@@ -11,17 +11,17 @@
 #include <cstdlib>
 
 // Constructor: empty image of given sizes.
-dip::Image::Image( UnsignedArray size, DataType dt ) {
+dip::Image::Image( dip::UnsignedArray size, dip::DataType dt ) {
    // ...   
 }
 
 // Constructor: Empty image of same size as 'src' image.
-dip::Image::Image( const Image & src, DataType dt ) {
+dip::Image::Image( const dip::Image & src, dip::DataType dt ) {
    // ...
 }
                                        
 // Constructor: Creates a 0-D image with the value of 'p' and of data type 'dt'.
-dip::Image::Image( double p, DataType dt ) {
+dip::Image::Image( double p, dip::DataType dt ) {
    // ...
 }
 
@@ -223,7 +223,7 @@ void dip::Image::Forge() {
       } else {
          ComputeStrides();
       }
-      dip::uint sz = dip::DataType_SizeOf( datatype );
+      dip::uint sz = dip::dt::SizeOf( datatype );
       void * p = ::malloc( size*sz );
       datablock = std::shared_ptr<void>( p , std::ptr_fun( ::free ) );
       origin = (void*)( (dip::uint8*)p + start*sz );
@@ -250,7 +250,7 @@ std::ostream & dip::operator<<(
       }
       os << "-tensor image, ";
    }
-   os << img.dims.size() << "-D, " << dip::DataType_Name(img.datatype) << std::endl;
+   os << img.dims.size() << "-D, " << dip::dt::Name(img.datatype) << std::endl;
    os << "   sizes: ";
    for( int ii=0; ii<img.dims.size(); ii++ ) {
       os << img.dims[ii] << ", ";
@@ -293,7 +293,7 @@ static void dip__MyFunction( void* vin ) {
 }
 
 void dip::MyFunction( dip::Image image ) {
-   DataType dt = dip::DataType::DFLOAT;
+   dip::DataType dt = dip::DataType::DFLOAT;
    double data;
    void* in = &data;
    DIP_OVL_CALL_ALL( dip__MyFunction, (in), dt );

@@ -36,7 +36,7 @@ DIP_DT_INFO_SUGGEST_4         // not used
 */
 
 
-const char* dip::DataType_Name( dip::DataType dt ) {
+const char* dip::dt::Name( dip::DataType dt ) {
    switch( dt ) {
       case dip::DataType::BIN:      return "BIN";
       case dip::DataType::UINT8:    return "UINT8";
@@ -52,7 +52,7 @@ const char* dip::DataType_Name( dip::DataType dt ) {
    };
 }
 
-dip::uint dip::DataType_SizeOf( dip::DataType dt ) {
+dip::uint dip::dt::SizeOf( dip::DataType dt ) {
    switch( dt ) {
       case dip::DataType::BIN:      return sizeof(dip::bin);
       case dip::DataType::UINT8:    return sizeof(dip::uint8);
@@ -69,13 +69,13 @@ dip::uint dip::DataType_SizeOf( dip::DataType dt ) {
 }
 
 
-bool dip::DataType_IsBinary( dip::DataType dt ) {
+bool dip::dt::IsBinary( dip::DataType dt ) {
    switch( dt ) {
       case dip::DataType::BIN:      return true;
       default:                      return false;
    };
 }
-bool dip::DataType_IsUInt( dip::DataType dt ) {
+bool dip::dt::IsUInt( dip::DataType dt ) {
    switch( dt ) {
       case dip::DataType::UINT8:    return true;
       case dip::DataType::UINT16:   return true;
@@ -83,7 +83,7 @@ bool dip::DataType_IsUInt( dip::DataType dt ) {
       default:                      return false;
    };
 }
-bool dip::DataType_IsSInt( dip::DataType dt ) {
+bool dip::dt::IsSInt( dip::DataType dt ) {
    switch( dt ) {
       case dip::DataType::SINT8:    return true;
       case dip::DataType::SINT16:   return true;
@@ -91,29 +91,29 @@ bool dip::DataType_IsSInt( dip::DataType dt ) {
       default:                      return false;
    };
 }
-bool dip::DataType_IsInteger( dip::DataType dt ) {
-   return dip::DataType_IsUInt( dt ) || dip::DataType_IsSInt( dt );
+bool dip::dt::IsInteger( dip::DataType dt ) {
+   return IsUInt( dt ) || IsSInt( dt );
 }
-bool dip::DataType_IsFloat( dip::DataType dt ) {
+bool dip::dt::IsFloat( dip::DataType dt ) {
    switch( dt ) {
       case dip::DataType::SFLOAT:   return true;
       case dip::DataType::DFLOAT:   return true;
       default:                      return false;
    };
 }
-bool dip::DataType_IsReal( dip::DataType dt ) {
-   return dip::DataType_IsInteger( dt ) || dip::DataType_IsFloat( dt );
+bool dip::dt::IsReal( dip::DataType dt ) {
+   return IsInteger( dt ) || IsFloat( dt );
 }
-bool dip::DataType_IsComplex( dip::DataType dt ) {
+bool dip::dt::IsComplex( dip::DataType dt ) {
    switch( dt ) {
       case dip::DataType::SCOMPLEX: return true;
       case dip::DataType::DCOMPLEX: return true;
       default:                      return false;
    };
 }
-bool dip::DataType_IsUnsigned( dip::DataType dt ) {
-   return dip::DataType_IsUInt( dt );
+bool dip::dt::IsUnsigned( dip::DataType dt ) {
+   return IsUInt( dt );
 }
-bool dip::DataType_IsSigned( dip::DataType dt ) {
-   return dip::DataType_IsSInt( dt ) || dip::DataType_IsReal( dt ) || dip::DataType_IsComplex( dt );
+bool dip::dt::IsSigned( dip::DataType dt ) {
+   return IsSInt( dt ) || IsReal( dt ) || IsComplex( dt );
 }

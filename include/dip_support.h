@@ -55,20 +55,26 @@ enum class DataType {
    DCOMPLEX,
 };
 
-const char* DataType_Name( DataType );
-uint DataType_SizeOf( DataType );
+namespace dt {
 
-bool DataType_IsBinary( DataType );    // DataType_IsNoNBinary(dt)=!DataType_IsBinary(dt);
-bool DataType_IsUInt( DataType );
-bool DataType_IsSInt( DataType );
-bool DataType_IsInteger( DataType );
-bool DataType_IsFloat( DataType );
-bool DataType_IsReal( DataType );
-bool DataType_IsComplex( DataType );   // DataType_IsNoNComplex(dt)=!DataType_IsComplex(dt);
-bool DataType_IsUnsigned( DataType );
-bool DataType_IsSigned( DataType );
+   const char* Name( DataType );
+   uint SizeOf( DataType );
+
+   bool IsBinary( DataType );       // IsNoNBinary(dt) = !IsBinary(dt);
+   bool IsUInt( DataType );
+   bool IsSInt( DataType );
+   bool IsInteger( DataType );
+   bool IsFloat( DataType );
+   bool IsReal( DataType );
+   bool IsComplex( DataType );      // IsNoNComplex(dt) = !IsComplex(dt);
+   bool IsUnsigned( DataType );
+   bool IsSigned( DataType );
+
+}
 
 // Arrays of signed, unsigned and floating-point values.
+// It's probably worth while to create our own short-vector optimized version of std::vector
+//    since these represent dimensions, and we usually only have two or three of those.
 typedef std::vector<sint> IntegerArray;   // strides
 typedef std::vector<uint> UnsignedArray;  // dimensions
 typedef std::vector<dfloat> FloatArray;
