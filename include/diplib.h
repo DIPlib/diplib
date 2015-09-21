@@ -10,13 +10,12 @@
 #ifndef DIPLIB_H
 #define DIPLIB_H
 
-#ifndef DIP_IMAGE_H
-#include    "dip_image.h"
-//includes  "dip_support.h"
+#ifndef DIP_ERROR_H
+#include "dip_error.h"
 #endif
 
-#ifndef DIP_ERROR_H
-#include    "dip_error.h"
+#ifndef DIP_IMAGE_H
+#include "dip_image.h"  // includes "dip_support.h"
 #endif
 
 #endif // DIPLIB_H

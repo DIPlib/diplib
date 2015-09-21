@@ -6,20 +6,23 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
+// TODO: all of the getters, and many other functions, should be included in the
+// header file, so they can be inlined.
+
 #include "diplib.h"
 #include <iostream>
 #include <cstdlib>
 
 // Constructor: empty image of given sizes.
 dip::Image::Image( dip::UnsignedArray size, dip::DataType dt ) {
-   // ...   
+   // ...
 }
 
 // Constructor: Empty image of same size as 'src' image.
 dip::Image::Image( const dip::Image & src, dip::DataType dt ) {
    // ...
 }
-                                       
+
 // Constructor: Creates a 0-D image with the value of 'p' and of data type 'dt'.
 dip::Image::Image( double p, dip::DataType dt ) {
    // ...
@@ -33,7 +36,7 @@ dip::Image::Image(
    const dip::IntegerArray & spacing
 ){
    dip::DefineROI( *this, src, origin, dims, spacing );
-}                                
+}
 
 void dip::DefineROI(
    dip::Image & dest,
@@ -45,8 +48,21 @@ void dip::DefineROI(
    // ...
 }
 
+// Constructor: Creates an image around existing data.
+dip::Image::Image(
+   std::shared_ptr<void>,
+   DataType datatype,
+   const UnsignedArray & dims,
+   const IntegerArray & strides,
+   const UnsignedArray & tensor_dims,
+   const IntegerArray & tensor_strides,
+   void * interface
+){
+   // ...
+}
+
 void * dip::Image::GetData() const {
-   DIPASSERT( IsForged(), DIP_E_IMAGE_NOT_FORGED );
+   DIPASSERT( IsForged(), dip::E::IMAGE_NOT_FORGED );
    return origin;
 }
 
@@ -96,22 +112,22 @@ dip::IntegerArray dip::Image::GetTensorStrides() const {
 }
 
 void dip::Image::SetDataType( dip::DataType dt ) {
-   DIPTS( IsForged(), DIP_E_IMAGE_NOT_RAW );
+   DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
    datatype = dt;
 }
 
 void dip::Image::SetDimensions( const dip::UnsignedArray & d ) {
-   DIPTS( IsForged(), DIP_E_IMAGE_NOT_RAW );
+   DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
    dims = d;
 }
 
 void dip::Image::SetStrides( const dip::IntegerArray & s ) {
-   DIPTS( IsForged(), DIP_E_IMAGE_NOT_RAW );
+   DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
    strides = s;
 }
 
 void dip::Image::SetTensorDimensions( const dip::UnsignedArray & td ) {
-   DIPTS( IsForged(), DIP_E_IMAGE_NOT_RAW );
+   DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
    tensor_dims = td;
    while( !tensor_dims.empty() && tensor_dims[tensor_dims.size()] == 1 ) {
       tensor_dims.pop_back();
@@ -119,7 +135,7 @@ void dip::Image::SetTensorDimensions( const dip::UnsignedArray & td ) {
 }
 
 void dip::Image::SetTensorStrides( const dip::IntegerArray & ts ) {
-   DIPTS( IsForged(), DIP_E_IMAGE_NOT_RAW );
+   DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
    tensor_strides = ts;
 }
 
@@ -131,7 +147,7 @@ bool dip::Image::IsForged() const {
 }
 
 bool dip::Image::HasContiguousData() const {
-   DIPASSERT( IsForged(), DIP_E_IMAGE_NOT_FORGED );
+   DIPASSERT( IsForged(), dip::E::IMAGE_NOT_FORGED );
    dip::uint size = GetNumberOfPixels() * GetNumberOfTensorComponents();
    dip::sint start;
    dip::uint sz;
@@ -140,7 +156,7 @@ bool dip::Image::HasContiguousData() const {
 }
 
 bool dip::Image::HasNormalStrides() const {
-   DIPASSERT( IsForged(), DIP_E_IMAGE_NOT_FORGED );
+   DIPASSERT( IsForged(), dip::E::IMAGE_NOT_FORGED );
    dip::sint total = 1;
    dip::uint n = dims.size();
    for( dip::uint ii=0; ii<n; ii++ ) {
@@ -170,7 +186,7 @@ bool dip::Image::HasValidStrides() const {
 }
 
 void dip::Image::ComputeStrides() {
-   DIPTS( IsForged(), DIP_E_IMAGE_NOT_RAW );
+   DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
    dip::uint s = 1;
    dip::uint n = dims.size();
    strides.resize( n );
@@ -209,24 +225,37 @@ void dip::Image::GetDataBlockSizeAndStart( dip::uint & size, dip::sint & start )
    size = max - min + 1;
 }
 
+void dip::Image::SetExternalInterface( ExternalInterface* ei ) {
+   DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
+   external_interface = ei;
+}
+
 void dip::Image::Forge() {
    if( !IsForged() ) {
-      dip::uint size = GetNumberOfPixels() * GetNumberOfTensorComponents();
-                        // todo: check for overflow in computation above!
-      dip::sint start = 0;
-      if( HasValidStrides() ) {
+      if( external_interface ) {
+         datablock = external_interface->AllocateData( dims, strides, tensor_dims, tensor_strides, datatype );
          dip::uint sz;
+         dip::sint start;
          GetDataBlockSizeAndStart( sz, start );
-         if( sz != size ) {
+         origin = (void*)( (dip::uint8*)datablock.get() + start*sz );
+      } else {
+         dip::uint size = GetNumberOfPixels() * GetNumberOfTensorComponents();
+                           // todo: check for overflow in computation above!
+         dip::sint start = 0;
+         if( HasValidStrides() ) {
+            dip::uint sz;
+            GetDataBlockSizeAndStart( sz, start );
+            if( sz != size ) {
+               ComputeStrides();
+            }
+         } else {
             ComputeStrides();
          }
-      } else {
-         ComputeStrides();
+         dip::uint sz = dip::dt::SizeOf( datatype );
+         void * p = ::malloc( size*sz );
+         datablock = std::shared_ptr<void>( p, ::free );
+         origin = (void*)( (dip::uint8*)p + start*sz );
       }
-      dip::uint sz = dip::dt::SizeOf( datatype );
-      void * p = ::malloc( size*sz );
-      datablock = std::shared_ptr<void>( p , std::ptr_fun( ::free ) );
-      origin = (void*)( (dip::uint8*)p + start*sz );
    }
 }
 
@@ -279,22 +308,4 @@ std::ostream & dip::operator<<(
       os << "   not forged" << std::endl;
    }
    return os;
-}
-
-
-
-
-// Just a test!
-
-template <typename TPI>
-static void dip__MyFunction( void* vin ) {
-   TPI* in = static_cast <TPI*> ( vin );
-   std::cout << "Data type = " << typeid(*in).name() << std::endl;
-}
-
-void dip::MyFunction( dip::Image image ) {
-   dip::DataType dt = dip::DataType::DFLOAT;
-   double data;
-   void* in = &data;
-   DIP_OVL_CALL_ALL( dip__MyFunction, (in), dt );
 }

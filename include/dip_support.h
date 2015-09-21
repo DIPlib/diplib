@@ -28,7 +28,7 @@ typedef std::size_t uint;     // For sizes and the like
             // pointers: 32 bits on 32-bit systems, 64 bits on 64-bit systems.
 
 // Types for pixel values
-typedef std::uint8_t          bin;     // Binary data stored in a single byte
+typedef std::uint8_t          bin;     // Binary data stored in a single byte (don't use bool, it has implementation-defined size)
 typedef std::uint8_t          uint8;
 typedef std::uint16_t         uint16;
 typedef std::uint32_t         uint32;
@@ -138,34 +138,21 @@ class PhysicalDimensions {
 };
 
 /*
- * Macros to call overloaded functions according to a DataType variable.
- * "paramlist" must include the brackets: DIP_OVL_CALL_ALL( MyFilter, ( in, mask, fsize ), dtype )
+ * Support for external interfaces:
+ * Software using DIPlib might want to control how pixel data is allocated.
  */
- 
-#define DIP_OVL_CALL_ALL(fname, paramlist, dtype) { \
-   if( dtype == dip::DataType::BIN      ) { fname <dip::bin>      paramlist; } \
-   if( dtype == dip::DataType::UINT8    ) { fname <dip::uint8>    paramlist; } \
-   if( dtype == dip::DataType::UINT16   ) { fname <dip::uint16>   paramlist; } \
-   if( dtype == dip::DataType::UINT32   ) { fname <dip::uint32>   paramlist; } \
-   if( dtype == dip::DataType::SINT8    ) { fname <dip::sint8>    paramlist; } \
-   if( dtype == dip::DataType::SINT16   ) { fname <dip::sint16>   paramlist; } \
-   if( dtype == dip::DataType::SINT32   ) { fname <dip::sint32>   paramlist; } \
-   if( dtype == dip::DataType::SFLOAT   ) { fname <dip::sfloat>   paramlist; } \
-   if( dtype == dip::DataType::DFLOAT   ) { fname <dip::dfloat>   paramlist; } \
-   if( dtype == dip::DataType::SCOMPLEX ) { fname <dip::scomplex> paramlist; } \
-   if( dtype == dip::DataType::DCOMPLEX ) { fname <dip::dcomplex> paramlist; } }
-// Make similar defines for:
-// DIP_OVL_CALL_UINT       // uint8 + uint16 + uint32
-// DIP_OVL_CALL_SINT       // sint8 + sint16 + sint32
-// DIP_OVL_CALL_INTEGER    // UINT + SINT
-// DIP_OVL_CALL_FLOAT      // sfloat + dfloat
-// DIP_OVL_CALL_REAL       // INTEGER + FLOAT
-// DIP_OVL_CALL_COMPLEX    // scomplex + dcomplex
-// DIP_OVL_CALL_NONCOMPLEX // REAL + BINARY
-// DIP_OVL_CALL_UNSIGNED   // UINT
-// DIP_OVL_CALL_SIGNED     // SINT + FLOAT + COMPLEX
-// DIP_OVL_CALL_BINARY     // is just one type, not really necessary, is it?
-// DIP_OVL_CALL_NONBINARY  // REAL + COMPLEX
+
+// A class derived from this one will do all we need it to do. Assign into
+// the image object through dip::Image::SetExternalInterface().
+// The caller will maintain ownership of the interface!
+class ExternalInterface {
+   public:
+      virtual std::shared_ptr<void> AllocateData(const UnsignedArray&,      // dims
+                                                       IntegerArray&,       // strides
+                                                 const UnsignedArray&,      // tensor_dims
+                                                       IntegerArray&,       // tensor_strides
+                                                       DataType) = 0;       // datatype
+};
 
 } // namespace dip
 

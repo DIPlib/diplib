@@ -20,7 +20,9 @@ class Image {
 
       // Default constructor
       Image() {}
-      // NOTE: destructor, move constructor, copy assignment operator, and move assignment operator should all be the default ones (Google for rule of zero).
+      // NOTE: destructor, move constructor, copy assignment operator, and move assignment operator
+      // should all be the default ones (Google for rule of zero).
+
       // Other constructors
       explicit Image( UnsignedArray dims, DataType dt = DataType::SFLOAT );
                                        // Empty image of given sizes.
@@ -33,10 +35,10 @@ class Image {
                                        // Creates a new image pointing to data of 'src'.
       Image( double p, DataType dt = DataType::SFLOAT );
                                        // Creates a 0-D image with the value of 'p'.
-      Image( void * data, DataType datatype,
+      Image( std::shared_ptr<void> data, DataType datatype,
              const UnsignedArray & dims, const IntegerArray & strides,
              const UnsignedArray & tensor_dims, const IntegerArray & tensor_strides,
-             void * interface );       // Creates an image around existing data.             
+             void * interface );       // Creates an image around existing data.
 
       // Getters (dimensions and strides arrays are copied, other properties are passed by const reference)
 
@@ -80,8 +82,8 @@ class Image {
 
       void Assimilate( const Image & );   // Same as Strip(); CopyProperties(); Forge();
       void CopyProperties( const Image & );
-      
-      void SetInterface();                // See below at 'interface' member value.
+
+      void SetExternalInterface( ExternalInterface* );
 
       // manipulation
 
@@ -99,7 +101,7 @@ class Image {
       void ConvertDataType( Image &, DataType );      // Deep copy with data type conversion.
 
       // operators
-      
+
       Image & operator+=( const Image & );
       Image & operator-=( const Image & );
       Image & operator*=( const Image & );
@@ -126,19 +128,17 @@ class Image {
       IntegerArray strides;               // strides.size == ndims
       UnsignedArray tensor_dims;          // tensor_dims.size == tensor_ndims
       IntegerArray tensor_strides;        // tensor_strides.size == tensor_ndims
-      ColorSpace color;
+      ColorSpace color_space;
       PhysicalDimensions physdims;
       std::shared_ptr<void> datablock;    // Holds the pixel data. Data block will be freed when last image
                                           //    that uses it is destroyed.
-      void * origin = nullptr;            // Points to the origin ( pixel (0,0) ), not necessarily the first
+      void* origin = nullptr;             // Points to the origin ( pixel (0,0) ), not necessarily the first
                                           //    pixel of the data block.
-      void * interface = nullptr;         // If the data is allocated by another library/program, relevant
-                                          //    information can be stored here. Not sure yet how this will
-                                          //    look, but it should have at least pointers to a malloc() and
-                                          //    a free() function.
+      ExternalInterface* external_interface = nullptr;
+                                          // A function that will be called instead of the default forge function.
 
       bool HasValidStrides() const;       // Are the two strides arrays of the same size as the dims arrays?
-      void ComputeStrides();              // Fill in the both strides arrays.
+      void ComputeStrides();              // Fill in both strides arrays.
       void GetDataBlockSizeAndStart( uint & size, sint & start ) const;
                                           // size is the distance between top left and bottom right corners.
                                           // start is the distance between top left corner and origin
@@ -148,7 +148,9 @@ class Image {
       friend std::ostream & operator<<( std::ostream &, const Image & );
 }; // class Image
 
-typedef std::vector<Image&> ImageArray;
+typedef std::vector<Image> ImageArray;
+typedef std::vector<Image&> ImageRefArray;
+
 
 /*
  * Functions to work with image properties
@@ -206,8 +208,6 @@ Image operator>=( const Image &, const Image & );
 
 // Makes a new image object pointing to same pixel data as 'src', but with different origin, strides and size.
 void DefineROI( Image & dest, const Image & src, const UnsignedArray & origin, const UnsignedArray & dims, const IntegerArray & spacing );
-                           
-void MyFunction( dip::Image image );
 
 } // namespace dip
 
