@@ -12,8 +12,6 @@
 #include "mex.h"
 #include "diplib.h"
 
-#include <map>
-
 namespace dml {
 
 // These are the names of the fields of the dip_image structure in MATLAB:
@@ -27,33 +25,30 @@ constexpr dip::uint DML_FEATURE_NAME_LENGTH = 50;
 static const char* InputImageError = "MATLAB image data of unsupported type.";
 
 // To create an output image:
-//    dml::MATLAB_Interface mi;
+//    dml::MATLAB_Interface mi0;
 //    dip::Image img_out0;
-//    img_out0.SetExternalInterface( mi );
-//    dip::Image img_out1;
-//    img_out1.SetExternalInterface( mi );
+//    img_out0.SetExternalInterface( mi0 );
+// Make sure that mi0 exists for as long as img_out0 exists!
 // To return that image back to MATLAB:
-//    plhs[0] = mi.GetArray( img_out0.GetData() );
-//    plhs[1] = mi.GetArray( img_out1.GetData() );
+//    plhs[0] = mi0.GetArray();
 // If we don't GetArray(), the mxArray will be destroyed when img_out0 goes out of scope.
 // This interface handler doesn't own any data.
 class MATLAB_Interface : public dip::ExternalInterface {
    private:
-      std::map<void*,mxArray*> mla;          // This map holds mxArray pointers, we can
-                                             // find the right mxArray if we have the data
-                                             // pointer.
+      mxArray* mla = nullptr;
+      bool donotfree = false;
       // This is the deleter functor we'll associate to the shared_ptr.
-      class StripHandler {
+      class FreeHandler {
          private:
             MATLAB_Interface& interface;
          public:
-            StripHandler( MATLAB_Interface& mi ) : interface{mi} {};
+            FreeHandler( MATLAB_Interface& mi ) : interface{mi} {};
             void operator()( void* p ) {
-               if( interface.mla.count( p )==0 ) {
+               if( interface.donotfree ) {
                   mexPrintf( "   Not destroying mxArray!\n" );
                } else {
-                  mxDestroyArray( interface.mla[p] );
-                  interface.mla.erase( p );
+                  mxDestroyArray( interface.mla );
+                  interface.mla = nullptr;
                   mexPrintf( "   Destroyed mxArray!\n" );
                }
             };
@@ -70,6 +65,7 @@ class MATLAB_Interface : public dip::ExternalInterface {
          dip::IntegerArray&        tensor_strides,
          dip::DataType             datatype
       ) override {
+         DIPTS( mla, "External Interface object used by more than one function!" );
          DIPTS( tensor_dims.size() != 0, "Tensor images not yet supported" );
          // Copy size array
          dip::UnsignedArray mldims = dims;
@@ -130,25 +126,22 @@ class MATLAB_Interface : public dip::ExternalInterface {
          } else {
             mldims.resize(2,1);  // add singleton dimensions
          }
-         mxArray* m = mxCreateNumericArray( n, mldims.data(), type, mxREAL );
-         mexPrintf( "   Created mxArray as dip::Image data block\n" );
-         void* p = mxGetData( m );
-         mla[p] = m;
-         return std::shared_ptr<void>( p, StripHandler( *this ) );
+         // Alternative is to mxMalloc() data, and pass mxFree() as deleter.
+         //    A matrix of the right size and type will have to be created and this
+         //    pointer moved into it.
+         mla = mxCreateNumericArray( n, mldims.data(), type, mxREAL );
+         return std::shared_ptr<void>( mxGetData( mla ), FreeHandler( *this ) );
       };
 
-      mxArray* GetArray( void* p ) {
-         mxArray* m = mla[p];
-         mla.erase( p );
-         return m;
+      mxArray* GetArray() {
+         donotfree = true;
+         return mla;
          // We should add code here to turn the array into a dip_image object.
       }
 };
 
 // A deleter that doesn't delete.
-void VoidStripHandler( void* p ) {
-   mexPrintf( "   Input mxArray not being destroyed\n" );
-};
+void VoidFreeHandler( void* p ) {};
 
 // Passing an mxArray to DIPlib, keeping ownership of data.
 dip::Image GetImage( const mxArray* mx ) {
@@ -262,7 +255,7 @@ dip::Image GetImage( const mxArray* mx ) {
    // Create Image object
    // If (complex), do something different here: make two images for mxGetData() and mxGetImagData(),
    // call a DIPlib function to merge them as a single complex image (will need to copy data).
-   std::shared_ptr<void> p( mxGetData( mxdata ), VoidStripHandler );
+   std::shared_ptr<void> p( mxGetData( mxdata ), VoidFreeHandler );
    return dip::Image( p, datatype, dims, strides, {}, {}, nullptr );
 }
 
