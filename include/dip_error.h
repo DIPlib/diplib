@@ -6,6 +6,8 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
+/* This file is included through diplib.h */
+
 #ifndef DIP_ERROR_H
 #define DIP_ERROR_H
 

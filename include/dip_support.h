@@ -6,6 +6,8 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
+/* This file is included through diplib.h */
+
 #ifndef DIP_SUPPORT_H
 #define DIP_SUPPORT_H
 
@@ -55,7 +57,7 @@ enum class DataType {
    DCOMPLEX,
 };
 
-namespace dt {
+namespace _DataType {
 
    const char* Name( DataType );
    uint SizeOf( DataType );
