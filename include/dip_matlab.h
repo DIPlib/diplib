@@ -66,11 +66,11 @@ class MATLAB_Interface : public dip::ExternalInterface {
       virtual std::shared_ptr<void> AllocateData(
          const dip::UnsignedArray& dims,
          dip::IntegerArray&        strides,
-         const dip::UnsignedArray& tensor_dims,
-         dip::IntegerArray&        tensor_strides,
+         dip::Tensor&              tensor,
+         dip::sint                 tstride,
          dip::DataType             datatype
       ) override {
-         DIPTS( tensor_dims.size() != 0, "Tensor images not yet supported" );
+         DIPTS( !tensor.IsScalar(), "Tensor images not yet supported" );
          // Copy size array
          dip::UnsignedArray mldims = dims;
          // Create stride array
@@ -84,35 +84,35 @@ class MATLAB_Interface : public dip::ExternalInterface {
          // Find the right data type
          mxClassID type;
          switch (datatype) {
-            case dip::DataType::BIN :
-            case dip::DataType::UINT8 :
+            case dip::DT_BIN :
+            case dip::DT_UINT8 :
                type = mxUINT8_CLASS;
                break;
-            case dip::DataType::SINT8 :
+            case dip::DT_SINT8 :
                type = mxINT8_CLASS;
                break;
-            case dip::DataType::UINT16 :
+            case dip::DT_UINT16 :
                type = mxUINT16_CLASS;
                break;
-            case dip::DataType::SINT16 :
+            case dip::DT_SINT16 :
                type = mxINT16_CLASS;
                break;
-            case dip::DataType::UINT32 :
+            case dip::DT_UINT32 :
                type = mxUINT32_CLASS;
                break;
-            case dip::DataType::SINT32 :
+            case dip::DT_SINT32 :
                type = mxINT32_CLASS;
                break;
-            case dip::DataType::SFLOAT :
+            case dip::DT_SFLOAT :
                type = mxSINGLE_CLASS;
                break;
-            case dip::DataType::DFLOAT :
+            case dip::DT_DFLOAT :
                type = mxDOUBLE_CLASS;
                break;
-            case dip::DataType::SCOMPLEX :
+            case dip::DT_SCOMPLEX :
                //type = mxSINGLE_CLASS;
                //break;
-            case dip::DataType::DCOMPLEX :
+            case dip::DT_DCOMPLEX :
                //type = mxDOUBLE_CLASS;
                throw dip::Error( "Complex images not yet supported" );
                // We should support these by allocating an mxArray with an extra first dimension of 2.
@@ -201,39 +201,40 @@ dip::Image GetImage( const mxArray* mx ) {
       throw dip::Error( "Complex images not yet supported" );
    dip::DataType datatype;
    switch (type) {
-      case mxDOUBLE_CLASS:    /* dfloat */
-         if (complex) datatype = dip::DataType::DCOMPLEX;
-         else datatype = dip::DataType::DFLOAT;
+      case mxDOUBLE_CLASS:    // dfloat
+         if (complex) datatype = dip::DT_DCOMPLEX;
+         else datatype = dip::DT_DFLOAT;
          break;
-      case mxSINGLE_CLASS:    /* sfloat */
-         if (complex) datatype = dip::DataType::SCOMPLEX;
-         else datatype = dip::DataType::SFLOAT;
+      case mxSINGLE_CLASS:    // sfloat
+         if (complex) datatype = dip::DT_SCOMPLEX;
+         else datatype = dip::DT_SFLOAT;
          break;
-      case mxINT8_CLASS:      /* sint8 */
+      case mxINT8_CLASS:      // sint8
          DIPTS (complex, InputImageError);
-         datatype = dip::DataType::SINT8;
+         datatype = dip::DT_SINT8;
          break;
-      case mxUINT8_CLASS:     /* uint8 , bin8 */
+      case mxUINT8_CLASS:     // uint8 , bin
          DIPTS (complex, InputImageError);
          if (binary)
-            datatype = dip::DataType::BIN;
+            datatype = dip::DT_BIN;
          else
-            datatype = dip::DataType::UINT8;
+            datatype = dip::DT_UINT8;
          break;
-      case mxINT16_CLASS:     /* sint16 */
+      case mxINT16_CLASS:     // sint16
          DIPTS (complex, InputImageError);
-         datatype = dip::DataType::SINT16;
+         datatype = dip::DT_SINT16;
          break;
-      case mxUINT16_CLASS:    /* uint16, bin16 */
+      case mxUINT16_CLASS:    // uint16
          DIPTS (complex, InputImageError);
-         datatype = dip::DataType::UINT16;
-      case mxINT32_CLASS:     /* sint32 */
+         datatype = dip::DT_UINT16;
+      case mxINT32_CLASS:     // sint32
          DIPTS (complex, InputImageError);
-         datatype = dip::DataType::SINT32;
+         datatype = dip::DT_SINT32;
          break;
-      case mxUINT32_CLASS:    /* uint32, bin32 */
+      case mxUINT32_CLASS:    // uint32
          DIPTS (complex, InputImageError);
-         datatype = dip::DataType::UINT32;
+         datatype = dip::DT_UINT32;
+         break;
       default:
          throw dip::Error( "Image data is not numeric." );
    }

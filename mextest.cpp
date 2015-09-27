@@ -15,7 +15,7 @@ void print_info( const dip::Image & img )
    for( dip::uint ii=0; ii<dims.size(); ++ii) {
       mexPrintf( " %d ", dims[ii] );
    }
-   mexPrintf( "), strides: (" );
+   mexPrintf( "), %s, strides: (", img.GetDataType().Name() );
    dip::IntegerArray stride = img.GetStrides();
    for( dip::uint ii=0; ii<stride.size(); ++ii) {
       mexPrintf( " %d ", stride[ii] );
@@ -45,7 +45,9 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       dip::Image img_out0;
       img_out0.SetExternalInterface( &mi );
       img_out0.SetDimensions( {3,5} );
+      print_info( img_out0 );
       img_out0.Forge();
+      print_info( img_out0 );
 
       mexPrintf("Reallocating output image img_out0\n");
       img_out0.Strip();

@@ -2,3 +2,4 @@ obj/
 test
 test.DSYM/
 mextest.mex*
+*.geany

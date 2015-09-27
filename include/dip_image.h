@@ -6,7 +6,7 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
-/* This file is included through diplib.h */
+// This file is included through diplib.h
 
 #ifndef DIP_IMAGE_H
 #define DIP_IMAGE_H
@@ -14,6 +14,42 @@
 #include <memory>
 
 namespace dip {
+
+
+//
+// Support functions that are needed in class Image
+//
+
+// Makes a new image object pointing to same pixel data as 'src', but with different origin, strides and size.
+void DefineROI( Image& dest, const Image& src, const UnsignedArray& origin, const UnsignedArray& dims, const IntegerArray& spacing );
+
+// Gateway to all the arithmetic functionality
+inline void Arithmetic( const Image& lhs, const Image& rhs, Image& out, String op, DataType dt ) {}; // Should be defined elsewhere, the "inline" and "{}" here is to avoid a linker warning for now.
+
+
+
+//
+// Support for external interfaces:
+// Software using DIPlib might want to control how pixel data is allocated.
+//
+
+// A class derived from this one will do all we need it to do. Assign into
+// the image object through dip::Image::SetExternalInterface().
+// The caller will maintain ownership of the interface!
+class ExternalInterface {
+   public:
+      virtual std::shared_ptr<void> AllocateData(const UnsignedArray& dims,
+                                                 IntegerArray& strides,
+                                                 Tensor& tensor,
+                                                 sint tstride,
+                                                 DataType datatype) = 0;
+};
+
+
+
+//
+// The Image class
+//
 
 class Image {
 
@@ -32,9 +68,10 @@ class Image {
       //
 
       // Empty (forged) image of given sizes.
-      explicit Image( UnsignedArray d, DataType dt = DataType::SFLOAT ) :
+      explicit Image( UnsignedArray d, uint nchan = 1, DataType dt = DT_SFLOAT ) :
          datatype(dt),
-         dims(d)
+         dims(d),
+         tensor({nchan})
       {
          Forge();
       }
@@ -44,8 +81,8 @@ class Image {
          datatype(dt),
          dims(src.dims),
          strides(src.strides),
-         tensor_dims(src.tensor_dims),
-         tensor_strides(src.tensor_strides),
+         tensor(src.tensor),
+         tstride(src.tstride),
          color_space(src.color_space),
          physdims(src.physdims),
          external_interface(src.external_interface)
@@ -60,7 +97,7 @@ class Image {
              const IntegerArray& spacing );
 
       // Creates a 0-D image with the value of 'p'.
-      Image( double p, DataType dt = DataType::SFLOAT ) :
+      Image( double p, DataType dt = DT_SFLOAT ) :
          datatype(dt)
       {
          Forge();       // dims is empty by default
@@ -72,15 +109,15 @@ class Image {
              DataType dt,
              const UnsignedArray& d,            // dimensions
              const IntegerArray& s,             // strides
-             const UnsignedArray& tensor_d,     // tensor dimensions
-             const IntegerArray& tensor_s,      // tensor strides
+             const Tensor& t,                   // tensor properties
+             sint ts ,                          // tensor stride
              ExternalInterface* ei ) :
-         datablock(data),
          datatype(dt),
          dims(d),
          strides(s),
-         tensor_dims(tensor_d),
-         tensor_strides(tensor_s),
+         tensor(t),
+         tstride(ts),
+         datablock(data),
          external_interface(ei)
       {
          origin = datablock.get();
@@ -120,10 +157,13 @@ class Image {
       IntegerArray GetStrides() const {
          return strides;
       }
+      uint GetTensorStride() const {
+         return tstride;
+      }
 
       bool HasContiguousData() const {
          DIPASSERT( IsForged(), dip::E::IMAGE_NOT_FORGED );
-         dip::uint size = GetNumberOfPixels() * GetNumberOfTensorComponents();
+         dip::uint size = GetNumberOfPixels() * GetTensorElements();
          dip::sint start;
          dip::uint sz;
          GetDataBlockSizeAndStart( sz, start );
@@ -136,29 +176,37 @@ class Image {
          DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
          strides = s;
       }
+      void SetTensorStride( sint ts ) {
+         DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
+         tstride = ts;
+      }
 
       //
       // Tensor
       //
 
-      uint GetTensorDimensionality() const;
-
-      UnsignedArray GetTensorDimensions() const;
-
-      uint GetNumberOfTensorComponents() const {
-         return 1;
-         // TODO: this is bad!
+      UnsignedArray GetTensorDimensions() const {
+         return tensor.Dimensions();
+      }
+      uint GetTensorElements() const {
+         return tensor.Elements();
+      }
+      uint GetTensorColumns() const {
+         return tensor.Columns();
+      }
+      uint GetTensorRows() const {
+         return tensor.Rows();
+      }
+      bool IsScalar() const {
+         return tensor.IsScalar();
+      }
+      bool IsVector() const {
+         return tensor.IsVector();
       }
 
-      IntegerArray GetTensorStrides() const;
-
-      bool IsScalar() const;
-
-      bool IsVector() const;
-
-      void SetTensorDimensions( const UnsignedArray& );
-
-      void SetTensorStrides( const IntegerArray& );
+      void SetTensorDimensions( const UnsignedArray& tdims ) {
+         tensor.SetDimensions( tdims );
+      }
 
       //
       // Data Type
@@ -211,8 +259,7 @@ class Image {
          datatype       = img.datatype;
          dims           = img.dims;
          strides        = img.strides;
-         tensor_dims    = img.tensor_dims;
-         tensor_strides = img.tensor_strides;
+         tensor         = img.tensor;
          color_space    = img.color_space;
          physdims       = img.physdims;
       }
@@ -223,6 +270,8 @@ class Image {
          CopyProperties( img );
          Forge();
       }
+
+      // Add functions to see if two image handles are the same, or if two images point to the same data
 
       //
       // Data
@@ -277,11 +326,9 @@ class Image {
 
       Image operator[]( uint );                       // Indexing in tensor dimensions (linear indexing)
 
-      //Pixel at( const UnsignedArray& );             // Indexing in spatial dimensions
+      Pixel at( const UnsignedArray& );               // Indexing in spatial dimensions
 
-      //Pixel at( uint );                             // Indexing in spatial dimensions (linear indexing)
-
-      // TODO: Define the Pixel class, which points to data in an image and holds references to tensor information etc.
+      Pixel at( uint );                               // Indexing in spatial dimensions (linear indexing)
 
       void Copy( Image& img );                        // Deep copy. 'this' will become a copy of 'img' with its own data.
 
@@ -295,20 +342,43 @@ class Image {
       // Operators
       //
 
-      Image& operator+=( const Image& );
-      Image& operator-=( const Image& );
-      Image& operator*=( const Image& );
-      Image& operator/=( const Image& );
-      Image& operator%=( const Image& );
-      Image& operator&=( const Image& );
-      Image& operator|=( const Image& );
-      Image& operator^=( const Image& );
+      Image& operator+=( const Image& rhs ) {
+         Arithmetic( *this, rhs, *this, "+", datatype );
+         return *this;
+      }
+      Image& operator-=( const Image& rhs ) {
+         Arithmetic( *this, rhs, *this, "-", datatype );
+         return *this;
+      }
+      Image& operator*=( const Image& rhs ) {
+         Arithmetic( *this, rhs, *this, "*", datatype );
+         return *this;
+      }
+      Image& operator/=( const Image& rhs ) {
+         Arithmetic( *this, rhs, *this, "/", datatype );
+         return *this;
+      }
+      Image& operator%=( const Image& rhs ) {
+         Arithmetic( *this, rhs, *this, "%", datatype );
+         return *this;
+      }
+      Image& operator&=( const Image& rhs ) { // only for binary images?
+         Arithmetic( *this, rhs, *this, "&", datatype );
+         return *this;
+      }
+      Image& operator|=( const Image& rhs ) { // only for binary images?
+         Arithmetic( *this, rhs, *this, "|", datatype );
+         return *this;
+      }
+      Image& operator^=( const Image& rhs ) { // only for binary images?
+         Arithmetic( *this, rhs, *this, "^", datatype );
+         return *this;
+      }
                // Implemented as calls to dip::Arithmetic(*this,in,*this,dip::Operation,dip::DataType);
-               // Note that a+=b should set the dip::DataType argument to a.DataType().
                // dip::Arithmetic should be then able to do this operation in place if 'a' has the right
                // size to hold the result. Singleton expansion could cause this to not be the case.
                // Should there be an error if in-place operation is not possible?
-               // a=a+b would resize 'a' and change its data type if necessary.
+               // a=a+b will resize 'a' and change its data type as necessary.
 
       friend std::ostream& operator<<( std::ostream&, const Image& );
 
@@ -318,11 +388,11 @@ class Image {
       // Implementation
       //
 
-      DataType datatype = DataType::SFLOAT;
+      DataType datatype = DT_SFLOAT;
       UnsignedArray dims;                 // dims.size == ndims
       IntegerArray strides;               // strides.size == ndims
-      UnsignedArray tensor_dims;          // tensor_dims.size == tensor_ndims
-      IntegerArray tensor_strides;        // tensor_strides.size == tensor_ndims
+      Tensor tensor;
+      sint tstride;
       ColorSpace color_space;
       PhysicalDimensions physdims;
       std::shared_ptr<void> datablock;    // Holds the pixel data. Data block will be freed when last image
@@ -338,9 +408,6 @@ class Image {
 
       bool HasValidStrides() const {      // Are the two strides arrays of the same size as the dims arrays?
          if( dims.size() != strides.size() ) {
-            return false;
-         }
-         if( tensor_dims.size() != tensor_strides.size() ) {
             return false;
          }
          return true;
@@ -359,9 +426,9 @@ typedef std::vector<Image>  ImageArray;
 typedef std::vector<Image&> ImageRefArray;
 
 
-/*
- * Functions to work with image properties
- */
+//
+//Functions to work with image properties
+//
 
 bool ImagesCompare( const ImageArray&, bool throw_exception = true );
                                        // Compares properties of all images in array,
@@ -384,37 +451,66 @@ void ImagesSeparate( const ImageArray& input, ImageArray& output );
 
 void ImageChangeDataType( const Image& src, Image& dst );
 
-/*
- * Overloaded operators
- */
+//
+// Overloaded operators
+//
 
+// Unary
 Image operator-( const Image& );
-Image operator~( const Image& );
-Image operator!( const Image& );
-         // Implemented as call to dip::Invert(in,out);
-Image operator+( const Image&, const Image& );
-Image operator-( const Image&, const Image& );
-Image operator*( const Image&, const Image& );
-Image operator/( const Image&, const Image& );
-Image operator%( const Image&, const Image& );
-Image operator&( const Image&, const Image& );
-Image operator|( const Image&, const Image& );
-Image operator^( const Image&, const Image& );
-         // Implemented as calls to dip::Arithmetic(in1,in2,out,dip::ArithmeticOperation,dip::DataType);
+Image operator~( const Image& ); // maybe not this one?
+Image operator!( const Image& ); // only for binary images?
+         // -> Implemented as call to dip::Invert(in,out);
+
+// Arithmetic
+inline Image operator+( const Image& lhs, const Image& rhs ) {
+   Image out;
+   Arithmetic( lhs, rhs, out, "+", DataTypeSuggest_Arithmetic( lhs, rhs ) );
+   return out;
+}
+inline Image operator-( const Image& lhs, const Image& rhs ) {
+   Image out;
+   Arithmetic( lhs, rhs, out, "-", DataTypeSuggest_Arithmetic( lhs, rhs ) );
+   return out;
+}
+inline Image operator*( const Image& lhs, const Image& rhs ) {
+   Image out;
+   Arithmetic( lhs, rhs, out, "*", DataTypeSuggest_Arithmetic( lhs, rhs ) );
+   return out;
+}
+inline Image operator/( const Image& lhs, const Image& rhs ) {
+   Image out;
+   Arithmetic( lhs, rhs, out, "/", DataTypeSuggest_Arithmetic( lhs, rhs ) );
+   return out;
+}
+inline Image operator%( const Image& lhs, const Image& rhs ) {
+   Image out;
+   Arithmetic( lhs, rhs, out, "%", DataTypeSuggest_Arithmetic( lhs, rhs ) );
+   return out;
+}
+inline Image operator&( const Image& lhs, const Image& rhs ) { // only for binary images?
+   Image out;
+   Arithmetic( lhs, rhs, out, "&", DataTypeSuggest_Arithmetic( lhs, rhs ) );
+   return out;
+}
+inline Image operator|( const Image& lhs, const Image& rhs ) { // only for binary images?
+   Image out;
+   Arithmetic( lhs, rhs, out, "|", DataTypeSuggest_Arithmetic( lhs, rhs ) );
+   return out;
+}
+inline Image operator^( const Image& lhs, const Image& rhs ) { // only for binary images?
+   Image out;
+   Arithmetic( lhs, rhs, out, "^", DataTypeSuggest_Arithmetic( lhs, rhs ) );
+   return out;
+}
+
+// Comparison
 Image operator==( const Image&, const Image& );
 Image operator!=( const Image&, const Image& );
 Image operator< ( const Image&, const Image& );
 Image operator> ( const Image&, const Image& );
 Image operator<=( const Image&, const Image& );
 Image operator>=( const Image&, const Image& );
-         // -> Implemented as call to dip::Compare(in1,in2,out,dip::ComparisonOperation);
-
-/*
- * Other image manipulation functions
- */
-
-// Makes a new image object pointing to same pixel data as 'src', but with different origin, strides and size.
-void DefineROI( Image& dest, const Image& src, const UnsignedArray& origin, const UnsignedArray& dims, const IntegerArray& spacing );
+         // -> Implemented as call to dip::Compare(in1,in2,out,"==");
 
 } // namespace dip
 

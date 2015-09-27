@@ -10,8 +10,16 @@
 #ifndef DIPLIB_H
 #define DIPLIB_H
 
+namespace dip {
+   class Image;      // Forward declaration, for use by some functions
+                     // declared in header files that are loaded before
+                     // dip_image.h.
+}
+
 #include "dip_error.h"
+#include "dip_datatype.h"
 #include "dip_support.h"
+#include "dip_pixel.h"
 #include "dip_image.h"
 
 #endif // DIPLIB_H

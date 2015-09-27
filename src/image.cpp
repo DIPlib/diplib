@@ -10,80 +10,70 @@
 #include <iostream>
 #include <cstdlib>
 
+using namespace dip;
+
 void dip::DefineROI(
-   dip::Image & dest,
-   const dip::Image & src,
-   const dip::UnsignedArray & origin,
-   const dip::UnsignedArray & dims,
-   const dip::IntegerArray & spacing
+   Image& dest,
+   const Image& src,
+   const UnsignedArray& origin,
+   const UnsignedArray& dims,
+   const IntegerArray& spacing
 ){
    // ...
 }
 
 // Constructor: Creates a new image pointing to data of 'src'.
-dip::Image::Image(
-   const dip::Image & src,
-   const dip::UnsignedArray & origin,
-   const dip::UnsignedArray & dims,
-   const dip::IntegerArray & spacing
+Image::Image(
+   const Image& src,
+   const UnsignedArray& origin,
+   const UnsignedArray& dims,
+   const IntegerArray& spacing
 ){
-   dip::DefineROI( *this, src, origin, dims, spacing );
+   DefineROI( *this, src, origin, dims, spacing );
 }
 
 //
 
-bool dip::Image::HasNormalStrides() const {
+bool Image::HasNormalStrides() const {
    DIPASSERT( IsForged(), dip::E::IMAGE_NOT_FORGED );
-   dip::sint total = 1;
-   dip::uint n = dims.size();
-   for( dip::uint ii=0; ii<n; ii++ ) {
+   if( tstride != 1 ) {
+      return false;
+   }
+   sint total = tensor.Elements();
+   for( uint ii=0; ii<dims.size(); ++ii ) {
       if( strides[ii] != total ) {
          return false;
       }
       total *= dims[ii];
    }
-   n = tensor_dims.size();
-   for( dip::uint ii=0; ii<n; ii++ ) {
-      if( tensor_strides[ii] != total ) {
-         return false;
-      }
-      total *= tensor_dims[ii];
-   }
    return true;
 }
 
 
-void dip::Image::ComputeStrides() {
+void Image::ComputeStrides() {
    DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
-   dip::uint s = 1;
-   dip::uint n = dims.size();
+   tstride = 1;                       // We set tensor strides to 1 by default.
+   uint s = tensor.Elements();
+   uint n = dims.size();
    strides.resize( n );
-   for( dip::uint ii=0; ii<n; ii++ ) {
+   for( uint ii=0; ii<n; ++ii ) {
       strides[ii] = s;
       s *= dims[ii];
-   }
-   n = tensor_dims.size();
-   tensor_strides.resize( n );
-   for( dip::uint ii=0; ii<n; ii++ ) {
-      tensor_strides[ii] = s;
-      s *= tensor_dims[ii];
    }
 }
 
 
-void dip::Image::GetDataBlockSizeAndStart( dip::uint & size, dip::sint & start ) const {
+void Image::GetDataBlockSizeAndStart( uint& size, sint& start ) const {
    DIPASSERT( HasValidStrides(), "Invalid strides" );
-   dip::sint min = 0, max = 0;
-   for( dip::uint ii=0; ii<dims.size(); ii++ ) {
-      dip::sint p = ( dims[ii] - 1 ) * strides[ii];
+   sint min = 0, max = 0;
+      sint p = ( tensor.Elements() - 1 ) * tstride;
       if( p < 0 ) {
          min += p;
       } else {
          max += p;
       }
-   }
-   for( dip::uint ii=0; ii<tensor_dims.size(); ii++ ) {
-      dip::sint p = ( tensor_dims[ii] - 1 ) * tensor_strides[ii];
+   for( uint ii=0; ii<dims.size(); ++ii ) {
+      sint p = ( dims[ii] - 1 ) * strides[ii];
       if( p < 0 ) {
          min += p;
       } else {
@@ -94,21 +84,21 @@ void dip::Image::GetDataBlockSizeAndStart( dip::uint & size, dip::sint & start )
    size = max - min + 1;
 }
 
-
-void dip::Image::Forge() {
+void Image::Forge() {
    if( !IsForged() ) {
       if( external_interface ) {
-         datablock = external_interface->AllocateData( dims, strides, tensor_dims, tensor_strides, datatype );
-         dip::uint sz;
-         dip::sint start;
+         datablock = external_interface->AllocateData( dims, strides, tensor, tstride, datatype );
+         uint sz;
+         sint start;
          GetDataBlockSizeAndStart( sz, start );
-         origin = (void*)( (dip::uint8*)datablock.get() + start*sz );
+         origin = (void*)( (uint8*)datablock.get() + start*sz );
       } else {
-         dip::uint size = GetNumberOfPixels() * GetNumberOfTensorComponents();
+         uint size = GetNumberOfPixels() * GetTensorElements();
                            // todo: check for overflow in computation above!
-         dip::sint start = 0;
+         std::cout << size << std::endl;
+         sint start = 0;
          if( HasValidStrides() ) {
-            dip::uint sz;
+            uint sz;
             GetDataBlockSizeAndStart( sz, start );
             if( sz != size ) {
                ComputeStrides();
@@ -116,46 +106,38 @@ void dip::Image::Forge() {
          } else {
             ComputeStrides();
          }
-         dip::uint sz = dip::_DataType::SizeOf( datatype );
-         void * p = ::malloc( size*sz );
+         uint sz = datatype.SizeOf();
+         void* p = ::malloc( size*sz );
          datablock = std::shared_ptr<void>( p, ::free );
-         origin = (void*)( (dip::uint8*)p + start*sz );
+         origin = (void*)( (uint8*)p + start*sz );
       }
    }
 }
 
 
-std::ostream & dip::operator<<(
-   std::ostream & os,
-   const dip::Image & img
+std::ostream& dip::operator<<(
+   std::ostream& os,
+   const Image& img
 ){
-   if( img.tensor_dims.size() == 0 ) {
+   if( img.tensor.Elements() == 1 ) {
       os << "Scalar image, ";
    } else {
-      os << img.tensor_dims[0];
-      for( int ii=1; ii<img.tensor_dims.size(); ii++ ) {
-         os << "x" << img.tensor_dims[ii];
-      }
-      os << "-tensor image, ";
+      os << img.tensor.Rows() << "x" << img.tensor.Columns() << "-tensor image, ";
    }
-   os << img.dims.size() << "-D, " << dip::_DataType::Name(img.datatype) << std::endl;
+   os << img.dims.size() << "-D, " << img.datatype.Name() << std::endl;
    os << "   sizes: ";
-   for( int ii=0; ii<img.dims.size(); ii++ ) {
+   for( int ii=0; ii<img.dims.size(); ++ii ) {
       os << img.dims[ii] << ", ";
    }
    os << std::endl;
    os << "   strides: ";
-   for( int ii=0; ii<img.strides.size(); ii++ ) {
+   for( int ii=0; ii<img.strides.size(); ++ii ) {
       os << img.strides[ii] << ", ";
    }
    os << std::endl;
-   os << "   tensor strides: ";
-   for( int ii=0; ii<img.tensor_strides.size(); ii++ ) {
-      os << img.tensor_strides[ii] << ", ";
-   }
-   os << std::endl;
+   os << "   tensor stride: " << img.tstride << std::endl;
    if( img.origin ) {
-      os << "   origin pointer: " << (dip::uint)img.origin << std::endl;
+      os << "   origin pointer: " << (uint)img.origin << std::endl;
       if( img.HasContiguousData() ) {
          if( img.HasNormalStrides() ) {
             os << "   strides are normal" << std::endl;

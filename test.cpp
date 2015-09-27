@@ -14,8 +14,7 @@ static void dip__MyFunction( void* vin ) {
 
 void MyFunction( dip::Image image ) {
    dip::DataType dt = image.GetDataType();
-   double data;
-   void* in = &data;
+   void* in = nullptr; // image.GetData();
    DIP_OVL_CALL_ALL( dip__MyFunction, (in), dt );
 }
 
@@ -30,16 +29,16 @@ int main() {
    std::cout << img;
    img.Strip();
    img.SetStrides({-80,-1,4000});
-   img.SetTensorStrides({120000});
+   img.SetTensorStride(120000);
    img.Forge();
    std::cout << img;
    }
    dip::Image img;
-   img.SetDataType(dip::DataType::UINT8);
+   img.SetDataType(dip::DT_UINT8);
    MyFunction(img);
-   img.SetDataType(dip::DataType::SINT32);
+   img.SetDataType(dip::DT_SINT32);
    MyFunction(img);
-   img.SetDataType(dip::DataType::SFLOAT);
+   img.SetDataType(dip::DT_SFLOAT);
    MyFunction(img);
    return 1;
 }

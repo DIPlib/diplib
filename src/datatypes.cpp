@@ -35,85 +35,117 @@ DIP_DT_INFO_SUGGEST_1         // not used
 DIP_DT_INFO_SUGGEST_4         // not used
 */
 
+using namespace dip;
 
-const char* dip::_DataType::Name( dip::DataType dt ) {
-   switch( dt ) {
-      case dip::DataType::BIN:      return "BIN";
-      case dip::DataType::UINT8:    return "UINT8";
-      case dip::DataType::UINT16:   return "UINT16";
-      case dip::DataType::UINT32:   return "UINT32";
-      case dip::DataType::SINT8:    return "SINT8";
-      case dip::DataType::SINT16:   return "SINT16";
-      case dip::DataType::SINT32:   return "SINT32";
-      case dip::DataType::SFLOAT:   return "SFLOAT";
-      case dip::DataType::DFLOAT:   return "DFLOAT";
-      case dip::DataType::SCOMPLEX: return "SCOMPLEX";
-      case dip::DataType::DCOMPLEX: return "DCOMPLEX";
-   };
+DataType DataTypeSuggest_Float( const Image& img ) {
+   switch( img.GetDataType() ) {
+      default:
+         return DT_SFLOAT;
+      case DT_DFLOAT:
+         return DT_DFLOAT;
+      case DT_SCOMPLEX:
+         return DT_SCOMPLEX;
+      case DT_DCOMPLEX:
+         return DT_DCOMPLEX;
+   }
 }
 
-dip::uint dip::_DataType::SizeOf( dip::DataType dt ) {
-   switch( dt ) {
-      case dip::DataType::BIN:      return sizeof(dip::bin);
-      case dip::DataType::UINT8:    return sizeof(dip::uint8);
-      case dip::DataType::UINT16:   return sizeof(dip::uint16);
-      case dip::DataType::UINT32:   return sizeof(dip::uint32);
-      case dip::DataType::SINT8:    return sizeof(dip::sint8);
-      case dip::DataType::SINT16:   return sizeof(dip::sint16);
-      case dip::DataType::SINT32:   return sizeof(dip::sint32);
-      case dip::DataType::SFLOAT:   return sizeof(dip::sfloat);
-      case dip::DataType::DFLOAT:   return sizeof(dip::dfloat);
-      case dip::DataType::SCOMPLEX: return sizeof(dip::scomplex);
-      case dip::DataType::DCOMPLEX: return sizeof(dip::dcomplex);
-   };
+DataType DataTypeSuggest_Complex(const Image& img) {
+   switch( img.GetDataType() ) {
+      default:
+         return DT_SCOMPLEX;
+      case DT_DFLOAT:
+      case DT_DCOMPLEX:
+         return DT_DCOMPLEX;
+   }
 }
 
+DataType DataTypeSuggest_Flex(const Image& img) {
+   switch( img.GetDataType() ) {
+      default:
+         return DT_SFLOAT;
+      case DT_DFLOAT:
+         return DT_DFLOAT;
+      case DT_SCOMPLEX:
+         return DT_SCOMPLEX;
+      case DT_DCOMPLEX:
+         return DT_DCOMPLEX;
+   }
+}
 
-bool dip::_DataType::IsBinary( dip::DataType dt ) {
-   switch( dt ) {
-      case dip::DataType::BIN:      return true;
-      default:                      return false;
+DataType DataTypeSuggest_FlexBin(const Image& img) {
+   switch( img.GetDataType() ) {
+      case DT_BIN:
+         return DT_BIN;
+      default:
+         return DT_SFLOAT;
+      case DT_DFLOAT:
+         return DT_DFLOAT;
+      case DT_SCOMPLEX:
+         return DT_SCOMPLEX;
+      case DT_DCOMPLEX:
+         return DT_DCOMPLEX;
+   }
+}
+
+DataType DataTypeSuggest_Arithmetic(const Image& img1, const Image& img2) {
+   /*** This is the old DIPlib's table:
+   DataType combos[][3] = {
+      { DT_DCOMPLEX, 0,         DT_DCOMPLEX },
+      { DT_SCOMPLEX, DT_DFLOAT, DT_DCOMPLEX },
+      { DT_SCOMPLEX, 0,         DT_SCOMPLEX },
+      { DT_DFLOAT,   0,         DT_DFLOAT   },
+      { DT_SFLOAT,   0,         DT_SFLOAT   },
+      { DT_SINT32,   0,         DT_SINT32   },
+      { DT_SINT16,   DT_UINT32, DT_SINT32   },
+      { DT_SINT16,   0,         DT_SINT16   },
+      { DT_SINT8,    DT_UINT32, DT_SINT32   },
+      { DT_SINT8,    DT_UINT16, DT_SINT16   },
+      { DT_SINT8,    0,         DT_SINT8    },
+      { DT_UINT32,   0,         DT_UINT32   },
+      { DT_UINT16,   0,         DT_UINT16   },
+      { DT_UINT8,    0,         DT_UINT8    },
+      { DT_BIN,      0,         DT_BIN      },
+      { 0,           0,         0           }, // This line is the terminator marker
    };
-}
-bool dip::_DataType::IsUInt( dip::DataType dt ) {
-   switch( dt ) {
-      case dip::DataType::UINT8:    return true;
-      case dip::DataType::UINT16:   return true;
-      case dip::DataType::UINT32:   return true;
-      default:                      return false;
+    *** The DIPimage-style table would be this, with the DT_SFLOAT as default result:
+   DataType combos[][3] = {
+      { DT_DCOMPLEX, 0,         DT_DCOMPLEX },
+      { DT_SCOMPLEX, DT_DFLOAT, DT_DCOMPLEX },
+      { DT_SCOMPLEX, 0,         DT_SCOMPLEX },
+      { DT_DFLOAT,   0,         DT_DFLOAT   },
+      { DT_BIN,      DT_BIN,    DT_BIN      },
+      { 0,           0,         0           }, // This line is the terminator marker
    };
-}
-bool dip::_DataType::IsSInt( dip::DataType dt ) {
-   switch( dt ) {
-      case dip::DataType::SINT8:    return true;
-      case dip::DataType::SINT16:   return true;
-      case dip::DataType::SINT32:   return true;
-      default:                      return false;
-   };
-}
-bool dip::_DataType::IsInteger( dip::DataType dt ) {
-   return IsUInt( dt ) || IsSInt( dt );
-}
-bool dip::_DataType::IsFloat( dip::DataType dt ) {
-   switch( dt ) {
-      case dip::DataType::SFLOAT:   return true;
-      case dip::DataType::DFLOAT:   return true;
-      default:                      return false;
-   };
-}
-bool dip::_DataType::IsReal( dip::DataType dt ) {
-   return IsInteger( dt ) || IsFloat( dt );
-}
-bool dip::_DataType::IsComplex( dip::DataType dt ) {
-   switch( dt ) {
-      case dip::DataType::SCOMPLEX: return true;
-      case dip::DataType::DCOMPLEX: return true;
-      default:                      return false;
-   };
-}
-bool dip::_DataType::IsUnsigned( dip::DataType dt ) {
-   return IsUInt( dt );
-}
-bool dip::_DataType::IsSigned( dip::DataType dt ) {
-   return IsSInt( dt ) || IsReal( dt ) || IsComplex( dt );
+   DataType type1 = img1.GetDataType();
+   DataType type2 = img2.GetDataType();
+   for( uint ix = 0; combos[ix][0]; ++ix ) {
+      if( combos[ix][1] ) {
+         if( (( type1 == combos[ix][0] ) && ( type2 == combos[ix][1] )) ||
+             (( type2 == combos[ix][0] ) && ( type1 == combos[ix][1] )) )
+            return combos[ix][2];
+      } else {
+         if( ( type1 == combos[ix][0] ) || ( type2 == combos[ix][0] ) )
+            return combos[ix][2];
+      }
+   }
+   return DT_SFLOAT;
+    *** But we cannot convert 0 to a DataType, and we don't allow illegal
+    *** data types in the enum class. */
+
+   DataType type1 = img1.GetDataType();
+   DataType type2 = img2.GetDataType();
+   if( (type1 == DT_DCOMPLEX) || (type2 == DT_DCOMPLEX) )
+      return DT_DCOMPLEX;
+   if( ((type1 == DT_SCOMPLEX) && (type2 == DT_DFLOAT)) ||
+       ((type2 == DT_SCOMPLEX) && (type1 == DT_DFLOAT)) )
+      return DT_DCOMPLEX;
+   if( (type1 == DT_SCOMPLEX) || (type2 == DT_SCOMPLEX) )
+      return DT_SCOMPLEX;
+   if( (type1 == DT_DFLOAT) || (type2 == DT_DFLOAT) )
+      return DT_DFLOAT;
+   if( (type1 == DT_BIN) && (type2 == DT_BIN) )
+      return DT_BIN;
+   return DT_SFLOAT;
+
 }
