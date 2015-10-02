@@ -1,5 +1,5 @@
 /*
- * New DIPlib include file
+ * DIPlib 3.0
  * This file contains data-type--related functions.
  *
  * (c)2015, Cris Luengo.

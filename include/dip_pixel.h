@@ -1,165 +1,21 @@
 /*
- * New DIPlib include file
- * This file contains definitions for the Tensor and Pixel classes and related functions.
+ * DIPlib 3.0
+ * This file contains definitions for the Pixel class and related functions.
  *
  * (c)2014-2015, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
 // This file is included through diplib.h
+#ifndef DIPLIB_H
+#include "diplib.h"
+#endif
 
 #ifndef DIP_PIXEL_H
 #define DIP_PIXEL_H
 
 
 namespace dip {
-
-//
-// The Tensor class
-// Describes the shape of a tensor (doesn't contain any data)
-//
-
-class Tensor {
-
-   public:
-
-      enum class Shape {
-         COL_VECTOR,       // a vector
-         ROW_VECTOR,       // a row vector
-         COL_MAJOR_MATRIX, // a matrix
-         ROw_MAJOR_MATRIX, // a row-major matrix
-         DIAGONAL_MATRIX,  // a diagonal matrix
-         SYMMETRIC_MATRIX, // a symmetric matrix
-         UPPTRIANG_MATRIX, // an upper-triangular matrix
-         LOWTRIANG_MATRIX, // a lower-triangular matrix
-      };
-
-      Tensor() {
-         SetScalar();
-      }
-      Tensor( uint n ) {
-         SetVector( n );
-      }
-      Tensor( uint _rows, uint _cols ) {
-         SetMatrix( _rows, _cols );
-      }
-      Tensor( Tensor::Shape _shape, uint _rows, uint _cols ) {
-         SetShape( _shape, _rows, _cols );
-      }
-
-      bool IsScalar()    const { return elements==1; }
-      bool IsVector()    const { return (shape==Shape::COL_VECTOR) || (shape==Shape::ROW_VECTOR); }
-      bool IsDiagonal()  const { return shape==Shape::DIAGONAL_MATRIX; }
-      bool IsSymmetric() const { return shape==Shape::SYMMETRIC_MATRIX; }
-      // Feel free to add more here: IsMatrix, IsTriangular, IsRowMajor, IsColumnMajor, ...
-      Shape GetShape()   const { return shape; }
-
-      uint Elements() const { return elements; }
-      uint Rows()     const { return rows; }
-      uint Columns()  const {
-         switch( shape ) {
-            case Shape::COL_VECTOR:
-               return 1;
-            case Shape::ROW_VECTOR:
-               return elements;
-            case Shape::COL_MAJOR_MATRIX:
-            case Shape::ROw_MAJOR_MATRIX:
-               return elements/rows;
-            case Shape::DIAGONAL_MATRIX:
-            case Shape::SYMMETRIC_MATRIX:
-            case Shape::UPPTRIANG_MATRIX:
-            case Shape::LOWTRIANG_MATRIX:
-               return rows;         // these are all square matrices
-          }
-      }
-      UnsignedArray Dimensions() const {
-         if( IsScalar() ) {
-            return {};
-         } else if( IsVector() ) {
-            return { elements };
-         } else {
-            return { rows, Columns() };
-         }
-      }
-
-      void SetShape( Shape _shape, uint _rows, uint _cols ) {
-         shape = _shape;
-         DIPASSERT( _rows>0 , "Number of rows must be non-zero" );
-         DIPASSERT( _cols>0 , "Number of columns must be non-zero" );
-         switch( shape ) {
-            case Shape::COL_VECTOR:
-               DIPASSERT( _cols==1 , "A column vector can have only one column" );
-               elements = _rows;
-               rows = _rows;
-               break;
-            case Shape::ROW_VECTOR:
-               DIPASSERT( _rows==1 , "A column vector can have only one column" );
-               elements = _cols;
-               rows = 1;
-               break;
-            case Shape::COL_MAJOR_MATRIX:
-            case Shape::ROw_MAJOR_MATRIX:
-               elements = _rows * _cols;
-               rows = _rows;
-               break;
-            case Shape::DIAGONAL_MATRIX:
-               DIPASSERT( _rows==_cols , "A diagonal matrix must be square" );
-               elements = _rows;
-               rows = _rows;
-               break;
-            case Shape::SYMMETRIC_MATRIX:
-               DIPASSERT( _rows==_cols , "A symmetric matrix must be square" );
-               elements = NUpperDiagonalElements( _rows );
-               rows = _rows;
-               break;
-            case Shape::UPPTRIANG_MATRIX:
-            case Shape::LOWTRIANG_MATRIX:
-               DIPASSERT( _rows==_cols , "A triangular matrix must be square" );
-               elements = NUpperDiagonalElements( _rows );
-               rows = _rows;
-               break;
-          }
-      }
-
-      void SetScalar() {
-         shape = Shape::COL_VECTOR;
-         elements = rows = 1;
-      }
-      void SetVector( uint n ) {
-         shape = Shape::COL_VECTOR;
-         elements = rows = n;
-      }
-      void SetMatrix( uint _rows, uint _cols ) {
-         shape = Shape::COL_MAJOR_MATRIX;
-         elements = _rows * _cols;
-         rows = _rows;
-      }
-      void SetDimensions( const UnsignedArray& tdims ) {
-         switch( tdims.size() ) {
-            case 0:
-               SetScalar();
-               break;
-            case 1:
-               SetVector( tdims[0] );
-               break;
-            case 2:
-               SetMatrix( tdims[0], tdims[1] );
-               break;
-            default:
-               DIPSJ( "Tensor dimensons higher than 2 not supported." );
-         }
-      }
-
-   private:
-
-      Shape shape = Shape::COL_VECTOR;
-      uint elements = 1;
-      uint rows = 1;
-
-      static inline uint NUpperDiagonalElements( uint rows ) {
-         return ( rows * ( rows+1 ) ) / 2;
-      }
-};
 
 //
 // The Pixel class

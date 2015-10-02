@@ -1,5 +1,5 @@
 /*
- * New DIPlib include file
+ * DIPlib 3.0
  * This file contains definitions for the basic data types and support functions.
  *
  * (c)2014-2015, Cris Luengo.
@@ -7,6 +7,9 @@
  */
 
 // This file is included through diplib.h
+#ifndef DIPLIB_H
+#include "diplib.h"
+#endif
 
 #ifndef DIP_DATATYPE_H
 #define DIP_DATATYPE_H
@@ -21,13 +24,13 @@ namespace dip {
 
 // Integer types for image properties, pixel coordinates, loop indices, etc.
 typedef std::ptrdiff_t sint;  // For strides and similar measures
-typedef std::size_t uint;     // For sizes and the like
+typedef std::size_t    uint;  // For sizes and the like
             // ptrdiff_t and size_t are signed and unsigned integers of the same length as
             // pointers: 32 bits on 32-bit systems, 64 bits on 64-bit systems.
 
 
 // Types for pixel values
-typedef std::uint8_t          bin;     // Binary data stored in a single byte (don't use bool, it has implementation-defined size)
+typedef std::uint8_t          bin;     // Binary data stored in a single byte (don't use bool for pixels, it has implementation-defined size)
 typedef std::uint8_t          uint8;
 typedef std::uint16_t         uint16;
 typedef std::uint32_t         uint32;
@@ -39,6 +42,11 @@ typedef double                dfloat;  // Also to be used for general floating-p
 typedef std::complex<sfloat>  scomplex;
 typedef std::complex<dfloat>  dcomplex;
 
+// if 8 bits is not a byte...
+static_assert( sizeof(uint8)==1, "8 bits is not a byte in your system!" );
+// Seriously, though. We rely on this property, and there is no guarantee
+// that a system actually has 8 bits in a byte. Maybe we should use char
+// (which is guaranteed to be size 1) for generic pointer arithmetic?
 
 // The DataType class
 struct DataType {
@@ -174,9 +182,11 @@ DataType DataTypeSuggest_Arithmetic(const Image& img1, const Image& img2); // a 
 // Arrays of signed, unsigned and floating-point values.
 // It's probably worth while to create our own short-vector optimized version of std::vector
 //    since these represent dimensions, and we usually only have two or three of those.
-typedef std::vector<sint> IntegerArray;   // strides
-typedef std::vector<uint> UnsignedArray;  // dimensions
-typedef std::vector<dfloat> FloatArray;
+typedef std::vector<sint>     IntegerArray;   // strides, filter sizes, etc.
+typedef std::vector<uint>     UnsignedArray;  // dimensions, dimension lists, etc.
+typedef std::vector<dfloat>   FloatArray;     // filter parameters
+typedef std::vector<dcomplex> ComplexArray;   // (used in only one obscure function in the old DIPlib
+typedef std::vector<bool>     BooleanArray;   // dimension selector
    // IntegerArray A;
    // IntegerArray A(n);
    // IntegerArray A(n,0);

@@ -1,5 +1,5 @@
 /*
- * New DIPlib include file
+ * DIPlib 3.0
  * This file contains definitions for support classes and functions.
  *
  * (c)2014-2015, Cris Luengo.
@@ -7,6 +7,9 @@
  */
 
 // This file is included through diplib.h
+#ifndef DIPLIB_H
+#include "diplib.h"
+#endif
 
 #ifndef DIP_SUPPORT_H
 #define DIP_SUPPORT_H

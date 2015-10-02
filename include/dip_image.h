@@ -1,5 +1,5 @@
 /*
- * New DIPlib include file
+ * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
  * (c)2014-2015, Cris Luengo.
@@ -7,11 +7,15 @@
  */
 
 // This file is included through diplib.h
+#ifndef DIPLIB_H
+#include "diplib.h"
+#endif
 
 #ifndef DIP_IMAGE_H
 #define DIP_IMAGE_H
 
 #include <memory>
+#include <limits>
 
 namespace dip {
 
@@ -34,7 +38,7 @@ inline void Arithmetic( const Image& lhs, const Image& rhs, Image& out, String o
 //
 
 // A class derived from this one will do all we need it to do. Assign into
-// the image object through dip::Image::SetExternalInterface().
+// the image object through Image::SetExternalInterface().
 // The caller will maintain ownership of the interface!
 class ExternalInterface {
    public:
@@ -120,35 +124,75 @@ class Image {
          datablock(data),
          external_interface(ei)
       {
-         origin = datablock.get();
-         // TODO: call GetDataBlockSizeAndStart() to figure out where the origin should be.
+         uint size;
+         sint start;
+         GetDataBlockSizeAndStart( size, start );
+         origin = (uint8*)datablock.get() + start * dt.SizeOf();
       }
+
+      // Creates an image with the external_interface set.
+      explicit Image( ExternalInterface* ei ) : external_interface(ei) {}
 
       //
       // Dimensions
       //
 
+      // TODO: We use the old DIPlib names here, I would prefer the
+      // getters to have a name without "Get": img.Dimensionality(), img.Sizes(), img.Strides(), etc.
+
+      // Get the number of spatial dimensions
       uint GetDimensionality() const {
          return dims.size();
       }
 
+      // Get the spatial dimensions (image size)
       UnsignedArray GetDimensions() const {
          return dims;
       }
 
+      // Get the number of pixels
       uint GetNumberOfPixels() const {
-         dip::uint n = 1;
-         for( dip::uint ii=0; ii<dims.size(); ++ii ) {
+         uint n = 1;
+         for( uint ii=0; ii<dims.size(); ++ii ) {
+            ThrowIf( ( dims[ii] != 0 ) && ( n > std::numeric_limits<uint>::max() / dims[ii] ),
+               E::DIMENSIONALITY_EXCEEDS_LIMIT );
             n *= dims[ii];
-            // We should add a test here to make sure we don't get overflow in the computation.
          }
          return n;
       }
 
-      void SetDimensions( const dip::UnsignedArray& d ) {
-         DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
+      // Set the spatial dimensions (image size)
+      void SetDimensions( const UnsignedArray& d ) {
+         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          dims = d;
       }
+
+      // Permute dimensions
+      // Example: {3,1} -> 3rd dimension becomes 1st, 1st dimension becomes 2nd,
+      //                   2nd dimension is removed (only possible if dims[1]==1).
+      Image& PermuteDimensions( const UnsignedArray& order );
+
+      // Swap dimensions d1 and d2
+      Image& SwapDimensions( uint d1, uint d2 );
+
+      // Make image 1D, if !HasContiguousData(), data block will be copied
+      Image& Flatten();
+
+      // Removes singleton dimensions (dimensions with size==1)
+      Image& Squeeze();
+
+      // Adds a singleton dimension (with size==1), dimensions dim to
+      // last are shifted up.
+      // Example: an image with dims {4,5,6}, we add singleton dimension
+      // dim=1, leaves the image with dims {4,1,5,6}.
+      Image& AddSingleton( uint dim );
+
+      // Appends singleton dimensions to increase the image dimensionality
+      // to n. If the image already has n or more dimensions, nothing happens.
+      Image& ExpandDimensionality( uint n );
+
+      // Mirror de image about selected axes
+      Image& Mirror( BooleanArray& process );
 
       //
       // Strides
@@ -157,29 +201,53 @@ class Image {
       IntegerArray GetStrides() const {
          return strides;
       }
+
       uint GetTensorStride() const {
          return tstride;
       }
 
+      void SetStrides( const IntegerArray& s ) {
+         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         strides = s;
+      }
+
+      void SetTensorStride( sint ts ) {
+         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         tstride = ts;
+      }
+
+      // Test if all the pixels are contiguous (i.e. you can traverse
+      // the whole image using a single stride==1.
       bool HasContiguousData() const {
-         DIPASSERT( IsForged(), dip::E::IMAGE_NOT_FORGED );
-         dip::uint size = GetNumberOfPixels() * GetTensorElements();
-         dip::sint start;
-         dip::uint sz;
+         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         uint size = GetNumberOfPixels() * GetTensorElements();
+         sint start;
+         uint sz;
          GetDataBlockSizeAndStart( sz, start );
          return sz == size;
       }
 
+      // Test if strides are as by default
       bool HasNormalStrides() const;
 
-      void SetStrides( const IntegerArray& s ) {
-         DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
-         strides = s;
+      // Test if the whole image can be travesed with a single stride value
+      bool HasSimpleStride() const {
+         void* p;
+         uint s;
+         GetSimpleStrideAndOrigin( s, p );
+         return s>0;
       }
-      void SetTensorStride( sint ts ) {
-         DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
-         tstride = ts;
-      }
+
+      // Return a pointer to the start of the data and a single stride to
+      // walk through all pixels. If this is not possible, stride==0 and
+      // porigin==nullptr.
+      void GetSimpleStrideAndOrigin( uint& stride, void*& origin ) const;
+
+      // Compute linear index given coordinates
+      uint CoordinateToIndex( UnsignedArray& );
+
+      // Compute coordinates given a linear index
+      UnsignedArray IndexToCoordinate( uint );
 
       //
       // Tensor
@@ -208,6 +276,17 @@ class Image {
          tensor.SetDimensions( tdims );
       }
 
+      void ReshapeTensor( uint rows, uint cols ) { // Make into a matrix
+         ThrowIf( tensor.Elements() != rows*cols, "Cannot reshape tensor to requested dimensions." );
+         tensor.ChangeShape( rows );
+      }
+      void ReshapeTensorAsVector() {               // Make into a vector
+         tensor.ChangeShape();
+      }
+      void Transpose() {                           // Transpose the tensor
+         tensor.Transpose();
+      }
+
       //
       // Data Type
       //
@@ -217,7 +296,7 @@ class Image {
       }
 
       void SetDataType( DataType dt ) {
-         DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
+         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          datatype = dt;
       }
 
@@ -241,27 +320,31 @@ class Image {
 
       void SetPhysicalDimensions( const PhysicalDimensions& );
 
+      FloatArray PixelsToPhysicalDims( const FloatArray& ) const;
+      FloatArray PhysicalDimsToPixels( const FloatArray& ) const;
+
       //
       // Utility functions
       //
 
+      // Compares properties of an image against a template, either
+      // returns true/false or throws an error.
       bool Compare( const Image&, bool error=true ) const;
-                                       // Compares properties of an image against a template,
-                                       // either returns true/false or throws an error.
 
+      // Checks image properties, either returns true/false or throws an error.
       bool Check( const uint ndims, const DataType dt, bool error=true ) const;
-                                       // Checks image properties, either returns true/false
-                                       // or throws an error.
 
-      // Copy all image properties except for the external interface
+      // Copy all image properties
       void CopyProperties( const Image& img ) {
-         DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
+         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          datatype       = img.datatype;
          dims           = img.dims;
          strides        = img.strides;
          tensor         = img.tensor;
          color_space    = img.color_space;
          physdims       = img.physdims;
+         if( !external_interface )
+            external_interface = img.external_interface;
       }
 
       // Make this image similar to the template (except for the extenal interface)
@@ -271,14 +354,26 @@ class Image {
          Forge();
       }
 
-      // Add functions to see if two image handles are the same, or if two images point to the same data
+      // Does this image share its data pointer with another image?
+      bool SharesData( const Image& other ) const {
+         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
+         return datablock == other.datablock;
+      }
+      bool SharesData() const {
+         return !datablock.unique();
+      }
+
+      // Does writing in this image change the data of the other image?
+      bool Aliases( const Image& other ) const;
 
       //
       // Data
       //
 
+      // Get data pointer
       void* GetData() const {
-         DIPASSERT( IsForged(), dip::E::IMAGE_NOT_FORGED );
+         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          return origin;
       }
 
@@ -293,6 +388,7 @@ class Image {
          }
       }
 
+      // Test if forged
       bool IsForged() const {
          if( origin )
             return true;
@@ -300,27 +396,11 @@ class Image {
             return false;
       }
 
+      // Set external interface pointer
       void SetExternalInterface( ExternalInterface* ei ) {
-         DIPTS( IsForged(), dip::E::IMAGE_NOT_RAW );
+         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          external_interface = ei;
       }
-
-      //
-      // Dimensionality manipulation
-      //
-
-      void PermuteDimensions( const UnsignedArray& );
-                                 // {3,1} -> 3rd dimension becomes 1st, 1st dimension becomse 2nd,
-                                 //          2nd dimension is removed (only possible if dims[1]==1).
-
-      void Flatten();            // Make image 1D, if !HasContiguousData(), data block will
-                                 //    be copied.
-
-      void Squeeze();            // Removes singleton dimensions.
-
-      //
-      // Data manipulation
-      //
 
       Image operator[]( const UnsignedArray& );       // Indexing in tensor dimensions
 
@@ -333,10 +413,6 @@ class Image {
       void Copy( Image& img );                        // Deep copy. 'this' will become a copy of 'img' with its own data.
 
       void ConvertDataType( Image&, DataType );       // Deep copy with data type conversion.
-
-      uint CoordinateToIndex( UnsignedArray& );
-
-      UnsignedArray IndexToCoordinate( uint );
 
       //
       // Operators
@@ -374,8 +450,7 @@ class Image {
          Arithmetic( *this, rhs, *this, "^", datatype );
          return *this;
       }
-               // Implemented as calls to dip::Arithmetic(*this,in,*this,dip::Operation,dip::DataType);
-               // dip::Arithmetic should be then able to do this operation in place if 'a' has the right
+               // Arithmetic should be then able to do this operation in place if 'a' has the right
                // size to hold the result. Singleton expansion could cause this to not be the case.
                // Should there be an error if in-place operation is not possible?
                // a=a+b will resize 'a' and change its data type as necessary.
@@ -459,7 +534,7 @@ void ImageChangeDataType( const Image& src, Image& dst );
 Image operator-( const Image& );
 Image operator~( const Image& ); // maybe not this one?
 Image operator!( const Image& ); // only for binary images?
-         // -> Implemented as call to dip::Invert(in,out);
+         // -> Implemented as call to Invert(in,out);
 
 // Arithmetic
 inline Image operator+( const Image& lhs, const Image& rhs ) {
@@ -510,7 +585,15 @@ Image operator< ( const Image&, const Image& );
 Image operator> ( const Image&, const Image& );
 Image operator<=( const Image&, const Image& );
 Image operator>=( const Image&, const Image& );
-         // -> Implemented as call to dip::Compare(in1,in2,out,"==");
+         // -> Implemented as call to Compare(in1,in2,out,"==");
+
+//
+// Utility functions
+//
+
+inline bool Alias( const Image& img1, const Image& img2 ) {
+   return img1.Aliases( img2 );
+}
 
 } // namespace dip
 

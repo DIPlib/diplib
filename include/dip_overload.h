@@ -1,5 +1,5 @@
 /*
- * New DIPlib include file
+ * DIPlib 3.0
  * This file contains macros to simplify overloading on image data type.
  *
  * (c)2014-2015, Cris Luengo.

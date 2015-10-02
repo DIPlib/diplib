@@ -1,11 +1,5 @@
 #include "diplib.h"
 
-/* memory allocation errors */
-const char* dip::E::NO_MEMORY =
-           "Could not allocate memory";
-const char* dip::E::MEMORY_INIT_FAILED =
-           "Initialisation of memory routines failed";
-
 /* image creation errors */
 const char* dip::E::IMAGE_IS_LOCKED =
            "Image is locked";
@@ -20,21 +14,7 @@ const char* dip::E::IMAGES_NOT_UNIQUE =
 const char* dip::E::IMAGE_LOCK_INVALID_KEY =
            "Cannot unlock; invalid key";
 
-/* image type errors */
-const char* dip::E::ILLEGAL_IMAGE_TYPE =
-           "Illegal image type";
-const char* dip::E::IMAGE_TYPE_DOES_NOT_EXIST =
-           "Image type does not exist";
-const char* dip::E::IMAGE_TYPE_ALREADY_EXISTS =
-           "Image type already exists";
-const char* dip::E::IMAGE_TYPE_NOT_SUPPORTED =
-           "Image type not supported";
-const char* dip::E::IMAGE_TYPE_HANDLER_MISSING =
-           "Image type handler missing";
-
 /* image data type errors */
-const char* dip::E::ILLEGAL_DATA_TYPE =
-           "Illegal data type";
 const char* dip::E::DATA_TYPE_NOT_SUPPORTED =
            "Data type not supported";
 
@@ -45,6 +25,8 @@ const char* dip::E::DIMENSIONALITY_NOT_SUPPORTED =
            "Dimensionality not supported";
 const char* dip::E::ILLEGAL_DIMENSION =
            "Illegal dimension";
+const char* dip::E::DIMENSIONALITY_EXCEEDS_LIMIT =
+           "Dimensionality exceeds address limit";
 
 /* image properties errors */
 const char* dip::E::NO_NORMAL_STRIDE =
@@ -66,18 +48,7 @@ const char* dip::E::IF_IMAGE_TYPE_NOT_SUPPORTED =
 const char* dip::E::IF_DATA_TYPE_NOT_SUPPORTED =
            "The interface does not support the DIPlib data type";
 
-
-/* resource tracking errors */
-const char* dip::E::RESOURCE_TRACKING_REQUIRED =
-           "Resources structure required";
-const char* dip::E::RESOURCE_NOT_FOUND =
-           "Resource not found";
-
 /* miscellaneous errors */
-const char* dip::E::NO_GLOBAL_STRUCTURE =
-           "No global structure";
-const char* dip::E::SWITCH_ERROR =
-           "Internal switch error";
 const char* dip::E::NOT_IMPLEMENTED =
            "Functionality has not (yet) been implemented";
 
@@ -114,6 +85,8 @@ const char* dip::E::INVALID_FLAG =
            "Invalid flag";
 const char* dip::E::PARAMETER_OUT_OF_RANGE =
            "Parameter value out of range";
+const char* dip::E::ARRAY_PARAMETER_WRONG_LENGTH =
+           "Array Parameter has the wrong number of elements";
 
 /* mask error codes */
 const char* dip::E::NO_MASK =

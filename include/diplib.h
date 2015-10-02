@@ -1,5 +1,5 @@
 /*
- * New DIPlib main include file
+ * DIPlib 3.0
  * This file contains definitions for all the main classes and functions.
  * Include additional files after this one for specialized functionality.
  *
@@ -19,6 +19,7 @@ namespace dip {
 #include "dip_error.h"
 #include "dip_datatype.h"
 #include "dip_support.h"
+#include "dip_tensor.h"
 #include "dip_pixel.h"
 #include "dip_image.h"
 
