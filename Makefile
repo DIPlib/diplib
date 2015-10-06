@@ -9,10 +9,16 @@ INC = include/
 
 OBJ = $(addprefix obj/,image.o sort.o datatypes.o error.o)
 
-obj/%.o : src/%.cpp
-	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
-
 all: test mextest.mexmaci64
+
+obj/image.o : src/library/image.cpp
+	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
+obj/sort.o : src/support/sort.cpp
+	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
+obj/datatypes.o : src/library/datatypes.cpp
+	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
+obj/error.o : src/library/error.cpp
+	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
 
 test: test.cpp $(OBJ)
 	$(CC) $(CFLAGS) -o test -I$(INC) $^
@@ -22,6 +28,11 @@ mextest.mexmaci64: mextest.cpp $(OBJ)
 	-I/Applications/MATLAB_R2014b.app/extern/include/ \
 	-L/Applications/MATLAB_R2014b.app/bin/maci64 -lmx -lmex
 
+.PHONY: docs
+docs:
+	doxygen
+
 .PHONY: clean
 clean:
-	rm $(OBJ) test
+	-\rm $(OBJ) test mextest.mexmaci64
+	-\rm -r doc/html/*

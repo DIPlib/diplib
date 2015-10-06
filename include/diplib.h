@@ -10,6 +10,7 @@
 #ifndef DIPLIB_H
 #define DIPLIB_H
 
+/// The dip namespace contains all the library funcionality.
 namespace dip {
    class Image;      // Forward declaration, for use by some functions
                      // declared in header files that are loaded before

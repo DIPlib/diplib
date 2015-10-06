@@ -222,7 +222,7 @@ class Tensor {
                shape = Shape::UPPTRIANG_MATRIX;
                break;
           }
-     }
+      }
 
    private:
 

@@ -14,6 +14,7 @@
 
 #include <map>
 
+/// The dml namespace contains the interface between MATLAB and DIPlib.
 namespace dml {
 
 // These are the names of the fields of the dip_image structure in MATLAB:
@@ -26,15 +27,24 @@ constexpr dip::uint DML_FEATURE_NAME_LENGTH = 50;
 // An error message
 static const char* InputImageError = "MATLAB image data of unsupported type.";
 
-// To create an output image:
-//    dml::MATLAB_Interface mi;
-//    dip::Image img_out0( &mi );
-//    dip::Image img_out1( &mi );
-// To return that image back to MATLAB:
-//    plhs[0] = mi.GetArray( img_out0.GetData() );
-//    plhs[1] = mi.GetArray( img_out1.GetData() );
-// If we don't GetArray(), the mxArray will be destroyed when img_out0 goes out of scope.
-// This interface handler doesn't own any data.
+/// This class is the dip::ExternalInterface for the MATLAB interface.
+/// In a MEX-file, use the following code when declaring images to be
+/// used as the output to a function:
+///
+///     dml::MATLAB_Interface mi;
+///     dip::Image img_out0( &mi );
+///     dip::Image img_out1( &mi );
+///
+/// To return those images back to MATLAB, use the GetArray() method:
+///
+///     plhs[0] = mi.GetArray( img_out0.GetData() );
+///     plhs[1] = mi.GetArray( img_out1.GetData() );
+///
+/// If you don't use the GetArray() method, the mxArray that contains
+/// the pixel data will be destroyed when the dip::Image object goes out
+/// of scope.
+///
+/// This interface handler doesn't own any data.
 class MATLAB_Interface : public dip::ExternalInterface {
    private:
       std::map<void*,mxArray*> mla;          // This map holds mxArray pointers, we can
@@ -58,9 +68,11 @@ class MATLAB_Interface : public dip::ExternalInterface {
       };
 
    public:
-      // This is the required AllocateData function. It allocates a MATLAB mxArray
-      // and returns a shared_ptr to the mxArray data pointer, with our custom
-      // deleter functor.
+      /// This function overrides dip::ExternalInterface::AllocateData().
+      /// It is called when an image with this `ExternalInterface` is forged.
+      /// It allocates a MATLAB mxArray and returns a `std::shared_ptr` to the
+      /// `mxArray` data pointer, with a custom deleter functor.
+      /// A user will never call this function.
       virtual std::shared_ptr<void> AllocateData(
          const dip::UnsignedArray& dims,
          dip::IntegerArray&        strides,
@@ -134,6 +146,7 @@ class MATLAB_Interface : public dip::ExternalInterface {
          return std::shared_ptr<void>( p, StripHandler( *this ) );
       };
 
+      /// Find the mxArray that holds the data pointed to by p.
       mxArray* GetArray( void* p ) {
          mxArray* m = mla[p];
          mla.erase( p );
@@ -149,7 +162,12 @@ void VoidStripHandler( void* p ) {
    mexPrintf( "   Input mxArray not being destroyed\n" );
 };
 
-// Passing an mxArray to DIPlib, keeping ownership of data.
+/// Passing an `mxArray` to DIPlib, keeping ownership of the data.
+/// This function "converts" an `mxArray` with image data to a dip::Image object.
+/// The dip::Image object will point to the data in the `mxArray`, unless
+/// the array contains complex numbers. Complex data needs to be copied because
+/// MATLAB represents it internally as two separate data blocks. In that
+/// case, the dip::Image object will own its own data block.
 dip::Image GetImage( const mxArray* mx ) {
 
    // TODO: test for an empty array as input. How do we handle those? throw()? non-forged image?

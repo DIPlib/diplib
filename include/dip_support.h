@@ -22,13 +22,14 @@ namespace dip {
 // Strings
 //
 
-typedef std::string String;
-typedef std::vector<String> StringArray;
+typedef std::string String;               ///< A string type
+typedef std::vector<String> StringArray;  ///< An array of strings
 
 //
 // Color spaces
 //
 
+/// Specifies an image's color space and holds related information.
 class ColorSpace {
    public:
       String name;               // We use strings to specify color space.
@@ -44,6 +45,7 @@ class ColorSpace {
 // Physical dimensions
 //
 
+/// Specifies an image's pixel size in physical units.
 class PhysicalDimensions {
    private:
       //StringArray spatial_value;

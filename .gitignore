@@ -3,3 +3,4 @@ test
 test.DSYM/
 mextest.mex*
 *.geany
+doc/

@@ -66,19 +66,22 @@ extern const char* MASK_IS_NOT_BINARY;
 extern const char* PIXEL_TABLE_IS_NOT_ALLOCATED;
 extern const char* PIXEL_TABLE_NOT_ENOUGH_RUNS;
 extern const char* PIXEL_TABLE_RUN_HAS_NO_DATA;
-
 }
 
 //
 // Test and throw exception
 //
+
+/// Test a condition, throw an Error if the condition is met.
 inline void ThrowIf( bool test, const char* str ) {
    if( test )
       throw Error( str );
 }
+/// Throw an Error.
 inline void Throw( const char* str ) {
    throw Error( str );
 }
+
 // These are the old DIPlib names, let's not use them any more:
 #define DIPASSERT( test , str ) ThrowIf( !(test), str )
 #define DIPTS( test , str )     ThrowIf( test, str )  // TEST something and SET error
