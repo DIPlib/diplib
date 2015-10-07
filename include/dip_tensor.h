@@ -19,74 +19,81 @@ namespace dip {
 
 //
 // The Tensor class
-// Describes the shape of a tensor (doesn't contain any data)
 //
 
+/// Describes the shape of a tensor, but doesn't actually contain tensor data.
+/// Used internally by the dip::Image and dip::Pixel objects.
 class Tensor {
 
    public:
 
-      // Possible shapes the tensor can have
-      // We use the given ordering for symmetric and triangular matrices
-      // because this makes it easy to extract the diagonal without having
-      // to copy data (it's just a window over the full tensor).
+      /// Possible shapes the tensor can have.
+      ///
+      /// Shape::COL_MAJOR_MATRIX is stored as follows:
+      ///
+      ///      |0 3 6|
+      ///      |1 4 7|
+      ///      |2 5 8|
+      ///
+      /// Shape::ROW_MAJOR_MATRIX is its transpose. Shape::DIAGONAL_MATRIX
+      /// stores only the diagonal elements. Shape::SYMMETRIC_MATRIX and
+      /// Shape::UPPTRIANG_MATRIX store the values in the upper triangle only,
+      /// as follows:
+      ///
+      ///      |0 3 4|
+      ///      |x 1 5|
+      ///      |x x 2|
+      ///
+      /// Here, `x` indicates values that are not stored.
+      /// Shape::LOWTRIANG_MATRIX is the transpose of Shape::UPPTRIANG_MATRIX.
+      ///
+      /// We use the given ordering for symmetric and triangular matrices
+      /// because this makes it easy to extract the diagonal without having
+      /// to copy data (it's just a window over the full tensor).
       enum class Shape {
-         COL_VECTOR,       // a vector                      // 0        (stores n elements)
-                                                            // 1
-                                                            // 2
-
-         ROW_VECTOR,       // a row vector                  // 0 1 2    (stores n elements)
-
-         COL_MAJOR_MATRIX, // a matrix                      // 0 3 6    (stores n x m elements)
-                                                            // 1 4 7
-                                                            // 2 5 8
-
-         ROW_MAJOR_MATRIX, // a row-major matrix            // 0 1 2    (stores n x m elements)
-                                                            // 3 4 5
-                                                            // 6 7 8
-
-         DIAGONAL_MATRIX,  // a diagonal matrix             // 0 x x    (stores n elements)
-                                                            // x 1 x    (x = not stored, value = 0)
-                                                            // x x 2
-
-         SYMMETRIC_MATRIX, // a symmetric matrix            // 0 3 4    (stores n(n+1)/2 elements)
-                                                            // 3 1 5
-                                                            // 4 5 2
-
-         UPPTRIANG_MATRIX, // an upper-triangular matrix    // 0 3 4    (stores n(n+1)/2 elements)
-                                                            // x 1 5    (x = not stored, value = 0)
-                                                            // x x 2
-
-         LOWTRIANG_MATRIX, // a lower-triangular matrix     // 0 x x    (stores n(n+1)/2 elements)
-                                                            // 3 1 x    (x = not stored, value = 0)
-                                                            // 4 5 2
+         COL_VECTOR,       ///< a vector (stores n elements)
+         ROW_VECTOR,       ///< a row vector (stores n elements)
+         COL_MAJOR_MATRIX, ///< a matrix (stores n x m elements)
+         ROW_MAJOR_MATRIX, ///< a row-major matrix (stores n x m elements)
+         DIAGONAL_MATRIX,  ///< a diagonal matrix (stores n elements)
+         SYMMETRIC_MATRIX, ///< a symmetric matrix (stores n(n+1)/2 elements)
+         UPPTRIANG_MATRIX, ///< an upper-triangular matrix (stores n(n+1)/2 elements)
+         LOWTRIANG_MATRIX, ///< a lower-triangular matrix (stores n(n+1)/2 elements)
       };
 
-      // Constructors
+      /// Creates a Shape::COL_VECTOR with one element (scalar).
       Tensor() {
          SetScalar();
       }
+      /// Creates a Shape::COL_VECTOR.
       Tensor( uint n ) {
          SetVector( n );
       }
+      /// Creates a Shape::COL_MAJOR_MATRIX.
       Tensor( uint _rows, uint _cols ) {
          SetMatrix( _rows, _cols );
       }
+      /// Constructor for arbitrary shape.
       Tensor( Tensor::Shape _shape, uint _rows, uint _cols ) {
          SetShape( _shape, _rows, _cols );
       }
 
-      // Test for shape
-      // Feel free to add more here: IsMatrix, IsTriangular, IsRowMajor, IsColumnMajor, ...
+      /// Tests the tensor shape
       bool IsScalar()    const { return elements==1; }
+      /// Tests the tensor shape
       bool IsVector()    const { return (shape==Shape::COL_VECTOR) || (shape==Shape::ROW_VECTOR); }
+      /// Tests the tensor shape
       bool IsDiagonal()  const { return shape==Shape::DIAGONAL_MATRIX; }
+      /// Tests the tensor shape
       bool IsSymmetric() const { return shape==Shape::SYMMETRIC_MATRIX; }
+      /// Returns tensor shape
       Shape GetShape()   const { return shape; }
 
-      // Get tensor sizes
+      /// Gets number of tensor elements.
       uint Elements() const { return elements; }
+      /// Gets number of tensor rows.
       uint Rows()     const { return rows; }
+      /// Gets number of tensor columns.
       uint Columns()  const {
          switch( shape ) {
             case Shape::COL_VECTOR:
@@ -103,6 +110,7 @@ class Tensor {
                return rows;         // these are all square matrices
           }
       }
+      /// Gets the tensor size.
       UnsignedArray Dimensions() const {
          if( IsScalar() ) {
             return {};
@@ -113,7 +121,7 @@ class Tensor {
          }
       }
 
-      // Set the tensor shape
+      /// Sest the tensor shape.
       void SetShape( Shape _shape, uint _rows, uint _cols ) {
          shape = _shape;
          ThrowIf( _rows==0, "Number of rows must be non-zero" );
@@ -152,19 +160,23 @@ class Tensor {
                break;
           }
       }
+      /// Sest the tensor shape, results in a Shape::COL_VECTOR with one element (scalar).
       void SetScalar() {
          shape = Shape::COL_VECTOR;
          elements = rows = 1;
       }
+      /// Sest the tensor shape, results in a Shape::COL_VECTOR.
       void SetVector( uint n ) {
          shape = Shape::COL_VECTOR;
          elements = rows = n;
       }
+      /// Sest the tensor shape, results in a Shape::COL_MAJOR_MATRIX.
       void SetMatrix( uint _rows, uint _cols ) {
          shape = Shape::COL_MAJOR_MATRIX;
          elements = _rows * _cols;
          rows = _rows;
       }
+      /// Sest the tensor size, always results in a Shape::COL_VECTOR or Shape::COL_MAJOR_MATRIX.
       void SetDimensions( const UnsignedArray& tdims ) {
          switch( tdims.size() ) {
             case 0:
@@ -181,8 +193,7 @@ class Tensor {
          }
       }
 
-      // Change the shape without changing the number of elements
-      // (can be used after forging the image)
+      /// Changes the tensor shape without changing the number of elements, results in a Shape::COL_MAJOR_MATRIX.
       void ChangeShape( uint _rows ) {
          if( rows != _rows ) {
             ThrowIf( elements % _rows, "Cannot reshape tensor to requested size" );
@@ -190,10 +201,12 @@ class Tensor {
             shape = Shape::COL_MAJOR_MATRIX;
          }
       }
+      /// Changes the tensor shape without changing the number of elements, results in a Shape::COL_VECTOR.
       void ChangeShape() {
          shape = Shape::COL_VECTOR;
          elements = rows;
       }
+      /// Transposes the tensor, causing a change of shape without a change of number of elements.
       void Transpose() {
          switch( shape ) {
             case Shape::COL_VECTOR:
