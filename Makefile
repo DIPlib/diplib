@@ -36,3 +36,10 @@ docs:
 clean:
 	-\rm $(OBJ) test mextest.mexmaci64
 	-\rm -r doc/html/*
+
+.PHONY: thoughts
+thoughts: DIPthoughts.html
+DIPthoughts.pdf : DIPthoughts.md
+	pandoc -t latex -o $@ $<
+DIPthoughts.html : DIPthoughts.md
+	pandoc -t html -o $@ $<
