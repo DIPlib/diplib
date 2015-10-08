@@ -1,4 +1,4 @@
-DIPlib 3.0
+DIPlib 3.0 {#mainpage}
 ==========
 
 Preface
@@ -19,14 +19,14 @@ and IRIX, and later on Windows, Linux, Mac OS 9 and Mac OS X.
 
 The project also encompasses the MATLAB toolbox DIPimage. We started
 its development as a front-end to DIPlib in 1999. It contains a
-user-friendly gui
+user-friendly GUI and a flexible and intuitive command-line syntax.
 
 DIPlib 3.0 represents the first major rewrite of the DIPlib code base.
 We have rewritten the infrastructure in C++11, using all of the original
 ideas and concepts, but adding tensor images, color support, and other
 ideas we have developed within the DIPimage toolbox.
 Hopefully, the new infrastructure is much easier to read, maintain, and
-contribute to. All of the image analysis routines (have been | will be)
+contribute to. All of the image analysis routines (have been / will be)
 ported to use the new infrastructure.
 
 The DIPimage toolbox will change to optimally use DIPlib 3.0. This means
@@ -61,7 +61,7 @@ There are other image processing/analysis libraries available, some of
 them hugely popular. Why do we keep investing time in developing and
 improving DIPlib? The short answer is that we believe DIPlib offers
 functionality that is not available elsewhere. This functionality is
-intricately related to our philosophy.
+intricately related to our philosophy:
 
 1. The library user should not have to worry about image data types
 (i.e. pixel representation) unless he/she wants to.

@@ -80,8 +80,8 @@ class Image {
          Forge();
       }
 
-      // Empty (forged) image similar to src.
-      explicit Image( const Image& src, DataType dt ) :
+      // Empty (forged) image similar to src, but with different data type.
+      Image( const Image& src, DataType dt ) :
          datatype(dt),
          dims(src.dims),
          strides(src.strides),

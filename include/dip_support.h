@@ -39,6 +39,10 @@ class ColorSpace {
       ColorSpace() {}
       explicit ColorSpace( const String& );
       explicit ColorSpace( const String&, const dfloat (&a) [3][3] );
+
+      bool IsColor() const {
+         return false;        // TODO
+      }
 };
 
 //

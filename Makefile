@@ -7,17 +7,19 @@ CFLAGS = -Wall -pedantic -g
 
 INC = include/
 
-OBJ = $(addprefix obj/,image.o sort.o datatypes.o error.o)
+OBJ = $(addprefix obj/,image.o pixel.o datatypes.o error.o sort.o)
 
 all: test mextest.mexmaci64
 
 obj/image.o : src/library/image.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
-obj/sort.o : src/support/sort.cpp
+obj/pixel.o : src/library/pixel.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
 obj/datatypes.o : src/library/datatypes.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
 obj/error.o : src/library/error.cpp
+	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
+obj/sort.o : src/support/sort.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
 
 test: test.cpp $(OBJ)

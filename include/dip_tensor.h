@@ -21,8 +21,10 @@ namespace dip {
 // The Tensor class
 //
 
-/// Describes the shape of a tensor, but doesn't actually contain tensor data.
+/// Describes the shape of a tensor, but doesn't actually contain tensor
+/// data.
 /// Used internally by the dip::Image and dip::Pixel objects.
+/// It is default-constructible, movable and copiable.
 class Tensor {
 
    public:
@@ -78,23 +80,37 @@ class Tensor {
          SetShape( _shape, _rows, _cols );
       }
 
-      /// Tests the tensor shape
-      bool IsScalar()    const { return elements==1; }
-      /// Tests the tensor shape
-      bool IsVector()    const { return (shape==Shape::COL_VECTOR) || (shape==Shape::ROW_VECTOR); }
-      /// Tests the tensor shape
-      bool IsDiagonal()  const { return shape==Shape::DIAGONAL_MATRIX; }
-      /// Tests the tensor shape
-      bool IsSymmetric() const { return shape==Shape::SYMMETRIC_MATRIX; }
-      /// Returns tensor shape
-      Shape GetShape()   const { return shape; }
+      /// Tests the tensor shape.
+      bool IsScalar() const {
+         return elements==1;
+      }
+      /// Tests the tensor shape.
+      bool IsVector() const {
+         return (shape==Shape::COL_VECTOR) || (shape==Shape::ROW_VECTOR);
+      }
+      /// Tests the tensor shape.
+      bool IsDiagonal() const {
+         return shape==Shape::DIAGONAL_MATRIX;
+      }
+      /// Tests the tensor shape.
+      bool IsSymmetric() const {
+         return shape==Shape::SYMMETRIC_MATRIX;
+      }
+      /// Returns tensor shape.
+      Shape GetShape() const {
+         return shape;
+      }
 
       /// Gets number of tensor elements.
-      uint Elements() const { return elements; }
+      uint Elements() const {
+         return elements;
+      }
       /// Gets number of tensor rows.
-      uint Rows()     const { return rows; }
+      uint Rows() const {
+         return rows;
+      }
       /// Gets number of tensor columns.
-      uint Columns()  const {
+      uint Columns() const {
          switch( shape ) {
             case Shape::COL_VECTOR:
                return 1;
