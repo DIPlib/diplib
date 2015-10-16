@@ -8,7 +8,7 @@
 
 // This file is included through diplib.h
 #ifndef DIPLIB_H
-#include "diplib.h"
+#error "Please don't include this file directly, include diplib.h instead."
 #endif
 
 #ifndef DIP_ERROR_H

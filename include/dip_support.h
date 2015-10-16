@@ -8,7 +8,7 @@
 
 // This file is included through diplib.h
 #ifndef DIPLIB_H
-#include "diplib.h"
+#error "Please don't include this file directly, include diplib.h instead."
 #endif
 
 #ifndef DIP_SUPPORT_H
@@ -16,17 +16,45 @@
 
 #include <string>    // std::string
 
+/// The dip namespace contains all the library functionality.
 namespace dip {
 
 //
-// Strings
+// String
 //
 
 typedef std::string String;               ///< A string type
 typedef std::vector<String> StringArray;  ///< An array of strings
 
+
 //
-// Color spaces
+// Range
+//
+
+/// Used in indexing to indicate start, stop and step. Negative start
+/// and stop values indicate offset from the end (-1 is the last pixel,
+/// -2 the second to last, etc.). If the stop comes before the start,
+/// the step is assumed to be negative. No sign is stored for the step.
+/// If stop cannot be reached with the given step size, the last pixel
+/// in the range will come earlier. That is, stop is never exceeded.
+struct Range {
+   sint start;    ///< First pixel included in range
+   sint stop;     ///< Last pixel included in range
+   uint step;     ///< Step size when going from start to stop
+
+   /// Creates a range that indicates all pixels
+   Range() : start{0}, stop{-1}, step{1} {}
+   /// Creates a range that indicates a single pixel
+   Range(sint i) : start{i}, stop{i}, step{1} {}
+   /// Creates a range that indicates all pixels between `i` and `j`
+   Range(sint i, sint j) : start{i}, stop{j}, step{1} {}
+   /// Creates a range with all thee values set
+   Range(sint i, sint j, uint s) : start{i}, stop{j}, step{s} {}
+};
+
+
+//
+// Color spaces (should probably get a header of its own)
 //
 
 /// Specifies an image's color space and holds related information.
@@ -46,7 +74,7 @@ class ColorSpace {
 };
 
 //
-// Physical dimensions
+// Physical dimensions (should probably get a header of its own)
 //
 
 /// Specifies an image's pixel size in physical units.

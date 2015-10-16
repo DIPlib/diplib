@@ -8,7 +8,7 @@
 
 // This file is included through diplib.h
 #ifndef DIPLIB_H
-#include "diplib.h"
+#error "Please don't include this file directly, include diplib.h instead."
 #endif
 
 #ifndef DIP_TENSOR_H
@@ -37,10 +37,12 @@ class Tensor {
       ///      |1 4 7|
       ///      |2 5 8|
       ///
-      /// Shape::ROW_MAJOR_MATRIX is its transpose. Shape::DIAGONAL_MATRIX
-      /// stores only the diagonal elements. Shape::SYMMETRIC_MATRIX and
-      /// Shape::UPPTRIANG_MATRIX store the values in the upper triangle only,
-      /// as follows:
+      /// Shape::ROW_MAJOR_MATRIX is its transpose.
+      ///
+      /// Shape::DIAGONAL_MATRIX stores only the diagonal elements.
+      ///
+      /// Shape::SYMMETRIC_MATRIX and Shape::UPPTRIANG_MATRIX store the
+      /// values in the upper triangle only, as follows:
       ///
       ///      |0 3 4|
       ///      |x 1 5|

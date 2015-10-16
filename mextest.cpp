@@ -10,19 +10,19 @@
 
 void print_info( const dip::Image & img )
 {
-   mexPrintf( "Image %dD (", img.GetDimensionality() );
-   dip::UnsignedArray dims = img.GetDimensions();
+   mexPrintf( "Image %dD (", img.Dimensionality() );
+   dip::UnsignedArray dims = img.Dimensions();
    for( dip::uint ii=0; ii<dims.size(); ++ii) {
       mexPrintf( " %d ", dims[ii] );
    }
-   mexPrintf( "), %s, strides: (", img.GetDataType().Name() );
-   dip::IntegerArray stride = img.GetStrides();
+   mexPrintf( "), %s, strides: (", img.DataType().Name() );
+   dip::IntegerArray stride = img.Strides();
    for( dip::uint ii=0; ii<stride.size(); ++ii) {
       mexPrintf( " %d ", stride[ii] );
    }
    mexPrintf( ")\n" );
    if( img.IsForged() ) {
-      mexPrintf( "   origin pointer: %lu", (dip::uint)img.GetData() );
+      mexPrintf( "   origin pointer: %lu", (dip::uint)img.Origin() );
       if( img.HasContiguousData() ) {
          if( img.HasNormalStrides() ) {
             mexPrintf( " (strides are normal)" );
@@ -58,10 +58,6 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       img_out1.Strip();
       img_out1.SetDimensions( {2,3} );
       img_out1.Forge();
-                           /* This shows the error in matlab_try1.h:
-                            * by forging the new image, we don't replace the pixels
-                            * of the old image, but we do change the mxArray that
-                            * it is associated with. */
 
       if( nrhs > 0 ) {
          mexPrintf("Obtaining input image img_in0\n");
@@ -75,7 +71,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       print_info( img_out1 );
 
       mexPrintf("Getting the array for img_out0\n");
-      plhs[0] = mi.GetArray( img_out0.GetData() );
+      plhs[0] = mi.GetArray( img_out0.Data() );
 
       mexPrintf("Exiting scope\n");
 

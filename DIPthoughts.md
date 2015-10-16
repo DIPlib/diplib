@@ -7,8 +7,8 @@ Implementation notes and thoughts
 * [Support]
 * [The Image object]
 * [Tensor dimensions]
-* [Indexing syntax]
-* [More complex indexing syntax]
+* [Indexing syntax - tensor dimensions]
+* [Indexing syntax - spatial dimensions]
 * [Initializing values of small images/pixel objects]
 * [Arithmetic and comparisons]
 * [Class method vs function]
@@ -42,8 +42,8 @@ doesn't cost a dime. Why do it ourselves?
 Web site: GitHub also hosts web sites, we probably should move
 `diplib.org` to point to the GitHub website (unless Google allows
 uploading HTML files, the web page editing system they have is crap).
-Alternatively, we could redirect `www.diplib.org` to `diplib.github.org`
-or whatever.
+Alternatively, we could redirect `www.diplib.org` to
+`diplib.github.org` or whatever.
 
 Documentation: [*Doxygen*](http://www.stack.nl/~dimitri/doxygen/).
 This will make sure the function signatures in the documentation match
@@ -54,15 +54,16 @@ when updating code.
 Build system: [*Waf*](https://waf.io)?
 I don't like *CMake*!
 *Autotools* is no good either.
-If we keep using Mike's build system, we will have to do major
-changes to support C++, Python, and whatever else we want to do. It'll
-be more effort to include 3^rd^ party libraries in our build tree. Let's
-use a system that can automatically compile dependencies.
+If we keep using Mike's build system, we will have to do major changes
+to support C++, Python, and whatever else we want to do. It'll be more
+effort to include 3^rd^ party libraries in our build tree. Let's use a
+system that can automatically compile dependencies.
 
 Other:
-[*KWStyle*](https://kitware.github.io/KWStyle/) for checking source code
-style (integrates with *Git*), it can give errors during compilation or
-during commit if the source code is not formatted according to a style.
+[*KWStyle*](https://kitware.github.io/KWStyle/) for checking source
+code style (integrates with *Git*), it can give errors during
+compilation or during commit if the source code is not formatted
+according to a style.
 
 
 The Image object
@@ -72,10 +73,11 @@ Images can have any number of dimensions and data types, as current. We
 will add the option of tensor images by adding dimensions to the data
 block. Tensor dimensions are administered separately from spatial
 dimensions, functions should not ignore this separation. Colour images
-have three or four tensor components in one dimension, and have a colour
-space info structure. Image methods should allow moving dimensions from
-being tensorial to spatial and vice versa (as a cheap operation). See
-below for thoughts on implementation of tensor dimensions.
+have three or four tensor components in one dimension, and have a
+colour space info structure. Image methods should allow moving
+dimensions from being tensorial to spatial and vice versa (as a cheap
+operation). [See below][Tensor dimensions] for thoughts on
+implementation of tensor dimensions.
 
 A version of the constructor should take a data pointer and a
 deallocator function pointer, and create an object from it. The
@@ -86,31 +88,34 @@ in independent include files that are not used by the library itself
 include files into their programs if they need them.
 
 There should also be a facility for allowing an external interface to
-allocate the data array. The image object has a `ForgeHandler()` function
-that will be called to allocate the data. For the MATLAB interface, this
-function will be set to a function that creates an appropriate `mxArray`,
-and returns its data pointer. This function also returns a deallocator
-functor (object that can be called like a function, the object can hold
-additional data, for example the `mxArray` pointer from which the data
-pointer was taken), as well as the stride arrays (which the interface
-might want to control). The data pointer is stored in the
-`std::shared_ptr` member, which takes care of deallocating the data when
-needed. The `std::shared_ptr` stores the deallocator function also.
+allocate the data array. The image object has a `ForgeHandler()`
+function that will be called to allocate the data. For the MATLAB
+interface, this function will be set to a function that creates an
+appropriate `mxArray`, and returns its data pointer. This function also
+returns a deallocator functor (object that can be called like a
+function, the object can hold additional data, for example the
+`mxArray` pointer from which the data pointer was taken), as well as
+the stride arrays (which the interface might want to control). The data
+pointer is stored in the `std::shared_ptr` member, which takes care of
+deallocating the data when needed. The `std::shared_ptr` stores the
+deallocator function also.
 
-By using a `std::shared_ptr`, we can have multiple image objects point to
-the same data block. When the last of these images is destroyed, the
+By using a `std::shared_ptr`, we can have multiple image objects point
+to the same data block. When the last of these images is destroyed, the
 memory block is freed. We need a method to query whether the data
 pointer is being shared or not.
 
 The image object should have a flag that, when set, avoids its data
-segment to be re-allocated. When the output image of a function has such
-a flag set, functions will simply convert their output to match that of
-the image. If such conversion is not possible, maybe because the image
-size is incorrect, an exception is thrown. This will allow a function
-such as `dip::Gauss(in,out,sigma)`, which would normally produce a
-floating-point output, to produce an integer output instead. This beats
-adding "output data type" parameters to functions, as the functionality
-is out of the way unless one is interested in it.
+segment to be re-allocated. When the output image of a function has
+such a flag set, functions will simply convert their output to match
+that of the image. If such conversion is not possible, maybe because
+the image size is incorrect, an exception is thrown. This will allow a
+function such as `dip::Gauss(in,out,sigma)`, which would normally
+produce a floating-point output, to produce an integer output instead.
+This beats adding "output data type" parameters to functions, as the
+functionality is out of the way unless one is interested in it.
+
+
 
 
 Tensor dimensions
@@ -127,17 +132,17 @@ etc.).
 There are two possible ways of implementing tensor images:
 
 1. add two `dip::IntegerArrays` to the image object: `tensordimensions`
-and `tensorstrides`.
+   and `tensorstrides`.
 
 2. add an `int ntensorelements`, an `int tensorrows`, an `int tensorstride`,
-and an `enum class tensorshape` to the image object. `tensorshape` would
-contain options such as `scalar`, `columnvector`, `rowvector`,
-`matrix_rowmajor`, `matrix_columnmajor`, `symmetricmatrix`,
-`uppertriangularmatrix`, etc.
+   and an `enum class tensorshape` to the image object. `tensorshape`
+   would contain options such as `scalar`, `columnvector`, `rowvector`,
+   `matrix_rowmajor`, `matrix_columnmajor`, `symmetricmatrix`,
+   `uppertriangularmatrix`, etc.
 
 Under \#1, any tensor dimensionality is supported. Individual tensor
-dimensions can be "converted" to spatial dimensions. This provides a lot
-of flexibility.
+dimensions can be "converted" to spatial dimensions. This provides a
+lot of flexibility.
 
 Under \#2, only tensors with up to 2 dimensions are allowed. However,
 it will be possible to implement symmetric tensors in an efficient way.
@@ -164,154 +169,264 @@ More details for \#2:
 Transposing the tensor, reshaping it, etc. are all trivial operations.
 
 
-Indexing syntax
----------------
+Indexing syntax - tensor dimensions
+-----------------------------------
 
 There is two types of indexing: into pixel dimensions and into tensor
-dimensions. We will overload the `[]` operator to index into tensor
-dimensions. Picking one of the "planes" is much more common than picking
-a pixel. No data copying is necessary, the output will point to the same
-data block.
+dimensions. We will overload `operator[]` to index into tensor
+dimensions. Picking one of the "planes" is much more common than
+picking a pixel. No data copying is necessary, the output will point to
+the same data block.
 
-    img[i]                 // Get tensor element i, using linear indexing
-    img[IntegerArray{i,j}] // Get tensor element (i,j)
+    img[i];                   // Get tensor element i, using linear indexing
+    img[IntegerArray{i,j}];   // Get tensor element (i,j)
 
 Both these notations return a `dip::Image` object.
 
-Tensors are stored column-wise, to be consistent with expectations. That
-is, the first index is down (row number), the second one is to the right
-(column number). But we do start at 0, because starting at 1 makes no
-sense. :)
+Tensors are stored column-wise, to be consistent with expectations.
+That is, the first index is down (row number), the second one is to the
+right (column number). But we do start at 0, because starting at 1
+makes no sense. :)
 
 For example:
 
     dip::Image img = dip::Read( "filename.tif" );
-    img = img[2];          // use only the blue channel.
+    img = img[2];             // use only the blue channel.
+
+A few methods should exist that also do tensor dimension indexing, such
+as the `Diagonal()` function:
+
+    img.Diagonal();           Get the tensor elements along the diagonal
+
+
+Indexing syntax - spatial dimensions
+------------------------------------
 
 To index into spatial dimensions we use the `at()` method (as in the
-standard library):
+standard library). The alternative is to overload `operator()`, but
+that could be confusing as indexing is very different from calling a
+function (this is one of the main gripes I have with the MATLAB
+syntax). Also, `operator()` can only take one argument.
 
-    img.at(i)                 // Get pixel at linear index i
-    img.at(x,y)               // Get pixel at coordinates (x,y), only for 2D images
-    img.at(x,y,z)             // Get pixel at coordinates (x,y,z), only for 3D images
-    img.at(IntegerArray{...}) // Get pixel at given coordinates, general syntax
+There are different forms of indexing:
 
-All these notations return a `dip::Pixel` object. This object simply
-contains a pointer to the pixel data in the image, has a reference to
-the image's tensor size and tensor stride arrays, and knows the data
-type also. This allows the user to read or write the pixel's value:
+* a single pixel
 
-    img.at(x,y) += 5;
+* an ROI (window into the image): rectangular area, subsampling, etc.
 
-The `dip::Pixel` object can be casted to a double or an int to get the
-first tensor component. It can be indexed using the `[]` notation, just
-like the image, and also has similar arithmetic and comparison
-functions. The following two notations do exactly the same thing:
+* an irregular set of columns/rows
 
-    img.at(x,y)[i]      // Get the tensor value pixel at (x,y), then get the tensor component i
-    img[i].at(x,y)      // Extract an image for the tensor component i, then index pixel (x,y)
+* an arbitrary collection of pixels
 
-A `dip::Pixel` object always points to an image. When the image is
-destroyed, deallocated or reallocated, the pixel object becomes invalid.
+The first case is simply a special case of the ROI indexing. For the
+ROI indexing, we want to return a `dip::Image` object where the data
+points to the same array as the original image. This allows data to be
+changed. For the last two cases, this is not possible, unless we want
+to make the `dip::Image` object even more complex by allowing it to
+contain a mask or index list. This will also make all image processing
+and analysis functions more complex, and will put unneeded difficulty
+on people wanting to contribute their functions to the library.
+Instead, these type of irregular indexing will cause a copy of the
+data.
 
-    img.at(mask); img.at(coord_array);
+The third case corresponds to MATLAB's `img([1,3,4],[5,6,3])` syntax.
+I'm not sure we need to support it, as it is rather uncommonly used and
+could be simulated by giving a full list of indices instead.
 
-Yet another option would be to overload the `()` operator, but again, this
-might cause too much confusion, as in C++ that operator is used for
-function calls. *OpenCV* uses references, iterators and more to allow
-this type of functionality. I'm not sure if we want to copy this. I'm
-open for suggestions.
+We discuss the second case (ROI indexing) and fourth case (arbitrary
+indexing) below.
 
-Casting an image to e.g. `double` or `int` will extract the very first pixel
-from the image. Thus
+*OpenCV* uses references, iterators and more to allow this type of
+functionality. I'm not sure if we want to copy this. I'm open for
+suggestions.
 
-    double v = (double)img.At(x,y);
+### ROI indexing
 
-should be the simple way of extracting a pixel value.
+This type of indexing requires a start, stop and step size for each
+dimension. We can copy the `dip_Roi()` function from the old *DIPlib*:
 
+    img.ROI(IntegerArray start, IntegerArray stop, IntegerArray step);
 
-More complex indexing syntax
-----------------------------
+But I would prefer a syntax that uses a support `Range` structure:
 
-Sometimes people want to select multiple pixels at once. There are two
-cases: regular subsampling, and irregular mask indexing.
+    struct dip::Range { sint start; sint stop; uint step; };
 
-**First case:** The regular case yields a new image with the same
-dimensionality as the source image, but is smaller in size. The new
-image points to the same data block as the original image, so it can be
-used to apply an operation to a single channel or a single plane, for
-example. Per dimension, you need to choose a start index, a stop index
-and a step size. We can support two ways of accomplishing this. One uses
-a `dip::Range` struct:
+With constructors such that
 
-    dip::Range rx {xstart, xstop, xstep};
-    dip::Range ry {ystart, ystop, ystep};
-    img.at(rx,ry);                  // Returns an image that points to the same data as img
+    dip::Range {}      == { 0,-1, 1 }; // all pixels
+    dip::Range {i}     == { i, i, 1 }; // pixel i only
+    dip::Range {i,j}   == { i, j, 1 }; // all pixels from i to j
+    dip::Range {i,j,s} == { i, j, s }; // full range specification
 
-    img.at(range)                   // For 1D images
-    img.at(xrange, yrange)          // For 2D images
-    img.at(xrange, yrange, zrange)  // For 3D images
-    img.at(RangeArray {...})        // General case for ND images
-    img[range]                      // Into tensor dimensions
+Note that negative values indicate distance from the end (-1 is the
+last pixel, -2 the second to last, etc.). We can now define indexing
+operations as:
 
-The alternative method is a function as we have in the current *DIPlib*:
+    img.At( Range );                         // 1D, or linear indexing
+    img.At( Range, Range );                  // 2D
+    img.At( Range, Range, Range );           // 3D
+    img.At( std::initializer_list<Range> );  // nD
 
-    img = GetROI( img, start, stop, step );
-    GetROI( img, img, start, stop, step );
+And we can write:
 
-This function takes start, stop and step as `IntegerArrays`. We should
-want to redefine this to allow sampling the tensor dimensions also.
-Otherwise the user can turn tensor dimensions into spatial dimensions.
+    img.At( Range{5} );                      // pixel 5
+    img.At( Range{3,7} );                    // pixels 3 to 7
+    img.At( Range{5}, Range{1} );            // pixel (5,1)
+    img.At( { Range{5}, Range{1}, Range{4}, Range{0} } );
 
+But if `int` converts implicitly to `Range`, it looks a little nicer:
 
-**Second case:** Indexing with a mask image produces a collection of
-pixels that is not regular, and cannot be represented in a normal image.
-The easiest way to support this type of indexing is to copy the selected
-pixels into a 1D image. Being a copy of the data, the resulting image
-cannot be used to modify the original image. A second indexing operation
-needs to be applied to copy the modified pixels back into the original
-image:
+    img.At( 5 );                             // pixel 5
+    img.At( 5, 1 );                          // pixel (5,1)
+    img.At( { 5, 1, 4, 0 } );
 
-    roi = img.applymask( mask ); // Pixels where mask==true are copied to roi
-    img.applymask( mask, roi ); // Pixels where mask==true are overwritten with the values in roi
+We just need the curly braces if we have more than 3 dimensions (unless
+we want to define more of those functions with ever increasing number
+of input arguments... Variadic input arguments are a no-go, as there is
+no way of determining how many arguments are passed (as far as I can
+tell).
 
-This is quite ugly. We could think also of allowing `img.at(mask)` or
-`img[mask]`.
+(Indexing into tensor dimensions with `operator[]` should also accept a
+`Range` as input.)
 
-The alternative is to make the `dip::Image` object more flexible, such
-that it can represent a masked set of pixels also. All functions will
-have to be aware of this, test whether the input image is a masked image
-or a regular image. This is difficult. Yet another alternative is to
-make a `dip::IrregularImage` object, which will have its own overload
-arithmetic operators and some other things, but not much else (as most
-functions could not work on such irregular data anyway). I don't like
-the duplication of code that this represents. *DIPlib* currently allows
-a mask image input as a second argument to some functions. We could
-overload these functions to accept such an irregular image:
+For efficiency, we could define `At()` functions that take `uint` input
+arguments, for the single pixel case.
 
-    void dip::Filter( dip::Image in, dip::Image mask, ... );
-    void dip::Filter( dip::IrregularImage in, ... ) { dip::Filter( in.Image, in.Mask, ... )}
+This syntax, of course, returns a `dip::Image` object. To extract the
+value of a pixel, we can cast to `int` or `double`:
 
-Not sure if this would be useful. Probably more work than it's worth.
+    static_cast<double> img.At( 5, 1 );
+
+This will always return the value of the first tensor component of the
+first pixel in the image (i.e. the same as dereferencing the data
+pointer after casting to the right data type). Alternatively, we could
+cause such a cast to throw an error if there is more than one pixel.
+
+Because these functions return an image that shares the data pointer
+with the original image, it is possible to modify the pixel values in
+the original image:
+
+    img.At( 5, 1 ) += 20;        // Add 20 to the pixel at (5,1)
+
+To be able to write values to a pixel, we just need to do something
+special with the assignment operator:
+
+* If the image is raw (not forged, there is no data segment), then the
+  assignment is as the default assignment, it copies the image (size,
+  stride, data type, data pointer, etc.).
+
+* If the image is forged, then we copy pixel values over. In this case,
+  we could do singleton expansion, but otherwise require that the image
+  dimensions be compatible. Data type would automatically be converted.
+  When assigning an `int` or a `double` into an image, all pixels and
+  all tensor elements are given this value.
+
+I'm afraid that this might cause confusion. On the other hand, it would
+be quite convenient and awesome.
+
+    img.At( 5, 1 ) = 0;          // Set pixel (5,1) to 0
+    img.At( Range{}, 0 ) = 0;    // Set the top image border to 0
+    img = 0;                     // Set the whole image to 0
+
+As an alternative, we should implement `AssignAt()` functions that mimic
+the `At()` syntax, but include an additional parameter (first? last?)
+that is a `dip::Image` or a scalar (`int`, `double`):
+
+    img.AssignAt( Image, Range );
+    img.AssignAt( Image, Range, Range );
+    img.AssignAt( Image, Range, Range, Range );
+    img.AssignAt( Image, std::initializer_list<Range> );
+
+    img.AssignAt( 0, 5, 1 );     // Equivalent to img.At( 5, 1 ) = 0;
+
+**Note:** When using linear indexing, it is possible that the resulting
+ser of pixels do not have a regular stride (a single value for stride
+that makes you visit each and every one of the selected pixels, without
+hitting any non-selected pixels). If the input has continuous data,
+this is never the case, but otherwise it might. We need to find a
+solution, or allow that the indexing throws an exception.
+
+### Arbitrary indexing
+
+Arbitrary indexing should be supported with three different ways of
+selecting the pixels:
+
+* a mask image
+
+* a list of linear indices into the image
+
+* a list of pixel coordinates
+
+These three forms can all be accomodated using the `At()` and `AssignAt()`
+functions:
+
+    img.At( Image mask );
+    img.At( IntegerArray indices );
+    img.At( CoordinateArray pixels );
+
+    img.AssignAt( Image data, Image mask );
+    img.AssignAt( Image data, IntegerArray indices );
+    img.AssignAt( Image data, CoordinateArray pixels );
+
+Here, `CoordinateArray` is simply a `std::vector<IntegerArray>`. This
+might not be the most efficient way of storing the data, but it is the
+most flexible, as it allows to add and remove elements from the list
+fairly easily. The more efficient alternative is an object that
+contains a single data block of <number of dimensions> x <number of
+pixels> elements. This is not a structure in the standard library, and
+thus needs extra work.
+
+These three forms of `At()` copy the data, creating a 1D image. This
+might be confusing, as compared with the other versions of the `At()`
+function, but it's the best I've been able to come up with so far. This
+is the reason why the `AssignAt()` function is so important: without it
+we wouldn't be able to assign data into irregularly sampled pixels.
+
+This will thus not work:
+
+    img.At( mask ) += 20;
+
+We'll need to do this instead:
+
+    Image result = img.At( mask ) + 20;            // Get the pixels, add 20
+    img.AssignAt( result, mask);                   // Assign the result back into the image
+
+    img.AssignAt( img.At( mask ) + 20, mask);      // Same as above
+
+This is not ideal, but it's the best compromise I've come up with so
+far. An alternative is for this syntax to produce, as I mentioned
+earlier, an alternate version of an `Image` object. Let's call that
+`ImageRef` for now. It would point to the original image, and contain a
+list of linear indices into the original image's data. When assigning
+into it, it would assign into the original image through the list of
+linear indices. But now we'd have two different types of output object
+for `At()`, depending on the input argument types. This could be even
+more confusing than not being sure if the data is being copied or not.
+The `ImageRef` would of course need a `Copy()` function to make a copy
+of the pixels referenced into a new image. It would also need overloaded
+versions of all operators: `+`, `+=`, `>=`, etc. Which other functions
+would need to support this type? All of this comes for free when simply
+returning an `Image` object with copied data.
 
 
 Initializing values of small images/pixel objects
 -------------------------------------------------
 
-Sure it is possible to use `img.at()[]` to write values into a small
+Sure it is possible to use `img.At()[]` to write values into a small
 image, but must be a better way. Small images are used, e.g., when doing
 arithmetic on tensor images. 0D scalar and vector images are trivial:
 
-    dip::Image img( 1 );          // This is a 0D sfloat image with pixel value 1
-    dip::Image img { 1 };         // Idem
-    dip::Image img { 1, 2, 3 };   // This is a 0D sfloat value with a 3-vector as pixel, value [1,2,3]^T^
+    dip::Image img( 1 );         // This is a 0D sfloat image with pixel value 1
+    dip::Image img { 1 };        // Idem
+    dip::Image img { 1, 2, 3 };  // This is a 0D sfloat image with a 3-vector as
+                                 //    pixel, value [1,2,3]^T
 
 How about 0D matrix images (e.g. a rotation matrix)? Maybe something
-like this could work, with an `initializer_list` object in there (not
-sure this would compile?):
+like this could work, with a `std::initializer_list` object in there:
 
     dip::Image img( size, tensorsize, dip::DT::SFLOAT, { 0, 1, 2, 3 } );
-                                 // 0, 1, 2 and 3 will be the first four values in the data block.
+                                 // 0, 1, 2 and 3 will be the first four values
+                                 //    in the data block.
 
 
 Arithmetic and comparisons
@@ -323,8 +438,8 @@ calls to
     dip::Arithmetic( in1, in2, out, op )
     dip::Comparison( in1, in2, out, op )
 
-where `op` is an `enum` specifying which operator to apply. `out` can be equal
-to `in1` or `in2` for inplace operation. Thus, we can do:
+where `op` is an `enum` specifying which operator to apply. `out` can
+be equal to `in1` or `in2` for inplace operation. Thus, we can do:
 
     img1 += img2;
     dip::Arithmetic( img1, img2, img1, "+" );
@@ -353,7 +468,7 @@ be implemented as special functions. For example, instead of writing
 
 one would write
 
-    dip::WeightedAddition( dip::ImageArray{img1,img2,img3}, out, dip::IntegerArray{a,b,c}, d );
+    WeightedAddition( ImageArray{img1,img2,img3}, out, IntegerArray{a,b,c}, d );
 
 For efficiency. There is template meta-programming that can convert an
 expression like the first one into a call like the second one, but that
@@ -364,7 +479,7 @@ We could try to complete the function that Mike started writing eons
 ago(?), in which a string expression is evaluated and applied pixel by
 pixel to a set of images:
 
-    dip::Evaluate( dip::ImageArray{img1,img2,img3}, out, "3*a + 2*(b+c) + 6 > 30*(a+c)" );
+    Evaluate( ImageArray{img1,img2,img3}, out, "3*a + 2*(b+c) + 6 > 30*(a+c)" );
 
 The expression is converted to a representation that can be used to
 efficiently apply the requested computation on each pixel. Which
@@ -411,21 +526,21 @@ changed by another thread is awkward.
 
 The current *DIPlib* does a lot with registries because it is a
 closed-source library. The registries allow extension of functionality
-in a way that would otherwise not be possible. In an open-source library
-this is much less important, since users can modify and re-compile the
-library. For some things, such as the measurement function and the
-colour conversion function, registering new functions makes sense: it is
-reasonable to expect a user to want to extend existing functionality,
-and it might be beneficial to not modify the "standard" library, or
-submit modifications to the maintainers. For these cases, an object
-should be created (see below under measurement and colour conversion).
-Other things that we currently register are not necessary: e.g. the
-image type will never be extended, and if someone does it, it is a
-sufficiently significant change to warrant recompiling the library (as
-none of the existing functions would work with the new image type
-anyway). Do we want file reading and writing functions to be registered?
-If one creates a function to read files of a specific type, one can
-simply call that function directly.
+in a way that would otherwise not be possible. In an open-source
+library this is much less important, since users can modify and
+re-compile the library. For some things, such as the measurement
+function and the colour conversion function, registering new functions
+makes sense: it is reasonable to expect a user to want to extend
+existing functionality, and it might be beneficial to not modify the
+"standard" library, or submit modifications to the maintainers. For
+these cases, an object should be created (see below under measurement
+and colour conversion). Other things that we currently register are not
+necessary: e.g. the image type will never be extended, and if someone
+does it, it is a sufficiently significant change to warrant recompiling
+the library (as none of the existing functions would work with the new
+image type anyway). Do we want file reading and writing functions to be
+registered? If one creates a function to read files of a specific type,
+one can simply call that function directly.
 
 
 Parallelisation
@@ -433,9 +548,9 @@ Parallelisation
 
 `dip_FWClassical()` and `dip_FWDoubleStripe()` need to be parallelised
 anew, `dip_FWClassicalOMP()` and `dip_FWDoubleStripeOMP()` are overly
-complicated (and slow!) because they are written for *pthreads*. In short,
-we need to make sure that each thread allocates its own buffers (`malloc`
-inside the parallel section rather than before, as is now).
+complicated (and slow!) because they are written for *pthreads*. In
+short, we need to make sure that each thread allocates its own buffers
+(`malloc` inside the parallel section rather than before, as is now).
 
 `dip_PixelTableArrayFrameWork()` and `dip_PixelTableFrameWork()` are
 currently not yet parallelised, but should. We should also be able to
@@ -447,22 +562,23 @@ Measurement
 -----------
 
     dip::MeasuringTool measuringTool;
-    measuringTool.Register( "myMsrName", myMsrFunc_Info, myMsrFunc_Prepare, myMsrFunc_Measure, ... );
-    dip::Measurement msr = measuringTool.Measure( labimg, greyimg, { "myMsrName", "size" } );
-    std::cout << msr["myMsrName"][1];     // How to do indexing?
-    std::cout << msr.at("myMsrName",1);   // How to do indexing?
+    measuringTool.Register( "myMsrName", myMsrFunc_Info, myMsrFunc_Prepare, ... );
+    dip::Measurement msr = measuringTool.Measure( labimg, greyimg,
+                                                  StringArray{ "myMsrName", "size" } );
+    std::cout << msr["myMsrName"][1];           // How to do indexing?
+    std::cout << msr.at("myMsrName",1);         // How to do indexing?
 
-Allocate instance of measurement tool class, call its `Measure()` method
-in much the same way we now call `dip_Measure()`. The `Register()` method
-allows to register new measurement features, in just the same way we do
-now. The constructor calls `Register()` for each of the standard types.
-This should be fast.
+Allocate instance of measurement tool class, call its `Measure()`
+method in much the same way we now call `dip_Measure()`. The
+`Register()` method allows to register new measurement features, in
+just the same way we do now. The constructor calls `Register()` for
+each of the standard types. This should be fast.
 
 Currently we use a function to get an ID for each of the measurement
-features. Instead, [we will always use strings][Passing options to a function]
-to refer to measurement features. These are mapped to an index into a
-table that stores the function pointers. We can use `std::unordered_map`,
-a hash table, to map the names to the indices.
+features. Instead, [we will always use strings][Passing options to a
+function] to refer to measurement features. These are mapped to an
+index into a table that stores the function pointers. We can use
+`std::unordered_map`, a hash table, to map the names to the indices.
 
 The measurement functionality will be different than it is now. The
 current measurement structure is too flexible; this is not necessary,
@@ -479,15 +595,15 @@ needed. This is how I envision the measurement functionality:
   quick searching).
 
 - Each measurement feature will register an `Info` function and a
-  `Measure` function. Currently they also register a `Value` and a `Convert`
-  function, these are useless. `LINE_BASED` features have a `Prepare`, a
-  `Measure`, and a `Finish` function. `Prepare` and `Finish` are called for
-  each object. `Measure` is called for each line. `IMAGE_BASED`,
-  `CHAINCODE_BASED` and `CONVHULL_BASED` features have only a `Measure`
-  function, called once (image-based feature) or once for each object
-  (the other two). `COMPOSITE` features have a `Measure` function that has
-  access to other measurement data (called after the other functions
-  are done) and is called once for each object.
+  `Measure` function. Currently they also register a `Value` and a
+  `Convert` function, these are useless. `LINE_BASED` features have a
+  `Prepare`, a `Measure`, and a `Finish` function. `Prepare` and `Finish`
+  are called for each object. `Measure` is called for each line.
+  `IMAGE_BASED`, `CHAINCODE_BASED` and `CONVHULL_BASED` features have
+  only a `Measure` function, called once (image-based feature) or once
+  for each object (the other two). `COMPOSITE` features have a `Measure`
+  function that has access to other measurement data (called after the
+  other functions are done) and is called once for each object.
 
 - The `Info` function returns the number of output values that the
   measurement will generate (based on dimensionality, physical
@@ -524,12 +640,16 @@ Colour space conversion
 -----------------------
 
     dip::ColourConverter colourConverter;
-    colourConverter.Define( "newspace", 3 );                      // "newspace" has 3 channels.
-    colourConverter.Register( rgb2new, "rgb", "newspace", cost ); // cost is optional, default = 1
+    colourConverter.Define( "newspace", 3 );
+                                    // "newspace" has 3 channels.
+    colourConverter.Register( rgb2new, "rgb", "newspace", cost );
+                                    // cost is optional, default = 1
     colourConverter.Register( new2rgb, "newspace", "rgb" );
-    colourConverter.Register( new2grey, "newspace", "grey" );     // cost is optional, default = 1e9
+    colourConverter.Register( new2grey, "newspace", "grey" );
+                                    // cost is optional, default = 1e9
     colourConverter.Register( grey2new, "grey", "newspace" );
-    colourConverter.Convert( img, img, "newspace" );              // convert img to 'newspace', write output in img
+    colourConverter.Convert( img, img, "newspace" );
+                                    // convert img to 'newspace', write output in img
 
 The object constructor registers the standard colour conversion
 functions, the user can allocate new functions. These functions compute
@@ -537,7 +657,7 @@ the conversion for a single pixel, and have the form
 
     rgb2new( FloatArray in, FloatArray out, double whitepoint[9] )
 
-The whitepoint matrix is given in column-major order..
+The whitepoint matrix is given in column-major order.
 
 Colour space names as strings might be OK if we use a hash table
 (`std::unordered_map`) to store colour space information.
@@ -550,12 +670,12 @@ indicate computational cost, but also the loss of information. This is
 why conversion to grey scale has a very high cost by default.
 
 A standard Dijkstra algorithm will find an optimal conversion path to
-convert an image from its current colour space to the destination colour
-space. This optimal path can then be cached in the object, if we see
-that this would save a significant amount of time. Because conversion to
-grey is so expensive, the optimal path will never be
-"RGB to grey to Lab" or something like that.
-**This has been implemented in *DIPimage*, to prove it works well.**
+convert an image from its current colour space to the destination
+colour space. This optimal path can then be cached in the object, if we
+see that this would save a significant amount of time. Because
+conversion to grey is so expensive, the optimal path will never be "RGB
+to grey to Lab" or something like that. **This has been implemented in
+*DIPimage*, to prove it works well.**
 
 With the conversion path as a list of function pointers, we call the
 point-scanning framework and for each pixel we call each of the
@@ -573,11 +693,11 @@ Function overloading
 We want to use templates for function overloading (instead of generated
 code through multiple inclusion of the same C file). But we don't want
 to expose any templates to the user: no knowledge of data types is
-assumed at compile time (see more on this
-[below][Compile-time vs run-time pixel type identification]).
-The decision about which overloaded version of a function to call has
-to be made at run time. The easiest way we have come up with so far to
-accomplish this is by defining macros such as:
+assumed at compile time (see more on this [below][Compile-time vs
+run-time pixel type identification]). The decision about which
+overloaded version of a function to call has to be made at run time.
+The easiest way we have come up with so far to accomplish this is by
+defining macros such as:
 
     #define DIP_OVL_CALL_REAL( fname, paramlist, dtype ) \\
     switch( dtype ) { \\
@@ -608,9 +728,9 @@ Similar macros would be defined for `INTEGER`, `UNSIGNED`, `SIGNED`, `FLOAT`,
 Frameworks
 ----------
 
-*DIPlib* uses Frameworks to handle most of the filtering. These need some
-refactoring for consistency. Current code is written for *POSIX* threads,
-and adapted to *OpenMP*, but this lead to suboptimal code.
+*DIPlib* uses Frameworks to handle most of the filtering. These need
+some refactoring for consistency. Current code is written for *POSIX*
+threads, and adapted to *OpenMP*, but this lead to suboptimal code.
 
 - `dip::FrameworkFilterFull()`
 
@@ -689,15 +809,15 @@ Input to the framework is:
 
 An alternative would be to combine the function pointer and the
 structure with parameters to pass to this function into a functor
-object. This could add a lot of flexibility and of course avoids the use
-of pointers altogether.
+object. This could add a lot of flexibility and of course avoids the
+use of pointers altogether.
 
-FrameWorks in current *DIPlib* find the dimension with the largest size,
-when asked to use optimal scanning. The callback function loops over
-this dimension. This minimizes the number of callback calls. However, if
-the size difference is not too large, it might be better to use the
-dimension with the smallest stride. We'll have to measure where the size
-ratio cutoffs are for this.
+FrameWorks in current *DIPlib* find the dimension with the largest
+size, when asked to use optimal scanning. The callback function loops
+over this dimension. This minimizes the number of callback calls.
+However, if the size difference is not too large, it might be better to
+use the dimension with the smallest stride. We'll have to measure where
+the size ratio cutoffs are for this.
 
 
 Alias handler
@@ -711,12 +831,13 @@ images. We can do that this way in C++:
 
     class AliasHandler {
        private:
-          ImageRefArray output;                    // We save references to the original output images here
-          ImageArray temp;                         // We keep temporary images here
+          ImageRefArray output;           // We save references to the original
+                                          //    output images here
+          ImageArray temp;                // We keep temporary images here
        public:
           AliasHandler( ImageRefArray in, ImageRefArray out ) {
              for( int ii=0; ii<output.size(); ++i i) {
-                if( out[ii] is in in ) {           // How to do this check is up for discussion
+                if( out[ii] is in in ) {  // How to do this check is up for discussion
                    output.push_back( out[ii] );
                    temp.emplace_back();
                    out[ii] = temp.back();
@@ -733,12 +854,14 @@ images. We can do that this way in C++:
     {
        ImageRefArray inar { in1, in2 };
        ImageRefArray outar { out1, out2, out3 };
-       AliasHandler ah( inar, outar );             // outar[0], outar[1], and outar[2] are now safe to use.
+       AliasHandler ah( inar, outar );    // outar[0], outar[1], and outar[2] are
+                                          //    now safe to use.
        outar.Strip();
        outar.CopyDimensions( in1 );
        outar.Forge();
       // do processing ...
-    }                                              // ah goes out of scope, its destructor is called, and temporary images are copied to output.
+    }                                     // ah goes out of scope, its destructor is called,
+                                          //     and temporary images are copied to output.
 
 
 Physical units
@@ -747,7 +870,8 @@ Physical units
 The image object should contain a `physDims` structure. This structure
 maybe should also contain the absolute position of the origin.
 Manipulation functions will update this (e.g. resampling changes
-physical dimensions of the pixel). For some functions this is difficult:
+physical dimensions of the pixel). For some functions this is
+difficult:
 
 - Rotate: what if the two dimensions being intermingled have different
   `physDims`?
@@ -760,7 +884,8 @@ but sometimes we want to give them in physical dimensions. We can solve
 this with a method of the `physDims` structure:
 
     dip::FloatArray sigmas { 45, 45 }; // sigmas in physical units (say micron)
-    dip::Gauss( in, out, in.physDims.topixels( sigmas ) ); // filter size parameter converted to pixels
+    dip::Gauss( in, out, in.physDims.topixels( sigmas ) );
+                                       // filter size parameter converted to pixels
 
 The measurement function always returns measurements with physical
 units. If physical dimensions are not known, they default to 1 px, and
@@ -769,12 +894,12 @@ between images with different physical dimensions leads to units to
 revert to 1 px. Scaling of an image with physical dimensions of 1 px
 does not affect its physical dimensions.
 
-Tensor images have same intensity units for all tensor elements (or???).
-Intensity will most likely be "Arbitrary Units" ("ADU"), only in very
-special cases the intensity has physical units. Problem: ADU^2^=ADU,
-ADU\*px=ADU, etc., but we don't want that. Maybe we don't even need to
-store the intensity units. This also saves us from having to modify them
-with every arithmetic operation.
+Tensor images have same intensity units for all tensor elements
+(or???). Intensity will most likely be "Arbitrary Units" ("ADU"), only
+in very special cases the intensity has physical units. Problem:
+ADU^2^=ADU, ADU\*px=ADU, etc., but we don't want that. Maybe we don't
+even need to store the intensity units. This also saves us from having
+to modify them with every arithmetic operation.
 
 To decide: How do we represent units? A class that knows how to convert
 inches to cm? Do we always use units in SI, and modify the value to
@@ -788,15 +913,16 @@ automatically add prefixes to the units to make values readable.
 We will use the C++ standard library for all maps, queues, vectors,
 sorting, etc., unless custom code is more efficient (measure if it
 really is the case!). One example could be creating our own version of
-`std::vector` for `dip::IntegerArray` and the like, that has a short vector
-optimization (these arrays we use mostly to do things per dimension, and
-usually images have only two or three dimensions; if the vector has e.g.
-four or fewer elements, this optimization will keep the data inside the
-object, avoiding a call to `malloc`; the standard library does this for
-`string`, but not for `vector`; copying these short arrays will then be
-trivial). It is a bit of work to write our own vector class, but I think
-it's worth it. We will then also be able to add some methods that might
-be useful (`product()`, arithmetic operators, etc.)
+`std::vector` for `dip::IntegerArray` and the like, that has a short
+vector optimization (these arrays we use mostly to do things per
+dimension, and usually images have only two or three dimensions; if the
+vector has e.g. four or fewer elements, this optimization will keep the
+data inside the object, avoiding a call to `malloc`; the standard
+library does this for `string`, but not for `vector`; copying these
+short arrays will then be trivial). It is a bit of work to write our
+own vector class, but I think it's worth it. We will then also be able
+to add some methods that might be useful (`product()`, arithmetic
+operators, etc.)
 
 We should use [*FFTW*](http://www.fftw.org) for the Fourier transform.
 But it's GNU licensed, meaning that we won't be able to include it
@@ -829,30 +955,30 @@ Compile-time vs run-time pixel type identification
 --------------------------------------------------
 
 Currently, *DIPlib* uses run-time identification of an image's pixel
-type, and functions dispatch internally to the appropriate sub-function.
-These sub-functions are generated at compile time through templates
-(C-style: `#include`!). We do not want to go away from this system. The
-alternative, seen in most C++ image analysis libraries (*ITK*, *Vigra*,
-*CImg*, etc.), is to define the image class, as well as
-most functions, as templates. The user declares an image having a specific data type,
-and the compiler then creates an image class with that data type for the
-pixels, as well as instances of all functions called with this image as
-input. This takes time. Compiling even a trivial program that uses
-*CImg* takes a minute, rather than a fraction of a second it takes to
-compile a trivial program that uses *DIPlib* (I do not have experience
-compiling *Vigra* or *ITK* programs, but presumably these also slow down
-compilation significantly). Writing most functionality as templates
-implies that most code is actually in the header files, rather than in
-the source files. This functionality then ends up in the application
-executable, rather than in an independent library file (shareable among
-many applications).
+type, and functions dispatch internally to the appropriate
+sub-function. These sub-functions are generated at compile time through
+templates (C-style: `#include`!). We do not want to go away from this
+system. The alternative, seen in most C++ image analysis libraries
+(*ITK*, *Vigra*, *CImg*, etc.), is to define the image class, as well
+as most functions, as templates. The user declares an image having a
+specific data type, and the compiler then creates an image class with
+that data type for the pixels, as well as instances of all functions
+called with this image as input. This takes time. Compiling even a
+trivial program that uses *CImg* takes a minute, rather than a fraction
+of a second it takes to compile a trivial program that uses *DIPlib* (I
+do not have experience compiling *Vigra* or *ITK* programs, but
+presumably these also slow down compilation significantly). Writing
+most functionality as templates implies that most code is actually in
+the header files, rather than in the source files. This functionality
+then ends up in the application executable, rather than in an
+independent library file (shareable among many applications).
 
 However, the largest disadvantage happens when creating an (even
 slightly) general image analysis program: you need to write code that
-allows the user of your program to select the image data type, and write
-code that does all the right dispatching depending on the data type.
-Alternatively, you have to restrict the data type to one choice. A
-library is meant to take away work from the programmer using the
+allows the user of your program to select the image data type, and
+write code that does all the right dispatching depending on the data
+type. Alternatively, you have to restrict the data type to one choice.
+A library is meant to take away work from the programmer using the
 library, so it is logical that *DIPlib* should allow all data types and
 do the dispatching as necessary. After all, *DIPlib* is meant as a
 foundation for *DIPimage* and similar general-purpose image analysis
@@ -872,13 +998,13 @@ complex values?). Instead, we simply convert the input array to a
 image class, but has another image class (virtual base class?) that the
 programmer typically uses. Thus, functions are compiled in the library,
 and do dispatching internally, as *DIPlib* does (not sure if they use
-RTTI or some other mechanism). However, I have seen functions explicitly
-defined for only a small subset of types (typically only uint8, uint16,
-sint16, or something like that). In *DIPlib* we aim at having as broad a
-type support as makes sense.
+RTTI or some other mechanism). However, I have seen functions
+explicitly defined for only a small subset of types (typically only
+uint8, uint16, sint16, or something like that). In *DIPlib* we aim at
+having as broad a type support as makes sense.
 
-I'd like *DIPlib* to expose as few templates to the user (programmer) as
-possible.
+I'd like *DIPlib* to expose as few templates to the user (programmer)
+as possible.
 
 
 Placement of output image argument in function calls
@@ -894,11 +1020,10 @@ The current *DIPlib* uses \#1 (but returning an error code). Both have
 advantages and disadvantages. With \#1 you can do in-place operations
 simply by giving the same image as input and output; you can also force
 the data type of the output by setting the "don't adjust" flag as
-described [earlier][The Image object]. For external
-interfaces, which want to control the allocation of data blocks by
-assigning a forge handler to an image, \#1 is the only choice. But with
-\#2 you can chain function calls without having to define intermediate
-variables:
+described [earlier][The Image object]. For external interfaces, which
+want to control the allocation of data blocks by assigning a forge
+handler to an image, \#1 is the only choice. But with \#2 you can chain
+function calls without having to define intermediate variables:
 
     dip::Gauss( dip::Gauss( in, params1 ), params2 );
 
@@ -919,26 +1044,26 @@ This allows both forms for the same function.
 Passing options to a function
 -----------------------------
 
-The *MMorph* library uses strings instead of `#defined` constants to pass
-options to functions: `dip::Fourier( in, out, "forward" )` instead of
-`dip::Fourier( in, out, dip::ft_dir::FORWARD )`. This has two advantages:
-it is easier to generate interfaces to MATLAB and Python (less code in
-the interface), and there are fewer `enum` definitions in the header
-files, and thus fewer possibilities for name clashes. The disadvantage
-is that the function needs to do string comparisons rather than integer
-comparisons when parsing input arguments. I don't really think this adds
-much of an overhead.
+The *MMorph* library uses strings instead of `#defined` constants to
+pass options to functions: `dip::Fourier( in, out, "forward" )` instead
+of `dip::Fourier( in, out, dip::ft_dir::FORWARD )`. This has two
+advantages: it is easier to generate interfaces to MATLAB and Python
+(less code in the interface), and there are fewer `enum` definitions in
+the header files, and thus fewer possibilities for name clashes. The
+disadvantage is that the function needs to do string comparisons rather
+than integer comparisons when parsing input arguments. I don't really
+think this adds much of an overhead.
 
 In short, as much of the parameter parsing that we currently do in
 *DIPimage* should be done in *DIPlib*, so that the C++ program looks
 more like the current MATLAB scripts.
 
 Currently, there are quite a few functions that use a bit field as an
-input argument. The bits are defined by an `enum`, but their combination
-(through the `|` operator) is not part of the `enum`, and consequently fires
-a compiler warning. We can do three things here: use an actual `bitfield`
-class (are `&` and `|` operators applicable?), use a compound string, or use
-a string array:
+input argument. The bits are defined by an `enum`, but their
+combination (through the `|` operator) is not part of the `enum`, and
+consequently fires a compiler warning. We can do three things here: use
+an actual `bitfield` class (are `&` and `|` operators applicable?), use
+a compound string, or use a string array:
 
 1. `struct param { int a:1, int b:1 };`
 
@@ -1024,9 +1149,10 @@ Python interface
 We will define a Python class as a thin layer over the `dip::Image` C++
 object. Allocating, indexing, etc. etc. through calls to C++. We'd
 create a method to convert to and from *NumPy* arrays, simply passing
-the pointer to the data. We'd have to make sure that deallocation occurs
-in the right place (data ownership). A *DIPlib* function to extract a 2D
-slice ready for display would be needed also, make display super-fast!
+the pointer to the data. We'd have to make sure that deallocation
+occurs in the right place (data ownership). A *DIPlib* function to
+extract a 2D slice ready for display would be needed also, make display
+super-fast!
 
 
 MATLAB interface
@@ -1040,13 +1166,13 @@ The MATLAB toolbox will be significantly simplified:
 -   Basically, all the code from that library will sit in a single
     header file to be included in each of the MEX-files:
 
-    -   Casting an `mxArray` input to: `Image`, `IntegerArray`, `FloatArray`,
-        `String`, `sint`, `uint`, or `double`.
+    -   Casting an `mxArray` input to: `Image`, `IntegerArray`,
+        `FloatArray`, `String`, `sint`, `uint`, or `double`.
 
     -   Casting those types to an `mxArray` output.
 
--   We won't need to convert strings to `enum`s, as [that will be done in
-    the *DIPlib* library][Passing options to a function].
+-   We won't need to convert strings to `enum`s, as [that will be done
+    in the *DIPlib* library][Passing options to a function].
 
 -   Some MEX-files will have more elaborate data conversion, as is the
     case now (e.g. `dip_measure`).

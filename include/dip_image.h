@@ -8,7 +8,7 @@
 
 // This file is included through diplib.h
 #ifndef DIPLIB_H
-#include "diplib.h"
+#error "Please don't include this file directly, include diplib.h instead."
 #endif
 
 #ifndef DIP_IMAGE_H
@@ -19,29 +19,43 @@
 
 namespace dip {
 
-
 //
 // Support functions that are needed in class Image
 //
 
-// Makes a new image object pointing to same pixel data as 'src', but with different origin, strides and size.
-void DefineROI( Image& dest, const Image& src, const UnsignedArray& origin, const UnsignedArray& dims, const IntegerArray& spacing );
+// I hope this section can end up elsewhere. I don't like needing the
+// forward declaration.
+
+class Image;      // Forward declaration.
+
+/// Makes a new image object pointing to same pixel data as `src`, but
+/// with different origin, strides and size.
+void DefineROI(
+   const Image& src,
+   Image& dest,
+   const UnsignedArray& origin,
+   const UnsignedArray& dims,
+   const IntegerArray& spacing );
 
 // Gateway to all the arithmetic functionality
+// Maybe this should be many different functions. The old DIPlib had
+// a single function here, but I'm not sure why.
 inline void Arithmetic( const Image& lhs, const Image& rhs, Image& out, String op, DataType dt ) {}; // Should be defined elsewhere, the "inline" and "{}" here is to avoid a linker warning for now.
 
 
 
 //
-// Support for external interfaces:
-// Software using DIPlib might want to control how pixel data is allocated.
+// Support for external interfaces
 //
 
-// A class derived from this one will do all we need it to do. Assign into
-// the image object through Image::SetExternalInterface().
-// The caller will maintain ownership of the interface!
+/// Support for external interfaces. Software using DIPlib might want to
+/// control how the image data is allocated. Such software should derive
+/// a class from this one, and assign a pointer to it into each of the
+/// images that it creates, through Image::SetExternalInterface().
+/// The caller will maintain ownership of the interface.
 class ExternalInterface {
    public:
+      /// Allocates the data for an image.
       virtual std::shared_ptr<void> AllocateData(const UnsignedArray& dims,
                                                  IntegerArray& strides,
                                                  Tensor& tensor,
@@ -55,6 +69,7 @@ class ExternalInterface {
 // The Image class
 //
 
+// The class is documented in the file src/documentation/image.md
 class Image {
 
    public:
@@ -71,7 +86,7 @@ class Image {
       // Other constructors
       //
 
-      // Empty (forged) image of given sizes.
+      /// Forged image of given sizes and data type.
       explicit Image( UnsignedArray d, uint nchan = 1, DataType dt = DT_SFLOAT ) :
          datatype(dt),
          dims(d),
@@ -80,7 +95,7 @@ class Image {
          Forge();
       }
 
-      // Empty (forged) image similar to src, but with different data type.
+      /// Forged image similar to `src`, but with different data type; the data is not copied.
       Image( const Image& src, DataType dt ) :
          datatype(dt),
          dims(src.dims),
@@ -94,28 +109,29 @@ class Image {
          Forge();
       }
 
-      // Creates a new image pointing to data of 'src'.
+      /// Create a new image sharing the data of `src`.
       Image( const Image& src,
              const UnsignedArray& origin,
              const UnsignedArray& dims,
              const IntegerArray& spacing );
 
-      // Creates a 0-D image with the value of 'p'.
-      Image( double p, DataType dt = DT_SFLOAT ) :
+      /// Create a 0-D image with the value of `p`.
+      explicit Image( double p, DataType dt = DT_SFLOAT ) :
          datatype(dt)
       {
          Forge();       // dims is empty by default
          // TODO: write data. There's sure to be a good way to do so later on.
+         // operator=( p );
       }
 
-      // Creates an image around existing data.
+      /// Create an image around existing data.
       Image( std::shared_ptr<void> data,
              DataType dt,
              const UnsignedArray& d,            // dimensions
              const IntegerArray& s,             // strides
              const Tensor& t,                   // tensor properties
              sint ts ,                          // tensor stride
-             ExternalInterface* ei ) :
+             ExternalInterface* ei = nullptr ) :
          datatype(dt),
          dims(d),
          strides(s),
@@ -130,7 +146,7 @@ class Image {
          origin = (uint8*)datablock.get() + start * dt.SizeOf();
       }
 
-      // Creates an image with the external_interface set.
+      /// Creates an image with the ExternalInterface set.
       explicit Image( ExternalInterface* ei ) : external_interface(ei) {}
 
       //
@@ -140,18 +156,18 @@ class Image {
       // TODO: We use the old DIPlib names here, I would prefer the
       // getters to have a name without "Get": img.Dimensionality(), img.Sizes(), img.Strides(), etc.
 
-      // Get the number of spatial dimensions
-      uint GetDimensionality() const {
+      /// Get the number of spatial dimensions.
+      uint Dimensionality() const {
          return dims.size();
       }
 
-      // Get the spatial dimensions (image size)
-      UnsignedArray GetDimensions() const {
+      /// Get the spatial dimensions (image size).
+      UnsignedArray Dimensions() const {
          return dims;
       }
 
-      // Get the number of pixels
-      uint GetNumberOfPixels() const {
+      /// Get the number of pixels.
+      uint NumberOfPixels() const {
          uint n = 1;
          for( uint ii=0; ii<dims.size(); ++ii ) {
             ThrowIf( ( dims[ii] != 0 ) && ( n > std::numeric_limits<uint>::max() / dims[ii] ),
@@ -161,76 +177,139 @@ class Image {
          return n;
       }
 
-      // Set the spatial dimensions (image size)
+      /// Set the spatial dimensions (image size); the image must be raw.
       void SetDimensions( const UnsignedArray& d ) {
          ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          dims = d;
       }
 
-      // Permute dimensions
-      // Example: {3,1} -> 3rd dimension becomes 1st, 1st dimension becomes 2nd,
-      //                   2nd dimension is removed (only possible if dims[1]==1).
+      /// Permute dimensions. This function allows to re-arrange the dimensions
+      /// of the image in any order. It also allows to remove singleton dimensions
+      /// (but not to add them, should we add that? how?). For example, given
+      /// an image with dimensions `{ 30, 1, 50 }`, and an `order` array of
+      /// `{ 2, 0 }`, the image will be modified to have dimensions `{ 50, 30 }`.
+      /// Dimension number 1 is not referenced, and was removed (this can only
+      /// happen if the dimension has size 1, otherwise an exception will be
+      /// thrown!). Dimension 2 was placed first, and dimension 0 was placed second.
+      ///
+      /// The image must be forged. If it is not, you can simply assign any
+      /// new dimensions array through Image::SetDimensions. The data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see SwapDimensions, Squeeze, AddSingleton, ExpandDimensionality, Flatten.
       Image& PermuteDimensions( const UnsignedArray& order );
 
-      // Swap dimensions d1 and d2
+      /// Swap dimensions d1 and d2. This is a simplified version of the
+      /// PermuteDimensions.
+      ///
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see PermuteDimensions.
       Image& SwapDimensions( uint d1, uint d2 );
 
-      // Make image 1D, if !HasContiguousData(), data block will be copied
+      /// Make image 1D. The image must be forged. If HasContiguousData,
+      /// this is a quick and cheap operation, but if not, the data segment
+      /// will be copied.
+      ///
+      /// \see PermuteDimensions, ExpandDimensionality.
       Image& Flatten();
 
-      // Removes singleton dimensions (dimensions with size==1)
+      /// Remove singleton dimensions (dimensions with size==1).
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see AddSingleton, ExpandDimensionality, PermuteDimensions.
       Image& Squeeze();
 
-      // Adds a singleton dimension (with size==1), dimensions dim to
-      // last are shifted up.
-      // Example: an image with dims {4,5,6}, we add singleton dimension
-      // dim=1, leaves the image with dims {4,1,5,6}.
+      /// Add a singleton dimension (with size==1) to the image.
+      /// Dimensions `dim` to last are shifted up, dimension `dim` will
+      /// have a size of 1.
+      ///
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// Example: to an image with dimensions `{ 4, 5, 6 }` we add a
+      /// singleton dimension `dim == 1`. The image will now have
+      /// dimensions `{ 4, 1, 5, 6 }`.
+      ///
+      /// \see Squeeze, ExpandDimensionality, PermuteDimensions.
       Image& AddSingleton( uint dim );
 
-      // Appends singleton dimensions to increase the image dimensionality
-      // to n. If the image already has n or more dimensions, nothing happens.
+      /// Append singleton dimensions to increase the image dimensionality.
+      /// The image will have `n` dimensions. However, if the image already
+      /// has `n` or more dimensions, nothing happens.
+      ///
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see AddSingleton, Squeeze, PermuteDimensions, Flatten.
       Image& ExpandDimensionality( uint n );
 
-      // Mirror de image about selected axes
+      /// Mirror de image about selected axes.
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
       Image& Mirror( BooleanArray& process );
 
       //
       // Strides
       //
 
-      IntegerArray GetStrides() const {
+      /// Get the strides array.
+      IntegerArray Strides() const {
          return strides;
       }
 
-      uint GetTensorStride() const {
+      /// Get the tensor stride.
+      uint TensorStride() const {
          return tstride;
       }
 
+      /// Set the strides array; the image must be raw.
       void SetStrides( const IntegerArray& s ) {
          ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          strides = s;
       }
 
+      /// Set the tensor stride; the image must be raw.
       void SetTensorStride( sint ts ) {
          ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          tstride = ts;
       }
 
-      // Test if all the pixels are contiguous (i.e. you can traverse
-      // the whole image using a single stride==1.
+      /// Test if all the pixels are contiguous.
+      /// If all pixels are contiguous, you can traverse the whole image,
+      /// accessing each of the tensor elements in each of the pixles,
+      /// using a single stride with a value of 1. To do so, you don't
+      /// necessarily start at the origin; if any of the strides is
+      /// negative, the origin of the contiguous data will be elsewhere.
+      /// Use GetSimpleStrideAndOrigin to get a pointer to the origin
+      /// of the contiguous data. Note that, in this case, the tensor
+      /// values will be treated line one more spatial dimension.
+      ///
+      /// The image must be forged.
+      /// /see GetSimpleStrideAndOrigin, HasSimpleStride, HasNormalStrides, Strides, TensorStride.
       bool HasContiguousData() const {
          ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         uint size = GetNumberOfPixels() * GetTensorElements();
+         uint size = NumberOfPixels() * TensorElements();
          sint start;
          uint sz;
          GetDataBlockSizeAndStart( sz, start );
          return sz == size;
       }
 
-      // Test if strides are as by default
+      /// Test if strides are as by default; the image must be forged.
       bool HasNormalStrides() const;
 
-      // Test if the whole image can be travesed with a single stride value
+      /// Test if the whole image can be traversed with a single stride
+      /// value. This is similar to HasContiguousData, but the stride
+      /// value can be larger than 1.
+      /// Use GetSimpleStrideAndOrigin to get a pointer to the origin
+      /// of the contiguous data. Note that, in this case, the tensor
+      /// values will be treated line one more spatial dimension.
+      ///
+      /// The image must be forged.
+      /// /see GetSimpleStrideAndOrigin, HasContiguousData, HasNormalStrides, Strides, TensorStride.
       bool HasSimpleStride() const {
          void* p;
          uint s;
@@ -238,9 +317,13 @@ class Image {
          return s>0;
       }
 
-      // Return a pointer to the start of the data and a single stride to
-      // walk through all pixels. If this is not possible, stride==0 and
-      // porigin==nullptr.
+      /// Return a pointer to the start of the data and a single stride to
+      /// walk through all pixels and all tensor elements.
+      /// If this is not possible, the function sets `stride==0` and
+      /// `porigin==nullptr`.
+      ///
+      /// The image must be forged.
+      /// /see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
       void GetSimpleStrideAndOrigin( uint& stride, void*& origin ) const;
 
       // Compute linear index given coordinates
@@ -253,37 +336,61 @@ class Image {
       // Tensor
       //
 
-      UnsignedArray GetTensorDimensions() const {
+      /// Get the tensor dimensions; the array returned can have 0, 1 or
+      /// 2 elements, as those are the allowed tensor dimensionalities.
+      UnsignedArray TensorDimensions() const {
          return tensor.Dimensions();
       }
-      uint GetTensorElements() const {
+
+      /// Get the number of tensor elements, the product of the elements
+      /// in the array returned by TensorDimensions.
+      uint TensorElements() const {
          return tensor.Elements();
       }
-      uint GetTensorColumns() const {
+
+      /// Get the number of tensor columns.
+      uint TensorColumns() const {
          return tensor.Columns();
       }
-      uint GetTensorRows() const {
+
+      /// Get the number of tensor rows.
+      uint TensorRows() const {
          return tensor.Rows();
       }
+
+      /// True for non-tensor (grey-value) images.
       bool IsScalar() const {
          return tensor.IsScalar();
       }
+
+      /// True for vector images, where the tensor is one-dimensional.
       bool IsVector() const {
          return tensor.IsVector();
       }
 
+      /// Set tensor dimensions; the image must be raw.
       void SetTensorDimensions( const UnsignedArray& tdims ) {
+         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          tensor.SetDimensions( tdims );
       }
 
-      void ReshapeTensor( uint rows, uint cols ) { // Make into a matrix
+      /// Change the tensor shape, without changing the number of tensor elements.
+      // NOTE: this currently forces the tensor to be a matrix. We should maybe
+      // modify the Tensor class so that matrices with one of the dimensions==1
+      // are marked as being vectors automatically. Thus setting the shape to
+      // {1,3} will make this a row vector.
+      void ReshapeTensor( uint rows, uint cols ) {
          ThrowIf( tensor.Elements() != rows*cols, "Cannot reshape tensor to requested dimensions." );
          tensor.ChangeShape( rows );
       }
-      void ReshapeTensorAsVector() {               // Make into a vector
+
+      /// Change the tensor to a vector, without changing the number of tensor elements.
+      void ReshapeTensorAsVector() {
          tensor.ChangeShape();
       }
-      void Transpose() {                           // Transpose the tensor
+
+      /// Transpose the tensor.
+      void Transpose
          tensor.Transpose();
       }
 
@@ -291,11 +398,15 @@ class Image {
       // Data Type
       //
 
-      DataType GetDataType() const {
+      // From this point on, we must refer to the DataType type as
+      // `struct DataType`, because we've hidden it with the declaration
+      // of the function `DataType`.
+
+      struct DataType DataType() const {
          return datatype;
       }
 
-      void SetDataType( DataType dt ) {
+      void SetDataType( struct DataType dt ) {
          ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          datatype = dt;
       }
@@ -327,60 +438,104 @@ class Image {
       // Utility functions
       //
 
-      // Compares properties of an image against a template, either
-      // returns true/false or throws an error.
-      bool Compare( const Image&, bool error=true ) const;
+      /// Compare properties of an image against a template, either
+      /// returns true/false or throws an error.
+      bool Compare( const Image& src, bool error=true ) const;
 
-      // Checks image properties, either returns true/false or throws an error.
-      bool Check( const uint ndims, const DataType dt, bool error=true ) const;
+      /// Check image properties, either returns true/false or throws an error.
+      bool Check( const uint ndims, const struct DataType dt, bool error=true ) const;
 
-      // Copy all image properties
-      void CopyProperties( const Image& img ) {
+      /// Copy all image properties from `src`; the image must be raw.
+      void CopyProperties( const Image& src ) {
          ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-         datatype       = img.datatype;
-         dims           = img.dims;
-         strides        = img.strides;
-         tensor         = img.tensor;
-         color_space    = img.color_space;
-         physdims       = img.physdims;
+         datatype       = src.datatype;
+         dims           = src.dims;
+         strides        = src.strides;
+         tensor         = src.tensor;
+         color_space    = src.color_space;
+         physdims       = src.physdims;
          if( !external_interface )
-            external_interface = img.external_interface;
+            external_interface = src.external_interface;
       }
 
-      // Make this image similar to the template (except for the extenal interface)
-      void Assimilate( const Image& img ) {
+      /// Make this image similar to the template by copying all its
+      /// properties, but not the data.
+      void Assimilate( const Image& src ) {
          Strip();
-         CopyProperties( img );
+         CopyProperties( src );
          Forge();
       }
 
-      // Does this image share its data pointer with another image?
-      bool SharesData( const Image& other ) const {
-         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
-         return datablock == other.datablock;
-      }
-      bool SharesData() const {
-         return !datablock.unique();
-      }
-
-      // Does writing in this image change the data of the other image?
+      /// Determine if this image shares any pixels with `other`.
+      /// If `true`, writing into this image will change the data in
+      /// `other`, and vice-versa.
+      ///
+      /// Both images must be forged.
+      /// \see SharesData.
       bool Aliases( const Image& other ) const;
 
       //
       // Data
       //
 
-      // Get data pointer
-      void* GetData() const {
+      /// Get pointer to the data segment. This is useful to identify
+      /// the data segment, but not to access the pixel data stored in
+      /// it. Use Origin instead. The image must be forged.
+      /// \see Origin, IsShared, ShareCount, SharesData.
+      void* Data() const {
+         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         return datablock.get();
+      }
+
+      /// Check to see if the data segment is shared with other images.
+      /// The image must be forged.
+      /// \see Data, ShareCount, SharesData.
+      bool IsShared() const {
+         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         return !datablock.unique();
+      }
+
+      /// Get the number of images that share their data with this image.
+      /// The count is always at least 1. If the count is 1, IsShared is
+      /// false. The image must be forged.
+      /// \see Data, IsShared, SharesData.
+      uint ShareCount() const {
+         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         return !datablock.use_count();
+      }
+
+      /// Determine if this image shares its data pointer with `other`.
+      /// Both images must be forged.
+      ///
+      /// Note that sharing the data pointer
+      /// does not imply that the two images share any pixel data, as it
+      /// is possible for the two images to represent disjoint windows
+      /// into the same data block. To determine if any pixels are shared,
+      /// use Aliases.
+      ///
+      /// \see Aliases, Data, IsShared, ShareCount.
+      bool SharesData( const Image& other ) const {
+         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
+         return datablock == other.datablock;
+      }
+
+      /// Get pointer to the first pixel in the image, at coordinates (0,0,0,...);
+      /// the image must be forged.
+      void* Origin() const {
          ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          return origin;
       }
 
-      // Allocate pixels
+      /// Allocate data segment. This function allocates a memory block
+      /// to hold the pixel data. If the stride array is consistent with
+      /// size array, and leads to a compact memory block, it is honored.
+      /// Otherwise, it is ignored and a new stride array is created that
+      /// leads to an image that HasNormalStrides.
       void Forge();
 
-      // Deallocate pixels
+      /// Dissasociate the data segment from the image. If there are no
+      /// other images using the same data segment, it will be freed.
       void Strip() {
          if( IsForged() ) {
             datablock = nullptr; // Automatically frees old memory if no other pointers to it exist.
@@ -388,7 +543,7 @@ class Image {
          }
       }
 
-      // Test if forged
+      /// Test if forged.
       bool IsForged() const {
          if( origin )
             return true;
@@ -396,23 +551,33 @@ class Image {
             return false;
       }
 
-      // Set external interface pointer
+      /// Set external interface pointer; the image must be raw.
       void SetExternalInterface( ExternalInterface* ei ) {
          ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          external_interface = ei;
       }
 
-      Image operator[]( const UnsignedArray& );       // Indexing in tensor dimensions
+      /// Extract a tensor element, `indices` must have one or two elements; the image must be forged.
+      Image operator[]( const UnsignedArray& indices );
 
-      Image operator[]( uint );                       // Indexing in tensor dimensions (linear indexing)
+      /// Extract a tensor element using linear indexing; the image must be forged.
+      Image operator[]( uint index );
 
-      Pixel at( const UnsignedArray& );               // Indexing in spatial dimensions
+      /// Extracts the tensor elements along the diagonal; the image must be forged.
+      Image Diagonal();
 
-      Pixel at( uint );                               // Indexing in spatial dimensions (linear indexing)
+      /// Extracts the pixel at the given coordinages; the image must be forged.
+      Image At( const UnsignedArray& );
 
-      void Copy( Image& img );                        // Deep copy. 'this' will become a copy of 'img' with its own data.
+      /// Extracts the pixel at the given linear index; the image must be forged.
+      Image At( uint );
 
-      void ConvertDataType( Image&, DataType );       // Deep copy with data type conversion.
+      // Deep copy. 'this' will become a copy of 'img' with its own data.
+      void Copy( Image& img );
+
+      // Deep copy with data type conversion.
+      void ConvertDataType( Image&, struct DataType );
+
 
       //
       // Operators
@@ -463,7 +628,7 @@ class Image {
       // Implementation
       //
 
-      DataType datatype = DT_SFLOAT;
+      struct DataType datatype = DT_SFLOAT;
       UnsignedArray dims;                 // dims.size == ndims
       IntegerArray strides;               // strides.size == ndims
       Tensor tensor;
@@ -481,12 +646,7 @@ class Image {
       // Some private functions
       //
 
-      bool HasValidStrides() const {      // Are the two strides arrays of the same size as the dims arrays?
-         if( dims.size() != strides.size() ) {
-            return false;
-         }
-         return true;
-      }
+      bool HasValidStrides() const;       // Are the two strides arrays of the same size as the dims arrays?
 
       void ComputeStrides();              // Fill in both strides arrays.
 
@@ -502,7 +662,7 @@ typedef std::vector<Image&> ImageRefArray;
 
 
 //
-//Functions to work with image properties
+// Functions to work with image properties
 //
 
 bool ImagesCompare( const ImageArray&, bool throw_exception = true );

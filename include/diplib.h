@@ -10,18 +10,19 @@
 #ifndef DIPLIB_H
 #define DIPLIB_H
 
-/// The dip namespace contains all the library funcionality.
-namespace dip {
-   class Image;      // Forward declaration, for use by some functions
-                     // declared in header files that are loaded before
-                     // dip_image.h.
-}
+/// \file
+/// This is the main include file for the DIPlib library. It contains
+/// definitions of the core classes in the \ref dip namespace,
+/// declarations of the most commonly used library functions, and
+/// definitions of some simple inline functions. Include other header
+/// files as needed for additional library functionality. The documentation
+/// will indicate which header file to include for each function.
 
 #include "dip_error.h"
 #include "dip_datatype.h"
 #include "dip_support.h"
 #include "dip_tensor.h"
-#include "dip_pixel.h"
+//#include "dip_pixel.h" // TODO: delete the pixel class files.
 #include "dip_image.h"
 
 #endif // DIPLIB_H

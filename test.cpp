@@ -13,13 +13,14 @@ static void dip__MyFunction( void* vin ) {
 }
 
 void MyFunction( dip::Image image ) {
-   dip::DataType dt = image.GetDataType();
-   void* in = nullptr; // image.GetData();
-   DIP_OVL_CALL_ALL( dip__MyFunction, (in), dt );
+   dip::DataType dt = image.DataType();
+   void* in = nullptr; // image.Data();
+   DIP_OVL_CALL_ALL( dip__MyFunction, (in), dt )
 }
 
 
 int main() {
+   // Forging with various strides
    {
    dip::Image img;
    std::cout << img;
@@ -33,12 +34,19 @@ int main() {
    img.Forge();
    std::cout << img;
    }
+   // Calling a function with overloads
    dip::Image img;
+   img.SetDataType(dip::DT_BIN);
+   MyFunction(img);
    img.SetDataType(dip::DT_UINT8);
    MyFunction(img);
    img.SetDataType(dip::DT_SINT32);
    MyFunction(img);
    img.SetDataType(dip::DT_SFLOAT);
    MyFunction(img);
+   img.SetDataType(dip::DT_DCOMPLEX);
+   MyFunction(img);
+   //
+
    return 1;
 }

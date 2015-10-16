@@ -640,7 +640,7 @@ ENABLED_SECTIONS       =
 # documentation regardless of this setting.
 # Minimum value: 0, maximum value: 10000, default value: 30.
 
-MAX_INITIALIZER_LINES  = 30
+MAX_INITIALIZER_LINES  = 300
 
 # Set the SHOW_USED_FILES tag to NO to disable the list of files generated at
 # the bottom of the documentation of classes and structs. If set to YES, the
@@ -654,7 +654,7 @@ SHOW_USED_FILES        = NO
 # (if specified).
 # The default value is: YES.
 
-SHOW_FILES             = NO
+SHOW_FILES             = YES
 
 # Set the SHOW_NAMESPACES tag to NO to disable the generation of the Namespaces
 # page. This will remove the Namespaces entry from the Quick Index and from the
@@ -992,7 +992,7 @@ USE_HTAGS              = NO
 # See also: Section \class.
 # The default value is: YES.
 
-VERBATIM_HEADERS       = YES
+VERBATIM_HEADERS       = NO
 
 #---------------------------------------------------------------------------
 # Configuration options related to the alphabetical class index
@@ -1947,7 +1947,7 @@ PERLMOD_MAKEVAR_PREFIX =
 # C-preprocessor directives found in the sources and include files.
 # The default value is: YES.
 
-ENABLE_PREPROCESSING   = NO
+ENABLE_PREPROCESSING   = YES
 
 # If the MACRO_EXPANSION tag is set to YES, doxygen will expand all macro names
 # in the source code. If set to NO, only conditional compilation will be

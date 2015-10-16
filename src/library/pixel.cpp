@@ -12,35 +12,11 @@
 
 using namespace dip;
 
+// Casting a Pixel to dcomplex.
+
 template< typename TPI >
 inline dcomplex CastValueComplex( void* p ) {
    return (dcomplex)*((TPI*)p);
-}
-
-template< typename TPI >
-inline dfloat CastValueDouble( void* p ) {
-   return (dfloat)*((TPI*)p);
-}
-template<>
-inline dfloat CastValueDouble< dcomplex >( void* p ) {
-   return (dfloat)std::abs(*((dcomplex*)p));
-}
-template<>
-inline dfloat CastValueDouble< scomplex >( void* p ) {
-   return (dfloat)std::abs(*((scomplex*)p));
-}
-
-template< typename TPI >
-inline sint CastValueInteger( void* p ) {
-   return (sint)*((TPI*)p);
-}
-template<>
-inline sint CastValueInteger< dcomplex >( void* p ) {
-   return (sint)std::abs(*((dcomplex*)p));
-}
-template<>
-inline sint CastValueInteger< scomplex >( void* p ) {
-   return (sint)std::abs(*((scomplex*)p));
 }
 
 Pixel::operator dcomplex() const{
@@ -49,10 +25,35 @@ Pixel::operator dcomplex() const{
    return x;
 }
 
+// Casting a Pixel to dfloat.
+
+inline dfloat dip__todfloat( dfloat v ) { return v; }
+
+template< typename T >
+inline dfloat dip__todfloat( std::complex< T > v ) { return std::abs(v); }
+
+template< typename TPI >
+inline dfloat CastValueDouble( void* p ) {
+   return dip__todfloat(*((TPI*)p));
+}
+
 Pixel::operator dfloat() const{
    dfloat x;
    DIP_OVL_CALL_ASSIGN_ALL( x, CastValueDouble, ( origin ), datatype );
    return x;
+}
+
+// Casting a Pixel to sint.
+// I hope sfloat is converted to sint implicitly, rather than to scomplex.
+
+inline sint dip__tosint( sint v )   { return v; }
+
+template< typename T >
+inline sint dip__tosint( std::complex< T > v ) { return (sint)std::abs(v); }
+
+template< typename TPI >
+inline sint CastValueInteger( void* p ) {
+   return dip__tosint(*((TPI*)p));
 }
 
 Pixel::operator sint() const {

@@ -8,7 +8,7 @@
 
 // This file is included through diplib.h
 #ifndef DIPLIB_H
-#include "diplib.h"
+#error "Please don't include this file directly, include diplib.h instead."
 #endif
 
 #ifndef DIP_DATATYPE_H
@@ -225,6 +225,8 @@ constexpr DataType DT_DCOMPLEX  { DataType::DT::DCOMPLEX };
 //
 // Functions to suggest an output data type for all types of filters and operators
 //
+
+class Image;      // Forward declaration.
 
 /// Returns a suitable floating-point type that can hold the data in `img`.
 DataType DataTypeSuggest_Float(const Image& img);

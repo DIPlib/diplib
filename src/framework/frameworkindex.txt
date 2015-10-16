@@ -1,4 +1,4 @@
-﻿dip_framework.c:  dip_SeparableFrameWork        // Calls dip__Framework() [ DIP_FRAMEWORK_SEPARABLE_FILTER & DIP_FRAMEWORK_TWO_LINES_SEPARABLE_FILTER ]
+dip_framework.c:  dip_SeparableFrameWork        // Calls dip__Framework() [ DIP_FRAMEWORK_SEPARABLE_FILTER & DIP_FRAMEWORK_TWO_LINES_SEPARABLE_FILTER ]
 
 dip_framework.c:  dip_MonadicFrameWork          // Calls dip__Framework()
 dip_monadicp.c:   dip_MonadicPoint              // Calls dip_MonadicFrameWork()
