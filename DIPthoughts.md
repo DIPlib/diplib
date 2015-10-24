@@ -10,8 +10,8 @@ Implementation notes and thoughts
 * [Indexing syntax - tensor dimensions]
 * [Indexing syntax - spatial dimensions]
 * [Initializing values of small images/pixel objects]
+* [Physical units]
 * [Arithmetic and comparisons]
-* [Class method vs function]
 * [Library initialisation and global variables]
 * [Parallelisation]
 * [Measurement]
@@ -19,14 +19,17 @@ Implementation notes and thoughts
 * [Function overloading]
 * [Frameworks]
 * [Alias handler]
-* [Physical units]
-* [3^rd^ party libraries]
-* [Compile-time vs run-time pixel type identification]
-* [Placement of output image argument in function calls]
-* [Passing options to a function]
 * [Functionality currently not in *DIPlib* that would be important to include]
 * [Python interface]
 * [MATLAB interface]
+
+Design considerations:
+
+* [3^rd^ party libraries]
+* [Class method vs function]
+* [Compile-time vs run-time pixel type identification]
+* [Placement of output image argument in function calls]
+* [Passing options to a function]
 
 
 Support
@@ -115,7 +118,18 @@ produce a floating-point output, to produce an integer output instead.
 This beats adding "output data type" parameters to functions, as the
 functionality is out of the way unless one is interested in it.
 
+Lastly, images also contain a color space flag and additional
+information (see [Colour space conversion]), and information about
+the size of pixels in physical units (see [Physical units]).
 
+See these sections for more details on the image object, and design
+considerations:
+* [Tensor dimensions]
+* [Indexing syntax - tensor dimensions]
+* [Indexing syntax - spatial dimensions]
+* [Initializing values of small images/pixel objects]
+* [Physical units]
+* [Compile-time vs run-time pixel type identification]
 
 
 Tensor dimensions
@@ -131,10 +145,11 @@ etc.).
 
 There are two possible ways of implementing tensor images:
 
-1. add two `dip::IntegerArrays` to the image object: `tensordimensions`
-   and `tensorstrides`.
+1. Add two `dip::IntegerArrays` to the image object: `tensordimensions`
+   and `tensorstrides`. This means tensor dimensions work exactly like
+   spatial dimensions, and have no explicit limitations.
 
-2. add an `int ntensorelements`, an `int tensorrows`, an `int tensorstride`,
+2. Add an `int ntensorelements`, an `int tensorrows`, an `int tensorstride`,
    and an `enum class tensorshape` to the image object. `tensorshape`
    would contain options such as `scalar`, `columnvector`, `rowvector`,
    `matrix_rowmajor`, `matrix_columnmajor`, `symmetricmatrix`,
@@ -429,6 +444,49 @@ like this could work, with a `std::initializer_list` object in there:
                                  //    in the data block.
 
 
+Physical units
+--------------
+
+The image object should contain a `physDims` structure. This structure
+maybe should also contain the absolute position of the origin.
+Manipulation functions will update this (e.g. resampling changes
+physical dimensions of the pixel). For some functions this is
+difficult:
+
+- Rotate: what if the two dimensions being intermingled have different
+  `physDims`?
+
+- The Fourier transform should set `physDims[i] :=
+  size[i]/physDims[i]` (or something like that).
+
+Parameters to functions (filter sizes, etc.) should still be in pixels,
+but sometimes we want to give them in physical dimensions. We can solve
+this with a method of the `physDims` structure:
+
+    dip::FloatArray sigmas { 45, 45 }; // sigmas in physical units (say micron)
+    dip::Gauss( in, out, in.physDims.topixels( sigmas ) );
+                                       // filter size parameter converted to pixels
+
+The measurement function always returns measurements with physical
+units. If physical dimensions are not known, they default to 1 px, and
+the measurement function returns measurements in pixels. Operations
+between images with different physical dimensions leads to units to
+revert to 1 px. Scaling of an image with physical dimensions of 1 px
+does not affect its physical dimensions.
+
+Tensor images have same intensity units for all tensor elements.
+Intensity will most likely be "Arbitrary Density Units" ("ADU"), only
+in very special cases the intensity has physical units (e.g. "photon count").
+Problem: ADU^2^=ADU, ADU\*px=ADU, etc., but we don't want that. Maybe we don't
+even need to store the intensity units. This also saves us from having
+to modify them with every arithmetic operation.
+
+To decide: How do we represent units? A class that knows how to convert
+inches to cm? Do we always use units in SI, and modify the value to
+account for kilo/mili/micro, etc.? In this case, we need to be able to
+automatically add prefixes to the units to make values readable.
+
+
 Arithmetic and comparisons
 --------------------------
 
@@ -486,29 +544,6 @@ efficiently apply the requested computation on each pixel. Which
 operators and functions to allow in there is open for discussion. In
 this example, letter `a` would refer to the first image in the input
 array, letter `b` to the second, etc.
-
-
-Class method vs function
-------------------------
-
-Some libraries put all image processing/analysis functionality into the
-image object as methods. The idea is to filter an image by
-`img.Gauss(sigma)`. This is a terrible idea for many reasons: it's ugly,
-one never knows if the image object is modified by the method, and the
-core include file for the library changes when adding any type of
-functionality, forcing recompilation of the whole library. Filters
-should be functions, not methods.
-
-Image object methods should be those that query image properties, set
-image properties, tweak dimensions, and so on. For example, we can have
-a `IntegerRotation()` method, which changes origin pointer, and strides
-and dimensions arrays, but doesn't change the data, to rotate by a
-multiple of 90 degrees. Similar methods would be `Mirror()`,
-`PermuteDimensions()`, `SwapDimensions()`, `TensorToScalar()`, etc. (a
-better name for that last one? a method that makes tensor dimensions be
-image dimensions, for example converting a 2D RGB image into a 3D
-scalar image). All these methods affect the image object itself, they
-do not make a modified copy.
 
 
 Library initialisation and global variables
@@ -864,47 +899,124 @@ images. We can do that this way in C++:
                                           //     and temporary images are copied to output.
 
 
-Physical units
---------------
+Functionality currently not in *DIPlib* that would be important to include
+--------------------------------------------------------------------------
 
-The image object should contain a `physDims` structure. This structure
-maybe should also contain the absolute position of the origin.
-Manipulation functions will update this (e.g. resampling changes
-physical dimensions of the pixel). For some functions this is
-difficult:
+-   An overlay function that adds a binary or labelled image on top of a
+    grey-value or colour image.
 
-- Rotate: what if the two dimensions being intermingled have different
-  `physDims`?
+-   Stain unmixing for bright-field microscopy
 
-- The Fourier transform should set `physDims[i] :=
-  size[i]/physDims[i]` (or something like that).
+-   Some form of image display for development and debugging. We can
+    have the users resort to third-party libraries or saving
+    intermediate images to file, or we can try to copy *OpenCV*'s image
+    display into *dipIO*.
 
-Parameters to functions (filter sizes, etc.) should still be in pixels,
-but sometimes we want to give them in physical dimensions. We can solve
-this with a method of the `physDims` structure:
+-   Some filters that are trivial to add:
 
-    dip::FloatArray sigmas { 45, 45 }; // sigmas in physical units (say micron)
-    dip::Gauss( in, out, in.physDims.topixels( sigmas ) );
-                                       // filter size parameter converted to pixels
+    -   Scharr (slightly better than Sobel)
 
-The measurement function always returns measurements with physical
-units. If physical dimensions are not known, they default to 1 px, and
-the measurement function returns measurements in pixels. Operations
-between images with different physical dimensions leads to units to
-revert to 1 px. Scaling of an image with physical dimensions of 1 px
-does not affect its physical dimensions.
+    -   h-minima & h-maxima
 
-Tensor images have same intensity units for all tensor elements
-(or???). Intensity will most likely be "Arbitrary Units" ("ADU"), only
-in very special cases the intensity has physical units. Problem:
-ADU^2^=ADU, ADU\*px=ADU, etc., but we don't want that. Maybe we don't
-even need to store the intensity units. This also saves us from having
-to modify them with every arithmetic operation.
+    -   opening by reconstruction
 
-To decide: How do we represent units? A class that knows how to convert
-inches to cm? Do we always use units in SI, and modify the value to
-account for kilo/mili/micro, etc.? In this case, we need to be able to
-automatically add prefixes to the units to make values readable.
+    -   alternating sequential open-close filter (3 versions: with
+        structural opening, opening by reconstruction, and area opening)
+
+-   Dilation/erosion by a rotated line is currently implemented by first
+    skewing the image, applying filter along rows or columns, then
+    skewing back. We can add a 2D-specific version that operates
+    directly over rotated lines. The diamond structuring element can
+    then be decomposed into two of these operations. We can also add
+    approximations of the circle with such lines.
+
+-   Most of the functionality that is now implemented in *DIPimage*
+    only:
+
+    -   automatic threshold determination (Otsu, triangle,
+        background, etc.)
+
+    -   [Colour space conversion]
+
+    -   2D snakes
+
+    -   look-up tables (LUT, both for grey-scale and colour LUTs, using
+        interpolation when input image is float)
+
+    -   general 2D affine transformation, 3D rotation
+
+    -   xx, yy, zz, rr, phiphi, ramp; extend this to coords(), which
+        makes a tensor image.
+
+-   Radon transform for lines and circles, Hough transform for lines
+
+-   Level-set segmentation, graph-cut segmentation
+
+-   The `Label()` function should return the number of labels. It could
+    optionally also return the sizes of the objects, since these are
+    counted anyway.
+
+-   We need to figure out if it is worth it to use loop unrolling for
+    some basic operations.
+
+
+Python interface
+----------------
+
+We will define a Python class as a thin layer over the `dip::Image` C++
+object. Allocating, indexing, etc. etc. through calls to C++. We'd
+create a method to convert to and from *NumPy* arrays, simply passing
+the pointer to the data. We'd have to make sure that deallocation
+occurs in the right place (data ownership). A *DIPlib* function to
+extract a 2D slice ready for display would be needed also, make display
+super-fast!
+
+
+MATLAB interface
+----------------
+
+The MATLAB toolbox will be significantly simplified:
+
+-   No need for the `libdml.so` / `libdml.dll` library, as there are no
+    globals to store, and not much code to compile.
+
+-   Basically, all the code from that library will sit in a single
+    header file to be included in each of the MEX-files:
+
+    -   Casting an `mxArray` input to: `Image`, `IntegerArray`,
+        `FloatArray`, `String`, `sint`, `uint`, or `double`.
+
+    -   Casting those types to an `mxArray` output.
+
+-   We won't need to convert strings to `enum`s, as [that will be done
+    in the *DIPlib* library][Passing options to a function].
+
+-   Some MEX-files will have more elaborate data conversion, as is the
+    case now (e.g. `dip_measure`).
+
+-   The few functions in the current *DIPlib* that use an `ImageArray` as
+    input or output will use tensor images instead.
+
+The M-file code will need to be adapted:
+
+-   The `dip_image` object will not also double as `dip_image_array`
+    (that was a mistake). Instead, tensor images will be a single data
+    block, as they will be in *DIPlib*. Thus, some of the class methods
+    will have to be rewritten, and some functions that use image arrays
+    will have to be adapted. For an array of images, use a cell array.
+    On the other hand, more functionality could be deferred to *DIPlib*.
+
+-   Much of the code for the `dip_measurement` object will change also,
+    as its representation will likely change with the changes in
+    *DIPlib*.
+
+-   The colour conversion code will be replaced with a single call to
+    *DIPlib*, as will some other functionality that will be translated
+    from MATALB to C++. Much of the tensor arithmetic should be done
+    through *DIPlib* also.
+
+-   `dipshow` will be simplified, as simple calls to a *DIPlib* display
+    function will generate the 2D array for display.
 
 
 3^rd^ party libraries
@@ -949,6 +1061,29 @@ could use *Bio-Formats*. How to link to Java from C++?
 library. It's stable, very efficient, and templated like the standard
 library. We will be able to wrap a pixel (with its strides) as an
 *Eigen* matrix and do computations.
+
+
+Class method vs function
+------------------------
+
+Some libraries put all image processing/analysis functionality into the
+image object as methods. The idea is to filter an image by
+`img.Gauss(sigma)`. This is a terrible idea for many reasons: it's ugly,
+one never knows if the image object is modified by the method, and the
+core include file for the library changes when adding any type of
+functionality, forcing recompilation of the whole library. Filters
+should be functions, not methods.
+
+Image object methods should be those that query image properties, set
+image properties, tweak dimensions, and so on. For example, we can have
+a `IntegerRotation()` method, which changes origin pointer, and strides
+and dimensions arrays, but doesn't change the data, to rotate by a
+multiple of 90 degrees. Similar methods would be `Mirror()`,
+`PermuteDimensions()`, `SwapDimensions()`, `TensorToScalar()`, etc. (a
+better name for that last one? a method that makes tensor dimensions be
+image dimensions, for example converting a 2D RGB image into a 3D
+scalar image). All these methods affect the image object itself, they
+do not make a modified copy.
 
 
 Compile-time vs run-time pixel type identification
@@ -1080,123 +1215,3 @@ For internal, low-level functions that are not exposed to the regular
 user nor to MATLAB and Python interfaces, we can keep using the more
 efficient `enum` method (e.g. for parameters to the framework
 functions).
-
-
-Functionality currently not in *DIPlib* that would be important to include
---------------------------------------------------------------------------
-
--   An overlay function that adds a binary or labelled image on top of a
-    grey-value or colour image.
-
--   Stain unmixing for bright-field microscopy
-
--   Some form of image display for development and debugging. We can
-    have the users resort to third-party libraries or saving
-    intermediate images to file, or we can try to copy *OpenCV*'s image
-    display into *dipIO*.
-
--   Some filters that are trivial to add:
-
-    -   Scharr (slightly better than Sobel)
-
-    -   h-minima & h-maxima
-
-    -   opening by reconstruction
-
-    -   alternating sequential open-close filter (3 versions: with
-        structural opening, opening by reconstruction, and area opening)
-
--   Dilation/erosion by a rotated line is currently implemented by first
-    skewing the image, applying filter along rows or columns, then
-    skewing back. We can add a 2D-specific version that operates
-    directly over rotated lines. The diamond structuring element can
-    then be decomposed into two of these operations. We can also add
-    approximations of the circle with such lines.
-
--   Most of the functionality that is now implemented in *DIPimage*
-    only:
-
-    -   automatic threshold determination (Otsu, triangle,
-        background, etc.)
-
-    -   [Colour space conversion]
-
-    -   2D snakes
-
-    -   look-up tables (LUT, both for grey-scale and colour LUTs, using
-        interpolation when input image is float)
-
-    -   general 2D affine transformation, 3D rotation
-
-    -   xx, yy, zz, rr, phiphi, ramp; extend this to coords(), which
-        makes a tensor image.
-
--   Radon transform for lines and circles, Hough transform for lines
-
--   Level-set segmentation, graph-cut segmentation
-
--   The `Label()` function should return the number of labels. It could
-    optionally also return the sizes of the objects, since these are
-    counted anyway.
-
--   We need to figure out if it is worth it to use loop unrolling for
-    some basic operations.
-
-
-Python interface
-----------------
-
-We will define a Python class as a thin layer over the `dip::Image` C++
-object. Allocating, indexing, etc. etc. through calls to C++. We'd
-create a method to convert to and from *NumPy* arrays, simply passing
-the pointer to the data. We'd have to make sure that deallocation
-occurs in the right place (data ownership). A *DIPlib* function to
-extract a 2D slice ready for display would be needed also, make display
-super-fast!
-
-
-MATLAB interface
-----------------
-
-The MATLAB toolbox will be significantly simplified:
-
--   No need for the `libdml.so` / `libdml.dll` library, as there are no
-    globals to store, and not much code to compile.
-
--   Basically, all the code from that library will sit in a single
-    header file to be included in each of the MEX-files:
-
-    -   Casting an `mxArray` input to: `Image`, `IntegerArray`,
-        `FloatArray`, `String`, `sint`, `uint`, or `double`.
-
-    -   Casting those types to an `mxArray` output.
-
--   We won't need to convert strings to `enum`s, as [that will be done
-    in the *DIPlib* library][Passing options to a function].
-
--   Some MEX-files will have more elaborate data conversion, as is the
-    case now (e.g. `dip_measure`).
-
--   The few functions in the current *DIPlib* that use an `ImageArray` as
-    input or output will use tensor images instead.
-
-The M-file code will need to be adapted:
-
--   The `dip_image` object will not also double as `dip_image_array`
-    (that was a mistake). Instead, tensor images will be a single data
-    block, as they will be in *DIPlib*. Thus, some of the class methods
-    will have to be rewritten, and some functions that use image arrays
-    will have to be adapted. For an array of images, use a cell array.
-    On the other hand, more functionality could be deferred to *DIPlib*.
-
--   Much of the code for the `dip_measurement` object will change also,
-    as its representation will likely change with the changes in
-    *DIPlib*.
-
--   The colour conversion code will be replaced with a single call to
-    *DIPlib*, as will some other functionality that will be translated
-    from MATALB to C++. Much of the tensor arithmetic should be done
-    through *DIPlib* also.
-
--   `dipshow` will be simplified, as simple calls to a *DIPlib* display
-    function will generate the 2D array for display.
