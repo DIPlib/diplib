@@ -32,6 +32,10 @@ const char* dip::E::DIMENSIONALITY_EXCEEDS_LIMIT =
 const char* dip::E::NO_NORMAL_STRIDE =
            "Image has a non-normal stride";
 
+/* indexing errors */
+const char* dip::E::INDEX_OUT_OF_RANGE =
+           "Index out of range";
+
 /* image roi errors */
 const char* dip::E::IMAGE_MUST_BE_ROI =
            "Image must be a ROI";
@@ -101,4 +105,3 @@ const char* dip::E::PIXEL_TABLE_NOT_ENOUGH_RUNS =
            "PixelTable does not have enough runs";
 const char* dip::E::PIXEL_TABLE_RUN_HAS_NO_DATA =
            "PixelTable run has no data";
-

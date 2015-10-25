@@ -19,6 +19,7 @@
 namespace dip {
 
 // All errors thrown in DIPlib are of this class:
+// TODO: our error class should also hold the name of the function that threw.
 typedef std::logic_error Error;
 
 namespace E {
@@ -40,6 +41,7 @@ extern const char* DIMENSIONALITY_NOT_SUPPORTED;
 extern const char* ILLEGAL_DIMENSION;
 extern const char* DIMENSIONALITY_EXCEEDS_LIMIT;
 extern const char* NO_NORMAL_STRIDE;
+extern const char* INDEX_OUT_OF_RANGE;
 extern const char* IMAGE_MUST_BE_ROI;
 extern const char* IMAGE_IS_ROI;
 extern const char* INVALID_ROI_MAP;
@@ -71,6 +73,14 @@ extern const char* PIXEL_TABLE_RUN_HAS_NO_DATA;
 //
 // Test and throw exception
 //
+
+// TODO: This might be nicer as preprocessor macros after all:
+// the compiler doesn't realize that these functions always throw, and
+// so sometimes complains that there is a path through a function where
+// there is no return statement, for example. As a macro this would not
+// happen. Also, as a macro we can add the new C++11 automatic variable
+// with the function name, to give some hints as to where there error
+// occurred. We are no longer able to generate a call stack.
 
 /// Test a condition, throw an Error if the condition is met.
 inline void ThrowIf( bool test, const char* str ) {

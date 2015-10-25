@@ -1,13 +1,13 @@
 CC = g++ -std=c++11
 #CFLAGS = -Wall -O3
-CFLAGS = -Wall -pedantic -g
+CFLAGS = -Wall -pedantic -g -Wno-sign-compare
 
 .SUFFIXES:
 .SUFFIXES: .cpp .o
 
 INC = include/
 
-OBJ = $(addprefix obj/,image.o image_manip.o image_indexing.o pixel.o datatypes.o error.o sort.o)
+OBJ = $(addprefix obj/,image.o image_manip.o image_indexing.o datatypes.o error.o sort.o)
 
 all: test mextest.mexmaci64
 
@@ -16,8 +16,6 @@ obj/image.o : src/library/image.cpp
 obj/image_manip.o : src/library/image_manip.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
 obj/image_indexing.o : src/library/image_indexing.cpp
-	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
-obj/pixel.o : src/library/pixel.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
 obj/datatypes.o : src/library/datatypes.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)

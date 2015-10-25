@@ -28,19 +28,10 @@ namespace dip {
 
 class Image;      // Forward declaration.
 
-/// Makes a new image object pointing to same pixel data as `src`, but
-/// with different origin, strides and size.
-void DefineROI(
-   const Image& src,
-   Image& dest,
-   const UnsignedArray& origin,
-   const UnsignedArray& dims,
-   const IntegerArray& spacing );
-
 // Gateway to all the arithmetic functionality
 // Maybe this should be many different functions. The old DIPlib had
 // a single function here, but I'm not sure why.
-inline void Arithmetic( const Image& lhs, const Image& rhs, Image& out, String op, DataType dt ) {}; // Should be defined elsewhere, the "inline" and "{}" here is to avoid a linker warning for now.
+inline void Arithmetic( const Image& lhs, const Image& rhs, Image& out, String op, DataType dt ) {} // Should be defined elsewhere, the "inline" and "{}" here is to avoid a linker warning for now.
 
 
 
@@ -109,12 +100,6 @@ class Image {
          Forge();
       }
 
-      /// Create a new image sharing the data of `src`.
-      Image( const Image& src,
-             const UnsignedArray& origin,
-             const UnsignedArray& dims,
-             const IntegerArray& spacing );
-
       /// Create a 0-D image with the value of `p`.
       explicit Image( double p, DataType dt = DT_SFLOAT ) :
          datatype(dt)
@@ -130,7 +115,7 @@ class Image {
              const UnsignedArray& d,            // dimensions
              const IntegerArray& s,             // strides
              const Tensor& t,                   // tensor properties
-             sint ts ,                          // tensor stride
+             sint ts,                           // tensor stride
              ExternalInterface* ei = nullptr ) :
          datatype(dt),
          dims(d),
@@ -326,11 +311,11 @@ class Image {
       /// /see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
       void GetSimpleStrideAndOrigin( uint& stride, void*& origin ) const;
 
-      // Compute linear index given coordinates
-      uint CoordinateToIndex( UnsignedArray& );
+      /// Compute linear index given coordinates.
+      uint CoordinateToIndex( UnsignedArray& coords ) const;
 
-      // Compute coordinates given a linear index
-      UnsignedArray IndexToCoordinate( uint );
+      /// Compute coordinates given a linear index.
+      UnsignedArray IndexToCoordinate( uint index ) const;
 
       //
       // Tensor
@@ -390,7 +375,7 @@ class Image {
       }
 
       /// Transpose the tensor.
-      void Transpose
+      void Transpose () {
          tensor.Transpose();
       }
 
@@ -402,10 +387,12 @@ class Image {
       // `struct DataType`, because we've hidden it with the declaration
       // of the function `DataType`.
 
+      /// Get the image's data type.
       struct DataType DataType() const {
          return datatype;
       }
 
+      /// Set the image's data type; the image must be raw.
       void SetDataType( struct DataType dt ) {
          ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          datatype = dt;
@@ -558,25 +545,37 @@ class Image {
       }
 
       /// Extract a tensor element, `indices` must have one or two elements; the image must be forged.
-      Image operator[]( const UnsignedArray& indices );
+      Image operator[]( const UnsignedArray& indices ) const;
 
       /// Extract a tensor element using linear indexing; the image must be forged.
-      Image operator[]( uint index );
+      Image operator[]( uint index ) const;
 
       /// Extracts the tensor elements along the diagonal; the image must be forged.
-      Image Diagonal();
+      Image Diagonal() const;
 
-      /// Extracts the pixel at the given coordinages; the image must be forged.
-      Image At( const UnsignedArray& );
+      /// Extracts the pixel at the given coordinates; the image must be forged.
+      Image At( const UnsignedArray& coords ) const;
 
       /// Extracts the pixel at the given linear index; the image must be forged.
-      Image At( uint );
+      Image At( uint index ) const;
 
-      // Deep copy. 'this' will become a copy of 'img' with its own data.
+      /// Extracts a subset of pixels from a 1D image; the image must be forged.
+      Image At( Range x_range ) const;
+
+      /// Extracts a subset of pixels from a 2D image; the image must be forged.
+      Image At( Range x_range, Range y_range ) const;
+
+      /// Extracts a subset of pixels from a 3D image; the image must be forged.
+      Image At( Range x_range, Range y_range, Range z_range ) const;
+
+      /// Extracts a subset of pixels from an image; the image must be forged.
+      Image At( RangeArray ranges ) const;
+
+      /// Deep copy, `this` will become a copy of `img` with its own data.
       void Copy( Image& img );
 
-      // Deep copy with data type conversion.
-      void ConvertDataType( Image&, struct DataType );
+      /// Deep copy with data type conversion, `this` will become a copy of `img` with its own data.
+      void ConvertDataType( Image&, struct DataType );   // TODO: should this be a method???
 
 
       //
@@ -747,6 +746,9 @@ Image operator<=( const Image&, const Image& );
 Image operator>=( const Image&, const Image& );
          // -> Implemented as call to Compare(in1,in2,out,"==");
 
+// Somehow this needs to be repeated here for GCC, CLang doesn't need this.
+std::ostream& operator<<( std::ostream&, const Image& );
+
 //
 // Utility functions
 //
@@ -755,7 +757,16 @@ inline bool Alias( const Image& img1, const Image& img2 ) {
    return img1.Aliases( img2 );
 }
 
+/// Makes a new image object pointing to same pixel data as `src`, but
+/// with different origin, strides and size (backwards compatibility
+/// function, we recommend the Image::At function instead).
+void DefineROI(
+   const Image& src,
+   Image& dest,
+   const UnsignedArray& origin,
+   const UnsignedArray& dims,
+   const IntegerArray& spacing );
+
 } // namespace dip
 
 #endif // DIP_IMAGE_H
-

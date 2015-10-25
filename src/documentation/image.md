@@ -143,6 +143,9 @@ stored in memory is irrelevant when making this assignment.
 
 \subsection regular_indexing Regular indexing (windows, ROI processing, subsampling)
 
+**Note** using linear index to get a pixel is slightly less efficient than accessing
+a pixel by its coordinates, unless the image has only one dimension.
+
 
 \subsection irregular_indexing Irregular indexing
 
@@ -197,4 +200,3 @@ wereas `img2` will get its new third dimension expanded. The output image
 In the case of assignment with forged images, the destination image will
 not be adjusted, only the source image will be adjusted to match the
 destination.
-

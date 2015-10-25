@@ -38,7 +38,7 @@ DIP_DT_INFO_SUGGEST_4         // not used
 using namespace dip;
 
 DataType DataTypeSuggest_Float( const Image& img ) {
-   switch( img.GetDataType() ) {
+   switch( img.DataType() ) {
       default:
          return DT_SFLOAT;
       case DT_DFLOAT:
@@ -51,7 +51,7 @@ DataType DataTypeSuggest_Float( const Image& img ) {
 }
 
 DataType DataTypeSuggest_Complex(const Image& img) {
-   switch( img.GetDataType() ) {
+   switch( img.DataType() ) {
       default:
          return DT_SCOMPLEX;
       case DT_DFLOAT:
@@ -61,7 +61,7 @@ DataType DataTypeSuggest_Complex(const Image& img) {
 }
 
 DataType DataTypeSuggest_Flex(const Image& img) {
-   switch( img.GetDataType() ) {
+   switch( img.DataType() ) {
       default:
          return DT_SFLOAT;
       case DT_DFLOAT:
@@ -74,7 +74,7 @@ DataType DataTypeSuggest_Flex(const Image& img) {
 }
 
 DataType DataTypeSuggest_FlexBin(const Image& img) {
-   switch( img.GetDataType() ) {
+   switch( img.DataType() ) {
       case DT_BIN:
          return DT_BIN;
       default:
@@ -89,7 +89,7 @@ DataType DataTypeSuggest_FlexBin(const Image& img) {
 }
 
 DataType DataTypeSuggest_Arithmetic(const Image& img1, const Image& img2) {
-   /*** This is the old DIPlib's table:
+   /* This is the old DIPlib's table:
    DataType combos[][3] = {
       { DT_DCOMPLEX, 0,         DT_DCOMPLEX },
       { DT_SCOMPLEX, DT_DFLOAT, DT_DCOMPLEX },
@@ -130,11 +130,11 @@ DataType DataTypeSuggest_Arithmetic(const Image& img1, const Image& img2) {
       }
    }
    return DT_SFLOAT;
-    *** But we cannot convert 0 to a DataType, and we don't allow illegal
-    *** data types in the enum class. */
+    * But we cannot convert 0 to a DataType, and we don't allow illegal
+    * data types in the enum class. */
 
-   DataType type1 = img1.GetDataType();
-   DataType type2 = img2.GetDataType();
+   DataType type1 = img1.DataType();
+   DataType type2 = img2.DataType();
    if( (type1 == DT_DCOMPLEX) || (type2 == DT_DCOMPLEX) )
       return DT_DCOMPLEX;
    if( ((type1 == DT_SCOMPLEX) && (type2 == DT_DFLOAT)) ||

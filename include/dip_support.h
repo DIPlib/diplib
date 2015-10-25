@@ -42,15 +42,53 @@ struct Range {
    sint stop;     ///< Last pixel included in range
    uint step;     ///< Step size when going from start to stop
 
-   /// Creates a range that indicates all pixels
+   /// Create a range that indicates all pixels
    Range() : start{0}, stop{-1}, step{1} {}
-   /// Creates a range that indicates a single pixel
+   /// Create a range that indicates a single pixel
    Range(sint i) : start{i}, stop{i}, step{1} {}
-   /// Creates a range that indicates all pixels between `i` and `j`
+   /// Create a range that indicates all pixels between `i` and `j`
    Range(sint i, sint j) : start{i}, stop{j}, step{1} {}
-   /// Creates a range with all thee values set
+   /// Create a range with all thee values set
    Range(sint i, sint j, uint s) : start{i}, stop{j}, step{s} {}
+
+   /// Modify a range so that negative values are assigned correct
+   /// values according to the given size; throws if the range falls
+   /// out of bounds.
+   void Fix( uint size ) {
+      // Compute indices from end
+      if( start<0 ) start += size;
+      if( stop <0 ) stop  += size;
+      // Check start and stop are within range
+      ThrowIf( (start<0)||(start>=size)||(stop<0)||(stop>=size),
+               E::INDEX_OUT_OF_RANGE );
+      // Compute stop given start and step
+      //stop = start + ((stop-start)/step)*step;
+   }
+
+   /// Get the number of pixels addressed by the range (must be fixed first!).
+   uint Size() const {
+      if( start > stop )
+         return 1 + (start-stop)/step;
+      else
+         return 1 + (stop-start)/step;
+   }
+
+   /// Get the offset for the range (must be fixed first!).
+   uint Offset() const {
+      return start;
+   }
+
+   /// Get the signed step size for the range (must be fixed first!).
+   sint Step() const {
+      if( start > stop )
+         return -step;
+      else
+         return step;
+   }
+
 };
+
+typedef std::vector<Range> RangeArray;  ///< An array of ranges
 
 
 //

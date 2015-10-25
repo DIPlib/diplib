@@ -306,12 +306,12 @@ std::ostream& dip::operator<<(
    }
    os << img.dims.size() << "-D, " << img.datatype.Name() << std::endl;
    os << "   sizes: ";
-   for( int ii=0; ii<img.dims.size(); ++ii ) {
+   for( uint ii=0; ii<img.dims.size(); ++ii ) {
       os << img.dims[ii] << ", ";
    }
    os << std::endl;
    os << "   strides: ";
-   for( int ii=0; ii<img.strides.size(); ++ii ) {
+   for( uint ii=0; ii<img.strides.size(); ++ii ) {
       os << img.strides[ii] << ", ";
    }
    os << std::endl;

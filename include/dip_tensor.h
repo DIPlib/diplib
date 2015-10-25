@@ -44,9 +44,10 @@ class Tensor {
       /// Shape::SYMMETRIC_MATRIX and Shape::UPPTRIANG_MATRIX store the
       /// values in the upper triangle only, as follows:
       ///
-      ///      |0 3 4|
-      ///      |x 1 5|
-      ///      |x x 2|
+      ///      |0 4 5 6|
+      ///      |x 1 7 8|
+      ///      |x x 2 9|
+      ///      |x x x 3|
       ///
       /// Here, `x` indicates values that are not stored.
       /// Shape::LOWTRIANG_MATRIX is the transpose of Shape::UPPTRIANG_MATRIX.
@@ -98,6 +99,10 @@ class Tensor {
       bool IsSymmetric() const {
          return shape==Shape::SYMMETRIC_MATRIX;
       }
+      /// Tests the tensor shape.
+      bool IsTriangular() const {
+         return (shape==Shape::UPPTRIANG_MATRIX) || (shape==Shape::LOWTRIANG_MATRIX);
+      }
       /// Returns tensor shape.
       Shape GetShape() const {
          return shape;
@@ -139,7 +144,7 @@ class Tensor {
          }
       }
 
-      /// Sest the tensor shape.
+      /// Sets the tensor shape.
       void SetShape( Shape _shape, uint _rows, uint _cols ) {
          shape = _shape;
          ThrowIf( _rows==0, "Number of rows must be non-zero" );
@@ -178,23 +183,23 @@ class Tensor {
                break;
           }
       }
-      /// Sest the tensor shape, results in a Shape::COL_VECTOR with one element (scalar).
+      /// Sets the tensor shape, results in a Shape::COL_VECTOR with one element (scalar).
       void SetScalar() {
          shape = Shape::COL_VECTOR;
          elements = rows = 1;
       }
-      /// Sest the tensor shape, results in a Shape::COL_VECTOR.
+      /// Sets the tensor shape, results in a Shape::COL_VECTOR.
       void SetVector( uint n ) {
          shape = Shape::COL_VECTOR;
          elements = rows = n;
       }
-      /// Sest the tensor shape, results in a Shape::COL_MAJOR_MATRIX.
+      /// Sets the tensor shape, results in a Shape::COL_MAJOR_MATRIX.
       void SetMatrix( uint _rows, uint _cols ) {
          shape = Shape::COL_MAJOR_MATRIX;
          elements = _rows * _cols;
          rows = _rows;
       }
-      /// Sest the tensor size, always results in a Shape::COL_VECTOR or Shape::COL_MAJOR_MATRIX.
+      /// Sets the tensor size, always results in a Shape::COL_VECTOR or Shape::COL_MAJOR_MATRIX.
       void SetDimensions( const UnsignedArray& tdims ) {
          switch( tdims.size() ) {
             case 0:
