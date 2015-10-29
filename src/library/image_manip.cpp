@@ -59,6 +59,7 @@ Image& Image::Flatten() {
       //    p = origin;
       // Else:
       //    GetSimpleStrideAndOrigin( stride, p );
+      Throw("Not yet implemented for non-simple strides.");
    }
    strides = { sint(stride) };
    dims = { NumberOfPixels() };
@@ -112,7 +113,7 @@ Image& Image::ExpandDimensionality( uint n ) {
 }
 
 
-Image& Image::Mirror( BooleanArray& process ) {
+Image& Image::Mirror( const BooleanArray& process ) {
    ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    uint nd = dims.size();
    ThrowIf( process.size() != nd, E::ARRAY_ILLEGAL_SIZE);

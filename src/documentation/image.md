@@ -1,6 +1,6 @@
 \class dip::Image
 
-Represents an image with all associated information.
+\brief Represents an image with all associated information.
 
 An Image object is the core of the *DIPlib* library, as all functionality
 revolves around images. Some image manipulation is provided as class

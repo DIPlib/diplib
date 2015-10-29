@@ -56,6 +56,7 @@ void Image::GetSimpleStrideAndOrigin( uint& stride, void*& porigin ) const {
    if( strides.size() == 0 ) {
       stride = 1;
       porigin = origin;
+      return;
    }
    sint s = std::abs( strides[0] );
    for( uint ii=1; ii<strides.size(); ++ii ) {
@@ -64,11 +65,10 @@ void Image::GetSimpleStrideAndOrigin( uint& stride, void*& porigin ) const {
    sint start;
    uint size;
    GetDataBlockSizeAndStart( size, start );
-   if( size == (NumberOfPixels()-1) * s + 1 ) {
+   if( size == (NumberOfPixels()-1) * s + (tensor.Elements()-1) * tstride + 1 ) {
       stride = s;
       porigin = (uint8*)origin + start * datatype.SizeOf();
-   }
-   else {
+   } else {
       stride = 0;
       porigin = nullptr;
    }
@@ -117,14 +117,13 @@ void Image::ComputeStrides() {
 
 
 void Image::GetDataBlockSizeAndStart( uint& size, sint& start ) const {
-   ThrowIf( !HasValidStrides(), "Invalid strides" );
    sint min = 0, max = 0;
-      sint p = ( tensor.Elements() - 1 ) * tstride;
-      if( p < 0 ) {
-         min += p;
-      } else {
-         max += p;
-      }
+   sint p = ( tensor.Elements() - 1 ) * tstride;
+   if( p < 0 ) {
+      min += p;
+   } else {
+      max += p;
+   }
    for( uint ii=0; ii<dims.size(); ++ii ) {
       sint p = ( dims[ii] - 1 ) * strides[ii];
       if( p < 0 ) {
@@ -299,30 +298,40 @@ std::ostream& dip::operator<<(
    std::ostream& os,
    const Image& img
 ){
-   if( img.tensor.Elements() == 1 ) {
+   // Size and shape
+   if( img.TensorElements() == 1 ) {
       os << "Scalar image, ";
    } else {
-      os << img.tensor.Rows() << "x" << img.tensor.Columns() << "-tensor image, ";
+      os << img.TensorRows() << "x" << img.TensorColumns() << "-tensor image, ";
    }
-   os << img.dims.size() << "-D, " << img.datatype.Name() << std::endl;
+   os << img.Dimensionality() << "-D, " << img.DataType().Name() << std::endl;
    os << "   sizes: ";
-   for( uint ii=0; ii<img.dims.size(); ++ii ) {
-      os << img.dims[ii] << ", ";
+   dip::UnsignedArray dims = img.Dimensions();
+   for( uint ii=0; ii<dims.size(); ++ii ) {
+      os << dims[ii] << ", ";
    }
    os << std::endl;
+   // Strides
    os << "   strides: ";
-   for( uint ii=0; ii<img.strides.size(); ++ii ) {
-      os << img.strides[ii] << ", ";
+   dip::IntegerArray strides = img.Strides();
+   for( uint ii=0; ii<strides.size(); ++ii ) {
+      os << strides[ii] << ", ";
    }
    os << std::endl;
-   os << "   tensor stride: " << img.tstride << std::endl;
-   if( img.origin ) {
-      os << "   origin pointer: " << (uint)img.origin << std::endl;
+   os << "   tensor stride: " << img.TensorStride() << std::endl;
+   // Data segment
+   if( img.IsForged() ) {
+      os << "   data pointer:   " << (uint)img.Data() << " (shared among " << img.ShareCount() << " images)" << std::endl;
+      os << "   origin pointer: " << (uint)img.Origin() << std::endl;
       if( img.HasContiguousData() ) {
          if( img.HasNormalStrides() ) {
             os << "   strides are normal" << std::endl;
          } else {
             os << "   strides are contiguous but not normal" << std::endl;
+         }
+      } else {
+         if( img.HasSimpleStride() ) {
+            os << "   strides are simple" << std::endl;
          }
       }
    } else {

@@ -234,7 +234,7 @@ class Image {
       /// Mirror de image about selected axes.
       /// The image must be forged, and the data will never
       /// be copied (i.e. this is a quick and cheap operation).
-      Image& Mirror( BooleanArray& process );
+      Image& Mirror( const BooleanArray& process );
 
       //
       // Strides
@@ -375,7 +375,7 @@ class Image {
       }
 
       /// Transpose the tensor.
-      void Transpose () {
+      void Transpose() {
          tensor.Transpose();
       }
 
@@ -458,7 +458,7 @@ class Image {
       /// `other`, and vice-versa.
       ///
       /// Both images must be forged.
-      /// \see SharesData.
+      /// \see SharesData, Alias.
       bool Aliases( const Image& other ) const;
 
       //
@@ -488,7 +488,7 @@ class Image {
       /// \see Data, IsShared, SharesData.
       uint ShareCount() const {
          ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         return !datablock.use_count();
+         return datablock.use_count();
       }
 
       /// Determine if this image shares its data pointer with `other`.
@@ -619,8 +619,6 @@ class Image {
                // Should there be an error if in-place operation is not possible?
                // a=a+b will resize 'a' and change its data type as necessary.
 
-      friend std::ostream& operator<<( std::ostream&, const Image& );
-
    private:
 
       //
@@ -746,13 +744,15 @@ Image operator<=( const Image&, const Image& );
 Image operator>=( const Image&, const Image& );
          // -> Implemented as call to Compare(in1,in2,out,"==");
 
-// Somehow this needs to be repeated here for GCC, CLang doesn't need this.
+/// You can output an Image to `std::cout` or any other stream; some
+/// information about the image is printed.
 std::ostream& operator<<( std::ostream&, const Image& );
 
 //
 // Utility functions
 //
 
+/// Calls `img1.Aliases( img2 )`; see Image::Aliases.
 inline bool Alias( const Image& img1, const Image& img2 ) {
    return img1.Aliases( img2 );
 }
