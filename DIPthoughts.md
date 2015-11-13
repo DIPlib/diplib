@@ -1,40 +1,12 @@
-% Implementation notes and thoughts
-% Cris Luengo
 
-Implementation notes and thoughts
-=================================
+---
+title: 'Implementation notes and thoughts'
+author: 'Cris Luengo'
+...
 
-* [Support]
-* [The Image object]
-* [Tensor dimensions]
-* [Indexing syntax - tensor dimensions]
-* [Indexing syntax - spatial dimensions]
-* [Initializing values of small images/pixel objects]
-* [Physical units]
-* [Arithmetic and comparisons]
-* [Library initialisation and global variables]
-* [Parallelisation]
-* [Measurement]
-* [Colour space conversion]
-* [Function overloading]
-* [Frameworks]
-* [Alias handler]
-* [Functionality currently not in *DIPlib* that would be important to include]
-* [Python interface]
-* [MATLAB interface]
+# Implementation notes and thoughts
 
-Design considerations:
-
-* [3^rd^ party libraries]
-* [Class method vs function]
-* [Compile-time vs run-time pixel type identification]
-* [Placement of output image argument in function calls]
-* [Passing options to a function]
-
-
-Support
--------
-
+## Support
 Repository: *Git* (on GitHub?). This will make it easier to collaborate
 and accept patches and additions from outside people (merging
 repositories rather than patching our local copy and committing). I
@@ -69,9 +41,7 @@ compilation or during commit if the source code is not formatted
 according to a style.
 
 
-The Image object
-----------------
-
+## The Image object
 Images can have any number of dimensions and data types, as current. We
 will add the option of tensor images by adding dimensions to the data
 block. Tensor dimensions are administered separately from spatial
@@ -132,9 +102,7 @@ considerations:
 * [Compile-time vs run-time pixel type identification]
 
 
-Tensor dimensions
------------------
-
+## Tensor dimensions
 It makes intuitive sense for tensor dimensions to be indexed as (row
 number, column number), and to not allow trailing singleton dimensions
 (these can automatically be removed). Furthermore, it would be
@@ -184,9 +152,7 @@ More details for \#2:
 Transposing the tensor, reshaping it, etc. are all trivial operations.
 
 
-Indexing syntax - tensor dimensions
------------------------------------
-
+## Indexing syntax - tensor dimensions
 There is two types of indexing: into pixel dimensions and into tensor
 dimensions. We will overload `operator[]` to index into tensor
 dimensions. Picking one of the "planes" is much more common than
@@ -214,9 +180,7 @@ as the `Diagonal()` function:
     img.Diagonal();           Get the tensor elements along the diagonal
 
 
-Indexing syntax - spatial dimensions
-------------------------------------
-
+## Indexing syntax - spatial dimensions
 To index into spatial dimensions we use the `at()` method (as in the
 standard library). The alternative is to overload `operator()`, but
 that could be confusing as indexing is very different from calling a
@@ -424,9 +388,7 @@ would need to support this type? All of this comes for free when simply
 returning an `Image` object with copied data.
 
 
-Initializing values of small images/pixel objects
--------------------------------------------------
-
+## Initializing values of small images/pixel objects
 Sure it is possible to use `img.At()[]` to write values into a small
 image, but must be a better way. Small images are used, e.g., when doing
 arithmetic on tensor images. 0D scalar and vector images are trivial:
@@ -444,9 +406,7 @@ like this could work, with a `std::initializer_list` object in there:
                                  //    in the data block.
 
 
-Physical units
---------------
-
+## Physical units
 The image object should contain a `physDims` structure. This structure
 maybe should also contain the absolute position of the origin.
 Manipulation functions will update this (e.g. resampling changes
@@ -487,9 +447,7 @@ account for kilo/mili/micro, etc.? In this case, we need to be able to
 automatically add prefixes to the units to make values readable.
 
 
-Arithmetic and comparisons
---------------------------
-
+## Arithmetic and comparisons
 Of course all operators will be overloaded. These will be implemented as
 calls to
 
@@ -546,9 +504,7 @@ this example, letter `a` would refer to the first image in the input
 array, letter `b` to the second, etc.
 
 
-Library initialisation and global variables
--------------------------------------------
-
+## Library initialisation and global variables
 We should avoid having to call `dip_Initialise()`, and we should avoid
 all globals. These make the library non-reentrant, which can be
 important for multi-threaded applications.
@@ -578,9 +534,7 @@ registered? If one creates a function to read files of a specific type,
 one can simply call that function directly.
 
 
-Parallelisation
----------------
-
+## Parallelisation
 `dip_FWClassical()` and `dip_FWDoubleStripe()` need to be parallelised
 anew, `dip_FWClassicalOMP()` and `dip_FWDoubleStripeOMP()` are overly
 complicated (and slow!) because they are written for *pthreads*. In
@@ -593,9 +547,7 @@ parallelise sorting functions, reductions (max, sum, etc.),
 measurements, and noise generation.
 
 
-Measurement
------------
-
+## Measurement
     dip::MeasuringTool measuringTool;
     measuringTool.Register( "myMsrName", myMsrFunc_Info, myMsrFunc_Prepare, ... );
     dip::Measurement msr = measuringTool.Measure( labimg, greyimg,
@@ -671,9 +623,7 @@ needed. This is how I envision the measurement functionality:
   - `SpatialCross(dimensionarray,physdims,power)` e.g.: m^2^ s^2^
 
 
-Colour space conversion
------------------------
-
+## Colour space conversion
     dip::ColourConverter colourConverter;
     colourConverter.Define( "newspace", 3 );
                                     // "newspace" has 3 channels.
@@ -722,9 +672,7 @@ matrix. If no white point is present, the default white point is
 assumed.
 
 
-Function overloading
---------------------
-
+## Function overloading
 We want to use templates for function overloading (instead of generated
 code through multiple inclusion of the same C file). But we don't want
 to expose any templates to the user: no knowledge of data types is
@@ -760,9 +708,7 @@ Similar macros would be defined for `INTEGER`, `UNSIGNED`, `SIGNED`, `FLOAT`,
     }
 
 
-Frameworks
-----------
-
+## Frameworks
 *DIPlib* uses Frameworks to handle most of the filtering. These need
 some refactoring for consistency. Current code is written for *POSIX*
 threads, and adapted to *OpenMP*, but this lead to suboptimal code.
@@ -855,9 +801,7 @@ use the dimension with the smallest stride. We'll have to measure where
 the size ratio cutoffs are for this.
 
 
-Alias handler
--------------
-
+## Alias handler
 Many of the current *DIPlib* functions (the ones that cannot work
 in-place) use a function `ImagesSeparate()` to create temporary images
 when output images are also input images. The resource handler takes
@@ -899,9 +843,7 @@ images. We can do that this way in C++:
                                           //     and temporary images are copied to output.
 
 
-Functionality currently not in *DIPlib* that would be important to include
---------------------------------------------------------------------------
-
+## Functionality currently not in *DIPlib* that would be important to include
 -   An overlay function that adds a binary or labelled image on top of a
     grey-value or colour image.
 
@@ -960,9 +902,7 @@ Functionality currently not in *DIPlib* that would be important to include
     some basic operations.
 
 
-Python interface
-----------------
-
+## Python interface
 We will define a Python class as a thin layer over the `dip::Image` C++
 object. Allocating, indexing, etc. etc. through calls to C++. We'd
 create a method to convert to and from *NumPy* arrays, simply passing
@@ -972,9 +912,7 @@ extract a 2D slice ready for display would be needed also, make display
 super-fast!
 
 
-MATLAB interface
-----------------
-
+## MATLAB interface
 The MATLAB toolbox will be significantly simplified:
 
 -   No need for the `libdml.so` / `libdml.dll` library, as there are no
@@ -1018,10 +956,9 @@ The M-file code will need to be adapted:
 -   `dipshow` will be simplified, as simple calls to a *DIPlib* display
     function will generate the 2D array for display.
 
+# Design considerations
 
-3^rd^ party libraries
----------------------
-
+## 3^rd^ party libraries
 We will use the C++ standard library for all maps, queues, vectors,
 sorting, etc., unless custom code is more efficient (measure if it
 really is the case!). One example could be creating our own version of
@@ -1063,9 +1000,7 @@ library. We will be able to wrap a pixel (with its strides) as an
 *Eigen* matrix and do computations.
 
 
-Class method vs function
-------------------------
-
+## Class method vs function
 Some libraries put all image processing/analysis functionality into the
 image object as methods. The idea is to filter an image by
 `img.Gauss(sigma)`. This is a terrible idea for many reasons: it's ugly,
@@ -1086,9 +1021,7 @@ scalar image). All these methods affect the image object itself, they
 do not make a modified copy.
 
 
-Compile-time vs run-time pixel type identification
---------------------------------------------------
-
+## Compile-time vs run-time pixel type identification
 Currently, *DIPlib* uses run-time identification of an image's pixel
 type, and functions dispatch internally to the appropriate
 sub-function. These sub-functions are generated at compile time through
@@ -1142,9 +1075,7 @@ I'd like *DIPlib* to expose as few templates to the user (programmer)
 as possible.
 
 
-Placement of output image argument in function calls
-----------------------------------------------------
-
+## Placement of output image argument in function calls
 Basically, there are two options:
 
 1. `void dip::Gauss( dip::Image in, dip::Image out, params );`
@@ -1176,9 +1107,7 @@ the advantages of \#1. One viable alternative is this:
 This allows both forms for the same function.
 
 
-Passing options to a function
------------------------------
-
+## Passing options to a function
 The *MMorph* library uses strings instead of `#defined` constants to
 pass options to functions: `dip::Fourier( in, out, "forward" )` instead
 of `dip::Fourier( in, out, dip::ft_dir::FORWARD )`. This has two
