@@ -19,6 +19,7 @@
 /// will indicate which header file to include for each function.
 
 #include "dip_error.h"
+#include "dip_types.h"
 #include "dip_datatype.h"
 #include "dip_support.h"
 #include "dip_tensor.h"

@@ -155,8 +155,6 @@ class Image {
       uint NumberOfPixels() const {
          uint n = 1;
          for( uint ii=0; ii<dims.size(); ++ii ) {
-            ThrowIf( ( dims[ii] != 0 ) && ( n > std::numeric_limits<uint>::max() / dims[ii] ),
-               E::DIMENSIONALITY_EXCEEDS_LIMIT );
             n *= dims[ii];
          }
          return n;

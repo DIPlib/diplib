@@ -29,16 +29,11 @@ int main() {
          img.SetTensorDimensions({3});
          img.Forge();
          std::cout << img;
-         dip::uint stride; void* origin;
-         img.GetSimpleStrideAndOrigin(stride, origin);
-         std::cout << "simple stride: " << stride << std::endl;
          img.Strip();
          img.SetStrides({-80,-1,4000});
          img.SetTensorStride(120000);
          img.Forge();
          std::cout << img;
-         img.GetSimpleStrideAndOrigin(stride, origin);
-         std::cout << "simple stride: " << stride << std::endl;
       }
       std::cout << std::endl << "Calling a function with overloads." << std::endl;
       {
@@ -104,6 +99,31 @@ int main() {
          std::cout << img1;
          img1.Flatten();
          std::cout << img1;
+      }
+      std::cout << std::endl << "Aliasing." << std::endl;
+      {
+         dip::Image img1;
+         img1.SetDimensions({50,80,30});
+         img1.SetTensorDimensions({3});
+         img1.Forge();
+         dip::Image img2 = img1[0];
+         std::cout << "Should alias: " << Alias(img1,img2) << std::endl;
+         dip::Image img3 = img1[1];
+         std::cout << "Should alias: " << Alias(img1,img3) << std::endl;
+         std::cout << "Should not alias: " << Alias(img2,img3) << std::endl;
+         dip::Image img4 = img1.At(dip::Range{},dip::Range{},dip::Range{10});
+         std::cout << "Should alias: " << Alias(img1,img4) << std::endl;
+         dip::Image img5 = img1.At(dip::Range{},dip::Range{},dip::Range{11});
+         std::cout << "Should not alias: " << Alias(img4,img5) << std::endl;
+         dip::Image img6 = img1.At(dip::Range{0,-1,2},dip::Range{},dip::Range{});
+         dip::Image img7 = img1.At(dip::Range{1,-1,2},dip::Range{},dip::Range{});
+         std::cout << "Should alias: " << Alias(img1,img7) << std::endl;
+         std::cout << "Should not alias: " << Alias(img6,img7) << std::endl;
+         dip::Image img8;
+         img8.SetDimensions({50,80,30});
+         img8.SetTensorDimensions({3});
+         img8.Forge();
+         std::cout << "Should not alias: " << Alias(img1,img8) << std::endl;
       }
 
    } catch( dip::Error e ) {
