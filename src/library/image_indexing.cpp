@@ -244,8 +244,8 @@ UnsignedArray Image::IndexToCoordinate( uint index ) const {
       stride *= dims[ii];
    }
    for( sint ii=((sint)dims.size())-1; ii>=0; --ii ) {
-      coords[ii] = index / strides[ii];
-      index      = index % strides[ii];
+      coords[ii] = index / fake_strides[ii];
+      index      = index % fake_strides[ii];
       ThrowIf( coords[ii] >= dims[ii], E::INDEX_OUT_OF_RANGE );
    }
    return coords;

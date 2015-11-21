@@ -309,10 +309,10 @@ class Image {
       /// /see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
       void GetSimpleStrideAndOrigin( uint& stride, void*& origin ) const;
 
-      /// Compute linear index given coordinates.
+      /// Compute linear index (not memory offset) given coordinates.
       uint CoordinateToIndex( UnsignedArray& coords ) const;
 
-      /// Compute coordinates given a linear index.
+      /// Compute coordinates given a linear index (not memory offset).
       UnsignedArray IndexToCoordinate( uint index ) const;
 
       //

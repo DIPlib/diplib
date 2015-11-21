@@ -107,23 +107,37 @@ int main() {
          img1.SetTensorDimensions({3});
          img1.Forge();
          dip::Image img2 = img1[0];
-         std::cout << "Should alias: " << Alias(img1,img2) << std::endl;
+         if( Alias(img1,img2) != true )
+            std::cout << "Error: aliasing computation, test #1" << std::endl;
          dip::Image img3 = img1[1];
-         std::cout << "Should alias: " << Alias(img1,img3) << std::endl;
-         std::cout << "Should not alias: " << Alias(img2,img3) << std::endl;
+         if( Alias(img1,img3) != true )
+            std::cout << "Error: aliasing computation, test #2" << std::endl;
+         if( Alias(img2,img3) != false )
+            std::cout << "Error: aliasing computation, test #3" << std::endl;
          dip::Image img4 = img1.At(dip::Range{},dip::Range{},dip::Range{10});
-         std::cout << "Should alias: " << Alias(img1,img4) << std::endl;
+         if( Alias(img1,img4) != true )
+            std::cout << "Error: aliasing computation, test #3" << std::endl;
          dip::Image img5 = img1.At(dip::Range{},dip::Range{},dip::Range{11});
-         std::cout << "Should not alias: " << Alias(img4,img5) << std::endl;
+         if( Alias(img4,img5) != false )
+            std::cout << "Error: aliasing computation, test #4" << std::endl;
          dip::Image img6 = img1.At(dip::Range{0,-1,2},dip::Range{},dip::Range{});
          dip::Image img7 = img1.At(dip::Range{1,-1,2},dip::Range{},dip::Range{});
-         std::cout << "Should alias: " << Alias(img1,img7) << std::endl;
-         std::cout << "Should not alias: " << Alias(img6,img7) << std::endl;
+         if( Alias(img1,img7) != true )
+            std::cout << "Error: aliasing computation, test #5" << std::endl;
+         if( Alias(img6,img7) != false )
+            std::cout << "Error: aliasing computation, test #6" << std::endl;
+         img7.Mirror( {true, false, false} );
+         if( Alias(img6,img7) != false )
+            std::cout << "Error: aliasing computation, test #7" << std::endl;
+         img7.SwapDimensions( 0, 1 );
+         if( Alias(img6,img7) != false )
+            std::cout << "Error: aliasing computation, test #8" << std::endl;
          dip::Image img8;
          img8.SetDimensions({50,80,30});
          img8.SetTensorDimensions({3});
          img8.Forge();
-         std::cout << "Should not alias: " << Alias(img1,img8) << std::endl;
+         if( Alias(img1,img8) != false )
+            std::cout << "Error: aliasing computation, test #9" << std::endl;
       }
 
    } catch( dip::Error e ) {

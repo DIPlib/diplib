@@ -16,7 +16,11 @@
 using namespace dip;
 
 
+// --- Internal functions, static ---
+
+
 // Sort strides smallest to largest (simple bubble sort, assume few elements)
+// Dimensions array is sorted the same way.
 static void SortByStrides(
    IntegerArray& s,
    UnsignedArray& d
@@ -98,6 +102,24 @@ static void FindSimpleStrideSizeAndStart(
       sstride = 0;
    }
 }
+
+
+// Compute coordinates of a pixel from an offset.
+// Strides array must be all positive, and sorted in increasing order.
+static UnsignedArray OffsetToCoordinates(
+   dip::uint offset,
+   const IntegerArray& strides
+) {
+   UnsignedArray coord( strides.size() );
+   for( dip::sint ii = (dip::sint)(strides.size()-1); ii >= 0 ; --ii ) {
+      coord[ii] = offset / strides[ii];
+      offset    = offset % strides[ii];
+   }
+   return coord;
+}
+
+
+// --- Library functions ---
 
 
 // Normal strides are the default ones:
@@ -199,15 +221,11 @@ bool Image::Aliases( const Image& other ) const {
    if( datablock != other.datablock )
       return false;
 
-   std::cout << "--Aliases()-- same data block" << std::endl;
-
    // Quicky: if the origin is the same, they share at least one pixel
    uint origin1 = (uint8*)      origin - (uint8*)      datablock.get();
    uint origin2 = (uint8*)other.origin - (uint8*)other.datablock.get();
    if( origin1 == origin2 )
       return true;
-
-   std::cout << "--Aliases()-- different origin" << std::endl;
 
    // Same data block: expect same data type also!
    uint dts = datatype.SizeOf();       // TODO: what do we do if this is not the case???
@@ -244,13 +262,9 @@ bool Image::Aliases( const Image& other ) const {
          return false;
    }
 
-   std::cout << "--Aliases()-- simple strides did not rule out non-aliasing" << std::endl;
-
    // Non-overlapping portions of the data block
    if( ( start1+size1 <= start2 ) || ( start2+size2 <= start1 ) )
       return false;
-
-   std::cout << "--Aliases()-- overlapping portions" << std::endl;
 
    // Lastly, check dimensions and strides
    // This is a bit complex
@@ -261,13 +275,13 @@ bool Image::Aliases( const Image& other ) const {
    for( uint ii=0; ii<ndims1; ++ii ) {
       if( strides1[ii] < 0 ) {
          strides1[ii] = -strides1[ii];
-         origin1 -= strides1[ii]*dims1[ii];
+         origin1 -= (dims1[ii]-1) * strides1[ii];
       }
    }
    for( uint ii=0; ii<ndims2; ++ii ) {
       if( strides2[ii] < 0 ) {
          strides2[ii] = -strides2[ii];
-         origin2 -= strides2[ii]*dims2[ii];
+         origin2 -= (dims2[ii]-1) * strides2[ii];
       }
    }
 
@@ -282,8 +296,8 @@ bool Image::Aliases( const Image& other ) const {
    IntegerArray  comstrides;  // common strides
    IntegerArray  newstrides1; // new strides img 1
    IntegerArray  newstrides2; // new strides img 2
-   UnsignedArray newdims1;  // new dimensions img 1
-   UnsignedArray newdims2;  // new dimensions img 2
+   UnsignedArray newdims1;    // new dimensions img 1
+   UnsignedArray newdims2;    // new dimensions img 2
 
    uint i1 = 0;
    uint i2 = 0;
@@ -331,19 +345,28 @@ bool Image::Aliases( const Image& other ) const {
       newdims2.push_back( d2 );
    }
 
-   // TODO: Compute coordinates of origin for both images
+   // Compute coordinates of origin for both images
+   UnsignedArray neworigin1 = OffsetToCoordinates( origin1, comstrides );
+   UnsignedArray neworigin2 = OffsetToCoordinates( origin2, comstrides );
 
-   // TODO: Compute, for each of the dimensions, if the views overlap. If
+   // Compute, for each of the dimensions, if the views overlap. If
    // they don't overlap for any one dimension, there is no aliasing.
+   for( uint ii = 0; ii < comstrides.size(); ++ii ) {
+      if( neworigin1[ii] + (newdims1[ii]-1)*newstrides1[ii] < neworigin2[ii] )
+         return false;
+      if( neworigin2[ii] + (newdims2[ii]-1)*newstrides2[ii] < neworigin1[ii] )
+         return false;
+      if( (newstrides1[ii] == newstrides2[ii]) &&
+          (newstrides1[ii] > 1) &&
+          (((dip::sint)neworigin1[ii]-(dip::sint)neworigin2[ii]) % newstrides1[ii] != 0) )
+         return false;
+   }
 
    return true;
 }
 
 
 //
-// Forge()
-//
-
 void Image::Forge() {
    if( !IsForged() ) {
       uint size = FindNumberOfPixels( dims );
@@ -378,10 +401,8 @@ void Image::Forge() {
    }
 }
 
-//
-// Operator<<()
-//
 
+//
 std::ostream& dip::operator<<(
    std::ostream& os,
    const Image& img
