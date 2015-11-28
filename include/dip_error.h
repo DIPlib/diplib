@@ -88,7 +88,7 @@ inline void ThrowIf( bool test, const char* str ) {
       throw Error( str );
 }
 /// Throw an Error.
-inline void Throw( const char* str ) {
+[[noreturn]] inline void Throw( const char* str ) {
    throw Error( str );
 }
 
