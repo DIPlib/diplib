@@ -4,5 +4,3 @@ test.DSYM/
 mextest.mex*
 *.geany
 doc/
-*.pdf
-*.html
