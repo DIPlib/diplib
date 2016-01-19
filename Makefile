@@ -51,6 +51,8 @@ DIPthoughts.pdf : DIPthoughts.md
 	pandoc -t latex -o $@ $<
 DIPthoughts.html : DIPthoughts.md
 	pandoc -t html -o $@ $<
+DIPproposal_SurfSara.pdf: DIPproposal_SurfSara.md
+	pandoc $< -o $@ -t latex --smart --number-sections --toc --variable colorlinks=true  --variable fontfamily="mathpazo" --latex-engine=xelatex  --listings -H pandoc/listings_setup.tex
 
 # clean:
 .PHONY: clean

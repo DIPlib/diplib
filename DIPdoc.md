@@ -31,9 +31,9 @@ The *pandoc* application renders the md-file (Markdown-file) to the given
 format as indicated by the extension of the output file. For example:
 
 ```
-$ pandoc -s --toc --mathjax DIPdoc.md -H pdf_color_links.tex -o DIPdoc.pdf  # create PDF
+$ pandoc -s --toc --mathjax DIPdoc.md --variable colorlinks=true -o DIPdoc.pdf  --filter pandoc/custom.py -H pandoc/custom.tex # create PDF
 $ pandoc -s --toc --mathjax DIPdoc.md -o DIPdoc.html # create HTML
-$ pandoc -s DIPproposal_SurfSara.md -o DIPproposal_SurfSara.pdf -H pdf_colored_links.tex -N --variable mainfont="Palatino" --latex-engine=xelatex --toc --listings -H listings_setup.tex
+$ pandoc -s DIPproposal_SurfSara.md -o DIPproposal_SurfSara.pdf --variable colorlinks=true  --variable mainfont="Palatino" --latex-engine=xelatex --toc --listings -H pandoc/listings_setup.tex --number-sections --filter pandoc/custom.py  -H pandoc/custom.tex 
 ```
 
 **NOTE**: the ```-H pdf_colored_links``` in the PDF creation is needed for the links to have color!
