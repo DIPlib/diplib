@@ -12,18 +12,18 @@
 using namespace dip;
 
 Image& Image::PermuteDimensions( const UnsignedArray& order ) {
-   ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    uint nd = dims.size();
-   ThrowIf( order.size() > nd, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   dip_ThrowIf( order.size() > nd, E::ARRAY_PARAMETER_WRONG_LENGTH );
    BooleanArray keep( nd, false );
    uint newnd = order.size();
    for( uint ii=0; ii<newnd; ++ii ) {
-      ThrowIf( order[ii] >= nd, E::ILLEGAL_DIMENSION );
-      ThrowIf( keep[ order[ii] ], "Cannot duplicate a dimension" );
+      dip_ThrowIf( order[ii] >= nd, E::ILLEGAL_DIMENSION );
+      dip_ThrowIf( keep[ order[ii] ], "Cannot duplicate a dimension" );
       keep[ order[ii] ] = true;
    }
    for( uint ii=0; ii<newnd; ++ii ) {
-      ThrowIf( !keep[ii] && dims[ii]>1, "Cannot discard non-singleton dimension" );
+      dip_ThrowIf( !keep[ii] && dims[ii]>1, "Cannot discard non-singleton dimension" );
    }
    UnsignedArray newdims( newnd, 0 );
    IntegerArray  newstrides( newnd, 0 );
@@ -38,9 +38,9 @@ Image& Image::PermuteDimensions( const UnsignedArray& order ) {
 
 
 Image& Image::SwapDimensions( uint d1, uint d2 ) {
-   ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    uint nd = dims.size();
-   ThrowIf( (d1>=nd) || (d2>=nd), E::ILLEGAL_DIMENSION );
+   dip_ThrowIf( (d1>=nd) || (d2>=nd), E::ILLEGAL_DIMENSION );
    std::swap( dims   [d1], dims   [d2] );
    std::swap( strides[d1], strides[d2] );
    return *this;
@@ -48,7 +48,7 @@ Image& Image::SwapDimensions( uint d1, uint d2 ) {
 
 
 Image& Image::Flatten() {
-   ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    uint stride;
    void* p;
    GetSimpleStrideAndOrigin( stride, p );
@@ -59,7 +59,7 @@ Image& Image::Flatten() {
       //    p = origin;
       // Else:
       //    GetSimpleStrideAndOrigin( stride, p );
-      Throw("Not yet implemented for non-simple strides.");
+      dip_Throw("Not yet implemented for non-simple strides.");
    }
    strides = { sint(stride) };
    dims = { NumberOfPixels() };
@@ -69,7 +69,7 @@ Image& Image::Flatten() {
 
 
 Image& Image::Squeeze() {
-   ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    uint jj = 0;
    for( uint ii=0; ii<dims.size(); ++ii ) {
       if( dims[ii] > 1) {
@@ -85,9 +85,9 @@ Image& Image::Squeeze() {
 
 
 Image& Image::AddSingleton( uint dim ) {
-   ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    uint nd = dims.size();
-   ThrowIf( dim > nd, E::INVALID_PARAMETER );
+   dip_ThrowIf( dim > nd, E::INVALID_PARAMETER );
    dims.resize( nd+1 );
    strides.resize( nd+1 );
    for( uint ii=nd; ii>dim; --ii ) {
@@ -104,7 +104,7 @@ Image& Image::AddSingleton( uint dim ) {
 
 
 Image& Image::ExpandDimensionality( uint n ) {
-   ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    if( dims.size() < n ) {
       dims   .resize( n, 1 );
       strides.resize( n, 0 ); // follow same convention as in AddSingleton().
@@ -114,9 +114,9 @@ Image& Image::ExpandDimensionality( uint n ) {
 
 
 Image& Image::Mirror( const BooleanArray& process ) {
-   ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    uint nd = dims.size();
-   ThrowIf( process.size() != nd, E::ARRAY_ILLEGAL_SIZE);
+   dip_ThrowIf( process.size() != nd, E::ARRAY_ILLEGAL_SIZE);
    for( uint ii=0; ii<nd; ++ii ) {
       if( process[ii] ) {
          origin = (uint8*)origin + ( dims[ii] - 1 ) * strides[ii] * datatype.SizeOf();

@@ -147,16 +147,16 @@ class Tensor {
       /// Sets the tensor shape.
       void SetShape( Shape _shape, uint _rows, uint _cols ) {
          shape = _shape;
-         ThrowIf( _rows==0, "Number of rows must be non-zero" );
-         ThrowIf( _cols==0, "Number of columns must be non-zero" );
+         dip_ThrowIf( _rows==0, "Number of rows must be non-zero" );
+         dip_ThrowIf( _cols==0, "Number of columns must be non-zero" );
          switch( shape ) {
             case Shape::COL_VECTOR:
-               ThrowIf( _cols!=1, "A column vector can have only one column" );
+               dip_ThrowIf( _cols!=1, "A column vector can have only one column" );
                elements = _rows;
                rows = _rows;
                break;
             case Shape::ROW_VECTOR:
-               ThrowIf( _rows!=1, "A column vector can have only one column" );
+               dip_ThrowIf( _rows!=1, "A column vector can have only one column" );
                elements = _cols;
                rows = 1;
                break;
@@ -166,18 +166,18 @@ class Tensor {
                rows = _rows;
                break;
             case Shape::DIAGONAL_MATRIX:
-               ThrowIf( _rows!=_cols, "A diagonal matrix must be square" );
+               dip_ThrowIf( _rows!=_cols, "A diagonal matrix must be square" );
                elements = _rows;
                rows = _rows;
                break;
             case Shape::SYMMETRIC_MATRIX:
-               ThrowIf( _rows!=_cols, "A symmetric matrix must be square" );
+               dip_ThrowIf( _rows!=_cols, "A symmetric matrix must be square" );
                elements = NUpperDiagonalElements( _rows );
                rows = _rows;
                break;
             case Shape::UPPTRIANG_MATRIX:
             case Shape::LOWTRIANG_MATRIX:
-               ThrowIf( _rows!=_cols, "A triangular matrix must be square" );
+               dip_ThrowIf( _rows!=_cols, "A triangular matrix must be square" );
                elements = NUpperDiagonalElements( _rows );
                rows = _rows;
                break;
@@ -212,14 +212,14 @@ class Tensor {
                SetMatrix( tdims[0], tdims[1] );
                break;
             default:
-               Throw( "Tensor dimensons higher than 2 not supported." );
+               dip_Throw( "Tensor dimensons higher than 2 not supported." );
          }
       }
 
       /// Changes the tensor shape without changing the number of elements, results in a Shape::COL_MAJOR_MATRIX.
       void ChangeShape( uint _rows ) {
          if( rows != _rows ) {
-            ThrowIf( elements % _rows, "Cannot reshape tensor to requested size" );
+            dip_ThrowIf( elements % _rows, "Cannot reshape tensor to requested size" );
             rows = _rows;
             shape = Shape::COL_MAJOR_MATRIX;
          }

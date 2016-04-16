@@ -81,7 +81,7 @@ class Image {
       explicit Image( UnsignedArray d, uint nchan = 1, DataType dt = DT_SFLOAT ) :
          datatype(dt),
          dims(d),
-         tensor({nchan})
+         tensor(nchan)
       {
          Forge();
       }
@@ -138,9 +138,6 @@ class Image {
       // Dimensions
       //
 
-      // TODO: We use the old DIPlib names here, I would prefer the
-      // getters to have a name without "Get": img.Dimensionality(), img.Sizes(), img.Strides(), etc.
-
       /// Get the number of spatial dimensions.
       uint Dimensionality() const {
          return dims.size();
@@ -162,7 +159,7 @@ class Image {
 
       /// Set the spatial dimensions (image size); the image must be raw.
       void SetDimensions( const UnsignedArray& d ) {
-         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          dims = d;
       }
 
@@ -250,13 +247,13 @@ class Image {
 
       /// Set the strides array; the image must be raw.
       void SetStrides( const IntegerArray& s ) {
-         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          strides = s;
       }
 
       /// Set the tensor stride; the image must be raw.
       void SetTensorStride( sint ts ) {
-         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          tstride = ts;
       }
 
@@ -273,7 +270,7 @@ class Image {
       /// The image must be forged.
       /// /see GetSimpleStrideAndOrigin, HasSimpleStride, HasNormalStrides, Strides, TensorStride.
       bool HasContiguousData() const {
-         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          uint size = NumberOfPixels() * TensorElements();
          sint start;
          uint sz;
@@ -353,7 +350,7 @@ class Image {
 
       /// Set tensor dimensions; the image must be raw.
       void SetTensorDimensions( const UnsignedArray& tdims ) {
-         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          tensor.SetDimensions( tdims );
       }
 
@@ -363,7 +360,7 @@ class Image {
       // are marked as being vectors automatically. Thus setting the shape to
       // {1,3} will make this a row vector.
       void ReshapeTensor( uint rows, uint cols ) {
-         ThrowIf( tensor.Elements() != rows*cols, "Cannot reshape tensor to requested dimensions." );
+         dip_ThrowIf( tensor.Elements() != rows*cols, "Cannot reshape tensor to requested dimensions." );
          tensor.ChangeShape( rows );
       }
 
@@ -392,7 +389,7 @@ class Image {
 
       /// Set the image's data type; the image must be raw.
       void SetDataType( struct DataType dt ) {
-         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          datatype = dt;
       }
 
@@ -432,7 +429,7 @@ class Image {
 
       /// Copy all image properties from `src`; the image must be raw.
       void CopyProperties( const Image& src ) {
-         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          datatype       = src.datatype;
          dims           = src.dims;
          strides        = src.strides;
@@ -468,7 +465,7 @@ class Image {
       /// it. Use Origin instead. The image must be forged.
       /// \see Origin, IsShared, ShareCount, SharesData.
       void* Data() const {
-         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          return datablock.get();
       }
 
@@ -476,7 +473,7 @@ class Image {
       /// The image must be forged.
       /// \see Data, ShareCount, SharesData.
       bool IsShared() const {
-         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          return !datablock.unique();
       }
 
@@ -485,7 +482,7 @@ class Image {
       /// false. The image must be forged.
       /// \see Data, IsShared, SharesData.
       uint ShareCount() const {
-         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          return datablock.use_count();
       }
 
@@ -500,15 +497,15 @@ class Image {
       ///
       /// \see Aliases, Data, IsShared, ShareCount.
       bool SharesData( const Image& other ) const {
-         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
+         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
          return datablock == other.datablock;
       }
 
       /// Get pointer to the first pixel in the image, at coordinates (0,0,0,...);
       /// the image must be forged.
       void* Origin() const {
-         ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          return origin;
       }
 
@@ -538,7 +535,7 @@ class Image {
 
       /// Set external interface pointer; the image must be raw.
       void SetExternalInterface( ExternalInterface* ei ) {
-         ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          external_interface = ei;
       }
 
@@ -574,6 +571,15 @@ class Image {
 
       /// Deep copy with data type conversion, `this` will become a copy of `img` with its own data.
       void ConvertDataType( Image&, struct DataType );   // TODO: should this be a method???
+
+      /// Extracts the fist value in the first pixel (At(0,0)[0]), for complex values
+      /// returns the absolute value.
+      explicit operator sint() const;
+      /// Extracts the fist value in the first pixel (At(0,0)[0]), for complex values
+      /// returns the absolute value.
+      explicit operator dfloat() const;
+      /// Extracts the fist value in the first pixel (At(0,0)[0]).
+      explicit operator dcomplex() const;
 
 
       //

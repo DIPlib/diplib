@@ -15,11 +15,11 @@
 #define DIP_ERROR_H
 
 #include <stdexcept> // std::logic_error and other exception classes
+#include <string>
 
 namespace dip {
 
 // All errors thrown in DIPlib are of this class:
-// TODO: our error class should also hold the name of the function that threw.
 typedef std::logic_error Error;
 
 namespace E {
@@ -74,28 +74,16 @@ extern const char* PIXEL_TABLE_RUN_HAS_NO_DATA;
 // Test and throw exception
 //
 
-// TODO: This might be nicer as preprocessor macros after all:
-// the compiler doesn't realize that these functions always throw, and
-// so sometimes complains that there is a path through a function where
-// there is no return statement, for example. As a macro this would not
-// happen. Also, as a macro we can add the new C++11 automatic variable
-// with the function name, to give some hints as to where there error
-// occurred. We are no longer able to generate a call stack.
+/// Throw an Error.
+#define dip_Throw( str ) { throw dip::Error( std::string(str) + std::string(" in function ") + std::string(__func__) ); }
 
 /// Test a condition, throw an Error if the condition is met.
-inline void ThrowIf( bool test, const char* str ) {
-   if( test )
-      throw Error( str );
-}
-/// Throw an Error.
-[[noreturn]] inline void Throw( const char* str ) {
-   throw Error( str );
-}
+#define dip_ThrowIf( test, str ) { if( test ) dip_Throw( str ) }
 
 // These are the old DIPlib names, let's not use them any more:
-#define DIPASSERT( test , str ) ThrowIf( !(test), str )
-#define DIPTS( test , str )     ThrowIf( test, str )  // TEST something and SET error
-#define DIPSJ( str )            Throw( str )          // SET error and JUMP
+#define DIPASSERT( test , str ) dip_ThrowIf( !(test), str )
+#define DIPTS( test , str )     dip_ThrowIf( test, str )  // TEST something and SET error
+#define DIPSJ( str )            dip_Throw( str )          // SET error and JUMP
 
 } // namespace dip
 

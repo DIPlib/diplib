@@ -80,7 +80,7 @@ class MATLAB_Interface : public dip::ExternalInterface {
          dip::sint                 tstride,
          dip::DataType             datatype
       ) override {
-         dip::ThrowIf( !tensor.IsScalar(), "Tensor images not yet supported" );
+         dip_ThrowIf( !tensor.IsScalar(), "Tensor images not yet supported" );
          // Copy size array
          dip::UnsignedArray mldims = dims;
          // Create stride array
@@ -124,13 +124,13 @@ class MATLAB_Interface : public dip::ExternalInterface {
                //break;
             case dip::DT_DCOMPLEX :
                //type = mxDOUBLE_CLASS;
-               dip::Throw( "Complex images not yet supported" );
+               dip_Throw( "Complex images not yet supported" );
                // We should support these by allocating an mxArray with an extra first dimension of 2.
                // The function that links stuff back to MATLAB should take care of splitting the image
                // into a real and imaginary parts, and putting those into an mxArray as the two components.
                // That whole process might be accomplished with a single callback to MATLAB.
             default:
-               dip::Throw( "This is not possible!!!" ); // Should not be possible
+               dip_Throw( "This is not possible!!!" ); // Should not be possible
          }
          // Allocate MATLAB matrix
          if (n >= 2) {
@@ -215,7 +215,7 @@ dip::Image GetImage( const mxArray* mx ) {
       }
    }
    if (complex)
-      dip::Throw( "Complex images not yet supported" );
+      dip_Throw( "Complex images not yet supported" );
    dip::DataType datatype;
    switch (type) {
       case mxDOUBLE_CLASS:    // dfloat
@@ -227,33 +227,33 @@ dip::Image GetImage( const mxArray* mx ) {
          else datatype = dip::DT_SFLOAT;
          break;
       case mxINT8_CLASS:      // sint8
-         dip::ThrowIf (complex, InputImageError);
+         dip_ThrowIf(complex, InputImageError);
          datatype = dip::DT_SINT8;
          break;
       case mxUINT8_CLASS:     // uint8 , bin
-         dip::ThrowIf (complex, InputImageError);
+         dip_ThrowIf(complex, InputImageError);
          if (binary)
             datatype = dip::DT_BIN;
          else
             datatype = dip::DT_UINT8;
          break;
       case mxINT16_CLASS:     // sint16
-         dip::ThrowIf (complex, InputImageError);
+         dip_ThrowIf(complex, InputImageError);
          datatype = dip::DT_SINT16;
          break;
       case mxUINT16_CLASS:    // uint16
-         dip::ThrowIf (complex, InputImageError);
+         dip_ThrowIf(complex, InputImageError);
          datatype = dip::DT_UINT16;
       case mxINT32_CLASS:     // sint32
-         dip::ThrowIf (complex, InputImageError);
+         dip_ThrowIf(complex, InputImageError);
          datatype = dip::DT_SINT32;
          break;
       case mxUINT32_CLASS:    // uint32
-         dip::ThrowIf (complex, InputImageError);
+         dip_ThrowIf(complex, InputImageError);
          datatype = dip::DT_UINT32;
          break;
       default:
-         dip::Throw( "Image data is not numeric." );
+         dip_Throw( "Image data is not numeric." );
    }
 
    // Create the size and stride arrays

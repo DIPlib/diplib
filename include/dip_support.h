@@ -59,7 +59,7 @@ struct Range {
       if( start<0 ) start += size;
       if( stop <0 ) stop  += size;
       // Check start and stop are within range
-      ThrowIf( (start<0)||(start>=size)||(stop<0)||(stop>=size),
+      dip_ThrowIf( (start<0)||(start>=size)||(stop<0)||(stop>=size),
                E::INDEX_OUT_OF_RANGE );
       // Compute stop given start and step
       //stop = start + ((stop-start)/step)*step;

@@ -46,7 +46,7 @@ static dip::uint FindNumberOfPixels(
 ) {
    dip::uint n = 1;
    for( dip::uint ii=0; ii<dims.size(); ++ii ) {
-      ThrowIf( ( dims[ii] != 0 ) && ( n > std::numeric_limits<dip::uint>::max() / dims[ii] ),
+      dip_ThrowIf( ( dims[ii] != 0 ) && ( n > std::numeric_limits<dip::uint>::max() / dims[ii] ),
          E::DIMENSIONALITY_EXCEEDS_LIMIT );
       n *= dims[ii];
    }
@@ -125,7 +125,7 @@ static UnsignedArray OffsetToCoordinates(
 // Normal strides are the default ones:
 // increasing in value, and with contiguous data.
 bool Image::HasNormalStrides() const {
-   ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    if( tstride != 1 ) {
       return false;
    }
@@ -144,7 +144,7 @@ bool Image::HasNormalStrides() const {
 // walk through all pixels. If this is not possible, stride==0 and
 // porigin==nullptr.
 void Image::GetSimpleStrideAndOrigin( uint& sstride, void*& porigin ) const {
-   ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    sint start;
    uint size;
    FindSimpleStrideSizeAndStart( strides, dims, sstride, size, start );
@@ -187,7 +187,7 @@ bool Image::HasValidStrides() const {
 
 //
 void Image::ComputeStrides() {
-   ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+   dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
    tstride = 1;                       // We set tensor strides to 1 by default.
    uint s = tensor.Elements();
    uint n = dims.size();
@@ -214,8 +214,8 @@ void Image::GetDataBlockSizeAndStart( uint& size, sint& start ) const {
 
 // Does writing in this image change the data of the other image?
 bool Image::Aliases( const Image& other ) const {
-   ThrowIf( !IsForged(),       E::IMAGE_NOT_FORGED );
-   ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !IsForged(),       E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
 
    // Different data blocks do not overlap by definition
    if( datablock != other.datablock )
@@ -370,8 +370,8 @@ bool Image::Aliases( const Image& other ) const {
 void Image::Forge() {
    if( !IsForged() ) {
       uint size = FindNumberOfPixels( dims );
-      ThrowIf( size==0, "Cannot forge an image without pixels (dimensions must be > 0)" );
-      ThrowIf( ( size != 0 ) &&
+      dip_ThrowIf( size==0, "Cannot forge an image without pixels (dimensions must be > 0)" );
+      dip_ThrowIf( ( size != 0 ) &&
                ( TensorElements() > std::numeric_limits<uint>::max() / size ),
                E::DIMENSIONALITY_EXCEEDS_LIMIT );
       size *= TensorElements();

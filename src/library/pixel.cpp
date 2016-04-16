@@ -12,41 +12,42 @@
 
 using namespace dip;
 
-// Casting a Pixel to dcomplex.
+// Casting (the first tensor component of) the first pixel to dcomplex.
 
 template< typename TPI >
 inline dcomplex CastValueComplex( void* p ) {
    return (dcomplex)*((TPI*)p);
 }
 
-Pixel::operator dcomplex() const{
+Image::operator dcomplex() const{
    dcomplex x;
    DIP_OVL_CALL_ASSIGN_ALL( x, CastValueComplex, ( origin ), datatype );
    return x;
 }
 
-// Casting a Pixel to dfloat.
-
-inline dfloat dip__todfloat( dfloat v ) { return v; }
+// Casting (the first tensor component of) the first pixel to dfloat.
 
 template< typename T >
-inline dfloat dip__todfloat( std::complex< T > v ) { return std::abs(v); }
+inline dfloat dip__todfloat( T v ) { return (dfloat)v; }
+
+template< typename T >
+inline dfloat dip__todfloat( std::complex< T > v ) { return (dfloat)std::abs(v); }
 
 template< typename TPI >
 inline dfloat CastValueDouble( void* p ) {
    return dip__todfloat(*((TPI*)p));
 }
 
-Pixel::operator dfloat() const{
+Image::operator dfloat() const{
    dfloat x;
    DIP_OVL_CALL_ASSIGN_ALL( x, CastValueDouble, ( origin ), datatype );
    return x;
 }
 
-// Casting a Pixel to sint.
-// I hope sfloat is converted to sint implicitly, rather than to scomplex.
+// Casting (the first tensor component of) the first pixel to sint.
 
-inline sint dip__tosint( sint v )   { return v; }
+template< typename T >
+inline sint dip__tosint( T v )   { return (sint)v; }
 
 template< typename T >
 inline sint dip__tosint( std::complex< T > v ) { return (sint)std::abs(v); }
@@ -56,7 +57,7 @@ inline sint CastValueInteger( void* p ) {
    return dip__tosint(*((TPI*)p));
 }
 
-Pixel::operator sint() const {
+Image::operator sint() const {
    sint x;
    DIP_OVL_CALL_ASSIGN_ALL( x, CastValueInteger, ( origin ), datatype );
    return x;

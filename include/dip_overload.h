@@ -56,7 +56,7 @@
    switch( dtype ) {
 
 #define DIP__OVL__FOOT \
-   default: /*throw dip::Error*/ dip::Throw( dip::E::DATA_TYPE_NOT_SUPPORTED ); \
+   default: dip_Throw( dip::E::DATA_TYPE_NOT_SUPPORTED ); \
 }
 
 #define DIP__OVL__BIN( fname ) \
@@ -304,67 +304,67 @@
 // DIP_OVL_ASSIGN_xxx
 //
 
-/// Assigns a pointer to the overloaded function to the variable `x`.
+/// Assigns a pointer to the overloaded function to the variable `f`.
 #define DIP_OVL_ASSIGN_UINT( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype ) \
    DIP__OVL__UINT( fname ) \
    DIP__OVL__FOOT
 
-/// Assigns a pointer to the overloaded function to the variable `x`.
+/// Assigns a pointer to the overloaded function to the variable `f`.
 #define DIP_OVL_ASSIGN_SINT( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype ) \
    DIP__OVL__SINT( fname ) \
    DIP__OVL__FOOT
 
-/// Assigns a pointer to the overloaded function to the variable `x`.
+/// Assigns a pointer to the overloaded function to the variable `f`.
 #define DIP_OVL_ASSIGN_FLOAT( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype )  \
    DIP__OVL__FLOAT( fname ) \
    DIP__OVL__FOOT
 
-/// Assigns a pointer to the overloaded function to the variable `x`.
+/// Assigns a pointer to the overloaded function to the variable `f`.
 #define DIP_OVL_ASSIGN_COMPLEX( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype )    \
    DIP__OVL__COMPLEX( fname ) \
    DIP__OVL__FOOT
 
-/// Assigns a pointer to the overloaded function to the variable `x`.
+/// Assigns a pointer to the overloaded function to the variable `f`.
 #define DIP_OVL_ASSIGN_INTEGER( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype )    \
    DIP__OVL__INTEGER( fname ) \
    DIP__OVL__FOOT
 
-/// Assigns a pointer to the overloaded function to the variable `x`.
+/// Assigns a pointer to the overloaded function to the variable `f`.
 #define DIP_OVL_ASSIGN_UNSIGNED( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype )     \
    DIP__OVL__UNSIGNED( fname ) \
    DIP__OVL__FOOT
 
-/// Assigns a pointer to the overloaded function to the variable `x`.
+/// Assigns a pointer to the overloaded function to the variable `f`.
 #define DIP_OVL_ASSIGN_SIGNED( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype )   \
    DIP__OVL__SIGNED( fname ) \
    DIP__OVL__FOOT
 
-/// Assigns a pointer to the overloaded function to the variable `x`.
+/// Assigns a pointer to the overloaded function to the variable `f`.
 #define DIP_OVL_ASSIGN_REAL( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype ) \
    DIP__OVL__REAL( fname ) \
    DIP__OVL__FOOT
 
-/// Assigns a pointer to the overloaded function to the variable `x`.
+/// Assigns a pointer to the overloaded function to the variable `f`.
 #define DIP_OVL_ASSIGN_NONCOMPLEX( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype )       \
    DIP__OVL__NONCOMPLEX( fname ) \
    DIP__OVL__FOOT
 
-/// Assigns a pointer to the overloaded function to the variable `x`.
+/// Assigns a pointer to the overloaded function to the variable `f`.
 #define DIP_OVL_ASSIGN_NONBINARY( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype )      \
    DIP__OVL__NONBINARY( fname ) \
    DIP__OVL__FOOT
 
-/// Assigns a pointer to the overloaded function to the variable `x`.
+/// Assigns a pointer to the overloaded function to the variable `f`.
 #define DIP_OVL_ASSIGN_ALL( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype ) \
    DIP__OVL__ALL( fname )  \

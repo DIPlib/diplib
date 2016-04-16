@@ -23,7 +23,6 @@
 #include "dip_datatype.h"
 #include "dip_support.h"
 #include "dip_tensor.h"
-//#include "dip_pixel.h" // TODO: delete the pixel class files.
 #include "dip_image.h"
 
 #endif // DIPLIB_H

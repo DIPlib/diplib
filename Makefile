@@ -36,8 +36,8 @@ test: test.cpp $(OBJ)
 # mex:
 mextest.mexmaci64: mextest.cpp $(OBJ)
 	$(CC) -bundle $(CFLAGS) -DMATLAB_MEX_FILE -o mextest.mexmaci64 -I$(INC) $^ \
-	-I/Applications/MATLAB_R2014b.app/extern/include/ \
-	-L/Applications/MATLAB_R2014b.app/bin/maci64 -lmx -lmex
+	-I/Applications/MATLAB_R2016a.app/extern/include/ \
+	-L/Applications/MATLAB_R2016a.app/bin/maci64 -lmx -lmex
 
 # docs:
 .PHONY: docs

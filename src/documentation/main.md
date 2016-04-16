@@ -63,7 +63,7 @@ using preprocessor macros and other tricks. *DIPlib* was originally used
 on HPUX, Solaris and IRIX, and later on Windows, Linux, Mac OS 9 and
 Mac OS X.
 
-Originally, the *DIPlib* library was used from within the SCIL_Image
+Originally, the *DIPlib* library was used from within the *SCIL_Image*
 image processing software. In 1999, Cris Luengo (with a lot of help from
 Michael van Ginkel) wrote an interface to MATLAB, defining a flexible
 and intuitive command-line syntax for the development of image analysis
