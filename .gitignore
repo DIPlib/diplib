@@ -1,8 +1,6 @@
 obj/
-test
-test.DSYM/
-mextest.mex*
-*.geany
+testout/
 doc/
+*.geany
 *.pdf
 *.html

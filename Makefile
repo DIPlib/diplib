@@ -2,6 +2,8 @@ CC = g++ -std=c++11
 #CFLAGS = -Wall -O3
 CFLAGS = -Wall -pedantic -g -Wno-sign-compare
 
+MATLABDIR = /Applications/MATLAB_R2016a.app
+
 .SUFFIXES:
 .SUFFIXES: .cpp .o
 
@@ -9,7 +11,7 @@ INC = include/
 
 OBJ = $(addprefix obj/,image.o image_manip.o image_indexing.o datatypes.o error.o sort.o numeric.o)
 
-all: test mextest.mexmaci64
+all: tests
 
 # src/library:
 obj/image.o : src/library/image.cpp
@@ -29,15 +31,20 @@ obj/sort.o : src/support/sort.cpp
 obj/numeric.o : src/support/numeric.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
 
-# test:
-test: test.cpp $(OBJ)
-	$(CC) $(CFLAGS) -o test -I$(INC) $^
+# tests:
+.PHONY: tests
+tests: testout/test_image testout/test_options testout/mextest.mexmaci64
 
-# mex:
-mextest.mexmaci64: mextest.cpp $(OBJ)
-	$(CC) -bundle $(CFLAGS) -DMATLAB_MEX_FILE -o mextest.mexmaci64 -I$(INC) $^ \
-	-I/Applications/MATLAB_R2016a.app/extern/include/ \
-	-L/Applications/MATLAB_R2016a.app/bin/maci64 -lmx -lmex
+# cmdline tests:
+testout/test_image: test/test_image.cpp $(OBJ)
+	$(CC) $(CFLAGS) -o $@ -I$(INC) $^
+testout/test_options: test/test_options.cpp $(OBJ)
+	$(CC) $(CFLAGS) -o $@ -I$(INC) $^
+
+# mex tests:
+testout/mextest.mexmaci64: test/mextest.cpp $(OBJ)
+	$(CC) -bundle $(CFLAGS) -DMATLAB_MEX_FILE -o $@ -I$(INC) $^ \
+	-I$(MATLABDIR)/extern/include/ -L$(MATLABDIR)/bin/maci64 -lmx -lmex
 
 # docs:
 .PHONY: docs
@@ -55,5 +62,5 @@ DIPthoughts.html : DIPthoughts.md
 # clean:
 .PHONY: clean
 clean:
-	-\rm $(OBJ) test mextest.mexmaci64
-	-\rm -r doc/html/*
+	-\rm -f $(OBJ) testout/test_image testout/test_options testout/mextest.mexmaci64
+	-\rm -rf doc/html/*
