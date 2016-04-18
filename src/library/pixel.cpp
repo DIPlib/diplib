@@ -15,7 +15,7 @@ using namespace dip;
 // Casting (the first tensor component of) the first pixel to dcomplex.
 
 template< typename TPI >
-inline dcomplex CastValueComplex( void* p ) {
+static inline dcomplex CastValueComplex( void* p ) {
    return (dcomplex)*((TPI*)p);
 }
 
@@ -28,13 +28,13 @@ Image::operator dcomplex() const{
 // Casting (the first tensor component of) the first pixel to dfloat.
 
 template< typename T >
-inline dfloat dip__todfloat( T v ) { return (dfloat)v; }
+static inline dfloat dip__todfloat( T v ) { return (dfloat)v; }
 
 template< typename T >
-inline dfloat dip__todfloat( std::complex< T > v ) { return (dfloat)std::abs(v); }
+static inline dfloat dip__todfloat( std::complex< T > v ) { return (dfloat)std::abs(v); }
 
 template< typename TPI >
-inline dfloat CastValueDouble( void* p ) {
+static inline dfloat CastValueDouble( void* p ) {
    return dip__todfloat(*((TPI*)p));
 }
 
@@ -47,18 +47,18 @@ Image::operator dfloat() const{
 // Casting (the first tensor component of) the first pixel to sint.
 
 template< typename T >
-inline sint dip__tosint( T v )   { return (sint)v; }
+static inline dip::sint dip__tosint( T v )   { return (dip::sint)v; }
 
 template< typename T >
-inline sint dip__tosint( std::complex< T > v ) { return (sint)std::abs(v); }
+static inline dip::sint dip__tosint( std::complex< T > v ) { return (dip::sint)std::abs(v); }
 
 template< typename TPI >
-inline sint CastValueInteger( void* p ) {
+static inline dip::sint CastValueInteger( void* p ) {
    return dip__tosint(*((TPI*)p));
 }
 
-Image::operator sint() const {
-   sint x;
+Image::operator dip::sint() const {
+   dip::sint x;
    DIP_OVL_CALL_ASSIGN_ALL( x, CastValueInteger, ( origin ), datatype );
    return x;
 }

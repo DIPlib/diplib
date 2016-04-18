@@ -25,8 +25,6 @@ static void SortByStrides(
    IntegerArray& s,
    UnsignedArray& d
 ) {
-   // I got compiler errors because `uint` seems to be defined in sys/types.h
-   // Solution is to specify the namespace for our `uint`.
    dip::uint n = s.size();
    for( dip::uint jj=n-1; jj!=0; --jj ) {
       for( dip::uint ii=0; ii!=jj; ++ii ) {
@@ -61,11 +59,11 @@ static void FindDataBlockSizeAndStart(
    const IntegerArray& strides,
    const UnsignedArray& dims,
    dip::uint& size,
-   sint& start
+   dip::sint& start
 ) {
-   sint min = 0, max = 0;
+   dip::sint min = 0, max = 0;
    for( dip::uint ii=0; ii<dims.size(); ++ii ) {
-      sint p = ( dims[ii] - 1 ) * strides[ii];
+      dip::sint p = ( dims[ii] - 1 ) * strides[ii];
       if( p < 0 ) {
          min += p;
       } else {
@@ -84,14 +82,14 @@ static void FindSimpleStrideSizeAndStart(
    const UnsignedArray& dims,
    dip::uint& sstride,
    dip::uint& size,
-   sint& start
+   dip::sint& start
 ) {
   if( strides.size() == 0 ) {
       sstride = 1;
       start = 0;
       return;
    }
-   sstride = std::numeric_limits<sint>::max();
+   sstride = std::numeric_limits<dip::sint>::max();
    for( dip::uint ii=0; ii<strides.size(); ++ii ) {
       if( dims[ii]>1 ) {
          sstride = std::min( sstride, static_cast<dip::uint>( std::abs( strides[ii] ) ) );
@@ -129,8 +127,8 @@ bool Image::HasNormalStrides() const {
    if( tstride != 1 ) {
       return false;
    }
-   sint total = tensor.Elements();
-   for( uint ii=0; ii<dims.size(); ++ii ) {
+   dip::sint total = tensor.Elements();
+   for( dip::uint ii=0; ii<dims.size(); ++ii ) {
       if( strides[ii] != total ) {
          return false;
       }
@@ -143,10 +141,10 @@ bool Image::HasNormalStrides() const {
 // Return a pointer to the start of the data and a single stride to
 // walk through all pixels. If this is not possible, stride==0 and
 // porigin==nullptr.
-void Image::GetSimpleStrideAndOrigin( uint& sstride, void*& porigin ) const {
+void Image::GetSimpleStrideAndOrigin( dip::uint& sstride, void*& porigin ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   sint start;
-   uint size;
+   dip::sint start;
+   dip::uint size;
    FindSimpleStrideSizeAndStart( strides, dims, sstride, size, start );
    if( sstride == 0 ) {
       porigin = nullptr;
@@ -169,14 +167,14 @@ bool Image::HasValidStrides() const {
       s.push_back( tstride );
       d.push_back( tensor.Elements() );
    }
-   uint n = s.size();
+   dip::uint n = s.size();
    // Make sure all strides are positive
-   for( uint ii=0; ii<n; ++ii ) {
+   for( dip::uint ii=0; ii<n; ++ii ) {
       s[ii] = std::abs( s[ii] );
    }
    SortByStrides( s, d );
    // Test invariant
-   for( uint ii=0; ii<n-1; ++ii ) {
+   for( dip::uint ii=0; ii<n-1; ++ii ) {
       if( s[ii+1] <= s[ii]*(d[ii]-1) )
          return false;
    }
@@ -189,10 +187,10 @@ bool Image::HasValidStrides() const {
 void Image::ComputeStrides() {
    dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
    tstride = 1;                       // We set tensor strides to 1 by default.
-   uint s = tensor.Elements();
-   uint n = dims.size();
+   dip::uint s = tensor.Elements();
+   dip::uint n = dims.size();
    strides.resize( n );
-   for( uint ii=0; ii<n; ++ii ) {
+   for( dip::uint ii=0; ii<n; ++ii ) {
       strides[ii] = s;
       s *= dims[ii];
    }
@@ -200,7 +198,7 @@ void Image::ComputeStrides() {
 
 
 //
-void Image::GetDataBlockSizeAndStart( uint& size, sint& start ) const {
+void Image::GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const {
    // Add tensor dimension and strides to the lists
    IntegerArray  s = strides;
    UnsignedArray d = dims;
@@ -222,13 +220,13 @@ bool Image::Aliases( const Image& other ) const {
       return false;
 
    // Quicky: if the origin is the same, they share at least one pixel
-   uint origin1 = (uint8*)      origin - (uint8*)      datablock.get();
-   uint origin2 = (uint8*)other.origin - (uint8*)other.datablock.get();
+   dip::uint origin1 = (uint8*)      origin - (uint8*)      datablock.get();
+   dip::uint origin2 = (uint8*)other.origin - (uint8*)other.datablock.get();
    if( origin1 == origin2 )
       return true;
 
    // Same data block: expect same data type also!
-   uint dts = datatype.SizeOf();       // TODO: what do we do if this is not the case???
+   dip::uint dts = datatype.SizeOf();       // TODO: what do we do if this is not the case???
 
    // Make origin in units of data size
    origin1 /= dts;
@@ -250,9 +248,9 @@ bool Image::Aliases( const Image& other ) const {
 
    // Quicky: if both have simple strides larger than one, and their offsets
    // do not differ by a multiple of that stride, they don't overlap.
-   uint sstride1, sstride2;
-   uint size1,    size2;
-   sint start1,   start2;
+   dip::uint sstride1, sstride2;
+   dip::uint size1,    size2;
+   dip::sint start1,   start2;
    FindSimpleStrideSizeAndStart( strides1, dims1, sstride1, size1, start1 );
    FindSimpleStrideSizeAndStart( strides2, dims2, sstride2, size2, start2 );
    start1 += origin1;
@@ -270,15 +268,15 @@ bool Image::Aliases( const Image& other ) const {
    // This is a bit complex
 
    // Make sure all strides are positive (un-mirror)
-   uint ndims1 = strides1.size();
-   uint ndims2 = strides2.size();
-   for( uint ii=0; ii<ndims1; ++ii ) {
+   dip::uint ndims1 = strides1.size();
+   dip::uint ndims2 = strides2.size();
+   for( dip::uint ii=0; ii<ndims1; ++ii ) {
       if( strides1[ii] < 0 ) {
          strides1[ii] = -strides1[ii];
          origin1 -= (dims1[ii]-1) * strides1[ii];
       }
    }
-   for( uint ii=0; ii<ndims2; ++ii ) {
+   for( dip::uint ii=0; ii<ndims2; ++ii ) {
       if( strides2[ii] < 0 ) {
          strides2[ii] = -strides2[ii];
          origin2 -= (dims2[ii]-1) * strides2[ii];
@@ -299,13 +297,13 @@ bool Image::Aliases( const Image& other ) const {
    UnsignedArray newdims1;    // new dimensions img 1
    UnsignedArray newdims2;    // new dimensions img 2
 
-   uint i1 = 0;
-   uint i2 = 0;
+   dip::uint i1 = 0;
+   dip::uint i2 = 0;
    while( (i1<ndims1) && (strides1[i1]==0) ) ++i1;
    while( (i2<ndims2) && (strides2[i2]==0) ) ++i2;
    while( i1<ndims1 || i2<ndims2 )
    {
-      uint s1 = 0, s2 = 0, d1 = 1, d2 = 1;
+      dip::uint s1 = 0, s2 = 0, d1 = 1, d2 = 1;
       if( i1<ndims1 ) {
          s1 = strides1[i1];
          d1 = dims1[i1];
@@ -337,7 +335,7 @@ bool Image::Aliases( const Image& other ) const {
          ++i1;
          ++i2;
       }
-      sint cs = comstrides.empty() ? 1 : gcd( s1, s2 ); // The first dimension should have stride==1
+      dip::sint cs = comstrides.empty() ? 1 : gcd( s1, s2 ); // The first dimension should have stride==1
       comstrides.push_back( cs );
       newstrides1.push_back( s1/cs );
       newstrides2.push_back( s2/cs );
@@ -351,7 +349,7 @@ bool Image::Aliases( const Image& other ) const {
 
    // Compute, for each of the dimensions, if the views overlap. If
    // they don't overlap for any one dimension, there is no aliasing.
-   for( uint ii = 0; ii < comstrides.size(); ++ii ) {
+   for( dip::uint ii = 0; ii < comstrides.size(); ++ii ) {
       if( neworigin1[ii] + (newdims1[ii]-1)*newstrides1[ii] < neworigin2[ii] )
          return false;
       if( neworigin2[ii] + (newdims2[ii]-1)*newstrides2[ii] < neworigin1[ii] )
@@ -369,23 +367,23 @@ bool Image::Aliases( const Image& other ) const {
 //
 void Image::Forge() {
    if( !IsForged() ) {
-      uint size = FindNumberOfPixels( dims );
+      dip::uint size = FindNumberOfPixels( dims );
       dip_ThrowIf( size==0, "Cannot forge an image without pixels (dimensions must be > 0)" );
       dip_ThrowIf( ( size != 0 ) &&
-               ( TensorElements() > std::numeric_limits<uint>::max() / size ),
+               ( TensorElements() > std::numeric_limits<dip::uint>::max() / size ),
                E::DIMENSIONALITY_EXCEEDS_LIMIT );
       size *= TensorElements();
       if( external_interface ) {
          datablock = external_interface->AllocateData( dims, strides, tensor, tstride, datatype );
-         uint sz;
-         sint start;
+         dip::uint sz;
+         dip::sint start;
          GetDataBlockSizeAndStart( sz, start );
          origin = (uint8*)datablock.get() + start * datatype.SizeOf();
       } else {
          // std::cout << size << std::endl;
-         sint start = 0;
+         dip::sint start = 0;
          if( HasValidStrides() ) {
-            uint sz;
+            dip::uint sz;
             GetDataBlockSizeAndStart( sz, start );
             if( sz != size ) {
                ComputeStrides();
@@ -393,7 +391,7 @@ void Image::Forge() {
          } else {
             ComputeStrides();
          }
-         uint sz = datatype.SizeOf();
+         dip::uint sz = datatype.SizeOf();
          void* p = ::malloc( size * sz );
          datablock = std::shared_ptr<void>( p, ::free );
          origin = (uint8*)p + start * sz;
@@ -416,22 +414,22 @@ std::ostream& dip::operator<<(
    os << img.Dimensionality() << "-D, " << img.DataType().Name() << std::endl;
    os << "   sizes: ";
    dip::UnsignedArray dims = img.Dimensions();
-   for( uint ii=0; ii<dims.size(); ++ii ) {
+   for( dip::uint ii=0; ii<dims.size(); ++ii ) {
       os << dims[ii] << ", ";
    }
    os << std::endl;
    // Strides
    os << "   strides: ";
    dip::IntegerArray strides = img.Strides();
-   for( uint ii=0; ii<strides.size(); ++ii ) {
+   for( dip::uint ii=0; ii<strides.size(); ++ii ) {
       os << strides[ii] << ", ";
    }
    os << std::endl;
    os << "   tensor stride: " << img.TensorStride() << std::endl;
    // Data segment
    if( img.IsForged() ) {
-      os << "   data pointer:   " << (uint)img.Data() << " (shared among " << img.ShareCount() << " images)" << std::endl;
-      os << "   origin pointer: " << (uint)img.Origin() << std::endl;
+      os << "   data pointer:   " << (dip::uint)img.Data() << " (shared among " << img.ShareCount() << " images)" << std::endl;
+      os << "   origin pointer: " << (dip::uint)img.Origin() << std::endl;
       if( img.HasContiguousData() ) {
          if( img.HasNormalStrides() ) {
             os << "   strides are normal" << std::endl;

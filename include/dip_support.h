@@ -38,23 +38,23 @@ typedef std::vector<String> StringArray;  ///< An array of strings
 /// If stop cannot be reached with the given step size, the last pixel
 /// in the range will come earlier. That is, stop is never exceeded.
 struct Range {
-   sint start;    ///< First pixel included in range
-   sint stop;     ///< Last pixel included in range
-   uint step;     ///< Step size when going from start to stop
+   dip::sint start;    ///< First pixel included in range
+   dip::sint stop;     ///< Last pixel included in range
+   dip::uint step;     ///< Step size when going from start to stop
 
    /// Create a range that indicates all pixels
    Range() : start{0}, stop{-1}, step{1} {}
    /// Create a range that indicates a single pixel
-   Range(sint i) : start{i}, stop{i}, step{1} {}
+   Range(dip::sint i) : start{i}, stop{i}, step{1} {}
    /// Create a range that indicates all pixels between `i` and `j`
-   Range(sint i, sint j) : start{i}, stop{j}, step{1} {}
+   Range(dip::sint i, dip::sint j) : start{i}, stop{j}, step{1} {}
    /// Create a range with all thee values set
-   Range(sint i, sint j, uint s) : start{i}, stop{j}, step{s} {}
+   Range(dip::sint i, dip::sint j, dip::uint s) : start{i}, stop{j}, step{s} {}
 
    /// Modify a range so that negative values are assigned correct
    /// values according to the given size; throws if the range falls
    /// out of bounds.
-   void Fix( uint size ) {
+   void Fix( dip::uint size ) {
       // Compute indices from end
       if( start<0 ) start += size;
       if( stop <0 ) stop  += size;
@@ -66,7 +66,7 @@ struct Range {
    }
 
    /// Get the number of pixels addressed by the range (must be fixed first!).
-   uint Size() const {
+   dip::uint Size() const {
       if( start > stop )
          return 1 + (start-stop)/step;
       else
@@ -74,12 +74,12 @@ struct Range {
    }
 
    /// Get the offset for the range (must be fixed first!).
-   uint Offset() const {
+   dip::uint Offset() const {
       return start;
    }
 
    /// Get the signed step size for the range (must be fixed first!).
-   sint Step() const {
+   dip::sint Step() const {
       if( start > stop )
          return -step;
       else

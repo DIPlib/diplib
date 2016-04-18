@@ -5,23 +5,23 @@
 
 namespace dip {
 
-void SortValues( uint8*  array, uint n);
-void SortValues( sint8*  array, uint n);
-void SortValues( uint16* array, uint n);
-void SortValues( sint16* array, uint n);
-void SortValues( uint32* array, uint n);
-void SortValues( sint32* array, uint n);
-void SortValues( sfloat* array, uint n);
-void SortValues( dfloat* array, uint n);
+void SortValues( dip::uint8*  array, dip::uint n);
+void SortValues( dip::sint8*  array, dip::uint n);
+void SortValues( dip::uint16* array, dip::uint n);
+void SortValues( dip::sint16* array, dip::uint n);
+void SortValues( dip::uint32* array, dip::uint n);
+void SortValues( dip::sint32* array, dip::uint n);
+void SortValues( dip::sfloat* array, dip::uint n);
+void SortValues( dip::dfloat* array, dip::uint n);
 
-void SortIndices( uint8*  array, uint* indices, uint n);
-void SortIndices( sint8*  array, uint* indices, uint n);
-void SortIndices( uint16* array, uint* indices, uint n);
-void SortIndices( sint16* array, uint* indices, uint n);
-void SortIndices( uint32* array, uint* indices, uint n);
-void SortIndices( sint32* array, uint* indices, uint n);
-void SortIndices( sfloat* array, uint* indices, uint n);
-void SortIndices( dfloat* array, uint* indices, uint n);
+void SortIndices( dip::uint8*  array, dip::uint* indices, dip::uint n);
+void SortIndices( dip::sint8*  array, dip::uint* indices, dip::uint n);
+void SortIndices( dip::uint16* array, dip::uint* indices, dip::uint n);
+void SortIndices( dip::sint16* array, dip::uint* indices, dip::uint n);
+void SortIndices( dip::uint32* array, dip::uint* indices, dip::uint n);
+void SortIndices( dip::sint32* array, dip::uint* indices, dip::uint n);
+void SortIndices( dip::sfloat* array, dip::uint* indices, dip::uint n);
+void SortIndices( dip::dfloat* array, dip::uint* indices, dip::uint n);
 
 } // namespace dip
 

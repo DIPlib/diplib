@@ -71,15 +71,15 @@ class Tensor {
          SetScalar();
       }
       /// Creates a Shape::COL_VECTOR.
-      Tensor( uint n ) {
+      Tensor( dip::uint n ) {
          SetVector( n );
       }
       /// Creates a Shape::COL_MAJOR_MATRIX.
-      Tensor( uint _rows, uint _cols ) {
+      Tensor( dip::uint _rows, dip::uint _cols ) {
          SetMatrix( _rows, _cols );
       }
       /// Constructor for arbitrary shape.
-      Tensor( Tensor::Shape _shape, uint _rows, uint _cols ) {
+      Tensor( Tensor::Shape _shape, dip::uint _rows, dip::uint _cols ) {
          SetShape( _shape, _rows, _cols );
       }
 
@@ -109,15 +109,15 @@ class Tensor {
       }
 
       /// Gets number of tensor elements.
-      uint Elements() const {
+      dip::uint Elements() const {
          return elements;
       }
       /// Gets number of tensor rows.
-      uint Rows() const {
+      dip::uint Rows() const {
          return rows;
       }
       /// Gets number of tensor columns.
-      uint Columns() const {
+      dip::uint Columns() const {
          switch( shape ) {
             case Shape::COL_VECTOR:
                return 1;
@@ -145,7 +145,7 @@ class Tensor {
       }
 
       /// Sets the tensor shape.
-      void SetShape( Shape _shape, uint _rows, uint _cols ) {
+      void SetShape( Shape _shape, dip::uint _rows, dip::uint _cols ) {
          shape = _shape;
          dip_ThrowIf( _rows==0, "Number of rows must be non-zero" );
          dip_ThrowIf( _cols==0, "Number of columns must be non-zero" );
@@ -189,12 +189,12 @@ class Tensor {
          elements = rows = 1;
       }
       /// Sets the tensor shape, results in a Shape::COL_VECTOR.
-      void SetVector( uint n ) {
+      void SetVector( dip::uint n ) {
          shape = Shape::COL_VECTOR;
          elements = rows = n;
       }
       /// Sets the tensor shape, results in a Shape::COL_MAJOR_MATRIX.
-      void SetMatrix( uint _rows, uint _cols ) {
+      void SetMatrix( dip::uint _rows, dip::uint _cols ) {
          shape = Shape::COL_MAJOR_MATRIX;
          elements = _rows * _cols;
          rows = _rows;
@@ -217,7 +217,7 @@ class Tensor {
       }
 
       /// Changes the tensor shape without changing the number of elements, results in a Shape::COL_MAJOR_MATRIX.
-      void ChangeShape( uint _rows ) {
+      void ChangeShape( dip::uint _rows ) {
          if( rows != _rows ) {
             dip_ThrowIf( elements % _rows, "Cannot reshape tensor to requested size" );
             rows = _rows;
@@ -263,10 +263,10 @@ class Tensor {
    private:
 
       Shape shape = Shape::COL_VECTOR;
-      uint elements = 1;
-      uint rows = 1;
+      dip::uint elements = 1;
+      dip::uint rows = 1;
 
-      static inline uint NUpperDiagonalElements( uint rows ) {
+      static inline dip::uint NUpperDiagonalElements( dip::uint rows ) {
          return ( rows * ( rows+1 ) ) / 2;
       }
 };

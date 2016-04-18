@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the basic data types.
  *
- * (c)2014-2015, Cris Luengo.
+ * (c)2014-2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -10,15 +10,20 @@
 #define DIP_TYPES_H
 
 #include <cstddef>   // std::size_t
-#include <cstdint>   // std::uint8_t, etc. (C++11 only!)
+#include <cstdint>   // std::uint8_t, etc.
 #include <complex>   // std::complex
 #include <vector>    // std::vector
+#include <bitset>    // std::bitset
 
 namespace dip {
 
 
 //
 // Integer types for image properties, pixel coordinates, loop indices, etc.
+//
+// NOTE: `uint` is defined somewhere in some header, so *always* refer to it
+// as `dip::uint`, everywhere in the DIPlib code base!
+// For consistency, we also use `dip::sint` everywhere we refer to `sint`.
 //
 typedef std::ptrdiff_t sint;  ///< An integer type to be used for strides and similar measures.
 typedef std::size_t    uint;  ///< An integer type to be used for sizes and the like.
@@ -44,7 +49,7 @@ typedef std::complex<sfloat>  scomplex;   ///< Type for pixels in a 64-bit compl
 typedef std::complex<dfloat>  dcomplex;   ///< Type for pixels in a 128-bit complex-valued (double-precision) image
 
 // if 8 bits is not a byte...
-static_assert( sizeof(uint8)==1, "8 bits is not a byte in your system!" );
+static_assert( sizeof(dip::uint8)==1, "8 bits is not a byte in your system!" );
 // Seriously, though. We rely on this property, and there is no guarantee
 // that a system actually has 8 bits in a byte. Maybe we should use char
 // (which is guaranteed to be size 1) for generic pointer arithmetic?
@@ -56,11 +61,14 @@ static_assert( sizeof(uint8)==1, "8 bits is not a byte in your system!" );
 //    since these represent dimensions, and we usually only have two or three of those.
 //
 
-typedef std::vector<sint>     IntegerArray;   ///< An array to hold strides, filter sizes, etc.
-typedef std::vector<uint>     UnsignedArray;  ///< An array to hold dimensions, dimension lists, etc.
-typedef std::vector<dfloat>   FloatArray;     ///< An array to hold filter parameters.
-typedef std::vector<dcomplex> ComplexArray;   //   (used in only one obscure function in the old DIPlib.
-typedef std::vector<bool>     BooleanArray;   ///< An array used as a dimension selector.
+template<typename T>
+using DimensionArray = std::vector<T>; // We define this to indicate which arrays are the ones that would benefit from the short-vector optimization.
+
+typedef DimensionArray<dip::sint>      IntegerArray;   ///< An array to hold strides, filter sizes, etc.
+typedef DimensionArray<dip::uint>      UnsignedArray;  ///< An array to hold dimensions, dimension lists, etc.
+typedef DimensionArray<dip::dfloat>    FloatArray;     ///< An array to hold filter parameters.
+typedef DimensionArray<dip::dcomplex>  ComplexArray;   //   (used in only one obscure function in the old DIPlib.
+typedef DimensionArray<bool>           BooleanArray;   ///< An array used as a dimension selector.
    // IntegerArray A;
    // IntegerArray A(n);
    // IntegerArray A(n,0);
@@ -75,6 +83,50 @@ typedef std::vector<bool>     BooleanArray;   ///< An array used as a dimension 
    // A.resize(n,0);
    // A == B;
 
+
+
+//
+// The following is support for defining an options type, where the user can
+// specify multiple options to pass on to a function or class. The class should
+// not be used directly, only through the macros defined below it
+//
+
+template<typename E, std::size_t N>
+class Options {
+   std::bitset<N> values;
+   public:
+   constexpr Options<E,N>() {}
+   constexpr Options<E,N>(dip::uint n) : values {1ULL << n} {}
+   bool operator& (const Options<E,N> &other) const { return (values & other.values).any(); }
+   Options<E,N> operator| (Options<E,N> other) const { other.values |= values; return other; }
+};
+
+/// Declare a type used to pass options to a function or class. This macro is used
+/// as follows:
+///
+///        DIP_DECLARE_OPTIONS(MyOptions, 3);
+///        DIP_DEFINE_OPTION(MyOptions, Option_clean, 0);
+///        DIP_DEFINE_OPTION(MyOptions, Option_fresh, 1);
+///        DIP_DEFINE_OPTION(MyOptions, Option_shine, 2);
+///
+/// `MyOptions` will by a type that has three non-exclusive flags. Each of the
+/// three DIP_DEFINE_OPTION commands defines a `constexpr` variable for the
+/// given flag. These values can be ORed together (using `|`). A variable of
+/// type `MyOptions` can be tested using the AND operator (`&`), which returns
+/// a `bool`:
+///
+///        MyOptions opts = {};                    // No options are set
+///        opts = Option_fresh;                    // Set only one option.
+///        opts = Option_clean | Option_shine;     // Set only these two options.
+///        if (opts & Option_clean) {...}          // Test to see if `Option_clean` is set.
+#define DIP_DECLARE_OPTIONS(name, number) class __##name; typedef dip::Options<__##name,number> name;
+
+/// Use in conjunction with DIP_DECLARE_OPTIONS.
+#define DIP_DEFINE_OPTION(name, value, index) constexpr name value { index };
+
+// TODO: It would look nice to do (option1 & option2 & option3) for combining
+// options, and testing with (options == option1). Though that might be
+// counter-intuitive to those used to bit fields.
 
 } // namespace dip
 

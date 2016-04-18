@@ -50,7 +50,7 @@ class ExternalInterface {
       virtual std::shared_ptr<void> AllocateData(const UnsignedArray& dims,
                                                  IntegerArray& strides,
                                                  Tensor& tensor,
-                                                 sint tstride,
+                                                 dip::sint tstride,
                                                  DataType datatype) = 0;
 };
 
@@ -78,7 +78,7 @@ class Image {
       //
 
       /// Forged image of given sizes and data type.
-      explicit Image( UnsignedArray d, uint nchan = 1, DataType dt = DT_SFLOAT ) :
+      explicit Image( UnsignedArray d, dip::uint nchan = 1, DataType dt = DT_SFLOAT ) :
          datatype(dt),
          dims(d),
          tensor(nchan)
@@ -115,7 +115,7 @@ class Image {
              const UnsignedArray& d,            // dimensions
              const IntegerArray& s,             // strides
              const Tensor& t,                   // tensor properties
-             sint ts,                           // tensor stride
+             dip::sint ts,                      // tensor stride
              ExternalInterface* ei = nullptr ) :
          datatype(dt),
          dims(d),
@@ -125,8 +125,8 @@ class Image {
          datablock(data),
          external_interface(ei)
       {
-         uint size;
-         sint start;
+         dip::uint size;
+         dip::sint start;
          GetDataBlockSizeAndStart( size, start );
          origin = (uint8*)datablock.get() + start * dt.SizeOf();
       }
@@ -139,7 +139,7 @@ class Image {
       //
 
       /// Get the number of spatial dimensions.
-      uint Dimensionality() const {
+      dip::uint Dimensionality() const {
          return dims.size();
       }
 
@@ -149,9 +149,9 @@ class Image {
       }
 
       /// Get the number of pixels.
-      uint NumberOfPixels() const {
-         uint n = 1;
-         for( uint ii=0; ii<dims.size(); ++ii ) {
+      dip::uint NumberOfPixels() const {
+         dip::uint n = 1;
+         for( dip::uint ii=0; ii<dims.size(); ++ii ) {
             n *= dims[ii];
          }
          return n;
@@ -186,7 +186,7 @@ class Image {
       /// be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see PermuteDimensions.
-      Image& SwapDimensions( uint d1, uint d2 );
+      Image& SwapDimensions( dip::uint d1, dip::uint d2 );
 
       /// Make image 1D. The image must be forged. If HasContiguousData,
       /// this is a quick and cheap operation, but if not, the data segment
@@ -214,7 +214,7 @@ class Image {
       /// dimensions `{ 4, 1, 5, 6 }`.
       ///
       /// \see Squeeze, ExpandDimensionality, PermuteDimensions.
-      Image& AddSingleton( uint dim );
+      Image& AddSingleton( dip::uint dim );
 
       /// Append singleton dimensions to increase the image dimensionality.
       /// The image will have `n` dimensions. However, if the image already
@@ -224,7 +224,7 @@ class Image {
       /// be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see AddSingleton, Squeeze, PermuteDimensions, Flatten.
-      Image& ExpandDimensionality( uint n );
+      Image& ExpandDimensionality( dip::uint n );
 
       /// Mirror de image about selected axes.
       /// The image must be forged, and the data will never
@@ -241,7 +241,7 @@ class Image {
       }
 
       /// Get the tensor stride.
-      uint TensorStride() const {
+      dip::uint TensorStride() const {
          return tstride;
       }
 
@@ -252,7 +252,7 @@ class Image {
       }
 
       /// Set the tensor stride; the image must be raw.
-      void SetTensorStride( sint ts ) {
+      void SetTensorStride( dip::sint ts ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          tstride = ts;
       }
@@ -271,9 +271,9 @@ class Image {
       /// /see GetSimpleStrideAndOrigin, HasSimpleStride, HasNormalStrides, Strides, TensorStride.
       bool HasContiguousData() const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         uint size = NumberOfPixels() * TensorElements();
-         sint start;
-         uint sz;
+         dip::uint size = NumberOfPixels() * TensorElements();
+         dip::sint start;
+         dip::uint sz;
          GetDataBlockSizeAndStart( sz, start );
          return sz == size;
       }
@@ -292,7 +292,7 @@ class Image {
       /// /see GetSimpleStrideAndOrigin, HasContiguousData, HasNormalStrides, Strides, TensorStride.
       bool HasSimpleStride() const {
          void* p;
-         uint s;
+         dip::uint s;
          GetSimpleStrideAndOrigin( s, p );
          return s>0;
       }
@@ -304,13 +304,13 @@ class Image {
       ///
       /// The image must be forged.
       /// /see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
-      void GetSimpleStrideAndOrigin( uint& stride, void*& origin ) const;
+      void GetSimpleStrideAndOrigin( dip::uint& stride, void*& origin ) const;
 
       /// Compute linear index (not memory offset) given coordinates.
-      uint CoordinateToIndex( UnsignedArray& coords ) const;
+      dip::uint CoordinateToIndex( UnsignedArray& coords ) const;
 
       /// Compute coordinates given a linear index (not memory offset).
-      UnsignedArray IndexToCoordinate( uint index ) const;
+      UnsignedArray IndexToCoordinate( dip::uint index ) const;
 
       //
       // Tensor
@@ -324,17 +324,17 @@ class Image {
 
       /// Get the number of tensor elements, the product of the elements
       /// in the array returned by TensorDimensions.
-      uint TensorElements() const {
+      dip::uint TensorElements() const {
          return tensor.Elements();
       }
 
       /// Get the number of tensor columns.
-      uint TensorColumns() const {
+      dip::uint TensorColumns() const {
          return tensor.Columns();
       }
 
       /// Get the number of tensor rows.
-      uint TensorRows() const {
+      dip::uint TensorRows() const {
          return tensor.Rows();
       }
 
@@ -359,7 +359,7 @@ class Image {
       // modify the Tensor class so that matrices with one of the dimensions==1
       // are marked as being vectors automatically. Thus setting the shape to
       // {1,3} will make this a row vector.
-      void ReshapeTensor( uint rows, uint cols ) {
+      void ReshapeTensor( dip::uint rows, dip::uint cols ) {
          dip_ThrowIf( tensor.Elements() != rows*cols, "Cannot reshape tensor to requested dimensions." );
          tensor.ChangeShape( rows );
       }
@@ -425,7 +425,7 @@ class Image {
       bool Compare( const Image& src, bool error=true ) const;
 
       /// Check image properties, either returns true/false or throws an error.
-      bool Check( const uint ndims, const struct DataType dt, bool error=true ) const;
+      bool Check( const dip::uint ndims, const struct DataType dt, bool error=true ) const;
 
       /// Copy all image properties from `src`; the image must be raw.
       void CopyProperties( const Image& src ) {
@@ -481,7 +481,7 @@ class Image {
       /// The count is always at least 1. If the count is 1, IsShared is
       /// false. The image must be forged.
       /// \see Data, IsShared, SharesData.
-      uint ShareCount() const {
+      dip::uint ShareCount() const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          return datablock.use_count();
       }
@@ -543,7 +543,7 @@ class Image {
       Image operator[]( const UnsignedArray& indices ) const;
 
       /// Extract a tensor element using linear indexing; the image must be forged.
-      Image operator[]( uint index ) const;
+      Image operator[]( dip::uint index ) const;
 
       /// Extracts the tensor elements along the diagonal; the image must be forged.
       Image Diagonal() const;
@@ -552,7 +552,7 @@ class Image {
       Image At( const UnsignedArray& coords ) const;
 
       /// Extracts the pixel at the given linear index; the image must be forged.
-      Image At( uint index ) const;
+      Image At( dip::uint index ) const;
 
       /// Extracts a subset of pixels from a 1D image; the image must be forged.
       Image At( Range x_range ) const;
@@ -633,7 +633,7 @@ class Image {
       UnsignedArray dims;                 // dims.size == ndims
       IntegerArray strides;               // strides.size == ndims
       Tensor tensor;
-      sint tstride;
+      dip::sint tstride;
       ColorSpace color_space;
       PhysicalDimensions physdims;
       std::shared_ptr<void> datablock;    // Holds the pixel data. Data block will be freed when last image
@@ -651,16 +651,15 @@ class Image {
 
       void ComputeStrides();              // Fill in both strides arrays.
 
-      void GetDataBlockSizeAndStart( uint& size, sint& start ) const;
+      void GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const;
                                           // size is the distance between top left and bottom right corners.
                                           // start is the distance between top left corner and origin
                                           // (will be <0 if any strides[ii] < 0). All measured in pixels.
 
 }; // class Image
 
-typedef std::vector<Image>  ImageArray;
-typedef std::vector<Image&> ImageRefArray;
-
+typedef std::vector<Image>  ImageArray;      ///< An array of images
+typedef std::vector<Image*> ImagePtrArray;   ///< An array of pointers to images, can be used to avoid copies
 
 //
 // Functions to work with image properties
@@ -669,7 +668,7 @@ typedef std::vector<Image&> ImageRefArray;
 bool ImagesCompare( const ImageArray&, bool throw_exception = true );
                                        // Compares properties of all images in array,
                                        // either returns true/false or throws an exception.
-bool ImagesCheck( const ImageArray&, const uint ndims, const DataType dt, bool throw_exception = true );
+bool ImagesCheck( const ImageArray&, const dip::uint ndims, const DataType dt, bool throw_exception = true );
                                        // Checks properties of all images in array,
                                        // either returns true/false or throws an exception.
 void ImagesSeparate( const ImageArray& input, ImageArray& output );

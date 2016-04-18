@@ -22,7 +22,7 @@ namespace dip {
 //
 
 /// DataType objects are used to indicate what the data type of
-/// an image is. It is a simple enumeration type, but will some added
+/// an image is. It is a simple enumeration type, but with some added
 /// member functions that can be used to query the data type. A series
 /// of constant expressions have been defined that should be used when
 /// specifying a data type or testing for specific data types:
@@ -81,19 +81,19 @@ struct DataType {
    }
 
    /// Returns the size in bytes of the data type.
-   uint SizeOf() const {
+   dip::uint SizeOf() const {
       switch( dt ) {
-         case DT::BIN:      return sizeof(bin);
-         case DT::UINT8:    return sizeof(uint8);
-         case DT::UINT16:   return sizeof(uint16);
-         case DT::UINT32:   return sizeof(uint32);
-         case DT::SINT8:    return sizeof(sint8);
-         case DT::SINT16:   return sizeof(sint16);
-         case DT::SINT32:   return sizeof(sint32);
-         case DT::SFLOAT:   return sizeof(sfloat);
-         case DT::DFLOAT:   return sizeof(dfloat);
-         case DT::SCOMPLEX: return sizeof(scomplex);
-         case DT::DCOMPLEX: return sizeof(dcomplex);
+         case DT::BIN:      return sizeof(dip::bin);
+         case DT::UINT8:    return sizeof(dip::uint8);
+         case DT::UINT16:   return sizeof(dip::uint16);
+         case DT::UINT32:   return sizeof(dip::uint32);
+         case DT::SINT8:    return sizeof(dip::sint8);
+         case DT::SINT16:   return sizeof(dip::sint16);
+         case DT::SINT32:   return sizeof(dip::sint32);
+         case DT::SFLOAT:   return sizeof(dip::sfloat);
+         case DT::DFLOAT:   return sizeof(dip::dfloat);
+         case DT::SCOMPLEX: return sizeof(dip::scomplex);
+         case DT::DCOMPLEX: return sizeof(dip::dcomplex);
       };
    }
 
@@ -168,6 +168,8 @@ struct DataType {
       return dt == other.dt;
    }
 };
+
+typedef std::vector<DataType> DataTypeArray;   ///< An array to hold data types
 
 //
 // Constants that people will use where a DataType is needed
