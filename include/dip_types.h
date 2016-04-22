@@ -11,9 +11,9 @@
 
 #include <cstddef>   // std::size_t
 #include <cstdint>   // std::uint8_t, etc.
-#include <complex>   // std::complex
-#include <vector>    // std::vector
-#include <bitset>    // std::bitset
+#include <complex>
+#include <vector>
+#include <bitset>
 
 namespace dip {
 
@@ -25,6 +25,11 @@ namespace dip {
 // as `dip::uint`, everywhere in the DIPlib code base!
 // For consistency, we also use `dip::sint` everywhere we refer to `sint`.
 //
+// TODO: It might be better to always used signed integer types everywhere.
+//       uint could lead to difficult to catch errors in loops, uint ii<0 is
+//       always false. I started with the uint because the standard library
+//       uses it for sizes of arrays, and sizeof() is unsigned also. Maybe
+//       better to cast these to sint?
 typedef std::ptrdiff_t sint;  ///< An integer type to be used for strides and similar measures.
 typedef std::size_t    uint;  ///< An integer type to be used for sizes and the like.
             // ptrdiff_t and size_t are signed and unsigned integers of the same length as
@@ -57,10 +62,11 @@ static_assert( sizeof(dip::uint8)==1, "8 bits is not a byte in your system!" );
 
 //
 // Arrays of signed, unsigned and floating-point values.
-//    It's probably worth while to create our own short-vector optimized version of std::vector
-//    since these represent dimensions, and we usually only have two or three of those.
 //
 
+// TODO: It's probably worth while to create our own short-vector optimized
+//       version of std::vector since these represent dimensions, and we usually
+//       only have two or three of those.
 template<typename T>
 using DimensionArray = std::vector<T>; // We define this to indicate which arrays are the ones that would benefit from the short-vector optimization.
 
@@ -88,7 +94,7 @@ typedef DimensionArray<bool>           BooleanArray;   ///< An array used as a d
 //
 // The following is support for defining an options type, where the user can
 // specify multiple options to pass on to a function or class. The class should
-// not be used directly, only through the macros defined below it
+// not be used directly, only through the macros defined below it.
 //
 
 template<typename E, std::size_t N>
@@ -97,8 +103,8 @@ class Options {
    public:
    constexpr Options<E,N>() {}
    constexpr Options<E,N>(dip::uint n) : values {1ULL << n} {}
-   bool operator& (const Options<E,N> &other) const { return (values & other.values).any(); }
-   Options<E,N> operator| (Options<E,N> other) const { other.values |= values; return other; }
+   bool operator== (const Options<E,N>& other) const { return (values & other.values).any(); }
+   Options<E,N> operator+ (Options<E,N> other) const { other.values |= values; return other; }
 };
 
 /// Declare a type used to pass options to a function or class. This macro is used
@@ -111,23 +117,37 @@ class Options {
 ///
 /// `MyOptions` will by a type that has three non-exclusive flags. Each of the
 /// three DIP_DEFINE_OPTION commands defines a `constexpr` variable for the
-/// given flag. These values can be ORed together (using `|`). A variable of
-/// type `MyOptions` can be tested using the AND operator (`&`), which returns
-/// a `bool`:
+/// given flag. These values can be combined using the `+` operator.
+/// A variable of type `MyOptions` can be tested using the `==` operator,
+/// which returns a `bool`:
 ///
 ///        MyOptions opts = {};                    // No options are set
 ///        opts = Option_fresh;                    // Set only one option.
-///        opts = Option_clean | Option_shine;     // Set only these two options.
-///        if (opts & Option_clean) {...}          // Test to see if `Option_clean` is set.
+///        opts = Option_clean + Option_shine;     // Set only these two options.
+///        if (opts == Option_clean) {...}         // Test to see if `Option_clean` is set.
 #define DIP_DECLARE_OPTIONS(name, number) class __##name; typedef dip::Options<__##name,number> name;
 
 /// Use in conjunction with DIP_DECLARE_OPTIONS.
 #define DIP_DEFINE_OPTION(name, value, index) constexpr name value { index };
 
-// TODO: It would look nice to do (option1 & option2 & option3) for combining
-// options, and testing with (options == option1). Though that might be
-// counter-intuitive to those used to bit fields.
 
+//
+// The following are some types for often-used parameters
+//
+
+/// Enumerated options are defined in the namespace dip::Option, unless they
+/// are specific to some other sub-namespace.
+namespace Option {
+
+/// @enum dip::Option::ThrowException
+/// Some functions that check for a condition optionally throw an exception
+/// if that condition is not met.
+enum  ThrowException {
+   doNotThrow, ///< Do not throw and exception, return false if the condition is not met.
+   doThrow     ///< Throw an exception if the condition is not met.
+};
+
+} // namespace Option
 } // namespace dip
 
 #endif // DIP_TYPES_H
