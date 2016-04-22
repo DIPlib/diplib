@@ -139,10 +139,9 @@ class Options {
 /// are specific to some other sub-namespace.
 namespace Option {
 
-/// @enum dip::Option::ThrowException
 /// Some functions that check for a condition optionally throw an exception
 /// if that condition is not met.
-enum  ThrowException {
+enum class ThrowException {
    doNotThrow, ///< Do not throw and exception, return false if the condition is not met.
    doThrow     ///< Throw an exception if the condition is not met.
 };
