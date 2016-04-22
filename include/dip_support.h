@@ -14,8 +14,6 @@
 #ifndef DIP_SUPPORT_H
 #define DIP_SUPPORT_H
 
-#include <string>    // std::string
-
 /// The dip namespace contains all the library functionality.
 namespace dip {
 
@@ -88,7 +86,7 @@ struct Range {
 
 };
 
-typedef std::vector<Range> RangeArray;  ///< An array of ranges
+typedef DimensionArray<Range> RangeArray;  ///< An array of ranges
 
 
 //

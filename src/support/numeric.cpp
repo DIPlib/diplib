@@ -9,7 +9,11 @@
 #include "dip_types.h"
 #include "dip_numeric.h"
 
+namespace dip {
+
 // While std::experimental::gcd is not in the standard...
-dip::uint dip::gcd( dip::uint a, dip::uint b ) {
-   return b == 0 ? a : dip::gcd( b, a % b );
+dip::uint gcd( dip::uint a, dip::uint b ) {
+   return b == 0 ? a : gcd( b, a % b );
 }
+
+} // namespace dip

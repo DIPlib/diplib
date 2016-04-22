@@ -8,8 +8,7 @@
 
 #include "diplib.h"
 
-using namespace dip;
-
+namespace dip {
 
 Image Image::operator[]( const UnsignedArray& indices ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
@@ -206,13 +205,13 @@ Image Image::At( RangeArray ranges ) const {
    return out;
 }
 
-void dip::DefineROI(
+void DefineROI(
    const Image& src,
    Image& dest,
    const UnsignedArray& origin,
    const UnsignedArray& dims,
    const IntegerArray& spacing
-){
+) {
    dip_ThrowIf( !dest.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint n = src.Dimensionality();
    dip_ThrowIf( origin.size()  != n , E::ARRAY_ILLEGAL_SIZE );
@@ -254,3 +253,5 @@ UnsignedArray Image::IndexToCoordinate( dip::uint index ) const {
    }
    return coords;
 }
+
+} // namespace dip

@@ -10,7 +10,7 @@
 #include "dip_overload.h"
 #include <typeinfo>
 
-using namespace dip;
+namespace dip {
 
 // Casting (the first tensor component of) the first pixel to dcomplex.
 
@@ -62,3 +62,5 @@ Image::operator dip::sint() const {
    DIP_OVL_CALL_ASSIGN_ALL( x, CastValueInteger, ( origin ), datatype );
    return x;
 }
+
+} // namespace dip

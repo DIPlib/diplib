@@ -35,7 +35,7 @@ DIP_DT_INFO_SUGGEST_1         // not used
 DIP_DT_INFO_SUGGEST_4         // not used
 */
 
-using namespace dip;
+namespace dip {
 
 DataType DataTypeSuggest_Float( const Image& img ) {
    switch( img.DataType() ) {
@@ -149,3 +149,5 @@ DataType DataTypeSuggest_Arithmetic(const Image& img1, const Image& img2) {
    return DT_SFLOAT;
 
 }
+
+} // namespace dip

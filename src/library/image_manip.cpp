@@ -9,7 +9,7 @@
 #include "diplib.h"
 #include <algorithm>
 
-using namespace dip;
+namespace dip {
 
 Image& Image::PermuteDimensions( const UnsignedArray& order ) {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
@@ -113,6 +113,16 @@ Image& Image::ExpandDimensionality( dip::uint n ) {
 }
 
 
+Image& Image::ExpandSingletonDimension( dip::uint dim, dip::uint sz ) {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( dims.size() <= dim, E::ILLEGAL_DIMENSION );
+   dip_ThrowIf( dims[dim] != 1, E::INVALID_PARAMETER );
+   dims   [dim] = sz;
+   strides[dim] = 0;
+   return *this;
+}
+
+
 Image& Image::Mirror( const BooleanArray& process ) {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = dims.size();
@@ -125,3 +135,40 @@ Image& Image::Mirror( const BooleanArray& process ) {
    }
    return *this;
 }
+
+
+Image& Image::TensorToSpatial( dip::uint dim ) {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nd = dims.size();
+   dip_ThrowIf( dim > nd, E::INVALID_PARAMETER );
+   dims.resize( nd+1 );
+   strides.resize( nd+1 );
+   for( dip::uint ii=nd; ii>dim; --ii ) {
+      dims   [ii] = dims   [ii-1];
+      strides[ii] = strides[ii-1];
+   }
+   dims   [dim] = tensor.Elements();
+   strides[dim] = tstride;
+   return *this;
+}
+
+
+Image& Image::SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols ) {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !tensor.IsScalar(), E::NOT_SCALAR );
+   dip::uint nd = dims.size();
+   dip_ThrowIf( dim >= nd, E::INVALID_PARAMETER );
+   dip_ThrowIf( dims[dim] != rows * cols, E::PARAMETER_OUT_OF_RANGE );
+   tensor.SetMatrix( rows, cols );
+   tstride = strides[dim];
+   --nd;
+   for( dip::uint ii=dim; ii<nd; ++ii ) {
+      dims   [ii] = dims   [ii+1];
+      strides[ii] = strides[ii+1];
+   }
+   dims.resize( nd );
+   strides.resize( nd );
+   return *this;
+}
+
+} // namespace dip

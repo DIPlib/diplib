@@ -8,7 +8,7 @@
 #include "diplib.h"
 #include "dip_sort.h"
 
-using namespace dip;
+namespace dip {
 
 template< typename T >
 static void SortValues__CountingSort
@@ -31,14 +31,14 @@ static void SortValues__QuickSort
    // We'll use this also for larger integers
 }
 
-void SortValues( dip::uint8*  array, dip::uint n) {  SortValues__CountingSort( array, n ); }
-void SortValues( dip::sint8*  array, dip::uint n) {  SortValues__CountingSort( array, n ); }
-void SortValues( dip::uint16* array, dip::uint n) {  SortValues__CountingSort( array, n ); }
-void SortValues( dip::sint16* array, dip::uint n) {  SortValues__CountingSort( array, n ); }
-void SortValues( dip::uint32* array, dip::uint n) {  SortValues__QuickSort( array, n ); }
-void SortValues( dip::sint32* array, dip::uint n) {  SortValues__QuickSort( array, n ); }
-void SortValues( dip::sfloat* array, dip::uint n) {  SortValues__QuickSort( array, n ); }
-void SortValues( dip::dfloat* array, dip::uint n) {  SortValues__QuickSort( array, n ); }
+void SortValues( uint8*  array, dip::uint n) {  SortValues__CountingSort( array, n ); }
+void SortValues( sint8*  array, dip::uint n) {  SortValues__CountingSort( array, n ); }
+void SortValues( uint16* array, dip::uint n) {  SortValues__CountingSort( array, n ); }
+void SortValues( sint16* array, dip::uint n) {  SortValues__CountingSort( array, n ); }
+void SortValues( uint32* array, dip::uint n) {  SortValues__QuickSort( array, n ); }
+void SortValues( sint32* array, dip::uint n) {  SortValues__QuickSort( array, n ); }
+void SortValues( sfloat* array, dip::uint n) {  SortValues__QuickSort( array, n ); }
+void SortValues( dfloat* array, dip::uint n) {  SortValues__QuickSort( array, n ); }
 
 template< typename T >
 static void SortIndices__CountingSort
@@ -63,11 +63,13 @@ static void SortIndices__QuickSort
    // We'll use this also for larger integers
 }
 
-void SortIndices( dip::uint8*  array, dip::uint* indices, dip::uint n) {  SortIndices__CountingSort( array, indices, n ); }
-void SortIndices( dip::sint8*  array, dip::uint* indices, dip::uint n) {  SortIndices__CountingSort( array, indices, n ); }
-void SortIndices( dip::uint16* array, dip::uint* indices, dip::uint n) {  SortIndices__CountingSort( array, indices, n ); }
-void SortIndices( dip::sint16* array, dip::uint* indices, dip::uint n) {  SortIndices__CountingSort( array, indices, n ); }
-void SortIndices( dip::uint32* array, dip::uint* indices, dip::uint n) {  SortIndices__QuickSort( array, indices, n ); }
-void SortIndices( dip::sint32* array, dip::uint* indices, dip::uint n) {  SortIndices__QuickSort( array, indices, n ); }
-void SortIndices( dip::sfloat* array, dip::uint* indices, dip::uint n) {  SortIndices__QuickSort( array, indices, n ); }
-void SortIndices( dip::dfloat* array, dip::uint* indices, dip::uint n) {  SortIndices__QuickSort( array, indices, n ); }
+void SortIndices( uint8*  array, dip::uint* indices, dip::uint n) {  SortIndices__CountingSort( array, indices, n ); }
+void SortIndices( sint8*  array, dip::uint* indices, dip::uint n) {  SortIndices__CountingSort( array, indices, n ); }
+void SortIndices( uint16* array, dip::uint* indices, dip::uint n) {  SortIndices__CountingSort( array, indices, n ); }
+void SortIndices( sint16* array, dip::uint* indices, dip::uint n) {  SortIndices__CountingSort( array, indices, n ); }
+void SortIndices( uint32* array, dip::uint* indices, dip::uint n) {  SortIndices__QuickSort( array, indices, n ); }
+void SortIndices( sint32* array, dip::uint* indices, dip::uint n) {  SortIndices__QuickSort( array, indices, n ); }
+void SortIndices( sfloat* array, dip::uint* indices, dip::uint n) {  SortIndices__QuickSort( array, indices, n ); }
+void SortIndices( dfloat* array, dip::uint* indices, dip::uint n) {  SortIndices__QuickSort( array, indices, n ); }
+
+} // namespace dip

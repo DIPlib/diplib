@@ -16,6 +16,7 @@
 
 #include <memory>
 #include <limits>
+#include <functional>
 
 namespace dip {
 
@@ -95,7 +96,7 @@ class Image {
          tstride(src.tstride),
          color_space(src.color_space),
          physdims(src.physdims),
-         external_interface(src.external_interface)
+         externalInterface(src.externalInterface)
       {
          Forge();
       }
@@ -123,7 +124,7 @@ class Image {
          tensor(t),
          tstride(ts),
          datablock(data),
-         external_interface(ei)
+         externalInterface(ei)
       {
          dip::uint size;
          dip::sint start;
@@ -132,7 +133,7 @@ class Image {
       }
 
       /// Creates an image with the ExternalInterface set.
-      explicit Image( ExternalInterface* ei ) : external_interface(ei) {}
+      explicit Image( ExternalInterface* ei ) : externalInterface(ei) {}
 
       //
       // Dimensions
@@ -223,8 +224,18 @@ class Image {
       /// The image must be forged, and the data will never
       /// be copied (i.e. this is a quick and cheap operation).
       ///
-      /// \see AddSingleton, Squeeze, PermuteDimensions, Flatten.
+      /// \see AddSingleton, ExpandSingletonDimension, Squeeze, PermuteDimensions, Flatten.
       Image& ExpandDimensionality( dip::uint n );
+
+      /// Expand singleton dimension `dim` to `sz` pixels, setting the corresponding
+      /// stride to 0. If `dim` is not a singleton dimension (size==1), an
+      /// exception is thrown.
+      ///
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see AddSingleton, ExpandDimensionality.
+      Image& ExpandSingletonDimension( dip::uint dim, dip::uint sz );
 
       /// Mirror de image about selected axes.
       /// The image must be forged, and the data will never
@@ -359,20 +370,29 @@ class Image {
       // modify the Tensor class so that matrices with one of the dimensions==1
       // are marked as being vectors automatically. Thus setting the shape to
       // {1,3} will make this a row vector.
-      void ReshapeTensor( dip::uint rows, dip::uint cols ) {
+      Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {
          dip_ThrowIf( tensor.Elements() != rows*cols, "Cannot reshape tensor to requested dimensions." );
          tensor.ChangeShape( rows );
+         return *this;
       }
 
       /// Change the tensor to a vector, without changing the number of tensor elements.
-      void ReshapeTensorAsVector() {
+      Image& ReshapeTensorAsVector() {
          tensor.ChangeShape();
+         return *this;
       }
 
       /// Transpose the tensor.
-      void Transpose() {
+      Image& Transpose() {
          tensor.Transpose();
+         return *this;
       }
+
+      /// Convert tensor dimensions to spatial dimension, works even for scalar images.
+      Image& TensorToSpatial( dip::uint dim );
+
+      /// Convert spatial dimension to tensor dimensions, image must be scalar.
+      Image& SpatialToTensor( dip::uint dim,  dip::uint rows, dip::uint cols );
 
       //
       // Data Type
@@ -422,10 +442,33 @@ class Image {
 
       /// Compare properties of an image against a template, either
       /// returns true/false or throws an error.
-      bool Compare( const Image& src, bool error=true ) const;
+      // TODO: We should be able to pick which properties are compared...
+      bool CompareProperties(
+            const Image& src,
+            Option::ThrowException throwException = Option::ThrowException::doThrow
+      ) const;
 
       /// Check image properties, either returns true/false or throws an error.
-      bool Check( const dip::uint ndims, const struct DataType dt, bool error=true ) const;
+      bool CheckProperties(
+            const dip::uint ndims,
+            const struct DataType dt,
+            Option::ThrowException throwException = Option::ThrowException::doThrow
+      ) const;
+
+      /// Check image properties, either returns true/false or throws an error.
+      bool CheckProperties(
+            const UnsignedArray& dimensions,
+            const struct DataType dt,
+            Option::ThrowException throwException = Option::ThrowException::doThrow
+      ) const;
+
+      /// Check image properties, either returns true/false or throws an error.
+      bool CheckProperties(
+            const UnsignedArray& dimensions,
+            dip::uint tensorElements,
+            const struct DataType dt,
+            Option::ThrowException throwException = Option::ThrowException::doThrow
+      ) const;
 
       /// Copy all image properties from `src`; the image must be raw.
       void CopyProperties( const Image& src ) {
@@ -436,8 +479,8 @@ class Image {
          tensor         = src.tensor;
          color_space    = src.color_space;
          physdims       = src.physdims;
-         if( !external_interface )
-            external_interface = src.external_interface;
+         if( !externalInterface )
+            externalInterface = src.externalInterface;
       }
 
       /// Make this image similar to the template by copying all its
@@ -520,6 +563,7 @@ class Image {
       /// other images using the same data segment, it will be freed.
       void Strip() {
          if( IsForged() ) {
+            dip_ThrowIf( IsProtected(), "Image is protected" );
             datablock = nullptr; // Automatically frees old memory if no other pointers to it exist.
             origin = nullptr;    // Keep this one in sync!
          }
@@ -527,16 +571,23 @@ class Image {
 
       /// Test if forged.
       bool IsForged() const {
-         if( origin )
-            return true;
-         else
-            return false;
+         return origin != nullptr;
+      }
+
+      /// Set protection flag.
+      void Protect( bool set = true ) {
+         protect = set;
+      }
+
+      /// Test if protected.
+      bool IsProtected() const {
+         return protect;
       }
 
       /// Set external interface pointer; the image must be raw.
       void SetExternalInterface( ExternalInterface* ei ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-         external_interface = ei;
+         externalInterface = ei;
       }
 
       /// Extract a tensor element, `indices` must have one or two elements; the image must be forged.
@@ -567,10 +618,49 @@ class Image {
       Image At( RangeArray ranges ) const;
 
       /// Deep copy, `this` will become a copy of `img` with its own data.
+      ///
+      /// If `this` is forged, then `img` is expected to have the same dimensions
+      /// and number of tensor elements, and the data is copied over from `img`
+      /// to `this`. The copy will apply data type conversion, where values are
+      /// clipped to the target range and/or rounded, as applicable. Complex
+      /// values are converted to non-complex values by taking the absolute
+      /// value.
+      ///
+      /// If `this` is not forged, then all the properties of `img` will be
+      /// copied to `this`, `this` will be forged, and the data from `img` will
+      /// be copied over.
       void Copy( Image& img );
 
-      /// Deep copy with data type conversion, `this` will become a copy of `img` with its own data.
-      void ConvertDataType( Image&, struct DataType );   // TODO: should this be a method???
+      /// Quick copy, returns a new image that points at the same data as `this`,
+      /// and has mostly the same properties. The color space and physical
+      /// dimensions information are not copied, and the protect flag is reset.
+      /// This function is mostly meant for use in functions that need to
+      /// modify some properties of the input images, without actually modifying
+      /// the input images.
+      Image QuickCopy() const {
+         Image out {};
+         out.datatype = datatype;
+         out.dims = dims;
+         out.strides = strides;
+         out.tensor = tensor;
+         out.tstride = tstride;
+         out.datablock = datablock;
+         out.origin = origin;
+         out.externalInterface = externalInterface;
+         return out;
+      }
+
+      /// Sets all tensor elements of all pixels to the value `v`; the image
+      /// must be forged.
+      void Set( dip::sint v );
+
+      /// Sets all tensor elements of all pixels to the value `v`; the image
+      /// must be forged.
+      void Set( dfloat v);
+
+      /// Sets all tensor elements of all pixels to the value `v`; the image
+      /// must be forged.
+      void Set( dcomplex v);
 
       /// Extracts the fist value in the first pixel (At(0,0)[0]), for complex values
       /// returns the absolute value.
@@ -633,14 +723,15 @@ class Image {
       UnsignedArray dims;                 // dims.size == ndims
       IntegerArray strides;               // strides.size == ndims
       Tensor tensor;
-      dip::sint tstride;
+      dip::sint tstride = 0;
+      bool protect = false;               // When set, don't strip image
       ColorSpace color_space;
       PhysicalDimensions physdims;
       std::shared_ptr<void> datablock;    // Holds the pixel data. Data block will be freed when last image
                                           //    that uses it is destroyed.
       void* origin = nullptr;             // Points to the origin ( pixel (0,0) ), not necessarily the first
                                           //    pixel of the data block.
-      ExternalInterface* external_interface = nullptr;
+      ExternalInterface* externalInterface = nullptr;
                                           // A function that will be called instead of the default forge function.
 
       //
@@ -658,20 +749,18 @@ class Image {
 
 }; // class Image
 
-typedef std::vector<Image>  ImageArray;      ///< An array of images
-typedef std::vector<Image*> ImagePtrArray;   ///< An array of pointers to images, can be used to avoid copies
+/// An array of images
+typedef std::vector<Image> ImageArray;
+
+/// An array of image references
+typedef std::vector<std::reference_wrapper<Image>> ImageRefArray;
+
 
 //
-// Functions to work with image properties
+// Management of output images
 //
 
-bool ImagesCompare( const ImageArray&, bool throw_exception = true );
-                                       // Compares properties of all images in array,
-                                       // either returns true/false or throws an exception.
-bool ImagesCheck( const ImageArray&, const dip::uint ndims, const DataType dt, bool throw_exception = true );
-                                       // Checks properties of all images in array,
-                                       // either returns true/false or throws an exception.
-void ImagesSeparate( const ImageArray& input, ImageArray& output );
+void SeparateImages( const ImageRefArray& input, ImageArray& output );
                                        // Makes sure none of the 'output' images are in the
                                        // 'input' list, and copies images if needed.
                                        // The idea is that, at function end, the modified
@@ -764,11 +853,11 @@ inline bool Alias( const Image& img1, const Image& img2 ) {
 /// with different origin, strides and size (backwards compatibility
 /// function, we recommend the Image::At function instead).
 void DefineROI(
-   const Image& src,
-   Image& dest,
-   const UnsignedArray& origin,
-   const UnsignedArray& dims,
-   const IntegerArray& spacing );
+      const Image& src,
+      Image& dest,
+      const UnsignedArray& origin,
+      const UnsignedArray& dims,
+      const IntegerArray& spacing );
 
 } // namespace dip
 
