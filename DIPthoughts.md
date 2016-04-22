@@ -309,23 +309,14 @@ be quite convenient and awesome.
     img.At( Range{}, 0 ) = 0;    // Set the top image border to 0
     img = 0;                     // Set the whole image to 0
 
-As an alternative, we should implement `AssignAt()` functions that mimic
-the `At()` syntax, but include an additional parameter (first? last?)
-that is a `dip::Image` or a scalar (`int`, `double`):
+As an alternative, a function `Copy()` could copy pixel data from one
+forged image to another, allowing a different way of writing the assignment:
 
-    img.AssignAt( Image, Range );
-    img.AssignAt( Image, Range, Range );
-    img.AssignAt( Image, Range, Range, Range );
-    img.AssignAt( Image, std::initializer_list<Range> );
+    img.Copy( Image );
 
-    img.AssignAt( 0, 5, 1 );     // Equivalent to img.At( 5, 1 ) = 0;
-
-**Note:** When using linear indexing, it is possible that the resulting
-ser of pixels do not have a regular stride (a single value for stride
-that makes you visit each and every one of the selected pixels, without
-hitting any non-selected pixels). If the input has continuous data,
-this is never the case, but otherwise it might. We need to find a
-solution, or allow that the indexing throws an exception.
+    img.At( 5, 1 ).Copy( 0 );       // Set pixel (5,1) to 0
+    img.At( Range{}, 0 ).Copy( 0 ); // Set the top image border to 0
+    img.Copy( 0 );                  // Set the whole image to 0
 
 ### Arbitrary indexing
 
@@ -338,16 +329,12 @@ selecting the pixels:
 
 * a list of pixel coordinates
 
-These three forms can all be accomodated using the `At()` and `AssignAt()`
-functions:
+These three forms can all be accomodated using the `At()` functions, which
+create a new image and copy pixel data over, resulting in a 1D image:
 
     img.At( Image mask );
     img.At( IntegerArray indices );
     img.At( CoordinateArray pixels );
-
-    img.AssignAt( Image data, Image mask );
-    img.AssignAt( Image data, IntegerArray indices );
-    img.AssignAt( Image data, CoordinateArray pixels );
 
 Here, `CoordinateArray` is simply a `std::vector<IntegerArray>`. This
 might not be the most efficient way of storing the data, but it is the
@@ -357,11 +344,14 @@ contains a single data block of <number of dimensions> x <number of
 pixels> elements. This is not a structure in the standard library, and
 thus needs extra work.
 
-These three forms of `At()` copy the data, creating a 1D image. This
-might be confusing, as compared with the other versions of the `At()`
-function, but it's the best I've been able to come up with so far. This
-is the reason why the `AssignAt()` function is so important: without it
-we wouldn't be able to assign data into irregularly sampled pixels.
+To assign values to the indexed pixels, we cannot use the `img.At().Copy()`
+trick, as in this case `At()` returns an image that does not point to the
+data of the original image. We will probably need to provide a more ugly
+solution like an `AssignAt()` function:
+
+    img.AssignAt( Image data, Image mask );
+    img.AssignAt( Image data, IntegerArray indices );
+    img.AssignAt( Image data, CoordinateArray pixels );
 
 This will thus not work:
 
@@ -392,9 +382,8 @@ returning an `Image` object with copied data.
 
 ## Initializing values of small images/pixel objects
 
-Sure it is possible to use `img.At()[]` to write values into a small
-image, but must be a better way. Small images are used, e.g., when doing
-arithmetic on tensor images. 0D scalar and vector images are trivial:
+Small images are used, e.g., when doing arithmetic on tensor images.
+0D scalar and vector images are trivial:
 
     dip::Image img( 1 );         // This is a 0D sfloat image with pixel value 1
     dip::Image img { 1 };        // Idem
@@ -727,7 +716,7 @@ Similar macros would be defined for `INTEGER`, `UNSIGNED`, `SIGNED`, `FLOAT`,
 some refactoring for consistency. Current code is written for *POSIX*
 threads, and adapted to *OpenMP*, but this lead to suboptimal code.
 
-- `dip::FrameworkFilterFull()`
+- `dip::Framework::FilterFull()`
 
     - A framework that scans the image line by line, using the pixel
       table concept to do *n*D filter neighbourhoods.
@@ -736,12 +725,12 @@ threads, and adapted to *OpenMP*, but this lead to suboptimal code.
       type of the image copy matches buffer type (or should we do this
       with a multi-dimensional buffer? depends on filter size?).
 
-    - `dip::FrameworkFilterFullSingle()`: 1 input, 1 output
+    - `dip::Framework::FilterFullSingle()`: 1 input, 1 output
 
     - currently: `dip_PixelTableArrayFrameWork()`
       and `dip_PixelTableFrameWork()`
 
-- `dip::FrameworkFilter1D()`
+- `dip::Framework::Filter1D()`
 
     - A framework that scans the image line by line. Image lines are
       copied to match buffer types and boundary extensions. Can
@@ -750,32 +739,32 @@ threads, and adapted to *OpenMP*, but this lead to suboptimal code.
     - Filtering function can be overloaded and takes a 1D vector of
       pixels, optionally with strides.
 
-    - `dip::FrameworkFilter1DSingle()`: 1 input, 1 output
+    - Input and output images can have different sizes (they are always equal
+      sizes in other frameworks).
 
-    - `dip::FrameworkSeparableFilter()`: repeated calling
+    - `dip::Framework::Filter1DSingle()`: 1 input, 1 output
+
+    - `dip::Framework::SeparableFilter()`: repeated calling
       of `dip::FrameworkFilter1D()`
 
-    - `dip::FrameworkSeparableFilterSingle()`: 1 input, 1 output
+    - `dip::Framework::SeparableFilterSingle()`: 1 input, 1 output
 
     - currently: `dip_SeparableFrameWork()`, `dip_MonadicFrameWork()`
       (as called by interpolation funcs)
 
-    - If boundary extension is 0, and buffer types are same as image
-      types, do `dip::FrameworkScan()`!
+    - If boundary extension is 0, do `dip::Framework::Scan()`!
 
-- `dip::FrameworkScan()`
+- `dip::Framework::Scan()`
 
     - A framework that scans the image, doing a point operation
-      (line-by-line, or whole image as one long line). Does not use
-      buffer types (maybe an output buffer?), can work in-place.
+      (line-by-line, or whole image as one long line). Can work in-place.
 
-    - Filtering function must be overloaded and takes a 1D vector of
-      pixels, with strides. `dip::FrameworkFilter1D()` can be used if
-      buffers are needed (e.g. no overloaded function).
+    - Filtering function can be overloaded and takes a 1D vector of
+      pixels, with strides.
 
-    - `dip::FrameworkScanSingle()`: 1 input, 1 output
+    - `dip::Framework::ScanSingle()`: 1 input, 1 output
 
-    - `dip::FrameworkScanSingleOutput()`: 1 output
+    - `dip::Framework::ScanSingleOutput()`: 1 output
 
     - currently: `dip_MonadicFrameWork()`,
       `dip_ScanFrameWork()`, `dip_SingleOutputFrameWork()`
