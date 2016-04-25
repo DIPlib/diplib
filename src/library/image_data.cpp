@@ -392,8 +392,8 @@ void Image::Forge() {
             ComputeStrides();
          }
          dip::uint sz = datatype.SizeOf();
-         void* p = ::malloc( size * sz );
-         datablock = std::shared_ptr<void>( p, ::free );
+         void* p = std::malloc( size * sz );
+         datablock = std::shared_ptr<void>( p, std::free );
          origin = (uint8*)p + start * sz;
       }
    }

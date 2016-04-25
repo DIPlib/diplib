@@ -79,15 +79,6 @@ bool Image::CheckProperties(
 }
 
 //
-void ImagesSeparate(
-      const ImageRefArray& input,
-      ImageArray& output
-) {
-   // TODO
-}
-
-
-//
 std::ostream& operator<<(
       std::ostream& os,
       const Image& img

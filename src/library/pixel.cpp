@@ -63,4 +63,10 @@ Image::operator dip::sint() const {
    return x;
 }
 
+// Copy
+
+void Image::Copy( const Image& img ) {
+   // TODO!
+}
+
 } // namespace dip

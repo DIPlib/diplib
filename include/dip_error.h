@@ -16,6 +16,7 @@
 
 #include <stdexcept> // std::logic_error and other exception classes
 #include <string>
+#include <cassert>
 
 namespace dip {
 

@@ -97,8 +97,8 @@ Image& Image::AddSingleton( dip::uint dim ) {
    dims   [dim] = 1;
    strides[dim] = 0;
    // We set added singleton dimensions to 0 stride. The value is
-   // irrelevant, but maybe we can use this as a flag for added
-   // singletons to be used in the Image::Aliases() function.
+   // irrelevant, but we use this as a flag for added singletons
+   // in the Image::Aliases() function.
    return *this;
 }
 

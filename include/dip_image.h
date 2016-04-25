@@ -392,7 +392,7 @@ class Image {
       Image& TensorToSpatial( dip::uint dim );
 
       /// Convert spatial dimension to tensor dimensions, image must be scalar.
-      Image& SpatialToTensor( dip::uint dim,  dip::uint rows, dip::uint cols );
+      Image& SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols = 1 );
 
       //
       // Data Type
@@ -629,7 +629,7 @@ class Image {
       /// If `this` is not forged, then all the properties of `img` will be
       /// copied to `this`, `this` will be forged, and the data from `img` will
       /// be copied over.
-      void Copy( Image& img );
+      void Copy( const Image& img );
 
       /// Quick copy, returns a new image that points at the same data as `this`,
       /// and has mostly the same properties. The color space and physical
@@ -757,25 +757,6 @@ typedef std::vector<std::reference_wrapper<Image>> ImageRefArray;
 
 
 //
-// Management of output images
-//
-
-void SeparateImages( const ImageRefArray& input, ImageArray& output );
-                                       // Makes sure none of the 'output' images are in the
-                                       // 'input' list, and copies images if needed.
-                                       // The idea is that, at function end, the modified
-                                       // copies are the ones that are passed back to the
-                                       // caller. We'll have to think about how exactly
-                                       // this works. This is useful when a function is called
-                                       // with the same image as input and output:
-                                       // MyFunc(img,img); We want to do the processing in-place.
-                                       // Some functions cannot work in-place, we need to make
-                                       // a temporary output image tmp, and after the processing,
-                                       // set img=tmp;
-
-void ImageChangeDataType( const Image& src, Image& dst );
-
-//
 // Overloaded operators
 //
 
@@ -858,6 +839,13 @@ void DefineROI(
       const UnsignedArray& origin,
       const UnsignedArray& dims,
       const IntegerArray& spacing );
+
+/// Changes the image's data type, copying over the data with convertion.
+inline Image ImageChangeDataType( const Image& src, DataType dt ) {
+   Image dest( src, dt );
+   dest.Copy( src );
+   return dest;
+}
 
 } // namespace dip
 
