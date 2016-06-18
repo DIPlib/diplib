@@ -1,4 +1,3 @@
-
 ---
 title: 'Implementation notes and thoughts'
 author: 'Cris Luengo'
@@ -289,7 +288,7 @@ the original image:
 
     img.At( 5, 1 ) += 20;        // Add 20 to the pixel at (5,1)
 
-To be able to write values to a pixel, we just need to do something
+To be able to write values to a pixel, we could do something
 special with the assignment operator:
 
 * If the image is raw (not forged, there is no data segment), then the
@@ -302,14 +301,14 @@ special with the assignment operator:
   When assigning an `int` or a `double` into an image, all pixels and
   all tensor elements are given this value.
 
-I'm afraid that this might cause confusion. On the other hand, it would
-be quite convenient and awesome.
+This would allow quite nice syntax:
 
     img.At( 5, 1 ) = 0;          // Set pixel (5,1) to 0
     img.At( Range{}, 0 ) = 0;    // Set the top image border to 0
     img = 0;                     // Set the whole image to 0
 
-As an alternative, a function `Copy()` could copy pixel data from one
+But on the other hand, it would be way too confusing, so I think it is bad
+design. As an alternative, a function `Copy()` could copy pixel data from one
 forged image to another, allowing a different way of writing the assignment:
 
     img.Copy( Image );
@@ -347,11 +346,11 @@ thus needs extra work.
 To assign values to the indexed pixels, we cannot use the `img.At().Copy()`
 trick, as in this case `At()` returns an image that does not point to the
 data of the original image. We will probably need to provide a more ugly
-solution like an `AssignAt()` function:
+solution like a `CopyAt()` function:
 
-    img.AssignAt( Image data, Image mask );
-    img.AssignAt( Image data, IntegerArray indices );
-    img.AssignAt( Image data, CoordinateArray pixels );
+    img.CopyAt( Image data, Image mask );
+    img.CopyAt( Image data, IntegerArray indices );
+    img.CopyAt( Image data, CoordinateArray pixels );
 
 This will thus not work:
 
@@ -360,9 +359,9 @@ This will thus not work:
 We'll need to do this instead:
 
     Image result = img.At( mask ) + 20;            // Get the pixels, add 20
-    img.AssignAt( result, mask);                   // Assign the result back into the image
+    img.CopyAt( result, mask);                     // Assign the result back into the image
 
-    img.AssignAt( img.At( mask ) + 20, mask);      // Same as above
+    img.CopyAt( img.At( mask ) + 20, mask);        // Same as above
 
 This is not ideal, but it's the best compromise I've come up with so
 far. An alternative is for this syntax to produce, as I mentioned
@@ -725,6 +724,9 @@ threads, and adapted to *OpenMP*, but this lead to suboptimal code.
       type of the image copy matches buffer type (or should we do this
       with a multi-dimensional buffer? depends on filter size?).
 
+    - Optionally, the caller can pass in the image already extended. That is,
+      the filter is not applied to the pixels in the image border.
+
     - `dip::Framework::FilterFullSingle()`: 1 input, 1 output
 
     - currently: `dip_PixelTableArrayFrameWork()`
@@ -810,104 +812,119 @@ Many of the current *DIPlib* functions (the ones that cannot work
 in-place) use a function `ImagesSeparate()` to create temporary images
 when output images are also input images. The resource handler takes
 care of moving the data blocks from the temporary images to the output
-images. We can do that this way in C++:
+images when the function ends. With the current design of shared pointers
+to the data, this is no longer necessary. Say a function is called with
 
-    class AliasHandler {
-       private:
-          ImageRefArray output;           // We save references to the original
-                                          //    output images here
-          ImageArray temp;                // We keep temporary images here
-       public:
-          AliasHandler( ImageRefArray in, ImageRefArray out ) {
-             for( int ii=0; ii<output.size(); ++i i) {
-                if( out[ii] is in in ) {  // How to do this check is up for discussion
-                   output.push_back( out[ii] );
-                   temp.emplace_back();
-                   out[ii] = temp.back();
-                }
-             }
-          }
-          ~AliasHandler() {
-             for( int ii=0; ii<output.size(); ++ii )
-                output[ii] = std::move( temp[ii] );
-          }
-    };
+    dip::Image A;
+    dip::Gauss(A, A, 4);
 
-    void DoSomethingWithImages( Image in1, Image in2, Image out1, Image out2, Image out3 )
-    {
-       ImageRefArray inar { in1, in2 };
-       ImageRefArray outar { out1, out2, out3 };
-       AliasHandler ah( inar, outar );    // outar[0], outar[1], and outar[2] are
-                                          //    now safe to use.
-       outar.Strip();
-       outar.CopyDimensions( in1 );
-       outar.Forge();
-      // do processing ...
-    }                                     // ah goes out of scope, its destructor is called,
-                                          //     and temporary images are copied to output.
+Then the function `dip::Gauss()` does this:
+
+    void dip::Gauss(const dip::Image &in_, dip::Image &out, double size) {
+       Image in = in_;
+       out.Strip();
+       // do more processing ...
+    }
+
+What happens here is that the new image `in` is a copy of the input image, `A`,
+pointing at the same data segment. The image `out` is a refernce to image `A`.
+When we strip `A`, the new image `in` still points at the original data segment,
+which will not be freed until `in` goes out of scope. Thus, the copy `in`
+preserves the original image data, leaving the output image, actually the
+image `A` in the caller's space, available for modifying.
+
+However, if `out` is not stripped, and data is written into it, then `in` is
+changed during processing. So if the function cannot work in plance, it should
+always test for aliasing of image data, and strip/forge the output image if
+necessary:
+
+    void dip::Gauss(const dip::Image &in_, dip::Image &out, double size) {
+       Image in = in_;                 // preserve original input data
+       bool needReForge = false;
+       if (out does not have the required properties) {
+          needReForge = true;
+       } else if (in and out share data) {
+          needReForge = true;
+       }
+       if (needReForge) {
+          out.Strip();                 // create new data segment for output
+          out.SetDimensions(...);
+          ...
+          out.Forge();
+       }
+       // do more processing ...
+    }
 
 
 ## Functionality currently not in *DIPlib* that would be important to include
 
--   An overlay function that adds a binary or labelled image on top of a
-    grey-value or colour image.
+- An overlay function that adds a binary or labelled image on top of a
+  grey-value or colour image.
 
--   Stain unmixing for bright-field microscopy
+- Stain unmixing for bright-field microscopy.
 
--   Some form of image display for development and debugging. We can
-    have the users resort to third-party libraries or saving
-    intermediate images to file, or we can try to copy *OpenCV*'s image
-    display into *dipIO*.
+- Some form of image display for development and debugging. We can
+  have the users resort to third-party libraries or saving
+  intermediate images to file, or we can try to copy *OpenCV*'s image
+  display into *dipIO*.
 
--   Some filters that are trivial to add:
+- Some filters that are trivial to add:
 
-    -   Scharr (slightly better than Sobel)
+    - Scharr (slightly better than Sobel)
 
-    -   h-minima & h-maxima
+    - h-minima & h-maxima
 
-    -   opening by reconstruction
+    - opening by reconstruction
 
-    -   alternating sequential open-close filter (3 versions: with
-        structural opening, opening by reconstruction, and area opening)
+    - alternating sequential open-close filter (3 versions: with
+      structural opening, opening by reconstruction, and area opening)
 
--   Dilation/erosion by a rotated line is currently implemented by first
-    skewing the image, applying filter along rows or columns, then
-    skewing back. We can add a 2D-specific version that operates
-    directly over rotated lines. The diamond structuring element can
-    then be decomposed into two of these operations. We can also add
-    approximations of the circle with such lines.
+- Dilation/erosion by a rotated line is currently implemented by first
+  skewing the image, applying filter along rows or columns, then
+  skewing back. We can add a 2D-specific version that operates
+  directly over rotated lines. The diamond structuring element can
+  then be decomposed into two of these operations. We can also add
+  approximations of the circle with such lines.
 
--   Most of the functionality that is now implemented in *DIPimage*
-    only:
+- We're also lacking some other morphological filters:
 
-    -   automatic threshold determination (Otsu, triangle,
-        background, etc.)
+    - hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees.
 
-    -   [Colour space conversion]
+    - thinning & thickening, to be implemented as iterated hit'n'miss.
 
-    -   2D snakes
+    - levelling
 
-    -   look-up tables (LUT, both for grey-scale and colour LUTs, using
-        interpolation when input image is float)
+- Most of the functionality that is now implemented in *DIPimage*
+  only:
 
-    -   general 2D affine transformation, 3D rotation
+    - automatic threshold determination (Otsu, triangle,
+      background, etc.).
 
-    -   xx, yy, zz, rr, phiphi, ramp; extend this to coords(), which
-        makes a tensor image.
+    - [Colour space conversion].
 
--   Radon transform for lines and circles, Hough transform for lines
+    - 2D snakes.
 
--   Level-set segmentation, graph-cut segmentation
+    - look-up tables (LUT, both for grey-scale and colour LUTs, using
+      interpolation when input image is float).
 
--   The `Label()` function should return the number of labels. It could
-    optionally also return the sizes of the objects, since these are
-    counted anyway. The labelling algorithm by Mike is quite efficient,
-    but we should compare with the more common union-find algorithm, which
-    is likely to be optimal for this application (Mike's code uses a priority
-    queue, union-find doesn't need it).
+    - general 2D affine transformation, 3D rotation.
 
--   We need to figure out if it is worth it to use loop unrolling for
-    some basic operations.
+    - xx, yy, zz, rr, phiphi, ramp; extend this to coords(), which
+      makes a tensor image.
+
+- Radon transform for lines and circles, Hough transform for lines.
+
+- Level-set segmentation, graph-cut segmentation.
+
+- The `Label()` function should return the number of labels. It could
+  optionally also return the sizes of the objects, since these are
+  counted anyway. The labelling algorithm by Mike is quite efficient,
+  but we should compare with the more common union-find algorithm, which
+  is likely to be optimal for this application (Mike's code uses a priority
+  queue, union-find doesn't need it).
+
+- We need to figure out if it is worth it to use loop unrolling for
+  some basic operations.
 
 
 ## Python interface

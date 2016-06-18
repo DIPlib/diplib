@@ -54,13 +54,14 @@ docs:
 	doxygen
 
 # thoughts:
-.PHONY: thoughts
-thoughts: DIPthoughts.html
-DIPthoughts.pdf : DIPthoughts.md
+.PHONY: thoughts proposal
+thoughts: doc/DIPthoughts.html
+doc/DIPthoughts.pdf : DIPthoughts.md
 	pandoc -t latex -o $@ $<
-DIPthoughts.html : DIPthoughts.md
+doc/DIPthoughts.html : DIPthoughts.md
 	pandoc -t html -o $@ $<
-DIPproposal_SurfSara.pdf: DIPproposal_SurfSara.md pandoc/listings_setup.tex
+proposal: doc/DIPproposal_SurfSara.pdf
+doc/DIPproposal_SurfSara.pdf: DIPproposal_SurfSara.md pandoc/listings_setup.tex
 	pandoc $< -o $@ -t latex --smart --number-sections --toc --variable colorlinks=true  --variable fontfamily="mathpazo" --latex-engine=xelatex  --listings -H pandoc/listings_setup.tex
 
 # clean:
