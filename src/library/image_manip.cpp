@@ -141,14 +141,10 @@ Image& Image::TensorToSpatial( dip::uint dim ) {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = dims.size();
    dip_ThrowIf( dim > nd, E::INVALID_PARAMETER );
-   dims.resize( nd+1 );
-   strides.resize( nd+1 );
-   for( dip::uint ii=nd; ii>dim; --ii ) {
-      dims   [ii] = dims   [ii-1];
-      strides[ii] = strides[ii-1];
-   }
-   dims   [dim] = tensor.Elements();
-   strides[dim] = tstride;
+   dims.insert( dim, tensor.Elements() );
+   strides.insert( dim, tstride );
+   tensor.SetScalar();
+   tstride = 1;
    return *this;
 }
 
@@ -158,16 +154,19 @@ Image& Image::SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols ) {
    dip_ThrowIf( !tensor.IsScalar(), E::NOT_SCALAR );
    dip::uint nd = dims.size();
    dip_ThrowIf( dim >= nd, E::INVALID_PARAMETER );
+   if ((rows == 0) && (cols == 0)) {
+      rows = dims[dim];
+      cols = 1;
+   } else if (rows == 0) {
+      rows = dims[dim] / cols;
+   } else if (cols == 0) {
+      cols = dims[dim] / rows;
+   }
    dip_ThrowIf( dims[dim] != rows * cols, E::PARAMETER_OUT_OF_RANGE );
    tensor.SetMatrix( rows, cols );
    tstride = strides[dim];
-   --nd;
-   for( dip::uint ii=dim; ii<nd; ++ii ) {
-      dims   [ii] = dims   [ii+1];
-      strides[ii] = strides[ii+1];
-   }
-   dims.resize( nd );
-   strides.resize( nd );
+   dims.erase( dim );
+   strides.erase( dim );
    return *this;
 }
 

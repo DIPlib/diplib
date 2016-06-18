@@ -6,6 +6,13 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
+
+//
+// NOTE!
+// This file is included through diplib.h -- no need to include directly
+//
+
+
 #ifndef DIP_TYPES_H
 #define DIP_TYPES_H
 
@@ -20,7 +27,7 @@
 #include <algorithm>
 #include <utility>
 
-#include <iostream> // temporary
+//#include <iostream> // for debugging
 
 namespace dip {
 
@@ -190,7 +197,7 @@ class DimensionArray {
                if( tmp == nullptr ) {
                   throw std::bad_alloc();
                }
-               std::cout << "   DimensionArray realloc\n";
+               //std::cout << "   DimensionArray realloc\n";
                if( newsz > size_ ) {
                   std::fill( tmp + size_, tmp + newsz, newval );
                }
@@ -199,7 +206,7 @@ class DimensionArray {
             } else {
                // move from static to heap data
                T* tmp = static_cast<T*>( std::malloc( newsz * sizeof( T ) ) );
-               std::cout << "   DimensionArray malloc\n";
+               //std::cout << "   DimensionArray malloc\n";
                if( tmp == nullptr ) {
                   throw std::bad_alloc();
                }
@@ -373,7 +380,7 @@ class DimensionArray {
       void free_array() {
          if( is_dynamic() ) {
             std::free( data_ );
-            std::cout << "   DimensionArray free\n";
+            //std::cout << "   DimensionArray free\n";
          }
       }
 
@@ -394,7 +401,6 @@ class DimensionArray {
 typedef DimensionArray<dip::sint>      IntegerArray;   ///< An array to hold strides, filter sizes, etc.
 typedef DimensionArray<dip::uint>      UnsignedArray;  ///< An array to hold dimensions, dimension lists, etc.
 typedef DimensionArray<dip::dfloat>    FloatArray;     ///< An array to hold filter parameters.
-typedef DimensionArray<dip::dcomplex>  ComplexArray;   //   (used in only one obscure function in the old DIPlib.
 typedef DimensionArray<bool>           BooleanArray;   ///< An array used as a dimension selector.
    // IntegerArray A;
    // IntegerArray A(n);
@@ -423,6 +429,7 @@ class Options {
    constexpr Options<E,N>() {}
    constexpr Options<E,N>(dip::uint n) : values {1ULL << n} {}
    bool operator== (const Options<E,N>& other) const { return (values & other.values).any(); }
+   bool operator!= (const Options<E,N>& other) const { return !(values & other.values).any(); }
    Options<E,N> operator+ (Options<E,N> other) const { other.values |= values; return other; }
 };
 
@@ -434,11 +441,11 @@ class Options {
 ///        DIP_DEFINE_OPTION(MyOptions, Option_fresh, 1);
 ///        DIP_DEFINE_OPTION(MyOptions, Option_shine, 2);
 ///
-/// `MyOptions` will by a type that has three non-exclusive flags. Each of the
+/// `MyOptions` will be a type that has three non-exclusive flags. Each of the
 /// three DIP_DEFINE_OPTION commands defines a `constexpr` variable for the
 /// given flag. These values can be combined using the `+` operator.
-/// A variable of type `MyOptions` can be tested using the `==` operator,
-/// which returns a `bool`:
+/// A variable of type `MyOptions` can be tested using the `==` and `!=`
+/// operators, which return a `bool`:
 ///
 ///        MyOptions opts = {};                    // No options are set
 ///        opts = Option_fresh;                    // Set only one option.

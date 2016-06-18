@@ -26,7 +26,7 @@ int main() {
          dip::Image img;
          std::cout << img;
          img.SetDimensions({50,80,30});
-         img.SetTensorDimensions({3});
+         img.SetTensorDimensions(3);
          img.Forge();
          std::cout << img;
          img.Strip();
@@ -53,7 +53,7 @@ int main() {
       {
          dip::Image img1;
          img1.SetDimensions({50,80,30});
-         img1.SetTensorDimensions({3});
+         img1.SetTensorDimensions(3);
          img1.Forge();
          std::cout << img1;
          dip::Image img2(img1);
@@ -78,7 +78,7 @@ int main() {
       {
          dip::Image img1;
          img1.SetDimensions({50,80,30});
-         img1.SetTensorDimensions({3});
+         img1.SetTensorDimensions(3);
          img1.Forge();
          std::cout << img1;
          img1.PermuteDimensions({2,1,0});
@@ -104,7 +104,7 @@ int main() {
       {
          dip::Image img1;
          img1.SetDimensions({50,80,30});
-         img1.SetTensorDimensions({3});
+         img1.SetTensorDimensions(3);
          img1.Forge();
          dip::Image img2 = img1[0];
          if( Alias(img1,img2) != true )
@@ -134,7 +134,7 @@ int main() {
             std::cout << "Error: aliasing computation, test #8" << std::endl;
          dip::Image img8;
          img8.SetDimensions({50,80,30});
-         img8.SetTensorDimensions({3});
+         img8.SetTensorDimensions(3);
          img8.Forge();
          if( Alias(img1,img8) != false )
             std::cout << "Error: aliasing computation, test #9" << std::endl;

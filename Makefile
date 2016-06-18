@@ -9,12 +9,14 @@ MATLABDIR = /Applications/MATLAB_R2016a.app
 
 INC = include/
 
-OBJ = $(addprefix obj/,image.o image_manip.o image_indexing.o datatypes.o error.o sort.o numeric.o)
+OBJ = $(addprefix obj/,image.o image_data.o image_manip.o image_indexing.o datatypes.o error.o sort.o numeric.o)
 
 all: tests
 
 # src/library:
 obj/image.o : src/library/image.cpp
+	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
+obj/image_data.o : src/library/image_data.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
 obj/image_manip.o : src/library/image_manip.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)

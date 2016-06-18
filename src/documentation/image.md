@@ -113,26 +113,6 @@ For details on possible tensor representations, see dip::Tensor::Shape.
 
 \section assignment Assignment
 
-The assignment operator has two distinct meanings, depending on whether
-the Image object is raw or forged:
-
-    dest = src;
-
-If the Image object `dest` is raw, assigning an Image `src` to it causes the
-Image object to be an identical copy of `src`, pointing at the same
-data segment. The two images share the data segment using reference
-counting, this memory will not be freed until the last of the Image
-objects referring to is is destroyed or stripped (Image::Strip).
-
-If the Image object `dest` is forged, assigning an Image `src` to it
-causes the pixel values in `src` to be copied to `dest`. The sizes of
-the two images are expected to be identical, but \ref
-singleton_expansion "singleton expansion" is performed first. Alternatively,
-`src` can be a 1D image with the same number of pixels as `dest`. Pixels
-are then assigned into `dest` by iterating first over the first dimension,
-then over the second, etc. That is, the order in which the pixels are
-stored in memory is irrelevant when making this assignment.
-
 [//]: # (--------------------------------------------------------------)
 
 \section indexing Indexing
@@ -197,6 +177,3 @@ be changed to `{ 50, 30, 60 }`. `img1` gets its second dimension expanded,
 wereas `img2` will get its new third dimension expanded. The output image
 `img3` will thus have 50x30x60 pixels.
 
-In the case of assignment with forged images, the destination image will
-not be adjusted, only the source image will be adjusted to match the
-destination.

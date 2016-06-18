@@ -6,15 +6,19 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
-// This file is included through diplib.h
-#ifndef DIPLIB_H
-#error "Please don't include this file directly, include diplib.h instead."
-#endif
+
+//
+// NOTE!
+// This file is included through diplib.h -- no need to include directly
+//
+
 
 #ifndef DIP_SUPPORT_H
 #define DIP_SUPPORT_H
 
-/// The dip namespace contains all the library functionality.
+#include "dip_error.h"
+#include "dip_types.h"
+
 namespace dip {
 
 //

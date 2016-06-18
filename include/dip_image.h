@@ -6,10 +6,12 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
-// This file is included through diplib.h
-#ifndef DIPLIB_H
-#error "Please don't include this file directly, include diplib.h instead."
-#endif
+
+//
+// NOTE!
+// This file is included through diplib.h -- no need to include directly
+//
+
 
 #ifndef DIP_IMAGE_H
 #define DIP_IMAGE_H
@@ -18,6 +20,11 @@
 #include <limits>
 #include <functional>
 
+#include "dip_support.h"
+#include "dip_tensor.h"
+#include "dip_datatype.h"
+
+/// The dip namespace contains all the library functionality.
 namespace dip {
 
 //
@@ -365,6 +372,12 @@ class Image {
          tensor.SetDimensions( tdims );
       }
 
+      /// Set tensor dimensions; the image must be raw.
+      void SetTensorDimensions( dip::uint nelems ) {
+         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         tensor.SetVector( nelems );
+      }
+
       /// Change the tensor shape, without changing the number of tensor elements.
       // NOTE: this currently forces the tensor to be a matrix. We should maybe
       // modify the Tensor class so that matrices with one of the dimensions==1
@@ -391,8 +404,11 @@ class Image {
       /// Convert tensor dimensions to spatial dimension, works even for scalar images.
       Image& TensorToSpatial( dip::uint dim );
 
-      /// Convert spatial dimension to tensor dimensions, image must be scalar.
-      Image& SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols = 1 );
+      /// Convert spatial dimension to tensor dimensions. The image must be scalar.
+      /// If `rows` or `cols` is zero, its size is computed from the size of the
+      /// image along dimension `dim`. If both are zero, a default column tensor
+      /// is created.
+      Image& SpatialToTensor( dip::uint dim, dip::uint rows = 0, dip::uint cols = 0 );
 
       //
       // Data Type

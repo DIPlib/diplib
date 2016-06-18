@@ -3,7 +3,7 @@
  * This file contains definitions for all the main classes and functions.
  * Include additional files after this one for specialized functionality.
  *
- * (c)2014-2015, Cris Luengo.
+ * (c)2014-2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -18,11 +18,6 @@
 /// files as needed for additional library functionality. The documentation
 /// will indicate which header file to include for each function.
 
-#include "dip_error.h"
-#include "dip_types.h"
-#include "dip_datatype.h"
-#include "dip_support.h"
-#include "dip_tensor.h"
 #include "dip_image.h"
 
 #endif // DIPLIB_H

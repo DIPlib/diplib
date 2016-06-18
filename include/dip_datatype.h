@@ -6,13 +6,17 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
-// This file is included through diplib.h
-#ifndef DIPLIB_H
-#error "Please don't include this file directly, include diplib.h instead."
-#endif
+
+//
+// NOTE!
+// This file is included through diplib.h -- no need to include directly
+//
+
 
 #ifndef DIP_DATATYPE_H
 #define DIP_DATATYPE_H
+
+#include <vector>
 
 namespace dip {
 
