@@ -39,6 +39,16 @@ namespace Framework {
 UnsignedArray SingletonExpandedSize(
       const ImageRefArray& in
 );
+/// Determines if images can be singleton-expanded to the same size, and what
+/// that size would be. Singleton dimensions (size==1) can be expanded to a
+/// larger size by setting their stride to 0. This change can be performed
+/// without modifying the data segment. If image dimensions differ such that
+/// singleton expansion cannot make them all the same size, an exception is
+/// thrown. Use dip::Framework::SingletonExpansion to apply the transform
+/// to all images.
+UnsignedArray SingletonExpandedSize(
+      const ImageArray& in
+);
 
 /// Performs singleton expansion. The image is modified so that it has `size`
 /// as dimensions. It must be forged and singleton-expandable to `size`,

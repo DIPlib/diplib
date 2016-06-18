@@ -199,14 +199,7 @@ void Image::ComputeStrides() {
 
 //
 void Image::GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const {
-   // Add tensor dimension and strides to the lists
-   IntegerArray  s = strides;
-   UnsignedArray d = dims;
-   if( tensor.Elements() > 1 ) {
-      s.push_back( tstride );
-      d.push_back( tensor.Elements() );
-   }
-   FindDataBlockSizeAndStart( s, d, size, start );
+   FindDataBlockSizeAndStart( strides, dims, size, start );
 }
 
 

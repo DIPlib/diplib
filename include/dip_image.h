@@ -196,7 +196,7 @@ class Image {
       /// \see PermuteDimensions.
       Image& SwapDimensions( dip::uint d1, dip::uint d2 );
 
-      /// Make image 1D. The image must be forged. If HasContiguousData,
+      /// Make image 1D. The image must be forged. If HasSimpleStride,
       /// this is a quick and cheap operation, but if not, the data segment
       /// will be copied.
       ///
@@ -277,13 +277,13 @@ class Image {
 
       /// Test if all the pixels are contiguous.
       /// If all pixels are contiguous, you can traverse the whole image,
-      /// accessing each of the tensor elements in each of the pixles,
-      /// using a single stride with a value of 1. To do so, you don't
-      /// necessarily start at the origin; if any of the strides is
-      /// negative, the origin of the contiguous data will be elsewhere.
+      /// accessing each of the pixles, using a single stride with a value
+      /// of 1. To do so, you don't necessarily start at the origin; if any
+      /// of the strides is negative, the origin of the contiguous data will
+      /// be elsewhere.
       /// Use GetSimpleStrideAndOrigin to get a pointer to the origin
-      /// of the contiguous data. Note that, in this case, the tensor
-      /// values will be treated line one more spatial dimension.
+      /// of the contiguous data. Note that this only tests spatial
+      /// dimesions, the tensor dimension must still be accessed separately.
       ///
       /// The image must be forged.
       /// /see GetSimpleStrideAndOrigin, HasSimpleStride, HasNormalStrides, Strides, TensorStride.
@@ -303,8 +303,8 @@ class Image {
       /// value. This is similar to HasContiguousData, but the stride
       /// value can be larger than 1.
       /// Use GetSimpleStrideAndOrigin to get a pointer to the origin
-      /// of the contiguous data. Note that, in this case, the tensor
-      /// values will be treated line one more spatial dimension.
+      /// of the contiguous data. Note that this only tests spatial
+      /// dimesions, the tensor dimension must still be accessed separately.
       ///
       /// The image must be forged.
       /// /see GetSimpleStrideAndOrigin, HasContiguousData, HasNormalStrides, Strides, TensorStride.
@@ -316,9 +316,10 @@ class Image {
       }
 
       /// Return a pointer to the start of the data and a single stride to
-      /// walk through all pixels and all tensor elements.
-      /// If this is not possible, the function sets `stride==0` and
-      /// `porigin==nullptr`.
+      /// walk through all pixels. If this is not possible, the function
+      /// sets `stride==0` and `porigin==nullptr`. Note that this only
+      /// tests spatial dimesions, the tensor dimension must still be
+      /// accessed separately.
       ///
       /// The image must be forged.
       /// /see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
@@ -507,14 +508,6 @@ class Image {
          Forge();
       }
 
-      /// Determine if this image shares any pixels with `other`.
-      /// If `true`, writing into this image will change the data in
-      /// `other`, and vice-versa.
-      ///
-      /// Both images must be forged.
-      /// \see SharesData, Alias.
-      bool Aliases( const Image& other ) const;
-
       //
       // Data
       //
@@ -560,6 +553,14 @@ class Image {
          dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
          return datablock == other.datablock;
       }
+
+      /// Determine if this image shares any pixels with `other`.
+      /// If `true`, writing into this image will change the data in
+      /// `other`, and vice-versa.
+      ///
+      /// Both images must be forged.
+      /// \see SharesData, Alias.
+      bool Aliases( const Image& other ) const;
 
       /// Get pointer to the first pixel in the image, at coordinates (0,0,0,...);
       /// the image must be forged.

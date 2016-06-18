@@ -12,27 +12,45 @@
 namespace dip {
 namespace Framework {
 
+// Part of the next two functions
+static inline void SingletonExpandedSize(
+      UnsignedArray& size,
+      const UnsignedArray& size2
+) {
+   if( size.size() < size2.size() ) {
+      size.resize( size2.size(), 1 );
+   }
+   for( dip::uint jj = 0; jj < size2.size(); ++jj ) {
+      if( size[jj] != size2[jj] ) {
+         if( size[jj] == 1 ) {
+            size[jj] = size2[jj];
+         } else if( size2[jj] != 1 ) {
+            dip_Throw( E::DIMENSIONS_DONT_MATCH );
+         }
+      }
+   }
+}
+
 // Figure out what the size of the images must be.
 UnsignedArray SingletonExpandedSize(
       const ImageRefArray& in
 ) {
    UnsignedArray size = in[0].get().Dimensions();
-   dip::uint ndims = size.size();
-   for( dip::uint ii=1; ii<in.size(); ++ii ) {
+   for( dip::uint ii = 1; ii < in.size(); ++ii ) {
       UnsignedArray size2 = in[ii].get().Dimensions();
-      if( ndims < size2.size() ) {
-         ndims = size2.size();
-         size.resize( ndims, 1 );
-      }
-      for( dip::uint jj=0; jj<size2.size(); ++jj ) {
-         if( size[jj] != size2[jj] ) {
-            if( size[jj] == 1 ) {
-               size[jj] = size2[jj];
-            } else if( size2[jj] != 1 ) {
-               dip_Throw( E::DIMENSIONS_DONT_MATCH );
-            }
-         }
-      }
+      SingletonExpandedSize( size, size2 );
+   }
+   return size;
+}
+
+// Idem as above.
+UnsignedArray SingletonExpandedSize(
+      const ImageArray& in
+) {
+   UnsignedArray size = in[0].Dimensions();
+   for( dip::uint ii = 1; ii < in.size(); ++ii ) {
+      UnsignedArray size2 = in[ii].Dimensions();
+      SingletonExpandedSize( size, size2 );
    }
    return size;
 }
@@ -47,7 +65,7 @@ void SingletonExpansion(
       in.ExpandDimensionality( ndims );
    }
    UnsignedArray size2 = in.Dimensions();
-   for( dip::uint ii=0; ii<ndims; ++ii ) {
+   for( dip::uint ii = 0; ii < ndims; ++ii ) {
       if( size2[ii] != size[ii] ) {
          in.ExpandSingletonDimension( ii, size[ii] );
       }

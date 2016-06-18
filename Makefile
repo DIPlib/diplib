@@ -9,7 +9,9 @@ MATLABDIR = /Applications/MATLAB_R2016a.app
 
 INC = include/
 
-OBJ = $(addprefix obj/,image.o image_data.o image_manip.o image_indexing.o datatypes.o error.o sort.o numeric.o)
+OBJ = $(addprefix obj/,image.o image_data.o image_manip.o image_indexing.o \
+			datatypes.o error.o framework.o framework_scan.o \
+			sort.o numeric.o)
 
 all: tests
 
@@ -25,6 +27,10 @@ obj/image_indexing.o : src/library/image_indexing.cpp
 obj/datatypes.o : src/library/datatypes.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
 obj/error.o : src/library/error.cpp
+	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
+obj/framework.o : src/library/framework.cpp
+	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
+obj/framework_scan.o : src/library/framework_scan.cpp
 	$(CC) -c $(CFLAGS) $< -o $@ -I$(INC)
 
 # src/support:
