@@ -1,0 +1,133 @@
+dip_framework.c:  dip_SeparableFrameWork        // Calls dip__Framework() [ DIP_FRAMEWORK_SEPARABLE_FILTER & DIP_FRAMEWORK_TWO_LINES_SEPARABLE_FILTER ]
+
+dip_framework.c:  dip_MonadicFrameWork          // Calls dip__Framework()
+dip_monadicp.c:   dip_MonadicPoint              // Calls dip_MonadicFrameWork()
+                    (used by functions in dip_immath.c)
+dip_monadicp.c:   dip_MonadicPointData          // Calls dip_MonadicFrameWork()
+                    (used by dip_PaintEllipsoid, dip_PaintBox, dip_PaintDiamond, and functions in dip_immath.c)
+
+dip_ptbafw.c:     dip_PixelTableArrayFrameWork  // DIP_FRAMEWORK_PIXEL_TABLE_ARRAY_FILTER
+
+dip_ptbfw.c:      dip_PixelTableFrameWork       // DIP_FRAMEWORK_PIXEL_TABLE_FILTER
+
+dip_scanfw.c:     dip_ScanFrameWork             // DIP_FRAMEWORK_SCAN_FILTER
+dip_sgloutfw.c:   dip_SingleOutputFrameWork     // Calls dip_ScanFrameWork() [ DIP_FRAMEWORK_SINGLE_OUTPUT_FILTER ]
+                    (used through dip_SingleOutputPoint)
+dip_monadicp.c:   dip_SingleOutputPoint         // Calls dip_SingleOutputFrameWork()
+                    (used by dip_IncoherentPSF, dip_IncoherentOTF, dip_EllipticDistanceToPoint, functions in
+                     dip_testobj.c, dip_GaussFT, dip_FTGaussian, dip_FTBox, dip_FTCross, and dip_FTEllipsoid)
+
+
+dip_framework.c:  dip__FrameWork                // Called by both dip_SeparableFrameWork() and dip_MonadicFrameWork()
+dip__fwclass.c:   dip_FWClassical (not used)    // Called by dip__FrameWork()
+dip__ompclass.c:  dip_FWClassicalOMP            // Called by dip__FrameWork()
+dip__fwstripe.c:  dip_FWDoubleStripe (not used) // Called by dip__FrameWork()
+dip__ompstripe.c: dip_FWDoubleStripeOMP         // Called by dip__FrameWork()
+
+dip_framework.c:  dip_FrameWorkProcessNew
+
+
+
+DIP_FRAMEWORK_DEFAULT_OPERATION
+   (equal to no flags at all set)
+DIP_FRAMEWORK_IN_PLACE (not used anywhere)
+   Filtering can be done in place
+   (only for separable framework? should be useful also in scan framework!)
+DIP_FRAMEWORK_NO_IN_BORDER
+   No border extension of input data needed
+   (not for pixel table frameworks, but you can always set the border to 0?)
+   (why is this option useful? only used in Fourier and Hartley transforms)
+DIP_FRAMEWORK_OUT_BORDER
+   Border extension of the output data needed
+   (not for pixel table frameworks)
+DIP_FRAMEWORK_WRITE_INPUT (not used anywhere, not implemented either!)
+   The filter function needs to overwrite the input data
+DIP_FRAMEWORK_OUTPUT_ACCESS
+   The filter gets direct access to the output image, no output buffer is used
+   (scan framework only)
+DIP_FRAMEWORK_USE_BUFFER_TYPES
+   The filter function expects input and output buffers to be of requested types
+DIP_FRAMEWORK_NO_BUFFER_STRIDE
+   The filter function expects input and output buffers to have a stride of 1
+   (not for pixel table frameworks)
+DIP_FRAMEWORK_DO_NOT_ADJUST
+   Do not adjust the output image, just check it
+DIP_FRAMEWORK_USE_OUTPUT_TYPE
+   Adjust the output image to the requested data type
+DIP_FRAMEWORK_MULTI_THREADING_SAFE
+   The filter function is multi-threading safe
+DIP_FRAMEWORK_AS_LINEAR_ARRAY
+   The filter function does not need coordinate information, and can therefore
+   process the images as if they were a single, long line.
+   (scan framework only)
+
+
+DIP_FRAMEWORK_SEPARABLE_FILTER (default)
+DIP_FRAMEWORK_TWO_LINES_SEPARABLE_FILTER (used only by the Hartley transform)
+DIP_FRAMEWORK_SINGLE_OUTPUT_FILTER (not used, default)
+DIP_FRAMEWORK_PIXEL_TABLE_FILTER (used, but default)
+DIP_FRAMEWORK_PIXEL_TABLE_ARRAY_FILTER (used, but default)
+DIP_FRAMEWORK_SCAN_FILTER (not used, default)
+
+
+
+
+All framework functions take a function that processes an image line
+
+We have:
+ = Scan framework: scans the image(s) once
+    - many input and output images
+    - border extension in both input and output images
+    - buffer data types for input and output image lines
+    - data type of output images
+    - possibility to see the whole image as a single array
+ = Single output framework: scans the image once
+    - one output
+ = Separable framework: scans the image multiple times
+    - one input, one output
+    - border extension
+    - buffer data types for input and output image lines
+    - fix output type
+    - scans the image along each dimension
+ = Monadic framework: scans the image once
+    - < based on separable framework >
+    - one input, one output
+    - border extension
+    - buffer data types for input and output image lines
+    - fix output type
+    - scans the image along chosen or optimal dimension
+ = Pixel table (array) framework: scans the image(s) once with a neighborhood
+    - many input and output images
+    - the other function has one input and one output image
+
+dip__Skewing() and dip__Resampling() use the monadic framework with a boundary.
+
+dip_ScanFrameWork() is always called without the boundary!
+
+
+
+We want:
+ = PointScanFrameWork
+   A framework that scans the image, doing a point operation (on each line).
+   No boundary extension, no buffers (optionally an output buffer?).
+   -> All point operations. Line filter function must be overloaded.
+ = Filter1DScanFrameWork
+   A framework that scans the image, doing a 1D neighborhood operation (on
+   each line). Like the previous framework, but with boundary exention. The
+   buffers are always used.
+   -> Point operations that do not have overloaded line filter functions.
+   -> Separable filters.
+ = FilterNDScanFrameWork
+   A framework that scans the image, doing a full neighborhood operation (on each
+   line). Full boundary extension. This is the current pixel table framework.
+   The buffer contains the whole image, with extended boundary.
+   -> Non-separable filters.
+ = Some utility frameworks that make use of the above simpler: single input and
+   output versions, a separable filter framework that calls the Filter1DScanFrameWork
+   repeatedly, etc:
+   - SeparableFrameWork -> repeated calling of Filter1DScanFrameWork.
+   - MonadicFrameWork -> PointScanFrameWork
+   - ScanFrameWork -> Filter1DScanFrameWork
+   - PixelTableArrayFrameWork, PixelTableFrameWork -> call FilterNDScanFrameWork.
+ = A separation between the framework implementations and the user functions,
+   to avoid duplicating input checking when repeatedly calling frameworks.
