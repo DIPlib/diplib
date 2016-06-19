@@ -24,6 +24,8 @@ namespace dip {
 /// independent, with little effort from the programmer.
 namespace Framework {
 
+// Maximum number of pixels in a buffer for the framework functions
+constexpr dip::uint MAX_BUFFER_SIZE = 256*1024;
 
 //
 // Support functions

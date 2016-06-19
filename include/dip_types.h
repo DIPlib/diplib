@@ -326,7 +326,7 @@ class DimensionArray {
          }
          return true;
       }
-      /// Compares two arrays, returns true if they have different size ans/or
+      /// Compares two arrays, returns true if they have different size and/or
       /// contain different values.
       friend inline bool operator != (const DimensionArray& lhs, const DimensionArray& rhs) {
          return !(lhs == rhs);
@@ -398,6 +398,7 @@ class DimensionArray {
 
 };
 
+// TODO: It's a little confusing that these arrays and others like StringArray or ImageArray work differently.
 typedef DimensionArray<dip::sint>      IntegerArray;   ///< An array to hold strides, filter sizes, etc.
 typedef DimensionArray<dip::uint>      UnsignedArray;  ///< An array to hold dimensions, dimension lists, etc.
 typedef DimensionArray<dip::dfloat>    FloatArray;     ///< An array to hold filter parameters.

@@ -11,9 +11,4 @@
 
 namespace dip {
 
-// While std::experimental::gcd is not in the standard...
-dip::uint gcd( dip::uint a, dip::uint b ) {
-   return b == 0 ? a : gcd( b, a % b );
-}
-
 } // namespace dip

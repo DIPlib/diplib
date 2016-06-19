@@ -8,6 +8,7 @@
 
 #include "diplib.h"
 #include "dip_framework.h"
+#include "dip_numeric.h"
 
 namespace dip {
 namespace Framework {
@@ -63,17 +64,17 @@ void Scan(
    }
 
    // Do singleton expansion if necessary
-   UnsignedArray imSize;
+   UnsignedArray dims;
    if( nIn > 0 ) {
-      imSize = SingletonExpandedSize( in );
+      dims = SingletonExpandedSize( in );
       for( dip::uint ii = 0; ii < nIn; ++ii) {
-         if( in[ii].Dimensions() != imSize ) {
-            SingletonExpansion( in[ii], imSize );
+         if( in[ii].Dimensions() != dims ) {
+            SingletonExpansion( in[ii], dims );
          }
       }
    } else {
       // nOut > 0, as was checked way at the top of this function.
-      imSize = c_out[0].get().Dimensions();
+      dims = c_out[0].get().Dimensions();
    }
 
    // Adjust output if necessary (and possible)
@@ -86,10 +87,10 @@ void Scan(
       if( tensorToSpatial ) {
          tmp.TensorToSpatial( 0 );
       }
-      bool good = tmp.CheckProperties( imSize, nTensElems, outImage[ii], Option::ThrowException::doNotThrow );
+      bool good = tmp.CheckProperties( dims, nTensElems, outImage[ii], Option::ThrowException::doNotThrow );
       if( !good ) {
          tmp.Strip();   // Will throw if image is protected
-         tmp.SetDimensions( imSize );
+         tmp.SetDimensions( dims );
          tmp.SetTensorDimensions( nTensorElements );
          tmp.SetDataType( outImage[ii] );
          tmp.Forge();
@@ -102,26 +103,31 @@ void Scan(
    }
 
    // Can we treat the images as if they were 1D?
-   bool scan1D = opts != Scan_NeedCoordinates;
-   if( scan1D ) {
-      for( dip::uint ii = 0; ii < nIn; ++ii) {
-         if( !in[ii].HasSimpleStride() ) {
-            scan1D = false;
-            break;
+   bool scan1D = dims.size() <= 1;
+   if( !scan1D ) {
+      scan1D = opts != Scan_NeedCoordinates;
+      if( scan1D ) {
+         for( dip::uint ii = 0; ii < nIn; ++ii) {
+            if( !in[ii].HasSimpleStride() ) {
+               scan1D = false;
+               break;
+            }
          }
       }
-   }
-   if( scan1D ) {
-      for( dip::uint ii = 0; ii < nOut; ++ii) {
-         if( !out[ii].HasSimpleStride() ) {
-            scan1D = false;
-            break;
+      if( scan1D ) {
+         for( dip::uint ii = 0; ii < nOut; ++ii) {
+            if( !out[ii].HasSimpleStride() ) {
+               scan1D = false;
+               break;
+            }
          }
       }
    }
 
    // If we can treat the images as 1D, convert them 1D.
    // Note we're only converting the copies of the headers, not the original ones.
+   // Note also that if we are dealing with a 0D image, it also has a simple
+   // stride and hence will be converted into 1D.
    if( scan1D ) {
       for( dip::uint ii = 0; ii < nIn; ++ii ) {
          in[ii].Flatten();
@@ -131,20 +137,57 @@ void Scan(
       }
    }
 
-   // TODO: For each image, determine if we need to make a new buffer or not.
+   // For each image, determine if we need to make a temporary buffer.
+   bool needBuffers = false;
+   std::vector<bool> inNeedBuffer( nIn );
+   for( dip::uint ii = 0; ii < nIn; ++ii ) {
+      inNeedBuffer[ii] = in[ii].DataType() != inBuffer[ii];
+      needBuffers |= inNeedBuffer[ii];
+   }
+   std::vector<bool> outNeedBuffer( nOut );
+   for( dip::uint ii = 0; ii < nOut; ++ii ) {
+      outNeedBuffer[ii] = out[ii].DataType() != outBuffer[ii];
+      needBuffers |= outNeedBuffer[ii];
+   }
 
-   // TODO: Determine the ideal block size, if we need to convert data. If not,
-   //       the ideal block size is infinite.
+   // Determine the best processing dimension, which is the one with the
+   // smallest stride, except if that dimension is very small and there's a
+   // longer dimension.
+   dip::uint processingDim = 0;
+   {
+      constexpr dip::uint SMALL_IMAGE = 63;  // A good value would depend on the size of cache.
+      // We use the strides of the first input image to determine this, if it exists.
+      IntegerArray strides;
+      if( nIn > 0 ) {
+         strides = in[0].Strides();
+      } else {
+         strides = out[0].Strides();
+      }
+      for( dip::uint ii = 1; ii < strides.size(); ++ii ) {
+         if( strides[ii] < strides[processingDim] ) {
+            if(( dims[ii] > SMALL_IMAGE ) || ( dims[ii] > dims[processingDim] )) {
+               processingDim = ii;
+            }
+         }
+      }
+   }
 
-   // TODO: Determine the best processing dimension, which is the one with the
-   //       smallest stride, except if that dimension is very small and there's
-   //       a significantly longer dimension.
+   // Determine the ideal buffer size
+   dip::uint bufferSize = dims[processingDim];
+   if( needBuffers ) {
+      // Maybe the buffer size should be smaller
+      if( bufferSize > MAX_BUFFER_SIZE ) {
+         dip::uint n = div_ceil( bufferSize, MAX_BUFFER_SIZE );
+         bufferSize = div_ceil( bufferSize, n );
+      }
+   }
 
    // TODO: Determine the number of threads we'll be using. The size of the data
    //       has an influence. We can cut an image line in parts if necessary.
    //       I guess it would be useful to get an idea of the amount of work that
    //       the lineFilter does per pixel. If the caller can provide that estimate,
    //       we'd be able to use that to determine the threading schedule.
+   //       If we have a 1D image
 
    // TODO: Start threads, ech thread makes its own buffers.
 

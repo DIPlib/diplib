@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2015, Cris Luengo.
+ * (c)2014-2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -17,7 +17,6 @@
 #define DIP_IMAGE_H
 
 #include <memory>
-#include <limits>
 #include <functional>
 
 #include "dip_support.h"
