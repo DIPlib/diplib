@@ -6,11 +6,12 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
-#include "diplib.h"
+#include <cstdlib>   // std::malloc, std::realloc, std::free
 #include <iostream>
-#include <cstdlib>
 #include <algorithm>
 #include <limits>
+
+#include "diplib.h"
 #include "dip_numeric.h"
 
 namespace dip {
@@ -386,6 +387,7 @@ void Image::Forge() {
          }
          dip::uint sz = datatype.SizeOf();
          void* p = std::malloc( size * sz );
+         dip_ThrowIf( !p, "Failed to allocate memory" );
          datablock = std::shared_ptr<void>( p, std::free );
          origin = (uint8*)p + start * sz;
       }

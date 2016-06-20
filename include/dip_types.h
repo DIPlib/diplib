@@ -205,6 +205,7 @@ class DimensionArray {
                data_ = tmp;
             } else {
                // move from static to heap data
+               // We use malloc because we want to be able to use realloc; new cannot do this.
                T* tmp = static_cast<T*>( std::malloc( newsz * sizeof( T ) ) );
                //std::cout << "   DimensionArray malloc\n";
                if( tmp == nullptr ) {

@@ -6,8 +6,9 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
-#include "diplib.h"
 #include <algorithm>
+
+#include "diplib.h"
 
 namespace dip {
 
