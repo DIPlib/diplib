@@ -257,6 +257,11 @@ class Image {
          return strides;
       }
 
+      /// Get the stride along a specific dimension.
+      dip::sint Stride( dip::uint dim ) const {
+         return strides[dim];
+      }
+
       /// Get the tensor stride.
       dip::uint TensorStride() const {
          return tstride;

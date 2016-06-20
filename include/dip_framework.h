@@ -187,9 +187,9 @@ typedef void (*ScanFilter) (
 void Scan(
       const ImageRefArray& in,                  ///< Input images
       ImageRefArray&       out,                 ///< Output images
-      const DataTypeArray& inBuffer,            ///< Data types for input buffers
-      const DataTypeArray& outBuffer,           ///< Data types for output buffers
-      const DataTypeArray& outImage,            ///< Data types for output images
+      const DataTypeArray& inBufferTypes,       ///< Data types for input buffers
+      const DataTypeArray& outBufferTypes,      ///< Data types for output buffers
+      const DataTypeArray& outImageTypes,       ///< Data types for output images
       const UnsignedArray& nTensorElements,     ///< Number of tensor elements in output images
       ScanFilter           lineFilter,          ///< Function to call for each image line
       const void*          functionParameters,  ///< Parameters to pass to `lineFilter`
