@@ -155,6 +155,16 @@ class Image {
          return dims;
       }
 
+      /// Get a const reference to the dimensions array (image size).
+      const UnsignedArray& RefDimensions() const {
+         return dims;
+      }
+
+      /// Get the dimension along a specific dimension.
+      dip::uint Dimension( dip::uint dim ) const {
+         return dims[dim];
+      }
+
       /// Get the number of pixels.
       dip::uint NumberOfPixels() const {
          dip::uint n = 1;
@@ -257,6 +267,11 @@ class Image {
          return strides;
       }
 
+      /// Get a const reference to the strides array.
+      const IntegerArray& RefStrides() const {
+         return strides;
+      }
+
       /// Get the stride along a specific dimension.
       dip::sint Stride( dip::uint dim ) const {
          return strides[dim];
@@ -290,7 +305,7 @@ class Image {
       /// dimesions, the tensor dimension must still be accessed separately.
       ///
       /// The image must be forged.
-      /// /see GetSimpleStrideAndOrigin, HasSimpleStride, HasNormalStrides, Strides, TensorStride.
+      /// \see GetSimpleStrideAndOrigin, HasSimpleStride, HasNormalStrides, Strides, TensorStride.
       bool HasContiguousData() const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          dip::uint size = NumberOfPixels() * TensorElements();
@@ -311,7 +326,7 @@ class Image {
       /// dimesions, the tensor dimension must still be accessed separately.
       ///
       /// The image must be forged.
-      /// /see GetSimpleStrideAndOrigin, HasContiguousData, HasNormalStrides, Strides, TensorStride.
+      /// \see GetSimpleStrideAndOrigin, HasContiguousData, HasNormalStrides, Strides, TensorStride.
       bool HasSimpleStride() const {
          void* p;
          dip::uint s;
@@ -326,14 +341,8 @@ class Image {
       /// accessed separately.
       ///
       /// The image must be forged.
-      /// /see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
+      /// \see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
       void GetSimpleStrideAndOrigin( dip::uint& stride, void*& origin ) const;
-
-      /// Compute linear index (not memory offset) given coordinates.
-      dip::uint CoordinateToIndex( UnsignedArray& coords ) const;
-
-      /// Compute coordinates given a linear index (not memory offset).
-      UnsignedArray IndexToCoordinate( dip::uint index ) const;
 
       //
       // Tensor
@@ -566,13 +575,6 @@ class Image {
       /// \see SharesData, Alias.
       bool Aliases( const Image& other ) const;
 
-      /// Get pointer to the first pixel in the image, at coordinates (0,0,0,...);
-      /// the image must be forged.
-      void* Origin() const {
-         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         return origin;
-      }
-
       /// Allocate data segment. This function allocates a memory block
       /// to hold the pixel data. If the stride array is consistent with
       /// size array, and leads to a compact memory block, it is honored.
@@ -611,6 +613,67 @@ class Image {
          externalInterface = ei;
       }
 
+      //
+      // Pointers, Offsets, Indices
+      //
+
+      /// Get pointer to the first pixel in the image, at coordinates (0,0,0,...);
+      /// the image must be forged.
+      void* Origin() const {
+         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         return origin;
+      }
+
+      /// Get a pointer to the pixel given by the offset. Cast the pointer
+      /// to the right type before use. No check is made on the index.
+      ///
+      /// \see Origin, Offset, OffsetToCoordinates
+      void* Pointer( dip::sint offset ) const {
+         return (uint8*)origin + offset * datatype.SizeOf();
+      }
+
+      /// Get a pointer to the pixel given by the coordinates index. Cast the
+      /// pointer to the right type before use. This is not the most efficient
+      /// way of indexing many pixels in the image.
+      ///
+      /// The image must be forged.
+      /// \see Origin, Offset, OffsetToCoordinates
+      void* Pointer( const UnsignedArray& coords ) const {
+         return Pointer( Offset( coords ) );
+      }
+
+      /// Compute offset given coordinates. The offset needs to be multiplied
+      /// by the number of bytes of each pixel (or rather tensor element) to
+      /// become a memory offset within the image.
+      ///
+      /// The image must be forged.
+      /// \see Origin, Pointer, OffsetToCoordinates
+      dip::sint Offset( const UnsignedArray& coords ) const;
+
+      /// Compute coordinates given an offset.
+      ///
+      /// The image must be forged.
+      /// \see Offset, IndexToCoordinates
+      UnsignedArray OffsetToCoordinates( dip::uint offset ) const;
+
+      /// Compute linear index (not offset) given coordinates. This index is not
+      /// related to the position of the pixel in memory, and should not be used
+      /// to index many pixels in sequence.
+      ///
+      /// The image must be forged.
+      /// \see IndexToCoordinates, Offset
+      dip::uint Index( const UnsignedArray& coords ) const;
+
+      /// Compute coordinates given a linear index.
+      ///
+      /// The image must be forged.
+      /// \see Index, Offset, OffsetToCoordinates
+      UnsignedArray IndexToCoordinates( dip::uint index ) const;
+
+      //
+      // Indexing
+      //
+
       /// Extract a tensor element, `indices` must have one or two elements; the image must be forged.
       Image operator[]( const UnsignedArray& indices ) const;
 
@@ -623,7 +686,7 @@ class Image {
       /// Extracts the pixel at the given coordinates; the image must be forged.
       Image At( const UnsignedArray& coords ) const;
 
-      /// Extracts the pixel at the given linear index; the image must be forged.
+      /// Extracts the pixel at the given linear index (inneficient!); the image must be forged.
       Image At( dip::uint index ) const;
 
       /// Extracts a subset of pixels from a 1D image; the image must be forged.

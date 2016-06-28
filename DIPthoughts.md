@@ -134,7 +134,7 @@ image as a single line, and it is easier to traverse the tensor
 elements of a pixel (only need one stride in a single loop, rather than
 a vector of strides in a multi-dimensional loop).
 
-I have never seen any applications for tensors with more than 3
+I have never seen any applications for tensors with more than 2
 dimensions in image analysis, so the flexibility of \#1 seems less
 important right now than the efficiency of \#2.
 

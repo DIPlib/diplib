@@ -71,7 +71,7 @@ Image Image::operator[]( const UnsignedArray& indices ) const {
    // Now `i` contains the linear index to the tensor element.
    Image out = *this;
    out.tensor.SetScalar();
-   out.origin = (uint8*)origin + i * tstride * datatype.SizeOf();
+   out.origin = Pointer( i * tstride );
    return out;
 }
 
@@ -80,7 +80,7 @@ Image Image::operator[]( dip::uint index ) const {
    dip_ThrowIf( index >= tensor.Elements() , E::INDEX_OUT_OF_RANGE );
    Image out = *this;
    out.tensor.SetScalar();
-   out.origin = (uint8*)origin + index * tstride * datatype.SizeOf();
+   out.origin = Pointer( index * tstride );
    return out;
 }
 
@@ -113,15 +113,10 @@ Image Image::Diagonal() const {
 Image Image::At( const UnsignedArray& coords ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip_ThrowIf( coords.size() != dims.size(), E::ARRAY_ILLEGAL_SIZE );
-   dip::uint index = 0;
-   for( dip::uint ii=0; ii<coords.size(); ++ii ) {
-      dip_ThrowIf( coords[ii] >= dims[ii], E::INDEX_OUT_OF_RANGE );
-      index += coords[ii]*strides[ii];
-   }
    Image out = *this;
    out.dims.resize( 0 );
    out.strides.resize( 0 );
-   out.origin = (uint8*)origin + index * datatype.SizeOf();
+   out.origin = Pointer( coords );
    return out;
 }
 
@@ -134,12 +129,12 @@ Image Image::At( dip::uint index ) const {
       Image out = *this;
       out.dims.resize( 0 );
       out.strides.resize( 0 );
-      out.origin = (uint8*)origin + index * datatype.SizeOf();
+      out.origin = Pointer( (dip::sint)index );
       return out;
    }
    else
    {
-      return At( IndexToCoordinate( index ) );
+      return At( IndexToCoordinates( index ) );
    }
 }
 
@@ -150,7 +145,7 @@ Image Image::At( Range x_range ) const {
    Image out = *this;
    out.dims[0] = x_range.Size();
    out.strides[0] *= x_range.Step();
-   out.origin = (uint8*)origin + x_range.Offset() * strides[0] * datatype.SizeOf();
+   out.origin = Pointer( x_range.Offset() * strides[0] );
    return out;
 }
 
@@ -164,8 +159,8 @@ Image Image::At( Range x_range, Range y_range ) const {
    out.dims[1] = y_range.Size();
    out.strides[0] *= x_range.Step();
    out.strides[1] *= y_range.Step();
-   out.origin = (uint8*)origin + ( x_range.Offset() * strides[0] +
-                                   y_range.Offset() * strides[1] ) * datatype.SizeOf();
+   out.origin = Pointer( x_range.Offset() * strides[0] +
+                         y_range.Offset() * strides[1] );
    return out;
 }
 
@@ -182,9 +177,9 @@ Image Image::At( Range x_range, Range y_range, Range z_range ) const {
    out.strides[0] *= x_range.Step();
    out.strides[1] *= y_range.Step();
    out.strides[2] *= z_range.Step();
-   out.origin = (uint8*)origin + ( x_range.Offset() * strides[0] +
-                                   y_range.Offset() * strides[1] +
-                                   z_range.Offset() * strides[2] ) * datatype.SizeOf();
+   out.origin = Pointer( x_range.Offset() * strides[0] +
+                         y_range.Offset() * strides[1] +
+                         z_range.Offset() * strides[2] );
    return out;
 }
 
@@ -195,13 +190,13 @@ Image Image::At( RangeArray ranges ) const {
       ranges[ii].Fix( dims[ii] );
    }
    Image out = *this;
-   dip::uint index = 0;
+   dip::sint offset = 0;
    for( dip::uint ii = 0; ii < dims.size(); ++ii ) {
       out.strides[ii] *= ranges[ii].Step();
       out.dims[ii] = ranges[ii].Size();
-      index += ranges[ii].Offset() * strides[ii];
+      offset += ranges[ii].Offset() * strides[ii];
    }
-   out.origin = (uint8*)origin + index * datatype.SizeOf();
+   out.origin = Pointer( offset );
    return out;
 }
 
@@ -222,36 +217,6 @@ void DefineROI(
       ranges[ii] = Range( origin[ii], dims[ii]+origin[ii]-1, spacing[ii] );
    }
    dest = src.At( ranges );
-}
-
-dip::uint Image::CoordinateToIndex( UnsignedArray& coords ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( coords.size() != dims.size(), E::ARRAY_ILLEGAL_SIZE );
-   dip::uint index = 0;
-   dip::uint stride = 1;
-   for( dip::uint ii=0; ii<coords.size(); ++ii ) {
-      dip_ThrowIf( coords[ii] >= dims[ii], E::INDEX_OUT_OF_RANGE );
-      index += coords[ii]*stride;
-      stride *= dims[ii];
-   }
-   return index;
-}
-
-UnsignedArray Image::IndexToCoordinate( dip::uint index ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   UnsignedArray coords( dims.size() );
-   UnsignedArray fake_strides( dims.size() );
-   dip::uint stride = 1;
-   for( dip::uint ii=0; ii<dims.size(); ++ii ) {
-      fake_strides[ii] = stride;
-      stride *= dims[ii];
-   }
-   for( dip::sint ii=((dip::sint)dims.size())-1; ii>=0; --ii ) {
-      coords[ii] = index / fake_strides[ii];
-      index      = index % fake_strides[ii];
-      dip_ThrowIf( coords[ii] >= dims[ii], E::INDEX_OUT_OF_RANGE );
-   }
-   return coords;
 }
 
 } // namespace dip

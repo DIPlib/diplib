@@ -56,6 +56,10 @@ typedef std::size_t    uint;  ///< An integer type to be used for sizes and the 
 typedef std::uint8_t          bin;        ///< Type for pixels in a binary image
             // Binary data stored in a single byte (don't use bool for pixels,
             // it has implementation-defined size)
+            // TODO: "bin" is a class, containing a uint8,
+            //       converting implicitly to/from bool and uint and sint and double.
+            //       It'll make it possible to have overloads that are different for uint8
+            //       and bin. We will probably need to make some overloaded operators too...
 typedef std::uint8_t          uint8;      ///< Type for pixels in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
 typedef std::uint16_t         uint16;     ///< Type for pixels in a 16-bit unsigned integer image
 typedef std::uint32_t         uint32;     ///< Type for pixels in a 32-bit unsigned integer image

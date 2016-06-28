@@ -82,10 +82,13 @@ void Scan(
    // Adjust output if necessary (and possible)
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       Image& tmp = c_out[ii].get();
-      if( tensorToSpatial ) {
-         tmp.TensorToSpatial( 0 );
+      bool good = false;
+      if( tmp.IsForged() ) {
+         if( tensorToSpatial ) {
+            tmp.TensorToSpatial( 0 );
+         }
+         good = tmp.CheckProperties( dims, nTensorElements, outImageTypes[ii], Option::ThrowException::doNotThrow );
       }
-      bool good = tmp.CheckProperties( dims, nTensorElements, outImageTypes[ii], Option::ThrowException::doNotThrow );
       if( !good ) {
          tmp.Strip();   // Will throw if image is protected
          tmp.SetDimensions( dims );
@@ -226,7 +229,8 @@ void Scan(
 
    // Iterate over lines in the image
    UnsignedArray position( dims.size(), 0 );
-   std::vector<dip::sint> indices( nIn + nOut, 0 ); // TODO: split into inIndices and outIndices.
+   std::vector<dip::sint> inIndices( nIn, 0 );
+   std::vector<dip::sint> outIndices( nOut, 0 );
    for(;;) {
 
       // Iterate over line sections, if bufferSize < dims[processingDim]
@@ -239,14 +243,14 @@ void Scan(
             if( inUseBuffer[ii] ) {
                // TODO: Copy nPixels from image to buffer
             } else {
-               inScanBufs[ii].buffer = (uint8*)in[ii].Origin() + ( indices[ii] + sectionStart * inScanBufs[ii].stride ) * inBufferTypes[ii].SizeOf();
+               inScanBufs[ii].buffer = in[ii].Pointer( inIndices[ii] + sectionStart * inScanBufs[ii].stride );
             }
          }
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
             if( outUseBuffer[ii] ) {
                // TODO: Copy nPixels from image to buffer
             } else {
-               outScanBufs[ii].buffer = (uint8*)out[ii].Origin() + ( indices[nIn + ii] + sectionStart * outScanBufs[ii].stride ) * outBufferTypes[ii].SizeOf();
+               outScanBufs[ii].buffer = out[ii].Pointer( outIndices[ii] + sectionStart * outScanBufs[ii].stride );
             }
          }
 
@@ -276,10 +280,10 @@ void Scan(
          if( dd != processingDim ) {
             ++position[dd];
             for( dip::uint ii = 0; ii < nIn; ++ii ) {
-               indices[ii] += in[ii].Stride( dd );
+               inIndices[ii] += in[ii].Stride( dd );
             }
             for( dip::uint ii = 0; ii < nOut; ++ii ) {
-               indices[nIn + ii] += out[ii].Stride( dd );
+               outIndices[ii] += out[ii].Stride( dd );
             }
             // Check whether we reached the last pixel of the line
             if( position[dd] != dims[dd] ) {
@@ -287,10 +291,10 @@ void Scan(
             }
             // Rewind along this dimension
             for( dip::uint ii = 0; ii < nIn; ++ii ) {
-               indices[ii] -= position[dd] * in[ii].Stride( dd );
+               inIndices[ii] -= position[dd] * in[ii].Stride( dd );
             }
             for( dip::uint ii = 0; ii < nOut; ++ii ) {
-               indices[nIn + ii] -= position[dd] * out[ii].Stride( dd );
+               outIndices[ii] -= position[dd] * out[ii].Stride( dd );
             }
             position[dd] = 0;
             // Continue loop to increment along next dimension

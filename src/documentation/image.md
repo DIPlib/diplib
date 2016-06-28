@@ -101,7 +101,8 @@ The various elements of a tensor are also accessed through a stride,
 which can be obtained through Image::TensorStride. Even for a 2D
 tensor, all tensor elements can be visited using a single stride value.
 See the section \ref tensors for more information on accessing tensor
-elements.
+elements. And see the section \ref pointers for more information about
+accessing pixel and tensor element values.
 
 [//]: # (--------------------------------------------------------------)
 
@@ -111,7 +112,114 @@ For details on possible tensor representations, see dip::Tensor::Shape.
 
 [//]: # (--------------------------------------------------------------)
 
-\section assignment Assignment
+\section pointers On pixel coordinates, indices, offsets and data pointers.
+
+Given
+
+    dip::Image img( dip::uint16, { 10, 12, 20, 8, 18 } );
+    img.Forge();
+
+Then `img.Origin()` is a `void*` pointer to the first pixel (dip::Image::Origin).
+This pointer needs to be cast to the type given by `img.DataType()` to be used
+(dip::Image::DataType), as in:
+
+    (dip::uint16*)img.Origin() = 0;
+
+A pixel's offset is the number of data elements to move away from the origin
+to access that pixel:
+
+    dip::uint16* ptr = (dip::uint16*)img.Origin();
+    ptr + offset = 1;
+
+Alternatively, it is possible to compute the pixel's pointer without casting
+to the right data type (this leads to a more generic algorithm) by using the
+dip::DataType::SizeOf operator:
+
+    (dip::uint8*)img.Origin() + offset * img.DataType().SizeOf();
+
+This computation is performed by `img.Pointer( offset )` (dip::Image::Pointer).
+
+Note that the offset is a signed integer, and can be negative, because strides
+can be negative also (e.g. one gets negative strides when mirroring an image).
+The offset is computed from coordinates using the image's strides:
+
+    dip::UnsignedArray coords { 1, 2, 3, 4, 5 };
+    dip::sint offset = 0;
+    for( dip::uint ii = 0; ii < img.Dimensionality(); ++ii ) {
+      offset += coords[ii] * img.Stride( ii );
+    }
+
+This computation is performed by `img.Offset( coords )` (dip::Image::Offset).
+`img.Pointer( coords )` simply chains this operation with the previous one
+(dip::Image::Pointer). The inverse operation is performed by
+`img.OffsetToCoordinates( offset )` (dip::Image::OffsetToCoordinates).
+Two images of the same size do not necessarily share offset values.
+Both the dimensions and the strides must be identical for the offset to be
+compatible between the images.
+
+The coordinates to a pixel simply indicate the number of pixels to skip along
+each dimension. The first dimension (dimension 0) is typically `x`, but this
+is not evident anywhere in the library, so it is the application using the
+library that would make this decision. Coordinates start at 0, and should be
+smaller than the `img.Dimensions()` value for that dimension.
+
+The index to a pixel (a.k.a. "linear index") is a value that increases
+monotonically as one moves from one pixel to the next, first along dimension 0,
+then along dimension 1, etc. The index computed from a pixel's coordinates is
+as follows:
+
+    dip::UnsignedArray coords { 1, 2, 3, 4, 5 };
+    dip::uint dd = img.Dimensionality();
+    dip::uint index = coords[--dd];
+    while( dd > 0 ) {
+      index *= img.Dimension( dd );
+      index += coords[--dd];
+    }
+
+This computation is performed by `img.Index( coords )` (dip::Image::Index).
+It is the *n*D equivalent to `x + y * width`. An index, as opposed to an
+offset, is always non-negative, and therefore stored in an unsigned integer. The
+index is also shared among any images with the same dimensions.
+
+It is not efficient to use indices to access many pixels, as the relationship
+between the index and the offset is non-trivial. One can determine the
+coordinates corresponding to an index through `img.IndexToCoordinates( index )`,
+which then leads to an offset or a pointer (dip::Image::IndexToCoordinates).
+The function dip::Image::At with a scalar argument uses linear indices, and
+consequently is not efficient for images with dimensionality of 2 or more.
+
+Oftentimes it is possible to determine a simple stride that will allow you to
+access every pixel in an image. When an image is a view into another image,
+this is not necessarily possible, but any default image (i.e. with normal strides)
+has this possibility. This simple stride allows one to view the image as a
+1D image. The function dip::Image::Flatten will create this 1D image (without
+copying any data, if there exists such a simple stride). Walking along this
+one dimension will, however, not necessarily access the pixels in the same order
+as given by the linear index. This order is only consistent if the image has
+normal strides. See dip::Image::HasNormalStrides,
+dip::Image::HasSimpleStride, dip::Image::GetSimpleStrideAndOrigin.
+
+To walk along all pixels in an arbitrary image (i.e. arbitrary dimensionality
+and strides) in the order given by the linear index, use the functions in the
+dip::NDLoop namespace:
+
+    dip::sint offset;
+    dip::UnsignedArray pos = dip::NDLoop::Init( offset, img.Dimensions() );
+    dip::uint16* ptr = (dip::uint16*)img.Origin();
+    dip::uint ii = 0;
+    do {
+      *(ptr + offset) = ii++;
+    } while( dip::NDLoop::Next( img, pos, offset );
+
+The functionality in the dip::Framework namespace is the recommended way of
+building generic functions that access all pixels in an image. These functions
+allow you to loop over multiple images simultaneously, using multi-threading,
+while taking care of different data types, checking input images, allocating
+output images, etc. Different framework functions do pixel-based processing,
+line-based processing (e.g. separable filters, projections) and
+neighborhood-based processing (i.e. non-separable filters). There is currently
+no plans for framework functionality to support priority queue algorithms,
+if you figure out how to make such a function generic enough please contribute!
 
 [//]: # (--------------------------------------------------------------)
 
@@ -123,11 +231,12 @@ For details on possible tensor representations, see dip::Tensor::Shape.
 
 \subsection regular_indexing Regular indexing (windows, ROI processing, subsampling)
 
-**Note** using linear index to get a pixel is slightly less efficient than accessing
-a pixel by its coordinates, unless the image has only one dimension.
-
 
 \subsection irregular_indexing Irregular indexing
+
+[//]: # (--------------------------------------------------------------)
+
+\section assignment Assignment
 
 
 [//]: # (--------------------------------------------------------------)

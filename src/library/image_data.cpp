@@ -38,6 +38,22 @@ static void SortByStrides(
 }
 
 
+// Compute a normal stride array.
+static void ComputeStrides(
+      const UnsignedArray& dims,
+      dip::uint s,               // set to tensor.Elements()
+      IntegerArray strides
+) {
+   dip::uint n = dims.size();
+   strides.resize( n );
+   for( dip::uint ii=0; ii<n; ++ii ) {
+      strides[ii] = s;
+      s *= dims[ii];
+   }
+}
+
+
+
 // Return the number of pixels defined by the dims array.
 // Same as dip::Image::NumberOfPixels() but with check.
 static dip::uint FindNumberOfPixels(
@@ -110,7 +126,10 @@ static UnsignedArray OffsetToCoordinates(
       const IntegerArray& strides
 ) {
    UnsignedArray coord( strides.size() );
-   for( dip::sint ii = (dip::sint)(strides.size()-1); ii >= 0 ; --ii ) {
+   for( dip::uint ii = strides.size(); ii > 0; ) {
+      // This loop increases its counter at the start, a disadvantage of using
+      // unsigned integers as loop counters.
+      --ii;
       coord[ii] = offset / strides[ii];
       offset    = offset % strides[ii];
    }
@@ -150,7 +169,7 @@ void Image::GetSimpleStrideAndOrigin( dip::uint& sstride, void*& porigin ) const
    if( sstride == 0 ) {
       porigin = nullptr;
    } else {
-      porigin = (uint8*)origin + start * datatype.SizeOf();
+      porigin = Pointer( start );
    }
 }
 
@@ -188,13 +207,7 @@ bool Image::HasValidStrides() const {
 void Image::ComputeStrides() {
    dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
    tstride = 1;                       // We set tensor strides to 1 by default.
-   dip::uint s = tensor.Elements();
-   dip::uint n = dims.size();
-   strides.resize( n );
-   for( dip::uint ii=0; ii<n; ++ii ) {
-      strides[ii] = s;
-      s *= dims[ii];
-   }
+   dip::ComputeStrides( dims, tensor.Elements(), strides );
 }
 
 
@@ -338,8 +351,8 @@ bool Image::Aliases( const Image& other ) const {
    }
 
    // Compute coordinates of origin for both images
-   UnsignedArray neworigin1 = OffsetToCoordinates( origin1, comstrides );
-   UnsignedArray neworigin2 = OffsetToCoordinates( origin2, comstrides );
+   UnsignedArray neworigin1 = dip::OffsetToCoordinates( origin1, comstrides );
+   UnsignedArray neworigin2 = dip::OffsetToCoordinates( origin2, comstrides );
 
    // Compute, for each of the dimensions, if the views overlap. If
    // they don't overlap for any one dimension, there is no aliasing.
@@ -392,6 +405,46 @@ void Image::Forge() {
          origin = (uint8*)p + start * sz;
       }
    }
+}
+
+//
+dip::sint Image::Offset( const UnsignedArray& coords ) const {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( coords.size() != dims.size(), E::ARRAY_ILLEGAL_SIZE );
+   dip::sint offset = 0;
+   for( dip::uint ii = 0; ii < dims.size(); ++ii ) {
+      dip_ThrowIf( coords[ii] >= dims[ii], E::INDEX_OUT_OF_RANGE );
+      offset += coords[ii] * strides[ii];
+   }
+   return offset;
+}
+
+//
+UnsignedArray Image::OffsetToCoordinates( dip::uint offset ) const {
+   return dip::OffsetToCoordinates( offset, strides );
+}
+
+//
+dip::uint Image::Index( const UnsignedArray& coords ) const {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( coords.size() != dims.size(), E::ARRAY_ILLEGAL_SIZE );
+   dip::uint index = 0;
+   for( dip::uint ii = dims.size(); ii > 0; ) {
+      --ii;
+      dip_ThrowIf( coords[ii] >= dims[ii], E::INDEX_OUT_OF_RANGE );
+      index *= dims[ii];
+      index += coords[ii];
+   }
+   return index;
+}
+
+//
+UnsignedArray Image::IndexToCoordinates( dip::uint index ) const {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   UnsignedArray coords( dims.size() );
+   IntegerArray fake_strides;
+   dip::ComputeStrides( dims, 1, fake_strides );
+   return dip::OffsetToCoordinates( index, fake_strides );
 }
 
 //

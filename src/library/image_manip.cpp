@@ -130,7 +130,7 @@ Image& Image::Mirror( const BooleanArray& process ) {
    dip_ThrowIf( process.size() != nd, E::ARRAY_ILLEGAL_SIZE);
    for( dip::uint ii=0; ii<nd; ++ii ) {
       if( process[ii] ) {
-         origin = (uint8*)origin + ( dims[ii] - 1 ) * strides[ii] * datatype.SizeOf();
+         origin = Pointer( ( dims[ii] - 1 ) * strides[ii] );
          strides[ii] = -strides[ii];
       }
    }
