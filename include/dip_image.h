@@ -117,7 +117,7 @@ class Image {
       }
 
       /// Create an image around existing data.
-      Image( std::shared_ptr<void> data,
+      Image( std::shared_ptr<void> data,        // points at the data block, not necessarily the origin!
              DataType dt,
              const UnsignedArray& d,            // dimensions
              const IntegerArray& s,             // strides
@@ -134,7 +134,7 @@ class Image {
       {
          dip::uint size;
          dip::sint start;
-         GetDataBlockSizeAndStart( size, start );
+         GetDataBlockSizeAndStartWithTensor( size, start );
          origin = (uint8*)datablock.get() + start * dt.SizeOf();
       }
 
@@ -301,8 +301,7 @@ class Image {
       /// of the strides is negative, the origin of the contiguous data will
       /// be elsewhere.
       /// Use GetSimpleStrideAndOrigin to get a pointer to the origin
-      /// of the contiguous data. Note that this only tests spatial
-      /// dimesions, the tensor dimension must still be accessed separately.
+      /// of the contiguous data.
       ///
       /// The image must be forged.
       /// \see GetSimpleStrideAndOrigin, HasSimpleStride, HasNormalStrides, Strides, TensorStride.
@@ -311,7 +310,7 @@ class Image {
          dip::uint size = NumberOfPixels() * TensorElements();
          dip::sint start;
          dip::uint sz;
-         GetDataBlockSizeAndStart( sz, start );
+         GetDataBlockSizeAndStartWithTensor( sz, start );
          return sz == size;
       }
 
@@ -822,11 +821,12 @@ class Image {
       // Some private functions
       //
 
-      bool HasValidStrides() const;       // Are the two strides arrays of the same size as the dims arrays?
+      bool HasValidStrides() const;       // Are the strides such that no two pixels are in the same memory cell?
 
-      void ComputeStrides();              // Fill in both strides arrays.
+      void SetNormalStrides();            // Fill in all strides.
 
       void GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const;
+      void GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const;
                                           // size is the distance between top left and bottom right corners.
                                           // start is the distance between top left corner and origin
                                           // (will be <0 if any strides[ii] < 0). All measured in pixels.

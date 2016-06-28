@@ -34,10 +34,6 @@
 /// **Note** the parenthesis around the function parameters in the macro
 /// call above!
 ///
-/// **Note** also that dip::bin is actually the same type as dip::uint8,
-/// so we have an issue here with typing.
-/// TODO: should we create a class dip::bin that is a distinct type?
-///
 /// There are three groups of macros defined in this file:
 /// - DIP_OVL_CALL_xxx calls a function, discarding any return value.
 /// - DIP_OVL_CALL_ASSIGN_xxx calls a function, assigning the return

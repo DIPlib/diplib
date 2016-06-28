@@ -53,13 +53,6 @@ typedef std::size_t    uint;  ///< An integer type to be used for sizes and the 
 //
 // Types for pixel values
 //
-typedef std::uint8_t          bin;        ///< Type for pixels in a binary image
-            // Binary data stored in a single byte (don't use bool for pixels,
-            // it has implementation-defined size)
-            // TODO: "bin" is a class, containing a uint8,
-            //       converting implicitly to/from bool and uint and sint and double.
-            //       It'll make it possible to have overloads that are different for uint8
-            //       and bin. We will probably need to make some overloaded operators too...
 typedef std::uint8_t          uint8;      ///< Type for pixels in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
 typedef std::uint16_t         uint16;     ///< Type for pixels in a 16-bit unsigned integer image
 typedef std::uint32_t         uint32;     ///< Type for pixels in a 32-bit unsigned integer image
@@ -70,12 +63,33 @@ typedef float                 sfloat;     ///< Type for pixels in a 32-bit float
 typedef double                dfloat;     ///< Type for pixels in a 64-bit floating point (double-precision) image
 typedef std::complex<sfloat>  scomplex;   ///< Type for pixels in a 64-bit complex-valued (single-precision) image
 typedef std::complex<dfloat>  dcomplex;   ///< Type for pixels in a 128-bit complex-valued (double-precision) image
+struct bin {
+   uint8 v;                               // Binary data stored in a single byte (don't use bool for pixels,
+                                          // it has implementation-defined size)
+                                          // We define this struct for binary data so that we can overload
+                                          // functions differently for bin and for uint8.
+   // Overload constructors to make sure we always write 0 or 1 in the bin.
+   bin (bool v_) : v(v_) {};
+   template<typename T>
+   bin (T v_) : v(!!v_) {};
+   template<typename T>
+   bin (std::complex<T> v_) : v(!!std::abs(v_)) {};
+   // Overload cast operators.
+   operator uint8() const { return v; }
+   operator sint8() const { return v; }
+   operator sfloat() const { return v; }
+   operator dfloat() const { return v; }
+   operator scomplex() const { return v; }
+   operator dcomplex() const { return v; }
+};                                        ///< Type for pixels in a binary image
 
 // if 8 bits is not a byte...
 static_assert( sizeof(dip::uint8)==1, "8 bits is not a byte in your system!" );
 // Seriously, though. We rely on this property, and there is no guarantee
 // that a system actually has 8 bits in a byte. Maybe we should use char
 // (which is guaranteed to be size 1) for generic pointer arithmetic?
+
+static_assert( sizeof(dip::bin)==1, "The binary type is not a single byte!" );
 
 
 //

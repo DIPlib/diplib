@@ -42,7 +42,7 @@ static void SortByStrides(
 static void ComputeStrides(
       const UnsignedArray& dims,
       dip::uint s,               // set to tensor.Elements()
-      IntegerArray strides
+      IntegerArray& strides
 ) {
    dip::uint n = dims.size();
    strides.resize( n );
@@ -204,16 +204,27 @@ bool Image::HasValidStrides() const {
 
 
 //
-void Image::ComputeStrides() {
+void Image::SetNormalStrides() {
    dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
    tstride = 1;                       // We set tensor strides to 1 by default.
-   dip::ComputeStrides( dims, tensor.Elements(), strides );
+   ComputeStrides( dims, tensor.Elements(), strides );
 }
 
 
 //
 void Image::GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const {
    FindDataBlockSizeAndStart( strides, dims, size, start );
+}
+void Image::GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const {
+   if( tensor.Elements() > 1 ) {
+      UnsignedArray d = dims;
+      d.push_back( tensor.Elements() );
+      IntegerArray s = strides;
+      s.push_back( tstride );
+      FindDataBlockSizeAndStart( s, d, size, start );
+   } else {
+      FindDataBlockSizeAndStart( strides, dims, size, start );
+   }
 }
 
 
@@ -384,20 +395,21 @@ void Image::Forge() {
          datablock = externalInterface->AllocateData( dims, strides, tensor, tstride, datatype );
          dip::uint sz;
          dip::sint start;
-         GetDataBlockSizeAndStart( sz, start );
+         GetDataBlockSizeAndStartWithTensor( sz, start );
          origin = (uint8*)datablock.get() + start * datatype.SizeOf();
       } else {
          // std::cout << size << std::endl;
          dip::sint start = 0;
          if( HasValidStrides() ) {
             dip::uint sz;
-            GetDataBlockSizeAndStart( sz, start );
+            GetDataBlockSizeAndStartWithTensor( sz, start );
             if( sz != size ) {
-               ComputeStrides();
+               SetNormalStrides();
             }
          } else {
-            ComputeStrides();
+            SetNormalStrides();
          }
+         std::cout << std::endl;
          dip::uint sz = datatype.SizeOf();
          void* p = std::malloc( size * sz );
          dip_ThrowIf( !p, "Failed to allocate memory" );
@@ -443,7 +455,7 @@ UnsignedArray Image::IndexToCoordinates( dip::uint index ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    UnsignedArray coords( dims.size() );
    IntegerArray fake_strides;
-   dip::ComputeStrides( dims, 1, fake_strides );
+   ComputeStrides( dims, 1, fake_strides );
    return dip::OffsetToCoordinates( index, fake_strides );
 }
 
