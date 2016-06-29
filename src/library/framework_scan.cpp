@@ -12,6 +12,8 @@
 #include "dip_framework.h"
 #include "dip_numeric.h"
 
+#include "copybuffer.h"
+
 namespace dip {
 namespace Framework {
 
@@ -216,14 +218,14 @@ void Scan(
       if( outUseBuffer[ii] ) {
          buffers.push_back( operator new( bufferSize * outBufferTypes[ii].SizeOf() * out[ii].TensorElements() ) );
          outScanBufs[ii].buffer = buffers.back();
-         outScanBufs[ii].stride = out[ii].TensorElements();
+         outScanBufs[ii].stride = out[ii].TensorElements(); // == nTensorElements
          outScanBufs[ii].tensorStride = 1;
-         outScanBufs[ii].tensorLength = out[ii].TensorElements();
+         outScanBufs[ii].tensorLength = out[ii].TensorElements(); // == nTensorElements
       } else {
          outScanBufs[ii].buffer = nullptr;
          outScanBufs[ii].stride = out[ii].Stride( processingDim );
          outScanBufs[ii].tensorStride = out[ii].TensorStride();
-         outScanBufs[ii].tensorLength = out[ii].TensorElements();
+         outScanBufs[ii].tensorLength = out[ii].TensorElements(); // == nTensorElements
       }
    }
 
@@ -241,15 +243,23 @@ void Scan(
          // Get points to input and ouput lines
          for( dip::uint ii = 0; ii < nIn; ++ii ) {
             if( inUseBuffer[ii] ) {
-               // TODO: Copy nPixels from image to buffer
+               CopyBuffer(
+                     in[ii].Pointer( inIndices[ii] + sectionStart * in[ii].Stride( processingDim ) ),
+                     in[ii].DataType(),
+                     in[ii].Stride( processingDim ),
+                     in[ii].TensorStride(),
+                     inScanBufs[ii].buffer,
+                     inBufferTypes[ii],
+                     inScanBufs[ii].stride,
+                     inScanBufs[ii].tensorStride,
+                     bufferSize,
+                     inScanBufs[ii].tensorLength );
             } else {
                inScanBufs[ii].buffer = in[ii].Pointer( inIndices[ii] + sectionStart * inScanBufs[ii].stride );
             }
          }
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
-            if( outUseBuffer[ii] ) {
-               // TODO: Copy nPixels from image to buffer
-            } else {
+            if( !outUseBuffer[ii] ) {
                outScanBufs[ii].buffer = out[ii].Pointer( outIndices[ii] + sectionStart * outScanBufs[ii].stride );
             }
          }
@@ -268,7 +278,17 @@ void Scan(
          // Copy back the line from output buffer to the image
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
             if( outUseBuffer[ii] ) {
-               // TODO: Copy nPixels from buffer to image
+               CopyBuffer(
+                     outScanBufs[ii].buffer,
+                     outBufferTypes[ii],
+                     outScanBufs[ii].stride,
+                     outScanBufs[ii].tensorStride,
+                     out[ii].Pointer( outIndices[ii] + sectionStart * out[ii].Stride( processingDim ) ),
+                     out[ii].DataType(),
+                     out[ii].Stride( processingDim ),
+                     out[ii].TensorStride(),
+                     bufferSize,
+                     outScanBufs[ii].tensorLength ); // == nTensorElements
             }
          }
       }

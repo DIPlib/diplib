@@ -18,6 +18,8 @@
 
 #include <vector>
 
+#include "dip_types.h"
+
 namespace dip {
 
 

@@ -69,18 +69,24 @@ struct bin {
                                           // We define this struct for binary data so that we can overload
                                           // functions differently for bin and for uint8.
    // Overload constructors to make sure we always write 0 or 1 in the bin.
-   bin (bool v_) : v(v_) {};
-   template<typename T>
-   bin (T v_) : v(!!v_) {};
-   template<typename T>
-   bin (std::complex<T> v_) : v(!!std::abs(v_)) {};
-   // Overload cast operators.
-   operator uint8() const { return v; }
-   operator sint8() const { return v; }
-   operator sfloat() const { return v; }
-   operator dfloat() const { return v; }
-   operator scomplex() const { return v; }
-   operator dcomplex() const { return v; }
+   bin() : v( 0 ) {};
+   bin( bool v_ ) : v( v_ ) {};
+   template< typename T >
+   bin( T v_ ) : v( !!v_ ) {};
+   template< typename T >
+   bin( std::complex<T> v_ ) : v( !!std::abs( v_ ) ) {};
+   operator bool() const { return v != 0; }
+   // The operators below don't participate in casts, because we have an implicit cast to bool
+   //explicit operator uint8() const { return uint8( v ); }
+   //explicit operator uint16() const { return uint16( v ); }
+   //explicit operator uint32() const { return uint32( v ); }
+   //explicit operator sint8() const { return sint8( v ); }
+   //explicit operator sint16() const { return sint16( v ); }
+   //explicit operator sint32() const { return sint32( v ); }
+   //explicit operator sfloat() const { return sfloat( v ); }
+   //explicit operator dfloat() const { return dfloat( v ); }
+   //explicit operator scomplex() const { return scomplex( sfloat( v ), 0.0f ); }
+   //explicit operator dcomplex() const { return dcomplex( dfloat( v ), 0.0 ); }
 };                                        ///< Type for pixels in a binary image
 
 // if 8 bits is not a byte...
@@ -150,12 +156,12 @@ class DimensionArray {
          std::copy( init.begin(), init.end(), data_ );
       }
       /// Copy constructor, initializes with a copy of `other`.
-      DimensionArray ( const DimensionArray& other ) {
+      DimensionArray( const DimensionArray& other ) {
          resize( other.size_ );
          std::copy( other.data_, other.data_ + size_, data_ );
       }
       /// Move constructor, initializes by stealing the contents of `other`.
-      DimensionArray ( DimensionArray&& other ) {
+      DimensionArray( DimensionArray&& other ) {
          steal_data_from( other );
       }
 
@@ -163,7 +169,7 @@ class DimensionArray {
       ~DimensionArray() { free_array(); } // no need to keep status consistent...
 
       /// Copy assignment, copies over data from `other`.
-      DimensionArray& operator= ( const DimensionArray & other ) {
+      DimensionArray& operator=( const DimensionArray & other ) {
          if (this != &other) {
             resize( other.size_ );
             std::copy( other.data_, other.data_ + size_, data_ );
@@ -171,7 +177,7 @@ class DimensionArray {
          return *this;
       }
       /// Move assignment, steals the contents of `other`.
-      DimensionArray& operator= ( DimensionArray && other ) {
+      DimensionArray& operator=( DimensionArray && other ) {
          // Self-assignment is not valid for move assignment, not testing for it here.
          free_array();
          steal_data_from( other );
