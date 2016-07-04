@@ -29,6 +29,12 @@
 
 //#include <iostream> // for debugging
 
+
+/// \file
+/// You don't need to include this file directly, it is included through diplib.h.
+//TODO: We need to document the macros defined here under the file diplib.h. How do we do this?
+
+
 namespace dip {
 
 
@@ -53,41 +59,31 @@ typedef std::size_t    uint;  ///< An integer type to be used for sizes and the 
 //
 // Types for pixel values
 //
-typedef std::uint8_t          uint8;      ///< Type for pixels in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
-typedef std::uint16_t         uint16;     ///< Type for pixels in a 16-bit unsigned integer image
-typedef std::uint32_t         uint32;     ///< Type for pixels in a 32-bit unsigned integer image
-typedef std::int8_t           sint8;      ///< Type for pixels in an 8-bit signed integer image
-typedef std::int16_t          sint16;     ///< Type for pixels in a 16-bit signed integer image
-typedef std::int32_t          sint32;     ///< Type for pixels in a 32-bit signed integer image
-typedef float                 sfloat;     ///< Type for pixels in a 32-bit floating point (single-precision) image
-typedef double                dfloat;     ///< Type for pixels in a 64-bit floating point (double-precision) image
-typedef std::complex<sfloat>  scomplex;   ///< Type for pixels in a 64-bit complex-valued (single-precision) image
-typedef std::complex<dfloat>  dcomplex;   ///< Type for pixels in a 128-bit complex-valued (double-precision) image
+typedef std::uint8_t          uint8;      ///< Type for samples in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
+typedef std::uint16_t         uint16;     ///< Type for samples in a 16-bit unsigned integer image
+typedef std::uint32_t         uint32;     ///< Type for samples in a 32-bit unsigned integer image
+typedef std::int8_t           sint8;      ///< Type for samples in an 8-bit signed integer image
+typedef std::int16_t          sint16;     ///< Type for samples in a 16-bit signed integer image
+typedef std::int32_t          sint32;     ///< Type for samples in a 32-bit signed integer image
+typedef float                 sfloat;     ///< Type for samples in a 32-bit floating point (single-precision) image
+typedef double                dfloat;     ///< Type for samples in a 64-bit floating point (double-precision) image
+typedef std::complex<sfloat>  scomplex;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
+typedef std::complex<dfloat>  dcomplex;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
 struct bin {
-   uint8 v;                               // Binary data stored in a single byte (don't use bool for pixels,
-                                          // it has implementation-defined size)
+   uint8 v_;                              // Binary data stored in a single byte (don't use bool for pixels,
+                                          // it has implementation-defined size).
                                           // We define this struct for binary data so that we can overload
                                           // functions differently for bin and for uint8.
    // Overload constructors to make sure we always write 0 or 1 in the bin.
-   bin() : v( 0 ) {};
-   bin( bool v_ ) : v( v_ ) {};
+   bin() : v_( 0 ) {};                    ///< The default value is 0 (false)
+   bin( bool v ) : v_( v ) {};            ///< A bool implicitly converts to bin
    template< typename T >
-   bin( T v_ ) : v( !!v_ ) {};
+   bin( T v ) : v_( !!v ) {};             ///< Any arithmetic type implicitly converts to bin by comparing to zero
    template< typename T >
-   bin( std::complex<T> v_ ) : v( !!std::abs( v_ ) ) {};
-   operator bool() const { return v != 0; }
-   // The operators below don't participate in casts, because we have an implicit cast to bool
-   //explicit operator uint8() const { return uint8( v ); }
-   //explicit operator uint16() const { return uint16( v ); }
-   //explicit operator uint32() const { return uint32( v ); }
-   //explicit operator sint8() const { return sint8( v ); }
-   //explicit operator sint16() const { return sint16( v ); }
-   //explicit operator sint32() const { return sint32( v ); }
-   //explicit operator sfloat() const { return sfloat( v ); }
-   //explicit operator dfloat() const { return dfloat( v ); }
-   //explicit operator scomplex() const { return scomplex( sfloat( v ), 0.0f ); }
-   //explicit operator dcomplex() const { return dcomplex( dfloat( v ), 0.0 ); }
-};                                        ///< Type for pixels in a binary image
+   bin( std::complex<T> v ) : v_( !!std::abs( v ) ) {};  ///< A complex value implicity converts to bin by comparing the absolute value to zero
+   operator bool() const { return v_; }   ///< Implicitly converts to bool
+   // TODO: we probably need to overload some arithmetic operators here? Or is that taken care of by the implicit conversions to bool?
+};                                        ///< Type for samples in a binary image. Can store 0 or 1. Ocupies 1 byte.
 
 // if 8 bits is not a byte...
 static_assert( sizeof(dip::uint8)==1, "8 bits is not a byte in your system!" );
@@ -214,7 +210,7 @@ class DimensionArray {
       /// new elements with `newval`.
       void resize( size_type newsz, T newval = T() ) {
          if( newsz == size_ ) return; // NOP
-         if( newsz > static_size ) {
+         if( newsz > static_size_ ) {
             if( is_dynamic() ) {
                // expand or contract heap data
                T* tmp = static_cast<T*>( std::realloc( data_, newsz * sizeof( T ) ) );
@@ -359,47 +355,50 @@ class DimensionArray {
 
       /// Sort the contents of the array from smallest to largest.
       void sort() {
-         // Using bubble sort because we expect the array to be small.
-         if( size_ > 1 ) {
-            for( size_type jj = size_ - 1; jj != 0; --jj ) {
-               for( size_type ii = 0; ii != jj; ++ii ) {
-                  if( data_[ii] > data_[ii+1] ) {
-                     std::swap( data_[ii], data_[ii+1] );
-                  }
-               }
+         // Using insertion sort because we expect the array to be small.
+         for( size_type ii = 1; ii < size_; ++ii ) {
+            T elem = data_[ii];
+            size_type jj = ii;
+            while( ( jj > 0 ) && ( data_[jj-1] > elem ) ) {
+               data_[jj] = data_[jj-1];
+               --jj;
             }
+            data_[jj] = elem;
          }
       }
       /// Sort the contents of the array from smallest to largest, and keeping
       /// `other` in the same order.
       template<typename S>
       void sort( DimensionArray<S>& other ) {
-         assert( size_ == other.size_ );
-         // Using bubble sort because we expect the array to be small.
-         if( size_ > 1 ) {
-            for( size_type jj = size_ - 1; jj != 0; --jj ) {
-               for( size_type ii = 0; ii != jj; ++ii ) {
-                  if( data_[ii] > data_[ii+1] ) {
-                     std::swap( data_[ii], data_[ii+1] );
-                     std::swap( other.data_[ii], other.data_[ii+1] );
-                  }
-               }
+         // We cannot access private members of `other` because it's a different class (if S != T).
+         assert( size_ == other.size() );
+         // Using insertion sort because we expect the array to be small.
+         for( size_type ii = 1; ii < size_; ++ii ) {
+            T elem = data_[ii];
+            S otherelem = other[ii];
+            size_type jj = ii;
+            while( ( jj > 0 ) && ( data_[jj-1] > elem ) ) {
+               data_[jj] = data_[jj-1];
+               other[jj] = other[jj-1];
+               --jj;
             }
+            data_[jj] = elem;
+            other[jj] = otherelem;
          }
       }
 
    private:
-      constexpr static size_type static_size = 4;
+      constexpr static size_type static_size_ = 4;
       size_type size_ = 0;
       T* data_ = stat_;
-      T  stat_[static_size];
+      T  stat_[static_size_];
       // The alternate implementation, where data_ and stat_ are in a union
       // to reduce the amount of memory used, requires a test for every data
       // access. Data access is most frequent, it's worth using a little bit
       // more memory to avoid that test.
 
       bool is_dynamic() {
-         return size_ > static_size;
+         return size_ > static_size_;
       }
 
       void free_array() {

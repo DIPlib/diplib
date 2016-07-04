@@ -11,38 +11,49 @@ in functions defined in the #dip namespace.
 
 \section image_representation Image representation
 
-An Image object can have any number of dimensions (from 0 up to
-billions), though 0D, 2D and 3D are the most often used dimensionalies.
+A dip::Image object can have any number of dimensions (limited by the integer
+representation used), though 0D, 2D and 3D are the most often used dimensionalies.
 Most functions in the library accept images with any number of
 dimensions, for the functions that are limited in this respect there is
 a note in the documentation. In the following, we refer to a dimension
 with size 1 (a single pixel) as a singleton dimension.
 
-An Image object has pixels represented by a tensor. We have limited the
-tensors to have no more than two dimensions (a matrix), as there
-doesn't seem to be much use for higher-dimensional tensors in image
-analysis. However, there is no limit to the number of tensor elements
-(other than available memory and the size of pointers in the underlying
-system). If the tensor is 0D (a single value), the image is a standard
+We use the term **pixel** to refer to the collection of samples taken at the
+same spatial location, irrespective of the number of dimensions that the
+image has (that is, we don't use the term voxel for pixels in 3D images).
+A pixel is represented by a **tensor**. We have limited the tensors, in the
+current implementation, to have no more than two dimensions (a matrix),
+as there doesn't seem to be much use for higher-dimensional tensors in
+image analysis. However, there is no limit to the number of **tensor elements**
+(other than available memory and the integer representation used).
+
+Each element of the tensor at a pixel is referred to as a **sample**. A tensor
+element is synonymous with sample, and we use the one or the other term
+in the documentation and code depending on context. We say that an image
+with 1 million pixels and 3 samples per pixel has a total of 3 million samples.
+
+If the tensor is 0D (a single sample), the image is a standard
 gray-value image. A 1D tensor (a vector) can be used to represent color
-images (e.g. the three values of an RGB image), but also for example
+images (e.g. an RGB image has three samples per pixel), but also for example
 the image gradient (TODO: add reference to the gradient function). With
 a 2D tensor (a matrix) it is possible to represent concepts such as the
-Hessian and the structure tensor. For more details, see the section on
-\ref tensors.
+Hessian and the structure tensor. For example, the Hessian of a 3D image
+has 9 samples per pixel. For more details on how tensor elements are stored,
+see the section on \ref tensors.
 
-An Image object can contain data of a wide variety of numeric types,
+An Image object can contain samples of a wide variety of numeric types,
 including binary, unsigned and signed integers, floating point, and
-complex. For a complete list see the desciption of the DataType class.
+complex. For a complete list see the desciption of the dip::DataType class.
+All the image's samples must have the same type.
 
 All of these image properties are dynamic. That is, they can be
 determined and changed at runtime, they are not fixed at compile time.
-An Image object has two states: *raw* and *forged*. When an image is
+An Image object has two states: **raw** and **forged**. When an image is
 **raw**, it has no associated data segment. In the raw state, all image
-properties can be changed. The Image::Forge method allocates the data
+properties can be changed. The dip::Image::Forge method allocates the data
 segment (the memory block that holds the pixel values). Once the image
 is **forged**, its properties are fixed. It is possible to call the
-Image::Strip method to revert to the raw state. The reason behind this
+dip::Image::Strip method to revert to the raw state. The reason behind this
 dynamic image structure is that it allows flexibility: one can read the
 data in a file without knowing what the file's data type is going to
 be; the file reading function can adjust the Image object's data type
@@ -57,12 +68,12 @@ the data types of images.
 \section strides Strides
 
 For maximum flexibility in the relationship between image coordinates
-and how the data is stored in memory, an Image object specifies a
-`strides` array. This array indicates, for each dimension, how many
-pixels to skip to get to the neighboring pixel. For example, to go from
-a pixel at coordinates (`x`,`y`) to the neighbour at coordinates
-(`x+1`,`y`), you would need to increment the data pointer with
-`strides[0]`. In a 2D image, the pixel at coordinates (`x`,`y`) can be
+and how the samples are stored in memory, an Image object specifies a
+**stride** array (dip::Image::Strides). This array indicates, for each dimension, how many
+samples to skip to get to the neighboring pixel in the given dimension.
+For example, to go from a pixel at coordinates (`x`,`y`) to the neighbour
+at coordinates (`x+1`,`y`), you would need to increment the data pointer
+with `strides[0]`. In a 2D image, the pixel at coordinates (`x`,`y`) can be
 reached by (assuming dip::DT_UINT8 data type):
 
     dip::uint8* origin = img.Data();
@@ -98,17 +109,39 @@ examples:
 All routines in the library support images with arbitrary strides.
 
 The various elements of a tensor are also accessed through a stride,
-which can be obtained through Image::TensorStride. Even for a 2D
+which can be obtained through dip::Image::TensorStride. Even for a 2D
 tensor, all tensor elements can be visited using a single stride value.
 See the section \ref tensors for more information on accessing tensor
 elements. And see the section \ref pointers for more information about
-accessing pixel and tensor element values.
+accessing samples.
 
 [//]: # (--------------------------------------------------------------)
 
 \section tensors Tensor images
 
-For details on possible tensor representations, see dip::Tensor::Shape.
+A tensor image (generalization of the vector and matrix image) has a tensor
+for each pixel. A tensor collects all samples corresponding to the same spatial
+location into a specific shape. dip::Image::TensorElements indicates how
+many samples per pixel the image has.
+
+A tensor image is stored into a single memory block. In the same way that
+strides indicate how to skip from one pixel to another (as described in the
+section \ref strides), the dip::Image::TensorStride indicates how to skip
+from one tensor element to another.
+
+All tensor elements are stored as if they composed a single spatial dimension.
+Therefore, it is possible to change the image such that the tensor elements
+form a new spatial dimension (dip::Image::TensorToSpatial), or such that one
+spatial dimension is converted to a tensor (dip::Image::SpatialToTensor),
+without moving the samples. It is also possible to change the shape of the
+tensor without moving data (dip::Image::ReshapeTensorAsVector, dip::Image::Transpose).
+
+The shape of the tensor is represented by the enumerator dip::Tensor::Shape
+(obtained through dip::Image::Shape).
+The chosen way of storing tensor elements allows us, for example, to store
+a symmetric 2D tensor such as the Hessian matrix without repeating the
+repeating the duplicated values. We also have a specific shape for diagonal
+matrices and triangular matrices.
 
 [//]: # (--------------------------------------------------------------)
 
@@ -119,13 +152,14 @@ Given
     dip::Image img( dip::uint16, { 10, 12, 20, 8, 18 } );
     img.Forge();
 
-Then `img.Origin()` is a `void*` pointer to the first pixel (dip::Image::Origin).
-This pointer needs to be cast to the type given by `img.DataType()` to be used
-(dip::Image::DataType), as in:
+Then `img.Origin()` (dip::Image::Origin) is a `void*` pointer to the first pixel
+(or rather the first sample of in the image).
+This pointer needs to be cast to the type given by `img.DataType()`
+(dip::Image::DataType) to be used, as in:
 
     (dip::uint16*)img.Origin() = 0;
 
-A pixel's offset is the number of data elements to move away from the origin
+A pixel's **offset** is the number of samples to move away from the origin
 to access that pixel:
 
     dip::uint16* ptr = (dip::uint16*)img.Origin();
@@ -140,7 +174,7 @@ dip::DataType::SizeOf operator:
 This computation is performed by `img.Pointer( offset )` (dip::Image::Pointer).
 
 Note that the offset is a signed integer, and can be negative, because strides
-can be negative also (e.g. one gets negative strides when mirroring an image).
+can be negative also.
 The offset is computed from coordinates using the image's strides:
 
     dip::UnsignedArray coords { 1, 2, 3, 4, 5 };
@@ -150,8 +184,8 @@ The offset is computed from coordinates using the image's strides:
     }
 
 This computation is performed by `img.Offset( coords )` (dip::Image::Offset).
-`img.Pointer( coords )` simply chains this operation with the previous one
-(dip::Image::Pointer). The inverse operation is performed by
+`img.Pointer( coords )` (dip::Image::Pointer) simply chains this operation
+with the previous one. The inverse operation is performed by
 `img.OffsetToCoordinates( offset )` (dip::Image::OffsetToCoordinates).
 Two images of the same size do not necessarily share offset values.
 Both the dimensions and the strides must be identical for the offset to be
@@ -170,21 +204,22 @@ as follows:
 
     dip::UnsignedArray coords { 1, 2, 3, 4, 5 };
     dip::uint dd = img.Dimensionality();
-    dip::uint index = coords[--dd];
+    dip::uint index = 0;
     while( dd > 0 ) {
+      --dd;
       index *= img.Dimension( dd );
-      index += coords[--dd];
+      index += coords[dd];
     }
 
 This computation is performed by `img.Index( coords )` (dip::Image::Index).
 It is the *n*D equivalent to `x + y * width`. An index, as opposed to an
 offset, is always non-negative, and therefore stored in an unsigned integer. The
-index is also shared among any images with the same dimensions.
+index is shared among any images with the same dimensions.
 
 It is not efficient to use indices to access many pixels, as the relationship
 between the index and the offset is non-trivial. One can determine the
-coordinates corresponding to an index through `img.IndexToCoordinates( index )`,
-which then leads to an offset or a pointer (dip::Image::IndexToCoordinates).
+coordinates corresponding to an index through `img.IndexToCoordinates( index )`
+(dip::Image::IndexToCoordinates), which then leads to an offset or a pointer.
 The function dip::Image::At with a scalar argument uses linear indices, and
 consequently is not efficient for images with dimensionality of 2 or more.
 
@@ -220,6 +255,15 @@ line-based processing (e.g. separable filters, projections) and
 neighborhood-based processing (i.e. non-separable filters). There is currently
 no plans for framework functionality to support priority queue algorithms,
 if you figure out how to make such a function generic enough please contribute!
+
+For images with more than one sample per pixel, the above discussion shows
+only how to access the first sample in each pixel. Coordinates always indicate
+a pixel, and therefore dip::Image::Offset always gives the offset to the
+first sample of a pixel. The other samples can be accessed by adding
+`n * img.TensorStride()` to the offset, where `n` is the tensor element. Tensor
+elements are then accessed in a specific order, depending on the shape of the
+tensor. See dip::Tensor::Shape for a description of the order of the tensor
+elements in memory.
 
 [//]: # (--------------------------------------------------------------)
 

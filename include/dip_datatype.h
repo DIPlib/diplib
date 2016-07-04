@@ -200,19 +200,19 @@ constexpr DataType DT_DCOMPLEX  { DataType::DT::DCOMPLEX };
 
 class Image;      // Forward declaration.
 
-/// Returns a suitable floating-point type that can hold the data in `img`.
+/// Returns a suitable floating-point type that can hold the samples in `img`.
 DataType DataTypeSuggest_Float(const Image& img);
 
-/// Returns a suitable complex type that can hold the data in `img`.
+/// Returns a suitable complex type that can hold the samples in `img`.
 DataType DataTypeSuggest_Complex(const Image& img);
 
-/// Returns a suitable floating-point or complex type that can hold the data in `img`.
+/// Returns a suitable floating-point or complex type that can hold the samples in `img`.
 DataType DataTypeSuggest_Flex(const Image& img);
 
-/// Returns a suitable floating-point, complex or binary type that can hold the data in `img`.
+/// Returns a suitable floating-point, complex or binary type that can hold the samples in `img`.
 DataType DataTypeSuggest_FlexBin(const Image& img);
 
-/// Returns a suitable floating-point, complex or binary type that can hold the result of a computation performed on the two images.
+/// Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed on the two images.
 DataType DataTypeSuggest_Arithmetic(const Image& img1, const Image& img2);
 
 

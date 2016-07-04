@@ -53,6 +53,7 @@ class Tensor {
       ///      |x x x 3|
       ///
       /// Here, `x` indicates values that are not stored.
+      ///
       /// Shape::LOWTRIANG_MATRIX is the transpose of Shape::UPPTRIANG_MATRIX.
       ///
       /// We use the given ordering for symmetric and triangular matrices
@@ -78,62 +79,62 @@ class Tensor {
          SetVector( n );
       }
       /// Creates a Shape::COL_MAJOR_MATRIX.
-      Tensor( dip::uint _rows, dip::uint _cols ) {
-         SetMatrix( _rows, _cols );
+      Tensor( dip::uint rows, dip::uint cols ) {
+         SetMatrix( rows, cols );
       }
       /// Constructor for arbitrary shape.
-      Tensor( Tensor::Shape _shape, dip::uint _rows, dip::uint _cols ) {
-         SetShape( _shape, _rows, _cols );
+      Tensor( enum Shape shape, dip::uint rows, dip::uint cols ) {
+         SetShape( shape, rows, cols );
       }
 
       /// Tests the tensor shape.
       bool IsScalar() const {
-         return elements==1;
+         return elements_==1;
       }
       /// Tests the tensor shape.
       bool IsVector() const {
-         return (shape==Shape::COL_VECTOR) || (shape==Shape::ROW_VECTOR);
+         return (shape_==Shape::COL_VECTOR) || (shape_==Shape::ROW_VECTOR);
       }
       /// Tests the tensor shape.
       bool IsDiagonal() const {
-         return shape==Shape::DIAGONAL_MATRIX;
+         return shape_==Shape::DIAGONAL_MATRIX;
       }
       /// Tests the tensor shape.
       bool IsSymmetric() const {
-         return shape==Shape::SYMMETRIC_MATRIX;
+         return shape_==Shape::SYMMETRIC_MATRIX;
       }
       /// Tests the tensor shape.
       bool IsTriangular() const {
-         return (shape==Shape::UPPTRIANG_MATRIX) || (shape==Shape::LOWTRIANG_MATRIX);
+         return (shape_==Shape::UPPTRIANG_MATRIX) || (shape_==Shape::LOWTRIANG_MATRIX);
       }
       /// Returns tensor shape.
-      Shape GetShape() const {
-         return shape;
+      enum Shape Shape() const {
+         return shape_;
       }
 
       /// Gets number of tensor elements.
       dip::uint Elements() const {
-         return elements;
+         return elements_;
       }
       /// Gets number of tensor rows.
       dip::uint Rows() const {
-         return rows;
+         return rows_;
       }
       /// Gets number of tensor columns.
       dip::uint Columns() const {
-         switch( shape ) {
+         switch( shape_ ) {
             case Shape::COL_VECTOR:
                return 1;
             case Shape::ROW_VECTOR:
-               return elements;
+               return elements_;
             case Shape::COL_MAJOR_MATRIX:
             case Shape::ROW_MAJOR_MATRIX:
-               return elements/rows;
+               return elements_/rows_;
             case Shape::DIAGONAL_MATRIX:
             case Shape::SYMMETRIC_MATRIX:
             case Shape::UPPTRIANG_MATRIX:
             case Shape::LOWTRIANG_MATRIX:
-               return rows;         // these are all square matrices
+               return rows_;        // these are all square matrices
           }
       }
       /// Gets the tensor size.
@@ -141,66 +142,66 @@ class Tensor {
          if( IsScalar() ) {
             return {};
          } else if( IsVector() ) {
-            return { elements };
+            return { elements_ };
          } else {
-            return { rows, Columns() };
+            return { rows_, Columns() };
          }
       }
 
       /// Sets the tensor shape.
-      void SetShape( Shape _shape, dip::uint _rows, dip::uint _cols ) {
-         shape = _shape;
-         dip_ThrowIf( _rows==0, "Number of rows must be non-zero" );
-         dip_ThrowIf( _cols==0, "Number of columns must be non-zero" );
-         switch( shape ) {
+      void SetShape( enum Shape shape, dip::uint rows, dip::uint cols ) {
+         shape_ = shape;
+         dip_ThrowIf( rows==0, "Number of rows must be non-zero" );
+         dip_ThrowIf( cols==0, "Number of columns must be non-zero" );
+         switch( shape_ ) {
             case Shape::COL_VECTOR:
-               dip_ThrowIf( _cols!=1, "A column vector can have only one column" );
-               elements = _rows;
-               rows = _rows;
+               dip_ThrowIf( cols!=1, "A column vector can have only one column" );
+               elements_ = rows;
+               rows_ = rows;
                break;
             case Shape::ROW_VECTOR:
-               dip_ThrowIf( _rows!=1, "A column vector can have only one column" );
-               elements = _cols;
-               rows = 1;
+               dip_ThrowIf( rows!=1, "A column vector can have only one column" );
+               elements_ = cols;
+               rows_ = 1;
                break;
             case Shape::COL_MAJOR_MATRIX:
             case Shape::ROW_MAJOR_MATRIX:
-               elements = _rows * _cols;
-               rows = _rows;
+               elements_ = rows * cols;
+               rows_ = rows;
                break;
             case Shape::DIAGONAL_MATRIX:
-               dip_ThrowIf( _rows!=_cols, "A diagonal matrix must be square" );
-               elements = _rows;
-               rows = _rows;
+               dip_ThrowIf( rows!=cols, "A diagonal matrix must be square" );
+               elements_ = rows;
+               rows_ = rows;
                break;
             case Shape::SYMMETRIC_MATRIX:
-               dip_ThrowIf( _rows!=_cols, "A symmetric matrix must be square" );
-               elements = NUpperDiagonalElements( _rows );
-               rows = _rows;
+               dip_ThrowIf( rows!=cols, "A symmetric matrix must be square" );
+               elements_ = NUpperDiagonalElements( rows );
+               rows_ = rows;
                break;
             case Shape::UPPTRIANG_MATRIX:
             case Shape::LOWTRIANG_MATRIX:
-               dip_ThrowIf( _rows!=_cols, "A triangular matrix must be square" );
-               elements = NUpperDiagonalElements( _rows );
-               rows = _rows;
+               dip_ThrowIf( rows!=cols, "A triangular matrix must be square" );
+               elements_ = NUpperDiagonalElements( rows );
+               rows_ = rows;
                break;
           }
       }
       /// Sets the tensor shape, results in a Shape::COL_VECTOR with one element (scalar).
       void SetScalar() {
-         shape = Shape::COL_VECTOR;
-         elements = rows = 1;
+         shape_ = Shape::COL_VECTOR;
+         elements_ = rows_ = 1;
       }
       /// Sets the tensor shape, results in a Shape::COL_VECTOR.
       void SetVector( dip::uint n ) {
-         shape = Shape::COL_VECTOR;
-         elements = rows = n;
+         shape_ = Shape::COL_VECTOR;
+         elements_ = rows_ = n;
       }
       /// Sets the tensor shape, results in a Shape::COL_MAJOR_MATRIX.
-      void SetMatrix( dip::uint _rows, dip::uint _cols ) {
-         shape = Shape::COL_MAJOR_MATRIX;
-         elements = _rows * _cols;
-         rows = _rows;
+      void SetMatrix( dip::uint rows, dip::uint cols ) {
+         shape_ = Shape::COL_MAJOR_MATRIX;
+         elements_ = rows * cols;
+         rows_ = rows;
       }
       /// Sets the tensor size, always results in a Shape::COL_VECTOR or Shape::COL_MAJOR_MATRIX.
       void SetDimensions( const UnsignedArray& tdims ) {
@@ -220,54 +221,54 @@ class Tensor {
       }
 
       /// Changes the tensor shape without changing the number of elements, results in a Shape::COL_MAJOR_MATRIX.
-      void ChangeShape( dip::uint _rows ) {
-         if( rows != _rows ) {
-            dip_ThrowIf( elements % _rows, "Cannot reshape tensor to requested size" );
-            rows = _rows;
-            shape = Shape::COL_MAJOR_MATRIX;
+      void ChangeShape( dip::uint rows ) {
+         if( rows_ != rows ) {
+            dip_ThrowIf( elements_ % rows, "Cannot reshape tensor to requested size" );
+            rows_ = rows;
+            shape_ = Shape::COL_MAJOR_MATRIX;
          }
       }
       /// Changes the tensor shape without changing the number of elements, results in a Shape::COL_VECTOR.
       void ChangeShape() {
-         shape = Shape::COL_VECTOR;
-         elements = rows;
+         shape_ = Shape::COL_VECTOR;
+         elements_ = rows_;
       }
       /// Transposes the tensor, causing a change of shape without a change of number of elements.
       void Transpose() {
-         switch( shape ) {
+         switch( shape_ ) {
             case Shape::COL_VECTOR:
-               shape = Shape::ROW_VECTOR;
-               rows = 1;
+               shape_ = Shape::ROW_VECTOR;
+               rows_ = 1;
                break;
             case Shape::ROW_VECTOR:
-               shape = Shape::COL_VECTOR;
-               rows = elements;
+               shape_ = Shape::COL_VECTOR;
+               rows_ = elements_;
                break;
             case Shape::COL_MAJOR_MATRIX:
-               shape = Shape::ROW_MAJOR_MATRIX;
-               rows = elements / rows;
+               shape_ = Shape::ROW_MAJOR_MATRIX;
+               rows_ = elements_ / rows_;
                break;
             case Shape::ROW_MAJOR_MATRIX:
-               shape = Shape::COL_MAJOR_MATRIX;
-               rows = elements / rows;
+               shape_ = Shape::COL_MAJOR_MATRIX;
+               rows_ = elements_ / rows_;
                break;
             case Shape::DIAGONAL_MATRIX:
             case Shape::SYMMETRIC_MATRIX:
                break;
             case Shape::UPPTRIANG_MATRIX:
-               shape = Shape::LOWTRIANG_MATRIX;
+               shape_ = Shape::LOWTRIANG_MATRIX;
                break;
             case Shape::LOWTRIANG_MATRIX:
-               shape = Shape::UPPTRIANG_MATRIX;
+               shape_ = Shape::UPPTRIANG_MATRIX;
                break;
           }
       }
 
    private:
 
-      Shape shape = Shape::COL_VECTOR;
-      dip::uint elements = 1;
-      dip::uint rows = 1;
+      enum Shape shape_ = Shape::COL_VECTOR;
+      dip::uint elements_ = 1;
+      dip::uint rows_ = 1;
 
       static inline dip::uint NUpperDiagonalElements( dip::uint rows ) {
          return ( rows * ( rows+1 ) ) / 2;

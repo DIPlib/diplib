@@ -20,24 +20,6 @@ namespace dip {
 // --- Internal functions, static ---
 
 
-// Sort strides smallest to largest (simple bubble sort, assume few elements)
-// Dimensions array is sorted the same way.
-static void SortByStrides(
-      IntegerArray& s,
-      UnsignedArray& d
-) {
-   dip::uint n = s.size();
-   for( dip::uint jj=n-1; jj!=0; --jj ) {
-      for( dip::uint ii=0; ii!=jj; ++ii ) {
-         if( s[ii] > s[ii+1] ) {
-            std::swap( s[ii], s[ii+1] );
-            std::swap( d[ii], d[ii+1] );
-         }
-      }
-   }
-}
-
-
 // Compute a normal stride array.
 static void ComputeStrides(
       const UnsignedArray& dims,
@@ -192,7 +174,7 @@ bool Image::HasValidStrides() const {
    for( dip::uint ii=0; ii<n; ++ii ) {
       s[ii] = std::abs( s[ii] );
    }
-   SortByStrides( s, d );
+   s.sort( d );
    // Test invariant
    for( dip::uint ii=0; ii<n-1; ++ii ) {
       if( s[ii+1] <= s[ii]*(d[ii]-1) )
@@ -244,7 +226,10 @@ bool Image::Aliases( const Image& other ) const {
       return true;
 
    // Same data block: expect same data type also!
-   dip::uint dts = datatype.SizeOf();       // TODO: what do we do if this is not the case???
+   dip::uint dts = datatype.SizeOf();
+   // TODO: If the two blocks have different data type, we should convert
+   // the one with the larger type by adding a new spatial dimension and
+   // adjusting all strides.
 
    // Make origin in units of data size
    origin1 /= dts;
@@ -301,9 +286,9 @@ bool Image::Aliases( const Image& other ) const {
       }
    }
 
-   // Sort strides smallest to largest
-   SortByStrides( strides1, dims1 );
-   SortByStrides( strides2, dims2 );
+   // Sort strides smallest to largest, keeping dims in sync.
+   strides1.sort( dims1 );
+   strides2.sort( dims2 );
 
    // Walk through both stride arrays matching up dimensions
    // The assumed invariant is that stride[ii+1]>=stride[ii]*dims[ii]
@@ -433,6 +418,8 @@ dip::sint Image::Offset( const UnsignedArray& coords ) const {
 
 //
 UnsignedArray Image::OffsetToCoordinates( dip::uint offset ) const {
+   // TODO: we need to sort the strides, but then the coordinates array will be in wrong order
+   // TODO: this does not work if there are negative strides!?
    return dip::OffsetToCoordinates( offset, strides );
 }
 

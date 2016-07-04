@@ -20,6 +20,12 @@
 #include <string>
 #include <cassert>
 
+
+/// \file
+/// You don't need to include this file directly, it is included through diplib.h.
+//TODO: We need to document the macros defined here under the file diplib.h. How do we do this?
+
+
 namespace dip {
 
 // All errors thrown in DIPlib are of this class:

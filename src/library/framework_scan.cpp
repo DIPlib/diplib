@@ -190,7 +190,10 @@ void Scan(
    //       I guess it would be useful to get an idea of the amount of work that
    //       the lineFilter does per pixel. If the caller can provide that estimate,
    //       we'd be able to use that to determine the threading schedule.
-   //       If we have a 1D image
+   //       functionVariables.size() is the upper limit to the number of threads,
+   //       unless it is zero.
+
+   bool useFunctionVariables = functionVariables.size() > 0;
 
    // TODO: Start threads, each thread makes its own buffers.
    dip::uint thread = 0;
@@ -272,7 +275,7 @@ void Scan(
             processingDim,
             position,
             functionParameters,
-            functionVariables[thread]
+            useFunctionVariables ? functionVariables[thread] : nullptr
          );
 
          // Copy back the line from output buffer to the image
@@ -329,7 +332,6 @@ void Scan(
    for( dip::uint ii = 0; ii < buffers.size(); ++ii ) {
       operator delete( buffers[ii] );
    }
-
 
    // TODO: End threads.
 

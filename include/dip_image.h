@@ -100,7 +100,7 @@ class Image {
          strides(src.strides),
          tensor(src.tensor),
          tstride(src.tstride),
-         color_space(src.color_space),
+         colspace(src.colspace),
          physdims(src.physdims),
          externalInterface(src.externalInterface)
       {
@@ -369,6 +369,11 @@ class Image {
          return tensor.Rows();
       }
 
+      /// Get the tensor shape.
+      enum Tensor::Shape TensorShape() const {
+         return tensor.Shape();
+      }
+
       /// True for non-tensor (grey-value) images.
       bool IsScalar() const {
          return tensor.IsScalar();
@@ -392,7 +397,7 @@ class Image {
       }
 
       /// Change the tensor shape, without changing the number of tensor elements.
-      // NOTE: this currently forces the tensor to be a matrix. We should maybe
+      // TODO: this currently forces the tensor to be a matrix. We should maybe
       // modify the Tensor class so that matrices with one of the dimensions==1
       // are marked as being vectors automatically. Thus setting the shape to
       // {1,3} will make this a row vector.
@@ -441,6 +446,12 @@ class Image {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          datatype = dt;
       }
+
+      // TODO: Add a function to convert the image to another data type.
+      // Conversion from uint8 to bin and back can occur in-place.
+
+      // TODO: Add a function to convert scomplex to sfloat with an extra
+      // dimension (or tensor dimension?), and dcomplex to dfloat.
 
       //
       // Color space
@@ -506,7 +517,7 @@ class Image {
          dims           = src.dims;
          strides        = src.strides;
          tensor         = src.tensor;
-         color_space    = src.color_space;
+         colspace       = src.colspace;
          physdims       = src.physdims;
          if( !externalInterface )
             externalInterface = src.externalInterface;
@@ -616,8 +627,8 @@ class Image {
       // Pointers, Offsets, Indices
       //
 
-      /// Get pointer to the first pixel in the image, at coordinates (0,0,0,...);
-      /// the image must be forged.
+      /// Get pointer to the first sample in the image, the first tensor
+      /// element at coordinates (0,0,0,...); the image must be forged.
       void* Origin() const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          return origin;
@@ -642,8 +653,8 @@ class Image {
       }
 
       /// Compute offset given coordinates. The offset needs to be multiplied
-      /// by the number of bytes of each pixel (or rather tensor element) to
-      /// become a memory offset within the image.
+      /// by the number of bytes of each sample to become a memory offset
+      /// within the image.
       ///
       /// The image must be forged.
       /// \see Origin, Pointer, OffsetToCoordinates
@@ -705,7 +716,7 @@ class Image {
       /// If `this` is forged, then `img` is expected to have the same dimensions
       /// and number of tensor elements, and the data is copied over from `img`
       /// to `this`. The copy will apply data type conversion, where values are
-      /// clipped to the target range and/or rounded, as applicable. Complex
+      /// clipped to the target range and/or truncated, as applicable. Complex
       /// values are converted to non-complex values by taking the absolute
       /// value.
       ///
@@ -733,25 +744,27 @@ class Image {
          return out;
       }
 
-      /// Sets all tensor elements of all pixels to the value `v`; the image
+      /// Sets all samples in the image to the value `v`; the image
       /// must be forged.
       void Set( dip::sint v );
 
-      /// Sets all tensor elements of all pixels to the value `v`; the image
+      /// Sets all samples in the image to the value `v`; the image
       /// must be forged.
       void Set( dfloat v);
 
-      /// Sets all tensor elements of all pixels to the value `v`; the image
+      /// Sets all samples in the image to the value `v`; the image
       /// must be forged.
       void Set( dcomplex v);
 
-      /// Extracts the fist value in the first pixel (At(0,0)[0]), for complex values
+      /// Extracts the fist sample in the first pixel (At(0,0)[0]), casted
+      /// to a signed integer of maximum width; for complex values
       /// returns the absolute value.
       explicit operator sint() const;
-      /// Extracts the fist value in the first pixel (At(0,0)[0]), for complex values
+      /// Extracts the fist sample in the first pixel (At(0,0)[0]), casted
+      /// to a double-precision floating point value; for complex values
       /// returns the absolute value.
       explicit operator dfloat() const;
-      /// Extracts the fist value in the first pixel (At(0,0)[0]).
+      /// Extracts the fist sample in the first pixel (At(0,0)[0]).
       explicit operator dcomplex() const;
 
 
@@ -803,12 +816,12 @@ class Image {
       //
 
       struct DataType datatype = DT_SFLOAT;
-      UnsignedArray dims;                 // dims.size == ndims
-      IntegerArray strides;               // strides.size == ndims
+      UnsignedArray dims;                 // dims.size == ndims (if forged)
+      IntegerArray strides;               // strides.size == ndims (if forged)
       Tensor tensor;
       dip::sint tstride = 0;
       bool protect = false;               // When set, don't strip image
-      ColorSpace color_space;
+      ColorSpace colspace;
       PhysicalDimensions physdims;
       std::shared_ptr<void> datablock;    // Holds the pixel data. Data block will be freed when last image
                                           //    that uses it is destroyed.
@@ -821,7 +834,7 @@ class Image {
       // Some private functions
       //
 
-      bool HasValidStrides() const;       // Are the strides such that no two pixels are in the same memory cell?
+      bool HasValidStrides() const;       // Are the strides such that no two samples are in the same memory cell?
 
       void SetNormalStrides();            // Fill in all strides.
 
@@ -829,7 +842,7 @@ class Image {
       void GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const;
                                           // size is the distance between top left and bottom right corners.
                                           // start is the distance between top left corner and origin
-                                          // (will be <0 if any strides[ii] < 0). All measured in pixels.
+                                          // (will be <0 if any strides[ii] < 0). All measured in samples.
 
 }; // class Image
 

@@ -13,7 +13,7 @@
 
 namespace dip {
 
-// Casting (the first tensor component of) the first pixel to dcomplex.
+// Casting the first sample (the first tensor component of the first pixel) to dcomplex.
 
 template< typename TPI >
 static inline dcomplex CastValueComplex( void* p ) {
@@ -26,7 +26,7 @@ Image::operator dcomplex() const{
    return x;
 }
 
-// Casting (the first tensor component of) the first pixel to dfloat.
+// Casting the first sample (the first tensor component of the first pixel) to dfloat.
 
 template< typename T >
 static inline dfloat dip__todfloat( T v ) { return (dfloat)v; }
@@ -45,7 +45,7 @@ Image::operator dfloat() const{
    return x;
 }
 
-// Casting (the first tensor component of) the first pixel to sint.
+// Casting the first sample (the first tensor component of the first pixel) to sint.
 
 template< typename T >
 static inline dip::sint dip__tosint( T v )   { return (dip::sint)v; }

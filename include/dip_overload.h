@@ -44,10 +44,6 @@
 // Note: in some macros below, we start with assigning a random function
 // pointer into `f`. This is necessary to determine the type of `f`.
 
-// TODO: This file is only documented if ENABLE_PREPROCESSING in Doxyfile
-// is set. But that causes most other stuff to not be documented, due to
-// the way we include diplib.h everywhere.
-
 #define DIP__OVL__HEAD( dtype ) \
    switch( dtype ) {
 

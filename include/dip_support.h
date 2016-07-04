@@ -40,8 +40,8 @@ typedef std::vector<String> StringArray;  ///< An array of strings
 /// If stop cannot be reached with the given step size, the last pixel
 /// in the range will come earlier. That is, stop is never exceeded.
 struct Range {
-   dip::sint start;    ///< First pixel included in range
-   dip::sint stop;     ///< Last pixel included in range
+   dip::sint start;    ///< First index included in range
+   dip::sint stop;     ///< Last index included in range
    dip::uint step;     ///< Step size when going from start to stop
 
    /// Create a range that indicates all pixels
@@ -57,6 +57,8 @@ struct Range {
    /// values according to the given size; throws if the range falls
    /// out of bounds.
    void Fix( dip::uint size ) {
+      // Check step is non-zero
+      dip_ThrowIf( step==0, E::PARAMETER_OUT_OF_RANGE );
       // Compute indices from end
       if( start<0 ) start += size;
       if( stop <0 ) stop  += size;
@@ -120,10 +122,8 @@ class ColorSpace {
 /// Specifies an image's pixel size in physical units.
 class PhysicalDimensions {
    private:
-      //StringArray spatial_value;
-      //FloatArray spatial_size;
-      //String intensity_unit;
-      //dfloat intensity_value = 0;
+      //StringArray units_;
+      //FloatArray magnitude_;
    public:
       // constructors & destructor
       // getters
