@@ -138,36 +138,44 @@ Image& Image::Mirror( const BooleanArray& process ) {
 }
 
 
-Image& Image::TensorToSpatial( dip::uint dim ) {
+Image& Image::TensorToSpatial( dip::sint dim ) {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = dims.size();
-   dip_ThrowIf( dim > nd, E::INVALID_PARAMETER );
-   dims.insert( dim, tensor.Elements() );
-   strides.insert( dim, tstride );
+   if( dim < 0 ) {
+      dim = nd;
+   }
+   dip::uint newdim = (dip::uint)dim;
+   dip_ThrowIf( newdim > nd, E::INVALID_PARAMETER );
+   dims.insert( newdim, tensor.Elements() );
+   strides.insert( newdim, tstride );
    tensor.SetScalar();
    tstride = 1;
    return *this;
 }
 
 
-Image& Image::SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols ) {
+Image& Image::SpatialToTensor( dip::sint dim, dip::uint rows, dip::uint cols ) {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip_ThrowIf( !tensor.IsScalar(), E::NOT_SCALAR );
    dip::uint nd = dims.size();
-   dip_ThrowIf( dim >= nd, E::INVALID_PARAMETER );
+   if( dim < 0 ) {
+      dim = nd;
+   }
+   dip::uint olddim = (dip::uint)dim;
+   dip_ThrowIf( olddim >= nd, E::INVALID_PARAMETER );
    if ((rows == 0) && (cols == 0)) {
       rows = dims[dim];
       cols = 1;
    } else if (rows == 0) {
-      rows = dims[dim] / cols;
+      rows = dims[olddim] / cols;
    } else if (cols == 0) {
-      cols = dims[dim] / rows;
+      cols = dims[olddim] / rows;
    }
-   dip_ThrowIf( dims[dim] != rows * cols, E::PARAMETER_OUT_OF_RANGE );
+   dip_ThrowIf( dims[olddim] != rows * cols, E::PARAMETER_OUT_OF_RANGE );
    tensor.SetMatrix( rows, cols );
-   tstride = strides[dim];
-   dims.erase( dim );
-   strides.erase( dim );
+   tstride = strides[olddim];
+   dims.erase( olddim );
+   strides.erase( olddim );
    return *this;
 }
 

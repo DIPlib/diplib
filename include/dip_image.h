@@ -23,6 +23,11 @@
 #include "dip_tensor.h"
 #include "dip_datatype.h"
 
+
+/// \file
+/// Defines the dip::Image class and support functions. This file is always included through diplib.h.
+
+
 /// The dip namespace contains all the library functionality.
 namespace dip {
 
@@ -419,14 +424,18 @@ class Image {
          return *this;
       }
 
-      /// Convert tensor dimensions to spatial dimension, works even for scalar images.
-      Image& TensorToSpatial( dip::uint dim );
+      /// Convert tensor dimensions to spatial dimension.
+      /// Works even for scalar images, creating a singleton dimension. `dim`
+      /// defines the new dimension, subsequent dimensions will be shifted over.
+      /// `dim` should not be larger than the number of dimensions. If `dim`
+      /// is negative, the new dimension will be the last one.
+      Image& TensorToSpatial( dip::sint dim );
 
       /// Convert spatial dimension to tensor dimensions. The image must be scalar.
       /// If `rows` or `cols` is zero, its size is computed from the size of the
       /// image along dimension `dim`. If both are zero, a default column tensor
-      /// is created.
-      Image& SpatialToTensor( dip::uint dim, dip::uint rows = 0, dip::uint cols = 0 );
+      /// is created. If `dim` is negative, the last dimension is used.
+      Image& SpatialToTensor( dip::sint dim, dip::uint rows = 0, dip::uint cols = 0 );
 
       //
       // Data Type
@@ -936,13 +945,6 @@ void DefineROI(
       const UnsignedArray& origin,
       const UnsignedArray& dims,
       const IntegerArray& spacing );
-
-/// Changes the image's data type, copying over the data with convertion.
-inline Image ImageChangeDataType( const Image& src, DataType dt ) {
-   Image dest( src, dt );
-   dest.Copy( src );
-   return dest;
-}
 
 } // namespace dip
 
