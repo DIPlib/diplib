@@ -70,10 +70,19 @@ void Scan(
    // Do singleton expansion if necessary
    UnsignedArray dims;
    if( nIn > 0 ) {
-      dims = SingletonExpandedSize( in );
-      for( dip::uint ii = 0; ii < nIn; ++ii) {
-         if( in[ii].Dimensions() != dims ) {
-            SingletonExpansion( in[ii], dims );
+      if( opts == Scan_NoSingletonExpansion ) {
+         dims = SingletonExpandedSize( in );
+         for( dip::uint ii = 0; ii < nIn; ++ii) {
+            if( in[ii].Dimensions() != dims ) {
+               SingletonExpansion( in[ii], dims );
+            }
+         }
+      } else {
+         dims = in[0].Dimensions();
+         for( dip::uint ii = 1; ii < nIn; ++ii) {
+            if( in[ii].Dimensions() != dims ) {
+               dip_Throw( E::DIMENSIONS_DONT_MATCH );
+            }
          }
       }
    } else {

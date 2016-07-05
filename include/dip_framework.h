@@ -11,6 +11,11 @@
 
 #include "diplib.h"
 
+
+/// \file
+/// Declares the dip::Framework namespace.
+
+
 namespace dip {
 
 /// Frameworks are the basis of most pixel-based processing in DIPlib.
@@ -67,12 +72,11 @@ void SingletonExpansion(
 // Process an image pixel by pixel
 //
 
-// TODO: Add an option for singleton expansion
-
-DIP_DECLARE_OPTIONS(ScanOptions, 4);
+DIP_DECLARE_OPTIONS(ScanOptions, 5);
 DIP_DEFINE_OPTION(ScanOptions, Scan_NoMultiThreading, 0);
 DIP_DEFINE_OPTION(ScanOptions, Scan_NeedCoordinates, 1);
 DIP_DEFINE_OPTION(ScanOptions, Scan_TensorAsSpatialDim, 2);
+DIP_DEFINE_OPTION(ScanOptions, Scan_NoSingletonExpansion, 3);
 
 /// Structure that holds information about input or output pixel buffers
 /// for the dip::Framework::Scan callback function. The length of the buffer
@@ -178,6 +182,8 @@ typedef void (*ScanFilter) (
 /// * `dip::FrameWork::Scan_TensorAsSpatialDim`: Tensor dimensions are treated
 ///     as a spatial dimension for scanning, ensuring that the line scan filter
 ///     always gets scalar pixels.
+/// * `dip::Framework::Scan_NoSingletonExpansion`: Inhibits singleton expansion
+///     of input images.
 ///
 /// The `lineFilter` function signature is as follows:
 ///
