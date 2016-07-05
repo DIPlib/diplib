@@ -22,8 +22,7 @@
 
 
 /// \file
-/// You don't need to include this file directly, it is included through diplib.h.
-//TODO: We need to document the macros defined here under the file diplib.h. How do we do this?
+/// Defines error macros and default error strings. This file is always included through diplib.h.
 
 
 namespace dip {

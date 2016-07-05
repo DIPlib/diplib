@@ -11,6 +11,11 @@
 
 #include "dip_types.h"
 
+
+/// \file
+/// Numeric algorithms unrelated to images.
+
+
 namespace dip {
 
 /// Compute the greatest common denominator of two positive integers.

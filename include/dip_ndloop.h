@@ -12,6 +12,11 @@
 #include "dip_error.h"
 #include "dip_types.h"
 
+
+/// \file
+/// Declares the dip::NDLoop namespace.
+
+
 namespace dip {
 
 /// An nD loop allows you to loop over all pixels in an image of arbitrary

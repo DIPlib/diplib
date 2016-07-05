@@ -18,6 +18,11 @@
 
 #include "dip_support.h"
 
+
+/// \file
+/// Defines the dip::Tensor class. This file is always included through diplib.h.
+
+
 namespace dip {
 
 //
