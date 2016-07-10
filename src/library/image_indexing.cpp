@@ -200,6 +200,36 @@ Image Image::At( RangeArray ranges ) const {
    return out;
 }
 
+Image Image::Real() const {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !datatype.IsComplex() , E::DATA_TYPE_NOT_SUPPORTED);
+   Image out = *this;
+   // Change data type
+   out.datatype = datatype == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
+   // Sample size is halved, meaning all strides must be doubled
+   for( dip::uint ii = 0; ii < strides.size(); ++ii ) {
+      out.strides[ii] *= 2;
+   }
+   out.tstride *= 2;
+   return out;
+}
+
+Image Image::Imaginary() const {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !datatype.IsComplex() , E::DATA_TYPE_NOT_SUPPORTED);
+   Image out = *this;
+   // Change data type
+   out.datatype = datatype == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
+   // Sample size is halved, meaning all strides must be doubled
+   for( dip::uint ii = 0; ii < strides.size(); ++ii ) {
+      out.strides[ii] *= 2;
+   }
+   out.tstride *= 2;
+   // Change the offset
+   out.origin = (uint8*)out.origin + out.datatype.SizeOf();
+   return out;
+}
+
 void DefineROI(
    const Image& src,
    Image& dest,

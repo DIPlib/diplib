@@ -185,84 +185,6 @@ class Image {
          dims = d;
       }
 
-      /// Permute dimensions. This function allows to re-arrange the dimensions
-      /// of the image in any order. It also allows to remove singleton dimensions
-      /// (but not to add them, should we add that? how?). For example, given
-      /// an image with dimensions `{ 30, 1, 50 }`, and an `order` array of
-      /// `{ 2, 0 }`, the image will be modified to have dimensions `{ 50, 30 }`.
-      /// Dimension number 1 is not referenced, and was removed (this can only
-      /// happen if the dimension has size 1, otherwise an exception will be
-      /// thrown!). Dimension 2 was placed first, and dimension 0 was placed second.
-      ///
-      /// The image must be forged. If it is not, you can simply assign any
-      /// new dimensions array through Image::SetDimensions. The data will never
-      /// be copied (i.e. this is a quick and cheap operation).
-      ///
-      /// \see SwapDimensions, Squeeze, AddSingleton, ExpandDimensionality, Flatten.
-      Image& PermuteDimensions( const UnsignedArray& order );
-
-      /// Swap dimensions d1 and d2. This is a simplified version of the
-      /// PermuteDimensions.
-      ///
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
-      ///
-      /// \see PermuteDimensions.
-      Image& SwapDimensions( dip::uint d1, dip::uint d2 );
-
-      /// Make image 1D. The image must be forged. If HasSimpleStride,
-      /// this is a quick and cheap operation, but if not, the data segment
-      /// will be copied.
-      ///
-      /// \see PermuteDimensions, ExpandDimensionality.
-      Image& Flatten();
-
-      /// Remove singleton dimensions (dimensions with size==1).
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
-      ///
-      /// \see AddSingleton, ExpandDimensionality, PermuteDimensions.
-      Image& Squeeze();
-
-      /// Add a singleton dimension (with size==1) to the image.
-      /// Dimensions `dim` to last are shifted up, dimension `dim` will
-      /// have a size of 1.
-      ///
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
-      ///
-      /// Example: to an image with dimensions `{ 4, 5, 6 }` we add a
-      /// singleton dimension `dim == 1`. The image will now have
-      /// dimensions `{ 4, 1, 5, 6 }`.
-      ///
-      /// \see Squeeze, ExpandDimensionality, PermuteDimensions.
-      Image& AddSingleton( dip::uint dim );
-
-      /// Append singleton dimensions to increase the image dimensionality.
-      /// The image will have `n` dimensions. However, if the image already
-      /// has `n` or more dimensions, nothing happens.
-      ///
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
-      ///
-      /// \see AddSingleton, ExpandSingletonDimension, Squeeze, PermuteDimensions, Flatten.
-      Image& ExpandDimensionality( dip::uint n );
-
-      /// Expand singleton dimension `dim` to `sz` pixels, setting the corresponding
-      /// stride to 0. If `dim` is not a singleton dimension (size==1), an
-      /// exception is thrown.
-      ///
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
-      ///
-      /// \see AddSingleton, ExpandDimensionality.
-      Image& ExpandSingletonDimension( dip::uint dim, dip::uint sz );
-
-      /// Mirror de image about selected axes.
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
-      Image& Mirror( const BooleanArray& process );
-
       //
       // Strides
       //
@@ -401,42 +323,6 @@ class Image {
          tensor.SetVector( nelems );
       }
 
-      /// Change the tensor shape, without changing the number of tensor elements.
-      // TODO: this currently forces the tensor to be a matrix. We should maybe
-      // modify the Tensor class so that matrices with one of the dimensions==1
-      // are marked as being vectors automatically. Thus setting the shape to
-      // {1,3} will make this a row vector.
-      Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {
-         dip_ThrowIf( tensor.Elements() != rows*cols, "Cannot reshape tensor to requested dimensions." );
-         tensor.ChangeShape( rows );
-         return *this;
-      }
-
-      /// Change the tensor to a vector, without changing the number of tensor elements.
-      Image& ReshapeTensorAsVector() {
-         tensor.ChangeShape();
-         return *this;
-      }
-
-      /// Transpose the tensor.
-      Image& Transpose() {
-         tensor.Transpose();
-         return *this;
-      }
-
-      /// Convert tensor dimensions to spatial dimension.
-      /// Works even for scalar images, creating a singleton dimension. `dim`
-      /// defines the new dimension, subsequent dimensions will be shifted over.
-      /// `dim` should not be larger than the number of dimensions. If `dim`
-      /// is negative, the new dimension will be the last one.
-      Image& TensorToSpatial( dip::sint dim );
-
-      /// Convert spatial dimension to tensor dimensions. The image must be scalar.
-      /// If `rows` or `cols` is zero, its size is computed from the size of the
-      /// image along dimension `dim`. If both are zero, a default column tensor
-      /// is created. If `dim` is negative, the last dimension is used.
-      Image& SpatialToTensor( dip::sint dim, dip::uint rows = 0, dip::uint cols = 0 );
-
       //
       // Data Type
       //
@@ -455,12 +341,6 @@ class Image {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          datatype = dt;
       }
-
-      // TODO: Add a function to convert the image to another data type.
-      // Conversion from uint8 to bin and back can occur in-place.
-
-      // TODO: Add a function to convert scomplex to sfloat with an extra
-      // dimension (or tensor dimension?), and dcomplex to dfloat.
 
       //
       // Color space
@@ -542,6 +422,7 @@ class Image {
 
       //
       // Data
+      // Defined in src/library/image_data.cpp
       //
 
       /// Get pointer to the data segment. This is useful to identify
@@ -634,6 +515,7 @@ class Image {
 
       //
       // Pointers, Offsets, Indices
+      // Defined in src/library/image_data.cpp
       //
 
       /// Get pointer to the first sample in the image, the first tensor
@@ -690,7 +572,151 @@ class Image {
       UnsignedArray IndexToCoordinates( dip::uint index ) const;
 
       //
-      // Indexing
+      // Modifying geometry of a forged image without data copy
+      // Defined in src/library/image_manip.cpp
+      //
+
+      /// Permute dimensions. This function allows to re-arrange the dimensions
+      /// of the image in any order. It also allows to remove singleton dimensions
+      /// (but not to add them, should we add that? how?). For example, given
+      /// an image with dimensions `{ 30, 1, 50 }`, and an `order` array of
+      /// `{ 2, 0 }`, the image will be modified to have dimensions `{ 50, 30 }`.
+      /// Dimension number 1 is not referenced, and was removed (this can only
+      /// happen if the dimension has size 1, otherwise an exception will be
+      /// thrown!). Dimension 2 was placed first, and dimension 0 was placed second.
+      ///
+      /// The image must be forged. If it is not, you can simply assign any
+      /// new dimensions array through Image::SetDimensions. The data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see SwapDimensions, Squeeze, AddSingleton, ExpandDimensionality, Flatten.
+      Image& PermuteDimensions( const UnsignedArray& order );
+
+      /// Swap dimensions d1 and d2. This is a simplified version of the
+      /// PermuteDimensions.
+      ///
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see PermuteDimensions.
+      Image& SwapDimensions( dip::uint d1, dip::uint d2 );
+
+      /// Make image 1D. The image must be forged. If HasSimpleStride,
+      /// this is a quick and cheap operation, but if not, the data segment
+      /// will be copied.
+      ///
+      /// \see PermuteDimensions, ExpandDimensionality.
+      Image& Flatten();
+
+      /// Remove singleton dimensions (dimensions with size==1).
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see AddSingleton, ExpandDimensionality, PermuteDimensions.
+      Image& Squeeze();
+
+      /// Add a singleton dimension (with size==1) to the image.
+      /// Dimensions `dim` to last are shifted up, dimension `dim` will
+      /// have a size of 1.
+      ///
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// Example: to an image with dimensions `{ 4, 5, 6 }` we add a
+      /// singleton dimension `dim == 1`. The image will now have
+      /// dimensions `{ 4, 1, 5, 6 }`.
+      ///
+      /// \see Squeeze, ExpandDimensionality, PermuteDimensions.
+      Image& AddSingleton( dip::uint dim );
+
+      /// Append singleton dimensions to increase the image dimensionality.
+      /// The image will have `n` dimensions. However, if the image already
+      /// has `n` or more dimensions, nothing happens.
+      ///
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see AddSingleton, ExpandSingletonDimension, Squeeze, PermuteDimensions, Flatten.
+      Image& ExpandDimensionality( dip::uint n );
+
+      /// Expand singleton dimension `dim` to `sz` pixels, setting the corresponding
+      /// stride to 0. If `dim` is not a singleton dimension (size==1), an
+      /// exception is thrown.
+      ///
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see AddSingleton, ExpandDimensionality.
+      Image& ExpandSingletonDimension( dip::uint dim, dip::uint sz );
+
+      /// Mirror de image about selected axes.
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      Image& Mirror( const BooleanArray& process );
+
+      /// Change the tensor shape, without changing the number of tensor elements.
+      // TODO: This currently forces the tensor to be a matrix.
+      // We should maybe modify the Tensor class so that matrices with one of
+      // the dimensions==1 are marked as being vectors automatically. Thus
+      // setting the shape to {1,3} will make this a row vector.
+      // TODO: How about converting the tensor dimension to a symmetric or triangular matrix?
+      // TODO: Convert between vector and diagonal matrix.
+      Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {
+         dip_ThrowIf( tensor.Elements() != rows*cols, "Cannot reshape tensor to requested dimensions." );
+         tensor.ChangeShape( rows );
+         return *this;
+      }
+
+      /// Change the tensor to a vector, without changing the number of tensor elements.
+      Image& ReshapeTensorAsVector() {
+         tensor.ChangeShape();
+         return *this;
+      }
+
+      /// Transpose the tensor.
+      Image& Transpose() {
+         tensor.Transpose();
+         return *this;
+      }
+
+      /// Convert tensor dimensions to spatial dimension.
+      /// Works even for scalar images, creating a singleton dimension. `dim`
+      /// defines the new dimension, subsequent dimensions will be shifted over.
+      /// `dim` should not be larger than the number of dimensions. If `dim`
+      /// is negative, the new dimension will be the last one. The image must
+      /// be forged.
+      Image& TensorToSpatial( dip::sint dim );
+
+      /// Convert spatial dimension to tensor dimensions. The image must be scalar.
+      /// If `rows` or `cols` is zero, its size is computed from the size of the
+      /// image along dimension `dim`. If both are zero, a default column tensor
+      /// is created. If `dim` is negative, the last dimension is used. The
+      /// image must be forged.
+      Image& SpatialToTensor( dip::sint dim, dip::uint rows = 0, dip::uint cols = 0 );
+
+      /// Split the two values in a complex sample into separate samples,
+      /// creating a new spatial dimension of size 2. `dim` defines the new
+      /// dimension, subsequent dimensions will be shifted over. `dim` should
+      /// not be larger than the number of dimensions. If `dim` is negative,
+      /// the new dimension will be the last one. The image must be forged.
+      Image& SplitComplex( dip::sint dim );
+
+      /// Merge the two samples along dimension `dim` into a single complex-valued sample.
+      /// Dimension `dim` must have size 2 and a stride of 1. If `dim` is negative, the last
+      /// dimension is used. The image must be forged.
+      Image& MergeComplex( dip::sint dim );
+
+      /// Split the two values in a complex sample into separate samples of
+      /// a tensor. The image must be scalar and forged.
+      Image& SplitComplexToTensor();
+
+      /// Merge the two samples in the tensor into a single complex-valued sample.
+      /// The image must have two tensor elements, a tensor stride of 1, and be forged.
+      Image& MergeTensorToComplex();
+
+      //
+      // Creating views of the data -- indexing without data copy
+      // Defined in src/library/image_indexing.cpp
       //
 
       /// Extract a tensor element, `indices` must have one or two elements; the image must be forged.
@@ -720,19 +746,11 @@ class Image {
       /// Extracts a subset of pixels from an image; the image must be forged.
       Image At( RangeArray ranges ) const;
 
-      /// Deep copy, `this` will become a copy of `img` with its own data.
-      ///
-      /// If `this` is forged, then `img` is expected to have the same dimensions
-      /// and number of tensor elements, and the data is copied over from `img`
-      /// to `this`. The copy will apply data type conversion, where values are
-      /// clipped to the target range and/or truncated, as applicable. Complex
-      /// values are converted to non-complex values by taking the absolute
-      /// value.
-      ///
-      /// If `this` is not forged, then all the properties of `img` will be
-      /// copied to `this`, `this` will be forged, and the data from `img` will
-      /// be copied over.
-      void Copy( const Image& img );
+      /// Extracts the real component of a complex-typed image; the image must be forged.
+      Image Real() const;
+
+      /// Extracts the imaginary component of a complex-typed image; the image must be forged.
+      Image Imaginary() const;
 
       /// Quick copy, returns a new image that points at the same data as `this`,
       /// and has mostly the same properties. The color space and physical
@@ -752,6 +770,28 @@ class Image {
          out.externalInterface = externalInterface;
          return out;
       }
+
+      //
+      // Getting/setting pixel values
+      // Defined in src/library/image_data.cpp
+      //
+
+      /// Deep copy, `this` will become a copy of `img` with its own data.
+      ///
+      /// If `this` is forged, then `img` is expected to have the same dimensions
+      /// and number of tensor elements, and the data is copied over from `img`
+      /// to `this`. The copy will apply data type conversion, where values are
+      /// clipped to the target range and/or truncated, as applicable. Complex
+      /// values are converted to non-complex values by taking the absolute
+      /// value.
+      ///
+      /// If `this` is not forged, then all the properties of `img` will be
+      /// copied to `this`, `this` will be forged, and the data from `img` will
+      /// be copied over.
+      void Copy( const Image& img );
+
+      // TODO: Add a function to convert the image to another data type.
+      // Conversion from uint8 to bin and back can occur in-place.
 
       /// Sets all samples in the image to the value `v`; the image
       /// must be forged.
@@ -776,9 +816,8 @@ class Image {
       /// Extracts the fist sample in the first pixel (At(0,0)[0]).
       explicit operator dcomplex() const;
 
-
       //
-      // Operators
+      // Compound assignment operators
       //
 
       Image& operator+=( const Image& rhs ) {

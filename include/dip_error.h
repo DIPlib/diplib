@@ -83,7 +83,7 @@ namespace E {
 //
 
 /// Throw an Error.
-#define dip_Throw( str ) { throw dip::Error( std::string(str) + std::string(" in function ") + std::string(__func__) ); }
+#define dip_Throw( str ) { throw dip::Error( std::string(str) + std::string(" (in function ") + std::string(__func__)  + std::string(")") ); }
 
 /// Test a condition, throw an Error if the condition is met.
 #define dip_ThrowIf( test, str ) { if( test ) dip_Throw( str ) }

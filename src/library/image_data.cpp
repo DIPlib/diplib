@@ -447,13 +447,24 @@ UnsignedArray Image::IndexToCoordinates( dip::uint index ) const {
 }
 
 //
-void Image::Set( dip::sint v ) { // TODO, calling Framework::Scan()
+void Image::Copy( const Image& img ) {
+   if( IsForged() ) {
+      CompareProperties( img );
+      // TODO: should allow for *this having a different data type from that of img.
+   } else {
+      CopyProperties( img );
+   }
+   // TODO: copy data calling Framework::Scan() ?
 }
 
-void Image::Set( dfloat v) { // TODO, calling Framework::Scan()
+//
+void Image::Set( dip::sint v ) { // TODO, calling Framework::Scan() ?
 }
 
-void Image::Set( dcomplex v) { // TODO, calling Framework::Scan()
+void Image::Set( dfloat v) { // TODO, calling Framework::Scan() ?
+}
+
+void Image::Set( dcomplex v) { // TODO, calling Framework::Scan() ?
 }
 
 } // namespace dip

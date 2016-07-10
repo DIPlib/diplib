@@ -179,4 +179,81 @@ Image& Image::SpatialToTensor( dip::sint dim, dip::uint rows, dip::uint cols ) {
    return *this;
 }
 
+Image& Image::SplitComplex( dip::sint dim ) {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !datatype.IsComplex() , E::DATA_TYPE_NOT_SUPPORTED);
+   dip::uint nd = dims.size();
+   if( dim < 0 ) {
+      dim = nd;
+   }
+   dip::uint newdim = (dip::uint)dim;
+   dip_ThrowIf( newdim > nd, E::INVALID_PARAMETER );
+   // Change data type
+   datatype = datatype == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
+   // Sample size is halved, meaning all strides must be doubled
+   for( dip::uint ii = 0; ii < nd; ++ii ) {
+      strides[ii] *= 2;
+   }
+   tstride *= 2;
+   // Create new spatial dimension
+   dims.insert( newdim, 2 );
+   strides.insert( newdim, 1 );
+   return *this;
+}
+
+Image& Image::MergeComplex( dip::sint dim ) {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( datatype.IsComplex() , E::DATA_TYPE_NOT_SUPPORTED);
+   dip::uint nd = dims.size();
+   if( dim < 0 ) {
+      dim = nd;
+   }
+   dip::uint olddim = (dip::uint)dim;
+   dip_ThrowIf( olddim >= nd, E::INVALID_PARAMETER );
+   dip_ThrowIf( ( dims[olddim] != 2 ) || ( strides[olddim] != 1 ), E::DIMENSIONS_DONT_MATCH );
+   // Change data type
+   datatype = datatype == DT_SFLOAT ? DT_SCOMPLEX : DT_DCOMPLEX;
+   // Delete old spatial dimension
+   dims.erase( olddim );
+   strides.erase( olddim );
+   // Sample size is doubled, meaning all strides must be halved
+   for( dip::uint ii = 0; ii < nd; ++ii ) {
+      strides[ii] /= 2;
+   }
+   tstride /= 2;
+   return *this;
+}
+
+Image& Image::SplitComplexToTensor() {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !tensor.IsScalar(), E::NOT_SCALAR );
+   dip_ThrowIf( !datatype.IsComplex() , E::DATA_TYPE_NOT_SUPPORTED);
+   // Change data type
+   datatype = datatype == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
+   // Sample size is halved, meaning all strides must be doubled
+   for( dip::uint ii = 0; ii < dims.size(); ++ii ) {
+      strides[ii] *= 2;
+   }
+   // Create new tensor dimension
+   tensor.SetVector( 2 );
+   tstride = 1;
+   return *this;
+}
+
+Image& Image::MergeTensorToComplex() {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( ( tensor.Elements() != 2 ) || ( tstride != 1 ), E::TENSORSIZES_DONT_MATCH );
+   dip_ThrowIf( datatype.IsComplex() , E::DATA_TYPE_NOT_SUPPORTED);
+   // Change data type
+   datatype = datatype == DT_SFLOAT ? DT_SCOMPLEX : DT_DCOMPLEX;
+   // Delete old tensor dimension
+   tensor.SetScalar();
+   //tstride = 1; // was already the case
+   // Sample size is doubled, meaning all strides must be halved
+   for( dip::uint ii = 0; ii < dims.size(); ++ii ) {
+      strides[ii] /= 2;
+   }
+   return *this;
+}
+
 } // namespace dip
