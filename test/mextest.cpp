@@ -71,7 +71,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       print_info( img_out1 );
 
       mexPrintf("Getting the array for img_out0\n");
-      plhs[0] = mi.GetArray( img_out0.Data() );
+      plhs[0] = mi.GetArray( img_out0 );
 
       mexPrintf("Exiting scope\n");
 

@@ -66,6 +66,13 @@ void SingletonExpansion(
       const UnsignedArray& size
 );
 
+/// Determines the best processing dimension, which is the one with the
+/// smallest stride, except if that dimension is very small and there's a
+/// longer dimension.
+dip::uint OptimalProcessingDim(
+      const Image& in
+);
+
 
 //
 // Scan Framework:

@@ -29,6 +29,9 @@ namespace dip {
 ///      do {
 ///         *(ptr + offset) = ii++;
 ///      } while( dip::NDLoop::Next( img, pos, offset );
+///
+/// For another example, see the source code to dip::Image::Set and
+/// dip::Image::Copy in `src/library/image_data.cpp`.
 namespace NDLoop {
 
 /// Initializes the variables for an nD loop over an image of size `dims`.
@@ -50,7 +53,7 @@ inline UnsignedArray Init(
    dip_ThrowIf( img1.RefDimensions() != img2.RefDimensions(), E::DIMENSIONS_DONT_MATCH );
    offset1 = 0;
    offset2 = 0;
-   return UnsignedArray( img.Dimensionality(), 0 );
+   return UnsignedArray( img1.Dimensionality(), 0 );
 }
 
 
@@ -115,7 +118,7 @@ inline bool Next(
    return dd != position.size();
 }
 
-} // namespace ndloop
+} // namespace NDLoop
 } // namespace dip
 
 #endif // DIP_NDLOOP_H

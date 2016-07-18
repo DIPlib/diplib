@@ -162,27 +162,8 @@ void Scan(
       needBuffers |= outUseBuffer[ii];
    }
 
-   // Determine the best processing dimension, which is the one with the
-   // smallest stride, except if that dimension is very small and there's a
-   // longer dimension.
-   dip::uint processingDim = 0;
-   {
-      constexpr dip::uint SMALL_IMAGE = 63;  // A good value would depend on the size of cache.
-      // We use the strides of the first input image to determine this, if it exists.
-      IntegerArray strides;
-      if( nIn > 0 ) {
-         strides = in[0].Strides();
-      } else {
-         strides = out[0].Strides();
-      }
-      for( dip::uint ii = 1; ii < strides.size(); ++ii ) {
-         if( strides[ii] < strides[processingDim] ) {
-            if(( dims[ii] > SMALL_IMAGE ) || ( dims[ii] > dims[processingDim] )) {
-               processingDim = ii;
-            }
-         }
-      }
-   }
+   // Determine the best processing dimension.
+   dip::uint processingDim = OptimalProcessingDim( nIn > 0 ? in[0] : out[0] );
 
    // Determine the ideal buffer size
    dip::uint bufferSize = dims[processingDim];

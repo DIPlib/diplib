@@ -58,20 +58,21 @@ int main() {
          std::cout << img1;
          dip::Image img2(img1);
          std::cout << img2;
-         img2.Strip();
          img2 = img1.At(10,10,10);
          std::cout << img2;
-         img2.Strip();
          img2 = img1[1];
          std::cout << img2;
-         img2.Strip();
          img2 = img1[1].At(10,10,10);
          std::cout << img2;
-         img2.Strip();
          img2 = img1.At(10,10,10)[1];
          std::cout << img2;
-         img2.Strip();
          img2 = img1.At(dip::Range{},dip::Range{0,-1,4},dip::Range{10});
+         std::cout << img2;
+         img1.Strip();
+         img1.SetDataType( dip::DT_SCOMPLEX );
+         img1.Forge();
+         std::cout << img1;
+         img2 = img1.Imaginary();
          std::cout << img2;
       }
       std::cout << std::endl << "Reshaping." << std::endl;
@@ -138,6 +139,14 @@ int main() {
          img8.Forge();
          if( Alias(img1,img8) != false )
             std::cout << "Error: aliasing computation, test #9" << std::endl;
+         img1.Strip();
+         img1.SetDataType( dip::DT_SCOMPLEX );
+         img1.Forge();
+         if( Alias(img1,img1.Imaginary()) != true )
+            std::cout << "Error: aliasing computation, test #10" << std::endl;
+         if( Alias(img1.Real(),img1.Imaginary()) != false )
+            std::cout << "Error: aliasing computation, test #11" << std::endl;
+
       }
 
    } catch( dip::Error e ) {

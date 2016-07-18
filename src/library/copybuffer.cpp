@@ -13,8 +13,10 @@
 
 namespace dip {
 
+// CopyBuffer()
+
 template< typename inT, typename outT >
-static void CopyBufferFromTo(
+static inline void CopyBufferFromTo(
       inT* inBuffer,
       dip::sint inStride,
       dip::sint inTensorStride,
@@ -38,7 +40,7 @@ static void CopyBufferFromTo(
 }
 
 template< typename inT >
-static void CopyBufferFrom(
+static inline void CopyBufferFrom(
       inT* inBuffer,
       dip::sint inStride,
       dip::sint inTensorStride,
@@ -133,6 +135,112 @@ void CopyBuffer(
          CopyBufferFrom( (dcomplex*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
          break;
    }
+}
+
+
+// FillBuffer()
+
+template< typename inT, typename outT >
+static inline void FillBufferFromTo(
+      outT* outBuffer,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      inT value
+) {
+   outT v = clamp_cast< outT >( value );
+   for( dip::uint pp = 0; pp < pixels; ++pp ) {
+      outT* out = outBuffer;
+      for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
+         *out = v;
+         out += outTensorStride;
+      }
+      outBuffer += outStride;
+   }
+}
+
+template< typename inT >
+static inline void FillBufferFrom(
+      void* outBuffer,
+      DataType outType,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      inT value
+) {
+   switch( outType ) {
+      case dip::DT_BIN:
+         FillBufferFromTo( (bin*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         break;
+      case dip::DT_UINT8:
+         FillBufferFromTo( (uint8*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         break;
+      case dip::DT_UINT16:
+         FillBufferFromTo( (uint16*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         break;
+      case dip::DT_UINT32:
+         FillBufferFromTo( (uint32*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         break;
+      case dip::DT_SINT8:
+         FillBufferFromTo( (sint8*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         break;
+      case dip::DT_SINT16:
+         FillBufferFromTo( (sint16*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         break;
+      case dip::DT_SINT32:
+         FillBufferFromTo( (sint32*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         break;
+      case dip::DT_SFLOAT:
+         FillBufferFromTo( (sfloat*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         break;
+      case dip::DT_DFLOAT:
+         FillBufferFromTo( (dfloat*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         break;
+      case dip::DT_SCOMPLEX:
+         FillBufferFromTo( (scomplex*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         break;
+      case dip::DT_DCOMPLEX:
+         FillBufferFromTo( (dcomplex*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         break;
+   }
+}
+
+void FillBuffer(
+      void* outBuffer,
+      DataType outType,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      dip::sint value
+) {
+   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value);
+}
+
+void FillBuffer(
+      void* outBuffer,
+      DataType outType,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      dfloat value
+) {
+   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value);
+}
+
+void FillBuffer(
+      void* outBuffer,
+      DataType outType,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      dcomplex value
+) {
+   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value);
 }
 
 } // namespace dip

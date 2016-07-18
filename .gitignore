@@ -1,5 +1,4 @@
-obj/
-testout/
+target/
 doc/
 *.geany
 *.pdf

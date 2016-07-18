@@ -90,35 +90,34 @@ class Image {
       //
 
       /// Forged image of given sizes and data type.
-      explicit Image( UnsignedArray d, dip::uint nchan = 1, DataType dt = DT_SFLOAT ) :
-         datatype(dt),
-         dims(d),
-         tensor(nchan)
+      explicit Image( UnsignedArray dimensions, dip::uint tensorElems = 1, DataType dt = DT_SFLOAT ) :
+         datatype( dt ),
+         dims( dimensions ),
+         tensor( tensorElems )
       {
          Forge();
       }
 
       /// Forged image similar to `src`, but with different data type; the data is not copied.
       Image( const Image& src, DataType dt ) :
-         datatype(dt),
-         dims(src.dims),
-         strides(src.strides),
-         tensor(src.tensor),
-         tstride(src.tstride),
-         colspace(src.colspace),
-         physdims(src.physdims),
-         externalInterface(src.externalInterface)
+         datatype( dt ),
+         dims( src.dims ),
+         strides( src.strides ),
+         tensor( src.tensor ),
+         tstride( src.tstride ),
+         colspace( src.colspace ),
+         physdims( src.physdims ),
+         externalInterface( src.externalInterface )
       {
          Forge();
       }
 
       /// Create a 0-D image with the value of `p`.
-      explicit Image( double p, DataType dt = DT_SFLOAT ) :
-         datatype(dt)
+      explicit Image( dfloat p, DataType dt = DT_SFLOAT ) :
+         datatype( dt )
       {
          Forge();       // dims is empty by default
-         // TODO: write data. There's sure to be a good way to do so later on.
-         // operator=( p );
+         Set( p );
       }
 
       /// Create an image around existing data.
@@ -129,13 +128,13 @@ class Image {
              const Tensor& t,                   // tensor properties
              dip::sint ts,                      // tensor stride
              ExternalInterface* ei = nullptr ) :
-         datatype(dt),
-         dims(d),
-         strides(s),
-         tensor(t),
-         tstride(ts),
-         datablock(data),
-         externalInterface(ei)
+         datatype( dt ),
+         dims( d ),
+         strides( s ),
+         tensor( t ),
+         tstride( ts ),
+         datablock( data ),
+         externalInterface( ei )
       {
          dip::uint size;
          dip::sint start;
@@ -144,7 +143,7 @@ class Image {
       }
 
       /// Creates an image with the ExternalInterface set.
-      explicit Image( ExternalInterface* ei ) : externalInterface(ei) {}
+      explicit Image( ExternalInterface* ei ) : externalInterface( ei ) {}
 
       //
       // Dimensions
@@ -513,6 +512,11 @@ class Image {
          externalInterface = ei;
       }
 
+      /// Get the number of samples.
+      dip::uint NumberOfSamples() const {
+         return NumberOfPixels() * TensorElements();
+      }
+
       //
       // Pointers, Offsets, Indices
       // Defined in src/library/image_data.cpp
@@ -776,43 +780,51 @@ class Image {
       // Defined in src/library/image_data.cpp
       //
 
-      /// Deep copy, `this` will become a copy of `img` with its own data.
+      /// Deep copy, `this` will become a copy of `src` with its own data.
       ///
-      /// If `this` is forged, then `img` is expected to have the same dimensions
-      /// and number of tensor elements, and the data is copied over from `img`
+      /// If `this` is forged, then `src` is expected to have the same dimensions
+      /// and number of tensor elements, and the data is copied over from `src`
       /// to `this`. The copy will apply data type conversion, where values are
       /// clipped to the target range and/or truncated, as applicable. Complex
       /// values are converted to non-complex values by taking the absolute
       /// value.
       ///
-      /// If `this` is not forged, then all the properties of `img` will be
-      /// copied to `this`, `this` will be forged, and the data from `img` will
+      /// If `this` is not forged, then all the properties of `src` will be
+      /// copied to `this`, `this` will be forged, and the data from `src` will
       /// be copied over.
-      void Copy( const Image& img );
+      void Copy( const Image& src );
 
       // TODO: Add a function to convert the image to another data type.
       // Conversion from uint8 to bin and back can occur in-place.
 
-      /// Sets all samples in the image to the value `v`; the image
-      /// must be forged.
+      /// Sets all samples in the image to the value `v`. The function is defined
+      /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
+      /// value will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged.
       void Set( dip::sint v );
 
-      /// Sets all samples in the image to the value `v`; the image
-      /// must be forged.
-      void Set( dfloat v);
+      /// Sets all samples in the image to the value `v`. The function is defined
+      /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
+      /// value will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged.
+      void Set( dfloat v );
 
-      /// Sets all samples in the image to the value `v`; the image
-      /// must be forged.
-      void Set( dcomplex v);
+      /// Sets all samples in the image to the value `v`. The function is defined
+      /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
+      /// value will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged.
+      void Set( dcomplex v );
 
       /// Extracts the fist sample in the first pixel (At(0,0)[0]), casted
       /// to a signed integer of maximum width; for complex values
       /// returns the absolute value.
       explicit operator sint() const;
+
       /// Extracts the fist sample in the first pixel (At(0,0)[0]), casted
       /// to a double-precision floating point value; for complex values
       /// returns the absolute value.
       explicit operator dfloat() const;
+
       /// Extracts the fist sample in the first pixel (At(0,0)[0]).
       explicit operator dcomplex() const;
 

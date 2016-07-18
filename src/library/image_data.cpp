@@ -13,6 +13,12 @@
 
 #include "diplib.h"
 #include "dip_numeric.h"
+#include "dip_ndloop.h"
+#include "dip_framework.h"
+#include "dip_overload.h"
+#include "dip_clamp_cast.h"
+
+#include "copybuffer.h"
 
 namespace dip {
 
@@ -225,29 +231,50 @@ bool Image::Aliases( const Image& other ) const {
    if( origin1 == origin2 )
       return true;
 
-   // Same data block: expect same data type also!
-   dip::uint dts = datatype.SizeOf();
-   // TODO: If the two blocks have different data type, we should convert
-   // the one with the larger type by adding a new spatial dimension and
-   // adjusting all strides.
-
-   // Make origin in units of data size
-   origin1 /= dts;
-   origin2 /= dts;
-
-   // Add tensor dimension and strides to the lists
+   // Copy size and stride arrays, add tensor dimension
    IntegerArray  strides1 = strides;
    UnsignedArray dims1    = dims;
    if( tensor.Elements() > 1 ) {
       strides1.push_back( tstride );
       dims1.push_back( tensor.Elements() );
    }
+   dip::uint ndims1 = strides1.size();
    IntegerArray  strides2 = other.strides;
    UnsignedArray dims2    = other.dims;
    if( other.tensor.Elements() > 1 ) {
       strides2.push_back( other.tstride );
       dims2.push_back( other.tensor.Elements() );
    }
+   dip::uint ndims2 = strides2.size();
+
+   // Check sample sizes
+   dip::uint dts1 = datatype.SizeOf();
+   dip::uint dts2 = other.datatype.SizeOf();
+   dip::uint dts = dts1;
+   if( dts1 > dts2 ) {
+      // Split the samples of 1, adding a new dimension
+      dts = dts2;
+      dip::uint n = dts1 / dts; // this is always an integer value, samples have size 1, 2, 4, 8 or 16.
+      for( dip::uint ii=0; ii<ndims1; ++ii ) {
+         strides1[ii] *= n;
+      }
+      strides1.push_back( 1 );
+      dims1.push_back( n );
+      ++ndims1;
+   } else if( dts1 < dts2 ) {
+      // Split the samples of 2, adding a new dimension
+      dip::uint n = dts2 / dts; // this is always an integer value, samples have size 1, 2, 4, 8 or 16.
+      for( dip::uint ii=0; ii<ndims2; ++ii ) {
+         strides2[ii] *= n;
+      }
+      strides2.push_back( 1 );
+      dims2.push_back( n );
+      ++ndims2;
+   } // else, the samples have the same size
+
+   // Make origin in units of data size
+   origin1 /= dts;
+   origin2 /= dts;
 
    // Quicky: if both have simple strides larger than one, and their offsets
    // do not differ by a multiple of that stride, they don't overlap.
@@ -271,8 +298,6 @@ bool Image::Aliases( const Image& other ) const {
    // This is a bit complex
 
    // Make sure all strides are positive (un-mirror)
-   dip::uint ndims1 = strides1.size();
-   dip::uint ndims2 = strides2.size();
    for( dip::uint ii=0; ii<ndims1; ++ii ) {
       if( strides1[ii] < 0 ) {
          strides1[ii] = -strides1[ii];
@@ -372,18 +397,21 @@ void Image::Forge() {
    if( !IsForged() ) {
       dip::uint size = FindNumberOfPixels( dims );
       dip_ThrowIf( size==0, "Cannot forge an image without pixels (dimensions must be > 0)" );
-      dip_ThrowIf( ( size != 0 ) &&
-               ( TensorElements() > std::numeric_limits<dip::uint>::max() / size ),
+      dip_ThrowIf( TensorElements() > std::numeric_limits<dip::uint>::max() / size,
                E::DIMENSIONALITY_EXCEEDS_LIMIT );
       size *= TensorElements();
       if( externalInterface ) {
          datablock = externalInterface->AllocateData( dims, strides, tensor, tstride, datatype );
-         dip::uint sz;
-         dip::sint start;
-         GetDataBlockSizeAndStartWithTensor( sz, start );
-         origin = (uint8*)datablock.get() + start * datatype.SizeOf();
-      } else {
-         // std::cout << size << std::endl;
+         // AllocateData() can fail by returning a nullptr. If so, we allocate data in the normal way because we remain raw.
+         if( datablock ) {
+            dip::uint sz;
+            dip::sint start;
+            GetDataBlockSizeAndStartWithTensor( sz, start );
+            origin = (uint8*)datablock.get() + start * datatype.SizeOf();
+            //std::cout << "   Successfully forged image with external interface\n";
+         }
+      }
+      if( !IsForged() ) {
          dip::sint start = 0;
          if( HasValidStrides() ) {
             dip::uint sz;
@@ -394,12 +422,12 @@ void Image::Forge() {
          } else {
             SetNormalStrides();
          }
-         std::cout << std::endl;
          dip::uint sz = datatype.SizeOf();
          void* p = std::malloc( size * sz );
          dip_ThrowIf( !p, "Failed to allocate memory" );
          datablock = std::shared_ptr<void>( p, std::free );
          origin = (uint8*)p + start * sz;
+         //std::cout << "   Successfully forged image\n";
       }
    }
 }
@@ -447,24 +475,143 @@ UnsignedArray Image::IndexToCoordinates( dip::uint index ) const {
 }
 
 //
-void Image::Copy( const Image& img ) {
+void Image::Copy( const Image& src ) {
    if( IsForged() ) {
-      CompareProperties( img );
-      // TODO: should allow for *this having a different data type from that of img.
+      CompareProperties( src );
+      // TODO: CompareProperties not yet implemented!
+      // TODO: We don't need to compare data types, they're allowed to be different
    } else {
-      CopyProperties( img );
+      CopyProperties( src );
+      Forge();
    }
-   // TODO: copy data calling Framework::Scan() ?
+   dip::uint sstride_d;
+   void* porigin_d;
+   GetSimpleStrideAndOrigin( sstride_d, porigin_d );
+   if( sstride_d != 0 ) {
+      dip::uint sstride_s;
+      void* porigin_s;
+      src.GetSimpleStrideAndOrigin( sstride_s, porigin_s );
+      if( sstride_s != 0 ) {
+         // No need to loop
+         CopyBuffer(
+            porigin_s,
+            src.datatype,
+            sstride_s,
+            src.tstride,
+            porigin_d,
+            datatype,
+            sstride_d,
+            tstride,
+            NumberOfPixels(),
+            tensor.Elements()
+         );
+         return;
+      }
+   }
+   // Make nD loop
+   dip::uint processingDim = Framework::OptimalProcessingDim( src );
+   dip::sint offset_s;
+   dip::sint offset_d;
+   UnsignedArray coords = NDLoop::Init( src, *this, offset_s, offset_d );
+   do {
+      CopyBuffer(
+         src.Pointer( offset_s ),
+         src.datatype,
+         src.strides[processingDim],
+         src.tstride,
+         Pointer( offset_d ),
+         datatype,
+         strides[processingDim],
+         tstride,
+         dims[processingDim],
+         tensor.Elements()
+      );
+   } while( NDLoop::Next( coords, offset_s, offset_d, dims, src.strides, strides, processingDim ));
 }
 
 //
-void Image::Set( dip::sint v ) { // TODO, calling Framework::Scan() ?
+template<typename inT>
+static inline void InternSet( Image& dest, inT v ) {
+   dip_ThrowIf( !dest.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint sstride_d;
+   void* porigin_d;
+   dest.GetSimpleStrideAndOrigin( sstride_d, porigin_d );
+   if( sstride_d != 0 ) {
+      // No need to loop
+      FillBuffer(
+         porigin_d,
+         dest.DataType(),
+         sstride_d,
+         dest.TensorStride(),
+         dest.NumberOfPixels(),
+         dest.TensorElements(),
+         v
+      );
+   } else {
+      // Make nD loop
+      dip::uint processingDim = Framework::OptimalProcessingDim( dest );
+      dip::sint offset_d;
+      UnsignedArray coords = NDLoop::Init( dest, offset_d );
+      do {
+         FillBuffer(
+            dest.Pointer( offset_d ),
+            dest.DataType(),
+            dest.Stride( processingDim ),
+            dest.TensorStride(),
+            dest.Dimension( processingDim ),
+            dest.TensorElements(),
+            v
+         );
+      } while( NDLoop::Next( coords, offset_d, dest.RefDimensions(), dest.RefStrides(), processingDim ));
+   }
 }
 
-void Image::Set( dfloat v) { // TODO, calling Framework::Scan() ?
+void Image::Set( dip::sint v ) {
+   InternSet( *this, v );
 }
 
-void Image::Set( dcomplex v) { // TODO, calling Framework::Scan() ?
+void Image::Set( dfloat v ) {
+   InternSet( *this, v );
+}
+
+void Image::Set( dcomplex v ) {
+   InternSet( *this, v );
+}
+
+// Casting the first sample (the first tensor component of the first pixel) to dcomplex.
+template< typename TPI >
+static inline dcomplex CastValueComplex( void* p ) {
+   return clamp_cast< dcomplex >( *((TPI*)p) );
+}
+Image::operator dcomplex() const{
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dcomplex x;
+   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueComplex, ( origin ), datatype );
+   return x;
+}
+
+// Casting the first sample (the first tensor component of the first pixel) to dfloat.
+template< typename TPI >
+static inline dfloat CastValueDouble( void* p ) {
+   return clamp_cast< dfloat >( *((TPI*)p) );
+}
+Image::operator dfloat() const{
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dfloat x;
+   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueDouble, ( origin ), datatype );
+   return x;
+}
+
+// Casting the first sample (the first tensor component of the first pixel) to sint.
+template< typename TPI >
+static inline dip::sint CastValueInteger( void* p ) {
+   return clamp_cast< dip::sint >( *((TPI*)p) );
+}
+Image::operator dip::sint() const {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::sint x;
+   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueInteger, ( origin ), datatype );
+   return x;
 }
 
 } // namespace dip

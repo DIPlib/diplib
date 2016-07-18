@@ -72,5 +72,26 @@ void SingletonExpansion(
    }
 }
 
+// Find best processing dimension, which is the one with the smallest stride,
+// except if that dimension is very small and there's a longer dimension.
+dip::uint OptimalProcessingDim(
+      const Image& in
+) {
+   constexpr dip::uint SMALL_IMAGE = 63;  // A good value would depend on the size of cache.
+   const IntegerArray& strides = in.RefStrides();
+   const UnsignedArray& dims = in.RefDimensions();
+   dip::uint processingDim = 0;
+   for( dip::uint ii = 1; ii < strides.size(); ++ii ) {
+      if( strides[ii] < strides[processingDim] ) {
+         if(( dims[ii] > SMALL_IMAGE ) || ( dims[ii] > dims[processingDim] )) {
+            processingDim = ii;
+         }
+      } else if(( dims[processingDim] <= SMALL_IMAGE ) && ( dims[ii] > dims[processingDim] )) {
+         processingDim = ii;
+      }
+   }
+   return processingDim;
+}
+
 } // namespace Framework
 } // namespace dip

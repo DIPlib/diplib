@@ -24,4 +24,33 @@ void CopyBuffer(
       dip::uint tensorElements
 );
 
+// Neither are these.
+void FillBuffer(
+      void* outBuffer,
+      DataType outType,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      dip::sint value
+);
+void FillBuffer(
+      void* outBuffer,
+      DataType outType,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      dfloat value
+);
+void FillBuffer(
+      void* outBuffer,
+      DataType outType,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      dcomplex value
+);
+
 } // namespace dip
