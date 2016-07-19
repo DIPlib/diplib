@@ -24,14 +24,17 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       dip::Image in2 = dml::GetImage( prhs[1] );
 
       dip::Image out( &mi );
-      out.CopyProperties( in1 );
+      //out.CopyProperties( in1 );
       mexPrintf( "About to call Forge() on output image:\n" );
-      out.Forge();
+      //out.Forge();
+      //out.Copy( in1.At( 0 ) );
+      out.Copy( in1 );
+      out = out.At( 0 );
 
-      out.Set(56.0e12);
+      //out.Set(56.0e12);
       //dip::Arithmetic( in1, in2, out, "+", dip::DataTypeSuggest_Arithmetic( in1, in2 ) );
 
-      std::cout << out;
+      std::cout << out << (dip::dcomplex)out << std::endl;
 
       mexPrintf( "About to extract mxArray from output image:\n" );
       plhs[0] = mi.GetArray( out );

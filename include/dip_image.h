@@ -56,13 +56,17 @@ inline void Arithmetic( const Image& lhs, const Image& rhs, Image& out, String o
 /// a class from this one, and assign a pointer to it into each of the
 /// images that it creates, through Image::SetExternalInterface().
 /// The caller will maintain ownership of the interface.
+///
+/// See dip_matlab.h for an example of how to create an ExternalInterface.
 class ExternalInterface {
    public:
-      /// Allocates the data for an image.
+      /// Allocates the data for an image. The function is free to modify
+      /// `strides` and `tstride` if desired, though they will be set
+      /// to the normal values by the calling function.
       virtual std::shared_ptr<void> AllocateData(const UnsignedArray& dims,
                                                  IntegerArray& strides,
-                                                 Tensor& tensor,
-                                                 dip::sint tstride,
+                                                 const Tensor& tensor,
+                                                 dip::sint& tstride,
                                                  DataType datatype) = 0;
 };
 

@@ -41,7 +41,8 @@ static const char* InputImageError = "MATLAB image data of unsupported type.";
 // Private funtions
 //
 
-bool IsMatlabStrides( const dip::UnsignedArray &dims, const dip::IntegerArray &strides, const dip::uint telem, const dip::sint tstride ) {
+bool IsMatlabStrides( const dip::UnsignedArray &dims, const dip::uint telem,
+                      const dip::IntegerArray &strides, const dip::sint tstride ) {
    if( dims.size() != strides.size() ) {
       return false;
    }
@@ -66,6 +67,25 @@ bool IsMatlabStrides( const dip::UnsignedArray &dims, const dip::IntegerArray &s
       return false;
    }
    return true;
+}
+
+bool MatchDimensions( const dip::UnsignedArray &dims, const dip::uint telem,
+                      const mwSize* pdims, const mwSize ndims ) {
+   dip::uint n = dims.size() + ( telem > 1 ? 1 : 0 );
+   if( n == 0 ) {
+      return !(( ndims != 2 ) || ( pdims[0] != 1 ) || ( pdims[1] != 1 ));
+   } else if( n == 1 ) {
+      dip::uint m = dims[0] * telem;
+      return !(( ndims != 2 ) || ( pdims[0] != m ) || ( pdims[1] != 1 ));
+   } else {
+      if(( ndims != n ) || ( pdims[0] != dims[1] ) || ( pdims[1] != dims[0] ))
+         return false;
+      for( dip::uint ii = 3; ii < n; ++ii ) {
+         if( dims[ii] != pdims[ii] )
+            return false;
+      }
+      return true;
+   }
 }
 
 
@@ -113,17 +133,17 @@ class MATLAB_Interface : public dip::ExternalInterface {
       /// This function overrides dip::ExternalInterface::AllocateData().
       /// It is called when an image with this `ExternalInterface` is forged.
       /// It allocates a MATLAB mxArray and returns a `std::shared_ptr` to the
-      /// `mxArray` data pointer, with a custom deleter functor.
+      /// `mxArray` data pointer, with a custom deleter functor. It also
+      /// adjusts strides to match the mxArray storage.
+      ///
       /// A user will never call this function.
       virtual std::shared_ptr<void> AllocateData(
          const dip::UnsignedArray& dims,
          dip::IntegerArray&        strides,
-         dip::Tensor&              tensor,
-         dip::sint                 tstride,
+         const dip::Tensor&        tensor,
+         dip::sint&                tstride,
          dip::DataType             datatype
       ) override {
-         // TODO: tensor dimension should be the last one, I think.
-         dip_ThrowIf( !tensor.IsScalar(), "Tensor images not yet supported" );
          // Find the right data type
          mxClassID type = mxUINT8_CLASS;
          bool complex = false;
@@ -181,6 +201,11 @@ class MATLAB_Interface : public dip::ExternalInterface {
                strides[ii] = s;
                s *= dims[ii];
             }
+            // Append tensor dimension as the last dimension of the mxArray
+            if (tensor.Elements() > 1) {
+               mldims.push_back(tensor.Elements());
+            }
+            tstride = s;
             // MATLAB arrays have a y-axis with stride 1.
             if( n >= 2 ) {
                std::swap( mldims[0], mldims[1] );
@@ -201,6 +226,7 @@ class MATLAB_Interface : public dip::ExternalInterface {
 
       /// Find the mxArray that holds the data pointed to by p.
       mxArray* GetArray( const dip::Image &img ) {
+         dip_ThrowIf( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
          mxArray* m;
          if( img.DataType().IsComplex() ) {
             mexPrintf( "   Copying complex data from dip::Image to mxArray.\n" );
@@ -214,31 +240,32 @@ class MATLAB_Interface : public dip::ExternalInterface {
             mxArray* c[2];
             c[0] = mla[real.Data()];
             c[1] = mla[imag.Data()];
-            // Call MATLAB's "complex"
+            // Call MATLAB's "complex" (*shouldn't* copy data...)
             mexCallMATLAB(1, &m, 2, c, "complex");
          } else {
             void* p = img.Data();
             dip::Image tmp( this );
-            // Does the image point to a modified view of the mxArray?
-            if( ( p != img.Origin() ) ||
-                !IsMatlabStrides( img.RefDimensions(), img.RefStrides(), img.TensorElements(), img.TensorStride() ) ) {
-               // TODO: how do we see if the data block is fully covered by the image?
-               // That is, it is possible to remove a bit along the right of a 2D
-               // image, or remove the later planes of a 3D image, and not affect
-               // the "MatlabStridyness" of the image.
-               mexPrintf( "   Copying data from dip::Image to mxArray\n" );
-               // We need to make a copy of the image into a new MATLAB array.
-               tmp.Copy( img );
-               p = tmp.Data();
-            } else {
-               mexPrintf( "   Retrieving mxArray out of output dip::Image object\n" );
-            }
-            // Simply get the mxArray and return it.
             m = mla[p];
             if( !m ) {
                mexPrintf( "   ...that was a nullptr mxArray\n" );
             }
-            mla.erase( p );
+            // Does the image point to a modified view of the mxArray?
+            if(( p != img.Origin() ) ||
+                !IsMatlabStrides( img.RefDimensions(), img.TensorElements(),
+                                  img.RefStrides(), img.TensorStride() ) ||
+                !MatchDimensions( img.RefDimensions(), img.TensorElements(),
+                                  mxGetDimensions( m ), mxGetNumberOfDimensions( m ) )) {
+               // Yes, it does. We need to make a copy of the image into a new MATLAB array.
+               mexPrintf( "   Copying data from dip::Image to mxArray\n" );
+               tmp.Copy( img );
+               p = tmp.Data();
+               m = mla[p];
+               mla.erase( p );
+            } else {
+               // No, it doesn't. Directly return the mxArray.
+               mla.erase( p );
+               mexPrintf( "   Retrieving mxArray out of output dip::Image object\n" );
+            }
          }
          // TODO: We need to add code here to turn the array into a dip_image object.
          return m;
