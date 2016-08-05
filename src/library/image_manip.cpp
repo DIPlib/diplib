@@ -7,6 +7,7 @@
  */
 
 #include <algorithm>
+#include <iostream>
 
 #include "diplib.h"
 
@@ -53,7 +54,7 @@ Image& Image::Flatten() {
    dip::uint stride;
    void* p;
    GetSimpleStrideAndOrigin( stride, p );
-   if( stride==0 ) {
+   if( !p ) {
       // TODO: force a rewrite of the data with normal strides.
       // If there is no external interface:
       //    stride = tensor.Elements();

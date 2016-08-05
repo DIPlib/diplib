@@ -11,7 +11,7 @@ endif()
 
 # Safe gcc compiler and architecture flags across all Intel and AMD processors (circa 2015)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wno-unknown-pragmas -Wno-deprecated-declarations")
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wno-c++14-extensions")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
@@ -39,29 +39,6 @@ file(GLOB HEADERS
 add_library(DIP SHARED ${SOURCES} ${HEADERS})
 
 
-# DIPlib documentation
-
-find_package(Doxygen)
-
-if (DOXYGEN_FOUND)
-
-   set(DOXYGEN_INPUT Doxyfile)
-   set(DOXYGEN_OUTPUT doc)
-
-   add_custom_command(
-      OUTPUT ${DOXYGEN_OUTPUT}
-      COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
-      COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
-      COMMAND ${CMAKE_COMMAND} -E echo "Done."
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPENDS ${DOXYGEN_INPUT}
-      )
-
-   add_custom_target(apidoc ALL DEPENDS ${DOXYGEN_OUTPUT})
-
-endif (DOXYGEN_FOUND)
-
-
 # DIPlib tests
 
 add_executable(test_array EXCLUDE_FROM_ALL test/test_array.cpp)
@@ -83,3 +60,25 @@ if(Matlab_FOUND)
 endif(Matlab_FOUND)
 
 add_custom_target(tests DEPENDS test_array test_options test_image)
+
+# DIPlib documentation
+
+find_package(Doxygen)
+
+if (DOXYGEN_FOUND)
+
+   set(DOXYGEN_INPUT Doxyfile)
+   set(DOXYGEN_OUTPUT doc)
+
+   add_custom_command(
+      OUTPUT ${DOXYGEN_OUTPUT}
+      COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
+      COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
+      COMMAND ${CMAKE_COMMAND} -E echo "Done."
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      DEPENDS ${DOXYGEN_INPUT}
+      )
+
+   add_custom_target(apidoc ALL DEPENDS ${DOXYGEN_OUTPUT})
+
+endif (DOXYGEN_FOUND)

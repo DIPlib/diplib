@@ -78,8 +78,8 @@ dip::uint OptimalProcessingDim(
       const Image& in
 ) {
    constexpr dip::uint SMALL_IMAGE = 63;  // A good value would depend on the size of cache.
-   const IntegerArray& strides = in.RefStrides();
-   const UnsignedArray& dims = in.RefDimensions();
+   const IntegerArray& strides = in.Strides();
+   const UnsignedArray& dims = in.Dimensions();
    dip::uint processingDim = 0;
    for( dip::uint ii = 1; ii < strides.size(); ++ii ) {
       if( strides[ii] < strides[processingDim] ) {

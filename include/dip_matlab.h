@@ -21,7 +21,7 @@
 /// file that will be linked together.
 
 /// The dml namespace contains the interface between MATLAB and DIPlib. It defines
-/// the functions needed to convert between mxArray objects and dip::Image objects.
+/// the functions needed to convert between `mxArray` objects and dip::Image objects.
 ///
 /// TODO: add more documentation here on how to use the dml interface.
 namespace dml {
@@ -93,21 +93,29 @@ bool MatchDimensions( const dip::UnsignedArray &dims, const dip::uint telem,
 /// In a MEX-file, use the following code when declaring images to be
 /// used as the output to a function:
 ///
-///     dml::MATLAB_Interface mi;
-///     dip::Image img_out0( &mi );
-///     dip::Image img_out1( &mi );
+///     dml::MatlabInterface mi;
+///     dip::Image img_out0 = mi.NewImage();
+///     dip::Image img_out1 = mi.NewImage();
 ///
 /// To return those images back to MATLAB, use the GetArray() method:
 ///
 ///     plhs[0] = mi.GetArray( img_out0 );
 ///     plhs[1] = mi.GetArray( img_out1 );
 ///
-/// If you don't use the GetArray() method, the mxArray that contains
+/// If you don't use the GetArray() method, the `mxArray` that contains
 /// the pixel data will be destroyed when the dip::Image object goes out
 /// of scope.
 ///
-/// This interface handler doesn't own any data.
-class MATLAB_Interface : public dip::ExternalInterface {
+/// Remember to not assing a result into the images created with NewImage,
+/// as they will be overwritten and no longer contain data allocated by
+/// MATLAB. Instead, use the DIPlib functions that take output images as
+/// function arguments:
+///
+///     img_out0 = in1 + in2; // WRONG! img_out0 will not contain data allocated by MATLAB
+///     dip::Add( in1, in2, out, DataType::SuggestArithmetic( in1, in1 ) ); // Correct
+///
+/// This interface handler doesn't own any image data.
+class MatlabInterface : public dip::ExternalInterface {
    private:
       std::map<void*,mxArray*> mla;          // This map holds mxArray pointers, we can
                                              // find the right mxArray if we have the data
@@ -115,9 +123,9 @@ class MATLAB_Interface : public dip::ExternalInterface {
       // This is the deleter functor we'll associate to the shared_ptr.
       class StripHandler {
          private:
-            MATLAB_Interface& interface;
+            MatlabInterface& interface;
          public:
-            StripHandler( MATLAB_Interface& mi ) : interface{mi} {};
+            StripHandler( MatlabInterface& mi ) : interface{ mi } {};
             void operator()( void* p ) {
                if( interface.mla.count( p )==0 ) {
                   mexPrintf( "   Not destroying mxArray!\n" );
@@ -132,9 +140,9 @@ class MATLAB_Interface : public dip::ExternalInterface {
    public:
       /// This function overrides dip::ExternalInterface::AllocateData().
       /// It is called when an image with this `ExternalInterface` is forged.
-      /// It allocates a MATLAB mxArray and returns a `std::shared_ptr` to the
+      /// It allocates a MATLAB `mxArray` and returns a `std::shared_ptr` to the
       /// `mxArray` data pointer, with a custom deleter functor. It also
-      /// adjusts strides to match the mxArray storage.
+      /// adjusts strides to match the `mxArray` storage.
       ///
       /// A user will never call this function.
       virtual std::shared_ptr<void> AllocateData(
@@ -224,7 +232,7 @@ class MATLAB_Interface : public dip::ExternalInterface {
          }
       };
 
-      /// Find the mxArray that holds the data pointed to by p.
+      /// Find the `mxArray` that holds the data for the dip::Image `img`.
       mxArray* GetArray( const dip::Image &img ) {
          dip_ThrowIf( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
          mxArray* m;
@@ -232,9 +240,9 @@ class MATLAB_Interface : public dip::ExternalInterface {
             mexPrintf( "   Copying complex data from dip::Image to mxArray.\n" );
             // Complex images must be split and copied over to new mxArrays.
             // Copy the two planes into two mxArrays
-            dip::Image real( this );
+            dip::Image real = NewImage();
             real.Copy( img.Real() );
-            dip::Image imag( this );
+            dip::Image imag = NewImage();
             imag.Copy( img.Imaginary() );
             // Retrieve the two mxArrays
             mxArray* c[2];
@@ -244,16 +252,16 @@ class MATLAB_Interface : public dip::ExternalInterface {
             mexCallMATLAB(1, &m, 2, c, "complex");
          } else {
             void* p = img.Data();
-            dip::Image tmp( this );
+            dip::Image tmp = NewImage();
             m = mla[p];
             if( !m ) {
                mexPrintf( "   ...that was a nullptr mxArray\n" );
             }
             // Does the image point to a modified view of the mxArray?
             if(( p != img.Origin() ) ||
-                !IsMatlabStrides( img.RefDimensions(), img.TensorElements(),
-                                  img.RefStrides(), img.TensorStride() ) ||
-                !MatchDimensions( img.RefDimensions(), img.TensorElements(),
+                !IsMatlabStrides( img.Dimensions(), img.TensorElements(),
+                                  img.Strides(), img.TensorStride() ) ||
+                !MatchDimensions( img.Dimensions(), img.TensorElements(),
                                   mxGetDimensions( m ), mxGetNumberOfDimensions( m ) )) {
                // Yes, it does. We need to make a copy of the image into a new MATLAB array.
                mexPrintf( "   Copying data from dip::Image to mxArray\n" );
@@ -270,7 +278,17 @@ class MATLAB_Interface : public dip::ExternalInterface {
          // TODO: We need to add code here to turn the array into a dip_image object.
          return m;
       }
-};
+
+      /// Constructs a dip::Image object with the external interface set so that,
+      /// when forged, a MATLAB `mxArray` will be allocated to hold the samples.
+      /// Use dml::MatlabInterface::GetArray to obtain the `mxArray` and assign
+      /// it as a `lhs` argument to your MEX-file.
+      dip::Image NewImage() {
+         dip::Image out;
+         out.SetExternalInterface( this );
+         return out;
+      }
+   };
 
 // A deleter that doesn't delete.
 void VoidStripHandler( void* p ) {

@@ -7,6 +7,7 @@
  */
 
 #include <new>
+#include <iostream>
 
 #include "diplib.h"
 #include "dip_framework.h"
@@ -18,12 +19,12 @@ namespace dip {
 namespace Framework {
 
 void Scan(
-      const ImageRefArray& c_in,
+      const ImageConstRefArray& c_in,
       ImageRefArray&       c_out,
       const DataTypeArray& inBufferTypes,
       const DataTypeArray& outBufferTypes,
       const DataTypeArray& outImageTypes,
-      dip::uint            nTensorElements,
+      const UnsignedArray& nTensorElements,
       ScanFilter           lineFilter,
       const void*          functionParameters,
       std::vector<void*>&  functionVariables,
@@ -50,7 +51,6 @@ void Scan(
    // Do tensor to spatial dimension if necessary
    bool tensorToSpatial = false;
    if( opts == Scan_TensorAsSpatialDim ) {
-      nTensorElements = 1; // Input parameter ignored, output matches singleton-expanded number of tensor elements.
       bool allscalar = true;
       // We either convert all images, or none (so that dimensions still match).
       for( dip::uint ii = 0; ii < nIn; ++ii) {
@@ -70,7 +70,7 @@ void Scan(
    // Do singleton expansion if necessary
    UnsignedArray dims;
    if( nIn > 0 ) {
-      if( opts == Scan_NoSingletonExpansion ) {
+      if( opts != Scan_NoSingletonExpansion ) {
          dims = SingletonExpandedSize( in );
          for( dip::uint ii = 0; ii < nIn; ++ii) {
             if( in[ii].Dimensions() != dims ) {
@@ -93,17 +93,18 @@ void Scan(
    // Adjust output if necessary (and possible)
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       Image& tmp = c_out[ii].get();
+      dip::uint nTensor = opts == Scan_TensorAsSpatialDim ? 1 : nTensorElements[ii]; // Input parameter ignored, output matches singleton-expanded number of tensor elements.
       bool good = false;
       if( tmp.IsForged() ) {
          if( tensorToSpatial ) {
             tmp.TensorToSpatial( 0 );
          }
-         good = tmp.CheckProperties( dims, nTensorElements, outImageTypes[ii], Option::ThrowException::doNotThrow );
+         good = tmp.CheckProperties( dims, nTensor, outImageTypes[ii], Option::ThrowException::doNotThrow );
       }
       if( !good ) {
          tmp.Strip();   // Will throw if image is protected
          tmp.SetDimensions( dims );
-         tmp.SetTensorDimensions( nTensorElements );
+         tmp.SetTensorDimensions( nTensor );
          tmp.SetDataType( outImageTypes[ii] );
          tmp.Forge();
       }
@@ -147,6 +148,7 @@ void Scan(
       for( dip::uint ii = 0; ii < nOut; ++ii ) {
          out[ii].Flatten();
       }
+      dims = (nIn > 0 ? in[0] : out[0]).Dimensions();
    }
 
    // For each image, determine if we need to make a temporary buffer.
@@ -211,14 +213,14 @@ void Scan(
       if( outUseBuffer[ii] ) {
          buffers.push_back( operator new( bufferSize * outBufferTypes[ii].SizeOf() * out[ii].TensorElements() ) );
          outScanBufs[ii].buffer = buffers.back();
-         outScanBufs[ii].stride = out[ii].TensorElements(); // == nTensorElements
+         outScanBufs[ii].stride = out[ii].TensorElements();
          outScanBufs[ii].tensorStride = 1;
-         outScanBufs[ii].tensorLength = out[ii].TensorElements(); // == nTensorElements
+         outScanBufs[ii].tensorLength = out[ii].TensorElements();
       } else {
          outScanBufs[ii].buffer = nullptr;
          outScanBufs[ii].stride = out[ii].Stride( processingDim );
          outScanBufs[ii].tensorStride = out[ii].TensorStride();
-         outScanBufs[ii].tensorLength = out[ii].TensorElements(); // == nTensorElements
+         outScanBufs[ii].tensorLength = out[ii].TensorElements();
       }
    }
 
@@ -281,7 +283,7 @@ void Scan(
                      out[ii].Stride( processingDim ),
                      out[ii].TensorStride(),
                      bufferSize,
-                     outScanBufs[ii].tensorLength ); // == nTensorElements
+                     outScanBufs[ii].tensorLength );
             }
          }
       }

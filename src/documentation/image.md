@@ -1,3 +1,5 @@
+\ingroup GrpDummyPages
+
 \class dip::Image
 
 \brief Represents an image with all associated information.

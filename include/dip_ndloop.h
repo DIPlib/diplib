@@ -50,7 +50,7 @@ inline UnsignedArray Init(
       dip::sint& offset1,
       dip::sint& offset2
 ) {
-   dip_ThrowIf( img1.RefDimensions() != img2.RefDimensions(), E::DIMENSIONS_DONT_MATCH );
+   dip_ThrowIf( img1.Dimensions() != img2.Dimensions(), E::DIMENSIONS_DONT_MATCH );
    offset1 = 0;
    offset2 = 0;
    return UnsignedArray( img1.Dimensionality(), 0 );

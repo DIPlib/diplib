@@ -2,8 +2,7 @@
  * DIPlib 3.0
  * This file contains overloaded definitions for the function dip::clamp_cast<>().
  *
- * (c)2014-2016, Cris Luengo.
- * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
+ * (c)2016, Cris Luengo.
  */
 
 #ifndef DIP_CLAMP_CAST_H
@@ -18,15 +17,15 @@ namespace dip {
 // A replacement for std::clamp that will be available in C++17.
 template< typename T >
 constexpr inline const T& clamp( const T& v, const T& lo, const T& hi ) {
-    return std::min( std::max( v, lo ), hi );
+   return std::min( std::max( v, lo ), hi );
 }
 
 // Basis of dip::clamp_cast<>
 template< typename T, typename S >
 constexpr inline const T clamp_both( const S& v ) {
-    return static_cast< T >( clamp( v,
-                                    static_cast< S >( std::numeric_limits< T >::lowest() ),
-                                    static_cast< S >( std::numeric_limits< T >::max()    ) ));
+   return static_cast< T >( clamp( v,
+                                   static_cast< S >( std::numeric_limits< T >::lowest() ),
+                                   static_cast< S >( std::numeric_limits< T >::max()    ) ));
 }
 template< typename T, typename S >
 constexpr inline const T clamp_lower( const S& v ) {   // T is an unsigned integer type with same or more bits than S
@@ -34,7 +33,7 @@ constexpr inline const T clamp_lower( const S& v ) {   // T is an unsigned integ
 }
 template< typename T, typename S >
 constexpr inline const T clamp_upper( const S& v ) {   // S is an unsigned integer type with fewer bits than T
-    return static_cast< T >( std::min( v, static_cast< S >( std::numeric_limits< T >::max() ) ) );
+   return static_cast< T >( std::min( v, static_cast< S >( std::numeric_limits< T >::max() ) ) );
 
 }
 
@@ -232,6 +231,7 @@ template<>
 inline dip::bin clamp_cast< dip::bin >( dip::sint v ) {
    return static_cast< dip::bin >( v );
 }
+
 
 // Casting from a float, we don't do checks if casting to a float, complex or bin
 template< typename T >

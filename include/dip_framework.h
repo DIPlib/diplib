@@ -44,7 +44,7 @@ constexpr dip::uint MAX_BUFFER_SIZE = 256*1024;
 /// thrown. Use dip::Framework::SingletonExpansion to apply the transform
 /// to one image.
 UnsignedArray SingletonExpandedSize(
-      const ImageRefArray& in
+      const ImageConstRefArray& in
 );
 /// Determines if images can be singleton-expanded to the same size, and what
 /// that size would be. Singleton dimensions (size==1) can be expanded to a
@@ -79,7 +79,7 @@ dip::uint OptimalProcessingDim(
 // Process an image pixel by pixel
 //
 
-DIP_DECLARE_OPTIONS(ScanOptions, 5);
+DIP_DECLARE_OPTIONS(ScanOptions, 4);
 DIP_DEFINE_OPTION(ScanOptions, Scan_NoMultiThreading, 0);
 DIP_DEFINE_OPTION(ScanOptions, Scan_NeedCoordinates, 1);
 DIP_DEFINE_OPTION(ScanOptions, Scan_TensorAsSpatialDim, 2);
@@ -204,7 +204,7 @@ typedef void (*ScanFilter) (
 ///         void*                      functionVariables);  // A pointer to user-defined output data
 /// See the definition of the dip::Framework::ScanBuffer structure.
 void Scan(
-      const ImageRefArray& in,                  ///< Input images
+      const ImageConstRefArray& in,             ///< Input images
       ImageRefArray&       out,                 ///< Output images
       const DataTypeArray& inBufferTypes,       ///< Data types for input buffers
       const DataTypeArray& outBufferTypes,      ///< Data types for output buffers

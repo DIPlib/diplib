@@ -41,8 +41,8 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    try {
 
       mexPrintf("Creating output image img_out0\n");
-      dml::MATLAB_Interface mi;
-      dip::Image img_out0( &mi );
+      dml::MatlabInterface mi;
+      dip::Image img_out0 = mi.NewImage();
       img_out0.SetDimensions( {3,5} );
       print_info( img_out0 );
       img_out0.Forge();

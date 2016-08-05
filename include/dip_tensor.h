@@ -238,6 +238,12 @@ class Tensor {
          shape_ = Shape::COL_VECTOR;
          elements_ = rows_;
       }
+      /// Changes the tensor shape without changing the number of elements, resulting in the shape described by `other`.
+      void ChangeShape( const Tensor& other ) {
+         dip_ThrowIf( elements_ != other.elements_, "Cannot reshape tensor to requested form" );
+         shape_ = other.shape_;
+         rows_ = other.rows_;
+      }
       /// Transposes the tensor, causing a change of shape without a change of number of elements.
       void Transpose() {
          switch( shape_ ) {

@@ -42,7 +42,7 @@ namespace dip {
 // as `dip::uint`, everywhere in the DIPlib code base!
 // For consistency, we also use `dip::sint` everywhere we refer to `sint`.
 //
-// TODO: It might be better to always used signed integer types everywhere.
+// NOTE: It might be better to always used signed integer types everywhere.
 //       uint could lead to difficult to catch errors in loops, uint ii<0 is
 //       always false. I started with the uint because the standard library
 //       uses it for sizes of arrays, and sizeof() is unsigned also. Maybe
@@ -66,21 +66,26 @@ typedef float                 sfloat;     ///< Type for samples in a 32-bit floa
 typedef double                dfloat;     ///< Type for samples in a 64-bit floating point (double-precision) image
 typedef std::complex<sfloat>  scomplex;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
 typedef std::complex<dfloat>  dcomplex;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
+/// Type for samples in a binary image. Can store 0 or 1. Ocupies 1 byte.
 struct bin {
-   uint8 v_;                              // Binary data stored in a single byte (don't use bool for pixels,
-                                          // it has implementation-defined size).
-                                          // We define this struct for binary data so that we can overload
-                                          // functions differently for bin and for uint8.
+   // Binary data stored in a single byte (don't use bool for pixels, it has
+   // implementation-defined size). We define this struct for binary data so
+   // that we can overload functions differently for bin and for uint8.
+   uint8 v_;
    // Overload constructors to make sure we always write 0 or 1 in the bin.
-   bin() : v_( 0 ) {};                    ///< The default value is 0 (false)
-   bin( bool v ) : v_( v ) {};            ///< A bool implicitly converts to bin
+   /// The default value is 0 (false)
+   constexpr bin() : v_( 0 ) {};
+   /// A bool implicitly converts to bin
+   constexpr bin( bool v ) : v_( v ) {};
+   /// Any arithmetic type converts to bin by comparing to zero
    template< typename T >
-   bin( T v ) : v_( !!v ) {};             ///< Any arithmetic type implicitly converts to bin by comparing to zero
+   constexpr explicit bin( T v ) : v_( !!v ) {};
+   /// A complex value converts to bin by comparing the absolute value to zero
    template< typename T >
-   bin( std::complex<T> v ) : v_( !!std::abs( v ) ) {};  ///< A complex value implicity converts to bin by comparing the absolute value to zero
-   operator bool() const { return v_; }   ///< Implicitly converts to bool
-   // TODO: we probably need to overload some arithmetic operators here? Or is that taken care of by the implicit conversions to bool?
-};                                        ///< Type for samples in a binary image. Can store 0 or 1. Ocupies 1 byte.
+   constexpr explicit bin( std::complex<T> v ) : v_( !!std::abs( v ) ) {};
+   /// A bin implicitly converts to bool
+   operator bool() const { return v_; }
+};
 
 // if 8 bits is not a byte...
 static_assert( sizeof(dip::uint8)==1, "8 bits is not a byte in your system!" );

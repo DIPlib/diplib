@@ -17,24 +17,30 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    try {
 
-      dml::MATLAB_Interface mi;
+      dml::MatlabInterface mi;
 
       mexPrintf( "About to get input images:\n" );
       dip::Image in1 = dml::GetImage( prhs[0] );
-      dip::Image in2 = dml::GetImage( prhs[1] );
+      //std::cout << in1 << std::endl;
 
-      dip::Image out( &mi );
+      dip::Image in2 = dml::GetImage( prhs[1] );
+      //std::cout << in2 << std::endl;
+
+      mexPrintf( "About to create output images:\n" );
+      dip::Image out = mi.NewImage();
       //out.CopyProperties( in1 );
-      mexPrintf( "About to call Forge() on output image:\n" );
+
+      //mexPrintf( "About to call Forge() on output image:\n" );
       //out.Forge();
       //out.Copy( in1.At( 0 ) );
-      out.Copy( in1 );
-      out = out.At( 0 );
+      //out.Copy( in1 );
+      //out = out.At( 0 );
 
+      mexPrintf( "About to call the DIPlib function:\n" );
       //out.Set(56.0e12);
-      //dip::Arithmetic( in1, in2, out, "+", dip::DataTypeSuggest_Arithmetic( in1, in2 ) );
+      dip::Add( in1, in2, out, dip::DataType::SuggestArithmetic( in1, in1 ) );
 
-      std::cout << out << (dip::dcomplex)out << std::endl;
+      //std::cout << out << std::endl;
 
       mexPrintf( "About to extract mxArray from output image:\n" );
       plhs[0] = mi.GetArray( out );

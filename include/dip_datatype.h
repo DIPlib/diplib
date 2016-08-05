@@ -27,6 +27,7 @@
 
 namespace dip {
 
+class Image;      // Forward declaration.
 
 //
 // The DataType class.
@@ -57,10 +58,10 @@ struct DataType {
    enum class DT {
       BIN,
       UINT8,
-      UINT16,
-      UINT32,
       SINT8,
+      UINT16,
       SINT16,
+      UINT32,
       SINT32,
       SFLOAT,
       DFLOAT,
@@ -68,8 +69,20 @@ struct DataType {
       DCOMPLEX,
    } dt;
 
-   constexpr DataType() : dt(DT::SFLOAT) {}
-   constexpr DataType( DT _dt ) : dt(_dt) {}
+   constexpr DataType() : dt( DT::SFLOAT ) {}
+   constexpr DataType( DT _dt ) : dt( _dt ) {}
+
+   constexpr explicit DataType( bin      ) : dt( DT::BIN      ) {}
+   constexpr explicit DataType( uint8    ) : dt( DT::UINT8    ) {}
+   constexpr explicit DataType( sint8    ) : dt( DT::SINT8    ) {}
+   constexpr explicit DataType( uint16   ) : dt( DT::UINT16   ) {}
+   constexpr explicit DataType( sint16   ) : dt( DT::SINT16   ) {}
+   constexpr explicit DataType( uint32   ) : dt( DT::UINT32   ) {}
+   constexpr explicit DataType( sint32   ) : dt( DT::SINT32   ) {}
+   constexpr explicit DataType( sfloat   ) : dt( DT::SFLOAT   ) {}
+   constexpr explicit DataType( dfloat   ) : dt( DT::DFLOAT   ) {}
+   constexpr explicit DataType( scomplex ) : dt( DT::SCOMPLEX ) {}
+   constexpr explicit DataType( dcomplex ) : dt( DT::DCOMPLEX ) {}
 
    /// DataType objects implicitly convert to the enumeration integer.
    constexpr operator int() const { return static_cast<int>(dt); }   // This one allows the use of DataType in a switch() statement
@@ -79,10 +92,10 @@ struct DataType {
       switch( dt ) {
          case DT::BIN:      return "BIN";
          case DT::UINT8:    return "UINT8";
-         case DT::UINT16:   return "UINT16";
-         case DT::UINT32:   return "UINT32";
          case DT::SINT8:    return "SINT8";
+         case DT::UINT16:   return "UINT16";
          case DT::SINT16:   return "SINT16";
+         case DT::UINT32:   return "UINT32";
          case DT::SINT32:   return "SINT32";
          case DT::SFLOAT:   return "SFLOAT";
          case DT::DFLOAT:   return "DFLOAT";
@@ -96,10 +109,10 @@ struct DataType {
       switch( dt ) {
          case DT::BIN:      return sizeof(dip::bin);
          case DT::UINT8:    return sizeof(dip::uint8);
-         case DT::UINT16:   return sizeof(dip::uint16);
-         case DT::UINT32:   return sizeof(dip::uint32);
          case DT::SINT8:    return sizeof(dip::sint8);
+         case DT::UINT16:   return sizeof(dip::uint16);
          case DT::SINT16:   return sizeof(dip::sint16);
+         case DT::UINT32:   return sizeof(dip::uint32);
          case DT::SINT32:   return sizeof(dip::sint32);
          case DT::SFLOAT:   return sizeof(dip::sfloat);
          case DT::DFLOAT:   return sizeof(dip::dfloat);
@@ -178,6 +191,42 @@ struct DataType {
    bool operator==(DataType other) const {
       return dt == other.dt;
    }
+
+   //
+   // Functions to suggest an output data type for all types of filters and operators
+   //
+
+
+   /// Returns a suitable floating-point type that can hold the samples of `type`.
+   static DataType SuggestFloat( DataType type );
+   /// Returns a suitable floating-point type that can hold the samples in `img`.
+   static DataType SuggestFloat( const Image& img );
+
+   /// Returns a suitable complex type that can hold the samples of `type`.
+   static DataType SuggestComplex( DataType type );
+   /// Returns a suitable complex type that can hold the samples in `img`.
+   static DataType SuggestComplex( const Image& img );
+
+   /// Returns a suitable floating-point or complex type that can hold the samples of `type`.
+   static DataType SuggestFlex( DataType type );
+   /// Returns a suitable floating-point or complex type that can hold the samples in `img`.
+   static DataType SuggestFlex( const Image& img );
+
+   /// Returns a suitable floating-point, complex or binary type that can hold the samples of `type`.
+   static DataType SuggestFlexBin( DataType type );
+   /// Returns a suitable floating-point, complex or binary type that can hold the samples in `img`.
+   static DataType SuggestFlexBin( const Image& img );
+
+   /// Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed with the two datatypes.
+   static DataType SuggestArithmetic( DataType type1, DataType type2 );
+   /// Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed on the two images.
+   static DataType SuggestArithmetic( const Image& img1, const Image& img2 );
+
+   /// Returns a suitable type that can hold any samples of the two datatypes.
+   static DataType SuggestDiadicOperation( DataType type1, DataType type2 );
+   /// Returns a suitable type that can hold the samples in the two images.
+   static DataType SuggestDiadicOperation( const Image& img1, const Image& img2 );
+
 };
 
 typedef std::vector<DataType> DataTypeArray;   ///< An array to hold data types
@@ -188,38 +237,15 @@ typedef std::vector<DataType> DataTypeArray;   ///< An array to hold data types
 
 constexpr DataType DT_BIN       { DataType::DT::BIN      };
 constexpr DataType DT_UINT8     { DataType::DT::UINT8    };
-constexpr DataType DT_UINT16    { DataType::DT::UINT16   };
-constexpr DataType DT_UINT32    { DataType::DT::UINT32   };
 constexpr DataType DT_SINT8     { DataType::DT::SINT8    };
+constexpr DataType DT_UINT16    { DataType::DT::UINT16   };
 constexpr DataType DT_SINT16    { DataType::DT::SINT16   };
+constexpr DataType DT_UINT32    { DataType::DT::UINT32   };
 constexpr DataType DT_SINT32    { DataType::DT::SINT32   };
 constexpr DataType DT_SFLOAT    { DataType::DT::SFLOAT   };
 constexpr DataType DT_DFLOAT    { DataType::DT::DFLOAT   };
 constexpr DataType DT_SCOMPLEX  { DataType::DT::SCOMPLEX };
 constexpr DataType DT_DCOMPLEX  { DataType::DT::DCOMPLEX };
-
-
-//
-// Functions to suggest an output data type for all types of filters and operators
-//
-
-class Image;      // Forward declaration.
-
-/// Returns a suitable floating-point type that can hold the samples in `img`.
-DataType DataTypeSuggest_Float(const Image& img);
-
-/// Returns a suitable complex type that can hold the samples in `img`.
-DataType DataTypeSuggest_Complex(const Image& img);
-
-/// Returns a suitable floating-point or complex type that can hold the samples in `img`.
-DataType DataTypeSuggest_Flex(const Image& img);
-
-/// Returns a suitable floating-point, complex or binary type that can hold the samples in `img`.
-DataType DataTypeSuggest_FlexBin(const Image& img);
-
-/// Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed on the two images.
-DataType DataTypeSuggest_Arithmetic(const Image& img1, const Image& img2);
-
 
 } // namespace dip
 

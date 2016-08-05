@@ -77,6 +77,7 @@ bool Image::CheckProperties(
    return result;
 }
 
+
 //
 std::ostream& operator<<(
       std::ostream& os,
@@ -105,8 +106,8 @@ std::ostream& operator<<(
    os << "   tensor stride: " << img.TensorStride() << std::endl;
    // Data segment
    if( img.IsForged() ) {
-      os << "   data pointer:   " << (dip::uint)img.Data() << " (shared among " << img.ShareCount() << " images)" << std::endl;
-      os << "   origin pointer: " << (dip::uint)img.Origin() << std::endl;
+      os << "   data pointer:   " << img.Data() << " (shared among " << img.ShareCount() << " images)" << std::endl;
+      os << "   origin pointer: " << img.Origin() << std::endl;
       if( img.HasContiguousData() ) {
          if( img.HasNormalStrides() ) {
             os << "   strides are normal" << std::endl;
@@ -116,7 +117,7 @@ std::ostream& operator<<(
       }
       dip::uint stride; void* origin;
       img.GetSimpleStrideAndOrigin(stride, origin);
-      if( stride != 0 ) {
+      if( origin ) {
          os << "   simple stride: " << stride << std::endl;
       } else {
          os << "   strides are not simple" << std::endl;

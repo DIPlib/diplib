@@ -23,10 +23,11 @@
 ///   * dip_dimensionarray.h
 ///   * dip_error.h
 ///   * dip_image.h
+///   * dip_math.h
 ///   * dip_support.h
 ///   * dip_tensor.h
 ///   * dip_types.h
 
-#include "dip_image.h" // This file includes all the others hierarchically.
+#include "dip_operators.h" // This file includes all the others hierarchically.
 
 #endif // DIPLIB_H

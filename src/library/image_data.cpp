@@ -80,30 +80,38 @@ static void FindDataBlockSizeAndStart(
 }
 
 
-// Return the simple stride (if it exists) and the start pixel (offset into
-// the data block) of pixels defined by strides and dims.
-static void FindSimpleStrideSizeAndStart(
+// Return the simple stride (if it exists), the start pixel (offset into the
+// data block), and number of pixels defined by strides and dims.
+// If there is no simple stride, sets sstride==0, and returns false.
+// Note that sstride==0 does not indicate an error condition, it is possible
+// that the image was singleton-expanded from a 0D image.
+static bool FindSimpleStrideSizeAndStart(
       const IntegerArray& strides,
       const UnsignedArray& dims,
       dip::uint& sstride,
       dip::uint& size,
       dip::sint& start
 ) {
-  if( strides.size() == 0 ) {
+   if( strides.size() == 0 ) {
+      // Special case
       sstride = 1;
+      size = 1;
       start = 0;
-      return;
-   }
-   sstride = std::numeric_limits<dip::sint>::max();
-   for( dip::uint ii=0; ii<strides.size(); ++ii ) {
-      if( dims[ii]>1 ) {
-         sstride = std::min( sstride, static_cast<dip::uint>( std::abs( strides[ii] ) ) );
+   } else {
+      // Find the simple stride
+      sstride = std::numeric_limits<dip::sint>::max();
+      for( dip::uint ii=0; ii<strides.size(); ++ii ) {
+         if( dims[ii]>1 ) {
+            sstride = std::min( sstride, static_cast<dip::uint>( std::abs( strides[ii] ) ) );
+         }
+      }
+      FindDataBlockSizeAndStart( strides, dims, size, start );
+      if( size != ( FindNumberOfPixels( dims ) - 1 ) * sstride + 1 ) {
+         sstride = 0;
+         return false;
       }
    }
-   FindDataBlockSizeAndStart( strides, dims, size, start );
-   if( size != ( FindNumberOfPixels( dims ) - 1 ) * sstride + 1 ) {
-      sstride = 0;
-   }
+   return true;
 }
 
 
@@ -147,17 +155,15 @@ bool Image::HasNormalStrides() const {
 
 
 // Return a pointer to the start of the data and a single stride to
-// walk through all pixels. If this is not possible, stride==0 and
-// porigin==nullptr.
+// walk through all pixels. If this is not possible, porigin==nullptr.
 void Image::GetSimpleStrideAndOrigin( dip::uint& sstride, void*& porigin ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::sint start;
    dip::uint size;
-   FindSimpleStrideSizeAndStart( strides, dims, sstride, size, start );
-   if( sstride == 0 ) {
-      porigin = nullptr;
-   } else {
+   if( FindSimpleStrideSizeAndStart( strides, dims, sstride, size, start )) {
       porigin = Pointer( start );
+   } else {
+      porigin = nullptr;
    }
 }
 
@@ -408,7 +414,7 @@ void Image::Forge() {
             dip::sint start;
             GetDataBlockSizeAndStartWithTensor( sz, start );
             origin = (uint8*)datablock.get() + start * datatype.SizeOf();
-            //std::cout << "   Successfully forged image with external interface\n";
+            std::cout << "   Successfully forged image with external interface\n";
          }
       }
       if( !IsForged() ) {
@@ -427,7 +433,7 @@ void Image::Forge() {
          dip_ThrowIf( !p, "Failed to allocate memory" );
          datablock = std::shared_ptr<void>( p, std::free );
          origin = (uint8*)p + start * sz;
-         //std::cout << "   Successfully forged image\n";
+         std::cout << "   Successfully forged image\n";
       }
    }
 }
@@ -562,7 +568,7 @@ static inline void InternSet( Image& dest, inT v ) {
             dest.TensorElements(),
             v
          );
-      } while( NDLoop::Next( coords, offset_d, dest.RefDimensions(), dest.RefStrides(), processingDim ));
+      } while( NDLoop::Next( coords, offset_d, dest.Dimensions(), dest.Strides(), processingDim ));
    }
 }
 
