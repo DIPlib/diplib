@@ -45,8 +45,9 @@ namespace dip {
 /// It also differs from std::vector in that it doesn't grow or shrink
 /// efficiently, don't use this type when repeatedly using `push_back()` or
 /// similar functionality. The DIPlib codebase uses dip::DimensionArray only
-/// where the array holds one value per image dimension, and `std::vector`
-/// everywhere else.
+/// where the array holds one value per image dimension, or when more often
+/// than not the array will have very few elements, and `std::vector` everywhere
+/// else.
 ///
 /// The interface tries to copy that of the STL containers, but only partially.
 /// We do not include some of the `std::vector` functionality, and do include

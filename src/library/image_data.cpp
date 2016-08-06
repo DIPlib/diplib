@@ -414,7 +414,7 @@ void Image::Forge() {
             dip::sint start;
             GetDataBlockSizeAndStartWithTensor( sz, start );
             origin = (uint8*)datablock.get() + start * datatype.SizeOf();
-            std::cout << "   Successfully forged image with external interface\n";
+            //std::cout << "   Successfully forged image with external interface\n";
          }
       }
       if( !IsForged() ) {
@@ -433,7 +433,7 @@ void Image::Forge() {
          dip_ThrowIf( !p, "Failed to allocate memory" );
          datablock = std::shared_ptr<void>( p, std::free );
          origin = (uint8*)p + start * sz;
-         std::cout << "   Successfully forged image\n";
+         //std::cout << "   Successfully forged image\n";
       }
    }
 }

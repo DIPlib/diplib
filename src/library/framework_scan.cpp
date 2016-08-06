@@ -39,6 +39,10 @@ void Scan(
    dip_ThrowIf( outBufferTypes.size() != nOut, E::ARRAY_ILLEGAL_SIZE );
    dip_ThrowIf( outImageTypes.size()  != nOut, E::ARRAY_ILLEGAL_SIZE );
 
+   // NOTE: In this function, we use some DimensionArray objects where the
+   // array needs to hold nIn or nOut elements. We expect nIn and nOut to be
+   // small in most cases.
+
    // Make simplified copies of input image headers so we can modify them at will.
    // This also effectively separates input and output images. They still point
    // at the same data, but we can strip an output image without destroying
@@ -151,14 +155,30 @@ void Scan(
       dims = (nIn > 0 ? in[0] : out[0]).Dimensions();
    }
 
+   /*
+   std::cout << "dip::Framework::Scan -- images\n";
+   for( dip::uint ii = 0; ii < nIn; ++ii ) {
+      std::cout << "   Input image, before: " << ii << std::endl;
+      std::cout << c_in[ii].get();
+      std::cout << "   Input image, after: " << ii << std::endl;
+      std::cout << in[ii];
+   }
+   for( dip::uint ii = 0; ii < nOut; ++ii ) {
+      std::cout << "   Output image, before: " << ii << std::endl;
+      std::cout << c_out[ii].get();
+      std::cout << "   Output image, after: " << ii << std::endl;
+      std::cout << out[ii];
+   }
+   */
+
    // For each image, determine if we need to make a temporary buffer.
    bool needBuffers = false;
-   std::vector<bool> inUseBuffer( nIn );
+   BooleanArray inUseBuffer( nIn );
    for( dip::uint ii = 0; ii < nIn; ++ii ) {
       inUseBuffer[ii] = in[ii].DataType() != inBufferTypes[ii];
       needBuffers |= inUseBuffer[ii];
    }
-   std::vector<bool> outUseBuffer( nOut );
+   BooleanArray outUseBuffer( nOut );
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       outUseBuffer[ii] = out[ii].DataType() != outBufferTypes[ii];
       needBuffers |= outUseBuffer[ii];
@@ -191,13 +211,13 @@ void Scan(
    dip::uint thread = 0;
 
    // Create buffer data structs and allocate buffers
-   // We use `operator new` instead of `std::malloc` here because it throws if out of memory.
-   std::vector<void*> buffers;
-   std::vector<ScanBuffer> inScanBufs( nIn );
+   std::vector< std::vector< uint8 > > buffers; // The outer one here is not a DimensionArray, because it won't delete() its contents
+   std::vector<ScanBuffer> inScanBufs( nIn );   // We don't use DimensionArray here either, but we could
    for( dip::uint ii = 0; ii < nIn; ++ii ) {
       if( inUseBuffer[ii] ) {
-         buffers.push_back( operator new( bufferSize * inBufferTypes[ii].SizeOf() * in[ii].TensorElements() ) );
-         inScanBufs[ii].buffer = buffers.back();
+         // TODO: If in[ii].Stride( processingDim ) == 0, allocate space for a single pixel
+         buffers.emplace_back( bufferSize * inBufferTypes[ii].SizeOf() * in[ii].TensorElements() );
+         inScanBufs[ii].buffer = buffers.back().data();
          inScanBufs[ii].stride = in[ii].TensorElements();
          inScanBufs[ii].tensorStride = 1;
          inScanBufs[ii].tensorLength = in[ii].TensorElements();
@@ -211,8 +231,8 @@ void Scan(
    std::vector<ScanBuffer> outScanBufs( nOut );
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       if( outUseBuffer[ii] ) {
-         buffers.push_back( operator new( bufferSize * outBufferTypes[ii].SizeOf() * out[ii].TensorElements() ) );
-         outScanBufs[ii].buffer = buffers.back();
+         buffers.emplace_back( bufferSize * outBufferTypes[ii].SizeOf() * out[ii].TensorElements() );
+         outScanBufs[ii].buffer = buffers.back().data();
          outScanBufs[ii].stride = out[ii].TensorElements();
          outScanBufs[ii].tensorStride = 1;
          outScanBufs[ii].tensorLength = out[ii].TensorElements();
@@ -224,10 +244,31 @@ void Scan(
       }
    }
 
+   /*
+   std::cout << "dip::Framework::Scan -- buffers\n";
+   std::cout << "   processing dimension = " << processingDim << std::endl;
+   std::cout << "   buffer size = " << bufferSize << std::endl;
+   for( dip::uint ii = 0; ii < nIn; ++ii ) {
+      std::cout << "   in[" << ii << "] use buffer: " << ( inUseBuffer[ii] ? "yes" : "no" ) << std::endl;
+      std::cout << "   in[" << ii << "] buffer stride: " << inScanBufs[ii].stride << std::endl;
+      std::cout << "   in[" << ii << "] buffer tensorStride: " << inScanBufs[ii].tensorStride << std::endl;
+      std::cout << "   in[" << ii << "] buffer tensorLength: " << inScanBufs[ii].tensorLength << std::endl;
+      std::cout << "   in[" << ii << "] buffer type: " << inBufferTypes[ii].Name() << std::endl;
+   }
+   for( dip::uint ii = 0; ii < nOut; ++ii ) {
+      std::cout << "   out[" << ii << "] use buffer: " << ( outUseBuffer[ii] ? "yes" : "no" ) << std::endl;
+      std::cout << "   out[" << ii << "] buffer stride: " << outScanBufs[ii].stride << std::endl;
+      std::cout << "   out[" << ii << "] buffer tensorStride: " << outScanBufs[ii].tensorStride << std::endl;
+      std::cout << "   out[" << ii << "] buffer tensorLength: " << outScanBufs[ii].tensorLength << std::endl;
+      std::cout << "   out[" << ii << "] buffer type: " << outBufferTypes[ii].Name() << std::endl;
+   }
+   */
+
    // Iterate over lines in the image
+   //std::cout << "dip::Framework::Scan -- running\n";
    UnsignedArray position( dims.size(), 0 );
-   std::vector<dip::sint> inIndices( nIn, 0 );
-   std::vector<dip::sint> outIndices( nOut, 0 );
+   IntegerArray inIndices( nIn, 0 );
+   IntegerArray outIndices( nOut, 0 );
    for(;;) {
 
       // Iterate over line sections, if bufferSize < dims[processingDim]
@@ -236,8 +277,13 @@ void Scan(
          dip::uint nPixels = std::min( bufferSize, dims[processingDim] - sectionStart );
 
          // Get points to input and ouput lines
+         //std::cout << "      sectionStart = " << sectionStart << std::endl;
          for( dip::uint ii = 0; ii < nIn; ++ii ) {
+            //std::cout << "      inIndices[" << ii << "] = " << inIndices[ii] << std::endl;
             if( inUseBuffer[ii] ) {
+               // TODO: If inIndices[ii] and sectionStart are the same as in the previous iteration, we don't need
+               //       to copy the buffer over again. This happens with singleton-expanded input images.
+               //       But it's easier to copy, and also safer as the lineFilter function could be bad and write in its input!
                CopyBuffer(
                      in[ii].Pointer( inIndices[ii] + sectionStart * in[ii].Stride( processingDim ) ),
                      in[ii].DataType(),
@@ -250,12 +296,13 @@ void Scan(
                      bufferSize,
                      inScanBufs[ii].tensorLength );
             } else {
-               inScanBufs[ii].buffer = in[ii].Pointer( inIndices[ii] + sectionStart * inScanBufs[ii].stride );
+               inScanBufs[ii].buffer = in[ii].Pointer( inIndices[ii] + sectionStart * in[ii].Stride( processingDim ) );
             }
          }
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
+            //std::cout << "      outIndices[" << ii << "] = " << outIndices[ii] << std::endl;
             if( !outUseBuffer[ii] ) {
-               outScanBufs[ii].buffer = out[ii].Pointer( outIndices[ii] + sectionStart * outScanBufs[ii].stride );
+               outScanBufs[ii].buffer = out[ii].Pointer( outIndices[ii] + sectionStart * out[ii].Stride( processingDim ) );
             }
          }
 
@@ -318,11 +365,6 @@ void Scan(
       if( dd == dims.size() ) {
          break;            // We're done!
       }
-   }
-
-   // Deallocate buffers
-   for( dip::uint ii = 0; ii < buffers.size(); ++ii ) {
-      operator delete( buffers[ii] );
    }
 
    // TODO: End threads.

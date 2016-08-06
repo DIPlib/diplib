@@ -128,11 +128,11 @@ class MatlabInterface : public dip::ExternalInterface {
             StripHandler( MatlabInterface& mi ) : interface{ mi } {};
             void operator()( void* p ) {
                if( interface.mla.count( p )==0 ) {
-                  mexPrintf( "   Not destroying mxArray!\n" );
+                  //mexPrintf( "   Not destroying mxArray!\n" );
                } else {
                   mxDestroyArray( interface.mla[p] );
                   interface.mla.erase( p );
-                  mexPrintf( "   Destroyed mxArray!\n" );
+                  //mexPrintf( "   Destroyed mxArray!\n" );
                }
             };
       };
@@ -196,27 +196,30 @@ class MatlabInterface : public dip::ExternalInterface {
          // We simply allocate an array using std::malloc(), then copy the data
          // over to a MATLAB array when pushing the image back to MATLAB.
          if( complex ) {
-            mexPrintf( "   Complex image is not put into an mxArray.\n" );
+            //mexPrintf( "   Complex image is not put into an mxArray.\n" );
             return std::shared_ptr<void>();
          } else {
             // Copy size array
             dip::UnsignedArray mldims = dims;
+            dip::uint n = dims.size();
+            // MATLAB arrays switch y and x axes
+            if( n >= 2 ) {
+               std::swap( mldims[0], mldims[1] );
+            }
             // Create stride array
             dip::uint s = 1;
-            dip::uint n = dims.size();
             strides.resize( n );
             for( dip::uint ii=0; ii<n; ii++ ) {
                strides[ii] = s;
-               s *= dims[ii];
+               s *= mldims[ii];
             }
             // Append tensor dimension as the last dimension of the mxArray
             if (tensor.Elements() > 1) {
                mldims.push_back(tensor.Elements());
             }
             tstride = s;
-            // MATLAB arrays have a y-axis with stride 1.
+            // MATLAB arrays switch y and x axes
             if( n >= 2 ) {
-               std::swap( mldims[0], mldims[1] );
                std::swap( strides[0], strides[1] );
             }
             // MATLAB arrays have at least 2 dimensions.
@@ -226,7 +229,7 @@ class MatlabInterface : public dip::ExternalInterface {
             // Allocate MATLAB matrix
             mxArray* m = mxCreateNumericArray( mldims.size(), mldims.data(), type, mxREAL );
             void* p = mxGetData( m );
-            mexPrintf( "   Created mxArray as dip::Image data block. Data pointer = %p.\n", p );
+            //mexPrintf( "   Created mxArray as dip::Image data block. Data pointer = %p.\n", p );
             mla[p] = m;
             return std::shared_ptr<void>( p, StripHandler( *this ) );
          }
@@ -237,7 +240,7 @@ class MatlabInterface : public dip::ExternalInterface {
          dip_ThrowIf( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
          mxArray* m;
          if( img.DataType().IsComplex() ) {
-            mexPrintf( "   Copying complex data from dip::Image to mxArray.\n" );
+            //mexPrintf( "   Copying complex data from dip::Image to mxArray.\n" );
             // Complex images must be split and copied over to new mxArrays.
             // Copy the two planes into two mxArrays
             dip::Image real = NewImage();
@@ -264,7 +267,7 @@ class MatlabInterface : public dip::ExternalInterface {
                 !MatchDimensions( img.Dimensions(), img.TensorElements(),
                                   mxGetDimensions( m ), mxGetNumberOfDimensions( m ) )) {
                // Yes, it does. We need to make a copy of the image into a new MATLAB array.
-               mexPrintf( "   Copying data from dip::Image to mxArray\n" );
+               //mexPrintf( "   Copying data from dip::Image to mxArray\n" );
                tmp.Copy( img );
                p = tmp.Data();
                m = mla[p];
@@ -272,7 +275,7 @@ class MatlabInterface : public dip::ExternalInterface {
             } else {
                // No, it doesn't. Directly return the mxArray.
                mla.erase( p );
-               mexPrintf( "   Retrieving mxArray out of output dip::Image object\n" );
+               //mexPrintf( "   Retrieving mxArray out of output dip::Image object\n" );
             }
          }
          // TODO: We need to add code here to turn the array into a dip_image object.
@@ -292,7 +295,7 @@ class MatlabInterface : public dip::ExternalInterface {
 
 // A deleter that doesn't delete.
 void VoidStripHandler( void* p ) {
-   mexPrintf( "   Input mxArray not being destroyed\n" );
+   //mexPrintf( "   Input mxArray not being destroyed\n" );
 };
 
 /// Passing an `mxArray` to DIPlib, keeping ownership of the data.
@@ -417,7 +420,7 @@ dip::Image GetImage( const mxArray* mx ) {
       std::swap( strides[0], strides[1] );
    }
    if( complex ) {
-      mexPrintf("   Copying complex image.\n");
+      //mexPrintf("   Copying complex image.\n");
       // Create 2 temporary Image objects for the real and complex component,
       // then copy them over into a new image.
       dip::DataType dt = datatype == dip::DT_DCOMPLEX ? dip::DT_DFLOAT : dip::DT_SFLOAT;
@@ -434,7 +437,7 @@ dip::Image GetImage( const mxArray* mx ) {
       }
       return out;
    } else {
-      mexPrintf("   Encapsulating non-complex image.\n");
+      //mexPrintf("   Encapsulating non-complex image.\n");
       // Create Image object
       std::shared_ptr<void> p( mxGetData( mxdata ), VoidStripHandler );
       return dip::Image( p, datatype, dims, strides, tensor, tstride, nullptr );
