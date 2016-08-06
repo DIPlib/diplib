@@ -197,16 +197,21 @@ typedef DimensionArray<Range> RangeArray;  ///< An array of ranges
 // specify multiple options to pass on to a function or class. The class should
 // not be used directly, only through the macros defined below it.
 //
+// NOTE: N <= sizeof(unsigned long), which is 32 because we want to keep
+// compatibility across different systems.
+//
 
-template<typename E, std::size_t N>
+template< typename E, std::size_t N >
 class Options {
-   std::bitset<N> values;
+   unsigned long values;
    public:
-   constexpr Options<E,N>() {}
-   constexpr Options<E,N>(dip::uint n) : values {1ULL << n} {}
-   bool operator== (const Options<E,N>& other) const { return (values & other.values).any(); }
-   bool operator!= (const Options<E,N>& other) const { return !(values & other.values).any(); }
-   Options<E,N> operator+ (Options<E,N> other) const { other.values |= values; return other; }
+   constexpr Options< E, N >() {}
+   //constexpr Options< E, N >( const Options< E, N >& other ) : values { other.values } {}
+   constexpr Options< E, N >( dip::uint n ) : values { 1UL << n } {}
+   constexpr Options< E, N >( unsigned long v, int ) : values { v } {}
+   constexpr bool operator== ( const Options< E, N >& other ) const { return ( values & other.values ) != 0; }
+   constexpr bool operator!= ( const Options< E, N >& other ) const { return ( values & other.values ) == 0; }
+   constexpr Options< E, N > operator+ ( const Options< E, N >& other ) const { return { values | other.values, 0 }; }
 };
 
 /// Declare a type used to pass options to a function or class. This macro is used
@@ -227,10 +232,19 @@ class Options {
 ///        opts = Option_fresh;                    // Set only one option.
 ///        opts = Option_clean + Option_shine;     // Set only these two options.
 ///        if (opts == Option_clean) {...}         // Test to see if `Option_clean` is set.
-#define DIP_DECLARE_OPTIONS(name, number) class __##name; typedef dip::Options<__##name,number> name;
+///
+/// It is possible to declare additional values as a combination of existing
+/// values as so (cannot be `constexpr`):
+///
+///        const MyOptions Option_freshNclean = Option_fresh + Option_clean;
+///
+/// For class member values, add `static` in front of `DIP_DEFINE_OPTION`.
+///
+/// **Note** that `N` cannot be more than 32.
+#define DIP_DECLARE_OPTIONS( name, number ) class __##name; typedef dip::Options<__##name,number> name;
 
 /// Use in conjunction with DIP_DECLARE_OPTIONS.
-#define DIP_DEFINE_OPTION(name, value, index) constexpr name value { index };
+#define DIP_DEFINE_OPTION( name, option, index ) constexpr name option { index };
 
 
 //

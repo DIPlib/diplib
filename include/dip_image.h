@@ -381,6 +381,7 @@ class Image {
       ) const;
 
       /// Check image properties, either returns true/false or throws an error.
+      ///
       bool CheckProperties(
             const dip::uint ndims,
             const dip::DataType dt,

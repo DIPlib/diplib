@@ -87,6 +87,9 @@ struct DataType {
    /// DataType objects implicitly convert to the enumeration integer.
    constexpr operator int() const { return static_cast<int>(dt); }   // This one allows the use of DataType in a switch() statement
 
+   /// DataType objects can be compared.
+   bool operator==(DataType other) const { return dt == other.dt; }
+
    /// Returns a C-style string constant with a representation of the data type name.
    const char* Name() const {
       switch( dt ) {
@@ -187,10 +190,51 @@ struct DataType {
       return IsSInt() || IsFloat() || IsComplex();
    }
 
-   /// DataType objects can be compared.
-   bool operator==(DataType other) const {
-      return dt == other.dt;
-   }
+   /// Specifies a collection of data types. Valid values are:
+   /// - Class_Bin
+   /// - Class_UInt8
+   /// - Class_SInt8
+   /// - Class_UInt16
+   /// - Class_SInt16
+   /// - Class_UInt32
+   /// - Class_SInt32
+   /// - Class_SFloat
+   /// - Class_DFloat
+   /// - Class_SComplex
+   /// - Class_DComplex
+   /// - Class_Binary = Class_Bin;
+   /// - Class_UInt = Class_UInt8 + Class_UInt16 + Class_UInt32;
+   /// - Class_SInt = Class_SInt8 + Class_SInt16 + Class_SInt32;
+   /// - Class_Integer = Class_UInt + Class_SInt;
+   /// - Class_Float = Class_SFloat + Class_DFloat;
+   /// - Class_Real = Class_Integer + Class_Float;
+   /// - Class_Complex = Class_SComplex + Class_DComplex;
+   /// - Class_Unsigned = Class_UInt;
+   /// - Class_Signed = Class_SInt + Class_Float + Class_Complex;
+   /// - Class_Any = Class_Binary + Class_Real + Class_Complex;
+   DIP_DECLARE_OPTIONS(Classes, 11);
+   static DIP_DEFINE_OPTION( Classes, Class_Bin, 0 );
+   static DIP_DEFINE_OPTION( Classes, Class_UInt8, 1 );
+   static DIP_DEFINE_OPTION( Classes, Class_SInt8, 2 );
+   static DIP_DEFINE_OPTION( Classes, Class_UInt16, 3 );
+   static DIP_DEFINE_OPTION( Classes, Class_SInt16, 4 );
+   static DIP_DEFINE_OPTION( Classes, Class_UInt32, 5 );
+   static DIP_DEFINE_OPTION( Classes, Class_SInt32, 6 );
+   static DIP_DEFINE_OPTION( Classes, Class_SFloat, 7 );
+   static DIP_DEFINE_OPTION( Classes, Class_DFloat, 8 );
+   static DIP_DEFINE_OPTION( Classes, Class_SComplex, 9 );
+   static DIP_DEFINE_OPTION( Classes, Class_DComplex, 10 );
+   static DIP_DEFINE_OPTION( Classes, Class_Binary, Class_Bin );
+   static DIP_DEFINE_OPTION( Classes, Class_UInt, Class_UInt8 + Class_UInt16 + Class_UInt32 );
+   static DIP_DEFINE_OPTION( Classes, Class_SInt, Class_SInt8 + Class_SInt16 + Class_SInt32 );
+   static DIP_DEFINE_OPTION( Classes, Class_Integer, Class_UInt + Class_SInt );
+   static DIP_DEFINE_OPTION( Classes, Class_Float, Class_SFloat + Class_DFloat );
+   static DIP_DEFINE_OPTION( Classes, Class_Real, Class_Integer + Class_Float );
+   static DIP_DEFINE_OPTION( Classes, Class_Complex, Class_SComplex + Class_DComplex );
+   static DIP_DEFINE_OPTION( Classes, Class_Unsigned, Class_UInt );
+   static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
+   static DIP_DEFINE_OPTION( Classes, Class_Any, Class_Binary + Class_Real + Class_Complex );
+
 
    //
    // Functions to suggest an output data type for all types of filters and operators
