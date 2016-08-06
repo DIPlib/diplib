@@ -477,7 +477,7 @@ be implemented as special functions. For example, instead of writing
 
 one would write
 
-    WeightedAddition( ImageArray{img1,img2,img3}, out, IntegerArray{a,b,c}, d );
+    WeightedAddition( ImageRefArray{img1,img2,img3}, out, IntegerRefArray{a,b,c}, d );
 
 For efficiency. There is template meta-programming that can convert an
 expression like the first one into a call like the second one, but that
