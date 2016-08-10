@@ -79,11 +79,12 @@ dip::uint OptimalProcessingDim(
 // Process an image pixel by pixel
 //
 
-DIP_DECLARE_OPTIONS(ScanOptions, 4);
+DIP_DECLARE_OPTIONS(ScanOptions, 5);
 DIP_DEFINE_OPTION(ScanOptions, Scan_NoMultiThreading, 0);
 DIP_DEFINE_OPTION(ScanOptions, Scan_NeedCoordinates, 1);
 DIP_DEFINE_OPTION(ScanOptions, Scan_TensorAsSpatialDim, 2);
-DIP_DEFINE_OPTION(ScanOptions, Scan_NoSingletonExpansion, 3);
+DIP_DEFINE_OPTION(ScanOptions, Scan_ExpandTensorInBuffer, 3);
+DIP_DEFINE_OPTION(ScanOptions, Scan_NoSingletonExpansion, 4);
 
 /// Structure that holds information about input or output pixel buffers
 /// for the dip::Framework::Scan callback function. The length of the buffer
@@ -137,14 +138,25 @@ typedef void (*ScanFilter) (
 /// as standard vectors. The calling function can reshape the tensors after the
 /// call to dip::Framework::Scan. It is not necessary nor enforced that the
 /// tensors for each image (both input and output) are the same, the calling
-/// function is to make sure the tensors satisfy whatever constraints. However,
-/// if the option `dip::FrameWork::Scan_TensorAsSpatialDim` is given, then the
-/// tensor is cast to a spatial dimension, and singleton expansion is applied.
-/// Thus, `lineFilter` does not need to check `inTensorLength` or
+/// function is to make sure the tensors satisfy whatever constraints.
+///
+/// However, if the option `dip::FrameWork::Scan_TensorAsSpatialDim` is given,
+/// then the tensor is cast to a spatial dimension, and singleton expansion is
+/// applied. Thus, `lineFilter` does not need to check `inTensorLength` or
 /// `outTensorLength` (they will be 1), and the output tensor size is guaranteed
 /// to match the largest input tensor. `nTensorElements` is ignored.
 ///
-/// The framework function also does not set the physical dimensions or color
+/// If the option `dip::FrameWork::Scan_ExpandTensorInBuffer` is given, then
+/// the input buffers passed to `lineFilter` will contain the tensor elements as a
+/// standard, column-major matrix. If the image has tensors stored differently,
+/// buffers will be used. This option is not used when
+/// `dip::FrameWork::Scan_TensorAsSpatialDim` is set, as that forces the tensor
+/// to be a single sample. Use this option if you need to do computations with
+/// the tensors, but do not want to bother with all the different tensor shapes,
+/// which are meant only to save memory. Note, however, that this option does
+/// not apply to the output images.
+///
+/// The framework function does not set the physical dimensions or color
 /// space information, the caller is expected to do so when the framework
 /// function is finished.
 ///

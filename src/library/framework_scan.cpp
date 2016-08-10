@@ -171,6 +171,10 @@ void Scan(
    }
    */
 
+   // TODO: use the FrameWork::Scan_ExpandTensorInBuffer option.
+   // This might cause inUseBuffer elements to be set to true.
+   // It also causes the CopyBuffer function to behave differently.
+
    // For each image, determine if we need to make a temporary buffer.
    bool needBuffers = false;
    BooleanArray inUseBuffer( nIn );
