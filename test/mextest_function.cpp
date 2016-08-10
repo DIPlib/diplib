@@ -38,7 +38,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       //mexPrintf( "About to call the DIPlib function:\n" );
       //out.Set(56.0e12);
-      dip::Add( in1, in2, out, dip::DataType::SuggestArithmetic( in1, in1 ) );
+      dip::Add( in1, in2, out, dip::DataType::SuggestArithmetic( in1.DataType(), in2.DataType() ) );
 
       //std::cout << out << std::endl;
 

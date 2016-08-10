@@ -45,15 +45,17 @@ class Tensor {
       ///      |1 4 7|
       ///      |2 5 8|
       ///
-      /// Shape::ROW_MAJOR_MATRIX is its transpose.
+      /// Shape::ROW_MAJOR_MATRIX is its transpose. These two shapes always have
+      /// more than one column and row. A tensor with only one row or one column
+      /// is a vector (Shape::COL_VECTOR or Shape::ROW_VECTOR).
       ///
       /// Shape::DIAGONAL_MATRIX stores only the diagonal elements.
       ///
       /// Shape::SYMMETRIC_MATRIX and Shape::UPPTRIANG_MATRIX store the
       /// values in the upper triangle only, as follows:
       ///
-      ///      |0 4 5 6|
-      ///      |x 1 7 8|
+      ///      |0 4 5 7|
+      ///      |x 1 6 8|
       ///      |x x 2 9|
       ///      |x x x 3|
       ///
@@ -63,7 +65,12 @@ class Tensor {
       ///
       /// We use the given ordering for symmetric and triangular matrices
       /// because this makes it easy to extract the diagonal without having
-      /// to copy data (it's just a window over the full tensor).
+      /// to copy data (it's just a window over the full tensor). Because it
+      /// is a little awkward finding the right elements given this ordering,
+      /// the function LookUpTable prepares a table that can be used to access
+      /// any tensor element given the row and column number. This function
+      /// should help make more generic functions that can access tensor elements
+      /// without paying attention to the tensor's Shape value.
       enum class Shape {
          COL_VECTOR,       ///< a vector (stores n elements)
          ROW_VECTOR,       ///< a row vector (stores n elements)
@@ -80,7 +87,7 @@ class Tensor {
          SetScalar();
       }
       /// Creates a Shape::COL_VECTOR.
-      Tensor( dip::uint n ) {
+      explicit Tensor( dip::uint n ) {
          SetVector( n );
       }
       /// Creates a Shape::COL_MAJOR_MATRIX.
@@ -140,7 +147,7 @@ class Tensor {
             case Shape::UPPTRIANG_MATRIX:
             case Shape::LOWTRIANG_MATRIX:
                return rows_;        // these are all square matrices
-          }
+         }
       }
       /// Gets the tensor size.
       UnsignedArray Dimensions() const {
@@ -151,6 +158,18 @@ class Tensor {
          } else {
             return { rows_, Columns() };
          }
+      }
+
+      /// Compares tensor size and shape.
+      friend bool operator==( const Tensor& lhs, const Tensor&  rhs ) {
+         return ( lhs.shape_ == rhs.shape_ ) &&
+                ( lhs.elements_ == rhs.elements_ ) &&
+                ( lhs.rows_ == rhs.rows_ );
+      }
+
+      /// Compares tensor size and shape.
+      friend bool operator!=( const Tensor& lhs, const Tensor&  rhs ) {
+         return !( lhs == rhs );
       }
 
       /// Sets the tensor shape.
@@ -173,6 +192,7 @@ class Tensor {
             case Shape::ROW_MAJOR_MATRIX:
                elements_ = rows * cols;
                rows_ = rows;
+               CorrectShape();
                break;
             case Shape::DIAGONAL_MATRIX:
                dip_ThrowIf( rows!=cols, "A diagonal matrix must be square" );
@@ -190,7 +210,7 @@ class Tensor {
                elements_ = NUpperDiagonalElements( rows );
                rows_ = rows;
                break;
-          }
+         }
       }
       /// Sets the tensor shape, results in a Shape::COL_VECTOR with one element (scalar).
       void SetScalar() {
@@ -207,6 +227,7 @@ class Tensor {
          shape_ = Shape::COL_MAJOR_MATRIX;
          elements_ = rows * cols;
          rows_ = rows;
+         CorrectShape();
       }
       /// Sets the tensor size, always results in a Shape::COL_VECTOR or Shape::COL_MAJOR_MATRIX.
       void SetDimensions( const UnsignedArray& tdims ) {
@@ -231,6 +252,7 @@ class Tensor {
             dip_ThrowIf( elements_ % rows, "Cannot reshape tensor to requested size" );
             rows_ = rows;
             shape_ = Shape::COL_MAJOR_MATRIX;
+            CorrectShape();
          }
       }
       /// Changes the tensor shape without changing the number of elements, results in a Shape::COL_VECTOR.
@@ -272,7 +294,84 @@ class Tensor {
             case Shape::LOWTRIANG_MATRIX:
                shape_ = Shape::UPPTRIANG_MATRIX;
                break;
-          }
+         }
+      }
+
+      /// Returns a look-up table that you can use to find specific tensor elements.
+      /// Given a tensor with `M` rows and `N` columns, tensor element `(m,n)` can
+      /// be found by adding `Tensor::LookUpTable()[n*M+m] * tstride` to the pixel's
+      /// pointer. If the value in the look-up table is -1, the tensor element is
+      /// not stored, and presumed to be 0 (happens with triangular and diagonal
+      /// matrices only).
+      std::vector< dip::sint > LookUpTable() {
+         dip::sint M = (dip::sint)rows_;
+         dip::sint N = (dip::sint)Columns();
+         std::vector< dip::sint > LUT( N * N, -1 );
+         dip::sint index = 0;
+         switch( shape_ ) {
+            case Shape::COL_VECTOR:
+            case Shape::ROW_VECTOR:
+            case Shape::COL_MAJOR_MATRIX:
+               for( dip::sint n = 0; n < N; ++n ) {
+                  for( dip::sint m = 0; m < M; ++m ) {
+                     LUT[n*M+m] = index;
+                     ++index;
+                  }
+               }
+               break;
+            case Shape::ROW_MAJOR_MATRIX:
+               for( dip::sint m = 0; m < M; ++m ) {
+                  for( dip::sint n = 0; n < N; ++n ) {
+                     LUT[n*M+m] = index;
+                     ++index;
+                  }
+               }
+               break;
+            case Shape::DIAGONAL_MATRIX:
+               for( dip::sint m = 0; m < M; ++m ) {
+                  LUT[m*M+m] = index;
+                  ++index;
+               }
+               break;
+            case Shape::SYMMETRIC_MATRIX:
+               for( dip::sint m = 0; m < M; ++m ) {
+                  LUT[m*M+m] = index;
+                  ++index;
+               }
+               for( dip::sint n = 1; n < N; ++n ) {
+                  for( dip::sint m = 0; m < n; ++m ) {
+                     LUT[n*M+m] = index;
+                     LUT[m*M+n] = index;
+                     ++index;
+                  }
+               }
+               break;
+            case Shape::UPPTRIANG_MATRIX:
+               for( dip::sint m = 0; m < M; ++m ) {
+                  LUT[m*M+m] = index;
+                  ++index;
+               }
+               for( dip::sint n = 1; n < N; ++n ) {
+                  for( dip::sint m = 0; m < n; ++m ) {
+                     LUT[n*M+m] = index;
+                     ++index;
+                  }
+               }
+               break;
+            case Shape::LOWTRIANG_MATRIX:
+               for( dip::sint m = 0; m < M; ++m ) {
+                  LUT[m*M+m] = index;
+                  ++index;
+               }
+               for( dip::sint n = 1; n < N; ++n ) {
+                  for( dip::sint m = 0; m < n; ++m ) {
+                     LUT[m*M+n] = index;
+                     ++index;
+                  }
+               }
+               break;
+         }
+         return LUT;
       }
 
    private:
@@ -283,6 +382,15 @@ class Tensor {
 
       static inline dip::uint NUpperDiagonalElements( dip::uint rows ) {
          return ( rows * ( rows+1 ) ) / 2;
+      }
+
+      // Only to be called if shape == COL_MAJOR_MATRIX or ROW_MAJOR_MATRIX.
+      void CorrectShape() {
+         if( rows_ == 1 ) {
+            shape_ = Shape::ROW_VECTOR;
+         } else if( rows_ == elements_ ) {
+            shape_ = Shape::COL_VECTOR;
+         }
       }
 };
 

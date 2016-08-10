@@ -15,7 +15,7 @@ int main() {
    DIP_DEFINE_OPTION(MyOptions, Option_burn,   4);
    DIP_DEFINE_OPTION(MyOptions, Option_freshNclean, Option_fresh + Option_clean);
 
-   MyOptions opts = {};
+   MyOptions opts {};
    std::cout << "{}: "        << (opts == Option_clean  ? "clean, "  : "not clean, ")
                               << (opts == Option_fresh  ? "fresh, "  : "not fresh, ")
                               << (opts == Option_shine  ? "shine, "  : "not shine, ")
@@ -53,9 +53,9 @@ int main() {
    DIP_DECLARE_OPTIONS(HisOptions, 5);
    DIP_DEFINE_OPTION(HisOptions, Option_ugly, 0);
    DIP_DEFINE_OPTION(HisOptions, Option_cheap, 1);
-   DIP_DEFINE_OPTION(HisOptions, Option_fast, 1);
+   DIP_DEFINE_OPTION(HisOptions, Option_fast, 1);  // repeated value
 
-   HisOptions bla = {};
+   HisOptions bla {};
    std::cout << "{}: "        << (bla == Option_ugly  ? "ugly, "  : "not ugly, ")
                               << (bla == Option_cheap  ? "cheap, "  : "not cheap, ")
                               << (bla == Option_fast  ? "fast, "  : "not fast.")
@@ -75,9 +75,9 @@ int main() {
                               << (bla == Option_fast  ? "fast, "  : "not fast.")
                               << std::endl;
 
-   // HisOptions a = Option_shine; // compiler error
+   // HisOptions a = Option_shine; // compiler error: assignment different types
 
-   // HisOptions b = Option_fast + Option_flower; // compiler error
+   // HisOptions b = Option_fast + Option_flower; // compiler error: addition different types
 
    return 0;
 }

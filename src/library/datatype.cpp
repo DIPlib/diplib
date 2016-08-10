@@ -48,9 +48,6 @@ DataType DataType::SuggestFloat( DataType type ) {
          return DT_DFLOAT;
    }
 }
-DataType DataType::SuggestFloat( const Image& img ) {
-   return DataType::SuggestFloat( img.DataType() );
-}
 
 DataType DataType::SuggestComplex( DataType type ) {
    switch( type ) {
@@ -62,9 +59,6 @@ DataType DataType::SuggestComplex( DataType type ) {
       case DT_DCOMPLEX:
          return DT_DCOMPLEX;
    }
-}
-DataType DataType::SuggestComplex( const Image& img ) {
-   return DataType::SuggestComplex( img.DataType() );
 }
 
 
@@ -81,9 +75,6 @@ DataType DataType::SuggestFlex( DataType type ) {
       case DT_DCOMPLEX:
          return DT_DCOMPLEX;
    }
-}
-DataType DataType::SuggestFlex( const Image& img ) {
-   return DataType::SuggestFlex( img.DataType() );
 }
 
 DataType DataType::SuggestFlexBin( DataType type ) {
@@ -102,9 +93,6 @@ DataType DataType::SuggestFlexBin( DataType type ) {
          return DT_DCOMPLEX;
    }
 }
-DataType DataType::SuggestFlexBin( const Image& img ) {
-   return DataType::SuggestFlexBin( img.DataType() );
-}
 
 DataType DataType::SuggestArithmetic( DataType type1, DataType type2 ) {
    type1 = DataType::SuggestFlexBin( type1 );
@@ -122,9 +110,6 @@ DataType DataType::SuggestArithmetic( DataType type1, DataType type2 ) {
    if( type1 == DT_SFLOAT )
       return DT_SFLOAT;
    return DT_BIN;
-}
-DataType DataType::SuggestArithmetic( const Image& img1, const Image& img2 ) {
-   return DataType::SuggestArithmetic( img1.DataType(), img2.DataType() );
 }
 
 DataType DataType::SuggestDiadicOperation( DataType type1, DataType type2 ) {
@@ -171,9 +156,6 @@ DataType DataType::SuggestDiadicOperation( DataType type1, DataType type2 ) {
       return DT_SINT8;
    //if( type1 == DT_UINT8 ) // is always the case: if it's DT_BIN, then type2 is also DT_BIN, and we returned at the first test in this function.
    return DT_UINT8;
-}
-DataType DataType::SuggestDiadicOperation( const Image& img1, const Image& img2 ) {
-   return DataType::SuggestDiadicOperation( img1.DataType(), img2.DataType() );
 }
 
 

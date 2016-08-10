@@ -360,7 +360,7 @@ void Not(
 
 /// Arithmetic operator, calls Add.
 inline Image operator+( const Image& lhs, const Image& rhs ) {
-   return Add( lhs, rhs, DataType::SuggestArithmetic( lhs, rhs ) );
+   return Add( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
 /// Arithmetic operator, calls Add.
@@ -371,7 +371,7 @@ inline Image operator+( const Image& lhs, T rhs ) {
 
 /// Arithmetic operator, calls Sub.
 inline Image operator-( const Image& lhs, const Image& rhs ) {
-   return Sub( lhs, rhs, DataType::SuggestArithmetic( lhs, rhs ) );
+   return Sub( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
 /// Arithmetic operator, calls Sub.
@@ -382,7 +382,7 @@ inline Image operator-( const Image& lhs, T rhs ) {
 
 /// Arithmetic operator, calls Mul.
 inline Image operator*( const Image& lhs, const Image& rhs ) {
-   return Mul( lhs, rhs, DataType::SuggestArithmetic( lhs, rhs ) );
+   return Mul( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
 /// Arithmetic operator, calls Mul.
@@ -393,7 +393,7 @@ inline Image operator*( const Image& lhs, T rhs ) {
 
 /// Arithmetic operator, calls Div.
 inline Image operator/( const Image& lhs, const Image& rhs ) {
-   return Div( lhs, rhs, DataType::SuggestArithmetic( lhs, rhs ) );
+   return Div( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
 /// Arithmetic operator, calls Div.

@@ -112,7 +112,7 @@ bool MatchDimensions( const dip::UnsignedArray &dims, const dip::uint telem,
 /// function arguments:
 ///
 ///     img_out0 = in1 + in2; // WRONG! img_out0 will not contain data allocated by MATLAB
-///     dip::Add( in1, in2, out, DataType::SuggestArithmetic( in1, in1 ) ); // Correct
+///     dip::Add( in1, in2, out, DataType::SuggestArithmetic( in1.DataType(), in1.DataType() ) ); // Correct
 ///
 /// This interface handler doesn't own any image data.
 class MatlabInterface : public dip::ExternalInterface {

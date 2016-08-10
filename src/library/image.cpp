@@ -17,23 +17,77 @@ namespace dip {
 //
 bool Image::CompareProperties(
       const Image& src,
+      Option::CmpProps cmpProps,
       Option::ThrowException throwException
 ) const {
-   // TODO
+   if( cmpProps == Option::CmpProps_DataType ) {
+      if( datatype != src.datatype ) {
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Data type doesn't match" );
+         return false;
+      }
+   }
+   if( cmpProps == Option::CmpProps_Dimensionality ) {
+      if( dims.size() != src.dims.size() ) {
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Dimensionality doesn't match" );
+         return false;
+      }
+   }
+   if( cmpProps == Option::CmpProps_Dimensions ) {
+      if( dims != src.dims ) {
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, E::DIMENSIONS_DONT_MATCH );
+         return false;
+      }
+   }
+   if( cmpProps == Option::CmpProps_Strides ) {
+      if( strides != src.strides ) {
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Strides don't match" );
+         return false;
+      }
+   }
+   if( cmpProps == Option::CmpProps_TensorShape ) {
+      if( tensor != src.tensor ) {
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Tensor shape doesn't match" );
+         return false;
+      }
+   }
+   if( cmpProps == Option::CmpProps_TensorElements ) {
+      if( tensor.Elements() != src.tensor.Elements() ) {
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, E::TENSORSIZES_DONT_MATCH );
+         return false;
+      }
+   }
+   if( cmpProps == Option::CmpProps_TensorStride ) {
+      if( tstride != src.tstride ) {
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Tensor stride doesn't match" );
+         return false;
+      }
+   }
+   if( cmpProps == Option::CmpProps_ColorSpace ) { // TODO
+      //if( ... ) {
+      //   dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Color space doesn't match" );
+      //   return false;
+      //}
+   }
+   if( cmpProps == Option::CmpProps_PhysDims ) { // TODO
+      //if( ... ) {
+      //   dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Physical dimensions don't match" );
+      //   return false;
+      //}
+   }
    return true;
 }
 
 //
 bool Image::CheckProperties(
       const dip::uint ndims,
-      const struct DataType dt,
+      const dip::DataType::Classes dts,
       Option::ThrowException throwException
 ) const {
    bool result = dims.size() == ndims;
    if( !result && (throwException == Option::ThrowException::doThrow) ) {
       dip_Throw( E::DIMENSIONALITY_NOT_SUPPORTED );
    }
-   result &= datatype == dt;
+   result &= dts == datatype;
    if( !result && (throwException == Option::ThrowException::doThrow) ) {
       dip_Throw( E::DATA_TYPE_NOT_SUPPORTED );
    }
@@ -42,14 +96,14 @@ bool Image::CheckProperties(
 
 bool Image::CheckProperties(
       const UnsignedArray& dimensions,
-      const struct DataType dt,
+      const dip::DataType::Classes dts,
       Option::ThrowException throwException
 ) const {
    bool result = dims == dimensions;
    if( !result && (throwException == Option::ThrowException::doThrow) ) {
       dip_Throw( E::DIMENSIONS_DONT_MATCH );
    }
-   result &= datatype == dt;
+   result &= dts == datatype;
    if( !result && (throwException == Option::ThrowException::doThrow) ) {
       dip_Throw( E::DATA_TYPE_NOT_SUPPORTED );
    }
@@ -59,7 +113,7 @@ bool Image::CheckProperties(
 bool Image::CheckProperties(
       const UnsignedArray& dimensions,
       dip::uint tensorElements,
-      const struct DataType dt,
+      const dip::DataType::Classes dts,
       Option::ThrowException throwException
 ) const {
    bool result = dims == dimensions;
@@ -70,7 +124,7 @@ bool Image::CheckProperties(
    if( !result && (throwException == Option::ThrowException::doThrow) ) {
       dip_Throw( E::TENSORSIZES_DONT_MATCH );
    }
-   result &= datatype == dt;
+   result &= dts == datatype;
    if( !result && (throwException == Option::ThrowException::doThrow) ) {
       dip_Throw( E::DATA_TYPE_NOT_SUPPORTED );
    }

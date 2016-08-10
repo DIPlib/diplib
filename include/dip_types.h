@@ -200,13 +200,14 @@ typedef DimensionArray<Range> RangeArray;  ///< An array of ranges
 // NOTE: N <= sizeof(unsigned long), which is 32 because we want to keep
 // compatibility across different systems.
 //
+// NOTE: N is currently not used. Would be needed to implement an .all() operator.
+//
 
 template< typename E, std::size_t N >
 class Options {
    unsigned long values;
    public:
    constexpr Options< E, N >() {}
-   //constexpr Options< E, N >( const Options< E, N >& other ) : values { other.values } {}
    constexpr Options< E, N >( dip::uint n ) : values { 1UL << n } {}
    constexpr Options< E, N >( unsigned long v, int ) : values { v } {}
    constexpr bool operator== ( const Options< E, N >& other ) const { return ( values & other.values ) != 0; }
@@ -217,10 +218,10 @@ class Options {
 /// Declare a type used to pass options to a function or class. This macro is used
 /// as follows:
 ///
-///        DIP_DECLARE_OPTIONS(MyOptions, 3);
-///        DIP_DEFINE_OPTION(MyOptions, Option_clean, 0);
-///        DIP_DEFINE_OPTION(MyOptions, Option_fresh, 1);
-///        DIP_DEFINE_OPTION(MyOptions, Option_shine, 2);
+///        DIP_DECLARE_OPTIONS( MyOptions, 3 );
+///        DIP_DEFINE_OPTION( MyOptions, Option_clean, 0 );
+///        DIP_DEFINE_OPTION( MyOptions, Option_fresh, 1 );
+///        DIP_DEFINE_OPTION( MyOptions, Option_shine, 2 );
 ///
 /// `MyOptions` will be a type that has three non-exclusive flags. Each of the
 /// three DIP_DEFINE_OPTION commands defines a `constexpr` variable for the
@@ -228,15 +229,15 @@ class Options {
 /// A variable of type `MyOptions` can be tested using the `==` and `!=`
 /// operators, which return a `bool`:
 ///
-///        MyOptions opts = {};                    // No options are set
+///        MyOptions opts {};                      // No options are set
 ///        opts = Option_fresh;                    // Set only one option.
 ///        opts = Option_clean + Option_shine;     // Set only these two options.
-///        if (opts == Option_clean) {...}         // Test to see if `Option_clean` is set.
+///        if( opts == Option_clean ) {...}        // Test to see if `Option_clean` is set.
 ///
 /// It is possible to declare additional values as a combination of existing
-/// values as so (cannot be `constexpr`):
+/// values:
 ///
-///        const MyOptions Option_freshNclean = Option_fresh + Option_clean;
+///        DIP_DEFINE_OPTION( MyOptions, Option_freshNclean, Option_fresh + Option_clean );
 ///
 /// For class member values, add `static` in front of `DIP_DEFINE_OPTION`.
 ///
@@ -257,10 +258,49 @@ namespace Option {
 
 /// Some functions that check for a condition optionally throw an exception
 /// if that condition is not met.
+// This one is documented, but only shows up only under the namespace members list,
+// not under dip_types.h nor under dip::Option. Sigh...
 enum class ThrowException {
    doNotThrow, ///< Do not throw and exception, return false if the condition is not met.
    doThrow     ///< Throw an exception if the condition is not met.
 };
+
+/// \class dip::Option::CmpProps
+/// Determines which properties to compare. Valid values are:
+///
+/// CmpProps constant       | Definition
+/// ----------------------- | ----------
+/// CmpProps_DataType       | compares data type
+/// CmpProps_Dimensionality | compares number of dimensions
+/// CmpProps_Dimensions     | compares image size
+/// CmpProps_Strides        | compares image strides
+/// CmpProps_TensorShape    | compares tensor size and shape
+/// CmpProps_TensorElements | compares number of tensor elements
+/// CmpProps_TensorStride   | compares tensor stride
+/// CmpProps_ColorSpace     | compares color space
+/// CmpProps_PhysDims       | compares physical dimensions
+/// CmpProps_Samples        | CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorElements
+/// CmpProps_Full           | CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorShape
+/// CmpProps_All            | CmpProps_Full + CmpProps_Strides + CmpProps_TensorStride
+///
+/// Note that you can add these constants together, for example `CmpProps_Dimensions + CmpProps_Strides`.
+DIP_DECLARE_OPTIONS( CmpProps, 11 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_DataType,   0 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_Dimensionality, 1 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_Dimensions, 2 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_Strides, 3 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorShape, 4 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorElements, 5 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorStride, 6 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_ColorSpace, 7 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_PhysDims, 8 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_Samples,
+      CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorElements );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_Full,
+      CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorShape );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_All,
+      CmpProps_Full + CmpProps_Strides + CmpProps_TensorStride );
+
 
 } // namespace Option
 } // namespace dip

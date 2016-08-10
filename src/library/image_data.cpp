@@ -483,10 +483,13 @@ UnsignedArray Image::IndexToCoordinates( dip::uint index ) const {
 //
 void Image::Copy( const Image& src ) {
    if( IsForged() ) {
-      CompareProperties( src );
-      // TODO: CompareProperties not yet implemented!
-      // TODO: We don't need to compare data types, they're allowed to be different
+      // Forged image, check to make sure number of samples is correct
+      CompareProperties( src, Option::CmpProps_Dimensions + Option::CmpProps_TensorElements );
+      // Change the tensor shape to match that of `src`
+      tensor.ChangeShape( src.tensor );
+      // The data type is not changed, the copy will convert the data type
    } else {
+      // Non-forged image, make properties identical to `src`
       CopyProperties( src );
       Forge();
    }

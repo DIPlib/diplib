@@ -27,8 +27,6 @@
 
 namespace dip {
 
-class Image;      // Forward declaration.
-
 //
 // The DataType class.
 //
@@ -85,7 +83,7 @@ struct DataType {
    constexpr explicit DataType( dcomplex ) : dt( DT::DCOMPLEX ) {}
 
    /// DataType objects implicitly convert to the enumeration integer.
-   constexpr operator int() const { return static_cast<int>(dt); }   // This one allows the use of DataType in a switch() statement
+   constexpr operator int() const { return static_cast< int >( dt ); }   // This one allows the use of DataType in a switch() statement
 
    /// DataType objects can be compared.
    bool operator==(DataType other) const { return dt == other.dt; }
@@ -110,17 +108,17 @@ struct DataType {
    /// Returns the size in bytes of the data type.
    dip::uint SizeOf() const {
       switch( dt ) {
-         case DT::BIN:      return sizeof(dip::bin);
-         case DT::UINT8:    return sizeof(dip::uint8);
-         case DT::SINT8:    return sizeof(dip::sint8);
-         case DT::UINT16:   return sizeof(dip::uint16);
-         case DT::SINT16:   return sizeof(dip::sint16);
-         case DT::UINT32:   return sizeof(dip::uint32);
-         case DT::SINT32:   return sizeof(dip::sint32);
-         case DT::SFLOAT:   return sizeof(dip::sfloat);
-         case DT::DFLOAT:   return sizeof(dip::dfloat);
-         case DT::SCOMPLEX: return sizeof(dip::scomplex);
-         case DT::DCOMPLEX: return sizeof(dip::dcomplex);
+         case DT::BIN:      return sizeof( dip::bin );
+         case DT::UINT8:    return sizeof( dip::uint8 );
+         case DT::SINT8:    return sizeof( dip::sint8 );
+         case DT::UINT16:   return sizeof( dip::uint16 );
+         case DT::SINT16:   return sizeof( dip::sint16 );
+         case DT::UINT32:   return sizeof( dip::uint32 );
+         case DT::SINT32:   return sizeof( dip::sint32 );
+         case DT::SFLOAT:   return sizeof( dip::sfloat );
+         case DT::DFLOAT:   return sizeof( dip::dfloat );
+         case DT::SCOMPLEX: return sizeof( dip::scomplex );
+         case DT::DCOMPLEX: return sizeof( dip::dcomplex );
       };
    }
 
@@ -190,40 +188,46 @@ struct DataType {
       return IsSInt() || IsFloat() || IsComplex();
    }
 
+   /// \class dip::DataType::Classes
    /// Specifies a collection of data types. Valid values are:
-   /// - Class_Bin
-   /// - Class_UInt8
-   /// - Class_SInt8
-   /// - Class_UInt16
-   /// - Class_SInt16
-   /// - Class_UInt32
-   /// - Class_SInt32
-   /// - Class_SFloat
-   /// - Class_DFloat
-   /// - Class_SComplex
-   /// - Class_DComplex
-   /// - Class_Binary = Class_Bin;
-   /// - Class_UInt = Class_UInt8 + Class_UInt16 + Class_UInt32;
-   /// - Class_SInt = Class_SInt8 + Class_SInt16 + Class_SInt32;
-   /// - Class_Integer = Class_UInt + Class_SInt;
-   /// - Class_Float = Class_SFloat + Class_DFloat;
-   /// - Class_Real = Class_Integer + Class_Float;
-   /// - Class_Complex = Class_SComplex + Class_DComplex;
-   /// - Class_Unsigned = Class_UInt;
-   /// - Class_Signed = Class_SInt + Class_Float + Class_Complex;
-   /// - Class_Any = Class_Binary + Class_Real + Class_Complex;
-   DIP_DECLARE_OPTIONS(Classes, 11);
-   static DIP_DEFINE_OPTION( Classes, Class_Bin, 0 );
-   static DIP_DEFINE_OPTION( Classes, Class_UInt8, 1 );
-   static DIP_DEFINE_OPTION( Classes, Class_SInt8, 2 );
-   static DIP_DEFINE_OPTION( Classes, Class_UInt16, 3 );
-   static DIP_DEFINE_OPTION( Classes, Class_SInt16, 4 );
-   static DIP_DEFINE_OPTION( Classes, Class_UInt32, 5 );
-   static DIP_DEFINE_OPTION( Classes, Class_SInt32, 6 );
-   static DIP_DEFINE_OPTION( Classes, Class_SFloat, 7 );
-   static DIP_DEFINE_OPTION( Classes, Class_DFloat, 8 );
-   static DIP_DEFINE_OPTION( Classes, Class_SComplex, 9 );
-   static DIP_DEFINE_OPTION( Classes, Class_DComplex, 10 );
+   ///
+   /// Classes constant | Definition
+   /// ---------------- | ----------
+   /// Class_Bin        | DT_BIN
+   /// Class_UInt8      | DT_UINT8
+   /// Class_SInt8      | DT_SINT8
+   /// Class_UInt16     | DT_UINT16
+   /// Class_SInt16     | DT_SINT16
+   /// Class_UInt32     | DT_UINT32
+   /// Class_SInt32     | DT_SINT32
+   /// Class_SFloat     | DT_SFLOAT
+   /// Class_DFloat     | DT_DFLOAT
+   /// Class_SComplex   | DT_SCOMPLEX
+   /// Class_DComplex   | DT_DCOMPLEX
+   /// Class_Binary     | Class_Bin;
+   /// Class_UInt       | Class_UInt8 + Class_UInt16 + Class_UInt32;
+   /// Class_SInt       | Class_SInt8 + Class_SInt16 + Class_SInt32;
+   /// Class_Integer    | Class_UInt + Class_SInt;
+   /// Class_Float      | Class_SFloat + Class_DFloat;
+   /// Class_Real       | Class_Integer + Class_Float;
+   /// Class_Complex    | Class_SComplex + Class_DComplex;
+   /// Class_Unsigned   | Class_UInt;
+   /// Class_Signed     | Class_SInt + Class_Float + Class_Complex;
+   /// Class_Any        | Class_Binary + Class_Real + Class_Complex;
+   ///
+   /// Note that you can add these constants together, for example `Class_Bin + Class_UInt`.
+   DIP_DECLARE_OPTIONS( Classes, 11 );
+   static DIP_DEFINE_OPTION( Classes, Class_Bin,      static_cast<dip::uint>( DT::BIN ));
+   static DIP_DEFINE_OPTION( Classes, Class_UInt8,    static_cast<dip::uint>( DT::UINT8 ));
+   static DIP_DEFINE_OPTION( Classes, Class_SInt8,    static_cast<dip::uint>( DT::SINT8 ));
+   static DIP_DEFINE_OPTION( Classes, Class_UInt16,   static_cast<dip::uint>( DT::UINT16 ));
+   static DIP_DEFINE_OPTION( Classes, Class_SInt16,   static_cast<dip::uint>( DT::SINT16 ));
+   static DIP_DEFINE_OPTION( Classes, Class_UInt32,   static_cast<dip::uint>( DT::UINT32 ));
+   static DIP_DEFINE_OPTION( Classes, Class_SInt32,   static_cast<dip::uint>( DT::SINT32 ));
+   static DIP_DEFINE_OPTION( Classes, Class_SFloat,   static_cast<dip::uint>( DT::SFLOAT ));
+   static DIP_DEFINE_OPTION( Classes, Class_DFloat,   static_cast<dip::uint>( DT::DFLOAT ));
+   static DIP_DEFINE_OPTION( Classes, Class_SComplex, static_cast<dip::uint>( DT::SCOMPLEX ));
+   static DIP_DEFINE_OPTION( Classes, Class_DComplex, static_cast<dip::uint>( DT::DCOMPLEX ));
    static DIP_DEFINE_OPTION( Classes, Class_Binary, Class_Bin );
    static DIP_DEFINE_OPTION( Classes, Class_UInt, Class_UInt8 + Class_UInt16 + Class_UInt32 );
    static DIP_DEFINE_OPTION( Classes, Class_SInt, Class_SInt8 + Class_SInt16 + Class_SInt32 );
@@ -235,6 +239,8 @@ struct DataType {
    static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
    static DIP_DEFINE_OPTION( Classes, Class_Any, Class_Binary + Class_Real + Class_Complex );
 
+   /// Implicit conversion to dip::DataType::Classes options class.
+   operator Classes() const { return { static_cast<dip::uint>( dt ) }; }
 
    //
    // Functions to suggest an output data type for all types of filters and operators
@@ -243,33 +249,21 @@ struct DataType {
 
    /// Returns a suitable floating-point type that can hold the samples of `type`.
    static DataType SuggestFloat( DataType type );
-   /// Returns a suitable floating-point type that can hold the samples in `img`.
-   static DataType SuggestFloat( const Image& img );
 
    /// Returns a suitable complex type that can hold the samples of `type`.
    static DataType SuggestComplex( DataType type );
-   /// Returns a suitable complex type that can hold the samples in `img`.
-   static DataType SuggestComplex( const Image& img );
 
    /// Returns a suitable floating-point or complex type that can hold the samples of `type`.
    static DataType SuggestFlex( DataType type );
-   /// Returns a suitable floating-point or complex type that can hold the samples in `img`.
-   static DataType SuggestFlex( const Image& img );
 
    /// Returns a suitable floating-point, complex or binary type that can hold the samples of `type`.
    static DataType SuggestFlexBin( DataType type );
-   /// Returns a suitable floating-point, complex or binary type that can hold the samples in `img`.
-   static DataType SuggestFlexBin( const Image& img );
 
    /// Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed with the two datatypes.
    static DataType SuggestArithmetic( DataType type1, DataType type2 );
-   /// Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed on the two images.
-   static DataType SuggestArithmetic( const Image& img1, const Image& img2 );
 
    /// Returns a suitable type that can hold any samples of the two datatypes.
    static DataType SuggestDiadicOperation( DataType type1, DataType type2 );
-   /// Returns a suitable type that can hold the samples in the two images.
-   static DataType SuggestDiadicOperation( const Image& img1, const Image& img2 );
 
 };
 

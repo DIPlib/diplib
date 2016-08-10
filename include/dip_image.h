@@ -377,6 +377,7 @@ class Image {
       // TODO: We should be able to pick which properties are compared...
       bool CompareProperties(
             const Image& src,
+            Option::CmpProps cmpProps,
             Option::ThrowException throwException = Option::ThrowException::doThrow
       ) const;
 
@@ -384,14 +385,14 @@ class Image {
       ///
       bool CheckProperties(
             const dip::uint ndims,
-            const dip::DataType dt,
+            const dip::DataType::Classes dts,
             Option::ThrowException throwException = Option::ThrowException::doThrow
       ) const;
 
       /// Check image properties, either returns true/false or throws an error.
       bool CheckProperties(
             const UnsignedArray& dimensions,
-            const dip::DataType dt,
+            const dip::DataType::Classes dts,
             Option::ThrowException throwException = Option::ThrowException::doThrow
       ) const;
 
@@ -399,7 +400,7 @@ class Image {
       bool CheckProperties(
             const UnsignedArray& dimensions,
             dip::uint tensorElements,
-            const dip::DataType dt,
+            const dip::DataType::Classes dts,
             Option::ThrowException throwException = Option::ThrowException::doThrow
       ) const;
 

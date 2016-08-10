@@ -26,7 +26,7 @@ const char* dip::E::DIMENSIONS_DONT_MATCH =
 const char* dip::E::NOT_SCALAR =
            "Image is not scalar";
 const char* dip::E::TENSORSIZES_DONT_MATCH =
-           "Tensor sizes don't match";
+           "Number of tensor elements doesn't match";
 
 /* image properties errors */
 const char* dip::E::NO_NORMAL_STRIDE =
