@@ -154,7 +154,9 @@ typedef void (*ScanFilter) (
 /// to be a single sample. Use this option if you need to do computations with
 /// the tensors, but do not want to bother with all the different tensor shapes,
 /// which are meant only to save memory. Note, however, that this option does
-/// not apply to the output images.
+/// not apply to the output images. When expanding the input tensors in this
+/// way, it makes sense to set the output tensor to a full matrix. Don't forget
+/// to specify the right size in `nTensorElements`.
 ///
 /// The framework function does not set the physical dimensions or color
 /// space information, the caller is expected to do so when the framework

@@ -171,10 +171,6 @@ void Scan(
    }
    */
 
-   // TODO: use the FrameWork::Scan_ExpandTensorInBuffer option.
-   // This might cause inUseBuffer elements to be set to true.
-   // It also causes the CopyBuffer function to behave differently.
-
    // For each image, determine if we need to make a temporary buffer.
    bool needBuffers = false;
    BooleanArray inUseBuffer( nIn );
@@ -186,6 +182,20 @@ void Scan(
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       outUseBuffer[ii] = out[ii].DataType() != outBufferTypes[ii];
       needBuffers |= outUseBuffer[ii];
+   }
+   // Temporary buffers are necessary also when expanding the tensor.
+   // `lookUpTables[ii]` is the look-up table for `in[ii]`. If it is not an
+   // empty array, then the tensor needs to be expanded. If it is an empty
+   // array, simply copy over the tensor elements the way they are.
+   std::vector< std::vector< dip::sint >> lookUpTables( nIn );
+   if(( opts == Scan_ExpandTensorInBuffer ) && ( opts != Scan_TensorAsSpatialDim )) {
+      for( dip::uint ii = 0; ii < nIn; ++ii ) {
+         if( !in[ii].Tensor().HasNormalOrder() ) {
+            inUseBuffer[ii] = true;
+            needBuffers = true;
+            lookUpTables[ii] = in[ii].Tensor().LookUpTable();
+         }
+      }
    }
 
    // Determine the best processing dimension.
@@ -216,35 +226,44 @@ void Scan(
 
    // Create buffer data structs and allocate buffers
    std::vector< std::vector< uint8 > > buffers; // The outer one here is not a DimensionArray, because it won't delete() its contents
-   std::vector<ScanBuffer> inScanBufs( nIn );   // We don't use DimensionArray here either, but we could
+   std::vector< ScanBuffer > inScanBufs( nIn );   // We don't use DimensionArray here either, but we could
    for( dip::uint ii = 0; ii < nIn; ++ii ) {
       if( inUseBuffer[ii] ) {
-         // TODO: If in[ii].Stride( processingDim ) == 0, allocate space for a single pixel
-         buffers.emplace_back( bufferSize * inBufferTypes[ii].SizeOf() * in[ii].TensorElements() );
-         inScanBufs[ii].buffer = buffers.back().data();
-         inScanBufs[ii].stride = in[ii].TensorElements();
+         if( lookUpTables[ii].empty() ) {
+            inScanBufs[ii].tensorLength = in[ii].TensorElements();
+         } else {
+            inScanBufs[ii].tensorLength = lookUpTables[ii].size();
+         }
          inScanBufs[ii].tensorStride = 1;
-         inScanBufs[ii].tensorLength = in[ii].TensorElements();
+         if( in[ii].Stride( processingDim ) == 0 ) {
+            // A stride of 0 means all pixels are the same, allocate space for a single pixel
+            inScanBufs[ii].stride = 0;
+            buffers.emplace_back( inBufferTypes[ii].SizeOf() * inScanBufs[ii].tensorLength );
+         } else {
+            inScanBufs[ii].stride = inScanBufs[ii].tensorLength;
+            buffers.emplace_back( bufferSize * inBufferTypes[ii].SizeOf() * inScanBufs[ii].tensorLength );
+         }
+         inScanBufs[ii].buffer = buffers.back().data();
       } else {
-         inScanBufs[ii].buffer = nullptr;
-         inScanBufs[ii].stride = in[ii].Stride( processingDim );
-         inScanBufs[ii].tensorStride = in[ii].TensorStride();
          inScanBufs[ii].tensorLength = in[ii].TensorElements();
+         inScanBufs[ii].tensorStride = in[ii].TensorStride();
+         inScanBufs[ii].stride = in[ii].Stride( processingDim );
+         inScanBufs[ii].buffer = nullptr;
       }
    }
-   std::vector<ScanBuffer> outScanBufs( nOut );
+   std::vector< ScanBuffer > outScanBufs( nOut );
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       if( outUseBuffer[ii] ) {
-         buffers.emplace_back( bufferSize * outBufferTypes[ii].SizeOf() * out[ii].TensorElements() );
-         outScanBufs[ii].buffer = buffers.back().data();
-         outScanBufs[ii].stride = out[ii].TensorElements();
+         outScanBufs[ii].tensorLength = out[ii].TensorElements();
          outScanBufs[ii].tensorStride = 1;
-         outScanBufs[ii].tensorLength = out[ii].TensorElements();
+         outScanBufs[ii].stride = outScanBufs[ii].tensorLength;
+         buffers.emplace_back( bufferSize * outBufferTypes[ii].SizeOf() * outScanBufs[ii].tensorLength );
+         outScanBufs[ii].buffer = buffers.back().data();
       } else {
-         outScanBufs[ii].buffer = nullptr;
-         outScanBufs[ii].stride = out[ii].Stride( processingDim );
-         outScanBufs[ii].tensorStride = out[ii].TensorStride();
          outScanBufs[ii].tensorLength = out[ii].TensorElements();
+         outScanBufs[ii].tensorStride = out[ii].TensorStride();
+         outScanBufs[ii].stride = out[ii].Stride( processingDim );
+         outScanBufs[ii].buffer = nullptr;
       }
    }
 
@@ -273,7 +292,7 @@ void Scan(
    UnsignedArray position( dims.size(), 0 );
    IntegerArray inIndices( nIn, 0 );
    IntegerArray outIndices( nOut, 0 );
-   for(;;) {
+   for( ; ; ) {
 
       // Iterate over line sections, if bufferSize < dims[processingDim]
       for( dip::uint sectionStart = 0; sectionStart < dims[processingDim]; sectionStart += bufferSize ) {
@@ -285,9 +304,9 @@ void Scan(
          for( dip::uint ii = 0; ii < nIn; ++ii ) {
             //std::cout << "      inIndices[" << ii << "] = " << inIndices[ii] << std::endl;
             if( inUseBuffer[ii] ) {
-               // TODO: If inIndices[ii] and sectionStart are the same as in the previous iteration, we don't need
-               //       to copy the buffer over again. This happens with singleton-expanded input images.
-               //       But it's easier to copy, and also safer as the lineFilter function could be bad and write in its input!
+               // If inIndices[ii] and sectionStart are the same as in the previous iteration, we don't need
+               // to copy the buffer over again. This happens with singleton-expanded input images.
+               // But it's easier to copy, and also safer as the lineFilter function could be bad and write in its input!
                CopyBuffer(
                      in[ii].Pointer( inIndices[ii] + sectionStart * in[ii].Stride( processingDim ) ),
                      in[ii].DataType(),
@@ -297,8 +316,9 @@ void Scan(
                      inBufferTypes[ii],
                      inScanBufs[ii].stride,
                      inScanBufs[ii].tensorStride,
-                     bufferSize,
-                     inScanBufs[ii].tensorLength );
+                     inScanBufs[ii].stride == 0 ? 1 : bufferSize, // if stride == 0, copy only a single pixel because they're all the same
+                     inScanBufs[ii].tensorLength,
+                     lookUpTables[ii] );
             } else {
                inScanBufs[ii].buffer = in[ii].Pointer( inIndices[ii] + sectionStart * in[ii].Stride( processingDim ) );
             }
@@ -329,12 +349,13 @@ void Scan(
                      outBufferTypes[ii],
                      outScanBufs[ii].stride,
                      outScanBufs[ii].tensorStride,
-                     out[ii].Pointer( outIndices[ii] + sectionStart * out[ii].Stride( processingDim ) ),
+                     out[ii].Pointer( outIndices[ii] + sectionStart * out[ii].Stride( processingDim )),
                      out[ii].DataType(),
                      out[ii].Stride( processingDim ),
                      out[ii].TensorStride(),
                      bufferSize,
-                     outScanBufs[ii].tensorLength );
+                     outScanBufs[ii].tensorLength,
+                     std::vector< dip::sint > {} );
             }
          }
       }
@@ -342,7 +363,7 @@ void Scan(
       // Determine which line to process next until we're done
       position[processingDim] = 0; // reset this index
       dip::uint dd;
-      for ( dd = 0; dd < dims.size(); dd++ ) {
+      for( dd = 0; dd < dims.size(); dd++ ) {
          if( dd != processingDim ) {
             ++position[dd];
             for( dip::uint ii = 0; ii < nIn; ++ii ) {
@@ -374,7 +395,7 @@ void Scan(
    // TODO: End threads.
 
    // Return output image tensors if we made them a spatial dimension
-   if (tensorToSpatial) {
+   if( tensorToSpatial ) {
       for( dip::uint ii = 0; ii < nOut; ++ii ) {
          c_out[ii].get().SpatialToTensor( 0 );
       }

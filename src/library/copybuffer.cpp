@@ -24,15 +24,23 @@ static inline void CopyBufferFromTo(
       dip::sint outStride,
       dip::sint outTensorStride,
       dip::uint pixels,
-      dip::uint tensorElements
+      dip::uint tensorElements,
+      const std::vector< dip::sint > &lookUpTable // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
 ) {
    for( dip::uint pp = 0; pp < pixels; ++pp ) {
       inT* in = inBuffer;
       outT* out = outBuffer;
-      for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
-         *out = clamp_cast< outT >( *in );
-         in += inTensorStride;
-         out += outTensorStride;
+      if( lookUpTable.empty() ) {
+         for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
+            *out = clamp_cast< outT >( *in );
+            in += inTensorStride;
+            out += outTensorStride;
+         }
+      } else {
+         for( dip::uint tt = 0; tt < lookUpTable.size(); ++tt ) {
+            *out = lookUpTable[tt] < 0 ? outT( 0 ) : clamp_cast< outT >( in[lookUpTable[tt]] );
+            out += outTensorStride;
+         }
       }
       inBuffer += inStride;
       outBuffer += outStride;
@@ -49,41 +57,42 @@ static inline void CopyBufferFrom(
       dip::sint outStride,
       dip::sint outTensorStride,
       dip::uint pixels,
-      dip::uint tensorElements
+      dip::uint tensorElements,
+      const std::vector< dip::sint > &lookUpTable
 ) {
    switch( outType ) {
       case dip::DT_BIN:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (bin*)outBuffer, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (bin*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT8:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (uint8*)outBuffer, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (uint8*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT16:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (uint16*)outBuffer, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (uint16*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT32:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (uint32*)outBuffer, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (uint32*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT8:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sint8*)outBuffer, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sint8*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT16:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sint16*)outBuffer, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sint16*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT32:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sint32*)outBuffer, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sint32*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SFLOAT:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sfloat*)outBuffer, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sfloat*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_DFLOAT:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (dfloat*)outBuffer, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (dfloat*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SCOMPLEX:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (scomplex*)outBuffer, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (scomplex*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_DCOMPLEX:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (dcomplex*)outBuffer, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (dcomplex*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
    }
 }
@@ -98,41 +107,42 @@ void CopyBuffer(
       dip::sint outStride,
       dip::sint outTensorStride,
       dip::uint pixels,
-      dip::uint tensorElements
+      dip::uint tensorElements,
+      const std::vector< dip::sint > &lookUpTable
 ) {
    switch( inType ) {
       case dip::DT_BIN:
-         CopyBufferFrom( (bin*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFrom( (bin*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT8:
-         CopyBufferFrom( (uint8*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFrom( (uint8*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT16:
-         CopyBufferFrom( (uint16*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFrom( (uint16*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT32:
-         CopyBufferFrom( (uint32*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFrom( (uint32*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT8:
-         CopyBufferFrom( (sint8*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFrom( (sint8*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT16:
-         CopyBufferFrom( (sint16*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFrom( (sint16*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT32:
-         CopyBufferFrom( (sint32*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFrom( (sint32*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SFLOAT:
-         CopyBufferFrom( (sfloat*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFrom( (sfloat*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_DFLOAT:
-         CopyBufferFrom( (dfloat*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFrom( (dfloat*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SCOMPLEX:
-         CopyBufferFrom( (scomplex*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFrom( (scomplex*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_DCOMPLEX:
-         CopyBufferFrom( (dcomplex*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements );
+         CopyBufferFrom( (dcomplex*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
    }
 }

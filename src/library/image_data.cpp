@@ -512,7 +512,8 @@ void Image::Copy( const Image& src ) {
             sstride_d,
             tstride,
             NumberOfPixels(),
-            tensor.Elements()
+            tensor.Elements(),
+            std::vector< dip::sint > {}
          );
          return;
       }
@@ -533,7 +534,8 @@ void Image::Copy( const Image& src ) {
          strides[processingDim],
          tstride,
          dims[processingDim],
-         tensor.Elements()
+         tensor.Elements(),
+         std::vector< dip::sint > {}
       );
    } while( NDLoop::Next( coords, offset_s, offset_d, dims, src.strides, strides, processingDim ));
 }

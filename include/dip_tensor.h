@@ -297,13 +297,26 @@ class Tensor {
          }
       }
 
+      /// Returns true for tensors that are stored in column-major order (all
+      /// vectors and non-transposed full tensors).
+      bool HasNormalOrder() const {
+         switch( shape_ ) {
+            case Shape::COL_VECTOR:
+            case Shape::ROW_VECTOR:
+            case Shape::COL_MAJOR_MATRIX:
+               return true;
+            default:
+               return false;
+         }
+      }
+
       /// Returns a look-up table that you can use to find specific tensor elements.
       /// Given a tensor with `M` rows and `N` columns, tensor element `(m,n)` can
       /// be found by adding `Tensor::LookUpTable()[n*M+m] * tstride` to the pixel's
       /// pointer. If the value in the look-up table is -1, the tensor element is
       /// not stored, and presumed to be 0 (happens with triangular and diagonal
       /// matrices only).
-      std::vector< dip::sint > LookUpTable() {
+      std::vector< dip::sint > LookUpTable() const {
          dip::sint M = (dip::sint)rows_;
          dip::sint N = (dip::sint)Columns();
          std::vector< dip::sint > LUT( N * N, -1 );
