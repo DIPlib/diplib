@@ -41,8 +41,26 @@ int main() {
                               << (opts == Option_burn   ? "burn."    : "don't burn.")
                               << std::endl;
 
+   opts += Option_shine;
+   std::cout << "Options_clean + Options_burn + Option_shine: "
+                              << (opts == Option_clean  ? "clean, "  : "not clean, ")
+                              << (opts == Option_fresh  ? "fresh, "  : "not fresh, ")
+                              << (opts == Option_shine  ? "shine, "  : "not shine, ")
+                              << (opts == Option_flower ? "flower, " : "not flower, ")
+                              << (opts == Option_burn   ? "burn."    : "don't burn.")
+                              << std::endl;
+
    opts = Option_freshNclean;
    std::cout << "Option_freshNclean: "
+                              << (opts == Option_clean  ? "clean, "  : "not clean, ")
+                              << (opts == Option_fresh  ? "fresh, "  : "not fresh, ")
+                              << (opts == Option_shine  ? "shine, "  : "not shine, ")
+                              << (opts == Option_flower ? "flower, " : "not flower, ")
+                              << (opts == Option_burn   ? "burn."    : "don't burn.")
+                              << std::endl;
+
+   opts -= Option_clean ;
+   std::cout << "Option_freshNclean - Option_clean: "
                               << (opts == Option_clean  ? "clean, "  : "not clean, ")
                               << (opts == Option_fresh  ? "fresh, "  : "not fresh, ")
                               << (opts == Option_shine  ? "shine, "  : "not shine, ")

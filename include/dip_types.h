@@ -213,6 +213,8 @@ class Options {
    constexpr bool operator== ( const Options< E, N >& other ) const { return ( values & other.values ) != 0; }
    constexpr bool operator!= ( const Options< E, N >& other ) const { return ( values & other.values ) == 0; }
    constexpr Options< E, N > operator+ ( const Options< E, N >& other ) const { return { values | other.values, 0 }; }
+   Options< E, N >& operator+= ( const Options< E, N >& other ) { values |= other.values; return *this; }
+   Options< E, N >& operator-= ( const Options< E, N >& other ) { values &= ~other.values; return *this; }
 };
 
 /// Declare a type used to pass options to a function or class. This macro is used
