@@ -28,7 +28,7 @@ namespace dip {
 /// Adds two images, sample-wise, with singleton expansion. Out will have the
 /// type `dt`.
 ///
-/// \see Sub, Mul, Div, Mod, operator+
+/// \see Sub, Mul, MulSamples, Div, Mod, operator+
 void Add(
       const Image& lhs,
       const Image& rhs,
@@ -38,7 +38,7 @@ void Add(
 
 /// Adds a constant to each sample in an image. Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, Div, Mod, operator+
+/// \see Add, Sub, Mul, MulSamples, Div, Mod, operator+
 template< typename T >
 inline void Add(
       const Image& lhs,
@@ -64,7 +64,7 @@ inline Image Add(
 /// Subtracts two images, sample-wise, with singleton expansion. Out will have the
 /// type `dt`.
 ///
-/// \see Add, Mul, Div, Mod, operator-
+/// \see Add, Mul, MulSamples, Div, Mod, operator-
 void Sub(
       const Image& lhs,
       const Image& rhs,
@@ -74,7 +74,7 @@ void Sub(
 
 /// Subtracts a constant from each sample in an image. Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, Div, Mod, operator-
+/// \see Add, Sub, Mul, MulSamples, Div, Mod, operator-
 template< typename T >
 inline void Sub(
       const Image& lhs,
@@ -107,7 +107,7 @@ inline Image Sub(
 /// output with dip::Image::SpatialToTensor. The helper function MulSamaples
 /// does this.
 ///
-/// \see Add, Sub, Div, Mod, operator*, MulSamples
+/// \see Add, Sub, MulSamples, Div, Mod, operator*
 void Mul(
       const Image& lhs,
       const Image& rhs,
@@ -117,7 +117,7 @@ void Mul(
 
 /// Multiplies each sample in an image by a constant. Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, Div, Mod, operator*
+/// \see Add, Sub, Mul, MulSamples, Div, Mod, operator*
 template< typename T >
 inline void Mul(
       const Image& lhs,
@@ -139,30 +139,16 @@ inline Image Mul(
    return out;
 }
 
-/// Multiplies two images, sample-wise, with singleton expansion. If the tensor
-/// dimension is singleton-expanded, it might be reshaped to a vector.
-/// Out will have the type `dt`.
+/// Adds two images, sample-wise, with singleton expansion. Out will have the
+/// type `dt`.
 ///
-/// \see Mul
-inline void MulSamples(
+/// \see Add, Sub, Mul, Div, Mod
+void MulSamples(
       const Image& lhs,
       const Image& rhs,
       Image& out,
       DataType dt
-) {
-   dip_ThrowIf( lhs.Dimensionality() != rhs.Dimensionality(), E::DIMENSIONS_DONT_MATCH );
-   Image newlhs = lhs; newlhs.TensorToSpatial(-1);
-   Image newrhs = rhs; newrhs.TensorToSpatial(-1);
-   Mul( newlhs, newrhs, out, dt );
-   out.SpatialToTensor(-1);
-   // If the number of tensor elements matches either LHS or RHS operand,
-   // then we copy over that tensor shape. Otherwise we leave it as a vector.
-   if( out.TensorElements() == lhs.TensorElements() ) {
-      out.ReshapeTensor( lhs.Tensor() );
-   } else if( out.TensorElements() == rhs.TensorElements() ) {
-      out.ReshapeTensor( rhs.Tensor() );
-   }
-}
+);
 
 inline Image MulSamples(
       const Image& lhs,
@@ -178,7 +164,7 @@ inline Image MulSamples(
 /// Divides two images, sample-wise, with singleton expansion. Out will have the
 /// type `dt`.
 ///
-/// \see Add, Sub, Mul, Mod, operator/
+/// \see Add, Sub, Mul, MulSamples, Mod, operator/
 void Div(
       const Image& lhs,
       const Image& rhs,
@@ -188,7 +174,7 @@ void Div(
 
 /// Divides each sample in an image by a constant. Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, Div, Mod, operator/
+/// \see Add, Sub, Mul, MulSamples, Div, Mod, operator/
 template< typename T >
 inline void Div(
       const Image& lhs,
@@ -214,7 +200,7 @@ inline Image Div(
 /// Computes the modulo of two images, sample-wise, with singleton expansion.
 /// Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, Div, operator%
+/// \see Add, Sub, Mul, MulSamples, Div, operator%
 void Mod(
       const Image& lhs,
       const Image& rhs,
@@ -225,7 +211,7 @@ void Mod(
 /// Computes the modulo of each sample in an image with a constant.
 /// Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, Div, Mod, operator%
+/// \see Add, Sub, Mul, MulSamples, Div, Mod, operator%
 template< typename T >
 inline void Mod(
       const Image& lhs,

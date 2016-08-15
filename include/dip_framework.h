@@ -230,6 +230,97 @@ void Scan(
       ScanOptions          opts                 ///< Options to control how `lineFilter` is called
 );
 
+/// Calls dip::Framework::Scan with one output image.
+inline void ScanSingleOutput(
+      Image&               out,                 ///< Output image
+      const DataType       outImageType,        ///< Data type for output image, buffer will have this type also
+      const dip::uint      nTensorElements,     ///< Number of tensor elements in output image
+      ScanFilter           lineFilter,          ///< Function to call for each image line
+      const void*          functionParameters,  ///< Parameters to pass to `lineFilter`
+      std::vector<void*>&  functionVariables,   ///< Variables to pass to `lineFilter`
+      ScanOptions          opts                 ///< Options to control how `lineFilter` is called
+) {
+   ImageConstRefArray inar {};
+   ImageRefArray outar { out };
+   DataTypeArray inBufT {};
+   DataTypeArray outBufT { outImageType };
+   DataTypeArray outImT { outImageType };
+   UnsignedArray nElem { nTensorElements };
+   Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, functionParameters, functionVariables, opts );
+}
+
+/// Calls dip::Framework::Scan with one input image and one output image.
+inline void ScanMonadic(
+      const Image&         in,                  ///< Input image
+      Image&               out,                 ///< Output image
+      const DataType       bufferTypes,         ///< Data type for all input and output buffers
+      const DataType       outImageType,        ///< Data type for output image
+      const dip::uint      nTensorElements,     ///< Number of tensor elements in output image
+      ScanFilter           lineFilter,          ///< Function to call for each image line
+      const void*          functionParameters,  ///< Parameters to pass to `lineFilter`
+      std::vector<void*>&  functionVariables,   ///< Variables to pass to `lineFilter`
+      ScanOptions          opts                 ///< Options to control how `lineFilter` is called
+) {
+   ImageConstRefArray inar { in };
+   ImageRefArray outar { out };
+   DataTypeArray inBufT { bufferTypes };
+   DataTypeArray outBufT { bufferTypes };
+   DataTypeArray outImT { outImageType };
+   UnsignedArray nElem { nTensorElements };
+   Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, functionParameters, functionVariables, opts );
+}
+
+/// Calls dip::Framework::Scan with two input images and one output image.
+/// Input tensors are expected to match, but a scalar is expanded to the size of the
+/// other tensor. The output tensor will be of the same size as the input tensors,
+/// its shape will match the input shape if one image is a scalar, or if both images
+/// have matching tensor shapes. Otherwise the output tensor will be a column-major
+/// matrix (or vector or scalar, as appropriate).
+///
+/// This function adds dip::Framework::Scan_TensorAsSpatialDim or
+/// dip::Framework::Scan_ExpandTensorInBuffer to `opts`, so don't set these
+/// values. This means that the tensors passed to `lineFilter` is either all scalars
+/// (the tensor can be converted to a spatial dimension) or full, column-major
+/// tensors of equal size. Do not specify dip::Framework::Scan_NoSingletonExpansion
+/// in `opts`.
+inline void ScanDyadic(
+      const Image&         in1,                 ///< Input image 1
+      const Image&         in2,                 ///< Input image 2
+      Image&               out,                 ///< Output image
+      const DataType       bufferTypes,         ///< Data type for all input and output buffers
+      const DataType       outImageType,        ///< Data type for output image
+      ScanFilter           lineFilter,          ///< Function to call for each image line
+      const void*          functionParameters,  ///< Parameters to pass to `lineFilter`
+      std::vector<void*>&  functionVariables,   ///< Variables to pass to `lineFilter`
+      ScanOptions          opts                 ///< Options to control how `lineFilter` is called
+) {
+   Tensor outTensor;
+   if( in1.IsScalar() ) {
+      outTensor = in2.Tensor();
+      opts += Framework::Scan_TensorAsSpatialDim;
+   } else if( in2.IsScalar() ) {
+      outTensor = in1.Tensor();
+      opts += Framework::Scan_TensorAsSpatialDim;
+   } else if( in1.Tensor() == in2.Tensor() ) {
+      outTensor = in1.Tensor();
+      opts += Framework::Scan_TensorAsSpatialDim;
+   } else if( in1.TensorDimensions() == in2.TensorDimensions() ) {
+      outTensor = Tensor( in1.TensorRows(), in1.TensorColumns() );
+      opts += Framework::Scan_ExpandTensorInBuffer;
+   } else {
+      dip_Throw( E::TENSORSIZES_DONT_MATCH );
+   }
+   ImageConstRefArray inar { in1, in2 };
+   ImageRefArray outar { out };
+   DataTypeArray inBufT { bufferTypes, bufferTypes };
+   DataTypeArray outBufT { bufferTypes };
+   DataTypeArray outImT { outImageType };
+   UnsignedArray nElem { outTensor.Elements() };
+   Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, functionParameters, functionVariables, opts );
+   out.ReshapeTensor( outTensor );
+}
+
+
 } // namespace Framework
 } // namespace dip
 

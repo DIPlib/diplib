@@ -27,7 +27,10 @@ static void dip__And(
    const TPI* rhs = (const TPI*)inBuffer[1].buffer;
    TPI* out = (TPI*)outBuffer[0].buffer;
    for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-      *out = *lhs & *rhs;
+      for( dip::uint jj = 0; jj < outBuffer[0].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
+         out[jj * outBuffer[0].tensorStride] = lhs[jj * inBuffer[0].tensorStride] &
+                                               rhs[jj * inBuffer[1].tensorStride];
+      }
       lhs += inBuffer[0].stride;
       rhs += inBuffer[1].stride;
       out += outBuffer[0].stride;
@@ -40,19 +43,11 @@ void And(
       Image& out
 ) {
    DataType dt = lhs.DataType();
-   ImageConstRefArray inar { lhs, rhs };
-   ImageRefArray outar { out };
-   DataTypeArray inBufferTypes { dt, dt };
-   DataTypeArray outBufferTypes { dt };
-   DataTypeArray outImageTypes { dt };
-
-   Framework::ScanOptions opts = Framework::Scan_TensorAsSpatialDim;
-   UnsignedArray nTensorOut{ 1 };
    Framework::ScanFilter filter;
    DIP_OVL_ASSIGN_INT_OR_BIN( filter, dip__And, dt ); // NOTE: binary and integer.
    std::vector<void*> vars;
-   Framework::Scan( inar, outar, inBufferTypes, outBufferTypes, outImageTypes,
-                    nTensorOut, filter, nullptr, vars, opts );
+   Framework::ScanOptions opts;
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, filter, nullptr, vars, opts );
 }
 
 //
@@ -70,7 +65,10 @@ static void dip__Or(
    const TPI* rhs = (const TPI*)inBuffer[1].buffer;
    TPI* out = (TPI*)outBuffer[0].buffer;
    for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-      *out = *lhs | *rhs;
+      for( dip::uint jj = 0; jj < outBuffer[0].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
+         out[jj * outBuffer[0].tensorStride] = lhs[jj * inBuffer[0].tensorStride] |
+                                               rhs[jj * inBuffer[1].tensorStride];
+      }
       lhs += inBuffer[0].stride;
       rhs += inBuffer[1].stride;
       out += outBuffer[0].stride;
@@ -83,19 +81,11 @@ void Or(
       Image& out
 ) {
    DataType dt = lhs.DataType();
-   ImageConstRefArray inar { lhs, rhs };
-   ImageRefArray outar { out };
-   DataTypeArray inBufferTypes { dt, dt };
-   DataTypeArray outBufferTypes { dt };
-   DataTypeArray outImageTypes { dt };
-
-   Framework::ScanOptions opts = Framework::Scan_TensorAsSpatialDim;
-   UnsignedArray nTensorOut{ 1 };
    Framework::ScanFilter filter;
    DIP_OVL_ASSIGN_INT_OR_BIN( filter, dip__Or, dt ); // NOTE: binary and integer.
    std::vector<void*> vars;
-   Framework::Scan( inar, outar, inBufferTypes, outBufferTypes, outImageTypes,
-                    nTensorOut, filter, nullptr, vars, opts );
+   Framework::ScanOptions opts;
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, filter, nullptr, vars, opts );
 }
 
 //
@@ -113,7 +103,10 @@ static void dip__Xor(
    const TPI* rhs = (const TPI*)inBuffer[1].buffer;
    TPI* out = (TPI*)outBuffer[0].buffer;
    for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-      *out = *lhs ^ *rhs;
+      for( dip::uint jj = 0; jj < outBuffer[0].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
+         out[jj * outBuffer[0].tensorStride] = lhs[jj * inBuffer[0].tensorStride] ^
+                                               rhs[jj * inBuffer[1].tensorStride];
+      }
       lhs += inBuffer[0].stride;
       rhs += inBuffer[1].stride;
       out += outBuffer[0].stride;
@@ -126,19 +119,11 @@ void Xor(
       Image& out
 ) {
    DataType dt = lhs.DataType();
-   ImageConstRefArray inar { lhs, rhs };
-   ImageRefArray outar { out };
-   DataTypeArray inBufferTypes { dt, dt };
-   DataTypeArray outBufferTypes { dt };
-   DataTypeArray outImageTypes { dt };
-
-   Framework::ScanOptions opts = Framework::Scan_TensorAsSpatialDim;
-   UnsignedArray nTensorOut{ 1 };
    Framework::ScanFilter filter;
    DIP_OVL_ASSIGN_INT_OR_BIN( filter, dip__Xor, dt ); // NOTE: binary and integer.
    std::vector<void*> vars;
-   Framework::Scan( inar, outar, inBufferTypes, outBufferTypes, outImageTypes,
-                    nTensorOut, filter, nullptr, vars, opts );
+   Framework::ScanOptions opts;
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, filter, nullptr, vars, opts );
 }
 
 } // namespace dip
