@@ -190,7 +190,7 @@ void Mul(
       DIP_OVL_ASSIGN_ALL( filter, dip__Mul, dt );
    }
    std::vector<void*> vars;
-   std::array< dip::uint, 3 >params { lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() }; // only used by dip__Mul, not by dip__MulSamples.
+   std::array< dip::uint, 3 >params {{ lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() }}; // only used by dip__Mul, not by dip__MulSamples.
    Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, filter, &params, vars, opts );
    out.ReshapeTensor( outTensor );
 }

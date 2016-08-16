@@ -50,6 +50,7 @@ void Scan(
    ImageArray in( nIn );
    for( dip::uint ii = 0; ii < nIn; ++ii) {
       in[ii] = c_in[ii].get().QuickCopy();
+      dip_ThrowIf( !in[ii].IsForged(), E::IMAGE_NOT_FORGED );
    }
 
    // Do tensor to spatial dimension if necessary

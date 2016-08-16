@@ -86,18 +86,14 @@ Image Image::operator[]( dip::uint index ) const {
 
 Image Image::Diagonal() const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   Image out = *this;
    if( tensor.IsScalar() || tensor.IsDiagonal() ) {
-      return *this;
+      out.tensor.SetVector(tensor.Elements());
    } else if( tensor.IsVector() ) {
-      Image out = *this;
       out.tensor.SetScalar();                // Keep the first tensor element only
-      return out;
    } else if( tensor.IsSymmetric() || tensor.IsTriangular() ) {
-      Image out = *this;
       out.tensor.SetVector(tensor.Rows());   // The diagonal elements are the first ones.
-      return out;
    } else { // matrix
-      Image out = *this;
       dip::uint m = tensor.Rows();
       dip::uint n = tensor.Columns();
       out.tensor.SetVector(std::min(m,n));
@@ -106,8 +102,8 @@ Image Image::Diagonal() const {
       } else { // row-major matrix
          out.tstride = (n+1)*tstride;
       }
-      return out;
    }
+   return out;
 }
 
 Image Image::At( const UnsignedArray& coords ) const {

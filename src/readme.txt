@@ -8,7 +8,6 @@ binary/           Binary image processing
 color/            Color spaces and transforms
 distance/         Distance transforms
 filtering/        Filters (linear & nonlinear smoothing, derivatives)
-framework/        Frameworks
 generation/       Creating image data
 histogram/        Histograms
 interpolation/    Interpolation and geometric transformations
@@ -34,6 +33,7 @@ detection/     -> analysis
 display/       -> support
 distribution/  -> library
 findshift/     -> analysis
+framework/     -> library
 infra/         -> library
 linear/        -> filtering
 manipulation/  -> interpolation
@@ -41,7 +41,7 @@ noise/         -> generation? math?
 numerical/     -> support
 paint/         -> generation
 pgst/          -> filtering
-pixel_table/   -> support or library
+pixel_table/   -> library
 point/         -> math (threshold to segmentation)
 restoration/   -> microscopy
 sort/          -> support

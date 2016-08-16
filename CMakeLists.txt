@@ -48,18 +48,22 @@ add_executable(test_options EXCLUDE_FROM_ALL test/test_options.cpp)
 add_executable(test_image EXCLUDE_FROM_ALL test/test_image.cpp)
 target_link_libraries(test_image DIP)
 
+add_executable(test_framework EXCLUDE_FROM_ALL test/test_framework.cpp)
+target_link_libraries(test_framework DIP)
+
+add_custom_target(tests DEPENDS test_array test_options test_image test_framework)
+
 if(Matlab_FOUND)
 
    matlab_add_mex(NAME mextest SRC test/mextest.cpp LINK_TO DIP)
+   set_target_properties(mextest PROPERTIES EXCLUDE_FROM_ALL 1)
 
    matlab_add_mex(NAME mextest_function SRC test/mextest_function.cpp LINK_TO DIP)
+   set_target_properties(mextest_function PROPERTIES EXCLUDE_FROM_ALL 1)
 
-   set_target_properties(mextest mextest_function PROPERTIES EXCLUDE_FROM_ALL 1)
    add_custom_target(mex DEPENDS mextest mextest_function)
 
 endif(Matlab_FOUND)
-
-add_custom_target(tests DEPENDS test_array test_options test_image)
 
 # DIPlib documentation
 
@@ -79,6 +83,6 @@ if (DOXYGEN_FOUND)
       DEPENDS ${DOXYGEN_INPUT}
       )
 
-   add_custom_target(apidoc ALL DEPENDS ${DOXYGEN_OUTPUT})
+   add_custom_target(apidoc DEPENDS ${DOXYGEN_OUTPUT})
 
 endif (DOXYGEN_FOUND)

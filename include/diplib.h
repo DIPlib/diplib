@@ -24,6 +24,7 @@
 ///   * dip_error.h
 ///   * dip_image.h
 ///   * dip_math.h
+///   * dip_operators.h
 ///   * dip_support.h
 ///   * dip_tensor.h
 ///   * dip_types.h
