@@ -126,4 +126,38 @@ void Xor(
    Framework::ScanDyadic( lhs, rhs, out, dt, dt, filter, nullptr, vars, opts );
 }
 
+//
+template< typename TPI >
+static void dip__Not(
+      const std::vector<Framework::ScanBuffer>&   inBuffer,
+      std::vector<Framework::ScanBuffer>&         outBuffer,
+      dip::uint            bufferLength,
+      dip::uint            dimension,
+      UnsignedArray        position,
+      const void*          functionParameters,
+      void*                functionVariables
+) {
+   const TPI* in = (const TPI*)inBuffer[0].buffer;
+   TPI* out = (TPI*)outBuffer[0].buffer;
+   for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+      // Tensor dimension is 1 because we request `Scan_TensorAsSpatialDim`
+      *out = ~ *in;
+      in += inBuffer[0].stride;
+      out += outBuffer[0].stride;
+   }
+}
+
+void Not(
+      const Image& in,
+      Image& out
+) {
+   DataType dt = in.DataType();
+   Framework::ScanFilter filter;
+   DIP_OVL_ASSIGN_INT_OR_BIN( filter, dip__Not, dt );
+   std::vector<void*> vars;
+   Framework::ScanOptions opts = Framework::Scan_TensorAsSpatialDim;
+   Framework::ScanMonadic( in, out, dt, dt, 1, filter, nullptr, vars, opts );
+}
+
+
 } // namespace dip

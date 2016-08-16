@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <array>
+#include <limits>
 
 #include "diplib.h"
 #include "dip_framework.h"
@@ -286,5 +287,60 @@ void Mod(
    Framework::ScanOptions opts;
    Framework::ScanDyadic( lhs, rhs, out, dt, dt, filter, nullptr, vars, opts );
 }
+
+//
+template< typename T >
+static inline T invert( T v ) {
+   return - v;
+}
+template<>
+inline bin invert( bin v ) {
+   return ! v;
+}
+template<>
+inline uint8 invert( uint8 v ) {
+   return std::numeric_limits< uint8 >::max() - v;
+}
+template<>
+inline uint16 invert( uint16 v ) {
+   return std::numeric_limits< uint16 >::max() - v;
+}
+template<>
+inline uint32 invert( uint32 v ) {
+   return std::numeric_limits< uint32 >::max() - v;
+}
+
+template< typename TPI >
+static void dip__Invert(
+      const std::vector<Framework::ScanBuffer>&   inBuffer,
+      std::vector<Framework::ScanBuffer>&         outBuffer,
+      dip::uint            bufferLength,
+      dip::uint            dimension,
+      UnsignedArray        position,
+      const void*          functionParameters,
+      void*                functionVariables
+) {
+   const TPI* in = (const TPI*)inBuffer[0].buffer;
+   TPI* out = (TPI*)outBuffer[0].buffer;
+   for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+      // Tensor dimension is 1 because we request `Scan_TensorAsSpatialDim`
+      *out = invert( *in );
+      in += inBuffer[0].stride;
+      out += outBuffer[0].stride;
+   }
+}
+
+void Invert(
+      const Image& in,
+      Image& out
+) {
+   DataType dt = in.DataType();
+   Framework::ScanFilter filter;
+   DIP_OVL_ASSIGN_ALL( filter, dip__Invert, dt );
+   std::vector<void*> vars;
+   Framework::ScanOptions opts = Framework::Scan_TensorAsSpatialDim;
+   Framework::ScanMonadic( in, out, dt, dt, 1, filter, nullptr, vars, opts );
+}
+
 
 } // namespace dip

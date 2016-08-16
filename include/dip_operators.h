@@ -234,6 +234,25 @@ inline Image Mod(
 }
 
 
+/// Inverts each sample of the input image, yielding an image of the same type.
+/// For unsigned images, the output is `std::numeric_limits::max() - in`, for
+/// signed and complex types, it is `0 - in`.
+///
+/// \see operator-, Not
+void Invert(
+      const Image& in,
+      Image& out
+);
+
+inline Image Invert(
+      const Image& in
+) {
+   Image out;
+   Invert( in, out );
+   return out;
+}
+
+
 //
 // Functions for bit-wise operations
 //
@@ -302,21 +321,6 @@ inline Image Xor(
 }
 
 
-//
-// Functions for unary negation operations
-//
-
-/// Inverts each sample of the input image, yielding an image of the same type.
-/// For unsigned images, the output is `std::numeric_limits::max() - in`, for
-/// signed and complex types, it is `0 - in`.
-///
-/// \see operator-, Not
-void Invert(
-      const Image& in,
-      Image& out
-);
-// out = Invert( in );
-
 /// Applies bit-wise negation to each sample of the input image, yielding an
 /// image of the same type.
 ///
@@ -325,7 +329,14 @@ void Not(
       const Image& in,
       Image& out
 );
-// out = Not( in );
+
+inline Image Not(
+      const Image& in
+) {
+   Image out;
+   Not( in, out );
+   return out;
+}
 
 
 //
@@ -426,22 +437,19 @@ inline Image operator^( const Image& lhs, const Image& rhs ) {
 
 /// Unary operator, calls Invert.
 inline Image operator-( const Image& in ) {
-   //Invert( in, out );
-   return {};
+   return Invert( in );
 }
 
 /// Bit-wise unary operator, calls Not.
 inline Image operator~( const Image& in ) {
    dip_ThrowIf( !in.DataType().IsInteger(), "Bit-wise unary not operator only applicable to integer images" );
-   //Not( in, out );
-   return {};
+   return Not( in );
 }
 
 /// Boolean unary operator, calls Not.
 inline Image operator!( const Image& in ) {
    dip_ThrowIf( !in.DataType().IsBinary(), "Boolean unary not operator only applicable to binary images" );
-   //Not( in, out );
-   return {};
+   return Not( in );
 }
 
 //
