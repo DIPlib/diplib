@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for framework functions and support classes.
+ * This file contains declarations for framework functions and support classes.
  *
  * (c)2014-2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -73,12 +73,38 @@ dip::uint OptimalProcessingDim(
       const Image& in
 );
 
+/// Creates a vector of void pointers that point at the elements of `in`.
+/// Use this function to create the `functionVariables` input for the framework
+/// functions.
+template< typename T >
+std::vector< void* > CastToVoidpVector(
+      std::vector< T >& in
+) {
+   std::vector< void* > out( in.size() );
+   for( dip::uint ii = 0; ii < in.size(); ++ii ) {
+      out[ii] = &(in[ii]);
+   }
+   return out;
+}
 
 //
 // Scan Framework:
 // Process an image pixel by pixel
 //
 
+
+/// \class dip::Framework::ScanOptions
+/// Defines options to the dip::Framework::Scan function. Valid values are:
+///
+/// ScanOptions constant      | Meaning
+/// ------------------------- | ----------
+/// Scan_NoMultiThreading     | Do not call the line scan filter simultaneouly from multiple threads (it is not re-entrant).
+/// Scan_NeedCoordinates      | The line scan filter needs the coordinates to the first pixel in the buffer.
+/// Scan_TensorAsSpatialDim   | Tensor dimensions are treated as a spatial dimension for scanning, ensuring that the line scan filter always gets scalar pixels.
+/// Scan_ExpandTensorInBuffer | The line scan filter always gets input tensor elements as a standard, column-major matrix.
+/// Scan_NoSingletonExpansion | Inhibits singleton expansion of input images.
+///
+/// Combine options by adding constants together.
 DIP_DECLARE_OPTIONS(ScanOptions, 5);
 DIP_DEFINE_OPTION(ScanOptions, Scan_NoMultiThreading, 0);
 DIP_DEFINE_OPTION(ScanOptions, Scan_NeedCoordinates, 1);
@@ -194,18 +220,6 @@ typedef void (*ScanFilter) (
 /// imposed on the number of threads, and a `nullptr` pointer will be passed to
 /// the `lineFilter` function.
 ///
-/// The `dip::FrameWork::ScanOptions` parameter can contain the following values
-/// (can be added together):
-/// * `dip::FrameWork::Scan_NoMultiThreading`: Do not call the line scan filter
-///     simultaneouly from multiple threads (it is not re-entrant).
-/// * `dip::FrameWork::Scan_NeedCoordinates`: The line scan filter needs the
-///     coordinates to the first pixel in the buffer.
-/// * `dip::FrameWork::Scan_TensorAsSpatialDim`: Tensor dimensions are treated
-///     as a spatial dimension for scanning, ensuring that the line scan filter
-///     always gets scalar pixels.
-/// * `dip::Framework::Scan_NoSingletonExpansion`: Inhibits singleton expansion
-///     of input images.
-///
 /// The `lineFilter` function signature is as follows:
 ///
 ///     void ScanFilter (
@@ -226,7 +240,7 @@ void Scan(
       const UnsignedArray& nTensorElements,     ///< Number of tensor elements in output images
       ScanFilter           lineFilter,          ///< Function to call for each image line
       const void*          functionParameters,  ///< Parameters to pass to `lineFilter`
-      std::vector<void*>&  functionVariables,   ///< Variables to pass to `lineFilter`
+      const std::vector< void* >& functionVariables, ///< Variables to pass to `lineFilter`
       ScanOptions          opts                 ///< Options to control how `lineFilter` is called
 );
 
@@ -237,7 +251,7 @@ inline void ScanSingleOutput(
       const dip::uint      nTensorElements,     ///< Number of tensor elements in output image
       ScanFilter           lineFilter,          ///< Function to call for each image line
       const void*          functionParameters,  ///< Parameters to pass to `lineFilter`
-      std::vector<void*>&  functionVariables,   ///< Variables to pass to `lineFilter`
+      const std::vector< void* >& functionVariables, ///< Variables to pass to `lineFilter`
       ScanOptions          opts                 ///< Options to control how `lineFilter` is called
 ) {
    ImageConstRefArray inar {};
@@ -258,7 +272,7 @@ inline void ScanMonadic(
       const dip::uint      nTensorElements,     ///< Number of tensor elements in output image
       ScanFilter           lineFilter,          ///< Function to call for each image line
       const void*          functionParameters,  ///< Parameters to pass to `lineFilter`
-      std::vector<void*>&  functionVariables,   ///< Variables to pass to `lineFilter`
+      const std::vector< void* >& functionVariables, ///< Variables to pass to `lineFilter`
       ScanOptions          opts                 ///< Options to control how `lineFilter` is called
 ) {
    ImageConstRefArray inar { in };
@@ -291,7 +305,7 @@ inline void ScanDyadic(
       const DataType       outType,             ///< Data type for output image and output buffer
       ScanFilter           lineFilter,          ///< Function to call for each image line
       const void*          functionParameters,  ///< Parameters to pass to `lineFilter`
-      std::vector<void*>&  functionVariables,   ///< Variables to pass to `lineFilter`
+      const std::vector< void* >& functionVariables, ///< Variables to pass to `lineFilter`
       ScanOptions          opts                 ///< Options to control how `lineFilter` is called
 ) {
    Tensor outTensor;

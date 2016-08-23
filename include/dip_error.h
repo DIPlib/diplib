@@ -53,6 +53,9 @@ namespace E {
 
    extern const char* NO_NORMAL_STRIDE;
 
+   extern const char* MASK_NOT_BINARY;
+   extern const char* MASK_TOO_MANY_DIMENSIONS;
+
    extern const char* INDEX_OUT_OF_RANGE;
 
    extern const char* INTERFACE_ERROR;

@@ -6,9 +6,7 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
-#include <iostream>
 #include <array>
-#include <limits>
 
 #include "diplib.h"
 #include "dip_framework.h"

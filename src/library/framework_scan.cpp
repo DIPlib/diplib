@@ -27,7 +27,7 @@ void Scan(
       const UnsignedArray& nTensorElements,
       ScanFilter           lineFilter,
       const void*          functionParameters,
-      std::vector<void*>&  functionVariables,
+      const std::vector< void* >& functionVariables,
       ScanOptions          opts
 ) {
    std::size_t nIn = c_in.size();
