@@ -702,26 +702,26 @@ class Image {
       /// `dim` should not be larger than the number of dimensions. If `dim`
       /// is negative, the new dimension will be the last one. The image must
       /// be forged.
-      Image& TensorToSpatial( dip::sint dim );
+      Image& TensorToSpatial( dip::sint dim = -1 );
 
       /// Convert spatial dimension to tensor dimensions. The image must be scalar.
       /// If `rows` or `cols` is zero, its size is computed from the size of the
       /// image along dimension `dim`. If both are zero, a default column tensor
       /// is created. If `dim` is negative, the last dimension is used. The
       /// image must be forged.
-      Image& SpatialToTensor( dip::sint dim, dip::uint rows = 0, dip::uint cols = 0 );
+      Image& SpatialToTensor( dip::sint dim = -1, dip::uint rows = 0, dip::uint cols = 0 );
 
       /// Split the two values in a complex sample into separate samples,
       /// creating a new spatial dimension of size 2. `dim` defines the new
       /// dimension, subsequent dimensions will be shifted over. `dim` should
       /// not be larger than the number of dimensions. If `dim` is negative,
       /// the new dimension will be the last one. The image must be forged.
-      Image& SplitComplex( dip::sint dim );
+      Image& SplitComplex( dip::sint dim = -1 );
 
       /// Merge the two samples along dimension `dim` into a single complex-valued sample.
       /// Dimension `dim` must have size 2 and a stride of 1. If `dim` is negative, the last
       /// dimension is used. The image must be forged.
-      Image& MergeComplex( dip::sint dim );
+      Image& MergeComplex( dip::sint dim = -1 );
 
       /// Split the two values in a complex sample into separate samples of
       /// a tensor. The image must be scalar and forged.

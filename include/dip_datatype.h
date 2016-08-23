@@ -124,10 +124,7 @@ struct DataType {
 
    /// Returns `true` if the data type is binary (equal to dip::DT_BIN).
    bool IsBinary() const {
-      switch( dt ) {
-         case DT::BIN:      return true;
-         default:           return false;
-      };
+      return dt == DT::BIN;
    }
 
    /// Returns `true` if the data type is an unsigned integer type.

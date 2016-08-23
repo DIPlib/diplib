@@ -20,6 +20,7 @@
 #include <initializer_list>
 #include <iterator>
 #include <algorithm>
+#include <cassert>
 //#include <iostream> // for debugging
 
 

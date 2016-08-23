@@ -24,8 +24,8 @@ static void dip__Equal(
       void*                functionVariables
 ) {
    const TPI* lhs = (const TPI*)inBuffer[0].buffer;
-   const bin* rhs = (const bin*)inBuffer[1].buffer;
-   TPI* out = (TPI*)outBuffer[0].buffer;
+   const TPI* rhs = (const TPI*)inBuffer[1].buffer;
+   bin* out = (bin*)outBuffer[0].buffer;
    for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
       for( dip::uint jj = 0; jj < outBuffer[0].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
          out[jj * outBuffer[0].tensorStride] = lhs[jj * inBuffer[0].tensorStride] ==
@@ -63,8 +63,8 @@ static void dip__NotEqual(
       void*                functionVariables
 ) {
    const TPI* lhs = (const TPI*)inBuffer[0].buffer;
-   const bin* rhs = (const bin*)inBuffer[1].buffer;
-   TPI* out = (TPI*)outBuffer[0].buffer;
+   const TPI* rhs = (const TPI*)inBuffer[1].buffer;
+   bin* out = (bin*)outBuffer[0].buffer;
    for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
       for( dip::uint jj = 0; jj < outBuffer[0].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
          out[jj * outBuffer[0].tensorStride] = lhs[jj * inBuffer[0].tensorStride] !=
@@ -102,8 +102,8 @@ static void dip__Lesser(
       void*                functionVariables
 ) {
    const TPI* lhs = (const TPI*)inBuffer[0].buffer;
-   const bin* rhs = (const bin*)inBuffer[1].buffer;
-   TPI* out = (TPI*)outBuffer[0].buffer;
+   const TPI* rhs = (const TPI*)inBuffer[1].buffer;
+   bin* out = (bin*)outBuffer[0].buffer;
    for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
       for( dip::uint jj = 0; jj < outBuffer[0].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
          out[jj * outBuffer[0].tensorStride] = lhs[jj * inBuffer[0].tensorStride] <
@@ -141,8 +141,8 @@ static void dip__Greater(
       void*                functionVariables
 ) {
    const TPI* lhs = (const TPI*)inBuffer[0].buffer;
-   const bin* rhs = (const bin*)inBuffer[1].buffer;
-   TPI* out = (TPI*)outBuffer[0].buffer;
+   const TPI* rhs = (const TPI*)inBuffer[1].buffer;
+   bin* out = (bin*)outBuffer[0].buffer;
    for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
       for( dip::uint jj = 0; jj < outBuffer[0].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
          out[jj * outBuffer[0].tensorStride] = lhs[jj * inBuffer[0].tensorStride] >
@@ -180,8 +180,8 @@ static void dip__NotGreater(
       void*                functionVariables
 ) {
    const TPI* lhs = (const TPI*)inBuffer[0].buffer;
-   const bin* rhs = (const bin*)inBuffer[1].buffer;
-   TPI* out = (TPI*)outBuffer[0].buffer;
+   const TPI* rhs = (const TPI*)inBuffer[1].buffer;
+   bin* out = (bin*)outBuffer[0].buffer;
    for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
       for( dip::uint jj = 0; jj < outBuffer[0].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
          out[jj * outBuffer[0].tensorStride] = lhs[jj * inBuffer[0].tensorStride] <=
@@ -219,8 +219,8 @@ static void dip__NotLesser(
       void*                functionVariables
 ) {
    const TPI* lhs = (const TPI*)inBuffer[0].buffer;
-   const bin* rhs = (const bin*)inBuffer[1].buffer;
-   TPI* out = (TPI*)outBuffer[0].buffer;
+   const TPI* rhs = (const TPI*)inBuffer[1].buffer;
+   bin* out = (bin*)outBuffer[0].buffer;
    for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
       for( dip::uint jj = 0; jj < outBuffer[0].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
          out[jj * outBuffer[0].tensorStride] = lhs[jj * inBuffer[0].tensorStride] >=

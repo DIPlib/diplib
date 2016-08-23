@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains the definition of the image arithmetic and logical operators.
+ * This file contains the declaration of the image arithmetic and logical operators.
  *
  * (c)2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -549,6 +549,11 @@ inline Image NotLesser(
 //
 // Arithmetic operators
 //
+
+/// Arithmetic operator, calls Add.
+inline Image operator+( const Image& lhs, const Image& rhs ) {
+   return Add( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
+}
 
 /// Arithmetic operator, calls Add.
 template< typename T >
