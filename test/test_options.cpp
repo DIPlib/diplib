@@ -1,10 +1,7 @@
 #include <iostream>
-#include "diplib.h"
+#include "dip_types.h"
 
 // Testing
-
-#include "dip_overload.h"
-#include <typeinfo>
 
 int main() {
    DIP_DECLARE_OPTIONS(MyOptions, 5);

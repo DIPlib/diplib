@@ -42,16 +42,14 @@ add_library(DIP SHARED ${SOURCES} ${HEADERS})
 # DIPlib tests
 
 add_executable(test_array EXCLUDE_FROM_ALL test/test_array.cpp)
-
+add_executable(test_bin EXCLUDE_FROM_ALL test/test_bin.cpp)
 add_executable(test_options EXCLUDE_FROM_ALL test/test_options.cpp)
-
 add_executable(test_image EXCLUDE_FROM_ALL test/test_image.cpp)
 target_link_libraries(test_image DIP)
-
 add_executable(test_framework EXCLUDE_FROM_ALL test/test_framework.cpp)
 target_link_libraries(test_framework DIP)
 
-add_custom_target(tests DEPENDS test_array test_options test_image test_framework)
+add_custom_target(tests DEPENDS test_array test_bin test_options test_image test_framework)
 
 if(Matlab_FOUND)
 
