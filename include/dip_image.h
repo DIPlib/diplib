@@ -19,9 +19,10 @@
 #include <memory>
 #include <functional>
 
-#include "dip_support.h"
-#include "dip_tensor.h"
 #include "dip_datatype.h"
+#include "dip_tensor.h"
+#include "dip_color.h"
+#include "dip_physdims.h"
 #include "dip_clamp_cast.h"
 
 
@@ -349,24 +350,47 @@ class Image {
       // Color space
       //
 
-      const ColorSpace& GetColorSpace() const;
+      // Note: This function is the reason we refer to the ColorSpace class as
+      // dip::ColorSpace everywhere in this file.
 
-      bool IsColor() const;
+      /// Get the image's color space information.
+      const dip::ColorSpace& ColorSpace() const { return colspace; }
 
-      void SetColorSpace( const ColorSpace& );
+      /// Get the image's color space name.
+      const String& ColorSpaceName() const { return colspace.Name(); }
 
-      void SetColorSpace( const String& );
+      /// Returns true if the image is in color, false if the image is grey-valued.
+      bool IsColor() const { return colspace.IsColor(); }
+
+      /// Sets the image's color space; this function will change.
+      void SetColorSpace( const dip::ColorSpace& cs ) { colspace = cs; } // TODO: The tensor dimensions must match the number of channels for the color space.
+
+      //void SetColorSpace( const String& name ) { colspace = dip::ColorSpace( name ); }
 
       //
       // Physical dimensions
       //
 
-      const PhysicalDimensions& GetPhysicalDimensions() const;
+      // Note: This function is the reason we refer to the PhysicalDimensions class as
+      // dip::PhysicalDimensions everywhere in this file.
 
-      void SetPhysicalDimensions( const PhysicalDimensions& );
+      /// Get the pixels's size in physical units.
+      const dip::PhysicalDimensions& PhysicalDimensions() const { return physdims; }
 
-      FloatArray PixelsToPhysicalDims( const FloatArray& ) const;
-      FloatArray PhysicalDimsToPixels( const FloatArray& ) const;
+      /// Set the pixels's physical dimensions.
+      void SetPhysicalDimensions( const dip::PhysicalDimensions& pd ) {
+         physdims = pd;
+         physdims.Resize( Dimensionality() );
+      }
+
+      /// Returns true if the pixel has the same size in all dimensions.
+      bool IsIsotropic() const { return physdims.IsIsotropic(); }
+
+      /// Converts a size in pixels to a size in phyical units.
+      FloatArray PixelsToPhysicalDims( const FloatArray& in ) const { return physdims.ToPhysical( in ); }
+
+      /// Converts a size in physical units to a size in pixels.
+      FloatArray PhysicalDimsToPixels( const FloatArray& in ) const { return physdims.ToPixels( in ); }
 
       //
       // Utility functions
@@ -374,7 +398,6 @@ class Image {
 
       /// Compare properties of an image against a template, either
       /// returns true/false or throws an error.
-      // TODO: We should be able to pick which properties are compared...
       bool CompareProperties(
             const Image& src,
             Option::CmpProps cmpProps,
@@ -849,13 +872,13 @@ class Image {
       //
 
       dip::DataType datatype = DT_SFLOAT;
-      UnsignedArray dims;                 // dims.size == ndims (if forged)
-      IntegerArray strides;               // strides.size == ndims (if forged)
+      UnsignedArray dims;                 // dims.size() == ndims (if forged)
+      IntegerArray strides;               // strides.size() == ndims (if forged)
       dip::Tensor tensor;
       dip::sint tstride = 0;
       bool protect = false;               // When set, don't strip image
-      ColorSpace colspace;
-      PhysicalDimensions physdims;
+      dip::ColorSpace colspace;
+      dip::PhysicalDimensions physdims;
       std::shared_ptr<void> datablock;    // Holds the pixel data. Data block will be freed when last image
                                           //    that uses it is destroyed.
       void* origin = nullptr;             // Points to the origin ( pixel (0,0) ), not necessarily the first

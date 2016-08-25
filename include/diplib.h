@@ -19,13 +19,14 @@
 /// will indicate which header file to include for each function.
 ///
 /// These are the header files included through diplib.h:
+///   * dip_color.h
 ///   * dip_datatype.h
 ///   * dip_dimensionarray.h
 ///   * dip_error.h
 ///   * dip_image.h
 ///   * dip_math.h
 ///   * dip_operators.h
-///   * dip_support.h
+///   * dip_physdims.h
 ///   * dip_tensor.h
 ///   * dip_types.h
 

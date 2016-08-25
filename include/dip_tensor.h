@@ -16,7 +16,7 @@
 #ifndef DIP_TENSOR_H
 #define DIP_TENSOR_H
 
-#include "dip_support.h"
+#include "dip_types.h"
 
 
 /// \file
