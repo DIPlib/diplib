@@ -353,19 +353,18 @@ class Image {
       // Note: This function is the reason we refer to the ColorSpace class as
       // dip::ColorSpace everywhere in this file.
 
-      /// Get the image's color space information.
-      const dip::ColorSpace& ColorSpace() const { return colspace; }
-
       /// Get the image's color space name.
-      const String& ColorSpaceName() const { return colspace.Name(); }
+      const String& ColorSpace() const { return colspace.Name(); }
 
       /// Returns true if the image is in color, false if the image is grey-valued.
       bool IsColor() const { return colspace.IsColor(); }
 
-      /// Sets the image's color space; this function will change.
-      void SetColorSpace( const dip::ColorSpace& cs ) { colspace = cs; } // TODO: The tensor dimensions must match the number of channels for the color space.
+      /// Sets the image's color space information; this function is used by dip::ColorSpaceManager,
+      /// and is not useful otherwise.
+      void SetColorSpace( const dip::ColorSpace& cs ) { colspace = cs; }
 
-      //void SetColorSpace( const String& name ) { colspace = dip::ColorSpace( name ); }
+      /// Resets the image's color space information, turning the image into a non-color image.
+      void ResetColorSpace() { colspace = dip::ColorSpace(); }
 
       //
       // Physical dimensions

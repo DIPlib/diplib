@@ -124,7 +124,7 @@ struct ScanBuffer {
    dip::uint tensorLength; ///< Number of tensor elements.
 };
 
-//
+// Prototype line filter for dip::Framework::Scan.
 typedef void (*ScanFilter) (
       const std::vector<ScanBuffer>&   inBuffer,
       std::vector<ScanBuffer>&         outBuffer,
