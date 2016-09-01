@@ -41,8 +41,8 @@ static const char* InputImageError = "MATLAB image data of unsupported type.";
 // Private funtions
 //
 
-bool IsMatlabStrides( const dip::UnsignedArray &dims, const dip::uint telem,
-                      const dip::IntegerArray &strides, const dip::sint tstride ) {
+bool IsMatlabStrides( const dip::UnsignedArray& dims, const dip::uint telem,
+                      const dip::IntegerArray& strides, const dip::sint tstride ) {
    if( dims.size() != strides.size() ) {
       return false;
    }
@@ -69,7 +69,7 @@ bool IsMatlabStrides( const dip::UnsignedArray &dims, const dip::uint telem,
    return true;
 }
 
-bool MatchDimensions( const dip::UnsignedArray &dims, const dip::uint telem,
+bool MatchDimensions( const dip::UnsignedArray& dims, const dip::uint telem,
                       const mwSize* pdims, const mwSize ndims ) {
    dip::uint n = dims.size() + ( telem > 1 ? 1 : 0 );
    if( n == 0 ) {
@@ -236,7 +236,7 @@ class MatlabInterface : public dip::ExternalInterface {
       };
 
       /// Find the `mxArray` that holds the data for the dip::Image `img`.
-      mxArray* GetArray( const dip::Image &img ) {
+      mxArray* GetArray( const dip::Image& img ) {
          dip_ThrowIf( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
          mxArray* m;
          if( img.DataType().IsComplex() ) {

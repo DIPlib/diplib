@@ -94,7 +94,7 @@ class PhysicalDimensions {
       }
 
       /// Converts meters to pixels.
-      FloatArray ToPixels( const FloatArray &in ) const {
+      FloatArray ToPixels( const FloatArray& in ) const {
          FloatArray out( in.size() );
          for( dip::uint ii = 0; ii < in.size(); ++ii ) {
             out[ii] = in[ii] / PixelSize( ii );
@@ -103,7 +103,7 @@ class PhysicalDimensions {
       }
 
       /// Converts pixels to meters.
-      FloatArray ToPhysical( const FloatArray &in ) const {
+      FloatArray ToPhysical( const FloatArray& in ) const {
          FloatArray out( in.size() );
          for( dip::uint ii = 0; ii < in.size(); ++ii ) {
             out[ii] = in[ii] * PixelSize( ii );
