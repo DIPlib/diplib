@@ -22,6 +22,8 @@
 
 namespace dip {
 
+// TODO: See dip_coordsindx.h in the old diplib. We need to implement something
+//       similar here, with an object whose operator() does the conversion.
 
 // --- Internal functions, static ---
 

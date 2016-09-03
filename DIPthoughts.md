@@ -715,7 +715,7 @@ Similar macros would be defined for `INTEGER`, `UNSIGNED`, `SIGNED`, `FLOAT`,
 some refactoring for consistency. Current code is written for *POSIX*
 threads, and adapted to *OpenMP*, but this lead to suboptimal code.
 
-- `dip::Framework::FilterFull()`
+- `dip::Framework::Full()`
 
     - A framework that scans the image line by line, using the pixel
       table concept to do *n*D filter neighbourhoods.
@@ -727,16 +727,19 @@ threads, and adapted to *OpenMP*, but this lead to suboptimal code.
     - Optionally, the caller can pass in the image already extended. That is,
       the filter is not applied to the pixels in the image border.
 
-    - `dip::Framework::FilterFullSingle()`: 1 input, 1 output
+    - `dip::Framework::MonadicFull()`: 1 input, 1 output
 
     - currently: `dip_PixelTableArrayFrameWork()`
       and `dip_PixelTableFrameWork()`
 
-- `dip::Framework::Filter1D()`
+- `dip::Framework::Separable()`
 
     - A framework that scans the image line by line. Image lines are
       copied to match buffer types and boundary extensions. Can
       work in-place.
+
+    - The image is processed up to nD times, looping over lines in each of
+      the dimensions. The caller can select which of the dimensions to process.
 
     - Filtering function can be overloaded and takes a 1D vector of
       pixels, optionally with strides.
@@ -744,12 +747,7 @@ threads, and adapted to *OpenMP*, but this lead to suboptimal code.
     - Input and output images can have different sizes (they are always equal
       sizes in other frameworks).
 
-    - `dip::Framework::Filter1DSingle()`: 1 input, 1 output
-
-    - `dip::Framework::SeparableFilter()`: repeated calling
-      of `dip::FrameworkFilter1D()`
-
-    - `dip::Framework::SeparableFilterSingle()`: 1 input, 1 output
+    - `dip::Framework::MonadicSeparable()`: 1 input, 1 output
 
     - currently: `dip_SeparableFrameWork()`, `dip_MonadicFrameWork()`
       (as called by interpolation funcs)
@@ -764,7 +762,9 @@ threads, and adapted to *OpenMP*, but this lead to suboptimal code.
     - Filtering function can be overloaded and takes a 1D vector of
       pixels, with strides.
 
-    - `dip::Framework::ScanSingle()`: 1 input, 1 output
+    - `dip::Framework::ScanMonadic()`: 1 input, 1 output
+
+    - `dip::Framework::ScanDyadic()`: 2 input, 1 output
 
     - `dip::Framework::ScanSingleOutput()`: 1 output
 
@@ -905,11 +905,12 @@ necessary:
     - 2D snakes.
 
     - look-up tables (LUT, both for grey-scale and colour LUTs, using
-      interpolation when input image is float).
+      interpolation when input image is float) -- some of this is implemented
+      already in DIPlib.
 
     - general 2D affine transformation, 3D rotation.
 
-    - xx, yy, zz, rr, phiphi, ramp; extend this to coords(), which
+    - xx, yy, zz, rr, phiphi, ramp; extend this to `Coordinates()`, which
       makes a tensor image.
 
 - Radon transform for lines and circles, Hough transform for lines.
