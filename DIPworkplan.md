@@ -164,3 +164,18 @@ done in parallel.
     OpenMP or Intel TBB? The `dip::Framework::Scan()` is ready to be parallelized.
     Other frameworks can be parallelized as they are written, potentially using
     code from the first framework.
+
+20. **X**
+    MATLAB interface. **Requires special expertise**. Add conversion of strings,
+    constants and arrays for input and output parameters. Rewrite the MATLAB
+    `dip_image` class. Add support for the `dip_image` class in the MATLAB interface.
+    MEX-files for DIPlib functions to be added as these functions are written.
+    Certain functionality in the `dip_image` class depends on functionality in
+    DIPlib that still needs to be written. The `dip_measurement` class needs
+    rewriting too. `dipshow` to use a DIPlib function to generate an RGB image for
+    display.
+
+21. Python interface. **Requires special expertise**. Using one of the C++/Python
+    interface generators. Write interactive image display and GUI as exists in
+    MATLAB. This can be developed in parallel to the MATLAB interface, or after
+    the MATLAB interface is complete.

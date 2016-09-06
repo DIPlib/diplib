@@ -19,6 +19,7 @@
 namespace dip {
 
 /// Compute the greatest common denominator of two positive integers.
+// `std::gcd` will be available in C++17.
 inline dip::uint gcd( dip::uint a, dip::uint b ) {
    return b == 0 ? a : gcd( b, a % b );
 }
@@ -79,6 +80,13 @@ inline dip::uint div_round( dip::uint lhs, dip::uint rhs ) {
 /// Integer division, return rounded.
 inline dip::sint div_round( dip::sint lhs, dip::sint rhs ) {
    return div_floor(lhs + rhs/2, rhs);
+}
+
+/// Clamps a value between a min and max value (a.k.a. clip, saturate, etc.).
+// `std::clamp` will be available in C++17.
+template< typename T >
+constexpr inline const T& clamp( const T& v, const T& lo, const T& hi ) {
+   return std::min( std::max( v, lo ), hi );
 }
 
 } // namespace dip

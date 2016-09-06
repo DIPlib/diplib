@@ -62,17 +62,17 @@ bool Image::CompareProperties(
          return false;
       }
    }
-   if( cmpProps == Option::CmpProps_ColorSpace ) { // TODO
-      //if( ... ) {
-      //   dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Color space doesn't match" );
-      //   return false;
-      //}
+   if( cmpProps == Option::CmpProps_ColorSpace ) {
+      if( colspace != src.colspace ) {
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Color space doesn't match" );
+         return false;
+      }
    }
-   if( cmpProps == Option::CmpProps_PhysDims ) { // TODO
-      //if( ... ) {
-      //   dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Physical dimensions don't match" );
-      //   return false;
-      //}
+   if( cmpProps == Option::CmpProps_PixelSize ) {
+      if( pixelsize != src.pixelsize ) {
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Physical dimensions don't match" );
+         return false;
+      }
    }
    return true;
 }
@@ -137,6 +137,7 @@ std::ostream& operator<<(
       std::ostream& os,
       const Image& img
 ) {
+   // TODO: Add color space and pixel size information
    // Size and shape
    if( img.TensorElements() == 1 ) {
       os << "Scalar image, ";

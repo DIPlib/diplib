@@ -97,7 +97,7 @@ class Image {
          tensor( src.tensor ),
          tstride( src.tstride ),
          colspace( src.colspace ),
-         physdims( src.physdims ),
+         pixelsize( src.pixelsize ),
          externalInterface( src.externalInterface )
       {
          Forge();
@@ -370,26 +370,28 @@ class Image {
       // Physical dimensions
       //
 
-      // Note: This function is the reason we refer to the PhysicalDimensions class as
-      // dip::PhysicalDimensions everywhere in this file.
+      // Note: This function is the reason we refer to the PixelSize class as
+      // dip::PixelSize everywhere in this file.
+
+      /// Get the pixels's size in physical units, by reference, allowing to modify it at will.
+      dip::PixelSize& PixelSize() { return pixelsize; }
 
       /// Get the pixels's size in physical units.
-      const dip::PhysicalDimensions& PhysicalDimensions() const { return physdims; }
+      const dip::PixelSize& PixelSize() const { return pixelsize; }
 
       /// Set the pixels's physical dimensions.
-      void SetPhysicalDimensions( const dip::PhysicalDimensions& pd ) {
-         physdims = pd;
-         physdims.Resize( Dimensionality() );
+      void SetPixelSize( const dip::PixelSize& ps ) {
+         pixelsize = ps;
       }
 
       /// Returns true if the pixel has the same size in all dimensions.
-      bool IsIsotropic() const { return physdims.IsIsotropic(); }
+      bool IsIsotropic() const { return pixelsize.IsIsotropic(); }
 
       /// Converts a size in pixels to a size in phyical units.
-      FloatArray PixelsToPhysicalDims( const FloatArray& in ) const { return physdims.ToPhysical( in ); }
+      PhysicalQuantityArray PixelsToPhysical( const FloatArray& in ) const { return pixelsize.ToPhysical( in ); }
 
       /// Converts a size in physical units to a size in pixels.
-      FloatArray PhysicalDimsToPixels( const FloatArray& in ) const { return physdims.ToPixels( in ); }
+      FloatArray PhysicalToPixels( const PhysicalQuantityArray& in ) const { return pixelsize.ToPixels( in ); }
 
       //
       // Utility functions
@@ -434,7 +436,7 @@ class Image {
          strides        = src.strides;
          tensor         = src.tensor;
          colspace       = src.colspace;
-         physdims       = src.physdims;
+         pixelsize      = src.pixelsize;
          if( !externalInterface )
             externalInterface = src.externalInterface;
       }
@@ -607,6 +609,8 @@ class Image {
       // Modifying geometry of a forged image without data copy
       // Defined in src/library/image_manip.cpp
       //
+
+      // TODO: many of these functions must adjust pixel size array
 
       /// Permute dimensions. This function allows to re-arrange the dimensions
       /// of the image in any order. It also allows to remove singleton dimensions
@@ -792,8 +796,8 @@ class Image {
       Image Imaginary() const;
 
       /// Quick copy, returns a new image that points at the same data as `this`,
-      /// and has mostly the same properties. The color space and physical
-      /// dimensions information are not copied, and the protect flag is reset.
+      /// and has mostly the same properties. The color space and pixel size
+      /// information are not copied, and the protect flag is reset.
       /// This function is mostly meant for use in functions that need to
       /// modify some properties of the input images, without actually modifying
       /// the input images.
@@ -877,7 +881,7 @@ class Image {
       dip::sint tstride = 0;
       bool protect = false;               // When set, don't strip image
       dip::ColorSpace colspace;
-      dip::PhysicalDimensions physdims;
+      dip::PixelSize pixelsize;
       std::shared_ptr<void> datablock;    // Holds the pixel data. Data block will be freed when last image
                                           //    that uses it is destroyed.
       void* origin = nullptr;             // Points to the origin ( pixel (0,0) ), not necessarily the first

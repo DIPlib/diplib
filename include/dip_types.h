@@ -280,7 +280,7 @@ enum class ThrowException {
 /// CmpProps_TensorElements | compares number of tensor elements
 /// CmpProps_TensorStride   | compares tensor stride
 /// CmpProps_ColorSpace     | compares color space
-/// CmpProps_PhysDims       | compares physical dimensions
+/// CmpProps_PixelSize      | compares pixel size
 /// CmpProps_Samples        | CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorElements
 /// CmpProps_Full           | CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorShape
 /// CmpProps_All            | CmpProps_Full + CmpProps_Strides + CmpProps_TensorStride
@@ -295,7 +295,7 @@ static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorShape, 4 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorElements, 5 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorStride, 6 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_ColorSpace, 7 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_PhysDims, 8 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_PixelSize, 8 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Samples,
       CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorElements );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Full,

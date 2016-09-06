@@ -134,7 +134,7 @@ with various values, that the interface code needs to translate, the option
 parameter is a string. The user of the interface and the user of the C++ library
 see the same parameter and use the function in the same way. The overhead of a
 few string comparisons is trivial compared to the computational cost of any
-image analysis algorihtm.
+image analysis algorithm.
 
 An other advantage is having fewer possibilities for name clashes when defining
 a lot of enumerator constants for the many, many options accumulated of the

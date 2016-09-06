@@ -399,44 +399,47 @@ like this could work, with a `std::initializer_list` object in there:
 
 ## Physical units
 
-The image object should contain a `physDims` structure. This structure
-maybe should also contain the absolute position of the origin.
-Manipulation functions will update this (e.g. resampling changes
-physical dimensions of the pixel). For some functions this is
-difficult:
+The image object should contain information about the size of the pixels
+in physical units.
+
+In the old DIPlib, there was a PhysDims structure that contains the pixel
+size, but also the location of the image origin within the real world (an
+offset), and units and offset for the pixel values. This structure was then
+set by the image reading functions, and only used by the Measurement function.
+The measurement function only used the pixel sizes. Intensity units were also
+used, but were never set by any image reading function.
+
+By attaching the pixel size to the image object, it is possible to track
+those sizes through geometric transformations (such as scaling and rotations),
+making it esaier on the user to obtain quantitative measurements.
+
+For some functions it might be difficult to track pixel sizes:
 
 - Rotate: what if the two dimensions being intermingled have different
-  `physDims`?
+  pixel sizes?
 
-- The Fourier transform should set `physDims[i] :=
-  size[i]/physDims[i]` (or something like that).
+- The Fourier transform should set `pixelSize[i] :=
+  imageSize[i]/pixelSize[i]` (or something like that).
+
+- Combining two images with different pixel sizes (e.g. `dip::Add()`) could,
+  e.g. retain the pixel sizes of the first input argument.
+
+Intensity units would be a lot more difficult to track, which makes them not
+so desireable to implement as a member of the image object.
 
 Parameters to functions (filter sizes, etc.) should still be in pixels,
 but sometimes we want to give them in physical dimensions. We can solve
-this with a method of the `physDims` structure:
+this with a method of the image object:
 
-    dip::FloatArray sigmas { 45, 45 }; // sigmas in physical units (say micron)
-    dip::Gauss( in, out, in.physDims.topixels( sigmas ) );
-                                       // filter size parameter converted to pixels
+    dip::FloatArray sigmas { 45 * MICRON, 45 * MICRON };
+    dip::Gauss( in, out, in.toPixels( sigmas ) );
 
 The measurement function always returns measurements with physical
-units. If physical dimensions are not known, they default to 1 px, and
-the measurement function returns measurements in pixels. Operations
-between images with different physical dimensions leads to units to
-revert to 1 px. Scaling of an image with physical dimensions of 1 px
-does not affect its physical dimensions.
-
-Tensor images have same intensity units for all tensor elements.
-Intensity will most likely be "Arbitrary Density Units" ("ADU"), only
-in very special cases the intensity has physical units (e.g. "photon count").
-Problem: ADU^2^=ADU, ADU\*px=ADU, etc., but we don't want that. Maybe we don't
-even need to store the intensity units. This also saves us from having
-to modify them with every arithmetic operation.
-
-To decide: How do we represent units? A class that knows how to convert
-inches to cm? Do we always use units in SI, and modify the value to
-account for kilo/mili/micro, etc.? In this case, we need to be able to
-automatically add prefixes to the units to make values readable.
+units. If pixel sizes are not known, they default to 1 px, and
+the measurement function returns measurements in pixels. Intensity units
+are also needed, I suggest we use a default "IU" intensity units to represent
+measurements that include intensity. The user can then replace these with
+actual known units if necessary.
 
 
 ## Arithmetic and comparisons

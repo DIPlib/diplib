@@ -1,8 +1,8 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for functionality related to physical dimensions.
+ * This file contains definitions for functionality related to the pixel size.
  *
- * (c)2014-2016, Cris Luengo.
+ * (c)2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -16,97 +16,525 @@
 #ifndef DIP_PHYSDIMS_H
 #define DIP_PHYSDIMS_H
 
+#include <array>
+
 #include "dip_error.h"
 #include "dip_types.h"
+#include "dip_numeric.h"
 
 
 /// \file
-/// Defines support for physical dimensions.
+/// Defines support for units, physical quantities and pixel sizes.
 
 
 namespace dip {
 
-/// Specifies an image's pixel size in physical units.
-/// Currently, the units are always meters. In the future, there should
-/// be proper unit management here.
-class PhysicalDimensions {
+/// Encapsulates the concepts of physical units, using SI units. It is possible
+/// to multiply or divide units, and raise to arbitrary integer powers with the
+/// class method Power. To associate a magnitude to the units, see the class
+/// dip::PhysicalQuantity. Note that radian, though dimensionless, is treated
+/// as a specific unit here.
+class Units {
+   // Note: this class encapsulates units defined at run time, not at
+   // compile time as in most C++ unit libraries:
+   //   https://github.com/martinmoene/PhysUnits-CT-Cpp11
+   //   http://www.boost.org/doc/libs/1_61_0/doc/html/boost_units.html
+   // We need run-time unit management because usually we won't know the
+   // units at compile time, and we want to be able to manage groups of
+   // physical quantities with heterogeneous units.
 
    public:
 
-      /// By default, an image has no physical dimensions. The pixel size is given
-      /// as "1 pixel".
-      PhysicalDimensions() {};
+      /// These are the base units for the SI system.
+      enum class BaseUnits {
+         LENGTH = 0,          ///< m
+         MASS,                ///< g (should be Kg, but this is easier when working with prefixes.
+         TIME,                ///< s
+         CURRENT,             ///< A
+         TEMPERATURE,         ///< K
+         LUMINOUSINTENSITY,   ///< cd
+         ANGLE,               ///< rad
+      }; // NOTE: when adding or re-ordering these, take care to change things marked below.
 
-      /// Returns the pixel size in meters for the given dimension.
-      double PixelSize( dip::uint d ) const {
-         if( magnitude_.size() == 0 ) {
-            return 1;                  // TODO: should be 1 pixel.
-         } else if( d >= magnitude_.size() ) {
-            return magnitude_.back();  // TODO: units = m ?
-         } else {
-            return magnitude_[d];      // TODO: units = m ?
+      /// A default-constructed Units is dimensionless.
+      Units() {};
+
+      /// Construct a Units for a specific unit.
+      Units( BaseUnits bu, dip::sint8 power = 1 ) { power_[int( bu )] = power; };
+
+      // Specific useful units
+      /// Meter units (m)
+      static Units Meter() { return dip::Units( dip::Units::BaseUnits::LENGTH ); }
+      /// Square meter units (m^2)
+      static Units SquareMeter() { return dip::Units( dip::Units::BaseUnits::LENGTH, 2 ); }
+      /// Cubic meter units (m^3)
+      static Units CubicMeter() { return dip::Units( dip::Units::BaseUnits::LENGTH, 3 ); }
+      /// Second units (s)
+      static Units Second() { return dip::Units( dip::Units::BaseUnits::TIME ); }
+      /// Hertz units (s^-1)
+      static Units Hertz() { return dip::Units( dip::Units::BaseUnits::TIME, -1 ); }
+      /// Radian units (rad)
+      static Units Radian() { return dip::Units( dip::Units::BaseUnits::ANGLE ); }
+
+      /// Elevates `*this` to the power `p`.
+      void Power( dip::sint8 power ) {
+         for( auto& p : power_ ) {
+            p = p * power;
          }
       }
 
-      /// Sets the pixel size in meters in the given dimension. Note that
-      /// any subsequent dimension, if not explicitly set, will have the same
-      /// size. Thus, for an isotropic pixel, only the first dimension needs to
-      /// be set.
-      void SetPixelSize( double m, dip::uint d = 0 ) {
-         if( magnitude_.size() == 0 ) {
-            magnitude_.resize( d + 1, 1 );
-         } else if( magnitude_.size() <= d ) {
-            magnitude_.resize( d + 1, magnitude_.back() );
+      /// Multiplies two units objects.
+      Units& operator*=( const Units& other ) {
+         for( dip::uint ii = 0; ii < ndims_; ++ii ) {
+            power_[ii] += other.power_[ii];
          }
-         magnitude_[d] = m;
+         return *this;
       }
 
-      /// Sets the pixel size in meters in the given dimensions.
-      void SetPixelSize( const FloatArray& m ) {
-         magnitude_ = m;
-      }
-
-      /// Clears the pixel sizes, reverting to the default value of 1 pixel.
-      void Clear() {
-         magnitude_.clear();
-      }
-
-      /// Returns the number of dimensions stored.
-      dip::uint Dimensions() const {
-         return magnitude_.size();
-      }
-
-      /// Removes stored dimensions, keeping the first `d` dimensions only.
-      void Resize( dip::uint d ) {
-         if( d < magnitude_.size() ) {
-            magnitude_.resize(d);
+      /// Divides two units objects.
+      Units& operator/=( const Units& other ) {
+         for( dip::uint ii = 0; ii < ndims_; ++ii ) {
+            power_[ii] -= other.power_[ii];
          }
+         return *this;
       }
 
-      /// Tests the pixel size for isotropy (the pixel has the same size in all dimensions).
-      bool IsIsotropic() const {
-         for( dip::uint ii = 1; ii < magnitude_.size(); ++ii ) {
-            if( magnitude_[ii] != magnitude_[0] ) {
+      /// Multiplies two units objects.
+      friend Units operator*( Units lhs, const Units& rhs ) {
+         lhs *= rhs;
+         return lhs;
+      }
+
+      /// Divides two units objects.
+      friend Units operator/( Units lhs, const Units& rhs ) {
+         lhs /= rhs;
+         return lhs;
+      }
+
+      /// Compares two units objects.
+      friend bool operator==( const Units& lhs, const Units& rhs ) {
+         for( dip::uint ii = 0; ii < ndims_; ++ii ) {
+            if( lhs.power_[ii] != rhs.power_[ii] ) {
                return false;
             }
          }
          return true;
       }
 
-      /// Converts meters to pixels.
-      FloatArray ToPixels( const FloatArray& in ) const {
+      /// Compares two units objects.
+      friend bool operator!=( const Units& lhs, const Units& rhs ) {
+         return !( lhs == rhs );
+      }
+
+      /// Test to see if the units are dimensionless.
+      bool IsDimensionless() const {
+         for( auto& p : power_ ) {
+            if( p != 0 ) {
+               return false;
+            }
+         }
+         return true;
+      }
+
+      /// Returns the power of the first unit to be written out, used to add an SI prefix to the unit.
+      dip::sint FirstPower() const {
+         for( auto& p : power_ ) {
+            if( p > 0 ) {
+               return p;
+            }
+         }
+         for( auto& p : power_ ) {
+            if( p != 0 ) {
+               return p;
+            }
+         }
+         return 0;
+      }
+
+      /// Insert physical quantity to an output stream as a string of base units;
+      /// no attempty is (yet?) made to produce derived SI units or to translate
+      /// to different units.
+      friend std::ostream& operator<<( std::ostream& os, const Units& units ) {
+         // NOTE: when changing BaseUnits in any way, adjusthere as necessary
+         bool prefix = false;
+         // We write out positive powers first
+         prefix = WritePositivePower( os, "m",   units.power_[0], prefix );
+         prefix = WritePositivePower( os, "g",   units.power_[1], prefix );
+         prefix = WritePositivePower( os, "s",   units.power_[2], prefix );
+         prefix = WritePositivePower( os, "A",   units.power_[3], prefix );
+         prefix = WritePositivePower( os, "K",   units.power_[4], prefix );
+         prefix = WritePositivePower( os, "cd",  units.power_[5], prefix );
+         prefix = WritePositivePower( os, "rad", units.power_[6], prefix );
+         // and negative powers at the end
+         prefix = WriteNegativePower( os, "m",   units.power_[0], prefix );
+         prefix = WriteNegativePower( os, "g",   units.power_[1], prefix );
+         prefix = WriteNegativePower( os, "s",   units.power_[2], prefix );
+         prefix = WriteNegativePower( os, "A",   units.power_[3], prefix );
+         prefix = WriteNegativePower( os, "K",   units.power_[4], prefix );
+         prefix = WriteNegativePower( os, "cd",  units.power_[5], prefix );
+         prefix = WriteNegativePower( os, "rad", units.power_[6], prefix );
+         return os;
+      }
+
+   private:
+
+      // NOTE: ndims_ needs to be the number of elements in the BaseUnits enum.
+      constexpr static dip::uint ndims_ = 7;
+      std::array< sint8, ndims_ > power_ = {{0,0,0,0,0,0,0}};
+
+      static bool WritePositivePower( std::ostream& os, const char* s, dip::sint8 p, bool prefix ) {
+         if( p > 0 ) {
+            if( prefix ) {
+               os << "."; // TODO: output 'cdot' character?
+            }
+            os << s;
+            if( p != 1 ) {
+               os << "^" << (int)p;
+            }
+            prefix = true;
+         }
+         return prefix;
+      }
+      static bool WriteNegativePower( std::ostream& os, const char* s, dip::sint8 p, bool prefix ) {
+         if( p < 0 ) {
+            if( prefix ) {
+               os << "/";
+               p = -p;
+            }
+            os << s;
+            if( p != 1 ) {
+               os << "^" << (int)p;
+            }
+            prefix = true;
+         }
+         return prefix;
+      }
+};
+
+
+/// Encapsulates a quantity with phyisical units. Multiplying a double by a
+/// dip::Units object yields a PhysicalQuantity object. It is possible to
+/// multiply and divide any physical quantities, but adding and subtracting is
+/// only possible if the units match.
+///
+/// ```
+/// dip::PhysicalQuantity a = 50 * dip::Units( dip::Units::BaseUnits::LENGTH );
+/// ```
+struct PhysicalQuantity {
+
+      /// A default-constructed PhysicalQuantity has magnitude 0 and is unitless.
+      PhysicalQuantity() {};
+
+      /// Create an arbitrary physical quantity.
+      PhysicalQuantity( double m, const Units& u = {} ) : magnitude(m), units(u) {};
+
+      /// One nanometer.
+      static PhysicalQuantity Nanometer()  { return PhysicalQuantity( 1e-9, dip::Units::Meter() ); }
+      /// One micrometer.
+      static PhysicalQuantity Micrometer() { return PhysicalQuantity( 1e-6, dip::Units::Meter() ); }
+      /// One millimeter.
+      static PhysicalQuantity Millimeter() { return PhysicalQuantity( 1e-3, dip::Units::Meter() ); }
+      /// One meter.
+      static PhysicalQuantity Meter()      { return PhysicalQuantity( 1,    dip::Units::Meter() ); }
+      /// One kilometer.
+      static PhysicalQuantity Kilometer()  { return PhysicalQuantity( 1e3,  dip::Units::Meter() ); }
+      /// One inch.
+      static PhysicalQuantity Inch()       { return PhysicalQuantity( 0.0254,  dip::Units::Meter() ); }
+      /// One mile.
+      static PhysicalQuantity Mile()       { return PhysicalQuantity( 1609.34, dip::Units::Meter() ); }
+
+      /// Multiplies two physical quantities.
+      PhysicalQuantity& operator*=( const PhysicalQuantity& other ) {
+         magnitude *= other.magnitude;
+         units *= other.units;
+         return *this;
+      }
+      /// Multiplies two physical quantities.
+      friend PhysicalQuantity operator*( PhysicalQuantity lhs, const PhysicalQuantity& rhs ) {
+         lhs *= rhs;
+         return lhs;
+      }
+      /// Scaling of a physical quantity.
+      PhysicalQuantity& operator*=( double other ) {
+         magnitude *= other;
+         return *this;
+      }
+      /// Scaling of a physical quantity.
+      friend PhysicalQuantity operator*( PhysicalQuantity lhs, double rhs ) {
+         lhs *= rhs;
+         return lhs;
+      }
+      /// Scaling of a physical quantity.
+      friend PhysicalQuantity operator*( double lhs, PhysicalQuantity rhs ) {
+         rhs *= lhs;
+         return rhs;
+      }
+
+      /// Divides two physical quantities.
+      PhysicalQuantity& operator/=( const PhysicalQuantity& other ) {
+         magnitude /= other.magnitude;
+         units /= other.units;
+         return *this;
+      }
+      /// Divides two physical quantities.
+      friend PhysicalQuantity operator/( PhysicalQuantity lhs, const PhysicalQuantity& rhs ) {
+         lhs /= rhs;
+         return lhs;
+      }
+      /// Scaling of a physical quantity.
+      PhysicalQuantity& operator/=( double other ) {
+         magnitude /= other;
+         return *this;
+      }
+      /// Scaling of a physical quantity.
+      friend PhysicalQuantity operator/( PhysicalQuantity lhs, double rhs ) {
+         lhs /= rhs;
+         return lhs;
+      }
+      /// Scaling of a physical quantity.
+      friend PhysicalQuantity operator/( double lhs, PhysicalQuantity rhs ) {
+         rhs.Power( -1 );
+         rhs *= lhs;
+         return rhs;
+      }
+
+      /// Computes a physical quantity to the power of `p`.
+      void Power( dip::sint8 p ) {
+         magnitude = std::pow( magnitude, p );
+         units.Power( p );
+      }
+
+      /// Unary negation.
+      friend PhysicalQuantity operator-( PhysicalQuantity pq ) {
+         pq.magnitude = -pq.magnitude;
+         return pq;
+      }
+
+      /// Addition of two physical quantities.
+      PhysicalQuantity& operator+=( const PhysicalQuantity& other ) {
+         dip_ThrowIf( units != other.units, "Units don't match" );
+         magnitude += other.magnitude;
+         return *this;
+      }
+      /// Addition of two physical quantities.
+      friend PhysicalQuantity operator+( PhysicalQuantity lhs, const PhysicalQuantity& rhs ) {
+         lhs += rhs;
+         return lhs;
+      }
+
+      /// Subtraction of two physical quantities.
+      PhysicalQuantity& operator-=( const PhysicalQuantity& other ) {
+         dip_ThrowIf( units != other.units, "Units don't match" );
+         magnitude -= other.magnitude;
+         return *this;
+      }
+      /// Subtraction of two physical quantities.
+      friend PhysicalQuantity operator-( PhysicalQuantity lhs, const PhysicalQuantity& rhs ) {
+         lhs -= rhs;
+         return lhs;
+      }
+
+      /// Comparison of two physical quantities.
+      friend bool operator==( const PhysicalQuantity& lhs, const PhysicalQuantity& rhs ) {
+         return ( lhs.magnitude == rhs.magnitude ) && ( lhs.units == rhs.units );
+      }
+
+      /// Comparison of two physical quantities.
+      friend bool operator!=( const PhysicalQuantity& lhs, const PhysicalQuantity& rhs ) {
+         return !( lhs == rhs );
+      }
+
+      /// Test to see if the physical quantity is dimensionless.
+      bool IsDimensionless() const {
+         return units.IsDimensionless();
+      }
+
+      /// Insert physical quantity to an output stream.
+      friend std::ostream& operator<<( std::ostream& os, const PhysicalQuantity& pq ) {
+         double magnitude = pq.magnitude;
+         dip::sint p = pq.units.FirstPower();
+         if( p == 0 ) {
+            // Dimensionless quantity
+            os << magnitude;
+         } else {
+            double nzeros = std::floor( std::log10( pq.magnitude ) );
+            nzeros = std::floor( nzeros / p / 3 ) * 3;
+            nzeros = dip::clamp( nzeros, -15.0, 18.0 );
+            magnitude /= std::pow( 10.0, nzeros * p );
+            os << magnitude << " ";
+            if( nzeros != 0 ) {
+               const char* prefixes = "fpnum kMGTPE";
+               os << prefixes[dip::sint( nzeros ) / 3 + 5];
+            }
+            os << pq.units;
+         }
+         return os;
+      }
+
+      /// Retrieve the magnitude, discaring units.
+      explicit operator double() const { return magnitude; };
+
+      double magnitude = 0; ///< The magnitude
+      Units units;   ///< The units
+};
+
+/// An array to hold physical quantities, such as a pixel's size.
+typedef DimensionArray< PhysicalQuantity > PhysicalQuantityArray;
+
+/// Create an arbitrary physical quantity by multiplying a magnitude with units.
+inline PhysicalQuantity operator*( double lhs, const Units& rhs ) {
+   return PhysicalQuantity( lhs, rhs );
+}
+
+/// Specifies an image's pixel size as physical quantities. The object works like an
+/// array with unlimited dimensions. It is possible to set only one value, and
+/// that value will be used for all dimensions. In general, if *N* dimensions
+/// are set, then dimensions *N+1* and further have the same value as dimension *N*.
+///
+class PixelSize {
+
+   public:
+
+      /// By default, an image has no physical dimensions. The pixel size is given
+      /// as "1 pixel".
+      PixelSize() {};
+
+      /// Returns the pixel size for the given dimension.
+      PhysicalQuantity Get( dip::uint d ) const {
+         if( size_.size() == 0 ) {
+            return PhysicalQuantity( 1 );
+         } else if( d >= size_.size() ) {
+            return size_.back();
+         } else {
+            return size_[d];
+         }
+      }
+
+      /// Sets the pixel size in the given dimension. Note that
+      /// any subsequent dimension, if not explicitly set, will have the same
+      /// size. Thus, for an isotropic pixel, only the first dimension needs to
+      /// be set.
+      void Set( PhysicalQuantity m, dip::uint d = 0 ) {
+         EnsureDimensionality( d + 1 );
+         size_[d] = m;
+      }
+
+      /// Sets the pixel size in the given dimension, in nanometers.
+      void SetNanometers( double m, dip::uint d = 0 ) {
+         Set( m * PhysicalQuantity::Nanometer(), d );
+      }
+      /// Sets the pixel size in the given dimension, in micrometers.
+      void SetMicrometers( double m, dip::uint d = 0 ) {
+         Set( m * PhysicalQuantity::Micrometer(), d );
+      }
+      /// Sets the pixel size in the given dimension, in millimeters.
+      void SetMillimeters( double m, dip::uint d = 0 ) {
+         Set( m * PhysicalQuantity::Millimeter(), d );
+      }
+      /// Sets the pixel size in the given dimension, in meters.
+      void SetMeters( double m, dip::uint d = 0 ) {
+         Set( m * PhysicalQuantity::Meter() , d );
+      }
+      /// Sets the pixel size in the given dimension, in kilometers.
+      void SetKilometers( double m, dip::uint d = 0 ) {
+         Set( m * PhysicalQuantity::Kilometer(), d );
+      }
+
+      /// Sets the pixel size in meters in the given dimensions.
+      void Set( const PhysicalQuantityArray& m ) {
+         size_ = m;
+      }
+
+      /// Scales the pixel size in the given dimension
+      void Scale( double s, dip::uint d = 0 ) {
+         EnsureDimensionality( d + 1 );
+         size_[d] *= s;
+      }
+
+      /// Scales the pixel size in all dimensions
+      void Scale( FloatArray s ) {
+         EnsureDimensionality( s.size() );
+         for( dip::uint ii = 1; ii < s.size(); ++ii ) {
+            size_[ii] *= s[ii];
+         }
+      }
+
+      /// Clears the pixel sizes, reverting to the default value of 1 pixel.
+      void Clear() {
+         size_.clear();
+      }
+
+      /// Returns the number of dimensions stored.
+      dip::uint Size() const {
+         return size_.size();
+      }
+
+      /// Removes stored dimensions, keeping the first `d` dimensions only.
+      void Resize( dip::uint d ) {
+         if( d < size_.size() ) {
+            size_.resize(d);
+         }
+      }
+
+      /// Tests the pixel size for isotropy (the pixel has the same size in all dimensions).
+      bool IsIsotropic() const {
+         for( dip::uint ii = 1; ii < size_.size(); ++ii ) {
+            if( size_[ii] != size_[0] ) {
+               return false;
+            }
+         }
+         return true;
+      }
+
+      /// Tests to see if the pixel size is defined.
+      bool IsDefined() const {
+         return !(size_.empty());
+      }
+
+      /// Multiplies together the sizes for the first `d` dimensions.
+      PhysicalQuantity Product( dip::uint d ) const {
+         if( d == 0 ) {
+            return PhysicalQuantity();
+         }
+         PhysicalQuantity out = Get( 0 );
+         for( dip::uint ii = 1; ii < d; ++ii ) {
+            out = out * Get( ii );
+         }
+         return out;
+      }
+
+      /// Compares two pixel sizes
+      friend bool operator==( const PixelSize& lhs, const PixelSize& rhs ) {
+         dip::uint d = std::max( lhs.size_.size(), rhs.size_.size() );
+         for( dip::uint ii = 0; ii < d; ++ii ) {
+            if( lhs.Get( ii ) != rhs.Get( ii ) ) {
+               return false;
+            }
+         }
+         return true;
+      }
+
+      /// Compares two pixel sizes
+      friend bool operator!=( const PixelSize& lhs, const PixelSize& rhs ) {
+         return !( lhs == rhs );
+      }
+
+      /// Converts physical units to pixels.
+      FloatArray ToPixels( const PhysicalQuantityArray& in ) const {
          FloatArray out( in.size() );
          for( dip::uint ii = 0; ii < in.size(); ++ii ) {
-            out[ii] = in[ii] / PixelSize( ii );
+            PhysicalQuantity v = Get( ii );
+            dip_ThrowIf( in[ii].units != v.units, "Units don't match" );
+            out[ii] = in[ii].magnitude / v.magnitude;
          }
          return out;
       }
 
       /// Converts pixels to meters.
-      FloatArray ToPhysical( const FloatArray& in ) const {
-         FloatArray out( in.size() );
+      PhysicalQuantityArray ToPhysical( const FloatArray& in ) const {
+         PhysicalQuantityArray out( in.size() );
          for( dip::uint ii = 0; ii < in.size(); ++ii ) {
-            out[ii] = in[ii] * PixelSize( ii );
+            out[ii] =  PhysicalQuantity( in[ii] ) * Get( ii );
          }
          return out;
       }
@@ -116,25 +544,19 @@ class PhysicalDimensions {
       // that this array, the last element is presumed repeated across non-defined
       // dimensions. This is useful because many images have isotropic pixels, and
       // therefore need to store only one value.
-      // The units are meters. Other units are converted to/from meters.
-      FloatArray magnitude_;
+      PhysicalQuantityArray size_;
 
-      // TODO: This class has become quite simplified, and so we cannot store
-      // units that are not physical sizes. A hyperspectral image has one dimension
-      // as frequency; a time axis uses seconds; a Fourier transform uses 1/m;
-      // none of these can be stored. We need to add functionality for run-time
-      // unit management (i.e. an object of this class has units defined at run
-      // time, not compile time as in most C++ unit libraries.
-      // ( https://github.com/martinmoene/PhysUnits-CT-Cpp11 )
-      // ( http://www.boost.org/doc/libs/1_61_0/doc/html/boost_units.html )
-      // Compile-time unit management would mean that either all images have
-      // the same units (that we already have), or that the dip::Image class
-      // is templated according to its units (we don't template it for size,
-      // dimensionality, etc. so why for units???).
-      // This class then returns values that include units as well as magnitude.
-      // Those values we can print and convert as necessary. We also need to be
-      // able to multiply and divide those values, yielding values with different
-      // units.
+      // Adds dimensions to the `size_` array, if necessary, such that there are
+      // at least `d` dimensions. The last element is repeated if the array is
+      // extended.
+      void EnsureDimensionality( dip::uint d ) {
+         if( size_.empty() ) {
+            size_.resize( d, 1 );
+         } else if( size_.size() < d ) {
+            size_.resize( d, size_.back() );
+         }
+      }
+
 };
 
 } // namespace dip

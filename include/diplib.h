@@ -15,8 +15,9 @@
 /// It contains definitions of the core classes in the \ref dip namespace,
 /// declarations of the most commonly used library functions, and
 /// definitions of some simple inline functions. Include other header
-/// files as needed for additional library functionality. The documentation
-/// will indicate which header file to include for each function.
+/// files as needed for additional library functionality.
+/// **TODO:** The documentation will indicate which header file to include
+/// for each function.
 ///
 /// These are the header files included through diplib.h:
 ///   * dip_color.h
@@ -25,6 +26,7 @@
 ///   * dip_error.h
 ///   * dip_image.h
 ///   * dip_math.h
+///   * dip_numeric.h
 ///   * dip_operators.h
 ///   * dip_physdims.h
 ///   * dip_tensor.h

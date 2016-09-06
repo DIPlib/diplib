@@ -9,16 +9,11 @@
 #define DIP_CLAMP_CAST_H
 
 #include "dip_types.h"
+#include "dip_numeric.h"
 #include <limits>
 //#include <algorithm> // defines std::clamp in C++17
 
 namespace dip {
-
-// A replacement for std::clamp that will be available in C++17.
-template< typename T >
-constexpr inline const T& clamp( const T& v, const T& lo, const T& hi ) {
-   return std::min( std::max( v, lo ), hi );
-}
 
 // Basis of dip::clamp_cast<>
 template< typename T, typename S >
