@@ -20,7 +20,6 @@
 /// for each function.
 ///
 /// These are the header files included through diplib.h:
-///   * dip_color.h
 ///   * dip_datatype.h
 ///   * dip_dimensionarray.h
 ///   * dip_error.h

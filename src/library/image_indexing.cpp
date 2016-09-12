@@ -72,6 +72,7 @@ Image Image::operator[]( const UnsignedArray& indices ) const {
    Image out = *this;
    out.tensor.SetScalar();
    out.origin = Pointer( i * tstride );
+   out.ResetColorSpace();
    return out;
 }
 
@@ -81,6 +82,7 @@ Image Image::operator[]( dip::uint index ) const {
    Image out = *this;
    out.tensor.SetScalar();
    out.origin = Pointer( index * tstride );
+   out.ResetColorSpace();
    return out;
 }
 
@@ -102,6 +104,9 @@ Image Image::Diagonal() const {
       } else { // row-major matrix
          out.tstride = (n+1)*tstride;
       }
+   }
+   if( out.tensor.Elements() != tensor.Elements() ) {
+      out.ResetColorSpace();
    }
    return out;
 }
@@ -141,6 +146,7 @@ Image Image::At( Range x_range ) const {
    Image out = *this;
    out.dims[0] = x_range.Size();
    out.strides[0] *= x_range.Step();
+   out.pixelsize.Scale( 0, x_range.Step() );
    out.origin = Pointer( x_range.Offset() * strides[0] );
    return out;
 }
@@ -155,6 +161,8 @@ Image Image::At( Range x_range, Range y_range ) const {
    out.dims[1] = y_range.Size();
    out.strides[0] *= x_range.Step();
    out.strides[1] *= y_range.Step();
+   out.pixelsize.Scale( 0, x_range.Step() );
+   out.pixelsize.Scale( 1, y_range.Step() );
    out.origin = Pointer( x_range.Offset() * strides[0] +
                          y_range.Offset() * strides[1] );
    return out;
@@ -173,6 +181,9 @@ Image Image::At( Range x_range, Range y_range, Range z_range ) const {
    out.strides[0] *= x_range.Step();
    out.strides[1] *= y_range.Step();
    out.strides[2] *= z_range.Step();
+   out.pixelsize.Scale( 0, x_range.Step() );
+   out.pixelsize.Scale( 1, y_range.Step() );
+   out.pixelsize.Scale( 2, z_range.Step() );
    out.origin = Pointer( x_range.Offset() * strides[0] +
                          y_range.Offset() * strides[1] +
                          z_range.Offset() * strides[2] );
@@ -188,8 +199,9 @@ Image Image::At( RangeArray ranges ) const {
    Image out = *this;
    dip::sint offset = 0;
    for( dip::uint ii = 0; ii < dims.size(); ++ii ) {
-      out.strides[ii] *= ranges[ii].Step();
       out.dims[ii] = ranges[ii].Size();
+      out.strides[ii] *= ranges[ii].Step();
+      out.pixelsize.Scale( ii, ranges[ii].Step() );
       offset += ranges[ii].Offset() * strides[ii];
    }
    out.origin = Pointer( offset );

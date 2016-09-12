@@ -29,12 +29,15 @@ Image& Image::PermuteDimensions( const UnsignedArray& order ) {
    }
    UnsignedArray newdims( newnd, 0 );
    IntegerArray  newstrides( newnd, 0 );
+   dip::PixelSize     newpixelsz;
    for( dip::uint ii=0; ii<newnd; ++ii ) {
       newdims   [ii] = dims   [ order[ii] ];
       newstrides[ii] = strides[ order[ii] ];
+      newpixelsz.Set( ii, pixelsize[ order[ii] ] );
    }
-   dims    = newdims;
-   strides = newstrides;
+   dims      = newdims;
+   strides   = newstrides;
+   pixelsize = newpixelsz;
    return *this;
 }
 
@@ -45,6 +48,7 @@ Image& Image::SwapDimensions( dip::uint d1, dip::uint d2 ) {
    dip_ThrowIf( (d1>=nd) || (d2>=nd), E::ILLEGAL_DIMENSION );
    std::swap( dims   [d1], dims   [d2] );
    std::swap( strides[d1], strides[d2] );
+   pixelsize.SwapDimensions( d1, d2 );
    return *this;
 }
 
@@ -66,6 +70,11 @@ Image& Image::Flatten() {
    strides = { dip::sint(stride) };
    dims = { NumberOfPixels() };
    origin = p;
+   if( pixelsize.IsIsotropic() ) {
+      pixelsize.Resize( 1 );  // if all sizes are identical, keep first one only
+   } else {
+      pixelsize.Clear();      // else set the pixel size to 'undefined'
+   }
    return *this;
 }
 
@@ -77,11 +86,13 @@ Image& Image::Squeeze() {
       if( dims[ii] > 1) {
          strides[jj] = strides[ii];
          dims[jj] = dims[ii];
+         pixelsize.Set( jj, pixelsize[ii] );
          ++jj;
       }
    }
    strides.resize( jj );
    dims.resize( jj );
+   pixelsize.Resize( jj );
    return *this;
 }
 
@@ -90,14 +101,9 @@ Image& Image::AddSingleton( dip::uint dim ) {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = dims.size();
    dip_ThrowIf( dim > nd, E::INVALID_PARAMETER );
-   dims.resize( nd+1 );
-   strides.resize( nd+1 );
-   for( dip::uint ii=nd; ii>dim; --ii ) {
-      dims   [ii] = dims   [ii-1];
-      strides[ii] = strides[ii-1];
-   }
-   dims   [dim] = 1;
-   strides[dim] = 0;
+   dims.insert( dim, 1 );
+   strides.insert( dim, 0 );
+   pixelsize.InsertDimension( dim );
    // We set added singleton dimensions to 0 stride. The value is
    // irrelevant, but we use this as a flag for added singletons
    // in the Image::Aliases() function.
@@ -110,6 +116,9 @@ Image& Image::ExpandDimensionality( dip::uint n ) {
    if( dims.size() < n ) {
       dims   .resize( n, 1 );
       strides.resize( n, 0 ); // follow same convention as in AddSingleton().
+      // Not setting the pixel sizes for these dimensions. If the pixel was isotropic,
+      // it continues to be. Otherwise, the last dimension's size is repeated for the
+      // new dimensions.
    }
    return *this;
 }
@@ -149,8 +158,10 @@ Image& Image::TensorToSpatial( dip::sint dim ) {
    dip_ThrowIf( newdim > nd, E::INVALID_PARAMETER );
    dims.insert( newdim, tensor.Elements() );
    strides.insert( newdim, tstride );
+   pixelsize.InsertDimension( newdim );
    tensor.SetScalar();
    tstride = 1;
+   ResetColorSpace();
    return *this;
 }
 
@@ -177,6 +188,8 @@ Image& Image::SpatialToTensor( dip::sint dim, dip::uint rows, dip::uint cols ) {
    tstride = strides[olddim];
    dims.erase( olddim );
    strides.erase( olddim );
+   pixelsize.EraseDimension( olddim );
+   ResetColorSpace();
    return *this;
 }
 
@@ -199,6 +212,7 @@ Image& Image::SplitComplex( dip::sint dim ) {
    // Create new spatial dimension
    dims.insert( newdim, 2 );
    strides.insert( newdim, 1 );
+   pixelsize.InsertDimension( newdim );
    return *this;
 }
 
@@ -222,6 +236,7 @@ Image& Image::MergeComplex( dip::sint dim ) {
       strides[ii] /= 2;
    }
    tstride /= 2;
+   pixelsize.EraseDimension( olddim );
    return *this;
 }
 
@@ -238,6 +253,7 @@ Image& Image::SplitComplexToTensor() {
    // Create new tensor dimension
    tensor.SetVector( 2 );
    tstride = 1;
+   ResetColorSpace();
    return *this;
 }
 
@@ -254,6 +270,7 @@ Image& Image::MergeTensorToComplex() {
    for( dip::uint ii = 0; ii < dims.size(); ++ii ) {
       strides[ii] /= 2;
    }
+   ResetColorSpace();
    return *this;
 }
 

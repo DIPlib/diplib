@@ -73,6 +73,14 @@ dip::uint OptimalProcessingDim(
       const Image& in
 );
 
+/// Determines which color space names to assign to each output image, by finding
+/// the first input image with the same number of tensor elements as each output
+/// image.
+StringArray OutputColorSpaces(
+      const ImageConstRefArray& c_in,
+      const UnsignedArray& nTensorElements
+);
+
 /// Creates a vector of void pointers that point at the elements of `in`.
 /// Use this function to create the `functionVariables` input for the framework
 /// functions.
@@ -184,12 +192,13 @@ typedef void (*ScanFilter) (
 /// way, it makes sense to set the output tensor to a full matrix. Don't forget
 /// to specify the right size in `nTensorElements`.
 ///
-/// The framework function does not set the physical dimensions or color
-/// space information, the caller is expected to do so when the framework
-/// function is finished.
+/// The framework function sets the output pixel size to that of the first input
+/// image with a defined pixel size, and it sets the color space to that of the
+/// first input image with matching number of tensor elements.
+/// The calling function is expected to "correct" these values if necessary.
 ///
-/// The buffers are not guaranteed to be contiguous, please use the `inStride`
-/// and `outStride` values to access pixels. All buffers contain `bufferLength`
+/// The buffers are not guaranteed to be contiguous, please use the `stride`
+/// and `tensorStride` values to access samples. All buffers contain `bufferLength`
 /// pixels. `position` gives the coordinates for the first pixel in the buffers,
 /// subsequent pixels occur along dimension `dimension`. `position[dimension]`
 /// is not necessarily zero. However, when `dip::FrameWork::Scan_NeedCoordinates`

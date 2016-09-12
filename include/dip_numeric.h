@@ -6,17 +6,29 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
+
+//
+// NOTE!
+// This file is included through diplib.h -- no need to include directly
+//
+
+
 #ifndef DIP_NUMERIC_H
 #define DIP_NUMERIC_H
+
+#include <cmath>
+#include <algorithm>
 
 #include "dip_types.h"
 
 
 /// \file
-/// Numeric algorithms unrelated to images.
+/// Numeric algorithms and constants unrelated to images.  This file is always included through diplib.h.
 
 
 namespace dip {
+
+static const double pi = std::acos( -1 );
 
 /// Compute the greatest common denominator of two positive integers.
 // `std::gcd` will be available in C++17.

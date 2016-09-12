@@ -47,25 +47,31 @@ void Scan(
    // This also effectively separates input and output images. They still point
    // at the same data, but we can strip an output image without destroying
    // the input pixel data.
+   PixelSize pixelSize;
    ImageArray in( nIn );
-   for( dip::uint ii = 0; ii < nIn; ++ii) {
-      in[ii] = c_in[ii].get().QuickCopy();
-      dip_ThrowIf( !in[ii].IsForged(), E::IMAGE_NOT_FORGED );
+   for( dip::uint ii = 0; ii < nIn; ++ii ) {
+      const Image& tmp = c_in[ii].get();
+      dip_ThrowIf( !tmp.IsForged(), E::IMAGE_NOT_FORGED );
+      in[ii] = tmp.QuickCopy();
+      if( !pixelSize.IsDefined() && tmp.HasPixelSize() ) {
+         pixelSize = tmp.PixelSize();
+      }
    }
+   StringArray colspaces = OutputColorSpaces( c_in, nTensorElements );
 
    // Do tensor to spatial dimension if necessary
    bool tensorToSpatial = false;
    if( opts == Scan_TensorAsSpatialDim ) {
       bool allscalar = true;
       // We either convert all images, or none (so that dimensions still match).
-      for( dip::uint ii = 0; ii < nIn; ++ii) {
+      for( dip::uint ii = 0; ii < nIn; ++ii ) {
          if( !in[ii].IsScalar() ) {
             allscalar = false;
             break;
          }
       }
       if( !allscalar ) {
-         for( dip::uint ii = 0; ii < nIn; ++ii) {
+         for( dip::uint ii = 0; ii < nIn; ++ii ) {
             in[ii].TensorToSpatial( 0 );
          }
          tensorToSpatial = true;
@@ -77,14 +83,14 @@ void Scan(
    if( nIn > 0 ) {
       if( opts != Scan_NoSingletonExpansion ) {
          dims = SingletonExpandedSize( in );
-         for( dip::uint ii = 0; ii < nIn; ++ii) {
+         for( dip::uint ii = 0; ii < nIn; ++ii ) {
             if( in[ii].Dimensions() != dims ) {
                SingletonExpansion( in[ii], dims );
             }
          }
       } else {
          dims = in[0].Dimensions();
-         for( dip::uint ii = 1; ii < nIn; ++ii) {
+         for( dip::uint ii = 1; ii < nIn; ++ii ) {
             if( in[ii].Dimensions() != dims ) {
                dip_Throw( E::DIMENSIONS_DONT_MATCH );
             }
@@ -114,9 +120,10 @@ void Scan(
          tmp.Forge();
       }
    }
+
    // Make simplified copies of output image headers so we can modify them at will
    ImageArray out( nOut );
-   for( dip::uint ii = 0; ii < nOut; ++ii) {
+   for( dip::uint ii = 0; ii < nOut; ++ii ) {
       out[ii] = c_out[ii].get().QuickCopy();
    }
 
@@ -125,7 +132,7 @@ void Scan(
    if( !scan1D ) {
       scan1D = opts != Scan_NeedCoordinates;
       if( scan1D ) {
-         for( dip::uint ii = 0; ii < nIn; ++ii) {
+         for( dip::uint ii = 0; ii < nIn; ++ii ) {
             if( !in[ii].HasSimpleStride() ) {
                scan1D = false;
                break;
@@ -400,6 +407,13 @@ void Scan(
       for( dip::uint ii = 0; ii < nOut; ++ii ) {
          c_out[ii].get().SpatialToTensor( 0 );
       }
+   }
+
+   // Set pixel size and color space
+   for( dip::uint ii = 0; ii < nOut; ++ii ) {
+      Image& tmp = c_out[ii].get();
+      tmp.SetPixelSize( pixelSize );
+      tmp.SetColorSpace( colspaces[ii] );
    }
 }
 

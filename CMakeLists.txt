@@ -36,7 +36,8 @@ file(GLOB HEADERS
    "include/*.h"
    )
 
-add_library(DIP SHARED ${SOURCES} ${HEADERS})
+#add_library(DIP DYNAMIC ${SOURCES} ${HEADERS}) # Why does this not work any more? What changed?
+add_library(DIP STATIC ${SOURCES} ${HEADERS})
 
 
 # DIPlib tests
@@ -50,7 +51,7 @@ target_link_libraries(test_image DIP)
 add_executable(test_framework EXCLUDE_FROM_ALL test/test_framework.cpp)
 target_link_libraries(test_framework DIP)
 
-add_custom_target(tests DEPENDS test_array test_bin test_options test_image test_framework)
+add_custom_target(tests DEPENDS test_array test_bin test_options test_physdims test_image test_framework)
 
 if(Matlab_FOUND)
 

@@ -615,15 +615,6 @@ needed. This is how I envision the measurement functionality:
   array for a measurement. This will make the conversion to
   MATLAB easier.
 
-- Convenience functions could be made to help with the units. For
-  example:
-
-  - `Intensity(physdims,power)` e.g.: ADU^2^
-
-  - `Spatial(dimension,physdims,power)` e.g.: px^2^
-
-  - `SpatialCross(dimensionarray,physdims,power)` e.g.: m^2^ s^2^
-
 
 ## Colour space conversion
 

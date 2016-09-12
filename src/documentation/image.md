@@ -297,10 +297,68 @@ on the two operands ...
 
 \section color Color images
 
+A color image is a vector image where each vector element represents a color
+channel. dip::Image::SetColorSpace assigns a string into the image object that
+flags it as a color image. The string identifies the color space. An empty string
+indicates that the image is not a color image.
+
+There are no checks made when
+marking the image as a color image. For example, and RGB image is expected to
+have three channels (`img.TensorElements() == 3`).
+However, the call `img.SetColorSpace( "RGB" )` will mark `img` as an RGB image
+no matter how many tensor elements it has (this is because the function has
+no knowledge of color spaces). If the image has other than three
+tensor elements, errors will occur when the color space information is used,
+for example when trying to convert the image to a different color space.
+
+Nonetheless, when manipulating an image in such a way that the number of tensor
+elements changes, the color space information in the image is reset, turning it
+into a non-color image.
+
+An object of type dip::ColorSpaceManager is used to convert an image from one
+known color space to another. This object is the only place in the library where
+there is knowledge about color spaces. Create one of these objects for any application
+that requires color space knowledge. It is possible to register new color spaces and color
+space conversion functions with this object. Other functions that use specific
+color spaces will have knowledge only of those specific color spaces, and will
+expect their input to be in one of those color spaces.
+
 
 [//]: # (--------------------------------------------------------------)
 
-\section phys_dims Physical dimensions
+\section pixel_size Pixel size
+
+Each image carries with it the size of its pixels as a series of physical
+quantities (dip::PhysicalQuantity), one for each image dimnesion. The advantage
+of keeping the pixel size with the image rather than as a separate value taken
+manually from the image file metadata is that it is automatically updated through
+manipulations such as scaling (zoom), dimension permutations, etc. When the pixel
+size in a particular dimension is not set, it is always presumed to be of size 1
+(a dimensionless unit). See dip::PixelSize for details.
+
+There are three ways in which the pixel size can be used:
+
+1. The measurement function will return its measurements as physical quantities,
+   using the pixel sizes, if known, to derive those from measurments in pixels.
+
+2. The dip::Image::PhysicalToPixels method converts a filter size in physical
+   units to one in pixels, suitable to pass to a filtering function. For example,
+   to apply a filter with a sigma of 1 micron to an image:
+
+       dip::PhysicalQuantityArray fsz_phys{ 1 * dip::PhysicalQuantity::Micrometer() };
+       dip::FloatArray fsz_pix = img.PhysicalToPixels( fsz_phys );
+       dip::Filter( img, img, fsz_pix );
+
+3. The dip::Image::PixelsToPhysical method converts coordinates in pixels to
+   coordinates in physical units. For example, to determine the position in
+   physical units of a pixel w.r.t. the top left pixel:
+
+       dip::FloatArray pos_pix{ 40, 24 };
+       dip::PhysicalQuantityArray pos_phys = img.PixelsToPhysical( pos_pix );
+
+It is currently possible to add, subtract, mutiply and divide two physical quantities,
+and elevate a physical quantity to an integer power. Other operations should be
+added as necessary.
 
 
 [//]: # (--------------------------------------------------------------)
@@ -326,7 +384,7 @@ along this dimension. For example:
     dip::Image img2( UnsignedArray{ 50, 30 } );
     dip::Image img3 = img1 + img2;
 
-Here, the dimension array for `img2` will be extended to `{ 50, 30, 1}`
+Here, the dimension array for `img2` will be extended to `{ 50, 30, 1 }`
 in the first step. In the second step, the arrays for both images will
 be changed to `{ 50, 30, 60 }`. `img1` gets its second dimension expanded,
 wereas `img2` will get its new third dimension expanded. The output image

@@ -138,31 +138,52 @@ std::ostream& operator<<(
       const Image& img
 ) {
    // TODO: Add color space and pixel size information
-   // Size and shape
+   // Shape and other main propertiees
    if( img.TensorElements() == 1 ) {
       os << "Scalar image, ";
    } else {
       os << img.TensorRows() << "x" << img.TensorColumns() << "-tensor image, ";
    }
-   os << img.Dimensionality() << "-D, " << img.DataType().Name() << std::endl;
+   os << img.Dimensionality() << "-D, " << img.DataType().Name();
+   if( img.IsColor() ) {
+      os << ", color image: " << img.ColorSpace();
+   }
+   os << std::endl;
+
+   // Image size
    os << "   sizes: ";
    dip::UnsignedArray dims = img.Dimensions();
    for( dip::uint ii=0; ii<dims.size(); ++ii ) {
-      os << dims[ii] << ", ";
+      os << ( ii>0 ? ", " : "" ) << dims[ii];
    }
    os << std::endl;
+
+   // Pixel size
+   if( img.HasPixelSize() ) {
+      os << "   pixel size: ";
+      dip::PixelSize ps = img.PixelSize();
+      for( dip::uint ii=0; ii<dims.size(); ++ii ) {
+         os << ( ii>0 ? " x " : "" ) << ps[ii];
+      }
+      os << std::endl;
+   }
+
    // Strides
    os << "   strides: ";
    dip::IntegerArray strides = img.Strides();
    for( dip::uint ii=0; ii<strides.size(); ++ii ) {
-      os << strides[ii] << ", ";
+      os << ( ii>0 ? ", " : "" ) << strides[ii];
    }
    os << std::endl;
+
    os << "   tensor stride: " << img.TensorStride() << std::endl;
+
    // Data segment
    if( img.IsForged() ) {
       os << "   data pointer:   " << img.Data() << " (shared among " << img.ShareCount() << " images)" << std::endl;
+
       os << "   origin pointer: " << img.Origin() << std::endl;
+
       if( img.HasContiguousData() ) {
          if( img.HasNormalStrides() ) {
             os << "   strides are normal" << std::endl;
@@ -170,6 +191,7 @@ std::ostream& operator<<(
             os << "   data are contiguous but strides are not normal" << std::endl;
          }
       }
+
       dip::uint stride; void* origin;
       img.GetSimpleStrideAndOrigin(stride, origin);
       if( origin ) {
@@ -177,6 +199,7 @@ std::ostream& operator<<(
       } else {
          os << "   strides are not simple" << std::endl;
       }
+
    } else {
       os << "   not forged" << std::endl;
    }

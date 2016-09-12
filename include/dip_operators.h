@@ -6,6 +6,13 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
+
+//
+// NOTE!
+// This file is included through diplib.h -- no need to include directly
+//
+
+
 #ifndef DIP_OPERATORS_H
 #define DIP_OPERATORS_H
 

@@ -54,6 +54,7 @@ int main() {
          dip::Image img1;
          img1.SetDimensions({50,80,30});
          img1.SetTensorDimensions(3);
+         img1.SetPixelSize({{dip::PhysicalQuantity::Micrometer(), 3*dip::PhysicalQuantity::Micrometer(), dip::PhysicalQuantity::Radian()}});
          img1.Forge();
          std::cout << img1;
          dip::Image img2(img1);
@@ -80,6 +81,7 @@ int main() {
          dip::Image img1;
          img1.SetDimensions({50,80,30});
          img1.SetTensorDimensions(3);
+         img1.SetPixelSize({{dip::PhysicalQuantity::Micrometer(), 3*dip::PhysicalQuantity::Micrometer(), dip::PhysicalQuantity::Radian()}});
          img1.Forge();
          std::cout << img1;
          img1.PermuteDimensions({2,1,0});

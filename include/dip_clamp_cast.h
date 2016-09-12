@@ -11,7 +11,6 @@
 #include "dip_types.h"
 #include "dip_numeric.h"
 #include <limits>
-//#include <algorithm> // defines std::clamp in C++17
 
 namespace dip {
 

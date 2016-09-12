@@ -7,12 +7,6 @@
  */
 
 
-//
-// NOTE!
-// This file is included through diplib.h -- no need to include directly
-//
-
-
 #ifndef DIP_COLOR_H
 #define DIP_COLOR_H
 
@@ -20,20 +14,15 @@
 #include <vector>
 #include <map>
 
-#include "dip_error.h"
-#include "dip_types.h"
-
+#include "diplib.h"
 
 /// \file
-/// Defines dip::ColorSpaceManager and dip::ColorSpace, providing support for
-/// color images.
+/// Defines dip::ColorSpaceManager, providing support for color images.
 
 // TODO: functions marked TODO in this file need to be defined in a .cpp file.
 
 namespace dip {
 
-
-class Image; // Forward declaration
 
 /// An object to encapsulate the white point array. It defines how R, G and B
 /// are to be combined to form X, Y and Z:
@@ -202,48 +191,6 @@ class ColorSpaceManager {
 
       // Find an optimal path between two color spaces, given by their indices.
       std::vector< dip::uint > FindPath( dip::uint start, dip::uint stop ) const ; // TODO
-};
-
-/// Specifies an image's color space and holds related information. The user should
-/// not need to use this class directly.
-/// \see dip::Image::ColorSpace, dip::Image::IsColor, dip::ColorSpaceManager
-class ColorSpace {
-
-   public:
-
-      /// The default color space is none (i.e. grey-value image)
-      ColorSpace() {}
-
-      /// Returns the color space name, or an empty string if the image is not a color image.
-      const String& Name() const { return name_; }
-
-      /// True if a color space name is set.
-      bool IsColor() const { return !name_.empty(); }
-
-      /// Compares two color spaces
-      friend bool operator==( const ColorSpace& lhs, const ColorSpace& rhs ) {
-         return lhs.name_ == rhs.name_;
-      }
-
-      /// Compares two color spaces
-      friend bool operator!=( const ColorSpace& lhs, const ColorSpace& rhs ) {
-         return !(lhs == rhs);
-      }
-
-      // By making ColorSpaceManager a friend, it can access the private constructor.
-      friend class dip::ColorSpaceManager;
-
-   private:
-
-      // The private constructor is only accessible by dip::ColorSpaceManager.
-      explicit ColorSpace( const String& name ) : name_( name ) {}
-
-      String name_;  // The color space name, if empty it's not a color image.
-
-      // Note that String == std::string uses short-string optimization, meaning
-      // that there's no memory allocation if the string is short enough. Keep
-      // color space names short to keep it efficient to copy and manage these
-      // strings.
 };
 
 } // namespace dip

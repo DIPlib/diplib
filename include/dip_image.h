@@ -21,7 +21,6 @@
 
 #include "dip_datatype.h"
 #include "dip_tensor.h"
-#include "dip_color.h"
 #include "dip_physdims.h"
 #include "dip_clamp_cast.h"
 
@@ -350,21 +349,19 @@ class Image {
       // Color space
       //
 
-      // Note: This function is the reason we refer to the ColorSpace class as
-      // dip::ColorSpace everywhere in this file.
-
       /// Get the image's color space name.
-      const String& ColorSpace() const { return colspace.Name(); }
+      const String& ColorSpace() const { return colspace; }
 
       /// Returns true if the image is in color, false if the image is grey-valued.
-      bool IsColor() const { return colspace.IsColor(); }
+      bool IsColor() const { return !colspace.empty(); }
 
-      /// Sets the image's color space information; this function is used by dip::ColorSpaceManager,
-      /// and is not useful otherwise.
-      void SetColorSpace( const dip::ColorSpace& cs ) { colspace = cs; }
+      /// Sets the image's color space name; this causes the image to be a color
+      /// image, but will cause errors to occur if the number of tensor elements
+      /// does not match the expected number of channels for the given color space.
+      void SetColorSpace( const String& cs ) { colspace = cs; }
 
       /// Resets the image's color space information, turning the image into a non-color image.
-      void ResetColorSpace() { colspace = dip::ColorSpace(); }
+      void ResetColorSpace() { colspace.clear(); }
 
       //
       // Physical dimensions
@@ -383,6 +380,9 @@ class Image {
       void SetPixelSize( const dip::PixelSize& ps ) {
          pixelsize = ps;
       }
+
+      /// Returns true if the pixel has physical dimensions.
+      bool HasPixelSize() const { return pixelsize.IsDefined(); }
 
       /// Returns true if the pixel has the same size in all dimensions.
       bool IsIsotropic() const { return pixelsize.IsIsotropic(); }
@@ -880,7 +880,7 @@ class Image {
       dip::Tensor tensor;
       dip::sint tstride = 0;
       bool protect = false;               // When set, don't strip image
-      dip::ColorSpace colspace;
+      String colspace;
       dip::PixelSize pixelsize;
       std::shared_ptr<void> datablock;    // Holds the pixel data. Data block will be freed when last image
                                           //    that uses it is destroyed.

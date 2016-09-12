@@ -18,6 +18,7 @@
 
 namespace dip {
 
+/// Contains the return values for the function dip::GetMaximumAndMinimum.
 struct MaximumAndMinimum {
    double min;
    double max;
