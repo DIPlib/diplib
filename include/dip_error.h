@@ -27,58 +27,70 @@
 
 namespace dip {
 
-// All errors thrown in DIPlib are of this class:
+/// All errors thrown in DIPlib are of this class, their `what()` string contains
+/// a reason for the error and the name of the function that originally threw it.
 typedef std::logic_error Error;
 
 namespace E {
    // These are some of the standard what() strings thrown.
    // These should all happen in multiple places. You don't need to add
    // a string here that is used in only one function or one file.
-   // This list comes from the original DIPlib. Many of these might not
-   // be useful any more.
-   // The strings are declared here and defined in error.cpp
-   extern const char* IMAGE_NOT_RAW;
-   extern const char* IMAGE_NOT_FORGED;
-   extern const char* IMAGE_NOT_VALID;
 
-   extern const char* DATA_TYPE_NOT_SUPPORTED;
+   // image creation errors
+   constexpr char const* IMAGE_NOT_RAW = "Image is not raw";
+   constexpr char const* IMAGE_NOT_FORGED = "Image is not forged";
+   constexpr char const* IMAGE_NOT_VALID = "Image is not valid";
 
-   extern const char* DIMENSIONALITY_EXCEEDS_LIMIT;
-   extern const char* ILLEGAL_DIMENSIONALITY;
-   extern const char* DIMENSIONALITY_NOT_SUPPORTED;
-   extern const char* ILLEGAL_DIMENSION;
-   extern const char* DIMENSIONS_DONT_MATCH;
-   extern const char* NOT_SCALAR;
-   extern const char* TENSORSIZES_DONT_MATCH;
+   // image data type errors
+   constexpr char const* DATA_TYPE_NOT_SUPPORTED = "Data type not supported";
 
-   extern const char* NO_NORMAL_STRIDE;
+   // image dimensionality and dimensions error
+   constexpr char const* DIMENSIONALITY_EXCEEDS_LIMIT = "Dimensionality exceeds address limit";
+   constexpr char const* ILLEGAL_DIMENSIONALITY = "Illegal dimensionality";
+   constexpr char const* DIMENSIONALITY_NOT_SUPPORTED = "Dimensionality not supported";
+   constexpr char const* ILLEGAL_DIMENSION = "Illegal dimension";
+   constexpr char const* DIMENSIONS_DONT_MATCH = "Dimensions don't match";
+   constexpr char const* NOT_SCALAR = "Image is not scalar";
+   constexpr char const* TENSORSIZES_DONT_MATCH = "Number of tensor elements doesn't match";
 
-   extern const char* MASK_NOT_BINARY;
-   extern const char* MASK_TOO_MANY_DIMENSIONS;
+   // image properties errors
+   constexpr char const* NO_NORMAL_STRIDE = "Image has a non-normal stride";
 
-   extern const char* INDEX_OUT_OF_RANGE;
+   // mask image properties errors
+   constexpr char const* MASK_NOT_BINARY = "Mask image not binary";
+   constexpr char const* MASK_TOO_MANY_DIMENSIONS = "Mask image has too many dimensions";
 
-   extern const char* INTERFACE_ERROR;
-   extern const char* IF_IMAGE_TYPE_NOT_SUPPORTED;
-   extern const char* IF_DATA_TYPE_NOT_SUPPORTED;
+   // indexing errors
+   constexpr char const* INDEX_OUT_OF_RANGE = "Index out of range";
 
-   extern const char* NOT_IMPLEMENTED;
+   // error produced by the interface to DIPlib
+   constexpr char const* INTERFACE_ERROR = "The interface with DIPlib produced an error";
+   constexpr char const* IF_IMAGE_TYPE_NOT_SUPPORTED = "The interface does not support the DIPlib image type";
+   constexpr char const* IF_DATA_TYPE_NOT_SUPPORTED = "The interface does not support the DIPlib data type";
 
-   extern const char* ARRAY_ILLEGAL_SIZE;
-   extern const char* ARRAY_SIZES_DONT_MATCH;
-   extern const char* ARRAY_OVERFLOW;
+   // miscellaneous errors
+   constexpr char const* NOT_IMPLEMENTED = "Functionality has not (yet) been implemented";
 
-   extern const char* FILTER_SHAPE_NOT_SUPPORTED;
-   extern const char* BOUNDARY_CONDITION_NOT_SUPPORTED;
+   // array errors
+   constexpr char const* ARRAY_ILLEGAL_SIZE = "Array has an illegal size";
+   constexpr char const* ARRAY_SIZES_DONT_MATCH = "Array sizes don't match";
+   constexpr char const* ARRAY_OVERFLOW = "Array overflow";
 
-   extern const char* INVALID_PARAMETER;
-   extern const char* INVALID_FLAG;
-   extern const char* PARAMETER_OUT_OF_RANGE;
-   extern const char* ARRAY_PARAMETER_WRONG_LENGTH;
+   // boundary and filter shape errors
+   constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supported";
+   constexpr char const* BOUNDARY_CONDITION_NOT_SUPPORTED = "Boundary condition is not supported";
 
-   extern const char* PIXEL_TABLE_IS_NOT_ALLOCATED;
-   extern const char* PIXEL_TABLE_NOT_ENOUGH_RUNS;
-   extern const char* PIXEL_TABLE_RUN_HAS_NO_DATA;
+   // function parameter errors
+   constexpr char const* INVALID_PARAMETER = "Parameter has invalid value";
+   constexpr char const* INVALID_FLAG = "Invalid flag";
+   constexpr char const* PARAMETER_OUT_OF_RANGE = "Parameter value out of range";
+   constexpr char const* ARRAY_PARAMETER_WRONG_LENGTH = "Array parameter has the wrong number of elements";
+
+   // pixel table errors
+   constexpr char const* PIXEL_TABLE_IS_NOT_ALLOCATED = "PixelTable is not allocated";
+   constexpr char const* PIXEL_TABLE_NOT_ENOUGH_RUNS = "PixelTable does not have enough runs";
+   constexpr char const* PIXEL_TABLE_RUN_HAS_NO_DATA = "PixelTable run has no data";
+
 }
 
 //
