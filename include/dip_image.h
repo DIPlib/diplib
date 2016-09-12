@@ -57,6 +57,27 @@ class ExternalInterface {
 };
 
 
+//
+// Functor that converts indices or offsets to coordinates.
+//
+
+/// Objects of this class are returned by dip::Image::OffsetToCoordinatesComputer
+/// and dip::Image::IndexToCoordinatesComputer. Call it with an offset or index
+/// respectively, and it will return the coordinates:
+///
+///     auto coords = img.OffsetToCoordinatesComputer();
+///     auto c1 = coords( offset1 );
+///     auto c2 = coords( offset2 );
+///     auto c3 = coords( offset3 );
+class CoordinatesComputer {
+   public:
+      CoordinatesComputer( const UnsignedArray& dims, const IntegerArray& stride );
+      CoordinatesComputer( const IntegerArray& stride ); // this constructor assumes no singleton dimensions, and all positive strides
+      UnsignedArray operator()( dip::sint offset );
+   private:
+      IntegerArray stride_; // a copy of the image's stride array
+      UnsignedArray index_; // sorted indices to the stride array (largest to smallest)
+};
 
 //
 // The Image class
@@ -585,11 +606,22 @@ class Image {
       /// \see Origin, Pointer, OffsetToCoordinates
       dip::sint Offset( const UnsignedArray& coords ) const;
 
-      /// Compute coordinates given an offset.
+      /// Compute coordinates given an offset. If the image has any singleton-expanded
+      /// dimensions, the computed coordinate along that dimension will always be 0.
+      /// This is an expensive operation, use OffsetToCoordinatesComputer to make it
+      /// more efficient when performing multiple computations in sequence.
       ///
       /// The image must be forged.
-      /// \see Offset, IndexToCoordinates
-      UnsignedArray OffsetToCoordinates( dip::uint offset ) const;
+      /// \see Offset, OffsetToCoordinatesComputer, IndexToCoordinates
+      UnsignedArray OffsetToCoordinates( dip::sint offset ) const;
+
+      /// Returns a functor that computes coordinates given an offset. This is
+      /// more efficient than using dip::Image::OffsetToCoordinates when repeatedly
+      /// computing offsets, but still requires complex calculations.
+      ///
+      /// The image must be forged.
+      /// \see Offset, OffsetToCoordinates, IndexToCoordinates, IndexToCoordinatesComputer
+      CoordinatesComputer OffsetToCoordinatesComputer() const;
 
       /// Compute linear index (not offset) given coordinates. This index is not
       /// related to the position of the pixel in memory, and should not be used
@@ -597,20 +629,29 @@ class Image {
       ///
       /// The image must be forged.
       /// \see IndexToCoordinates, Offset
-      dip::uint Index( const UnsignedArray& coords ) const;
+      dip::sint Index( const UnsignedArray& coords ) const;
 
-      /// Compute coordinates given a linear index.
+      /// Compute coordinates given a linear index. If the image has any singleton-expanded
+      /// dimensions, the computed coordinate along that dimension will always be 0.
+      /// This is an expensive operation, use IndexToCoordinatesComputer to make it
+      /// more efficient when performing multiple computations in sequence.
       ///
       /// The image must be forged.
-      /// \see Index, Offset, OffsetToCoordinates
-      UnsignedArray IndexToCoordinates( dip::uint index ) const;
+      /// \see Index, Offset, IndexToCoordinatesComputer, OffsetToCoordinates
+      UnsignedArray IndexToCoordinates( dip::sint index ) const;
+
+      /// Returns a functor that computes coordinates given a linear index. This is
+      /// more efficient than using dip::Image::IndexToCoordinates, when repeatedly
+      /// computing indices, but still requires complex calculations.
+      ///
+      /// The image must be forged.
+      /// \see Index, Offset, IndexToCoordinates, OffsetToCoordinates, OffsetToCoordinatesComputer
+      CoordinatesComputer IndexToCoordinatesComputer() const;
 
       //
       // Modifying geometry of a forged image without data copy
       // Defined in src/library/image_manip.cpp
       //
-
-      // TODO: many of these functions must adjust pixel size array
 
       /// Permute dimensions. This function allows to re-arrange the dimensions
       /// of the image in any order. It also allows to remove singleton dimensions

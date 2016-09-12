@@ -261,7 +261,6 @@ struct PhysicalQuantity {
       static PhysicalQuantity Radian()       { return PhysicalQuantity( 1,        dip::Units::Radian() ); }
       /// One degree
       static PhysicalQuantity Degree()       { return PhysicalQuantity( pi / 180, dip::Units::Radian() ); }
-      // TODO: add some more of these: millisecond, second, minute, hour, day; radian, degree;
 
       /// Multiplies two physical quantities.
       PhysicalQuantity& operator*=( const PhysicalQuantity& other ) {

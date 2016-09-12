@@ -137,7 +137,6 @@ std::ostream& operator<<(
       std::ostream& os,
       const Image& img
 ) {
-   // TODO: Add color space and pixel size information
    // Shape and other main propertiees
    if( img.TensorElements() == 1 ) {
       os << "Scalar image, ";

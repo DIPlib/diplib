@@ -22,10 +22,10 @@
 
 namespace dip {
 
-// TODO: See dip_coordsindx.h in the old diplib. We need to implement something
-//       similar here, with an object whose operator() does the conversion.
 
+//
 // --- Internal functions, static ---
+//
 
 
 // Compute a normal stride array.
@@ -135,7 +135,92 @@ static UnsignedArray OffsetToCoordinates(
 }
 
 
+//
 // --- Library functions ---
+//
+
+
+// Constructor.
+CoordinatesComputer::CoordinatesComputer( const UnsignedArray& dims, const IntegerArray& stride ) {
+   dip::uint N = stride.size();
+   dip_ThrowIf( dims.size() != N, "Input arrays do not have the same size" );
+   stride_ = stride;
+   index_.resize( N );
+   // Set indices to all non-singleton dimensions.
+   // Zero-stride dimensions are those that used to be singleton, but were expanded
+   // by setting the dimension > 1 and stride = 0.
+   dip::uint nelem = 0;
+   for( dip::uint ii = 0; ii < N; ++ii ) {
+      if(( dims[ii] != 1 ) && ( stride_[ii] != 0 )) {
+         index_[nelem] = ii;
+         ++nelem;
+      }
+   }
+   // Sort the indices large to small.
+   for( dip::uint ii = 1; ii < nelem; ++ii ) {
+      dip::uint keepIndex = index_[ii];
+      dip::sint key = stride_[keepIndex];
+      dip::uint jj = ii;
+      if( stride_[index_[jj - 1]] < key ) {
+         while(( jj > 0 ) && ( stride_[index_[jj - 1]] < key )) {
+            index_[jj] = index_[jj - 1];
+            --jj;
+         }
+         index_[jj] = keepIndex;
+      }
+   }
+   // The indices for the singleton dimensions go at the end.
+   for( dip::uint ii = 0; ii < N; ++ii ) {
+      if(( dims[ii] == 1 ) || ( stride_[ii] == 0 )) {
+         index_[nelem] = ii;
+         // By the time we use these elements, the resudue should be 0, so it
+         // doesn't matter what the stride values are. As long as they are not 0!
+         stride_[nelem] = 1;
+         ++nelem;
+      }
+   }
+}
+
+// This version assumes no singleton dimensions, and all positive strides (including non-zero).
+CoordinatesComputer::CoordinatesComputer( const IntegerArray& stride ) {
+   dip::uint N = stride.size();
+   stride_ = stride;
+   index_.resize( N );
+   for( dip::uint ii = 0; ii < N; ++ii ) {
+      index_[ii] = ii;
+   }
+   for( dip::uint ii = 1; ii < N; ++ii ) {
+      dip::uint keepIndex = index_[ii];
+      dip::sint key = stride_[keepIndex];
+      dip::uint jj = ii;
+      if( stride_[index_[jj - 1]] < key ) {
+         while(( jj > 0 ) && ( stride_[index_[jj - 1]] < key )) {
+            index_[jj] = index_[jj - 1];
+            --jj;
+         }
+         index_[jj] = keepIndex;
+      }
+   }
+}
+
+// The function that computes OffsetToCoordinates and IndexToCoordinates.
+// TODO: None of this works with negative strides. To fix that, we might have
+// to use the image dimensions in the computation. Currently we expect the
+// residue for coordimates[ii] to be within 0 and dim[ii+1]*stride[ii+1], and
+// that is how we find the right value for that dimension. But we use this
+// property implicitly. We'll have to make it expliciit. With negative strides
+// there are different lower and upper bounds.
+UnsignedArray CoordinatesComputer::operator()( dip::sint offset ) {
+   dip::uint N = stride_.size();
+   UnsignedArray coordinates( N );
+   for( dip::uint ii = 0; ii < N; ++ii ) {
+      dip::uint jj = index_[ii];
+      coordinates[jj] = static_cast< dip::uint >( offset / stride_[jj] );
+      //offset = offset - stride_[jj] * coordinates[jj];
+      offset = offset % stride_[ii];
+   }
+   return coordinates;
+}
 
 
 // Normal strides are the default ones:
@@ -305,6 +390,22 @@ bool Image::Aliases( const Image& other ) const {
    // Lastly, check dimensions and strides
    // This is a bit complex
 
+   // Remove singleton dimensions
+   for( dip::uint ii=0; ii<ndims1; ++ii ) {
+      if( dims1[ii] == 1 ) {
+         dims1.erase( ii );
+         --ii;
+         --ndims1;
+      }
+   }
+   for( dip::uint ii=0; ii<ndims2; ++ii ) {
+      if( dims2[ii] == 1 ) {
+         dims2.erase( ii );
+         --ii;
+         --ndims2;
+      }
+   }
+
    // Make sure all strides are positive (un-mirror)
    for( dip::uint ii=0; ii<ndims1; ++ii ) {
       if( strides1[ii] < 0 ) {
@@ -325,7 +426,6 @@ bool Image::Aliases( const Image& other ) const {
 
    // Walk through both stride arrays matching up dimensions
    // The assumed invariant is that stride[ii+1]>=stride[ii]*dims[ii]
-   // Added singleton dimensions have a stride of 0
 
    IntegerArray  comstrides;  // common strides
    IntegerArray  newstrides1; // new strides img 1
@@ -453,17 +553,22 @@ dip::sint Image::Offset( const UnsignedArray& coords ) const {
 }
 
 //
-UnsignedArray Image::OffsetToCoordinates( dip::uint offset ) const {
-   // TODO: we need to sort the strides, but then the coordinates array will be in wrong order
-   // TODO: this does not work if there are negative strides!?
-   return dip::OffsetToCoordinates( offset, strides );
+UnsignedArray Image::OffsetToCoordinates( dip::sint offset ) const {
+   auto comp = OffsetToCoordinatesComputer();
+   return comp( offset );
 }
 
 //
-dip::uint Image::Index( const UnsignedArray& coords ) const {
+CoordinatesComputer Image::OffsetToCoordinatesComputer() const {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   return CoordinatesComputer( dims, strides );
+}
+
+//
+dip::sint Image::Index( const UnsignedArray& coords ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip_ThrowIf( coords.size() != dims.size(), E::ARRAY_ILLEGAL_SIZE );
-   dip::uint index = 0;
+   dip::sint index = 0;
    for( dip::uint ii = dims.size(); ii > 0; ) {
       --ii;
       dip_ThrowIf( coords[ii] >= dims[ii], E::INDEX_OUT_OF_RANGE );
@@ -474,12 +579,17 @@ dip::uint Image::Index( const UnsignedArray& coords ) const {
 }
 
 //
-UnsignedArray Image::IndexToCoordinates( dip::uint index ) const {
+UnsignedArray Image::IndexToCoordinates( dip::sint index ) const {
+   auto comp = IndexToCoordinatesComputer();
+   return comp( index );
+}
+
+//
+CoordinatesComputer Image::IndexToCoordinatesComputer() const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   UnsignedArray coords( dims.size() );
    IntegerArray fake_strides;
    ComputeStrides( dims, 1, fake_strides );
-   return dip::OffsetToCoordinates( index, fake_strides );
+   return CoordinatesComputer( dims, fake_strides );
 }
 
 //
