@@ -1,10 +1,10 @@
 #include <iostream>
+#include <random>
+#include <typeinfo>
 #include "diplib.h"
+#include "dip_overload.h"
 
 // Just a test!
-
-#include "dip_overload.h"
-#include <typeinfo>
 
 template< typename TPI >
 static void dip__MyFunction( void* vin ) {
@@ -103,7 +103,7 @@ int main() {
          img1.Flatten();
          std::cout << img1;
       }
-      std::cout << std::endl << "Aliasing." << std::endl;
+      std::cout << std::endl << "Aliasing (no output is good)." << std::endl;
       {
          dip::Image img1;
          img1.SetDimensions({50,80,30});
@@ -148,7 +148,64 @@ int main() {
             std::cout << "Error: aliasing computation, test #10" << std::endl;
          if( Alias(img1.Real(),img1.Imaginary()) != false )
             std::cout << "Error: aliasing computation, test #11" << std::endl;
-
+      }
+      std::cout << std::endl << "Indices and offsets (no output is good)." << std::endl;
+      std::default_random_engine random;
+      std::uniform_int_distribution<dip::uint> rand8(1, 8);
+      std::uniform_int_distribution<dip::uint> rand30(1, 30);
+      std::uniform_real_distribution<double> randF(0, 1);
+      for( dip::uint repeat = 0; repeat < 1000; ++repeat ) {
+         dip::uint ndims = rand8( random );
+         dip::UnsignedArray sz( ndims );
+         for( dip::uint ii = 0; ii < ndims; ++ii ) {
+            sz[ii] = rand30( random );
+         }
+         dip::Image img;
+         img.SetDimensions( sz );
+         img.Forge();
+         std::uniform_int_distribution<int> randD(0, ndims-1);
+         for( dip::uint ii = 0; ii < rand8( random ); ++ii) {
+            img.SwapDimensions( randD( random ), randD( random ));
+         }
+         dip::BooleanArray mirror( ndims );
+         for( dip::uint ii = 0; ii < ndims; ++ii ) {
+            mirror[ii] = randF( random ) > 0.7;
+         }
+         img.Mirror( mirror );
+         //std::cout << img;
+         const dip::UnsignedArray& dims = img.Dimensions();
+         auto o2c = img.OffsetToCoordinatesComputer();
+         auto i2c = img.IndexToCoordinatesComputer();
+         for( dip::uint repeat2 = 0; repeat2 < 100; ++repeat2 ) {
+            dip::UnsignedArray coords( ndims );
+            for( dip::uint ii = 0; ii < ndims; ++ii ) {
+               coords[ii] = (dip::uint)std::floor( randF( random ) * dims[ii] );
+            }
+            dip::sint offset = img.Offset( coords );
+            if( o2c( offset ) != coords ) {
+               std::cout << "Error: offset to coordinates computation" << std::endl;
+               std::cout << img;
+               std::cout << "   coords = ";
+               for( dip::uint ii = 0; ii < coords.size(); ++ii ) std::cout << coords[ii] << ", ";
+               std::cout << "\n   offset = " << offset << std::endl;
+               coords = o2c( offset );
+               std::cout << "   coords = ";
+               for( dip::uint ii = 0; ii < coords.size(); ++ii ) std::cout << coords[ii] << ", ";
+               return 2;
+            }
+            dip::sint index = img.Index( coords );
+            if( i2c( index ) != coords ) {
+               std::cout << "Error: index to coordinates computation" << std::endl;
+               std::cout << img;
+               std::cout << "   coords = ";
+               for( dip::uint ii = 0; ii < coords.size(); ++ii ) std::cout << coords[ii] << ", ";
+               std::cout << "\n   index = " << index << std::endl;
+               coords = i2c( index );
+               std::cout << "   coords = ";
+               for( dip::uint ii = 0; ii < coords.size(); ++ii ) std::cout << coords[ii] << ", ";
+               return 2;
+            }
+         }
       }
 
    } catch( dip::Error e ) {

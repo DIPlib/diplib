@@ -71,12 +71,13 @@ class ExternalInterface {
 ///     auto c3 = coords( offset3 );
 class CoordinatesComputer {
    public:
-      CoordinatesComputer( const UnsignedArray& dims, const IntegerArray& stride );
-      CoordinatesComputer( const IntegerArray& stride ); // this constructor assumes no singleton dimensions, and all positive strides
-      UnsignedArray operator()( dip::sint offset );
+      CoordinatesComputer( const UnsignedArray& dims, const IntegerArray& strides );
+      UnsignedArray operator()( dip::sint offset ) const;
    private:
-      IntegerArray stride_; // a copy of the image's stride array
-      UnsignedArray index_; // sorted indices to the stride array (largest to smallest)
+      IntegerArray strides_; // a copy of the image's strides array, but with all positive values
+      IntegerArray dims_;    // a copy of the image's dims array, but with negative values where the strides are negative
+      UnsignedArray index_;  // sorted indices to the strides array (largest to smallest)
+      dip::sint offset_;     // offset needed to handle negative strides
 };
 
 //

@@ -45,10 +45,12 @@ Image& Image::PermuteDimensions( const UnsignedArray& order ) {
 Image& Image::SwapDimensions( dip::uint d1, dip::uint d2 ) {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = dims.size();
-   dip_ThrowIf( (d1>=nd) || (d2>=nd), E::ILLEGAL_DIMENSION );
-   std::swap( dims   [d1], dims   [d2] );
-   std::swap( strides[d1], strides[d2] );
-   pixelsize.SwapDimensions( d1, d2 );
+   dip_ThrowIf(( d1>=nd ) || ( d2>=nd ), E::ILLEGAL_DIMENSION );
+   if( d1 != d2 ) {
+      std::swap( dims   [d1], dims   [d2] );
+      std::swap( strides[d1], strides[d2] );
+      pixelsize.SwapDimensions( d1, d2 );
+   }
    return *this;
 }
 
@@ -140,7 +142,7 @@ Image& Image::Mirror( const BooleanArray& process ) {
    dip_ThrowIf( process.size() != nd, E::ARRAY_ILLEGAL_SIZE);
    for( dip::uint ii=0; ii<nd; ++ii ) {
       if( process[ii] ) {
-         origin = Pointer( ( dims[ii] - 1 ) * strides[ii] );
+         origin = Pointer(( dims[ii] - 1 ) * strides[ii] );
          strides[ii] = -strides[ii];
       }
    }
