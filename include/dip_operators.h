@@ -37,8 +37,8 @@ namespace dip {
 ///
 /// \see Sub, Mul, MulSamples, Div, Mod, operator+
 void Add(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out,
       DataType dt
 );
@@ -48,8 +48,8 @@ void Add(
 /// \see Add, Sub, Mul, MulSamples, Div, Mod, operator+
 template< typename T >
 inline void Add(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       Image& out,
       DataType dt
 ) {
@@ -58,8 +58,8 @@ inline void Add(
 
 template< typename T >
 inline Image Add(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       DataType dt
 ) {
    Image out;
@@ -73,8 +73,8 @@ inline Image Add(
 ///
 /// \see Add, Mul, MulSamples, Div, Mod, operator-
 void Sub(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out,
       DataType dt
 );
@@ -84,8 +84,8 @@ void Sub(
 /// \see Add, Sub, Mul, MulSamples, Div, Mod, operator-
 template< typename T >
 inline void Sub(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       Image& out,
       DataType dt
 ) {
@@ -94,8 +94,8 @@ inline void Sub(
 
 template< typename T >
 inline Image Sub(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       DataType dt
 ) {
    Image out;
@@ -116,8 +116,8 @@ inline Image Sub(
 ///
 /// \see Add, Sub, MulSamples, Div, Mod, operator*
 void Mul(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out,
       DataType dt
 );
@@ -127,8 +127,8 @@ void Mul(
 /// \see Add, Sub, Mul, MulSamples, Div, Mod, operator*
 template< typename T >
 inline void Mul(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       Image& out,
       DataType dt
 ) {
@@ -137,8 +137,8 @@ inline void Mul(
 
 template< typename T >
 inline Image Mul(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       DataType dt
 ) {
    Image out;
@@ -151,15 +151,15 @@ inline Image Mul(
 ///
 /// \see Add, Sub, Mul, Div, Mod
 void MulSamples(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out,
       DataType dt
 );
 
 inline Image MulSamples(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       DataType dt
 ) {
    Image out;
@@ -173,8 +173,8 @@ inline Image MulSamples(
 ///
 /// \see Add, Sub, Mul, MulSamples, Mod, operator/
 void Div(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out,
       DataType dt
 );
@@ -184,8 +184,8 @@ void Div(
 /// \see Add, Sub, Mul, MulSamples, Div, Mod, operator/
 template< typename T >
 inline void Div(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       Image& out,
       DataType dt
 ) {
@@ -194,8 +194,8 @@ inline void Div(
 
 template< typename T >
 inline Image Div(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       DataType dt
 ) {
    Image out;
@@ -209,8 +209,8 @@ inline Image Div(
 ///
 /// \see Add, Sub, Mul, MulSamples, Div, operator%
 void Mod(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out,
       DataType dt
 );
@@ -221,8 +221,8 @@ void Mod(
 /// \see Add, Sub, Mul, MulSamples, Div, Mod, operator%
 template< typename T >
 inline void Mod(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       Image& out,
       DataType dt
 ) {
@@ -231,8 +231,8 @@ inline void Mod(
 
 template< typename T >
 inline Image Mod(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       DataType dt
 ) {
    Image out;
@@ -247,12 +247,12 @@ inline Image Mod(
 ///
 /// \see operator-, Not
 void Invert(
-      const Image& in,
+      Image const& in,
       Image& out
 );
 
 inline Image Invert(
-      const Image& in
+      Image const& in
 ) {
    Image out;
    Invert( in, out );
@@ -271,14 +271,14 @@ inline Image Invert(
 ///
 /// \see Or, Xor, operator&
 void And(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out
 );
 
 inline Image And(
-      const Image& lhs,
-      const Image& rhs
+      Image const& lhs,
+      Image const& rhs
 ) {
    Image out;
    And( lhs, rhs, out );
@@ -292,14 +292,14 @@ inline Image And(
 ///
 /// \see And, Xor, operator|
 void Or(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out
 );
 
 inline Image Or(
-      const Image& lhs,
-      const Image& rhs
+      Image const& lhs,
+      Image const& rhs
 ) {
    Image out;
    Or( lhs, rhs, out );
@@ -313,14 +313,14 @@ inline Image Or(
 ///
 /// \see And, Or, operator^
 void Xor(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out
 );
 
 inline Image Xor(
-      const Image& lhs,
-      const Image& rhs
+      Image const& lhs,
+      Image const& rhs
 ) {
    Image out;
    Xor( lhs, rhs, out );
@@ -333,12 +333,12 @@ inline Image Xor(
 ///
 /// \see operator!, operator~, Invert
 void Not(
-      const Image& in,
+      Image const& in,
       Image& out
 );
 
 inline Image Not(
-      const Image& in
+      Image const& in
 ) {
    Image out;
    Not( in, out );
@@ -355,8 +355,8 @@ inline Image Not(
 ///
 /// \see NotEqual, Lesser, Greater, NotGreater, NotLesser, operator==
 void Equal(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out
 );
 
@@ -366,8 +366,8 @@ void Equal(
 /// \see NotEqual, Lesser, Greater, NotGreater, NotLesser, operator==
 template< typename T >
 inline void Equal(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       Image& out
 ) {
    Equal( lhs, Image{ rhs }, out );
@@ -375,8 +375,8 @@ inline void Equal(
 
 template< typename T >
 inline Image Equal(
-      const Image& lhs,
-      const T& rhs
+      Image const& lhs,
+      T const& rhs
 ) {
    Image out;
    Equal( lhs, rhs, out );
@@ -389,8 +389,8 @@ inline Image Equal(
 ///
 /// \see Equal, Lesser, Greater, NotGreater, NotLesser, operator!=
 void NotEqual(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out
 );
 
@@ -400,8 +400,8 @@ void NotEqual(
 /// \see Equal, Lesser, Greater, NotGreater, NotLesser, operator!=
 template< typename T >
 inline void NotEqual(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       Image& out
 ) {
    NotEqual( lhs, Image{ rhs }, out );
@@ -409,8 +409,8 @@ inline void NotEqual(
 
 template< typename T >
 inline Image NotEqual(
-      const Image& lhs,
-      const T& rhs
+      Image const& lhs,
+      T const& rhs
 ) {
    Image out;
    NotEqual( lhs, rhs, out );
@@ -423,8 +423,8 @@ inline Image NotEqual(
 ///
 /// \see Equal, NotEqual, Greater, NotGreater, NotLesser, operator<
 void Lesser(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out
 );
 
@@ -434,8 +434,8 @@ void Lesser(
 /// \see Equal, NotEqual, Greater, NotGreater, NotLesser, operator<
 template< typename T >
 inline void Lesser(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       Image& out
 ) {
    Lesser( lhs, Image{ rhs }, out );
@@ -443,8 +443,8 @@ inline void Lesser(
 
 template< typename T >
 inline Image Lesser(
-      const Image& lhs,
-      const T& rhs
+      Image const& lhs,
+      T const& rhs
 ) {
    Image out;
    Lesser( lhs, rhs, out );
@@ -457,8 +457,8 @@ inline Image Lesser(
 ///
 /// \see Equal, NotEqual, Lesser, NotGreater, NotLesser, operator>
 void Greater(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out
 );
 
@@ -468,8 +468,8 @@ void Greater(
 /// \see Equal, NotEqual, Lesser, NotGreater, NotLesser, operator>
 template< typename T >
 inline void Greater(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       Image& out
 ) {
    Greater( lhs, Image{ rhs }, out );
@@ -477,8 +477,8 @@ inline void Greater(
 
 template< typename T >
 inline Image Greater(
-      const Image& lhs,
-      const T& rhs
+      Image const& lhs,
+      T const& rhs
 ) {
    Image out;
    Greater( lhs, rhs, out );
@@ -491,8 +491,8 @@ inline Image Greater(
 ///
 /// \see Equal, NotEqual, Lesser, Greater, NotLesser, operator<=
 void NotGreater(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out
 );
 
@@ -502,8 +502,8 @@ void NotGreater(
 /// \see Equal, NotEqual, Lesser, Greater, NotLesser, operator<=
 template< typename T >
 inline void NotGreater(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       Image& out
 ) {
    NotGreater( lhs, Image{ rhs }, out );
@@ -511,8 +511,8 @@ inline void NotGreater(
 
 template< typename T >
 inline Image NotGreater(
-      const Image& lhs,
-      const T& rhs
+      Image const& lhs,
+      T const& rhs
 ) {
    Image out;
    NotGreater( lhs, rhs, out );
@@ -524,8 +524,8 @@ inline Image NotGreater(
 ///
 /// \see Equal, NotEqual, Lesser, Greater, NotGreater, operator>=
 void NotLesser(
-      const Image& lhs,
-      const Image& rhs,
+      Image const& lhs,
+      Image const& rhs,
       Image& out
 );
 
@@ -535,8 +535,8 @@ void NotLesser(
 /// \see Equal, NotEqual, Lesser, Greater, NotGreater, operator>=
 template< typename T >
 inline void NotLesser(
-      const Image& lhs,
-      const T& rhs,
+      Image const& lhs,
+      T const& rhs,
       Image& out
 ) {
    NotLesser( lhs, Image{ rhs }, out );
@@ -544,8 +544,8 @@ inline void NotLesser(
 
 template< typename T >
 inline Image NotLesser(
-      const Image& lhs,
-      const T& rhs
+      Image const& lhs,
+      T const& rhs
 ) {
    Image out;
    NotLesser( lhs, rhs, out );
@@ -558,57 +558,57 @@ inline Image NotLesser(
 //
 
 /// Arithmetic operator, calls Add.
-inline Image operator+( const Image& lhs, const Image& rhs ) {
+inline Image operator+( Image const& lhs, Image const& rhs ) {
    return Add( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
 /// Arithmetic operator, calls Add.
 template< typename T >
-inline Image operator+( const Image& lhs, const T& rhs ) {
+inline Image operator+( Image const& lhs, T const& rhs ) {
    return Add( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
 /// Arithmetic operator, calls Sub.
-inline Image operator-( const Image& lhs, const Image& rhs ) {
+inline Image operator-( Image const& lhs, Image const& rhs ) {
    return Sub( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
 /// Arithmetic operator, calls Sub.
 template< typename T >
-inline Image operator-( const Image& lhs, const T& rhs ) {
+inline Image operator-( Image const& lhs, T const& rhs ) {
    return Sub( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
 /// Arithmetic operator, calls Mul.
-inline Image operator*( const Image& lhs, const Image& rhs ) {
+inline Image operator*( Image const& lhs, Image const& rhs ) {
    return Mul( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
 /// Arithmetic operator, calls Mul.
 template< typename T >
-inline Image operator*( const Image& lhs, const T& rhs ) {
+inline Image operator*( Image const& lhs, T const& rhs ) {
    return Mul( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
 /// Arithmetic operator, calls Div.
-inline Image operator/( const Image& lhs, const Image& rhs ) {
+inline Image operator/( Image const& lhs, Image const& rhs ) {
    return Div( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
 /// Arithmetic operator, calls Div.
 template< typename T >
-inline Image operator/( const Image& lhs, const T& rhs ) {
+inline Image operator/( Image const& lhs, T const& rhs ) {
    return Div( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
 /// Arithmetic operator, calls Mod.
-inline Image operator%( const Image& lhs, const Image& rhs ) {
+inline Image operator%( Image const& lhs, Image const& rhs ) {
    return Mod( lhs, rhs, lhs.DataType() );
 }
 
 /// Arithmetic operator, calls Mod.
 template< typename T >
-inline Image operator%( const Image& lhs, const T& rhs ) {
+inline Image operator%( Image const& lhs, T const& rhs ) {
    return Mod( lhs, Image{ rhs }, lhs.DataType() );
 }
 
@@ -618,17 +618,17 @@ inline Image operator%( const Image& lhs, const T& rhs ) {
 //
 
 /// Boolean operator, calls And.
-inline Image operator&( const Image& lhs, const Image& rhs ) {
+inline Image operator&( Image const& lhs, Image const& rhs ) {
    return And( lhs, rhs );
 }
 
 /// Boolean operator, calls Or.
-inline Image operator|( const Image& lhs, const Image& rhs ) {
+inline Image operator|( Image const& lhs, Image const& rhs ) {
    return Or( lhs, rhs );
 }
 
 /// Boolean operator, calls Xor.
-inline Image operator^( const Image& lhs, const Image& rhs ) {
+inline Image operator^( Image const& lhs, Image const& rhs ) {
    return Xor( lhs, rhs );
 }
 
@@ -638,18 +638,18 @@ inline Image operator^( const Image& lhs, const Image& rhs ) {
 //
 
 /// Unary operator, calls Invert.
-inline Image operator-( const Image& in ) {
+inline Image operator-( Image const& in ) {
    return Invert( in );
 }
 
 /// Bit-wise unary operator, calls Not.
-inline Image operator~( const Image& in ) {
+inline Image operator~( Image const& in ) {
    dip_ThrowIf( !in.DataType().IsInteger(), "Bit-wise unary not operator only applicable to integer images" );
    return Not( in );
 }
 
 /// Boolean unary operator, calls Not.
-inline Image operator!( const Image& in ) {
+inline Image operator!( Image const& in ) {
    dip_ThrowIf( !in.DataType().IsBinary(), "Boolean unary not operator only applicable to binary images" );
    return Not( in );
 }
@@ -660,37 +660,37 @@ inline Image operator!( const Image& in ) {
 
 /// Comparison operator, calls Equal.
 template< typename T >
-inline Image operator==( const Image& lhs, const T& rhs ) {
+inline Image operator==( Image const& lhs, T const& rhs ) {
    return Equal( lhs, rhs );
 }
 
 /// Comparison operator, calls NotEqual.
 template< typename T >
-inline Image operator!=( const Image& lhs, const T& rhs ) {
+inline Image operator!=( Image const& lhs, T const& rhs ) {
    return NotEqual( lhs, rhs );
 }
 
 /// Comparison operator, calls Lesser.
 template< typename T >
-inline Image operator< ( const Image& lhs, const T& rhs ) {
+inline Image operator<( Image const& lhs, T const& rhs ) {
    return Lesser( lhs, rhs );
 }
 
 /// Comparison operator, calls Greater.
 template< typename T >
-inline Image operator> ( const Image& lhs, const T& rhs ) {
+inline Image operator>( Image const& lhs, T const& rhs ) {
    return Greater( lhs, rhs );
 }
 
 /// Comparison operator, calls NotGreater.
 template< typename T >
-inline Image operator<=( const Image& lhs, const T& rhs ) {
+inline Image operator<=( Image const& lhs, T const& rhs ) {
    return NotGreater( lhs, rhs );
 }
 
 /// Comparison operator, calls NotLesser.
 template< typename T >
-inline Image operator>=( const Image& lhs, const T& rhs ) {
+inline Image operator>=( Image const& lhs, T const& rhs ) {
    return NotLesser( lhs, rhs );
 }
 
@@ -702,7 +702,7 @@ inline Image operator>=( const Image& lhs, const T& rhs ) {
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 template< typename T >
-inline Image& operator+=( Image& lhs, const T& rhs ) {
+inline Image& operator+=( Image& lhs, T const& rhs ) {
    Add( lhs, rhs, lhs, lhs.DataType() );
    return lhs;
 }
@@ -711,7 +711,7 @@ inline Image& operator+=( Image& lhs, const T& rhs ) {
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 template< typename T >
-inline Image& operator-=( Image& lhs, const T& rhs ) {
+inline Image& operator-=( Image& lhs, T const& rhs ) {
    Sub( lhs, rhs, lhs, lhs.DataType() );
    return lhs;
 }
@@ -720,7 +720,7 @@ inline Image& operator-=( Image& lhs, const T& rhs ) {
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 template< typename T >
-inline Image& operator*=( Image& lhs, const T& rhs ) {
+inline Image& operator*=( Image& lhs, T const& rhs ) {
    Mul( lhs, rhs, lhs, lhs.DataType() );
    return lhs;
 }
@@ -729,7 +729,7 @@ inline Image& operator*=( Image& lhs, const T& rhs ) {
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 template< typename T >
-inline Image& operator/=( Image& lhs, const T& rhs ) {
+inline Image& operator/=( Image& lhs, T const& rhs ) {
    Div( lhs, rhs, lhs, lhs.DataType() );
    return lhs;
 }
@@ -738,7 +738,7 @@ inline Image& operator/=( Image& lhs, const T& rhs ) {
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 template< typename T >
-inline Image& operator%=( Image& lhs, const T& rhs ) {
+inline Image& operator%=( Image& lhs, T const& rhs ) {
    Mod( lhs, rhs, lhs, lhs.DataType() );
    return lhs;
 }
@@ -746,7 +746,7 @@ inline Image& operator%=( Image& lhs, const T& rhs ) {
 /// Bit-wise compount assignment operator. The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
-inline Image& operator&=( Image& lhs, const Image& rhs ) {
+inline Image& operator&=( Image& lhs, Image const& rhs ) {
    And( lhs, rhs, lhs );
    return lhs;
 }
@@ -754,7 +754,7 @@ inline Image& operator&=( Image& lhs, const Image& rhs ) {
 /// Bit-wise compount assignment operator. The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
-inline Image& operator|=( Image& lhs, const Image& rhs ) {
+inline Image& operator|=( Image& lhs, Image const& rhs ) {
    Or( lhs, rhs, lhs );
    return lhs;
 }
@@ -762,7 +762,7 @@ inline Image& operator|=( Image& lhs, const Image& rhs ) {
 /// Bit-wise compount assignment operator. The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
-inline Image& operator^=( Image& lhs, const Image& rhs ) {
+inline Image& operator^=( Image& lhs, Image const& rhs ) {
    Xor( lhs, rhs, lhs );
    return lhs;
 }

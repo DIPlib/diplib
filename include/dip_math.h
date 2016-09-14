@@ -32,8 +32,8 @@ struct MaximumAndMinimum {
 /// image, returns the maximum and minimum sample values. In case of a complex
 /// samples, treats real and imaginary components as individual samples.
 MaximumAndMinimum GetMaximumAndMinimum(
-   Image in,
-   Image mask
+      Image const& in,
+      Image const& mask
 );
 
 

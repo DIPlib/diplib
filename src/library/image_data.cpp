@@ -30,47 +30,46 @@ namespace dip {
 
 // Compute a normal stride array.
 static void ComputeStrides(
-      const UnsignedArray& dims,
+      UnsignedArray const& sizes,
       dip::uint s,               // set to tensor.Elements()
       IntegerArray& strides
 ) {
-   dip::uint n = dims.size();
+   dip::uint n = sizes.size();
    strides.resize( n );
-   for( dip::uint ii=0; ii<n; ++ii ) {
-      strides[ii] = s;
-      s *= dims[ii];
+   for( dip::uint ii = 0; ii < n; ++ii ) {
+      strides[ ii ] = s;
+      s *= sizes[ ii ];
    }
 }
 
 
-
-// Return the number of pixels defined by the dims array.
+// Return the number of pixels defined by the sizes array.
 // Same as dip::Image::NumberOfPixels() but with check.
 static dip::uint FindNumberOfPixels(
-      const UnsignedArray& dims
+      UnsignedArray const& sizes
 ) {
    dip::uint n = 1;
-   for( dip::uint ii=0; ii<dims.size(); ++ii ) {
-      dip_ThrowIf( ( dims[ii] != 0 ) && ( n > std::numeric_limits<dip::uint>::max() / dims[ii] ),
-         E::DIMENSIONALITY_EXCEEDS_LIMIT );
-      n *= dims[ii];
+   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+      dip_ThrowIf( ( sizes[ ii ] != 0 ) && ( n > std::numeric_limits< dip::uint >::max() / sizes[ ii ] ),
+                   E::DIMENSIONALITY_EXCEEDS_LIMIT );
+      n *= sizes[ ii ];
    }
    return n;
 }
 
 
 // Return the size of the data block needed to store an image given by
-// strides and dims, as well as the (negative) offset of the block if any
+// strides and sizes, as well as the (negative) offset of the block if any
 // of the strides are negative.
 static void FindDataBlockSizeAndStart(
-      const IntegerArray& strides,
-      const UnsignedArray& dims,
+      IntegerArray const& strides,
+      UnsignedArray const& sizes,
       dip::uint& size,
       dip::sint& start
 ) {
    dip::sint min = 0, max = 0;
-   for( dip::uint ii=0; ii<dims.size(); ++ii ) {
-      dip::sint p = ( dims[ii] - 1 ) * strides[ii];
+   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+      dip::sint p = ( sizes[ ii ] - 1 ) * strides[ ii ];
       if( p < 0 ) {
          min += p;
       } else {
@@ -78,18 +77,18 @@ static void FindDataBlockSizeAndStart(
       }
    }
    start = min;
-   size = max - min + 1;
+   size = static_cast< dip::uint >( max - min + 1 );
 }
 
 
 // Return the simple stride (if it exists), the start pixel (offset into the
-// data block), and number of pixels defined by strides and dims.
+// data block), and number of pixels defined by strides and sizes.
 // If there is no simple stride, sets sstride==0, and returns false.
 // Note that sstride==0 does not indicate an error condition, it is possible
 // that the image was singleton-expanded from a 0D image.
 static bool FindSimpleStrideSizeAndStart(
-      const IntegerArray& strides,
-      const UnsignedArray& dims,
+      IntegerArray const& strides,
+      UnsignedArray const& sizes,
       dip::uint& sstride,
       dip::uint& size,
       dip::sint& start
@@ -101,14 +100,14 @@ static bool FindSimpleStrideSizeAndStart(
       start = 0;
    } else {
       // Find the simple stride
-      sstride = std::numeric_limits<dip::sint>::max();
-      for( dip::uint ii=0; ii<strides.size(); ++ii ) {
-         if( dims[ii]>1 ) {
-            sstride = std::min( sstride, static_cast<dip::uint>( std::abs( strides[ii] ) ) );
+      sstride = std::numeric_limits< dip::uint >::max();
+      for( dip::uint ii = 0; ii < strides.size(); ++ii ) {
+         if( sizes[ ii ] > 1 ) {
+            sstride = std::min( sstride, static_cast< dip::uint >( std::abs( strides[ ii ] ) ) );
          }
       }
-      FindDataBlockSizeAndStart( strides, dims, size, start );
-      if( size != ( FindNumberOfPixels( dims ) - 1 ) * sstride + 1 ) {
+      FindDataBlockSizeAndStart( strides, sizes, size, start );
+      if( size != ( FindNumberOfPixels( sizes ) - 1 ) * sstride + 1 ) {
          sstride = 0;
          return false;
       }
@@ -121,15 +120,15 @@ static bool FindSimpleStrideSizeAndStart(
 // Strides array must be all positive, and sorted in increasing order.
 static UnsignedArray OffsetToCoordinates(
       dip::uint offset,
-      const IntegerArray& strides
+      IntegerArray const& strides
 ) {
    UnsignedArray coord( strides.size() );
    for( dip::uint ii = strides.size(); ii > 0; ) {
       // This loop increases its counter at the start, a disadvantage of using
       // unsigned integers as loop counters.
       --ii;
-      coord[ii] = offset / strides[ii];
-      offset    = offset % strides[ii];
+      coord[ ii ] = offset / strides[ ii ];
+      offset = offset % strides[ ii ];
    }
    return coord;
 }
@@ -141,11 +140,11 @@ static UnsignedArray OffsetToCoordinates(
 
 
 // Constructor.
-CoordinatesComputer::CoordinatesComputer( const UnsignedArray& dims, const IntegerArray& strides ) {
+CoordinatesComputer::CoordinatesComputer( UnsignedArray const& sizes, IntegerArray const& strides ) {
    dip::uint N = strides.size();
-   dip_ThrowIf( dims.size() != N, "Input arrays do not have the same size" );
+   dip_ThrowIf( sizes.size() != N, "Input arrays do not have the same size" );
    strides_ = strides;
-   dims_.resize( N );
+   sizes_.resize( N );
    index_.resize( N );
    offset_ = 0;
    // Set indices to all non-singleton dimensions.
@@ -153,50 +152,50 @@ CoordinatesComputer::CoordinatesComputer( const UnsignedArray& dims, const Integ
    // by setting the dimension > 1 and stride = 0.
    dip::uint nelem = 0;
    for( dip::uint ii = 0; ii < N; ++ii ) {
-      dims_[ii] = dims[ii];
-      if(( dims_[ii] != 1 ) && ( strides_[ii] != 0 )) {
-         index_[nelem] = ii;
+      sizes_[ ii ] = sizes[ ii ];
+      if( ( sizes_[ ii ] != 1 ) && ( strides_[ ii ] != 0 ) ) {
+         index_[ nelem ] = ii;
          ++nelem;
-         if( strides_[ii] < 0 ) {
-            // For negative strides, we save a positive value instead. The dims
+         if( strides_[ ii ] < 0 ) {
+            // For negative strides, we save a positive value instead. The sizes
             // we make negative to remember that the stride was negative. We also
             // compute the offset that will be needed to compute coordinates.
             // In short, what this accomplishes is to reverse the dimension,
             // making the stride positive but counting starting at the end of
             // the image line instead of at the beginning. The computed coordinate
             // will thus need to be reversed again.
-            strides_[ii] = -strides_[ii];
-            offset_ += strides_[ii] * ( dims_[ii] - 1 );
-            dims_[ii] = -dims_[ii];
+            strides_[ ii ] = -strides_[ ii ];
+            offset_ += strides_[ ii ] * ( sizes_[ ii ] - 1 );
+            sizes_[ ii ] = -sizes_[ ii ];
          }
       }
    }
    // Sort the indices large to small.
    for( dip::uint ii = 1; ii < nelem; ++ii ) {
-      dip::uint keepIndex = index_[ii];
-      dip::sint key = strides_[keepIndex];
+      dip::uint keepIndex = index_[ ii ];
+      dip::sint key = strides_[ keepIndex ];
       dip::uint jj = ii;
-      while(( jj > 0 ) && ( strides_[index_[jj - 1]] < key )) {
-         index_[jj] = index_[jj - 1];
+      while( ( jj > 0 ) && ( strides_[ index_[ jj - 1 ] ] < key ) ) {
+         index_[ jj ] = index_[ jj - 1 ];
          --jj;
       }
-      index_[jj] = keepIndex;
+      index_[ jj ] = keepIndex;
    }
    // The indices for the singleton dimensions go at the end.
    for( dip::uint ii = 0; ii < N; ++ii ) {
-      if(( dims_[ii] == 1 ) || ( strides_[ii] == 0 )) {
-         index_[nelem] = ii;
+      if( ( sizes_[ ii ] == 1 ) || ( strides_[ ii ] == 0 ) ) {
+         index_[ nelem ] = ii;
          ++nelem;
          // By the time we use these elements, the resudue should be 0, so it
          // doesn't matter what the stride values are. As long as they are not 0!
-         strides_[ii] = 1;
+         strides_[ ii ] = 1;
       }
    }
    //std::cout << "   CoordinatesComputer: \n";
    //std::cout << "      strides_ = ";
    //for( dip::uint ii = 0; ii < strides_.size(); ++ii ) std::cout << strides_[ii] << ", ";
-   //std::cout << std::endl << "      dims_ = ";
-   //for( dip::uint ii = 0; ii < dims_.size(); ++ii ) std::cout << dims_[ii] << ", ";
+   //std::cout << std::endl << "      sizes_ = ";
+   //for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) std::cout << sizes_[ii] << ", ";
    //std::cout << std::endl << "      index_ = ";
    //for( dip::uint ii = 0; ii < index_.size(); ++ii ) std::cout << index_[ii] << ", ";
    //std::cout << std::endl << "      offset_ = " << offset_ << std::endl;
@@ -208,13 +207,13 @@ UnsignedArray CoordinatesComputer::operator()( dip::sint offset ) const {
    UnsignedArray coordinates( N );
    offset += offset_;
    for( dip::uint ii = 0; ii < N; ++ii ) {
-      dip::uint jj = index_[ii];
-      coordinates[jj] = static_cast< dip::uint >( offset / strides_[jj] );
-      offset = offset % strides_[jj];
-      if( dims_[jj] < 0 ) {
+      dip::uint jj = index_[ ii ];
+      coordinates[ jj ] = static_cast< dip::uint >( offset / strides_[ jj ] );
+      offset = offset % strides_[ jj ];
+      if( sizes_[ jj ] < 0 ) {
          // This dimension had a negative stride. The computed coordinate started
          // at the end of the line instead of the begging, so we reverse it.
-         coordinates[jj] = -dims_[jj] - coordinates[jj] - 1;
+         coordinates[ jj ] = -sizes_[ jj ] - coordinates[ jj ] - 1;
       }
    }
    return coordinates;
@@ -225,15 +224,15 @@ UnsignedArray CoordinatesComputer::operator()( dip::sint offset ) const {
 // increasing in value, and with contiguous data.
 bool Image::HasNormalStrides() const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   if( tstride != 1 ) {
+   if( tensorStride_ != 1 ) {
       return false;
    }
-   dip::sint total = tensor.Elements();
-   for( dip::uint ii=0; ii<dims.size(); ++ii ) {
-      if( strides[ii] != total ) {
+   dip::sint total = tensor_.Elements();
+   for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
+      if( strides_[ ii ] != total ) {
          return false;
       }
-      total *= dims[ii];
+      total *= sizes_[ ii ];
    }
    return true;
 }
@@ -245,7 +244,7 @@ void Image::GetSimpleStrideAndOrigin( dip::uint& sstride, void*& porigin ) const
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::sint start;
    dip::uint size;
-   if( FindSimpleStrideSizeAndStart( strides, dims, sstride, size, start )) {
+   if( FindSimpleStrideSizeAndStart( strides_, sizes_, sstride, size, start ) ) {
       porigin = Pointer( start );
    } else {
       porigin = nullptr;
@@ -255,27 +254,28 @@ void Image::GetSimpleStrideAndOrigin( dip::uint& sstride, void*& porigin ) const
 
 //
 bool Image::HasValidStrides() const {
-   // We require that |strides[ii+1]| > |strides[ii]|*(dims[ii]-1) (after sorting the absolute strides on size)
-   if( dims.size() != strides.size() ) {
+   // We require that |strides[ii+1]| > |strides[ii]|*(sizes[ii]-1) (after sorting the absolute strides on size)
+   if( sizes_.size() != strides_.size() ) {
       return false;
    }
    // Add tensor dimension and strides to the lists
-   IntegerArray  s = strides;
-   UnsignedArray d = dims;
-   if( tensor.Elements() > 1 ) {
-      s.push_back( tstride );
-      d.push_back( tensor.Elements() );
+   IntegerArray s = strides_;
+   UnsignedArray d = sizes_;
+   if( tensor_.Elements() > 1 ) {
+      s.push_back( tensorStride_ );
+      d.push_back( tensor_.Elements() );
    }
    dip::uint n = s.size();
    // Make sure all strides are positive
-   for( dip::uint ii=0; ii<n; ++ii ) {
-      s[ii] = std::abs( s[ii] );
+   for( dip::uint ii = 0; ii < n; ++ii ) {
+      s[ ii ] = std::abs( s[ ii ] );
    }
    s.sort( d );
    // Test invariant
-   for( dip::uint ii=0; ii<n-1; ++ii ) {
-      if( s[ii+1] <= s[ii]*(d[ii]-1) )
+   for( dip::uint ii = 0; ii < n - 1; ++ii ) {
+      if( s[ ii + 1 ] <= s[ ii ] * ( d[ ii ] - 1 ) ) {
          return false;
+      }
    }
    // It's OK
    return true;
@@ -285,81 +285,83 @@ bool Image::HasValidStrides() const {
 //
 void Image::SetNormalStrides() {
    dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-   tstride = 1;                       // We set tensor strides to 1 by default.
-   ComputeStrides( dims, tensor.Elements(), strides );
+   tensorStride_ = 1;                       // We set tensor strides to 1 by default.
+   ComputeStrides( sizes_, tensor_.Elements(), strides_ );
 }
 
 
 //
 void Image::GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const {
-   FindDataBlockSizeAndStart( strides, dims, size, start );
+   FindDataBlockSizeAndStart( strides_, sizes_, size, start );
 }
 void Image::GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const {
-   if( tensor.Elements() > 1 ) {
-      UnsignedArray d = dims;
-      d.push_back( tensor.Elements() );
-      IntegerArray s = strides;
-      s.push_back( tstride );
+   if( tensor_.Elements() > 1 ) {
+      UnsignedArray d = sizes_;
+      d.push_back( tensor_.Elements() );
+      IntegerArray s = strides_;
+      s.push_back( tensorStride_ );
       FindDataBlockSizeAndStart( s, d, size, start );
    } else {
-      FindDataBlockSizeAndStart( strides, dims, size, start );
+      FindDataBlockSizeAndStart( strides_, sizes_, size, start );
    }
 }
 
 
 // Does writing in this image change the data of the other image?
-bool Image::Aliases( const Image& other ) const {
-   dip_ThrowIf( !IsForged(),       E::IMAGE_NOT_FORGED );
+bool Image::Aliases( Image const& other ) const {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
 
    // Different data blocks do not overlap by definition
-   if( datablock != other.datablock )
+   if( dataBlock_ != other.dataBlock_ ) {
       return false;
+   }
 
    // Quicky: if the origin is the same, they share at least one pixel
-   dip::uint origin1 = (uint8*)      origin - (uint8*)      datablock.get();
-   dip::uint origin2 = (uint8*)other.origin - (uint8*)other.datablock.get();
-   if( origin1 == origin2 )
+   dip::uint origin1 = static_cast< uint8* >( origin_ ) - static_cast< uint8* >( dataBlock_.get() );
+   dip::uint origin2 = static_cast< uint8* >( other.origin_ ) - static_cast< uint8* >( other.dataBlock_.get() );
+   if( origin1 == origin2 ) {
       return true;
+   }
 
    // Copy size and stride arrays, add tensor dimension
-   IntegerArray  strides1 = strides;
-   UnsignedArray dims1    = dims;
-   if( tensor.Elements() > 1 ) {
-      strides1.push_back( tstride );
-      dims1.push_back( tensor.Elements() );
+   IntegerArray strides1 = strides_;
+   UnsignedArray sizes1 = sizes_;
+   if( tensor_.Elements() > 1 ) {
+      strides1.push_back( tensorStride_ );
+      sizes1.push_back( tensor_.Elements() );
    }
    dip::uint ndims1 = strides1.size();
-   IntegerArray  strides2 = other.strides;
-   UnsignedArray dims2    = other.dims;
-   if( other.tensor.Elements() > 1 ) {
-      strides2.push_back( other.tstride );
-      dims2.push_back( other.tensor.Elements() );
+   IntegerArray strides2 = other.strides_;
+   UnsignedArray sizes2 = other.sizes_;
+   if( other.tensor_.Elements() > 1 ) {
+      strides2.push_back( other.tensorStride_ );
+      sizes2.push_back( other.tensor_.Elements() );
    }
    dip::uint ndims2 = strides2.size();
 
    // Check sample sizes
-   dip::uint dts1 = datatype.SizeOf();
-   dip::uint dts2 = other.datatype.SizeOf();
+   dip::uint dts1 = dataType_.SizeOf();
+   dip::uint dts2 = other.dataType_.SizeOf();
    dip::uint dts = dts1;
    if( dts1 > dts2 ) {
       // Split the samples of 1, adding a new dimension
       dts = dts2;
       dip::uint n = dts1 / dts; // this is always an integer value, samples have size 1, 2, 4, 8 or 16.
-      for( dip::uint ii=0; ii<ndims1; ++ii ) {
-         strides1[ii] *= n;
+      for( dip::uint ii = 0; ii < ndims1; ++ii ) {
+         strides1[ ii ] *= n;
       }
       strides1.push_back( 1 );
-      dims1.push_back( n );
+      sizes1.push_back( n );
       ++ndims1;
    } else if( dts1 < dts2 ) {
       // Split the samples of 2, adding a new dimension
       dip::uint n = dts2 / dts; // this is always an integer value, samples have size 1, 2, 4, 8 or 16.
-      for( dip::uint ii=0; ii<ndims2; ++ii ) {
-         strides2[ii] *= n;
+      for( dip::uint ii = 0; ii < ndims2; ++ii ) {
+         strides2[ ii ] *= n;
       }
       strides2.push_back( 1 );
-      dims2.push_back( n );
+      sizes2.push_back( n );
       ++ndims2;
    } // else, the samples have the same size
 
@@ -370,36 +372,38 @@ bool Image::Aliases( const Image& other ) const {
    // Quicky: if both have simple strides larger than one, and their offsets
    // do not differ by a multiple of that stride, they don't overlap.
    dip::uint sstride1, sstride2;
-   dip::uint size1,    size2;
-   dip::sint start1,   start2;
-   FindSimpleStrideSizeAndStart( strides1, dims1, sstride1, size1, start1 );
-   FindSimpleStrideSizeAndStart( strides2, dims2, sstride2, size2, start2 );
+   dip::uint size1, size2;
+   dip::sint start1, start2;
+   FindSimpleStrideSizeAndStart( strides1, sizes1, sstride1, size1, start1 );
+   FindSimpleStrideSizeAndStart( strides2, sizes2, sstride2, size2, start2 );
    start1 += origin1;
    start2 += origin2;
    if( ( sstride1 > 1 ) && ( sstride1 == sstride2 ) ) {
-      if( ( start1 - start2 ) % sstride1 != 0 )
+      if( ( start1 - start2 ) % sstride1 != 0 ) {
          return false;
+      }
    }
 
    // Non-overlapping portions of the data block
-   if( ( start1+size1 <= start2 ) || ( start2+size2 <= start1 ) )
+   if( ( start1 + size1 <= start2 ) || ( start2 + size2 <= start1 ) ) {
       return false;
+   }
 
    // Lastly, check dimensions and strides
    // This is a bit complex
 
    // Remove singleton dimensions
-   for( dip::uint ii=0; ii<ndims1; ++ii ) {
-      if( dims1[ii] == 1 ) {
-         dims1.erase( ii );
+   for( dip::uint ii = 0; ii < ndims1; ++ii ) {
+      if( sizes1[ ii ] == 1 ) {
+         sizes1.erase( ii );
          strides1.erase( ii );
          --ii;
          --ndims1;
       }
    }
-   for( dip::uint ii=0; ii<ndims2; ++ii ) {
-      if( dims2[ii] == 1 ) {
-         dims2.erase( ii );
+   for( dip::uint ii = 0; ii < ndims2; ++ii ) {
+      if( sizes2[ ii ] == 1 ) {
+         sizes2.erase( ii );
          strides2.erase( ii );
          --ii;
          --ndims2;
@@ -407,62 +411,61 @@ bool Image::Aliases( const Image& other ) const {
    }
 
    // Make sure all strides are positive (un-mirror)
-   for( dip::uint ii=0; ii<ndims1; ++ii ) {
-      if( strides1[ii] < 0 ) {
-         strides1[ii] = -strides1[ii];
-         origin1 -= (dims1[ii]-1) * strides1[ii];
+   for( dip::uint ii = 0; ii < ndims1; ++ii ) {
+      if( strides1[ ii ] < 0 ) {
+         strides1[ ii ] = -strides1[ ii ];
+         origin1 -= ( sizes1[ ii ] - 1 ) * strides1[ ii ];
       }
    }
-   for( dip::uint ii=0; ii<ndims2; ++ii ) {
-      if( strides2[ii] < 0 ) {
-         strides2[ii] = -strides2[ii];
-         origin2 -= (dims2[ii]-1) * strides2[ii];
+   for( dip::uint ii = 0; ii < ndims2; ++ii ) {
+      if( strides2[ ii ] < 0 ) {
+         strides2[ ii ] = -strides2[ ii ];
+         origin2 -= ( sizes2[ ii ] - 1 ) * strides2[ ii ];
       }
    }
 
-   // Sort strides smallest to largest, keeping dims in sync.
-   strides1.sort( dims1 );
-   strides2.sort( dims2 );
+   // Sort strides smallest to largest, keeping sizes in sync.
+   strides1.sort( sizes1 );
+   strides2.sort( sizes2 );
 
    // Walk through both stride arrays matching up dimensions
-   // The assumed invariant is that stride[ii+1]>=stride[ii]*dims[ii]
+   // The assumed invariant is that stride[ii+1]>=stride[ii]*sizes[ii]
 
-   IntegerArray  comstrides;  // common strides
-   IntegerArray  newstrides1; // new strides img 1
-   IntegerArray  newstrides2; // new strides img 2
-   UnsignedArray newdims1;    // new dimensions img 1
-   UnsignedArray newdims2;    // new dimensions img 2
+   IntegerArray comstrides;  // common strides
+   IntegerArray newstrides1; // new strides img 1
+   IntegerArray newstrides2; // new strides img 2
+   UnsignedArray newsizes1;    // new sizes img 1
+   UnsignedArray newsizes2;    // new sizes img 2
 
    dip::uint i1 = 0;
    dip::uint i2 = 0;
-   while( (i1<ndims1) && (strides1[i1]==0) ) ++i1;
-   while( (i2<ndims2) && (strides2[i2]==0) ) ++i2;
-   while( i1<ndims1 || i2<ndims2 )
-   {
+   while( ( i1 < ndims1 ) && ( strides1[ i1 ] == 0 ) ) { ++i1; }
+   while( ( i2 < ndims2 ) && ( strides2[ i2 ] == 0 ) ) { ++i2; }
+   while( i1 < ndims1 || i2 < ndims2 ) {
       dip::uint s1 = 0, s2 = 0, d1 = 1, d2 = 1;
-      if( i1<ndims1 ) {
-         s1 = strides1[i1];
-         d1 = dims1[i1];
+      if( i1 < ndims1 ) {
+         s1 = static_cast< dip::uint >( strides1[ i1 ] );
+         d1 = sizes1[ i1 ];
       }
-      if( i2<ndims2 ) {
-         s2 = strides2[i2];
-         d2 = dims2[i2];
+      if( i2 < ndims2 ) {
+         s2 = static_cast< dip::uint >( strides2[ i2 ] );
+         d2 = sizes2[ i2 ];
       }
       if( s1 == 0 ) {
-         // we're at the end of dims1
+         // we're at the end of sizes1
          s1 = s2;
          ++i2;
       } else if( s2 == 0 ) {           // s1 and s2 cannot be 0 at the same time
-         // we're at the end of dims2
+         // we're at the end of sizes2
          s2 = s1;
          ++i1;
-      } else if( (i1+1 < ndims1) && (strides1[i1+1] <= s2*(d2-1)) ) {
-         // s2 is too large, assume img2 has dims==1 in this dimension
+      } else if( ( i1 + 1 < ndims1 ) && ( strides1[ i1 + 1 ] <= s2 * ( d2 - 1 ) ) ) {
+         // s2 is too large, assume img2 has sizes==1 in this dimension
          s2 = s1;
          d2 = 1;
          ++i1;
-      } else if( (i2+1 < ndims2) && (strides2[i2+1] <= s1*(d1-1)) ) {
-         // s1 is too large, assume img1 has dims==1 in this dimension
+      } else if( ( i2 + 1 < ndims2 ) && ( strides2[ i2 + 1 ] <= s1 * ( d1 - 1 ) ) ) {
+         // s1 is too large, assume img1 has sizes==1 in this dimension
          s1 = s2;
          d1 = 1;
          ++i2;
@@ -473,10 +476,10 @@ bool Image::Aliases( const Image& other ) const {
       }
       dip::sint cs = comstrides.empty() ? 1 : gcd( s1, s2 ); // The first dimension should have stride==1
       comstrides.push_back( cs );
-      newstrides1.push_back( s1/cs );
-      newstrides2.push_back( s2/cs );
-      newdims1.push_back( d1 );
-      newdims2.push_back( d2 );
+      newstrides1.push_back( s1 / cs );
+      newstrides2.push_back( s2 / cs );
+      newsizes1.push_back( d1 );
+      newsizes2.push_back( d2 );
    }
 
    // Compute coordinates of origin for both images
@@ -486,14 +489,17 @@ bool Image::Aliases( const Image& other ) const {
    // Compute, for each of the dimensions, if the views overlap. If
    // they don't overlap for any one dimension, there is no aliasing.
    for( dip::uint ii = 0; ii < comstrides.size(); ++ii ) {
-      if( neworigin1[ii] + (newdims1[ii]-1)*newstrides1[ii] < neworigin2[ii] )
+      if( neworigin1[ ii ] + ( newsizes1[ ii ] - 1 ) * newstrides1[ ii ] < neworigin2[ ii ] ) {
          return false;
-      if( neworigin2[ii] + (newdims2[ii]-1)*newstrides2[ii] < neworigin1[ii] )
+      }
+      if( neworigin2[ ii ] + ( newsizes2[ ii ] - 1 ) * newstrides2[ ii ] < neworigin1[ ii ] ) {
          return false;
-      if( (newstrides1[ii] == newstrides2[ii]) &&
-          (newstrides1[ii] > 1) &&
-          (((dip::sint)neworigin1[ii]-(dip::sint)neworigin2[ii]) % newstrides1[ii] != 0) )
+      }
+      if( ( newstrides1[ ii ] == newstrides2[ ii ] ) &&
+          ( newstrides1[ ii ] > 1 ) &&
+          ( ( static_cast< dip::sint >( neworigin1[ ii ] ) - static_cast< dip::sint >( neworigin2[ ii ] )) % newstrides1[ ii ] != 0 ) ) {
          return false;
+      }
    }
 
    return true;
@@ -503,19 +509,19 @@ bool Image::Aliases( const Image& other ) const {
 //
 void Image::Forge() {
    if( !IsForged() ) {
-      dip::uint size = FindNumberOfPixels( dims );
-      dip_ThrowIf( size==0, "Cannot forge an image without pixels (dimensions must be > 0)" );
-      dip_ThrowIf( TensorElements() > std::numeric_limits<dip::uint>::max() / size,
-               E::DIMENSIONALITY_EXCEEDS_LIMIT );
+      dip::uint size = FindNumberOfPixels( sizes_ );
+      dip_ThrowIf( size == 0, "Cannot forge an image without pixels (dimensions must be > 0)" );
+      dip_ThrowIf( TensorElements() > std::numeric_limits< dip::uint >::max() / size,
+                   E::DIMENSIONALITY_EXCEEDS_LIMIT );
       size *= TensorElements();
-      if( externalInterface ) {
-         datablock = externalInterface->AllocateData( dims, strides, tensor, tstride, datatype );
+      if( externalInterface_ ) {
+         dataBlock_ = externalInterface_->AllocateData( sizes_, strides_, tensor_, tensorStride_, dataType_ );
          // AllocateData() can fail by returning a nullptr. If so, we allocate data in the normal way because we remain raw.
-         if( datablock ) {
+         if( dataBlock_ ) {
             dip::uint sz;
             dip::sint start;
             GetDataBlockSizeAndStartWithTensor( sz, start );
-            origin = (uint8*)datablock.get() + start * datatype.SizeOf();
+            origin_ = static_cast< uint8* >( dataBlock_.get() ) + start * dataType_.SizeOf();
             //std::cout << "   Successfully forged image with external interface\n";
          }
       }
@@ -530,11 +536,11 @@ void Image::Forge() {
          } else {
             SetNormalStrides();
          }
-         dip::uint sz = datatype.SizeOf();
+         dip::uint sz = dataType_.SizeOf();
          void* p = std::malloc( size * sz );
          dip_ThrowIf( !p, "Failed to allocate memory" );
-         datablock = std::shared_ptr<void>( p, std::free );
-         origin = (uint8*)p + start * sz;
+         dataBlock_ = std::shared_ptr< void >( p, std::free );
+         origin_ = static_cast< uint8* >( p ) + start * sz;
          //std::cout << "   Successfully forged image\n";
       }
    }
@@ -542,13 +548,13 @@ void Image::Forge() {
 
 
 //
-dip::sint Image::Offset( const UnsignedArray& coords ) const {
+dip::sint Image::Offset( UnsignedArray const& coords ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( coords.size() != dims.size(), E::ARRAY_ILLEGAL_SIZE );
+   dip_ThrowIf( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
    dip::sint offset = 0;
-   for( dip::uint ii = 0; ii < dims.size(); ++ii ) {
-      dip_ThrowIf( coords[ii] >= dims[ii], E::INDEX_OUT_OF_RANGE );
-      offset += coords[ii] * strides[ii];
+   for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
+      dip_ThrowIf( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
+      offset += coords[ ii ] * strides_[ ii ];
    }
    return offset;
 }
@@ -562,19 +568,19 @@ UnsignedArray Image::OffsetToCoordinates( dip::sint offset ) const {
 //
 CoordinatesComputer Image::OffsetToCoordinatesComputer() const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   return CoordinatesComputer( dims, strides );
+   return CoordinatesComputer( sizes_, strides_ );
 }
 
 //
-dip::sint Image::Index( const UnsignedArray& coords ) const {
+dip::sint Image::Index( UnsignedArray const& coords ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( coords.size() != dims.size(), E::ARRAY_ILLEGAL_SIZE );
+   dip_ThrowIf( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
    dip::sint index = 0;
-   for( dip::uint ii = dims.size(); ii > 0; ) {
+   for( dip::uint ii = sizes_.size(); ii > 0; ) {
       --ii;
-      dip_ThrowIf( coords[ii] >= dims[ii], E::INDEX_OUT_OF_RANGE );
-      index *= dims[ii];
-      index += coords[ii];
+      dip_ThrowIf( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
+      index *= sizes_[ ii ];
+      index += coords[ ii ];
    }
    return index;
 }
@@ -589,18 +595,18 @@ UnsignedArray Image::IndexToCoordinates( dip::sint index ) const {
 CoordinatesComputer Image::IndexToCoordinatesComputer() const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    IntegerArray fake_strides;
-   ComputeStrides( dims, 1, fake_strides );
-   return CoordinatesComputer( dims, fake_strides );
+   ComputeStrides( sizes_, 1, fake_strides );
+   return CoordinatesComputer( sizes_, fake_strides );
 }
 
 
 //
-void Image::Copy( const Image& src ) {
+void Image::Copy( Image const& src ) {
    if( IsForged() ) {
       // Forged image, check to make sure number of samples is correct
       CompareProperties( src, Option::CmpProps_Dimensions + Option::CmpProps_TensorElements );
       // Change the tensor shape to match that of `src`
-      tensor.ChangeShape( src.tensor );
+      tensor_.ChangeShape( src.tensor_ );
       // The data type is not changed, the copy will convert the data type
    } else {
       // Non-forged image, make properties identical to `src`
@@ -617,17 +623,17 @@ void Image::Copy( const Image& src ) {
       if( sstride_s != 0 ) {
          // No need to loop
          CopyBuffer(
-            porigin_s,
-            src.datatype,
-            sstride_s,
-            src.tstride,
-            porigin_d,
-            datatype,
-            sstride_d,
-            tstride,
-            NumberOfPixels(),
-            tensor.Elements(),
-            std::vector< dip::sint > {}
+               porigin_s,
+               src.dataType_,
+               sstride_s,
+               src.tensorStride_,
+               porigin_d,
+               dataType_,
+               sstride_d,
+               tensorStride_,
+               NumberOfPixels(),
+               tensor_.Elements(),
+               std::vector< dip::sint > {}
          );
          return;
       }
@@ -636,26 +642,26 @@ void Image::Copy( const Image& src ) {
    dip::uint processingDim = Framework::OptimalProcessingDim( src );
    dip::sint offset_s;
    dip::sint offset_d;
-   UnsignedArray coords = NDLoop::Init( src, *this, offset_s, offset_d );
+   UnsignedArray coords = NDLoop::Init( src, * this, offset_s, offset_d );
    do {
       CopyBuffer(
-         src.Pointer( offset_s ),
-         src.datatype,
-         src.strides[processingDim],
-         src.tstride,
-         Pointer( offset_d ),
-         datatype,
-         strides[processingDim],
-         tstride,
-         dims[processingDim],
-         tensor.Elements(),
-         std::vector< dip::sint > {}
+            src.Pointer( offset_s ),
+            src.dataType_,
+            src.strides_[ processingDim ],
+            src.tensorStride_,
+            Pointer( offset_d ),
+            dataType_,
+            strides_[ processingDim ],
+            tensorStride_,
+            sizes_[ processingDim ],
+            tensor_.Elements(),
+            std::vector< dip::sint > {}
       );
-   } while( NDLoop::Next( coords, offset_s, offset_d, dims, src.strides, strides, processingDim ));
+   } while( NDLoop::Next( coords, offset_s, offset_d, sizes_, src.strides_, strides_, processingDim ) );
 }
 
 //
-template<typename inT>
+template< typename inT >
 static inline void InternSet( Image& dest, inT v ) {
    dip_ThrowIf( !dest.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint sstride_d;
@@ -664,13 +670,13 @@ static inline void InternSet( Image& dest, inT v ) {
    if( sstride_d != 0 ) {
       // No need to loop
       FillBuffer(
-         porigin_d,
-         dest.DataType(),
-         sstride_d,
-         dest.TensorStride(),
-         dest.NumberOfPixels(),
-         dest.TensorElements(),
-         v
+            porigin_d,
+            dest.DataType(),
+            sstride_d,
+            dest.TensorStride(),
+            dest.NumberOfPixels(),
+            dest.TensorElements(),
+            v
       );
    } else {
       // Make nD loop
@@ -679,63 +685,63 @@ static inline void InternSet( Image& dest, inT v ) {
       UnsignedArray coords = NDLoop::Init( dest, offset_d );
       do {
          FillBuffer(
-            dest.Pointer( offset_d ),
-            dest.DataType(),
-            dest.Stride( processingDim ),
-            dest.TensorStride(),
-            dest.Dimension( processingDim ),
-            dest.TensorElements(),
-            v
+               dest.Pointer( offset_d ),
+               dest.DataType(),
+               dest.Stride( processingDim ),
+               dest.TensorStride(),
+               dest.Size( processingDim ),
+               dest.TensorElements(),
+               v
          );
-      } while( NDLoop::Next( coords, offset_d, dest.Dimensions(), dest.Strides(), processingDim ));
+      } while( NDLoop::Next( coords, offset_d, dest.Sizes(), dest.Strides(), processingDim ) );
    }
 }
 
 void Image::Set( dip::sint v ) {
-   InternSet( *this, v );
+   InternSet( * this, v );
 }
 
 void Image::Set( dfloat v ) {
-   InternSet( *this, v );
+   InternSet( * this, v );
 }
 
 void Image::Set( dcomplex v ) {
-   InternSet( *this, v );
+   InternSet( * this, v );
 }
 
 // Casting the first sample (the first tensor component of the first pixel) to dcomplex.
 template< typename TPI >
 static inline dcomplex CastValueComplex( void* p ) {
-   return clamp_cast< dcomplex >( *((TPI*)p) );
+   return clamp_cast< dcomplex >( *static_cast< TPI* >( p ));
 }
-Image::operator dcomplex() const{
+Image::operator dcomplex() const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dcomplex x;
-   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueComplex, ( origin ), datatype );
+   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueComplex, ( origin_ ), dataType_ );
    return x;
 }
 
 // Casting the first sample (the first tensor component of the first pixel) to dfloat.
 template< typename TPI >
 static inline dfloat CastValueDouble( void* p ) {
-   return clamp_cast< dfloat >( *((TPI*)p) );
+   return clamp_cast< dfloat >( *static_cast< TPI* >( p ));
 }
-Image::operator dfloat() const{
+Image::operator dfloat() const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dfloat x;
-   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueDouble, ( origin ), datatype );
+   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueDouble, ( origin_ ), dataType_ );
    return x;
 }
 
 // Casting the first sample (the first tensor component of the first pixel) to sint.
 template< typename TPI >
 static inline dip::sint CastValueInteger( void* p ) {
-   return clamp_cast< dip::sint >( *((TPI*)p) );
+   return clamp_cast< dip::sint >( *static_cast< TPI* >( p ));
 }
 Image::operator dip::sint() const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::sint x;
-   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueInteger, ( origin ), datatype );
+   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueInteger, ( origin_ ), dataType_ );
    return x;
 }
 

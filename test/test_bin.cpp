@@ -8,22 +8,22 @@ int main() {
 
    dip::bin A = false;
    dip::bin B = true;
-   if( !(A < B) ) {
+   if( !( A < B ) ) {
       error |= true;
    }
-   if( !(B > A) ) {
+   if( !( B > A ) ) {
       error |= true;
    }
-   if( !(A >= A) ) {
+   if( !( A >= A ) ) {
       error |= true;
    }
-   if( !(A <= B) ) {
+   if( !( A <= B ) ) {
       error |= true;
    }
-   if( !(A == A) ) {
+   if( !( A == A ) ) {
       error |= true;
    }
-   if( !(A != B) ) {
+   if( !( A != B ) ) {
       error |= true;
    }
    if( !error ) {

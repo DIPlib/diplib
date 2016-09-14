@@ -8,21 +8,20 @@
 
 #include "dip_matlab.h"
 
-void print_info( const dip::Image & img )
-{
+void print_info( const dip::Image& img ) {
    mexPrintf( "Image %dD (", img.Dimensionality() );
-   dip::UnsignedArray dims = img.Dimensions();
-   for( dip::uint ii=0; ii<dims.size(); ++ii) {
-      mexPrintf( " %d ", dims[ii] );
+   dip::UnsignedArray sizes = img.Sizes();
+   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+      mexPrintf( " %d ", sizes[ ii ] );
    }
    mexPrintf( "), %s, strides: (", img.DataType().Name() );
    dip::IntegerArray stride = img.Strides();
-   for( dip::uint ii=0; ii<stride.size(); ++ii) {
-      mexPrintf( " %d ", stride[ii] );
+   for( dip::uint ii = 0; ii < stride.size(); ++ii ) {
+      mexPrintf( " %d ", stride[ ii ] );
    }
    mexPrintf( ")\n" );
    if( img.IsForged() ) {
-      mexPrintf( "   origin pointer: %lu", (dip::uint)img.Origin() );
+      mexPrintf( "   origin pointer: %lu", ( dip::uint )img.Origin() );
       if( img.HasContiguousData() ) {
          if( img.HasNormalStrides() ) {
             mexPrintf( " (strides are normal)" );
@@ -33,47 +32,46 @@ void print_info( const dip::Image & img )
    } else {
       mexPrintf( "   not forged" );
    }
-   mexPrintf("\n");
+   mexPrintf( "\n" );
 }
 
-void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-{
+void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
-      mexPrintf("Creating output image img_out0\n");
+      mexPrintf( "Creating output image img_out0\n" );
       dml::MatlabInterface mi;
       dip::Image img_out0 = mi.NewImage();
-      img_out0.SetDimensions( {3,5} );
+      img_out0.SetSizes( { 3, 5 } );
       print_info( img_out0 );
       img_out0.Forge();
       print_info( img_out0 );
 
-      mexPrintf("Reallocating output image img_out0\n");
+      mexPrintf( "Reallocating output image img_out0\n" );
       img_out0.Strip();
       img_out0.Forge();
 
-      mexPrintf("Copying output image img_out0 to img_out1\n");
+      mexPrintf( "Copying output image img_out0 to img_out1\n" );
       dip::Image img_out1 = img_out0;
-      mexPrintf("Reallocating output image img_out1\n");
+      mexPrintf( "Reallocating output image img_out1\n" );
       img_out1.Strip();
-      img_out1.SetDimensions( {2,3} );
+      img_out1.SetSizes( { 2, 3 } );
       img_out1.Forge();
 
       if( nrhs > 0 ) {
-         mexPrintf("Obtaining input image img_in0\n");
-         dip::Image img_in0 = dml::GetImage( prhs[0] );
+         mexPrintf( "Obtaining input image img_in0\n" );
+         dip::Image img_in0 = dml::GetImage( prhs[ 0 ] );
          print_info( img_in0 );
-         mexPrintf("Exiting scope\n");
+         mexPrintf( "Exiting scope\n" );
       }
 
-      mexPrintf("The two output images:\n");
+      mexPrintf( "The two output images:\n" );
       print_info( img_out0 );
       print_info( img_out1 );
 
-      mexPrintf("Getting the array for img_out0\n");
-      plhs[0] = mi.GetArray( img_out0 );
+      mexPrintf( "Getting the array for img_out0\n" );
+      plhs[ 0 ] = mi.GetArray( img_out0 );
 
-      mexPrintf("Exiting scope\n");
+      mexPrintf( "Exiting scope\n" );
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

@@ -147,7 +147,7 @@ matrices and triangular matrices.
 
 [//]: # (--------------------------------------------------------------)
 
-\section pointers On pixel coordinates, indices, offsets and data pointers.
+\section pointers On pixel coordinates, indices, offsets and data pointers
 
 Given
 
@@ -197,9 +197,9 @@ The coordinates to a pixel simply indicate the number of pixels to skip along
 each dimension. The first dimension (dimension 0) is typically `x`, but this
 is not evident anywhere in the library, so it is the application using the
 library that would make this decision. Coordinates start at 0, and should be
-smaller than the `img.Dimensions()` value for that dimension.
+smaller than the `img.Sizes()` value for that dimension.
 
-The index to a pixel (a.k.a. "linear index") is a value that increases
+The **index** to a pixel (a.k.a. "linear index") is a value that increases
 monotonically as one moves from one pixel to the next, first along dimension 0,
 then along dimension 1, etc. The index computed from a pixel's coordinates is
 as follows:
@@ -209,7 +209,7 @@ as follows:
     dip::uint index = 0;
     while( dd > 0 ) {
       --dd;
-      index *= img.Dimension( dd );
+      index *= img.Size( dd );
       index += coords[dd];
     }
 
@@ -241,7 +241,7 @@ and strides) in the order given by the linear index, use the functions in the
 dip::NDLoop namespace:
 
     dip::sint offset;
-    dip::UnsignedArray pos = dip::NDLoop::Init( offset, img.Dimensions() );
+    dip::UnsignedArray pos = dip::NDLoop::Init( offset, img.Sizes() );
     dip::uint16* ptr = (dip::uint16*)img.Origin();
     dip::uint ii = 0;
     do {

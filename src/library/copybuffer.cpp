@@ -25,20 +25,20 @@ static inline void CopyBufferFromTo(
       dip::sint outTensorStride,
       dip::uint pixels,
       dip::uint tensorElements,
-      const std::vector< dip::sint > &lookUpTable // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
+      std::vector< dip::sint > const& lookUpTable // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
 ) {
    for( dip::uint pp = 0; pp < pixels; ++pp ) {
       inT* in = inBuffer;
       outT* out = outBuffer;
       if( lookUpTable.empty() ) {
          for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
-            *out = clamp_cast< outT >( *in );
+            * out = clamp_cast< outT >( * in );
             in += inTensorStride;
             out += outTensorStride;
          }
       } else {
          for( dip::uint tt = 0; tt < lookUpTable.size(); ++tt ) {
-            *out = lookUpTable[tt] < 0 ? outT( 0 ) : clamp_cast< outT >( in[lookUpTable[tt]] );
+            * out = lookUpTable[ tt ] < 0 ? outT( 0 ) : clamp_cast< outT >( in[ lookUpTable[ tt ] ] );
             out += outTensorStride;
          }
       }
@@ -58,41 +58,41 @@ static inline void CopyBufferFrom(
       dip::sint outTensorStride,
       dip::uint pixels,
       dip::uint tensorElements,
-      const std::vector< dip::sint > &lookUpTable
+      std::vector< dip::sint > const& lookUpTable
 ) {
    switch( outType ) {
       case dip::DT_BIN:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (bin*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< bin* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT8:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (uint8*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< uint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT16:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (uint16*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< uint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT32:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (uint32*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< uint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT8:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sint8*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< sint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT16:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sint16*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< sint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT32:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sint32*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< sint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SFLOAT:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (sfloat*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< sfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_DFLOAT:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (dfloat*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< dfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SCOMPLEX:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (scomplex*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< scomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_DCOMPLEX:
-         CopyBufferFromTo( inBuffer, inStride, inTensorStride, (dcomplex*)outBuffer, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFromTo( inBuffer, inStride, inTensorStride, static_cast< dcomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
    }
 }
@@ -108,41 +108,41 @@ void CopyBuffer(
       dip::sint outTensorStride,
       dip::uint pixels,
       dip::uint tensorElements,
-      const std::vector< dip::sint > &lookUpTable
+      std::vector< dip::sint > const& lookUpTable
 ) {
    switch( inType ) {
       case dip::DT_BIN:
-         CopyBufferFrom( (bin*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFrom( static_cast< bin* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT8:
-         CopyBufferFrom( (uint8*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFrom( static_cast< uint8* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT16:
-         CopyBufferFrom( (uint16*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFrom( static_cast< uint16* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_UINT32:
-         CopyBufferFrom( (uint32*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFrom( static_cast< uint32* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT8:
-         CopyBufferFrom( (sint8*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFrom( static_cast< sint8* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT16:
-         CopyBufferFrom( (sint16*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFrom( static_cast< sint16* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SINT32:
-         CopyBufferFrom( (sint32*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFrom( static_cast< sint32* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SFLOAT:
-         CopyBufferFrom( (sfloat*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFrom( static_cast< sfloat* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_DFLOAT:
-         CopyBufferFrom( (dfloat*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFrom( static_cast< dfloat* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_SCOMPLEX:
-         CopyBufferFrom( (scomplex*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFrom( static_cast< scomplex* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
       case dip::DT_DCOMPLEX:
-         CopyBufferFrom( (dcomplex*)inBuffer, inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
+         CopyBufferFrom( static_cast< dcomplex* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
          break;
    }
 }
@@ -163,7 +163,7 @@ static inline void FillBufferFromTo(
    for( dip::uint pp = 0; pp < pixels; ++pp ) {
       outT* out = outBuffer;
       for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
-         *out = v;
+         * out = v;
          out += outTensorStride;
       }
       outBuffer += outStride;
@@ -182,37 +182,37 @@ static inline void FillBufferFrom(
 ) {
    switch( outType ) {
       case dip::DT_BIN:
-         FillBufferFromTo( (bin*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< bin* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
          break;
       case dip::DT_UINT8:
-         FillBufferFromTo( (uint8*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< uint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
          break;
       case dip::DT_UINT16:
-         FillBufferFromTo( (uint16*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< uint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
          break;
       case dip::DT_UINT32:
-         FillBufferFromTo( (uint32*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< uint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
          break;
       case dip::DT_SINT8:
-         FillBufferFromTo( (sint8*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< sint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
          break;
       case dip::DT_SINT16:
-         FillBufferFromTo( (sint16*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< sint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
          break;
       case dip::DT_SINT32:
-         FillBufferFromTo( (sint32*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< sint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
          break;
       case dip::DT_SFLOAT:
-         FillBufferFromTo( (sfloat*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< sfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
          break;
       case dip::DT_DFLOAT:
-         FillBufferFromTo( (dfloat*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< dfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
          break;
       case dip::DT_SCOMPLEX:
-         FillBufferFromTo( (scomplex*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< scomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
          break;
       case dip::DT_DCOMPLEX:
-         FillBufferFromTo( (dcomplex*)outBuffer, outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< dcomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
          break;
    }
 }
@@ -226,7 +226,7 @@ void FillBuffer(
       dip::uint tensorElements,
       dip::sint value
 ) {
-   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value);
+   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value );
 }
 
 void FillBuffer(
@@ -238,7 +238,7 @@ void FillBuffer(
       dip::uint tensorElements,
       dfloat value
 ) {
-   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value);
+   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value );
 }
 
 void FillBuffer(
@@ -250,7 +250,7 @@ void FillBuffer(
       dip::uint tensorElements,
       dcomplex value
 ) {
-   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value);
+   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value );
 }
 
 } // namespace dip

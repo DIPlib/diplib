@@ -9,8 +9,7 @@
 #include "dip_matlab.h"
 #include <iostream>
 
-void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-{
+void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    if( nrhs != 2 ) {
       mexErrMsgTxt( "Two input images expected" );
    }
@@ -20,10 +19,10 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       dml::MatlabInterface mi;
 
       //mexPrintf( "About to get input images:\n" );
-      dip::Image in1 = dml::GetImage( prhs[0] );
+      dip::Image in1 = dml::GetImage( prhs[ 0 ] );
       //std::cout << in1 << std::endl;
 
-      dip::Image in2 = dml::GetImage( prhs[1] );
+      dip::Image in2 = dml::GetImage( prhs[ 1 ] );
       //std::cout << in2 << std::endl;
 
       //mexPrintf( "About to create output images:\n" );
@@ -43,7 +42,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       //std::cout << out << std::endl;
 
       //mexPrintf( "About to extract mxArray from output image:\n" );
-      plhs[0] = mi.GetArray( out );
+      plhs[ 0 ] = mi.GetArray( out );
 
       //mexPrintf( "End of scope for interface object\n" );
 

@@ -8,9 +8,9 @@ void PrintPhysicalQuantityArray( dip::PhysicalQuantityArray pqa ) {
    if( pqa.empty() ) {
       std::cout << "(empty)\n";
    } else {
-      std::cout << pqa[0];
+      std::cout << pqa[ 0 ];
       for( dip::uint ii = 1; ii < pqa.size(); ++ii ) {
-         std::cout << " x " << pqa[ii];
+         std::cout << " x " << pqa[ ii ];
       }
    }
    std::cout << std::endl;
@@ -53,7 +53,7 @@ int main() {
 
    try {
       c + d;
-   } catch ( std::exception& e ) {
+   } catch( std::exception& e ) {
       std::cout << "Caught exception: " << e.what() << std::endl;
    }
 
@@ -89,22 +89,22 @@ int main() {
    std::cout << "1000000000 m^2 = " << f * f * 1000000000 << std::endl;
 
    std::cout << "1 m = " << f << std::endl;
-   std::cout << "1 m^2 = " << f*f << std::endl;
-   std::cout << "1 m^3 = " << f*f*f << std::endl;
-   std::cout << "1 m^4 = " << f*f*f*f << std::endl;
-   std::cout << "1 m^-1 = " << 1/f << std::endl;
-   std::cout << "1 m^-2 = " << 1/f/f << std::endl;
-   std::cout << "1 m^-3 = " << 1/f/f/f << std::endl;
-   std::cout << "1 m^-4 = " << 1/f/f/f/f << std::endl;
+   std::cout << "1 m^2 = " << f * f << std::endl;
+   std::cout << "1 m^3 = " << f * f * f << std::endl;
+   std::cout << "1 m^4 = " << f * f * f * f << std::endl;
+   std::cout << "1 m^-1 = " << 1 / f << std::endl;
+   std::cout << "1 m^-2 = " << 1 / f / f << std::endl;
+   std::cout << "1 m^-3 = " << 1 / f / f / f << std::endl;
+   std::cout << "1 m^-4 = " << 1 / f / f / f / f << std::endl;
 
    dip::PhysicalQuantity g = 1.0 * dip::Units::Second();
-   std::cout << "1 m/s = " << f/g << std::endl;
-   std::cout << "1 m/s^2 = " << f/g/g << std::endl;
-   std::cout << "1 m/s^3 = " << f/g/g/g << std::endl;
-   std::cout << "1 m/s^4 = " << f/g/g/g/g << std::endl;
-   std::cout << "1 s/m = " << g/f << std::endl;
-   std::cout << "1 s/m^2 = " << g/f/f << std::endl;
-   std::cout << "1 s^2/m = " << g*g/f << std::endl;
+   std::cout << "1 m/s = " << f / g << std::endl;
+   std::cout << "1 m/s^2 = " << f / g / g << std::endl;
+   std::cout << "1 m/s^3 = " << f / g / g / g << std::endl;
+   std::cout << "1 m/s^4 = " << f / g / g / g / g << std::endl;
+   std::cout << "1 s/m = " << g / f << std::endl;
+   std::cout << "1 s/m^2 = " << g / f / f << std::endl;
+   std::cout << "1 s^2/m = " << g * g / f << std::endl;
 
    dip::PixelSize sz;
    std::cout << "Default-constructed PixelSize: ";
@@ -122,11 +122,11 @@ int main() {
    std::cout << "Step 3: ";
    PrintPixelSize( sz );
 
-   sz.Scale( 3, 1/1.3 );
+   sz.Scale( 3, 1 / 1.3 );
    std::cout << "Step 4: ";
    PrintPixelSize( sz );
 
-   sz.Scale( 2, 1/1.3 );
+   sz.Scale( 2, 1 / 1.3 );
    std::cout << "Step 5: ";
    PrintPixelSize( sz );
 
@@ -139,9 +139,9 @@ int main() {
    std::cout << "Step 7: ";
    PrintPixelSize( sz );
 
-   PrintPhysicalQuantityArray( sz.ToPhysical( dip::FloatArray{ 10, 10 } ));
-   PrintPhysicalQuantityArray( sz.ToPhysical( dip::FloatArray{ 10, 10, 10 } ));
-   PrintPhysicalQuantityArray( sz.ToPhysical( dip::FloatArray{ 10, 10, 10, 10, 10 } ));
+   PrintPhysicalQuantityArray( sz.ToPhysical( dip::FloatArray{ 10, 10 } ) );
+   PrintPhysicalQuantityArray( sz.ToPhysical( dip::FloatArray{ 10, 10, 10 } ) );
+   PrintPhysicalQuantityArray( sz.ToPhysical( dip::FloatArray{ 10, 10, 10, 10, 10 } ) );
 
    sz.Clear();
    sz.SetMicrometers( 0, 0.5 );

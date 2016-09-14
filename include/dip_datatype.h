@@ -54,31 +54,31 @@ namespace dip {
 struct DataType {
 
    enum class DT {
-      BIN,
-      UINT8,
-      SINT8,
-      UINT16,
-      SINT16,
-      UINT32,
-      SINT32,
-      SFLOAT,
-      DFLOAT,
-      SCOMPLEX,
-      DCOMPLEX,
+         BIN,
+         UINT8,
+         SINT8,
+         UINT16,
+         SINT16,
+         UINT32,
+         SINT32,
+         SFLOAT,
+         DFLOAT,
+         SCOMPLEX,
+         DCOMPLEX,
    } dt;
 
    constexpr DataType() : dt( DT::SFLOAT ) {}
    constexpr DataType( DT _dt ) : dt( _dt ) {}
 
-   constexpr explicit DataType( bin      ) : dt( DT::BIN      ) {}
-   constexpr explicit DataType( uint8    ) : dt( DT::UINT8    ) {}
-   constexpr explicit DataType( sint8    ) : dt( DT::SINT8    ) {}
-   constexpr explicit DataType( uint16   ) : dt( DT::UINT16   ) {}
-   constexpr explicit DataType( sint16   ) : dt( DT::SINT16   ) {}
-   constexpr explicit DataType( uint32   ) : dt( DT::UINT32   ) {}
-   constexpr explicit DataType( sint32   ) : dt( DT::SINT32   ) {}
-   constexpr explicit DataType( sfloat   ) : dt( DT::SFLOAT   ) {}
-   constexpr explicit DataType( dfloat   ) : dt( DT::DFLOAT   ) {}
+   constexpr explicit DataType( bin ) : dt( DT::BIN ) {}
+   constexpr explicit DataType( uint8 ) : dt( DT::UINT8 ) {}
+   constexpr explicit DataType( sint8 ) : dt( DT::SINT8 ) {}
+   constexpr explicit DataType( uint16 ) : dt( DT::UINT16 ) {}
+   constexpr explicit DataType( sint16 ) : dt( DT::SINT16 ) {}
+   constexpr explicit DataType( uint32 ) : dt( DT::UINT32 ) {}
+   constexpr explicit DataType( sint32 ) : dt( DT::SINT32 ) {}
+   constexpr explicit DataType( sfloat ) : dt( DT::SFLOAT ) {}
+   constexpr explicit DataType( dfloat ) : dt( DT::DFLOAT ) {}
    constexpr explicit DataType( scomplex ) : dt( DT::SCOMPLEX ) {}
    constexpr explicit DataType( dcomplex ) : dt( DT::DCOMPLEX ) {}
 
@@ -86,10 +86,10 @@ struct DataType {
    constexpr operator int() const { return static_cast< int >( dt ); }   // This one allows the use of DataType in a switch() statement
 
    /// DataType objects can be compared.
-   bool operator==(DataType other) const { return dt == other.dt; }
+   bool operator==( DataType other ) const { return dt == other.dt; }
 
    /// Returns a C-style string constant with a representation of the data type name.
-   const char* Name() const {
+   char const* Name() const {
       switch( dt ) {
          case DT::BIN:      return "BIN";
          case DT::UINT8:    return "UINT8";
@@ -130,20 +130,24 @@ struct DataType {
    /// Returns `true` if the data type is an unsigned integer type.
    bool IsUInt() const {
       switch( dt ) {
-         case DT::UINT8:    return true;
-         case DT::UINT16:   return true;
-         case DT::UINT32:   return true;
-         default:           return false;
+         case DT::UINT8:
+         case DT::UINT16:
+         case DT::UINT32:
+            return true;
+         default:
+            return false;
       };
    }
 
    /// Returns `true` if the data type is a signed integer type.
    bool IsSInt() const {
       switch( dt ) {
-         case DT::SINT8:    return true;
-         case DT::SINT16:   return true;
-         case DT::SINT32:   return true;
-         default:           return false;
+         case DT::SINT8:
+         case DT::SINT16:
+         case DT::SINT32:
+            return true;
+         default:
+            return false;
       };
    }
 
@@ -155,9 +159,11 @@ struct DataType {
    /// Returns `true` if the data type is a floating point type.
    bool IsFloat() const {
       switch( dt ) {
-         case DT::SFLOAT:   return true;
-         case DT::DFLOAT:   return true;
-         default:           return false;
+         case DT::SFLOAT:
+         case DT::DFLOAT:
+            return true;
+         default:
+            return false;
       };
    }
 
@@ -169,9 +175,11 @@ struct DataType {
    /// Returns `true` if the data type is complex.
    bool IsComplex() const {
       switch( dt ) {
-         case DT::SCOMPLEX: return true;
-         case DT::DCOMPLEX: return true;
-         default:           return false;
+         case DT::SCOMPLEX:
+         case DT::DCOMPLEX:
+            return true;
+         default:
+            return false;
       };
    }
 
@@ -214,17 +222,17 @@ struct DataType {
    ///
    /// Note that you can add these constants together, for example `Class_Bin + Class_UInt`.
    DIP_DECLARE_OPTIONS( Classes, 11 );
-   static DIP_DEFINE_OPTION( Classes, Class_Bin,      static_cast<dip::uint>( DT::BIN ));
-   static DIP_DEFINE_OPTION( Classes, Class_UInt8,    static_cast<dip::uint>( DT::UINT8 ));
-   static DIP_DEFINE_OPTION( Classes, Class_SInt8,    static_cast<dip::uint>( DT::SINT8 ));
-   static DIP_DEFINE_OPTION( Classes, Class_UInt16,   static_cast<dip::uint>( DT::UINT16 ));
-   static DIP_DEFINE_OPTION( Classes, Class_SInt16,   static_cast<dip::uint>( DT::SINT16 ));
-   static DIP_DEFINE_OPTION( Classes, Class_UInt32,   static_cast<dip::uint>( DT::UINT32 ));
-   static DIP_DEFINE_OPTION( Classes, Class_SInt32,   static_cast<dip::uint>( DT::SINT32 ));
-   static DIP_DEFINE_OPTION( Classes, Class_SFloat,   static_cast<dip::uint>( DT::SFLOAT ));
-   static DIP_DEFINE_OPTION( Classes, Class_DFloat,   static_cast<dip::uint>( DT::DFLOAT ));
-   static DIP_DEFINE_OPTION( Classes, Class_SComplex, static_cast<dip::uint>( DT::SCOMPLEX ));
-   static DIP_DEFINE_OPTION( Classes, Class_DComplex, static_cast<dip::uint>( DT::DCOMPLEX ));
+   static DIP_DEFINE_OPTION( Classes, Class_Bin, static_cast<dip::uint>( DT::BIN ) );
+   static DIP_DEFINE_OPTION( Classes, Class_UInt8, static_cast<dip::uint>( DT::UINT8 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_SInt8, static_cast<dip::uint>( DT::SINT8 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_UInt16, static_cast<dip::uint>( DT::UINT16 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_SInt16, static_cast<dip::uint>( DT::SINT16 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_UInt32, static_cast<dip::uint>( DT::UINT32 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_SInt32, static_cast<dip::uint>( DT::SINT32 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_SFloat, static_cast<dip::uint>( DT::SFLOAT ) );
+   static DIP_DEFINE_OPTION( Classes, Class_DFloat, static_cast<dip::uint>( DT::DFLOAT ) );
+   static DIP_DEFINE_OPTION( Classes, Class_SComplex, static_cast<dip::uint>( DT::SCOMPLEX ) );
+   static DIP_DEFINE_OPTION( Classes, Class_DComplex, static_cast<dip::uint>( DT::DCOMPLEX ) );
    static DIP_DEFINE_OPTION( Classes, Class_Binary, Class_Bin );
    static DIP_DEFINE_OPTION( Classes, Class_UInt, Class_UInt8 + Class_UInt16 + Class_UInt32 );
    static DIP_DEFINE_OPTION( Classes, Class_SInt, Class_SInt8 + Class_SInt16 + Class_SInt32 );
@@ -264,23 +272,23 @@ struct DataType {
 
 };
 
-typedef std::vector<DataType> DataTypeArray;   ///< An array to hold data types
+typedef std::vector< DataType > DataTypeArray;   ///< An array to hold data types
 
 //
 // Constants that people will use where a DataType is needed
 //
 
-constexpr DataType DT_BIN       { DataType::DT::BIN      };
-constexpr DataType DT_UINT8     { DataType::DT::UINT8    };
-constexpr DataType DT_SINT8     { DataType::DT::SINT8    };
-constexpr DataType DT_UINT16    { DataType::DT::UINT16   };
-constexpr DataType DT_SINT16    { DataType::DT::SINT16   };
-constexpr DataType DT_UINT32    { DataType::DT::UINT32   };
-constexpr DataType DT_SINT32    { DataType::DT::SINT32   };
-constexpr DataType DT_SFLOAT    { DataType::DT::SFLOAT   };
-constexpr DataType DT_DFLOAT    { DataType::DT::DFLOAT   };
-constexpr DataType DT_SCOMPLEX  { DataType::DT::SCOMPLEX };
-constexpr DataType DT_DCOMPLEX  { DataType::DT::DCOMPLEX };
+constexpr DataType DT_BIN{ DataType::DT::BIN };
+constexpr DataType DT_UINT8{ DataType::DT::UINT8 };
+constexpr DataType DT_SINT8{ DataType::DT::SINT8 };
+constexpr DataType DT_UINT16{ DataType::DT::UINT16 };
+constexpr DataType DT_SINT16{ DataType::DT::SINT16 };
+constexpr DataType DT_UINT32{ DataType::DT::UINT32 };
+constexpr DataType DT_SINT32{ DataType::DT::SINT32 };
+constexpr DataType DT_SFLOAT{ DataType::DT::SFLOAT };
+constexpr DataType DT_DFLOAT{ DataType::DT::DFLOAT };
+constexpr DataType DT_SCOMPLEX{ DataType::DT::SCOMPLEX };
+constexpr DataType DT_DCOMPLEX{ DataType::DT::DCOMPLEX };
 
 } // namespace dip
 

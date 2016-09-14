@@ -16,17 +16,18 @@ namespace dip {
 
 // Basis of dip::clamp_cast<>
 template< typename T, typename S >
-constexpr inline const T clamp_both( const S& v ) {
-   return static_cast< T >( clamp( v,
-                                   static_cast< S >( std::numeric_limits< T >::lowest() ),
-                                   static_cast< S >( std::numeric_limits< T >::max()    ) ));
+constexpr inline const T clamp_both( S const& v ) {
+   return static_cast< T >( clamp(
+         v,
+         static_cast< S >( std::numeric_limits< T >::lowest() ),
+         static_cast< S >( std::numeric_limits< T >::max()    ) ));
 }
 template< typename T, typename S >
-constexpr inline const T clamp_lower( const S& v ) {   // T is an unsigned integer type with same or more bits than S
+constexpr inline const T clamp_lower( S const& v ) {   // T is an unsigned integer type with same or more bits than S
    return static_cast< T >( std::max( v, static_cast< S >( 0 ) ) );
 }
 template< typename T, typename S >
-constexpr inline const T clamp_upper( const S& v ) {   // S is an unsigned integer type with fewer bits than T
+constexpr inline const T clamp_upper( S const& v ) {   // S is an unsigned integer type with fewer bits than T
    return static_cast< T >( std::min( v, static_cast< S >( std::numeric_limits< T >::max() ) ) );
 
 }
@@ -37,7 +38,7 @@ constexpr inline const T clamp_upper( const S& v ) {   // S is an unsigned integ
 // Not used because casting the limit of T to S might cause overflow if S is
 // narrower. How do we test for that case? In the code we use now we've
 // manually written out most cases. It looks stupid but it works.
-constexpr inline const T clamp_cast_basis( const S& v ) {
+constexpr inline const T clamp_cast_basis( S const& v ) {
    // Check lower bound
    if ( std::numeric_limits< S >::lowest() < static_cast< S >( std::numeric_limits< T >::lowest() ) ) {
       if ( v < static_cast< S >( std::numeric_limits< T >::lowest() ) ) {

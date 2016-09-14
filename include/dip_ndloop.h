@@ -36,7 +36,7 @@ namespace NDLoop {
 
 /// Initializes the variables for an nD loop over an image of size `dims`.
 inline UnsignedArray Init(
-      const Image& img,
+      Image const& img,
       dip::sint& offset
 ) {
    offset = 0;
@@ -45,12 +45,12 @@ inline UnsignedArray Init(
 
 /// Initializes the variables for an nD loop over two images of size `dims`.
 inline UnsignedArray Init(
-      const Image& img1,
-      const Image& img2,
+      Image const& img1,
+      Image const& img2,
       dip::sint& offset1,
       dip::sint& offset2
 ) {
-   dip_ThrowIf( img1.Dimensions() != img2.Dimensions(), E::DIMENSIONS_DONT_MATCH );
+   dip_ThrowIf( img1.Sizes() != img2.Sizes(), E::DIMENSIONS_DONT_MATCH );
    offset1 = 0;
    offset2 = 0;
    return UnsignedArray( img1.Dimensionality(), 0 );
@@ -69,13 +69,13 @@ inline UnsignedArray Init(
 inline bool Next(
       UnsignedArray& position,
       dip::sint& offset,
-      const UnsignedArray& dims,
-      const IntegerArray& strides,
+      UnsignedArray const& dims,
+      IntegerArray const& strides,
       dip::sint skipDim = -1
 ) {
    dip::uint dd;
    for( dd = 0; dd < position.size(); ++dd ) {
-      if( (dip::sint)dd != skipDim ) {
+      if( static_cast< dip::sint >( dd ) != skipDim ) {
          ++position[ dd ];
          offset += strides[ dd ];
          // Check whether we reached the last pixel of the line ...
@@ -95,14 +95,14 @@ inline bool Next(
       UnsignedArray& position,
       dip::sint& offset1,
       dip::sint& offset2,
-      const UnsignedArray& dims,
-      const IntegerArray& strides1,
-      const IntegerArray& strides2,
+      UnsignedArray const& dims,
+      IntegerArray const& strides1,
+      IntegerArray const& strides2,
       dip::sint skipDim = -1
 ) {
    dip::uint dd;
    for( dd = 0; dd < position.size(); ++dd ) {
-      if( (dip::sint)dd != skipDim ) {
+      if( static_cast< dip::sint >( dd ) != skipDim ) {
          ++position[ dd ];
          offset1 += strides1[ dd ];
          offset2 += strides2[ dd ];

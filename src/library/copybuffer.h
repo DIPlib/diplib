@@ -22,7 +22,7 @@ void CopyBuffer(
       dip::sint outTensorStride,
       dip::uint pixels,
       dip::uint tensorElements,
-      const std::vector< dip::sint > &lookUpTable // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
+      std::vector< dip::sint > const& lookUpTable // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
 );
 
 // Neither are these.

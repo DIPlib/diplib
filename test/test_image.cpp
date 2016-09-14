@@ -25,7 +25,7 @@ int main() {
       {
          dip::Image img;
          std::cout << img;
-         img.SetDimensions({50,80,30});
+         img.SetSizes( { 50, 80, 30 } );
          img.SetTensorDimensions(3);
          img.Forge();
          std::cout << img;
@@ -52,7 +52,7 @@ int main() {
       std::cout << std::endl << "Indexing." << std::endl;
       {
          dip::Image img1;
-         img1.SetDimensions({50,80,30});
+         img1.SetSizes( { 50, 80, 30 } );
          img1.SetTensorDimensions(3);
          img1.SetPixelSize({{dip::PhysicalQuantity::Micrometer(), 3*dip::PhysicalQuantity::Micrometer(), dip::PhysicalQuantity::Radian()}});
          img1.Forge();
@@ -79,7 +79,7 @@ int main() {
       std::cout << std::endl << "Reshaping." << std::endl;
       {
          dip::Image img1;
-         img1.SetDimensions({50,80,30});
+         img1.SetSizes( { 50, 80, 30 } );
          img1.SetTensorDimensions(3);
          img1.SetPixelSize({{dip::PhysicalQuantity::Micrometer(), 3*dip::PhysicalQuantity::Micrometer(), dip::PhysicalQuantity::Radian()}});
          img1.Forge();
@@ -106,7 +106,7 @@ int main() {
       std::cout << std::endl << "Aliasing (no output is good)." << std::endl;
       {
          dip::Image img1;
-         img1.SetDimensions({50,80,30});
+         img1.SetSizes( { 50, 80, 30 } );
          img1.SetTensorDimensions(3);
          img1.Forge();
          dip::Image img2 = img1[0];
@@ -136,7 +136,7 @@ int main() {
          if( Alias(img6,img7) != false )
             std::cout << "Error: aliasing computation, test #8" << std::endl;
          dip::Image img8;
-         img8.SetDimensions({50,80,30});
+         img8.SetSizes( { 50, 80, 30 } );
          img8.SetTensorDimensions(3);
          img8.Forge();
          if( Alias(img1,img8) != false )
@@ -161,7 +161,7 @@ int main() {
             sz[ii] = rand30( random );
          }
          dip::Image img;
-         img.SetDimensions( sz );
+         img.SetSizes( sz );
          img.Forge();
          std::uniform_int_distribution<int> randD(0, ndims-1);
          for( dip::uint ii = 0; ii < rand8( random ); ++ii) {
@@ -173,7 +173,7 @@ int main() {
          }
          img.Mirror( mirror );
          //std::cout << img;
-         const dip::UnsignedArray& dims = img.Dimensions();
+         const dip::UnsignedArray& dims = img.Sizes();
          auto o2c = img.OffsetToCoordinatesComputer();
          auto i2c = img.IndexToCoordinatesComputer();
          for( dip::uint repeat2 = 0; repeat2 < 100; ++repeat2 ) {

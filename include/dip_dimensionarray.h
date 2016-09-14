@@ -65,15 +65,15 @@ namespace dip {
 /// return a `nullptr`, and nothing will break if you call front(). But don't
 /// do any of these things! The implementation could change. Plus, you're just
 /// being silly and making unreadable code.
-template<typename T>
+template< typename T >
 class DimensionArray {
    public:
       // Types for consistency with STL containers
       using value_type = T;
       using iterator = T*;
-      using const_iterator = const T*;
-      using reverse_iterator = std::reverse_iterator<iterator>;
-      using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+      using const_iterator = T const*;
+      using reverse_iterator = std::reverse_iterator< iterator >;
+      using const_reverse_iterator = std::reverse_iterator< const_iterator >;
       using size_type = std::size_t;
 
       /// The default-initialized array has zero size.
@@ -81,12 +81,12 @@ class DimensionArray {
       /// Like `std::vector`, you can initialize with a size and a default value.
       explicit DimensionArray( size_type sz, T newval = T() ) { resize( sz, newval ); }
       /// Like `std::vector`, you can initialize with a set of values in braces.
-      DimensionArray( const std::initializer_list<T> init ) {
+      DimensionArray( std::initializer_list< T > const init ) {
          resize( init.size() );
          std::copy( init.begin(), init.end(), data_ );
       }
       /// Copy constructor, initializes with a copy of `other`.
-      DimensionArray( const DimensionArray& other ) {
+      DimensionArray( DimensionArray const& other ) {
          resize( other.size_ );
          std::copy( other.data_, other.data_ + size_, data_ );
       }
@@ -99,15 +99,15 @@ class DimensionArray {
       ~DimensionArray() { free_array(); } // no need to keep status consistent...
 
       /// Copy assignment, copies over data from `other`.
-      DimensionArray& operator=( const DimensionArray & other ) {
-         if (this != &other) {
+      DimensionArray& operator=( DimensionArray const& other ) {
+         if( this != & other ) {
             resize( other.size_ );
             std::copy( other.data_, other.data_ + size_, data_ );
          }
          return *this;
       }
       /// Move assignment, steals the contents of `other`.
-      DimensionArray& operator=( DimensionArray && other ) {
+      DimensionArray& operator=( DimensionArray&& other ) {
          // Self-assignment is not valid for move assignment, not testing for it here.
          free_array();
          steal_data_from( other );
@@ -115,7 +115,7 @@ class DimensionArray {
       }
 
       /// Swaps the contents of two arrays.
-      void swap( DimensionArray & other ) {
+      void swap( DimensionArray& other ) {
          if( is_dynamic() ) {
             if( other.is_dynamic() ) {
                // both have dynamic memory
@@ -143,11 +143,11 @@ class DimensionArray {
       /// Resizes the array, making it either larger or smaller; initializes
       /// new elements with `newval`.
       void resize( size_type newsz, T newval = T() ) {
-         if( newsz == size_ ) return; // NOP
+         if( newsz == size_ ) { return; } // NOP
          if( newsz > static_size_ ) {
             if( is_dynamic() ) {
                // expand or contract heap data
-               T* tmp = static_cast<T*>( std::realloc( data_, newsz * sizeof( T ) ) );
+               T* tmp = static_cast< T* >( std::realloc( data_, newsz * sizeof( T ) ) );
                if( tmp == nullptr ) {
                   throw std::bad_alloc();
                }
@@ -199,24 +199,24 @@ class DimensionArray {
       size_type size() const { return size_; }
 
       /// Accesses an element of the array
-      T& operator [] ( size_type index ) { return *(data_ + index); }
+      T& operator[]( size_type index ) { return * ( data_ + index ); }
       /// Accesses an element of the array
-      const T& operator [] ( size_type index ) const { return *(data_ + index); }
+      T const& operator[]( size_type index ) const { return * ( data_ + index ); }
 
       /// Accesses the first element of the array
-      T& front() { return *data_; }
+      T& front() { return * data_; }
       /// Accesses the first element of the array
-      const T& front() const { return *data_; }
+      T const& front() const { return * data_; }
 
       /// Accesses the last element of the array
-      T& back() { return *(data_ + size_ - 1); }
+      T& back() { return * ( data_ + size_ - 1 ); }
       /// Accesses the last element of the array
-      const T& back() const { return *(data_ + size_ - 1); }
+      T const& back() const { return * ( data_ + size_ - 1 ); }
 
       /// Returns a pointer to the underlying data
       T* data() { return data_; };
       /// Returns a pointer to the underlying data
-      const T* data() const { return data_; };
+      T const* data() const { return data_; };
 
       /// Returns an iterator to the beginning
       iterator begin() { return data_; }
@@ -227,28 +227,28 @@ class DimensionArray {
       /// Returns an iterator to the end
       const_iterator end() const { return data_ + size_; }
       /// Returns a reverse iterator to the beginning
-      reverse_iterator rbegin() { return reverse_iterator(end()); }
+      reverse_iterator rbegin() { return reverse_iterator( end() ); }
       /// Returns a reverse iterator to the beginning
-      const_reverse_iterator rbegin() const { return const_reverse_iterator(begin()); }
+      const_reverse_iterator rbegin() const { return const_reverse_iterator( begin() ); }
       /// Returns a reverse iterator to the end
-      reverse_iterator rend() { return reverse_iterator(begin()); }
+      reverse_iterator rend() { return reverse_iterator( begin() ); }
       /// Returns a reverse iterator to the end
-      const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+      const_reverse_iterator rend() const { return const_reverse_iterator( begin() ); }
 
       /// Adds a value at the given location, moving the current value at that
       /// location and subsequent values forward by one.
-      void insert( size_type index, const T& value ) {
+      void insert( size_type index, T const& value ) {
          assert( index <= size_ );
          resize( size_ + 1 );
          if( index < size_ - 1 ) {
             std::copy_backward( data_ + index, data_ + size_ - 1, data_ + size_ );
          }
-         *(data_ + index) = value;
+         * ( data_ + index ) = value;
       }
       /// Adds a value to the back.
-      void push_back( const T& value ) {
+      void push_back( T const& value ) {
          resize( size_ + 1 );
-         *(data_ + size_ - 1) = value;
+         * ( data_ + size_ - 1 ) = value;
       }
 
       /// Removes the value at the given location, moving subsequent values
@@ -268,14 +268,14 @@ class DimensionArray {
 
       /// Compares two arrays, returns true only if they have the same size and
       /// contain the same values.
-      friend inline bool operator == (const DimensionArray& lhs, const DimensionArray& rhs) {
+      friend inline bool operator==( DimensionArray const& lhs, DimensionArray const& rhs ) {
          if( lhs.size_ != rhs.size_ ) {
             return false;
          }
-         const T* lhsp = lhs.data_;
-         const T* rhsp = rhs.data_;
-         for( size_type ii=0; ii<lhs.size_; ++ii ) {
-            if( *(lhsp++) != *(rhsp++) ) {
+         T const* lhsp = lhs.data_;
+         T const* rhsp = rhs.data_;
+         for( size_type ii = 0; ii < lhs.size_; ++ii ) {
+            if( * ( lhsp++ ) != * ( rhsp++ ) ) {
                return false;
             }
          }
@@ -283,41 +283,41 @@ class DimensionArray {
       }
       /// Compares two arrays, returns true if they have different size and/or
       /// contain different values.
-      friend inline bool operator != (const DimensionArray& lhs, const DimensionArray& rhs) {
-         return !(lhs == rhs);
+      friend inline bool operator!=( DimensionArray const& lhs, DimensionArray const& rhs ) {
+         return !( lhs == rhs );
       }
 
       /// Sort the contents of the array from smallest to largest.
       void sort() {
          // Using insertion sort because we expect the array to be small.
          for( size_type ii = 1; ii < size_; ++ii ) {
-            T elem = data_[ii];
+            T elem = data_[ ii ];
             size_type jj = ii;
-            while( ( jj > 0 ) && ( data_[jj-1] > elem ) ) {
-               data_[jj] = data_[jj-1];
+            while( ( jj > 0 ) && ( data_[ jj - 1 ] > elem ) ) {
+               data_[ jj ] = data_[ jj - 1 ];
                --jj;
             }
-            data_[jj] = elem;
+            data_[ jj ] = elem;
          }
       }
       /// Sort the contents of the array from smallest to largest, and keeping
       /// `other` in the same order.
-      template<typename S>
-      void sort( DimensionArray<S>& other ) {
+      template< typename S >
+      void sort( DimensionArray< S >& other ) {
          // We cannot access private members of `other` because it's a different class (if S != T).
          assert( size_ == other.size() );
          // Using insertion sort because we expect the array to be small.
          for( size_type ii = 1; ii < size_; ++ii ) {
-            T elem = data_[ii];
-            S otherelem = other[ii];
+            T elem = data_[ ii ];
+            S otherelem = other[ ii ];
             size_type jj = ii;
-            while( ( jj > 0 ) && ( data_[jj-1] > elem ) ) {
-               data_[jj] = data_[jj-1];
-               other[jj] = other[jj-1];
+            while( ( jj > 0 ) && ( data_[ jj - 1 ] > elem ) ) {
+               data_[ jj ] = data_[ jj - 1 ];
+               other[ jj ] = other[ jj - 1 ];
                --jj;
             }
-            data_[jj] = elem;
-            other[jj] = otherelem;
+            data_[ jj ] = elem;
+            other[ jj ] = otherelem;
          }
       }
 
@@ -325,7 +325,7 @@ class DimensionArray {
       constexpr static size_type static_size_ = 4;
       size_type size_ = 0;
       T* data_ = stat_;
-      T  stat_[static_size_];
+      T stat_[static_size_];
       // The alternate implementation, where data_ and stat_ are in a union
       // to reduce the amount of memory used, requires a test for every data
       // access. Data access is most frequent, it's worth using a little bit

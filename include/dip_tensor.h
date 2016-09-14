@@ -67,19 +67,19 @@ class Tensor {
       /// because this makes it easy to extract the diagonal without having
       /// to copy data (it's just a window over the full tensor). Because it
       /// is a little awkward finding the right elements given this ordering,
-      /// the function LookUpTable prepares a table that can be used to access
+      /// the function dip::Tensor::LookUpTable prepares a table that can be used to access
       /// any tensor element given the row and column number. This function
       /// should help make more generic functions that can access tensor elements
       /// without paying attention to the tensor's Shape value.
       enum class Shape {
-         COL_VECTOR,       ///< a vector (stores n elements)
-         ROW_VECTOR,       ///< a row vector (stores n elements)
-         COL_MAJOR_MATRIX, ///< a matrix (stores n x m elements)
-         ROW_MAJOR_MATRIX, ///< a row-major matrix (stores n x m elements)
-         DIAGONAL_MATRIX,  ///< a diagonal matrix (stores n elements)
-         SYMMETRIC_MATRIX, ///< a symmetric matrix (stores n(n+1)/2 elements)
-         UPPTRIANG_MATRIX, ///< an upper-triangular matrix (stores n(n+1)/2 elements)
-         LOWTRIANG_MATRIX, ///< a lower-triangular matrix (stores n(n+1)/2 elements)
+            COL_VECTOR,       ///< a vector (stores n elements)
+            ROW_VECTOR,       ///< a row vector (stores n elements)
+            COL_MAJOR_MATRIX, ///< a matrix (stores n x m elements)
+            ROW_MAJOR_MATRIX, ///< a row-major matrix (stores n x m elements)
+            DIAGONAL_MATRIX,  ///< a diagonal matrix (stores n elements)
+            SYMMETRIC_MATRIX, ///< a symmetric matrix (stores n(n+1)/2 elements)
+            UPPTRIANG_MATRIX, ///< an upper-triangular matrix (stores n(n+1)/2 elements)
+            LOWTRIANG_MATRIX, ///< a lower-triangular matrix (stores n(n+1)/2 elements)
       };
 
       /// Creates a Shape::COL_VECTOR with one element (scalar).
@@ -101,23 +101,23 @@ class Tensor {
 
       /// Tests the tensor shape.
       bool IsScalar() const {
-         return elements_==1;
+         return elements_ == 1;
       }
       /// Tests the tensor shape.
       bool IsVector() const {
-         return (shape_==Shape::COL_VECTOR) || (shape_==Shape::ROW_VECTOR);
+         return ( shape_ == Shape::COL_VECTOR ) || ( shape_ == Shape::ROW_VECTOR );
       }
       /// Tests the tensor shape.
       bool IsDiagonal() const {
-         return shape_==Shape::DIAGONAL_MATRIX;
+         return shape_ == Shape::DIAGONAL_MATRIX;
       }
       /// Tests the tensor shape.
       bool IsSymmetric() const {
-         return shape_==Shape::SYMMETRIC_MATRIX;
+         return shape_ == Shape::SYMMETRIC_MATRIX;
       }
       /// Tests the tensor shape.
       bool IsTriangular() const {
-         return (shape_==Shape::UPPTRIANG_MATRIX) || (shape_==Shape::LOWTRIANG_MATRIX);
+         return ( shape_ == Shape::UPPTRIANG_MATRIX ) || ( shape_ == Shape::LOWTRIANG_MATRIX );
       }
       /// Returns tensor shape.
       enum Shape Shape() const {
@@ -141,7 +141,7 @@ class Tensor {
                return elements_;
             case Shape::COL_MAJOR_MATRIX:
             case Shape::ROW_MAJOR_MATRIX:
-               return elements_/rows_;
+               return elements_ / rows_;
             case Shape::DIAGONAL_MATRIX:
             case Shape::SYMMETRIC_MATRIX:
             case Shape::UPPTRIANG_MATRIX:
@@ -161,30 +161,28 @@ class Tensor {
       }
 
       /// Compares tensor size and shape.
-      friend bool operator==( const Tensor& lhs, const Tensor&  rhs ) {
+      friend bool operator==( Tensor const& lhs, Tensor const& rhs ) {
          return ( lhs.shape_ == rhs.shape_ ) &&
                 ( lhs.elements_ == rhs.elements_ ) &&
                 ( lhs.rows_ == rhs.rows_ );
       }
 
       /// Compares tensor size and shape.
-      friend bool operator!=( const Tensor& lhs, const Tensor&  rhs ) {
+      friend bool operator!=( Tensor const& lhs, Tensor const& rhs ) {
          return !( lhs == rhs );
       }
 
       /// Sets the tensor shape.
       void SetShape( enum Shape shape, dip::uint rows, dip::uint cols ) {
          shape_ = shape;
-         dip_ThrowIf( rows==0, "Number of rows must be non-zero" );
-         dip_ThrowIf( cols==0, "Number of columns must be non-zero" );
+         dip_ThrowIf( rows == 0, "Number of rows must be non-zero" );
+         dip_ThrowIf( cols == 0, "Number of columns must be non-zero" );
          switch( shape_ ) {
-            case Shape::COL_VECTOR:
-               dip_ThrowIf( cols!=1, "A column vector can have only one column" );
+            case Shape::COL_VECTOR: dip_ThrowIf( cols != 1, "A column vector can have only one column" );
                elements_ = rows;
                rows_ = rows;
                break;
-            case Shape::ROW_VECTOR:
-               dip_ThrowIf( rows!=1, "A column vector can have only one column" );
+            case Shape::ROW_VECTOR: dip_ThrowIf( rows != 1, "A column vector can have only one column" );
                elements_ = cols;
                rows_ = 1;
                break;
@@ -194,19 +192,16 @@ class Tensor {
                rows_ = rows;
                CorrectShape();
                break;
-            case Shape::DIAGONAL_MATRIX:
-               dip_ThrowIf( rows!=cols, "A diagonal matrix must be square" );
+            case Shape::DIAGONAL_MATRIX: dip_ThrowIf( rows != cols, "A diagonal matrix must be square" );
                elements_ = rows;
                rows_ = rows;
                break;
-            case Shape::SYMMETRIC_MATRIX:
-               dip_ThrowIf( rows!=cols, "A symmetric matrix must be square" );
+            case Shape::SYMMETRIC_MATRIX: dip_ThrowIf( rows != cols, "A symmetric matrix must be square" );
                elements_ = NUpperDiagonalElements( rows );
                rows_ = rows;
                break;
             case Shape::UPPTRIANG_MATRIX:
-            case Shape::LOWTRIANG_MATRIX:
-               dip_ThrowIf( rows!=cols, "A triangular matrix must be square" );
+            case Shape::LOWTRIANG_MATRIX: dip_ThrowIf( rows != cols, "A triangular matrix must be square" );
                elements_ = NUpperDiagonalElements( rows );
                rows_ = rows;
                break;
@@ -230,19 +225,18 @@ class Tensor {
          CorrectShape();
       }
       /// Sets the tensor size, always results in a Shape::COL_VECTOR or Shape::COL_MAJOR_MATRIX.
-      void SetDimensions( const UnsignedArray& tdims ) {
+      void SetDimensions( UnsignedArray const& tdims ) {
          switch( tdims.size() ) {
             case 0:
                SetScalar();
                break;
             case 1:
-               SetVector( tdims[0] );
+               SetVector( tdims[ 0 ] );
                break;
             case 2:
-               SetMatrix( tdims[0], tdims[1] );
+               SetMatrix( tdims[ 0 ], tdims[ 1 ] );
                break;
-            default:
-               dip_Throw( "Tensor dimensons higher than 2 not supported." );
+            default: dip_Throw( "Tensor dimensons higher than 2 not supported." );
          }
       }
 
@@ -261,7 +255,7 @@ class Tensor {
          elements_ = rows_;
       }
       /// Changes the tensor shape without changing the number of elements, resulting in the shape described by `other`.
-      void ChangeShape( const Tensor& other ) {
+      void ChangeShape( Tensor const& other ) {
          dip_ThrowIf( elements_ != other.elements_, "Cannot reshape tensor to requested form" );
          shape_ = other.shape_;
          rows_ = other.rows_;
@@ -317,8 +311,8 @@ class Tensor {
       /// not stored, and presumed to be 0 (happens with triangular and diagonal
       /// matrices only).
       std::vector< dip::sint > LookUpTable() const {
-         dip::sint M = (dip::sint)rows_;
-         dip::sint N = (dip::sint)Columns();
+         dip::sint M = ( dip::sint )rows_;
+         dip::sint N = ( dip::sint )Columns();
          std::vector< dip::sint > LUT( N * N, -1 );
          dip::sint index = 0;
          switch( shape_ ) {
@@ -327,7 +321,7 @@ class Tensor {
             case Shape::COL_MAJOR_MATRIX:
                for( dip::sint n = 0; n < N; ++n ) {
                   for( dip::sint m = 0; m < M; ++m ) {
-                     LUT[n*M+m] = index;
+                     LUT[ n * M + m ] = index;
                      ++index;
                   }
                }
@@ -335,50 +329,50 @@ class Tensor {
             case Shape::ROW_MAJOR_MATRIX:
                for( dip::sint m = 0; m < M; ++m ) {
                   for( dip::sint n = 0; n < N; ++n ) {
-                     LUT[n*M+m] = index;
+                     LUT[ n * M + m ] = index;
                      ++index;
                   }
                }
                break;
             case Shape::DIAGONAL_MATRIX:
                for( dip::sint m = 0; m < M; ++m ) {
-                  LUT[m*M+m] = index;
+                  LUT[ m * M + m ] = index;
                   ++index;
                }
                break;
             case Shape::SYMMETRIC_MATRIX:
                for( dip::sint m = 0; m < M; ++m ) {
-                  LUT[m*M+m] = index;
+                  LUT[ m * M + m ] = index;
                   ++index;
                }
                for( dip::sint n = 1; n < N; ++n ) {
                   for( dip::sint m = 0; m < n; ++m ) {
-                     LUT[n*M+m] = index;
-                     LUT[m*M+n] = index;
+                     LUT[ n * M + m ] = index;
+                     LUT[ m * M + n ] = index;
                      ++index;
                   }
                }
                break;
             case Shape::UPPTRIANG_MATRIX:
                for( dip::sint m = 0; m < M; ++m ) {
-                  LUT[m*M+m] = index;
+                  LUT[ m * M + m ] = index;
                   ++index;
                }
                for( dip::sint n = 1; n < N; ++n ) {
                   for( dip::sint m = 0; m < n; ++m ) {
-                     LUT[n*M+m] = index;
+                     LUT[ n * M + m ] = index;
                      ++index;
                   }
                }
                break;
             case Shape::LOWTRIANG_MATRIX:
                for( dip::sint m = 0; m < M; ++m ) {
-                  LUT[m*M+m] = index;
+                  LUT[ m * M + m ] = index;
                   ++index;
                }
                for( dip::sint n = 1; n < N; ++n ) {
                   for( dip::sint m = 0; m < n; ++m ) {
-                     LUT[m*M+n] = index;
+                     LUT[ m * M + n ] = index;
                      ++index;
                   }
                }
@@ -394,7 +388,7 @@ class Tensor {
       dip::uint rows_ = 1;
 
       static inline dip::uint NUpperDiagonalElements( dip::uint rows ) {
-         return ( rows * ( rows+1 ) ) / 2;
+         return ( rows * ( rows + 1 ) ) / 2;
       }
 
       // Only to be called if shape == COL_MAJOR_MATRIX or ROW_MAJOR_MATRIX.

@@ -49,11 +49,13 @@ class ExternalInterface {
       /// Allocates the data for an image. The function is free to modify
       /// `strides` and `tstride` if desired, though they will be set
       /// to the normal values by the calling function.
-      virtual std::shared_ptr<void> AllocateData(const UnsignedArray& dims,
-                                                 IntegerArray& strides,
-                                                 const dip::Tensor& tensor,
-                                                 dip::sint& tstride,
-                                                 dip::DataType datatype) = 0;
+      virtual std::shared_ptr< void > AllocateData(
+            UnsignedArray const& sizes,
+            IntegerArray& strides,
+            dip::Tensor const& tensor,
+            dip::sint& tstride,
+            dip::DataType datatype
+      ) = 0;
 };
 
 
@@ -62,20 +64,23 @@ class ExternalInterface {
 //
 
 /// Objects of this class are returned by dip::Image::OffsetToCoordinatesComputer
-/// and dip::Image::IndexToCoordinatesComputer. Call it with an offset or index
-/// respectively, and it will return the coordinates:
+/// and dip::Image::IndexToCoordinatesComputer, and act as functors.
+/// Call it with an offset or index (depending on which function created the
+/// functor), and it will return the coordinates:
 ///
-///     auto coords = img.OffsetToCoordinatesComputer();
-///     auto c1 = coords( offset1 );
-///     auto c2 = coords( offset2 );
-///     auto c3 = coords( offset3 );
+///     auto coordComp = img.OffsetToCoordinatesComputer();
+///     auto coords1 = coordComp( offset1 );
+///     auto coords2 = coordComp( offset2 );
+///     auto coords3 = coordComp( offset3 );
 class CoordinatesComputer {
    public:
-      CoordinatesComputer( const UnsignedArray& dims, const IntegerArray& strides );
+      CoordinatesComputer( UnsignedArray const& sizes, IntegerArray const& strides );
+
       UnsignedArray operator()( dip::sint offset ) const;
+
    private:
       IntegerArray strides_; // a copy of the image's strides array, but with all positive values
-      IntegerArray dims_;    // a copy of the image's dims array, but with negative values where the strides are negative
+      IntegerArray sizes_;   // a copy of the image's sizes array, but with negative values where the strides are negative
       UnsignedArray index_;  // sorted indices to the strides array (largest to smallest)
       dip::sint offset_;     // offset needed to handle negative strides
 };
@@ -102,111 +107,132 @@ class Image {
       //
 
       /// Forged image of given sizes and data type.
-      explicit Image( UnsignedArray dimensions, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :
-         datatype( dt ),
-         dims( dimensions ),
-         tensor( tensorElems )
-      {
+      explicit Image( UnsignedArray sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :
+            dataType_( dt ),
+            sizes_( sizes ),
+            tensor_( tensorElems ) {
          Forge();
       }
 
       /// Forged image similar to `src`, but with different data type; the data is not copied.
-      Image( const Image& src, dip::DataType dt ) :
-         datatype( dt ),
-         dims( src.dims ),
-         strides( src.strides ),
-         tensor( src.tensor ),
-         tstride( src.tstride ),
-         colspace( src.colspace ),
-         pixelsize( src.pixelsize ),
-         externalInterface( src.externalInterface )
-      {
+      Image( Image const& src, dip::DataType dt ) :
+            dataType_( dt ),
+            sizes_( src.sizes_ ),
+            strides_( src.strides_ ),
+            tensor_( src.tensor_ ),
+            tensorStride_( src.tensorStride_ ),
+            colorSpace_( src.colorSpace_ ),
+            pixelSize_( src.pixelSize_ ),
+            externalInterface_( src.externalInterface_ ) {
          Forge();
       }
 
       /// Create a 0-D image with the value and data type of `p`.
       template< typename T >
       explicit Image( T p ) {
-         datatype = dip::DataType( p );
-         Forge();       // dims is empty by default
-         *(( T* )origin ) = p;
+         dataType_ = dip::DataType( p );
+         Forge();       // sizes is empty by default
+         * static_cast< T* >( origin_ ) = p;
       }
 
       /// Create a 0-D image with the value of `p` and the given data type.
       template< typename T >
       Image( T p, dip::DataType dt ) {
-         datatype = dt;
-         Forge();       // dims is empty by default
-         switch( datatype ) {
-            case dip::DT_BIN      : ( bin*      )origin = clamp_cast<bin>     ( p ); break;
-            case dip::DT_UINT8    : ( uint8*    )origin = clamp_cast<uint8>   ( p ); break;
-            case dip::DT_UINT16   : ( uint16*   )origin = clamp_cast<uint16>  ( p ); break;
-            case dip::DT_UINT32   : ( uint32*   )origin = clamp_cast<uint32>  ( p ); break;
-            case dip::DT_SINT8    : ( sint8*    )origin = clamp_cast<sint8>   ( p ); break;
-            case dip::DT_SINT16   : ( sint16*   )origin = clamp_cast<sint16>  ( p ); break;
-            case dip::DT_SINT32   : ( sint32*   )origin = clamp_cast<sint32>  ( p ); break;
-            case dip::DT_SFLOAT   : ( sfloat*   )origin = clamp_cast<sfloat>  ( p ); break;
-            case dip::DT_DFLOAT   : ( dfloat*   )origin = clamp_cast<dfloat>  ( p ); break;
-            case dip::DT_SCOMPLEX : ( scomplex* )origin = clamp_cast<scomplex>( p ); break;
-            case dip::DT_DCOMPLEX : ( dcomplex* )origin = clamp_cast<dcomplex>( p ); break;
+         dataType_ = dt;
+         Forge();       // sizes is empty by default
+         switch( dataType_ ) {
+            case dip::DT_BIN:
+               * static_cast< bin* >( origin_ ) = clamp_cast< bin >( p );
+               break;
+            case dip::DT_UINT8:
+               * static_cast< uint8* >( origin_ ) = clamp_cast< uint8 >( p );
+               break;
+            case dip::DT_UINT16:
+               * static_cast< uint16* >( origin_ ) = clamp_cast< uint16 >( p );
+               break;
+            case dip::DT_UINT32:
+               * static_cast< uint32* >( origin_ ) = clamp_cast< uint32 >( p );
+               break;
+            case dip::DT_SINT8:
+               * static_cast< sint8* >( origin_ ) = clamp_cast< sint8 >( p );
+               break;
+            case dip::DT_SINT16:
+               * static_cast< sint16* >( origin_ ) = clamp_cast< sint16 >( p );
+               break;
+            case dip::DT_SINT32:
+               * static_cast< sint32* >( origin_ ) = clamp_cast< sint32 >( p );
+               break;
+            case dip::DT_SFLOAT:
+               * static_cast< sfloat* >( origin_ ) = clamp_cast< sfloat >( p );
+               break;
+            case dip::DT_DFLOAT:
+               * static_cast< dfloat* >( origin_ ) = clamp_cast< dfloat >( p );
+               break;
+            case dip::DT_SCOMPLEX:
+               * static_cast< scomplex* >( origin_ ) = clamp_cast< scomplex >( p );
+               break;
+            case dip::DT_DCOMPLEX:
+               * static_cast< dcomplex* >( origin_ ) = clamp_cast< dcomplex >( p );
+               break;
             default: dip_Throw( dip::E::DATA_TYPE_NOT_SUPPORTED );
          }
       }
 
       /// Create an image around existing data.
-      Image( std::shared_ptr<void> data,        // points at the data block, not necessarily the origin!
-             dip::DataType dt,
-             const UnsignedArray& d,            // dimensions
-             const IntegerArray& s,             // strides
-             const dip::Tensor& t,              // tensor properties
-             dip::sint ts,                      // tensor stride
-             ExternalInterface* ei = nullptr ) :
-         datatype( dt ),
-         dims( d ),
-         strides( s ),
-         tensor( t ),
-         tstride( ts ),
-         datablock( data ),
-         externalInterface( ei )
-      {
+      Image(
+            std::shared_ptr< void > data,        // points at the data block, not necessarily the origin!
+            dip::DataType dataType,
+            UnsignedArray const& sizes,
+            IntegerArray const& strides,
+            dip::Tensor const& tensor,
+            dip::sint tensorStride,
+            ExternalInterface* externalInterface = nullptr
+      ) :
+            dataType_( dataType ),
+            sizes_( sizes ),
+            strides_( strides ),
+            tensor_( tensor ),
+            tensorStride_( tensorStride ),
+            dataBlock_( data ),
+            externalInterface_( externalInterface ) {
          dip::uint size;
          dip::sint start;
          GetDataBlockSizeAndStartWithTensor( size, start );
-         origin = (uint8*)datablock.get() + start * dt.SizeOf();
+         origin_ = static_cast< uint8* >( dataBlock_.get() ) + start * dataType_.SizeOf();
       }
 
       //
-      // Dimensions
+      // Sizes
       //
 
       /// Get the number of spatial dimensions.
       dip::uint Dimensionality() const {
-         return dims.size();
+         return sizes_.size();
       }
 
-      /// Get a const reference to the dimensions array (image size).
-      const UnsignedArray& Dimensions() const {
-         return dims;
+      /// Get a const reference to the sizes array (image size).
+      UnsignedArray const& Sizes() const {
+         return sizes_;
       }
 
-      /// Get the dimension along a specific dimension.
-      dip::uint Dimension( dip::uint dim ) const {
-         return dims[dim];
+      /// Get the image size along a specific dimension.
+      dip::uint Size( dip::uint dim ) const {
+         return sizes_[ dim ];
       }
 
       /// Get the number of pixels.
       dip::uint NumberOfPixels() const {
          dip::uint n = 1;
-         for( dip::uint ii=0; ii<dims.size(); ++ii ) {
-            n *= dims[ii];
+         for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
+            n *= sizes_[ ii ];
          }
          return n;
       }
 
-      /// Set the spatial dimensions (image size); the image must be raw.
-      void SetDimensions( const UnsignedArray& d ) {
+      /// Set the image sizes; the image must be raw.
+      void SetSizes( UnsignedArray const& d ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-         dims = d;
+         sizes_ = d;
       }
 
       //
@@ -214,30 +240,30 @@ class Image {
       //
 
       /// Get a const reference to the strides array.
-      const IntegerArray& Strides() const {
-         return strides;
+      IntegerArray const& Strides() const {
+         return strides_;
       }
 
       /// Get the stride along a specific dimension.
       dip::sint Stride( dip::uint dim ) const {
-         return strides[dim];
+         return strides_[ dim ];
       }
 
       /// Get the tensor stride.
-      dip::uint TensorStride() const {
-         return tstride;
+      dip::sint TensorStride() const {
+         return tensorStride_;
       }
 
       /// Set the strides array; the image must be raw.
-      void SetStrides( const IntegerArray& s ) {
+      void SetStrides( IntegerArray const& s ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-         strides = s;
+         strides_ = s;
       }
 
       /// Set the tensor stride; the image must be raw.
       void SetTensorStride( dip::sint ts ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-         tstride = ts;
+         tensorStride_ = ts;
       }
 
       /// Test if all the pixels are contiguous.
@@ -295,58 +321,58 @@ class Image {
       /// Get the tensor dimensions; the array returned can have 0, 1 or
       /// 2 elements, as those are the allowed tensor dimensionalities.
       UnsignedArray TensorDimensions() const {
-         return tensor.Dimensions();
+         return tensor_.Dimensions();
       }
 
       /// Get the number of tensor elements, the product of the elements
       /// in the array returned by TensorDimensions.
       dip::uint TensorElements() const {
-         return tensor.Elements();
+         return tensor_.Elements();
       }
 
       /// Get the number of tensor columns.
       dip::uint TensorColumns() const {
-         return tensor.Columns();
+         return tensor_.Columns();
       }
 
       /// Get the number of tensor rows.
       dip::uint TensorRows() const {
-         return tensor.Rows();
+         return tensor_.Rows();
       }
 
       /// Get the tensor shape.
       enum dip::Tensor::Shape TensorShape() const {
-         return tensor.Shape();
+         return tensor_.Shape();
       }
 
       // Note: This function is the reason we refer to the Tensor class as
       // dip::Tensor everywhere in this file.
 
       /// Get the tensor shape.
-      const dip::Tensor& Tensor() const {
-         return tensor;
+      dip::Tensor const& Tensor() const {
+         return tensor_;
       }
 
       /// True for non-tensor (grey-value) images.
       bool IsScalar() const {
-         return tensor.IsScalar();
+         return tensor_.IsScalar();
       }
 
       /// True for vector images, where the tensor is one-dimensional.
       bool IsVector() const {
-         return tensor.IsVector();
+         return tensor_.IsVector();
       }
 
       /// Set tensor dimensions; the image must be raw.
-      void SetTensorDimensions( const UnsignedArray& tdims ) {
+      void SetTensorDimensions( UnsignedArray const& tdims ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-         tensor.SetDimensions( tdims );
+         tensor_.SetDimensions( tdims );
       }
 
       /// Set tensor dimensions; the image must be raw.
       void SetTensorDimensions( dip::uint nelems ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-         tensor.SetVector( nelems );
+         tensor_.SetVector( nelems );
       }
 
       //
@@ -358,13 +384,13 @@ class Image {
 
       /// Get the image's data type.
       dip::DataType DataType() const {
-         return datatype;
+         return dataType_;
       }
 
       /// Set the image's data type; the image must be raw.
       void SetDataType( dip::DataType dt ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-         datatype = dt;
+         dataType_ = dt;
       }
 
       //
@@ -372,18 +398,18 @@ class Image {
       //
 
       /// Get the image's color space name.
-      const String& ColorSpace() const { return colspace; }
+      String const& ColorSpace() const { return colorSpace_; }
 
       /// Returns true if the image is in color, false if the image is grey-valued.
-      bool IsColor() const { return !colspace.empty(); }
+      bool IsColor() const { return !colorSpace_.empty(); }
 
       /// Sets the image's color space name; this causes the image to be a color
       /// image, but will cause errors to occur if the number of tensor elements
       /// does not match the expected number of channels for the given color space.
-      void SetColorSpace( const String& cs ) { colspace = cs; }
+      void SetColorSpace( String const& cs ) { colorSpace_ = cs; }
 
       /// Resets the image's color space information, turning the image into a non-color image.
-      void ResetColorSpace() { colspace.clear(); }
+      void ResetColorSpace() { colorSpace_.clear(); }
 
       //
       // Physical dimensions
@@ -393,27 +419,27 @@ class Image {
       // dip::PixelSize everywhere in this file.
 
       /// Get the pixels's size in physical units, by reference, allowing to modify it at will.
-      dip::PixelSize& PixelSize() { return pixelsize; }
+      dip::PixelSize& PixelSize() { return pixelSize_; }
 
       /// Get the pixels's size in physical units.
-      const dip::PixelSize& PixelSize() const { return pixelsize; }
+      dip::PixelSize const& PixelSize() const { return pixelSize_; }
 
       /// Set the pixels's physical dimensions.
-      void SetPixelSize( const dip::PixelSize& ps ) {
-         pixelsize = ps;
+      void SetPixelSize( dip::PixelSize const& ps ) {
+         pixelSize_ = ps;
       }
 
       /// Returns true if the pixel has physical dimensions.
-      bool HasPixelSize() const { return pixelsize.IsDefined(); }
+      bool HasPixelSize() const { return pixelSize_.IsDefined(); }
 
       /// Returns true if the pixel has the same size in all dimensions.
-      bool IsIsotropic() const { return pixelsize.IsIsotropic(); }
+      bool IsIsotropic() const { return pixelSize_.IsIsotropic(); }
 
       /// Converts a size in pixels to a size in phyical units.
-      PhysicalQuantityArray PixelsToPhysical( const FloatArray& in ) const { return pixelsize.ToPhysical( in ); }
+      PhysicalQuantityArray PixelsToPhysical( FloatArray const& in ) const { return pixelSize_.ToPhysical( in ); }
 
       /// Converts a size in physical units to a size in pixels.
-      FloatArray PhysicalToPixels( const PhysicalQuantityArray& in ) const { return pixelsize.ToPixels( in ); }
+      FloatArray PhysicalToPixels( PhysicalQuantityArray const& in ) const { return pixelSize_.ToPixels( in ); }
 
       //
       // Utility functions
@@ -422,7 +448,7 @@ class Image {
       /// Compare properties of an image against a template, either
       /// returns true/false or throws an error.
       bool CompareProperties(
-            const Image& src,
+            Image const& src,
             Option::CmpProps cmpProps,
             Option::ThrowException throwException = Option::ThrowException::doThrow
       ) const;
@@ -430,42 +456,43 @@ class Image {
       /// Check image properties, either returns true/false or throws an error.
       ///
       bool CheckProperties(
-            const dip::uint ndims,
-            const dip::DataType::Classes dts,
+            dip::uint ndims,
+            dip::DataType::Classes dts,
             Option::ThrowException throwException = Option::ThrowException::doThrow
       ) const;
 
       /// Check image properties, either returns true/false or throws an error.
       bool CheckProperties(
-            const UnsignedArray& dimensions,
-            const dip::DataType::Classes dts,
+            UnsignedArray const& dimensions,
+            dip::DataType::Classes dts,
             Option::ThrowException throwException = Option::ThrowException::doThrow
       ) const;
 
       /// Check image properties, either returns true/false or throws an error.
       bool CheckProperties(
-            const UnsignedArray& dimensions,
+            UnsignedArray const& dimensions,
             dip::uint tensorElements,
-            const dip::DataType::Classes dts,
+            dip::DataType::Classes dts,
             Option::ThrowException throwException = Option::ThrowException::doThrow
       ) const;
 
       /// Copy all image properties from `src`; the image must be raw.
-      void CopyProperties( const Image& src ) {
+      void CopyProperties( Image const& src ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-         datatype       = src.datatype;
-         dims           = src.dims;
-         strides        = src.strides;
-         tensor         = src.tensor;
-         colspace       = src.colspace;
-         pixelsize      = src.pixelsize;
-         if( !externalInterface )
-            externalInterface = src.externalInterface;
+         dataType_ = src.dataType_;
+         sizes_ = src.sizes_;
+         strides_ = src.strides_;
+         tensor_ = src.tensor_;
+         colorSpace_ = src.colorSpace_;
+         pixelSize_ = src.pixelSize_;
+         if( !externalInterface_ ) {
+            externalInterface_ = src.externalInterface_;
+         }
       }
 
       /// Make this image similar to the template by copying all its
       /// properties, but not the data.
-      void Assimilate( const Image& src ) {
+      void Assimilate( Image const& src ) {
          Strip();
          CopyProperties( src );
          Forge();
@@ -482,7 +509,7 @@ class Image {
       /// \see Origin, IsShared, ShareCount, SharesData.
       void* Data() const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         return datablock.get();
+         return dataBlock_.get();
       }
 
       /// Check to see if the data segment is shared with other images.
@@ -490,7 +517,7 @@ class Image {
       /// \see Data, ShareCount, SharesData.
       bool IsShared() const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         return !datablock.unique();
+         return !dataBlock_.unique();
       }
 
       /// Get the number of images that share their data with this image.
@@ -499,7 +526,7 @@ class Image {
       /// \see Data, IsShared, SharesData.
       dip::uint ShareCount() const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         return datablock.use_count();
+         return dataBlock_.use_count();
       }
 
       /// Determine if this image shares its data pointer with `other`.
@@ -512,10 +539,10 @@ class Image {
       /// use Aliases.
       ///
       /// \see Aliases, Data, IsShared, ShareCount.
-      bool SharesData( const Image& other ) const {
+      bool SharesData( Image const& other ) const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
-         return datablock == other.datablock;
+         return dataBlock_ == other.dataBlock_;
       }
 
       /// Determine if this image shares any pixels with `other`.
@@ -524,7 +551,7 @@ class Image {
       ///
       /// Both images must be forged.
       /// \see SharesData, Alias.
-      bool Aliases( const Image& other ) const;
+      bool Aliases( Image const& other ) const;
 
       /// Allocate data segment. This function allocates a memory block
       /// to hold the pixel data. If the stride array is consistent with
@@ -538,30 +565,30 @@ class Image {
       void Strip() {
          if( IsForged() ) {
             dip_ThrowIf( IsProtected(), "Image is protected" );
-            datablock = nullptr; // Automatically frees old memory if no other pointers to it exist.
-            origin = nullptr;    // Keep this one in sync!
+            dataBlock_ = nullptr; // Automatically frees old memory if no other pointers to it exist.
+            origin_ = nullptr;    // Keep this one in sync!
          }
       }
 
       /// Test if forged.
       bool IsForged() const {
-         return origin != nullptr;
+         return origin_ != nullptr;
       }
 
       /// Set protection flag.
       void Protect( bool set = true ) {
-         protect = set;
+         protect_ = set;
       }
 
       /// Test if protected.
       bool IsProtected() const {
-         return protect;
+         return protect_;
       }
 
       /// Set external interface pointer; the image must be raw.
       void SetExternalInterface( ExternalInterface* ei ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-         externalInterface = ei;
+         externalInterface_ = ei;
       }
 
       /// Get the number of samples.
@@ -578,7 +605,7 @@ class Image {
       /// element at coordinates (0,0,0,...); the image must be forged.
       void* Origin() const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         return origin;
+         return origin_;
       }
 
       /// Get a pointer to the pixel given by the offset. Cast the pointer
@@ -586,7 +613,7 @@ class Image {
       ///
       /// \see Origin, Offset, OffsetToCoordinates
       void* Pointer( dip::sint offset ) const {
-         return (uint8*)origin + offset * datatype.SizeOf();
+         return static_cast< uint8* >( origin_ ) + offset * dataType_.SizeOf();
       }
 
       /// Get a pointer to the pixel given by the coordinates index. Cast the
@@ -595,7 +622,7 @@ class Image {
       ///
       /// The image must be forged.
       /// \see Origin, Offset, OffsetToCoordinates
-      void* Pointer( const UnsignedArray& coords ) const {
+      void* Pointer( UnsignedArray const& coords ) const {
          return Pointer( Offset( coords ) );
       }
 
@@ -605,11 +632,11 @@ class Image {
       ///
       /// The image must be forged.
       /// \see Origin, Pointer, OffsetToCoordinates
-      dip::sint Offset( const UnsignedArray& coords ) const;
+      dip::sint Offset( UnsignedArray const& coords ) const;
 
       /// Compute coordinates given an offset. If the image has any singleton-expanded
       /// dimensions, the computed coordinate along that dimension will always be 0.
-      /// This is an expensive operation, use OffsetToCoordinatesComputer to make it
+      /// This is an expensive operation, use dip::Image::OffsetToCoordinatesComputer to make it
       /// more efficient when performing multiple computations in sequence.
       ///
       /// The image must be forged.
@@ -630,11 +657,11 @@ class Image {
       ///
       /// The image must be forged.
       /// \see IndexToCoordinates, Offset
-      dip::sint Index( const UnsignedArray& coords ) const;
+      dip::sint Index( UnsignedArray const& coords ) const;
 
       /// Compute coordinates given a linear index. If the image has any singleton-expanded
       /// dimensions, the computed coordinate along that dimension will always be 0.
-      /// This is an expensive operation, use IndexToCoordinatesComputer to make it
+      /// This is an expensive operation, use dip::Image::IndexToCoordinatesComputer to make it
       /// more efficient when performing multiple computations in sequence.
       ///
       /// The image must be forged.
@@ -668,7 +695,7 @@ class Image {
       /// be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see SwapDimensions, Squeeze, AddSingleton, ExpandDimensionality, Flatten.
-      Image& PermuteDimensions( const UnsignedArray& order );
+      Image& PermuteDimensions( UnsignedArray const& order );
 
       /// Swap dimensions d1 and d2. This is a simplified version of the
       /// PermuteDimensions.
@@ -677,7 +704,7 @@ class Image {
       /// be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see PermuteDimensions.
-      Image& SwapDimensions( dip::uint d1, dip::uint d2 );
+      Image& SwapDimensions( dip::uint dim1, dip::uint dim2 );
 
       /// Make image 1D. The image must be forged. If HasSimpleStride,
       /// this is a quick and cheap operation, but if not, the data segment
@@ -715,7 +742,7 @@ class Image {
       /// be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see AddSingleton, ExpandSingletonDimension, Squeeze, PermuteDimensions, Flatten.
-      Image& ExpandDimensionality( dip::uint n );
+      Image& ExpandDimensionality( dip::uint dim );
 
       /// Expand singleton dimension `dim` to `sz` pixels, setting the corresponding
       /// stride to 0. If `dim` is not a singleton dimension (size==1), an
@@ -730,38 +757,38 @@ class Image {
       /// Mirror de image about selected axes.
       /// The image must be forged, and the data will never
       /// be copied (i.e. this is a quick and cheap operation).
-      Image& Mirror( const BooleanArray& process );
+      Image& Mirror( BooleanArray const& process );
 
       /// Change the tensor shape, without changing the number of tensor elements.
       Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {
-         dip_ThrowIf( tensor.Elements() != rows*cols, "Cannot reshape tensor to requested dimensions." );
-         tensor.ChangeShape( rows );
-         return *this;
+         dip_ThrowIf( tensor_.Elements() != rows * cols, "Cannot reshape tensor to requested dimensions." );
+         tensor_.ChangeShape( rows );
+         return * this;
       }
 
       /// Change the tensor shape, without changing the number of tensor elements.
-      Image& ReshapeTensor( const dip::Tensor& other ) {
-         tensor.ChangeShape( other );
-         return *this;
+      Image& ReshapeTensor( dip::Tensor const& other ) {
+         tensor_.ChangeShape( other );
+         return * this;
       }
 
       /// Change the tensor to a vector, without changing the number of tensor elements.
       Image& ReshapeTensorAsVector() {
-         tensor.ChangeShape();
-         return *this;
+         tensor_.ChangeShape();
+         return * this;
       }
 
       /// Change the tensor to a diagonal matrix, without changing the number of tensor elements.
       Image& ReshapeTensorAsDiagonal() {
-         dip::Tensor other { dip::Tensor::Shape::DIAGONAL_MATRIX, tensor.Elements(), tensor.Elements() };
-         tensor.ChangeShape( other );
-         return *this;
+         dip::Tensor other{ dip::Tensor::Shape::DIAGONAL_MATRIX, tensor_.Elements(), tensor_.Elements() };
+         tensor_.ChangeShape( other );
+         return * this;
       }
 
       /// Transpose the tensor.
       Image& Transpose() {
-         tensor.Transpose();
-         return *this;
+         tensor_.Transpose();
+         return * this;
       }
 
       /// Convert tensor dimensions to spatial dimension.
@@ -805,7 +832,7 @@ class Image {
       //
 
       /// Extract a tensor element, `indices` must have one or two elements; the image must be forged.
-      Image operator[]( const UnsignedArray& indices ) const;
+      Image operator[]( UnsignedArray const& indices ) const;
 
       /// Extract a tensor element using linear indexing; the image must be forged.
       Image operator[]( dip::uint index ) const;
@@ -814,7 +841,7 @@ class Image {
       Image Diagonal() const;
 
       /// Extracts the pixel at the given coordinates; the image must be forged.
-      Image At( const UnsignedArray& coords ) const;
+      Image At( UnsignedArray const& coords ) const;
 
       /// Extracts the pixel at the given linear index (inneficient!); the image must be forged.
       Image At( dip::uint index ) const;
@@ -844,15 +871,15 @@ class Image {
       /// modify some properties of the input images, without actually modifying
       /// the input images.
       Image QuickCopy() const {
-         Image out {};
-         out.datatype = datatype;
-         out.dims = dims;
-         out.strides = strides;
-         out.tensor = tensor;
-         out.tstride = tstride;
-         out.datablock = datablock;
-         out.origin = origin;
-         out.externalInterface = externalInterface;
+         Image out;
+         out.dataType_ = dataType_;
+         out.sizes_ = sizes_;
+         out.strides_ = strides_;
+         out.tensor_ = tensor_;
+         out.tensorStride_ = tensorStride_;
+         out.dataBlock_ = dataBlock_;
+         out.origin_ = origin_;
+         out.externalInterface_ = externalInterface_;
          return out;
       }
 
@@ -873,7 +900,7 @@ class Image {
       /// If `this` is not forged, then all the properties of `src` will be
       /// copied to `this`, `this` will be forged, and the data from `src` will
       /// be copied over.
-      void Copy( const Image& src );
+      void Copy( Image const& src );
 
       // TODO: Add a function to convert the image to another data type.
       // Conversion from uint8 to bin and back can occur in-place.
@@ -899,7 +926,7 @@ class Image {
       /// Extracts the fist sample in the first pixel (At(0,0)[0]), casted
       /// to a signed integer of maximum width; for complex values
       /// returns the absolute value.
-      explicit operator sint() const;
+      explicit operator dip::sint() const;
 
       /// Extracts the fist sample in the first pixel (At(0,0)[0]), casted
       /// to a double-precision floating point value; for complex values
@@ -916,20 +943,17 @@ class Image {
       // Implementation
       //
 
-      dip::DataType datatype = DT_SFLOAT;
-      UnsignedArray dims;                 // dims.size() == ndims (if forged)
-      IntegerArray strides;               // strides.size() == ndims (if forged)
-      dip::Tensor tensor;
-      dip::sint tstride = 0;
-      bool protect = false;               // When set, don't strip image
-      String colspace;
-      dip::PixelSize pixelsize;
-      std::shared_ptr<void> datablock;    // Holds the pixel data. Data block will be freed when last image
-                                          //    that uses it is destroyed.
-      void* origin = nullptr;             // Points to the origin ( pixel (0,0) ), not necessarily the first
-                                          //    pixel of the data block.
-      ExternalInterface* externalInterface = nullptr;
-                                          // A function that will be called instead of the default forge function.
+      dip::DataType dataType_ = DT_SFLOAT;
+      UnsignedArray sizes_;               // sizes_.size() == ndims (if forged)
+      IntegerArray strides_;              // strides_.size() == ndims (if forged)
+      dip::Tensor tensor_;
+      dip::sint tensorStride_ = 0;
+      bool protect_ = false;              // When set, don't strip image
+      String colorSpace_;
+      dip::PixelSize pixelSize_;
+      std::shared_ptr< void > dataBlock_; // Holds the pixel data. Data block will be freed when last image that uses it is destroyed.
+      void* origin_ = nullptr;            // Points to the origin ( pixel (0,0) ), not necessarily the first pixel of the data block.
+      ExternalInterface* externalInterface_ = nullptr; // A function that will be called instead of the default forge function.
 
       //
       // Some private functions
@@ -940,21 +964,22 @@ class Image {
       void SetNormalStrides();            // Fill in all strides.
 
       void GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const;
+
       void GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const;
-                                          // size is the distance between top left and bottom right corners.
-                                          // start is the distance between top left corner and origin
-                                          // (will be <0 if any strides[ii] < 0). All measured in samples.
+      // size is the distance between top left and bottom right corners.
+      // start is the distance between top left corner and origin
+      // (will be <0 if any strides[ii] < 0). All measured in samples.
 
 }; // class Image
 
 /// An array of images
-typedef std::vector<Image> ImageArray;
+typedef std::vector< Image > ImageArray;
 
 /// An array of image references
-typedef std::vector<std::reference_wrapper<Image>> ImageRefArray;
+typedef std::vector< std::reference_wrapper< Image>> ImageRefArray;
 
 /// An array of const image references
-typedef std::vector<std::reference_wrapper<const Image>> ImageConstRefArray;
+typedef std::vector< std::reference_wrapper< const Image>> ImageConstRefArray;
 
 
 //
@@ -963,14 +988,14 @@ typedef std::vector<std::reference_wrapper<const Image>> ImageConstRefArray;
 
 /// You can output an Image to `std::cout` or any other stream; some
 /// information about the image is printed.
-std::ostream& operator<<( std::ostream&, const Image& );
+std::ostream& operator<<( std::ostream& os, Image const& img );
 
 //
 // Utility functions
 //
 
 /// Calls `img1.Aliases( img2 )`; see Image::Aliases.
-inline bool Alias( const Image& img1, const Image& img2 ) {
+inline bool Alias( Image const& img1, Image const& img2 ) {
    return img1.Aliases( img2 );
 }
 
@@ -978,11 +1003,12 @@ inline bool Alias( const Image& img1, const Image& img2 ) {
 /// with different origin, strides and size (backwards compatibility
 /// function, we recommend the Image::At function instead).
 void DefineROI(
-      const Image& src,
+      Image const& src,
       Image& dest,
-      const UnsignedArray& origin,
-      const UnsignedArray& dims,
-      const IntegerArray& spacing );
+      UnsignedArray const& origin,
+      UnsignedArray const& sizes,
+      IntegerArray const& spacing
+);
 
 } // namespace dip
 

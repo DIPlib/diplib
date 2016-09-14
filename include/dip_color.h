@@ -34,14 +34,14 @@ class WhitePoint {
 
       /// The default white point is the Standard Illuminant D65.
       WhitePoint() :
-         matrix_{{0.412453, 0.212671, 0.019334, 0.357580, 0.715160, 0.119193, 0.180423, 0.072169, 0.950227}} {};
+            matrix_{ { 0.412453, 0.212671, 0.019334, 0.357580, 0.715160, 0.119193, 0.180423, 0.072169, 0.950227 } } {};
       /// Any 3x3 array can be used as white point (column-major).
       WhitePoint( std::array< double, 9 > m ) {
          std::copy( m.begin(), m.end(), matrix_.begin() );
       }
 
       /// Get the 3x3 white point array, for conversion from RGB to XYZ.
-      const std::array< double, 9 >& Matrix() { return matrix_; }
+      std::array< double, 9 > const& Matrix() { return matrix_; }
 
       /// Get the inverse of the 3x3 white point array, for conversion from XYZ to RGB.
       std::array< double, 9 > InverseMatrix(); // TODO
@@ -52,10 +52,10 @@ class WhitePoint {
 };
 
 // Prototype function for conversion between two color spaces.
-typedef void (*ColorSpaceConverter) (
-      const double*  input,      // pointer to input data, holding a known number of elements
-      double*        output,     // pointer to output data, holding a known number of elements
-      const double*  matrix      // pointer to the whitepoint array, its inverse, or any other relevant array
+typedef void ( * ColorSpaceConverter )(
+      double const* input,    // pointer to input data, holding a known number of elements
+      double* output,         // pointer to output data, holding a known number of elements
+      double const* matrix    // pointer to the whitepoint array, its inverse, or any other relevant array
 );
 
 /// An object of this class is used to convert images between color spaces. By default,
@@ -101,54 +101,57 @@ class ColorSpaceManager {
       ColorSpaceManager(); // TODO
 
       /// Defines a new color space, that requires `chans` channels.
-      void Define( const String& name, dip::uint chans ) {
+      void Define( String const& name, dip::uint chans ) {
          dip_ThrowIf( IsDefined( name ), "Color space name already defined." );
          nodes_.emplace_back( name, chans );
-         names_[name] = nodes_.size() - 1;
+         names_[ name ] = nodes_.size() - 1;
       }
 
       /// Defines an alias for a defined color space name.
-      void DefineAlias( const String& alias, const String& name ) {
+      void DefineAlias( String const& alias, String const& name ) {
          dip_ThrowIf( IsDefined( alias ), "Alias name already defined." );
-         names_[alias] = Index( name );
+         names_[ alias ] = Index( name );
       }
 
       /// Registers a function to translate from one color space to another.
       /// The conversion function converts a single pixel, and has the following
       /// signature:
       ///     void ColorSpaceConverter(
-      ///         const double*  input,
+      ///         double const*  input,
       ///         double*        output,
-      ///         const double*  matrix);
+      ///         double const*  matrix);
       /// `input` is a pointer to a set of sample values composing the pixel, and
       /// `output` is where the result of the conversion is to be placed. Both
       /// arrays have a number of values corresponding to the channels used by
       /// the corresponding color space.
-      void Register( ColorSpaceConverter func, const String& source, const String& destination, dip::uint cost = 1 ) {
-         nodes_[Index( source )].edges[Index( destination )] = { func, cost }; // updates the edge if it was already there
+      void Register( ColorSpaceConverter func, String const& source, String const& destination, dip::uint cost = 1 ) {
+         nodes_[ Index( source ) ].edges[ Index( destination ) ] = {
+               func,
+               cost
+         }; // updates the edge if it was already there
       }
 
       /// Returns the number of channels used by the given color space.
-      dip::uint NumberOfChannels( const String& name ) const {
-         return nodes_[Index( name )].chans;
+      dip::uint NumberOfChannels( String const& name ) const {
+         return nodes_[ Index( name ) ].chans;
       }
 
       /// Returns the cannonical name for the given color space (i.e. looks up name aliases).
-      const String& CannonicalName( const String& name ) const {
-         return nodes_[Index( name )].name;
+      const String& CannonicalName( String const& name ) const {
+         return nodes_[ Index( name ) ].name;
       }
 
       /// Sets the color space of a non-color image. The image must have the right
       /// number of channels for the given color space, and the color space name
       /// must be one of the color spaces known by the ColorSpaceManager object.
-      void Set( Image& in, const String& name ) const; // TODO
+      void Set( Image& in, String const& name ) const; // TODO
 
       /// Converts an image to a different color space. Both the source and destination
       /// color spaces must be known, and a path of registered conversion functions
       /// must exist between the two.
-      void Convert( const Image& in, const Image& out, const String& name, const WhitePoint& whitepoint ) const; // TODO
+      void Convert( Image const& in, Image const& out, String const& name, WhitePoint const& whitepoint ) const; // TODO
 
-      Image Convert( const Image& in, const String& name, const WhitePoint& whitepoint  ) const;
+      Image Convert( Image const& in, String const& name, WhitePoint const& whitepoint ) const;
       // { Image out; Convert( in, out, name ); return out; } // TODO
 
    private:
@@ -157,24 +160,25 @@ class ColorSpaceManager {
          ColorSpaceConverter func;
          dip::uint cost;
       };
+
       struct Node {
          String name;
          dip::uint chans;
-         std::map< dip::uint, Edge > edges;  // The key is the target color space index
-         Node( const String& name, dip::uint chans ):
-            name( name ), chans( chans ) {}
+         std::map <dip::uint, Edge> edges;  // The key is the target color space index
+         Node( String const& name, dip::uint chans ) :
+               name( name ), chans( chans ) {}
       };
 
-      std::map< String, dip::uint > names_;
-      std::vector< Node > nodes_;
+      std::map <String, dip::uint> names_;
+      std::vector <Node> nodes_;
 
-      dip::uint Index( const String& name ) const {
+      dip::uint Index( String const& name ) const {
          auto it = names_.find( name );
          dip_ThrowIf( it == names_.end(), "Color space name not defined." );
          return it->second;
       }
 
-      bool IsDefined( const String& name ) const {
+      bool IsDefined( String const& name ) const {
          return names_.count( name ) != 0;
       }
 
@@ -190,7 +194,7 @@ class ColorSpaceManager {
       // which, when called in succession, accomplish the color space conversion.
 
       // Find an optimal path between two color spaces, given by their indices.
-      std::vector< dip::uint > FindPath( dip::uint start, dip::uint stop ) const ; // TODO
+      std::vector <dip::uint> FindPath( dip::uint start, dip::uint stop ) const; // TODO
 };
 
 } // namespace dip

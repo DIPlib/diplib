@@ -29,8 +29,6 @@
 /// \file
 /// Defines the basic types used throughout the library. This file is always included through diplib.h.
 
-//TODO: We need to document the macros defined here under the file diplib.h. How do we do this?
-
 
 namespace dip {
 
@@ -48,52 +46,57 @@ namespace dip {
 //       uses it for sizes of arrays, and sizeof() is unsigned also. Maybe
 //       better to cast these to sint?
 typedef std::ptrdiff_t sint;  ///< An integer type to be used for strides and similar measures.
-typedef std::size_t    uint;  ///< An integer type to be used for sizes and the like.
-            // ptrdiff_t and size_t are signed and unsigned integers of the same length as
-            // pointers: 32 bits on 32-bit systems, 64 bits on 64-bit systems.
+typedef std::size_t uint;  ///< An integer type to be used for sizes and the like.
+// ptrdiff_t and size_t are signed and unsigned integers of the same length as
+// pointers: 32 bits on 32-bit systems, 64 bits on 64-bit systems.
 
 
 //
 // Types for pixel values
 //
-typedef std::uint8_t          uint8;      ///< Type for samples in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
-typedef std::uint16_t         uint16;     ///< Type for samples in a 16-bit unsigned integer image
-typedef std::uint32_t         uint32;     ///< Type for samples in a 32-bit unsigned integer image
-typedef std::int8_t           sint8;      ///< Type for samples in an 8-bit signed integer image
-typedef std::int16_t          sint16;     ///< Type for samples in a 16-bit signed integer image
-typedef std::int32_t          sint32;     ///< Type for samples in a 32-bit signed integer image
-typedef float                 sfloat;     ///< Type for samples in a 32-bit floating point (single-precision) image
-typedef double                dfloat;     ///< Type for samples in a 64-bit floating point (double-precision) image
-typedef std::complex<sfloat>  scomplex;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
-typedef std::complex<dfloat>  dcomplex;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
+typedef std::uint8_t  uint8;      ///< Type for samples in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
+typedef std::uint16_t uint16;     ///< Type for samples in a 16-bit unsigned integer image
+typedef std::uint32_t uint32;     ///< Type for samples in a 32-bit unsigned integer image
+typedef std::int8_t   sint8;      ///< Type for samples in an 8-bit signed integer image
+typedef std::int16_t  sint16;     ///< Type for samples in a 16-bit signed integer image
+typedef std::int32_t  sint32;     ///< Type for samples in a 32-bit signed integer image
+typedef float         sfloat;     ///< Type for samples in a 32-bit floating point (single-precision) image
+typedef double        dfloat;     ///< Type for samples in a 64-bit floating point (double-precision) image
+typedef std::complex< sfloat > scomplex;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
+typedef std::complex< dfloat > dcomplex;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
 /// Type for samples in a binary image. Can store 0 or 1. Ocupies 1 byte.
 struct bin {
    // Binary data stored in a single byte (don't use bool for pixels, it has
    // implementation-defined size). We define this struct for binary data so
    // that we can overload functions differently for bin and for uint8.
    uint8 v_;
+
    // Overload constructors to make sure we always write 0 or 1 in the bin.
    /// The default value is 0 (false)
    constexpr bin() : v_( 0 ) {};
+
    /// A bool implicitly converts to bin
    constexpr bin( bool v ) : v_( v ) {};
+
    /// Any arithmetic type converts to bin by comparing to zero
    template< typename T >
    constexpr explicit bin( T v ) : v_( !!v ) {};
+
    /// A complex value converts to bin by comparing the absolute value to zero
    template< typename T >
-   constexpr explicit bin( std::complex<T> v ) : v_( !!std::abs( v ) ) {};
+   constexpr explicit bin( std::complex< T > v ) : v_( !!std::abs( v ) ) {};
+
    /// A bin implicitly converts to bool
    operator bool() const { return v_; }
 };
 
 // if 8 bits is not a byte...
-static_assert( sizeof(dip::uint8)==1, "8 bits is not a byte in your system!" );
+static_assert( sizeof( dip::uint8 ) == 1, "8 bits is not a byte in your system!" );
 // Seriously, though. We rely on this property, and there is no guarantee
 // that a system actually has 8 bits in a byte. Maybe we should use char
 // (which is guaranteed to be size 1) for generic pointer arithmetic?
 
-static_assert( sizeof(dip::bin)==1, "The binary type is not a single byte!" );
+static_assert( sizeof( dip::bin ) == 1, "The binary type is not a single byte!" );
 
 
 //
@@ -101,29 +104,29 @@ static_assert( sizeof(dip::bin)==1, "The binary type is not a single byte!" );
 //
 
 // TODO: It's a little confusing that these arrays and others like StringArray or ImageArray work differently.
-typedef DimensionArray<dip::sint>      IntegerArray;   ///< An array to hold strides, filter sizes, etc.
-typedef DimensionArray<dip::uint>      UnsignedArray;  ///< An array to hold dimensions, dimension lists, etc.
-typedef DimensionArray<dip::dfloat>    FloatArray;     ///< An array to hold filter parameters.
-typedef DimensionArray<bool>           BooleanArray;   ///< An array used as a dimension selector.
-   // IntegerArray A;
-   // IntegerArray A(n);
-   // IntegerArray A(n,0);
-   // IntegerArray A {10,20,5};
-   // A = ...;
-   // A.size();
-   // A[ii];
-   // A.data();
-   // A.resize(n);
-   // A.resize(n,0);
-   // A == B;
+typedef DimensionArray< dip::sint > IntegerArray;   ///< An array to hold strides, filter sizes, etc.
+typedef DimensionArray< dip::uint > UnsignedArray;  ///< An array to hold dimensions, dimension lists, etc.
+typedef DimensionArray< dip::dfloat > FloatArray;   ///< An array to hold filter parameters.
+typedef DimensionArray< bool > BooleanArray;        ///< An array used as a dimension selector.
+// IntegerArray A;
+// IntegerArray A(n);
+// IntegerArray A(n,0);
+// IntegerArray A {10,20,5};
+// A = ...;
+// A.size();
+// A[ii];
+// A.data();
+// A.resize(n);
+// A.resize(n,0);
+// A == B;
 
 
 //
 // Strings, used for parameters and other things
 //
 
-typedef std::string String;               ///< A string type
-typedef std::vector<String> StringArray;  ///< An array of strings
+typedef std::string String;                 ///< A string type
+typedef std::vector< String > StringArray;  ///< An array of strings
 
 
 //
@@ -142,54 +145,59 @@ struct Range {
    dip::uint step;     ///< Step size when going from start to stop
 
    /// Create a range that indicates all pixels
-   Range() : start{0}, stop{-1}, step{1} {}
+   Range() : start{ 0 }, stop{ -1 }, step{ 1 } {}
+
    /// Create a range that indicates a single pixel
-   Range(dip::sint i) : start{i}, stop{i}, step{1} {}
+   Range( dip::sint i ) : start{ i }, stop{ i }, step{ 1 } {}
+
    /// Create a range that indicates all pixels between `i` and `j`
-   Range(dip::sint i, dip::sint j) : start{i}, stop{j}, step{1} {}
+   Range( dip::sint i, dip::sint j ) : start{ i }, stop{ j }, step{ 1 } {}
+
    /// Create a range with all thee values set
-   Range(dip::sint i, dip::sint j, dip::uint s) : start{i}, stop{j}, step{s} {}
+   Range( dip::sint i, dip::sint j, dip::uint s ) : start{ i }, stop{ j }, step{ s } {}
 
    /// Modify a range so that negative values are assigned correct
    /// values according to the given size; throws if the range falls
    /// out of bounds.
    void Fix( dip::uint size ) {
       // Check step is non-zero
-      dip_ThrowIf( step==0, E::PARAMETER_OUT_OF_RANGE );
+      dip_ThrowIf( step == 0, E::PARAMETER_OUT_OF_RANGE );
       // Compute indices from end
-      if( start<0 ) start += size;
-      if( stop <0 ) stop  += size;
+      if( start < 0 ) { start += size; }
+      if( stop < 0 ) { stop += size; }
       // Check start and stop are within range
-      dip_ThrowIf( (start<0)||(start>=size)||(stop<0)||(stop>=size),
-               E::INDEX_OUT_OF_RANGE );
+      dip_ThrowIf( ( start < 0 ) || ( start >= size ) || ( stop < 0 ) || ( stop >= size ),
+                   E::INDEX_OUT_OF_RANGE );
       // Compute stop given start and step
       //stop = start + ((stop-start)/step)*step;
    }
 
    /// Get the number of pixels addressed by the range (must be fixed first!).
    dip::uint Size() const {
-      if( start > stop )
-         return 1 + (start-stop)/step;
-      else
-         return 1 + (stop-start)/step;
+      if( start > stop ) {
+         return 1 + ( start - stop ) / step;
+      } else {
+         return 1 + ( stop - start ) / step;
+      }
    }
 
    /// Get the offset for the range (must be fixed first!).
    dip::uint Offset() const {
-      return start;
+      return static_cast< dip::uint >( start );
    }
 
    /// Get the signed step size for the range (must be fixed first!).
    dip::sint Step() const {
-      if( start > stop )
+      if( start > stop ) {
          return -step;
-      else
+      } else {
          return step;
+      }
    }
 
 };
 
-typedef DimensionArray<Range> RangeArray;  ///< An array of ranges
+typedef DimensionArray< Range > RangeArray;  ///< An array of ranges
 
 
 //
@@ -206,15 +214,21 @@ typedef DimensionArray<Range> RangeArray;  ///< An array of ranges
 template< typename E, std::size_t N >
 class Options {
    unsigned long values;
-   public:
+public:
    constexpr Options< E, N >() {}
-   constexpr Options< E, N >( dip::uint n ) : values { 1UL << n } {}
-   constexpr Options< E, N >( unsigned long v, int ) : values { v } {}
-   constexpr bool operator== ( const Options< E, N >& other ) const { return ( values & other.values ) != 0; }
-   constexpr bool operator!= ( const Options< E, N >& other ) const { return ( values & other.values ) == 0; }
-   constexpr Options< E, N > operator+ ( const Options< E, N >& other ) const { return { values | other.values, 0 }; }
-   Options< E, N >& operator+= ( const Options< E, N >& other ) { values |= other.values; return *this; }
-   Options< E, N >& operator-= ( const Options< E, N >& other ) { values &= ~other.values; return *this; }
+   constexpr Options< E, N >( dip::uint n ) : values{ 1UL << n } {}
+   constexpr Options< E, N >( unsigned long v, int ) : values{ v } {}
+   constexpr bool operator==( Options< E, N > const& other ) const { return ( values & other.values ) != 0; }
+   constexpr bool operator!=( Options< E, N > const& other ) const { return ( values & other.values ) == 0; }
+   constexpr Options< E, N > operator+( Options< E, N > const& other ) const { return { values | other.values, 0 }; }
+   Options< E, N >& operator+=( Options< E, N > const& other ) {
+      values |= other.values;
+      return * this;
+   }
+   Options< E, N >& operator-=( Options< E, N > const& other ) {
+      values &= ~other.values;
+      return * this;
+   }
 };
 
 /// Declare a type used to pass options to a function or class. This macro is used
@@ -287,7 +301,7 @@ enum class ThrowException {
 ///
 /// Note that you can add these constants together, for example `CmpProps_Dimensions + CmpProps_Strides`.
 DIP_DECLARE_OPTIONS( CmpProps, 11 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_DataType,   0 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_DataType, 0 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Dimensionality, 1 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Dimensions, 2 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Strides, 3 );
@@ -297,11 +311,11 @@ static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorStride, 6 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_ColorSpace, 7 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_PixelSize, 8 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Samples,
-      CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorElements );
+                          CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorElements );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Full,
-      CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorShape );
+                          CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorShape );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_All,
-      CmpProps_Full + CmpProps_Strides + CmpProps_TensorStride );
+                          CmpProps_Full + CmpProps_Strides + CmpProps_TensorStride );
 
 
 } // namespace Option

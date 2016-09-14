@@ -16,60 +16,60 @@ namespace dip {
 
 //
 bool Image::CompareProperties(
-      const Image& src,
+      Image const& src,
       Option::CmpProps cmpProps,
       Option::ThrowException throwException
 ) const {
    if( cmpProps == Option::CmpProps_DataType ) {
-      if( datatype != src.datatype ) {
+      if( dataType_ != src.dataType_ ) {
          dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Data type doesn't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_Dimensionality ) {
-      if( dims.size() != src.dims.size() ) {
+      if( sizes_.size() != src.sizes_.size() ) {
          dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Dimensionality doesn't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_Dimensions ) {
-      if( dims != src.dims ) {
+      if( sizes_ != src.sizes_ ) {
          dip_ThrowIf( throwException == Option::ThrowException::doThrow, E::DIMENSIONS_DONT_MATCH );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_Strides ) {
-      if( strides != src.strides ) {
+      if( strides_ != src.strides_ ) {
          dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Strides don't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_TensorShape ) {
-      if( tensor != src.tensor ) {
+      if( tensor_ != src.tensor_ ) {
          dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Tensor shape doesn't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_TensorElements ) {
-      if( tensor.Elements() != src.tensor.Elements() ) {
+      if( tensor_.Elements() != src.tensor_.Elements() ) {
          dip_ThrowIf( throwException == Option::ThrowException::doThrow, E::TENSORSIZES_DONT_MATCH );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_TensorStride ) {
-      if( tstride != src.tstride ) {
+      if( tensorStride_ != src.tensorStride_ ) {
          dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Tensor stride doesn't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_ColorSpace ) {
-      if( colspace != src.colspace ) {
+      if( colorSpace_ != src.colorSpace_ ) {
          dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Color space doesn't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_PixelSize ) {
-      if( pixelsize != src.pixelsize ) {
+      if( pixelSize_ != src.pixelSize_ ) {
          dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Physical dimensions don't match" );
          return false;
       }
@@ -79,53 +79,53 @@ bool Image::CompareProperties(
 
 //
 bool Image::CheckProperties(
-      const dip::uint ndims,
-      const dip::DataType::Classes dts,
+      dip::uint ndims,
+      dip::DataType::Classes dts,
       Option::ThrowException throwException
 ) const {
-   bool result = dims.size() == ndims;
-   if( !result && (throwException == Option::ThrowException::doThrow) ) {
+   bool result = sizes_.size() == ndims;
+   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
       dip_Throw( E::DIMENSIONALITY_NOT_SUPPORTED );
    }
-   result &= dts == datatype;
-   if( !result && (throwException == Option::ThrowException::doThrow) ) {
+   result &= dts == dataType_;
+   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
       dip_Throw( E::DATA_TYPE_NOT_SUPPORTED );
    }
    return result;
 }
 
 bool Image::CheckProperties(
-      const UnsignedArray& dimensions,
-      const dip::DataType::Classes dts,
+      UnsignedArray const& dimensions,
+      dip::DataType::Classes dts,
       Option::ThrowException throwException
 ) const {
-   bool result = dims == dimensions;
-   if( !result && (throwException == Option::ThrowException::doThrow) ) {
+   bool result = sizes_ == dimensions;
+   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
       dip_Throw( E::DIMENSIONS_DONT_MATCH );
    }
-   result &= dts == datatype;
-   if( !result && (throwException == Option::ThrowException::doThrow) ) {
+   result &= dts == dataType_;
+   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
       dip_Throw( E::DATA_TYPE_NOT_SUPPORTED );
    }
    return result;
 }
 
 bool Image::CheckProperties(
-      const UnsignedArray& dimensions,
+      UnsignedArray const& dimensions,
       dip::uint tensorElements,
-      const dip::DataType::Classes dts,
+      dip::DataType::Classes dts,
       Option::ThrowException throwException
 ) const {
-   bool result = dims == dimensions;
-   if( !result && (throwException == Option::ThrowException::doThrow) ) {
+   bool result = sizes_ == dimensions;
+   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
       dip_Throw( E::DIMENSIONS_DONT_MATCH );
    }
-   result &= tensor.Elements() == tensorElements;
-   if( !result && (throwException == Option::ThrowException::doThrow) ) {
+   result &= tensor_.Elements() == tensorElements;
+   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
       dip_Throw( E::TENSORSIZES_DONT_MATCH );
    }
-   result &= dts == datatype;
-   if( !result && (throwException == Option::ThrowException::doThrow) ) {
+   result &= dts == dataType_;
+   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
       dip_Throw( E::DATA_TYPE_NOT_SUPPORTED );
    }
    return result;
@@ -135,7 +135,7 @@ bool Image::CheckProperties(
 //
 std::ostream& operator<<(
       std::ostream& os,
-      const Image& img
+      Image const& img
 ) {
    // Shape and other main propertiees
    if( img.TensorElements() == 1 ) {
@@ -151,27 +151,27 @@ std::ostream& operator<<(
 
    // Image size
    os << "   sizes: ";
-   dip::UnsignedArray dims = img.Dimensions();
-   for( dip::uint ii=0; ii<dims.size(); ++ii ) {
-      os << ( ii>0 ? ", " : "" ) << dims[ii];
+   dip::UnsignedArray const& sizes = img.Sizes();
+   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+      os << ( ii > 0 ? ", " : "" ) << sizes[ ii ];
    }
    os << std::endl;
 
    // Pixel size
    if( img.HasPixelSize() ) {
       os << "   pixel size: ";
-      dip::PixelSize ps = img.PixelSize();
-      for( dip::uint ii=0; ii<dims.size(); ++ii ) {
-         os << ( ii>0 ? " x " : "" ) << ps[ii];
+      dip::PixelSize const& ps = img.PixelSize();
+      for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+         os << ( ii > 0 ? " x " : "" ) << ps[ ii ];
       }
       os << std::endl;
    }
 
    // Strides
    os << "   strides: ";
-   dip::IntegerArray strides = img.Strides();
-   for( dip::uint ii=0; ii<strides.size(); ++ii ) {
-      os << ( ii>0 ? ", " : "" ) << strides[ii];
+   dip::IntegerArray const& strides = img.Strides();
+   for( dip::uint ii = 0; ii < strides.size(); ++ii ) {
+      os << ( ii > 0 ? ", " : "" ) << strides[ ii ];
    }
    os << std::endl;
 
@@ -191,8 +191,9 @@ std::ostream& operator<<(
          }
       }
 
-      dip::uint stride; void* origin;
-      img.GetSimpleStrideAndOrigin(stride, origin);
+      dip::uint stride;
+      void* origin;
+      img.GetSimpleStrideAndOrigin( stride, origin );
       if( origin ) {
          os << "   simple stride: " << stride << std::endl;
       } else {

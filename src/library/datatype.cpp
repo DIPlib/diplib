@@ -101,7 +101,7 @@ DataType DataType::SuggestArithmetic( DataType type1, DataType type2 ) {
       std::swap( type1, type2 );    // sort the two, it saves us lots of tests
    if( type1 == DT_DCOMPLEX )
       return DT_DCOMPLEX;
-   if( (type1 == DT_SCOMPLEX) && (type2 == DT_DFLOAT) )
+   if( ( type1 == DT_SCOMPLEX ) && ( type2 == DT_DFLOAT ) )
       return DT_DCOMPLEX;
    if( type1 == DT_SCOMPLEX )
       return DT_SCOMPLEX;
@@ -120,37 +120,37 @@ DataType DataType::SuggestDiadicOperation( DataType type1, DataType type2 ) {
 
    if( type1 == DT_DCOMPLEX )
       return DT_DCOMPLEX;
-   if( (type1 == DT_SCOMPLEX) && (type2 == DT_DFLOAT) )
+   if( ( type1 == DT_SCOMPLEX ) && ( type2 == DT_DFLOAT ) )
       return DT_DCOMPLEX;
    if( type1 == DT_SCOMPLEX )
       return DT_SCOMPLEX;
 
    if( type1 == DT_DFLOAT )
       return DT_DFLOAT;
-   if( (type1 == DT_SFLOAT) && ( (type2 == DT_UINT32) || (type2 == DT_SINT32) ))
+   if( ( type1 == DT_SFLOAT ) && ( ( type2 == DT_UINT32 ) || ( type2 == DT_SINT32 ) ) )
       return DT_DFLOAT;
    if( type1 == DT_SFLOAT )
       return DT_SFLOAT;
 
-   if( (type1 == DT_SINT32) && (type2 == DT_UINT32) )
+   if( ( type1 == DT_SINT32 ) && ( type2 == DT_UINT32 ) )
       return DT_DFLOAT;
    if( type1 == DT_SINT32 )
       return DT_SINT32;
-   if( (type1 == DT_UINT32) && ( (type2 == DT_SINT16) || (type2 == DT_SINT8) ))
+   if( ( type1 == DT_UINT32 ) && ( ( type2 == DT_SINT16 ) || ( type2 == DT_SINT8 ) ) )
       return DT_DFLOAT;
    if( type1 == DT_UINT32 )
       return DT_UINT32;
 
-   if( (type1 == DT_SINT16) && (type2 == DT_UINT16) )
+   if( ( type1 == DT_SINT16 ) && ( type2 == DT_UINT16 ) )
       return DT_SINT32;
    if( type1 == DT_SINT16 )
       return DT_SINT16;
-   if( (type1 == DT_UINT16) && (type2 == DT_SINT8) )
+   if( ( type1 == DT_UINT16 ) && ( type2 == DT_SINT8 ) )
       return DT_SINT32;
    if( type1 == DT_UINT16 )
       return DT_UINT16;
 
-   if( (type1 == DT_SINT8) && (type2 == DT_UINT8) )
+   if( ( type1 == DT_SINT8 ) && ( type2 == DT_UINT8 ) )
       return DT_SINT16;
    if( type1 == DT_SINT8 )
       return DT_SINT8;

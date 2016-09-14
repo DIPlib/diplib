@@ -16,22 +16,22 @@ namespace dip {
 //
 template< typename TPI >
 static void dip__GetMaximumAndMinimum(
-      const std::vector<Framework::ScanBuffer>&   inBuffer,
-      std::vector<Framework::ScanBuffer>&         outBuffer,
-      dip::uint            bufferLength,
-      dip::uint            dimension,
-      UnsignedArray        position,
-      const void*          functionParameters,
-      void*                functionVariables
+      std::vector< Framework::ScanBuffer > const& inBuffer,
+      std::vector< Framework::ScanBuffer >& outBuffer,
+      dip::uint bufferLength,
+      dip::uint dimension,
+      UnsignedArray position,
+      const void* functionParameters,
+      void* functionVariables
 ) {
-   const TPI* in = (const TPI*)inBuffer[0].buffer;
-   MaximumAndMinimum* vars = (MaximumAndMinimum*)functionVariables;
+   TPI const* in = static_cast< TPI const* >( inBuffer[ 0 ].buffer );
+   MaximumAndMinimum* vars = ( MaximumAndMinimum* )functionVariables;
    if( inBuffer.size() > 1 ) {
       // If there's two input buffers, we have a mask image.
-      const bin* mask = (const bin*)inBuffer[1].buffer;
+      bin const* mask = static_cast< bin const* >( inBuffer[ 1 ].buffer );
       for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-         if( *mask ) {
-            double v = *in;
+         if( * mask ) {
+            double v = * in;
             if( v < vars->min ) {
                vars->min = v;
             }
@@ -39,27 +39,27 @@ static void dip__GetMaximumAndMinimum(
                vars->max = v;
             }
          }
-         in += inBuffer[0].stride;
-         mask += inBuffer[1].stride;
+         in += inBuffer[ 0 ].stride;
+         mask += inBuffer[ 1 ].stride;
       }
    } else {
       // Otherwise we don't.
       for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-         double v = *in;
+         double v = * in;
          if( v < vars->min ) {
             vars->min = v;
          }
          if( v > vars->max ) {
             vars->max = v;
          }
-         in += inBuffer[0].stride;
+         in += inBuffer[ 0 ].stride;
       }
    }
 }
 
 MaximumAndMinimum GetMaximumAndMinimum(
-   Image in,
-   Image mask
+      Image const& in,
+      Image const& mask
 ) {
    ImageConstRefArray inar;
    inar.reserve( 2 );
@@ -83,22 +83,23 @@ MaximumAndMinimum GetMaximumAndMinimum(
    Framework::ScanFilter filter;
    DIP_OVL_ASSIGN_NONCOMPLEX( filter, dip__GetMaximumAndMinimum, in.DataType() );
    // Create an array for the values computed by each thread, and initialize them.
-   MaximumAndMinimum init {
-      std::numeric_limits< double >::lowest(),
-      std::numeric_limits< double >::max()
+   MaximumAndMinimum init{
+         std::numeric_limits< double >::lowest(),
+         std::numeric_limits< double >::max()
    };
    std::vector< MaximumAndMinimum > vars( 1, init ); // TODO: fill in the max number of threads we expect to create.
    // Call the framework function
    ImageRefArray outar{};
-   Framework::Scan( inar, outar,
-                    inBufT, DataTypeArray{}, DataTypeArray{}, UnsignedArray{},
-                    filter, nullptr, Framework::CastToVoidpVector( vars ),
-                    Framework::Scan_TensorAsSpatialDim );
+   Framework::Scan(
+         inar, outar,
+         inBufT, DataTypeArray{}, DataTypeArray{}, UnsignedArray{},
+         filter, nullptr, Framework::CastToVoidpVector( vars ),
+         Framework::Scan_TensorAsSpatialDim );
    // Reduce
-   MaximumAndMinimum out = vars[0];
+   MaximumAndMinimum out = vars[ 0 ];
    for( dip::uint ii = 1; ii < vars.size(); ++ii ) {
-      out.max = std::max( out.max, vars[ii].max );
-      out.min = std::min( out.min, vars[ii].min );
+      out.max = std::max( out.max, vars[ ii ].max );
+      out.min = std::min( out.min, vars[ ii ].min );
    }
    return out;
 }

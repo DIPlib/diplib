@@ -38,31 +38,31 @@ inline dip::uint gcd( dip::uint a, dip::uint b ) {
 
 /// Integer division, return ceil.
 inline dip::uint div_ceil( dip::uint lhs, dip::uint rhs ) {
-   if (lhs * rhs == 0) {
+   if( lhs * rhs == 0 ) {
       return 0;
    }
-   return (lhs - 1) / rhs + 1;
+   return ( lhs - 1 ) / rhs + 1;
 }
 
 /// Integer division, return ceil.
 inline dip::sint div_ceil( dip::sint lhs, dip::sint rhs ) {
-   if (lhs * rhs == 0) {
+   if( lhs * rhs == 0 ) {
       return 0;
    }
-   if (lhs * rhs < 0) {
+   if( lhs * rhs < 0 ) {
       return lhs / rhs;
    } else {
-      if (lhs < 0) {
-         return (lhs + 1) / rhs + 1;
+      if( lhs < 0 ) {
+         return ( lhs + 1 ) / rhs + 1;
       } else {
-         return (lhs - 1) / rhs + 1;
+         return ( lhs - 1 ) / rhs + 1;
       }
    }
 }
 
 /// Integer division, return floor.
 inline dip::uint div_floor( dip::uint lhs, dip::uint rhs ) {
-   if (lhs * rhs == 0) {
+   if( lhs * rhs == 0 ) {
       return 0;
    }
    return lhs / rhs;
@@ -70,14 +70,14 @@ inline dip::uint div_floor( dip::uint lhs, dip::uint rhs ) {
 
 /// Integer division, return floor.
 inline dip::sint div_floor( dip::sint lhs, dip::sint rhs ) {
-   if (lhs * rhs == 0) {
+   if( lhs * rhs == 0 ) {
       return 0;
    }
-   if (lhs * rhs < 0) {
-      if (lhs < 0) {
-         return (lhs + 1) / rhs - 1;
+   if( lhs * rhs < 0 ) {
+      if( lhs < 0 ) {
+         return ( lhs + 1 ) / rhs - 1;
       } else {
-         return (lhs - 1) / rhs - 1;
+         return ( lhs - 1 ) / rhs - 1;
       }
    } else {
       return lhs / rhs;
@@ -86,12 +86,12 @@ inline dip::sint div_floor( dip::sint lhs, dip::sint rhs ) {
 
 /// Integer division, return rounded.
 inline dip::uint div_round( dip::uint lhs, dip::uint rhs ) {
-   return div_floor(lhs + rhs/2, rhs);
+   return div_floor( lhs + rhs / 2, rhs );
 }
 
 /// Integer division, return rounded.
 inline dip::sint div_round( dip::sint lhs, dip::sint rhs ) {
-   return div_floor(lhs + rhs/2, rhs);
+   return div_floor( lhs + rhs / 2, rhs );
 }
 
 /// Clamps a value between a min and max value (a.k.a. clip, saturate, etc.).
