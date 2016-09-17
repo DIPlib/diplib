@@ -25,7 +25,7 @@ static inline void SingletonExpandedSize(
          if( size[ jj ] == 1 ) {
             size[ jj ] = size2[ jj ];
          } else if( size2[ jj ] != 1 ) {
-            dip_Throw( E::DIMENSIONS_DONT_MATCH );
+            dip_Throw( E::SIZES_DONT_MATCH );
          }
       }
    }

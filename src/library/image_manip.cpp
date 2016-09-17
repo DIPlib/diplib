@@ -61,13 +61,15 @@ Image& Image::Flatten() {
    void* p;
    GetSimpleStrideAndOrigin( stride, p );
    if( !p ) {
-      // TODO: force a rewrite of the data with normal strides.
-      // If there is no external interface:
-      //    stride = tensor.Elements();
-      //    p = origin;
-      // Else:
-      //    GetSimpleStrideAndOrigin( stride, p );
-      dip_Throw( "Not yet implemented for non-simple strides." );
+      // The image has no simple stride -- copy the samples over to a new data segment
+      Image newimg;
+      newimg.CopyProperties( *this );
+      newimg.strides_.clear();
+      newimg.Forge();
+      newimg.Copy( *this );
+      newimg.GetSimpleStrideAndOrigin( stride, p );
+      dip_ThrowIf( !p, "Copying over the image data didn't yield simple strides." );
+      std::swap( newimg, *this );
    }
    strides_ = { dip::sint( stride ) };
    sizes_ = { NumberOfPixels() };
@@ -227,7 +229,7 @@ Image& Image::MergeComplex( dip::sint dim ) {
    }
    dip::uint olddim = static_cast< dip::uint >( dim );
    dip_ThrowIf( olddim >= nd, E::INVALID_PARAMETER );
-   dip_ThrowIf( ( sizes_[ olddim ] != 2 ) || ( strides_[ olddim ] != 1 ), E::DIMENSIONS_DONT_MATCH );
+   dip_ThrowIf( ( sizes_[ olddim ] != 2 ) || ( strides_[ olddim ] != 1 ), E::SIZES_DONT_MATCH );
    // Change data type
    dataType_ = dataType_ == DT_SFLOAT ? DT_SCOMPLEX : DT_DCOMPLEX;
    // Delete old spatial dimension
@@ -261,7 +263,7 @@ Image& Image::SplitComplexToTensor() {
 
 Image& Image::MergeTensorToComplex() {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( ( tensor_.Elements() != 2 ) || ( tensorStride_ != 1 ), E::TENSORSIZES_DONT_MATCH );
+   dip_ThrowIf( ( tensor_.Elements() != 2 ) || ( tensorStride_ != 1 ), E::NTENSORELEM_DONT_MATCH );
    dip_ThrowIf( dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    // Change data type
    dataType_ = dataType_ == DT_SFLOAT ? DT_SCOMPLEX : DT_DCOMPLEX;

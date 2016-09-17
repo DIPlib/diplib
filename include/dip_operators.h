@@ -18,6 +18,7 @@
 
 #include "dip_image.h"
 
+
 /// \file
 /// Declares the overloaded arithmetic and logical operators for dip::Image,
 /// as well as functions implementing their functionality.

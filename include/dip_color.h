@@ -16,8 +16,10 @@
 
 #include "diplib.h"
 
+
 /// \file
 /// Defines dip::ColorSpaceManager, providing support for color images.
+
 
 // TODO: functions marked TODO in this file need to be defined in a .cpp file.
 

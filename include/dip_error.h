@@ -49,9 +49,9 @@ constexpr char const* DIMENSIONALITY_EXCEEDS_LIMIT = "Dimensionality exceeds add
 constexpr char const* ILLEGAL_DIMENSIONALITY = "Illegal dimensionality";
 constexpr char const* DIMENSIONALITY_NOT_SUPPORTED = "Dimensionality not supported";
 constexpr char const* ILLEGAL_DIMENSION = "Illegal dimension";
-constexpr char const* DIMENSIONS_DONT_MATCH = "Dimensions don't match";
+constexpr char const* SIZES_DONT_MATCH = "Sizes don't match";
 constexpr char const* NOT_SCALAR = "Image is not scalar";
-constexpr char const* TENSORSIZES_DONT_MATCH = "Number of tensor elements doesn't match";
+constexpr char const* NTENSORELEM_DONT_MATCH = "Number of tensor elements doesn't match";
 
 // image properties errors
 constexpr char const* NO_NORMAL_STRIDE = "Image has a non-normal stride";

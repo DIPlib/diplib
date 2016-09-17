@@ -34,7 +34,7 @@ namespace dip {
 /// dip::Image::Copy in `src/library/image_data.cpp`.
 namespace NDLoop {
 
-/// Initializes the variables for an nD loop over an image of size `dims`.
+/// Initializes the variables for an nD loop over an image.
 inline UnsignedArray Init(
       Image const& img,
       dip::sint& offset
@@ -43,14 +43,14 @@ inline UnsignedArray Init(
    return UnsignedArray( img.Dimensionality(), 0 );
 }
 
-/// Initializes the variables for an nD loop over two images of size `dims`.
+/// Initializes the variables for an nD loop over two images of equal sizes.
 inline UnsignedArray Init(
       Image const& img1,
       Image const& img2,
       dip::sint& offset1,
       dip::sint& offset2
 ) {
-   dip_ThrowIf( img1.Sizes() != img2.Sizes(), E::DIMENSIONS_DONT_MATCH );
+   dip_ThrowIf( img1.Sizes() != img2.Sizes(), E::SIZES_DONT_MATCH );
    offset1 = 0;
    offset2 = 0;
    return UnsignedArray( img1.Dimensionality(), 0 );
@@ -69,7 +69,7 @@ inline UnsignedArray Init(
 inline bool Next(
       UnsignedArray& position,
       dip::sint& offset,
-      UnsignedArray const& dims,
+      UnsignedArray const& sizes,
       IntegerArray const& strides,
       dip::sint skipDim = -1
 ) {
@@ -79,7 +79,7 @@ inline bool Next(
          ++position[ dd ];
          offset += strides[ dd ];
          // Check whether we reached the last pixel of the line ...
-         if( position[ dd ] < dims[ dd ] ) {
+         if( position[ dd ] < sizes[ dd ] ) {
             break;
          }
          offset -= position[ dd ] * strides[ dd ];
@@ -95,7 +95,7 @@ inline bool Next(
       UnsignedArray& position,
       dip::sint& offset1,
       dip::sint& offset2,
-      UnsignedArray const& dims,
+      UnsignedArray const& sizes,
       IntegerArray const& strides1,
       IntegerArray const& strides2,
       dip::sint skipDim = -1
@@ -107,7 +107,7 @@ inline bool Next(
          offset1 += strides1[ dd ];
          offset2 += strides2[ dd ];
          // Check whether we reached the last pixel of the line ...
-         if( position[ dd ] < dims[ dd ] ) {
+         if( position[ dd ] < sizes[ dd ] ) {
             break;
          }
          offset1 -= position[ dd ] * strides1[ dd ];

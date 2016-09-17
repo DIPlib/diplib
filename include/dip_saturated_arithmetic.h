@@ -8,9 +8,18 @@
 #ifndef DIP_SATURATED_ARITHMETIC_H
 #define DIP_SATURATED_ARITHMETIC_H
 
+#include <limits>
+
 #include "dip_types.h"
 #include "dip_clamp_cast.h"
-#include <limits>
+
+
+/// \file
+/// Defines templated functions for saturated arithmetic. Most DIPlib functions take care
+/// of properly clamping the result of operations on pixels. This typically is more intuitive
+/// and useful when processing images than the default C/C++ overflow behavior, which
+/// corresponds to modular arithmetic for integer values.
+
 
 namespace dip {
 
@@ -20,6 +29,7 @@ namespace dip {
 // Addition
 //
 
+/// Adds two values using saturated arithmetic.
 // The base template is good for floats and complex.
 template< typename T >
 constexpr inline const T saturated_add( T const& lhs, T const& rhs ) {
@@ -67,6 +77,7 @@ constexpr inline const bin saturated_add( bin const& lhs, bin const& rhs ) {
 // Subtraction
 //
 
+/// Subtracts two values using saturated arithmetic.
 // The base template is good for floats and complex.
 template< typename T >
 constexpr inline const T saturated_sub( T const& lhs, T const& rhs ) {
@@ -114,6 +125,7 @@ constexpr inline const bin saturated_sub( bin const& lhs, bin const& rhs ) {
 // Multiplication
 //
 
+/// Multiplies two values using saturated arithmetic.
 // The base template is good for floats and complex.
 template< typename T >
 constexpr inline const T saturated_mul( T const& lhs, T const& rhs ) {
@@ -156,6 +168,7 @@ constexpr inline const bin saturated_mul( bin const& lhs, bin const& rhs ) {
 // Division
 //
 
+/// Divides two values using saturated arithmetic (but the division never overflows anyway).
 // Division never overflows. We let the system handle division by 0.
 template< typename T >
 constexpr inline const T saturated_div( T const& lhs, T const& rhs ) {

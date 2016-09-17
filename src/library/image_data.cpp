@@ -7,7 +7,7 @@
  */
 
 #include <cstdlib>   // std::malloc, std::realloc, std::free
-#include <iostream>
+//#include <iostream>
 #include <algorithm>
 #include <limits>
 
@@ -16,7 +16,6 @@
 #include "dip_ndloop.h"
 #include "dip_framework.h"
 #include "dip_overload.h"
-#include "dip_clamp_cast.h"
 
 #include "copybuffer.h"
 
@@ -602,17 +601,25 @@ CoordinatesComputer Image::IndexToCoordinatesComputer() const {
 
 //
 void Image::Copy( Image const& src ) {
+   if( &src == this ) {
+      // Copying self... what for?
+      return;
+   }
    if( IsForged() ) {
       // Forged image, check to make sure number of samples is correct
+      // The data type is not changed, the copy will convert the data type
       CompareProperties( src, Option::CmpProps_Dimensions + Option::CmpProps_TensorElements );
       // Change the tensor shape to match that of `src`
       tensor_.ChangeShape( src.tensor_ );
-      // The data type is not changed, the copy will convert the data type
+      // Copy over additional properties
+      pixelSize_ = src.pixelSize_;
+      colorSpace_ = src.colorSpace_;
    } else {
       // Non-forged image, make properties identical to `src`
       CopyProperties( src );
       Forge();
    }
+   /* TODO: This section temporarily removed. This only works if all images have strides in the same order (i.e. x first, then z, then y).
    dip::uint sstride_d;
    void* porigin_d;
    GetSimpleStrideAndOrigin( sstride_d, porigin_d );
@@ -625,11 +632,11 @@ void Image::Copy( Image const& src ) {
          CopyBuffer(
                porigin_s,
                src.dataType_,
-               sstride_s,
+               static_cast< dip::sint >( sstride_s ),
                src.tensorStride_,
                porigin_d,
                dataType_,
-               sstride_d,
+               static_cast< dip::sint >( sstride_d ),
                tensorStride_,
                NumberOfPixels(),
                tensor_.Elements(),
@@ -638,6 +645,7 @@ void Image::Copy( Image const& src ) {
          return;
       }
    }
+   */
    // Make nD loop
    dip::uint processingDim = Framework::OptimalProcessingDim( src );
    dip::sint offset_s;
@@ -659,6 +667,69 @@ void Image::Copy( Image const& src ) {
       );
    } while( NDLoop::Next( coords, offset_s, offset_d, sizes_, src.strides_, strides_, processingDim ) );
 }
+
+
+//
+void Image::Convert( dip::DataType dt ) {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   if( dt != dataType_ ) {
+      if( dt.SizeOf() == dataType_.SizeOf() ) {
+         // The operation can happen in place.
+         // Loop over all pixels, casting with clamp each of the values; finally set the data type field.
+         dip::uint sstride;
+         void* porigin;
+         GetSimpleStrideAndOrigin( sstride, porigin );
+         if( sstride != 0 ) {
+            // No need to loop
+            //std::cout << "dip::Image::Convert: in-place, no need to loop\n";
+            CopyBuffer(
+                  porigin,
+                  dataType_,
+                  static_cast< dip::sint >( sstride ),
+                  tensorStride_,
+                  porigin,
+                  dt,
+                  static_cast< dip::sint >( sstride ),
+                  tensorStride_,
+                  NumberOfPixels(),
+                  tensor_.Elements(),
+                  std::vector< dip::sint > {}
+            );
+         } else {
+            // Make nD loop
+            //std::cout << "dip::Image::Convert: in-place, nD loop\n";
+            dip::uint processingDim = Framework::OptimalProcessingDim( *this );
+            dip::sint offset;
+            UnsignedArray coords = NDLoop::Init( *this, offset );
+            do {
+               CopyBuffer(
+                     Pointer( offset ),
+                     dataType_,
+                     strides_[ processingDim ],
+                     tensorStride_,
+                     Pointer( offset ),
+                     dt,
+                     strides_[ processingDim ],
+                     tensorStride_,
+                     sizes_[ processingDim ],
+                     tensor_.Elements(),
+                     std::vector< dip::sint > {}
+               );
+            } while( NDLoop::Next( coords, offset, sizes_, strides_, processingDim ) );
+         }
+         dataType_ = dt;
+      } else {
+         // We need to create a new data segment and copy it over.
+         // Simply create a new image, identical copy of *this, with a different data type, copy
+         // the data, then swap the two images.
+         //std::cout << "dip::Image::Convert: using Copy\n";
+         Image newimg( *this, dt ); // constructor forges the image
+         newimg.Copy( *this );
+         std::swap( newimg, *this );
+      }
+   }
+}
+
 
 //
 template< typename inT >

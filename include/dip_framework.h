@@ -331,7 +331,7 @@ inline void ScanDyadic(
       outTensor = Tensor( in1.TensorRows(), in1.TensorColumns() );
       opts += Framework::Scan_ExpandTensorInBuffer;
    } else {
-      dip_Throw( E::TENSORSIZES_DONT_MATCH );
+      dip_Throw( E::NTENSORELEM_DONT_MATCH );
    }
    ImageConstRefArray inar{ in1, in2 };
    ImageRefArray outar{ out };

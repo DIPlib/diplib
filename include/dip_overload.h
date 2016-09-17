@@ -9,6 +9,7 @@
 #ifndef DIP_OVERLOAD_H
 #define DIP_OVERLOAD_H
 
+
 /// \file
 /// Help with instantiating templates for different pixel data types.
 /// The preprocessor macros in this file insert a block of code that
@@ -40,6 +41,7 @@
 ///   value in a variable.
 /// - DIP_OVL_ASSIGN_xxx assigns a function pointer to a variable, without
 ///   calling the function.
+
 
 // Note: in some macros below, we start with assigning a random function
 // pointer into `f`. This is necessary to determine the type of `f`.

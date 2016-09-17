@@ -8,9 +8,26 @@
 #ifndef DIP_CLAMP_CAST_H
 #define DIP_CLAMP_CAST_H
 
+#include <limits>
+
 #include "dip_types.h"
 #include "dip_numeric.h"
-#include <limits>
+
+
+/// \file
+/// Defines dip::clamp_cast, an operator that returns the input value cast to a different
+/// type, clamped to the range of values representable by that output type. This
+/// is also often referred to as saturated cast. Most DIPlib functions take care of properly
+/// clamping values when casting pixel values. This typically is more intuitive and useful
+/// when processing images than the default C/C++ overflow behavior, which corresponds to
+/// modular arithmetic for integer values.
+///
+/// `clamp_cast` is defined as a series of overloaded template functions with specializations.
+/// The input argument type is used in overload resolution, the output type is the template
+/// parameter, and should be specified between angled brackets after the function name,
+/// much like the standard `static_cast` and similar:
+///     uint8 u = dip::clamp_cast< dip::uint8 >( -54.6 );
+
 
 namespace dip {
 
@@ -67,6 +84,7 @@ constexpr inline const T clamp_cast_basis( S const& v ) {
 // in regular function overload selection. We define specialized version of
 // the templates where needed.
 
+/// Casting from a binary value to any other sample type.
 // Casting from dip::bin is always OK, except when casting to complex values
 template< typename T >
 inline T clamp_cast( dip::bin v ) {
@@ -81,6 +99,7 @@ inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::bin v ) {
    return { static_cast< dip::dfloat >( v ), 0.0 };
 }
 
+/// Casting from a 8-bit unsigned value to any other sample type.
 // Casting from dip::uint8, specialize for dip::sint8
 template< typename T >
 inline T clamp_cast( dip::uint8 v ) {
@@ -91,6 +110,7 @@ inline dip::sint8 clamp_cast< dip::sint8 >( dip::uint8 v ) {
    return clamp_upper< dip::sint8, dip::uint8 >( v );
 }
 
+/// Casting from a 16-bit unsigned value to any other sample type.
 // Casting from a dip::uint16, specialize for dip::uint8, dip::sint8 and dip::sint16
 template< typename T >
 inline T clamp_cast( dip::uint16 v ) {
@@ -109,6 +129,7 @@ inline dip::sint16 clamp_cast< dip::sint16 >( dip::uint16 v ) {
    return clamp_upper< dip::sint16, dip::uint16 >( v );
 }
 
+/// Casting from a 32-bit unsigned value to any other sample type.
 // Casting from a dip::uint32, specialize for dip::uint8, dip::uint16 and all signed types
 template< typename T >
 inline T clamp_cast( dip::uint32 v ) {
@@ -135,6 +156,7 @@ inline dip::sint32 clamp_cast< dip::sint32 >( dip::uint32 v ) {
    return clamp_upper< dip::sint32, dip::uint32 >( v );
 }
 
+/// Casting from a 8-bit signed value to any other sample type.
 // Casting from dip::sint8, specialize for all unsigned types
 template< typename T >
 inline T clamp_cast( dip::sint8 v ) {
@@ -153,6 +175,7 @@ inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint8 v ) {
    return clamp_lower< dip::uint32, dip::sint8 >( v );
 }
 
+/// Casting from a 16-bit signed value to any other sample type.
 // Casting from a dip::sint16, specialize for dip::sint8 and all unsigned types
 template< typename T >
 inline T clamp_cast( dip::sint16 v ) {
@@ -175,6 +198,7 @@ inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint16 v ) {
    return clamp_lower< dip::uint32, dip::sint16 >( v );
 }
 
+/// Casting from a 32-bit signed value to any other sample type.
 // Casting from a dip::sint32, specialize for dip::sint8, dip::sint16 and all unsigned types
 template< typename T >
 inline T clamp_cast( dip::sint32 v ) {
@@ -201,6 +225,7 @@ inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint32 v ) {
    return clamp_lower< dip::uint32, dip::sint32 >( v );
 }
 
+/// Casting from a machine-width signed value to any other sample type.
 // Casting from a dip::sint, we don't do checks if casting to a float, complex or bin
 template< typename T >
 inline T clamp_cast( dip::sint v ) {
@@ -227,8 +252,8 @@ inline dip::bin clamp_cast< dip::bin >( dip::sint v ) {
    return static_cast< dip::bin >( v );
 }
 
-
-// Casting from a float, we don't do checks if casting to a float, complex or bin
+/// Casting from a single-precision float value to any other sample type.
+// Casting from a dip::sfloat, we don't do checks if casting to a float, complex or bin
 template< typename T >
 inline T clamp_cast( dip::sfloat v ) {
    return clamp_both< T, dip::sfloat >( v );
@@ -254,7 +279,8 @@ inline dip::bin clamp_cast< dip::bin >( dip::sfloat v ) {
    return static_cast< dip::bin >( v );
 }
 
-// Casting from a float, we don't do checks if casting to a float, complex or bin
+/// Casting from a double-precision float value to any other sample type.
+// Casting from a dip::dfloat, we don't do checks if casting to a float, complex or bin
 template< typename T >
 inline T clamp_cast( dip::dfloat v ) {
    return clamp_both< T, dip::dfloat >( v );
@@ -280,7 +306,8 @@ inline dip::bin clamp_cast< dip::bin >( dip::dfloat v ) {
    return static_cast< dip::bin >( v );
 }
 
-// Casting from a complex, we take the absolute value and cast as if from a float
+/// Casting from a single-precision complex value to any other sample type.
+// Casting from an dip::scomplex, we take the absolute value and cast as if from a float
 template< typename T >
 inline T clamp_cast( dip::scomplex v ) {
    return clamp_cast< T >( std::abs( v ) );
@@ -294,7 +321,8 @@ inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::scomplex v ) {
    return static_cast< dip::dcomplex >( v );
 }
 
-// Casting from a complex, we take the absolute value and cast as if from a float
+/// Casting from a double-precision complex value to any other sample type.
+// Casting from a dip::dcomplex, we take the absolute value and cast as if from a float
 template< typename T >
 inline T clamp_cast( dip::dcomplex v ) {
    return clamp_cast< T >( std::abs( v ) );

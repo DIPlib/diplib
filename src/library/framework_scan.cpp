@@ -92,7 +92,7 @@ void Scan(
          sizes = in[ 0 ].Sizes();
          for( dip::uint ii = 1; ii < nIn; ++ii ) {
             if( in[ ii ].Sizes() != sizes ) {
-               dip_Throw( E::DIMENSIONS_DONT_MATCH );
+               dip_Throw( E::SIZES_DONT_MATCH );
             }
          }
       }
@@ -128,7 +128,9 @@ void Scan(
    }
 
    // Can we treat the images as if they were 1D?
+   // TODO: Temporarily disabled. This only works if they all have strides in the same order (i.e. x first, then z, then y).
    bool scan1D = sizes.size() <= 1;
+   /*
    if( !scan1D ) {
       scan1D = opts != Scan_NeedCoordinates;
       if( scan1D ) {
@@ -148,6 +150,7 @@ void Scan(
          }
       }
    }
+   */
 
    // If we can treat the images as 1D, convert them 1D.
    // Note we're only converting the copies of the headers, not the original ones.

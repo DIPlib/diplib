@@ -9,16 +9,19 @@
 #ifndef DIP_MATLAB_H
 #define DIP_MATLAB_H
 
+#include <map>
+
 #include "mex.h"
 #include "diplib.h"
 
-#include <map>
+#include <iostream>
 
 /// \file
 /// This file should be included in each MEX file. It defines the
 /// \ref dml namespace. Since it defines functions that are not `inline`,
 /// you will not be able to include this header into more than one source
 /// file that will be linked together.
+
 
 /// The dml namespace contains the interface between MATLAB and DIPlib. It defines
 /// the functions needed to convert between `mxArray` objects and dip::Image objects.
@@ -41,31 +44,31 @@ static char const* InputImageError = "MATLAB image data of unsupported type.";
 // Private funtions
 //
 
-bool IsMatlabStrides(
-      dip::UnsignedArray const& dims,
+static bool IsMatlabStrides(
+      dip::UnsignedArray const& sizes,
       dip::uint telem,
       dip::IntegerArray const& strides,
       dip::sint tstride
 ) {
-   if( dims.size() != strides.size() ) {
+   if( sizes.size() != strides.size() ) {
       return false;
    }
-   if( dims.size() < 2 ) {
+   if( sizes.size() < 2 ) {
       return true;
    }
    if( strides[ 1 ] != 1 ) {
       return false;
    }
-   dip::sint total = ( dip::sint )dims[ 1 ];
+   dip::sint total = ( dip::sint )sizes[ 1 ];
    if( strides[ 0 ] != total ) {
       return false;
    }
-   total *= dims[ 0 ];
-   for( dip::uint ii = 2; ii < dims.size(); ++ii ) {
+   total *= sizes[ 0 ];
+   for( dip::uint ii = 2; ii < sizes.size(); ++ii ) {
       if( strides[ ii ] != total ) {
          return false;
       }
-      total *= dims[ ii ];
+      total *= sizes[ ii ];
    }
    if( ( telem > 1 ) && ( tstride != total ) ) {
       return false;
@@ -73,24 +76,24 @@ bool IsMatlabStrides(
    return true;
 }
 
-bool MatchDimensions(
-      dip::UnsignedArray const& dims,
+static bool MatchDimensions(
+      dip::UnsignedArray const& sizes,
       dip::uint telem,
-      mwSize const* pdims,
+      mwSize const* psizes,
       mwSize ndims
 ) {
-   dip::uint n = dims.size() + ( telem > 1 ? 1 : 0 );
+   dip::uint n = sizes.size() + ( telem > 1 ? 1 : 0 );
    if( n == 0 ) {
-      return !( ( ndims != 2 ) || ( pdims[ 0 ] != 1 ) || ( pdims[ 1 ] != 1 ) );
+      return !( ( ndims != 2 ) || ( psizes[ 0 ] != 1 ) || ( psizes[ 1 ] != 1 ) );
    } else if( n == 1 ) {
-      dip::uint m = dims[ 0 ] * telem;
-      return !( ( ndims != 2 ) || ( pdims[ 0 ] != m ) || ( pdims[ 1 ] != 1 ) );
+      dip::uint m = sizes[ 0 ] * telem;
+      return !( ( ndims != 2 ) || ( psizes[ 0 ] != m ) || ( psizes[ 1 ] != 1 ) );
    } else {
-      if( ( ndims != n ) || ( pdims[ 0 ] != dims[ 1 ] ) || ( pdims[ 1 ] != dims[ 0 ] ) ) {
+      if( ( ndims != n ) || ( psizes[ 0 ] != sizes[ 1 ] ) || ( psizes[ 1 ] != sizes[ 0 ] ) ) {
          return false;
       }
       for( dip::uint ii = 3; ii < n; ++ii ) {
-         if( dims[ ii ] != pdims[ ii ] ) {
+         if( sizes[ ii ] != psizes[ ii ] ) {
             return false;
          }
       }
@@ -98,6 +101,42 @@ bool MatchDimensions(
    }
 }
 
+static mxClassID GetMatlabClassID(
+      dip::DataType dt
+) {
+   mxClassID type = mxUINT8_CLASS;
+   switch( dt ) {
+      case dip::DT_BIN:
+      case dip::DT_UINT8:
+         type = mxUINT8_CLASS;
+         break;
+      case dip::DT_SINT8:
+         type = mxINT8_CLASS;
+         break;
+      case dip::DT_UINT16:
+         type = mxUINT16_CLASS;
+         break;
+      case dip::DT_SINT16:
+         type = mxINT16_CLASS;
+         break;
+      case dip::DT_UINT32:
+         type = mxUINT32_CLASS;
+         break;
+      case dip::DT_SINT32:
+         type = mxINT32_CLASS;
+         break;
+      case dip::DT_SFLOAT:
+      case dip::DT_SCOMPLEX:
+         type = mxSINGLE_CLASS;
+         break;
+      case dip::DT_DFLOAT:
+      case dip::DT_DCOMPLEX:
+         type = mxDOUBLE_CLASS;
+         break;
+      default: dip_Throw( "This is not possible!!!" ); // Should not be possible
+   }
+   return type;
+}
 
 /// This class is the dip::ExternalInterface for the MATLAB interface.
 /// In a MEX-file, use the following code when declaring images to be
@@ -156,75 +195,38 @@ class MatlabInterface : public dip::ExternalInterface {
       ///
       /// A user will never call this function.
       virtual std::shared_ptr< void > AllocateData(
-            dip::UnsignedArray const& dims,
+            dip::UnsignedArray const& sizes,
             dip::IntegerArray& strides,
             dip::Tensor const& tensor,
             dip::sint& tstride,
             dip::DataType datatype
       ) override {
-         // Find the right data type
-         mxClassID type = mxUINT8_CLASS;
-         bool complex = false;
-         switch( datatype ) {
-            case dip::DT_BIN:
-            case dip::DT_UINT8:
-               type = mxUINT8_CLASS;
-               break;
-            case dip::DT_SINT8:
-               type = mxINT8_CLASS;
-               break;
-            case dip::DT_UINT16:
-               type = mxUINT16_CLASS;
-               break;
-            case dip::DT_SINT16:
-               type = mxINT16_CLASS;
-               break;
-            case dip::DT_UINT32:
-               type = mxUINT32_CLASS;
-               break;
-            case dip::DT_SINT32:
-               type = mxINT32_CLASS;
-               break;
-            case dip::DT_SFLOAT:
-               type = mxSINGLE_CLASS;
-               break;
-            case dip::DT_DFLOAT:
-               type = mxDOUBLE_CLASS;
-               break;
-            case dip::DT_SCOMPLEX:
-               type = mxSINGLE_CLASS;
-               complex = true;
-               break;
-            case dip::DT_DCOMPLEX:
-               type = mxDOUBLE_CLASS;
-               complex = true;
-               break;
-            default: dip_Throw( "This is not possible!!!" ); // Should not be possible
-         }
          // Complex arrays are stored differently in MATLAB than in DIPlib.
          // We simply allocate an array using std::malloc(), then copy the data
          // over to a MATLAB array when pushing the image back to MATLAB.
-         if( complex ) {
+         if( datatype.IsComplex() ) {
             //mexPrintf( "   Complex image is not put into an mxArray.\n" );
             return std::shared_ptr< void >();
          } else {
+            // Find the right MATLAB class
+            mxClassID type = GetMatlabClassID( datatype );
             // Copy size array
-            dip::UnsignedArray mldims = dims;
-            dip::uint n = dims.size();
+            dip::UnsignedArray mlsizes = sizes;
+            dip::uint n = sizes.size();
             // MATLAB arrays switch y and x axes
             if( n >= 2 ) {
-               std::swap( mldims[ 0 ], mldims[ 1 ] );
+               std::swap( mlsizes[ 0 ], mlsizes[ 1 ] );
             }
             // Create stride array
             dip::uint s = 1;
             strides.resize( n );
             for( dip::uint ii = 0; ii < n; ii++ ) {
                strides[ ii ] = s;
-               s *= mldims[ ii ];
+               s *= mlsizes[ ii ];
             }
             // Append tensor dimension as the last dimension of the mxArray
             if( tensor.Elements() > 1 ) {
-               mldims.push_back( tensor.Elements() );
+               mlsizes.push_back( tensor.Elements() );
             }
             tstride = s;
             // MATLAB arrays switch y and x axes
@@ -232,17 +234,17 @@ class MatlabInterface : public dip::ExternalInterface {
                std::swap( strides[ 0 ], strides[ 1 ] );
             }
             // MATLAB arrays have at least 2 dimensions.
-            if( mldims.size() < 2 ) {
-               mldims.resize( 2, 1 );  // add singleton dimensions at end
+            if( mlsizes.size() < 2 ) {
+               mlsizes.resize( 2, 1 );  // add singleton dimensions at end
             }
             // Allocate MATLAB matrix
-            mxArray* m = mxCreateNumericArray( mldims.size(), mldims.data(), type, mxREAL );
+            mxArray* m = mxCreateNumericArray( mlsizes.size(), mlsizes.data(), type, mxREAL );
             void* p = mxGetData( m );
-            //mexPrintf( "   Created mxArray as dip::Image data block. Data pointer = %p.\n", p );
+            mexPrintf( "   Created mxArray as dip::Image data block. Data pointer = %p.\n", p );
             mla[ p ] = m;
             return std::shared_ptr< void >( p, StripHandler( * this ) );
          }
-      };
+      }
 
       /// Find the `mxArray` that holds the data for the dip::Image `img`.
       mxArray* GetArray( dip::Image const& img ) {
@@ -264,22 +266,23 @@ class MatlabInterface : public dip::ExternalInterface {
             mexCallMATLAB( 1, & m, 2, c, "complex" );
          } else {
             void* p = img.Data();
-            dip::Image tmp = NewImage();
             m = mla[ p ];
-            if( !m ) {
-               mexPrintf( "   ...that was a nullptr mxArray\n" );
-            }
-            // Does the image point to a modified view of the mxArray?
-            if( ( p != img.Origin() ) ||
+            if( !m ) { mexPrintf( "   ...that was a nullptr mxArray\n" ); } // TODO: temporary warning, to be removed.
+            // Does the image point to a modified view of the mxArray? Or to a non-MATLAB array?
+            if( !m || ( p != img.Origin() ) ||
                 !IsMatlabStrides(
                       img.Sizes(), img.TensorElements(),
                       img.Strides(), img.TensorStride() ) ||
                 !MatchDimensions(
                       img.Sizes(), img.TensorElements(),
-                      mxGetDimensions( m ), mxGetNumberOfDimensions( m ) ) ) {
+                      mxGetDimensions( m ), mxGetNumberOfDimensions( m ) ) ||
+                ( mxGetClassID( m ) != GetMatlabClassID( img.DataType() ) )
+                  ) {
                // Yes, it does. We need to make a copy of the image into a new MATLAB array.
-               //mexPrintf( "   Copying data from dip::Image to mxArray\n" );
+               mexPrintf( "   Copying data from dip::Image to mxArray\n" );
+               dip::Image tmp = NewImage();
                tmp.Copy( img );
+               std::cout << tmp << std::endl;
                p = tmp.Data();
                m = mla[ p ];
                mla.erase( p );
@@ -343,10 +346,10 @@ dip::Image GetImage( mxArray const* mx ) {
       mxdata = mx;
       ndims = mxGetNumberOfDimensions( mxdata );
       if( ndims <= 2 ) {
-         mwSize const* pdims = mxGetDimensions( mxdata );
-         if( pdims[ 0 ] == 1 && pdims[ 1 ] == 1 ) {
+         mwSize const* psizes = mxGetDimensions( mxdata );
+         if( psizes[ 0 ] == 1 && psizes[ 1 ] == 1 ) {
             ndims = 0;
-         } else if( pdims[ 0 ] > 1 && pdims[ 1 ] > 1 ) {
+         } else if( psizes[ 0 ] > 1 && psizes[ 1 ] > 1 ) {
             ndims = 2;
          } else {
             ndims = 1;
@@ -403,21 +406,21 @@ dip::Image GetImage( mxArray const* mx ) {
       default: dip_Throw( "Image data is not numeric." );
    }
    // Create the size and stride arrays
-   dip::UnsignedArray dims( ndims );
-   mwSize const* pdims = mxGetDimensions( mxdata );
+   dip::UnsignedArray sizes( ndims );
+   mwSize const* psizes = mxGetDimensions( mxdata );
    if( ndims == 1 ) {
-      dims[ 0 ] = pdims[ 0 ] *
-                  pdims[ 1 ];  // for a 1D image, we expect one of the two dimensions to be 1. This also handles the case that one of them is 0.
+      sizes[ 0 ] = psizes[ 0 ] *
+                  psizes[ 1 ];  // for a 1D image, we expect one of the two dimensions to be 1. This also handles the case that one of them is 0.
    } else if( ndims > 1 ) {
       for( dip::uint ii = 0; ii < ndims; ii++ ) {
-         dims[ ii ] = pdims[ ii ];
+         sizes[ ii ] = psizes[ ii ];
       }
    }
    dip::uint s = 1;
    dip::IntegerArray strides( ndims );
    for( dip::uint ii = 0; ii < ndims; ii++ ) {
       strides[ ii ] = s;
-      s *= dims[ ii ];
+      s *= sizes[ ii ];
    }
    dip::sint tstride = s;
    if( s == 0 ) {
@@ -427,7 +430,7 @@ dip::Image GetImage( mxArray const* mx ) {
       return dip::Image();
    }
    if( ndims >= 2 ) {
-      std::swap( dims[ 0 ], dims[ 1 ] );
+      std::swap( sizes[ 0 ], sizes[ 1 ] );
       std::swap( strides[ 0 ], strides[ 1 ] );
    }
    if( complex ) {
@@ -436,12 +439,12 @@ dip::Image GetImage( mxArray const* mx ) {
       // then copy them over into a new image.
       dip::DataType dt = datatype == dip::DT_DCOMPLEX ? dip::DT_DFLOAT : dip::DT_SFLOAT;
       std::shared_ptr< void > p_real( mxGetData( mxdata ), VoidStripHandler );
-      dip::Image real( p_real, dt, dims, strides, tensor, tstride, nullptr );
-      dip::Image out( dims, 1, datatype );
+      dip::Image real( p_real, dt, sizes, strides, tensor, tstride, nullptr );
+      dip::Image out( sizes, 1, datatype );
       out.Real().Copy( real );
       std::shared_ptr< void > p_imag( mxGetImagData( mxdata ), VoidStripHandler );
       if( p_imag ) {
-         dip::Image imag( p_imag, dt, dims, strides, tensor, tstride, nullptr );
+         dip::Image imag( p_imag, dt, sizes, strides, tensor, tstride, nullptr );
          out.Imaginary().Copy( imag );
       } else {
          out.Imaginary().Set( 0.0 );
@@ -451,7 +454,7 @@ dip::Image GetImage( mxArray const* mx ) {
       //mexPrintf("   Encapsulating non-complex image.\n");
       // Create Image object
       std::shared_ptr< void > p( mxGetData( mxdata ), VoidStripHandler );
-      return dip::Image( p, datatype, dims, strides, tensor, tstride, nullptr );
+      return dip::Image( p, datatype, sizes, strides, tensor, tstride, nullptr );
    }
 }
 

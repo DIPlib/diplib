@@ -16,6 +16,7 @@
 /// Declares image math and statistics functions, except basic arithmetic and comparison.
 /// \see dip_operators.h
 
+
 namespace dip {
 
 /// Contains the return values for the function dip::GetMaximumAndMinimum.

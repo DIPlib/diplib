@@ -34,7 +34,7 @@ bool Image::CompareProperties(
    }
    if( cmpProps == Option::CmpProps_Dimensions ) {
       if( sizes_ != src.sizes_ ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, E::DIMENSIONS_DONT_MATCH );
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, E::SIZES_DONT_MATCH );
          return false;
       }
    }
@@ -52,7 +52,7 @@ bool Image::CompareProperties(
    }
    if( cmpProps == Option::CmpProps_TensorElements ) {
       if( tensor_.Elements() != src.tensor_.Elements() ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, E::TENSORSIZES_DONT_MATCH );
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, E::NTENSORELEM_DONT_MATCH );
          return false;
       }
    }
@@ -101,7 +101,7 @@ bool Image::CheckProperties(
 ) const {
    bool result = sizes_ == dimensions;
    if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
-      dip_Throw( E::DIMENSIONS_DONT_MATCH );
+      dip_Throw( E::SIZES_DONT_MATCH );
    }
    result &= dts == dataType_;
    if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
@@ -118,11 +118,11 @@ bool Image::CheckProperties(
 ) const {
    bool result = sizes_ == dimensions;
    if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
-      dip_Throw( E::DIMENSIONS_DONT_MATCH );
+      dip_Throw( E::SIZES_DONT_MATCH );
    }
    result &= tensor_.Elements() == tensorElements;
    if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
-      dip_Throw( E::TENSORSIZES_DONT_MATCH );
+      dip_Throw( E::NTENSORELEM_DONT_MATCH );
    }
    result &= dts == dataType_;
    if( !result && ( throwException == Option::ThrowException::doThrow ) ) {

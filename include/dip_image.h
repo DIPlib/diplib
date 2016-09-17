@@ -229,6 +229,11 @@ class Image {
          return n;
       }
 
+      /// Get the number of samples.
+      dip::uint NumberOfSamples() const {
+         return NumberOfPixels() * TensorElements();
+      }
+
       /// Set the image sizes; the image must be raw.
       void SetSizes( UnsignedArray const& d ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
@@ -591,11 +596,6 @@ class Image {
          externalInterface_ = ei;
       }
 
-      /// Get the number of samples.
-      dip::uint NumberOfSamples() const {
-         return NumberOfPixels() * TensorElements();
-      }
-
       //
       // Pointers, Offsets, Indices
       // Defined in src/library/image_data.cpp
@@ -902,8 +902,10 @@ class Image {
       /// be copied over.
       void Copy( Image const& src );
 
-      // TODO: Add a function to convert the image to another data type.
-      // Conversion from uint8 to bin and back can occur in-place.
+      /// Converts the image to another data type. The data segment is replaced
+      /// by a new one, unless the old and new data types have the same size.
+      /// If the data segment is replaced, strides are set to normal.
+      void Convert( dip::DataType dt );
 
       /// Sets all samples in the image to the value `v`. The function is defined
       /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The

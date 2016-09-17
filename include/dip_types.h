@@ -26,6 +26,7 @@
 #include "dip_dimensionarray.h"
 #include "dip_error.h"
 
+
 /// \file
 /// Defines the basic types used throughout the library. This file is always included through diplib.h.
 

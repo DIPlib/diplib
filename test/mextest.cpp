@@ -1,9 +1,6 @@
 /*
  * Testing MEX-file functionality
  *
- * Compile with:
- *   mex -setup C++
- *   mex -largeArrayDims mextest.cpp -I./include/ ./src/image.cpp ./src/error.cpp ./src/datatypes.cpp CXXFLAGS='$CXXFLAGS -std=c++11'
  */
 
 #include "dip_matlab.h"
