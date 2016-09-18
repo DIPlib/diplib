@@ -23,8 +23,7 @@ done in parallel.
 1.  CMake compilation environment. Will need to be expended as new interfaces are
     created, etc.
 
-2.  `class dip::Image`. Some features need to be tested more thoroughly. The support
-    for physical dimensions and color spaces needs to be completed.
+2.  `class dip::Image`. Some features need to be tested more thoroughly.
 
 3.  `dip::Framework::Scan()`. Will be tested more thoroughly through the functions
     that use it. Not yet parallelized.
@@ -45,14 +44,9 @@ done in parallel.
     **Requires experience with testing frameworks.**
 
 2.  **X**
-    Color support. **Partial design work done.** Port existing MATLAB code within
+    Color support. **Design work done.** Port existing MATLAB code within
     current framework, and use `dip::Framework::Scan()` to apply conversions to all
     pixels in an image.
-
-3.  **X**
-    Physical dimension support. Pixel sizes now always are in meters. There's little
-    previous code to base this on. **Lots of design work needed**, plus integration into
-    existing code.
 
 4.  Image I/O. Has high priority because it will make testing other functions easier.
     Porting current code in dipIO to read TIFF and ICS files. Interfacing to
@@ -62,7 +56,7 @@ done in parallel.
 5.  **X**
     Pixel-based algorithms built on `dip::Framework::Scan()`: monadic and
     diadic operators (i.e. the stuff in the old dip_math.h), statistics, etc. This is
-    mostly porting old code to the new framework.
+    mostly porting old code to the new framework. There are already a few examples.
     - dip_derivatives.h
     - dip_noise.h
     - dip_point.h

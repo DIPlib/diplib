@@ -977,6 +977,37 @@ The M-file code will need to be adapted:
 
 -   `dipshow` will be simplified, as simple calls to a *DIPlib* display
     function will generate the 2D array for display.
+    
+### Issues with the current MATLAB interface
+
+Currently (version 2), complex images need to be copied over in the
+interface, as DIPlib and MATLAB represent them differently. There are
+two solutions: DIPlib represents them as MATLAB does (which seems like
+a really bad idea to me), or we cast them to a non-complex array that
+MATLAB can be happy with even if it doesn't interpret it correctly.
+Only when converting the `dip_image` object to a MATLAB array will the
+copy be necessary. It could be simple to include a 'complex' dimension
+as the first dimension of the `mxArray` (for real images, this would have
+a size of 1). The new tensor dimension would then be the second dimension
+(for scalar images, again of size 1). Thus, the mxArray would always be:
+[complex, tensor, x, y, z, ...]. A reshape would get rid of the first
+dimension to translate to a MATLAB array, in case of a real image.
+A complex image would need a simple copy.
+
+If we go this route, we might as well go all the way, and always have
+a one-dimensional uint8 array inside the `dip_image` object. Each of the
+`dip::Image` member elements would be copied into the `dip_image` object,
+to make the conversion back and forth in the interface as trivial as possible.
+All indexing and basic operations that are computed in MATLAB in the
+old implementation would go through DIPlib in the new implementation.
+The `dml` interface would also copy the image data into an `mxArray`
+(or two for complex images). This step would then not be as efficient
+as it is in the old DIPimage, but should be avoided anyway. The only
+place where this step needs to be efficient is in the generation of a
+display image, which could be arranged by creating that image as an
+encapsulated `mxArray` with the right dimensions and strides for MATLAB
+to show it.
+
 
 # Design considerations
 
