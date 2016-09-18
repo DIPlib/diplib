@@ -26,6 +26,7 @@
 /// The input argument type is used in overload resolution, the output type is the template
 /// parameter, and should be specified between angled brackets after the function name,
 /// much like the standard `static_cast` and similar:
+///
 ///     uint8 u = dip::clamp_cast< dip::uint8 >( -54.6 );
 
 

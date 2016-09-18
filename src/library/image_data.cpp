@@ -673,7 +673,7 @@ void Image::Copy( Image const& src ) {
 void Image::Convert( dip::DataType dt ) {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    if( dt != dataType_ ) {
-      if( dt.SizeOf() == dataType_.SizeOf() ) {
+      if( !IsShared() && ( dt.SizeOf() == dataType_.SizeOf() )) {
          // The operation can happen in place.
          // Loop over all pixels, casting with clamp each of the values; finally set the data type field.
          dip::uint sstride;

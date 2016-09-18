@@ -9,6 +9,7 @@ revolves around images. Some image manipulation is provided as class
 methods, but most image processing and analysis functionality is provided
 in functions defined in the #dip namespace.
 
+
 [//]: # (--------------------------------------------------------------)
 
 \section image_representation Image representation
@@ -65,6 +66,7 @@ to think about, for example, what data type is appropriate as output of
 a specific function. However, when desired, it is possible to control
 the data types of images.
 
+
 [//]: # (--------------------------------------------------------------)
 
 \section strides Strides
@@ -117,6 +119,7 @@ See the section \ref tensors for more information on accessing tensor
 elements. And see the section \ref pointers for more information about
 accessing samples.
 
+
 [//]: # (--------------------------------------------------------------)
 
 \section tensors Tensor images
@@ -144,6 +147,7 @@ The chosen way of storing tensor elements allows us, for example, to store
 a symmetric 2D tensor such as the Hessian matrix without repeating the
 repeating the duplicated values. We also have a specific shape for diagonal
 matrices and triangular matrices.
+
 
 [//]: # (--------------------------------------------------------------)
 
@@ -267,6 +271,69 @@ elements are then accessed in a specific order, depending on the shape of the
 tensor. See dip::Tensor::Shape for a description of the order of the tensor
 elements in memory.
 
+
+[//]: # (--------------------------------------------------------------)
+
+\section assignment Assignment and copy
+
+The assignment operator creates a copy of the image, but does not actually
+copy the data. Instead, the new copy will share the data segment with the
+original image:
+
+    dip::Image img2 = img1;
+
+Both `img1` and `img2` point at the same data, meaning that changing one
+image's pixel values also affects the other image. The data segment will
+exist as long as one image references it. That is, if `img1` goes out
+of scope, `img2` will still point at a valid data segment, which will not
+be freed until `img2` goes out of scope (or is stripped).
+
+The copy constructor creates an identical image, with its own data segment,
+but does not copy the pixel data:
+
+    dip::Image img2( img1 );
+
+`img2` will be identical to `img1`, but with non-initialized data. The second
+argument to the copy constructor can be used to specify the data type of the
+new image:
+
+    dip::Image img2( img1, dip::DT_UINT8 );
+
+`img2` will be identical to `img1`, but with 8-bit unsigned integer samples.
+
+To make a copy of an image with its own copy of the data segment, use the
+dip::Image::Copy method:
+
+    dip::Image img2;
+    img2.Copy( img1 );
+
+or equivalenty the dip::Copy function:
+
+    dip::Image img2 = dip::Copy( img1 );
+
+In both cases, `img2` will be identical to `img1`, with identical pixel values,
+and with its own data segment.
+
+When the dip::Image::Copy method is used on a forged image, it is expected to
+be of the same size as the image to be copied. Pixel values will be copied to
+the existing data segment, casting to the target image's data type with clamping
+(see \ref dip_clamp_cast.h):
+
+    dip::Image img2( img1, dip::DT_UINT8 );
+    img2.Copy( img1 );
+
+Or equivalently:
+
+    dip::Image img2 = dip::Convert( img1, dip::DT_UINT8 );
+
+The dip::Image::Convert method, as opposed to the dip::Convert function, converts
+the image itself to a new data type. This process creates a new data segment if
+the data type is of different size, and works in place if the data type is of the
+same size (e.g. dip::DT_SINT32 and dip::DT_SFLOAT have the same size, as do
+dip::DT_DFLOAT and dip::DT_SCOMPLEX). However, if the data segment is shared,
+it will never work in place, as that could cause important problems.
+
+
 [//]: # (--------------------------------------------------------------)
 
 \section indexing Indexing
@@ -279,10 +346,6 @@ elements in memory.
 
 
 \subsection irregular_indexing Irregular indexing
-
-[//]: # (--------------------------------------------------------------)
-
-\section assignment Assignment
 
 
 [//]: # (--------------------------------------------------------------)

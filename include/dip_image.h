@@ -98,6 +98,8 @@ class Image {
       // Default constructor
       //
 
+      /// The default-initialized image is 0D (an empty sizes array), one tensor element, dip::DT_SFLOAT,
+      /// and raw (it has no data segment).
       Image() {}
       // NOTE: destructor, move constructor, copy assignment operator, and move assignment operator
       // should all be the default ones (Google for rule of zero).
@@ -111,6 +113,19 @@ class Image {
             dataType_( dt ),
             sizes_( sizes ),
             tensor_( tensorElems ) {
+         Forge();
+      }
+
+      /// Forged image similar to `src`; the data is not copied.
+      Image( Image const& src ) :
+            dataType_( src.dataType_ ),
+            sizes_( src.sizes_ ),
+            strides_( src.strides_ ),
+            tensor_( src.tensor_ ),
+            tensorStride_( src.tensorStride_ ),
+            colorSpace_( src.colorSpace_ ),
+            pixelSize_( src.pixelSize_ ),
+            externalInterface_( src.externalInterface_ ) {
          Forge();
       }
 
@@ -497,6 +512,11 @@ class Image {
 
       /// Make this image similar to the template by copying all its
       /// properties, but not the data.
+      // TODO: Check properties before stripping.
+      // If *this has the same sizes, number of tensor elements, and data type size, we can copy over
+      // the other properties without stripping. Assimilate should guarantee a non-shared data segment.
+      // TODO: Use this function in Copy and other methods where we check properties before stripping.
+      // TODO: An optional second argument could allow a different data type.
       void Assimilate( Image const& src ) {
          Strip();
          CopyProperties( src );
@@ -510,7 +530,7 @@ class Image {
 
       /// Get pointer to the data segment. This is useful to identify
       /// the data segment, but not to access the pixel data stored in
-      /// it. Use Origin instead. The image must be forged.
+      /// it. Use dip::Image::Origin instead. The image must be forged.
       /// \see Origin, IsShared, ShareCount, SharesData.
       void* Data() const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
@@ -526,12 +546,12 @@ class Image {
       }
 
       /// Get the number of images that share their data with this image.
-      /// The count is always at least 1. If the count is 1, IsShared is
+      /// The count is always at least 1. If the count is 1, dip::Image::IsShared is
       /// false. The image must be forged.
       /// \see Data, IsShared, SharesData.
       dip::uint ShareCount() const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         return dataBlock_.use_count();
+         return static_cast< dip::uint >( dataBlock_.use_count() );
       }
 
       /// Determine if this image shares its data pointer with `other`.
@@ -562,7 +582,7 @@ class Image {
       /// to hold the pixel data. If the stride array is consistent with
       /// size array, and leads to a compact memory block, it is honored.
       /// Otherwise, it is ignored and a new stride array is created that
-      /// leads to an image that HasNormalStrides.
+      /// leads to an image that dip::Image::HasNormalStrides.
       void Forge();
 
       /// Dissasociate the data segment from the image. If there are no
@@ -903,7 +923,8 @@ class Image {
       void Copy( Image const& src );
 
       /// Converts the image to another data type. The data segment is replaced
-      /// by a new one, unless the old and new data types have the same size.
+      /// by a new one, unless the old and new data types have the same size and
+      /// is not shared with other images.
       /// If the data segment is replaced, strides are set to normal.
       void Convert( dip::DataType dt );
 
@@ -1011,6 +1032,81 @@ void DefineROI(
       UnsignedArray const& sizes,
       IntegerArray const& spacing
 );
+
+inline Image DefineROI(
+      Image const& src,
+      UnsignedArray const& origin,
+      UnsignedArray const& sizes,
+      IntegerArray const& spacing
+) {
+   Image dest;
+   DefineROI( src, dest, origin, sizes, spacing );
+   return dest;
+}
+
+/// Copies samples over from `src` to `dest`. This is the same as
+///
+///     dest.Copy( src );
+///
+/// unless `dest` is forged and of different size than `src`, in which case no exception is thrown,
+/// but instead `src` is stripped becore calling the dip::Image::Copy method.
+inline void Copy(
+      Image const& src,
+      Image& dest
+) {
+   if( dest.IsForged() && !dest.CompareProperties( src, Option::CmpProps_Dimensions + Option::CmpProps_TensorElements, Option::ThrowException::doNotThrow )) {
+      dest.Strip();
+   }
+   dest.Copy( src );
+}
+
+inline Image Copy(
+      Image const& src
+) {
+   Image dest;
+   dest.Copy( src );
+   return dest;
+}
+
+/// Copies samples over from `src` to `dest`, with data type conversion. If `dest` is forged,
+/// has the same size as number of tensor elements as `src`, and has data type `dt`, then
+/// its data segment is reused. If `src` and `dest` are the same object, its dip::Image::Convert
+/// method is called instead.
+inline void Convert(
+      Image const& src,
+      Image& dest,
+      dip::DataType dt
+) {
+   if( &src == &dest ) {
+      dest.Convert( dt );
+   } else {
+      if( dest.IsForged() ) {
+         if( ( dest.DataType() != dt ) ||
+             !dest.CompareProperties(
+                   src,
+                   Option::CmpProps_Dimensions + Option::CmpProps_TensorElements,
+                   Option::ThrowException::doNotThrow ) ) {
+            dest.Strip();
+         }
+      }
+      if( !dest.IsForged() ) {
+         dest.CopyProperties( src );
+         dest.SetDataType( dt );
+         dest.Forge();
+      }
+      dest.Copy( src );
+   }
+}
+
+inline Image Convert(
+      Image const& src,
+      dip::DataType dt
+) {
+   Image dest( src, dt );
+   dest.Copy( src );
+   return dest;
+}
+
 
 } // namespace dip
 
