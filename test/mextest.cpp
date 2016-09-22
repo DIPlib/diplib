@@ -5,7 +5,7 @@
 
 #include "dip_matlab.h"
 
-void print_info( const dip::Image& img ) {
+void print_info( dip::Image const& img ) {
    mexPrintf( "Image %dD (", img.Dimensionality() );
    dip::UnsignedArray sizes = img.Sizes();
    for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
@@ -32,7 +32,7 @@ void print_info( const dip::Image& img ) {
    mexPrintf( "\n" );
 }
 
-void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
 
       mexPrintf( "Creating output image img_out0\n" );
@@ -56,7 +56,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
       if( nrhs > 0 ) {
          mexPrintf( "Obtaining input image img_in0\n" );
-         dip::Image img_in0 = dml::GetImage( prhs[ 0 ] );
+         dip::Image const img_in0 = dml::GetImage( prhs[ 0 ] );
          print_info( img_in0 );
          mexPrintf( "Exiting scope\n" );
       }

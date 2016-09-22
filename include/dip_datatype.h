@@ -17,6 +17,7 @@
 #define DIP_DATATYPE_H
 
 #include <vector>
+#include <utility>
 
 #include "dip_types.h"
 
@@ -81,6 +82,12 @@ struct DataType {
    constexpr explicit DataType( dfloat ) : dt( DT::DFLOAT ) {}
    constexpr explicit DataType( scomplex ) : dt( DT::SCOMPLEX ) {}
    constexpr explicit DataType( dcomplex ) : dt( DT::DCOMPLEX ) {}
+
+   /// Swaps the values of `*this` and `other`
+   void swap( DataType& other ) {
+      using std::swap;
+      swap( dt, other.dt );
+   }
 
    /// DataType objects implicitly convert to the enumeration integer.
    constexpr operator int() const { return static_cast< int >( dt ); }   // This one allows the use of DataType in a switch() statement
@@ -271,6 +278,10 @@ struct DataType {
    static DataType SuggestDiadicOperation( DataType type1, DataType type2 );
 
 };
+
+inline void swap( DataType& v1, DataType& v2 ) {
+   v1.swap( v2 );
+}
 
 typedef std::vector< DataType > DataTypeArray;   ///< An array to hold data types
 

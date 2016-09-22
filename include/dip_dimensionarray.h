@@ -20,6 +20,7 @@
 #include <initializer_list>
 #include <iterator>
 #include <algorithm>
+#include <utility>
 #include <cassert>
 //#include <iostream> // for debugging
 
@@ -116,10 +117,11 @@ class DimensionArray {
 
       /// Swaps the contents of two arrays.
       void swap( DimensionArray& other ) {
+         using std::swap;
          if( is_dynamic() ) {
             if( other.is_dynamic() ) {
                // both have dynamic memory
-               std::swap( data_, other.data_ );
+               swap( data_, other.data_ );
             } else {
                // *this has dynamic memory, other doesn't
                other.data_ = data_;
@@ -137,7 +139,7 @@ class DimensionArray {
                std::swap_ranges( stat_, stat_ + std::max( size_, other.size_ ), other.stat_ );
             }
          }
-         std::swap( size_, other.size_ );
+         swap( size_, other.size_ );
       }
 
       /// Resizes the array, making it either larger or smaller; initializes
@@ -321,6 +323,15 @@ class DimensionArray {
          }
       }
 
+      /// Compute the product of the elements in the array.
+      T product() const {
+         T p = 1;
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            p *= data_[ ii ];
+         }
+         return p;
+      }
+
    private:
       constexpr static size_type static_size_ = 4;
       size_type size_ = 0;
@@ -355,6 +366,11 @@ class DimensionArray {
       }
 
 };
+
+template< typename T >
+inline void swap( DimensionArray< T >& v1, DimensionArray< T >& v2 ) {
+   v1.swap( v2 );
+}
 
 } // namespace dip
 

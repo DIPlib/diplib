@@ -178,6 +178,12 @@ class Units {
          return os;
       }
 
+      /// Swaps the values of `*this` and `other`.
+      void swap( Units& other ) {
+         using std::swap;
+         swap( power_, other.power_ );
+      }
+
    private:
 
       // NOTE: ndims_ needs to be the number of elements in the BaseUnits enum.
@@ -212,6 +218,10 @@ class Units {
          return prefix;
       }
 };
+
+inline void swap( Units& v1, Units& v2 ) {
+   v1.swap( v2 );
+}
 
 
 /// Encapsulates a quantity with phyisical units. Multiplying a double by a
@@ -394,9 +404,20 @@ struct PhysicalQuantity {
    /// Retrieve the magnitude, discaring units.
    explicit operator double() const { return magnitude; };
 
+   /// Swaps the values of `*this` and `other`.
+   void swap( PhysicalQuantity& other ) {
+      using std::swap;
+      swap( magnitude, other.magnitude );
+      swap( units, other.units );
+   }
+
    double magnitude = 0; ///< The magnitude
    Units units;   ///< The units
 };
+
+inline void swap( PhysicalQuantity& v1, PhysicalQuantity& v2 ) {
+   v1.swap( v2 );
+}
 
 /// An array to hold physical quantities, such as a pixel's size.
 typedef DimensionArray< PhysicalQuantity > PhysicalQuantityArray;
@@ -555,11 +576,12 @@ class PixelSize {
 
       /// Swaps two dimensions.
       void SwapDimensions( dip::uint d1, dip::uint d2 ) {
+         using std::swap;
          if( !size_.empty() && ( Get( d1 ) != Get( d2 ) ) ) {
             EnsureDimensionality(
                   std::max( d1, d2 ) +
                   2 ); // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
-            std::swap( size_[ d1 ], size_[ d2 ] );
+            swap( size_[ d1 ], size_[ d2 ] );
          }
       }
 
@@ -672,6 +694,12 @@ class PixelSize {
          return out;
       }
 
+      /// Swaps the values of `*this` and `other`.
+      void swap( PixelSize& other ) {
+         using std::swap;
+         swap( size_, other.size_ );
+      }
+
    private:
       // The array below stores a series of values. If the image has more dimensions
       // that this array, the last element is presumed repeated across non-defined
@@ -691,6 +719,10 @@ class PixelSize {
       }
 
 };
+
+inline void swap( PixelSize& v1, PixelSize& v2 ) {
+   v1.swap( v2 );
+}
 
 } // namespace dip
 

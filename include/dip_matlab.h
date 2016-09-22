@@ -10,6 +10,8 @@
 #define DIP_MATLAB_H
 
 #include <map>
+#include <utility>
+using std::swap;
 
 #include "mex.h"
 #include "diplib.h"
@@ -215,7 +217,7 @@ class MatlabInterface : public dip::ExternalInterface {
             dip::uint n = sizes.size();
             // MATLAB arrays switch y and x axes
             if( n >= 2 ) {
-               std::swap( mlsizes[ 0 ], mlsizes[ 1 ] );
+               swap( mlsizes[ 0 ], mlsizes[ 1 ] );
             }
             // Create stride array
             dip::uint s = 1;
@@ -231,7 +233,7 @@ class MatlabInterface : public dip::ExternalInterface {
             tstride = s;
             // MATLAB arrays switch y and x axes
             if( n >= 2 ) {
-               std::swap( strides[ 0 ], strides[ 1 ] );
+               swap( strides[ 0 ], strides[ 1 ] );
             }
             // MATLAB arrays have at least 2 dimensions.
             if( mlsizes.size() < 2 ) {
@@ -318,6 +320,12 @@ void VoidStripHandler( void* p ) {
 /// the array contains complex numbers. Complex data needs to be copied because
 /// MATLAB represents it internally as two separate data blocks. In that
 /// case, the dip::Image object will own its own data block.
+///
+/// When calling GetImage with a `prhs` argument in `mexFunction()`, use a const
+/// modifier for the output argument. This should prevent acidentally modifying
+/// an input array, which is supposed to be illegal in `mexFunction()`:
+///
+///     dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
 dip::Image GetImage( mxArray const* mx ) {
 
    // TODO: test for an empty array as input. How do we handle those? throw()? non-forged image?
@@ -430,8 +438,8 @@ dip::Image GetImage( mxArray const* mx ) {
       return dip::Image();
    }
    if( ndims >= 2 ) {
-      std::swap( sizes[ 0 ], sizes[ 1 ] );
-      std::swap( strides[ 0 ], strides[ 1 ] );
+      swap( sizes[ 0 ], sizes[ 1 ] );
+      swap( strides[ 0 ], strides[ 1 ] );
    }
    if( complex ) {
       //mexPrintf("   Copying complex image.\n");

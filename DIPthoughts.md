@@ -721,7 +721,7 @@ threads, and adapted to *OpenMP*, but this lead to suboptimal code.
     - Optionally, the caller can pass in the image already extended. That is,
       the filter is not applied to the pixels in the image border.
 
-    - `dip::Framework::MonadicFull()`: 1 input, 1 output
+    - `dip::Framework::FullMonadic()`: 1 input, 1 output
 
     - currently: `dip_PixelTableArrayFrameWork()`
       and `dip_PixelTableFrameWork()`
@@ -741,7 +741,7 @@ threads, and adapted to *OpenMP*, but this lead to suboptimal code.
     - Input and output images can have different sizes (they are always equal
       sizes in other frameworks).
 
-    - `dip::Framework::MonadicSeparable()`: 1 input, 1 output
+    - `dip::Framework::SeparableMonadic()`: 1 input, 1 output
 
     - currently: `dip_SeparableFrameWork()`, `dip_MonadicFrameWork()`
       (as called by interpolation funcs)

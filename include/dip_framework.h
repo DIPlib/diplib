@@ -327,7 +327,7 @@ inline void ScanDyadic(
    } else if( in1.Tensor() == in2.Tensor() ) {
       outTensor = in1.Tensor();
       opts += Framework::Scan_TensorAsSpatialDim;
-   } else if( in1.TensorDimensions() == in2.TensorDimensions() ) {
+   } else if( in1.TensorSizes() == in2.TensorSizes() ) {
       outTensor = Tensor( in1.TensorRows(), in1.TensorColumns() );
       opts += Framework::Scan_ExpandTensorInBuffer;
    } else {

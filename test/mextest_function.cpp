@@ -16,9 +16,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dml::MatlabInterface mi;
 
       //mexPrintf( "About to get input images:\n" );
-      dip::Image in1 = dml::GetImage( prhs[ 0 ] );
+      dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
 
-      dip::Image in2 = dml::GetImage( prhs[ 1 ] );
+      dip::Image const in2 = dml::GetImage( prhs[ 1 ] );
       //std::cout << in2 << std::endl;
 
       //mexPrintf( "About to create output images:\n" );
@@ -44,11 +44,11 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       //out.Forge();
       //std::cout << "\nCopy():\n";
       //out.Copy( tmp );
-      //std::cout << out << double(out) << std::endl;
+      std::cout << out << double(out) << std::endl;
 
       std::cout << "\nConvert():\n";
-      out.Convert( dip::DT_SCOMPLEX );
-      //std::cout << out << double(out) << std::endl;
+      out.Convert( dip::DT_SINT16 );
+      std::cout << out << double(out) << std::endl;
 
       mexPrintf( "About to extract mxArray from output image:\n" );
       plhs[ 0 ] = mi.GetArray( out );

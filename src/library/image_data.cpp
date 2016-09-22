@@ -8,15 +8,14 @@
 
 #include <cstdlib>   // std::malloc, std::realloc, std::free
 //#include <iostream>
-#include <algorithm>
 #include <limits>
+#include <algorithm>
 
 #include "diplib.h"
 #include "dip_numeric.h"
 #include "dip_ndloop.h"
 #include "dip_framework.h"
 #include "dip_overload.h"
-
 #include "copybuffer.h"
 
 namespace dip {
@@ -148,7 +147,7 @@ CoordinatesComputer::CoordinatesComputer( UnsignedArray const& sizes, IntegerArr
    offset_ = 0;
    // Set indices to all non-singleton dimensions.
    // Zero-stride dimensions are those that used to be singleton, but were expanded
-   // by setting the dimension > 1 and stride = 0.
+   // by setting the size > 1 and stride = 0.
    dip::uint nelem = 0;
    for( dip::uint ii = 0; ii < N; ++ii ) {
       sizes_[ ii ] = sizes[ ii ];
@@ -248,6 +247,27 @@ void Image::GetSimpleStrideAndOrigin( dip::uint& sstride, void*& porigin ) const
    } else {
       porigin = nullptr;
    }
+}
+
+
+// Are the dimensions ordered in the same way?
+bool Image::HasSameDimensionOrder( Image const& other ) const {
+   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
+   // TODO: ignore singleton dimensions?
+   if( strides_.size() != other.strides_.size() ) {
+      return false;
+   }
+   // We sort s1, keeping s2 in synch. s2 must be sorted also.
+   IntegerArray s1 = strides_;
+   IntegerArray s2 = other.strides_;
+   s1.sort( s2 );
+   for( dip::uint ii = 1; ii < s2.size(); ++ii ) {
+      if( s2[ ii ] < s2[ ii - 1 ] ) {
+         return false;
+      }
+   }
+   return true;
 }
 
 
@@ -388,7 +408,7 @@ bool Image::Aliases( Image const& other ) const {
       return false;
    }
 
-   // Lastly, check dimensions and strides
+   // Lastly, check sizes and strides
    // This is a bit complex
 
    // Remove singleton dimensions
@@ -509,7 +529,7 @@ bool Image::Aliases( Image const& other ) const {
 void Image::Forge() {
    if( !IsForged() ) {
       dip::uint size = FindNumberOfPixels( sizes_ );
-      dip_ThrowIf( size == 0, "Cannot forge an image without pixels (dimensions must be > 0)" );
+      dip_ThrowIf( size == 0, "Cannot forge an image without pixels (sizes must be > 0)" );
       dip_ThrowIf( TensorElements() > std::numeric_limits< dip::uint >::max() / size,
                    E::DIMENSIONALITY_EXCEEDS_LIMIT );
       size *= TensorElements();
@@ -543,6 +563,42 @@ void Image::Forge() {
          //std::cout << "   Successfully forged image\n";
       }
    }
+}
+
+//
+void Image::ReForge( Image const& src, dip::DataType dt ) {
+   ReForge( src.sizes_, src.tensor_.Elements(), dt );
+   tensor_ = src.tensor_;
+   colorSpace_ = src.colorSpace_;
+   pixelSize_ = src.pixelSize_;
+}
+
+//
+void Image::ReForge( UnsignedArray const& sizes, dip::uint tensorElems, dip::DataType dt ) {
+   if( IsForged() ) {
+      if(( sizes_ == sizes ) && ( tensor_.Elements() == tensorElems ) && ( dataType_ == dt )) {
+         // It already matches, nothing to do
+         return;
+      }
+      if(   !protect_ &&
+            !IsShared() &&
+            HasContiguousData() &&
+            ( sizes_.product() * tensor_.Elements() * dataType_.SizeOf() == sizes.product() * tensorElems * dt.SizeOf() )) {
+         // The data segment has the right number of bytes, and is not shared with another image: let's reuse it
+         dataType_ = dt;
+         sizes_ = sizes;
+         tensor_.SetVector( tensorElems );
+         tensorStride_ = 1;                       // We set tensor strides to 1 by default.
+         ComputeStrides( sizes_, tensor_.Elements(), strides_ );
+         origin_ = dataBlock_.get();
+         return;
+      }
+   }
+   Strip();
+   dataType_ = dt;
+   sizes_ = sizes;
+   tensor_.SetVector( tensorElems );
+   Forge();
 }
 
 
@@ -606,51 +662,57 @@ void Image::Copy( Image const& src ) {
       return;
    }
    if( IsForged() ) {
-      // Forged image, check to make sure number of samples is correct
-      // The data type is not changed, the copy will convert the data type
-      CompareProperties( src, Option::CmpProps_Dimensions + Option::CmpProps_TensorElements );
-      // Change the tensor shape to match that of `src`
-      tensor_.ChangeShape( src.tensor_ );
-      // Copy over additional properties
-      pixelSize_ = src.pixelSize_;
-      colorSpace_ = src.colorSpace_;
-   } else {
-      // Non-forged image, make properties identical to `src`
+      if( !CompareProperties( src, Option::CmpProps_Sizes + Option::CmpProps_TensorElements ) ||
+            IsOverlappingView( src )) {
+         // We cannot reuse the data segment
+         Strip();
+      } else {
+         // We've got the data segment covered. Copy over additional properties
+         tensor_ = src.tensor_;
+         pixelSize_ = src.pixelSize_;
+         colorSpace_ = src.colorSpace_;
+      }
+   }
+   if( !IsForged() ) {
       CopyProperties( src );
       Forge();
    }
-   /* TODO: This section temporarily removed. This only works if all images have strides in the same order (i.e. x first, then z, then y).
    dip::uint sstride_d;
    void* porigin_d;
    GetSimpleStrideAndOrigin( sstride_d, porigin_d );
-   if( sstride_d != 0 ) {
+   if( porigin_d ) {
+      //std::cout << "dip::Image::Copy: destination has simple strides\n";
       dip::uint sstride_s;
       void* porigin_s;
       src.GetSimpleStrideAndOrigin( sstride_s, porigin_s );
-      if( sstride_s != 0 ) {
-         // No need to loop
-         CopyBuffer(
-               porigin_s,
-               src.dataType_,
-               static_cast< dip::sint >( sstride_s ),
-               src.tensorStride_,
-               porigin_d,
-               dataType_,
-               static_cast< dip::sint >( sstride_d ),
-               tensorStride_,
-               NumberOfPixels(),
-               tensor_.Elements(),
-               std::vector< dip::sint > {}
-         );
-         return;
+      if( porigin_s ) {
+         //std::cout << "dip::Image::Copy: source has simple strides\n";
+         if( HasSameDimensionOrder( src )) {
+            // No need to loop
+            //std::cout << "dip::Image::Copy: no need to loop\n";
+            CopyBuffer(
+                  porigin_s,
+                  src.dataType_,
+                  static_cast< dip::sint >( sstride_s ),
+                  src.tensorStride_,
+                  porigin_d,
+                  dataType_,
+                  static_cast< dip::sint >( sstride_d ),
+                  tensorStride_,
+                  NumberOfPixels(),
+                  tensor_.Elements(),
+                  std::vector< dip::sint > {}
+            );
+            return;
+         }
       }
    }
-   */
    // Make nD loop
+   //std::cout << "dip::Image::Copy: nD loop\n";
    dip::uint processingDim = Framework::OptimalProcessingDim( src );
    dip::sint offset_s;
    dip::sint offset_d;
-   UnsignedArray coords = NDLoop::Init( src, * this, offset_s, offset_d );
+   UnsignedArray coords = NDLoop::Init( src, *this, offset_s, offset_d );
    do {
       CopyBuffer(
             src.Pointer( offset_s ),
@@ -665,7 +727,7 @@ void Image::Copy( Image const& src ) {
             tensor_.Elements(),
             std::vector< dip::sint > {}
       );
-   } while( NDLoop::Next( coords, offset_s, offset_d, sizes_, src.strides_, strides_, processingDim ) );
+   } while( NDLoop::Next( coords, offset_s, offset_d, sizes_, src.strides_, strides_, processingDim ));
 }
 
 
@@ -679,7 +741,7 @@ void Image::Convert( dip::DataType dt ) {
          dip::uint sstride;
          void* porigin;
          GetSimpleStrideAndOrigin( sstride, porigin );
-         if( sstride != 0 ) {
+         if( porigin ) {
             // No need to loop
             //std::cout << "dip::Image::Convert: in-place, no need to loop\n";
             CopyBuffer(
@@ -715,7 +777,7 @@ void Image::Convert( dip::DataType dt ) {
                      tensor_.Elements(),
                      std::vector< dip::sint > {}
                );
-            } while( NDLoop::Next( coords, offset, sizes_, strides_, processingDim ) );
+            } while( NDLoop::Next( coords, offset, sizes_, strides_, processingDim ));
          }
          dataType_ = dt;
       } else {
@@ -725,7 +787,7 @@ void Image::Convert( dip::DataType dt ) {
          //std::cout << "dip::Image::Convert: using Copy\n";
          Image newimg( *this, dt ); // constructor forges the image
          newimg.Copy( *this );
-         std::swap( newimg, *this );
+         swap( newimg );
       }
    }
 }
@@ -738,7 +800,7 @@ static inline void InternSet( Image& dest, inT v ) {
    dip::uint sstride_d;
    void* porigin_d;
    dest.GetSimpleStrideAndOrigin( sstride_d, porigin_d );
-   if( sstride_d != 0 ) {
+   if( porigin_d ) {
       // No need to loop
       FillBuffer(
             porigin_d,

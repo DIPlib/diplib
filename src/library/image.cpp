@@ -32,7 +32,7 @@ bool Image::CompareProperties(
          return false;
       }
    }
-   if( cmpProps == Option::CmpProps_Dimensions ) {
+   if( cmpProps == Option::CmpProps_Sizes ) {
       if( sizes_ != src.sizes_ ) {
          dip_ThrowIf( throwException == Option::ThrowException::doThrow, E::SIZES_DONT_MATCH );
          return false;
@@ -70,7 +70,7 @@ bool Image::CompareProperties(
    }
    if( cmpProps == Option::CmpProps_PixelSize ) {
       if( pixelSize_ != src.pixelSize_ ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Physical dimensions don't match" );
+         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Pixel sizes don't match" );
          return false;
       }
    }
@@ -95,11 +95,11 @@ bool Image::CheckProperties(
 }
 
 bool Image::CheckProperties(
-      UnsignedArray const& dimensions,
+      UnsignedArray const& sizes,
       dip::DataType::Classes dts,
       Option::ThrowException throwException
 ) const {
-   bool result = sizes_ == dimensions;
+   bool result = sizes_ == sizes;
    if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
       dip_Throw( E::SIZES_DONT_MATCH );
    }
@@ -111,12 +111,12 @@ bool Image::CheckProperties(
 }
 
 bool Image::CheckProperties(
-      UnsignedArray const& dimensions,
+      UnsignedArray const& sizes,
       dip::uint tensorElements,
       dip::DataType::Classes dts,
       Option::ThrowException throwException
 ) const {
-   bool result = sizes_ == dimensions;
+   bool result = sizes_ == sizes;
    if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
       dip_Throw( E::SIZES_DONT_MATCH );
    }

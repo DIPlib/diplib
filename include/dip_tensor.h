@@ -16,6 +16,8 @@
 #ifndef DIP_TENSOR_H
 #define DIP_TENSOR_H
 
+#include <utility>
+
 #include "dip_types.h"
 
 
@@ -150,7 +152,7 @@ class Tensor {
          }
       }
       /// Gets the tensor size.
-      UnsignedArray Dimensions() const {
+      UnsignedArray Sizes() const {
          if( IsScalar() ) {
             return {};
          } else if( IsVector() ) {
@@ -225,16 +227,16 @@ class Tensor {
          CorrectShape();
       }
       /// Sets the tensor size, always results in a Shape::COL_VECTOR or Shape::COL_MAJOR_MATRIX.
-      void SetDimensions( UnsignedArray const& tdims ) {
-         switch( tdims.size() ) {
+      void SetSizes( UnsignedArray const& sizes ) {
+         switch( sizes.size() ) {
             case 0:
                SetScalar();
                break;
             case 1:
-               SetVector( tdims[ 0 ] );
+               SetVector( sizes[ 0 ] );
                break;
             case 2:
-               SetMatrix( tdims[ 0 ], tdims[ 1 ] );
+               SetMatrix( sizes[ 0 ], sizes[ 1 ] );
                break;
             default: dip_Throw( "Tensor dimensons higher than 2 not supported." );
          }
@@ -381,6 +383,14 @@ class Tensor {
          return LUT;
       }
 
+      /// Swaps the contents of `*this` and `other`.
+      void swap( Tensor& other ) {
+         using std::swap;
+         swap( shape_, other.shape_ );
+         swap( elements_, other.elements_ );
+         swap( rows_, other.rows_ );
+      }
+
    private:
 
       enum Shape shape_ = Shape::COL_VECTOR;
@@ -400,6 +410,10 @@ class Tensor {
          }
       }
 };
+
+inline void swap( Tensor& v1, Tensor& v2 ) {
+   v1.swap( v2 );
+}
 
 } // namespace dip
 

@@ -15,7 +15,7 @@ Priority for these items to be discussed. Framework and other infrastructure
 elements have highest priority, because other things depend on them. Some filters
 and algorithms are much more important than others.
 
-The **X** markers indicate points that should be done first, and can be
+The **(X)** markers indicate points that should be done first, and can be
 done in parallel.
 
 ## What is aleady done:
@@ -36,24 +36,24 @@ done in parallel.
 
 ## What still needs to be done:
 
-1.  **X**
+1.  **(X)**
     Test framework. We need a test framework that can be run automatically and
     shows that stuff works as expected. It should be easy to add new tests for each
     of the features implemented. It should be easy to add new tests (regression tests)
     as bugs are fixed to make sure they don't come back.
     **Requires experience with testing frameworks.**
 
-2.  **X**
+2.  **(X)**
     Color support. **Design work done.** Port existing MATLAB code within
     current framework, and use `dip::Framework::Scan()` to apply conversions to all
     pixels in an image.
 
-4.  Image I/O. Has high priority because it will make testing other functions easier.
+4.  **(X)**
+    Image I/O. Has high priority because it will make testing other functions easier.
     Porting current code in dipIO to read TIFF and ICS files. Interfacing to
-    BioFormats. Requires color and physical dimension support to be available (or
-    at least designed and with a dummy interface).
+    BioFormats.
 
-5.  **X**
+5.  **(X)**
     Pixel-based algorithms built on `dip::Framework::Scan()`: monadic and
     diadic operators (i.e. the stuff in the old dip_math.h), statistics, etc. This is
     mostly porting old code to the new framework. There are already a few examples.
@@ -61,14 +61,14 @@ done in parallel.
     - dip_noise.h
     - dip_point.h
 
-7.  **X**
+7.  **(X)**
     Lookup table: we should have a single lookup table function that handles scalar,
     tensor and color images, with floating-point images using interpolation.
     **Requires design work**. Depends on `dip::Framework::Scan()`.
     - dip_lookup_table.h
     - dip_imarlut.h
 
-6.  **X**
+6.  **(X)**
     Histograms. **Some design work needed** (a class to hold the histogram data, possibly
     based on `dip::Image` as is the case in the old DIPlib). The multi-dimensional
     histogram will work on tensor images also. Depends on `dip::Framework::Scan()`.
@@ -77,12 +77,12 @@ done in parallel.
 7.  Global threhsold algorithms, depending on the histogram, currently implemented
     in dipimage/threshold.m.
 
-8.  **X**
+8.  **(X)**
     Image generation algorihtms using `dip::Framework::ScanSingleOutput()`.
     - dip_generation.h
     - dip_paint.h
 
-9.  **X**
+9.  **(X)**
     Measurement framework. **Lots of design work needed**: a class to hold measurement
     data, and that is efficient and easy to use, and a significant changes in the
     infrastructure, see DIPthoughts.md. Then, porting of existing measurement code.
@@ -90,7 +90,7 @@ done in parallel.
     - dip_measurement.h
     - dip_chaincode.h
 
-10. **X**
+10. **(X)**
     `dip::Framework::Separable()`. **Lots of design work needed.**
 
 11. Algorithms built on `dip::Framework::Separable()`: Gaussian filter, Fourier
@@ -107,7 +107,7 @@ done in parallel.
     image array, but a single tensor image.
     - dip_structure.h
 
-13. **X**
+13. **(X)**
     `dip::Framework::Full()`. **Lots of design work needed**. Porting of pixel table
     code to a sensible class that makes its use easier.
 
@@ -124,7 +124,7 @@ done in parallel.
     - dip_morphology.h (parts)
     - dip_linear.h (parts)
 
-16. **X**
+16. **(X)**
     Algorithms that do not depend on any framework: all binary morphology, the
     watershed, labelling, region growing, distance transforms, etc.
     Simply porting old code.
@@ -159,7 +159,7 @@ done in parallel.
     Other frameworks can be parallelized as they are written, potentially using
     code from the first framework.
 
-20. **X**
+20. **(X)**
     MATLAB interface. **Requires special expertise**. Add conversion of strings,
     constants and arrays for input and output parameters. Rewrite the MATLAB
     `dip_image` class. Add support for the `dip_image` class in the MATLAB interface.

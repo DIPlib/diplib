@@ -64,7 +64,7 @@ Image& Image::Flatten() {
       // The image has no simple stride -- copy the samples over to a new data segment
       Image newimg;
       newimg.CopyProperties( *this );
-      newimg.strides_.clear();
+      newimg.strides_.clear(); // reset strides so Forge() fills out normal strides
       newimg.Forge();
       newimg.Copy( *this );
       newimg.GetSimpleStrideAndOrigin( stride, p );

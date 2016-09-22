@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <functional>
+#include <utility>
 
 #include "dip_datatype.h"
 #include "dip_tensor.h"
@@ -85,9 +86,21 @@ class CoordinatesComputer {
       dip::sint offset_;     // offset needed to handle negative strides
 };
 
+
 //
 // The Image class
 //
+
+class Image;
+
+/// An array of images
+typedef std::vector< Image > ImageArray;
+
+/// An array of image references
+typedef std::vector< std::reference_wrapper< Image >> ImageRefArray;
+
+/// An array of const image references
+typedef std::vector< std::reference_wrapper< const Image >> ImageConstRefArray;
 
 // The class is documented in the file src/documentation/image.md
 class Image {
@@ -109,7 +122,7 @@ class Image {
       //
 
       /// Forged image of given sizes and data type.
-      explicit Image( UnsignedArray sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :
+      explicit Image( UnsignedArray const& sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :
             dataType_( dt ),
             sizes_( sizes ),
             tensor_( tensorElems ) {
@@ -237,11 +250,7 @@ class Image {
 
       /// Get the number of pixels.
       dip::uint NumberOfPixels() const {
-         dip::uint n = 1;
-         for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
-            n *= sizes_[ ii ];
-         }
-         return n;
+         return sizes_.product();
       }
 
       /// Get the number of samples.
@@ -334,18 +343,28 @@ class Image {
       /// \see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
       void GetSimpleStrideAndOrigin( dip::uint& stride, void*& origin ) const;
 
+      /// Checks to see if `other` and `this` have their dimensions ordered in
+      /// the same way. Traversing more than one image using simple strides is only
+      /// possible if they have their dimensions ordered in the same way, otherwise
+      /// the simple stride does not visit the pixels in the same order in the
+      /// various images.
+      ///
+      /// The images must be forged.
+      /// \see HasSimpleStride, GetSimpleStrideAndOrigin, HasContiguousData.
+      bool HasSameDimensionOrder( Image const& other ) const;
+
       //
       // Tensor
       //
 
-      /// Get the tensor dimensions; the array returned can have 0, 1 or
+      /// Get the tensor sizes; the array returned can have 0, 1 or
       /// 2 elements, as those are the allowed tensor dimensionalities.
-      UnsignedArray TensorDimensions() const {
-         return tensor_.Dimensions();
+      UnsignedArray TensorSizes() const {
+         return tensor_.Sizes();
       }
 
       /// Get the number of tensor elements, the product of the elements
-      /// in the array returned by TensorDimensions.
+      /// in the array returned by TensorSizes.
       dip::uint TensorElements() const {
          return tensor_.Elements();
       }
@@ -383,14 +402,14 @@ class Image {
          return tensor_.IsVector();
       }
 
-      /// Set tensor dimensions; the image must be raw.
-      void SetTensorDimensions( UnsignedArray const& tdims ) {
+      /// Set tensor sizes; the image must be raw.
+      void SetTensorSizes( UnsignedArray const& tdims ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
-         tensor_.SetDimensions( tdims );
+         tensor_.SetSizes( tdims );
       }
 
-      /// Set tensor dimensions; the image must be raw.
-      void SetTensorDimensions( dip::uint nelems ) {
+      /// Set tensor sizes; the image must be raw.
+      void SetTensorSizes( dip::uint nelems ) {
          dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
          tensor_.SetVector( nelems );
       }
@@ -432,7 +451,7 @@ class Image {
       void ResetColorSpace() { colorSpace_.clear(); }
 
       //
-      // Physical dimensions
+      // Pixel size
       //
 
       // Note: This function is the reason we refer to the PixelSize class as
@@ -444,7 +463,7 @@ class Image {
       /// Get the pixels's size in physical units.
       dip::PixelSize const& PixelSize() const { return pixelSize_; }
 
-      /// Set the pixels's physical dimensions.
+      /// Set the pixels's size.
       void SetPixelSize( dip::PixelSize const& ps ) {
          pixelSize_ = ps;
       }
@@ -483,14 +502,14 @@ class Image {
 
       /// Check image properties, either returns true/false or throws an error.
       bool CheckProperties(
-            UnsignedArray const& dimensions,
+            UnsignedArray const& sizes,
             dip::DataType::Classes dts,
             Option::ThrowException throwException = Option::ThrowException::doThrow
       ) const;
 
       /// Check image properties, either returns true/false or throws an error.
       bool CheckProperties(
-            UnsignedArray const& dimensions,
+            UnsignedArray const& sizes,
             dip::uint tensorElements,
             dip::DataType::Classes dts,
             Option::ThrowException throwException = Option::ThrowException::doThrow
@@ -503,6 +522,7 @@ class Image {
          sizes_ = src.sizes_;
          strides_ = src.strides_;
          tensor_ = src.tensor_;
+         tensorStride_ = src.tensorStride_;
          colorSpace_ = src.colorSpace_;
          pixelSize_ = src.pixelSize_;
          if( !externalInterface_ ) {
@@ -510,17 +530,20 @@ class Image {
          }
       }
 
-      /// Make this image similar to the template by copying all its
-      /// properties, but not the data.
-      // TODO: Check properties before stripping.
-      // If *this has the same sizes, number of tensor elements, and data type size, we can copy over
-      // the other properties without stripping. Assimilate should guarantee a non-shared data segment.
-      // TODO: Use this function in Copy and other methods where we check properties before stripping.
-      // TODO: An optional second argument could allow a different data type.
-      void Assimilate( Image const& src ) {
-         Strip();
-         CopyProperties( src );
-         Forge();
+      /// Swaps `*this` and `other`.
+      void swap( Image& other ) {
+         using std::swap;
+         swap( dataType_, other.dataType_ );
+         swap( sizes_, other.sizes_ );
+         swap( strides_, other.strides_ );
+         swap( tensor_, other.tensor_ );
+         swap( tensorStride_, other.tensorStride_ );
+         swap( protect_, other.protect_ );
+         swap( colorSpace_, other.colorSpace_ );
+         swap( pixelSize_, other.pixelSize_ );
+         swap( dataBlock_, other.dataBlock_ );
+         swap( origin_, other.origin_ );
+         swap( externalInterface_, other.externalInterface_ );
       }
 
       //
@@ -563,27 +586,122 @@ class Image {
       /// into the same data block. To determine if any pixels are shared,
       /// use Aliases.
       ///
-      /// \see Aliases, Data, IsShared, ShareCount.
+      /// \see Aliases, IsIdenticalView, IsOverlappingView, Data, IsShared, ShareCount.
       bool SharesData( Image const& other ) const {
          dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
          dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
          return dataBlock_ == other.dataBlock_;
       }
 
-      /// Determine if this image shares any pixels with `other`.
+      /// Determine if this image shares any samples with `other`.
       /// If `true`, writing into this image will change the data in
       /// `other`, and vice-versa.
       ///
       /// Both images must be forged.
-      /// \see SharesData, Alias.
+      /// \see SharesData, IsIdenticalView, IsOverlappingView, Alias.
       bool Aliases( Image const& other ) const;
+
+      /// Determine if this image and `other` offer an identical view of the
+      /// same set of pixels. If `true`, changing one sample in this image will
+      /// change the same sample in `other`.
+      ///
+      /// Both images must be forged.
+      /// \see SharesData, Aliases, IsOverlappingView.
+      bool IsIdenticalView( Image const& other ) const {
+         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
+         // We don't need to check dataBlock_ here, as origin_ is a pointer, not an offset.
+         return ( origin_ == other.origin_ ) &&
+                ( dataType_ == other.dataType_ ) &&
+                ( strides_ == other.strides_ ) &&
+                ( tensorStride_ == other.tensorStride_ );
+      }
+
+      /// Determine if this image and `other` offer different views of the
+      /// same data segment, and share at least one sample. If `true`, changing one
+      /// sample in this image might change a different sample in `other`.
+      /// An image with an overlapping view of an input image cannot be used as output to a
+      /// filter, as it might change input data that still needs to be used. Use this function
+      /// to test whether to use the existing data segment or allocate a new one.
+      ///
+      /// Both images must be forged.
+      /// \see SharesData, Aliases, IsIdenticalView.
+      bool IsOverlappingView( Image const& other ) const {
+         // Aliases checks for both images to be forged.
+         return Aliases( other ) && !IsIdenticalView( other );
+      }
+
+      /// Determine if this image and any of those in `other` offer different views of the
+      /// same data segment, and share at least one sample. If `true`, changing one
+      /// sample in this image might change a different sample in at least one image in `other`.
+      /// An image with an overlapping view of an input image cannot be used as output to a
+      /// filter, as it might change input data that still needs to be used. Use this function
+      /// to test whether to use the existing data segment or allocate a new one.
+      ///
+      /// `*this` must be forged.
+      /// \see SharesData, Aliases, IsIdenticalView.
+      bool IsOverlappingView( ImageConstRefArray const& other ) const {
+         for( dip::uint ii = 0; ii < other.size(); ++ii ) {
+            Image const& tmp = other[ ii ].get();
+            if( tmp.IsForged() && IsOverlappingView( tmp )) {
+               return true;
+            }
+         }
+         return false;
+      }
+
+      /// Determine if this image and any of those in `other` offer different views of the
+      /// same data segment, and share at least one sample. If `true`, changing one
+      /// sample in this image might change a different sample in at least one image in `other`.
+      /// An image with an overlapping view of an input image cannot be used as output to a
+      /// filter, as it might change input data that still needs to be used. Use this function
+      /// to test whether to use the existing data segment or allocate a new one.
+      ///
+      /// `*this` must be forged.
+      /// \see SharesData, Aliases, IsIdenticalView.
+      bool IsOverlappingView( ImageArray const& other ) const {
+         for( dip::uint ii = 0; ii < other.size(); ++ii ) {
+            Image const& tmp = other[ ii ];
+            if( tmp.IsForged() && IsOverlappingView( tmp )) {
+               return true;
+            }
+         }
+         return false;
+      }
 
       /// Allocate data segment. This function allocates a memory block
       /// to hold the pixel data. If the stride array is consistent with
-      /// size array, and leads to a compact memory block, it is honored.
+      /// size array, and leads to a compact data segment, it is honored.
       /// Otherwise, it is ignored and a new stride array is created that
-      /// leads to an image that dip::Image::HasNormalStrides.
+      /// leads to an image that dip::Image::HasNormalStrides. If an
+      /// external interface is registered for this image, the resulting
+      /// strides might be different from normal, and the exising stride
+      /// array need not be honored even if it would yield a compact
+      /// data segment.
       void Forge();
+
+      /// Modify image properties and forge the image. ReForge has three
+      /// signatures that match three image constructors. ReForge will try
+      /// to avoid freeing the current data segment and allocating a new one.
+      /// This version will cause `*this` to be an identical copy of `src`,
+      /// but with uninitialized data.
+      void ReForge( Image const& src ) {
+         ReForge( src, src.dataType_ );
+      }
+
+      /// Modify image properties and forge the image. ReForge has three
+      /// signatures that match three image constructors. ReForge will try
+      /// to avoid freeing the current data segment and allocating a new one.
+      /// This version will cause `*this` to be an identical copy of `src`,
+      /// but with a different data type and uninitialized data.
+      void ReForge( Image const& src, dip::DataType dt );
+
+      /// Modify image properties and forge the image. ReForge has three
+      /// signatures that match three image constructors. ReForge will try
+      /// to avoid freeing the current data segment and allocating a new one.
+      /// This version will cause `*this` to be of the requested size and
+      /// data type.
+      void ReForge( UnsignedArray const& sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT );
 
       /// Dissasociate the data segment from the image. If there are no
       /// other images using the same data segment, it will be freed.
@@ -704,14 +822,14 @@ class Image {
       /// Permute dimensions. This function allows to re-arrange the dimensions
       /// of the image in any order. It also allows to remove singleton dimensions
       /// (but not to add them, should we add that? how?). For example, given
-      /// an image with dimensions `{ 30, 1, 50 }`, and an `order` array of
-      /// `{ 2, 0 }`, the image will be modified to have dimensions `{ 50, 30 }`.
+      /// an image with size `{ 30, 1, 50 }`, and an `order` array of
+      /// `{ 2, 0 }`, the image will be modified to have size `{ 50, 30 }`.
       /// Dimension number 1 is not referenced, and was removed (this can only
       /// happen if the dimension has size 1, otherwise an exception will be
       /// thrown!). Dimension 2 was placed first, and dimension 0 was placed second.
       ///
       /// The image must be forged. If it is not, you can simply assign any
-      /// new dimensions array through Image::SetDimensions. The data will never
+      /// new sizes array through Image::SetSizes. The data will never
       /// be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see SwapDimensions, Squeeze, AddSingleton, ExpandDimensionality, Flatten.
@@ -728,7 +846,9 @@ class Image {
 
       /// Make image 1D. The image must be forged. If HasSimpleStride,
       /// this is a quick and cheap operation, but if not, the data segment
-      /// will be copied.
+      /// will be copied. Note that the order of the pixels in the
+      /// resulting image depend on the strides, and do not necessarily
+      /// follow the same order as linear indices.
       ///
       /// \see PermuteDimensions, ExpandDimensionality.
       Image& Flatten();
@@ -747,9 +867,9 @@ class Image {
       /// The image must be forged, and the data will never
       /// be copied (i.e. this is a quick and cheap operation).
       ///
-      /// Example: to an image with dimensions `{ 4, 5, 6 }` we add a
+      /// Example: to an image with sizes `{ 4, 5, 6 }` we add a
       /// singleton dimension `dim == 1`. The image will now have
-      /// dimensions `{ 4, 1, 5, 6 }`.
+      /// sizes `{ 4, 1, 5, 6 }`.
       ///
       /// \see Squeeze, ExpandDimensionality, PermuteDimensions.
       Image& AddSingleton( dip::uint dim );
@@ -781,7 +901,7 @@ class Image {
 
       /// Change the tensor shape, without changing the number of tensor elements.
       Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {
-         dip_ThrowIf( tensor_.Elements() != rows * cols, "Cannot reshape tensor to requested dimensions." );
+         dip_ThrowIf( tensor_.Elements() != rows * cols, "Cannot reshape tensor to requested sizes." );
          tensor_.ChangeShape( rows );
          return * this;
       }
@@ -910,7 +1030,7 @@ class Image {
 
       /// Deep copy, `this` will become a copy of `src` with its own data.
       ///
-      /// If `this` is forged, then `src` is expected to have the same dimensions
+      /// If `this` is forged, then `src` is expected to have the same sizes
       /// and number of tensor elements, and the data is copied over from `src`
       /// to `this`. The copy will apply data type conversion, where values are
       /// clipped to the target range and/or truncated, as applicable. Complex
@@ -995,15 +1115,6 @@ class Image {
 
 }; // class Image
 
-/// An array of images
-typedef std::vector< Image > ImageArray;
-
-/// An array of image references
-typedef std::vector< std::reference_wrapper< Image>> ImageRefArray;
-
-/// An array of const image references
-typedef std::vector< std::reference_wrapper< const Image>> ImageConstRefArray;
-
 
 //
 // Overloaded operators
@@ -1016,6 +1127,10 @@ std::ostream& operator<<( std::ostream& os, Image const& img );
 //
 // Utility functions
 //
+
+inline void swap( Image& v1, Image& v2 ) {
+   v1.swap( v2 );
+}
 
 /// Calls `img1.Aliases( img2 )`; see Image::Aliases.
 inline bool Alias( Image const& img1, Image const& img2 ) {
@@ -1044,19 +1159,11 @@ inline Image DefineROI(
    return dest;
 }
 
-/// Copies samples over from `src` to `dest`. This is the same as
-///
-///     dest.Copy( src );
-///
-/// unless `dest` is forged and of different size than `src`, in which case no exception is thrown,
-/// but instead `src` is stripped becore calling the dip::Image::Copy method.
+/// Copies samples over from `src` to `dest`, identical to the dip::Image::Copy method.
 inline void Copy(
       Image const& src,
       Image& dest
 ) {
-   if( dest.IsForged() && !dest.CompareProperties( src, Option::CmpProps_Dimensions + Option::CmpProps_TensorElements, Option::ThrowException::doNotThrow )) {
-      dest.Strip();
-   }
    dest.Copy( src );
 }
 
@@ -1080,11 +1187,11 @@ inline void Convert(
    if( &src == &dest ) {
       dest.Convert( dt );
    } else {
-      if( dest.IsForged() ) {
+      if( dest.IsForged() ) { // TODO: use Assimilate() here.
          if( ( dest.DataType() != dt ) ||
              !dest.CompareProperties(
                    src,
-                   Option::CmpProps_Dimensions + Option::CmpProps_TensorElements,
+                   Option::CmpProps_Sizes + Option::CmpProps_TensorElements,
                    Option::ThrowException::doNotThrow ) ) {
             dest.Strip();
          }

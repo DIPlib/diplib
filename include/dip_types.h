@@ -289,22 +289,22 @@ enum class ThrowException {
 /// ----------------------- | ----------
 /// CmpProps_DataType       | compares data type
 /// CmpProps_Dimensionality | compares number of dimensions
-/// CmpProps_Dimensions     | compares image size
+/// CmpProps_Sizes          | compares image size
 /// CmpProps_Strides        | compares image strides
 /// CmpProps_TensorShape    | compares tensor size and shape
 /// CmpProps_TensorElements | compares number of tensor elements
 /// CmpProps_TensorStride   | compares tensor stride
 /// CmpProps_ColorSpace     | compares color space
 /// CmpProps_PixelSize      | compares pixel size
-/// CmpProps_Samples        | CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorElements
-/// CmpProps_Full           | CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorShape
+/// CmpProps_Samples        | CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorElements
+/// CmpProps_Full           | CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorShape
 /// CmpProps_All            | CmpProps_Full + CmpProps_Strides + CmpProps_TensorStride
 ///
-/// Note that you can add these constants together, for example `CmpProps_Dimensions + CmpProps_Strides`.
+/// Note that you can add these constants together, for example `CmpProps_Sizes + CmpProps_Strides`.
 DIP_DECLARE_OPTIONS( CmpProps, 11 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_DataType, 0 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Dimensionality, 1 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_Dimensions, 2 );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_Sizes, 2 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Strides, 3 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorShape, 4 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorElements, 5 );
@@ -312,9 +312,9 @@ static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorStride, 6 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_ColorSpace, 7 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_PixelSize, 8 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Samples,
-                          CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorElements );
+                          CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorElements );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Full,
-                          CmpProps_DataType + CmpProps_Dimensions + CmpProps_TensorShape );
+                          CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorShape );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_All,
                           CmpProps_Full + CmpProps_Strides + CmpProps_TensorStride );
 

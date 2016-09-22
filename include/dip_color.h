@@ -2,10 +2,9 @@
  * DIPlib 3.0
  * This file contains definitions for color image support.
  *
- * (c)2014-2016, Cris Luengo.
+ * (c)2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
-
 
 #ifndef DIP_COLOR_H
 #define DIP_COLOR_H

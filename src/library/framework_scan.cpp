@@ -105,20 +105,13 @@ void Scan(
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       Image& tmp = c_out[ ii ].get();
       dip::uint nTensor = opts == Scan_TensorAsSpatialDim ? 1 : nTensorElements[ ii ]; // Input parameter ignored, output matches singleton-expanded number of tensor elements.
-      bool good = false;
-      if( tmp.IsForged() ) {
-         if( tensorToSpatial ) {
-            tmp.TensorToSpatial( 0 );
-         }
-         good = tmp.CheckProperties( sizes, nTensor, outImageTypes[ ii ], Option::ThrowException::doNotThrow );
+      if( tmp.IsForged() && tmp.IsOverlappingView( in )) {
+         tmp.Strip();
       }
-      if( !good ) {
-         tmp.Strip();   // Will throw if image is protected
-         tmp.SetSizes( sizes );
-         tmp.SetTensorDimensions( nTensor );
-         tmp.SetDataType( outImageTypes[ ii ] );
-         tmp.Forge();
+      if( tmp.IsForged() && tensorToSpatial ) {
+         tmp.TensorToSpatial( 0 );
       }
+      tmp.ReForge( sizes, nTensor, outImageTypes[ ii ] );
    }
 
    // Make simplified copies of output image headers so we can modify them at will
