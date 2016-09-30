@@ -694,7 +694,12 @@ class Image {
       /// to avoid freeing the current data segment and allocating a new one.
       /// This version will cause `*this` to be an identical copy of `src`,
       /// but with a different data type and uninitialized data.
-      void ReForge( Image const& src, dip::DataType dt );
+      void ReForge( Image const& src, dip::DataType dt ) {
+         ReForge( src.sizes_, src.tensor_.Elements(), dt );
+         tensor_ = src.tensor_;
+         colorSpace_ = src.colorSpace_;
+         pixelSize_ = src.pixelSize_;
+      }
 
       /// Modify image properties and forge the image. ReForge has three
       /// signatures that match three image constructors. ReForge will try
@@ -1040,6 +1045,8 @@ class Image {
       /// If `this` is not forged, then all the properties of `src` will be
       /// copied to `this`, `this` will be forged, and the data from `src` will
       /// be copied over.
+      ///
+      /// `src` must be forged.
       void Copy( Image const& src );
 
       /// Converts the image to another data type. The data segment is replaced
@@ -1187,20 +1194,7 @@ inline void Convert(
    if( &src == &dest ) {
       dest.Convert( dt );
    } else {
-      if( dest.IsForged() ) { // TODO: use Assimilate() here.
-         if( ( dest.DataType() != dt ) ||
-             !dest.CompareProperties(
-                   src,
-                   Option::CmpProps_Sizes + Option::CmpProps_TensorElements,
-                   Option::ThrowException::doNotThrow ) ) {
-            dest.Strip();
-         }
-      }
-      if( !dest.IsForged() ) {
-         dest.CopyProperties( src );
-         dest.SetDataType( dt );
-         dest.Forge();
-      }
+      dest.ReForge( src, dt );
       dest.Copy( src );
    }
 }

@@ -258,7 +258,7 @@ bool Image::HasSameDimensionOrder( Image const& other ) const {
    if( strides_.size() != other.strides_.size() ) {
       return false;
    }
-   // We sort s1, keeping s2 in synch. s2 must be sorted also.
+   // We sort s1, keeping s2 in sync. s2 must be sorted also.
    IntegerArray s1 = strides_;
    IntegerArray s2 = other.strides_;
    s1.sort( s2 );
@@ -565,13 +565,6 @@ void Image::Forge() {
    }
 }
 
-//
-void Image::ReForge( Image const& src, dip::DataType dt ) {
-   ReForge( src.sizes_, src.tensor_.Elements(), dt );
-   tensor_ = src.tensor_;
-   colorSpace_ = src.colorSpace_;
-   pixelSize_ = src.pixelSize_;
-}
 
 //
 void Image::ReForge( UnsignedArray const& sizes, dip::uint tensorElems, dip::DataType dt ) {
@@ -657,11 +650,16 @@ CoordinatesComputer Image::IndexToCoordinatesComputer() const {
 
 //
 void Image::Copy( Image const& src ) {
+   dip_ThrowIf( !src.IsForged(), E::IMAGE_NOT_FORGED );
    if( &src == this ) {
       // Copying self... what for?
       return;
    }
    if( IsForged() ) {
+      if( IsIdenticalView( src )) {
+         // Copy is a no-op
+         return;
+      }
       if( !CompareProperties( src, Option::CmpProps_Sizes + Option::CmpProps_TensorElements ) ||
             IsOverlappingView( src )) {
          // We cannot reuse the data segment
