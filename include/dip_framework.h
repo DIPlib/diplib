@@ -32,9 +32,11 @@ namespace Framework {
 // Maximum number of pixels in a buffer for the framework functions
 constexpr dip::uint MAX_BUFFER_SIZE = 256 * 1024;
 
+
 //
 // Support functions
 //
+
 
 /// Determines if images can be singleton-expanded to the same size, and what
 /// that size would be. Singleton dimensions (size==1) can be expanded to a
@@ -95,6 +97,7 @@ std::vector< void* > CastToVoidpVector(
    return out;
 }
 
+
 //
 // Scan Framework:
 // Process an image pixel by pixel
@@ -126,7 +129,7 @@ DIP_DEFINE_OPTION( ScanOptions, Scan_NoSingletonExpansion, 4 );
 /// arguments given to the framework function, you might assume that `tensorLength`
 /// is always 1, and consequently ignore also `tensorStride`.
 struct ScanBuffer {
-   void* buffer;       ///< Pointer to pixel data for image line, to be cast to expected data type.
+   void* buffer;           ///< Pointer to pixel data for image line, to be cast to expected data type.
    dip::sint stride;       ///< Stride to walk along pixels.
    dip::sint tensorStride; ///< Stride to walk along tensor elements.
    dip::uint tensorLength; ///< Number of tensor elements.
@@ -232,13 +235,13 @@ typedef void (* ScanFilter)(
 /// The `lineFilter` function signature is as follows:
 ///
 ///     void ScanFilter (
-///         std::vector<const ScanBuffer> const& inBuffer,  // Input buffers (1D)
+///         std::vector<ScanBuffer> const& inBuffer,        // Input buffers (1D)
 ///         std::vector<ScanBuffer>&   outBuffer,           // Output buffers (1D)
 ///         dip::uint                  bufferLength,        // Number of pixels in each buffer
 ///         dip::uint                  dimension,           // Dimension along which the line filter is applied
 ///         UnsignedArray              position,            // Coordinates of first pixel in line
 ///         void const*                functionParameters,  // A pointer to user-defined input data
-///         void*                      functionVariables);  // A pointer to user-defined output data
+///         void*                      functionVariables);  // A pointer to user-defined temporary or output data
 /// See the definition of the dip::Framework::ScanBuffer structure.
 void Scan(
       ImageConstRefArray const& in,             ///< Input images
@@ -272,6 +275,24 @@ inline void ScanSingleOutput(
    Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, functionParameters, functionVariables, opts );
 }
 
+/// Calls dip::Framework::Scan with one input image.
+inline void ScanSingleInput(
+      Image& in,                       ///< Input image
+      DataType bufferType,             ///< Data type for input buffer
+      ScanFilter lineFilter,           ///< Function to call for each image line
+      void const* functionParameters,  ///< Parameters to pass to `lineFilter`
+      std::vector< void* > const& functionVariables, ///< Variables to pass to `lineFilter`
+      ScanOptions opts                 ///< Options to control how `lineFilter` is called
+) {
+   ImageConstRefArray inar{ in };
+   ImageRefArray outar{};
+   DataTypeArray inBufT{ bufferType };
+   DataTypeArray outBufT{};
+   DataTypeArray outImT{};
+   UnsignedArray nElem{};
+   Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, functionParameters, functionVariables, opts );
+}
+
 /// Calls dip::Framework::Scan with one input image and one output image.
 inline void ScanMonadic(
       Image const& in,                 ///< Input image
@@ -293,7 +314,10 @@ inline void ScanMonadic(
    Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, functionParameters, functionVariables, opts );
 }
 
-/// Calls dip::Framework::Scan with two input images and one output image.
+/// Calls dip::Framework::Scan with two input images and one output image. It handles
+/// some of the work for dyadic (binary) operators related to matching up tensor
+/// dimensions in the input image.
+///
 /// Input tensors are expected to match, but a scalar is expanded to the size of the
 /// other tensor. The output tensor will be of the same size as the input tensors,
 /// its shape will match the input shape if one image is a scalar, or if both images
@@ -343,6 +367,180 @@ inline void ScanDyadic(
    out.ReshapeTensor( outTensor );
 }
 
+// TODO: ScanDyadic, ScanMonadic and ScanSingleInput are used a lot, I don't know how much overhead comes from converting these problems to the generic problem of N input images and M output images.
+
+
+//
+// Separable Framework:
+// Process an image line by line, once for each dimension
+//
+
+
+/// \class dip::Framework::SeparableOptions
+/// Defines options to the dip::Framework::Separable function. Valid values are:
+///
+/// SeparableOptions constant      | Meaning
+/// ------------------------------ | ----------
+/// Separable_NoMultiThreading     | Do not call the line scan filter simultaneouly from multiple threads (it is not re-entrant).
+/// Separable_AsScalarImage        | The line scan filter is called for each tensor element separately, and thus always sees pixels as scalar values.
+/// Separable_ExpandTensorInBuffer | The line scan filter always gets input tensor elements as a standard, column-major matrix.
+/// Separable_UseOutBorder         | The output buffer also has space allocated for a border.
+///
+/// Combine options by adding constants together.
+DIP_DECLARE_OPTIONS( SeparableOptions, 4 );
+DIP_DEFINE_OPTION( SeparableOptions, Separable_NoMultiThreading, 0 );
+DIP_DEFINE_OPTION( SeparableOptions, Separable_AsScalarImage, 1 );
+DIP_DEFINE_OPTION( SeparableOptions, Separable_ExpandTensorInBuffer, 2 );
+DIP_DEFINE_OPTION( SeparableOptions, Separable_UseOutBorder, 3 );
+
+/// Structure that holds information about input or output pixel buffers
+/// for the dip::Framework::Separable callback function. The length of the buffer
+/// is given in a separate argument to the callback function. Depending on the
+/// arguments given to the framework function, you might assume that `tensorLength`
+/// is always 1, and consequently ignore also `tensorStride`.
+struct SeparableBuffer {
+   void* buffer;           ///< Pointer to pixel data for image line, to be cast to expected data type.
+   dip::sint stride;       ///< Stride to walk along pixels.
+   dip::sint tensorStride; ///< Stride to walk along tensor elements.
+   dip::uint tensorLength; ///< Number of tensor elements.
+};
+
+// Prototype line filter for dip::Framework::Separable.
+typedef void (* SeparableFilter)(
+      SeparableBuffer const& inBuffer,
+      SeparableBuffer& outBuffer,
+      dip::uint bufferLength,
+      dip::uint dimension,
+      UnsignedArray position,
+      void const* functionParameters,
+      std::vector< void* > const& functionVariables, ///< Variables to pass to `lineFilter`
+);
+
+/// Framework for separable filtering of images.
+///
+/// The function `lineFilter` is called for each image line, and along each
+/// dimension, with input and output buffers either pointing directly to the
+/// input and output images, or pointing to temporary buffers that are handled
+/// by the framework and present the line's pixel data with a different data type,
+/// with expanded borders, etc. The buffers are always of the type specified in
+/// `inBuffer` and `outBuffer`, but are passed as `void*`. `lineFilter` should
+/// cast these pointers to the right types. The output buffer is not initialized,
+/// the `lineFilter` function is responsible for setting all its values.
+///
+/// The `process` array specifies along which dimensions the filtering is applied.
+///
+/// Output images (unless protected) will be resized to match the input,
+/// and their type will be set to that specified by `outImage`.
+/// Protected output images must have the correct size and type,
+/// otherwise an exception will be thrown.
+/// The separable filter function always has one input and one output image.
+///
+/// Tensors are passed to the `lineFilter` function as vectors, if the shape is
+/// important, pass this information through `functionParameters`. `nTensorElements`
+/// gives the number of tensor elements for the output image. These are created
+/// as standard vectors, unless the input image has the same number of tensor elements,
+/// in which case that tensor shape is copied. The calling function can reshape the tensors after the
+/// call to dip::Framework::Separable. It is not necessary nor enforced that the
+/// tensors for each image (both input and output) are the same, the calling
+/// function is to make sure the tensors satisfy whatever constraints.
+///
+/// However, if the option `dip::FrameWork::Separable_AsScalarImage` is given,
+/// then the line filter is called for each tensor element, effectively causing
+/// the filter to process a sequence of scalar images, one for each tensor element.
+/// This is accomplished by converting the tensor into a spatial dimension for
+/// both the input and output image, and setting the `process` array for the new
+/// dimension to false. `nTensorElements` is ignored, and set to the number of tensor
+/// elements of the input. For example, given an input image `in` with 3 tensor
+/// elements, `filter(in,out)` will result in an output image `out` with 3 tensor
+/// elements, and computed as if the filter function were called 3 times:
+/// `filter(in[0],out[0])`, `filter(in[1],out[1])`, and `filter(in[2],out[2])`.
+///
+/// If the option `dip::FrameWork::Separable_ExpandTensorInBuffer` is given, then
+/// the input buffers passed to `lineFilter` will contain the tensor elements as a
+/// standard, column-major matrix. If the image has tensors stored differently,
+/// buffers will be used. This option is not used when
+/// `dip::FrameWork::Separable_AsScalarImage` is set, as that forces the tensor
+/// to be a single sample. Use this option if you need to do computations with
+/// the tensors, but do not want to bother with all the different tensor shapes,
+/// which are meant only to save memory. Note, however, that this option does
+/// not apply to the output images. When expanding the input tensors in this
+/// way, it makes sense to set the output tensor to a full matrix. Don't forget
+/// to specify the right size in `nTensorElements`.
+///
+/// The framework function sets the output pixel size to that of the input
+/// image, and it sets the color space to that of the
+/// input image if the two images have matching number of tensor elements.
+/// The calling function is expected to "correct" these values if necessary.
+///
+/// The buffers are not guaranteed to be contiguous, please use the `stride`
+/// and `tensorStride` values to access samples. The input buffer contains `bufferLength + 2 * border`
+/// pixels. The pixel pointed to by the `buffer` pointer is the first pixel on
+/// that line in the input image. The `lineFilter` function can read up to `border`
+/// pixels before that pixel, and up to `border` pixels after the last pixel on the
+/// line. These pixels are filled by the framework using the `boundaryCondition`
+/// value for the given line. The `boundaryCondition` vector can be empty, in which
+/// case the default boundary condition value is used. If the option
+/// `Separable_UseOutBorder` is given, then the output buffer also has `border`
+/// extra samples at each end. These extra samples are meant to help in the
+/// computation for some filters, and are not copied back to the output image.
+/// `position` gives the coordinates for the first pixel in the buffers,
+/// subsequent pixels occur along dimension `dimension`. `position[dimension]`
+/// is always zero.
+///
+/// If `in` and `out` share their data segments, then the input image might be
+/// overwritten with the processing result. However, the input and output buffers
+/// will never share memory. That is, the line filter can freely write in the
+/// output buffer without invalidating the input buffer, even when the filter is
+/// being applied in-place.
+///
+/// dip::Framework::Separable() will process the image using multiple threads, so
+/// `lineFilter` is expected to be re-entrant. If this is not the case, specify
+/// `dip::FrameWork::Separable_NoMultiThreading` as an option.
+///
+/// `functionParameters` is a `void*` pointing to user data. This pointer will
+/// be passed unaltered to the `lineFilter`. `functionVariables` is an array
+/// of `void*`, which should have as many (identical) elements as threads can
+/// be generated by the framework. `lineFilter` can e.g. write intermediate data into
+/// the memory referenced by these pointers. The length of the `functionVariables`
+/// array determines the maximum number of threads created, but if the array is of
+/// zero length, then it is presumed that this feature is not used, no additional
+/// limits are imposed on the number of threads, and a `nullptr` pointer will
+/// be passed to the `lineFilter` function.
+///
+/// The `lineFilter` function signature is as follows:
+///
+///     void SeparableFilter (
+///         SeparableBuffer const&     inBuffer,            // Input buffers (1D)
+///         SeparableBuffer&           outBuffer,           // Output buffers (1D)
+///         dip::uint                  bufferLength,        // Number of pixels in each buffer
+///         dip::uint                  dimension,           // Dimension along which the line filter is applied
+///         UnsignedArray              position,            // Coordinates of first pixel in line
+///         void const*                functionParameters,  // A pointer to user-defined input data
+///         std::vector< void* > const& functionVariables); // A pointer to user-defined temporary or output data
+/// See the definition of the dip::Framework::SeparableBuffer structure.
+void Separable(
+      Image const& in,                 ///< Input image
+      Image& out,                      ///< Output image
+      DataType inBufferType,           ///< Data type for input buffer
+      DataType outBufferType,          ///< Data type for output buffer
+      DataType outImageType,           ///< Data type for output image
+      dip::uint nTensorElements,       ///< Number of tensor elements in output image
+      BooleanArray process,            ///< Determines along which dimensions to apply the filter
+      UnsignedArray border,            ///< Number of pixels to add to the beginning and end of each line, for each dimension
+      BoundaryConditionArray boundaryConditions, ///< Filling method for the border
+      SeparableFilter lineFilter,      ///< Function to call for each image line
+      void const* functionParameters,  ///< Parameters to pass to `lineFilter`
+      void* functionVariables,         ///< Variables to pass to `lineFilter`
+      SeparableOptions opts            ///< Options to control how `lineFilter` is called
+);
+// Examples of usage:
+// - The Gaussian filter can make an array of arrays, where each array contains the Gaussian weights
+//   to be used along one dimension. The `lineFilter` function takes array number `dimension` for weights.
+// - The dilation with a square support has two std::vector<uint8> for each element of the `functionVariables`
+//   array. The `lineFilter` checks to see if they have the right number of elements, and resizes them if not.
+//   These are then the temporary buffers it needs to do the computation efficiently. The `std::vector`s will be
+//   resized for processing the first line along each dimension, and freed automatically at the end of the caller's
+//   scope.
 
 } // namespace Framework
 } // namespace dip

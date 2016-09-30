@@ -202,6 +202,26 @@ typedef DimensionArray< Range > RangeArray;  ///< An array of ranges
 
 
 //
+// Boundary conditions, or what values to read when indexing outside an image boundary
+//
+enum class BoundaryCondition {
+      SYMMETRIC_MIRROR,
+      ASYMMETRIC_MIRROR,
+      PERIODIC,
+      ASYMMETRIC_PERIODIC,
+      ADD_ZEROS,
+      ADD_MAX_VALUE,
+      ADD_MIN_VALUE,
+      ZERO_ORDER_EXTRAPOLATE,
+      FIRST_ORDER_EXTRAPOLATE,
+      SECOND_ORDER_EXTRAPOLATE,
+      DEFAULT = SYMMETRIC_MIRROR,
+};
+
+typedef DimensionArray< BoundaryCondition > BoundaryConditionArray; ///< An array to hold boundary conditions.
+
+
+//
 // The following is support for defining an options type, where the user can
 // specify multiple options to pass on to a function or class. The class should
 // not be used directly, only through the macros defined below it.

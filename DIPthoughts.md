@@ -216,10 +216,6 @@ could be simulated by giving a full list of indices instead.
 We discuss the second case (ROI indexing) and fourth case (arbitrary
 indexing) below.
 
-*OpenCV* uses references, iterators and more to allow this type of
-functionality. I'm not sure if we want to copy this. I'm open for
-suggestions.
-
 ### ROI indexing
 
 This type of indexing requires a start, stop and step size for each
@@ -703,7 +699,25 @@ Similar macros would be defined for `INTEGER`, `UNSIGNED`, `SIGNED`, `FLOAT`,
     }
 
 
-## Frameworks
+## Processing images -- how to access and modify pixels
+
+The old DIPlib does most processing through the [frameworks][Frameworks].
+These are great because they handle a lot of things -- creating the output
+image(s), dealing with different data types and dimensionalities, apply
+filters using multithreading, etc. But the frameworks can use some
+refactoring, as described below. Also, the documentation is out of date
+(and so does not correctly describe the functionality as implemented),
+there are a slew of aliases that complicate the landscape, and there are
+options that are never used, some are not even implemented.
+
+The [second sub-section][Image iterators] describes an alternative that
+leaves more to the user, but might be easier to use under certain circumstances.
+
+We also discuss how to [describe a neighborhood][Neighborhood lists], which
+is done in different ways in the old code.
+
+
+### Frameworks
 
 *DIPlib* uses Frameworks to handle most of the filtering. These need
 some refactoring for consistency. Current code is written for *POSIX*
@@ -718,8 +732,10 @@ threads, and adapted to *OpenMP*, but this lead to suboptimal code.
       type of the image copy matches buffer type (or should we do this
       with a multi-dimensional buffer? depends on filter size?).
 
-    - Optionally, the caller can pass in the image already extended. That is,
+    - (new) Optionally, the caller can pass in the image already extended. That is,
       the filter is not applied to the pixels in the image border.
+
+    - (new, I think) The processing should follow the optimal dimension.
 
     - `dip::Framework::FullMonadic()`: 1 input, 1 output
 
@@ -732,21 +748,24 @@ threads, and adapted to *OpenMP*, but this lead to suboptimal code.
       copied to match buffer types and boundary extensions. Can
       work in-place.
 
+    - 1 input and 1 output image.
+
     - The image is processed up to nD times, looping over lines in each of
       the dimensions. The caller can select which of the dimensions to process.
 
     - Filtering function can be overloaded and takes a 1D vector of
       pixels, optionally with strides.
 
-    - Input and output images can have different sizes (they are always equal
-      sizes in other frameworks).
+    - currently: `dip_SeparableFrameWork()`
 
-    - `dip::Framework::SeparableMonadic()`: 1 input, 1 output
-
-    - currently: `dip_SeparableFrameWork()`, `dip_MonadicFrameWork()`
-      (as called by interpolation funcs)
-
-    - If boundary extension is 0, do `dip::Framework::Scan()`!
+    - A similar functionality is used by the interpolation functions, which
+      do the processing through `dip_MonadicFrameWork()` with the
+      `DIP_FRAMEWORK_DO_NOT_ADJUST` option set. That functionality requires
+      that the output have a different size than the input, and the size of
+      the intermediate results as each dimension is being processed changes.
+      It would be best to replicate that functionality through the
+      [iterators][Image iterators] instead, since it only concerns one or
+      two functions (skew and resize, I believe, need this)
 
 - `dip::Framework::Scan()`
 
@@ -766,6 +785,25 @@ threads, and adapted to *OpenMP*, but this lead to suboptimal code.
       `dip_ScanFrameWork()`, `dip_SingleOutputFrameWork()`
 
     - option: ignore coordinates (`DIP_FRAMEWORK_AS_LINEAR_ARRAY`)
+
+- `dip::Framework::Projection()`
+
+    - For each output pixel, an ROI is set over the input image, and a
+      statistic is computed for that ROI and written to the output pixel.
+
+    - 1 input and 1 output image.
+
+    - The output image can be a tensor image, receiving either
+      a tensor-valued statistic from an identical tensor-valued input
+      image (e.g. mean vector), or receiving a different statistic in
+      each tensor element.
+
+    - Output pixels can be computed in parallel. The statistic computed
+      could be done through the scan framework, but with multithreading
+      disabled.
+
+    - currently: `dip_SeparableFrameWork()`, `dip_MonadicFrameWork()`
+      (with DIP_FRAMEWORK_DO_NOT_ADJUST and/or DIP_FRAMEWORK_OUTPUT_ACCESS)
 
 Input to the framework is:
 
@@ -798,6 +836,290 @@ over this dimension. This minimizes the number of callback calls.
 However, if the size difference is not too large, it might be better to
 use the dimension with the smallest stride. We'll have to measure where
 the size ratio cutoffs are for this.
+
+
+### Image iterators
+
+The goal of the iterator is to provide an alternative to the `dip::Framework`
+and the `dip::NDLoop` functionality that is more intuitive to C++ programmers.
+
+This is how it could work for a simple iteration over all pixels in an image:
+
+    dip_ThrowIf( img.DataType() != dip::DT_SFLOAT, "Unexpected data type!" );
+    dip::sfloat sum = 0;
+    for( auto img_it = img.begin<dip::sfloat>(); img_it != img.end(); ++img_it ) {
+       sum += *img_it;
+    }
+
+Note that `img.end()` is an iterator object that has no information other than a
+`nullptr` pointer. The inequality operator simply compares the pointer inside the iterator.
+Instead of comparing to `img.end()`, one can test `img_it.IsAtEnd()`.
+
+An alternative could be that there's no `begin()` and `end()` methods in an image,
+but instead the iterator is created by calling its constructor directly:
+
+    for( auto img_it = ImageIterator<dip::sfloat>( img ); img_it.IsAtEnd(); ++img_it ) {
+       ...
+    }
+
+You need to know the image's data type, but nothing else. It'll work for all
+image dimensionalities. The code above doesn't handle tensor images, only scalar
+images. One can use `dip::Image::TensorToSpatial()` to make any image into a
+scalar image. Or you can use the tensor iterator:
+
+    for( auto img_it = img.begin<dip::sfloat>(); img_it != img.end(); ++img_it ) {
+       for( auto tensor_it = img_it.begin(); tensor_it != img_it.end(); ++tensor_it ) {
+          sum += *tensor_it;
+       }
+    }
+
+The tensor looks a lot like a `std::vector`. Indexing using `[]`, iterators with `begin()`
+and `end()`, maybe we should then also add a `size()` and `data()`! Its iterator is just
+a pointer and one stride, which can be added/subtracted to the pointer to do increment
+and decrement of the iterator. It doesn't know anything about the length of the tensor,
+as is the case for the `std::vector` iterator.
+
+Sometimes it's useful to iterate over one image line at a time (e.g. in separable
+filters). This can be accomplished with the processing dimension (the `dip::NDLoop`
+functions call it the skip dimension). It might look like this:
+
+    dip::sint procDim = 0;
+    for( auto img_it = img.begin<dip::sfloat>( procDim ); !img_it.IsAtEnd(); ++img_it ) {
+       dip::sfloat sum = 0;
+       for( auto line_it = img_it.LineIterator(); !line_it.IsAtEnd(); ++line_it ) {
+          sum += *line_it;
+       }
+       std::cout << "Line sum = " << sum << std::endl;
+    }
+
+The line iterator can be incremented and decremented, and does not test for line size,
+except for evaluating `IsAtEnd()`. That means that the iterator can be incremented and
+decremented past the image boundaries. This is useful if the image that we're iterating
+over is a ROI of a larger image, where we're interested in getting values outside of
+the image window. The user must thus be carefull (just as when using iterators on
+containers in the standard library, they don't test either!). Note that the boundary
+condition is thus not relevant here.
+
+Of course, it is possible to get a tensor iterator from the line iterator also:
+
+    for( auto tensor_it = line_it.begin(); tensor_it != line_it.end(); ++tensor_it ) {
+       ...
+    }
+
+There would be an `ImageIterator`, `ImageConstIterator`, `LineIterator`, `LineConstIterator`,
+`TensorIterator` and `TensorConstIterator`. They're all templates, with the template argument
+matching the data type of the image that they iterate over. These iterator classes are
+friends to `dip::Image` (not really necessary, but will make the code easier to read).
+
+The iterator can be constructed with specific boundary conditions, and with a processing dimension:
+
+    img.begin<T>( procDim );
+    img.begin<T>( bcArray, procDim = -1 );
+
+These properties can be modified, see below, at any time. The boundary conditions will be useful
+when getting pixel values in the neighborhood of the iterator. More on this below.
+
+The image iterator can only be incremented, not decremented and not added to (`it+=n` and `it+n`
+not defined, nor are `--it`, `it-=n` and `it-n`). If you need to iterate over a subset of pixels
+(e.g. every 3rd pixel), then you can create a view using the indexing operators, and iterate
+over the view.
+
+`*it` gets a reference to the value pointed at (`T&`, or `T const&` for the const iterators),
+and `it[n]` gets a reference to the nth tensor element. There should be some way to access
+neighbors as well (**TODO**). Maybe something like this:
+
+    it.at(i,j,k)
+    it.atWithBoundaryCheck(i,j,k)
+    it.at(coords)
+    it.atWithBoundaryCheck(coords)
+    it.atOffset(o) // adds offset to pointer, can provide a list of pre-computed values.
+
+(None of these allow accessing various tensor elements, this needs a solution). `atOffset()`
+would combine with a neighborhood list in various forms (e.g. a pixel table).
+
+It should also be possible to move the iterator to any random pixel inside the image. This
+might be useful for algorithms that process the image by walking along some path (e.g. steepest
+descent on a distance transform). An algorithm could check neighbors, find the lowest one,
+and move the iterator to its position. In this case, the iterator is not so much an iterator
+as a pointer to a pixel that can be moved around at will. It simply encapsulates some of the
+logic involved in moving the pointer (i.e. handling strides).
+
+Iterator properties:
+
+    it.Coordinates()
+    it.Pointer()
+    it.Index()
+    it.ProcessingDimension(), it.SetProcessingDimension( d ), it.RemoveProcessingDimension()
+    it.BoundaryCondition( d ), it.SetBoundaryCondition( d, bc ), it.SetBoundaryCondition( bc_array )
+    it.IsAtEnd()
+
+`Coordinates` are as computed by `dip::NDLoop`. `Pointer` is the address dereferenced by the
+`*` operator. `Index` is the linear index, computed when needed. It corresponds to the number
+of times that the iterator has been incremented.
+
+`ProcessingDimension` is a dimension along which the iterator does not iterate. The coordinate
+for that dimension is always 0. If the `ProcessingDimension` is negative, no dimensions are skipped.
+
+`BoundaryCondition` specifies what value to get when indexing outside the image bounds, and
+can be different for each of the dimensions.
+
+`IsAtEnd` tests for `pointer_ == nullptr`.
+
+Implementation could look like this:
+
+    template< typename T >
+    class ImageIterator {
+       private:
+          UnsignedArray coordinates_;
+          T* pointer_;
+          UnsignedArray const& sizes_;  // Copied out of image
+          IntegerArray const& strides_; // Copied out of image
+          dip::uint tensorElements_;    // Copied out of image
+          dip::sint tensorStride_;      // Copied out of image
+          dip::sint procDim_;
+          BoundaryConditionArray boundaryCondition_;
+       public:
+          ImageIterator( Image const& image, dip::sint procDim = -1 );
+          ImageIterator( Image const& image, BoundaryConditionArray const& bc, dip::sint procDim = -1 );
+          bool operator==( ImageIterator const& other ) { return pointer_ == other.pointer_; }
+          bool operator!=( ImageIterator const& other ) { return pointer_ != other.pointer_; }
+          ImageIterator& operator++();
+          T& operator*() { return *pointer_; }
+          T& operator[]( dip::sint n ) { return *( pointer_ + n * tensorStride_ ); }
+          bool IsAtEnd() { return pointer_ == nullptr; }
+          UnsignedArray const& Coordinates() { return coordinates_; }
+          T* Pointer() { return pointer_; }
+          dip::uint Index();
+          dip::sint ProcessingDimension() { return procDim_; }
+          void SetProcessingDimension( dip::sint d );
+          void RemoveProcessingDimension() { SetProcessingDimension( -1 ); }
+          BoundaryCondition BoundaryCondition( d );
+          void SetBoundaryCondition( dip::uint d, BoundaryCondition const& bc );
+          void SetBoundaryCondition( BoundaryConditionArray const& bc );
+          TensorIterator< T > begin() { return TensorIterator< T >( pointer_, tensorStride_ ); }
+          TensorIterator< T > end() { return TensorIterator< T >( pointer_ + tensorStride_ * tensor_Elements,
+                                                             tensorStride_ ); }
+          friend template< typename T > class LineIterator;
+          dip::LineIterator< T > LineIterator();
+    }
+
+    template< typename T >
+    class LineIterator {
+       private:
+          dip::sint coordinate_;
+          T* pointer_;
+          dip::uint size_;
+          dip::sint stride_;
+          dip::uint tensorElements_;
+          dip::sint tensorStride_;
+       public:
+          LineIterator( ImageIterator const& img_it ) :
+             coordinate_( 0 ),
+             pointer_( img_it.pointer_ ),
+             size_( img_it.sizes_[ img_it.procDim_ ]),
+             stride_( img_it.strides_[ img_it.procDim_ ]),
+             tensorElements_( img_it.tensorElements_ ),
+             tensorStride_( img_it.tensorStride_ )
+             {
+               // in case the ImageIterator is not at the beginning of the line: rewind
+               pointer_ -= img_it.coordinate_[ img_it.procDim ] * stride_;
+             };
+          bool operator==( LineIterator const& other ) { return pointer_ == other.pointer_; }
+          bool operator!=( LineIterator const& other ) { return pointer_ != other.pointer_; }
+          LineIterator& operator++() { ++coordinate_; pointer_ += stride_; }
+          LineIterator& operator--() { --coordinate_; pointer_ -= stride_; }
+          LineIterator& operator+=( dip::sint n ) { coordinate_ += n; pointer_ += n * stride_; }
+          LineIterator& operator-=( dip::sint n ) { coordinate_ -= n; pointer_ -= n * stride_; }
+          T& operator*() { return *pointer_; }
+          T& operator[]( dip::sint n ) { return *( pointer_ + n * tensorStride_ ); }
+          bool IsAtEnd() { return coordinate_ >= size_; }
+          dip::uint Coordinate() { return coordinate_; }
+          T* Pointer() { return pointer_; }
+          TensorIterator< T > begin() { return TensorIterator< T >( pointer_, tensorStride_ ); }
+          TensorIterator< T > end() { return TensorIterator< T >( pointer_ + tensorStride_ * tensor_Elements,
+                                                             tensorStride_ ); }
+    }
+
+    template< typename T >
+    class TensorIterator {
+       private:
+          T* pointer_;
+          dip::sint stride_;
+       public:
+          TensorIterator( T* pointer, dip::sint stride ): pointer_( pointer ), stride_( stride ) {}
+          bool operator==( TensorIterator const& other ) { return pointer_ == other.pointer_; }
+          bool operator!=( TensorIterator const& other ) { return pointer_ != other.pointer_; }
+          LineIterator& operator++() { pointer_ += stride_; }
+          LineIterator& operator--() { pointer_ -= stride_; }
+          LineIterator& operator+=( dip::sint n ) { pointer_ += n * stride_; }
+          LineIterator& operator-=( dip::sint n ) { pointer_ -= n * stride_; }
+          T& operator*() { return *pointer_; }
+          T* Pointer() { return pointer_; }
+          // Note: >, >=, <, <=, [], it_a-it_b and n+it must exist for this to be a full BidirectionalIterator.
+    }
+
+**TODO**: How do we do joint iterators, that iterate over two images at once? Doing two
+separate iterators is less efficient, as the increment operator is not trivial and would
+do some repeated computations when jointly iterating over two images.
+
+    ImageJointIterator( Image const& image1, Image const& image2, ... );
+    it.first(), it.second()
+
+**TODO**: The other problem with this implementation of the iterator is that it doesn't
+allow for generic data types, the image data type needs to be known at compile time.
+An alternative implementation would be generic, like `dip::NDLoop` is, but the dereference
+operator would not exist. One would instead need to do `*(float*)it.Pointer()`. This is not
+pretty. It's better to stick the templated iterator in a templated function, using our
+overloading scheme. Or use the frameworks.
+
+
+### Neighborhood lists
+
+Current code uses two different ways to describe a neighborhood:
+
+- A list (actually two, one containing coordinates for each neighbor, one containing their
+  corresponding offsets).
+  It describes the immediate neighborhood of a pixel (given by the dimensionality and the
+  connectivity), and is used in algorithms that process images using priority queues
+  (watershed, region growing, skeleton, labelling, etc.). Most of these algorithms use their
+  own version of these lists, not all need the coordinates, for example.
+
+- A pixel table (a list of pixel runs).
+  It describes a filter support of arbitrary shape by giving the offset to the first pixel
+  in each run, and the number of pixels in the run. Subsequent pixels are then accessed by
+  adding the correct stride to the offset of the first pixel.
+  The pixel table framework use this system, I don't think it's used outside it.
+
+We should keep both methods, and standardize the first one.
+
+The `NeighborhoodList` will be an array with a `Coordinates`, an `Offset`, and a `Weight`
+element for each neighbor pixel. An option of the constructor will leave the coordinates
+empty if they are not needed. It would be nice to have an iterator for this list, but if
+it is build on a `std::vector` that will come automatically. The `Weight` element would
+be filled with the distance of the neighbor (different options should be available there).
+
+    NeighborhoodList neighbors ( image, connectivity );
+    for( auto img_it = ImageIterator<dip::sfloat>( image ); img_it.IsAtEnd(); ++img_it ) {
+       for( auto n_it = neighbors.begin(); n_it != neighbors.end(); ++n_it ) {
+          img_it.atOffset( *n_it );
+       }
+    }
+
+The `PixelTable` will be an array with a `Offset` and a `Length` element for each run.
+Again, if it's build on a `std::vector` we'll have an iterator automatically.
+But it would be nice to also have an iterator that iterates over each of the pixels in the
+filter's support. It's a little awkward having a container with two different iterators,
+but they'd both be useful. To add a `Weight` element, we'd have an additional array directly
+listing weights for each of the pixels represented. These weights would be optionally added
+to the object. The iterator that visits each of the pixels would make it easy to access
+these weights.
+
+The constructor takes a binary image (weight is distance to center pixel) or grey-value
+image (weight is grey value) representing the neighborhood support or filtering kernel.
+A parameter in the constructor causes no weights being added to the object. Another parameter
+dictates the direction of the pixel runs. This direction should match with the processing
+dimension for some algorithms, and it might be beneficial to use the smallest stride dimension
+for some others, or the dimension that yields the longest runs.
 
 
 ## Alias handler
@@ -977,7 +1299,7 @@ The M-file code will need to be adapted:
 
 -   `dipshow` will be simplified, as simple calls to a *DIPlib* display
     function will generate the 2D array for display.
-    
+
 ### Issues with the current MATLAB interface
 
 Currently (version 2), complex images need to be copied over in the
