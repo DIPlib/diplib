@@ -91,7 +91,7 @@ done in parallel.
     - dip_chaincode.h
 
 10. **(X)**
-    `dip::Framework::Separable()`. **Lots of design work needed.**
+    `dip::Framework::Separable()`. **Most design work done.**
 
 11. Algorithms built on `dip::Framework::Separable()`: Gaussian filter, Fourier
     and other transforms, derivative filters, projections, etc. This is mostly porting
@@ -109,20 +109,31 @@ done in parallel.
 
 13. **(X)**
     `dip::Framework::Full()`. **Lots of design work needed**. Porting of pixel table
-    code to a sensible class that makes its use easier.
+    code to a sensible class that makes its use easier (and that includes iterators).
 
-14. Algorithms build on `dip::Framework::Full()`: Rank filters, adaptive filters, etc.
+14. Algorithms built on `dip::Framework::Full()`: Rank filters, adaptive filters, etc.
     Simply porting old code.
     - dip_adaptive.h
     - dip_bilateral.h
     - dip_filtering.h
     - dip_rankfilters.h
 
-15. Algorithms build on `dip::Framework::Separable()` and `dip::Framework::Full()`:
+15. Algorithms built on `dip::Framework::Separable()` and `dip::Framework::Full()`:
     Filters that are separable for some filter shapes and non-separable for others,
     such as dilation and erosion, uniform filter, etc. Simply porting old code.
     - dip_morphology.h (parts)
     - dip_linear.h (parts)
+
+15. **(X)**
+    `dip::Framework::Projection()`. **Design work needed**.
+
+15. Algorithms built on `dip::Framework::Projection()`: max, min, mean projections, etc.
+
+15. **(X)**
+    Image iterators. **Lots of design work needed**, though some is done. Iterators
+    are useful as simpler substitutes of the frameworks, to be used in only a few
+    library functions, meant for the library user to implement pixel-wise processing,
+    and filters, without the steep learning curve nor pointers.
 
 16. **(X)**
     Algorithms that do not depend on any framework: all binary morphology, the

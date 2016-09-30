@@ -23,6 +23,13 @@ set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # This is necessary because my vers
 find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)
 
 
+# Doxygen
+
+find_package(Doxygen)
+
+set(DOCUMENTATION_OUTPUT doc)
+
+
 # DIPlib library
 
 include_directories(include)
@@ -65,17 +72,15 @@ if(Matlab_FOUND)
 
 endif(Matlab_FOUND)
 
-# DIPlib documentation
 
-find_package(Doxygen)
+# DIPlib documentation
 
 if (DOXYGEN_FOUND)
 
    set(DOXYGEN_INPUT Doxyfile)
-   set(DOXYGEN_OUTPUT doc)
 
    add_custom_command(
-      OUTPUT ${DOXYGEN_OUTPUT}
+      OUTPUT ${DOCUMENTATION_OUTPUT}
       COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
       COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
       COMMAND ${CMAKE_COMMAND} -E echo "Done."
@@ -83,6 +88,22 @@ if (DOXYGEN_FOUND)
       DEPENDS ${DOXYGEN_INPUT}
       )
 
-   add_custom_target(apidoc DEPENDS ${DOXYGEN_OUTPUT})
+   add_custom_target(apidoc DEPENDS ${DOCUMENTATION_OUTPUT})
 
 endif (DOXYGEN_FOUND)
+
+add_custom_command(
+      OUTPUT ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
+      COMMAND pandoc -o ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf DIPthoughts.md
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      DEPENDS ${DIPthoughts.md}
+)
+
+add_custom_command(
+      OUTPUT ${DOCUMENTATION_OUTPUT}/DIPworkplan.pdf
+      COMMAND pandoc -o ${DOCUMENTATION_OUTPUT}/DIPworkplan.pdf DIPworkplan.md
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      DEPENDS ${DIPworkplan.md}
+)
+
+add_custom_target(docs DEPENDS ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf ${DOCUMENTATION_OUTPUT}/DIPworkplan.pdf)
