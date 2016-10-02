@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include "diplib.h"
-#include "dip_numeric.h"
 
 namespace dip {
 

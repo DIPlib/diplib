@@ -20,10 +20,10 @@
 #include <functional>
 #include <utility>
 
-#include "dip_datatype.h"
-#include "dip_tensor.h"
-#include "dip_physdims.h"
-#include "dip_clamp_cast.h"
+#include "diplib/datatype.h"
+#include "diplib/tensor.h"
+#include "diplib/physdims.h"
+#include "diplib/clamp_cast.h"
 
 
 /// \file

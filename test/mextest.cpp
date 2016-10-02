@@ -3,7 +3,7 @@
  *
  */
 
-#include "dip_matlab.h"
+#include "dip_matlab_interface.h"
 
 void print_info( dip::Image const& img ) {
    mexPrintf( "Image %dD (", img.Dimensionality() );

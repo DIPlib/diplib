@@ -10,7 +10,7 @@
 #ifndef DIPLIB_H
 #define DIPLIB_H
 
-#include "dip_operators.h" // This file includes all the others hierarchically.
+#include "diplib/operators.h" // This file includes all the others hierarchically.
 
 
 /// \file
@@ -23,17 +23,17 @@
 /// for each function.
 ///
 /// These are the header files included through diplib.h:
-///   * dip_datatype.h
-///   * dip_dimensionarray.h
-///   * dip_clamp_cast.h
-///   * dip_error.h
-///   * dip_image.h
-///   * dip_math.h
-///   * dip_numeric.h
-///   * dip_operators.h
-///   * dip_physdims.h
-///   * dip_tensor.h
-///   * dip_types.h
+///   * diplib/datatype.h
+///   * diplib/dimensionarray.h
+///   * diplib/clamp_cast.h
+///   * diplib/error.h
+///   * diplib/image.h
+///   * diplib/math.h
+///   * diplib/numeric.h
+///   * diplib/operators.h
+///   * diplib/physdims.h
+///   * diplib/tensor.h
+///   * diplib/types.h
 
 
 #endif // DIPLIB_H

@@ -19,7 +19,7 @@
 #include <cmath>
 #include <algorithm>
 
-#include "dip_types.h"
+#include "diplib/types.h"
 
 
 /// \file
@@ -28,6 +28,7 @@
 
 namespace dip {
 
+/// The constant pi.
 static const double pi = std::acos( -1 );
 
 /// Compute the greatest common denominator of two positive integers.

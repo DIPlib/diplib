@@ -7,8 +7,8 @@
  */
 
 #include "diplib.h"
-#include "dip_framework.h"
-#include "dip_overload.h"
+#include "diplib/framework.h"
+#include "diplib/overload.h"
 
 namespace dip {
 

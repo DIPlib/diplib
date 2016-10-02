@@ -3,8 +3,8 @@
  *
  */
 
-#include "dip_matlab.h"
 #include <iostream>
+#include "dip_matlab_interface.h"
 
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    if( nrhs != 2 ) {

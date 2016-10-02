@@ -18,7 +18,7 @@
 
 #include <utility>
 
-#include "dip_types.h"
+#include "diplib/types.h"
 
 
 /// \file

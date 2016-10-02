@@ -10,8 +10,7 @@
 #include <iostream>
 
 #include "diplib.h"
-#include "dip_framework.h"
-#include "dip_numeric.h"
+#include "diplib/framework.h"
 
 #include "copybuffer.h"
 

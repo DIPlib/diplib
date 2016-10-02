@@ -6,8 +6,8 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
-#include "dip_types.h"
-#include "dip_numeric.h"
+#include "diplib/types.h"
+#include "diplib/numeric.h"
 
 namespace dip {
 

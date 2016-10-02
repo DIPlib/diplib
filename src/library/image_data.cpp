@@ -12,10 +12,10 @@
 #include <algorithm>
 
 #include "diplib.h"
-#include "dip_numeric.h"
-#include "dip_ndloop.h"
-#include "dip_framework.h"
-#include "dip_overload.h"
+#include "diplib/numeric.h"
+#include "diplib/ndloop.h"
+#include "diplib/framework.h"
+#include "diplib/overload.h"
 #include "copybuffer.h"
 
 namespace dip {

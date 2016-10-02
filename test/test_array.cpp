@@ -1,5 +1,5 @@
 #include <iostream>
-#include "dip_types.h"
+#include "diplib/types.h"
 
 template< typename T >
 std::ostream& operator<<( std::ostream& os, const dip::DimensionArray< T >& array ) {

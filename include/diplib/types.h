@@ -23,8 +23,8 @@
 #include <vector>
 #include <bitset>
 
-#include "dip_dimensionarray.h"
-#include "dip_error.h"
+#include "diplib/dimensionarray.h"
+#include "diplib/error.h"
 
 
 /// \file
@@ -204,21 +204,31 @@ typedef DimensionArray< Range > RangeArray;  ///< An array of ranges
 //
 // Boundary conditions, or what values to read when indexing outside an image boundary
 //
+
+/// Ennumerates various ways of extending image data beyond its boundary. This ennumerator
+/// is used by the framework functions and some internal functions. Externally, the
+/// boundary condition is represented by strings.
 enum class BoundaryCondition {
-      SYMMETRIC_MIRROR,
-      ASYMMETRIC_MIRROR,
-      PERIODIC,
-      ASYMMETRIC_PERIODIC,
-      ADD_ZEROS,
-      ADD_MAX_VALUE,
-      ADD_MIN_VALUE,
-      ZERO_ORDER_EXTRAPOLATE,
-      FIRST_ORDER_EXTRAPOLATE,
-      SECOND_ORDER_EXTRAPOLATE,
-      DEFAULT = SYMMETRIC_MIRROR,
+      SYMMETRIC_MIRROR,          ///< The data is mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
+      ASYMMETRIC_MIRROR,         ///< The data is mirrored and inverted.
+      PERIODIC,                  ///< The data is repeated periodically, with the value at -1 equal to the value of the last pixel.
+      ASYMMETRIC_PERIODIC,       ///< The data is repeated periodically and inverted.
+      ADD_ZEROS,                 ///< The boundary is filled with zeros.
+      ADD_MAX_VALUE,             ///< The boundary is filled with the max value for the data type.
+      ADD_MIN_VALUE,             ///< The boundary is filled with the min value for the data type.
+      ZERO_ORDER_EXTRAPOLATE,    ///< The value at the border is repeated indefinitely.
+      FIRST_ORDER_EXTRAPOLATE,   ///< A linear function is defined based on the two values closest to the border.
+      SECOND_ORDER_EXTRAPOLATE,  ///< A quadratic function is defined based on the two values closest to the border.
+      DEFAULT = SYMMETRIC_MIRROR ///< The default value, currently equal to SYMMETRIC_MIRROR.
 };
 
 typedef DimensionArray< BoundaryCondition > BoundaryConditionArray; ///< An array to hold boundary conditions.
+
+/// Convert a string to a boundary condition.
+BoundaryCondition StringToBoundaryCondition( String bc );
+
+/// Convert an array of strings to an array of boundary conditions.
+BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray bc );
 
 
 //
@@ -295,8 +305,6 @@ namespace Option {
 
 /// Some functions that check for a condition optionally throw an exception
 /// if that condition is not met.
-// This one is documented, but only shows up only under the namespace members list,
-// not under dip_types.h nor under dip::Option. Sigh...
 enum class ThrowException {
    doNotThrow, ///< Do not throw and exception, return false if the condition is not met.
    doThrow     ///< Throw an exception if the condition is not met.
@@ -317,8 +325,9 @@ enum class ThrowException {
 /// CmpProps_ColorSpace     | compares color space
 /// CmpProps_PixelSize      | compares pixel size
 /// CmpProps_Samples        | CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorElements
-/// CmpProps_Full           | CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorShape
-/// CmpProps_All            | CmpProps_Full + CmpProps_Strides + CmpProps_TensorStride
+/// CmpProps_Shape          | CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorShape
+/// CmpProps_Full           | CmpProps_Shape + CmpProps_Strides + CmpProps_TensorStride
+/// CmpProps_All            | CmpProps_Shape + CmpProps_ColorSpace + CmpProps_PixelSize
 ///
 /// Note that you can add these constants together, for example `CmpProps_Sizes + CmpProps_Strides`.
 DIP_DECLARE_OPTIONS( CmpProps, 11 );
@@ -333,10 +342,12 @@ static DIP_DEFINE_OPTION( CmpProps, CmpProps_ColorSpace, 7 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_PixelSize, 8 );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_Samples,
                           CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorElements );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_Full,
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_Shape,
                           CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorShape );
+static DIP_DEFINE_OPTION( CmpProps, CmpProps_Full,
+                          CmpProps_Shape + CmpProps_Strides + CmpProps_TensorStride );
 static DIP_DEFINE_OPTION( CmpProps, CmpProps_All,
-                          CmpProps_Full + CmpProps_Strides + CmpProps_TensorStride );
+                          CmpProps_Shape + CmpProps_ColorSpace + CmpProps_PixelSize );
 
 
 } // namespace Option

@@ -10,8 +10,8 @@
 
 #include <limits>
 
-#include "dip_types.h"
-#include "dip_clamp_cast.h"
+#include "diplib/types.h"
+#include "diplib/clamp_cast.h"
 
 
 /// \file

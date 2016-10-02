@@ -9,9 +9,9 @@
 #include <array>
 
 #include "diplib.h"
-#include "dip_framework.h"
-#include "dip_overload.h"
-#include "dip_saturated_arithmetic.h"
+#include "diplib/framework.h"
+#include "diplib/overload.h"
+#include "diplib/saturated_arithmetic.h"
 
 namespace dip {
 

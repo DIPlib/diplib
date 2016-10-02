@@ -10,8 +10,8 @@
 
 #include <limits>
 
-#include "dip_types.h"
-#include "dip_numeric.h"
+#include "diplib/types.h"
+#include "diplib/numeric.h"
 
 
 /// \file

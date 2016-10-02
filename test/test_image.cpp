@@ -2,7 +2,7 @@
 #include <random>
 #include <typeinfo>
 #include "diplib.h"
-#include "dip_overload.h"
+#include "diplib/overload.h"
 
 // Just a test!
 
@@ -26,7 +26,7 @@ int main() {
          dip::Image img;
          std::cout << img;
          img.SetSizes( { 50, 80, 30 } );
-         img.SetTensorDimensions(3);
+         img.SetTensorSizes(3);
          img.Forge();
          std::cout << img;
          img.Strip();
@@ -53,7 +53,7 @@ int main() {
       {
          dip::Image img1;
          img1.SetSizes( { 50, 80, 30 } );
-         img1.SetTensorDimensions(3);
+         img1.SetTensorSizes(3);
          img1.SetPixelSize({{dip::PhysicalQuantity::Micrometer(), 3*dip::PhysicalQuantity::Micrometer(), dip::PhysicalQuantity::Radian()}});
          img1.Forge();
          std::cout << img1;
@@ -80,7 +80,7 @@ int main() {
       {
          dip::Image img1;
          img1.SetSizes( { 50, 80, 30 } );
-         img1.SetTensorDimensions(3);
+         img1.SetTensorSizes(3);
          img1.SetPixelSize({{dip::PhysicalQuantity::Micrometer(), 3*dip::PhysicalQuantity::Micrometer(), dip::PhysicalQuantity::Radian()}});
          img1.Forge();
          std::cout << img1;
@@ -107,7 +107,7 @@ int main() {
       {
          dip::Image img1;
          img1.SetSizes( { 50, 80, 30 } );
-         img1.SetTensorDimensions(3);
+         img1.SetTensorSizes(3);
          img1.Forge();
          dip::Image img2 = img1[0];
          if( Alias(img1,img2) != true )
@@ -137,7 +137,7 @@ int main() {
             std::cout << "Error: aliasing computation, test #8" << std::endl;
          dip::Image img8;
          img8.SetSizes( { 50, 80, 30 } );
-         img8.SetTensorDimensions(3);
+         img8.SetTensorSizes(3);
          img8.Forge();
          if( Alias(img1,img8) != false )
             std::cout << "Error: aliasing computation, test #9" << std::endl;

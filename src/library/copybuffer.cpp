@@ -9,7 +9,7 @@
 #include <limits>
 
 #include "copybuffer.h"
-#include "dip_clamp_cast.h"
+#include "diplib/clamp_cast.h"
 
 //#include <iostream>
 

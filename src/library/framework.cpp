@@ -7,7 +7,7 @@
  */
 
 #include "diplib.h"
-#include "dip_framework.h"
+#include "diplib/framework.h"
 
 namespace dip {
 namespace Framework {

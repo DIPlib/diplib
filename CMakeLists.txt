@@ -41,6 +41,7 @@ file(GLOB SOURCES
 
 file(GLOB HEADERS
    "include/*.h"
+   "include/diplib/*.h"
    )
 
 #add_library(DIP DYNAMIC ${SOURCES} ${HEADERS}) # Why does this not work any more? What changed?

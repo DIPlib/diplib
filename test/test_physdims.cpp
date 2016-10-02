@@ -1,5 +1,5 @@
 #include <iostream>
-#include "dip_physdims.h"
+#include "diplib/physdims.h"
 
 // Testing
 

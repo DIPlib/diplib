@@ -6,7 +6,7 @@
  */
 
 #include "diplib.h"
-#include "dip_sort.h"
+#include "diplib/sort.h"
 
 namespace dip {
 

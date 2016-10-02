@@ -16,7 +16,7 @@
 #ifndef DIP_OPERATORS_H
 #define DIP_OPERATORS_H
 
-#include "dip_image.h"
+#include "diplib/image.h"
 
 
 /// \file

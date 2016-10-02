@@ -413,7 +413,7 @@ typedef void (* SeparableFilter)(
       dip::uint dimension,
       UnsignedArray position,
       void const* functionParameters,
-      std::vector< void* > const& functionVariables, ///< Variables to pass to `lineFilter`
+      void* functionVariables
 );
 
 /// Framework for separable filtering of images.
@@ -510,13 +510,13 @@ typedef void (* SeparableFilter)(
 /// The `lineFilter` function signature is as follows:
 ///
 ///     void SeparableFilter (
-///         SeparableBuffer const&     inBuffer,            // Input buffers (1D)
-///         SeparableBuffer&           outBuffer,           // Output buffers (1D)
-///         dip::uint                  bufferLength,        // Number of pixels in each buffer
-///         dip::uint                  dimension,           // Dimension along which the line filter is applied
-///         UnsignedArray              position,            // Coordinates of first pixel in line
-///         void const*                functionParameters,  // A pointer to user-defined input data
-///         std::vector< void* > const& functionVariables); // A pointer to user-defined temporary or output data
+///         SeparableBuffer const& inBuffer,            // Input buffers (1D)
+///         SeparableBuffer&       outBuffer,           // Output buffers (1D)
+///         dip::uint              bufferLength,        // Number of pixels in each buffer
+///         dip::uint              dimension,           // Dimension along which the line filter is applied
+///         UnsignedArray          position,            // Coordinates of first pixel in line
+///         void const*            functionParameters,  // A pointer to user-defined input data
+///         void*                  functionVariables); // A pointer to user-defined temporary or output data
 /// See the definition of the dip::Framework::SeparableBuffer structure.
 void Separable(
       Image const& in,                 ///< Input image
@@ -530,7 +530,7 @@ void Separable(
       BoundaryConditionArray boundaryConditions, ///< Filling method for the border
       SeparableFilter lineFilter,      ///< Function to call for each image line
       void const* functionParameters,  ///< Parameters to pass to `lineFilter`
-      void* functionVariables,         ///< Variables to pass to `lineFilter`
+      std::vector< void* > const& functionVariables, ///< Variables to pass to `lineFilter`
       SeparableOptions opts            ///< Options to control how `lineFilter` is called
 );
 // Examples of usage:

@@ -9,8 +9,8 @@
 #ifndef DIP_NDLOOP_H
 #define DIP_NDLOOP_H
 
-#include "dip_error.h"
-#include "dip_types.h"
+#include "diplib/error.h"
+#include "diplib/types.h"
 
 
 /// \file
