@@ -68,7 +68,8 @@ Image Image::operator[]( UnsignedArray const& indices ) const {
          break;
    }
    // Now `i` contains the linear index to the tensor element.
-   Image out = * this;
+   Image out;
+   out = *this;
    out.tensor_.SetScalar();
    out.origin_ = Pointer( i * tensorStride_ );
    out.ResetColorSpace();
@@ -78,7 +79,8 @@ Image Image::operator[]( UnsignedArray const& indices ) const {
 Image Image::operator[]( dip::uint index ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip_ThrowIf( index >= tensor_.Elements(), E::INDEX_OUT_OF_RANGE );
-   Image out = * this;
+   Image out;
+   out = *this;
    out.tensor_.SetScalar();
    out.origin_ = Pointer( index * tensorStride_ );
    out.ResetColorSpace();
@@ -87,7 +89,8 @@ Image Image::operator[]( dip::uint index ) const {
 
 Image Image::Diagonal() const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   Image out = * this;
+   Image out;
+   out = *this;
    if( tensor_.IsScalar() || tensor_.IsDiagonal() ) {
       out.tensor_.SetVector( tensor_.Elements() );
    } else if( tensor_.IsVector() ) {
@@ -113,7 +116,8 @@ Image Image::Diagonal() const {
 Image Image::At( UnsignedArray const& coords ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip_ThrowIf( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-   Image out = * this;
+   Image out;
+   out = *this;
    out.sizes_.resize( 0 );
    out.strides_.resize( 0 );
    out.origin_ = Pointer( coords );
@@ -125,7 +129,8 @@ Image Image::At( dip::uint index ) const {
    if( sizes_.size() < 2 ) {
       dip::uint n = sizes_.size() == 0 ? 1 : sizes_[ 0 ];
       dip_ThrowIf( index >= n, E::INDEX_OUT_OF_RANGE );
-      Image out = * this;
+      Image out;
+      out = *this;
       out.sizes_.resize( 0 );
       out.strides_.resize( 0 );
       out.origin_ = Pointer( ( dip::sint )index );
@@ -139,7 +144,8 @@ Image Image::At( Range x_range ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip_ThrowIf( sizes_.size() != 1, E::ILLEGAL_DIMENSIONALITY );
    x_range.Fix( sizes_[ 0 ] );
-   Image out = * this;
+   Image out;
+   out = *this;
    out.sizes_[ 0 ] = x_range.Size();
    out.strides_[ 0 ] *= x_range.Step();
    out.pixelSize_.Scale( 0, x_range.Step() );
@@ -152,7 +158,8 @@ Image Image::At( Range x_range, Range y_range ) const {
    dip_ThrowIf( sizes_.size() != 2, E::ILLEGAL_DIMENSIONALITY );
    x_range.Fix( sizes_[ 0 ] );
    y_range.Fix( sizes_[ 1 ] );
-   Image out = * this;
+   Image out;
+   out = *this;
    out.sizes_[ 0 ] = x_range.Size();
    out.sizes_[ 1 ] = y_range.Size();
    out.strides_[ 0 ] *= x_range.Step();
@@ -171,7 +178,8 @@ Image Image::At( Range x_range, Range y_range, Range z_range ) const {
    x_range.Fix( sizes_[ 0 ] );
    y_range.Fix( sizes_[ 1 ] );
    z_range.Fix( sizes_[ 2 ] );
-   Image out = * this;
+   Image out;
+   out = *this;
    out.sizes_[ 0 ] = x_range.Size();
    out.sizes_[ 1 ] = y_range.Size();
    out.sizes_[ 2 ] = z_range.Size();
@@ -194,7 +202,8 @@ Image Image::At( RangeArray ranges ) const {
    for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
       ranges[ ii ].Fix( sizes_[ ii ] );
    }
-   Image out = * this;
+   Image out;
+   out = *this;
    dip::sint offset = 0;
    for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
       out.sizes_[ ii ] = ranges[ ii ].Size();
@@ -209,7 +218,8 @@ Image Image::At( RangeArray ranges ) const {
 Image Image::Real() const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip_ThrowIf( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
-   Image out = * this;
+   Image out;
+   out = *this;
    // Change data type
    out.dataType_ = dataType_ == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
    // Sample size is halved, meaning all strides must be doubled
@@ -223,7 +233,8 @@ Image Image::Real() const {
 Image Image::Imaginary() const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip_ThrowIf( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
-   Image out = * this;
+   Image out;
+   out = *this;
    // Change data type
    out.dataType_ = dataType_ == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
    // Sample size is halved, meaning all strides must be doubled

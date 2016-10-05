@@ -46,8 +46,8 @@ namespace dip {
 //       always false. I started with the uint because the standard library
 //       uses it for sizes of arrays, and sizeof() is unsigned also. Maybe
 //       better to cast these to sint?
-typedef std::ptrdiff_t sint;  ///< An integer type to be used for strides and similar measures.
-typedef std::size_t uint;  ///< An integer type to be used for sizes and the like.
+using sint = std::ptrdiff_t;  ///< An integer type to be used for strides and similar measures.
+using uint = std::size_t;  ///< An integer type to be used for sizes and the like.
 // ptrdiff_t and size_t are signed and unsigned integers of the same length as
 // pointers: 32 bits on 32-bit systems, 64 bits on 64-bit systems.
 
@@ -55,16 +55,16 @@ typedef std::size_t uint;  ///< An integer type to be used for sizes and the lik
 //
 // Types for pixel values
 //
-typedef std::uint8_t  uint8;      ///< Type for samples in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
-typedef std::uint16_t uint16;     ///< Type for samples in a 16-bit unsigned integer image
-typedef std::uint32_t uint32;     ///< Type for samples in a 32-bit unsigned integer image
-typedef std::int8_t   sint8;      ///< Type for samples in an 8-bit signed integer image
-typedef std::int16_t  sint16;     ///< Type for samples in a 16-bit signed integer image
-typedef std::int32_t  sint32;     ///< Type for samples in a 32-bit signed integer image
-typedef float         sfloat;     ///< Type for samples in a 32-bit floating point (single-precision) image
-typedef double        dfloat;     ///< Type for samples in a 64-bit floating point (double-precision) image
-typedef std::complex< sfloat > scomplex;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
-typedef std::complex< dfloat > dcomplex;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
+using uint8 = std::uint8_t;      ///< Type for samples in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
+using uint16 = std::uint16_t;    ///< Type for samples in a 16-bit unsigned integer image
+using uint32 = std::uint32_t;    ///< Type for samples in a 32-bit unsigned integer image
+using sint8 = std::int8_t;       ///< Type for samples in an 8-bit signed integer image
+using sint16 = std::int16_t;     ///< Type for samples in a 16-bit signed integer image
+using sint32 = std::int32_t;     ///< Type for samples in a 32-bit signed integer image
+using sfloat = float;            ///< Type for samples in a 32-bit floating point (single-precision) image
+using dfloat = double;           ///< Type for samples in a 64-bit floating point (double-precision) image
+using scomplex = std::complex< sfloat >;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
+using dcomplex = std::complex< dfloat >;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
 /// Type for samples in a binary image. Can store 0 or 1. Ocupies 1 byte.
 struct bin {
    // Binary data stored in a single byte (don't use bool for pixels, it has
@@ -105,29 +105,18 @@ static_assert( sizeof( dip::bin ) == 1, "The binary type is not a single byte!" 
 //
 
 // TODO: It's a little confusing that these arrays and others like StringArray or ImageArray work differently.
-typedef DimensionArray< dip::sint > IntegerArray;   ///< An array to hold strides, filter sizes, etc.
-typedef DimensionArray< dip::uint > UnsignedArray;  ///< An array to hold dimensions, dimension lists, etc.
-typedef DimensionArray< dip::dfloat > FloatArray;   ///< An array to hold filter parameters.
-typedef DimensionArray< bool > BooleanArray;        ///< An array used as a dimension selector.
-// IntegerArray A;
-// IntegerArray A(n);
-// IntegerArray A(n,0);
-// IntegerArray A {10,20,5};
-// A = ...;
-// A.size();
-// A[ii];
-// A.data();
-// A.resize(n);
-// A.resize(n,0);
-// A == B;
+using IntegerArray = DimensionArray< dip::sint >;   ///< An array to hold strides, filter sizes, etc.
+using UnsignedArray = DimensionArray< dip::uint >;  ///< An array to hold dimensions, dimension lists, etc.
+using FloatArray = DimensionArray< dip::dfloat >;   ///< An array to hold filter parameters.
+using BooleanArray = DimensionArray< bool >;        ///< An array used as a dimension selector.
 
 
 //
 // Strings, used for parameters and other things
 //
 
-typedef std::string String;                 ///< A string type
-typedef std::vector< String > StringArray;  ///< An array of strings
+using String = std::string;                 ///< A string type
+using StringArray = std::vector< String >;  ///< An array of strings
 
 
 //
@@ -198,7 +187,7 @@ struct Range {
 
 };
 
-typedef DimensionArray< Range > RangeArray;  ///< An array of ranges
+using RangeArray = DimensionArray< Range >;  ///< An array of ranges
 
 
 //
@@ -222,7 +211,7 @@ enum class BoundaryCondition {
       DEFAULT = SYMMETRIC_MIRROR ///< The default value, currently equal to SYMMETRIC_MIRROR.
 };
 
-typedef DimensionArray< BoundaryCondition > BoundaryConditionArray; ///< An array to hold boundary conditions.
+using BoundaryConditionArray = DimensionArray< BoundaryCondition >; ///< An array to hold boundary conditions.
 
 /// Convert a string to a boundary condition.
 BoundaryCondition StringToBoundaryCondition( String bc );
@@ -244,22 +233,22 @@ BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray bc );
 
 template< typename E, std::size_t N >
 class Options {
-   unsigned long values;
-public:
-   constexpr Options< E, N >() {}
-   constexpr Options< E, N >( dip::uint n ) : values{ 1UL << n } {}
-   constexpr Options< E, N >( unsigned long v, int ) : values{ v } {}
-   constexpr bool operator==( Options< E, N > const& other ) const { return ( values & other.values ) != 0; }
-   constexpr bool operator!=( Options< E, N > const& other ) const { return ( values & other.values ) == 0; }
-   constexpr Options< E, N > operator+( Options< E, N > const& other ) const { return { values | other.values, 0 }; }
-   Options< E, N >& operator+=( Options< E, N > const& other ) {
-      values |= other.values;
-      return * this;
-   }
-   Options< E, N >& operator-=( Options< E, N > const& other ) {
-      values &= ~other.values;
-      return * this;
-   }
+      unsigned long values;
+   public:
+      constexpr Options() : values( 0 ) {}
+      constexpr Options( dip::uint n ) : values{ 1UL << n } {}
+      constexpr Options( unsigned long v, int ) : values{ v } {}
+      constexpr bool operator==( Options const& other ) const { return ( values & other.values ) != 0; }
+      constexpr bool operator!=( Options const& other ) const { return ( values & other.values ) == 0; }
+      constexpr Options operator+( Options const& other ) const { return { values | other.values, 0 }; }
+      Options& operator+=( Options const& other ) {
+         values |= other.values;
+         return *this;
+      }
+      Options& operator-=( Options const& other ) {
+         values &= ~other.values;
+         return *this;
+      }
 };
 
 /// Declare a type used to pass options to a function or class. This macro is used
@@ -289,7 +278,7 @@ public:
 /// For class member values, add `static` in front of `DIP_DEFINE_OPTION`.
 ///
 /// **Note** that `N` cannot be more than 32.
-#define DIP_DECLARE_OPTIONS( name, number ) class __##name; typedef dip::Options<__##name,number> name;
+#define DIP_DECLARE_OPTIONS( name, number ) class __##name; using name = dip::Options< __##name, number >;
 
 /// Use in conjunction with DIP_DECLARE_OPTIONS.
 #define DIP_DEFINE_OPTION( name, option, index ) constexpr name option { index };

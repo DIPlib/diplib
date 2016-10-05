@@ -1,4 +1,4 @@
-﻿/*
+/*
  * DIPlib 3.0
  * This file contains definitions for exceptions and support functions.
  *
@@ -29,7 +29,7 @@ namespace dip {
 
 /// All errors thrown in DIPlib are of this class, their `what()` string contains
 /// a reason for the error and the name of the function that originally threw it.
-typedef std::logic_error Error;
+using Error = std::logic_error;
 
 namespace E {
 // These are some of the standard what() strings thrown.

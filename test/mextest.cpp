@@ -48,7 +48,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       img_out0.Forge();
 
       mexPrintf( "Copying output image img_out0 to img_out1\n" );
-      dip::Image img_out1 = img_out0;
+      dip::Image img_out1; img_out1 = img_out0;
       mexPrintf( "Reallocating output image img_out1\n" );
       img_out1.Strip();
       img_out1.SetSizes( { 2, 3 } );

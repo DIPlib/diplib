@@ -136,7 +136,7 @@ struct ScanBuffer {
 };
 
 // Prototype line filter for dip::Framework::Scan.
-typedef void (* ScanFilter)(
+using ScanFilter =  void ( * )(
       std::vector< ScanBuffer > const& inBuffer,
       std::vector< ScanBuffer >& outBuffer,
       dip::uint bufferLength,
@@ -406,7 +406,7 @@ struct SeparableBuffer {
 };
 
 // Prototype line filter for dip::Framework::Separable.
-typedef void (* SeparableFilter)(
+using SeparableFilter = void ( * )(
       SeparableBuffer const& inBuffer,
       SeparableBuffer& outBuffer,
       dip::uint bufferLength,

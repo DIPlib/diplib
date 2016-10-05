@@ -168,7 +168,7 @@ static mxClassID GetMatlabClassID(
 /// This interface handler doesn't own any image data.
 class MatlabInterface : public dip::ExternalInterface {
    private:
-      std::map< void*, mxArray* > mla;          // This map holds mxArray pointers, we can
+      std::map< void const*, mxArray* > mla;          // This map holds mxArray pointers, we can
       // find the right mxArray if we have the data
       // pointer.
       // This is the deleter functor we'll associate to the shared_ptr.
@@ -177,7 +177,7 @@ class MatlabInterface : public dip::ExternalInterface {
             MatlabInterface& interface;
          public:
             StripHandler( MatlabInterface& mi ) : interface{ mi } {};
-            void operator()( void* p ) {
+            void operator()( void const* p ) {
                if( interface.mla.count( p ) == 0 ) {
                   //mexPrintf( "   Not destroying mxArray!\n" );
                } else {
@@ -244,7 +244,7 @@ class MatlabInterface : public dip::ExternalInterface {
             void* p = mxGetData( m );
             mexPrintf( "   Created mxArray as dip::Image data block. Data pointer = %p.\n", p );
             mla[ p ] = m;
-            return std::shared_ptr< void >( p, StripHandler( * this ) );
+            return std::shared_ptr< void >( p, StripHandler( *this ) );
          }
       }
 
@@ -265,9 +265,9 @@ class MatlabInterface : public dip::ExternalInterface {
             c[ 0 ] = mla[ real.Data() ];
             c[ 1 ] = mla[ imag.Data() ];
             // Call MATLAB's "complex" (*shouldn't* copy data...)
-            mexCallMATLAB( 1, & m, 2, c, "complex" );
+            mexCallMATLAB( 1, &m, 2, c, "complex" );
          } else {
-            void* p = img.Data();
+            void const* p = img.Data();
             m = mla[ p ];
             if( !m ) { mexPrintf( "   ...that was a nullptr mxArray\n" ); } // TODO: temporary warning, to be removed.
             // Does the image point to a modified view of the mxArray? Or to a non-MATLAB array?
@@ -310,7 +310,7 @@ class MatlabInterface : public dip::ExternalInterface {
 };
 
 // A deleter that doesn't delete.
-void VoidStripHandler( void* p ) {
+void VoidStripHandler( void const* p ) {
    //mexPrintf( "   Input mxArray not being destroyed\n" );
 };
 

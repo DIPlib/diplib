@@ -280,7 +280,7 @@ The assignment operator creates a copy of the image, but does not actually
 copy the data. Instead, the new copy will share the data segment with the
 original image:
 
-    dip::Image img2 = img1;
+    img2 = img1;
 
 Both `img1` and `img2` point at the same data, meaning that changing one
 image's pixel values also affects the other image. The data segment will
@@ -291,25 +291,24 @@ be freed until `img2` goes out of scope (or is stripped).
 The copy constructor creates an identical image, with its own data segment,
 but does not copy the pixel data:
 
-    dip::Image img2( img1 );
+    img2 = dip::Image( img1 );
 
 `img2` will be identical to `img1`, but with non-initialized data. The second
 argument to the copy constructor can be used to specify the data type of the
 new image:
 
-    dip::Image img2( img1, dip::DT_UINT8 );
+    img2 = dip::Image( img1, dip::DT_UINT8 );
 
 `img2` will be identical to `img1`, but with 8-bit unsigned integer samples.
 
 To make a copy of an image with its own copy of the data segment, use the
 dip::Image::Copy method:
 
-    dip::Image img2;
     img2.Copy( img1 );
 
 or equivalenty the dip::Copy function:
 
-    dip::Image img2 = dip::Copy( img1 );
+    img2 = dip::Copy( img1 );
 
 In both cases, `img2` will be identical to `img1`, with identical pixel values,
 and with its own data segment.
@@ -346,6 +345,25 @@ it will never work in place, as that could cause important problems.
 
 
 \subsection irregular_indexing Irregular indexing
+
+
+[//]: # (--------------------------------------------------------------)
+
+\section const_correctness Const correctness
+
+When an image object is marked `const`, the compiler will prevent modifications
+to it, it cannot be assigned to, and it cannot be used as the output argument
+to a filter function. However, the \ref indexing indexing operators, the copy
+assignment operator, and dip::Image::QuickCopy all allow the user to make
+a non-const object that points to the same data, making it possible to
+modify the pixel values of a const image (see [Design decisions](#design)
+for our reasons to allow this). Because of that, it did not really make sense
+either to have dip::Image::Data, dip::Image::Origin, and dip::Image::Pointer
+return const pointers when applied to a const image.
+
+Thus, there is nothing prevent you from modifying the pixel values of a const image.
+However, none of the functions in DIPlib will do so. A const image (usually
+the input images to functions are marked const) will not be modified.
 
 
 [//]: # (--------------------------------------------------------------)

@@ -19,8 +19,6 @@
 /// declarations of the most commonly used library functions, and
 /// definitions of some simple inline functions. Include other header
 /// files as needed for additional library functionality.
-/// **TODO:** The documentation will indicate which header file to include
-/// for each function.
 ///
 /// These are the header files included through diplib.h:
 ///   * diplib/datatype.h

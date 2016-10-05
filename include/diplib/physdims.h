@@ -90,7 +90,7 @@ class Units {
          for( dip::uint ii = 0; ii < ndims_; ++ii ) {
             power_[ ii ] += other.power_[ ii ];
          }
-         return * this;
+         return *this;
       }
 
       /// Divides two units objects.
@@ -98,7 +98,7 @@ class Units {
          for( dip::uint ii = 0; ii < ndims_; ++ii ) {
             power_[ ii ] -= other.power_[ ii ];
          }
-         return * this;
+         return *this;
       }
 
       /// Multiplies two units objects.
@@ -276,7 +276,7 @@ struct PhysicalQuantity {
    PhysicalQuantity& operator*=( PhysicalQuantity const& other ) {
       magnitude *= other.magnitude;
       units *= other.units;
-      return * this;
+      return *this;
    }
    /// Multiplies two physical quantities.
    friend PhysicalQuantity operator*( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
@@ -286,7 +286,7 @@ struct PhysicalQuantity {
    /// Scaling of a physical quantity.
    PhysicalQuantity& operator*=( double other ) {
       magnitude *= other;
-      return * this;
+      return *this;
    }
    /// Scaling of a physical quantity.
    friend PhysicalQuantity operator*( PhysicalQuantity lhs, double rhs ) {
@@ -303,7 +303,7 @@ struct PhysicalQuantity {
    PhysicalQuantity& operator/=( PhysicalQuantity const& other ) {
       magnitude /= other.magnitude;
       units /= other.units;
-      return * this;
+      return *this;
    }
    /// Divides two physical quantities.
    friend PhysicalQuantity operator/( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
@@ -313,7 +313,7 @@ struct PhysicalQuantity {
    /// Scaling of a physical quantity.
    PhysicalQuantity& operator/=( double other ) {
       magnitude /= other;
-      return * this;
+      return *this;
    }
    /// Scaling of a physical quantity.
    friend PhysicalQuantity operator/( PhysicalQuantity lhs, double rhs ) {
@@ -343,7 +343,7 @@ struct PhysicalQuantity {
    PhysicalQuantity& operator+=( PhysicalQuantity const& other ) {
       dip_ThrowIf( units != other.units, "Units don't match" );
       magnitude += other.magnitude;
-      return * this;
+      return *this;
    }
    /// Addition of two physical quantities.
    friend PhysicalQuantity operator+( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
@@ -355,7 +355,7 @@ struct PhysicalQuantity {
    PhysicalQuantity& operator-=( PhysicalQuantity const& other ) {
       dip_ThrowIf( units != other.units, "Units don't match" );
       magnitude -= other.magnitude;
-      return * this;
+      return *this;
    }
    /// Subtraction of two physical quantities.
    friend PhysicalQuantity operator-( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
@@ -420,7 +420,7 @@ inline void swap( PhysicalQuantity& v1, PhysicalQuantity& v2 ) {
 }
 
 /// An array to hold physical quantities, such as a pixel's size.
-typedef DimensionArray< PhysicalQuantity > PhysicalQuantityArray;
+using PhysicalQuantityArray = DimensionArray< PhysicalQuantity >;
 
 /// Create an arbitrary physical quantity by multiplying a magnitude with units.
 inline PhysicalQuantity operator*( double lhs, Units const& rhs ) {

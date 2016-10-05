@@ -12,7 +12,7 @@ static void dip__MyFunction( void* vin ) {
    std::cout << "Data type = " << typeid( in ).name() << std::endl;
 }
 
-void MyFunction( dip::Image image ) {
+void MyFunction( dip::Image& image ) {
    dip::DataType dt = image.DataType();
    void* in = nullptr; // image.Data();
    DIP_OVL_CALL_ALL( dip__MyFunction, (in), dt )
@@ -193,7 +193,7 @@ int main() {
                for( dip::uint ii = 0; ii < coords.size(); ++ii ) std::cout << coords[ii] << ", ";
                return 2;
             }
-            dip::sint index = img.Index( coords );
+            dip::uint index = img.Index( coords );
             if( i2c( index ) != coords ) {
                std::cout << "Error: index to coordinates computation" << std::endl;
                std::cout << img;

@@ -283,7 +283,7 @@ inline void swap( DataType& v1, DataType& v2 ) {
    v1.swap( v2 );
 }
 
-typedef std::vector< DataType > DataTypeArray;   ///< An array to hold data types
+using DataTypeArray = std::vector< DataType >;   ///< An array to hold data types
 
 //
 // Constants that people will use where a DataType is needed

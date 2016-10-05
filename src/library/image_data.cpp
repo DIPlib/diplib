@@ -12,7 +12,6 @@
 #include <algorithm>
 
 #include "diplib.h"
-#include "diplib/numeric.h"
 #include "diplib/ndloop.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
@@ -620,10 +619,10 @@ CoordinatesComputer Image::OffsetToCoordinatesComputer() const {
 }
 
 //
-dip::sint Image::Index( UnsignedArray const& coords ) const {
+dip::uint Image::Index( UnsignedArray const& coords ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip_ThrowIf( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-   dip::sint index = 0;
+   dip::uint index = 0;
    for( dip::uint ii = sizes_.size(); ii > 0; ) {
       --ii;
       dip_ThrowIf( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
@@ -634,7 +633,7 @@ dip::sint Image::Index( UnsignedArray const& coords ) const {
 }
 
 //
-UnsignedArray Image::IndexToCoordinates( dip::sint index ) const {
+UnsignedArray Image::IndexToCoordinates( dip::uint index ) const {
    CoordinatesComputer comp = IndexToCoordinatesComputer();
    return comp( index );
 }

@@ -53,7 +53,7 @@ class WhitePoint {
 };
 
 // Prototype function for conversion between two color spaces.
-typedef void ( * ColorSpaceConverter )(
+using ColorSpaceConverter = void ( * )(
       double const* input,    // pointer to input data, holding a known number of elements
       double* output,         // pointer to output data, holding a known number of elements
       double const* matrix    // pointer to the whitepoint array, its inverse, or any other relevant array

@@ -25,6 +25,7 @@
 #include "diplib/physdims.h"
 #include "diplib/clamp_cast.h"
 
+#include <iostream>
 
 /// \file
 /// Defines the dip::Image class and support functions. This file is always included through diplib.h.
@@ -94,13 +95,16 @@ class CoordinatesComputer {
 class Image;
 
 /// An array of images
-typedef std::vector< Image > ImageArray;
+using ImageArray = std::vector< Image >;
+
+/// An array of const images
+using ConstImageArray = std::vector< Image const >;
 
 /// An array of image references
-typedef std::vector< std::reference_wrapper< Image >> ImageRefArray;
+using ImageRefArray = std::vector< std::reference_wrapper< Image >>;
 
 /// An array of const image references
-typedef std::vector< std::reference_wrapper< const Image >> ImageConstRefArray;
+using ImageConstRefArray = std::vector< std::reference_wrapper< Image const >>;
 
 // The class is documented in the file src/documentation/image.md
 class Image {
@@ -114,8 +118,6 @@ class Image {
       /// The default-initialized image is 0D (an empty sizes array), one tensor element, dip::DT_SFLOAT,
       /// and raw (it has no data segment).
       Image() {}
-      // NOTE: destructor, move constructor, copy assignment operator, and move assignment operator
-      // should all be the default ones (Google for rule of zero).
 
       //
       // Other constructors
@@ -129,8 +131,27 @@ class Image {
          Forge();
       }
 
+      /// Move constructor moves all data from `src` to `*this`.
+      Image( Image&& src ) = default;
+
       /// Forged image similar to `src`; the data is not copied.
-      Image( Image const& src ) :
+      /// This constructor is explicit, meaning that it is called for the syntax
+      ///
+      ///     Image newimg( img );
+      ///
+      /// but not for the syntax
+      ///
+      ///     Image newimg = img;
+      ///
+      /// This latter syntax is therefore invalid, unfortunately. Instead, use
+      ///
+      ///     Image newimg;
+      ///     newimg = img;
+      ///
+      /// to invoke the copy assignment operator.
+      // NOTE: this is the copy constructor. Because we change the definition here, we also need
+      // to define the move constructor, the copy assignment operator, and the move assignment operator.
+      explicit Image( Image const& src ) :
             dataType_( src.dataType_ ),
             sizes_( src.sizes_ ),
             strides_( src.strides_ ),
@@ -227,6 +248,46 @@ class Image {
          dip::sint start;
          GetDataBlockSizeAndStartWithTensor( size, start );
          origin_ = static_cast< uint8* >( dataBlock_.get() ) + start * dataType_.SizeOf();
+      }
+
+      //
+      // Copy and move assignment operators
+      //
+
+      /// Move assignment has `*this` steal all data from `src`.
+      Image& operator=( Image&& src ) = default;
+
+      /// Copy assignment makes `*this` into an identical copy of `src`, with shared data.
+      // NOTE: we need to explicitly define this because the copy constructor does something different...
+      Image& operator=( Image const& src ) {
+         dataType_ = src.dataType_;
+         sizes_ = src.sizes_;
+         strides_ = src.strides_;
+         tensor_ = src.tensor_;
+         tensorStride_ = src.tensorStride_;
+         protect_ = src.protect_;
+         colorSpace_ = src.colorSpace_;
+         pixelSize_ = src.pixelSize_;
+         dataBlock_ = src.dataBlock_;
+         origin_ = src.origin_;
+         externalInterface_ = src.externalInterface_;
+         return *this;
+      }
+
+      /// Swaps `*this` and `other`.
+      void swap( Image& other ) {
+         using std::swap;
+         swap( dataType_, other.dataType_ );
+         swap( sizes_, other.sizes_ );
+         swap( strides_, other.strides_ );
+         swap( tensor_, other.tensor_ );
+         swap( tensorStride_, other.tensorStride_ );
+         swap( protect_, other.protect_ );
+         swap( colorSpace_, other.colorSpace_ );
+         swap( pixelSize_, other.pixelSize_ );
+         swap( dataBlock_, other.dataBlock_ );
+         swap( origin_, other.origin_ );
+         swap( externalInterface_, other.externalInterface_ );
       }
 
       //
@@ -530,22 +591,6 @@ class Image {
          }
       }
 
-      /// Swaps `*this` and `other`.
-      void swap( Image& other ) {
-         using std::swap;
-         swap( dataType_, other.dataType_ );
-         swap( sizes_, other.sizes_ );
-         swap( strides_, other.strides_ );
-         swap( tensor_, other.tensor_ );
-         swap( tensorStride_, other.tensorStride_ );
-         swap( protect_, other.protect_ );
-         swap( colorSpace_, other.colorSpace_ );
-         swap( pixelSize_, other.pixelSize_ );
-         swap( dataBlock_, other.dataBlock_ );
-         swap( origin_, other.origin_ );
-         swap( externalInterface_, other.externalInterface_ );
-      }
-
       //
       // Data
       // Defined in src/library/image_data.cpp
@@ -766,7 +811,7 @@ class Image {
       /// The image must be forged.
       /// \see Origin, Offset, OffsetToCoordinates
       void* Pointer( UnsignedArray const& coords ) const {
-         return Pointer( Offset( coords ) );
+         return Pointer( Offset( coords ));
       }
 
       /// Compute offset given coordinates. The offset needs to be multiplied
@@ -800,7 +845,7 @@ class Image {
       ///
       /// The image must be forged.
       /// \see IndexToCoordinates, Offset
-      dip::sint Index( UnsignedArray const& coords ) const;
+      dip::uint Index( UnsignedArray const& coords ) const;
 
       /// Compute coordinates given a linear index. If the image has any singleton-expanded
       /// dimensions, the computed coordinate along that dimension will always be 0.
@@ -809,7 +854,7 @@ class Image {
       ///
       /// The image must be forged.
       /// \see Index, Offset, IndexToCoordinatesComputer, OffsetToCoordinates
-      UnsignedArray IndexToCoordinates( dip::sint index ) const;
+      UnsignedArray IndexToCoordinates( dip::uint index ) const;
 
       /// Returns a functor that computes coordinates given a linear index. This is
       /// more efficient than using dip::Image::IndexToCoordinates, when repeatedly
@@ -908,32 +953,32 @@ class Image {
       Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {
          dip_ThrowIf( tensor_.Elements() != rows * cols, "Cannot reshape tensor to requested sizes." );
          tensor_.ChangeShape( rows );
-         return * this;
+         return *this;
       }
 
       /// Change the tensor shape, without changing the number of tensor elements.
       Image& ReshapeTensor( dip::Tensor const& other ) {
          tensor_.ChangeShape( other );
-         return * this;
+         return *this;
       }
 
       /// Change the tensor to a vector, without changing the number of tensor elements.
       Image& ReshapeTensorAsVector() {
          tensor_.ChangeShape();
-         return * this;
+         return *this;
       }
 
       /// Change the tensor to a diagonal matrix, without changing the number of tensor elements.
       Image& ReshapeTensorAsDiagonal() {
          dip::Tensor other{ dip::Tensor::Shape::DIAGONAL_MATRIX, tensor_.Elements(), tensor_.Elements() };
          tensor_.ChangeShape( other );
-         return * this;
+         return *this;
       }
 
       /// Transpose the tensor.
       Image& Transpose() {
          tensor_.Transpose();
-         return * this;
+         return *this;
       }
 
       /// Convert tensor dimensions to spatial dimension.
@@ -1079,11 +1124,12 @@ class Image {
       explicit operator dip::sint() const;
 
       /// Extracts the fist sample in the first pixel (At(0,0)[0]), casted
-      /// to a double-precision floating point value; for complex values
+      /// to a double-precision floating-point value; for complex values
       /// returns the absolute value.
       explicit operator dfloat() const;
 
-      /// Extracts the fist sample in the first pixel (At(0,0)[0]).
+      /// Extracts the fist sample in the first pixel (At(0,0)[0]), casted
+      /// to a double-precision complex floating-point value.
       explicit operator dcomplex() const;
 
 

@@ -12,7 +12,7 @@ namespace dip {
 
 // This function is not available to the library user.
 void CopyBuffer(
-      void* inBuffer,
+      void const* inBuffer,
       DataType inType,
       dip::sint inStride,
       dip::sint inTensorStride,

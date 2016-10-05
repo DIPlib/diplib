@@ -65,7 +65,7 @@ int main() {
                               << ( opts == Option_burn   ? "burn."    : "don't burn."  )
                               << std::endl;
 
-   DIP_DECLARE_OPTIONS( HisOptions, 5 );
+   DIP_DECLARE_OPTIONS( HisOptions, 3 );
    DIP_DEFINE_OPTION( HisOptions, Option_ugly, 0 );
    DIP_DEFINE_OPTION( HisOptions, Option_cheap, 1 );
    DIP_DEFINE_OPTION( HisOptions, Option_fast, 1 );  // repeated value

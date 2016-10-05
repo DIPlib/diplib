@@ -37,6 +37,13 @@ code style (integrates with *Git*), it can give errors during
 compilation or during commit if the source code is not formatted
 according to a style.
 
+Testing:
+We need to find a good test system. One idea is to encode the correct output
+image as a hash value. The test system can then check for correctness
+without having to store an image with each of the tests. For floating-point
+results we would need to round the result before computing the hash, to avoid
+issues with numerical accuracy.
+
 
 ## The Image object
 
@@ -1359,7 +1366,10 @@ alternative could be [*djbfft*](http://cr.yp.to/djbfft.html), which
 looks like it hasn't been updated in a while (since 1999!), but is
 claimed by the author to be faster than *FFTW2* and any other library
 at that time. I'm sure this is good enough for us. There are no
-indications of a license at all...
+indications of a license at all... Another alternative is
+[*Kiss FFT](https://sourceforge.net/projects/kissfft/), a simple FFT
+written in a single C++ header file and BSD licensed, and presumably
+quite a bit faster than the current FFT implementation in DIPlib.
 
 [*Tina's Random Number Generator Library*](http://numbercrunch.de/trng/)
 for RNG? (does parallel RNG also). Update: apparently the C++11
