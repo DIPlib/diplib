@@ -45,7 +45,7 @@ namespace dip {
 /// images that it creates, through Image::SetExternalInterface().
 /// The caller will maintain ownership of the interface.
 ///
-/// See dip_matlab.h for an example of how to create an ExternalInterface.
+/// See dip_matlab_interface.h for an example of how to create an ExternalInterface.
 class ExternalInterface {
    public:
       /// Allocates the data for an image. The function is free to modify

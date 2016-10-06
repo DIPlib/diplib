@@ -1,4 +1,4 @@
-# Changes from DIPlib 2.0 (the old DIPlib)
+# Changes from DIPlib 2.0 (the old DIPlib) {#changes}
 
 We list here some old names that have not been kept in the new DIPlib. We do not
 list all the infrastructure changes and so on, those should be clear from reading

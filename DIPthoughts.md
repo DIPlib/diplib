@@ -1367,9 +1367,11 @@ looks like it hasn't been updated in a while (since 1999!), but is
 claimed by the author to be faster than *FFTW2* and any other library
 at that time. I'm sure this is good enough for us. There are no
 indications of a license at all... Another alternative is
-[*Kiss FFT](https://sourceforge.net/projects/kissfft/), a simple FFT
+[*Kiss FFT*](https://sourceforge.net/projects/kissfft/), a simple FFT
 written in a single C++ header file and BSD licensed, and presumably
 quite a bit faster than the current FFT implementation in DIPlib.
+However, the implementation on OpenCV is 4 to 10 times faster than
+*Kiss FFT* in my quick test with various array sizes (even if less precise).
 
 [*Tina's Random Number Generator Library*](http://numbercrunch.de/trng/)
 for RNG? (does parallel RNG also). Update: apparently the C++11

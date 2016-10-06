@@ -95,14 +95,18 @@ endif (DOXYGEN_FOUND)
 
 add_custom_command(
       OUTPUT ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
-      COMMAND pandoc -o ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf DIPthoughts.md
+      COMMAND pandoc -s DIPthoughts.md -o ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
+      --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
+      --toc --listings -H pandoc/listings_setup.tex --number-sections
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       DEPENDS ${DIPthoughts.md}
 )
 
 add_custom_command(
       OUTPUT ${DOCUMENTATION_OUTPUT}/DIPworkplan.pdf
-      COMMAND pandoc -o ${DOCUMENTATION_OUTPUT}/DIPworkplan.pdf DIPworkplan.md
+      COMMAND pandoc -s DIPworkplan.md -o ${DOCUMENTATION_OUTPUT}/DIPworkplan.pdf
+      --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
+      --toc --listings -H pandoc/listings_setup.tex --number-sections
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       DEPENDS ${DIPworkplan.md}
 )
