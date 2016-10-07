@@ -860,12 +860,12 @@ This is how it could work for a simple iteration over all pixels in an image:
 
 Note that `img.end()` is an iterator object that has no information other than a
 `nullptr` pointer. The inequality operator simply compares the pointer inside the iterator.
-Instead of comparing to `img.end()`, one can test `img_it.IsAtEnd()`.
+Instead of comparing to `img.end()`, one can test `!img_it.IsAtEnd()` or simply `img_it`.
 
 An alternative could be that there's no `begin()` and `end()` methods in an image,
 but instead the iterator is created by calling its constructor directly:
 
-    for( auto img_it = ImageIterator<dip::sfloat>( img ); img_it.IsAtEnd(); ++img_it ) {
+    for( auto img_it = ImageIterator<dip::sfloat>( img ); img_it; ++img_it ) {
        ...
     }
 
@@ -881,7 +881,7 @@ scalar image. Or you can use the tensor iterator:
     }
 
 The tensor looks a lot like a `std::vector`. Indexing using `[]`, iterators with `begin()`
-and `end()`, maybe we should then also add a `size()` and `data()`! Its iterator is just
+and `end()`. Its iterator is just
 a pointer and one stride, which can be added/subtracted to the pointer to do increment
 and decrement of the iterator. It doesn't know anything about the length of the tensor,
 as is the case for the `std::vector` iterator.
@@ -891,9 +891,9 @@ filters). This can be accomplished with the processing dimension (the `dip::NDLo
 functions call it the skip dimension). It might look like this:
 
     dip::sint procDim = 0;
-    for( auto img_it = img.begin<dip::sfloat>( procDim ); !img_it.IsAtEnd(); ++img_it ) {
+    for( auto img_it = img.begin<dip::sfloat>( procDim ); img_it; ++img_it ) {
        dip::sfloat sum = 0;
-       for( auto line_it = img_it.LineIterator(); !line_it.IsAtEnd(); ++line_it ) {
+       for( auto line_it = img_it.LineIterator(); line_it; ++line_it ) {
           sum += *line_it;
        }
        std::cout << "Line sum = " << sum << std::endl;
@@ -903,7 +903,7 @@ The line iterator can be incremented and decremented, and does not test for line
 except for evaluating `IsAtEnd()`. That means that the iterator can be incremented and
 decremented past the image boundaries. This is useful if the image that we're iterating
 over is a ROI of a larger image, where we're interested in getting values outside of
-the image window. The user must thus be carefull (just as when using iterators on
+the image window. The user must thus be careful (just as when using iterators on
 containers in the standard library, they don't test either!). Note that the boundary
 condition is thus not relevant here.
 
@@ -915,8 +915,7 @@ Of course, it is possible to get a tensor iterator from the line iterator also:
 
 There would be an `ImageIterator`, `ImageConstIterator`, `LineIterator`, `LineConstIterator`,
 `TensorIterator` and `TensorConstIterator`. They're all templates, with the template argument
-matching the data type of the image that they iterate over. These iterator classes are
-friends to `dip::Image` (not really necessary, but will make the code easier to read).
+matching the data type of the image that they iterate over.
 
 The iterator can be constructed with specific boundary conditions, and with a processing dimension:
 
@@ -935,13 +934,13 @@ over the view.
 and `it[n]` gets a reference to the nth tensor element. There should be some way to access
 neighbors as well (**TODO**). Maybe something like this:
 
-    it.at(i,j,k)
-    it.atWithBoundaryCheck(i,j,k)
-    it.at(coords)
-    it.atWithBoundaryCheck(coords)
-    it.atOffset(o) // adds offset to pointer, can provide a list of pre-computed values.
+    it.At(i,j,k)
+    it.AtWithBoundaryCheck(i,j,k)
+    it.At(coords)
+    it.AtWithBoundaryCheck(coords)
+    it.AtOffset(o) // adds offset to pointer, can provide a list of pre-computed values.
 
-(None of these allow accessing various tensor elements, this needs a solution). `atOffset()`
+(None of these allow accessing various tensor elements, this needs a solution). `AtOffset()`
 would combine with a neighborhood list in various forms (e.g. a pixel table).
 
 It should also be possible to move the iterator to any random pixel inside the image. This
@@ -971,99 +970,6 @@ for that dimension is always 0. If the `ProcessingDimension` is negative, no dim
 can be different for each of the dimensions.
 
 `IsAtEnd` tests for `pointer_ == nullptr`.
-
-Implementation could look like this:
-
-    template< typename T >
-    class ImageIterator {
-       private:
-          UnsignedArray coordinates_;
-          T* pointer_;
-          UnsignedArray const& sizes_;  // Copied out of image
-          IntegerArray const& strides_; // Copied out of image
-          dip::uint tensorElements_;    // Copied out of image
-          dip::sint tensorStride_;      // Copied out of image
-          dip::sint procDim_;
-          BoundaryConditionArray boundaryCondition_;
-       public:
-          ImageIterator( Image const& image, dip::sint procDim = -1 );
-          ImageIterator( Image const& image, BoundaryConditionArray const& bc, dip::sint procDim = -1 );
-          bool operator==( ImageIterator const& other ) { return pointer_ == other.pointer_; }
-          bool operator!=( ImageIterator const& other ) { return pointer_ != other.pointer_; }
-          ImageIterator& operator++();
-          T& operator*() { return *pointer_; }
-          T& operator[]( dip::sint n ) { return *( pointer_ + n * tensorStride_ ); }
-          bool IsAtEnd() { return pointer_ == nullptr; }
-          UnsignedArray const& Coordinates() { return coordinates_; }
-          T* Pointer() { return pointer_; }
-          dip::uint Index();
-          dip::sint ProcessingDimension() { return procDim_; }
-          void SetProcessingDimension( dip::sint d );
-          void RemoveProcessingDimension() { SetProcessingDimension( -1 ); }
-          BoundaryCondition BoundaryCondition( d );
-          void SetBoundaryCondition( dip::uint d, BoundaryCondition const& bc );
-          void SetBoundaryCondition( BoundaryConditionArray const& bc );
-          TensorIterator< T > begin() { return TensorIterator< T >( pointer_, tensorStride_ ); }
-          TensorIterator< T > end() { return TensorIterator< T >( pointer_ + tensorStride_ * tensor_Elements,
-                                                             tensorStride_ ); }
-          friend template< typename T > class LineIterator;
-          dip::LineIterator< T > LineIterator();
-    }
-
-    template< typename T >
-    class LineIterator {
-       private:
-          dip::sint coordinate_;
-          T* pointer_;
-          dip::uint size_;
-          dip::sint stride_;
-          dip::uint tensorElements_;
-          dip::sint tensorStride_;
-       public:
-          LineIterator( ImageIterator const& img_it ) :
-             coordinate_( 0 ),
-             pointer_( img_it.pointer_ ),
-             size_( img_it.sizes_[ img_it.procDim_ ]),
-             stride_( img_it.strides_[ img_it.procDim_ ]),
-             tensorElements_( img_it.tensorElements_ ),
-             tensorStride_( img_it.tensorStride_ )
-             {
-               // in case the ImageIterator is not at the beginning of the line: rewind
-               pointer_ -= img_it.coordinate_[ img_it.procDim ] * stride_;
-             };
-          bool operator==( LineIterator const& other ) { return pointer_ == other.pointer_; }
-          bool operator!=( LineIterator const& other ) { return pointer_ != other.pointer_; }
-          LineIterator& operator++() { ++coordinate_; pointer_ += stride_; }
-          LineIterator& operator--() { --coordinate_; pointer_ -= stride_; }
-          LineIterator& operator+=( dip::sint n ) { coordinate_ += n; pointer_ += n * stride_; }
-          LineIterator& operator-=( dip::sint n ) { coordinate_ -= n; pointer_ -= n * stride_; }
-          T& operator*() { return *pointer_; }
-          T& operator[]( dip::sint n ) { return *( pointer_ + n * tensorStride_ ); }
-          bool IsAtEnd() { return coordinate_ >= size_; }
-          dip::uint Coordinate() { return coordinate_; }
-          T* Pointer() { return pointer_; }
-          TensorIterator< T > begin() { return TensorIterator< T >( pointer_, tensorStride_ ); }
-          TensorIterator< T > end() { return TensorIterator< T >( pointer_ + tensorStride_ * tensor_Elements,
-                                                             tensorStride_ ); }
-    }
-
-    template< typename T >
-    class TensorIterator {
-       private:
-          T* pointer_;
-          dip::sint stride_;
-       public:
-          TensorIterator( T* pointer, dip::sint stride ): pointer_( pointer ), stride_( stride ) {}
-          bool operator==( TensorIterator const& other ) { return pointer_ == other.pointer_; }
-          bool operator!=( TensorIterator const& other ) { return pointer_ != other.pointer_; }
-          LineIterator& operator++() { pointer_ += stride_; }
-          LineIterator& operator--() { pointer_ -= stride_; }
-          LineIterator& operator+=( dip::sint n ) { pointer_ += n * stride_; }
-          LineIterator& operator-=( dip::sint n ) { pointer_ -= n * stride_; }
-          T& operator*() { return *pointer_; }
-          T* Pointer() { return pointer_; }
-          // Note: >, >=, <, <=, [], it_a-it_b and n+it must exist for this to be a full BidirectionalIterator.
-    }
 
 **TODO**: How do we do joint iterators, that iterate over two images at once? Doing two
 separate iterators is less efficient, as the increment operator is not trivial and would

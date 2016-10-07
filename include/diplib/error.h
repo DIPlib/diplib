@@ -43,6 +43,7 @@ constexpr char const* IMAGE_NOT_VALID = "Image is not valid";
 
 // image data type errors
 constexpr char const* DATA_TYPE_NOT_SUPPORTED = "Data type not supported";
+constexpr char const* WRONG_DATA_TYPE = "Data type does not match";
 
 // image dimensionality and dimensions error
 constexpr char const* DIMENSIONALITY_EXCEEDS_LIMIT = "Dimensionality exceeds address limit";
@@ -62,11 +63,8 @@ constexpr char const* MASK_TOO_MANY_DIMENSIONS = "Mask image has too many dimens
 
 // indexing errors
 constexpr char const* INDEX_OUT_OF_RANGE = "Index out of range";
-
-// error produced by the interface to DIPlib
-constexpr char const* INTERFACE_ERROR = "The interface with DIPlib produced an error";
-constexpr char const* IF_IMAGE_TYPE_NOT_SUPPORTED = "The interface does not support the DIPlib image type";
-constexpr char const* IF_DATA_TYPE_NOT_SUPPORTED = "The interface does not support the DIPlib data type";
+constexpr char const* COORDINATES_OUT_OF_RANGE = "Coordinates out of range";
+constexpr char const* ITERATOR_NOT_VALID = "Iterator is not valid";
 
 // miscellaneous errors
 constexpr char const* NOT_IMPLEMENTED = "Functionality has not (yet) been implemented";

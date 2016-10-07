@@ -69,7 +69,10 @@ if(Matlab_FOUND)
    matlab_add_mex(NAME mextest_function SRC test/mextest_function.cpp LINK_TO DIP)
    set_target_properties(mextest_function PROPERTIES EXCLUDE_FROM_ALL 1)
 
-   add_custom_target(mex DEPENDS mextest mextest_function)
+   matlab_add_mex(NAME mextest_iterators SRC test/mextest_iterators.cpp LINK_TO DIP)
+   set_target_properties(mextest_iterators PROPERTIES EXCLUDE_FROM_ALL 1)
+
+   add_custom_target(mex DEPENDS mextest mextest_function mextest_iterators)
 
 endif(Matlab_FOUND)
 
