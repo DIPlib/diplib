@@ -74,7 +74,7 @@ methods.
 
 In *DIPlib*, methods to the core `dip::Image` class query and manipulate image
 properties, not pixel data (with the exception of `dip::Image::Copy` and
-`dip::Image::Set`). Filters and other algorithms that manipulate image data are
+`dip::Image::Fill`). Filters and other algorithms that manipulate image data are
 always functions or function objects.
 
 We use function objects sparingly in *DIPlib*. *ITK*, for example, has taken

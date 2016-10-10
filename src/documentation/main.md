@@ -45,9 +45,9 @@ output makes it possible to measure more precisely.
 
 There are many other unique things about *DIPlib*, we encourage you to
 explore the documentation to learn more about it. A good place to start
-is with the documentation for the dip::Image class. We also recommend you
-read [a page documenting design decisions](#design). All image processing
-and analysis functions are defined in the \ref dip namespace.
+is with the documentation for the `dip::Image` class. We also recommend you
+read \ref design "a page documenting design decisions". All image processing
+and analysis functions are defined in the `#dip` namespace.
 
 A short history
 ---------------
