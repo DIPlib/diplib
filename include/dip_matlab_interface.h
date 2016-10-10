@@ -455,7 +455,7 @@ dip::Image GetImage( mxArray const* mx ) {
          dip::Image imag( p_imag, dt, sizes, strides, tensor, tstride, nullptr );
          out.Imaginary().Copy( imag );
       } else {
-         out.Imaginary().Set( 0.0 );
+         out.Imaginary().Fill( 0.0 );
       }
       return out;
    } else {

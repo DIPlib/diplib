@@ -1104,19 +1104,19 @@ class Image {
       /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
       /// value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
-      void Set( dip::sint v );
+      void Fill( dip::sint v );
 
       /// Sets all samples in the image to the value `v`. The function is defined
       /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
       /// value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
-      void Set( dfloat v );
+      void Fill( dfloat v );
 
       /// Sets all samples in the image to the value `v`. The function is defined
       /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
       /// value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
-      void Set( dcomplex v );
+      void Fill( dcomplex v );
 
       /// Extracts the fist sample in the first pixel (At(0,0)[0]), casted
       /// to a signed integer of maximum width; for complex values

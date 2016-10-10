@@ -789,7 +789,7 @@ void Image::Convert( dip::DataType dt ) {
 
 //
 template< typename inT >
-static inline void InternSet( Image& dest, inT v ) {
+static inline void InternFill( Image& dest, inT v ) {
    dip_ThrowIf( !dest.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint sstride_d;
    void* porigin_d;
@@ -823,16 +823,16 @@ static inline void InternSet( Image& dest, inT v ) {
    }
 }
 
-void Image::Set( dip::sint v ) {
-   InternSet( * this, v );
+void Image::Fill( dip::sint v ) {
+   InternFill( *this, v );
 }
 
-void Image::Set( dfloat v ) {
-   InternSet( * this, v );
+void Image::Fill( dfloat v ) {
+   InternFill( *this, v );
 }
 
-void Image::Set( dcomplex v ) {
-   InternSet( * this, v );
+void Image::Fill( dcomplex v ) {
+   InternFill( *this, v );
 }
 
 // Casting the first sample (the first tensor component of the first pixel) to dcomplex.
