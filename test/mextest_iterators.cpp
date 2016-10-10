@@ -21,11 +21,14 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          out.Forge();
       }
 
-      dip::dfloat v = 0;
-      for( dip::ImageIterator<dip::dfloat> it( out ); it; ++it ) {
-         *it = v;
+      dip::sint v = 0;
+      dip::ImageIterator<dip::dfloat> it( out );
+      do {
+         if( v % 2 ) {
+            *it = -( *it );
+         }
          ++v;
-      }
+      } while( ++it );
 
       plhs[ 0 ] = mi.GetArray( out );
 

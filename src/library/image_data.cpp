@@ -12,7 +12,7 @@
 #include <algorithm>
 
 #include "diplib.h"
-#include "diplib/ndloop.h"
+#include "diplib/iterators.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "copybuffer.h"
@@ -707,16 +707,14 @@ void Image::Copy( Image const& src ) {
    // Make nD loop
    //std::cout << "dip::Image::Copy: nD loop\n";
    dip::uint processingDim = Framework::OptimalProcessingDim( src );
-   dip::sint offset_s;
-   dip::sint offset_d;
-   UnsignedArray coords = NDLoop::Init( src, *this, offset_s, offset_d );
+   auto it = dip::GenericJointImageIterator( src, *this, processingDim );
    do {
       CopyBuffer(
-            src.Pointer( offset_s ),
+            it.InPointer(),
             src.dataType_,
             src.strides_[ processingDim ],
             src.tensorStride_,
-            Pointer( offset_d ),
+            it.OutPointer(),
             dataType_,
             strides_[ processingDim ],
             tensorStride_,
@@ -724,7 +722,7 @@ void Image::Copy( Image const& src ) {
             tensor_.Elements(),
             std::vector< dip::sint > {}
       );
-   } while( NDLoop::Next( coords, offset_s, offset_d, sizes_, src.strides_, strides_, processingDim ));
+   } while( ++it );
 }
 
 
@@ -758,15 +756,14 @@ void Image::Convert( dip::DataType dt ) {
             // Make nD loop
             //std::cout << "dip::Image::Convert: in-place, nD loop\n";
             dip::uint processingDim = Framework::OptimalProcessingDim( *this );
-            dip::sint offset;
-            UnsignedArray coords = NDLoop::Init( *this, offset );
+            auto it = GenericImageIterator( *this, processingDim );
             do {
                CopyBuffer(
-                     Pointer( offset ),
+                     it.Pointer(),
                      dataType_,
                      strides_[ processingDim ],
                      tensorStride_,
-                     Pointer( offset ),
+                     it.Pointer(),
                      dt,
                      strides_[ processingDim ],
                      tensorStride_,
@@ -774,7 +771,7 @@ void Image::Convert( dip::DataType dt ) {
                      tensor_.Elements(),
                      std::vector< dip::sint > {}
                );
-            } while( NDLoop::Next( coords, offset, sizes_, strides_, processingDim ));
+            } while( ++it );
          }
          dataType_ = dt;
       } else {
@@ -811,11 +808,10 @@ static inline void InternSet( Image& dest, inT v ) {
    } else {
       // Make nD loop
       dip::uint processingDim = Framework::OptimalProcessingDim( dest );
-      dip::sint offset_d;
-      UnsignedArray coords = NDLoop::Init( dest, offset_d );
+      auto it = GenericImageIterator( dest, processingDim );
       do {
          FillBuffer(
-               dest.Pointer( offset_d ),
+               it.Pointer(),
                dest.DataType(),
                dest.Stride( processingDim ),
                dest.TensorStride(),
@@ -823,7 +819,7 @@ static inline void InternSet( Image& dest, inT v ) {
                dest.TensorElements(),
                v
          );
-      } while( NDLoop::Next( coords, offset_d, dest.Sizes(), dest.Strides(), processingDim ) );
+      } while( ++it );
    }
 }
 
