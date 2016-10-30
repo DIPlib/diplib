@@ -16,12 +16,11 @@
 #ifndef DIP_TYPES_H
 #define DIP_TYPES_H
 
-#include <cstdlib>   // std::malloc, std::realloc, std::free
-#include <cstddef>   // std::size_t
+#include <cstddef>   // std::size_t, std::ptrdiff_t
 #include <cstdint>   // std::uint8_t, etc.
 #include <complex>
 #include <vector>
-#include <bitset>
+#include <string>
 
 #include "diplib/dimensionarray.h"
 #include "diplib/error.h"
@@ -110,6 +109,31 @@ using UnsignedArray = DimensionArray< dip::uint >;  ///< An array to hold dimens
 using FloatArray = DimensionArray< dip::dfloat >;   ///< An array to hold filter parameters.
 using BooleanArray = DimensionArray< bool >;        ///< An array used as a dimension selector.
 
+/* THESE DON'T COMPILE
+
+/// Cast an UnsignedArray to an IntegerArray.
+explicit operator IntegerArray( UnsignedArray in ) {
+   IntegerArray out( in.size() );
+   auto init = in.begin();
+   auto outit = out.begin();
+   for( ; init != in.end() ; ++init, ++outit ) {
+      *outit = static_cast< dip::sint >( *init );
+   }
+   return out;
+}
+
+/// Cast an IntegerArray to an UnsignedArray.
+explicit operator UnsignedArray( IntegerArray in ) {
+   UnsignedArray out( in.size() );
+   auto init = in.begin();
+   auto outit = out.begin();
+   for( ; init != in.end() ; ++init, ++outit ) {
+      *outit = static_cast< dip::uint >( *init );
+   }
+   return out;
+}
+
+*/
 
 //
 // Strings, used for parameters and other things
@@ -188,36 +212,6 @@ struct Range {
 };
 
 using RangeArray = DimensionArray< Range >;  ///< An array of ranges
-
-
-//
-// Boundary conditions, or what values to read when indexing outside an image boundary
-//
-
-/// Ennumerates various ways of extending image data beyond its boundary. This ennumerator
-/// is used by the framework functions and some internal functions. Externally, the
-/// boundary condition is represented by strings.
-enum class BoundaryCondition {
-      SYMMETRIC_MIRROR,          ///< The data is mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
-      ASYMMETRIC_MIRROR,         ///< The data is mirrored and inverted.
-      PERIODIC,                  ///< The data is repeated periodically, with the value at -1 equal to the value of the last pixel.
-      ASYMMETRIC_PERIODIC,       ///< The data is repeated periodically and inverted.
-      ADD_ZEROS,                 ///< The boundary is filled with zeros.
-      ADD_MAX_VALUE,             ///< The boundary is filled with the max value for the data type.
-      ADD_MIN_VALUE,             ///< The boundary is filled with the min value for the data type.
-      ZERO_ORDER_EXTRAPOLATE,    ///< The value at the border is repeated indefinitely.
-      FIRST_ORDER_EXTRAPOLATE,   ///< A linear function is defined based on the two values closest to the border.
-      SECOND_ORDER_EXTRAPOLATE,  ///< A quadratic function is defined based on the two values closest to the border.
-      DEFAULT = SYMMETRIC_MIRROR ///< The default value, currently equal to SYMMETRIC_MIRROR.
-};
-
-using BoundaryConditionArray = DimensionArray< BoundaryCondition >; ///< An array to hold boundary conditions.
-
-/// Convert a string to a boundary condition.
-BoundaryCondition StringToBoundaryCondition( String bc );
-
-/// Convert an array of strings to an array of boundary conditions.
-BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray bc );
 
 
 //

@@ -10,7 +10,7 @@
 #define DIP_FRAMEWORK_H
 
 #include "diplib.h"
-
+#include "diplib/boundary.h"
 
 /// \file
 /// Declares the dip::Framework namespace.

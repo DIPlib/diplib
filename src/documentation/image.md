@@ -73,8 +73,9 @@ the data types of images.
 
 For maximum flexibility in the relationship between image coordinates
 and how the samples are stored in memory, an `%Image` object specifies a
-**stride** array (`dip::Image::Strides`). This array indicates, for each dimension, how many
-samples to skip to get to the neighboring pixel in the given dimension.
+**stride** array (`dip::Image::Strides`). This array indicates, for each
+dimension, how many samples to skip to get to the neighboring pixel in the
+given dimension.
 For example, to go from a pixel at coordinates (`x`,`y`) to the neighbour
 at coordinates (`x+1`,`y`), you would need to increment the data pointer
 with `strides[0]`. In a 2D image, the pixel at coordinates (`x`,`y`) can be
@@ -139,7 +140,8 @@ Therefore, it is possible to change the image such that the tensor elements
 form a new spatial dimension (`dip::Image::TensorToSpatial`), or such that one
 spatial dimension is converted to a tensor (`dip::Image::SpatialToTensor`),
 without moving the samples. It is also possible to change the shape of the
-tensor without moving data (`dip::Image::ReshapeTensorAsVector`, `dip::Image::Transpose`).
+tensor without moving data (`dip::Image::ReshapeTensorAsVector`,
+`dip::Image::Transpose`).
 
 The shape of the tensor is represented by the enumerator `dip::Tensor::Shape`
 (obtained through `dip::Image::Shape`).
@@ -158,8 +160,8 @@ Given
     dip::Image img( dip::uint16, { 10, 12, 20, 8, 18 } );
     img.Forge();
 
-Then \link dip::Image::Origin `img.Origin()`\endlink is a `void*` pointer to the first pixel
-(or rather the first sample of in the image).
+Then \link dip::Image::Origin `img.Origin()`\endlink is a `void*` pointer to
+the first pixel (or rather the first sample of in the image).
 This pointer needs to be cast to the type given by 
 \link dip::Image::DataType `img.DataType()`\endlink to be used, as in:
 
@@ -177,7 +179,8 @@ to the right data type (this leads to a more generic algorithm) by using the
 
     (dip::uint8*)img.Origin() + offset * img.DataType().SizeOf();
 
-This computation is performed by \link dip::Image::Pointer `img.Pointer( offset )`\endlink.
+This computation is performed by
+\link dip::Image::Pointer `img.Pointer( offset )`\endlink.
 
 Note that the offset is a signed integer, and can be negative, because strides
 can be negative also.
@@ -189,9 +192,10 @@ The offset is computed from coordinates using the image's strides:
       offset += coords[ii] * img.Stride( ii );
     }
 
-This computation is performed by \link dip::Image::Offset `img.Offset( coords )`\endlink.
-\link dip::Image::Pointer `img.Pointer( coords )`\endlink simply chains this operation
-with the previous one. The inverse operation is performed by
+This computation is performed by
+\link dip::Image::Offset `img.Offset( coords )`\endlink.
+\link dip::Image::Pointer `img.Pointer( coords )`\endlink simply chains this
+operation with the previous one. The inverse operation is performed by
 \link dip::Image::OffsetToCoordinates `img.OffsetToCoordinates( offset )`\endlink.
 Two images of the same size do not necessarily share offset values.
 Both the dimensions and the strides must be identical for the offset to be
@@ -398,11 +402,11 @@ into a non-color image.
 
 An object of type `dip::ColorSpaceManager` is used to convert an image from one
 known color space to another. This object is the only place in the library where
-there is knowledge about color spaces. Create one of these objects for any application
-that requires color space knowledge. It is possible to register new color spaces and color
-space conversion functions with this object. Other functions that use specific
-color spaces will have knowledge only of those specific color spaces, and will
-expect their input to be in one of those color spaces.
+there is knowledge about color spaces. Create one of these objects for any
+application that requires color space knowledge. It is possible to register new
+color spaces and color space conversion functions with this object. Other functions
+that use specific color spaces will have knowledge only of those specific color
+spaces, and will expect their input to be in one of those color spaces.
 
 
 [//]: # (--------------------------------------------------------------)

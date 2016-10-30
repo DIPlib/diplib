@@ -12,6 +12,7 @@
 #include <utility>
 #include "diplib/error.h"
 #include "diplib/types.h"
+#include "diplib/boundary.h"
 #include "diplib/image.h"
 
 /// \file
@@ -176,6 +177,8 @@ using ConstSampleIterator = SampleIterator< T const >;
 ///
 /// Satisfies all the requirements for a mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
 ///
+/// Note that when an image is stripped or reforged, all its iterators are invalidated.
+///
 /// \see ImageIterator, JointImageIterator, SampleIterator
 template< typename T >
 class LineIterator {
@@ -268,8 +271,10 @@ class LineIterator {
       bool IsAtEnd() const { return ptr_ == nullptr; }
       /// Test to see if the iterator is still pointing at a pixel
       operator bool() const { return ptr_ != nullptr; }
-      /// Return the current coordinates
+      /// Return the current coordinate along the line
       dip::uint const& Coordinate() const { return coord_; }
+      /// Return the number of pixels along the line
+      dip::uint const& Length() const { return size_; }
       /// Return the current pointer
       pointer Pointer() const { return ptr_; }
       void SetBoundaryCondition( BoundaryCondition bc ) {
@@ -329,6 +334,8 @@ using ConstLineIterator = LineIterator< T const >;
 ///     it.begin() .. it.end()
 ///
 /// Satisfies all the requirements for a mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
+///
+/// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
 /// \see JointImageIterator, LineIterator, SampleIterator, GenericImageIterator
 template< typename T >
@@ -540,6 +547,8 @@ using ConstImageIterator = ImageIterator< T const >;
 /// Instead of `GetLineIterator`, use `GetInLineIterator` and `GetOutLineIterator`. Likewise, instead of
 /// `Pointer` and `Offset` methods, use `InPointer`, `OutPointer`, `InOffset` and `OutOffset`.
 ///
+/// Note that when an image is stripped or reforged, all its iterators are invalidated.
+///
 /// \see ImageIterator, LineIterator, SampleIterator, GenericJointImageIterator
 // TODO: Allow input and output image to differ in size along the processing dimension.
 template< typename inT, typename outT >
@@ -746,6 +755,24 @@ inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, 
 /// It is not possible to obtain line or sample iterators from this iterator, and it has no support for
 /// accessing pixels in the neighborhood of the referenced pixel.
 ///
+/// Example usage from `dip::Image::Fill`:
+///
+///     dip::uint processingDim = Framework::OptimalProcessingDim( dest );
+///     auto it = GenericImageIterator( dest, processingDim );
+///        do {
+///        FillBuffer(
+///              it.Pointer(),
+///              dest.DataType(),
+///              dest.Stride( processingDim ),
+///              dest.TensorStride(),
+///              dest.Size( processingDim ),
+///              dest.TensorElements(),
+///              v
+///        );
+///     } while( ++it );
+///
+/// Note that when an image is stripped or reforged, all its iterators are invalidated.
+///
 /// \see ImageIterator, GenericJointImageIterator
 class GenericImageIterator {
    public:
@@ -872,7 +899,7 @@ inline void swap( GenericImageIterator& v1, GenericImageIterator& v2 ) {
 /// It is not possible to obtain line or sample iterators from this iterator, and it has no support for
 /// accessing pixels in the neighborhood of the referenced pixel.
 ///
-/// Example usage from `dip::Image:Copy`:
+/// Example usage from `dip::Image::Copy`:
 ///
 ///     dip::uint processingDim = Framework::OptimalProcessingDim( src );
 ///     auto it = dip::GenericJointImageIterator( src, *this, processingDim );
@@ -891,6 +918,8 @@ inline void swap( GenericImageIterator& v1, GenericImageIterator& v2 ) {
 ///              std::vector< dip::sint > {}
 ///        );
 ///     } while( ++it );
+///
+/// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
 /// \see JointImageIterator, GenericImageIterator
 class GenericJointImageIterator {

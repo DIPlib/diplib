@@ -15,8 +15,7 @@
 #ifndef DIP_DIMENSIONARRAY_H
 #define DIP_DIMENSIONARRAY_H
 
-#include <cstdlib>   // std::malloc, std::realloc, std::free
-#include <cstddef>   // std::size_t
+#include <cstdlib>   // std::malloc, std::realloc, std::free, std::size_t
 #include <initializer_list>
 #include <iterator>
 #include <algorithm>

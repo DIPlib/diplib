@@ -39,7 +39,6 @@ namespace E {
 // image creation errors
 constexpr char const* IMAGE_NOT_RAW = "Image is not raw";
 constexpr char const* IMAGE_NOT_FORGED = "Image is not forged";
-constexpr char const* IMAGE_NOT_VALID = "Image is not valid";
 
 // image data type errors
 constexpr char const* DATA_TYPE_NOT_SUPPORTED = "Data type not supported";
@@ -74,15 +73,12 @@ constexpr char const* ARRAY_ILLEGAL_SIZE = "Array has an illegal size";
 constexpr char const* ARRAY_SIZES_DONT_MATCH = "Array sizes don't match";
 constexpr char const* ARRAY_OVERFLOW = "Array overflow";
 
-// boundary and filter shape errors
-constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supported";
-constexpr char const* BOUNDARY_CONDITION_NOT_SUPPORTED = "Boundary condition is not supported";
-
 // function parameter errors
 constexpr char const* INVALID_PARAMETER = "Parameter has invalid value";
 constexpr char const* INVALID_FLAG = "Invalid flag";
 constexpr char const* PARAMETER_OUT_OF_RANGE = "Parameter value out of range";
 constexpr char const* ARRAY_PARAMETER_WRONG_LENGTH = "Array parameter has the wrong number of elements";
+constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supported";
 
 // pixel table errors
 constexpr char const* PIXEL_TABLE_IS_NOT_ALLOCATED = "PixelTable is not allocated";
