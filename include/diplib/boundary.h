@@ -10,8 +10,7 @@
 
 #include <limits>
 
-#include "diplib/types.h"
-#include "diplib/numeric.h"
+#include "diplib.h"
 
 
 /// \file
@@ -51,10 +50,9 @@ BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray bc ); //
 
 
 /// Copies the sample values at `coords` into the output iterator `it`. The output iterator needs to
-/// have `tensorElements` spaces available. Note that a simple pointer can be used here. `sizes`,
-/// `strides`, `tensorElements` and `tensorStrides` describe the image object, and `origin` is the
-/// image's origin pointer, cast to the proper data type. If `coords` falls outside the image, then
-/// the boundary condition `bc` is used to determine what values to write into the output iterator.
+/// have `tensorElements` spaces available. Note that a simple pointer can be used here. If `coords`
+/// falls outside the image, then the boundary condition `bc` is used to determine what values to write
+/// into the output iterator.
 ///
 /// `dip::BoundaryCondition::FIRST_ORDER_EXTRAPOLATE` and `dip::BoundaryCondition::SECOND_ORDER_EXTRAPOLATE`
 /// do the same thing as `dip::BoundaryCondition::ZERO_ORDER_EXTRAPOLATE`, because their functionality
@@ -62,73 +60,64 @@ BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray bc ); //
 /// of these boundary conditions.
 template< typename DataType, typename OutputIterator >
 void ReadPixelWithBoundaryCondition(
-      IntegerArray coords,
-      DataType* origin,
-      UnsignedArray sizes,
-      IntegerArray strides,
-      dip::uint tensorElements,
-      dip::sint tensorStride,
-      BoundaryConditionArray bc,
-      OutputIterator it
+      Image const& img,
+      OutputIterator it,
+      IntegerArray coords, // getting a local copy so we can modify it
+      BoundaryConditionArray const& bc
 ) {
-   dip_ThrowIf( coords.size() != sizes.size(), E::ARRAY_SIZES_DONT_MATCH );
+   dip_ThrowIf( coords.size() != img.Dimensionality(), E::ARRAY_ILLEGAL_SIZE );
    bool invert = false;
-   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
-      dip::sint index = coords[ ii ];
-      if(( index < 0 ) || ( index >= sizes[ ii ] )) {
+   for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
+      dip::sint sz = img.Size( ii );
+      if(( coords[ ii ] < 0 ) || ( coords[ ii ] >= sz )) {
          switch( bc[ ii ] ) {
             case BoundaryCondition::ASYMMETRIC_MIRROR:
                invert = true;
                // fall-through on purpose!
             case BoundaryCondition::SYMMETRIC_MIRROR:
-               index = index % ( static_cast< dip::sint >( sizes[ ii ] ) * 2 );
-               if( index >= sizes[ ii ] ) {
-                  index = 2 * sizes[ ii ] - index - 1;
+               coords[ ii ] = coords[ ii ] % ( sz * 2 );
+               if( coords[ ii ] >= sz ) {
+                  coords[ ii ] = 2 * sz - coords[ ii ] - 1;
                }
                break;
             case BoundaryCondition::ASYMMETRIC_PERIODIC:
                invert = true;
                // fall-through on purpose!
             case BoundaryCondition::PERIODIC:
-               index = index % ( static_cast< dip::sint >( sizes[ ii ] ) );
+               coords[ ii ] = coords[ ii ] % ( sz );
                break;
             case BoundaryCondition::ADD_ZEROS:
-               for( dip::uint jj = 0; jj < tensorElements; ++jj, ++it ) {
+               for( dip::uint jj = 0; jj < img.TensorElements(); ++jj, ++it ) {
                   *it = 0;
                }
                return; // We're done!
             case BoundaryCondition::ADD_MAX_VALUE:
-               for( dip::uint jj = 0; jj < tensorElements; ++jj, ++it ) {
+               for( dip::uint jj = 0; jj < img.TensorElements(); ++jj, ++it ) {
                   *it = std::numeric_limits< DataType >::max();
                }
                return; // We're done!
             case BoundaryCondition::ADD_MIN_VALUE:
-               for( dip::uint jj = 0; jj < tensorElements; ++jj, ++it ) {
+               for( dip::uint jj = 0; jj < img.TensorElements(); ++jj, ++it ) {
                   *it = std::numeric_limits< DataType >::lowest();
                }
                return; // We're done!
             case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
             case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:  // not implemented, difficult to implement in this framework.
             case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
-               index = clamp( index, dip::sint( 0 ), static_cast< dip::sint >( sizes[ ii ] - 1 ));
+               coords[ ii ] = clamp( coords[ ii ], dip::sint( 0 ), sz - 1 );
                break;
          }
       }
    }
-   DataType* in = origin;
-   for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
-      in += coords[ ii ] * strides[ ii ];
-   }
-   for( dip::uint jj = 0; jj < tensorElements; ++jj ) {
-      *it = *in;
+   DataType* in = static_cast< DataType* >( img.Pointer( coords ));
+   for( dip::uint jj = 0; jj < img.TensorElements(); ++jj ) {
+      *it = invert ? ( - *in ) : ( *in );
       ++it;
-      in += tensorStride;
+      in += img.TensorStride();
    }
    return; // We're done!
-
 }
 
-class Image; // Forward declarator
 
 /// Extends the image `in` by `boundary` along each dimension. The new regions are filled using
 /// the boundary condition `bc`. If `bc` is an empty array, the default boundary condition is
