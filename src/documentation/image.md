@@ -81,9 +81,9 @@ at coordinates (`x+1`,`y`), you would need to increment the data pointer
 with `strides[0]`. In a 2D image, the pixel at coordinates (`x`,`y`) can be
 reached by (assuming `dip::DT_UINT8` data type):
 
-    dip::uint8* origin = img.Data();
+    dip::uint8* origin = img.Origin();
     dip::IntegerArray strides = img.Strides();
-    dip::uint8 value = *( origin + x * strides[0] + y * strudes[1] );
+    dip::uint8 value = *( origin + x * strides[0] + y * strides[1] );
 
 This concept naturally scales with image dimensionality. Strides can be
 negative, and need not be ordered in any particular way. This allows an
@@ -111,6 +111,10 @@ examples:
   sizes and strides associated to these dimensions), and inverting one
   of the dimensions (as in the case of the mirrored image).
 
+Arbitrary strides also allow data segments from other software to be
+encapsulated by an `%Image` object. For example, MATLAB stores images
+with columns contiguous in memory, requiring `strides[1] == 1`.
+
 All routines in the library support images with arbitrary strides.
 
 The various elements of a tensor are also accessed through a stride,
@@ -133,7 +137,10 @@ many samples per pixel the image has.
 A tensor image is stored into a single memory block. In the same way that
 strides indicate how to skip from one pixel to another (as described in the
 section \ref strides), the `dip::Image::TensorStride` indicates how to skip
-from one tensor element to another.
+from one tensor element to another. This allows e.g. a multi-channel image to
+be stored as either interleaved per pixel, per line or per plane, and as long
+as an algorithm uses the strides, it does not need to know how the channels
+are interleaved.
 
 All tensor elements are stored as if they composed a single spatial dimension.
 Therefore, it is possible to change the image such that the tensor elements
@@ -175,7 +182,8 @@ to access that pixel:
 
 Alternatively, it is possible to compute the pixel's pointer without casting
 to the right data type (this leads to a more generic algorithm) by using the
-`dip::DataType::SizeOf` operator:
+`dip::DataType::SizeOf` operator (we cast to `dip::uint8` pointer to do
+pointer arithmetic in bytes):
 
     (dip::uint8*)img.Origin() + offset * img.DataType().SizeOf();
 
@@ -205,7 +213,10 @@ The coordinates to a pixel simply indicate the number of pixels to skip along
 each dimension. The first dimension (dimension 0) is typically `x`, but this
 is not evident anywhere in the library, so it is the application using the
 library that would make this decision. Coordinates start at 0, and should be
-smaller than the `img.Sizes()` value for that dimension.
+smaller than the `img.Sizes()` value for that dimension. They are encoded
+using a `dip::UnsignedArray`. However, some functions take coordinates as
+a `dip::IntegerArray`. These are the functions that do not expect the coordinates
+to indicate a pixel inside the image domain.
 
 The **index** to a pixel (a.k.a. "linear index") is a value that increases
 monotonically as one moves from one pixel to the next, first along dimension 0,
@@ -234,7 +245,7 @@ which then leads to an offset or a pointer.
 The function `dip::Image::At` with a scalar argument uses linear indices, and
 consequently is not efficient for images with dimensionality of 2 or more.
 
-Oftentimes it is possible to determine a simple stride that will allow you to
+Oftentimes it is possible to determine a **simple stride** that will allow you to
 access every pixel in an image. When an image is a view into another image,
 this is not necessarily possible, but any default image (i.e. with normal strides)
 has this possibility. This simple stride allows one to view the image as a
@@ -246,8 +257,9 @@ normal strides. See `dip::Image::HasNormalStrides`,
 `dip::Image::HasSimpleStride`, `dip::Image::GetSimpleStrideAndOrigin`.
 
 To walk along all pixels in an arbitrary image (i.e. arbitrary dimensionality
-and strides) in the order given by the linear index, use the image iterators
-defined in diplib/iterators.h:
+and strides) in the order given by the linear index, use the **image iterators**
+defined in `diplib/iterators.h`
+(see \ref iterators "Using iterators to implement filters"):
 
     dip::ImageIterator< dip::uint16 > it( img );
     dip::uint16 ii = 0;

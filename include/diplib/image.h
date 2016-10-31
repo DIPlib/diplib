@@ -74,6 +74,9 @@ class ExternalInterface {
 ///     auto coords1 = coordComp( offset1 );
 ///     auto coords2 = coordComp( offset2 );
 ///     auto coords3 = coordComp( offset3 );
+///
+/// Note that the coordinates must be inside the image domain, if the offset given
+/// does not correspond to one of the image's pixels, the result is meaningless.
 class CoordinatesComputer {
    public:
       CoordinatesComputer( UnsignedArray const& sizes, IntegerArray const& strides );
@@ -808,9 +811,23 @@ class Image {
       /// pointer to the right type before use. This is not the most efficient
       /// way of indexing many pixels in the image.
       ///
+      /// If `coords` is not within the image domain, an exception is thrown.
+      ///
       /// The image must be forged.
       /// \see Origin, Offset, OffsetToCoordinates
       void* Pointer( UnsignedArray const& coords ) const {
+         return Pointer( Offset( coords ));
+      }
+
+      /// Get a pointer to the pixel given by the coordinates index. Cast the
+      /// pointer to the right type before use. This is not the most efficient
+      /// way of indexing many pixels in the image.
+      ///
+      /// `coords` can be outside the image domain.
+      ///
+      /// The image must be forged.
+      /// \see Origin, Offset, OffsetToCoordinates
+      void* Pointer( IntegerArray const& coords ) const {
          return Pointer( Offset( coords ));
       }
 
@@ -818,14 +835,29 @@ class Image {
       /// by the number of bytes of each sample to become a memory offset
       /// within the image.
       ///
+      /// If `coords` is not within the image domain, an exception is thrown.
+      ///
       /// The image must be forged.
       /// \see Origin, Pointer, OffsetToCoordinates
       dip::sint Offset( UnsignedArray const& coords ) const;
+
+      /// Compute offset given coordinates. The offset needs to be multiplied
+      /// by the number of bytes of each sample to become a memory offset
+      /// within the image.
+      ///
+      /// `coords` can be outside the image domain.
+      ///
+      /// The image must be forged.
+      /// \see Origin, Pointer, OffsetToCoordinates
+      dip::sint Offset( IntegerArray const& coords ) const;
 
       /// Compute coordinates given an offset. If the image has any singleton-expanded
       /// dimensions, the computed coordinate along that dimension will always be 0.
       /// This is an expensive operation, use dip::Image::OffsetToCoordinatesComputer to make it
       /// more efficient when performing multiple computations in sequence.
+      ///
+      /// Note that the coordinates must be inside the image domain, if the offset given
+      /// does not correspond to one of the image's pixels, the result is meaningless.
       ///
       /// The image must be forged.
       /// \see Offset, OffsetToCoordinatesComputer, IndexToCoordinates
@@ -851,6 +883,9 @@ class Image {
       /// dimensions, the computed coordinate along that dimension will always be 0.
       /// This is an expensive operation, use dip::Image::IndexToCoordinatesComputer to make it
       /// more efficient when performing multiple computations in sequence.
+      ///
+      /// Note that the coordinates must be inside the image domain, if the index given
+      /// does not correspond to one of the image's pixels, the result is meaningless.
       ///
       /// The image must be forged.
       /// \see Index, Offset, IndexToCoordinatesComputer, OffsetToCoordinates
