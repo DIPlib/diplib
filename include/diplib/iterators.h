@@ -190,10 +190,8 @@ class LineIterator {
       using pointer = T*;
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       LineIterator() {}
-      /// To construct a useful iterator, provide an image, the coordinate of the start pixel, the processing dimension,
-      /// and optionally a boundary condition
-      LineIterator( Image const& image, UnsignedArray const& coords, dip::uint procDim, BoundaryCondition bc = BoundaryCondition::DEFAULT ) :
-            boundaryCondition_( bc ) {
+      /// To construct a useful iterator, provide an image, the coordinate of the start pixel, and the processing dimension
+      LineIterator( Image const& image, UnsignedArray const& coords, dip::uint procDim ) {
          dip_ThrowIf( !image.IsForged(), E::IMAGE_NOT_FORGED );
          dip_ThrowIf( image.DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
          dip_ThrowIf( procDim >= image.Dimensionality(), E::ILLEGAL_DIMENSION );
@@ -213,7 +211,6 @@ class LineIterator {
          swap( stride_, other.stride_ );
          swap( nTensorElements_, other.nTensorElements_ );
          swap( tensorStride_, other.tensorStride_ );
-         swap( boundaryCondition_, other.boundaryCondition_ );
       }
       /// Convert from non-const iterator to const iterator
       operator LineIterator< T const >() const {
@@ -224,7 +221,6 @@ class LineIterator {
          out.stride_ = stride_ ;
          out.nTensorElements_ = nTensorElements_ ;
          out.tensorStride_ = tensorStride_ ;
-         out.boundaryCondition_ = boundaryCondition_ ;
          return out;
       }
       /// Dereference
@@ -277,9 +273,6 @@ class LineIterator {
       dip::uint const& Length() const { return size_; }
       /// Return the current pointer
       pointer Pointer() const { return ptr_; }
-      void SetBoundaryCondition( BoundaryCondition bc ) {
-         boundaryCondition_ = bc;
-      }
    private:
       pointer ptr_ = nullptr;
       dip::uint coord_ = 0;
@@ -287,7 +280,6 @@ class LineIterator {
       dip::sint stride_;
       dip::uint nTensorElements_ = 0;
       dip::sint tensorStride_;
-      BoundaryCondition boundaryCondition_ = BoundaryCondition::DEFAULT;
 };
 
 template< typename T >
@@ -332,6 +324,26 @@ using ConstLineIterator = LineIterator< T const >;
 /// Alternatively, a `dip::SampleIterator` can be obtained to iterate over the samples of the tensor:
 ///
 ///     it.begin() .. it.end()
+///
+/// It is possible to obtain neighboring pixel values using one of two methods. The simpler method is
+/// also the most dangerous:
+///
+///     *( it.Pointer() + offset )
+///
+/// accesses the neighbor at a pre-computed offset. Note that this offset can cause a read-out-of-bounds
+/// or simply access the wrong pixel if the neighbor is not within the image domain. One would have to test
+/// for `it.Coordinates()` to be far enough away from the edge of the image. This method for accessing a
+/// neighbor is best used when iterating over a window within a larger image, where one can be sure that
+/// neighbors always exist.
+///
+/// The more complex method is always safe but always slower:
+///
+///     std::array< dip::uint8, image.TensorElements() > pixel;
+///     it.PixelAt( coords, pixel.begin() );
+///
+/// copies the pixel values at the current position + `coords` over to a temporary buffer, using the
+/// iterator's boundary condition if that location falls outside the image domain. This method is not
+/// the most efficient way of accessing neighbor pixels, but can be convienient at times.
 ///
 /// Satisfies all the requirements for a mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
 ///
@@ -394,7 +406,22 @@ class ImageIterator {
          dip_ThrowIf( !image_, E::ITERATOR_NOT_VALID );
          return *( ptr_ + index * image_->TensorStride() );
       }
-      // TODO: methods to access the pixel's neighborhood.
+      /// Copy the samples of a neighbor with relative coordinates of `coords`, using the
+      /// boundary condition if that neighbor is outside of the iamge domain.
+      ///
+      /// It is relatively expensive to test for a pixel to be outside the image domain,
+      /// if you can be sure that the neighbor exists, use `*( dip::ImageIterator::Pointer() + offset )`
+      /// instead.
+      ///
+      /// \see dip::ReadPixelWithBoundaryCondition
+      template< typename OutputIterator >
+      void PixelAt( IntegerArray coords, OutputIterator it ) {
+         dip_ThrowIf( coords.size() != coords_.size(), E::ARRAY_ILLEGAL_SIZE );
+         for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
+            coords[ ii ] += coords_[ ii ];
+         }
+         ReadPixelWithBoundaryCondition< T >( *image_, it, coords, boundaryCondition_ );
+      }
       /// Increment
       ImageIterator& operator++() {
          if( ptr_ ) {
@@ -443,12 +470,12 @@ class ImageIterator {
       /// Get an iterator over the current line
       LineIterator< T > GetLineIterator() const {
          dip_ThrowIf( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return LineIterator< T >( *image_, coords_, procDim_, boundaryCondition_[ procDim_ ] );
+         return LineIterator< T >( *image_, coords_, static_cast< dip::uint >( procDim_ ) );
       }
       /// Get a const iterator over the current line
       ConstLineIterator< T > GetConstLineIterator() const {
          dip_ThrowIf( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return ConstLineIterator< T >( *image_, coords_, procDim_, boundaryCondition_[ procDim_ ] );
+         return ConstLineIterator< T >( *image_, coords_, static_cast< dip::uint >( procDim_ ) );
       }
       /// Equality comparison
       bool operator==( ImageIterator const& other ) const {
@@ -547,6 +574,8 @@ using ConstImageIterator = ImageIterator< T const >;
 /// Instead of `GetLineIterator`, use `GetInLineIterator` and `GetOutLineIterator`. Likewise, instead of
 /// `Pointer` and `Offset` methods, use `InPointer`, `OutPointer`, `InOffset` and `OutOffset`.
 ///
+/// The `PixelAt` method reads pixels from the input image.
+///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
 /// \see ImageIterator, LineIterator, SampleIterator, GenericJointImageIterator
@@ -613,7 +642,22 @@ class JointImageIterator {
          dip_ThrowIf( !outImage_, E::ITERATOR_NOT_VALID );
          return *( outPtr_ + index * outImage_->TensorStride() );
       }
-      // TODO: methods to access the pixel's neighborhood.
+      /// Copy the input samples of a neighbor pixel with relative coordinates of `coords`, using the
+      /// boundary condition if that neighbor is outside of the image domain.
+      ///
+      /// It is relatively expensive to test for a pixel to be outside the image domain,
+      /// if you can be sure that the neighbor exists, use `*( dip::JointImageIterator::InPointer() + offset )`
+      /// instead.
+      ///
+      /// \see dip::ReadPixelWithBoundaryCondition
+      template< typename OutputIterator >
+      void PixelAt( IntegerArray coords, OutputIterator it ) {
+         dip_ThrowIf( coords.size() != coords_.size(), E::ARRAY_ILLEGAL_SIZE );
+         for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
+            coords[ ii ] += coords_[ ii ];
+         }
+         ReadPixelWithBoundaryCondition< inT >( *inImage_, it, coords, boundaryCondition_ );
+      }
       /// Increment
       JointImageIterator& operator++() {
          if( inPtr_ ) {
@@ -651,12 +695,12 @@ class JointImageIterator {
       /// Get an iterator over the current line of the input image
       ConstLineIterator< inT > GetInLineIterator() const {
          dip_ThrowIf( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return ConstLineIterator< inT >( *inImage_, coords_, procDim_, boundaryCondition_[ procDim_ ] );
+         return ConstLineIterator< inT >( *inImage_, coords_, static_cast< dip::uint >( procDim_ ) );
       }
       /// Get an iterator over the current line of the output image
       LineIterator< inT > GetOutLineIterator() const {
          dip_ThrowIf( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return LineIterator< outT >( *outImage_, coords_, procDim_, boundaryCondition_[ procDim_ ] );
+         return LineIterator< outT >( *outImage_, coords_, static_cast< dip::uint >( procDim_ ) );
       }
       /// Equality comparison
       bool operator==( JointImageIterator const& other ) const {
