@@ -123,10 +123,14 @@ void ReadPixelWithBoundaryCondition(
 /// the boundary condition `bc`. If `bc` is an empty array, the default boundary condition is
 /// used along all dimensions. If `bc` has a single element, it is used for all dimensions.
 /// Similarly, if `boundary` has a single element, it is used for all dimensions.
-void ExtendImage( Image in, Image out, UnsignedArray boundary, BoundaryConditionArray bc );
+///
+/// If `masked` is true, the output image is a window on the boundary-extended image, of the
+/// same size as `in`. That is, `out` will be identical to `in` except that it is possible
+/// to access pixels outside of its domain.
+void ExtendImage( Image in, Image out, UnsignedArray boundary, BoundaryConditionArray bc, bool masked = false );
 // TODO: implement this function!
 
-Image ExtendImage( Image in, UnsignedArray boundary, BoundaryConditionArray bc ) {
+Image ExtendImage( Image in, UnsignedArray boundary, BoundaryConditionArray bc, bool masked = false ) {
    Image out;
    // TODO: ExtendImage( in, out, boundary, bc );
    return out;

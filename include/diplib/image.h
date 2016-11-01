@@ -553,7 +553,7 @@ class Image {
       bool CompareProperties(
             Image const& src,
             Option::CmpProps cmpProps,
-            Option::ThrowException throwException = Option::ThrowException::doThrow
+            Option::ThrowException throwException = Option::ThrowException::DO_THROW
       ) const;
 
       /// Check image properties, either returns true/false or throws an error.
@@ -561,14 +561,14 @@ class Image {
       bool CheckProperties(
             dip::uint ndims,
             dip::DataType::Classes dts,
-            Option::ThrowException throwException = Option::ThrowException::doThrow
+            Option::ThrowException throwException = Option::ThrowException::DO_THROW
       ) const;
 
       /// Check image properties, either returns true/false or throws an error.
       bool CheckProperties(
             UnsignedArray const& sizes,
             dip::DataType::Classes dts,
-            Option::ThrowException throwException = Option::ThrowException::doThrow
+            Option::ThrowException throwException = Option::ThrowException::DO_THROW
       ) const;
 
       /// Check image properties, either returns true/false or throws an error.
@@ -576,7 +576,7 @@ class Image {
             UnsignedArray const& sizes,
             dip::uint tensorElements,
             dip::DataType::Classes dts,
-            Option::ThrowException throwException = Option::ThrowException::doThrow
+            Option::ThrowException throwException = Option::ThrowException::DO_THROW
       ) const;
 
       /// Copy all image properties from `src`; the image must be raw.

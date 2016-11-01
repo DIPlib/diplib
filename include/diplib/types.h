@@ -289,8 +289,8 @@ namespace Option {
 /// Some functions that check for a condition optionally throw an exception
 /// if that condition is not met.
 enum class ThrowException {
-   doNotThrow, ///< Do not throw and exception, return false if the condition is not met.
-   doThrow     ///< Throw an exception if the condition is not met.
+   DONT_THROW, ///< Do not throw and exception, return false if the condition is not met.
+   DO_THROW    ///< Throw an exception if the condition is not met.
 };
 
 /// \class dip::Option::CmpProps

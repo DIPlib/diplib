@@ -143,13 +143,39 @@ one can create functions that process one line at a time:
           sum += *lit;
        } while( ++lit );
        dip::uint mean = sum / it.Length();
-       lit = it.GetLineIterator(); // TODO: cannot reset!?
+       lit = it.GetLineIterator();
        do {
           *lit = ( *lit * 1000 ) / mean;
        } while( ++lit );
     } while( ++it );
 
-Note that projections and separable filters use such line by line operations.
+A one-dimensional filter can be implemented using the line iterator as an array:
+
+    dip_ThrowIf( img.DataType() != dip::DT_SFLOAT, "Expecting single-precision float image" );
+    dip::Image out( img, dip::DT_SFLOAT );
+    constexpr dip::uint N = 2;
+    std::array< float, 2*N+1 > filter {{ 1.0/9.0, 2.0/9.0, 3.0/9.0. 2.0/9.0, 1.0/9.0 }};
+    dip::JointImageIterator< dip::sfloat, dip::sfloat > it( img, out, 0 );
+    do {
+       auto iit = it.GetInLineIterator();
+       auto oit = it.GetOutLineIterator();
+       // At the beginning of the line the filter has only partial support within the image
+       for( dip::uint ii = N; ii > 0; --ii, ++oit ) {
+          *oit = std::inner_product( filter.begin() + ii, filter.end(), iit, 0 );
+       }
+       // In the middle of the line the filter has full support
+       for( dip::uint ii = N; ii < oit.Length() - N; ++ii, ++iit, ++oit ) {
+          *oit = inner_product( filter.begin(), filter.end(), iit, 0 );
+       }
+       // At the end of the line the filter has only partial support
+       for( dip::uint ii = 1; ii <= N; ++ii, ++iit, ++oit ) {
+          *oit = inner_product( filter.begin(), filter.end() - ii, iit, 0 );
+       }
+    } while( ++it );
+
+Note that separable filters use such line by line operations along each dimension
+to compose full filters.
+
 
 Applying an arbitrary neighborhood filter
 ---
@@ -158,30 +184,83 @@ Simpler:
 
     dip_ThrowIf( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image out( img, dip::DT_UINT16 );
+    dip::PixelTable kernel( "elliptic", { 5, 5 } );
     dip::JointImageIterator< dip::uint16, dip::uint16 > it( img, out );
     do {
        dip::uint value = 0;
-       for( dip::sint nit = pixelTable.begin(); nit != pixelTable.end(); ++nit ) {
-          // *nit is an offset.
-          // TODO: it.InPointer( *nit ) uses boundary condition...
-          value += *( it.InPointer() + *nit )
+       for( auto kit = kernel.begin(); kit != kernel.end(); ++kit ) {
+          dip::uint16 pix; // If the image is not scalar, we need to provide an array here.
+          it.PixelAt( kit.Coordinates(), &pix );
+          value += pix;
        }
-       it.Out() = value / nit.NumberOfPixels();
+       it.Out() = value / kit.NumberOfPixels();
     } while( ++it );
+
+We iterate over every pixel in the input and output images. At each pixel we read all pixels
+in the kernel, with each read checking for the location to be inside the image domain, and
+applying the default boundary condition if not. We write the average pixel value within the
+kernel at each output pixel.
 
 Better:
 
     dip_ThrowIf( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
+    dip::Image in = dip::ExtendImage( img, { 2, 2 }, {}, true ); // a copy of the input image with data ouside of its domain
     dip::Image out( img, dip::DT_UINT16 );
-    dip::JointImageIterator< dip::uint16, dip::uint16 > it( img, out );
+    dip::PixelTable kernel( "elliptic", { 5, 5 }, 0 );
+    dip::JointImageIterator< dip::uint16, dip::uint16 > it( img, out, 0 );
     do {
        auto iit = it.GetInLineIterator();
        auto oit = it.GetOutLineIterator();
+       // Compute the sum across all pixels in the kernels for the first point on the line only
+       dip::uint value = 0;
+       for( auto kit = kernel.begin(); kit != kernel.end(); ++kit ) {
+          value += *( iit.Pointer() + kit.Offset() );
+       }
+       *oit = value / kit.NumberOfPixels();
+       ++oit;
        do {
-          dip::uint value = 0;
-          for( auto nit = pixelTable.Runs().begin(); nit != pixelTable.Runs().end(); ++nit ) {
-             nit->start, nit->length;
+          // Subtract the pixels that will exit the kernel when it moves
+          for( auto kit = kernel.Runs().begin(); kit != kernel.Runs().end(); ++kit ) {
+             value -= *( iit.Pointer() + kit->First() );
           }
-          *oit = value;
-       } while( ++iit, ++oit ); // (the two images are of the same size, these iterators reach the end at the same time 
+          ++iit;
+          // Add the pixels that entered the kernel when it moved 
+          for( auto kit = kernel.Runs().begin(); kit != kernel.Runs().end(); ++kit ) {
+             value += *( iit.Pointer() + kit->Last() );
+          }
+          *oit = value / kit.NumberOfPixels();
+       } while( ++oit ); // (the two images are of the same size, the line iterators reach the end at the same time 
     } while( ++it );
+
+We first create a copy of the input image with expanded domain. The image `in` is identical to
+`img`, but we can read outside the bounds where data has been filled in. Not having to check for
+reads being within the image domain saves a lot of time, more than making up for creating the
+copy of the input image.
+The outer loop iterates over all lines in the image (in this case, the lines lie along dimension
+0). For the first pixel in the line we do the same as before: we compute the sum of values over
+the kernel. But for the rest of the pixels in the line, we subtract the values for the first
+pixel in each run of the kernel, then move the kernel over, and add the values for the last pixel
+in each run. This bookkeeping makes the operation much cheaper. Being able to loop over the lines
+of the image, instead of only over each pixel in the image, allows for simple implementation of
+many efficient algorithm.
+
+**TODO**
+`kernel.Runs()` is a `std::vector< dip::PixelRun >`. So `*kit` is an object of class
+`dip::PixelRun`, and `kit->First()` calls `dip::PixelRun::First()`.
+`dip::PixelRun` has members `offset`, `coordinates`, `length`, but to compute `Last()` we
+also need access to the stride.
+
+`kernel.begin()` returns a `dip::PixelTableIterator`, which iterates over every pixel
+represented in the table. It has members `run`, `index`, and `pixelTable&`. Incrementing
+the iterator increments `index` until it reaches `length` for the given `run`, then
+increments `run`. It should be able to return the `Coordinates()` and the `Offset()`
+for the given pixel.
+
+The `dip::PixelTable` constructor takes either a filter shape and size as input, or
+a binary image. An optional additional input is the directon along which the runs are
+created. By default it makes runs along dimension 0, but maybe we can instead pick the
+optimal dimension, which is the one that makes the fewest runs. If the user doesn't
+specify a dimension, it is not important which dimension is used anyway, and we might
+as well pick a dimension that yields a more efficient iterator.
+Its members are `std::vector< dip::PixelRun > runs`, `processingDimension`, `stride`,
+and `numberOfPixels`.

@@ -21,55 +21,55 @@ bool Image::CompareProperties(
 ) const {
    if( cmpProps == Option::CmpProps_DataType ) {
       if( dataType_ != src.dataType_ ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Data type doesn't match" );
+         dip_ThrowIf( throwException == Option::ThrowException::DO_THROW, "Data type doesn't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_Dimensionality ) {
       if( sizes_.size() != src.sizes_.size() ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Dimensionality doesn't match" );
+         dip_ThrowIf( throwException == Option::ThrowException::DO_THROW, "Dimensionality doesn't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_Sizes ) {
       if( sizes_ != src.sizes_ ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, E::SIZES_DONT_MATCH );
+         dip_ThrowIf( throwException == Option::ThrowException::DO_THROW, E::SIZES_DONT_MATCH );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_Strides ) {
       if( strides_ != src.strides_ ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Strides don't match" );
+         dip_ThrowIf( throwException == Option::ThrowException::DO_THROW, "Strides don't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_TensorShape ) {
       if( tensor_ != src.tensor_ ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Tensor shape doesn't match" );
+         dip_ThrowIf( throwException == Option::ThrowException::DO_THROW, "Tensor shape doesn't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_TensorElements ) {
       if( tensor_.Elements() != src.tensor_.Elements() ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, E::NTENSORELEM_DONT_MATCH );
+         dip_ThrowIf( throwException == Option::ThrowException::DO_THROW, E::NTENSORELEM_DONT_MATCH );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_TensorStride ) {
       if( tensorStride_ != src.tensorStride_ ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Tensor stride doesn't match" );
+         dip_ThrowIf( throwException == Option::ThrowException::DO_THROW, "Tensor stride doesn't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_ColorSpace ) {
       if( colorSpace_ != src.colorSpace_ ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Color space doesn't match" );
+         dip_ThrowIf( throwException == Option::ThrowException::DO_THROW, "Color space doesn't match" );
          return false;
       }
    }
    if( cmpProps == Option::CmpProps_PixelSize ) {
       if( pixelSize_ != src.pixelSize_ ) {
-         dip_ThrowIf( throwException == Option::ThrowException::doThrow, "Pixel sizes don't match" );
+         dip_ThrowIf( throwException == Option::ThrowException::DO_THROW, "Pixel sizes don't match" );
          return false;
       }
    }
@@ -83,11 +83,11 @@ bool Image::CheckProperties(
       Option::ThrowException throwException
 ) const {
    bool result = sizes_.size() == ndims;
-   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
+   if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
       dip_Throw( E::DIMENSIONALITY_NOT_SUPPORTED );
    }
    result &= dts == dataType_;
-   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
+   if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
       dip_Throw( E::DATA_TYPE_NOT_SUPPORTED );
    }
    return result;
@@ -99,11 +99,11 @@ bool Image::CheckProperties(
       Option::ThrowException throwException
 ) const {
    bool result = sizes_ == sizes;
-   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
+   if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
       dip_Throw( E::SIZES_DONT_MATCH );
    }
    result &= dts == dataType_;
-   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
+   if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
       dip_Throw( E::DATA_TYPE_NOT_SUPPORTED );
    }
    return result;
@@ -116,15 +116,15 @@ bool Image::CheckProperties(
       Option::ThrowException throwException
 ) const {
    bool result = sizes_ == sizes;
-   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
+   if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
       dip_Throw( E::SIZES_DONT_MATCH );
    }
    result &= tensor_.Elements() == tensorElements;
-   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
+   if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
       dip_Throw( E::NTENSORELEM_DONT_MATCH );
    }
    result &= dts == dataType_;
-   if( !result && ( throwException == Option::ThrowException::doThrow ) ) {
+   if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
       dip_Throw( E::DATA_TYPE_NOT_SUPPORTED );
    }
    return result;

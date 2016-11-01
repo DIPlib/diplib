@@ -34,6 +34,12 @@ done in parallel.
     objects to MATLAB arrays and vice-versa. No support yet for arrays, constants
     and strings. No support yet on the MATLAB side for a `dip_image` object.
 
+6.  Image iterators. Need to be tested more thoroughly, some features have not been
+    tested at all...
+    Iterators are useful as simpler substitutes of the frameworks, to be used in only a
+    few library functions, meant for the library user to implement pixel-wise processing,
+    and filters, without the steep learning curve nor pointers.
+
 ## What still needs to be done:
 
 1.  **(X)**
@@ -78,7 +84,7 @@ done in parallel.
     in dipimage/threshold.m.
 
 8.  **(X)**
-    Image generation algorihtms using `dip::Framework::ScanSingleOutput()`.
+    Image generation algorithms using `dip::Framework::ScanSingleOutput()`.
     - dip_generation.h
     - dip_paint.h
 
@@ -128,12 +134,6 @@ done in parallel.
     `dip::Framework::Projection()`. **Design work needed**.
 
 15. Algorithms built on `dip::Framework::Projection()`: max, min, mean projections, etc.
-
-15. **(X)**
-    Image iterators. **Lots of design work needed**, though some is done. Iterators
-    are useful as simpler substitutes of the frameworks, to be used in only a few
-    library functions, meant for the library user to implement pixel-wise processing,
-    and filters, without the steep learning curve nor pointers.
 
 16. **(X)**
     Algorithms that do not depend on any framework: all binary morphology, the

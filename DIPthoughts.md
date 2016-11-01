@@ -848,7 +848,7 @@ the size ratio cutoffs are for this.
 ### Image iterators
 
 The goal of the iterator is to provide an alternative to the `dip::Framework`
-and the `dip::NDLoop` functionality that is more intuitive to C++ programmers.
+functionality that is more intuitive to C++ programmers.
 
 This is how it could work for a simple iteration over all pixels in an image:
 
@@ -887,8 +887,8 @@ and decrement of the iterator. It doesn't know anything about the length of the 
 as is the case for the `std::vector` iterator.
 
 Sometimes it's useful to iterate over one image line at a time (e.g. in separable
-filters). This can be accomplished with the processing dimension (the `dip::NDLoop`
-functions call it the skip dimension). It might look like this:
+filters). This can be accomplished with the processing dimension.
+It might look like this:
 
     dip::sint procDim = 0;
     for( auto img_it = img.begin<dip::sfloat>( procDim ); img_it; ++img_it ) {
@@ -971,19 +971,18 @@ can be different for each of the dimensions.
 
 `IsAtEnd` tests for `pointer_ == nullptr`.
 
-**TODO**: How do we do joint iterators, that iterate over two images at once? Doing two
-separate iterators is less efficient, as the increment operator is not trivial and would
-do some repeated computations when jointly iterating over two images.
+There will be other iterators:
 
-    ImageJointIterator( Image const& image1, Image const& image2, ... );
-    it.first(), it.second()
+ - A joint iterator, that iterates over two images at once. Doing two
+   separate iterators is less efficient, as the increment operator is not trivial and would
+   do some repeated computations when jointly iterating over two images.
 
-**TODO**: The other problem with this implementation of the iterator is that it doesn't
-allow for generic data types, the image data type needs to be known at compile time.
-An alternative implementation would be generic, like `dip::NDLoop` is, but the dereference
-operator would not exist. One would instead need to do `*(float*)it.Pointer()`. This is not
-pretty. It's better to stick the templated iterator in a templated function, using our
-overloading scheme. Or use the frameworks.
+       ImageJointIterator( Image const& image1, Image const& image2, ... );
+       it.first(), it.second()
+
+ - A generic iterator, that is not templated and determines data type at run time.
+   The dereference operator would not exist. One would instead need to do
+   `*(float*)it.Pointer()`. This is not pretty!
 
 
 ### Neighborhood lists
@@ -1263,11 +1262,11 @@ to add some methods that might be useful (`product()`, arithmetic
 operators, etc.)
 
 We should use [*FFTW*](http://www.fftw.org) for the Fourier transform.
-But it's GNU licensed, meaning that we won't be able to include it
-without making the library GNU also? We might be able to include it as
+But it's GPL licensed, meaning that we won't be able to include it
+without making the library GPL also? We might be able to include it as
 an "optional" element, let the user download *FFTW* for him/herself. It
-is not clear whether that breaks the GNU license terms. And what does
-the poor soul do that wants to create non-GNU software with this? An
+is not clear whether that breaks the GPL license terms. And what does
+the poor soul do that wants to create non-GPL software with this? An
 alternative could be [*djbfft*](http://cr.yp.to/djbfft.html), which
 looks like it hasn't been updated in a while (since 1999!), but is
 claimed by the author to be faster than *FFTW2* and any other library
