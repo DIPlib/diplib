@@ -130,7 +130,7 @@ void ReadPixelWithBoundaryCondition(
 void ExtendImage( Image in, Image out, UnsignedArray boundary, BoundaryConditionArray bc, bool masked = false );
 // TODO: implement this function!
 
-Image ExtendImage( Image in, UnsignedArray boundary, BoundaryConditionArray bc, bool masked = false ) {
+inline Image ExtendImage( Image in, UnsignedArray boundary, BoundaryConditionArray bc, bool masked = false ) {
    Image out;
    // TODO: ExtendImage( in, out, boundary, bc );
    return out;

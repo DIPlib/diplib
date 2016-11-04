@@ -546,9 +546,8 @@ class PixelSize {
       /// Scales the pixel size in the given dimension, if it is defined.
       void Scale( dip::uint d, double s ) {
          if( ( !size_.empty() ) && !Get( d ).IsDimensionless() ) {
-            EnsureDimensionality(
-                  d +
-                  2 ); // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
+            // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
+            EnsureDimensionality( d + 2 );
             size_[ d ] *= s;
          }
       }
@@ -565,7 +564,8 @@ class PixelSize {
       /// Scales the pixel size non-isotropically in all dimensions, where defined.
       void Scale( FloatArray const& s ) {
          if( !size_.empty() ) {
-            EnsureDimensionality( s.size() ); // we do not add a dimension past `d` here, assuming that the caller is modifying all useful dimensions.
+            // we do not add a dimension past `d` here, assuming that the caller is modifying all useful dimensions.
+            EnsureDimensionality( s.size() );
             for( dip::uint ii = 1; ii < s.size(); ++ii ) {
                if( !size_[ ii ].IsDimensionless() ) {
                   size_[ ii ] *= s[ ii ];
@@ -578,9 +578,8 @@ class PixelSize {
       void SwapDimensions( dip::uint d1, dip::uint d2 ) {
          using std::swap;
          if( !size_.empty() && ( Get( d1 ) != Get( d2 ) ) ) {
-            EnsureDimensionality(
-                  std::max( d1, d2 ) +
-                  2 ); // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
+            // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
+            EnsureDimensionality( std::max( d1, d2 ) + 2 );
             swap( size_[ d1 ], size_[ d2 ] );
          }
       }
@@ -588,17 +587,16 @@ class PixelSize {
       /// Inserts a dimension, undefined by default.
       void InsertDimension( dip::uint d, PhysicalQuantity const& m = 1 ) {
          if( !m.IsDimensionless() || IsDefined() ) {
-            EnsureDimensionality(
-                  d +
-                  1 ); // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
+            // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
+            EnsureDimensionality( d + 1 );
             size_.insert( d, m );
          } // else we don't need to do anything: the pixel is undefined and we add a dimensionless quantity.
       }
 
       /// Erases a dimension
       void EraseDimension( dip::uint d ) {
-         if( d + 1 <
-             size_.size() ) { // we don't erase the last element in the array, since that would change all subsequent elemtns too.
+         // we don't erase the last element in the array, since that would change all subsequent elemtns too.
+         if( d + 1 < size_.size() ) {
             size_.erase( d );
          }
       }

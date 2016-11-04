@@ -244,12 +244,12 @@ class DimensionArray {
          if( index < size_ - 1 ) {
             std::copy_backward( data_ + index, data_ + size_ - 1, data_ + size_ );
          }
-         * ( data_ + index ) = value;
+         *( data_ + index ) = value;
       }
       /// Adds a value to the back.
       void push_back( T const& value ) {
          resize( size_ + 1 );
-         * ( data_ + size_ - 1 ) = value;
+         *( data_ + size_ - 1 ) = value;
       }
 
       /// Removes the value at the given location, moving subsequent values
