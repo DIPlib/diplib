@@ -1,5 +1,5 @@
 /*
- * Testing MEX-file functionality
+ * Testing assorted DIPlib functionality
  *
  */
 

@@ -95,7 +95,9 @@ class CoordinatesComputer {
 // The Image class
 //
 
+// Forward declarations
 class Image;
+class ImageSliceIterator;
 
 /// An array of images
 using ImageArray = std::vector< Image >;
@@ -1167,6 +1169,8 @@ class Image {
       /// to a double-precision complex floating-point value.
       explicit operator dcomplex() const;
 
+      // Some friend declarations
+      friend class dip::ImageSliceIterator;
 
    private:
 

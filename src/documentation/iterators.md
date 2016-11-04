@@ -264,3 +264,51 @@ specify a dimension, it is not important which dimension is used anyway, and we 
 as well pick a dimension that yields a more efficient iterator.
 Its members are `std::vector< dip::PixelRun > runs`, `processingDimension`, `stride`,
 and `numberOfPixels`.
+
+
+Processing an image slice by slice
+---
+
+Most filters in DIPlib are applicable to images of any dimensionality, and one can
+choose to not filter along a specific dimension. This is useful, for example, in the
+case of a time series image, a 3D image where the 3rd dimension is time. One might
+want to filter each of the 2D slices in the same way, but not mix information from
+one slice to another. Some image processing functions allow to specify which
+dimensions are to be processed, and so one can choose only the first two dimensions.
+With other filters one can set the size of the neighborhood to 1 along the third
+dimension, so that effectively no filtering is applied in that direction. But a few
+filters are written explicitly for 2D images, or do not make it possible to restrict
+processing dimensions. `dip::EuclideanSkeleton` is an example of the latter. The
+skeleton is always computed across the full image. To apply it to each of the slices
+in the time series one can use the `dip::ImageSliceIterator`:
+
+    dip::ImageSliceIterator it( img, 2 );
+    do {
+       dip::EuclideanSkeleton( *it, *it, "natural", true );
+    } while( ++it );
+
+Here, the slice iterator `it` points at a 2D subimage of the 3D image `img`,
+in which the third dimension (dimension number 2) of `img` is removed. It is
+possible to read and write to the pixels of this slice, but it is not possible
+to strip or reforge it. 
+When constructed, the iterator points at the slice for index 0. Each time it is
+incremented, the next slice is indexed. As with the other image iterators,
+testing it results in `false` when the iterator points past the last slice and
+should not be dereferenced, making the loop logic quite compact.
+
+This iterator allows adding or subtracting any integer, meaning that it is
+possible to navigate to any slice. This is a very cheap operation, and requires
+no data copies. Note that the loop above is much more efficient than a similar
+loop using indexing:
+
+    // Identical result to the previous code block, but less efficient
+    dip::RangeArray ra( 3 );
+    for( dip::sint ii = 0; ii < img.Size(2); ++ii ) {
+       ra[2] = Range( ii );
+       dip::Image slice = img.At( ra );
+       slice.Squeeze();
+       dip::EuclideanSkeleton( slice, slice, "natural", true );
+    }
+
+The difference in efficiency might or might not be important depending on
+the cost of the function being applied to each 2D slice.
