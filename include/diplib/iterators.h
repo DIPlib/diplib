@@ -10,10 +10,10 @@
 #define DIP_ITERATORS_H
 
 #include <utility>
-#include "diplib/error.h"
-#include "diplib/types.h"
-#include "diplib/boundary.h"
-#include "diplib/image.h"
+
+#include "diplib.h"
+#include "boundary.h"
+
 
 /// \file
 /// Defines image iterators and pixel iterators
@@ -1111,9 +1111,32 @@ inline void swap( GenericJointImageIterator& v1, GenericJointImageIterator& v2 )
 }
 
 
-/// An iterator for plane-by-plane processing of an image. Dereferencing the iterator yields a
-/// reference to an image that encapsulates a plane in the original image. This image has the
-/// protected flag set so that it cannot be stripped or reforged.
+/// An iterator for plane-by-plane processing of an image. Use it to process a multi-dimensional
+/// image as a series of lower-dimensional images.
+///
+/// Dereferencing the iterator yields a reference to an image that encapsulates a plane in the
+/// original image. This image has the protected flag set so that it cannot be stripped or reforged.
+///
+/// The iterator can be moved to any arbitrary slice with a non-negative index (so you cannot decrement
+/// it below 0, the first slice; if you try nothing will happen), even slices past the last one.
+/// If the iterator points at a slice that does not exist, the iterator will test false, but it will
+/// still be a valid iterator that can be manipulated.
+///
+///     dip::ImageSliceIterator it( img, 2 );
+///     do {
+///        // do something with the image *it here.
+///     } while( ++it );
+///
+/// The function `dip::ImageSliceEndIterator` creates an iterator that points at a slice one past
+/// the last, and so is a end iterator. Because it is not possible to decrement below 0, a loop that
+/// iterates in reverse order must test the `dip::ImageSliceIterator::Coordinate()` for equality to
+/// zero:
+///
+///     dip::ImageSliceEndIterator it( img, 2 );
+///     do {
+///        --it;
+///        // do something with the image *it here.
+///     } while( it.Coordinate() != 0 );
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///

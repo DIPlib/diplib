@@ -54,4 +54,6 @@ void FillBuffer(
       dcomplex value
 );
 
+// TODO: Add a function that fills a boundary-extended buffer with appropriate pixel values
+
 } // namespace dip

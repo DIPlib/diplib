@@ -15,7 +15,7 @@
 #include "diplib/iterators.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
-#include "copybuffer.h"
+#include "copy_buffer.h"
 
 namespace dip {
 

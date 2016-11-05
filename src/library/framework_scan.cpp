@@ -12,7 +12,7 @@
 #include "diplib.h"
 #include "diplib/framework.h"
 
-#include "copybuffer.h"
+#include "copy_buffer.h"
 
 namespace dip {
 namespace Framework {

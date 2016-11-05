@@ -22,7 +22,7 @@
 #include <vector>
 #include <string>
 
-#include "diplib/dimensionarray.h"
+#include "diplib/dimension_array.h"
 #include "diplib/error.h"
 
 

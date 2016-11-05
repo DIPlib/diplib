@@ -8,7 +8,7 @@
 
 #include <limits>
 
-#include "copybuffer.h"
+#include "copy_buffer.h"
 #include "diplib/clamp_cast.h"
 
 //#include <iostream>
