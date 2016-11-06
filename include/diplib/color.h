@@ -20,8 +20,6 @@
 /// Defines dip::ColorSpaceManager, providing support for color images.
 
 
-// TODO: functions marked TODO in this file need to be defined in a .cpp file.
-
 namespace dip {
 
 
@@ -45,7 +43,7 @@ class WhitePoint {
       std::array< double, 9 > const& Matrix() { return matrix_; }
 
       /// Get the inverse of the 3x3 white point array, for conversion from XYZ to RGB.
-      std::array< double, 9 > InverseMatrix(); // TODO
+      std::array< double, 9 > InverseMatrix();
 
    private:
 
@@ -99,7 +97,7 @@ class ColorSpaceManager {
    public:
 
       /// Constructor, registers the default color spaces.
-      ColorSpaceManager(); // TODO
+      ColorSpaceManager();
 
       /// Defines a new color space, that requires `chans` channels.
       void Define( String const& name, dip::uint chans ) {
@@ -152,8 +150,8 @@ class ColorSpaceManager {
       /// must exist between the two.
       void Convert( Image const& in, Image const& out, String const& name, WhitePoint const& whitepoint ) const; // TODO
 
-      Image Convert( Image const& in, String const& name, WhitePoint const& whitepoint ) const;
-      // { Image out; Convert( in, out, name ); return out; } // TODO
+      Image Convert( Image const& in, String const& name, WhitePoint const& whitepoint ) const
+      { Image out; Convert( in, out, name, whitepoint ); return out; }
 
    private:
 
@@ -195,7 +193,7 @@ class ColorSpaceManager {
       // which, when called in succession, accomplish the color space conversion.
 
       // Find an optimal path between two color spaces, given by their indices.
-      std::vector <dip::uint> FindPath( dip::uint start, dip::uint stop ) const; // TODO
+      std::vector <dip::uint> FindPath( dip::uint start, dip::uint stop ) const;
 };
 
 } // namespace dip
