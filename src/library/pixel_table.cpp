@@ -10,6 +10,24 @@
 
 namespace dip {
 
+// Construct a pixel table with offsets from a pixel table
+PixelTableOffsets::PixelTableOffsets(
+      PixelTable const& pt,
+      Image const& image
+) {
+   sizes_ = pt.Sizes();
+   origin_ = pt.Origin();
+   nPixels_ = pt.NumberOfPixels();
+   procDim_ = pt.ProcessingDimension();
+   stride_ = image.Stride( procDim_ );
+   auto const& inRuns = pt.Runs();
+   runs_.resize( inRuns.size() );
+   for( dip::uint ii = 0; ii < runs_.size(); ++ii ) {
+      runs_[ ii ].offset = image.Offset( inRuns[ ii ].coordinates );
+      runs_[ ii ].length = inRuns[ ii ].length;
+   }
+}
+
 // Construct a pixel table from a unit circle
 PixelTable::PixelTable(
       String shape,
@@ -25,7 +43,10 @@ PixelTable::PixelTable(
       UnsignedArray origin,
       dip::uint procDim
 ) {
-   // TODO: the old dip_BinaryImageToPixelTable goes here
+   // TODO: the old dip_BinaryImageToPixelTable goes here,
+   // but instead of using the scan framework (which doesn't guarantee a whole line is processed at once), we use
+   // the new ImageIterator functionality.
+
 }
 
 // Create a binary image from a pixel table

@@ -21,3 +21,6 @@ the introductory documentation.
     - `dip_ScanFrameWork` -> `dip::Framework::Scan()` / `dip::Framework::ScanDyadic()`
     - `dip_SingleOutputFrameWork` -> `dip::Framework::ScanSingleOutput()`
     - `dip_SingleOutputPoint` -> `dip::Framework::ScanSingleOutput()`
+
+  Their interfaces are not exactly compatible, but it should be relatively straightforward
+  to port old line functions to use the new framework.

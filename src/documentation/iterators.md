@@ -49,7 +49,7 @@ templated function, then call the right version of the function with the
           *it *= 2;
        } while( ++it );
     }
-    
+
     void ProcessImage( dip::Image img ) {
        DIP_OVL_CALL_REAL( processImage_subfunc, (img), img.dataType() );
     }
@@ -72,24 +72,24 @@ should be processed. There are two ways of doing so:
    data segment), and modify this copy so that the tensor dimension becomes a
    spatial dimension. The loop above would then iterate over each sample, rather
    than each pixel:
-   
+
        dip::Image tmp = img.QuickCopy();
        tmp.TensorToSpatial();
        dip::ImageIterator< dip::uint16 > it( tmp );
        ...
-    
+
  - The second way is to explicitly iterate over the tensor elements within the
    main loop. This allows the different tensor elements to be treated differently.
    Simply note that the iterator `it` points at the first element of the tensor,
    and using the `[]` indexing operator yields the other tensor elements:
-   
+
        dip::ImageIterator< T > it( img );
        do {
           for( dip::uint te = 0; te < img.TensorElements(); ++te ) {
              it[ te ] *= 2;
           }
        } while( ++it );
-       
+
    Alternatively, iterate over the tensor elements using the corresponding
    iterator (see `dip::SampleIterator`):
 
@@ -190,10 +190,10 @@ Simpler:
        dip::uint value = 0;
        for( auto kit = kernel.begin(); kit != kernel.end(); ++kit ) {
           dip::uint16 pix; // If the image is not scalar, we need to provide an array here.
-          it.PixelAt( kit.Coordinates(), &pix );
+          it.PixelAt( *kit, &pix );
           value += pix;
        }
-       it.Out() = value / kit.NumberOfPixels();
+       it.Out() = value / kernel.NumberOfPixels();
     } while( ++it );
 
 We iterate over every pixel in the input and output images. At each pixel we read all pixels
@@ -207,29 +207,30 @@ Better:
     dip::Image in = dip::ExtendImage( img, { 2, 2 }, {}, true ); // a copy of the input image with data ouside of its domain
     dip::Image out( img, dip::DT_UINT16 );
     dip::PixelTable kernel( "elliptic", { 5, 5 }, 0 );
+    dip::PixelTableOffsets offsets = kernel.Prepare( img );
     dip::JointImageIterator< dip::uint16, dip::uint16 > it( img, out, 0 );
     do {
        auto iit = it.GetInLineIterator();
        auto oit = it.GetOutLineIterator();
        // Compute the sum across all pixels in the kernels for the first point on the line only
        dip::uint value = 0;
-       for( auto kit = kernel.begin(); kit != kernel.end(); ++kit ) {
-          value += *( iit.Pointer() + kit.Offset() );
+       for( auto kit = offsets.begin();  kit != kernel.end(); ++kit ) {
+          value += *( iit.Pointer() + *kit );
        }
-       *oit = value / kit.NumberOfPixels();
+       *oit = value / kernel.NumberOfPixels();
        ++oit;
        do {
           // Subtract the pixels that will exit the kernel when it moves
-          for( auto kit = kernel.Runs().begin(); kit != kernel.Runs().end(); ++kit ) {
+          for( auto kit = offsets.Runs().begin(); kit != offsets.Runs().end(); ++kit ) {
              value -= *( iit.Pointer() + kit->First() );
           }
           ++iit;
-          // Add the pixels that entered the kernel when it moved 
-          for( auto kit = kernel.Runs().begin(); kit != kernel.Runs().end(); ++kit ) {
+          // Add the pixels that entered the kernel when it moved
+          for( auto kit = offsets.Runs().begin(); kit != offsets.Runs().end(); ++kit ) {
              value += *( iit.Pointer() + kit->Last() );
           }
-          *oit = value / kit.NumberOfPixels();
-       } while( ++oit ); // (the two images are of the same size, the line iterators reach the end at the same time 
+          *oit = value / kernel.NumberOfPixels();
+       } while( ++oit ); // (the two images are of the same size, the line iterators reach the end at the same time
     } while( ++it );
 
 We first create a copy of the input image with expanded domain. The image `in` is identical to
@@ -238,32 +239,12 @@ reads being within the image domain saves a lot of time, more than making up for
 copy of the input image.
 The outer loop iterates over all lines in the image (in this case, the lines lie along dimension
 0). For the first pixel in the line we do the same as before: we compute the sum of values over
-the kernel. But for the rest of the pixels in the line, we subtract the values for the first
+the kernel (note that we directly index by adding the offset to the data pointer, there's no
+checking). But for the rest of the pixels in the line, we subtract the values for the first
 pixel in each run of the kernel, then move the kernel over, and add the values for the last pixel
 in each run. This bookkeeping makes the operation much cheaper. Being able to loop over the lines
 of the image, instead of only over each pixel in the image, allows for simple implementation of
 many efficient algorithm.
-
-**TODO**
-`kernel.Runs()` is a `std::vector< dip::PixelRun >`. So `*kit` is an object of class
-`dip::PixelRun`, and `kit->First()` calls `dip::PixelRun::First()`.
-`dip::PixelRun` has members `offset`, `coordinates`, `length`, but to compute `Last()` we
-also need access to the stride.
-
-`kernel.begin()` returns a `dip::PixelTableIterator`, which iterates over every pixel
-represented in the table. It has members `run`, `index`, and `pixelTable&`. Incrementing
-the iterator increments `index` until it reaches `length` for the given `run`, then
-increments `run`. It should be able to return the `Coordinates()` and the `Offset()`
-for the given pixel.
-
-The `dip::PixelTable` constructor takes either a filter shape and size as input, or
-a binary image. An optional additional input is the directon along which the runs are
-created. By default it makes runs along dimension 0, but maybe we can instead pick the
-optimal dimension, which is the one that makes the fewest runs. If the user doesn't
-specify a dimension, it is not important which dimension is used anyway, and we might
-as well pick a dimension that yields a more efficient iterator.
-Its members are `std::vector< dip::PixelRun > runs`, `processingDimension`, `stride`,
-and `numberOfPixels`.
 
 
 Processing an image slice by slice
@@ -290,7 +271,7 @@ in the time series one can use the `dip::ImageSliceIterator`:
 Here, the slice iterator `it` points at a 2D subimage of the 3D image `img`,
 in which the third dimension (dimension number 2) of `img` is removed. It is
 possible to read and write to the pixels of this slice, but it is not possible
-to strip or reforge it. 
+to strip or reforge it.
 When constructed, the iterator points at the slice for index 0. Each time it is
 incremented, the next slice is indexed. As with the other image iterators,
 testing it results in `false` when the iterator points past the last slice and
