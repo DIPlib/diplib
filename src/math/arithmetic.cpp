@@ -22,7 +22,7 @@ static void dip__Add(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -61,7 +61,7 @@ static void dip__Sub(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -100,7 +100,7 @@ static void dip__Mul(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -135,7 +135,7 @@ static void dip__MulSamples(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -221,7 +221,7 @@ static void dip__Div(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -261,7 +261,7 @@ static void dip__Mod(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -296,34 +296,13 @@ void Mod(
 }
 
 //
-template< typename T >
-static inline T invert( T v ) {
-   return -v;
-}
-template<>
-inline bin invert( bin v ) {
-   return !v;
-}
-template<>
-inline uint8 invert( uint8 v ) {
-   return std::numeric_limits< uint8 >::max() - v;
-}
-template<>
-inline uint16 invert( uint16 v ) {
-   return std::numeric_limits< uint16 >::max() - v;
-}
-template<>
-inline uint32 invert( uint32 v ) {
-   return std::numeric_limits< uint32 >::max() - v;
-}
-
 template< typename TPI >
 static void dip__Invert(
       std::vector< Framework::ScanBuffer > const& inBuffer,
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -331,7 +310,7 @@ static void dip__Invert(
    TPI* out = static_cast< TPI* >( outBuffer[ 0 ].buffer );
    for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
       // Tensor dimension is 1 because we request `Scan_TensorAsSpatialDim`
-      * out = invert( * in );
+      *out = saturated_inv( *in );
       in += inBuffer[ 0 ].stride;
       out += outBuffer[ 0 ].stride;
    }

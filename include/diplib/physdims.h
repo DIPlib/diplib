@@ -404,6 +404,9 @@ struct PhysicalQuantity {
    /// Retrieve the magnitude, discaring units.
    explicit operator double() const { return magnitude; };
 
+   /// Retrieve the magnitude, discaring units.
+   explicit operator bool() const { return static_cast< bool >( magnitude ); };
+
    /// Swaps the values of `*this` and `other`.
    void swap( PhysicalQuantity& other ) {
       using std::swap;

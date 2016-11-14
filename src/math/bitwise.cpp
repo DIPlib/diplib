@@ -19,7 +19,7 @@ static void dip__And(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -57,7 +57,7 @@ static void dip__Or(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -95,7 +95,7 @@ static void dip__Xor(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -133,7 +133,7 @@ static void dip__Not(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {

@@ -19,7 +19,7 @@ static void dip__Equal(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -58,7 +58,7 @@ static void dip__NotEqual(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -97,7 +97,7 @@ static void dip__Lesser(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -136,7 +136,7 @@ static void dip__Greater(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -175,7 +175,7 @@ static void dip__NotGreater(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {
@@ -214,7 +214,7 @@ static void dip__NotLesser(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {

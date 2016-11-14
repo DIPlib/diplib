@@ -31,7 +31,10 @@ void Scan(
 ) {
    std::size_t nIn = c_in.size();
    std::size_t nOut = c_out.size();
-   if( ( nIn == 0 ) && ( nOut == 0 ) ) { return; } // Duh!
+   if(( nIn == 0 ) && ( nOut == 0 )) {
+      // Duh!
+      return;
+   }
 
    // Check array sizes
    dip_ThrowIf( inBufferTypes.size() != nIn, E::ARRAY_ILLEGAL_SIZE );
@@ -120,14 +123,16 @@ void Scan(
    }
 
    // Can we treat the images as if they were 1D?
-   // TODO: Temporarily disabled. This only works if they all have strides in the same order (i.e. x first, then z, then y).
    bool scan1D = sizes.size() <= 1;
-   /*
    if( !scan1D ) {
       scan1D = opts != Scan_NeedCoordinates;
       if( scan1D ) {
          for( dip::uint ii = 0; ii < nIn; ++ii ) {
             if( !in[ ii ].HasSimpleStride() ) {
+               scan1D = false;
+               break;
+            }
+            if(( ii > 0 ) && !in[ ii ].HasSameDimensionOrder( in[ 0 ] )) {
                scan1D = false;
                break;
             }
@@ -139,12 +144,21 @@ void Scan(
                scan1D = false;
                break;
             }
+            if(( ii > 0 ) && !out[ ii ].HasSameDimensionOrder( out[ 0 ] )) {
+               scan1D = false;
+               break;
+            }
          }
       }
    }
-   */
+   if( scan1D && ( nIn > 0 ) && ( nOut > 0 )) {
+      // Input all have the same order, and output all are the same order. But are these the same?
+      if( !in[ 0 ].HasSameDimensionOrder( out[ 0 ] )) {
+         scan1D = false;
+      }
+   }
 
-   // If we can treat the images as 1D, convert them 1D.
+   // If we can treat the images as 1D, convert them to 1D.
    // Note we're only converting the copies of the headers, not the original ones.
    // Note also that if we are dealing with a 0D image, it also has a simple
    // stride and hence will be converted into 1D.
@@ -191,7 +205,7 @@ void Scan(
    // empty array, then the tensor needs to be expanded. If it is an empty
    // array, simply copy over the tensor elements the way they are.
    std::vector< std::vector< dip::sint >> lookUpTables( nIn );
-   if( ( opts == Scan_ExpandTensorInBuffer ) && ( opts != Scan_TensorAsSpatialDim ) ) {
+   if(( opts == Scan_ExpandTensorInBuffer ) && ( opts != Scan_TensorAsSpatialDim )) {
       for( dip::uint ii = 0; ii < nIn; ++ii ) {
          if( !in[ ii ].Tensor().HasNormalOrder() ) {
             inUseBuffer[ ii ] = true;
@@ -302,7 +316,7 @@ void Scan(
          position[ processingDim ] = sectionStart;
          dip::uint nPixels = std::min( bufferSize, sizes[ processingDim ] - sectionStart );
 
-         // Get points to input and ouput lines
+         // Get pointers to input and ouput lines
          //std::cout << "      sectionStart = " << sectionStart << std::endl;
          for( dip::uint ii = 0; ii < nIn; ++ii ) {
             //std::cout << "      inIndices[" << ii << "] = " << inIndices[ii] << std::endl;
@@ -311,7 +325,7 @@ void Scan(
                // to copy the buffer over again. This happens with singleton-expanded input images.
                // But it's easier to copy, and also safer as the lineFilter function could be bad and write in its input!
                CopyBuffer(
-                     in[ ii ].Pointer( inIndices[ ii ] + sectionStart * in[ ii ].Stride( processingDim ) ),
+                     in[ ii ].Pointer( inIndices[ ii ] + sectionStart * in[ ii ].Stride( processingDim )),
                      in[ ii ].DataType(),
                      in[ ii ].Stride( processingDim ),
                      in[ ii ].TensorStride(),
@@ -319,20 +333,17 @@ void Scan(
                      inBufferTypes[ ii ],
                      inScanBufs[ ii ].stride,
                      inScanBufs[ ii ].tensorStride,
-                     inScanBufs[ ii ].stride == 0 ? 1
-                                                  : bufferSize, // if stride == 0, copy only a single pixel because they're all the same
+                     inScanBufs[ ii ].stride == 0 ? 1 : bufferSize, // if stride == 0, copy only a single pixel because they're all the same
                      inScanBufs[ ii ].tensorLength,
                      lookUpTables[ ii ] );
             } else {
-               inScanBufs[ ii ].buffer = in[ ii ].Pointer(
-                     inIndices[ ii ] + sectionStart * in[ ii ].Stride( processingDim ) );
+               inScanBufs[ ii ].buffer = in[ ii ].Pointer( inIndices[ ii ] + sectionStart * in[ ii ].Stride( processingDim ));
             }
          }
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
             //std::cout << "      outIndices[" << ii << "] = " << outIndices[ii] << std::endl;
             if( !outUseBuffer[ ii ] ) {
-               outScanBufs[ ii ].buffer = out[ ii ].Pointer(
-                     outIndices[ ii ] + sectionStart * out[ ii ].Stride( processingDim ) );
+               outScanBufs[ ii ].buffer = out[ ii ].Pointer( outIndices[ ii ] + sectionStart * out[ ii ].Stride( processingDim ));
             }
          }
 
@@ -355,7 +366,7 @@ void Scan(
                      outBufferTypes[ ii ],
                      outScanBufs[ ii ].stride,
                      outScanBufs[ ii ].tensorStride,
-                     out[ ii ].Pointer( outIndices[ ii ] + sectionStart * out[ ii ].Stride( processingDim ) ),
+                     out[ ii ].Pointer( outIndices[ ii ] + sectionStart * out[ ii ].Stride( processingDim )),
                      out[ ii ].DataType(),
                      out[ ii ].Stride( processingDim ),
                      out[ ii ].TensorStride(),

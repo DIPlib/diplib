@@ -32,9 +32,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       //out.Copy( in1 );
       //out = out.At( 0 );
 
-      //mexPrintf( "About to call the DIPlib function:\n" );
-      //out.Fill(56.0e12);
-      //dip::Add( in1, in2, out, dip::DataType::SuggestArithmetic( in1.DataType(), in2.DataType() ) );
+      mexPrintf( "About to call the DIPlib function:\n" );
+      out.Fill(56.0e12);
+      dip::Add( in1, in2, out, dip::DataType::SuggestArithmetic( in1.DataType(), in2.DataType() ) );
 
       std::cout << "\nAt():\n";
       out = out.At( dip::Range(0,-1,2), dip::Range(0,4,3) );

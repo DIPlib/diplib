@@ -43,3 +43,6 @@ Specifically:
 - The keyword `const` comes after the type name it modifies: `dip::Image const& img`.
 
 - Braces and brackets have spaces on the inside, not the outside.
+
+- All functions local to a translation unit must be declared `static` to prevent
+  name space pollution. This also prevents them for being exported out of the library.

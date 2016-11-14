@@ -20,7 +20,7 @@ static void dip__GetMaximumAndMinimum(
       std::vector< Framework::ScanBuffer >& outBuffer,
       dip::uint bufferLength,
       dip::uint dimension,
-      UnsignedArray position,
+      UnsignedArray const& position,
       const void* functionParameters,
       void* functionVariables
 ) {

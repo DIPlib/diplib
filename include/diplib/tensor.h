@@ -313,42 +313,42 @@ class Tensor {
       /// not stored, and presumed to be 0 (happens with triangular and diagonal
       /// matrices only).
       std::vector< dip::sint > LookUpTable() const {
-         dip::sint M = ( dip::sint )rows_;
-         dip::sint N = ( dip::sint )Columns();
-         std::vector< dip::sint > LUT( N * N, -1 );
+         dip::uint M = rows_;
+         dip::uint N = Columns();
+         std::vector< dip::sint > LUT( N * M, -1 );
          dip::sint index = 0;
          switch( shape_ ) {
             case Shape::COL_VECTOR:
             case Shape::ROW_VECTOR:
             case Shape::COL_MAJOR_MATRIX:
-               for( dip::sint n = 0; n < N; ++n ) {
-                  for( dip::sint m = 0; m < M; ++m ) {
+               for( dip::uint n = 0; n < N; ++n ) {
+                  for( dip::uint m = 0; m < M; ++m ) {
                      LUT[ n * M + m ] = index;
                      ++index;
                   }
                }
                break;
             case Shape::ROW_MAJOR_MATRIX:
-               for( dip::sint m = 0; m < M; ++m ) {
-                  for( dip::sint n = 0; n < N; ++n ) {
+               for( dip::uint m = 0; m < M; ++m ) {
+                  for( dip::uint n = 0; n < N; ++n ) {
                      LUT[ n * M + m ] = index;
                      ++index;
                   }
                }
                break;
             case Shape::DIAGONAL_MATRIX:
-               for( dip::sint m = 0; m < M; ++m ) {
+               for( dip::uint m = 0; m < M; ++m ) {
                   LUT[ m * M + m ] = index;
                   ++index;
                }
                break;
             case Shape::SYMMETRIC_MATRIX:
-               for( dip::sint m = 0; m < M; ++m ) {
+               for( dip::uint m = 0; m < M; ++m ) {
                   LUT[ m * M + m ] = index;
                   ++index;
                }
-               for( dip::sint n = 1; n < N; ++n ) {
-                  for( dip::sint m = 0; m < n; ++m ) {
+               for( dip::uint n = 1; n < N; ++n ) {
+                  for( dip::uint m = 0; m < n; ++m ) {
                      LUT[ n * M + m ] = index;
                      LUT[ m * M + n ] = index;
                      ++index;
@@ -356,24 +356,24 @@ class Tensor {
                }
                break;
             case Shape::UPPTRIANG_MATRIX:
-               for( dip::sint m = 0; m < M; ++m ) {
+               for( dip::uint m = 0; m < M; ++m ) {
                   LUT[ m * M + m ] = index;
                   ++index;
                }
-               for( dip::sint n = 1; n < N; ++n ) {
-                  for( dip::sint m = 0; m < n; ++m ) {
+               for( dip::uint n = 1; n < N; ++n ) {
+                  for( dip::uint m = 0; m < n; ++m ) {
                      LUT[ n * M + m ] = index;
                      ++index;
                   }
                }
                break;
             case Shape::LOWTRIANG_MATRIX:
-               for( dip::sint m = 0; m < M; ++m ) {
+               for( dip::uint m = 0; m < M; ++m ) {
                   LUT[ m * M + m ] = index;
                   ++index;
                }
-               for( dip::sint n = 1; n < N; ++n ) {
-                  for( dip::sint m = 0; m < n; ++m ) {
+               for( dip::uint n = 1; n < N; ++n ) {
+                  for( dip::uint m = 0; m < n; ++m ) {
                      LUT[ m * M + n ] = index;
                      ++index;
                   }
