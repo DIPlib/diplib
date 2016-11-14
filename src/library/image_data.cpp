@@ -131,6 +131,19 @@ static UnsignedArray OffsetToCoordinates(
 }
 
 
+// Removes elements from the stride array that correspond to singleton dimensions (sizes[ii]==1).
+// Modifies the strides array.
+void RemoveSingletonsFromStrideArray( UnsignedArray const& sizes, IntegerArray strides ) {
+   dip::uint jj = 0;
+   for( dip::uint ii = 0; ii < strides.size(); ++ii ) {
+      if( sizes[ ii ] > 1 ) {
+         strides[ jj ] = strides[ ii ];
+         ++jj;
+      }
+   }
+   strides.resize( jj );
+}
+
 //
 // --- Library functions ---
 //
@@ -253,13 +266,17 @@ void Image::GetSimpleStrideAndOrigin( dip::uint& sstride, void*& porigin ) const
 bool Image::HasSameDimensionOrder( Image const& other ) const {
    dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
    dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
-   // TODO: ignore singleton dimensions?
-   if( strides_.size() != other.strides_.size() ) {
+   // Remove singleton dimensions in stride array
+   IntegerArray s1 = strides_;
+   RemoveSingletonsFromStrideArray( sizes_, s1 );
+   // Remove singleton dimensions in other's stride array
+   IntegerArray s2 = other.strides_;
+   RemoveSingletonsFromStrideArray( other.sizes_, s2 );
+   // Compare number of non-singleton dimensions
+   if( s1.size() != s2.size() ) {
       return false;
    }
    // We sort s1, keeping s2 in sync. s2 must be sorted also.
-   IntegerArray s1 = strides_;
-   IntegerArray s2 = other.strides_;
    s1.sort( s2 );
    for( dip::uint ii = 1; ii < s2.size(); ++ii ) {
       if( s2[ ii ] < s2[ ii - 1 ] ) {
