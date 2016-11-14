@@ -24,3 +24,12 @@ the introductory documentation.
 
   Their interfaces are not exactly compatible, but it should be relatively straightforward
   to port old line functions to use the new framework.
+
+- Second order extrapolation boundary extension didn't do as advertised in the old DIPlib.
+  Also the first order extrapolation couldn't have worked correctly with unsigned integers.
+  The new implementation fits a 2nd order polynomial that reaches 0 at the end of the extended
+  boundary, yielding a continuous first derivative at the boundary. A third order extrapolation
+  has been added, which works similarly but yields a continuous second derivative at the boundary.
+  These functions are quite noise sensitive, however, and I expect they might produce high
+  frequencies along the edge.
+  TODO: should we make first order extrapolation also reach zero?

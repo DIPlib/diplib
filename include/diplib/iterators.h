@@ -376,10 +376,9 @@ class ImageIterator {
             ptr_( static_cast< pointer >( image.Origin() )),
             coords_( image.Dimensionality(), 0 ),
             procDim_( procDim ),
-            boundaryCondition_( image.Dimensionality(), BoundaryCondition::DEFAULT ) {
+            boundaryCondition_( BoundaryArrayUseParameter( bc, image.Dimensionality() ) ) {
          dip_ThrowIf( !image_->IsForged(), E::IMAGE_NOT_FORGED );
          dip_ThrowIf( image_->DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
-         SetBoundaryCondition( bc );
       }
       /// Swap
       void swap( ImageIterator& other ) {
@@ -522,12 +521,11 @@ class ImageIterator {
       }
       /// Return the processing dimension, the direction of the lines over which the iterator iterates
       dip::sint ProcessingDimension() const { return HasProcessingDimension() ? procDim_ : -1; }
-      /// Set the boundary condition for accessing pixels outside the image boundary; dimensions not specified will
-      /// use the default boundary condition.
+      /// Set the boundary condition for accessing pixels outside the image boundary; an empty array sets
+      /// all dimensions to the default value, and an array with a single element sets all dimensions to
+      /// that value.
       void SetBoundaryCondition( BoundaryConditionArray const& bc ) {
-         for( dip::uint ii = 0; ii < std::min( bc.size(), boundaryCondition_.size() ); ++ii ) {
-            boundaryCondition_[ ii ] = bc[ ii ];
-         }
+         boundaryCondition_ = BoundaryArrayUseParameter( bc, image_->Dimensionality() );
       }
       /// Set the boundary condition for accessing pixels outside the image boundary, for the given dimension
       void SetBoundaryCondition( dip::uint d, BoundaryCondition bc ) {
@@ -606,13 +604,12 @@ class JointImageIterator {
             outPtr_( static_cast< outT* >( output.Origin() )),
             coords_( input.Dimensionality(), 0 ),
             procDim_( procDim ),
-            boundaryCondition_( input.Dimensionality(), BoundaryCondition::DEFAULT ) {
+            boundaryCondition_( BoundaryArrayUseParameter( bc, input.Dimensionality() ) ) {
          dip_ThrowIf( !inImage_->IsForged(), E::IMAGE_NOT_FORGED );
          dip_ThrowIf( !outImage_->IsForged(), E::IMAGE_NOT_FORGED );
          dip_ThrowIf( inImage_->DataType() != DataType( inT(0) ), E::WRONG_DATA_TYPE );
          dip_ThrowIf( outImage_->DataType() != DataType( outT(0) ), E::WRONG_DATA_TYPE );
          dip_ThrowIf( !CompareSizes(), E::SIZES_DONT_MATCH );
-         SetBoundaryCondition( bc );
       }
       /// Swap
       void swap( JointImageIterator& other ) {
@@ -755,9 +752,7 @@ class JointImageIterator {
       /// Set the boundary condition for accessing pixels outside the image boundary; dimensions not specified will
       /// use the default boundary condition.
       void SetBoundaryCondition( BoundaryConditionArray const& bc ) {
-         for( dip::uint ii = 0; ii < std::min( bc.size(), boundaryCondition_.size() ); ++ii ) {
-            boundaryCondition_[ ii ] = bc[ ii ];
-         }
+         boundaryCondition_ = BoundaryArrayUseParameter( bc, inImage_->Dimensionality() );
       }
       /// Set the boundary condition for accessing pixels outside the image boundary, for the given dimension
       void SetBoundaryCondition( dip::uint d, BoundaryCondition bc ) {

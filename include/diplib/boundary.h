@@ -15,39 +15,74 @@
 
 
 /// \file
-/// Defines dip::BoundaryCondition and related types, and the functions that
+/// Defines `dip::BoundaryCondition` and related types, and the functions that
 /// implement the logic behind the boundary conditions. Boundary conditions
 /// control what sample value is read when reading outside of the boundary
 /// of the image.
-
 
 namespace dip {
 
 /// Ennumerates various ways of extending image data beyond its boundary. This ennumerator
 /// is used by the framework functions and some internal functions. Externally, the
 /// boundary condition is represented by strings.
+///
+/// Most functions will take a string instead of a `dip::BoundaryCondition` constant.
+/// The following table links boundary condition constants and their string representations.
 enum class BoundaryCondition {
-      SYMMETRIC_MIRROR,          ///< The data is mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
-      ASYMMETRIC_MIRROR,         ///< The data is mirrored and inverted.
-      PERIODIC,                  ///< The data is repeated periodically, with the value at -1 equal to the value of the last pixel.
-      ASYMMETRIC_PERIODIC,       ///< The data is repeated periodically and inverted.
-      ADD_ZEROS,                 ///< The boundary is filled with zeros.
-      ADD_MAX_VALUE,             ///< The boundary is filled with the max value for the data type.
-      ADD_MIN_VALUE,             ///< The boundary is filled with the min value for the data type.
-      ZERO_ORDER_EXTRAPOLATE,    ///< The value at the border is repeated indefinitely.
-      FIRST_ORDER_EXTRAPOLATE,   ///< A linear function is defined based on the two values closest to the border (dangerous to use!).
-      SECOND_ORDER_EXTRAPOLATE,  ///< A quadratic function is defined based on the three values closest to the border (dangerous to use!).
-      DEFAULT = SYMMETRIC_MIRROR ///< The default value, currently equal to SYMMETRIC_MIRROR.
+      SYMMETRIC_MIRROR,          ///< "mirror" - The data is mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
+      ASYMMETRIC_MIRROR,         ///< "asym mirror" - The data is mirrored and inverted.
+      PERIODIC,                  ///< "periodic" - The data is repeated periodically, with the value at -1 equal to the value of the last pixel.
+      ASYMMETRIC_PERIODIC,       ///< "asym periodic" - The data is repeated periodically and inverted.
+      ADD_ZEROS,                 ///< "add zeros" - The boundary is filled with zeros.
+      ADD_MAX_VALUE,             ///< "add max" - The boundary is filled with the max value for the data type.
+      ADD_MIN_VALUE,             ///< "add min" - The boundary is filled with the min value for the data type.
+      ZERO_ORDER_EXTRAPOLATE,    ///< "zero order" - The value at the border is repeated indefinitely.
+      FIRST_ORDER_EXTRAPOLATE,   ///< "first order" - A linear function is defined based on the two values closest to the border.
+      SECOND_ORDER_EXTRAPOLATE,  ///< "second order" - A quadratic function is defined based on the two values closest to the border, the function reaches zero at the end of the extended boundary.
+      THIRD_ORDER_EXTRAPOLATE,   ///< "third order" - A cubic function is defined based on the three values closest to the border, the function reaches zero at the end of the extended boundary.
+      DEFAULT = SYMMETRIC_MIRROR ///< "default" or "" - The default value, currently equal to `SYMMETRIC_MIRROR`.
 };
 
 using BoundaryConditionArray = DimensionArray< BoundaryCondition >; ///< An array to hold boundary conditions.
 
 
 /// Convert a string to a boundary condition.
-BoundaryCondition StringToBoundaryCondition( String bc ); // TODO
+inline BoundaryCondition StringToBoundaryCondition( String bc ) {
+   // TODO: This is not the most efficient way of looking up a string. What are good alternatives? Perfect hash? Hard-coded trie (==prefix tree)?
+   if( bc.empty() ) { return BoundaryCondition::DEFAULT; }
+   else if( bc == "default" ) { return BoundaryCondition::DEFAULT; }
+   else if( bc == "mirror" ) { return BoundaryCondition::SYMMETRIC_MIRROR; }
+   else if( bc == "asym mirror" ) { return BoundaryCondition::ASYMMETRIC_MIRROR; }
+   else if( bc == "periodic" ) { return BoundaryCondition::PERIODIC; }
+   else if( bc == "asym periodic" ) { return BoundaryCondition::ASYMMETRIC_PERIODIC; }
+   else if( bc == "add zeros" ) { return BoundaryCondition::ADD_ZEROS; }
+   else if( bc == "add max" ) { return BoundaryCondition::ADD_MAX_VALUE; }
+   else if( bc == "add min" ) { return BoundaryCondition::ADD_MIN_VALUE; }
+   else if( bc == "zero order" ) { return BoundaryCondition::ZERO_ORDER_EXTRAPOLATE; }
+   else if( bc == "first order" ) { return BoundaryCondition::FIRST_ORDER_EXTRAPOLATE; }
+   else if( bc == "second order" ) { return BoundaryCondition::SECOND_ORDER_EXTRAPOLATE; }
+   else if( bc == "third order" ) { return BoundaryCondition::THIRD_ORDER_EXTRAPOLATE; }
+   else dip_Throw( "Boundary condition not recognized" );
+}
 
 /// Convert an array of strings to an array of boundary conditions.
-BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray bc ); // TODO
+inline BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray bc ) {
+   BoundaryConditionArray out( bc.size() );
+   for( dip::sint ii = 0; ii < bc.size(); ++ii ) {
+      out[ ii ] = StringToBoundaryCondition( bc[ ii ] );
+   }
+   return out;
+}
+
+/// Check the length of a `BoundaryConditionArray`, and extend it if necessary and possible. The output will
+/// have `nDims` elements. If the input has a single value, it will be used for all dimensions. If the
+/// input is an empty array, the default boundary condition will be used for all dimensions. If the array
+/// has `nDims` elements, it is copied unchanged. For any other length, an exception is thrown.
+///
+/// \see  ArrayUseParameter
+inline BoundaryConditionArray BoundaryArrayUseParameter( BoundaryConditionArray const& bc, dip::uint nDims ) {
+   return ArrayUseParameter( bc, nDims, BoundaryCondition::DEFAULT );
+}
 
 
 /// Copies the sample values at `coords` into the output iterator `it`. The output iterator needs to
@@ -55,8 +90,7 @@ BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray bc ); //
 /// falls outside the image, then the boundary condition `bc` is used to determine what values to write
 /// into the output iterator.
 ///
-/// `dip::BoundaryCondition::FIRST_ORDER_EXTRAPOLATE` and `dip::BoundaryCondition::SECOND_ORDER_EXTRAPOLATE`
-/// do the same thing as `dip::BoundaryCondition::ZERO_ORDER_EXTRAPOLATE`, because their functionality
+/// First, second and third order interpolations are not implemented, because their functionality
 /// is impossible to reproduce in this simple function. Use `dip::ExtendImage` to get the functionality
 /// of these boundary conditions.
 template< typename DataType, typename OutputIterator >
@@ -103,10 +137,12 @@ void ReadPixelWithBoundaryCondition(
                }
                return; // We're done!
             case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
-            case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:  // not implemented, difficult to implement in this framework.
-            case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
                coords[ ii ] = clamp( coords[ ii ], dip::sint( 0 ), sz - 1 );
                break;
+            case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:  // not implemented, difficult to implement in this framework.
+            case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
+            case BoundaryCondition::THIRD_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
+               dip_Throw("Boundary condition not implemented.")
          }
       }
    }
@@ -137,7 +173,6 @@ inline Image ExtendImage( Image in, UnsignedArray boundary, BoundaryConditionArr
    return out;
 }
 
-// TODO: Write a helper function that takes an input parameter array, compares its length against the dimensionality of an image, and extends it if it has a single element.
 
 } // namespace dip
 

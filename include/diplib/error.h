@@ -48,6 +48,7 @@ constexpr char const* WRONG_DATA_TYPE = "Data type does not match";
 constexpr char const* DIMENSIONALITY_EXCEEDS_LIMIT = "Dimensionality exceeds address limit";
 constexpr char const* ILLEGAL_DIMENSIONALITY = "Illegal dimensionality";
 constexpr char const* DIMENSIONALITY_NOT_SUPPORTED = "Dimensionality not supported";
+constexpr char const* DIMENSIONALITIES_DONT_MATCH = "Dimensionalities don't match";
 constexpr char const* ILLEGAL_DIMENSION = "Illegal dimension";
 constexpr char const* SIZES_DONT_MATCH = "Sizes don't match";
 constexpr char const* NOT_SCALAR = "Image is not scalar";
@@ -79,11 +80,6 @@ constexpr char const* INVALID_FLAG = "Invalid flag";
 constexpr char const* PARAMETER_OUT_OF_RANGE = "Parameter value out of range";
 constexpr char const* ARRAY_PARAMETER_WRONG_LENGTH = "Array parameter has the wrong number of elements";
 constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supported";
-
-// pixel table errors
-constexpr char const* PIXEL_TABLE_IS_NOT_ALLOCATED = "PixelTable is not allocated";
-constexpr char const* PIXEL_TABLE_NOT_ENOUGH_RUNS = "PixelTable does not have enough runs";
-constexpr char const* PIXEL_TABLE_RUN_HAS_NO_DATA = "PixelTable run has no data";
 
 }
 
