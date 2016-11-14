@@ -109,6 +109,23 @@ using UnsignedArray = DimensionArray< dip::uint >;  ///< An array to hold dimens
 using FloatArray = DimensionArray< dip::dfloat >;   ///< An array to hold filter parameters.
 using BooleanArray = DimensionArray< bool >;        ///< An array used as a dimension selector.
 
+/// Check the length of an array, and extend it if necessary and possible. This function is used where a function's
+/// input parameter is an array that is supposed to match the image dimensionality `nDims`. The user can give an
+/// array of that length, or an array with a single value, which will be used for all dimensions, or an empty array,
+/// in which case the default value `defaultValue` will be used for all dimensions.
+template< typename T >
+inline DimensionArray< T > ArrayUseParameter( DimensionArray< T > const& array, dip::uint nDims, T defaultValue = 0 ) {
+   if( array.empty() ) {
+      return DimensionArray< T >( nDims, defaultValue );
+   } else if( array.size() == 1 ) {
+      return DimensionArray< T >( nDims, array[ 0 ] );
+   } else if( array.size() == nDims ) {
+      return array;
+   } else {
+      dip_Throw( E::ARRAY_PARAMETER_WRONG_LENGTH );
+   }
+}
+
 /* THESE DON'T COMPILE
 
 /// Cast an UnsignedArray to an IntegerArray.
