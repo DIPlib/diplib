@@ -294,7 +294,7 @@ class DimensionArray {
          for( size_type ii = 1; ii < size_; ++ii ) {
             T elem = data_[ ii ];
             size_type jj = ii;
-            while( ( jj > 0 ) && ( data_[ jj - 1 ] > elem ) ) {
+            while(( jj > 0 ) && ( data_[ jj - 1 ] > elem )) {
                data_[ jj ] = data_[ jj - 1 ];
                --jj;
             }
@@ -312,7 +312,7 @@ class DimensionArray {
             T elem = data_[ ii ];
             S otherelem = other[ ii ];
             size_type jj = ii;
-            while( ( jj > 0 ) && ( data_[ jj - 1 ] > elem ) ) {
+            while(( jj > 0 ) && ( data_[ jj - 1 ] > elem )) {
                data_[ jj ] = data_[ jj - 1 ];
                other[ jj ] = other[ jj - 1 ];
                --jj;
@@ -320,6 +320,33 @@ class DimensionArray {
             data_[ jj ] = elem;
             other[ jj ] = otherelem;
          }
+      }
+      /// Returns an array with indices into the array, sorted from smallest value to largest.
+      DimensionArray< size_type > sortedIndices() const {
+         DimensionArray< size_type > out( size_ );
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            out[ ii ] = ii;
+         }
+         // Using insertion sort because we expect the array to be small.
+         for( size_type ii = 1; ii < size_; ++ii ) {
+            size_type elem = out[ ii ];
+            size_type jj = ii;
+            while(( jj > 0 ) && ( data_[ out[ jj - 1 ]] > data_[ elem ] )) {
+               out[ jj ] = out[ jj - 1 ];
+               --jj;
+            }
+            out[ jj ] = elem;
+         }
+         return out;
+      }
+
+      /// Compute the sum of the elements in the array.
+      T sum() const {
+         T p = 0;
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            p += data_[ ii ];
+         }
+         return p;
       }
 
       /// Compute the product of the elements in the array.
@@ -329,6 +356,48 @@ class DimensionArray {
             p *= data_[ ii ];
          }
          return p;
+      }
+
+      /// True if all elements evaluate to true.
+      bool all() const {
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            if( !data_[ ii ] ) {
+               return false;
+            }
+         }
+         return true;
+      }
+
+      /// True if one element evaluates to true.
+      bool any() const {
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            if( data_[ ii ] ) {
+               return true;
+            }
+         }
+         return false;
+      }
+
+      /// Count of number of elements that evaluate to true.
+      size_type count() const {
+         size_type n = 0;
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            if( data_[ ii ] ) {
+               ++n;
+            }
+         }
+         return n;
+      }
+
+      /// True if all elements are equal or smaller than those in other
+      bool allSmallerOrEqual( DimensionArray const& other ) const {
+         assert( size_ == other.size_ );
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            if( data_[ ii ] > other.data_[ ii] ) {
+               return false;
+            }
+         }
+         return true;
       }
 
    private:
