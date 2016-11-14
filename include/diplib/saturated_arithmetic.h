@@ -88,17 +88,17 @@ constexpr inline const T saturated_sub( T const& lhs, T const& rhs ) {
 template<>
 constexpr inline const uint32 saturated_sub( uint32 const& lhs, uint32 const& rhs ) {
    uint32 res = lhs - rhs;
-   return res > lhs ? 0 : res;
+   return res > lhs ? uint32( 0 ) : res;
 }
 template<>
 constexpr inline const uint16 saturated_sub( uint16 const& lhs, uint16 const& rhs ) {
    uint16 res = lhs - rhs;
-   return res > lhs ? 0 : res;
+   return res > lhs ? uint16( 0 ) : res;
 }
 template<>
 constexpr inline const uint8 saturated_sub( uint8 const& lhs, uint8 const& rhs ) {
    uint8 res = lhs - rhs;
-   return res > lhs ? 0 : res;
+   return res > lhs ? uint8( 0 ) : res;
 }
 // Signed integers are more complex, we simply use a larger integer type to do the operation.
 // TODO: overflow only happens if both operands have the opposite sign, opportunity for improvement?
@@ -178,6 +178,49 @@ constexpr inline const T saturated_div( T const& lhs, T const& rhs ) {
 template<>
 constexpr inline const bin saturated_div( bin const& lhs, bin const& rhs ) {
    return lhs ^ rhs;
+}
+
+
+//
+// Inversion
+//
+
+/// Inverts a value using saturated arithmetic.
+// The base template is good for floats and complex.
+template< typename T >
+constexpr inline const T saturated_inv( T const& v ) {
+   return -v;
+}
+// Unsigned integers invert by subtracting from max value.
+template<>
+constexpr inline const uint32 saturated_inv( uint32 const& v ) {
+   return std::numeric_limits< uint32 >::max() - v;
+}
+template<>
+constexpr inline const uint16 saturated_inv( uint16 const& v ) {
+   return std::numeric_limits< uint16 >::max() - v;
+}
+template<>
+constexpr inline const uint8 saturated_inv( uint8 const& v ) {
+   return std::numeric_limits< uint8 >::max() - v;
+}
+// Signed integers seem simple but overflow can happen if the value is equal to lowest possible value
+template<>
+constexpr inline const sint32 saturated_inv( sint32 const& v ) {
+   return v == std::numeric_limits< sint32 >::lowest() ? std::numeric_limits< sint32 >::max() : -v;
+}
+template<>
+constexpr inline const sint16 saturated_inv( sint16 const& v ) {
+   return v == std::numeric_limits< sint16 >::lowest() ? std::numeric_limits< sint16 >::max() : -v;
+}
+template<>
+constexpr inline const sint8 saturated_inv( sint8 const& v ) {
+   return v == std::numeric_limits< sint8 >::lowest() ? std::numeric_limits< sint8 >::max() : -v;
+}
+// Binary inversion is equivalent to NOT
+template<>
+constexpr inline const bin saturated_inv( bin const& v ) {
+   return !v;
 }
 
 
