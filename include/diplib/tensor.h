@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Tensor class and related functions.
  *
- * (c)2014-2015, Cris Luengo.
+ * (c)2014-2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -22,38 +22,43 @@
 
 
 /// \file
-/// Defines the dip::Tensor class. This file is always included through diplib.h.
+/// \brief Defines the dip::Tensor class. This file is always included through `diplib.h`.
 
 
 namespace dip {
+
+
+/// \addtogroup infrastructure
+/// \{
+
 
 //
 // The Tensor class
 //
 
-/// Describes the shape of a tensor, but doesn't actually contain tensor
-/// data.
-/// Used internally by the dip::Image and dip::Pixel objects.
+/// \brief Describes the shape of a tensor, but doesn't actually contain tensor data.
+///
+/// Used internally by the `dip::Image` objects.
 /// It is default-constructible, movable and copiable.
 class Tensor {
 
    public:
 
-      /// Possible shapes the tensor can have.
+      /// \brief Possible shapes the tensor can have.
       ///
-      /// Shape::COL_MAJOR_MATRIX is stored as follows:
+      /// `Shape::COL_MAJOR_MATRIX` is stored as follows:
       ///
       ///      |0 3 6|
       ///      |1 4 7|
       ///      |2 5 8|
       ///
-      /// Shape::ROW_MAJOR_MATRIX is its transpose. These two shapes always have
+      /// `Shape::ROW_MAJOR_MATRIX` is its transpose. These two shapes always have
       /// more than one column and row. A tensor with only one row or one column
-      /// is a vector (Shape::COL_VECTOR or Shape::ROW_VECTOR).
+      /// is a vector (`Shape::COL_VECTOR` or `Shape::ROW_VECTOR`).
       ///
-      /// Shape::DIAGONAL_MATRIX stores only the diagonal elements.
+      /// `Shape::DIAGONAL_MATRIX` stores only the diagonal elements.
       ///
-      /// Shape::SYMMETRIC_MATRIX and Shape::UPPTRIANG_MATRIX store the
+      /// `Shape::SYMMETRIC_MATRIX` and `Shape::UPPTRIANG_MATRIX` store the
       /// values in the upper triangle only, as follows:
       ///
       ///      |0 4 5 7|
@@ -63,13 +68,13 @@ class Tensor {
       ///
       /// Here, `x` indicates values that are not stored.
       ///
-      /// Shape::LOWTRIANG_MATRIX is the transpose of Shape::UPPTRIANG_MATRIX.
+      /// `Shape::LOWTRIANG_MATRIX` is the transpose of `Shape::UPPTRIANG_MATRIX`.
       ///
       /// We use the given ordering for symmetric and triangular matrices
       /// because this makes it easy to extract the diagonal without having
       /// to copy data (it's just a window over the full tensor). Because it
       /// is a little awkward finding the right elements given this ordering,
-      /// the function dip::Tensor::LookUpTable prepares a table that can be used to access
+      /// the function `dip::Tensor::LookUpTable` prepares a table that can be used to access
       /// any tensor element given the row and column number. This function
       /// should help make more generic functions that can access tensor elements
       /// without paying attention to the tensor's Shape value.
@@ -84,15 +89,15 @@ class Tensor {
             LOWTRIANG_MATRIX, ///< a lower-triangular matrix (stores n(n+1)/2 elements)
       };
 
-      /// Creates a Shape::COL_VECTOR with one element (scalar).
+      /// Creates a `Shape::COL_VECTOR` with one element (scalar).
       Tensor() {
          SetScalar();
       }
-      /// Creates a Shape::COL_VECTOR.
+      /// Creates a `Shape::COL_VECTOR`.
       explicit Tensor( dip::uint n ) {
          SetVector( n );
       }
-      /// Creates a Shape::COL_MAJOR_MATRIX.
+      /// Creates a `Shape::COL_MAJOR_MATRIX`.
       Tensor( dip::uint rows, dip::uint cols ) {
          SetMatrix( rows, cols );
       }
@@ -107,7 +112,7 @@ class Tensor {
       }
       /// Tests the tensor shape.
       bool IsVector() const {
-         return ( shape_ == Shape::COL_VECTOR ) || ( shape_ == Shape::ROW_VECTOR );
+         return (( shape_ == Shape::COL_VECTOR ) || ( shape_ == Shape::ROW_VECTOR )) && ( elements_ > 1 );
       }
       /// Tests the tensor shape.
       bool IsDiagonal() const {
@@ -209,24 +214,27 @@ class Tensor {
                break;
          }
       }
-      /// Sets the tensor shape, results in a Shape::COL_VECTOR with one element (scalar).
+      /// Sets the tensor shape, results in a `Shape::COL_VECTOR` with one element (scalar).
       void SetScalar() {
          shape_ = Shape::COL_VECTOR;
          elements_ = rows_ = 1;
       }
       /// Sets the tensor shape, results in a Shape::COL_VECTOR.
       void SetVector( dip::uint n ) {
+         dip_ThrowIf( n == 0, "Number of vector elements must be non-zero" );
          shape_ = Shape::COL_VECTOR;
          elements_ = rows_ = n;
       }
       /// Sets the tensor shape, results in a Shape::COL_MAJOR_MATRIX.
       void SetMatrix( dip::uint rows, dip::uint cols ) {
+         dip_ThrowIf( rows == 0, "Number of rows must be non-zero" );
+         dip_ThrowIf( cols == 0, "Number of columns must be non-zero" );
          shape_ = Shape::COL_MAJOR_MATRIX;
          elements_ = rows * cols;
          rows_ = rows;
          CorrectShape();
       }
-      /// Sets the tensor size, always results in a Shape::COL_VECTOR or Shape::COL_MAJOR_MATRIX.
+      /// Sets the tensor size, always results in a `Shape::COL_VECTOR` or `Shape::COL_MAJOR_MATRIX`.
       void SetSizes( UnsignedArray const& sizes ) {
          switch( sizes.size() ) {
             case 0:
@@ -238,11 +246,11 @@ class Tensor {
             case 2:
                SetMatrix( sizes[ 0 ], sizes[ 1 ] );
                break;
-            default: dip_Throw( "Tensor dimensons higher than 2 not supported." );
+            default: dip_Throw( "Tensor dimensionalities higher than 2 not supported." );
          }
       }
 
-      /// Changes the tensor shape without changing the number of elements, results in a Shape::COL_MAJOR_MATRIX.
+      /// Changes the tensor shape without changing the number of elements, results in a `Shape::COL_MAJOR_MATRIX`.
       void ChangeShape( dip::uint rows ) {
          if( rows_ != rows ) {
             dip_ThrowIf( elements_ % rows, "Cannot reshape tensor to requested size" );
@@ -251,7 +259,7 @@ class Tensor {
             CorrectShape();
          }
       }
-      /// Changes the tensor shape without changing the number of elements, results in a Shape::COL_VECTOR.
+      /// Changes the tensor shape without changing the number of elements, results in a `Shape::COL_VECTOR`.
       void ChangeShape() {
          shape_ = Shape::COL_VECTOR;
          elements_ = rows_;
@@ -293,7 +301,7 @@ class Tensor {
          }
       }
 
-      /// Returns true for tensors that are stored in column-major order (all
+      /// \brief Returns true for tensors that are stored in column-major order (all
       /// vectors and non-transposed full tensors).
       bool HasNormalOrder() const {
          switch( shape_ ) {
@@ -306,7 +314,8 @@ class Tensor {
          }
       }
 
-      /// Returns a look-up table that you can use to find specific tensor elements.
+      /// \brief Returns a look-up table that you can use to find specific tensor elements.
+      ///
       /// Given a tensor with `M` rows and `N` columns, tensor element `(m,n)` can
       /// be found by adding `Tensor::LookUpTable()[n*M+m] * tstride` to the pixel's
       /// pointer. If the value in the look-up table is -1, the tensor element is
@@ -383,7 +392,7 @@ class Tensor {
          return LUT;
       }
 
-      /// Swaps the contents of `*this` and `other`.
+      /// Swaps the contents of `this` and `other`.
       void swap( Tensor& other ) {
          using std::swap;
          swap( shape_, other.shape_ );
@@ -414,6 +423,8 @@ class Tensor {
 inline void swap( Tensor& v1, Tensor& v2 ) {
    v1.swap( v2 );
 }
+
+/// \}
 
 } // namespace dip
 

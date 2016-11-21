@@ -23,21 +23,29 @@
 
 
 /// \file
-/// Numeric algorithms and constants unrelated to images.  This file is always included through diplib.h.
+/// \brief Numeric algorithms and constants unrelated to images. This file is always included through `diplib.h`.
+/// \see numeric
 
 
 namespace dip {
 
-/// The constant pi.
+
+/// \defgroup numeric Numeric algorithms and constants
+/// \ingroup infrastructure
+/// \brief Functions and constants to be used in numeric computation, unrelated to images.
+/// \{
+
+
+/// \brief The constant pi.
 static const double pi = std::acos( -1 );
 
-/// Compute the greatest common denominator of two positive integers.
+/// \brief Compute the greatest common denominator of two positive integers.
 // `std::gcd` will be available in C++17.
 inline dip::uint gcd( dip::uint a, dip::uint b ) {
    return b == 0 ? a : gcd( b, a % b );
 }
 
-/// Integer division, return ceil.
+/// \brief Integer division, return ceil.
 inline dip::uint div_ceil( dip::uint lhs, dip::uint rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
@@ -45,7 +53,7 @@ inline dip::uint div_ceil( dip::uint lhs, dip::uint rhs ) {
    return ( lhs - 1 ) / rhs + 1;
 }
 
-/// Integer division, return ceil.
+/// \brief Integer division, return ceil.
 inline dip::sint div_ceil( dip::sint lhs, dip::sint rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
@@ -61,7 +69,7 @@ inline dip::sint div_ceil( dip::sint lhs, dip::sint rhs ) {
    }
 }
 
-/// Integer division, return floor.
+/// \brief Integer division, return floor.
 inline dip::uint div_floor( dip::uint lhs, dip::uint rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
@@ -69,7 +77,7 @@ inline dip::uint div_floor( dip::uint lhs, dip::uint rhs ) {
    return lhs / rhs;
 }
 
-/// Integer division, return floor.
+/// \brief Integer division, return floor.
 inline dip::sint div_floor( dip::sint lhs, dip::sint rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
@@ -85,22 +93,24 @@ inline dip::sint div_floor( dip::sint lhs, dip::sint rhs ) {
    }
 }
 
-/// Integer division, return rounded.
+/// \brief Integer division, return rounded.
 inline dip::uint div_round( dip::uint lhs, dip::uint rhs ) {
    return div_floor( lhs + rhs / 2, rhs );
 }
 
-/// Integer division, return rounded.
+/// \brief Integer division, return rounded.
 inline dip::sint div_round( dip::sint lhs, dip::sint rhs ) {
    return div_floor( lhs + rhs / 2, rhs );
 }
 
-/// Clamps a value between a min and max value (a.k.a. clip, saturate, etc.).
+/// \brief Clamps a value between a min and max value (a.k.a. clip, saturate, etc.).
 // `std::clamp` will be available in C++17.
 template< typename T >
 constexpr inline const T& clamp( const T& v, const T& lo, const T& hi ) {
    return std::min( std::max( v, lo ), hi );
 }
+
+/// \}
 
 } // namespace dip
 

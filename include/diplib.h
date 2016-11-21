@@ -10,28 +10,29 @@
 #ifndef DIPLIB_H
 #define DIPLIB_H
 
-#include "diplib/operators.h" // This file includes all the others hierarchically.
+
+#include "diplib/dimension_array.h"
+#include "diplib/types.h"
+#include "diplib/numeric.h"
+#include "diplib/clamp_cast.h"
+#include "diplib/error.h"
+#include "diplib/datatype.h"
+#include "diplib/tensor.h"
+#include "diplib/physdims.h"
+#include "diplib/image.h"
+#include "diplib/operators.h"
 
 
 /// \file
-/// This is the main include file for the DIPlib library.
-/// It contains definitions of the core classes in the \ref dip namespace,
-/// declarations of the most commonly used library functions, and
-/// definitions of some simple inline functions. Include other header
-/// files as needed for additional library functionality.
+/// \brief This is the main include file for the DIPlib library.
 ///
-/// These are the header files included through diplib.h:
-///   * diplib/datatype.h
-///   * diplib/dimensionarray.h
-///   * diplib/clamp_cast.h
-///   * diplib/error.h
-///   * diplib/image.h
-///   * diplib/math.h
-///   * diplib/numeric.h
-///   * diplib/operators.h
-///   * diplib/physdims.h
-///   * diplib/tensor.h
-///   * diplib/types.h
+/// It declares all classes, functions, macros and constants that form the basic
+/// library infrastructure. Everything is declared within the \ref `dip` namespace.
+/// This header file is the core of DIPlib. To access image processing or analysis
+/// functionality, include their corresponding header files.
 
+
+/// \defgroup infrastructure The library infrastructure
+/// \brief The nuts and bolts that make it all work
 
 #endif // DIPLIB_H

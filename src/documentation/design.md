@@ -1,7 +1,7 @@
 DIPlib 3.0 design decisions {#design}
 ===
 
-This page lists some of the design decisions that went into *DIPlib 3.0*.
+This page gives reasons behind some of the design choices of *DIPlib 3.0*.
 Many of these decisions are inherited from the previous version of the library,
 and some new ones are made possible by the port to C++.
 
@@ -158,7 +158,7 @@ An other advantage is having fewer possibilities for name clashes when defining
 a lot of enumerator constants for the many, many options accumulated of the
 large collection of functions and algorithms in *DIPlib*.
 
-However, for infrastrucute functions not typically exposed in interfaces (i.e.
+However, for infrastructure functions not typically exposed in interfaces (i.e.
 the functions that *DIPlib* uses internally to do its work) we do define
 numeric constants for options. For example, see the enumerator `dip::Options::ThrowException`,
 or any of the flags defined through \ref `DIP_DECLARE_OPTIONS`. These are more efficient

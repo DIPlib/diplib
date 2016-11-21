@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for exceptions and support functions.
  *
- * (c)2014-2015, Cris Luengo.
+ * (c)2014-2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -22,12 +22,18 @@
 
 
 /// \file
-/// Defines error macros and default error strings. This file is always included through diplib.h.
+/// \brief Defines error macros and default error strings. This file is always included through `diplib.h`.
+/// \see infrastructure
 
 
 namespace dip {
 
-/// All errors thrown in DIPlib are of this class, their `what()` string contains
+
+/// \addtogroup infrastructure
+/// \{
+
+
+/// \brief All errors thrown in DIPlib are of this class, their `what()` string contains
 /// a reason for the error and the name of the function that originally threw it.
 using Error = std::logic_error;
 
@@ -73,6 +79,7 @@ constexpr char const* NOT_IMPLEMENTED = "Functionality has not (yet) been implem
 constexpr char const* ARRAY_ILLEGAL_SIZE = "Array has an illegal size";
 constexpr char const* ARRAY_SIZES_DONT_MATCH = "Array sizes don't match";
 constexpr char const* ARRAY_OVERFLOW = "Array overflow";
+constexpr char const* INITIALIZERLIST_ILLEGAL_SIZE = "Initializer list has an illegal size";
 
 // function parameter errors
 constexpr char const* INVALID_PARAMETER = "Parameter has invalid value";
@@ -87,16 +94,18 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 // Test and throw exception
 //
 
-/// Throw an Error.
+/// \brief Throw an Error.
 #define dip_Throw( str ) { throw dip::Error( std::string(str) + std::string(" (in function ") + std::string(__func__)  + std::string(")") ); }
 
-/// Test a condition, throw an Error if the condition is met.
+/// \brief Test a condition, throw an Error if the condition is met.
 #define dip_ThrowIf( test, str ) { if( test ) dip_Throw( str ) }
 
 // These are the old DIPlib names, let's not use them any more:
-#define DIPASSERT( test, str ) dip_ThrowIf( !(test), str )
-#define DIPTS( test, str )     dip_ThrowIf( test, str )  // TEST something and SET error
-#define DIPSJ( str )           dip_Throw( str )          // SET error and JUMP
+//#define DIPASSERT( test, str ) dip_ThrowIf( !(test), str )
+//#define DIPTS( test, str )     dip_ThrowIf( test, str )
+//#define DIPSJ( str )           dip_Throw( str )
+
+/// \}
 
 } // namespace dip
 

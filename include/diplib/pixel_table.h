@@ -13,17 +13,26 @@
 
 
 /// \file
-/// A pixel table is a convenient way to simplify neighborhoods of arbitrary
+/// \brief A pixel table is a convenient way to simplify neighborhoods of arbitrary
 /// dimensionality. Such a neighborhood represents the support of a filter of
 /// arbitrary shape and number of dimensions.
+
+// TODO: Add grey-value information (tensor?) to the pixel table. This can be done as a separate class, baked into the class as an option, or as special grey-value pixel tables.
 
 
 namespace dip {
 
-class PixelTable;
 
-/// The `%PixelTableOffsets` represents an arbitrarily-shaped neighborhood (filter support)
-/// in an arbitrary number of dimensions. If is created from a `dip::PixelTable` through
+/// \addtogroup infrastructure
+/// \{
+
+
+class PixelTable; // forward declaration, it's defined a little lower down.
+
+/// \brief Represents an arbitrarily-shaped neighborhood (filter support)
+/// in an arbitrary number of dimensions.
+///
+/// A `%PixelTableOffsets` object is created from a `dip::PixelTable` through
 /// its `dip::PixelTable::Prepare` method. The object is identical to its parent, but
 /// instead of coordinates it contains offsets. It is ready to be applied to a specific
 /// image. It can only be used on other images that have the exact same strides as the
@@ -77,8 +86,10 @@ class PixelTableOffsets {
       dip::sint stride_ = 0;     // the stride of the image along the processing dimension
 };
 
-/// The `%PixelTable` represents an arbirarily-shaped neighborhood (filter support)
-/// in an arbitrary number of dimensions. It is simple to create a pixel table for
+/// \brief Represents an arbirarily-shaped neighborhood (filter support)
+/// in an arbitrary number of dimensions.
+///
+/// It is simple to create a pixel table for
 /// unit circles (spheres) in different norms, and any other shape can be created through
 /// a binary image.
 ///
@@ -87,12 +98,12 @@ class PixelTableOffsets {
 /// in which there would be fewer runs.
 ///
 /// Two ways can be used to walk through the pixel table:
-/// 1.  `dip::PixelTable::Runs()` returns a vector with all the runs, which are encoded
+/// 1.  `dip::PixelTable::Runs` returns a vector with all the runs, which are encoded
 ///     by the coordinates of the first pixel and a run length.
-/// 2.  `dip::PixelTable::BeginIterator()` returns an iterator to the first pixel in the table,
+/// 2.  `dip::PixelTable::BeginIterator` returns an iterator to the first pixel in the table,
 ///     incrementing the iterator successively visits each of the pixels in the run.
 ///
-/// \see dip::PuxelTableOffsets, dip::NeighborList, dip::Framework::Full, dip::ImageIterator
+/// \see dip::PixelTableOffsets, dip::NeighborList, dip::Framework::Full, dip::ImageIterator
 class PixelTable {
    public:
 
@@ -106,16 +117,21 @@ class PixelTable {
 
       /// A default-constructed pixel table is kinda useless
       PixelTable() {};
-      /// A pixel table can be constructed for default filter `shape`s: "rectagular", "elliptic" and "diamond",
-      /// which correspond to a unit circle in the L_{infinity} norm, the L_2 norm, and the L_1 norm. The
-      /// `size` array determines the size and dimensionality; it gives the diameter of the neighborhood (not
+      /// \brief Construct a pixel table for default filter shapes.
+      ///
+      /// The known default `shape`s are "rectagular", "elliptic", and "diamond",
+      /// which correspond to a unit circle in the L_{infinity} norm, the L_2 norm, and the L_1 norm.
+      ///
+      /// The `size` array determines the size and dimensionality. It gives the diameter of the neighborhood (not
       /// the radius!). For the "rectangular" shape, the diameter is rounded to the nearest integer, yielding
       /// a rectangle that is even or odd in size. For the "diamond" shape, the diameter is rounded to the
       /// nearet odd integer. For the "elliptic" shape, the diameter is not rounded at all, but always yields an
       /// odd-sized bounding box. `procDim` indicates the processing dimension.
       PixelTable( String shape, FloatArray size, dip::uint procDim = 0 );
-      /// A pixel table can be constructed for an arbitrary shape defined by a binary image, where set
-      /// pixels indicate pixels that belong to the neighborhood. `origin` gives the coordinates of the pixel
+      /// \brief Construct a pixel table for an arbitrary shape defined by a binary image.
+      ///
+      /// Set pixels in `mask` indicate pixels that belong to the neighborhood.
+      /// `origin` gives the coordinates of the pixel
       /// in the image that will be placed at the origin (i.e. have coordinates {0,0,0}.
       /// `procDim` indicates the processing dimension.
       PixelTable( Image mask, UnsignedArray origin = {}, dip::uint procDim = 0 );
@@ -137,7 +153,9 @@ class PixelTable {
       iterator end() const;
       /// Cast to dip::Image yields a binary image representing the neighborhood
       operator dip::Image() const;
-      /// Prepare the pixel table to be applied to a specific image. the resulting object is identical to `this`,
+      /// \brief Prepare the pixel table to be applied to a specific image.
+      ///
+      /// The resulting object is identical to `this`,
       /// but has knowledge of the image's strides and thus directly gives offsets rather than coordinates to
       /// the neighbors.
       PixelTableOffsets Prepare( Image const& image ) const {
@@ -152,8 +170,10 @@ class PixelTable {
       dip::uint procDim_ = 0;    // the dimension along which the runs go
 };
 
-/// An iterator that visits each of the neighborhood's pixels in turn. Dereferencing
-/// the iterator returns the coordinates of the pixel. Satisfies the requirements for ForwardIterator.
+/// \brief An iterator that visits each of the neighborhood's pixels in turn.
+///
+/// Dereferencing the iterator returns the coordinates of the pixel.
+/// Satisfies the requirements for ForwardIterator.
 class PixelTable::iterator {
    public:
 
@@ -210,7 +230,7 @@ class PixelTable::iterator {
          operator++();
          return tmp;
       }
-      /// Equality comparison, is true if the two iterators reference the same pixel in the same pixel table,
+      /// \brief Equality comparison, is true if the two iterators reference the same pixel in the same pixel table,
       /// even if they use the strides of different images.
       bool operator==( iterator const& other ) const {
          return ( pixelTable_ == other.pixelTable_ ) && ( run_ == other.run_ ) && ( index_ == other.index_ );
@@ -243,8 +263,10 @@ inline PixelTable::iterator PixelTable::end() const {
    return iterator::end( *this );
 }
 
-/// An iterator that visits each of the neighborhood's pixels in turn. Dereferencing
-/// the iterator returns an offset. Satisfies the requirements for ForwardIterator.
+/// \brief An iterator that visits each of the neighborhood's pixels in turn.
+///
+/// Dereferencing the iterator returns an offset.
+/// Satisfies the requirements for ForwardIterator.
 class PixelTableOffsets::iterator {
    public:
 
@@ -301,7 +323,7 @@ class PixelTableOffsets::iterator {
          operator++();
          return tmp;
       }
-      /// Equality comparison, is true if the two iterators reference the same pixel in the same pixel table,
+      /// \brief Equality comparison, is true if the two iterators reference the same pixel in the same pixel table,
       /// even if they use the strides of different images.
       bool operator==( iterator const& other ) const {
          return ( pixelTable_ == other.pixelTable_ ) && ( run_ == other.run_ ) && ( index_ == other.index_ );
@@ -333,6 +355,8 @@ inline PixelTableOffsets::iterator PixelTableOffsets::begin() const {
 inline PixelTableOffsets::iterator PixelTableOffsets::end() const {
    return iterator::end( *this );
 }
+
+/// \}
 
 } // namespace dip
 

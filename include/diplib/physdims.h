@@ -24,12 +24,20 @@
 
 
 /// \file
-/// Defines support for units, physical quantities and pixel sizes.  This file is always included through diplib.h.
+/// \brief Defines support for units, physical quantities and pixel sizes.
+/// This file is always included through `diplib.h`.
 
 
 namespace dip {
 
-/// Encapsulates the concepts of physical units, using SI units. It is possible
+
+/// \addtogroup infrastructure
+/// \{
+
+
+/// \brief Encapsulates the concepts of physical units, using SI units.
+///
+/// It is possible
 /// to multiply or divide units, and raise to arbitrary integer powers with the
 /// class method Power. To associate a magnitude to the units, see the class
 /// dip::PhysicalQuantity. Note that radian, though dimensionless, is treated
@@ -78,7 +86,7 @@ class Units {
       /// Radian units (rad)
       static Units Radian() { return dip::Units( dip::Units::BaseUnits::ANGLE ); }
 
-      /// Elevates `*this` to the power `p`.
+      /// Elevates `this` to the power `p`.
       void Power( dip::sint8 power ) {
          for( auto& p : power_ ) {
             p = p * power;
@@ -153,8 +161,8 @@ class Units {
          return 0;
       }
 
-      /// Insert physical quantity to an output stream as a string of base units;
-      /// no attempty is (yet?) made to produce derived SI units or to translate
+      /// \brief Insert physical quantity to an output stream as a string of base units.
+      /// No attempt is (yet?) made to produce derived SI units or to translate
       /// to different units.
       friend std::ostream& operator<<( std::ostream& os, Units const& units ) {
          // NOTE: when changing BaseUnits in any way, adjusthere as necessary
@@ -178,7 +186,7 @@ class Units {
          return os;
       }
 
-      /// Swaps the values of `*this` and `other`.
+      /// Swaps the values of `this` and `other`.
       void swap( Units& other ) {
          using std::swap;
          swap( power_, other.power_ );
@@ -224,14 +232,14 @@ inline void swap( Units& v1, Units& v2 ) {
 }
 
 
-/// Encapsulates a quantity with phyisical units. Multiplying a double by a
-/// dip::Units object yields a PhysicalQuantity object. Numbers and units implicity
-/// convert to a PhysicalQuantity. It is possible to multiply and divide any physical
+/// \brief Encapsulates a quantity with phyisical units.
+///
+/// Multiplying a double by a
+/// `dip::Units` object yields a %PhysicalQuantity object. Numbers and units implicity
+/// convert to a %PhysicalQuantity. It is possible to multiply and divide any physical
 /// quantities, but adding and subtracting is only possible if the units match.
 ///
-/// ```
-/// dip::PhysicalQuantity a = 50 * dip::Units( dip::Units::BaseUnits::LENGTH );
-/// ```
+///     dip::PhysicalQuantity a = 50 * dip::Units( dip::Units::BaseUnits::LENGTH );
 struct PhysicalQuantity {
 
    /// A default-constructed PhysicalQuantity has magnitude 0 and is unitless.
@@ -407,7 +415,7 @@ struct PhysicalQuantity {
    /// Retrieve the magnitude, discaring units.
    explicit operator bool() const { return static_cast< bool >( magnitude ); };
 
-   /// Swaps the values of `*this` and `other`.
+   /// Swaps the values of `this` and `other`.
    void swap( PhysicalQuantity& other ) {
       using std::swap;
       swap( magnitude, other.magnitude );
@@ -430,7 +438,9 @@ inline PhysicalQuantity operator*( double lhs, Units const& rhs ) {
    return PhysicalQuantity( lhs, rhs );
 }
 
-/// Specifies an image's pixel size as physical quantities. The object works like an
+/// \brief Specifies an image's pixel size as physical quantities.
+///
+/// The object works like an
 /// array with unlimited number of elements. It is possible to set only one value, and
 /// that value will be used for all dimensions. In general, if *N* dimensions
 /// are set (i.e. the array has *N* elements defined), then dimensions *N* and further
@@ -444,7 +454,8 @@ inline PhysicalQuantity operator*( double lhs, Units const& rhs ) {
 /// Thus, it is important to know how many elements are set in the array to know
 /// how any modifications will affect it.
 ///
-/// However, SwapDimensions, InsertDimension and EraseDimension will expand the array
+/// However, `dip::PixelSize::SwapDimensions`, `dip::PixelSize::InsertDimension` and
+/// `dip::PixelSize::EraseDimension` will expand the array
 /// by one element before modifying the last element in the array. This prevents the
 /// implicit elements after the defined ones to be modified. For example, inserting
 /// dimension *N+K* first expands the array to size *N+K+2* by setting all the new
@@ -454,7 +465,7 @@ inline PhysicalQuantity operator*( double lhs, Units const& rhs ) {
 ///
 /// The pixel size always needs a unit. Any dimensionless quantity is interpreted
 /// as 1, and considered as an "undefined" size. Angles, measured in radian, are
-/// not considered dimensionless, though they actually are (see dip::Units).
+/// not considered dimensionless, though they actually are (see `dip::Units`).
 class PixelSize {
 
    public:
@@ -484,7 +495,7 @@ class PixelSize {
          return Get( d );
       }
 
-      /// Sets the pixel size in the given dimension. Note that
+      /// \brief Sets the pixel size in the given dimension. Note that
       /// any subsequent dimension, if not explicitly set, will have the same
       /// size.
       void Set( dip::uint d, PhysicalQuantity const& m ) {
@@ -695,7 +706,7 @@ class PixelSize {
          return out;
       }
 
-      /// Swaps the values of `*this` and `other`.
+      /// Swaps the values of `this` and `other`.
       void swap( PixelSize& other ) {
          using std::swap;
          swap( size_, other.size_ );
@@ -724,6 +735,8 @@ class PixelSize {
 inline void swap( PixelSize& v1, PixelSize& v2 ) {
    v1.swap( v2 );
 }
+
+/// \}
 
 } // namespace dip
 

@@ -104,6 +104,7 @@ void Scan(
    }
 
    // Adjust output if necessary (and possible)
+   // TODO: we should allocate c_out[ ii ] correctly, not with tensor dimension as spatial dimension.
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       Image& tmp = c_out[ ii ].get();
       dip::uint nTensor = opts == Scan_TensorAsSpatialDim ? 1 : nTensorElements[ ii ]; // Input parameter ignored, output matches singleton-expanded number of tensor elements.
@@ -113,7 +114,7 @@ void Scan(
       if( tmp.IsForged() && tensorToSpatial ) {
          tmp.TensorToSpatial( 0 );
       }
-      tmp.ReForge( sizes, nTensor, outImageTypes[ ii ] );
+      tmp.ReForge( sizes, nTensor, outImageTypes[ ii ], true );
    }
 
    // Make simplified copies of output image headers so we can modify them at will

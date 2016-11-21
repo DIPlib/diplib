@@ -16,10 +16,21 @@
 
 
 /// \file
-/// Defines image iterators and pixel iterators
+/// \brief Defines image iterators and pixel iterators.
+/// \see iterators
 
 
 namespace dip {
+
+
+/// \defgroup iterators Iterators
+/// \ingroup infrastructure
+/// \brief Objects to iterate over images and pixels in different ways.
+///
+/// See \ref using_iterators "Using iterators to implement filters"
+/// for a mini-tutorial on how to use each of the different iterator types. Next, read the documentation
+/// for the iterator you plan to use, to learn about additional options and possibilities.
+/// \{
 
 
 //
@@ -27,8 +38,9 @@ namespace dip {
 //
 
 
-/// An iterator to iterate over samples in a tensor, or pixels on an image line. This
-/// is the simplest iterator available in this library, and is most like working with
+/// \brief An iterator to iterate over samples in a tensor, or pixels on an image line.
+///
+/// This is the simplest iterator available in this library, and is most like working with
 /// a pointer to a data segment. The only difference with a pointer is that the data
 /// stride is taken into account.
 ///
@@ -144,7 +156,8 @@ inline void swap( SampleIterator< T >& v1, SampleIterator< T >& v2 ) {
    v1.swap( v2 );
 }
 
-/// A const iterator to iterate over samples in a tensor, or pixels on an image line.
+/// \brief A const iterator to iterate over samples in a tensor, or pixels on an image line.
+///
 /// This iterator is identical to `dip::SampleIterator`, but with a const value type.
 ///
 /// Satisfies all the requirements for a non-mutable [RandomAccessIterator](http://en.cppreference.com/w/cpp/iterator).
@@ -157,7 +170,9 @@ using ConstSampleIterator = SampleIterator< T const >;
 //
 
 
-/// An iterator to iterate over all pixels of an image line. This iterator is constructed
+/// \brief An iterator to iterate over all pixels of an image line.
+///
+/// This iterator is constructed
 /// from a `dip::ImageIterator`, but can also be constructed manually if necessary.
 ///
 /// The iterator can be incremented until it reaches the end of the line. At this point, the
@@ -287,7 +302,8 @@ inline void swap( LineIterator< T >& v1, LineIterator< T >& v2 ) {
    v1.swap( v2 );
 }
 
-/// A const iterator to iterate over all pixels of an image line.
+/// \brief A const iterator to iterate over all pixels of an image line.
+///
 /// This iterator is identical to `dip::LineIterator`, but with a const value type.
 ///
 /// Satisfies all the requirements for a non-mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
@@ -300,7 +316,7 @@ using ConstLineIterator = LineIterator< T const >;
 //
 
 
-/// An iterator to iterate over all pixels of an image, or all lines of an image.
+/// \brief An iterator to iterate over all pixels of an image, or all lines of an image.
 ///
 /// If it is created with the processing dimension set, then the processing dimension indicates
 /// a dimension over which this iterator does not iterate. That is, it will iterate over all pixels
@@ -405,7 +421,7 @@ class ImageIterator {
          dip_ThrowIf( !image_, E::ITERATOR_NOT_VALID );
          return *( ptr_ + index * image_->TensorStride() );
       }
-      /// Copy the samples of a neighbor with relative coordinates of `coords`, using the
+      /// \brief Copy the samples of a neighbor with relative coordinates of `coords`, using the
       /// boundary condition if that neighbor is outside of the iamge domain.
       ///
       /// It is relatively expensive to test for a pixel to be outside the image domain,
@@ -521,7 +537,7 @@ class ImageIterator {
       }
       /// Return the processing dimension, the direction of the lines over which the iterator iterates
       dip::sint ProcessingDimension() const { return HasProcessingDimension() ? procDim_ : -1; }
-      /// Set the boundary condition for accessing pixels outside the image boundary; an empty array sets
+      /// \brief Set the boundary condition for accessing pixels outside the image boundary. An empty array sets
       /// all dimensions to the default value, and an array with a single element sets all dimensions to
       /// that value.
       void SetBoundaryCondition( BoundaryConditionArray const& bc ) {
@@ -546,7 +562,8 @@ inline void swap( ImageIterator< T >& v1, ImageIterator< T >& v2 ) {
    v1.swap( v2 );
 }
 
-/// A const iterator to iterate over all pixels of an image, or all lines of an image.
+/// \brief A const iterator to iterate over all pixels of an image, or all lines of an image.
+///
 /// This iterator is identical to `dip::ImageIterator`, but with a const value type.
 ///
 /// Satisfies all the requirements for a non-mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
@@ -559,8 +576,10 @@ using ConstImageIterator = ImageIterator< T const >;
 //
 
 
-/// An iterator to iterate over all pixels of two images, with read-only access of the first image (input)
-/// and write access of the second (output). The two images must have the same sizes except along the
+/// \brief An iterator to iterate over all pixels of two images, with read-only access of the first image (input)
+/// and write access of the second (output).
+///
+/// The two images must have the same sizes except along the
 /// processing dimension. It behaves similarly to `dip::ImageIterator` with the following differences:
 ///
 /// This iterator is not dereferenceable. The reason is that it points at two pixels at the same time
@@ -636,7 +655,7 @@ class JointImageIterator {
          dip_ThrowIf( !outImage_, E::ITERATOR_NOT_VALID );
          return *( outPtr_ + index * outImage_->TensorStride() );
       }
-      /// Copy the input samples of a neighbor pixel with relative coordinates of `coords`, using the
+      /// \brief Copy the input samples of a neighbor pixel with relative coordinates of `coords`, using the
       /// boundary condition if that neighbor is outside of the image domain.
       ///
       /// It is relatively expensive to test for a pixel to be outside the image domain,
@@ -749,8 +768,8 @@ class JointImageIterator {
       }
       /// Return the processing dimension, the direction of the lines over which the iterator iterates
       dip::sint ProcessingDimension() const { return HasProcessingDimension() ? procDim_ : -1; }
-      /// Set the boundary condition for accessing pixels outside the image boundary; dimensions not specified will
-      /// use the default boundary condition.
+      /// \brief Set the boundary condition for accessing pixels outside the image boundary.
+      /// Dimensions not specified will use the default boundary condition.
       void SetBoundaryCondition( BoundaryConditionArray const& bc ) {
          boundaryCondition_ = BoundaryArrayUseParameter( bc, inImage_->Dimensionality() );
       }
@@ -791,7 +810,7 @@ inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, 
 // Three generic image iterators, non-templated
 //
 
-/// A data-type--agnostic version of `dip::ImageIterator`. Use this iterator only to write code that
+/// \brief A data-type--agnostic version of `dip::ImageIterator`. Use this iterator only to write code that
 /// does not know at compile-time what the data type of the image is.
 ///
 /// This iterator works similarly to `dip::ImageIterator` except it is not dereferenceable. Use the
@@ -928,7 +947,7 @@ inline void swap( GenericImageIterator& v1, GenericImageIterator& v2 ) {
 }
 
 
-/// A data-type--agnostic version of `dip::JointImageIterator`. Use this iterator only to write code that
+/// \brief A data-type--agnostic version of `dip::JointImageIterator`. Use this iterator only to write code that
 /// does not know at compile-time what the data type of the image is.
 ///
 /// This iterator works similarly to `dip::JointImageIterator` except it does not have the `In` and `Out`
@@ -1106,7 +1125,7 @@ inline void swap( GenericJointImageIterator& v1, GenericJointImageIterator& v2 )
 }
 
 
-/// An iterator for plane-by-plane processing of an image. Use it to process a multi-dimensional
+/// \brief An iterator for slice-by-slice processing of an image. Use it to process a multi-dimensional
 /// image as a series of lower-dimensional images.
 ///
 /// Dereferencing the iterator yields a reference to an image that encapsulates a plane in the
@@ -1298,6 +1317,8 @@ inline ImageSliceIterator ImageSliceEndIterator( Image const& image, dip::uint p
    out += image.Size( procDim );
    return out;
 }
+
+/// \}
 
 } // namespace dip
 

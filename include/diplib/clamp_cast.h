@@ -15,7 +15,19 @@
 
 
 /// \file
-/// Defines dip::clamp_cast, an operator that returns the input value cast to a different
+/// \brief Defines `dip::clamp_cast`, an operator that returns the input value cast to a different
+/// type, clamped to the range of values representable by that output type. This file is always included through `diplib.h`.
+/// \see sample_operators
+
+
+namespace dip {
+
+
+/// \defgroup sample_operators Saturated arithmetic and casts
+/// \ingroup infrastructure
+/// \brief These operators operate on single sample values, implementing saturated arithmetic and type casting.
+///
+/// `dip::clamp_cast` is an operator that returns the input value cast to a different
 /// type, clamped to the range of values representable by that output type. This
 /// is also often referred to as saturated cast. Most DIPlib functions take care of properly
 /// clamping values when casting pixel values. This typically is more intuitive and useful
@@ -28,9 +40,9 @@
 /// much like the standard `static_cast` and similar:
 ///
 ///     uint8 u = dip::clamp_cast< dip::uint8 >( -54.6 );
+///
+/// \{
 
-
-namespace dip {
 
 // Basis of dip::clamp_cast<>
 template< typename T, typename S >
@@ -337,6 +349,7 @@ inline dip::scomplex clamp_cast< dip::scomplex >( dip::dcomplex v ) {
    return static_cast< dip::scomplex >( v );
 }
 
+/// \}
 
 } // namespace dip
 

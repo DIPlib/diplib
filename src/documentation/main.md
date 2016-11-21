@@ -45,9 +45,12 @@ output makes it possible to measure more precisely.
 
 There are many other unique things about *DIPlib*, we encourage you to
 explore the documentation to learn more about it. A good place to start
-is with the documentation for the `dip::Image` class. We also recommend you
-read \ref design "a page documenting design decisions". All image processing
-and analysis functions are defined in the `#dip` namespace.
+are the following documentation pages:
+
+- The `dip::Image` class, everything else revolves around it.
+- \ref design "A page documenting design decisions", helps understand the library architecture.
+- All image analysis functions are defined in the \ref dip "dip namespace".
+- \ref using_iterators "Using iterators to implement filters", in case existing algorithms are not sufficient.
 
 A short history
 ---------------
@@ -77,7 +80,7 @@ MATLAB toolbox, called *DIPimage*, became the primary interface to the
 *DIPlib* 3.0 represents the first major rewrite of the *DIPlib* code base.
 We have rewritten the infrastructure in C++11, using all of the original
 ideas and concepts, but adding tensor images, color support, and other
-ideas we have developed within the *DIPimage* toolbox.
+ideas we had developed within the *DIPimage* toolbox.
 Hopefully, the new infrastructure is much easier to read, maintain, and
 contribute to. All of the image analysis routines (have been / will be)
 ported to use the new infrastructure.
@@ -105,7 +108,3 @@ Additional contributions by:
 * Niels van den Brink
 * Ronald Ligteringen
 * Tuan Pham
-
-\defgroup GrpDummyPages HiddenEmpty
-@{
-@}

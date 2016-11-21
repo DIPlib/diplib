@@ -20,12 +20,17 @@
 
 
 /// \file
-/// Declares the overloaded arithmetic and logical operators for dip::Image,
+/// \brief Declares the overloaded arithmetic, logical and comparison operators for `dip::Image`,
 /// as well as functions implementing their functionality.
-/// This file is always included through diplib.h.
+/// This file is always included through `diplib.h`.
 
 
 namespace dip {
+
+
+/// \defgroup operators Arithmetic, logical and comparison operators
+/// \brief Operators that work on a `dip::Image`, and the functions that implement their functionality.
+/// \{
 
 
 //
@@ -33,8 +38,9 @@ namespace dip {
 //
 
 
-/// Adds two images, sample-wise, with singleton expansion. Out will have the
-/// type `dt`.
+/// \brief Adds two images, sample-wise, with singleton expansion.
+///
+/// Out will have the type `dt`.
 ///
 /// \see Sub, Mul, MulSamples, Div, Mod, operator+
 void Add(
@@ -44,7 +50,9 @@ void Add(
       DataType dt
 );
 
-/// Adds a constant to each sample in an image. Out will have the type `dt`.
+/// \brief Adds a constant to each sample in an image.
+///
+/// Out will have the type `dt`.
 ///
 /// \see Add, Sub, Mul, MulSamples, Div, Mod, operator+
 template< typename T >
@@ -69,8 +77,9 @@ inline Image Add(
 }
 
 
-/// Subtracts two images, sample-wise, with singleton expansion. Out will have the
-/// type `dt`.
+/// \brief Subtracts two images, sample-wise, with singleton expansion.
+///
+/// Out will have the type `dt`.
 ///
 /// \see Add, Mul, MulSamples, Div, Mod, operator-
 void Sub(
@@ -80,7 +89,9 @@ void Sub(
       DataType dt
 );
 
-/// Subtracts a constant from each sample in an image. Out will have the type `dt`.
+/// \brief Subtracts a constant from each sample in an image.
+///
+/// Out will have the type `dt`.
 ///
 /// \see Add, Sub, Mul, MulSamples, Div, Mod, operator-
 template< typename T >
@@ -105,7 +116,9 @@ inline Image Sub(
 }
 
 
-/// Multiplies two images, pixel-wise, with singleton expansion. Tensor dimensions
+/// \brief Multiplies two images, pixel-wise, with singleton expansion.
+///
+/// Tensor dimensions
 /// of the two images must have identical inner dimensions, and the output at
 /// each pixel will be the matrix multiplication of the two input pixels.
 /// Out will have the type `dt`.
@@ -123,7 +136,9 @@ void Mul(
       DataType dt
 );
 
-/// Multiplies each sample in an image by a constant. Out will have the type `dt`.
+/// \brief Multiplies each sample in an image by a constant.
+///
+/// Out will have the type `dt`.
 ///
 /// \see Add, Sub, Mul, MulSamples, Div, Mod, operator*
 template< typename T >
@@ -147,8 +162,9 @@ inline Image Mul(
    return out;
 }
 
-/// Adds two images, sample-wise, with singleton expansion. Out will have the
-/// type `dt`.
+/// \brief Adds two images, sample-wise, with singleton expansion.
+///
+/// Out will have the type `dt`.
 ///
 /// \see Add, Sub, Mul, Div, Mod
 void MulSamples(
@@ -169,8 +185,9 @@ inline Image MulSamples(
 }
 
 
-/// Divides two images, sample-wise, with singleton expansion. Out will have the
-/// type `dt`.
+/// \brief Divides two images, sample-wise, with singleton expansion.
+///
+/// Out will have the type `dt`.
 ///
 /// \see Add, Sub, Mul, MulSamples, Mod, operator/
 void Div(
@@ -180,7 +197,9 @@ void Div(
       DataType dt
 );
 
-/// Divides each sample in an image by a constant. Out will have the type `dt`.
+/// \brief Divides each sample in an image by a constant.
+///
+/// Out will have the type `dt`.
 ///
 /// \see Add, Sub, Mul, MulSamples, Div, Mod, operator/
 template< typename T >
@@ -205,7 +224,8 @@ inline Image Div(
 }
 
 
-/// Computes the modulo of two images, sample-wise, with singleton expansion.
+/// \brief Computes the modulo of two images, sample-wise, with singleton expansion.
+///
 /// Out will have the type `dt`.
 ///
 /// \see Add, Sub, Mul, MulSamples, Div, operator%
@@ -216,7 +236,8 @@ void Mod(
       DataType dt
 );
 
-/// Computes the modulo of each sample in an image with a constant.
+/// \brief Computes the modulo of each sample in an image with a constant.
+///
 /// Out will have the type `dt`.
 ///
 /// \see Add, Sub, Mul, MulSamples, Div, Mod, operator%
@@ -242,9 +263,10 @@ inline Image Mod(
 }
 
 
-/// Inverts each sample of the input image, yielding an image of the same type.
-/// For unsigned images, the output is `std::numeric_limits::max() - in`, for
-/// signed and complex types, it is `0 - in`.
+/// \brief Inverts each sample of the input image, yielding an image of the same type.
+///
+/// For unsigned images, the output is `std::numeric_limits::max() - in`. For
+/// signed and complex types, it is `0 - in`. For binary types it is the same as `dip::Not`.
 ///
 /// \see operator-, Not
 void Invert(
@@ -266,7 +288,8 @@ inline Image Invert(
 //
 
 
-/// Bit-wise and of two binary or integer images, sample-wise, with singleton expansion.
+/// \brief Bit-wise and of two binary or integer images, sample-wise, with singleton expansion.
+///
 /// Out will have the type of `lhs`, and `rhs` will be converted to that type
 /// before applying the operation.
 ///
@@ -287,7 +310,8 @@ inline Image And(
 }
 
 
-/// Bit-wise or of two binary or integer images, sample-wise, with singleton expansion.
+/// \brief Bit-wise or of two binary or integer images, sample-wise, with singleton expansion.
+///
 /// Out will have the type of `lhs`, and `rhs` will be converted to that type
 /// before applying the operation.
 ///
@@ -308,7 +332,8 @@ inline Image Or(
 }
 
 
-/// Bit-wise exclusive-or of two binary or integer images, sample-wise, with singleton expansion.
+/// \brief Bit-wise exclusive-or of two binary or integer images, sample-wise, with singleton expansion.
+///
 /// Out will have the type of `lhs`, and `rhs` will be converted to that type
 /// before applying the operation.
 ///
@@ -329,7 +354,7 @@ inline Image Xor(
 }
 
 
-/// Applies bit-wise negation to each sample of the input image, yielding an
+/// \brief Applies bit-wise negation to each sample of the input image, yielding an
 /// image of the same type.
 ///
 /// \see operator!, operator~, Invert
@@ -351,7 +376,8 @@ inline Image Not(
 // Functions for comparison
 //
 
-/// Equality comparison, sample-wise, with singleton expansion.
+/// \brief Equality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see NotEqual, Lesser, Greater, NotGreater, NotLesser, operator==
@@ -361,7 +387,8 @@ void Equal(
       Image& out
 );
 
-/// Equality comparison, sample-wise, with singleton expansion.
+/// \brief Equality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see NotEqual, Lesser, Greater, NotGreater, NotLesser, operator==
@@ -385,7 +412,8 @@ inline Image Equal(
 }
 
 
-/// Inequality comparison, sample-wise, with singleton expansion.
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see Equal, Lesser, Greater, NotGreater, NotLesser, operator!=
@@ -395,7 +423,8 @@ void NotEqual(
       Image& out
 );
 
-/// Inequality comparison, sample-wise, with singleton expansion.
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see Equal, Lesser, Greater, NotGreater, NotLesser, operator!=
@@ -419,7 +448,8 @@ inline Image NotEqual(
 }
 
 
-/// Inequality comparison, sample-wise, with singleton expansion.
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see Equal, NotEqual, Greater, NotGreater, NotLesser, operator<
@@ -429,7 +459,8 @@ void Lesser(
       Image& out
 );
 
-/// Inequality comparison, sample-wise, with singleton expansion.
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see Equal, NotEqual, Greater, NotGreater, NotLesser, operator<
@@ -453,7 +484,8 @@ inline Image Lesser(
 }
 
 
-/// Inequality comparison, sample-wise, with singleton expansion.
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see Equal, NotEqual, Lesser, NotGreater, NotLesser, operator>
@@ -463,7 +495,8 @@ void Greater(
       Image& out
 );
 
-/// Inequality comparison, sample-wise, with singleton expansion.
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see Equal, NotEqual, Lesser, NotGreater, NotLesser, operator>
@@ -487,7 +520,8 @@ inline Image Greater(
 }
 
 
-/// Inequality comparison, sample-wise, with singleton expansion.
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see Equal, NotEqual, Lesser, Greater, NotLesser, operator<=
@@ -497,7 +531,8 @@ void NotGreater(
       Image& out
 );
 
-/// Inequality comparison, sample-wise, with singleton expansion.
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see Equal, NotEqual, Lesser, Greater, NotLesser, operator<=
@@ -520,7 +555,8 @@ inline Image NotGreater(
    return out;
 }
 
-/// Inequality comparison, sample-wise, with singleton expansion.
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see Equal, NotEqual, Lesser, Greater, NotGreater, operator>=
@@ -530,7 +566,8 @@ void NotLesser(
       Image& out
 );
 
-/// Inequality comparison, sample-wise, with singleton expansion.
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
 /// Out will be binary.
 ///
 /// \see Equal, NotEqual, Lesser, Greater, NotGreater, operator>=
@@ -558,56 +595,56 @@ inline Image NotLesser(
 // Arithmetic operators
 //
 
-/// Arithmetic operator, calls Add.
+/// \brief Arithmetic operator, calls `dip::Add`.
 inline Image operator+( Image const& lhs, Image const& rhs ) {
    return Add( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
-/// Arithmetic operator, calls Add.
+/// \brief Arithmetic operator, calls `dip::Add`.
 template< typename T >
 inline Image operator+( Image const& lhs, T const& rhs ) {
    return Add( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
-/// Arithmetic operator, calls Sub.
+/// \brief Arithmetic operator, calls `dip::Sub`.
 inline Image operator-( Image const& lhs, Image const& rhs ) {
    return Sub( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
-/// Arithmetic operator, calls Sub.
+/// \brief Arithmetic operator, calls `dip::Sub`.
 template< typename T >
 inline Image operator-( Image const& lhs, T const& rhs ) {
    return Sub( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
-/// Arithmetic operator, calls Mul.
+/// \brief Arithmetic operator, calls `dip::Mul`.
 inline Image operator*( Image const& lhs, Image const& rhs ) {
    return Mul( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
-/// Arithmetic operator, calls Mul.
+/// \brief Arithmetic operator, calls `dip::Mul`.
 template< typename T >
 inline Image operator*( Image const& lhs, T const& rhs ) {
    return Mul( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
-/// Arithmetic operator, calls Div.
+/// \brief Arithmetic operator, calls `dip::Div`.
 inline Image operator/( Image const& lhs, Image const& rhs ) {
    return Div( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
-/// Arithmetic operator, calls Div.
+/// \brief Arithmetic operator, calls `dip::Div`.
 template< typename T >
 inline Image operator/( Image const& lhs, T const& rhs ) {
    return Div( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
-/// Arithmetic operator, calls Mod.
+/// \brief Arithmetic operator, calls `dip::Mod`.
 inline Image operator%( Image const& lhs, Image const& rhs ) {
    return Mod( lhs, rhs, lhs.DataType() );
 }
 
-/// Arithmetic operator, calls Mod.
+/// \brief Arithmetic operator, calls `dip::Mod`.
 template< typename T >
 inline Image operator%( Image const& lhs, T const& rhs ) {
    return Mod( lhs, Image{ rhs }, lhs.DataType() );
@@ -618,17 +655,17 @@ inline Image operator%( Image const& lhs, T const& rhs ) {
 // Bit-wise operators
 //
 
-/// Boolean operator, calls And.
+/// \brief Boolean operator, calls `dip::And`.
 inline Image operator&( Image const& lhs, Image const& rhs ) {
    return And( lhs, rhs );
 }
 
-/// Boolean operator, calls Or.
+/// \brief Boolean operator, calls `dip::Or`.
 inline Image operator|( Image const& lhs, Image const& rhs ) {
    return Or( lhs, rhs );
 }
 
-/// Boolean operator, calls Xor.
+/// \brief Boolean operator, calls `dip::Xor`.
 inline Image operator^( Image const& lhs, Image const& rhs ) {
    return Xor( lhs, rhs );
 }
@@ -638,18 +675,18 @@ inline Image operator^( Image const& lhs, Image const& rhs ) {
 // Unary operators
 //
 
-/// Unary operator, calls Invert.
+/// \brief Unary operator, calls `dip::Invert`.
 inline Image operator-( Image const& in ) {
    return Invert( in );
 }
 
-/// Bit-wise unary operator, calls Not.
+/// \brief Bit-wise unary operator, calls `dip::Not`.
 inline Image operator~( Image const& in ) {
    dip_ThrowIf( !in.DataType().IsInteger(), "Bit-wise unary not operator only applicable to integer images" );
    return Not( in );
 }
 
-/// Boolean unary operator, calls Not.
+/// \brief Boolean unary operator, calls `dip::Not`.
 inline Image operator!( Image const& in ) {
    dip_ThrowIf( !in.DataType().IsBinary(), "Boolean unary not operator only applicable to binary images" );
    return Not( in );
@@ -659,37 +696,37 @@ inline Image operator!( Image const& in ) {
 // Comparison operators
 //
 
-/// Comparison operator, calls Equal.
+/// \brief Comparison operator, calls `dip::Equal`.
 template< typename T >
 inline Image operator==( Image const& lhs, T const& rhs ) {
    return Equal( lhs, rhs );
 }
 
-/// Comparison operator, calls NotEqual.
+/// \brief Comparison operator, calls `dip::NotEqual`.
 template< typename T >
 inline Image operator!=( Image const& lhs, T const& rhs ) {
    return NotEqual( lhs, rhs );
 }
 
-/// Comparison operator, calls Lesser.
+/// \brief Comparison operator, calls `dip::Lesser`.
 template< typename T >
 inline Image operator<( Image const& lhs, T const& rhs ) {
    return Lesser( lhs, rhs );
 }
 
-/// Comparison operator, calls Greater.
+/// \brief Comparison operator, calls `dip::Greater`.
 template< typename T >
 inline Image operator>( Image const& lhs, T const& rhs ) {
    return Greater( lhs, rhs );
 }
 
-/// Comparison operator, calls NotGreater.
+/// \brief Comparison operator, calls `dip::NotGreater`.
 template< typename T >
 inline Image operator<=( Image const& lhs, T const& rhs ) {
    return NotGreater( lhs, rhs );
 }
 
-/// Comparison operator, calls NotLesser.
+/// \brief Comparison operator, calls `dip::NotLesser`.
 template< typename T >
 inline Image operator>=( Image const& lhs, T const& rhs ) {
    return NotLesser( lhs, rhs );
@@ -699,7 +736,9 @@ inline Image operator>=( Image const& lhs, T const& rhs ) {
 // Compound assignment operators
 //
 
-/// Compount assignment operator. The operation is performed in-place only
+/// \brief Compount assignment operator.
+///
+/// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 template< typename T >
@@ -708,7 +747,9 @@ inline Image& operator+=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
-/// Compount assignment operator. The operation is performed in-place only
+/// \brief Compount assignment operator.
+///
+/// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 template< typename T >
@@ -717,7 +758,9 @@ inline Image& operator-=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
-/// Compount assignment operator. The operation is performed in-place only
+/// \brief Compount assignment operator.
+///
+/// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 template< typename T >
@@ -726,7 +769,9 @@ inline Image& operator*=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
-/// Compount assignment operator. The operation is performed in-place only
+/// \brief Compount assignment operator.
+///
+/// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 template< typename T >
@@ -735,7 +780,9 @@ inline Image& operator/=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
-/// Compount assignment operator. The operation is performed in-place only
+/// \brief Compount assignment operator.
+///
+/// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 template< typename T >
@@ -744,7 +791,9 @@ inline Image& operator%=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
-/// Bit-wise compount assignment operator. The operation is performed in-place only
+/// \brief Bit-wise compount assignment operator.
+///
+/// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 inline Image& operator&=( Image& lhs, Image const& rhs ) {
@@ -752,7 +801,9 @@ inline Image& operator&=( Image& lhs, Image const& rhs ) {
    return lhs;
 }
 
-/// Bit-wise compount assignment operator. The operation is performed in-place only
+/// \brief Bit-wise compount assignment operator.
+///
+/// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 inline Image& operator|=( Image& lhs, Image const& rhs ) {
@@ -760,7 +811,9 @@ inline Image& operator|=( Image& lhs, Image const& rhs ) {
    return lhs;
 }
 
-/// Bit-wise compount assignment operator. The operation is performed in-place only
+/// \brief Bit-wise compount assignment operator.
+///
+/// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
 inline Image& operator^=( Image& lhs, Image const& rhs ) {
@@ -768,6 +821,7 @@ inline Image& operator^=( Image& lhs, Image const& rhs ) {
    return lhs;
 }
 
+/// \}
 
 } // namespace dip
 

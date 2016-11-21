@@ -1,4 +1,4 @@
-Using iterators to implement filters {#iterators}
+Using iterators to implement filters {#using_iterators}
 ===
 
 DIPlib provides a set of iterators that can be used to efficiently visit all
@@ -108,7 +108,7 @@ The `dip::JointImageIterator` loops over both an input and an output image
 at the same time. The two images must have the same sizes:
 
     dip_ThrowIf( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
-    dip::Image out( img, dip::DT_SFLOAT );
+    dip::Image out = img.Similar( dip::DT_SFLOAT );
     dip::JointImageIterator< dip::uint16, dip::sfloat > it( img, out );
     do {
        it.Out() = 2 * it.In();
@@ -152,7 +152,7 @@ one can create functions that process one line at a time:
 A one-dimensional filter can be implemented using the line iterator as an array:
 
     dip_ThrowIf( img.DataType() != dip::DT_SFLOAT, "Expecting single-precision float image" );
-    dip::Image out( img, dip::DT_SFLOAT );
+    dip::Image out = img.Similar( dip::DT_SFLOAT );
     constexpr dip::uint N = 2;
     std::array< float, 2*N+1 > filter {{ 1.0/9.0, 2.0/9.0, 3.0/9.0. 2.0/9.0, 1.0/9.0 }};
     dip::JointImageIterator< dip::sfloat, dip::sfloat > it( img, out, 0 );
@@ -183,7 +183,7 @@ Applying an arbitrary neighborhood filter
 Simpler:
 
     dip_ThrowIf( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
-    dip::Image out( img, dip::DT_UINT16 );
+    dip::Image out = img.Similar( dip::DT_UINT16 );
     dip::PixelTable kernel( "elliptic", { 5, 5 } );
     dip::JointImageIterator< dip::uint16, dip::uint16 > it( img, out );
     do {
@@ -205,7 +205,7 @@ Better:
 
     dip_ThrowIf( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image in = dip::ExtendImage( img, { 2, 2 }, {}, true ); // a copy of the input image with data ouside of its domain
-    dip::Image out( img, dip::DT_UINT16 );
+    dip::Image out = img.Similar( dip::DT_UINT16 );
     dip::PixelTable kernel( "elliptic", { 5, 5 }, 0 );
     dip::PixelTableOffsets offsets = kernel.Prepare( img );
     dip::JointImageIterator< dip::uint16, dip::uint16 > it( img, out, 0 );

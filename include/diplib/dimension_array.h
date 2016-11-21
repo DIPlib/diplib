@@ -25,12 +25,19 @@
 
 
 /// \file
-/// Defines the dip::DimensionArray template class. This file is always included through diplib.h.
+/// \brief Defines the dip::DimensionArray template class. This file is always included through `diplib.h`.
+/// \see infrastructure
 
 
 namespace dip {
 
 
+/// \addtogroup infrastructure
+/// \{
+
+
+/// \brief A dynamic array type optimized for few elements.
+///
 /// We have our own array type, similar to `std::vector` but optimized for our
 /// particular use: hold one element per image dimension. Most images have
 /// only two or three dimensions, and for internal processing we might add the
@@ -141,7 +148,7 @@ class DimensionArray {
          swap( size_, other.size_ );
       }
 
-      /// Resizes the array, making it either larger or smaller; initializes
+      /// \brief Resizes the array, making it either larger or smaller. Initializes
       /// new elements with `newval`.
       void resize( size_type newsz, T newval = T() ) {
          if( newsz == size_ ) { return; } // NOP
@@ -236,7 +243,7 @@ class DimensionArray {
       /// Returns a reverse iterator to the end
       const_reverse_iterator rend() const { return const_reverse_iterator( begin() ); }
 
-      /// Adds a value at the given location, moving the current value at that
+      /// \brief Adds a value at the given location, moving the current value at that
       /// location and subsequent values forward by one.
       void insert( size_type index, T const& value ) {
          assert( index <= size_ );
@@ -252,8 +259,7 @@ class DimensionArray {
          *( data_ + size_ - 1 ) = value;
       }
 
-      /// Removes the value at the given location, moving subsequent values
-      /// forward by one.
+      /// Removes the value at the given location, moving subsequent values forward by one.
       void erase( size_type index ) {
          assert( index < size_ );
          if( index < size_ - 1 ) {
@@ -267,8 +273,7 @@ class DimensionArray {
          resize( size_ - 1 );
       }
 
-      /// Compares two arrays, returns true only if they have the same size and
-      /// contain the same values.
+      /// Compares two arrays, returns true only if they have the same size and contain the same values.
       friend inline bool operator==( DimensionArray const& lhs, DimensionArray const& rhs ) {
          if( lhs.size_ != rhs.size_ ) {
             return false;
@@ -282,8 +287,7 @@ class DimensionArray {
          }
          return true;
       }
-      /// Compares two arrays, returns true if they have different size and/or
-      /// contain different values.
+      /// Compares two arrays, returns true if they have different size and/or contain different values.
       friend inline bool operator!=( DimensionArray const& lhs, DimensionArray const& rhs ) {
          return !( lhs == rhs );
       }
@@ -301,8 +305,7 @@ class DimensionArray {
             data_[ jj ] = elem;
          }
       }
-      /// Sort the contents of the array from smallest to largest, and keeping
-      /// `other` in the same order.
+      /// Sort the contents of the array from smallest to largest, and keeping `other` in the same order.
       template< typename S >
       void sort( DimensionArray< S >& other ) {
          // We cannot access private members of `other` because it's a different class (if S != T).
@@ -439,6 +442,8 @@ template< typename T >
 inline void swap( DimensionArray< T >& v1, DimensionArray< T >& v2 ) {
    v1.swap( v2 );
 }
+
+/// \}
 
 } // namespace dip
 

@@ -19,16 +19,15 @@ using std::swap;
 #include <iostream>
 
 /// \file
-/// This file should be included in each MEX file. It defines the
+/// \brief This file should be included in each MEX file. It defines the
 /// \ref dml namespace. Since it defines functions that are not `inline`,
 /// you will not be able to include this header into more than one source
 /// file that will be linked together.
 
 
-/// The dml namespace contains the interface between MATLAB and DIPlib. It defines
+/// \brief The dml namespace contains the interface between MATLAB and DIPlib. It defines
 /// the functions needed to convert between `mxArray` objects and dip::Image objects.
-///
-/// TODO: add more documentation here on how to use the dml interface.
+// TODO: add more documentation here on how to use the dml interface.
 namespace dml {
 
 // These are the names of the fields of the dip_image structure in MATLAB:
@@ -140,7 +139,8 @@ static mxClassID GetMatlabClassID(
    return type;
 }
 
-/// This class is the dip::ExternalInterface for the MATLAB interface.
+/// \brief This class is the dip::ExternalInterface for the MATLAB interface.
+///
 /// In a MEX-file, use the following code when declaring images to be
 /// used as the output to a function:
 ///
@@ -248,7 +248,7 @@ class MatlabInterface : public dip::ExternalInterface {
          }
       }
 
-      /// Find the `mxArray` that holds the data for the dip::Image `img`.
+      /// \brief Find the `mxArray` that holds the data for the dip::Image `img`.
       mxArray* GetArray( dip::Image const& img ) {
          dip_ThrowIf( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
          mxArray* m;
@@ -298,8 +298,9 @@ class MatlabInterface : public dip::ExternalInterface {
          return m;
       }
 
-      /// Constructs a dip::Image object with the external interface set so that,
+      /// \brief Constructs a dip::Image object with the external interface set so that,
       /// when forged, a MATLAB `mxArray` will be allocated to hold the samples.
+      ///
       /// Use dml::MatlabInterface::GetArray to obtain the `mxArray` and assign
       /// it as a `lhs` argument to your MEX-file.
       dip::Image NewImage() {
@@ -314,7 +315,8 @@ void VoidStripHandler( void const* p ) {
    //mexPrintf( "   Input mxArray not being destroyed\n" );
 };
 
-/// Passing an `mxArray` to DIPlib, keeping ownership of the data.
+/// \brief Passing an `mxArray` to DIPlib, keeping ownership of the data.
+///
 /// This function "converts" an `mxArray` with image data to a dip::Image object.
 /// The dip::Image object will point to the data in the `mxArray`, unless
 /// the array contains complex numbers. Complex data needs to be copied because

@@ -13,13 +13,19 @@
 
 
 /// \file
-/// Declares image math and statistics functions, except basic arithmetic and comparison.
-/// \see dip_operators.h
+/// \brief Declares image math and statistics functions, except basic arithmetic and comparison.
+/// \see operators.h, math
 
 
 namespace dip {
 
-/// Contains the return values for the function dip::GetMaximumAndMinimum.
+
+/// \defgroup math Image math and statistics functions
+/// \brief The image math and statistics functions, except basic arithmetic and comparison, which are in \ref operators.
+/// \{
+
+
+/// \brief Contains the return values for the function dip::GetMaximumAndMinimum.
 struct MaximumAndMinimum {
    double min;
    double max;
@@ -28,7 +34,8 @@ struct MaximumAndMinimum {
 // This function here serves as an example of how to use the scan framework
 // to do a multi-threaded reduce operation. It also demonstrates how to handle
 // optional mask images.
-/// Finds the largest and smallest value in the image, within an optional mask.
+/// \brief Finds the largest and smallest value in the image, within an optional mask.
+///
 /// If `mask` is not forged, all input pixels are considered. In case of a tensor
 /// image, returns the maximum and minimum sample values. In case of a complex
 /// samples, treats real and imaginary components as individual samples.
@@ -37,6 +44,7 @@ MaximumAndMinimum GetMaximumAndMinimum(
       Image const& mask
 );
 
+/// \}
 
 } // namespace dip
 

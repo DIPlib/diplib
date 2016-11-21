@@ -1,4 +1,6 @@
-\ingroup GrpDummyPages
+\ingroup iterators
+
+[comment]: # (The `ingroup` statement above avoids the generation of an empty page for this file. The actual group we add the file to is irrelevant, nothing is actually added.)
 
 \class dip::Image
 
@@ -164,12 +166,11 @@ matrices and triangular matrices.
 
 Given
 
-    dip::Image img( dip::uint16, { 10, 12, 20, 8, 18 } );
-    img.Forge();
+    dip::Image img( { 10, 12, 20, 8, 18 }, 1, dip::DT_UINT16 );
 
 Then \link dip::Image::Origin `img.Origin()`\endlink is a `void*` pointer to
 the first pixel (or rather the first sample of in the image).
-This pointer needs to be cast to the type given by 
+This pointer needs to be cast to the type given by
 \link dip::Image::DataType `img.DataType()`\endlink to be used, as in:
 
     (dip::uint16*)img.Origin() = 0;
@@ -259,7 +260,7 @@ normal strides. See `dip::Image::HasNormalStrides`,
 To walk along all pixels in an arbitrary image (i.e. arbitrary dimensionality
 and strides) in the order given by the linear index, use the **image iterators**
 defined in `diplib/iterators.h`
-(see \ref iterators "Using iterators to implement filters"):
+(see \ref using_iterators "Using iterators to implement filters"):
 
     dip::ImageIterator< dip::uint16 > it( img );
     dip::uint16 ii = 0;
@@ -290,7 +291,65 @@ element.
 
 [//]: # (--------------------------------------------------------------)
 
-\section assignment Assignment and copy
+\section assignment Creation, assignment and copy
+
+To create a new image with specific properties, one can either set each of
+the properties individually, or use one of the constructors. For example,
+the two following images are the same:
+
+    dip::Image img1;
+    img1.SetSizes( { 256, 256 } );
+    img1.SetDataType( dip::DT_UINT8 );
+    img1.SetTensorSizes( 1 );
+    img1.Forge();
+
+    dip::Image img2( UnsingedArray{ 256, 256 }, 1, dip::DT_UINT8 );
+
+The first method is more flexible, as it allows to set all properties
+before forging the image (such as strides).
+Note that the created image has uninitialized pixel data. You can use the
+`dip::Image::Fill` method to set all pixels to a specific value.
+
+To create a new image with same sizes and tensor shape as another one,
+use the `dip::Image::Similar` method:
+
+    img2 = img1.Similar();
+
+Again, the new image will have uninitialized pixel data. An optional second
+argument can be used to specify the data type of the new image:
+
+    img2 = img1.Similar( dip::DT_SCOMPLEX );
+
+Both methods copy all image properties, including the strides array and the
+external interface; see `dip::Image::CopyProperties`.
+
+A similar method is `dip::Image::ReForge`, which modifies the properties of
+an image and creates a new data segment if the old one is of the wrong size
+to support the new properties. In function, these three sets of statements
+are equivalent:
+
+    img2 = img1.Similar();
+
+    img2.Strip();
+    img2.CopyProperties( img1 );
+    img2.Forge();
+
+    img2.ReForge( img1 );
+
+However, `ReForge` might not strip and forge if it is not necessary
+(also, it does not use the source image's strides), and so
+is the recommended way of modifying an image to match another one.
+`dip::Image::ReForge` has two other forms that can be useful, see the
+documentation.
+
+Lastly, it is possible to create a 0D image (an image with a single pixel)
+with the constructor that takes a scalar value (integer, float or complex),
+or an initializer list containing scalar values of the same type. With the
+initializer list, the image will be a vector image with as many samples
+as elements in the initializer list:
+
+    dip::Image img1( 10 );
+    dip::Image img2( { 0, 1, 2, 3 } );
 
 The assignment operator creates a copy of the image, but does not actually
 copy the data. Instead, the new copy will share the data segment with the
@@ -304,18 +363,12 @@ exist as long as one image references it. That is, if `img1` goes out
 of scope, `img2` will still point at a valid data segment, which will not
 be freed until `img2` goes out of scope (or is stripped).
 
-The copy constructor creates an identical image, with its own data segment,
-but does not copy the pixel data:
+The copy constructor does the same thing. The following three statements
+all invoke the copy constructor:
 
     img2 = dip::Image( img1 );
-
-`img2` will be identical to `img1`, but with non-initialized data. The second
-argument to the copy constructor can be used to specify the data type of the
-new image:
-
-    img2 = dip::Image( img1, dip::DT_UINT8 );
-
-`img2` will be identical to `img1`, but with 8-bit unsigned integer samples.
+    dip::Image img3( img1 );
+    dip::Image img4 = img1;
 
 To make a copy of an image with its own copy of the data segment, use the
 `dip::Image::Copy` method:
@@ -334,12 +387,12 @@ be of the same size as the image to be copied. Pixel values will be copied to
 the existing data segment, casting to the target image's data type with clamping
 (see \ref dip_clamp_cast.h):
 
-    dip::Image img2( img1, dip::DT_UINT8 );
+    img2 = img1.Similar( dip::DT_UINT8 );
     img2.Copy( img1 );
 
 Or equivalently:
 
-    dip::Image img2 = dip::Convert( img1, dip::DT_UINT8 );
+    img2 = dip::Convert( img1, dip::DT_UINT8 );
 
 The `dip::Image::Convert` method, as opposed to the `dip::Convert` function, converts
 the image itself to a new data type. This process creates a new data segment if
@@ -347,6 +400,23 @@ the data type is of different size, and works in place if the data type is of th
 same size (e.g. `dip::DT_SINT32` and `dip::DT_SFLOAT` have the same size, as do
 `dip::DT_DFLOAT` and `dip::DT_SCOMPLEX`). However, if the data segment is shared,
 it will never work in place, as that could cause important problems.
+
+Assigning a constant to an image is equivalent to calling the `dip::Image::Fill`
+method, writing that constant to each sample in the image. The constant is
+cast to the image's data type with saturation (see `dip::clamp_cast`). Note that
+the image must be forged:
+
+    img1 = 10;
+    img2.Fill( 0 );
+
+Additionally, one can assign an initializer list to an image. The list should
+have one element for each tensor element. Each pixel in the image will then
+be set to the tensor values in the initializer list:
+
+    img2 = dip::Image( UnsignedArray{ 256, 256 }, 10, dip::DT_SFLOAT );
+    img2 = { 1, 2, 3, 4 };
+
+`img2` will have all pixels set to the same vector `[ 1, 2, 3, 4 ]`.
 
 
 [//]: # (--------------------------------------------------------------)
@@ -361,6 +431,53 @@ it will never work in place, as that could cause important problems.
 
 
 \subsection irregular_indexing Irregular indexing
+
+
+[//]: # (--------------------------------------------------------------)
+
+\section protect The "protect" flag
+
+An image carries a "protect" flag. When set, the `dip::Image::Strip` function
+throws an exception. That is, when the flag is set, the data segment cannot
+be stripped (freed) or reforged (reallocated). It does not, however, protect
+the image from being assigned into. For example:
+
+    dip::Image img1( UnsignedArray{ 256, 256 }, 3, dip::DT_SFLOAT );
+    img1.Protect();
+    //img1.Strip();  // Throws!
+    img1 = img2;     // OK
+
+The main purpose of the protect flag is to provide a simple means of specifying
+the data type for the output image of a filter. Most filters and operations in
+DIPlib choose a specific data type for their output based on the input data
+type, and in such a way that little precision is lost. For example, the Gaussian
+filter will produce a single-precision floating point output image by default
+when the input image is an 8-bit unsigned integer. Under the assumption that
+this default choice is suitable most of the time, we have chosen to not give
+all these functions an additional input argument to specify the data type for
+the output image. Instead, if the output image has the protect flag set, these
+functions will not modify its data type. Thus, you can set the output image's
+data type, protect it, and receive the result of the filter in that data type:
+
+    dip::Image img = ...
+    dip::Image out;
+    out.SetDataType( dip::DT_SINT16 );
+    out.Protect();
+    dip::Gauss( img, out, { 4 } );
+    // out is forged with correct sizes to receive filter result, and as 16-bit integer.
+
+This is especially simple for in-place operations where we want to receive the
+output in the same data segment as the input:
+
+    dip::Image img = ...
+    img.Protect();
+    dip::Gauss( img, img, { 4 } );
+
+If the filter is called with a protected, forged image as output, as is the case
+in the last code snipped above, the filter will not be able to strip and re-forge
+the image, meaning that the image must have the correct sizes and tensor elements
+to receive the output. However, if the image is not forged, as in the first
+code snippet, then the filter can set its sizes and forge it.
 
 
 [//]: # (--------------------------------------------------------------)

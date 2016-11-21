@@ -15,16 +15,21 @@
 
 
 /// \file
-/// Defines `dip::BoundaryCondition` and related types, and the functions that
-/// implement the logic behind the boundary conditions. Boundary conditions
-/// control what sample value is read when reading outside of the boundary
-/// of the image.
+/// \brief Defines `dip::BoundaryCondition` and related types, and the functions that
+/// implement the logic behind the boundary conditions.  This file is always included through `diplib.h`.
+/// \see infrastructure
 
 namespace dip {
 
-/// Ennumerates various ways of extending image data beyond its boundary. This ennumerator
-/// is used by the framework functions and some internal functions. Externally, the
-/// boundary condition is represented by strings.
+
+/// \addtogroup infrastructure
+/// \{
+
+
+/// \brief Ennumerates various ways of extending image data beyond its boundary.
+///
+/// This ennumerator is used by the framework functions and some internal functions.
+/// Externally, the boundary condition is represented by strings.
 ///
 /// Most functions will take a string instead of a `dip::BoundaryCondition` constant.
 /// The following table links boundary condition constants and their string representations.
@@ -46,7 +51,7 @@ enum class BoundaryCondition {
 using BoundaryConditionArray = DimensionArray< BoundaryCondition >; ///< An array to hold boundary conditions.
 
 
-/// Convert a string to a boundary condition.
+/// \brief Convert a string to a boundary condition.
 inline BoundaryCondition StringToBoundaryCondition( String bc ) {
    // TODO: This is not the most efficient way of looking up a string. What are good alternatives? Perfect hash? Hard-coded trie (==prefix tree)?
    if( bc.empty() ) { return BoundaryCondition::DEFAULT; }
@@ -65,7 +70,7 @@ inline BoundaryCondition StringToBoundaryCondition( String bc ) {
    else dip_Throw( "Boundary condition not recognized" );
 }
 
-/// Convert an array of strings to an array of boundary conditions.
+/// \brief Convert an array of strings to an array of boundary conditions.
 inline BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray bc ) {
    BoundaryConditionArray out( bc.size() );
    for( dip::sint ii = 0; ii < bc.size(); ++ii ) {
@@ -74,7 +79,9 @@ inline BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray b
    return out;
 }
 
-/// Check the length of a `BoundaryConditionArray`, and extend it if necessary and possible. The output will
+/// \brief Check the length of a `BoundaryConditionArray`, and extend it if necessary and possible.
+///
+/// The output will
 /// have `nDims` elements. If the input has a single value, it will be used for all dimensions. If the
 /// input is an empty array, the default boundary condition will be used for all dimensions. If the array
 /// has `nDims` elements, it is copied unchanged. For any other length, an exception is thrown.
@@ -85,10 +92,11 @@ inline BoundaryConditionArray BoundaryArrayUseParameter( BoundaryConditionArray 
 }
 
 
-/// Copies the sample values at `coords` into the output iterator `it`. The output iterator needs to
-/// have `tensorElements` spaces available. Note that a simple pointer can be used here. If `coords`
-/// falls outside the image, then the boundary condition `bc` is used to determine what values to write
-/// into the output iterator.
+/// \brief Copies the sample values at `coords` into the output iterator `it`.
+///
+/// The output iterator needs to have `tensorElements` spaces available. Note that a simple pointer can
+/// be used here. If `coords` falls outside the image, then the boundary condition `bc` is used to
+/// determine what values to write into the output iterator.
 ///
 /// First, second and third order interpolations are not implemented, because their functionality
 /// is impossible to reproduce in this simple function. Use `dip::ExtendImage` to get the functionality
@@ -156,10 +164,11 @@ void ReadPixelWithBoundaryCondition(
 }
 
 
-/// Extends the image `in` by `boundary` along each dimension. The new regions are filled using
-/// the boundary condition `bc`. If `bc` is an empty array, the default boundary condition is
-/// used along all dimensions. If `bc` has a single element, it is used for all dimensions.
-/// Similarly, if `boundary` has a single element, it is used for all dimensions.
+/// \brief Extends the image `in` by `boundary` along each dimension.
+///
+/// The new regions are filled using the boundary condition `bc`. If `bc` is an empty array, the default
+/// boundary condition is used along all dimensions. If `bc` has a single element, it is used for all
+/// dimensions. Similarly, if `boundary` has a single element, it is used for all dimensions.
 ///
 /// If `masked` is true, the output image is a window on the boundary-extended image, of the
 /// same size as `in`. That is, `out` will be identical to `in` except that it is possible
@@ -173,6 +182,7 @@ inline Image ExtendImage( Image in, UnsignedArray boundary, BoundaryConditionArr
    return out;
 }
 
+/// \}
 
 } // namespace dip
 

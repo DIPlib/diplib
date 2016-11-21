@@ -27,10 +27,14 @@
 
 
 /// \file
-/// Defines the basic types used throughout the library. This file is always included through diplib.h.
+/// \brief Defines the basic types used throughout the library. This file is always included through `diplib.h`.
 
 
 namespace dip {
+
+
+/// \addtogroup infrastructure
+/// \{
 
 
 //
@@ -64,7 +68,7 @@ using sfloat = float;            ///< Type for samples in a 32-bit floating poin
 using dfloat = double;           ///< Type for samples in a 64-bit floating point (double-precision) image
 using scomplex = std::complex< sfloat >;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
 using dcomplex = std::complex< dfloat >;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
-/// Type for samples in a binary image. Can store 0 or 1. Ocupies 1 byte.
+/// \brief Type for samples in a binary image. Can store 0 or 1. Ocupies 1 byte.
 struct bin {
    // Binary data stored in a single byte (don't use bool for pixels, it has
    // implementation-defined size). We define this struct for binary data so
@@ -109,7 +113,9 @@ using UnsignedArray = DimensionArray< dip::uint >;  ///< An array to hold dimens
 using FloatArray = DimensionArray< dip::dfloat >;   ///< An array to hold filter parameters.
 using BooleanArray = DimensionArray< bool >;        ///< An array used as a dimension selector.
 
-/// Check the length of an array, and extend it if necessary and possible. This function is used where a function's
+/// \brief Check the length of an array, and extend it if necessary and possible.
+///
+/// This function is used where a function's
 /// input parameter is an array that is supposed to match the image dimensionality `nDims`. The user can give an
 /// array of that length, or an array with a single value, which will be used for all dimensions, or an empty array,
 /// in which case the default value `defaultValue` will be used for all dimensions.
@@ -128,7 +134,7 @@ inline DimensionArray< T > ArrayUseParameter( DimensionArray< T > const& array, 
 
 /* THESE DON'T COMPILE
 
-/// Cast an UnsignedArray to an IntegerArray.
+/// \brief Cast an UnsignedArray to an IntegerArray.
 explicit operator IntegerArray( UnsignedArray in ) {
    IntegerArray out( in.size() );
    auto init = in.begin();
@@ -139,7 +145,7 @@ explicit operator IntegerArray( UnsignedArray in ) {
    return out;
 }
 
-/// Cast an IntegerArray to an UnsignedArray.
+/// \brief Cast an IntegerArray to an UnsignedArray.
 explicit operator UnsignedArray( IntegerArray in ) {
    UnsignedArray out( in.size() );
    auto init = in.begin();
@@ -164,7 +170,9 @@ using StringArray = std::vector< String >;  ///< An array of strings
 // Ranges, used for indexing
 //
 
-/// Used in indexing to indicate start, stop and step. Negative start
+/// \brief Used in indexing to indicate start, stop and step.
+///
+/// Negative start
 /// and stop values indicate offset from the end (-1 is the last pixel,
 /// -2 the second to last, etc.). If the stop comes before the start,
 /// the step is assumed to be negative. No sign is stored for the step.
@@ -187,8 +195,8 @@ struct Range {
    /// Create a range with all thee values set
    Range( dip::sint i, dip::sint j, dip::uint s ) : start{ i }, stop{ j }, step{ s } {}
 
-   /// Modify a range so that negative values are assigned correct
-   /// values according to the given size; throws if the range falls
+   /// \brief Modify a range so that negative values are assigned correct
+   /// values according to the given size. Throws if the range falls
    /// out of bounds.
    void Fix( dip::uint size ) {
       // Check step is non-zero
@@ -262,8 +270,9 @@ class Options {
       }
 };
 
-/// Declare a type used to pass options to a function or class. This macro is used
-/// as follows:
+/// \brief Declare a type used to pass options to a function or class.
+///
+/// This macro is used as follows:
 ///
 ///        DIP_DECLARE_OPTIONS( MyOptions, 3 );
 ///        DIP_DEFINE_OPTION( MyOptions, Option_clean, 0 );
@@ -288,10 +297,10 @@ class Options {
 ///
 /// For class member values, add `static` in front of `DIP_DEFINE_OPTION`.
 ///
-/// **Note** that `N` cannot be more than 32.
+/// **Note** that `number` cannot be more than 32.
 #define DIP_DECLARE_OPTIONS( name, number ) class __##name; using name = dip::Options< __##name, number >;
 
-/// Use in conjunction with DIP_DECLARE_OPTIONS.
+/// \brief Use in conjunction with `DIP_DECLARE_OPTIONS`.
 #define DIP_DEFINE_OPTION( name, option, index ) constexpr name option { index };
 
 
@@ -299,11 +308,11 @@ class Options {
 // The following are some types for often-used parameters
 //
 
-/// Enumerated options are defined in the namespace dip::Option, unless they
+/// \brief Enumerated options are defined in the namespace `dip::Option`, unless they
 /// are specific to some other sub-namespace.
 namespace Option {
 
-/// Some functions that check for a condition optionally throw an exception
+/// \brief Some functions that check for a condition optionally throw an exception
 /// if that condition is not met.
 enum class ThrowException {
    DONT_THROW, ///< Do not throw and exception, return false if the condition is not met.
@@ -311,7 +320,9 @@ enum class ThrowException {
 };
 
 /// \class dip::Option::CmpProps
-/// Determines which properties to compare. Valid values are:
+/// \brief Determines which properties to compare.
+///
+/// Valid values are:
 ///
 /// CmpProps constant       | Definition
 /// ----------------------- | ----------
@@ -351,6 +362,9 @@ static DIP_DEFINE_OPTION( CmpProps, CmpProps_All,
 
 
 } // namespace Option
+
+/// \}
+
 } // namespace dip
 
 #endif // DIP_TYPES_H

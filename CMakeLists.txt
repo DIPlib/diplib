@@ -52,6 +52,7 @@ add_library(DIP STATIC ${SOURCES} ${HEADERS})
 
 add_executable(test_array EXCLUDE_FROM_ALL test/test_array.cpp)
 add_executable(test_bin EXCLUDE_FROM_ALL test/test_bin.cpp)
+add_executable(test_saturated_arithmetic EXCLUDE_FROM_ALL test/test_saturated_arithmetic.cpp)
 add_executable(test_options EXCLUDE_FROM_ALL test/test_options.cpp)
 add_executable(test_physdims EXCLUDE_FROM_ALL test/test_physdims.cpp)
 add_executable(test_image EXCLUDE_FROM_ALL test/test_image.cpp)

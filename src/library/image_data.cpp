@@ -583,7 +583,15 @@ void Image::Forge() {
 
 
 //
-void Image::ReForge( UnsignedArray const& sizes, dip::uint tensorElems, dip::DataType dt ) {
+void Image::ReForge(
+      UnsignedArray const& sizes,
+      dip::uint tensorElems,
+      dip::DataType dt,
+      bool acceptDataTypeChange
+) {
+   if( acceptDataTypeChange && protect_ ) {
+      dt = dataType_;
+   }
    if( IsForged() ) {
       if(( sizes_ == sizes ) && ( tensor_.Elements() == tensorElems ) && ( dataType_ == dt )) {
          // It already matches, nothing to do
@@ -807,7 +815,8 @@ void Image::Convert( dip::DataType dt ) {
          // Simply create a new image, identical copy of *this, with a different data type, copy
          // the data, then swap the two images.
          //std::cout << "dip::Image::Convert: using Copy\n";
-         Image newimg( *this, dt ); // constructor forges the image
+         Image newimg;
+         newimg.ReForge( *this, dt );
          newimg.Copy( *this );
          swap( newimg );
       }

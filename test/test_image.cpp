@@ -105,10 +105,10 @@ int main() {
       }
       std::cout << std::endl << "Aliasing (no output is good)." << std::endl;
       {
-         dip::Image img1;
-         img1.SetSizes( { 50, 80, 30 } );
-         img1.SetTensorSizes(3);
-         img1.Forge();
+         dip::Image img1( dip::UnsignedArray{ 50, 80, 30 }, 3 );
+         //img1.SetSizes( { 50, 80, 30 } );
+         //img1.SetTensorSizes(3);
+         //img1.Forge();
          dip::Image img2 = img1[0];
          if( Alias(img1,img2) != true )
             std::cout << "Error: aliasing computation, test #1" << std::endl;

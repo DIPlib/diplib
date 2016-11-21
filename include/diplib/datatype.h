@@ -23,17 +23,25 @@
 
 
 /// \file
-/// Declares the dip::DataType class and support functions. This file is always included through diplib.h.
+/// \brief Declares the dip::DataType class and support functions. This file is always included through `diplib.h`.
+/// \see infrastructure
 
 
 namespace dip {
+
+
+/// \addtogroup infrastructure
+/// \{
+
 
 //
 // The DataType class.
 //
 
-/// DataType objects are used to indicate what the data type of
-/// an image is. It is a simple enumeration type, but with some added
+/// \brief DataType objects are used to indicate what the data type of
+/// an image is.
+///
+/// It is a simple enumeration type, but with some added
 /// member functions that can be used to query the data type. A series
 /// of constant expressions have been defined that should be used when
 /// specifying a data type or testing for specific data types:
@@ -83,19 +91,19 @@ struct DataType {
    constexpr explicit DataType( scomplex ) : dt( DT::SCOMPLEX ) {}
    constexpr explicit DataType( dcomplex ) : dt( DT::DCOMPLEX ) {}
 
-   /// Swaps the values of `*this` and `other`
+   /// \brief Swaps the values of `this` and `other`
    void swap( DataType& other ) {
       using std::swap;
       swap( dt, other.dt );
    }
 
-   /// DataType objects implicitly convert to the enumeration integer.
+   /// \brief DataType objects implicitly convert to the enumeration integer.
    constexpr operator int() const { return static_cast< int >( dt ); }   // This one allows the use of DataType in a switch() statement
 
-   /// DataType objects can be compared.
+   /// \brief DataType objects can be compared.
    bool operator==( DataType other ) const { return dt == other.dt; }
 
-   /// Returns a C-style string constant with a representation of the data type name.
+   /// \brief Returns a C-style string constant with a representation of the data type name.
    char const* Name() const {
       switch( dt ) {
          case DT::BIN:      return "BIN";
@@ -112,7 +120,7 @@ struct DataType {
       };
    }
 
-   /// Returns the size in bytes of the data type.
+   /// \brief Returns the size in bytes of the data type.
    dip::uint SizeOf() const {
       switch( dt ) {
          case DT::BIN:      return sizeof( dip::bin );
@@ -129,12 +137,12 @@ struct DataType {
       };
    }
 
-   /// Returns `true` if the data type is binary (equal to dip::DT_BIN).
+   /// \brief Returns `true` if the data type is binary (equal to `dip::DT_BIN`).
    bool IsBinary() const {
       return dt == DT::BIN;
    }
 
-   /// Returns `true` if the data type is an unsigned integer type.
+   /// \brief Returns `true` if the data type is an unsigned integer type.
    bool IsUInt() const {
       switch( dt ) {
          case DT::UINT8:
@@ -146,7 +154,7 @@ struct DataType {
       };
    }
 
-   /// Returns `true` if the data type is a signed integer type.
+   /// \brief Returns `true` if the data type is a signed integer type.
    bool IsSInt() const {
       switch( dt ) {
          case DT::SINT8:
@@ -158,12 +166,12 @@ struct DataType {
       };
    }
 
-   /// Returns `true` if the data type is an integer type.
+   /// \brief Returns `true` if the data type is an integer type.
    bool IsInteger() const {
       return IsUInt() || IsSInt();
    }
 
-   /// Returns `true` if the data type is a floating point type.
+   /// \brief Returns `true` if the data type is a floating point type.
    bool IsFloat() const {
       switch( dt ) {
          case DT::SFLOAT:
@@ -174,12 +182,12 @@ struct DataType {
       };
    }
 
-   /// Returns `true` if the data type is real (floating point or integer).
+   /// \brief Returns `true` if the data type is real (floating point or integer).
    bool IsReal() const {
       return IsInteger() || IsFloat();
    }
 
-   /// Returns `true` if the data type is complex.
+   /// vReturns `true` if the data type is complex.
    bool IsComplex() const {
       switch( dt ) {
          case DT::SCOMPLEX:
@@ -190,18 +198,20 @@ struct DataType {
       };
    }
 
-   /// Returns `true` if the data type is an unsigned type (same as IsUInt()).
+   /// \brief Returns `true` if the data type is an unsigned type (same as `dip::DataType::IsUInt`).
    bool IsUnsigned() const {
       return IsUInt();
    }
 
-   /// Returns `true` if the data type is a signed type (signed integer, floating point or complex)
+   /// \brief Returns `true` if the data type is a signed type (signed integer, floating point or complex)
    bool IsSigned() const {
       return IsSInt() || IsFloat() || IsComplex();
    }
 
    /// \class dip::DataType::Classes
-   /// Specifies a collection of data types. Valid values are:
+   /// \brief Specifies a collection of data types.
+   ///
+   /// Valid values are:
    ///
    /// Classes constant | Definition
    /// ---------------- | ----------
@@ -227,7 +237,7 @@ struct DataType {
    /// Class_Signed     | Class_SInt + Class_Float + Class_Complex;
    /// Class_Any        | Class_Binary + Class_Real + Class_Complex;
    ///
-   /// Note that you can add these constants together, for example `Class_Bin + Class_UInt`.
+   /// Note that you can add these constants together, for example `dip::Class_Bin + dip::Class_UInt`.
    DIP_DECLARE_OPTIONS( Classes, 11 );
    static DIP_DEFINE_OPTION( Classes, Class_Bin, static_cast<dip::uint>( DT::BIN ) );
    static DIP_DEFINE_OPTION( Classes, Class_UInt8, static_cast<dip::uint>( DT::UINT8 ) );
@@ -251,7 +261,7 @@ struct DataType {
    static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
    static DIP_DEFINE_OPTION( Classes, Class_Any, Class_Binary + Class_Real + Class_Complex );
 
-   /// Implicit conversion to dip::DataType::Classes options class.
+   /// \brief Implicit conversion to `dip::DataType::Classes` options class.
    operator Classes() const { return { static_cast<dip::uint>( dt ) }; }
 
    //
@@ -259,22 +269,22 @@ struct DataType {
    //
 
 
-   /// Returns a suitable floating-point type that can hold the samples of `type`.
+   /// \brief Returns a suitable floating-point type that can hold the samples of `type`.
    static DataType SuggestFloat( DataType type );
 
-   /// Returns a suitable complex type that can hold the samples of `type`.
+   /// \brief Returns a suitable complex type that can hold the samples of `type`.
    static DataType SuggestComplex( DataType type );
 
-   /// Returns a suitable floating-point or complex type that can hold the samples of `type`.
+   /// \brief Returns a suitable floating-point or complex type that can hold the samples of `type`.
    static DataType SuggestFlex( DataType type );
 
-   /// Returns a suitable floating-point, complex or binary type that can hold the samples of `type`.
+   /// \brief Returns a suitable floating-point, complex or binary type that can hold the samples of `type`.
    static DataType SuggestFlexBin( DataType type );
 
-   /// Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed with the two datatypes.
+   /// \brief Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed with the two datatypes.
    static DataType SuggestArithmetic( DataType type1, DataType type2 );
 
-   /// Returns a suitable type that can hold any samples of the two datatypes.
+   /// \brief Returns a suitable type that can hold any samples of the two datatypes.
    static DataType SuggestDiadicOperation( DataType type1, DataType type2 );
 
 };
@@ -283,7 +293,8 @@ inline void swap( DataType& v1, DataType& v2 ) {
    v1.swap( v2 );
 }
 
-using DataTypeArray = std::vector< DataType >;   ///< An array to hold data types
+/// \brief An array to hold data types
+using DataTypeArray = std::vector< DataType >;
 
 //
 // Constants that people will use where a DataType is needed
@@ -300,6 +311,8 @@ constexpr DataType DT_SFLOAT{ DataType::DT::SFLOAT };
 constexpr DataType DT_DFLOAT{ DataType::DT::DFLOAT };
 constexpr DataType DT_SCOMPLEX{ DataType::DT::SCOMPLEX };
 constexpr DataType DT_DCOMPLEX{ DataType::DT::DCOMPLEX };
+
+/// \}
 
 } // namespace dip
 

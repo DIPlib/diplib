@@ -14,12 +14,14 @@
 #include "diplib/pixel_table.h"
 
 /// \file
-/// Declares the dip::Framework namespace.
+/// \brief Declares the `dip::Framework` namespace.
+/// \see frameworks, infrastructure
 
 
 namespace dip {
 
-/// Frameworks are the basis of most pixel-based processing in DIPlib.
+
+/// \brief Frameworks are the basis of most pixel-based processing in DIPlib.
 ///
 /// The various frameworks implement iterating over image pixels, giving
 /// access to a single pixel, a whole image line, or a pixel's neighborhood.
@@ -30,6 +32,14 @@ namespace dip {
 /// independent, with little effort from the programmer.
 namespace Framework {
 
+
+/// \defgroup frameworks Frameworks
+/// \ingroup infrastructure
+/// \brief Functions that form the basis of most pixel-based processing in DIPlib.
+///
+/// \{
+
+
 // Maximum number of pixels in a buffer for the framework functions
 constexpr dip::uint MAX_BUFFER_SIZE = 256 * 1024;
 
@@ -39,44 +49,50 @@ constexpr dip::uint MAX_BUFFER_SIZE = 256 * 1024;
 //
 
 
-/// Determines if images can be singleton-expanded to the same size, and what
-/// that size would be. Singleton dimensions (size==1) can be expanded to a
+/// \brief Determines if images can be singleton-expanded to the same size, and what
+/// that size would be.
+///
+/// Singleton dimensions (size==1) can be expanded to a
 /// larger size by setting their stride to 0. This change can be performed
 /// without modifying the data segment. If image dimensions differ such that
 /// singleton expansion cannot make them all the same size, an exception is
-/// thrown. Use dip::Framework::SingletonExpansion to apply the transform
+/// thrown. Use `dip::Framework::SingletonExpansion` to apply the transform
 /// to one image.
 UnsignedArray SingletonExpandedSize(
       ImageConstRefArray const& in
 );
-/// Determines if images can be singleton-expanded to the same size, and what
-/// that size would be. Singleton dimensions (size==1) can be expanded to a
+/// \brief Determines if images can be singleton-expanded to the same size, and what
+/// that size would be.
+///
+/// Singleton dimensions (size==1) can be expanded to a
 /// larger size by setting their stride to 0. This change can be performed
 /// without modifying the data segment. If image dimensions differ such that
 /// singleton expansion cannot make them all the same size, an exception is
-/// thrown. Use dip::Framework::SingletonExpansion to apply the transform
+/// thrown. Use `dip::Framework::SingletonExpansion` to apply the transform
 /// to one image.
 UnsignedArray SingletonExpandedSize(
       ImageArray const& in
 );
 
-/// Performs singleton expansion. The image is modified so that it has `size`
+/// \brief Performs singleton expansion.
+///
+/// The image is modified so that it has `size`
 /// as dimensions. It must be forged and singleton-expandable to `size`,
-/// otherwise an exception is thrown. See dip::Image::ExpandSingletonDimension.
-/// `size` is the array as returned by dip::Framework::SingletonExpandedSize.
+/// otherwise an exception is thrown. See `dip::Image::ExpandSingletonDimension`.
+/// `size` is the array as returned by `dip::Framework::SingletonExpandedSize`.
 void SingletonExpansion(
       Image& in,
       UnsignedArray const& size
 );
 
-/// Determines the best processing dimension, which is the one with the
+/// \brief Determines the best processing dimension, which is the one with the
 /// smallest stride, except if that dimension is very small and there's a
 /// longer dimension.
 dip::uint OptimalProcessingDim(
       Image const& in
 );
 
-/// Determines which color space names to assign to each output image, by finding
+/// \brief Determines which color space names to assign to each output image, by finding
 /// the first input image with the same number of tensor elements as each output
 /// image.
 StringArray OutputColorSpaces(
@@ -84,7 +100,7 @@ StringArray OutputColorSpaces(
       UnsignedArray const& nTensorElements
 );
 
-/// Creates a vector of void pointers that point at the elements of `in`.
+/// \brief Creates a vector of void pointers that point at the elements of `in`.
 /// Use this function to create the `functionVariables` input for the framework
 /// functions.
 template< typename T >
@@ -106,7 +122,9 @@ std::vector< void* > CastToVoidpVector(
 
 
 /// \class dip::Framework::ScanOptions
-/// Defines options to the `dip::Framework::Scan` function. Valid values are:
+/// \brief Defines options to the `dip::Framework::Scan` function.
+///
+/// Valid values are:
 ///
 /// `ScanOptions` constant      | Meaning
 /// --------------------------- | ----------
@@ -124,8 +142,10 @@ DIP_DEFINE_OPTION( ScanOptions, Scan_TensorAsSpatialDim, 2 );
 DIP_DEFINE_OPTION( ScanOptions, Scan_ExpandTensorInBuffer, 3 );
 DIP_DEFINE_OPTION( ScanOptions, Scan_NoSingletonExpansion, 4 );
 
-/// Structure that holds information about input or output pixel buffers
-/// for the `dip::Framework::Scan` callback function. The length of the buffer
+/// \brief Structure that holds information about input or output pixel buffers
+/// for the `dip::Framework::Scan` callback function.
+///
+/// The length of the buffer
 /// is given in a separate argument to the callback function. Depending on the
 /// arguments given to the framework function, you might assume that `tensorLength`
 /// is always 1, and consequently ignore also `tensorStride`.
@@ -147,7 +167,7 @@ using ScanFilter =  void ( * )(
       void* functionVariables
 );
 
-/// Framework for pixel-based processing of images.
+/// \brief Framework for pixel-based processing of images.
 ///
 /// The function `lineFilter` is called for each image line, with input and
 /// output buffers either pointing directly to the input and output images,
@@ -257,7 +277,7 @@ void Scan(
       ScanOptions opts                          ///< Options to control how `lineFilter` is called
 );
 
-/// Calls dip::Framework::Scan with one output image.
+/// \brief Calls `dip::Framework::Scan` with one output image.
 inline void ScanSingleOutput(
       Image& out,                      ///< Output image
       DataType outImageType,           ///< Data type for output image, buffer will have this type also
@@ -276,7 +296,7 @@ inline void ScanSingleOutput(
    Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, functionParameters, functionVariables, opts );
 }
 
-/// Calls dip::Framework::Scan with one input image.
+/// \brief Calls `dip::Framework::Scan` with one input image.
 inline void ScanSingleInput(
       Image& in,                       ///< Input image
       DataType bufferType,             ///< Data type for input buffer
@@ -294,7 +314,7 @@ inline void ScanSingleInput(
    Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, functionParameters, functionVariables, opts );
 }
 
-/// Calls dip::Framework::Scan with one input image and one output image.
+/// \brief Calls `dip::Framework::Scan` with one input image and one output image.
 inline void ScanMonadic(
       Image const& in,                 ///< Input image
       Image& out,                      ///< Output image
@@ -315,9 +335,10 @@ inline void ScanMonadic(
    Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, functionParameters, functionVariables, opts );
 }
 
-/// Calls `dip::Framework::Scan` with two input images and one output image. It handles
-/// some of the work for dyadic (binary) operators related to matching up tensor
-/// dimensions in the input image.
+/// \brief Calls `dip::Framework::Scan` with two input images and one output image.
+///
+/// It handles some of the work for dyadic (binary) operators related to matching up
+/// tensor dimensions in the input image.
 ///
 /// Input tensors are expected to match, but a scalar is expanded to the size of the
 /// other tensor. The output tensor will be of the same size as the input tensors,
@@ -378,7 +399,9 @@ inline void ScanDyadic(
 
 
 /// \class dip::Framework::SeparableOptions
-/// Defines options to the `dip::Framework::Separable` function. Valid values are:
+/// \brief Defines options to the `dip::Framework::Separable` function.
+///
+/// Valid values are:
 ///
 /// `SeparableOptions` constant      | Meaning
 /// -------------------------------- | ----------
@@ -396,8 +419,10 @@ DIP_DEFINE_OPTION( SeparableOptions, Separable_ExpandTensorInBuffer, 2 );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_UseOutBorder, 3 );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_DontResizeOutput, 4 );
 
-/// Structure that holds information about input or output pixel buffers
-/// for the `dip::Framework::Separable` callback function. The length of the buffer
+/// \brief Structure that holds information about input or output pixel buffers
+/// for the `dip::Framework::Separable` callback function.
+///
+/// The length of the buffer
 /// is given in a separate argument to the callback function. Depending on the
 /// arguments given to the framework function, you might assume that `tensorLength`
 /// is always 1, and consequently ignore also `tensorStride`.
@@ -420,7 +445,7 @@ using SeparableFilter = void ( * )(
       void* functionVariables
 );
 
-/// Framework for separable filtering of images.
+/// \brief Framework for separable filtering of images.
 ///
 /// The function `lineFilter` is called for each image line, and along each
 /// dimension, with input and output buffers either pointing directly to the
@@ -528,8 +553,8 @@ using SeparableFilter = void ( * )(
 ///         void*                  functionVariables);  // A pointer to user-defined temporary or output data
 /// See the definition of the `dip::Framework::SeparableBuffer` structure.
 void Separable(
-      Image const& in,                 ///< Input image
-      Image& out,                      ///< Output image
+      Image const& cInput,             ///< Input image
+      Image& cOutput,                  ///< Output image
       DataType bufferType,             ///< Data type for input and output buffer
       DataType outImageType,           ///< Data type for output image
       BooleanArray process,            ///< Determines along which dimensions to apply the filter
@@ -557,7 +582,9 @@ void Separable(
 
 
 /// \class dip::Framework::FullOptions
-/// Defines options to the `dip::Framework::Full` function. Valid values are:
+/// \brief Defines options to the `dip::Framework::Full` function.
+///
+/// Valid values are:
 ///
 /// `FullOptions` constant      | Meaning
 /// --------------------------- | ----------
@@ -571,10 +598,11 @@ DIP_DEFINE_OPTION( FullOptions, Full_NoMultiThreading, 0 );
 DIP_DEFINE_OPTION( FullOptions, Full_AsScalarImage, 1 );
 DIP_DEFINE_OPTION( FullOptions, Full_ExpandTensorInBuffer, 2 );
 
-/// Structure that holds information about input or output pixel buffers
-/// for the `dip::Framework::Full` callback function. Depending on the
-/// arguments given to the framework function, you might assume that `tensorLength`
-/// is always 1, and consequently ignore also `tensorStride`.
+/// \brief Structure that holds information about input or output pixel buffers
+/// for the `dip::Framework::Full` callback function.
+///
+/// Depending on the arguments given to the framework function, you might assume that
+/// `tensorLength` is always 1, and consequently ignore also `tensorStride`.
 struct FullBuffer {
    void* buffer;           ///< Pointer to pixel data for image line, to be cast to expected data type.
    dip::sint stride;       ///< Stride to walk along pixels.
@@ -594,7 +622,7 @@ using FullFilter = void ( * )(
       void* functionVariables
 );
 
-/// Framework for filtering of images with an arbitrary shape neighborhood.
+/// \brief Framework for filtering of images with an arbitrary shape neighborhood.
 ///
 /// The function `lineFilter` is called for each image line,
 /// with input and output buffers either pointing directly to the
@@ -705,7 +733,7 @@ void Full(
       FullOptions opts                       ///< Options to control how `lineFilter` is called
 );
 
-/// Calls dip::Framework::Full with one input image and one output image.
+/// \brief Calls `dip::Framework::Full` with one input image and one output image.
 inline void FullMonadic(
       Image const& in,                 ///< Input image
       Image& out,                      ///< Output image
@@ -728,6 +756,7 @@ inline void FullMonadic(
    Full( inar, outar, inBufT, outBufT, outImT, nElem, boundaryConditions, pixelTable, lineFilter, functionParameters, functionVariables, opts );
 }
 
+/// \}
 
 } // namespace Framework
 } // namespace dip
