@@ -9,6 +9,7 @@
 #define DIP_CLAMP_CAST_H
 
 #include <limits>
+#include <cstdint>
 
 #include "diplib/types.h"
 #include "diplib/numeric.h"
@@ -169,6 +170,35 @@ inline dip::sint32 clamp_cast< dip::sint32 >( dip::uint32 v ) {
    return clamp_upper< dip::sint32, dip::uint32 >( v );
 }
 
+#if SIZE_MAX != UINT32_MAX // we don't want to compile this segment on 32-bit machines, they'd conflict with the segment above.
+/// Casting from a machine-width unsigned value to any other sample type.
+// Casting from a dip::uint, we don't do checks if casting to a float, complex or bin
+template< typename T >
+inline T clamp_cast( dip::uint v ) {
+   return clamp_upper< T, dip::uint >( v );
+}
+template<>
+inline dip::sfloat clamp_cast< dip::sfloat >( dip::uint v ) {
+   return static_cast< dip::sfloat >( v );
+}
+template<>
+inline dip::dfloat clamp_cast< dip::dfloat >( dip::uint v ) {
+   return static_cast< dip::dfloat >( v );
+}
+template<>
+inline dip::scomplex clamp_cast< dip::scomplex >( dip::uint v ) {
+   return static_cast< dip::scomplex >( v );
+}
+template<>
+inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::uint v ) {
+   return static_cast< dip::dcomplex >( v );
+}
+template<>
+inline dip::bin clamp_cast< dip::bin >( dip::uint v ) {
+   return static_cast< dip::bin >( v );
+}
+#endif
+
 /// Casting from a 8-bit signed value to any other sample type.
 // Casting from dip::sint8, specialize for all unsigned types
 template< typename T >
@@ -238,6 +268,7 @@ inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint32 v ) {
    return clamp_lower< dip::uint32, dip::sint32 >( v );
 }
 
+#if PTRDIFF_MAX != INT32_MAX // we don't want to compile this segment on 32-bit machines, they'd conflict with the segment above.
 /// Casting from a machine-width signed value to any other sample type.
 // Casting from a dip::sint, we don't do checks if casting to a float, complex or bin
 template< typename T >
@@ -264,6 +295,7 @@ template<>
 inline dip::bin clamp_cast< dip::bin >( dip::sint v ) {
    return static_cast< dip::bin >( v );
 }
+#endif
 
 /// Casting from a single-precision float value to any other sample type.
 // Casting from a dip::sfloat, we don't do checks if casting to a float, complex or bin
@@ -331,7 +363,7 @@ inline dip::scomplex clamp_cast< dip::scomplex >( dip::scomplex v ) {
 }
 template<>
 inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::scomplex v ) {
-   return static_cast< dip::dcomplex >( v );
+   return dip::dcomplex{ v.real(), v.imag() };
 }
 
 /// Casting from a double-precision complex value to any other sample type.
@@ -346,7 +378,7 @@ inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::dcomplex v ) {
 }
 template<>
 inline dip::scomplex clamp_cast< dip::scomplex >( dip::dcomplex v ) {
-   return static_cast< dip::scomplex >( v );
+   return dip::scomplex{ static_cast< dip::sfloat >( v.real() ), static_cast< dip::sfloat >( v.imag() ) };
 }
 
 /// \}
