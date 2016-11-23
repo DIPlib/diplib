@@ -142,34 +142,35 @@ one can create functions that process one line at a time:
        do {
           sum += *lit;
        } while( ++lit );
-       dip::uint mean = sum / it.Length();
+       dip::uint mean = sum / lit.Length();
        lit = it.GetLineIterator();
        do {
-          *lit = ( *lit * 1000 ) / mean;
+          dip::uint res = mean == 0 ? 0 : ( *lit * 1000 ) / mean;
+          *lit = dip::clamp_cast< dip::uint16 >( res );
        } while( ++lit );
     } while( ++it );
 
 A one-dimensional filter can be implemented using the line iterator as an array:
 
-    dip_ThrowIf( img.DataType() != dip::DT_SFLOAT, "Expecting single-precision float image" );
+    dip_ThrowIf( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image out = img.Similar( dip::DT_SFLOAT );
     constexpr dip::uint N = 2;
-    std::array< float, 2*N+1 > filter {{ 1.0/9.0, 2.0/9.0, 3.0/9.0. 2.0/9.0, 1.0/9.0 }};
-    dip::JointImageIterator< dip::sfloat, dip::sfloat > it( img, out, 0 );
+    std::array< double, 2 * N + 1 > filter{ { 1.0 / 9.0, 2.0 / 9.0, 3.0 / 9.0, 2.0 / 9.0, 1.0 / 9.0 } };
+    dip::JointImageIterator< dip::uint16, dip::sfloat > it( img, out, 0 );
     do {
        auto iit = it.GetInLineIterator();
        auto oit = it.GetOutLineIterator();
        // At the beginning of the line the filter has only partial support within the image
        for( dip::uint ii = N; ii > 0; --ii, ++oit ) {
-          *oit = std::inner_product( filter.begin() + ii, filter.end(), iit, 0 );
+          *oit = std::inner_product( filter.begin() + ii, filter.end(), iit, 0.0f );
        }
        // In the middle of the line the filter has full support
        for( dip::uint ii = N; ii < oit.Length() - N; ++ii, ++iit, ++oit ) {
-          *oit = inner_product( filter.begin(), filter.end(), iit, 0 );
+          *oit = std::inner_product( filter.begin(), filter.end(), iit, 0.0f );
        }
        // At the end of the line the filter has only partial support
        for( dip::uint ii = 1; ii <= N; ++ii, ++iit, ++oit ) {
-          *oit = inner_product( filter.begin(), filter.end() - ii, iit, 0 );
+          *oit = std::inner_product( filter.begin(), filter.end() - ii, iit, 0.0f );
        }
     } while( ++it );
 

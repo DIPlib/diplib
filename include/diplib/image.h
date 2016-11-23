@@ -926,7 +926,9 @@ class Image {
       ///
       /// \see IsProtected, Strip
       bool Protect( bool set = true ) {
+         bool old = protect_;
          protect_ = set;
+         return old;
       }
 
       /// \brief Test if protected. See `dip::Image::Protect` for information.

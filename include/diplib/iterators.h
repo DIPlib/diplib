@@ -210,7 +210,7 @@ class LineIterator {
          dip_ThrowIf( !image.IsForged(), E::IMAGE_NOT_FORGED );
          dip_ThrowIf( image.DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
          dip_ThrowIf( procDim >= image.Dimensionality(), E::ILLEGAL_DIMENSION );
-         ptr_ = image.Pointer( coords ); // throws if coords are outside of image
+         ptr_ = static_cast< pointer >( image.Pointer( coords )); // throws if coords are outside of image
          coord_ = coords[ procDim ];
          size_ = image.Size( procDim );
          stride_ = image.Stride( procDim );
@@ -711,7 +711,7 @@ class JointImageIterator {
          return ConstLineIterator< inT >( *inImage_, coords_, static_cast< dip::uint >( procDim_ ) );
       }
       /// Get an iterator over the current line of the output image
-      LineIterator< inT > GetOutLineIterator() const {
+      LineIterator< outT > GetOutLineIterator() const {
          dip_ThrowIf( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
          return LineIterator< outT >( *outImage_, coords_, static_cast< dip::uint >( procDim_ ) );
       }

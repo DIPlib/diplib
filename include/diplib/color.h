@@ -131,10 +131,7 @@ class ColorSpaceManager {
       /// arrays have a number of values corresponding to the channels used by
       /// the corresponding color space.
       void Register( ColorSpaceConverter func, String const& source, String const& destination, dip::uint cost = 1 ) {
-         nodes_[ Index( source ) ].edges[ Index( destination ) ] = {
-               func,
-               cost
-         }; // updates the edge if it was already there
+         nodes_[ Index( source ) ].edges[ Index( destination ) ] = { func, cost }; // updates the edge if it was already there
       }
 
       /// \brief Returns the number of channels used by the given color space.
@@ -161,8 +158,11 @@ class ColorSpaceManager {
       /// must exist between the two.
       void Convert( Image const& in, Image const& out, String const& name, WhitePoint const& whitepoint ) const;
 
-      Image Convert( Image const& in, String const& name, WhitePoint const& whitepoint ) const
-      { Image out; Convert( in, out, name, whitepoint ); return out; }
+      Image Convert( Image const& in, String const& name, WhitePoint const& whitepoint ) const {
+         Image out;
+         Convert( in, out, name, whitepoint );
+         return out;
+      }
 
    private:
 
@@ -174,13 +174,13 @@ class ColorSpaceManager {
       struct Node {
          String name;
          dip::uint chans;
-         std::map <dip::uint, Edge> edges;  // The key is the target color space index
+         std::map< dip::uint, Edge > edges;  // The key is the target color space index
          Node( String const& name, dip::uint chans ) :
                name( name ), chans( chans ) {}
       };
 
-      std::map <String, dip::uint> names_;
-      std::vector <Node> nodes_;
+      std::map< String, dip::uint > names_;
+      std::vector< Node > nodes_;
 
       dip::uint Index( String const& name ) const {
          auto it = names_.find( name );
@@ -204,7 +204,7 @@ class ColorSpaceManager {
       // which, when called in succession, accomplish the color space conversion.
 
       // Find an optimal path between two color spaces, given by their indices.
-      std::vector <dip::uint> FindPath( dip::uint start, dip::uint stop ) const;
+      std::vector< dip::uint > FindPath( dip::uint start, dip::uint stop ) const;
 };
 
 /// \}

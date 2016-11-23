@@ -8,9 +8,11 @@
 
 #include <new>
 #include <iostream>
+#include <cmath>
 
 #include "diplib.h"
 #include "diplib/framework.h"
+#include "diplib/iterators.h"
 
 #include "copy_buffer.h"
 
@@ -18,8 +20,8 @@ namespace dip {
 namespace Framework {
 
 void Separable(
-      Image const& c_in,
-      Image& c_out,
+      Image const& cInput,
+      Image& cOutput,
       DataType bufferType,
       DataType outImageType,
       BooleanArray process,   // taken by copy so we can modify
@@ -30,7 +32,7 @@ void Separable(
       std::vector< void* > const& functionVariables,
       SeparableOptions opts
 ) {
-   UnsignedArray inSizes = c_in.Sizes();
+   UnsignedArray inSizes = cInput.Sizes();
    dip::uint nDims = inSizes.size();
 
    // Check inputs
@@ -41,7 +43,7 @@ void Separable(
       dip_ThrowIf( process.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
       if( !process.any() ) {
          // No dimensions to process
-         c_out = c_in; // This ignores the Separable_DontResizeOutput option...
+         cOutput = cInput; // This ignores the Separable_DontResizeOutput option...
          return;
       }
    }
@@ -52,14 +54,14 @@ void Separable(
    // This also effectively separates input and output images. They still point
    // at the same data, but we can strip the output image without destroying
    // the input pixel data.
-   Image in = c_in.QuickCopy();
-   PixelSize pixelSize = c_in.PixelSize();
-   String colorSpace = c_in.ColorSpace();
+   Image input = cInput.QuickCopy();
+   PixelSize pixelSize = cInput.PixelSize();
+   String colorSpace = cInput.ColorSpace();
 
    // Determine output sizes
    UnsignedArray outSizes;
    if( opts == Separable_DontResizeOutput ) {
-      outSizes = c_out.Sizes();
+      outSizes = cOutput.Sizes();
       dip_ThrowIf( outSizes.size() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
       for( size_t ii = 0; ii < nDims; ++ii ) {
          dip_ThrowIf( !process[ ii ] && ( inSizes[ ii ] != outSizes[ ii ] ), "Output size must match input size for dimensions not being processed" );
@@ -74,39 +76,39 @@ void Separable(
    std::vector< dip::sint > lookUpTable;
 
    // Determine number of tensor elements and do tensor to spatial dimension if necessary
-   Tensor outTensor = in.Tensor();
+   Tensor outTensor = input.Tensor();
    bool tensorToSpatial = false;
    if( opts == Separable_AsScalarImage ) {
-      if( !in.IsScalar() ) {
-         in.TensorToSpatial( 0 );
+      if( !input.IsScalar() ) {
+         input.TensorToSpatial( 0 );
          process.insert( 0, false );
          tensorToSpatial = true;
          ++nDims;
-         inSizes = in.Sizes();
+         inSizes = input.Sizes();
       }
    } else {
-      if(( opts == Separable_ExpandTensorInBuffer ) && !in.Tensor().HasNormalOrder() ) {
-         lookUpTable = in.Tensor().LookUpTable();
-         outTensor.SetMatrix( in.Tensor().Rows(), in.Tensor().Columns() );
+      if(( opts == Separable_ExpandTensorInBuffer ) && !input.Tensor().HasNormalOrder() ) {
+         lookUpTable = input.Tensor().LookUpTable();
+         outTensor.SetMatrix( input.Tensor().Rows(), input.Tensor().Columns() );
          colorSpace.clear(); // the output tensor shape is different from the input's, the color space presumably doesn't match
       }
    }
 
    // Adjust output if necessary (and possible)
-   if( c_out.IsForged() && c_out.IsOverlappingView( c_in ) ) {
-      c_out.Strip();
+   if( cOutput.IsForged() && cOutput.IsOverlappingView( cInput ) ) {
+      cOutput.Strip();
    }
-   c_out.ReForge( outSizes, outTensor.Elements(), outImageType );
-   c_out.ReshapeTensor( outTensor );
-   // NOTE: Don't use c_in any more from here on. It has possibly been reforged!
+   cOutput.ReForge( outSizes, outTensor.Elements(), outImageType, true );
+   cOutput.ReshapeTensor( outTensor );
+   // NOTE: Don't use cInput any more from here on. It has possibly been reforged!
 
    // Make simplified copies of output image headers so we can modify them at will
-   Image out = c_out.QuickCopy();
+   Image output = cOutput.QuickCopy();
 
    // Do tensor to spatial dimension if necessary
    if( tensorToSpatial ) {
-      out.TensorToSpatial( 0 );
-      outSizes = out.Sizes();
+      output.TensorToSpatial( 0 );
+      outSizes = output.Sizes();
    }
 
    // Determine the order in which dimensions are to be processed.
@@ -117,16 +119,18 @@ void Separable(
       if( process[ ii ] ) {
          grow[ ii ] = static_cast< double >( outSizes[ ii ] ) / static_cast< double >( inSizes[ ii ] );
       } else {
-         grow[ ii ] = 0; // this dimension will not be processed, the order arraw will index it first
+         grow[ ii ] = std::numeric_limits< double >::infinity(); // this dimension will not be processed, the order array will index it last
       }
    }
    UnsignedArray order = grow.sortedIndices();
-   while(( order.size() > 0 ) && ( order[ 0 ] == 0 )) {
-      order.erase( 0 );
+   while(( order.size() > 0 ) && ( std::isinf( grow[ order.back() ] ))) {
+      order.pop_back();
    }
    // `order` now indexes the dimensions to be processed, in the optimal order (to reduce the amount of
    // computation and intermediate storage)
+   // TODO: for dimensions with equal 'grow' weight (more often than not, grow == 1 for all dimensions), sort them by stride, with lower stride first.
 
+   /*
    // Create a temporary image, if needed, that can hold the result of all the steps minus the last one
    // (which will be written directly in the output data segment).
    // TODO: It might be better to have a different temp image for each step, and flip dimensions so
@@ -138,14 +142,15 @@ void Separable(
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          tmpSizes[ ii ] = std::max( inSizes[ ii ], outSizes[ ii ] );
       }
-      tmpSizes[ order[ 0 ] ] = outSizes[ order[ 0 ] ];
-      tmpSizes[ order[ nDims - 1 ] ] = inSizes[ order[ nDims - 1 ] ];
-      if( ( tmpSizes.allSmallerOrEqual( outSizes ) ) && ( bufferType == outImageType ) ) {
+      tmpSizes[ order.front() ] = outSizes[ order.front() ];
+      tmpSizes[ order.back() ] = inSizes[ order.back() ];
+      if( ( tmpSizes.allSmallerOrEqual( outSizes ) ) && ( bufferType == output.DataType() ) ) {
          tmp = out;  // we can use the data segment of out for intermediate data
       } else {
          tmp = Image( tmpSizes, tensorToSpatial ? 1 : outTensor.Elements(), bufferType );
       }
    }
+   */
 
    // TODO: Determine the number of threads we'll be using.
 
@@ -154,26 +159,44 @@ void Separable(
    // TODO: Start threads, each thread makes its own buffers.
    dip::uint thread = 0;
 
-   // The temporary buffers, if needed, will be stored here
+   // The temporary buffers, if needed, will be stored here (each process their own!)
    std::vector< uint8 > inBufferStorage;
    std::vector< uint8 > outBufferStorage;
 
-   // TODO: iterate over dimensions
-   {
-      dip::uint processingDim = 0;
-      // in the first iteration: input data = in
-      // in the last iteration: output data = out
-      // at other times: input data = tmp, output buffer = tmp
-      UnsignedArray sizes = inSizes; // TODO: This array will change during each iteration to match the input size
+   // The intermediate image, if needed, stored here
+   Image intermediate;
 
-      dip::uint inLength = inSizes[ processingDim ];
+   // Iterate over the dimensions to be processed. This loop should be sequential, not parallelized!
+   for( dip::uint processingDim : order ) {
+      // Where do we read and write data?
+      Image& inImage = order.front() == processingDim ? input : intermediate;
+      Image tmpImage;
+      Image& outImage = order.back() == processingDim ? output : tmpImage;
+
+      // Allocate space for intermediate data
+      if( &outImage == &tmpImage ) {
+         UnsignedArray tmpSizes = inImage.Sizes();
+         tmpSizes[ processingDim ] = outSizes[ processingDim ];
+         tmpImage.SetSizes( tmpSizes );
+         tmpImage.SetTensorSizes( outImage.TensorElements() );
+         tmpImage.SetDataType( bufferType );
+         // TODO: set strides such that the next dimension has a stride of 1 (or rather TensorElements)
+         tmpImage.Forge();
+      }
+
+      //std::cout << "dip::Framework::Separable(), processingDim = " << processingDim << std::endl;
+      //std::cout << "   inImage.Origin() = " << inImage.Origin() << std::endl;
+      //std::cout << "   outImage.Origin() = " << outImage.Origin() << std::endl;
+
+      // Some values to use during this iteration
+      dip::uint inLength = inSizes[ processingDim ]; assert( inLength == inImage.Size( processingDim ) );
       dip::uint inBorder = border[ processingDim ];
       dip::uint outLength = outSizes[ processingDim ];
       dip::uint outBorder = opts == Separable_UseOutBorder ? inBorder : 0;
 
       // Determine if we need to make a temporary buffer for this dimension
-      bool inUseBuffer = ( in.DataType() != bufferType ) || !lookUpTable.empty() || ( inBorder > 0 );
-      bool outUseBuffer = ( out.DataType() != bufferType ) || ( outBorder > 0 );
+      bool inUseBuffer = ( inImage.DataType() != bufferType ) || !lookUpTable.empty() || ( inBorder > 0 );
+      bool outUseBuffer = ( outImage.DataType() != bufferType ) || ( outBorder > 0 );
 
       // Create buffer data structs and (re-)allocate buffers
       SeparableBuffer inSeparableBuf;
@@ -181,62 +204,60 @@ void Separable(
       inSeparableBuf.border = inBorder;
       if( inUseBuffer ) {
          if( lookUpTable.empty() ) {
-            inSeparableBuf.tensorLength = in.TensorElements();
+            inSeparableBuf.tensorLength = inImage.TensorElements();
          } else {
             inSeparableBuf.tensorLength = lookUpTable.size();
          }
          inSeparableBuf.tensorStride = 1;
-         if( in.Stride( processingDim ) == 0 ) {
+         if( inImage.Stride( processingDim ) == 0 ) {
             // A stride of 0 means all pixels are the same, allocate space for a single pixel
             inSeparableBuf.stride = 0;
             inBufferStorage.resize( bufferType.SizeOf() * inSeparableBuf.tensorLength );
+            //std::cout << "   Using input buffer, stride = 0\n";
          } else {
             inSeparableBuf.stride = inSeparableBuf.tensorLength;
             inBufferStorage.resize( ( inLength + 2 * inBorder ) * bufferType.SizeOf() * inSeparableBuf.tensorLength );
+            //std::cout << "   Using input buffer, size = " << inBufferStorage.size() << std::endl;
          }
-         inSeparableBuf.buffer = inBufferStorage.data();
+         inSeparableBuf.buffer = inBufferStorage.data() + inBorder * bufferType.SizeOf() * inSeparableBuf.tensorLength;
       } else {
-         inSeparableBuf.tensorLength = in.TensorElements();
-         inSeparableBuf.tensorStride = in.TensorStride();
-         inSeparableBuf.stride = in.Stride( processingDim );
+         inSeparableBuf.tensorLength = inImage.TensorElements();
+         inSeparableBuf.tensorStride = inImage.TensorStride();
+         inSeparableBuf.stride = inImage.Stride( processingDim );
          inSeparableBuf.buffer = nullptr;
+         //std::cout << "   Not using input buffer\n";
       }
       SeparableBuffer outSeparableBuf;
       outSeparableBuf.length = outLength;
       outSeparableBuf.border = outBorder;
       if( outUseBuffer ) {
-         outSeparableBuf.tensorLength = out.TensorElements();
+         outSeparableBuf.tensorLength = outImage.TensorElements();
          outSeparableBuf.tensorStride = 1;
          outSeparableBuf.stride = outSeparableBuf.tensorLength;
          outBufferStorage.resize( ( outLength + 2 * outBorder ) * bufferType.SizeOf() * outSeparableBuf.tensorLength );
-         outSeparableBuf.buffer = outBufferStorage.data();
+         outSeparableBuf.buffer = outBufferStorage.data() + outBorder * bufferType.SizeOf() * outSeparableBuf.tensorLength;
+         //std::cout << "   Using output buffer, size = " << outBufferStorage.size() << std::endl;
       } else {
-         outSeparableBuf.tensorLength = out.TensorElements();
-         outSeparableBuf.tensorStride = out.TensorStride();
-         outSeparableBuf.stride = out.Stride( processingDim );
+         outSeparableBuf.tensorLength = outImage.TensorElements();
+         outSeparableBuf.tensorStride = outImage.TensorStride();
+         outSeparableBuf.stride = outImage.Stride( processingDim );
          outSeparableBuf.buffer = nullptr;
+         //std::cout << "   Not using output buffer\n";
       }
 
-      // Iterate over lines in the image
-      // TODO: use the GenericJointImageIterator here.
-      //std::cout << "dip::Framework::Separable -- running\n";
-      UnsignedArray position( sizes.size(), 0 );
-      dip::sint inIndex = 0;
-      dip::sint outIndex = 0;
-      for( ;; ) {
-
+      // Iterate over all lines in the image
+      auto it = dip::GenericJointImageIterator( inImage, outImage, processingDim );
+      do {
          // Get pointers to input and ouput lines
-         //std::cout << "      sectionStart = " << sectionStart << std::endl;
-         //std::cout << "      inIndex[" << ii << "] = " << inIndex[ii] << std::endl;
          if( inUseBuffer ) {
             // If inIndex[ii] is the same as in the previous iteration, we don't need
             // to copy the buffer over again. This happens with singleton-expanded input images.
             // But it's easier to copy, and also safer as the lineFilter function could be bad and write in its input!
             CopyBuffer(
-                  in.Pointer( inIndex ),
-                  in.DataType(),
-                  in.Stride( processingDim ),
-                  in.TensorStride(),
+                  it.InPointer(),
+                  inImage.DataType(),
+                  inImage.Stride( processingDim ),
+                  inImage.TensorStride(),
                   inSeparableBuf.buffer,
                   bufferType,
                   inSeparableBuf.stride,
@@ -256,11 +277,10 @@ void Separable(
                      boundaryConditions[ processingDim ] );
             }
          } else {
-            inSeparableBuf.buffer = in.Pointer( inIndex );
+            inSeparableBuf.buffer = it.InPointer();
          }
-         //std::cout << "      outIndex[" << ii << "] = " << outIndex[ii] << std::endl;
          if( !outUseBuffer ) {
-            outSeparableBuf.buffer = out.Pointer( outIndex );
+            outSeparableBuf.buffer = it.OutPointer();
          }
 
          // Filter the line
@@ -268,7 +288,7 @@ void Separable(
                inSeparableBuf,
                outSeparableBuf,
                processingDim,
-               position,
+               it.Coordinates(),
                functionParameters,
                useFunctionVariables ? functionVariables[ thread ] : nullptr
          );
@@ -280,46 +300,26 @@ void Separable(
                   bufferType,
                   outSeparableBuf.stride,
                   outSeparableBuf.tensorStride,
-                  out.Pointer( outIndex ),
-                  out.DataType(),
-                  out.Stride( processingDim ),
-                  out.TensorStride(),
+                  it.OutPointer(),
+                  outImage.DataType(),
+                  outImage.Stride( processingDim ),
+                  outImage.TensorStride(),
                   outLength,
                   outSeparableBuf.tensorLength,
                   std::vector< dip::sint > {} );
          }
+      } while( ++it );
 
-         // Determine which line to process next until we're done
-         position[ processingDim ] = 0; // reset this index
-         dip::uint dd;
-         for( dd = 0; dd < sizes.size(); dd++ ) {
-            if( dd != processingDim ) {
-               ++position[ dd ];
-               inIndex += in.Stride( dd );
-               outIndex += out.Stride( dd );
-               // Check whether we reached the last pixel of the line
-               if( position[ dd ] != sizes[ dd ] ) {
-                  break;
-               }
-               // Rewind along this dimension
-               inIndex -= position[ dd ] * in.Stride( dd );
-               outIndex -= position[ dd ] * out.Stride( dd );
-               position[ dd ] = 0;
-               // Continue loop to increment along next dimension
-            }
-         }
-         if( dd == sizes.size() ) {
-            break;            // We're done!
-         }
-      }
       // Clear the tensor look-up table: if this was set, then the intermediate data now has a full matrix as tensor shape and we don't need it any more.
       lookUpTable.clear();
+      // Save the temporary image, if we used it.
+      intermediate = std::move( tmpImage );
    }
 
    // TODO: End threads.
 
-   c_out.SetPixelSize( pixelSize );
-   c_out.SetColorSpace( colorSpace );
+   cOutput.SetPixelSize( pixelSize );
+   cOutput.SetColorSpace( colorSpace );
 }
 
 } // namespace Framework

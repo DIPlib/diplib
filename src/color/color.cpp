@@ -10,14 +10,31 @@
 
 namespace dip {
 
-std::array< double, 9 > WhitePoint::InverseMatrix() {} // TODO
+std::array< double, 9 > WhitePoint::InverseMatrix() {
+   // TODO
+   return {};
+}
 
-ColorSpaceManager::ColorSpaceManager() {} // TODO
+ColorSpaceManager::ColorSpaceManager() {
+   // TODO
+}
 
-void ColorSpaceManager::Set( Image& in, String const& name ) const {} // TODO
+void ColorSpaceManager::Set( Image& in, String const& name ) const {
+   // TODO
+}
 
-void ColorSpaceManager::Convert( Image const& in, Image const& out, String const& name, WhitePoint const& whitepoint ) const {} // TODO
+void ColorSpaceManager::Convert(
+      Image const& in,
+      Image const& out,
+      String const& name,
+      WhitePoint const& whitepoint
+) const {
+   // TODO
+}
 
-std::vector <dip::uint> ColorSpaceManager::FindPath( dip::uint start, dip::uint stop ) const {} // TODO
+std::vector< dip::uint > ColorSpaceManager::FindPath( dip::uint start, dip::uint stop ) const {
+   // TODO
+   return {};
+}
 
 } // namespace dip

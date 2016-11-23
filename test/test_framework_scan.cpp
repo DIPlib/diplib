@@ -8,10 +8,10 @@ int main() {
    try {
       dip::Tensor example( dip::Tensor::Shape::SYMMETRIC_MATRIX, 2, 2 );
 
-      dip::Image lhs( dip::UnsignedArray{ 50, 80, 30 }, 3, dip::DT_UINT8 );
+      dip::Image lhs{ dip::UnsignedArray{ 50, 80, 30 }, 3, dip::DT_UINT8 };
       lhs.ReshapeTensor( example );
 
-      dip::Image rhs( dip::UnsignedArray{ 50, 1, 30 }, 2, dip::DT_SINT16 );
+      dip::Image rhs{ dip::UnsignedArray{ 50, 1, 30 }, 2, dip::DT_SINT16 };
       example.SetShape( dip::Tensor::Shape::DIAGONAL_MATRIX, 2, 2 );
       rhs.ReshapeTensor( example );
 

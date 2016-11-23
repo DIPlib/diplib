@@ -57,10 +57,12 @@ add_executable(test_options EXCLUDE_FROM_ALL test/test_options.cpp)
 add_executable(test_physdims EXCLUDE_FROM_ALL test/test_physdims.cpp)
 add_executable(test_image EXCLUDE_FROM_ALL test/test_image.cpp)
 target_link_libraries(test_image DIP)
-add_executable(test_framework EXCLUDE_FROM_ALL test/test_framework.cpp)
-target_link_libraries(test_framework DIP)
+add_executable( test_framework_scan EXCLUDE_FROM_ALL test/test_framework_scan.cpp )
+target_link_libraries(test_framework_scan DIP)
+add_executable( test_framework_separable EXCLUDE_FROM_ALL test/test_framework_separable.cpp )
+target_link_libraries(test_framework_separable DIP)
 
-add_custom_target(tests DEPENDS test_array test_bin test_options test_physdims test_image test_framework)
+add_custom_target(tests DEPENDS test_array test_bin test_options test_physdims test_image test_framework_scan test_framework_separable)
 
 if(Matlab_FOUND)
 
