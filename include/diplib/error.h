@@ -16,10 +16,9 @@
 #ifndef DIP_ERROR_H
 #define DIP_ERROR_H
 
-#include <stdexcept> // std::logic_error and other exception classes
+#include <exception>
+#include <vector>
 #include <string>
-#include <cassert>
-
 
 /// \file
 /// \brief Defines error macros and default error strings. This file is always included through `diplib.h`.
@@ -33,9 +32,84 @@ namespace dip {
 /// \{
 
 
-/// \brief All errors thrown in DIPlib are of this class, their `what()` string contains
-/// a reason for the error and the name of the function that originally threw it.
-using Error = std::logic_error;
+/// \brief Base exception class. All exceptions thrown in DIPlib are derived of this class.
+///
+/// You can catch this exception at the top level, where you can communicate the problem to the user,
+/// and only if you want to prevent your program from exiting abnormally.
+/// This class is derived from `std::exception`, so you can choose to catch that instead.
+class Error : public std::exception {
+
+   public:
+
+      Error() = default;
+      explicit Error( char const* message ) : message_( message ) {}
+      explicit Error( const std::string& message ) : message_( message ) {};
+
+      /// \brief Return a message indicating what caused the exception to be thrown, as well as the location
+      /// where the error occurred.
+      ///
+      /// Sometimes multiple locations are given, this is an (incomplete) stack trace that might help figure
+      /// out the error. Such a stack trace is generally created when it is a helper function that threw the
+      /// exception. The calling function sometimes will catch such an exception, add its name to the stack
+      /// trace, and re-throw the exception.
+      /// \see dip_AddStackTrace
+      virtual char const* what() const noexcept override { // std::exception::what() is declared noexcept, but this one is not.
+         std::string msg = message_;
+         for( auto const& callSig : stackTrace_ ) {
+            msg += "\nin function: " + callSig.functionName +
+                   " (" + callSig.fileName + " at line number " + std::to_string( callSig.lineNumber ) + ")";
+         }
+         return msg.c_str();
+      }
+
+      /// \brief Add an entry to the stack trace. Typically called through the `dip_AddStackTrace` macro.
+      Error& AddStackTrace(
+            std::string const& functionName,
+            std::string const& fileName,
+            unsigned int lineNumber
+      ) {
+         stackTrace_.emplace_back( functionName, fileName, lineNumber );
+         return *this;
+      }
+
+   private:
+
+      struct CallSig {
+         std::string functionName;
+         std::string fileName;
+         unsigned int lineNumber;
+         CallSig( std::string functionName, std::string fileName, unsigned int lineNumber ) :
+               functionName( functionName ), fileName( fileName ), lineNumber( lineNumber ) {}
+      };
+
+      std::string message_;
+      std::vector< CallSig > stackTrace_;
+};
+
+/// \brief Exception class indicating that an internal inconsistency was found (the library code is wrong).
+///
+/// You shouldn't need to catch exceptions of this type.
+class AssertionError : public Error {
+      using Error::Error;
+};
+
+/// \brief Exception class indicating that a function received an inconsitent or out of range parameter
+/// (the calling code is wrong).
+///
+/// Catch exceptions of this type only if you don't control the input arguments (i.e. in a use interface).
+class ParameterError : public Error {
+      using Error::Error;
+};
+
+/// \brief Exception class indicating that something happened that we couldn't predict (e.g. file error).
+///
+/// Catch exceptions of this type if you want to account for run time errors. Note that memory allocation
+/// errors are typically `std::bad_alloc`, unless a different allocator is chosen. None of the
+/// library functions catch and translate this exception.
+class RunTimeError : public Error {
+      using Error::Error;
+};
+
 
 namespace E {
 // These are some of the standard what() strings thrown.
@@ -94,11 +168,44 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 // Test and throw exception
 //
 
-/// \brief Throw an Error.
-#define dip_Throw( str ) { throw dip::Error( std::string(str) + std::string(" (in function ") + std::string(__func__)  + std::string(")") ); }
+#if HAS_PRETTY_FUNCTION
+// This is a better thing to use than __func__, if available
+#define DIP__FUNC__ __PRETTY_FUNCTION__
+#else
+// This is in the C++11 standard, so should always be available
+#define DIP__FUNC__ __func__
+#endif
 
-/// \brief Test a condition, throw an Error if the condition is met.
-#define dip_ThrowIf( test, str ) { if( test ) dip_Throw( str ) }
+/// \brief Adds information from current function (including source file and location within file) to the `dip::Error`.
+///
+/// This macro is useful for building a stack trace. If you want a stack trace, each function must catch `dip::Error`,
+/// add its name to the stack trace, and re-throw the exception.
+///
+/// You can use this macro as follows:
+///
+///     try {
+///        [some DIPlib functions that might throw here...]
+///     }
+///     catch( dip::Error& e ) {
+///        dip_AddStackTrace( e );
+///        throw;
+///     }
+#define dip_AddStackTrace( error ) error.AddStackTrace( DIP__FUNC__, __FILE__, __LINE__ )
+
+/// \brief Throw a `dip::ParameterError`.
+#define dip_Throw( str ) do { auto e = dip::ParameterError( str ); dip_AddStackTrace( e ); throw e; } while( false )
+
+/// \brief Test a condition, throw a `dip::ParameterError` if the condition is met.
+#define dip_ThrowIf( test, str ) do { if( test ) dip_Throw( str ); } while( false )
+
+/// \brief Throw a `dip::RunTimeError`.
+#define dip_ThrowRunTime( str ) do { auto e = dip::RunTimeError( str ); dip_AddStackTrace( e ); throw e; } while( false )
+
+/// \brief Throw a `dip::AssertionError`.
+#define dip_ThrowAssertion( str ) do { auto e = dip::AssertionError( str ); dip_AddStackTrace( e ); throw e; } while( false )
+
+/// \brief Test a condition, throw a `dip::AssertionError` if the condition is not met.
+#define dip_Assert( test ) do { if( !( test ) ) dip_ThrowAssertion( "Failed assertion: " #test ); } while( false )
 
 // These are the old DIPlib names, let's not use them any more:
 //#define DIPASSERT( test, str ) dip_ThrowIf( !(test), str )

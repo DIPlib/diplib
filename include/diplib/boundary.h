@@ -150,7 +150,7 @@ void ReadPixelWithBoundaryCondition(
             case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:  // not implemented, difficult to implement in this framework.
             case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
             case BoundaryCondition::THIRD_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
-               dip_Throw("Boundary condition not implemented.")
+               dip_Throw("Boundary condition not implemented.");
          }
       }
    }

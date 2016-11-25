@@ -193,7 +193,7 @@ To index into spatial dimensions we use the `at()` method (as in the
 standard library). The alternative is to overload `operator()`, but
 that could be confusing as indexing is very different from calling a
 function (this is one of the main gripes I have with the MATLAB
-syntax). Also, `operator()` can only take one argument.
+syntax).
 
 There are different forms of indexing:
 
@@ -291,34 +291,22 @@ the original image:
 
     img.At( 5, 1 ) += 20;        // Add 20 to the pixel at (5,1)
 
-To be able to write values to a pixel, we could do something
-special with the assignment operator:
-
-* If the image is raw (not forged, there is no data segment), then the
-  assignment is as the default assignment, it copies the image (size,
-  stride, data type, data pointer, etc.).
-
-* If the image is forged, then we copy pixel values over. In this case,
-  we could do singleton expansion, but otherwise require that the image
-  dimensions be compatible. Data type would automatically be converted.
-  When assigning an `int` or a `double` into an image, all pixels and
-  all tensor elements are given this value.
-
-This would allow quite nice syntax:
+To be able to write values to a pixel, assigning a constant to an image
+could assign that constant to all samples:
 
     img.At( 5, 1 ) = 0;          // Set pixel (5,1) to 0
     img.At( Range{}, 0 ) = 0;    // Set the top image border to 0
     img = 0;                     // Set the whole image to 0
 
-But on the other hand, it would be way too confusing, so I think it is bad
-design. As an alternative, a function `Copy()` could copy pixel data from one
-forged image to another, allowing a different way of writing the assignment:
+To write different values to different pixels, a function `Copy()` could
+copy pixel data from one forged image to another, allowing a different way
+of writing the assignment:
 
-    img.Copy( Image );
+    img.Copy( img2 );
 
-    img.At( 5, 1 ).Copy( 0 );       // Set pixel (5,1) to 0
-    img.At( Range{}, 0 ).Copy( 0 ); // Set the top image border to 0
-    img.Copy( 0 );                  // Set the whole image to 0
+    img.At( {}, 0 ).Copy( img.At( {}, -1 ) );
+
+This last one copies the bottom image row to the top row.
 
 ### Arbitrary indexing
 

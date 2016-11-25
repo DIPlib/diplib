@@ -134,7 +134,7 @@ static mxClassID GetMatlabClassID(
       case dip::DT_DCOMPLEX:
          type = mxDOUBLE_CLASS;
          break;
-      default: dip_Throw( "This is not possible!!!" ); // Should not be possible
+      default: dip_ThrowAssertion( "Unhandled DataType" ); // Should not be possible
    }
    return type;
 }

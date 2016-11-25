@@ -189,7 +189,7 @@ void Separable(
       //std::cout << "   outImage.Origin() = " << outImage.Origin() << std::endl;
 
       // Some values to use during this iteration
-      dip::uint inLength = inSizes[ processingDim ]; assert( inLength == inImage.Size( processingDim ) );
+      dip::uint inLength = inSizes[ processingDim ]; dip_Assert( inLength == inImage.Size( processingDim ) );
       dip::uint inBorder = border[ processingDim ];
       dip::uint outLength = outSizes[ processingDim ];
       dip::uint outBorder = opts == Separable_UseOutBorder ? inBorder : 0;

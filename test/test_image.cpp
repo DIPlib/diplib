@@ -105,7 +105,7 @@ int main() {
       }
       std::cout << std::endl << "Aliasing (no output is good)." << std::endl;
       {
-         dip::Image img1( dip::UnsignedArray{ 50, 80, 30 }, 3 );
+         dip::Image img1{ dip::UnsignedArray{ 50, 80, 30 }, 3 };
          //img1.SetSizes( { 50, 80, 30 } );
          //img1.SetTensorSizes(3);
          //img1.Forge();
@@ -209,7 +209,8 @@ int main() {
       }
 
    } catch( dip::Error e ) {
-      std::cout << e.what() << std::endl;
+      std::cout << "DIPlib error: " << e.what() << std::endl;
+      return 1;
    }
-   return 1;
+   return 0;
 }

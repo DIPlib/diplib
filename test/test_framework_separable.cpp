@@ -132,7 +132,7 @@ int main() {
       PrintPixelValues< dip::sfloat >( out );
 
    } catch( dip::Error e ) {
-      std::cout << e.what() << std::endl;
+      std::cout << "DIPlib error: " << e.what() << std::endl;
       return 1;
    }
    return 0;
