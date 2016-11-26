@@ -31,12 +31,12 @@ using std::swap;
 namespace dml {
 
 // These are the names of the fields of the dip_image structure in MATLAB:
-static char const* dip_DataFieldName = "data";
-static char const* dip_TypeFieldName = "dip_type";
-static char const* dip_DimsFieldName = "dims";
-static char const* dip_TensorFieldName = "tensor";
+static char const* dataFieldName = "data";
+static char const* typeFieldName = "dip_type";
+static char const* dimsFieldName = "dims";
+static char const* tensorFieldName = "tensor";
 
-constexpr dip::uint DML_FEATURE_NAME_LENGTH = 50;
+constexpr dip::uint maxNameLength = 50;
 
 // An error message
 static char const* InputImageError = "MATLAB image data of unsupported type.";
@@ -134,7 +134,7 @@ static mxClassID GetMatlabClassID(
       case dip::DT_DCOMPLEX:
          type = mxDOUBLE_CLASS;
          break;
-      default: dip_ThrowAssertion( "Unhandled DataType" ); // Should not be possible
+      default: DIP_THROW_ASSERTION( "Unhandled DataType" ); // Should not be possible
    }
    return type;
 }
@@ -250,7 +250,7 @@ class MatlabInterface : public dip::ExternalInterface {
 
       /// \brief Find the `mxArray` that holds the data for the dip::Image `img`.
       mxArray* GetArray( dip::Image const& img ) {
-         dip_ThrowIf( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
          mxArray* m;
          if( img.DataType().IsComplex() ) {
             //mexPrintf( "   Copying complex data from dip::Image to mxArray.\n" );
@@ -339,10 +339,10 @@ dip::Image GetImage( mxArray const* mx ) {
    mxClassID type;
    mxArray const* mxdata;
    if( mxIsClass( mx, "dip_image" ) ) {
-      mxdata = mxGetField( mx, 0, dip_DataFieldName );
-      mxArray* mxtype = mxGetField( mx, 0, dip_TypeFieldName );
-      char buf[DML_FEATURE_NAME_LENGTH];
-      mxGetString( mxtype, buf, DML_FEATURE_NAME_LENGTH );
+      mxdata = mxGetField( mx, 0, dataFieldName );
+      mxArray* mxtype = mxGetField( mx, 0, typeFieldName );
+      char buf[maxNameLength];
+      mxGetString( mxtype, buf, maxNameLength );
       if( !strncmp( buf, "bin", 3 ) ) {
          binary = true;
       }
@@ -350,8 +350,8 @@ dip::Image GetImage( mxArray const* mx ) {
          complex = true;
       }
       type = mxGetClassID( mxdata );
-      ndims = static_cast< dip::uint >(mxGetScalar( mxGetField( mx, 0, dip_DimsFieldName )));
-      // TODO: read `dip_TensorFieldName`, set the `tensor` variable appropriately.
+      ndims = static_cast< dip::uint >(mxGetScalar( mxGetField( mx, 0, dimsFieldName )));
+      // TODO: read `tensorFieldName`, set the `tensor` variable appropriately.
    } else {
       mxdata = mx;
       ndims = mxGetNumberOfDimensions( mxdata );
@@ -386,11 +386,11 @@ dip::Image GetImage( mxArray const* mx ) {
          else { datatype = dip::DT_SFLOAT; }
          break;
       case mxINT8_CLASS:      // sint8
-      dip_ThrowIf( complex, InputImageError );
+      DIP_THROW_IF( complex, InputImageError );
          datatype = dip::DT_SINT8;
          break;
       case mxUINT8_CLASS:     // uint8 , bin
-      dip_ThrowIf( complex, InputImageError );
+      DIP_THROW_IF( complex, InputImageError );
          if( binary ) {
             datatype = dip::DT_BIN;
          } else {
@@ -398,22 +398,22 @@ dip::Image GetImage( mxArray const* mx ) {
          }
          break;
       case mxINT16_CLASS:     // sint16
-      dip_ThrowIf( complex, InputImageError );
+      DIP_THROW_IF( complex, InputImageError );
          datatype = dip::DT_SINT16;
          break;
       case mxUINT16_CLASS:    // uint16
-      dip_ThrowIf( complex, InputImageError );
+      DIP_THROW_IF( complex, InputImageError );
          datatype = dip::DT_UINT16;
          break;
       case mxINT32_CLASS:     // sint32
-      dip_ThrowIf( complex, InputImageError );
+      DIP_THROW_IF( complex, InputImageError );
          datatype = dip::DT_SINT32;
          break;
       case mxUINT32_CLASS:    // uint32
-      dip_ThrowIf( complex, InputImageError );
+      DIP_THROW_IF( complex, InputImageError );
          datatype = dip::DT_UINT32;
          break;
-      default: dip_Throw( "Image data is not numeric." );
+      default: DIP_THROW( "Image data is not numeric." );
    }
    // Create the size and stride arrays
    dip::UnsignedArray sizes( ndims );

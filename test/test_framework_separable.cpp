@@ -11,7 +11,7 @@ template< typename T >
 void PrintPixelValues(
       dip::Image img
 ) {
-   dip_ThrowIf( img.DataType() != dip::DataType( T() ), "Wrong version of PrintPixelValues() called" );
+   DIP_THROW_IF( img.DataType() != dip::DataType( T() ), "Wrong version of PrintPixelValues() called" );
    dip::uint linelength = img.Size( 0 );
    std::cout << "Image of size " << linelength << " x " << img.Sizes().product() / linelength << ":\n";
    dip::ImageIterator< T > it( img, 0 );
@@ -63,7 +63,7 @@ int main() {
    try {
       dip::Image img{ dip::UnsignedArray{ 20, 15 }, 1, dip::DT_UINT16 };
       {
-         dip_ThrowIf( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
+         DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
          std::random_device rd;
          std::mt19937 gen(rd());
          std::normal_distribution<float> normDist(9563.0, 500.0);
@@ -77,7 +77,7 @@ int main() {
 
       {
          // Copied from src/documentation/iterators.md
-         dip_ThrowIf( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
+         DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
          dip::ImageIterator< dip::uint16 > it( img, 0 );
          do {
             auto lit = it.GetLineIterator();
@@ -99,8 +99,8 @@ int main() {
       dip::Image out = img.Similar( dip::DT_SFLOAT );
       {
          // Copied from src/documentation/iterators.md
-         dip_ThrowIf( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
-         dip_ThrowIf( out.DataType() != dip::DT_SFLOAT, "Expecting single-precision float image" );
+         DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
+         DIP_THROW_IF( out.DataType() != dip::DT_SFLOAT, "Expecting single-precision float image" );
          constexpr dip::uint N = 2;
          std::array< double, 2 * N + 1 > filter{ { 1.0 / 9.0, 2.0 / 9.0, 3.0 / 9.0, 2.0 / 9.0, 1.0 / 9.0 } };
          dip::JointImageIterator< dip::uint16, dip::sfloat > it( img, out, 0 );

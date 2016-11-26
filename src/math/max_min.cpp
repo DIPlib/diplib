@@ -73,8 +73,8 @@ MaximumAndMinimum GetMaximumAndMinimum(
    inBufT.push_back( in.DataType() );
    if( mask.IsForged() ) {
       // If we have a mask, add it to the input array.
-      dip_ThrowIf( !mask.DataType().IsBinary(), dip::E::MASK_NOT_BINARY );
-      dip_ThrowIf( mask.Dimensionality() > in.Dimensionality(), dip::E::MASK_TOO_MANY_DIMENSIONS );
+      DIP_THROW_IF( !mask.DataType().IsBinary(), dip::E::MASK_NOT_BINARY );
+      DIP_THROW_IF( mask.Dimensionality() > in.Dimensionality(), dip::E::MASK_TOO_MANY_DIMENSIONS );
       // It's OK for the mask to have fewer dimensions, singleton expansion will take care of it.
       // Note that the scan function will do the other checks.
       inar.push_back( mask );

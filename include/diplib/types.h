@@ -128,7 +128,7 @@ inline DimensionArray< T > ArrayUseParameter( DimensionArray< T > const& array, 
    } else if( array.size() == nDims ) {
       return array;
    } else {
-      dip_Throw( E::ARRAY_PARAMETER_WRONG_LENGTH );
+      DIP_THROW( E::ARRAY_PARAMETER_WRONG_LENGTH );
    }
 }
 
@@ -200,12 +200,12 @@ struct Range {
    /// out of bounds.
    void Fix( dip::uint size ) {
       // Check step is non-zero
-      dip_ThrowIf( step == 0, E::PARAMETER_OUT_OF_RANGE );
+      DIP_THROW_IF( step == 0, E::PARAMETER_OUT_OF_RANGE );
       // Compute indices from end
       if( start < 0 ) { start += size; }
       if( stop < 0 ) { stop += size; }
       // Check start and stop are within range
-      dip_ThrowIf( ( start < 0 ) || ( start >= size ) || ( stop < 0 ) || ( stop >= size ),
+      DIP_THROW_IF( ( start < 0 ) || ( start >= size ) || ( stop < 0 ) || ( stop >= size ),
                    E::INDEX_OUT_OF_RANGE );
       // Compute stop given start and step
       //stop = start + ((stop-start)/step)*step;

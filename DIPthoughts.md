@@ -840,7 +840,7 @@ functionality that is more intuitive to C++ programmers.
 
 This is how it could work for a simple iteration over all pixels in an image:
 
-    dip_ThrowIf( img.DataType() != dip::DT_SFLOAT, "Unexpected data type!" );
+    DIP_THROW_IF( img.DataType() != dip::DT_SFLOAT, "Unexpected data type!" );
     dip::sfloat sum = 0;
     for( auto img_it = img.begin<dip::sfloat>(); img_it != img.end(); ++img_it ) {
        sum += *img_it;

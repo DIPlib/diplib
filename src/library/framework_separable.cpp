@@ -40,15 +40,17 @@ void Separable(
       // An empty process array means all dimensions are to be processed
       process.resize( nDims, true );
    } else {
-      dip_ThrowIf( process.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+      DIP_THROW_IF( process.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
       if( !process.any() ) {
          // No dimensions to process
          cOutput = cInput; // This ignores the Separable_DontResizeOutput option...
          return;
       }
    }
+   DIP_TRY
    border = ArrayUseParameter( border, nDims, dip::uint( 0 ));
    boundaryConditions = BoundaryArrayUseParameter( boundaryConditions, nDims );
+   DIP_CATCH
 
    // Make simplified copy of input image headers so we can modify it at will.
    // This also effectively separates input and output images. They still point
@@ -62,9 +64,9 @@ void Separable(
    UnsignedArray outSizes;
    if( opts == Separable_DontResizeOutput ) {
       outSizes = cOutput.Sizes();
-      dip_ThrowIf( outSizes.size() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
+      DIP_THROW_IF( outSizes.size() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
       for( size_t ii = 0; ii < nDims; ++ii ) {
-         dip_ThrowIf( !process[ ii ] && ( inSizes[ ii ] != outSizes[ ii ] ), "Output size must match input size for dimensions not being processed" );
+         DIP_THROW_IF( !process[ ii ] && ( inSizes[ ii ] != outSizes[ ii ] ), "Output size must match input size for dimensions not being processed" );
       }
    } else {
       outSizes = inSizes;
@@ -189,7 +191,7 @@ void Separable(
       //std::cout << "   outImage.Origin() = " << outImage.Origin() << std::endl;
 
       // Some values to use during this iteration
-      dip::uint inLength = inSizes[ processingDim ]; dip_Assert( inLength == inImage.Size( processingDim ) );
+      dip::uint inLength = inSizes[ processingDim ]; DIP_ASSERT( inLength == inImage.Size( processingDim ) );
       dip::uint inBorder = border[ processingDim ];
       dip::uint outLength = outSizes[ processingDim ];
       dip::uint outBorder = opts == Separable_UseOutBorder ? inBorder : 0;

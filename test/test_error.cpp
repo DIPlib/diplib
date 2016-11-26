@@ -1,31 +1,25 @@
 #include <iostream>
 #include "diplib/error.h"
 
-// Testing
+// Testing exceptions and related macros.
+// When compiling with `cmake -DENABLE_ASSERT=ON ..`, the program should exit with a `dip::AssertionError` exception.
+// When compiling with `cmake -DENABLE_ASSERT=OFF ..`, the program should exit with a `dip::ParameterError` exception.
 
 void test2() {
-   dip_Throw("A test case");
+   DIP_THROW("A test case");
 };
 
 void test1() {
-   try {
-      test2();
-   }
-   catch( dip::Error& e ) {
-      dip_AddStackTrace( e );
-      throw;
-   }
+   DIP_TRY
+   test2();
+   DIP_CATCH
 }
 
 int main() {
-   try {
-      test1();
-      //dip_Assert( 6 > 2 );
-      //dip_Assert( 6 < 2 );
-   }
-   catch( dip::Error& e ) {
-      dip_AddStackTrace( e );
-      throw;
-   }
+   DIP_TRY
+   DIP_ASSERT( 6 > 2 );
+   DIP_ASSERT( 6 < 2 );
+   test1();
+   DIP_CATCH
    return 0;
 }

@@ -160,7 +160,7 @@ void Mul(
       Image& out,
       DataType dt
 ) {
-   dip_ThrowIf( lhs.TensorColumns() != rhs.TensorRows(), );
+   DIP_THROW_IF( lhs.TensorColumns() != rhs.TensorRows(), );
 
    Tensor outTensor;
    Framework::ScanOptions opts;
@@ -179,7 +179,7 @@ void Mul(
       opts += Framework::Scan_ExpandTensorInBuffer;
       samplewise = false;
    } else {
-      dip_Throw( "Inner tensor dimensions must match in multiplication" );
+      DIP_THROW( "Inner tensor dimensions must match in multiplication" );
    }
    ImageConstRefArray inar{ lhs, rhs };
    ImageRefArray outar{ out };
@@ -246,7 +246,7 @@ void Div(
       Image& out,
       DataType dt
 ) {
-   dip_ThrowIf( rhs.TensorElements() != 1, "Divisor must be scalar image" );
+   DIP_THROW_IF( rhs.TensorElements() != 1, "Divisor must be scalar image" );
    Framework::ScanFilter filter;
    DIP_OVL_ASSIGN_ALL( filter, dip__Div, dt );
    std::vector< void* > vars;
@@ -287,7 +287,7 @@ void Mod(
       Image& out,
       DataType dt
 ) {
-   dip_ThrowIf( rhs.TensorElements() != 1, "Divisor must be scalar image" );
+   DIP_THROW_IF( rhs.TensorElements() != 1, "Divisor must be scalar image" );
    Framework::ScanFilter filter;
    DIP_OVL_ASSIGN_REAL( filter, dip__Mod, dt ); // NOTE: non-binary and non-complex.
    std::vector< void* > vars;

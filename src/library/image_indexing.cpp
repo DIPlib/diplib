@@ -11,7 +11,7 @@
 namespace dip {
 
 Image Image::operator[]( UnsignedArray const& indices ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint i = 0;
    dip::uint j = 0;
    switch( indices.size() ) {
@@ -21,11 +21,11 @@ Image Image::operator[]( UnsignedArray const& indices ) const {
       case 1:
          i = indices[ 0 ];
          break;
-      default: dip_Throw( E::ARRAY_ILLEGAL_SIZE );
+      default: DIP_THROW( E::ARRAY_ILLEGAL_SIZE );
    }
    dip::uint m = tensor_.Rows();
    dip::uint n = tensor_.Columns();
-   dip_ThrowIf( ( i >= m ) || ( j >= n ), E::INDEX_OUT_OF_RANGE );
+   DIP_THROW_IF( ( i >= m ) || ( j >= n ), E::INDEX_OUT_OF_RANGE );
    switch( tensor_.Shape() ) {
       case Tensor::Shape::COL_VECTOR:
          break;
@@ -39,13 +39,13 @@ Image Image::operator[]( UnsignedArray const& indices ) const {
          i += j * m;
          break;
       case Tensor::Shape::DIAGONAL_MATRIX:
-         dip_ThrowIf( i != j, E::INDEX_OUT_OF_RANGE );
+         DIP_THROW_IF( i != j, E::INDEX_OUT_OF_RANGE );
          break;
       case Tensor::Shape::LOWTRIANG_MATRIX:
          std::swap( i, j );
          // no break!
       case Tensor::Shape::UPPTRIANG_MATRIX:
-         dip_ThrowIf( i > j, E::INDEX_OUT_OF_RANGE );
+         DIP_THROW_IF( i > j, E::INDEX_OUT_OF_RANGE );
          // no break!
       case Tensor::Shape::SYMMETRIC_MATRIX:
          if( i != j ) {
@@ -77,8 +77,8 @@ Image Image::operator[]( UnsignedArray const& indices ) const {
 }
 
 Image Image::operator[]( dip::uint index ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( index >= tensor_.Elements(), E::INDEX_OUT_OF_RANGE );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( index >= tensor_.Elements(), E::INDEX_OUT_OF_RANGE );
    Image out;
    out = *this;
    out.tensor_.SetScalar();
@@ -88,7 +88,7 @@ Image Image::operator[]( dip::uint index ) const {
 }
 
 Image Image::Diagonal() const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    Image out;
    out = *this;
    if( tensor_.IsScalar() || tensor_.IsDiagonal() ) {
@@ -114,8 +114,8 @@ Image Image::Diagonal() const {
 }
 
 Image Image::At( UnsignedArray const& coords ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
    Image out;
    out = *this;
    out.sizes_.resize( 0 );
@@ -125,10 +125,10 @@ Image Image::At( UnsignedArray const& coords ) const {
 }
 
 Image Image::At( dip::uint index ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    if( sizes_.size() < 2 ) {
       dip::uint n = sizes_.size() == 0 ? 1 : sizes_[ 0 ];
-      dip_ThrowIf( index >= n, E::INDEX_OUT_OF_RANGE );
+      DIP_THROW_IF( index >= n, E::INDEX_OUT_OF_RANGE );
       Image out;
       out = *this;
       out.sizes_.resize( 0 );
@@ -141,8 +141,8 @@ Image Image::At( dip::uint index ) const {
 }
 
 Image Image::At( Range x_range ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( sizes_.size() != 1, E::ILLEGAL_DIMENSIONALITY );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( sizes_.size() != 1, E::ILLEGAL_DIMENSIONALITY );
    x_range.Fix( sizes_[ 0 ] );
    Image out;
    out = *this;
@@ -154,8 +154,8 @@ Image Image::At( Range x_range ) const {
 }
 
 Image Image::At( Range x_range, Range y_range ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( sizes_.size() != 2, E::ILLEGAL_DIMENSIONALITY );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( sizes_.size() != 2, E::ILLEGAL_DIMENSIONALITY );
    x_range.Fix( sizes_[ 0 ] );
    y_range.Fix( sizes_[ 1 ] );
    Image out;
@@ -173,8 +173,8 @@ Image Image::At( Range x_range, Range y_range ) const {
 }
 
 Image Image::At( Range x_range, Range y_range, Range z_range ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( sizes_.size() != 3, E::ILLEGAL_DIMENSIONALITY );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( sizes_.size() != 3, E::ILLEGAL_DIMENSIONALITY );
    x_range.Fix( sizes_[ 0 ] );
    y_range.Fix( sizes_[ 1 ] );
    z_range.Fix( sizes_[ 2 ] );
@@ -197,8 +197,8 @@ Image Image::At( Range x_range, Range y_range, Range z_range ) const {
 }
 
 Image Image::At( RangeArray ranges ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( sizes_.size() != ranges.size(), E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( sizes_.size() != ranges.size(), E::ARRAY_ILLEGAL_SIZE );
    for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
       ranges[ ii ].Fix( sizes_[ ii ] );
    }
@@ -216,8 +216,8 @@ Image Image::At( RangeArray ranges ) const {
 }
 
 Image Image::Real() const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    Image out;
    out = *this;
    // Change data type
@@ -231,8 +231,8 @@ Image Image::Real() const {
 }
 
 Image Image::Imaginary() const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    Image out;
    out = *this;
    // Change data type
@@ -254,11 +254,11 @@ void DefineROI(
       UnsignedArray const& sizes,
       IntegerArray const& spacing
 ) {
-   dip_ThrowIf( !dest.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !dest.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint n = src.Dimensionality();
-   dip_ThrowIf( origin.size() != n, E::ARRAY_ILLEGAL_SIZE );
-   dip_ThrowIf( sizes.size() != n, E::ARRAY_ILLEGAL_SIZE );
-   dip_ThrowIf( spacing.size() != n, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( origin.size() != n, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( sizes.size() != n, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( spacing.size() != n, E::ARRAY_ILLEGAL_SIZE );
    RangeArray ranges( n );
    for( dip::uint ii = 0; ii < n; ++ii ) {
       ranges[ ii ] = Range( origin[ ii ], sizes[ ii ] + origin[ ii ] - 1, spacing[ ii ] );

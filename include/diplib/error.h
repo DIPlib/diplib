@@ -50,45 +50,35 @@ class Error : public std::exception {
       ///
       /// Sometimes multiple locations are given, this is an (incomplete) stack trace that might help figure
       /// out the error. Such a stack trace is generally created when it is a helper function that threw the
-      /// exception. The calling function sometimes will catch such an exception, add its name to the stack
-      /// trace, and re-throw the exception.
-      /// \see dip_AddStackTrace
+      /// exception. Some calling functions will catch such an exception, add its name to the stack trace,
+      /// and re-throw the exception.
+      ///
+      /// \see DIP_ADD_STACK_TRACE, DIP_TRY, DIP_CATCH
       virtual char const* what() const noexcept override { // std::exception::what() is declared noexcept, but this one is not.
-         std::string msg = message_;
-         for( auto const& callSig : stackTrace_ ) {
-            msg += "\nin function: " + callSig.functionName +
-                   " (" + callSig.fileName + " at line number " + std::to_string( callSig.lineNumber ) + ")";
-         }
-         return msg.c_str();
+         return message_.c_str();
       }
 
-      /// \brief Add an entry to the stack trace. Typically called through the `dip_AddStackTrace` macro.
+      /// \brief Add an entry to the stack trace. Typically called through the `#DIP_ADD_STACK_TRACE` macro.
       Error& AddStackTrace(
             std::string const& functionName,
             std::string const& fileName,
             unsigned int lineNumber
       ) {
-         stackTrace_.emplace_back( functionName, fileName, lineNumber );
+         message_ += "\nin function: " + functionName +
+                   " (" + fileName + " at line number " + std::to_string( lineNumber ) + ")";
          return *this;
       }
 
    private:
 
-      struct CallSig {
-         std::string functionName;
-         std::string fileName;
-         unsigned int lineNumber;
-         CallSig( std::string functionName, std::string fileName, unsigned int lineNumber ) :
-               functionName( functionName ), fileName( fileName ), lineNumber( lineNumber ) {}
-      };
-
       std::string message_;
-      std::vector< CallSig > stackTrace_;
 };
 
 /// \brief Exception class indicating that an internal inconsistency was found (the library code is wrong).
 ///
 /// You shouldn't need to catch exceptions of this type.
+///
+/// To throw an exception of this type, use the `#DIP_THROW_ASSERTION` and `#DIP_ASSERT` macros.
 class AssertionError : public Error {
       using Error::Error;
 };
@@ -97,6 +87,8 @@ class AssertionError : public Error {
 /// (the calling code is wrong).
 ///
 /// Catch exceptions of this type only if you don't control the input arguments (i.e. in a use interface).
+///
+/// To throw an exception of this type, use the `#DIP_THROW` and `#DIP_THROW_IF` macros.
 class ParameterError : public Error {
       using Error::Error;
 };
@@ -106,6 +98,8 @@ class ParameterError : public Error {
 /// Catch exceptions of this type if you want to account for run time errors. Note that memory allocation
 /// errors are typically `std::bad_alloc`, unless a different allocator is chosen. None of the
 /// library functions catch and translate this exception.
+///
+/// To throw an exception of this type, use the `#DIP_THROW_RUNTIME` macro.
 class RunTimeError : public Error {
       using Error::Error;
 };
@@ -187,30 +181,85 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 ///        [some DIPlib functions that might throw here...]
 ///     }
 ///     catch( dip::Error& e ) {
-///        dip_AddStackTrace( e );
+///        DIP_ADD_STACK_TRACE( e );
 ///        throw;
 ///     }
-#define dip_AddStackTrace( error ) error.AddStackTrace( DIP__FUNC__, __FILE__, __LINE__ )
+///
+/// The `#DIP_TRY` and `#DIP_CATCH` macros help build this code.
+#define DIP_ADD_STACK_TRACE( error ) error.AddStackTrace( DIP__FUNC__, __FILE__, __LINE__ )
 
 /// \brief Throw a `dip::ParameterError`.
-#define dip_Throw( str ) do { auto e = dip::ParameterError( str ); dip_AddStackTrace( e ); throw e; } while( false )
+#define DIP_THROW( str ) do { auto e = dip::ParameterError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
 
 /// \brief Test a condition, throw a `dip::ParameterError` if the condition is met.
-#define dip_ThrowIf( test, str ) do { if( test ) dip_Throw( str ); } while( false )
-
-/// \brief Throw a `dip::RunTimeError`.
-#define dip_ThrowRunTime( str ) do { auto e = dip::RunTimeError( str ); dip_AddStackTrace( e ); throw e; } while( false )
-
-/// \brief Throw a `dip::AssertionError`.
-#define dip_ThrowAssertion( str ) do { auto e = dip::AssertionError( str ); dip_AddStackTrace( e ); throw e; } while( false )
-
-/// \brief Test a condition, throw a `dip::AssertionError` if the condition is not met.
-#define dip_Assert( test ) do { if( !( test ) ) dip_ThrowAssertion( "Failed assertion: " #test ); } while( false )
+#define DIP_THROW_IF( test, str ) do { if( test ) DIP_THROW( str ); } while( false )
 
 // These are the old DIPlib names, let's not use them any more:
-//#define DIPASSERT( test, str ) dip_ThrowIf( !(test), str )
-//#define DIPTS( test, str )     dip_ThrowIf( test, str )
-//#define DIPSJ( str )           dip_Throw( str )
+//#define DIPTS( test, str )     DIP_THROW_IF( test, str )
+//#define DIPSJ( str )           DIP_THROW( str )
+
+/// \brief Throw a `dip::RunTimeError`.
+#define DIP_THROW_RUNTIME( str ) do { auto e = dip::RunTimeError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
+
+#ifdef ENABLE_ASSERT
+
+/// \brief Throw a `dip::AssertionError`.
+///
+/// If `ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
+///
+///     cmake -DENABLE_ASSERT=OFF ...
+#define DIP_THROW_ASSERTION( str ) do { auto e = dip::AssertionError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
+
+/// \brief Test a condition, throw a `dip::AssertionError` if the condition is not met.
+///
+/// If `ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
+///
+///     cmake -DENABLE_ASSERT=OFF ...
+///
+/// You would typically disable assertions for production code, as assertions are only used to test internal
+/// consistency or detect bugs in the code.
+#define DIP_ASSERT( test ) do { if( !( test ) ) DIP_THROW_ASSERTION( "Failed assertion: " #test ); } while( false )
+
+#else
+
+#define DIP_THROW_ASSERTION( str )
+#define DIP_ASSERT( test )
+
+#endif
+
+#ifdef EXCEPTIONS_RECORD_STACK_TRACE
+
+/// \brief Starts a try/catch block that builds a stack trace when an exception is thrown. See `#DIP_CATCH`.
+// NOTE! Yes, we've got an opening brace here and no closing brace. This macro always needs to be paired with DIP_CATCH.
+#define DIP_TRY try {
+
+/// \brief Ends a try/catch block that builds a stack trace when an exception is thrown.
+///
+/// To build a stack trace, some library functions catch DIPlib exceptions, add their name and other info to it,
+/// then re-throw. To simplify this mechanism and make it easier to future changes, this macro and its partner
+/// `#DIP_TRY` are used by these library functions. Use then as follows:
+///
+///     DIP_TRY
+///     [some DIPlib functions that might throw here...]
+///     DIP_CATCH
+///
+/// This expands to the exact same code as shown under `#DIP_ADD_STACK_TRACE`.
+///
+/// NOTE! `DIP_TRY` starts a try/catch block, which must be closed with `DIP_CATCH` to prevent malformed syntax.
+/// Thus you should never use one of these two macros without the other one.
+///
+/// When compiling with the `EXCEPTIONS_RECORD_STACK_TRACE` set to `OFF`, these macros don't do anything. Turn the
+/// option off if your application would make no use of the stack trace, as building the stack trace does incur some
+/// runtime cost.
+// NOTE! Yes, we start with a closing brace here. This macro always needs to be paired with DIP_TRY.
+#define DIP_CATCH } catch( dip::Error& e ) { DIP_ADD_STACK_TRACE( e ); throw; }
+
+#else
+
+#define DIP_TRY
+#define DIP_CATCH
+
+#endif
 
 /// \}
 

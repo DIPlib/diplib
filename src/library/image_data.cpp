@@ -47,7 +47,7 @@ static dip::uint FindNumberOfPixels(
 ) {
    dip::uint n = 1;
    for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
-      dip_ThrowIf( ( sizes[ ii ] != 0 ) && ( n > std::numeric_limits< dip::uint >::max() / sizes[ ii ] ),
+      DIP_THROW_IF( ( sizes[ ii ] != 0 ) && ( n > std::numeric_limits< dip::uint >::max() / sizes[ ii ] ),
                    E::DIMENSIONALITY_EXCEEDS_LIMIT );
       n *= sizes[ ii ];
    }
@@ -152,7 +152,7 @@ void RemoveSingletonsFromStrideArray( UnsignedArray const& sizes, IntegerArray s
 // Constructor.
 CoordinatesComputer::CoordinatesComputer( UnsignedArray const& sizes, IntegerArray const& strides ) {
    dip::uint N = strides.size();
-   dip_ThrowIf( sizes.size() != N, "Input arrays do not have the same size" );
+   DIP_THROW_IF( sizes.size() != N, "Input arrays do not have the same size" );
    strides_ = strides;
    sizes_.resize( N );
    index_.resize( N );
@@ -233,7 +233,7 @@ UnsignedArray CoordinatesComputer::operator()( dip::sint offset ) const {
 // Normal strides are the default ones:
 // increasing in value, and with contiguous data.
 bool Image::HasNormalStrides() const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    if( tensorStride_ != 1 ) {
       return false;
    }
@@ -251,7 +251,7 @@ bool Image::HasNormalStrides() const {
 // Return a pointer to the start of the data and a single stride to
 // walk through all pixels. If this is not possible, porigin==nullptr.
 void Image::GetSimpleStrideAndOrigin( dip::uint& sstride, void*& porigin ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::sint start;
    dip::uint size;
    if( FindSimpleStrideSizeAndStart( strides_, sizes_, sstride, size, start ) ) {
@@ -264,8 +264,8 @@ void Image::GetSimpleStrideAndOrigin( dip::uint& sstride, void*& porigin ) const
 
 // Are the dimensions ordered in the same way?
 bool Image::HasSameDimensionOrder( Image const& other ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !other.IsForged(), E::IMAGE_NOT_FORGED );
    // Remove singleton dimensions in stride array
    IntegerArray s1 = strides_;
    RemoveSingletonsFromStrideArray( sizes_, s1 );
@@ -319,7 +319,7 @@ bool Image::HasValidStrides() const {
 
 //
 void Image::SetNormalStrides() {
-   dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+   DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
    tensorStride_ = 1;                       // We set tensor strides to 1 by default.
    ComputeStrides( sizes_, tensor_.Elements(), strides_ );
 }
@@ -344,8 +344,8 @@ void Image::GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& star
 
 // Does writing in this image change the data of the other image?
 bool Image::Aliases( Image const& other ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !other.IsForged(), E::IMAGE_NOT_FORGED );
 
    // Different data blocks do not overlap by definition
    if( dataBlock_ != other.dataBlock_ ) {
@@ -545,8 +545,8 @@ bool Image::Aliases( Image const& other ) const {
 void Image::Forge() {
    if( !IsForged() ) {
       dip::uint size = FindNumberOfPixels( sizes_ );
-      dip_ThrowIf( size == 0, "Cannot forge an image without pixels (sizes must be > 0)" );
-      dip_ThrowIf( TensorElements() > std::numeric_limits< dip::uint >::max() / size,
+      DIP_THROW_IF( size == 0, "Cannot forge an image without pixels (sizes must be > 0)" );
+      DIP_THROW_IF( TensorElements() > std::numeric_limits< dip::uint >::max() / size,
                    E::DIMENSIONALITY_EXCEEDS_LIMIT );
       size *= TensorElements();
       if( externalInterface_ ) {
@@ -573,7 +573,7 @@ void Image::Forge() {
          }
          dip::uint sz = dataType_.SizeOf();
          void* p = std::malloc( size * sz );
-         dip_ThrowIf( !p, "Failed to allocate memory" );
+         DIP_THROW_IF( !p, "Failed to allocate memory" );
          dataBlock_ = std::shared_ptr< void >( p, std::free );
          origin_ = static_cast< uint8* >( p ) + start * sz;
          //std::cout << "   Successfully forged image\n";
@@ -621,11 +621,11 @@ void Image::ReForge(
 
 //
 dip::sint Image::Offset( UnsignedArray const& coords ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
    dip::sint offset = 0;
    for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
-      dip_ThrowIf( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
+      DIP_THROW_IF( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
       offset += coords[ ii ] * strides_[ ii ];
    }
    return offset;
@@ -633,8 +633,8 @@ dip::sint Image::Offset( UnsignedArray const& coords ) const {
 
 //
 dip::sint Image::Offset( IntegerArray const& coords ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
    dip::sint offset = 0;
    for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
       offset += coords[ ii ] * strides_[ ii ];
@@ -650,18 +650,18 @@ UnsignedArray Image::OffsetToCoordinates( dip::sint offset ) const {
 
 //
 CoordinatesComputer Image::OffsetToCoordinatesComputer() const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    return CoordinatesComputer( sizes_, strides_ );
 }
 
 //
 dip::uint Image::Index( UnsignedArray const& coords ) const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip_ThrowIf( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
    dip::uint index = 0;
    for( dip::uint ii = sizes_.size(); ii > 0; ) {
       --ii;
-      dip_ThrowIf( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
+      DIP_THROW_IF( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
       index *= sizes_[ ii ];
       index += coords[ ii ];
    }
@@ -676,7 +676,7 @@ UnsignedArray Image::IndexToCoordinates( dip::uint index ) const {
 
 //
 CoordinatesComputer Image::IndexToCoordinatesComputer() const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    IntegerArray fake_strides;
    ComputeStrides( sizes_, 1, fake_strides );
    return CoordinatesComputer( sizes_, fake_strides );
@@ -685,7 +685,7 @@ CoordinatesComputer Image::IndexToCoordinatesComputer() const {
 
 //
 void Image::Copy( Image const& src ) {
-   dip_ThrowIf( !src.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
    if( &src == this ) {
       // Copying self... what for?
       return;
@@ -764,7 +764,7 @@ void Image::Copy( Image const& src ) {
 
 //
 void Image::Convert( dip::DataType dt ) {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    if( dt != dataType_ ) {
       if( !IsShared() && ( dt.SizeOf() == dataType_.SizeOf() )) {
          // The operation can happen in place.
@@ -827,7 +827,7 @@ void Image::Convert( dip::DataType dt ) {
 //
 template< typename inT >
 static inline void InternFill( Image& dest, inT v ) {
-   dip_ThrowIf( !dest.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !dest.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint sstride_d;
    void* porigin_d;
    dest.GetSimpleStrideAndOrigin( sstride_d, porigin_d );
@@ -878,7 +878,7 @@ static inline dcomplex CastValueComplex( void* p ) {
    return clamp_cast< dcomplex >( *static_cast< TPI* >( p ));
 }
 Image::operator dcomplex() const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dcomplex x;
    DIP_OVL_CALL_ASSIGN_ALL( x, CastValueComplex, ( origin_ ), dataType_ );
    return x;
@@ -890,7 +890,7 @@ static inline dfloat CastValueDouble( void* p ) {
    return clamp_cast< dfloat >( *static_cast< TPI* >( p ));
 }
 Image::operator dfloat() const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dfloat x;
    DIP_OVL_CALL_ASSIGN_ALL( x, CastValueDouble, ( origin_ ), dataType_ );
    return x;
@@ -902,7 +902,7 @@ static inline dip::sint CastValueInteger( void* p ) {
    return clamp_cast< dip::sint >( *static_cast< TPI* >( p ));
 }
 Image::operator dip::sint() const {
-   dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::sint x;
    DIP_OVL_CALL_ASSIGN_ALL( x, CastValueInteger, ( origin_ ), dataType_ );
    return x;

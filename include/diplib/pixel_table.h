@@ -186,7 +186,7 @@ class PixelTable::iterator {
       iterator() {}
       /// Constructs an iterator
       iterator( PixelTable const& pt ) {
-         dip_ThrowIf( pt.nPixels_ == 0, "Pixel Table is empty" );
+         DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
          pixelTable_ = &pt;
          coordinates_ = pt.runs_[ 0 ].coordinates;
          // run_ and index_ are set properly by default
@@ -279,7 +279,7 @@ class PixelTableOffsets::iterator {
       iterator() {}
       /// Constructs an iterator
       iterator( PixelTableOffsets const& pt ) {
-         dip_ThrowIf( pt.nPixels_ == 0, "Pixel Table is empty" );
+         DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
          pixelTable_ = &pt;
          offset_ = pt.runs_[ 0 ].offset;
          // run_ and index_ are set properly by default

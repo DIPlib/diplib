@@ -37,9 +37,9 @@ void Scan(
    }
 
    // Check array sizes
-   dip_ThrowIf( inBufferTypes.size() != nIn, E::ARRAY_ILLEGAL_SIZE );
-   dip_ThrowIf( outBufferTypes.size() != nOut, E::ARRAY_ILLEGAL_SIZE );
-   dip_ThrowIf( outImageTypes.size() != nOut, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( inBufferTypes.size() != nIn, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( outBufferTypes.size() != nOut, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( outImageTypes.size() != nOut, E::ARRAY_ILLEGAL_SIZE );
 
    // NOTE: In this function, we use some DimensionArray objects where the
    // array needs to hold nIn or nOut elements. We expect nIn and nOut to be
@@ -53,7 +53,7 @@ void Scan(
    ImageArray in( nIn );
    for( dip::uint ii = 0; ii < nIn; ++ii ) {
       Image const& tmp = c_in[ ii ].get();
-      dip_ThrowIf( !tmp.IsForged(), E::IMAGE_NOT_FORGED );
+      DIP_THROW_IF( !tmp.IsForged(), E::IMAGE_NOT_FORGED );
       in[ ii ] = tmp.QuickCopy();
       if( !pixelSize.IsDefined() && tmp.HasPixelSize() ) {
          pixelSize = tmp.PixelSize();
@@ -94,7 +94,7 @@ void Scan(
          sizes = in[ 0 ].Sizes();
          for( dip::uint ii = 1; ii < nIn; ++ii ) {
             if( in[ ii ].Sizes() != sizes ) {
-               dip_Throw( E::SIZES_DONT_MATCH );
+               DIP_THROW( E::SIZES_DONT_MATCH );
             }
          }
       }
@@ -105,6 +105,7 @@ void Scan(
 
    // Adjust output if necessary (and possible)
    // TODO: we should allocate c_out[ ii ] correctly, not with tensor dimension as spatial dimension.
+   DIP_TRY
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       Image& tmp = c_out[ ii ].get();
       dip::uint nTensor = opts == Scan_TensorAsSpatialDim ? 1 : nTensorElements[ ii ]; // Input parameter ignored, output matches singleton-expanded number of tensor elements.
@@ -116,6 +117,7 @@ void Scan(
       }
       tmp.ReForge( sizes, nTensor, outImageTypes[ ii ], true );
    }
+   DIP_CATCH
 
    // Make simplified copies of output image headers so we can modify them at will
    ImageArray out( nOut );
@@ -163,6 +165,7 @@ void Scan(
    // Note we're only converting the copies of the headers, not the original ones.
    // Note also that if we are dealing with a 0D image, it also has a simple
    // stride and hence will be converted into 1D.
+   DIP_TRY
    if( scan1D ) {
       for( dip::uint ii = 0; ii < nIn; ++ii ) {
          in[ ii ].Flatten();
@@ -172,6 +175,7 @@ void Scan(
       }
       sizes = ( nIn > 0 ? in[ 0 ] : out[ 0 ] ).Sizes();
    }
+   DIP_CATCH
 
    /*
    std::cout << "dip::Framework::Scan -- images\n";

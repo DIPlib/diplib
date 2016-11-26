@@ -206,7 +206,7 @@ class Image {
             case dip::DT_DCOMPLEX:
                *static_cast< dcomplex* >( origin_ ) = clamp_cast< dcomplex >( p );
                break;
-            default: dip_Throw( dip::E::DATA_TYPE_NOT_SUPPORTED );
+            default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
          }
       }
 
@@ -305,7 +305,7 @@ class Image {
                }
                break;
             }
-            default: dip_Throw( dip::E::DATA_TYPE_NOT_SUPPORTED );
+            default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
          }
       }
 
@@ -396,7 +396,7 @@ class Image {
 
       /// \brief Set the image sizes. The image must be raw.
       void SetSizes( UnsignedArray const& d ) {
-         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          sizes_ = d;
       }
 
@@ -421,13 +421,13 @@ class Image {
 
       /// \brief Set the strides array. The image must be raw.
       void SetStrides( IntegerArray const& s ) {
-         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          strides_ = s;
       }
 
       /// \brief Set the tensor stride. The image must be raw.
       void SetTensorStride( dip::sint ts ) {
-         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          tensorStride_ = ts;
       }
 
@@ -445,7 +445,7 @@ class Image {
       ///
       /// \see GetSimpleStrideAndOrigin, HasSimpleStride, HasNormalStrides, Strides, TensorStride.
       bool HasContiguousData() const {
-         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          dip::uint size = NumberOfPixels() * TensorElements();
          dip::sint start;
          dip::uint sz;
@@ -551,13 +551,13 @@ class Image {
 
       /// \brief Set tensor sizes. The image must be raw.
       void SetTensorSizes( UnsignedArray const& tdims ) {
-         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          tensor_.SetSizes( tdims );
       }
 
       /// \brief Set tensor sizes. The image must be raw.
       void SetTensorSizes( dip::uint nelems ) {
-         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          tensor_.SetVector( nelems );
       }
 
@@ -575,7 +575,7 @@ class Image {
 
       /// \brief Set the image's data type. The image must be raw.
       void SetDataType( dip::DataType dt ) {
-         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          dataType_ = dt;
       }
 
@@ -584,18 +584,26 @@ class Image {
       //
 
       /// \brief Get the image's color space name.
-      String const& ColorSpace() const { return colorSpace_; }
+      String const& ColorSpace() const {
+         return colorSpace_;
+      }
 
       /// \brief Returns true if the image is in color, false if the image is grey-valued.
-      bool IsColor() const { return !colorSpace_.empty(); }
+      bool IsColor() const {
+         return !colorSpace_.empty();
+      }
 
       /// \brief Sets the image's color space name. This causes the image to be a color
       /// image, but will cause errors to occur if the number of tensor elements
       /// does not match the expected number of channels for the given color space.
-      void SetColorSpace( String const& cs ) { colorSpace_ = cs; }
+      void SetColorSpace( String const& cs ) {
+         colorSpace_ = cs;
+      }
 
       /// \brief Resets the image's color space information, turning the image into a non-color image.
-      void ResetColorSpace() { colorSpace_.clear(); }
+      void ResetColorSpace() {
+         colorSpace_.clear();
+      }
 
       //
       // Pixel size
@@ -605,10 +613,14 @@ class Image {
       // dip::PixelSize everywhere in this file.
 
       /// \brief Get the pixels's size in physical units, by reference, allowing to modify it at will.
-      dip::PixelSize& PixelSize() { return pixelSize_; }
+      dip::PixelSize& PixelSize() {
+         return pixelSize_;
+      }
 
       /// \brief Get the pixels's size in physical units.
-      dip::PixelSize const& PixelSize() const { return pixelSize_; }
+      dip::PixelSize const& PixelSize() const {
+         return pixelSize_;
+      }
 
       /// \brief Set the pixels's size.
       void SetPixelSize( dip::PixelSize const& ps ) {
@@ -616,16 +628,24 @@ class Image {
       }
 
       /// \brief Returns true if the pixel has physical dimensions.
-      bool HasPixelSize() const { return pixelSize_.IsDefined(); }
+      bool HasPixelSize() const {
+         return pixelSize_.IsDefined();
+      }
 
       /// \brief Returns true if the pixel has the same size in all dimensions.
-      bool IsIsotropic() const { return pixelSize_.IsIsotropic(); }
+      bool IsIsotropic() const {
+         return pixelSize_.IsIsotropic();
+      }
 
       /// \brief Converts a size in pixels to a size in phyical units.
-      PhysicalQuantityArray PixelsToPhysical( FloatArray const& in ) const { return pixelSize_.ToPhysical( in ); }
+      PhysicalQuantityArray PixelsToPhysical( FloatArray const& in ) const {
+         return pixelSize_.ToPhysical( in );
+      }
 
       /// \brief Converts a size in physical units to a size in pixels.
-      FloatArray PhysicalToPixels( PhysicalQuantityArray const& in ) const { return pixelSize_.ToPixels( in ); }
+      FloatArray PhysicalToPixels( PhysicalQuantityArray const& in ) const {
+         return pixelSize_.ToPixels( in );
+      }
 
       //
       // Utility functions
@@ -664,7 +684,7 @@ class Image {
 
       /// \brief Copy all image properties from `src`. The image must be raw.
       void CopyProperties( Image const& src ) {
-         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          dataType_ = src.dataType_;
          sizes_ = src.sizes_;
          strides_ = src.strides_;
@@ -690,7 +710,7 @@ class Image {
       ///
       /// \see Origin, IsShared, ShareCount, SharesData.
       void* Data() const {
-         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return dataBlock_.get();
       }
 
@@ -699,7 +719,7 @@ class Image {
       ///
       /// \see Data, ShareCount, SharesData.
       bool IsShared() const {
-         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return !dataBlock_.unique();
       }
 
@@ -710,7 +730,7 @@ class Image {
       ///
       /// \see Data, IsShared, SharesData.
       dip::uint ShareCount() const {
-         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return static_cast< dip::uint >( dataBlock_.use_count() );
       }
 
@@ -726,8 +746,8 @@ class Image {
       ///
       /// \see Aliases, IsIdenticalView, IsOverlappingView, Data, IsShared, ShareCount.
       bool SharesData( Image const& other ) const {
-         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !other.IsForged(), E::IMAGE_NOT_FORGED );
          return dataBlock_ == other.dataBlock_;
       }
 
@@ -750,8 +770,8 @@ class Image {
       ///
       /// \see SharesData, Aliases, IsOverlappingView.
       bool IsIdenticalView( Image const& other ) const {
-         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         dip_ThrowIf( !other.IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !other.IsForged(), E::IMAGE_NOT_FORGED );
          // We don't need to check dataBlock_ here, as origin_ is a pointer, not an offset.
          return ( origin_ == other.origin_ ) &&
                 ( dataType_ == other.dataType_ ) &&
@@ -902,7 +922,7 @@ class Image {
       /// other images using the same data segment, it will be freed.
       void Strip() {
          if( IsForged() ) {
-            dip_ThrowIf( IsProtected(), "Image is protected" );
+            DIP_THROW_IF( IsProtected(), "Image is protected" );
             dataBlock_ = nullptr; // Automatically frees old memory if no other pointers to it exist.
             origin_ = nullptr;    // Keep this one in sync!
          }
@@ -938,7 +958,7 @@ class Image {
 
       /// \brief Set external interface pointer. The image must be raw.
       void SetExternalInterface( ExternalInterface* ei ) {
-         dip_ThrowIf( IsForged(), E::IMAGE_NOT_RAW );
+         DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          externalInterface_ = ei;
       }
 
@@ -950,7 +970,7 @@ class Image {
       /// \brief Get pointer to the first sample in the image, the first tensor
       /// element at coordinates (0,0,0,...). The image must be forged.
       void* Origin() const {
-         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return origin_;
       }
 
@@ -1180,7 +1200,7 @@ class Image {
 
       /// \brief Change the tensor shape, without changing the number of tensor elements.
       Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {
-         dip_ThrowIf( tensor_.Elements() != rows * cols, "Cannot reshape tensor to requested sizes." );
+         DIP_THROW_IF( tensor_.Elements() != rows * cols, "Cannot reshape tensor to requested sizes." );
          tensor_.ChangeShape( rows );
          return *this;
       }
@@ -1371,8 +1391,8 @@ class Image {
       /// The image must be forged and have the same number of tensor elements as
       /// elements in `vlist`.
       void Fill( std::initializer_list< dip::sint > const& vlist ) {
-         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         dip_ThrowIf( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
          Image tmp = QuickCopy();
          tmp.tensor_.SetScalar();
          for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
@@ -1391,8 +1411,8 @@ class Image {
       /// The image must be forged and have the same number of tensor elements as
       /// elements in `vlist`.
       void Fill( std::initializer_list< dfloat > const& vlist ) {
-         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         dip_ThrowIf( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
          Image tmp = QuickCopy();
          tmp.tensor_.SetScalar();
          for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
@@ -1408,8 +1428,8 @@ class Image {
       /// The image must be forged and have the same number of tensor elements as
       /// elements in `vlist`.
       void Fill( std::initializer_list< dcomplex > const& vlist ) {
-         dip_ThrowIf( !IsForged(), E::IMAGE_NOT_FORGED );
-         dip_ThrowIf( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
          Image tmp = QuickCopy();
          tmp.tensor_.SetScalar();
          for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {

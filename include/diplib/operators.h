@@ -682,13 +682,13 @@ inline Image operator-( Image const& in ) {
 
 /// \brief Bit-wise unary operator, calls `dip::Not`.
 inline Image operator~( Image const& in ) {
-   dip_ThrowIf( !in.DataType().IsInteger(), "Bit-wise unary not operator only applicable to integer images" );
+   DIP_THROW_IF( !in.DataType().IsInteger(), "Bit-wise unary not operator only applicable to integer images" );
    return Not( in );
 }
 
 /// \brief Boolean unary operator, calls `dip::Not`.
 inline Image operator!( Image const& in ) {
-   dip_ThrowIf( !in.DataType().IsBinary(), "Boolean unary not operator only applicable to binary images" );
+   DIP_THROW_IF( !in.DataType().IsBinary(), "Boolean unary not operator only applicable to binary images" );
    return Not( in );
 }
 

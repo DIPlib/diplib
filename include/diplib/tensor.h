@@ -182,14 +182,14 @@ class Tensor {
       /// Sets the tensor shape.
       void SetShape( enum Shape shape, dip::uint rows, dip::uint cols ) {
          shape_ = shape;
-         dip_ThrowIf( rows == 0, "Number of rows must be non-zero" );
-         dip_ThrowIf( cols == 0, "Number of columns must be non-zero" );
+         DIP_THROW_IF( rows == 0, "Number of rows must be non-zero" );
+         DIP_THROW_IF( cols == 0, "Number of columns must be non-zero" );
          switch( shape_ ) {
-            case Shape::COL_VECTOR: dip_ThrowIf( cols != 1, "A column vector can have only one column" );
+            case Shape::COL_VECTOR: DIP_THROW_IF( cols != 1, "A column vector can have only one column" );
                elements_ = rows;
                rows_ = rows;
                break;
-            case Shape::ROW_VECTOR: dip_ThrowIf( rows != 1, "A column vector can have only one column" );
+            case Shape::ROW_VECTOR: DIP_THROW_IF( rows != 1, "A column vector can have only one column" );
                elements_ = cols;
                rows_ = 1;
                break;
@@ -199,16 +199,16 @@ class Tensor {
                rows_ = rows;
                CorrectShape();
                break;
-            case Shape::DIAGONAL_MATRIX: dip_ThrowIf( rows != cols, "A diagonal matrix must be square" );
+            case Shape::DIAGONAL_MATRIX: DIP_THROW_IF( rows != cols, "A diagonal matrix must be square" );
                elements_ = rows;
                rows_ = rows;
                break;
-            case Shape::SYMMETRIC_MATRIX: dip_ThrowIf( rows != cols, "A symmetric matrix must be square" );
+            case Shape::SYMMETRIC_MATRIX: DIP_THROW_IF( rows != cols, "A symmetric matrix must be square" );
                elements_ = NUpperDiagonalElements( rows );
                rows_ = rows;
                break;
             case Shape::UPPTRIANG_MATRIX:
-            case Shape::LOWTRIANG_MATRIX: dip_ThrowIf( rows != cols, "A triangular matrix must be square" );
+            case Shape::LOWTRIANG_MATRIX: DIP_THROW_IF( rows != cols, "A triangular matrix must be square" );
                elements_ = NUpperDiagonalElements( rows );
                rows_ = rows;
                break;
@@ -221,14 +221,14 @@ class Tensor {
       }
       /// Sets the tensor shape, results in a Shape::COL_VECTOR.
       void SetVector( dip::uint n ) {
-         dip_ThrowIf( n == 0, "Number of vector elements must be non-zero" );
+         DIP_THROW_IF( n == 0, "Number of vector elements must be non-zero" );
          shape_ = Shape::COL_VECTOR;
          elements_ = rows_ = n;
       }
       /// Sets the tensor shape, results in a Shape::COL_MAJOR_MATRIX.
       void SetMatrix( dip::uint rows, dip::uint cols ) {
-         dip_ThrowIf( rows == 0, "Number of rows must be non-zero" );
-         dip_ThrowIf( cols == 0, "Number of columns must be non-zero" );
+         DIP_THROW_IF( rows == 0, "Number of rows must be non-zero" );
+         DIP_THROW_IF( cols == 0, "Number of columns must be non-zero" );
          shape_ = Shape::COL_MAJOR_MATRIX;
          elements_ = rows * cols;
          rows_ = rows;
@@ -246,14 +246,14 @@ class Tensor {
             case 2:
                SetMatrix( sizes[ 0 ], sizes[ 1 ] );
                break;
-            default: dip_Throw( "Tensor dimensionalities higher than 2 not supported." );
+            default: DIP_THROW( "Tensor dimensionalities higher than 2 not supported." );
          }
       }
 
       /// Changes the tensor shape without changing the number of elements, results in a `Shape::COL_MAJOR_MATRIX`.
       void ChangeShape( dip::uint rows ) {
          if( rows_ != rows ) {
-            dip_ThrowIf( elements_ % rows, "Cannot reshape tensor to requested size" );
+            DIP_THROW_IF( elements_ % rows, "Cannot reshape tensor to requested size" );
             rows_ = rows;
             shape_ = Shape::COL_MAJOR_MATRIX;
             CorrectShape();
@@ -266,7 +266,7 @@ class Tensor {
       }
       /// Changes the tensor shape without changing the number of elements, resulting in the shape described by `other`.
       void ChangeShape( Tensor const& other ) {
-         dip_ThrowIf( elements_ != other.elements_, "Cannot reshape tensor to requested form" );
+         DIP_THROW_IF( elements_ != other.elements_, "Cannot reshape tensor to requested form" );
          shape_ = other.shape_;
          rows_ = other.rows_;
       }

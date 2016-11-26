@@ -349,7 +349,7 @@ struct PhysicalQuantity {
 
    /// Addition of two physical quantities.
    PhysicalQuantity& operator+=( PhysicalQuantity const& other ) {
-      dip_ThrowIf( units != other.units, "Units don't match" );
+      DIP_THROW_IF( units != other.units, "Units don't match" );
       magnitude += other.magnitude;
       return *this;
    }
@@ -361,7 +361,7 @@ struct PhysicalQuantity {
 
    /// Subtraction of two physical quantities.
    PhysicalQuantity& operator-=( PhysicalQuantity const& other ) {
-      dip_ThrowIf( units != other.units, "Units don't match" );
+      DIP_THROW_IF( units != other.units, "Units don't match" );
       magnitude -= other.magnitude;
       return *this;
    }
@@ -691,7 +691,7 @@ class PixelSize {
          FloatArray out( in.size() );
          for( dip::uint ii = 0; ii < in.size(); ++ii ) {
             PhysicalQuantity v = Get( ii );
-            dip_ThrowIf( in[ ii ].units != v.units, "Units don't match" );
+            DIP_THROW_IF( in[ ii ].units != v.units, "Units don't match" );
             out[ ii ] = in[ ii ].magnitude / v.magnitude;
          }
          return out;

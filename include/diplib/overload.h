@@ -56,7 +56,7 @@
    switch( dtype ) {
 
 #define DIP__OVL__FOOT \
-   default: dip_Throw( dip::E::DATA_TYPE_NOT_SUPPORTED ); \
+   default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED ); \
 }
 
 #define DIP__OVL__BIN( fname, f ) \

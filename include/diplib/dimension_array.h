@@ -20,9 +20,8 @@
 #include <iterator>
 #include <algorithm>
 #include <utility>
-#include <cassert>
 //#include <iostream> // for debugging
-
+#include "diplib/error.h"
 
 /// \file
 /// \brief Defines the dip::DimensionArray template class. This file is always included through `diplib.h`.
@@ -246,7 +245,7 @@ class DimensionArray {
       /// \brief Adds a value at the given location, moving the current value at that
       /// location and subsequent values forward by one.
       void insert( size_type index, T const& value ) {
-         assert( index <= size_ );
+         DIP_ASSERT( index <= size_ );
          resize( size_ + 1 );
          if( index < size_ - 1 ) {
             std::copy_backward( data_ + index, data_ + size_ - 1, data_ + size_ );
@@ -261,7 +260,7 @@ class DimensionArray {
 
       /// Removes the value at the given location, moving subsequent values forward by one.
       void erase( size_type index ) {
-         assert( index < size_ );
+         DIP_ASSERT( index < size_ );
          if( index < size_ - 1 ) {
             std::copy( data_ + index + 1, data_ + size_, data_ + index );
          }
@@ -269,7 +268,7 @@ class DimensionArray {
       }
       /// Removes the value at the back.
       void pop_back() {
-         assert( size_ > 0 );
+         DIP_ASSERT( size_ > 0 );
          resize( size_ - 1 );
       }
 
@@ -309,7 +308,7 @@ class DimensionArray {
       template< typename S >
       void sort( DimensionArray< S >& other ) {
          // We cannot access private members of `other` because it's a different class (if S != T).
-         assert( size_ == other.size() );
+         DIP_ASSERT( size_ == other.size() );
          // Using insertion sort because we expect the array to be small.
          for( size_type ii = 1; ii < size_; ++ii ) {
             T elem = data_[ ii ];
@@ -394,7 +393,7 @@ class DimensionArray {
 
       /// True if all elements are equal or smaller than those in other
       bool allSmallerOrEqual( DimensionArray const& other ) const {
-         assert( size_ == other.size_ );
+         DIP_ASSERT( size_ == other.size_ );
          for( size_type ii = 0; ii < size_; ++ii ) {
             if( data_[ ii ] > other.data_[ ii] ) {
                return false;

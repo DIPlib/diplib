@@ -28,6 +28,16 @@ if(HAS_PRETTY_FUNCTION)
    add_definitions(-DHAS_PRETTY_FUNCTION)
 endif()
 
+# Control exceptions
+set(EXCEPTIONS_RECORD_STACK_TRACE ON CACHE BOOL "Stack trace information is added to exceptions (see the documentation for DIP_CATCH)")
+if(EXCEPTIONS_RECORD_STACK_TRACE)
+   add_definitions(-DEXCEPTIONS_RECORD_STACK_TRACE)
+endif()
+set(ENABLE_ASSERT ON CACHE BOOL "Enable assertions (see the documentation for DIP_ASSERT)")
+if(ENABLE_ASSERT)
+   add_definitions(-DENABLE_ASSERT)
+endif()
+
 # MATLAB
 set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # This is necessary because my version of MATLAB is very recent and my version of CMake is not. Ajust as necessary.
 find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)
