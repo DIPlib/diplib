@@ -1,8 +1,8 @@
 /*
  * DIPlib 3.0
- * This file contains data-type--related functions.
+ * This file contains definitions of functions declared in pixel_table.h.
  *
- * (c)2015-2016, Cris Luengo.
+ * (c)2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 

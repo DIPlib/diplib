@@ -317,7 +317,7 @@ class Image {
             IntegerArray const& strides,
             dip::Tensor const& tensor,
             dip::sint tensorStride,
-            ExternalInterface* externalInterface = nullptr
+            dip::ExternalInterface* externalInterface = nullptr
       ) :
             dataType_( dataType ),
             sizes_( sizes ),
@@ -697,6 +697,19 @@ class Image {
          }
       }
 
+      /// \brief Copy non-data image properties from `src`.
+      ///
+      /// The non-data image properties are those that do not influence how the data is stored in
+      /// memory: tensor shape, color space, and pixel size. The number of tensor elements of the
+      /// the two images must match. The image must be forged.
+      void CopyNonDataProperties( Image const& src ) {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( tensor_.Elements() != src.tensor_.Elements(), E::NTENSORELEM_DONT_MATCH );
+         tensor_ = src.tensor_;
+         colorSpace_ = src.colorSpace_;
+         pixelSize_ = src.pixelSize_;
+      }
+
       //
       // Data
       // Defined in src/library/image_data.cpp
@@ -892,9 +905,7 @@ class Image {
       /// data type of the image, ignoring any requested data type here.
       void ReForge( Image const& src, dip::DataType dt, bool acceptDataTypeChange = false ) {
          ReForge( src.sizes_, src.tensor_.Elements(), dt, acceptDataTypeChange );
-         tensor_ = src.tensor_;
-         colorSpace_ = src.colorSpace_;
-         pixelSize_ = src.pixelSize_;
+         CopyNonDataProperties( src );
       }
 
       /// \brief Modify image properties and forge the image.
@@ -956,10 +967,23 @@ class Image {
          return protect_;
       }
 
+      // Note: This function is the reason we refer to the ExternalInterface class as
+      // dip::ExternalInterface everywhere inside the dip::Image class.
+
       /// \brief Set external interface pointer. The image must be raw.
-      void SetExternalInterface( ExternalInterface* ei ) {
+      void SetExternalInterface( dip::ExternalInterface* ei ) {
          DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          externalInterface_ = ei;
+      }
+
+      /// \brief Get external interface pointer.
+      dip::ExternalInterface* ExternalInterface() const {
+         return externalInterface_;
+      }
+
+      /// \brief Test if an external interface is set.
+      bool HasExternalInterface() const {
+         return externalInterface_ != nullptr;
       }
 
       //
@@ -1539,7 +1563,7 @@ class Image {
       dip::PixelSize pixelSize_;
       std::shared_ptr< void > dataBlock_; // Holds the pixel data. Data block will be freed when last image that uses it is destroyed.
       void* origin_ = nullptr;            // Points to the origin ( pixel (0,0) ), not necessarily the first pixel of the data block.
-      ExternalInterface* externalInterface_ = nullptr; // A function that will be called instead of the default forge function.
+      dip::ExternalInterface* externalInterface_ = nullptr; // A function that will be called instead of the default forge function.
 
       //
       // Some private functions

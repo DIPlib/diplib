@@ -97,11 +97,13 @@ void Separable(
    }
 
    // Adjust output if necessary (and possible)
+   DIP_TRY
    if( cOutput.IsForged() && cOutput.IsOverlappingView( cInput ) ) {
       cOutput.Strip();
    }
    cOutput.ReForge( outSizes, outTensor.Elements(), outImageType, true );
    cOutput.ReshapeTensor( outTensor );
+   DIP_CATCH
    // NOTE: Don't use cInput any more from here on. It has possibly been reforged!
 
    // Make simplified copies of output image headers so we can modify them at will

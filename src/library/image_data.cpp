@@ -701,9 +701,7 @@ void Image::Copy( Image const& src ) {
          Strip();
       } else {
          // We've got the data segment covered. Copy over additional properties
-         tensor_ = src.tensor_;
-         pixelSize_ = src.pixelSize_;
-         colorSpace_ = src.colorSpace_;
+         CopyNonDataProperties( src );
       }
    }
    if( !IsForged() ) {

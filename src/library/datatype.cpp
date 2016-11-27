@@ -98,7 +98,7 @@ DataType DataType::SuggestArithmetic( DataType type1, DataType type2 ) {
    type1 = DataType::SuggestFlexBin( type1 );
    type2 = DataType::SuggestFlexBin( type2 );
    if( type2 > type1 )
-      std::swap( type1, type2 );    // sort the two, it saves us lots of tests
+      dip::swap( type1, type2 );    // sort the two, it saves us lots of tests
    if( type1 == DT_DCOMPLEX )
       return DT_DCOMPLEX;
    if( ( type1 == DT_SCOMPLEX ) && ( type2 == DT_DFLOAT ) )
@@ -116,7 +116,7 @@ DataType DataType::SuggestDiadicOperation( DataType type1, DataType type2 ) {
    if( type1 == type2 )
       return type1;                 // short-cut
    if( type2 > type1 )
-      std::swap( type1, type2 );    // sort the two, it saves us lots of tests
+      dip::swap( type1, type2 );    // sort the two, it saves us lots of tests
 
    if( type1 == DT_DCOMPLEX )
       return DT_DCOMPLEX;
