@@ -44,7 +44,7 @@ enum class BoundaryCondition {
       ZERO_ORDER_EXTRAPOLATE,    ///< "zero order" - The value at the border is repeated indefinitely.
       FIRST_ORDER_EXTRAPOLATE,   ///< "first order" - A linear function is defined based on the two values closest to the border.
       SECOND_ORDER_EXTRAPOLATE,  ///< "second order" - A quadratic function is defined based on the two values closest to the border, the function reaches zero at the end of the extended boundary.
-      THIRD_ORDER_EXTRAPOLATE,   ///< "third order" - A cubic function is defined based on the three values closest to the border, the function reaches zero at the end of the extended boundary.
+      THIRD_ORDER_EXTRAPOLATE,   ///< "third order" - A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
       DEFAULT = SYMMETRIC_MIRROR ///< "default" or "" - The default value, currently equal to `SYMMETRIC_MIRROR`.
 };
 
@@ -166,19 +166,18 @@ void ReadPixelWithBoundaryCondition(
 
 /// \brief Extends the image `in` by `boundary` along each dimension.
 ///
-/// The new regions are filled using the boundary condition `bc`. If `bc` is an empty array, the default
-/// boundary condition is used along all dimensions. If `bc` has a single element, it is used for all
-/// dimensions. Similarly, if `boundary` has a single element, it is used for all dimensions.
+/// The new regions are filled using the boundary condition `bc`. If `boundaryCondition` is an empty array, the default
+/// boundary condition is used along all dimensions. If `boundaryCondition` has a single element, it is used for all
+/// dimensions. Similarly, if `borderSizes` has a single element, it is used for all dimensions.
 ///
 /// If `masked` is true, the output image is a window on the boundary-extended image, of the
 /// same size as `in`. That is, `out` will be identical to `in` except that it is possible
 /// to access pixels outside of its domain.
-void ExtendImage( Image in, Image out, UnsignedArray boundary, BoundaryConditionArray bc, bool masked = false );
-// TODO: implement this function!
+void ExtendImage( Image const& in, Image& out, UnsignedArray borderSizes, StringArray const& boundaryCondition, bool masked = false );
 
-inline Image ExtendImage( Image in, UnsignedArray boundary, BoundaryConditionArray bc, bool masked = false ) {
+inline Image ExtendImage( Image const& in, UnsignedArray const& borderSizes, StringArray const& boundaryCondition, bool masked = false ) {
    Image out;
-   // TODO: ExtendImage( in, out, boundary, bc );
+   ExtendImage( in, out, borderSizes, boundaryCondition, masked );
    return out;
 }
 

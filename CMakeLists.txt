@@ -76,8 +76,10 @@ add_executable( test_framework_scan EXCLUDE_FROM_ALL test/test_framework_scan.cp
 target_link_libraries(test_framework_scan DIP)
 add_executable( test_framework_separable EXCLUDE_FROM_ALL test/test_framework_separable.cpp )
 target_link_libraries(test_framework_separable DIP)
+add_executable( test_boundary EXCLUDE_FROM_ALL test/test_boundary.cpp )
+target_link_libraries(test_boundary DIP)
 
-add_custom_target(tests DEPENDS test_array test_bin test_error test_saturated_arithmetic test_options test_physdims test_image test_framework_scan test_framework_separable)
+add_custom_target(tests DEPENDS test_array test_bin test_error test_saturated_arithmetic test_options test_physdims test_image test_framework_scan test_framework_separable test_boundary)
 
 if(Matlab_FOUND)
 

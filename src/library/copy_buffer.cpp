@@ -226,7 +226,7 @@ static inline void ExpandBufferSecondOrder(
       dip::uint pixels, // guaranteed larger than 1
       dip::uint border  // guaranteed larger than 0
 ) {
-   double b = border;
+   double b = border + 1;
    // Left side
    DataType* in = buffer;
    DataType* out = buffer - stride;
@@ -266,7 +266,7 @@ static inline void ExpandBufferThirdOrder(
       dip::uint pixels, // guaranteed larger than 2
       dip::uint border  // guaranteed larger than 0
 ) {
-   double b = border;
+   double b = border + 1;
    double b12 = ( b + 1 ) * ( b + 1 );
    // Left side
    DataType* in = buffer;
