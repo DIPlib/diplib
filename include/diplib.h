@@ -11,16 +11,16 @@
 #define DIPLIB_H
 
 
-#include "diplib/dimension_array.h"
-#include "diplib/types.h"
-#include "diplib/numeric.h"
-#include "diplib/clamp_cast.h"
-#include "diplib/error.h"
-#include "diplib/datatype.h"
-#include "diplib/tensor.h"
-#include "diplib/physdims.h"
-#include "diplib/image.h"
-#include "diplib/operators.h"
+#include "diplib/library/dimension_array.h"
+#include "diplib/library/types.h"
+#include "diplib/library/numeric.h"
+#include "diplib/library/clamp_cast.h"
+#include "diplib/library/error.h"
+#include "diplib/library/datatype.h"
+#include "diplib/library/tensor.h"
+#include "diplib/library/physdims.h"
+#include "diplib/library/image.h"
+#include "diplib/library/operators.h"
 
 
 /// \file

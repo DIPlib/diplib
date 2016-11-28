@@ -8,9 +8,8 @@
 
 #include <limits>
 
-#include "diplib/clamp_cast.h"
-#include "diplib/saturated_arithmetic.h"
 #include "copy_buffer.h"
+#include "diplib/saturated_arithmetic.h"
 
 //#include <iostream>
 

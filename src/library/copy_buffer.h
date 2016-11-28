@@ -6,7 +6,7 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
-#include "diplib/datatype.h"
+#include "diplib.h"
 #include "diplib/boundary.h"
 
 namespace dip {

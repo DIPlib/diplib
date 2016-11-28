@@ -1,5 +1,5 @@
 #include <iostream>
-#include "diplib/error.h"
+#include "diplib/library/error.h"
 
 // Testing exceptions and related macros.
 // When compiling with `cmake -DENABLE_ASSERT=ON ..`, the program should exit with a `dip::AssertionError` exception.

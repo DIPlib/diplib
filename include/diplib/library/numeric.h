@@ -19,7 +19,7 @@
 #include <cmath>
 #include <algorithm>
 
-#include "diplib/types.h"
+#include "diplib/library/types.h"
 
 
 /// \file

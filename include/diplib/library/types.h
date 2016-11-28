@@ -22,8 +22,8 @@
 #include <vector>
 #include <string>
 
-#include "diplib/dimension_array.h"
-#include "diplib/error.h"
+#include "diplib/library/dimension_array.h"
+#include "error.h"
 
 
 /// \file

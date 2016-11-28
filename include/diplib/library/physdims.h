@@ -18,9 +18,9 @@
 
 #include <array>
 
-#include "diplib/error.h"
-#include "diplib/types.h"
-#include "diplib/numeric.h"
+#include "diplib/library/error.h"
+#include "diplib/library/types.h"
+#include "diplib/library/numeric.h"
 
 
 /// \file

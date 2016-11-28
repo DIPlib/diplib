@@ -1,5 +1,5 @@
 #include <iostream>
-#include "diplib/types.h"
+#include "diplib/library/types.h"
 
 // Testing
 

@@ -12,6 +12,8 @@ endif()
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
+set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid settings mismatch with the MEX files
+set(CMAKE_VISIBILITY_INLINES_HIDDEN hidden)
 
 # Safe gcc compiler and architecture flags across all Intel and AMD processors (circa 2015)
 # This optimizes things for GCC and CLANG, but presumably shouldn't be here for MSVC++.
@@ -23,7 +25,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles(
       "int main() { char const* name = __PRETTY_FUNCTION__; return 0; }"
-      HAS_PRETTY_FUNCTION)
+      HAS_PRETTY_FUNCTION
+)
 if(HAS_PRETTY_FUNCTION)
    add_definitions(-DHAS_PRETTY_FUNCTION)
 endif()
@@ -47,22 +50,28 @@ find_package(Doxygen)
 set(DOCUMENTATION_OUTPUT doc)
 
 
-# DIPlib library
+### DIPlib library
 
 include_directories(include)
-file(GLOB SOURCES
-   "src/*/*.h"
-   "src/*/*.cpp"
-   )
-file(GLOB HEADERS
-   "include/*.h"
-   "include/diplib/*.h"
-   )
-#add_library(DIP DYNAMIC ${SOURCES} ${HEADERS}) # Why does this not work any more? What changed?
+file(
+      GLOB SOURCES
+      "src/*/*.h"
+      "src/*/*.cpp"
+)
+file(
+      GLOB HEADERS
+      "include/*.h"
+      "include/diplib/*.h"
+      "include/diplib/library/*.h"
+)
 add_library(DIP STATIC ${SOURCES} ${HEADERS})
 
+#add_library(DIP DYNAMIC ${SOURCES} ${HEADERS})
+# If you want to compile a dynamic library, you need to set export properties for all public functions.
+# See CMake command GenerateExportHeader()
 
-# DIPlib tests
+
+### DIPlib tests
 
 add_executable(test_array EXCLUDE_FROM_ALL test/test_array.cpp)
 add_executable(test_bin EXCLUDE_FROM_ALL test/test_bin.cpp)
@@ -97,20 +106,20 @@ if(Matlab_FOUND)
 endif(Matlab_FOUND)
 
 
-# DIPlib documentation
+### DIPlib documentation
 
 if (DOXYGEN_FOUND)
 
    set(DOXYGEN_INPUT Doxyfile)
 
    add_custom_command(
-      OUTPUT ${DOCUMENTATION_OUTPUT}
-      COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
-      COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
-      COMMAND ${CMAKE_COMMAND} -E echo "Done."
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPENDS ${DOXYGEN_INPUT}
-      )
+         OUTPUT ${DOCUMENTATION_OUTPUT}
+         COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
+         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
+         COMMAND ${CMAKE_COMMAND} -E echo "Done."
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+         DEPENDS ${DOXYGEN_INPUT}
+   )
 
    add_custom_target(apidoc DEPENDS ${DOCUMENTATION_OUTPUT})
 

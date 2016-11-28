@@ -1,7 +1,7 @@
 #ifndef DIP_SORT_H
 #define DIP_SORT_H
 
-#include "diplib/types.h"
+#include "diplib/library/types.h"
 
 namespace dip {
 

@@ -19,7 +19,7 @@
 #include <vector>
 #include <utility>
 
-#include "diplib/types.h"
+#include "diplib/library/types.h"
 
 
 /// \file

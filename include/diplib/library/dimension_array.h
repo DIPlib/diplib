@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <utility>
 //#include <iostream> // for debugging
-#include "diplib/error.h"
+#include "error.h"
 
 /// \file
 /// \brief Defines the dip::DimensionArray template class. This file is always included through `diplib.h`.
