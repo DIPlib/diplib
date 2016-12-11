@@ -33,3 +33,6 @@ the introductory documentation.
   These functions are quite noise sensitive, however, and I expect they might produce high
   frequencies along the edge.
   TODO: should we make first order extrapolation also reach zero?
+
+- `dip_ObjectToMeasurement()` now takes a feature iterator rather than computing the feature;
+  this might be more flexible.

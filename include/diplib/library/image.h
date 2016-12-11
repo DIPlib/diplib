@@ -32,7 +32,7 @@
 /// \see infrastructure
 
 
-/// \brief The dip namespace contains all the library functionality.
+/// \brief The `dip` namespace contains all the library functionality.
 namespace dip {
 
 
@@ -622,6 +622,11 @@ class Image {
          return pixelSize_;
       }
 
+      /// \brief Get the pixels's size in physical units along the given dimension.
+      PhysicalQuantity PixelSize( dip::uint dim ) const {
+         return pixelSize_[ dim ];
+      }
+
       /// \brief Set the pixels's size.
       void SetPixelSize( dip::PixelSize const& ps ) {
          pixelSize_ = ps;
@@ -660,9 +665,16 @@ class Image {
       ) const;
 
       /// \brief Check image properties, either returns true/false or throws an error.
-      ///
       bool CheckProperties(
             dip::uint ndims,
+            dip::DataType::Classes dts,
+            Option::ThrowException throwException = Option::ThrowException::DO_THROW
+      ) const;
+
+      /// \brief Check image properties, either returns true/false or throws an error.
+      bool CheckProperties(
+            dip::uint ndims,
+            dip::uint tensorElements,
             dip::DataType::Classes dts,
             Option::ThrowException throwException = Option::ThrowException::DO_THROW
       ) const;

@@ -1,4 +1,4 @@
-\ingroup iterators
+\ingroup infrastructure
 
 [comment]: # (The `ingroup` statement above avoids the generation of an empty page for this file. The actual group we add the file to is irrelevant, nothing is actually added.)
 
@@ -385,7 +385,7 @@ and with its own data segment.
 When the `dip::Image::Copy` method is used on a forged image, it is expected to
 be of the same size as the image to be copied. Pixel values will be copied to
 the existing data segment, casting to the target image's data type with clamping
-(see \ref dip_clamp_cast.h):
+(see `diplib/library/clamp_cast.h`):
 
     img2 = img1.Similar( dip::DT_UINT8 );
     img2.Copy( img1 );
@@ -486,10 +486,10 @@ code snippet, then the filter can set its sizes and forge it.
 
 When an image object is marked `const`, the compiler will prevent modifications
 to it, it cannot be assigned to, and it cannot be used as the output argument
-to a filter function. However, the \ref indexing indexing operators, the copy
+to a filter function. However, the \ref indexing "indexing operators", the copy
 assignment operator, and `dip::Image::QuickCopy` all allow the user to make
 a non-const object that points to the same data, making it possible to
-modify the pixel values of a const image (see \ref design "Design decisions"
+modify the pixel values of a const image (see \ref design_const_correctness
 for our reasons to allow this). Because of that, it did not really make sense
 either to have `dip::Image::Data`, `dip::Image::Origin`, and `dip::Image::Pointer`
 return const pointers when applied to a const image.

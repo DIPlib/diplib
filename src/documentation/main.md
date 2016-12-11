@@ -48,9 +48,9 @@ explore the documentation to learn more about it. A good place to start
 are the following documentation pages:
 
 - The `dip::Image` class, everything else revolves around it.
-- \ref design "A page documenting design decisions", helps understand the library architecture.
-- All image analysis functions are defined in the \ref dip "dip namespace".
-- \ref using_iterators "Using iterators to implement filters", in case existing algorithms are not sufficient.
+- \ref design, helps understand the library architecture.
+- All image analysis functions are defined in the `#dip` namespace.
+- \ref using_iterators, in case existing algorithms are not sufficient.
 
 A short history
 ---------------

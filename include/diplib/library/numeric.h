@@ -37,7 +37,9 @@ namespace dip {
 
 
 /// \brief The constant pi.
-static const double pi = std::acos( -1 );
+constexpr double pi = 3.14159265358979323846264338327950288;
+// std::acos( -1 ) is the good way of definig pi, but it's not constexpr.
+
 
 /// \brief Compute the greatest common denominator of two positive integers.
 // `std::gcd` will be available in C++17.

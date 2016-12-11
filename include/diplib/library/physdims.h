@@ -566,7 +566,7 @@ class PixelSize {
          }
       }
 
-      /// Scales the pixel size isotropically in the given dimension, if it is defined.
+      /// Scales the pixel size isotropically.
       void Scale( double s ) {
          for( dip::uint ii = 0; ii < size_.size(); ++ii ) {
             if( !size_[ ii ].IsDimensionless() ) {

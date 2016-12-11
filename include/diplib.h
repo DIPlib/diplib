@@ -27,7 +27,7 @@
 /// \brief This is the main include file for the DIPlib library.
 ///
 /// It declares all classes, functions, macros and constants that form the basic
-/// library infrastructure. Everything is declared within the \ref `dip` namespace.
+/// library infrastructure. Everything is declared within the `#dip` namespace.
 /// This header file is the core of DIPlib. To access image processing or analysis
 /// functionality, include their corresponding header files.
 

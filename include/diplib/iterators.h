@@ -49,7 +49,7 @@ namespace dip {
 /// This means that you can increment and decrement the iterator, add or subtract an
 /// integer from it, dereference it, index it using the `[]` operator, as well as compare
 /// two iterators or take the difference between them (as long as they reference samples
-/// within the same data segment). It is default constructible and swappable, but the
+/// within the same data segment). It is default constructable and swappable, but the
 /// default constructed iterator is invalid and should not be dereferenced.
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
@@ -172,12 +172,12 @@ using ConstSampleIterator = SampleIterator< T const >;
 
 /// \brief An iterator to iterate over all pixels of an image line.
 ///
-/// This iterator is constructed
-/// from a `dip::ImageIterator`, but can also be constructed manually if necessary.
+/// This iterator is constructed from a `dip::ImageIterator`, but can also be constructed manually
+/// if necessary.
 ///
 /// The iterator can be incremented until it reaches the end of the line. At this point, the
 /// iterator will become invalid. An invalid iterator will test false. The `IsAtEnd` method
-/// can be used instead to test for this condion. It is also possible to compare two iterators
+/// can be used instead to test for this condition. It is also possible to compare two iterators
 /// for equality (i.e. to compare against an end iterator).
 ///
 /// Dereferencing the iterator yields the first sample of the current pixel. One can index using the
@@ -217,6 +217,22 @@ class LineIterator {
          nTensorElements_ = image.TensorElements();
          tensorStride_ = image.TensorStride();
       }
+      /// To construct a useful iterator, provide a pointer, the offset within the line, the length of the line,
+      /// the stride, the number of tensor elements, and the tensor stride.
+      LineIterator(
+            pointer ptr,
+            dip::uint coord,
+            dip::uint size,
+            dip::sint stride,
+            dip::uint nTensorElements,
+            dip::sint tensorStride
+      ) :
+            ptr_( ptr ),
+            coord_( coord ),
+            size_( size ),
+            stride_( stride ),
+            nTensorElements_( nTensorElements ),
+            tensorStride_( tensorStride ) {}
       /// Swap
       void swap( LineIterator& other ) {
          using std::swap;
@@ -328,7 +344,7 @@ using ConstLineIterator = LineIterator< T const >;
 ///
 /// The iterator can be incremented until it reaches the end of the image. At this point, the
 /// iterator will become invalid. An invalid iterator will test false. The `IsAtEnd` method
-/// can be used instead to test for this condion. It is also possible to compare two iterators
+/// can be used instead to test for this condition. It is also possible to compare two iterators
 /// for equality (i.e. to compare against an end iterator).
 ///
 /// Dereferencing the iterator yields the first sample of the current pixel. One can index using the

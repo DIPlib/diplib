@@ -33,6 +33,8 @@ Specifically:
 
 - Prefer using `using` over `typedef`.
 
+- Use `struct` for classes without any private members.
+
 - All loops and conditional statements should be surrounded by braces, even if they
   are only one statement long.
 

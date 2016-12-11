@@ -257,6 +257,14 @@ class DimensionArray {
          resize( size_ + 1 );
          *( data_ + size_ - 1 ) = value;
       }
+      /// Adds all values in source array to the back.
+      void push_back( DimensionArray const& values ) {
+         size_type index = size_;
+         resize( size_ + values.size_ );
+         for( size_type ii = 0; ii < values.size_; ++ii ) {
+            data_[ index + ii ] = values.data_[ ii ];
+         }
+      }
 
       /// Removes the value at the given location, moving subsequent values forward by one.
       void erase( size_type index ) {

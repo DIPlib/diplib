@@ -1,5 +1,4 @@
-Using iterators to implement filters {#using_iterators}
-===
+\page using_iterators Using iterators to implement filters
 
 DIPlib provides a set of iterators that can be used to efficiently visit all
 pixels in an image, independently of the dimensionality of the image.
@@ -20,8 +19,9 @@ function you are writing, you can choose to use either an iterator or a
 framework function.
 
 
-Visiting each pixel in a single image
----
+[//]: # (--------------------------------------------------------------)
+
+\section iterate_one_image Visiting each pixel in a single image
 
 To loop over each pixel in an image and modify its value, you can use the
 `dip::ImageIterator`:
@@ -101,8 +101,9 @@ should be processed. There are two ways of doing so:
        } while( ++it );
 
 
-Processing an image using a separate output image
----
+[//]: # (--------------------------------------------------------------)
+
+\section iterate_two_images Processing an image using a separate output image
 
 The `dip::JointImageIterator` loops over both an input and an output image
 at the same time. The two images must have the same sizes:
@@ -126,8 +127,9 @@ There is also a `dip::GenericJointImageIterator`, which, just like
 provides a `void` pointer to each pixel.
 
 
-Processing an image line by line
----
+[//]: # (--------------------------------------------------------------)
+
+\section iterate_lines Processing an image line by line
 
 Some processing requires access to a whole image line at the time. Both the
 `dip::ImageIterator` and the `dip::JointImageIterator` allow to specify one
@@ -178,8 +180,9 @@ Note that separable filters use such line by line operations along each dimensio
 to compose full filters.
 
 
-Applying an arbitrary neighborhood filter
----
+[//]: # (--------------------------------------------------------------)
+
+\section iterate_neighborhood Applying an arbitrary neighborhood filter
 
 Simpler:
 
@@ -248,8 +251,9 @@ of the image, instead of only over each pixel in the image, allows for simple im
 many efficient algorithm.
 
 
-Processing an image slice by slice
----
+[//]: # (--------------------------------------------------------------)
+
+\section iterate_slices Processing an image slice by slice
 
 Most filters in DIPlib are applicable to images of any dimensionality, and one can
 choose to not filter along a specific dimension. This is useful, for example, in the

@@ -14,14 +14,14 @@
 
 /// \file
 /// \brief Declares image math and statistics functions, except basic arithmetic and comparison.
-/// \see operators.h, math
+/// \see diplib/library/operators.h, math
 
 
 namespace dip {
 
 
 /// \defgroup math Image math and statistics functions
-/// \brief The image math and statistics functions, except basic arithmetic and comparison, which are in \ref operators.
+/// \brief The image math and statistics functions, except basic arithmetic and comparison, which are in module \ref operators.
 /// \{
 
 

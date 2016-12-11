@@ -1,13 +1,13 @@
-DIPlib 3.0 design decisions {#design}
-===
+\page design DIPlib 3.0 design decisions
 
 This page gives reasons behind some of the design choices of *DIPlib 3.0*.
 Many of these decisions are inherited from the previous version of the library,
 and some new ones are made possible by the port to C++.
 
 
-Function signatures
----
+[//]: # (--------------------------------------------------------------)
+
+\section design_function_signatures Function signatures
 
 There are two possible function signature styles for use in an image analysis
 library:
@@ -61,8 +61,9 @@ However, if a function `Filter( in, out )` exists, then you can assume that
 there will also be a function `out = Filter( in )`.
 
 
-Class method vs function
----
+[//]: # (--------------------------------------------------------------)
+
+\section design_method_vs_function Class method vs function
 
 Some libraries put all image processing/analysis functionality into the
 image object as methods. The idea is to filter an image by
@@ -93,9 +94,9 @@ version of that that ignores *ITK*'s templates and processing pipeline):
     outim = dip::Gauss( image, FloatArray{ 5, 1 } );
 
 
+[//]: # (--------------------------------------------------------------)
 
-Compile-time vs run-time pixel type identification
----
+\section design_dynamic_types Compile-time vs run-time pixel type identification
 
 *DIPlib* uses run-time identification of an image's pixel type, and functions
 dispatch internally to the appropriate sub-function. These sub-functions are
@@ -140,8 +141,9 @@ Such a template is always a trivial function that simplifies the library user's
 code.
 
 
-Passing options to a function
----
+[//]: # (--------------------------------------------------------------)
+
+\section design_options Passing options to a function
 
 Many algorithms require parameters that select a mode of operation. *DIPlib 3.0*
 uses strings for such parameters when the function is intended to be useable
@@ -161,12 +163,13 @@ large collection of functions and algorithms in *DIPlib*.
 However, for infrastructure functions not typically exposed in interfaces (i.e.
 the functions that *DIPlib* uses internally to do its work) we do define
 numeric constants for options. For example, see the enumerator `dip::Options::ThrowException`,
-or any of the flags defined through \ref `DIP_DECLARE_OPTIONS`. These are more efficient
+or any of the flags defined through `#DIP_DECLARE_OPTIONS`. These are more efficient
 in use and equally convenient if limited to the C++ code.
 
 
-Const correctness
----
+[//]: # (--------------------------------------------------------------)
+
+\section design_const_correctness Const correctness
 
 When an image object is marked `const`, the compiler will prevent modifications
 to it, it cannot be assigned to, and it cannot be used as the output argument
@@ -203,3 +206,41 @@ etc.), not to its pixel values.
 However, none of the functions in *DIPlib* will modify pixel values of a const image.
 Input images to functions are always const references, and even though it would be
 technically possible to modify its pixel values, we have an explicit policy to not do so.
+
+
+[//]: # (--------------------------------------------------------------)
+
+\section connectivity Connectivity
+
+Traditionally, neighborhood connectivity is given as 4 or 8 in a 2D image, 6, 18 or 26
+in a 3D image, etc. These numbers indicate the number of neighbors one obtains when
+using the given connectivity. Since this way of indicating connectivity does not naturally
+lead to dimensionality-independent code, DIPlib uses the distance to the neighbors in
+city-block distance instead (the L1 norm). Thus, the connectivity is a number between
+1 and *N*, where *N* is the image dimensionality. For example, in a 2D image,
+a connectivity of 1 leads to 4 nearest neighbors (the edge neighbors), and a connectivity
+of 2 leads to 8 nearest neighbors (the edge and vertex neighbors).
+
+We use negative values for connectivity in some algorithms. These indicate alternating
+connectivities, which leads to more isotropic shapes in e.g. the binary dilation than
+using the same connectivity for all iterations.
+
+In terms of the classical connectivity denominations we have, in 2D:
+
+Connectivity | Classical denominations | Structuring element shape
+------------ | ----------------------- | -------------------------
+1            | 4 connectivity          | diamond
+2            | 8 connectivity          | square
+-1           | 4-8 connectivity        | octagon
+-2           | 8-4 connectivity        | octagon
+
+And in 3D:
+
+Connectivity | Classical denominations | Structuring element shape
+------------ | ----------------------- | -------------------------
+1            | 6 connectivity          | octahedron
+2            | 18 connectivity         | cuboctahedron
+3            | 26 connectivity         | cube
+-1           | 6-26 connectivity       | small rhombicuboctahedron
+-3           | 26-6 connectivity       | small rhombicuboctahedron
+

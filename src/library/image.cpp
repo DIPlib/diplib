@@ -94,6 +94,27 @@ bool Image::CheckProperties(
 }
 
 bool Image::CheckProperties(
+      dip::uint ndims,
+      dip::uint tensorElements,
+      dip::DataType::Classes dts,
+      Option::ThrowException throwException
+) const {
+   bool result = sizes_.size() == ndims;
+   if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
+      DIP_THROW( E::DIMENSIONALITY_NOT_SUPPORTED );
+   }
+   result &= tensor_.Elements() == tensorElements;
+   if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
+      DIP_THROW( tensorElements == 1 ? E::NOT_SCALAR : E::NTENSORELEM_DONT_MATCH );
+   }
+   result &= dts == dataType_;
+   if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
+      DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
+   }
+   return result;
+}
+
+bool Image::CheckProperties(
       UnsignedArray const& sizes,
       dip::DataType::Classes dts,
       Option::ThrowException throwException
@@ -121,7 +142,7 @@ bool Image::CheckProperties(
    }
    result &= tensor_.Elements() == tensorElements;
    if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
-      DIP_THROW( E::NTENSORELEM_DONT_MATCH );
+      DIP_THROW( tensorElements == 1 ? E::NOT_SCALAR : E::NTENSORELEM_DONT_MATCH );
    }
    result &= dts == dataType_;
    if( !result && ( throwException == Option::ThrowException::DO_THROW ) ) {
