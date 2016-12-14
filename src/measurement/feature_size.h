@@ -19,7 +19,7 @@ namespace Feature {
 
 class FeatureSize : public LineBased {
    public:
-      FeatureSize() : LineBased( info_ ) {};
+      FeatureSize() : LineBased( { "Size", "number of object pixels", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey ) override {
          sizes_.clear();
@@ -72,7 +72,6 @@ class FeatureSize : public LineBased {
       }
 
    private:
-      static constexpr Information info_ { "Size", "number of object pixels", false };
       dfloat scale_;
       std::map< dip::uint, dip::uint > sizes_;
 };

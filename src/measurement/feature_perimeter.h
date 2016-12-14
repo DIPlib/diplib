@@ -19,7 +19,7 @@ namespace Feature {
 
 class FeaturePerimeter : public ChainCodeBased {
    public:
-      FeaturePerimeter() : ChainCodeBased( info_ ) {};
+      FeaturePerimeter() : ChainCodeBased( { "Perimeter", "length of the object perimeter  (chain-code method, 2D)", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& ) override {
          ValueInformationArray out( 1 );
@@ -44,7 +44,6 @@ class FeaturePerimeter : public ChainCodeBased {
       virtual void Cleanup() override {}
 
    private:
-      static constexpr Information info_ { "Perimeter", "length of the object perimeter  (chain-code method, 2D)", false };
       dfloat scale_;
 };
 

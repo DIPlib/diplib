@@ -75,7 +75,7 @@ dip::uint Label(
       BoundaryConditionArray bc
 );
 
-Image Label(
+inline Image Label(
       Image const& binary,
       dip::uint connectivity,
       String mode,

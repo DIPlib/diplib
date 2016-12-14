@@ -55,8 +55,8 @@ static void dip__GetLabels(
             prevID = *data;
             objectIDs->insert( prevID );
          }
+         data += stride;
       }
-      data += stride;
    }
 }
 
@@ -106,7 +106,9 @@ UnsignedArray GetObjectLabels(
    LabelSet& objectIDs = functionVariables[ 0 ];
    UnsignedArray out;
    for( auto const& id : objectIDs ) {
-      out.push_back( id );
+      if(( id != 0 ) || nullIsObject ) {
+         out.push_back( id );
+      }
    }
    return out;
 }

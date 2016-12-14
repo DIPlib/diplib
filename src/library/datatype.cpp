@@ -158,5 +158,27 @@ DataType DataType::SuggestDiadicOperation( DataType type1, DataType type2 ) {
    return DT_UINT8;
 }
 
+// Static data members of dip::DataType need to have a place in memory, which is claimed here.
+constexpr DataType::Classes DataType::Class_Bin;
+constexpr DataType::Classes DataType::Class_UInt8;
+constexpr DataType::Classes DataType::Class_SInt8;
+constexpr DataType::Classes DataType::Class_UInt16;
+constexpr DataType::Classes DataType::Class_SInt16;
+constexpr DataType::Classes DataType::Class_UInt32;
+constexpr DataType::Classes DataType::Class_SInt32;
+constexpr DataType::Classes DataType::Class_SFloat;
+constexpr DataType::Classes DataType::Class_DFloat;
+constexpr DataType::Classes DataType::Class_SComplex;
+constexpr DataType::Classes DataType::Class_DComplex;
+constexpr DataType::Classes DataType::Class_Binary;
+constexpr DataType::Classes DataType::Class_UInt;
+constexpr DataType::Classes DataType::Class_SInt;
+constexpr DataType::Classes DataType::Class_Integer;
+constexpr DataType::Classes DataType::Class_Float;
+constexpr DataType::Classes DataType::Class_Real;
+constexpr DataType::Classes DataType::Class_Complex;
+constexpr DataType::Classes DataType::Class_Unsigned;
+constexpr DataType::Classes DataType::Class_Signed;
+constexpr DataType::Classes DataType::Class_Any;
 
 } // namespace dip

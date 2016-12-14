@@ -27,7 +27,7 @@ namespace Feature {
 
 class FeatureSurfaceArea : public ImageBased {
    public:
-      FeatureSurfaceArea() : ImageBased( info_ ) {};
+      FeatureSurfaceArea() : ImageBased( { "SurfaceArea", "surface area of object (3D)", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& ) override {
          DIP_THROW_IF( label.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -62,7 +62,6 @@ class FeatureSurfaceArea : public ImageBased {
       virtual void Cleanup() override {}
 
    private:
-      static constexpr Information info_ { "SurfaceArea", "surface area of object (3D)", false };
       dfloat scale_;
 };
 

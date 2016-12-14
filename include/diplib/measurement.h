@@ -46,12 +46,12 @@ enum class Type {
 
 /// \brief %Information about a measurement feature
 struct Information {
-   char const* name;          ///< The name of the feature, used to identify it
-   char const* description;   ///< A description of the feature, to be shown to the user
+   String name;               ///< The name of the feature, used to identify it
+   String description;        ///< A description of the feature, to be shown to the user
    bool needsGreyValue;       ///< Does the feature need a grey-value image?
-   constexpr Information( char const* name, char const* description, bool needsGreyValue = false ) :
+   Information( String const& name, String const& description, bool needsGreyValue = false ) :
          name( name ), description( description ), needsGreyValue( needsGreyValue ) {}
-   constexpr Information() : name( nullptr ), description( nullptr ), needsGreyValue( false ) {}
+   Information() : name( "" ), description( "" ), needsGreyValue( false ) {}
 };
 
 /// \brief %Information about the known measurement features
@@ -251,7 +251,7 @@ class Measurement {
       void AddFeature( String const& name, Feature::ValueInformationArray const& values ) {
          DIP_THROW_IF( IsForged(), "Measurement object is forged." );
          DIP_THROW_IF( name.empty(), "No feature name given." );
-         DIP_THROW_IF( FeatureExists( name ), "Feature already present." );
+         DIP_THROW_IF( FeatureExists( name ), String( "Feature already present: " ) + name );
          DIP_THROW_IF( values.empty(), "A feature needs at least one value." );
          AddFeature_( name, values );
       }
@@ -271,7 +271,7 @@ class Measurement {
       void AddObjectIDs( UnsignedArray const& objectIDs ) {
          DIP_THROW_IF( IsForged(), "Measurement object is forged." );
          for( auto const& objectID : objectIDs ) {
-            DIP_THROW_IF( ObjectExists( objectID ), "Object already present." );
+            DIP_THROW_IF( ObjectExists( objectID ), String( "Object already present: " ) + std::to_string( objectID ));
             dip::uint index = objects_.size();
             objects_.push_back( objectID );
             objectIndices_.emplace( objectID, index );
@@ -324,7 +324,7 @@ class Measurement {
       /// \brief Finds the column index for the first value of the given feature.
       dip::uint FeatureIndex( String const& name ) const {
          auto it = featureIndices_.find( name );
-         DIP_THROW_IF( it == featureIndices_.end(), "Feature not present." );
+         DIP_THROW_IF( it == featureIndices_.end(), String( "Feature not present: " ) + name );
          return it->second;
       }
 
@@ -378,7 +378,7 @@ class Measurement {
       /// \brief Finds the row index for the given object ID.
       dip::uint ObjectIndex( dip::uint objectID ) const {
          auto it = objectIndices_.find( objectID );
-         DIP_THROW_IF( it == objectIndices_.end(), "Object not present." );
+         DIP_THROW_IF( it == objectIndices_.end(), String( "Object not present: " ) + std::to_string( objectID ));
          return it->second;
       }
 
@@ -416,6 +416,14 @@ class Measurement {
       // index `jj`. `jj = objectIndices_[ id ]`. `ii = features_[ featureIndices_[ name ]].startColumn`.
 };
 
+//
+// Overloaded operators
+//
+
+/// \brief You can output a `dip::Image` to `std::cout` or any other stream. Some
+/// information about the image is printed.
+std::ostream& operator<<( std::ostream& os, Measurement const& msr );
+
 
 namespace Feature {
 
@@ -426,9 +434,6 @@ class Base {
       Type const type; ///< The type of the measurement
 
       Base( Information const& information, Type const type ) : information( information ), type( type ) {};
-
-      /// \brief Returns the feature name
-      String Name() const { return information.name; }
 
       /// \brief All measurement features define an `Initialize` method that prepares the feature class
       /// to perform measurements on the image. It also gives information on the feature as applied to that image.
@@ -457,7 +462,7 @@ class Base {
       /// process for one image.
       virtual void Cleanup() = 0;
 
-      virtual ~Base() = 0;
+      virtual ~Base() {};
 };
 
 /// \brief A pointer to a measurement feature of any type
@@ -532,11 +537,11 @@ class Composite : public Base {
 /// The MeasurementTool class knows about defined measurement features, and can apply them to an
 /// image through its `dip::MeasurementTool::Measure` method.
 ///
-///     dip::MeasuremenTool tool;
+///     dip::MeasurementTool tool;
 ///     dip::Image img = ...
 ///     dip::Image label = Label( Threshold( img ), 2 );
-///     dip::Measure msr = tool.Measure( label, img, { "Size", "Perimeter" }, {}, 2 );
-///     std::cout << "Size of object with label 1 is " << msr[ Size ][ 1 ][ 0 ] << std::endl;
+///     dip::Measurement msr = tool.Measure( label, img, { "Size", "Perimeter" }, {}, 2 );
+///     std::cout << "Size of object with label 1 is " << msr[ "Size" ][ 1 ][ 0 ] << std::endl;
 ///
 // TODO: Document default measurement features here.
 class MeasurementTool {
@@ -560,7 +565,7 @@ class MeasurementTool {
             Feature::Pointer feature
       ) {
          String const& name = feature->information.name;
-         if(   Exists( name )) {
+         if( !Exists( name )) {
             dip::uint index = features_.size();
             features_.emplace_back( std::move( feature ));
             featureIndices_.emplace( name, index );
@@ -619,7 +624,7 @@ class MeasurementTool {
 
       dip::uint Index( String const& name ) const {
          auto it = featureIndices_.find( name );
-         DIP_THROW_IF( it == featureIndices_.end(), "Feature name not known." );
+         DIP_THROW_IF( it == featureIndices_.end(), String( "Feature name not known: " ) + name );
          return it->second;
       }
 };
@@ -640,7 +645,7 @@ void ObjectToMeasurement(
       Measurement::IteratorFeature const& featureValues
 );
 
-Image ObjectToMeasurement(
+inline Image ObjectToMeasurement(
       Image const& label,
       Measurement::IteratorFeature const& featureValues
 ) {

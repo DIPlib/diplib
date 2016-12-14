@@ -19,7 +19,7 @@ namespace Feature {
 
 class FeatureFeret : public ConvexHullBased {
    public:
-      FeatureFeret() : ConvexHullBased( info_ ) {};
+      FeatureFeret() : ConvexHullBased( { "Feret", "maximum and minimum object diameters (2D)", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& ) override {
          ValueInformationArray out( 5 );
@@ -57,7 +57,6 @@ class FeatureFeret : public ConvexHullBased {
       virtual void Cleanup() override {}
 
    private:
-      static constexpr Information info_ { "Feret", "maximum and minimum object diameters (2D)", false };
       dfloat scale_;
 };
 

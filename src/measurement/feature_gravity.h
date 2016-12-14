@@ -19,7 +19,7 @@ namespace Feature {
 
 class FeatureGravity : public LineBased {
    public:
-      FeatureGravity() : LineBased( info_ ) {};
+      FeatureGravity() : LineBased( { "Gravity", "coordinates of the center-of-mass of the grey-value object", true } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::NOT_SCALAR );
@@ -49,7 +49,7 @@ class FeatureGravity : public LineBased {
             if( *label > 0 ) {
                if( *label != objectID ) {
                   objectID = *label;
-                  data = & ( sums_[ objectID ] );
+                  data = &( sums_[ objectID ] );
                   if( data->empty() ) {
                      data->resize( nD_ + 1, 0 );
                   }
@@ -83,7 +83,6 @@ class FeatureGravity : public LineBased {
       }
 
    private:
-      static constexpr Information info_ { "Gravity", "coordinates of the center-of-mass of the grey-value object", true };
       dip::uint nD_;
       FloatArray scales_;
       std::map< dip::uint, FloatArray > sums_;

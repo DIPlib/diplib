@@ -19,7 +19,7 @@ namespace Feature {
 
 class FeatureP2A : public Composite {
    public:
-      FeatureP2A() : Composite( info_ ) {};
+      FeatureP2A() : Composite( { "P2A", "circularity of the object (2D & 3D)", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& ) override {
          nD_ = label.Dimensionality();
@@ -63,7 +63,6 @@ class FeatureP2A : public Composite {
       virtual void Cleanup() override {}
 
    private:
-      static constexpr Information info_ { "P2A", "circularity of the object (2D & 3D)", false };
       dip::sint sizeIndex;
       dip::sint perimIndex;
       dip::uint nD_;

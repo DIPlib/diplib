@@ -220,12 +220,12 @@ Measurement MeasurementTool::Measure(
             dip__Measure,
             &lineBasedFeatures,
             {},
-            Framework::Scan_NoMultiThreading
+            Framework::Scan_NoMultiThreading + Framework::Scan_NeedCoordinates
       );
 
       // Call dip::Feature::LineBased::Finish()
       for( auto const& feature : lineBasedFeatures ) {
-         Measurement::IteratorFeature column = measurement[ feature->Name() ];
+         Measurement::IteratorFeature column = measurement[ feature->information.name ];
          Measurement::IteratorFeature::Iterator it = column.FirstObject();
          do {
             feature->Finish( it.ObjectID(), it.data() );
@@ -237,7 +237,7 @@ Measurement MeasurementTool::Measure(
    if( doImageBased ) {
       for( auto const& feature : featureArray ) {
          if( feature->type == Feature::Type::IMAGE_BASED ) {
-            Measurement::IteratorFeature column = measurement[ feature->Name() ];
+            Measurement::IteratorFeature column = measurement[ feature->information.name ];
             dynamic_cast< Feature::ImageBased* >( feature )->Measure( label, grey, column );
          }
       }
@@ -255,10 +255,10 @@ Measurement MeasurementTool::Measure(
          }
          for( auto const& feature : featureArray ) {
             if( feature->type == Feature::Type::CHAINCODE_BASED ) {
-               auto cell = itObj[ feature->Name() ];
+               auto cell = itObj[ feature->information.name ];
                dynamic_cast< Feature::ChainCodeBased* >( feature )->Measure( *itCC, cell.data() );
             } else if( feature->type == Feature::Type::CONVEXHULL_BASED ) {
-               auto cell = itObj[ feature->Name() ];
+               auto cell = itObj[ feature->information.name ];
                dynamic_cast< Feature::ConvexHullBased* >( feature )->Measure( ch, cell.data() );
             }
          }
@@ -271,7 +271,7 @@ Measurement MeasurementTool::Measure(
       do {
          for( auto const& feature : featureArray ) {
             if( feature->type == Feature::Type::COMPOSITE ) {
-               auto cell = row[ feature->Name() ];
+               auto cell = row[ feature->information.name ];
                dynamic_cast< Feature::Composite* >( feature )->Measure( row, cell.data() );
             }
          }
@@ -284,6 +284,15 @@ Measurement MeasurementTool::Measure(
    }
 
    return measurement;
+}
+
+
+std::ostream& operator<<(
+      std::ostream& os,
+      Measurement const& msr
+) {
+   // TODO
+   return os;
 }
 
 

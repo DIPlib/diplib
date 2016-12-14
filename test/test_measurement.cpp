@@ -35,7 +35,7 @@ int main() {
       values[ 2 ].units = dip::Units::Meter();
       msr.AddFeature( "Feature3", values );
 
-      std::vector< dip::uint > ids;
+      dip::UnsignedArray ids;
       for( dip::uint ii = 10; ii < 30; ++ii ) {
          ids.push_back( ii );
       }

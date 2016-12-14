@@ -40,6 +40,13 @@ done in parallel.
     few library functions, meant for the library user to implement pixel-wise processing,
     and filters, without the steep learning curve nor pointers.
 
+7.  Measurement framework, a class to hold measurement data, and a class that knows all
+    measurement features and can apply them to images. Depends on `dip::Framework::Scan()`.
+
+8. `dip::Framework::Separable()`. Will be tested more thoroughly through the functions
+   that use it. Not yet parallelized.
+
+
 ## What still needs to be done:
 
 1.  **(X)**
@@ -89,15 +96,8 @@ done in parallel.
     - dip_paint.h
 
 9.  **(X)**
-    Measurement framework. **Lots of design work needed**: a class to hold measurement
-    data, and that is efficient and easy to use, and a significant changes in the
-    infrastructure, see DIPthoughts.md. Then, porting of existing measurement code.
-    Depends on `dip::Framework::Scan()`.
+    Port measurement features.
     - dip_measurement.h
-    - dip_chaincode.h
-
-10. **(X)**
-    `dip::Framework::Separable()`. **Most design work done.**
 
 11. Algorithms built on `dip::Framework::Separable()`: Gaussian filter, Fourier
     and other transforms, derivative filters, projections, etc. This is mostly porting
@@ -114,7 +114,7 @@ done in parallel.
     - dip_structure.h
 
 13. **(X)**
-    `dip::Framework::Full()`. **Lots of design work needed**. Porting of pixel table
+    `dip::Framework::Full()`. **Design mostly done**. Porting of pixel table
     code to a sensible class that makes its use easier (and that includes iterators).
 
 14. Algorithms built on `dip::Framework::Full()`: Rank filters, adaptive filters, etc.
@@ -129,11 +129,6 @@ done in parallel.
     such as dilation and erosion, uniform filter, etc. Simply porting old code.
     - dip_morphology.h (parts)
     - dip_linear.h (parts)
-
-15. **(X)**
-    `dip::Framework::Projection()`. **Design work needed**.
-
-15. Algorithms built on `dip::Framework::Projection()`: max, min, mean projections, etc.
 
 16. **(X)**
     Algorithms that do not depend on any framework: all binary morphology, the
@@ -166,7 +161,8 @@ done in parallel.
     infrastructure to be available.
 
 19. Parallelization of frameworks. **Requires special expertise**. Decision:
-    OpenMP or Intel TBB? The `dip::Framework::Scan()` is ready to be parallelized.
+    OpenMP or Intel TBB? The `dip::Framework::Scan()` and `dip::Framework::Separable`
+    are ready to be parallelized.
     Other frameworks can be parallelized as they are written, potentially using
     code from the first framework.
 
