@@ -3,6 +3,7 @@
  *
  */
 
+#define DOCTEST_CONFIG_IMPLEMENT
 #include "dip_matlab_interface.h"
 
 void print_info( dip::Image const& img ) {

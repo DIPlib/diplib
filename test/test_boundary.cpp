@@ -1,3 +1,4 @@
+#define DOCTEST_CONFIG_IMPLEMENT
 #include <iostream>
 #include <numeric>
 #include "diplib.h"

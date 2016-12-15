@@ -17,6 +17,12 @@
 #include "diplib/overload.h"
 #include "copy_buffer.h"
 
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include <random> // used in one of the tests
+#endif
+
+
 namespace dip {
 
 
@@ -540,6 +546,44 @@ bool Image::Aliases( Image const& other ) const {
    return true;
 }
 
+#ifdef DIP__ENABLE_DOCTEST
+
+DOCTEST_TEST_CASE("[DIPlib] testing the Alias function") {
+   dip::Image img1{ dip::UnsignedArray{ 50, 80, 30 }, 3 };
+   DOCTEST_REQUIRE( img1.Size( 0 ) == 50 );
+   DOCTEST_REQUIRE( img1.Size( 1 ) == 80 );
+   DOCTEST_REQUIRE( img1.Size( 2 ) == 30 );
+   DOCTEST_REQUIRE( img1.NumberOfPixels() == 120000 );
+   DOCTEST_REQUIRE( img1.TensorElements() == 3 );
+
+   dip::Image img2 = img1[ 0 ];
+   DOCTEST_CHECK( Alias( img1, img2 ) );
+   dip::Image img3 = img1[ 1 ];
+   DOCTEST_CHECK( Alias( img1, img3 ) );
+   DOCTEST_CHECK_FALSE( Alias( img2, img3 ) );
+   dip::Image img4 = img1.At( dip::Range{}, dip::Range{}, dip::Range{ 10 } );
+   DOCTEST_CHECK( Alias( img1, img4 ) );
+   dip::Image img5 = img1.At( dip::Range{}, dip::Range{}, dip::Range{ 11 } );
+   DOCTEST_CHECK_FALSE( Alias( img4, img5 ) );
+   dip::Image img6 = img1.At( dip::Range{ 0, -1, 2 }, dip::Range{}, dip::Range{} );
+   dip::Image img7 = img1.At( dip::Range{ 1, -1, 2 }, dip::Range{}, dip::Range{} );
+   DOCTEST_CHECK( Alias( img1, img7 ) );
+   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
+   img7.Mirror( { true, false, false } );
+   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
+   img7.SwapDimensions( 0, 1 );
+   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
+   dip::Image img8{ dip::UnsignedArray{ 50, 80, 30 }, 3 };
+   DOCTEST_CHECK_FALSE( Alias( img1, img8 ) );
+   img1.Strip();
+   img1.SetDataType( dip::DT_SCOMPLEX );
+   img1.Forge();
+   DOCTEST_CHECK( Alias( img1, img1.Imaginary() ) );
+   DOCTEST_CHECK_FALSE( Alias( img1.Real(), img1.Imaginary() ) );
+}
+
+#endif // DIP__ENABLE_DOCTEST
+
 
 //
 void Image::Forge() {
@@ -681,6 +725,49 @@ CoordinatesComputer Image::IndexToCoordinatesComputer() const {
    ComputeStrides( sizes_, 1, fake_strides );
    return CoordinatesComputer( sizes_, fake_strides );
 }
+
+#ifdef DIP__ENABLE_DOCTEST
+
+DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
+   std::default_random_engine random;
+   std::uniform_int_distribution< dip::uint > rand8( 1, 8 );
+   std::uniform_int_distribution< dip::uint > rand30( 1, 30 );
+   std::uniform_real_distribution< double > randF( 0, 1 );
+   for( dip::uint repeat = 0; repeat < 1000; ++repeat ) {
+      dip::uint ndims = rand8( random );
+      dip::UnsignedArray sz( ndims );
+      for( dip::uint ii = 0; ii < ndims; ++ii ) {
+         sz[ ii ] = rand30( random );
+      }
+      dip::Image img;
+      img.SetSizes( sz );
+      img.Forge();
+      std::uniform_int_distribution< dip::uint > randD( 0, ndims - 1 );
+      for( dip::uint ii = 0; ii < rand8( random ); ++ii ) {
+         img.SwapDimensions( randD( random ), randD( random ) );
+      }
+      dip::BooleanArray mirror( ndims );
+      for( dip::uint ii = 0; ii < ndims; ++ii ) {
+         mirror[ ii ] = randF( random ) > 0.7;
+      }
+      img.Mirror( mirror );
+      const dip::UnsignedArray& dims = img.Sizes();
+      auto o2c = img.OffsetToCoordinatesComputer();
+      auto i2c = img.IndexToCoordinatesComputer();
+      for( dip::uint repeat2 = 0; repeat2 < 100; ++repeat2 ) {
+         dip::UnsignedArray coords( ndims );
+         for( dip::uint ii = 0; ii < ndims; ++ii ) {
+            coords[ ii ] = ( dip::uint )std::floor( randF( random ) * dims[ ii ] );
+         }
+         dip::sint offset = img.Offset( coords );
+         DOCTEST_CHECK( o2c( offset ) == coords );
+         dip::uint index = img.Index( coords );
+         DOCTEST_CHECK( i2c( index ) == coords );
+      }
+   }
+}
+
+#endif // DIP__ENABLE_DOCTEST
 
 
 //

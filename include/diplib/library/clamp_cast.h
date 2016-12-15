@@ -14,6 +14,10 @@
 #include "diplib/library/types.h"
 #include "diplib/library/numeric.h"
 
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#endif
+
 
 /// \file
 /// \brief Defines `dip::clamp_cast`, an operator that returns the input value cast to a different
@@ -384,5 +388,32 @@ inline dip::scomplex clamp_cast< dip::scomplex >( dip::dcomplex v ) {
 /// \}
 
 } // namespace dip
+
+
+#ifdef DIP__ENABLE_DOCTEST
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::clamp_cast functions") {
+   // We pick a few cases, it's difficult to do an exhaustive test here, and not really necessary.
+   // Cast up:
+   DOCTEST_CHECK( dip::clamp_cast<dip::uint32>( dip::uint8(50) ) == dip::uint32(50) );
+   DOCTEST_CHECK( dip::clamp_cast<dip::sfloat>( dip::sint8(50) ) == dip::sfloat(50) );
+   DOCTEST_CHECK( dip::clamp_cast<dip::dcomplex>( dip::uint32(50) ) == dip::dcomplex(50) );
+   // Cast down:
+   DOCTEST_CHECK( dip::clamp_cast<dip::uint32>( dip::sfloat(50) ) == dip::uint32(50) );
+   DOCTEST_CHECK( dip::clamp_cast<dip::uint32>( dip::sfloat(-50) ) == dip::uint32(0) );
+   DOCTEST_CHECK( dip::clamp_cast<dip::uint16>( dip::sfloat(1e20) ) == dip::uint16(65535) );
+   DOCTEST_CHECK( dip::clamp_cast<dip::sint16>( dip::sfloat(-50) ) == dip::sint16(-50) );
+   DOCTEST_CHECK( dip::clamp_cast<dip::sint16>( dip::sfloat(1e20) ) == dip::sint16(32767) );
+   DOCTEST_CHECK( dip::clamp_cast<dip::sfloat>( dip::dcomplex{4,3} ) == dip::sfloat(5) );
+   DOCTEST_CHECK( dip::clamp_cast<dip::uint8>( dip::scomplex{4,3} ) == dip::uint8(5) );
+   // Signed/unsigned casts
+   DOCTEST_CHECK( dip::clamp_cast<dip::uint16>( dip::sint16(-50) ) == dip::uint16(0) );
+   DOCTEST_CHECK( dip::clamp_cast<dip::uint16>( dip::sint16(50) ) == dip::uint16(50) );
+   DOCTEST_CHECK( dip::clamp_cast<dip::sint16>( dip::uint16(50) ) == dip::sint16(50) );
+   DOCTEST_CHECK( dip::clamp_cast<dip::sint16>( dip::uint16(50000) ) == dip::sint16(32767) );
+}
+
+#endif // DIP__ENABLE_DOCTEST
+
 
 #endif // DIP_CLAMP_CAST_H

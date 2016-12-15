@@ -25,6 +25,10 @@
 #include "diplib/library/dimension_array.h"
 #include "error.h"
 
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#endif
+
 
 /// \file
 /// \brief Defines the basic types used throughout the library. This file is always included through `diplib.h`.
@@ -378,5 +382,68 @@ static DIP_DEFINE_OPTION( CmpProps, CmpProps_All,
 /// \}
 
 } // namespace dip
+
+
+#ifdef DIP__ENABLE_DOCTEST
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::bin class") {
+   dip::bin A = false;
+   dip::bin B = true;
+   DOCTEST_CHECK( A < B );
+   DOCTEST_CHECK( B > A );
+   DOCTEST_CHECK( A >= A );
+   DOCTEST_CHECK( A <= B );
+   DOCTEST_CHECK( A == A );
+   DOCTEST_CHECK( A == false );
+   DOCTEST_CHECK( A == 0 );
+   DOCTEST_CHECK( A != B );
+   DOCTEST_CHECK( A != true );
+   DOCTEST_CHECK( A != 100 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::Options class") {
+   DIP_DECLARE_OPTIONS( MyOptions, 5 );
+   DIP_DEFINE_OPTION( MyOptions, Option_clean, 0 );
+   DIP_DEFINE_OPTION( MyOptions, Option_fresh, 1 );
+   DIP_DEFINE_OPTION( MyOptions, Option_shine, 2 );
+   DIP_DEFINE_OPTION( MyOptions, Option_flower, 3 );
+   DIP_DEFINE_OPTION( MyOptions, Option_burn, 4 );
+   DIP_DEFINE_OPTION( MyOptions, Option_freshNclean, Option_fresh + Option_clean );
+   MyOptions opts {};
+   DOCTEST_CHECK( opts != Option_clean );
+   opts = Option_fresh;
+   DOCTEST_CHECK( opts != Option_clean );
+   DOCTEST_CHECK( opts == Option_fresh );
+   opts = Option_clean + Option_burn;
+   DOCTEST_CHECK( opts == Option_clean );
+   DOCTEST_CHECK( opts == Option_burn );
+   DOCTEST_CHECK( opts != Option_shine );
+   DOCTEST_CHECK( opts != Option_fresh );
+   opts += Option_shine;
+   DOCTEST_CHECK( opts == Option_clean );
+   DOCTEST_CHECK( opts == Option_burn );
+   DOCTEST_CHECK( opts == Option_shine );
+   DOCTEST_CHECK( opts != Option_fresh );
+   opts = Option_freshNclean;
+   DOCTEST_CHECK( opts == Option_clean );
+   DOCTEST_CHECK( opts == Option_fresh );
+   DOCTEST_CHECK( opts != Option_shine );
+   opts -= Option_clean ;
+   DOCTEST_CHECK( opts != Option_clean );
+   DOCTEST_CHECK( opts == Option_fresh );
+   DOCTEST_CHECK( opts != Option_shine );
+
+   DIP_DECLARE_OPTIONS( HisOptions, 3 );
+   DIP_DEFINE_OPTION( HisOptions, Option_ugly, 0 );
+   DIP_DEFINE_OPTION( HisOptions, Option_cheap, 1 );
+   DIP_DEFINE_OPTION( HisOptions, Option_fast, 1 );  // repeated value
+   DOCTEST_CHECK( Option_cheap == Option_fast );
+
+   // DOCTEST_CHECK( Option_cheap == Option_shine ); // compiler error: assignment different types
+   // HisOptions b = Option_fast + Option_flower;    // compiler error: addition different types
+}
+
+#endif // DIP__ENABLE_DOCTEST
+
 
 #endif // DIP_TYPES_H

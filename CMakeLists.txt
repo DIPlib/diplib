@@ -1,5 +1,17 @@
 # CMakeLists file for DIPlib 3.0
 
+# USAGE:
+#    mkdir target
+#    cd target
+#    cmake /path/to/dip/root/directory
+#    make -j         # builds the library (builds the default DIP target)
+#    make -j DIP     # builds the library
+#    make -j check   # builds the unit_tests program and runs it
+#    make -j tests   # deprecated -- old test functions
+#    make -j mex     # deprecated -- mex test functions
+#    make docs       # makes some PDF project documentation files
+#    make apidoc     # Doxygen HTML documentation for the library API
+
 cmake_minimum_required (VERSION 3.5.2) # It might work with older versions, but this is the version I'm testing with.
 
 project (DIPlib)
@@ -28,17 +40,24 @@ check_cxx_source_compiles(
       HAS_PRETTY_FUNCTION
 )
 if(HAS_PRETTY_FUNCTION)
-   add_definitions(-DHAS_PRETTY_FUNCTION)
+   add_definitions(-DDIP__HAS_PRETTY_FUNCTION)
 endif()
 
 # Control exceptions
 set(EXCEPTIONS_RECORD_STACK_TRACE ON CACHE BOOL "Stack trace information is added to exceptions (see the documentation for DIP_CATCH)")
 if(EXCEPTIONS_RECORD_STACK_TRACE)
-   add_definitions(-DEXCEPTIONS_RECORD_STACK_TRACE)
+   add_definitions(-DDIP__EXCEPTIONS_RECORD_STACK_TRACE)
 endif()
 set(ENABLE_ASSERT ON CACHE BOOL "Enable assertions (see the documentation for DIP_ASSERT)")
 if(ENABLE_ASSERT)
-   add_definitions(-DENABLE_ASSERT)
+   add_definitions(-DDIP__ENABLE_ASSERT)
+endif()
+
+# Enable testing
+set(ENABLE_DOCTEST ON CACHE BOOL "Turn off to not include doctest.h in the library headers")
+if(ENABLE_DOCTEST)
+   include_directories(dependencies/doctest)
+   add_definitions(-DDIP__ENABLE_DOCTEST -DDOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
 endif()
 
 # MATLAB
@@ -71,13 +90,23 @@ add_library(DIP STATIC ${SOURCES} ${HEADERS})
 # See CMake command GenerateExportHeader()
 
 
+### DIPlib unit tests
+
+if(ENABLE_DOCTEST)
+   add_custom_target(check COMMAND ./unit_tests)
+   enable_testing()
+   add_executable (unit_tests EXCLUDE_FROM_ALL test/test.cpp)
+   target_link_libraries(unit_tests DIP)
+   add_test(NAME unit_tests COMMAND unit_tests)
+   add_dependencies(check unit_tests)
+   include(dependencies/doctest/doctest_force_link_static_lib_in_target.cmake)
+   doctest_force_link_static_lib_in_target(unit_tests DIP) # This pulls in all object files from the static DIP library
+endif()
+
+
 ### DIPlib tests
 
-add_executable(test_array EXCLUDE_FROM_ALL test/test_array.cpp)
-add_executable(test_bin EXCLUDE_FROM_ALL test/test_bin.cpp)
 add_executable(test_error EXCLUDE_FROM_ALL test/test_error.cpp)
-add_executable(test_saturated_arithmetic EXCLUDE_FROM_ALL test/test_saturated_arithmetic.cpp)
-add_executable(test_options EXCLUDE_FROM_ALL test/test_options.cpp)
 add_executable(test_physdims EXCLUDE_FROM_ALL test/test_physdims.cpp)
 add_executable(test_image EXCLUDE_FROM_ALL test/test_image.cpp)
 target_link_libraries(test_image DIP)
@@ -90,7 +119,7 @@ target_link_libraries(test_boundary DIP)
 add_executable( test_measurement EXCLUDE_FROM_ALL test/test_measurement.cpp )
 target_link_libraries(test_measurement DIP)
 
-add_custom_target(tests DEPENDS test_array test_bin test_error test_saturated_arithmetic test_options test_physdims test_image test_framework_scan test_framework_separable test_boundary test_measurement)
+add_custom_target(tests DEPENDS test_error test_physdims test_image test_framework_scan test_framework_separable test_boundary test_measurement)
 
 if(Matlab_FOUND)
 
@@ -103,7 +132,10 @@ if(Matlab_FOUND)
    matlab_add_mex(NAME mextest_iterators SRC test/mextest_iterators.cpp LINK_TO DIP)
    set_target_properties(mextest_iterators PROPERTIES EXCLUDE_FROM_ALL 1)
 
-   add_custom_target(mex DEPENDS mextest mextest_function mextest_iterators)
+   matlab_add_mex(NAME mextest_measure SRC test/mextest_measure.cpp LINK_TO DIP)
+   set_target_properties(mextest_measure PROPERTIES EXCLUDE_FROM_ALL 1)
+
+   add_custom_target(mex DEPENDS mextest mextest_function mextest_iterators mextest_measure)
 
 endif(Matlab_FOUND)
 

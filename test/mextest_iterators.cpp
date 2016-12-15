@@ -3,6 +3,7 @@
  *
  */
 
+#define DOCTEST_CONFIG_IMPLEMENT
 #include "dip_matlab_interface.h"
 #include "diplib/iterators.h"
 

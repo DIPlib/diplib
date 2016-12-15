@@ -162,7 +162,7 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 // Test and throw exception
 //
 
-#if HAS_PRETTY_FUNCTION
+#if DIP__HAS_PRETTY_FUNCTION
 // This is a better thing to use than __func__, if available
 #define DIP__FUNC__ __PRETTY_FUNCTION__
 #else
@@ -201,15 +201,15 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 /// \brief Throw a `dip::RunTimeError`.
 #define DIP_THROW_RUNTIME( str ) do { auto e = dip::RunTimeError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
 
-#ifdef ENABLE_ASSERT
 
+/// \def DIP_THROW_ASSERTION(str)
 /// \brief Throw a `dip::AssertionError`.
 ///
 /// If `ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
 ///
 ///     cmake -DENABLE_ASSERT=OFF ...
-#define DIP_THROW_ASSERTION( str ) do { auto e = dip::AssertionError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
 
+/// \def DIP_ASSERT(test)
 /// \brief Test a condition, throw a `dip::AssertionError` if the condition is not met.
 ///
 /// If `ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
@@ -218,21 +218,26 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 ///
 /// You would typically disable assertions for production code, as assertions are only used to test internal
 /// consistency or detect bugs in the code.
+
+#ifdef DIP__ENABLE_ASSERT
+
+#define DIP_THROW_ASSERTION( str ) do { auto e = dip::AssertionError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
+
 #define DIP_ASSERT( test ) do { if( !( test ) ) DIP_THROW_ASSERTION( "Failed assertion: " #test ); } while( false )
 
 #else
 
 #define DIP_THROW_ASSERTION( str )
+
 #define DIP_ASSERT( test )
 
 #endif
 
-#ifdef EXCEPTIONS_RECORD_STACK_TRACE
 
+/// \def DIP_TRY
 /// \brief Starts a try/catch block that builds a stack trace when an exception is thrown. See `#DIP_CATCH`.
-// NOTE! Yes, we've got an opening brace here and no closing brace. This macro always needs to be paired with DIP_CATCH.
-#define DIP_TRY try {
 
+/// \def DIP_CATCH
 /// \brief Ends a try/catch block that builds a stack trace when an exception is thrown.
 ///
 /// To build a stack trace, some library functions catch DIPlib exceptions, add their name and other info to it,
@@ -251,6 +256,12 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 /// When compiling with the `EXCEPTIONS_RECORD_STACK_TRACE` set to `OFF`, these macros don't do anything. Turn the
 /// option off if your application would make no use of the stack trace, as building the stack trace does incur some
 /// runtime cost.
+
+#ifdef DIP__EXCEPTIONS_RECORD_STACK_TRACE
+
+// NOTE! Yes, we've got an opening brace here and no closing brace. This macro always needs to be paired with DIP_CATCH.
+#define DIP_TRY try {
+
 // NOTE! Yes, we start with a closing brace here. This macro always needs to be paired with DIP_TRY.
 #define DIP_CATCH } catch( dip::Error& e ) { DIP_ADD_STACK_TRACE( e ); throw; }
 

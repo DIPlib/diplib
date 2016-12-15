@@ -3,6 +3,7 @@
  *
  */
 
+#define DOCTEST_CONFIG_IMPLEMENT
 #include <iostream>
 #include "dip_matlab_interface.h"
 #include "diplib/measurement.h"

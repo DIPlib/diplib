@@ -1,0 +1,8 @@
+From: https://github.com/onqtam/doctest
+
+"The lightest feature-rich C++98/C++11 single-header testing framework for unit tests and TDD"
+
+We use doctest for unit tests throughout the DIPlib library. If you want to use doctest in
+your own code, and not re-test DIPlib at the same time, do not define the DIP__ENABLE_DOCTEST
+preprocessor macro. That will disable the inclusion of doctest.h and all tests in all DIPlib
+library headers.
