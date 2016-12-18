@@ -13,7 +13,7 @@ histogram/        Histograms
 interpolation/    Interpolation and geometric transformations
 math/             Pixel math
 measurement/      Measurement infrastructure and functions
-microscopy/       Deconvolution, attenuation correction, dye unmixing, etc.
+microscopy/       Deconvolution, attenuation correction, stain unmixing, etc.
 morphology/       Mathematical morphology
 regions/          Labeling and labeled image processing
 segmentation/     Segmentation
