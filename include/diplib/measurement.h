@@ -77,20 +77,24 @@ using ValueInformationArray = std::vector< ValueInformation >;
 /// A newly constructed `%Measurement` will accept calls to `AddFeature`, and
 /// `AddObjectIDs`. Once the object is set up with all objects and features needed, a call
 /// to `Forge` creates the data segment necessary to hold all those measurements. Once
-/// forged, it is no longer possible to add features or objects.
+/// forged, it is no longer possible to add features or objects. As with a `dip::Image`,
+/// the method `IsForged` can be used to test if the object has been forged.
 ///
 /// A forged `%Measurement` can be read from in various ways, and a writeable pointer to the
-/// data can be obtained.
+/// data can be obtained. As with the `dip::Image` class, data pointes are always writeable,
+/// even if the object is const-qualified. This simplifies the code, at the expense of opening
+/// the door to undesireable modifications to data. DIPlib will never modify the data of a
+/// const `%Measurement`.
 ///
-/// The columns of the `%Measurement` table are the features. Each feature can have multiple
-/// values, and so can have multiple consecutive sub-columns. The rows of the table are the objects.
+/// The columns of the `%Measurement` table are the feature values. Since each feature can have multiple
+/// values, features represent column groups. The rows of the table are the objects.
 ///
-/// Indexing with a feature name produces a reference to a column. Indexing with an object ID
+/// Indexing with a feature name produces a reference to a column group. Indexing with an object ID
 /// (an integer) produces a reference to a row. Each of these references can be indexed to
-/// produce a reference to a table cell. A cell contains the values produced by one feature for one
+/// produce a reference to a table cell group. A cell group contains the values produced by one feature for one
 /// object. The cell group can again be indexed to obtain each of the values. These three types of
-/// references are represented as iterators. Thus, it is also possible to iterate over all columns
-/// (or all rows), iterate over each of the cell groups within a column (or within a row), and
+/// references are represented as iterators. Thus, it is also possible to iterate over all columns groups
+/// (or all rows), iterate over each of the cell groups within a column group (or within a row), and
 /// iterate over the values within a cell group.
 class Measurement {
    public:
@@ -106,35 +110,41 @@ class Measurement {
                : name( name ), startColumn( startColumn ), numberValues( numberValues ) {}
       };
 
-      /// \brief An iterator to visit all features (columns) in the `dip::Measurement` table. Can also be seen as a
-      /// view over a specific feature.
+      /// \brief An iterator to visit all features (column groups) in the `dip::Measurement` table. Can also
+      /// be seen as a view over a specific feature.
       ///
       /// The iterator can be indexed with an object ID to access the table cell that contains the feature's
       /// values for that object. It is also possible to iterate over all objects. See `dip::Measurement` for
       /// examples of using this class.
+      ///
+      /// The `Subset` method selects a subset of the values of the current feature. This does not invalidate
+      /// the iterator: incrementing it will select the next feature in the same way it would have if `Subset`
+      /// hadn't been called. When indexing a subset feature using an object ID, the resulting table cell is
+      /// the same subset of the cell, as one would expect. Thus, subsetting can be used to look at only one
+      /// value of a feature as if that feature had produced only one value.
       class IteratorFeature {
          public:
             friend class Measurement;
-            /// \brief An iterator to visit all objects (rows) within a feature (column) of the `dip::Measurement` table.
+            /// \brief An iterator to visit all objects (rows) within a feature (column group) of the `dip::Measurement` table.
             ///
             /// An object of this class can be treated (in only the most basic ways) as a `std::array` or `std::vector`.
             class Iterator {
                public:
                   friend class IteratorFeature;
                   /// \brief Index to acess a specific value
-                  ValueType& operator[]( dip::uint index ) { return *( begin() + index ); }
+                  ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
                   /// \brief Iterator to the first value
-                  ValueIterator begin() {
-                     return feature_.measurement_.data_.data() +
+                  ValueIterator begin() const {
+                     return feature_.measurement_.Data() +
                            index_ * feature_.measurement_.Stride() +
-                           feature_.Feature().startColumn;
+                           feature_.startColumn_;
                   }
                   /// \brief Iterator one past the last value
-                  ValueIterator end() { return begin() + size(); }
+                  ValueIterator end() const { return begin() + size(); }
                   /// \brief A pointer to the first value
-                  ValueIterator data() { return begin(); }
+                  ValueIterator data() const { return begin(); }
                   /// \brief Number of values
-                  dip::uint size() const { return feature_.Feature().numberValues; }
+                  dip::uint size() const { return feature_.numberValues_; }
                   /// \brief Increment, to access the next object
                   Iterator& operator++() { ++index_; return *this; }
                   /// \brief True if done iterating (do not call other methods if this is true!)
@@ -146,16 +156,29 @@ class Measurement {
                   /// \brief ID of the object
                   dip::uint ObjectID() const { return feature_.measurement_.objects_[ index_ ]; }
                private:
-                  Iterator( IteratorFeature& feature, dip::uint index ) : feature_( feature ), index_( index ) {}
-                  IteratorFeature& feature_;
+                  Iterator( IteratorFeature const& feature, dip::uint index ) : feature_( feature ), index_( index ) {}
+                  IteratorFeature const& feature_;
                   dip::uint index_;
             };
             /// \brief Iterator to the first object for this feature
-            Iterator FirstObject() { return Iterator( *this, 0 ); }
+            Iterator FirstObject() const { return Iterator( *this, 0 ); }
             /// \brief Iterator to the given object for this feature
-            Iterator operator[]( dip::uint objectID ) { return Iterator( *this, ObjectIndex( objectID )); }
+            Iterator operator[]( dip::uint objectID ) const { return Iterator( *this, ObjectIndex( objectID )); }
             /// \brief Increment, to access the next feature
-            IteratorFeature& operator++() { ++index_; return *this; }
+            IteratorFeature& operator++() {
+               ++index_;
+               startColumn_ = measurement_.features_[ index_ ].startColumn;
+               numberValues_ = measurement_.features_[ index_ ].numberValues;
+               return *this;
+            }
+            /// \brief Selects a subset of values from the current feature. This does not invalidate the iterator.
+            IteratorFeature& Subset( dip::uint first, dip::uint number = 1 ) {
+               DIP_THROW_IF( first >= Feature().numberValues, E::INDEX_OUT_OF_RANGE );
+               DIP_THROW_IF( first+number > Feature().numberValues, E::INDEX_OUT_OF_RANGE );
+               startColumn_ = Feature().startColumn + first;
+               numberValues_ = number;
+               return *this;
+            }
             /// \brief True if done iterating (do not call other methods if this is true!)
             bool IsAtEnd() const { return index_ >= NumberOfFeatures(); }
             /// \brief True if the iterator is valid and can be used
@@ -169,17 +192,25 @@ class Measurement {
             /// \brief Finds the index for the given object ID
             dip::uint ObjectIndex( dip::uint objectID ) const { return measurement_.ObjectIndex( objectID ); }
          private:
-            IteratorFeature( Measurement& measurement, dip::uint index ) : measurement_( measurement ), index_( index ) {}
+            IteratorFeature( Measurement const& measurement, dip::uint index ) : measurement_( measurement ), index_( index ) {
+               startColumn_ = Feature().startColumn;
+               numberValues_ = Feature().numberValues;
+            }
+            IteratorFeature( Measurement const& measurement, dip::uint startColumn, dip::uint numberValues ) :
+                  measurement_( measurement ), index_( 0 ),
+                  startColumn_( startColumn ), numberValues_( numberValues ) {}
             dip::uint NumberOfFeatures() const { return measurement_.NumberOfFeatures(); }
             FeatureInfo const& Feature() const { return measurement_.features_[ index_ ]; }
-            Measurement& measurement_;
+            Measurement const& measurement_;
             dip::uint index_;
+            dip::uint startColumn_;  // A local copy of measurement_.features_[ index_ ].startColumn, so that it can be tweaked.
+            dip::uint numberValues_; // A local copy of measurement_.features_[ index_ ].numberValues, so that it can be tweaked.
       };
 
       /// \brief An iterator to visit all objects (rows) in the `dip::Measurement` table. Can also be seen as a
       /// view over a specific object.
       ///
-      /// The iterator can be indexed with an feature name to access the table cell that contains the object's
+      /// The iterator can be indexed with an feature name to access the table cell group that contains the object's
       /// values for that feature. It is also possible to iterate over all features. See `dip::Measurement` for
       /// examples of using this class.
       class IteratorObject {
@@ -192,17 +223,17 @@ class Measurement {
                public:
                   friend class IteratorObject;
                   /// \brief Index to acess a specific value
-                  ValueType& operator[]( dip::uint index ) { return *( begin() + index ); }
+                  ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
                   /// \brief Iterator to the first value
-                  ValueIterator begin() {
+                  ValueIterator begin() const {
                      return object_.measurement_.Data() +
                            object_.index_ * object_.measurement_.Stride() +
                            Feature().startColumn;
                   }
                   /// \brief Iterator one past the last value
-                  ValueIterator end() { return begin() + size(); }
+                  ValueIterator end() const { return begin() + size(); }
                   /// \brief A pointer to the first value
-                  ValueIterator data() { return begin(); }
+                  ValueIterator data() const { return begin(); }
                   /// \brief Number of values
                   dip::uint size() const { return Feature().numberValues; }
                   /// \brief Increment, to access the next feature
@@ -216,15 +247,15 @@ class Measurement {
                   /// \brief ID of the object
                   dip::uint ObjectID() const { return object_.ObjectID(); }
                private:
-                  Iterator( IteratorObject& object, dip::uint index ) : object_( object ), index_( index ) {}
+                  Iterator( IteratorObject const& object, dip::uint index ) : object_( object ), index_( index ) {}
                   FeatureInfo const& Feature() const { return object_.measurement_.features_[ index_ ]; }
-                  IteratorObject& object_;
+                  IteratorObject const& object_;
                   dip::uint index_;
             };
             /// \brief Iterator to the first feature for this object
-            Iterator FirstFeature() { return Iterator( *this, 0 ); }
+            Iterator FirstFeature() const { return Iterator( *this, 0 ); }
             /// \brief Iterator to the given feature for this object
-            Iterator operator[]( String const& name ) { return Iterator( *this, FeatureIndex( name )); }
+            Iterator operator[]( String const& name ) const { return Iterator( *this, FeatureIndex( name )); }
             /// \brief Increment, to access the next object
             IteratorObject& operator++() { ++index_; return *this; }
             /// \brief True if done iterating (do not call other methods if this is true!)
@@ -240,10 +271,10 @@ class Measurement {
             /// \brief Returns the index to the first columns for the feature
             dip::uint ValueIndex( String const& name ) const { return measurement_.ValueIndex( name ); }
          private:
-            IteratorObject( Measurement& measurement, dip::uint index ) : measurement_( measurement ), index_( index ) {}
+            IteratorObject( Measurement const& measurement, dip::uint index ) : measurement_( measurement ), index_( index ) {}
             dip::uint NumberOfObjects() const { return measurement_.NumberOfObjects(); }
             dip::uint FeatureIndex( String const& name ) const { return measurement_.FeatureIndex( name ); }
-            Measurement& measurement_;
+            Measurement const& measurement_;
             dip::uint index_;
       };
 
@@ -287,26 +318,29 @@ class Measurement {
          }
       }
 
+      /// \brief Tests if the object is forged (has data segment allocated)
+      bool IsForged() const { return !data_.empty(); }
+
       /// \brief Creates an iterator (view) to the first object
-      IteratorObject FirstObject() { return IteratorObject( *this, 0 ); }
+      IteratorObject FirstObject() const { return IteratorObject( *this, 0 ); }
 
       /// \brief Creats and iterator (view) to the given object
-      IteratorObject operator[]( dip::uint objectID ) { return IteratorObject( *this, ObjectIndex( objectID )); }
+      IteratorObject operator[]( dip::uint objectID ) const { return IteratorObject( *this, ObjectIndex( objectID )); }
 
       /// \brief Creats and iterator (view) to the first feature
-      IteratorFeature FirstFeature() { return IteratorFeature( *this, 0 ); }
+      IteratorFeature FirstFeature() const { return IteratorFeature( *this, 0 ); }
 
       /// \brief Creats and iterator (view) to the given feature
-      IteratorFeature operator[]( String const& name ) { return IteratorFeature( *this, FeatureIndex( name )); }
+      IteratorFeature operator[]( String const& name ) const { return IteratorFeature( *this, FeatureIndex( name )); }
 
-      /// \brief A raw pointer to the data of the table. All values for one object are contiguous.
-      ValueType* Data() {
-         DIP_THROW_IF( !IsForged(), "Measurement object not forged." );
-         return data_.data();
+      /// \brief Creats and iterator (view) to a subset of feature values
+      IteratorFeature FeatureValuesView( dip::uint startValue, dip::uint numberValues = 1 ) const {
+         DIP_THROW_IF( startValue + numberValues > NumberOfValues(), "Subset out of range." );
+         return IteratorFeature( *this, startValue, numberValues );
       }
 
       /// \brief A raw pointer to the data of the table. All values for one object are contiguous.
-      ValueType const* Data() const {
+      ValueType* Data() const {
          DIP_THROW_IF( !IsForged(), "Measurement object not forged." );
          return data_.data();
       }
@@ -394,7 +428,6 @@ class Measurement {
 
    private:
 
-      bool IsForged() const { return !data_.empty(); }
       void AddFeature_( String const& name, Feature::ValueInformationArray const& values ) {
          dip::uint startIndex = values_.size();
          values_.resize( startIndex + values.size() );
@@ -407,10 +440,10 @@ class Measurement {
       }
       UnsignedArray objects_;                         // the rows of the table (maps row indices to objectIDs)
       std::map< dip::uint, dip::uint > objectIndices_;// maps object IDs to row indices
-      std::vector< FeatureInfo > features_;           // the columns of the table (maps column indices to feature names and contains other indo also)
-      Feature::ValueInformationArray values_;         // the sub-columns of the table
-      std::map< String, dip::uint > featureIndices_;  // maps feature names to column indices
-      std::vector< ValueType > data_;
+      std::vector< FeatureInfo > features_;           // the column groups of the table (maps column group indices to feature names and contains other indo also)
+      Feature::ValueInformationArray values_;         // the columns of the table
+      std::map< String, dip::uint > featureIndices_;  // maps feature names to column group indices
+      std::vector< ValueType > mutable data_;         // this is mutable so that a const object doesn't have const data -- the only reason for this is to avoid making const versions of the iterators, which seems pointless
       // `data` has a row for each objectID, and a column for each feature value. The rows are stored contiguous.
       // `data[ features[ ii ].offset + jj * numberValues ]` gives the first value for feature `ii` for object with
       // index `jj`. `jj = objectIndices_[ id ]`. `ii = features_[ featureIndices_[ name ]].startColumn`.
@@ -632,13 +665,23 @@ class MeasurementTool {
 
 /// \brief Paints each object with the selected measurement feature values.
 ///
-/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. It is assumed that
-/// that object was obtained through measurement of the input `label` image.
+/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object.
+/// It is assumed that that measurement object was obtained through measurement of the input `label` image.
+/// To obtain such a view, use the measurement's `[]` indexing with a feature name. Alternatively, use the
+/// `dip::Measurement::FeatureValuesView` method to select an arbitrary subset of feature value columns:
+///
+///     dip::Measurement msr = measureTool.Measure( label, grey, {"Feret"}, {} );
+///     auto featureValues = msr.FeatureValuesView( 1, 1 ); // Select the "FeretMin" column only
+///     dip::Image objectWidth = ObjectToMeasurement( label, featureValues );
+///
+/// The `dip::Measurement::IteratorFeature::Subset` method can be used to select a subset of columns
+/// of the current feature, leading to the same result as above:
+///
+///     auto featureValues = msr[ "Feret" ];
+///     featureValues.Subset( 1 ); // Select the "FeretMin" column only
 ///
 /// If the selected feature has more than one value, then `out` will be a vector image with as many tensor elements
 /// as values are in the feature.
-// TODO: We could try to allow the user to "tweak" the IteratorFeature object so that it points to a custom
-//       subset of value columns (i.e. a single value of a feature, or any consecutive set of values).
 void ObjectToMeasurement(
       Image const& label,
       Image& out,

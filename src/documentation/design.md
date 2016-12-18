@@ -174,9 +174,9 @@ in use and equally convenient if limited to the C++ code.
 When an image object is marked `const`, the compiler will prevent modifications
 to it, it cannot be assigned to, and it cannot be used as the output argument
 to a filter function. However, it is possible to create a non-const image that
-points to the same data as a const image. The assignment operator, the `dip::Image::QuickCopy`
-method, and most indexing operations will do this. There were two important
-reasons for this design decision:
+points to the same data as a const image. The assignment operator, the 
+`dip::Image::QuickCopy` method, and most indexing operations will do this.
+There were two important reasons for this design decision:
 
 1. Making a const and a non-const version of most of these indexing
    operators is possible, but some are functions (such as `dip::DefineROI`) taking
@@ -206,6 +206,13 @@ etc.), not to its pixel values.
 However, none of the functions in *DIPlib* will modify pixel values of a const image.
 Input images to functions are always const references, and even though it would be
 technically possible to modify its pixel values, we have an explicit policy to not do so.
+
+The same applies to the `dip::Measurement` object, but for a different reason:
+Implementing correct handling of const objects would require two versions of all
+iterators (a const one and a non-const one). Since these iterators are quire complex,
+and the benefit of correct const handling is limited, we decided to follow the same
+principle as with the `dip::Image` object: non-const data access is always allowed, but
+DIPlib has an explicit policy to not to change data of a const object.
 
 
 [//]: # (--------------------------------------------------------------)

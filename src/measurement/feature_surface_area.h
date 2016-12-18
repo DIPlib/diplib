@@ -32,14 +32,14 @@ class FeatureSurfaceArea : public ImageBased {
       virtual ValueInformationArray Initialize( Image const& label, Image const& ) override {
          DIP_THROW_IF( label.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
-         if( label.IsIsotropic() ) {
-            PhysicalQuantity pq = label.PixelSize( 0 );
+         PhysicalQuantity pq = label.PixelSize( 0 );
+         if( label.IsIsotropic() && pq.IsPhysical() ) {
             pq *= pq;
             scale_ = pq.magnitude;
             out[ 0 ].units = pq.units;
          } else {
-            scale_ = 1.0;
-            // TODO: units = px^2.
+            scale_ = 1;
+            out[ 0 ].units = Units::SquarePixel();
          }
          out[ 0 ].name = "SurfaceArea";
          return out;

@@ -6,6 +6,10 @@
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+
 #include "diplib.h"
 #include "diplib/measurement.h"
 #include "diplib/framework.h"
@@ -291,7 +295,74 @@ std::ostream& operator<<(
       std::ostream& os,
       Measurement const& msr
 ) {
-   // TODO
+   // Figure out column widths
+   const std::string sep{ " | " };
+   constexpr int separatorWidth = 3;
+   constexpr int minimumColumnWidth = 9; // we format numbers with at least this many spaces: 4 digits of precision + '.' + 'e+NN'
+   // TODO: there's also the prefix '-' sign, so we really need a width of 10, but I presume we won't have very large negative numbers, so let's just ignore this for now...
+   const int firstColumnWidth = int( std::ceil( std::log10( msr.NumberOfObjects() + 1 ) ) );
+   auto const& values = msr.Values();
+   std::vector< int > valueWidths( values.size(), 0 );
+   for( dip::uint ii = 0; ii < values.size(); ++ii ) {
+      std::stringstream ss;
+      ss << values[ ii ].units;
+      std::string units = ss.str();
+      valueWidths[ ii ] = std::max( int( values[ ii ].name.size() ), int( units.size() ) + 2 ); // + 2 for the brackets we'll add later
+      valueWidths[ ii ] = std::max( valueWidths[ ii ], minimumColumnWidth );
+   }
+   auto const& features = msr.Features();
+   std::vector< int > featureWidths( values.size(), 0 );
+   for( dip::uint ii = 0; ii < features.size(); ++ii ) {
+      featureWidths[ ii ] = valueWidths[ features[ ii ].startColumn ];
+      for( dip::uint jj = 1; jj < features[ ii ].numberValues; ++jj ) {
+         featureWidths[ ii ] += valueWidths[ features[ ii ].startColumn + jj ] + separatorWidth;
+      }
+      featureWidths[ ii ] = std::max( featureWidths[ ii ], int( features[ ii ].name.size() ));
+   }
+   // Write out the header: feature names
+   std::cout << std::setw( firstColumnWidth ) << " " << " | ";
+   for( dip::uint ii = 0; ii < features.size(); ++ii ) {
+      std::cout << std::setw( featureWidths[ ii ] ) << features[ ii ].name << " | ";
+   }
+   std::cout << std::endl;
+   // Write out the header: horizontal line
+   std::cout << std::setfill( '-' ) << std::setw( firstColumnWidth ) << "-" << " | ";
+   for( dip::uint ii = 0; ii < features.size(); ++ii ) {
+      std::cout << std::setw( featureWidths[ ii ] ) << "-" << " | ";
+   }
+   std::cout << std::setfill( ' ' ) << std::endl;
+   // Write out the header: value names
+   std::cout << std::setw( firstColumnWidth ) << " " << " | ";
+   for( dip::uint ii = 0; ii < values.size(); ++ii ) {
+      std::cout << std::setw( valueWidths[ ii ] ) << values[ ii ].name << " | ";
+   }
+   std::cout << std::endl;
+   // Write out the header: value units
+   std::cout << std::setw( firstColumnWidth ) << " " << " | ";
+   for( dip::uint ii = 0; ii < values.size(); ++ii ) {
+      std::stringstream ss;
+      ss << values[ ii ].units;
+      std::string units = '(' + ss.str() + ')';
+      std::cout << std::setw( valueWidths[ ii ] ) << units << " | ";
+   }
+   std::cout << std::endl;
+   // Write out the header: horizontal line
+   std::cout << std::setfill( '-' ) << std::setw( firstColumnWidth ) << "-" << " | ";
+   for( dip::uint ii = 0; ii < values.size(); ++ii ) {
+      std::cout << std::setw( valueWidths[ ii ] ) << "-" << " | ";
+   }
+   std::cout << std::setfill( ' ' ) << std::endl;
+   // Write out the object IDs and associated values
+   auto const& objects = msr.Objects();
+   Measurement::ValueIterator data = msr.Data();
+   for( dip::uint jj = 0; jj < objects.size(); ++jj ) {
+      std::cout << std::setw( firstColumnWidth ) << objects[ jj ] << " | ";
+      for( dip::uint ii = 0; ii < values.size(); ++ii ) {
+         std::cout << std::setw( valueWidths[ ii ] ) << std::setprecision( 4 ) << std::showpoint << *data << " | ";
+         ++data;
+      }
+      std::cout << std::endl;
+   }
    return os;
 }
 

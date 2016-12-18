@@ -23,12 +23,13 @@ class FeaturePerimeter : public ChainCodeBased {
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& ) override {
          ValueInformationArray out( 1 );
-         if( label.IsIsotropic() ) {
-            PhysicalQuantity pq = label.PixelSize( 0 );
+         PhysicalQuantity pq = label.PixelSize( 0 );
+         if( label.IsIsotropic() && pq.IsPhysical() ) {
             scale_ = pq.magnitude;
             out[ 0 ].units = pq.units;
          } else {
-            scale_ = 1.0;
+            scale_ = 1;
+            out[ 0 ].units = Units::Pixel();
          }
          out[ 0 ].name = "Perimeter";
          return out;

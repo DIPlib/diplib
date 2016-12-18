@@ -506,6 +506,12 @@ struct PhysicalQuantity {
    static PhysicalQuantity Radian() { return Units::Radian(); }
    /// One degree
    static PhysicalQuantity Degree() { return PhysicalQuantity( pi / 180, Units::Radian() ); }
+   /// One pixel
+   static PhysicalQuantity Pixel() { return Units::Pixel(); }
+   /// One square pixel
+   static PhysicalQuantity SquarePixel() { return Units::SquarePixel(); }
+   /// One cubic pixel
+   static PhysicalQuantity CubicPixel() { return Units::CubicPixel(); }
 
    /// Multiplies two physical quantities.
    PhysicalQuantity& operator*=( PhysicalQuantity const& other ) {

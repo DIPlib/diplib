@@ -23,14 +23,17 @@ class FeatureFeret : public ConvexHullBased {
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& ) override {
          ValueInformationArray out( 5 );
-         if( label.IsIsotropic() ) {
-            PhysicalQuantity pq = label.PixelSize( 0 );
+         PhysicalQuantity pq = label.PixelSize( 0 );
+         if( label.IsIsotropic() && pq.IsPhysical() ) {
             scale_ = pq.magnitude;
             out[ 0 ].units = pq.units;
             out[ 1 ].units = pq.units;
             out[ 2 ].units = pq.units;
          } else {
-            scale_ = 1.0;
+            scale_ = 1;
+            out[ 0 ].units = Units::Pixel();
+            out[ 1 ].units = Units::Pixel();
+            out[ 2 ].units = Units::Pixel();
          }
          out[ 3 ].units = Units::Radian();
          out[ 4 ].units = Units::Radian();

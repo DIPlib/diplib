@@ -29,8 +29,13 @@ class FeatureGravity : public LineBased {
          ValueInformationArray out( nD_ );
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
             PhysicalQuantity pq = label.PixelSize( ii );
-            scales_[ ii ] = pq.magnitude;
-            out[ ii ].units = pq.units;
+            if( pq.IsPhysical() ) {
+               scales_[ ii ] = pq.magnitude;
+               out[ ii ].units = pq.units;
+            } else {
+               scales_[ ii ] = 1;
+               out[ ii ].units = Units::Pixel();
+            }
             out[ ii ].name = String( "dim" ) + std::to_string( ii );
          }
          return out;

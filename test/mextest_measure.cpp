@@ -16,7 +16,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
       dml::MatlabInterface mi;
-      dip::Image const label = dml::GetImage( prhs[ 0 ] );
+      dip::Image label = dml::GetImage( prhs[ 0 ] );
+      //label.SetPixelSize( dip::PhysicalQuantity( 0.5, dip::Units::Micrometer() ));
       dip::Image const grey = dml::GetImage( prhs[ 1 ] );
 
       dip::MeasurementTool tool;
@@ -26,18 +27,48 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       // "P2A" adds 2 of the other 3 features that we currently have defined: "Size", "Perimeter" (2D), "SurfaceArea" (3D)
       // Call with 2D inputs and 3D inputs to test all features, which tests all infrastructure functionality
 
-      plhs[ 0 ] = mxCreateDoubleMatrix( msr.NumberOfValues(), msr.NumberOfObjects(), mxREAL );
-      double* data = mxGetPr( plhs[ 0 ] );
-      auto objIt = msr.FirstObject();
-      do {
-         auto ftrIt = objIt.FirstFeature();
+      if( nlhs > 0 ) {
+
+         plhs[ 0 ] = mxCreateDoubleMatrix( msr.NumberOfValues(), msr.NumberOfObjects(), mxREAL );
+         double* data = mxGetPr( plhs[ 0 ] );
+         auto objIt = msr.FirstObject();
          do {
-            for( auto& value : ftrIt ) {
-               *data = value;
-               ++data;
-            }
-         } while( ++ftrIt );
-      } while( ++objIt );
+            auto ftrIt = objIt.FirstFeature();
+            do {
+               for( auto& value : ftrIt ) {
+                  *data = value;
+                  ++data;
+               }
+            } while( ++ftrIt );
+         } while( ++objIt );
+
+      } else {
+
+         /*
+         double* data = msr.Data();
+         *data = 1.01234567e0;
+         data += msr.Stride();
+         *data = 1.01234567e1;
+         data += msr.Stride();
+         *data = 1.01234567e2;
+         data += msr.Stride();
+         *data = 1.01234567e3;
+         data += msr.Stride();
+         *data = 1.01234567e4;
+         data += msr.Stride();
+         *data = 1.01234567e5;
+         data += msr.Stride();
+         *data = 1.01234567e8;
+         data += msr.Stride();
+         *data = -1.01234567e13;
+         data += msr.Stride();
+         *data = 1.01234567e-10;
+         data += msr.Stride();
+         *data = 0.123456;
+         */
+         std::cout << msr << std::endl;
+
+      }
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

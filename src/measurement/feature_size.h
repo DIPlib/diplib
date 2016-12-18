@@ -37,7 +37,15 @@ class FeatureSize : public LineBased {
             default:
                out[ 0 ].name = "Size";
          }
-         PhysicalQuantity unitArea = label.PixelSize().Product( label.Dimensionality() );
+         PhysicalQuantity unitArea = 1;
+         for( dip::uint ii = 0; ii < label.Dimensionality(); ++ii ) {
+            PhysicalQuantity pq = label.PixelSize( ii );
+            if( pq.IsPhysical() ) {
+               unitArea *= pq;
+            } else {
+               unitArea *= PhysicalQuantity::Pixel();
+            }
+         }
          scale_ = unitArea.magnitude;
          out[ 0 ].units = unitArea.units;
          return out;
