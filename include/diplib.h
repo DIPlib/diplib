@@ -18,7 +18,7 @@
 #include "diplib/library/error.h"
 #include "diplib/library/datatype.h"
 #include "diplib/library/tensor.h"
-#include "diplib/library/physdims.h"
+#include "diplib/library/physical_dimensions.h"
 #include "diplib/library/image.h"
 #include "diplib/library/operators.h"
 

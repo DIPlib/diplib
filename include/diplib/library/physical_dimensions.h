@@ -55,7 +55,7 @@ namespace dip {
 /// often to multiply by 10^3. Thus, a value of 1 here corresponds to the 'k'
 /// prefix, 3 with 'G', and -2 with 'u' (==micro). Note that for 'mm^2', the
 /// value for length is 2, and that for thousands is -2. if thousands were -1,
-/// the units would have to be formatted as '10^-3.m^2'. `dip::Units::AdjustThousands'
+/// the units would have to be formatted as '10^-3.m^2'. `dip::Units::AdjustThousands`
 /// adjusts this power so that it can always be formatted with an SI prefix,
 /// returning a magnitude that can be handled elsewhere (the `dip::PhysicalQuantity`
 /// class uses this feature).

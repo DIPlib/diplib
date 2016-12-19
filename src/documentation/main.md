@@ -1,8 +1,6 @@
-DIPlib 3.0 {#mainpage}
-==========
+# DIPlib 3.0 {#mainpage}
 
-Introduction
-------------
+## Introduction
 
 The purpose of the *DIPlib* project is to provide a one-stop library and
 development environment for quantitative image analysis, be it applied
@@ -49,11 +47,10 @@ are the following documentation pages:
 
 - The `dip::Image` class, everything else revolves around it.
 - \ref design, helps understand the library architecture.
-- All image analysis functions are defined in the `#dip` namespace.
+- All image analysis functions are defined in the `#dip` \ref dip "namespace".
 - \ref using_iterators, in case existing algorithms are not sufficient.
 
-A short history
----------------
+## A short history
 
 Development of *DIPlib* started in 1995, at the capable hands of Geert
 van Kempen and Michael van Ginkel, under direction of Lucas van Vliet,

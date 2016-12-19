@@ -80,7 +80,7 @@ static void dip__Sub(
    }
 }
 
-void Sub(
+void Subtract(
       Image const& lhs,
       Image const& rhs,
       Image& out,
@@ -154,7 +154,7 @@ static void dip__MulSamples(
    }
 }
 
-void Mul(
+void Multiply(
       Image const& lhs,
       Image const& rhs,
       Image& out,
@@ -201,7 +201,7 @@ void Mul(
    out.ReshapeTensor( outTensor );
 }
 
-void MulSamples(
+void MultiplySampleWise(
       Image const& lhs,
       Image const& rhs,
       Image& out,
@@ -240,7 +240,7 @@ static void dip__Div(
    }
 }
 
-void Div(
+void Divide(
       Image const& lhs,
       Image const& rhs,
       Image& out,
@@ -281,7 +281,7 @@ static void dip__Mod(
    }
 }
 
-void Mod(
+void Modulo(
       Image const& lhs,
       Image const& rhs,
       Image& out,

@@ -3,6 +3,22 @@
 When contributing to *DIPlib*, please follow the style and layout of other files.
 Specifically:
 
+## Programming style:
+
+- Everything should be declared within the `dip` namespace, or a sub-namespace. The
+  exception is functionality that interfaces *DIPlib* with other libraries or software,
+  which should be defined in their own namespaces (e.g. the `dml` namespace for the
+  *DIPlib*--*MATLAB* interface).
+
+- All functions local to a translation unit must be declared `static` to prevent
+  name space pollution. This also prevents them for being exported out of the library.
+
+- Prefer using `using` over `typedef`.
+
+- Use `struct` for classes without any private members.
+
+## Naming conventions:
+
 - Use camel case for variable, function and class names. Variable names start with
   a lowercase letter, function and class names start with an uppercase letter. Don't
   use underscores except for in a few special cases. Private class member variables
@@ -26,14 +42,7 @@ Specifically:
 - File names are in all lowercase and use underscores between words. There's no need
   to shorten names to 8 characters, so don't make the names cryptic.
 
-- Everything should be declared within the `dip` namespace, or a sub-namespace. The
-  exception is functionality that interfaces *DIPlib* with other libraries or software,
-  which should be defined in their own namespaces (e.g. the `dml` namespace for the
-  *DIPlib*--*MATLAB* interface).
-
-- Prefer using `using` over `typedef`.
-
-- Use `struct` for classes without any private members.
+## Formatting:
 
 - All loops and conditional statements should be surrounded by braces, even if they
   are only one statement long.
@@ -45,6 +54,3 @@ Specifically:
 - The keyword `const` comes after the type name it modifies: `dip::Image const& img`.
 
 - Braces and brackets have spaces on the inside, not the outside.
-
-- All functions local to a translation unit must be declared `static` to prevent
-  name space pollution. This also prevents them for being exported out of the library.

@@ -4,6 +4,7 @@ This page gives reasons behind some of the design choices of *DIPlib 3.0*.
 Many of these decisions are inherited from the previous version of the library,
 and some new ones are made possible by the port to C++.
 
+\tableofcontents
 
 [//]: # (--------------------------------------------------------------)
 

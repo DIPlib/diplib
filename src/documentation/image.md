@@ -11,6 +11,7 @@ revolves around images. Some image manipulation is provided as class
 methods, but most image processing and analysis functionality is provided
 in functions defined in the `#dip` namespace.
 
+\tableofcontents
 
 [//]: # (--------------------------------------------------------------)
 
@@ -503,8 +504,52 @@ the input images to functions are marked const) will not be modified.
 
 \section arithmetic Arithmetic and comparison operators
 
-... \ref singleton_expansion "singleton expansion" is always performed
-on the two operands ...
+Arithmetic operations, logical operations, and comparisons
+can all be performed using operators, but there are also functions defined
+that perform the same function with more flexibility. See \ref operators
+for a full list of these functions.
+
+For example, to add two images `a` and `b`, one can simply do:
+
+    dip::Image c = a + b;
+
+But it is also possible to control the output image by using the `dip::Add`
+function:
+
+    dip::Image c;
+    dip::Add( a, b, c, dip::DT_SINT32 );
+
+The fourth argument specifies the data type of the output image. The computation
+is performed in that data type, meaning that both inputs are first cast to that
+data type (with clamping). The operation is then performed with saturation. This
+means that adding -5 and 10 in an unsigned integer format will not yield 5, but 0,
+because the -5 is first cast to unsigned. Also, adding 200 and 200 in an 8-bit
+unsigned integer format will yield 255, there is no dropping of the higher-order
+bit as in standard C++ arithmetic.
+
+As is true for most image processing functions in DIPlib (see \ref design_function_signatures),
+the statement above is identical to
+
+    dip::Image c = dip::Add( a, b, dip::DT_SINT32 );
+
+However, the former version allows for writing to already-allocated memory space
+in image `c`, or to an image with an external interface (see \ref external_interface).
+
+For in-place addition, use
+
+    dip::Add( a, b, a, a.DataType() );
+
+or simply
+
+    a += b;
+
+All diadic operations (arithmetic, logical, comparison) perform \ref singleton_expansion.
+They also correctly handle tensor images of any shape. For example, it is possible
+to add a vector image and a tensor image, but it is not possible to add two vector
+images of different lengths. The multiplication operation always performs matrix
+multiplication on the tensors, use the `dip::MultiplySampleWise` function to do
+sample-wise multiplication. Other operators are sample-wise by definition (including
+the division, which is not really defined for tensors).
 
 
 [//]: # (--------------------------------------------------------------)

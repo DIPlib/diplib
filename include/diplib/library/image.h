@@ -22,7 +22,7 @@
 
 #include "diplib/library/datatype.h"
 #include "diplib/library/tensor.h"
-#include "diplib/library/physdims.h"
+#include "diplib/library/physical_dimensions.h"
 #include "diplib/library/clamp_cast.h"
 
 #include <iostream>
@@ -126,17 +126,16 @@ class Image {
    public:
 
       //
-      // Default constructor
+      // Constructor
       //
+
+      /// \name Constructors
+      /// \{
 
       /// \brief The default-initialized image is 0D (an empty sizes array), one tensor element, dip::DT_SFLOAT,
       /// and raw (it has no data segment).
       Image() {}
       // Copy constructor, move constructor, copy assignment, move assignment and destructor are all default.
-
-      //
-      // Other constructors
-      //
 
       /// \brief Forged image of given sizes and data type. The data is left uninitialized.
       explicit Image( UnsignedArray const& sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :
@@ -349,25 +348,14 @@ class Image {
          return out;
       }
 
-      /// \brief Swaps `this` and `other`.
-      void swap( Image& other ) {
-         using std::swap;
-         swap( dataType_, other.dataType_ );
-         swap( sizes_, other.sizes_ );
-         swap( strides_, other.strides_ );
-         swap( tensor_, other.tensor_ );
-         swap( tensorStride_, other.tensorStride_ );
-         swap( protect_, other.protect_ );
-         swap( colorSpace_, other.colorSpace_ );
-         swap( pixelSize_, other.pixelSize_ );
-         swap( dataBlock_, other.dataBlock_ );
-         swap( origin_, other.origin_ );
-         swap( externalInterface_, other.externalInterface_ );
-      }
+      /// \}
 
       //
       // Sizes
       //
+
+      /// \name Sizes
+      /// \{
 
       /// \brief Get the number of spatial dimensions.
       dip::uint Dimensionality() const {
@@ -400,9 +388,14 @@ class Image {
          sizes_ = d;
       }
 
+      /// \}
+
       //
       // Strides
       //
+
+      /// \name Strides
+      /// \{
 
       /// \brief Get a const reference to the strides array.
       IntegerArray const& Strides() const {
@@ -500,9 +493,14 @@ class Image {
       /// \see HasSimpleStride, GetSimpleStrideAndOrigin, HasContiguousData.
       bool HasSameDimensionOrder( Image const& other ) const;
 
+      /// \}
+
       //
       // Tensor
       //
+
+      /// \name Tensor
+      /// \{
 
       /// \brief Get the tensor sizes. The array returned can have 0, 1 or
       /// 2 elements, as those are the allowed tensor dimensionalities.
@@ -561,9 +559,14 @@ class Image {
          tensor_.SetVector( nelems );
       }
 
+      /// \}
+
       //
-      // Data Type
+      // Data type
       //
+
+      /// \name Data type
+      /// \{
 
       // Note: This function is the reason we refer to the DataType class as
       // dip::DataType everywhere in this file.
@@ -579,9 +582,14 @@ class Image {
          dataType_ = dt;
       }
 
+      /// \}
+
       //
       // Color space
       //
+
+      /// \name Color space
+      /// \{
 
       /// \brief Get the image's color space name.
       String const& ColorSpace() const {
@@ -605,9 +613,14 @@ class Image {
          colorSpace_.clear();
       }
 
+      /// \}
+
       //
       // Pixel size
       //
+
+      /// \name Pixel size
+      /// \{
 
       // Note: This function is the reason we refer to the PixelSize class as
       // dip::PixelSize everywhere in this file.
@@ -652,9 +665,14 @@ class Image {
          return pixelSize_.ToPixels( in );
       }
 
+      /// \}
+
       //
       // Utility functions
       //
+
+      /// \name Utility functions
+      /// \{
 
       /// \brief Compare properties of an image against a template, either
       /// returns true/false or throws an error.
@@ -722,10 +740,31 @@ class Image {
          pixelSize_ = src.pixelSize_;
       }
 
+      /// \brief Swaps `this` and `other`.
+      void swap( Image& other ) {
+         using std::swap;
+         swap( dataType_, other.dataType_ );
+         swap( sizes_, other.sizes_ );
+         swap( strides_, other.strides_ );
+         swap( tensor_, other.tensor_ );
+         swap( tensorStride_, other.tensorStride_ );
+         swap( protect_, other.protect_ );
+         swap( colorSpace_, other.colorSpace_ );
+         swap( pixelSize_, other.pixelSize_ );
+         swap( dataBlock_, other.dataBlock_ );
+         swap( origin_, other.origin_ );
+         swap( externalInterface_, other.externalInterface_ );
+      }
+
+      /// \}
+
       //
       // Data
       // Defined in src/library/image_data.cpp
       //
+
+      /// \name Data
+      /// \{
 
       /// \brief Get pointer to the data segment.
       ///
@@ -998,10 +1037,15 @@ class Image {
          return externalInterface_ != nullptr;
       }
 
+      /// \}
+
       //
-      // Pointers, Offsets, Indices
+      // Pointers, offsets, indices
       // Defined in src/library/image_data.cpp
       //
+
+      /// \name Pointers, offsets, indices
+      /// \{
 
       /// \brief Get pointer to the first sample in the image, the first tensor
       /// element at coordinates (0,0,0,...). The image must be forged.
@@ -1140,10 +1184,15 @@ class Image {
       /// \see Index, Offset, IndexToCoordinates, OffsetToCoordinates, OffsetToCoordinatesComputer
       CoordinatesComputer IndexToCoordinatesComputer() const;
 
+      /// \}
+
       //
       // Modifying geometry of a forged image without data copy
       // Defined in src/library/image_manip.cpp
       //
+
+      /// \name Reshaping forged image
+      /// \{
 
       /// \brief Permute dimensions.
       ///
@@ -1307,10 +1356,15 @@ class Image {
       /// The image must have two tensor elements, a tensor stride of 1, and be forged.
       Image& MergeTensorToComplex();
 
+      /// \}
+
       //
       // Creating views of the data -- indexing without data copy
       // Defined in src/library/image_indexing.cpp
       //
+
+      /// \name Indexing
+      /// \{
 
       /// \brief Extract a tensor element, `indices` must have one or two elements. The image must be forged.
       Image operator[]( UnsignedArray const& indices ) const;
@@ -1366,10 +1420,15 @@ class Image {
          return out;
       }
 
+      /// \}
+
       //
       // Getting/setting pixel values
       // Defined in src/library/image_data.cpp
       //
+
+      /// \name Getting and setting pixel values
+      /// \{
 
       /// \brief Deep copy, `this` will become a copy of `src` with its own data.
       ///
@@ -1555,6 +1614,8 @@ class Image {
       /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), casted
       /// to a double-precision complex floating-point value.
       explicit operator dcomplex() const;
+
+      /// \}
 
       // Some friend declarations
       friend class dip::ImageSliceIterator;

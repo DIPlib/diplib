@@ -44,6 +44,9 @@ MaximumAndMinimum GetMaximumAndMinimum(
       Image const& mask
 );
 
+// TODO: We need functions dip::All() dip::Any() that apply to samples within a tensor. This combines with equality: dip::All( a == b ), for a, b tensor images.
+// TODO: We need similar functions that apply to all pixels in an image.
+
 /// \}
 
 } // namespace dip

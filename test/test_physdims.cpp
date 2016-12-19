@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <iostream>
-#include "diplib/library/physdims.h"
+#include "diplib/library/physical_dimensions.h"
 
 // Testing
 

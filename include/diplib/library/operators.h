@@ -42,7 +42,7 @@ namespace dip {
 ///
 /// Out will have the type `dt`.
 ///
-/// \see Sub, Mul, MulSamples, Div, Mod, operator+
+/// \see Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator+
 void Add(
       Image const& lhs,
       Image const& rhs,
@@ -54,7 +54,7 @@ void Add(
 ///
 /// Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, MulSamples, Div, Mod, operator+
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator+
 template< typename T >
 inline void Add(
       Image const& lhs,
@@ -81,8 +81,8 @@ inline Image Add(
 ///
 /// Out will have the type `dt`.
 ///
-/// \see Add, Mul, MulSamples, Div, Mod, operator-
-void Sub(
+/// \see Add, Multiply, MultiplySampleWise, Divide, Modulo, operator-
+void Subtract(
       Image const& lhs,
       Image const& rhs,
       Image& out,
@@ -93,25 +93,25 @@ void Sub(
 ///
 /// Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, MulSamples, Div, Mod, operator-
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator-
 template< typename T >
-inline void Sub(
+inline void Subtract(
       Image const& lhs,
       T const& rhs,
       Image& out,
       DataType dt
 ) {
-   Sub( lhs, Image{ rhs }, out, dt );
+   Subtract( lhs, Image{ rhs }, out, dt );
 }
 
 template< typename T >
-inline Image Sub(
+inline Image Subtract(
       Image const& lhs,
       T const& rhs,
       DataType dt
 ) {
    Image out;
-   Sub( lhs, rhs, out, dt );
+   Subtract( lhs, rhs, out, dt );
    return out;
 }
 
@@ -128,8 +128,8 @@ inline Image Sub(
 /// output with dip::Image::SpatialToTensor. The helper function MulSamaples
 /// does this.
 ///
-/// \see Add, Sub, MulSamples, Div, Mod, operator*
-void Mul(
+/// \see Add, Subtract, MultiplySampleWise, Divide, Modulo, operator*
+void Multiply(
       Image const& lhs,
       Image const& rhs,
       Image& out,
@@ -140,25 +140,25 @@ void Mul(
 ///
 /// Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, MulSamples, Div, Mod, operator*
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator*
 template< typename T >
-inline void Mul(
+inline void Multiply(
       Image const& lhs,
       T const& rhs,
       Image& out,
       DataType dt
 ) {
-   Mul( lhs, Image{ rhs }, out, dt );
+   Multiply( lhs, Image{ rhs }, out, dt );
 }
 
 template< typename T >
-inline Image Mul(
+inline Image Multiply(
       Image const& lhs,
       T const& rhs,
       DataType dt
 ) {
    Image out;
-   Mul( lhs, rhs, out, dt );
+   Multiply( lhs, rhs, out, dt );
    return out;
 }
 
@@ -166,21 +166,21 @@ inline Image Mul(
 ///
 /// Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, Div, Mod
-void MulSamples(
+/// \see Add, Subtract, Multiply, Divide, Modulo
+void MultiplySampleWise(
       Image const& lhs,
       Image const& rhs,
       Image& out,
       DataType dt
 );
 
-inline Image MulSamples(
+inline Image MultiplySampleWise(
       Image const& lhs,
       Image const& rhs,
       DataType dt
 ) {
    Image out;
-   MulSamples( lhs, rhs, out, dt );
+   MultiplySampleWise( lhs, rhs, out, dt );
    return out;
 }
 
@@ -189,8 +189,8 @@ inline Image MulSamples(
 ///
 /// Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, MulSamples, Mod, operator/
-void Div(
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Modulo, operator/
+void Divide(
       Image const& lhs,
       Image const& rhs,
       Image& out,
@@ -201,25 +201,25 @@ void Div(
 ///
 /// Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, MulSamples, Div, Mod, operator/
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator/
 template< typename T >
-inline void Div(
+inline void Divide(
       Image const& lhs,
       T const& rhs,
       Image& out,
       DataType dt
 ) {
-   Div( lhs, Image{ rhs }, out, dt );
+   Divide( lhs, Image{ rhs }, out, dt );
 }
 
 template< typename T >
-inline Image Div(
+inline Image Divide(
       Image const& lhs,
       T const& rhs,
       DataType dt
 ) {
    Image out;
-   Div( lhs, rhs, out, dt );
+   Divide( lhs, rhs, out, dt );
    return out;
 }
 
@@ -228,8 +228,8 @@ inline Image Div(
 ///
 /// Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, MulSamples, Div, operator%
-void Mod(
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, operator%
+void Modulo(
       Image const& lhs,
       Image const& rhs,
       Image& out,
@@ -240,25 +240,25 @@ void Mod(
 ///
 /// Out will have the type `dt`.
 ///
-/// \see Add, Sub, Mul, MulSamples, Div, Mod, operator%
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator%
 template< typename T >
-inline void Mod(
+inline void Modulo(
       Image const& lhs,
       T const& rhs,
       Image& out,
       DataType dt
 ) {
-   Mod( lhs, Image{ rhs }, out, dt );
+   Modulo( lhs, Image{ rhs }, out, dt );
 }
 
 template< typename T >
-inline Image Mod(
+inline Image Modulo(
       Image const& lhs,
       T const& rhs,
       DataType dt
 ) {
    Image out;
-   Mod( lhs, rhs, out, dt );
+   Modulo( lhs, rhs, out, dt );
    return out;
 }
 
@@ -606,48 +606,48 @@ inline Image operator+( Image const& lhs, T const& rhs ) {
    return Add( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
-/// \brief Arithmetic operator, calls `dip::Sub`.
+/// \brief Arithmetic operator, calls `dip::Subtract`.
 inline Image operator-( Image const& lhs, Image const& rhs ) {
-   return Sub( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
+   return Subtract( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
-/// \brief Arithmetic operator, calls `dip::Sub`.
+/// \brief Arithmetic operator, calls `dip::Subtract`.
 template< typename T >
 inline Image operator-( Image const& lhs, T const& rhs ) {
-   return Sub( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
+   return Subtract( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
-/// \brief Arithmetic operator, calls `dip::Mul`.
+/// \brief Arithmetic operator, calls `dip::Multiply`.
 inline Image operator*( Image const& lhs, Image const& rhs ) {
-   return Mul( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
+   return Multiply( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
-/// \brief Arithmetic operator, calls `dip::Mul`.
+/// \brief Arithmetic operator, calls `dip::Multiply`.
 template< typename T >
 inline Image operator*( Image const& lhs, T const& rhs ) {
-   return Mul( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
+   return Multiply( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
-/// \brief Arithmetic operator, calls `dip::Div`.
+/// \brief Arithmetic operator, calls `dip::Divide`.
 inline Image operator/( Image const& lhs, Image const& rhs ) {
-   return Div( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
+   return Divide( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
 }
 
-/// \brief Arithmetic operator, calls `dip::Div`.
+/// \brief Arithmetic operator, calls `dip::Divide`.
 template< typename T >
 inline Image operator/( Image const& lhs, T const& rhs ) {
-   return Div( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
+   return Divide( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
 }
 
-/// \brief Arithmetic operator, calls `dip::Mod`.
+/// \brief Arithmetic operator, calls `dip::Modulo`.
 inline Image operator%( Image const& lhs, Image const& rhs ) {
-   return Mod( lhs, rhs, lhs.DataType() );
+   return Modulo( lhs, rhs, lhs.DataType() );
 }
 
-/// \brief Arithmetic operator, calls `dip::Mod`.
+/// \brief Arithmetic operator, calls `dip::Modulo`.
 template< typename T >
 inline Image operator%( Image const& lhs, T const& rhs ) {
-   return Mod( lhs, Image{ rhs }, lhs.DataType() );
+   return Modulo( lhs, Image{ rhs }, lhs.DataType() );
 }
 
 
@@ -754,7 +754,7 @@ inline Image& operator+=( Image& lhs, T const& rhs ) {
 /// could change the size of `lhs`.
 template< typename T >
 inline Image& operator-=( Image& lhs, T const& rhs ) {
-   Sub( lhs, rhs, lhs, lhs.DataType() );
+   Subtract( lhs, rhs, lhs, lhs.DataType() );
    return lhs;
 }
 
@@ -765,7 +765,7 @@ inline Image& operator-=( Image& lhs, T const& rhs ) {
 /// could change the size of `lhs`.
 template< typename T >
 inline Image& operator*=( Image& lhs, T const& rhs ) {
-   Mul( lhs, rhs, lhs, lhs.DataType() );
+   Multiply( lhs, rhs, lhs, lhs.DataType() );
    return lhs;
 }
 
@@ -776,7 +776,7 @@ inline Image& operator*=( Image& lhs, T const& rhs ) {
 /// could change the size of `lhs`.
 template< typename T >
 inline Image& operator/=( Image& lhs, T const& rhs ) {
-   Div( lhs, rhs, lhs, lhs.DataType() );
+   Divide( lhs, rhs, lhs, lhs.DataType() );
    return lhs;
 }
 
@@ -787,7 +787,7 @@ inline Image& operator/=( Image& lhs, T const& rhs ) {
 /// could change the size of `lhs`.
 template< typename T >
 inline Image& operator%=( Image& lhs, T const& rhs ) {
-   Mod( lhs, rhs, lhs, lhs.DataType() );
+   Modulo( lhs, rhs, lhs, lhs.DataType() );
    return lhs;
 }
 

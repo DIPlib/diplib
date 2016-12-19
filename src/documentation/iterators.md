@@ -18,6 +18,8 @@ the framework functions. Depending on the application of the image processing
 function you are writing, you can choose to use either an iterator or a
 framework function.
 
+\tableofcontents
+
 
 [//]: # (--------------------------------------------------------------)
 
