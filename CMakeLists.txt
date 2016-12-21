@@ -150,6 +150,8 @@ if (DOXYGEN_FOUND)
          OUTPUT ${DOCUMENTATION_OUTPUT}
          COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
          COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
+         COMMAND ${CMAKE_COMMAND} -E echo "Fixing header names..."
+         COMMAND tools/fix_doc_includes.sh ${DOCUMENTATION_OUTPUT}/html
          COMMAND ${CMAKE_COMMAND} -E echo "Done."
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
          DEPENDS ${DOXYGEN_INPUT}

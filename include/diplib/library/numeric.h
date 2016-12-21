@@ -37,6 +37,8 @@ namespace dip {
 /// \defgroup numeric Numeric algorithms and constants
 /// \ingroup infrastructure
 /// \brief Functions and constants to be used in numeric computation, unrelated to images.
+///
+/// These functions and constants are made available when including `diplib.h`.
 /// \{
 
 

@@ -32,20 +32,21 @@ namespace dip {
 /// \ingroup infrastructure
 /// \brief These operators operate on single sample values, implementing saturated arithmetic and type casting.
 ///
-/// `dip::clamp_cast` is an operator that returns the input value cast to a different
+/// `%dip::clamp_cast` is an operator that returns the input value cast to a different
 /// type, clamped to the range of values representable by that output type. This
 /// is also often referred to as saturated cast. Most DIPlib functions take care of properly
 /// clamping values when casting pixel values. This typically is more intuitive and useful
 /// when processing images than the default C/C++ overflow behavior, which corresponds to
 /// modular arithmetic for integer values.
 ///
-/// `clamp_cast` is defined as a series of overloaded template functions with specializations.
+/// `%dip::clamp_cast` is defined as a series of overloaded template functions with specializations.
 /// The input argument type is used in overload resolution, the output type is the template
 /// parameter, and should be specified between angled brackets after the function name,
 /// much like the standard `static_cast` and similar:
 ///
 ///     uint8 u = dip::clamp_cast< dip::uint8 >( -54.6 );
 ///
+/// `%dip::clamp_cast` is made available when including `diplib.h`.
 /// \{
 
 

@@ -37,6 +37,7 @@ namespace dip {
 ///     10u - 20u == 4294967286u;
 ///     saturated_sub(10u, 20u) == 0u;
 ///
+/// Saturated arithmetic is made available by including `diplib/saturated_arithmetic.h`.
 /// \{
 
 
