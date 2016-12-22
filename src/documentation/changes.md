@@ -25,6 +25,14 @@ the introductory documentation.
   Their interfaces are not exactly compatible, but it should be relatively straightforward
   to port old line functions to use the new framework.
 
+- Images now carry the physical dimension in them (referred to as pixel size). When porting
+  functions, think about whether this data needs to be maintained, modified, or removed.
+
+- The same is true for the color space. A function that changes the number of thensor
+  elements must also remove the color space information.
+
+- There is no longer a `dip_Initialise` function. There are no global variables.
+
 - Second order extrapolation boundary extension didn't do as advertised in the old DIPlib.
   Also the first order extrapolation couldn't have worked correctly with unsigned integers.
   The new implementation fits a 2nd order polynomial that reaches 0 at the end of the extended

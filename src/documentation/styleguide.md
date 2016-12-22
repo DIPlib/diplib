@@ -17,6 +17,19 @@ Specifically:
 
 - Use `struct` for classes without any private members.
 
+- Option parameters to high-level functions (those that should be available in interfaces
+  to other languages such as MATLAB) should be strings or string arrays, which are easier
+  to translate to scripted languages.
+
+- Option parameters to low-level functions (those that are meant to be called only from
+  C++ code) should be defined through `DIP_DECLARE_OPTIONS`/`DIP_DEFINE_OPTION` or as
+  `enum class`, preferably in `dip::Option::` or another sub-namespace. These are simpler
+  and more efficient than strings.
+
+- Don't use boolean parameters, prefer "yes"/"no" or "on"/"off" strings in high-level
+  functions, and `enum class` with two options defined in `dip::Option::` namespace for
+  low-level functions.
+
 ## Naming conventions:
 
 - Use camel case for variable, function and class names. Variable names start with

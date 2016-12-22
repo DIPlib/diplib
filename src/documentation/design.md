@@ -175,7 +175,7 @@ in use and equally convenient if limited to the C++ code.
 When an image object is marked `const`, the compiler will prevent modifications
 to it, it cannot be assigned to, and it cannot be used as the output argument
 to a filter function. However, it is possible to create a non-const image that
-points to the same data as a const image. The assignment operator, the 
+points to the same data as a const image. The assignment operator, the
 `dip::Image::QuickCopy` method, and most indexing operations will do this.
 There were two important reasons for this design decision:
 
