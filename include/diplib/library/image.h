@@ -712,6 +712,13 @@ class Image {
             Option::ThrowException throwException = Option::ThrowException::DO_THROW
       ) const;
 
+      /// \brief Check image properties for a mask image, either returns true/false or throws an error.
+      bool CheckIsMask(
+            UnsignedArray const& sizes,
+            Option::AllowSingletonExpansion allowSingletonExpansion = Option::AllowSingletonExpansion::DONT_ALLOW,
+            Option::ThrowException throwException = Option::ThrowException::DO_THROW
+      ) const;
+
       /// \brief Copy all image properties from `src`. The image must be raw.
       void CopyProperties( Image const& src ) {
          DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
@@ -1277,6 +1284,17 @@ class Image {
       /// \see AddSingleton, ExpandDimensionality.
       Image& ExpandSingletonDimension( dip::uint dim, dip::uint sz );
 
+      /// \brief Performs singleton expansion.
+      ///
+      /// The image is modified so that it has `size`
+      /// as dimensions. It must be forged and singleton-expandable to `size`,
+      /// otherwise an exception is thrown. See `dip::Image::ExpandSingletonDimension`.
+      /// `size` is the array as returned by `dip::Framework::SingletonExpandedSize`.
+      Image& ExpandSingletonDimensions( UnsignedArray const& newSizes );
+
+      /// \brief Tests if the image can be singleton-expanded to `size`.
+      bool IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const;
+
       /// \brief Mirror de image about selected axes.
       ///
       /// The image must be forged, and the data will never
@@ -1363,7 +1381,7 @@ class Image {
       // Defined in src/library/image_indexing.cpp
       //
 
-      /// \name Indexing
+      /// \name Indexing without data copy
       /// \{
 
       /// \brief Extract a tensor element, `indices` must have one or two elements. The image must be forged.
@@ -1430,6 +1448,82 @@ class Image {
       /// \name Getting and setting pixel values
       /// \{
 
+      /// \brief Creates a 1D image containing the pixels selected by `mask`.
+      ///
+      /// The values are copied, not referenced. The output image will be of the same data type and tensor shape
+      /// as `this`, but have only one dimension. Pixels will be read from `mask` in the linear index order.
+      ///
+      /// `this` must be forged and be of equal size as `mask`. `mask` is a scalar binary image.
+      Image CopyAt( Image const& mask ) const;
+
+      /// \brief Creates a 1D image containing the pixels selected by `indices`.
+      ///
+      /// The values are copied, not referenced. The output image will be of the same data type and tensor shape
+      /// as `this`, but have only one dimension. It will have as many pixels as indices are in `indices`, and
+      /// be sorted in the same order.
+      ///
+      /// `indices` contains linear indices into the image. Note that converting indices into offsets is not a
+      /// trivial operation; prefer to use the version of this function that uses coordinates.
+      ///
+      /// `this` must be forged.
+      Image CopyAt( UnsignedArray const& indices ) const;
+
+      /// \brief Creates a 1D image containing the pixels selected by `coordinates`.
+      ///
+      /// The values are copied, not referenced. The output image will be of the same data type and tensor shape
+      /// as `this`, but have only one dimension. It will have as many pixels as coordinates are in `coordinates`,
+      /// and be sorted in the same order.
+      ///
+      /// Each of the coordinates must have the same number of dimensions as `this`.
+      ///
+      /// `this` must be forged.
+      Image CopyAt( CoordinateArray const& coordinates ) const;
+
+      /// \brief Copies the pixel values from `source` into `this`, to the pixels selected by `mask`.
+      ///
+      /// `source` must have the same number of tensor elements as `this`. The pixel values will be
+      /// cast to match the data type of `this`, where values are clipped to the target range and/or
+      /// truncated, as applicable. Complex values are converted to non-complex values by taking the
+      /// absolute value.
+      ///
+      /// Pixels selected by `mask` are taken in the linear index order.
+      ///
+      /// `source` is expected to have the same number of pixels as are selected by `mask`, but this is
+      /// not tested for before the copy begins unless `throws` is set to `dip::Option::ThrowException::DO_THROW`.
+      /// Note that this tests costs extra time, and often is not necessary.
+      /// By default, the pixels are copied until either all `source` pixels have been copied or until all
+      /// pixels selected by `mask` have been written to.
+      ///
+      /// `this` must be forged and be of equal size as `mask`. `mask` is a scalar binary image.
+      void CopyAt( Image const& source, Image const& mask, Option::ThrowException throws = Option::ThrowException::DONT_THROW );
+
+      /// \brief Copies the pixel values from `source` into `this`, to the pixels selected by `indices`.
+      ///
+      /// `source` must have the same number of tensor elements as `this`. The pixel values will be
+      /// cast to match the data type of `this`, where values are clipped to the target range and/or
+      /// truncated, as applicable. Complex values are converted to non-complex values by taking the
+      /// absolute value.
+      ///
+      /// `source` must have the same number of pixels as indices are in `indices`, and are used in the
+      /// same order. `indices` contains linear indices into the image. Note that converting indices
+      /// into offsets is not a trivial operation; prefer to use the version of this function that uses coordinates.
+      ///
+      /// `this` must be forged.
+      void CopyAt( Image const& source, UnsignedArray const& indices );
+
+      /// \brief Copies the pixel values from `source` into `this`, to the pixels selected by `coordinates`.
+      ///
+      /// `source` must have the same number of tensor elements as `this`. The pixel values will be
+      /// cast to match the data type of `this`, where values are clipped to the target range and/or
+      /// truncated, as applicable. Complex values are converted to non-complex values by taking the
+      /// absolute value.
+      ///
+      /// `source` must have the same number of pixels as coordinates are in `coordinates`, and are used
+      /// in the same order. Each of the coordinates must have the same number of dimensions as `this`.
+      ///
+      /// `this` must be forged.
+      void CopyAt( Image const& source, CoordinateArray const& coordinates );
+
       /// \brief Deep copy, `this` will become a copy of `src` with its own data.
       ///
       /// If `this` is forged, then `src` is expected to have the same sizes
@@ -1448,9 +1542,8 @@ class Image {
 
       /// \brief Converts the image to another data type.
       ///
-      /// The data segment is replaced
-      /// by a new one, unless the old and new data types have the same size and
-      /// is not shared with other images.
+      /// The data segment is replaced by a new one, unless the old and new data
+      /// types have the same size and it is not shared with other images.
       /// If the data segment is replaced, strides are set to normal.
       void Convert( dip::DataType dt );
 

@@ -600,7 +600,7 @@ using ConstImageIterator = ImageIterator< T const >;
 ///
 /// This iterator is not dereferenceable. The reason is that it points at two pixels at the same time
 /// (that is, one pixel in each image). Instead, use the `In` and `Out` methods to obtain references to
-/// to the first sample of each pixel. Use the `InElement` and `OutElement` methods instead of the `[]`
+/// to the first sample of each pixel. Use the `InSample` and `OutSample` methods instead of the `[]`
 /// operator to access the other samples.
 ///
 /// Instead of `GetLineIterator`, use `GetInLineIterator` and `GetOutLineIterator`. Likewise, instead of
@@ -662,12 +662,12 @@ class JointImageIterator {
       /// Dereference output image
       outT& Out() const { return *outPtr_; }
       /// Index into input tensor.
-      inT const& InElement( dip::sint index ) const {
+      inT const& InSample( dip::sint index ) const {
          DIP_THROW_IF( !inImage_, E::ITERATOR_NOT_VALID );
          return *( inPtr_ + index * inImage_->TensorStride() );
       }
       /// Index into output tensor.
-      outT& OutElement( dip::sint index ) const {
+      outT& OutSample( dip::sint index ) const {
          DIP_THROW_IF( !outImage_, E::ITERATOR_NOT_VALID );
          return *( outPtr_ + index * outImage_->TensorStride() );
       }
@@ -875,8 +875,12 @@ class GenericImageIterator {
          swap( coords_, other.coords_ );
          swap( procDim_, other.procDim_ );
       }
-      /// Tensor indexing returns the offset to the sample
+      /// Tensor indexing returns a pointer to the sample
       void* operator[]( dip::sint index ) const {
+         return Sample( index );
+      }
+      /// Pointer to a sampe of the current pixel
+      void* Sample( dip::sint index ) const {
          DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
          return image_->Pointer( offset_ + index * image_->TensorStride() );
       }
@@ -968,8 +972,9 @@ inline void swap( GenericImageIterator& v1, GenericImageIterator& v2 ) {
 ///
 /// This iterator works similarly to `dip::JointImageIterator` except it does not have the `In` and `Out`
 /// methods to obtain references to samples. Instead, use the `InPointer` and `OutPointer` methods to obtain
-/// a `void` pointer to the first sample in the pixels. The `InElement` and `OutElement` methods return
-/// a `void` pointer to any other sample.
+/// a `void` pointer to the first sample in the pixels. The `InSample` and `OutSample` methods return
+/// a `void` pointer to any other sample. Note that `In` and `Out` could also have been named `First` and
+/// `Second` -- there is no need for one image to be input and out to be output.
 ///
 /// It is not possible to obtain line or sample iterators from this iterator, and it has no support for
 /// accessing pixels in the neighborhood of the referenced pixel.
@@ -1023,13 +1028,13 @@ class GenericJointImageIterator {
          swap( coords_, other.coords_ );
          swap( procDim_, other.procDim_ );
       }
-      /// Index into input tensor.
-      void* InElement( dip::sint index ) const {
+      /// Pointer to a sampe of the current pixel for the in image.
+      void* InSample( dip::sint index ) const {
          DIP_THROW_IF( !inImage_, E::ITERATOR_NOT_VALID );
          return inImage_->Pointer( inOffset_ + index * inImage_->TensorStride() );
       }
-      /// Index into output tensor.
-      void* OutElement( dip::sint index ) const {
+      /// Pointer to a sampe of the current pixel for the out image.
+      void* OutSample( dip::sint index ) const {
          DIP_THROW_IF( !outImage_, E::ITERATOR_NOT_VALID );
          return outImage_->Pointer( outOffset_ + index * outImage_->TensorStride() );
       }

@@ -24,6 +24,10 @@ namespace dip {
 /// \brief The image math and statistics functions, except basic arithmetic and comparison, which are in module \ref operators.
 /// \{
 
+/// \brief Counts the number of non-zero pixels in a scalar image.
+dip::uint Count(
+      Image const& in
+);
 
 /// \brief Contains the return values for the function dip::GetMaximumAndMinimum.
 struct MaximumAndMinimum {

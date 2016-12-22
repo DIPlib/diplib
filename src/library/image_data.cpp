@@ -12,10 +12,6 @@
 #include <algorithm>
 
 #include "diplib.h"
-#include "diplib/iterators.h"
-#include "diplib/framework.h"
-#include "diplib/overload.h"
-#include "copy_buffer.h"
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
@@ -54,7 +50,7 @@ static dip::uint FindNumberOfPixels(
    dip::uint n = 1;
    for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
       DIP_THROW_IF( ( sizes[ ii ] != 0 ) && ( n > std::numeric_limits< dip::uint >::max() / sizes[ ii ] ),
-                   E::DIMENSIONALITY_EXCEEDS_LIMIT );
+                   E::SIZE_EXCEEDS_LIMIT );
       n *= sizes[ ii ];
    }
    return n;
@@ -591,7 +587,7 @@ void Image::Forge() {
       dip::uint size = FindNumberOfPixels( sizes_ );
       DIP_THROW_IF( size == 0, "Cannot forge an image without pixels (sizes must be > 0)" );
       DIP_THROW_IF( TensorElements() > std::numeric_limits< dip::uint >::max() / size,
-                   E::DIMENSIONALITY_EXCEEDS_LIMIT );
+                   E::SIZE_EXCEEDS_LIMIT );
       size *= TensorElements();
       if( externalInterface_ ) {
          dataBlock_ = externalInterface_->AllocateData( sizes_, strides_, tensor_, tensorStride_, dataType_ );
@@ -768,229 +764,5 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
 }
 
 #endif // DIP__ENABLE_DOCTEST
-
-
-//
-void Image::Copy( Image const& src ) {
-   DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
-   if( &src == this ) {
-      // Copying self... what for?
-      return;
-   }
-   if( IsForged() ) {
-      if( IsIdenticalView( src )) {
-         // Copy is a no-op
-         return;
-      }
-      if( !CompareProperties( src, Option::CmpProps_Sizes + Option::CmpProps_TensorElements ) ||
-            IsOverlappingView( src )) {
-         // We cannot reuse the data segment
-         Strip();
-      } else {
-         // We've got the data segment covered. Copy over additional properties
-         CopyNonDataProperties( src );
-      }
-   }
-   if( !IsForged() ) {
-      CopyProperties( src );
-      Forge();
-   }
-   dip::uint sstride_d;
-   void* porigin_d;
-   GetSimpleStrideAndOrigin( sstride_d, porigin_d );
-   if( porigin_d ) {
-      //std::cout << "dip::Image::Copy: destination has simple strides\n";
-      dip::uint sstride_s;
-      void* porigin_s;
-      src.GetSimpleStrideAndOrigin( sstride_s, porigin_s );
-      if( porigin_s ) {
-         //std::cout << "dip::Image::Copy: source has simple strides\n";
-         if( HasSameDimensionOrder( src )) {
-            // No need to loop
-            //std::cout << "dip::Image::Copy: no need to loop\n";
-            CopyBuffer(
-                  porigin_s,
-                  src.dataType_,
-                  static_cast< dip::sint >( sstride_s ),
-                  src.tensorStride_,
-                  porigin_d,
-                  dataType_,
-                  static_cast< dip::sint >( sstride_d ),
-                  tensorStride_,
-                  NumberOfPixels(),
-                  tensor_.Elements(),
-                  std::vector< dip::sint > {}
-            );
-            return;
-         }
-      }
-   }
-   // Make nD loop
-   //std::cout << "dip::Image::Copy: nD loop\n";
-   dip::uint processingDim = Framework::OptimalProcessingDim( src );
-   auto it = dip::GenericJointImageIterator( src, *this, processingDim );
-   do {
-      CopyBuffer(
-            it.InPointer(),
-            src.dataType_,
-            src.strides_[ processingDim ],
-            src.tensorStride_,
-            it.OutPointer(),
-            dataType_,
-            strides_[ processingDim ],
-            tensorStride_,
-            sizes_[ processingDim ],
-            tensor_.Elements(),
-            std::vector< dip::sint > {}
-      );
-   } while( ++it );
-}
-
-
-//
-void Image::Convert( dip::DataType dt ) {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   if( dt != dataType_ ) {
-      if( !IsShared() && ( dt.SizeOf() == dataType_.SizeOf() )) {
-         // The operation can happen in place.
-         // Loop over all pixels, casting with clamp each of the values; finally set the data type field.
-         dip::uint sstride;
-         void* porigin;
-         GetSimpleStrideAndOrigin( sstride, porigin );
-         if( porigin ) {
-            // No need to loop
-            //std::cout << "dip::Image::Convert: in-place, no need to loop\n";
-            CopyBuffer(
-                  porigin,
-                  dataType_,
-                  static_cast< dip::sint >( sstride ),
-                  tensorStride_,
-                  porigin,
-                  dt,
-                  static_cast< dip::sint >( sstride ),
-                  tensorStride_,
-                  NumberOfPixels(),
-                  tensor_.Elements(),
-                  std::vector< dip::sint > {}
-            );
-         } else {
-            // Make nD loop
-            //std::cout << "dip::Image::Convert: in-place, nD loop\n";
-            dip::uint processingDim = Framework::OptimalProcessingDim( *this );
-            auto it = GenericImageIterator( *this, processingDim );
-            do {
-               CopyBuffer(
-                     it.Pointer(),
-                     dataType_,
-                     strides_[ processingDim ],
-                     tensorStride_,
-                     it.Pointer(),
-                     dt,
-                     strides_[ processingDim ],
-                     tensorStride_,
-                     sizes_[ processingDim ],
-                     tensor_.Elements(),
-                     std::vector< dip::sint > {}
-               );
-            } while( ++it );
-         }
-         dataType_ = dt;
-      } else {
-         // We need to create a new data segment and copy it over.
-         // Simply create a new image, identical copy of *this, with a different data type, copy
-         // the data, then swap the two images.
-         //std::cout << "dip::Image::Convert: using Copy\n";
-         Image newimg;
-         newimg.ReForge( *this, dt );
-         newimg.Copy( *this );
-         swap( newimg );
-      }
-   }
-}
-
-
-//
-template< typename inT >
-static inline void InternFill( Image& dest, inT v ) {
-   DIP_THROW_IF( !dest.IsForged(), E::IMAGE_NOT_FORGED );
-   dip::uint sstride_d;
-   void* porigin_d;
-   dest.GetSimpleStrideAndOrigin( sstride_d, porigin_d );
-   if( porigin_d ) {
-      // No need to loop
-      FillBuffer(
-            porigin_d,
-            dest.DataType(),
-            sstride_d,
-            dest.TensorStride(),
-            dest.NumberOfPixels(),
-            dest.TensorElements(),
-            v
-      );
-   } else {
-      // Make nD loop
-      dip::uint processingDim = Framework::OptimalProcessingDim( dest );
-      auto it = GenericImageIterator( dest, processingDim );
-      do {
-         FillBuffer(
-               it.Pointer(),
-               dest.DataType(),
-               dest.Stride( processingDim ),
-               dest.TensorStride(),
-               dest.Size( processingDim ),
-               dest.TensorElements(),
-               v
-         );
-      } while( ++it );
-   }
-}
-
-void Image::Fill( dip::sint v ) {
-   InternFill( *this, v );
-}
-
-void Image::Fill( dfloat v ) {
-   InternFill( *this, v );
-}
-
-void Image::Fill( dcomplex v ) {
-   InternFill( *this, v );
-}
-
-// Casting the first sample (the first tensor component of the first pixel) to dcomplex.
-template< typename TPI >
-static inline dcomplex CastValueComplex( void* p ) {
-   return clamp_cast< dcomplex >( *static_cast< TPI* >( p ));
-}
-Image::operator dcomplex() const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dcomplex x;
-   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueComplex, ( origin_ ), dataType_ );
-   return x;
-}
-
-// Casting the first sample (the first tensor component of the first pixel) to dfloat.
-template< typename TPI >
-static inline dfloat CastValueDouble( void* p ) {
-   return clamp_cast< dfloat >( *static_cast< TPI* >( p ));
-}
-Image::operator dfloat() const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dfloat x;
-   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueDouble, ( origin_ ), dataType_ );
-   return x;
-}
-
-// Casting the first sample (the first tensor component of the first pixel) to sint.
-template< typename TPI >
-static inline dip::sint CastValueInteger( void* p ) {
-   return clamp_cast< dip::sint >( *static_cast< TPI* >( p ));
-}
-Image::operator dip::sint() const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::sint x;
-   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueInteger, ( origin_ ), dataType_ );
-   return x;
-}
 
 } // namespace dip

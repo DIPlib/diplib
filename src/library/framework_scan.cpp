@@ -87,7 +87,7 @@ void Scan(
          sizes = SingletonExpandedSize( in );
          for( dip::uint ii = 0; ii < nIn; ++ii ) {
             if( in[ ii ].Sizes() != sizes ) {
-               SingletonExpansion( in[ ii ], sizes );
+               in[ ii ].ExpandSingletonDimensions( sizes );
             }
          }
       } else {

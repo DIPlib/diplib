@@ -55,23 +55,6 @@ UnsignedArray SingletonExpandedSize(
    return size;
 }
 
-// Adjust the size of one image.
-void SingletonExpansion(
-      Image& in,
-      UnsignedArray const& size
-) {
-   dip::uint ndims = size.size();
-   if( in.Dimensionality() < ndims ) {
-      in.ExpandDimensionality( ndims );
-   }
-   UnsignedArray size2 = in.Sizes();
-   for( dip::uint ii = 0; ii < ndims; ++ii ) {
-      if( size2[ ii ] != size[ ii ] ) {
-         in.ExpandSingletonDimension( ii, size[ ii ] );
-      }
-   }
-}
-
 // Find best processing dimension, which is the one with the smallest stride,
 // except if that dimension is very small and there's a longer dimension.
 dip::uint OptimalProcessingDim(

@@ -13,6 +13,7 @@
 #include "diplib/boundary.h"
 #include "diplib/pixel_table.h"
 
+
 /// \file
 /// \brief Declares the `dip::Framework` namespace.
 /// \see frameworks, infrastructure
@@ -56,11 +57,12 @@ constexpr dip::uint MAX_BUFFER_SIZE = 256 * 1024;
 /// larger size by setting their stride to 0. This change can be performed
 /// without modifying the data segment. If image dimensions differ such that
 /// singleton expansion cannot make them all the same size, an exception is
-/// thrown. Use `dip::Framework::SingletonExpansion` to apply the transform
+/// thrown. Use `dip::Image::ExpandSingletonDimensions` to apply the transform
 /// to one image.
 UnsignedArray SingletonExpandedSize(
       ImageConstRefArray const& in
 );
+
 /// \brief Determines if images can be singleton-expanded to the same size, and what
 /// that size would be.
 ///
@@ -68,21 +70,10 @@ UnsignedArray SingletonExpandedSize(
 /// larger size by setting their stride to 0. This change can be performed
 /// without modifying the data segment. If image dimensions differ such that
 /// singleton expansion cannot make them all the same size, an exception is
-/// thrown. Use `dip::Framework::SingletonExpansion` to apply the transform
+/// thrown. Use `dip::Image::ExpandSingletonDimensions` to apply the transform
 /// to one image.
 UnsignedArray SingletonExpandedSize(
       ImageArray const& in
-);
-
-/// \brief Performs singleton expansion.
-///
-/// The image is modified so that it has `size`
-/// as dimensions. It must be forged and singleton-expandable to `size`,
-/// otherwise an exception is thrown. See `dip::Image::ExpandSingletonDimension`.
-/// `size` is the array as returned by `dip::Framework::SingletonExpandedSize`.
-void SingletonExpansion(
-      Image& in,
-      UnsignedArray const& size
 );
 
 /// \brief Determines the best processing dimension, which is the one with the
@@ -298,7 +289,7 @@ inline void ScanSingleOutput(
 
 /// \brief Calls `dip::Framework::Scan` with one input image.
 inline void ScanSingleInput(
-      Image& in,                       ///< Input image
+      Image const& in,                 ///< Input image
       DataType bufferType,             ///< Data type for input buffer
       ScanFilter lineFilter,           ///< Function to call for each image line
       void const* functionParameters,  ///< Parameters to pass to `lineFilter`

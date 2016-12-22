@@ -294,7 +294,7 @@ class DimensionArray {
          T const* lhsp = lhs.data_;
          T const* rhsp = rhs.data_;
          for( size_type ii = 0; ii < lhs.size_; ++ii ) {
-            if( * ( lhsp++ ) != * ( rhsp++ ) ) {
+            if( *( lhsp++ ) != *( rhsp++ ) ) {
                return false;
             }
          }
@@ -303,6 +303,62 @@ class DimensionArray {
       /// Compares two arrays, returns true if they have different size and/or contain different values.
       friend inline bool operator!=( DimensionArray const& lhs, DimensionArray const& rhs ) {
          return !( lhs == rhs );
+      }
+      /// Compares two arrays, returns true only if they have the same size and all `lhs` elements are larger than all `rhs` elements.
+      friend inline bool operator>( DimensionArray const& lhs, DimensionArray const& rhs ) {
+         if( lhs.size_ != rhs.size_ ) {
+            return false;
+         }
+         T const* lhsp = lhs.data_;
+         T const* rhsp = rhs.data_;
+         for( size_type ii = 0; ii < lhs.size_; ++ii ) {
+            if( *( lhsp++ ) <= *( rhsp++ ) ) {
+               return false;
+            }
+         }
+         return true;
+      }
+      /// Compares two arrays, returns true only if they have the same size and all `lhs` elements are smaller than all `rhs` elements.
+      friend inline bool operator<( DimensionArray const& lhs, DimensionArray const& rhs ) {
+         if( lhs.size_ != rhs.size_ ) {
+            return false;
+         }
+         T const* lhsp = lhs.data_;
+         T const* rhsp = rhs.data_;
+         for( size_type ii = 0; ii < lhs.size_; ++ii ) {
+            if( *( lhsp++ ) >= *( rhsp++ ) ) {
+               return false;
+            }
+         }
+         return true;
+      }
+      /// Compares two arrays, returns true only if they have the same size and all `lhs` elements are larger or equal than all `rhs` elements.
+      friend inline bool operator>=( DimensionArray const& lhs, DimensionArray const& rhs ) {
+         if( lhs.size_ != rhs.size_ ) {
+            return false;
+         }
+         T const* lhsp = lhs.data_;
+         T const* rhsp = rhs.data_;
+         for( size_type ii = 0; ii < lhs.size_; ++ii ) {
+            if( *( lhsp++ ) < *( rhsp++ ) ) {
+               return false;
+            }
+         }
+         return true;
+      }
+      /// Compares two arrays, returns true only if they have the same size and all `lhs` elements are smaller or equal than all `rhs` elements.
+      friend inline bool operator<=( DimensionArray const& lhs, DimensionArray const& rhs ) {
+         if( lhs.size_ != rhs.size_ ) {
+            return false;
+         }
+         T const* lhsp = lhs.data_;
+         T const* rhsp = rhs.data_;
+         for( size_type ii = 0; ii < lhs.size_; ++ii ) {
+            if( *( lhsp++ ) > *( rhsp++ ) ) {
+               return false;
+            }
+         }
+         return true;
       }
 
       /// Sort the contents of the array from smallest to largest.

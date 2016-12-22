@@ -72,6 +72,7 @@ using sfloat = float;            ///< Type for samples in a 32-bit floating poin
 using dfloat = double;           ///< Type for samples in a 64-bit floating point (double-precision) image
 using scomplex = std::complex< sfloat >;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
 using dcomplex = std::complex< dfloat >;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
+
 /// \brief Type for samples in a binary image. Can store 0 or 1. Ocupies 1 byte.
 struct bin {
    // Binary data stored in a single byte (don't use bool for pixels, it has
@@ -117,6 +118,9 @@ using UnsignedArray = DimensionArray< dip::uint >;  ///< An array to hold dimens
 using FloatArray = DimensionArray< dip::dfloat >;   ///< An array to hold filter parameters.
 using BooleanArray = DimensionArray< bool >;        ///< An array used as a dimension selector.
 
+using CoordinateArray = std::vector< UnsignedArray >; ///< An array of pixel coordinates.
+
+
 /// \brief Check the length of an array, and extend it if necessary and possible.
 ///
 /// This function is used where a function's
@@ -136,31 +140,6 @@ inline DimensionArray< T > ArrayUseParameter( DimensionArray< T > const& array, 
    }
 }
 
-/* THESE DON'T COMPILE
-
-/// \brief Cast an UnsignedArray to an IntegerArray.
-explicit operator IntegerArray( UnsignedArray in ) {
-   IntegerArray out( in.size() );
-   auto init = in.begin();
-   auto outit = out.begin();
-   for( ; init != in.end() ; ++init, ++outit ) {
-      *outit = static_cast< dip::sint >( *init );
-   }
-   return out;
-}
-
-/// \brief Cast an IntegerArray to an UnsignedArray.
-explicit operator UnsignedArray( IntegerArray in ) {
-   UnsignedArray out( in.size() );
-   auto init = in.begin();
-   auto outit = out.begin();
-   for( ; init != in.end() ; ++init, ++outit ) {
-      *outit = static_cast< dip::uint >( *init );
-   }
-   return out;
-}
-
-*/
 
 //
 // Strings, used for parameters and other things
@@ -333,6 +312,12 @@ namespace Option {
 enum class ThrowException {
    DONT_THROW, ///< Do not throw and exception, return false if the condition is not met.
    DO_THROW    ///< Throw an exception if the condition is not met.
+};
+
+/// \brief The function `dip::Image::CheckIsMask` takes this option to control how sizes are compared.
+enum class AllowSingletonExpansion {
+   DONT_ALLOW, ///< Do not allow singleton expansion.
+   DO_ALLOW    ///< Allow singleton expansion.
 };
 
 /// \class dip::Option::CmpProps

@@ -38,7 +38,7 @@ Image& Image::PermuteDimensions( UnsignedArray const& order ) {
    sizes_ = newsizes;
    strides_ = newstrides;
    pixelSize_ = newpixelsz;
-   return * this;
+   return *this;
 }
 
 
@@ -51,7 +51,7 @@ Image& Image::SwapDimensions( dip::uint dim1, dip::uint dim2 ) {
       std::swap( strides_[ dim1 ], strides_[ dim2 ] );
       pixelSize_.SwapDimensions( dim1, dim2 );
    }
-   return * this;
+   return *this;
 }
 
 
@@ -79,7 +79,7 @@ Image& Image::Flatten() {
    } else {
       pixelSize_.Clear();      // else set the pixel size to 'undefined'
    }
-   return * this;
+   return *this;
 }
 
 
@@ -97,7 +97,7 @@ Image& Image::Squeeze() {
    strides_.resize( jj );
    sizes_.resize( jj );
    pixelSize_.Resize( jj );
-   return * this;
+   return *this;
 }
 
 
@@ -111,7 +111,7 @@ Image& Image::AddSingleton( dip::uint dim ) {
    // We set added singleton dimensions to 0 stride. The value is
    // irrelevant, but we use this as a flag for added singletons
    // in the Image::Aliases() function.
-   return * this;
+   return *this;
 }
 
 
@@ -124,7 +124,7 @@ Image& Image::ExpandDimensionality( dip::uint dim ) {
       // it continues to be. Otherwise, the last dimension's size is repeated for the
       // new dimensions.
    }
-   return * this;
+   return *this;
 }
 
 
@@ -134,7 +134,37 @@ Image& Image::ExpandSingletonDimension( dip::uint dim, dip::uint sz ) {
    DIP_THROW_IF( sizes_[ dim ] != 1, E::INVALID_PARAMETER );
    sizes_[ dim ] = sz;
    strides_[ dim ] = 0;
-   return * this;
+   return *this;
+}
+
+
+Image& Image::ExpandSingletonDimensions( UnsignedArray const& newSizes ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint ndims = newSizes.size();
+   DIP_THROW_IF( sizes_.size() > ndims, E::DIMENSIONALITIES_DONT_MATCH );
+   if( sizes_.size() < ndims ) {
+      ExpandDimensionality( ndims );
+   }
+   DIP_THROW_IF( !IsSingletonExpansionPossible( newSizes ), E::SIZES_DONT_MATCH );
+   for( dip::uint ii = 0; ii < ndims; ++ii ) {
+      if( sizes_[ ii ] != newSizes[ ii ] ) {
+         ExpandSingletonDimension( ii, newSizes[ ii ] );
+      }
+   }
+   return *this;
+}
+
+
+bool Image::IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const {
+   if( sizes_.size() > newSizes.size() ) {
+      return false;
+   }
+   for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
+      if( ( sizes_[ ii ] != newSizes[ ii ] ) && ( sizes_[ ii ] != 1 ) ) {
+         return false;
+      }
+   }
+   return true;
 }
 
 
@@ -148,7 +178,7 @@ Image& Image::Mirror( BooleanArray const& process ) {
          strides_[ ii ] = -strides_[ ii ];
       }
    }
-   return * this;
+   return *this;
 }
 
 
@@ -166,7 +196,7 @@ Image& Image::TensorToSpatial( dip::sint dim ) {
    tensor_.SetScalar();
    tensorStride_ = 1;
    ResetColorSpace();
-   return * this;
+   return *this;
 }
 
 
@@ -194,7 +224,7 @@ Image& Image::SpatialToTensor( dip::sint dim, dip::uint rows, dip::uint cols ) {
    strides_.erase( olddim );
    pixelSize_.EraseDimension( olddim );
    ResetColorSpace();
-   return * this;
+   return *this;
 }
 
 Image& Image::SplitComplex( dip::sint dim ) {
@@ -217,7 +247,7 @@ Image& Image::SplitComplex( dip::sint dim ) {
    sizes_.insert( newdim, 2 );
    strides_.insert( newdim, 1 );
    pixelSize_.InsertDimension( newdim );
-   return * this;
+   return *this;
 }
 
 Image& Image::MergeComplex( dip::sint dim ) {
@@ -241,7 +271,7 @@ Image& Image::MergeComplex( dip::sint dim ) {
    }
    tensorStride_ /= 2;
    pixelSize_.EraseDimension( olddim );
-   return * this;
+   return *this;
 }
 
 Image& Image::SplitComplexToTensor() {
@@ -258,7 +288,7 @@ Image& Image::SplitComplexToTensor() {
    tensor_.SetVector( 2 );
    tensorStride_ = 1;
    ResetColorSpace();
-   return * this;
+   return *this;
 }
 
 Image& Image::MergeTensorToComplex() {
@@ -275,7 +305,7 @@ Image& Image::MergeTensorToComplex() {
       strides_[ ii ] /= 2;
    }
    ResetColorSpace();
-   return * this;
+   return *this;
 }
 
 } // namespace dip

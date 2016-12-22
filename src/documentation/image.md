@@ -2,7 +2,7 @@
 
 [comment]: # (The `ingroup` statement above avoids the generation of an empty page for this file. The actual group we add the file to is irrelevant, nothing is actually added.)
 
-\class dip::Image
+\class dip::Image diplib.h
 
 \brief Represents an image with all associated information.
 
@@ -424,14 +424,115 @@ be set to the tensor values in the initializer list:
 
 \section indexing Indexing
 
+There are different modes of indexing pixels in an `%Image` object. They can be
+split into two main categories: those that produce a view of the image, and those
+that copy the samples. A view is an `%Image` that shares the data segment with
+the oringial image, and gives access to a regular subset of the pixels. You can
+think here of a specific tensor component, a window, subsampling, etc. These
+views can be created by manipulating the origin pointer, the strides, and the
+sizes (see /ref strides). Indexing an irregular subset of pixels cannot be done
+with this mechanism, and therefore sample values are copied.
+
 
 \subsection tensor_indexing Tensor dimensions
+
+To address one channel in a color image is a rather common operation, and therefore
+we have delegated the C++ indexing operator (`[]`) to the task of extracting a
+tensor component from an image (remember that a channel is a tensor component).
+For example:
+
+    dip::Image red = colorIm[ 0 ];
+
+For a two-dimensional matrix it is possible to index using two values in an array:
+
+    dip::Image out = tensorIm[ dip::UnsignedArray{ i, j } ];
+
+In both cases, the image created shares the pixels with the original image, meaning
+that it is possible to write to a channel in this way:
+
+    colorIm[ 0 ].Copy( colorIm[ 1 ] );
+    dip::Gauss( colorIm[ 2 ], colorIm[ 2 ], { 4 } );
+
+The function `dip::Image::Diagonal` extracts the tensor elements along the diagonal
+of the tensor, yielding a vector image.
+
+// TODO: we need to document the image reshaping functions also!
 
 
 \subsection regular_indexing Regular indexing (windows, ROI processing, subsampling)
 
+The function `dip::Image::At` is used for creating views that represent a subset of
+pixels. It has different forms, accepting either a `dip::UnsignedArray` representing
+the coordinates of one pixel, an index to a pixel, or a set of `dip::Range` objects
+representing regular pixel intervals along one dimension through a start, stop and
+step value. That is, a range indicates a portion of an image line, with optional
+subsampling. For example, indexing into a 1D image:
+
+    image1D.At( dip::Range{ 5 } );          // indexes pixel at coordinate 5
+    image1D.At( dip::Range{ 0, 10 } );      // indexes the first 11 pixels
+    image1D.At( dip::Range{ 0, -1, 2 } );   // indexes every second pixel
+
+Note that negative values index from the end, without needing to know the exact
+size of the image.
+
+For indexing into multidimensional images, simply provide one range per dimension.
+For more than 3 dimensions, provide a `dip::RangeArray`.
+
+As is the case with the `[]` indexing, these operations yield an image that
+shares data with the original image, and therefore can be used to write to the
+selected subset of pixels:
+
+    image.At( dip::UnsignedArray{ 5, 10 } ) += 1;
+
+Combining tensor and spatial indexing can be done in either order, with identical
+results:
+
+    image.At( dip::UnsignedArray{ 5, 10 } )[ 1 ];
+    image[ 1 ].At( dip::UnsignedArray{ 5, 10 } );
+
+
+\subsection other_views Other ways of creating a view of an image
+
+There are a few other possible views of an image that one can create.
+
+`dip::Image::QuickCopy` creates a view over all pixels, but the output
+image does not contain "non-essential" information such as color space and
+pixel size. This is useful where the const input image to a function must be
+reshaped.
+
+`dip::Image::Real` and `dip::Image::Imaginary` create views over images with
+a complex data type. The resulting view has a corresponding floating-point
+data type, mapping only one of the components of the complex samples.
+
 
 \subsection irregular_indexing Irregular indexing
+
+Indexing an arbitrary subset of pixels can be accomplished in three ways, using
+one of:
+ * a mask image
+ * a list of linear indices into the image
+ * a list of pixel coordinates
+
+These three forms can all be accomodated using the `dip::Image::CopyAt`
+functions, which create a new image and copy pixel data over, resulting
+in a 1D image:
+
+    dip::Image out = image.CopyAt( mask );
+
+These functions are called `CopyAt` rather than simply `At` to reinfoce that
+sample values are copied into the new image. Therefore, when writing into
+these images, the original image is not affected. To write data into selected
+pixels, use the version of this function that takes two arguments:
+
+    image.CopyAt( data, mask );
+
+Here, `data` is an image with as many pixels as are selected by `mask` (or
+the indices or coordinates array). So, to modify a subset of pixels, one
+can extract them first, then write them back after modification:
+
+    Image result = image.CopyAt( mask );  // get the pixels
+    result += 1;                          // modify them
+    image.CopyAt( result, mask );         // write them back into the image
 
 
 [//]: # (--------------------------------------------------------------)

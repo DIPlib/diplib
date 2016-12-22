@@ -33,28 +33,37 @@ static inline void CopyBufferFromTo(
       std::vector< dip::sint > const& lookUpTable // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
 ) {
    //std::cout << "CopyBuffer: ";
-   for( dip::uint pp = 0; pp < pixels; ++pp ) {
-      inT const* in = inBuffer;
-      outT* out = outBuffer;
-      if( lookUpTable.empty() ) {
-         for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
-            *out = clamp_cast< outT >( *in );
-            //std::cout << *out << " ";
-            in += inTensorStride;
-            out += outTensorStride;
-         }
-      } else {
-         for( dip::uint tt = 0; tt < lookUpTable.size(); ++tt ) {
-            *out = lookUpTable[ tt ] < 0 ? outT( 0 ) : clamp_cast< outT >( in[ lookUpTable[ tt ] ] );
-            //std::cout << *out << " ";
-            out += outTensorStride;
-         }
+   if( tensorElements == 1 ) {
+      for( dip::uint pp = 0; pp < pixels; ++pp ) {
+         *outBuffer = clamp_cast< outT >( *inBuffer );
+         inBuffer += inStride;
+         outBuffer += outStride;
       }
-      inBuffer += inStride;
-      outBuffer += outStride;
+   } else {
+      for( dip::uint pp = 0; pp < pixels; ++pp ) {
+         inT const* in = inBuffer;
+         outT* out = outBuffer;
+         if( lookUpTable.empty() ) {
+            for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
+               *out = clamp_cast< outT >( *in );
+               //std::cout << *out << " ";
+               in += inTensorStride;
+               out += outTensorStride;
+            }
+         } else {
+            for( dip::uint tt = 0; tt < lookUpTable.size(); ++tt ) {
+               *out = lookUpTable[ tt ] < 0 ? outT( 0 ) : clamp_cast< outT >( in[ lookUpTable[ tt ] ] );
+               //std::cout << *out << " ";
+               out += outTensorStride;
+            }
+         }
+         inBuffer += inStride;
+         outBuffer += outStride;
+      }
    }
    //std::cout << std::endl;
 }
+// TODO: make a template specialization where inT == outT, using std::memcpy when there's multiple tensor elements and tstride == 1.
 
 template< typename inT >
 static inline void CopyBufferFrom(

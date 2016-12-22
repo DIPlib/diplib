@@ -119,7 +119,7 @@ constexpr char const* DATA_TYPE_NOT_SUPPORTED = "Data type not supported";
 constexpr char const* WRONG_DATA_TYPE = "Data type does not match";
 
 // image dimensionality and dimensions error
-constexpr char const* DIMENSIONALITY_EXCEEDS_LIMIT = "Dimensionality exceeds address limit";
+constexpr char const* SIZE_EXCEEDS_LIMIT = "Size exceeds address limit";
 constexpr char const* ILLEGAL_DIMENSIONALITY = "Illegal dimensionality";
 constexpr char const* DIMENSIONALITY_NOT_SUPPORTED = "Dimensionality not supported";
 constexpr char const* DIMENSIONALITIES_DONT_MATCH = "Dimensionalities don't match";
@@ -133,7 +133,8 @@ constexpr char const* NO_NORMAL_STRIDE = "Image has a non-normal stride";
 
 // mask image properties errors
 constexpr char const* MASK_NOT_BINARY = "Mask image not binary";
-constexpr char const* MASK_TOO_MANY_DIMENSIONS = "Mask image has too many dimensions";
+constexpr char const* MASK_NOT_SCALAR = "Mask image not scalar";
+constexpr char const* MASK_DIMENSIONS_NOT_COMPATIBLE = "Mask image dimensions not compatible";
 
 // indexing errors
 constexpr char const* INDEX_OUT_OF_RANGE = "Index out of range";

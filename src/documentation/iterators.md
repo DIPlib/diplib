@@ -121,7 +121,7 @@ Note that `it.In()` returns a const reference to the sample, indicating that
 it is meant as the input image. The joint image iterator cannot be dereferenced,
 as it points at two samples at the same time.
 
-To access the various tensor elements, use the `InElement()` and `OutElement()`
+To access the various tensor elements, use the `InSample()` and `OutSample()`
 methods.
 
 There is also a `dip::GenericJointImageIterator`, which, just like
