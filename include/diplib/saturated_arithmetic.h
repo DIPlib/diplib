@@ -30,7 +30,7 @@ namespace dip {
 
 /// \addtogroup sample_operators
 ///
-/// `dip::saturated_XXX` are templated functions for saturated arithmetic. Most DIPlib functions take care
+/// `dip::saturated_XXX` are templated functions for saturated arithmetic. Most *DIPlib* functions take care
 /// of properly clamping the result of operations on pixels by using these functions to perform arithmetic.
 /// For example,
 ///

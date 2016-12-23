@@ -46,7 +46,7 @@ namespace dip {
 
 /// \brief Support for external interfaces.
 ///
-/// Software using DIPlib might want to
+/// Software using *DIPlib* might want to
 /// control how the image data is allocated. Such software should derive
 /// a class from this one, and assign a pointer to it into each of the
 /// images that it creates, through Image::SetExternalInterface().

@@ -3,13 +3,13 @@ title: 'Work plan for DIPlib 3.0'
 author: 'Cris Luengo'
 ...
 
-# Work plan for DIPlib 3.0
+# Work plan for *DIPlib* 3.0
 
 This is a list of tasks that need to be done, in order of dependencies.
 This list includes dependencies and an estimate of how much design work needs
 to be done before that component can be implemented.
 
-Header files mentioned are from the currently released version of DIPlib ("the old DIPlib").
+Header files mentioned are from *DIPlib* 2.0 ("the old *DIPlib*").
 
 Priority for these items to be discussed. Framework and other infrastructure
 elements have highest priority, because other things depend on them. Some filters
@@ -32,9 +32,9 @@ done in parallel.
 
 1.  Arithmetic, bitwise and comparison operators (dependent on `dip::Framework::Scan()`)
 
-1.  MATLAB interface is partially completed. It is possible to convert `dip::Image`
-    objects to MATLAB arrays and vice-versa. No support yet for arrays, constants
-    and strings. No support yet on the MATLAB side for a `dip_image` object.
+1.  *MATLAB* interface is partially completed. It is possible to convert `dip::Image`
+    objects to *MATLAB* arrays and vice-versa. No support yet for arrays, constants
+    and strings. No support yet on the *MATLAB* side for a `dip_image` object.
 
 1.  Image iterators. Need to be tested more thoroughly, some features have not been
     tested at all...
@@ -64,7 +64,7 @@ done in parallel.
     BioFormats.
 
 1.  **(X)**
-    Color support. **Design work done.** Port existing MATLAB code within
+    Color support. **Design work done.** Port existing *MATLAB* code within
     current framework, and use `dip::Framework::Scan()` to apply conversions to all
     pixels in an image.
 
@@ -78,19 +78,19 @@ done in parallel.
     are ready to be parallelized.
 
 1.  **(X)**
-    MATLAB interface. **Requires special expertise**. Add conversion of strings,
-    constants and arrays for input and output parameters. Rewrite the MATLAB
-    `dip_image` class. Add support for the `dip_image` class in the MATLAB interface.
-    MEX-files for DIPlib functions to be added as these functions are written.
+    *MATLAB* interface. **Requires special expertise**. Add conversion of strings,
+    constants and arrays for input and output parameters. Rewrite the *MATLAB*
+    `dip_image` class. Add support for the `dip_image` class in the *MATLAB* interface.
+    MEX-files for *DIPlib* functions to be added as these functions are written.
     Certain functionality in the `dip_image` class depends on functionality in
-    DIPlib that still needs to be written. The `dip_measurement` class needs
-    rewriting too. `dipshow` to use a DIPlib function to generate an RGB image for
+    *DIPlib* that still needs to be written. The `dip_measurement` class needs
+    rewriting too. `dipshow` to use a *DIPlib* function to generate an RGB image for
     display.
 
 1.  Python interface. **Requires special expertise**. Using one of the C++/Python
     interface generators. Write interactive image display and GUI as exists in
-    MATLAB. This can be developed in parallel to the MATLAB interface, or after
-    the MATLAB interface is complete.
+    *MATLAB*. This can be developed in parallel to the *MATLAB* interface, or after
+    the *MATLAB* interface is complete.
 
 1.  Other interfaces. **Requires special expertise**. Header files that define
     functions to create a `dip::Image` object around image data from other libraries,
@@ -115,7 +115,7 @@ done in parallel.
 
 1.  **(X)**
     Histograms. **Some design work needed** (a class to hold the histogram data, possibly
-    based on `dip::Image` as is the case in the old DIPlib). The multi-dimensional
+    based on `dip::Image` as is the case in the old *DIPlib*). The multi-dimensional
     histogram will work on tensor images also. Depends on `dip::Framework::Scan()`.
     - dip_histogram.h
 
@@ -138,7 +138,7 @@ done in parallel.
 
 1.  **(X)**
     The Fourier and associated transforms (built on `dip::Framework::Separable()`).
-    The code in the old DIPlib is very slow. We could copy code from OpenCV as a
+    The code in the old *DIPlib* is very slow. We could copy code from OpenCV as a
     free to use implementation, and provide an optional module that uses FFTW (not
     free, it's GPL which turns any application using it into GPL),
 
@@ -186,6 +186,6 @@ done in parallel.
     - xx, yy, zz, rr, phiphi, ramp; extend this to `Coordinates()`, which makes a
       tensor image (based on `dip::Framework::ScanSingleOutput()`)
 
-1.  Other stuff that's not in the old DIPlib (see DIPthoughts.md).
+1.  Other stuff that's not in the old *DIPlib* (see `DIPthoughts.md`).
     **Requires special expertise**, and presumably depends on frameworks and other
     infrastructure to be available.

@@ -1,10 +1,10 @@
 \page using_iterators Using iterators to implement filters
 
-DIPlib provides a set of iterators that can be used to efficiently visit all
+*DIPlib* provides a set of iterators that can be used to efficiently visit all
 pixels in an image, independently of the dimensionality of the image.
 These iterators can be used to implement filters and other monadic operators.
 This page shows how to use these iterators to write different types of image
-processing functionality. However, most of the filters in DIPlib are not written
+processing functionality. However, most of the filters in *DIPlib* are not written
 using these iterators, but using the functions in the `dip::Framework` namespace.
 Those functions take care of many things, avoiding the need to replicate that
 functionality in each filter:
@@ -257,7 +257,7 @@ many efficient algorithm.
 
 \section iterate_slices Processing an image slice by slice
 
-Most filters in DIPlib are applicable to images of any dimensionality, and one can
+Most filters in *DIPlib* are applicable to images of any dimensionality, and one can
 choose to not filter along a specific dimension. This is useful, for example, in the
 case of a time series image, a 3D image where the 3rd dimension is time. One might
 want to filter each of the 2D slices in the same way, but not mix information from

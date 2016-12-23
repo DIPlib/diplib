@@ -8,6 +8,8 @@
 #include "dip_matlab_interface.h"
 
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+   dml::streambuf streambuf;
+
    if( nrhs != 2 ) {
       mexErrMsgTxt( "Two input images expected" );
    }

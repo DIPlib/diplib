@@ -6,43 +6,17 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "dip_matlab_interface.h"
 
-void print_info( dip::Image const& img ) {
-   mexPrintf( "Image %dD (", img.Dimensionality() );
-   dip::UnsignedArray sizes = img.Sizes();
-   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
-      mexPrintf( " %d ", sizes[ ii ] );
-   }
-   mexPrintf( "), %s, strides: (", img.DataType().Name() );
-   dip::IntegerArray stride = img.Strides();
-   for( dip::uint ii = 0; ii < stride.size(); ++ii ) {
-      mexPrintf( " %d ", stride[ ii ] );
-   }
-   mexPrintf( ")\n" );
-   if( img.IsForged() ) {
-      mexPrintf( "   origin pointer: %lu", ( dip::uint )img.Origin() );
-      if( img.HasContiguousData() ) {
-         if( img.HasNormalStrides() ) {
-            mexPrintf( " (strides are normal)" );
-         } else {
-            mexPrintf( " (strides are contiguous but not normal)" );
-         }
-      }
-   } else {
-      mexPrintf( "   not forged" );
-   }
-   mexPrintf( "\n" );
-}
-
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
+   dml::streambuf streambuf;
    try {
 
       mexPrintf( "Creating output image img_out0\n" );
       dml::MatlabInterface mi;
       dip::Image img_out0 = mi.NewImage();
       img_out0.SetSizes( { 3, 5 } );
-      print_info( img_out0 );
+      std::cout << img_out0;
       img_out0.Forge();
-      print_info( img_out0 );
+      std::cout << img_out0;
 
       mexPrintf( "Reallocating output image img_out0\n" );
       img_out0.Strip();
@@ -58,13 +32,13 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       if( nrhs > 0 ) {
          mexPrintf( "Obtaining input image img_in0\n" );
          dip::Image const img_in0 = dml::GetImage( prhs[ 0 ] );
-         print_info( img_in0 );
+         std::cout << img_in0;
          mexPrintf( "Exiting scope\n" );
       }
 
       mexPrintf( "The two output images:\n" );
-      print_info( img_out0 );
-      print_info( img_out1 );
+      std::cout << img_out0;
+      std::cout << img_out1;
 
       mexPrintf( "Getting the array for img_out0\n" );
       plhs[ 0 ] = mi.GetArray( img_out0 );

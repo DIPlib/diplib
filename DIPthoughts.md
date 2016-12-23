@@ -20,7 +20,7 @@ one would write
 For efficiency. There is template meta-programming that can convert an
 expression like the first one into a call like the second one, but that
 is too much templates for my taste. Is that really worth it? It doesn't
-translate to other languages (Python, MATLAB, etc.).
+translate to other languages (Python, *MATLAB*, etc.).
 
 We could try to complete the function that Mike started writing eons
 ago(?), in which a string expression is evaluated and applied pixel by
@@ -68,7 +68,7 @@ the `dip::ColourConverter` class. For example, the RGB converter could
 carry a whitepoint value, that the user can set by interacting directly
 with the RGB object. (It's not really clear yet how...) This seems better
 than my original idea of having the whitepoint attached to the image
-(which is also how we do it in DIPimage).
+(which is also how we do it in *DIPimage*).
 
 With the conversion path as a list of function/object pointers, we call the
 point-scanning framework and for each pixel we call each of the
@@ -83,7 +83,7 @@ be made.
 
 ## Processing images -- how to access and modify pixels
 
-The old DIPlib does most processing through the [frameworks][Frameworks].
+The old *DIPlib* does most processing through the [frameworks][Frameworks].
 These are great because they handle a lot of things -- creating the output
 image(s), dealing with different data types and dimensionalities, apply
 filters using multithreading, etc. But the frameworks can use some
@@ -263,7 +263,7 @@ necessary:
 
     - look-up tables (LUT, both for grey-scale and colour LUTs, using
       interpolation when input image is float) -- some of this is implemented
-      already in DIPlib.
+      already in *DIPlib*.
 
     - general 2D affine transformation, 3D rotation.
 
@@ -296,9 +296,9 @@ extract a 2D slice ready for display would be needed also, make display
 super-fast!
 
 
-## MATLAB interface
+## *MATLAB* interface
 
-The MATLAB toolbox will be significantly simplified:
+The *MATLAB* toolbox will be significantly simplified:
 
 -   No need for the `libdml.so` / `libdml.dll` library, as there are no
     globals to store, and not much code to compile.
@@ -341,34 +341,34 @@ The M-file code will need to be adapted:
 -   `dipshow` will be simplified, as simple calls to a *DIPlib* display
     function will generate the 2D array for display.
 
-### Issues with the current MATLAB interface
+### Issues with the current *MATLAB* interface
 
 Currently (version 2), complex images need to be copied over in the
-interface, as DIPlib and MATLAB represent them differently. There are
-two solutions: DIPlib represents them as MATLAB does (which seems like
+interface, as *DIPlib* and *MATLAB* represent them differently. There are
+two solutions: *DIPlib* represents them as *MATLAB* does (which seems like
 a really bad idea to me), or we cast them to a non-complex array that
-MATLAB can be happy with even if it doesn't interpret it correctly.
-Only when converting the `dip_image` object to a MATLAB array will the
+*MATLAB* can be happy with even if it doesn't interpret it correctly.
+Only when converting the `dip_image` object to a *MATLAB* array will the
 copy be necessary. It could be simple to include a 'complex' dimension
 as the first dimension of the `mxArray` (for real images, this would have
 a size of 1). The new tensor dimension would then be the second dimension
 (for scalar images, again of size 1). Thus, the mxArray would always be:
 [complex, tensor, x, y, z, ...]. A reshape would get rid of the first
-dimension to translate to a MATLAB array, in case of a real image.
+dimension to translate to a *MATLAB* array, in case of a real image.
 A complex image would need a simple copy.
 
 If we go this route, we might as well go all the way, and always have
 a one-dimensional uint8 array inside the `dip_image` object. Each of the
 `dip::Image` member elements would be copied into the `dip_image` object,
 to make the conversion back and forth in the interface as trivial as possible.
-All indexing and basic operations that are computed in MATLAB in the
-old implementation would go through DIPlib in the new implementation.
+All indexing and basic operations that are computed in *MATLAB* in the
+old implementation would go through *DIPlib* in the new implementation.
 The `dml` interface would also copy the image data into an `mxArray`
 (or two for complex images). This step would then not be as efficient
-as it is in the old DIPimage, but should be avoided anyway. The only
+as it is in the old *DIPimage*, but should be avoided anyway. The only
 place where this step needs to be efficient is in the generation of a
 display image, which could be arranged by creating that image as an
-encapsulated `mxArray` with the right dimensions and strides for MATLAB
+encapsulated `mxArray` with the right dimensions and strides for *MATLAB*
 to show it.
 
 
@@ -387,7 +387,7 @@ at that time. I'm sure this is good enough for us. There are no
 indications of a license at all... Another alternative is
 [*Kiss FFT*](https://sourceforge.net/projects/kissfft/), a simple FFT
 written in a single C++ header file and BSD licensed, and presumably
-quite a bit faster than the current FFT implementation in DIPlib.
+quite a bit faster than the current FFT implementation in *DIPlib*.
 However, the implementation on OpenCV is 4 to 10 times faster than
 *Kiss FFT* in my quick test with various array sizes (even if less precise).
 

@@ -10,6 +10,13 @@ Specifically:
   which should be defined in their own namespaces (e.g. the `dml` namespace for the
   *DIPlib*--*MATLAB* interface).
 
+- Don't put `dip::` in front of every identifyer within the library code, but do always
+  do so for `dip::sint` and `dip::uint`, as they might be confused with types commonly
+  present in the base namespace or as preprocessor macros.
+
+- Do explicitly state the namespace for identifyers from every other library, including
+  `std::`. This makes it easier to find references to specific types or functions.
+
 - All functions local to a translation unit must be declared `static` to prevent
   name space pollution. This also prevents them for being exported out of the library.
 
@@ -18,7 +25,7 @@ Specifically:
 - Use `struct` for classes without any private members.
 
 - Option parameters to high-level functions (those that should be available in interfaces
-  to other languages such as MATLAB) should be strings or string arrays, which are easier
+  to other languages such as *MATLAB*) should be strings or string arrays, which are easier
   to translate to scripted languages.
 
 - Option parameters to low-level functions (those that are meant to be called only from

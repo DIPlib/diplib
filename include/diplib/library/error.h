@@ -32,7 +32,7 @@ namespace dip {
 /// \{
 
 
-/// \brief Base exception class. All exceptions thrown in DIPlib are derived of this class.
+/// \brief Base exception class. All exceptions thrown in *DIPlib* are derived of this class.
 ///
 /// You can catch this exception at the top level, where you can communicate the problem to the user,
 /// and only if you want to prevent your program from exiting abnormally.
@@ -241,7 +241,7 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 /// \def DIP_CATCH
 /// \brief Ends a try/catch block that builds a stack trace when an exception is thrown.
 ///
-/// To build a stack trace, some library functions catch DIPlib exceptions, add their name and other info to it,
+/// To build a stack trace, some library functions catch *DIPlib* exceptions, add their name and other info to it,
 /// then re-throw. To simplify this mechanism and make it easier to future changes, this macro and its partner
 /// `#DIP_TRY` are used by these library functions. Use then as follows:
 ///

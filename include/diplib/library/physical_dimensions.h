@@ -49,7 +49,7 @@ namespace dip {
 /// Note that radian (`BaseUnits::ANGLE`), though dimensionless, is treated
 /// as a specific unit here. Also, mass is measured in grams, rather than kilograms,
 /// because it simplifies writing prefixes (we presume the Kg won't be used much
-/// in DIPlib...).
+/// in *DIPlib*...).
 ///
 /// Prefixes are recorded with the `BaseUnits::THOUSANDS` value. It indicates how
 /// often to multiply by 10^3. Thus, a value of 1 here corresponds to the 'k'

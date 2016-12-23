@@ -22,21 +22,21 @@
 namespace dip {
 
 
-/// \brief Frameworks are the basis of most pixel-based processing in DIPlib.
+/// \brief Frameworks are the basis of most pixel-based processing in *DIPlib*.
 ///
 /// The various frameworks implement iterating over image pixels, giving
 /// access to a single pixel, a whole image line, or a pixel's neighborhood.
 /// The programmer needs to define a function that loops over one dimension.
 /// The framework will call this function repeatedly to process all the image's
 /// lines, thereby freeing the programmer from implementing loops over multiple
-/// dimensions. This process allows most of DIPlib's filters to be dimensionality
+/// dimensions. This process allows most of *DIPlib*'s filters to be dimensionality
 /// independent, with little effort from the programmer.
 namespace Framework {
 
 
 /// \defgroup frameworks Frameworks
 /// \ingroup infrastructure
-/// \brief Functions that form the basis of most pixel-based processing in DIPlib.
+/// \brief Functions that form the basis of most pixel-based processing in *DIPlib*.
 ///
 /// \{
 

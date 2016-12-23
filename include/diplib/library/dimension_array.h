@@ -47,7 +47,7 @@ namespace dip {
 /// particular use: hold one element per image dimension. Most images have
 /// only two or three dimensions, and for internal processing we might add the
 /// tensor dimension to the mix, yielding up to four dimensions for most
-/// applications. However, DIPlib does not limit image dimensionality, and we
+/// applications. However, *DIPlib* does not limit image dimensionality, and we
 /// need to be able to hold more than four dimensions if the user needs to do
 /// so. We want the array holding the image dimensions to be as efficient in
 /// use as a static array of size 4, but without the limitation of a static
@@ -57,7 +57,7 @@ namespace dip {
 ///
 /// It also differs from std::vector in that it doesn't grow or shrink
 /// efficiently, don't use this type when repeatedly using `push_back()` or
-/// similar functionality. The DIPlib codebase uses dip::DimensionArray only
+/// similar functionality. The *DIPlib* codebase uses dip::DimensionArray only
 /// where the array holds one value per image dimension, or when more often
 /// than not the array will have very few elements, and `std::vector` everywhere
 /// else.

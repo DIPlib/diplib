@@ -83,7 +83,7 @@ using ValueInformationArray = std::vector< ValueInformation >;
 /// A forged `%Measurement` can be read from in various ways, and a writeable pointer to the
 /// data can be obtained. As with the `dip::Image` class, data pointes are always writeable,
 /// even if the object is const-qualified. This simplifies the code, at the expense of opening
-/// the door to undesireable modifications to data. DIPlib will never modify the data of a
+/// the door to undesireable modifications to data. *DIPlib* will never modify the data of a
 /// const `%Measurement`.
 ///
 /// The columns of the `%Measurement` table are the feature values. Since each feature can have multiple

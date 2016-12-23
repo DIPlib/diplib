@@ -34,7 +34,7 @@ namespace dip {
 ///
 /// `%dip::clamp_cast` is an operator that returns the input value cast to a different
 /// type, clamped to the range of values representable by that output type. This
-/// is also often referred to as saturated cast. Most DIPlib functions take care of properly
+/// is also often referred to as saturated cast. Most *DIPlib* functions take care of properly
 /// clamping values when casting pixel values. This typically is more intuitive and useful
 /// when processing images than the default C/C++ overflow behavior, which corresponds to
 /// modular arithmetic for integer values.

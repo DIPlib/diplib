@@ -115,7 +115,7 @@ examples:
   of the dimensions (as in the case of the mirrored image).
 
 Arbitrary strides also allow data segments from other software to be
-encapsulated by an `%Image` object. For example, MATLAB stores images
+encapsulated by an `%Image` object. For example, *MATLAB* stores images
 with columns contiguous in memory, requiring `strides[1] == 1`.
 
 All routines in the library support images with arbitrary strides.

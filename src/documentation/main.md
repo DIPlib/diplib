@@ -1,4 +1,4 @@
-# DIPlib 3.0 {#mainpage}
+# *DIPlib* 3.0 {#mainpage}
 
 ## Introduction
 

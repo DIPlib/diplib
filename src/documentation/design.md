@@ -1,6 +1,6 @@
-\page design DIPlib 3.0 design decisions
+\page design *DIPlib* 3.0 design decisions
 
-This page gives reasons behind some of the design choices of *DIPlib 3.0*.
+This page gives reasons behind some of the design choices of *DIPlib* 3.0.
 Many of these decisions are inherited from the previous version of the library,
 and some new ones are made possible by the port to C++.
 
@@ -38,7 +38,7 @@ for a very elegant chaingin of operations:
     img = Filter2( Filter1( img, 3 ), 1 );
 
 Furthermore, style 2 makes it much easier to automatically generate interfaces
-to languages (such as MATLAB) that do not allow a function to modify its input
+to languages (such as *MATLAB*) that do not allow a function to modify its input
 arguments. Such an automatic interface generation tool needs to know which
 arguments are inputs and which are outputs.
 
@@ -213,7 +213,7 @@ Implementing correct handling of const objects would require two versions of all
 iterators (a const one and a non-const one). Since these iterators are quire complex,
 and the benefit of correct const handling is limited, we decided to follow the same
 principle as with the `dip::Image` object: non-const data access is always allowed, but
-DIPlib has an explicit policy to not to change data of a const object.
+*DIPlib* has an explicit policy to not to change data of a const object.
 
 
 [//]: # (--------------------------------------------------------------)
@@ -223,7 +223,7 @@ DIPlib has an explicit policy to not to change data of a const object.
 Traditionally, neighborhood connectivity is given as 4 or 8 in a 2D image, 6, 18 or 26
 in a 3D image, etc. These numbers indicate the number of neighbors one obtains when
 using the given connectivity. Since this way of indicating connectivity does not naturally
-lead to dimensionality-independent code, DIPlib uses the distance to the neighbors in
+lead to dimensionality-independent code, *DIPlib* uses the distance to the neighbors in
 city-block distance instead (the L1 norm). Thus, the connectivity is a number between
 1 and *N*, where *N* is the image dimensionality. For example, in a 2D image,
 a connectivity of 1 leads to 4 nearest neighbors (the edge neighbors), and a connectivity

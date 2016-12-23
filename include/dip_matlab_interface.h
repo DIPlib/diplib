@@ -11,12 +11,12 @@
 
 #include <map>
 #include <utility>
-using std::swap;
+#include <streambuf>
+#include <iostream>
 
 #include "mex.h"
 #include "diplib.h"
 
-#include <iostream>
 
 /// \file
 /// \brief This file should be included in each MEX file. It defines the
@@ -25,21 +25,21 @@ using std::swap;
 /// file that will be linked together.
 
 
-/// \brief The dml namespace contains the interface between MATLAB and DIPlib. It defines
+/// \brief The dml namespace contains the interface between *MATLAB* and *DIPlib*. It defines
 /// the functions needed to convert between `mxArray` objects and dip::Image objects.
 // TODO: add more documentation here on how to use the dml interface.
 namespace dml {
 
 // These are the names of the fields of the dip_image structure in MATLAB:
-static char const* dataFieldName = "data";
-static char const* typeFieldName = "dip_type";
-static char const* dimsFieldName = "dims";
-static char const* tensorFieldName = "tensor";
+static constexpr char const* dataFieldName = "data";
+static constexpr char const* typeFieldName = "dip_type";
+static constexpr char const* dimsFieldName = "dims";
+static constexpr char const* tensorFieldName = "tensor";
 
 constexpr dip::uint maxNameLength = 50;
 
 // An error message
-static char const* InputImageError = "MATLAB image data of unsupported type.";
+static constexpr char const* InputImageError = "MATLAB image data of unsupported type.";
 
 //
 // Private funtions
@@ -139,7 +139,7 @@ static mxClassID GetMatlabClassID(
    return type;
 }
 
-/// \brief This class is the dip::ExternalInterface for the MATLAB interface.
+/// \brief This class is the dip::ExternalInterface for the *MATLAB* interface.
 ///
 /// In a MEX-file, use the following code when declaring images to be
 /// used as the output to a function:
@@ -148,7 +148,7 @@ static mxClassID GetMatlabClassID(
 ///     dip::Image img_out0 = mi.NewImage();
 ///     dip::Image img_out1 = mi.NewImage();
 ///
-/// To return those images back to MATLAB, use the GetArray() method:
+/// To return those images back to *MATLAB*, use the GetArray() method:
 ///
 ///     plhs[0] = mi.GetArray( img_out0 );
 ///     plhs[1] = mi.GetArray( img_out1 );
@@ -159,10 +159,10 @@ static mxClassID GetMatlabClassID(
 ///
 /// Remember to not assing a result into the images created with NewImage,
 /// as they will be overwritten and no longer contain data allocated by
-/// MATLAB. Instead, use the DIPlib functions that take output images as
+/// *MATLAB*. Instead, use the *DIPlib* functions that take output images as
 /// function arguments:
 ///
-///     img_out0 = in1 + in2; // WRONG! img_out0 will not contain data allocated by MATLAB
+///     img_out0 = in1 + in2; // WRONG! img_out0 will not contain data allocated by *MATLAB*
 ///     dip::Add( in1, in2, out, DataType::SuggestArithmetic( in1.DataType(), in1.DataType() ) ); // Correct
 ///
 /// This interface handler doesn't own any image data.
@@ -191,7 +191,7 @@ class MatlabInterface : public dip::ExternalInterface {
    public:
       /// This function overrides dip::ExternalInterface::AllocateData().
       /// It is called when an image with this `ExternalInterface` is forged.
-      /// It allocates a MATLAB `mxArray` and returns a `std::shared_ptr` to the
+      /// It allocates a *MATLAB* `mxArray` and returns a `std::shared_ptr` to the
       /// `mxArray` data pointer, with a custom deleter functor. It also
       /// adjusts strides to match the `mxArray` storage.
       ///
@@ -217,6 +217,7 @@ class MatlabInterface : public dip::ExternalInterface {
             dip::uint n = sizes.size();
             // MATLAB arrays switch y and x axes
             if( n >= 2 ) {
+               using std::swap;
                swap( mlsizes[ 0 ], mlsizes[ 1 ] );
             }
             // Create stride array
@@ -233,6 +234,7 @@ class MatlabInterface : public dip::ExternalInterface {
             tstride = s;
             // MATLAB arrays switch y and x axes
             if( n >= 2 ) {
+               using std::swap;
                swap( strides[ 0 ], strides[ 1 ] );
             }
             // MATLAB arrays have at least 2 dimensions.
@@ -299,7 +301,7 @@ class MatlabInterface : public dip::ExternalInterface {
       }
 
       /// \brief Constructs a dip::Image object with the external interface set so that,
-      /// when forged, a MATLAB `mxArray` will be allocated to hold the samples.
+      /// when forged, a *MATLAB* `mxArray` will be allocated to hold the samples.
       ///
       /// Use dml::MatlabInterface::GetArray to obtain the `mxArray` and assign
       /// it as a `lhs` argument to your MEX-file.
@@ -315,12 +317,12 @@ void VoidStripHandler( void const* p ) {
    //mexPrintf( "   Input mxArray not being destroyed\n" );
 };
 
-/// \brief Passing an `mxArray` to DIPlib, keeping ownership of the data.
+/// \brief Passing an `mxArray` to *DIPlib*, keeping ownership of the data.
 ///
 /// This function "converts" an `mxArray` with image data to a dip::Image object.
 /// The dip::Image object will point to the data in the `mxArray`, unless
 /// the array contains complex numbers. Complex data needs to be copied because
-/// MATLAB represents it internally as two separate data blocks. In that
+/// *MATLAB* represents it internally as two separate data blocks. In that
 /// case, the dip::Image object will own its own data block.
 ///
 /// When calling GetImage with a `prhs` argument in `mexFunction()`, use a const
@@ -440,6 +442,7 @@ dip::Image GetImage( mxArray const* mx ) {
       return dip::Image();
    }
    if( ndims >= 2 ) {
+      using std::swap;
       swap( sizes[ 0 ], sizes[ 1 ] );
       swap( strides[ 0 ], strides[ 1 ] );
    }
@@ -467,6 +470,40 @@ dip::Image GetImage( mxArray const* mx ) {
       return dip::Image( p, datatype, sizes, strides, tensor, tstride, nullptr );
    }
 }
+
+/// \brief An output stream buffer for MEX-files.
+///
+/// Creating an object of this class replaces the stream buffer in `std::cout` with the newly
+/// created object. This buffer will be used as long as the object exists. When the object
+/// is destroyed (which happens automatically when it goes out of scope), the original
+/// stream buffer is replaced.
+///
+/// Create an object of this class at the beginning of any MEX-file that uses `std::cout` to
+/// print information to the *MATLAB* terminal. *DIPlib* defines several classes with a stream
+/// insertion operator that would be cumbersome to use with a `std::stringstream` and `mexPrintf`.
+/// This class simplifies their use.
+class streambuf : public std::streambuf {
+   public:
+      streambuf() {
+         stdoutbuf = std::cout.rdbuf( this );
+      }
+      ~streambuf() {
+         std::cout.rdbuf( stdoutbuf );
+      }
+   protected:
+      virtual std::streamsize xsputn( const char* s, std::streamsize n ) override {
+         mexPrintf( "%.*s", n, s );
+         return n;
+      }
+      virtual int overflow( int c = EOF ) override {
+         if( c != EOF ) {
+            mexPrintf( "%.1s", & c );
+         }
+         return 1;
+      }
+   private:
+      std::streambuf *stdoutbuf;
+};
 
 } // namespace dml
 

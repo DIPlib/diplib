@@ -8,6 +8,8 @@
 #include "diplib/iterators.h"
 
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
+   dml::streambuf streambuf;
+
    try {
 
       dml::MatlabInterface mi;
