@@ -18,7 +18,7 @@ void ExtendImage(
       Image& out,
       UnsignedArray borderSizes,
       StringArray const& boundaryCondition,
-      bool masked
+      String masked
 ) {
    // Test input arguments
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -37,7 +37,7 @@ void ExtendImage(
       sizes[ ii ] += 2 * borderSizes[ ii ];
    }
    DIP_TRY
-      out.ReForge( sizes, in.TensorElements(), in.DataType(), true );
+      out.ReForge( sizes, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
    DIP_CATCH
 
    // The view on the output image that matches the input
@@ -74,7 +74,7 @@ void ExtendImage(
    }
 
    // Produce output by either using tmp directly or making a window of the original size over it.
-   if( masked ) {
+   if( masked == "yes" ) {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          dip::sint b = static_cast< dip::sint >( borderSizes[ ii ] );
          ranges[ ii ] = Range{ b, -b-1 };

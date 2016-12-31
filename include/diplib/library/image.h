@@ -935,12 +935,16 @@ class Image {
       /// If `this` doesn't match the requested properties, it must be stripped
       /// and forged. If `this` is protected (see `dip::Image::Protect`) and
       /// forged, an exception will be thrown by `dip::Image::Strip`. However,
-      /// if `acceptDataTypeChange` is `true`, a protected image will keep its
+      /// if `acceptDataTypeChange` is `dip::Option::AcceptDataTypeChange::DO_ALLOW`,
+      /// a protected image will keep its
       /// old data type, and no exception will be thrown if this data type
       /// is different from `dt`. Note that other properties much still match
       /// if `this` was forged. Thus, this flag allows `this` to control the
       /// data type of the image, ignoring any requested data type here.
-      void ReForge( Image const& src, bool acceptDataTypeChange = false ) {
+      void ReForge(
+            Image const& src,
+            Option::AcceptDataTypeChange acceptDataTypeChange = Option::AcceptDataTypeChange::DONT_ALLOW
+      ) {
          ReForge( src, src.dataType_, acceptDataTypeChange );
       }
 
@@ -956,12 +960,17 @@ class Image {
       /// If `this` doesn't match the requested properties, it must be stripped
       /// and forged. If `this` is protected (see `dip::Image::Protect`) and
       /// forged, an exception will be thrown by `dip::Image::Strip`. However,
-      /// if `acceptDataTypeChange` is `true`, a protected image will keep its
+      /// if `acceptDataTypeChange` is `dip::Option::AcceptDataTypeChange::DO_ALLOW`,
+      /// a protected image will keep its
       /// old data type, and no exception will be thrown if this data type
       /// is different from `dt`. Note that other properties much still match
       /// if `this` was forged. Thus, this flag allows `this` to control the
       /// data type of the image, ignoring any requested data type here.
-      void ReForge( Image const& src, dip::DataType dt, bool acceptDataTypeChange = false ) {
+      void ReForge(
+            Image const& src,
+            dip::DataType dt,
+            Option::AcceptDataTypeChange acceptDataTypeChange = Option::AcceptDataTypeChange::DONT_ALLOW
+      ) {
          ReForge( src.sizes_, src.tensor_.Elements(), dt, acceptDataTypeChange );
          CopyNonDataProperties( src );
       }
@@ -977,15 +986,18 @@ class Image {
       /// If `this` doesn't match the requested properties, it must be stripped
       /// and forged. If `this` is protected (see `dip::Image::Protect`) and
       /// forged, an exception will be thrown by `dip::Image::Strip`. However,
-      /// if `acceptDataTypeChange` is `true`, a protected image will keep its
+      /// if `acceptDataTypeChange` is `dip::Option::AcceptDataTypeChange::DO_ALLOW`,
+      /// a protected image will keep its
       /// old data type, and no exception will be thrown if this data type
       /// is different from `dt`. Note that other properties much still match
       /// if `this` was forged. Thus, this flag allows `this` to control the
       /// data type of the image, ignoring any requested data type here.
-      void ReForge( UnsignedArray const& sizes,
-                    dip::uint tensorElems = 1,
-                    dip::DataType dt = DT_SFLOAT,
-                    bool acceptDataTypeChange = false );
+      void ReForge(
+            UnsignedArray const& sizes,
+            dip::uint tensorElems = 1,
+            dip::DataType dt = DT_SFLOAT,
+            Option::AcceptDataTypeChange acceptDataTypeChange = Option::AcceptDataTypeChange::DONT_ALLOW
+      );
 
       /// \brief Dissasociate the data segment from the image. If there are no
       /// other images using the same data segment, it will be freed.

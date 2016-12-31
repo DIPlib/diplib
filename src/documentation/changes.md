@@ -1,4 +1,4 @@
-# Changes from *DIPlib* 2.0 (the old *DIPlib*) {#changes}
+# Changes from DIPlib 2.0 (the old DIPlib) {#changes}
 
 *DIPlib* 3.0 is a complete rewrite in C++ of the *DIPlib* 2.0 infrastructure, which was written
 in C; only the code that implements actual image processing and analysis algorithms is ported
@@ -7,7 +7,6 @@ over.
 ## Core/infrastructure changes
 
 - Functions and types used to start with `dip_`, now they are in the `dip::` namespace. All
-  
 
 - Functions no longer return a `dip_Error`, they throw an exception instead. The `DIPXJ`
   et al. macros are gone. So are the `DIP_FNR_DECLARE` / `DIP_FNR_INITIALISE` /
@@ -44,15 +43,15 @@ over.
      library!
 
 - The framework functions all have different names:
-    - `dip_SeparableFrameWork` -> `dip::Framework::Separable()`
-    - `dip_MonadicFrameWork` -> `dip::Framework::ScanMonadic()` / `dip::Framework::SeparableMonadic()`
-    - `dip_MonadicPoint` -> `dip::Framework::ScanMonadic()`
-    - `dip_MonadicPointData` -> `dip::Framework::ScanMonadic()`
-    - `dip_PixelTableArrayFrameWork` -> `dip::Framework::Full()`
-    - `dip_PixelTableFrameWork` -> `dip::Framework::FullMonadic()`
-    - `dip_ScanFrameWork` -> `dip::Framework::Scan()` / `dip::Framework::ScanDyadic()`
-    - `dip_SingleOutputFrameWork` -> `dip::Framework::ScanSingleOutput()`
-    - `dip_SingleOutputPoint` -> `dip::Framework::ScanSingleOutput()`
+    - `dip_SeparableFrameWork` -> `dip::Framework::Separable`
+    - `dip_MonadicFrameWork` -> `dip::Framework::ScanMonadic` / `dip::Framework::SeparableMonadic`
+    - `dip_MonadicPoint` -> `dip::Framework::ScanMonadic`
+    - `dip_MonadicPointData` -> `dip::Framework::ScanMonadic`
+    - `dip_PixelTableArrayFrameWork` -> doesn't exist any more, was used meaningfully only in `dip_GeneralisedKuwaharaImproved`
+    - `dip_PixelTableFrameWork` -> `dip::Framework::Full`
+    - `dip_ScanFrameWork` -> `dip::Framework::Scan()` / `dip::Framework::ScanDyadic`
+    - `dip_SingleOutputFrameWork` -> `dip::Framework::ScanSingleOutput`
+    - `dip_SingleOutputPoint` -> `dip::Framework::ScanSingleOutput`
 
   Their interfaces are not exactly compatible, but it should be relatively straightforward
   to port old line functions to use the new framework, yielding shorter code.
@@ -68,7 +67,7 @@ over.
 
 ## Changes in algorithm interface
 
-- Function parameters are now represented by strings rather than `#define` or `enum`
+- Function parameters are now represented by strings rather than \c \#define or `enum`
   constants.
 
 - `dip_Measure` is now `dip::MeasurementTool::Measure`, with `dip::MeasurementTool` an object
@@ -92,3 +91,8 @@ over.
   has been added, which works similarly but yields a continuous second derivative at the boundary.
   These functions are quite noise sensitive, however, and I expect they might produce high
   frequencies along the edge.
+
+- Fixed little bug in the perimeter measurement feature, which didn't check the corner count
+  for the transition from the last to the first chain code, yielding a perimeter that was often
+  0.0910 pixels too long.
+

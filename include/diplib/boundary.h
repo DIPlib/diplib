@@ -170,12 +170,12 @@ void ReadPixelWithBoundaryCondition(
 /// boundary condition is used along all dimensions. If `boundaryCondition` has a single element, it is used for all
 /// dimensions. Similarly, if `borderSizes` has a single element, it is used for all dimensions.
 ///
-/// If `masked` is true, the output image is a window on the boundary-extended image, of the
+/// If `masked` is "yes", the output image is a window on the boundary-extended image, of the
 /// same size as `in`. That is, `out` will be identical to `in` except that it is possible
 /// to access pixels outside of its domain.
-void ExtendImage( Image const& in, Image& out, UnsignedArray borderSizes, StringArray const& boundaryCondition, bool masked = false );
+void ExtendImage( Image const& in, Image& out, UnsignedArray borderSizes, StringArray const& boundaryCondition, String masked = "no" );
 
-inline Image ExtendImage( Image const& in, UnsignedArray const& borderSizes, StringArray const& boundaryCondition, bool masked = false ) {
+inline Image ExtendImage( Image const& in, UnsignedArray const& borderSizes, StringArray const& boundaryCondition, String masked = "no" ) {
    Image out;
    ExtendImage( in, out, borderSizes, boundaryCondition, masked );
    return out;

@@ -627,9 +627,9 @@ void Image::ReForge(
       UnsignedArray const& sizes,
       dip::uint tensorElems,
       dip::DataType dt,
-      bool acceptDataTypeChange
+      Option::AcceptDataTypeChange acceptDataTypeChange
 ) {
-   if( acceptDataTypeChange && protect_ ) {
+   if(( acceptDataTypeChange == dip::Option::AcceptDataTypeChange::DO_ALLOW ) && protect_ ) {
       dt = dataType_;
    }
    if( IsForged() ) {

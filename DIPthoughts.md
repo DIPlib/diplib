@@ -103,11 +103,6 @@ is done in different ways in the old code.
 
 This is already described in the code.
 
-An alternative would be to combine the function pointer and the
-structure with parameters to pass to this function into a functor
-object. This could add a lot of flexibility and of course avoids the
-use of pointers altogether.
-
 
 ### Image iterators
 

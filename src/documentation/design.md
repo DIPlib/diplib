@@ -1,4 +1,4 @@
-\page design *DIPlib* 3.0 design decisions
+\page design DIPlib 3.0 design decisions
 
 This page gives reasons behind some of the design choices of *DIPlib* 3.0.
 Many of these decisions are inherited from the previous version of the library,
@@ -218,37 +218,46 @@ principle as with the `dip::Image` object: non-const data access is always allow
 
 [//]: # (--------------------------------------------------------------)
 
-\section connectivity Connectivity
+\section design_frameworks Frameworks
 
-Traditionally, neighborhood connectivity is given as 4 or 8 in a 2D image, 6, 18 or 26
-in a 3D image, etc. These numbers indicate the number of neighbors one obtains when
-using the given connectivity. Since this way of indicating connectivity does not naturally
-lead to dimensionality-independent code, *DIPlib* uses the distance to the neighbors in
-city-block distance instead (the L1 norm). Thus, the connectivity is a number between
-1 and *N*, where *N* is the image dimensionality. For example, in a 2D image,
-a connectivity of 1 leads to 4 nearest neighbors (the edge neighbors), and a connectivity
-of 2 leads to 8 nearest neighbors (the edge and vertex neighbors).
+The frameworks simplify the writing of many image processing algorithms such that
+they work on images of many different data types, are dimensionality independent,
+and use multithreading. Framework functions also take on the task of testing input
+images and creating output images. Typically, an image processing function only
+needs to write a function that processes a single image line.
 
-We use negative values for connectivity in some algorithms. These indicate alternating
-connectivities, which leads to more isotropic shapes in e.g. the binary dilation than
-using the same connectivity for all iterations.
+Such a line function is passed to the framework function, and the framework
+function calls the line function for every image line. The line function might
+need a state (parameters, intermediate data, output data). Furthermore, intermediate
+and output data (i.e. data that the line function writes) must be separate for each
+thread calling the line function. The old DIPlib did this in the typical C fashion:
+a function pointer and a `void*` to the state. The framework function passed the
+`void*` to the line function, which would cast it back to its original type. C++11
+offers several alternatives that are more type-safe, and offer greater flexibility.
 
-In terms of the classical connectivity denominations we have, in 2D:
+One option (that we did not choose) would be using `std::function`, which is an object
+that encapsulates a function pointer, a lambda, or a functor with a predetermined
+signature. It would be possible to write a lambda function that captures some variables
+by reference, or to use `std::bind` to bind local variables to a function pointer. It
+would also be possible to write a more complex class whose objects can be 'called'
+with the required signature (functor). `std::function` has some overhead, especially
+at creation.
 
-Connectivity | Classical denominations | Structuring element shape
------------- | ----------------------- | -------------------------
-1            | 4 connectivity          | diamond
-2            | 8 connectivity          | square
--1           | 4-8 connectivity        | octagon
--2           | 8-4 connectivity        | octagon
+The other option (that we did choose) is through derived classes and virtual functions.
+A base class with a pure virtual function serves as the "model". An object of a derived
+class, implementing a specific image analysis algorithm, can be referenced using a base
+class pointer. The derived class can have variables that the algorithm uses,
+including references to local variables in the caller's workspace. A benefit of this
+option over the `std::function` is that we were able to define a second function
+in the class, which the framework function calls once, before starting the processing,
+and after it has decided how many threads to use. This allows the creation of
+intermediate state variables for each thread. Without this facility, intermediate
+state needs to be created for each potential thread (i.e. by examining the maximum
+number of threads setting), which might be wasted effort if fewer threads will be
+used.
 
-And in 3D:
-
-Connectivity | Classical denominations | Structuring element shape
------------- | ----------------------- | -------------------------
-1            | 6 connectivity          | octahedron
-2            | 18 connectivity         | cuboctahedron
-3            | 26 connectivity         | cube
--1           | 6-26 connectivity       | small rhombicuboctahedron
--3           | 26-6 connectivity       | small rhombicuboctahedron
-
+A `std::function` might have offered more flexibility in how to implement the line
+function, and would have allowed to write simple line functions inline, using a
+lambda. However, the syntax using a derived class with a virtual function is somewhat
+simpler and more straight-forward, and thus more accessible. This was the main reason
+for us to choose the approach we chose.

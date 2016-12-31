@@ -29,11 +29,11 @@ namespace dip {
 
 /// \brief Contains the various Feret diameters as returned by `dip::ConvexHull::Feret` and `dip::ChainCode::Feret`.
 struct FeretValues {
-   dfloat maxDiameter = 0.0;
-   dfloat minDiameter = 0.0;
-   dfloat maxPerpendicular = 0.0; // The width of the object perpendicular to minDiameter
-   dfloat maxAngle = 0.0;
-   dfloat minAngle = 0.0;
+   dfloat maxDiameter = 0.0;        ///< The maximum Feret diameter
+   dfloat minDiameter = 0.0;        ///< The minimum Feret diameter
+   dfloat maxPerpendicular = 0.0;   ///< The Feret diameter perpendicular to `minDiameter`
+   dfloat maxAngle = 0.0;           ///< The angle at which `maxDiameter` was measured
+   dfloat minAngle = 0.0;           ///< The angle at which `minDiameter` was measured
 };
 
 
@@ -42,8 +42,12 @@ template< typename T >
 struct Vertex {
    T x;   ///< The x-coordinate
    T y;   ///< The y-coordinate
-   Vertex() : x( T( 0 ) ), y( T( 0 ) ) {}  ///< Default constructor
-   Vertex( T x, T y ) : x( x ), y( y ) {}   ///< Constructor
+
+   /// Default constructor
+   Vertex() : x( T( 0 ) ), y( T( 0 ) ) {}
+   /// Constructor
+   Vertex( T x, T y ) : x( x ), y( y ) {}
+
    /// Add a vertex
    template< typename V >
    Vertex& operator+=( Vertex< V > v ) {
@@ -103,6 +107,7 @@ struct Vertex {
       v *= n;
       return v;
    }
+
    /// Compare two vertices
    friend bool operator==( Vertex v1, Vertex v2 ) {
       return ( v1.x == v2.x ) && ( v1.y == v2.y );
@@ -213,22 +218,23 @@ struct ChainCode {
    /// Adds a code to the end of the chain.
    void Push( Code const& code ) { codes.push_back( code ); }
 
-   /// Returns the length of the chain code using the method by Vossepoel and Smeulders. If the chain code
+   /// \brief Returns the length of the chain code using the method by Vossepoel and Smeulders. If the chain code
    /// represents the closed contour of an object, add pi to the result.
    dfloat Length() const;
 
-   /// Returns the Feret diameters, using an angular step size in radian of `angleStep`.
+   /// \brief Returns the Feret diameters, using an angular step size in radian of `angleStep`.
    /// It is better to use `chainCode.ConvexHull().Feret()`.
    FeretValues Feret( dfloat angleStep ) const;
 
    /// Holds the various output values of the `dip::ChainCode::Radius` function.
    struct RadiusValues {
-      dfloat max = 0.0;
-      dfloat mean = 0.0;
-      dfloat min = 0.0;
-      dfloat var = 0.0;
+      dfloat max = 0.0;    ///< Maximum radius
+      dfloat mean = 0.0;   ///< Mean radius
+      dfloat min = 0.0;    ///< Minimum radius
+      dfloat var = 0.0;    ///< Radius variance
    };
-   /// Returns statistics on the radius of the object.
+   /// \brief Returns statistics on the radii of the object. The radii are the distances between the centroid and
+   /// each of the boundary pixels.
    RadiusValues Radius() const;
 
    /// Returns the length of the longest run of idenitcal chain codes.

@@ -8,7 +8,7 @@ Specifically:
 - Everything should be declared within the `dip` namespace, or a sub-namespace. The
   exception is functionality that interfaces *DIPlib* with other libraries or software,
   which should be defined in their own namespaces (e.g. the `dml` namespace for the
-  *DIPlib*--*MATLAB* interface).
+  *DIPlib--MATLAB* interface).
 
 - Don't put `dip::` in front of every identifyer within the library code, but do always
   do so for `dip::sint` and `dip::uint`, as they might be confused with types commonly
@@ -20,7 +20,7 @@ Specifically:
 - All functions local to a translation unit must be declared `static` to prevent
   name space pollution. This also prevents them for being exported out of the library.
 
-- Prefer using `using` over `typedef`.
+- Prefer `using` over `typedef`.
 
 - Use `struct` for classes without any private members.
 
@@ -33,9 +33,14 @@ Specifically:
   `enum class`, preferably in `dip::Option::` or another sub-namespace. These are simpler
   and more efficient than strings.
 
-- Don't use boolean parameters, prefer "yes"/"no" or "on"/"off" strings in high-level
-  functions, and `enum class` with two options defined in `dip::Option::` namespace for
-  low-level functions.
+- Don't use `bool` as a function parameter, prefer "yes"/"no" or "on"/"off" strings in
+  high-level functions, and `enum class` with two options defined in `dip::Option::`
+  namespace for low-level functions.
+
+- Multiple return values are preferably combined in a `struct`, rather than a `std::tuple`
+  or similar, as a `struct` has named members and is easier to use. Output should rarely
+  be put into the function's argument list, with the exception of images
+  (see \ref design_function_signatures).
 
 ## Naming conventions:
 
@@ -49,9 +54,9 @@ Specifically:
   that do something have a name that resembles a verb: `Forge`, `Convert`, `PermuteDimensions`.
 
 - The exception is in classes such as `dip::DimensionArray`, which is meant to emulate
-  the `std::vector` class, and therefore follows the naming convention of the STL. Also,
-  most classes define a `swap` operator that needs to be named as in the STL to be
-  useful.
+  the `std::vector` class, and therefore follows the naming convention of the C++ Standard
+  Library. Also, most classes define a `swap` operator that needs to be named as in
+  the C++ Standard Library to be useful.
 
 - Use all uppercase letters for preprocessor macros. Separate words with an underscore.
   Macros always start with `DIP_`, or `DIP__` if it is an internal macro not meant to

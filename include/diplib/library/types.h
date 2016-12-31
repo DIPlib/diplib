@@ -74,29 +74,32 @@ using scomplex = std::complex< sfloat >;   ///< Type for samples in a 64-bit com
 using dcomplex = std::complex< dfloat >;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
 
 /// \brief Type for samples in a binary image. Can store 0 or 1. Ocupies 1 byte.
-struct bin {
+class bin {
    // Binary data stored in a single byte (don't use bool for pixels, it has
-   // implementation-defined size). We define this struct for binary data so
+   // implementation-defined size). We define this class for binary data so
    // that we can overload functions differently for bin and for uint8.
-   uint8 v_;
+   public:
 
-   // Overload constructors to make sure we always write 0 or 1 in the bin.
-   /// The default value is 0 (false)
-   constexpr bin() : v_( 0 ) {};
+      // Overload constructors to make sure we always write 0 or 1 in the bin.
+      /// The default value is 0 (false)
+      constexpr bin() : v_( 0 ) {};
 
-   /// A bool implicitly converts to bin
-   constexpr bin( bool v ) : v_( v ) {};
+      /// A bool implicitly converts to bin
+      constexpr bin( bool v ) : v_( v ) {};
 
-   /// Any arithmetic type converts to bin by comparing to zero
-   template< typename T >
-   constexpr explicit bin( T v ) : v_( !!v ) {};
+      /// Any arithmetic type converts to bin by comparing to zero
+      template< typename T >
+      constexpr explicit bin( T v ) : v_( !!v ) {};
 
-   /// A complex value converts to bin by comparing the absolute value to zero
-   template< typename T >
-   constexpr explicit bin( std::complex< T > v ) : v_( !!std::abs( v ) ) {};
+      /// A complex value converts to bin by comparing the absolute value to zero
+      template< typename T >
+      constexpr explicit bin( std::complex< T > v ) : v_( !!std::abs( v ) ) {};
 
-   /// A bin implicitly converts to bool
-   operator bool() const { return v_; }
+      /// A bin implicitly converts to bool
+      operator bool() const { return v_; }
+
+   private:
+      uint8 v_;
 };
 
 // if 8 bits is not a byte...
@@ -318,6 +321,12 @@ enum class ThrowException {
 enum class AllowSingletonExpansion {
    DONT_ALLOW, ///< Do not allow singleton expansion.
    DO_ALLOW    ///< Allow singleton expansion.
+};
+
+/// \brief The function `dip::Image::ReForge` takes this option to control how to handle protected images.
+enum class AcceptDataTypeChange {
+   DONT_ALLOW, ///< Do not allow data type change, the output image is always of the requested type.
+   DO_ALLOW    ///< Allow data type change, if the output image is protected, it will be used as is.
 };
 
 /// \class dip::Option::CmpProps
