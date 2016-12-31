@@ -89,34 +89,31 @@ using FeatureArray = std::vector< Feature::Base* >;
 
 // dip::Framework::ScanFilter function, not overloaded because the Feature::LineBased::Measure functions
 // that we call here are not overloaded.
-static void dip__Measure(
-      std::vector< Framework::ScanBuffer > const& inBuffer,
-      std::vector< Framework::ScanBuffer >& outBuffer,
-      dip::uint bufferLength,
-      dip::uint dimension,
-      UnsignedArray const& position,
-      void const* functionParameters,
-      void*
-) {
-   LineIterator< uint32 > label(
-         static_cast< uint32* >( inBuffer[ 0 ].buffer ),
-         0, bufferLength, inBuffer[ 0 ].stride,
-         inBuffer[ 0 ].tensorLength, inBuffer[ 0 ].tensorStride
-   );
-   LineIterator< dfloat > grey;
-   if( inBuffer.size() > 1 ) {
-      grey = LineIterator< dfloat >(
-            static_cast< dfloat* >( inBuffer[ 1 ].buffer ),
-            0, bufferLength, inBuffer[ 1 ].stride,
-            inBuffer[ 1 ].tensorLength, inBuffer[ 1 ].tensorStride
-      );
-   }
+class dip__Measure : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
+         LineIterator< uint32 > label(
+               static_cast< uint32* >( params.inBuffer[ 0 ].buffer ),
+               0, params.bufferLength, params.inBuffer[ 0 ].stride,
+               params.inBuffer[ 0 ].tensorLength, params.inBuffer[ 0 ].tensorStride
+         );
+         LineIterator< dfloat > grey;
+         if( params.inBuffer.size() > 1 ) {
+            grey = LineIterator< dfloat >(
+                  static_cast< dfloat* >( params.inBuffer[ 1 ].buffer ),
+                  0, params.bufferLength, params.inBuffer[ 1 ].stride,
+                  params.inBuffer[ 1 ].tensorLength, params.inBuffer[ 1 ].tensorStride
+            );
+         }
 
-   LineBasedFeatureArray const& features = *( static_cast< LineBasedFeatureArray const* >( functionParameters ));
-   for( auto const& feature : features ) {
-      feature->Measure( label, grey, position, dimension );
-   }
-}
+         for( auto const& feature : features ) {
+            feature->Measure( label, grey, params.position, params.dimension );
+         }
+      }
+      dip__Measure( LineBasedFeatureArray const& features ) : features( features ) {}
+   private:
+      LineBasedFeatureArray const& features;
+};
 
 
 Measurement MeasurementTool::Measure(
@@ -219,13 +216,9 @@ Measurement MeasurementTool::Measure(
       UnsignedArray nElem{};
 
       // Do the scan, which calls dip::Feature::LineBased::Measure()
-      Framework::Scan(
-            inar, outar, inBufT, outBufT, outImT, nElem,
-            dip__Measure,
-            &lineBasedFeatures,
-            {},
-            Framework::Scan_NoMultiThreading + Framework::Scan_NeedCoordinates
-      );
+      dip__Measure functor{ lineBasedFeatures };
+      Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, &functor,
+            Framework::Scan_NoMultiThreading + Framework::Scan_NeedCoordinates );
 
       // Call dip::Feature::LineBased::Finish()
       for( auto const& feature : lineBasedFeatures ) {

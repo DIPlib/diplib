@@ -24,9 +24,7 @@ void Scan(
       DataTypeArray const& outBufferTypes,
       DataTypeArray const& outImageTypes,
       UnsignedArray const& nTensorElements,
-      ScanFilter lineFilter,
-      void const* functionParameters,
-      std::vector< void* > const& functionVariables,
+      ScanLineFilter* lineFilter,
       ScanOptions opts
 ) {
    std::size_t nIn = c_in.size();
@@ -115,7 +113,7 @@ void Scan(
       if( tmp.IsForged() && tensorToSpatial ) {
          tmp.TensorToSpatial( 0 );
       }
-      tmp.ReForge( sizes, nTensor, outImageTypes[ ii ], true );
+      tmp.ReForge( sizes, nTensor, outImageTypes[ ii ], Option::AcceptDataTypeChange::DO_ALLOW );
    }
    DIP_CATCH
 
@@ -238,10 +236,8 @@ void Scan(
    //       I guess it would be useful to get an idea of the amount of work that
    //       the lineFilter does per pixel. If the caller can provide that estimate,
    //       we'd be able to use that to determine the threading schedule.
-   //       functionVariables.size() is the upper limit to the number of threads,
-   //       unless it is zero.
 
-   bool useFunctionVariables = functionVariables.size() > 0;
+   lineFilter->SetNumberOfThreads( 1 );
 
    // TODO: Start threads, each thread makes its own buffers.
    dip::uint thread = 0;
@@ -314,12 +310,14 @@ void Scan(
    UnsignedArray position( sizes.size(), 0 );
    IntegerArray inIndices( nIn, 0 );
    IntegerArray outIndices( nOut, 0 );
+   ScanLineFilterParameters scanLineFilterParams{ inScanBufs, outScanBufs, 0, processingDim, position, thread }; // Takes inScanBufs, outScanBufs, position as references
    for( ;; ) {
 
       // Iterate over line sections, if bufferSize < sizes[processingDim]
       for( dip::uint sectionStart = 0; sectionStart < sizes[ processingDim ]; sectionStart += bufferSize ) {
          position[ processingDim ] = sectionStart;
          dip::uint nPixels = std::min( bufferSize, sizes[ processingDim ] - sectionStart );
+         scanLineFilterParams.bufferLength = nPixels;
 
          // Get pointers to input and ouput lines
          //std::cout << "      sectionStart = " << sectionStart << std::endl;
@@ -338,7 +336,7 @@ void Scan(
                      inBufferTypes[ ii ],
                      inScanBufs[ ii ].stride,
                      inScanBufs[ ii ].tensorStride,
-                     inScanBufs[ ii ].stride == 0 ? 1 : bufferSize, // if stride == 0, copy only a single pixel because they're all the same
+                     inScanBufs[ ii ].stride == 0 ? 1 : nPixels, // if stride == 0, copy only a single pixel because they're all the same
                      inScanBufs[ ii ].tensorLength,
                      lookUpTables[ ii ] );
             } else {
@@ -353,15 +351,7 @@ void Scan(
          }
 
          // Filter the line
-         lineFilter(
-               inScanBufs,
-               outScanBufs,
-               nPixels,
-               processingDim,
-               position,
-               functionParameters,
-               useFunctionVariables ? functionVariables[ thread ] : nullptr
-         );
+         lineFilter->Filter( scanLineFilterParams );
 
          // Copy back the line from output buffer to the image
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
@@ -375,7 +365,7 @@ void Scan(
                      out[ ii ].DataType(),
                      out[ ii ].Stride( processingDim ),
                      out[ ii ].TensorStride(),
-                     bufferSize,
+                     nPixels,
                      outScanBufs[ ii ].tensorLength,
                      std::vector< dip::sint > {} );
             }

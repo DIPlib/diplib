@@ -15,47 +15,39 @@ namespace dip {
 
 //
 template< typename TPI >
-static void dip__GetMaximumAndMinimum(
-      std::vector< Framework::ScanBuffer > const& inBuffer,
-      std::vector< Framework::ScanBuffer >& /*outBuffer*/,
-      dip::uint bufferLength,
-      dip::uint /*dimension*/,
-      UnsignedArray const& /*position*/,
-      const void* /*functionParameters*/,
-      void* functionVariables
-) {
-   TPI const* in = static_cast< TPI const* >( inBuffer[ 0 ].buffer );
-   MaximumAndMinimum* vars = ( MaximumAndMinimum* )functionVariables;
-   if( inBuffer.size() > 1 ) {
-      // If there's two input buffers, we have a mask image.
-      bin const* mask = static_cast< bin const* >( inBuffer[ 1 ].buffer );
-      for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-         if( * mask ) {
-            double v = * in;
-            if( v < vars->min ) {
-               vars->min = v;
+class dip__GetMaximumAndMinimum : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         MaximumAndMinimum& vars = varsArray[ params.thread ];
+         auto bufferLength = params.bufferLength;
+         auto inStride = params.inBuffer[ 0 ].stride;
+         if( params.inBuffer.size() > 1 ) {
+            // If there's two input buffers, we have a mask image.
+            auto maskStride = params.inBuffer[ 1 ].stride;
+            bin const* mask = static_cast< bin const* >( params.inBuffer[ 1 ].buffer );
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               if( *mask ) {
+                  vars.Push( *in );
+               }
+               in += inStride;
+               mask += maskStride;
             }
-            if( v > vars->max ) {
-               vars->max = v;
+         } else {
+            // Otherwise we don't.
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               vars.Push( *in );
+               in += inStride;
             }
          }
-         in += inBuffer[ 0 ].stride;
-         mask += inBuffer[ 1 ].stride;
       }
-   } else {
-      // Otherwise we don't.
-      for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-         double v = * in;
-         if( v < vars->min ) {
-            vars->min = v;
-         }
-         if( v > vars->max ) {
-            vars->max = v;
-         }
-         in += inBuffer[ 0 ].stride;
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
+         varsArray.resize( threads );
       }
-   }
-}
+      dip__GetMaximumAndMinimum( std::vector< MaximumAndMinimum >& varsArray ) : varsArray( varsArray ) {}
+   private:
+      std::vector< MaximumAndMinimum >& varsArray;
+};
 
 MaximumAndMinimum GetMaximumAndMinimum(
       Image const& in,
@@ -79,28 +71,25 @@ MaximumAndMinimum GetMaximumAndMinimum(
       inar.push_back( mask );
       inBufT.push_back( DT_BIN );
    }
-   Framework::ScanFilter filter;
-   DIP_OVL_ASSIGN_NONCOMPLEX( filter, dip__GetMaximumAndMinimum, in.DataType() );
    // Create an array for the values computed by each thread, and initialize them.
-   MaximumAndMinimum init{
-         std::numeric_limits< double >::lowest(),
-         std::numeric_limits< double >::max()
-   };
-   std::vector< MaximumAndMinimum > vars( 1, init ); // TODO: fill in the max number of threads we expect to create.
+   std::vector< MaximumAndMinimum > varsArray;
+   // Find the right overload for our data type
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__GetMaximumAndMinimum, ( varsArray ), in.DataType() );
    // Call the framework function
    ImageRefArray outar{};
    Framework::Scan(
          inar, outar,
          inBufT, DataTypeArray{}, DataTypeArray{}, UnsignedArray{},
-         filter, nullptr, Framework::CastToVoidpVector( vars ),
-         Framework::Scan_TensorAsSpatialDim );
+         scanLineFilter.get(), Framework::Scan_TensorAsSpatialDim );
    // Reduce
-   MaximumAndMinimum out = vars[ 0 ];
-   for( dip::uint ii = 1; ii < vars.size(); ++ii ) {
-      out.max = std::max( out.max, vars[ ii ].max );
-      out.min = std::min( out.min, vars[ ii ].min );
+   MaximumAndMinimum out = varsArray[ 0 ];
+   for( dip::uint ii = 1; ii < varsArray.size(); ++ii ) {
+      out.max = std::max( out.max, varsArray[ ii ].max );
+      out.min = std::min( out.min, varsArray[ ii ].min );
    }
    return out;
 }
+
 
 } // namespace dip

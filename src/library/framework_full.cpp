@@ -18,17 +18,15 @@ namespace dip {
 namespace Framework {
 
 void Full(
-      ImageConstRefArray const& c_in,
-      ImageRefArray& c_out,
-      DataTypeArray const& inBufferTypes,
-      DataTypeArray const& outBufferTypes,
-      DataTypeArray const& outImageTypes,
-      UnsignedArray const& nTensorElements,
+      Image const& in,
+      Image& out,
+      DataType inBufferTypes,
+      DataType outBufferTypes,
+      DataType outImageTypes,
+      dip::uint nTensorElements,
       BoundaryConditionArray boundaryConditions,
       PixelTable const& pixelTable,
-      FullFilter lineFilter,
-      void const* functionParameters,
-      std::vector< void* > const& functionVariables,
+      FullLineFilter* lineFilter,
       FullOptions opts
 ) {
    // TODO

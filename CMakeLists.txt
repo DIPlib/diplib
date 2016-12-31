@@ -135,7 +135,10 @@ if(Matlab_FOUND)
    matlab_add_mex(NAME mextest_measure SRC test/mextest_measure.cpp LINK_TO DIP)
    set_target_properties(mextest_measure PROPERTIES EXCLUDE_FROM_ALL 1)
 
-   add_custom_target(mex DEPENDS mextest mextest_function mextest_iterators mextest_measure)
+   matlab_add_mex(NAME mextest_maxmin SRC test/mextest_maxmin.cpp LINK_TO DIP)
+   set_target_properties(mextest_maxmin PROPERTIES EXCLUDE_FROM_ALL 1)
+
+   add_custom_target(mex DEPENDS mextest mextest_function mextest_iterators mextest_measure mextest_maxmin)
 
 endif(Matlab_FOUND)
 
@@ -179,4 +182,16 @@ add_custom_command(
       DEPENDS ${DIPworkplan.md}
 )
 
-add_custom_target(docs DEPENDS ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf ${DOCUMENTATION_OUTPUT}/DIPworkplan.pdf)
+add_custom_command(
+      OUTPUT ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf
+      COMMAND pandoc -s DIPproposal.md -o ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf
+      --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
+      --toc --listings -H pandoc/listings_setup.tex --number-sections
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      DEPENDS ${DIPproposal.md}
+)
+
+add_custom_target(docs DEPENDS
+                  ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
+                  ${DOCUMENTATION_OUTPUT}/DIPworkplan.pdf
+                  ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf)

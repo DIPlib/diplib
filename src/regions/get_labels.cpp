@@ -20,45 +20,43 @@ namespace dip {
 using LabelSet = std::set< dip::uint >;
 
 template< typename TPI >
-static void dip__GetLabels(
-      std::vector< Framework::ScanBuffer > const& inBuffer,
-      std::vector< Framework::ScanBuffer >&,
-      dip::uint bufferLength,
-      dip::uint,
-      UnsignedArray const&,
-      void const*,
-      void* functionVariables
-) {
-   LabelSet* objectIDs = static_cast< LabelSet* >( functionVariables );
-   TPI* data = static_cast< TPI* >( inBuffer[ 0 ].buffer );
-   dip::sint stride = inBuffer[ 0 ].stride;
-   if( inBuffer.size() > 1 ) {
-      bin* mask = static_cast< bin* >( inBuffer[ 1 ].buffer );
-      dip::sint mask_stride = inBuffer[ 1 ].stride;
-      dip::uint prevID = 0;
-      bool setPrevID = false;
-      for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-         if( *mask ) {
-            if( !setPrevID || ( *data != prevID )) {
-               prevID = *data;
-               setPrevID = true;
-               objectIDs->insert( prevID );
+class dip__GetLabels : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
+         TPI* data = static_cast< TPI* >( params.inBuffer[ 0 ].buffer );
+         dip::sint stride = params.inBuffer[ 0 ].stride;
+         dip::uint bufferLength = params.bufferLength;
+         if( params.inBuffer.size() > 1 ) {
+            bin* mask = static_cast< bin* >( params.inBuffer[ 1 ].buffer );
+            dip::sint mask_stride = params.inBuffer[ 1 ].stride;
+            dip::uint prevID = 0;
+            bool setPrevID = false;
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               if( * mask ) {
+                  if( !setPrevID || ( * data != prevID ) ) {
+                     prevID = * data;
+                     setPrevID = true;
+                     objectIDs.insert( prevID );
+                  }
+               }
+               data += stride;
+               mask += mask_stride;
+            }
+         } else {
+            dip::uint prevID = * data + 1; // something that's different from the first pixel value
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               if( * data != prevID ) {
+                  prevID = * data;
+                  objectIDs.insert( prevID );
+               }
+               data += stride;
             }
          }
-         data += stride;
-         mask += mask_stride;
       }
-   } else {
-      dip::uint prevID = *data + 1; // something that's different from the first pixel value
-      for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-         if( *data != prevID ) {
-            prevID = *data;
-            objectIDs->insert( prevID );
-         }
-         data += stride;
-      }
-   }
-}
+      dip__GetLabels( LabelSet& objectIDs ) : objectIDs( objectIDs ) {}
+   private:
+      LabelSet& objectIDs;
+};
 
 UnsignedArray GetObjectLabels(
       Image const& label,
@@ -87,23 +85,21 @@ UnsignedArray GetObjectLabels(
    DataTypeArray outBufT{};
    DataTypeArray outImT{};
    UnsignedArray nElem{};
-   std::vector< LabelSet > functionVariables( 1 ); // we only use one, as this is not multi-threaded.
+
+   LabelSet objectIDs; // output
 
    // Get pointer to overloaded scan function
-   Framework::ScanFilter lineFilter;
-   DIP_OVL_ASSIGN_UINT( lineFilter, dip__GetLabels, label.DataType() );
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_NEW_UINT( scanLineFilter, dip__GetLabels, ( objectIDs ), label.DataType() );
 
    // Do the scan
    Framework::Scan(
          inar, outar, inBufT, outBufT, outImT, nElem,
-         lineFilter,
-         nullptr,
-         Framework::CastToVoidpVector( functionVariables ),
+         scanLineFilter.get(),
          Framework::Scan_NoMultiThreading
    );
 
    // Copy the labels to output array
-   LabelSet& objectIDs = functionVariables[ 0 ];
    UnsignedArray out;
    for( auto const& id : objectIDs ) {
       if(( id != 0 ) || nullIsObject ) {

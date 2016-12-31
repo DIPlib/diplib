@@ -27,9 +27,7 @@ void Separable(
       BooleanArray process,   // taken by copy so we can modify
       UnsignedArray border,   // taken by copy so we can modify
       BoundaryConditionArray boundaryConditions,   // taken by copy so we can modify
-      SeparableFilter lineFilter,
-      void const* functionParameters,
-      std::vector< void* > const& functionVariables,
+      SeparableLineFilter* lineFilter,
       SeparableOptions opts
 ) {
    UnsignedArray inSizes = cInput.Sizes();
@@ -101,7 +99,7 @@ void Separable(
    if( cOutput.IsForged() && cOutput.IsOverlappingView( cInput ) ) {
       cOutput.Strip();
    }
-   cOutput.ReForge( outSizes, outTensor.Elements(), outImageType, true );
+   cOutput.ReForge( outSizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
    cOutput.ReshapeTensor( outTensor );
    DIP_CATCH
    // NOTE: Don't use cInput any more from here on. It has possibly been reforged!
@@ -158,7 +156,7 @@ void Separable(
 
    // TODO: Determine the number of threads we'll be using.
 
-   bool useFunctionVariables = functionVariables.size() > 0;
+   lineFilter->SetNumberOfThreads( 1 );
 
    // TODO: Start threads, each thread makes its own buffers.
    dip::uint thread = 0;
@@ -251,6 +249,7 @@ void Separable(
 
       // Iterate over all lines in the image
       auto it = dip::GenericJointImageIterator( inImage, outImage, processingDim );
+      SeparableLineFilterParameters separableLineFilterParams{ inSeparableBuf, outSeparableBuf, processingDim, it.Coordinates(), thread }; // Takes inSeparableBuf, outSeparableBuf, it.Coordinates() as references
       do {
          // Get pointers to input and ouput lines
          if( inUseBuffer ) {
@@ -288,14 +287,7 @@ void Separable(
          }
 
          // Filter the line
-         lineFilter(
-               inSeparableBuf,
-               outSeparableBuf,
-               processingDim,
-               it.Coordinates(),
-               functionParameters,
-               useFunctionVariables ? functionVariables[ thread ] : nullptr
-         );
+         lineFilter->Filter( separableLineFilterParams );
 
          // Copy back the line from output buffer to the image
          if( outUseBuffer ) {

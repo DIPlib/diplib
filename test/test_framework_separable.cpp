@@ -28,37 +28,34 @@ void PrintPixelValues(
    } while( ++it );
 }
 
-void lineFilter(
-      dip::Framework::SeparableBuffer const& inBuffer,
-      dip::Framework::SeparableBuffer& outBuffer,
-      dip::uint dimension, // unused
-      dip::UnsignedArray const& position, // unused
-      void const* functionParameters, // unused
-      void* functionVariables // unused
-) {
-   // struct SeparableBuffer {
-   //    void* buffer;           ///< Pointer to pixel data for image line, to be cast to expected data type.
-   //    dip::uint length;       ///< Length of the buffer, not counting the expanded boundary
-   //    dip::uint border;       ///< Length of the expanded boundary at each side of the buffer.
-   //    dip::sint stride;       ///< Stride to walk along pixels.
-   //    dip::sint tensorStride; ///< Stride to walk along tensor elements.
-   //    dip::uint tensorLength; ///< Number of tensor elements.
-   // };
-   constexpr dip::sint N = 2;
-   constexpr std::array< float, 2 * N + 1 > filter_{ { 1.0f / 9.0f, 2.0f / 9.0f, 3.0f / 9.0f, 2.0f / 9.0f, 1.0f / 9.0f } };
-   float const* filter = &( filter_[ N ] );
-   dip::ConstSampleIterator< dip::sfloat > in ( static_cast< dip::sfloat* >(inBuffer.buffer), inBuffer.stride );
-   dip::SampleIterator< dip::sfloat > out ( static_cast< dip::sfloat* >(outBuffer.buffer), outBuffer.stride );
-   for( dip::uint ii = 0; ii < inBuffer.length; ++ii ) {
-      float res = 0;
-      for( dip::sint jj = -N; jj <= N; ++jj ) {
-         res += in[ jj ] * filter[ jj ];
+class LineFilter : public dip::Framework::SeparableLineFilter {
+   public:
+      virtual void Filter( dip::Framework::SeparableLineFilterParameters& params ) override {
+         float const* filter = &( filter_[ N ] );
+         dip::ConstSampleIterator< dip::sfloat > in(
+               static_cast< dip::sfloat* >(params.inBuffer.buffer),
+               params.inBuffer.stride );
+         dip::SampleIterator< dip::sfloat > out(
+               static_cast< dip::sfloat* >(params.outBuffer.buffer),
+               params.outBuffer.stride );
+         for( dip::uint ii = 0; ii < params.inBuffer.length; ++ii ) {
+            float res = 0;
+            for( dip::sint jj = -N; jj <= N; ++jj ) {
+               res += in[ jj ] * filter[ jj ];
+            }
+            *out = res;
+            ++in;
+            ++out;
+         }
       }
-      *out = res;
-      ++in;
-      ++out;
-   }
-}
+   private:
+      static constexpr dip::sint N = 2;
+      std::array< float, 2 * N + 1 > filter_{
+            {
+                  1.0f / 9.0f, 2.0f / 9.0f, 3.0f / 9.0f, 2.0f / 9.0f, 1.0f / 9.0f
+            }
+      };
+};
 
 int main() {
    try {
@@ -66,8 +63,8 @@ int main() {
       {
          DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
          std::random_device rd;
-         std::mt19937 gen(rd());
-         std::normal_distribution<float> normDist(9563.0, 500.0);
+         std::mt19937 gen( rd() );
+         std::normal_distribution< float > normDist( 9563.0, 500.0 );
          dip::ImageIterator< dip::uint16 > it( img );
          do {
             *it = dip::clamp_cast< dip::uint16 >( normDist( gen ));
@@ -124,11 +121,12 @@ int main() {
       }
 
       PrintPixelValues< dip::sfloat >( out );
+      LineFilter lineFilter;
 
       dip::Framework::Separable( img, out, dip::DT_SFLOAT, dip::DT_SFLOAT,
             dip::BooleanArray{ true, false }, { 2 },
             dip::BoundaryConditionArray{ dip::BoundaryCondition::ADD_ZEROS },
-            lineFilter, nullptr, std::vector< void* > {}, dip::Framework::Separable_AsScalarImage);
+            &lineFilter, dip::Framework::Separable_AsScalarImage);
 
       PrintPixelValues< dip::sfloat >( out );
 

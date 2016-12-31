@@ -14,28 +14,31 @@ namespace dip {
 
 //
 template< typename TPI >
-static void dip__And(
-      std::vector< Framework::ScanBuffer > const& inBuffer,
-      std::vector< Framework::ScanBuffer >& outBuffer,
-      dip::uint bufferLength,
-      dip::uint dimension,
-      UnsignedArray const& position,
-      const void* functionParameters,
-      void* functionVariables
-) {
-   TPI const* lhs = static_cast< TPI const* >( inBuffer[ 0 ].buffer );
-   TPI const* rhs = static_cast< TPI const* >( inBuffer[ 1 ].buffer );
-   TPI* out = static_cast< TPI* >( outBuffer[ 0 ].buffer );
-   for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-      for( dip::uint jj = 0; jj < outBuffer[ 0 ].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
-         out[ jj * outBuffer[ 0 ].tensorStride ] = lhs[ jj * inBuffer[ 0 ].tensorStride ] &
-                                                   rhs[ jj * inBuffer[ 1 ].tensorStride ];
+class dip__And : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
+         TPI const* lhs = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         TPI const* rhs = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint lhsStride = params.inBuffer[ 0 ].stride;
+         dip::sint rhsStride = params.inBuffer[ 1 ].stride;
+         dip::sint outStride = params.outBuffer[ 0 ].stride;
+         dip::sint lhsTensorStride = params.inBuffer[ 0 ].tensorStride;
+         dip::sint rhsTensorStride = params.inBuffer[ 1 ].tensorStride;
+         dip::sint outTensorStride = params.outBuffer[ 0 ].tensorStride;
+         dip::uint bufferLength = params.bufferLength;
+         dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
+         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+            for( dip::uint jj = 0; jj < tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
+               out[ jj * outTensorStride ] = lhs[ jj * lhsTensorStride ] &
+                                             rhs[ jj * rhsTensorStride ];
+            }
+            lhs += lhsStride;
+            rhs += rhsStride;
+            out += outStride;
+         }
       }
-      lhs += inBuffer[ 0 ].stride;
-      rhs += inBuffer[ 1 ].stride;
-      out += outBuffer[ 0 ].stride;
-   }
-}
+};
 
 void And(
       Image const& lhs,
@@ -43,37 +46,39 @@ void And(
       Image& out
 ) {
    DataType dt = lhs.DataType();
-   Framework::ScanFilter filter;
-   DIP_OVL_ASSIGN_INT_OR_BIN( filter, dip__And, dt ); // NOTE: binary and integer.
-   std::vector< void* > vars;
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_NEW_INT_OR_BIN( scanLineFilter, dip__And, (), dt ); // NOTE: binary and integer.
    Framework::ScanOptions opts;
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, filter, nullptr, vars, opts );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, scanLineFilter.get(), opts );
 }
 
 //
 template< typename TPI >
-static void dip__Or(
-      std::vector< Framework::ScanBuffer > const& inBuffer,
-      std::vector< Framework::ScanBuffer >& outBuffer,
-      dip::uint bufferLength,
-      dip::uint dimension,
-      UnsignedArray const& position,
-      const void* functionParameters,
-      void* functionVariables
-) {
-   TPI const* lhs = static_cast< TPI const* >( inBuffer[ 0 ].buffer );
-   TPI const* rhs = static_cast< TPI const* >( inBuffer[ 1 ].buffer );
-   TPI* out = static_cast< TPI* >( outBuffer[ 0 ].buffer );
-   for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-      for( dip::uint jj = 0; jj < outBuffer[ 0 ].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
-         out[ jj * outBuffer[ 0 ].tensorStride ] = lhs[ jj * inBuffer[ 0 ].tensorStride ] |
-                                                   rhs[ jj * inBuffer[ 1 ].tensorStride ];
+class dip__Or : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
+         TPI const* lhs = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         TPI const* rhs = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint lhsStride = params.inBuffer[ 0 ].stride;
+         dip::sint rhsStride = params.inBuffer[ 1 ].stride;
+         dip::sint outStride = params.outBuffer[ 0 ].stride;
+         dip::sint lhsTensorStride = params.inBuffer[ 0 ].tensorStride;
+         dip::sint rhsTensorStride = params.inBuffer[ 1 ].tensorStride;
+         dip::sint outTensorStride = params.outBuffer[ 0 ].tensorStride;
+         dip::uint bufferLength = params.bufferLength;
+         dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
+         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+            for( dip::uint jj = 0; jj < tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
+               out[ jj * outTensorStride ] = lhs[ jj * lhsTensorStride ] |
+                                             rhs[ jj * rhsTensorStride ];
+            }
+            lhs += lhsStride;
+            rhs += rhsStride;
+            out += outStride;
+         }
       }
-      lhs += inBuffer[ 0 ].stride;
-      rhs += inBuffer[ 1 ].stride;
-      out += outBuffer[ 0 ].stride;
-   }
-}
+};
 
 void Or(
       Image const& lhs,
@@ -81,37 +86,40 @@ void Or(
       Image& out
 ) {
    DataType dt = lhs.DataType();
-   Framework::ScanFilter filter;
-   DIP_OVL_ASSIGN_INT_OR_BIN( filter, dip__Or, dt ); // NOTE: binary and integer.
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_NEW_INT_OR_BIN( scanLineFilter, dip__Or, (), dt ); // NOTE: binary and integer.
    std::vector< void* > vars;
    Framework::ScanOptions opts;
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, filter, nullptr, vars, opts );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, scanLineFilter.get(), opts );
 }
 
 //
 template< typename TPI >
-static void dip__Xor(
-      std::vector< Framework::ScanBuffer > const& inBuffer,
-      std::vector< Framework::ScanBuffer >& outBuffer,
-      dip::uint bufferLength,
-      dip::uint dimension,
-      UnsignedArray const& position,
-      const void* functionParameters,
-      void* functionVariables
-) {
-   TPI const* lhs = static_cast< TPI const* >( inBuffer[ 0 ].buffer );
-   TPI const* rhs = static_cast< TPI const* >( inBuffer[ 1 ].buffer );
-   TPI* out = static_cast< TPI* >( outBuffer[ 0 ].buffer );
-   for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-      for( dip::uint jj = 0; jj < outBuffer[ 0 ].tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
-         out[ jj * outBuffer[ 0 ].tensorStride ] = lhs[ jj * inBuffer[ 0 ].tensorStride ] ^
-                                                   rhs[ jj * inBuffer[ 1 ].tensorStride ];
+class dip__Xor : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
+         TPI const* lhs = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         TPI const* rhs = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint lhsStride = params.inBuffer[ 0 ].stride;
+         dip::sint rhsStride = params.inBuffer[ 1 ].stride;
+         dip::sint outStride = params.outBuffer[ 0 ].stride;
+         dip::sint lhsTensorStride = params.inBuffer[ 0 ].tensorStride;
+         dip::sint rhsTensorStride = params.inBuffer[ 1 ].tensorStride;
+         dip::sint outTensorStride = params.outBuffer[ 0 ].tensorStride;
+         dip::uint bufferLength = params.bufferLength;
+         dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
+         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+            for( dip::uint jj = 0; jj < tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
+               out[ jj * outTensorStride ] = lhs[ jj * lhsTensorStride ] ^
+                                             rhs[ jj * rhsTensorStride ];
+            }
+            lhs += lhsStride;
+            rhs += rhsStride;
+            out += outStride;
+         }
       }
-      lhs += inBuffer[ 0 ].stride;
-      rhs += inBuffer[ 1 ].stride;
-      out += outBuffer[ 0 ].stride;
-   }
-}
+};
 
 void Xor(
       Image const& lhs,
@@ -119,44 +127,42 @@ void Xor(
       Image& out
 ) {
    DataType dt = lhs.DataType();
-   Framework::ScanFilter filter;
-   DIP_OVL_ASSIGN_INT_OR_BIN( filter, dip__Xor, dt ); // NOTE: binary and integer.
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_NEW_INT_OR_BIN( scanLineFilter, dip__Xor, (), dt ); // NOTE: binary and integer.
    std::vector< void* > vars;
    Framework::ScanOptions opts;
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, filter, nullptr, vars, opts );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, scanLineFilter.get(), opts );
 }
 
 //
 template< typename TPI >
-static void dip__Not(
-      std::vector< Framework::ScanBuffer > const& inBuffer,
-      std::vector< Framework::ScanBuffer >& outBuffer,
-      dip::uint bufferLength,
-      dip::uint dimension,
-      UnsignedArray const& position,
-      const void* functionParameters,
-      void* functionVariables
-) {
-   TPI const* in = static_cast< TPI const* >( inBuffer[ 0 ].buffer );
-   TPI* out = static_cast< TPI* >( outBuffer[ 0 ].buffer );
-   for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-      // Tensor dimension is 1 because we request `Scan_TensorAsSpatialDim`
-      * out = ~* in;
-      in += inBuffer[ 0 ].stride;
-      out += outBuffer[ 0 ].stride;
-   }
-}
+class dip__Not : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint inStride = params.inBuffer[ 0 ].stride;
+         dip::sint outStride = params.outBuffer[ 0 ].stride;
+         dip::uint bufferLength = params.bufferLength;
+         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+            // Tensor dimension is 1 because we request `Scan_TensorAsSpatialDim`
+            *out = ~*in;
+            in += inStride;
+            out += outStride;
+         }
+      }
+};
 
 void Not(
       Image const& in,
       Image& out
 ) {
    DataType dt = in.DataType();
-   Framework::ScanFilter filter;
-   DIP_OVL_ASSIGN_INT_OR_BIN( filter, dip__Not, dt );
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_NEW_INT_OR_BIN( scanLineFilter, dip__Not, (), dt ); // NOTE: binary and integer.
    std::vector< void* > vars;
    Framework::ScanOptions opts = Framework::Scan_TensorAsSpatialDim;
-   Framework::ScanMonadic( in, out, dt, dt, 1, filter, nullptr, vars, opts );
+   Framework::ScanMonadic( in, out, dt, dt, 1, scanLineFilter.get(), opts );
 }
 
 
