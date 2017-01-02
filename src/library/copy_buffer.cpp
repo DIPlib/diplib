@@ -204,8 +204,8 @@ static inline void ExpandBufferFirstOrder(
    // Left side
    DataType* in = buffer;
    DataType* out = buffer - stride;
-   double d0 = *in;
-   double d1 = double( *in ) - double( *( in + stride ));
+   dfloat d0 = *in;
+   dfloat d1 = dfloat( *in ) - dfloat( *( in + stride ));
    for( dip::uint ii = 0; ii < border; ii++ ) {
       d0 += d1;
       *out = clamp_cast< DataType >( d0 );
@@ -215,7 +215,7 @@ static inline void ExpandBufferFirstOrder(
    in = buffer + ( pixels - 1 ) * stride;
    out = buffer + pixels * stride;
    d0 = *in;
-   d1 = double( *in ) - double( *( in - stride ));
+   d1 = dfloat( *in ) - dfloat( *( in - stride ));
    for( dip::uint ii = 0; ii < border; ii++ ) {
       d0 += d1;
       *out = clamp_cast< DataType >( d0 );
@@ -234,14 +234,14 @@ static inline void ExpandBufferSecondOrder(
       dip::uint pixels, // guaranteed larger than 1
       dip::uint border  // guaranteed larger than 0
 ) {
-   double b = border + 1;
+   dfloat b = border + 1;
    // Left side
    DataType* in = buffer;
    DataType* out = buffer - stride;
-   double d0 = *in;
-   double f1 = *( in + stride );
-   double d1 = ( b - 1.0 ) / b * d0 - b / ( b + 1.0 ) * f1;
-   double d2 = -1.0 / b * d0 + 1.0 / ( b + 1.0 ) * f1;
+   dfloat d0 = *in;
+   dfloat f1 = *( in + stride );
+   dfloat d1 = ( b - 1.0 ) / b * d0 - b / ( b + 1.0 ) * f1;
+   dfloat d2 = -1.0 / b * d0 + 1.0 / ( b + 1.0 ) * f1;
    for( dip::uint ii = 1; ii <= border; ii++ ) {
       *out = clamp_cast< DataType >( d0 + ii * d1 + ii * ii * d2 );
       out -= stride;
@@ -274,16 +274,16 @@ static inline void ExpandBufferThirdOrder(
       dip::uint pixels, // guaranteed larger than 2
       dip::uint border  // guaranteed larger than 0
 ) {
-   double b = border + 1;
-   double b12 = ( b + 1 ) * ( b + 1 );
+   dfloat b = border + 1;
+   dfloat b12 = ( b + 1 ) * ( b + 1 );
    // Left side
    DataType* in = buffer;
    DataType* out = buffer - stride;
-   double d0 = *in;
-   double f1 = *( in + stride );
-   double d1 = -( 2.0 * d0 ) / b + d0 - ( b * b * f1 ) / b12;
-   double d2 = ( 2.0 * b * f1 ) / b12 - ( d0 * ( 2.0 * b - 1.0 ) ) / ( b * b );
-   double d3 = d0 / ( b * b ) - f1 / b12;
+   dfloat d0 = *in;
+   dfloat f1 = *( in + stride );
+   dfloat d1 = -( 2.0 * d0 ) / b + d0 - ( b * b * f1 ) / b12;
+   dfloat d2 = ( 2.0 * b * f1 ) / b12 - ( d0 * ( 2.0 * b - 1.0 ) ) / ( b * b );
+   dfloat d3 = d0 / ( b * b ) - f1 / b12;
    for( dip::uint ii = 1; ii <= border; ii++ ) {
       *out = clamp_cast< DataType >( d0 + ii * d1 + ii * ii * d2 + ii * ii * ii * d3 );
       out -= stride;

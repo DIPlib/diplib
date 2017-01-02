@@ -15,7 +15,7 @@ be implemented as special functions. For example, instead of writing
 
 one would write
 
-    WeightedAddition( ImageRefArray{img1,img2,img3}, out, IntegerRefArray{a,b,c}, d );
+    WeightedAddition( ImageRefArray{img1,img2,img3}, out, IntegerArray{a,b,c}, d );
 
 For efficiency. There is template meta-programming that can convert an
 expression like the first one into a call like the second one, but that
@@ -206,78 +206,6 @@ necessary:
        }
        // do more processing ...
     }
-
-
-## Functionality currently not in *DIPlib* that would be important to include
-
-- An overlay function that adds a binary or labelled image on top of a
-  grey-value or colour image.
-
-- Stain unmixing for bright-field microscopy.
-
-- Some form of image display for development and debugging. We can
-  have the users resort to third-party libraries or saving
-  intermediate images to file, or we can try to copy *OpenCV*'s image
-  display into *dipIO*.
-
-- Some filters that are trivial to add:
-
-    - Scharr (slightly better than Sobel)
-
-    - h-minima & h-maxima
-
-    - opening by reconstruction
-
-    - alternating sequential open-close filter (3 versions: with
-      structural opening, opening by reconstruction, and area opening)
-
-- Dilation/erosion by a rotated line is currently implemented by first
-  skewing the image, applying filter along rows or columns, then
-  skewing back. We can add a 2D-specific version that operates
-  directly over rotated lines. The diamond structuring element can
-  then be decomposed into two of these operations. We can also add
-  approximations of the circle with such lines.
-
-- We're also lacking some other morphological filters:
-
-    - hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees.
-
-    - thinning & thickening, to be implemented as iterated hit'n'miss.
-
-    - levelling
-
-- Most of the functionality that is now implemented in *DIPimage*
-  only:
-
-    - automatic threshold determination (Otsu, triangle,
-      background, etc.).
-
-    - [Colour space conversion].
-
-    - 2D snakes.
-
-    - look-up tables (LUT, both for grey-scale and colour LUTs, using
-      interpolation when input image is float) -- some of this is implemented
-      already in *DIPlib*.
-
-    - general 2D affine transformation, 3D rotation.
-
-    - xx, yy, zz, rr, phiphi, ramp; extend this to `Coordinates()`, which
-      makes a tensor image.
-
-- Radon transform for lines and circles, Hough transform for lines.
-
-- Level-set segmentation, graph-cut segmentation.
-
-- The `Label()` function should return the number of labels. It could
-  optionally also return the sizes of the objects, since these are
-  counted anyway. The labelling algorithm by Mike is quite efficient,
-  but we should compare with the more common union-find algorithm, which
-  is likely to be optimal for this application (Mike's code uses a priority
-  queue, union-find doesn't need it).
-
-- We need to figure out if it is worth it to use loop unrolling for
-  some basic operations.
 
 
 ## Python interface

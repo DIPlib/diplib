@@ -1,4 +1,4 @@
-# *DIPlib* 3.0 {#mainpage}
+# DIPlib 3.0 {#mainpage}
 
 ## Introduction
 
@@ -46,9 +46,9 @@ explore the documentation to learn more about it. A good place to start
 are the following documentation pages:
 
 - The `dip::Image` class, everything else revolves around it.
-- \ref design, helps understand the library architecture.
 - All image analysis functions are defined in the `#dip` \ref dip "namespace".
 - \ref using_iterators, in case existing algorithms are not sufficient.
+- \ref design, might help understand the library architecture.
 
 ## A short history
 
@@ -80,7 +80,8 @@ ideas and concepts, but adding tensor images, color support, and other
 ideas we had developed within the *DIPimage* toolbox.
 Hopefully, the new infrastructure is much easier to read, maintain, and
 contribute to. All of the image analysis routines (have been / will be)
-ported to use the new infrastructure.
+ported to use the new infrastructure. See \ref workplan for progress and
+a detailed list of what still needs to be done.
 
 The *DIPimage* toolbox will change to optimally use *DIPlib* 3.0. This means
 that some of the MATLAB code will be replaced with calls to *DIPlib*, and
@@ -105,3 +106,60 @@ Additional contributions by:
 * Niels van den Brink
 * Ronald Ligteringen
 * Tuan Pham
+
+## Contributing
+
+If you want to contribute to the *DIPlib* project, there are many different
+ways of doing so:
+
+- Help port algorithms from the old *DIPlib* to the new infrastructure. Please
+  coordinate with Cris Luengo before you get started. He can share the old code
+  for the algorithms that need porting. See \ref workplan for a list of stuff to do.
+
+- Write new algorithms. If you have an algorithm that you'd like to contribute
+  to the project, we'll be happy to see it!
+
+- Fix bugs, improve documentation, add code to the unit tests, add interfaces
+  to other libraries or scripting languages.
+
+In any of these cases, fork the project, create a new branch for your contribution,
+and send a pull request to Cris Luengo. Do also read \ref styleguide, and make sure
+you adhere to it. Don't be offended if you receive requests for modifications
+before your work is merged with the project.
+
+Your contributions will carry the same licencing terms as the rest of the library.
+
+## License
+
+Copyright 2014-2017 Cris Luengo  
+Copyright 1995-2014 Delft University of Technology
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+### Non-legalese description of license
+
+The apache 2.0 license is a permissive open-source license. In short, this means that
+you can use this software as you see fit, including making modifications, and distribute
+this software, parts of it, and/or your modifications to it, either in source form or as
+binaries. You are free to keep your modifications private, you are not required to
+distribute sources with your binaries. HOWEVER, you must include proper attribution, as
+well as the copyright notices, with any such distribution. You cannot pretend that you
+wrote this software, and you cannot make it look like we endorse any software that you
+wrote.
+
+If you make modifications to this software, you are not required to share those with us,
+but we certainly would appreciate any such contribution!
+
+Note that this short description of the license does not replace the license text and
+might not correctly represent all the legaleese in the licence. Please read the actual
+licence text if you plan to redistribute this software.

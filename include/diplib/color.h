@@ -58,6 +58,8 @@ class WhitePoint {
 };
 
 // Prototype function for conversion between two color spaces.
+// TODO: This should probably be an abstract base class where converters derive from, with a Convert() function
+// (and maybe also a Cost() function?)
 using ColorSpaceConverter = void ( * )(
       double const* input,    // pointer to input data, holding a known number of elements
       double* output,         // pointer to output data, holding a known number of elements

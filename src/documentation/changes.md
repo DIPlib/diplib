@@ -65,6 +65,10 @@ over.
 - There is no longer a `dip_Initialise` function. There are no global variables. There are
   no registries.
 
+- There is no longer a `dip_ImagesSeparate` function. Its functionality can be accomplished
+  using a simple image copy (the copy shares the image data with the original image, and
+  makes it possible to strip the original image while still keeping the input data available).
+
 ## Changes in algorithm interface
 
 - Function parameters are now represented by strings rather than \c \#define or `enum`
@@ -81,6 +85,12 @@ over.
 
 - `dip_ObjectToMeasurement` now takes a feature iterator rather than computing the feature;
   this might be more flexible.
+
+- `dip_Arith` and `dip_Compare` used to implement all arithmetic and comparison operators,
+  with macros `dip_Add`, `dip_Sub`, etc. These functions no longer exist, each operator is
+  implemented by its own function. The shortened names of these functions are no longer
+  shortened, so instead of `dip_Sub` use `dip::Subtract`. `dip_AddInteger`, `dip_AddFloat`,
+  etc. now are overloaded versions of `dip::Add` et al.
 
 ## Changes in functionality
 
