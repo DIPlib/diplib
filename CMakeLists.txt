@@ -126,7 +126,10 @@ if(Matlab_FOUND)
    matlab_add_mex(NAME mextest_maxmin SRC test/mextest_maxmin.cpp LINK_TO DIP)
    set_target_properties(mextest_maxmin PROPERTIES EXCLUDE_FROM_ALL 1)
 
-   add_custom_target(mex DEPENDS mextest mextest_function mextest_iterators mextest_measure mextest_maxmin)
+   matlab_add_mex(NAME mextest_pixel_table SRC test/mextest_pixel_table.cpp LINK_TO DIP)
+   set_target_properties(mextest_pixel_table PROPERTIES EXCLUDE_FROM_ALL 1)
+
+   add_custom_target(mex DEPENDS mextest mextest_function mextest_iterators mextest_measure mextest_maxmin mextest_pixel_table)
 
 endif(Matlab_FOUND)
 

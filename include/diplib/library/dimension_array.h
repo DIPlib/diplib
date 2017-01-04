@@ -212,9 +212,9 @@ class DimensionArray {
       size_type size() const { return size_; }
 
       /// Accesses an element of the array
-      T& operator[]( size_type index ) { return * ( data_ + index ); }
+      T& operator[]( size_type index ) { return *( data_ + index ); }
       /// Accesses an element of the array
-      T const& operator[]( size_type index ) const { return * ( data_ + index ); }
+      T const& operator[]( size_type index ) const { return *( data_ + index ); }
 
       /// Accesses the first element of the array
       T& front() { return * data_; }
@@ -359,6 +359,42 @@ class DimensionArray {
             }
          }
          return true;
+      }
+
+      /// Adds a constant to each element in the array.
+      DimensionArray& operator+=( T const& v ) {
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            data_[ ii ] += v;
+         }
+         return *this;
+      }
+
+      /// \brief Adds an array to `this`, element-wise. `other` must have the same number of elements.
+      template< typename S >
+      DimensionArray& operator+=( DimensionArray< S > const& other ) {
+         DIP_ASSERT( size_ == other.size() );
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            data_[ ii ] += other[ ii ];
+         }
+         return *this;
+      }
+
+      /// Subtracts a constant to each element in the array.
+      DimensionArray& operator-=( T const& v ) {
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            data_[ ii ] -= v;
+         }
+         return *this;
+      }
+
+      /// \brief Subtracts an array to `this`, element-wise. `other` must have the same number of elements.
+      template< typename S >
+      DimensionArray& operator-=( DimensionArray< S > const& other ) {
+         DIP_ASSERT( size_ == other.size() );
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            data_[ ii ] -= other[ ii ];
+         }
+         return *this;
       }
 
       /// Sort the contents of the array from smallest to largest.

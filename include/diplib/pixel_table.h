@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for the pixel table functionality.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -16,8 +16,6 @@
 /// \brief A pixel table is a convenient way to simplify neighborhoods of arbitrary
 /// dimensionality. Such a neighborhood represents the support of a filter of
 /// arbitrary shape and number of dimensions.
-
-// TODO: Add grey-value information (tensor?) to the pixel table. This can be done as a separate class, baked into the class as an option, or as special grey-value pixel tables.
 
 
 namespace dip {
@@ -58,29 +56,45 @@ class PixelTableOffsets {
 
       /// A default-constructed pixel table is kinda useless
       PixelTableOffsets() {};
+
       /// A pixel table with offsets is constructed from a `dip::PixelTable` and a `dip::Image`.
       PixelTableOffsets( PixelTable const& pt, Image const& image );
+
       /// Returns the vector of runs
       std::vector< PixelRun > const& Runs() const { return runs_; }
+
       /// Returns the dimensionality of the neighborhood
       dip::uint Dimensionality() const { return sizes_.size(); }
+
       /// Returns the size of the bounding box of the neighborhood
       UnsignedArray const& Sizes() const { return sizes_; }
+
       /// Returns the origin of the neighborhood w.r.t. the top-left corner of the bounding box
-      UnsignedArray const& Origin() const { return origin_; }
+      IntegerArray const& Origin() const { return origin_; }
+
       /// Returns the number of pixels in the neighborhood
       dip::uint NumberOfPixels() const { return nPixels_; }
+
       /// Returns the processing dimension, the dimension along which pixel runs are laid out
       dip::uint ProcessingDimension() const { return procDim_; }
+
       /// A const iterator to the first pixel in the neighborhood
       iterator begin() const;
+
       /// A const iterator to one past the last pixel in the neighborhood
       iterator end() const;
 
+      /// Tests if there are weights associated to each pixel in the neighborhood.
+      bool HasWeights() const { return !weights_.empty(); }
+
+      /// Returns a const reference to the weights array.
+      std::vector< dfloat > const& Weights() const { return weights_; }
+
    private:
       std::vector< PixelRun > runs_;
+      std::vector< dfloat > weights_;
       UnsignedArray sizes_;      // the size of the bounding box
-      UnsignedArray origin_;     // the coordinates of the origin w.r.t. the top-left corner of the bounding box
+      IntegerArray origin_;      // the coordinates of the origin w.r.t. the top-left corner of the bounding box
       dip::uint nPixels_ = 0;    // the total number of pixels in the pixel table
       dip::uint procDim_ = 0;    // the dimension along which the runs go
       dip::sint stride_ = 0;     // the stride of the image along the processing dimension
@@ -88,6 +102,10 @@ class PixelTableOffsets {
 
 /// \brief Represents an arbirarily-shaped neighborhood (filter support)
 /// in an arbitrary number of dimensions.
+///
+/// The `%PixelTable` is an array of pixel runs, where each run is encoded by start coordinates
+/// and a length (number of pixels). The runs all go along the same dimension, given by
+/// `dip::PixelTable::ProcessingDimension`.
 ///
 /// It is simple to create a pixel table for
 /// unit circles (spheres) in different norms, and any other shape can be created through
@@ -100,8 +118,16 @@ class PixelTableOffsets {
 /// Two ways can be used to walk through the pixel table:
 /// 1.  `dip::PixelTable::Runs` returns a vector with all the runs, which are encoded
 ///     by the coordinates of the first pixel and a run length.
-/// 2.  `dip::PixelTable::BeginIterator` returns an iterator to the first pixel in the table,
+/// 2.  `dip::PixelTable::begin` returns an iterator to the first pixel in the table,
 ///     incrementing the iterator successively visits each of the pixels in the run.
+///
+/// The pixel table can optionally contain a weight for each pixel. These can be accessed
+/// only by retrieving the array containing all weights. This array is meant to be used
+/// by taking its `begin` iterator, and using that iterator in conjunction with the pixel
+/// table's iterator. Taken together, they provide both the location and the weight of each
+/// pixel in the neighborhood.
+///
+/// TODO: Add an example somewhere.
 ///
 /// \see dip::PixelTableOffsets, dip::NeighborList, dip::Framework::Full, dip::ImageIterator
 class PixelTable {
@@ -111,48 +137,83 @@ class PixelTable {
       struct PixelRun {
          IntegerArray coordinates;  ///< the coordinates of the first pixel in a run, w.r.t. the origin
          dip::uint length;          ///< the length of the run
+         PixelRun( IntegerArray const& coordinates, dip::uint length ) : coordinates( coordinates ), length( length ) {}
       };
 
       class iterator;
 
       /// A default-constructed pixel table is kinda useless
       PixelTable() {};
+
       /// \brief Construct a pixel table for default filter shapes.
       ///
       /// The known default `shape`s are "rectagular", "elliptic", and "diamond",
       /// which correspond to a unit circle in the L_{infinity} norm, the L_2 norm, and the L_1 norm.
       ///
       /// The `size` array determines the size and dimensionality. It gives the diameter of the neighborhood (not
-      /// the radius!). For the "rectangular" shape, the diameter is rounded to the nearest integer, yielding
-      /// a rectangle that is even or odd in size. For the "diamond" shape, the diameter is rounded to the
-      /// nearet odd integer. For the "elliptic" shape, the diameter is not rounded at all, but always yields an
-      /// odd-sized bounding box. `procDim` indicates the processing dimension.
-      PixelTable( String shape, FloatArray size, dip::uint procDim = 0 );
+      /// the radius!); the neighborhood contains all pixels at a distance equal or smaller than half the diameter
+      /// from the origin. This means that not only integer sizes are meaningful.
+      /// The exception is for the "rectangular" shape, where the sizes are rounded down to the nearest integer,
+      /// yielding rectangle sides that are either even or odd in length. For even sizes, one can imagine that the
+      /// origin is shifted by half a pixel to accomodate the requested size (thought the origin is set to the pixel
+      /// that is right of the center). For the "diamond" and "elliptic" shapes, the bounding box always has odd
+      /// sizes, and the origin is always centered on one pixel. To accomplish the same for the "rectangular" shape,
+      /// simply round the sizes array to an odd integer: `size[ ii ] = std::floor( size[ ii ] / 2 ) * 2 + 1`.
+      ///
+      /// `procDim` indicates the processing dimension.
+      PixelTable( String const& shape, FloatArray size, dip::uint procDim = 0 );
+
       /// \brief Construct a pixel table for an arbitrary shape defined by a binary image.
       ///
       /// Set pixels in `mask` indicate pixels that belong to the neighborhood.
-      /// `origin` gives the coordinates of the pixel
-      /// in the image that will be placed at the origin (i.e. have coordinates {0,0,0}.
+      ///
+      /// `origin` gives the coordinates of the pixel in the image that will be placed at the origin
+      /// (i.e. have coordinates {0,0,0}. If `origin` is an empty array, the origin is set to the middle
+      /// pixel, as given by `mask.Sizes() / 2`. That is, for odd-sized dimensions, the origin is the
+      /// exact middle pixel, and for even-sized dimensions the origin is the pixel to the right of the
+      /// exact middle.
+      ///
       /// `procDim` indicates the processing dimension.
-      PixelTable( Image mask, UnsignedArray origin = {}, dip::uint procDim = 0 );
+      PixelTable( Image const& mask, IntegerArray const& origin = {}, dip::uint procDim = 0 );
+
       /// Returns the vector of runs
       std::vector< PixelRun > const& Runs() const { return runs_; }
+
       /// Returns the dimensionality of the neighborhood
       dip::uint Dimensionality() const { return sizes_.size(); }
+
       /// Returns the size of the bounding box of the neighborhood
       UnsignedArray const& Sizes() const { return sizes_; }
+
       /// Returns the origin of the neighborhood w.r.t. the top-left corner of the bounding box
-      UnsignedArray const& Origin() const { return origin_; }
+      IntegerArray const& Origin() const { return origin_; }
+
+      /// Shifts the origin of the neighborhood by the given amount
+      void ShiftOrigin( IntegerArray const& shift );
+
       /// Returns the number of pixels in the neighborhood
       dip::uint NumberOfPixels() const { return nPixels_; }
+
       /// Returns the processing dimension, the dimension along which pixel runs are laid out
       dip::uint ProcessingDimension() const { return procDim_; }
+
       /// A const iterator to the first pixel in the neighborhood
       iterator begin() const;
+
       /// A const iterator to one past the last pixel in the neighborhood
       iterator end() const;
-      /// Cast to dip::Image yields a binary image representing the neighborhood
-      operator dip::Image() const;
+
+      /// \brief Creates a binary image representing the neighborhood, or a `dfloat` one if
+      /// there are weights associtated.
+      Image AsImage() const {
+         Image out;
+         AsImage( out );
+         return out;
+      }
+
+      /// Same as previous overload, but writing into the given image.
+      void AsImage( Image& out ) const;
+
       /// \brief Prepare the pixel table to be applied to a specific image.
       ///
       /// The resulting object is identical to `this`,
@@ -162,10 +223,24 @@ class PixelTable {
          return PixelTableOffsets( *this, image );
       }
 
+      /// \brief Add weights to each pixel in the neighborhood, taken from an image. The image must be of the same
+      /// sizes as the `%PixelTable`'s bounding box (i.e. the image used to construct the pixel table).
+      void AddWeights( Image const& image );
+
+      /// \brief Add weights to each pixel in the neighborhood, using the Euclidean distance to the origin as the weight.
+      void AddDistanceToOriginAsWeights();
+
+      /// Tests if there are weights associated to each pixel in the neighborhood.
+      bool HasWeights() const { return !weights_.empty(); }
+
+      /// Returns a const reference to the weights array.
+      std::vector< dfloat > const& Weights() const { return weights_; }
+
    private:
       std::vector< PixelRun > runs_;
+      std::vector< dfloat > weights_;
       UnsignedArray sizes_;      // the size of the bounding box
-      UnsignedArray origin_;     // the coordinates of the origin w.r.t. the top-left corner of the bounding box
+      IntegerArray origin_;      // the coordinates of the origin w.r.t. the top-left corner of the bounding box
       dip::uint nPixels_ = 0;    // the total number of pixels in the pixel table
       dip::uint procDim_ = 0;    // the dimension along which the runs go
 };
@@ -184,6 +259,7 @@ class PixelTable::iterator {
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       iterator() {}
+
       /// Constructs an iterator
       iterator( PixelTable const& pt ) {
          DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
@@ -191,6 +267,7 @@ class PixelTable::iterator {
          coordinates_ = pt.runs_[ 0 ].coordinates;
          // run_ and index_ are set properly by default
       }
+
       /// Constructs an end iterator
       static iterator end( PixelTable const& pt ) {
          iterator out;
@@ -198,6 +275,7 @@ class PixelTable::iterator {
          out.run_ = pt.runs_.size();
          return out;
       }
+
       /// Swap
       void swap( iterator& other ) {
          using std::swap;
@@ -206,8 +284,10 @@ class PixelTable::iterator {
          swap( index_, other.index_ );
          swap( coordinates_, other.coordinates_ );
       }
+
       /// Dereference
       reference operator*() const { return coordinates_; }
+
       /// Increment
       iterator& operator++() {
          if( pixelTable_ && ( run_ < pixelTable_->runs_.size() ) ) {
@@ -224,23 +304,28 @@ class PixelTable::iterator {
          }
          return * this;
       }
+
       /// Increment
       iterator operator++( int ) {
          iterator tmp( *this );
          operator++();
          return tmp;
       }
+
       /// \brief Equality comparison, is true if the two iterators reference the same pixel in the same pixel table,
       /// even if they use the strides of different images.
       bool operator==( iterator const& other ) const {
          return ( pixelTable_ == other.pixelTable_ ) && ( run_ == other.run_ ) && ( index_ == other.index_ );
       }
+
       /// Inequality comparison
       bool operator!=( iterator const& other ) const {
          return !operator==( other );
       }
+
       /// Test to see if the iterator reached past the last pixel
       bool IsAtEnd() const { return run_ == pixelTable_->runs_.size(); }
+
       /// Test to see if the iterator is still pointing at a pixel
       operator bool() const { return !IsAtEnd(); }
 
@@ -277,6 +362,7 @@ class PixelTableOffsets::iterator {
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       iterator() {}
+
       /// Constructs an iterator
       iterator( PixelTableOffsets const& pt ) {
          DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
@@ -284,6 +370,7 @@ class PixelTableOffsets::iterator {
          offset_ = pt.runs_[ 0 ].offset;
          // run_ and index_ are set properly by default
       }
+
       /// Constructs an end iterator
       static iterator end( PixelTableOffsets const& pt ) {
          iterator out;
@@ -291,6 +378,7 @@ class PixelTableOffsets::iterator {
          out.run_ = pt.runs_.size();
          return out;
       }
+
       /// Swap
       void swap( iterator& other ) {
          using std::swap;
@@ -299,8 +387,10 @@ class PixelTableOffsets::iterator {
          swap( index_, other.index_ );
          swap( offset_, other.offset_ );
       }
+
       /// Dereference
       reference operator*() const { return offset_; }
+
       /// Increment
       iterator& operator++() {
          if( pixelTable_ && ( run_ < pixelTable_->runs_.size() ) ) {
@@ -317,23 +407,28 @@ class PixelTableOffsets::iterator {
          }
          return * this;
       }
+
       /// Increment
       iterator operator++( int ) {
          iterator tmp( *this );
          operator++();
          return tmp;
       }
+
       /// \brief Equality comparison, is true if the two iterators reference the same pixel in the same pixel table,
       /// even if they use the strides of different images.
       bool operator==( iterator const& other ) const {
          return ( pixelTable_ == other.pixelTable_ ) && ( run_ == other.run_ ) && ( index_ == other.index_ );
       }
+
       /// Inequality comparison
       bool operator!=( iterator const& other ) const {
          return !operator==( other );
       }
+
       /// Test to see if the iterator reached past the last pixel
       bool IsAtEnd() const { return run_ == pixelTable_->runs_.size(); }
+
       /// Test to see if the iterator is still pointing at a pixel
       operator bool() const { return !IsAtEnd(); }
 
