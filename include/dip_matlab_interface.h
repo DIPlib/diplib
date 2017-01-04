@@ -108,6 +108,8 @@ static mxClassID GetMatlabClassID(
    mxClassID type = mxUINT8_CLASS;
    switch( dt ) {
       case dip::DT_BIN:
+         type = mxLOGICAL_CLASS;
+         break;
       case dip::DT_UINT8:
          type = mxUINT8_CLASS;
          break;
@@ -242,10 +244,17 @@ class MatlabInterface : public dip::ExternalInterface {
                mlsizes.resize( 2, 1 );  // add singleton dimensions at end
             }
             // Allocate MATLAB matrix
-            mxArray* m = mxCreateNumericArray( mlsizes.size(), mlsizes.data(), type, mxREAL );
-            void* p = mxGetData( m );
-            mexPrintf( "   Created mxArray as dip::Image data block. Data pointer = %p.\n", p );
-            mla[ p ] = m;
+            void* p;
+            if( type == mxLOGICAL_CLASS ) {
+               mxArray* m = mxCreateLogicalArray( mlsizes.size(), mlsizes.data() );
+               p = mxGetLogicals( m );
+               mla[ p ] = m;
+            } else {
+               mxArray* m = mxCreateNumericArray( mlsizes.size(), mlsizes.data(), type, mxREAL );
+               p = mxGetData( m );
+               mla[ p ] = m;
+            }
+            //mexPrintf( "   Created mxArray as dip::Image data block. Data pointer = %p.\n", p );
             return std::shared_ptr< void >( p, StripHandler( *this ) );
          }
       }
@@ -283,7 +292,7 @@ class MatlabInterface : public dip::ExternalInterface {
                 ( mxGetClassID( m ) != GetMatlabClassID( img.DataType() ) )
                   ) {
                // Yes, it does. We need to make a copy of the image into a new MATLAB array.
-               mexPrintf( "   Copying data from dip::Image to mxArray\n" );
+               mexPrintf( "   Copying data from dip::Image to mxArray\n" ); // TODO: temporary warning, to be removed.
                dip::Image tmp = NewImage();
                tmp.Copy( img );
                std::cout << tmp << std::endl;
@@ -421,8 +430,8 @@ dip::Image GetImage( mxArray const* mx ) {
    dip::UnsignedArray sizes( ndims );
    mwSize const* psizes = mxGetDimensions( mxdata );
    if( ndims == 1 ) {
-      sizes[ 0 ] = psizes[ 0 ] *
-                  psizes[ 1 ];  // for a 1D image, we expect one of the two dimensions to be 1. This also handles the case that one of them is 0.
+      // for a 1D image, we expect one of the two dimensions to be 1. This also handles the case that one of them is 0.
+      sizes[ 0 ] = psizes[ 0 ] * psizes[ 1 ];
    } else if( ndims > 1 ) {
       for( dip::uint ii = 0; ii < ndims; ii++ ) {
          sizes[ ii ] = psizes[ ii ];
@@ -450,21 +459,31 @@ dip::Image GetImage( mxArray const* mx ) {
       //mexPrintf("   Copying complex image.\n");
       // Create 2 temporary Image objects for the real and complex component,
       // then copy them over into a new image.
+      dip::Image out( sizes, 1, datatype );
       dip::DataType dt = datatype == dip::DT_DCOMPLEX ? dip::DT_DFLOAT : dip::DT_SFLOAT;
       std::shared_ptr< void > p_real( mxGetData( mxdata ), VoidStripHandler );
-      dip::Image real( p_real, dt, sizes, strides, tensor, tstride, nullptr );
-      dip::Image out( sizes, 1, datatype );
-      out.Real().Copy( real );
+      if( p_real ) {
+         dip::Image real( p_real, dt, sizes, strides, tensor, tstride, nullptr );
+         out.Real().Copy( real );
+      } else {
+         out.Real().Fill( 0 );
+      }
       std::shared_ptr< void > p_imag( mxGetImagData( mxdata ), VoidStripHandler );
       if( p_imag ) {
          dip::Image imag( p_imag, dt, sizes, strides, tensor, tstride, nullptr );
          out.Imaginary().Copy( imag );
       } else {
-         out.Imaginary().Fill( 0.0 );
+         out.Imaginary().Fill( 0 );
       }
       return out;
+   } else if( binary ) {
+      //mexPrintf("   Encapsulating binary image.\n");
+      // Create Image object
+      static_assert( sizeof( mxLogical ) == sizeof( dip::bin ), "mxLogical is not one byte!" );
+      std::shared_ptr< void > p( mxGetLogicals( mxdata ), VoidStripHandler );
+      return dip::Image( p, datatype, sizes, strides, tensor, tstride, nullptr );
    } else {
-      //mexPrintf("   Encapsulating non-complex image.\n");
+      //mexPrintf("   Encapsulating non-complex and non-binary image.\n");
       // Create Image object
       std::shared_ptr< void > p( mxGetData( mxdata ), VoidStripHandler );
       return dip::Image( p, datatype, sizes, strides, tensor, tstride, nullptr );
