@@ -250,14 +250,21 @@ using RangeArray = DimensionArray< Range >;  ///< An array of ranges
 
 template< typename E, std::size_t N >
 class Options {
-      unsigned long values;
+      using value_type = unsigned long;
+      value_type values;
+      constexpr Options( value_type v, int ) : values{ v } {} // used by operator+
    public:
       constexpr Options() : values( 0 ) {}
       constexpr Options( dip::uint n ) : values{ 1UL << n } {}
-      constexpr Options( unsigned long v, int ) : values{ v } {}
-      constexpr bool operator==( Options const& other ) const { return ( values & other.values ) != 0; }
-      constexpr bool operator!=( Options const& other ) const { return ( values & other.values ) == 0; }
-      constexpr Options operator+( Options const& other ) const { return { values | other.values, 0 }; }
+      constexpr bool operator==( Options const& other ) const {
+         return ( values & other.values ) == other.values;
+      }
+      constexpr bool operator!=( Options const& other ) const {
+         return !operator==( other );
+      }
+      constexpr Options operator+( Options const& other ) const {
+         return { values | other.values, 0 };
+      }
       Options& operator+=( Options const& other ) {
          values |= other.values;
          return *this;
@@ -296,10 +303,10 @@ class Options {
 /// For class member values, add `static` in front of `DIP_DEFINE_OPTION`.
 ///
 /// **Note** that `number` cannot be more than 32.
-#define DIP_DECLARE_OPTIONS( name, number ) class __##name; using name = dip::Options< __##name, number >;
+#define DIP_DECLARE_OPTIONS( name, number ) class name##__Tag; using name = dip::Options< name##__Tag, number >
 
 /// \brief Use in conjunction with `DIP_DECLARE_OPTIONS`.
-#define DIP_DEFINE_OPTION( name, option, index ) constexpr name option { index };
+#define DIP_DEFINE_OPTION( name, option, index ) constexpr name option { index }
 
 
 //
@@ -408,11 +415,14 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::Options class") {
    opts = Option_fresh;
    DOCTEST_CHECK( opts != Option_clean );
    DOCTEST_CHECK( opts == Option_fresh );
+   DOCTEST_CHECK( opts != Option_fresh + Option_burn );
    opts = Option_clean + Option_burn;
    DOCTEST_CHECK( opts == Option_clean );
    DOCTEST_CHECK( opts == Option_burn );
+   DOCTEST_CHECK( opts == Option_burn + Option_clean );
    DOCTEST_CHECK( opts != Option_shine );
    DOCTEST_CHECK( opts != Option_fresh );
+   DOCTEST_CHECK( opts != Option_fresh + Option_burn );
    opts += Option_shine;
    DOCTEST_CHECK( opts == Option_clean );
    DOCTEST_CHECK( opts == Option_burn );
