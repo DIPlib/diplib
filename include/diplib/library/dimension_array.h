@@ -466,6 +466,16 @@ class DimensionArray {
          return p;
       }
 
+      /// Compute the sum of the squares of the elements in the array.
+      double norm_square() const {
+         T p = 0;
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            double d = static_cast< double >( data_[ ii ] );
+            p += d * d;
+         }
+         return p;
+      }
+
       /// True if all elements evaluate to true.
       bool all() const {
          for( size_type ii = 0; ii < size_; ++ii ) {
