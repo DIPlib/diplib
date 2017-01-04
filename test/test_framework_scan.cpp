@@ -16,10 +16,10 @@ int main() {
       example.SetShape( dip::Tensor::Shape::DIAGONAL_MATRIX, 2, 2 );
       rhs.ReshapeTensor( example );
 
-      lhs.Fill( dip::sint( 1 ) );                     // all values
-      lhs[ 2 ].At( 3, 4, 5 ).Fill( dip::sint( 9 ) );  // off-diagonal values for this pixel only
-      rhs.Fill( dip::sint( 4 ) );                     // diagonal values for all pixels
-      rhs[ 0 ].At( 2, 0, 3 ).Fill( dip::sint( 6 ) );  // first element for this pixel only
+      lhs.Fill( 1 );                     // all values
+      lhs[ 2 ].At( 3, 4, 5 ).Fill( 9 );  // off-diagonal values for this pixel only
+      rhs.Fill( 4 );                     // diagonal values for all pixels
+      rhs[ 0 ].At( 2, 0, 3 ).Fill( 6 );  // first element for this pixel only
 
       dip::Image out = lhs + rhs;
       std::cout << out;

@@ -1561,32 +1561,116 @@ class Image {
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
-      /// The function is defined
-      /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
-      /// value will be clipped to the target range and/or truncated, as applicable.
+      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged.
+      void Fill( bool v );
+
+      /// \brief Sets all samples in the image to the value `v`.
+      ///
+      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged.
+      void Fill( int v );
+
+      /// \brief Sets all samples in the image to the value `v`.
+      ///
+      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged.
+      void Fill( dip::uint v );
+
+      /// \brief Sets all samples in the image to the value `v`.
+      ///
+      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
       void Fill( dip::sint v );
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
-      /// The function is defined
-      /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
-      /// value will be clipped to the target range and/or truncated, as applicable.
+      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
       void Fill( dfloat v );
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
-      /// The function is defined
-      /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
-      /// value will be clipped to the target range and/or truncated, as applicable.
+      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
       void Fill( dcomplex v );
 
       /// \brief Sets all pixels in the image to the values `vlist`.
       ///
-      /// The function is defined
-      /// for initializer lists `vlist` of type dip::sint, dip::dfloat, and dip::dcomplex.
+      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
+      /// The values will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged and have the same number of tensor elements as
+      /// elements in `vlist`.
+      void Fill( std::initializer_list< bool > const& vlist ) {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
+         Image tmp = QuickCopy();
+         tmp.tensor_.SetScalar();
+         for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
+            // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
+            // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
+            // were a pointer to the correct data type.
+            tmp.Fill( *v );
+         }
+      }
+
+      /// \brief Sets all pixels in the image to the values `vlist`.
+      ///
+      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
+      /// The values will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged and have the same number of tensor elements as
+      /// elements in `vlist`.
+      void Fill( std::initializer_list< int > const& vlist ) {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
+         Image tmp = QuickCopy();
+         tmp.tensor_.SetScalar();
+         for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
+            // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
+            // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
+            // were a pointer to the correct data type.
+            tmp.Fill( *v );
+         }
+      }
+
+      /// \brief Sets all pixels in the image to the values `vlist`.
+      ///
+      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
+      /// The values will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged and have the same number of tensor elements as
+      /// elements in `vlist`.
+      void Fill( std::initializer_list< dip::uint > const& vlist ) {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
+         Image tmp = QuickCopy();
+         tmp.tensor_.SetScalar();
+         for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
+            // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
+            // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
+            // were a pointer to the correct data type.
+            tmp.Fill( *v );
+         }
+      }
+
+      /// \brief Sets all pixels in the image to the values `vlist`.
+      ///
+      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
       /// The values will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged and have the same number of tensor elements as
       /// elements in `vlist`.
@@ -1605,8 +1689,8 @@ class Image {
 
       /// \brief Sets all pixels in the image to the values `vlist`.
       ///
-      /// The function is defined
-      /// for initializer lists `vlist` of type dip::sint, dip::dfloat, and dip::dcomplex.
+      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
       /// The values will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged and have the same number of tensor elements as
       /// elements in `vlist`.
@@ -1622,8 +1706,8 @@ class Image {
 
       /// \brief Sets all pixels in the image to the values `vlist`.
       ///
-      /// The function is defined
-      /// for initializer lists `vlist` of type dip::sint, dip::dfloat, and dip::dcomplex.
+      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
       /// The values will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged and have the same number of tensor elements as
       /// elements in `vlist`.
@@ -1639,9 +1723,42 @@ class Image {
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
-      /// The operator is defined
-      /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
-      /// value will be clipped to the target range and/or truncated, as applicable.
+      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged.
+      Image& operator=( bool v ) {
+         Fill( v );
+         return *this;
+      }
+
+      /// \brief Sets all samples in the image to the value `v`.
+      ///
+      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged.
+      Image& operator=( int v ) {
+         Fill( v );
+         return *this;
+      }
+
+      /// \brief Sets all samples in the image to the value `v`.
+      ///
+      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged.
+      Image& operator=( dip::uint v ) {
+         Fill( v );
+         return *this;
+      }
+
+      /// \brief Sets all samples in the image to the value `v`.
+      ///
+      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
       Image& operator=( dip::sint v ) {
          Fill( v );
@@ -1650,9 +1767,9 @@ class Image {
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
-      /// The operator is defined
-      /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
-      /// value will be clipped to the target range and/or truncated, as applicable.
+      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
       Image& operator=( dfloat v ) {
          Fill( v );
@@ -1661,9 +1778,9 @@ class Image {
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
-      /// The operator is defined
-      /// for values `v` of type dip::sint, dip::dfloat, and dip::dcomplex. The
-      /// value will be clipped to the target range and/or truncated, as applicable.
+      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
+      /// dip::dfloat (double), and dip::dcomplex.
+      /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
       Image& operator=( dcomplex v ) {
          Fill( v );
@@ -1672,8 +1789,44 @@ class Image {
 
       /// \brief Sets all pixels in the image to the values `vlist`.
       ///
-      /// The operator is defined
-      /// for initializer lists `vlist` of type dip::sint, dip::dfloat, and dip::dcomplex.
+      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
+      /// The values will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged and have the same number of tensor elements as
+      /// elements in `vlist`.
+      Image& operator=( std::initializer_list< bool > const& vlist ) {
+         Fill( vlist );
+         return *this;
+      }
+
+      /// \brief Sets all pixels in the image to the values `vlist`.
+      ///
+      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
+      /// The values will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged and have the same number of tensor elements as
+      /// elements in `vlist`.
+      Image& operator=( std::initializer_list< int > const& vlist ) {
+         Fill( vlist );
+         return *this;
+      }
+
+      /// \brief Sets all pixels in the image to the values `vlist`.
+      ///
+      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
+      /// The values will be clipped to the target range and/or truncated, as applicable.
+      /// The image must be forged and have the same number of tensor elements as
+      /// elements in `vlist`.
+      Image& operator=( std::initializer_list< dip::uint > const& vlist ) {
+         Fill( vlist );
+         return *this;
+      }
+
+      /// \brief Sets all pixels in the image to the values `vlist`.
+      ///
+      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
       /// The values will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged and have the same number of tensor elements as
       /// elements in `vlist`.
@@ -1684,8 +1837,8 @@ class Image {
 
       /// \brief Sets all pixels in the image to the values `vlist`.
       ///
-      /// The operator is defined
-      /// for initializer lists `vlist` of type dip::sint, dip::dfloat, and dip::dcomplex.
+      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
       /// The values will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged and have the same number of tensor elements as
       /// elements in `vlist`.
@@ -1696,8 +1849,8 @@ class Image {
 
       /// \brief Sets all pixels in the image to the values `vlist`.
       ///
-      /// The operator is defined
-      /// for initializer lists `vlist` of type dip::sint, dip::dfloat, and dip::dcomplex.
+      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
+      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
       /// The values will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged and have the same number of tensor elements as
       /// elements in `vlist`.

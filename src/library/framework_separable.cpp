@@ -119,9 +119,9 @@ void Separable(
    FloatArray grow( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( process[ ii ] ) {
-         grow[ ii ] = static_cast< double >( outSizes[ ii ] ) / static_cast< double >( inSizes[ ii ] );
+         grow[ ii ] = static_cast< dfloat >( outSizes[ ii ] ) / static_cast< dfloat >( inSizes[ ii ] );
       } else {
-         grow[ ii ] = std::numeric_limits< double >::infinity(); // this dimension will not be processed, the order array will index it last
+         grow[ ii ] = std::numeric_limits< dfloat >::infinity(); // this dimension will not be processed, the order array will index it last
       }
    }
    UnsignedArray order = grow.sortedIndices();

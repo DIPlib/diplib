@@ -511,6 +511,21 @@ static inline void InternFill( Image& dest, inT v ) {
    }
 }
 
+void Image::Fill( bool v ) {
+   InternFill( *this, static_cast< dip::sint >( v ));
+}
+
+void Image::Fill( int v ) {
+   InternFill( *this, static_cast< dip::sint >( v ));
+}
+
+void Image::Fill( dip::uint v ) {
+   InternFill( *this, clamp_cast< dip::sint >( v ));
+   // `v` could potentially be clamped here, but:
+   //  - it would be clamped anyway for any integer typed image.
+   //  - if the image is float type, they should use the `dfloat` overload.
+}
+
 void Image::Fill( dip::sint v ) {
    InternFill( *this, v );
 }

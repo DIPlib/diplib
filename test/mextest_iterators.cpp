@@ -47,8 +47,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       {
          dip::ImageSliceIterator it( img, 1 );
          do {
-            //(*it).Fill( double(it.Coordinate()) );
-            it->Fill( double( it.Coordinate() ) );
+            //(*it).Fill( it.Coordinate() );
+            it->Fill( it.Coordinate() );
             std::cout << *it;
          } while( ++it );
       }

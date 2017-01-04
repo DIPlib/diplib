@@ -523,20 +523,19 @@ void ExpandBuffer(
 //
 
 
-template< typename inT, typename outT >
+template< typename outT >
 static inline void FillBufferFromTo(
       outT* outBuffer,
       dip::sint outStride,
       dip::sint outTensorStride,
       dip::uint pixels,
       dip::uint tensorElements,
-      inT value
+      outT value
 ) {
-   outT v = clamp_cast< outT >( value );
    for( dip::uint pp = 0; pp < pixels; ++pp ) {
       outT* out = outBuffer;
       for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
-         * out = v;
+         *out = value;
          out += outTensorStride;
       }
       outBuffer += outStride;
@@ -544,7 +543,7 @@ static inline void FillBufferFromTo(
 }
 
 template< typename inT >
-static inline void FillBufferFrom(
+void FillBuffer(
       void* outBuffer,
       DataType outType,
       dip::sint outStride,
@@ -555,41 +554,43 @@ static inline void FillBufferFrom(
 ) {
    switch( outType ) {
       case dip::DT_BIN:
-         FillBufferFromTo( static_cast< bin* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< bin* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< bin >( value ));
          break;
       case dip::DT_UINT8:
-         FillBufferFromTo( static_cast< uint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< uint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint8 >( value ) );
          break;
       case dip::DT_UINT16:
-         FillBufferFromTo( static_cast< uint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< uint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint16 >( value ) );
          break;
       case dip::DT_UINT32:
-         FillBufferFromTo( static_cast< uint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< uint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint32 >( value ) );
          break;
       case dip::DT_SINT8:
-         FillBufferFromTo( static_cast< sint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< sint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint8 >( value ) );
          break;
       case dip::DT_SINT16:
-         FillBufferFromTo( static_cast< sint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< sint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint16 >( value ) );
          break;
       case dip::DT_SINT32:
-         FillBufferFromTo( static_cast< sint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< sint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint32 >( value ) );
          break;
       case dip::DT_SFLOAT:
-         FillBufferFromTo( static_cast< sfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< sfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sfloat >( value ) );
          break;
       case dip::DT_DFLOAT:
-         FillBufferFromTo( static_cast< dfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< dfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< dfloat >( value ) );
          break;
       case dip::DT_SCOMPLEX:
-         FillBufferFromTo( static_cast< scomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< scomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< scomplex >( value ) );
          break;
       case dip::DT_DCOMPLEX:
-         FillBufferFromTo( static_cast< dcomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, value );
+         FillBufferFromTo( static_cast< dcomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< dcomplex >( value ) );
          break;
    }
 }
 
+// Explicit instantiations:
+template
 void FillBuffer(
       void* outBuffer,
       DataType outType,
@@ -598,10 +599,9 @@ void FillBuffer(
       dip::uint pixels,
       dip::uint tensorElements,
       dip::sint value
-) {
-   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value );
-}
+);
 
+template
 void FillBuffer(
       void* outBuffer,
       DataType outType,
@@ -610,10 +610,9 @@ void FillBuffer(
       dip::uint pixels,
       dip::uint tensorElements,
       dfloat value
-) {
-   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value );
-}
+);
 
+template
 void FillBuffer(
       void* outBuffer,
       DataType outType,
@@ -622,8 +621,6 @@ void FillBuffer(
       dip::uint pixels,
       dip::uint tensorElements,
       dcomplex value
-) {
-   FillBufferFrom( outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, value );
-}
+);
 
 } // namespace dip

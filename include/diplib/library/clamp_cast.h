@@ -63,7 +63,7 @@ constexpr inline const T clamp_lower( S const& v ) {   // T is an unsigned integ
    return static_cast< T >( std::max( v, static_cast< S >( 0 ) ) );
 }
 template< typename T, typename S >
-constexpr inline const T clamp_upper( S const& v ) {   // S is an unsigned integer type with fewer bits than T
+constexpr inline const T clamp_upper( S const& v ) {   // S is an unsigned integer type with same or more bits than T
    return static_cast< T >( std::min( v, static_cast< S >( std::numeric_limits< T >::max() ) ) );
 
 }
@@ -222,6 +222,12 @@ template<>
 inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint8 v ) {
    return clamp_lower< dip::uint32, dip::sint8 >( v );
 }
+#if SIZE_MAX != UINT32_MAX // we don't want to compile this segment on 32-bit machines, they'd conflict with the segment above.
+template<>
+inline dip::uint clamp_cast< dip::uint >( dip::sint8 v ) {
+   return clamp_lower< dip::uint, dip::sint8 >( v );
+}
+#endif
 
 /// Casting from a 16-bit signed value to any other sample type.
 // Casting from a dip::sint16, specialize for dip::sint8 and all unsigned types
@@ -245,6 +251,12 @@ template<>
 inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint16 v ) {
    return clamp_lower< dip::uint32, dip::sint16 >( v );
 }
+#if SIZE_MAX != UINT32_MAX // we don't want to compile this segment on 32-bit machines, they'd conflict with the segment above.
+template<>
+inline dip::uint clamp_cast< dip::uint >( dip::sint16 v ) {
+   return clamp_lower< dip::uint, dip::sint16 >( v );
+}
+#endif
 
 /// Casting from a 32-bit signed value to any other sample type.
 // Casting from a dip::sint32, specialize for dip::sint8, dip::sint16 and all unsigned types
@@ -272,6 +284,12 @@ template<>
 inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint32 v ) {
    return clamp_lower< dip::uint32, dip::sint32 >( v );
 }
+#if SIZE_MAX != UINT32_MAX // we don't want to compile this segment on 32-bit machines, they'd conflict with the segment above.
+template<>
+inline dip::uint clamp_cast< dip::uint >( dip::sint32 v ) {
+   return clamp_lower< dip::uint, dip::sint32 >( v );
+}
+#endif
 
 #if PTRDIFF_MAX != INT32_MAX // we don't want to compile this segment on 32-bit machines, they'd conflict with the segment above.
 /// Casting from a machine-width signed value to any other sample type.
@@ -279,6 +297,10 @@ inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint32 v ) {
 template< typename T >
 inline T clamp_cast( dip::sint v ) {
    return clamp_both< T, dip::sint >( v );
+}
+template<>
+inline dip::uint clamp_cast< dip::uint >( dip::sint v ) {
+   return clamp_lower< dip::uint, dip::sint >( v );
 }
 template<>
 inline dip::sfloat clamp_cast< dip::sfloat >( dip::sint v ) {
