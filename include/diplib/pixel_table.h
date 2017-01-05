@@ -148,7 +148,8 @@ class PixelTable {
       /// \brief Construct a pixel table for default filter shapes.
       ///
       /// The known default `shape`s are "rectagular", "elliptic", and "diamond",
-      /// which correspond to a unit circle in the L_{infinity} norm, the L_2 norm, and the L_1 norm.
+      /// which correspond to a unit circle in the L<sub>infinity</sub> norm, the L<sub>2</sub> norm,
+      /// and the L<sub>1</sub> norm.
       ///
       /// The `size` array determines the size and dimensionality. It gives the diameter of the neighborhood (not
       /// the radius!); the neighborhood contains all pixels at a distance equal or smaller than half the diameter
@@ -224,10 +225,14 @@ class PixelTable {
       }
 
       /// \brief Add weights to each pixel in the neighborhood, taken from an image. The image must be of the same
-      /// sizes as the `%PixelTable`'s bounding box (i.e. the image used to construct the pixel table).
+      /// sizes as the `%PixelTable`'s bounding box (i.e. the image used to construct the pixel table), and of a
+      /// real type (i.e. integer or float).
+      // TODO: Do we need to support complex weights? Tensor weights?
       void AddWeights( Image const& image );
 
-      /// \brief Add weights to each pixel in the neighborhood, using the Euclidean distance to the origin as the weight.
+      /// \brief Add weights to each pixel in the neighborhood, using the Euclidean distance to the origin
+      /// as the weight. This is useful for algorithms that need to, for example, sort the pixels in the
+      /// neighborhood by distance to the origin.
       void AddDistanceToOriginAsWeights();
 
       /// Tests if there are weights associated to each pixel in the neighborhood.
@@ -260,7 +265,7 @@ class PixelTable::iterator {
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       iterator() {}
 
-      /// Constructs an iterator
+      /// Constructs an iterator to the first pixel in the neighborhood
       iterator( PixelTable const& pt ) {
          DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
          pixelTable_ = &pt;
@@ -312,8 +317,7 @@ class PixelTable::iterator {
          return tmp;
       }
 
-      /// \brief Equality comparison, is true if the two iterators reference the same pixel in the same pixel table,
-      /// even if they use the strides of different images.
+      /// \brief Equality comparison, is true if the two iterators reference the same pixel in the same pixel table.
       bool operator==( iterator const& other ) const {
          return ( pixelTable_ == other.pixelTable_ ) && ( run_ == other.run_ ) && ( index_ == other.index_ );
       }
@@ -363,7 +367,7 @@ class PixelTableOffsets::iterator {
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       iterator() {}
 
-      /// Constructs an iterator
+      /// Constructs an iterator to the first pixel in the neighborhood
       iterator( PixelTableOffsets const& pt ) {
          DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
          pixelTable_ = &pt;

@@ -13,7 +13,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dml::MatlabInterface mi;
       dip::Image out = mi.NewImage();
       if( nrhs == 0 ) {
-         dip::PixelTable pt( "elliptic", dip::FloatArray{ 10.1, 12.7, 5.3 }, 0 );
+         dip::PixelTable pt( "diamond", dip::FloatArray{ 10.1, 12.7, 5.3 }, 0 );
          std::cout << "Origin: " << pt.Origin()[ 0 ] << "," << pt.Origin()[ 1 ] << "," << pt.Origin()[ 2 ] << std::endl;
          std::cout << "Sizes: " << pt.Sizes()[ 0 ] << "," << pt.Sizes()[ 1 ] << "," << pt.Sizes()[ 2 ] << std::endl;
          std::cout << "Runs: " << pt.Runs().size() << std::endl;
@@ -21,7 +21,15 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       }
       else {
          dip::Image const img = dml::GetImage( prhs[ 0 ] );
-         dip::PixelTable pt( img, {}, 0 );
+         dip::PixelTable pt;
+         if( img.DataType().IsBinary() ) {
+            pt = { img, {}, 0 };
+            pt.AddDistanceToOriginAsWeights();
+         } else {
+            dip::Image bin = img > 0;
+            pt = { bin, {}, 0 };
+            pt.AddWeights( img );
+         }
          std::cout << "Origin: " << pt.Origin()[ 0 ] << "," << pt.Origin()[ 1 ] << "," << pt.Origin()[ 2 ] << std::endl;
          std::cout << "Sizes: " << pt.Sizes()[ 0 ] << "," << pt.Sizes()[ 1 ] << "," << pt.Sizes()[ 2 ] << std::endl;
          std::cout << "Runs: " << pt.Runs().size() << std::endl;

@@ -8,6 +8,7 @@
 
 #include "diplib/pixel_table.h"
 #include "diplib/iterators.h"
+#include "diplib/overload.h"
 
 namespace dip {
 
@@ -30,7 +31,7 @@ PixelTableOffsets::PixelTableOffsets(
    weights_ = pt.Weights();
 }
 
-// Construct a pixel table from a unit circle
+// Construct a pixel table from a unit circle in different metrics
 PixelTable::PixelTable(
       String const& shape,
       FloatArray size, // by copy
@@ -73,7 +74,7 @@ PixelTable::PixelTable(
          // Fill next pixel table run
          runs_.emplace_back( cor, length );
 
-         // some nD looping bookkeeping stuff
+         // Some nD looping bookkeeping stuff
          dip::uint ii = 0;
          for( ; ii < nDims; ++ii ) {
             if( ii == procDim ) {
@@ -104,42 +105,31 @@ PixelTable::PixelTable(
       }
 
       // Fill the pixel table runs
+      dfloat sz = size[ procDim ];
       IntegerArray cor = origin_;
-      for( ;; ) {
+      for( ;; ) { // Loop over image lines
 
-         // Find the first position along the line that lies within the ellipse
-         dfloat radius = 0.0;
+         // Find the square distance from the origin for the pixel in the middle of this line
+         dfloat distance2 = 0.0;
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             if( ii != procDim ) {
                dfloat tmp = static_cast< dfloat >( cor[ ii ] ) / size[ ii ];
-               radius += tmp * tmp;
+               distance2 += tmp * tmp;
             }
          }
-         if( radius <= 1.0 ) {
-            // TODO: this bit below must be possible to do without a loop!?
-            dip::sint length = origin_[ procDim ];
-            dfloat tmp = static_cast< dfloat >( length ) / size[ procDim ];
-            tmp *= tmp;
-            while( ( radius + tmp ) > 1.0 ) {
-               ++length;
-               if( length > 0 ) {
-                  break;
-               }
-               tmp = static_cast< dfloat >( length ) / size[ procDim ];
-               tmp *= tmp;
-            }
-
-            // Fill next pixel table run
-            if((( radius + tmp ) <= 1.0 ) && ( length <= 0 )) {
-               IntegerArray coordinate = cor;
-               coordinate[ procDim ] = length;
-               dip::uint len = static_cast< dip::uint >( 2 * -length + 1 );
-               runs_.emplace_back( coordinate, len);
-               nPixels_ += len;
-            }
+         // If we're still within the radius, this line intersects the ellipsoid
+         if( distance2 <= 1.0 ) {
+            // Find the distance from the origin, along this line, that we can go and still stay within the ellipsoid
+            dip::sint length = static_cast< dip::sint >( std::floor( sz * std::sqrt( 1.0 - distance2 )));
+            // Determine and fill the run for this line
+            IntegerArray coordinate = cor;
+            coordinate[ procDim ] = -length;
+            dip::uint len = static_cast< dip::uint >( 2 * length + 1 );
+            runs_.emplace_back( coordinate, len );
+            nPixels_ += len;
          }
 
-         // some nD looping bookkeeping stuff
+         // Some nD looping bookkeeping stuff
          dip::uint ii = 0;
          for( ; ii < nDims; ++ii ) {
             if( ii == procDim ) {
@@ -170,36 +160,27 @@ PixelTable::PixelTable(
       }
 
       // Fill the pixel table runs
+      dfloat sz = size[ procDim ];
       IntegerArray cor = origin_;
-      for( ;; ) {
+      for( ;; ) { // Loop over image lines
 
-         // Find the first position along the line that lies within the diamond
-         dfloat radius = 0.0;
+         // Find the L1 distance from the origin for the pixel in the middle of this line
+         dfloat distance = 0.0;
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             if( ii != procDim ) {
-               radius += static_cast< dfloat >( std::abs( cor[ ii ] )) / size[ ii ];
+               distance += static_cast< dfloat >( std::abs( cor[ ii ] )) / size[ ii ];
             }
          }
-         if( radius <= 1.0 ) {
-            // TODO: this bit below must be possible to do without a loop!?
-            dip::sint length = origin_[ procDim ];
-            dfloat tmp = static_cast< dfloat >( std::abs( length )) / size[ procDim ];
-            while( ( radius + tmp ) > 1.0 ) {
-               ++length;
-               if( length > 0 ) {
-                  break;
-               }
-               tmp = static_cast< dfloat >( std::abs( length )) / size[ procDim ];
-            }
-
-            // Fill next pixel table run
-            if( ( ( radius + tmp ) <= 1.0 ) && ( length <= 0 ) ) {
-               IntegerArray coordinate = cor;
-               coordinate[ procDim ] = length;
-               dip::uint len = static_cast< dip::uint >( 2 * -length + 1 );
-               runs_.emplace_back( coordinate, len);
-               nPixels_ += len;
-            }
+         // If we're still within the radius, this line intersects the diamond-oid
+         if( distance <= 1.0 ) {
+            // Find the distance from the origin, along this line, that we can go and still stay within the ellipsoid
+            dip::sint length = static_cast< dip::sint >( std::floor( sz * ( 1.0 - distance )));
+            // Determine and fill the run for this line
+            IntegerArray coordinate = cor;
+            coordinate[ procDim ] = -length;
+            dip::uint len = static_cast< dip::uint >( 2 * length + 1 );
+            runs_.emplace_back( coordinate, len );
+            nPixels_ += len;
          }
 
          // some nD looping bookkeeping stuff
@@ -309,6 +290,63 @@ void PixelTable::AsImage( Image& out ) const {
    }
 }
 
+// Shift the origin
+void PixelTable::ShiftOrigin( IntegerArray const& shift ) {
+   dip::uint nDims = origin_.size();
+   DIP_THROW_IF( shift.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
+   origin_ += shift;
+   for( auto& run : runs_ ) {
+      run.coordinates -= shift;
+   }
+}
+
+template< typename TPI >
+void dip__AddWeights(
+      Image const& image,
+      dip::sint stride,
+      std::vector< PixelTable::PixelRun > const& runs,
+      std::vector< dfloat >& weights,
+      IntegerArray const& origin
+) {
+   for( auto& run : runs ) {
+      IntegerArray position = run.coordinates;
+      position -= origin;
+      TPI* data = static_cast< TPI* >( image.Pointer( position ));
+      for( dip::uint ii = 0; ii < run.length; ++ii ) {
+         weights.push_back( *data );
+         data += stride;
+      }
+   }
+}
+
+// Add weights from an image
+void PixelTable::AddWeights( Image const& image ) {
+   DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( image.TensorElements() != 1, E::NOT_SCALAR );
+   DIP_THROW_IF( image.Sizes() != sizes_, E::SIZES_DONT_MATCH );
+   DIP_THROW_IF( !image.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   weights_.reserve( nPixels_ );
+   dip::sint stride = image.Stride( procDim_ );
+   DIP_OVL_CALL_REAL( dip__AddWeights, ( image, stride, runs_, weights_, origin_ ), image.DataType() );
+}
+
+// Add weights from distances
+void PixelTable::AddDistanceToOriginAsWeights() {
+   weights_.reserve( nPixels_ );
+   for( auto& run : runs_ ) {
+      IntegerArray position = run.coordinates;
+      double sum2 = position.norm_square();
+      weights_.push_back( std::sqrt( sum2 ));
+      if( run.length > 1 ) {
+         double d = static_cast< double >( position[ procDim_ ] );
+         for( dip::uint ii = 1; ii < run.length; ++ii ) {
+            // new sum2 = sum2 - d^2 + (d+ii)^2 = sum2 + ii^2 - 2*ii*d
+            weights_.push_back( std::sqrt( sum2 + ii * ii + 2 * ii * d ));
+         }
+      }
+   }
+}
+
 #ifdef DIP__ENABLE_DOCTEST
 
 DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
@@ -370,26 +408,5 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
 }
 
 #endif // DIP__ENABLE_DOCTEST
-
-// Shift the origin
-void PixelTable::ShiftOrigin( IntegerArray const& shift ) {
-   dip::uint nDims = origin_.size();
-   DIP_THROW_IF( shift.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
-   origin_ += shift;
-   for( auto& run : runs_ ) {
-      run.coordinates -= shift;
-   }
-}
-
-// Add weights from an image
-void PixelTable::AddWeights( Image const& image ) {
-   // TODO: the old dip_GreyValuesInPixelTable goes here
-}
-
-// Add weights from distances
-void PixelTable::AddDistanceToOriginAsWeights() {
-   // TODO
-}
-
 
 } // namespace dip
