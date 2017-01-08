@@ -102,6 +102,8 @@ add_executable( test_framework_scan EXCLUDE_FROM_ALL test/test_framework_scan.cp
 target_link_libraries(test_framework_scan DIP)
 add_executable( test_framework_separable EXCLUDE_FROM_ALL test/test_framework_separable.cpp )
 target_link_libraries(test_framework_separable DIP)
+add_executable( test_framework_full EXCLUDE_FROM_ALL test/test_framework_full.cpp )
+target_link_libraries(test_framework_full DIP)
 add_executable( test_boundary EXCLUDE_FROM_ALL test/test_boundary.cpp )
 target_link_libraries(test_boundary DIP)
 add_executable( test_measurement EXCLUDE_FROM_ALL test/test_measurement.cpp )
@@ -113,6 +115,7 @@ if(Matlab_FOUND)
 
    matlab_add_mex(NAME mextest SRC test/mextest.cpp LINK_TO DIP)
    set_target_properties(mextest PROPERTIES EXCLUDE_FROM_ALL 1)
+   # Does: mex ../test/mextest.cpp -I../include -I../dependencies/doctest/ -largeArrayDims libDIP.a -DDIP__ENABLE_DOCTEST -DDOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
 
    matlab_add_mex(NAME mextest_function SRC test/mextest_function.cpp LINK_TO DIP)
    set_target_properties(mextest_function PROPERTIES EXCLUDE_FROM_ALL 1)

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for framework functions and support classes.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -521,8 +521,8 @@ class SeparableLineFilter {
 /// the processing starts, when `%dip::Framework::Separable` has determined how many
 /// threads will be used in the processing.
 void Separable(
-      Image const& cInput,             ///< Input image
-      Image& cOutput,                  ///< Output image
+      Image const& in,                 ///< Input image
+      Image& out,                      ///< Output image
       DataType bufferType,             ///< Data type for input and output buffer
       DataType outImageType,           ///< Data type for output image
       BooleanArray process,            ///< Determines along which dimensions to apply the filter
@@ -614,7 +614,15 @@ class FullLineFilter {
 ///
 /// `lineFilter` can access the pixels on the given line for all
 /// input and output images, as well as all pixels within the neighborhood for
-/// all input images.
+/// all input images. The neighborhood is given by `pixelTable`. This object
+/// defines the size of the border extension in the input buffer, as well as
+/// the processing dimension. Use `dip::Framework::OptimalProcessingDim` to determine
+/// the processing dimension to use when generating the `pixelTable`. Though under
+/// some circumstances it might be beneficial to use a different dimension.
+///
+/// TODO: some filters benefit strongly from longer pixel runs, they'd want to
+/// decrease the number of runs by picking a processing dimension where the filter
+/// is wide.
 ///
 /// The output image (unless protected) will be resized to match the input,
 /// and its type will be set to that specified by `outImage`.
@@ -681,9 +689,9 @@ class FullLineFilter {
 void Full(
       Image const& in,                 ///< Input image
       Image& out,                      ///< Output image
-      DataType inBufferTypes,          ///< Data types for input buffer
-      DataType outBufferTypes,         ///< Data types for output buffer
-      DataType outImageTypes,          ///< Data types for output image
+      DataType inBufferType,           ///< Data types for input buffer
+      DataType outBufferType,          ///< Data types for output buffer
+      DataType outImageType,           ///< Data types for output image
       dip::uint nTensorElements,       ///< Number of tensor elements in output image
       BoundaryConditionArray boundaryConditions, ///< Filling method for the border
       PixelTable const& pixelTable,    ///< Object describing the neighborhood

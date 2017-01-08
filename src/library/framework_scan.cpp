@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the scan framework.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -103,7 +103,7 @@ void Scan(
 
    // Adjust output if necessary (and possible)
    // TODO: we should allocate c_out[ ii ] correctly, not with tensor dimension as spatial dimension.
-   DIP_TRY
+   DIP_START_STACK_TRACE
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       Image& tmp = c_out[ ii ].get();
       dip::uint nTensor = opts == Scan_TensorAsSpatialDim ? 1 : nTensorElements[ ii ]; // Input parameter ignored, output matches singleton-expanded number of tensor elements.
@@ -115,7 +115,7 @@ void Scan(
       }
       tmp.ReForge( sizes, nTensor, outImageTypes[ ii ], Option::AcceptDataTypeChange::DO_ALLOW );
    }
-   DIP_CATCH
+   DIP_END_STACK_TRACE
 
    // Make simplified copies of output image headers so we can modify them at will
    ImageArray out( nOut );
@@ -163,17 +163,17 @@ void Scan(
    // Note we're only converting the copies of the headers, not the original ones.
    // Note also that if we are dealing with a 0D image, it also has a simple
    // stride and hence will be converted into 1D.
-   DIP_TRY
-   if( scan1D ) {
-      for( dip::uint ii = 0; ii < nIn; ++ii ) {
-         in[ ii ].Flatten();
+   DIP_START_STACK_TRACE
+      if( scan1D ) {
+         for( dip::uint ii = 0; ii < nIn; ++ii ) {
+            in[ ii ].Flatten();
+         }
+         for( dip::uint ii = 0; ii < nOut; ++ii ) {
+            out[ ii ].Flatten();
+         }
+         sizes = ( nIn > 0 ? in[ 0 ] : out[ 0 ] ).Sizes();
       }
-      for( dip::uint ii = 0; ii < nOut; ++ii ) {
-         out[ ii ].Flatten();
-      }
-      sizes = ( nIn > 0 ? in[ 0 ] : out[ 0 ] ).Sizes();
-   }
-   DIP_CATCH
+   DIP_END_STACK_TRACE
 
    /*
    std::cout << "dip::Framework::Scan -- images\n";
@@ -244,44 +244,44 @@ void Scan(
 
    // Create buffer data structs and allocate buffers
    std::vector< std::vector< uint8 > > buffers; // The outer one here is not a DimensionArray, because it won't delete() its contents
-   std::vector< ScanBuffer > inScanBufs( nIn );   // We don't use DimensionArray here either, but we could
+   std::vector< ScanBuffer > inBuffers( nIn );   // We don't use DimensionArray here either, but we could
    for( dip::uint ii = 0; ii < nIn; ++ii ) {
       if( inUseBuffer[ ii ] ) {
          if( lookUpTables[ ii ].empty() ) {
-            inScanBufs[ ii ].tensorLength = in[ ii ].TensorElements();
+            inBuffers[ ii ].tensorLength = in[ ii ].TensorElements();
          } else {
-            inScanBufs[ ii ].tensorLength = lookUpTables[ ii ].size();
+            inBuffers[ ii ].tensorLength = lookUpTables[ ii ].size();
          }
-         inScanBufs[ ii ].tensorStride = 1;
+         inBuffers[ ii ].tensorStride = 1;
          if( in[ ii ].Stride( processingDim ) == 0 ) {
             // A stride of 0 means all pixels are the same, allocate space for a single pixel
-            inScanBufs[ ii ].stride = 0;
-            buffers.emplace_back( inBufferTypes[ ii ].SizeOf() * inScanBufs[ ii ].tensorLength );
+            inBuffers[ ii ].stride = 0;
+            buffers.emplace_back( inBufferTypes[ ii ].SizeOf() * inBuffers[ ii ].tensorLength );
          } else {
-            inScanBufs[ ii ].stride = inScanBufs[ ii ].tensorLength;
-            buffers.emplace_back( bufferSize * inBufferTypes[ ii ].SizeOf() * inScanBufs[ ii ].tensorLength );
+            inBuffers[ ii ].stride = inBuffers[ ii ].tensorLength;
+            buffers.emplace_back( bufferSize * inBufferTypes[ ii ].SizeOf() * inBuffers[ ii ].tensorLength );
          }
-         inScanBufs[ ii ].buffer = buffers.back().data();
+         inBuffers[ ii ].buffer = buffers.back().data();
       } else {
-         inScanBufs[ ii ].tensorLength = in[ ii ].TensorElements();
-         inScanBufs[ ii ].tensorStride = in[ ii ].TensorStride();
-         inScanBufs[ ii ].stride = in[ ii ].Stride( processingDim );
-         inScanBufs[ ii ].buffer = nullptr;
+         inBuffers[ ii ].tensorLength = in[ ii ].TensorElements();
+         inBuffers[ ii ].tensorStride = in[ ii ].TensorStride();
+         inBuffers[ ii ].stride = in[ ii ].Stride( processingDim );
+         inBuffers[ ii ].buffer = nullptr;
       }
    }
-   std::vector< ScanBuffer > outScanBufs( nOut );
+   std::vector< ScanBuffer > outBuffers( nOut );
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       if( outUseBuffer[ ii ] ) {
-         outScanBufs[ ii ].tensorLength = out[ ii ].TensorElements();
-         outScanBufs[ ii ].tensorStride = 1;
-         outScanBufs[ ii ].stride = outScanBufs[ ii ].tensorLength;
-         buffers.emplace_back( bufferSize * outBufferTypes[ ii ].SizeOf() * outScanBufs[ ii ].tensorLength );
-         outScanBufs[ ii ].buffer = buffers.back().data();
+         outBuffers[ ii ].tensorLength = out[ ii ].TensorElements();
+         outBuffers[ ii ].tensorStride = 1;
+         outBuffers[ ii ].stride = outBuffers[ ii ].tensorLength;
+         buffers.emplace_back( bufferSize * outBufferTypes[ ii ].SizeOf() * outBuffers[ ii ].tensorLength );
+         outBuffers[ ii ].buffer = buffers.back().data();
       } else {
-         outScanBufs[ ii ].tensorLength = out[ ii ].TensorElements();
-         outScanBufs[ ii ].tensorStride = out[ ii ].TensorStride();
-         outScanBufs[ ii ].stride = out[ ii ].Stride( processingDim );
-         outScanBufs[ ii ].buffer = nullptr;
+         outBuffers[ ii ].tensorLength = out[ ii ].TensorElements();
+         outBuffers[ ii ].tensorStride = out[ ii ].TensorStride();
+         outBuffers[ ii ].stride = out[ ii ].Stride( processingDim );
+         outBuffers[ ii ].buffer = nullptr;
       }
    }
 
@@ -291,16 +291,16 @@ void Scan(
    std::cout << "   buffer size = " << bufferSize << std::endl;
    for( dip::uint ii = 0; ii < nIn; ++ii ) {
       std::cout << "   in[" << ii << "] use buffer: " << ( inUseBuffer[ii] ? "yes" : "no" ) << std::endl;
-      std::cout << "   in[" << ii << "] buffer stride: " << inScanBufs[ii].stride << std::endl;
-      std::cout << "   in[" << ii << "] buffer tensorStride: " << inScanBufs[ii].tensorStride << std::endl;
-      std::cout << "   in[" << ii << "] buffer tensorLength: " << inScanBufs[ii].tensorLength << std::endl;
+      std::cout << "   in[" << ii << "] buffer stride: " << inBuffers[ii].stride << std::endl;
+      std::cout << "   in[" << ii << "] buffer tensorStride: " << inBuffers[ii].tensorStride << std::endl;
+      std::cout << "   in[" << ii << "] buffer tensorLength: " << inBuffers[ii].tensorLength << std::endl;
       std::cout << "   in[" << ii << "] buffer type: " << inBufferTypes[ii].Name() << std::endl;
    }
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       std::cout << "   out[" << ii << "] use buffer: " << ( outUseBuffer[ii] ? "yes" : "no" ) << std::endl;
-      std::cout << "   out[" << ii << "] buffer stride: " << outScanBufs[ii].stride << std::endl;
-      std::cout << "   out[" << ii << "] buffer tensorStride: " << outScanBufs[ii].tensorStride << std::endl;
-      std::cout << "   out[" << ii << "] buffer tensorLength: " << outScanBufs[ii].tensorLength << std::endl;
+      std::cout << "   out[" << ii << "] buffer stride: " << outBuffers[ii].stride << std::endl;
+      std::cout << "   out[" << ii << "] buffer tensorStride: " << outBuffers[ii].tensorStride << std::endl;
+      std::cout << "   out[" << ii << "] buffer tensorLength: " << outBuffers[ii].tensorLength << std::endl;
       std::cout << "   out[" << ii << "] buffer type: " << outBufferTypes[ii].Name() << std::endl;
    }
    */
@@ -310,7 +310,7 @@ void Scan(
    UnsignedArray position( sizes.size(), 0 );
    IntegerArray inIndices( nIn, 0 );
    IntegerArray outIndices( nOut, 0 );
-   ScanLineFilterParameters scanLineFilterParams{ inScanBufs, outScanBufs, 0, processingDim, position, thread }; // Takes inScanBufs, outScanBufs, position as references
+   ScanLineFilterParameters scanLineFilterParams{ inBuffers, outBuffers, 0, processingDim, position, thread }; // Takes inBuffers, outBuffers, position as references
    for( ;; ) {
 
       // Iterate over line sections, if bufferSize < sizes[processingDim]
@@ -332,21 +332,21 @@ void Scan(
                      in[ ii ].DataType(),
                      in[ ii ].Stride( processingDim ),
                      in[ ii ].TensorStride(),
-                     inScanBufs[ ii ].buffer,
+                     inBuffers[ ii ].buffer,
                      inBufferTypes[ ii ],
-                     inScanBufs[ ii ].stride,
-                     inScanBufs[ ii ].tensorStride,
-                     inScanBufs[ ii ].stride == 0 ? 1 : nPixels, // if stride == 0, copy only a single pixel because they're all the same
-                     inScanBufs[ ii ].tensorLength,
+                     inBuffers[ ii ].stride,
+                     inBuffers[ ii ].tensorStride,
+                     inBuffers[ ii ].stride == 0 ? 1 : nPixels, // if stride == 0, copy only a single pixel because they're all the same
+                     inBuffers[ ii ].tensorLength,
                      lookUpTables[ ii ] );
             } else {
-               inScanBufs[ ii ].buffer = in[ ii ].Pointer( inIndices[ ii ] + sectionStart * in[ ii ].Stride( processingDim ));
+               inBuffers[ ii ].buffer = in[ ii ].Pointer( inIndices[ ii ] + sectionStart * in[ ii ].Stride( processingDim ));
             }
          }
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
             //std::cout << "      outIndices[" << ii << "] = " << outIndices[ii] << std::endl;
             if( !outUseBuffer[ ii ] ) {
-               outScanBufs[ ii ].buffer = out[ ii ].Pointer( outIndices[ ii ] + sectionStart * out[ ii ].Stride( processingDim ));
+               outBuffers[ ii ].buffer = out[ ii ].Pointer( outIndices[ ii ] + sectionStart * out[ ii ].Stride( processingDim ));
             }
          }
 
@@ -357,16 +357,16 @@ void Scan(
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
             if( outUseBuffer[ ii ] ) {
                CopyBuffer(
-                     outScanBufs[ ii ].buffer,
+                     outBuffers[ ii ].buffer,
                      outBufferTypes[ ii ],
-                     outScanBufs[ ii ].stride,
-                     outScanBufs[ ii ].tensorStride,
+                     outBuffers[ ii ].stride,
+                     outBuffers[ ii ].tensorStride,
                      out[ ii ].Pointer( outIndices[ ii ] + sectionStart * out[ ii ].Stride( processingDim )),
                      out[ ii ].DataType(),
                      out[ ii ].Stride( processingDim ),
                      out[ ii ].TensorStride(),
                      nPixels,
-                     outScanBufs[ ii ].tensorLength,
+                     outBuffers[ ii ].tensorLength,
                      std::vector< dip::sint > {} );
             }
          }

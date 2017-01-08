@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2016, Cris Luengo.
+ * (c)2014-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -652,6 +652,7 @@ void Image::ReForge(
       }
    }
    Strip();
+   ResetNonDataProperties();
    dataType_ = dt;
    sizes_ = sizes;
    tensor_.SetVector( tensorElems );

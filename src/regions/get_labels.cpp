@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition for the GetObjectLabels function.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -69,9 +69,9 @@ UnsignedArray GetObjectLabels(
    if( mask.IsForged() ) {
       DIP_THROW_IF( mask.TensorElements() != 1, E::NOT_SCALAR );
       DIP_THROW_IF( !mask.DataType().IsBinary(), E::MASK_NOT_BINARY );
-      DIP_TRY
+      DIP_START_STACK_TRACE
          mask.CompareProperties( label, Option::CmpProps_Sizes );
-      DIP_CATCH
+      DIP_END_STACK_TRACE
    }
 
    // Create arrays for Scan framework

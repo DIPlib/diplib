@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for exceptions and support functions.
  *
- * (c)2014-2016, Cris Luengo.
+ * (c)2014-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -235,41 +235,41 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 #endif
 
 
-/// \def DIP_TRY
-/// \brief Starts a try/catch block that builds a stack trace when an exception is thrown. See `#DIP_CATCH`.
-
-/// \def DIP_CATCH
-/// \brief Ends a try/catch block that builds a stack trace when an exception is thrown.
+/// \def DIP_START_STACK_TRACE
+/// \brief Starts a try/catch block that builds a stack trace when an exception is thrown.
 ///
 /// To build a stack trace, some library functions catch *DIPlib* exceptions, add their name and other info to it,
 /// then re-throw. To simplify this mechanism and make it easier to future changes, this macro and its partner
-/// `#DIP_TRY` are used by these library functions. Use then as follows:
+/// `#DIP_END_STACK_TRACE` are used by these library functions. Use then as follows:
 ///
-///     DIP_TRY
+///     DIP_START_STACK_TRACE
 ///     [some DIPlib functions that might throw here...]
-///     DIP_CATCH
+///     DIP_END_STACK_TRACE
 ///
 /// This expands to the exact same code as shown under `#DIP_ADD_STACK_TRACE`.
 ///
-/// NOTE! `DIP_TRY` starts a try/catch block, which must be closed with `DIP_CATCH` to prevent malformed syntax.
-/// Thus you should never use one of these two macros without the other one.
+/// NOTE! `DIP_START_STACK_TRACE` starts a try/catch block, which must be closed with `DIP_END_STACK_TRACE` to
+/// prevent malformed syntax. Thus you should never use one of these two macros without the other one.
 ///
 /// When compiling with the `EXCEPTIONS_RECORD_STACK_TRACE` set to `OFF`, these macros don't do anything. Turn the
 /// option off if your application would make no use of the stack trace, as building the stack trace does incur some
 /// runtime cost.
 
+/// \def DIP_END_STACK_TRACE
+/// \brief Ends a try/catch block that builds a stack trace when an exception is thrown. See `#DIP_START_STACK_TRACE`.
+
 #ifdef DIP__EXCEPTIONS_RECORD_STACK_TRACE
 
-// NOTE! Yes, we've got an opening brace here and no closing brace. This macro always needs to be paired with DIP_CATCH.
-#define DIP_TRY try {
+// NOTE! Yes, we've got an opening brace here and no closing brace. This macro always needs to be paired with DIP_END_STACK_TRACE.
+#define DIP_START_STACK_TRACE try {
 
-// NOTE! Yes, we start with a closing brace here. This macro always needs to be paired with DIP_TRY.
-#define DIP_CATCH } catch( dip::Error& e ) { DIP_ADD_STACK_TRACE( e ); throw; }
+// NOTE! Yes, we start with a closing brace here. This macro always needs to be paired with DIP_START_STACK_TRACE.
+#define DIP_END_STACK_TRACE } catch( dip::Error& e ) { DIP_ADD_STACK_TRACE( e ); throw; }
 
 #else
 
-#define DIP_TRY
-#define DIP_CATCH
+#define DIP_START_STACK_TRACE
+#define DIP_END_STACK_TRACE
 
 #endif
 

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for functions that create chain codes from object outlines.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -122,9 +122,9 @@ ChainCodeArray GetImageChainCodes(
 ) {
    // Check input image
    DIP_THROW_IF( !labels.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_TRY
+   DIP_START_STACK_TRACE
       labels.CheckProperties( 2, 1, DataType::Class_UInt );
-   DIP_CATCH
+   DIP_END_STACK_TRACE
    DIP_THROW_IF( !(connectivity == 1 || connectivity == 2),
           "connectivity not supported");
 

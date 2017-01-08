@@ -161,9 +161,14 @@ An other advantage is having fewer possibilities for name clashes when defining
 a lot of enumerator constants for the many, many options accumulated of the
 large collection of functions and algorithms in *DIPlib*.
 
+A function that has multiple independent options takes a `dip::StringSet`
+(a `std::set<std::string>`) as input. The user can simply join strings using
+curly braces, much like in *MATLAB*. The algorithm can easily check if a
+specific string is given or not.
+
 However, for infrastructure functions not typically exposed in interfaces (i.e.
 the functions that *DIPlib* uses internally to do its work) we do define
-numeric constants for options. For example, see the enumerator `dip::Options::ThrowException`,
+numeric constants for options. For example, see the enumerator `dip::Option::ThrowException`,
 or any of the flags defined through `#DIP_DECLARE_OPTIONS`. These are more efficient
 in use and equally convenient if limited to the C++ code.
 

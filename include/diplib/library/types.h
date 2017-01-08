@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the basic data types.
  *
- * (c)2014-2016, Cris Luengo.
+ * (c)2014-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -21,6 +21,7 @@
 #include <complex>
 #include <vector>
 #include <string>
+#include <set>
 
 #include "diplib/library/dimension_array.h"
 #include "error.h"
@@ -148,9 +149,9 @@ inline DimensionArray< T > ArrayUseParameter( DimensionArray< T > const& array, 
 // Strings, used for parameters and other things
 //
 
-using String = std::string;                 ///< A string type
-using StringArray = std::vector< String >;  ///< An array of strings
-
+using String = std::string;                 ///< A string, used to specify an option
+using StringArray = std::vector< String >;  ///< An array of strings, used to specify an option per dimension
+using StringSet = std::set< String >;       ///< A collection of strings, used to specify multiple independent options
 
 //
 // Ranges, used for indexing
@@ -249,27 +250,27 @@ using RangeArray = DimensionArray< Range >;  ///< An array of ranges
 //
 
 template< typename E, std::size_t N >
-class Options {
+class dip__Options {
       using value_type = unsigned long;
       value_type values;
-      constexpr Options( value_type v, int ) : values{ v } {} // used by operator+
+      constexpr dip__Options( value_type v, int ) : values{ v } {} // used by operator+
    public:
-      constexpr Options() : values( 0 ) {}
-      constexpr Options( dip::uint n ) : values{ 1UL << n } {}
-      constexpr bool operator==( Options const& other ) const {
+      constexpr dip__Options() : values( 0 ) {}
+      constexpr dip__Options( dip::uint n ) : values{ 1UL << n } {}
+      constexpr bool operator==( dip__Options const& other ) const {
          return ( values & other.values ) == other.values;
       }
-      constexpr bool operator!=( Options const& other ) const {
+      constexpr bool operator!=( dip__Options const& other ) const {
          return !operator==( other );
       }
-      constexpr Options operator+( Options const& other ) const {
+      constexpr dip__Options operator+( dip__Options const& other ) const {
          return { values | other.values, 0 };
       }
-      Options& operator+=( Options const& other ) {
+      dip__Options& operator+=( dip__Options const& other ) {
          values |= other.values;
          return *this;
       }
-      Options& operator-=( Options const& other ) {
+      dip__Options& operator-=( dip__Options const& other ) {
          values &= ~other.values;
          return *this;
       }
@@ -303,7 +304,7 @@ class Options {
 /// For class member values, add `static` in front of `DIP_DEFINE_OPTION`.
 ///
 /// **Note** that `number` cannot be more than 32.
-#define DIP_DECLARE_OPTIONS( name, number ) class name##__Tag; using name = dip::Options< name##__Tag, number >
+#define DIP_DECLARE_OPTIONS( name, number ) class name##__Tag; using name = dip::dip__Options< name##__Tag, number >
 
 /// \brief Use in conjunction with `DIP_DECLARE_OPTIONS`.
 #define DIP_DEFINE_OPTION( name, option, index ) constexpr name option { index }
@@ -343,15 +344,15 @@ enum class AcceptDataTypeChange {
 ///
 /// CmpProps constant       | Definition
 /// ----------------------- | ----------
-/// CmpProps_DataType       | compares data type
-/// CmpProps_Dimensionality | compares number of dimensions
-/// CmpProps_Sizes          | compares image size
-/// CmpProps_Strides        | compares image strides
-/// CmpProps_TensorShape    | compares tensor size and shape
-/// CmpProps_TensorElements | compares number of tensor elements
-/// CmpProps_TensorStride   | compares tensor stride
-/// CmpProps_ColorSpace     | compares color space
-/// CmpProps_PixelSize      | compares pixel size
+/// CmpProps_DataType       | Compares data type
+/// CmpProps_Dimensionality | Compares number of dimensions
+/// CmpProps_Sizes          | Compares image size
+/// CmpProps_Strides        | Compares image strides
+/// CmpProps_TensorShape    | Compares tensor size and shape
+/// CmpProps_TensorElements | Compares number of tensor elements
+/// CmpProps_TensorStride   | Compares tensor stride
+/// CmpProps_ColorSpace     | Compares color space
+/// CmpProps_PixelSize      | Compares pixel size
 /// CmpProps_Samples        | CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorElements
 /// CmpProps_Shape          | CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorShape
 /// CmpProps_Full           | CmpProps_Shape + CmpProps_Strides + CmpProps_TensorStride
@@ -402,7 +403,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::bin class") {
    DOCTEST_CHECK( A != 100 );
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::Options class") {
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::dip__Options class") {
    DIP_DECLARE_OPTIONS( MyOptions, 5 );
    DIP_DEFINE_OPTION( MyOptions, Option_clean, 0 );
    DIP_DEFINE_OPTION( MyOptions, Option_fresh, 1 );

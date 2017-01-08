@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for image statistics functions.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -65,9 +65,9 @@ MaximumAndMinimum GetMaximumAndMinimum(
    inBufT.push_back( in.DataType() );
    if( mask.IsForged() ) {
       // If we have a mask, add it to the input array.
-      DIP_TRY
+      DIP_START_STACK_TRACE
          mask.CheckIsMask( in.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
-      DIP_CATCH
+      DIP_END_STACK_TRACE
       inar.push_back( mask );
       inBufT.push_back( DT_BIN );
    }

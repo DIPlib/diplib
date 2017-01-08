@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains macros to simplify overloading on image data type.
  *
- * (c)2014-2016, Cris Luengo.
+ * (c)2014-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 

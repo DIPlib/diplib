@@ -189,6 +189,17 @@ class PixelTable {
       /// Returns the origin of the neighborhood w.r.t. the top-left corner of the bounding box
       IntegerArray const& Origin() const { return origin_; }
 
+      /// Returns the size of the boundary extension along each dimension that is necessary to accomodate the
+      /// neighborhood on the edge pixels of the image
+      UnsignedArray Boundary() const {
+         dip::uint nDims = sizes_.size();
+         UnsignedArray boundary( nDims );
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            boundary[ ii ] = dip::uint( std::max( std::abs( origin_[ ii ] ), std::abs( origin_[ ii ] + dip::sint( sizes_[ ii ] ) - 1 )));
+         }
+         return boundary;
+      }
+
       /// Shifts the origin of the neighborhood by the given amount
       void ShiftOrigin( IntegerArray const& shift );
 
@@ -245,7 +256,7 @@ class PixelTable {
       std::vector< PixelRun > runs_;
       std::vector< dfloat > weights_;
       UnsignedArray sizes_;      // the size of the bounding box
-      IntegerArray origin_;      // the coordinates of the origin w.r.t. the top-left corner of the bounding box
+      IntegerArray origin_;      // the coordinates of the top-left corner of the bounding box
       dip::uint nPixels_ = 0;    // the total number of pixels in the pixel table
       dip::uint procDim_ = 0;    // the dimension along which the runs go
 };

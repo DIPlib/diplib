@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains functionality related to the boundary condition
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -26,26 +26,41 @@ namespace dip {
 /// \{
 
 
-/// \brief Ennumerates various ways of extending image data beyond its boundary.
+/// \brief Enumerates various ways of extending image data beyond its boundary.
 ///
-/// This ennumerator is used by the framework functions and some internal functions.
+/// This enumerator is used by the framework functions and some internal functions.
 /// Externally, the boundary condition is represented by strings.
 ///
 /// Most functions will take a string instead of a `dip::BoundaryCondition` constant.
 /// The following table links boundary condition constants and their string representations.
+///
+/// BoundaryCondition constant | BoundaryCondition string | Definition
+/// -------------------------- | ------------------------ | ----------
+/// `SYMMETRIC_MIRROR`         | "mirror"                 | The data is mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
+/// `ASYMMETRIC_MIRROR`        | "asym mirror"            | The data is mirrored and inverted.
+/// `PERIODIC`                 | "periodic"               | The data is repeated periodically, with the value at -1 equal to the value of the last pixel.
+/// `ASYMMETRIC_PERIODIC`      | "asym periodic"          | The data is repeated periodically and inverted.
+/// `ADD_ZEROS`                | "add zeros"              | The boundary is filled with zeros.
+/// `ADD_MAX_VALUE`            | "add max"                | The boundary is filled with the max value for the data type.
+/// `ADD_MIN_VALUE`            | "add min"                | The boundary is filled with the min value for the data type.
+/// `ZERO_ORDER_EXTRAPOLATE`   | "zero order"             | The value at the border is repeated indefinitely.
+/// `FIRST_ORDER_EXTRAPOLATE`  | "first order"            | A linear function is defined based on the two values closest to the border.
+/// `SECOND_ORDER_EXTRAPOLATE` | "second order"           | A quadratic function is defined based on the two values closest to the border, the function reaches zero at the end of the extended boundary.
+/// `THIRD_ORDER_EXTRAPOLATE`  | "third order"            | A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
+/// `DEFAULT`                  | "default" or ""          | The default value, currently equal to `SYMMETRIC_MIRROR`.
 enum class BoundaryCondition {
-      SYMMETRIC_MIRROR,          ///< "mirror" - The data is mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
-      ASYMMETRIC_MIRROR,         ///< "asym mirror" - The data is mirrored and inverted.
-      PERIODIC,                  ///< "periodic" - The data is repeated periodically, with the value at -1 equal to the value of the last pixel.
-      ASYMMETRIC_PERIODIC,       ///< "asym periodic" - The data is repeated periodically and inverted.
-      ADD_ZEROS,                 ///< "add zeros" - The boundary is filled with zeros.
-      ADD_MAX_VALUE,             ///< "add max" - The boundary is filled with the max value for the data type.
-      ADD_MIN_VALUE,             ///< "add min" - The boundary is filled with the min value for the data type.
-      ZERO_ORDER_EXTRAPOLATE,    ///< "zero order" - The value at the border is repeated indefinitely.
-      FIRST_ORDER_EXTRAPOLATE,   ///< "first order" - A linear function is defined based on the two values closest to the border.
-      SECOND_ORDER_EXTRAPOLATE,  ///< "second order" - A quadratic function is defined based on the two values closest to the border, the function reaches zero at the end of the extended boundary.
-      THIRD_ORDER_EXTRAPOLATE,   ///< "third order" - A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
-      DEFAULT = SYMMETRIC_MIRROR ///< "default" or "" - The default value, currently equal to `SYMMETRIC_MIRROR`.
+      SYMMETRIC_MIRROR,
+      ASYMMETRIC_MIRROR,
+      PERIODIC,
+      ASYMMETRIC_PERIODIC,
+      ADD_ZEROS,
+      ADD_MAX_VALUE,
+      ADD_MIN_VALUE,
+      ZERO_ORDER_EXTRAPOLATE,
+      FIRST_ORDER_EXTRAPOLATE,
+      SECOND_ORDER_EXTRAPOLATE,
+      THIRD_ORDER_EXTRAPOLATE,
+      DEFAULT = SYMMETRIC_MIRROR
 };
 
 using BoundaryConditionArray = DimensionArray< BoundaryCondition >; ///< An array to hold boundary conditions.
@@ -164,20 +179,77 @@ void ReadPixelWithBoundaryCondition(
 }
 
 
+namespace Option {
+/// \class dip::Option::ExtendImage
+/// \brief Determines which properties to compare.
+///
+/// Valid values are:
+///
+/// ExtendImage constant     | Definition
+/// ------------------------ | ----------
+/// ExtendImage_Masked       | The output image is a window on the boundary-extended image of the same size as the input
+/// ExtendImage_ExpandTensor | The output image has normal tensor storage
+///
+/// Note that you can add these constants together: `ExtendImage_Masked + ExtendImage_ExpandTensor`.
+DIP_DECLARE_OPTIONS( ExtendImage, 2 );
+static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_Masked, 0 );
+static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_ExpandTensor, 1 );
+
+} // namespace Option
+
+/// \brief Extends the image `in` by `boundary` along each dimension.
+///
+/// Is identical to `dip::ExtendImage`, except it uses boundary condition constants instead of strings, and
+/// option constants instead of strings. This version is meant to be used by low-level library functions.
+void ExtendImageLowLevel(
+      Image const& in,
+      Image& out,
+      UnsignedArray borderSizes,
+      BoundaryConditionArray boundaryCondition,
+      Option::ExtendImage options
+);
+
 /// \brief Extends the image `in` by `boundary` along each dimension.
 ///
 /// The new regions are filled using the boundary condition `bc`. If `boundaryCondition` is an empty array, the default
 /// boundary condition is used along all dimensions. If `boundaryCondition` has a single element, it is used for all
 /// dimensions. Similarly, if `borderSizes` has a single element, it is used for all dimensions.
 ///
-/// If `masked` is "yes", the output image is a window on the boundary-extended image, of the
+/// If `options` contains "masked", the output image is a window on the boundary-extended image, of the
 /// same size as `in`. That is, `out` will be identical to `in` except that it is possible
 /// to access pixels outside of its domain.
-void ExtendImage( Image const& in, Image& out, UnsignedArray borderSizes, StringArray const& boundaryCondition, String masked = "no" );
+///
+/// If `options` contains "expand tensor", the output image will have normal tensor storage
+/// (`dip::Tensor::HasNormalOrder` is true). This affects only those input images that have a transposed, symmetric
+/// or triangular matrix as tensor shape.
+inline void ExtendImage(
+      Image const& in,
+      Image& out,
+      UnsignedArray const& borderSizes,
+      StringArray const& boundaryCondition,
+      StringSet const& options = {}
+) {
+   BoundaryConditionArray bc;
+   DIP_START_STACK_TRACE
+      bc = StringArrayToBoundaryConditionArray( boundaryCondition );
+   DIP_END_STACK_TRACE
+   Option::ExtendImage opts;
+   if( options.count( "masked" ) > 0 ) {
+      opts += Option::ExtendImage_Masked;
+   }
+   if( options.count( "expand tensor" ) > 0 ) {
+      opts += Option::ExtendImage_ExpandTensor;
+   }
+   ExtendImageLowLevel( in, out, borderSizes, bc, opts );
+}
 
-inline Image ExtendImage( Image const& in, UnsignedArray const& borderSizes, StringArray const& boundaryCondition, String masked = "no" ) {
+inline Image ExtendImage(
+      Image const& in,
+      UnsignedArray const& borderSizes,
+      StringArray const& boundaryCondition,
+      StringSet const& options = {} ) {
    Image out;
-   ExtendImage( in, out, borderSizes, boundaryCondition, masked );
+   ExtendImage( in, out, borderSizes, boundaryCondition, options );
    return out;
 }
 

@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains overloaded definitions for the function dip::clamp_cast<>().
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  */
 
 #ifndef DIP_CLAMP_CAST_H
@@ -38,6 +38,11 @@ namespace dip {
 /// clamping values when casting pixel values. This typically is more intuitive and useful
 /// when processing images than the default C/C++ overflow behavior, which corresponds to
 /// modular arithmetic for integer values.
+///
+/// When casting from complex to non-complex, the absolute value of the complex number is taken.
+/// When casting from a floating-point number to an integer, the decimals are truncated, as typically
+/// done in C++.
+/// TODO: Do we want to round the float values instead?
 ///
 /// `%dip::clamp_cast` is defined as a series of overloaded template functions with specializations.
 /// The input argument type is used in overload resolution, the output type is the template

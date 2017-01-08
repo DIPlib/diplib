@@ -10,16 +10,16 @@ void test2() {
 };
 
 void test1() {
-   DIP_TRY
+   DIP_START_STACK_TRACE
    test2();
-   DIP_CATCH
+   DIP_END_STACK_TRACE
 }
 
 int main() {
-   DIP_TRY
+   DIP_START_STACK_TRACE
    DIP_ASSERT( 6 > 2 );
    DIP_ASSERT( 6 < 2 );
    test1();
-   DIP_CATCH
+   DIP_END_STACK_TRACE
    return 0;
 }

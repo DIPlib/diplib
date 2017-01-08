@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for function that computes 3D surface area.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Original code written by Jim Mullikin, Pattern Recognition Group.
  */
@@ -168,9 +168,9 @@ std::vector< dfloat > SurfaceArea(
    }
 
    // Check image properties
-   DIP_TRY
+   DIP_START_STACK_TRACE
       label.CheckProperties( 3, 1, dip::DataType::Class_UInt, Option::ThrowException::DO_THROW );
-   DIP_CATCH
+   DIP_END_STACK_TRACE
 
    // Intialise the surface area results array
    std::vector< dfloat > surfaceArea( objectIDs.size() );

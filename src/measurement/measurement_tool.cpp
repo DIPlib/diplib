@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for functions in the dip::MeasurementTool class.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -129,9 +129,9 @@ Measurement MeasurementTool::Measure(
    DIP_THROW_IF( !label.DataType().IsUnsigned(), E::DATA_TYPE_NOT_SUPPORTED );
    if( grey.IsForged() ) {
       DIP_THROW_IF( !grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-      DIP_TRY
+      DIP_START_STACK_TRACE
          grey.CompareProperties( label, Option::CmpProps_Sizes );
-      DIP_CATCH
+      DIP_END_STACK_TRACE
    }
 
    // Parse the features array and prepare measurements
@@ -148,10 +148,10 @@ Measurement MeasurementTool::Measure(
             DIP_THROW_IF( !grey.IsForged(), "Measurement feature requires grey-value image" );
          }
          featureArray.push_back( feature );
-         DIP_TRY
+         DIP_START_STACK_TRACE
             Feature::ValueInformationArray values = feature->Initialize( label, grey );
             measurement.AddFeature( name, values );
-         DIP_CATCH
+         DIP_END_STACK_TRACE
          if( feature->type == Feature::Type::COMPOSITE ) {
             StringArray names = dynamic_cast< Feature::Composite* >( feature )->Dependencies();
             for( auto const& n : names ) {

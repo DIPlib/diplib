@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition for the dip::DimensionArray template class.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  */
 
 

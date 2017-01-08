@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2016, Cris Luengo.
+ * (c)2014-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -739,12 +739,26 @@ class Image {
       /// The non-data image properties are those that do not influence how the data is stored in
       /// memory: tensor shape, color space, and pixel size. The number of tensor elements of the
       /// the two images must match. The image must be forged.
+      ///
+      /// \see CopyProperties, ResetNonDataProperties
       void CopyNonDataProperties( Image const& src ) {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( tensor_.Elements() != src.tensor_.Elements(), E::NTENSORELEM_DONT_MATCH );
          tensor_ = src.tensor_;
          colorSpace_ = src.colorSpace_;
          pixelSize_ = src.pixelSize_;
+      }
+
+      /// \brief Reset non-data image properties.
+      ///
+      /// The non-data image properties are those that do not influence how the data is stored in
+      /// memory: tensor shape, color space, and pixel size.
+      ///
+      /// \see CopyNonDataProperties, Strip
+      void ResetNonDataProperties() {
+         tensor_ = {};
+         colorSpace_ = {};
+         pixelSize_ = {};
       }
 
       /// \brief Swaps `this` and `other`.
@@ -1958,18 +1972,35 @@ inline Image DefineROI(
 }
 
 /// \brief Copies samples over from `src` to `dest`, identical to the `dip::Image::Copy` method.
-inline void Copy(
-      Image const& src,
-      Image& dest
-) {
+inline void Copy( Image const& src, Image& dest ) {
    dest.Copy( src );
 }
 
-inline Image Copy(
-      Image const& src
-) {
+inline Image Copy( Image const& src ) {
    Image dest;
    dest.Copy( src );
+   return dest;
+}
+
+/// \brief Copies samples over from `src` to `dest`, expanding the tensor so it's a standard, column-major matrix.
+///
+/// If the tensor representation in `src` is one of those that do not save symmetric or zero values, to save space,
+/// a new data segment will be allocated for `dest`, where the tensor representation is a column-major matrix
+/// (`dest` will have `dip::Tensor::HasNormalOrder` be true).
+/// This function simplifies manipulating tensors by normalizing their storage.
+///
+/// Creates an identical copy, if the tensor representation is scalar, vector, or a column-major matrix. Note that
+/// this copy does not share data, a new data segment is always used, unless `src` and `dest` are the same object.
+///
+/// If `dest` is protected, it will keep its data type, and the data will be converted as usual to the destination
+/// data type.
+///
+/// \see Copy, Convert
+void ExpandTensor( Image const& src, Image& dest );
+
+inline Image ExpandTensor( Image const& src ) {
+   Image dest;
+   ExpandTensor( src, dest );
    return dest;
 }
 
@@ -1992,10 +2023,7 @@ inline void Convert(
    }
 }
 
-inline Image Convert(
-      Image const& src,
-      dip::DataType dt
-) {
+inline Image Convert( Image const& src, dip::DataType dt ) {
    Image dest;
    dest.ReForge( src, dt );
    dest.Copy( src );

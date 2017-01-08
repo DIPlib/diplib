@@ -124,7 +124,7 @@ Current code uses two different ways to describe a neighborhood:
   It describes a filter support of arbitrary shape by giving the offset to the first pixel
   in each run, and the number of pixels in the run. Subsequent pixels are then accessed by
   adding the correct stride to the offset of the first pixel.
-  The pixel table framework use this system, I don't think it's used outside it.
+  The pixel table framework uses this system, I don't think it's used outside it.
 
 We should keep both methods, and standardize the first one.
 
@@ -140,22 +140,6 @@ be filled with the distance of the neighbor (different options should be availab
           img_it.atOffset( *n_it );
        }
     }
-
-The `PixelTable` will be an array with a `Offset` and a `Length` element for each run.
-Again, if it's build on a `std::vector` we'll have an iterator automatically.
-But it would be nice to also have an iterator that iterates over each of the pixels in the
-filter's support. It's a little awkward having a container with two different iterators,
-but they'd both be useful. To add a `Weight` element, we'd have an additional array directly
-listing weights for each of the pixels represented. These weights would be optionally added
-to the object. The iterator that visits each of the pixels would make it easy to access
-these weights.
-
-The constructor takes a binary image (weight is distance to center pixel) or grey-value
-image (weight is grey value) representing the neighborhood support or filtering kernel.
-A parameter in the constructor causes no weights being added to the object. Another parameter
-dictates the direction of the pixel runs. This direction should match with the processing
-dimension for some algorithms, and it might be beneficial to use the smallest stride dimension
-for some others, or the dimension that yields the longest runs.
 
 
 ## Alias handler

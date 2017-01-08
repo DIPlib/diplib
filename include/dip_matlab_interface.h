@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains functionality for the MATLAB interface.
  *
- * (c)2015-2016, Cris Luengo.
+ * (c)2015-2017, Cris Luengo.
  * Based on original DIPlib/MATLAB interface code: (c)1999-2014, Delft University of Technology.
  */
 
