@@ -1,9 +1,9 @@
 /*
  * DIPlib 3.0
- * This file defines the "Perimeter" measurement feature
+ * This file defines the "ConvexArea" measurement feature
  *
- * (c)2016, Cris Luengo.
- * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
+ * (c)2016-2017, Cris Luengo.
+ * Based on original DIPlib code: (c)2011, Cris Luengo.
  */
 
 
@@ -17,29 +17,29 @@ namespace dip {
 namespace Feature {
 
 
-class FeaturePerimeter : public ChainCodeBased {
+class FeatureConvexArea : public ConvexHullBased {
    public:
-      FeaturePerimeter() : ChainCodeBased( { "Perimeter", "Length of the object perimeter  (chain-code method, 2D)", false } ) {};
+      FeatureConvexArea() : ConvexHullBased( { "ConvexArea", "Area of the convex hull (2D)", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
+         out[ 0 ].name = "Area";
          PhysicalQuantity pq = label.PixelSize( 0 );
          if( label.IsIsotropic() && pq.IsPhysical() ) {
-            scale_ = pq.magnitude;
-            out[ 0 ].units = pq.units;
+            scale_ = pq.magnitude * pq.magnitude;
+            out[ 0 ].units = pq.units * pq.units;
          } else {
             scale_ = 1;
-            out[ 0 ].units = Units::Pixel();
+            out[ 0 ].units = Units::SquarePixel();
          }
-         out[ 0 ].name = "Perimeter";
          return out;
       }
 
       virtual void Measure(
-            ChainCode const& chainCode,
+            ConvexHull const& convexHull,
             Measurement::ValueIterator data
       ) override {
-         *data = ( chainCode.Length() + pi ) * scale_;
+         data[ 0 ] = convexHull.Area() * scale_;
       }
 
    private:

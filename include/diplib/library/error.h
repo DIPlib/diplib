@@ -186,7 +186,7 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 ///        throw;
 ///     }
 ///
-/// The `#DIP_TRY` and `#DIP_CATCH` macros help build this code.
+/// The `#DIP_START_STACK_TRACE` and `#DIP_END_STACK_TRACE` macros help build this code.
 #define DIP_ADD_STACK_TRACE( error ) error.AddStackTrace( DIP__FUNC__, __FILE__, __LINE__ )
 
 /// \brief Throw a `dip::ParameterError`.

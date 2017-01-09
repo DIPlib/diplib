@@ -19,9 +19,9 @@ namespace Feature {
 
 class FeatureFeret : public ConvexHullBased {
    public:
-      FeatureFeret() : ConvexHullBased( { "Feret", "maximum and minimum object diameters (2D)", false } ) {};
+      FeatureFeret() : ConvexHullBased( { "Feret", "Maximum and minimum object diameters (2D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& ) override {
+      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 5 );
          PhysicalQuantity pq = label.PixelSize( 0 );
          if( label.IsIsotropic() && pq.IsPhysical() ) {
@@ -56,8 +56,6 @@ class FeatureFeret : public ConvexHullBased {
          data[ 3 ] = feret.maxAngle;
          data[ 4 ] = feret.minAngle;
       }
-
-      virtual void Cleanup() override {}
 
    private:
       dfloat scale_;

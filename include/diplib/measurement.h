@@ -70,6 +70,9 @@ using ValueInformationArray = std::vector< ValueInformation >;
 } // namespace Feature
 
 
+/// \brief Maps object IDs to object indices
+using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
+
 /// \brief Contains measurement results, as obtained through `dip::MeasurementTool::Measure`.
 ///
 /// \ingroup measurement
@@ -152,9 +155,11 @@ class Measurement {
                   /// \brief True if the iterator is valid and can be used
                   operator bool() const { return !IsAtEnd(); }
                   /// \brief Name of the feature
-                  String const& Name() const { return feature_.Name(); }
+                  String const& FeatureName() const { return feature_.FeatureName(); }
                   /// \brief ID of the object
                   dip::uint ObjectID() const { return feature_.measurement_.objects_[ index_ ]; }
+                  /// \brief Index of the object (row number)
+                  dip::uint ObjectIndex() const { return index_; }
                private:
                   Iterator( IteratorFeature const& feature, dip::uint index ) : feature_( feature ), index_( index ) {}
                   IteratorFeature const& feature_;
@@ -184,7 +189,7 @@ class Measurement {
             /// \brief True if the iterator is valid and can be used
             operator bool() const { return !IsAtEnd(); }
             /// \brief Name of the feature
-            String const& Name() const { return Feature().name; }
+            String const& FeatureName() const { return Feature().name; }
             /// \brief Number of objects
             dip::uint NumberOfObjects() const { return measurement_.NumberOfObjects(); }
             /// \brief Returns a list of object IDs
@@ -243,9 +248,11 @@ class Measurement {
                   /// \brief True if the iterator is valid and can be used
                   operator bool() const { return !IsAtEnd(); }
                   /// \brief Name of the feature
-                  String const& Name() const { return Feature().name; }
+                  String const& FeatureName() const { return Feature().name; }
                   /// \brief ID of the object
                   dip::uint ObjectID() const { return object_.ObjectID(); }
+                  /// \brief Index of the object (row number)
+                  dip::uint ObjectIndex() const { return object_.ObjectIndex(); }
                private:
                   Iterator( IteratorObject const& object, dip::uint index ) : object_( object ), index_( index ) {}
                   FeatureInfo const& Feature() const { return object_.measurement_.features_[ index_ ]; }
@@ -262,8 +269,10 @@ class Measurement {
             bool IsAtEnd() const { return index_ >= NumberOfObjects(); }
             /// \brief True if the iterator is valid and can be used
             operator bool() const { return !IsAtEnd(); }
-            /// \brief ID of object
+            /// \brief ID of the object
             dip::uint ObjectID() const { return measurement_.objects_[ index_ ]; }
+            /// \brief Index of the object (row number)
+            dip::uint ObjectIndex() const { return index_; }
             /// \brief Number of features
             dip::uint NumberOfFeatures() const { return measurement_.NumberOfFeatures(); }
             /// \brief Returns an array of feature names
@@ -416,6 +425,11 @@ class Measurement {
          return it->second;
       }
 
+      /// \brief Returns the map that links object IDs to row indices.
+      ObjectIdToIndexMap const& ObjectIndices() const {
+         return objectIndices_;
+      }
+
       /// \brief Returns a list of object IDs
       UnsignedArray const& Objects() const {
           return objects_;
@@ -439,7 +453,7 @@ class Measurement {
          featureIndices_.emplace( name, index );
       }
       UnsignedArray objects_;                         // the rows of the table (maps row indices to objectIDs)
-      std::map< dip::uint, dip::uint > objectIndices_;// maps object IDs to row indices
+      ObjectIdToIndexMap objectIndices_;              // maps object IDs to row indices
       std::vector< FeatureInfo > features_;           // the column groups of the table (maps column group indices to feature names and contains other indo also)
       Feature::ValueInformationArray values_;         // the columns of the table
       std::map< String, dip::uint > featureIndices_;  // maps feature names to column group indices
@@ -488,12 +502,12 @@ class Base {
       /// class, so that it is available when performing measurements. For example, it can store the
       /// pixel size to inform the measurement.
       ///
-      /// Note that this function is not expected perform any major amount of work.
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey ) = 0;
+      /// Note that this function is not expected to perform any major amount of work.
+      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) = 0;
 
       /// \brief All measurement features define a `Cleanup` method that is called after finishing the measurement
       /// process for one image.
-      virtual void Cleanup() = 0;
+      virtual void Cleanup() {};
 
       virtual ~Base() {};
 };
@@ -507,16 +521,27 @@ class LineBased : public Base {
       LineBased( Information const& information ) : Base( information, Type::LINE_BASED ) {};
 
       /// \brief Called once for each image line, to accumulate information about each object.
-      /// This function is not called in parallel, and hence does not need to be re-entrant.
-      virtual void Measure(
+      /// This function is not called in parallel, and hence does not need to be thread-safe.
+      ///
+      /// The two line iterators can always be incremented exactly the same number of times.
+      /// `coordinates[ dimension ]` should be incremented at the same time, if coordinate
+      /// information is required by the algorithm. `label` is non-zero where there is an
+      /// object pixel. Look up the `label` value in `objectIndices` to obtain the index for
+      /// the object. Object indices are always between 0 and number of objects - 1. The
+      /// `dip::Feature::Base::Initialize` function should allocate an array with `nObjects`
+      /// elements, where measurements are accumulated. The `dip::Feature::LineBased::Finish`
+      /// function is called after the whole image has been scanned, and should provide the
+      /// final measurement result for one object given its index (not object ID).
+      virtual void ScanLine(
             LineIterator< uint32 > label, ///< Pointer to the line in the labelled image (always scalar)
             LineIterator< dfloat > grey, ///< Pointer to the line in the grey-value image (if given, invalid otherwise)
             UnsignedArray coordinates, ///< Coordinates of the first pixel on the line (by copy, so it can be modified)
-            dip::uint dimension ///< Along which dimension the line runs
+            dip::uint dimension, ///< Along which dimension the line runs
+            ObjectIdToIndexMap const& objectIndices ///< A map from objectID (label) to index
       ) = 0;
 
       /// \brief Called once for each object, to finalize the measurement
-      virtual void Finish( dip::uint objectID, Measurement::ValueIterator data ) = 0;
+      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator data ) = 0;
 };
 
 /// \brief The pure virtual base class for all image-based measurement features.
@@ -557,7 +582,7 @@ class Composite : public Base {
 
       /// \brief Called once for each object, the input `dependencies` object contains the measurements
       /// for the object from all the features in the `dip::Composite::Dependencies` list.
-      virtual void Measure( Measurement::IteratorObject& dependencies, Measurement::ValueIterator data ) = 0;
+      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator data ) = 0;
 };
 
 } // namespace Feature
@@ -567,7 +592,7 @@ class Composite : public Base {
 ///
 /// \ingroup measurement
 ///
-/// The MeasurementTool class knows about defined measurement features, and can apply them to an
+/// The %MeasurementTool class knows about defined measurement features, and can apply them to an
 /// image through its `dip::MeasurementTool::Measure` method.
 ///
 ///     dip::MeasurementTool tool;
@@ -576,7 +601,61 @@ class Composite : public Base {
 ///     dip::Measurement msr = tool.Measure( label, img, { "Size", "Perimeter" }, {}, 2 );
 ///     std::cout << "Size of object with label 1 is " << msr[ "Size" ][ 1 ][ 0 ] << std::endl;
 ///
-// TODO: Document default measurement features here.
+/// By default, the features in the following table are defined:
+///
+/// <table>
+/// <tr><th> %Measurement name <th> Description <th> Limitations
+/// <tr><td colspan="3"> **Size features**
+/// <tr><td> "Size"                    <td> Number of object pixels <td>
+/// <tr><td> "CartesianBox"            <td> Cartesian box size of the object in all dimensions <td>
+/// <tr><td> "Minimum"                 <td> Minimum coordinates of the object <td>
+/// <tr><td> "Maximum"                 <td> Maximum coordinates of the object <td>
+/// <tr><td> "Perimeter"               <td> Length of the object perimeter <td> 2D (CC)
+/// <tr><td> "SurfaceArea"             <td> Surface area of object <td> 3D
+/// <tr><td> "Feret"                   <td> Maximum and minimum object diameters <td> 2D (CC)
+/// <tr><td> "ConvexArea"              <td> Area of the convex hull <td> 2D (CC)
+/// <tr><td> "ConvexPerimeter"         <td> Perimeter of the convex hull <td> 2D (CC)
+/// <tr><td colspan="3"> **Shape features**
+/// <tr><td> "AspectRatioFeret"        <td> Feret-based aspect ratio <td> 2D (CC)
+/// <tr><td> "Radius"                  <td> Statistics on radius of object <td> 2D (CC)
+/// <tr><td> "P2A"                     <td> Circularity of the object <td> 2D (CC) & 3D
+/// <tr><td> "PodczeckShapes"          <td> Podczeck shape descriptors <td> 2D (CC)
+/// <tr><td> "Convexity"               <td> Area fraction of convex hull covered by object <td> 2D (CC)
+/// <tr><td> "BendingEnergy"           <td> Bending energy of object perimeter <td> 2D (CC)
+/// <tr><td colspan="3"> **Intensity features**
+/// <tr><td> "Mass"                    <td> Mass of object (sum of object intensity) <td> Scalar grey
+/// <tr><td> "Mean"                    <td> Mean object intensity <td> Scalar grey
+/// <tr><td> "StdDev"                  <td> Standard deviation of object intensity <td> Scalar grey
+/// <tr><td> "Skewness"                <td> Skewness (gamma_1) of object intensity <td> Scalar grey
+/// <tr><td> "ExcessKurtosis"          <td> Excess Kurtosis (gamma_2) of object intensity <td> Scalar grey
+/// <tr><td> "MaxVal"                  <td> Maximum object intensity <td> Scalar grey
+/// <tr><td> "MinVal"                  <td> Minimum object intensity <td> Scalar grey
+/// <tr><td colspan="3"> **Moments of binary object**
+/// <tr><td> "Center"                  <td> Coordinates of the geometric mean of the object <td>
+/// <tr><td> "Inertia"                 <td> Moments of inertia of binary object <td>
+/// <tr><td> "Mu"                      <td> Elements of the inertia tensor <td>
+/// <tr><td> "DimensionsCube"          <td> Extent along the principal axes of a cube <td>
+/// <tr><td> "DimensionsEllipsoid"     <td> Extent along the principal axes of an ellipsoid <td>
+/// <tr><td> "MajorAxes"               <td> Principal axes of an object <td>
+/// <tr><td colspan="3"> **Moments of grey-value object**
+/// <tr><td> "Gravity"                 <td> Coordinates of the center-of-mass of the object <td> Scalar grey
+/// <tr><td> "GreyInertia"             <td> Grey-weighted moments of inertia of object <td> Scalar grey
+/// <tr><td> "GreyMu"                  <td> Elements of the grey-weighted inertia tensor <td> Scalar grey
+/// <tr><td> "GreyDimensionsCube"      <td> Extent along the principal axes of a cube <td> Scalar grey
+/// <tr><td> "GreyDimensionsEllipsoid" <td> Extent along the principal axes of an elliposid <td> Scalar grey
+/// <tr><td> "GreyMajorAxes"           <td> Principal axes of an object <td> Scalar grey
+/// </table>
+///
+/// Note that some features are derived from others, and will cause the features they depend on to be included in the
+/// output measurement object.
+///
+/// Some features are specific for 2D, and include "(CC)" in the limitations column above. "CC" stands for chain code.
+/// These features are computed based on the chain code of the object, and only work correctly for connected objects.
+/// That is, the object must be a single connected component. In case of the perimeter, only the external perimeter
+/// is measured, the boundaries of holes in the object are ignored.
+///
+/// Features that include "Scalar grey" in the limitations column require a scalar grey-value image to be passed
+/// into the `dip::MeasurementTool::Measure` method together with the label image.
 class MeasurementTool {
    public:
 

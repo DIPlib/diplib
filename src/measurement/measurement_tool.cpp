@@ -16,78 +16,79 @@
 #include "diplib/regions.h"
 
 // FEATURES:
-// Core
+// Size
 #include "feature_size.h"
+#include "feature_minimum.h"
+#include "feature_maximum.h"
+#include "feature_cartesian_box.h"
 #include "feature_perimeter.h"
 #include "feature_surface_area.h"
 #include "feature_feret.h"
-// Moments
-#include "feature_gravity.h"
-// Shape features
+#include "feature_convex_area.h"
+#include "feature_convex_perimeter.h"
+// Shape
+#include "feature_aspect_ratio_feret.h"
 #include "feature_p2a.h"
+#include "feature_podczeck_shapes.h"
+#include "feature_convexity.h"
+#include "feature_bending_energy.h"
+// Intensity
+// Binary moments
+// Grey-value moments
+#include "feature_gravity.h"
 
 
 namespace dip {
 
 
 MeasurementTool::MeasurementTool() {
-   // Core
+   // TODO: Port remaining features and register them here
+   // Size
    Register( dip::Feature::Pointer( new Feature::FeatureSize ));
+   Register( dip::Feature::Pointer( new Feature::FeatureMinimum ));
+   Register( dip::Feature::Pointer( new Feature::FeatureMaximum ));
+   Register( dip::Feature::Pointer( new Feature::FeatureCartesianBox ));
    Register( dip::Feature::Pointer( new Feature::FeaturePerimeter ));
    Register( dip::Feature::Pointer( new Feature::FeatureSurfaceArea ));
    Register( dip::Feature::Pointer( new Feature::FeatureFeret ));
-   // Moments
-   Register( dip::Feature::Pointer( new Feature::FeatureGravity ));
-   // Shape features
+   Register( dip::Feature::Pointer( new Feature::FeatureConvexArea ));
+   Register( dip::Feature::Pointer( new Feature::FeatureConvexPerimeter ));
+   // Shape
+   Register( dip::Feature::Pointer( new Feature::FeatureAspectRatioFeret ));
+   // Register( dip::Feature::Pointer( new Feature::FeatureRadius ));
    Register( dip::Feature::Pointer( new Feature::FeatureP2A ));
-
-   // TODO: register all measurement features
-   /*
-   //DIPXJ( dip_FeatureSizeRegister( 0 ));
-   DIPXJ( dip_FeatureDimensionRegister( 0 ));
-   DIPXJ( dip_FeatureMinimumRegister( 0 ));
-   DIPXJ( dip_FeatureMaximumRegister( 0 ));
-
-   //DIPXJ( dip_FeaturePerimeterRegister( 0 ));
-   //DIPXJ( dip_FeatureSurfaceAreaRegister( 0 ));
-   //DIPXJ( dip_FeatureFeretRegister( 0 ));
-   DIPXJ( dip_FeatureAspectRatioFeretRegister( 0 ));
-   DIPXJ( dip_FeatureRadiusRegister( 0 ));
-   DIPXJ( dip_FeatureConvexAreaRegister( 0 ));
-   DIPXJ( dip_FeatureConvexPerimeterRegister( 0 ));
-
-   //DIPXJ( dip_FeatureP2ARegister( 0 ));
-   DIPXJ( dip_FeatureShapeRegister( 0 ));
-   DIPXJ( dip_FeatureConvexityRegister( 0 ));
-
-   DIPXJ( dip_FeatureSumRegister( 0 ));
-   DIPXJ( dip_FeatureMeanRegister( 0 ));
-   DIPXJ( dip_FeatureStdDevRegister( 0 ));
-   DIPXJ( dip_FeatureSkewnessRegister( 0 ));
-   DIPXJ( dip_FeatureExcessKurtosisRegister( 0 ));
-   DIPXJ( dip_FeatureMaxValRegister( 0 ));
-   DIPXJ( dip_FeatureMinValRegister( 0 ));
-
-   DIPXJ( dip_FeatureCenterRegister( 0 ));
-   //DIPXJ( dip_FeatureGravityRegister( 0 ));
-   DIPXJ( dip_FeatureInertiaRegister( 0 ));
-   DIPXJ( dip_FeatureGinertiaRegister( 0 ));
-   DIPXJ( dip_FeatureMuRegister( 0 ));
-   DIPXJ( dip_FeatureGmuRegister( 0 ));
-
-   DIPXJ( dip_FeatureBendingEnergyRegister( 0 ));
-   DIPXJ( dip_FeatureChainCodeBendingEnergyRegister( 0 ));
-   DIPXJ( dip_FeatureAnisotropy2DRegister( 0 ));
-   DIPXJ( dip_FeatureOrientation2DRegister( 0 ));
-   DIPXJ( dip_FeatureLongestChaincodeRunRegister( 0 ));
-   */
+   Register( dip::Feature::Pointer( new Feature::FeaturePodczeckShapes ));
+   Register( dip::Feature::Pointer( new Feature::FeatureConvexity ));
+   Register( dip::Feature::Pointer( new Feature::FeatureBendingEnergy ));
+   // Intensity
+   //Register( dip::Feature::Pointer( new Feature::FeatureMass ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureMean ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureStdDev ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureSkewness ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureExcessKurtosis ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureMaxVal ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureMinVal ));
+   // Binary moments
+   //Register( dip::Feature::Pointer( new Feature::FeatureCenter ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureInertia ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureMu ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureDimensionsCube ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureDimensionsEllipsoid ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureMajorAxes ));
+   // Grey-value moments
+   Register( dip::Feature::Pointer( new Feature::FeatureGravity ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureGreyInertia ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureGreyMu ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureGreyDimensionsCube ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureGreyDimensionsEllipsoid ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureGreyMajorAxes ));
 }
 
 using LineBasedFeatureArray = std::vector< Feature::LineBased* >;
 using FeatureArray = std::vector< Feature::Base* >;
 
 
-// dip::Framework::ScanFilter function, not overloaded because the Feature::LineBased::Measure functions
+// dip::Framework::ScanFilter function, not overloaded because the Feature::LineBased::ScanLine functions
 // that we call here are not overloaded.
 class dip__Measure : public Framework::ScanLineFilter {
    public:
@@ -107,12 +108,14 @@ class dip__Measure : public Framework::ScanLineFilter {
          }
 
          for( auto const& feature : features ) {
-            feature->Measure( label, grey, params.position, params.dimension );
+            feature->ScanLine( label, grey, params.position, params.dimension, objectIndices );
          }
       }
-      dip__Measure( LineBasedFeatureArray const& features ) : features( features ) {}
+      dip__Measure( LineBasedFeatureArray const& features, ObjectIdToIndexMap const& objectIndices ) :
+            features( features ), objectIndices( objectIndices ) {}
    private:
       LineBasedFeatureArray const& features;
+      ObjectIdToIndexMap const& objectIndices;
 };
 
 
@@ -134,11 +137,24 @@ Measurement MeasurementTool::Measure(
       DIP_END_STACK_TRACE
    }
 
+   Measurement measurement;
+
+   // Fill out the object IDs
+   if( objectIDs.empty() ) {
+      measurement.AddObjectIDs( GetObjectLabels( label, Image(), false ));
+   } else {
+      measurement.AddObjectIDs( objectIDs );
+   }
+   if( measurement.NumberOfObjects() == 0 ) {
+      // There's no objects to be measured. We're done.
+      // TODO: throw?
+      return measurement;
+   }
+
    // Parse the features array and prepare measurements
    DIP_THROW_IF( features.empty(), "No features given" );
    FeatureArray featureArray;
    featureArray.reserve( features.size() );
-   Measurement measurement;
    dip::uint ii = 0;
    while( ii < features.size() ) {
       String const& name = features[ ii ];
@@ -149,7 +165,7 @@ Measurement MeasurementTool::Measure(
          }
          featureArray.push_back( feature );
          DIP_START_STACK_TRACE
-            Feature::ValueInformationArray values = feature->Initialize( label, grey );
+            Feature::ValueInformationArray values = feature->Initialize( label, grey, measurement.NumberOfObjects() );
             measurement.AddFeature( name, values );
          DIP_END_STACK_TRACE
          if( feature->type == Feature::Type::COMPOSITE ) {
@@ -160,13 +176,6 @@ Measurement MeasurementTool::Measure(
          }
       }
       ++ii;
-   }
-
-   // Fill out the object IDs
-   if( objectIDs.empty() ) {
-      measurement.AddObjectIDs( GetObjectLabels( label, Image(), false ));
-   } else {
-      measurement.AddObjectIDs( objectIDs );
    }
 
    // Allocate memory for all features and objects
@@ -215,8 +224,8 @@ Measurement MeasurementTool::Measure(
       DataTypeArray outImT{};
       UnsignedArray nElem{};
 
-      // Do the scan, which calls dip::Feature::LineBased::Measure()
-      dip__Measure functor{ lineBasedFeatures };
+      // Do the scan, which calls dip::Feature::LineBased::ScanLine()
+      dip__Measure functor{ lineBasedFeatures, measurement.ObjectIndices() };
       Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, &functor,
             Framework::Scan_NoMultiThreading + Framework::Scan_NeedCoordinates );
 
@@ -225,7 +234,7 @@ Measurement MeasurementTool::Measure(
          Measurement::IteratorFeature column = measurement[ feature->information.name ];
          Measurement::IteratorFeature::Iterator it = column.FirstObject();
          do {
-            feature->Finish( it.ObjectID(), it.data() );
+            feature->Finish( it.ObjectIndex(), it.data() );
          } while( ++it );
       }
    }
@@ -269,7 +278,7 @@ Measurement MeasurementTool::Measure(
          for( auto const& feature : featureArray ) {
             if( feature->type == Feature::Type::COMPOSITE ) {
                auto cell = row[ feature->information.name ];
-               dynamic_cast< Feature::Composite* >( feature )->Measure( row, cell.data() );
+               dynamic_cast< Feature::Composite* >( feature )->Compose( row, cell.data() );
             }
          }
       } while( ++row );

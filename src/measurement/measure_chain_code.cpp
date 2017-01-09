@@ -128,6 +128,60 @@ FeretValues ChainCode::Feret( dfloat angleStep ) const {
    return feret;
 }
 
+dfloat ChainCode::BendingEnergy() const {
+   constexpr dfloat kulpa_weights[8] = { 0.9481, 1.3408, 0.9481, 1.3408, 0.9481, 1.3408, 0.9481, 1.3408 };
+   dip::uint size = codes.size();
+   if( size > 1 ) {
+      // Compute angular difference, divide by curve element length computed using Kulpa weights.
+      dip::uint size1 = size - 1;
+      FloatArray diff( size, 0 );
+      FloatArray delta_s( size, 0 );
+      for( dip::uint ii = 0; ii < size1; ++ii ) {
+         delta_s[ ii ] = 0.5 * ( kulpa_weights[ codes[ ii ] ] + kulpa_weights[ codes[ ii + 1 ] ] );
+         diff[ ii ] = codes[ ii + 1 ] - codes[ ii ];
+         if( !is8connected ) { diff[ ii ] *= 2; }
+         if( diff[ ii ] > 3 ) { diff[ ii ] -= 8; }
+         if( diff[ ii ] < -3 ) { diff[ ii ] += 8; }
+         diff[ ii ] = diff[ ii ] / delta_s[ ii ];
+      }
+      diff[ size1 ] = codes.front() - codes.back();
+      // Three times uniform filtering of diff
+      if( size > 5 ) {
+         for( dip::uint jj = 0; jj < 3; ++jj ) {
+            dfloat sum = 0;
+            dfloat stored[5];
+            dfloat saved;
+            for( dip::uint ii = 0; ii < 5; ++ii ) {
+               stored[ ii ] = diff[ ii ];
+               sum += diff[ ii ];
+            }
+            size1 = size - 5;
+            for( dip::uint ii = 0; ii < size1; ++ii ) {
+               saved = diff[ ii ];
+               diff[ ii ] = sum / 5;
+               sum += diff[ ii + 5 ] - saved;
+            }
+            for( dip::uint ii = size1; ii < size; ++ii ) {
+               saved = diff[ ii ];
+               diff[ ii ] = sum / 5;
+               sum += stored[ 5 - size + ii ] - saved;
+            }
+         }
+      }
+      // Integrate the curvature squared weighted by the curve element length
+      sfloat be = 0;
+      for( dip::uint ii = 0; ii < size; ++ii ) {
+         be += diff[ii] * diff[ii] * delta_s[ii];
+      }
+      // Convert chain code into actual angle in radian
+      be *= dip::pi * dip::pi / 16;
+      return be;
+   }
+   else {
+      return 0;
+   }
+}
+
 ChainCode::RadiusValues ChainCode::Radius() const {
    ChainCode::RadiusValues radius;
    if( codes.size() <= 1 ) {

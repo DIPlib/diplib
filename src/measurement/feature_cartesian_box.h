@@ -1,8 +1,8 @@
 /*
  * DIPlib 3.0
- * This file defines the "Gravity" measurement feature
+ * This file defines the "CartesianBox" measurement feature
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -17,12 +17,11 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureGravity : public LineBased {
+class FeatureCartesianBox : public LineBased {
    public:
-      FeatureGravity() : LineBased( { "Gravity", "Coordinates of the center-of-mass of the grey-value object", true } ) {};
+      FeatureCartesianBox() : LineBased( { "CartesianBox", "Cartesian box size of the object in all dimensions", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
-         DIP_THROW_IF( !grey.IsScalar(), E::NOT_SCALAR );
+      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
          nD_ = label.Dimensionality();
          data_.clear();
          scales_.resize( nD_ );
@@ -38,20 +37,20 @@ class FeatureGravity : public LineBased {
             }
             out[ ii ].name = String( "dim" ) + std::to_string( ii );
          }
-         data_.resize( nObjects * ( nD_ + 1 ), 0 );
+         data_.resize( nObjects * nD_ );
          return out;
       }
 
       virtual void ScanLine(
             LineIterator <uint32> label,
-            LineIterator <dfloat> grey,
+            LineIterator <dfloat>, // unused
             UnsignedArray coordinates,
             dip::uint dimension,
             ObjectIdToIndexMap const& objectIndices
       ) override {
-         // If new objectID is equal to previous one, we don't to fetch the data pointer again
+         // If new objectID is equal to previous one, we don't need to fetch the data pointer again
          uint32 objectID = 0;
-         dfloat* data = nullptr;
+         MinMaxCoord* data = nullptr;
          do {
             if( *label > 0 ) {
                if( *label != objectID ) {
@@ -60,30 +59,31 @@ class FeatureGravity : public LineBased {
                   if( it == objectIndices.end() ) {
                      data = nullptr;
                   } else {
-                     data = &( data_[ it->second * ( nD_ + 1 ) ] );
+                     data = &( data_[ it->second * nD_ ] );
+                     for( dip::uint ii = 0; ii < nD_; ii++ ) {
+                        data[ ii ].min = std::min( data[ ii ].min, coordinates[ ii ] );
+                        data[ ii ].max = std::max( data[ ii ].max, coordinates[ ii ] );
+                     }
                   }
-               }
-               if( data ) {
-                  for( dip::uint ii = 0; ii < nD_; ii++ ) {
-                     data[ ii ] += coordinates[ ii ] * *grey;
+               } else {
+                  if( data ) {
+                     data[ dimension ].max = std::max( data[ dimension ].max, coordinates[ dimension ] );
                   }
-                  data[ nD_ ] += *grey;
                }
             }
             ++coordinates[ dimension ];
-            ++grey;
          } while( ++label );
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         dfloat* data = &( data_[ objectIndex * ( nD_ + 1 ) ] );
-         if( data[ nD_ ] == 0 ) {
+         MinMaxCoord* data = &( data_[ objectIndex * nD_ ] );
+         if( data[ 0 ].min > data[ 0 ].max ) {
             for( dip::uint ii = 0; ii < nD_; ++ii ) {
                output[ ii ] = 0;
             }
          } else {
             for( dip::uint ii = 0; ii < nD_; ++ii ) {
-               output[ ii ] = data[ ii ] / data[ nD_ ] * scales_[ ii ];
+               output[ ii ] = ( data[ ii ].max - data[ ii ].min + 1 ) * scales_[ ii ];
             }
          }
       }
@@ -94,9 +94,13 @@ class FeatureGravity : public LineBased {
       }
 
    private:
+      struct MinMaxCoord {
+         dip::uint min = std::numeric_limits< dip::uint >::max();
+         dip::uint max = 0;
+      };
       dip::uint nD_;
       FloatArray scales_;
-      std::vector< dfloat > data_; // size of this array is nObjects * ( nD_ + 1 ). Index as data_[ objectIndex * ( nD_ + 1 ) ]
+      std::vector< MinMaxCoord > data_; // size of this array is nObjects * nD_. Index as data_[ objectIndex * nD_ ]
 };
 
 

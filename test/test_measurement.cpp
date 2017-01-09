@@ -100,7 +100,7 @@ int main() {
    {
       auto column = msr.FirstFeature();
       do {
-         std::cout << column.Name();
+         std::cout << column.FeatureName();
          auto row = column.FirstObject();
          do {
             std::cout << " --";

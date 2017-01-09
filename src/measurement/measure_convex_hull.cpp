@@ -41,7 +41,7 @@ dfloat ConvexHull::Area() const {
    }
 }
 
-dfloat ConvexHull::Primeter() const {
+dfloat ConvexHull::Perimeter() const {
    if( vertices.size() < 2 ) {
        return 0;
    } else {

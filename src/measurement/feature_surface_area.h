@@ -29,7 +29,7 @@ class FeatureSurfaceArea : public ImageBased {
    public:
       FeatureSurfaceArea() : ImageBased( { "SurfaceArea", "surface area of object (3D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& ) override {
+      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
          PhysicalQuantity pq = label.PixelSize( 0 );
@@ -58,8 +58,6 @@ class FeatureSurfaceArea : public ImageBased {
             dst[ 0 ] = *src;
          } while( ++src, ++dst );
       }
-
-      virtual void Cleanup() override {}
 
    private:
       dfloat scale_;

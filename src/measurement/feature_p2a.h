@@ -19,9 +19,9 @@ namespace Feature {
 
 class FeatureP2A : public Composite {
    public:
-      FeatureP2A() : Composite( { "P2A", "circularity of the object (2D & 3D)", false } ) {};
+      FeatureP2A() : Composite( { "P2A", "Circularity of the object (2D & 3D)", false } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& ) override {
+      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          nD_ = label.Dimensionality();
          DIP_THROW_IF((( nD_ < 2 ) || ( nD_ > 3 )), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
@@ -38,7 +38,7 @@ class FeatureP2A : public Composite {
          return out;
       }
 
-      virtual void Measure(
+      virtual void Compose(
             Measurement::IteratorObject& dependencies,
             Measurement::ValueIterator data
       ) override {
@@ -52,15 +52,17 @@ class FeatureP2A : public Composite {
             }
          }
          dfloat area = it[ sizeIndex ];
-         dfloat perimeter = it[ perimIndex ];
-         if( nD_ == 2 ) {
-            *data = ( perimeter * perimeter ) / ( 4.0 * pi * area );
+         if( area == 0 ) {
+            *data = std::nan( "" );
          } else {
-            *data = std::pow( perimeter, 1.5 ) / ( 6.0 * std::sqrt( pi ) * area );
+            dfloat perimeter = it[ perimIndex ];
+            if( nD_ == 2 ) {
+               *data = ( perimeter * perimeter ) / ( 4.0 * pi * area );
+            } else {
+               *data = std::pow( perimeter, 1.5 ) / ( 6.0 * std::sqrt( pi ) * area );
+            }
          }
       }
-
-      virtual void Cleanup() override {}
 
    private:
       dip::sint sizeIndex;

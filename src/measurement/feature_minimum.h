@@ -1,8 +1,8 @@
 /*
  * DIPlib 3.0
- * This file defines the "Size" measurement feature
+ * This file defines the "Minimum" measurement feature
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -17,46 +17,35 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureSize : public LineBased {
+class FeatureMinimum : public LineBased {
    public:
-      FeatureSize() : LineBased( { "Size", "Number of object pixels", false } ) {};
+      FeatureMinimum() : LineBased( { "Minimum", "Minimum coordinates of the object", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
-         sizes_.clear();
-         ValueInformationArray out( 1 );
-         switch( label.Dimensionality() ) {
-            case 1:
-               out[ 0 ].name = "Length";
-               break;
-            case 2:
-               out[ 0 ].name = "Area";
-               break;
-            case 3:
-               out[ 0 ].name = "Volume";
-               break;
-            default:
-               out[ 0 ].name = "Size";
-         }
-         PhysicalQuantity unitArea = 1;
-         for( dip::uint ii = 0; ii < label.Dimensionality(); ++ii ) {
+         nD_ = label.Dimensionality();
+         data_.clear();
+         scales_.resize( nD_ );
+         ValueInformationArray out( nD_ );
+         for( dip::uint ii = 0; ii < nD_; ++ii ) {
             PhysicalQuantity pq = label.PixelSize( ii );
             if( pq.IsPhysical() ) {
-               unitArea *= pq;
+               scales_[ ii ] = pq.magnitude;
+               out[ ii ].units = pq.units;
             } else {
-               unitArea *= PhysicalQuantity::Pixel();
+               scales_[ ii ] = 1;
+               out[ ii ].units = Units::Pixel();
             }
+            out[ ii ].name = String( "dim" ) + std::to_string( ii );
          }
-         scale_ = unitArea.magnitude;
-         out[ 0 ].units = unitArea.units;
-         sizes_.resize( nObjects, 0 );
+         data_.resize( nObjects * nD_, std::numeric_limits< dip::uint >::max() );
          return out;
       }
 
       virtual void ScanLine(
             LineIterator <uint32> label,
             LineIterator <dfloat>, // unused
-            UnsignedArray, // unused
-            dip::uint, // unused
+            UnsignedArray coordinates,
+            dip::uint dimension,
             ObjectIdToIndexMap const& objectIndices
       ) override {
          // If new objectID is equal to previous one, we don't need to fetch the data pointer again
@@ -70,27 +59,33 @@ class FeatureSize : public LineBased {
                   if( it == objectIndices.end() ) {
                      data = nullptr;
                   } else {
-                     data = &( sizes_[ it->second ] );
+                     data = &( data_[ it->second * nD_ ] );
+                     for( dip::uint ii = 0; ii < nD_; ii++ ) {
+                        data[ ii ] = std::min( data[ ii ], coordinates[ ii ] );
+                     }
                   }
                }
-               if( data ) {
-                  ++( *data );
-               }
             }
+            ++coordinates[ dimension ];
          } while( ++label );
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         *output = sizes_[ objectIndex ] * scale_;
+         dip::uint* data = &( data_[ objectIndex * nD_ ] );
+         for( dip::uint ii = 0; ii < nD_; ++ii ) {
+            output[ ii ] = data[ ii ] * scales_[ ii ];
+         }
       }
 
       virtual void Cleanup() override {
-         sizes_.clear();
+         data_.clear();
+         scales_.clear();
       }
 
    private:
-      dfloat scale_;
-      std::vector< dip::uint > sizes_;
+      dip::uint nD_;
+      FloatArray scales_;
+      std::vector< dip::uint > data_; // size of this array is nObjects * nD_. Index as data_[ objectIndex * nD_ ]
 };
 
 

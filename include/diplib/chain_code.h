@@ -172,7 +172,7 @@ struct ConvexHull {
    dfloat Area() const;
 
    /// Returns the perimeter of the convex hull
-   dfloat Primeter() const;
+   dfloat Perimeter() const;
 
    /// Returns the Feret diameters of the convex hull
    FeretValues Feret() const;
@@ -225,6 +225,9 @@ struct ChainCode {
    /// \brief Returns the Feret diameters, using an angular step size in radian of `angleStep`.
    /// It is better to use `chainCode.ConvexHull().Feret()`.
    FeretValues Feret( dfloat angleStep ) const;
+
+   /// \brief Computes the bending energy.
+   dfloat BendingEnergy() const;
 
    /// Holds the various output values of the `dip::ChainCode::Radius` function.
    struct RadiusValues {
