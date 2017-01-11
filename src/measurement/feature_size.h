@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file defines the "Size" measurement feature
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -22,7 +22,8 @@ class FeatureSize : public LineBased {
       FeatureSize() : LineBased( { "Size", "Number of object pixels", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
-         sizes_.clear();
+         data_.clear();
+         data_.resize( nObjects, 0 );
          ValueInformationArray out( 1 );
          switch( label.Dimensionality() ) {
             case 1:
@@ -48,7 +49,6 @@ class FeatureSize : public LineBased {
          }
          scale_ = unitArea.magnitude;
          out[ 0 ].units = unitArea.units;
-         sizes_.resize( nObjects, 0 );
          return out;
       }
 
@@ -70,7 +70,7 @@ class FeatureSize : public LineBased {
                   if( it == objectIndices.end() ) {
                      data = nullptr;
                   } else {
-                     data = &( sizes_[ it->second ] );
+                     data = &( data_[ it->second ] );
                   }
                }
                if( data ) {
@@ -81,16 +81,17 @@ class FeatureSize : public LineBased {
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         *output = sizes_[ objectIndex ] * scale_;
+         *output = data_[ objectIndex ] * scale_;
       }
 
       virtual void Cleanup() override {
-         sizes_.clear();
+         data_.clear();
+         data_.shrink_to_fit();
       }
 
    private:
       dfloat scale_;
-      std::vector< dip::uint > sizes_;
+      std::vector< dip::uint > data_;
 };
 
 

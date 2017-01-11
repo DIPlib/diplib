@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file defines the "Gravity" measurement feature
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -25,6 +25,7 @@ class FeatureGravity : public LineBased {
          DIP_THROW_IF( !grey.IsScalar(), E::NOT_SCALAR );
          nD_ = label.Dimensionality();
          data_.clear();
+         data_.resize( nObjects * ( nD_ + 1 ), 0 );
          scales_.resize( nD_ );
          ValueInformationArray out( nD_ );
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
@@ -38,7 +39,6 @@ class FeatureGravity : public LineBased {
             }
             out[ ii ].name = String( "dim" ) + std::to_string( ii );
          }
-         data_.resize( nObjects * ( nD_ + 1 ), 0 );
          return out;
       }
 
@@ -90,6 +90,7 @@ class FeatureGravity : public LineBased {
 
       virtual void Cleanup() override {
          data_.clear();
+         data_.shrink_to_fit();
          scales_.clear();
       }
 

@@ -24,6 +24,7 @@ class FeatureMaximum : public LineBased {
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
          nD_ = label.Dimensionality();
          data_.clear();
+         data_.resize( nObjects * nD_, 0 );
          scales_.resize( nD_ );
          ValueInformationArray out( nD_ );
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
@@ -37,7 +38,6 @@ class FeatureMaximum : public LineBased {
             }
             out[ ii ].name = String( "dim" ) + std::to_string( ii );
          }
-         data_.resize( nObjects * nD_, 0 );
          return out;
       }
 
@@ -83,6 +83,7 @@ class FeatureMaximum : public LineBased {
 
       virtual void Cleanup() override {
          data_.clear();
+         data_.shrink_to_fit();
          scales_.clear();
       }
 

@@ -656,6 +656,9 @@ class Composite : public Base {
 ///
 /// Features that include "Scalar grey" in the limitations column require a scalar grey-value image to be passed
 /// into the `dip::MeasurementTool::Measure` method together with the label image.
+// TODO: Document each feature in more detail in a separate page
+// TODO: Create a DirectionalStatistics feature that computes directional mean, std dev and variance.
+// TODO: Skewness and ExcessKurtosis should be a single Statistics feature
 class MeasurementTool {
    public:
 

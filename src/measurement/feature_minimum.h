@@ -24,6 +24,7 @@ class FeatureMinimum : public LineBased {
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
          nD_ = label.Dimensionality();
          data_.clear();
+         data_.resize( nObjects * nD_, std::numeric_limits< dip::uint >::max() );
          scales_.resize( nD_ );
          ValueInformationArray out( nD_ );
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
@@ -37,7 +38,6 @@ class FeatureMinimum : public LineBased {
             }
             out[ ii ].name = String( "dim" ) + std::to_string( ii );
          }
-         data_.resize( nObjects * nD_, std::numeric_limits< dip::uint >::max() );
          return out;
       }
 
@@ -79,6 +79,7 @@ class FeatureMinimum : public LineBased {
 
       virtual void Cleanup() override {
          data_.clear();
+         data_.shrink_to_fit();
          scales_.clear();
       }
 

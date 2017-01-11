@@ -28,11 +28,19 @@
 #include "feature_convex_perimeter.h"
 // Shape
 #include "feature_aspect_ratio_feret.h"
+#include "feature_radius.h"
 #include "feature_p2a.h"
 #include "feature_podczeck_shapes.h"
 #include "feature_convexity.h"
 #include "feature_bending_energy.h"
 // Intensity
+#include "feature_mass.h"
+#include "feature_mean.h"
+#include "feature_stddev.h"
+#include "feature_skewness.h"
+#include "feature_excess_kurtosis.h"
+#include "feature_max_val.h"
+#include "feature_min_val.h"
 // Binary moments
 // Grey-value moments
 #include "feature_gravity.h"
@@ -55,19 +63,19 @@ MeasurementTool::MeasurementTool() {
    Register( dip::Feature::Pointer( new Feature::FeatureConvexPerimeter ));
    // Shape
    Register( dip::Feature::Pointer( new Feature::FeatureAspectRatioFeret ));
-   // Register( dip::Feature::Pointer( new Feature::FeatureRadius ));
+   Register( dip::Feature::Pointer( new Feature::FeatureRadius ));
    Register( dip::Feature::Pointer( new Feature::FeatureP2A ));
    Register( dip::Feature::Pointer( new Feature::FeaturePodczeckShapes ));
    Register( dip::Feature::Pointer( new Feature::FeatureConvexity ));
    Register( dip::Feature::Pointer( new Feature::FeatureBendingEnergy ));
    // Intensity
-   //Register( dip::Feature::Pointer( new Feature::FeatureMass ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureMean ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureStdDev ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureSkewness ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureExcessKurtosis ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureMaxVal ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureMinVal ));
+   Register( dip::Feature::Pointer( new Feature::FeatureMass ));
+   Register( dip::Feature::Pointer( new Feature::FeatureMean ));
+   Register( dip::Feature::Pointer( new Feature::FeatureStdDev ));
+   Register( dip::Feature::Pointer( new Feature::FeatureSkewness ));
+   Register( dip::Feature::Pointer( new Feature::FeatureExcessKurtosis ));
+   Register( dip::Feature::Pointer( new Feature::FeatureMaxVal ));
+   Register( dip::Feature::Pointer( new Feature::FeatureMinVal ));
    // Binary moments
    //Register( dip::Feature::Pointer( new Feature::FeatureCenter ));
    //Register( dip::Feature::Pointer( new Feature::FeatureInertia ));

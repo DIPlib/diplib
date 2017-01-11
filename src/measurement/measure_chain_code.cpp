@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for functions that measure chain codes.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -220,7 +220,7 @@ ChainCode::RadiusValues ChainCode::Radius() const {
    pos = { 0, 0 };
    dfloat sumR = 0.0;
    dfloat sumR2 = 0.0;
-   //radius.max = 0.0;
+   radius.max = 0.0;
    radius.min = std::numeric_limits< dfloat >::max();
    for( auto code : codes ) {
       pos += dir[ int( code ) ];
@@ -234,7 +234,7 @@ ChainCode::RadiusValues ChainCode::Radius() const {
    }
    radius.mean = sumR / codes.size();
    radius.var = ( sumR2 - ( sumR * radius.mean )) / ( codes.size() - 1 );
-   return {};
+   return radius;
 }
 
 dip::uint ChainCode::LongestRun() const {
