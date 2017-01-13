@@ -48,6 +48,11 @@ if(ENABLE_DOCTEST)
    add_definitions(-DDIP__ENABLE_DOCTEST -DDOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
 endif()
 
+# Eigen
+include_directories(dependencies/eigen3)
+add_definitions(-DEIGEN_MPL2_ONLY) # This makes sure we only use parts of the Eigen library that use the MPL2 license or more permissive ones.
+add_definitions(-DEIGEN_DONT_PARALLELIZE) # This to prevent Eigen algorithms trying to run in parallel -- we parallelize at a larger scale.
+
 # MATLAB
 set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # This is necessary because my version of MATLAB is very recent and my version of CMake is not. Ajust as necessary.
 find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)

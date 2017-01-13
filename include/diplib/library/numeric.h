@@ -240,6 +240,142 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::pow10 function") {
 
 #endif
 
+
+/// \brief Finds the eigenvalues of a 2D symmetric matrix.
+///
+/// `input` is a pointer to 4 values, in column-major order; only the lower triangle will be used.
+/// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
+void SymmetricEigenValues2D( double const* input, double* lambdas );
+
+/// \brief Finds the eigenvalues of a 2D symmetric matrix, where only the unique values are given.
+///
+/// `input` is a pointer to 3 values: { xx, xy, yy }.
+/// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
+inline void SymmetricEigenValues2DPacked( double const* input, double* lambdas ) {
+   double matrix[ 4 ];
+   matrix[ 0 ] = input[ 0 ];
+   matrix[ 1 ] = input[ 1 ];
+   // matrix[ 2 ] is never used
+   matrix[ 3 ] = input[ 2 ];
+   SymmetricEigenValues2D( matrix, lambdas );
+}
+
+/// \brief Finds the eigenvalues and eigenvectors of a 2D symmetric matrix.
+///
+/// `input` is a pointer to 4 values, in column-major order; only the lower triangle will be used.
+/// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
+/// `v1` and `v2` are pointers to space for 2 values each, and will receive the two eigenvectors.
+void SymmetricEigenSystem2D( double const* input, double* lambdas, double* v1, double* v2 );
+
+/// \brief Finds the eigenvalues and eigenvectors of a 2D symmetric matrix, where only the unique values are given.
+///
+/// `input` is a pointer to 3 values: { xx, xy, yy }.
+/// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
+/// `v1` and `v2` are pointers to space for 2 values each, and will receive the two eigenvectors.
+inline void SymmetricEigenSystem2DPacked( double const* input, double* lambdas, double* v1, double* v2 ) {
+   double matrix[ 4 ];
+   matrix[ 0 ] = input[ 0 ];
+   matrix[ 1 ] = input[ 1 ];
+   // matrix[ 2 ] is never used
+   matrix[ 3 ] = input[ 2 ];
+   SymmetricEigenSystem2D( matrix, lambdas, v1, v2 );
+}
+
+
+/// \brief Finds the eigenvalues of a 3D symmetric matrix.
+///
+/// `input` is a pointer to 9 values, in column-major order; only the lower triangle will be used.
+/// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
+void SymmetricEigenValues3D( double const* input, double* lambdas );
+
+/// \brief Finds the eigenvalues of a 3D symmetric matrix, where only the unique values are given.
+///
+/// `input` is a pointer to 6 values: { xx, xy, xz, yy, yz, zz }.
+/// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
+inline void SymmetricEigenValues3DPacked( double const* input, double* lambdas ) {
+   double matrix[ 9 ];
+   matrix[ 0 ] = input[ 0 ];
+   matrix[ 1 ] = input[ 1 ];
+   matrix[ 2 ] = input[ 2 ];
+   // matrix[ 3 ] is never used
+   matrix[ 4 ] = input[ 3 ];
+   matrix[ 5 ] = input[ 4 ];
+   // matrix[ 6 ] is never used
+   // matrix[ 7 ] is never used
+   matrix[ 8 ] = input[ 5 ];
+   SymmetricEigenValues3D( matrix, lambdas );
+}
+
+/// \brief Finds the eigenvalues and eigenvectors of a 3D symmetric matrix.
+///
+/// `input` is a pointer to 9 values, in column-major order; only the lower triangle will be used.
+/// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
+/// `v1`, `v2` and `v3` are pointers to space for 3 values each, and will receive the three eigenvectors.
+void SymmetricEigenSystem3D( double const* input, double* lambdas, double* v1, double* v2, double* v3 );
+
+/// \brief Finds the eigenvalues and eigenvectors of a 3D symmetric matrix, where only the unique values are given.
+///
+/// `input` is a pointer to 6 values: { xx, xy, xz, yy, yz, zz }.
+/// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
+/// `v1`, `v2` and `v3` are pointers to space for 3 values each, and will receive the three eigenvectors.
+inline void SymmetricEigenSystem3DPacked( double const* input, double* lambdas, double* v1, double* v2, double* v3 ) {
+   double matrix[ 9 ];
+   matrix[ 0 ] = input[ 0 ];
+   matrix[ 1 ] = input[ 1 ];
+   matrix[ 2 ] = input[ 2 ];
+   // matrix[ 3 ] is never used
+   matrix[ 4 ] = input[ 3 ];
+   matrix[ 5 ] = input[ 4 ];
+   // matrix[ 6 ] is never used
+   // matrix[ 7 ] is never used
+   matrix[ 8 ] = input[ 5 ];
+   SymmetricEigenSystem3D( matrix, lambdas, v1, v2, v3 );
+}
+
+
+/// \brief Finds the eigenvalues of a 2D matrix.
+///
+/// `input` is a pointer to 4 values, in column-major order.
+/// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
+void EigenValues2D( double const* input, double* lambdas );
+
+/// \brief Finds the eigenvalues and eigenvectors of a 2D matrix.
+///
+/// `input` is a pointer to 4 values, in column-major order.
+/// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
+/// `v1` and `v2` are pointers to space for 2 values each, and will receive the two eigenvectors.
+void EigenSystem2D( double const* input, double* lambdas, double* v1, double* v2 );
+
+
+/// \brief Finds the eigenvalues of a 3D matrix.
+///
+/// `input` is a pointer to 9 values, in column-major order.
+/// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
+void EigenValues3D( double const* input, double* lambdas );
+
+/// \brief Finds the eigenvalues and eigenvectors of a 3D matrix.
+///
+/// `input` is a pointer to 9 values, in column-major order.
+/// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
+/// `v1`, `v2` and `v3` are pointers to space for 3 values each, and will receive the three eigenvectors.
+void EigenSystem3D( double const* input, double* lambdas, double* v1, double* v2, double* v3 );
+
+
+/// \brief Finds the eigenvalues of a square matrix.
+///
+/// `input` is a pointer to `n`*`n` values, in column-major order.
+/// `lambdas` is a pointer to space for `n` values, which will be written sorted largest to smallest.
+void EigenValues( dip::uint n, double const* input, double* lambdas );
+
+/// \brief Finds the eigenvalues and eigenvectors of a square matrix.
+///
+/// `input` is a pointer to `n`*`n` values, in column-major order.
+/// `lambdas` is a pointer to space for `n` values, which will be written sorted largest to smallest.
+/// `vectors` is a pointers to space for `n`*`n` values and will receive the `n` eigenvectors. The eigenvectors
+/// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
+void EigenSystem( dip::uint n, double const* input, double* lambdas, double* vectors );
+
+
 /// \}
 
 } // namespace dip
