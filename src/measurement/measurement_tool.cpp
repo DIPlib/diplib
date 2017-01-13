@@ -42,6 +42,9 @@
 #include "feature_max_val.h"
 #include "feature_min_val.h"
 // Binary moments
+#include "feature_center.h"
+#include "feature_mu.h"
+#include "feature_inertia.h"
 // Grey-value moments
 #include "feature_gravity.h"
 #include "feature_grey_mu.h"
@@ -79,9 +82,9 @@ MeasurementTool::MeasurementTool() {
    Register( dip::Feature::Pointer( new Feature::FeatureMaxVal ));
    Register( dip::Feature::Pointer( new Feature::FeatureMinVal ));
    // Binary moments
-   //Register( dip::Feature::Pointer( new Feature::FeatureCenter ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureMu ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureInertia ));
+   Register( dip::Feature::Pointer( new Feature::FeatureCenter ));
+   Register( dip::Feature::Pointer( new Feature::FeatureMu ));
+   Register( dip::Feature::Pointer( new Feature::FeatureInertia ));
    //Register( dip::Feature::Pointer( new Feature::FeatureDimensionsCube ));
    //Register( dip::Feature::Pointer( new Feature::FeatureDimensionsEllipsoid ));
    //Register( dip::Feature::Pointer( new Feature::FeatureMajorAxes ));
