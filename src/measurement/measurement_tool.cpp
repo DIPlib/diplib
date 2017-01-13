@@ -44,6 +44,8 @@
 // Binary moments
 // Grey-value moments
 #include "feature_gravity.h"
+#include "feature_grey_mu.h"
+#include "feature_grey_inertia.h"
 
 
 namespace dip {
@@ -78,15 +80,15 @@ MeasurementTool::MeasurementTool() {
    Register( dip::Feature::Pointer( new Feature::FeatureMinVal ));
    // Binary moments
    //Register( dip::Feature::Pointer( new Feature::FeatureCenter ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureInertia ));
    //Register( dip::Feature::Pointer( new Feature::FeatureMu ));
+   //Register( dip::Feature::Pointer( new Feature::FeatureInertia ));
    //Register( dip::Feature::Pointer( new Feature::FeatureDimensionsCube ));
    //Register( dip::Feature::Pointer( new Feature::FeatureDimensionsEllipsoid ));
    //Register( dip::Feature::Pointer( new Feature::FeatureMajorAxes ));
    // Grey-value moments
    Register( dip::Feature::Pointer( new Feature::FeatureGravity ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureGreyInertia ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureGreyMu ));
+   Register( dip::Feature::Pointer( new Feature::FeatureGreyMu ));
+   Register( dip::Feature::Pointer( new Feature::FeatureGreyInertia ));
    //Register( dip::Feature::Pointer( new Feature::FeatureGreyDimensionsCube ));
    //Register( dip::Feature::Pointer( new Feature::FeatureGreyDimensionsEllipsoid ));
    //Register( dip::Feature::Pointer( new Feature::FeatureGreyMajorAxes ));

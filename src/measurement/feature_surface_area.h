@@ -45,14 +45,10 @@ class FeatureSurfaceArea : public ImageBased {
          return out;
       }
 
-      virtual void Measure(
-            Image const& label,
-            Image const&,
-            Measurement::IteratorFeature& data
-      ) override {
-         std::vector< dfloat > res = SurfaceArea( label, data.Objects() );
-         // Note that `res` has objects sorted in the same way as `data`.
-         auto dst = data.FirstObject();
+      virtual void Measure( Image const& label, Image const&, Measurement::IteratorFeature& output ) override {
+         std::vector< dfloat > res = SurfaceArea( label, output.Objects() );
+         // Note that `res` has objects sorted in the same way as `output`.
+         auto dst = output.FirstObject();
          auto src = res.begin();
          do {
             dst[ 0 ] = *src;

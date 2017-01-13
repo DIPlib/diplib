@@ -29,9 +29,9 @@ class FeaturePodczeckShapes : public Composite {
          out[ 0 ].name = "Triangle";
          out[ 0 ].name = "Ellipse";
          out[ 0 ].name = "Elongation";
-         sizeIndex = -1;
-         feretIndex = -1;
-         perimeterIndex = -1;
+         sizeIndex_ = -1;
+         feretIndex_ = -1;
+         perimeterIndex_ = -1;
          return out;
       }
 
@@ -43,36 +43,33 @@ class FeaturePodczeckShapes : public Composite {
          return out;
       }
 
-      virtual void Compose(
-            Measurement::IteratorObject& dependencies,
-            Measurement::ValueIterator data
-      ) override {
+      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( sizeIndex == -1 ) {
-            sizeIndex = dependencies.ValueIndex( "Size" );
-            feretIndex = dependencies.ValueIndex( "ConvexArea" );
-            perimeterIndex = dependencies.ValueIndex( "Perimeter" );
+         if( sizeIndex_ == -1 ) {
+            sizeIndex_ = dependencies.ValueIndex( "Size" );
+            feretIndex_ = dependencies.ValueIndex( "ConvexArea" );
+            perimeterIndex_ = dependencies.ValueIndex( "Perimeter" );
          }
-         dfloat area = it[ sizeIndex ];
+         dfloat area = it[ sizeIndex_ ];
          if( area == 0 ) {
-            data[ 0 ] = data[ 1 ] = data[ 2 ] = data[ 3 ] = data[ 4 ] = std::nan( "" );
+            output[ 0 ] = output[ 1 ] = output[ 2 ] = output[ 3 ] = output[ 4 ] = std::nan( "" );
          } else {
-            dfloat length = it[ feretIndex ];
-            dfloat boxWidth = it[ feretIndex + 1 ];
-            dfloat boxLength = it[ feretIndex + 2 ];
-            dfloat perimeter = it[ perimeterIndex ];
-            data[ 0 ] = area / ( boxWidth * boxLength );
-            data[ 1 ] = area / ( 0.25 * dip::pi * boxLength * boxLength );
-            data[ 2 ] = area / ( 0.5 * boxWidth * boxLength );
-            data[ 3 ] = area / ( 0.25 * dip::pi * boxWidth * boxLength );
-            data[ 4 ] = perimeter / length;
+            dfloat length = it[ feretIndex_ ];
+            dfloat boxWidth = it[ feretIndex_ + 1 ];
+            dfloat boxLength = it[ feretIndex_ + 2 ];
+            dfloat perimeter = it[ perimeterIndex_ ];
+            output[ 0 ] = area / ( boxWidth * boxLength );
+            output[ 1 ] = area / ( 0.25 * dip::pi * boxLength * boxLength );
+            output[ 2 ] = area / ( 0.5 * boxWidth * boxLength );
+            output[ 3 ] = area / ( 0.25 * dip::pi * boxWidth * boxLength );
+            output[ 4 ] = perimeter / length;
          }
       }
 
    private:
-      dip::sint sizeIndex;
-      dip::sint feretIndex;
-      dip::sint perimeterIndex;
+      dip::sint sizeIndex_;
+      dip::sint feretIndex_;
+      dip::sint perimeterIndex_;
 };
 
 

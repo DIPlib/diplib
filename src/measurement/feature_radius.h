@@ -44,15 +44,12 @@ class FeatureRadius : public ChainCodeBased {
          return out;
       }
 
-      virtual void Measure(
-            ChainCode const& chaincode,
-            Measurement::ValueIterator data
-      ) override {
+      virtual void Measure( ChainCode const& chaincode, Measurement::ValueIterator output ) override {
          ChainCode::RadiusValues radius = chaincode.Radius();
-         data[ 0 ] = radius.max * scale_;
-         data[ 1 ] = radius.mean * scale_;
-         data[ 2 ] = radius.min * scale_;
-         data[ 3 ] = std::sqrt( radius.var ) * scale_;
+         output[ 0 ] = radius.max * scale_;
+         output[ 1 ] = radius.mean * scale_;
+         output[ 2 ] = radius.min * scale_;
+         output[ 3 ] = std::sqrt( radius.var ) * scale_;
       }
 
    private:

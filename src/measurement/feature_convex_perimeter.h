@@ -35,11 +35,8 @@ class FeatureConvexPerimeter : public ConvexHullBased {
          return out;
       }
 
-      virtual void Measure(
-            ConvexHull const& convexHull,
-            Measurement::ValueIterator data
-      ) override {
-         data[ 0 ] = convexHull.Perimeter() * scale_;
+      virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) override {
+         output[ 0 ] = convexHull.Perimeter() * scale_;
       }
 
    private:

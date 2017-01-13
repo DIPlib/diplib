@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file defines the "P2A" measurement feature
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -23,11 +23,11 @@ class FeatureP2A : public Composite {
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          nD_ = label.Dimensionality();
-         DIP_THROW_IF((( nD_ < 2 ) || ( nD_ > 3 )), E::DIMENSIONALITY_NOT_SUPPORTED );
+         DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
          out[ 0 ].name = "P2A";
-         sizeIndex = -1;
-         perimIndex = -1;
+         sizeIndex_ = -1;
+         perimIndex_ = -1;
          return out;
       }
 
@@ -38,35 +38,32 @@ class FeatureP2A : public Composite {
          return out;
       }
 
-      virtual void Compose(
-            Measurement::IteratorObject& dependencies,
-            Measurement::ValueIterator data
-      ) override {
+      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( sizeIndex == -1 ) {
-            sizeIndex = dependencies.ValueIndex( "Size" );
+         if( sizeIndex_ == -1 ) {
+            sizeIndex_ = dependencies.ValueIndex( "Size" );
             if( nD_ == 2 ) {
-               perimIndex = dependencies.ValueIndex( "Perimeter" );
+               perimIndex_ = dependencies.ValueIndex( "Perimeter" );
             } else  {
-               perimIndex = dependencies.ValueIndex( "SurfaceArea" );
+               perimIndex_ = dependencies.ValueIndex( "SurfaceArea" );
             }
          }
-         dfloat area = it[ sizeIndex ];
+         dfloat area = it[ sizeIndex_ ];
          if( area == 0 ) {
-            *data = std::nan( "" );
+            *output = std::nan( "" );
          } else {
-            dfloat perimeter = it[ perimIndex ];
+            dfloat perimeter = it[ perimIndex_ ];
             if( nD_ == 2 ) {
-               *data = ( perimeter * perimeter ) / ( 4.0 * pi * area );
+               *output = ( perimeter * perimeter ) / ( 4.0 * pi * area );
             } else {
-               *data = std::pow( perimeter, 1.5 ) / ( 6.0 * std::sqrt( pi ) * area );
+               *output = std::pow( perimeter, 1.5 ) / ( 6.0 * std::sqrt( pi ) * area );
             }
          }
       }
 
    private:
-      dip::sint sizeIndex;
-      dip::sint perimIndex;
+      dip::sint sizeIndex_;
+      dip::sint perimIndex_;
       dip::uint nD_;
 };
 

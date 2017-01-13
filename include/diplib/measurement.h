@@ -541,7 +541,7 @@ class LineBased : public Base {
       ) = 0;
 
       /// \brief Called once for each object, to finalize the measurement
-      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator data ) = 0;
+      virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) = 0;
 };
 
 /// \brief The pure virtual base class for all image-based measurement features.
@@ -550,7 +550,7 @@ class ImageBased : public Base {
       ImageBased( Information const& information ) : Base( information, Type::IMAGE_BASED ) {};
 
       /// \brief Called once to compute measurements for all objects
-      virtual void Measure( Image const& label, Image const& grey, Measurement::IteratorFeature& data ) = 0;
+      virtual void Measure( Image const& label, Image const& grey, Measurement::IteratorFeature& output ) = 0;
 };
 
 /// \brief The pure virtual base class for all chain-code--based measurement features.
@@ -559,7 +559,7 @@ class ChainCodeBased : public Base {
       ChainCodeBased( Information const& information ) : Base( information, Type::CHAINCODE_BASED ) {};
 
       /// \brief Called once for each object
-      virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator data ) = 0;
+      virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) = 0;
 };
 
 /// \brief The pure virtual base class for all convex-hull--based measurement features.
@@ -568,7 +568,7 @@ class ConvexHullBased : public Base {
       ConvexHullBased( Information const& information ) : Base( information, Type::CONVEXHULL_BASED ) {};
 
       /// \brief Called once for each object
-      virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator data ) = 0;
+      virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) = 0;
 };
 
 /// \brief The pure virtual base class for all composite measurement features.
@@ -582,7 +582,7 @@ class Composite : public Base {
 
       /// \brief Called once for each object, the input `dependencies` object contains the measurements
       /// for the object from all the features in the `dip::Composite::Dependencies` list.
-      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator data ) = 0;
+      virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) = 0;
 };
 
 } // namespace Feature
@@ -632,15 +632,15 @@ class Composite : public Base {
 /// <tr><td> "MinVal"                  <td> Minimum object intensity <td> Scalar grey
 /// <tr><td colspan="3"> **Moments of binary object**
 /// <tr><td> "Center"                  <td> Coordinates of the geometric mean of the object <td>
-/// <tr><td> "Inertia"                 <td> Moments of inertia of binary object <td>
 /// <tr><td> "Mu"                      <td> Elements of the inertia tensor <td>
+/// <tr><td> "Inertia"                 <td> Moments of inertia of binary object <td>
 /// <tr><td> "DimensionsCube"          <td> Extent along the principal axes of a cube <td>
 /// <tr><td> "DimensionsEllipsoid"     <td> Extent along the principal axes of an ellipsoid <td>
 /// <tr><td> "MajorAxes"               <td> Principal axes of an object <td>
 /// <tr><td colspan="3"> **Moments of grey-value object**
 /// <tr><td> "Gravity"                 <td> Coordinates of the center-of-mass of the object <td> Scalar grey
-/// <tr><td> "GreyInertia"             <td> Grey-weighted moments of inertia of object <td> Scalar grey
 /// <tr><td> "GreyMu"                  <td> Elements of the grey-weighted inertia tensor <td> Scalar grey
+/// <tr><td> "GreyInertia"             <td> Grey-weighted moments of inertia of object <td> Scalar grey
 /// <tr><td> "GreyDimensionsCube"      <td> Extent along the principal axes of a cube <td> Scalar grey
 /// <tr><td> "GreyDimensionsEllipsoid" <td> Extent along the principal axes of an elliposid <td> Scalar grey
 /// <tr><td> "GreyMajorAxes"           <td> Principal axes of an object <td> Scalar grey
@@ -659,6 +659,7 @@ class Composite : public Base {
 // TODO: Document each feature in more detail in a separate page
 // TODO: Create a DirectionalStatistics feature that computes directional mean, std dev and variance.
 // TODO: Skewness and ExcessKurtosis should be a single Statistics feature
+// TODO: Add MeasurementTool::Configure("feature","parameter",value), which calls the ::Configure method of Feature::Base
 class MeasurementTool {
    public:
 

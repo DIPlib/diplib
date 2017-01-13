@@ -45,16 +45,13 @@ class FeatureFeret : public ConvexHullBased {
          return out;
       }
 
-      virtual void Measure(
-            ConvexHull const& convexHull,
-            Measurement::ValueIterator data
-      ) override {
+      virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) override {
          FeretValues feret = convexHull.Feret();
-         data[ 0 ] = feret.maxDiameter * scale_;
-         data[ 1 ] = feret.minDiameter * scale_;
-         data[ 2 ] = feret.maxPerpendicular * scale_;
-         data[ 3 ] = feret.maxAngle;
-         data[ 4 ] = feret.minAngle;
+         output[ 0 ] = feret.maxDiameter * scale_;
+         output[ 1 ] = feret.minDiameter * scale_;
+         output[ 2 ] = feret.maxPerpendicular * scale_;
+         output[ 3 ] = feret.maxAngle;
+         output[ 4 ] = feret.minAngle;
       }
 
    private:
