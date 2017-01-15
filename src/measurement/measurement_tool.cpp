@@ -45,10 +45,16 @@
 #include "feature_center.h"
 #include "feature_mu.h"
 #include "feature_inertia.h"
+#include "feature_major_axes.h"
+#include "feature_dimensions_cube.h"
+#include "feature_dimensions_ellipsoid.h"
 // Grey-value moments
 #include "feature_gravity.h"
 #include "feature_grey_mu.h"
 #include "feature_grey_inertia.h"
+#include "feature_grey_major_axes.h"
+#include "feature_grey_dimensions_cube.h"
+#include "feature_grey_dimensions_ellipsoid.h"
 
 
 namespace dip {
@@ -85,16 +91,16 @@ MeasurementTool::MeasurementTool() {
    Register( dip::Feature::Pointer( new Feature::FeatureCenter ));
    Register( dip::Feature::Pointer( new Feature::FeatureMu ));
    Register( dip::Feature::Pointer( new Feature::FeatureInertia ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureDimensionsCube ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureDimensionsEllipsoid ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureMajorAxes ));
+   Register( dip::Feature::Pointer( new Feature::FeatureMajorAxes ));
+   Register( dip::Feature::Pointer( new Feature::FeatureDimensionsCube ));
+   Register( dip::Feature::Pointer( new Feature::FeatureDimensionsEllipsoid ));
    // Grey-value moments
    Register( dip::Feature::Pointer( new Feature::FeatureGravity ));
    Register( dip::Feature::Pointer( new Feature::FeatureGreyMu ));
    Register( dip::Feature::Pointer( new Feature::FeatureGreyInertia ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureGreyDimensionsCube ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureGreyDimensionsEllipsoid ));
-   //Register( dip::Feature::Pointer( new Feature::FeatureGreyMajorAxes ));
+   Register( dip::Feature::Pointer( new Feature::FeatureGreyMajorAxes ));
+   Register( dip::Feature::Pointer( new Feature::FeatureGreyDimensionsCube ));
+   Register( dip::Feature::Pointer( new Feature::FeatureGreyDimensionsEllipsoid ));
 }
 
 using LineBasedFeatureArray = std::vector< Feature::LineBased* >;

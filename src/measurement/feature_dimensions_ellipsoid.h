@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file defines the "Inertia" measurement feature
+ * This file defines the "DimensionsEllipsoid" measurement feature
  *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -19,9 +19,9 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureInertia : public Composite {
+class FeatureDimensionsEllipsoid : public Composite {
    public:
-      FeatureInertia() : Composite( { "Inertia", "Moments of inertia of the binary object", true } ) {};
+      FeatureDimensionsEllipsoid() : Composite( { "DimensionsEllipsoid", "Extent along the principal axes of an ellipsoid", true } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
          nD_ = label.Dimensionality();
@@ -40,36 +40,38 @@ class FeatureInertia : public Composite {
             }
          }
          Units units = sameUnits ? pq.units : Units::Pixel();
-         units *= units;
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
             out[ ii ].units = units;
-            out[ ii ].name = String( "lambda_" ) + std::to_string( ii );
+            out[ ii ].name = String( "axis" ) + std::to_string( ii );
          }
-         muIndex_ = -1;
+         inertiaIndex_ = -1;
          return out;
       }
 
       virtual StringArray Dependencies() override {
          StringArray out( 1 );
-         out[ 0 ] = "Mu";
+         out[ 0 ] = "Inertia";
          return out;
       }
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( muIndex_ == -1 ) {
-            muIndex_ = dependencies.ValueIndex( "Mu" );
+         if( inertiaIndex_ == -1 ) {
+            inertiaIndex_ = dependencies.ValueIndex( "Inertia" );
          }
-         dfloat const* data = &it[ muIndex_ ];
+         dfloat const* data = &it[ inertiaIndex_ ];
          if( nD_ == 2 ) {
-            SymmetricEigenValues2DPacked( data, output );
+            output[ 0 ] = std::sqrt( 16 * data[ 0 ] );
+            output[ 1 ] = std::sqrt( 16 * data[ 1 ] );
          } else { // nD_ == 3
-            SymmetricEigenValues3DPacked( data, output );
+            output[ 0 ] = std::sqrt( 10 * (   data[ 0 ] + data[ 1 ] - data[ 2 ] ));
+            output[ 1 ] = std::sqrt( 10 * (   data[ 0 ] - data[ 1 ] + data[ 2 ] ));
+            output[ 2 ] = std::sqrt( 10 * ( - data[ 0 ] + data[ 1 ] + data[ 2 ] ));
          }
       }
 
    private:
-      dip::sint muIndex_;
+      dip::sint inertiaIndex_;
       dip::uint nD_;
 };
 
