@@ -482,7 +482,13 @@ class Base {
 
       Base( Information const& information, Type const type ) : information( information ), type( type ) {};
 
-      /// \brief All measurement features define an `Initialize` method that prepares the feature class
+      /// \brief A feature can have configurable parameters. Such a feature can define a `%Configure` method
+      /// that the user can access through `dip::MeasurementTool::Configure`.
+      virtual void Configure( String const& parameter, dfloat value ) {
+         DIP_THROW( "Feature not configurable" );
+      };
+
+      /// \brief All measurement features define an `%Initialize` method that prepares the feature class
       /// to perform measurements on the image. It also gives information on the feature as applied to that image.
       ///
       /// This function should check image properties and throw an exception if the measurement
@@ -505,7 +511,7 @@ class Base {
       /// Note that this function is not expected to perform any major amount of work.
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) = 0;
 
-      /// \brief All measurement features define a `Cleanup` method that is called after finishing the measurement
+      /// \brief All measurement features define a `%Cleanup` method that is called after finishing the measurement
       /// process for one image.
       virtual void Cleanup() {};
 
@@ -659,14 +665,13 @@ class Composite : public Base {
 // TODO: Document each feature in more detail in a separate page
 // TODO: Create a DirectionalStatistics feature that computes directional mean, std dev and variance.
 // TODO: Skewness and ExcessKurtosis should be a single Statistics feature
-// TODO: Add MeasurementTool::Configure("feature","parameter",value), which calls the ::Configure method of Feature::Base
 class MeasurementTool {
    public:
 
       /// \brief Constructor.
       MeasurementTool();
 
-      /// \brief Registers a feature with this `MeasurementTool`. The feature object becomes property of the tool.
+      /// \brief Registers a feature with this `%MeasurementTool`. The feature object becomes property of the tool.
       ///
       /// Create an instance of the feature class on the heap using `new`. The feature class must be
       /// derived from one of the five classes dervied from `dip::Feature::Base` (thus not directly from `Base`).
@@ -688,6 +693,15 @@ class MeasurementTool {
          } else {
             feature = nullptr; // deallocates the feature we received, we don't need it, we already have one with that name
          }
+      }
+
+      /// \brief Sets a parameter for one feature registered with this `%MeasurementTool`.
+      void Configure(
+            String const& feature,
+            String const& parameter,
+            dfloat value
+      ) const {
+         features_[ Index( feature ) ]->Configure( parameter, value );
       }
 
       /// \brief Measures one or more features on one or more objects in the labelled image.

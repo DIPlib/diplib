@@ -113,6 +113,8 @@ add_executable( test_boundary EXCLUDE_FROM_ALL test/test_boundary.cpp )
 target_link_libraries(test_boundary DIP)
 add_executable( test_measurement EXCLUDE_FROM_ALL test/test_measurement.cpp )
 target_link_libraries(test_measurement DIP)
+add_executable( test_measuretool EXCLUDE_FROM_ALL test/test_measuretool.cpp )
+target_link_libraries(test_measuretool DIP)
 
 add_custom_target(tests DEPENDS test_error test_physdims test_image test_framework_scan test_framework_separable test_boundary test_measurement)
 
