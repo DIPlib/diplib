@@ -24,8 +24,19 @@ void SymmetricEigenValues2D( double const* input, double* lambdas ) {
    }
 }
 
-void SymmetricEigenSystem2D( double const* input, double* lambdas, double* v1, double* v2 ) {
-   // TODO
+void SymmetricEigenSystem2D( double const* input, double* lambdas, double* vectors ) {
+   Eigen::Map< Eigen::Matrix2d const > matrix( input );
+   Eigen::SelfAdjointEigenSolver< Eigen::Matrix2d > eigensolver( matrix );
+   //if( eigensolver.info() != Eigen::Success ) { abort(); }
+   Eigen::Map< Eigen::Vector2d > eigenvalues( lambdas );
+   eigenvalues = eigensolver.eigenvalues();
+   Eigen::Map< Eigen::Matrix2d > eigenvectors( vectors );
+   eigenvectors = eigensolver.eigenvectors();
+   if( lambdas[ 0 ] < lambdas[ 1 ] ) {
+      std::swap( lambdas[ 0 ], lambdas[ 1 ]);
+      std::swap( vectors[ 0 ], vectors[ 2 ]);
+      std::swap( vectors[ 1 ], vectors[ 3 ]);
+   }
 }
 
 void SymmetricEigenValues3D( double const* input, double* lambdas ) {
@@ -43,86 +54,112 @@ void SymmetricEigenValues3D( double const* input, double* lambdas ) {
    }
 }
 
-void SymmetricEigenSystem3D( double const* input, double* lambdas, double* v1, double* v2, double* v3 ) {
-   // TODO
+void SymmetricEigenSystem3D( double const* input, double* lambdas, double* vectors) {
+   Eigen::Map< Eigen::Matrix3d const > matrix( input );
+   Eigen::SelfAdjointEigenSolver< Eigen::Matrix3d > eigensolver( matrix );
+   //if( eigensolver.info() != Eigen::Success ) { abort(); }
+   Eigen::Map< Eigen::Vector3d > eigenvalues( lambdas );
+   eigenvalues = eigensolver.eigenvalues();
+   Eigen::Map< Eigen::Matrix3d > eigenvectors( vectors );
+   eigenvectors = eigensolver.eigenvectors();
+   if( lambdas[ 0 ] < lambdas[ 1 ] ) {
+      std::swap( lambdas[ 0 ], lambdas[ 1 ]);
+      std::swap( vectors[ 0 ], vectors[ 3 ]);
+      std::swap( vectors[ 1 ], vectors[ 4 ]);
+      std::swap( vectors[ 2 ], vectors[ 5 ]);
+   }
+   if( lambdas[ 1 ] < lambdas[ 2 ] ) {
+      std::swap( lambdas[ 1 ], lambdas[ 2 ]);
+      std::swap( vectors[ 3 ], vectors[ 6 ]);
+      std::swap( vectors[ 4 ], vectors[ 7 ]);
+      std::swap( vectors[ 5 ], vectors[ 8 ]);
+   }
+   if( lambdas[ 0 ] < lambdas[ 1 ] ) {
+      std::swap( lambdas[ 0 ], lambdas[ 1 ]);
+      std::swap( vectors[ 0 ], vectors[ 3 ]);
+      std::swap( vectors[ 1 ], vectors[ 4 ]);
+      std::swap( vectors[ 2 ], vectors[ 5 ]);
+   }
 }
 
 #ifdef DIP__ENABLE_DOCTEST
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::SymmetricEigenXXX functions") {
    double matrix2[] = { 4, 0, 8 };
-   double out[ 3 ];
-   //double v1[ 3 ];
-   //double v2[ 3 ];
-   //double v3[ 3 ];
-   SymmetricEigenValues2DPacked( matrix2, out );
-   DOCTEST_CHECK( out[ 0 ] == 8 );
-   DOCTEST_CHECK( out[ 1 ] == 4 );
-   //SymmetricEigenSystem2DPacked( matrix2, out, v1, v2 );
-   //DOCTEST_CHECK( out[ 1 ] == 8 );
-   //DOCTEST_CHECK( out[ 2 ] == 4 );
-   //DOCTEST_CHECK( v1[ 1 ] == 1 );
-   //DOCTEST_CHECK( v1[ 2 ] == 0 );
-   //DOCTEST_CHECK( v2[ 1 ] == 0 );
-   //DOCTEST_CHECK( v2[ 2 ] == 1 );
+   double lambdas[ 3 ];
+   double vectors[ 9 ];
+   SymmetricEigenValues2DPacked( matrix2, lambdas );
+   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 4 );
+   SymmetricEigenSystem2DPacked( matrix2, lambdas, vectors );
+   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 4 );
+   DOCTEST_CHECK( vectors[ 0 ] == 0 );
+   DOCTEST_CHECK( vectors[ 1 ] == 1 );
+   DOCTEST_CHECK( vectors[ 2 ] == 1 );
+   DOCTEST_CHECK( vectors[ 3 ] == 0 );
    matrix2[ 0 ] = 8;
    matrix2[ 2 ] = 4;
-   SymmetricEigenValues2DPacked( matrix2, out );
-   DOCTEST_CHECK( out[ 0 ] == 8 );
-   DOCTEST_CHECK( out[ 1 ] == 4 );
-   //SymmetricEigenSystem2DPacked( matrix2, out, v1, v2 );
-   //DOCTEST_CHECK( out[ 1 ] == 8 );
-   //DOCTEST_CHECK( out[ 2 ] == 4 );
-   //DOCTEST_CHECK( v1[ 1 ] == 1 );
-   //DOCTEST_CHECK( v1[ 2 ] == 0 );
-   //DOCTEST_CHECK( v2[ 1 ] == 0 );
-   //DOCTEST_CHECK( v2[ 2 ] == 1 );
+   SymmetricEigenValues2DPacked( matrix2, lambdas );
+   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 4 );
+   SymmetricEigenSystem2DPacked( matrix2, lambdas, vectors );
+   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 4 );
+   DOCTEST_CHECK( vectors[ 0 ] == 1 );
+   DOCTEST_CHECK( vectors[ 1 ] == 0 );
+   DOCTEST_CHECK( vectors[ 2 ] == 0 );
+   DOCTEST_CHECK( vectors[ 3 ] == 1 );
    matrix2[ 0 ] = 3;
    matrix2[ 1 ] = -1;
    matrix2[ 2 ] = 3;
-   SymmetricEigenValues2DPacked( matrix2, out );
-   DOCTEST_CHECK( out[ 0 ] == 4 );
-   DOCTEST_CHECK( out[ 1 ] == 2 );
-   //SymmetricEigenSystem2DPacked( matrix2, out, v1, v2 );
-   //DOCTEST_CHECK( out[ 1 ] == 4 );
-   //DOCTEST_CHECK( out[ 2 ] == 2 );
-   //DOCTEST_CHECK( v1[ 1 ] == doctest::Approx( -cos( M_PI/4 )) );
-   //DOCTEST_CHECK( v1[ 2 ] == doctest::Approx( sin( M_PI/4 )) );      // signs might be different here...
-   //DOCTEST_CHECK( v2[ 1 ] == doctest::Approx( sin( M_PI/4 )) );
-   //DOCTEST_CHECK( v2[ 2 ] == doctest::Approx( cos( M_PI/4 )) );
+   SymmetricEigenValues2DPacked( matrix2, lambdas );
+   DOCTEST_CHECK( lambdas[ 0 ] == 4 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 2 );
+   SymmetricEigenSystem2DPacked( matrix2, lambdas, vectors );
+   DOCTEST_CHECK( lambdas[ 0 ] == 4 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 2 );
+   DOCTEST_CHECK( vectors[ 0 ] == doctest::Approx(  cos( M_PI/4 )) ); // signs might be different here...
+   DOCTEST_CHECK( vectors[ 1 ] == doctest::Approx( -sin( M_PI/4 )) );
+   DOCTEST_CHECK( vectors[ 2 ] == doctest::Approx(  sin( M_PI/4 )) );
+   DOCTEST_CHECK( vectors[ 3 ] == doctest::Approx(  cos( M_PI/4 )) );
 
    double matrix3[] = { 4, 0, 0, 8, 0, 6 };
-   SymmetricEigenValues3DPacked( matrix3, out );
-   DOCTEST_CHECK( out[ 0 ] == 8 );
-   DOCTEST_CHECK( out[ 1 ] == 6 );
-   DOCTEST_CHECK( out[ 2 ] == 4 );
-   //SymmetricEigenSystem3DPacked( matrix3, out, v1, v2, v3 );
+   SymmetricEigenValues3DPacked( matrix3, lambdas );
+   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 6 );
+   DOCTEST_CHECK( lambdas[ 2 ] == 4 );
+   SymmetricEigenSystem3DPacked( matrix3, lambdas, vectors );
+   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 6 );
+   DOCTEST_CHECK( lambdas[ 2 ] == 4 );
+   DOCTEST_CHECK( vectors[ 0 ] == 0 );
+   DOCTEST_CHECK( vectors[ 1 ] == 1 );
+   DOCTEST_CHECK( vectors[ 2 ] == 0 );
+   DOCTEST_CHECK( vectors[ 3 ] == 0 );
+   DOCTEST_CHECK( vectors[ 4 ] == 0 );
+   DOCTEST_CHECK( vectors[ 5 ] == 1 );
+   DOCTEST_CHECK( vectors[ 6 ] == 1 );
+   DOCTEST_CHECK( vectors[ 7 ] == 0 );
+   DOCTEST_CHECK( vectors[ 8 ] == 0 );
 }
 
 #endif
 
 
-void EigenValues2D( double const* input, double* lambdas ) {
+void EigenValues( dip::uint n, double const* input, dcomplex* lambdas ) {
    // TODO
 }
 
-void EigenSystem2D( double const* input, double* lambdas, double* v1, double* v2 ) {
+void EigenValues( dip::uint n, dcomplex const* input, dcomplex* lambdas ) {
    // TODO
 }
 
-void EigenValues3D( double const* input, double* lambdas ) {
+void EigenSystem( dip::uint n, double const* input, dcomplex* lambdas, dcomplex* vectors ) {
    // TODO
 }
 
-void EigenSystem3D( double const* input, double* lambdas, double* v1, double* v2, double* v3 ) {
-   // TODO
-}
-
-void EigenValues( dip::uint n, double const* input, double* lambdas ) {
-   // TODO
-}
-
-void EigenSystem( dip::uint n, double const* input, double* lambdas, double* vectors ) {
+void EigenSystem( dip::uint n, dcomplex const* input, dcomplex* lambdas, dcomplex* vectors ) {
    // TODO
 }
 
