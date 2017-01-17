@@ -631,9 +631,8 @@ class Composite : public Base {
 /// <tr><td colspan="3"> **Intensity features**
 /// <tr><td> "Mass"                    <td> Mass of object (sum of object intensity) <td> Scalar grey
 /// <tr><td> "Mean"                    <td> Mean object intensity <td> Scalar grey
-/// <tr><td> "StdDev"                  <td> Standard deviation of object intensity <td> Scalar grey
-/// <tr><td> "Skewness"                <td> Skewness (gamma_1) of object intensity <td> Scalar grey
-/// <tr><td> "ExcessKurtosis"          <td> Excess Kurtosis (gamma_2) of object intensity <td> Scalar grey
+/// <tr><td> "StandardDeviation"       <td> Standard deviation of object intensity <td> Scalar grey
+/// <tr><td> "Statistics"              <td> Mean, standard deviation, skewness and excess kurtosis of object intensity <td> Scalar grey
 /// <tr><td> "MaxVal"                  <td> Maximum object intensity <td> Scalar grey
 /// <tr><td> "MinVal"                  <td> Minimum object intensity <td> Scalar grey
 /// <tr><td colspan="3"> **Moments of binary object**
@@ -695,7 +694,7 @@ class MeasurementTool {
          }
       }
 
-      /// \brief Sets a parameter for one feature registered with this `%MeasurementTool`.
+      /// \brief Sets a parameter of a feature registered with this `%MeasurementTool`.
       void Configure(
             String const& feature,
             String const& parameter,

@@ -7,8 +7,6 @@
  */
 
 
-#include <array>
-
 #include "diplib.h"
 #include "diplib/measurement.h"
 

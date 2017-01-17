@@ -106,3 +106,8 @@ over.
   for the transition from the last to the first chain code, yielding a perimeter that was often
   0.0910 pixels too long.
 
+- The measurement features "Skewness" and "ExcessKurtosis" are no longer separate features, but
+  instead put together in the new "Statistics" feature, which also computes the mean and standard
+  deviation. The measurement feature "StdDev" is now called "StandardDeviation".
+  The algorithms to compute these statistics have changed to be more stable. The measurement
+  feature "Sum" was an alias to "Mass", and is not (yet?) available.

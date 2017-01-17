@@ -1,13 +1,11 @@
 /*
  * DIPlib 3.0
- * This file defines the "StdDev" measurement feature
+ * This file defines the "StandardDeviation" measurement feature
  *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
-
-#include <array>
 
 #include "diplib.h"
 #include "diplib/measurement.h"
@@ -17,9 +15,9 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureStdDev : public LineBased {
+class FeatureStandardDeviation : public LineBased {
    public:
-      FeatureStdDev() : LineBased( { "StdDev", "Standard deviation of object intensity", true } ) {};
+      FeatureStandardDeviation() : LineBased( { "StandardDeviation", "Standard deviation of object intensity", true } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::NOT_SCALAR );
@@ -27,7 +25,7 @@ class FeatureStdDev : public LineBased {
          data_.clear();
          data_.resize( nObjects );
          ValueInformationArray out( 1 );
-         out[ 0 ].name = String( "StdDev" );
+         out[ 0 ].name = String( "StandardDeviation" );
          return out;
       }
 
@@ -40,7 +38,7 @@ class FeatureStdDev : public LineBased {
       ) override {
          // If new objectID is equal to previous one, we don't to fetch the data pointer again
          uint32 objectID = 0;
-         Data* data = nullptr;
+         VarianceAccumulator* data = nullptr;
          do {
             if( *label > 0 ) {
                if( *label != objectID ) {
@@ -53,9 +51,7 @@ class FeatureStdDev : public LineBased {
                   }
                }
                if( data ) {
-                  data->sum += *grey;
-                  data->sum2 += *grey * *grey;
-                  ++( data->number );
+                  data->Push( *grey );
                }
             }
             ++grey;
@@ -63,13 +59,8 @@ class FeatureStdDev : public LineBased {
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         Data data = data_[ objectIndex ];
-         if( data.number > 1 ) {
-            dfloat stddev = ( data.sum2 - (( data.sum * data.sum ) / data.number )) / ( data.number - 1 );
-            *output = std::sqrt( std::max( 0.0, stddev ));
-         } else {
-            *output = 0;
-         }
+         VarianceAccumulator data = data_[ objectIndex ];
+         *output = data.StandardDeviation();
       }
 
       virtual void Cleanup() override {
@@ -78,13 +69,8 @@ class FeatureStdDev : public LineBased {
       }
 
    private:
-      struct Data {
-         dfloat sum = 0;
-         dfloat sum2 = 0;
-         dip::uint number = 0;
-      };
       dip::uint nD_;
-      std::vector< Data > data_;
+      std::vector< VarianceAccumulator > data_;
 };
 
 

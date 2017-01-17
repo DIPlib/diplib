@@ -28,7 +28,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       // "P2A" adds 2 of the other 3 features that we currently have defined: "Size", "Perimeter" (2D), "SurfaceArea" (3D)
       // Call with 2D inputs and 3D inputs to test all features, which tests all infrastructure functionality
 
-      //dip::Measurement msr = tool.Measure( label, grey, {"GreyInertia"}, {}, label.Dimensionality() );
+      //dip::Measurement msr = tool.Measure( label, grey, {"Mean","StandardDeviation","Statistics"}, {}, label.Dimensionality() );
 
       if( nlhs > 0 ) {
 

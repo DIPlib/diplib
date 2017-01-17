@@ -36,9 +36,8 @@
 // Intensity
 #include "feature_mass.h"
 #include "feature_mean.h"
-#include "feature_stddev.h"
-#include "feature_skewness.h"
-#include "feature_excess_kurtosis.h"
+#include "feature_stdandard_deviation.h"
+#include "feature_statistics.h"
 #include "feature_max_val.h"
 #include "feature_min_val.h"
 // Binary moments
@@ -82,9 +81,8 @@ MeasurementTool::MeasurementTool() {
    // Intensity
    Register( dip::Feature::Pointer( new Feature::FeatureMass ));
    Register( dip::Feature::Pointer( new Feature::FeatureMean ));
-   Register( dip::Feature::Pointer( new Feature::FeatureStdDev ));
-   Register( dip::Feature::Pointer( new Feature::FeatureSkewness ));
-   Register( dip::Feature::Pointer( new Feature::FeatureExcessKurtosis ));
+   Register( dip::Feature::Pointer( new Feature::FeatureStandardDeviation ));
+   Register( dip::Feature::Pointer( new Feature::FeatureStatistics ));
    Register( dip::Feature::Pointer( new Feature::FeatureMaxVal ));
    Register( dip::Feature::Pointer( new Feature::FeatureMinVal ));
    // Binary moments
@@ -319,8 +317,7 @@ std::ostream& operator<<(
    // Figure out column widths
    const std::string sep{ " | " };
    constexpr int separatorWidth = 3;
-   constexpr int minimumColumnWidth = 9; // we format numbers with at least this many spaces: 4 digits of precision + '.' + 'e+NN'
-   // TODO: there's also the prefix '-' sign, so we really need a width of 10, but I presume we won't have very large negative numbers, so let's just ignore this for now...
+   constexpr int minimumColumnWidth = 10; // we format numbers with at least this many spaces: '-' + 4 digits of precision + '.' + 'e+NN'
    const int firstColumnWidth = int( std::ceil( std::log10( msr.NumberOfObjects() + 1 ) ) );
    // TODO: find the actual largest object ID, rather than the number of objects.
    auto const& values = msr.Values();

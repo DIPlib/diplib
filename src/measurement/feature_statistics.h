@@ -1,11 +1,13 @@
 /*
  * DIPlib 3.0
- * This file defines the "Mean" measurement feature
+ * This file defines the "Statistics" measurement feature
  *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
+
+#include <cmath>
 
 #include "diplib.h"
 #include "diplib/measurement.h"
@@ -15,17 +17,20 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureMean : public LineBased {
+class FeatureStatistics : public LineBased {
    public:
-      FeatureMean() : LineBased( { "Mean", "Mean object intensity", true } ) {};
+      FeatureStatistics() : LineBased( { "Statistics", "Mean, standard deviation, skewness and excess kurtosis of object intensity", true } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::NOT_SCALAR );
          nD_ = label.Dimensionality();
          data_.clear();
          data_.resize( nObjects );
-         ValueInformationArray out( 1 );
+         ValueInformationArray out( 4 );
          out[ 0 ].name = String( "Mean" );
+         out[ 1 ].name = String( "StandardDeviation" );
+         out[ 2 ].name = String( "Skewness" );
+         out[ 3 ].name = String( "ExcessKurtosis" );
          return out;
       }
 
@@ -38,7 +43,7 @@ class FeatureMean : public LineBased {
       ) override {
          // If new objectID is equal to previous one, we don't to fetch the data pointer again
          uint32 objectID = 0;
-         Data* data = nullptr;
+         StatisticsAccumulator* data = nullptr;
          do {
             if( *label > 0 ) {
                if( *label != objectID ) {
@@ -51,8 +56,7 @@ class FeatureMean : public LineBased {
                   }
                }
                if( data ) {
-                  data->sum += *grey;
-                  ++( data->number );
+                  data->Push( *grey );
                }
             }
             ++grey;
@@ -60,8 +64,11 @@ class FeatureMean : public LineBased {
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         Data data = data_[ objectIndex ];
-         *output = ( data.number != 0.0 ) ? ( data.sum / data.number ) : ( 0.0 );
+         StatisticsAccumulator data = data_[ objectIndex ];
+         output[ 0 ] = data.Mean();
+         output[ 1 ] = data.StandardDeviation();
+         output[ 2 ] = data.Skewness();
+         output[ 3 ] = data.ExcessKurtosis();
       }
 
       virtual void Cleanup() override {
@@ -70,12 +77,8 @@ class FeatureMean : public LineBased {
       }
 
    private:
-      struct Data {
-         dfloat sum = 0;
-         dip::uint number = 0;
-      };
       dip::uint nD_;
-      std::vector< Data > data_;
+      std::vector< StatisticsAccumulator > data_;
 };
 
 
