@@ -366,6 +366,183 @@ void EigenSystem( dip::uint n, double const* input, dcomplex* lambdas, dcomplex*
 void EigenSystem( dip::uint n, dcomplex const* input, dcomplex* lambdas, dcomplex* vectors );
 
 
+/// \brief `%StatisticsAccumulator` computes population statistics by accumulating the first four central moments.
+///
+/// Samples are added one by one, using the `Push` method. Other members are used to retrieve estimates of
+/// the population statistics based on the samples seen up to that point. Formula used to compute population
+/// statistics are corrected, though the standard deviation, skewness and excess kurtosis are not unbiased
+/// estimators. The accumulator uses a stable algorithm to prevent catastrophic cancellation.
+///
+/// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
+/// and add the accumulators together using the `+` operator.
+///
+/// \see VarianceAccumulator
+///
+/// ###Source
+///
+/// Code modified from <a href="http://www.johndcook.com/blog/skewness_kurtosis/">John D. Cook</a>,
+/// but the same code appears on <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance">Wikipedia</a>.
+/// Method for 3rd and 4th order moments was first published by:
+///    <a href="http://people.xiph.org/~tterribe/notes/homs.html">T. B. Terriberry,
+///    "Computing higher-order moments online", 2008</a>.
+/// For more information:
+///    <a href="http://infoserve.sandia.gov/sand_doc/2008/086212.pdf">Philippe P. Pébay, "Formulas for Robust,
+///    One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments",
+///    Technical Report SAND2008-6212, Sandia National Laboratories, September 2008</a>.
+///
+/// Computation of statistics from moments according to Wikipedia:
+///    <a href="https://en.wikipedia.org/wiki/Skewness#Sample_skewness">Skewness</a> and
+///    <a href="https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis">Kurtosis</a>.
+class StatisticsAccumulator {
+   public:
+      /// Add a sample to the accumulator
+      void Push( dfloat x ) {
+         ++n_;
+         dfloat delta = x - m1_;
+         dfloat term1 = delta / n_;
+         dfloat term2 = term1 * term1;
+         dfloat term3 = delta * term1 * ( n_ - 1 );
+         m4_ += term3 * term2 * ( n_ * n_ - 3.0 * n_ + 3 ) + 6.0 * term2 * m2_ - 4.0 * term1 * m3_;
+         m3_ += term3 * term1 * ( n_ - 2 ) - 3.0 * term1 * m2_; // old value used for m4_ calculation
+         m2_ += term3; // old value used for m3_ and m4_ calculation.
+         m1_ += term1;
+      }
+
+      /// Combine two accumulators
+      StatisticsAccumulator& operator+=( StatisticsAccumulator const& b ) {
+         dip::uint an = n_;
+         dip::uint an2 = an * an;
+         dip::uint bn2 = b.n_ * b.n_;
+         dip::uint xn2 = an * b.n_;
+         n_ += b.n_;
+         dip::uint n2 = n_ * n_;
+         dfloat delta = b.m1_ - m1_;
+         dfloat delta2 = delta * delta;
+         m4_ += b.m4_ + delta2 * delta2 * xn2 * ( an2 - xn2 + bn2 ) / ( n2 * n_ )
+               + 6.0 * delta2 * ( an2 * b.m2_ + bn2 * m2_ ) / n2
+               + 4.0 * delta * ( an * b.m3_ - b.n_ * m3_ ) / n_;
+         m3_ += b.m3_ + delta * delta2 * xn2 * ( an - b.n_ ) / n2
+                + 3.0 * delta * ( an * b.m2_ - b.n_ * m2_ ) / n_;
+         m2_ += b.m2_ + delta2 * xn2 / n_;
+         m1_ = ( an * m1_ + b.n_ * b.m1_ ) / n_;
+         return *this;
+      }
+
+      /// Combine two accumulators
+      friend StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAccumulator const& rhs ) {
+         lhs += rhs;
+         return lhs;
+      }
+
+      /// Number of samples
+      dip::uint Number() const {
+         return n_;
+      }
+      /// Unbiased estimator of population mean
+      dfloat Mean() const {
+         return m1_;
+      }
+      /// Unbiased estimator of population variance
+      dfloat Variance() const {
+         return ( n_ > 1 ) ? ( m2_ / ( n_ - 1 )) : ( 0.0 );
+      }
+      /// Estimator of population standard deviation (it is not possible to derive an unbiased estimator)
+      dfloat StandardDeviation() const {
+         return std::sqrt( Variance() );
+      }
+      /// \brief Estimator of population skewness. This estimator is unbiased only for symetric distributions
+      /// (it is not possible to derive an unbiased estimator).
+      dfloat Skewness() const {
+         if(( n_ > 2 ) && ( m2_ != 0 )) {
+            dfloat n = n_;
+            return (( n * n ) / (( n - 1 ) * ( n - 2 ))) * ( m3_ / ( n * std::pow( Variance(), 1.5 )));
+         }
+         return 0;
+      }
+      /// \brief Estimator of population excess kurtosis. This estimator is only unbiased for normally
+      /// distributed data (it is not possible to derive an unbiased estimator).
+      dfloat ExcessKurtosis() const {
+         if( n_ > 3 && ( m2_ != 0 )) {
+            dfloat n = n_;
+            return ( n - 1 ) / (( n - 2 ) * ( n - 3 )) * (( n + 1 ) * n * m4_ / ( m2_ * m2_ ) - 3 * ( n - 1 ));
+         }
+         return 0;
+      }
+
+   private:
+      dip::uint n_ = 0; // number of values x collected
+      dfloat m1_ = 0;   // mean of values x
+      dfloat m2_ = 0;   // sum of (x-mean(x))^2  --  `m2_ / n_` is second order central moment
+      dfloat m3_ = 0;   // sum of (x-mean(x))^3  --  `m3_ / n_` is third order central moment
+      dfloat m4_ = 0;   // sum of (x-mean(x))^4  --  `m4_ / n_` is fourth order central moment
+};
+
+/// \brief `%VarianceAccumulator` computes mean and standard deviation by accumulating the first two
+/// central moments.
+///
+/// Samples are added one by one, using the `Push` method. Other members are used to retrieve estimates of
+/// the population statistics based on the samples seen up to that point. Formula used to compute population
+/// statistics are corrected, though the standard deviation is not an unbiased estimator. The accumulator
+/// uses a stable algorithm to prevent catastrophic cancellation.
+///
+/// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
+/// and add the accumulators together using the `+` operator.
+///
+/// \see StatisticsAccumulator
+///
+/// ### Source
+///
+/// Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3rd Ed., 1998.
+class VarianceAccumulator {
+   public:
+      /// Add a sample to the accumulator
+      void Push( dfloat x ) {
+         ++n_;
+         dfloat delta = x - m1_;
+         m1_ += delta / n_;
+         m2_ += delta * ( x - m1_ );
+      }
+
+      /// Combine two accumulators
+      VarianceAccumulator& operator+=( VarianceAccumulator const& b ) {
+         dip::uint oldn = n_;
+         n_ += b.n_;
+         dfloat delta = b.m1_ - m1_;
+         m1_ = ( oldn * m1_ + b.n_ * b.m1_ ) / n_;
+         m2_ += b.m2_ + delta * delta * ( oldn * b.n_ ) / n_;
+         return *this;
+      }
+
+      /// Combine two accumulators
+      friend VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulator const& rhs ) {
+         lhs += rhs;
+         return lhs;
+      }
+
+      /// Number of samples
+      dip::uint Number() const {
+         return n_;
+      }
+      /// Unbiased estimator of population mean
+      dfloat Mean() const {
+         return m1_;
+      }
+      /// Unbiased estimator of population variance
+      dfloat Variance() const {
+         return ( n_ > 1 ) ? ( m2_ / ( n_ - 1 )) : ( 0.0 );
+      }
+      /// Estimator of population standard deviation (it is not possible to derive an unbiased estimator)
+      dfloat StandardDeviation() const {
+         return std::sqrt( Variance() );
+      }
+
+   private:
+      dip::uint n_ = 0; // number of values x collected
+      dfloat m1_ = 0;   // mean of values x
+      dfloat m2_ = 0;   // sum of (x-mean(x))^2  --  `m2_ / n_` is second order central moment
+};
+
+
 /// \}
 
 } // namespace dip
