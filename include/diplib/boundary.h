@@ -185,13 +185,13 @@ namespace Option {
 ///
 /// Valid values are:
 ///
-/// ExtendImage constant     | Definition
+/// %ExtendImage constant    | Definition
 /// ------------------------ | ----------
 /// ExtendImage_Masked       | The output image is a window on the boundary-extended image of the same size as the input
 /// ExtendImage_ExpandTensor | The output image has normal tensor storage
 ///
-/// Note that you can add these constants together: `ExtendImage_Masked + ExtendImage_ExpandTensor`.
-DIP_DECLARE_OPTIONS( ExtendImage, 2 );
+/// Note that you can add these constants together: `dip::Option::ExtendImage_Masked + dip::Option::ExtendImage_ExpandTensor`.
+DIP_DECLARE_OPTIONS( ExtendImage );
 static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_Masked, 0 );
 static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_ExpandTensor, 1 );
 

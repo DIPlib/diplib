@@ -45,21 +45,23 @@ namespace dip {
 /// member functions that can be used to query the data type. A series
 /// of constant expressions have been defined that should be used when
 /// specifying a data type or testing for specific data types:
-/// * dip::DT_BIN
-/// * dip::DT_UINT8
-/// * dip::DT_UINT16
-/// * dip::DT_UINT32
-/// * dip::DT_SINT8
-/// * dip::DT_SINT16
-/// * dip::DT_SINT32
-/// * dip::DT_SFLOAT
-/// * dip::DT_DFLOAT
-/// * dip::DT_SCOMPLEX
-/// * dip::DT_DCOMPLEX
+/// * `dip::DT_BIN`
+/// * `dip::DT_UINT8`
+/// * `dip::DT_UINT16`
+/// * `dip::DT_UINT32`
+/// * `dip::DT_SINT8`
+/// * `dip::DT_SINT16`
+/// * `dip::DT_SINT32`
+/// * `dip::DT_SFLOAT`
+/// * `dip::DT_DFLOAT`
+/// * `dip::DT_SCOMPLEX`
+/// * `dip::DT_DCOMPLEX`
 ///
 /// It is possible to call DataType member functions on these constants:
 ///
+/// ```cpp
 ///     dip::DT_BIN.SizeOf();
+/// ```
 struct DataType {
 
    enum class DT {
@@ -238,7 +240,7 @@ struct DataType {
    /// Class_Any        | Class_Binary + Class_Real + Class_Complex;
    ///
    /// Note that you can add these constants together, for example `dip::Class_Bin + dip::Class_UInt`.
-   DIP_DECLARE_OPTIONS( Classes, 11 );
+   DIP_DECLARE_OPTIONS( Classes );
    static DIP_DEFINE_OPTION( Classes, Class_Bin, static_cast<dip::uint>( DT::BIN ) );
    static DIP_DEFINE_OPTION( Classes, Class_UInt8, static_cast<dip::uint>( DT::UINT8 ) );
    static DIP_DEFINE_OPTION( Classes, Class_SInt8, static_cast<dip::uint>( DT::SINT8 ) );

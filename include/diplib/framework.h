@@ -112,7 +112,7 @@ StringArray OutputColorSpaces(
 /// `Scan_NoSingletonExpansion` | Inhibits singleton expansion of input images.
 ///
 /// Combine options by adding constants together.
-DIP_DECLARE_OPTIONS( ScanOptions, 5 );
+DIP_DECLARE_OPTIONS( ScanOptions );
 DIP_DEFINE_OPTION( ScanOptions, Scan_NoMultiThreading, 0 );
 DIP_DEFINE_OPTION( ScanOptions, Scan_NeedCoordinates, 1 );
 DIP_DEFINE_OPTION( ScanOptions, Scan_TensorAsSpatialDim, 2 );
@@ -378,7 +378,7 @@ inline void ScanDyadic(
 /// `Separable_DontResizeOutput`     | The output image has the right size; it can differ from the input size
 ///
 /// Combine options by adding constants together.
-DIP_DECLARE_OPTIONS( SeparableOptions, 5 );
+DIP_DECLARE_OPTIONS( SeparableOptions );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_NoMultiThreading, 0 );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_AsScalarImage, 1 );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_ExpandTensorInBuffer, 2 );
@@ -551,7 +551,7 @@ void Separable(
 /// `Full_ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
 ///
 /// Combine options by adding constants together.
-DIP_DECLARE_OPTIONS( FullOptions, 3 );
+DIP_DECLARE_OPTIONS( FullOptions );
 DIP_DEFINE_OPTION( FullOptions, Full_NoMultiThreading, 0 );
 DIP_DEFINE_OPTION( FullOptions, Full_AsScalarImage, 1 );
 DIP_DEFINE_OPTION( FullOptions, Full_ExpandTensorInBuffer, 2 );

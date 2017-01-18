@@ -180,15 +180,12 @@ using ConstSampleIterator = SampleIterator< T const >;
 /// can be used instead to test for this condition. It is also possible to compare two iterators
 /// for equality (i.e. to compare against an end iterator).
 ///
-/// Dereferencing the iterator yields the first sample of the current pixel. One can index using the
-/// `[]` operator to obtain each of the samples of the tensor:
+/// Dereferencing the iterator yields the first sample of the current pixel (`*it` == `it[ 0 ]`).
+/// One can index using the `[]` operator to obtain each of the samples of the tensor
+/// (`it[ 0 ]` .. `it[ image.TensorElements() - 1 ]`).
 ///
-///     *it == it[ 0 ]
-///     it[ 0 ] .. it[ image.TensorElements() - 1 ]
-///
-/// Alternatively, a `dip::SampleIterator` can be obtained to iterate over the samples of the tensor:
-///
-///     it.begin() .. it.end()
+/// Alternatively, a `dip::SampleIterator` can be obtained to iterate over the samples of the tensor
+/// (`it.begin()` .. `it.end()`).
 ///
 /// Satisfies all the requirements for a mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
 ///
@@ -347,20 +344,19 @@ using ConstLineIterator = LineIterator< T const >;
 /// can be used instead to test for this condition. It is also possible to compare two iterators
 /// for equality (i.e. to compare against an end iterator).
 ///
-/// Dereferencing the iterator yields the first sample of the current pixel. One can index using the
-/// `[]` operator to obtain each of the samples of the tensor:
+/// Dereferencing the iterator yields the first sample of the current pixel (`*it` == `it[ 0 ]`).
+/// One can index using the `[]` operator to obtain each of the samples of the tensor
+/// (`it[ 0 ]` .. `it[ image.TensorElements() - 1 ]`).
 ///
-///     *it == it[ 0 ]
-///     it[ 0 ] .. it[ image.TensorElements() - 1 ]
-///
-/// Alternatively, a `dip::SampleIterator` can be obtained to iterate over the samples of the tensor:
-///
-///     it.begin() .. it.end()
+/// Alternatively, a `dip::SampleIterator` can be obtained to iterate over the samples of the tensor
+/// (`it.begin()` .. `it.end()`).
 ///
 /// It is possible to obtain neighboring pixel values using one of two methods. The simpler method is
 /// also the most dangerous:
 ///
+/// ```cpp
 ///     *( it.Pointer() + offset )
+/// ```
 ///
 /// accesses the neighbor at a pre-computed offset. Note that this offset can cause a read-out-of-bounds
 /// or simply access the wrong pixel if the neighbor is not within the image domain. One would have to test
@@ -370,8 +366,10 @@ using ConstLineIterator = LineIterator< T const >;
 ///
 /// The more complex method is always safe but always slower:
 ///
+/// ```cpp
 ///     std::array< dip::uint8, image.TensorElements() > pixel;
 ///     it.PixelAt( coords, pixel.begin() );
+/// ```cpp
 ///
 /// copies the pixel values at the current position + `coords` over to a temporary buffer, using the
 /// iterator's boundary condition if that location falls outside the image domain. This method is not
@@ -838,6 +836,7 @@ inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, 
 ///
 /// Example usage from `dip::Image::Fill`:
 ///
+/// ```cpp
 ///     dip::uint processingDim = Framework::OptimalProcessingDim( dest );
 ///     auto it = GenericImageIterator( dest, processingDim );
 ///        do {
@@ -851,6 +850,7 @@ inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, 
 ///              v
 ///        );
 ///     } while( ++it );
+/// ```
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
@@ -981,6 +981,7 @@ inline void swap( GenericImageIterator& v1, GenericImageIterator& v2 ) {
 ///
 /// Example usage from `dip::Image::Copy`:
 ///
+/// ```cpp
 ///     dip::uint processingDim = Framework::OptimalProcessingDim( src );
 ///     auto it = dip::GenericJointImageIterator( src, *this, processingDim );
 ///     do {
@@ -998,6 +999,7 @@ inline void swap( GenericImageIterator& v1, GenericImageIterator& v2 ) {
 ///              std::vector< dip::sint > {}
 ///        );
 ///     } while( ++it );
+/// ```
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
@@ -1157,21 +1159,25 @@ inline void swap( GenericJointImageIterator& v1, GenericJointImageIterator& v2 )
 /// If the iterator points at a slice that does not exist, the iterator will test false, but it will
 /// still be a valid iterator that can be manipulated.
 ///
+/// ```cpp
 ///     dip::ImageSliceIterator it( img, 2 );
 ///     do {
 ///        // do something with the image *it here.
 ///     } while( ++it );
+/// ```
 ///
 /// The function `dip::ImageSliceEndIterator` creates an iterator that points at a slice one past
 /// the last, and so is a end iterator. Because it is not possible to decrement below 0, a loop that
 /// iterates in reverse order must test the `dip::ImageSliceIterator::Coordinate()` for equality to
 /// zero:
 ///
+/// ```cpp
 ///     dip::ImageSliceEndIterator it( img, 2 );
 ///     do {
 ///        --it;
 ///        // do something with the image *it here.
 ///     } while( it.Coordinate() != 0 );
+/// ```
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///

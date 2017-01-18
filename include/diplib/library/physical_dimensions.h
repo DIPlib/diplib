@@ -466,7 +466,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
 /// convert to a `%PhysicalQuantity`. It is possible to multiply and divide any physical
 /// quantities, but adding and subtracting is only possible if the units match.
 ///
+/// ```cpp
 ///     dip::PhysicalQuantity a = 50 * dip::Units( dip::Units::BaseUnits::LENGTH );
+/// ```
 struct PhysicalQuantity {
 
    /// A default-constructed `%PhysicalQuantity` has magnitude 0 and is unitless.

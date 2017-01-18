@@ -20,22 +20,28 @@ library:
 Both of these options have advantages and disadvantages. Style 1 allows for
 in-place operation:
 
+```cpp
     dip::Image img = ...
     Filter( img, img, 1 );
+```
 
 The function here is able to write the results in the image's pixel buffer,
 without having to allocate a temporary pixel buffer as would be the case for:
 
+```cpp
     dip::Image img = ...
     img = Filter( img, 1 );
+```
 
 This is a huge advantage both in speed and memory usage. However, resulting
 programs are not as easy to read (which parameters are inputs and which are
 outputs?) and not as pretty as with style 2. For example, style 2 allows
 for a very elegant chaingin of operations:
 
+```cpp
     dip::Image img = ...
     img = Filter2( Filter1( img, 3 ), 1 );
+```
 
 Furthermore, style 2 makes it much easier to automatically generate interfaces
 to languages (such as *MATLAB*) that do not allow a function to modify its input
@@ -51,11 +57,13 @@ kept the function signature style (and argument order) of the old *DIPlib*.
 However, we have written a small, inline wrapper function for most of the image
 filters that follow the signature style 2. Such a wrapper is very straight-forward:
 
+```cpp
     inline dip::Image Filter( dip::Image &in, int size ) {
         dip::Image out;
         Filter( in, out, size );
         return out;
     }
+```
 
 We have chosen not to pollute the documentation with these wrapper functions.
 However, if a function `Filter( in, out )` exists, then you can assume that
@@ -86,6 +94,7 @@ This leads to very verbose code that is not readable. For example, compare the
 two code snippets below (function object version is not *ITK* code, but a simplified
 version of that that ignores *ITK*'s templates and processing pipeline):
 
+```cpp
     lib::GaussianFilter gauss;
     gauss.SetInput( image );
     gauss.SetSigma( FloatArray{ 5, 1 } );
@@ -93,7 +102,7 @@ version of that that ignores *ITK*'s templates and processing pipeline):
     outim = gauss.GetOutput();
 
     outim = dip::Gauss( image, FloatArray{ 5, 1 } );
-
+```
 
 [//]: # (--------------------------------------------------------------)
 

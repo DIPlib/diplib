@@ -178,13 +178,15 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 ///
 /// You can use this macro as follows:
 ///
+/// ```cpp
 ///     try {
-///        [some DIPlib functions that might throw here...]
+///        // some DIPlib functions that might throw here
 ///     }
 ///     catch( dip::Error& e ) {
 ///        DIP_ADD_STACK_TRACE( e );
 ///        throw;
 ///     }
+/// ```
 ///
 /// The `#DIP_START_STACK_TRACE` and `#DIP_END_STACK_TRACE` macros help build this code.
 #define DIP_ADD_STACK_TRACE( error ) error.AddStackTrace( DIP__FUNC__, __FILE__, __LINE__ )
@@ -195,10 +197,6 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 /// \brief Test a condition, throw a `dip::ParameterError` if the condition is met.
 #define DIP_THROW_IF( test, str ) do { if( test ) DIP_THROW( str ); } while( false )
 
-// These are the old DIPlib names, let's not use them any more:
-//#define DIPTS( test, str )     DIP_THROW_IF( test, str )
-//#define DIPSJ( str )           DIP_THROW( str )
-
 /// \brief Throw a `dip::RunTimeError`.
 #define DIP_THROW_RUNTIME( str ) do { auto e = dip::RunTimeError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
 
@@ -208,14 +206,18 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 ///
 /// If `ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
 ///
+/// ```
 ///     cmake -DENABLE_ASSERT=OFF ...
+/// ```
 
 /// \def DIP_ASSERT(test)
 /// \brief Test a condition, throw a `dip::AssertionError` if the condition is not met.
 ///
 /// If `ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
 ///
+/// ```
 ///     cmake -DENABLE_ASSERT=OFF ...
+/// ```
 ///
 /// You would typically disable assertions for production code, as assertions are only used to test internal
 /// consistency or detect bugs in the code.
@@ -242,9 +244,11 @@ constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supporte
 /// then re-throw. To simplify this mechanism and make it easier to future changes, this macro and its partner
 /// `#DIP_END_STACK_TRACE` are used by these library functions. Use then as follows:
 ///
+/// ```cpp
 ///     DIP_START_STACK_TRACE
-///     [some DIPlib functions that might throw here...]
+///     // some DIPlib functions that might throw here
 ///     DIP_END_STACK_TRACE
+/// ```
 ///
 /// This expands to the exact same code as shown under `#DIP_ADD_STACK_TRACE`.
 ///

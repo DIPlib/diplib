@@ -79,10 +79,12 @@ class ExternalInterface {
 /// Call it with an offset or index (depending on which function created the
 /// functor), and it will return the coordinates:
 ///
+/// ```cpp
 ///     auto coordComp = img.OffsetToCoordinatesComputer();
 ///     auto coords1 = coordComp( offset1 );
 ///     auto coords2 = coordComp( offset2 );
 ///     auto coords3 = coordComp( offset3 );
+/// ```
 ///
 /// Note that the coordinates must be inside the image domain, if the offset given
 /// does not correspond to one of the image's pixels, the result is meaningless.
@@ -1035,9 +1037,11 @@ class Image {
       /// Returns the old setting. This can be used as follows to temporarily
       /// protect an image:
       ///
+      /// ```cpp
       ///     bool wasProtected = img.Protect();
       ///     [...] // do your thing
       ///     img.Protect( wasProtected );
+      /// ```
       ///
       /// \see IsProtected, Strip
       bool Protect( bool set = true ) {

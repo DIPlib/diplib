@@ -146,14 +146,18 @@ static mxClassID GetMatlabClassID(
 /// In a MEX-file, use the following code when declaring images to be
 /// used as the output to a function:
 ///
+/// ```cpp
 ///     dml::MatlabInterface mi;
 ///     dip::Image img_out0 = mi.NewImage();
 ///     dip::Image img_out1 = mi.NewImage();
+/// ```
 ///
 /// To return those images back to *MATLAB*, use the GetArray() method:
 ///
+/// ```cpp
 ///     plhs[0] = mi.GetArray( img_out0 );
 ///     plhs[1] = mi.GetArray( img_out1 );
+/// ```
 ///
 /// If you don't use the GetArray() method, the `mxArray` that contains
 /// the pixel data will be destroyed when the dip::Image object goes out
@@ -164,8 +168,10 @@ static mxClassID GetMatlabClassID(
 /// *MATLAB*. Instead, use the *DIPlib* functions that take output images as
 /// function arguments:
 ///
+/// ```cpp
 ///     img_out0 = in1 + in2; // WRONG! img_out0 will not contain data allocated by *MATLAB*
 ///     dip::Add( in1, in2, out, DataType::SuggestArithmetic( in1.DataType(), in1.DataType() ) ); // Correct
+/// ```
 ///
 /// This interface handler doesn't own any image data.
 class MatlabInterface : public dip::ExternalInterface {
@@ -338,7 +344,9 @@ void VoidStripHandler( void const* p ) {
 /// modifier for the output argument. This should prevent acidentally modifying
 /// an input array, which is supposed to be illegal in `mexFunction()`:
 ///
+/// ```cpp
 ///     dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
+/// ```
 dip::Image GetImage( mxArray const* mx ) {
 
    // TODO: test for an empty array as input. How do we handle those? throw()? non-forged image?

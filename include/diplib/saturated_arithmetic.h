@@ -34,8 +34,10 @@ namespace dip {
 /// of properly clamping the result of operations on pixels by using these functions to perform arithmetic.
 /// For example,
 ///
+/// ```cpp
 ///     10u - 20u == 4294967286u;
-///     saturated_sub(10u, 20u) == 0u;
+///     dip::saturated_sub(10u, 20u) == 0u;
+/// ```
 ///
 /// Saturated arithmetic is made available by including `diplib/saturated_arithmetic.h`.
 /// \{

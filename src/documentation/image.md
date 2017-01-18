@@ -84,9 +84,11 @@ at coordinates (`x+1`,`y`), you would need to increment the data pointer
 with `strides[0]`. In a 2D image, the pixel at coordinates (`x`,`y`) can be
 reached by (assuming `dip::DT_UINT8` data type):
 
+```cpp
     dip::uint8* origin = img.Origin();
     dip::IntegerArray strides = img.Strides();
     dip::uint8 value = *( origin + x * strides[0] + y * strides[1] );
+```
 
 This concept naturally scales with image dimensionality. Strides can be
 negative, and need not be ordered in any particular way. This allows an
@@ -167,27 +169,35 @@ matrices and triangular matrices.
 
 Given
 
+```cpp
     dip::Image img( { 10, 12, 20, 8, 18 }, 1, dip::DT_UINT16 );
+```
 
 Then \link dip::Image::Origin `img.Origin()`\endlink is a `void*` pointer to
 the first pixel (or rather the first sample of in the image).
 This pointer needs to be cast to the type given by
 \link dip::Image::DataType `img.DataType()`\endlink to be used, as in:
 
+```cpp
     (dip::uint16*)img.Origin() = 0;
+```
 
 A pixel's **offset** is the number of samples to move away from the origin
 to access that pixel:
 
+```cpp
     dip::uint16* ptr = (dip::uint16*)img.Origin();
     ptr + offset = 1;
+```
 
 Alternatively, it is possible to compute the pixel's pointer without casting
 to the right data type (this leads to a more generic algorithm) by using the
 `dip::DataType::SizeOf` operator (we cast to `dip::uint8` pointer to do
 pointer arithmetic in bytes):
 
+```cpp
     (dip::uint8*)img.Origin() + offset * img.DataType().SizeOf();
+```
 
 This computation is performed by
 \link dip::Image::Pointer `img.Pointer( offset )`\endlink.
@@ -196,11 +206,13 @@ Note that the offset is a signed integer, and can be negative, because strides
 can be negative also.
 The offset is computed from coordinates using the image's strides:
 
+```cpp
     dip::UnsignedArray coords { 1, 2, 3, 4, 5 };
     dip::sint offset = 0;
     for( dip::uint ii = 0; ii < img.Dimensionality(); ++ii ) {
       offset += coords[ii] * img.Stride( ii );
     }
+```
 
 This computation is performed by
 \link dip::Image::Offset `img.Offset( coords )`\endlink.
@@ -225,6 +237,7 @@ monotonically as one moves from one pixel to the next, first along dimension 0,
 then along dimension 1, etc. The index computed from a pixel's coordinates is
 as follows:
 
+```cpp
     dip::UnsignedArray coords { 1, 2, 3, 4, 5 };
     dip::uint dd = img.Dimensionality();
     dip::uint index = 0;
@@ -233,6 +246,7 @@ as follows:
       index *= img.Size( dd );
       index += coords[dd];
     }
+```
 
 This computation is performed by \link dip::Image::Index `img.Index( coords )`\endlink.
 It is the *n*D equivalent to `x + y * width`. An index, as opposed to an
@@ -263,11 +277,13 @@ and strides) in the order given by the linear index, use the **image iterators**
 defined in `diplib/iterators.h`
 (see \ref using_iterators "Using iterators to implement filters"):
 
+```cpp
     dip::ImageIterator< dip::uint16 > it( img );
     dip::uint16 ii = 0;
     do {
       *it = ii++;
     } while( ++it );
+```
 
 The functionality in the `dip::Framework` namespace is the recommended way of
 building generic functions that access all pixels in an image. These functions
@@ -298,6 +314,7 @@ To create a new image with specific properties, one can either set each of
 the properties individually, or use one of the constructors. For example,
 the two following images are the same:
 
+```cpp
     dip::Image img1;
     img1.SetSizes( { 256, 256 } );
     img1.SetDataType( dip::DT_UINT8 );
@@ -305,6 +322,7 @@ the two following images are the same:
     img1.Forge();
 
     dip::Image img2( UnsingedArray{ 256, 256 }, 1, dip::DT_UINT8 );
+```
 
 The first method is more flexible, as it allows to set all properties
 before forging the image (such as strides).
@@ -314,12 +332,16 @@ Note that the created image has uninitialized pixel data. You can use the
 To create a new image with same sizes and tensor shape as another one,
 use the `dip::Image::Similar` method:
 
+```cpp
     img2 = img1.Similar();
+```
 
 Again, the new image will have uninitialized pixel data. An optional second
 argument can be used to specify the data type of the new image:
 
+```cpp
     img2 = img1.Similar( dip::DT_SCOMPLEX );
+```
 
 Both methods copy all image properties, including the strides array and the
 external interface; see `dip::Image::CopyProperties`.
@@ -329,6 +351,7 @@ an image and creates a new data segment if the old one is of the wrong size
 to support the new properties. In function, these three sets of statements
 are equivalent:
 
+```cpp
     img2 = img1.Similar();
 
     img2.Strip();
@@ -336,6 +359,7 @@ are equivalent:
     img2.Forge();
 
     img2.ReForge( img1 );
+```
 
 However, `ReForge` might not strip and forge if it is not necessary
 (also, it does not use the source image's strides), and so
@@ -349,14 +373,18 @@ or an initializer list containing scalar values of the same type. With the
 initializer list, the image will be a vector image with as many samples
 as elements in the initializer list:
 
+```cpp
     dip::Image img1( 10 );
     dip::Image img2( { 0, 1, 2, 3 } );
+```
 
 The assignment operator creates a copy of the image, but does not actually
 copy the data. Instead, the new copy will share the data segment with the
 original image:
 
+```cpp
     img2 = img1;
+```
 
 Both `img1` and `img2` point at the same data, meaning that changing one
 image's pixel values also affects the other image. The data segment will
@@ -367,18 +395,24 @@ be freed until `img2` goes out of scope (or is stripped).
 The copy constructor does the same thing. The following three statements
 all invoke the copy constructor:
 
+```cpp
     img2 = dip::Image( img1 );
     dip::Image img3( img1 );
     dip::Image img4 = img1;
+```
 
 To make a copy of an image with its own copy of the data segment, use the
 `dip::Image::Copy` method:
 
+```cpp
     img2.Copy( img1 );
+```
 
 or equivalenty the `dip::Copy` function:
 
+```cpp
     img2 = dip::Copy( img1 );
+```
 
 In both cases, `img2` will be identical to `img1`, with identical pixel values,
 and with its own data segment.
@@ -388,12 +422,16 @@ be of the same size as the image to be copied. Pixel values will be copied to
 the existing data segment, casting to the target image's data type with clamping
 (see `diplib/library/clamp_cast.h`):
 
+```cpp
     img2 = img1.Similar( dip::DT_UINT8 );
     img2.Copy( img1 );
+```
 
 Or equivalently:
 
+```cpp
     img2 = dip::Convert( img1, dip::DT_UINT8 );
+```
 
 The `dip::Image::Convert` method, as opposed to the `dip::Convert` function, converts
 the image itself to a new data type. This process creates a new data segment if
@@ -407,15 +445,19 @@ method, writing that constant to each sample in the image. The constant is
 cast to the image's data type with saturation (see `dip::clamp_cast`). Note that
 the image must be forged:
 
+```cpp
     img1 = 10;
     img2.Fill( 0 );
+```
 
 Additionally, one can assign an initializer list to an image. The list should
 have one element for each tensor element. Each pixel in the image will then
 be set to the tensor values in the initializer list:
 
+```cpp
     img2 = dip::Image( UnsignedArray{ 256, 256 }, 10, dip::DT_SFLOAT );
     img2 = { 1, 2, 3, 4 };
+```
 
 `img2` will have all pixels set to the same vector `[ 1, 2, 3, 4 ]`.
 
@@ -441,17 +483,23 @@ we have delegated the C++ indexing operator (`[]`) to the task of extracting a
 tensor component from an image (remember that a channel is a tensor component).
 For example:
 
+```cpp
     dip::Image red = colorIm[ 0 ];
+```
 
 For a two-dimensional matrix it is possible to index using two values in an array:
 
+```cpp
     dip::Image out = tensorIm[ dip::UnsignedArray{ i, j } ];
+```
 
 In both cases, the image created shares the pixels with the original image, meaning
 that it is possible to write to a channel in this way:
 
+```cpp
     colorIm[ 0 ].Copy( colorIm[ 1 ] );
     dip::Gauss( colorIm[ 2 ], colorIm[ 2 ], { 4 } );
+```
 
 The function `dip::Image::Diagonal` extracts the tensor elements along the diagonal
 of the tensor, yielding a vector image.
@@ -468,9 +516,11 @@ representing regular pixel intervals along one dimension through a start, stop a
 step value. That is, a range indicates a portion of an image line, with optional
 subsampling. For example, indexing into a 1D image:
 
+```cpp
     image1D.At( dip::Range{ 5 } );          // indexes pixel at coordinate 5
     image1D.At( dip::Range{ 0, 10 } );      // indexes the first 11 pixels
     image1D.At( dip::Range{ 0, -1, 2 } );   // indexes every second pixel
+```
 
 Note that negative values index from the end, without needing to know the exact
 size of the image.
@@ -482,13 +532,17 @@ As is the case with the `[]` indexing, these operations yield an image that
 shares data with the original image, and therefore can be used to write to the
 selected subset of pixels:
 
+```cpp
     image.At( dip::UnsignedArray{ 5, 10 } ) += 1;
+```
 
 Combining tensor and spatial indexing can be done in either order, with identical
 results:
 
+```cpp
     image.At( dip::UnsignedArray{ 5, 10 } )[ 1 ];
     image[ 1 ].At( dip::UnsignedArray{ 5, 10 } );
+```
 
 
 \subsection other_views Other ways of creating a view of an image
@@ -517,22 +571,28 @@ These three forms can all be accomodated using the `dip::Image::CopyAt`
 functions, which create a new image and copy pixel data over, resulting
 in a 1D image:
 
+```cpp
     dip::Image out = image.CopyAt( mask );
+```
 
 These functions are called `CopyAt` rather than simply `At` to reinfoce that
 sample values are copied into the new image. Therefore, when writing into
 these images, the original image is not affected. To write data into selected
 pixels, use the version of this function that takes two arguments:
 
+```cpp
     image.CopyAt( data, mask );
+```
 
 Here, `data` is an image with as many pixels as are selected by `mask` (or
 the indices or coordinates array). So, to modify a subset of pixels, one
 can extract them first, then write them back after modification:
 
-    Image result = image.CopyAt( mask );  // get the pixels
-    result += 1;                          // modify them
-    image.CopyAt( result, mask );         // write them back into the image
+```cpp
+    dip::Image result = image.CopyAt( mask );  // get the pixels
+    result += 1;                               // modify them
+    image.CopyAt( result, mask );              // write them back into the image
+```
 
 
 [//]: # (--------------------------------------------------------------)
@@ -544,10 +604,12 @@ throws an exception. That is, when the flag is set, the data segment cannot
 be stripped (freed) or reforged (reallocated). It does not, however, protect
 the image from being assigned into. For example:
 
+```cpp
     dip::Image img1( UnsignedArray{ 256, 256 }, 3, dip::DT_SFLOAT );
     img1.Protect();
     //img1.Strip();  // Throws!
     img1 = img2;     // OK
+```
 
 The main purpose of the protect flag is to provide a simple means of specifying
 the data type for the output image of a filter. Most filters and operations in
@@ -561,19 +623,23 @@ the output image. Instead, if the output image has the protect flag set, these
 functions will not modify its data type. Thus, you can set the output image's
 data type, protect it, and receive the result of the filter in that data type:
 
+```cpp
     dip::Image img = ...
     dip::Image out;
     out.SetDataType( dip::DT_SINT16 );
     out.Protect();
     dip::Gauss( img, out, { 4 } );
     // out is forged with correct sizes to receive filter result, and as 16-bit integer.
+```
 
 This is especially simple for in-place operations where we want to receive the
 output in the same data segment as the input:
 
+```cpp
     dip::Image img = ...
     img.Protect();
     dip::Gauss( img, img, { 4 } );
+```
 
 If the filter is called with a protected, forged image as output, as is the case
 in the last code snipped above, the filter will not be able to strip and re-forge
@@ -612,13 +678,17 @@ for a full list of these functions.
 
 For example, to add two images `a` and `b`, one can simply do:
 
+```cpp
     dip::Image c = a + b;
+```
 
 But it is also possible to control the output image by using the `dip::Add`
 function:
 
+```cpp
     dip::Image c;
     dip::Add( a, b, c, dip::DT_SINT32 );
+```
 
 The fourth argument specifies the data type of the output image. The computation
 is performed in that data type, meaning that both inputs are first cast to that
@@ -631,14 +701,18 @@ bit as in standard C++ arithmetic.
 As is true for most image processing functions in DIPlib (see \ref design_function_signatures),
 the statement above is identical to
 
+```cpp
     dip::Image c = dip::Add( a, b, dip::DT_SINT32 );
+```
 
 However, the former version allows for writing to already-allocated memory space
 in image `c`, or to an image with an external interface (see \ref external_interface).
 
 For in-place addition, use
 
+```cpp
     dip::Add( a, b, a, a.DataType() );
+```
 
 or simply
 
@@ -705,16 +779,20 @@ There are three ways in which the pixel size can be used:
    units to one in pixels, suitable to pass to a filtering function. For example,
    to apply a filter with a sigma of 1 micron to an image:
 
+   ```cpp
        dip::PhysicalQuantityArray fsz_phys{ 1 * dip::PhysicalQuantity::Micrometer() };
        dip::FloatArray fsz_pix = img.PhysicalToPixels( fsz_phys );
        dip::Filter( img, img, fsz_pix );
+   ```
 
 3. The `dip::Image::PixelsToPhysical` method converts coordinates in pixels to
    coordinates in physical units. For example, to determine the position in
    physical units of a pixel w.r.t. the top left pixel:
 
+   ```cpp
        dip::FloatArray pos_pix{ 40, 24 };
        dip::PhysicalQuantityArray pos_phys = img.PixelsToPhysical( pos_pix );
+   ```
 
 It is currently possible to add, subtract, mutiply and divide two physical quantities,
 and elevate a physical quantity to an integer power. Other operations should be
@@ -740,9 +818,11 @@ the expected value, and the corresponding stride to 0. This will cause
 an algorithm to read the same value, no matter how many steps it takes
 along this dimension. For example:
 
+```cpp
     dip::Image img1( UnsignedArray{ 50, 1, 60 } );
     dip::Image img2( UnsignedArray{ 50, 30 } );
     dip::Image img3 = img1 + img2;
+```
 
 Here, the dimension array for `img2` will be extended to `{ 50, 30, 1 }`
 in the first step. In the second step, the arrays for both images will

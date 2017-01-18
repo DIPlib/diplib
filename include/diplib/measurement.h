@@ -601,11 +601,13 @@ class Composite : public Base {
 /// The %MeasurementTool class knows about defined measurement features, and can apply them to an
 /// image through its `dip::MeasurementTool::Measure` method.
 ///
+/// ```cpp
 ///     dip::MeasurementTool tool;
 ///     dip::Image img = ...
 ///     dip::Image label = Label( Threshold( img ), 2 );
 ///     dip::Measurement msr = tool.Measure( label, img, { "Size", "Perimeter" }, {}, 2 );
 ///     std::cout << "Size of object with label 1 is " << msr[ "Size" ][ 1 ][ 0 ] << std::endl;
+/// ```
 ///
 /// By default, the features in the following table are defined:
 ///
@@ -676,11 +678,13 @@ class MeasurementTool {
       /// derived from one of the five classes dervied from `dip::Feature::Base` (thus not directly from `Base`).
       /// Note that the pointer returned by `new` must be explicitly converted to a `dip::Feature::Pointer`:
       ///
+      /// ```cpp
       ///     class MyFeature : public dip::Feature::ChainCodeBased {
       ///        // define constructor and override virtual functions
       ///     }
       ///     MeasurementTool measurementTool;
       ///     measurementTool.Register( dip::Feature::Pointer( new MyFeature ));
+      /// ```
       void Register(
             Feature::Pointer feature
       ) {
@@ -766,15 +770,19 @@ class MeasurementTool {
 /// To obtain such a view, use the measurement's `[]` indexing with a feature name. Alternatively, use the
 /// `dip::Measurement::FeatureValuesView` method to select an arbitrary subset of feature value columns:
 ///
+/// ```cpp
 ///     dip::Measurement msr = measureTool.Measure( label, grey, {"Feret"}, {} );
 ///     auto featureValues = msr.FeatureValuesView( 1, 1 ); // Select the "FeretMin" column only
 ///     dip::Image objectWidth = ObjectToMeasurement( label, featureValues );
+/// ```
 ///
 /// The `dip::Measurement::IteratorFeature::Subset` method can be used to select a subset of columns
 /// of the current feature, leading to the same result as above:
 ///
+/// ```cpp
 ///     auto featureValues = msr[ "Feret" ];
 ///     featureValues.Subset( 1 ); // Select the "FeretMin" column only
+/// ```
 ///
 /// If the selected feature has more than one value, then `out` will be a vector image with as many tensor elements
 /// as values are in the feature.

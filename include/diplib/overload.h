@@ -22,7 +22,9 @@
 /// template, according to a DataType argument (or create an object of
 /// a template class). For example, the code
 ///
+/// ```cpp
 ///     DIP_OVL_CALL_ALL( myFunc, ( param1, param2 ), datatype );
+/// ```
 ///
 /// causes a call to `myFunc( param1, param2 )`, where `myFunc` is
 /// a function template. The template will be specialized to

@@ -32,8 +32,10 @@ namespace dip {
 ///
 /// It defines how R, G and B are to be combined to form X, Y and Z:
 ///
+/// ```cpp
 ///     XYZ = WhitePoint * RGB
 ///     RGB = inv(WhitePoint) * XYZ
+/// ```
 class WhitePoint {
 
    public:
@@ -76,6 +78,7 @@ using ColorSpaceConverter = void ( * )(
 /// all known color spaces, it is sufficient to register two function that translate to
 /// and from your new color space to any existing color space.
 ///
+/// ```cpp
 ///     dip::ColorSpaceManager csm;
 ///     dip::Image img = ...
 ///     csm.Set( img, "RGB" );                      // img is RGB
@@ -86,6 +89,7 @@ using ColorSpaceConverter = void ( * )(
 ///     csm.Register( frank2xyz, "f", "XYZ", 2 );   // a function that converts from Frank to XYZ
 ///     csm.Register( yxy2frank, "Yxy", "f", 3 );   // a function that converts from Yxy to Frank
 ///     csm.Convert( img, "f" );                    // img will be converted from Lab to Frank
+/// ```
 ///
 /// The known color spaces are:
 /// * CMY
@@ -124,10 +128,14 @@ class ColorSpaceManager {
       ///
       /// The conversion function converts a single pixel, and has the following
       /// signature:
+      ///
+      /// ```cpp
       ///     void ColorSpaceConverter(
       ///         double const*  input,
       ///         double*        output,
       ///         double const*  matrix);
+      /// ```
+      ///
       /// `input` is a pointer to a set of sample values composing the pixel, and
       /// `output` is where the result of the conversion is to be placed. Both
       /// arrays have a number of values corresponding to the channels used by
