@@ -1339,6 +1339,9 @@ inline ImageSliceIterator ImageSliceEndIterator( Image const& image, dip::uint p
    return out;
 }
 
+
+/// TODO: ImageTensorIterator: like ImageSliceIterator, but creates a view over one tensor element at the time (a scalar image).
+
 /// \}
 
 } // namespace dip

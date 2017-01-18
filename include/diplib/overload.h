@@ -48,7 +48,7 @@
 /// the template class must have a base class that is not a template, and
 /// the object must be referred to through a pointer to its base class. The
 /// result of `new` is cast to the declaration type of the variable being
-/// assigned to, so that one can assign into a `std::unique_ptr`.
+/// assigned to, so that one can assign e.g. into a `std::unique_ptr`.
 /// [TODO: See the functions in `dip::Framework`.]
 ///
 /// There are four groups of macros defined in this file:
@@ -380,79 +380,79 @@
 // DIP_OVL_NEW_xxx
 //
 
-/// \brief Assigns a unique pointer to the overloaded class for the binary type to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for the binary type to the variable `x`.
 #define DIP_OVL_NEW_BINARY( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )   \
    DIP__OVL__BIN( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all unsigned integer types to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all unsigned integer types to the variable `x`.
 #define DIP_OVL_NEW_UINT( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )    \
    DIP__OVL__UINT( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all signed integer types to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all signed integer types to the variable `x`.
 #define DIP_OVL_NEW_SINT( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )    \
    DIP__OVL__SINT( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all float types to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all float types to the variable `x`.
 #define DIP_OVL_NEW_FLOAT( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )     \
    DIP__OVL__FLOAT( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all complex types to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all complex types to the variable `x`.
 #define DIP_OVL_NEW_COMPLEX( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )       \
    DIP__OVL__COMPLEX( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all integer types to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all integer types to the variable `x`.
 #define DIP_OVL_NEW_INTEGER( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )       \
    DIP__OVL__INTEGER( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all integer and binary types to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all integer and binary types to the variable `x`.
 #define DIP_OVL_NEW_INT_OR_BIN( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )          \
    DIP__OVL__INT_OR_BIN( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all unsigned types to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all unsigned types to the variable `x`.
 #define DIP_OVL_NEW_UNSIGNED( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )        \
    DIP__OVL__UNSIGNED( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all signed (integer + float + complex) types to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all signed (integer + float + complex) types to the variable `x`.
 #define DIP_OVL_NEW_SIGNED( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )      \
    DIP__OVL__SIGNED( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all real (integer + float) types to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all real (integer + float) types to the variable `x`.
 #define DIP_OVL_NEW_REAL( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )    \
    DIP__OVL__REAL( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all non-complex types to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all non-complex types to the variable `x`.
 #define DIP_OVL_NEW_NONCOMPLEX( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )          \
    DIP__OVL__NONCOMPLEX( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all types but binary to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all types but binary to the variable `x`.
 #define DIP_OVL_NEW_NONBINARY( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )         \
    DIP__OVL__NONBINARY( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
-/// \brief Assigns a unique pointer to the overloaded class for all types to the variable `x`.
+/// \brief Assigns a pointer to the overloaded class for all types to the variable `x`.
 #define DIP_OVL_NEW_ALL( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )    \
    DIP__OVL__ALL( x = ( decltype( x )) new cname, paramlist )  \

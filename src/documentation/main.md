@@ -9,37 +9,39 @@ to microscopy, radiology, astronomy, or anything in between.
 There are other image processing/analysis libraries available, some of
 them hugely popular. Why do we keep investing time in developing and
 improving *DIPlib*? The short answer is that we believe *DIPlib* offers
-functionality that is not available elsewhere. This functionality is
-intricately related to our philosophy:
+things that are not available elsewhere. The library is built on the
+following three principles:
 
-1. The library user should not have to worry about image data types
-(i.e. pixel representation) unless he/she wants to.
+1. **Precision:**
 
-2. Algorithms are more elegant when they can be implemented in a
-dimensionality-independent way.
+   We implement the most precise known methods, and output often defaults to
+   floating-point samples. The purpose of these algorithms is quantification,
+   not approximation.
 
-3. Speed is important, but not at the cost of precision.
+2. **Ease of use**
 
-This means that most functions will accept an input image of any data
-type and any number of dimensions, and produce a correct output in
-a dynamically determined data type (output data types can differ from
-input data types to avoid loss of precision). At the time of compilation,
-the data type and dimensionality of an image are not necessarily known.
-Most other C++ image libraries use a template for the image class,
-requiring the programmer to specify the data type and dimensionality of
-all declared images.
+   We use modern C++11 features to provide a simple and intuitive interface
+   to algorithms, with expressive syntax, default values, and little
+   boiler-plate code required from the user. There is no need to be aware of
+   an image's data type to use the algorithms effectively.
 
-*OpenCV*, the most widely used image library, is geared towards computer
-vision rather than quantitative image analysis. Many applications require
-real-time computation, and therefore the library introduces imprecision
-for the sake of speed. *DIPlib* is implemented with speed in mind,
-implementing the most efficient known algorithms, using parallelism
-where possible, etc., but will not cut corners for the extra time gain.
-For example, the Gaussian smoothing filter produces a floating-point
-output, even if the input is 8-bit integer, unless the user specifies
-otherwise. Floating-point values occupy more space, and thus take more
-time to process, than 8-bit integers, but the added precision in the
-output makes it possible to measure more precisely.
+   Furthermore, developing an image analysis program involves a lot of trial-and-error,
+   rapid prototyping approaches are applicable: the edit-compile-run loop
+   should be quick. We aim for short compile times with pre-compiled algorithms
+   and few templates.
+
+3. **Efficiency**
+
+   We implement the most efficient known algorithms, as long as they don't
+   compromise precision. Ease-of-use features might also incur a slight overhead
+   in execution times. The library can be used in high-throughput analysis
+   pipelines, but is not designed for real-time video processing.
+
+Algorithms in *DIPlib* typically accept input images of any data type (though,
+of course, some algorithms are specific to binary images, or cannot handle
+complex images) and any number of dimensions (algorithms that are limited to
+specific dimensionalities typically show so in their name). The image data
+type and dimensionality do not need to be known at compile time. 
 
 There are many other unique things about *DIPlib*, we encourage you to
 explore the documentation to learn more about it. A good place to start
@@ -57,7 +59,7 @@ van Kempen and Michael van Ginkel, under direction of Lucas van Vliet,
 at the Pattern Recognition Group (now Quantitative Imaging Group) of
 Delft University of Technology. Most of the algorithms that had been
 developed there were included in the library, together with a large
-array of standard algorithms. Due to the lack of a C++ standard at the
+collection of standard algorithms. Due to the lack of a C++ standard at the
 time, they developed the library in C, recreating much of the C++
 functionality (templates, function overloading, exceptions, data
 hiding, automatic destructor call at the end of a function's scope)
@@ -67,24 +69,26 @@ Mac OS X.
 
 Originally, the *DIPlib* library was used from within the *SCIL_Image*
 image processing software. In 1999, Cris Luengo (with a lot of help from
-Michael van Ginkel) wrote an interface to MATLAB, defining a flexible
+Michael van Ginkel) wrote an interface to *MATLAB*, defining a flexible
 and intuitive command-line syntax for the development of image analysis
 algorithms. That same year, a user-friendly GUI in the spirit of
-SCIL_Image was written, as well as interactive image display tools. This
-MATLAB toolbox, called *DIPimage*, became the primary interface to the
+*SCIL_Image* was written, as well as interactive image display tools. This
+*MATLAB* toolbox, called *DIPimage*, became the primary interface to the
 *DIPlib* library.
 
 *DIPlib* 3.0 represents the first major rewrite of the *DIPlib* code base.
 We have rewritten the infrastructure in C++11, using all of the original
 ideas and concepts, but adding tensor images, color support, and other
-ideas we had developed within the *DIPimage* toolbox.
+ideas we had developed within the *DIPimage* toolbox. C++11 allows the
+user to write code that is almost as simple as the equivalent *MATLAB*
+code, making it simpler to use the library even for rapid prototyping.
 Hopefully, the new infrastructure is much easier to read, maintain, and
 contribute to. All of the image analysis routines (have been / will be)
 ported to use the new infrastructure. See \ref workplan for progress and
 a detailed list of what still needs to be done.
 
 The *DIPimage* toolbox will change to optimally use *DIPlib* 3.0. This means
-that some of the MATLAB code will be replaced with calls to *DIPlib*, and
+that some of the *MATLAB* code will be replaced with calls to *DIPlib*, and
 some (most?) of the low-level interface will change. The internal
 representation of images will also change. However, we will strive
 to keep the high-level toolbox functions identical.
@@ -119,15 +123,19 @@ ways of doing so:
 - Write new algorithms. If you have an algorithm that you'd like to contribute
   to the project, we'll be happy to see it!
 
-- Fix bugs, improve documentation, add code to the unit tests, add interfaces
-  to other libraries or scripting languages.
+- Create an interface to another libraries or scripting language
+
+- Fix bugs, improve documentation, add code to the unit tests
+
+- Create a nice Doxygen theme for the documentation, create a logo for the project
 
 In any of these cases, fork the project, create a new branch for your contribution,
 and send a pull request to Cris Luengo. Do also read \ref styleguide, and make sure
 you adhere to it. Don't be offended if you receive requests for modifications
 before your work is merged with the project.
 
-Your contributions will carry the same licencing terms as the rest of the library.
+Your contributions will carry the same licencing terms as the rest of the library,
+you keep the copyright to any substantial contribution.
 
 ## License
 

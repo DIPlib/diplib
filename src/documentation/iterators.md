@@ -6,17 +6,16 @@ These iterators can be used to implement filters and other monadic operators.
 This page shows how to use these iterators to write different types of image
 processing functionality. However, most of the filters in *DIPlib* are not written
 using these iterators, but using the functions in the `dip::Framework` namespace.
-Those functions take care of many things, avoiding the need to replicate that
-functionality in each filter:
+Those functions take care of:
  - parallel processing,
  - overloading for different data types,
  - boundary conditions, and
  - allocating the data segment for the output image(s).
 
-But do note that using iterators is not necessarily less efficient than using
+Note that using iterators is not necessarily less efficient than using
 the framework functions. Depending on the application of the image processing
-function you are writing, you can choose to use either an iterator or a
-framework function.
+function you are writing, and on the complexity you are willing to deal with,
+you can choose to use either an iterator or a framework function.
 
 \tableofcontents
 
@@ -28,22 +27,27 @@ framework function.
 To loop over each pixel in an image and modify its value, you can use the
 `dip::ImageIterator`:
 
+```cpp
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::ImageIterator< dip::uint16 > it( img );
     do {
        *it *= 2;
     } while( ++it );
+```
 
 This construct works for an image of any dimensionality and size, but only for an
 image of type `dip::uint16`. Instead of throwing an error if the image doesn't
 match expectation, you can convert it:
 
+```cpp
     img.Convert( dip::DT_UINT16 );
+```
 
 To handle images of different data types with the same loop, write the loop in a
 templated function, then call the right version of the function with the
-`DIP_OVL_CALL_REAL` macro or any of its relatives defined in `diplib/overload.h`:
+`#DIP_OVL_CALL_REAL` macro or any of its relatives defined in `diplib/overload.h`:
 
+```cpp
     template< typename T >
     void ProcessImage_subfunc( dip::Image img ) {
        dip::ImageIterator< T > it( img );
@@ -55,8 +59,9 @@ templated function, then call the right version of the function with the
     void ProcessImage( dip::Image img ) {
        DIP_OVL_CALL_REAL( processImage_subfunc, (img), img.dataType() );
     }
+```
 
-The `DIP_OVL_CALL_REAL` macro will throw an exception if the image is of a type
+The `#DIP_OVL_CALL_REAL` macro will throw an exception if the image is of a type
 that does not correspond to the `REAL` group, so there is no need to test for that
 separately.
 
@@ -75,32 +80,38 @@ should be processed. There are two ways of doing so:
    spatial dimension. The loop above would then iterate over each sample, rather
    than each pixel:
 
+   ```cpp
        dip::Image tmp = img.QuickCopy();
        tmp.TensorToSpatial();
        dip::ImageIterator< dip::uint16 > it( tmp );
        ...
+   ```
 
  - The second way is to explicitly iterate over the tensor elements within the
    main loop. This allows the different tensor elements to be treated differently.
    Simply note that the iterator `it` points at the first element of the tensor,
    and using the `[]` indexing operator yields the other tensor elements:
 
+   ```cpp
        dip::ImageIterator< T > it( img );
        do {
           for( dip::uint te = 0; te < img.TensorElements(); ++te ) {
              it[ te ] *= 2;
           }
        } while( ++it );
+   ```
 
    Alternatively, iterate over the tensor elements using the corresponding
    iterator (see `dip::SampleIterator`):
 
+   ```cpp
        dip::ImageIterator< T > it( img );
        do {
           for( auto te = it.begin(); te != it.end(); ++te ) {
              *te *= 2;
           }
        } while( ++it );
+   ```
 
 
 [//]: # (--------------------------------------------------------------)
@@ -110,12 +121,14 @@ should be processed. There are two ways of doing so:
 The `dip::JointImageIterator` loops over both an input and an output image
 at the same time. The two images must have the same sizes:
 
+```cpp
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image out = img.Similar( dip::DT_SFLOAT );
     dip::JointImageIterator< dip::uint16, dip::sfloat > it( img, out );
     do {
        it.Out() = 2 * it.In();
     } while( ++it );
+```
 
 Note that `it.In()` returns a const reference to the sample, indicating that
 it is meant as the input image. The joint image iterator cannot be dereferenced,
@@ -138,6 +151,7 @@ Some processing requires access to a whole image line at the time. Both the
 dimension over which is not looped. In combination with the `dip::LineIterator`,
 one can create functions that process one line at a time:
 
+```cpp
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::ImageIterator< dip::uint16 > it( img, 0 );
     do {
@@ -153,9 +167,11 @@ one can create functions that process one line at a time:
           *lit = dip::clamp_cast< dip::uint16 >( res );
        } while( ++lit );
     } while( ++it );
+```
 
 A one-dimensional filter can be implemented using the line iterator as an array:
 
+```cpp
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image out = img.Similar( dip::DT_SFLOAT );
     constexpr dip::uint N = 2;
@@ -177,6 +193,7 @@ A one-dimensional filter can be implemented using the line iterator as an array:
           *oit = std::inner_product( filter.begin(), filter.end() - ii, iit, 0.0f );
        }
     } while( ++it );
+```
 
 Note that separable filters use such line by line operations along each dimension
 to compose full filters.
@@ -188,6 +205,7 @@ to compose full filters.
 
 Simpler:
 
+```cpp
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image out = img.Similar( dip::DT_UINT16 );
     dip::PixelTable kernel( "elliptic", { 5, 5 } );
@@ -201,6 +219,7 @@ Simpler:
        }
        it.Out() = value / kernel.NumberOfPixels();
     } while( ++it );
+```
 
 We iterate over every pixel in the input and output images. At each pixel we read all pixels
 in the kernel, with each read checking for the location to be inside the image domain, and
@@ -209,8 +228,9 @@ kernel at each output pixel.
 
 Better:
 
+```cpp
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
-    dip::Image in = dip::ExtendImage( img, { 2, 2 }, {}, true ); // a copy of the input image with data ouside of its domain
+    dip::Image in = dip::ExtendImage( img, { 2, 2 }, {}, { "masked" } ); // a copy of the input image with data ouside of its domain
     dip::Image out = img.Similar( dip::DT_UINT16 );
     dip::PixelTable kernel( "elliptic", { 5, 5 }, 0 );
     dip::PixelTableOffsets offsets = kernel.Prepare( img );
@@ -238,6 +258,7 @@ Better:
           *oit = value / kernel.NumberOfPixels();
        } while( ++oit ); // (the two images are of the same size, the line iterators reach the end at the same time
     } while( ++it );
+```
 
 We first create a copy of the input image with expanded domain. The image `in` is identical to
 `img`, but we can read outside the bounds where data has been filled in. Not having to check for
@@ -257,12 +278,10 @@ many efficient algorithm.
 
 \section iterate_slices Processing an image slice by slice
 
-Most filters in *DIPlib* are applicable to images of any dimensionality, and one can
-choose to not filter along a specific dimension. This is useful, for example, in the
-case of a time series image, a 3D image where the 3rd dimension is time. One might
-want to filter each of the 2D slices in the same way, but not mix information from
-one slice to another. Some image processing functions allow to specify which
-dimensions are to be processed, and so one can choose only the first two dimensions.
+That for example the case of a time series image, a 3D image where the 3rd dimension is
+time. One might want to filter each of the 2D slices in the same way, but not mix
+information from one slice to another. Some image processing functions allow to specify
+which dimensions are to be processed, one can choose to process only the first two dimensions.
 With other filters one can set the size of the neighborhood to 1 along the third
 dimension, so that effectively no filtering is applied in that direction. But a few
 filters are written explicitly for 2D images, or do not make it possible to restrict
@@ -270,10 +289,12 @@ processing dimensions. `dip::EuclideanSkeleton` is an example of the latter. The
 skeleton is always computed across the full image. To apply it to each of the slices
 in the time series one can use the `dip::ImageSliceIterator`:
 
+```cpp
     dip::ImageSliceIterator it( img, 2 );
     do {
        dip::EuclideanSkeleton( *it, *it, "natural", true );
     } while( ++it );
+```
 
 Here, the slice iterator `it` points at a 2D subimage of the 3D image `img`,
 in which the third dimension (dimension number 2) of `img` is removed. It is
@@ -289,14 +310,16 @@ possible to navigate to any slice. This is a very cheap operation, and requires
 no data copies. Note that the loop above is much more efficient than a similar
 loop using indexing:
 
+```cpp
     // Identical result to the previous code block, but less efficient
     dip::RangeArray ra( 3 );
-    for( dip::sint ii = 0; ii < img.Size(2); ++ii ) {
+    for( dip::sint ii = 0; ii < img.Size( 2 ); ++ii ) {
        ra[2] = Range( ii );
        dip::Image slice = img.At( ra );
        slice.Squeeze();
        dip::EuclideanSkeleton( slice, slice, "natural", true );
     }
+```
 
 The difference in efficiency might or might not be important depending on
 the cost of the function being applied to each 2D slice.

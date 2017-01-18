@@ -22,8 +22,9 @@ done in parallel.
 
 1.  `class dip::Image`. Some features need to be tested more thoroughly.
 
-1.  `dip::Framework::Scan`. Will be tested more thoroughly through the functions
-    that use it. Not yet parallelized.
+1.  `dip::Framework::Scan`, `dip::Framework::Separable` and `dip::Framework::Full`.
+    These frameworks are the core of most algorithms. They will be tested more thoroughly
+    through the functions that use it. Not yet parallelized.
 
 1.  Arithmetic, bitwise and comparison operators (dependent on `dip::Framework::Scan`)
 
@@ -38,20 +39,15 @@ done in parallel.
     and filters, without the steep learning curve nor pointers.
 
 1.  Measurement framework, a class to hold measurement data, and a class that knows all
-    measurement features and can apply them to images. Depends on `dip::Framework::Scan`.
-
-1. `dip::Framework::Separable`. Will be tested more thoroughly through the functions
-   that use it. Not yet parallelized.
+    measurement features and can apply them to images.
+    All measurement features have been ported, including the previously only defined in
+    *DIPimage*.
 
 
 ## What still needs to be done:
 
 1.  **(X)**
     Test framework. We need to add many more tests for existing features.
-
-1.  **(X)**
-    `dip::Framework::Full`. **Design work done**. Porting of pixel table
-    code to a sensible class that makes its use easier (and that includes iterators).
 
 1.  **(X)**
     Image I/O. Has high priority because it will make testing other functions easier.
@@ -62,10 +58,6 @@ done in parallel.
     Color support. **Design work done.** Port existing *MATLAB* code within
     current framework, and use `dip::Framework::Scan` to apply conversions to all
     pixels in an image.
-
-1.  **(X)**
-    Port measurement features.
-    - dip_measurement.h
 
 1.  **(X)**
     Parallelization of frameworks. **Requires special expertise**. Decision:
