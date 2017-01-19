@@ -71,7 +71,7 @@ static bool IsMatlabStrides(
       }
       total *= sizes[ ii ];
    }
-   if( ( telem > 1 ) && ( tstride != total ) ) {
+   if(( telem > 1 ) && ( tstride != total )) {
       return false;
    }
    return true;
@@ -85,12 +85,12 @@ static bool MatchDimensions(
 ) {
    dip::uint n = sizes.size() + ( telem > 1 ? 1 : 0 );
    if( n == 0 ) {
-      return !( ( ndims != 2 ) || ( psizes[ 0 ] != 1 ) || ( psizes[ 1 ] != 1 ) );
+      return !(( ndims != 2 ) || ( psizes[ 0 ] != 1 ) || ( psizes[ 1 ] != 1 ));
    } else if( n == 1 ) {
       dip::uint m = sizes[ 0 ] * telem;
-      return !( ( ndims != 2 ) || ( psizes[ 0 ] != m ) || ( psizes[ 1 ] != 1 ) );
+      return !(( ndims != 2 ) || ( psizes[ 0 ] != m ) || ( psizes[ 1 ] != 1 ));
    } else {
-      if( ( ndims != n ) || ( psizes[ 0 ] != sizes[ 1 ] ) || ( psizes[ 1 ] != sizes[ 0 ] ) ) {
+      if(( ndims != n ) || ( psizes[ 0 ] != sizes[ 1 ] ) || ( psizes[ 1 ] != sizes[ 0 ] )) {
          return false;
       }
       for( dip::uint ii = 3; ii < n; ++ii ) {
@@ -170,7 +170,7 @@ static mxClassID GetMatlabClassID(
 ///
 /// ```cpp
 ///     img_out0 = in1 + in2; // WRONG! img_out0 will not contain data allocated by *MATLAB*
-///     dip::Add( in1, in2, out, DataType::SuggestArithmetic( in1.DataType(), in1.DataType() ) ); // Correct
+///     dip::Add( in1, in2, out, DataType::SuggestArithmetic( in1.DataType(), in1.DataType() )); // Correct
 /// ```
 ///
 /// This interface handler doesn't own any image data.
@@ -261,7 +261,7 @@ class MatlabInterface : public dip::ExternalInterface {
                mla[ p ] = m;
             }
             //mexPrintf( "   Created mxArray as dip::Image data block. Data pointer = %p.\n", p );
-            return std::shared_ptr< void >( p, StripHandler( *this ) );
+            return std::shared_ptr< void >( p, StripHandler( *this ));
          }
       }
 
@@ -294,8 +294,8 @@ class MatlabInterface : public dip::ExternalInterface {
                       img.Strides(), img.TensorStride() ) ||
                 !MatchDimensions(
                       img.Sizes(), img.TensorElements(),
-                      mxGetDimensions( m ), mxGetNumberOfDimensions( m ) ) ||
-                ( mxGetClassID( m ) != GetMatlabClassID( img.DataType() ) )
+                      mxGetDimensions( m ), mxGetNumberOfDimensions( m )) ||
+                ( mxGetClassID( m ) != GetMatlabClassID( img.DataType() ))
                   ) {
                // Yes, it does. We need to make a copy of the image into a new MATLAB array.
                mexPrintf( "   Copying data from dip::Image to mxArray\n" ); // TODO: temporary warning, to be removed.
@@ -347,9 +347,9 @@ void VoidStripHandler( void const* p ) {
 /// ```cpp
 ///     dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
 /// ```
+///
+/// An empty `mxArray` produces a non-forged image.
 dip::Image GetImage( mxArray const* mx ) {
-
-   // TODO: test for an empty array as input. How do we handle those? throw()? non-forged image?
 
    // Find image properties
    bool complex = false, binary = false;
@@ -357,21 +357,27 @@ dip::Image GetImage( mxArray const* mx ) {
    dip::uint ndims;
    mxClassID type;
    mxArray const* mxdata;
-   if( mxIsClass( mx, "dip_image" ) ) {
+   if( mxIsClass( mx, "dip_image" )) {
       mxdata = mxGetField( mx, 0, dataFieldName );
+      if( mxIsEmpty( mxdata )) {
+         return {};
+      }
       mxArray* mxtype = mxGetField( mx, 0, typeFieldName );
       char buf[maxNameLength];
       mxGetString( mxtype, buf, maxNameLength );
-      if( !strncmp( buf, "bin", 3 ) ) {
+      if( !strncmp( buf, "bin", 3 )) {
          binary = true;
       }
-      if( !strncmp( buf + 1, "complex", 7 ) ) {
+      if( !strncmp( buf + 1, "complex", 7 )) {
          complex = true;
       }
       type = mxGetClassID( mxdata );
-      ndims = static_cast< dip::uint >(mxGetScalar( mxGetField( mx, 0, dimsFieldName )));
+      ndims = static_cast< dip::uint >( mxGetScalar( mxGetField( mx, 0, dimsFieldName )));
       // TODO: read `tensorFieldName`, set the `tensor` variable appropriately.
    } else {
+      if( mxIsEmpty( mx )) {
+         return {};
+      }
       mxdata = mx;
       ndims = mxGetNumberOfDimensions( mxdata );
       if( ndims <= 2 ) {
@@ -496,6 +502,268 @@ dip::Image GetImage( mxArray const* mx ) {
       std::shared_ptr< void > p( mxGetData( mxdata ), VoidStripHandler );
       return dip::Image( p, datatype, sizes, strides, tensor, tstride, nullptr );
    }
+}
+
+// True if empty or a one-dimensional array
+static inline bool IsVector( mxArray const* mx ) {
+   return ( mxGetNumberOfDimensions( mx ) == 2 ) && (( mxGetM( mx ) <= 1 ) || ( mxGetN( mx ) <= 1 ));
+}
+
+/// \brief Convert a boolean (logical) from `mxArray` to `bool` by copy.
+bool GetBoolean( mxArray const* mx ) {
+   if( mxIsScalar( mx )) {
+      if( mxIsLogical( mx )) {
+         return *mxGetLogicals( mx );
+      } else if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
+         return *mxGetPr( mx ) != 0;
+      }
+   }
+   DIP_THROW( "Boolean value expected." );
+}
+
+/// \brief Convert an unsigned integer from `mxArray` to `dip::uint` by copy.
+dip::uint GetUnsigned( mxArray const* mx ) {
+   if( mxIsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
+      double v = *mxGetPr( mx );
+      if(( std::fmod( v, 1 ) == 0 ) && ( v >= 0 )) {
+         return dip::uint( v );
+      }
+   }
+   DIP_THROW( "Unsigned integer value expected." );
+}
+
+/// \brief Convert a signed integer from `mxArray` to `dip::sint` by copy.
+dip::sint GetInteger( mxArray const* mx ) {
+   if( mxIsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
+      double v = *mxGetPr( mx );
+      if( std::fmod( v, 1 ) == 0 ) {
+         return dip::sint( v );
+      }
+   }
+   DIP_THROW( "Integer value expected." );
+}
+
+/// \brief Convert a floating-point number from `mxArray` to `dip::dfloat` by copy.
+dip::dfloat GetFloat( mxArray const* mx ) {
+   if( mxIsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
+      return *mxGetPr( mx );
+   }
+   DIP_THROW( "Real floating-point value expected." );
+}
+
+/// \brief Convert a complex floating-point number from `mxArray` to `dip::dcomplex` by copy.
+dip::dcomplex GetComplex( mxArray const* mx ) {
+   if( mxIsScalar( mx ) && mxIsDouble( mx )) {
+      auto pr = mxGetPr( mx );
+      auto pi = mxGetPi( mx );
+      dip::dcomplex out{ 0, 0 };
+      if( pr ) { out.real( *pr ); }
+      if( pi ) { out.imag( *pi ); }
+      return out;
+   }
+   DIP_THROW( "Complex floating-point value expected." );
+}
+
+/// \brief Convert a boolean (logical) array from `mxArray` to `dip::BooleanArray` by copy.
+dip::BooleanArray GetBooleanArray( mxArray const* mx ) {
+   if( IsVector( mx ) ) {
+      if( mxIsLogical( mx )) {
+         dip::uint n = mxGetNumberOfElements( mx );
+         dip::BooleanArray out( n );
+         auto data = mxGetLogicals( mx );
+         for( dip::uint ii = 0; ii < n; ++ii ) {
+            out[ ii ] = data[ ii ];
+         }
+         return out;
+      } else if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
+         dip::uint n = mxGetNumberOfElements( mx );
+         dip::BooleanArray out( n );
+         auto data = mxGetPr( mx );
+         for( dip::uint ii = 0; ii < n; ++ii ) {
+            out[ ii ] = data[ ii ] != 0;
+         }
+         return out;
+      }
+   }
+   DIP_THROW( "Boolean array expected." );
+}
+
+/// \brief Convert an unsigned integer array from `mxArray` to `dip::UnsignedArray` by copy.
+dip::UnsignedArray GetUnsignedArray( mxArray const* mx ) {
+   if( IsVector( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
+      dip::uint n = mxGetNumberOfElements( mx );
+      dip::UnsignedArray out( n );
+      auto data = mxGetPr( mx );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         double v = data[ ii ];
+         DIP_THROW_IF(( std::fmod( v, 1 ) != 0 ) || ( v < 0 ), "Array element not an unsigned integer." );
+         out[ ii ] = dip::uint( v );
+      }
+      return out;
+   }
+   DIP_THROW( "Unsigned integer array expected." );
+}
+
+/// \brief Convert a signed integer array from `mxArray` to `dip::IntegerArray` by copy.
+dip::IntegerArray GetIntegerArray( mxArray const* mx ) {
+   if( IsVector( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
+      dip::uint n = mxGetNumberOfElements( mx );
+      dip::IntegerArray out( n );
+      auto data = mxGetPr( mx );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         double v = data[ ii ];
+         DIP_THROW_IF( std::fmod( v, 1 ) != 0 , "Array element not an integer." );
+         out[ ii ] = dip::sint( v );
+      }
+      return out;
+   }
+   DIP_THROW( "Integer array expected." );
+}
+
+/// \brief Convert a floating-point array from `mxArray` to `dip::FloatArray` by copy.
+dip::FloatArray GetFloatArray( mxArray const* mx ) {
+   if( IsVector( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
+      dip::uint n = mxGetNumberOfElements( mx );
+      dip::FloatArray out( n );
+      auto data = mxGetPr( mx );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         out[ ii ] = data[ ii ];
+      }
+      return out;
+   }
+   DIP_THROW( "Floating-point array expected." );
+}
+
+/// \brief Convert a coordinates array from `mxArray` to `dip::CoordinateArray` by copy.
+///
+/// A coordinates array is either a cell array with arrays of unsigned integers (all of them
+/// the same length), or a matrix with a row per coordinate and a column per dimension.
+dip::CoordinateArray GetCoordinateArray( mxArray const* mx ) {
+   if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
+      dip::uint n = mxGetM( mx );
+      dip::uint ndims = mxGetN( mx );
+      dip::CoordinateArray out( n );
+      auto data = mxGetPr( mx );
+      for( auto& o : out ) {
+         o.resize( ndims );
+         for( dip::uint ii = 0; ii < ndims; ++ii ) {
+            double v = data[ ii * n ];
+            DIP_THROW_IF( ( std::fmod( v, 1 ) != 0 ) || ( v < 0 ), "Coordinate value not an unsigned integer." );
+            o[ ii ] = dip::uint( v );
+         }
+         ++data;
+      }
+      return out;
+   } else if( mxIsCell( mx ) && IsVector( mx )) {
+      dip::uint n = mxGetNumberOfElements( mx );
+      dip::CoordinateArray out( n );
+      dip::uint ndims = 0;
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         mxArray const* elem = mxGetCell( mx, ii );
+         if( ii == 0 ) {
+            ndims = mxGetNumberOfElements( elem );
+         } else {
+            DIP_THROW_IF( ndims != mxGetNumberOfElements( elem ), "Coordinates in array must have consistent dimensionalities." );
+         }
+         try {
+            out[ ii ] = GetUnsignedArray( elem );
+         } catch( ... ) {
+            DIP_THROW( "Coordinates in array must be unsigned integer arrays." );
+         }
+      }
+      return out;
+   }
+   DIP_THROW( "Coordinate array expected." );
+}
+
+/// \brief Convert a string from `mxArray` to `dip::String` by copy.
+dip::String GetString( mxArray const* mx ) {
+   if( IsVector( mx ) && mxIsChar( mx )) {
+      dip::String out( mxGetNumberOfElements( mx ), '\0' );
+      mxGetString( mx, &( out[ 0 ] ), out.size() + 1 ); // Why is out.data() a const* ???
+      return out;
+   }
+   DIP_THROW( "String expected." );
+}
+
+/// \brief Convert a cell array of strings from `mxArray` to `dip::StringArray` by copy.
+dip::StringArray GetStringArray( mxArray const* mx ) {
+   if( IsVector( mx ) && mxIsCell( mx )) {
+      dip::uint n = mxGetNumberOfElements( mx );
+      dip::StringArray out( n );
+      try {
+         for( dip::uint ii = 0; ii < n; ++ii ) {
+            out[ ii ] = GetString( mxGetCell( mx, ii ) );
+         }
+      } catch( ... ) {
+         DIP_THROW( "String array expected." );
+      }
+      return out;
+   }
+   DIP_THROW( "String array expected." );
+}
+
+/// \brief Convert a cell array of string from `mxArray` to `dip::StringSet` by copy.
+dip::StringSet GetStringSet( mxArray const* mx ) {
+   if( IsVector( mx ) && mxIsCell( mx )) {
+      dip::uint n = mxGetNumberOfElements( mx );
+      dip::StringSet out;
+      try {
+         for( dip::uint ii = 0; ii < n; ++ii ) {
+            out.insert( GetString( mxGetCell( mx, ii ) ) );
+         }
+      } catch( ... ) {
+         DIP_THROW( "String set expected." );
+      }
+      return out;
+   }
+   DIP_THROW( "String set expected." );
+}
+
+/// \brief Convert an integer array from `mxArray` to `dip::Range` by copy.
+///
+/// A range is an integer array with zero to three elements, ordered the same way as in the
+/// constructors for `dip::Range`.
+dip::Range GetRange( mxArray const* mx ) {
+   if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
+      dip::uint n = mxGetNumberOfElements( mx );
+      if( n <= 3 ) {
+         dip::Range out; // default = { 0, -1, 1 } ( == 1:1:end in MATLAB-speak )
+         if( n > 0 ) {
+            auto data = mxGetPr( mx );
+            double start = data[ 0 ];
+            DIP_THROW_IF( std::fmod( start, 1 ) != 0, "Range start value must be an integer." );
+            out.start = dip::sint( start );
+            if( n > 1 ) {
+               double stop = data[ 1 ];
+               DIP_THROW_IF( std::fmod( stop, 1 ) != 0, "Range start value must be an integer." );
+               out.stop = dip::sint( stop );
+               if( n > 2 ) {
+                  double step = data[ 2 ];
+                  DIP_THROW_IF(( std::fmod( step, 1 ) != 0 ) || ( step < 0 ), "Range step value must be a positive integer." );
+                  out.step = dip::uint( step );
+               }
+            } else {
+               out.stop = out.start; // with one number, we start and stop at the same value
+            }
+         }
+         return out;
+      }
+   }
+   DIP_THROW( "Range expected." );
+}
+
+/// \brief Convert a cell array of integer array from `mxArray` to `dip::RangeArray` by copy.
+dip::RangeArray GetRangeArray( mxArray const* mx ) {
+   if( IsVector( mx ) && mxIsCell( mx )) {
+      dip::uint n = mxGetNumberOfElements( mx );
+      dip::RangeArray out( n );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         out[ ii ] = GetRange( mxGetCell( mx, ii ) );
+      }
+      return out;
+   }
+   DIP_THROW( "Range array expected." );
 }
 
 /// \brief An output stream buffer for MEX-files.

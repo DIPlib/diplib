@@ -190,11 +190,9 @@ struct Range {
    /// Create a range that indicates a single pixel
    Range( dip::sint i ) : start{ i }, stop{ i }, step{ 1 } {}
 
-   /// Create a range that indicates all pixels between `i` and `j`
-   Range( dip::sint i, dip::sint j ) : start{ i }, stop{ j }, step{ 1 } {}
-
-   /// Create a range with all thee values set
-   Range( dip::sint i, dip::sint j, dip::uint s ) : start{ i }, stop{ j }, step{ s } {}
+   /// \brief Create a range using two or three values; it indicates all pixels between `i` and `j`, both inclusive.
+   /// The step size defaults to 1.
+   Range( dip::sint i, dip::sint j, dip::uint s = 1 ) : start{ i }, stop{ j }, step{ s } {}
 
    /// \brief Modify a range so that negative values are assigned correct
    /// values according to the given size. Throws if the range falls

@@ -81,17 +81,35 @@ struct DataType {
    constexpr DataType() : dt( DT::SFLOAT ) {}
    constexpr DataType( DT _dt ) : dt( _dt ) {}
 
-   constexpr explicit DataType( bin ) : dt( DT::BIN ) {}
-   constexpr explicit DataType( uint8 ) : dt( DT::UINT8 ) {}
-   constexpr explicit DataType( sint8 ) : dt( DT::SINT8 ) {}
-   constexpr explicit DataType( uint16 ) : dt( DT::UINT16 ) {}
-   constexpr explicit DataType( sint16 ) : dt( DT::SINT16 ) {}
-   constexpr explicit DataType( uint32 ) : dt( DT::UINT32 ) {}
-   constexpr explicit DataType( sint32 ) : dt( DT::SINT32 ) {}
-   constexpr explicit DataType( sfloat ) : dt( DT::SFLOAT ) {}
-   constexpr explicit DataType( dfloat ) : dt( DT::DFLOAT ) {}
+   constexpr explicit DataType( bin      ) : dt( DT::BIN      ) {}
+   constexpr explicit DataType( uint8    ) : dt( DT::UINT8    ) {}
+   constexpr explicit DataType( sint8    ) : dt( DT::SINT8    ) {}
+   constexpr explicit DataType( uint16   ) : dt( DT::UINT16   ) {}
+   constexpr explicit DataType( sint16   ) : dt( DT::SINT16   ) {}
+   constexpr explicit DataType( uint32   ) : dt( DT::UINT32   ) {}
+   constexpr explicit DataType( sint32   ) : dt( DT::SINT32   ) {}
+   constexpr explicit DataType( sfloat   ) : dt( DT::SFLOAT   ) {}
+   constexpr explicit DataType( dfloat   ) : dt( DT::DFLOAT   ) {}
    constexpr explicit DataType( scomplex ) : dt( DT::SCOMPLEX ) {}
    constexpr explicit DataType( dcomplex ) : dt( DT::DCOMPLEX ) {}
+
+   /// \brief A string can be cast to a data type. The recognized names are identical to the enumerator names in `dip::DataType::DT`.
+   explicit DataType( String name ) {
+      if( name == "BIN"      ) { dt = DT::BIN;      } else
+      if( name == "UINT8"    ) { dt = DT::UINT8;    } else
+      if( name == "SINT8"    ) { dt = DT::SINT8;    } else
+      if( name == "UINT16"   ) { dt = DT::UINT16;   } else
+      if( name == "SINT16"   ) { dt = DT::SINT16;   } else
+      if( name == "UINT32"   ) { dt = DT::UINT32;   } else
+      if( name == "SINT32"   ) { dt = DT::SINT32;   } else
+      if( name == "SFLOAT"   ) { dt = DT::SFLOAT;   } else
+      if( name == "DFLOAT"   ) { dt = DT::DFLOAT;   } else
+      if( name == "SCOMPLEX" ) { dt = DT::SCOMPLEX; } else
+      if( name == "DCOMPLEX" ) { dt = DT::DCOMPLEX; }
+      else {
+         DIP_THROW( "Illegal data type name" );
+      }
+   }
 
    /// \brief Swaps the values of `this` and `other`
    void swap( DataType& other ) {
