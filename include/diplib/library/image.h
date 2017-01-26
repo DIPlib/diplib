@@ -137,7 +137,13 @@ class Image {
       /// \brief The default-initialized image is 0D (an empty sizes array), one tensor element, dip::DT_SFLOAT,
       /// and raw (it has no data segment).
       Image() {}
+
       // Copy constructor, move constructor, copy assignment, move assignment and destructor are all default.
+      Image( Image const& ) = default;
+      Image( Image&& ) = default;
+      ~Image() = default;
+      Image& operator=( Image const& ) = default;  // TODO: overload to copy pixels when external interfaces don't match?
+      Image& operator=( Image&& ) = default;       // TODO: overload to copy pixels when external interfaces don't match?
 
       /// \brief Forged image of given sizes and data type. The data is left uninitialized.
       explicit Image( UnsignedArray const& sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :

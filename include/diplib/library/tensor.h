@@ -79,7 +79,7 @@ class Tensor {
       /// should help make more generic functions that can access tensor elements
       /// without paying attention to the tensor's Shape value.
       enum class Shape {
-            COL_VECTOR,       ///< a vector (stores n elements)
+            COL_VECTOR = 0,   ///< a vector (stores n elements)
             ROW_VECTOR,       ///< a row vector (stores n elements)
             COL_MAJOR_MATRIX, ///< a matrix (stores n x m elements)
             ROW_MAJOR_MATRIX, ///< a row-major matrix (stores n x m elements)

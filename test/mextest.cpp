@@ -38,7 +38,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
 
          //std::cout << dip::DataType( dml::GetString( prhs[ 0 ] )) << std::endl;
 
-         //dml::GetCoordinateArray( prhs[ 0 ] );
+         dml::GetCoordinateArray( prhs[ 0 ] );
 
          /*
          auto bla = dml::GetRangeArray( prhs[ 0 ] );
@@ -47,9 +47,12 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          }
          */
 
+         //plhs[ 0 ] = dml::GetArray( dip::IntegerArray{5,2,6,3,1} );
+         plhs[ 0 ] = dml::GetArray( "bla" );
+
       } else {
 
-         mexPrintf( "Creating output image img_out0\n" );
+         std::cout << "Creating output image img_out0\n";
          dml::MatlabInterface mi;
          dip::Image img_out0 = mi.NewImage();
          img_out0.SetSizes( { 3, 5 } );
@@ -57,26 +60,26 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          img_out0.Forge();
          std::cout << img_out0;
 
-         mexPrintf( "Reallocating output image img_out0\n" );
+         std::cout << "Reallocating output image img_out0\n";
          img_out0.Strip();
          img_out0.Forge();
 
-         mexPrintf( "Copying output image img_out0 to img_out1\n" );
+         std::cout << "Copying output image img_out0 to img_out1\n";
          dip::Image img_out1;
          img_out1 = img_out0;
-         mexPrintf( "Reallocating output image img_out1\n" );
+         std::cout << "Reallocating output image img_out1\n";
          img_out1.Strip();
          img_out1.SetSizes( { 2, 3 } );
          img_out1.Forge();
 
-         mexPrintf( "The two output images:\n" );
+         std::cout << "The two output images:\n";
          std::cout << img_out0;
          std::cout << img_out1;
 
-         mexPrintf( "Getting the array for img_out0\n" );
+         std::cout << "Getting the array for img_out0\n";
          plhs[ 0 ] = mi.GetArray( img_out0 );
 
-         mexPrintf( "Exiting scope\n" );
+         std::cout << "Exiting scope\n";
 
       }
 

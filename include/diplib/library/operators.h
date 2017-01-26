@@ -655,17 +655,17 @@ inline Image operator%( Image const& lhs, T const& rhs ) {
 // Bit-wise operators
 //
 
-/// \brief Boolean operator, calls `dip::And`.
+/// \brief Bit-wise operator, calls `dip::And`.
 inline Image operator&( Image const& lhs, Image const& rhs ) {
    return And( lhs, rhs );
 }
 
-/// \brief Boolean operator, calls `dip::Or`.
+/// \brief Bit-wise operator, calls `dip::Or`.
 inline Image operator|( Image const& lhs, Image const& rhs ) {
    return Or( lhs, rhs );
 }
 
-/// \brief Boolean operator, calls `dip::Xor`.
+/// \brief Bit-wise operator, calls `dip::Xor`.
 inline Image operator^( Image const& lhs, Image const& rhs ) {
    return Xor( lhs, rhs );
 }
