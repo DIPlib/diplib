@@ -1,12 +1,18 @@
-# CMakeLists file for DIPlib 3.0
+# CMakeLists file for DIPlib 3
 
 cmake_minimum_required (VERSION 3.5.2) # It might work with older versions, but this is the version I'm testing with.
 
-project (DIPlib)
+project (DIPlib VERSION 3.0)
 
+# Debug or Release?
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
+
+# Installation path
+set(CMAKE_INSTALL_PREFIX "${CMAKE_BUILD_TYPE}" CACHE PATH "Installation directory")
+set(DOCUMENTATION_OUTPUT ${CMAKE_INSTALL_PREFIX}/share/doc/DIPlib)
+set(DIPIMAGE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/share/dipimage)
 
 # Compiler flags
 set(CMAKE_CXX_STANDARD 11)
@@ -59,7 +65,6 @@ find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)
 
 # Doxygen
 find_package(Doxygen)
-set(DOCUMENTATION_OUTPUT doc)
 
 
 ### DIPlib library
@@ -77,6 +82,8 @@ file(
       "include/diplib/library/*.h"
 )
 add_library(DIP STATIC ${SOURCES} ${HEADERS})
+install(TARGETS DIP DESTINATION lib)
+install(DIRECTORY include/ DESTINATION include)
 
 #add_library(DIP DYNAMIC ${SOURCES} ${HEADERS})
 # If you want to compile a dynamic library, you need to set export properties for all public functions.
@@ -94,6 +101,21 @@ if(ENABLE_DOCTEST)
    add_dependencies(check unit_tests)
    include(dependencies/doctest/doctest_force_link_static_lib_in_target.cmake)
    doctest_force_link_static_lib_in_target(unit_tests DIP) # This pulls in all object files from the static DIP library
+endif()
+
+
+### DIPimage toolbox for MATLAB
+
+if(Matlab_FOUND)
+   # Install M-files
+   install(DIRECTORY dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m") # could also do PATTERN "*.cpp" EXCLUDE
+   # Compile and install MEX-files in @dip_image/private
+   matlab_add_mex(NAME dip_operators SRC dipimage/@dip3_image/private/dip_operators.cpp LINK_TO DIP)
+   install(TARGETS dip_operators DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip3_image/private)
+   # Compile and install MEX-files in @dip_image
+   #install(TARGETS dip_operators DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip3_image)
+   # Compile and install MEX-files in toolbox directory
+   #install(TARGETS dip_operators DESTINATION ${DIPIMAGE_INSTALL_PATH})
 endif()
 
 
@@ -139,7 +161,19 @@ if(Matlab_FOUND)
    matlab_add_mex(NAME mextest_pixel_table SRC test/mextest_pixel_table.cpp LINK_TO DIP)
    set_target_properties(mextest_pixel_table PROPERTIES EXCLUDE_FROM_ALL 1)
 
-   add_custom_target(mex DEPENDS mextest mextest_function mextest_iterators mextest_measure mextest_maxmin mextest_pixel_table)
+   matlab_add_mex(NAME mextest_dip3_image SRC test/mextest_dip3_image.cpp LINK_TO DIP)
+   set_target_properties(mextest_dip3_image PROPERTIES EXCLUDE_FROM_ALL 1)
+
+   add_custom_target(
+         mex DEPENDS
+         mextest
+         mextest_function
+         mextest_iterators
+         mextest_measure
+         mextest_maxmin
+         mextest_pixel_table
+         mextest_dip3_image
+   )
 
 endif(Matlab_FOUND)
 
@@ -148,20 +182,18 @@ endif(Matlab_FOUND)
 
 if (DOXYGEN_FOUND)
 
-   set(DOXYGEN_INPUT Doxyfile)
+   configure_file(src/documentation/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
 
-   add_custom_command(
-         OUTPUT ${DOCUMENTATION_OUTPUT}
+   add_custom_target(
+         apidoc
          COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
-         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
+         COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
          COMMAND ${CMAKE_COMMAND} -E echo "Fixing header names..."
-         COMMAND tools/fix_doc_includes.sh ${DOCUMENTATION_OUTPUT}/html
+         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/fix_doc_includes.sh ${DOCUMENTATION_OUTPUT}/html
          COMMAND ${CMAKE_COMMAND} -E echo "Done."
-         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
          DEPENDS ${DOXYGEN_INPUT}
    )
-
-   add_custom_target(apidoc DEPENDS ${DOCUMENTATION_OUTPUT})
 
 endif (DOXYGEN_FOUND)
 
@@ -175,15 +207,6 @@ add_custom_command(
 )
 
 add_custom_command(
-      OUTPUT ${DOCUMENTATION_OUTPUT}/DIPworkplan.pdf
-      COMMAND pandoc -s DIPworkplan.md -o ${DOCUMENTATION_OUTPUT}/DIPworkplan.pdf
-      --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
-      --toc --listings -H pandoc/listings_setup.tex --number-sections
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPENDS ${DIPworkplan.md}
-)
-
-add_custom_command(
       OUTPUT ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf
       COMMAND pandoc -s DIPproposal.md -o ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf
       --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
@@ -192,7 +215,8 @@ add_custom_command(
       DEPENDS ${DIPproposal.md}
 )
 
-add_custom_target(docs DEPENDS
-                  ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
-                  ${DOCUMENTATION_OUTPUT}/DIPworkplan.pdf
-                  ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf)
+add_custom_target(
+      docs DEPENDS
+      ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
+      ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf
+)

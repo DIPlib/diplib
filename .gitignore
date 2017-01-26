@@ -1,6 +1,3 @@
 target/
-doc/
 .idea/
 *.geany
-*.pdf
-*.html
