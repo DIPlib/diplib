@@ -33,9 +33,12 @@ static inline void CopyBufferFromTo(
       std::vector< dip::sint > const& lookUpTable // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
 ) {
    //std::cout << "CopyBuffer: ";
+   //std::cout << "   inStride = " << inStride << ", outStride = " << outStride << std::endl;
+   //std::cout << "   pixels = " << pixels << ", tensorElements = " << tensorElements << std::endl;
    if( tensorElements == 1 ) {
       for( dip::uint pp = 0; pp < pixels; ++pp ) {
          *outBuffer = clamp_cast< outT >( *inBuffer );
+         //std::cout << *outBuffer << " ";
          inBuffer += inStride;
          outBuffer += outStride;
       }

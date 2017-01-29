@@ -20,7 +20,7 @@
 #include <iterator>
 #include <algorithm>
 #include <utility>
-//#include <iostream> // for debugging
+#include <iostream>
 
 #include "error.h"
 
@@ -516,6 +516,22 @@ class DimensionArray {
             }
          }
          return true;
+      }
+
+      /// Writes the array to a stream
+      friend std::ostream& operator<<(
+            std::ostream& os,
+            DimensionArray const& array
+      ) {
+         os << "[";
+         if( !array.empty() ) {
+            os << array[ 0 ];
+         }
+         for( size_type ii = 1; ii < array.size(); ++ii ) {
+            os << ", " << array[ ii ];
+         }
+         os << "]";
+         return os;
       }
 
    private:

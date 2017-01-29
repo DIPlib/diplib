@@ -198,30 +198,20 @@ std::ostream& operator<<(
    os << std::endl;
 
    // Image size
-   os << "   sizes: ";
-   dip::UnsignedArray const& sizes = img.Sizes();
-   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
-      os << ( ii > 0 ? ", " : "" ) << sizes[ ii ];
-   }
-   os << std::endl;
+   os << "   sizes: " << img.Sizes() << std::endl;
 
    // Pixel size
    if( img.HasPixelSize() ) {
       os << "   pixel size: ";
       dip::PixelSize const& ps = img.PixelSize();
-      for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+      for( dip::uint ii = 0; ii < img.Dimensionality(); ++ii ) {
          os << ( ii > 0 ? " x " : "" ) << ps[ ii ];
       }
       os << std::endl;
    }
 
    // Strides
-   os << "   strides: ";
-   dip::IntegerArray const& strides = img.Strides();
-   for( dip::uint ii = 0; ii < strides.size(); ++ii ) {
-      os << ( ii > 0 ? ", " : "" ) << strides[ ii ];
-   }
-   os << std::endl;
+   os << "   strides: " << img.Strides() << std::endl;
 
    os << "   tensor stride: " << img.TensorStride() << std::endl;
 

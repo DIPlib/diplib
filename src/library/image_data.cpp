@@ -204,13 +204,10 @@ CoordinatesComputer::CoordinatesComputer( UnsignedArray const& sizes, IntegerArr
       }
    }
    //std::cout << "   CoordinatesComputer: \n";
-   //std::cout << "      strides_ = ";
-   //for( dip::uint ii = 0; ii < strides_.size(); ++ii ) std::cout << strides_[ii] << ", ";
-   //std::cout << std::endl << "      sizes_ = ";
-   //for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) std::cout << sizes_[ii] << ", ";
-   //std::cout << std::endl << "      index_ = ";
-   //for( dip::uint ii = 0; ii < index_.size(); ++ii ) std::cout << index_[ii] << ", ";
-   //std::cout << std::endl << "      offset_ = " << offset_ << std::endl;
+   //std::cout << "      strides_ = " << strides_ << std::endl
+   //std::cout << "      sizes_ = " << sizes_ << std::endl
+   //std::cout << "      index_ = " << index_ << std::endl;
+   //std::cout << "      offset_ = " << offset_ << std::endl;
 }
 
 // The function that computes OffsetToCoordinates and IndexToCoordinates.
