@@ -59,7 +59,7 @@ void Scan(
    }
    StringArray colspaces = OutputColorSpaces( c_in, nTensorElements );
 
-   // Do tensor to spatial dimension if necessary
+   // Will we apply tensor to spatial dimension?
    bool tensorToSpatial = false;
    if( opts == Scan_TensorAsSpatialDim ) {
       bool allscalar = true;
@@ -71,21 +71,25 @@ void Scan(
          }
       }
       if( !allscalar ) {
-         for( dip::uint ii = 0; ii < nIn; ++ii ) {
-            in[ ii ].TensorToSpatial( 0 );
-         }
          tensorToSpatial = true;
       }
    }
 
    // Do singleton expansion if necessary
    UnsignedArray sizes;
+   dip::uint tsize = 1;
    if( nIn > 0 ) {
       if( opts != Scan_NoSingletonExpansion ) {
          sizes = SingletonExpandedSize( in );
+         if( tensorToSpatial ) {
+            tsize = SingletonExpendedTensorElements( in );
+         }
          for( dip::uint ii = 0; ii < nIn; ++ii ) {
             if( in[ ii ].Sizes() != sizes ) {
                in[ ii ].ExpandSingletonDimensions( sizes );
+            }
+            if( tensorToSpatial && ( in[ ii ].TensorElements() != tsize )) {
+               in[ ii ].ExpandSingletonTensor( tsize );
             }
          }
       } else {
@@ -102,11 +106,16 @@ void Scan(
    }
 
    // Adjust output if necessary (and possible)
-   // TODO: we should allocate c_out[ ii ] correctly, not with tensor dimension as spatial dimension.
    DIP_START_STACK_TRACE
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       Image& tmp = c_out[ ii ].get();
-      dip::uint nTensor = opts == Scan_TensorAsSpatialDim ? 1 : nTensorElements[ ii ]; // Input parameter ignored, output matches singleton-expanded number of tensor elements.
+      dip::uint nTensor;
+      if( opts == Scan_TensorAsSpatialDim ) {
+         // Input parameter ignored, output matches singleton-expanded number of tensor elements.
+         nTensor = tsize;
+      } else {
+         nTensor = nTensorElements[ ii ];
+      }
       if( tmp.IsForged() && tmp.IsOverlappingView( in )) {
          tmp.Strip();
       }
@@ -121,6 +130,17 @@ void Scan(
    ImageArray out( nOut );
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       out[ ii ] = c_out[ ii ].get().QuickCopy();
+   }
+
+   // Do tensor to spatial dimension if necessary
+   if( tensorToSpatial ) {
+      for( dip::uint ii = 0; ii < nIn; ++ii ) {
+         in[ ii ].TensorToSpatial( 0 );
+      }
+      for( dip::uint ii = 0; ii < nOut; ++ii ) {
+         out[ ii ].TensorToSpatial( 0 );
+      }
+      sizes.insert( 0, tsize );
    }
 
    // Can we treat the images as if they were 1D?
@@ -160,9 +180,6 @@ void Scan(
    }
 
    // If we can treat the images as 1D, convert them to 1D.
-   // Note we're only converting the copies of the headers, not the original ones.
-   // Note also that if we are dealing with a 0D image, it also has a simple
-   // stride and hence will be converted into 1D.
    DIP_START_STACK_TRACE
       if( scan1D ) {
          for( dip::uint ii = 0; ii < nIn; ++ii ) {
@@ -178,16 +195,16 @@ void Scan(
    /*
    std::cout << "dip::Framework::Scan -- images\n";
    for( dip::uint ii = 0; ii < nIn; ++ii ) {
-      std::cout << "   Input image, before: " << ii << std::endl;
-      std::cout << c_in[ii].get();
-      std::cout << "   Input image, after: " << ii << std::endl;
-      std::cout << in[ii];
+      std::cout << "- Input image, before: " << ii << std::endl;
+      std::cout << "  " << c_in[ii].get(); // NOTE! this one might look like one of the output images now, if they are the same object
+      std::cout << "- Input image, after: " << ii << std::endl;
+      std::cout << "  " << in[ii];
    }
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
-      std::cout << "   Output image, before: " << ii << std::endl;
-      std::cout << c_out[ii].get();
-      std::cout << "   Output image, after: " << ii << std::endl;
-      std::cout << out[ii];
+      std::cout << "- Output image, before: " << ii << std::endl;
+      std::cout << "  " << c_out[ii].get();
+      std::cout << "- Output image, after: " << ii << std::endl;
+      std::cout << "  " << out[ii];
    }
    */
 
@@ -287,21 +304,22 @@ void Scan(
 
    /*
    std::cout << "dip::Framework::Scan -- buffers\n";
+   std::cout << "   sizes = " << sizes << std::endl;
    std::cout << "   processing dimension = " << processingDim << std::endl;
    std::cout << "   buffer size = " << bufferSize << std::endl;
    for( dip::uint ii = 0; ii < nIn; ++ii ) {
-      std::cout << "   in[" << ii << "] use buffer: " << ( inUseBuffer[ii] ? "yes" : "no" ) << std::endl;
-      std::cout << "   in[" << ii << "] buffer stride: " << inBuffers[ii].stride << std::endl;
-      std::cout << "   in[" << ii << "] buffer tensorStride: " << inBuffers[ii].tensorStride << std::endl;
-      std::cout << "   in[" << ii << "] buffer tensorLength: " << inBuffers[ii].tensorLength << std::endl;
-      std::cout << "   in[" << ii << "] buffer type: " << inBufferTypes[ii].Name() << std::endl;
+      std::cout << "   in[" << ii << "]: use buffer: " << ( inUseBuffer[ii] ? "yes" : "no" ) << std::endl;
+      std::cout << "      buffer stride: " << inBuffers[ii].stride << std::endl;
+      std::cout << "      buffer tensorStride: " << inBuffers[ii].tensorStride << std::endl;
+      std::cout << "      buffer tensorLength: " << inBuffers[ii].tensorLength << std::endl;
+      std::cout << "      buffer type: " << inBufferTypes[ii].Name() << std::endl;
    }
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
-      std::cout << "   out[" << ii << "] use buffer: " << ( outUseBuffer[ii] ? "yes" : "no" ) << std::endl;
-      std::cout << "   out[" << ii << "] buffer stride: " << outBuffers[ii].stride << std::endl;
-      std::cout << "   out[" << ii << "] buffer tensorStride: " << outBuffers[ii].tensorStride << std::endl;
-      std::cout << "   out[" << ii << "] buffer tensorLength: " << outBuffers[ii].tensorLength << std::endl;
-      std::cout << "   out[" << ii << "] buffer type: " << outBufferTypes[ii].Name() << std::endl;
+      std::cout << "   out[" << ii << "]: use buffer: " << ( outUseBuffer[ii] ? "yes" : "no" ) << std::endl;
+      std::cout << "      buffer stride: " << outBuffers[ii].stride << std::endl;
+      std::cout << "      buffer tensorStride: " << outBuffers[ii].tensorStride << std::endl;
+      std::cout << "      buffer tensorLength: " << outBuffers[ii].tensorLength << std::endl;
+      std::cout << "      buffer type: " << outBufferTypes[ii].Name() << std::endl;
    }
    */
 
@@ -405,13 +423,6 @@ void Scan(
    }
 
    // TODO: End threads.
-
-   // Return output image tensors if we made them a spatial dimension
-   if( tensorToSpatial ) {
-      for( dip::uint ii = 0; ii < nOut; ++ii ) {
-         c_out[ ii ].get().SpatialToTensor( 0 );
-      }
-   }
 
    // Set pixel size and color space
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
