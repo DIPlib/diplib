@@ -228,6 +228,18 @@ struct DataType {
       return IsSInt() || IsFloat() || IsComplex();
    }
 
+   /// \brief Returns the real data type corresponding to a complex data type
+   DataType Real() {
+      switch( dt ) {
+         case DT::SCOMPLEX:
+            return DT::SFLOAT;
+         case DT::DCOMPLEX:
+            return DT::DFLOAT;
+         default:
+            return dt;
+      };
+   }
+
    /// \class dip::DataType::Classes
    /// \brief Specifies a collection of data types.
    ///
@@ -287,7 +299,6 @@ struct DataType {
    //
    // Functions to suggest an output data type for all types of filters and operators
    //
-
 
    /// \brief Returns a suitable floating-point type that can hold the samples of `type`.
    static DataType SuggestFloat( DataType type );
