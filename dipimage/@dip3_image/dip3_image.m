@@ -24,7 +24,7 @@ classdef dip3_image
    properties (Access=private)
       Data = [] % Pixel data, see Array property
       TrailingSingletons = 0 % Number of trailing singleton dimensions.
-      TensorShapeInternal = dip_tensor_shape.COL_VECTOR % How the tensor is stored, see TensorShape property.
+      TensorShapeInternal = 'column vector'; % How the tensor is stored, see TensorShape property.
       TensorSizeInternal = [1,1] % Size of the tensor, see TensorSize property.
    end
 
@@ -47,11 +47,19 @@ classdef dip3_image
       TensorElements % The number of tensor elements.
       TensorSize  % The size of the tensor: [ROWS,COLUMNS].
       %TensorShape - How the tensor is stored.
-      %   A single value of class dip_tensor_shape.
+      %   A string, one of:
+      %      'column vector'
+      %      'row vector'
+      %      'column-major matrix'
+      %      'row-major matrix'
+      %      'diagonal matrix'
+      %      'symmetric matrix'
+      %      'upper triangular matrix'
+      %      'lower triangular matrix'
       %
       %   Set this property to change how the tensor storage is interpreted.
-      %   Assign either a value of class dip_tensor_shape, or a numeric
-      %   array representing a size. The setting must be consistent with the
+      %   Assign either one of the strings above, or a numeric array
+      %   representing a size. The setting must be consistent with the
       %   TensorElements property. The tensor size is set to match.
       TensorShape
       DataType    % Gives the MATLAB class corresponding to the image data type.
@@ -66,11 +74,11 @@ classdef dip3_image
       function img = dip3_image(varargin)
          %dip3_image   Constructor
          %   Construct an object with one of the following syntaxes:
-         %      IMG = DIP3_IMAGE(IMAGE)
-         %      IMG = DIP3_IMAGE(IMAGE,TENSOR_SHAPE)
-         %      IMG = DIP3_IMAGE('array',ARRAY)
-         %      IMG = DIP3_IMAGE('array',ARRAY,TENSOR_SHAPE)
-         %      IMG = DIP3_IMAGE('array',ARRAY,TENSOR_SHAPE,NDIMS)
+         %      OUT = DIP3_IMAGE(IMAGE)
+         %      OUT = DIP3_IMAGE(IMAGE,TENSOR_SHAPE,DATATYPE)
+         %      OUT = DIP3_IMAGE('array',ARRAY)
+         %      OUT = DIP3_IMAGE('array',ARRAY,TENSOR_SHAPE)
+         %      OUT = DIP3_IMAGE('array',ARRAY,TENSOR_SHAPE,NDIMS)
          %
          %   IMAGE is a matrix representing an image. Its
          %   class must be numeric or logical. It can be complex, but data
@@ -79,7 +87,9 @@ classdef dip3_image
          %   Matrices with only one column or one row are converted to a 1D
          %   image. Matrices with one value are converted to 0D images.
          %   Otherwise, the dimensionality is not affected, and singleton
-         %   dimensions are kept.
+         %   dimensions are kept. If IMAGE is an object of class dip3_image,
+         %   it is kept as is, with possibly a different tensor shape and/or
+         %   data type.
          %
          %   IMAGE can also be a cell array containing the tensor
          %   components of the image. Each element in the cell array must
@@ -92,11 +102,23 @@ classdef dip3_image
          %   vector indicating the matrix size, or a struct as the
          %   dip3_image.TensorShape property.
          %
+         %   DATATYPE is a string representing the required data type of
+         %   the created dip_image object. Possible string and aliases are:
+         %    - 'binary', aliases 'logical','bin'
+         %    - 'uint8'
+         %    - 'uint16'
+         %    - 'uint32'
+         %    - 'int8', alias 'sint8'
+         %    - 'int16', alias 'sint16'
+         %    - 'int32', alias 'sint32'
+         %    - 'single', alias 'sfloat'
+         %    - 'double', alias 'dfloat'
+         %    - 'scomplex'
+         %    - 'dcomplex'
+         %
          %   NDIMS is the number of dimensions in the data. It equals
          %   SIZE(ARRAY)-2, but can be set to be larger, to add singleton
          %   dimensions at the end.
-         %
-         %   TODO: Old behavior was DIP_IMAGE(IMAGE,DATATYPE).
 
          % Fix input data
          if nargin < 1
@@ -120,32 +142,87 @@ classdef dip3_image
             % User-friendly method
             data = varargin{1};
             tensor_shape = [];
+            datatype = [];
+            complex = false;
             if nargin > 1
-               tensor_shape = varargin{2};
-            end
-            if iscell(data)
-               error('Cell data not yet supported');
-               % TODO: implement this!
-            else
-               if isempty(tensor_shape)
-                  % Add tensor dimension
-                  data = shiftdim(data,-1);
+               if validate_tensor_shape(varargin{2})
+                  tensor_shape = varargin{2};
+               else
+                  [datatype,complex] = matlabtype(varargin{2});
+               end
+               if nargin > 2
+                  if isempty(tensor_shape) && validate_tensor_shape(varargin{3})
+                     tensor_shape = varargin{3};
+                  elseif isempty(datatype)
+                     [datatype,complex] = matlabtype(varargin{3});
+                  else
+                     error('Unrecognized string');
+                  end
+                  if nargin > 3
+                     error('Too many arguments in call to dip_image constructor')
+                  end
                end
             end
-            % Add the complex dimension
-            data = shiftdim(data,-1);
-            if ~isreal(data)
-               data = cat(1,real(data),imag(data));
-            end
-            % Handle 1D images properly
-            sz = size(data);
-            if sum(sz(3:end)>1) == 1
-               data = reshape(data,sz(1),sz(2),[]);
-            end
-            % Write properties
-            img.Array = data; % calls set.Array
-            if ~isempty(tensor_shape)
-               img.TensorShape = tensor_shape; % calls set.TensorShape
+            if isa(data,'dip3_image')
+               % Convert dip_image to new dip_image
+               img = data;
+               % Data type conversion
+               if ~isempty(datatype)
+                  if ~complex && img.IsComplex
+                     warning('Ignoring data type conversion: complex data cannot be converted to requested type')
+                  else
+                     if ~isa(img.Data,datatype)
+                        img.Data = array_convert_datatype(img.Data,datatype);
+                     end
+                     if complex && ~img.IsComplex
+                        img.Data = cat(1,img.Data,zeros(size(img.Data),datatype));
+                     end
+                  end
+               end
+               % Tensor shape
+               if ~isempty(tensor_shape)
+                  img.TensorShape = tensor_shape; % calls set.TensorShape
+               end
+            else
+               % Create a new dip_image from given data
+               if iscell(data)
+                  % Convert cell array of images to new dip_image
+                  error('Cell data not yet supported');
+                  % TODO: implement this!
+               elseif isnumeric(data) || islogical(data)
+                  % Convert MATLAB array to new dip_image
+                  % Data type conversion
+                  if ~isempty(datatype)
+                     if ~isa(data,datatype)
+                        data = array_convert_datatype(data,datatype);
+                     end
+                  else
+                     datatype = class(data);
+                  end
+                  % Add tensor dimension
+                  if isempty(tensor_shape)
+                     data = shiftdim(data,-1);
+                  end
+               else
+                  error('Input image is not an image');
+               end
+               % Add the complex dimension
+               data = shiftdim(data,-1);
+               if ~isreal(data)
+                  data = cat(1,real(data),imag(data));
+               elseif complex
+                  data = cat(1,data,zeros(size(data),datatype));
+               end
+               % Handle 1D images properly
+               sz = size(data);
+               if sum(sz(3:end)>1) == 1
+                  data = reshape(data,sz(1),sz(2),[]);
+               end
+               % Write properties
+               img.Array = data; % calls set.Array
+               if ~isempty(tensor_shape)
+                  img.TensorShape = tensor_shape; % calls set.TensorShape
+               end
             end
          end
       end
@@ -157,7 +234,7 @@ classdef dip3_image
             error('Pixel data must be real, numeric or logical');
          end
          img.Data = data;
-         img.TensorShapeInternal = dip_tensor_shape.COL_VECTOR;
+         img.TensorShapeInternal = 'column vector';
          img.TensorSizeInternal = [size(img.Data,2),1];
          img.TrailingSingletons = 0;
       end
@@ -172,15 +249,14 @@ classdef dip3_image
 
       function img = set.TensorShape(img,tshape)
          nelem = size(img.Data,2);
-         if isa(tshape, 'dip_tensor_shape')
+         if isstring(tshape)
             % Figure out what the size must be
             switch tshape
-               case dip_tensor_shape.COL_VECTOR
+               case 'column vector'
                   tsize = [nelem,1];
-               case dip_tensor_shape.ROW_VECTOR
+               case 'row vector'
                   tsize = [1,nelem];
-               case {dip_tensor_shape.COL_MAJOR_MATRIX,...
-                     dip_tensor_shape.ROW_MAJOR_MATRIX}
+               case {'column-major matrix','row-major matrix'}
                   if prod(img.TensorShapeInternal) == nelem
                      tsize = img.TensorShapeInternal;
                   else
@@ -190,11 +266,9 @@ classdef dip3_image
                         error('TensorShape value not consistent with number of tensor elements')
                      end
                   end
-               case dip_tensor_shape.DIAGONAL_MATRIX
+               case 'diagonal matrix'
                   tsize = [nelem,nelem];
-               case {dip_tensor_shape.SYMMETRIC_MATRIX,...
-                     dip_tensor_shape.UPPTRIANG_MATRIX,...
-                     dip_tensor_shape.LOWTRIANG_MATRIX}
+               case {'symmetric matrix','upper triangular matrix','lower triangular matrix'}
                   rows = (sqrt(1+8*nelem)-1)/2;
                   if mod(rows,1) ~= 0
                      error('TensorShape value not consistent with number of tensor elements')
@@ -220,12 +294,12 @@ classdef dip3_image
                end
                tsize = tshape;
             end
-            tshape = dip_tensor_shape.COL_MAJOR_MATRIX;
+            tshape = 'column-major matrix';
          end
          if tsize(2) == 1
-            tshape = dip_tensor_shape.COL_VECTOR;
+            tshape = 'column vector';
          elseif tsize(1) == 1
-            tshape = dip_tensor_shape.ROW_VECTOR;
+            tshape = 'row vector';
          end
          img.TensorShapeInternal = tshape;
          img.TensorSizeInternal = tsize;
@@ -314,11 +388,13 @@ classdef dip3_image
          sz = obj.Size;
          if nargout > 1
             if nargin ~= 1, error('Unknown command option.'); end
-            if sz ~= 0
-               for ii=1:min(length(sz),nargout)
+            varargout = cell(1,nargout);
+            if ~isempty(obj)
+               n = min(length(sz),nargout);
+               for ii=1:n
                   varargout{ii} = sz(ii);
                end
-               for ii=ii+1:nargout
+               for ii=n+1:nargout
                   varargout{ii} = 1;
                end
             else
@@ -327,10 +403,18 @@ classdef dip3_image
                end
             end
          else
-            if nargin > 1
-               varargout{1} = sz(dim);
+            if ~isempty(obj)
+               if nargin > 1
+                  if dim <= length(sz)
+                     varargout{1} = sz(dim);
+                  else
+                     varargout{1} = 1;
+                  end
+               else
+                  varargout{1} = sz;
+               end
             else
-               varargout{1} = sz;
+               varargout{1} = 0;
             end
          end
       end
@@ -385,8 +469,12 @@ classdef dip3_image
 
       function n = numpixels(obj)
          %NUMPIXELS   Returns the number of pixels in the image
-         sz = size(obj.Data);
-         n = prod(sz(3:end));
+         if isempty(obj)
+            n = 0;
+         else
+            sz = size(obj.Data);
+            n = prod(sz(3:end));
+         end
       end
 
       function res = isempty(obj)
@@ -395,8 +483,22 @@ classdef dip3_image
       end
 
       function dt = datatype(obj)
-         %DATATYPE   Returns the data type of the samples (class of underlying data array).
-         dt = obj.DataType;
+         %DATATYPE   Returns a string representing  the data type of the samples
+         %
+         %   These are the strings it returns, and the corresponding MATLAB
+         %   classes:
+         %    - 'binary':   logical
+         %    - 'uint8':    uint8
+         %    - 'uint16':   uint16
+         %    - 'uint32':   uint32
+         %    - 'sint8':    int8
+         %    - 'sint16':   int16
+         %    - 'sint32':   int32
+         %    - 'sfloat',   single
+         %    - 'dfloat':   double
+         %    - 'scomplex': single, complex
+         %    - 'dcomplex': double, complex
+         dt = datatypestring(obj);
       end
 
       function res = isfloat(obj)
@@ -446,21 +548,21 @@ classdef dip3_image
 
       function res = isvector(obj)
          %isvector   Returns true if it is a vector image
-         res = obj.TensorShape == dip_tensor_shape.COL_VECTOR || ...
-               obj.TensorShape == dip_tensor_shape.ROW_VECTOR;
+         res = strcmp(obj.TensorShape,'column vector') || ...
+               strcmp(obj.TensorShape,'row vector');
       end
 
       function res = iscolumn(obj)
          %iscolumn   Returns true if it is a column vector image
-         res = obj.TensorShape == dip_tensor_shape.COL_VECTOR;
+         res = strcmp(obj.TensorShape,'column vector');
       end
 
       function res = isrow(obj)
          %isrow   Returns true if it is a row vector image
-         res = obj.TensorShape == dip_tensor_shape.ROW_VECTOR;
+         res = strcmp(obj.TensorShape,'row vector');
       end
 
-      function res = ismatrix(obj)
+      function res = ismatrix(~)
          %ismatrix   Returns true (always) -- for backwards compatibility
          res = true;
       end
@@ -490,8 +592,9 @@ classdef dip3_image
          % DISP   Display array
          if obj.IsTensor
             sz = obj.TensorSize;
-            shape = tensorshapestring(obj.TensorShape);
-            tensor = [num2str(sz(1)),'x',num2str(sz(2)),' ',shape];
+            shape = obj.TensorShape;
+            tensor = [num2str(sz(1)),'x',num2str(sz(2)),' ',shape,', ',...
+                      num2str(obj.TensorElements),' elements'];
          end
          if iscolor(obj)
             disp(['Color image (',tensor,', ',obj.ColorSpace,'):']);
@@ -540,7 +643,8 @@ classdef dip3_image
          %   tensor image B in the arrays A1 through An.
          %
          %   DIP_ARRAY(B,DATATYPE) converts the dip_image B to a MATLAB
-         %   array of class DATATYE.
+         %   array of class DATATYE. Various aliases are available, see
+         %   dip3_image.dip3_image for a list of possible data type strings.
          %
          %   If B is a tensor image and only one output argument is given,
          %   the tensor dimension is expandend into extra MATLAB array
@@ -553,6 +657,8 @@ classdef dip3_image
             dt = '';
          elseif ~isstring(dt)
             error('DATATYPE must be a string.')
+         else
+            [dt,~] = matlabtype(dt);
          end
          % TODO: allow for the old data type aliases
          out = obj.Data;
@@ -572,7 +678,7 @@ classdef dip3_image
          end
          if nargout<=1
             if ~isempty(dt)
-               out = di_convert(out,dt);
+               out = array_convert_datatype(out,dt);
             end
             varargout = {out};
          elseif nargout==sz(2)
@@ -580,7 +686,7 @@ classdef dip3_image
             for ii = 1:nargout
                varargout{ii} = reshape(out(ii,:),sz(3:end));
                if ~isempty(dt)
-                  varargout{ii} = di_convert(varargout{ii},dt);
+                  varargout{ii} = array_convert_datatype(varargout{ii},dt);
                end
             end
          else
@@ -761,41 +867,86 @@ function res = isstring(in)
    res = ischar(in) && isrow(in);
 end
 
-function in = di_convert(in,class)
+function in = array_convert_datatype(in,class)
    %#function int8, uint8, int16, uint16, int32, uint32, int64, uint64, single, double, logical
    in = feval(class,in);
    % TODO: make sure we don't convert complex values to an integer type
 end
 
-function str = tensorshapestring(tshape)
-   switch(tshape)
-      case dip_tensor_shape.COL_VECTOR
-         str = 'column vector';
-      case dip_tensor_shape.ROW_VECTOR
-         str = 'row vector';
-      case dip_tensor_shape.COL_MAJOR_MATRIX
-         str = 'column-major matrix';
-      case dip_tensor_shape.ROW_MAJOR_MATRIX
-         str = 'row-major matrix';
-      case dip_tensor_shape.DIAGONAL_MATRIX
-         str = 'diagonal matrix';
-      case dip_tensor_shape.SYMMETRIC_MATRIX
-         str = 'symmetric matrix';
-      case dip_tensor_shape.UPPTRIANG_MATRIX
-         str = 'upper triangular matrix';
-      case dip_tensor_shape.LOWTRIANG_MATRIX
-         str = 'lower triangular matrix';
+% Gives a DIPlib data type string for the data in the image.
+function str = datatypestring(in)
+   str = in.DataType;
+   switch str
+      case 'logical'
+         str = 'binary';
+      case {'uint8','uint16','uint32'}
+         % nothing to do, it's OK.
+      case 'int8'
+         str = 'sint8';
+      case 'int16'
+         str = 'sint16';
+      case 'int32'
+         str = 'sint32';
+      case 'single'
+         if in.IsComplex
+            str = 'scomplex';
+         else
+            str = 'sfloat';
+         end
+      case 'double'
+         if in.IsComplex
+            str = 'dcomplex';
+         else
+            str = 'dfloat';
+         end
       otherwise
-         str = '';
+         error('Internal data of unrecognized type')
    end
 end
 
-function str = datatypestring(in)
-   str = in.DataType;
-   if strcmp(str,'logical')
-      str = 'binary';
+% Converts a DIPlib data type string or one of the many aliases into a
+% MATLAB class string and a complex flag.
+function [str,complex] = matlabtype(str)
+   if ~isstring(str), error('String expected'); end
+   complex = false;
+   switch str
+      case {'logical','binary','bin'}
+         str = 'logical';
+      case {'uint8','uint16','uint32'}
+         % nothing to do, it's OK.
+      case {'int8','sint8'}
+         str = 'int8';
+      case {'int16','sint16'}
+         str = 'int16';
+      case {'int32','sint32'}
+         str = 'int32';
+      case {'single','sfloat'}
+         str = 'single';
+      case {'double','dfloat'}
+         str = 'double';
+      case 'scomplex'
+         str = 'single';
+         complex = true;
+      case 'dcomplex'
+         str = 'double';
+         complex = true;
+      otherwise
+         error('Unknown data type string')
    end
-   if in.IsComplex
-    str = [str,' complex'];
+end
+
+function res = validate_tensor_shape(str)
+   if isstring(str)
+      res = ismember(str,{
+         'column vector'
+         'row vector'
+         'column-major matrix'
+         'row-major matrix'
+         'diagonal matrix'
+         'symmetric matrix'
+         'upper triangular matrix'
+         'lower triangular matrix'});
+   else
+      res = false;
    end
 end

@@ -207,22 +207,42 @@ static inline mxArray* CreateDouble2Vector( double v0, double v1 ) {
    return out;
 }
 
-// Create an mxArray with a "dip_image_array" object representing the same shape as the dip::Tensor::Shape argument
+// Create an mxArray with a string representation of the dip::Tensor::Shape argument
 static inline mxArray* CreateTensorShape( enum dip::Tensor::Shape shape ) {
-   mxArray* in = mxCreateDoubleScalar( static_cast< int >( shape ));
-   mxArray* out;
-   mexCallMATLAB( 1, &out, 1, &in, tensorShapeClassName );
-   return out;
+   switch( shape ) {
+      case dip::Tensor::Shape::COL_VECTOR:
+         return mxCreateString( "column vector" );
+      case dip::Tensor::Shape::ROW_VECTOR:
+         return mxCreateString( "row vector" );
+      case dip::Tensor::Shape::COL_MAJOR_MATRIX:
+         return mxCreateString( "column-major matrix" );
+      case dip::Tensor::Shape::ROW_MAJOR_MATRIX:
+         return mxCreateString( "row-major matrix" );
+      case dip::Tensor::Shape::DIAGONAL_MATRIX:
+         return mxCreateString( "diagonal matrix" );
+      case dip::Tensor::Shape::SYMMETRIC_MATRIX:
+         return mxCreateString( "symmetric matrix" );
+      case dip::Tensor::Shape::UPPTRIANG_MATRIX:
+         return mxCreateString( "upper triangular matrix" );
+      case dip::Tensor::Shape::LOWTRIANG_MATRIX:
+         return mxCreateString( "lower triangular matrix" );
+   }
 }
 
-// Get the dip::Tensor::Shape value from an mxArray
+// Get the dip::Tensor::Shape value from a string mxArray
 static inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
-   DIP_THROW_IF( !mxIsClass( mx, tensorShapeClassName ) || !mxIsScalar( mx ), "TensorShape property returned wrong data!" );
-   mxArray* mxval;
-   mexCallMATLAB( 1, &mxval, 1, &mx, "uint8" );
-   dip::uint8 value = *( dip::uint8* )mxGetData( mxval );
-   DIP_THROW_IF( value > 7, "dip_tensor_shape value larger than expected." );
-   return static_cast< enum dip::Tensor::Shape >( value );
+   char str[ 25 ];
+   if( mxGetString( mx, str, 25 ) == 0 ) {
+      if( strcmp( str, "column vector" ) == 0 ) { return dip::Tensor::Shape::COL_VECTOR; }
+      else if( strcmp( str, "row vector" ) == 0 ) { return dip::Tensor::Shape::ROW_VECTOR; }
+      else if( strcmp( str, "column-major matrix" ) == 0 ) { return dip::Tensor::Shape::COL_MAJOR_MATRIX; }
+      else if( strcmp( str, "row-major matrix" ) == 0 ) { return dip::Tensor::Shape::ROW_MAJOR_MATRIX; }
+      else if( strcmp( str, "diagonal matrix" ) == 0 ) { return dip::Tensor::Shape::DIAGONAL_MATRIX; }
+      else if( strcmp( str, "symmetric matrix" ) == 0 ) { return dip::Tensor::Shape::SYMMETRIC_MATRIX; }
+      else if( strcmp( str, "upper triangular matrix" ) == 0 ) { return dip::Tensor::Shape::UPPTRIANG_MATRIX; }
+      else if( strcmp( str, "lower triangular matrix" ) == 0 ) { return dip::Tensor::Shape::LOWTRIANG_MATRIX; }
+   }
+   DIP_THROW( "TensorShape property returned wrong data!" );
 }
 
 
