@@ -59,9 +59,7 @@ constexpr dip::uint MAX_BUFFER_SIZE = 256 * 1024;
 /// singleton expansion cannot make them all the same size, an exception is
 /// thrown. Use `dip::Image::ExpandSingletonDimensions` to apply the transform
 /// to one image.
-UnsignedArray SingletonExpandedSize(
-      ImageConstRefArray const& in
-);
+UnsignedArray SingletonExpandedSize( ImageConstRefArray const& in );
 
 /// \brief Determines if images can be singleton-expanded to the same size, and what
 /// that size would be.
@@ -72,16 +70,23 @@ UnsignedArray SingletonExpandedSize(
 /// singleton expansion cannot make them all the same size, an exception is
 /// thrown. Use `dip::Image::ExpandSingletonDimensions` to apply the transform
 /// to one image.
-UnsignedArray SingletonExpandedSize(
-      ImageArray const& in
-);
+UnsignedArray SingletonExpandedSize( ImageArray const& in );
+
+/// \brief Determines if tensors in images can be singleton-expanded to the same
+/// size, and what that size would be.
+///
+/// The tensors must all be of the same size, or of size 1. The tensors with
+/// size 1 are singletons, and can be expended to the size of the others by
+/// setting their stride to 0. This change can be performed without modifying the
+/// data segment. If singleton expansion cannot make them all the same size, an
+/// exception is thrown. Use `dip::Image::ExpandSingletonTensor` to apply the
+/// transform to one image.
+dip::uint SingletonExpendedTensorElements( ImageArray const& in );
 
 /// \brief Determines the best processing dimension, which is the one with the
 /// smallest stride, except if that dimension is very small and there's a
 /// longer dimension.
-dip::uint OptimalProcessingDim(
-      Image const& in
-);
+dip::uint OptimalProcessingDim( Image const& in );
 
 /// \brief Determines which color space names to assign to each output image, by finding
 /// the first input image with the same number of tensor elements as each output

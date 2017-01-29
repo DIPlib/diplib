@@ -168,6 +168,15 @@ bool Image::IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const 
 }
 
 
+Image& Image::ExpandSingletonTensor( dip::uint sz ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( tensor_.Elements() != 1, E::INVALID_PARAMETER );
+   tensor_.SetVector( sz );
+   tensorStride_ = 0;
+   return *this;
+}
+
+
 Image& Image::Mirror( BooleanArray const& process ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = sizes_.size();

@@ -1331,6 +1331,17 @@ class Image {
       /// \brief Tests if the image can be singleton-expanded to `size`.
       bool IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const;
 
+      /// \brief Expand singleton tensor dimension `sz` samples, setting the tensor
+      /// stride to 0.
+      ///
+      /// If there is more than one tensor element, an exception is thrown.
+      ///
+      /// The image must be forged, and the data will never be copied (i.e. this is a
+      /// quick and cheap operation).
+      ///
+      /// \see ExpandSingletonDimension.
+      Image& ExpandSingletonTensor( dip::uint sz );
+
       /// \brief Mirror de image about selected axes.
       ///
       /// The image must be forged, and the data will never

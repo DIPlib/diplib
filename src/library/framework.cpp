@@ -55,6 +55,23 @@ UnsignedArray SingletonExpandedSize(
    return size;
 }
 
+dip::uint SingletonExpendedTensorElements(
+      ImageArray const& in
+) {
+   dip::uint tsize = in[ 0 ].TensorElements();
+   for( dip::uint ii = 1; ii < in.size(); ++ii ) {
+      dip::uint tsize2 = in[ ii ].TensorElements();
+      if( tsize != tsize2 ) {
+         if( tsize == 1 ) {
+            tsize = tsize2;
+         } else if( tsize2 != 1 ) {
+            DIP_THROW( E::SIZES_DONT_MATCH );
+         }
+      }
+   }
+   return tsize;
+}
+
 // Find best processing dimension, which is the one with the smallest stride,
 // except if that dimension is very small and there's a longer dimension.
 dip::uint OptimalProcessingDim(
