@@ -76,27 +76,33 @@ static bool IsMatlabStrides(
       dip::sint tstride
 ) {
    if( sizes.size() != strides.size() ) {
+      //mexPrintf( "IsMatlabStrides: dimensionality test failed\n" );
       return false;
    }
    if(( telem > 1 ) && ( tstride != 1 )) { // tstride is meaningless if there's only one tensor element
+      //mexPrintf( "IsMatlabStrides: tensor test failed\n" );
       return false;
    }
    if( sizes.size() == 1 ) {
       if( strides[ 0 ] != telem ) {
+         //mexPrintf( "IsMatlabStrides: 1D test failed\n" );
          return false;
       }
    } else if( sizes.size() >= 2 ){
       dip::sint total = static_cast< dip::sint >( telem );
       if( strides[ 1 ] != total ) {
+         //mexPrintf( "IsMatlabStrides: second dimension test failed\n" );
          return false;
       }
       total *= sizes[ 1 ];
       if( strides[ 0 ] != total ) {
+         //mexPrintf( "IsMatlabStrides: first dimension test failed\n" );
          return false;
       }
       total *= sizes[ 0 ];
       for( dip::uint ii = 2; ii < sizes.size(); ++ii ) {
          if( strides[ ii ] != total ) {
+            //mexPrintf( "IsMatlabStrides: higher dimension test failed\n" );
             return false;
          }
          total *= sizes[ ii ];
@@ -114,28 +120,37 @@ static bool MatchDimensions(
       mwSize ndims
 ) {
    if(( complex && psizes[ 0 ] != 2 ) || ( !complex && psizes[ 0 ] != 1 )) {
+      //mexPrintf( "MatchDimensions: complexity test failed\n" );
       return false;
    }
    if( psizes[ 1 ] != telem ) {
+      //mexPrintf( "MatchDimensions: telem test failed\n" );
       return false;
    }
    dip::uint n = ndims - 2;
    if( n > sizes.size() ) { // can be smaller if there are trailing singleton dimensions
+      //mexPrintf( "MatchDimensions: dimensionality test failed\n" );
       return false;
    }
    if( n == 1 ) {
-      return psizes[ 2 ] != sizes[ 0 ];
+      if( psizes[ 2 ] != sizes[ 0 ] ) {
+         //mexPrintf( "MatchDimensions: 1D test failed\n" );
+         return false;
+      }
    } else if( n >= 2 ) {
       if(( psizes[ 2 ] != sizes[ 1 ] ) || ( psizes[ 3 ] != sizes[ 0 ] )) {
+         //mexPrintf( "MatchDimensions: first two dimensions test failed\n" );
          return false;
       }
       for( dip::uint ii = 2; ii < n; ++ii ) {
          if( psizes[ 2 + ii ] != sizes[ ii ] ) {
+            //mexPrintf( "MatchDimensions: higher dimension test failed\n" );
             return false;
          }
       }
       for( dip::uint ii = n; ii < sizes.size(); ++ii ) {
          if( sizes[ ii ] != 1 ) {
+            //mexPrintf( "MatchDimensions: trailing singleton test failed\n" );
             return false;
          }
       }
@@ -645,7 +660,7 @@ class MatlabInterface : public dip::ExternalInterface {
       /// `mxArray` data pointer, with a custom deleter functor. It also
       /// adjusts strides to match the `mxArray` storage.
       ///
-      /// A user will never call this function.
+      /// A user will never call this function directly.
       virtual std::shared_ptr< void > AllocateData(
             dip::UnsignedArray const& sizes,
             dip::IntegerArray& strides,
@@ -664,7 +679,8 @@ class MatlabInterface : public dip::ExternalInterface {
             swap( mlsizes[ 0 ], mlsizes[ 1 ] );
          }
          // Create stride array
-         dip::uint s = 1;
+         tstride = 1;
+         dip::uint s = tensor.Elements();
          strides.resize( n );
          for( dip::uint ii = 0; ii < n; ii++ ) {
             strides[ ii ] = s;
@@ -672,7 +688,6 @@ class MatlabInterface : public dip::ExternalInterface {
          }
          // Prepend tensor dimension
          mlsizes.insert( 0, tensor.Elements() );
-         tstride = 1;
          // Handle complex data
          mlsizes.insert( 0, datatype.IsComplex() ? 2 : 1 );
          // MATLAB arrays switch y and x axes
@@ -695,16 +710,18 @@ class MatlabInterface : public dip::ExternalInterface {
          return std::shared_ptr< void >( p, StripHandler( *this ));
       }
 
-      /// \brief Find the `mxArray` that holds the data for the dip::Image `img`, and create a MATALB dip_image object
-      /// around it.
+      /// \brief Find the `mxArray` that holds the data for the dip::Image `img`,
+      /// and create a MATLAB dip_image object around it.
       mxArray* GetArray( dip::Image const& img ) {
+         //std::cout << "GetArray for image: " << img;
          DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
          void const* ptr = img.Data();
+         void const* inputOrigin = img.Origin();
          mxArray* mat = mla[ ptr ];
-         if( !mat ) { mexPrintf( "   ...that was a nullptr mxArray\n" ); } // TODO: temporary warning, to be removed.
+         if( !mat ) { mexPrintf( "   ...that image was not forged through the MATLAB interface\n" ); } // TODO: temporary warning, to be removed.
          // Does the image point to a modified view of the mxArray or to a non-MATLAB array?
          // TODO: added or removed singleton dimensions should not trigger a data copy, but a modification of the mxArray.
-         if( !mat || ( ptr != img.Origin() ) ||
+         if( !mat || ( ptr != inputOrigin ) ||
              !IsMatlabStrides(
                    img.Sizes(), img.TensorElements(),
                    img.Strides(), img.TensorStride() ) ||
@@ -717,8 +734,9 @@ class MatlabInterface : public dip::ExternalInterface {
             mexPrintf( "   Copying data from dip::Image to mxArray\n" ); // TODO: temporary warning, to be removed.
             dip::Image tmp = NewImage();
             tmp.Copy( img );
-            std::cout << tmp << std::endl;
+            //std::cout << "   New image: " << tmp;
             ptr = tmp.Data();
+            inputOrigin = tmp.Origin(); // for the assertion later on.
             mat = mla[ ptr ];
             mla.erase( ptr );
          } else {
@@ -770,7 +788,7 @@ class MatlabInterface : public dip::ExternalInterface {
 #ifdef DIP__ENABLE_ASSERT
          mxArray* out_data = mxGetPropertyShared( out, 0, "Array" );
          DIP_ASSERT( out_data );
-         DIP_ASSERT( img.Origin() == mxGetData( out_data ));
+         DIP_ASSERT( inputOrigin == mxGetData( out_data ));
 #endif
 
          return out;
@@ -820,6 +838,7 @@ dip::Image GetImage( mxArray const* mx ) {
 
    // Find image properties
    bool complex = false;
+   bool needCopy = false;
    dip::Tensor tensor; // scalar by default
    mxClassID type;
    mxArray const* mxdata;
@@ -885,7 +904,12 @@ dip::Image GetImage( mxArray const* mx ) {
       // Data Type
       type = mxGetClassID( mxdata );
       complex = mxIsComplex( mxdata );
-      // It's never a tensor (`tensor` is scalar by default)
+      if( complex ) {
+         // The complex data in an mxArray is stored as two separate memory blocks, and need to be copied to be
+         // compatible with DIPlib storage
+         needCopy = true;
+      }
+      // It's never a tensor (`tensor` is scalar by default), and color space nor pixel size are defined
    }
    dip::DataType datatype;
    switch( type ) {
@@ -934,12 +958,12 @@ dip::Image GetImage( mxArray const* mx ) {
       swap( sizes[ 0 ], sizes[ 1 ] );
       swap( strides[ 0 ], strides[ 1 ] );
    }
-   if( complex ) {
-      //mexPrintf("   Copying complex image.\n");
+   if( needCopy ) {
+      //mexPrintf("   Copying complex mxArray.\n");
       // Create 2 temporary Image objects for the real and complex component,
       // then copy them over into a new image.
       dip::Image out( sizes, 1, datatype );
-      dip::DataType dt = datatype == dip::DT_DCOMPLEX ? dip::DT_DFLOAT : dip::DT_SFLOAT;
+      dip::DataType dt = datatype.Real();
       std::shared_ptr< void > p_real( mxGetData( mxdata ), VoidStripHandler );
       if( p_real ) {
          dip::Image real( p_real, dt, sizes, strides, tensor, tstride, nullptr );
@@ -954,8 +978,8 @@ dip::Image GetImage( mxArray const* mx ) {
       } else {
          out.Imaginary().Fill( 0 );
       }
-      out.SetPixelSize( pixelSize );
-      out.SetColorSpace( colorSpace );
+      //out.SetPixelSize( pixelSize );
+      //out.SetColorSpace( colorSpace ); // these are never defined in this case, the input was a plain matrix.
       return out;
    } else if( datatype.IsBinary() ) {
       //mexPrintf("   Encapsulating binary image.\n");
