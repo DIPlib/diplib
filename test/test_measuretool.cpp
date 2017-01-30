@@ -37,6 +37,9 @@ class FeatureTest : public dip::Feature::ImageBased {
 int main() {
 
    dip::MeasurementTool measurementTool;
+
+   auto f = measurementTool.Features();
+
    measurementTool.Register( dip::Feature::Pointer( new FeatureTest ));
 
    dip::Image label( dip::UnsignedArray{ 10, 10 }, 1, dip::DT_UINT8 );

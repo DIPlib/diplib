@@ -69,19 +69,19 @@ dip::uint Label(
       Image const& binary,
       Image& out,
       dip::uint connectivity,
-      String mode,
-      dip::uint minSize,
-      dip::uint maxSize,
-      BoundaryConditionArray bc
+      String mode = "",
+      dip::uint minSize = 0,
+      dip::uint maxSize = 0,
+      BoundaryConditionArray bc = {}
 );
 
 inline Image Label(
       Image const& binary,
       dip::uint connectivity,
-      String mode,
-      dip::uint minSize,
-      dip::uint maxSize,
-      BoundaryConditionArray bc
+      String mode = "",
+      dip::uint minSize = 0,
+      dip::uint maxSize = 0,
+      BoundaryConditionArray bc = {}
 ) {
    Image out;
    Label( binary, out, connectivity, mode, minSize, maxSize, bc );

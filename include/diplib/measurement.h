@@ -55,7 +55,7 @@ struct Information {
 };
 
 /// \brief %Information about the known measurement features
-using InformationArray = DimensionArray< Information >;
+using InformationArray = std::vector< Information >;
 
 /// \brief %Information about a measurement value, one of the components of a feature
 struct ValueInformation {

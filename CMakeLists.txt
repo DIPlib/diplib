@@ -113,13 +113,15 @@ if(Matlab_FOUND)
    matlab_add_mex(NAME dip_operators SRC dipimage/@dip3_image/private/dip_operators.cpp LINK_TO DIP)
    install(TARGETS dip_operators DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip3_image/private)
    # Compile and install MEX-files in @dip_image
-   #install(TARGETS dip_operators DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip3_image)
+   #matlab_add_mex(NAME bla SRC dipimage/@dip3_image/bla.cpp LINK_TO DIP)
+   #install(TARGETS bla DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip3_image)
    # Compile and install MEX-files in toolbox directory
-   #install(TARGETS dip_operators DESTINATION ${DIPIMAGE_INSTALL_PATH})
+   matlab_add_mex(NAME measure SRC dipimage/measure.cpp LINK_TO DIP)
+   install(TARGETS measure DESTINATION ${DIPIMAGE_INSTALL_PATH})
 endif()
 
 
-### DIPlib tests
+### DIPlib tests ### TEMPORARY!
 
 add_executable(test_error EXCLUDE_FROM_ALL test/test_error.cpp)
 add_executable(test_physdims EXCLUDE_FROM_ALL test/test_physdims.cpp)
@@ -181,9 +183,7 @@ endif(Matlab_FOUND)
 ### DIPlib documentation
 
 if (DOXYGEN_FOUND)
-
    configure_file(src/documentation/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-
    add_custom_target(
          apidoc
          COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
@@ -194,7 +194,6 @@ if (DOXYGEN_FOUND)
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
          DEPENDS ${DOXYGEN_INPUT}
    )
-
 endif (DOXYGEN_FOUND)
 
 add_custom_command(

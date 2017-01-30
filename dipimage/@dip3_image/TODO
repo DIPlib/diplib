@@ -7,7 +7,6 @@ subsref.m
 end.m
 ind2sub.m
 
-loadobj.m
 plot.m
 
 cat.m
@@ -21,7 +20,6 @@ reshape.m
 shiftdim.m
 squeeze.m
 
-iscolor.m
 colorspace.m
 
 imarfun.m

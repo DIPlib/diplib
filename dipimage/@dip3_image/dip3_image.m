@@ -451,6 +451,10 @@ classdef dip3_image
 
       function n = numel(obj)
          %NUMEL   Returns the number of samples in the image
+         %
+         %   NUMEL(IMG) == NUMPIXELS(IMG) * NUMTENSOREL(IMG)
+         %
+         %   See also dip3_image.numpixels, dip3_image.numtensorel, dip3_image.ndims
          n = numel(obj.Data);
          if obj.IsComplex
             n = n / 2;
@@ -464,11 +468,19 @@ classdef dip3_image
 
       function n = numtensorel(obj)
          %NUMTENSOREL   Returns the number of tensor elements in the image
+         %
+         %   NUMEL(IMG) == NUMPIXELS(IMG) * NUMTENSOREL(IMG)
+         %
+         %   See also dip3_image.numel, dip3_image.numpixels
          n = obj.TensorElements;
       end
 
       function n = numpixels(obj)
          %NUMPIXELS   Returns the number of pixels in the image
+         %
+         %   NUMEL(IMG) == NUMPIXELS(IMG) * NUMTENSOREL(IMG)
+         %
+         %   See also dip3_image.numel, dip3_image.numtensorel, dip3_image.ndims
          if isempty(obj)
             n = 0;
          else

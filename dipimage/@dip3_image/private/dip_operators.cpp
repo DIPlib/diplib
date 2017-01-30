@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This file contains functionality for all monadic and diadic operators
+ * This MEX-file implements all monadic and diadic operators
  *
  * Input arguments:
  *  prhs[0] -> operator (a character)
