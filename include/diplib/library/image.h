@@ -142,8 +142,42 @@ class Image {
       Image( Image const& ) = default;
       Image( Image&& ) = default;
       ~Image() = default;
-      Image& operator=( Image const& ) = default;  // TODO: overload to copy pixels when external interfaces don't match?
-      Image& operator=( Image&& ) = default;       // TODO: overload to copy pixels when external interfaces don't match?
+
+      /// \brief The copy assignment does not copy pixel data, the LHS shares the data pointer with the RHS, except
+      /// in the case where the LHS image has an external interface set. See \ref external_interface.
+      Image& operator=( Image const& rhs ) {
+         if( externalInterface_ && ( externalInterface_ != rhs.externalInterface_ )) {
+            // Copy pixel data too
+            this->Copy( rhs );
+         } else {
+            // Do what the default copy assignment would do
+            dataType_ = rhs.dataType_;
+            sizes_ = rhs.sizes_;
+            strides_ = rhs.strides_;
+            tensor_ = rhs.tensor_;
+            tensorStride_ = rhs.tensorStride_;
+            protect_ = rhs.protect_;
+            colorSpace_ = rhs.colorSpace_;
+            pixelSize_ = rhs.pixelSize_;
+            dataBlock_ = rhs.dataBlock_;
+            origin_ = rhs.origin_;
+            externalInterface_ = rhs.externalInterface_;
+         }
+         return *this;
+      }
+
+      /// \brief The move assignment copies the data in the case where the LHS image has an external interface set.
+      /// See \ref external_interface.
+      Image& operator=( Image&& rhs ) {
+         if( externalInterface_ && ( externalInterface_ != rhs.externalInterface_ )) {
+            // Copy pixel data too
+            this->Copy( rhs );
+         } else {
+            // Do what the default move assignment would do
+            this->swap( rhs );
+         }
+         return *this;
+      }
 
       /// \brief Forged image of given sizes and data type. The data is left uninitialized.
       explicit Image( UnsignedArray const& sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :

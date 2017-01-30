@@ -28,10 +28,6 @@ done in parallel.
 
 1.  Arithmetic, bitwise and comparison operators (dependent on `dip::Framework::Scan`)
 
-1.  *MATLAB* interface is partially completed. It is possible to convert `dip::Image`
-    objects to *MATLAB* arrays and vice-versa. No support yet for arrays, constants
-    and strings. No support yet on the *MATLAB* side for a `dip_image` object.
-
 1.  Image iterators. Need to be tested more thoroughly, some features have not been
     tested at all...
     Iterators are useful as simpler substitutes of the frameworks, to be used in only a
@@ -43,6 +39,13 @@ done in parallel.
     All measurement features have been ported, including the previously only defined in
     *DIPimage*.
 
+1.  *MATLAB* interface is partially completed: It is possible to convert `dip::Image`
+    objects to MATLAB `dip_image` objects and vice-versa, as well as a series of numeric
+    and string parameter types.
+
+1.  *DIPimage* toolbox: The `dip_image` object is defined and has a few functions,
+    including all binary and unary operators in one MEX-file, and the `measure` function
+    in another MEX-file.
 
 ## What still needs to be done:
 
@@ -55,7 +58,7 @@ done in parallel.
     BioFormats.
 
 1.  **(X)**
-    Color support. **Design work done.** Port existing *MATLAB* code within
+    Color support. **Design work done**. Port existing *MATLAB* code within
     current framework, and use `dip::Framework::Scan` to apply conversions to all
     pixels in an image.
 
@@ -65,14 +68,10 @@ done in parallel.
     are ready to be parallelized.
 
 1.  **(X)**
-    *MATLAB* interface. **Requires special expertise**. Add conversion of strings,
-    constants and arrays for input and output parameters. Rewrite the *MATLAB*
-    `dip_image` class. Add support for the `dip_image` class in the *MATLAB* interface.
+    *MATLAB* interface and *DIPimage* toolbox. **Requires special expertise**.
     MEX-files for *DIPlib* functions to be added as these functions are written.
-    Certain functionality in the `dip_image` class depends on functionality in
-    *DIPlib* that still needs to be written. The `dip_measurement` class needs
-    rewriting too. `dipshow` to use a *DIPlib* function to generate an RGB image for
-    display.
+    The `dip_measurement` class needs to be rewritten.
+    `dipshow` to use a *DIPlib* function to generate an RGB image for display.
 
 1.  Python interface. **Requires special expertise**. Using one of the C++/Python
     interface generators. Write interactive image display and GUI as exists in
@@ -134,7 +133,8 @@ done in parallel.
     image array, but a single tensor image.
     - dip_structure.h
 
-1.  Algorithms built on `dip::Framework::Full`: Rank filters, adaptive filters, etc.
+1.  **(X)**
+    Algorithms built on `dip::Framework::Full`: Rank filters, adaptive filters, etc.
     Simply porting old code.
     - dip_adaptive.h
     - dip_bilateral.h

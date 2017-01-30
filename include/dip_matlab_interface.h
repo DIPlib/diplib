@@ -622,15 +622,16 @@ inline mxArray* GetArray( dip::String const& in ) {
 ///
 /// In a MEX-file, use the following code when declaring images to be
 /// used as the output to a function:
-///
 /// ```cpp
 ///     dml::MatlabInterface mi;
 ///     dip::Image img_out0 = mi.NewImage();
 ///     dip::Image img_out1 = mi.NewImage();
 /// ```
-///
-/// To return those images back to *MATLAB*, use the GetArray() method:
-///
+/// This configures the images `img_out0` and `img_out1` such that, when they are
+/// forged later on, an `mxArray` structure will be created to hold the pixel data.
+/// `mxArray` is *MATLAB*'s representation of arrays.
+/// To return those images back to *MATLAB*, use the GetArray() method, which returns
+/// the `mxArray` created when the image was forged:
 /// ```cpp
 ///     plhs[0] = mi.GetArray( img_out0 );
 ///     plhs[1] = mi.GetArray( img_out1 );
@@ -641,14 +642,17 @@ inline mxArray* GetArray( dip::String const& in ) {
 /// of scope.
 ///
 /// Remember to not assign a result into the images created with `NewImage`,
-/// as they will be overwritten and no longer contain data allocated by
-/// *MATLAB*. Instead, use the *DIPlib* functions that take output images as
-/// function arguments:
-///
+/// as the pixel data will be copied in the assignment into a *MATLAB* array.
+/// Instead, use the *DIPlib* functions that take output images as function
+/// arguments:
 /// ```cpp
-///     img_out0 = in1 + in2; // WRONG! img_out0 will not contain data allocated by *MATLAB*
+///     img_out0 = in1 + in2;                                                                    // Bad!
 ///     dip::Add( in1, in2, out, DataType::SuggestArithmetic( in1.DataType(), in1.DataType() )); // Correct
 /// ```
+/// In the first case, `in1 + in2` is computed into a temporary image, whose
+/// pixels are then copied into the `mxArray` created for `img_out0`. In the
+/// second case, the result of the operation is directly written into the
+/// `mxArray`, no copies are necessary.
 ///
 /// This interface handler doesn't own any image data.
 class MatlabInterface : public dip::ExternalInterface {
@@ -848,14 +852,12 @@ void VoidStripHandler( void const* p ) {
 /// When calling GetImage with a `prhs` argument in `mexFunction()`, use a const
 /// modifier for the output argument. This should prevent acidentally modifying
 /// an input array, which is supposed to be illegal in `mexFunction()`:
-///
 /// ```cpp
 ///     dip::Image const in1 = dml::GetImage( prhs[ 0 ] );
 /// ```
 ///
 /// An empty `mxArray` produces a non-forged image.
 dip::Image GetImage( mxArray const* mx ) {
-
    // Find image properties
    bool complex = false;
    bool needCopy = false;
