@@ -22,7 +22,7 @@ over.
   Many of these class methods have names similar to the original access functions, but not
   always. For example, `dip_ImageSetStride` now is `dip::Image::SetStrides`.
 
-   - `dip_Assimilate` is the `dip::Image::ReForge`.
+   - `dip_Assimilate` is the `dip::Image::ReForge` method.
 
    - We used to call the image size its dimension. `dip_Dimensions` is now `dip::Image::Sizes`.
      The reason is that it was too confusing talking about a dimension as an image axis (the

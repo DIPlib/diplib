@@ -23,7 +23,7 @@ namespace dip {
 /// \defgroup linear Linear filters
 /// \ingroup filtering
 /// \brief Functions that implement linear filters
-
+/// \{
 
 /// \brief Describes a 1D filter
 ///
@@ -189,6 +189,7 @@ void FiniteDifference(
       bool
 );
 
+/// \}
 
 } // namespace dip
 
