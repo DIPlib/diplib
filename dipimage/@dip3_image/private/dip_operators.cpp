@@ -29,7 +29,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       dip::Image out = mi.NewImage();
 
       // Get operator
-      DIP_THROW_IF( nrhs < 2, "Insufficient number of input arguments." );
+      DML_MIN_ARGS( 2 );
       DIP_THROW_IF( !mxIsChar( prhs[ 0 ] ), "First argument must be a string.");
       mxChar* ch = mxGetChars( prhs[ 0 ] );
 

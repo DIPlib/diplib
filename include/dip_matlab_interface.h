@@ -250,6 +250,9 @@ static inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
 // Get input arguments: convert mxArray to various dip:: types
 //
 
+#define DML_MIN_ARGS( n ) DIP_THROW_IF( nrhs < n, "Too few input arguments." )
+#define DML_MAX_ARGS( n ) DIP_THROW_IF( nrhs > n, "Too many input arguments." )
+
 // True if empty or a one-dimensional array
 static inline bool IsVector( mxArray const* mx ) {
    return ( mxGetNumberOfDimensions( mx ) == 2 ) && (( mxGetM( mx ) <= 1 ) || ( mxGetN( mx ) <= 1 ));

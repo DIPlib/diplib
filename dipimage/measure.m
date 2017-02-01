@@ -40,3 +40,6 @@
 %
 % NOTE:
 %  See the user guide for the definition of connectivity in DIPimage.
+%
+% DIPlib:
+%  This function calls the DIPlib functions dip::MeasurementTool::Measure.

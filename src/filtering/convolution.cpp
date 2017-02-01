@@ -18,7 +18,7 @@ namespace {
 
 // *grumble* multiplication of complex values with scalars is only defined when the types are identical
 template< typename T >
-static inline T multiply( dfloat const& lhs, T const& rhs ) {
+inline T multiply( dfloat const& lhs, T const& rhs ) {
    return lhs * rhs;
 }
 template<>
@@ -115,46 +115,72 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
       InternOneDimensionalFilterArray const& filter_;
 };
 
+inline bool IsMeaninglessFilter( FloatArray const& filter ) {
+   return ( filter.size() == 0 ) || (( filter.size() == 1 ) && ( filter[ 0 ] == 1.0 ));
+}
+
 } // namespace
 
 
 void SeparableConvolution(
       Image const& in,
       Image& out,
-      OneDimensionalFilterArray const& filter,
+      OneDimensionalFilterArray const& filterArray,
       StringArray boundaryCondition,
       BooleanArray process
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   dip::uint ndims = in.Dimensionality();
-   DIP_THROW_IF( ndims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF(( filter.size() != 1 ) && ( filter.size() != ndims ), E::ARRAY_ILLEGAL_SIZE );
+   dip::uint nDims = in.Dimensionality();
+   DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF(( filterArray.size() != 1 ) && ( filterArray.size() != nDims ), E::ARRAY_ILLEGAL_SIZE );
+   InternOneDimensionalFilterArray filterData;
    DIP_START_STACK_TRACE
-      InternOneDimensionalFilterArray filterData;
-      for( auto const& f : filter ) {
+      for( auto const& f : filterArray ) {
          filterData.emplace_back( f );
       }
-      UnsignedArray border( ndims );
-      if( filterData.size() == 1 ) {
-         dip::uint sz = filterData[ 0 ].filter.size();
+   DIP_END_STACK_TRACE
+   // Handle `filterArray` and create `border` array
+   UnsignedArray border( nDims );
+   if( filterData.size() == 1 ) {
+      dip::uint sz = filterData[ 0 ].filter.size();
+      dip::uint b = static_cast< dip::uint >( filterData[ 0 ].origin );
+      b = std::max( b, sz - b - 1 ); // note that b < sz.
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         border[ ii ] = b;
+      }
+   } else {
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         dip::uint sz = filterData[ ii ].filter.size();
          dip::uint b = static_cast< dip::uint >( filterData[ 0 ].origin );
          b = std::max( b, sz - b - 1 ); // note that b < sz.
-         for( dip::uint ii = 0; ii < ndims; ++ii ) {
-            border[ ii ] = b;
-         }
-      } else {
-         for( dip::uint ii = 0; ii < ndims; ++ii ) {
-            dip::uint sz = filterData[ ii ].filter.size();
-            dip::uint b = static_cast< dip::uint >( filterData[ 0 ].origin );
-            b = std::max( b, sz - b - 1 ); // note that b < sz.
-            border[ ii ] = b;
+         border[ ii ] = b;
+      }
+   }
+   // Handle `process` array
+   if( process.empty() ) {
+      process.resize( nDims, true );
+   } else {
+      DIP_THROW_IF( process.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
+   }
+   if( filterData.size() == 1 ) {
+      if( IsMeaninglessFilter( filterData[ 0 ].filter )) {
+         // Nothing to do for this filter
+         process.fill( false );
+      }
+   } else {
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         if( IsMeaninglessFilter( filterData[ ii ].filter )) {
+            process[ ii ] = false;
          }
       }
-      // TODO: set process = false for dimensions where filter is either {1} or size 0.
+   }
+   DIP_START_STACK_TRACE
+      // handle boundary condition array (checks are made in Framework::Separable, no need to repeat them here)
+      BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
+      // Get callback function
       DataType dtype = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_FLOAT_OR_COMPLEX( lineFilter, SeparableConvolutionLineFilter, ( filterData ), dtype );
-      BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       Framework::Separable(
             in,
             out,

@@ -77,14 +77,15 @@ using OneDimensionalFilterArray = std::vector< OneDimensionalFilter >;
 /// `filter` is an array with exactly one element for each dimension of `in`. Alternatively, it can have a single
 /// element, which will be used unchanged for each dimension. For the dimensions that are not processed (`process` is
 /// `false` for those dimensions), the `filter` array can have non-sensical data or a zero-length filter weights array.
+/// Any `filter` array that is zero size or the equivalent of `{1}` will not be applied either.
 ///
 /// \see dip::GeneralConvolution, dip::ConvolveFT, dip::Framework::Separable
 void SeparableConvolution(
-      Image const& in,                          ///< Input image
-      Image& out,                               ///< Output image
-      OneDimensionalFilterArray const& filter,  ///< The filter
-      StringArray boundaryCondition = {},       ///< The boundary condition
-      BooleanArray process = {}                 ///< Which dimensions to process, can be `{}` to indicate all dimensions are to be processed
+      Image const& in,                    ///< Input image
+      Image& out,                         ///< Output image
+      OneDimensionalFilterArray const& filterArray, ///< The filter
+      StringArray boundaryCondition = {}, ///< The boundary condition
+      BooleanArray process = {}           ///< Which dimensions to process, can be `{}` to indicate all dimensions are to be processed
 );
 inline Image SeparableConvolution(
       Image const& in,

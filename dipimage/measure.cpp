@@ -20,9 +20,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
    try {
 
-      if( nrhs < 1 ) {
-         DIP_THROW( "At least one input expected" );
-      }
+      DML_MIN_ARGS( 1 );
 
       dip::MeasurementTool measurementTool;
 
@@ -30,6 +28,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
          dip::String str = dml::GetString( prhs[ 0 ]);
          if( str == "help" ) {
+            DML_MAX_ARGS( 1 );
             std::cout << "\nAvailable measurement features:\n";
             auto features = measurementTool.Features();
             std::cout << features.size() << " features." << std::endl;
@@ -46,6 +45,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          }
 
       } else {
+
+         DML_MAX_ARGS( 5 );
 
          dml::MatlabInterface mi;
          dip::Image const label = dml::GetImage( prhs[ 0 ] );

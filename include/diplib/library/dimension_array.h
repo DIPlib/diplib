@@ -518,6 +518,13 @@ class DimensionArray {
          return true;
       }
 
+      /// Assigns one same value to each element in the array
+      void fill( T const& value ) {
+         for( size_type ii = 0; ii < size_; ++ii ) {
+            data_[ ii ] = value;
+         }
+      }
+
       /// Writes the array to a stream
       friend std::ostream& operator<<(
             std::ostream& os,
