@@ -119,6 +119,10 @@
    DIP__OVL__SINT( assign_name, paramlist ) \
    DIP__OVL__FLOAT( assign_name, paramlist )
 
+#define DIP__OVL__FLOAT_OR_COMPLEX( assign_name, paramlist ) \
+   DIP__OVL__FLOAT( assign_name, paramlist )  \
+   DIP__OVL__COMPLEX( assign_name, paramlist )
+
 #define DIP__OVL__NONBINARY( assign_name, paramlist ) \
    DIP__OVL__UINT( assign_name, paramlist )   \
    DIP__OVL__SINT( assign_name, paramlist )   \
@@ -202,6 +206,12 @@
    DIP__OVL__NONCOMPLEX( fname, paramlist ) \
    DIP__OVL__FOOT }
 
+/// \brief Calls the overloaded function for all floating-point and complex types.
+#define DIP_OVL_CALL_FLOAT_OR_COMPLEX( fname, paramlist, dtype ) \
+{  DIP__OVL__HEAD( dtype )          \
+   DIP__OVL__FLOAT_OR_COMPLEX( fname, paramlist ) \
+   DIP__OVL__FOOT }
+
 /// \brief Calls the overloaded function for all types but binary.
 #define DIP_OVL_CALL_NONBINARY( fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )         \
@@ -218,79 +228,85 @@
 // DIP_OVL_CALL_ASSIGN_xxx
 //
 
-/// \brief Calls the overloaded function for the binary type and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for the binary type, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_BINARY( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )     \
    DIP__OVL__BIN( x = fname, paramlist )   \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function for all unsigned integer types and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for all unsigned integer types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_UINT( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )       \
    DIP__OVL__UINT( x = fname, paramlist )    \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function for all signed integer types and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for all signed integer types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_SINT( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )       \
    DIP__OVL__SINT( x = fname, paramlist )    \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function for all float types and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for all float types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_FLOAT( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )        \
    DIP__OVL__FLOAT( x = fname, paramlist )    \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function for all complex types and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for all complex types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_COMPLEX( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )          \
    DIP__OVL__COMPLEX( x = fname, paramlist )    \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function for all integer types and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for all integer types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_INTEGER( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )       \
    DIP__OVL__INTEGER( x = fname, paramlist ) \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function for all integer and binary types and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for all integer and binary types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_INT_OR_BIN( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )          \
    DIP__OVL__INT_OR_BIN( x = fname, paramlist ) \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function function for all unsigned types and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function function for all unsigned types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_UNSIGNED( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )        \
    DIP__OVL__UNSIGNED( x = fname, paramlist ) \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function for all signed (integer + float + complex) types and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for all signed (integer + float + complex) types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_SIGNED( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )       \
    DIP__OVL__SIGNED( x = fname, paramlist )  \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function for all real (integer + float) types and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for all real (integer + float) types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_REAL( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )       \
    DIP__OVL__REAL( x = fname, paramlist )    \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function for all non-complex types and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for all non-complex types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_NONCOMPLEX( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )          \
    DIP__OVL__NONCOMPLEX( x = fname, paramlist ) \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function for all types but binary and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for all floating-point and complex types, and assigns the output value to variable `x`.
+#define DIP_OVL_CALL_ASSIGN_FLOAT_OR_COMPLEX( x, fname, paramlist, dtype ) \
+{  DIP__OVL__HEAD( dtype )          \
+   DIP__OVL__FLOAT_OR_COMPLEX( x = fname, paramlist ) \
+   DIP__OVL__FOOT }
+
+/// \brief Calls the overloaded function for all types but binary, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_NONBINARY( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )         \
    DIP__OVL__NONBINARY( x = fname, paramlist ) \
    DIP__OVL__FOOT }
 
-/// \brief Calls the overloaded function for all types and assigns the output value to variable `x`.
+/// \brief Calls the overloaded function for all types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_ALL( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )       \
    DIP__OVL__ALL( x = fname, paramlist )     \
@@ -364,6 +380,12 @@
 #define DIP_OVL_ASSIGN_NONCOMPLEX( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype )          \
    DIP__OVL__NONCOMPLEX( f = fname, ) \
+   DIP__OVL__FOOT
+
+/// \brief Assigns a pointer to the overloaded function for all floating-point and complex types to the variable `f`.
+#define DIP_OVL_ASSIGN_FLOAT_OR_COMPLEX( f, fname, dtype ) \
+   DIP__OVL__HEAD( dtype )          \
+   DIP__OVL__FLOAT_OR_COMPLEX( f = fname, ) \
    DIP__OVL__FOOT
 
 /// \brief Assigns a pointer to the overloaded function for all types but binary to the variable `f`.
@@ -446,6 +468,12 @@
 #define DIP_OVL_NEW_NONCOMPLEX( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )          \
    DIP__OVL__NONCOMPLEX( x = ( decltype( x )) new cname, paramlist ) \
+   DIP__OVL__FOOT
+
+/// \brief Assigns a pointer to the overloaded class for all floating-point and complex types to the variable `x`.
+#define DIP_OVL_NEW_FLOAT_OR_COMPLEX( x, cname, paramlist, dtype ) \
+   DIP__OVL__HEAD( dtype )          \
+   DIP__OVL__FLOAT_OR_COMPLEX( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
 /// \brief Assigns a pointer to the overloaded class for all types but binary to the variable `x`.

@@ -35,4 +35,7 @@
 /// \defgroup infrastructure The library infrastructure
 /// \brief The nuts and bolts that make it all work
 
+/// \defgroup filtering Image filters
+/// \brief Functions that implement linear and non-linear filters
+
 #endif // DIPLIB_H

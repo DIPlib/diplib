@@ -19,6 +19,7 @@ Specifically:
 
 - All functions local to a translation unit must be declared `static` to prevent
   name space pollution. This also prevents them for being exported out of the library.
+  Alternatively, declare them in an unnamed (anonymous) namespace.
 
 - Prefer `using` over `typedef`.
 

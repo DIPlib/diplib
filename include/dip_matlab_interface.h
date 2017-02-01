@@ -69,7 +69,7 @@ static_assert( sizeof( mxLogical ) == sizeof( dip::bin ), "mxLogical is not one 
 //
 
 // Are the strides consistent for how we create them in this interface?
-static bool IsMatlabStrides(
+static inline bool IsMatlabStrides(
       dip::UnsignedArray const& sizes,
       dip::uint telem,
       dip::IntegerArray const& strides,
@@ -112,7 +112,7 @@ static bool IsMatlabStrides(
 }
 
 // Do the dip::Image and mxArray dimensions match?
-static bool MatchDimensions(
+static inline bool MatchDimensions(
       dip::UnsignedArray const& sizes,
       dip::uint telem,
       bool complex,
@@ -159,7 +159,7 @@ static bool MatchDimensions(
 }
 
 // Convert DIPlib data type to MATLAB class ID
-static mxClassID GetMatlabClassID(
+static inline mxClassID GetMatlabClassID(
       dip::DataType dt
 ) {
    mxClassID type;
@@ -256,7 +256,7 @@ static inline bool IsVector( mxArray const* mx ) {
 }
 
 /// \brief Convert a boolean (logical) from `mxArray` to `bool` by copy.
-inline bool GetBoolean( mxArray const* mx ) {
+static inline bool GetBoolean( mxArray const* mx ) {
    if( mxIsScalar( mx )) {
       if( mxIsLogical( mx )) {
          return *mxGetLogicals( mx );
@@ -268,7 +268,7 @@ inline bool GetBoolean( mxArray const* mx ) {
 }
 
 /// \brief Convert an unsigned integer from `mxArray` to `dip::uint` by copy.
-inline dip::uint GetUnsigned( mxArray const* mx ) {
+static inline dip::uint GetUnsigned( mxArray const* mx ) {
    if( mxIsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
       double v = *mxGetPr( mx );
       if(( std::fmod( v, 1 ) == 0 ) && ( v >= 0 )) {
@@ -279,7 +279,7 @@ inline dip::uint GetUnsigned( mxArray const* mx ) {
 }
 
 /// \brief Convert a signed integer from `mxArray` to `dip::sint` by copy.
-inline dip::sint GetInteger( mxArray const* mx ) {
+static inline dip::sint GetInteger( mxArray const* mx ) {
    if( mxIsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
       double v = *mxGetPr( mx );
       if( std::fmod( v, 1 ) == 0 ) {
@@ -290,7 +290,7 @@ inline dip::sint GetInteger( mxArray const* mx ) {
 }
 
 /// \brief Convert a floating-point number from `mxArray` to `dip::dfloat` by copy.
-inline dip::dfloat GetFloat( mxArray const* mx ) {
+static inline dip::dfloat GetFloat( mxArray const* mx ) {
    if( mxIsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
       return *mxGetPr( mx );
    }
@@ -298,7 +298,7 @@ inline dip::dfloat GetFloat( mxArray const* mx ) {
 }
 
 /// \brief Convert a complex floating-point number from `mxArray` to `dip::dcomplex` by copy.
-inline dip::dcomplex GetComplex( mxArray const* mx ) {
+static inline dip::dcomplex GetComplex( mxArray const* mx ) {
    if( mxIsScalar( mx ) && mxIsDouble( mx )) {
       auto pr = mxGetPr( mx );
       auto pi = mxGetPi( mx );
@@ -311,7 +311,7 @@ inline dip::dcomplex GetComplex( mxArray const* mx ) {
 }
 
 /// \brief Convert a boolean (logical) array from `mxArray` to `dip::BooleanArray` by copy.
-inline dip::BooleanArray GetBooleanArray( mxArray const* mx ) {
+static inline dip::BooleanArray GetBooleanArray( mxArray const* mx ) {
    if( IsVector( mx ) ) {
       if( mxIsLogical( mx )) {
          dip::uint n = mxGetNumberOfElements( mx );
@@ -335,7 +335,7 @@ inline dip::BooleanArray GetBooleanArray( mxArray const* mx ) {
 }
 
 /// \brief Convert an unsigned integer array from `mxArray` to `dip::UnsignedArray` by copy.
-inline dip::UnsignedArray GetUnsignedArray( mxArray const* mx ) {
+static inline dip::UnsignedArray GetUnsignedArray( mxArray const* mx ) {
    if( mxIsDouble( mx ) && !mxIsComplex( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
       dip::UnsignedArray out( n );
@@ -351,7 +351,7 @@ inline dip::UnsignedArray GetUnsignedArray( mxArray const* mx ) {
 }
 
 /// \brief Convert a signed integer array from `mxArray` to `dip::IntegerArray` by copy.
-inline dip::IntegerArray GetIntegerArray( mxArray const* mx ) {
+static inline dip::IntegerArray GetIntegerArray( mxArray const* mx ) {
    if( mxIsDouble( mx ) && !mxIsComplex( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
       dip::IntegerArray out( n );
@@ -367,7 +367,7 @@ inline dip::IntegerArray GetIntegerArray( mxArray const* mx ) {
 }
 
 /// \brief Convert a floating-point array from `mxArray` to `dip::FloatArray` by copy.
-inline dip::FloatArray GetFloatArray( mxArray const* mx ) {
+static inline dip::FloatArray GetFloatArray( mxArray const* mx ) {
    if( mxIsDouble( mx ) && !mxIsComplex( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
       dip::FloatArray out( n );
@@ -384,7 +384,7 @@ inline dip::FloatArray GetFloatArray( mxArray const* mx ) {
 ///
 /// A coordinates array is either a cell array with arrays of unsigned integers (all of them
 /// the same length), or a matrix with a row per coordinate and a column per dimension.
-inline dip::CoordinateArray GetCoordinateArray( mxArray const* mx ) {
+static inline dip::CoordinateArray GetCoordinateArray( mxArray const* mx ) {
    if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
       dip::uint n = mxGetM( mx );
       dip::uint ndims = mxGetN( mx );
@@ -423,7 +423,7 @@ inline dip::CoordinateArray GetCoordinateArray( mxArray const* mx ) {
 }
 
 /// \brief Convert a string from `mxArray` to `dip::String` by copy.
-inline dip::String GetString( mxArray const* mx ) {
+static inline dip::String GetString( mxArray const* mx ) {
    if( mxIsChar( mx ) && IsVector( mx )) {
       dip::String out( mxGetNumberOfElements( mx ), '\0' );
       mxGetString( mx, &( out[ 0 ] ), out.size() + 1 ); // Why is out.data() a const* ???
@@ -433,7 +433,7 @@ inline dip::String GetString( mxArray const* mx ) {
 }
 
 /// \brief Convert a cell array of strings from `mxArray` to `dip::StringArray` by copy.
-inline dip::StringArray GetStringArray( mxArray const* mx ) {
+static inline dip::StringArray GetStringArray( mxArray const* mx ) {
    try {
       if( mxIsCell( mx ) && IsVector( mx )) {
          dip::uint n = mxGetNumberOfElements( mx );
@@ -453,7 +453,7 @@ inline dip::StringArray GetStringArray( mxArray const* mx ) {
 }
 
 /// \brief Convert a cell array of string from `mxArray` to `dip::StringSet` by copy.
-inline dip::StringSet GetStringSet( mxArray const* mx ) {
+static inline dip::StringSet GetStringSet( mxArray const* mx ) {
    try {
       if( mxIsCell( mx ) && IsVector( mx )) {
          dip::uint n = mxGetNumberOfElements( mx );
@@ -476,7 +476,7 @@ inline dip::StringSet GetStringSet( mxArray const* mx ) {
 ///
 /// A range is an integer array with zero to three elements, ordered the same way as in the
 /// constructors for `dip::Range`.
-inline dip::Range GetRange( mxArray const* mx ) {
+static inline dip::Range GetRange( mxArray const* mx ) {
    if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
       if( n <= 3 ) {
@@ -506,7 +506,7 @@ inline dip::Range GetRange( mxArray const* mx ) {
 }
 
 /// \brief Convert a cell array of integer array from `mxArray` to `dip::RangeArray` by copy.
-inline dip::RangeArray GetRangeArray( mxArray const* mx ) {
+static inline dip::RangeArray GetRangeArray( mxArray const* mx ) {
    if( mxIsCell( mx ) && IsVector( mx )) {
       dip::uint n = mxGetNumberOfElements( mx );
       dip::RangeArray out( n );
@@ -532,22 +532,22 @@ inline dip::RangeArray GetRangeArray( mxArray const* mx ) {
 
 
 /// \brief Convert an unsigned integer from `dip::uint` to `mxArray` by copy.
-inline mxArray* GetArray( dip::uint in ) {
+static inline mxArray* GetArray( dip::uint in ) {
    return mxCreateDoubleScalar( in );
 }
 
 /// \brief Convert a signed integer from `dip::sint` to `mxArray` by copy.
-inline mxArray* GetArray( dip::sint in ) {
+static inline mxArray* GetArray( dip::sint in ) {
    return mxCreateDoubleScalar( in );
 }
 
 /// \brief Convert a floating-point number from `dip::dfloat` to `mxArray` by copy.
-inline mxArray* GetArray( dip::dfloat in ) {
+static inline mxArray* GetArray( dip::dfloat in ) {
    return mxCreateDoubleScalar( in );
 }
 
 /// \brief Convert a complex floating-point number from `dip::dcomplex` to `mxArray` by copy.
-inline mxArray* GetArray( dip::dcomplex in ) {
+static inline mxArray* GetArray( dip::dcomplex in ) {
    mxArray* mx = mxCreateDoubleMatrix( 1, 1, mxCOMPLEX );
    *( mxGetPr( mx )) = in.real();
    *( mxGetPi( mx )) = in.imag();
@@ -555,7 +555,7 @@ inline mxArray* GetArray( dip::dcomplex in ) {
 }
 
 /// \brief Convert an unsigned integer array from `dip::UnsignedArray` to `mxArray` by copy.
-inline mxArray* GetArray( dip::UnsignedArray const& in ) {
+static inline mxArray* GetArray( dip::UnsignedArray const& in ) {
    mxArray* mx = mxCreateDoubleMatrix( 1, in.size(), mxREAL );
    auto data = mxGetPr( mx );
    for( dip::uint ii = 0; ii < in.size(); ++ii ) {
@@ -565,7 +565,7 @@ inline mxArray* GetArray( dip::UnsignedArray const& in ) {
 }
 
 /// \brief Convert a signed integer array from `dip::IntegerArray` to `mxArray` by copy.
-inline mxArray* GetArray( dip::IntegerArray const& in ) {
+static inline mxArray* GetArray( dip::IntegerArray const& in ) {
    mxArray* mx = mxCreateDoubleMatrix( 1, in.size(), mxREAL );
    auto data = mxGetPr( mx );
    for( dip::uint ii = 0; ii < in.size(); ++ii ) {
@@ -575,7 +575,7 @@ inline mxArray* GetArray( dip::IntegerArray const& in ) {
 }
 
 /// \brief Convert a floating-point array from `dip::FloatArray` to `mxArray` by copy.
-inline mxArray* GetArray( dip::FloatArray const& in ) {
+static inline mxArray* GetArray( dip::FloatArray const& in ) {
    mxArray* mx = mxCreateDoubleMatrix( 1, in.size(), mxREAL );
    auto data = mxGetPr( mx );
    for( dip::uint ii = 0; ii < in.size(); ++ii ) {
@@ -587,7 +587,7 @@ inline mxArray* GetArray( dip::FloatArray const& in ) {
 /// \brief Convert a coordinates array from `mxArray` to `dip::CoordinateArray` by copy.
 ///
 /// The output `mxArray` is a matrix with a row per coordinate and a column per dimension.
-inline mxArray* GetArray( dip::CoordinateArray const& in ) {
+static inline mxArray* GetArray( dip::CoordinateArray const& in ) {
    dip::uint n = in.size();
    if( n == 0 ) {
       return mxCreateDoubleMatrix( 0, 0, mxREAL );
@@ -606,7 +606,7 @@ inline mxArray* GetArray( dip::CoordinateArray const& in ) {
 }
 
 /// \brief Convert a string from `dip::String` to `mxArray` by copy.
-inline mxArray* GetArray( dip::String const& in ) {
+static inline mxArray* GetArray( dip::String const& in ) {
    return mxCreateString( in.c_str() );
 }
 
@@ -857,7 +857,7 @@ void VoidStripHandler( void const* p ) {
 /// ```
 ///
 /// An empty `mxArray` produces a non-forged image.
-dip::Image GetImage( mxArray const* mx ) {
+static dip::Image GetImage( mxArray const* mx ) {
    // Find image properties
    bool complex = false;
    bool needCopy = false;
