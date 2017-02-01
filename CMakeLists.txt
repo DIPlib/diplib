@@ -116,9 +116,10 @@ if(Matlab_FOUND)
    #matlab_add_mex(NAME bla SRC dipimage/@dip3_image/bla.cpp LINK_TO DIP)
    #install(TARGETS bla DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip3_image)
    # Compile and install MEX-files in toolbox directory
-   matlab_add_mex(NAME measure SRC dipimage/measure.cpp LINK_TO DIP)
    matlab_add_mex(NAME convolve SRC dipimage/convolve.cpp LINK_TO DIP)
-   install(TARGETS measure convolve DESTINATION ${DIPIMAGE_INSTALL_PATH})
+   matlab_add_mex(NAME extendimage SRC dipimage/extendimage.cpp LINK_TO DIP)
+   matlab_add_mex(NAME measure SRC dipimage/measure.cpp LINK_TO DIP)
+   install(TARGETS convolve extendimage measure DESTINATION ${DIPIMAGE_INSTALL_PATH})
 endif()
 
 
