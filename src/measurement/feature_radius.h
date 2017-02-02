@@ -43,7 +43,7 @@ class FeatureRadius : public ChainCodeBased {
       }
 
       virtual void Measure( ChainCode const& chaincode, Measurement::ValueIterator output ) override {
-         ChainCode::RadiusValues radius = chaincode.Radius();
+         RadiusValues radius = chaincode.RadiusStatistics();
          output[ 0 ] = radius.max * scale_;
          output[ 1 ] = radius.mean * scale_;
          output[ 2 ] = radius.min * scale_;

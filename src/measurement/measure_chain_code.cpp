@@ -17,11 +17,9 @@
 
 namespace dip {
 
-
 dfloat ChainCode::Length() const {
+   DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)." );
    if( codes.empty() ) {
-      return 0;
-   } else if( codes.size() == 1 ) {
       return pi;
    } else if( is8connected ) {
       dip::uint Ne = 0;
@@ -61,16 +59,15 @@ dfloat ChainCode::Length() const {
 }
 
 FeretValues ChainCode::Feret( dfloat angleStep ) const {
+   DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)." );
    FeretValues feret;
    if( codes.empty() ) {
-      return feret;
-   } else if( codes.size() == 1 ) {
-      // Fill in some values, hopefully this code won't ever run, as we never generate chain codes with one value.
-      feret.maxDiameter = 2.0;
+      // Fill in some values
+      feret.maxDiameter = 1.0;
       feret.minDiameter = 1.0;
       feret.maxPerpendicular = 1.0;
-      feret.maxAngle = int( codes.front() ) * pi / 4.0;
-      feret.minAngle = feret.maxAngle + pi / 2.0;
+      feret.maxAngle = 0;
+      feret.minAngle = pi / 2;
       return feret;
    }
 
@@ -182,69 +179,14 @@ dfloat ChainCode::BendingEnergy() const {
    }
 }
 
-ChainCode::RadiusValues ChainCode::Radius() const {
-   ChainCode::RadiusValues radius;
-   if( codes.size() <= 1 ) {
-      return radius;
-   }
-
-   std::array< VertexInteger, 8 > dir;
-   if( is8connected ) {
-      dir[ 0 ] = {  1,  0 };
-      dir[ 1 ] = {  1, -1 };
-      dir[ 2 ] = {  0, -1 };
-      dir[ 3 ] = { -1, -1 };
-      dir[ 4 ] = { -1,  0 };
-      dir[ 5 ] = { -1,  1 };
-      dir[ 6 ] = {  0,  1 };
-      dir[ 7 ] = {  1,  1 };
-   } else {
-      dir[ 0 ] = {  1,  0 };
-      dir[ 1 ] = {  0, -1 };
-      dir[ 2 ] = { -1,  0 };
-      dir[ 3 ] = {  0,  1 };
-   }
-
-   // Find center of gravity of the border pixels
-   // TODO: use known center of gravity of triangles instead
-   VertexInteger pos { 0, 0 };
-   VertexInteger sum { 0, 0 };
-   for( auto code : codes ) {
-      pos += dir[ int( code ) ];
-      sum += pos;
-   }
-   VertexFloat centroid { dfloat( sum.x ), dfloat( sum.y ) };
-   centroid *= 1.0 / dfloat( codes.size() );
-
-   // Compute radius statistics
-   pos = { 0, 0 };
-   dfloat sumR = 0.0;
-   dfloat sumR2 = 0.0;
-   radius.max = 0.0;
-   radius.min = std::numeric_limits< dfloat >::max();
-   for( auto code : codes ) {
-      pos += dir[ int( code ) ];
-      VertexFloat tmp = centroid - pos;
-      dfloat r = tmp.x * tmp.x + tmp.y * tmp.y;
-      sumR2 += r;
-      r = std::sqrt( r );
-      sumR += r;
-      radius.max = std::max( radius.max, r );
-      radius.min = std::min( radius.min, r );
-   }
-   radius.mean = sumR / codes.size();
-   radius.var = ( sumR2 - ( sumR * radius.mean )) / ( codes.size() - 1 );
-   return radius;
-}
-
 dip::uint ChainCode::LongestRun() const {
    dip::uint longestRun = 0;
    dip::uint currentRun = 0;
    Code prev = codes.back();
    // Two loops around the perimeter, the second one is to count the chain code run that starts before the first code
    for( dip::uint ii = 0; ii <= 1; ++ii ) {
-   for( auto code : codes ) {
-      if( !code.IsBorder() && ( code == prev )) {
+      for( auto code : codes ) {
+         if( !code.IsBorder() && ( code == prev )) {
             currentRun++;
          } else {
             longestRun = std::max( longestRun, currentRun );

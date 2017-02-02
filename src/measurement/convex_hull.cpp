@@ -27,13 +27,11 @@ static inline void DecrementMod4( int& k ) {
    k = ( k == 0 ) ? ( 3 ) : ( k - 1 );
 }
 
-static Polygon dip__ChainCodeToPolygon(
-      ChainCode const& chainCode
-) {
-   DIP_THROW_IF( chainCode.codes.size() == 1, "Received a weird chain code as input (N==2)." );
+dip::Polygon ChainCode::Polygon() const {
+   DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)." );
 
    std::array< VertexInteger, 8 > dir;
-   if( chainCode.is8connected ) {
+   if( is8connected ) {
       dir[ 0 ] = {  1,  0 };
       dir[ 1 ] = {  1, -1 };
       dir[ 2 ] = {  0, -1 };
@@ -55,21 +53,21 @@ static Polygon dip__ChainCodeToPolygon(
    pts[ 2 ] = {  0.0,  0.5 };
    pts[ 3 ] = {  0.5,  0.0 };
 
-   VertexFloat pos { dfloat( chainCode.start.x ), dfloat( chainCode.start.y ) };
-   Polygon polygon;
+   VertexFloat pos { dfloat( start.x ), dfloat( start.y ) };
+   dip::Polygon polygon;
 
-   if( chainCode.codes.empty() ) {
+   if( codes.empty() ) {
       /* A 1-pixel oject. */
-      polygon.push_back( pts[ 0 ] + pos );
-      polygon.push_back( pts[ 1 ] + pos );
-      polygon.push_back( pts[ 2 ] + pos );
-      polygon.push_back( pts[ 3 ] + pos );
+      polygon.vertices.push_back( pts[ 0 ] + pos );
+      polygon.vertices.push_back( pts[ 1 ] + pos );
+      polygon.vertices.push_back( pts[ 2 ] + pos );
+      polygon.vertices.push_back( pts[ 3 ] + pos );
    } else {
       int m = 0;
-      for( auto const& code : chainCode.codes ) {
+      for( auto const& code : codes ) {
          int n = int( code );
          int k, l;
-         if( chainCode.is8connected ) {
+         if( is8connected ) {
             k = ( m + 1 ) / 2;
             if( k == 4 ) {
                k = 0;
@@ -82,17 +80,17 @@ static Polygon dip__ChainCodeToPolygon(
             k = m;
             l = n;
          }
-         polygon.push_back( pts[ k ] + pos );
+         polygon.vertices.push_back( pts[ k ] + pos );
          if( l != 0 ) {
             DecrementMod4( k );
-            polygon.push_back( pts[ k ] + pos );
+            polygon.vertices.push_back( pts[ k ] + pos );
             if( l <= 2 ) {
                DecrementMod4( k );
-               polygon.push_back( pts[ k ] + pos );
-               if( chainCode.is8connected && ( l == 1 ) ) {
+               polygon.vertices.push_back( pts[ k ] + pos );
+               if( is8connected && ( l == 1 ) ) {
                   // This case is only possible if n is odd and n==m+4
                   DecrementMod4( k );
-                  polygon.push_back( pts[ k ] + pos );
+                  polygon.vertices.push_back( pts[ k ] + pos );
                }
             }
          }
@@ -104,19 +102,17 @@ static Polygon dip__ChainCodeToPolygon(
 }
 
 
-dip::ConvexHull ChainCode::ConvexHull() const {
-   Polygon polygon = dip__ChainCodeToPolygon( * this );
-   //dip__PolygonRemoveColinearPoints( polygon ); // this should not be necessary
-   if( polygon.size() <= 3 ) {
+ConvexHull::ConvexHull( Polygon const&& polygon ) {
+   auto const& pv = polygon.vertices;
+   if( pv.size() <= 3 ) {
       // If there's less than 4 elements, we already have a convex hull
-      dip::ConvexHull convexHull;
-      convexHull.vertices = std::move( polygon );
-      return convexHull;
+      vertices_ = std::move( polygon );
+      return;
    }
 
    // Melkman's algorithm for the convex hull
    std::deque< VertexFloat > deque;
-   auto v1 = polygon.begin();
+   auto v1 = pv.begin();
    auto v2 = v1 + 1;
    auto v3 = v2 + 1;         // these elements exist for sure -- we have more than 3 elements!
    while( ParallelogramSignedArea( *v1, *v2, *v3 ) == 0 ) {
@@ -125,11 +121,9 @@ dip::ConvexHull ChainCode::ConvexHull() const {
       // at the extrema. But because of the way we generate the vertices, they cannot all be in a straight line.
       v2 = v3;
       ++v3;
-      if( v3 == polygon.end() ) {
-         dip::ConvexHull convexHull;
-         convexHull.vertices.push_back( *v1 );
-         convexHull.vertices.push_back( *v2 );
-         return convexHull;
+      if( v3 == pv.end() ) {
+         vertices_.vertices.push_back( *v1 );
+         vertices_.vertices.push_back( *v2 );
       }
    }
    if( ParallelogramSignedArea( *v1, *v2, *v3 ) > 0 ) {
@@ -142,19 +136,19 @@ dip::ConvexHull ChainCode::ConvexHull() const {
    deque.push_back( *v3 );
    deque.push_front( *v3 );
    v1 = v3;
-   while( v1 != polygon.end() ) {
+   while( v1 != pv.end() ) {
       ++v1;
-      if( v1 == polygon.end() ) {
+      if( v1 == pv.end() ) {
          break;
       }
       while( ParallelogramSignedArea( *v1, deque.front(), deque.begin()[ 1 ] ) >= 0 &&
              ParallelogramSignedArea( deque.rbegin()[ 1 ], deque.back(), *v1 ) >= 0 ) {
          ++v1;
-         if( v1 == polygon.end() ) {
+         if( v1 == pv.end() ) {
             break;
          }
       }
-      if( v1 == polygon.end() ) {
+      if( v1 == pv.end() ) {
          break;
       }
       while( ParallelogramSignedArea( deque.rbegin()[ 1 ], deque.back(), *v1 ) <= 0 ) {
@@ -169,11 +163,9 @@ dip::ConvexHull ChainCode::ConvexHull() const {
    deque.pop_front(); // The deque always has the same point at beginning and end, we only need it once in out polygon.
 
    // Make a new chain of the relevant polygon vertices.
-   dip::ConvexHull convexHull;
    for( auto const& v : deque ) {
-      convexHull.vertices.push_back( v );
+      vertices_.vertices.push_back( v );
    }
-   return convexHull;
 }
 
 } // namespace dip

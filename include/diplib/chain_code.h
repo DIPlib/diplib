@@ -16,7 +16,7 @@
 
 
 /// \file
-/// \brief Declares the `dip::ChainCode` class, and releated functions.
+/// \brief Declares `dip::ChainCode`, `dip::Polygon`, `dip::ConvexHull`, and related functions.
 /// \see measurement
 
 
@@ -36,6 +36,13 @@ struct FeretValues {
    dfloat minAngle = 0.0;           ///< The angle at which `minDiameter` was measured
 };
 
+/// Holds the various output values of the `dip::RadiusStatistics` and `dip::ChainCode::RadiusStatistics` function.
+struct RadiusValues {
+   dfloat max = 0.0;    ///< Maximum radius
+   dfloat mean = 0.0;   ///< Mean radius
+   dfloat min = 0.0;    ///< Minimum radius
+   dfloat var = 0.0;    ///< Radius variance
+};
 
 /// \brief Encodes a location in a 2D image
 template< typename T >
@@ -44,7 +51,7 @@ struct Vertex {
    T y;   ///< The y-coordinate
 
    /// Default constructor
-   Vertex() : x( T( 0 ) ), y( T( 0 ) ) {}
+   Vertex() : x( T( 0 )), y( T( 0 )) {}
    /// Constructor
    Vertex( T x, T y ) : x( x ), y( y ) {}
 
@@ -80,6 +87,12 @@ struct Vertex {
       y = T( dfloat( y ) * n );
       return *this;
    }
+   /// Scale by a inverse of a constant, isotropically
+   Vertex& operator/=( dfloat n ) {
+      x = T( dfloat( x ) / n );
+      y = T( dfloat( y ) / n );
+      return *this;
+   }
    /// Add two vertices together
    template< typename T1, typename T2 >
    friend Vertex< T1 > operator+( Vertex< T1 > v1, Vertex< T2 > const& v2 ) {
@@ -107,6 +120,11 @@ struct Vertex {
       v *= n;
       return v;
    }
+   /// Divide a vertex and a constant
+   friend Vertex operator/( Vertex v, dfloat n ) {
+      v /= n;
+      return v;
+   }
 
    /// Compare two vertices
    friend bool operator==( Vertex v1, Vertex v2 ) {
@@ -122,60 +140,143 @@ struct Vertex {
 template< typename T >
 dfloat Distance( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    Vertex< T > v = v2 - v1;
-   return( std::hypot( v.x, v.y ));
+   return std::hypot( v.x, v.y );
 }
 
 /// \brief The square norm of the vector v2-v1.
 template< typename T >
 dfloat DistanceSquare( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    Vertex< T > v = v2 - v1;
-   return( v.x * v.x + v.y * v.y );
+   return v.x * v.x + v.y * v.y;
 }
 
 /// \brief The angle of the vector v2-v1.
 template< typename T >
 dfloat Angle( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    Vertex< T > v = v2 - v1;
-   return( std::atan2( v.y, v.x ));
+   return std::atan2( v.y, v.x );
+}
+
+/// \brief Compute the z component of the cross product of vectors v1 and v2
+template< typename T >
+dfloat CrossProduct( Vertex< T > const& v1, Vertex< T > const& v2 ) {
+   return v1.x * v2.y - v1.y * v2.x;
 }
 
 /// \brief Compute the z component of the cross product of vectors v2-v1 and v3-v1
 template< typename T >
 dfloat ParallelogramSignedArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
-   Vertex< T > vA = v2 - v1;
-   Vertex< T > vB = v3 - v1;
-   return ( vA.x * vB.y - vA.y * vB.x );
+   return CrossProduct( v2 - v1, v3 - v1 );
 }
 
 /// \brief Compute the area of the triangle formed by vertices v1, v2 and v3
 template< typename T >
 dfloat TriangleArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
-   return ( std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / 2.0 ) );
+   return std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / 2.0 );
 }
 
 /// \brief Compute the height of the triangle formed by vertices v1, v2 and v3, with v3 the tip
 template< typename T >
 dfloat TriangleHeight( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
-   return ( std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / Distance< T >( v1, v2 ) ) );
+   return std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / Distance< T >( v1, v2 ));
 }
 
 using VertexFloat = Vertex< dfloat >;        ///< A vertex with floating-point coordinates
 using VertexInteger = Vertex< dip::sint >;   ///< A vertex with integer coordinates
 
-using Polygon = std::vector< VertexFloat >;  ///< A polygon with floating-point vertices
+/// \brief A polygon with floating-point vertices.
+struct Polygon {
+
+   std::vector< VertexFloat > vertices;  ///< The vertices
+
+   /// \brief Computes the area of a polygon
+   dfloat Area() const {
+      if( vertices.size() < 3 ) {
+         return 0; // Should we generate an error instead?
+      }
+      dfloat sum = CrossProduct( vertices.back(), vertices[ 0 ] );
+      for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
+         sum += CrossProduct( vertices[ ii - 1 ], vertices[ ii ] );
+      }
+      return sum / 2.0;
+   }
+
+   /// \brief Computes the centroid of a polygon
+   VertexFloat Centroid() const {
+      if( vertices.size() < 3 ) {
+         return { 0, 0 }; // Should we generate an error instead?
+      }
+      dfloat v = CrossProduct( vertices.back(), vertices[ 0 ] );
+      dfloat sum = v;
+      dfloat xsum = vertices.back().x + vertices[ 0 ].x;
+      dfloat ysum = vertices.back().y + vertices[ 0 ].y;
+      for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
+         v = CrossProduct( vertices[ ii - 1 ], vertices[ ii ] );
+         sum += v;
+         xsum += ( vertices[ ii - 1 ].x + vertices[ ii ].x ) * v;
+         ysum += ( vertices[ ii - 1 ].y + vertices[ ii ].y ) * v;
+      }
+      return VertexFloat{ xsum, ysum } / ( 3 * sum );
+   }
+
+   /// \brief Computes the lenght of a vertices (i.e. perimeter). If the vertices represents a pixelated object,
+   /// this function will overestimate the object's perimeter. Use `dip::ChainCode::Length` instead.
+   dfloat Length() const {
+      if( vertices.size() < 2 ) {
+         return 0; // Should we generate an error instead?
+      }
+      dfloat sum = Distance( vertices.back(), vertices[ 0 ] );
+      for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
+         sum += Distance( vertices[ ii - 1 ], vertices[ ii ] );
+      }
+      return sum;
+   }
+
+   /// \brief Returns statistics on the radii of the poligon. The radii are the distances between the centroid and
+   /// each of the vertices.
+   RadiusValues RadiusStatistics() const;
+};
 
 /// \brief A convex hull as a sequence of vertices (i.e. a closed polygon).
-struct ConvexHull {
-   Polygon vertices;  ///< The vertices
+class ConvexHull {
+   public:
 
-   /// Returns the area of the convex hull
-   dfloat Area() const;
+      /// Default-constructed ConvexHull (without vertices)
+      ConvexHull() {};
 
-   /// Returns the perimeter of the convex hull
-   dfloat Perimeter() const;
+      /// Constructs a convex hull of a polygon
+      ConvexHull( Polygon const&& polygon );
 
-   /// Returns the Feret diameters of the convex hull
-   FeretValues Feret() const;
+      /// Retrive the vertices that represent the convex hull
+      std::vector< VertexFloat > const& Vertices() const {
+         return vertices_.vertices;
+      }
+
+      /// Returns the area of the convex hull
+      dfloat Area() const {
+         return vertices_.Area();
+      }
+
+      /// Returns the perimeter of the convex hull
+      dfloat Perimeter() const {
+         return vertices_.Length();
+      }
+
+      /// Returns the Feret diameters of the convex hull
+      FeretValues Feret() const;
+
+      /// Returns the centroid of the convex hull
+      VertexFloat Centroid() const {
+         return vertices_.Centroid();
+      }
+
+      /// Converts the `%ConvexHull` object to a `dip::Polygon`
+      operator Polygon() const {
+         return vertices_;
+      }
+
+   private:
+      Polygon vertices_;
 };
 
 
@@ -219,32 +320,59 @@ struct ChainCode {
    void Push( Code const& code ) { codes.push_back( code ); }
 
    /// \brief Returns the length of the chain code using the method by Vossepoel and Smeulders. If the chain code
-   /// represents the closed contour of an object, add pi to the result.
+   /// represents the closed contour of an object, add pi to the result to determine the object's perimeter.
    dfloat Length() const;
 
    /// \brief Returns the Feret diameters, using an angular step size in radian of `angleStep`.
    /// It is better to use `chainCode.ConvexHull().Feret()`.
    FeretValues Feret( dfloat angleStep ) const;
 
-   /// \brief Computes the bending energy.
+   /// Computes the bending energy.
    dfloat BendingEnergy() const;
 
-   /// Holds the various output values of the `dip::ChainCode::Radius` function.
-   struct RadiusValues {
-      dfloat max = 0.0;    ///< Maximum radius
-      dfloat mean = 0.0;   ///< Mean radius
-      dfloat min = 0.0;    ///< Minimum radius
-      dfloat var = 0.0;    ///< Radius variance
-   };
-   /// \brief Returns statistics on the radii of the object. The radii are the distances between the centroid and
-   /// each of the boundary pixels.
-   RadiusValues Radius() const;
+   /// \brief Computes the area of the solid object described by the chain code. Uses the result of
+   /// `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the polygon and
+   /// compute the measures on that.
+   dfloat Area() const {
+      return Polygon().Area();
+   }
+
+   /// \brief Computes the centroid of the solid object described by the chain code. Uses the result of
+   /// `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the polygon and
+   /// compute the measures on that.
+   VertexFloat Centroid() const {
+      return Polygon().Centroid();
+   }
+
+   /// \brief Returns statistics on the radii of the object.
+   ///
+   /// The radii are the distances between the centroid and each of the boundary mid-points. These
+   /// are the mid-points between an object pixel and a background pixel that are edge-connected neighbors.
+   /// See `dip::ChainCode::Polygon` for a more detailed explanation.
+   ///
+   /// Uses the result of `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the
+   /// polygon and compute the measures on that.
+   RadiusValues RadiusStatistics() const {
+      return Polygon().RadiusStatistics();
+   }
 
    /// Returns the length of the longest run of idenitcal chain codes.
    dip::uint LongestRun() const;
 
-   /// Returns the convex hull of the object.
-   dip::ConvexHull ConvexHull() const;
+   /// \brief Returns a polygon representation of the object.
+   ///
+   /// Creates a polygon by joining the mid-points between an object pixel and a background pixel that are
+   /// edge-connected neighbors. The polygon follows the "crack" between pixels, but without the biases
+   /// one gets when joining pixel vertices into a polygon.
+   ///
+   /// This idea comes from Steve Eddins:
+   /// http://blogs.mathworks.com/steve/2011/10/04/binary-image-convex-hull-algorithm-notes/
+   dip::Polygon Polygon() const;
+
+   /// Returns the convex hull of the object, see `dip::ChainCode::Polygon`.
+   dip::ConvexHull ConvexHull() const {
+      return dip::ConvexHull( Polygon() );
+   }
 };
 
 /// \brief A collection of object contours

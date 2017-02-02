@@ -15,50 +15,6 @@
 
 namespace dip {
 
-
-dfloat ConvexHull::Area() const {
-   if( vertices.size() < 3 ) {
-      if( vertices.empty() ) {
-         return 0;
-      } else if( vertices.size() == 1 ) {
-         return 1;
-      } else {
-         return Distance( vertices[ 0 ], vertices[ 1 ] ) + 1;
-      }
-   } else {
-      dfloat a = 0;
-      auto first = vertices.begin();
-      auto v1 = first + 1;
-      auto v2 = v1 + 1;
-      while( v2 != vertices.end() ) {
-         a += TriangleArea( *first, *v1, *v2 );
-         v1 = v2;
-         ++v2;
-      }
-      // Because the way we define the polygons w.r.t. the boundary pixels,
-      // we are always half a pixel under the correct object area.
-      return a + 0.5;
-   }
-}
-
-dfloat ConvexHull::Perimeter() const {
-   if( vertices.size() < 2 ) {
-       return 0;
-   } else {
-      dfloat p = 0;
-      auto v1 = vertices.begin();
-      auto v2 = v1 + 1;
-      while( v2 != vertices.end() ) {
-         p += Distance( *v1, *v2 );
-         v1 = v2;
-         ++v2;
-      }
-      p += Distance( vertices.back(), vertices.front() );
-      return p;
-   }
-}
-
-
 // An operator that increments the iterator but treating the container as a circular one
 template< typename Iterator, typename Container >
 static inline Iterator Next( Iterator it, Container const& con ) {
@@ -72,6 +28,8 @@ static inline Iterator Next( Iterator it, Container const& con ) {
 FeretValues ConvexHull::Feret() const {
 
    FeretValues feret;
+
+   auto const& vertices = Vertices();
 
    if( vertices.size() < 3 ) {
       // Nothing to do, give some meaningful values
@@ -179,6 +137,28 @@ FeretValues ConvexHull::Feret() const {
    feret.minAngle = feret.minAngle + pi / 2.0;
 
    return feret;
+}
+
+
+RadiusValues Polygon::RadiusStatistics() const {
+   RadiusValues radius;
+   if( vertices.size() < 3 ) {
+      return radius;
+   }
+   VertexFloat centroid = Centroid();
+
+   VarianceAccumulator acc;
+   radius.max = 0.0;
+   radius.min = std::numeric_limits< dfloat >::max();
+   for( auto const& v : vertices ) {
+      dfloat r = Distance( centroid, v );
+      acc.Push( r );
+      radius.max = std::max( radius.max, r );
+      radius.min = std::min( radius.min, r );
+   }
+   radius.mean = acc.Mean();
+   radius.var = acc.Variance();
+   return radius;
 }
 
 
