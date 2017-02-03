@@ -1270,28 +1270,34 @@ class ImageSliceIterator {
          return *this;
       }
       /// Add integer
+      /// wcaarls, 02-02-2017: WARNING: you would expect this to be const!
       friend ImageSliceIterator operator+( ImageSliceIterator it, difference_type n ) {
          it += n;
          return it;
       }
       /// Add integer
+      /// wcaarls, 02-02-2017: WARNING: you would expect this to be const!
       friend ImageSliceIterator operator+( difference_type n, ImageSliceIterator it ) {
          it += n;
          return it;
       }
       /// Subtract integer, but never moves the iterator to before the first slide
-      friend ImageSliceIterator operator-( ImageSliceIterator it, difference_type n ) {
-         it -= n;
-         return it;
+      /// wcaarls, 02-02-2017: WARNING: you would expect this to be const!
+      ImageSliceIterator operator-( difference_type n ) {
+         *this -= n;
+         return *this;
       }
       /// Difference between iterators
-      friend difference_type operator-( ImageSliceIterator const& it1, ImageSliceIterator const& it2 ) {
-         DIP_THROW_IF( !it1.IsValid() || !it2.IsValid(), E::ITERATOR_NOT_VALID );
-         DIP_THROW_IF( ( it1.image_.dataBlock_ != it2.image_.dataBlock_ ) ||
-                      ( it1.image_.sizes_ != it2.image_.sizes_ ) ||
-                      ( it1.stride_ != it2.stride_ ) ||
-                      ( it1.procDim_ != it2.procDim_ ), "Iterators index in different images or along different dimensions" );
-         return it1.coord_ - it2.coord_;
+      /// wcaarls, 02-02-2017: friend functions are not class members, and therefore
+      /// do not benefit from this class being Image's friend.
+      /// wcaarls, 02-02-2017: you would expect this to be const
+      difference_type operator-( ImageSliceIterator const& it2 ) {
+         DIP_THROW_IF( !IsValid() || !it2.IsValid(), E::ITERATOR_NOT_VALID );
+         DIP_THROW_IF(( image_.dataBlock_ != it2.image_.dataBlock_) ||
+                      ( image_.sizes_ != it2.image_.sizes_ ) ||
+                      ( stride_ != it2.stride_ ) ||
+                      ( procDim_ != it2.procDim_ ), "Iterators index in different images or along different dimensions" );
+         return coord_ - it2.coord_;
       }
       /// Equality comparison
       bool operator==( ImageSliceIterator const& other ) const {

@@ -51,70 +51,62 @@ struct Vertex {
    /// Add a vertex
    template< typename V >
    Vertex& operator+=( Vertex< V > v ) {
-      x += T( v.x );
-      y += T( v.y );
+      *this = *this + v;
       return *this;
    }
    /// Subtract a vertex
    template< typename V >
    Vertex& operator-=( Vertex< V > v ) {
-      x -= T( v.x );
-      y -= T( v.y );
+      *this = *this - v;
       return *this;
    }
    /// Add a constant to both coordinate components
    Vertex& operator+=( T n ) {
-      x += n;
-      y += n;
+      *this = *this + n;
       return *this;
    }
    /// Subtract a constant from both coordinate components
    Vertex& operator-=( T n ) {
-      x -= n;
-      y -= n;
+      *this = *this - n;
       return *this;
    }
    /// Scale by a constant, isotropically
    Vertex& operator*=( dfloat n ) {
-      x = T( dfloat( x ) * n );
-      y = T( dfloat( y ) * n );
+      *this = *this * n;
       return *this;
    }
    /// Add two vertices together
-   template< typename T1, typename T2 >
-   friend Vertex< T1 > operator+( Vertex< T1 > v1, Vertex< T2 > const& v2 ) {
-      v1 += v2;
-      return v1;
+   template< typename T2 >
+   Vertex< T > operator+( Vertex< T2 > const& v2 ) const {
+      return Vertex<T>(x+v2.x, y+v2.y);
    }
    /// Subtract two vertices from each other
-   template< typename T1, typename T2 >
-   friend Vertex< T1 > operator-( Vertex< T1 > v1, Vertex< T2 > const& v2 ) {
-      v1 -= v2;
-      return v1;
+   template< typename T2 >
+   Vertex< T > operator-( Vertex< T2 > const& v2 ) const {
+      return Vertex<T>(x-v2.x, y-v2.y);
    }
    /// Add a vertex and a constant
-   friend Vertex operator+( Vertex v, T n ) {
-      v += n;
-      return v;
+   Vertex operator+( T n ) const {
+      return Vertex<T>(x+n, y+n);
    }
    /// Subtract a vertex and a constant
-   friend Vertex operator-( Vertex v, T n ) {
-      v -= n;
-      return v;
+   Vertex operator-( T n ) const {
+      return Vertex<T>(x-n, y-n);
    }
    /// Multiply a vertex and a constant
-   friend Vertex operator*( Vertex v, dfloat n ) {
-      v *= n;
-      return v;
+   Vertex operator*( dfloat n ) const {
+      return Vertex<T>(x*n, y*n);
    }
 
    /// Compare two vertices
-   friend bool operator==( Vertex v1, Vertex v2 ) {
-      return ( v1.x == v2.x ) && ( v1.y == v2.y );
+   template< typename T2 >
+   bool operator==( Vertex< T2 > const& v2 ) const {
+      return ( x == v2.x ) && ( y == v2.y );
    }
    /// Compare two vertices
-   friend bool operator!=( Vertex v1, Vertex v2 ) {
-      return !( v1 == v2 );
+   template< typename T2 >
+   bool operator!=( Vertex< T2 > const& v2 ) const {
+      return !( *this == v2 );
    }
 };
 

@@ -127,7 +127,8 @@ class Tensor {
          return ( shape_ == Shape::UPPTRIANG_MATRIX ) || ( shape_ == Shape::LOWTRIANG_MATRIX );
       }
       /// Returns tensor shape.
-      enum Shape Shape() const {
+      /// wcaarls, 02-02-2017: Shape() clashes with enum Shape.
+      enum Shape TensorShape() const {
          return shape_;
       }
 
