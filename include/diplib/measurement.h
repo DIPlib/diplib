@@ -40,6 +40,7 @@ enum class Type {
       LINE_BASED, ///< The feature is derived from `dip::Feature::LineBased`
       IMAGE_BASED, ///< The feature is derived from `dip::Feature::ImageBased`
       CHAINCODE_BASED, ///< The feature is derived from `dip::Feature::ChainCodeBased`
+      POLYGON_BASED, ///< The feature is derived from `dip::Feature::PolygonBased`
       CONVEXHULL_BASED, ///< The feature is derived from `dip::Feature::ConvexHullBased`
       COMPOSITE ///< The feature is derived from `dip::Feature::Composite`
 };
@@ -568,6 +569,15 @@ class ChainCodeBased : public Base {
       virtual void Measure( ChainCode const& chainCode, Measurement::ValueIterator output ) = 0;
 };
 
+/// \brief The pure virtual base class for all polygon-based measurement features.
+class PolygonBased : public Base {
+   public:
+      PolygonBased( Information const& information ) : Base( information, Type::POLYGON_BASED ) {};
+
+      /// \brief Called once for each object
+      virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) = 0;
+};
+
 /// \brief The pure virtual base class for all convex-hull--based measurement features.
 class ConvexHullBased : public Base {
    public:
@@ -626,6 +636,7 @@ class Composite : public Base {
 /// <tr><td colspan="3"> **Shape features**
 /// <tr><td> "AspectRatioFeret"        <td> Feret-based aspect ratio <td> 2D (CC)
 /// <tr><td> "Radius"                  <td> Statistics on radius of object <td> 2D (CC)
+/// <tr><td> "EllipseVariance"         <td> Ellipse variance <td> 2D (CC)
 /// <tr><td> "P2A"                     <td> Circularity of the object <td> 2D (CC) & 3D
 /// <tr><td> "PodczeckShapes"          <td> Podczeck shape descriptors <td> 2D (CC)
 /// <tr><td> "Convexity"               <td> Area fraction of convex hull covered by object <td> 2D (CC)

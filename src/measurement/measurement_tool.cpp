@@ -29,6 +29,7 @@
 // Shape
 #include "feature_aspect_ratio_feret.h"
 #include "feature_radius.h"
+#include "feature_ellipse_variance.h"
 #include "feature_p2a.h"
 #include "feature_podczeck_shapes.h"
 #include "feature_convexity.h"
@@ -74,6 +75,7 @@ MeasurementTool::MeasurementTool() {
    // Shape
    Register( dip::Feature::Pointer( new Feature::FeatureAspectRatioFeret ));
    Register( dip::Feature::Pointer( new Feature::FeatureRadius ));
+   Register( dip::Feature::Pointer( new Feature::FeatureEllipseVariance ));
    Register( dip::Feature::Pointer( new Feature::FeatureP2A ));
    Register( dip::Feature::Pointer( new Feature::FeaturePodczeckShapes ));
    Register( dip::Feature::Pointer( new Feature::FeatureConvexity ));
@@ -203,6 +205,7 @@ Measurement MeasurementTool::Measure(
    LineBasedFeatureArray lineBasedFeatures;
    bool doImageBased = false;
    bool doChaincodeBased = false;
+   bool doPolygonBased = false;
    bool doConvHullBased = false;
    bool doComposite = false;
    for( auto const& feature : featureArray ) {
@@ -216,6 +219,9 @@ Measurement MeasurementTool::Measure(
             break;
          case Feature::Type::CHAINCODE_BASED:
             doChaincodeBased = true;
+            break;
+         case Feature::Type::POLYGON_BASED:
+            doPolygonBased = true;
             break;
          case Feature::Type::CONVEXHULL_BASED:
             doConvHullBased = true;
@@ -267,22 +273,29 @@ Measurement MeasurementTool::Measure(
    }
 
    // Let the chaincode based functions do their work
-   if( doChaincodeBased || doConvHullBased ) {
+   if( doChaincodeBased || doPolygonBased || doConvHullBased ) {
       ChainCodeArray chainCodeArray = GetImageChainCodes( label, measurement.Objects(), connectivity );
       auto itCC = chainCodeArray.begin();
       auto itObj = measurement.FirstObject(); // these two arrays are ordered the same way
       do {
-         ConvexHull ch;
+         Polygon polygon;
+         ConvexHull convexHull;
+         if( doPolygonBased || doConvHullBased ) {
+            polygon = itCC->Polygon();
+         }
          if( doConvHullBased ) {
-            ch = itCC->ConvexHull();
+            convexHull = polygon.ConvexHull();
          }
          for( auto const& feature : featureArray ) {
             if( feature->type == Feature::Type::CHAINCODE_BASED ) {
                auto cell = itObj[ feature->information.name ];
                dynamic_cast< Feature::ChainCodeBased* >( feature )->Measure( *itCC, cell.data() );
+            } else if( feature->type == Feature::Type::POLYGON_BASED ) {
+               auto cell = itObj[ feature->information.name ];
+               dynamic_cast< Feature::PolygonBased* >( feature )->Measure( polygon, cell.data() );
             } else if( feature->type == Feature::Type::CONVEXHULL_BASED ) {
                auto cell = itObj[ feature->information.name ];
-               dynamic_cast< Feature::ConvexHullBased* >( feature )->Measure( ch, cell.data() );
+               dynamic_cast< Feature::ConvexHullBased* >( feature )->Measure( convexHull, cell.data() );
             }
          }
       } while( ++itCC, ++itObj );

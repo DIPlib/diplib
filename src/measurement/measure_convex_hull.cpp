@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for functions that measure convex hulls.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  */
 
@@ -143,7 +143,7 @@ FeretValues ConvexHull::Feret() const {
 RadiusValues Polygon::RadiusStatistics() const {
    RadiusValues radius;
    if( vertices.size() < 3 ) {
-      return radius;
+      return radius; // CLion thinks this is not initialized, but it is.
    }
    VertexFloat centroid = Centroid();
 
@@ -159,6 +159,42 @@ RadiusValues Polygon::RadiusStatistics() const {
    radius.mean = acc.Mean();
    radius.var = acc.Variance();
    return radius;
+}
+
+dfloat Polygon::EllipseVariance() const {
+   // TODO: check that this makes sense at all...
+   dip::uint N = vertices.size();
+   if( N < 3 ) {
+      return 0;
+   }
+   // Covariance matrix C
+   VertexFloat g = Centroid();
+   dfloat Cxx = 0;
+   dfloat Cxy = 0;
+   dfloat Cyy = 0;
+   for( auto v : vertices ) {
+      v -= g;
+      Cxx += v.x * v.x;
+      Cxy += v.x * v.y;
+      Cyy += v.y * v.y;
+   }
+   Cxx /= N;
+   Cxy /= N;
+   Cyy /= N;
+   // Inverse of covariance matrix U
+   dfloat det = Cxx * Cyy - Cxy * Cxy;
+   dfloat Uxx = Cyy / det;
+   dfloat Uxy = -Cxy / det;
+   dfloat Uyy = Cxx / det;
+   // Distance of vertex to ellipse is given by sqrt( v' * U * v ), with v' the transpose of v
+   VarianceAccumulator acc;
+   for( auto v : vertices ) {
+      dfloat d = v.x * v.x * Uxx + 2 * v.x * v.y * Uxy + v.y * v.y * Uyy;
+      acc.Push( std::sqrt( d ));
+   }
+   dfloat m = acc.Mean();
+   // Ellipse variance = coefficient of variation of radius
+   return m == 0 ? 0 : acc.StandardDeviation() / acc.Mean();
 }
 
 

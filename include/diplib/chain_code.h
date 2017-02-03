@@ -184,6 +184,8 @@ dfloat TriangleHeight( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T >
 using VertexFloat = Vertex< dfloat >;        ///< A vertex with floating-point coordinates
 using VertexInteger = Vertex< dip::sint >;   ///< A vertex with integer coordinates
 
+class ConvexHull; // Forward declaration
+
 /// \brief A polygon with floating-point vertices.
 struct Polygon {
 
@@ -219,7 +221,7 @@ struct Polygon {
       return VertexFloat{ xsum, ysum } / ( 3 * sum );
    }
 
-   /// \brief Computes the lenght of a vertices (i.e. perimeter). If the vertices represents a pixelated object,
+   /// \brief Computes the lenght of a polygon (i.e. perimeter). If the polygon represents a pixelated object,
    /// this function will overestimate the object's perimeter. Use `dip::ChainCode::Length` instead.
    dfloat Length() const {
       if( vertices.size() < 2 ) {
@@ -232,9 +234,17 @@ struct Polygon {
       return sum;
    }
 
-   /// \brief Returns statistics on the radii of the poligon. The radii are the distances between the centroid and
-   /// each of the vertices.
+   /// \brief Returns statistics on the radii of the poligon. The radii are the distances between the centroid
+   /// and each of the vertices.
    RadiusValues RadiusStatistics() const;
+
+   /// \brief Compares a polygon to the ellipse with the same covariance matrix, returning the standard deviation of
+   /// the distance of vertices to the ellipse normalized by the average distance.
+   // TODO: Add literature ref for this measure.
+   dfloat EllipseVariance() const;
+
+   /// \brief Returns the convex hull of the polygon.
+   dip::ConvexHull ConvexHull() const;
 };
 
 /// \brief A convex hull as a sequence of vertices (i.e. a closed polygon).
@@ -279,6 +289,12 @@ class ConvexHull {
       Polygon vertices_;
 };
 
+// This function cannot be written inside the dip::Polygon class because it needs to know about the dip::ConvexHull
+// class, which in turn needs to know about the dip::Polygon class.
+inline dip::ConvexHull Polygon::ConvexHull() const {
+   Polygon copy = *this;
+   return dip::ConvexHull( std::move( copy ));
+}
 
 /// \brief The contour of an object as a chain code sequence.
 struct ChainCode {
@@ -334,7 +350,7 @@ struct ChainCode {
    /// `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the polygon and
    /// compute the measures on that.
    dfloat Area() const {
-      return Polygon().Area();
+      return Polygon().Area() + 0.5;
    }
 
    /// \brief Computes the centroid of the solid object described by the chain code. Uses the result of
@@ -344,18 +360,6 @@ struct ChainCode {
       return Polygon().Centroid();
    }
 
-   /// \brief Returns statistics on the radii of the object.
-   ///
-   /// The radii are the distances between the centroid and each of the boundary mid-points. These
-   /// are the mid-points between an object pixel and a background pixel that are edge-connected neighbors.
-   /// See `dip::ChainCode::Polygon` for a more detailed explanation.
-   ///
-   /// Uses the result of `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the
-   /// polygon and compute the measures on that.
-   RadiusValues RadiusStatistics() const {
-      return Polygon().RadiusStatistics();
-   }
-
    /// Returns the length of the longest run of idenitcal chain codes.
    dip::uint LongestRun() const;
 
@@ -363,7 +367,8 @@ struct ChainCode {
    ///
    /// Creates a polygon by joining the mid-points between an object pixel and a background pixel that are
    /// edge-connected neighbors. The polygon follows the "crack" between pixels, but without the biases
-   /// one gets when joining pixel vertices into a polygon.
+   /// one gets when joining pixel vertices into a polygon. The polygon always has an area exaclty half a
+   /// pixel smaller than the binary object it represents.
    ///
    /// This idea comes from Steve Eddins:
    /// http://blogs.mathworks.com/steve/2011/10/04/binary-image-convex-hull-algorithm-notes/

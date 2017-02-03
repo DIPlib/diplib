@@ -15,9 +15,9 @@ namespace dip {
 namespace Feature {
 
 
-class FeatureRadius : public ChainCodeBased {
+class FeatureRadius : public PolygonBased {
    public:
-      FeatureRadius() : ChainCodeBased( { "Radius", "Statistics on radius of object (2D)", false } ) {};
+      FeatureRadius() : PolygonBased( { "Radius", "Statistics on radius of object (2D)", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 4 );
@@ -42,8 +42,8 @@ class FeatureRadius : public ChainCodeBased {
          return out;
       }
 
-      virtual void Measure( ChainCode const& chaincode, Measurement::ValueIterator output ) override {
-         RadiusValues radius = chaincode.RadiusStatistics();
+      virtual void Measure( Polygon const& polygon, Measurement::ValueIterator output ) override {
+         RadiusValues radius = polygon.RadiusStatistics();
          output[ 0 ] = radius.max * scale_;
          output[ 1 ] = radius.mean * scale_;
          output[ 2 ] = radius.min * scale_;
