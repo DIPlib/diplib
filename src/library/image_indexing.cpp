@@ -26,7 +26,7 @@ Image Image::operator[]( UnsignedArray const& indices ) const {
    dip::uint m = tensor_.Rows();
    dip::uint n = tensor_.Columns();
    DIP_THROW_IF( ( i >= m ) || ( j >= n ), E::INDEX_OUT_OF_RANGE );
-   switch( tensor_.Shape() ) {
+   switch( tensor_.TensorShape() ) {
       case Tensor::Shape::COL_VECTOR:
          break;
       case Tensor::Shape::ROW_VECTOR:
@@ -101,7 +101,7 @@ Image Image::Diagonal() const {
       dip::uint m = tensor_.Rows();
       dip::uint n = tensor_.Columns();
       out.tensor_.SetVector( std::min( m, n ) );
-      if( tensor_.Shape() == Tensor::Shape::COL_MAJOR_MATRIX ) {
+      if( tensor_.TensorShape() == Tensor::Shape::COL_MAJOR_MATRIX ) {
          out.tensorStride_ = ( m + 1 ) * tensorStride_;
       } else { // row-major matrix
          out.tensorStride_ = ( n + 1 ) * tensorStride_;

@@ -154,7 +154,7 @@ class Measurement {
                   /// \brief True if done iterating (do not call other methods if this is true!)
                   bool IsAtEnd() const { return index_ >= feature_.NumberOfObjects(); }
                   /// \brief True if the iterator is valid and can be used
-                  operator bool() const { return !IsAtEnd(); }
+                  explicit operator bool() const { return !IsAtEnd(); }
                   /// \brief Name of the feature
                   String const& FeatureName() const { return feature_.FeatureName(); }
                   /// \brief ID of the object
@@ -188,7 +188,7 @@ class Measurement {
             /// \brief True if done iterating (do not call other methods if this is true!)
             bool IsAtEnd() const { return index_ >= NumberOfFeatures(); }
             /// \brief True if the iterator is valid and can be used
-            operator bool() const { return !IsAtEnd(); }
+            explicit operator bool() const { return !IsAtEnd(); }
             /// \brief Name of the feature
             String const& FeatureName() const { return Feature().name; }
             /// \brief Number of objects
@@ -247,7 +247,7 @@ class Measurement {
                   /// \brief True if done iterating (do not call other methods if this is true!)
                   bool IsAtEnd() const { return index_ >= object_.NumberOfFeatures(); }
                   /// \brief True if the iterator is valid and can be used
-                  operator bool() const { return !IsAtEnd(); }
+                  explicit operator bool() const { return !IsAtEnd(); }
                   /// \brief Name of the feature
                   String const& FeatureName() const { return Feature().name; }
                   /// \brief ID of the object
@@ -269,7 +269,7 @@ class Measurement {
             /// \brief True if done iterating (do not call other methods if this is true!)
             bool IsAtEnd() const { return index_ >= NumberOfObjects(); }
             /// \brief True if the iterator is valid and can be used
-            operator bool() const { return !IsAtEnd(); }
+            explicit operator bool() const { return !IsAtEnd(); }
             /// \brief ID of the object
             dip::uint ObjectID() const { return measurement_.objects_[ index_ ]; }
             /// \brief Index of the object (row number)

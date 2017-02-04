@@ -115,24 +115,9 @@ class SampleIterator {
          ptr_ -= index * stride_;
          return *this;
       }
-      /// Add integer
-      friend SampleIterator operator+( SampleIterator it, difference_type n ) {
-         it += n;
-         return it;
-      }
-      /// Add integer
-      friend SampleIterator operator+( difference_type n, SampleIterator it ) {
-         it += n;
-         return it;
-      }
-      /// Subtract integer
-      friend SampleIterator operator-( SampleIterator it, difference_type n ) {
-         it -= n;
-         return it;
-      }
       /// Difference between iterators
-      friend difference_type operator-( SampleIterator const& it1, SampleIterator const& it2 ) {
-         return it1.ptr_ - it2.ptr_;
+      difference_type operator-( SampleIterator const& it ) const {
+         return ptr_ - it.ptr_;
       }
       /// Equality comparison
       bool operator==( SampleIterator const& other ) const { return ptr_ == other.ptr_; }
@@ -150,6 +135,25 @@ class SampleIterator {
       dip::sint stride_;
       pointer ptr_;
 };
+
+/// \brief Add integer to a sample iterator
+template< typename T >
+inline SampleIterator< T > operator+( SampleIterator< T > it, dip::sint n ) {
+   it += n;
+   return it;
+}
+/// \brief Add integer to a sample iterator
+template< typename T >
+inline SampleIterator< T > operator+( dip::sint n, SampleIterator< T > it ) {
+   it += n;
+   return it;
+}
+/// \brief Subtract integer from a sample iterator
+template< typename T >
+inline SampleIterator< T > operator-( SampleIterator< T > it, dip::sint n ) {
+   it -= n;
+   return it;
+}
 
 template< typename T >
 inline void swap( SampleIterator< T >& v1, SampleIterator< T >& v2 ) {
@@ -294,7 +298,7 @@ class LineIterator {
       /// Test to see if the iterator reached past the last pixel
       bool IsAtEnd() const { return ptr_ == nullptr; }
       /// Test to see if the iterator is still pointing at a pixel
-      operator bool() const { return ptr_ != nullptr; }
+      explicit operator bool() const { return ptr_ != nullptr; }
       /// Return the current coordinate along the line
       dip::uint const& Coordinate() const { return coord_; }
       /// Return the number of pixels along the line
@@ -517,7 +521,7 @@ class ImageIterator {
       /// Test to see if the iterator reached past the last pixel
       bool IsAtEnd() const { return ptr_ == nullptr; }
       /// Test to see if the iterator is still pointing at a pixel
-      operator bool() const { return ptr_ != nullptr; }
+      explicit operator bool() const { return ptr_ != nullptr; }
       /// Return the current coordinates
       UnsignedArray const& Coordinates() const { return coords_; }
       /// Set the iterator to point at a different location in the image
@@ -740,7 +744,7 @@ class JointImageIterator {
       /// Test to see if the iterator reached past the last pixel
       bool IsAtEnd() const { return inPtr_ == nullptr; }
       /// Test to see if the iterator is still pointing at a pixel
-      operator bool() const { return inPtr_ != nullptr; }
+      explicit operator bool() const { return inPtr_ != nullptr; }
       /// Return the current coordinates
       UnsignedArray const& Coordinates() const { return coords_; }
       /// Set the iterator to point at a different location in the image
@@ -924,7 +928,7 @@ class GenericImageIterator {
       /// Test to see if the iterator reached past the last pixel
       bool IsAtEnd() const { return image_ == nullptr; }
       /// Test to see if the iterator is still pointing at a pixel
-      operator bool() const { return image_ != nullptr; }
+      explicit operator bool() const { return image_ != nullptr; }
       /// Return the current coordinates
       UnsignedArray const& Coordinates() const { return coords_; }
       /// Set the iterator to point at a different location in the image
@@ -1084,7 +1088,7 @@ class GenericJointImageIterator {
       /// Test to see if the iterator reached past the last pixel
       bool IsAtEnd() const { return inImage_ == nullptr; }
       /// Test to see if the iterator is still pointing at a pixel
-      operator bool() const { return inImage_ != nullptr; }
+      explicit operator bool() const { return inImage_ != nullptr; }
       /// Return the current coordinates
       UnsignedArray const& Coordinates() const { return coords_; }
       /// Set the iterator to point at a different location in the image
@@ -1252,46 +1256,34 @@ class ImageSliceIterator {
          operator--();
          return tmp;
       }
-      /// Add integer
-      ImageSliceIterator& operator+=( difference_type index ) {
+      /// Increment by `n`
+      ImageSliceIterator& operator+=( difference_type n ) {
          DIP_THROW_IF( !IsValid(), E::ITERATOR_NOT_VALID );
-         coord_ += index;
-         image_.origin_ = image_.Pointer( index * stride_ );
-         return *this;
-      }
-      /// Subtract integer, but never moves the iterator to before the first slide
-      ImageSliceIterator& operator-=( difference_type index ) {
-         DIP_THROW_IF( !IsValid(), E::ITERATOR_NOT_VALID );
-         if( index > coord_ ) {
-            index = coord_;
+         if( n < 0 ) {
+            n = -n;
+            if( n > static_cast< difference_type >( coord_ )) {
+               n = static_cast< difference_type >( coord_ );
+            }
+            coord_ -= n;
+            image_.origin_ = image_.Pointer( -n * stride_ );
+         } else {
+            coord_ += n;
+            image_.origin_ = image_.Pointer( n * stride_ );
          }
-         coord_ -= index;
-         image_.origin_ = image_.Pointer( -index * stride_ );
-         return *this;
+         return * this;
       }
-      /// Add integer
-      friend ImageSliceIterator operator+( ImageSliceIterator it, difference_type n ) {
-         it += n;
-         return it;
-      }
-      /// Add integer
-      friend ImageSliceIterator operator+( difference_type n, ImageSliceIterator it ) {
-         it += n;
-         return it;
-      }
-      /// Subtract integer, but never moves the iterator to before the first slide
-      friend ImageSliceIterator operator-( ImageSliceIterator it, difference_type n ) {
-         it -= n;
-         return it;
+      /// Decrement by `n`, but never moves the iterator to before the first slide
+      ImageSliceIterator& operator-=( difference_type n ) {
+         return operator+=( -n );
       }
       /// Difference between iterators
-      friend difference_type operator-( ImageSliceIterator const& it1, ImageSliceIterator const& it2 ) {
-         DIP_THROW_IF( !it1.IsValid() || !it2.IsValid(), E::ITERATOR_NOT_VALID );
-         DIP_THROW_IF( ( it1.image_.dataBlock_ != it2.image_.dataBlock_ ) ||
-                      ( it1.image_.sizes_ != it2.image_.sizes_ ) ||
-                      ( it1.stride_ != it2.stride_ ) ||
-                      ( it1.procDim_ != it2.procDim_ ), "Iterators index in different images or along different dimensions" );
-         return it1.coord_ - it2.coord_;
+      difference_type operator-( ImageSliceIterator const& it2 ) const {
+         DIP_THROW_IF( !IsValid() || !it2.IsValid(), E::ITERATOR_NOT_VALID );
+         DIP_THROW_IF(( image_.dataBlock_ != it2.image_.dataBlock_) ||
+                      ( image_.sizes_ != it2.image_.sizes_ ) ||
+                      ( stride_ != it2.stride_ ) ||
+                      ( procDim_ != it2.procDim_ ), "Iterators index in different images or along different dimensions" );
+         return coord_ - it2.coord_;
       }
       /// Equality comparison
       bool operator==( ImageSliceIterator const& other ) const {
@@ -1315,7 +1307,7 @@ class ImageSliceIterator {
       /// Test to see if the iterator reached past the last plane
       bool IsAtEnd() const { return coord_ >= size_; }
       /// Test to see if the iterator is valid and can be dereferenced
-      operator bool() const { return !IsAtEnd(); }
+      explicit operator bool() const { return !IsAtEnd(); }
       /// Return the current position
       dip::uint Coordinate() const { return coord_; }
       /// Set the iterator to point at a different location in the image
@@ -1334,6 +1326,22 @@ class ImageSliceIterator {
       dip::uint procDim_ = 0; // the dimension along which we iterate, the image contains all other dimensions
 };
 
+/// \brief Increment an image slice iterator by `n`
+inline ImageSliceIterator operator+( ImageSliceIterator it, dip::sint n ) {
+   it += n;
+   return it;
+}
+/// \brief Increment an image slice iterator by `n`
+inline ImageSliceIterator operator+( dip::sint n, ImageSliceIterator it ) {
+   it += n;
+   return it;
+}
+/// \brief Decrement an image slice iterator by `n`, but never moves the iterator to before the first slide
+inline ImageSliceIterator operator-( ImageSliceIterator it, dip::sint n ) {
+   it -= n;
+   return it;
+}
+
 inline void swap( ImageSliceIterator& v1, ImageSliceIterator& v2 ) {
    v1.swap( v2 );
 }
@@ -1346,7 +1354,7 @@ inline ImageSliceIterator ImageSliceEndIterator( Image const& image, dip::uint p
 }
 
 
-/// TODO: ImageTensorIterator: like ImageSliceIterator, but creates a view over one tensor element at the time (a scalar image).
+// TODO: ImageTensorIterator: like ImageSliceIterator, but creates a view over one tensor element at the time (a scalar image).
 
 /// \}
 

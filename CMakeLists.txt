@@ -1,6 +1,6 @@
 # CMakeLists file for DIPlib 3
 
-cmake_minimum_required (VERSION 3.5.2) # It might work with older versions, but this is the version I'm testing with.
+cmake_minimum_required (VERSION 3.5) # It might work with older versions, but this is the version I'm testing with.
 
 project (DIPlib VERSION 3.0)
 
@@ -15,7 +15,7 @@ set(DOCUMENTATION_OUTPUT ${CMAKE_INSTALL_PREFIX}/share/doc/DIPlib)
 set(DIPIMAGE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/share/dipimage)
 
 # Compiler flags
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid settings mismatch with the MEX files
@@ -23,7 +23,7 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN hidden)
 
 # Safe gcc compiler and architecture flags across all Intel and AMD processors (circa 2015)
 # This optimizes things for GCC and CLANG, but presumably shouldn't be here for MSVC++.
-set(CMAKE_CXX_FLAGS "-Wall -Wno-c++14-extensions")
+set(CMAKE_CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 

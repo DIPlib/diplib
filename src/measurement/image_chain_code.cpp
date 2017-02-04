@@ -42,7 +42,7 @@ static ChainCodeArray dip__ChainCode(
 
    // Find first pixel of requested label
    dip::uint label = 0;
-   Vertex< dip::sint > coord;
+   VertexInteger coord;
    for( coord.y = 0; coord.y < dims[ 1 ]; ++coord.y ) {
       dip::sint pos = coord.y * strides[ 1 ];
       for( coord.x = 0; coord.x < dims[ 0 ]; ++coord.x ) {
@@ -68,12 +68,12 @@ static ChainCodeArray dip__ChainCode(
             ccArray[ index ].is8connected = connectivity == 2;
 
             // Follow contour always as left as possible (i.e. ii = ii+2)
-            Vertex< dip::sint > c = coord;
+            VertexInteger c = coord;
             dip::sint offset = pos;
             int dir = 0;
             do {
 
-               Vertex< dip::sint > nc = c + freeman[ dir ].pos;
+               VertexInteger nc = c + freeman[ dir ].pos;
                dip::sint no = offset + freeman[ dir ].offset;
                if(( nc.x >= 0 ) && ( nc.x <= dims[ 0 ] ) &&
                   ( nc.y >= 0 ) && ( nc.y <= dims[ 1 ] ) &&

@@ -127,10 +127,9 @@ class Tensor {
          return ( shape_ == Shape::UPPTRIANG_MATRIX ) || ( shape_ == Shape::LOWTRIANG_MATRIX );
       }
       /// Returns tensor shape.
-      enum Shape Shape() const {
+      enum Shape TensorShape() const {
          return shape_;
       }
-
       /// Gets number of tensor elements.
       dip::uint Elements() const {
          return elements_;
@@ -168,15 +167,15 @@ class Tensor {
       }
 
       /// Compares tensor size and shape.
-      friend bool operator==( Tensor const& lhs, Tensor const& rhs ) {
-         return ( lhs.shape_ == rhs.shape_ ) &&
-                ( lhs.elements_ == rhs.elements_ ) &&
-                ( lhs.rows_ == rhs.rows_ );
+      bool operator==( Tensor const& rhs )  const {
+         return ( shape_ == rhs.shape_ ) &&
+                ( elements_ == rhs.elements_ ) &&
+                ( rows_ == rhs.rows_ );
       }
 
       /// Compares tensor size and shape.
-      friend bool operator!=( Tensor const& lhs, Tensor const& rhs ) {
-         return !( lhs == rhs );
+      bool operator!=( Tensor const& rhs ) const {
+         return !( *this == rhs );
       }
 
       /// Sets the tensor shape.

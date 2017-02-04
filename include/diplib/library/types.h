@@ -97,7 +97,7 @@ class bin {
       constexpr explicit bin( std::complex< T > v ) : v_( !!std::abs( v ) ) {};
 
       /// A bin implicitly converts to bool
-      operator bool() const { return v_; }
+      constexpr operator bool() const { return v_; }
 
    private:
       uint8 v_;

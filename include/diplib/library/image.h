@@ -568,7 +568,7 @@ class Image {
 
       /// \brief Get the tensor shape.
       enum dip::Tensor::Shape TensorShape() const {
-         return tensor_.Shape();
+         return tensor_.TensorShape();
       }
 
       // Note: This function is the reason we refer to the Tensor class as
