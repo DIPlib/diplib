@@ -51,64 +51,48 @@ struct Vertex {
    /// Add a vertex
    template< typename V >
    Vertex& operator+=( Vertex< V > v ) {
-      *this = *this + v;
+      x += T( v.x );
+      y += T( v.y );
       return *this;
    }
    /// Subtract a vertex
    template< typename V >
    Vertex& operator-=( Vertex< V > v ) {
-      *this = *this - v;
+      x -= T( v.x );
+      y -= T( v.y );
       return *this;
    }
    /// Add a constant to both coordinate components
    Vertex& operator+=( T n ) {
-      *this = *this + n;
+      x += n;
+      y += n;
       return *this;
    }
    /// Subtract a constant from both coordinate components
    Vertex& operator-=( T n ) {
-      *this = *this - n;
+      x -= n;
+      y -= n;
       return *this;
    }
    /// Scale by a constant, isotropically
    Vertex& operator*=( dfloat n ) {
-      *this = *this * n;
+      x = T( dfloat( x ) * n );
+      y = T( dfloat( y ) * n );
       return *this;
    }
-   /// Add two vertices together
-   template< typename T2 >
-   Vertex< T > operator+( Vertex< T2 > const& v2 ) const {
-      return Vertex<T>(x+v2.x, y+v2.y);
-   }
-   /// Subtract two vertices from each other
-   template< typename T2 >
-   Vertex< T > operator-( Vertex< T2 > const& v2 ) const {
-      return Vertex<T>(x-v2.x, y-v2.y);
-   }
-   /// Add a vertex and a constant
-   Vertex operator+( T n ) const {
-      return Vertex<T>(x+n, y+n);
-   }
-   /// Subtract a vertex and a constant
-   Vertex operator-( T n ) const {
-      return Vertex<T>(x-n, y-n);
-   }
-   /// Multiply a vertex and a constant
-   Vertex operator*( dfloat n ) const {
-      return Vertex<T>(x*n, y*n);
-   }
-
-   /// Compare two vertices
-   template< typename T2 >
-   bool operator==( Vertex< T2 > const& v2 ) const {
-      return ( x == v2.x ) && ( y == v2.y );
-   }
-   /// Compare two vertices
-   template< typename T2 >
-   bool operator!=( Vertex< T2 > const& v2 ) const {
-      return !( *this == v2 );
-   }
 };
+
+/// \brief Compare two vertices
+template< typename T >
+inline bool operator==( Vertex< T > v1, Vertex< T > v2 ) {
+   return ( v1.x == v2.x ) && ( v1.y == v2.y );
+}
+
+template< typename T >
+/// \brief Compare two vertices
+inline bool operator!=( Vertex< T > v1, Vertex< T > v2 ) {
+   return !( v1 == v2 );
+}
 
 /// \brief The norm of the vector v2-v1.
 template< typename T >
@@ -154,6 +138,67 @@ dfloat TriangleHeight( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T >
 using VertexFloat = Vertex< dfloat >;        ///< A vertex with floating-point coordinates
 using VertexInteger = Vertex< dip::sint >;   ///< A vertex with integer coordinates
 
+/// \brief Add two vertices together, with identical types
+template< typename T >
+Vertex< T > operator+( Vertex< T > lhs, Vertex< T > const& rhs ) {
+   lhs += rhs;
+   return lhs;
+}
+
+/// \brief Add two vertices together, where the LHS is floating-point and the RHS is integer
+inline VertexFloat operator+( VertexFloat lhs, VertexInteger const& rhs ) {
+   lhs += rhs;
+   return lhs;
+}
+
+/// \brief Add two vertices together, where the LHS is integer and the RHS is floating-point
+inline VertexFloat operator+( VertexInteger const& lhs, VertexFloat rhs ) {
+   rhs += lhs;
+   return rhs;
+}
+
+/// \brief Subtract two vertices from each other
+template< typename T >
+Vertex< T > operator-( Vertex< T > lhs, Vertex< T > const& rhs ) {
+   lhs -= rhs;
+   return lhs;
+}
+
+/// \brief Subtract two vertices from each other, where the LHS is floating-point and the RHS is integer
+inline VertexFloat operator-( VertexFloat lhs, VertexInteger const& rhs ) {
+   lhs -= rhs;
+   return lhs;
+}
+
+/// \brief Subtract two vertices from each other, where the LHS is integer and the RHS is floating-point
+inline VertexFloat operator-( VertexInteger const& lhs, VertexFloat const& rhs ) {
+   VertexFloat out{ static_cast< dfloat >( lhs.x ),
+                    static_cast< dfloat >( lhs.y ) };
+   out -= rhs;
+   return out;
+}
+
+/// \brief Add a vertex and a constant
+template< typename T >
+Vertex< T > operator+( Vertex< T > v, T n ) {
+   v += n;
+   return v;
+}
+
+/// \brief Subtract a vertex and a constant
+template< typename T >
+Vertex< T > operator-( Vertex< T > v, T n ) {
+   v -= n;
+   return v;
+}
+
+/// \brief Multiply a vertex and a constant
+template< typename T >
+Vertex< T > operator*( Vertex< T > v, dfloat n ) {
+   v *= n;
+   return v;
+}
+
 using Polygon = std::vector< VertexFloat >;  ///< A polygon with floating-point vertices
 
 /// \brief A convex hull as a sequence of vertices (i.e. a closed polygon).
@@ -191,19 +236,19 @@ struct ChainCode {
          /// Is it an off code?
          bool IsOdd() const { return !IsEven(); }
          /// Compare codes
-         friend bool operator==( Code const& c1, Code const& c2 ) {
-            return ( c1.value & 7 ) == ( c2.value & 7 );
+         bool operator==( Code const& c2 ) const {
+            return ( value & 7 ) == ( c2.value & 7 );
          }
          /// Compare codes
-         friend bool operator!=( Code const& c1, Code const& c2 ) {
-            return !( c1 == c2 );
+         bool operator!=( Code const& c2 ) const {
+            return !( *this == c2 );
          }
       private:
          dip::uint8 value;
    };
 
    std::vector< Code > codes;  ///< The chain codes
-   Vertex< dip::sint > start = { 0, 0 };         ///< The coordinates of the start pixel
+   VertexInteger start = { 0, 0 };  ///< The coordinates of the start pixel
    dip::uint objectID;              ///< The label of the object from which this chaincode is taken
    bool is8connected = true;        ///< Is false when connectivity = 1, true when connectivity = 2
 

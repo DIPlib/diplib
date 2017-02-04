@@ -156,7 +156,7 @@ tensor without moving data (`dip::Image::ReshapeTensorAsVector`,
 `dip::Image::Transpose`).
 
 The shape of the tensor is represented by the enumerator `dip::Tensor::Shape`
-(obtained through `dip::Image::Shape`).
+(obtained through `dip::Image::TensorShape`).
 The chosen way of storing tensor elements allows us, for example, to store
 a symmetric 2D tensor such as the Hessian matrix without repeating the
 repeating the duplicated values. We also have a specific shape for diagonal

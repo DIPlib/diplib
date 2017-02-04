@@ -1,6 +1,6 @@
 # CMakeLists file for DIPlib 3
 
-cmake_minimum_required (VERSION 3.5.1) # It might work with older versions, but this is the version I'm testing with.
+cmake_minimum_required (VERSION 3.5) # It might work with older versions, but this is the version I'm testing with.
 
 project (DIPlib VERSION 3.0)
 
@@ -15,7 +15,7 @@ set(DOCUMENTATION_OUTPUT ${CMAKE_INSTALL_PREFIX}/share/doc/DIPlib)
 set(DIPIMAGE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/share/dipimage)
 
 # Compiler flags
-set(CMAKE_CXX_STANDARD 14) # wcaarls, 02-02-2017: uses declaration in constexpr
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid settings mismatch with the MEX files

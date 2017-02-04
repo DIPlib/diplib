@@ -342,7 +342,7 @@ class PixelTable::iterator {
       bool IsAtEnd() const { return run_ == pixelTable_->runs_.size(); }
 
       /// Test to see if the iterator is still pointing at a pixel
-      operator bool() const { return !IsAtEnd(); }
+      explicit operator bool() const { return !IsAtEnd(); }
 
    private:
       PixelTable const* pixelTable_ = nullptr;
@@ -445,7 +445,7 @@ class PixelTableOffsets::iterator {
       bool IsAtEnd() const { return run_ == pixelTable_->runs_.size(); }
 
       /// Test to see if the iterator is still pointing at a pixel
-      operator bool() const { return !IsAtEnd(); }
+      explicit operator bool() const { return !IsAtEnd(); }
 
    private:
       PixelTableOffsets const* pixelTable_ = nullptr;

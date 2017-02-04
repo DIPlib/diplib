@@ -112,7 +112,7 @@ class DimensionArray {
 
       /// Copy assignment, copies over data from `other`.
       DimensionArray& operator=( DimensionArray const& other ) {
-         if( this != & other ) {
+         if( this != &other ) {
             resize( other.size_ );
             std::copy( other.data_, other.data_ + size_, data_ );
          }
@@ -286,81 +286,6 @@ class DimensionArray {
          resize( size_ - 1 );
       }
 
-      /// Compares two arrays, returns true only if they have the same size and contain the same values.
-      friend inline bool operator==( DimensionArray const& lhs, DimensionArray const& rhs ) {
-         if( lhs.size_ != rhs.size_ ) {
-            return false;
-         }
-         T const* lhsp = lhs.data_;
-         T const* rhsp = rhs.data_;
-         for( size_type ii = 0; ii < lhs.size_; ++ii ) {
-            if( *( lhsp++ ) != *( rhsp++ ) ) {
-               return false;
-            }
-         }
-         return true;
-      }
-      /// Compares two arrays, returns true if they have different size and/or contain different values.
-      friend inline bool operator!=( DimensionArray const& lhs, DimensionArray const& rhs ) {
-         return !( lhs == rhs );
-      }
-      /// Compares two arrays, returns true only if they have the same size and all `lhs` elements are larger than all `rhs` elements.
-      friend inline bool operator>( DimensionArray const& lhs, DimensionArray const& rhs ) {
-         if( lhs.size_ != rhs.size_ ) {
-            return false;
-         }
-         T const* lhsp = lhs.data_;
-         T const* rhsp = rhs.data_;
-         for( size_type ii = 0; ii < lhs.size_; ++ii ) {
-            if( *( lhsp++ ) <= *( rhsp++ ) ) {
-               return false;
-            }
-         }
-         return true;
-      }
-      /// Compares two arrays, returns true only if they have the same size and all `lhs` elements are smaller than all `rhs` elements.
-      friend inline bool operator<( DimensionArray const& lhs, DimensionArray const& rhs ) {
-         if( lhs.size_ != rhs.size_ ) {
-            return false;
-         }
-         T const* lhsp = lhs.data_;
-         T const* rhsp = rhs.data_;
-         for( size_type ii = 0; ii < lhs.size_; ++ii ) {
-            if( *( lhsp++ ) >= *( rhsp++ ) ) {
-               return false;
-            }
-         }
-         return true;
-      }
-      /// Compares two arrays, returns true only if they have the same size and all `lhs` elements are larger or equal than all `rhs` elements.
-      friend inline bool operator>=( DimensionArray const& lhs, DimensionArray const& rhs ) {
-         if( lhs.size_ != rhs.size_ ) {
-            return false;
-         }
-         T const* lhsp = lhs.data_;
-         T const* rhsp = rhs.data_;
-         for( size_type ii = 0; ii < lhs.size_; ++ii ) {
-            if( *( lhsp++ ) < *( rhsp++ ) ) {
-               return false;
-            }
-         }
-         return true;
-      }
-      /// Compares two arrays, returns true only if they have the same size and all `lhs` elements are smaller or equal than all `rhs` elements.
-      friend inline bool operator<=( DimensionArray const& lhs, DimensionArray const& rhs ) {
-         if( lhs.size_ != rhs.size_ ) {
-            return false;
-         }
-         T const* lhsp = lhs.data_;
-         T const* rhsp = rhs.data_;
-         for( size_type ii = 0; ii < lhs.size_; ++ii ) {
-            if( *( lhsp++ ) > *( rhsp++ ) ) {
-               return false;
-            }
-         }
-         return true;
-      }
-
       /// Adds a constant to each element in the array.
       DimensionArray& operator+=( T const& v ) {
          for( size_type ii = 0; ii < size_; ++ii ) {
@@ -518,22 +443,6 @@ class DimensionArray {
          return true;
       }
 
-      /// Writes the array to a stream
-      friend std::ostream& operator<<(
-            std::ostream& os,
-            DimensionArray const& array
-      ) {
-         os << "[";
-         if( !array.empty() ) {
-            os << array[ 0 ];
-         }
-         for( size_type ii = 1; ii < array.size(); ++ii ) {
-            os << ", " << array[ ii ];
-         }
-         os << "]";
-         return os;
-      }
-
    private:
       constexpr static size_type static_size_ = 4;
       size_type size_ = 0;
@@ -568,6 +477,123 @@ class DimensionArray {
       }
 
 };
+
+/// \brief Compares two arrays, returns true only if they have the same size and contain the same values.
+template< typename T >
+inline bool operator==( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
+   if( lhs.size() != rhs.size() ) {
+      return false;
+   }
+   auto lhsp = lhs.begin();
+   auto rhsp = rhs.begin();
+   do {
+      if( *lhsp != *rhsp ) {
+         return false;
+      }
+      ++lhsp;
+      ++rhsp;
+   } while( lhsp != lhs.end() );
+   return true;
+}
+/// \brief Compares two arrays, returns true if they have different size and/or contain different values.
+template< typename T >
+inline bool operator!=( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
+   return !( lhs == rhs );
+}
+
+// Note on ordering operators: These have a non-standard meaning, because they all return false if the arrays
+// are not of the same lenght. Therefore, it is not possible to define operator<= in terms of operator>, etc.
+
+/// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are larger
+/// than all `rhs` elements.
+template< typename T >
+inline bool operator>( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
+   if( lhs.size() != rhs.size() ) {
+      return false;
+   }
+   auto lhsp = lhs.begin();
+   auto rhsp = rhs.begin();
+   do {
+      if( *lhsp <= *rhsp ) {
+         return false;
+      }
+      ++lhsp;
+      ++rhsp;
+   } while( lhsp != lhs.end() );
+   return true;
+}
+/// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are smaller
+/// than all `rhs` elements.
+template< typename T >
+inline bool operator<( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
+   if( lhs.size() != rhs.size() ) {
+      return false;
+   }
+   auto lhsp = lhs.begin();
+   auto rhsp = rhs.begin();
+   do {
+      if( *lhsp >= *rhsp ) {
+         return false;
+      }
+      ++lhsp;
+      ++rhsp;
+   } while( lhsp != lhs.end() );
+   return true;
+}
+/// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are larger
+/// or equal than all `rhs` elements.
+template< typename T >
+inline bool operator>=( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
+   if( lhs.size() != rhs.size() ) {
+      return false;
+   }
+   auto lhsp = lhs.begin();
+   auto rhsp = rhs.begin();
+   do {
+      if( *lhsp < *rhsp ) {
+         return false;
+      }
+      ++lhsp;
+      ++rhsp;
+   } while( lhsp != lhs.end() );
+   return true;
+}
+/// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are smaller
+/// or equal than all `rhs` elements.
+template< typename T >
+inline bool operator<=( DimensionArray< T > const& lhs, DimensionArray< T > const& rhs ) {
+   if( lhs.size() != rhs.size() ) {
+      return false;
+   }
+   auto lhsp = lhs.begin();
+   auto rhsp = rhs.begin();
+   do {
+      if( *lhsp > *rhsp ) {
+         return false;
+      }
+      ++lhsp;
+      ++rhsp;
+   } while( lhsp != lhs.end() );
+   return true;
+}
+
+/// \brief Writes the array to a stream
+template< typename T >
+inline std::ostream& operator<<(
+      std::ostream& os,
+      DimensionArray< T > const& array
+) {
+   os << "[";
+   auto it = array.begin();
+   if( it != array.end() ) {
+      os << *it;
+   }
+   while( ++it != array.end() ) {
+      os << ", " << *it;
+   };
+   os << "]";
+   return os;
+}
 
 template< typename T >
 inline void swap( DimensionArray< T >& v1, DimensionArray< T >& v2 ) {

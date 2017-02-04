@@ -428,12 +428,6 @@ class StatisticsAccumulator {
          return *this;
       }
 
-      /// Combine two accumulators
-      friend StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAccumulator const& rhs ) {
-         lhs += rhs;
-         return lhs;
-      }
-
       /// Number of samples
       dip::uint Number() const {
          return n_;
@@ -477,6 +471,12 @@ class StatisticsAccumulator {
       dfloat m4_ = 0;   // sum of (x-mean(x))^4  --  `m4_ / n_` is fourth order central moment
 };
 
+/// \brief Combine two accumulators
+inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAccumulator const& rhs ) {
+   lhs += rhs;
+   return lhs;
+}
+
 /// \brief `%VarianceAccumulator` computes mean and standard deviation by accumulating the first two
 /// central moments.
 ///
@@ -513,12 +513,6 @@ class VarianceAccumulator {
          return *this;
       }
 
-      /// Combine two accumulators
-      friend VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulator const& rhs ) {
-         lhs += rhs;
-         return lhs;
-      }
-
       /// Number of samples
       dip::uint Number() const {
          return n_;
@@ -541,6 +535,12 @@ class VarianceAccumulator {
       dfloat m1_ = 0;   // mean of values x
       dfloat m2_ = 0;   // sum of (x-mean(x))^2  --  `m2_ / n_` is second order central moment
 };
+
+/// \brief Combine two accumulators
+inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulator const& rhs ) {
+   lhs += rhs;
+   return lhs;
+}
 
 
 /// \}

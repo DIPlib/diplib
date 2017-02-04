@@ -181,22 +181,10 @@ class Units {
          return *this;
       }
 
-      /// Multiplies two units objects.
-      friend Units operator*( Units lhs, Units const& rhs ) {
-         lhs *= rhs;
-         return lhs;
-      }
-
-      /// Divides two units objects.
-      friend Units operator/( Units lhs, Units const& rhs ) {
-         lhs /= rhs;
-         return lhs;
-      }
-
       /// Compares two units objects.
-      friend bool operator==( Units const& lhs, Units const& rhs ) {
+      bool operator==( Units const& rhs ) const {
          for( dip::uint ii = 0; ii < ndims_; ++ii ) {
-            if( lhs.power_[ ii ] != rhs.power_[ ii ] ) {
+            if( power_[ ii ] != rhs.power_[ ii ] ) {
                return false;
             }
          }
@@ -204,8 +192,8 @@ class Units {
       }
 
       /// Compares two units objects.
-      friend bool operator!=( Units const& lhs, Units const& rhs ) {
-         return !( lhs == rhs );
+      bool operator!=( Units const& rhs ) const {
+         return !( *this == rhs );
       }
 
       /// \brief Compares two units objects. This differs from the `==` operator in that `km` and `um` test equal.
@@ -377,6 +365,18 @@ class Units {
       }
 };
 
+/// \brief Multiplies two units objects.
+inline Units operator*( Units lhs, Units const& rhs ) {
+   lhs *= rhs;
+   return lhs;
+}
+
+/// \brief Divides two units objects.
+inline Units operator/( Units lhs, Units const& rhs ) {
+   lhs /= rhs;
+   return lhs;
+}
+
 inline void swap( Units& v1, Units& v2 ) {
    v1.swap( v2 );
 }
@@ -521,25 +521,10 @@ struct PhysicalQuantity {
       units *= other.units;
       return *this;
    }
-   /// Multiplies two physical quantities.
-   friend PhysicalQuantity operator*( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
-      lhs *= rhs;
-      return lhs;
-   }
    /// Scaling of a physical quantity.
    PhysicalQuantity& operator*=( double other ) {
       magnitude *= other;
       return *this;
-   }
-   /// Scaling of a physical quantity.
-   friend PhysicalQuantity operator*( PhysicalQuantity lhs, double rhs ) {
-      lhs *= rhs;
-      return lhs;
-   }
-   /// Scaling of a physical quantity.
-   friend PhysicalQuantity operator*( double lhs, PhysicalQuantity rhs ) {
-      rhs *= lhs;
-      return rhs;
    }
 
    /// Divides two physical quantities.
@@ -548,26 +533,10 @@ struct PhysicalQuantity {
       units /= other.units;
       return *this;
    }
-   /// Divides two physical quantities.
-   friend PhysicalQuantity operator/( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
-      lhs /= rhs;
-      return lhs;
-   }
    /// Scaling of a physical quantity.
    PhysicalQuantity& operator/=( double other ) {
       magnitude /= other;
       return *this;
-   }
-   /// Scaling of a physical quantity.
-   friend PhysicalQuantity operator/( PhysicalQuantity lhs, double rhs ) {
-      lhs /= rhs;
-      return lhs;
-   }
-   /// Scaling of a physical quantity.
-   friend PhysicalQuantity operator/( double lhs, PhysicalQuantity rhs ) {
-      rhs = rhs.Power( -1 );
-      rhs *= lhs;
-      return rhs;
    }
 
    /// Computes a physical quantity to the power of `p`.
@@ -579,9 +548,8 @@ struct PhysicalQuantity {
    }
 
    /// Unary negation.
-   friend PhysicalQuantity operator-( PhysicalQuantity pq ) {
-      pq.magnitude = -pq.magnitude;
-      return pq;
+   PhysicalQuantity operator-() const {
+      return { -magnitude, units };
    }
 
    /// Addition of two physical quantities.
@@ -604,11 +572,6 @@ struct PhysicalQuantity {
       }
       return *this;
    }
-   /// Addition of two physical quantities.
-   friend PhysicalQuantity operator+( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
-      lhs += rhs;
-      return lhs;
-   }
 
    /// Subtraction of two physical quantities.
    PhysicalQuantity& operator-=( PhysicalQuantity other ) {
@@ -616,30 +579,25 @@ struct PhysicalQuantity {
       other.magnitude = -other.magnitude;
       return operator+=( other );
    }
-   /// Subtraction of two physical quantities.
-   friend PhysicalQuantity operator-( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
-      lhs -= rhs;
-      return lhs;
-   }
 
    /// Comparison of two physical quantities.
-   friend bool operator==( PhysicalQuantity const& lhs, PhysicalQuantity const& rhs ) {
-      if( lhs.units.Thousands() != rhs.units.Thousands() ) {
-         if( lhs.units.HasSameDimensions( rhs.units )) {
-            double lhsmag = lhs.magnitude * pow10( 3 * lhs.units.Thousands() );
+   bool operator==( PhysicalQuantity const& rhs ) const {
+      if( units.Thousands() != rhs.units.Thousands() ) {
+         if( units.HasSameDimensions( rhs.units )) {
+            double lhsmag =     magnitude * pow10( 3 *     units.Thousands() );
             double rhsmag = rhs.magnitude * pow10( 3 * rhs.units.Thousands() );
             return lhsmag == rhsmag;
          } else {
             return false;
          }
       } else {
-         return ( lhs.magnitude == rhs.magnitude ) && ( lhs.units == rhs.units );
+         return ( magnitude == rhs.magnitude ) && ( units == rhs.units );
       }
    }
 
    /// Comparison of two physical quantities.
-   friend bool operator!=( PhysicalQuantity const& lhs, PhysicalQuantity const& rhs ) {
-      return !( lhs == rhs );
+   bool operator!=( PhysicalQuantity const& rhs ) const {
+      return !( *this == rhs );
    }
 
    /// Test to see if the physical quantity is dimensionless.
@@ -664,12 +622,6 @@ struct PhysicalQuantity {
       return *this;
    }
 
-   /// Insert physical quantity to an output stream.
-   friend std::ostream& operator<<( std::ostream& os, PhysicalQuantity const& pq ) {
-      os << pq.magnitude << " " << pq.units;
-      return os;
-   }
-
    /// Retrieve the magnitude, discaring units.
    explicit operator double() const { return magnitude; };
 
@@ -686,6 +638,56 @@ struct PhysicalQuantity {
    double magnitude = 0;   ///< The magnitude
    Units units;            ///< The units
 };
+
+/// Multiplies two physical quantities.
+inline PhysicalQuantity operator*( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
+   lhs *= rhs;
+   return lhs;
+}
+/// Scaling of a physical quantity.
+inline PhysicalQuantity operator*( PhysicalQuantity lhs, double rhs ) {
+   lhs *= rhs;
+   return lhs;
+}
+/// Scaling of a physical quantity.
+inline PhysicalQuantity operator*( double lhs, PhysicalQuantity rhs ) {
+   rhs *= lhs;
+   return rhs;
+}
+
+/// Divides two physical quantities.
+inline PhysicalQuantity operator/( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
+   lhs /= rhs;
+   return lhs;
+}
+/// Scaling of a physical quantity.
+inline PhysicalQuantity operator/( PhysicalQuantity lhs, double rhs ) {
+   lhs /= rhs;
+   return lhs;
+}
+/// Scaling of a physical quantity.
+inline PhysicalQuantity operator/( double lhs, PhysicalQuantity rhs ) {
+   rhs = rhs.Power( -1 );
+   rhs *= lhs;
+   return rhs;
+}
+
+/// Addition of two physical quantities.
+inline PhysicalQuantity operator+( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
+   lhs += rhs;
+   return lhs;
+}
+/// Subtraction of two physical quantities.
+inline PhysicalQuantity operator-( PhysicalQuantity lhs, PhysicalQuantity const& rhs ) {
+   lhs -= rhs;
+   return lhs;
+}
+
+/// Insert physical quantity to an output stream.
+inline std::ostream& operator<<( std::ostream& os, PhysicalQuantity const& pq ) {
+   os << pq.magnitude << " " << pq.units;
+   return os;
+}
 
 inline void swap( PhysicalQuantity& v1, PhysicalQuantity& v2 ) {
    v1.swap( v2 );
@@ -1049,10 +1051,10 @@ class PixelSize {
       }
 
       /// Compares two pixel sizes
-      friend bool operator==( PixelSize const& lhs, PixelSize const& rhs ) {
-         dip::uint d = std::max( lhs.size_.size(), rhs.size_.size() );
+      bool operator==( PixelSize const& rhs ) const {
+         dip::uint d = std::max( size_.size(), rhs.size_.size() );
          for( dip::uint ii = 0; ii < d; ++ii ) {
-            if( lhs.Get( ii ) != rhs.Get( ii ) ) {
+            if( Get( ii ) != rhs.Get( ii ) ) {
                return false;
             }
          }
@@ -1060,8 +1062,8 @@ class PixelSize {
       }
 
       /// Compares two pixel sizes
-      friend bool operator!=( PixelSize const& lhs, PixelSize const& rhs ) {
-         return !( lhs == rhs );
+      bool operator!=( PixelSize const& rhs ) const {
+         return !( *this == rhs );
       }
 
       /// Converts physical units to pixels.
