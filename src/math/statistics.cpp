@@ -18,7 +18,7 @@ namespace dip {
 template< typename TPI >
 class dip__Count : public Framework::ScanLineFilter {
    public:
-      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::uint& count = counts[ params.thread ];
          auto bufferLength = params.bufferLength;

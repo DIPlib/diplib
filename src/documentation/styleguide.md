@@ -49,8 +49,8 @@ Specifically:
   a lowercase letter, function and class names start with an uppercase letter. Don't
   use underscores except for in a few special cases. Private class member variables
   end in an underscore. Enumerator constants are in all uppercase letters. Internal
-  names (the ones that are not meant to be used directly by library users) start with
-  `dip__`.
+  names (the ones that are not meant to be used directly by library users), if public,
+  start with `dip__`; internal names inside an unnamed namespace do not need the prefix.
 
 - Setter member functions start with `Set`. But getter member functions do not start
   with `Get`. Query functions that return a boolean start with `Is`. Member functions

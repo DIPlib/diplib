@@ -112,7 +112,7 @@ DataType DataType::SuggestArithmetic( DataType type1, DataType type2 ) {
    return DT_BIN;
 }
 
-DataType DataType::SuggestDiadicOperation( DataType type1, DataType type2 ) {
+DataType DataType::SuggestDyadicOperation( DataType type1, DataType type2 ) {
    if( type1 == type2 )
       return type1;                 // short-cut
    if( type2 > type1 )

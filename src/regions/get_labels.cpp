@@ -22,7 +22,7 @@ using LabelSet = std::set< dip::uint >;
 template< typename TPI >
 class dip__GetLabels : public Framework::ScanLineFilter {
    public:
-      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI* data = static_cast< TPI* >( params.inBuffer[ 0 ].buffer );
          dip::sint stride = params.inBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;

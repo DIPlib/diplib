@@ -111,7 +111,7 @@ using FeatureArray = std::vector< Feature::Base* >;
 // that we call here are not overloaded.
 class dip__Measure : public Framework::ScanLineFilter {
    public:
-      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          LineIterator< uint32 > label(
                static_cast< uint32* >( params.inBuffer[ 0 ].buffer ),
                0, params.bufferLength, params.inBuffer[ 0 ].stride,

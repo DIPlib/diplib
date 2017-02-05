@@ -4,6 +4,8 @@
  *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
+ *
+ * Credit to Wouter Caarls for suggesting what is now `NadicScanLineFilter`.
  */
 
 #ifndef DIP_FRAMEWORK_H
@@ -163,7 +165,7 @@ struct ScanLineFilterParameters {
 class ScanLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
-      virtual void Filter( ScanLineFilterParameters& params ) = 0;
+      virtual void Filter( ScanLineFilterParameters const& params ) = 0;
       /// \brief The derived class can defined this function if it needs this information ahead of time.
       virtual void SetNumberOfThreads( dip::uint threads ) {}
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
@@ -205,7 +207,10 @@ class ScanLineFilter {
 /// then the tensor is cast to a spatial dimension, and singleton expansion is
 /// applied. Thus, `lineFilter` does not need to check `inTensorLength` or
 /// `outTensorLength` (they will be 1), and the output tensor size is guaranteed
-/// to match the largest input tensor. `nTensorElements` is ignored.
+/// to match the largest input tensor. `nTensorElements` is ignored. Even with
+/// a single input image, where no singleton expantion can happen, it is
+/// beneficial to use the `dip::FrameWork::Scan_TensorAsSpatialDim` option, as
+/// `lineFilter` can be simpler and faster.
 ///
 /// If the option `dip::FrameWork::Scan_ExpandTensorInBuffer` is given, then
 /// the input buffers passed to `lineFilter` will contain the tensor elements as a
@@ -253,7 +258,7 @@ void Scan(
       DataTypeArray const& outImageTypes,       ///< Data types for output images
       UnsignedArray const& nTensorElements,     ///< Number of tensor elements in output images
       ScanLineFilter* lineFilter,               ///< Pointer to function object to call for each image line
-      ScanOptions opts                          ///< Options to control how `lineFilter` is called
+      ScanOptions opts = {}                     ///< Options to control how `lineFilter` is called
 );
 
 /// \brief Calls `dip::Framework::Scan` with one output image.
@@ -262,7 +267,7 @@ inline void ScanSingleOutput(
       DataType outImageType,           ///< Data type for output image, buffer will have this type also
       dip::uint nTensorElements,       ///< Number of tensor elements in output image
       ScanLineFilter* lineFilter,      ///< Pointer to function object to call for each image line
-      ScanOptions opts                 ///< Options to control how `lineFilter` is called
+      ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
    ImageConstRefArray inar{};
    ImageRefArray outar{ out };
@@ -278,7 +283,7 @@ inline void ScanSingleInput(
       Image const& in,                 ///< Input image
       DataType bufferType,             ///< Data type for input buffer
       ScanLineFilter* lineFilter,      ///< Pointer to function object to call for each image line
-      ScanOptions opts                 ///< Options to control how `lineFilter` is called
+      ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
    ImageConstRefArray inar{ in };
    ImageRefArray outar{};
@@ -297,7 +302,7 @@ inline void ScanMonadic(
       DataType outImageType,           ///< Data type for output image
       dip::uint nTensorElements,       ///< Number of tensor elements in output image
       ScanLineFilter* lineFilter,      ///< Pointer to function object to call for each image line
-      ScanOptions opts                 ///< Options to control how `lineFilter` is called
+      ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
    ImageConstRefArray inar{ in };
    ImageRefArray outar{ out };
@@ -332,21 +337,21 @@ inline void ScanDyadic(
       DataType inType,                 ///< Data type for all input buffers
       DataType outType,                ///< Data type for output image and output buffer
       ScanLineFilter* lineFilter,      ///< Pointer to function object to call for each image line
-      ScanOptions opts                 ///< Options to control how `lineFilter` is called
+      ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
    Tensor outTensor;
    if( in1.IsScalar() ) {
       outTensor = in2.Tensor();
-      opts += Framework::Scan_TensorAsSpatialDim;
+      opts += Scan_TensorAsSpatialDim;
    } else if( in2.IsScalar() ) {
       outTensor = in1.Tensor();
-      opts += Framework::Scan_TensorAsSpatialDim;
+      opts += Scan_TensorAsSpatialDim;
    } else if( in1.Tensor() == in2.Tensor() ) {
       outTensor = in1.Tensor();
-      opts += Framework::Scan_TensorAsSpatialDim;
+      opts += Scan_TensorAsSpatialDim;
    } else if( in1.TensorSizes() == in2.TensorSizes() ) {
       outTensor = Tensor( in1.TensorRows(), in1.TensorColumns() );
-      opts += Framework::Scan_ExpandTensorInBuffer;
+      opts += Scan_ExpandTensorInBuffer;
    } else {
       DIP_THROW( E::NTENSORELEM_DONT_MATCH );
    }
@@ -360,8 +365,150 @@ inline void ScanDyadic(
    out.ReshapeTensor( outTensor );
 }
 
-// TODO: ScanDyadic, ScanMonadic and ScanSingleInput are used a lot, I don't know how much overhead comes from converting these problems to the generic problem of N input images and M output images.
+/// An implementation of the ScanLinefilter for N input images and 1 output image.
+///
+/// Here, all buffers are of the same data type, and the scalar operation applied to each sample is the lambda
+/// function of type F, passed to the constructor. All input and output images must have the same number of tensor
+/// elements, and in the same order.
+///
+/// When `N` = 1, the resulting object can be passed to the `dip::Framework::ScanMonadic` function. When `N` = 2,
+/// you can use the `dip::Framework::ScanDyadic` function. For any other `N`, or when `dip::Framework::ScanDyadic`
+/// does not do the right thing, use `dip::Framework::Scan`.
+///
+/// The following example shows how to make a dyadic operator that performs computations in `sfloat` and generates
+/// an output image of that same type.
+///
+/// ```cpp
+/// dip::Image lhs = ...;
+/// dip::Image rhs = ...;
+/// dip::Image out;
+/// dip::dfloat offset = 40;
+/// auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) { return ( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset; };
+/// dip::Framework::NadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
+/// dip::Framework::ScanDyadic( lhs, rhs, out, dip::DT_SFLOAT, dip::DT_SFLOAT, &scanLineFilter );
+/// ```
+///
+/// `sampleOperator` is a lambda function, which captures `offset` by value (note that capturing by reference will
+/// slow down the execution significantly). It has a single input argument, a `std::array` of 2 float pointers. The
+/// first pointer will point at a sample in the `lhs` input image, and the second to the corresponding sample in the
+/// `rhs` input image. The return value of the lambda will be assigned to the corresponding sample in the output image.
+/// Note that to access the sample values, you need to use the syntax `*its[ 0 ]`, where the `0` is the index into
+/// the array, yielding a pointer, which is derefferenced by the `*` operator to access the sample value.
+///
+/// To use the `%NadicScanLineFilter` with dynamic data type dispatch, it is necessary to use an auxiliary function.
+/// Such an auxiliary function also simplifies the use of the class template:
+///
+/// ```cpp
+/// template< class TPI, class F >
+/// std::unique_ptr< dip::Framework::ScanLineFilter > NewFilter( F func ) {
+///    return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::NadicScanLineFilter< 1, TPI, F >( func ));
+/// }
+/// // ...
+/// dip::Image in = ...;
+/// dip::Image out;
+/// dip::DataType dt = in.DataType();
+/// std::unique_ptr< dip::Framework::ScanLineFilter > scanLineFilter;
+/// DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, NewFilter, (
+///       [ = ]( auto its ) { return ( std::cos( *its[ 0 ] ) * 100 ) + offset; }
+/// ), dt );
+/// dip::Framework::ScanMonadic( in, out, dt, dt, in.TensorElements(), scanLineFilter.get(), dip::Framework::Scan_TensorAsSpatialDim );
+/// ```
+///
+/// Notice in this case we used a generic lambda, i.e. its input parameter has type `auto`. It will be compiled
+/// differently for each allowed data type. The function template `%NewFilter` that we defined specifies the `N` in
+/// the `%NadicScanLineFilter` template, and helps pass on the type of the lambda, which is automatically determined
+/// by the compiler and filled out. That is, the function can be called as `NewFilter< dip::sfloat >( sampleOperator )`.
+/// The object is allocated in free memory, and its lifetime is managed by `std::unique_ptr`, meaning that there is
+/// no need to explicitly delete the object. Next, we use the `DIP_OVL_CALL_ASSIGN_REAL` macro to call different
+/// instantiations of our function, depending on the data type `dt`, which we determine dynamically from the input
+/// image. The output is captured in a variable and passed to the scan function.
+///
+/// For values of `N` from 1 to 4 there are pre-defined functions just like the `%NewFilter` function above:
+/// `dip::Framework::NewMonadicScanLineFilter`, `dip::Framework::NewDyadicScanLineFilter`,
+/// `dip::Framework::NewTriadicScanLineFilter`, `dip::Framework::NewTetradicScanLineFilter`.
+template< dip::uint N, class TPI, class F >
+class NadicScanLineFilter : public ScanLineFilter {
+   // Note that N is a compile-time constant, and consequently the compiler should be able to optimize all the loops
+   // over N.
+   public:
+      static_assert( N > 0, "NadicScanLineFilter does not work without input images." );
+      NadicScanLineFilter( F func ) : func_( func ) {}
+      virtual void Filter( ScanLineFilterParameters const& params ) override {
+         DIP_ASSERT( params.inBuffer.size() == N );
+         DIP_ASSERT( params.outBuffer.size() == 1 );
+         std::array< TPI const*, N > in;
+         std::array< dip::sint, N > inStride;
+         std::array< dip::sint, N > inTensorStride;
+         dip::uint const bufferLength = params.bufferLength;
+         dip::uint const tensorLength = params.outBuffer[ 0 ].tensorLength; // all buffers have same number of tensor elements
+         for( dip::uint ii = 0; ii < N; ++ii ) {
+            in[ ii ] = static_cast< TPI const* >( params.inBuffer[ ii ].buffer );
+            inStride[ ii ] = params.inBuffer[ ii ].stride;
+            if( tensorLength > 1 ) {
+               inTensorStride[ ii ] = params.inBuffer[ ii ].tensorStride;
+            }
+            DIP_ASSERT( params.inBuffer[ ii ].tensorLength == tensorLength );
+         }
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint const outStride = params.outBuffer[ 0 ].stride;
+         dip::sint const outTensorStride = params.outBuffer[ 0 ].tensorStride;
+         if( tensorLength > 1 ) {
+            for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+               std::array< TPI const*, N > inT = in;
+               TPI* outT = out;
+               for( dip::uint jj = 0; jj < tensorLength; ++jj ) {
+                  *outT = func_( inT );
+                  for( dip::uint ii = 0; ii < N; ++ii ) {
+                     inT[ ii ] += inTensorStride[ ii ];
+                  }
+                  outT += outTensorStride;
+               }
+               for( dip::uint ii = 0; ii < N; ++ii ) {
+                  in[ ii ] += inStride[ ii ];
+               }
+               out += outStride;
+            }
+         } else {
+            for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+               *out = func_( in );
+               for( dip::uint ii = 0; ii < N; ++ii ) {
+                  in[ ii ] += inStride[ ii ];
+               }
+               out += outStride;
+            }
+         }
+      }
+   private:
+      F const& func_;
+};
 
+/// \brief Support for quickly defining monadic operators (1 input image, 1 output image).
+/// See `dip::Framework::NadicScanLineFilter`.
+template< class TPI, class F >
+std::unique_ptr< ScanLineFilter > NewMonadicScanLineFilter( F func ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 1, TPI, F >( func ));
+}
+
+/// \brief Support for quickly defining dyadic operators (2 input images, 1 output image).
+/// See `dip::Framework::NadicScanLineFilter`.
+template< class TPI, class F >
+std::unique_ptr< ScanLineFilter > NewDyadicScanLineFilter( F func ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 2, TPI, F >( func ));
+}
+
+/// \brief Support for quickly defining triadic operators (3 input images, 1 output image).
+/// See `dip::Framework::NadicScanLineFilter`.
+template< class TPI, class F >
+std::unique_ptr< ScanLineFilter > NewTriadicScanLineFilter( F func ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 3, TPI, F >( func ));
+}
+
+/// \brief Support for quickly defining tetradic operators (4 input images, 1 output image).
+/// See `dip::Framework::NadicScanLineFilter`.
+template< class TPI, class F >
+std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F func ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 4, TPI, F >( func ));
+}
 
 //
 // Separable Framework:
@@ -430,7 +577,7 @@ struct SeparableLineFilterParameters {
 class SeparableLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
-      virtual void Filter( SeparableLineFilterParameters& params ) = 0;
+      virtual void Filter( SeparableLineFilterParameters const& params ) = 0;
       /// \brief The derived class can defined this function if it needs this information ahead of time.
       virtual void SetNumberOfThreads( dip::uint threads ) {}
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
@@ -534,7 +681,7 @@ void Separable(
       UnsignedArray border,            ///< Number of pixels to add to the beginning and end of each line, for each dimension
       BoundaryConditionArray boundaryConditions, ///< Filling method for the border
       SeparableLineFilter* lineFilter, ///< Pointer to function object to call for each image line
-      SeparableOptions opts            ///< Options to control how `lineFilter` is called
+      SeparableOptions opts = {}       ///< Options to control how `lineFilter` is called
 );
 
 
@@ -599,7 +746,7 @@ struct FullLineFilterParameters {
 class FullLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
-      virtual void Filter( FullLineFilterParameters& params ) = 0;
+      virtual void Filter( FullLineFilterParameters const& params ) = 0;
       /// \brief The derived class can defined this function if it needs this information ahead of time.
       virtual void SetNumberOfThreads( dip::uint threads ) {}
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
@@ -701,7 +848,7 @@ void Full(
       BoundaryConditionArray boundaryConditions, ///< Filling method for the border
       PixelTable const& pixelTable,    ///< Object describing the neighborhood
       FullLineFilter* lineFilter,      ///< Pointer to function object to call for each image line
-      FullOptions opts                 ///< Options to control how `lineFilter` is called
+      FullOptions opts = {}            ///< Options to control how `lineFilter` is called
 );
 
 /// \}

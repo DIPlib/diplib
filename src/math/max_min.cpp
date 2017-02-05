@@ -17,7 +17,7 @@ namespace dip {
 template< typename TPI >
 class dip__GetMaximumAndMinimum : public Framework::ScanLineFilter {
    public:
-      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          MaximumAndMinimum& vars = varsArray[ params.thread ];
          auto bufferLength = params.bufferLength;

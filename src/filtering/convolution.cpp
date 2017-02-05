@@ -54,7 +54,7 @@ template< typename TPI >
 class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
    public:
       SeparableConvolutionLineFilter( InternOneDimensionalFilterArray const& filter ) : filter_( filter ) {}
-      virtual void Filter( Framework::SeparableLineFilterParameters& params ) {
+      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          dip::sint inStride = params.inBuffer.stride;

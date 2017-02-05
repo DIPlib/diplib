@@ -118,15 +118,12 @@ inline Image Subtract(
 
 /// \brief Multiplies two images, pixel-wise, with singleton expansion.
 ///
-/// Tensor dimensions
+/// %Tensor dimensions
 /// of the two images must have identical inner dimensions, and the output at
 /// each pixel will be the matrix multiplication of the two input pixels.
 /// Out will have the type `dt`.
 ///
-/// To obtain a sample-wise multiplication, convert the tensor dimension into
-/// a spatial dimension using dip::Image::TensorToSpatial, and reshape the
-/// output with dip::Image::SpatialToTensor. The helper function MulSamaples
-/// does this.
+/// To obtain a sample-wise multiplication, Use `dip::MultiplySampleWise` instead.
 ///
 /// \see Add, Subtract, MultiplySampleWise, Divide, Modulo, operator*
 void Multiply(
@@ -162,7 +159,7 @@ inline Image Multiply(
    return out;
 }
 
-/// \brief Adds two images, sample-wise, with singleton expansion.
+/// \brief Multiplies two images, sample-wise, with singleton expansion.
 ///
 /// Out will have the type `dt`.
 ///
@@ -226,7 +223,7 @@ inline Image Divide(
 
 /// \brief Computes the modulo of two images, sample-wise, with singleton expansion.
 ///
-/// Out will have the type `dt`.
+/// Out will have the type `dt`. Works for all real types (i.e. not complex).
 ///
 /// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, operator%
 void Modulo(
@@ -238,7 +235,7 @@ void Modulo(
 
 /// \brief Computes the modulo of each sample in an image with a constant.
 ///
-/// Out will have the type `dt`.
+/// Out will have the type `dt`. Works for all real types (i.e. not complex).
 ///
 /// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator%
 template< typename T >
@@ -736,7 +733,9 @@ inline Image operator>=( Image const& lhs, T const& rhs ) {
 // Compound assignment operators
 //
 
-/// \brief Compount assignment operator.
+/// \brief Compound assignment operator.
+///
+/// Equivalent, but usually faster, than `lhs = lhs + rhs`. See `dip::Add`.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -747,7 +746,9 @@ inline Image& operator+=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
-/// \brief Compount assignment operator.
+/// \brief Compound assignment operator.
+///
+/// Equivalent, but usually faster, than `lhs = lhs - rhs`. See `dip::Subtract`.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -758,7 +759,9 @@ inline Image& operator-=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
-/// \brief Compount assignment operator.
+/// \brief Compound assignment operator.
+///
+/// Equivalent, but usually faster, than `lhs = lhs * rhs`. See `dip::Multiply`.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -769,7 +772,9 @@ inline Image& operator*=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
-/// \brief Compount assignment operator.
+/// \brief Compound assignment operator.
+///
+/// Equivalent, but usually faster, than `lhs = lhs / rhs`. See `dip::Divide`.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -780,7 +785,9 @@ inline Image& operator/=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
-/// \brief Compount assignment operator.
+/// \brief Compound assignment operator.
+///
+/// Equivalent, but usually faster, than `lhs = lhs % rhs`. See `dip::Modulo`.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -791,7 +798,9 @@ inline Image& operator%=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
-/// \brief Bit-wise compount assignment operator.
+/// \brief Bit-wise Compound assignment operator.
+///
+/// Equivalent, but usually faster, than `lhs = lhs & rhs`. See `dip::And`.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -801,7 +810,9 @@ inline Image& operator&=( Image& lhs, Image const& rhs ) {
    return lhs;
 }
 
-/// \brief Bit-wise compount assignment operator.
+/// \brief Bit-wise Compound assignment operator.
+///
+/// Equivalent, but usually faster, than `lhs = lhs | rhs`. See `dip::Or`.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
@@ -811,7 +822,9 @@ inline Image& operator|=( Image& lhs, Image const& rhs ) {
    return lhs;
 }
 
-/// \brief Bit-wise compount assignment operator.
+/// \brief Bit-wise Compound assignment operator.
+///
+/// Equivalent, but usually faster, than `lhs = lhs ^ rhs`. See `dip::Xor`.
 ///
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion

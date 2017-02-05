@@ -131,6 +131,8 @@ add_executable(test_image EXCLUDE_FROM_ALL test/test_image.cpp)
 target_link_libraries(test_image DIP)
 add_executable( test_framework_scan EXCLUDE_FROM_ALL test/test_framework_scan.cpp )
 target_link_libraries(test_framework_scan DIP)
+add_executable( test_lambdafun EXCLUDE_FROM_ALL test/test_lambdafun.cpp )
+target_link_libraries(test_lambdafun DIP)
 add_executable( test_framework_separable EXCLUDE_FROM_ALL test/test_framework_separable.cpp )
 target_link_libraries(test_framework_separable DIP)
 add_executable( test_framework_full EXCLUDE_FROM_ALL test/test_framework_full.cpp )
@@ -142,7 +144,18 @@ target_link_libraries(test_measurement DIP)
 add_executable( test_measuretool EXCLUDE_FROM_ALL test/test_measuretool.cpp )
 target_link_libraries(test_measuretool DIP)
 
-add_custom_target(tests DEPENDS test_error test_physdims test_image test_framework_scan test_framework_separable test_boundary test_measurement)
+add_custom_target(
+      tests DEPENDS
+      test_error
+      test_physdims
+      test_image
+      test_framework_scan
+      test_lambdafun
+      test_framework_separable
+      test_boundary
+      test_measurement
+      test_measuretool
+)
 
 if(Matlab_FOUND)
 

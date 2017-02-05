@@ -316,7 +316,7 @@ struct DataType {
    static DataType SuggestArithmetic( DataType type1, DataType type2 );
 
    /// \brief Returns a suitable type that can hold any samples of the two datatypes.
-   static DataType SuggestDiadicOperation( DataType type1, DataType type2 );
+   static DataType SuggestDyadicOperation( DataType type1, DataType type2 );
 
 };
 

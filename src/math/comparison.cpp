@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definition the bit-wise operators.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -12,249 +12,159 @@
 
 namespace dip {
 
-//
-template< typename TPI >
-class dip__Equal : public Framework::ScanLineFilter {
+namespace {
+
+// This are the same class as Framework::NadicScanLineFilter, but with a binary output.
+template< dip::uint N, class TPI, class F >
+class NadicScanLineFilterBinOut : public Framework::ScanLineFilter {
+   // Note that N is a compile-time constant, and consequently the compiler should be able to optimize all the loops
+   // over N.
    public:
-      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
-         TPI const* lhs = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         TPI const* rhs = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
-         bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
-         dip::sint lhsStride = params.inBuffer[ 0 ].stride;
-         dip::sint rhsStride = params.inBuffer[ 1 ].stride;
-         dip::sint outStride = params.outBuffer[ 0 ].stride;
-         dip::sint lhsTensorStride = params.inBuffer[ 0 ].tensorStride;
-         dip::sint rhsTensorStride = params.inBuffer[ 1 ].tensorStride;
-         dip::sint outTensorStride = params.outBuffer[ 0 ].tensorStride;
-         dip::uint bufferLength = params.bufferLength;
-         dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
-         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-            for( dip::uint jj = 0; jj < tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
-               out[ jj * outTensorStride ] = lhs[ jj * lhsTensorStride ] ==
-                                             rhs[ jj * rhsTensorStride ];
+      static_assert( N > 0, "NadicScanLineFilter does not work without input images." );
+      NadicScanLineFilterBinOut( F func ) : func_( func ) {}
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         DIP_ASSERT( params.inBuffer.size() == N );
+         DIP_ASSERT( params.outBuffer.size() == 1 );
+         std::array< TPI const*, N > in;
+         std::array< dip::sint, N > inStride;
+         std::array< dip::sint, N > inTensorStride;
+         dip::uint const bufferLength = params.bufferLength;
+         dip::uint const tensorLength = params.outBuffer[ 0 ].tensorLength; // all buffers have same number of tensor elements
+         for( dip::uint ii = 0; ii < N; ++ii ) {
+            in[ ii ] = static_cast< TPI const* >( params.inBuffer[ ii ].buffer );
+            inStride[ ii ] = params.inBuffer[ ii ].stride;
+            if( tensorLength > 1 ) {
+               inTensorStride[ ii ] = params.inBuffer[ ii ].tensorStride;
             }
-            lhs += lhsStride;
-            rhs += rhsStride;
-            out += outStride;
+            DIP_ASSERT( params.inBuffer[ ii ].tensorLength == tensorLength );
+         }
+         bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
+         dip::sint const outStride = params.outBuffer[ 0 ].stride;
+         dip::sint const outTensorStride = params.outBuffer[ 0 ].tensorStride;
+         if( tensorLength > 1 ) {
+            for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+               std::array< TPI const*, N > inT = in;
+               bin* outT = out;
+               for( dip::uint jj = 0; jj < tensorLength; ++jj ) {
+                  *outT = func_( inT );
+                  for( dip::uint ii = 0; ii < N; ++ii ) {
+                     inT[ ii ] += inTensorStride[ ii ];
+                  }
+                  outT += outTensorStride;
+               }
+               for( dip::uint ii = 0; ii < N; ++ii ) {
+                  in[ ii ] += inStride[ ii ];
+               }
+               out += outStride;
+            }
+         } else {
+            for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+               *out = func_( in );
+               for( dip::uint ii = 0; ii < N; ++ii ) {
+                  in[ ii ] += inStride[ ii ];
+               }
+               out += outStride;
+            }
          }
       }
+   private:
+      F const& func_;
 };
 
+template< class TPI, class F >
+std::unique_ptr< Framework::ScanLineFilter > NewDyadicScanLineFilterBinOut( F func ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new NadicScanLineFilterBinOut< 2, TPI, F >( func ));
+}
+
+} // namespace
+
+//
 void Equal(
       Image const& lhs,
       Image const& rhs,
       Image& out
 ) {
-   DataType dt = DataType::SuggestDiadicOperation( lhs.DataType(), rhs.DataType() );
+   DataType dt = DataType::SuggestDyadicOperation( lhs.DataType(), rhs.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_ALL( scanLineFilter, dip__Equal, (), dt );
-   Framework::ScanOptions opts;
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get(), opts );
+   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, NewDyadicScanLineFilterBinOut, (
+         []( auto its ) { return *its[ 0 ] == *its[ 1 ]; }
+   ), dt );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
 }
 
 
 //
-template< typename TPI >
-class dip__NotEqual : public Framework::ScanLineFilter {
-   public:
-      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
-         TPI const* lhs = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         TPI const* rhs = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
-         bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
-         dip::sint lhsStride = params.inBuffer[ 0 ].stride;
-         dip::sint rhsStride = params.inBuffer[ 1 ].stride;
-         dip::sint outStride = params.outBuffer[ 0 ].stride;
-         dip::sint lhsTensorStride = params.inBuffer[ 0 ].tensorStride;
-         dip::sint rhsTensorStride = params.inBuffer[ 1 ].tensorStride;
-         dip::sint outTensorStride = params.outBuffer[ 0 ].tensorStride;
-         dip::uint bufferLength = params.bufferLength;
-         dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
-         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-            for( dip::uint jj = 0; jj < tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
-               out[ jj * outTensorStride ] = lhs[ jj * lhsTensorStride ] !=
-                                             rhs[ jj * rhsTensorStride ];
-            }
-            lhs += lhsStride;
-            rhs += rhsStride;
-            out += outStride;
-         }
-      }
-};
-
 void NotEqual(
       Image const& lhs,
       Image const& rhs,
       Image& out
 ) {
-   DataType dt = DataType::SuggestDiadicOperation( lhs.DataType(), rhs.DataType() );
+   DataType dt = DataType::SuggestDyadicOperation( lhs.DataType(), rhs.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_ALL( scanLineFilter, dip__NotEqual, (), dt );
-   Framework::ScanOptions opts;
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get(), opts );
+   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, NewDyadicScanLineFilterBinOut, (
+         []( auto its ) { return *its[ 0 ] != *its[ 1 ]; }
+   ), dt );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
 }
 
 
 //
-template< typename TPI >
-class dip__Lesser : public Framework::ScanLineFilter {
-   public:
-      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
-         TPI const* lhs = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         TPI const* rhs = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
-         bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
-         dip::sint lhsStride = params.inBuffer[ 0 ].stride;
-         dip::sint rhsStride = params.inBuffer[ 1 ].stride;
-         dip::sint outStride = params.outBuffer[ 0 ].stride;
-         dip::sint lhsTensorStride = params.inBuffer[ 0 ].tensorStride;
-         dip::sint rhsTensorStride = params.inBuffer[ 1 ].tensorStride;
-         dip::sint outTensorStride = params.outBuffer[ 0 ].tensorStride;
-         dip::uint bufferLength = params.bufferLength;
-         dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
-         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-            for( dip::uint jj = 0; jj < tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
-               out[ jj * outTensorStride ] = lhs[ jj * lhsTensorStride ] <
-                                             rhs[ jj * rhsTensorStride ];
-            }
-            lhs += lhsStride;
-            rhs += rhsStride;
-            out += outStride;
-         }
-      }
-};
-
 void Lesser(
       Image const& lhs,
       Image const& rhs,
       Image& out
 ) {
-   DataType dt = DataType::SuggestDiadicOperation( lhs.DataType(), rhs.DataType() );
+   DataType dt = DataType::SuggestDyadicOperation( lhs.DataType(), rhs.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__Lesser, (), dt );
-   Framework::ScanOptions opts;
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get(), opts );
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewDyadicScanLineFilterBinOut, (
+         []( auto its ) { return *its[ 0 ] < *its[ 1 ]; }
+   ), dt );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
 }
 
 
 //
-template< typename TPI >
-class dip__Greater : public Framework::ScanLineFilter {
-   public:
-      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
-         TPI const* lhs = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         TPI const* rhs = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
-         bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
-         dip::sint lhsStride = params.inBuffer[ 0 ].stride;
-         dip::sint rhsStride = params.inBuffer[ 1 ].stride;
-         dip::sint outStride = params.outBuffer[ 0 ].stride;
-         dip::sint lhsTensorStride = params.inBuffer[ 0 ].tensorStride;
-         dip::sint rhsTensorStride = params.inBuffer[ 1 ].tensorStride;
-         dip::sint outTensorStride = params.outBuffer[ 0 ].tensorStride;
-         dip::uint bufferLength = params.bufferLength;
-         dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
-         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-            for( dip::uint jj = 0; jj < tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
-               out[ jj * outTensorStride ] = lhs[ jj * lhsTensorStride ] >
-                                             rhs[ jj * rhsTensorStride ];
-            }
-            lhs += lhsStride;
-            rhs += rhsStride;
-            out += outStride;
-         }
-      }
-};
-
 void Greater(
       Image const& lhs,
       Image const& rhs,
       Image& out
 ) {
-   DataType dt = DataType::SuggestDiadicOperation( lhs.DataType(), rhs.DataType() );
+   DataType dt = DataType::SuggestDyadicOperation( lhs.DataType(), rhs.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__Greater, (), dt );
-   Framework::ScanOptions opts;
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get(), opts );
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewDyadicScanLineFilterBinOut, (
+         []( auto its ) { return *its[ 0 ] > *its[ 1 ]; }
+   ), dt );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
 }
 
 
 //
-template< typename TPI >
-class dip__NotGreater : public Framework::ScanLineFilter {
-   public:
-      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
-         TPI const* lhs = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         TPI const* rhs = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
-         bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
-         dip::sint lhsStride = params.inBuffer[ 0 ].stride;
-         dip::sint rhsStride = params.inBuffer[ 1 ].stride;
-         dip::sint outStride = params.outBuffer[ 0 ].stride;
-         dip::sint lhsTensorStride = params.inBuffer[ 0 ].tensorStride;
-         dip::sint rhsTensorStride = params.inBuffer[ 1 ].tensorStride;
-         dip::sint outTensorStride = params.outBuffer[ 0 ].tensorStride;
-         dip::uint bufferLength = params.bufferLength;
-         dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
-         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-            for( dip::uint jj = 0; jj < tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
-               out[ jj * outTensorStride ] = lhs[ jj * lhsTensorStride ] <=
-                                             rhs[ jj * rhsTensorStride ];
-            }
-            lhs += lhsStride;
-            rhs += rhsStride;
-            out += outStride;
-         }
-      }
-};
-
 void NotGreater(
       Image const& lhs,
       Image const& rhs,
       Image& out
 ) {
-   DataType dt = DataType::SuggestDiadicOperation( lhs.DataType(), rhs.DataType() );
+   DataType dt = DataType::SuggestDyadicOperation( lhs.DataType(), rhs.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__NotGreater, (), dt );
-   Framework::ScanOptions opts;
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get(), opts );
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewDyadicScanLineFilterBinOut, (
+         []( auto its ) { return *its[ 0 ] <= *its[ 1 ]; }
+   ), dt );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
 }
 
 
 //
-template< typename TPI >
-class dip__NotLesser : public Framework::ScanLineFilter {
-   public:
-      virtual void Filter( Framework::ScanLineFilterParameters& params ) override {
-         TPI const* lhs = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         TPI const* rhs = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
-         bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
-         dip::sint lhsStride = params.inBuffer[ 0 ].stride;
-         dip::sint rhsStride = params.inBuffer[ 1 ].stride;
-         dip::sint outStride = params.outBuffer[ 0 ].stride;
-         dip::sint lhsTensorStride = params.inBuffer[ 0 ].tensorStride;
-         dip::sint rhsTensorStride = params.inBuffer[ 1 ].tensorStride;
-         dip::sint outTensorStride = params.outBuffer[ 0 ].tensorStride;
-         dip::uint bufferLength = params.bufferLength;
-         dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
-         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-            for( dip::uint jj = 0; jj < tensorLength; ++jj ) { // all 3 buffers have same number of tensor elements
-               out[ jj * outTensorStride ] = lhs[ jj * lhsTensorStride ] >=
-                                             rhs[ jj * rhsTensorStride ];
-            }
-            lhs += lhsStride;
-            rhs += rhsStride;
-            out += outStride;
-         }
-      }
-};
-
 void NotLesser(
       Image const& lhs,
       Image const& rhs,
       Image& out
 ) {
-   DataType dt = DataType::SuggestDiadicOperation( lhs.DataType(), rhs.DataType() );
+   DataType dt = DataType::SuggestDyadicOperation( lhs.DataType(), rhs.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__NotLesser, (), dt );
-   Framework::ScanOptions opts;
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get(), opts );
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewDyadicScanLineFilterBinOut, (
+         []( auto its ) { return *its[ 0 ] >= *its[ 1 ]; }
+   ), dt );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
 }
 
 

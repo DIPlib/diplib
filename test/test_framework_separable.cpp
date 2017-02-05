@@ -30,7 +30,7 @@ void PrintPixelValues(
 
 class LineFilter : public dip::Framework::SeparableLineFilter {
    public:
-      virtual void Filter( dip::Framework::SeparableLineFilterParameters& params ) override {
+      virtual void Filter( dip::Framework::SeparableLineFilterParameters const& params ) override {
          float const* filter = &( filter_[ N ] );
          dip::ConstSampleIterator< dip::sfloat > in(
                static_cast< dip::sfloat* >(params.inBuffer.buffer),
