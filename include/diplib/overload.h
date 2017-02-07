@@ -51,7 +51,6 @@
 /// the object must be referred to through a pointer to its base class. The
 /// result of `new` is cast to the declaration type of the variable being
 /// assigned to, so that one can assign e.g. into a `std::unique_ptr`.
-/// [TODO: See the functions in `dip::Framework`.]
 ///
 /// There are four groups of macros defined in this file:
 /// - `DIP_OVL_CALL_xxx` calls a function, discarding any return value.

@@ -173,6 +173,8 @@ void Full(
          }
       }
    } while( ++it );
+
+   // TODO: End threads.
 }
 
 } // namespace Framework

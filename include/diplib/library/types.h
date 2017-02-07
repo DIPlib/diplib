@@ -116,7 +116,6 @@ static_assert( sizeof( dip::bin ) == 1, "The binary type is not a single byte!" 
 // Array types
 //
 
-// TODO: It's a little confusing that these arrays and others like StringArray or ImageArray work differently.
 using IntegerArray = DimensionArray< dip::sint >;   ///< An array to hold strides, filter sizes, etc.
 using UnsignedArray = DimensionArray< dip::uint >;  ///< An array to hold dimensions, dimension lists, etc.
 using FloatArray = DimensionArray< dip::dfloat >;   ///< An array to hold filter parameters.

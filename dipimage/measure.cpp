@@ -85,7 +85,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
             } while( ++ftrIt );
          } while( ++objIt );
          // TODO: convert to dip_measurement object.
-         // TODO: create a dip_measurement object to conver to.
+         // TODO: create a dip_measurement object to convert to.
       }
 
    } catch( const dip::Error& e ) {

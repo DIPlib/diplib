@@ -105,8 +105,9 @@ void Multiply(
       Image& out,
       DataType dt
 ) {
-   // TODO: if lhs == rhs, we can optimize this somehow?
-   // TODO: a special case could be for diagonal matrices, where each row/column of the other matrix is multiplied by the same value.
+   // TODO: If lhs == rhs.Transpose(), we should create a symmetric matrix! lhs.IsIdenticalView(rhs) && lhs.Tensor() == rhs.Tensor().Transpose()
+   //       Special cases of these are the dot product and the inner product of vectors
+   // TODO: Another special case could be for diagonal matrices, where each row/column of the other matrix is multiplied by the same value.
    if( lhs.IsScalar() || rhs.IsScalar() ) {
       MultiplySampleWise( lhs, rhs, out, dt );
       return;

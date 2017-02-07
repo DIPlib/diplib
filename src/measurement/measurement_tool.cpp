@@ -61,7 +61,6 @@ namespace dip {
 
 
 MeasurementTool::MeasurementTool() {
-   // TODO: Port remaining features and register them here
    // Size
    Register( dip::Feature::Pointer( new Feature::FeatureSize ));
    Register( dip::Feature::Pointer( new Feature::FeatureMinimum ));

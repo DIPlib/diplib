@@ -132,28 +132,6 @@ void Separable(
    // computation and intermediate storage)
    // TODO: for dimensions with equal 'grow' weight (more often than not, grow == 1 for all dimensions), sort them by stride, with lower stride first.
 
-   /*
-   // Create a temporary image, if needed, that can hold the result of all the steps minus the last one
-   // (which will be written directly in the output data segment).
-   // TODO: It might be better to have a different temp image for each step, and flip dimensions so
-   // TODO:   that each step reads a line that is consecutive in memory, and writes it out so that
-   // TODO:   the next dimension to process is consecutive. (x,y) -> (y,x) -> (x,y) ; (x,y,z) -> (y,z,x) -> (z,x,y) -> (x,y,z)
-   Image tmp;
-   if( order.size() > 1 ) { // if not, we won't ever user tmp
-      UnsignedArray tmpSizes( nDims );
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         tmpSizes[ ii ] = std::max( inSizes[ ii ], outSizes[ ii ] );
-      }
-      tmpSizes[ order.front() ] = outSizes[ order.front() ];
-      tmpSizes[ order.back() ] = inSizes[ order.back() ];
-      if( ( tmpSizes.allSmallerOrEqual( outSizes ) ) && ( bufferType == output.DataType() ) ) {
-         tmp = out;  // we can use the data segment of out for intermediate data
-      } else {
-         tmp = Image( tmpSizes, tensorToSpatial ? 1 : outTensor.Elements(), bufferType );
-      }
-   }
-   */
-
    // TODO: Determine the number of threads we'll be using.
 
    lineFilter->SetNumberOfThreads( 1 );
@@ -182,7 +160,8 @@ void Separable(
          tmpImage.SetSizes( tmpSizes );
          tmpImage.SetTensorSizes( outImage.TensorElements() );
          tmpImage.SetDataType( bufferType );
-         // TODO: set strides such that the next dimension has a stride of 1 (or rather TensorElements)
+         // TODO: Set strides such that the next dimension has a stride of 1 (or rather TensorElements)
+         // As in: (x,y) -> (y,x) -> (x,y) ; (x,y,z) -> (y,z,x) -> (z,x,y) -> (x,y,z)
          tmpImage.Forge();
       }
 

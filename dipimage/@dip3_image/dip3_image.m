@@ -175,7 +175,7 @@ classdef dip3_image
                         img.Data = array_convert_datatype(img.Data,datatype);
                      end
                      if complex && ~img.IsComplex
-                        img.Data = cat(1,img.Data,zeros(size(img.Data),datatype));
+                        img.Data = cat(1,img.Data,zeros(size(img.Data),class(img.Data)));
                      end
                   end
                end
@@ -193,11 +193,11 @@ classdef dip3_image
                   % Convert MATLAB array to new dip_image
                   % Data type conversion
                   if ~isempty(datatype)
-                     if ~isa(data,datatype)
+                     if ~isreal(data) && (datatype != 'single') && (datatype != 'double')
+                        warning('Ignoring data type conversion: complex data cannot be converted to requested type')
+                     elseif ~isa(data,datatype)
                         data = array_convert_datatype(data,datatype);
                      end
-                  else
-                     datatype = class(data);
                   end
                   % Add tensor dimension
                   if isempty(tensor_shape)
@@ -211,7 +211,7 @@ classdef dip3_image
                if ~isreal(data)
                   data = cat(1,real(data),imag(data));
                elseif complex
-                  data = cat(1,data,zeros(size(data),datatype));
+                  data = cat(1,data,zeros(size(data),class(data)));
                end
                % Handle 1D images properly
                sz = size(data);
@@ -672,7 +672,6 @@ classdef dip3_image
          else
             [dt,~] = matlabtype(dt);
          end
-         % TODO: allow for the old data type aliases
          out = obj.Data;
          sz = size(out);
          if sz(1) > 1
@@ -882,7 +881,6 @@ end
 function in = array_convert_datatype(in,class)
    %#function int8, uint8, int16, uint16, int32, uint32, int64, uint64, single, double, logical
    in = feval(class,in);
-   % TODO: make sure we don't convert complex values to an integer type
 end
 
 % Gives a DIPlib data type string for the data in the image.
