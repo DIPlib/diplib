@@ -379,13 +379,13 @@ inline void ScanDyadic(
 /// an output image of that same type.
 ///
 /// ```cpp
-/// dip::Image lhs = ...;
-/// dip::Image rhs = ...;
-/// dip::Image out;
-/// dip::dfloat offset = 40;
-/// auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) { return ( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset; };
-/// dip::Framework::NadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
-/// dip::Framework::ScanDyadic( lhs, rhs, out, dip::DT_SFLOAT, dip::DT_SFLOAT, &scanLineFilter );
+///     dip::Image lhs = ...;
+///     dip::Image rhs = ...;
+///     dip::Image out;
+///     dip::dfloat offset = 40;
+///     auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) { return ( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset; };
+///     dip::Framework::NadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
+///     dip::Framework::ScanDyadic( lhs, rhs, out, dip::DT_SFLOAT, dip::DT_SFLOAT, &scanLineFilter );
 /// ```
 ///
 /// `sampleOperator` is a lambda function, which captures `offset` by value (note that capturing by reference will
@@ -399,19 +399,19 @@ inline void ScanDyadic(
 /// Such an auxiliary function also simplifies the use of the class template:
 ///
 /// ```cpp
-/// template< class TPI, class F >
-/// std::unique_ptr< dip::Framework::ScanLineFilter > NewFilter( F func ) {
-///    return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::NadicScanLineFilter< 1, TPI, F >( func ));
-/// }
-/// // ...
-/// dip::Image in = ...;
-/// dip::Image out;
-/// dip::DataType dt = in.DataType();
-/// std::unique_ptr< dip::Framework::ScanLineFilter > scanLineFilter;
-/// DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, NewFilter, (
-///       [ = ]( auto its ) { return ( std::cos( *its[ 0 ] ) * 100 ) + offset; }
-/// ), dt );
-/// dip::Framework::ScanMonadic( in, out, dt, dt, in.TensorElements(), scanLineFilter.get(), dip::Framework::Scan_TensorAsSpatialDim );
+///     template< class TPI, class F >
+///     std::unique_ptr< dip::Framework::ScanLineFilter > NewFilter( F func ) {
+///        return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::NadicScanLineFilter< 1, TPI, F >( func ));
+///     }
+///     // ...
+///     dip::Image in = ...;
+///     dip::Image out;
+///     dip::DataType dt = in.DataType();
+///     std::unique_ptr< dip::Framework::ScanLineFilter > scanLineFilter;
+///     DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, NewFilter, (
+///           [ = ]( auto its ) { return ( std::cos( *its[ 0 ] ) * 100 ) + offset; }
+///     ), dt );
+///     dip::Framework::ScanMonadic( in, out, dt, dt, in.TensorElements(), scanLineFilter.get(), dip::Framework::Scan_TensorAsSpatialDim );
 /// ```
 ///
 /// Notice in this case we used a generic lambda, i.e. its input parameter has type `auto`. It will be compiled
@@ -596,7 +596,8 @@ class SeparableLineFilter {
 /// `lineFilter` is responsible for setting all its values.
 ///
 /// The `process` array specifies along which dimensions the filtering is applied.
-/// If it is an empty array, all dimensions will be processed.
+/// If it is an empty array, all dimensions will be processed. Otherwise, it must
+/// have one element per image dimension.
 ///
 /// The output image (unless protected) will be resized to match the input,
 /// and its type will be set to that specified by `outImage`.

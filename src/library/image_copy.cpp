@@ -345,7 +345,8 @@ void Image::Copy( Image const& src ) {
    }
    if( IsForged() ) {
       if( IsIdenticalView( src )) {
-         // Copy is a no-op
+         // Copy is a no-op, make sure additional properties are identical also
+         CopyNonDataProperties( src );
          return;
       }
       if( !CompareProperties( src, Option::CmpProps_Sizes + Option::CmpProps_TensorElements ) ||

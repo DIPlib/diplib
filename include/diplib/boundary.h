@@ -102,8 +102,10 @@ inline BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray b
 /// has `nDims` elements, it is copied unchanged. For any other length, an exception is thrown.
 ///
 /// \see  ArrayUseParameter
-inline BoundaryConditionArray BoundaryArrayUseParameter( BoundaryConditionArray const& bc, dip::uint nDims ) {
-   return ArrayUseParameter( bc, nDims, BoundaryCondition::DEFAULT );
+inline BoundaryConditionArray BoundaryArrayUseParameter( BoundaryConditionArray bc, dip::uint nDims ) {
+   // We take an lvalue by copy, which is elided for rvalues. The array is then moved to the core function,
+   // which will modify and return the result. This is the reason we don't take the input array by const reference.
+   return ArrayUseParameter( std::move( bc ), nDims, BoundaryCondition::DEFAULT );
 }
 
 

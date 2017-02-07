@@ -594,10 +594,10 @@ inline std::ostream& operator<<(
    auto it = array.begin();
    if( it != array.end() ) {
       os << *it;
+      while( ++it != array.end() ) {
+         os << ", " << *it;
+      };
    }
-   while( ++it != array.end() ) {
-      os << ", " << *it;
-   };
    os << "]";
    return os;
 }

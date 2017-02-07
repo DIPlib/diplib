@@ -25,8 +25,8 @@ void ExtendImageLowLevel(
    DIP_THROW_IF( borderSizes.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
    dip::uint nDims = c_in.Dimensionality();
    DIP_START_STACK_TRACE
-      borderSizes = ArrayUseParameter( borderSizes, nDims );
-      boundaryConditions = BoundaryArrayUseParameter( boundaryConditions, nDims );
+      borderSizes = ArrayUseParameter( std::move( borderSizes ), nDims );
+      boundaryConditions = BoundaryArrayUseParameter( std::move( boundaryConditions ), nDims );
    DIP_END_STACK_TRACE
 
    // Save input data

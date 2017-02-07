@@ -902,6 +902,8 @@ class Image {
          // We don't need to check dataBlock_ here, as origin_ is a pointer, not an offset.
          return ( origin_ == other.origin_ ) &&
                 ( dataType_ == other.dataType_ ) &&
+                ( sizes_ == other.sizes_ ) &&
+                ( tensor_.Elements() == other.tensor_.Elements() ) &&
                 ( strides_ == other.strides_ ) &&
                 ( tensorStride_ == other.tensorStride_ );
       }
@@ -2005,21 +2007,31 @@ inline bool Alias( Image const& img1, Image const& img2 ) {
 }
 
 /// \brief Makes a new image object pointing to same pixel data as `src`, but
-/// with different origin, strides and size (backwards compatibility
-/// function, we recommend the `dip::Image::At` function instead).
+/// with different origin, strides and size.
+///
+/// This function does the same as `dip::Image::At`, but allows for more flexible
+/// defaults: If `origin`, `sizes` or `spacing` have only one value, that value is
+/// repeated for each dimension. For empty arrays, `origin` defaults to all zeros,
+/// `sizes` to `src.Sizes() - origin`, and `spacing` to all ones. These defaults
+/// make it easy to crop pixels from one side of the image, to subsample the image,
+/// etc. For example, the following code subsamples by a factor 2 in each dimension:
+///
+/// ```cpp
+///     DefineROI( src, dest, {}, {}, { 2 } );
+/// ```
 void DefineROI(
       Image const& src,
       Image& dest,
-      UnsignedArray const& origin,
-      UnsignedArray const& sizes,
-      IntegerArray const& spacing
+      UnsignedArray origin = {},
+      UnsignedArray sizes = {},
+      UnsignedArray spacing = {}
 );
 
 inline Image DefineROI(
       Image const& src,
       UnsignedArray const& origin,
       UnsignedArray const& sizes,
-      IntegerArray const& spacing
+      UnsignedArray const& spacing = {}
 ) {
    Image dest;
    DefineROI( src, dest, origin, sizes, spacing );

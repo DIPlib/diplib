@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains support for 1D and nD iterators.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -405,12 +405,12 @@ class ImageIterator {
          DIP_THROW_IF( image_->DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
       }
       /// To construct a useful iterator, provide an image, a boundary condition array, and optionally a processing dimension
-      ImageIterator( Image const& image, BoundaryConditionArray const& bc, dip::sint procDim = -1 ) :
+      ImageIterator( Image const& image, BoundaryConditionArray bc, dip::sint procDim = -1 ) :
             image_( &image ),
             ptr_( static_cast< pointer >( image.Origin() )),
             coords_( image.Dimensionality(), 0 ),
             procDim_( procDim ),
-            boundaryCondition_( BoundaryArrayUseParameter( bc, image.Dimensionality() ) ) {
+            boundaryCondition_( BoundaryArrayUseParameter( std::move( bc ), image.Dimensionality() ) ) {
          DIP_THROW_IF( !image_->IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( image_->DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
       }
@@ -558,8 +558,8 @@ class ImageIterator {
       /// \brief Set the boundary condition for accessing pixels outside the image boundary. An empty array sets
       /// all dimensions to the default value, and an array with a single element sets all dimensions to
       /// that value.
-      void SetBoundaryCondition( BoundaryConditionArray const& bc ) {
-         boundaryCondition_ = BoundaryArrayUseParameter( bc, image_->Dimensionality() );
+      void SetBoundaryCondition( BoundaryConditionArray bc ) {
+         boundaryCondition_ = BoundaryArrayUseParameter( std::move( bc ), image_->Dimensionality() );
       }
       /// Set the boundary condition for accessing pixels outside the image boundary, for the given dimension
       void SetBoundaryCondition( dip::uint d, BoundaryCondition bc ) {
@@ -634,14 +634,14 @@ class JointImageIterator {
          DIP_THROW_IF( !CompareSizes(), E::SIZES_DONT_MATCH );
       }
       /// To construct a useful iterator, provide two images, a boundary condition array, and optionally a processing dimension
-      JointImageIterator( Image const& input, Image const& output, BoundaryConditionArray const& bc, dip::sint procDim = -1 ) :
+      JointImageIterator( Image const& input, Image const& output, BoundaryConditionArray bc, dip::sint procDim = -1 ) :
             inImage_( &input ),
             outImage_( &output ),
             inPtr_( static_cast< inT* >( input.Origin() )),
             outPtr_( static_cast< outT* >( output.Origin() )),
             coords_( input.Dimensionality(), 0 ),
             procDim_( procDim ),
-            boundaryCondition_( BoundaryArrayUseParameter( bc, input.Dimensionality() ) ) {
+            boundaryCondition_( BoundaryArrayUseParameter( std::move( bc ), input.Dimensionality() ) ) {
          DIP_THROW_IF( !inImage_->IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !outImage_->IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( inImage_->DataType() != DataType( inT(0) ), E::WRONG_DATA_TYPE );
@@ -788,8 +788,8 @@ class JointImageIterator {
       dip::sint ProcessingDimension() const { return HasProcessingDimension() ? procDim_ : -1; }
       /// \brief Set the boundary condition for accessing pixels outside the image boundary.
       /// Dimensions not specified will use the default boundary condition.
-      void SetBoundaryCondition( BoundaryConditionArray const& bc ) {
-         boundaryCondition_ = BoundaryArrayUseParameter( bc, inImage_->Dimensionality() );
+      void SetBoundaryCondition( BoundaryConditionArray bc ) {
+         boundaryCondition_ = BoundaryArrayUseParameter( std::move( bc ), inImage_->Dimensionality() );
       }
       /// Set the boundary condition for accessing pixels outside the image boundary, for the given dimension
       void SetBoundaryCondition( dip::uint d, BoundaryCondition bc ) {
