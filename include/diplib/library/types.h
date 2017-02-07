@@ -131,17 +131,12 @@ using CoordinateArray = std::vector< UnsignedArray >; ///< An array of pixel coo
 /// array of that length, or an array with a single value, which will be used for all dimensions, or an empty array,
 /// in which case the default value `defaultValue` will be used for all dimensions.
 template< typename T >
-inline DimensionArray< T > ArrayUseParameter( DimensionArray< T > array, dip::uint nDims, T defaultValue = 0 ) {
-   // If the input array is an lvalue, a copy is made, modified and returned.
-   // If the input array is an rvalue (a temporary or the result of `std::move`), the copy should be elided, and the
-   // array taken as-is, modified and returned. This is the reason we don't take the input array as a const reference.
+inline void ArrayUseParameter( DimensionArray< T >& array, dip::uint nDims, T defaultValue = 0 ) {
    if( array.empty() ) {
-      return DimensionArray< T >( nDims, defaultValue );
+      array.resize( nDims, defaultValue );
    } else if( array.size() == 1 ) {
-      return DimensionArray< T >( nDims, array[ 0 ] );
-   } else if( array.size() == nDims ) {
-      return array;
-   } else {
+      array.resize( nDims, array[ 0 ] );
+   } else if( array.size() != nDims ) {
       DIP_THROW( E::ARRAY_PARAMETER_WRONG_LENGTH );
    }
 }

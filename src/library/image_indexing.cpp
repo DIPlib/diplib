@@ -249,7 +249,7 @@ void DefineROI(
 ) {
    DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint n = src.Dimensionality();
-   origin = ArrayUseParameter( std::move( origin ), n, dip::uint( 0 ));
+   ArrayUseParameter( origin, n, dip::uint( 0 ));
    if( sizes.empty() ) {
       // computing: sizes = src.Sizes() - origin;
       sizes.resize( n );
@@ -257,9 +257,9 @@ void DefineROI(
          sizes[ ii ] = src.Size( ii ) - origin[ ii ];
       }
    } else {
-      sizes = ArrayUseParameter( std::move( sizes ), n, dip::uint( 1 ) );
+      ArrayUseParameter( sizes, n, dip::uint( 1 ) );
    }
-   spacing = ArrayUseParameter( std::move( spacing ), n, dip::uint( 1 ));
+   ArrayUseParameter( spacing, n, dip::uint( 1 ));
    RangeArray ranges( n );
    for( dip::uint ii = 0; ii < n; ++ii ) {
       ranges[ ii ] = Range( origin[ ii ], sizes[ ii ] + origin[ ii ] - 1, spacing[ ii ] );
