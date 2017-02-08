@@ -607,6 +607,27 @@ inline void swap( DimensionArray< T >& v1, DimensionArray< T >& v2 ) {
    v1.swap( v2 );
 }
 
+/// \brief Sorts the `indices` array with indices into the `data` array, from smallest to largest. The sort is stable.
+template< typename T >
+inline void sortIndices( DimensionArray< typename DimensionArray< T >::size_type >& indices, DimensionArray< T > const& data ) {
+   using size_type = typename DimensionArray< T >::size_type;
+   #ifdef DIP__ENABLE_ASSERT
+      for( size_type ii = 0; ii < indices.size(); ++ii ) {
+         DIP_ASSERT( indices[ ii ] < data.size() );
+      }
+   #endif
+   // Using insertion sort because we expect the array to be small.
+   for( size_type ii = 1; ii < indices.size(); ++ii ) {
+      size_type elem = indices[ ii ];
+      size_type jj = ii;
+      while(( jj > 0 ) && ( data[ indices[ jj - 1 ]] > data[ elem ] )) {
+         indices[ jj ] = indices[ jj - 1 ];
+         --jj;
+      }
+      indices[ jj ] = elem;
+   }
+}
+
 /// \}
 
 } // namespace dip

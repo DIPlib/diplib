@@ -196,7 +196,7 @@ class ScanLineFilter {
 /// makes no sense to call the scan function without input nor output images.
 ///
 /// Tensors are passed to `lineFilter` as vectors, if the shape is
-/// important, pass this information through `functionParameters`. `nTensorElements`
+/// important, store this information in `lineFilter`. `nTensorElements`
 /// gives the number of tensor elements for each output image. These are created
 /// as standard vectors. The calling function can reshape the tensors after the
 /// call to `%dip::Framework::Scan`. It is not necessary nor enforced that the
@@ -527,7 +527,9 @@ std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F func ) {
 /// `Separable_AsScalarImage`        | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
 /// `Separable_ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
 /// `Separable_UseOutBorder`         | The output line buffer also has space allocated for a border.
-/// `Separable_DontResizeOutput`     | The output image has the right size; it can differ from the input size
+/// `Separable_DontResizeOutput`     | The output image has the right size; it can differ from the input size.
+/// `Separable_UseInputBuffer`       | The line filter can modify the input data without affecting the input data.
+/// `Separable_SaveMemory`           | The result of intermediate operations are stored directly in the output image.
 ///
 /// Combine options by adding constants together.
 DIP_DECLARE_OPTIONS( SeparableOptions );
@@ -536,6 +538,8 @@ DIP_DEFINE_OPTION( SeparableOptions, Separable_AsScalarImage, 1 );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_ExpandTensorInBuffer, 2 );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_UseOutBorder, 3 );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_DontResizeOutput, 4 );
+DIP_DEFINE_OPTION( SeparableOptions, Separable_UseInputBuffer, 5 );
+DIP_DEFINE_OPTION( SeparableOptions, Separable_SaveMemory, 6 );
 
 /// \brief Structure that holds information about input or output pixel buffers
 /// for the `dip::Framework::Separable` callback function object.
@@ -615,12 +619,12 @@ class SeparableLineFilter {
 /// output. In a second step, a single line of 256 pixels is processed yielding
 /// the final single-pixel result. In the same case, but with an output of 64x512,
 /// 256 lines are processed, each with 256 pixels as input and 64 pixels as output.
-/// In the second step, 64 lines are processed, each iwth 256 pixels as input and
+/// In the second step, 64 lines are processed, each with 256 pixels as input and
 /// 512 pixels as output. This option is useful for functions that scale and do other
 /// geometric transformations, as well as functions that compute projections.
 ///
-/// Tensors are passed to lineFilter` as vectors, if the shape is
-/// important, pass this information through `functionParameters`. The output image
+/// Tensors are passed to `lineFilter` as vectors, if the shape is
+/// important, store this information in `lineFilter`. The output image
 /// will have the same tensor shape as the input except if the option
 /// `dip::FrameWork::Separable_ExpandTensorInBuffer` is given. In this case,
 /// the input buffers passed to `lineFilter` will contain the tensor elements as a
@@ -666,6 +670,28 @@ class SeparableLineFilter {
 /// will never share memory. That is, the line filter can freely write in the
 /// output buffer without invalidating the input buffer, even when the filter is
 /// being applied in-place.
+/// With the `dip::FrameWork::Separable_UseInputBuffer` option, the input buffer
+/// never points to the input image, the input data is always copied to a temporary
+/// buffer. This allows the `lineFilter` to modify the input, which is useful for,
+/// for exaple, computing the median of the input data by sorting.
+///
+/// By default, the separable framework uses intermediate images in which certain
+/// dimensions are swapped. For example, in the 2D case, the result of the first
+/// pass is written to a temporary image where the two dimensions are reversed,
+/// giving the y dimension a stride of 1. In the second pass, the dimensions are
+/// swapped again, giving the output a normal storage. Thus, if the input image
+/// has storage (x,y), the intermediate image has storage (y,x), and the output
+/// image has storage (x,y) again. This ordering swap allows each of the passes
+/// to always read data that is contiguous in memory, thereby improving performance
+/// especially for large images. With the `dip::FrameWork::Separable_SaveMemory`
+/// option set, the dimension swaps are disabled, and the intermediate data is
+/// directly written in the output image if possible, or otherwise into a single
+/// temporary image. Without dimension swapping, each pass can write output lines
+/// into the image containing the input data. If the output and input images
+/// are the same object, or share their data segments, then the filtering operation
+/// can be applied completely in place, without any temporary images. For this
+/// to be possible, `outImageType` must match `bufferType`, and the input and
+/// output must have the same size.
 ///
 /// `%dip::Framework::Separable` will process the image using multiple threads, so
 /// `lineFilter` will be called from multiple threads simultaneously. If it is not
@@ -784,7 +810,7 @@ class FullLineFilter {
 /// The full filter always has one input and one output image.
 ///
 /// Tensors are passed to `lineFilter` as vectors, if the shape is
-/// important, pass this information through `functionParameters`. `nTensorElements`
+/// important, store this information in `lineFilter`. `nTensorElements`
 /// gives the number of tensor elements for the output image. These are created
 /// as standard vectors, unless the input image has the same number of tensor elements,
 /// in which case that tensor shape is copied. The calling function can reshape the tensors after the

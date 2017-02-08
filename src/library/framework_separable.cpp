@@ -46,8 +46,8 @@ void Separable(
       }
    }
    DIP_START_STACK_TRACE
-   ArrayUseParameter( border, nDims, dip::uint( 0 ));
-   BoundaryArrayUseParameter( boundaryConditions, nDims );
+      ArrayUseParameter( border, nDims, dip::uint( 0 ));
+      BoundaryArrayUseParameter( boundaryConditions, nDims );
    DIP_END_STACK_TRACE
 
    // Make simplified copy of input image header so we can modify it at will.
@@ -96,11 +96,11 @@ void Separable(
 
    // Adjust output if necessary (and possible)
    DIP_START_STACK_TRACE
-   if( c_out.IsForged() && c_out.IsOverlappingView( c_in ) ) {
-      c_out.Strip();
-   }
-   c_out.ReForge( outSizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
-   c_out.ReshapeTensor( outTensor );
+      if( c_out.IsForged() && c_out.IsOverlappingView( c_in ) ) {
+         c_out.Strip();
+      }
+      c_out.ReForge( outSizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
+      c_out.ReshapeTensor( outTensor );
    DIP_END_STACK_TRACE
    // NOTE: Don't use c_in any more from here on. It has possibly been reforged!
 
@@ -114,23 +114,68 @@ void Separable(
    }
 
    // Determine the order in which dimensions are to be processed.
-   // The first dimension to process is the one that most reduces the size of the intermediate image.
-   // The last one is the one that most expands the intermediate image.
-   FloatArray grow( nDims );
+   //
+   // Step 1: create a list of dimension numbers that we'll process.
+   UnsignedArray order( nDims );
+   dip::uint jj = 0;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( process[ ii ] ) {
-         grow[ ii ] = static_cast< dfloat >( outSizes[ ii ] ) / static_cast< dfloat >( inSizes[ ii ] );
-      } else {
-         grow[ ii ] = std::numeric_limits< dfloat >::infinity(); // this dimension will not be processed, the order array will index it last
+         order[ jj ] = ii;
+         ++jj;
       }
    }
-   UnsignedArray order = grow.sortedIndices();
-   while(( order.size() > 0 ) && ( std::isinf( grow[ order.back() ] ))) {
-      order.pop_back();
+   order.resize( jj );
+   // Step 2: sort the list of dimensions so that the smallest stride comes first
+   sortIndices( order, input.Strides() );
+   // Step 3: sort the list of dimensions again, so that the dimension that reduces the size of the image
+   // the most is processed first.
+   if ( opts == Separable_DontResizeOutput ) { // else: all `grow` is 1.
+      FloatArray grow( nDims );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         grow[ ii ] = static_cast< dfloat >( outSizes[ ii ] ) / static_cast< dfloat >( inSizes[ ii ] );
+      }
+      sortIndices( order, grow );
    }
    // `order` now indexes the dimensions to be processed, in the optimal order (to reduce the amount of
-   // computation and intermediate storage)
-   // TODO: for dimensions with equal 'grow' weight (more often than not, grow == 1 for all dimensions), sort them by stride, with lower stride first.
+   // computation and intermediate storage, and to reduce cache misses).
+
+   // Processing:
+   //  if flipDims (normal operation)
+   //       input -> temp1 -> temp2 -> temp3 -> ... -> output
+   //       - each image tempN has a different dimension with stride==1
+   //       - at the end of each pass, we move the tempN image to intermediate
+   //       - all but first pass read from intermediate, all but last pass write to a new tempN
+   // else if useIntermediate
+   //       input -> intermediate -> intermediate -> ... -> output
+   //       - the intermediate image should be allocated only once
+   //       - all but first pass read from intermediate, all but last pass write to intermediate
+   //  else
+   //       input -> output -> output -> output -> ... -> output
+   //       - all but first pass read from output, all passes write in output
+   //       - we can do this because output.DataType() == bufferType, so no precision is lost
+
+   // The intermediate image, if needed, stored here
+   Image intermediate;
+
+   // Do we flip dimensions or not?
+   bool flipDims = true;
+   if(( opts == Separable_SaveMemory ) && ( order.size() > 1 )) {
+      // If we have more than one dimension to process, the Separable_SaveMemory option comes into play.
+      dip::uint d = order[ 1 ]; // the 2nd dimension to process
+      if( outSizes[ d ] >= inSizes[ d ] ) {
+         // As long as the 2nd dimension doesn't shrink, we can write the result of the 1st pass into the output image.
+         // Note that if the 2nd dimension doesn't shrink, no subsequent dimensions do either.
+         flipDims = false;
+      }
+   }
+   // If not, do we need an intermediate image?
+   bool useIntermediate = false;
+   if( !flipDims && ( output.DataType() != bufferType )) {
+      useIntermediate = true;
+      intermediate.CopyProperties( output );
+      intermediate.SetDataType( bufferType );
+      intermediate.Forge();
+   }
 
    // TODO: Determine the number of threads we'll be using.
 
@@ -143,31 +188,44 @@ void Separable(
    std::vector< uint8 > inBufferStorage;
    std::vector< uint8 > outBufferStorage;
 
-   // The intermediate image, if needed, stored here
-   Image intermediate;
-
    // Iterate over the dimensions to be processed. This loop should be sequential, not parallelized!
-   for( dip::uint processingDim : order ) {
-      // Where do we read and write data?
-      Image& inImage = order.front() == processingDim ? input : intermediate;
+   for( dip::uint rep = 0; rep < order.size(); ++rep ) {
+      dip::uint processingDim = order[ rep ];
       Image tmpImage;
-      Image& outImage = order.back() == processingDim ? output : tmpImage;
+      // First step always reads from input, other steps read from intermediate or output
+      Image& inImage = ( rep == 0 ) ? ( input ) : (( flipDims || useIntermediate ) ? intermediate : output );
+      // Last step always writes to output, other steps write to tmpImage, intermediate or output
+      Image& outImage = ( rep == order.size() - 1 ) ? ( output ) : ( flipDims ? ( tmpImage ) : ( useIntermediate ? intermediate : output ));
 
-      // Allocate space for intermediate data
+      // Allocate tmpImage if we need it
       if( &outImage == &tmpImage ) {
+         using std::swap;
+         // Here we set strides such that the next dimension to be processed has the smallest
+         // stride possible. This leads to a processing as follows:
+         //     2D: (x,y) -> (y,x) -> (x,y)
+         //     3D: (x,y,z) -> (y,x,z) -> (z,y,x) -> (x,y,z)
+         // This causes each iteration to read from an image with storage for optimal use of buffers.
+         // We accomplish this simply by swapping the dimensions 0 and `nextDim` before forging
+         // (the forge always makes dimension 0 to have the smallest stride), and swapping them back
+         // after the forge.
+         dip::uint nextDim = order[ rep + 1 ];
          UnsignedArray tmpSizes = inImage.Sizes();
          tmpSizes[ processingDim ] = outSizes[ processingDim ];
+         swap( tmpSizes[ 0 ], tmpSizes[ nextDim ] );
          tmpImage.SetSizes( tmpSizes );
-         tmpImage.SetTensorSizes( outImage.TensorElements() );
+         tmpImage.SetTensorSizes( output.TensorElements() );
          tmpImage.SetDataType( bufferType );
-         // TODO: Set strides such that the next dimension has a stride of 1 (or rather TensorElements)
-         // As in: (x,y) -> (y,x) -> (x,y) ; (x,y,z) -> (y,z,x) -> (z,x,y) -> (x,y,z)
          tmpImage.Forge();
+         tmpImage.SwapDimensions( 0, nextDim );
       }
 
-      //std::cout << "dip::Framework::Separable(), processingDim = " << processingDim << std::endl;
-      //std::cout << "   inImage.Origin() = " << inImage.Origin() << std::endl;
-      //std::cout << "   outImage.Origin() = " << outImage.Origin() << std::endl;
+      std::cout << "dip::Framework::Separable(), processingDim = " << processingDim << std::endl;
+      std::cout << "   inImage.Origin() = " << inImage.Origin() << std::endl;
+      std::cout << "   inImage.Sizes() = " << inImage.Sizes() << std::endl;
+      std::cout << "   inImage.Strides() = " << inImage.Strides() << std::endl;
+      std::cout << "   outImage.Origin() = " << outImage.Origin() << std::endl;
+      std::cout << "   outImage.Sizes() = " << outImage.Sizes() << std::endl;
+      std::cout << "   outImage.Strides() = " << outImage.Strides() << std::endl;
 
       // Some values to use during this iteration
       dip::uint inLength = inSizes[ processingDim ]; DIP_ASSERT( inLength == inImage.Size( processingDim ) );
@@ -176,7 +234,7 @@ void Separable(
       dip::uint outBorder = opts == Separable_UseOutBorder ? inBorder : 0;
 
       // Determine if we need to make a temporary buffer for this dimension
-      bool inUseBuffer = ( inImage.DataType() != bufferType ) || !lookUpTable.empty() || ( inBorder > 0 );
+      bool inUseBuffer = ( inImage.DataType() != bufferType ) || !lookUpTable.empty() || ( inBorder > 0 ) || ( opts == Separable_UseInputBuffer );
       bool outUseBuffer = ( outImage.DataType() != bufferType ) || ( outBorder > 0 );
 
       // Create buffer data structs and (re-)allocate buffers
@@ -226,7 +284,7 @@ void Separable(
          //std::cout << "   Not using output buffer\n";
       }
 
-      // Iterate over all lines in the image
+      // Iterate over all lines in the image. This loop to be parallelized.
       auto it = dip::GenericJointImageIterator( inImage, outImage, processingDim );
       SeparableLineFilterParameters separableLineFilterParams{ inBuffer, outBuffer, processingDim, it.Coordinates(), thread }; // Takes inBuffer, outBuffer, it.Coordinates() as references
       do {
@@ -287,8 +345,10 @@ void Separable(
 
       // Clear the tensor look-up table: if this was set, then the intermediate data now has a full matrix as tensor shape and we don't need it any more.
       lookUpTable.clear();
-      // Save the temporary image, if we used it.
-      intermediate = std::move( tmpImage );
+      // Save tmpImage image to intermediate if we used it.
+      if( &outImage == &tmpImage ) {
+         intermediate = std::move( tmpImage );
+      }
    }
 
    // TODO: End threads.
