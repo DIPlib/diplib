@@ -36,8 +36,9 @@ static ChainCodeArray dip__ChainCode(
    DIP_TPI *data = static_cast< DIP_TPI* >( labels.Origin() );
    BooleanArray done( objectIDs.size(), false ); // mark labels as done
    ChainCodeArray ccArray( objectIDs.size() );  // output array
-   UnsignedArray dims = labels.Sizes();
-   --dims[ 0 ]; --dims[ 1 ]; // our local copy of `dims` now contains the largest coordinates
+   IntegerArray dims( 2 );
+   dims[ 0 ] = labels.Size( 0 ) - 1;
+   dims[ 1 ] = labels.Size( 1 ) - 1; // our local copy of `dims` now contains the largest coordinates
    IntegerArray const& strides = labels.Strides();
 
    // Find first pixel of requested label
@@ -51,7 +52,7 @@ static ChainCodeArray dip__ChainCode(
          if( data[ pos ] != label || coord.x == 0 ) {
             // Check whether data[pos] is start of not processed object
             for( index = 0; index < objectIDs.size(); ++index ) {
-               if( ( data[ pos ] ) == objectIDs[ index ] ) {
+               if( data[ pos ] == objectIDs[ index ] ) {
                   if( !done[ index ] ) {
                      done[ index ] = true;
                      label = objectIDs[ index ];

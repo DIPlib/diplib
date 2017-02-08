@@ -307,7 +307,7 @@ bool Image::HasValidStrides() const {
    s.sort( d );
    // Test invariant
    for( dip::uint ii = 0; ii < n - 1; ++ii ) {
-      if( s[ ii + 1 ] <= s[ ii ] * ( d[ ii ] - 1 ) ) {
+      if( s[ ii + 1 ] <= s[ ii ] * ( static_cast< dip::sint >( d[ ii ] ) - 1 )) {
          return false;
       }
    }
@@ -419,7 +419,7 @@ bool Image::Aliases( Image const& other ) const {
    }
 
    // Non-overlapping portions of the data block
-   if( ( start1 + size1 <= start2 ) || ( start2 + size2 <= start1 ) ) {
+   if(( start1 + static_cast< dip::sint >( size1 ) <= start2 ) || ( start2 + static_cast< dip::sint >( size2 ) <= start1 )) {
       return false;
    }
 
@@ -493,12 +493,12 @@ bool Image::Aliases( Image const& other ) const {
          // we're at the end of sizes2
          s2 = s1;
          ++i1;
-      } else if( ( i1 + 1 < ndims1 ) && ( strides1[ i1 + 1 ] <= s2 * ( d2 - 1 ) ) ) {
+      } else if(( i1 + 1 < ndims1 ) && ( strides1[ i1 + 1 ] <= static_cast< dip::sint >( s2 * ( d2 - 1 )))) {
          // s2 is too large, assume img2 has sizes==1 in this dimension
          s2 = s1;
          d2 = 1;
          ++i1;
-      } else if( ( i2 + 1 < ndims2 ) && ( strides2[ i2 + 1 ] <= s1 * ( d1 - 1 ) ) ) {
+      } else if(( i2 + 1 < ndims2 ) && ( strides2[ i2 + 1 ] <= static_cast< dip::sint >( s1 * ( d1 - 1 )))) {
          // s1 is too large, assume img1 has sizes==1 in this dimension
          s1 = s2;
          d1 = 1;

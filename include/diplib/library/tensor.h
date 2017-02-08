@@ -154,6 +154,8 @@ class Tensor {
             case Shape::LOWTRIANG_MATRIX:
                return rows_;        // these are all square matrices
          }
+         // This should never happen:
+         DIP_THROW( "Unknown tensor shape" ); // WTF GCC???
       }
       /// Gets the tensor size.
       UnsignedArray Sizes() const {
@@ -245,7 +247,8 @@ class Tensor {
             case 2:
                SetMatrix( sizes[ 0 ], sizes[ 1 ] );
                break;
-            default: DIP_THROW( "Tensor dimensionalities higher than 2 not supported." );
+            default:
+               DIP_THROW( "Tensor dimensionalities higher than 2 not supported" );
          }
       }
 

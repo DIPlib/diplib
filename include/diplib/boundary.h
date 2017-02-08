@@ -88,7 +88,7 @@ inline BoundaryCondition StringToBoundaryCondition( String bc ) {
 /// \brief Convert an array of strings to an array of boundary conditions.
 inline BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray bc ) {
    BoundaryConditionArray out( bc.size() );
-   for( dip::sint ii = 0; ii < bc.size(); ++ii ) {
+   for( dip::uint ii = 0; ii < bc.size(); ++ii ) {
       out[ ii ] = StringToBoundaryCondition( bc[ ii ] );
    }
    return out;

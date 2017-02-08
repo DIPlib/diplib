@@ -223,11 +223,11 @@ struct Range {
       // Check step is non-zero
       DIP_THROW_IF( step == 0, E::PARAMETER_OUT_OF_RANGE );
       // Compute indices from end
-      if( start < 0 ) { start += size; }
-      if( stop < 0 ) { stop += size; }
+      dip::sint sz = static_cast< dip::sint >( size );
+      if( start < 0 ) { start += sz; }
+      if( stop < 0 ) { stop += sz; }
       // Check start and stop are within range
-      DIP_THROW_IF( ( start < 0 ) || ( start >= size ) || ( stop < 0 ) || ( stop >= size ),
-                   E::INDEX_OUT_OF_RANGE );
+      DIP_THROW_IF( ( start < 0 ) || ( start >= sz ) || ( stop < 0 ) || ( stop >= sz ), E::INDEX_OUT_OF_RANGE );
       // Compute stop given start and step
       //stop = start + ((stop-start)/step)*step;
    }

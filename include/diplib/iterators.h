@@ -549,7 +549,7 @@ class ImageIterator {
       /// True if the processing dimension is set
       bool HasProcessingDimension() const {
          if( image_ ) {
-            return ( procDim_ >= 0 ) && ( procDim_ < image_->Dimensionality() );
+            return ( procDim_ >= 0 ) && ( procDim_ < static_cast< dip::sint >( image_->Dimensionality() ));
          } else {
             return false;
          }
@@ -782,7 +782,7 @@ class JointImageIterator {
       /// True if the processing dimension is set
       bool HasProcessingDimension() const {
          if( inImage_ ) {
-            return ( procDim_ >= 0 ) && ( procDim_ < inImage_->Dimensionality() );
+            return ( procDim_ >= 0 ) && ( procDim_ < static_cast< dip::sint >( inImage_->Dimensionality() ));
          } else {
             return false;
          }
@@ -956,7 +956,7 @@ class GenericImageIterator {
       /// True if the processing dimension is set
       bool HasProcessingDimension() const {
          if( image_ ) {
-            return ( procDim_ >= 0 ) && ( procDim_ < image_->Dimensionality() );
+            return ( procDim_ >= 0 ) && ( procDim_ < static_cast< dip::sint >( image_->Dimensionality() ));
          } else {
             return false;
          }
@@ -1124,7 +1124,7 @@ class GenericJointImageIterator {
       /// True if the processing dimension is set
       bool HasProcessingDimension() const {
          if( inImage_ ) {
-            return ( procDim_ >= 0 ) && ( procDim_ < inImage_->Dimensionality() );
+            return ( procDim_ >= 0 ) && ( procDim_ < static_cast< dip::sint >( inImage_->Dimensionality() ));
          } else {
             return false;
          }
@@ -1143,7 +1143,7 @@ class GenericJointImageIterator {
             return false;
          }
          for( dip::uint ii = 0; ii < inImage_->Dimensionality(); ++ii ) {
-            if(( ii != procDim_ ) && ( inImage_->Size( ii ) != outImage_->Size( ii ) )) {
+            if(( static_cast< dip::sint >( ii ) != procDim_ ) && ( inImage_->Size( ii ) != outImage_->Size( ii ) )) {
                return false;
             }
          }
