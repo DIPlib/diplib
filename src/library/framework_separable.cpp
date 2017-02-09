@@ -136,15 +136,14 @@ void Separable(
       }
       sortIndices( order, grow );
    }
-   // `order` now indexes the dimensions to be processed, in the optimal order (to reduce the amount of
-   // computation and intermediate storage, and to reduce cache misses).
 
    // Processing:
-   //  if flipDims (normal operation)
+   //  if flipDims [ not used any more ]
    //       input -> temp1 -> temp2 -> temp3 -> ... -> output
    //       - each image tempN has a different dimension with stride==1
    //       - at the end of each pass, we move the tempN image to intermediate
    //       - all but first pass read from intermediate, all but last pass write to a new tempN
+   //       - this is actually slower on my computer except with very large 2D images, where the difference is not significant
    // else if useIntermediate
    //       input -> intermediate -> intermediate -> ... -> output
    //       - the intermediate image should be allocated only once
@@ -156,21 +155,8 @@ void Separable(
 
    // The intermediate image, if needed, stored here
    Image intermediate;
-
-   // Do we flip dimensions or not?
-   bool flipDims = true;
-   if(( opts == Separable_SaveMemory ) && ( order.size() > 1 )) {
-      // If we have more than one dimension to process, the Separable_SaveMemory option comes into play.
-      dip::uint d = order[ 1 ]; // the 2nd dimension to process
-      if( outSizes[ d ] >= inSizes[ d ] ) {
-         // As long as the 2nd dimension doesn't shrink, we can write the result of the 1st pass into the output image.
-         // Note that if the 2nd dimension doesn't shrink, no subsequent dimensions do either.
-         flipDims = false;
-      }
-   }
-   // If not, do we need an intermediate image?
    bool useIntermediate = false;
-   if( !flipDims && ( output.DataType() != bufferType )) {
+   if( output.DataType() != bufferType ) {
       useIntermediate = true;
       intermediate.CopyProperties( output );
       intermediate.SetDataType( bufferType );
@@ -191,51 +177,32 @@ void Separable(
    // Iterate over the dimensions to be processed. This loop should be sequential, not parallelized!
    for( dip::uint rep = 0; rep < order.size(); ++rep ) {
       dip::uint processingDim = order[ rep ];
-      Image tmpImage;
       // First step always reads from input, other steps read from intermediate or output
-      Image& inImage = ( rep == 0 ) ? ( input ) : (( flipDims || useIntermediate ) ? intermediate : output );
-      // Last step always writes to output, other steps write to tmpImage, intermediate or output
-      Image& outImage = ( rep == order.size() - 1 ) ? ( output ) : ( flipDims ? ( tmpImage ) : ( useIntermediate ? intermediate : output ));
+      Image& inImage = ( rep == 0 ) ? ( input ) : ( useIntermediate ? intermediate : output );
+      // Last step always writes to output, other steps write to intermediate or output
+      Image& outImage = ( rep == order.size() - 1 ) ? ( output ) : ( useIntermediate ? intermediate : output );
 
-      // Allocate tmpImage if we need it
-      if( &outImage == &tmpImage ) {
-         using std::swap;
-         // Here we set strides such that the next dimension to be processed has the smallest
-         // stride possible. This leads to a processing as follows:
-         //     2D: (x,y) -> (y,x) -> (x,y)
-         //     3D: (x,y,z) -> (y,x,z) -> (z,y,x) -> (x,y,z)
-         // This causes each iteration to read from an image with storage for optimal use of buffers.
-         // We accomplish this simply by swapping the dimensions 0 and `nextDim` before forging
-         // (the forge always makes dimension 0 to have the smallest stride), and swapping them back
-         // after the forge.
-         dip::uint nextDim = order[ rep + 1 ];
-         UnsignedArray tmpSizes = inImage.Sizes();
-         tmpSizes[ processingDim ] = outSizes[ processingDim ];
-         swap( tmpSizes[ 0 ], tmpSizes[ nextDim ] );
-         tmpImage.SetSizes( tmpSizes );
-         tmpImage.SetTensorSizes( output.TensorElements() );
-         tmpImage.SetDataType( bufferType );
-         tmpImage.Forge();
-         tmpImage.SwapDimensions( 0, nextDim );
-      }
-
-      std::cout << "dip::Framework::Separable(), processingDim = " << processingDim << std::endl;
-      std::cout << "   inImage.Origin() = " << inImage.Origin() << std::endl;
-      std::cout << "   inImage.Sizes() = " << inImage.Sizes() << std::endl;
-      std::cout << "   inImage.Strides() = " << inImage.Strides() << std::endl;
-      std::cout << "   outImage.Origin() = " << outImage.Origin() << std::endl;
-      std::cout << "   outImage.Sizes() = " << outImage.Sizes() << std::endl;
-      std::cout << "   outImage.Strides() = " << outImage.Strides() << std::endl;
+      // std::cout << "dip::Framework::Separable(), processingDim = " << processingDim << std::endl;
+      // std::cout << "   inImage.Origin() = " << inImage.Origin() << std::endl;
+      // std::cout << "   inImage.Sizes() = " << inImage.Sizes() << std::endl;
+      // std::cout << "   inImage.Strides() = " << inImage.Strides() << std::endl;
+      // std::cout << "   outImage.Origin() = " << outImage.Origin() << std::endl;
+      // std::cout << "   outImage.Sizes() = " << outImage.Sizes() << std::endl;
+      // std::cout << "   outImage.Strides() = " << outImage.Strides() << std::endl;
 
       // Some values to use during this iteration
       dip::uint inLength = inSizes[ processingDim ]; DIP_ASSERT( inLength == inImage.Size( processingDim ) );
       dip::uint inBorder = border[ processingDim ];
       dip::uint outLength = outSizes[ processingDim ];
-      dip::uint outBorder = opts == Separable_UseOutBorder ? inBorder : 0;
+      dip::uint outBorder = opts == Separable_UseOutputBorder ? inBorder : 0;
 
       // Determine if we need to make a temporary buffer for this dimension
       bool inUseBuffer = ( inImage.DataType() != bufferType ) || !lookUpTable.empty() || ( inBorder > 0 ) || ( opts == Separable_UseInputBuffer );
-      bool outUseBuffer = ( outImage.DataType() != bufferType ) || ( outBorder > 0 );
+      bool outUseBuffer = ( outImage.DataType() != bufferType ) || ( outBorder > 0 ) || ( opts == Separable_UseOutputBuffer );
+      if( !inUseBuffer && !outUseBuffer && ( inImage.Origin() == outImage.Origin() )) {
+         // If input and output images are the same, we need to use at least one buffer!
+         inUseBuffer = true;
+      }
 
       // Create buffer data structs and (re-)allocate buffers
       SeparableBuffer inBuffer;
@@ -345,10 +312,6 @@ void Separable(
 
       // Clear the tensor look-up table: if this was set, then the intermediate data now has a full matrix as tensor shape and we don't need it any more.
       lookUpTable.clear();
-      // Save tmpImage image to intermediate if we used it.
-      if( &outImage == &tmpImage ) {
-         intermediate = std::move( tmpImage );
-      }
    }
 
    // TODO: End threads.

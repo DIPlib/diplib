@@ -62,7 +62,7 @@ namespace dip {
 ///
 /// The convolution is applied to each tensor component separately, which is always the correct behavior for linear
 /// filters.
-struct OneDimensionalFilter{
+struct OneDimensionalFilter {
    FloatArray filter;            ///< Filter weights
    dip::sint origin = -1;        ///< Origin of the filter if non-negative
    String symmetry = "";         ///< Filter shape: `""` == `"general"`, `"even"` or `"odd"`

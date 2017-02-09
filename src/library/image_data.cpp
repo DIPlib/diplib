@@ -292,7 +292,7 @@ bool Image::HasValidStrides() const {
    if( sizes_.size() != strides_.size() ) {
       return false;
    }
-   // Add tensor dimension and strides to the lists
+   // Add tensor dimension and stride to the lists
    IntegerArray s = strides_;
    UnsignedArray d = sizes_;
    if( tensor_.Elements() > 1 ) {
@@ -300,6 +300,10 @@ bool Image::HasValidStrides() const {
       d.push_back( tensor_.Elements() );
    }
    dip::uint n = s.size();
+   if( n < 2 ) {
+      // It's a 0D or 1D image, strides are always OK
+      return true;
+   }
    // Make sure all strides are positive
    for( dip::uint ii = 0; ii < n; ++ii ) {
       s[ ii ] = std::abs( s[ ii ] );

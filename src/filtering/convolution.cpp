@@ -17,6 +17,8 @@ namespace dip {
 namespace {
 
 // *grumble* multiplication of complex values with scalars is only defined when the types are identical
+// The template works for T = sfloat, T = dfloat, T = dcomplex.
+// For T = scomplex we need a specialization.
 template< typename T >
 inline T multiply( dfloat const& lhs, T const& rhs ) {
    return lhs * rhs;

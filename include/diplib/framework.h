@@ -526,20 +526,20 @@ std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F func ) {
 /// `Separable_NoMultiThreading`     | Do not call the line filter simultaneouly from multiple threads (it is not thread safe).
 /// `Separable_AsScalarImage`        | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
 /// `Separable_ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
-/// `Separable_UseOutBorder`         | The output line buffer also has space allocated for a border.
+/// `Separable_UseOutputBorder`      | The output line buffer also has space allocated for a border.
 /// `Separable_DontResizeOutput`     | The output image has the right size; it can differ from the input size.
-/// `Separable_UseInputBuffer`       | The line filter can modify the input data without affecting the input data.
-/// `Separable_SaveMemory`           | The result of intermediate operations are stored directly in the output image.
+/// `Separable_UseInputBuffer`       | The line filter can modify the input data without affecting the input image; samples are guaranteed to be contiguous.
+/// `Separable_UseOutputBuffer`      | The output buffer is guaranteed to have contiguous samples.
 ///
 /// Combine options by adding constants together.
 DIP_DECLARE_OPTIONS( SeparableOptions );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_NoMultiThreading, 0 );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_AsScalarImage, 1 );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_ExpandTensorInBuffer, 2 );
-DIP_DEFINE_OPTION( SeparableOptions, Separable_UseOutBorder, 3 );
+DIP_DEFINE_OPTION( SeparableOptions, Separable_UseOutputBorder, 3 );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_DontResizeOutput, 4 );
 DIP_DEFINE_OPTION( SeparableOptions, Separable_UseInputBuffer, 5 );
-DIP_DEFINE_OPTION( SeparableOptions, Separable_SaveMemory, 6 );
+DIP_DEFINE_OPTION( SeparableOptions, Separable_UseOutputBuffer, 6 );
 
 /// \brief Structure that holds information about input or output pixel buffers
 /// for the `dip::Framework::Separable` callback function object.
@@ -651,14 +651,28 @@ class SeparableLineFilter {
 /// The calling function is expected to "correct" these values if necessary.
 ///
 /// The buffers are not guaranteed to be contiguous, please use the `stride`
-/// and `tensorStride` values to access samples. The input buffer contains `bufferLength + 2 * border`
-/// pixels. The pixel pointed to by the `buffer` pointer is the first pixel on
+/// and `tensorStride` values to access samples. The
+/// `dip::Framework::Separable_UseInputBorder` and `dip::Framework::Separable_UseOutputBorder`
+/// options force the use of temporary buffers to store each image line. These
+/// temporary buffers always have contiguous samples, with the tensor stride
+/// equal to 1 and the spatial stride equal to the number of tensor elements.
+/// That is, the tensor elements for each pixel are contiguous, and the pixels
+/// are contiguous. This is useful when calling external code to process the
+/// buffers, and that external code expects input data to be contiguous.
+/// If the input has a stride of 0 in the dimension being processed
+/// (this happens when expanding singleton dimensions), it means that a single
+/// pixel is repeated across the whole line. This property is preserved in the
+/// buffer. Thus, even when these two flags are used, you need to check the
+/// `stride` value and deal with the singleton dimension appropriately.
+///
+/// The input buffer contains `bufferLength + 2 * border` pixels.
+/// The pixel pointed to by the `buffer` pointer is the first pixel on
 /// that line in the input image. The `lineFilter` function object can read up to `border`
 /// pixels before that pixel, and up to `border` pixels after the last pixel on the
 /// line. These pixels are filled by the framework using the `boundaryCondition`
 /// value for the given dimension. The `boundaryCondition` array can be empty, in which
 /// case the default boundary condition value is used. If the option
-/// `dip::FrameWork::Separable_UseOutBorder` is given, then the output buffer also has `border`
+/// `dip::FrameWork::Separable_UseOutputBorder` is given, then the output buffer also has `border`
 /// extra samples at each end. These extra samples are meant to help in the
 /// computation for some filters, and are not copied back to the output image.
 /// `position` gives the coordinates for the first pixel in the buffers,
@@ -675,23 +689,10 @@ class SeparableLineFilter {
 /// buffer. This allows the `lineFilter` to modify the input, which is useful for,
 /// for exaple, computing the median of the input data by sorting.
 ///
-/// By default, the separable framework uses intermediate images in which certain
-/// dimensions are swapped. For example, in the 2D case, the result of the first
-/// pass is written to a temporary image where the two dimensions are reversed,
-/// giving the y dimension a stride of 1. In the second pass, the dimensions are
-/// swapped again, giving the output a normal storage. Thus, if the input image
-/// has storage (x,y), the intermediate image has storage (y,x), and the output
-/// image has storage (x,y) again. This ordering swap allows each of the passes
-/// to always read data that is contiguous in memory, thereby improving performance
-/// especially for large images. With the `dip::FrameWork::Separable_SaveMemory`
-/// option set, the dimension swaps are disabled, and the intermediate data is
-/// directly written in the output image if possible, or otherwise into a single
-/// temporary image. Without dimension swapping, each pass can write output lines
-/// into the image containing the input data. If the output and input images
-/// are the same object, or share their data segments, then the filtering operation
-/// can be applied completely in place, without any temporary images. For this
-/// to be possible, `outImageType` must match `bufferType`, and the input and
-/// output must have the same size.
+/// If `in` and `out` share their data segments (e.g. they are the same image),
+/// then the filtering operation can be applied completely in place, without any
+/// temporary images. For this to be possible, `outImageType`, `bufferType` and
+/// the input image data type must all be the same.
 ///
 /// `%dip::Framework::Separable` will process the image using multiple threads, so
 /// `lineFilter` will be called from multiple threads simultaneously. If it is not

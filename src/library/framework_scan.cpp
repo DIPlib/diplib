@@ -59,7 +59,7 @@ void Scan(
    }
    StringArray colspaces = OutputColorSpaces( c_in, nTensorElements );
 
-   // Will we apply tensor to spatial dimension?
+   // Will we convert tensor to spatial dimension?
    bool tensorToSpatial = false;
    if( opts == Scan_TensorAsSpatialDim ) {
       bool allscalar = true;
@@ -78,7 +78,10 @@ void Scan(
    // Do singleton expansion if necessary
    UnsignedArray sizes;
    dip::uint tsize = 1;
-   if( nIn > 0 ) {
+   if( nIn == 1 ) {
+      sizes = in[ 0 ].Sizes();
+      tsize = in[ 0 ].TensorElements();
+   } else if( nIn > 1 ) {
       if( opts != Scan_NoSingletonExpansion ) {
          sizes = SingletonExpandedSize( in );
          if( tensorToSpatial ) {
@@ -88,7 +91,7 @@ void Scan(
             if( in[ ii ].Sizes() != sizes ) {
                in[ ii ].ExpandSingletonDimensions( sizes );
             }
-            if( tensorToSpatial && ( in[ ii ].TensorElements() != tsize )) {
+            if( tensorToSpatial && ( in[ ii ].TensorElements() != tsize ) ) {
                in[ ii ].ExpandSingletonTensor( tsize );
             }
          }

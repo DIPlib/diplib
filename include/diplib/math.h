@@ -44,9 +44,6 @@ struct MaximumAndMinimum {
    }
 };
 
-// This function here serves as an example of how to use the scan framework
-// to do a multi-threaded reduce operation. It also demonstrates how to handle
-// optional mask images.
 /// \brief Finds the largest and smallest value in the image, within an optional mask.
 ///
 /// If `mask` is not forged, all input pixels are considered. In case of a tensor
@@ -54,12 +51,12 @@ struct MaximumAndMinimum {
 /// samples, treats real and imaginary components as individual samples.
 MaximumAndMinimum GetMaximumAndMinimum(
       Image const& in,
-      Image const& mask
+      Image const& mask = {}
 );
 
 MaximumAndMinimum GetMaximumAndMinimum2(
       Image const& in,
-      Image const& mask
+      Image const& mask = {}
 );
 
 // TODO: We need functions dip::All() dip::Any() that apply to samples within a tensor. This combines with equality: dip::All( a == b ), for a, b tensor images.

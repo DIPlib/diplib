@@ -135,6 +135,8 @@ add_executable( test_lambdafun EXCLUDE_FROM_ALL test/test_lambdafun.cpp )
 target_link_libraries(test_lambdafun DIP)
 add_executable( test_framework_separable EXCLUDE_FROM_ALL test/test_framework_separable.cpp )
 target_link_libraries(test_framework_separable DIP)
+add_executable( test_framework_separable2 EXCLUDE_FROM_ALL test/test_framework_separable2.cpp )
+target_link_libraries(test_framework_separable2 DIP)
 add_executable( test_framework_full EXCLUDE_FROM_ALL test/test_framework_full.cpp )
 target_link_libraries(test_framework_full DIP)
 add_executable( test_boundary EXCLUDE_FROM_ALL test/test_boundary.cpp )
@@ -152,6 +154,8 @@ add_custom_target(
       test_framework_scan
       test_lambdafun
       test_framework_separable
+      test_framework_separable2
+      test_framework_full
       test_boundary
       test_measurement
       test_measuretool

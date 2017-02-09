@@ -47,7 +47,7 @@ dip::uint Count(
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__Count, ( counts ), in.DataType() );
    // Call the framework function
    ImageRefArray outar{};
-   Framework::ScanSingleInput( in, in.DataType(), scanLineFilter.get(), Framework::Scan_NoSingletonExpansion );
+   Framework::ScanSingleInput( in, in.DataType(), scanLineFilter.get() );
    // Reduce
    dip::uint out = counts[ 0 ];
    for( dip::uint ii = 1; ii < counts.size(); ++ii ) {

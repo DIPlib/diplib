@@ -31,18 +31,22 @@ Use the following commands to build:
     mkdir target
     cd target
     cmake /path/to/dip/root/directory
-    make -j         # builds the library (builds the default DIP target)
+    make -j install
+
+To change which compilers CMake uses:
+
+    CC=gcc-5 CXX=g++-5 cmake /path/to/dip/root/directory
 
 Available `make` targets:
 
-    make -j DIP     # builds the DIPlib library
-    make -j MATLAB  # builds the DIPimage MEX-files (as well as DIPlib)
-    make -j check   # builds the unit_tests program and runs it
-    make -j tests   # deprecated -- old test functions
-    make -j mex     # deprecated -- mex test functions
-    make docs       # makes some PDF project documentation files
-    make apidoc     # Doxygen HTML documentation for the library API
-    make install    # builds and installs DIPlib and DIPimage
+    <default>   # builds DIPlib and DIPimage MEX-files
+    DIP         # builds the DIPlib library only
+    check       # builds the unit_tests program and runs it
+    apidoc      # Doxygen HTML documentation for the library API
+    install     # builds and installs DIPlib and DIPimage
+    docs        # makes some PDF project documentation files
+    tests       # deprecated -- old test functions
+    mex         # deprecated -- mex test functions
 
 Under Windows you can follow a similar process, but I have never used CMake under
 Windows, so I'll let someone else write this bit.
