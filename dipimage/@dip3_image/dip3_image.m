@@ -193,7 +193,7 @@ classdef dip3_image
                   % Convert MATLAB array to new dip_image
                   % Data type conversion
                   if ~isempty(datatype)
-                     if ~isreal(data) && (datatype != 'single') && (datatype != 'double')
+                     if ~isreal(data) && (datatype ~= 'single') && (datatype ~= 'double')
                         warning('Ignoring data type conversion: complex data cannot be converted to requested type')
                      elseif ~isa(data,datatype)
                         data = array_convert_datatype(data,datatype);
