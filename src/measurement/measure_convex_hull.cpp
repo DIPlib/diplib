@@ -150,18 +150,17 @@ RadiusValues Polygon::RadiusStatistics() const {
       return radius; // CLion thinks this is not initialized, but it is.
    }
    VertexFloat centroid = Centroid();
-
-   VarianceAccumulator acc;
-   radius.max = 0.0;
-   radius.min = std::numeric_limits< dfloat >::max();
+   VarianceAccumulator vacc;
+   MinMaxAccumulator macc;
    for( auto const& v : vertices ) {
       dfloat r = Distance( centroid, v );
-      acc.Push( r );
-      radius.max = std::max( radius.max, r );
-      radius.min = std::min( radius.min, r );
+      vacc.Push( r );
+      macc.Push( r );
    }
-   radius.mean = acc.Mean();
-   radius.var = acc.Variance();
+   radius.mean = vacc.Mean();
+   radius.var = vacc.Variance();
+   radius.max = macc.Maximum();
+   radius.min = macc.Minimum();
    return radius;
 }
 

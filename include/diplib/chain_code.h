@@ -36,12 +36,16 @@ struct FeretValues {
    dfloat minAngle = 0.0;           ///< The angle at which `minDiameter` was measured
 };
 
-/// Holds the various output values of the `dip::RadiusStatistics` and `dip::ChainCode::RadiusStatistics` function.
+/// \brief Holds the various output values of the `dip::RadiusStatistics` and `dip::ConvexHull::RadiusStatistics` function.
 struct RadiusValues {
-   dfloat max = 0.0;    ///< Maximum radius
    dfloat mean = 0.0;   ///< Mean radius
-   dfloat min = 0.0;    ///< Minimum radius
    dfloat var = 0.0;    ///< Radius variance
+   dfloat max = 0.0;    ///< Maximum radius
+   dfloat min = 0.0;    ///< Minimum radius
+   /// Computes a circularity measure given by the coefficient of variation of the radii of the object.
+   dfloat Circularity() {
+      return std::sqrt( var ) / mean;
+   }
 };
 
 
@@ -431,7 +435,7 @@ class ConvexHull {
       ConvexHull() {};
 
       /// Constructs a convex hull of a polygon
-      ConvexHull( Polygon const&& polygon );
+      ConvexHull( dip::Polygon const&& polygon );
 
       /// Retrive the vertices that represent the convex hull
       std::vector< VertexFloat > const& Vertices() const {
@@ -456,13 +460,24 @@ class ConvexHull {
          return vertices_.Centroid();
       }
 
-      /// Converts the `%ConvexHull` object to a `dip::Polygon`
-      operator Polygon() const {
-         return vertices_;
+      /// Returns statistics on the radii of the polygon, see `dip::Polygon::RadiusStatistics`.
+      RadiusValues RadiusStatistics() const {
+         return vertices_.RadiusStatistics();
+      }
+
+      /// \brief Returns the coeffient of variation of the distance of vertices to the ellipse with identical
+      /// covarianace matrix, see `dip::Polygon::EllipseVariance`.
+      dfloat EllipseVariance() const {
+         return vertices_.EllipseVariance();
+      }
+
+      /// Returns the polygon representing the convex hull
+      dip::Polygon const& Polygon() const {
+          return vertices_;
       }
 
    private:
-      Polygon vertices_;
+      dip::Polygon vertices_;
 };
 
 // This function cannot be written inside the dip::Polygon class because it needs to know about the dip::ConvexHull
@@ -532,6 +547,7 @@ struct ChainCode {
    /// `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the polygon and
    /// compute the measures on that.
    dfloat Area() const {
+      // There's another algorithm to compute this, that doesn't depend on the polygon. Should we implement that?
       return Polygon().Area() + 0.5;
    }
 
@@ -539,6 +555,7 @@ struct ChainCode {
    /// `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the polygon and
    /// compute the measures on that.
    VertexFloat Centroid() const {
+      // There's another algorithm to compute this, that doesn't depend on the polygon. Should we implement that?
       return Polygon().Centroid();
    }
 

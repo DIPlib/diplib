@@ -101,7 +101,7 @@ dip::Polygon ChainCode::Polygon() const {
 }
 
 
-ConvexHull::ConvexHull( Polygon const&& polygon ) {
+ConvexHull::ConvexHull( dip::Polygon const&& polygon ) {
    auto const& pv = polygon.vertices;
    if( pv.size() <= 3 ) {
       // If there's less than 4 elements, we already have a convex hull

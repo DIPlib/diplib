@@ -29,20 +29,6 @@ dip::uint Count(
       Image const& in
 );
 
-/// \brief Contains the return values for the function dip::GetMaximumAndMinimum.
-struct MaximumAndMinimum {
-   double min;    ///< Maximum sample value
-   double max;    ///< Minimum sample value
-   MaximumAndMinimum() : min( std::numeric_limits< double >::max() ), max( std::numeric_limits< double >::lowest() ) {}
-   void Push( double value ) {
-      if( value < min ) {
-         min = value;
-      }
-      if( value > max ) {
-         max = value;
-      }
-   }
-};
 
 // This function here serves as an example of how to use the scan framework
 // to do a multi-threaded reduce operation. It also demonstrates how to handle
@@ -52,12 +38,12 @@ struct MaximumAndMinimum {
 /// If `mask` is not forged, all input pixels are considered. In case of a tensor
 /// image, returns the maximum and minimum sample values. In case of a complex
 /// samples, treats real and imaginary components as individual samples.
-MaximumAndMinimum GetMaximumAndMinimum(
+MinMaxAccumulator GetMaximumAndMinimum(
       Image const& in,
       Image const& mask
 );
 
-MaximumAndMinimum GetMaximumAndMinimum2(
+MinMaxAccumulator GetMaximumAndMinimum2(
       Image const& in,
       Image const& mask
 );
