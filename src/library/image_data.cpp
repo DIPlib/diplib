@@ -724,20 +724,26 @@ CoordinatesComputer Image::IndexToCoordinatesComputer() const {
 
 DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
    std::default_random_engine random;
-   std::uniform_int_distribution< dip::uint > rand8( 1, 8 );
-   std::uniform_int_distribution< dip::uint > rand30( 1, 30 );
+   std::uniform_int_distribution< dip::uint > randD( 1, 8 );
+   std::uniform_int_distribution< dip::uint > randSz( 1, 30 );
+   std::uniform_int_distribution< dip::uint > randSSz( 1, 10 ); // Smaller size for 7 or 8 dimensions
    std::uniform_real_distribution< double > randF( 0, 1 );
    for( dip::uint repeat = 0; repeat < 1000; ++repeat ) {
-      dip::uint ndims = rand8( random );
+      dip::uint ndims = randD( random );
       dip::UnsignedArray sz( ndims );
       for( dip::uint ii = 0; ii < ndims; ++ii ) {
-         sz[ ii ] = rand30( random );
+         sz[ ii ] = ndims > 6 ? randSSz( random ) : randSz( random );
       }
       dip::Image img;
       img.SetSizes( sz );
-      img.Forge();
+      try{
+         img.Forge();
+      } catch (dip::Error &e) {
+         std::cout << "Couldn't forge an image of size " << sz << std::endl;
+         continue;
+      }
       std::uniform_int_distribution< dip::uint > randD( 0, ndims - 1 );
-      for( dip::uint ii = 0; ii < rand8( random ); ++ii ) {
+      for( dip::uint ii = 0; ii < randD( random ); ++ii ) {
          img.SwapDimensions( randD( random ), randD( random ) );
       }
       dip::BooleanArray mirror( ndims );
