@@ -39,11 +39,6 @@ void Separable(
       process.resize( nDims, true );
    } else {
       DIP_THROW_IF( process.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
-      if( !process.any() ) {
-         // No dimensions to process
-         c_out = c_in; // This ignores the Separable_DontResizeOutput option...
-         return;
-      }
    }
    DIP_START_STACK_TRACE
       ArrayUseParameter( border, nDims, dip::uint( 0 ));
@@ -130,6 +125,9 @@ void Separable(
          order[ jj ] = ii;
          ++jj;
       }
+   }
+   if( jj == 0 ) {
+      output.Copy( input ); // This should always work, as dimensions where the sizes don't match will be processed.
    }
    order.resize( jj );
    // Step 2: sort the list of dimensions so that the smallest stride comes first
