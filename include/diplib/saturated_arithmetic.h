@@ -13,10 +13,6 @@
 #include "diplib/library/types.h"
 #include "diplib/library/clamp_cast.h"
 
-#ifdef DIP__ENABLE_DOCTEST
-#include "doctest.h"
-#endif
-
 
 /// \file
 /// \brief Defines templated functions for saturated arithmetic.
@@ -247,6 +243,7 @@ constexpr inline const bin saturated_inv( bin const& v ) {
 
 
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::saturatedXXX functions") {
    // Addition
@@ -278,8 +275,6 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::saturatedXXX functions") {
    DOCTEST_CHECK( dip::saturated_inv( dip::uint16(300) ) == dip::uint16(65235) );
 }
 
-
 #endif // DIP__ENABLE_DOCTEST
-
 
 #endif // DIP_SATURATED_ARITHMETIC_H

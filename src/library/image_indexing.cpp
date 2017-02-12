@@ -8,11 +8,9 @@
 
 #include "diplib.h"
 
-#ifdef DIP__ENABLE_DOCTEST
-#include "doctest.h"
-#endif
 
 namespace dip {
+
 
 Image Image::operator[]( UnsignedArray const& indices ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
@@ -269,7 +267,11 @@ void DefineROI(
 }
 
 
+} // namespace dip
+
+
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
    dip::Image img{ dip::UnsignedArray{ 15, 20, 10 }, 3 };
@@ -305,6 +307,3 @@ DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
 }
 
 #endif // DIP__ENABLE_DOCTEST
-
-
-} // namespace dip

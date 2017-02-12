@@ -347,10 +347,14 @@ void PixelTable::AddDistanceToOriginAsWeights() {
    }
 }
 
+
+} // namespace dip
+
+
 #ifdef DIP__ENABLE_DOCTEST
 
 DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
-   PixelTable pt( "elliptic", FloatArray{ 10.1, 12.7, 5.3 }, 1 );
+   dip::PixelTable pt( "elliptic", dip::FloatArray{ 10.1, 12.7, 5.3 }, 1 );
    DOCTEST_REQUIRE( pt.Sizes().size() == 3 );
    DOCTEST_CHECK( pt.Sizes()[ 0 ] == 11 );
    DOCTEST_CHECK( pt.Sizes()[ 1 ] == 13 );
@@ -364,8 +368,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
    DOCTEST_CHECK( pt.ProcessingDimension() == 1 );
    DOCTEST_CHECK_FALSE( pt.HasWeights() );
 
-   Image img = pt.AsImage(); // convert to image
-   PixelTable pt2( img, {}, 1 ); // convert back to pixel table, should be exactly the same table.
+   dip::Image img = pt.AsImage(); // convert to image
+   dip::PixelTable pt2( img, {}, 1 ); // convert back to pixel table, should be exactly the same table.
    DOCTEST_REQUIRE( pt2.Sizes().size() == 3 );
    DOCTEST_CHECK( pt2.Sizes()[ 0 ] == 11 );
    DOCTEST_CHECK( pt2.Sizes()[ 1 ] == 13 );
@@ -380,7 +384,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
    DOCTEST_CHECK_FALSE( pt2.HasWeights() );
    DOCTEST_CHECK( pt.Runs()[ 0 ].coordinates == pt2.Runs()[ 0 ].coordinates );
 
-   PixelTable pt3( "rectangular", FloatArray{ 22.2, 33.3 }, 0 );
+   dip::PixelTable pt3( "rectangular", dip::FloatArray{ 22.2, 33.3 }, 0 );
    DOCTEST_REQUIRE( pt3.Sizes().size() == 2 );
    DOCTEST_CHECK( pt3.Sizes()[ 0 ] == 22 );
    DOCTEST_CHECK( pt3.Sizes()[ 1 ] == 33 );
@@ -392,7 +396,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
    DOCTEST_CHECK( pt3.ProcessingDimension() == 0 );
    DOCTEST_CHECK_FALSE( pt3.HasWeights() );
 
-   PixelTable pt4( "diamond", FloatArray{ 10.1, 12.7, 5.3 }, 2 );
+   dip::PixelTable pt4( "diamond", dip::FloatArray{ 10.1, 12.7, 5.3 }, 2 );
    DOCTEST_REQUIRE( pt4.Sizes().size() == 3 );
    DOCTEST_CHECK( pt4.Sizes()[ 0 ] == 11 );
    DOCTEST_CHECK( pt4.Sizes()[ 1 ] == 13 );
@@ -408,5 +412,3 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
 }
 
 #endif // DIP__ENABLE_DOCTEST
-
-} // namespace dip

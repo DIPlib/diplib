@@ -70,6 +70,13 @@ void Separable(
       outSizes = inSizes;
    }
 
+   // Reset `process` for dimensions with size==1
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      if(( inSizes[ ii ] == 1 ) && ( outSizes[ ii ] == 1 )) {
+         process[ ii ] = false;
+      }
+   }
+
    // `lookUpTable` is the look-up table for `in`. If it is not an
    // empty array, then the tensor needs to be expanded. If it is an empty
    // array, simply copy over the tensor elements the way they are.

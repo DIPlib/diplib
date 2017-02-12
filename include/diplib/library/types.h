@@ -26,10 +26,6 @@
 #include "diplib/library/dimension_array.h"
 #include "error.h"
 
-#ifdef DIP__ENABLE_DOCTEST
-#include "doctest.h"
-#endif
-
 
 /// \file
 /// \brief Defines the basic types used throughout the library. This file is always included through `diplib.h`.
@@ -408,6 +404,7 @@ static DIP_DEFINE_OPTION( CmpProps, CmpProps_All,
 
 
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::bin class") {
    dip::bin A = false;
@@ -470,6 +467,5 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::dip__Options class") {
 }
 
 #endif // DIP__ENABLE_DOCTEST
-
 
 #endif // DIP_TYPES_H

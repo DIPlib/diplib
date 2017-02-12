@@ -7,16 +7,10 @@
  */
 
 #include <cstdlib>   // std::malloc, std::realloc, std::free
-//#include <iostream>
 #include <limits>
 #include <algorithm>
 
 #include "diplib.h"
-
-#ifdef DIP__ENABLE_DOCTEST
-#include "doctest.h"
-#include <random> // used in one of the tests
-#endif
 
 
 namespace dip {
@@ -543,44 +537,6 @@ bool Image::Aliases( Image const& other ) const {
    return true;
 }
 
-#ifdef DIP__ENABLE_DOCTEST
-
-DOCTEST_TEST_CASE("[DIPlib] testing the Alias function") {
-   dip::Image img1{ dip::UnsignedArray{ 50, 80, 30 }, 3 };
-   DOCTEST_REQUIRE( img1.Size( 0 ) == 50 );
-   DOCTEST_REQUIRE( img1.Size( 1 ) == 80 );
-   DOCTEST_REQUIRE( img1.Size( 2 ) == 30 );
-   DOCTEST_REQUIRE( img1.NumberOfPixels() == 120000 );
-   DOCTEST_REQUIRE( img1.TensorElements() == 3 );
-
-   dip::Image img2 = img1[ 0 ];
-   DOCTEST_CHECK( Alias( img1, img2 ) );
-   dip::Image img3 = img1[ 1 ];
-   DOCTEST_CHECK( Alias( img1, img3 ) );
-   DOCTEST_CHECK_FALSE( Alias( img2, img3 ) );
-   dip::Image img4 = img1.At( dip::Range{}, dip::Range{}, dip::Range{ 10 } );
-   DOCTEST_CHECK( Alias( img1, img4 ) );
-   dip::Image img5 = img1.At( dip::Range{}, dip::Range{}, dip::Range{ 11 } );
-   DOCTEST_CHECK_FALSE( Alias( img4, img5 ) );
-   dip::Image img6 = img1.At( dip::Range{ 0, -1, 2 }, dip::Range{}, dip::Range{} );
-   dip::Image img7 = img1.At( dip::Range{ 1, -1, 2 }, dip::Range{}, dip::Range{} );
-   DOCTEST_CHECK( Alias( img1, img7 ) );
-   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
-   img7.Mirror( { true, false, false } );
-   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
-   img7.SwapDimensions( 0, 1 );
-   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
-   dip::Image img8{ dip::UnsignedArray{ 50, 80, 30 }, 3 };
-   DOCTEST_CHECK_FALSE( Alias( img1, img8 ) );
-   img1.Strip();
-   img1.SetDataType( dip::DT_SCOMPLEX );
-   img1.Forge();
-   DOCTEST_CHECK( Alias( img1, img1.Imaginary() ) );
-   DOCTEST_CHECK_FALSE( Alias( img1.Real(), img1.Imaginary() ) );
-}
-
-#endif // DIP__ENABLE_DOCTEST
-
 
 //
 void Image::Forge() {
@@ -724,7 +680,47 @@ CoordinatesComputer Image::IndexToCoordinatesComputer() const {
    return CoordinatesComputer( sizes_, fake_strides );
 }
 
+
+} // namespace dip
+
+
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include <random> // used in one of the tests
+
+DOCTEST_TEST_CASE("[DIPlib] testing the Alias function") {
+   dip::Image img1{ dip::UnsignedArray{ 50, 80, 30 }, 3 };
+   DOCTEST_REQUIRE( img1.Size( 0 ) == 50 );
+   DOCTEST_REQUIRE( img1.Size( 1 ) == 80 );
+   DOCTEST_REQUIRE( img1.Size( 2 ) == 30 );
+   DOCTEST_REQUIRE( img1.NumberOfPixels() == 120000 );
+   DOCTEST_REQUIRE( img1.TensorElements() == 3 );
+
+   dip::Image img2 = img1[ 0 ];
+   DOCTEST_CHECK( Alias( img1, img2 ) );
+   dip::Image img3 = img1[ 1 ];
+   DOCTEST_CHECK( Alias( img1, img3 ) );
+   DOCTEST_CHECK_FALSE( Alias( img2, img3 ) );
+   dip::Image img4 = img1.At( dip::Range{}, dip::Range{}, dip::Range{ 10 } );
+   DOCTEST_CHECK( Alias( img1, img4 ) );
+   dip::Image img5 = img1.At( dip::Range{}, dip::Range{}, dip::Range{ 11 } );
+   DOCTEST_CHECK_FALSE( Alias( img4, img5 ) );
+   dip::Image img6 = img1.At( dip::Range{ 0, -1, 2 }, dip::Range{}, dip::Range{} );
+   dip::Image img7 = img1.At( dip::Range{ 1, -1, 2 }, dip::Range{}, dip::Range{} );
+   DOCTEST_CHECK( Alias( img1, img7 ) );
+   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
+   img7.Mirror( { true, false, false } );
+   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
+   img7.SwapDimensions( 0, 1 );
+   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
+   dip::Image img8{ dip::UnsignedArray{ 50, 80, 30 }, 3 };
+   DOCTEST_CHECK_FALSE( Alias( img1, img8 ) );
+   img1.Strip();
+   img1.SetDataType( dip::DT_SCOMPLEX );
+   img1.Forge();
+   DOCTEST_CHECK( Alias( img1, img1.Imaginary() ) );
+   DOCTEST_CHECK_FALSE( Alias( img1.Real(), img1.Imaginary() ) );
+}
 
 DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
    std::default_random_engine random;
@@ -772,5 +768,3 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
 }
 
 #endif // DIP__ENABLE_DOCTEST
-
-} // namespace dip

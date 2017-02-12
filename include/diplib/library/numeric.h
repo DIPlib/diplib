@@ -21,10 +21,6 @@
 
 #include "diplib/library/types.h"
 
-#ifdef DIP__ENABLE_DOCTEST
-#include "doctest.h"
-#endif
-
 
 /// \file
 /// \brief Numeric algorithms and constants unrelated to images. This file is always included through `diplib.h`.
@@ -52,18 +48,6 @@ inline dip::uint gcd( dip::uint a, dip::uint b ) {
    return b == 0 ? a : gcd( b, a % b );
 }
 
-#ifdef DIP__ENABLE_DOCTEST
-
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::gcd function") {
-   DOCTEST_CHECK( gcd( 10, 10 ) == 10 );
-   DOCTEST_CHECK( gcd( 10, 5 ) == 5 );
-   DOCTEST_CHECK( gcd( 10, 1 ) == 1 );
-   DOCTEST_CHECK( gcd( 10, 12 ) == 2 );
-   DOCTEST_CHECK( gcd( 10, 15 ) == 5 );
-   DOCTEST_CHECK( gcd( 15, 10 ) == 5 );
-}
-
-#endif
 
 /// \brief Integer division, return ceil.
 inline dip::uint div_ceil( dip::uint lhs, dip::uint rhs ) {
@@ -89,30 +73,6 @@ inline dip::sint div_ceil( dip::sint lhs, dip::sint rhs ) {
    }
 }
 
-#ifdef DIP__ENABLE_DOCTEST
-
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_ceil function") {
-   DOCTEST_CHECK( div_ceil( 11l, 11l ) == 1 );
-   DOCTEST_CHECK( div_ceil( 11l, 6l ) == 2 );
-   DOCTEST_CHECK( div_ceil( 11l, 5l ) == 3 );
-   DOCTEST_CHECK( div_ceil( 11l, 4l ) == 3 );
-   DOCTEST_CHECK( div_ceil( 11l, 3l ) == 4 );
-   DOCTEST_CHECK( div_ceil( -11l, 3l ) == -3 );
-   DOCTEST_CHECK( div_ceil( -11l, 4l ) == -2 );
-   DOCTEST_CHECK( div_ceil( -11l, 5l ) == -2 );
-   DOCTEST_CHECK( div_ceil( -11l, 6l ) == -1 );
-   DOCTEST_CHECK( div_ceil( 11l, -3l ) == -3 );
-   DOCTEST_CHECK( div_ceil( 11l, -4l ) == -2 );
-   DOCTEST_CHECK( div_ceil( 11l, -5l ) == -2 );
-   DOCTEST_CHECK( div_ceil( 11l, -6l ) == -1 );
-   DOCTEST_CHECK( div_ceil( -11l, -6l ) == 2 );
-   DOCTEST_CHECK( div_ceil( -11l, -5l ) == 3 );
-   DOCTEST_CHECK( div_ceil( -11l, -4l ) == 3 );
-   DOCTEST_CHECK( div_ceil( -11l, -3l ) == 4 );
-}
-
-#endif
-
 /// \brief Integer division, return floor.
 inline dip::uint div_floor( dip::uint lhs, dip::uint rhs ) {
    if( lhs * rhs == 0 ) {
@@ -137,30 +97,6 @@ inline dip::sint div_floor( dip::sint lhs, dip::sint rhs ) {
    }
 }
 
-#ifdef DIP__ENABLE_DOCTEST
-
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_floor function") {
-   DOCTEST_CHECK( div_floor( 10l, 10l ) == 1 );
-   DOCTEST_CHECK( div_floor( 11l, 6l ) == 1 );
-   DOCTEST_CHECK( div_floor( 11l, 5l ) == 2 );
-   DOCTEST_CHECK( div_floor( 11l, 4l ) == 2 );
-   DOCTEST_CHECK( div_floor( 11l, 3l ) == 3 );
-   DOCTEST_CHECK( div_floor( -11l, 3l ) == -4 );
-   DOCTEST_CHECK( div_floor( -11l, 4l ) == -3 );
-   DOCTEST_CHECK( div_floor( -11l, 5l ) == -3 );
-   DOCTEST_CHECK( div_floor( -11l, 6l ) == -2 );
-   DOCTEST_CHECK( div_floor( 11l, -3l ) == -4 );
-   DOCTEST_CHECK( div_floor( 11l, -4l ) == -3 );
-   DOCTEST_CHECK( div_floor( 11l, -5l ) == -3 );
-   DOCTEST_CHECK( div_floor( 11l, -6l ) == -2 );
-   DOCTEST_CHECK( div_floor( -11l, -6l ) == 1 );
-   DOCTEST_CHECK( div_floor( -11l, -5l ) == 2 );
-   DOCTEST_CHECK( div_floor( -11l, -4l ) == 2 );
-   DOCTEST_CHECK( div_floor( -11l, -3l ) == 3 );
-}
-
-#endif
-
 /// \brief Integer division, return rounded.
 inline dip::uint div_round( dip::uint lhs, dip::uint rhs ) {
    return div_floor( lhs + rhs / 2, rhs );
@@ -171,29 +107,6 @@ inline dip::sint div_round( dip::sint lhs, dip::sint rhs ) {
    return div_floor( lhs + rhs / 2, rhs );
 }
 
-#ifdef DIP__ENABLE_DOCTEST
-
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_round function") {
-   DOCTEST_CHECK( div_round( 10l, 10l ) == 1 );
-   DOCTEST_CHECK( div_round( 11l, 6l ) == 2 );
-   DOCTEST_CHECK( div_round( 11l, 5l ) == 2 );
-   DOCTEST_CHECK( div_round( 11l, 4l ) == 3 );
-   DOCTEST_CHECK( div_round( 11l, 3l ) == 4 );
-   DOCTEST_CHECK( div_round( -11l, 3l ) == -4 );
-   DOCTEST_CHECK( div_round( -11l, 4l ) == -3 );
-   DOCTEST_CHECK( div_round( -11l, 5l ) == -2 );
-   DOCTEST_CHECK( div_round( -11l, 6l ) == -2 );
-   DOCTEST_CHECK( div_round( 11l, -3l ) == -4 );
-   DOCTEST_CHECK( div_round( 11l, -4l ) == -3 );
-   DOCTEST_CHECK( div_round( 11l, -5l ) == -2 );
-   DOCTEST_CHECK( div_round( 11l, -6l ) == -2 );
-   DOCTEST_CHECK( div_round( -11l, -6l ) == 2 );
-   DOCTEST_CHECK( div_round( -11l, -5l ) == 2 );
-   DOCTEST_CHECK( div_round( -11l, -4l ) == 3 );
-   DOCTEST_CHECK( div_round( -11l, -3l ) == 4 );
-}
-
-#endif
 
 /// \brief Clamps a value between a min and max value (a.k.a. clip, saturate, etc.).
 // `std::clamp` will be available in C++17.
@@ -226,19 +139,6 @@ inline double pow10( dip::sint power ) {
          }
    }
 }
-
-#ifdef DIP__ENABLE_DOCTEST
-
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::pow10 function") {
-   DOCTEST_CHECK( pow10( 25 ) == doctest::Approx( std::pow( 10, 25 )) );
-   DOCTEST_CHECK( pow10( 10 ) == std::pow( 10, 10 ) );
-   DOCTEST_CHECK( pow10( 1 ) == std::pow( 10, 1 ) );
-   DOCTEST_CHECK( pow10( 0 ) == std::pow( 10, 0 ) );
-   DOCTEST_CHECK( pow10( -5 ) == std::pow( 10, -5 ) );
-   DOCTEST_CHECK( pow10( -21 ) == doctest::Approx( std::pow( 10, -21 )) );
-}
-
-#endif
 
 
 /// \brief Finds the eigenvalues of a 2D symmetric matrix.
@@ -477,6 +377,7 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
    return lhs;
 }
 
+
 /// \brief `%VarianceAccumulator` computes mean and standard deviation by accumulating the first two
 /// central moments.
 ///
@@ -542,6 +443,7 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
    return lhs;
 }
 
+
 /// \brief `%MinMaxAccumulator` computes minimum and maximum values of a sequence of values.
 ///
 /// Samples are added one by one, using the `Push` method. Other members are used to retrieve the results.
@@ -584,5 +486,89 @@ class MinMaxAccumulator {
 /// \}
 
 } // namespace dip
+
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::gcd function") {
+   DOCTEST_CHECK( dip::gcd( 10, 10 ) == 10 );
+   DOCTEST_CHECK( dip::gcd( 10, 5 ) == 5 );
+   DOCTEST_CHECK( dip::gcd( 10, 1 ) == 1 );
+   DOCTEST_CHECK( dip::gcd( 10, 12 ) == 2 );
+   DOCTEST_CHECK( dip::gcd( 10, 15 ) == 5 );
+   DOCTEST_CHECK( dip::gcd( 15, 10 ) == 5 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_ceil function") {
+   DOCTEST_CHECK( dip::div_ceil( 11l, 11l ) == 1 );
+   DOCTEST_CHECK( dip::div_ceil( 11l, 6l ) == 2 );
+   DOCTEST_CHECK( dip::div_ceil( 11l, 5l ) == 3 );
+   DOCTEST_CHECK( dip::div_ceil( 11l, 4l ) == 3 );
+   DOCTEST_CHECK( dip::div_ceil( 11l, 3l ) == 4 );
+   DOCTEST_CHECK( dip::div_ceil( -11l, 3l ) == -3 );
+   DOCTEST_CHECK( dip::div_ceil( -11l, 4l ) == -2 );
+   DOCTEST_CHECK( dip::div_ceil( -11l, 5l ) == -2 );
+   DOCTEST_CHECK( dip::div_ceil( -11l, 6l ) == -1 );
+   DOCTEST_CHECK( dip::div_ceil( 11l, -3l ) == -3 );
+   DOCTEST_CHECK( dip::div_ceil( 11l, -4l ) == -2 );
+   DOCTEST_CHECK( dip::div_ceil( 11l, -5l ) == -2 );
+   DOCTEST_CHECK( dip::div_ceil( 11l, -6l ) == -1 );
+   DOCTEST_CHECK( dip::div_ceil( -11l, -6l ) == 2 );
+   DOCTEST_CHECK( dip::div_ceil( -11l, -5l ) == 3 );
+   DOCTEST_CHECK( dip::div_ceil( -11l, -4l ) == 3 );
+   DOCTEST_CHECK( dip::div_ceil( -11l, -3l ) == 4 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_floor function") {
+   DOCTEST_CHECK( dip::div_floor( 10l, 10l ) == 1 );
+   DOCTEST_CHECK( dip::div_floor( 11l, 6l ) == 1 );
+   DOCTEST_CHECK( dip::div_floor( 11l, 5l ) == 2 );
+   DOCTEST_CHECK( dip::div_floor( 11l, 4l ) == 2 );
+   DOCTEST_CHECK( dip::div_floor( 11l, 3l ) == 3 );
+   DOCTEST_CHECK( dip::div_floor( -11l, 3l ) == -4 );
+   DOCTEST_CHECK( dip::div_floor( -11l, 4l ) == -3 );
+   DOCTEST_CHECK( dip::div_floor( -11l, 5l ) == -3 );
+   DOCTEST_CHECK( dip::div_floor( -11l, 6l ) == -2 );
+   DOCTEST_CHECK( dip::div_floor( 11l, -3l ) == -4 );
+   DOCTEST_CHECK( dip::div_floor( 11l, -4l ) == -3 );
+   DOCTEST_CHECK( dip::div_floor( 11l, -5l ) == -3 );
+   DOCTEST_CHECK( dip::div_floor( 11l, -6l ) == -2 );
+   DOCTEST_CHECK( dip::div_floor( -11l, -6l ) == 1 );
+   DOCTEST_CHECK( dip::div_floor( -11l, -5l ) == 2 );
+   DOCTEST_CHECK( dip::div_floor( -11l, -4l ) == 2 );
+   DOCTEST_CHECK( dip::div_floor( -11l, -3l ) == 3 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_round function") {
+   DOCTEST_CHECK( dip::div_round( 10l, 10l ) == 1 );
+   DOCTEST_CHECK( dip::div_round( 11l, 6l ) == 2 );
+   DOCTEST_CHECK( dip::div_round( 11l, 5l ) == 2 );
+   DOCTEST_CHECK( dip::div_round( 11l, 4l ) == 3 );
+   DOCTEST_CHECK( dip::div_round( 11l, 3l ) == 4 );
+   DOCTEST_CHECK( dip::div_round( -11l, 3l ) == -4 );
+   DOCTEST_CHECK( dip::div_round( -11l, 4l ) == -3 );
+   DOCTEST_CHECK( dip::div_round( -11l, 5l ) == -2 );
+   DOCTEST_CHECK( dip::div_round( -11l, 6l ) == -2 );
+   DOCTEST_CHECK( dip::div_round( 11l, -3l ) == -4 );
+   DOCTEST_CHECK( dip::div_round( 11l, -4l ) == -3 );
+   DOCTEST_CHECK( dip::div_round( 11l, -5l ) == -2 );
+   DOCTEST_CHECK( dip::div_round( 11l, -6l ) == -2 );
+   DOCTEST_CHECK( dip::div_round( -11l, -6l ) == 2 );
+   DOCTEST_CHECK( dip::div_round( -11l, -5l ) == 2 );
+   DOCTEST_CHECK( dip::div_round( -11l, -4l ) == 3 );
+   DOCTEST_CHECK( dip::div_round( -11l, -3l ) == 4 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::pow10 function") {
+   DOCTEST_CHECK( dip::pow10( 25 ) == doctest::Approx( std::pow( 10, 25 )) );
+   DOCTEST_CHECK( dip::pow10( 10 ) == std::pow( 10, 10 ) );
+   DOCTEST_CHECK( dip::pow10( 1 ) == std::pow( 10, 1 ) );
+   DOCTEST_CHECK( dip::pow10( 0 ) == std::pow( 10, 0 ) );
+   DOCTEST_CHECK( dip::pow10( -5 ) == std::pow( 10, -5 ) );
+   DOCTEST_CHECK( dip::pow10( -21 ) == doctest::Approx( std::pow( 10, -21 )) );
+}
+
+#endif // DIP__ENABLE_DOCTEST
 
 #endif // DIP_NUMERIC_H

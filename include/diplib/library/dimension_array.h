@@ -24,10 +24,6 @@
 
 #include "error.h"
 
-#ifdef DIP__ENABLE_DOCTEST
-#include "doctest.h"
-#endif
-
 
 /// \file
 /// \brief Defines the dip::DimensionArray template class. This file is always included through `diplib.h`.
@@ -634,6 +630,7 @@ inline void sortIndices( DimensionArray< typename DimensionArray< T >::size_type
 
 
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
    dip::DimensionArray< int > a{ 1, 2, 4, 8, 16, 32 };
@@ -770,8 +767,6 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
    }
 }
 
-
 #endif // DIP__ENABLE_DOCTEST
-
 
 #endif // DIP_DIMENSIONARRAY_H

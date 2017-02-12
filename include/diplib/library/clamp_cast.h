@@ -14,10 +14,6 @@
 #include "diplib/library/types.h"
 #include "diplib/library/numeric.h"
 
-#ifdef DIP__ENABLE_DOCTEST
-#include "doctest.h"
-#endif
-
 
 /// \file
 /// \brief Defines `dip::clamp_cast`, an operator that returns the input value cast to a different
@@ -421,6 +417,7 @@ inline dip::scomplex clamp_cast< dip::scomplex >( dip::dcomplex v ) {
 
 
 #ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::clamp_cast functions") {
    // We pick a few cases, it's difficult to do an exhaustive test here, and not really necessary.
@@ -444,6 +441,5 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::clamp_cast functions") {
 }
 
 #endif // DIP__ENABLE_DOCTEST
-
 
 #endif // DIP_CLAMP_CAST_H

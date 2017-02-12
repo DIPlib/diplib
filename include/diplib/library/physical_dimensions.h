@@ -22,10 +22,6 @@
 #include "diplib/library/types.h"
 #include "diplib/library/numeric.h"
 
-#ifdef DIP__ENABLE_DOCTEST
-#include "doctest.h"
-#endif
-
 
 /// \file
 /// \brief Defines support for units, physical quantities and pixel sizes.
@@ -382,83 +378,6 @@ inline void swap( Units& v1, Units& v2 ) {
 }
 
 
-#ifdef DIP__ENABLE_DOCTEST
-
-#include <sstream>
-
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
-   // We only test the printing function here
-   // Other workings are tested at the same time as dip::PhysicalQuantity below
-   std::stringstream ss;
-
-   dip::Units f = dip::Units::Meter();
-   ss << f;
-   DOCTEST_CHECK( ss.str() == std::string( "m" ) );
-   ss.str( "" );
-   ss << f * f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^2" ) );
-   ss.str( "" );
-   ss << f * f * f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^3" ) );
-   ss.str( "" );
-   ss << f * f * f * f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^4" ) );
-   ss.str( "" );
-   ss << dip::Units() / f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^-1" ) );
-   ss.str( "" );
-   ss << dip::Units() / f / f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^-2" ) );
-   ss.str( "" );
-   ss << dip::Units() / f / f / f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^-3" ) );
-   ss.str( "" );
-   ss << dip::Units() / f / f / f / f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^-4" ) );
-
-   dip::Units g = dip::Units::Second();
-   ss.str( "" );
-   ss << f / g;
-   DOCTEST_CHECK( ss.str() == std::string( "m/s" ));
-   ss.str( "" );
-   ss << f / g / g;
-   DOCTEST_CHECK( ss.str() == std::string( "m/s^2" ));
-   ss.str( "" );
-   ss << f / g / g / g;
-   DOCTEST_CHECK( ss.str() == std::string( "m/s^3" ));
-   ss.str( "" );
-   ss << f / g / g / g / g;
-   DOCTEST_CHECK( ss.str() == std::string( "m/s^4" ));
-   ss.str( "" );
-   ss << g / f;
-   DOCTEST_CHECK( ss.str() == std::string( "s/m" ));
-   ss.str( "" );
-   ss << g / f / f;
-   DOCTEST_CHECK( ss.str() == std::string( "s/m^2" ));
-   ss.str( "" );
-   ss << g * g / f;
-   DOCTEST_CHECK( ss.str() == std::string( "s^2/m" ));
-   ss.str( "" );
-   ss << g * f;
-   DOCTEST_CHECK( ss.str() == std::string( "m.s" ));
-
-   ss.str( "" );
-   ss << dip::Units::Millimeter();
-   DOCTEST_CHECK( ss.str() == std::string( "mm" ));
-   ss.str( "" );
-   ss << dip::Units::Millimeter() * dip::Units::Millimeter();
-   DOCTEST_CHECK( ss.str() == std::string( "mm^2" ));
-   ss.str( "" );
-   ss << dip::Units::Millimeter() * dip::Units::Meter();
-   DOCTEST_CHECK( ss.str() == std::string( "10^3.mm^2" ));
-   ss.str( "" );
-   ss << dip::Units::Kilometer() * dip::Units::Meter();
-   DOCTEST_CHECK( ss.str() == std::string( "10^3.m^2" ));
-}
-
-#endif
-
-
 /// \brief Encapsulates a quantity with phyisical units.
 ///
 /// Multiplying a double by a
@@ -700,92 +619,6 @@ using PhysicalQuantityArray = DimensionArray< PhysicalQuantity >;
 inline PhysicalQuantity operator*( double lhs, Units const& rhs ) {
    return PhysicalQuantity( lhs, rhs );
 }
-
-
-#ifdef DIP__ENABLE_DOCTEST
-
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
-   DOCTEST_SUBCASE("Arithmetic") {
-      dip::PhysicalQuantity a = 50 * dip::Units::Nanometer();
-      dip::PhysicalQuantity b = .4 * dip::Units::Micrometer();
-      DOCTEST_CHECK( a + b == b + a );
-      DOCTEST_CHECK( a + a == 2 * a );
-      DOCTEST_CHECK( a * a == a.Power( 2 ) );
-      DOCTEST_CHECK(( 1 / ( a * a )) == a.Power( -2 ) );
-      dip::PhysicalQuantity c( 100, dip::Units::Second() );
-      DOCTEST_CHECK(( 1 / c ) == c.Power( -1 ) );
-      DOCTEST_CHECK(( b / c ) == b * c.Power( -1 ) );
-      dip::PhysicalQuantity d = 180 * dip::PhysicalQuantity::Degree();
-      DOCTEST_CHECK( d.magnitude == doctest::Approx( dip::pi ) );
-      DOCTEST_CHECK_THROWS( c + d );
-   }
-   DOCTEST_SUBCASE("Normalization") {
-      dip::PhysicalQuantity f = dip::PhysicalQuantity::Meter();
-      DOCTEST_CHECK( ( f * 1 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 0.1 ).Normalize().magnitude == 0.1 );
-      DOCTEST_CHECK( ( f * 0.01 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 0.001 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 0.0001 ).Normalize().magnitude == 0.1 );
-      DOCTEST_CHECK( ( f * 0.00001 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 0.000001 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 0.0000001 ).Normalize().magnitude == doctest::Approx( 0.1 ));
-      DOCTEST_CHECK( ( f * 0.00000001 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 0.000000001 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 0.0000000001 ).Normalize().magnitude == doctest::Approx( 0.1 ));
-      DOCTEST_CHECK( ( f * 10 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 100 ).Normalize().magnitude == 0.1 );
-      DOCTEST_CHECK( ( f * 1000 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 10000 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 100000 ).Normalize().magnitude == doctest::Approx( 0.1 ));
-      DOCTEST_CHECK( ( f * 1000000 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 10000000 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 100000000 ).Normalize().magnitude == doctest::Approx( 0.1 ));
-      DOCTEST_CHECK( ( f * 1000000000 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * f * 1 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * f * 10 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * f * 100 ).Normalize().magnitude == 100 );
-      DOCTEST_CHECK( ( f * f * 1000 ).Normalize().magnitude == 1000 );
-      DOCTEST_CHECK( ( f * f * 10000 ).Normalize().magnitude == 10000 );
-      DOCTEST_CHECK( ( f * f * 100000 ).Normalize().magnitude == doctest::Approx( 0.1 ));
-      DOCTEST_CHECK( ( f * f * 1000000 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * f * 10000000 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * f * 100000000 ).Normalize().magnitude == 100 );
-      DOCTEST_CHECK( ( f * f * 1000000000 ).Normalize().magnitude == 1000 );
-
-      DOCTEST_CHECK( ( f * 1 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * 0.1 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * 0.01 ).Normalize().units.Thousands() == -1 );
-      DOCTEST_CHECK( ( f * 0.001 ).Normalize().units.Thousands() == -1 );
-      DOCTEST_CHECK( ( f * 0.0001 ).Normalize().units.Thousands() == -1 );
-      DOCTEST_CHECK( ( f * 0.00001 ).Normalize().units.Thousands() == -2 );
-      DOCTEST_CHECK( ( f * 0.000001 ).Normalize().units.Thousands() == -2 );
-      DOCTEST_CHECK( ( f * 0.0000001 ).Normalize().units.Thousands() == -2 );
-      DOCTEST_CHECK( ( f * 0.00000001 ).Normalize().units.Thousands() == -3 );
-      DOCTEST_CHECK( ( f * 0.000000001 ).Normalize().units.Thousands() == -3 );
-      DOCTEST_CHECK( ( f * 0.0000000001 ).Normalize().units.Thousands() == -3 );
-      DOCTEST_CHECK( ( f * 10 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * 100 ).Normalize().units.Thousands() == 1 );
-      DOCTEST_CHECK( ( f * 1000 ).Normalize().units.Thousands() == 1 );
-      DOCTEST_CHECK( ( f * 10000 ).Normalize().units.Thousands() == 1 );
-      DOCTEST_CHECK( ( f * 100000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * 1000000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * 10000000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * 100000000 ).Normalize().units.Thousands() == 3 );
-      DOCTEST_CHECK( ( f * 1000000000 ).Normalize().units.Thousands() == 3 );
-      DOCTEST_CHECK( ( f * f * 1 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * f * 10 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * f * 100 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * f * 1000 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * f * 10000 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * f * 100000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * f * 1000000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * f * 10000000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * f * 100000000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * f * 1000000000 ).Normalize().units.Thousands() == 2 );
-   }
-}
-
-#endif
 
 
 /// \brief Specifies an image's pixel size as physical quantities.
@@ -1119,5 +952,163 @@ inline void swap( PixelSize& v1, PixelSize& v2 ) {
 /// \}
 
 } // namespace dip
+
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include <sstream>
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
+   // We only test the printing function here
+   // Other workings are tested at the same time as dip::PhysicalQuantity below
+   std::stringstream ss;
+
+   dip::Units f = dip::Units::Meter();
+   ss << f;
+   DOCTEST_CHECK( ss.str() == std::string( "m" ) );
+   ss.str( "" );
+   ss << f * f;
+   DOCTEST_CHECK( ss.str() == std::string( "m^2" ) );
+   ss.str( "" );
+   ss << f * f * f;
+   DOCTEST_CHECK( ss.str() == std::string( "m^3" ) );
+   ss.str( "" );
+   ss << f * f * f * f;
+   DOCTEST_CHECK( ss.str() == std::string( "m^4" ) );
+   ss.str( "" );
+   ss << dip::Units() / f;
+   DOCTEST_CHECK( ss.str() == std::string( "m^-1" ) );
+   ss.str( "" );
+   ss << dip::Units() / f / f;
+   DOCTEST_CHECK( ss.str() == std::string( "m^-2" ) );
+   ss.str( "" );
+   ss << dip::Units() / f / f / f;
+   DOCTEST_CHECK( ss.str() == std::string( "m^-3" ) );
+   ss.str( "" );
+   ss << dip::Units() / f / f / f / f;
+   DOCTEST_CHECK( ss.str() == std::string( "m^-4" ) );
+
+   dip::Units g = dip::Units::Second();
+   ss.str( "" );
+   ss << f / g;
+   DOCTEST_CHECK( ss.str() == std::string( "m/s" ));
+   ss.str( "" );
+   ss << f / g / g;
+   DOCTEST_CHECK( ss.str() == std::string( "m/s^2" ));
+   ss.str( "" );
+   ss << f / g / g / g;
+   DOCTEST_CHECK( ss.str() == std::string( "m/s^3" ));
+   ss.str( "" );
+   ss << f / g / g / g / g;
+   DOCTEST_CHECK( ss.str() == std::string( "m/s^4" ));
+   ss.str( "" );
+   ss << g / f;
+   DOCTEST_CHECK( ss.str() == std::string( "s/m" ));
+   ss.str( "" );
+   ss << g / f / f;
+   DOCTEST_CHECK( ss.str() == std::string( "s/m^2" ));
+   ss.str( "" );
+   ss << g * g / f;
+   DOCTEST_CHECK( ss.str() == std::string( "s^2/m" ));
+   ss.str( "" );
+   ss << g * f;
+   DOCTEST_CHECK( ss.str() == std::string( "m.s" ));
+
+   ss.str( "" );
+   ss << dip::Units::Millimeter();
+   DOCTEST_CHECK( ss.str() == std::string( "mm" ));
+   ss.str( "" );
+   ss << dip::Units::Millimeter() * dip::Units::Millimeter();
+   DOCTEST_CHECK( ss.str() == std::string( "mm^2" ));
+   ss.str( "" );
+   ss << dip::Units::Millimeter() * dip::Units::Meter();
+   DOCTEST_CHECK( ss.str() == std::string( "10^3.mm^2" ));
+   ss.str( "" );
+   ss << dip::Units::Kilometer() * dip::Units::Meter();
+   DOCTEST_CHECK( ss.str() == std::string( "10^3.m^2" ));
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
+   DOCTEST_SUBCASE("Arithmetic") {
+      dip::PhysicalQuantity a = 50 * dip::Units::Nanometer();
+      dip::PhysicalQuantity b = .4 * dip::Units::Micrometer();
+      DOCTEST_CHECK( a + b == b + a );
+      DOCTEST_CHECK( a + a == 2 * a );
+      DOCTEST_CHECK( a * a == a.Power( 2 ) );
+      DOCTEST_CHECK(( 1 / ( a * a )) == a.Power( -2 ) );
+      dip::PhysicalQuantity c( 100, dip::Units::Second() );
+      DOCTEST_CHECK(( 1 / c ) == c.Power( -1 ) );
+      DOCTEST_CHECK(( b / c ) == b * c.Power( -1 ) );
+      dip::PhysicalQuantity d = 180 * dip::PhysicalQuantity::Degree();
+      DOCTEST_CHECK( d.magnitude == doctest::Approx( dip::pi ) );
+      DOCTEST_CHECK_THROWS( c + d );
+   }
+   DOCTEST_SUBCASE("Normalization") {
+      dip::PhysicalQuantity f = dip::PhysicalQuantity::Meter();
+      DOCTEST_CHECK( ( f * 1 ).Normalize().magnitude == 1 );
+      DOCTEST_CHECK( ( f * 0.1 ).Normalize().magnitude == 0.1 );
+      DOCTEST_CHECK( ( f * 0.01 ).Normalize().magnitude == 10 );
+      DOCTEST_CHECK( ( f * 0.001 ).Normalize().magnitude == 1 );
+      DOCTEST_CHECK( ( f * 0.0001 ).Normalize().magnitude == 0.1 );
+      DOCTEST_CHECK( ( f * 0.00001 ).Normalize().magnitude == 10 );
+      DOCTEST_CHECK( ( f * 0.000001 ).Normalize().magnitude == 1 );
+      DOCTEST_CHECK( ( f * 0.0000001 ).Normalize().magnitude == doctest::Approx( 0.1 ));
+      DOCTEST_CHECK( ( f * 0.00000001 ).Normalize().magnitude == 10 );
+      DOCTEST_CHECK( ( f * 0.000000001 ).Normalize().magnitude == 1 );
+      DOCTEST_CHECK( ( f * 0.0000000001 ).Normalize().magnitude == doctest::Approx( 0.1 ));
+      DOCTEST_CHECK( ( f * 10 ).Normalize().magnitude == 10 );
+      DOCTEST_CHECK( ( f * 100 ).Normalize().magnitude == 0.1 );
+      DOCTEST_CHECK( ( f * 1000 ).Normalize().magnitude == 1 );
+      DOCTEST_CHECK( ( f * 10000 ).Normalize().magnitude == 10 );
+      DOCTEST_CHECK( ( f * 100000 ).Normalize().magnitude == doctest::Approx( 0.1 ));
+      DOCTEST_CHECK( ( f * 1000000 ).Normalize().magnitude == 1 );
+      DOCTEST_CHECK( ( f * 10000000 ).Normalize().magnitude == 10 );
+      DOCTEST_CHECK( ( f * 100000000 ).Normalize().magnitude == doctest::Approx( 0.1 ));
+      DOCTEST_CHECK( ( f * 1000000000 ).Normalize().magnitude == 1 );
+      DOCTEST_CHECK( ( f * f * 1 ).Normalize().magnitude == 1 );
+      DOCTEST_CHECK( ( f * f * 10 ).Normalize().magnitude == 10 );
+      DOCTEST_CHECK( ( f * f * 100 ).Normalize().magnitude == 100 );
+      DOCTEST_CHECK( ( f * f * 1000 ).Normalize().magnitude == 1000 );
+      DOCTEST_CHECK( ( f * f * 10000 ).Normalize().magnitude == 10000 );
+      DOCTEST_CHECK( ( f * f * 100000 ).Normalize().magnitude == doctest::Approx( 0.1 ));
+      DOCTEST_CHECK( ( f * f * 1000000 ).Normalize().magnitude == 1 );
+      DOCTEST_CHECK( ( f * f * 10000000 ).Normalize().magnitude == 10 );
+      DOCTEST_CHECK( ( f * f * 100000000 ).Normalize().magnitude == 100 );
+      DOCTEST_CHECK( ( f * f * 1000000000 ).Normalize().magnitude == 1000 );
+
+      DOCTEST_CHECK( ( f * 1 ).Normalize().units.Thousands() == 0 );
+      DOCTEST_CHECK( ( f * 0.1 ).Normalize().units.Thousands() == 0 );
+      DOCTEST_CHECK( ( f * 0.01 ).Normalize().units.Thousands() == -1 );
+      DOCTEST_CHECK( ( f * 0.001 ).Normalize().units.Thousands() == -1 );
+      DOCTEST_CHECK( ( f * 0.0001 ).Normalize().units.Thousands() == -1 );
+      DOCTEST_CHECK( ( f * 0.00001 ).Normalize().units.Thousands() == -2 );
+      DOCTEST_CHECK( ( f * 0.000001 ).Normalize().units.Thousands() == -2 );
+      DOCTEST_CHECK( ( f * 0.0000001 ).Normalize().units.Thousands() == -2 );
+      DOCTEST_CHECK( ( f * 0.00000001 ).Normalize().units.Thousands() == -3 );
+      DOCTEST_CHECK( ( f * 0.000000001 ).Normalize().units.Thousands() == -3 );
+      DOCTEST_CHECK( ( f * 0.0000000001 ).Normalize().units.Thousands() == -3 );
+      DOCTEST_CHECK( ( f * 10 ).Normalize().units.Thousands() == 0 );
+      DOCTEST_CHECK( ( f * 100 ).Normalize().units.Thousands() == 1 );
+      DOCTEST_CHECK( ( f * 1000 ).Normalize().units.Thousands() == 1 );
+      DOCTEST_CHECK( ( f * 10000 ).Normalize().units.Thousands() == 1 );
+      DOCTEST_CHECK( ( f * 100000 ).Normalize().units.Thousands() == 2 );
+      DOCTEST_CHECK( ( f * 1000000 ).Normalize().units.Thousands() == 2 );
+      DOCTEST_CHECK( ( f * 10000000 ).Normalize().units.Thousands() == 2 );
+      DOCTEST_CHECK( ( f * 100000000 ).Normalize().units.Thousands() == 3 );
+      DOCTEST_CHECK( ( f * 1000000000 ).Normalize().units.Thousands() == 3 );
+      DOCTEST_CHECK( ( f * f * 1 ).Normalize().units.Thousands() == 0 );
+      DOCTEST_CHECK( ( f * f * 10 ).Normalize().units.Thousands() == 0 );
+      DOCTEST_CHECK( ( f * f * 100 ).Normalize().units.Thousands() == 0 );
+      DOCTEST_CHECK( ( f * f * 1000 ).Normalize().units.Thousands() == 0 );
+      DOCTEST_CHECK( ( f * f * 10000 ).Normalize().units.Thousands() == 0 );
+      DOCTEST_CHECK( ( f * f * 100000 ).Normalize().units.Thousands() == 2 );
+      DOCTEST_CHECK( ( f * f * 1000000 ).Normalize().units.Thousands() == 2 );
+      DOCTEST_CHECK( ( f * f * 10000000 ).Normalize().units.Thousands() == 2 );
+      DOCTEST_CHECK( ( f * f * 100000000 ).Normalize().units.Thousands() == 2 );
+      DOCTEST_CHECK( ( f * f * 1000000000 ).Normalize().units.Thousands() == 2 );
+   }
+}
+
+#endif // DIP__ENABLE_DOCTEST
 
 #endif // DIP_PHYSDIMS_H
