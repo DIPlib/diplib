@@ -20,36 +20,57 @@ namespace {
 // The template works for T = sfloat, T = dfloat, T = dcomplex.
 // For T = scomplex we need a specialization.
 template< typename T >
-inline T multiply( dfloat const& lhs, T const& rhs ) {
+inline T multiply( dfloat lhs, T rhs ) {
    return lhs * rhs;
 }
 template<>
-inline scomplex multiply( dfloat const& lhs, scomplex const& rhs ) {
+inline scomplex multiply( dfloat lhs, scomplex rhs ) {
    return static_cast< sfloat >( lhs ) * rhs;
 }
 
-struct InternOneDimensionalFilter{
+enum class FilterSymmetry {
+      GENERAL,
+      EVEN,
+      ODD,
+      D_EVEN,
+      D_ODD
+};
+
+struct InternOneDimensionalFilter {
    FloatArray const& filter;
-   dip::uint origin;
-   dip::uint symmetry;
-   InternOneDimensionalFilter( OneDimensionalFilter const& in ) : filter(in.filter) {
-      if( in.origin < 0 ) {
-         origin = filter.size() / 2;
-      } else {
-         origin = static_cast< dip::uint >( in.origin );
-         DIP_THROW_IF( origin >= filter.size(), "Origin outside of filter." );
-      }
-      if( in.symmetry.empty() || ( in.symmetry == "general" )) {
-         symmetry = 0;
-      } else if( in.symmetry == "even" ) {
-         symmetry = 1;
-      } else if( in.symmetry == "odd" ) {
-         symmetry = 2;
-      } else {
-         DIP_THROW( "Symmetry string not recognized: " + in.symmetry );
+   dip::uint size = 0;
+   dip::uint origin = 0;
+   FilterSymmetry symmetry = FilterSymmetry::GENERAL;
+   InternOneDimensionalFilter( OneDimensionalFilter const& in ) : filter( in.filter ) {
+      size = filter.size();
+      if( size != 0 ) {
+         if( in.symmetry.empty() || ( in.symmetry == "general" ) ) {
+            symmetry = FilterSymmetry::GENERAL;
+         } else if( in.symmetry == "even" ) {
+            symmetry = FilterSymmetry::EVEN;
+            size += size - 1;
+         } else if( in.symmetry == "odd" ) {
+            symmetry = FilterSymmetry::ODD;
+            size += size - 1;
+         } else if( in.symmetry == "d-even" ) {
+            symmetry = FilterSymmetry::D_EVEN;
+            size += size;
+         } else if( in.symmetry == "d-odd" ) {
+            symmetry = FilterSymmetry::D_ODD;
+            size += size;
+         } else {
+            DIP_THROW( "Symmetry string not recognized: " + in.symmetry );
+         }
+         if( in.origin < 0 ) {
+            origin = size / 2;
+         } else {
+            origin = static_cast< dip::uint >( in.origin );
+            DIP_THROW_IF( origin >= size, "Origin outside of filter." );
+         }
       }
    }
 };
+
 using InternOneDimensionalFilterArray = std::vector< InternOneDimensionalFilter >;
 
 template< typename TPI >
@@ -62,53 +83,100 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
-         dip::uint procDim = filter_.size() == 1 ? 1 : params.dimension;
+         dip::uint procDim = filter_.size() == 1 ? 0 : params.dimension;
          FloatArray const& filter = filter_[ procDim ].filter;
          dip::uint origin = filter_[ procDim ].origin;
-         dip::uint filterSize = filter.size();
-         dip::uint fsh = filterSize / 2;
-         dip::sint fil = origin;
-         dip::sint fir = origin - filterSize + 1;
-         dip::sint fih = origin - fsh;
-         bool odd = ( filterSize & 1 ) == 1;
+         dip::uint filterSize = filter_[ procDim ].size;
+         dip::uint fsh = filter.size() - 1;
          switch( filter_[ procDim ].symmetry ) {
-            default:
-            case 0: // "general"
-               for( dip::uint ii = 0; ii < length; ++ii, ++fil ) {
+            case FilterSymmetry::GENERAL:
+               in += origin * inStride;
+               for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI sum = 0;
-                  dip::sint kk = fil;
-                  for( dip::uint jj = 0; jj < filterSize; ++jj, --kk ) {
-                     sum += multiply( filter[ jj ], in[ kk * inStride ] );
+                  TPI* in_t = in;
+                  for( dip::uint jj = 0; jj < filterSize; ++jj ) {
+                     sum += multiply( filter[ jj ], *in_t );
+                     in_t -= inStride;
                   }
-                  out[ ii * outStride ] = sum;
+                  *out = sum;
+                  in += inStride;
+                  out += outStride;
                }
                break;
-            case 1: // "even"
-               for( dip::uint ii = 0; ii < length; ++ii, ++fil, ++fir, ++fih ) {
-                  TPI sum = 0;
-                  if( odd ) {
-                     sum = multiply( filter[ fsh ], in[ fih * inStride ] );
+            case FilterSymmetry::EVEN: // Always an odd-sized filter
+               in += ( origin - fsh ) * inStride;
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  TPI* in_r = in;
+                  TPI sum = multiply( filter[ fsh ], *in_r );
+                  TPI* in_l = in_r - inStride;
+                  in_r += inStride;
+                  dip::uint jj = fsh;
+                  while( jj > 0 ) {
+                     --jj;
+                     sum += multiply( filter[ jj ], *in_r + *in_l );
+                     in_l -= inStride;
+                     in_r += inStride;
                   }
-                  dip::sint kk = fil;
-                  dip::sint ll = fir;
-                  for( dip::uint jj = 0; jj < fsh; ++jj, --kk, ++ll ) {
-                     sum += multiply( filter[ jj ], in[ kk * inStride ] + in[ ll * inStride ] );
-                  }
-                  out[ ii * outStride ] = sum;
+                  *out = sum;
+                  in += inStride;
+                  out += outStride;
                }
                break;
-            case 2: // "odd"
-               for( dip::uint ii = 0; ii < length; ++ii, ++fil, ++fir, ++fih ) {
+            case FilterSymmetry::ODD: // Always an odd-sized filter
+               in += ( origin - fsh ) * inStride;
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  TPI* in_r = in;
+                  TPI sum = multiply( filter[ fsh ], *in_r );
+                  TPI* in_l = in_r - inStride;
+                  in_r += inStride;
+                  dip::uint jj = fsh;
+                  while( jj > 0 ) {
+                     --jj;
+                     sum += multiply( filter[ jj ], *in_r - *in_l ); // TODO: reverse?
+                     in_l -= inStride;
+                     in_r += inStride;
+                  }
+                  *out = sum;
+                  in += inStride;
+                  out += outStride;
+               }
+               break;
+            case FilterSymmetry::D_EVEN: // Always an even-sized filter
+               in += ( origin - fsh ) * inStride;
+               ++fsh;
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  TPI* in_r = in;
                   TPI sum = 0;
-                  if( odd ) {
-                     sum = multiply( filter[ fsh ], in[ fih * inStride ] );
+                  TPI* in_l = in_r - inStride;
+                  dip::uint jj = fsh;
+                  while( jj > 0 ) {
+                     --jj;
+                     sum += multiply( filter[ jj ], *in_r + *in_l );
+                     in_l -= inStride;
+                     in_r += inStride;
                   }
-                  dip::sint kk = fil;
-                  dip::sint ll = fir;
-                  for( dip::uint jj = 0; jj < fsh; ++jj, --kk, ++ll ) {
-                     sum += multiply( filter[ jj ], in[ kk * inStride ] - in[ ll * inStride ] );
+                  *out = sum;
+                  in += inStride;
+                  out += outStride;
+               }
+               break;
+            case FilterSymmetry::D_ODD: // Always an even-sized filter
+               in += ( origin - fsh ) * inStride;
+               ++fsh;
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  TPI* in_r = in;
+                  TPI sum = 0;
+                  TPI* in_l = in_r - inStride;
+                  dip::uint jj = fsh;
+                  while( jj > 0 ) {
+                     --jj;
+                     sum += multiply( filter[ jj ], *in_r - *in_l ); // TODO: reverse?
+                     in_l -= inStride;
+                     in_r += inStride;
                   }
-                  out[ ii * outStride ] = sum;
+                  *out = sum;
+                  in += inStride;
+                  out += outStride;
                }
                break;
          }
@@ -117,8 +185,8 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
       InternOneDimensionalFilterArray const& filter_;
 };
 
-inline bool IsMeaninglessFilter( FloatArray const& filter ) {
-   return ( filter.size() == 0 ) || (( filter.size() == 1 ) && ( filter[ 0 ] == 1.0 ));
+inline bool IsMeaninglessFilter( InternOneDimensionalFilter const& filter ) {
+   return ( filter.size == 0 ) || (( filter.size == 1 ) && ( filter.filter[ 0 ] == 1.0 ));
 }
 
 } // namespace
@@ -128,7 +196,7 @@ void SeparableConvolution(
       Image const& in,
       Image& out,
       OneDimensionalFilterArray const& filterArray,
-      StringArray boundaryCondition,
+      StringArray const& boundaryCondition,
       BooleanArray process
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -144,16 +212,16 @@ void SeparableConvolution(
    // Handle `filterArray` and create `border` array
    UnsignedArray border( nDims );
    if( filterData.size() == 1 ) {
-      dip::uint sz = filterData[ 0 ].filter.size();
-      dip::uint b = static_cast< dip::uint >( filterData[ 0 ].origin );
+      dip::uint sz = filterData[ 0 ].size;
+      dip::uint b = filterData[ 0 ].origin;
       b = std::max( b, sz - b - 1 ); // note that b < sz.
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          border[ ii ] = b;
       }
    } else {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         dip::uint sz = filterData[ ii ].filter.size();
-         dip::uint b = static_cast< dip::uint >( filterData[ 0 ].origin );
+         dip::uint sz = filterData[ ii ].size;
+         dip::uint b = filterData[ 0 ].origin;
          b = std::max( b, sz - b - 1 ); // note that b < sz.
          border[ ii ] = b;
       }
@@ -165,13 +233,13 @@ void SeparableConvolution(
       DIP_THROW_IF( process.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    }
    if( filterData.size() == 1 ) {
-      if( IsMeaninglessFilter( filterData[ 0 ].filter )) {
+      if( IsMeaninglessFilter( filterData[ 0 ] )) {
          // Nothing to do for this filter
          process.fill( false );
       }
    } else {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         if( IsMeaninglessFilter( filterData[ ii ].filter )) {
+         if( IsMeaninglessFilter( filterData[ ii ] )) {
             process[ ii ] = false;
          }
       }
@@ -199,3 +267,88 @@ void SeparableConvolution(
 
 
 } // namespace dip
+
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include <random>
+#include "diplib/math.h"
+#include "diplib/iterators.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
+   dip::Image img{ dip::UnsignedArray{ 200, 50, 30 }, 1, dip::DT_UINT16 };
+   {
+      DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
+      std::random_device rd;
+      std::mt19937 gen( rd() );
+      std::normal_distribution< float > normDist( 9563.0, 500.0 );
+      dip::ImageIterator< dip::uint16 > it( img );
+      do {
+         * it = dip::clamp_cast< dip::uint16 >( normDist( gen ) );
+      } while( false /* ++it */ );
+   }
+   // Comparing general to even
+   dip::Image out1;
+   dip::OneDimensionalFilterArray filterArray( 1 );
+   filterArray[ 0 ].filter = {
+         1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0,
+         6.0 / 49.0, 5.0 / 49.0, 4.0 / 49.0, 3.0 / 49.0, 2.0 / 49.0, 1.0 / 49.0
+   };
+   filterArray[ 0 ].origin = 0;
+   filterArray[ 0 ].symmetry = "general";
+   dip::SeparableConvolution( img, out1, filterArray );
+   dip::Image out2;
+   filterArray[ 0 ].filter = {
+         1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0
+   };
+   filterArray[ 0 ].symmetry = "even";
+   dip::SeparableConvolution( img, out2, filterArray );
+   DOCTEST_CHECK( dip::Count( out1 != out2 ) == 0 );
+
+   // Comparing general to odd
+   filterArray[ 0 ].filter = {
+         1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0,
+         -6.0 / 49.0, -5.0 / 49.0, -4.0 / 49.0, -3.0 / 49.0, -2.0 / 49.0, -1.0 / 49.0
+   };
+   filterArray[ 0 ].origin = 0;
+   filterArray[ 0 ].symmetry = "general";
+   dip::SeparableConvolution( img, out1, filterArray );
+   filterArray[ 0 ].filter = {
+         1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0
+   };
+   filterArray[ 0 ].symmetry = "odd";
+   dip::SeparableConvolution( img, out2, filterArray );
+   DOCTEST_CHECK( dip::Count( out1 != out2 ) == 0 );
+
+   // Comparing general to d-even
+   filterArray[ 0 ].filter = {
+         1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0,
+         7.0 / 49.0, 6.0 / 49.0, 5.0 / 49.0, 4.0 / 49.0, 3.0 / 49.0, 2.0 / 49.0, 1.0 / 49.0
+   };
+   filterArray[ 0 ].origin = 0;
+   filterArray[ 0 ].symmetry = "general";
+   dip::SeparableConvolution( img, out1, filterArray );
+   filterArray[ 0 ].filter = {
+         1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0
+   };
+   filterArray[ 0 ].symmetry = "d-even";
+   dip::SeparableConvolution( img, out2, filterArray );
+   DOCTEST_CHECK( dip::Count( out1 != out2 ) == 0 );
+
+   // Comparing general to d-odd
+   filterArray[ 0 ].filter = {
+         1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0,
+         -7.0 / 49.0, -6.0 / 49.0, -5.0 / 49.0, -4.0 / 49.0, -3.0 / 49.0, -2.0 / 49.0, -1.0 / 49.0
+   };
+   filterArray[ 0 ].origin = 0;
+   filterArray[ 0 ].symmetry = "general";
+   dip::SeparableConvolution( img, out1, filterArray );
+   filterArray[ 0 ].filter = {
+         1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0
+   };
+   filterArray[ 0 ].symmetry = "d-odd";
+   dip::SeparableConvolution( img, out2, filterArray );
+   DOCTEST_CHECK( dip::Count( out1 != out2 ) == 0 );
+}
+
+#endif // DIP__ENABLE_DOCTEST

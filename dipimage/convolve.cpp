@@ -13,9 +13,36 @@
 #include "dip_matlab_interface.h"
 #include "diplib/linear.h"
 
+namespace {
+
+dip::OneDimensionalFilter GetFilter(
+      mxArray const* mxFilter, // A struct array
+      dip::uint ii
+) {
+   dip::OneDimensionalFilter out;
+   mxArray const* elem = mxGetField( mxFilter, ii, "filter" );
+   DIP_THROW_IF( !elem, "" );
+   out.filter = dml::GetFloatArray( elem );
+
+   elem = mxGetField( mxFilter, ii, "origin" );
+   if( elem ) {
+      out.origin = dml::GetInteger( elem );
+   }
+
+   elem = mxGetField( mxFilter, ii, "flags" );
+   if( elem ) {
+      out.symmetry = dml::GetString( elem );
+   }
+
+   return out;
+}
+
+} // namespace
 
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dml::streambuf streambuf;
+
+   char const* wrongFilter = "Wrong filter definition";
 
    try {
 
@@ -26,15 +53,37 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      DIP_THROW_IF( !mxIsCell( prhs[ 1 ] ) || !dml::IsVector( prhs[ 1 ] ), "Filter must be a cell array." );
-      dip::uint n = mxGetNumberOfElements( prhs[ 1 ] );
-      dip::OneDimensionalFilterArray filterArray( n );
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         mxArray const* elem = mxGetCell( prhs[ 1 ], ii );
+      dip::OneDimensionalFilterArray filterArray;
+      mxArray const* mxFilter = prhs[ 1 ];
+      if( mxIsCell( mxFilter )) {
+         DIP_THROW_IF( !dml::IsVector( mxFilter ), wrongFilter );
+         dip::uint n = mxGetNumberOfElements( mxFilter );
+         filterArray.resize( n );
+         for( dip::uint ii = 0; ii < n; ++ii ) {
+            mxArray const* elem = mxGetCell( mxFilter, ii );
+            try {
+               filterArray[ ii ].filter = dml::GetFloatArray( elem );
+            } catch( dip::Error& ) {
+               DIP_THROW( wrongFilter );
+            }
+         }
+      } else if( mxIsNumeric( mxFilter )) {
+         DIP_THROW_IF( !dml::IsVector( mxFilter ), wrongFilter );
+         filterArray.resize( 1 );
          try {
-            filterArray[ ii ].filter = dml::GetFloatArray( elem );
+            filterArray[ 0 ].filter = dml::GetFloatArray( mxFilter );
          } catch( dip::Error& ) {
-            DIP_THROW( "Filter must be a cell array with vectors." );
+            DIP_THROW( wrongFilter );
+         }
+      } else if( mxIsStruct( mxFilter )) {
+         dip::uint n = mxGetNumberOfElements( mxFilter );
+         filterArray.resize( n );
+         for( dip::uint ii = 0; ii < n; ++ii ) {
+            try {
+               filterArray[ ii ] = GetFilter( mxFilter, ii );
+            } catch( dip::Error& ) {
+               DIP_THROW( wrongFilter );
+            }
          }
       }
 

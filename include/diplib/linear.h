@@ -44,28 +44,26 @@ namespace dip {
 ///
 /// Note that `origin` must be an index to one of the samples in the `filter` array
 ///
-/// `symmetry` indicates the filter shape: `"general"` (or an empty string) indicates no symmetry, and the whole filter
-/// array is used. `"even"` indicates even symmetry, and `"odd"` indicates odd symmetry. In the symmetric cases, only
-/// the first half of the filter data is used:
+/// `symmetry` indicates the filter shape: `"general"` (or an empty string) indicates no symmetry.
+/// `"even"` indicates even symmetry, and `"odd"` indicates odd symmetry. In both cases, the filter represents
+/// the left half of the full filter, with the righmost element at the origin (and not repeated). The full filter
+/// is thus always odd in size. `"d-even"` and `"d-odd"` are similar, but duplicate the rightmost element, yielding
+/// an even-sized filter. The origin for the symmetric filters is handled identically to the general filter case.
 ///
-///     filter data (odd size):      a  b  c  d  e  f  g      orgin = 3
+///     filter array:                a  b  c              array has N elements
 ///
-///     symmetry = "general":        a  b  c  d  e  f  g
-///     symmetry = "even":           a  b  c  d  c  b  a
-///     symmetry = "odd":            a  b  c  d -c -b -a
-///
-///     filter data (even size):     a  b  c  d  e  f         orgin = 3
-///
-///     symmetry = "general":        a  b  c  d  e  f
-///     symmetry = "even":           a  b  c  c  b  a
-///     symmetry = "odd":            a  b  c -c -b -a
+///     symmetry = "general":        a  b  c              filter size = N
+///     symmetry = "even":           a  b  c  b  a        filter size = N + N - 1
+///     symmetry = "odd":            a  b  c -b -a        filter size = N + N - 1
+///     symmetry = "d-even":         a  b  c  c  b  a     filter size = N + N
+///     symmetry = "d-odd":          a  b  c -c -b -a     filter size = N + N
 ///
 /// The convolution is applied to each tensor component separately, which is always the correct behavior for linear
 /// filters.
 struct OneDimensionalFilter {
    FloatArray filter;            ///< Filter weights
    dip::sint origin = -1;        ///< Origin of the filter if non-negative
-   String symmetry = "";         ///< Filter shape: `""` == `"general"`, `"even"` or `"odd"`
+   String symmetry = "";         ///< Filter shape: `""` == `"general"`, `"even"`, `"odd"`, `"d-even"` or `"d-odd"`
 };
 
 /// \brief An array of 1D filters
@@ -84,14 +82,14 @@ void SeparableConvolution(
       Image const& in,                    ///< Input image
       Image& out,                         ///< Output image
       OneDimensionalFilterArray const& filterArray, ///< The filter
-      StringArray boundaryCondition = {}, ///< The boundary condition
+      StringArray const& boundaryCondition = {}, ///< The boundary condition
       BooleanArray process = {}           ///< Which dimensions to process, can be `{}` to indicate all dimensions are to be processed
 );
 inline Image SeparableConvolution(
       Image const& in,
       OneDimensionalFilterArray const& filter,
-      StringArray boundaryCondition = {},
-      BooleanArray process = {}
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {}
 ) {
    Image out;
    SeparableConvolution( in, out, filter, boundaryCondition, process );
