@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for functions that measure convex hulls.
+ * This file contains definitions for functions that measure polygons and convex hulls.
  *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
@@ -11,6 +11,10 @@
 
 #include "diplib.h"
 #include "diplib/chain_code.h"
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#endif
 
 
 namespace dip {
@@ -146,56 +150,71 @@ RadiusValues Polygon::RadiusStatistics() const {
       return radius; // CLion thinks this is not initialized, but it is.
    }
    VertexFloat centroid = Centroid();
-
-   VarianceAccumulator acc;
-   radius.max = 0.0;
-   radius.min = std::numeric_limits< dfloat >::max();
+   VarianceAccumulator vacc;
+   MinMaxAccumulator macc;
    for( auto const& v : vertices ) {
       dfloat r = Distance( centroid, v );
-      acc.Push( r );
-      radius.max = std::max( radius.max, r );
-      radius.min = std::min( radius.min, r );
+      vacc.Push( r );
+      macc.Push( r );
    }
-   radius.mean = acc.Mean();
-   radius.var = acc.Variance();
+   radius.mean = vacc.Mean();
+   radius.var = vacc.Variance();
+   radius.max = macc.Maximum();
+   radius.min = macc.Minimum();
    return radius;
 }
 
+
 dfloat Polygon::EllipseVariance() const {
-   // TODO: check that this makes sense at all...
-   dip::uint N = vertices.size();
-   if( N < 3 ) {
-      return 0;
-   }
-   // Covariance matrix C
+   // Covariance matrix of polygon vertices
    VertexFloat g = Centroid();
-   dfloat Cxx = 0;
-   dfloat Cxy = 0;
-   dfloat Cyy = 0;
-   for( auto v : vertices ) {
-      v -= g;
-      Cxx += v.x * v.x;
-      Cxy += v.x * v.y;
-      Cyy += v.y * v.y;
-   }
-   Cxx /= N;
-   Cxy /= N;
-   Cyy /= N;
-   // Inverse of covariance matrix U
-   dfloat det = Cxx * Cyy - Cxy * Cxy;
-   dfloat Uxx = Cyy / det;
-   dfloat Uxy = -Cxy / det;
-   dfloat Uyy = Cxx / det;
+   dip::CovarianceMatrix C = this->CovarianceMatrix( g );
+   // Inverse of covariance matrix
+   dip::CovarianceMatrix U = C.Inv();
    // Distance of vertex to ellipse is given by sqrt( v' * U * v ), with v' the transpose of v
    VarianceAccumulator acc;
    for( auto v : vertices ) {
-      dfloat d = v.x * v.x * Uxx + 2 * v.x * v.y * Uxy + v.y * v.y * Uyy;
-      acc.Push( std::sqrt( d ));
+      v -= g;
+      dfloat d = std::sqrt( U.Project( v ));
+      acc.Push( d );
    }
    dfloat m = acc.Mean();
    // Ellipse variance = coefficient of variation of radius
    return m == 0 ? 0 : acc.StandardDeviation() / acc.Mean();
 }
+
+
+#ifdef DIP__ENABLE_DOCTEST
+
+DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
+   ChainCode cc;
+   Polygon p = cc.Polygon();
+   DOCTEST_CHECK( p.vertices.size() == 4 );
+   DOCTEST_CHECK( p.Area() == doctest::Approx( 0.5 ));
+   DOCTEST_CHECK( p.Length() == doctest::Approx( 2.0 * std::sqrt( 2.0 )));
+   ConvexHull h = p.ConvexHull();
+   DOCTEST_CHECK( h.Vertices().size() == 4 );
+   DOCTEST_CHECK( h.Area() == doctest::Approx( 0.5 ));
+   DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 2.0 * std::sqrt( 2.0 )));
+   auto f = h.Feret();
+   DOCTEST_CHECK( f.maxDiameter == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( f.minDiameter == doctest::Approx( std::sqrt( 2 ) / 2.0 ));
+
+   cc.codes = { 0, 6, 4, 2 }; // A chain code that is a little square.
+   p = cc.Polygon();
+   DOCTEST_CHECK( p.vertices.size() == 8 );
+   DOCTEST_CHECK( p.Area() == doctest::Approx( 4 - 0.5 ));
+   DOCTEST_CHECK( p.Length() == doctest::Approx( 4 + 2 * std::sqrt( 2 )));
+   h = p.ConvexHull();
+   DOCTEST_CHECK( h.Vertices().size() == 8 );
+   DOCTEST_CHECK( h.Area() == doctest::Approx( 4 - 0.5 ));
+   DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 4 + 2 * std::sqrt( 2 )));
+   f = h.Feret();
+   DOCTEST_CHECK( f.maxDiameter == doctest::Approx( std::sqrt( 5 )));
+   DOCTEST_CHECK( f.minDiameter == doctest::Approx( 2 ));
+}
+
+#endif // DIP__ENABLE_DOCTEST
 
 
 } // namespace dip

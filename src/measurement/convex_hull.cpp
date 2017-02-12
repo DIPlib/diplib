@@ -5,7 +5,7 @@
  * (c)2016, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *
- * The algorihtm to convert a simple polygon to a convex hull is from:
+ * The algorithm to convert a simple polygon to a convex hull is from:
  *    A.A. Melkman, "On-Line Construction of the Convex Hull of a Simple Polyline",
  *    Information Processing Letters 25:11-12 (1987).
  * Algorithm to make a polygon from a chain code is home-brewed, concept of using
@@ -47,7 +47,7 @@ dip::Polygon ChainCode::Polygon() const {
       dir[ 3 ] = {  0,  1 };
    }
 
-   std::array< VertexFloat, 8 > pts;
+   std::array< VertexFloat, 4 > pts;
    pts[ 0 ] = {  0.0, -0.5 };
    pts[ 1 ] = { -0.5,  0.0 };
    pts[ 2 ] = {  0.0,  0.5 };
@@ -57,15 +57,14 @@ dip::Polygon ChainCode::Polygon() const {
    dip::Polygon polygon;
 
    if( codes.empty() ) {
-      /* A 1-pixel oject. */
+      // A 1-pixel object.
       polygon.vertices.push_back( pts[ 0 ] + pos );
-      polygon.vertices.push_back( pts[ 1 ] + pos );
-      polygon.vertices.push_back( pts[ 2 ] + pos );
       polygon.vertices.push_back( pts[ 3 ] + pos );
+      polygon.vertices.push_back( pts[ 2 ] + pos );
+      polygon.vertices.push_back( pts[ 1 ] + pos );
    } else {
-      int m = 0;
-      for( auto const& code : codes ) {
-         int n = int( code );
+      int m = codes.back();
+      for( int n : codes ) {
          int k, l;
          if( is8connected ) {
             k = ( m + 1 ) / 2;
@@ -102,7 +101,7 @@ dip::Polygon ChainCode::Polygon() const {
 }
 
 
-ConvexHull::ConvexHull( Polygon const&& polygon ) {
+ConvexHull::ConvexHull( dip::Polygon const&& polygon ) {
    auto const& pv = polygon.vertices;
    if( pv.size() <= 3 ) {
       // If there's less than 4 elements, we already have a convex hull

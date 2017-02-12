@@ -1,8 +1,8 @@
 /*
  * DIPlib 3.0
- * This file contains declarations for measurement-related classes
+ * This file contains declarations and definitions for chain-code--based 2D measurements
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -27,22 +27,32 @@ namespace dip {
 /// \{
 
 
-/// \brief Contains the various Feret diameters as returned by `dip::ConvexHull::Feret` and `dip::ChainCode::Feret`.
+/// \brief Contains the various %Feret diameters as returned by `dip::ConvexHull::Feret` and `dip::ChainCode::Feret`.
 struct FeretValues {
-   dfloat maxDiameter = 0.0;        ///< The maximum Feret diameter
-   dfloat minDiameter = 0.0;        ///< The minimum Feret diameter
-   dfloat maxPerpendicular = 0.0;   ///< The Feret diameter perpendicular to `minDiameter`
+   dfloat maxDiameter = 0.0;        ///< The maximum %Feret diameter
+   dfloat minDiameter = 0.0;        ///< The minimum %Feret diameter
+   dfloat maxPerpendicular = 0.0;   ///< The %Feret diameter perpendicular to `minDiameter`
    dfloat maxAngle = 0.0;           ///< The angle at which `maxDiameter` was measured
    dfloat minAngle = 0.0;           ///< The angle at which `minDiameter` was measured
 };
 
-/// Holds the various output values of the `dip::RadiusStatistics` and `dip::ChainCode::RadiusStatistics` function.
+/// \brief Holds the various output values of the `dip::RadiusStatistics` and `dip::ConvexHull::RadiusStatistics` function.
 struct RadiusValues {
-   dfloat max = 0.0;    ///< Maximum radius
    dfloat mean = 0.0;   ///< Mean radius
-   dfloat min = 0.0;    ///< Minimum radius
    dfloat var = 0.0;    ///< Radius variance
+   dfloat max = 0.0;    ///< Maximum radius
+   dfloat min = 0.0;    ///< Minimum radius
+   /// Computes a circularity measure given by the coefficient of variation of the radii of the object.
+   dfloat Circularity() {
+      return std::sqrt( var ) / mean;
+   }
 };
+
+
+//
+// Vertex of a polygon
+//
+
 
 /// \brief Encodes a location in a 2D image
 template< typename T >
@@ -224,6 +234,118 @@ Vertex< T > operator/( Vertex< T > v, dfloat n ) {
 }
 
 
+//
+// Covariance matrix
+//
+
+
+/// \brief A 2D covariance matrix for computation with 2D vertices.
+///
+/// The matrix is real, symmetric, positive semidefinite. See `dip::Polygon::CovarianceMatrix`
+/// for how to create a covariance matrix.
+///
+/// The elements stored are `xx`, `xy` and `yy`, with `xx` the top-left element, and `xy` both
+/// the off-diagonal elements, which are equal by definition.
+class CovarianceMatrix {
+   public:
+      /// \brief Default-initialized covariance matrix is all zeros
+      CovarianceMatrix() : xx_( 0 ), xy_( 0 ), yy_( 0 ) {}
+      /// \brief Construct a covariance matrix as the outer product of a vector and itself
+      CovarianceMatrix( VertexFloat v ) : xx_( v.x * v.x ), xy_( v.x * v.y ), yy_( v.y * v.y ) {}
+      /// \brief Read matrix element
+      dfloat xx() const { return xx_; }
+      /// \brief Read matrix element
+      dfloat xy() const { return xy_; }
+      /// \brief Read matrix element
+      dfloat yy() const { return yy_; }
+      /// \brief Compute determinant of matrix
+      dfloat Det() const { return xx_ * yy_ - xy_ * xy_; }
+      /// \brief Compute inverse of matrix
+      CovarianceMatrix Inv() const {
+         dfloat d = Det();
+         CovarianceMatrix out;
+         out.xx_ =  yy_ / d;
+         out.xy_ = -xy_ / d;
+         out.yy_ =  xx_ / d;
+         return out;
+      }
+      /// \brief Add other matrix to this matrix
+      CovarianceMatrix& operator+=( CovarianceMatrix const& other ) {
+         xx_ += other.xx_;
+         xy_ += other.xy_;
+         yy_ += other.yy_;
+         return * this;
+      }
+      /// \brief Scale matrix
+      CovarianceMatrix& operator*=( dfloat d ) {
+         xx_ *= d;
+         xy_ *= d;
+         yy_ *= d;
+         return * this;
+      }
+      /// \brief Scale matrix
+      CovarianceMatrix& operator/=( dfloat d ) {
+         return operator*=( 1.0 / d );
+      }
+      /// \brief Computes v' * C * v, with v' the transpose of v.
+      /// This is a positive scalar if v is non-zero, because C (this matrix) is positive semidefinite.
+      dfloat Project( VertexFloat const& v ) {
+         return v.x * v.x * xx_ + 2 * v.x * v.y * xy_ + v.y * v.y * yy_;
+      }
+
+      /// \brief Container for matrix eigenvalues
+      struct Eigenvalues {
+         dfloat largest;   ///< Largest eigenvalue
+         dfloat smallest;  ///< Smallest eigenvalue
+         /// \brief Computes eccentricity using the two eigenvalues of the covarance matrix.
+         dfloat Eccentricity() {
+            // Eccentricity according to https://en.wikipedia.org/wiki/Image_moment
+            if( largest <= 0 ) {    // largest == 0 really, it cannot be negative.
+               return 0;            // if largest == 0, then smallest == 0 also.
+            } else {
+               return std::sqrt( 1 - smallest / largest );
+            }
+         }
+      };
+      /// \brief Compute eigenvalues of matrix
+      Eigenvalues Eig() {
+         // Eigenvalue calculation according to e.g. http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
+         dfloat mmu2 = ( xx_ + yy_ ) / 2.0;
+         dfloat dmu2 = ( xx_ - yy_ ) / 2.0;
+         dfloat sqroot = std::sqrt( xy_ * xy_ + dmu2 * dmu2 );
+         Eigenvalues lambda;
+         lambda.largest = mmu2 + sqroot;
+         lambda.smallest = mmu2 - sqroot;
+         return lambda;
+      }
+
+      /// \brief Container for ellipse parameters
+      struct EllipseParameters {
+         dfloat majorAxis;    ///< Major axis length
+         dfloat minorAxis;    ///< Minor axis length
+         dfloat orientation;  ///< Orientation of major axis
+      };
+      /// \brief Compute parameters of ellipse with same covariance matrix.
+      EllipseParameters Ellipse() {
+         // Eigenvector calculation according to e.g. http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
+         Eigenvalues lambda = Eig();
+         EllipseParameters out;
+         out.majorAxis = 4.0 * std::sqrt( lambda.largest );
+         out.minorAxis = 4.0 * std::sqrt( lambda.smallest );
+         out.orientation = std::atan2( lambda.largest - xx_, xy_ ); // eigenvector is {xy, lambda.largest - xx}
+         return out;
+      }
+
+   private:
+      dfloat xx_, xy_, yy_;
+};
+
+
+//
+// Polygon, convex hull
+//
+
+
 class ConvexHull; // Forward declaration
 
 /// \brief A polygon with floating-point vertices.
@@ -243,15 +365,15 @@ struct Polygon {
       return sum / 2.0;
    }
 
-   /// \brief Computes the centroid of a polygon
+   /// \brief Computes the centroid of the polygon
    VertexFloat Centroid() const {
       if( vertices.size() < 3 ) {
          return { 0, 0 }; // Should we generate an error instead?
       }
       dfloat v = CrossProduct( vertices.back(), vertices[ 0 ] );
       dfloat sum = v;
-      dfloat xsum = vertices.back().x + vertices[ 0 ].x;
-      dfloat ysum = vertices.back().y + vertices[ 0 ].y;
+      dfloat xsum = ( vertices.back().x + vertices[ 0 ].x ) * v;
+      dfloat ysum = ( vertices.back().y + vertices[ 0 ].y ) * v;
       for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
          v = CrossProduct( vertices[ ii - 1 ], vertices[ ii ] );
          sum += v;
@@ -261,7 +383,23 @@ struct Polygon {
       return VertexFloat{ xsum, ysum } / ( 3 * sum );
    }
 
-   /// \brief Computes the lenght of a polygon (i.e. perimeter). If the polygon represents a pixelated object,
+   /// \brief Returns the covariance matrix for the vertices of the polygon, using centroid `g`.
+   dip::CovarianceMatrix CovarianceMatrix( VertexFloat const& g ) const {
+      dip::CovarianceMatrix C;
+      if( vertices.size() >= 3 ) {
+         for( auto& v : vertices ) {
+            C += dip::CovarianceMatrix( v - g );
+         }
+         C /= vertices.size();
+      }
+      return C;
+   }
+   /// \brief Returns the covariance matrix for the vertices of the polygon.
+   dip::CovarianceMatrix CovarianceMatrix() const {
+      return this->CovarianceMatrix( Centroid() );
+   }
+
+   /// \brief Computes the length of a polygon (i.e. perimeter). If the polygon represents a pixelated object,
    /// this function will overestimate the object's perimeter. Use `dip::ChainCode::Length` instead.
    dfloat Length() const {
       if( vertices.size() < 2 ) {
@@ -274,13 +412,15 @@ struct Polygon {
       return sum;
    }
 
-   /// \brief Returns statistics on the radii of the poligon. The radii are the distances between the centroid
+   /// \brief Returns statistics on the radii of the polygon. The radii are the distances between the centroid
    /// and each of the vertices.
    RadiusValues RadiusStatistics() const;
 
-   /// \brief Compares a polygon to the ellipse with the same covariance matrix, returning the standard deviation of
-   /// the distance of vertices to the ellipse normalized by the average distance.
-   // TODO: Add literature ref for this measure.
+   /// \brief Compares a polygon to the ellipse with the same covariance matrix, returning the coeffient of
+   /// variation of the distance of vertices to the ellipse.
+   ///
+   /// See: M. Yang, K. Kpalma and J. Ronsin, "A Survey of Shape Feature Extraction Techniques",
+   /// in: Pattern Recognition Techniques, Technology and Applications, P.Y. Yin (Editor), I-Tech, 2008.
    dfloat EllipseVariance() const;
 
    /// \brief Returns the convex hull of the polygon.
@@ -295,7 +435,7 @@ class ConvexHull {
       ConvexHull() {};
 
       /// Constructs a convex hull of a polygon
-      ConvexHull( Polygon const&& polygon );
+      ConvexHull( dip::Polygon const&& polygon );
 
       /// Retrive the vertices that represent the convex hull
       std::vector< VertexFloat > const& Vertices() const {
@@ -312,7 +452,7 @@ class ConvexHull {
          return vertices_.Length();
       }
 
-      /// Returns the Feret diameters of the convex hull
+      /// Returns the %Feret diameters of the convex hull
       FeretValues Feret() const;
 
       /// Returns the centroid of the convex hull
@@ -320,13 +460,24 @@ class ConvexHull {
          return vertices_.Centroid();
       }
 
-      /// Converts the `%ConvexHull` object to a `dip::Polygon`
-      operator Polygon() const {
-         return vertices_;
+      /// Returns statistics on the radii of the polygon, see `dip::Polygon::RadiusStatistics`.
+      RadiusValues RadiusStatistics() const {
+         return vertices_.RadiusStatistics();
+      }
+
+      /// \brief Returns the coeffient of variation of the distance of vertices to the ellipse with identical
+      /// covarianace matrix, see `dip::Polygon::EllipseVariance`.
+      dfloat EllipseVariance() const {
+         return vertices_.EllipseVariance();
+      }
+
+      /// Returns the polygon representing the convex hull
+      dip::Polygon const& Polygon() const {
+          return vertices_;
       }
 
    private:
-      Polygon vertices_;
+      dip::Polygon vertices_;
 };
 
 // This function cannot be written inside the dip::Polygon class because it needs to know about the dip::ConvexHull
@@ -335,6 +486,12 @@ inline dip::ConvexHull Polygon::ConvexHull() const {
    Polygon copy = *this;
    return dip::ConvexHull( std::move( copy ));
 }
+
+
+//
+// Chain code
+//
+
 
 /// \brief The contour of an object as a chain code sequence.
 struct ChainCode {
@@ -379,8 +536,8 @@ struct ChainCode {
    /// represents the closed contour of an object, add pi to the result to determine the object's perimeter.
    dfloat Length() const;
 
-   /// \brief Returns the Feret diameters, using an angular step size in radian of `angleStep`.
-   /// It is better to use `chainCode.ConvexHull().Feret()`.
+   /// \brief Returns the %Feret diameters, using an angular step size in radian of `angleStep`.
+   /// It is better to use `this->ConvexHull().Feret()`.
    FeretValues Feret( dfloat angleStep ) const;
 
    /// Computes the bending energy.
@@ -390,6 +547,7 @@ struct ChainCode {
    /// `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the polygon and
    /// compute the measures on that.
    dfloat Area() const {
+      // There's another algorithm to compute this, that doesn't depend on the polygon. Should we implement that?
       return Polygon().Area() + 0.5;
    }
 
@@ -397,17 +555,18 @@ struct ChainCode {
    /// `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the polygon and
    /// compute the measures on that.
    VertexFloat Centroid() const {
+      // There's another algorithm to compute this, that doesn't depend on the polygon. Should we implement that?
       return Polygon().Centroid();
    }
 
-   /// Returns the length of the longest run of idenitcal chain codes.
+   /// Returns the length of the longest run of identical chain codes.
    dip::uint LongestRun() const;
 
    /// \brief Returns a polygon representation of the object.
    ///
    /// Creates a polygon by joining the mid-points between an object pixel and a background pixel that are
    /// edge-connected neighbors. The polygon follows the "crack" between pixels, but without the biases
-   /// one gets when joining pixel vertices into a polygon. The polygon always has an area exaclty half a
+   /// one gets when joining pixel vertices into a polygon. The polygon always has an area exactly half a
    /// pixel smaller than the binary object it represents.
    ///
    /// This idea comes from Steve Eddins:
@@ -423,7 +582,7 @@ struct ChainCode {
 /// \brief A collection of object contours
 using ChainCodeArray = std::vector< ChainCode >;
 
-/// \brief Returns the set of chain codes sequences that encode the countours of the given objects in a labelled image.
+/// \brief Returns the set of chain codes sequences that encode the contours of the given objects in a labelled image.
 /// Note that only the first closed contour for each label is found; if an object has multiple connected components,
 /// only part of the object is found.
 ChainCodeArray GetImageChainCodes(
@@ -431,6 +590,7 @@ ChainCodeArray GetImageChainCodes(
       UnsignedArray const& objectIDs,
       dip::uint connectivity = 2
 );
+
 
 /// \}
 

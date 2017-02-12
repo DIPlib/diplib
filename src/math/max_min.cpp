@@ -19,7 +19,7 @@ class dip__GetMaximumAndMinimum : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         MaximumAndMinimum& vars = varsArray[ params.thread ];
+         MinMaxAccumulator& vars = varsArray[ params.thread ];
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          if( params.inBuffer.size() > 1 ) {
@@ -44,12 +44,12 @@ class dip__GetMaximumAndMinimum : public Framework::ScanLineFilter {
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          varsArray.resize( threads );
       }
-      dip__GetMaximumAndMinimum( std::vector< MaximumAndMinimum >& varsArray ) : varsArray( varsArray ) {}
+      dip__GetMaximumAndMinimum( std::vector< MinMaxAccumulator >& varsArray ) : varsArray( varsArray ) {}
    private:
-      std::vector< MaximumAndMinimum >& varsArray;
+      std::vector< MinMaxAccumulator >& varsArray;
 };
 
-MaximumAndMinimum GetMaximumAndMinimum(
+MinMaxAccumulator GetMaximumAndMinimum(
       Image const& in,
       Image const& mask
 ) {
@@ -72,7 +72,7 @@ MaximumAndMinimum GetMaximumAndMinimum(
       inBufT.push_back( DT_BIN );
    }
    // Create an array for the values computed by each thread, and initialize them.
-   std::vector< MaximumAndMinimum > varsArray;
+   std::vector< MinMaxAccumulator > varsArray;
    // Find the right overload for our data type
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__GetMaximumAndMinimum, ( varsArray ), in.DataType() );
@@ -83,10 +83,9 @@ MaximumAndMinimum GetMaximumAndMinimum(
          inBufT, DataTypeArray{}, DataTypeArray{}, UnsignedArray{},
          scanLineFilter.get(), Framework::Scan_TensorAsSpatialDim );
    // Reduce
-   MaximumAndMinimum out = varsArray[ 0 ];
+   MinMaxAccumulator out = varsArray[ 0 ];
    for( dip::uint ii = 1; ii < varsArray.size(); ++ii ) {
-      out.max = std::max( out.max, varsArray[ ii ].max );
-      out.min = std::min( out.min, varsArray[ ii ].min );
+      out += varsArray[ ii ];
    }
    return out;
 }

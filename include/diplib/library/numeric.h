@@ -376,7 +376,7 @@ void EigenSystem( dip::uint n, dcomplex const* input, dcomplex* lambdas, dcomple
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see VarianceAccumulator
+/// \see VarianceAccumulator, MinMaxAccumulator
 ///
 /// ###Source
 ///
@@ -488,7 +488,7 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see StatisticsAccumulator
+/// \see StatisticsAccumulator, MinMaxAccumulator
 ///
 /// ### Source
 ///
@@ -541,6 +541,44 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
    lhs += rhs;
    return lhs;
 }
+
+/// \brief `%MinMaxAccumulator` computes minimum and maximum values of a sequence of values.
+///
+/// Samples are added one by one, using the `Push` method. Other members are used to retrieve the results.
+///
+/// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
+/// and add the accumulators together using the `+` operator.
+///
+/// \see StatisticsAccumulator, VarianceAccumulator
+class MinMaxAccumulator {
+   public:
+      /// Add a sample to the accumulator
+      void Push( dfloat x ) {
+         max_ = std::max( max_, x );
+         min_ = std::min( min_, x );
+      }
+
+      /// Combine two accumulators
+      MinMaxAccumulator& operator+=( MinMaxAccumulator const& other ) {
+         min_ = std::min( min_, other.min_ );
+         max_ = std::max( max_, other.max_ );
+         return *this;
+      }
+
+      /// Minimum value seen so far
+      dfloat Minimum() const {
+         return min_;
+      }
+
+      /// Maximum value seen so far
+      dfloat Maximum() const {
+         return max_;
+      }
+
+   private:
+      dfloat min_ = std::numeric_limits< dfloat >::max();
+      dfloat max_ = std::numeric_limits< dfloat >::lowest();
+};
 
 
 /// \}
