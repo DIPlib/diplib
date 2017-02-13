@@ -27,7 +27,7 @@ void Full(
       dip::uint nTensorElements,
       BoundaryConditionArray boundaryConditions,
       PixelTable const& pixelTable,
-      FullLineFilter* lineFilter,
+      FullLineFilter& lineFilter,
       FullOptions opts
 ) {
    UnsignedArray sizes = c_in.Sizes();
@@ -51,6 +51,7 @@ void Full(
       if(( opts == Full_ExpandTensorInBuffer ) && !c_in.Tensor().HasNormalOrder() ) {
          expandTensor = true;
          outTensor.SetMatrix( c_in.Tensor().Rows(), c_in.Tensor().Columns() );
+         colorSpace.clear(); // the output tensor shape is different from the input's, the color space presumably doesn't match
       }
    }
 
@@ -86,7 +87,7 @@ void Full(
       output.ReForge( sizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
       output.ReshapeTensor( outTensor );
       output.SetPixelSize( pixelSize );
-      if( !expandTensor ) {
+      if( !colorSpace.empty() ) {
          output.SetColorSpace( colorSpace );
       }
    DIP_END_STACK_TRACE
@@ -104,7 +105,7 @@ void Full(
    //       the lineFilter does per pixel. If the caller can provide that estimate,
    //       we'd be able to use that to determine the threading schedule.
 
-   lineFilter->SetNumberOfThreads( 1 );
+   lineFilter.SetNumberOfThreads( 1 );
 
    // TODO: Start threads, each thread makes its own buffers.
    dip::uint thread = 0;
@@ -155,7 +156,7 @@ void Full(
             outBuffer.buffer = output.Pointer( it.OutOffset() + ii * outBuffer.tensorStride );
          }
          // Filter the line
-         lineFilter->Filter( fullLineFilterParameters );
+         lineFilter.Filter( fullLineFilterParameters );
          if( useOutBuffer ) {
             // Copy output buffer to output image
             CopyBuffer(
@@ -168,8 +169,7 @@ void Full(
                   output.Stride( processingDim ),
                   output.TensorStride(),
                   lineLength,
-                  outBuffer.tensorLength,
-                  std::vector< dip::sint > {} );
+                  outBuffer.tensorLength );
          }
       }
    } while( ++it );

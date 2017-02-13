@@ -88,7 +88,7 @@ int main() {
       dip::Framework::Full(
             img, out, dip::DT_SFLOAT, dip::DT_SFLOAT, dip::DT_SFLOAT, 1,
             dip::BoundaryConditionArray{ dip::BoundaryCondition::SYMMETRIC_MIRROR },
-            pixelTable, &lineFilter, dip::Framework::Full_AsScalarImage );
+            pixelTable, lineFilter, dip::Framework::Full_AsScalarImage );
 
       PrintPixelValues< dip::sfloat >( out );
       //PrintPixelValues< dip::uint16 >( out );

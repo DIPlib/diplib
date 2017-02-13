@@ -257,7 +257,7 @@ void Scan(
       DataTypeArray const& outBufferTypes,      ///< Data types for output buffers
       DataTypeArray const& outImageTypes,       ///< Data types for output images
       UnsignedArray const& nTensorElements,     ///< Number of tensor elements in output images
-      ScanLineFilter* lineFilter,               ///< Pointer to function object to call for each image line
+      ScanLineFilter& lineFilter,               ///< Function object to call for each image line
       ScanOptions opts = {}                     ///< Options to control how `lineFilter` is called
 );
 
@@ -266,7 +266,7 @@ inline void ScanSingleOutput(
       Image& out,                      ///< Output image
       DataType outImageType,           ///< Data type for output image, buffer will have this type also
       dip::uint nTensorElements,       ///< Number of tensor elements in output image
-      ScanLineFilter* lineFilter,      ///< Pointer to function object to call for each image line
+      ScanLineFilter& lineFilter,      ///< Function object to call for each image line
       ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
    ImageConstRefArray inar{};
@@ -278,16 +278,37 @@ inline void ScanSingleOutput(
    Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, opts );
 }
 
-/// \brief Calls `dip::Framework::Scan` with one input image.
+/// \brief Calls `dip::Framework::Scan` with one input image and a mask image.
+///
+/// If `mask` is forged, it is expected to be a scalar image of type `dip::DT_BIN`,
+/// and of size compatible with `in`. `mask` is singleton-expanded to the size of `in`,
+/// but not the other way around. Its pointer will be passed to `lineFilter` directly,
+/// without copies to change its data type. Thus, `inBuffer[ 1 ].buffer` is of type `bin*`,
+/// not of type `bufferType`.
 inline void ScanSingleInput(
       Image const& in,                 ///< Input image
+      Image const& mask,               ///< Mask image
       DataType bufferType,             ///< Data type for input buffer
-      ScanLineFilter* lineFilter,      ///< Pointer to function object to call for each image line
+      ScanLineFilter& lineFilter,      ///< Function object to call for each image line
       ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
-   ImageConstRefArray inar{ in };
+   ImageConstRefArray inar;
+   inar.reserve( 2 );
+   inar.push_back( in );
+   DataTypeArray inBufT;
+   inBufT.reserve( 2 );
+   inBufT.push_back( bufferType );
+   if( mask.IsForged() ) {
+      // If we have a mask, add it to the input array.
+      Image tmp = mask.QuickCopy();
+      DIP_START_STACK_TRACE
+         tmp.CheckIsMask( in.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
+         tmp.ExpandSingletonDimensions( in.Sizes() );
+      DIP_END_STACK_TRACE
+      inar.push_back( tmp );
+      inBufT.push_back( tmp.DataType() );
+   }
    ImageRefArray outar{};
-   DataTypeArray inBufT{ bufferType };
    DataTypeArray outBufT{};
    DataTypeArray outImT{};
    UnsignedArray nElem{};
@@ -301,7 +322,7 @@ inline void ScanMonadic(
       DataType bufferTypes,            ///< Data type for all input and output buffers
       DataType outImageType,           ///< Data type for output image
       dip::uint nTensorElements,       ///< Number of tensor elements in output image
-      ScanLineFilter* lineFilter,      ///< Pointer to function object to call for each image line
+      ScanLineFilter& lineFilter,      ///< Function object to call for each image line
       ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
    ImageConstRefArray inar{ in };
@@ -336,7 +357,7 @@ inline void ScanDyadic(
       Image& out,                      ///< Output image
       DataType inType,                 ///< Data type for all input buffers
       DataType outType,                ///< Data type for output image and output buffer
-      ScanLineFilter* lineFilter,      ///< Pointer to function object to call for each image line
+      ScanLineFilter& lineFilter,      ///< Function object to call for each image line
       ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
    Tensor outTensor;
@@ -385,7 +406,7 @@ inline void ScanDyadic(
 ///     dip::dfloat offset = 40;
 ///     auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) { return ( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset; };
 ///     dip::Framework::NadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
-///     dip::Framework::ScanDyadic( lhs, rhs, out, dip::DT_SFLOAT, dip::DT_SFLOAT, &scanLineFilter );
+///     dip::Framework::ScanDyadic( lhs, rhs, out, dip::DT_SFLOAT, dip::DT_SFLOAT, scanLineFilter );
 /// ```
 ///
 /// `sampleOperator` is a lambda function, which captures `offset` by value (note that capturing by reference will
@@ -411,7 +432,7 @@ inline void ScanDyadic(
 ///     DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, NewFilter, (
 ///           [ = ]( auto its ) { return ( std::cos( *its[ 0 ] ) * 100 ) + offset; }
 ///     ), dt );
-///     dip::Framework::ScanMonadic( in, out, dt, dt, in.TensorElements(), scanLineFilter.get(), dip::Framework::Scan_TensorAsSpatialDim );
+///     dip::Framework::ScanMonadic( in, out, dt, dt, in.TensorElements(), *scanLineFilter, dip::Framework::Scan_TensorAsSpatialDim );
 /// ```
 ///
 /// Notice in this case we used a generic lambda, i.e. its input parameter has type `auto`. It will be compiled
@@ -708,7 +729,7 @@ void Separable(
       BooleanArray process,            ///< Determines along which dimensions to apply the filter
       UnsignedArray border,            ///< Number of pixels to add to the beginning and end of each line, for each dimension
       BoundaryConditionArray boundaryConditions, ///< Filling method for the border
-      SeparableLineFilter* lineFilter, ///< Pointer to function object to call for each image line
+      SeparableLineFilter& lineFilter, ///< Function object to call for each image line
       SeparableOptions opts = {}       ///< Options to control how `lineFilter` is called
 );
 
@@ -875,7 +896,7 @@ void Full(
       dip::uint nTensorElements,       ///< Number of tensor elements in output image
       BoundaryConditionArray boundaryConditions, ///< Filling method for the border
       PixelTable const& pixelTable,    ///< Object describing the neighborhood
-      FullLineFilter* lineFilter,      ///< Pointer to function object to call for each image line
+      FullLineFilter& lineFilter,      ///< Function object to call for each image line
       FullOptions opts = {}            ///< Options to control how `lineFilter` is called
 );
 

@@ -23,7 +23,7 @@ void And(
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return *its[ 0 ] & *its[ 1 ]; }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
 
 //
@@ -37,7 +37,7 @@ void Or(
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return *its[ 0 ] | *its[ 1 ]; }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
 
 //
@@ -51,7 +51,7 @@ void Xor(
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return *its[ 0 ] ^ *its[ 1 ]; }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
 
 //
@@ -64,7 +64,7 @@ void Not(
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewMonadicScanLineFilter, (
          []( auto its ) { return ~*its[ 0 ]; }
    ), dt );
-   Framework::ScanMonadic( in, out, dt, dt, 1, scanLineFilter.get(), Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
 }
 
 

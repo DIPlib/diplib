@@ -248,7 +248,7 @@ Measurement MeasurementTool::Measure(
 
       // Do the scan, which calls dip::Feature::LineBased::ScanLine()
       dip__Measure functor{ lineBasedFeatures, measurement.ObjectIndices() };
-      Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, &functor,
+      Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, functor,
             Framework::Scan_NoMultiThreading + Framework::Scan_NeedCoordinates );
 
       // Call dip::Feature::LineBased::Finish()

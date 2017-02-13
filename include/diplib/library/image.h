@@ -1133,6 +1133,18 @@ class Image {
          return origin_;
       }
 
+      /// \brief Sets the pointer to the first sample in the image. Do not use this function
+      /// unless you know what you're doing.
+      void dip__SetOrigin( void* origin ) {
+         origin_ = origin;
+      }
+
+      /// \brief Get pointer to the first sample in the image, the first tensor
+      /// element at coordinates (0,0,0,...). The image must be forged.
+      void dip__ShiftOrigin( dip::sint offset ) {
+         origin_ = static_cast< uint8* >( origin_ ) + offset * dataType_.SizeOf();
+      }
+
       /// \brief Get a pointer to the pixel given by the offset.
       ///
       /// Cast the pointer to the right type before use. No check is made on the index.
@@ -1141,6 +1153,7 @@ class Image {
       ///
       /// \see Origin, Offset, OffsetToCoordinates
       void* Pointer( dip::sint offset ) const {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return static_cast< uint8* >( origin_ ) + offset * dataType_.SizeOf();
       }
 

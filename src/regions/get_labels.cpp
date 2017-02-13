@@ -95,7 +95,7 @@ UnsignedArray GetObjectLabels(
    // Do the scan
    Framework::Scan(
          inar, outar, inBufT, outBufT, outImT, nElem,
-         scanLineFilter.get(),
+         *scanLineFilter,
          Framework::Scan_NoMultiThreading
    );
 

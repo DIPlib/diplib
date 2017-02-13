@@ -24,7 +24,7 @@ void Scan(
       DataTypeArray const& outBufferTypes,
       DataTypeArray const& outImageTypes,
       UnsignedArray const& nTensorElements,
-      ScanLineFilter* lineFilter,
+      ScanLineFilter& lineFilter,
       ScanOptions opts
 ) {
    std::size_t nIn = c_in.size();
@@ -126,6 +126,9 @@ void Scan(
          tmp.TensorToSpatial( 0 );
       }
       tmp.ReForge( sizes, nTensor, outImageTypes[ ii ], Option::AcceptDataTypeChange::DO_ALLOW );
+      // Set pixel size and color space
+      tmp.SetPixelSize( pixelSize );
+      tmp.SetColorSpace( colspaces[ ii ] );
    }
    DIP_END_STACK_TRACE
 
@@ -257,7 +260,7 @@ void Scan(
    //       the lineFilter does per pixel. If the caller can provide that estimate,
    //       we'd be able to use that to determine the threading schedule.
 
-   lineFilter->SetNumberOfThreads( 1 );
+   lineFilter.SetNumberOfThreads( 1 );
 
    // TODO: Start threads, each thread makes its own buffers.
    dip::uint thread = 0;
@@ -372,7 +375,7 @@ void Scan(
          }
 
          // Filter the line
-         lineFilter->Filter( scanLineFilterParams );
+         lineFilter.Filter( scanLineFilterParams );
 
          // Copy back the line from output buffer to the image
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
@@ -387,8 +390,7 @@ void Scan(
                      out[ ii ].Stride( processingDim ),
                      out[ ii ].TensorStride(),
                      nPixels,
-                     outBuffers[ ii ].tensorLength,
-                     std::vector< dip::sint > {} );
+                     outBuffers[ ii ].tensorLength );
             }
          }
       }
@@ -426,13 +428,6 @@ void Scan(
    }
 
    // TODO: End threads.
-
-   // Set pixel size and color space
-   for( dip::uint ii = 0; ii < nOut; ++ii ) {
-      Image& tmp = c_out[ ii ].get();
-      tmp.SetPixelSize( pixelSize );
-      tmp.SetColorSpace( colspaces[ ii ] );
-   }
 }
 
 } // namespace Framework

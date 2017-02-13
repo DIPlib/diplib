@@ -209,8 +209,7 @@ void Image::CopyAt( Image const& source, Image const& mask, Option::ThrowExcepti
                   0, // stride ignored, we're reading only one pixel
                   TensorStride(),
                   1, // one pixel to copy
-                  TensorElements(),
-                  std::vector< dip::sint > {}
+                  TensorElements()
             );
             ++srcIt;
          }
@@ -270,8 +269,7 @@ void Image::CopyAt( Image const& source, UnsignedArray const& indices ) {
                0, // stride ignored, we're reading only one pixel
                TensorStride(),
                1, // one pixel to copy
-               TensorElements(),
-               std::vector< dip::sint > {}
+               TensorElements()
          );
       } while( ++indIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
    }
@@ -329,8 +327,7 @@ void Image::CopyAt( Image const& source, CoordinateArray const& coordinates ) {
                0, // stride ignored, we're reading only one pixel
                TensorStride(),
                1, // one pixel to copy
-               TensorElements(),
-               std::vector< dip::sint > {}
+               TensorElements()
          );
       } while( ++corIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as corIt should be compared with the end iterator.
    }
@@ -386,8 +383,7 @@ void Image::Copy( Image const& src ) {
                   static_cast< dip::sint >( sstride_d ),
                   tensorStride_,
                   NumberOfPixels(),
-                  tensor_.Elements(),
-                  std::vector< dip::sint > {}
+                  tensor_.Elements()
             );
             return;
          }
@@ -412,8 +408,7 @@ void Image::Copy( Image const& src ) {
             destStride,
             tensorStride_,
             nPixels,
-            nTElems,
-            std::vector< dip::sint > {}
+            nTElems
       );
    } while( ++it );
 }
@@ -522,8 +517,7 @@ void Image::Convert( dip::DataType dt ) {
                   static_cast< dip::sint >( sstride ),
                   tensorStride_,
                   NumberOfPixels(),
-                  tensor_.Elements(),
-                  std::vector< dip::sint > {}
+                  tensor_.Elements()
             );
          } else {
             // Make nD loop
@@ -541,8 +535,7 @@ void Image::Convert( dip::DataType dt ) {
                      strides_[ processingDim ],
                      tensorStride_,
                      sizes_[ processingDim ],
-                     tensor_.Elements(),
-                     std::vector< dip::sint > {}
+                     tensor_.Elements()
                );
             } while( ++it );
          }

@@ -27,7 +27,7 @@ void Separable(
       BooleanArray process,   // taken by copy so we can modify
       UnsignedArray border,   // taken by copy so we can modify
       BoundaryConditionArray boundaryConditions,   // taken by copy so we can modify
-      SeparableLineFilter* lineFilter,
+      SeparableLineFilter& lineFilter,
       SeparableOptions opts
 ) {
    UnsignedArray inSizes = c_in.Sizes();
@@ -98,13 +98,17 @@ void Separable(
 
    // Adjust output if necessary (and possible)
    DIP_START_STACK_TRACE
-      if( c_out.IsForged() && c_out.IsOverlappingView( c_in ) ) {
+      if( c_out.IsForged() && c_out.IsOverlappingView( input ) ) {
          c_out.Strip();
       }
       c_out.ReForge( outSizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
+      // NOTE: Don't use c_in any more from here on. It has possibly been reforged!
       c_out.ReshapeTensor( outTensor );
+      c_out.SetPixelSize( pixelSize );
+      if( !colorSpace.empty() ) {
+         c_out.SetColorSpace( colorSpace );
+      }
    DIP_END_STACK_TRACE
-   // NOTE: Don't use c_in any more from here on. It has possibly been reforged!
 
    // Make simplified copies of output image headers so we can modify them at will
    Image output = c_out.QuickCopy();
@@ -127,7 +131,9 @@ void Separable(
       }
    }
    if( jj == 0 ) {
+      // No dimensions to process.
       output.Copy( input ); // This should always work, as dimensions where the sizes don't match will be processed.
+      return;
    }
    order.resize( jj );
    // Step 2: sort the list of dimensions so that the smallest stride comes first
@@ -160,17 +166,25 @@ void Separable(
 
    // The intermediate image, if needed, stored here
    Image intermediate;
+   UnsignedArray intermSizes = outSizes;
+   for( dip::uint ii = 1; ii < order.size(); ++ii ) { // not using the 1st dimension to be processed
+      dip::uint kk = order[ ii ];
+      if( inSizes[ kk ] > outSizes[ kk ] ) {
+         intermSizes[ kk ] = inSizes[ kk ];
+      }
+   }
    bool useIntermediate = false;
    if( output.DataType() != bufferType ) {
       useIntermediate = true;
       intermediate.CopyProperties( output );
       intermediate.SetDataType( bufferType );
+      intermediate.SetSizes( intermSizes );
       intermediate.Forge();
    }
 
    // TODO: Determine the number of threads we'll be using.
 
-   lineFilter->SetNumberOfThreads( 1 );
+   lineFilter.SetNumberOfThreads( 1 );
 
    // TODO: Start threads, each thread makes its own buffers.
    dip::uint thread = 0;
@@ -296,7 +310,7 @@ void Separable(
          }
 
          // Filter the line
-         lineFilter->Filter( separableLineFilterParams );
+         lineFilter.Filter( separableLineFilterParams );
 
          // Copy back the line from output buffer to the image
          if( outUseBuffer ) {
@@ -310,8 +324,7 @@ void Separable(
                   outImage.Stride( processingDim ),
                   outImage.TensorStride(),
                   outLength,
-                  outBuffer.tensorLength,
-                  std::vector< dip::sint > {} );
+                  outBuffer.tensorLength );
          }
       } while( ++it );
 
@@ -320,9 +333,6 @@ void Separable(
    }
 
    // TODO: End threads.
-
-   c_out.SetPixelSize( pixelSize );
-   c_out.SetColorSpace( colorSpace );
 }
 
 } // namespace Framework

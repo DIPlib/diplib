@@ -259,7 +259,7 @@ void SeparableConvolution(
             process,
             border,
             bc,
-            lineFilter.get(),
+            *lineFilter,
             Framework::Separable_AsScalarImage
       );
    DIP_END_STACK_TRACE

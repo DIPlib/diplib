@@ -38,7 +38,7 @@ int main( void ) {
    DIP_OVL_CALL_ASSIGN_REAL( dyadicScanLineFilter, dip::Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_add( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   dip::Framework::ScanDyadic( in1, in2, out, dt, dt, dyadicScanLineFilter.get() );
+   dip::Framework::ScanDyadic( in1, in2, out, dt, dt, *dyadicScanLineFilter );
    std::cout << "dyadicScanLineFilter: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
 
    start = std::chrono::steady_clock::now();
@@ -50,7 +50,7 @@ int main( void ) {
    start = std::chrono::steady_clock::now();
    auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) { return ( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset; };
    dip::Framework::NadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
-   dip::Framework::ScanDyadic( in1, in2, out, dip::DT_SFLOAT, dip::DT_SFLOAT, &scanLineFilter );
+   dip::Framework::ScanDyadic( in1, in2, out, dip::DT_SFLOAT, dip::DT_SFLOAT, scanLineFilter );
    std::cout << "scanLineFilter: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
 
    // idem, but with dynamic dispatch
@@ -60,7 +60,7 @@ int main( void ) {
    DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter2, dip::Framework::NewDyadicScanLineFilter, (
          [ = ]( auto its ) { return ( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset; }
    ), dt );
-   dip::Framework::ScanDyadic( in1, in2, out, dt, dt, scanLineFilter2.get() );
+   dip::Framework::ScanDyadic( in1, in2, out, dt, dt, *scanLineFilter2 );
    std::cout << "scanLineFilter2: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
 
    // Trivial implementation of the same
@@ -97,7 +97,7 @@ int main( void ) {
    DIP_OVL_CALL_ASSIGN_REAL( monfilt, NewFilter, (
          [ = ]( auto its ) { return ( std::cos( *its[ 0 ] ) * 100 ) + offset; }
    ), dt );
-   dip::Framework::ScanMonadic( in1, out, dt, dt, in1.TensorElements(), monfilt.get(), dip::Framework::Scan_TensorAsSpatialDim );
+   dip::Framework::ScanMonadic( in1, out, dt, dt, in1.TensorElements(), *monfilt, dip::Framework::Scan_TensorAsSpatialDim );
    std::cout << "monfilt: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
 
    return 0;

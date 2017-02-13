@@ -1,8 +1,8 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for image statistics functions.
+ * This file contains the definition for the Count function.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -13,8 +13,8 @@
 
 namespace dip {
 
+namespace {
 
-//
 template< typename TPI >
 class dip__Count : public Framework::ScanLineFilter {
    public:
@@ -23,11 +23,25 @@ class dip__Count : public Framework::ScanLineFilter {
          dip::uint& count = counts[ params.thread ];
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
-         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-            if( *in != TPI( 0 ) ) {
-               ++count;
+         if( params.inBuffer.size() > 1 ) {
+            // If there's two input buffers, we have a mask image.
+            auto maskStride = params.inBuffer[ 1 ].stride;
+            bin const* mask = static_cast< bin const* >( params.inBuffer[ 1 ].buffer );
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               if( *mask && ( *in != TPI( 0 ))) {
+                  ++count;
+               }
+               in += inStride;
+               mask += maskStride;
             }
-            in += inStride;
+         } else {
+            // Otherwise we don't.
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               if( *in != TPI( 0 )) {
+                  ++count;
+               }
+               in += inStride;
+            }
          }
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
@@ -38,16 +52,19 @@ class dip__Count : public Framework::ScanLineFilter {
       std::vector< dip::uint >& counts;
 };
 
+} // namespace
+
 dip::uint Count(
-      Image const& in
+      Image const& in,
+      Image const& mask
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::NOT_SCALAR );
    std::vector< dip::uint > counts;
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__Count, ( counts ), in.DataType() );
    // Call the framework function
-   ImageRefArray outar{};
-   Framework::ScanSingleInput( in, in.DataType(), scanLineFilter.get() );
+   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter );
    // Reduce
    dip::uint out = counts[ 0 ];
    for( dip::uint ii = 1; ii < counts.size(); ++ii ) {

@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for image statistics functions.
+ * This file contains the definition for the GetMaximumAndMinimum function.
  *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -13,7 +13,8 @@
 
 namespace dip {
 
-//
+namespace {
+
 template< typename TPI >
 class dip__GetMaximumAndMinimum : public Framework::ScanLineFilter {
    public:
@@ -49,39 +50,20 @@ class dip__GetMaximumAndMinimum : public Framework::ScanLineFilter {
       std::vector< MinMaxAccumulator >& varsArray;
 };
 
+} // namespace
+
 MinMaxAccumulator GetMaximumAndMinimum(
       Image const& in,
       Image const& mask
 ) {
-   ImageConstRefArray inar;
-   inar.reserve( 2 );
-   if( in.DataType().IsComplex() ) {
-      inar.push_back( in.QuickCopy().SplitComplex() );
-   } else {
-      inar.push_back( in );
-   }
-   DataTypeArray inBufT;
-   inBufT.reserve( 2 );
-   inBufT.push_back( in.DataType() );
-   if( mask.IsForged() ) {
-      // If we have a mask, add it to the input array.
-      DIP_START_STACK_TRACE
-         mask.CheckIsMask( in.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
-      DIP_END_STACK_TRACE
-      inar.push_back( mask );
-      inBufT.push_back( DT_BIN );
-   }
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    // Create an array for the values computed by each thread, and initialize them.
    std::vector< MinMaxAccumulator > varsArray;
    // Find the right overload for our data type
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__GetMaximumAndMinimum, ( varsArray ), in.DataType() );
    // Call the framework function
-   ImageRefArray outar{};
-   Framework::Scan(
-         inar, outar,
-         inBufT, DataTypeArray{}, DataTypeArray{}, UnsignedArray{},
-         scanLineFilter.get(), Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
    // Reduce
    MinMaxAccumulator out = varsArray[ 0 ];
    for( dip::uint ii = 1; ii < varsArray.size(); ++ii ) {

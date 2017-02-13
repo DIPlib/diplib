@@ -89,7 +89,7 @@ void Equal(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, NewDyadicScanLineFilterBinOut, (
          []( auto its ) { return *its[ 0 ] == *its[ 1 ]; }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, *scanLineFilter );
 }
 
 
@@ -104,7 +104,7 @@ void NotEqual(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, NewDyadicScanLineFilterBinOut, (
          []( auto its ) { return *its[ 0 ] != *its[ 1 ]; }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, *scanLineFilter );
 }
 
 
@@ -119,7 +119,7 @@ void Lesser(
    DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewDyadicScanLineFilterBinOut, (
          []( auto its ) { return *its[ 0 ] < *its[ 1 ]; }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, *scanLineFilter );
 }
 
 
@@ -134,7 +134,7 @@ void Greater(
    DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewDyadicScanLineFilterBinOut, (
          []( auto its ) { return *its[ 0 ] > *its[ 1 ]; }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, *scanLineFilter );
 }
 
 
@@ -149,7 +149,7 @@ void NotGreater(
    DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewDyadicScanLineFilterBinOut, (
          []( auto its ) { return *its[ 0 ] <= *its[ 1 ]; }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, *scanLineFilter );
 }
 
 
@@ -164,7 +164,7 @@ void NotLesser(
    DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewDyadicScanLineFilterBinOut, (
          []( auto its ) { return *its[ 0 ] >= *its[ 1 ]; }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, *scanLineFilter );
 }
 
 

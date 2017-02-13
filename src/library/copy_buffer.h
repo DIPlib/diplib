@@ -25,7 +25,7 @@ void CopyBuffer(
       dip::sint outTensorStride,
       dip::uint pixels,          // number of pixels in the two buffers
       dip::uint tensorElements,  // number of samples per pixel
-      std::vector< dip::sint > const& lookUpTable // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
+      std::vector< dip::sint > const& lookUpTable = {} // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
 );
 
 // Expands the boundary of a 1D buffer, which extends `boundary` pixels on either side.

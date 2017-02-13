@@ -26,7 +26,7 @@ void Add(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_add( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
 
 //
@@ -40,7 +40,7 @@ void Subtract(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_sub( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
 
 //
@@ -123,7 +123,7 @@ void Multiply(
    UnsignedArray nElem{ outTensor.Elements() };
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    DIP_OVL_NEW_ALL( scanLineFilter, MultiplyLineFilter, ( lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() ), dt );
-   Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, scanLineFilter.get(), Framework::Scan_ExpandTensorInBuffer );
+   Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
    out.ReshapeTensor( outTensor );
 }
 
@@ -137,7 +137,7 @@ void MultiplySampleWise(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_mul( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
 
 //
@@ -152,7 +152,7 @@ void Divide(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_div( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
 
 //
@@ -167,7 +167,7 @@ void Modulo(
    DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return std::fmod( *its[ 0 ], *its[ 1 ] ); } // output is always dfloat, rather than of type dt, let's hope the compiler quietly casts...
    ), dt );
-   Framework::ScanDyadic( lhs, rhs, out, dt, dt, scanLineFilter.get() );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
 
 //
@@ -198,7 +198,7 @@ void Invert(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewMonadicScanLineFilter, (
          []( auto its ) { return saturated_inv( *its[ 0 ] ); }
    ), dt );
-   Framework::ScanMonadic( in, out, dt, dt, 1, scanLineFilter.get(), Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
 }
 
 

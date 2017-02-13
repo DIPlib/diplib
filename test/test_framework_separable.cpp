@@ -126,7 +126,7 @@ int main() {
       dip::Framework::Separable( img, out, dip::DT_SFLOAT, dip::DT_SFLOAT,
             dip::BooleanArray{ true, false }, { 2 },
             dip::BoundaryConditionArray{ dip::BoundaryCondition::ADD_ZEROS },
-            &lineFilter, dip::Framework::Separable_AsScalarImage);
+            lineFilter, dip::Framework::Separable_AsScalarImage);
 
       PrintPixelValues< dip::sfloat >( out );
 

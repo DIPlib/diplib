@@ -6,7 +6,7 @@ over.
 
 ## Core/infrastructure changes
 
-- Functions and types used to start with `dip_`, now they are in the `dip::` namespace. All
+- Functions and types used to start with `dip_`, now they are in the `dip::` namespace.
 
 - Functions no longer return a `dip_Error`, they throw an exception instead. The `DIPXJ`
   et al. macros are gone. So are the `DIP_FNR_DECLARE` / `DIP_FNR_INITIALISE` /
@@ -71,8 +71,13 @@ over.
 
 ## Changes in algorithm interface
 
-- Function parameters are now represented by strings rather than \c \#define or `enum`
-  constants.
+- Function parameters expressing options are now represented by strings rather than
+  \c \#define or `enum` constants (except for low-level library functionality).
+
+- The library now makes a distinction between signed and unsigned integers. This affects many
+  function parameters.
+
+- Output arguments are now always on the left-hand side, except for output images.
 
 - `dip_Measure` is now `dip::MeasurementTool::Measure`, with `dip::MeasurementTool` an object
   that knows about defined measurement features.
@@ -111,3 +116,8 @@ over.
   deviation. The measurement feature "StdDev" is now called "StandardDeviation".
   The algorithms to compute these statistics have changed to be more stable. The measurement
   feature "Sum" was an alias to "Mass", and is not (yet?) available.
+
+- `dip::SeparableConvolution` treats input filter definitions slightly differently, and there
+  no longer are "left" and "right" options.
+
+- `dip::ImageDisplay` no longer does any scaling.
