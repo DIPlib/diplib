@@ -261,7 +261,7 @@ class Image {
             case dip::DT_BIN: {
                bin* ptr = static_cast< bin* >( origin_ );
                for( T const& p : plist ) {
-                  *ptr = p;
+                  *ptr = clamp_cast< bin >( p );
                   ptr += tensorStride_;
                }
                break;
@@ -269,7 +269,7 @@ class Image {
             case dip::DT_UINT8: {
                uint8* ptr = static_cast< uint8* >( origin_ );
                for( T const& p : plist ) {
-                  *ptr = p;
+                  *ptr = clamp_cast< uint8 >( p );
                   ptr += tensorStride_;
                }
                break;
@@ -277,7 +277,7 @@ class Image {
             case dip::DT_UINT16: {
                uint16* ptr = static_cast< uint16* >( origin_ );
                for( T const& p : plist ) {
-                  *ptr = p;
+                  *ptr = clamp_cast< uint16 >( p );
                   ptr += tensorStride_;
                }
                break;
@@ -285,7 +285,7 @@ class Image {
             case dip::DT_UINT32: {
                uint32* ptr = static_cast< uint32* >( origin_ );
                for( T const& p : plist ) {
-                  *ptr = p;
+                  *ptr = clamp_cast< uint32 >( p );
                   ptr += tensorStride_;
                }
                break;
@@ -293,7 +293,7 @@ class Image {
             case dip::DT_SINT8: {
                sint8* ptr = static_cast< sint8* >( origin_ );
                for( T const& p : plist ) {
-                  *ptr = p;
+                  *ptr = clamp_cast< sint8 >( p );
                   ptr += tensorStride_;
                }
                break;
@@ -301,7 +301,7 @@ class Image {
             case dip::DT_SINT16: {
                sint16* ptr = static_cast< sint16* >( origin_ );
                for( T const& p : plist ) {
-                  *ptr = p;
+                  *ptr = clamp_cast< sint16 >( p );
                   ptr += tensorStride_;
                }
                break;
@@ -309,7 +309,7 @@ class Image {
             case dip::DT_SINT32: {
                sint32* ptr = static_cast< sint32* >( origin_ );
                for( T const& p : plist ) {
-                  *ptr = p;
+                  *ptr = clamp_cast< sint32 >( p );
                   ptr += tensorStride_;
                }
                break;
@@ -317,7 +317,7 @@ class Image {
             case dip::DT_SFLOAT: {
                sfloat* ptr = static_cast< sfloat* >( origin_ );
                for( T const& p : plist ) {
-                  *ptr = p;
+                  *ptr = clamp_cast< sfloat >( p );
                   ptr += tensorStride_;
                }
                break;
@@ -325,7 +325,7 @@ class Image {
             case dip::DT_DFLOAT: {
                dfloat* ptr = static_cast< dfloat* >( origin_ );
                for( T const& p : plist ) {
-                  *ptr = p;
+                  *ptr = clamp_cast< dfloat >( p );
                   ptr += tensorStride_;
                }
                break;
@@ -333,7 +333,7 @@ class Image {
             case dip::DT_SCOMPLEX: {
                scomplex* ptr = static_cast< scomplex* >( origin_ );
                for( T const& p : plist ) {
-                  *ptr = p;
+                  *ptr = clamp_cast< scomplex >( p );
                   ptr += tensorStride_;
                }
                break;
@@ -341,7 +341,7 @@ class Image {
             case dip::DT_DCOMPLEX: {
                dcomplex* ptr = static_cast< dcomplex* >( origin_ );
                for( T const& p : plist ) {
-                  *ptr = p;
+                  *ptr = clamp_cast< dcomplex >( p );
                   ptr += tensorStride_;
                }
                break;
@@ -1133,14 +1133,14 @@ class Image {
          return origin_;
       }
 
-      /// \brief Sets the pointer to the first sample in the image. Do not use this function
-      /// unless you know what you're doing.
+      // Sets the pointer to the first sample in the image. Do not use this function
+      // unless you know what you're doing.
       void dip__SetOrigin( void* origin ) {
          origin_ = origin;
       }
 
-      /// \brief Get pointer to the first sample in the image, the first tensor
-      /// element at coordinates (0,0,0,...). The image must be forged.
+      // Shifts the pointer to the first sample in the image by offset. Do not use this
+      // function unless you know what you're doing.
       void dip__ShiftOrigin( dip::sint offset ) {
          origin_ = static_cast< uint8* >( origin_ ) + offset * dataType_.SizeOf();
       }

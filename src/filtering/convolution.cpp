@@ -16,18 +16,6 @@ namespace dip {
 
 namespace {
 
-// *grumble* multiplication of complex values with scalars is only defined when the types are identical
-// The template works for T = sfloat, T = dfloat, T = dcomplex.
-// For T = scomplex we need a specialization.
-template< typename T >
-inline T multiply( dfloat lhs, T rhs ) {
-   return lhs * rhs;
-}
-template<>
-inline scomplex multiply( dfloat lhs, scomplex rhs ) {
-   return static_cast< sfloat >( lhs ) * rhs;
-}
-
 enum class FilterSymmetry {
       GENERAL,
       EVEN,
@@ -95,7 +83,7 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
                   TPI sum = 0;
                   TPI* in_t = in;
                   for( dip::uint jj = 0; jj < filterSize; ++jj ) {
-                     sum += multiply( filter[ jj ], *in_t );
+                     sum += static_cast< FloatType< TPI >>( filter[ jj ] ) * *in_t;
                      in_t -= inStride;
                   }
                   *out = sum;
@@ -107,13 +95,13 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
                in += ( origin - fsh ) * inStride;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI* in_r = in;
-                  TPI sum = multiply( filter[ fsh ], *in_r );
+                  TPI sum = static_cast< FloatType< TPI >>( filter[ fsh ] ) * *in_r;
                   TPI* in_l = in_r - inStride;
                   in_r += inStride;
                   dip::uint jj = fsh;
                   while( jj > 0 ) {
                      --jj;
-                     sum += multiply( filter[ jj ], *in_r + *in_l );
+                     sum += static_cast< FloatType< TPI >>( filter[ jj ] ) * ( *in_r + *in_l );
                      in_l -= inStride;
                      in_r += inStride;
                   }
@@ -126,13 +114,13 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
                in += ( origin - fsh ) * inStride;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI* in_r = in;
-                  TPI sum = multiply( filter[ fsh ], *in_r );
+                  TPI sum = static_cast< FloatType< TPI >>( filter[ fsh ] ) * *in_r;
                   TPI* in_l = in_r - inStride;
                   in_r += inStride;
                   dip::uint jj = fsh;
                   while( jj > 0 ) {
                      --jj;
-                     sum += multiply( filter[ jj ], *in_r - *in_l ); // TODO: reverse?
+                     sum += static_cast< FloatType< TPI >>( filter[ jj ] ) * ( *in_r - *in_l );
                      in_l -= inStride;
                      in_r += inStride;
                   }
@@ -151,7 +139,7 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
                   dip::uint jj = fsh;
                   while( jj > 0 ) {
                      --jj;
-                     sum += multiply( filter[ jj ], *in_r + *in_l );
+                     sum += static_cast< FloatType< TPI >>( filter[ jj ] ) * ( *in_r + *in_l );
                      in_l -= inStride;
                      in_r += inStride;
                   }
@@ -170,7 +158,7 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
                   dip::uint jj = fsh;
                   while( jj > 0 ) {
                      --jj;
-                     sum += multiply( filter[ jj ], *in_r - *in_l ); // TODO: reverse?
+                     sum += static_cast< FloatType< TPI >>( filter[ jj ] ) * ( *in_r - *in_l );
                      in_l -= inStride;
                      in_r += inStride;
                   }

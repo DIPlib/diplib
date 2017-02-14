@@ -109,6 +109,65 @@ static_assert( sizeof( dip::bin ) == 1, "The binary type is not a single byte!" 
 
 
 //
+// Templates that help get the right types in template functions and template classes
+//
+
+template< class T >
+struct DataTypeCalculator {
+   using float_type = sfloat;
+   using complex_type = scomplex;
+   using flex_type = sfloat;
+};
+
+template<>
+struct DataTypeCalculator< uint32 > {
+   using float_type = dfloat;
+   using complex_type = dcomplex;
+   using flex_type = dfloat;
+};
+
+template<>
+struct DataTypeCalculator< sint32 > {
+   using float_type = dfloat;
+   using complex_type = dcomplex;
+   using flex_type = dfloat;
+};
+
+template<>
+struct DataTypeCalculator< dfloat > {
+   using float_type = dfloat;
+   using complex_type = dcomplex;
+   using flex_type = dfloat;
+};
+
+template<>
+struct DataTypeCalculator< scomplex > {
+   using float_type = sfloat;
+   using complex_type = scomplex;
+   using flex_type = scomplex;
+};
+
+template<>
+struct DataTypeCalculator< dcomplex > {
+   using float_type = dfloat;
+   using complex_type = dcomplex;
+   using flex_type = dcomplex;
+};
+
+/// \brief The type to use in calculations when a floating-point type is needed. Matches `dip::DataType::SuggestFloat`.
+template< class T >
+using FloatType = typename DataTypeCalculator< T >::float_type;
+
+/// \brief The type to use in calculations when a complex type is needed. Matches `dip::DataType::SuggestComplex`.
+template< class T >
+using ComplexType = typename DataTypeCalculator< T >::complex_type;
+
+/// \brief The type to use in calculations. Matches `dip::DataType::SuggestFlex`.
+template< class T >
+using FlexType = typename DataTypeCalculator< T >::flex_type;
+
+
+//
 // Array types
 //
 
