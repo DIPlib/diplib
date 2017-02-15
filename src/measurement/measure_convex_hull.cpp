@@ -168,7 +168,11 @@ RadiusValues Polygon::RadiusStatistics() const {
 dfloat Polygon::EllipseVariance() const {
    // Covariance matrix of polygon vertices
    VertexFloat g = Centroid();
-   dip::CovarianceMatrix C = this->CovarianceMatrix( g );
+   dip::CovarianceMatrix C = this->CovarianceMatrix(g);
+   return EllipseVariance( g, C );
+}
+
+dfloat Polygon::EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const {
    // Inverse of covariance matrix
    dip::CovarianceMatrix U = C.Inv();
    // Distance of vertex to ellipse is given by sqrt( v' * U * v ), with v' the transpose of v

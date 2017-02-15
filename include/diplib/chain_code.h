@@ -416,12 +416,16 @@ struct Polygon {
    /// and each of the vertices.
    RadiusValues RadiusStatistics() const;
 
-   /// \brief Compares a polygon to the ellipse with the same covariance matrix, returning the coeffient of
+   /// \brief Compares a polygon to the ellipse with the same covariance matrix, returning the coefficient of
    /// variation of the distance of vertices to the ellipse.
    ///
    /// See: M. Yang, K. Kpalma and J. Ronsin, "A Survey of Shape Feature Extraction Techniques",
    /// in: Pattern Recognition Techniques, Technology and Applications, P.Y. Yin (Editor), I-Tech, 2008.
    dfloat EllipseVariance() const;
+
+   /// \brief Compares a polygon to the ellipse described by the given centroid and covariance matrix, returning
+   /// the coefficient of variation of the distance of vertices to the ellipse.
+   dfloat EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const;
 
    /// \brief Returns the convex hull of the polygon.
    dip::ConvexHull ConvexHull() const;
