@@ -147,7 +147,7 @@ class PixelTable {
 
       /// \brief Construct a pixel table for default filter shapes.
       ///
-      /// The known default `shape`s are "rectagular", "elliptic", and "diamond",
+      /// The known default `shape`s are "rectangular", "elliptic", and "diamond",
       /// which correspond to a unit circle in the L<sub>infinity</sub> norm, the L<sub>2</sub> norm,
       /// and the L<sub>1</sub> norm.
       ///
@@ -216,7 +216,7 @@ class PixelTable {
       iterator end() const;
 
       /// \brief Creates a binary image representing the neighborhood, or a `dfloat` one if
-      /// there are weights associtated.
+      /// there are weights associated.
       Image AsImage() const {
          Image out;
          AsImage( out );
