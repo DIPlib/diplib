@@ -814,7 +814,7 @@ class JointImageIterator {
             return false;
          }
          for( dip::uint ii = 0; ii < inImage_->Dimensionality(); ++ii ) {
-            if(( ii != procDim_ ) && ( inImage_->Size( ii ) != outImage_->Size( ii ) )) {
+            if(( static_cast< dip::sint >( ii ) != procDim_ ) && ( inImage_->Size( ii ) != outImage_->Size( ii ) )) {
                return false;
             }
          }
