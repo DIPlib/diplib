@@ -159,7 +159,7 @@ struct DataType {
       DIP_THROW( "Unknown data type." ); // WTF GCC?
    }
 
-   /// \brief Returns `true` if the data type is binary (equal to `dip::DT_BIN`).
+   /// \brief Returns `true` if the data type is binary.
    bool IsBinary() const {
       return dt == DT::BIN;
    }
@@ -220,9 +220,9 @@ struct DataType {
       };
    }
 
-   /// \brief Returns `true` if the data type is an unsigned type (same as `dip::DataType::IsUInt`).
+   /// \brief Returns `true` if the data type is an unsigned type (binary or unsigned integer).
    bool IsUnsigned() const {
-      return IsUInt();
+      return IsUInt() || IsBinary();
    }
 
    /// \brief Returns `true` if the data type is a signed type (signed integer, floating point or complex)
@@ -267,7 +267,7 @@ struct DataType {
    /// Class_Float      | Class_SFloat + Class_DFloat;
    /// Class_Real       | Class_Integer + Class_Float;
    /// Class_Complex    | Class_SComplex + Class_DComplex;
-   /// Class_Unsigned   | Class_UInt;
+   /// Class_Unsigned   | Class_Bin + Class_UInt;
    /// Class_Signed     | Class_SInt + Class_Float + Class_Complex;
    /// Class_Any        | Class_Binary + Class_Real + Class_Complex;
    ///
@@ -291,7 +291,7 @@ struct DataType {
    static DIP_DEFINE_OPTION( Classes, Class_Float, Class_SFloat + Class_DFloat );
    static DIP_DEFINE_OPTION( Classes, Class_Real, Class_Integer + Class_Float );
    static DIP_DEFINE_OPTION( Classes, Class_Complex, Class_SComplex + Class_DComplex );
-   static DIP_DEFINE_OPTION( Classes, Class_Unsigned, Class_UInt );
+   static DIP_DEFINE_OPTION( Classes, Class_Unsigned, Class_Bin + Class_UInt );
    static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
    static DIP_DEFINE_OPTION( Classes, Class_Any, Class_Binary + Class_Real + Class_Complex );
 

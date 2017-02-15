@@ -100,6 +100,7 @@
    DIP__OVL__SINT( assign_name, paramlist )
 
 #define DIP__OVL__UNSIGNED( assign_name, paramlist ) \
+   DIP__OVL__BIN( assign_name, paramlist )  \
    DIP__OVL__UINT( assign_name, paramlist )
 
 #define DIP__OVL__SIGNED( assign_name, paramlist ) \

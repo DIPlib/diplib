@@ -151,7 +151,7 @@ ChainCodeArray GetImageChainCodes(
 
    // Get the chaincode for each label
    ChainCodeArray ccArray;
-   DIP_OVL_CALL_ASSIGN_UNSIGNED( ccArray, dip__ChainCode, (
+   DIP_OVL_CALL_ASSIGN_UINT( ccArray, dip__ChainCode, (
                labels,
                objectIDs.empty() ? GetObjectLabels( labels, Image(), false ) : objectIDs,
                connectivity,

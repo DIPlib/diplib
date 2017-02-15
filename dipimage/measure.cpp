@@ -64,7 +64,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          dip::uint connectivity = nrhs > 4 ? dml::GetUnsigned( prhs[ 4 ] ) : label.Dimensionality();
 
          dip::Image tmp;
-         if( !label.DataType().IsUnsigned() ) {
+         if( !label.DataType().IsUInt() ) {
             // Not yet labeled
             DIP_THROW_IF( label.DataType().IsBinary(), "Object input image must be either labelled or binary." );
             dip::Label( label, tmp, connectivity );

@@ -65,7 +65,7 @@ UnsignedArray GetObjectLabels(
 ) {
    // Check input
    DIP_THROW_IF( label.TensorElements() != 1, E::NOT_SCALAR );
-   DIP_THROW_IF( !label.DataType().IsUnsigned(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
    if( mask.IsForged() ) {
       DIP_THROW_IF( mask.TensorElements() != 1, E::NOT_SCALAR );
       DIP_THROW_IF( !mask.DataType().IsBinary(), E::MASK_NOT_BINARY );
