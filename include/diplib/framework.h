@@ -166,7 +166,7 @@ class ScanLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( ScanLineFilterParameters const& params ) = 0;
-      /// \brief The derived class can defined this function if it needs this information ahead of time.
+      /// \brief The derived class can define this function if it needs this information ahead of time.
       virtual void SetNumberOfThreads( dip::uint threads ) {}
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~ScanLineFilter() {}
@@ -603,7 +603,7 @@ class SeparableLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( SeparableLineFilterParameters const& params ) = 0;
-      /// \brief The derived class can defined this function if it needs this information ahead of time.
+      /// \brief The derived class can define this function if it needs this information ahead of time.
       virtual void SetNumberOfThreads( dip::uint threads ) {}
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~SeparableLineFilter() {}
@@ -796,7 +796,7 @@ class FullLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( FullLineFilterParameters const& params ) = 0;
-      /// \brief The derived class can defined this function if it needs this information ahead of time.
+      /// \brief The derived class can define this function if it needs this information ahead of time.
       virtual void SetNumberOfThreads( dip::uint threads ) {}
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~FullLineFilter() {}

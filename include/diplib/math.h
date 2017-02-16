@@ -46,12 +46,14 @@ inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArra
    return out;
 }
 
+
 /// \brief Finds the largest and smallest value in the image, within an optional mask.
 ///
 /// If `mask` is not forged, all input pixels are considered. In case of a tensor
 /// image, returns the maximum and minimum sample values. In case of a complex
 /// samples, treats real and imaginary components as individual samples.
 MinMaxAccumulator GetMaximumAndMinimum( Image const& in, Image const& mask = {} );
+
 
 // TODO: We need functions dip::All() dip::Any() that apply to samples within a tensor. This combines with equality: dip::All( a == b ), for a, b tensor images.
 // TODO: We need similar functions that apply to all pixels in an image.

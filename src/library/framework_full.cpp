@@ -30,6 +30,7 @@ void Full(
       FullLineFilter& lineFilter,
       FullOptions opts
 ) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    UnsignedArray sizes = c_in.Sizes();
    dip::uint nDims = sizes.size();
 

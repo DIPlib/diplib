@@ -446,7 +446,7 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
 
 /// \brief `%MinMaxAccumulator` computes minimum and maximum values of a sequence of values.
 ///
-/// Samples are added one by one, using the `Push` method. Other members are used to retrieve the results.
+/// Samples are added one by one or two by two, using the `Push` method. Other members are used to retrieve the results.
 ///
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
@@ -458,6 +458,17 @@ class MinMaxAccumulator {
       void Push( dfloat x ) {
          max_ = std::max( max_, x );
          min_ = std::min( min_, x );
+      }
+
+      /// \brief Add two samples to the accumulator. Prefer this over adding one value at the time.
+      void Push( dfloat x, dfloat y ) {
+         if( x > y ) {
+            max_ = std::max( max_, x );
+            min_ = std::min( min_, y );
+         } else { // y >= x
+            max_ = std::max( max_, y );
+            min_ = std::min( min_, x );
+         }
       }
 
       /// Combine two accumulators
@@ -481,6 +492,9 @@ class MinMaxAccumulator {
       dfloat min_ = std::numeric_limits< dfloat >::max();
       dfloat max_ = std::numeric_limits< dfloat >::lowest();
 };
+
+
+
 
 
 /// \}

@@ -30,6 +30,7 @@ void Separable(
       SeparableLineFilter& lineFilter,
       SeparableOptions opts
 ) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    UnsignedArray inSizes = c_in.Sizes();
    dip::uint nDims = inSizes.size();
 

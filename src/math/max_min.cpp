@@ -36,6 +36,7 @@ class dip__GetMaximumAndMinimum : public Framework::ScanLineFilter {
             }
          } else {
             // Otherwise we don't.
+            // TODO: algorithm can be more efficient by pushing pairs of values into the accumulator.
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                vars.Push( *in );
                in += inStride;
