@@ -26,7 +26,9 @@ class ProjectionScanFunction {
    public:
       // The filter to be applied to each sub-image, which fills out a single sample in `out`. The `out` pointer
       // must be cast to the requested `outImageType` in the call to `ProjectionScan`.
-      virtual void Project( Image const& in, Image const& mask, void* out ) = 0;
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint thread ) = 0;
+      // The derived class can define this function if it needs this information ahead of time.
+      virtual void SetNumberOfThreads( dip::uint threads ) {}
       // A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~ProjectionScanFunction() {}
 };
@@ -39,6 +41,7 @@ void ProjectionScan(
       BooleanArray process,   // taken by copy so we can modify
       ProjectionScanFunction& function
 ) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    UnsignedArray inSizes = c_in.Sizes();
    dip::uint nDims = inSizes.size();
 
@@ -120,13 +123,14 @@ void ProjectionScan(
    // Do we need to loop at all?
    if( process.all() ) {
       //std::cout << "Projection framework: no need to loop!" << std::endl;
+      function.SetNumberOfThreads( 1 );
       if( output.DataType() != outImageType ) {
          Image outBuffer( {}, 1, outImageType );
-         function.Project( input, mask, outBuffer.Origin() );
+         function.Project( input, mask, outBuffer.Origin(), 0 );
          CopyBuffer( outBuffer.Origin(), outBuffer.DataType(), 1, 1,
                      output.Origin(), output.DataType(), 1, 1, 1, 1 );
       } else {
-         function.Project( input, mask, output.Origin() );
+         function.Project( input, mask, output.Origin(), 0 );
       }
       return;
    }
@@ -135,8 +139,10 @@ void ProjectionScan(
    // TODO: This is an opportunity for improving performance if the non-processing dimensions in in, mask and out have the same layout and simple stride
 
    // TODO: Determine the number of threads we'll be using. The size of the data has an influence. As is the number of sub-images that we can generate
+   function.SetNumberOfThreads( 1 );
 
    // TODO: Start threads, each thread makes its own temp image.
+   dip::uint thread = 0;
 
    // Create view over input image, that spans the processing dimensions
    Image tempIn;
@@ -196,12 +202,12 @@ void ProjectionScan(
 
       // Do the thing
       if( useOutputBuffer ) {
-         function.Project( tempIn, tempMask, outBuffer.Origin() );
+         function.Project( tempIn, tempMask, outBuffer.Origin(), thread );
          // Copy data from output buffer to output image
          CopyBuffer( outBuffer.Origin(), outBuffer.DataType(), 1, 1,
                      tempOut.Origin(), tempOut.DataType(), 1, 1, 1, 1 );
       } else {
-         function.Project( tempIn, tempMask, tempOut.Origin() );
+         function.Project( tempIn, tempMask, tempOut.Origin(), thread );
       }
 
       // Next output pixel
@@ -243,7 +249,7 @@ template< typename TPI >
 class ProjectionMean : public ProjectionScanFunction {
    public:
       ProjectionMean( bool computeMean ) : computeMean_( computeMean ) {}
-      void Project( Image const& in, Image const& mask, void* out ) override {
+      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
          FlexType< TPI > sum = 0;
          if( mask.IsForged() ) {
@@ -277,7 +283,7 @@ ComplexType< TPI > AngleToVector( TPI v ) { return { static_cast< FloatType< TPI
 template< typename TPI >
 class ProjectionMeanDirectional : public ProjectionScanFunction {
    public:
-      void Project( Image const& in, Image const& mask, void* out ) override {
+      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          ComplexType< TPI > sum = { 0, 0 };
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
@@ -330,7 +336,7 @@ namespace {
 template< typename TPI >
 class ProjectionProduct : public ProjectionScanFunction {
    public:
-      void Project( Image const& in, Image const& mask, void* out ) override {
+      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          FlexType< TPI > product = 1.0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
@@ -368,7 +374,7 @@ template< typename TPI >
 class ProjectionMeanAbs : public ProjectionScanFunction {
    public:
       ProjectionMeanAbs( bool computeMean ) : computeMean_( computeMean ) {}
-      void Project( Image const& in, Image const& mask, void* out ) override {
+      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
          FloatType< TPI > sum = 0;
          if( mask.IsForged() ) {
@@ -432,7 +438,7 @@ template< typename TPI >
 class ProjectionMeanSquare : public ProjectionScanFunction {
    public:
       ProjectionMeanSquare( bool computeMean ) : computeMean_( computeMean ) {}
-      void Project( Image const& in, Image const& mask, void* out ) override {
+      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
          FlexType< TPI > sum = 0;
          if( mask.IsForged() ) {
@@ -498,7 +504,7 @@ template< typename TPI >
 class ProjectionVariance : public ProjectionScanFunction {
    public:
       ProjectionVariance( bool computeStD ) : computeStD_( computeStD ) {}
-      void Project( Image const& in, Image const& mask, void* out ) override {
+      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          VarianceAccumulator acc;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
@@ -525,7 +531,7 @@ template< typename TPI >
 class ProjectionVarianceDirectional : public ProjectionScanFunction {
    public:
       ProjectionVarianceDirectional( bool computeStD ) : computeStD_( computeStD ) {}
-      void Project( Image const& in, Image const& mask, void* out ) override {
+      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
          ComplexType< TPI > sum = { 0, 0 };
          if( mask.IsForged() ) {
@@ -593,7 +599,7 @@ namespace {
 template< typename TPI >
 class ProjectionMaximum : public ProjectionScanFunction {
    public:
-      void Project( Image const& in, Image const& mask, void* out ) override {
+      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          TPI max = std::numeric_limits< TPI >::lowest();
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
@@ -630,7 +636,7 @@ namespace {
 template< typename TPI >
 class ProjectionMinimum : public ProjectionScanFunction {
    public:
-      void Project( Image const& in, Image const& mask, void* out ) override {
+      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          TPI min = std::numeric_limits< TPI >::max();
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
@@ -662,6 +668,82 @@ void Minimum(
    ProjectionScan( in, mask, out, in.DataType(), process, *lineFilter );
 }
 
+namespace {
+
+template< typename TPI >
+class ProjectionPercentile : public ProjectionScanFunction {
+   public:
+      ProjectionPercentile( dfloat percentile ) : percentile_( percentile ) {}
+      void Project( Image const& in, Image const& mask, void* out, dip::uint thread ) override {
+         dip::uint N;
+         if( mask.IsForged() ) {
+            N = Count( mask );
+         } else {
+            N = in.NumberOfPixels();
+         }
+         if( N == 0 ) {
+            *static_cast< TPI* >( out ) = TPI{};
+            return;
+         }
+         dip::uint rank = static_cast< dip::uint >( std::floor( N * percentile_ / 100.0 )); // rank < N, because percentile_ < 100
+         buffer_[ thread ].resize( N );
+         auto begin = buffer_[ thread ].begin();
+         auto leftIt = begin;
+         auto rightIt = buffer_[ thread ].rbegin();
+         TPI pivot{};
+         if( mask.IsForged() ) {
+            JointImageIterator< TPI, bin > it( in, mask );
+            do {
+               if( it.Out() ) {
+                  pivot = it.In();
+                  ++it;
+                  break;
+               }
+            } while( ++it );
+            do {
+               if( it.Out() ) {
+                  TPI v = it.In();
+                  if( v < pivot ) {
+                     *( leftIt++ ) = v;
+                  } else {
+                     *( rightIt++ ) = v;
+                  }
+               }
+            } while( ++it );
+         } else {
+            ImageIterator< TPI > it( in );
+            pivot = *( it++ );
+            do {
+               TPI v = *it;
+               if( v < pivot ) {
+                  *( leftIt++ ) = v;
+               } else {
+                  *( rightIt++ ) = v;
+               }
+            } while( ++it );
+         }
+         DIP_ASSERT( &*leftIt == &*rightIt ); // They should both be pointing to the same array element.
+         *leftIt = pivot;
+         auto ourGuy = begin + rank;
+         if( ourGuy < leftIt ) {
+            // our guy is to the left
+            std::nth_element( begin, ourGuy, leftIt );
+         } else if( ourGuy > leftIt ){
+            // our guy is to the right
+            std::nth_element( ++leftIt, ourGuy, buffer_[ thread ].end() );
+         } // else: ourGuy == leftIt, which is already sorted correctly.
+         *static_cast< TPI* >( out ) = *ourGuy;
+      }
+      void SetNumberOfThreads( dip::uint threads ) override {
+         buffer_.resize( threads );
+      }
+   private:
+      std::vector< std::vector< TPI >> buffer_;
+      dfloat percentile_;
+};
+
+}
+
 void Percentile(
       Image const& in,
       Image const& mask,
@@ -669,12 +751,15 @@ void Percentile(
       dfloat percentile,
       BooleanArray process
 ) {
+   DIP_THROW_IF(( percentile < 0.0 ) || ( percentile > 100.0 ), E::PARAMETER_OUT_OF_RANGE );
    if( percentile == 0.0 ) {
       Minimum( in, mask, out, process );
    } else if( percentile == 100.0 ) {
       Maximum( in, mask, out, process );
    } else {
-
+      std::unique_ptr< ProjectionScanFunction > lineFilter;
+      DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionPercentile, ( percentile ), in.DataType() );
+      ProjectionScan( in, mask, out, in.DataType(), process, *lineFilter );
    }
 }
 
