@@ -113,8 +113,25 @@ if(Matlab_FOUND)
    matlab_add_mex(NAME dip_operators SRC dipimage/@dip3_image/private/dip_operators.cpp LINK_TO DIP)
    install(TARGETS dip_operators DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip3_image/private)
    # Compile and install MEX-files in @dip_image
-   #matlab_add_mex(NAME bla SRC dipimage/@dip3_image/bla.cpp LINK_TO DIP)
-   #install(TARGETS bla DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip3_image)
+   matlab_add_mex(NAME max SRC dipimage/@dip3_image/max.cpp LINK_TO DIP)
+   matlab_add_mex(NAME mean SRC dipimage/@dip3_image/mean.cpp LINK_TO DIP)
+   matlab_add_mex(NAME min SRC dipimage/@dip3_image/min.cpp LINK_TO DIP)
+   matlab_add_mex(NAME percentile SRC dipimage/@dip3_image/percentile.cpp LINK_TO DIP)
+   matlab_add_mex(NAME prod SRC dipimage/@dip3_image/prod.cpp LINK_TO DIP)
+   matlab_add_mex(NAME std SRC dipimage/@dip3_image/std.cpp LINK_TO DIP)
+   matlab_add_mex(NAME sum SRC dipimage/@dip3_image/sum.cpp LINK_TO DIP)
+   matlab_add_mex(NAME var SRC dipimage/@dip3_image/var.cpp LINK_TO DIP)
+   install(
+         TARGETS
+            max
+            mean
+            min
+            percentile
+            prod
+            std
+            sum
+            var
+         DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip3_image)
    # Compile and install MEX-files in toolbox directory
    matlab_add_mex(NAME convolve SRC dipimage/convolve.cpp LINK_TO DIP)
    matlab_add_mex(NAME extendimage SRC dipimage/extendimage.cpp LINK_TO DIP)

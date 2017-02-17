@@ -13,6 +13,7 @@ cat.m
 horzcat.m
 repmat.m
 vertcat.m
+complex.m
 
 expanddim.m
 permute.m
@@ -36,7 +37,6 @@ atan2.m
 besselj.m
 ceil.m
 circshift.m
-complex.m
 convhull.m
 cos.m
 cross.m
@@ -67,30 +67,21 @@ isnan.m
 log.m
 log10.m
 log2.m
-max.m
-mean.m
-median.m
-min.m
 mod.m
 norm.m
 outer.m
-percentile.m
 phase.m
 pinv.m
 pow10.m
 pow2.m
 power.m
-prod.m
 rot90.m
 rotate.m
 round.m
 sign.m
 sin.m
 sqrt.m
-std.m
-sum.m
 svd.m
 tan.m
 trace.m
 unique.m
-var.m

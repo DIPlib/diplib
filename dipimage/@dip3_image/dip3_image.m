@@ -237,6 +237,8 @@ classdef dip3_image
          img.TensorShapeInternal = 'column vector';
          img.TensorSizeInternal = [size(img.Data,2),1];
          img.TrailingSingletons = 0;
+         %disp('set.Array')
+         %disp(img)
       end
 
       function img = set.NDims(img,nd)
@@ -245,6 +247,8 @@ classdef dip3_image
             error('NDims must be a scalar value and at least as large as the number of spatial dimensions')
          end
          img.TrailingSingletons = double(nd) - minnd; % convert to double just in case...
+         %disp('set.NDims')
+         %disp(img)
       end
 
       function img = set.TensorShape(img,tshape)
@@ -303,6 +307,8 @@ classdef dip3_image
          end
          img.TensorShapeInternal = tshape;
          img.TensorSizeInternal = tsize;
+         %disp('set.TensorShape')
+         %disp(img)
       end
 
       function img = set.PixelSize(img,pxsz)
@@ -315,6 +321,8 @@ classdef dip3_image
          else
             error('ColorSpace must be a string')
          end
+         %disp('set.ColorSpace')
+         %disp(img)
       end
 
       % ------- GET PROPERTIES -------

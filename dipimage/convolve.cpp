@@ -40,7 +40,7 @@ dip::OneDimensionalFilter GetFilter(
 } // namespace
 
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
-   dml::streambuf streambuf;
+   //dml::streambuf streambuf;
 
    char const* wrongFilter = "Wrong filter definition";
 
