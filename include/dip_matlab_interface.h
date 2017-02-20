@@ -51,7 +51,7 @@ namespace dml {
 namespace { // This makes all these functions not visible outside the current compilation unit. Result: the MEX-file will not export these functions.
 
 // These are the names of the properties we get/set in the dip_image class in MATLAB:
-constexpr char const* imageClassName = "dip3_image"; // TODO: rename this to "dip_image" when we're done testing and comparing to the old dip_image class
+constexpr char const* imageClassName = "dip_image";
 constexpr char const* arrayPropertyName = "Array"; // Set/get pixel data
 constexpr char const* ndimsPropertyName = "NDims"; // Set/get number of dimensions
 constexpr char const* tsizePropertyName = "TensorSize"; // Get tensor size: [rows, cols]

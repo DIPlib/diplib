@@ -110,17 +110,17 @@ if(Matlab_FOUND)
    # Install M-files
    install(DIRECTORY dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m") # could also do PATTERN "*.cpp" EXCLUDE
    # Compile and install MEX-files in @dip_image/private
-   matlab_add_mex(NAME dip_operators SRC dipimage/@dip3_image/private/dip_operators.cpp LINK_TO DIP)
-   install(TARGETS dip_operators DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip3_image/private)
+   matlab_add_mex(NAME dip_operators SRC dipimage/@dip_image/private/dip_operators.cpp LINK_TO DIP)
+   install(TARGETS dip_operators DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private)
    # Compile and install MEX-files in @dip_image
-   matlab_add_mex(NAME max SRC dipimage/@dip3_image/max.cpp LINK_TO DIP)
-   matlab_add_mex(NAME mean SRC dipimage/@dip3_image/mean.cpp LINK_TO DIP)
-   matlab_add_mex(NAME min SRC dipimage/@dip3_image/min.cpp LINK_TO DIP)
-   matlab_add_mex(NAME percentile SRC dipimage/@dip3_image/percentile.cpp LINK_TO DIP)
-   matlab_add_mex(NAME prod SRC dipimage/@dip3_image/prod.cpp LINK_TO DIP)
-   matlab_add_mex(NAME std SRC dipimage/@dip3_image/std.cpp LINK_TO DIP)
-   matlab_add_mex(NAME sum SRC dipimage/@dip3_image/sum.cpp LINK_TO DIP)
-   matlab_add_mex(NAME var SRC dipimage/@dip3_image/var.cpp LINK_TO DIP)
+   matlab_add_mex(NAME max SRC dipimage/@dip_image/max.cpp LINK_TO DIP)
+   matlab_add_mex(NAME mean SRC dipimage/@dip_image/mean.cpp LINK_TO DIP)
+   matlab_add_mex(NAME min SRC dipimage/@dip_image/min.cpp LINK_TO DIP)
+   matlab_add_mex(NAME percentile SRC dipimage/@dip_image/percentile.cpp LINK_TO DIP)
+   matlab_add_mex(NAME prod SRC dipimage/@dip_image/prod.cpp LINK_TO DIP)
+   matlab_add_mex(NAME std SRC dipimage/@dip_image/std.cpp LINK_TO DIP)
+   matlab_add_mex(NAME sum SRC dipimage/@dip_image/sum.cpp LINK_TO DIP)
+   matlab_add_mex(NAME var SRC dipimage/@dip_image/var.cpp LINK_TO DIP)
    install(
          TARGETS
             max
@@ -131,12 +131,21 @@ if(Matlab_FOUND)
             std
             sum
             var
-         DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip3_image)
+         DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image)
    # Compile and install MEX-files in toolbox directory
    matlab_add_mex(NAME convolve SRC dipimage/convolve.cpp LINK_TO DIP)
    matlab_add_mex(NAME extendimage SRC dipimage/extendimage.cpp LINK_TO DIP)
+   matlab_add_mex(NAME getmaximumandminimum SRC dipimage/getmaximumandminimum.cpp LINK_TO DIP)
+   matlab_add_mex(NAME imagedisplay SRC dipimage/imagedisplay.cpp LINK_TO DIP)
    matlab_add_mex(NAME measure SRC dipimage/measure.cpp LINK_TO DIP)
-   install(TARGETS convolve extendimage measure DESTINATION ${DIPIMAGE_INSTALL_PATH})
+   install(
+         TARGETS
+            convolve
+            extendimage
+            getmaximumandminimum
+            imagedisplay
+            measure
+         DESTINATION ${DIPIMAGE_INSTALL_PATH})
 endif()
 
 
@@ -199,8 +208,8 @@ if(Matlab_FOUND)
    matlab_add_mex(NAME mextest_pixel_table SRC test/mextest_pixel_table.cpp LINK_TO DIP)
    set_target_properties(mextest_pixel_table PROPERTIES EXCLUDE_FROM_ALL 1)
 
-   matlab_add_mex(NAME mextest_dip3_image SRC test/mextest_dip3_image.cpp LINK_TO DIP)
-   set_target_properties(mextest_dip3_image PROPERTIES EXCLUDE_FROM_ALL 1)
+   matlab_add_mex(NAME mextest_dip_image SRC test/mextest_dip_image.cpp LINK_TO DIP)
+   set_target_properties(mextest_dip_image PROPERTIES EXCLUDE_FROM_ALL 1)
 
    add_custom_target(
          mex DEPENDS
@@ -210,7 +219,7 @@ if(Matlab_FOUND)
          mextest_measure
          mextest_maxmin
          mextest_pixel_table
-         mextest_dip3_image
+         mextest_dip_image
    )
 
 endif(Matlab_FOUND)

@@ -18,10 +18,10 @@ namespace dip {
 /// \brief Parameters to the `dip::ImageDisplay` function.
 struct ImageDisplayParams {
    String mode; ///< "lin" (for linear), "log" (for logarithmic), "based" (for based at 0, where 0 is anchored at grey value 128.
-   String complex; ///< "mag" (for magnitude), "phase", "real", "imag".
+   String complex; ///< "mag" (for magnitude) or "abs", "phase", "real", "imag".
    String projection; ///< "slice", "max", "mean".
-   dip::dfloat lowerBound; ///< grey value to set to 0.
-   dip::dfloat upperBound; ///< grey value to set to 255.
+   dfloat lowerBound; ///< grey value to set to 0.
+   dfloat upperBound; ///< grey value to set to 255.
 };
 
 /// \brief Transform the image to make it suitable for display.
@@ -35,21 +35,22 @@ struct ImageDisplayParams {
 /// `params.lowerBound` and `params.upperBound` indicate how the grey-values will be stretched to the range of the
 /// `dip::DT_UINT8` output data type. In case `in` is complex, it will be converted to real values through
 /// `params.complex`. Finally, if `params.mode` is "log", a logarithmic stretching will be applied, instead of linear.
-/// With the "based" mode, the lower and upper bounds will be adjusted such that 0 is mapped to middle grey.
+/// With the "based" mode, the lower and upper bounds will be adjusted such that 0 is mapped to middle grey. Note that
+/// the upper bound must be stricly greater than the lower bound.
 ///
 /// If `in` is a color image, it will be converted to RGB, and each of the three channels will be handled identically.
 /// Other tensor images are not supported.
 void ImageDisplay(
-      Image in,
-      Image out,
+      Image const& in,
+      Image& out,
       UnsignedArray const& coordinates,
       dip::uint dim1,
       dip::uint dim2,
       ImageDisplayParams const& params
 );
 
-Image ImageDisplay (
-      Image in,
+inline Image ImageDisplay (
+      Image const& in,
       UnsignedArray const& coordinates,
       dip::uint dim1,
       dip::uint dim2,

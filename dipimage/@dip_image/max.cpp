@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the 'min' function
+ * This MEX-file implements the 'max' function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -45,16 +45,20 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
             DIP_THROW( dip::E::NOT_IMPLEMENTED );
          } else {
             // Simply get the maximum projection
-            dip::Minimum( in1, in2, out, process );
+            dip::Maximum( in1, in2, out, process );
+            if( nrhs > 2 ) {
+               plhs[ 0 ] = mi.GetArray( out );
+            } else {
+               // TODO: we must either take the max over all tensor elements, or return the max for each tensor element.
+               plhs[ 0 ] = dml::GetArray( static_cast< dip::dfloat >( out ));
+            }
          }
       } else {
          // Maximum over two images
          // TODO
          DIP_THROW( dip::E::NOT_IMPLEMENTED );
+         //plhs[ 0 ] = mi.GetArray( out );
       }
-
-      // Done
-      plhs[ 0 ] = mi.GetArray( out );
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

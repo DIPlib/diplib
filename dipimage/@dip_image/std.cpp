@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the 'mean' function
+ * This MEX-file implements the 'std' function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -36,10 +36,15 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       }
 
       // Do the thing
-      dip::Mean( in, mask, out, "", process );
+      dip::StandardDeviation( in, mask, out, "", process );
 
       // Done
-      plhs[ 0 ] = mi.GetArray( out );
+      if( nrhs > 2 ) {
+         plhs[ 0 ] = mi.GetArray( out );
+      } else {
+         // TODO: we must either take the max over all tensor elements, or return the max for each tensor element.
+         plhs[ 0 ] = dml::GetArray( static_cast< dip::dfloat >( out ));
+      }
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

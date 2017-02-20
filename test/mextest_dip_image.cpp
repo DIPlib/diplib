@@ -14,7 +14,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
                 << " -- Array data pointer = " << mxGetData( data )
                 << std::endl;
 
-      mexCallMATLAB( 1, plhs, 1, &data, "dip3_image" );
+      mexCallMATLAB( 1, plhs, 1, &data, "dip_image" );
       std::cout << "Called MATLAB" << std::endl;
 
       mxArray* data1 = mxGetPropertyShared( plhs[ 0 ], 0, "Array" );

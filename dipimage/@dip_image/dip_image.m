@@ -1,5 +1,5 @@
-classdef dip3_image
-   %dip3_image   Represents an image
+classdef dip_image
+   %dip_image   Represents an image
    %   Objects of this class contain all information relevant to define an
    %   image.
    %
@@ -71,14 +71,14 @@ classdef dip3_image
 
       % ------- CONSTRUCTOR -------
 
-      function img = dip3_image(varargin)
-         %dip3_image   Constructor
+      function img = dip_image(varargin)
+         %dip_image   Constructor
          %   Construct an object with one of the following syntaxes:
-         %      OUT = DIP3_IMAGE(IMAGE)
-         %      OUT = DIP3_IMAGE(IMAGE,TENSOR_SHAPE,DATATYPE)
-         %      OUT = DIP3_IMAGE('array',ARRAY)
-         %      OUT = DIP3_IMAGE('array',ARRAY,TENSOR_SHAPE)
-         %      OUT = DIP3_IMAGE('array',ARRAY,TENSOR_SHAPE,NDIMS)
+         %      OUT = DIP_IMAGE(IMAGE)
+         %      OUT = DIP_IMAGE(IMAGE,TENSOR_SHAPE,DATATYPE)
+         %      OUT = DIP_IMAGE('array',ARRAY)
+         %      OUT = DIP_IMAGE('array',ARRAY,TENSOR_SHAPE)
+         %      OUT = DIP_IMAGE('array',ARRAY,TENSOR_SHAPE,NDIMS)
          %
          %   IMAGE is a matrix representing an image. Its
          %   class must be numeric or logical. It can be complex, but data
@@ -87,7 +87,7 @@ classdef dip3_image
          %   Matrices with only one column or one row are converted to a 1D
          %   image. Matrices with one value are converted to 0D images.
          %   Otherwise, the dimensionality is not affected, and singleton
-         %   dimensions are kept. If IMAGE is an object of class dip3_image,
+         %   dimensions are kept. If IMAGE is an object of class dip_image,
          %   it is kept as is, with possibly a different tensor shape and/or
          %   data type.
          %
@@ -96,11 +96,11 @@ classdef dip3_image
          %   be the same class and size.
          %
          %   ARRAY is as the internal representation of the pixel data,
-         %   see the dip3_image.Array property.
+         %   see the dip_image.Array property.
          %
          %   TENSOR_SHAPE is either a string indicating the shape, a
          %   vector indicating the matrix size, or a struct as the
-         %   dip3_image.TensorShape property.
+         %   dip_image.TensorShape property.
          %
          %   DATATYPE is a string representing the required data type of
          %   the created dip_image object. Possible string and aliases are:
@@ -163,7 +163,7 @@ classdef dip3_image
                   end
                end
             end
-            if isa(data,'dip3_image')
+            if isa(data,'dip_image')
                % Convert dip_image to new dip_image
                img = data;
                % Data type conversion
@@ -462,7 +462,7 @@ classdef dip3_image
          %
          %   NUMEL(IMG) == NUMPIXELS(IMG) * NUMTENSOREL(IMG)
          %
-         %   See also dip3_image.numpixels, dip3_image.numtensorel, dip3_image.ndims
+         %   See also dip_image.numpixels, dip_image.numtensorel, dip_image.ndims
          n = numel(obj.Data);
          if obj.IsComplex
             n = n / 2;
@@ -479,7 +479,7 @@ classdef dip3_image
          %
          %   NUMEL(IMG) == NUMPIXELS(IMG) * NUMTENSOREL(IMG)
          %
-         %   See also dip3_image.numel, dip3_image.numpixels
+         %   See also dip_image.numel, dip_image.numpixels
          n = obj.TensorElements;
       end
 
@@ -488,7 +488,7 @@ classdef dip3_image
          %
          %   NUMEL(IMG) == NUMPIXELS(IMG) * NUMTENSOREL(IMG)
          %
-         %   See also dip3_image.numel, dip3_image.numtensorel, dip3_image.ndims
+         %   See also dip_image.numel, dip_image.numtensorel, dip_image.ndims
          if isempty(obj)
             n = 0;
          else
@@ -592,10 +592,29 @@ classdef dip3_image
          res = ~isempty(obj.ColorSpace);
       end
 
+      function res = colorspace(obj)
+         %colorspace   Returns the name of the color space, or an empty string if ~ISCOLOR(OBJ).
+         res = obj.ColorSpace;
+      end
+
       function display(obj)
          %DISPLAY   Called when not terminating a statement with a semicolon
-
-         % TODO: check 'DisplayToFigure' preference, yada yada.
+         if dipgetpref('DisplayToFigure') && (isscalar(obj) || iscolor(obj))
+            sz = imsize(squeeze(obj));
+            dims = length(sz);
+            if dims >= 1 & dims <= 4
+               if all(sz<=dipgetpref('ImageSizeLimit'))
+                  h = dipshow(obj,'name',inputname(1));
+                  if ~isnumeric(h)
+                     if ishandle(h)
+                        h = h.Number;
+                     end
+                  end
+                  disp(['Displayed in figure ',num2str(h)])
+                  return
+               end
+            end
+         end
          if isequal(get(0,'FormatSpacing'),'compact')
             disp([inputname(1),' ='])
             disp(obj)
@@ -664,7 +683,7 @@ classdef dip3_image
          %
          %   DIP_ARRAY(B,DATATYPE) converts the dip_image B to a MATLAB
          %   array of class DATATYE. Various aliases are available, see
-         %   dip3_image.dip3_image for a list of possible data type strings.
+         %   dip_image.dip_image for a list of possible data type strings.
          %
          %   If B is a tensor image and only one output argument is given,
          %   the tensor dimension is expandend into extra MATLAB array

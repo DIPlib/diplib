@@ -10,14 +10,92 @@
 #include "diplib.h"
 #include "diplib/display.h"
 #include "diplib/math.h"
+#include "diplib/overload.h"
 
 
 namespace dip {
 
+namespace {
+
+enum class ComplexToReal {
+      Magnitude,
+      Phase
+};
+
+enum class Mapping {
+      Linear,
+      Logarithmic
+};
+
+template< typename T >
+dfloat convert( T v, ComplexToReal /*method*/ ) {
+   return v;
+}
+template<>
+dfloat convert( dcomplex v, ComplexToReal method ) {
+   if( method == ComplexToReal::Magnitude ) {
+      return std::abs( v );
+   } else {
+      return std::arg( v );
+   }
+}
+template<>
+dfloat convert( scomplex v, ComplexToReal method ) {
+   if( method == ComplexToReal::Magnitude ) {
+      return std::abs( v );
+   } else {
+      return std::arg( v );
+   }
+}
+
+template< typename TPI >
+void dip__ImageDisplay(
+      Image const& slice,
+      Image& out,
+      ComplexToReal complexToReal,
+      Mapping mapping,
+      dip::dfloat offset,
+      dip::dfloat scale
+) {
+   dip::uint width = slice.Size( 0 );
+   dip::uint height = slice.Size( 1 );
+   dip::sint sliceStride0 = slice.Stride( 0 );
+   dip::sint sliceStride1 = slice.Stride( 1 );
+   dip::sint outStride0 = out.Stride( 0 );
+   dip::sint outStride1 = out.Stride( 1 );
+   dip::uint telems = slice.TensorElements();
+   dip::sint sliceStrideT = slice.TensorStride();
+   dip::sint outStrideT = out.TensorStride();
+   for( dip::uint kk = 0; kk < telems; ++kk ) {
+      TPI* slicePtr = static_cast< TPI* >( slice.Pointer( sliceStrideT * kk ) );
+      uint8* outPtr = static_cast< uint8* >( out.Pointer( outStrideT * kk ) );
+      for( dip::uint jj = 0; jj < height; ++jj ) {
+         TPI* iPtr = slicePtr;
+         uint8* oPtr = outPtr;
+         if( mapping == Mapping::Linear ) {
+            for( dip::uint ii = 0; ii < width; ++ii ) {
+               *oPtr = clamp_cast< uint8 >( ( convert( *iPtr, complexToReal ) - offset ) * scale );
+               iPtr += sliceStride0;
+               oPtr += outStride0;
+            }
+         } else {
+            for( dip::uint ii = 0; ii < width; ++ii ) {
+               *oPtr = clamp_cast< uint8 >( std::log( convert( *iPtr, complexToReal ) - offset ) * scale );
+               iPtr += sliceStride0;
+               oPtr += outStride0;
+            }
+         }
+         slicePtr += sliceStride1;
+         outPtr += outStride1;
+      }
+   }
+}
+
+} // namespace
 
 void ImageDisplay(
-      Image in,
-      Image out,
+      Image const& in,
+      Image& out,
       UnsignedArray const& coordinates,
       dip::uint dim1,
       dip::uint dim2,
@@ -26,10 +104,10 @@ void ImageDisplay(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( in.IsScalar() && !in.IsColor(), E::NOT_SCALAR );
+   DIP_THROW_IF( !in.IsScalar() && !in.IsColor(), E::NOT_SCALAR );
 
    // Compute projection
-   Image slice = in;
+   Image slice = in.QuickCopy();
    if( nDims > 2 ) {
       DIP_THROW_IF( !coordinates.empty() && coordinates.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
       DIP_THROW_IF(( dim1 >= nDims ) || ( dim2 >= nDims ), E::PARAMETER_OUT_OF_RANGE );
@@ -55,19 +133,21 @@ void ImageDisplay(
       } else {
          DIP_THROW( E::INVALID_FLAG );
       }
+      slice.PermuteDimensions( { dim1, dim2 } );
    }
 
-   // Convert color image
-   if( slice.IsColor() ) {
+   // Convert color image to RGB
+   if( in.IsColor() ) {
       // TODO
    }
 
-   // Convert complex image to float
+   // How do we convert from complex to real?
+   ComplexToReal complexToReal = ComplexToReal::Magnitude;
    if( slice.DataType().IsComplex() ) {
-      if( params.complex == "mag" ) {
-         slice.Convert( slice.DataType().Real() );
+      if( params.complex == "mag" || params.complex == "abs" ) {
+         // nothing to do
       } else if( params.complex == "phase" ) {
-         // TODO
+         complexToReal = ComplexToReal::Phase;
       } else if( params.complex == "real" ) {
          slice = slice.Real();
       } else if( params.complex == "imag" ) {
@@ -77,17 +157,32 @@ void ImageDisplay(
       }
    }
 
-   // Stretch image and convert to uint8 data type
-   slice.Convert( DT_UINT8 ); // TODO: this is temporary
+   // How do we stretch the values to the uint8 range?
+   DIP_ASSERT( params.upperBound > params.lowerBound );
+   Mapping mapping = Mapping::Linear;
+   dfloat offset;
+   dfloat scale;
    if( params.mode == "lin" ) {
-      // TODO
+      offset = params.lowerBound;
+      scale = 255.0 / ( params.upperBound - params.lowerBound );
    } else if( params.mode == "based" ) {
-      // TODO
+      dfloat bound = std::max( std::abs( params.lowerBound ), std::abs( params.upperBound ) );
+      scale = 255.0 / bound / 2.0;
+      offset = -bound;
    } else if( params.mode == "log" ) {
-      // TODO
+      mapping = Mapping::Logarithmic;
+      offset = params.lowerBound + 1.0;
+      scale = 255.0 / std::log( params.upperBound - offset );
    } else {
       DIP_THROW( E::INVALID_FLAG );
    }
+
+   // Create ouput
+   DIP_ASSERT( slice.Dimensionality() == 2 );
+   out.ReForge( slice.Sizes(), slice.TensorElements(), DT_UINT8 );
+
+   // Stretch and convert the data
+   DIP_OVL_CALL_ALL( dip__ImageDisplay, ( slice, out, complexToReal, mapping, offset, scale ), slice.DataType() );
 }
 
 
