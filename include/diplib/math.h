@@ -37,6 +37,7 @@ dip::uint Count( Image const& in, Image const& mask = {} );
 /// \brief Calculates the cumulative sum of the pixel values over all those dimensions which are specified by `process`.
 ///
 /// If `process` is an empty array, all dimensions are processed. The output is an image of the same size as the input.
+/// For tensor images, the output has the same tensor size and shape as the input.
 ///
 /// If `mask` is forged, those pixels not selected by the mask are presumed to be 0.
 void CumulativeSum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
