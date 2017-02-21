@@ -238,7 +238,7 @@ void SeparableConvolution(
       // Get callback function
       DataType dtype = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-      DIP_OVL_NEW_FLOAT_OR_COMPLEX( lineFilter, SeparableConvolutionLineFilter, ( filterData ), dtype );
+      DIP_OVL_NEW_FLEX( lineFilter, SeparableConvolutionLineFilter, ( filterData ), dtype );
       Framework::Separable(
             in,
             out,

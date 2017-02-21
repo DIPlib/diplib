@@ -267,6 +267,8 @@ struct DataType {
    /// Class_Float      | Class_SFloat + Class_DFloat;
    /// Class_Real       | Class_Integer + Class_Float;
    /// Class_Complex    | Class_SComplex + Class_DComplex;
+   /// Class_Flex       | Class_Float + Class_Complex;
+   /// Class_FlexBin    | Class_Flex + Class_Bin;
    /// Class_Unsigned   | Class_Bin + Class_UInt;
    /// Class_Signed     | Class_SInt + Class_Float + Class_Complex;
    /// Class_Any        | Class_Binary + Class_Real + Class_Complex;
@@ -291,9 +293,11 @@ struct DataType {
    static DIP_DEFINE_OPTION( Classes, Class_Float, Class_SFloat + Class_DFloat );
    static DIP_DEFINE_OPTION( Classes, Class_Real, Class_Integer + Class_Float );
    static DIP_DEFINE_OPTION( Classes, Class_Complex, Class_SComplex + Class_DComplex );
+   static DIP_DEFINE_OPTION( Classes, Class_Flex, Class_Float + Class_Complex );
+   static DIP_DEFINE_OPTION( Classes, Class_FlexBin, Class_Flex + Class_Bin );
    static DIP_DEFINE_OPTION( Classes, Class_Unsigned, Class_Bin + Class_UInt );
    static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
-   static DIP_DEFINE_OPTION( Classes, Class_Any, Class_Binary + Class_Real + Class_Complex );
+   static DIP_DEFINE_OPTION( Classes, Class_Any, Class_Binary + Class_Real + Class_Complex ); // == Class_Unsigned + Class_Signed
 
    /// \brief Implicit conversion to `dip::DataType::Classes` options class.
    operator Classes() const { return { static_cast<dip::uint>( dt ) }; }

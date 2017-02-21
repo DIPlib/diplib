@@ -119,7 +119,12 @@
    DIP__OVL__SINT( assign_name, paramlist ) \
    DIP__OVL__FLOAT( assign_name, paramlist )
 
-#define DIP__OVL__FLOAT_OR_COMPLEX( assign_name, paramlist ) \
+#define DIP__OVL__FLEX( assign_name, paramlist ) \
+   DIP__OVL__FLOAT( assign_name, paramlist )  \
+   DIP__OVL__COMPLEX( assign_name, paramlist )
+
+#define DIP__OVL__FLEXBIN( assign_name, paramlist ) \
+   DIP__OVL__BIN( assign_name, paramlist )  \
    DIP__OVL__FLOAT( assign_name, paramlist )  \
    DIP__OVL__COMPLEX( assign_name, paramlist )
 
@@ -207,9 +212,15 @@
    DIP__OVL__FOOT }
 
 /// \brief Calls the overloaded function for all floating-point and complex types.
-#define DIP_OVL_CALL_FLOAT_OR_COMPLEX( fname, paramlist, dtype ) \
+#define DIP_OVL_CALL_FLEX( fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )          \
-   DIP__OVL__FLOAT_OR_COMPLEX( fname, paramlist ) \
+   DIP__OVL__FLEX( fname, paramlist ) \
+   DIP__OVL__FOOT }
+
+/// \brief Calls the overloaded function for all floating-point, complex and binary types.
+#define DIP_OVL_CALL_FLEXBIN( fname, paramlist, dtype ) \
+{  DIP__OVL__HEAD( dtype )          \
+   DIP__OVL__FLEXBIN( fname, paramlist ) \
    DIP__OVL__FOOT }
 
 /// \brief Calls the overloaded function for all types but binary.
@@ -295,9 +306,15 @@
    DIP__OVL__FOOT }
 
 /// \brief Calls the overloaded function for all floating-point and complex types, and assigns the output value to variable `x`.
-#define DIP_OVL_CALL_ASSIGN_FLOAT_OR_COMPLEX( x, fname, paramlist, dtype ) \
+#define DIP_OVL_CALL_ASSIGN_FLEX( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )          \
-   DIP__OVL__FLOAT_OR_COMPLEX( x = fname, paramlist ) \
+   DIP__OVL__FLEX( x = fname, paramlist ) \
+   DIP__OVL__FOOT }
+
+/// \brief Calls the overloaded function for all floating-point, complex and binary types, and assigns the output value to variable `x`.
+#define DIP_OVL_CALL_ASSIGN_FLEXBIN( x, fname, paramlist, dtype ) \
+{  DIP__OVL__HEAD( dtype )          \
+   DIP__OVL__FLEXBIN( x = fname, paramlist ) \
    DIP__OVL__FOOT }
 
 /// \brief Calls the overloaded function for all types but binary, and assigns the output value to variable `x`.
@@ -383,9 +400,15 @@
    DIP__OVL__FOOT
 
 /// \brief Assigns a pointer to the overloaded function for all floating-point and complex types to the variable `f`.
-#define DIP_OVL_ASSIGN_FLOAT_OR_COMPLEX( f, fname, dtype ) \
+#define DIP_OVL_ASSIGN_FLEX( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype )          \
-   DIP__OVL__FLOAT_OR_COMPLEX( f = fname, ) \
+   DIP__OVL__FLEX( f = fname, ) \
+   DIP__OVL__FOOT
+
+/// \brief Assigns a pointer to the overloaded function for all floating-point, complex and binary types to the variable `f`.
+#define DIP_OVL_ASSIGN_FLEXBIN( f, fname, dtype ) \
+   DIP__OVL__HEAD( dtype )          \
+   DIP__OVL__FLEXBIN( f = fname, ) \
    DIP__OVL__FOOT
 
 /// \brief Assigns a pointer to the overloaded function for all types but binary to the variable `f`.
@@ -471,9 +494,15 @@
    DIP__OVL__FOOT
 
 /// \brief Assigns a pointer to the overloaded class for all floating-point and complex types to the variable `x`.
-#define DIP_OVL_NEW_FLOAT_OR_COMPLEX( x, cname, paramlist, dtype ) \
+#define DIP_OVL_NEW_FLEX( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )          \
-   DIP__OVL__FLOAT_OR_COMPLEX( x = ( decltype( x )) new cname, paramlist ) \
+   DIP__OVL__FLEX( x = ( decltype( x )) new cname, paramlist ) \
+   DIP__OVL__FOOT
+
+/// \brief Assigns a pointer to the overloaded class for all floating-point, complex and binary types to the variable `x`.
+#define DIP_OVL_NEW_FLEXBIN( x, cname, paramlist, dtype ) \
+   DIP__OVL__HEAD( dtype )          \
+   DIP__OVL__FLEXBIN( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
 /// \brief Assigns a pointer to the overloaded class for all types but binary to the variable `x`.
