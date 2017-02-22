@@ -379,20 +379,19 @@ classdef dip_image
          dt = class(obj.Data);
       end
 
-      function varargout = imsize(obj,dim)
-         %IMSIZE   Size of the image.
-         %   IMSIZE(B) returns an N-D array containing the lengths of
-         %   each dimension in the image in B.
+      function varargout = size(obj,dim)
+         %SIZE   Size of the image.
+         %   SIZE(B) returns an array containing the lengths of each
+         %   dimension in the image in B. The array always has at least
+         %   two elements, filling in 1 for non-existent dimensions.
+         %   Returns [0,0] for an empty image.
          %
-         %   IMSIZE(B,DIM) returns the length of the dimension specified
-         %   by the scalar DIM.
+         %   SIZE(B,DIM) returns the length of the dimension specified
+         %   by the scalar DIM. If DIM > NDIMS(B), returns 1.
          %
-         %   [M,N] = IMSIZE(B) returns the number of rows and columns in
-         %   separate output variables. [M1,M2,M3,...,MN] = IMSIZE(B)
+         %   [M,N] = SIZE(B) returns the number of rows and columns in
+         %   separate output variables. [M1,M2,M3,...,MN] = SIZE(B)
          %   returns the length of the first N dimensions of B.
-         %
-         %   If B is an array of images, IMSIZE only works if ISTENSOR is
-         %   true.
          sz = obj.Size;
          if nargout > 1
             if nargin ~= 1, error('Unknown command option.'); end
@@ -419,6 +418,58 @@ classdef dip_image
                      varargout{1} = 1;
                   end
                else
+                  if length(sz) == 0
+                     varargout{1} = [1,1];
+                  elseif length(sz) == 1
+                     varargout{1} = [sz,1];
+                  else
+                     varargout{1} = sz;
+                  end
+               end
+            else
+               varargout{1} = [0,0];
+            end
+         end
+      end
+
+      function varargout = imsize(obj,dim)
+         %IMSIZE   Size of the image.
+         %   IMSIZE(B) returns an array containing the lengths of each
+         %   dimension in the image in B. Returns 0 for an empty image.
+         %
+         %   IMSIZE(B,DIM) returns the length of the dimension specified
+         %   by the scalar DIM.
+         %
+         %   [M,N] = IMSIZE(B) returns the number of rows and columns in
+         %   separate output variables. [M1,M2,M3,...,MN] = IMSIZE(B)
+         %   returns the length of the first N dimensions of B.
+         %
+         %   IMSIZE is identical to SIZE, except throws an error when a
+         %   non-existing dimension is requested, and the first form always
+         %   returns exactly as many values as there are image dimensions.
+         sz = obj.Size;
+         if nargout > 1
+            if nargin ~= 1, error('Unknown command option.'); end
+            if nargout > length(sz), error('Too many dimensions requested.'); end
+            varargout = cell(1,nargout);
+            if ~isempty(obj)
+               for ii=1:nargout
+                  varargout{ii} = sz(ii);
+               end
+            else
+               for ii=1:nargout
+                  varargout{ii} = 0;
+               end
+            end
+         else
+            if ~isempty(obj)
+               if nargin > 1
+                  if dim <= length(sz)
+                     varargout{1} = sz(dim);
+                  else
+                     error(['Dimension ',num2str(dim),' does not exist.']);
+                  end
+               else
                   varargout{1} = sz;
                end
             else
@@ -427,18 +478,18 @@ classdef dip_image
          end
       end
 
-      function [m,n] = imarsize(obj)
-         %IMARSIZE   Size of the image array.
-         %   IMARSIZE(B) returns a 2D array containing the length of the
+      function [m,n] = tensorsize(obj)
+         %TENSORSIZE   Size of the image's tensor.
+         %   TENSORSIZE(B) returns a 2D array containing the length of the
          %   two tensor dimensions in the tensor image B.
          %
-         %   IMARSIZE(B,DIM) returns the length of the dimension specified
+         %   TENSORSIZE(B,DIM) returns the length of the dimension specified
          %   by the scalar DIM.
          %
-         %   [M,N] = IMARSIZE(B) returns the number of rows and columns in
+         %   [M,N] = TENSORSIZE(B) returns the number of rows and columns in
          %   separate output variables.
          %
-         %   If B is a scalar image, IMARSIZE returns [1,1].
+         %   If B is a scalar image, TENSORSIZE returns [1,1].
          sz = obj.TensorSize;
          if nargout > 1
             if nargin ~= 1, error('Unknown command option.'); end
@@ -453,8 +504,22 @@ classdef dip_image
          end
       end
 
-      function size(~)
-         error('SIZE should not be used with DIP_IMAGE objects: use IMSIZE or IMARSIZE');
+      function varargout = imarsize(obj)
+         %IMARSIZE   Size of the image's tensor.
+         %   IMARSIZE(B) returns a 2D array containing the length of the
+         %   two tensor dimensions in the tensor image B.
+         %
+         %   IMARSIZE(B,DIM) returns the length of the dimension specified
+         %   by the scalar DIM.
+         %
+         %   [M,N] = IMARSIZE(B) returns the number of rows and columns in
+         %   separate output variables.
+         %
+         %   If B is a scalar image, IMARSIZE returns [1,1].
+         %
+         %   IMARSIZE is identical to TENSORSIZE.
+         varargout = cell(1,nargout);
+         [varargout{:}] = tensorsize(varargin);
       end
 
       function n = numel(obj)
@@ -599,10 +664,10 @@ classdef dip_image
 
       function display(obj)
          %DISPLAY   Called when not terminating a statement with a semicolon
-         if dipgetpref('DisplayToFigure') && (isscalar(obj) || iscolor(obj))
+         if ~isempty(obj) && dipgetpref('DisplayToFigure') && (isscalar(obj) || iscolor(obj))
             sz = imsize(squeeze(obj));
             dims = length(sz);
-            if dims >= 1 & dims <= 4
+            if dims >= 1 && dims <= 4
                if all(sz<=dipgetpref('ImageSizeLimit'))
                   h = dipshow(obj,'name',inputname(1));
                   if ~isnumeric(h)
