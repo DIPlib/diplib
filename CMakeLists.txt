@@ -113,6 +113,7 @@ if(Matlab_FOUND)
    matlab_add_mex(NAME dip_operators SRC dipimage/@dip_image/private/dip_operators.cpp LINK_TO DIP)
    install(TARGETS dip_operators DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private)
    # Compile and install MEX-files in @dip_image
+   matlab_add_mex(NAME cumsum SRC dipimage/@dip_image/cumsum.cpp LINK_TO DIP)
    matlab_add_mex(NAME max SRC dipimage/@dip_image/max.cpp LINK_TO DIP)
    matlab_add_mex(NAME mean SRC dipimage/@dip_image/mean.cpp LINK_TO DIP)
    matlab_add_mex(NAME min SRC dipimage/@dip_image/min.cpp LINK_TO DIP)
@@ -123,6 +124,7 @@ if(Matlab_FOUND)
    matlab_add_mex(NAME var SRC dipimage/@dip_image/var.cpp LINK_TO DIP)
    install(
          TARGETS
+            cumsum
             max
             mean
             min
@@ -138,6 +140,7 @@ if(Matlab_FOUND)
    matlab_add_mex(NAME getmaximumandminimum SRC dipimage/getmaximumandminimum.cpp LINK_TO DIP)
    matlab_add_mex(NAME imagedisplay SRC dipimage/imagedisplay.cpp LINK_TO DIP)
    matlab_add_mex(NAME measure SRC dipimage/measure.cpp LINK_TO DIP)
+   matlab_add_mex(NAME select SRC dipimage/select.cpp LINK_TO DIP)
    install(
          TARGETS
             convolve
@@ -145,6 +148,7 @@ if(Matlab_FOUND)
             getmaximumandminimum
             imagedisplay
             measure
+            select
          DESTINATION ${DIPIMAGE_INSTALL_PATH})
 endif()
 
