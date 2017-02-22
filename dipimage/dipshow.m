@@ -311,8 +311,7 @@ if nargin >= n
       return
    end
    if ~isnumeric(in) || ~isempty(in)
-      %#function isa
-      if ~builtin('isa',in,'dip_image')
+      if ~isa(in,'dip_image')
          in = dip_image(in);
       end
       in = squeeze(in);
@@ -321,17 +320,9 @@ if nargin >= n
       elseif ndims(in)>4
          error('DIPSHOW cannot handle images with more than 4 dimensions.')
       end
-      % -- handle expection to display 0D images (useful for color) BR on request of PV
+      % -- handle expectation to display 0D images (useful for color) BR on request of PV
       if ndims(in)==0
-         %fprintf('0D image expection\n');
-         if ~isa(in,'dip_image_array')
-            tmp = newim(1,1,datatype(in));
-            tmp(0) = in(0);
-         else
-            tmp = newcolorim([1,1],colorspace(in),datatype(in));
-            tmp(0)=in(0);
-         end
-         in = tmp;
+         in = reshape(in,[1,1]);
       end
    % else it's OK, create empty display later on.
    end
@@ -1359,7 +1350,6 @@ set(fig,...
    'RendererMode','auto',...
    'Resize','on',...
    'ResizeFcn','dipshow DIP_callback ResizeFcn',...
-   ...'ShareColors','on',... %%%!!!CL -- gives warning in MATLAB 7.5
    'UIContextMenu',[],...
    'Units','pixels',...
    'UserData',[],...
@@ -1475,6 +1465,7 @@ if nD==4
    uimenu(h,'Label','Z-T slice','Tag','zt','Callback',...
           'dipshow(gcbf,''ch_slicing'',''zt'')');
 end
+% TODO: add slice / max projection / mean projection as options for nD>=3
 
 % Create 'Actions' menu
 h = uimenu(fig,'Label','Actions','Tag','actions');
@@ -1482,9 +1473,6 @@ uimenu(h,'Label','None','Tag','mouse_none','Callback',...
        'dipshow DIP_callback menu_actions_none_cb');
 uimenu(h,'Label','Pixel testing','Tag','mouse_diptest','Callback','diptest(gcbf,''on'')',...
        'Accelerator','i');
-if nD==2
-   uimenu(h,'Label','Orientation testing','Tag','mouse_diporien','Callback','diporien(gcbf,''on'')');
-end
 uimenu(h,'Label','Zoom','Tag','mouse_dipzoom','Callback','dipzoom(gcbf,''on'')',...
        'Accelerator','z');
 uimenu(h,'Label','Looking Glass','Tag','mouse_diplooking','Callback','diplooking(gcbf,''on'')');
@@ -1499,10 +1487,6 @@ if nD>=3
    uimenu(h,'Label','Step through slices','Tag','mouse_dipstep','Callback','dipstep(gcbf,''on'')',...
           'Accelerator','o');
    uimenu(h,'Label','Animate','Tag','dipanimate','Callback','dipanimate(gcbf)');
-   uimenu(h,'Label','Max projection','Tag','pro_max','Callback',...
-       'dipprojection(gcbf,''max'')','Separator','on');
-   uimenu(h,'Label','Sum projection','Tag','pro_sum','Callback',...
-       'dipprojection(gcbf,''sum'')');
    if nD==3 && ~iscol
       uimenu(h,'Label','Isosurface plot ...','Tag','dipiso','Callback','dipisosurface(gcbf)');
    end
