@@ -387,17 +387,18 @@ inline dip::FloatArray GetFloatArray( mxArray const* mx ) {
 }
 
 /// \brief Convert an unsigned integer `mxArray` to a `dip::BooleanArray`, where elements of the input are indices
-/// where the output array is set. The output array has `nDims` elements.
+/// where the output array is set. The output array has `nDims` elements. In MATLAB, dimensions start with 1.
 inline dip::BooleanArray GetProcessArray( mxArray const* mx, dip::uint nDims ) {
-   dip::UnsignedArray in;
+   dip::IntegerArray in;
    try {
-      in = GetUnsignedArray( mx );
+      in = GetIntegerArray( mx );
    } catch( dip::Error& ) {
-      DIP_THROW( "Process array must be an unsigned integer array." );
+      DIP_THROW( "Process array must be an integer array." );
    }
    dip::BooleanArray out( nDims, false );
    for( auto ii : in ) {
-      DIP_THROW_IF( ii >= nDims, "Process array contains index out of range." );
+      --ii;
+      DIP_THROW_IF(( ii < 0 ) || ( ii >= nDims ), "Process array contains index out of range." );
       out[ ii ] = true;
    }
    return out;
