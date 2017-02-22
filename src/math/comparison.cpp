@@ -15,7 +15,7 @@ namespace dip {
 namespace {
 
 // This are the same class as Framework::NadicScanLineFilter, but with a binary output.
-template< dip::uint N, class TPI, class F >
+template< dip::uint N, typename TPI, typename F >
 class NadicScanLineFilterBinOut : public Framework::ScanLineFilter {
    // Note that N is a compile-time constant, and consequently the compiler should be able to optimize all the loops
    // over N.
@@ -71,7 +71,7 @@ class NadicScanLineFilterBinOut : public Framework::ScanLineFilter {
       F const& func_;
 };
 
-template< class TPI, class F >
+template< typename TPI, typename F >
 std::unique_ptr< Framework::ScanLineFilter > NewDyadicScanLineFilterBinOut( F func ) {
    return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new NadicScanLineFilterBinOut< 2, TPI, F >( func ));
 }

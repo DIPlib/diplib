@@ -51,6 +51,13 @@ constexpr dip::uint MAX_BUFFER_SIZE = 256 * 1024;
 // Support functions
 //
 
+/// \brief Determines the singleton-expanded size as a combination of the two sizes.
+///
+/// Singleton dimensions (size==1) can be expanded to match another image's size. This
+/// function can be used to check if such expansion is possible, and what the resulting
+/// sizes would be. `size1` is adjusted. An exception is thrown if the singleton
+/// expansion is not possible.
+void SingletonExpandedSize( UnsignedArray& size1, UnsignedArray const& size2 );
 
 /// \brief Determines if images can be singleton-expanded to the same size, and what
 /// that size would be.
@@ -420,7 +427,7 @@ inline void ScanDyadic(
 /// Such an auxiliary function also simplifies the use of the class template:
 ///
 /// ```cpp
-///     template< class TPI, class F >
+///     template< typename TPI, typename F >
 ///     std::unique_ptr< dip::Framework::ScanLineFilter > NewFilter( F func ) {
 ///        return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::NadicScanLineFilter< 1, TPI, F >( func ));
 ///     }
@@ -447,7 +454,7 @@ inline void ScanDyadic(
 /// For values of `N` from 1 to 4 there are pre-defined functions just like the `%NewFilter` function above:
 /// `dip::Framework::NewMonadicScanLineFilter`, `dip::Framework::NewDyadicScanLineFilter`,
 /// `dip::Framework::NewTriadicScanLineFilter`, `dip::Framework::NewTetradicScanLineFilter`.
-template< dip::uint N, class TPI, class F >
+template< dip::uint N, typename TPI, typename F >
 class NadicScanLineFilter : public ScanLineFilter {
    // Note that N is a compile-time constant, and consequently the compiler should be able to optimize all the loops
    // over N.
@@ -505,28 +512,28 @@ class NadicScanLineFilter : public ScanLineFilter {
 
 /// \brief Support for quickly defining monadic operators (1 input image, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
-template< class TPI, class F >
+template< typename TPI, typename F >
 std::unique_ptr< ScanLineFilter > NewMonadicScanLineFilter( F func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 1, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining dyadic operators (2 input images, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
-template< class TPI, class F >
+template< typename TPI, typename F >
 std::unique_ptr< ScanLineFilter > NewDyadicScanLineFilter( F func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 2, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining triadic operators (3 input images, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
-template< class TPI, class F >
+template< typename TPI, typename F >
 std::unique_ptr< ScanLineFilter > NewTriadicScanLineFilter( F func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 3, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining tetradic operators (4 input images, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
-template< class TPI, class F >
+template< typename TPI, typename F >
 std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 4, TPI, F >( func ));
 }

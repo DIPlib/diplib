@@ -339,9 +339,79 @@ inline Image Median( Image const& in, Image const& mask = {}, BooleanArray proce
 
 
 //
-//
+// Functions that combine two source images
 //
 
+
+/// \brief Compares `in1` to `in2` according to `selector`, and writes `in3` or `in4` to `out` depending on the result.
+///
+/// In short, this is the operation that is applied sample by sample:
+/// ```cpp
+///     in1 <selector> in2 ? in3 : in4
+/// ```
+///
+/// The string `selector` can be one of: "==", "!=", ">", "<", ">=", "<="
+///
+/// An alternative (slower) implementation would be:
+/// ```cpp
+///     dip::Image mask = in1 <selector> in2;
+///     out = in4;
+///     out.CopyAt( in3.CopyAt( mask ), mask );
+/// ```
+///
+/// Note that all input images are singleton-expanded to match in size, so the function can e.g. be used with scalar
+/// values for `in3` and `in4`:
+/// ```cpp
+///     dip::Image result = dip::Select( in1, in2, dip::Image{ true }, dip::Image{ false }, "==" );
+/// ```
+/// The above is an (less efficient) implementation of
+/// ```cpp
+///     dip::Image result = in1 == in2;
+/// ```
+///
+/// The output image has the same type as `in3` and `in4`. If these types are different, the output type is given by
+/// ```cpp
+///     dip::DataType::SuggestDyadicOperation( in3.DataType(), in4.DataType() );
+/// ```
+void Select( Image const& in1, Image const& in2, Image const& in3, Image const& in4, Image& out, String const& selector );
+inline Image Select( Image const& in1, Image const& in2, Image const& in3, Image const& in4, String const& selector ) {
+   Image out;
+   Select( in1, in2, in3, in4, out, selector );
+   return out;
+}
+
+/// \brief Writes either `in1` or `in2` to `out` depending on the value of `mask`.
+///
+/// In short, this is the operation that is applied sample by sample:
+/// ```cpp
+///     mask ? in1 : in2
+/// ```
+///
+/// An alternative (slower) implementation would be:
+/// ```cpp
+///     out = in2;
+///     out.CopyAt( in1.CopyAt( mask ), mask );
+/// ```
+///
+/// When `out` is the same image as `in1`, the operation becomes similar to:
+/// ```cpp
+///     in1.CopyAt( in2, !mask );
+/// ```
+/// Conversely, when `out` is the same image as `in2`, the operation becomes similar to:
+/// ```cpp
+///     in2.CopyAt( in1, mask );
+/// ```
+///
+/// The output image has the same type as `in1` and `in2`. If these types are different, the output type is given by
+/// ```cpp
+///     dip::DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
+/// ```
+void Select( Image const& in1, Image const& in2, Image const& mask, Image& out );
+inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
+   Image out;
+   Select( in1, in2, mask, out );
+   return out;
+}
 
 
 /// \}

@@ -13,7 +13,7 @@ namespace dip {
 namespace Framework {
 
 // Part of the next two functions
-static inline void SingletonExpandedSize(
+void SingletonExpandedSize(
       UnsignedArray& size,
       UnsignedArray const& size2
 ) {

@@ -47,16 +47,12 @@ void CumulativeSum(
    std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
    DIP_OVL_NEW_FLEX( lineFilter, CumSumFilter, (), dataType );
    if( mask.IsForged() ) {
-      mask.CheckIsMask( in.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
-      //out.ReForge( in, Option::AcceptDataTypeChange::DO_ALLOW );
-      //out.CopyAt( mask );
-      Convert( in, out, dataType );
-      // TODO: set pixels not selected by mask to 0.
-      Framework::Separable( out, out, dataType, out.DataType(),
+      Select( in, Image( 0, dataType ), mask, out );
+      Framework::Separable( out, out, dataType, dataType,
                             process, { 0 }, {}, *lineFilter,
                             Framework::Separable_AsScalarImage );
    }
-   Framework::Separable( in, out, dataType, out.DataType(),
+   Framework::Separable( in, out, dataType, dataType,
                          process, { 0 }, {}, *lineFilter,
                          Framework::Separable_AsScalarImage );
 }
