@@ -452,7 +452,7 @@ class NadicScanLineFilter : public ScanLineFilter {
    // Note that N is a compile-time constant, and consequently the compiler should be able to optimize all the loops
    // over N.
    public:
-      static_assert( N > 0, "NadicScanLineFilter does not work without input images." );
+      static_assert( N > 0, "NadicScanLineFilter does not work without input images" );
       NadicScanLineFilter( F func ) : func_( func ) {}
       virtual void Filter( ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( params.inBuffer.size() == N );

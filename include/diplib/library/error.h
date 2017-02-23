@@ -83,7 +83,7 @@ class AssertionError : public Error {
       using Error::Error;
 };
 
-/// \brief Exception class indicating that a function received an inconsitent or out of range parameter
+/// \brief Exception class indicating that a function received an inconsistent or out of range parameter
 /// (the calling code is wrong).
 ///
 /// Catch exceptions of this type only if you don't control the input arguments (i.e. in a use interface).
