@@ -202,7 +202,7 @@ PixelTable::PixelTable(
       }
 
    } else {
-      DIP_THROW( "Neighborhood shape name not recognized" );
+      DIP_THROW( "Neighborhood shape name not recognized: " + shape );
    }
 }
 

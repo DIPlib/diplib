@@ -1399,7 +1399,7 @@ class Image {
 
       /// \brief Change the tensor shape, without changing the number of tensor elements.
       Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {
-         DIP_THROW_IF( tensor_.Elements() != rows * cols, "Cannot reshape tensor to requested sizes." );
+         DIP_THROW_IF( tensor_.Elements() != rows * cols, "Cannot reshape tensor to requested sizes" );
          tensor_.ChangeShape( rows );
          return *this;
       }

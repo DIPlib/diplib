@@ -15,6 +15,7 @@
 
 namespace dip {
 
+namespace {
 
 // Surface type
 constexpr std::array< dip::uint, 64 > stype = {{
@@ -53,14 +54,14 @@ constexpr std::array< dfloat, 10 > sa = {{
       0.0            / 2.0
 }};
 
-template< typename DIP_TPI >
+template< typename TPI >
 static void dip__SurfaceArea(
       Image const& label,
       std::map< dip::uint, dip::uint > const& objectIndex,
       std::vector< dfloat >& surfaceArea,
       std::array< dip::sint, 6 > const& nn
 ) {
-   DIP_TPI* ip = static_cast< DIP_TPI* >( label.Origin() );
+   TPI* ip = static_cast< TPI* >( label.Origin() );
    IntegerArray const& stride = label.Strides();
    UnsignedArray const& dims = label.Sizes();
    for( dip::uint zz = 0; zz < dims[ 2 ]; ++zz ) {
@@ -158,6 +159,8 @@ static void dip__SurfaceArea(
       }
    }
 }
+
+} // namespace
 
 std::vector< dfloat > SurfaceArea(
       Image const& label,

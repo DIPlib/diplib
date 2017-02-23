@@ -82,7 +82,7 @@ inline BoundaryCondition StringToBoundaryCondition( String bc ) {
    else if( bc == "first order" ) { return BoundaryCondition::FIRST_ORDER_EXTRAPOLATE; }
    else if( bc == "second order" ) { return BoundaryCondition::SECOND_ORDER_EXTRAPOLATE; }
    else if( bc == "third order" ) { return BoundaryCondition::THIRD_ORDER_EXTRAPOLATE; }
-   else DIP_THROW( "Boundary condition not recognized" );
+   else DIP_THROW( "Boundary condition not recognized: " + bc );
 }
 
 /// \brief Convert an array of strings to an array of boundary conditions.
@@ -165,7 +165,7 @@ void ReadPixelWithBoundaryCondition(
             case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:  // not implemented, difficult to implement in this framework.
             case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
             case BoundaryCondition::THIRD_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
-               DIP_THROW("Boundary condition not implemented.");
+               DIP_THROW("Boundary condition not implemented" );
          }
       }
    }

@@ -68,7 +68,7 @@ Image& Image::Flatten() {
       newimg.Forge();
       newimg.Copy( *this );
       newimg.GetSimpleStrideAndOrigin( stride, p );
-      DIP_THROW_IF( !p, "Copying over the image data didn't yield simple strides." );
+      DIP_THROW_IF( !p, "Copying over the image data didn't yield simple strides" );
       swap( newimg );
    }
    strides_ = { dip::sint( stride ) };

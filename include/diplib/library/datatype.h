@@ -107,7 +107,7 @@ struct DataType {
       if( name == "SCOMPLEX" ) { dt = DT::SCOMPLEX; } else
       if( name == "DCOMPLEX" ) { dt = DT::DCOMPLEX; }
       else {
-         DIP_THROW( "Illegal data type name" );
+         DIP_THROW( "Illegal data type name: " + name );
       }
    }
 
@@ -138,7 +138,7 @@ struct DataType {
          case DT::SCOMPLEX: return "SCOMPLEX";
          case DT::DCOMPLEX: return "DCOMPLEX";
       };
-      DIP_THROW( "Unknown data type." ); // WTF GCC?
+      DIP_THROW( "Unknown data type" ); // WTF GCC?
    }
 
    /// \brief Returns the size in bytes of the data type.
@@ -156,7 +156,7 @@ struct DataType {
          case DT::SCOMPLEX: return sizeof( dip::scomplex );
          case DT::DCOMPLEX: return sizeof( dip::dcomplex );
       };
-      DIP_THROW( "Unknown data type." ); // WTF GCC?
+      DIP_THROW( "Unknown data type" ); // WTF GCC?
    }
 
    /// \brief Returns `true` if the data type is binary.
