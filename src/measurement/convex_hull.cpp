@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains the definitions for the functions that creates a convex hull from a sequence of chain codes.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)2011, Cris Luengo.
  *
  * The algorithm to convert a simple polygon to a convex hull is from:
@@ -28,23 +28,13 @@ static inline void DecrementMod4( int& k ) {
 }
 
 dip::Polygon ChainCode::Polygon() const {
-   DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)." );
+   DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
 
-   std::array< VertexInteger, 8 > dir;
+   VertexInteger const* dir;
    if( is8connected ) {
-      dir[ 0 ] = {  1,  0 };
-      dir[ 1 ] = {  1, -1 };
-      dir[ 2 ] = {  0, -1 };
-      dir[ 3 ] = { -1, -1 };
-      dir[ 4 ] = { -1,  0 };
-      dir[ 5 ] = { -1,  1 };
-      dir[ 6 ] = {  0,  1 };
-      dir[ 7 ] = {  1,  1 };
+      dir = Code::deltas8;
    } else {
-      dir[ 0 ] = {  1,  0 };
-      dir[ 1 ] = {  0, -1 };
-      dir[ 2 ] = { -1,  0 };
-      dir[ 3 ] = {  0,  1 };
+      dir = Code::deltas4;
    }
 
    std::array< VertexFloat, 4 > pts;

@@ -23,7 +23,7 @@
 namespace dip {
 
 
-/// \addtogroup infrastructure
+/// \addtogroup measurement
 /// \{
 
 
@@ -61,9 +61,9 @@ struct Vertex {
    T y;   ///< The y-coordinate
 
    /// Default constructor
-   Vertex() : x( T( 0 )), y( T( 0 )) {}
+   constexpr Vertex() : x( T( 0 )), y( T( 0 )) {}
    /// Constructor
-   Vertex( T x, T y ) : x( x ), y( y ) {}
+   constexpr Vertex( T x, T y ) : x( x ), y( y ) {}
 
    /// Add a vertex
    template< typename V >
@@ -206,16 +206,16 @@ inline VertexFloat operator-( VertexInteger const& lhs, VertexFloat const& rhs )
 }
 
 /// \brief Add a vertex and a constant
-template< typename T >
-Vertex< T > operator+( Vertex< T > v, T n ) {
-   v += n;
+template< typename T, typename S >
+Vertex< T > operator+( Vertex< T > v, S n ) {
+   v += T( n );
    return v;
 }
 
 /// \brief Subtract a vertex and a constant
-template< typename T >
-Vertex< T > operator-( Vertex< T > v, T n ) {
-   v -= n;
+template< typename T, typename S >
+Vertex< T > operator-( Vertex< T > v, S n ) {
+   v -= T( n );
    return v;
 }
 
@@ -233,6 +233,50 @@ Vertex< T > operator/( Vertex< T > v, dfloat n ) {
    return v;
 }
 
+/// \brief Encodes a bounding box in a 2D image by the top left and bottom right corners (both coordinates included in the box).
+struct BoundingBox {
+   VertexInteger topLeft;
+   VertexInteger bottomRight;
+   /// Default constructor
+   constexpr BoundingBox() {}
+   /// Constructor, yields a bounding box of a single pixel
+   constexpr BoundingBox( VertexInteger pt ) : topLeft( pt ), bottomRight( pt ) {}
+   /// Constructor
+   BoundingBox( VertexInteger a, VertexInteger b ) {
+         if( a.x < b.x ) {
+            topLeft.x = a.x;
+            bottomRight.x = b.x;
+         } else {
+            topLeft.x = b.x;
+            bottomRight.x = a.x;
+         }
+         if( a.y < b.y ) {
+            topLeft.y = a.y;
+            bottomRight.y = b.y;
+         } else {
+            topLeft.y = b.y;
+            bottomRight.y = a.y;
+         }
+   }
+   /// Expand bounding box to include given point.
+   void Expand( VertexInteger pt ) {
+      if( pt.x < topLeft.x ) {
+         topLeft.x = pt.x;
+      } else if( pt.x > bottomRight.x ) {
+         bottomRight.x = pt.x;
+      }
+      if( pt.y < topLeft.y ) {
+         topLeft.y = pt.y;
+      } else if( pt.y > bottomRight.y ) {
+         bottomRight.y = pt.y;
+      }
+   }
+   /// Returns the size of the bounding box.
+   UnsignedArray Size() const {
+      VertexInteger res = bottomRight - topLeft + 1;
+      return { static_cast< dip::uint >( res.x ), static_cast< dip::uint >( res.y ) };
+   }
+};
 
 //
 // Covariance matrix
@@ -504,6 +548,18 @@ struct ChainCode {
    /// and between 0 and 7 for connectivity = 2. The border flag marks pixels at the border of the image.
    class Code {
       public:
+         static constexpr VertexInteger deltas4[4] = { {  1,  0 },
+                                                       {  0, -1 },
+                                                       { -1,  0 },
+                                                       {  0,  1 } };
+         static constexpr VertexInteger deltas8[8] = { {  1,  0 },
+                                                       {  1, -1 },
+                                                       {  0, -1 },
+                                                       { -1, -1 },
+                                                       { -1,  0 },
+                                                       { -1,  1 },
+                                                       {  0,  1 },
+                                                       {  1,  1 } };
          /// Default constructor
          Code() : value( 0 ) {}
          /// Constructor
@@ -516,6 +572,10 @@ struct ChainCode {
          bool IsEven() const { return !(value & 1); }
          /// Is it an off code?
          bool IsOdd() const { return !IsEven(); }
+         /// The change in coordinates for an 8-connected chain code
+         VertexInteger const& Delta8() const { return deltas8[value & 7]; }
+         /// The change in coordinates for a 4-connected chain code
+         VertexInteger const& Delta4() const { return deltas4[value & 7]; }
          /// Compare codes
          bool operator==( Code const& c2 ) const {
             return ( value & 7 ) == ( c2.value & 7 );
@@ -563,6 +623,9 @@ struct ChainCode {
       return Polygon().Centroid();
    }
 
+   /// \brief Finds the bounding box for the object described by the chain code
+   dip::BoundingBox BoundingBox() const;
+
    /// Returns the length of the longest run of identical chain codes.
    dip::uint LongestRun() const;
 
@@ -581,20 +644,50 @@ struct ChainCode {
    dip::ConvexHull ConvexHull() const {
       return dip::ConvexHull( Polygon() );
    }
+
+   /// \brief Paints the pixels traced by the chain code in a binary image. The image has the size of the
+   /// `dip::ChainCode::BoundingBox`.
+   void Image( dip::Image& out ) const;
+   dip::Image Image() const {
+      dip::Image out;
+      Image( out );
+      return out;
+   }
+
+   /// \brief Create a new chain code that goes around the object in the same direction, but traces the background
+   /// pixels that are 4-connected to the object. That is, it grows the object by one pixel. Only defined for
+   /// 8-connected chain codes.
+   ChainCode Offset() const;
 };
 
 /// \brief A collection of object contours
 using ChainCodeArray = std::vector< ChainCode >;
 
 /// \brief Returns the set of chain codes sequences that encode the contours of the given objects in a labelled image.
+///
 /// Note that only the first closed contour for each label is found; if an object has multiple connected components,
-/// only part of the object is found.
+/// only part of it is found. The chain code traces the outer perimeter of the object, holes are ignored.
+///
+/// `objectIDs` is a list with object IDs present in the labelled image. If an empty array is given, all objects in
+/// the image are used.
 ChainCodeArray GetImageChainCodes(
-      Image const& labels,
-      UnsignedArray const& objectIDs,
-      dip::uint connectivity = 2
+      Image const& labels,             ///< Labelled image, unsigned integer type
+      UnsignedArray const& objectIDs,  ///< A list of object IDs to get chain codes for
+      dip::uint connectivity = 2       ///< Connectivity, see \ref connectivity
 );
 
+/// \brief Returns the chain codes sequence that encodes the contour of one object in a binary or labelled image.
+///
+/// Note that only one closed contour is found; if the object has multiple connected components,
+/// only part of it is found. The chain code traces the outer perimeter of the object, holes are ignored.
+///
+/// `startCoord` is the 2D coordinates of a boundary pixel. If it points to a zero-valued pixel or a pixel not on
+/// the boundary of an object, an exception will be thrown.
+ChainCode GetSingleChainCode(
+      Image const& labels,             ///< Labelled or binary image (unsigned integer type or binary type)
+      UnsignedArray const& startCoord, ///< The starting coordinates for the chain code; must point to a non-zero pixel in `labels`
+      dip::uint connectivity = 2       ///< Connectivity, see \ref connectivity
+);
 
 /// \}
 
