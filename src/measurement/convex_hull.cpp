@@ -32,9 +32,9 @@ dip::Polygon ChainCode::Polygon() const {
 
    VertexInteger const* dir;
    if( is8connected ) {
-      dir = Code::deltas8;
+      dir = deltas8;
    } else {
-      dir = Code::deltas4;
+      dir = deltas4;
    }
 
    std::array< VertexFloat, 4 > pts;

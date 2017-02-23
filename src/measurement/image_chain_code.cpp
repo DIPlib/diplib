@@ -18,31 +18,11 @@
 
 namespace dip {
 
-constexpr VertexInteger ChainCode::Code::deltas4[4];
-constexpr VertexInteger ChainCode::Code::deltas8[8];
+// We need storage for these tables, as we take pointers to them.
+constexpr VertexInteger ChainCode::deltas4[4];
+constexpr VertexInteger ChainCode::deltas8[8];
 
 namespace {
-
-struct FeemanCodeTable {
-   VertexInteger const* pos;
-   std::array< dip::sint, 8 > offset;
-   FeemanCodeTable( dip::uint connectivity, IntegerArray strides ) {
-      // Not testing for dimensionality of `strides`, expect 2 elements.
-      dip::sint xS = strides[ 0 ];
-      dip::sint yS = strides[ 1 ];
-      if( connectivity == 1 ) {
-         pos = ChainCode::Code::deltas4;
-         for( dip::uint ii = 0; ii < 4; ++ii ) {
-            offset[ ii ] = pos[ ii ].x * xS + pos[ ii ].y * yS;
-         }
-      } else {
-         pos = ChainCode::Code::deltas8;
-         for( dip::uint ii = 0; ii < 8; ++ii ) {
-            offset[ ii ] = pos[ ii ].x * xS + pos[ ii ].y * yS;
-         }
-      }
-   }
-};
 
 struct ObjectData { dip::uint index; bool done; };
 using ObjectIdList = std::map< dip::uint, ObjectData >; // key is the objectID (label)
@@ -53,7 +33,7 @@ static ChainCode dip__OneChainCode(
       VertexInteger coord, // starting coordinates
       VertexInteger const& dims,  // largest coordinates in image
       dip::uint connectivity,
-      FeemanCodeTable const& freeman,
+      ChainCode::CodeTable const& codeTable,
       bool startDir0 = false
 ) {
    TPI const* data = static_cast< TPI const* >( data_ptr );
@@ -70,8 +50,8 @@ static ChainCode dip__OneChainCode(
    if( !startDir0 ) {
       // In this case, we cannot be sure of the start direction. Let's look for a background pixel first.
       while( true ) {
-         VertexInteger nc = coord + freeman.pos[ dir ];
-         dip::sint no = freeman.offset[ dir ];
+         VertexInteger nc = coord + codeTable.pos[ dir ];
+         dip::sint no = codeTable.offset[ dir ];
          if( ( nc.x < 0 ) || ( nc.x > dims.x ) || ( nc.y < 0 ) || ( nc.y > dims.y ) || ( ( data[ no ] ) != label ) ) {
             break;
          }
@@ -81,8 +61,8 @@ static ChainCode dip__OneChainCode(
    }
    int startdir = dir;
    do {
-      VertexInteger nc = coord + freeman.pos[ dir ];
-      dip::sint no = offset + freeman.offset[ dir ];
+      VertexInteger nc = coord + codeTable.pos[ dir ];
+      dip::sint no = offset + codeTable.offset[ dir ];
       if(( nc.x >= 0 ) && ( nc.x <= dims.x ) && ( nc.y >= 0 ) && ( nc.y <= dims.y ) && (( data[ no ] ) == label ) ) {
          // Add new chain
          bool border = ( nc.x == 0 ) || ( nc.x == dims.x ) || ( nc.y == 0 ) || ( nc.y == dims.y );
@@ -110,7 +90,7 @@ static ChainCodeArray dip__ChainCodes(
       ObjectIdList& objectIDs,
       dip::uint nObjects, // potentially different from the number of entries in objectIDs, if there were repeated elements in the original list.
       dip::uint connectivity,
-      FeemanCodeTable const& freeman
+      ChainCode::CodeTable const& codeTable
 ) {
    DIP_ASSERT( labels.DataType() == DataType( TPI( 0 ) ) );
    TPI* data = static_cast< TPI* >( labels.Origin() );
@@ -138,7 +118,7 @@ static ChainCodeArray dip__ChainCodes(
             }
          }
          if( process ) {
-            ccArray[ index ] = dip__OneChainCode< TPI >( data + pos, coord, dims, connectivity, freeman, true );
+            ccArray[ index ] = dip__OneChainCode< TPI >( data + pos, coord, dims, connectivity, codeTable, true );
          }
          pos += strides[ 0 ];
       }
@@ -158,11 +138,10 @@ ChainCodeArray GetImageChainCodes(
    DIP_START_STACK_TRACE
       labels.CheckProperties( 2, 1, DataType::Class_UInt );
    DIP_END_STACK_TRACE
-   DIP_THROW_IF( !(connectivity == 1 || connectivity == 2),
-          "connectivity not supported");
+   DIP_THROW_IF( !( connectivity == 1 || connectivity == 2 ), E::CONNECTIVITY_NOT_SUPPORTED );
 
    // Initialize freeman codes
-   FeemanCodeTable freeman( connectivity, labels.Strides() );
+   ChainCode::CodeTable codeTable = ChainCode::PrepareCodeTable( connectivity, labels.Strides() );
 
    // Create a map for the object IDs
    ObjectIdList objectIdList;
@@ -183,7 +162,7 @@ ChainCodeArray GetImageChainCodes(
    // Get the chain code for each label
    ChainCodeArray ccArray;
    DIP_OVL_CALL_ASSIGN_UINT( ccArray,
-                             dip__ChainCodes, ( labels, objectIdList, nObjects, connectivity, freeman ),
+                             dip__ChainCodes, ( labels, objectIdList, nObjects, connectivity, codeTable ),
                              labels.DataType() );
    return ccArray;
 }
@@ -198,11 +177,10 @@ ChainCode GetSingleChainCode(
    DIP_START_STACK_TRACE
       labels.CheckProperties( 2, 1, DataType::Class_Unsigned );
    DIP_END_STACK_TRACE
-   DIP_THROW_IF( !(connectivity == 1 || connectivity == 2),
-                 "connectivity not supported");
+   DIP_THROW_IF( !( connectivity == 1 || connectivity == 2 ), E::CONNECTIVITY_NOT_SUPPORTED );
 
    // Initialize freeman codes
-   FeemanCodeTable freeman( connectivity, labels.Strides() );
+   ChainCode::CodeTable codeTable = ChainCode::PrepareCodeTable( connectivity, labels.Strides() );
 
    // Get the chain code for each label
    void const* data = labels.Pointer( startCoord );
@@ -210,7 +188,7 @@ ChainCode GetSingleChainCode(
    VertexInteger dims = { static_cast< dip::sint >( labels.Size( 0 ) - 1 ), static_cast< dip::sint >( labels.Size( 1 ) - 1 ) };
    ChainCode cc;
    DIP_OVL_CALL_ASSIGN_UNSIGNED( cc,
-                                 dip__OneChainCode, ( data, coord, dims, connectivity, freeman ),
+                                 dip__OneChainCode, ( data, coord, dims, connectivity, codeTable ),
                                  labels.DataType() );
    return cc;
 }
@@ -220,7 +198,7 @@ void ChainCode::Image( dip::Image& out ) const {
    UnsignedArray size = bb.Size();
    out.ReForge( size, 1, DT_BIN );
    out = false; // set all pixels to false
-   FeemanCodeTable freeman( is8connected ? 2 : 1, out.Strides() );
+   ChainCode::CodeTable freeman = PrepareCodeTable( out.Strides() );
    VertexInteger coord = start - bb.topLeft;
    dip::sint offset = coord.x * out.Stride( 0 ) + coord.y * out.Stride( 1 );
    dip::bin* ptr = static_cast< dip::bin* >( out.Origin() ) + offset;
@@ -237,7 +215,7 @@ ChainCode ChainCode::Offset() const {
    out.objectID = objectID;
    out.is8connected = true;
    int prev = codes.back();
-   out.start = start + Code::deltas8[ ( prev + codes.back().IsEven() ? 2 : 3 ) % 8 ];
+   out.start = start + deltas8[ ( prev + codes.back().IsEven() ? 2 : 3 ) % 8 ];
    for( auto code : codes ) {
       int n = ( code - prev ) % 8;
       if( n < -4 ) {

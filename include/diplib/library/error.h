@@ -158,6 +158,7 @@ constexpr char const* INVALID_FLAG = "Invalid flag";
 constexpr char const* PARAMETER_OUT_OF_RANGE = "Parameter value out of range";
 constexpr char const* ARRAY_PARAMETER_WRONG_LENGTH = "Array parameter has the wrong number of elements";
 constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supported";
+constexpr char const* CONNECTIVITY_NOT_SUPPORTED = "Connectivity is not supported";
 
 }
 

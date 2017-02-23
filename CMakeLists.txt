@@ -92,7 +92,7 @@ install(DIRECTORY include/ DESTINATION include)
 
 ### DIPlib unit tests
 
-if(ENABLE_DOCTEST)
+if(DIP_ENABLE_DOCTEST)
    add_custom_target(check COMMAND ./unit_tests)
    enable_testing()
    add_executable (unit_tests EXCLUDE_FROM_ALL test/test.cpp)

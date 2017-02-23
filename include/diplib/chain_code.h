@@ -544,22 +544,56 @@ inline dip::ConvexHull Polygon::ConvexHull() const {
 /// \brief The contour of an object as a chain code sequence.
 struct ChainCode {
 
+   static constexpr VertexInteger deltas4[4] = { {  1,  0 },
+                                                 {  0, -1 },
+                                                 { -1,  0 },
+                                                 {  0,  1 } };
+   static constexpr VertexInteger deltas8[8] = { {  1,  0 },
+                                                 {  1, -1 },
+                                                 {  0, -1 },
+                                                 { -1, -1 },
+                                                 { -1,  0 },
+                                                 { -1,  1 },
+                                                 {  0,  1 },
+                                                 {  1,  1 } };
+
+   /// \brief Provides data that is helpful when processing chain codes.
+   ///
+   /// The table is prepared using the `dip::ChainCode::PrepareCodeTable` method. The method takes a stride array,
+   /// which is expected to have exactly two elements (as chain codes only work with 2D images). The returned
+   /// table contains a value `pos[code]` that says how the coordinates change when moving in the direction of the
+   /// `code`, and a value `offset[code]` that says how to modify the image data pointer to reach the new pixel.
+   ///
+   /// `pos[code]` is identical to `code.Delta8()` or `code.Delta4()` (depending on connectivity).
+   ///
+   /// No checking is done when indexing. If the `%CodeTable` is derived from a 4-connected chain code, only the
+   /// first four table elements can be used. Otherwise, eight table elements exist and are valid.
+   struct CodeTable {
+         VertexInteger const* pos; ///< Array with position offsets for each chain code.
+         std::array< dip::sint, 8 > offset; ///< Array with pointer offsets for each chain code.
+      private:
+         friend class ChainCode; // make it so that we can only create one of these tables through the dip::ChainCode::PrepareCodeTable method.
+         CodeTable( bool is8connected, IntegerArray strides ) {
+            dip::sint xS = strides[ 0 ];
+            dip::sint yS = strides[ 1 ];
+            if( is8connected ) {
+               pos = deltas8;
+               for( dip::uint ii = 0; ii < 8; ++ii ) {
+                  offset[ ii ] = pos[ ii ].x * xS + pos[ ii ].y * yS;
+               }
+            } else {
+               pos = deltas4;
+               for( dip::uint ii = 0; ii < 4; ++ii ) {
+                  offset[ ii ] = pos[ ii ].x * xS + pos[ ii ].y * yS;
+               }
+            }
+         }
+   };
+
    /// \brief Encodes a single chain code, as used by `dip::ChainCode`. Chain codes are between 0 and 3 for connectivity = 1,
    /// and between 0 and 7 for connectivity = 2. The border flag marks pixels at the border of the image.
    class Code {
       public:
-         static constexpr VertexInteger deltas4[4] = { {  1,  0 },
-                                                       {  0, -1 },
-                                                       { -1,  0 },
-                                                       {  0,  1 } };
-         static constexpr VertexInteger deltas8[8] = { {  1,  0 },
-                                                       {  1, -1 },
-                                                       {  0, -1 },
-                                                       { -1, -1 },
-                                                       { -1,  0 },
-                                                       { -1,  1 },
-                                                       {  0,  1 },
-                                                       {  1,  1 } };
          /// Default constructor
          Code() : value( 0 ) {}
          /// Constructor
@@ -575,7 +609,7 @@ struct ChainCode {
          /// The change in coordinates for an 8-connected chain code
          VertexInteger const& Delta8() const { return deltas8[value & 7]; }
          /// The change in coordinates for a 4-connected chain code
-         VertexInteger const& Delta4() const { return deltas4[value & 7]; }
+         VertexInteger const& Delta4() const { return deltas4[value & 3]; }
          /// Compare codes
          bool operator==( Code const& c2 ) const {
             return ( value & 7 ) == ( c2.value & 7 );
@@ -595,6 +629,19 @@ struct ChainCode {
 
    /// Adds a code to the end of the chain.
    void Push( Code const& code ) { codes.push_back( code ); }
+
+   /// \brief Returns a table that is useful when processing the chain code
+   CodeTable PrepareCodeTable( IntegerArray const& strides ) const {
+      DIP_THROW_IF( strides.size() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+      return CodeTable( is8connected, strides );
+   }
+
+   /// \brief Returns a table that is useful when processing the chain code
+   static CodeTable PrepareCodeTable( dip::uint connectivity, IntegerArray const& strides ) {
+      DIP_THROW_IF( strides.size() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+      DIP_THROW_IF(( connectivity < 1 ) || ( connectivity > 2 ), E::CONNECTIVITY_NOT_SUPPORTED );
+      return CodeTable( connectivity == 2, strides );
+   }
 
    /// \brief Returns the length of the chain code using the method by Vossepoel and Smeulders. If the chain code
    /// represents the closed contour of an object, add pi to the result to determine the object's perimeter.
