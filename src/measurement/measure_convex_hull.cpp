@@ -12,10 +12,6 @@
 #include "diplib.h"
 #include "diplib/chain_code.h"
 
-#ifdef DIP__ENABLE_DOCTEST
-#include "doctest.h"
-#endif
-
 
 namespace dip {
 
@@ -188,15 +184,18 @@ dfloat Polygon::EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix con
 }
 
 
+} // namespace dip
+
+
 #ifdef DIP__ENABLE_DOCTEST
 
 DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
-   ChainCode cc;
-   Polygon p = cc.Polygon();
+   dip::ChainCode cc;
+   dip::Polygon p = cc.Polygon();
    DOCTEST_CHECK( p.vertices.size() == 4 );
    DOCTEST_CHECK( p.Area() == doctest::Approx( 0.5 ));
    DOCTEST_CHECK( p.Length() == doctest::Approx( 2.0 * std::sqrt( 2.0 )));
-   ConvexHull h = p.ConvexHull();
+   dip::ConvexHull h = p.ConvexHull();
    DOCTEST_CHECK( h.Vertices().size() == 4 );
    DOCTEST_CHECK( h.Area() == doctest::Approx( 0.5 ));
    DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 2.0 * std::sqrt( 2.0 )));
@@ -219,6 +218,3 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
 }
 
 #endif // DIP__ENABLE_DOCTEST
-
-
-} // namespace dip

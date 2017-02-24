@@ -20,15 +20,16 @@
 
 /// \file
 /// \brief Declares the `dip::Measurement` and `dip::MeasurementTool` classes, and the `dip::Feature` namespace.
-/// \see measurement, infrastructure
+/// \see measurement
 
 
 namespace dip {
 
 
 /// \defgroup measurement Measurement
-/// \ingroup infrastructure
-/// \brief The measurement infrastructure.
+/// \brief The measurement infrastructure and functionality, based around the `dip::MeasurementTool` class and the
+/// `dip::Measurement` class.
+/// \{
 
 
 /// \brief Contains classes that implement the measurement features.
@@ -100,6 +101,7 @@ using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
 /// references are represented as iterators. Thus, it is also possible to iterate over all columns groups
 /// (or all rows), iterate over each of the cell groups within a column group (or within a row), and
 /// iterate over the values within a cell group.
+// TODO: Provide some examples on indexing.
 class Measurement {
    public:
       using ValueType = dfloat;           ///< The type of the measurement data
@@ -290,27 +292,27 @@ class Measurement {
 
       /// \brief Adds a feature to a non-forged `Measurement` object.
       void AddFeature( String const& name, Feature::ValueInformationArray const& values ) {
-         DIP_THROW_IF( IsForged(), "Measurement object is forged." );
-         DIP_THROW_IF( name.empty(), "No feature name given." );
+         DIP_THROW_IF( IsForged(), "Measurement object is forged" );
+         DIP_THROW_IF( name.empty(), "No feature name given" );
          DIP_THROW_IF( FeatureExists( name ), String( "Feature already present: " ) + name );
-         DIP_THROW_IF( values.empty(), "A feature needs at least one value." );
+         DIP_THROW_IF( values.empty(), "A feature needs at least one value" );
          AddFeature_( name, values );
       }
 
       /// \brief Adds a feature to a non-forged `Measurement` object if it is not already there.
       void EnsureFeature( String const& name, Feature::ValueInformationArray const& values ) {
-         DIP_THROW_IF( IsForged(), "Measurement object is forged." );
-         DIP_THROW_IF( name.empty(), "No feature name given." );
+         DIP_THROW_IF( IsForged(), "Measurement object is forged" );
+         DIP_THROW_IF( name.empty(), "No feature name given" );
          if( FeatureExists( name )) {
             return;
          }
-         DIP_THROW_IF( values.empty(), "A feature needs at least one value." );
+         DIP_THROW_IF( values.empty(), "A feature needs at least one value" );
          AddFeature_( name, values );
       }
 
       /// \brief Adds object IDs to a non-forged `Measurement` object.
       void AddObjectIDs( UnsignedArray const& objectIDs ) {
-         DIP_THROW_IF( IsForged(), "Measurement object is forged." );
+         DIP_THROW_IF( IsForged(), "Measurement object is forged" );
          for( auto const& objectID : objectIDs ) {
             DIP_THROW_IF( ObjectExists( objectID ), String( "Object already present: " ) + std::to_string( objectID ));
             dip::uint index = objects_.size();
@@ -323,7 +325,7 @@ class Measurement {
       void Forge() {
          if( !IsForged() ) {
             dip::uint n = values_.size() * objects_.size();
-            DIP_THROW_IF( n == 0, "Attempting to forge a zero-sized table." );
+            DIP_THROW_IF( n == 0, "Attempting to forge a zero-sized table" );
             data_.resize( n );
          }
       }
@@ -345,13 +347,13 @@ class Measurement {
 
       /// \brief Creats and iterator (view) to a subset of feature values
       IteratorFeature FeatureValuesView( dip::uint startValue, dip::uint numberValues = 1 ) const {
-         DIP_THROW_IF( startValue + numberValues > NumberOfValues(), "Subset out of range." );
+         DIP_THROW_IF( startValue + numberValues > NumberOfValues(), "Subset out of range" );
          return IteratorFeature( *this, startValue, numberValues );
       }
 
       /// \brief A raw pointer to the data of the table. All values for one object are contiguous.
       ValueType* Data() const {
-         DIP_THROW_IF( !IsForged(), "Measurement object not forged." );
+         DIP_THROW_IF( !IsForged(), "Measurement object not forged" );
          return data_.data();
       }
 
@@ -604,7 +606,7 @@ class Composite : public Base {
 } // namespace Feature
 
 
-/// \brief Performs measurements, as defined by classes in `dip::Feature`, on images.
+/// \brief Performs measurements on images.
 ///
 /// \ingroup measurement
 ///
@@ -674,7 +676,12 @@ class Composite : public Base {
 ///
 /// Features that include "Scalar grey" in the limitations column require a scalar grey-value image to be passed
 /// into the `dip::MeasurementTool::Measure` method together with the label image.
-// TODO: Document each feature in more detail in a separate page
+///
+/// Note that you can define new measurement features, and register them with the `%MeasurementTool` through the
+/// `dip::MeasurementTool::Register` method. The new feature then becomes available in the `dip::MeasurementTool::Measure`
+/// method just like any of the default features.
+// TODO: Document how to create your own feature and register it with the MeasurementTool.
+// TODO: Document each feature in more detail in a separate page.
 // TODO: Create a DirectionalStatistics feature that computes directional mean, std dev and variance.
 class MeasurementTool {
    public:
@@ -811,6 +818,7 @@ inline Image ObjectToMeasurement(
    return out;
 }
 
+/// \}
 
 } // namespace dip
 

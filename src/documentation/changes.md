@@ -120,4 +120,4 @@ over.
 - `dip::SeparableConvolution` treats input filter definitions slightly differently, and there
   no longer are "left" and "right" options.
 
-- `dip::ImageDisplay` no longer does any scaling.
+- `dip::ImageDisplay` no longer does any spatial scaling.

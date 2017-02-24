@@ -18,7 +18,7 @@
 namespace dip {
 
 dfloat ChainCode::Length() const {
-   DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)." );
+   DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
    if( codes.empty() ) {
       return pi;
    } else if( is8connected ) {
@@ -59,7 +59,7 @@ dfloat ChainCode::Length() const {
 }
 
 FeretValues ChainCode::Feret( dfloat angleStep ) const {
-   DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)." );
+   DIP_THROW_IF( codes.size() == 1, "Received a weird chain code as input (N==1)" );
    FeretValues feret;
    if( codes.empty() ) {
       // Fill in some values
@@ -134,7 +134,7 @@ dfloat ChainCode::BendingEnergy() const {
       FloatArray diff( size, 0 );
       FloatArray delta_s( size, 0 );
       for( dip::uint ii = 0; ii < size1; ++ii ) {
-         delta_s[ ii ] = 0.5 * ( kulpa_weights[ codes[ ii ] ] + kulpa_weights[ codes[ ii + 1 ] ] );
+         delta_s[ ii ] = 0.5 * ( kulpa_weights[ codes[ ii ] ] + kulpa_weights[ codes[ ii + 1 ] ] ); // TODO: does not work for 4-connected CCs
          diff[ ii ] = codes[ ii + 1 ] - codes[ ii ];
          if( !is8connected ) { diff[ ii ] *= 2; }
          if( diff[ ii ] > 3 ) { diff[ ii ] -= 8; }
@@ -177,6 +177,23 @@ dfloat ChainCode::BendingEnergy() const {
    else {
       return 0;
    }
+}
+
+dip::BoundingBox ChainCode::BoundingBox() const {
+   VertexInteger current = start;
+   dip::BoundingBox bb{ current };
+   if( is8connected ) {
+      for( auto code : codes ) {
+         current += code.Delta8();
+         bb.Expand( current );
+      }
+   } else {
+      for( auto code : codes ) {
+         current += code.Delta4();
+         bb.Expand( current );
+      }
+   }
+   return bb;
 }
 
 dip::uint ChainCode::LongestRun() const {

@@ -13,6 +13,7 @@
 #include <utility>
 #include <streambuf>
 #include <iostream>
+#include <cstring>
 
 #include "mex.h"
 // Undocumented functions in libmx
@@ -37,18 +38,27 @@ extern void mxSetPropertyShared( mxArray* pa, mwIndex index, char const* propnam
 
 
 /// \file
-/// \brief This file should be included in each MEX file. It defines the
-/// \ref dml namespace. Since it defines functions that are not `inline`,
-/// you will not be able to include this header into more than one source
-/// file that will be linked together.
+/// \brief This file should be included in each MEX-file. It defines the `#dml` namespace.
 
 
-/// \brief The dml namespace contains the interface between *MATLAB* and *DIPlib*. It defines
-/// the functions needed to convert between `mxArray` objects and dip::Image objects.
-// TODO: add more documentation here on how to use the dml interface.
+/// \brief The `%dml` namespace contains the interface between *MATLAB* and *DIPlib*.
+///
+/// The functions and classes defined in this namespace are meant to be used in *MATLAB* MEX-files.
+/// All functionality is defined within an anonymous namespace to prevent them being exported out of the MEX-file.
+/// This is why they are not shown on this page. See \ref dip_matlab_interface for the full interface functionality.
+//
+// Note that Doxygen doesn't (yet) recognize this link:
+// \ref anonymous_namespace{dip_matlab_interface.h} ["an anonymous namespace"]
+// It might be implemented at some point: http://stackoverflow.com/questions/14166416/doxygen-c-how-to-link-to-anonymous-namespace-variables
 namespace dml {
 
+/// \brief Everything in the `#dml` namespace is defined within this anonymous namespace.
 namespace { // This makes all these functions not visible outside the current compilation unit. Result: the MEX-file will not export these functions.
+
+/// \defgroup dip_matlab_interface *DIPlib*--*MATLAB* interface
+/// \brief Functions to convert image data, function parameters and other arrays to and from *MATLAB*.
+///
+/// \{
 
 // These are the names of the properties we get/set in the dip_image class in MATLAB:
 constexpr char const* imageClassName = "dip_image";
@@ -236,14 +246,15 @@ inline mxArray* CreateTensorShape( enum dip::Tensor::Shape shape ) {
 inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
    char str[25];
    if( mxGetString( mx, str, 25 ) == 0 ) {
-      if( strcmp( str, "column vector" ) == 0 ) { return dip::Tensor::Shape::COL_VECTOR; }
-      else if( strcmp( str, "row vector" ) == 0 ) { return dip::Tensor::Shape::ROW_VECTOR; }
-      else if( strcmp( str, "column-major matrix" ) == 0 ) { return dip::Tensor::Shape::COL_MAJOR_MATRIX; }
-      else if( strcmp( str, "row-major matrix" ) == 0 ) { return dip::Tensor::Shape::ROW_MAJOR_MATRIX; }
-      else if( strcmp( str, "diagonal matrix" ) == 0 ) { return dip::Tensor::Shape::DIAGONAL_MATRIX; }
-      else if( strcmp( str, "symmetric matrix" ) == 0 ) { return dip::Tensor::Shape::SYMMETRIC_MATRIX; }
-      else if( strcmp( str, "upper triangular matrix" ) == 0 ) { return dip::Tensor::Shape::UPPTRIANG_MATRIX; }
-      else if( strcmp( str, "lower triangular matrix" ) == 0 ) { return dip::Tensor::Shape::LOWTRIANG_MATRIX; }
+      if( std::strcmp( str, "column vector" ) == 0 ) { return dip::Tensor::Shape::COL_VECTOR; }
+      else if( std::strcmp( str, "row vector" ) == 0 ) { return dip::Tensor::Shape::ROW_VECTOR; }
+      else if( std::strcmp( str, "column-major matrix" ) == 0 ) { return dip::Tensor::Shape::COL_MAJOR_MATRIX; }
+      else if( std::strcmp( str, "row-major matrix" ) == 0 ) { return dip::Tensor::Shape::ROW_MAJOR_MATRIX; }
+      else if( std::strcmp( str, "diagonal matrix" ) == 0 ) { return dip::Tensor::Shape::DIAGONAL_MATRIX; }
+      else if( std::strcmp( str, "symmetric matrix" ) == 0 ) { return dip::Tensor::Shape::SYMMETRIC_MATRIX; }
+      else if( std::strcmp( str, "upper triangular matrix" ) == 0 ) { return dip::Tensor::Shape::UPPTRIANG_MATRIX; }
+      else if( std::strcmp( str, "lower triangular matrix" ) == 0 ) { return dip::Tensor::Shape::LOWTRIANG_MATRIX; }
+      else { DIP_THROW( dip::String{ "TensorShape string not recognized: " } + dip::String{ str } ) }
    }
    DIP_THROW( "TensorShape property returned wrong data!" );
 }
@@ -253,8 +264,8 @@ inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
 // Get input arguments: convert mxArray to various dip:: types
 //
 
-#define DML_MIN_ARGS( n ) DIP_THROW_IF( nrhs < n, "Too few input arguments." )
-#define DML_MAX_ARGS( n ) DIP_THROW_IF( nrhs > n, "Too many input arguments." )
+#define DML_MIN_ARGS( n ) DIP_THROW_IF( nrhs < n, "Too few input arguments" )
+#define DML_MAX_ARGS( n ) DIP_THROW_IF( nrhs > n, "Too many input arguments" )
 
 /// \brief True if empty or a one-dimensional array
 inline bool IsVector( mxArray const* mx ) {
@@ -270,7 +281,7 @@ inline bool GetBoolean( mxArray const* mx ) {
          return *mxGetPr( mx ) != 0;
       }
    }
-   DIP_THROW( "Boolean value expected." );
+   DIP_THROW( "Boolean value expected" );
 }
 
 /// \brief Convert an unsigned integer from `mxArray` to `dip::uint` by copy.
@@ -281,7 +292,7 @@ inline dip::uint GetUnsigned( mxArray const* mx ) {
          return dip::uint( v );
       }
    }
-   DIP_THROW( "Unsigned integer value expected." );
+   DIP_THROW( "Unsigned integer value expected" );
 }
 
 /// \brief Convert a signed integer from `mxArray` to `dip::sint` by copy.
@@ -292,7 +303,7 @@ inline dip::sint GetInteger( mxArray const* mx ) {
          return dip::sint( v );
       }
    }
-   DIP_THROW( "Integer value expected." );
+   DIP_THROW( "Integer value expected" );
 }
 
 /// \brief Convert a floating-point number from `mxArray` to `dip::dfloat` by copy.
@@ -300,7 +311,7 @@ inline dip::dfloat GetFloat( mxArray const* mx ) {
    if( mxIsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
       return *mxGetPr( mx );
    }
-   DIP_THROW( "Real floating-point value expected." );
+   DIP_THROW( "Real floating-point value expected" );
 }
 
 /// \brief Convert a complex floating-point number from `mxArray` to `dip::dcomplex` by copy.
@@ -313,7 +324,7 @@ inline dip::dcomplex GetComplex( mxArray const* mx ) {
       if( pi ) { out.imag( *pi ); }
       return out;
    }
-   DIP_THROW( "Complex floating-point value expected." );
+   DIP_THROW( "Complex floating-point value expected" );
 }
 
 /// \brief Convert a boolean (logical) array from `mxArray` to `dip::BooleanArray` by copy.
@@ -337,7 +348,7 @@ inline dip::BooleanArray GetBooleanArray( mxArray const* mx ) {
          return out;
       }
    }
-   DIP_THROW( "Boolean array expected." );
+   DIP_THROW( "Boolean array expected" );
 }
 
 /// \brief Convert an unsigned integer array from `mxArray` to `dip::UnsignedArray` by copy.
@@ -348,12 +359,12 @@ inline dip::UnsignedArray GetUnsignedArray( mxArray const* mx ) {
       auto data = mxGetPr( mx );
       for( dip::uint ii = 0; ii < n; ++ii ) {
          double v = data[ ii ];
-         DIP_THROW_IF(( std::fmod( v, 1 ) != 0 ) || ( v < 0 ), "Array element not an unsigned integer." );
+         DIP_THROW_IF(( std::fmod( v, 1 ) != 0 ) || ( v < 0 ), "Array element not an unsigned integer" );
          out[ ii ] = dip::uint( v );
       }
       return out;
    }
-   DIP_THROW( "Unsigned integer array expected." );
+   DIP_THROW( "Unsigned integer array expected" );
 }
 
 /// \brief Convert a signed integer array from `mxArray` to `dip::IntegerArray` by copy.
@@ -364,12 +375,12 @@ inline dip::IntegerArray GetIntegerArray( mxArray const* mx ) {
       auto data = mxGetPr( mx );
       for( dip::uint ii = 0; ii < n; ++ii ) {
          double v = data[ ii ];
-         DIP_THROW_IF( std::fmod( v, 1 ) != 0, "Array element not an integer." );
+         DIP_THROW_IF( std::fmod( v, 1 ) != 0, "Array element not an integer" );
          out[ ii ] = dip::sint( v );
       }
       return out;
    }
-   DIP_THROW( "Integer array expected." );
+   DIP_THROW( "Integer array expected" );
 }
 
 /// \brief Convert a floating-point array from `mxArray` to `dip::FloatArray` by copy.
@@ -383,7 +394,7 @@ inline dip::FloatArray GetFloatArray( mxArray const* mx ) {
       }
       return out;
    }
-   DIP_THROW( "Floating-point array expected." );
+   DIP_THROW( "Floating-point array expected" );
 }
 
 /// \brief Convert an unsigned integer `mxArray` to a `dip::BooleanArray`, where elements of the input are indices
@@ -393,13 +404,12 @@ inline dip::BooleanArray GetProcessArray( mxArray const* mx, dip::uint nDims ) {
    try {
       in = GetIntegerArray( mx );
    } catch( dip::Error& ) {
-      DIP_THROW( "Process array must be an integer array." );
+      DIP_THROW( "Process array must be an integer array" );
    }
    dip::BooleanArray out( nDims, false );
    for( auto ii : in ) {
-      --ii;
-      DIP_THROW_IF(( ii < 0 ) || ( ii >= nDims ), "Process array contains index out of range." );
-      out[ ii ] = true;
+      DIP_THROW_IF(( ii <= 0 ) || ( ii > nDims ), "Process array contains index out of range" );
+      out[ ii - 1 ] = true;
    }
    return out;
 }
@@ -418,7 +428,7 @@ inline dip::CoordinateArray GetCoordinateArray( mxArray const* mx ) {
          o.resize( ndims );
          for( dip::uint ii = 0; ii < ndims; ++ii ) {
             double v = data[ ii * n ];
-            DIP_THROW_IF(( std::fmod( v, 1 ) != 0 ) || ( v < 0 ), "Coordinate value not an unsigned integer." );
+            DIP_THROW_IF(( std::fmod( v, 1 ) != 0 ) || ( v < 0 ), "Coordinate value not an unsigned integer" );
             o[ ii ] = dip::uint( v );
          }
          ++data;
@@ -433,17 +443,17 @@ inline dip::CoordinateArray GetCoordinateArray( mxArray const* mx ) {
          if( ii == 0 ) {
             ndims = mxGetNumberOfElements( elem );
          } else {
-            DIP_THROW_IF( ndims != mxGetNumberOfElements( elem ), "Coordinates in array must have consistent dimensionalities." );
+            DIP_THROW_IF( ndims != mxGetNumberOfElements( elem ), "Coordinates in array must have consistent dimensionalities" );
          }
          try {
             out[ ii ] = GetUnsignedArray( elem );
          } catch( dip::Error& ) {
-            DIP_THROW( "Coordinates in array must be unsigned integer arrays." );
+            DIP_THROW( "Coordinates in array must be unsigned integer arrays" );
          }
       }
       return out;
    }
-   DIP_THROW( "Coordinate array expected." );
+   DIP_THROW( "Coordinate array expected" );
 }
 
 /// \brief Convert a string from `mxArray` to `dip::String` by copy.
@@ -453,7 +463,7 @@ inline dip::String GetString( mxArray const* mx ) {
       mxGetString( mx, &( out[ 0 ] ), out.size() + 1 ); // Why is out.data() a const* ???
       return out;
    }
-   DIP_THROW( "String expected." );
+   DIP_THROW( "String expected" );
 }
 
 /// \brief Convert a cell array of strings from `mxArray` to `dip::StringArray` by copy.
@@ -472,7 +482,7 @@ inline dip::StringArray GetStringArray( mxArray const* mx ) {
          return out;
       }
    } catch( dip::Error& ) {
-      DIP_THROW( "String array expected." );
+      DIP_THROW( "String array expected" );
    }
 }
 
@@ -492,7 +502,7 @@ inline dip::StringSet GetStringSet( mxArray const* mx ) {
          return out;
       }
    } catch( dip::Error& ) {
-      DIP_THROW( "String set expected." );
+      DIP_THROW( "String set expected" );
    }
 }
 
@@ -508,15 +518,15 @@ inline dip::Range GetRange( mxArray const* mx ) {
          if( n > 0 ) {
             auto data = mxGetPr( mx );
             double start = data[ 0 ];
-            DIP_THROW_IF( std::fmod( start, 1 ) != 0, "Range start value must be an integer." );
+            DIP_THROW_IF( std::fmod( start, 1 ) != 0, "Range start value must be an integer" );
             out.start = dip::sint( start );
             if( n > 1 ) {
                double stop = data[ 1 ];
-               DIP_THROW_IF( std::fmod( stop, 1 ) != 0, "Range start value must be an integer." );
+               DIP_THROW_IF( std::fmod( stop, 1 ) != 0, "Range start value must be an integer" );
                out.stop = dip::sint( stop );
                if( n > 2 ) {
                   double step = data[ 2 ];
-                  DIP_THROW_IF(( std::fmod( step, 1 ) != 0 ) || ( step < 0 ), "Range step value must be a positive integer." );
+                  DIP_THROW_IF(( std::fmod( step, 1 ) != 0 ) || ( step < 0 ), "Range step value must be a positive integer" );
                   out.step = dip::uint( step );
                }
             } else {
@@ -526,7 +536,7 @@ inline dip::Range GetRange( mxArray const* mx ) {
          return out;
       }
    }
-   DIP_THROW( "Range expected." );
+   DIP_THROW( "Range expected" );
 }
 
 /// \brief Convert a cell array of integer array from `mxArray` to `dip::RangeArray` by copy.
@@ -544,7 +554,7 @@ inline dip::RangeArray GetRangeArray( mxArray const* mx ) {
          out[ 0 ] = GetRange( mx );
          return out;
       } catch( dip::Error& ) {
-         DIP_THROW( "Range array expected." );
+         DIP_THROW( "Range array expected" );
       }
    }
 }
@@ -920,7 +930,7 @@ dip::Image GetImage( mxArray const* mx ) {
       tensor.SetVector( psizes[ 1 ] );
       if( !tensor.IsScalar() ) {
          dip::UnsignedArray tsize = dml::GetUnsignedArray( mxGetPropertyShared( mx, 0, tsizePropertyName ));
-         DIP_THROW_IF( tsize.size() != 2, "Error in tensor size property." );
+         DIP_THROW_IF( tsize.size() != 2, "Error in tensor size property" );
          enum dip::Tensor::Shape tshape = dml::GetTensorShape( mxGetPropertyShared( mx, 0, tshapePropertyName ));
          tensor.ChangeShape( dip::Tensor( tshape, tsize[ 0 ], tsize[ 1 ] ));
       }
@@ -995,9 +1005,9 @@ dip::Image GetImage( mxArray const* mx ) {
          datatype = dip::DT_BIN;
          break;
       default:
-         DIP_THROW( "Image data is not numeric." );
+         DIP_THROW( "Image data is not numeric" );
    }
-   DIP_THROW_IF( complex && !datatype.IsComplex(), "MATLAB image data of unsupported type." );
+   DIP_THROW_IF( complex && !datatype.IsComplex(), "MATLAB image data of unsupported type" );
    // Create the stride array
    dip::sint tstride = 1;
    dip::uint s = tensor.Elements();
@@ -1092,6 +1102,8 @@ class streambuf : public std::streambuf {
    private:
       std::streambuf* stdoutbuf;
 };
+
+/// \}
 
 } // namespace
 } // namespace dml

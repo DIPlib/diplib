@@ -113,14 +113,14 @@ class ColorSpaceManager {
 
       /// \brief Defines a new color space, that requires `chans` channels.
       void Define( String const& name, dip::uint chans ) {
-         DIP_THROW_IF( IsDefined( name ), "Color space name already defined." );
+         DIP_THROW_IF( IsDefined( name ), "Color space name already defined" );
          nodes_.emplace_back( name, chans );
          names_[ name ] = nodes_.size() - 1;
       }
 
       /// \brief Defines an alias for a defined color space name.
       void DefineAlias( String const& alias, String const& name ) {
-         DIP_THROW_IF( IsDefined( alias ), "Alias name already defined." );
+         DIP_THROW_IF( IsDefined( alias ), "Alias name already defined" );
          names_[ alias ] = Index( name );
       }
 
@@ -194,7 +194,7 @@ class ColorSpaceManager {
 
       dip::uint Index( String const& name ) const {
          auto it = names_.find( name );
-         DIP_THROW_IF( it == names_.end(), "Color space name not defined." );
+         DIP_THROW_IF( it == names_.end(), "Color space name not defined" );
          return it->second;
       }
 

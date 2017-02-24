@@ -53,7 +53,7 @@ struct InternOneDimensionalFilter {
             origin = size / 2;
          } else {
             origin = static_cast< dip::uint >( in.origin );
-            DIP_THROW_IF( origin >= size, "Origin outside of filter." );
+            DIP_THROW_IF( origin >= size, "Origin outside of filter" );
          }
       }
    }

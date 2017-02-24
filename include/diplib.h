@@ -3,7 +3,7 @@
  * This file contains definitions for all the main classes and functions.
  * Include additional files after this one for specialized functionality.
  *
- * (c)2014-2016, Cris Luengo.
+ * (c)2014-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  */
 
@@ -24,11 +24,11 @@
 
 
 /// \file
-/// \brief This is the main include file for the DIPlib library.
+/// \brief This is the main include file for the *DIPlib* library.
 ///
 /// It declares all classes, functions, macros and constants that form the basic
 /// library infrastructure. Everything is declared within the `#dip` namespace.
-/// This header file is the core of DIPlib. To access image processing or analysis
+/// This header file is the core of *DIPlib*. To access image processing or analysis
 /// functionality, include their corresponding header files.
 
 

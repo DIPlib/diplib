@@ -1,4 +1,4 @@
-# Work plan for *DIPlib* 3.0 {#workplan}
+# Work plan for DIPlib 3.0 {#workplan}
 
 This is a list of tasks that need to be done, in order of dependencies.
 This list includes dependencies and an estimate of how much design work needs
