@@ -333,7 +333,7 @@ class CovarianceMatrix {
       }
       /// \brief Computes v' * C * v, with v' the transpose of v.
       /// This is a positive scalar if v is non-zero, because C (this matrix) is positive semidefinite.
-      dfloat Project( VertexFloat const& v ) {
+      dfloat Project( VertexFloat const& v ) const {
          return v.x * v.x * xx_ + 2 * v.x * v.y * xy_ + v.y * v.y * yy_;
       }
 
@@ -342,7 +342,7 @@ class CovarianceMatrix {
          dfloat largest;   ///< Largest eigenvalue
          dfloat smallest;  ///< Smallest eigenvalue
          /// \brief Computes eccentricity using the two eigenvalues of the covarance matrix.
-         dfloat Eccentricity() {
+         dfloat Eccentricity() const {
             // Eccentricity according to https://en.wikipedia.org/wiki/Image_moment
             if( largest <= 0 ) {    // largest == 0 really, it cannot be negative.
                return 0;            // if largest == 0, then smallest == 0 also.
@@ -352,7 +352,7 @@ class CovarianceMatrix {
          }
       };
       /// \brief Compute eigenvalues of matrix
-      Eigenvalues Eig() {
+      Eigenvalues Eig() const {
          // Eigenvalue calculation according to e.g. http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
          dfloat mmu2 = ( xx_ + yy_ ) / 2.0;
          dfloat dmu2 = ( xx_ - yy_ ) / 2.0;
@@ -370,7 +370,7 @@ class CovarianceMatrix {
          dfloat orientation;  ///< Orientation of major axis
       };
       /// \brief Compute parameters of ellipse with same covariance matrix.
-      EllipseParameters Ellipse() {
+      EllipseParameters Ellipse() const {
          // Eigenvector calculation according to e.g. http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
          Eigenvalues lambda = Eig();
          EllipseParameters out;
