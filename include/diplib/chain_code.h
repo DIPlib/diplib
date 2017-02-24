@@ -465,7 +465,12 @@ struct Polygon {
    ///
    /// See: M. Yang, K. Kpalma and J. Ronsin, "A Survey of Shape Feature Extraction Techniques",
    /// in: Pattern Recognition Techniques, Technology and Applications, P.Y. Yin (Editor), I-Tech, 2008.
-   dfloat EllipseVariance() const;
+   inline dfloat EllipseVariance() const {
+       // Covariance matrix of polygon vertices
+       VertexFloat g = Centroid();
+       dip::CovarianceMatrix C = this->CovarianceMatrix(g);
+       return EllipseVariance( g, C );
+   }
 
    /// \brief Compares a polygon to the ellipse described by the given centroid and covariance matrix, returning
    /// the coefficient of variation of the distance of vertices to the ellipse.
