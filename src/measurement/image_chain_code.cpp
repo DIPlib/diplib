@@ -215,7 +215,7 @@ ChainCode ChainCode::Offset() const {
    out.objectID = objectID;
    out.is8connected = true;
    int prev = codes.back();
-   out.start = start + deltas8[ ( prev + codes.back().IsEven() ? 2 : 3 ) % 8 ];
+   out.start = start + deltas8[ ( prev + ( codes.back().IsEven() ? 2 : 3 )) % 8 ];
    for( auto code : codes ) {
       int n = ( code - prev ) % 8;
       if( n < -4 ) {
