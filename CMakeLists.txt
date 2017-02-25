@@ -109,47 +109,36 @@ endif()
 if(Matlab_FOUND)
    # Install M-files
    install(DIRECTORY dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m") # could also do PATTERN "*.cpp" EXCLUDE
+
    # Compile and install MEX-files in @dip_image/private
-   matlab_add_mex(NAME dip_operators SRC dipimage/@dip_image/private/dip_operators.cpp LINK_TO DIP)
-   install(TARGETS dip_operators DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private)
+   file(GLOB DIP_PRIVATE "dipimage/@dip_image/private/*.cpp")
+   set(DIP_PRIVATE_TARGETS "")
+   foreach(file ${DIP_PRIVATE})
+      get_filename_component(target ${file} NAME_WE)
+      matlab_add_mex(NAME ${target} SRC ${file} LINK_TO DIP)
+      set(DIP_PRIVATE_TARGETS ${DIP_PRIVATE_TARGETS} ${target})
+   endforeach()
+   install(TARGETS ${DIP_PRIVATE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private)
+
    # Compile and install MEX-files in @dip_image
-   matlab_add_mex(NAME cumsum SRC dipimage/@dip_image/cumsum.cpp LINK_TO DIP)
-   matlab_add_mex(NAME max SRC dipimage/@dip_image/max.cpp LINK_TO DIP)
-   matlab_add_mex(NAME mean SRC dipimage/@dip_image/mean.cpp LINK_TO DIP)
-   matlab_add_mex(NAME min SRC dipimage/@dip_image/min.cpp LINK_TO DIP)
-   matlab_add_mex(NAME percentile SRC dipimage/@dip_image/percentile.cpp LINK_TO DIP)
-   matlab_add_mex(NAME prod SRC dipimage/@dip_image/prod.cpp LINK_TO DIP)
-   matlab_add_mex(NAME std SRC dipimage/@dip_image/std.cpp LINK_TO DIP)
-   matlab_add_mex(NAME sum SRC dipimage/@dip_image/sum.cpp LINK_TO DIP)
-   matlab_add_mex(NAME var SRC dipimage/@dip_image/var.cpp LINK_TO DIP)
-   install(
-         TARGETS
-            cumsum
-            max
-            mean
-            min
-            percentile
-            prod
-            std
-            sum
-            var
-         DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image)
+   file(GLOB DIP_IMAGE "dipimage/@dip_image/*.cpp")
+   set(DIP_IMAGE_TARGETS "")
+   foreach(file ${DIP_IMAGE})
+      get_filename_component(target ${file} NAME_WE)
+      matlab_add_mex(NAME ${target} SRC ${file} LINK_TO DIP)
+      set(DIP_IMAGE_TARGETS ${DIP_IMAGE_TARGETS} ${target})
+   endforeach()
+   install(TARGETS ${DIP_IMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image)
+
    # Compile and install MEX-files in toolbox directory
-   matlab_add_mex(NAME convolve SRC dipimage/convolve.cpp LINK_TO DIP)
-   matlab_add_mex(NAME extendimage SRC dipimage/extendimage.cpp LINK_TO DIP)
-   matlab_add_mex(NAME getmaximumandminimum SRC dipimage/getmaximumandminimum.cpp LINK_TO DIP)
-   matlab_add_mex(NAME imagedisplay SRC dipimage/imagedisplay.cpp LINK_TO DIP)
-   matlab_add_mex(NAME measure SRC dipimage/measure.cpp LINK_TO DIP)
-   matlab_add_mex(NAME select SRC dipimage/select.cpp LINK_TO DIP)
-   install(
-         TARGETS
-            convolve
-            extendimage
-            getmaximumandminimum
-            imagedisplay
-            measure
-            select
-         DESTINATION ${DIPIMAGE_INSTALL_PATH})
+   file(GLOB DIPIMAGE "dipimage/*.cpp")
+   set(DIPIMAGE_TARGETS "")
+   foreach(file ${DIPIMAGE})
+      get_filename_component(target ${file} NAME_WE)
+      matlab_add_mex(NAME ${target} SRC ${file} LINK_TO DIP)
+      set(DIPIMAGE_TARGETS ${DIPIMAGE_TARGETS} ${target})
+   endforeach()
+   install(TARGETS ${DIPIMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH})
 endif()
 
 
@@ -235,11 +224,10 @@ if (DOXYGEN_FOUND)
    configure_file(src/documentation/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
    add_custom_target(
          apidoc
-         COMMAND ${CMAKE_COMMAND} -E echo_append "Building API Documentation..."
+         COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
          COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
-         COMMAND ${CMAKE_COMMAND} -E echo "Fixing header names..."
+         COMMAND ${CMAKE_COMMAND} -E echo "Fixing header names and other things..."
          COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/fix_doc_includes.sh ${DOCUMENTATION_OUTPUT}/html
-         COMMAND ${CMAKE_COMMAND} -E echo "Done."
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
          DEPENDS ${DOXYGEN_INPUT}
    )
@@ -247,6 +235,7 @@ endif (DOXYGEN_FOUND)
 
 add_custom_command(
       OUTPUT ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
       COMMAND pandoc -s DIPthoughts.md -o ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
       --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
       --toc --listings -H pandoc/listings_setup.tex --number-sections
@@ -256,6 +245,7 @@ add_custom_command(
 
 add_custom_command(
       OUTPUT ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
       COMMAND pandoc -s DIPproposal.md -o ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf
       --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
       --toc --listings -H pandoc/listings_setup.tex --number-sections
