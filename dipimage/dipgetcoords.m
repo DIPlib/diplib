@@ -19,26 +19,20 @@
 %
 %   See also DIPSHOW, DIPTEST, DIPCROP, DIPPROFILE.
 
-% (C) Copyright 1999-2003               Pattern Recognition Group
-%     All rights reserved               Faculty of Applied Physics
-%                                       Delft University of Technology
-%                                       Lorentzweg 1
-%                                       2628 CJ Delft
-%                                       The Netherlands
+% (c)2017, Cris Luengo.
+% (c)1999-2014, Delft University of Technology.
 %
-% Cris Luengo, October 2000
-% Adapted from DIPTEST
-% 29 July 2001: Now using dipfig_getcurpos(), a shared private function.
-%               The 'slicing' is now regarded: it's not always X-Y slices!
-%               Shown in menus.
-% 15 August 2001: Catch error in event of closing the window while waiting for the user.
-% 16-26 August 2001: Changed DIPSHOW. This function changes accordingly.
-%                    Now supporting 1D images.
-%                    Removed call to WAITFORBUTTONPRESS. Now using callbacks like DIPCROP.
-% 07 April 2005: added right clicking returns -1 (BR)
-% 28 July 2006: added 4D image support (BR)
-% 04 July 2008: Bug fix for 3D/4D images (BR)
-% 18 Aug  2009: Bug fix when using and changing the view slice xy, xz etc (BR)
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+%
+%    http://www.apache.org/licenses/LICENSE-2.0
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
 
 function coords = dipgetcoords(arg1,arg2)
 

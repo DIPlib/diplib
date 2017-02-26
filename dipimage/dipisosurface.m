@@ -9,26 +9,20 @@
 %
 %   Slow for large images, and uses lots of memory for the calculation.
 
-% (C) Copyright 1999-2007               Pattern Recognition Group
-%     All rights reserved               Faculty of Applied Physics
-%                                       Delft University of Technology
-%                                       Lorentzweg 1
-%                                       2628 CJ Delft
-%                                       The Netherlands
+% (c)2017, Cris Luengo.
+% (c)1999-2014, Delft University of Technology.
 %
-% Bernd Rieger, Jan 2001
-% 16-26 August 2001 (CL): Changed DIPSHOW. This function changes accordingly.
-%                         This is still a command in a figure window's menu, but
-%                         it is no longer marked or anything.
-%                         UIControls now don't queue events when computing.
-% 13 February 2002 (CL):  Improved robustness by using the figure handle in all commands.
-% 1 July 2002 (CL):       The 'Computing...' uicontrol now hides instead of setting the
-%                         string value to empty. Copying the figure window now produces
-%                         a better looking bitmap.
-% March 2003 (BR):        Added a 'Delete Buttons' button to make exporting easy
-% 16 April 2007 (CL):     The axis now start at 0, instead of 1.
-% 23 February 2015 (CL):  Added another light at the opposite side of the object.
-%                         Added VALUE input argument.
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+%
+%    http://www.apache.org/licenses/LICENSE-2.0
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
 
 % TODO: make the window resizable, and add a Resize callback to position the controls
 

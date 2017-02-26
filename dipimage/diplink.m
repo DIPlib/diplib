@@ -22,21 +22,20 @@
 %
 %   See also DIPSHOW, DIPMAPPING, DIPSTEP, DIPZOOM, DIPTEST.
 
-% (C) Copyright 1999-2005               Pattern Recognition Group
-%     All rights reserved               Faculty of Applied Physics
-%                                       Delft University of Technology
-%                                       Lorentzweg 1
-%                                       2628 CJ Delft
-%                                       The Netherlands
+% (c)2017, Cris Luengo.
+% (c)1999-2014, Delft University of Technology.
 %
-% Bernd Rieger, July 2001
-% 16-26 August 2001 (CL): Changed DIPSHOW. This function changes accordingly.
-% 22 September 2001 (CL): Changing the windows we link to immediately.
-%                         New syntax: DIPLINK(H,LIST).
-% Dec 2002 (BR), extended help (diplink only works on registered images names)
-% 2 February 2005 (CL):   DIPLINK no longer toggles the state, but always shows
-%                         the dialog box to specify new linlked windows.
-% 17 october 2011 (BR):   Added linking for 2D displays
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+%
+%    http://www.apache.org/licenses/LICENSE-2.0
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
 
 function menu_out = diplink(arg1,arg2)
 

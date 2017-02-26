@@ -18,19 +18,20 @@
 %
 %   See also DIPSHOW.
 
-% (C) Copyright 1999-2009               Pattern Recognition Group
-%     All rights reserved               Faculty of Applied Physics
-%                                       Delft University of Technology
-%                                       Lorentzweg 1
-%                                       2628 CJ Delft
-%                                       The Netherlands
+% (c)2017, Cris Luengo.
+% (c)1999-2014, Delft University of Technology.
 %
-% Cris Luengo, September 2001
-% 18 February 2002: Fixed bug because of difference between versions of MATLAB.
-% 22 Jan 2004: Changed looping behaviour, to go 0:N-1,N-1:0 instead of 0:N-1,0:N-1 (BR)
-% 11 Aug 2005: Added the 'loopfwd' option, and made the non-looping version not go backwards. (CL)
-% 19 September 2007: Using new function MATLABVERSION.
-% 17 December 2009: Using new function MATLABVER_GE.
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+%
+%    http://www.apache.org/licenses/LICENSE-2.0
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
 
 function out = dipanimate(varargin)
 

@@ -41,29 +41,20 @@
 %
 %   See also DIPSHOW.
 
-% (C) Copyright 1999-2014               Pattern Recognition Group
-%     All rights reserved               Faculty of Applied Physics
-%                                       Delft University of Technology
-%                                       Lorentzweg 1
-%                                       2628 CJ Delft
-%                                       The Netherlands
+% (c)2017, Cris Luengo.
+% (c)1999-2014, Delft University of Technology.
 %
-% Cris Luengo, August 2001
-% 22 September 2001: Added undocumented feature 'manual' as a callback to a menu item.
-%                    Added 'slice' and 'global' parameters.
-% 19 October 2001:   The dialog box now updates the figure interactively. Removed the
-%                    cancel button.
-% 19 March 2002:     Fixed little bug that occurred when the dialog box was killed by
-%                    the user.
-% 25 November 2003:  Added colormap things.
-% 7 February 2005:   Added mapping modes for unsigned, 12- and 16-bit data. Not computing
-%                    the range immediately if not available - let user click a button if
-%                    he needs it.
-% 4 October 2005:    The 'labels' mode now forces 'normal', like it said in the help.
-% 24 July 2007:      Added 'xt','yt' and 'zt' options.
-% 24 June 2008:      Fixed GUI error when low and high limits for slider were equal.
-% 2 September 2011:  Added 'unit' stretch mode. (CL)
-% 11 August 2014:    Fix for new graphics in MATLAB 8.4 (R2014b).
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+%
+%    http://www.apache.org/licenses/LICENSE-2.0
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
 
 % Undocumented:
 %   DIPMAPPING('manual') brings up a dialog box that allows the user to

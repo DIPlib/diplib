@@ -4,6 +4,18 @@
  *
  * (c)2015-2017, Cris Luengo.
  * Based on original DIPlib/MATLAB interface code: (c)1999-2014, Delft University of Technology.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef DIP_MATLAB_H
@@ -254,7 +266,7 @@ inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
       else if( std::strcmp( str, "symmetric matrix" ) == 0 ) { return dip::Tensor::Shape::SYMMETRIC_MATRIX; }
       else if( std::strcmp( str, "upper triangular matrix" ) == 0 ) { return dip::Tensor::Shape::UPPTRIANG_MATRIX; }
       else if( std::strcmp( str, "lower triangular matrix" ) == 0 ) { return dip::Tensor::Shape::LOWTRIANG_MATRIX; }
-      else { DIP_THROW( dip::String{ "TensorShape string not recognized: " } + dip::String{ str } ) }
+      else { DIP_THROW( dip::String{ "TensorShape string not recognized: " } + dip::String{ str } ); }
    }
    DIP_THROW( "TensorShape property returned wrong data!" );
 }
@@ -929,13 +941,13 @@ dip::Image GetImage( mxArray const* mx ) {
       // Tensor size and shape
       tensor.SetVector( psizes[ 1 ] );
       if( !tensor.IsScalar() ) {
-         dip::UnsignedArray tsize = dml::GetUnsignedArray( mxGetPropertyShared( mx, 0, tsizePropertyName ));
+         dip::UnsignedArray tsize = GetUnsignedArray( mxGetPropertyShared( mx, 0, tsizePropertyName ));
          DIP_THROW_IF( tsize.size() != 2, "Error in tensor size property" );
-         enum dip::Tensor::Shape tshape = dml::GetTensorShape( mxGetPropertyShared( mx, 0, tshapePropertyName ));
+         enum dip::Tensor::Shape tshape = GetTensorShape( mxGetPropertyShared( mx, 0, tshapePropertyName ));
          tensor.ChangeShape( dip::Tensor( tshape, tsize[ 0 ], tsize[ 1 ] ));
       }
       //mxGetPropertyShared( mx, 0, pxsizePropertyName ); // TODO
-      colorSpace = dml::GetString( mxGetPropertyShared( mx, 0, colspPropertyName ));
+      colorSpace = GetString( mxGetPropertyShared( mx, 0, colspPropertyName ));
    } else {
       // Data
       if( mxIsEmpty( mx )) {

@@ -2,24 +2,37 @@
  * DIPimage 3.0
  * This MEX-file implements all monadic and diadic operators
  *
- * Input arguments:
- *  prhs[0] -> operator (a character)
- *  prhs[1] -> lhs operand
- *  prhs[2] -> rhs operand (or none if monadic operator)
- * Output arguments:
- *  plhs[0] -> result (duh!)
- *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
+/*
+ * Interface:
+ *
+ * out = dip_operators(operator,lhs,rhs)
+ *
+ * operator = a single character (see switch statement below)
+ * lhs = first operand
+ * rhs = second operand (some operators use only one operand)
+ */
 
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "dip_matlab_interface.h"
 
 
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
-   dml::streambuf streambuf;
    try {
 
       dml::MatlabInterface mi;

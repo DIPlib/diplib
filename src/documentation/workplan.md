@@ -1,5 +1,22 @@
 # Work plan for DIPlib 3.0 {#workplan}
 
+[//]: # (DIPlib 3.0)
+
+[//]: # ([c]2016-2017, Cris Luengo.)
+[//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
+
+[//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
+[//]: # (you may not use this file except in compliance with the License.)
+[//]: # (You may obtain a copy of the License at)
+[//]: # ()
+[//]: # (   http://www.apache.org/licenses/LICENSE-2.0)
+[//]: # ()
+[//]: # (Unless required by applicable law or agreed to in writing, software)
+[//]: # (distributed under the License is distributed on an "AS IS" BASIS,)
+[//]: # (WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.)
+[//]: # (See the License for the specific language governing permissions and)
+[//]: # (limitations under the License.)
+
 This is a list of tasks that need to be done, in order of dependencies.
 This list includes dependencies and an estimate of how much design work needs
 to be done before that component can be implemented.
@@ -10,145 +27,134 @@ Priority for these items to be discussed. Framework and other infrastructure
 elements have highest priority, because other things depend on them. Some filters
 and algorithms are much more important than others.
 
-The **(X)** markers indicate points that should be done first, and can be
-done in parallel.
+The **DEP** markers indicate points that depend on functionality not yet implemented.
 
 ## What is aleady done:
 
-1.  CMake compilation environment. Will need to be expanded as new interfaces are
+-   CMake compilation environment. Will need to be expanded as new interfaces are
     created, etc.
 
-1.  Test framework. We need to add more tests for the stuff that's already implemented.
+-   Test framework. We need to add more tests for the stuff that's already implemented.
 
-1.  `class dip::Image`. Some features need to be tested more thoroughly.
+-   `class dip::Image`. Some features need to be tested more thoroughly.
 
-1.  `dip::Framework::Scan`, `dip::Framework::Separable` and `dip::Framework::Full`.
+-   `dip::Framework::Scan`, `dip::Framework::Separable` and `dip::Framework::Full`.
     These frameworks are the core of most algorithms. They will be tested more thoroughly
     through the functions that use it. Not yet parallelized.
 
-1.  Arithmetic, bitwise and comparison operators (dependent on `dip::Framework::Scan`)
+-   Arithmetic, bitwise and comparison operators (dependent on `dip::Framework::Scan`)
 
-1.  Image iterators. Need to be tested more thoroughly, some features have not been
+-   Image iterators. Need to be tested more thoroughly, some features have not been
     tested at all...
     Iterators are useful as simpler substitutes of the frameworks, to be used in only a
     few library functions, meant for the library user to implement pixel-wise processing,
     and filters, without the steep learning curve nor pointers.
 
-1.  Measurement framework, a class to hold measurement data, and a class that knows all
+-   Measurement framework, a class to hold measurement data, and a class that knows all
     measurement features and can apply them to images.
     All measurement features have been ported, including the previously only defined in
     *DIPimage*.
 
-1.  *MATLAB* interface is partially completed: It is possible to convert `dip::Image`
+-   *MATLAB* interface is partially completed: It is possible to convert `dip::Image`
     objects to MATLAB `dip_image` objects and vice-versa, as well as a series of numeric
     and string parameter types.
 
-1.  *DIPimage* toolbox: The `dip_image` object is defined and has a few functions,
+-   *DIPimage* toolbox: The `dip_image` object is defined and has a few functions,
     including all binary and unary operators in one MEX-file, and the `measure` function
     in another MEX-file.
 
 ## What still needs to be done:
 
-1.  **(X)**
-    Test framework. We need to add many more tests for existing features.
+-   Test framework. We need to add many more tests for existing features.
 
-1.  **(X)**
-    Image I/O. Has high priority because it will make testing other functions easier.
+-   Image I/O. Has high priority because it will make testing other functions easier.
     Porting current code in dipIO to read TIFF and ICS files. Interfacing to
     BioFormats.
 
-1.  **(X)**
-    Color support. **Design work done**. Port existing *MATLAB* code within
+-   Color support. **Design work done**. Port existing *MATLAB* code within
     current framework, and use `dip::Framework::Scan` to apply conversions to all
     pixels in an image.
 
-1.  **(X)**
-    Parallelization of frameworks. **Requires special expertise**. Decision:
+-   Parallelization of frameworks. **Requires special expertise**. Decision:
     OpenMP or Intel TBB? The `dip::Framework::Scan` and `dip::Framework::Separable`
     are ready to be parallelized.
 
-1.  **(X)**
-    *MATLAB* interface and *DIPimage* toolbox. **Requires special expertise**.
+-   *MATLAB* interface and *DIPimage* toolbox. **Requires special expertise**.
     MEX-files for *DIPlib* functions to be added as these functions are written.
     The `dip_measurement` class needs to be rewritten.
     `dipshow` to use a *DIPlib* function to generate an RGB image for display.
 
-1.  Python interface. **Requires special expertise**. Using one of the C++/Python
+-   Python interface. **Requires special expertise**. Using one of the C++/Python
     interface generators. Write interactive image display and GUI as exists in
     *MATLAB*. This can be developed in parallel to the *MATLAB* interface, or after
     the *MATLAB* interface is complete.
 
-1.  Other interfaces. **Requires special expertise**. Header files that define
+-   Other interfaces. **Requires special expertise**. Header files that define
     functions to create a `dip::Image` object around image data from other libraries,
     as well as functions to convert a `dip::Image` to an image of that library
     (either as a view over the same data segment, or by copying the data). We'll
     do this for: OpenCV, ITK, SimpleITK. Any other libraries of interest?
 
-1.  **(X)**
-    Pixel-based algorithms built on `dip::Framework::Scan`: monadic and
+-   Pixel-based algorithms built on `dip::Framework::Scan`: monadic and
     diadic operators (i.e. the stuff in the old dip_math.h), statistics, etc. This is
-    mostly porting old code to the new framework. There are already a few examples.
-    - dip_derivatives.h
+    mostly porting old code to the new framework.
+    - dip_math.h
     - dip_noise.h
     - dip_point.h
 
-1.  **(X)**
-    Lookup table: we should have a single lookup table function that handles scalar,
+-   Lookup table: we should have a single lookup table function that handles scalar,
     tensor and color images, with floating-point images using interpolation.
     **Requires design work**. Depends on `dip::Framework::Scan`.
     - dip_lookup_table.h
     - dip_imarlut.h
 
-1.  **(X)**
-    Histograms. **Some design work needed** (a class to hold the histogram data, possibly
+-   Histograms. **Some design work needed** (a class to hold the histogram data, possibly
     based on `dip::Image` as is the case in the old *DIPlib*). The multi-dimensional
     histogram will work on tensor images. Depends on `dip::Framework::Scan`.
     - dip_histogram.h
 
-1.  Global threhsold algorithms, depending on the histogram, currently implemented
+-   **DEP**
+    Global threhsold algorithms, depending on the histogram, currently implemented
     in dipimage/threshold.m (Otsu, triangle, background, etc.).
 
-1.  **(X)**
-    Image generation algorithms using `dip::Framework::ScanSingleOutput`.
+-   Image generation algorithms using `dip::Framework::ScanSingleOutput`.
     - dip_generation.h
     - dip_paint.h
 
-1.  **(X)**
-    Algorithms built on `dip::Framework::Separable`: Gaussian filter, Fourier
+-   Algorithms built on `dip::Framework::Separable`: Gaussian filter, Fourier
     and other transforms, derivative filters, projections, etc. This is mostly porting
     old code to the new framework.
+    - dip_derivatives.h
     - dip_iir.h
     - dip_interpolation.h
     - dip_linear.h (parts)
     - dip_manipulation.h (some functions, most are already implemented in `class dip::Image`)
 
-1.  **(X)**
-    The Fourier and associated transforms (built on `dip::Framework::Separable`).
+-   The Fourier and associated transforms (built on `dip::Framework::Separable`).
     The code in the old *DIPlib* is very slow. We could copy code from OpenCV as a
     free to use implementation, and provide an optional module that uses FFTW (not
     free, it's GPL which turns any application using it into GPL),
 
-1.  Algorithms built on derivatives: the gradient, the structure tensor, etc.
+-   **DEP**
+    Algorithms built on derivatives: the gradient, the structure tensor, etc.
     Mostly porting old code, but some changes expected due to output not being an
     image array, but a single tensor image.
     - dip_structure.h
 
-1.  **(X)**
-    Algorithms built on `dip::Framework::Full`: Rank filters, adaptive filters, etc.
+-   Algorithms built on `dip::Framework::Full`: Rank filters, adaptive filters, etc.
     Simply porting old code.
     - dip_adaptive.h
     - dip_bilateral.h
     - dip_filtering.h
     - dip_rankfilters.h
 
-1.  Algorithms built on `dip::Framework::Separable` and `dip::Framework::Full`:
+-   Algorithms built on `dip::Framework::Separable` and `dip::Framework::Full`:
     Filters that are separable for some filter shapes and non-separable for others,
     such as dilation and erosion, uniform filter, etc. Simply porting old code.
     - dip_morphology.h (parts)
     - dip_linear.h (parts)
 
-1.  **(X)**
-    Algorithms that do not depend on any framework: all binary morphology, the
+-   Algorithms that do not depend on any framework: all binary morphology, the
     watershed, labelling, region growing, distance transforms, etc.
     Simply porting old code.
     - dip_binary.h
@@ -158,7 +164,8 @@ done in parallel.
     - dip_pgst.h
     - dip_regions.h
 
-1.  Assorted stuff that depends on combinations of other algorithms, and stuff that
+-   **DEP**
+    Assorted stuff that depends on combinations of other algorithms, and stuff that
     I haven't looked yet into how it's implemented. Simply porting old code.
     - dip_analysis.h
     - dip_detection.h
@@ -167,13 +174,13 @@ done in parallel.
     - dip_microscopy.h
     - dip_restoration.h
 
-1.  Stuff that is in DIPimage:
-    - 2D snakes (**requires design work**)
+-   Stuff that is in DIPimage:
+    - **DEP** 2D snakes (**requires design work**)
     - general 2D affine transformation, 3D rotation (is already C code)
     - xx, yy, zz, rr, phiphi, ramp; extend this to `dip::Coordinates`, which makes a
       tensor image (based on `dip::Framework::ScanSingleOutput`)
 
-1.  Other stuff that's not in the old *DIPlib* (see below).
+-   Other stuff that's not in the old *DIPlib* (see below).
     **Requires special expertise**, and presumably depends on frameworks and other
     infrastructure to be available.
 
@@ -216,5 +223,3 @@ done in parallel.
   by Mike is quite efficient, but we should compare with the more common union-find
   algorithm, which is likely to be optimal for this application (Mike's code uses a
   priority queue, union-find doesn't need it).
-
-- We need to figure out if it is worth it to use loop unrolling for some basic operations.

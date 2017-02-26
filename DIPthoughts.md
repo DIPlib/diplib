@@ -1,6 +1,7 @@
 ---
 title: 'Implementation notes and thoughts'
 author: 'Cris Luengo'
+copyright: (c)2014-2017, Cris Luengo.
 ...
 
 # Implementation notes and thoughts

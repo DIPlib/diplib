@@ -19,21 +19,20 @@
 %
 %   See also DIPSHOW, DIPGETCOORDS, DIPTEST, DIPPROFILE.
 
-% (C) Copyright 1999-2014               Pattern Recognition Group
-%     All rights reserved               Faculty of Applied Physics
-%                                       Delft University of Technology
-%                                       Lorentzweg 1
-%                                       2628 CJ Delft
-%                                       The Netherlands
+% (c)2017, Cris Luengo.
+% (c)1999-2014, Delft University of Technology.
 %
-% Cris Luengo, July 2001
-% 15 August 2001: Catch error in event of closing the window while waiting for the user.
-% 16-26 August 2001: Changed DIPSHOW. This function changes accordingly.
-%                    Now supporting 1D images.
-%                    Changed waiting method: not harmed by changing the state anymore.
-% 22 September 2001: Changed specs of 1D image display (again, *sigh*).
-% 05 October 2004:   Added cropped coordinates as second output (BR)
-% 11 August 2014:    Fix for new graphics in MATLAB 8.4 (R2014b).
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+%
+%    http://www.apache.org/licenses/LICENSE-2.0
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
 
 function [out,roi] = dipcrop(fig)
 

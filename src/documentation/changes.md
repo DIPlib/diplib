@@ -1,4 +1,22 @@
-# Changes from DIPlib 2.0 (the old DIPlib) {#changes}
+# Changes from DIPlib 2.x (the old DIPlib) {#changes}
+
+[//]: # (DIPlib 3.0)
+
+[//]: # ([c]2016-2017, Cris Luengo.)
+[//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
+[//]: # (Based on original DIPimage code: [c]1999-2014, Delft University of Technology.)
+
+[//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
+[//]: # (you may not use this file except in compliance with the License.)
+[//]: # (You may obtain a copy of the License at)
+[//]: # ()
+[//]: # (   http://www.apache.org/licenses/LICENSE-2.0)
+[//]: # ()
+[//]: # (Unless required by applicable law or agreed to in writing, software)
+[//]: # (distributed under the License is distributed on an "AS IS" BASIS,)
+[//]: # (WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.)
+[//]: # (See the License for the specific language governing permissions and)
+[//]: # (limitations under the License.)
 
 *DIPlib* 3.0 is a complete rewrite in C++ of the *DIPlib* 2.0 infrastructure, which was written
 in C; only the code that implements actual image processing and analysis algorithms is ported
@@ -121,3 +139,38 @@ over.
   no longer are "left" and "right" options.
 
 - `dip::ImageDisplay` no longer does any spatial scaling.
+
+## Changes from DIPimage 2.x (the old DIPimage)
+
+- The `dip_image` object has changed conpletely internally. Pixel data is stored differently:
+  tensor images have all samples in the same MATLAB array. Complex images are stored as a
+  single real matrix, with real and complex samples next to each other (this translates
+  much more nicely to DIPlib, where complex data is stored in that same way).
+
+  Consequently, the `dip_image_array` pseudo-class no longer exists. Both scalar and tensor
+  images report to be of class `dip_image`. If you need to store multiple images in one
+  object, create a cell array instead.
+
+  We tried keeping how the `dip_image` object is used as similar as possible to how it was
+  in the old *DIPimage*, so that users need not change their code. Nonetheless, some changes
+  must occur:
+
+  - The `size` method was discouraged, we asked users to use `imsize` and `imarsize` instead.
+    Those two functions work as before, except that they don't return 1 for dimensions that
+    don't exist. `size` now always works like `imsize`, except that it always returns at least
+    two values, and will return 1 for non-existing dimensions. This makes it similar to the
+    default `size`, and plays nice with the `whos` command. `tensorsize` is like `imarsize`,
+    but with a more sensical name, since image arrays no longer exist.
+
+  - `end` was discouraged as well, as the meaning changed from `dip_image` to `dip_image_array`.
+    Now `end` will always work for spatial dimensions, and cannot be used with tensor indexing.
+    That is, `end` will work in `()` indexing, but not in `{}` indexing.
+
+- `dipsetpref` and `dipgetpref` have fewer settings than in the old *DIPimage*. Some settings
+  were linked to *DIPlib* global variables, none of which exist any more, and some others
+  are simply no longer relevant.
+
+- Many filters now have a boundary condition parameter. In the old *DIPimage* one would change
+  the boundary condition through a global parameter, which no longer exists. If you never
+  touched the global parameter, nothing should change for you. If you did change this global
+  parameter in a program, you now need to pass the value to the relevant functions instead.
