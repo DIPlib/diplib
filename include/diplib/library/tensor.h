@@ -4,6 +4,18 @@
  *
  * (c)2014-2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -316,6 +328,75 @@ class Tensor {
          }
       }
 
+      /// \brief Returns the linear index corresponding to the given tensor indices.
+      ///
+      /// Tensor element `(m,n)` can be found by adding `Tensor::Index({m,m}) * tstride`
+      /// to the pixel's pointer. Throws if the indices do not point to a stored tensor
+      /// element (for example, in a diagonal matrix, only the diagonal elements are
+      /// stored; trying to access an off-diagonal element through `%Index` causes an
+      /// exception to be thrown).
+      ///
+      /// \see dip::Tensor::LookUpTable
+      dip::uint Index( UnsignedArray const& indices ) const {
+         dip::uint i = 0;
+         dip::uint j = 0;
+         switch( indices.size() ) {
+            case 2:
+               j = indices[ 1 ];
+               // no break!
+            case 1:
+               i = indices[ 0 ];
+               break;
+            default:
+               DIP_THROW( E::ARRAY_ILLEGAL_SIZE );
+         }
+         dip::uint m = rows_;
+         dip::uint n = Columns();
+         DIP_THROW_IF(( i >= m ) || ( j >= n ), E::INDEX_OUT_OF_RANGE );
+         switch( shape_ ) {
+            case Tensor::Shape::COL_VECTOR:
+               break;
+            case Tensor::Shape::ROW_VECTOR:
+               i = j;
+               break;
+            case Tensor::Shape::ROW_MAJOR_MATRIX:
+               std::swap( i, j );
+               // no break!
+            case Tensor::Shape::COL_MAJOR_MATRIX:
+               i += j * m;
+               break;
+            case Tensor::Shape::DIAGONAL_MATRIX:
+               DIP_THROW_IF( i != j, E::INDEX_OUT_OF_RANGE );
+               break;
+            case Tensor::Shape::LOWTRIANG_MATRIX:
+               std::swap( i, j );
+               // no break!
+            case Tensor::Shape::UPPTRIANG_MATRIX:
+               DIP_THROW_IF( i > j, E::INDEX_OUT_OF_RANGE );
+               // no break!
+            case Tensor::Shape::SYMMETRIC_MATRIX:
+               if( i != j ) {
+                  // |0 4 5 6|     |0 1 2|
+                  // |x 1 7 8| --\ |x 3 4| (index + 4)
+                  // |x x 2 9| --/ |x x 5|
+                  // |x x x 3|
+                  if( i > j ) { std::swap( i, j ); }
+                  // we know: j >= 1
+                  dip::uint k = 0;
+                  for( dip::uint ii = 0; ii < i; ++ii ) {
+                     --j;
+                     --n;
+                     k += n;
+                  }
+                  --j;
+                  k += j;
+                  i = k + m;
+               }
+               break;
+         }
+         return i;
+      }
+
       /// \brief Returns a look-up table that you can use to find specific tensor elements.
       ///
       /// Given a tensor with `M` rows and `N` columns, tensor element `(m,n)` can
@@ -323,6 +404,7 @@ class Tensor {
       /// pointer. If the value in the look-up table is -1, the tensor element is
       /// not stored, and presumed to be 0 (happens with triangular and diagonal
       /// matrices only).
+      ///
       std::vector< dip::sint > LookUpTable() const {
          dip::uint M = rows_;
          dip::uint N = Columns();
