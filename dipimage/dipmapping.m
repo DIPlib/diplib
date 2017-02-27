@@ -66,7 +66,7 @@
 
 function menu_out = dipmapping(varargin)
 
-if nargin == 2 & ischar(varargin{1})
+if nargin == 2 && ischar(varargin{1})
    if strcmp(varargin{1},'DIP_RangeDlg_Callback')
       rangecallbacks(varargin{2});
       return
@@ -106,7 +106,7 @@ while ii<=N
             colmap = arg;
             hascolmap = 1;
          case {'labels'}
-            if hascolmap|hasrange, error('Too many arguments.'); end
+            if hascolmap || hasrange, error('Too many arguments.'); end
             colmap = arg;
             hascolmap = 1;
             currange = 'normal';
@@ -134,7 +134,7 @@ while ii<=N
             if ~isempty(newslice), error('Too many arguments.'); end
             ii = ii+1;
             newslice = varargin{ii};
-            if ~isnumeric(newslice) | length(newslice)~=1
+            if ~isnumeric(newslice) || length(newslice)~=1
                error('Slice number expected.')
             end
          case 'colormap'
@@ -143,7 +143,7 @@ while ii<=N
             ii = ii+1;
             colmap = varargin{ii};
             hascolmap = 1;
-            if ~isnumeric(colmap) | size(colmap,2)~=3
+            if ~isnumeric(colmap) || size(colmap,2)~=3
                error('Colormap expected.')
             end
          otherwise
@@ -161,7 +161,7 @@ while ii<=N
             end
       end
    else
-      if ( isnumeric(arg) | ishandle(arg) ) & length(arg)==1 & ii==1 & N>1
+      if ( isnumeric(arg) || ishandle(arg) ) && length(arg)==1 && ii==1 && N>1
          % figure handle parameter?
          try
             fig = getfigh(arg);
@@ -169,7 +169,7 @@ while ii<=N
             error('Argument must be a valid figure handle.')
          end
       else
-         if ~isnumeric(arg) | ~(isempty(arg) | prod(size(arg))==2)
+         if ~isnumeric(arg) || ~(isempty(arg) || prod(size(arg))==2)
             error('Arguments should be strings or two-element vectors.')
          end
          if hasrange
@@ -197,20 +197,20 @@ if manual
 % GUI functionality manual stretch
 %
 
-   if hasrange | hascolmap | hastoreal | hasslicing | ~isempty(newslice) | custom
+   if hasrange || hascolmap || hastoreal || hasslicing || ~isempty(newslice) || custom
       error('Too many arguments.')
    end
    % Get slider range
    udata = get(fig,'UserData');
    currange = [];
-   if length(udata.imsize)>=3 & ~udata.globalstretch
+   if length(udata.imsize)>=3 && ~udata.globalstretch
       % A 3D image without global stretch: look for globalcomputed
       if isreal(udata.imagedata)
-         if isfield(udata,'globalcomputed') & isfield(udata.globalcomputed.computed,'lin')
+         if isfield(udata,'globalcomputed') && isfield(udata.globalcomputed.computed,'lin')
             currange = udata.globalcomputed.computed.lin;
          end
       else
-         if isfield(udata,'globalcomputed') & isfield(udata.globalcomputed,['computed_',complexmapping])
+         if isfield(udata,'globalcomputed') && isfield(udata.globalcomputed,['computed_',complexmapping])
             tmp = getfield(udata.globalcomputed,['computed_',complexmapping]);
             if isfield(tmp,'lin')
                currange = tmp.lin;
@@ -218,7 +218,7 @@ if manual
          end
       end
    else
-      if isfield(udata,'computed') & isfield(udata.computed,'lin')
+      if isfield(udata,'computed') && isfield(udata.computed,'lin')
          currange = udata.computed.lin;
       end
    end
@@ -356,11 +356,11 @@ elseif custom
 % GUI functionality custom colormap
 %
 
-   if hasrange | hascolmap | hastoreal | hasslicing | ~isempty(newslice)
+   if hasrange || hascolmap || hastoreal || hasslicing || ~isempty(newslice)
       error('Too many arguments.')
    end
    tag = get(fig,'tag');
-   if length(tag)==18 & tag(14:18)=='Color'
+   if length(tag)==18 && tag(14:18)=='Color'
       error('Cannot change color map for color image.')
    end
    % Create dialog box

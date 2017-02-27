@@ -18,7 +18,7 @@
 
 function b = isfigh(h)
 b = 0;
-if length(h)==1 & ishandle(h)
+if length(h)==1 && ishandle(h)
    if strcmp(get(h,'type'),'figure')
       b = 1;
    end

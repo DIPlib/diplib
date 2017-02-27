@@ -29,12 +29,6 @@
 
 function menu_out = diplooking(arg1,arg2)
 
-% Avoid being in menu
-if nargin == 1 & ischar(arg1) & strcmp(arg1,'DIP_GetParamList')
-   menu_out = struct('menu','none');
-   return
-end
-
 if nargin == 0
    fig = get(0,'CurrentFigure');
    if isempty(fig)
@@ -142,7 +136,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
       axpos = get(udata.ax,'position');
       curxlim = get(udata.ax,'XLim');
       curylim = get(udata.ax,'YLim');
-      if isempty(zo) | zo==0
+      if isempty(zo) || zo==0
          udata.lookaspectratio = [axpos(3)/diff(curxlim),axpos(4)/diff(curylim)];
       else
          udata.lookaspectratio = [zo,zo];

@@ -82,7 +82,7 @@ if isempty(settings)
    settings = factory;
 end
 
-if nargin<1 | ~ischar(varargin{1})
+if nargin<1 || ~ischar(varargin{1})
    error('Nothing to do!');
 end
 switch varargin{1}
@@ -97,7 +97,7 @@ switch varargin{1}
 
    % dippreferences('get',name)
    case 'get'
-      if nargin~=2 | ~ischar(varargin{2})
+      if nargin~=2 || ~ischar(varargin{2})
          error('Get what???')
       end
       name = varargin{2};
@@ -112,7 +112,7 @@ switch varargin{1}
 
    % dippreferences('set',name,value)
    case 'set'
-      if nargin~=3 | ~ischar(varargin{2})
+      if nargin~=3 || ~ischar(varargin{2})
          error('Set what???')
       end
       name = varargin{2};
@@ -140,7 +140,7 @@ switch varargin{1}
             end
             data.value = value;
          case 'boolean'
-            if islogical(value) | isnumeric(value)
+            if islogical(value) || isnumeric(value)
                data.value = logical(value(1));
             elseif ischar(value)
                if any(strcmpi({'on','yes'},value))
@@ -154,7 +154,7 @@ switch varargin{1}
                error(['String expected for preference ',name,'.'])
             end
          case 'integer'
-            if ~isnumeric(value) | any(mod(value,1))
+            if ~isnumeric(value) || any(mod(value,1))
                error(['Integer value expected for preference ',name,'.'])
             end
             if prod(size(value))~=N

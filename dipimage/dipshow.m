@@ -292,7 +292,7 @@ if nargin >= n
          error('Argument must be a valid figure handle.')
       end
       n = n+1;
-   elseif ishandle(varargin{n}) && numel(varargin{n})==1
+   elseif numel(varargin{n})==1 && ishandle(varargin{n})
       fig = varargin{n};
       if ~isfigh(fig)
          error('Argument must be a valid figure handle.')

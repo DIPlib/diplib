@@ -89,7 +89,7 @@ else
    end
    action = lower(arg2);
 end
-if (length(fig) == 1) & ishandle(fig)
+if (length(fig) == 1) && ishandle(fig)
    tag = get(fig,'Tag');
    if strncmp(tag,'DIP_Image',9)
       OneD = tag(11)=='1';

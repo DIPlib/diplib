@@ -39,13 +39,6 @@ function out = dipanimate(varargin)
 loop = 0;
 t = 0.05;
 fig = [];
-if nargin == 1
-   arg = varargin{1};
-   if ischar(arg) & strcmp(arg,'DIP_GetParamList')
-      out = struct('menu','none');
-      return
-   end
-end
 N = nargin;
 if N>3
    error('Too many input arguments.')
@@ -71,7 +64,7 @@ if N>=1
    ii = 2;
    if ii<=N
       arg = varargin{ii};
-      if isnumeric(arg) & length(arg)==1
+      if isnumeric(arg) && length(arg)==1
          if arg>t
             t = arg;
          end
@@ -89,7 +82,7 @@ else
 end
 
 tag = get(fig,'Tag');
-if ~strncmp(tag,'DIP_Image_3D',12) & ~strncmp(tag,'DIP_Image_4D',12)
+if ~strncmp(tag,'DIP_Image_3D',12) && ~strncmp(tag,'DIP_Image_4D',12)
    error('DIPANIMATE only works on 3/4D images displayed using DIPSHOW.')
 end
 
@@ -115,7 +108,7 @@ N = udata.imsize(Nd);
 set(fig,'CurrentCharacter',' '); % Avoid it containing 'Esc'.
 if loop==1
    sequence = [0:(N-1),(N-2):-1:1];
-else % loop==0 | loop==2
+else % loop==0 || loop==2
    sequence = 0:(N-1);
 end
 while 1
@@ -127,7 +120,7 @@ while 1
       end
       pause(t);
       newch = get(fig,'CurrentCharacter');
-      if ~isempty(newch) & double(newch)==27 % 'Esc' terminates.
+      if ~isempty(newch) && double(newch)==27 % 'Esc' terminates.
          loop = 0;
          break
       end

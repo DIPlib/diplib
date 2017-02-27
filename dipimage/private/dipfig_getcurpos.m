@@ -31,7 +31,7 @@ function pt = dipfig_getcurpos(ax,crop)
 pt = get(ax,'CurrentPoint');
 pt = [pt(1,1),pt(1,2)];
 pt = round(pt);
-if nargin==1 | crop
+if nargin==1 || crop
    curxlim = get(ax,'XLim');
    if pt(1) < curxlim(1)
       pt(1) = ceil(curxlim(1));

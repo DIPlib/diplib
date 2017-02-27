@@ -58,12 +58,6 @@
 
 function h = dipfig(varargin)
 
-% Avoid being in menu
-if nargin == 1 & ischar(varargin{1}) & strcmp(varargin{1},'DIP_GetParamList')
-   h = struct('menu','none');
-   return
-end
-
 % Parse input
 if nargin < 1
    error('Variable name expected.')
@@ -72,16 +66,16 @@ name = '';
 fig = 0;
 pos = [];
 n = 1;
-if isnumeric(varargin{n}) & length(varargin{n})==1
+if isnumeric(varargin{n}) && length(varargin{n})==1
    fig = double(varargin{n});
-   if ~ishandle(fig) & fix(fig) ~= fig
+   if ~ishandle(fig) && fix(fig) ~= fig
       error('Argument must be a valid figure handle.')
    end
    n = n+1;
 end
-if nargin >= n & ischar(varargin{n})
+if nargin >= n && ischar(varargin{n})
    name = varargin{n};
-   if length(name)>0 & name(1)=='-'
+   if length(name)>0 && name(1)=='-'
       switch lower(name)
          case '-unlink'
             dip__fig('-unlink');
@@ -118,7 +112,7 @@ end
 if isempty(pos)
    pos = [dipgetpref('DefaultFigureWidth'),dipgetpref('DefaultFigureHeight')];
 end
-if isfigh(fig) & strncmp(get(fig,'Tag'),'DIP_Image',9)
+if isfigh(fig) && strncmp(get(fig,'Tag'),'DIP_Image',9)
    if length(pos)==2
       coord = get(fig,'position');
       pos = [coord(1),coord(2)+coord(4)-pos(2),pos];
@@ -166,7 +160,7 @@ case '-link'
       handles = subsasgn(handles,substruct('.',name),fig);
    end
 case '-get'
-   if ~isempty(handles) & any(strcmp(fieldnames(handles),name))
+   if ~isempty(handles) && any(strcmp(fieldnames(handles),name))
       h = subsref(handles,substruct('.',name));
    elseif ~isempty(otherhandles)
       lasthandle = lasthandle+1;

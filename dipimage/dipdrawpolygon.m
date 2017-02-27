@@ -82,10 +82,6 @@ if nargin == 1
       case 'dip_dp_MovePoint_ButtonUp'
          dip_dp_MovePoint_ButtonUp
          return
-      case 'DIP_GetParamList'
-         coords = d;
-         return
-      end
    end
 end
 try
@@ -379,7 +375,7 @@ function dip_dp_MovePoint_ButtonMotion
 fig = gcbf;
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
-   if isfield(udata,'lineh') & isfield(udata,'selectedptindex')
+   if isfield(udata,'lineh') && isfield(udata,'selectedptindex')
       pt = dipfig_getcurpos(udata.ax);
       xd = get(udata.lineh,'XData');
       yd = get(udata.lineh,'YData');

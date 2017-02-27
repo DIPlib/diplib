@@ -38,7 +38,7 @@ if nargin==1 && ischar(varargin{1}) && strcmpi(varargin{1},'-unload')
    clear private/dippreferences
 return
 end
-if nargin<2 | mod(nargin,2)
+if nargin<2 || mod(nargin,2)
    error('Need name-value pairs.')
 end
 for ii=1:2:nargin

@@ -48,7 +48,7 @@ state = 1;
 tight = 0;
 initial = 0;
 ii = 1;
-if nargin > 1 & ~ischar(varargin{1})
+if nargin > 1 && ~ischar(varargin{1})
    try
       fig = getfigh(varargin{1});
    catch
@@ -71,7 +71,7 @@ else
          tight = 1;
          if nargin>ii
             ii = ii+1;
-            if isnumeric(varargin{ii}) & prod(size(varargin{ii}))==1
+            if isnumeric(varargin{ii}) && prod(size(varargin{ii}))==1
                zoom = varargin{ii}/100;
             else
                error('Percentage expected.')
@@ -86,7 +86,7 @@ else
       else
          error('Illegal mode string.')
       end
-   elseif isnumeric(varargin{ii}) & prod(size(varargin{ii}))==1
+   elseif isnumeric(varargin{ii}) && prod(size(varargin{ii}))==1
       zoom = varargin{ii}/100;
    else
       error('Percentage expected.')

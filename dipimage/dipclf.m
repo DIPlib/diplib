@@ -24,21 +24,14 @@
 
 function d = dipclf(h)
 
-% Avoid being in menu
-if nargin == 1 & ischar(h) & strcmp(h,'DIP_GetParamList')
-   d = struct('menu','Display',...
-              'display','Clear all image windows');
-   return
-end
-
-if nargin < 1 | isequal(h,0)
+if nargin < 1 || isequal(h,0)
    h = findobj('Type','figure');
 else
    if isempty(h)
       return;
    end
    if ~iscell(h)
-      if isnumeric(h) | ishandle(h)
+      if isnumeric(h) || ishandle(h)
          h = num2cell(h);
       elseif ischar(h)
          h = {h};

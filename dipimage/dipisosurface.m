@@ -28,14 +28,8 @@
 
 function menu_out = dipisosurface(in,value)
 
-% Avoid being in menu
-if nargin == 1 & ischar(in) & strcmp(in,'DIP_GetParamList')
-   menu_out = struct('menu','none');
-   return
-end
-
 %Tread the callbacks first
-if nargin == 1 & ischar(in)
+if nargin == 1 && ischar(in)
    switch in
       case 'axis_change'
          axis_change
@@ -56,7 +50,7 @@ end
 %Check if input is a figure handle or an image
 if isfigh(in)
    udata = get(in,'UserData');
-   if strncmp(get(in,'Tag'),'DIP_Image_3D',12) & ~iscolor(udata.slices)
+   if strncmp(get(in,'Tag'),'DIP_Image_3D',12) && ~iscolor(udata.slices)
       in = udata.slices;
    else
       error('Cannot create isosurface for image.')

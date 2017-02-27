@@ -39,12 +39,6 @@
 
 function menu_out = diplink(arg1,arg2)
 
-% Avoid being in menu
-if nargin == 1 & ischar(arg1) & strcmp(arg1,'DIP_GetParamList')
-   menu_out = struct('menu','none');
-   return
-end
-
 list = NaN;
 if nargin == 0
    fig = get(0,'CurrentFigure');
@@ -82,7 +76,7 @@ else
    catch
       error('Argument must be a valid figure handle.')
    end
-   if ischar(arg2) & any(strcmpi(arg2,{'on','off','toggle'}))
+   if ischar(arg2) && any(strcmpi(arg2,{'on','off','toggle'}))
       action = lower(arg2);
    elseif isempty(arg2)
       action = 'on';
@@ -91,7 +85,7 @@ else
       action = 'on';
    end
 end
-if strncmp(get(fig,'Tag'),'DIP_Image_2D',12) | strncmp(get(fig,'Tag'),'DIP_Image_3D',12) | strncmp(get(fig,'Tag'),'DIP_Image_4D',12)
+if strncmp(get(fig,'Tag'),'DIP_Image_2D',12) || strncmp(get(fig,'Tag'),'DIP_Image_3D',12) || strncmp(get(fig,'Tag'),'DIP_Image_4D',12)
    udata = get(fig,'UserData');
    switch (action)
    case 'toggle'
@@ -115,7 +109,7 @@ end
 %
 function makeDIPlinkObj(fig,udata,list)
 nD = length(udata.imsize);
-if isnumeric(list) & isnan(list)
+if isnumeric(list) && isnan(list)
    switch nD
       case {2,3,4}
          newlist = handleselect(['Select a ' num2str(nD) 'D image display'],fig,udata.linkdisplay,[ num2str(nD) 'D']);
