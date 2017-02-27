@@ -27,6 +27,8 @@
  * out = dip_tensor_indices(images,[i,j])
  *    out is the linear index into the tensor for element (i,j) (i.e. the value of element i+j*M in the look-up table
  *    that would be generaged in the call of the first form.
+ *
+ * Note that all indices here start with 0, whereas in MATLAB they'd start with 1. Adjust as necessary!
  */
 
 #define DOCTEST_CONFIG_IMPLEMENT

@@ -1,8 +1,53 @@
 %dip_image   Represents an image
-%   Objects of this class contain all information relevant to define an
-%   image.
+%   The DIP_IMAGE object represents an image. All DIPimage functions that
+%   output image data do so in the form of a DIP_IMAGE object. However,
+%   input image data can be either a DIP_IMAGE or a numeric array.
+%
+%   An image can have any number of dimensions, including 0 and 1 (as
+%   opposed to the standard MATLAB arrays, which always have at least 2
+%   dimensions. Image pixels are not necessarily scalar values. The pixels
+%   can be tensors of any size, and rank up to 2 (i.e. a matrix; we use the
+%   term tensor because it's more generic and also because it matches the
+%   terminology often used in the field, e.g. structure tensor, tensor
+%   flow, etc.). A color image is an image where the pixels are vectors.
+%
+%   To index into an image, use the '()' indexing as usual. The '{}'
+%   indexing is used to index into the tensor components. For example,
+%      A{1}(0,0)
+%   returns the first tensor component of the pixel at coordinates (0,0).
+%   Note that indexing in the spatial dimensions is 0-based, and the first
+%   index is horizontal. Note also that the notation A(0,0){1} is not legal
+%   in MATLAB, though we would have liked to support it. The keyword END is
+%   only allowed for spatial indices (i.e. within the '()' indexing), not
+%   for tensor indexing.
+%
+%   To create an image, you can call the constructor DIP_IMAGE/DIP_IMAGE,
+%   or you can use the functions NEWIM or NEWCOLORIM.
+%
+%   To determine the size of the image, use IMSIZE, and to determine the
+%   size of the tensor, use TENSORSIZE. Many methods that work on numeric
+%   arrays also work on DIP_IMAGE objects, though not always identically.
+%   For example, NDIMS will return 0 or 1 for some images. ISVECTOR tests 
+%   the tensor shape, not the shape of the image. Some other methods also
+%   work on the tensor, such as the transpose operator A' and the matrix
+%   multiplication A*B.
+%
+%   A statement that returns a DIP_IMAGE object, when not terminated with a
+%   semicolon, will not dump the pixel values to the command line, but
+%   instead show the image in an interactive display window. See DIPSHOW to
+%   learn more about that window.
 %
 %   TODO: Add more documentation for this class
+%
+%   NOTE:
+%   The dimensions of an image start at 1. A 2D image has dimensions 1 and
+%   2. This is different from how they are counted in DIPlib, which always
+%   starts at 0.
+%   Tensor indexing is also 1-based, as if they were standard MATLAB
+%   matrices. Again, different from DIPlib.
+%
+%   See also: newim, newcolorim, dip_image.dip_image, dip_image.imsize,
+%   dip_image.tensorsize, dip_image.ndims, dipshow
 
 % DIPimage 3.0
 %
@@ -35,11 +80,14 @@ classdef dip_image
    end
 
    properties (Access=private)
-      Data = [] % Pixel data, see Array property
-      TrailingSingletons = 0 % Number of trailing singleton dimensions.
-      TensorShapeInternal = 'column vector'; % How the tensor is stored, see TensorShape property.
-      TensorSizeInternal = [1,1] % Size of the tensor, see TensorSize property.
+      Data = []                             % Pixel data, see Array property
+      TrailingSingletons = 0                % Number of trailing singleton dimensions.
+      TensorShapeInternal = 'column vector' % How the tensor is stored, see TensorShape property.
+      TensorSizeInternal = [1,1]            % Size of the tensor: [ROWS,COLUMNS].
    end
+
+   % These dependent properties are mostly meant for intenal use, and use of the MATLAB-DIPlib interface.
+   % The user has regular methods to access these properties.
 
    properties (Dependent)
       %Array - The pixel data, an array of size [C,T,Y,X,Z,...].
@@ -52,13 +100,11 @@ classdef dip_image
       %
       %   Set this property to replace the image data. The array assigned to
       %   this property is interpreted as described above.
-      Array = []
-      NDims       % The number of spatial dimensions.
-      Size        % The spatial size of the image.
-      IsComplex   % True if the data type is complex.
-      IsTensor    % True if the image is a tensor image, false if scalar.
-      TensorElements % The number of tensor elements.
-      TensorSize  % The size of the tensor: [ROWS,COLUMNS].
+      Array
+      % The number of spatial dimensions.
+      NDims
+      % The size of the tensor: [ROWS,COLUMNS].
+      TensorSize
       %TensorShape - How the tensor is stored.
       %   A string, one of:
       %      'column vector'
@@ -73,9 +119,8 @@ classdef dip_image
       %   Set this property to change how the tensor storage is interpreted.
       %   Assign either one of the strings above, or a numeric array
       %   representing a size. The setting must be consistent with the
-      %   TensorElements property. The tensor size is set to match.
+      %   number of tensor elements. The tensor size is set to match.
       TensorShape
-      DataType    % Gives the MATLAB class corresponding to the image data type.
    end
 
    % ------- METHODS -------
@@ -181,13 +226,13 @@ classdef dip_image
                img = data;
                % Data type conversion
                if ~isempty(datatype)
-                  if ~complex && img.IsComplex
+                  if ~complex && iscomplex(img)
                      warning('Ignoring data type conversion: complex data cannot be converted to requested type')
                   else
                      if ~isa(img.Data,datatype)
                         img.Data = array_convert_datatype(img.Data,datatype);
                      end
-                     if complex && ~img.IsComplex
+                     if complex && ~iscomplex(img)
                         img.Data = cat(1,img.Data,zeros(size(img.Data),class(img.Data)));
                      end
                   end
@@ -274,8 +319,8 @@ classdef dip_image
                case 'row vector'
                   tsize = [1,nelem];
                case {'column-major matrix','row-major matrix'}
-                  if prod(img.TensorShapeInternal) == nelem
-                     tsize = img.TensorShapeInternal;
+                  if prod(img.TensorSizeInternal) == nelem
+                     tsize = img.TensorSizeInternal;
                   else
                      rows = ceil(sqrt(nelem));
                      tsize = [rows,nelem/rows];
@@ -352,44 +397,12 @@ classdef dip_image
          end
       end
 
-      function sz = get.Size(obj)
-         if isempty(obj.Data)
-            sz = 0;
-         else
-            sz = [size(obj.Data),ones(1,obj.TrailingSingletons)];
-            if length(sz)==2
-               sz = [];
-            else
-               sz(1:2) = [];
-            end
-            if length(sz) > 1
-               sz(1:2) = sz([2,1]);
-            end
-         end
-      end
-
-      function res = get.IsComplex(obj)
-         res = size(obj.Data,1) > 1;
-      end
-
-      function res = get.IsTensor(obj)
-         res = size(obj.Data,2) > 1;
-      end
-
-      function n = get.TensorElements(obj)
-         n = size(obj.Data,2);
-      end
-
       function sz = get.TensorSize(obj)
          sz = obj.TensorSizeInternal;
       end
 
       function shape = get.TensorShape(obj)
          shape = obj.TensorShapeInternal;
-      end
-
-      function dt = get.DataType(obj)
-         dt = class(obj.Data);
       end
 
       function varargout = size(obj,dim)
@@ -405,7 +418,9 @@ classdef dip_image
          %   [M,N] = SIZE(B) returns the number of rows and columns in
          %   separate output variables. [M1,M2,M3,...,MN] = SIZE(B)
          %   returns the length of the first N dimensions of B.
-         sz = obj.Size;
+         %
+         %   See also dip_image.imsize, dip_image.tensorsize
+         sz = imsize(obj);
          if nargout > 1
             if nargin ~= 1, error('Unknown command option.'); end
             varargout = cell(1,nargout);
@@ -460,7 +475,21 @@ classdef dip_image
          %   IMSIZE is identical to SIZE, except throws an error when a
          %   non-existing dimension is requested, and the first form always
          %   returns exactly as many values as there are image dimensions.
-         sz = obj.Size;
+         %
+         %   See also dip_image.tensorsize, dip_image.size
+         if isempty(obj)
+            sz = 0;
+         else
+            sz = [size(obj.Data),ones(1,obj.TrailingSingletons)];
+            if length(sz)==2
+               sz = [];
+            else
+               sz(1:2) = [];
+            end
+            if length(sz) > 1
+               sz(1:2) = sz([2,1]);
+            end
+         end
          if nargout > 1
             if nargin ~= 1, error('Unknown command option.'); end
             if nargout > length(sz), error('Too many dimensions requested.'); end
@@ -503,7 +532,9 @@ classdef dip_image
          %   separate output variables.
          %
          %   If B is a scalar image, TENSORSIZE returns [1,1].
-         sz = obj.TensorSize;
+         %
+         %   See also dip_image.imsize, dip_image.size
+         sz = obj.TensorSizeInternal;
          if nargout > 1
             if nargin ~= 1, error('Unknown command option.'); end
             m = sz(1);
@@ -542,7 +573,7 @@ classdef dip_image
          %
          %   See also dip_image.numpixels, dip_image.numtensorel, dip_image.ndims
          n = numel(obj.Data);
-         if obj.IsComplex
+         if iscomplex(obj)
             n = n / 2;
          end
       end
@@ -558,7 +589,7 @@ classdef dip_image
          %   NUMEL(IMG) == NUMPIXELS(IMG) * NUMTENSOREL(IMG)
          %
          %   See also dip_image.numel, dip_image.numpixels
-         n = obj.TensorElements;
+         n = size(obj.Data,2);
       end
 
       function n = numpixels(obj)
@@ -626,17 +657,17 @@ classdef dip_image
 
       function res = isreal(obj)
          %ISREAL   Returns true if the image is of a non-complex type
-         res = ~obj.IsComplex;
+         res = ~iscomplex(obj);
       end
 
       function res = iscomplex(obj)
          %ISCOMPLEX   Returns true if the image is of a complex type
-         res = obj.IsComplex;
+         res = size(obj.Data,1) > 1;
       end
 
       function res = isscalar(obj)
          %isscalar   Returns true if the image is scalar
-         res = ~obj.IsTensor;
+         res = size(obj.Data,2) == 1;
       end
 
       function res = istensor(~)
@@ -646,18 +677,18 @@ classdef dip_image
 
       function res = isvector(obj)
          %isvector   Returns true if it is a vector image
-         res = strcmp(obj.TensorShape,'column vector') || ...
-               strcmp(obj.TensorShape,'row vector');
+         res = strcmp(obj.TensorShapeInternal,'column vector') || ...
+               strcmp(obj.TensorShapeInternal,'row vector');
       end
 
       function res = iscolumn(obj)
          %iscolumn   Returns true if it is a column vector image
-         res = strcmp(obj.TensorShape,'column vector');
+         res = strcmp(obj.TensorShapeInternal,'column vector');
       end
 
       function res = isrow(obj)
          %isrow   Returns true if it is a row vector image
-         res = strcmp(obj.TensorShape,'row vector');
+         res = strcmp(obj.TensorShapeInternal,'row vector');
       end
 
       function res = ismatrix(~)
@@ -707,15 +738,15 @@ classdef dip_image
 
       function disp(obj)
          % DISP   Display array
-         if obj.IsTensor
-            sz = obj.TensorSize;
-            shape = obj.TensorShape;
+         if ~isscalar(obj)
+            sz = obj.TensorSizeInternal;
+            shape = obj.TensorShapeInternal;
             tensor = [num2str(sz(1)),'x',num2str(sz(2)),' ',shape,', ',...
-                      num2str(obj.TensorElements),' elements'];
+                      num2str(numtensorel(obj)),' elements'];
          end
          if iscolor(obj)
             disp(['Color image (',tensor,', ',obj.ColorSpace,'):']);
-         elseif obj.IsTensor
+         elseif ~isscalar(obj)
             disp(['Tensor image (',tensor,'):']);
          else
             disp('Scalar image:');
@@ -865,6 +896,89 @@ classdef dip_image
          out = dip_array(in,'logical');
       end
 
+      % ------- INDEXING -------
+
+      function n = numArgumentsFromSubscript(~,~,~)
+         n = 1; % Indexing into a dip_image object always returns a single object.
+      end
+
+      function a = subsref(a,s)
+         if isempty(a)
+            error('Cannot index into empty image')
+         end
+         if length(s)==1 && strcmp(s(1).type,'.')
+            name = s(1).subs;
+            if strcmp(name,'Data') || ...
+                  strcmp(name,'TrailingSingletons') || ...
+                  strcmp(name,'TensorShapeInternal') || ...
+                  strcmp(name,'TensorSizeInternal')
+               error('Cannot access private properties')
+            end
+            a = builtin('subsref',a,s); % Call built-in method to access properties
+            return
+         end
+         % Find the indices to use
+         sz = imsize(a);
+         [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a);
+         if ndims == 1 && length(sz) > 1
+            a.Data = reshape(a.Data,size(a.Data,1),size(a.Data,2),[]);
+         end
+         % Do the indexing!
+         a.Data = subsref(a.Data,s);
+         a.NDims = ndims;
+         a.TensorShapeInternal = tsh;
+         a.TensorSizeInternal = tsz;
+      end
+
+      function a = subsasgn(a,s,b)
+         if isempty(a)
+            error('Cannot index into empty image')
+         end
+         if length(s)==1 && strcmp(s(1).type,'.')
+            name = s(1).subs;
+            if strcmp(name,'Data') || ...
+                  strcmp(name,'TrailingSingletons') || ...
+                  strcmp(name,'TensorShapeInternal') || ...
+                  strcmp(name,'TensorSizeInternal')
+               error('Cannot access private properties')
+            end
+            a = builtin('subsasgn',a,s,b); % Call built-in method to access properties
+            return
+         end
+         % Find the indices to use
+         sz = imsize(a);
+         [s,~,~,ndims] = construct_subs_struct(s,sz,a);
+         if ndims == 1 && length(sz) > 1
+            a.Data = reshape(a.Data,size(a.Data,1),size(a.Data,2),[]);
+         end
+         % Do the indexing!
+         if isa(b,'dip_image')
+            b = b.Data;
+         end
+         a.Data = subsasgn(a.Data,s,b);
+         if ndims == 1 && length(sz) > 1
+            a.Data = reshape(a.Data,[size(a.Data,1),size(a.Data,2),sz]);
+         end
+      end
+
+      function ii = end(a,k,n)
+         if n == 1
+            ii = numpixels(a)-1;
+         else
+            if n ~= ndims(a)
+               error('Number of indices does not match dimensionality.')
+            end
+            ii = imsize(a,k)-1;
+         end
+      end
+
+      function a = subsindex(a)
+         if ~isscalar(a) || ~islogical(a)
+            error('Can only index using scalar, binary images.')
+         end
+         a = find(a.Data)-1;
+      end
+
       % ------- OPERATORS -------
 
       function out = plus(lhs,rhs) % +
@@ -884,7 +998,7 @@ classdef dip_image
       end
 
       function out = mrdivide(lhs,rhs) % /
-         if rhs.IsTensor
+         if ~isscalar(rhs)
             error('Not implented');
          end
          out = dip_operators('/',lhs,rhs);
@@ -953,13 +1067,13 @@ classdef dip_image
       end
 
       function in = conj(in)
-         if in.IsComplex
+         if iscomplex(in)
             in.Data(2,:) = -in.Data(2,:);
          end
       end
 
       function in = real(in)
-         if in.IsComplex
+         if iscomplex(in)
             sz = size(in.Data);
             sz(1) = 1;
             in.Data = reshape(in.Data(1,:),sz);
@@ -967,7 +1081,7 @@ classdef dip_image
       end
 
       function in = imag(in)
-         if in.IsComplex
+         if iscomplex(in)
             sz = size(in.Data);
             sz(1) = 1;
             in.Data = reshape(in.Data(2,:),sz);
@@ -990,7 +1104,7 @@ end
 
 % Gives a DIPlib data type string for the data in the image.
 function str = datatypestring(in)
-   str = in.DataType;
+   str = class(in.Data);
    switch str
       case 'logical'
          str = 'binary';
@@ -1003,13 +1117,13 @@ function str = datatypestring(in)
       case 'int32'
          str = 'sint32';
       case 'single'
-         if in.IsComplex
+         if iscomplex(in)
             str = 'scomplex';
          else
             str = 'sfloat';
          end
       case 'double'
-         if in.IsComplex
+         if iscomplex(in)
             str = 'dcomplex';
          else
             str = 'dfloat';
@@ -1064,4 +1178,140 @@ function res = validate_tensor_shape(str)
    else
       res = false;
    end
+end
+
+% Figures out how to index into an image, used by subsref and subsasgn
+function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
+   tensorindex = 0;
+   imageindex = 0;
+   for ii=1:length(s)
+      switch s(ii).type
+         case '{}'
+            if tensorindex
+               error('Illegal indexing.')
+            end
+            tensorindex = ii;
+         case '()'
+            if imageindex
+               error('Illegal indexing.')
+            end
+            imageindex = ii;
+         otherwise
+            error('Illegal indexing.')
+      end
+   end
+   % Find tensor dimension indices
+   tsz = a.TensorSizeInternal;
+   tsh = a.TensorShapeInternal;
+   if tensorindex
+      t = s(tensorindex).subs;
+      N = numel(t);
+      if N==1
+         % One element: linear indexing
+         telems = t{1};
+         if isequal(telems,':')
+            telems = 1:numtensorel(a);
+         elseif any(telems<1) || any(telems>numtensorel(a))
+            error('Tensor index out of range');
+         end
+         tsz = [length(telems),1];
+         tsh = 'column vector';
+      elseif N==2
+         % Two elements: use lookup table
+         ii = t{1};
+         if isequal(ii,':')
+            ii = 1:tsz(1);
+         elseif any(ii<1) || any(ii>tsz(1))
+            error('Tensor index out of range');
+         end
+         jj = t{2};
+         if isequal(jj,':')
+            jj = 1:tsz(2);
+         elseif any(jj<1) || any(jj>tsz(2))
+            error('Tensor index out of range');
+         end
+         stride = tsz(1);
+         tsh = 'column-major matrix';
+         tsz = [length(ii),length(jj)];
+         lut = dip_tensor_indices(a);
+         [ii,jj] = ndgrid(ii,jj);
+         telems = lut(ii + (jj-1)*stride) + 1;
+         telems = telems(:); % make into column vector
+         if any(telems == 0)
+            error('Indexing into non-stored tensor elements')
+            % TODO: return zeros?
+         end
+      else
+         error('Illegal tensor indexing');
+      end
+   else
+      telems = 1:numtensorel(a);
+   end
+   % Find spatial indices
+   ndims = length(sz);
+   if imageindex
+      s = s(imageindex);
+      if length(s.subs) == 1 % (this should produce a 1D image)
+         ind = s.subs{1};
+         ndims = 1;
+         if isa(ind,'dip_image')
+            if numel(ind)==1 % You can index with a 0D scalar image, convenience for Piet Verbeek.
+               ind = double(ind)+1;
+            elseif ~islogical(ind) || ~isscalar(ind)
+               error('Only binary scalar images can be used to index')
+            elseif ~isequal(imsize(ind),sz) % TODO: allow singleton expansion?
+               error('Mask image must have same sizes as image it''s indexing into')
+            else
+               ind = logical(ind.Data);
+               ind = ind(:);
+               ind = find(ind);
+            end
+         elseif isnumeric(ind)
+            ind = ind+1;
+            if any(ind > prod(sz)) || any(ind < 1)
+               error('Index exceeds image dimensions')
+            end
+         elseif islogical(ind)
+            msz = size(ind);
+            msz = msz([2,1,3:end]);
+            % TODO: remove trailing singleton dimensions from `sz` for comparison
+            if ~isequal(msz,sz)
+               error('Mask image must match image size when indexing')
+            end
+            ind = ind(:);
+            ind = find(ind);
+            % else it's ':'
+         end
+         s.subs{1} = ind;
+      elseif length(s.subs) == length(sz)
+         tmp = s.subs(2);
+         s.subs(2) = s.subs(1);
+         s.subs(1) = tmp;
+         for ii=1:length(sz)
+            ind = s.subs{ii};
+            if islogical(ind)
+               error('Illegal indexing.')
+            elseif isa(ind,'dip_image')
+               if ndims(squeeze(ind))==0 %added for Piet (BR)
+                  ind=double(ind);
+               else
+                  error('Illegal indexing.');
+               end
+            end
+            if isnumeric(ind)
+               ind = ind+1;
+               if any(ind > sz(ii)) || any(ind < 1)
+                  error('Index exceeds image dimensions.')
+               end
+            end
+            s.subs{ii} = ind;
+         end
+      else
+         error('Number of indices not the same as image dimensionality.')
+      end
+   else
+      s = substruct('()',repmat({':'},1,length(sz)));
+   end
+   % Combine spatial and tensor indexing, add indexing into complex dimension
+   s.subs = [{':'},{telems},s.subs];
 end

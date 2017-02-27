@@ -1,12 +1,5 @@
 These functions were overloaded in DIPimage 2.x, and haven't yet been overloaded in 3.0
 
-sub2ind.m
-subsasgn.m
-subsindex.m
-subsref.m
-end.m
-ind2sub.m
-
 plot.m
 
 cat.m
