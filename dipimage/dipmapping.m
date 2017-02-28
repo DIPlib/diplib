@@ -430,11 +430,7 @@ elseif custom
             catch
                error('Evaluation of user string failed.')
             end
-            try
-               dipshow(fig,'ch_colormap',colmap);
-            catch
-               error(firsterr);
-            end
+            dipshow(fig,'ch_colormap',colmap);
          end
       else
          delete(h)
@@ -479,11 +475,7 @@ else
       params{ii+1} = newslice;
       ii = ii+2;
    end
-   try
-      dipshow(fig,params{:});
-   catch
-      error(firsterr);
-   end
+   dipshow(fig,params{:});
 
 end
 

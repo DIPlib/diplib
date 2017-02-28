@@ -39,6 +39,34 @@
 #include "dip_matlab_interface.h"
 #include "diplib/display.h"
 
+// This is a very simple external interface: it can be used for only one image, which should be
+// forged only once!
+class MatlabInterfaceUInt8 : public dip::ExternalInterface {
+   public:
+      mxArray* array = nullptr;
+      virtual std::shared_ptr< void > AllocateData(
+            dip::UnsignedArray const& sizes,
+            dip::IntegerArray& strides,
+            dip::Tensor const& tensor,
+            dip::sint& tstride,
+            dip::DataType datatype
+      ) override {
+         DIP_THROW_IF( datatype != dip::DT_UINT8, dip::E::DATA_TYPE_NOT_SUPPORTED );
+         DIP_THROW_IF( sizes.size() != 2, dip::E::DIMENSIONALITY_NOT_SUPPORTED );
+         dip::UnsignedArray mlsizes( 3 );
+         mlsizes[ 0 ] = sizes[ 1 ];
+         mlsizes[ 1 ] = sizes[ 0 ];
+         mlsizes[ 2 ] = tensor.Elements();
+         strides.resize( 2 );
+         strides[ 0 ] = sizes[ 1 ];
+         strides[ 1 ] = 1;
+         tstride = sizes[ 0 ] * sizes[ 1 ];
+         array = mxCreateNumericArray( mlsizes.size(), mlsizes.data(), mxUINT8_CLASS, mxREAL );
+         void* p = mxGetData( array );
+         return std::shared_ptr< void >( p, dml::VoidStripHandler );
+      }
+};
+
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
    char const* wrongParamsStruct = "Wrong params struct.";
@@ -48,11 +76,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       DML_MIN_ARGS( 5 );
       DML_MAX_ARGS( 5 );
 
-      // TODO: output image should be created using a custom version of MatlabInterface that does not handle complex
-      // images, and puts the tensor dimension at the end.
-      dml::MatlabInterface mi;
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
-      dip::Image out = mi.NewImage();
 
       dip::UnsignedArray coordinates = dml::GetUnsignedArray( prhs[ 1 ] );
       dip::uint dim1 = dml::GetUnsigned( prhs[ 2 ] );
@@ -76,9 +100,13 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       DIP_THROW_IF( !upperBound, wrongParamsStruct );
       params.upperBound = dml::GetFloat( upperBound );
 
+      MatlabInterfaceUInt8 allocator;
+      dip::Image out;
+      out.SetExternalInterface( &allocator );
+
       dip::ImageDisplay( in, out, coordinates, dim1, dim2, params );
 
-      plhs[ 0 ] = mi.GetArray( out );
+      plhs[ 0 ] = allocator.array;
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

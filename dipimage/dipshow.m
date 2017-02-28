@@ -172,6 +172,8 @@
 %   - If DIPORIEN has been enabled:
 %      - udata.orientationim  -> dip_image object with orientation image.
 
+% TODO: use image pixel size to determine aspect ratio, and use aspect ratio to scale axes.
+
 % COMMON PHRASES
 %
 % Tests using the UserData property:
@@ -316,11 +318,7 @@ if nargin >= n
             error('Argument must be a valid figure handle.')
          end
       end
-      try
-         change_mapping(fig,varargin{n:end});
-      catch
-         error(firsterr);
-      end
+      change_mapping(fig,varargin{n:end});
       return
    end
    if ~isnumeric(in) || ~isempty(in)
@@ -472,21 +470,13 @@ end
 % Select display 'mode'
 [currange,mappingmode,colmap,colmapdata,complexmapping,slicing,state,keys] = get_default_mode(fig);
 if hasrange
-   try
-      [currange,mappingmode,newcolmap] = parse_rangestr(rangestr);
-      if ischar(newcolmap) && ~strcmp(newcolmap,'custom') && ~strcmp(newcolmap,colmap)
-         [colmap,colmapdata] = parse_colmapstr(newcolmap);
-      end
-   catch
-      error(firsterr)
+   [currange,mappingmode,newcolmap] = parse_rangestr(rangestr);
+   if ischar(newcolmap) && ~strcmp(newcolmap,'custom') && ~strcmp(newcolmap,colmap)
+      [colmap,colmapdata] = parse_colmapstr(newcolmap);
    end
 end
 if hascolmap
-   try
-      [colmap,colmapdata] = parse_colmapstr(colmapstr);
-   catch
-      error(firsterr)
-   end
+   [colmap,colmapdata] = parse_colmapstr(colmapstr);
 end
 
 if isnumeric(in) && isempty(in)
@@ -1281,7 +1271,7 @@ else
       %g = dipgetpref('GammaGrey');
    %end
    % TODO: use `g` in `imagedisplay`.
-   cdata = dip_array(imagedisplay(cdata,[],0,1,params));
+   cdata = imagedisplay(cdata,[],0,1,params);
 end
 set(imh,'cdata',cdata);
 udata.mappingmode = mappingmode;

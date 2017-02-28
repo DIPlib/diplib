@@ -119,13 +119,9 @@ if isfigh(fig) && strncmp(get(fig,'Tag'),'DIP_Image',9)
    end
    set(fig,'position',pos);
 else
-   try
-      fig = dipshow(fig,[],'name',name,'position',pos);
-      if ~isnumeric(fig)
-         fig = fig.Number;
-      end
-   catch
-      error(firsterr);
+   fig = dipshow(fig,[],'name',name,'position',pos);
+   if ~isnumeric(fig)
+      fig = fig.Number;
    end
 end
 % Link variable name with figure handle

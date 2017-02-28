@@ -90,7 +90,7 @@ catch
    if ~isempty(paramerror)
       error(paramerror)
    else
-      error(firsterr)
+      error(lasterr)
    end
 end
 
