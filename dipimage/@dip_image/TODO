@@ -2,18 +2,6 @@ These functions were overloaded in DIPimage 2.x, and haven't yet been overloaded
 
 plot.m
 
-cat.m
-horzcat.m
-repmat.m
-vertcat.m
-complex.m
-
-expanddim.m
-permute.m
-reshape.m
-shiftdim.m
-squeeze.m
-
 colorspace.m
 
 imarfun.m

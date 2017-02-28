@@ -285,6 +285,31 @@ classdef dip_image
          end
       end
 
+      function out = complex(out,im)
+         %COMPLEX   Construct complex image from real and imaginary parts.
+         %   COMPLEX(A,B) returns the complex result A + Bi, where A and B
+         %   are identically sized images of the same data type.
+         %
+         %   COMPLEX(A) returns the complex result A + 0i, where A must
+         %   be real.
+         if nargin == 1
+            if ~iscomplex(out)
+               if isa(out.Data,'double') || isa(out.Data,'uint32') || isa(out.Data,'int32')
+                  out.Data = cat(1,double(out.Data),zeros(size(out.Data)));
+               else
+                  out.Data = cat(1,single(out.Data),zeros(size(out.Data),'single'));
+               end
+            end
+         else % nargin == 2
+            if isa(out.Data,'double') || isa(out.Data,'uint32') || isa(out.Data,'int32') || ...
+                  isa(im.Data,'double') || isa(im.Data,'uint32') || isa(im.Data,'int32')
+               out.Data = cat(1,double(out.Data),double(im.Data));
+            else
+               out.Data = cat(1,single(out.Data),single(im.Data));
+            end
+         end
+      end
+
       % ------- SET PROPERTIES -------
 
       function img = set.Array(img,data)
@@ -422,7 +447,7 @@ classdef dip_image
          %   See also dip_image.imsize, dip_image.tensorsize
          sz = imsize(obj);
          if nargout > 1
-            if nargin ~= 1, error('Unknown command option.'); end
+            if nargin ~= 1, error('Unknown command option'); end
             varargout = cell(1,nargout);
             if ~isempty(obj)
                n = min(length(sz),nargout);
@@ -491,8 +516,8 @@ classdef dip_image
             end
          end
          if nargout > 1
-            if nargin ~= 1, error('Unknown command option.'); end
-            if nargout > length(sz), error('Too many dimensions requested.'); end
+            if nargin ~= 1, error('Unknown command option'); end
+            if nargout > length(sz), error('Too many dimensions requested'); end
             varargout = cell(1,nargout);
             if ~isempty(obj)
                for ii=1:nargout
@@ -536,7 +561,7 @@ classdef dip_image
          %   See also dip_image.imsize, dip_image.size
          sz = obj.TensorSizeInternal;
          if nargout > 1
-            if nargin ~= 1, error('Unknown command option.'); end
+            if nargin ~= 1, error('Unknown command option'); end
             m = sz(1);
             n = sz(2);
          else
@@ -804,7 +829,7 @@ classdef dip_image
          if nargin == 1
             dt = '';
          elseif ~isstring(dt)
-            error('DATATYPE must be a string.')
+            error('DATATYPE must be a string')
          else
             [dt,~] = matlabtype(dt);
          end
@@ -837,7 +862,7 @@ classdef dip_image
                end
             end
          else
-            error('Output arguments must match number of tensor elements or be 1.')
+            error('Output arguments must match number of tensor elements or be 1')
          end
       end
 
@@ -966,7 +991,7 @@ classdef dip_image
             ii = numpixels(a)-1;
          else
             if n ~= ndims(a)
-               error('Number of indices does not match dimensionality.')
+               error('Number of indices does not match dimensionality')
             end
             ii = imsize(a,k)-1;
          end
@@ -974,9 +999,282 @@ classdef dip_image
 
       function a = subsindex(a)
          if ~isscalar(a) || ~islogical(a)
-            error('Can only index using scalar, binary images.')
+            error('Can only index using scalar, binary images')
          end
          a = find(a.Data)-1;
+      end
+
+      % ------- RESHAPING -------
+
+      function in = tensortospatial(in,dim)
+         if ~isintscalar(dim) || dim < 1, error('Dimension argument must be a positive scalar integer'), end
+         nd = in.NDims;
+         dim = dim+2;
+         n = 1:max(ndims(in.Data)+1,dim);
+         if length(n) > 4
+            n = n([1:2,4,3,5:end]);
+         end
+         n = [n(1:dim-1),2,n(dim:end)];
+         n(2) = n(end);
+         n(end) = [];
+         if length(n) > 2
+            n = n([1:2,4,3,5:end]);
+         end
+         in.Data = permute(in.Data,n);
+         in.NDims = nd + 1;
+         % TODO: pixels sizes!
+      end
+
+      function in = spatialtotensor(in,dim)
+         if ~isscalar(in), error('Cannot create a tensor dimension, image is not scalar'), end
+         if ~isintscalar(dim) || dim < 1 || dim > in.NDims, error('Dimension argument must be a positive scalar integer in the indexing range'), end
+         nd = in.NDims;
+         dim = dim+2;
+         n = 1:ndims(in.Data);
+         if length(n) > 4
+            n = n([1:2,4,3,5:end]);
+         end
+         n = n([1,dim,3:dim-1,dim+1:end,2]);
+         if length(n) > 2
+            n = n([1:2,4,3,5:end]);
+         end
+         in.Data = permute(in.Data,n);
+         in.NDims = nd - 1;
+         % TODO: pixels sizes!
+      end
+
+      function in = expanddim(in,dims)
+         %EXPANDDIM   Appends dimensions of size 1
+         %   B = EXPANDDIM(A,N) increases the dimensionality of the image A
+         %   to N, if its dimensionality is smaller. The dimensions added will
+         %   have a size of 1.
+         if ~isintscalar(dims), error('Number of dimensions must be scalar integer'), end
+         if ndims(in) < dims
+            in.NDims = dims;
+         end
+      end
+
+      function in = permute(in,k)
+         %PERMUTE   Permute image dimensions.
+         %   B = PERMUTE(A,ORDER) rearranges the dimensions of A so that they
+         %   are in the order specified by the vector ORDER. The array
+         %   produced has the same values of A but the order of the subscripts
+         %   needed to access any particular element are rearranged as
+         %   specified by ORDER.
+         %
+         %   The elements of ORDER must be a rearrangement of the numbers from
+         %   1 to N. However, singleton dimensions of A can be skipped.
+         %
+         %   ORDER can also include values of 0, which indicate singleton
+         %   dimensions to add.
+         if ~isnumeric(k) || any(fix(k)~=k)
+            error('ORDER must be an integer vector')
+         elseif any(k<0) | any(k>in.NDims)
+            error('ORDER contains an index out of range')
+         end
+         k = k(:)'; % Make sure K is a 1xN vector.
+         nd = length(k);
+         tmp = k;
+         tmp(tmp==0) = [];
+         if length(unique(tmp)) ~= length(tmp)
+            error('ORDER contains a repeated index')
+         end
+         notused = setdiff(1:in.NDims,tmp);
+         sz = imsize(in);
+         if any(sz(notused)>1)
+            error('ORDER misses some non-singleton dimensions')
+         end
+         k = [k,notused];
+         k(k==0) = max(k) + 1:length(k==0);
+         if length(k) > 1
+            % Where we say 1, we mean 2.
+            I = k==1;
+            J = k==2;
+            k(I) = 2;
+            k(J) = 1;
+            % The X index must be the second one for MATLAB.
+            k = k([2,1,3:end]);
+         end
+         in.Data = permute(in.Data,[1,2,k+2]);
+         in.NDims = nd;
+         % TODO: pixels sizes!
+      end
+
+      function [in,nshifts] = shiftdim(in,n)
+         %SHIFTDIM   Shift dimensions (reorients/flips an image).
+         %   B = SHIFTDIM(X,N) shifts the dimensions of X by N. When N is
+         %   positive, SHIFTDIM shifts the dimensions to the left and wraps
+         %   the N leading dimensions to the end.  When N is negative,
+         %   SHIFTDIM shifts the dimensions to the right and pads with
+         %   singletons.
+         %
+         %   [B,NSHIFTS] = SHIFTDIM(X) returns the array B with the same
+         %   number of elements as X but with any leading singleton
+         %   dimensions removed. NSHIFTS returns the number of dimensions
+         %   that are removed.
+         if nargin==1
+            % Remove leading singleton dimensions
+            sz = imsize(in);
+            n = min(find(sz>1));                  % First non-singleton dimension.
+            if isempty(n)
+               n = length(sz);
+            end
+            nshifts = n-1;
+            if n>1
+               in = permute(in,n:length(sz));
+            % else don't do anything
+            end
+         else
+            if ~isintscalar(n)
+                error('N should be a scalar integer')
+            end
+            if ~isequal(n,0) && ~isempty(in)
+               if n>0
+                  % Wrapped shift to the left
+                  n = mod(n,in.NDims);
+                  order = [n+1:in.NDims,1:n];
+                  in = permute(in,order);
+               else
+                  % Shift to the right (padding with singletons).
+                  order = [zeros(1,-n),1:in.NDims];
+                  in = permute(in,order);
+               end
+            end
+         end
+      end
+
+      function in = reshape(in,varargin)
+         %RESHAPE   Change size of an image.
+         %   B = RESHAPE(A,M,N,...) returns an image with the same
+         %   pixels as A but reshaped to have the size M-by-N-by-...
+         %   M*N*... must be the same as PROD(SIZE(A)).
+         %
+         %   B = RESHAPE(A,[M N ...]) is the same thing.
+         %
+         %   In general, RESHAPE(A,SIZ) returns an image with the same
+         %   elements as A but reshaped to the size SIZ. PROD(SIZ) must be
+         %   the same as PROD(SIZE(A)).
+         %
+         %   Note that RESHAPE takes pixels column-wise from A.
+         if nargin > 2
+            for ii=1:nargin-1
+               if ~isintscalar(varargin{ii}), error('Size arguments must be positive scalar integers'), end
+            end
+            n = cat(2,varargin{:});
+         else
+            n = varargin{1}(:)';
+            if ~isnumeric(n) || any(mod(n,1)) || any(n<1)
+               error('Size vector must be a vector with positive integer elements')
+            end
+         end
+         if length(n)>1
+            n = n([2,1,3:end]);
+         end
+         % TODO: pixel size!
+         in.Data = reshape(in.Data,[size(in.Data,1),size(in.Data,2),n]);
+         in.NDims = length(n);
+      end
+
+      function in = squeeze(in)
+         %SQUEEZE   Remove singleton dimensions.
+         %   B = SQUEEZE(A) returns an image B with the same elements as
+         %   A but with all the singleton dimensions removed. A dimension
+         %   is singleton if size(A,dim)==1.
+         sz = imsize(in);
+         if length(sz)>1
+            sz = sz([2,1,3:end]);
+         end
+         sz(sz==1) = [];
+         if length(sz)>1
+            sz = sz([2,1,3:end]);
+         end
+         in = reshape(in,sz);
+      end
+
+      function out = cat(dim,varargin)
+         %CAT   Concatenate (append, join) images.
+         %   CAT(DIM,A,B) concatenates the images A and B along
+         %   the dimension DIM.
+         %   CAT(1,A,B) is the same as [A,B].
+         %   CAT(2,A,B) is the same as [A;B].
+         %
+         %   CAT(DIM,A1,A2,A3,A4,...) concatenates the input images
+         %   A1, A2, etc. along the dimension DIM.
+         if nargin < 2, error('Erroneus input'); end
+         if ~isintscalar(dim), error('Erroneus input'), end
+         out = varargin{1};
+         % Collect all images in cell array
+         n = nargin-1;
+         if n == 1
+            return
+         end
+         in = cell(1,n);
+         %in_phys = cell(1,n);
+         for ii=1:n
+            img = varargin{ii};
+            if ~isa(img,'dip_image')
+               img = dip_image(img);
+            end
+            in{ii} = img.Data;
+            %in_phys{ii} = img.physDims;
+         end
+         % Find the correct output datatype
+         %out_phys = in_phys{1};
+         out_type = di_findtypex(class(in{ii}),class(in{ii}),size(in{ii},2)==2);
+         for ii=1:length(in)
+            out_type = di_findtypex(out_type,class(in{ii}),size(in{ii},2)==2);
+            %out_phys = di_findphysdims(out_phys,in_phys{ii});
+         end
+         % Convert images to the output type
+         for ii=1:length(in)
+            if ~strcmp(class(in{ii}),out_type)
+               in{ii} = array_convert_datatype(in{ii},out_type);
+            end
+         end
+         % Call CAT
+         if dim == 1
+            dim = 2;
+         elseif dim == 2
+            dim = 1;
+         end
+         out.Data = cat(dim+2,in{:});
+      end
+
+      function a = horzcat(varargin)
+         a = cat(1,varargin{:});
+      end
+
+      function a = vertcat(varargin)
+         a = cat(2,varargin{:});
+      end
+
+      function in = repmat(in,varargin)
+         %REPMAT   Replicate and tile an image.
+         %   B = REPMAT(A,M,N,...) replicates and tiles the image A to produce an
+         %   image of size SIZE(A).*[M,N]. Any number of dimensions are allowed.
+         %
+         %   B = REPMAT(A,[M N ...]) produces the same thing.
+         if nargin > 2
+            for ii=1:nargin-1
+               if ~isintscalar(varargin{ii}), error('Size arguments must be positive scalar integers'), end
+            end
+            n = cat(2,varargin{:});
+         else
+            n = varargin{1}(:)';
+            if ~isnumeric(n) || any(mod(n,1)) || any(n<1)
+               error('Size vector must be a vector with positive integer elements')
+            end
+         end
+         switch length(n)
+            case 0
+               n = [1,1];
+            case 1
+               n = [n,1];
+            otherwise
+               n = n([2,1,3:end]);
+         end
+         n = [1,1,n];
+         in.Data = repmat(in.Data,n);
       end
 
       % ------- OPERATORS -------
@@ -1097,6 +1395,10 @@ function res = isstring(in)
    res = ischar(in) && isrow(in);
 end
 
+function res = isintscalar(in)
+   res = isnumeric(in) && numel(in)==1 && ~mod(in,1);
+end
+
 function in = array_convert_datatype(in,class)
    %#function int8, uint8, int16, uint16, int32, uint32, int64, uint64, single, double, logical
    in = feval(class,in);
@@ -1164,6 +1466,81 @@ function [str,complex] = matlabtype(str)
    end
 end
 
+% Determines the output type that should be used for
+% concatenation between data of types DT1 and DT2.
+% If COMP is true, returns either single or double
+function dt_out = di_findtypex(dt1,dt2,comp)
+   if strcmp(dt1,dt2)
+      % Same type
+      dt_out = dt1;
+   else
+      % Different types
+      if strcmp(dt1,'double') || strcmp(dt2,'double')
+         dt_out = 'double';
+      elseif strcmp(dt1,'single') || strcmp(dt2,'single')
+         dt_out = 'single';
+      elseif strcmp(dt1,'logical')
+         dt_out = dt2;
+      elseif strcmp(dt2,'logical')
+         dt_out = dt1;
+      else
+         % All that is left now is INTxx or UINTxx
+         if dt1(1:3)=='int'
+            dt1_signed = true;
+         else
+            dt1_signed = false;
+         end
+         if dt2(1:3)=='int'
+            dt2_signed = true;
+         else
+            dt2_signed = false;
+         end
+         if dt1_signed && dt2_signed
+            % Both signed
+            if strcmp(dt1,'int32') || strcmp(dt2,'int32')
+               dt_out = 'int32';
+            elseif strcmp(dt1,'int16') || strcmp(dt2,'int16')
+               dt_out = 'int16';
+            else
+               dt_out = 'int8';
+            end
+         else
+            if ~dt1_signed && dt2_signed
+               tmp = dt1; dt1 = dt2; dt2 = tmp;
+            end
+            if ~dt1_signed && ~dt2_signed
+               % Both unsigned
+               if strcmp(dt1,'uint32') || strcmp(dt2,'uint32')
+                  dt_out = 'uint32';
+               elseif strcmp(dt1,'uint16') || strcmp(dt2,'uint16')
+                  dt_out = 'uint16';
+               else
+                  dt_out = 'uint8';
+               end
+            else
+               % dt1 unsigned, dt2 signed
+               if strcmp(dt1,'uint32')
+                  dt_out = 'dfloat';
+               elseif strcmp(dt1,'uint16') || strcmp(dt2,'sint32')
+                  dt_out = 'sint32';
+               elseif strcmp(dt1,'uint8') || strcmp(dt2,'sint16')
+                  dt_out = 'sint16';
+               else
+                  dt_out = 'sint8';
+               end
+            end
+         end
+      end
+   end
+   if comp
+      if strcmp(dt_out,'double') || strcmp(dt_out,'int32') || strcmp(dt_out,'sint32')
+         dt_out = 'double';
+      else
+         dt_out = 'single';
+      end
+   end
+end
+
 function res = validate_tensor_shape(str)
    if isstring(str)
       res = ismember(str,{
@@ -1188,16 +1565,16 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
       switch s(ii).type
          case '{}'
             if tensorindex
-               error('Illegal indexing.')
+               error('Illegal indexing')
             end
             tensorindex = ii;
          case '()'
             if imageindex
-               error('Illegal indexing.')
+               error('Illegal indexing')
             end
             imageindex = ii;
          otherwise
-            error('Illegal indexing.')
+            error('Illegal indexing')
       end
    end
    % Find tensor dimension indices
@@ -1290,24 +1667,24 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
          for ii=1:length(sz)
             ind = s.subs{ii};
             if islogical(ind)
-               error('Illegal indexing.')
+               error('Illegal indexing')
             elseif isa(ind,'dip_image')
                if ndims(squeeze(ind))==0 %added for Piet (BR)
                   ind=double(ind);
                else
-                  error('Illegal indexing.');
+                  error('Illegal indexing');
                end
             end
             if isnumeric(ind)
                ind = ind+1;
                if any(ind > sz(ii)) || any(ind < 1)
-                  error('Index exceeds image dimensions.')
+                  error('Index exceeds image dimensions')
                end
             end
             s.subs{ii} = ind;
          end
       else
-         error('Number of indices not the same as image dimensionality.')
+         error('Number of indices not the same as image dimensionality')
       end
    else
       s = substruct('()',repmat({':'},1,length(sz)));

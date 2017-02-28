@@ -166,6 +166,11 @@ over.
     Now `end` will always work for spatial dimensions, and cannot be used with tensor indexing.
     That is, `end` will work in `()` indexing, but not in `{}` indexing.
 
+  - The `reshape` method now takes pixels column-wise instead of row-wise from the input. This
+    is the natural way of doing it, as it doesn't require data copy. I don't remember why it
+    was row-wise in the old *DIPimage*, and I presume there are few (if any) programs that
+    depend on the old behaviour.
+
 - `dipsetpref` and `dipgetpref` have fewer settings than in the old *DIPimage*. Some settings
   were linked to *DIPlib* global variables, none of which exist any more, and some others
   are simply no longer relevant.
