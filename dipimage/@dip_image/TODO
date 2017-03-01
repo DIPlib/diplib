@@ -1,68 +1,77 @@
 These functions were overloaded in DIPimage 2.x, and haven't yet been overloaded in 3.0
 
-plot.m
+requires core DIPlib work:
+   colorspace.m
 
-colorspace.m
+pure MATLAB stuff:
+   plot.m
 
-imarfun.m
-iterate.m
+   imarfun.m
+   iterate.m
 
-abs.m
-acos.m
-all.m
-angle.m
-any.m
-asin.m
-atan.m
-atan2.m
-besselj.m
-ceil.m
-circshift.m
-convhull.m
-cos.m
-cross.m
-curl.m
-det.m
-diag.m
-divergence.m
-dot.m
-eig_largest.m
-eig.m
-erf.m
-exp.m
-eye.m
-find.m
-findcoord.m
-fix.m
-flipdim.m
-fliplr.m
-flipud.m
-floor.m
-gradient.m
-hypot.m
-inner.m
-inv.m
-isfinite.m
-isinf.m
-isnan.m
-log.m
-log10.m
-log2.m
-mod.m
-norm.m
-outer.m
-phase.m
-pinv.m
-pow10.m
-pow2.m
-power.m
-rot90.m
-rotate.m
-round.m
-sign.m
-sin.m
-sqrt.m
-svd.m
-tan.m
-trace.m
-unique.m
+   find.m
+   findcoord.m
+
+   flipdim.m
+   fliplr.m
+   flipud.m
+   rot90.m
+
+new projections:
+   all.m
+   any.m
+   unique.m
+
+filtering:
+   convhull.m
+   gradient.m
+   rotate.m
+
+arithmetic:
+   abs.m
+   acos.m
+   angle.m
+   asin.m
+   atan.m
+   atan2.m
+   besselj.m
+   ceil.m
+   circshift.m
+   cos.m
+   cross.m
+   curl.m
+   det.m
+   diag.m
+   divergence.m
+   dot.m
+   eig_largest.m
+   eig.m
+   erf.m
+   exp.m
+   eye.m
+   fix.m
+   floor.m
+   hypot.m
+   inner.m
+   inv.m
+   isfinite.m
+   isinf.m
+   isnan.m
+   log.m
+   log10.m
+   log2.m
+   mod.m
+   norm.m
+   outer.m
+   phase.m
+   pinv.m
+   pow10.m
+   pow2.m
+   power.m
+   round.m
+   sign.m
+   sin.m
+   sqrt.m
+   svd.m
+   tan.m
+   trace.m

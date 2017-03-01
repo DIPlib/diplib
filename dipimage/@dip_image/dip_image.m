@@ -134,16 +134,17 @@ classdef dip_image
          %   Construct an object with one of the following syntaxes:
          %      OUT = DIP_IMAGE(IMAGE)
          %      OUT = DIP_IMAGE(IMAGE,TENSOR_SHAPE,DATATYPE)
+         %      OUT = DIP_IMAGE(IMAGE,DATATYPE,TENSOR_SHAPE)
          %      OUT = DIP_IMAGE('array',ARRAY)
          %      OUT = DIP_IMAGE('array',ARRAY,TENSOR_SHAPE)
          %      OUT = DIP_IMAGE('array',ARRAY,TENSOR_SHAPE,NDIMS)
          %
          %   IMAGE is a matrix representing an image. Its
          %   class must be numeric or logical. It can be complex, but data
-         %   will be copied in that case. If TENSOR_SHAPE is given, the
-         %   first dimension is taken to be the tensor dimension.
-         %   Matrices with only one column or one row are converted to a 1D
-         %   image. Matrices with one value are converted to 0D images.
+         %   will be copied in that case. If TENSOR_SHAPE is given, and
+         %   different from 1, the first dimension is taken to be the tensor
+         %   dimension. Matrices with only one column or one row are converted
+         %   to a 1D image. Matrices with one value are converted to 0D images.
          %   Otherwise, the dimensionality is not affected, and singleton
          %   dimensions are kept. If IMAGE is an object of class dip_image,
          %   it is kept as is, with possibly a different tensor shape and/or
@@ -151,14 +152,13 @@ classdef dip_image
          %
          %   IMAGE can also be a cell array containing the tensor
          %   components of the image. Each element in the cell array must
-         %   be the same class and size.
+         %   be scalar image and have the same size.
          %
          %   ARRAY is as the internal representation of the pixel data,
          %   see the dip_image.Array property.
          %
-         %   TENSOR_SHAPE is either a string indicating the shape, a
-         %   vector indicating the matrix size, or a struct as the
-         %   dip_image.TensorShape property.
+         %   TENSOR_SHAPE is either a string indicating the shape, or a
+         %   vector indicating the matrix size. A 1 indicates a scalar image.
          %
          %   DATATYPE is a string representing the required data type of
          %   the created dip_image object. Possible string and aliases are:
@@ -244,9 +244,30 @@ classdef dip_image
             else
                % Create a new dip_image from given data
                if iscell(data)
-                  % Convert cell array of images to new dip_image
-                  error('Cell data not yet supported');
-                  % TODO: implement this!
+                  % Convert cell array of scalar images to tensor dip_image
+                  for ii=1:numel(data)
+                     tmp = data{ii};
+                     if ~isa(tmp,'dip_image')
+                        tmp = dip_image(tmp);
+                     end
+                     if ~isscalar(tmp)
+                        error('Images in cell array must be scalar')
+                     end
+                     sz = size(tmp.Data);
+                     sz = [sz(1:2),1,sz(3:end)]; % add a 2nd dimension of size 1, we'll concatenate along this dimension
+                     tmp.Data = reshape(tmp.Data,sz);
+                     data{ii} = tmp;
+                  end
+                  img = cat(2,data{:}); % concatenate along 2nd dimension. Note that the 2nd dimension is the fastest changing one, the first spatial dimension in storage order
+                  sz = size(img.Data);
+                  sz = sz([1,3:end]); % make 2nd dimension the tensor dimension
+                  img.Data = reshape(img.Data,sz);
+                  img.TensorSizeInternal = [size(img.Data,2),1];
+                  if isempty(tensor_shape)
+                     tensor_shape = 'column vector';
+                  end
+                  img.TensorShape = tensor_shape; % calls set.TensorShape
+                  return
                elseif isnumeric(data) || islogical(data)
                   % Convert MATLAB array to new dip_image
                   % Data type conversion
@@ -314,7 +335,7 @@ classdef dip_image
 
       function img = set.Array(img,data)
          if ( ~islogical(data) && ~isnumeric(data) ) || ~isreal(data)
-            error('Pixel data must be real, numeric or logical');
+            error('Pixel data must be real, and numeric or logical');
          end
          img.Data = data;
          img.TensorShapeInternal = 'column vector';
@@ -326,7 +347,7 @@ classdef dip_image
 
       function img = set.NDims(img,nd)
          minnd = ndims(img.Data)-2;
-         if ~isscalar(nd) || ~isnumeric(nd) || mod(nd,1) ~= 0 || nd < minnd
+         if ~isintscalar(nd) || nd < minnd
             error('NDims must be a scalar value and at least as large as the number of spatial dimensions')
          end
          img.TrailingSingletons = double(nd) - minnd; % convert to double just in case...
@@ -349,7 +370,7 @@ classdef dip_image
                   else
                      rows = ceil(sqrt(nelem));
                      tsize = [rows,nelem/rows];
-                     if mod(tsize(2),1) ~= 0
+                     if ~isint(tsize(2))
                         error('TensorShape value not consistent with number of tensor elements')
                      end
                   end
@@ -357,7 +378,7 @@ classdef dip_image
                   tsize = [nelem,nelem];
                case {'symmetric matrix','upper triangular matrix','lower triangular matrix'}
                   rows = (sqrt(1+8*nelem)-1)/2;
-                  if mod(rows,1) ~= 0
+                  if ~isint(rows)
                      error('TensorShape value not consistent with number of tensor elements')
                   end
                   tsize = [rows,rows];
@@ -365,14 +386,13 @@ classdef dip_image
                   error('Bad value for TensorShape property')
             end
          else
-            if ~isnumeric(tshape) || ~isrow(tshape) || isempty(tshape) || ...
-                  numel(tshape) > 2 || any(mod(tshape,1) ~= 0)
+            if ~isint(tshape) || ~isrow(tshape) || isempty(tshape) || numel(tshape) > 2
                error('Bad value for TensorShape property')
             end
             tshape = double(tshape); % convert to double just in case...
             if numel(tshape) == 1
                tsize = [tshape,nelem / tshape];
-               if mod(tsize(2),1) ~= 0
+               if ~isint(tsize(2))
                   error('TensorShape value not consistent with number of tensor elements')
                end
             else
@@ -701,13 +721,13 @@ classdef dip_image
       end
 
       function res = isvector(obj)
-         %isvector   Returns true if it is a vector image
+         %isvector   Returns true if it is a vector image; scalar images are vectors
          res = strcmp(obj.TensorShapeInternal,'column vector') || ...
                strcmp(obj.TensorShapeInternal,'row vector');
       end
 
       function res = iscolumn(obj)
-         %iscolumn   Returns true if it is a column vector image
+         %iscolumn   Returns true if it is a column vector image; scalar images are column vectors
          res = strcmp(obj.TensorShapeInternal,'column vector');
       end
 
@@ -789,7 +809,7 @@ classdef dip_image
                end
                disp(['    size ',sz]);
                if ~isempty(obj.PixelSize)
-                  % TODO
+                  % TODO pixel size!
                   % disp(['        pixel size ',sz]);
                end
             else
@@ -1048,6 +1068,8 @@ classdef dip_image
          %   B = EXPANDDIM(A,N) increases the dimensionality of the image A
          %   to N, if its dimensionality is smaller. The dimensions added will
          %   have a size of 1.
+         %
+         %   EXPANDDIM is a trivial operation which never copies pixel data.
          if ~isintscalar(dims), error('Number of dimensions must be scalar integer'), end
          if ndims(in) < dims
             in.NDims = dims;
@@ -1067,7 +1089,11 @@ classdef dip_image
          %
          %   ORDER can also include values of 0, which indicate singleton
          %   dimensions to add.
-         if ~isnumeric(k) || any(fix(k)~=k)
+         %
+         %   PERMUTE always copies the pixel data.
+         %
+         %   See also dip_image.shiftdims, dip_image.reshape
+         if ~isint(k)
             error('ORDER must be an integer vector')
          elseif any(k<0) | any(k>in.NDims)
             error('ORDER contains an index out of range')
@@ -1112,6 +1138,11 @@ classdef dip_image
          %   number of elements as X but with any leading singleton
          %   dimensions removed. NSHIFTS returns the number of dimensions
          %   that are removed.
+         %
+         %   SHIFTDIM is implemented through a call to PERMUTE, and always
+         %   copies the pixel data.
+         %
+         %   See also dip_image.permute, dip_image.reshape
          if nargin==1
             % Remove leading singleton dimensions
             sz = imsize(in);
@@ -1155,7 +1186,10 @@ classdef dip_image
          %   elements as A but reshaped to the size SIZ. PROD(SIZ) must be
          %   the same as PROD(SIZE(A)).
          %
-         %   Note that RESHAPE takes pixels column-wise from A.
+         %   Note that RESHAPE takes pixels column-wise from A. RESHAPE
+         %   never copies the pixel data.
+         %
+         %   See also dip_image.squeeze, dip_image.permute
          if nargin > 2
             for ii=1:nargin-1
                if ~isintscalar(varargin{ii}), error('Size arguments must be positive scalar integers'), end
@@ -1163,7 +1197,7 @@ classdef dip_image
             n = cat(2,varargin{:});
          else
             n = varargin{1}(:)';
-            if ~isnumeric(n) || any(mod(n,1)) || any(n<1)
+            if ~isint(n) || any(n<1)
                error('Size vector must be a vector with positive integer elements')
             end
          end
@@ -1180,6 +1214,15 @@ classdef dip_image
          %   B = SQUEEZE(A) returns an image B with the same elements as
          %   A but with all the singleton dimensions removed. A dimension
          %   is singleton if size(A,dim)==1.
+         %
+         %   SQUEEZE never requires a data copy.
+         %
+         %   SQUEEZE is implemented through RESHAPE, and can cause some dimension
+         %   flipping due to the way that data is stored in MATLAB: if size is
+         %   [1 N M], the squeezed size is [M N]. Preserving the dimension order
+         %   would require a data copy, and can be accomplished with PERMUTE.
+         %
+         %   See also dip_image.reshape, dip_image.permute
          sz = imsize(in);
          if length(sz)>1
             sz = sz([2,1,3:end]);
@@ -1261,7 +1304,7 @@ classdef dip_image
             n = cat(2,varargin{:});
          else
             n = varargin{1}(:)';
-            if ~isnumeric(n) || any(mod(n,1)) || any(n<1)
+            if ~isint(n) || any(n<1)
                error('Size vector must be a vector with positive integer elements')
             end
          end
@@ -1395,8 +1438,12 @@ function res = isstring(in)
    res = ischar(in) && isrow(in);
 end
 
+function res = isint(in)
+   res = isnumeric(in) && all(fix(in)==in);
+end
+
 function res = isintscalar(in)
-   res = isnumeric(in) && numel(in)==1 && ~mod(in,1);
+   res = isint(in) && numel(in)==1;
 end
 
 function in = array_convert_datatype(in,class)
@@ -1552,6 +1599,8 @@ function res = validate_tensor_shape(str)
          'symmetric matrix'
          'upper triangular matrix'
          'lower triangular matrix'});
+   elseif isint(str) && numel(str) >= 1 && numel(str) <= 2
+      res = true;
    else
       res = false;
    end
@@ -1639,9 +1688,7 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
             elseif ~isequal(imsize(ind),sz) % TODO: allow singleton expansion?
                error('Mask image must have same sizes as image it''s indexing into')
             else
-               ind = logical(ind.Data);
-               ind = ind(:);
-               ind = find(ind);
+               ind = find(ind.Data(:));
             end
          elseif isnumeric(ind)
             ind = ind+1;
@@ -1651,19 +1698,17 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
          elseif islogical(ind)
             msz = size(ind);
             msz = msz([2,1,3:end]);
-            % TODO: remove trailing singleton dimensions from `sz` for comparison
+            % We compare the "squeezed" sizes
+            msz(msz==1) = [];
+            sz(sz==1) = [];
             if ~isequal(msz,sz)
                error('Mask image must match image size when indexing')
             end
-            ind = ind(:);
-            ind = find(ind);
-            % else it's ':'
+            ind = find(ind(:));
+         % else it's ':'
          end
          s.subs{1} = ind;
       elseif length(s.subs) == length(sz)
-         tmp = s.subs(2);
-         s.subs(2) = s.subs(1);
-         s.subs(1) = tmp;
          for ii=1:length(sz)
             ind = s.subs{ii};
             if islogical(ind)
@@ -1683,6 +1728,7 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
             end
             s.subs{ii} = ind;
          end
+         s.subs = s.subs([2,1,3:end]);
       else
          error('Number of indices not the same as image dimensionality')
       end

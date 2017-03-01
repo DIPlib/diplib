@@ -151,6 +151,10 @@ over.
   images report to be of class `dip_image`. If you need to store multiple images in one
   object, create a cell array instead.
 
+  Additionally, the tensor no longer can hold arbitrary number of dimensions, it is limited
+  to vectors and matrices, as it is in *DIPlib*. I don't expect this to impact any user's code,
+  and I'd be happy to hear if you actually used tensors with more than two dimensions. 
+
   We tried keeping how the `dip_image` object is used as similar as possible to how it was
   in the old *DIPimage*, so that users need not change their code. Nonetheless, some changes
   must occur:
@@ -171,9 +175,16 @@ over.
     was row-wise in the old *DIPimage*, and I presume there are few (if any) programs that
     depend on the old behaviour.
 
+  - Related to the previous point, `squeeze` now might reorder dimensions. But it's cheaper
+    this way!
+
 - `dipsetpref` and `dipgetpref` have fewer settings than in the old *DIPimage*. Some settings
   were linked to *DIPlib* global variables, none of which exist any more, and some others
   are simply no longer relevant.
+
+- `newimar` is now in the `alias` subdirectory, and identical to `newtensorim`.
+  Other functinos that used to be in the `alias` directory are no longer. We recommend that
+  you correct affected code, but if you want, you can always create those aliases again.
 
 - Many filters now have a boundary condition parameter. In the old *DIPimage* one would change
   the boundary condition through a global parameter, which no longer exists. If you never
