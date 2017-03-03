@@ -224,7 +224,7 @@ inline mxClassID GetMatlabClassID(
 }
 
 // Create a two-element mxArray and write the two values in it
-inline mxArray* CreateDouble2Vector( double v0, double v1 ) {
+inline mxArray* CreateDouble2Vector( dip::dfloat v0, dip::dfloat v1 ) {
    mxArray* out = mxCreateDoubleMatrix( 1, 2, mxREAL );
    double* p = mxGetPr( out );
    p[ 0 ] = v0;

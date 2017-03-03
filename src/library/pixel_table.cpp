@@ -347,10 +347,10 @@ void PixelTable::AddDistanceToOriginAsWeights() {
    weights_.reserve( nPixels_ );
    for( auto& run : runs_ ) {
       IntegerArray position = run.coordinates;
-      double sum2 = position.norm_square();
+      dfloat sum2 = position.norm_square();
       weights_.push_back( std::sqrt( sum2 ));
       if( run.length > 1 ) {
-         double d = static_cast< double >( position[ procDim_ ] );
+         dfloat d = static_cast< dfloat >( position[ procDim_ ] );
          for( dip::uint ii = 1; ii < run.length; ++ii ) {
             // new sum2 = sum2 - d^2 + (d+ii)^2 = sum2 + ii^2 - 2*ii*d
             weights_.push_back( std::sqrt( sum2 + ii * ii + 2 * ii * d ));

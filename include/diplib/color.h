@@ -44,7 +44,7 @@ namespace dip {
 ///
 /// It defines how R, G and B are to be combined to form X, Y and Z:
 ///
-/// ```cpp
+/// ```
 ///     XYZ = WhitePoint * RGB
 ///     RGB = inv(WhitePoint) * XYZ
 /// ```
@@ -52,32 +52,35 @@ class WhitePoint {
 
    public:
 
+      using MatrixValues = std::array< dfloat, 9 >;
+
       /// \brief The default white point is the Standard Illuminant D65.
       WhitePoint() :
-            matrix_{ { 0.412453, 0.212671, 0.019334, 0.357580, 0.715160, 0.119193, 0.180423, 0.072169, 0.950227 } } {};
+            matrix_{{ 0.412453, 0.212671, 0.019334, 0.357580, 0.715160, 0.119193, 0.180423, 0.072169, 0.950227 }} {};
       /// \brief Any 3x3 array can be used as white point (column-major).
-      WhitePoint( std::array< double, 9 > m ) {
+      WhitePoint( MatrixValues m ) {
          std::copy( m.begin(), m.end(), matrix_.begin() );
       }
 
       /// \brief Get the 3x3 white point array, for conversion from RGB to XYZ.
-      std::array< double, 9 > const& Matrix() { return matrix_; }
+      MatrixValues const& Matrix() { return matrix_; }
 
       /// \brief Get the inverse of the 3x3 white point array, for conversion from XYZ to RGB.
-      std::array< double, 9 > InverseMatrix();
+      MatrixValues InverseMatrix();
 
    private:
 
-      std::array< double, 9 > matrix_;
+      MatrixValues matrix_;
 };
 
 // Prototype function for conversion between two color spaces.
-// TODO: This should probably be an abstract base class where converters derive from, with a Convert() function
+// TODO: This should be an abstract base class where converters derive from, with a Convert() function
+// TODO: The converter class should also have a Configure() function, as the measurement features have, where the user can, e.g., set the whitepoint matrix.
 // (and maybe also a Cost() function?)
 using ColorSpaceConverter = void ( * )(
-      double const* input,    // pointer to input data, holding a known number of elements
-      double* output,         // pointer to output data, holding a known number of elements
-      double const* matrix    // pointer to the whitepoint array, its inverse, or any other relevant array
+      dfloat const* input,    // pointer to input data, holding a known number of elements
+      dfloat* output,         // pointer to output data, holding a known number of elements
+      dfloat const* matrix    // pointer to the whitepoint array, its inverse, or any other relevant array
 );
 
 /// \brief An object of this class is used to convert images between color spaces.
@@ -143,9 +146,9 @@ class ColorSpaceManager {
       ///
       /// ```cpp
       ///     void ColorSpaceConverter(
-      ///         double const*  input,
-      ///         double*        output,
-      ///         double const*  matrix);
+      ///         dip::dfloat const*  input,
+      ///         dip::dfloat*        output,
+      ///         dip::dfloat const*  matrix);
       /// ```
       ///
       /// `input` is a pointer to a set of sample values composing the pixel, and

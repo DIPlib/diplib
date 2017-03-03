@@ -25,7 +25,7 @@
 namespace dip {
 
 
-void SymmetricEigenValues2D( double const* input, double* lambdas ) {
+void SymmetricEigenValues2D( dfloat const* input, dfloat* lambdas ) {
    Eigen::Map< Eigen::Matrix2d const > matrix( input );
    Eigen::Map< Eigen::Vector2d > eigenvalues( lambdas );
    eigenvalues = matrix.selfadjointView< Eigen::Lower >().eigenvalues();
@@ -34,7 +34,7 @@ void SymmetricEigenValues2D( double const* input, double* lambdas ) {
    }
 }
 
-void SymmetricEigenSystem2D( double const* input, double* lambdas, double* vectors ) {
+void SymmetricEigenSystem2D( dfloat const* input, dfloat* lambdas, dfloat* vectors ) {
    Eigen::Map< Eigen::Matrix2d const > matrix( input );
    Eigen::SelfAdjointEigenSolver< Eigen::Matrix2d > eigensolver( matrix );
    //if( eigensolver.info() != Eigen::Success ) { abort(); }
@@ -49,7 +49,7 @@ void SymmetricEigenSystem2D( double const* input, double* lambdas, double* vecto
    }
 }
 
-void SymmetricEigenValues3D( double const* input, double* lambdas ) {
+void SymmetricEigenValues3D( dfloat const* input, dfloat* lambdas ) {
    Eigen::Map< Eigen::Matrix3d const > matrix( input );
    Eigen::Map< Eigen::Vector3d > eigenvalues( lambdas );
    eigenvalues = matrix.selfadjointView< Eigen::Lower >().eigenvalues();
@@ -64,7 +64,7 @@ void SymmetricEigenValues3D( double const* input, double* lambdas ) {
    }
 }
 
-void SymmetricEigenSystem3D( double const* input, double* lambdas, double* vectors) {
+void SymmetricEigenSystem3D( dfloat const* input, dfloat* lambdas, dfloat* vectors) {
    Eigen::Map< Eigen::Matrix3d const > matrix( input );
    Eigen::SelfAdjointEigenSolver< Eigen::Matrix3d > eigensolver( matrix );
    //if( eigensolver.info() != Eigen::Success ) { abort(); }
@@ -92,7 +92,7 @@ void SymmetricEigenSystem3D( double const* input, double* lambdas, double* vecto
    }
 }
 
-void EigenValues( dip::uint n, double const* input, dcomplex* lambdas ) {
+void EigenValues( dip::uint n, dfloat const* input, dcomplex* lambdas ) {
    // TODO
 }
 
@@ -100,7 +100,7 @@ void EigenValues( dip::uint n, dcomplex const* input, dcomplex* lambdas ) {
    // TODO
 }
 
-void EigenSystem( dip::uint n, double const* input, dcomplex* lambdas, dcomplex* vectors ) {
+void EigenSystem( dip::uint n, dfloat const* input, dcomplex* lambdas, dcomplex* vectors ) {
    // TODO
 }
 

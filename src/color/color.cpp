@@ -22,7 +22,7 @@
 
 namespace dip {
 
-std::array< double, 9 > WhitePoint::InverseMatrix() {
+std::array< dfloat, 9 > WhitePoint::InverseMatrix() {
    // TODO
    return {};
 }

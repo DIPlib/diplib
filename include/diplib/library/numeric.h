@@ -51,7 +51,7 @@ namespace dip {
 
 
 /// \brief The constant pi.
-constexpr double pi = 3.14159265358979323846264338327950288;
+constexpr dfloat pi = 3.14159265358979323846264338327950288;
 // std::acos( -1 ) is the good way of definig pi, but it's not constexpr.
 
 /// \brief Compute the greatest common denominator of two positive integers.
@@ -128,7 +128,7 @@ constexpr inline const T& clamp( const T& v, const T& lo, const T& hi ) {
 }
 
 /// \brief Computes integer powers of 10, assuming the power is relatively small.
-inline double pow10( dip::sint power ) {
+inline dfloat pow10( dip::sint power ) {
    switch( power ) {
       case -6: return 1e-6;
       case -5: return 1e-5;
@@ -157,14 +157,14 @@ inline double pow10( dip::sint power ) {
 ///
 /// `input` is a pointer to 4 values, in column-major order; only the lower triangle will be used.
 /// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
-void SymmetricEigenValues2D( double const* input, double* lambdas );
+void SymmetricEigenValues2D( dfloat const* input, dfloat* lambdas );
 
 /// \brief Finds the eigenvalues of a 2D symmetric matrix, where only the unique values are given.
 ///
 /// `input` is a pointer to 3 values: { xx, xy, yy }.
 /// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
-inline void SymmetricEigenValues2DPacked( double const* input, double* lambdas ) {
-   double matrix[ 4 ];
+inline void SymmetricEigenValues2DPacked( dfloat const* input, dfloat* lambdas ) {
+   dfloat matrix[ 4 ];
    matrix[ 0 ] = input[ 0 ];
    matrix[ 1 ] = input[ 1 ];
    // matrix[ 2 ] is never used
@@ -178,7 +178,7 @@ inline void SymmetricEigenValues2DPacked( double const* input, double* lambdas )
 /// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
 /// `vectors` is a pointer to space for 4 values and will receive the 2 eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]` and `&vectors[ 2 ]`.
-void SymmetricEigenSystem2D( double const* input, double* lambdas, double* vectors );
+void SymmetricEigenSystem2D( dfloat const* input, dfloat* lambdas, dfloat* vectors );
 
 /// \brief Finds the eigenvalues and eigenvectors of a 2D symmetric matrix, where only the unique values are given.
 ///
@@ -186,8 +186,8 @@ void SymmetricEigenSystem2D( double const* input, double* lambdas, double* vecto
 /// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
 /// `vectors` is a pointer to space for 4 values and will receive the 2 eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]` and `&vectors[ 2 ]`.
-inline void SymmetricEigenSystem2DPacked( double const* input, double* lambdas, double* vectors ) {
-   double matrix[ 4 ];
+inline void SymmetricEigenSystem2DPacked( dfloat const* input, dfloat* lambdas, dfloat* vectors ) {
+   dfloat matrix[ 4 ];
    matrix[ 0 ] = input[ 0 ];
    matrix[ 1 ] = input[ 1 ];
    // matrix[ 2 ] is never used
@@ -200,14 +200,14 @@ inline void SymmetricEigenSystem2DPacked( double const* input, double* lambdas, 
 ///
 /// `input` is a pointer to 9 values, in column-major order; only the lower triangle will be used.
 /// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
-void SymmetricEigenValues3D( double const* input, double* lambdas );
+void SymmetricEigenValues3D( dfloat const* input, dfloat* lambdas );
 
 /// \brief Finds the eigenvalues of a 3D symmetric matrix, where only the unique values are given.
 ///
 /// `input` is a pointer to 6 values: { xx, xy, xz, yy, yz, zz }.
 /// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
-inline void SymmetricEigenValues3DPacked( double const* input, double* lambdas ) {
-   double matrix[ 9 ];
+inline void SymmetricEigenValues3DPacked( dfloat const* input, dfloat* lambdas ) {
+   dfloat matrix[ 9 ];
    matrix[ 0 ] = input[ 0 ];
    matrix[ 1 ] = input[ 1 ];
    matrix[ 2 ] = input[ 2 ];
@@ -226,7 +226,7 @@ inline void SymmetricEigenValues3DPacked( double const* input, double* lambdas )
 /// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
 /// `vectors` is a pointer to space for 9 values and will receive the 3 eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ 3 ]` and `&vectors[ 6 ]`.
-void SymmetricEigenSystem3D( double const* input, double* lambdas, double* vectors );
+void SymmetricEigenSystem3D( dfloat const* input, dfloat* lambdas, dfloat* vectors );
 
 /// \brief Finds the eigenvalues and eigenvectors of a 3D symmetric matrix, where only the unique values are given.
 ///
@@ -234,8 +234,8 @@ void SymmetricEigenSystem3D( double const* input, double* lambdas, double* vecto
 /// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
 /// `vectors` is a pointer to space for 9 values and will receive the 3 eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ 3 ]` and `&vectors[ 6 ]`.
-inline void SymmetricEigenSystem3DPacked( double const* input, double* lambdas, double* vectors ) {
-   double matrix[ 9 ];
+inline void SymmetricEigenSystem3DPacked( dfloat const* input, dfloat* lambdas, dfloat* vectors ) {
+   dfloat matrix[ 9 ];
    matrix[ 0 ] = input[ 0 ];
    matrix[ 1 ] = input[ 1 ];
    matrix[ 2 ] = input[ 2 ];
@@ -253,7 +253,7 @@ inline void SymmetricEigenSystem3DPacked( double const* input, double* lambdas, 
 ///
 /// `input` is a pointer to `n`*`n` values, in column-major order.
 /// `lambdas` is a pointer to space for `n` values, which will be written sorted largest to smallest.
-void EigenValues( dip::uint n, double const* input, dcomplex* lambdas );
+void EigenValues( dip::uint n, dfloat const* input, dcomplex* lambdas );
 
 /// \brief Finds the eigenvalues of a square complex matrix.
 ///
@@ -267,7 +267,7 @@ void EigenValues( dip::uint n, dcomplex const* input, dcomplex* lambdas );
 /// `lambdas` is a pointer to space for `n` values, which will be written sorted largest to smallest.
 /// `vectors` is a pointer to space for `n`*`n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
-void EigenSystem( dip::uint n, double const* input, dcomplex* lambdas, dcomplex* vectors );
+void EigenSystem( dip::uint n, dfloat const* input, dcomplex* lambdas, dcomplex* vectors );
 
 /// \brief Finds the eigenvalues and eigenvectors of a square complex matrix.
 ///

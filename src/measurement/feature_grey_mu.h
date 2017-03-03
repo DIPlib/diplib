@@ -112,25 +112,25 @@ class FeatureGreyMu : public LineBased {
             if( nD_ == 2 ) {
                // 2D Gmu tensor, as defined in B. Jahne, Practical Handbook on Image Processing
                // for Scientific Applications, section 16.3.5c
-               dfloat x = data[ 0 ];
-               dfloat y = data[ 1 ];
-               output[ 0 ] =  ( data[ 4 ] - ( y * y ) / n ) / n  * scales_[ 0 ];
-               output[ 1 ] = -( data[ 3 ] - ( x * y ) / n ) / n  * scales_[ 1 ];
-               output[ 2 ] =  ( data[ 2 ] - ( x * x ) / n ) / n  * scales_[ 2 ];
+               dfloat x = data[ 0 ] / n;
+               dfloat y = data[ 1 ] / n;
+               output[ 0 ] =  ( data[ 4 ] / n - ( y * y )) * scales_[ 0 ];
+               output[ 1 ] = -( data[ 3 ] / n - ( x * y )) * scales_[ 1 ];
+               output[ 2 ] =  ( data[ 2 ] / n - ( x * x )) * scales_[ 2 ];
             } else { // nD_ == 3
                // 3D Gmu tensor, as defined in G. Lohmann, Volumetric Image Analysis, pp 55
-               dfloat x = data[ 0 ];
-               dfloat y = data[ 1 ];
-               dfloat z = data[ 2 ];
-               dfloat xx = ( data[ 3 ] - ( x * x ) / n ) / n;
-               dfloat yy = ( data[ 6 ] - ( y * y ) / n ) / n;
-               dfloat zz = ( data[ 8 ] - ( z * z ) / n ) / n;
-               output[ 0 ] =  ( yy + zz )                        * scales_[ 0 ];
-               output[ 1 ] = -( data[ 4 ] - ( x * y ) / n ) / n  * scales_[ 1 ];
-               output[ 2 ] = -( data[ 5 ] - ( x * z ) / n ) / n  * scales_[ 2 ];
-               output[ 3 ] =  ( xx + zz )                        * scales_[ 3 ];
-               output[ 4 ] = -( data[ 7 ] - ( y * z ) / n ) / n  * scales_[ 4 ];
-               output[ 5 ] =  ( xx + yy )                        * scales_[ 5 ];
+               dfloat x = data[ 0 ] / n;
+               dfloat y = data[ 1 ] / n;
+               dfloat z = data[ 2 ] / n;
+               dfloat xx = ( data[ 3 ] / n - ( x * x ));
+               dfloat yy = ( data[ 6 ] / n - ( y * y ));
+               dfloat zz = ( data[ 8 ] / n - ( z * z ));
+               output[ 0 ] =  ( yy + zz )                   * scales_[ 0 ];
+               output[ 1 ] = -( data[ 4 ] / n - ( x * y ))  * scales_[ 1 ];
+               output[ 2 ] = -( data[ 5 ] / n - ( x * z ))  * scales_[ 2 ];
+               output[ 3 ] =  ( xx + zz )                   * scales_[ 3 ];
+               output[ 4 ] = -( data[ 7 ] / n - ( y * z ))  * scales_[ 4 ];
+               output[ 5 ] =  ( xx + yy )                   * scales_[ 5 ];
             }
          }
       }

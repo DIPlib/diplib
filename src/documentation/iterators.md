@@ -192,7 +192,7 @@ A one-dimensional filter can be implemented using the line iterator as an array:
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image out = img.Similar( dip::DT_SFLOAT );
     constexpr dip::uint N = 2;
-    std::array< double, 2 * N + 1 > filter{ { 1.0 / 9.0, 2.0 / 9.0, 3.0 / 9.0, 2.0 / 9.0, 1.0 / 9.0 } };
+    std::array< dip::dfloat, 2 * N + 1 > filter{ { 1.0 / 9.0, 2.0 / 9.0, 3.0 / 9.0, 2.0 / 9.0, 1.0 / 9.0 } };
     dip::JointImageIterator< dip::uint16, dip::sfloat > it( img, out, 0 );
     do {
        auto iit = it.GetInLineIterator();
