@@ -54,7 +54,12 @@ void VoidStripHandler( void const* p ) {};
 /// The `dip::Image` object will point to the data in the `::%Image`.
 ///
 /// An empty `::%Image` produces a non-forged `dip::Image`.
-dip::Image MmToDip( ::Image const& mm ) {
+///
+/// The optional second input argument serves to force an `MM_INT` image to be `DT_UINT32`. The pixel values
+/// are simply re-interpreted as unsigned integer. This is useful for the output of `mmLabel`, which is either
+/// `MM_USHORT` or `MM_INT`, but always contains only non-negative integers, considering that DIPlib expects
+/// labelled images to be unsigned.
+dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
    // Find image properties
    if( mm.isnull() ) {
       return {};
@@ -78,7 +83,10 @@ dip::Image MmToDip( ::Image const& mm ) {
          dt = dip::DT_UINT16;
          break;
       case MM_INT:
-         dt = dip::DT_SINT32;
+         dt = forceUnsigned ? dip::DT_UINT32 : dip::DT_SINT32;
+         break;
+      case MM_UINT: // not supported by C++ MMorph interface
+         dt = dip::DT_UINT32;
          break;
       case MM_FLOAT: // not supported by C++ MMorph interface
          dt = dip::DT_SFLOAT;
@@ -90,10 +98,17 @@ dip::Image MmToDip( ::Image const& mm ) {
          DIP_THROW( "MMorph image with unknown type code" );
    }
    dip::UnsignedArray sizes = { static_cast< dip::uint >( mm.width()), static_cast< dip::uint >( mm.height()) };
-   dip::Tensor tensor( static_cast< dip::uint >( mm.depth() ));
+   dip::Tensor tensor; // scalar by default
    // Define proper strides
    dip::IntegerArray strides = { 1, mm.width() };
-   dip::sint tstride = mm.width() * mm.height();
+   dip::sint tstride = 1;
+   if( mm.depth() > 3 ) { // NOTE! This is an arbitrary threshold
+      sizes.push_back( static_cast< dip::uint >( mm.depth() ));
+      strides.push_back( mm.width() * mm.height() );
+   } else if( mm.depth() > 1 ) {
+      tensor = dip::Tensor( static_cast< dip::uint >( mm.depth() ));
+      tstride = mm.width() * mm.height();
+   }
    // Create Image object
    std::shared_ptr< void > p(static_cast< void* >( mm.raster() ), VoidStripHandler );
    dip::Image out( p, dt, sizes, strides, tensor, tstride, nullptr );
@@ -179,11 +194,20 @@ class ExternalInterface : public dip::ExternalInterface {
             dip::sint& tstride,
             dip::DataType datatype
       ) override {
-         DIP_THROW_IF( sizes.size() != 2, dip::E::DIMENSIONALITY_NOT_SUPPORTED );
-         strides.resize( 2 );
+         dip::uint ndims = sizes.size();
+         DIP_THROW_IF(( ndims != 2 ) && !(( ndims == 3 ) && tensor.IsScalar() ), dip::E::DIMENSIONALITY_NOT_SUPPORTED ); // TODO: we can do 3D scalar images or 2D tensor images.
+         strides.resize( ndims );
          strides[ 0 ] = 1;
          strides[ 1 ] = sizes[ 0 ];
-         tstride = sizes[ 0 ] * sizes[ 1 ]; // tensor dimension is last ('depth')
+         dip::uint depth = 1;
+         if( ndims == 3 ) {
+            strides[ 2 ] = sizes[ 0 ] * sizes[ 1 ];
+            tstride = 1;
+            depth = sizes[ 2 ];
+         } else {
+            tstride = sizes[ 0 ] * sizes[ 1 ]; // tensor dimension is last ('depth')
+            depth = tensor.Elements();
+         }
          char const* typestr;
          switch( datatype ) {
             case dip::DT_BIN:
@@ -202,7 +226,8 @@ class ExternalInterface : public dip::ExternalInterface {
                DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
          }
          // Create ::Image
-         ImagePtr mm = (ImagePtr)new ::Image(static_cast< int >( sizes[ 0 ] ), static_cast< int >( sizes[ 1 ] ), static_cast< int >( tensor.Elements() ), typestr, 0.0 );
+         ImagePtr mm = ( ImagePtr )new ::Image( static_cast< int >( sizes[ 0 ] ), static_cast< int >( sizes[ 1 ] ),
+                                                static_cast< int >( depth ), typestr, 0.0 );
          void* ptr = mm->raster();
          images_.emplace( ptr, std::move( mm ));
          return std::shared_ptr< void >( ptr, StripHandler( *this ));
