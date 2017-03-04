@@ -25,6 +25,7 @@
 
 #include "diplib/library/dimension_array.h"
 #include "diplib/library/types.h"
+#include "diplib/library/sample_iterator.h"
 #include "diplib/library/numeric.h"
 #include "diplib/library/clamp_cast.h"
 #include "diplib/library/error.h"

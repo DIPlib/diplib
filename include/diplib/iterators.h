@@ -28,7 +28,7 @@
 
 
 /// \file
-/// \brief Defines image iterators and pixel iterators.
+/// \brief Defines image iterators and line iterators.
 /// \see iterators
 
 
@@ -37,148 +37,12 @@ namespace dip {
 
 /// \defgroup iterators Iterators
 /// \ingroup infrastructure
-/// \brief Objects to iterate over images and pixels in different ways.
+/// \brief Objects to iterate over images and image lines in different ways.
 ///
 /// See \ref using_iterators "Using iterators to implement filters"
 /// for a mini-tutorial on how to use each of the different iterator types. Next, read the documentation
 /// for the iterator you plan to use, to learn about additional options and possibilities.
 /// \{
-
-
-//
-// Sample iterator, does 1D loop over samples with a single stride
-//
-
-
-/// \brief An iterator to iterate over samples in a tensor, or pixels on an image line.
-///
-/// This is the simplest iterator available in this library, and is most like working with
-/// a pointer to a data segment. The only difference with a pointer is that the data
-/// stride is taken into account.
-///
-/// Satisfies all the requirements for a mutable [RandomAccessIterator](http://en.cppreference.com/w/cpp/iterator).
-///
-/// This means that you can increment and decrement the iterator, add or subtract an
-/// integer from it, dereference it, index it using the `[]` operator, as well as compare
-/// two iterators or take the difference between them (as long as they reference samples
-/// within the same data segment). It is default constructable and swappable, but the
-/// default constructed iterator is invalid and should not be dereferenced.
-///
-/// Note that when an image is stripped or reforged, all its iterators are invalidated.
-///
-/// \see ImageIterator, JointImageIterator, LineIterator
-template< typename T >
-class SampleIterator {
-   public:
-      using iterator_category = std::random_access_iterator_tag;
-      using value_type = T;               ///< The data type of the pixel, obtained when dereferencing the iterator
-      using difference_type = dip::sint;  ///< The type of distances between iterators
-      using reference = T&;               ///< The type of a reference to a pixel
-      using pointer = T*;                 ///< The type of a pointer to a pixel
-      /// Default constructor yields an invalid iterator that cannot be dereferenced
-      SampleIterator() : stride_( 1 ), ptr_( nullptr ) {}
-      /// To construct a useful iterator, provide a pointer and a stride
-      SampleIterator( pointer ptr, dip::sint stride ) : stride_( stride ), ptr_( ptr ) {}
-      /// Swap
-      void swap( SampleIterator& other ) {
-         using std::swap;
-         swap( stride_, other.stride_ );
-         swap( ptr_, other.ptr_ );
-      }
-      /// Convert from non-const iterator to const iterator
-      operator SampleIterator< value_type const >() const {
-         return SampleIterator< value_type const >( ptr_, stride_ );
-      }
-      /// Dereference
-      reference operator*() const { return *ptr_; }
-      /// Dereference
-      pointer operator->() const { return ptr_; }
-      /// Index
-      reference operator[]( difference_type index ) const { return *( ptr_ + index * stride_ ); }
-      /// Increment
-      SampleIterator& operator++() {
-         ptr_ += stride_;
-         return *this;
-      }
-      /// Decrement
-      SampleIterator& operator--() {
-         ptr_ -= stride_;
-         return *this;
-      }
-      /// Increment
-      SampleIterator operator++( int ) {
-         SampleIterator tmp( *this );
-         ptr_ += stride_;
-         return tmp;
-      }
-      /// Decrement
-      SampleIterator operator--( int ) {
-         SampleIterator tmp( *this );
-         ptr_ -= stride_;
-         return tmp;
-      }
-      /// Add integer
-      SampleIterator& operator+=( difference_type index ) {
-         ptr_ += index * stride_;
-         return *this;
-      }
-      /// Subtract integer
-      SampleIterator& operator-=( difference_type index ) {
-         ptr_ -= index * stride_;
-         return *this;
-      }
-      /// Difference between iterators
-      difference_type operator-( SampleIterator const& it ) const {
-         return ptr_ - it.ptr_;
-      }
-      /// Equality comparison
-      bool operator==( SampleIterator const& other ) const { return ptr_ == other.ptr_; }
-      /// Inequality comparison
-      bool operator!=( SampleIterator const& other ) const { return ptr_ != other.ptr_; }
-      /// Larger than comparison
-      bool operator>( SampleIterator const& other ) const { return ptr_ > other.ptr_; }
-      /// Smaller than comparison
-      bool operator<( SampleIterator const& other ) const { return ptr_ < other.ptr_; }
-      /// Not smaller than comparison
-      bool operator>=( SampleIterator const& other ) const { return ptr_ >= other.ptr_; }
-      /// Not larger than comparison
-      bool operator<=( SampleIterator const& other ) const { return ptr_ <= other.ptr_; }
-   private:
-      dip::sint stride_;
-      pointer ptr_;
-};
-
-/// \brief Add integer to a sample iterator
-template< typename T >
-inline SampleIterator< T > operator+( SampleIterator< T > it, dip::sint n ) {
-   it += n;
-   return it;
-}
-/// \brief Add integer to a sample iterator
-template< typename T >
-inline SampleIterator< T > operator+( dip::sint n, SampleIterator< T > it ) {
-   it += n;
-   return it;
-}
-/// \brief Subtract integer from a sample iterator
-template< typename T >
-inline SampleIterator< T > operator-( SampleIterator< T > it, dip::sint n ) {
-   it -= n;
-   return it;
-}
-
-template< typename T >
-inline void swap( SampleIterator< T >& v1, SampleIterator< T >& v2 ) {
-   v1.swap( v2 );
-}
-
-/// \brief A const iterator to iterate over samples in a tensor, or pixels on an image line.
-///
-/// This iterator is identical to `dip::SampleIterator`, but with a const value type.
-///
-/// Satisfies all the requirements for a non-mutable [RandomAccessIterator](http://en.cppreference.com/w/cpp/iterator).
-template< typename T >
-using ConstSampleIterator = SampleIterator< T const >;
 
 
 //

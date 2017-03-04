@@ -44,41 +44,104 @@ static inline void CopyBufferFromTo(
       dip::uint tensorElements,
       std::vector< dip::sint > const& lookUpTable // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
 ) {
-   //std::cout << "CopyBuffer: ";
-   //std::cout << "   inStride = " << inStride << ", outStride = " << outStride << std::endl;
-   //std::cout << "   pixels = " << pixels << ", tensorElements = " << tensorElements << std::endl;
    if( tensorElements == 1 ) {
       for( dip::uint pp = 0; pp < pixels; ++pp ) {
          *outBuffer = clamp_cast< outT >( *inBuffer );
-         //std::cout << *outBuffer << " ";
+         inBuffer += inStride;
+         outBuffer += outStride;
+      }
+   } else if( lookUpTable.empty() ) {
+      for( dip::uint pp = 0; pp < pixels; ++pp ) {
+         inT const* in = inBuffer;
+         outT* out = outBuffer;
+         for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
+            *out = clamp_cast< outT >( *in );
+            in += inTensorStride;
+            out += outTensorStride;
+         }
          inBuffer += inStride;
          outBuffer += outStride;
       }
    } else {
+      // TODO: reverse these loops, use std::fill to write all zeros to non-stored tensor components
       for( dip::uint pp = 0; pp < pixels; ++pp ) {
          inT const* in = inBuffer;
          outT* out = outBuffer;
-         if( lookUpTable.empty() ) {
-            for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
-               *out = clamp_cast< outT >( *in );
-               //std::cout << *out << " ";
-               in += inTensorStride;
-               out += outTensorStride;
-            }
-         } else {
-            for( dip::uint tt = 0; tt < lookUpTable.size(); ++tt ) {
-               *out = lookUpTable[ tt ] < 0 ? outT( 0 ) : clamp_cast< outT >( in[ lookUpTable[ tt ] ] );
-               //std::cout << *out << " ";
-               out += outTensorStride;
-            }
+         for( dip::uint tt = 0; tt < lookUpTable.size(); ++tt ) {
+            *out = lookUpTable[ tt ] < 0 ? outT( 0 ) : clamp_cast< outT >( in[ lookUpTable[ tt ] ] );
+            out += outTensorStride;
          }
          inBuffer += inStride;
          outBuffer += outStride;
       }
    }
-   //std::cout << std::endl;
 }
-// TODO: make a template specialization where inT == outT, using std::memcpy when there's multiple tensor elements and tstride == 1.
+
+template< typename T >
+static inline void CopyBufferFromTo(
+      T const* inBuffer,
+      dip::sint inStride,
+      dip::sint inTensorStride,
+      T* outBuffer,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      std::vector< dip::sint > const& lookUpTable // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
+) {
+   if( tensorElements == 1 ) {
+      if(( inStride == 1 ) && ( outStride == 1 )) {
+         std::copy( inBuffer, inBuffer + pixels, outBuffer );
+      } else {
+         auto inIt = ConstSampleIterator< T >( inBuffer, inStride );
+         auto outIt = SampleIterator< T >( outBuffer, outStride );
+         std::copy( inIt, inIt + pixels, outIt );
+      }
+   } else if( lookUpTable.empty() ) {
+      if(( inTensorStride == 1 ) && ( outTensorStride == 1 )) {
+         if(( inStride == static_cast< dip::sint >( tensorElements )) && ( outStride == static_cast< dip::sint >( tensorElements ))) {
+            std::copy( inBuffer, inBuffer + pixels * tensorElements, outBuffer );
+         } else {
+            for( dip::uint pp = 0; pp < pixels; ++pp ) {
+               std::copy( inBuffer, inBuffer + tensorElements, outBuffer );
+               inBuffer += inStride;
+               outBuffer += outStride;
+            }
+         }
+      } else if(( inStride == 1 ) && ( outStride == 1 )) {
+         if(( inTensorStride == static_cast< dip::sint >( pixels )) && ( outTensorStride == static_cast< dip::sint >( pixels ))) {
+            std::copy( inBuffer, inBuffer + pixels, outBuffer );
+         } else {
+            for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
+               std::copy( inBuffer, inBuffer + pixels, outBuffer );
+               inBuffer += inTensorStride;
+               outBuffer += outTensorStride;
+            }
+         }
+      } else {
+         // Assuming there are fewer tensor elements than pixels
+         for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
+            auto inIt = ConstSampleIterator< T >( inBuffer, inStride );
+            auto outIt = SampleIterator< T >( outBuffer, outStride );
+            std::copy( inIt, inIt + pixels, outIt );
+            inBuffer += inTensorStride;
+            outBuffer += outTensorStride;
+         }
+      }
+   } else {
+      // TODO: reverse these loops, use std::fill to write all zeros to non-stored tensor components
+      for( dip::uint pp = 0; pp < pixels; ++pp ) {
+         T const* in = inBuffer;
+         T* out = outBuffer;
+         for( dip::uint tt = 0; tt < lookUpTable.size(); ++tt ) {
+            *out = lookUpTable[ tt ] < 0 ? T( 0 ) : in[ lookUpTable[ tt ] ];
+            out += outTensorStride;
+         }
+         inBuffer += inStride;
+         outBuffer += outStride;
+      }
+   }
+}
 
 template< typename inT >
 static inline void CopyBufferFrom(
