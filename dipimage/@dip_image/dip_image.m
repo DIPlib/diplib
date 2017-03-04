@@ -71,9 +71,11 @@ classdef dip_image
    % ------- PROPERTIES -------
 
    properties
-      % PixelSize - A cell array indicating the size of a pixel along each of the spatial
-      % dimensions
-      PixelSize = {}
+      % PixelSize - A struct array indicating the size of a pixel along each of the spatial
+      % dimensions. The struct contains fields 'magnitude' and 'units'. Magnitude is a double
+      % scalar value, and units is a string formatted according to the dip::Units class in
+      % DIPlib.
+      PixelSize = struct('magnitude',{},'units',{})
       % ColorSpace - A string indicating the color space, if any. An empty string
       % indicates there is no color space associated to the image data.
       ColorSpace = ''
@@ -415,7 +417,18 @@ classdef dip_image
       end
 
       function img = set.PixelSize(img,pxsz)
-         % TODO (how?)
+         nd = min(img.NDims,numel(pxsz));
+         % Make sure we don't use more elements than image dimensions
+         pxsz = validatePixelSize(pxsz);
+         % Make the array as short as possible, given that we automatically replicate the last array element to cover all image dimensions
+         while nd > 1 && isequal(pxsz(nd),pxsz(nd-1))
+            nd = nd-1;
+         end
+         % If isotropic, make sure we don't have pixels as units
+         if nd == 1 && ~isempty(strfind(pxsz(1).units,'px'))
+            nd = 0;
+         end
+         img.PixelSize = pxsz(1:nd);
       end
 
       function img = set.ColorSpace(img,colsp)
@@ -809,8 +822,13 @@ classdef dip_image
                end
                disp(['    size ',sz]);
                if ~isempty(obj.PixelSize)
-                  % TODO pixel size!
-                  % disp(['        pixel size ',sz]);
+                  pxsz = obj.PixelSize;
+                  pxsz(end+1:length(v)) = pxsz(end); % replicate the last element across all dimensions
+                  sz = [num2str(pxsz(1).magnitude),' ',pxsz(1).units];
+                  for jj=2:length(pxsz)
+                     sz = [sz,' x ',num2str(pxsz(2).magnitude),' ',pxsz(2).units];
+                  end
+                  disp(['    pixel size ',sz]);
                end
             else
                v = 1;
@@ -951,7 +969,7 @@ classdef dip_image
          if isempty(a)
             error('Cannot index into empty image')
          end
-         if length(s)==1 && strcmp(s(1).type,'.')
+         if strcmp(s(1).type,'.')
             name = s(1).subs;
             if strcmp(name,'Data') || ...
                   strcmp(name,'TrailingSingletons') || ...
@@ -959,6 +977,7 @@ classdef dip_image
                   strcmp(name,'TensorSizeInternal')
                error('Cannot access private properties')
             end
+            % TODO: implement b = a.pixelsize(j) and b = a.pixelunits(j) for backwards compatibility
             a = builtin('subsref',a,s); % Call built-in method to access properties
             return
          end
@@ -979,7 +998,7 @@ classdef dip_image
          if isempty(a)
             error('Cannot index into empty image')
          end
-         if length(s)==1 && strcmp(s(1).type,'.')
+         if strcmp(s(1).type,'.')
             name = s(1).subs;
             if strcmp(name,'Data') || ...
                   strcmp(name,'TrailingSingletons') || ...
@@ -987,6 +1006,7 @@ classdef dip_image
                   strcmp(name,'TensorSizeInternal')
                error('Cannot access private properties')
             end
+            % TODO: implement a.pixelsize(j) = b and a.pixelunits(j) = b for backwards compatibility
             a = builtin('subsasgn',a,s,b); % Call built-in method to access properties
             return
          end
@@ -1042,13 +1062,13 @@ classdef dip_image
          end
          in.Data = permute(in.Data,n);
          in.NDims = nd + 1;
-         % TODO: pixels sizes!
+         in = insertPixelSizeElement(in,dim-2,defaultPixelSize);
       end
 
       function in = spatialtotensor(in,dim)
          if ~isscalar(in), error('Cannot create a tensor dimension, image is not scalar'), end
-         if ~isintscalar(dim) || dim < 1 || dim > in.NDims, error('Dimension argument must be a positive scalar integer in the indexing range'), end
          nd = in.NDims;
+         if ~isintscalar(dim) || dim < 1 || dim > nd, error('Dimension argument must be a positive scalar integer in the indexing range'), end
          dim = dim+2;
          n = 1:ndims(in.Data);
          if length(n) > 4
@@ -1060,7 +1080,7 @@ classdef dip_image
          end
          in.Data = permute(in.Data,n);
          in.NDims = nd - 1;
-         % TODO: pixels sizes!
+         in = removePixelSizeElement(in,dim-2);
       end
 
       function in = expanddim(in,dims)
@@ -1074,6 +1094,7 @@ classdef dip_image
          if ndims(in) < dims
             in.NDims = dims;
          end
+         % PixelSize is automatically expanded to cover all dimensions, so we don't need to do anything here
       end
 
       function in = permute(in,k)
@@ -1110,6 +1131,7 @@ classdef dip_image
          if any(sz(notused)>1)
             error('ORDER misses some non-singleton dimensions')
          end
+         k_orig = k; % Save to change pixel sizes later
          k = [k,notused];
          k(k==0) = max(k) + 1:length(k==0);
          if length(k) > 1
@@ -1123,7 +1145,8 @@ classdef dip_image
          end
          in.Data = permute(in.Data,[1,2,k+2]);
          in.NDims = nd;
-         % TODO: pixels sizes!
+         pxsz = ensurePixelSizeDimensionality(in.PixelSize,nd);
+         in.PixelSize = pxsz(k);
       end
 
       function [in,nshifts] = shiftdim(in,n)
@@ -1178,35 +1201,60 @@ classdef dip_image
          %RESHAPE   Change size of an image.
          %   B = RESHAPE(A,M,N,...) returns an image with the same
          %   pixels as A but reshaped to have the size M-by-N-by-...
-         %   M*N*... must be the same as PROD(SIZE(A)).
+         %   M*N*... must be the same as PROD(SIZE(A)) or NUMPIXELS(A).
          %
          %   B = RESHAPE(A,[M N ...]) is the same thing.
-         %
          %   In general, RESHAPE(A,SIZ) returns an image with the same
          %   elements as A but reshaped to the size SIZ. PROD(SIZ) must be
          %   the same as PROD(SIZE(A)).
          %
+         %   RESHAPE(A,...,[],...) calculates the length of the dimension
+         %   represented by [], such that the product of the dimensions
+         %   equals PROD(SIZE(A)). The value of PROD(SIZE(A)) must be evenly
+         %   divisible by the product of the specified dimensions. You can use
+         %   only one occurrence of [].
+         %
          %   Note that RESHAPE takes pixels column-wise from A. RESHAPE
-         %   never copies the pixel data.
+         %   never copies the pixel data. Pixel sizes are reset unless
+         %   they are isotropic.
          %
          %   See also dip_image.squeeze, dip_image.permute
          if nargin > 2
+            emptydim = 0;
             for ii=1:nargin-1
-               if ~isintscalar(varargin{ii}), error('Size arguments must be positive scalar integers'), end
+               if isempty(varargin{ii})
+                  if emptydim == 0
+                     emptydim = ii;
+                  else
+                     error('Only one occurrence of [] can be used'),
+                  end
+               else
+                  if ~isintscalar(varargin{ii}), error('Size arguments must be positive scalar integers'), end
+               end
             end
             n = cat(2,varargin{:});
+            if emptydim ~= 0
+               p = numpixels(in) / prod(n);
+               if fix(p)~=p, error('Number of pixels not evenly divisible by given dimensions'), end
+               n = [n(1:emptydim-1),p,n(emptydim:end)];
+            end
          else
             n = varargin{1}(:)';
             if ~isint(n) || any(n<1)
                error('Size vector must be a vector with positive integer elements')
             end
          end
+         if numpixels(in) ~= prod(n), error('Number of pixels must not change'), end
          if length(n)>1
             n = n([2,1,3:end]);
          end
-         % TODO: pixel size!
          in.Data = reshape(in.Data,[size(in.Data,1),size(in.Data,2),n]);
          in.NDims = length(n);
+         pxsz = in.PixelSize;
+         if numel(pxsz) > 1
+            pxsz = defaultPixelSize;
+         end
+         in.PixelSize = pxsz; % We set it even if we didn't change the value, so that 0D images can erase the array, etc.
       end
 
       function in = squeeze(in)
@@ -1252,21 +1300,23 @@ classdef dip_image
             return
          end
          in = cell(1,n);
-         %in_phys = cell(1,n);
+         pxsz = cell(1,n);
          for ii=1:n
             img = varargin{ii};
             if ~isa(img,'dip_image')
                img = dip_image(img);
             end
             in{ii} = img.Data;
-            %in_phys{ii} = img.physDims;
+            pxsz{ii} = img.PixelSize;
          end
          % Find the correct output datatype
-         %out_phys = in_phys{1};
          out_type = di_findtypex(class(in{ii}),class(in{ii}),size(in{ii},2)==2);
          for ii=1:length(in)
             out_type = di_findtypex(out_type,class(in{ii}),size(in{ii},2)==2);
-            %out_phys = di_findphysdims(out_phys,in_phys{ii});
+         end
+         pxsz(cellfun('isempty',pxsz)) = [];
+         if ~isempty(pxsz)
+            pxsz = pxsz{1};
          end
          % Convert images to the output type
          for ii=1:length(in)
@@ -1281,6 +1331,9 @@ classdef dip_image
             dim = 1;
          end
          out.Data = cat(dim+2,in{:});
+         if ~isempty(pxsz)
+            out.PixelSize = pxsz;
+         end
       end
 
       function a = horzcat(varargin)
@@ -1604,6 +1657,56 @@ function res = validate_tensor_shape(str)
    else
       res = false;
    end
+end
+
+% Validates and converts numbers to a PixelSize struct
+function pxsz = validatePixelSize(pxsz)
+   if isnumeric(pxsz)
+      pxsz = struct('magnitude',num2cell(pxsz(:)),'units',repmat({'m'},numel(pxsz),1));
+   elseif ~isstruct(pxsz) || ~isfield(pxsz,'magnitude') || ~isfield(pxsz,'units') || ...
+          ~all(arrayfun(@(pxsz)isnumeric(pxsz.magnitude) && isscalar(pxsz.magnitude) && isstring(pxsz.units), pxsz))
+          % Record for longest expression???
+      error('Illegal value for pixel size')
+   end
+end
+
+% Makes sure that the PixelSize array has at least the given number of elements by replicating the last element
+function pxsz = ensurePixelSizeDimensionality(pxsz,dim)
+   if isempty(pxsz)
+      pxsz(1:dim) = defaultPixelSize;
+   elseif numel(pxsz) < dim
+      pxsz(end+1:dim) = pxsz(end);
+   end
+end
+
+% Inserts an element at location `dim` in the `img.PixelSize` array
+function img = insertPixelSizeElement(img,dim,newelem)
+   pxsz = img.PixelSize;
+   pxsz = ensurePixelSizeDimensionality(pxsz,dim);
+   pxsz = [pxsz(1:dim-1),validatePixelSize(newelem),pxsz(dim:end)];
+   img.PixelSize = pxsz;
+end
+
+% Swaps the element at locations `dim1` and `dim2` in the `img.PixelSize` array
+function img = swapPixelSizeElements(img,dim1,dim2)
+   pxsz = img.PixelSize;
+   pxsz = ensurePixelSizeDimensionality(pxsz,max(dim1,dim2));
+   pxsz([dim1,dim2]) = pxsz([dim2,dim1]);
+   img.PixelSize = pxsz;
+end
+
+% Removes the element at location `dim` in the `img.PixelSize` array
+function img = removePixelSizeElement(img,dim)
+   pxsz = img.PixelSize;
+   if numel(pxsz) > dim % Not `>=`: we don't want to remove the last element in the array, as that is implicitly also the value for subsequent elements
+      pxsz = [pxsz(1:dim-1),pxsz(dim+1:end)];
+      img.PixelSize = pxsz;
+   end
+end
+
+% The default value for pixel sizes: 1 px
+function pxsz = defaultPixelSize
+   pxsz = struct('magnitude',1,'units','px');
 end
 
 % Figures out how to index into an image, used by subsref and subsasgn

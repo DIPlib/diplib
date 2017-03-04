@@ -146,6 +146,7 @@ endif()
 
 add_executable(test_error EXCLUDE_FROM_ALL test/test_error.cpp)
 add_executable(test_physdims EXCLUDE_FROM_ALL test/test_physdims.cpp)
+target_link_libraries(test_physdims DIP)
 add_executable(test_image EXCLUDE_FROM_ALL test/test_image.cpp)
 target_link_libraries(test_image DIP)
 add_executable( test_framework_scan EXCLUDE_FROM_ALL test/test_framework_scan.cpp )

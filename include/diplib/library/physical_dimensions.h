@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for functionality related to the pixel size.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -108,6 +108,12 @@ class Units {
          power_.fill( 0 );
          power_[ int( bu ) ] = power;
       }
+
+      /// \brief Construct a `%Units` from a string representation of units. The string representation should be as
+      /// producted by `dip::Units::String`.
+      explicit Units( dip::String const& string );
+
+   public:
 
       // Specific useful powers
       /// Dimensionless nano magnitude (n)
@@ -254,35 +260,9 @@ class Units {
          return power_[ 0 ];
       }
 
-      /// \brief Insert physical quantity to an output stream as a string of base units.
-      /// No attempt is (yet?) made to produce derived SI units or to translate
-      /// to different units.
-      friend std::ostream& operator<<( std::ostream& os, Units const& units ) {
-         String out;
-         // The prefix
-         bool prefix = units.WritePrefix( out );
-         // We write out positive powers first
-         prefix = WritePositivePower( out, "m",   units.power_[ int( BaseUnits::LENGTH            ) ], prefix );
-         prefix = WritePositivePower( out, "g",   units.power_[ int( BaseUnits::MASS              ) ], prefix );
-         prefix = WritePositivePower( out, "s",   units.power_[ int( BaseUnits::TIME              ) ], prefix );
-         prefix = WritePositivePower( out, "A",   units.power_[ int( BaseUnits::CURRENT           ) ], prefix );
-         prefix = WritePositivePower( out, "K",   units.power_[ int( BaseUnits::TEMPERATURE       ) ], prefix );
-         prefix = WritePositivePower( out, "cd",  units.power_[ int( BaseUnits::LUMINOUSINTENSITY ) ], prefix );
-         prefix = WritePositivePower( out, "rad", units.power_[ int( BaseUnits::ANGLE             ) ], prefix );
-         prefix = WritePositivePower( out, "px",  units.power_[ int( BaseUnits::PIXEL             ) ], prefix );
-         // and negative powers at the end
-         prefix = WriteNegativePower( out, "m",   units.power_[ int( BaseUnits::LENGTH            ) ], prefix );
-         prefix = WriteNegativePower( out, "g",   units.power_[ int( BaseUnits::MASS              ) ], prefix );
-         prefix = WriteNegativePower( out, "s",   units.power_[ int( BaseUnits::TIME              ) ], prefix );
-         prefix = WriteNegativePower( out, "A",   units.power_[ int( BaseUnits::CURRENT           ) ], prefix );
-         prefix = WriteNegativePower( out, "K",   units.power_[ int( BaseUnits::TEMPERATURE       ) ], prefix );
-         prefix = WriteNegativePower( out, "cd",  units.power_[ int( BaseUnits::LUMINOUSINTENSITY ) ], prefix );
-         prefix = WriteNegativePower( out, "rad", units.power_[ int( BaseUnits::ANGLE             ) ], prefix );
-         prefix = WriteNegativePower( out, "px",  units.power_[ int( BaseUnits::PIXEL             ) ], prefix );
-         // send to os
-         os << out;
-         return os;
-      }
+      /// \brief Cast physical units to a string representation.
+      /// No attempt is (yet?) made to produce derived SI units or to translate to different units.
+      dip::String String() const;
 
       /// Swaps the values of `this` and `other`.
       void swap( Units& other ) {
@@ -309,68 +289,6 @@ class Units {
          }
          return 0;
       }
-
-      // Appends the SI prefix to the string `out`.
-      bool WritePrefix( String& out ) const {
-         bool prefix = false;
-         if( power_[ 0 ] != 0 ) {
-            dip::sint p = FirstPower();
-            dip::sint n = div_floor( power_[ 0 ], p );
-            if(( n < -5 ) || ( n > 6 )) {
-               // We cannot print an SI prefix, just print a 10^n instead.
-               n = 0;
-               p = power_[ 0 ] * 3;
-            } else {
-               p = ( power_[ 0 ] - n * p ) * 3;     // dip::PhysicalQuantity should make sure that p is 0 here, using AdjustThousands()
-            }
-            if( p != 0 ) {
-               out += String( "10^" ) + std::to_string( p );
-               prefix = true;
-            }
-            if( n != 0 ) {
-               if( prefix ) {
-                  out += '.'; // TODO: output 'cdot' character?
-               }
-               constexpr char const* prefixes = "fpnum kMGTPE"; // TODO: output 'mu' character instead of 'u'?
-               out += prefixes[ n + 5 ];
-               prefix = false; // next thing should not output a '.' first.
-            }
-         }
-         return prefix;
-      }
-
-      // Appends a unit with a positive power to the string `out`.
-      static bool WritePositivePower( String& out, const char* s, dip::sint8 p, bool prefix ) {
-         if( p > 0 ) {
-            if( prefix ) {
-               out += '.'; // TODO: output 'cdot' character?
-            }
-            out += s;
-            if( p != 1 ) {
-               out += '^';
-               out += std::to_string( p );
-            }
-            prefix = true;
-         }
-         return prefix;
-      }
-
-      // Appends a unit with a negative power to the string `out`.
-      static bool WriteNegativePower( String& out, const char* s, dip::sint8 p, bool prefix ) {
-         if( p < 0 ) {
-            if( prefix ) {
-               out += '/';
-               p = -p;
-            }
-            out += s;
-            if( p != 1 ) {
-               out += '^';
-               out += std::to_string( p );
-            }
-            prefix = true;
-         }
-         return prefix;
-      }
 };
 
 /// \brief Multiplies two units objects.
@@ -383,6 +301,12 @@ inline Units operator*( Units lhs, Units const& rhs ) {
 inline Units operator/( Units lhs, Units const& rhs ) {
    lhs /= rhs;
    return lhs;
+}
+
+/// \brief Insert physical quantity to an output stream as a string of base units. See `dip::Units::String`.
+inline std::ostream& operator<<( std::ostream& os, Units const& units ) {
+   os << units.String();
+   return os;
 }
 
 inline void swap( Units& v1, Units& v2 ) {
@@ -964,163 +888,5 @@ inline void swap( PixelSize& v1, PixelSize& v2 ) {
 /// \}
 
 } // namespace dip
-
-
-#ifdef DIP__ENABLE_DOCTEST
-#include "doctest.h"
-#include <sstream>
-
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
-   // We only test the printing function here
-   // Other workings are tested at the same time as dip::PhysicalQuantity below
-   std::stringstream ss;
-
-   dip::Units f = dip::Units::Meter();
-   ss << f;
-   DOCTEST_CHECK( ss.str() == std::string( "m" ) );
-   ss.str( "" );
-   ss << f * f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^2" ) );
-   ss.str( "" );
-   ss << f * f * f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^3" ) );
-   ss.str( "" );
-   ss << f * f * f * f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^4" ) );
-   ss.str( "" );
-   ss << dip::Units() / f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^-1" ) );
-   ss.str( "" );
-   ss << dip::Units() / f / f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^-2" ) );
-   ss.str( "" );
-   ss << dip::Units() / f / f / f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^-3" ) );
-   ss.str( "" );
-   ss << dip::Units() / f / f / f / f;
-   DOCTEST_CHECK( ss.str() == std::string( "m^-4" ) );
-
-   dip::Units g = dip::Units::Second();
-   ss.str( "" );
-   ss << f / g;
-   DOCTEST_CHECK( ss.str() == std::string( "m/s" ));
-   ss.str( "" );
-   ss << f / g / g;
-   DOCTEST_CHECK( ss.str() == std::string( "m/s^2" ));
-   ss.str( "" );
-   ss << f / g / g / g;
-   DOCTEST_CHECK( ss.str() == std::string( "m/s^3" ));
-   ss.str( "" );
-   ss << f / g / g / g / g;
-   DOCTEST_CHECK( ss.str() == std::string( "m/s^4" ));
-   ss.str( "" );
-   ss << g / f;
-   DOCTEST_CHECK( ss.str() == std::string( "s/m" ));
-   ss.str( "" );
-   ss << g / f / f;
-   DOCTEST_CHECK( ss.str() == std::string( "s/m^2" ));
-   ss.str( "" );
-   ss << g * g / f;
-   DOCTEST_CHECK( ss.str() == std::string( "s^2/m" ));
-   ss.str( "" );
-   ss << g * f;
-   DOCTEST_CHECK( ss.str() == std::string( "m.s" ));
-
-   ss.str( "" );
-   ss << dip::Units::Millimeter();
-   DOCTEST_CHECK( ss.str() == std::string( "mm" ));
-   ss.str( "" );
-   ss << dip::Units::Millimeter() * dip::Units::Millimeter();
-   DOCTEST_CHECK( ss.str() == std::string( "mm^2" ));
-   ss.str( "" );
-   ss << dip::Units::Millimeter() * dip::Units::Meter();
-   DOCTEST_CHECK( ss.str() == std::string( "10^3.mm^2" ));
-   ss.str( "" );
-   ss << dip::Units::Kilometer() * dip::Units::Meter();
-   DOCTEST_CHECK( ss.str() == std::string( "10^3.m^2" ));
-}
-
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {
-   DOCTEST_SUBCASE("Arithmetic") {
-      dip::PhysicalQuantity a = 50 * dip::Units::Nanometer();
-      dip::PhysicalQuantity b = .4 * dip::Units::Micrometer();
-      DOCTEST_CHECK( a + b == b + a );
-      DOCTEST_CHECK( a + a == 2 * a );
-      DOCTEST_CHECK( a * a == a.Power( 2 ) );
-      DOCTEST_CHECK(( 1 / ( a * a )) == a.Power( -2 ) );
-      dip::PhysicalQuantity c( 100, dip::Units::Second() );
-      DOCTEST_CHECK(( 1 / c ) == c.Power( -1 ) );
-      DOCTEST_CHECK(( b / c ) == b * c.Power( -1 ) );
-      dip::PhysicalQuantity d = 180 * dip::PhysicalQuantity::Degree();
-      DOCTEST_CHECK( d.magnitude == doctest::Approx( dip::pi ) );
-      DOCTEST_CHECK_THROWS( c + d );
-   }
-   DOCTEST_SUBCASE("Normalization") {
-      dip::PhysicalQuantity f = dip::PhysicalQuantity::Meter();
-      DOCTEST_CHECK( ( f * 1 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 0.1 ).Normalize().magnitude == 0.1 );
-      DOCTEST_CHECK( ( f * 0.01 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 0.001 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 0.0001 ).Normalize().magnitude == 0.1 );
-      DOCTEST_CHECK( ( f * 0.00001 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 0.000001 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 0.0000001 ).Normalize().magnitude == doctest::Approx( 0.1 ));
-      DOCTEST_CHECK( ( f * 0.00000001 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 0.000000001 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 0.0000000001 ).Normalize().magnitude == doctest::Approx( 0.1 ));
-      DOCTEST_CHECK( ( f * 10 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 100 ).Normalize().magnitude == 0.1 );
-      DOCTEST_CHECK( ( f * 1000 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 10000 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 100000 ).Normalize().magnitude == doctest::Approx( 0.1 ));
-      DOCTEST_CHECK( ( f * 1000000 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * 10000000 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * 100000000 ).Normalize().magnitude == doctest::Approx( 0.1 ));
-      DOCTEST_CHECK( ( f * 1000000000 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * f * 1 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * f * 10 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * f * 100 ).Normalize().magnitude == 100 );
-      DOCTEST_CHECK( ( f * f * 1000 ).Normalize().magnitude == 1000 );
-      DOCTEST_CHECK( ( f * f * 10000 ).Normalize().magnitude == 10000 );
-      DOCTEST_CHECK( ( f * f * 100000 ).Normalize().magnitude == doctest::Approx( 0.1 ));
-      DOCTEST_CHECK( ( f * f * 1000000 ).Normalize().magnitude == 1 );
-      DOCTEST_CHECK( ( f * f * 10000000 ).Normalize().magnitude == 10 );
-      DOCTEST_CHECK( ( f * f * 100000000 ).Normalize().magnitude == 100 );
-      DOCTEST_CHECK( ( f * f * 1000000000 ).Normalize().magnitude == 1000 );
-
-      DOCTEST_CHECK( ( f * 1 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * 0.1 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * 0.01 ).Normalize().units.Thousands() == -1 );
-      DOCTEST_CHECK( ( f * 0.001 ).Normalize().units.Thousands() == -1 );
-      DOCTEST_CHECK( ( f * 0.0001 ).Normalize().units.Thousands() == -1 );
-      DOCTEST_CHECK( ( f * 0.00001 ).Normalize().units.Thousands() == -2 );
-      DOCTEST_CHECK( ( f * 0.000001 ).Normalize().units.Thousands() == -2 );
-      DOCTEST_CHECK( ( f * 0.0000001 ).Normalize().units.Thousands() == -2 );
-      DOCTEST_CHECK( ( f * 0.00000001 ).Normalize().units.Thousands() == -3 );
-      DOCTEST_CHECK( ( f * 0.000000001 ).Normalize().units.Thousands() == -3 );
-      DOCTEST_CHECK( ( f * 0.0000000001 ).Normalize().units.Thousands() == -3 );
-      DOCTEST_CHECK( ( f * 10 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * 100 ).Normalize().units.Thousands() == 1 );
-      DOCTEST_CHECK( ( f * 1000 ).Normalize().units.Thousands() == 1 );
-      DOCTEST_CHECK( ( f * 10000 ).Normalize().units.Thousands() == 1 );
-      DOCTEST_CHECK( ( f * 100000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * 1000000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * 10000000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * 100000000 ).Normalize().units.Thousands() == 3 );
-      DOCTEST_CHECK( ( f * 1000000000 ).Normalize().units.Thousands() == 3 );
-      DOCTEST_CHECK( ( f * f * 1 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * f * 10 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * f * 100 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * f * 1000 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * f * 10000 ).Normalize().units.Thousands() == 0 );
-      DOCTEST_CHECK( ( f * f * 100000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * f * 1000000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * f * 10000000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * f * 100000000 ).Normalize().units.Thousands() == 2 );
-      DOCTEST_CHECK( ( f * f * 1000000000 ).Normalize().units.Thousands() == 2 );
-   }
-}
-
-#endif // DIP__ENABLE_DOCTEST
 
 #endif // DIP_PHYSDIMS_H

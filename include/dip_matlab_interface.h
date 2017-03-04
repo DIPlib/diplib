@@ -67,6 +67,9 @@ namespace dml {
 /// \brief Everything in the `#dml` namespace is defined within this anonymous namespace.
 namespace { // This makes all these functions not visible outside the current compilation unit. Result: the MEX-file will not export these functions.
 
+// Note also that we define all functions as `inline`. Hopefully the compiler won't inline the few that are really
+// large. We need to use `inline` to prevent the compiler from complainging about unused functions.
+
 /// \defgroup dip_matlab_interface *DIPlib*--*MATLAB* interface
 /// \brief Functions to convert image data, function parameters and other arrays to and from *MATLAB*.
 ///
@@ -80,9 +83,8 @@ constexpr char const* tsizePropertyName = "TensorSize"; // Get tensor size: [row
 constexpr char const* tshapePropertyName = "TensorShape"; // Get tensor shape enum, set tensor shape enum and size
 constexpr char const* pxsizePropertyName = "PixelSize"; // Set/get pixel size array
 constexpr char const* colspPropertyName = "ColorSpace"; // Set/get color space name
-constexpr char const* tensorShapeClassName = "dip_tensor_shape";
-
-constexpr dip::uint maxNameLength = 50;
+constexpr dip::uint nPxsizeStructFields = 2;
+char const* pxsizeStructFields[nPxsizeStructFields] = { "magnitude", "units" };
 
 // Make sure that MATLAB stores logical arrays the same way we store binary images
 static_assert( sizeof( mxLogical ) == sizeof( dip::bin ), "mxLogical is not one byte!" );
@@ -854,7 +856,13 @@ class MatlabInterface : public dip::ExternalInterface {
          }
          // Set PixelSize property
          if( img.HasPixelSize() ) {
-            //mxSetPropertyShared( out, 0, pxsizePropertyName, pxsize ); // TODO
+            dip::PixelSize const& pixelSize = img.PixelSize();
+            mxArray* pxsz = mxCreateStructMatrix( pixelSize.Size(), 1, nPxsizeStructFields, pxsizeStructFields );
+            for( dip::uint ii = 0; ii < pixelSize.Size(); ++ii ) {
+               mxSetField( pxsz, ii, pxsizeStructFields[ 0 ], dml::GetArray( pixelSize[ ii ].magnitude ) );
+               mxSetField( pxsz, ii, pxsizeStructFields[ 1 ], dml::GetArray( pixelSize[ ii ].units.String() ) );
+            }
+            mxSetPropertyShared( out, 0, pxsizePropertyName, pxsz );
          }
          // Set ColorSpace property
          if( img.IsColor() ) {
@@ -909,7 +917,7 @@ void VoidStripHandler( void const* p ) {
 /// ```
 ///
 /// An empty `mxArray` produces a non-forged image.
-dip::Image GetImage( mxArray const* mx ) {
+inline dip::Image GetImage( mxArray const* mx ) {
    // Find image properties
    bool complex = false;
    bool needCopy = false;
@@ -946,7 +954,17 @@ dip::Image GetImage( mxArray const* mx ) {
          enum dip::Tensor::Shape tshape = GetTensorShape( mxGetPropertyShared( mx, 0, tshapePropertyName ));
          tensor.ChangeShape( dip::Tensor( tshape, tsize[ 0 ], tsize[ 1 ] ));
       }
-      //mxGetPropertyShared( mx, 0, pxsizePropertyName ); // TODO
+      mxArray* pxsz = mxGetPropertyShared( mx, 0, pxsizePropertyName );
+      dip::uint ndim = mxGetNumberOfElements( pxsz );
+      dip::PhysicalQuantityArray pq( ndim );
+      for(dip::uint ii = 0; ii < ndim; ++ii ) {
+         mxArray* magnitude = mxGetField( pxsz, ii, pxsizeStructFields[ 0 ] );
+         mxArray* units = mxGetField( pxsz, ii, pxsizeStructFields[ 1 ] );
+         if( magnitude && units ) {
+            pq[ ii ] = { GetFloat( magnitude ), dip::Units( GetString( units ) ) };
+         }
+      }
+      pixelSize.Set( pq );
       colorSpace = GetString( mxGetPropertyShared( mx, 0, colspPropertyName ));
    } else {
       // Data

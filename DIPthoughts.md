@@ -203,6 +203,9 @@ occurs in the right place (data ownership). A *DIPlib* function to
 extract a 2D slice ready for display would be needed also, make display
 super-fast!
 
+[pybind11](https://github.com/pybind/pybind11), a C++11 Python binding
+library, seems to me to be the way to go.
+
 
 ## *MATLAB* interface
 
@@ -306,7 +309,10 @@ standard library includes the concepts and ideas from this library.
 We will keep the TIFF and ICS readers/writers we currently have, using
 [*libtiff*](http://www.remotesensing.org/libtiff/) and
 [*libics*](http://libics.sourceforge.net). For other file types, we
-could use *Bio-Formats*. How to link to Java from C++?
+could use *Bio-Formats*. That one is a Java library, we'll probably use
+[JNI](http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html)
+to interface between C++ and Java, see for example
+[this tutorial](https://www.codeproject.com/Articles/993067/Calling-Java-from-Cplusplus-with-JNI).
 
 [*Eigen*](http://eigen.tuxfamily.org) is a pretty sweet linear algebra
 library. It's stable, very efficient, and templated like the standard

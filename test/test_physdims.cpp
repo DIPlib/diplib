@@ -35,6 +35,23 @@ void PrintPixelSize( dip::PixelSize ps ) {
 }
 
 int main() {
+
+   std::cout << "m = " << dip::Units( "m" ) << std::endl;
+   std::cout << "m^2 = " << dip::Units( "m^2" ) << std::endl;
+   std::cout << "mm = " << dip::Units( "mm" ) << std::endl;
+   std::cout << "mm^2 = " << dip::Units( "mm^2" ) << std::endl;
+   std::cout << "mm^-2 = " << dip::Units( "mm^-2" ) << std::endl;
+   std::cout << "10^6.mm^2 = " << dip::Units( "10^6.mm^2" ) << std::endl; // writes m^2
+   std::cout << "km = " << dip::Units( "km" ) << std::endl;
+   std::cout << "km/s = " << dip::Units( "km/s" ) << std::endl;
+   std::cout << "km.cd.rad.px = " << dip::Units( "km.cd.rad.px" ) << std::endl;
+   std::cout << "km.cd/rad.px = " << dip::Units( "km.cd/rad.px" ) << std::endl; // writes km.cd.px/rad
+   std::cout << "10^3.km^-1.cd^-2/K = " << dip::Units( "10^3.km^-1.cd^-2/K" ) << std::endl; // writes m^-1/K/cd^2
+
+   std::cout << "s/m = " << dip::Units( "s/m" ) << std::endl;
+   std::cout << "s/m^2 = " << dip::Units( "s/m^2" ) << std::endl;
+   std::cout << "s^2/m = " << dip::Units( "s^2/m" ) << std::endl;
+
    dip::PhysicalQuantity a = 50 * dip::Units::Nanometer();
    dip::PhysicalQuantity b = .4 * dip::Units::Micrometer();
    std::cout << "a = " << a << std::endl;
