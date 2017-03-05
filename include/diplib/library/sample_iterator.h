@@ -68,6 +68,7 @@ class SampleIterator {
       using difference_type = dip::sint;  ///< The type of distances between iterators
       using reference = T&;               ///< The type of a reference to a pixel
       using pointer = T*;                 ///< The type of a pointer to a pixel
+
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       SampleIterator() : stride_( 1 ), ptr_( nullptr ) {}
       /// To construct a useful iterator, provide a pointer and a stride

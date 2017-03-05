@@ -80,6 +80,7 @@ class LineIterator {
       using difference_type = dip::sint;  ///< The type of distances between iterators
       using reference = T&;               ///< The type of a reference to a pixel
       using pointer = T*;                 ///< The type of a pointer to a pixel
+
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       LineIterator() {}
       /// To construct a useful iterator, provide an image, the coordinate of the start pixel, and the processing dimension
@@ -94,7 +95,7 @@ class LineIterator {
          nTensorElements_ = image.TensorElements();
          tensorStride_ = image.TensorStride();
       }
-      /// To construct a useful iterator, provide a pointer, the offset within the line, the length of the line,
+      /// \brief To construct a useful iterator, provide a pointer, the offset within the line, the length of the line,
       /// the stride, the number of tensor elements, and the tensor stride.
       LineIterator(
             pointer ptr,
@@ -249,7 +250,7 @@ using ConstLineIterator = LineIterator< T const >;
 /// ```cpp
 ///     std::array< dip::uint8, image.TensorElements() > pixel;
 ///     it.PixelAt( coords, pixel.begin() );
-/// ```cpp
+/// ```
 ///
 /// copies the pixel values at the current position + `coords` over to a temporary buffer, using the
 /// iterator's boundary condition if that location falls outside the image domain. This method is not
@@ -268,6 +269,7 @@ class ImageIterator {
       using difference_type = dip::sint;  ///< The type of distances between iterators
       using reference = T&;               ///< The type of a reference to a pixel
       using pointer = T*;                 ///< The type of a pointer to a pixel
+
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       ImageIterator() {}
       /// To construct a useful iterator, provide an image and optionally a processing dimension
@@ -491,6 +493,7 @@ using ConstImageIterator = ImageIterator< T const >;
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
 /// \see ImageIterator, LineIterator, SampleIterator, GenericJointImageIterator
+// TODO: This would look better in some cases (see src/math/projection.cpp) if it was `first` and `second` instead of `in` and `out`.
 template< typename inT, typename outT >
 class JointImageIterator {
    public:
