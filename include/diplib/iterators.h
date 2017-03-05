@@ -111,6 +111,48 @@ class LineIterator {
             stride_( stride ),
             nTensorElements_( nTensorElements ),
             tensorStride_( tensorStride ) {}
+      /// \brief To construct a useful iterator, provide a pointer, the length of the line, the stride, the number
+      /// of tensor elements, and the tensor stride. The iterator starts at the beginning of the line.
+      LineIterator(
+            pointer ptr,
+            dip::uint size,
+            dip::sint stride,
+            dip::uint nTensorElements,
+            dip::sint tensorStride
+      ) :
+            ptr_( ptr ),
+            coord_( 0 ),
+            size_( size ),
+            stride_( stride ),
+            nTensorElements_( nTensorElements ),
+            tensorStride_( tensorStride ) {}
+      /// \brief To construct a useful iterator, provide a pointer, the offset within the line, the length of the line,
+      /// and the stride. A single tensor element is assumed.
+      LineIterator(
+            pointer ptr,
+            dip::uint coord,
+            dip::uint size,
+            dip::sint stride
+      ) :
+            ptr_( ptr ),
+            coord_( coord ),
+            size_( size ),
+            stride_( stride ),
+            nTensorElements_( 1 ),
+            tensorStride_( 0 ) {}
+      /// \brief To construct a useful iterator, provide a pointer, the length of the line, and the stride.
+      /// A single tensor element is assumed. The iterator starts at the beginning of the line.
+      LineIterator(
+            pointer ptr,
+            dip::uint size,
+            dip::sint stride
+      ) :
+            ptr_( ptr ),
+            coord_( 0 ),
+            size_( size ),
+            stride_( stride ),
+            nTensorElements_( 1 ),
+            tensorStride_( 0 ) {}
       /// Swap
       void swap( LineIterator& other ) {
          using std::swap;
