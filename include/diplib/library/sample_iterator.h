@@ -122,7 +122,7 @@ class SampleIterator {
       }
       /// Difference between iterators
       difference_type operator-( SampleIterator const& it ) const {
-         return ptr_ - it.ptr_;
+         return ( ptr_ - it.ptr_ ) / stride_;
       }
       /// Equality comparison
       bool operator==( SampleIterator const& other ) const { return ptr_ == other.ptr_; }

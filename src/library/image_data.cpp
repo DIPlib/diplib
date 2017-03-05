@@ -740,6 +740,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
    std::uniform_int_distribution< dip::uint > randSz( 1, 30 );
    std::uniform_int_distribution< dip::uint > randSSz( 1, 10 ); // Smaller size for 7 or 8 dimensions
    std::uniform_real_distribution< double > randF( 0, 1 );
+   bool error = false;
    for( dip::uint repeat = 0; repeat < 1000; ++repeat ) {
       dip::uint ndims = randD( random );
       dip::UnsignedArray sz( ndims );
@@ -754,9 +755,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
          std::cout << "Couldn't forge an image of size " << sz << std::endl;
          continue;
       }
-      std::uniform_int_distribution< dip::uint > randD( 0, ndims - 1 );
-      for( dip::uint ii = 0; ii < randD( random ); ++ii ) {
-         img.SwapDimensions( randD( random ), randD( random ) );
+      std::uniform_int_distribution< dip::uint > randD2( 0, ndims - 1 );
+      for( dip::uint ii = 0; ii < randD2( random ); ++ii ) {
+         img.SwapDimensions( randD2( random ), randD2( random ) );
       }
       dip::BooleanArray mirror( ndims );
       for( dip::uint ii = 0; ii < ndims; ++ii ) {
@@ -772,11 +773,12 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
             coords[ ii ] = ( dip::uint )std::floor( randF( random ) * dims[ ii ] );
          }
          dip::sint offset = img.Offset( coords );
-         DOCTEST_CHECK( o2c( offset ) == coords );
+         error |= o2c( offset ) != coords;
          dip::uint index = img.Index( coords );
-         DOCTEST_CHECK( i2c( index ) == coords );
+         error |= i2c( index ) != coords;
       }
    }
+   DOCTEST_CHECK_FALSE( error );
 }
 
 #endif // DIP__ENABLE_DOCTEST

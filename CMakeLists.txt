@@ -9,6 +9,14 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
+if(CMAKE_BUILD_TYPE MATCHES "^Release$")
+   message(STATUS "Configured for release")
+elseif(CMAKE_BUILD_TYPE MATCHES "^Debug$")
+   message(STATUS "Configured for debugging")
+else()
+   message(WARNING "Not configured for release or debugging!: ${CMAKE_BUILD_TYPE}")
+endif()
+
 # Installation path
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BUILD_TYPE}" CACHE PATH "Installation directory")
 set(DOCUMENTATION_OUTPUT ${CMAKE_INSTALL_PREFIX}/share/doc/DIPlib)
