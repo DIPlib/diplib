@@ -303,7 +303,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].symmetry = "even";
    dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( dip::Count( out1 != out2 ) == 0 );
+   DOCTEST_CHECK( double( dip::MeanAbs( out1 - out2 )) < 1e-7 );
 
    // Comparing general to odd
    filterArray[ 0 ].filter = {
@@ -318,7 +318,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].symmetry = "odd";
    dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( dip::Count( out1 != out2 ) == 0 );
+   DOCTEST_CHECK( double( dip::MeanAbs( out1 - out2 )) < 1e-7 );
 
    // Comparing general to d-even
    filterArray[ 0 ].filter = {
@@ -333,7 +333,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].symmetry = "d-even";
    dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( dip::Count( out1 != out2 ) == 0 );
+   DOCTEST_CHECK( double( dip::MeanAbs( out1 - out2 )) < 1e-7 );
 
    // Comparing general to d-odd
    filterArray[ 0 ].filter = {
@@ -348,7 +348,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].symmetry = "d-odd";
    dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( dip::Count( out1 != out2 ) == 0 );
+   DOCTEST_CHECK( double( dip::MeanAbs( out1 - out2 )) < 1e-7 );
 }
 
 #endif // DIP__ENABLE_DOCTEST
