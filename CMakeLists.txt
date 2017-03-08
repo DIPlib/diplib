@@ -174,19 +174,18 @@ target_link_libraries(test_measurement DIP)
 add_executable( test_measuretool EXCLUDE_FROM_ALL test/test_measuretool.cpp )
 target_link_libraries(test_measuretool DIP)
 
+add_executable(test_fft_kissfft EXCLUDE_FROM_ALL test/test_fft_kissfft.cpp test/kissfft.h)
+add_executable(test_fft_opencv EXCLUDE_FROM_ALL test/test_fft_opencv.cpp src/transform/opencv_dxt.h)
+
 add_custom_target(
       tests DEPENDS
       test_error
       test_physdims
       test_image
-      test_framework_scan
-      test_lambdafun
-      test_framework_separable
-      test_framework_separable2
-      test_framework_full
+      test_framework_scan test_lambdafun test_framework_separable test_framework_separable2 test_framework_full
       test_boundary
-      test_measurement
-      test_measuretool
+      test_measurement test_measuretool
+      test_fft_kissfft test_fft_opencv
 )
 
 if(Matlab_FOUND)
