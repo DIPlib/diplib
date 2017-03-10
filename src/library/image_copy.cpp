@@ -214,11 +214,11 @@ void Image::CopyAt( Image const& source, Image const& mask, Option::ThrowExcepti
             CopyBuffer(
                   srcIt.Pointer(),
                   source.DataType(),
-                  0, // stride ignored, we're reading only one pixel
+                  1, // stride ignored, we're reading only one pixel
                   source.TensorStride(),
                   destIt.InPointer(),
                   DataType(),
-                  0, // stride ignored, we're reading only one pixel
+                  1, // stride ignored, we're reading only one pixel
                   TensorStride(),
                   1, // one pixel to copy
                   TensorElements()
@@ -274,11 +274,11 @@ void Image::CopyAt( Image const& source, UnsignedArray const& indices ) {
          CopyBuffer(
                srcIt.Pointer(),
                source.DataType(),
-               0, // stride ignored, we're reading only one pixel
+               1, // stride ignored, we're reading only one pixel
                source.TensorStride(),
                Pointer( coordinates( *indIt )),
                DataType(),
-               0, // stride ignored, we're reading only one pixel
+               1, // stride ignored, we're reading only one pixel
                TensorStride(),
                1, // one pixel to copy
                TensorElements()
@@ -332,11 +332,11 @@ void Image::CopyAt( Image const& source, CoordinateArray const& coordinates ) {
          CopyBuffer(
                srcIt.Pointer(),
                source.DataType(),
-               0, // stride ignored, we're reading only one pixel
+               1, // stride ignored, we're reading only one pixel
                source.TensorStride(),
                Pointer( *corIt ),
                DataType(),
-               0, // stride ignored, we're reading only one pixel
+               1, // stride ignored, we're reading only one pixel
                TensorStride(),
                1, // one pixel to copy
                TensorElements()

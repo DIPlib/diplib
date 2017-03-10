@@ -25,6 +25,12 @@ namespace dip {
 
 // Copies pixels from one 1D buffer to another, converting data type using clamp_cast.
 //
+// If inStride and/or inTensorStride are 0, The function is similar to FillBuffer along that dimension.
+// If outStride and/or outTensorStride are 0, then only one sample can be written in that dimension;
+// we choose here to write only the first sample from inBuffer. This is different than if all values
+// would have been written in order to that same location, where only the last write (the last
+// sample) would remain. However, neither option makes sense.
+//
 // This function is not available to the library user.
 void CopyBuffer(
       void const* inBuffer,

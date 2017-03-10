@@ -27,6 +27,119 @@ namespace dip {
 
 
 //
+// FillBuffer()
+//
+
+
+template< typename outT >
+static inline void FillBufferFromTo(
+      outT* outBuffer,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      outT value
+) {
+   // TODO: use memset when stride == 1, etc.
+   for( dip::uint pp = 0; pp < pixels; ++pp ) {
+      outT* out = outBuffer;
+      for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
+         *out = value;
+         out += outTensorStride;
+      }
+      outBuffer += outStride;
+   }
+}
+
+template< typename inT >
+void FillBuffer(
+      void* outBuffer,
+      DataType outType,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      inT value
+) {
+   if( outStride == 0 ) {
+      pixels = 1;
+   }
+   if( outTensorStride == 0 ) {
+      tensorElements = 1;
+   }
+   switch( outType ) {
+      case dip::DT_BIN:
+         FillBufferFromTo( static_cast< bin* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< bin >( value ));
+         break;
+      case dip::DT_UINT8:
+         FillBufferFromTo( static_cast< uint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint8 >( value ) );
+         break;
+      case dip::DT_UINT16:
+         FillBufferFromTo( static_cast< uint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint16 >( value ) );
+         break;
+      case dip::DT_UINT32:
+         FillBufferFromTo( static_cast< uint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint32 >( value ) );
+         break;
+      case dip::DT_SINT8:
+         FillBufferFromTo( static_cast< sint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint8 >( value ) );
+         break;
+      case dip::DT_SINT16:
+         FillBufferFromTo( static_cast< sint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint16 >( value ) );
+         break;
+      case dip::DT_SINT32:
+         FillBufferFromTo( static_cast< sint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint32 >( value ) );
+         break;
+      case dip::DT_SFLOAT:
+         FillBufferFromTo( static_cast< sfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sfloat >( value ) );
+         break;
+      case dip::DT_DFLOAT:
+         FillBufferFromTo( static_cast< dfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< dfloat >( value ) );
+         break;
+      case dip::DT_SCOMPLEX:
+         FillBufferFromTo( static_cast< scomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< scomplex >( value ) );
+         break;
+      case dip::DT_DCOMPLEX:
+         FillBufferFromTo( static_cast< dcomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< dcomplex >( value ) );
+         break;
+   }
+}
+
+// Explicit instantiations:
+template
+void FillBuffer(
+      void* outBuffer,
+      DataType outType,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      dip::sint value
+);
+
+template
+void FillBuffer(
+      void* outBuffer,
+      DataType outType,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      dfloat value
+);
+
+template
+void FillBuffer(
+      void* outBuffer,
+      DataType outType,
+      dip::sint outStride,
+      dip::sint outTensorStride,
+      dip::uint pixels,
+      dip::uint tensorElements,
+      dcomplex value
+);
+
+
+//
 // CopyBuffer()
 //
 
@@ -49,35 +162,71 @@ static inline void CopyBufferFromTo(
       dip::uint tensorElements,
       std::vector< dip::sint > const& lookUpTable // it this is empty, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
 ) {
+   //std::cout << "CopyBufferFromTo<" << typeid(inT).name() << "," << typeid(outT).name() << ">\n";
    if( tensorElements == 1 ) {
-      //std::cout << "CopyBufferFromTo<inT,outT>, mode 1\n";
-      auto inIt = ConstSampleIterator< inT >( inBuffer, inStride );
-      auto outIt = SampleIterator< outT >( outBuffer, outStride );
-      cast_copy( inIt, inIt + pixels, outIt );
+      if( inStride == 0 ) {
+         //std::cout << "CopyBufferFromTo<inT,outT>, mode 1\n";
+         FillBufferFromTo( outBuffer, outStride, 1, pixels, 1, clamp_cast< outT >( *inBuffer ) );
+      } else {
+         //std::cout << "CopyBufferFromTo<inT,outT>, mode 2\n";
+         auto inIt = ConstSampleIterator< inT >( inBuffer, inStride );
+         auto outIt = SampleIterator< outT >( outBuffer, outStride );
+         cast_copy( inIt, inIt + pixels, outIt );
+      }
    } else if( lookUpTable.empty() ) {
       // TODO: tensorElements * {in|out}TensorStride == {in|out}Stride -> do a single loop. Is that worth it?
-      //std::cout << "CopyBufferFromTo<inT,outT>, mode 2\n";
-      for( dip::uint pp = 0; pp < pixels; ++pp ) {
-         auto inIt = ConstSampleIterator< inT >( inBuffer, inTensorStride );
-         auto outIt = SampleIterator< outT >( outBuffer, outTensorStride );
-         cast_copy( inIt, inIt + tensorElements, outIt );
-         inBuffer += inStride;
-         outBuffer += outStride;
+      if( inStride == 0 ) {
+         if( inTensorStride == 0 ) {
+            //std::cout << "CopyBufferFromTo<inT,outT>, mode 3\n";
+            FillBufferFromTo( outBuffer, outStride, outTensorStride, pixels, tensorElements, clamp_cast< outT >( *inBuffer ) );
+         } else {
+            //std::cout << "CopyBufferFromTo<inT,outT>, mode 4\n";
+            for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
+               FillBufferFromTo( outBuffer, outStride, 1, pixels, 1, clamp_cast< outT >( *inBuffer ) );
+               inBuffer += inTensorStride;
+               outBuffer += outTensorStride;
+            }
+         }
+      } else {
+         if( inTensorStride == 0 ) {
+            //std::cout << "CopyBufferFromTo<inT,outT>, mode 5\n";
+            for( dip::uint pp = 0; pp < pixels; ++pp ) {
+               FillBufferFromTo( outBuffer, 1, outTensorStride, 1, tensorElements, clamp_cast< outT >( *inBuffer ) );
+               inBuffer += inStride;
+               outBuffer += outStride;
+            }
+         } else {
+            //std::cout << "CopyBufferFromTo<inT,outT>, mode 6\n";
+            for( dip::uint pp = 0; pp < pixels; ++pp ) {
+               auto inIt = ConstSampleIterator< inT >( inBuffer, inTensorStride );
+               auto outIt = SampleIterator< outT >( outBuffer, outTensorStride );
+               cast_copy( inIt, inIt + tensorElements, outIt );
+               inBuffer += inStride;
+               outBuffer += outStride;
+            }
+         }
       }
    } else {
-      //std::cout << "CopyBufferFromTo<inT,outT>, mode 3\n";
+      //std::cout << ( inStride == 0 ? "CopyBufferFromTo<inT,outT>, mode 7\n" : "CopyBufferFromTo<inT,outT>, mode 8\n" );
       for( dip::uint tt = 0; tt < lookUpTable.size(); ++tt ) {
          dip::sint index = lookUpTable[ tt ];
          auto outIt = SampleIterator< outT >( outBuffer, outStride );
          if( index < 0 ) {
             std::fill( outIt, outIt + pixels, outT( 0 ) );
          } else {
-            auto inIt = ConstSampleIterator< inT >( inBuffer + index * inTensorStride, inStride );
-            cast_copy( inIt, inIt + pixels, outIt );
+            if( inStride == 0 ) {
+               // mode 7
+               std::fill( outIt, outIt + pixels, clamp_cast< outT >( *( inBuffer + index * inTensorStride ) ) );
+            } else {
+               // mode 8
+               auto inIt = ConstSampleIterator< inT >( inBuffer + index * inTensorStride, inStride );
+               cast_copy( inIt, inIt + pixels, outIt );
+            }
          }
          outBuffer += outTensorStride;
       }
    }
+   //std::cout << "/CopyBufferFromTo\n";
 }
 
 template< typename T >
@@ -93,22 +242,37 @@ static inline void CopyBufferFromTo(
       std::vector< dip::sint > const& lookUpTable // it this is empty, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
 ) {
    if( tensorElements == 1 ) {
-      if(( inStride == 1 ) && ( outStride == 1 )) {
+      if( inStride == 0 ) {
          //std::cout << "CopyBufferFromTo<T>, mode 1\n";
+         FillBufferFromTo( outBuffer, outStride, 1, pixels, 1, *inBuffer );
+      } else if(( inStride == 1 ) && ( outStride == 1 )) {
+         //std::cout << "CopyBufferFromTo<T>, mode 2\n";
          std::copy( inBuffer, inBuffer + pixels, outBuffer );
       } else {
-         //std::cout << "CopyBufferFromTo<T>, mode 2\n";
+         //std::cout << "CopyBufferFromTo<T>, mode 3\n";
          auto inIt = ConstSampleIterator< T >( inBuffer, inStride );
          auto outIt = SampleIterator< T >( outBuffer, outStride );
          std::copy( inIt, inIt + pixels, outIt );
       }
    } else if( lookUpTable.empty() ) {
-      if(( inTensorStride == 1 ) && ( outTensorStride == 1 )) {
+      if( inStride == 0 ) {
+         if( inTensorStride == 0 ) {
+            //std::cout << "CopyBufferFromTo<T>, mode 4\n";
+            FillBufferFromTo( outBuffer, outStride, outTensorStride, pixels, tensorElements, *inBuffer );
+         } else {
+            //std::cout << "CopyBufferFromTo<T>, mode 5\n";
+            for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
+               FillBufferFromTo( outBuffer, outStride, 1, pixels, 1, *inBuffer );
+               inBuffer += inTensorStride;
+               outBuffer += outTensorStride;
+            }
+         }
+      } else if(( inTensorStride == 1 ) && ( outTensorStride == 1 )) {
          if(( inStride == static_cast< dip::sint >( tensorElements )) && ( outStride == static_cast< dip::sint >( tensorElements ))) {
-            //std::cout << "CopyBufferFromTo<T>, mode 3\n";
+            //std::cout << "CopyBufferFromTo<T>, mode 6\n";
             std::copy( inBuffer, inBuffer + pixels * tensorElements, outBuffer );
          } else {
-            //std::cout << "CopyBufferFromTo<T>, mode 4\n";
+            //std::cout << "CopyBufferFromTo<T>, mode 7\n";
             for( dip::uint pp = 0; pp < pixels; ++pp ) {
                std::copy( inBuffer, inBuffer + tensorElements, outBuffer );
                inBuffer += inStride;
@@ -117,10 +281,10 @@ static inline void CopyBufferFromTo(
          }
       } else if(( inStride == 1 ) && ( outStride == 1 )) {
          if(( inTensorStride == static_cast< dip::sint >( pixels )) && ( outTensorStride == static_cast< dip::sint >( pixels ))) {
-            //std::cout << "CopyBufferFromTo<T>, mode 5\n";
+            //std::cout << "CopyBufferFromTo<T>, mode 8\n";
             std::copy( inBuffer, inBuffer + pixels * tensorElements, outBuffer );
          } else {
-            //std::cout << "CopyBufferFromTo<T>, mode 6\n";
+            //std::cout << "CopyBufferFromTo<T>, mode 9\n";
             for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
                std::copy( inBuffer, inBuffer + pixels, outBuffer );
                inBuffer += inTensorStride;
@@ -128,25 +292,38 @@ static inline void CopyBufferFromTo(
             }
          }
       } else {
-         //std::cout << "CopyBufferFromTo<T>, mode 7\n";
-         for( dip::uint pp = 0; pp < pixels; ++pp ) {
-            auto inIt = ConstSampleIterator< T >( inBuffer, inTensorStride );
-            auto outIt = SampleIterator< T >( outBuffer, outTensorStride );
-            std::copy( inIt, inIt + tensorElements, outIt );
-            inBuffer += inStride;
-            outBuffer += outStride;
+         if( inTensorStride == 0 ) {
+            //std::cout << "CopyBufferFromTo<T>, mode 10\n";
+            for( dip::uint pp = 0; pp < pixels; ++pp ) {
+               FillBufferFromTo( outBuffer, 1, outTensorStride, 1, tensorElements, *inBuffer );
+               inBuffer += inStride;
+               outBuffer += outStride;
+            }
+         } else {
+            //std::cout << "CopyBufferFromTo<T>, mode 11\n";
+            for( dip::uint pp = 0; pp < pixels; ++pp ) {
+               auto inIt = ConstSampleIterator< T >( inBuffer, inTensorStride );
+               auto outIt = SampleIterator< T >( outBuffer, outTensorStride );
+               std::copy( inIt, inIt + tensorElements, outIt );
+               inBuffer += inStride;
+               outBuffer += outStride;
+            }
          }
       }
    } else {
-      //std::cout << "CopyBufferFromTo<T>, mode 8\n";
+      //std::cout << ( inStride == 0 ? "CopyBufferFromTo<T>, mode 12\n" : "CopyBufferFromTo<T>, mode 13\n" );
       for( dip::uint tt = 0; tt < lookUpTable.size(); ++tt ) {
          dip::sint index = lookUpTable[ tt ];
          auto outIt = SampleIterator< T >( outBuffer, outStride );
          if( index < 0 ) {
             std::fill( outIt, outIt + pixels, T( 0 ) );
          } else {
-            auto inIt = ConstSampleIterator< T >( inBuffer + index * inTensorStride, inStride );
-            std::copy( inIt, inIt + pixels, outIt );
+            if( inStride == 0 ) {
+               std::fill( outIt, outIt + pixels, *( inBuffer + index * inTensorStride ) );
+            } else {
+               auto inIt = ConstSampleIterator< T >( inBuffer + index * inTensorStride, inStride );
+               std::copy( inIt, inIt + pixels, outIt );
+            }
          }
          outBuffer += outTensorStride;
       }
@@ -216,6 +393,14 @@ void CopyBuffer(
       dip::uint tensorElements,
       std::vector< dip::sint > const& lookUpTable
 ) {
+   // If output strides are zero, we only have one sample to fill. As is now, we fill it with the first input sample.
+   // TODO: should we throw instead?
+   if( outStride == 0 ) {
+      pixels = 1;
+   }
+   if( outTensorStride == 0 ) {
+      tensorElements = 1;
+   }
    switch( inType ) {
       case dip::DT_BIN:
          CopyBufferFrom( static_cast< bin const* >( inBuffer ), inStride, inTensorStride, outBuffer, outType, outStride, outTensorStride, pixels, tensorElements, lookUpTable );
@@ -606,111 +791,6 @@ void ExpandBuffer(
 }
 
 
-//
-// FillBuffer()
-//
-
-
-template< typename outT >
-static inline void FillBufferFromTo(
-      outT* outBuffer,
-      dip::sint outStride,
-      dip::sint outTensorStride,
-      dip::uint pixels,
-      dip::uint tensorElements,
-      outT value
-) {
-   for( dip::uint pp = 0; pp < pixels; ++pp ) {
-      outT* out = outBuffer;
-      for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
-         *out = value;
-         out += outTensorStride;
-      }
-      outBuffer += outStride;
-   }
-}
-
-template< typename inT >
-void FillBuffer(
-      void* outBuffer,
-      DataType outType,
-      dip::sint outStride,
-      dip::sint outTensorStride,
-      dip::uint pixels,
-      dip::uint tensorElements,
-      inT value
-) {
-   switch( outType ) {
-      case dip::DT_BIN:
-         FillBufferFromTo( static_cast< bin* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< bin >( value ));
-         break;
-      case dip::DT_UINT8:
-         FillBufferFromTo( static_cast< uint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint8 >( value ) );
-         break;
-      case dip::DT_UINT16:
-         FillBufferFromTo( static_cast< uint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint16 >( value ) );
-         break;
-      case dip::DT_UINT32:
-         FillBufferFromTo( static_cast< uint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint32 >( value ) );
-         break;
-      case dip::DT_SINT8:
-         FillBufferFromTo( static_cast< sint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint8 >( value ) );
-         break;
-      case dip::DT_SINT16:
-         FillBufferFromTo( static_cast< sint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint16 >( value ) );
-         break;
-      case dip::DT_SINT32:
-         FillBufferFromTo( static_cast< sint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint32 >( value ) );
-         break;
-      case dip::DT_SFLOAT:
-         FillBufferFromTo( static_cast< sfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sfloat >( value ) );
-         break;
-      case dip::DT_DFLOAT:
-         FillBufferFromTo( static_cast< dfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< dfloat >( value ) );
-         break;
-      case dip::DT_SCOMPLEX:
-         FillBufferFromTo( static_cast< scomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< scomplex >( value ) );
-         break;
-      case dip::DT_DCOMPLEX:
-         FillBufferFromTo( static_cast< dcomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< dcomplex >( value ) );
-         break;
-   }
-}
-
-// Explicit instantiations:
-template
-void FillBuffer(
-      void* outBuffer,
-      DataType outType,
-      dip::sint outStride,
-      dip::sint outTensorStride,
-      dip::uint pixels,
-      dip::uint tensorElements,
-      dip::sint value
-);
-
-template
-void FillBuffer(
-      void* outBuffer,
-      DataType outType,
-      dip::sint outStride,
-      dip::sint outTensorStride,
-      dip::uint pixels,
-      dip::uint tensorElements,
-      dfloat value
-);
-
-template
-void FillBuffer(
-      void* outBuffer,
-      DataType outType,
-      dip::sint outStride,
-      dip::sint outTensorStride,
-      dip::uint pixels,
-      dip::uint tensorElements,
-      dcomplex value
-);
-
 } // namespace dip
 
 
@@ -727,8 +807,21 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
 
    // 1- Copying with identical types
 
+   // TODO: add test cases for stride==0: mode 1, 4, 5, 10, 12
+
    std::fill( output.begin(), output.end(), 101 );
    dip::CopyBuffer( // mode 1
+         input.data(), dip::DT_UINT8, 0, 1,
+         output.data(), dip::DT_UINT8, 1, 1,
+         20, 1 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      error |= output[ ii ] != 0;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::CopyBuffer( // mode 2
          input.data(), dip::DT_UINT8, 1, 1,
          output.data(), dip::DT_UINT8, 1, 1,
          20, 1 );
@@ -740,7 +833,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 2
+   dip::CopyBuffer( // mode 3
          input.data(), dip::DT_UINT8, 1, 1,
          output.data(), dip::DT_UINT8, 3, 1,
          20, 1 );
@@ -752,7 +845,34 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 3
+   dip::CopyBuffer( // mode 4
+         input.data(), dip::DT_UINT8, 0, 0,
+         output.data(), dip::DT_UINT8, 5, 1,
+         20, 5 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      for( dip::uint jj = 0; jj < 5; ++jj ) {
+         error |= output[ ii * 5 + jj ] != 0;
+      }
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::CopyBuffer( // mode 5
+         input.data(), dip::DT_UINT8, 0, 1,
+         output.data(), dip::DT_UINT8, 5, 1,
+         20, 5 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      kk = 0;
+      for( dip::uint jj = 0; jj < 5; ++jj ) {
+         error |= output[ ii * 5 + jj ] != kk++;
+      }
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::CopyBuffer( // mode 6
          input.data(), dip::DT_UINT8, 5, 1,
          output.data(), dip::DT_UINT8, 5, 1,
          20, 5 );
@@ -766,7 +886,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 4
+   dip::CopyBuffer( // mode 7
          input.data(), dip::DT_UINT8, 5, 1,
          output.data(), dip::DT_UINT8, 6, 1,
          20, 5 );
@@ -780,7 +900,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 5
+   dip::CopyBuffer( // mode 8
          input.data(), dip::DT_UINT8, 1, 20,
          output.data(), dip::DT_UINT8, 1, 20,
          20, 5 );
@@ -794,7 +914,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 6
+   dip::CopyBuffer( // mode 9
          input.data(), dip::DT_UINT8, 1, 20,
          output.data(), dip::DT_UINT8, 1, 30,
          20, 5 );
@@ -808,7 +928,22 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 7
+   dip::CopyBuffer( // mode 10
+         input.data(), dip::DT_UINT8, 1, 0,
+         output.data(), dip::DT_UINT8, 12, 2,
+         20, 5 );
+   error = false;
+   kk = 0;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      for( dip::uint jj = 0; jj < 5; ++jj ) {
+         error |= output[ ii * 12 + jj * 2 ] != kk;
+      }
+      ++kk;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::CopyBuffer( // mode 11
          input.data(), dip::DT_UINT8, 5, 1,
          output.data(), dip::DT_UINT8, 12, 2,
          20, 5 );
@@ -822,7 +957,21 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 8
+   dip::CopyBuffer( // mode 12
+         input.data(), dip::DT_UINT8, 0, 1,
+         output.data(), dip::DT_UINT8, 4, 1,
+         20, 2, dip::Tensor{ dip::Tensor::Shape::DIAGONAL_MATRIX, 2, 2 }.LookUpTable() );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      error |= output[ ii * 4 + 0 ] != 0;
+      error |= output[ ii * 4 + 1 ] != 0;
+      error |= output[ ii * 4 + 2 ] != 0;
+      error |= output[ ii * 4 + 3 ] != 1;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::CopyBuffer( // mode 13
          input.data(), dip::DT_UINT8, 2, 1,
          output.data(), dip::DT_UINT8, 4, 1,
          20, 2, dip::Tensor{ dip::Tensor::Shape::DIAGONAL_MATRIX, 2, 2 }.LookUpTable() );
@@ -840,19 +989,71 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
 
    std::fill( output.begin(), output.end(), 101 );
    dip::CopyBuffer( // mode 1
+         input.data(), dip::DT_UINT8, 0, 1,
+         output.data(), dip::DT_SINT8, 3, 1,
+         20, 1 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      error |= output[ ii * 3 ] != 0;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::CopyBuffer( // mode 2
          input.data(), dip::DT_UINT8, 1, 1,
          output.data(), dip::DT_SINT8, 3, 1,
          20, 1 );
    error = false;
    kk = 0;
    for( dip::uint ii = 0; ii < 20; ++ii ) {
-      error |= output[ ii * 3 ] != kk;
+      error |= output[ ii * 3 ] != kk++;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::CopyBuffer( // mode 3
+         input.data(), dip::DT_UINT8, 0, 0,
+         output.data(), dip::DT_SINT8, 12, 2,
+         20, 5 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      for( dip::uint jj = 0; jj < 5; ++jj ) {
+         error |= output[ ii * 12 + jj * 2 ] != 0;
+      }
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::CopyBuffer( // mode 4
+         input.data(), dip::DT_UINT8, 0, 1,
+         output.data(), dip::DT_SINT8, 12, 2,
+         20, 5 );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      kk = 0;
+      for( dip::uint jj = 0; jj < 5; ++jj ) {
+         error |= output[ ii * 12 + jj * 2 ] != kk++;
+      }
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::CopyBuffer( // mode 5
+         input.data(), dip::DT_UINT8, 1, 0,
+         output.data(), dip::DT_SINT8, 12, 2,
+         20, 5 );
+   error = false;
+   kk = 0;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      for( dip::uint jj = 0; jj < 5; ++jj ) {
+         error |= output[ ii * 12 + jj * 2 ] != kk;
+      }
       ++kk;
    }
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 2
+   dip::CopyBuffer( // mode 6
          input.data(), dip::DT_UINT8, 5, 1,
          output.data(), dip::DT_SINT8, 12, 2,
          20, 5 );
@@ -866,7 +1067,21 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 3
+   dip::CopyBuffer( // mode 7
+         input.data(), dip::DT_UINT8, 0, 1,
+         output.data(), dip::DT_SINT8, 5, 1,
+         20, 2, dip::Tensor{ dip::Tensor::Shape::DIAGONAL_MATRIX, 2, 2 }.LookUpTable() );
+   error = false;
+   for( dip::uint ii = 0; ii < 20; ++ii ) {
+      error |= output[ ii * 5 + 0 ] != 0;
+      error |= output[ ii * 5 + 1 ] != 0;
+      error |= output[ ii * 5 + 2 ] != 0;
+      error |= output[ ii * 5 + 3 ] != 1;
+   }
+   DOCTEST_CHECK_FALSE( error );
+
+   std::fill( output.begin(), output.end(), 101 );
+   dip::CopyBuffer( // mode 8
          input.data(), dip::DT_UINT8, 2, 1,
          output.data(), dip::DT_SINT8, 5, 1,
          20, 2, dip::Tensor{ dip::Tensor::Shape::DIAGONAL_MATRIX, 2, 2 }.LookUpTable() );

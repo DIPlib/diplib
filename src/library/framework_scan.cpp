@@ -372,7 +372,7 @@ void Scan(
                      inBufferTypes[ ii ],
                      inBuffers[ ii ].stride,
                      inBuffers[ ii ].tensorStride,
-                     inBuffers[ ii ].stride == 0 ? 1 : nPixels, // if stride == 0, copy only a single pixel because they're all the same
+                     nPixels, // if stride == 0, only a single pixel will be copied, because they're all the same
                      inBuffers[ ii ].tensorLength,
                      lookUpTables[ ii ] );
             } else {
