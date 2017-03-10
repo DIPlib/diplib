@@ -32,7 +32,7 @@ class FeatureGreyDimensionsEllipsoid : public Composite {
       FeatureGreyDimensionsEllipsoid() : Composite( { "GreyDimensionsEllipsoid", "Extent along the principal axes of an ellipsoid (grey-weighted)", true } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
-         DIP_THROW_IF( !grey.IsScalar(), E::NOT_SCALAR );
+         DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( nD_ );

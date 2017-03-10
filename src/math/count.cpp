@@ -71,7 +71,7 @@ dip::uint Count(
       Image const& mask
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsScalar(), E::NOT_SCALAR );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    std::vector< dip::uint > counts;
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__Count, ( counts ), in.DataType() );

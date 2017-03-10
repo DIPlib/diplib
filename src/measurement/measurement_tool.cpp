@@ -157,7 +157,7 @@ Measurement MeasurementTool::Measure(
 ) const {
 
    // Check input
-   DIP_THROW_IF( label.TensorElements() != 1, E::NOT_SCALAR );
+   DIP_THROW_IF( label.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
    if( grey.IsForged() ) {
       DIP_THROW_IF( !grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );

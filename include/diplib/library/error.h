@@ -137,9 +137,9 @@ constexpr char const* DIMENSIONALITY_NOT_SUPPORTED = "Dimensionality not support
 constexpr char const* DIMENSIONALITIES_DONT_MATCH = "Dimensionalities don't match";
 constexpr char const* ILLEGAL_DIMENSION = "Illegal dimension";
 constexpr char const* SIZES_DONT_MATCH = "Sizes don't match";
-constexpr char const* NOT_SCALAR = "Image is not scalar";
-constexpr char const* NOT_COLOR = "Image is not color";
-constexpr char const* NOT_TENSOR = "Image is not tensor";
+constexpr char const* IMAGE_NOT_SCALAR = "Image is not scalar";
+constexpr char const* IMAGE_NOT_COLOR = "Image is not color";
+constexpr char const* IMAGE_NOT_TENSOR = "Image is not tensor";
 constexpr char const* NTENSORELEM_DONT_MATCH = "Number of tensor elements doesn't match";
 
 // image properties errors

@@ -114,7 +114,7 @@ void ImageDisplay(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( !in.IsScalar() && !in.IsColor(), E::NOT_SCALAR );
+   DIP_THROW_IF( !in.IsScalar() && !in.IsColor(), E::IMAGE_NOT_SCALAR );
 
    // Compute projection
    Image slice = in.QuickCopy();

@@ -117,7 +117,7 @@ bool Image::CheckProperties(
    }
    if( tensor_.Elements() != tensorElements ) {
       DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW,
-                    tensorElements == 1 ? E::NOT_SCALAR : E::NTENSORELEM_DONT_MATCH );
+                    tensorElements == 1 ? E::IMAGE_NOT_SCALAR : E::NTENSORELEM_DONT_MATCH );
       return false;
    }
    if( dts != dataType_ ) {
@@ -155,7 +155,7 @@ bool Image::CheckProperties(
    }
    if( tensor_.Elements() != tensorElements ) {
       DIP_THROW_IF( throwException == Option::ThrowException::DO_THROW,
-                    tensorElements == 1 ? E::NOT_SCALAR : E::NTENSORELEM_DONT_MATCH );
+                    tensorElements == 1 ? E::IMAGE_NOT_SCALAR : E::NTENSORELEM_DONT_MATCH );
       return false;
    }
    if( dts != dataType_ ) {

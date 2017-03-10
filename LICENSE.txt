@@ -1,3 +1,46 @@
+*DIPlib* 3.0 License Terms and Conditions
+=========================================
+
+Copyright 2014-2017 Cris Luengo
+Copyright 1995-2014 Delft University of Technology
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this library except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+   (it is also reproduced at the bottom of this file)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-------------------------------------------------------------------------------
+
+DIPlib includes the following libraries / external code:
+========================================================
+
+- Eigen 3
+  Mozilla Public License Version 2.0
+  see dependencies/eigen3/LICENSE.txt
+  (we do not use any of the components with more restrictive licenses)
+
+- DocTest
+  Copyright (c) 2016 Viktor Kirilov
+  The MIT License (MIT)
+  see dependencies/doctest/LICENSE.txt
+
+- The DFT algorithm out of OpenCV 3.1
+  Copyright (C) 2000, Intel Corporation
+  Intel License Agreement For Open Source Computer Vision Library
+  see src/transform/opencv_dxt.h
+
+Note that all of these have permissive open-source licenses similar in spirit
+to the Apache License.
+
+-------------------------------------------------------------------------------
 
                                  Apache License
                            Version 2.0, January 2004

@@ -223,7 +223,7 @@ Image& Image::TensorToSpatial( dip::sint dim ) {
 
 Image& Image::SpatialToTensor( dip::sint dim, dip::uint rows, dip::uint cols ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !IsScalar(), E::NOT_SCALAR );
+   DIP_THROW_IF( !IsScalar(), E::IMAGE_NOT_SCALAR );
    dip::uint nd = sizes_.size();
    if( dim < 0 ) {
       dim = nd;
@@ -297,7 +297,7 @@ Image& Image::MergeComplex( dip::sint dim ) {
 
 Image& Image::SplitComplexToTensor() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !IsScalar(), E::NOT_SCALAR );
+   DIP_THROW_IF( !IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    // Change data type
    dataType_ = dataType_ == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;

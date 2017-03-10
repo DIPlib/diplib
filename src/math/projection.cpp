@@ -261,7 +261,7 @@ template< typename TPI >
 class ProjectionMean : public ProjectionScanFunction {
    public:
       ProjectionMean( bool computeMean ) : computeMean_( computeMean ) {}
-      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
          FlexType< TPI > sum = 0;
          if( mask.IsForged() ) {
@@ -295,7 +295,7 @@ ComplexType< TPI > AngleToVector( TPI v ) { return { static_cast< FloatType< TPI
 template< typename TPI >
 class ProjectionMeanDirectional : public ProjectionScanFunction {
    public:
-      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          ComplexType< TPI > sum = { 0, 0 };
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
@@ -348,7 +348,7 @@ namespace {
 template< typename TPI >
 class ProjectionProduct : public ProjectionScanFunction {
    public:
-      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          FlexType< TPI > product = 1.0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
@@ -386,7 +386,7 @@ template< typename TPI >
 class ProjectionMeanAbs : public ProjectionScanFunction {
    public:
       ProjectionMeanAbs( bool computeMean ) : computeMean_( computeMean ) {}
-      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
          FloatType< TPI > sum = 0;
          if( mask.IsForged() ) {
@@ -450,7 +450,7 @@ template< typename TPI >
 class ProjectionMeanSquare : public ProjectionScanFunction {
    public:
       ProjectionMeanSquare( bool computeMean ) : computeMean_( computeMean ) {}
-      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
          FlexType< TPI > sum = 0;
          if( mask.IsForged() ) {
@@ -516,7 +516,7 @@ template< typename TPI >
 class ProjectionVariance : public ProjectionScanFunction {
    public:
       ProjectionVariance( bool computeStD ) : computeStD_( computeStD ) {}
-      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          VarianceAccumulator acc;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
@@ -543,7 +543,7 @@ template< typename TPI >
 class ProjectionVarianceDirectional : public ProjectionScanFunction {
    public:
       ProjectionVarianceDirectional( bool computeStD ) : computeStD_( computeStD ) {}
-      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
          ComplexType< TPI > sum = { 0, 0 };
          if( mask.IsForged() ) {
@@ -611,7 +611,7 @@ namespace {
 template< typename TPI >
 class ProjectionMaximum : public ProjectionScanFunction {
    public:
-      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          TPI max = std::numeric_limits< TPI >::lowest();
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
@@ -648,7 +648,7 @@ namespace {
 template< typename TPI >
 class ProjectionMinimum : public ProjectionScanFunction {
    public:
-      void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          TPI min = std::numeric_limits< TPI >::max();
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
@@ -686,7 +686,7 @@ template< typename TPI >
 class ProjectionPercentile : public ProjectionScanFunction {
    public:
       ProjectionPercentile( dfloat percentile ) : percentile_( percentile ) {}
-      void Project( Image const& in, Image const& mask, void* out, dip::uint thread ) override {
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint thread ) override {
          dip::uint N;
          if( mask.IsForged() ) {
             N = Count( mask );

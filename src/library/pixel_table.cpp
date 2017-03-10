@@ -334,7 +334,7 @@ void dip__AddWeights(
 // Add weights from an image
 void PixelTable::AddWeights( Image const& image ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( image.TensorElements() != 1, E::NOT_SCALAR );
+   DIP_THROW_IF( image.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( image.Sizes() != sizes_, E::SIZES_DONT_MATCH );
    DIP_THROW_IF( !image.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    weights_.reserve( nPixels_ );

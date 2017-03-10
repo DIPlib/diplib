@@ -30,7 +30,7 @@ class FeatureMinVal : public LineBased {
       FeatureMinVal() : LineBased( { "MinVal", "Minimum object intensity", true } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
-         DIP_THROW_IF( !grey.IsScalar(), E::NOT_SCALAR );
+         DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
          data_.clear();
          data_.resize( nObjects, std::numeric_limits< dfloat >::max() );

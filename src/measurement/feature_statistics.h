@@ -32,7 +32,7 @@ class FeatureStatistics : public LineBased {
       FeatureStatistics() : LineBased( { "Statistics", "Mean, standard deviation, skewness and excess kurtosis of object intensity", true } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
-         DIP_THROW_IF( !grey.IsScalar(), E::NOT_SCALAR );
+         DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
          data_.clear();
          data_.resize( nObjects );
