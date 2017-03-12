@@ -7,12 +7,11 @@
 //    - Added a class DFTOptions to call and hold results of DFTFactorize() and DFTInit().
 //    - Passing std::vectors instead of naked pointers into DFT.
 // NOTE!
-//    The multiplication for two std::complex values is 6-8 times slower than the equivalent
-//    hand-written code (or rather, it makes the FFT for small arrays 6-8 times slower). I
-//    presume this is because of the tests for NaN that the Std Lib must do because of the
-//    definition of complex infinity. Depending on how the input data is generated, simple
-//    tests to duplicate this produced identical timings (with constexpr input), 30% slower
-//    times (with constant randomly-generated input), or 50x slower (with an input array).
+//    The multiplication for two std::complex values is 3-8 times slower than the equivalent
+//    hand-written code. I presume this is because of the tests for NaN that the Std Lib must
+//    do because of the definition of complex infinity. With GCC-5 and particular optimization
+//    switches turned on, it becomes about 50x slower! (probably a compiler bug, the same is
+//    not observed with CLang).
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -57,13 +56,14 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include <complex>
-#include <cassert>
 #include <vector>
 #include <cstring>
 
+#include "diplib/library/error.h"
+
 namespace {
 
-static unsigned char bitrevTab[] = {
+constexpr static unsigned char bitrevTab[] = {
       0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0, 0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
       0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8, 0x18, 0x98, 0x58, 0xd8, 0x38, 0xb8, 0x78, 0xf8,
       0x04, 0x84, 0x44, 0xc4, 0x24, 0xa4, 0x64, 0xe4, 0x14, 0x94, 0x54, 0xd4, 0x34, 0xb4, 0x74, 0xf4,
@@ -89,7 +89,7 @@ static inline int BitRev( int i, int shift ) {
                     (( unsigned )bitrevTab[ (( i ) >> 24 ) ] )) >> shift ));
 }
 
-static const std::complex< double > DFTTab[] = {
+constexpr static const std::complex< double > DFTTab[] = {
       { 1.00000000000000000,  -0.00000000000000000 },
       { -1.00000000000000000, -0.00000000000000000 },
       { 0.00000000000000000,  -1.00000000000000000 },
@@ -135,12 +135,14 @@ class DFTOptions {
 
    public:
 
+      DFTOptions() {} // Default-initialized options has nfft==0 and sz==0
+
       DFTOptions( int nfft_, bool inverse_ ) {
          DFTInit( nfft_, inverse_ );
       }
 
       void DFTInit( int nfft_, bool inverse_ ) {
-         assert( nfft_ > 0 );
+         DIP_ASSERT( nfft_ > 0 );
          nfft = nfft_;
          inverse = inverse_;
          factors = DFTFactorize( nfft );
@@ -177,7 +179,7 @@ class DFTOptions {
             m = 2;
          } else {
             // radix[] is initialized from index 'nf' down to zero
-            assert ( factors.size() < 34 );
+            DIP_ASSERT ( factors.size() < 34 );
             int digits[34];
             int radix[34];
             radix[ factors.size() ] = 1;
@@ -187,39 +189,32 @@ class DFTOptions {
                radix[ factors.size() - i - 1 ] = radix[ factors.size() - i ] * factors[ factors.size() - i - 1 ];
             }
 
-            int* itabptr = itab.data();
-            std::vector< int > temp_itab;
-            if( inverse && factors[ 0 ] != factors[ factors.size() - 1 ] ) {
-               temp_itab.resize( nfft );
-               itabptr = temp_itab.data();
-            }
-
             if(( n & 1 ) == 0 ) {
                int a = radix[ 1 ];
                int na2 = n * a >> 1;
                int na4 = na2 >> 1;
                for( m = 0; ( unsigned )( 1 << m ) < ( unsigned )n; m++ ) {}
                if( n <= 2 ) {
-                  itabptr[ 0 ] = 0;
-                  itabptr[ 1 ] = na2;
+                  itab[ 0 ] = 0;
+                  itab[ 1 ] = na2;
                } else if( n <= 256 ) {
                   int shift = 10 - m;
                   for( int i = 0; i <= n - 4; i += 4 ) {
                      int j = ( bitrevTab[ i >> 2 ] >> shift ) * a;
-                     itabptr[ i ] = j;
-                     itabptr[ i + 1 ] = j + na2;
-                     itabptr[ i + 2 ] = j + na4;
-                     itabptr[ i + 3 ] = j + na2 + na4;
+                     itab[ i ] = j;
+                     itab[ i + 1 ] = j + na2;
+                     itab[ i + 2 ] = j + na4;
+                     itab[ i + 3 ] = j + na2 + na4;
                   }
                } else {
                   int shift = 34 - m;
                   for( int i = 0; i < n; i += 4 ) {
                      int i4 = i >> 2;
                      int j = BitRev( i4, shift ) * a;
-                     itabptr[ i ] = j;
-                     itabptr[ i + 1 ] = j + na2;
-                     itabptr[ i + 2 ] = j + na4;
-                     itabptr[ i + 3 ] = j + na2 + na4;
+                     itab[ i ] = j;
+                     itab[ i + 1 ] = j + na2;
+                     itab[ i + 2 ] = j + na4;
+                     itab[ i + 3 ] = j + na2 + na4;
                   }
                }
 
@@ -228,7 +223,7 @@ class DFTOptions {
                if( factors.size() >= 2 ) {
                   for( int i = n, j = radix[ 2 ]; i < nfft; ) {
                      for( int k = 0; k < n; k++ ) {
-                        itabptr[ i + k ] = itabptr[ k ] + j;
+                        itab[ i + k ] = itab[ k ] + j;
                      }
                      if(( i += n ) >= nfft ) {
                         break;
@@ -242,7 +237,7 @@ class DFTOptions {
                }
             } else {
                for( int i = 0, j = 0;; ) {
-                  itabptr[ i ] = j;
+                  itab[ i ] = j;
                   if( ++i >= nfft ) {
                      break;
                   }
@@ -251,16 +246,6 @@ class DFTOptions {
                      digits[ k ] = 0;
                      j += radix[ k + 2 ] - radix[ k ];
                   }
-               }
-            }
-
-            if( itabptr == temp_itab.data() ) {
-               itab[ 0 ] = 0;
-               for( int i = nfft & 1; i < nfft; i += 2 ) {
-                  int k0 = temp_itab[ i ];
-                  int k1 = temp_itab[ i + 1 ];
-                  itab[ k0 ] = i;
-                  itab[ k1 ] = i + 1;
                }
             }
          }
@@ -293,12 +278,12 @@ class DFTOptions {
 
    private:
 
-      int nfft;
+      int nfft = 0;
       bool inverse;
       std::vector< int > factors;
       std::vector< int > itab;
       std::vector< std::complex< T >> wave;
-      int sz; // Size of the buffer to be passed to DFT.
+      int sz = 0; // Size of the buffer to be passed to DFT.
 
       static std::vector< int > DFTFactorize( int n ) {
          std::vector< int > factors;
@@ -366,11 +351,10 @@ void DFT(
          int i;
          for( i = 0; i <= n - 2; i += 2, itab += 2 * tab_step ) {
             int k0 = itab[ 0 ], k1 = itab[ tab_step ];
-            assert(( unsigned )k0 < ( unsigned )n && ( unsigned )k1 < ( unsigned )n );
+            DIP_ASSERT(( unsigned )k0 < ( unsigned )n && ( unsigned )k1 < ( unsigned )n );
             dst[ i ] = src[ k0 ];
             dst[ i + 1 ] = src[ k1 ];
          }
-
          if( i < n ) {
             dst[ n - 1 ] = src[ n - 1 ];
          }
@@ -378,24 +362,23 @@ void DFT(
          int i;
          for( i = 0; i <= n - 2; i += 2, itab += 2 * tab_step ) {
             int k0 = itab[ 0 ], k1 = itab[ tab_step ];
-            assert(( unsigned )k0 < ( unsigned )n && ( unsigned )k1 < ( unsigned )n );
+            DIP_ASSERT(( unsigned )k0 < ( unsigned )n && ( unsigned )k1 < ( unsigned )n );
             dst[ i ] = std::conj( src[ k0 ] );
             dst[ i + 1 ] = std::conj( src[ k1 ] );
          }
-
          if( i < n ) {
             dst[ i ] = std::conj( src[ n - 1 ] );
          }
       }
    } else {
-      assert( factors[ 0 ] == factors[ nf - 1 ] );
+      DIP_ASSERT( factors[ 0 ] == factors[ nf - 1 ] );
       if( nf == 1 ) {
          if(( n & 3 ) == 0 ) {
             int n2 = n / 2;
             std::complex< T >* dsth = dst + n2;
             for( int i = 0; i < n2; i += 2, itab += tab_step * 2 ) {
                int j = itab[ 0 ];
-               assert(( unsigned )j < ( unsigned )n2 );
+               DIP_ASSERT(( unsigned )j < ( unsigned )n2 );
 
                std::swap( dst[ i + 1 ], dsth[ j ] );
                if( j > i ) {
@@ -408,7 +391,7 @@ void DFT(
       } else {
          for( int i = 0; i < n; i++, itab += tab_step ) {
             int j = itab[ 0 ];
-            assert(( unsigned )j < ( unsigned )n );
+            DIP_ASSERT(( unsigned )j < ( unsigned )n );
             if( j > i ) {
                std::swap( dst[ i ], dst[ j ] );
             }
@@ -437,7 +420,6 @@ void DFT(
          int nx = n;
          n *= 4;
          dw0 /= 4;
-
          for( int i = 0; i < n0; i += n ) {
             std::complex< T >* v0 = dst + i;
             std::complex< T >* v1 = v0 + nx * 2;
@@ -517,7 +499,6 @@ void DFT(
             t0 -= T( 0.5 ) * t1;
             v[ nx ] = t0 + t2;
             v[ nx * 2 ] = t0 - t2;
-
             for( int j = 1, dw = dw0; j < nx; j++, dw += dw0 ) {
                v = dst + i + j;
                t0 = { v[ nx ].real() * wave[ dw ].real() - v[ nx ].imag() * wave[ dw ].imag(),
@@ -653,7 +634,7 @@ void DFT(
    }
 }
 
-static const unsigned int optimalDFTSizeTab[] = {
+constexpr static unsigned int optimalDFTSizeTab[] = {
       1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 16, 18, 20, 24, 25, 27, 30, 32, 36, 40, 45, 48,
       50, 54, 60, 64, 72, 75, 80, 81, 90, 96, 100, 108, 120, 125, 128, 135, 144, 150, 160,
       162, 180, 192, 200, 216, 225, 240, 243, 250, 256, 270, 288, 300, 320, 324, 360, 375,
@@ -834,14 +815,14 @@ static const unsigned int optimalDFTSizeTab[] = {
       2097152000, 2099520000, 2109375000, 2123366400, 2125764000
 };
 
-int getOptimalDFTSize( unsigned int size0 ) {
-   unsigned int a = 0;
-   unsigned int b = sizeof( optimalDFTSizeTab ) / sizeof( optimalDFTSizeTab[ 0 ] ) - 1;
-   if( size0 >= optimalDFTSizeTab[ b ] ) {
-      return -1;
+size_t getOptimalDFTSize( size_t size0 ) {
+   size_t a = 0;
+   size_t b = sizeof( optimalDFTSizeTab ) / sizeof( optimalDFTSizeTab[ 0 ] ) - 1;
+   if( size0 > optimalDFTSizeTab[ b ] ) {
+      return 0; // 0 indicates an error condition -- of course we don't do DFT on an empty array!
    }
    while( a < b ) {
-      unsigned int c = ( a + b ) >> 1;
+      size_t c = ( a + b ) >> 1;
       if( size0 <= optimalDFTSizeTab[ c ] ) {
          b = c;
       } else {
@@ -863,9 +844,9 @@ int getOptimalDFTSize( unsigned int size0 ) {
 #endif
 
 template< typename T >
-T dotest( size_t nfft ) {
+T dotest( size_t nfft, bool inverse = false ) {
    // Initialize
-   DFTOptions< T > opts( nfft, false );
+   DFTOptions< T > opts( nfft, inverse );
    std::vector< std::complex< T >> buf( opts.bufferSize() );
    // Create test data
    std::vector< std::complex< T>> inbuf( nfft );
@@ -880,10 +861,10 @@ T dotest( size_t nfft ) {
    long double difpower = 0;
    for( size_t k0 = 0; k0 < nfft; ++k0 ) {
       std::complex< long double > acc{ 0, 0 };
-      long double phinc = 2 * k0 * M_PIl / nfft;
+      long double phinc = ( inverse ? 2.0 : -2.0 ) * k0 * M_PIl / nfft;
       for( size_t k1 = 0; k1 < nfft; ++k1 ) {
          acc += std::complex< long double >( inbuf[ k1 ] ) *
-                std::exp( std::complex< long double >( 0, -( k1 * phinc )));
+                std::exp( std::complex< long double >( 0, ( k1 * phinc )));
       }
       totalpower += std::norm( acc );
       difpower += std::norm( acc - std::complex< long double >( outbuf[ k0 ] ));
@@ -892,6 +873,7 @@ T dotest( size_t nfft ) {
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the Alias function") {
+   // Test a few different sizes that have all different radixes.
    DOCTEST_CHECK( doctest::Approx( dotest< float >( 32 )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< double >( 32 )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< float >( 1024 )) == 0 );
@@ -902,6 +884,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Alias function") {
    DOCTEST_CHECK( doctest::Approx( dotest< double >( 840 )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< float >( 1023 )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< double >( 1023 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( dotest< float >( 840, true )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( dotest< double >( 840, true )) == 0 );
 }
 
 #endif // DIP__ENABLE_DOCTEST

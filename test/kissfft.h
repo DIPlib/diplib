@@ -40,6 +40,7 @@
 
 #include <complex>
 #include <vector>
+#include <cassert>
 
 template<typename T_Scalar>
 class kissfft {
@@ -262,7 +263,9 @@ private:
             size_t m,
             size_t p
     ) const {
-        cpx_type scratchbuf[p];
+        //cpx_type scratchbuf[p]; // CLang doesn't like this. Also, it seems like this is dynamic memory allocation? Slows stuff down???
+        cpx_type scratchbuf[8*1024];
+        assert(p <= 8*1024);
         for (size_t u = 0; u < m; ++u) {
             size_t k = u;
             for (size_t q1 = 0; q1 < p; ++q1) {

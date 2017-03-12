@@ -6,38 +6,22 @@ copyright: (c)2014-2017, Cris Luengo.
 
 # Implementation notes and thoughts
 
+## Fourier Transform
 
-## Arithmetic and comparisons
+The function `FourierTransform` will have an extra option: "fast" or "fastest", which
+causes the algorithm to pad the data with zeros before doing the transform. "fast"
+pads to a multiple of 2, 3 and/or 5, "fastest" to a multiple of 2. Note that the output
+Fourier domain will be larger too, and cannot be simply cropped. This is sometimes OK,
+for example when computing convolutions. The convolution result will be different
+because of the zero padding, but the effects would be relevant only near the image
+edges.
 
-Several more complex arithmetic operations are rather common, and could
-be implemented as special functions. For example, instead of writing
-
-    out = a*img1 + b*img2 + c*img3 + d;
-
-one would write
-
-    WeightedAddition( ImageRefArray{img1,img2,img3}, out, IntegerArray{a,b,c}, d );
-
-For efficiency. There is template meta-programming that can convert an
-expression like the first one into a call like the second one, but that
-is too much templates for my taste. Is that really worth it? It doesn't
-translate to other languages (Python, *MATLAB*, etc.).
-
-We could try to complete the function that Mike started writing eons
-ago(?), in which a string expression is evaluated and applied pixel by
-pixel to a set of images:
-
-    Evaluate( ImageArray{img1,img2,img3}, out, "3*a + 2*(b+c) + 6 > 30*(a+c)" );
-
-The expression is converted to a representation that can be used to
-efficiently apply the requested computation on each pixel. Which
-operators and functions to allow in there is open for discussion. In
-this example, letter `a` would refer to the first image in the input
-array, letter `b` to the second, etc.
-
-Would it not be easier to allow the user to write a callback to
-`dip::Framework::Scan`?
-
+If the *FFTW* library is installed on the user's system, *DIPlib* will link against it
+and use it to compute the FT. The CMakeLists script will have a setting that disables
+this behaviour, as *FFTW* uses a GNU license and we want *DIPlib* to be totally
+unencumbered by licenses. When not using *FFTW*, the built-in FFT algorithm is used.
+We'll copy the FFT from *OpenCV*, which uses the MIT license. *KissFFT* is also
+an option, though seemed slower in my first test (to be repeated).
 
 ## Colour space conversion
 
@@ -122,10 +106,7 @@ Current code uses two different ways to describe a neighborhood:
   own version of these lists, not all need the coordinates, for example.
 
 - A pixel table (a list of pixel runs).
-  It describes a filter support of arbitrary shape by giving the offset to the first pixel
-  in each run, and the number of pixels in the run. Subsequent pixels are then accessed by
-  adding the correct stride to the offset of the first pixel.
-  The pixel table framework uses this system, I don't think it's used outside it.
+  This is already described in the code.
 
 We should keep both methods, and standardize the first one.
 
