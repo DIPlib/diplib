@@ -207,12 +207,16 @@ void Separable(
    std::vector< uint8 > outBufferStorage;
 
    // Iterate over the dimensions to be processed. This loop should be sequential, not parallelized!
+   Image outImage;
    for( dip::uint rep = 0; rep < order.size(); ++rep ) {
       dip::uint processingDim = order[ rep ];
-      // First step always reads from input, other steps read from intermediate or output
-      Image& inImage = ( rep == 0 ) ? ( input ) : ( useIntermediate ? intermediate : output );
+      // First step always reads from input, other steps read from outImage, which is either intermediate or output
+      Image inImage = (( rep == 0 ) ? ( input ) : ( outImage )).QuickCopy();
       // Last step always writes to output, other steps write to intermediate or output
-      Image& outImage = ( rep == order.size() - 1 ) ? ( output ) : ( useIntermediate ? intermediate : output );
+      UnsignedArray sizes = inImage.Sizes();
+      outImage = (( rep == order.size() - 1 ) ? ( output ) : ( useIntermediate ? intermediate : output )).QuickCopy();
+      sizes[ processingDim ] = outSizes[ processingDim ];
+      outImage.dip__SetSizes( sizes );
 
       // std::cout << "dip::Framework::Separable(), processingDim = " << processingDim << std::endl;
       // std::cout << "   inImage.Origin() = " << inImage.Origin() << std::endl;
@@ -268,15 +272,14 @@ void Separable(
       SeparableBuffer outBuffer;
       outBuffer.length = outLength;
       outBuffer.border = outBorder;
+      outBuffer.tensorLength = outImage.TensorElements();
       if( outUseBuffer ) {
-         outBuffer.tensorLength = outImage.TensorElements();
          outBuffer.tensorStride = 1;
          outBuffer.stride = outBuffer.tensorLength;
          outBufferStorage.resize( ( outLength + 2 * outBorder ) * bufferType.SizeOf() * outBuffer.tensorLength );
          outBuffer.buffer = outBufferStorage.data() + outBorder * bufferType.SizeOf() * outBuffer.tensorLength;
          //std::cout << "   Using output buffer, size = " << outBufferStorage.size() << std::endl;
       } else {
-         outBuffer.tensorLength = outImage.TensorElements();
          outBuffer.tensorStride = outImage.TensorStride();
          outBuffer.stride = outImage.Stride( processingDim );
          outBuffer.buffer = nullptr;
@@ -285,7 +288,7 @@ void Separable(
 
       // Iterate over all lines in the image. This loop to be parallelized.
       auto it = dip::GenericJointImageIterator( inImage, outImage, processingDim );
-      SeparableLineFilterParameters separableLineFilterParams{ inBuffer, outBuffer, processingDim, it.Coordinates(), thread }; // Takes inBuffer, outBuffer, it.Coordinates() as references
+      SeparableLineFilterParameters separableLineFilterParams{ inBuffer, outBuffer, processingDim, rep, order.size(), it.Coordinates(), thread }; // Takes inBuffer, outBuffer, it.Coordinates() as references
       do {
          // Get pointers to input and ouput lines
          if( inUseBuffer ) {
@@ -301,7 +304,7 @@ void Separable(
                   bufferType,
                   inBuffer.stride,
                   inBuffer.tensorStride,
-                  inBuffer.stride == 0 ? 1 : inLength, // if stride == 0, copy only a single pixel because they're all the same
+                  inLength, // if stride == 0, only a single pixel will be copied, because they're all the same
                   inBuffer.tensorLength,
                   lookUpTable );
             if(( inBorder > 0 ) && ( inBuffer.stride != 0 )) {

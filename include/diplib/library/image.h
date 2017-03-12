@@ -442,6 +442,11 @@ class Image {
          sizes_ = d;
       }
 
+      // Sets the sizes of the image. Do not use this function unless you know what you're doing.
+      void dip__SetSizes( UnsignedArray const& d ) {
+         sizes_ = d;
+      }
+
       /// \}
 
       //
@@ -490,7 +495,7 @@ class Image {
       ///
       /// The image must be forged.
       ///
-      /// \see GetSimpleStrideAndOrigin, HasSimpleStride, HasNormalStrides, Strides, TensorStride.
+      /// \see GetSimpleStrideAndOrigin, HasSimpleStride, HasNormalStrides, IsSingletonExpanded, Strides, TensorStride.
       bool HasContiguousData() const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          dip::uint size = NumberOfPixels() * TensorElements();
@@ -502,6 +507,15 @@ class Image {
 
       /// \brief Test if strides are as by default. The image must be forged.
       bool HasNormalStrides() const;
+
+      /// \brief Test if the image has been singleton expanded.
+      ///
+      /// If any dimension is larger than 1, but has a stride of 0, it means that a single pixel is being used
+      /// across that dimension. The methods `dip::Image::ExpandSingletonDimension` and
+      /// `dip::Image::ExpandSingletonTensor` create such dimensions.
+      ///
+      /// See HasContiguousData, HasNormalStrides, ExpandSingletonDimension, ExpandSingletonTensor.
+      bool IsSingletonExpanded() const;
 
       /// \brief Test if the whole image can be traversed with a single stride
       /// value.
@@ -1341,7 +1355,7 @@ class Image {
       /// The image must be forged, and the data will never
       /// be copied (i.e. this is a quick and cheap operation).
       ///
-      /// \see AddSingleton, ExpandDimensionality, PermuteDimensions.
+      /// \see AddSingleton, ExpandDimensionality, PermuteDimensions, UnexpandSingletonDimensions.
       Image& Squeeze();
 
       /// \brief Add a singleton dimension (with size==1) to the image.
@@ -1378,7 +1392,7 @@ class Image {
       /// The image must be forged, and the data will never
       /// be copied (i.e. this is a quick and cheap operation).
       ///
-      /// \see AddSingleton, ExpandDimensionality.
+      /// \see ExpandSingletonDimensions, ExpandSingletonTensor, IsSingletonExpanded, UnexpandSingletonDimensions, AddSingleton, ExpandDimensionality.
       Image& ExpandSingletonDimension( dip::uint dim, dip::uint sz );
 
       /// \brief Performs singleton expansion.
@@ -1387,9 +1401,21 @@ class Image {
       /// as dimensions. It must be forged and singleton-expandable to `size`,
       /// otherwise an exception is thrown. See `dip::Image::ExpandSingletonDimension`.
       /// `size` is the array as returned by `dip::Framework::SingletonExpandedSize`.
+      ///
+      /// \see ExpandSingletonDimension, ExpandSingletonTensor, IsSingletonExpanded, UnexpandSingletonDimensions.
       Image& ExpandSingletonDimensions( UnsignedArray const& newSizes );
 
+      /// \brief Unexpands singleton-expanded dimensions.
+      ///
+      /// The image is modified so that each singleton-expanded dimension has a size of 1.
+      /// That is, the resulting image will no longer be `dip::Image::IsSingletonExpanded`.
+      ///
+      /// \see ExpandSingletonDimension, ExpandSingletonTensor, IsSingletonExpanded, Squeeze.
+      Image& UnexpandSingletonDimensions();
+
       /// \brief Tests if the image can be singleton-expanded to `size`.
+      ///
+      /// \see ExpandSingletonDimensions, ExpandSingletonTensor, IsSingletonExpanded.
       bool IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const;
 
       /// \brief Expand singleton tensor dimension `sz` samples, setting the tensor
@@ -1400,7 +1426,7 @@ class Image {
       /// The image must be forged, and the data will never be copied (i.e. this is a
       /// quick and cheap operation).
       ///
-      /// \see ExpandSingletonDimension.
+      /// \see ExpandSingletonDimension, IsSingletonExpanded.
       Image& ExpandSingletonTensor( dip::uint sz );
 
       /// \brief Mirror de image about selected axes.
@@ -1518,6 +1544,10 @@ class Image {
 
       /// \brief Extracts a subset of pixels from an image. The image must be forged.
       Image At( RangeArray ranges ) const;
+
+      /// \brief Extracts a subset of pixels from an image. The image must be forged.
+      // TODO: Make a version of this that crops evenly from all sides.
+      Image Crop( UnsignedArray sizes ) const;
 
       /// \brief Extracts the real component of a complex-typed image. The image must be forged.
       Image Real() const;

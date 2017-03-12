@@ -605,6 +605,8 @@ struct SeparableLineFilterParameters {
    SeparableBuffer const& inBuffer;   ///< Input buffer (1D)
    SeparableBuffer& outBuffer;        ///< Output buffer (1D)
    dip::uint dimension;               ///< Dimension along which the line filter is applied
+   dip::uint pass;                    ///< Pass number (0..nPasses), useful to know when it's the first pass,
+   dip::uint nPasses;                 ///< Number of passes (typically nDims)
    UnsignedArray const& position;     ///< Coordinates of first pixel in line
    dip::uint thread;                  ///< Thread number
 };

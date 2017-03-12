@@ -168,6 +168,15 @@ Image Image::At( RangeArray ranges ) const {
    return out;
 }
 
+Image Image::Crop( UnsignedArray sizes ) const {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( sizes_.size() != sizes.size(), E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( sizes_.size() < sizes.size(), E::INDEX_OUT_OF_RANGE );
+   Image out = *this;
+   out.sizes_ = sizes;
+   return out;
+}
+
 Image Image::Real() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );

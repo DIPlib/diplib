@@ -166,6 +166,17 @@ Image& Image::ExpandSingletonDimensions( UnsignedArray const& newSizes ) {
    return *this;
 }
 
+Image& Image::UnexpandSingletonDimensions() {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint ndims = sizes_.size();
+   for( dip::uint ii = 0; ii < ndims; ++ii ) {
+      if(( sizes_[ ii ] > 1 ) && ( strides_[ ii ] == 0 )) {
+         sizes_[ ii ] = 1; // we leave the stride at 0, it's irrelevant.
+      }
+   }
+   return *this;
+}
+
 
 bool Image::IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const {
    if( sizes_.size() > newSizes.size() ) {

@@ -253,6 +253,20 @@ bool Image::HasNormalStrides() const {
 }
 
 
+// If any stride is 0, the image has been singleton-expanded.
+bool Image::IsSingletonExpanded() const {
+   if(( tensor_.Elements() > 1 ) && ( tensorStride_ == 0 )) {
+      return true;
+   }
+   for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
+      if(( sizes_[ ii ] > 1 ) && ( strides_[ ii ] == 0 )) {
+         return true;
+      }
+   }
+   return false;
+}
+
+
 // Return a pointer to the start of the data and a single stride to
 // walk through all pixels. If this is not possible, porigin==nullptr.
 void Image::GetSimpleStrideAndOrigin( dip::uint& sstride, void*& porigin ) const {
@@ -601,7 +615,7 @@ void Image::ReForge(
    if(( acceptDataTypeChange == dip::Option::AcceptDataTypeChange::DO_ALLOW ) && protect_ ) {
       dt = dataType_;
    }
-   if( IsForged() ) {
+   if( IsForged() && !IsSingletonExpanded() ) {
       if(( sizes_ == sizes ) && ( tensor_.Elements() == tensorElems ) && ( dataType_ == dt )) {
          // It already matches, nothing to do
          return;
