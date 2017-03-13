@@ -112,7 +112,7 @@ class PixelTableOffsets {
       dip::sint stride_ = 0;     // the stride of the image along the processing dimension
 };
 
-/// \brief Represents an arbirarily-shaped neighborhood (filter support)
+/// \brief Represents an arbitrarily-shaped neighborhood (filter support)
 /// in an arbitrary number of dimensions.
 ///
 /// The `%PixelTable` is an array of pixel runs, where each run is encoded by start coordinates
@@ -168,7 +168,7 @@ class PixelTable {
       /// from the origin. This means that not only integer sizes are meaningful.
       /// The exception is for the "rectangular" shape, where the sizes are rounded down to the nearest integer,
       /// yielding rectangle sides that are either even or odd in length. For even sizes, one can imagine that the
-      /// origin is shifted by half a pixel to accomodate the requested size (thought the origin is set to the pixel
+      /// origin is shifted by half a pixel to accommodate the requested size (thought the origin is set to the pixel
       /// that is right of the center). For the "diamond" and "elliptic" shapes, the bounding box always has odd
       /// sizes, and the origin is always centered on one pixel. To accomplish the same for the "rectangular" shape,
       /// simply round the sizes array to an odd integer: `size[ ii ] = std::floor( size[ ii ] / 2 ) * 2 + 1`.
@@ -201,7 +201,7 @@ class PixelTable {
       /// Returns the origin of the neighborhood w.r.t. the top-left corner of the bounding box
       IntegerArray const& Origin() const { return origin_; }
 
-      /// Returns the size of the boundary extension along each dimension that is necessary to accomodate the
+      /// Returns the size of the boundary extension along each dimension that is necessary to accommodate the
       /// neighborhood on the edge pixels of the image
       UnsignedArray Boundary() const {
          dip::uint nDims = sizes_.size();
@@ -283,7 +283,6 @@ class PixelTable::iterator {
       using iterator_category = std::forward_iterator_tag;
       using value_type = IntegerArray;       ///< The value obtained by dereferencing are coordinates
       using reference = IntegerArray const&; ///< The type of a reference
-      using pointer = IntegerArray const*;   ///< The type of a pointer
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       iterator() {}
@@ -360,7 +359,7 @@ class PixelTable::iterator {
       PixelTable const* pixelTable_ = nullptr;
       dip::uint run_ = 0;        // which run we're currently point at
       dip::uint index_ = 0;      // which pixel on the run we're currently pointing at
-      IntegerArray coordinates_; // the coordinates of the pixel
+      value_type coordinates_;   // the coordinates of the pixel
 };
 
 inline void swap( PixelTable::iterator& v1, PixelTable::iterator& v2 ) {
@@ -384,8 +383,7 @@ class PixelTableOffsets::iterator {
 
       using iterator_category = std::forward_iterator_tag;
       using value_type = dip::sint;       ///< The value obtained by dereferencing is an offset
-      using reference = dip::sint const&; ///< The type of a reference
-      using pointer = dip::sint const*;   ///< The type of a pointer
+      using reference = dip::sint;        ///< The type of a reference, but we don't return by reference, it's just as easy to copy
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       iterator() {}
@@ -417,6 +415,12 @@ class PixelTableOffsets::iterator {
 
       /// Dereference
       reference operator*() const { return offset_; }
+
+      /// Get offset, identical to dereferencing
+      reference Offset() const { return offset_; }
+
+      /// Get index within run
+      dip::uint Index() const { return index_; }
 
       /// Increment
       iterator& operator++() {
@@ -463,7 +467,7 @@ class PixelTableOffsets::iterator {
       PixelTableOffsets const* pixelTable_ = nullptr;
       dip::uint run_ = 0;        // which run we're currently point at
       dip::uint index_ = 0;      // which pixel on the run we're currently pointing at
-      dip::sint offset_;         // the offset of the pixel
+      value_type offset_;        // the offset of the pixel
 };
 
 inline void swap( PixelTableOffsets::iterator& v1, PixelTableOffsets::iterator& v2 ) {
