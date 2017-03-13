@@ -872,7 +872,7 @@ T dotest( size_t nfft, bool inverse = false ) {
    return std::sqrt( difpower / totalpower ); // Root mean square error
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing the Alias function") {
+DOCTEST_TEST_CASE("[DIPlib] testing the DFT function") {
    // Test a few different sizes that have all different radixes.
    DOCTEST_CHECK( doctest::Approx( dotest< float >( 32 )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< double >( 32 )) == 0 );

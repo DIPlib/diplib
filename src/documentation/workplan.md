@@ -29,10 +29,9 @@ and algorithms are much more important than others.
 
 The **DEP** markers indicate points that depend on functionality not yet implemented.
 
-## What is aleady done:
+## What is already done:
 
--   CMake compilation environment. Will need to be expanded as new interfaces are
-    created, etc.
+-   CMake compilation environment.
 
 -   Test framework. We need to add more tests for the stuff that's already implemented.
 
@@ -55,9 +54,10 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     All measurement features have been ported, including the previously only defined in
     *DIPimage*.
 
--   *MATLAB* interface is partially completed: It is possible to convert `dip::Image`
-    objects to MATLAB `dip_image` objects and vice-versa, as well as a series of numeric
-    and string parameter types.
+-   The Fourier transform ( based on the code out of OpenCV, much faster than the code in
+    the old *DIPlib*).
+
+-   *MATLAB* interface.
 
 -   *DIPimage* toolbox: The `dip_image` object is defined and has a few functions,
     including all binary and unary operators in one MEX-file, and the `measure` function
@@ -114,7 +114,7 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     - dip_histogram.h
 
 -   **DEP**
-    Global threhsold algorithms, depending on the histogram, currently implemented
+    Global threshold algorithms, depending on the histogram, currently implemented
     in dipimage/threshold.m (Otsu, triangle, background, etc.).
 
 -   Image generation algorithms using `dip::Framework::ScanSingleOutput`.
@@ -130,10 +130,10 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     - dip_linear.h (parts)
     - dip_manipulation.h (some functions, most are already implemented in `class dip::Image`)
 
--   The Fourier and associated transforms (built on `dip::Framework::Separable`).
-    The code in the old *DIPlib* is very slow. We could copy code from OpenCV as a
-    free to use implementation, and provide an optional module that uses FFTW (not
-    free, it's GPL which turns any application using it into GPL),
+-   The Fourier transform: Use *FFTW* when a compile switch is set, we must be able to
+    disable that so *DIPlib* can be used in non-open-source projects. Further improvements
+    could be making specific paths for real input or output (could mean a small increase in
+    performance).
 
 -   **DEP**
     Algorithms built on derivatives: the gradient, the structure tensor, etc.
@@ -174,7 +174,7 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     - dip_microscopy.h
     - dip_restoration.h
 
--   Stuff that is in DIPimage:
+-   Stuff that is in *DIPimage*:
     - **DEP** 2D snakes (**requires design work**)
     - general 2D affine transformation, 3D rotation (is already C code)
     - xx, yy, zz, rr, phiphi, ramp; extend this to `dip::Coordinates`, which makes a

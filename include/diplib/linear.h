@@ -123,57 +123,67 @@ void GeneralConvolution(
       Image const& in,
       Image const& filter,
       Image& out,
-      StringArray boundaryCondition
+      StringArray const& boundaryCondition = {}
 );
 
 void Uniform(
       Image const& in,
       Image& out,
-      Image& neighborhood,
-      StringArray boundaryCondition,
-      FloatArray,
-      String const& filterShape
+      Image& neighborhood, // TODO: create 2 signatures, like we did with Dilation and Erosion
+      FloatArray filterSize = { 7 },
+      String const& filterShape = "elliptic",
+      StringArray const& boundaryCondition = {}
 );
 
 void Gauss(
       Image const& in,
       Image& out,
-      StringArray boundaryCondition,
-      BooleanArray,
-      FloatArray,
-      IntegerArray,
-      dfloat
+      FloatArray const& sigmas = { 1 },
+      IntegerArray const& derivativeOrder = { 0 },
+      StringArray const& boundaryCondition = {}, // ignored if GaussFT
+      BooleanArray const& process = {},
+      String const& method = "optimal" // "FIR","IIR","FT","optimal"
+);
+
+void GaussFIR(
+      Image const& in,
+      Image& out,
+      FloatArray sigmas,
+      IntegerArray derivativeOrder = { 0 },
+      StringArray const& boundaryCondition = {},
+      BooleanArray process = {},
+      dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
 );
 
 void GaussFT(
       Image const& in,
       Image& out,
-      FloatArray,
-      IntegerArray,
-      dfloat
+      FloatArray sigmas,
+      IntegerArray derivativeOrder = { 0 },
+      dfloat truncation = 0
 );
 
 void GaussIIR(
       Image const& in,
       Image& out,
-      StringArray boundaryCondition,
-      BooleanArray,
-      FloatArray,
-      IntegerArray,
-      IntegerArray,
-      dip::uint,
-      dfloat
+      FloatArray sigmas = { 1 },
+      IntegerArray derivativeOrder = { 0 },
+      StringArray const& boundaryCondition = {},
+      BooleanArray process = {},
+      IntegerArray filterOrder = {},
+      dip::uint designMethod = 0, // should be a string
+      dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
 );
 
 void GaborIIR(
       Image const& in,
       Image& out,
-      StringArray boundaryCondition,
-      BooleanArray,
-      FloatArray,
-      FloatArray,
-      IntegerArray,
-      dfloat
+      FloatArray sigmas,
+      FloatArray frequencies,
+      StringArray const& boundaryCondition = {},
+      BooleanArray process = {},
+      IntegerArray filterOrder = {},
+      dfloat truncation = 3
 );
 
 void OrientedGauss(
@@ -183,20 +193,20 @@ void OrientedGauss(
       FloatArray
 );
 
-void SobelGradient(
+void SobelGradient( // this is a call to FiniteDifference
       Image const& in,
       Image& out,
-      StringArray boundaryCondition,
-      dip::uint
+      dip::uint dimension = 0,
+      StringArray const& boundaryCondition = {}
 );
 
 void FiniteDifference(
       Image const& in,
       Image& out,
-      StringArray boundaryCondition,
-      BooleanArray,
-      IntegerArray,
-      bool
+      IntegerArray derivativeOrder = { 0 },
+      bool smoothFlag = true, // Should be a string
+      StringArray const& boundaryCondition = {},
+      BooleanArray process = {}
 );
 
 /// \}

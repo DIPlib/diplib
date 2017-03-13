@@ -173,7 +173,7 @@ code.
 \section design_options Passing options to a function
 
 Many algorithms require parameters that select a mode of operation. *DIPlib 3.0*
-uses strings for such parameters when the function is intended to be useable
+uses strings for such parameters when the function is intended to be usable
 from interfaces. By not defining C++ constants, the interface code can be
 kept simple. For example, `dip::Dilation` has an option for the shape of the
 structuring element. Instead of defining an `enum` (as the old *DIPlib* did)

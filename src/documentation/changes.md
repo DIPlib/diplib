@@ -54,7 +54,7 @@ over.
    - Images now carry the physical dimension in them (referred to as pixel size). When porting
      functions, think about whether this data needs to be maintained, modified, or removed.
 
-   - The same is true for the color space. A function that changes the number of thensor
+   - The same is true for the color space. A function that changes the number of tensor
      elements must also remove the color space information.
 
    - Please read the documentation to the `dip::Image` class before doing any work with the
@@ -96,6 +96,10 @@ over.
   function parameters.
 
 - Output arguments are now always on the left-hand side, except for output images.
+
+- The boundary condition array input argument is now typically further to the right in the
+  argument list. We try to sort arguments such that the ones most commonly left with default
+  values appear at the end, and the boundary condition is not commonly changed.
 
 - `dip_Measure` is now `dip::MeasurementTool::Measure`, with `dip::MeasurementTool` an object
   that knows about defined measurement features.
@@ -140,9 +144,14 @@ over.
 
 - `dip::ImageDisplay` no longer does any spatial scaling.
 
+- `dip::FourierTransform` now does normalization in the more common way (forward transform not
+  normalized, inverse transform normalized by 1/N), but an option ("symmetric") allows to change
+  the normalization to be consistent with the old DIPlib, which used a symmetric normalization
+  scheme (both forward and backward transforms use 1/N^0.5)
+
 ## Changes from DIPimage 2.x (the old DIPimage)
 
-- The `dip_image` object has changed conpletely internally. Pixel data is stored differently:
+- The `dip_image` object has changed completely internally. Pixel data is stored differently:
   tensor images have all samples in the same MATLAB array. Complex images are stored as a
   single real matrix, with real and complex samples next to each other (this translates
   much more nicely to DIPlib, where complex data is stored in that same way).
@@ -183,7 +192,7 @@ over.
   are simply no longer relevant.
 
 - `newimar` is now in the `alias` subdirectory, and identical to `newtensorim`.
-  Other functinos that used to be in the `alias` directory are no longer. We recommend that
+  Other functions that used to be in the `alias` directory are no longer. We recommend that
   you correct affected code, but if you want, you can always create those aliases again.
 
 - Many filters now have a boundary condition parameter. In the old *DIPimage* one would change

@@ -186,5 +186,5 @@ If you make modifications to this software, you are not required to share those 
 but we certainly would appreciate any such contribution!
 
 Note that this short description of the license does not replace the license text and
-might not correctly represent all the legaleese in the licence. Please read the actual
+might not correctly represent all the legalese in the licence. Please read the actual
 licence text if you plan to redistribute this software.

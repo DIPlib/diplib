@@ -35,7 +35,7 @@ in functions defined in the `#dip` namespace.
 \section image_representation Image representation
 
 An `%Image` object can have any number of dimensions (limited by the integer
-representation used), though 0D, 2D and 3D are the most often used dimensionalies.
+representation used), though 0D, 2D and 3D are the most often used dimensionalities.
 Most functions in the library accept images with any number of
 dimensions, for the functions that are limited in this respect there is
 a note in the documentation. In the following, we refer to a dimension
@@ -66,7 +66,7 @@ see the section on \ref tensors.
 
 An `%Image` object can contain samples of a wide variety of numeric types,
 including binary, unsigned and signed integers, floating point, and
-complex. For a complete list see the desciption of the `dip::DataType` class.
+complex. For a complete list see the description of the `dip::DataType` class.
 All the image's samples must have the same type.
 
 All of these image properties are dynamic. That is, they can be
@@ -80,7 +80,7 @@ is **forged**, its properties are fixed. It is possible to call the
 dynamic image structure is that it allows flexibility: one can read the
 data in a file without knowing what the file's data type is going to
 be; the file reading function can adjust the `%Image` object's data type
-(and dimensionality) at run time to accomodate any data that the file
+(and dimensionality) at run time to accommodate any data that the file
 might contain. Another advantage is that the programmer does not need
 to think about, for example, what data type is appropriate as output of
 a specific function. However, when desired, it is possible to control
@@ -425,7 +425,7 @@ To make a copy of an image with its own copy of the data segment, use the
     img2.Copy( img1 );
 ```
 
-or equivalenty the `dip::Copy` function:
+or equivalently the `dip::Copy` function:
 
 ```cpp
     img2 = dip::Copy( img1 );
@@ -486,7 +486,7 @@ be set to the tensor values in the initializer list:
 There are different modes of indexing pixels in an `%Image` object. They can be
 split into two main categories: those that produce a view of the image, and those
 that copy the samples. A view is an `%Image` that shares the data segment with
-the oringial image, and gives access to a regular subset of the pixels. You can
+the original image, and gives access to a regular subset of the pixels. You can
 think here of a specific tensor component, a window, subsampling, etc. These
 views can be created by manipulating the origin pointer, the strides, and the
 sizes (see /ref strides). Indexing an irregular subset of pixels cannot be done
@@ -584,7 +584,7 @@ one of:
  * a list of linear indices into the image
  * a list of pixel coordinates
 
-These three forms can all be accomodated using the `dip::Image::CopyAt`
+These three forms can all be accommodated using the `dip::Image::CopyAt`
 functions, which create a new image and copy pixel data over, resulting
 in a 1D image:
 
@@ -592,7 +592,7 @@ in a 1D image:
     dip::Image out = image.CopyAt( mask );
 ```
 
-These functions are called `CopyAt` rather than simply `At` to reinfoce that
+These functions are called `CopyAt` rather than simply `At` to reinforce that
 sample values are copied into the new image. Therefore, when writing into
 these images, the original image is not affected. To write data into selected
 pixels, use the version of this function that takes two arguments:
@@ -735,7 +735,7 @@ or simply
 
     a += b;
 
-All diadic operations (arithmetic, logical, comparison) perform \ref singleton_expansion.
+All dyadic operations (arithmetic, logical, comparison) perform \ref singleton_expansion.
 They also correctly handle tensor images of any shape. For example, it is possible
 to add a vector image and a tensor image, but it is not possible to add two vector
 images of different lengths. The multiplication operation always performs matrix
@@ -780,7 +780,7 @@ spaces, and will expect their input to be in one of those color spaces.
 \section pixel_size Pixel size
 
 Each image carries with it the size of its pixels as a series of physical
-quantities (`dip::PhysicalQuantity`), one for each image dimnesion. The advantage
+quantities (`dip::PhysicalQuantity`), one for each image dimension. The advantage
 of keeping the pixel size with the image rather than as a separate value taken
 manually from the image file metadata is that it is automatically updated through
 manipulations such as scaling (zoom), dimension permutations, etc. When the pixel
@@ -790,7 +790,7 @@ size in a particular dimension is not set, it is always presumed to be of size 1
 There are three ways in which the pixel size can be used:
 
 1. The measurement function will return its measurements as physical quantities,
-   using the pixel sizes, if known, to derive those from measurments in pixels.
+   using the pixel sizes, if known, to derive those from measurements in pixels.
 
 2. The `dip::Image::PhysicalToPixels` method converts a filter size in physical
    units to one in pixels, suitable to pass to a filtering function. For example,
@@ -811,7 +811,7 @@ There are three ways in which the pixel size can be used:
        dip::PhysicalQuantityArray pos_phys = img.PixelsToPhysical( pos_pix );
    ```
 
-It is currently possible to add, subtract, mutiply and divide two physical quantities,
+It is currently possible to add, subtract, multiply and divide two physical quantities,
 and elevate a physical quantity to an integer power. Other operations should be
 added as necessary.
 
@@ -844,5 +844,5 @@ along this dimension. For example:
 Here, the dimension array for `img2` will be extended to `{ 50, 30, 1 }`
 in the first step. In the second step, the arrays for both images will
 be changed to `{ 50, 30, 60 }`. `img1` gets its second dimension expanded,
-wereas `img2` will get its new third dimension expanded. The output image
+whereas `img2` will get its new third dimension expanded. The output image
 `img3` will thus have 50x30x60 pixels.

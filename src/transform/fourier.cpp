@@ -52,8 +52,8 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          DFTOptions< FloatType< TPI >> const& opts = options_[ params.dimension ];
-         if( buffers_[ params.thread ].size() != opts.bufferSize() ) {
-            buffers_[ params.thread ].resize( opts.bufferSize() );
+         if( buffers_[ params.thread ].size() != static_cast< dip::uint >( opts.bufferSize() )) {
+            buffers_[ params.thread ].resize( static_cast< dip::uint >( opts.bufferSize() ));
          }
          dip::uint length = static_cast< dip::uint >( opts.transformSize() );
          dip::uint border = params.inBuffer.border;

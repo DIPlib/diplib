@@ -340,6 +340,7 @@ void PixelTable::AddWeights( Image const& image ) {
    weights_.reserve( nPixels_ );
    dip::sint stride = image.Stride( procDim_ );
    DIP_OVL_CALL_REAL( dip__AddWeights, ( image, stride, runs_, weights_, origin_ ), image.DataType() );
+   DIP_ASSERT( weights_.size() == nPixels_ );
 }
 
 // Add weights from distances
