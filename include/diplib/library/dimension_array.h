@@ -110,6 +110,13 @@ class DimensionArray {
          resize( other.size_ );
          std::copy( other.data_, other.data_ + size_, data_ );
       }
+      /// \brief Cast constructor, initializes with a copy of `other`.
+      /// Casting done as default in C++, not through `dip::clamp_cast`.
+      template< typename O >
+      explicit DimensionArray( DimensionArray< O > const& other ) {
+         resize( other.size() );
+         std::copy( other.data(), other.data() + size_, data_ );
+      }
       /// Move constructor, initializes by stealing the contents of `other`.
       DimensionArray( DimensionArray&& other ) {
          steal_data_from( other );
