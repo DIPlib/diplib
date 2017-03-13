@@ -152,6 +152,7 @@ dfloat ChainCode::BendingEnergy() const {
          diff[ ii ] = diff[ ii ] / delta_s[ ii ];
       }
       diff[ size1 ] = codes.front() - codes.back();
+      delta_s[ size1 ] = 0.5 * ( kulpa_weights[ codes.back() ] + kulpa_weights[ codes.front() ] ); // TODO: does not work for 4-connected CCs
       // Three times uniform filtering of diff
       if( size > 5 ) {
          for( dip::uint jj = 0; jj < 3; ++jj ) {
