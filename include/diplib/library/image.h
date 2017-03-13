@@ -1433,7 +1433,10 @@ class Image {
       ///
       /// The image must be forged, and the data will never
       /// be copied (i.e. this is a quick and cheap operation).
-      Image& Mirror( BooleanArray const& process );
+      ///
+      /// `process` indicates which axes to mirror. If `process` is an empty array, all
+      /// axes will be mirrored.
+      Image& Mirror( BooleanArray process = {} );
 
       /// \brief Change the tensor shape, without changing the number of tensor elements.
       Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {

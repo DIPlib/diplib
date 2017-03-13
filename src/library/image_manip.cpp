@@ -200,10 +200,12 @@ Image& Image::ExpandSingletonTensor( dip::uint sz ) {
 }
 
 
-Image& Image::Mirror( BooleanArray const& process ) {
+Image& Image::Mirror( BooleanArray process ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = sizes_.size();
-   DIP_THROW_IF( process.size() != nd, E::ARRAY_ILLEGAL_SIZE );
+   DIP_START_STACK_TRACE
+      ArrayUseParameter( process, nd, true );
+   DIP_END_STACK_TRACE
    for( dip::uint ii = 0; ii < nd; ++ii ) {
       if( process[ ii ] ) {
          origin_ = Pointer( ( sizes_[ ii ] - 1 ) * strides_[ ii ] );
