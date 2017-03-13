@@ -84,14 +84,12 @@ dip::uint SingletonExpendedTensorElements(
    return tsize;
 }
 
-// Find best processing dimension, which is the one with the smallest stride,
-// except if that dimension is very small and there's a longer dimension.
-dip::uint OptimalProcessingDim(
-      Image const& in
+
+static dip::uint OptimalProcessingDim_internal(
+      UnsignedArray const& sizes,
+      IntegerArray const& strides
 ) {
    constexpr dip::uint SMALL_IMAGE = 63;  // A good value would depend on the size of cache.
-   IntegerArray const& strides = in.Strides();
-   UnsignedArray const& sizes = in.Sizes();
    dip::uint processingDim = 0;
    for( dip::uint ii = 1; ii < strides.size(); ++ii ) {
       if( strides[ ii ] < strides[ processingDim ] ) {
@@ -103,6 +101,33 @@ dip::uint OptimalProcessingDim(
       }
    }
    return processingDim;
+}
+
+// Find best processing dimension, which is the one with the smallest stride,
+// except if that dimension is very small and there's a longer dimension.
+dip::uint OptimalProcessingDim(
+      Image const& in
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   return OptimalProcessingDim_internal( in.Sizes(), in.Strides() );
+}
+
+// Find the best processing dimension as above, but giving preference to a dimension
+// where `kernelSizes` is large also.
+dip::uint OptimalProcessingDim(
+      Image const& in,
+      UnsignedArray const& kernelSizes
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   UnsignedArray sizes = in.Sizes();
+   DIP_THROW_IF( sizes.size() != kernelSizes.size(), E::ARRAY_ILLEGAL_SIZE );
+   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+      if( kernelSizes[ ii ] == 1 ) {
+         sizes[ ii ] = 1; // this will surely force the algorithm to not return this dimension as optimal processing dimension
+      }
+   }
+   // TODO: a kernel of 1000x2 should definitely return the dimension where it's 1000 as the optimal dimension. Or?
+   return OptimalProcessingDim_internal( sizes, in.Strides() );
 }
 
 // Find color space names to attach to output images.
