@@ -269,14 +269,15 @@ void SeparableConvolution(
 
 void ConvolveFT(
       Image const& in,
-      Image const& kernel,
+      Image const& filter,
       Image& out,
       String const& inRepresentation,
-      String const& kernelRepresentation,
+      String const& filterRepresentation,
       String const& outRepresentation
 ) {
+   // TODO: Fix for tensor images
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !kernel.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !filter.IsForged(), E::IMAGE_NOT_FORGED );
    bool real = true;
    Image inFT;
    if( inRepresentation == "spatial" ) {
@@ -286,20 +287,20 @@ void ConvolveFT(
       real = false;
       inFT = in.QuickCopy();
    }
-   Image kernelFT = kernel.QuickCopy();
-   if( kernelFT.Dimensionality() < in.Dimensionality() ) {
-      kernelFT.ExpandDimensionality( in.Dimensionality() );
+   Image filterFT = filter.QuickCopy();
+   if( filterFT.Dimensionality() < in.Dimensionality() ) {
+      filterFT.ExpandDimensionality( in.Dimensionality() );
    }
-   DIP_THROW_IF( !(kernelFT.Sizes() <= in.Sizes()), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
-   kernelFT = kernelFT.Pad( in.Sizes() );
-   if( kernelRepresentation == "spatial" ) {
-      real &= kernelFT.DataType().IsReal();
-      FourierTransform( kernelFT, kernelFT );
+   DIP_THROW_IF( !( filterFT.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
+   filterFT = filterFT.Pad( in.Sizes() );
+   if( filterRepresentation == "spatial" ) {
+      real &= filterFT.DataType().IsReal();
+      FourierTransform( filterFT, filterFT );
    } else {
       real = false;
    }
    DataType dt = inFT.DataType();
-   MultiplySampleWise( inFT, kernelFT, out, dt );
+   MultiplySampleWise( inFT, filterFT, out, dt );
    if( outRepresentation == "spatial" ) {
       StringSet options{ "inverse" };
       if( real ) {
@@ -307,6 +308,99 @@ void ConvolveFT(
       }
       FourierTransform( out, out, options );
    }
+}
+
+
+namespace {
+
+template< typename TPI >
+class GeneralConvolutionLineFilter : public Framework::FullLineFilter {
+   public:
+      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         dip::sint inStride = params.inBuffer.stride;
+         TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
+         dip::sint outStride = params.outBuffer.stride;
+         dip::uint length = params.bufferLength;
+         PixelTableOffsets const& pixelTable = params.pixelTable;
+         std::vector< dfloat > const& weights = pixelTable.Weights();
+         for( dip::uint ii = 0; ii < length; ++ii ) {
+            TPI sum = 0;
+            auto ito = pixelTable.begin();
+            auto itw = weights.begin();
+            while( !ito.IsAtEnd() ) {
+               sum += in[ *ito ] * static_cast< FloatType< TPI >>( *itw );
+               ++ito;
+               ++itw;
+            }
+            *out = sum;
+            in += inStride;
+            out += outStride;
+         }
+      }
+};
+
+} // namespace
+
+void GeneralConvolution(
+      Image const& in,
+      Image const& c_filter,
+      Image& out,
+      StringArray const& boundaryCondition
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !c_filter.IsForged(), E::IMAGE_NOT_FORGED );
+   if( c_filter.DataType().IsBinary() ) {
+      // For binary filters, apply a uniform filter.
+      Uniform( in, c_filter, out, boundaryCondition );
+      return;
+   }
+   Image filter = c_filter.QuickCopy();
+   if( filter.Dimensionality() < in.Dimensionality() ) {
+      filter.ExpandDimensionality( in.Dimensionality() );
+   }
+   DIP_THROW_IF( !( filter.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
+   // Mirror the filter
+   filter.Mirror();
+   // Generate the pixel table
+   dip::uint procDim = Framework::OptimalProcessingDim( in, filter.Sizes() );
+   PixelTable pixelTable( filter != 0, {}, procDim );
+   pixelTable.AddWeights( filter );
+   /*
+   double s = 0;
+   for( auto w : pixelTable.Weights() ) {
+      s += w;
+   }
+   std::cout << "Sum of filter values = " << s << std::endl;
+   */
+   // Shift the pixel table's origin if it is even in size (so the mirrored filter keeps it origin)
+   auto sizes = pixelTable.Sizes();
+   IntegerArray offset( sizes.size(), 0 );
+   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+      if( !( sizes[ ii ] & 1 )) {
+         offset[ ii ] = -1;
+      }
+   }
+   pixelTable.ShiftOrigin( offset );
+   // Do the filtering
+   BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
+   DataType dtype = DataType::SuggestFlex( in.DataType() );
+   DIP_START_STACK_TRACE
+      std::unique_ptr< Framework::FullLineFilter > lineFilter;
+      DIP_OVL_NEW_FLEX( lineFilter, GeneralConvolutionLineFilter, (), dtype );
+      Framework::Full(
+            in,
+            out,
+            dtype,
+            dtype,
+            dtype,
+            1,
+            bc,
+            pixelTable,
+            *lineFilter,
+            Framework::Full_AsScalarImage
+      );
+   DIP_END_STACK_TRACE
 }
 
 
@@ -341,13 +435,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].origin = -1;
    filterArray[ 0 ].symmetry = "general";
-   dip::SeparableConvolution( img, out1, filterArray );
+   dip::SeparableConvolution( img, out1, filterArray, { "periodic" } );
    filterArray[ 0 ].filter = {
          1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0
    };
    filterArray[ 0 ].symmetry = "even";
-   dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::MeanAbs( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+   dip::SeparableConvolution( img, out2, filterArray, { "periodic" } );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
 
    // Comparing general to odd
    filterArray[ 0 ].filter = {
@@ -356,13 +450,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].origin = -1;
    filterArray[ 0 ].symmetry = "general";
-   dip::SeparableConvolution( img, out1, filterArray );
+   dip::SeparableConvolution( img, out1, filterArray, { "periodic" } );
    filterArray[ 0 ].filter = {
          1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0
    };
    filterArray[ 0 ].symmetry = "odd";
-   dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::MeanAbs( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+   dip::SeparableConvolution( img, out2, filterArray, { "periodic" } );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
 
    // Comparing general to d-even
    filterArray[ 0 ].filter = {
@@ -371,13 +465,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].origin = -1;
    filterArray[ 0 ].symmetry = "general";
-   dip::SeparableConvolution( img, out1, filterArray );
+   dip::SeparableConvolution( img, out1, filterArray, { "periodic" } );
    filterArray[ 0 ].filter = {
          1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0
    };
    filterArray[ 0 ].symmetry = "d-even";
-   dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::MeanAbs( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+   dip::SeparableConvolution( img, out2, filterArray, { "periodic" } );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
 
    // Comparing general to d-odd
    filterArray[ 0 ].filter = {
@@ -386,13 +480,26 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].origin = -1;
    filterArray[ 0 ].symmetry = "general";
-   dip::SeparableConvolution( img, out1, filterArray );
+   dip::SeparableConvolution( img, out1, filterArray, { "periodic" } );
    filterArray[ 0 ].filter = {
          1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0
    };
    filterArray[ 0 ].symmetry = "d-odd";
-   dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::MeanAbs( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+   dip::SeparableConvolution( img, out2, filterArray, { "periodic" } );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+
+   // Comparing that last filter to GeneralConvolution
+   dip::Image filter{ dip::UnsignedArray{ 19, 19, 19 }, 1, dip::DT_DFLOAT };
+   filter.Fill( 0 );
+   filter.At( 19/2, 19/2, 19/2 ) = 1;
+   dip::SeparableConvolution( filter, filter, filterArray, { "add zeros" } );
+   dip::GeneralConvolution( img, filter, out2, { "periodic" } );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+
+   // Comparing that one again, against ConvolveFT
+   // Note that we can do this because we've used "periodic" boundary condition everywhere else
+   dip::ConvolveFT( img, filter, out2 );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
 }
 
 #endif // DIP__ENABLE_DOCTEST

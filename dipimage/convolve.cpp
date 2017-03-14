@@ -68,9 +68,10 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       mxArray const* mxFilter = prhs[ 1 ];
       if( mxIsNumeric( mxFilter ) || mxIsClass( mxFilter, "dip_image" )) {
 
-         dip::Image const psf = dml::GetImage( mxFilter );
+         dip::Image const filter = dml::GetImage( mxFilter );
 
-         dip::ConvolveFT( in, psf, out );
+         dip::ConvolveFT( in, filter, out );
+         //dip::GeneralConvolution( in, filter, out );
 
       } else {
 

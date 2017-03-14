@@ -82,7 +82,7 @@ struct OneDimensionalFilter {
 using OneDimensionalFilterArray = std::vector< OneDimensionalFilter >;
 
 // TODO: Implement code to separate an image into 1D filters to be applied with SeparableConvolution
-OneDimensionalFilterArray SeparateKernel( Image const& kernel );
+OneDimensionalFilterArray SeparateFilter( Image const& filter );
 
 /// \brief Applies a convolution with a filter kernel (PSF) that is separable.
 ///
@@ -91,7 +91,9 @@ OneDimensionalFilterArray SeparateKernel( Image const& kernel );
 /// `false` for those dimensions), the `filter` array can have non-sensical data or a zero-length filter weights array.
 /// Any `filter` array that is zero size or the equivalent of `{1}` will not be applied either.
 ///
-/// \see dip::GeneralConvolution, dip::ConvolveFT, dip::Framework::Separable
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// \see dip::SeparateFilter, dip::GeneralConvolution, dip::ConvolveFT, dip::Framework::Separable
 void SeparableConvolution(
       Image const& in,                    ///< Input image
       Image& out,                         ///< Output image
@@ -110,39 +112,85 @@ inline Image SeparableConvolution(
    return out;
 }
 
+/// \brief Applies a convolution with a filter kernel (PSF) by multiplication in the Fourier domain.
+///
+/// `filter` is an image, and must be equal in size or smaller than `in`. If both `in` and `filter`
+/// are real, `out` will be real too, otherwise it will have a complex type.
+///
+/// As elsewhere, the origin of `filter` is in the middle of the image, on the pixel to the right of
+/// the center in case of an even-sized image.
+///
+/// If `in` or `filter` is already Fourier transformed, set `inRepresentation` or `filterRepresentation`
+/// to `"frequency"` (actually, any string different from `"spatial"` will do). Similarly, if
+/// `outRepresentation` is `"frequency"`, the output will not be inverse-transformed, so will be in
+/// the frequency domain.
+///
+/// \see dip::GeneralConvolution, dip::SeparableConvolution
 void ConvolveFT(
       Image const& in,
-      Image const& kernel,
+      Image const& filter,
       Image& out,
       String const& inRepresentation = "spatial",
-      String const& kernelRepresentation = "spatial",
+      String const& filterRepresentation = "spatial",
       String const& outRepresentation = "spatial"
 );
 inline Image ConvolveFT(
       Image const& in,
-      Image const& kernel,
+      Image const& filter,
       String const& inRepresentation = "spatial",
-      String const& kernelRepresentation = "spatial",
+      String const& filterRepresentation = "spatial",
       String const& outRepresentation = "spatial"
 ) {
    Image out;
-   ConvolveFT( in, kernel, out, inRepresentation, kernelRepresentation, outRepresentation );
+   ConvolveFT( in, filter, out, inRepresentation, filterRepresentation, outRepresentation );
    return out;
 }
 
+/// \brief Applies a convolution with a filter kernel (PSF) by direct implementation of the convolution sum.
+///
+/// `filter` is an image, and must be equal in size or smaller than `in`. `filter` must be real-valued.
+///
+/// As elsewhere, the origin of `filter` is in the middle of the image, on the pixel to the right of
+/// the center in case of an even-sized image.
+///
+/// Note that this is a really expensive way to compute the convolution for any `filter` that has more than a
+/// small amount of non-zero values. It is always advantageous to try to separate your filter into a set of 1D
+/// filters (see `dip::SeparateFilter` and `dip::SeparableConvolution`). If this is not possible, use
+/// `dip::ConvolveFT` with larger filters to compute the convolution in the Fourier domain.
+///
+/// Also, if all non-zero filter weights have the same value, `dip::Uniform` implements a more efficient
+/// algorithm. If `filter` is a binary image, `dip::Uniform` is called.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// \see dip::ConvolveFT, dip::SeparableConvolution, dip::SeparateFilter, dip::Uniform
 void GeneralConvolution(
       Image const& in,
       Image const& filter,
       Image& out,
       StringArray const& boundaryCondition = {}
 );
+inline Image GeneralConvolution(
+      Image const& in,
+      Image const& filter,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   GeneralConvolution( in, filter, out, boundaryCondition );
+   return out;
+}
 
 void Uniform(
       Image const& in,
       Image& out,
-      Image& neighborhood, // TODO: create 2 signatures, like we did with Dilation and Erosion
       FloatArray filterSize = { 7 },
       String const& filterShape = "elliptic",
+      StringArray const& boundaryCondition = {}
+);
+void Uniform(
+      Image const& in,
+      Image const& neighborhood,
+      Image& out,
       StringArray const& boundaryCondition = {}
 );
 
