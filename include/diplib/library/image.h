@@ -1310,6 +1310,8 @@ class Image {
       //
 
       /// \name Reshaping forged image
+      /// These functions change the image object, providing a differently-shaped version of the same data.
+      /// No data is copied, and the result contains the same set of samples as the input.
       /// \{
 
       /// \brief Permute dimensions.
@@ -1519,6 +1521,9 @@ class Image {
       //
 
       /// \name Indexing without data copy
+      /// These functions create a different view of the data contained in the object. The output
+      /// is a new `%Image` object. No data is copied, and the output typically contains a subset
+      /// of the samples from the input.
       /// \{
 
       /// \brief Extract a tensor element, `indices` must have one or two elements. The image must be forged.
@@ -1548,9 +1553,17 @@ class Image {
       /// \brief Extracts a subset of pixels from an image. The image must be forged.
       Image At( RangeArray ranges ) const;
 
-      /// \brief Extracts a subset of pixels from an image. The image must be forged.
-      // TODO: Make a version of this that crops evenly from all sides.
-      Image Crop( UnsignedArray sizes ) const;
+      /// \brief Extracts a subset of pixels from an image.
+      ///
+      /// Crops the image to the given size. Which pixels are selected is controlled by the
+      /// `cropLocation` parameter. The default is `dip::Option::CropLocation::CENTER`, which
+      /// maintains the origin pixel (as defined in `dip::FourierTransform` and other other places)
+      /// at the origin of the output image.
+      ///
+      /// `dip::Image::Pad` does the inverse operation.
+      ///
+      /// The image must be forged.
+      Image Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
 
       /// \brief Extracts the real component of a complex-typed image. The image must be forged.
       Image Real() const;
@@ -1561,11 +1574,9 @@ class Image {
       /// \brief Quick copy, returns a new image that points at the same data as `this`,
       /// and has mostly the same properties.
       ///
-      /// The color space and pixel size
-      /// information are not copied, and the protect flag is reset.
-      /// This function is mostly meant for use in functions that need to
-      /// modify some properties of the input images, without actually modifying
-      /// the input images.
+      /// The color space and pixel size information are not copied, and the protect flag is reset.
+      /// This function is mostly meant for use in functions that need to modify some properties of
+      /// the input images, without actually modifying the input images.
       Image QuickCopy() const {
          Image out;
          out.dataType_ = dataType_;
@@ -1664,6 +1675,21 @@ class Image {
       ///
       /// `this` must be forged.
       void CopyAt( Image const& source, CoordinateArray const& coordinates );
+
+      /// \brief Extends the image by padding with zeros.
+      ///
+      /// Pads the image to the given size. Where the original image data is located in the output image
+      /// is controlled by the `cropLocation` parameter. The default is `dip::Option::CropLocation::CENTER`,
+      /// which maintains the origin pixel (as defined in `dip::FourierTransform` and other other places)
+      /// at the origin of the output image.
+      ///
+      /// The object is not modified, a new image is created, with identical properties, but of the requested
+      /// size.
+      ///
+      /// `dip::Image::Crop` does the inverse operation.
+      ///
+      /// The image must be forged.
+      Image Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
 
       /// \brief Deep copy, `this` will become a copy of `src` with its own data.
       ///

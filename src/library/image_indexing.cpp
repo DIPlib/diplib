@@ -168,11 +168,33 @@ Image Image::At( RangeArray ranges ) const {
    return out;
 }
 
-Image Image::Crop( UnsignedArray sizes ) const {
+Image Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( sizes_.size() != sizes.size(), E::ARRAY_ILLEGAL_SIZE );
-   DIP_THROW_IF( sizes_.size() < sizes.size(), E::INDEX_OUT_OF_RANGE );
+   dip::uint nDims = sizes_.size();
+   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( sizes > sizes_, E::INDEX_OUT_OF_RANGE );
    Image out = *this;
+   UnsignedArray origin( nDims, 0 );
+   switch( cropLocation ) {
+      case Option::CropLocation::CENTER:
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            origin[ ii ] = ( sizes_[ ii ] - sizes[ ii ] + ( sizes[ ii ] & 1 ) ) / 2; // add one if output is odd in size
+         }
+         break;
+      case Option::CropLocation::MIRROR_CENTER:
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            origin[ ii ] = ( sizes_[ ii ] - sizes[ ii ] + ( sizes_[ ii ] & 1 ) ) / 2; // add one if input is odd in size
+         }
+         break;
+      case Option::CropLocation::TOP_LEFT:
+         // Origin stays at 0
+         break;
+      case Option::CropLocation::BOTTOM_RIGHT:
+         origin = sizes_;
+         origin -= sizes;
+         break;
+   }
+   out.origin_ = out.Pointer( origin );
    out.sizes_ = sizes;
    return out;
 }
@@ -273,6 +295,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
    // Tests that the window shares data, and that indexing with coordinates works
    DOCTEST_CHECK( static_cast< dip::sint >( img.At( 6, 2, 6 )) == 20 );
    DOCTEST_CHECK( static_cast< dip::sint >( img.At( 6, 1, 6 )) == 0 );
+   // Tests Crop
+   img.Fill( 0 );
+   img.At( 15/2, 20/2, 10/2 ) = 1;
+   dip::Image cropped = img.Crop( { 10, 10, 9 } );
+   DOCTEST_CHECK( static_cast< dip::sint >( cropped.At( 10/2, 10/2, 9/2 )) == 1 );
 }
 
 #endif // DIP__ENABLE_DOCTEST

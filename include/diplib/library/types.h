@@ -425,6 +425,14 @@ enum class AcceptDataTypeChange {
    DO_ALLOW    ///< Allow data type change, if the output image is protected, it will be used as is.
 };
 
+/// \brief The function `dip::Image::Crop` takes this option to control which pixels are taken.
+enum class CropLocation {
+   CENTER,        ///< The pixel at the origin of the input image is also at the origin in the output image.
+   MIRROR_CENTER, ///< Same as `%CENTER`, but for even-sized images, the origin is presumed to be left of center, rather than right of center.
+   TOP_LEFT,      ///< The corner of the image at coordinates {0,0,0...} is kept in the corner.
+   BOTTOM_RIGHT,  ///< The corner of the image opposite that of `%TOP_LEFT` is kept in the corner.
+};
+
 /// \class dip::Option::CmpProps
 /// \brief Determines which properties to compare.
 ///

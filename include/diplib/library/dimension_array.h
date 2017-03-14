@@ -319,7 +319,7 @@ class DimensionArray {
          return *this;
       }
 
-      /// Subtracts a constant to each element in the array.
+      /// Subtracts a constant from each element in the array.
       DimensionArray& operator-=( T const& v ) {
          for( size_type ii = 0; ii < size_; ++ii ) {
             data_[ ii ] -= v;
@@ -327,7 +327,7 @@ class DimensionArray {
          return *this;
       }
 
-      /// \brief Subtracts an array to `this`, element-wise. `other` must have the same number of elements.
+      /// \brief Subtracts an array from `this`, element-wise. `other` must have the same number of elements.
       template< typename S >
       DimensionArray& operator-=( DimensionArray< S > const& other ) {
          DIP_ASSERT( size_ == other.size() );

@@ -49,6 +49,9 @@ void Full(
    // Check inputs
    DIP_THROW_IF( pixelTable.Dimensionality() != nDims, "Pixel table dimensionality does not match image" );
 
+   // Determine the processing dimension.
+   dip::uint processingDim = pixelTable.ProcessingDimension();
+
    // Store these because they can get lost when ReForging `output` (it could be the same image as `c_in`)
    PixelSize pixelSize = c_in.PixelSize();
    String colorSpace = c_in.ColorSpace();
@@ -80,6 +83,8 @@ void Full(
       input.Protect();
    }
    if( dataTypeChange || expandTensor || boundary.any() ) {
+      // TODO: Make sure that the stride order stays the same when we do ExtendImageLowLevel. How???
+      //       Or better, set the stride along processingDim to 1 (or rather to TensorElements()), we don't care about the rest.
       Option::ExtendImage options = Option::ExtendImage_Masked;
       if( expandTensor ) {
          options += Option::ExtendImage_ExpandTensor;
@@ -105,10 +110,6 @@ void Full(
       }
    DIP_END_STACK_TRACE
 
-   // Determine the processing dimension.
-   dip::uint processingDim = pixelTable.ProcessingDimension();
-   dip::uint lineLength = input.Size( processingDim );
-
    // Create a pixel table suitable to be applied to `input`
    PixelTableOffsets pixelTableOffsets( pixelTable, input );
 
@@ -132,6 +133,7 @@ void Full(
    inBuffer.buffer = nullptr;
 
    // Create output buffer data struct and allocate buffer if necessary
+   dip::uint lineLength = input.Size( processingDim );
    std::vector< uint8 > outputBuffer;
    bool useOutBuffer = false;
    if( output.DataType() != outBufferType ) {
