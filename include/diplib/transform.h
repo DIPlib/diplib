@@ -43,36 +43,47 @@ namespace dip {
 /// along that dimension, where `N/2` is the integer division, and hence truncates the result for
 /// odd values of `N`. For example, an image of 256 pixels wide will have the origin at pixel 128
 /// (right of the center), whereas an image of 255 pixels will have the origin at pixel 127
-/// (dead in the middle).
+/// (dead in the middle). The same is true for the spatial domain, which is only obvious when
+/// computing the Fourier transform of a convolution kernel.
 ///
-/// The Fourier transform as implemented here normalizes by `1/sqrt(size)` for each dimension. Both
-/// forward and inverse transform use the same normalization. This is different from the more typical
-/// normalization where the forward transform is not normalized and the inverse transform is
-/// normalized by `1/size`. The person that originally implemented the DIPlib Fourier Transform likes
-/// symmetry.
+/// As it is commonly defined, the Fourier transform is not normalized, and the inverse transform
+/// is normalized by `1/size` for each dimension. This normalization is necessary for the sequence of
+/// forward and inverse transform to be idempotent. However, it is possible to change where the
+/// normalization is applied. For example, versions of *DIPlib* prior to version 3.0 used identical
+/// normalization for each of the two transforms. The advantage of using the common
+/// definition without normalization in the forward transform is that it is straightforward to
+/// transform an image and a convolution kernel, multiply them, and apply the inverse transform, as
+/// an efficient way to compute the convolution. With any other normalization, this process would
+/// require an extra multiplication by a constant to undo the normalization in the forward transform
+/// of the convolution kernel.
 ///
 /// This function will compute the Fourier Transform along the dimensions indicated by `process`. If
 /// `process` is an empty array, all dimensions will be processed (normal multi-dimensional transform).
 ///
-/// `options` is an array of strings that indicate how the transform is applied:
-///   - "forward": compute the forward transform (this is the default, so this option does not need to
-///     be given.
-///   - "inverse": compute the inverse transform
+/// `options` is an set of strings that indicate how the transform is applied:
+///   - "inverse": compute the inverse transform; not providing this string causes the the forward
+///     transform to be computed.
 ///   - "real": assumes that the (complex) input is conjugate symmetric, and returns a real-valued
 ///     result.
 ///   - "fast": pads the input to a "nice" size, multiple of 2, 3 and 5, which can be processed faster.
 ///     Note that "fast" causes the output to be interpolated. This is not always a problem
 ///     when computing convolutions or correlations, but will introduce e.g. edge effects in the result
 ///     of the convolution.
+///   - "corner": sets the origin to the top-left corner of the image (both in the spatial and the
+///     frequency domain). This yields a standard DFT (Discrete Fourier Transform).
+///   - "symmetric": the normalization is made symmetric, where both forward and inverse transforms
+///     are normalized by the same amount. Each transform is multiplied by `1/sqrt(size)` for each
+///     dimension. This makes the transform identical to how it was in versions of *DIPlib* prior to
+///     version 3.0.
 void FourierTransform(
       Image const& in,
       Image& out,
-      StringArray const& options = {},
+      StringSet const& options = {},
       BooleanArray process = {}
 );
 inline Image FourierTransform(
       Image const& in,
-      StringArray const& options = {},
+      StringSet const& options = {},
       BooleanArray const& process = {}
 ) {
    Image out;

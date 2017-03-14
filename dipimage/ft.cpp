@@ -35,9 +35,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      dip::StringArray options;
+      dip::StringSet options;
       if( nrhs > 1 ) {
-         options = dml::GetStringArray( prhs[ 1 ] );
+         options = dml::GetStringSet( prhs[ 1 ] );
       }
 
       dip::BooleanArray process;

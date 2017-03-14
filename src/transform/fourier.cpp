@@ -34,18 +34,24 @@ namespace {
 template< typename TPI >
 class DFTLineFilter : public Framework::SeparableLineFilter {
    public:
-      DFTLineFilter( UnsignedArray const& outSize, BooleanArray const& process, bool inverse ) {
+      DFTLineFilter(
+            UnsignedArray const& outSize,
+            BooleanArray const& process,
+            bool inverse, bool corner, bool symmetric
+      ) : inverse_( inverse ), shift_( !corner ) {
          options_.resize( outSize.size() );
          scale_ = 1.0;
          for( dip::uint ii = 0; ii < outSize.size(); ++ii ) {
             if( process[ ii ] ) {
                options_[ ii ].DFTInit( static_cast< int >( outSize[ ii ] ), inverse );
-               scale_ /= outSize[ ii ];
-               //std::cout << "Called DFTInit for dimension " << ii << std::endl;
+               if( inverse || symmetric ) {
+                  scale_ /= outSize[ ii ];
+               }
             }
          }
-         scale_ = std::sqrt( scale_ );
-         //std::cout << "scale_ = " << scale_ << std::endl;
+         if( symmetric ) {
+            scale_ = std::sqrt( scale_ );
+         }
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
@@ -65,16 +71,24 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
          if( params.pass == params.nPasses - 1 ) {
             scale = scale_;
          }
-         if( opts.isInverse() ) {
-            ifftshift( in, length );
+         if( shift_ ) {
+            if( inverse_ ) {
+               ifftshift( in, length );
+            } else {
+               fftshift( in, length );
+            }
          }
          DFT( in, out, buffers_[ params.thread ].data(), opts, scale );
-         if( !opts.isInverse() ) {
-            fftshift( out, length );
+         if( shift_ ) {
+            if( inverse_ ) {
+               ifftshift( out, length );
+            } else {
+               fftshift( out, length );
+            }
          }
       }
       // The two functions below by Alexei: http://stackoverflow.com/a/19752002/7328782
-      void fftshift( TPI* data, dip::uint length ) {
+      static void fftshift( TPI* data, dip::uint length ) {
          dip::uint jj = length / 2;
          if( length & 1 ) { // Odd-sized transform
             TPI tmp = data[ 0 ];
@@ -89,7 +103,7 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
             }
          }
       }
-      void ifftshift( TPI* data, dip::uint length ) {
+      static void ifftshift( TPI* data, dip::uint length ) {
          dip::uint jj = length / 2;
          if( length & 1 ) { // Odd-sized transform
             TPI tmp = data[ length - 1 ];
@@ -110,6 +124,8 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
       std::vector< DFTOptions< FloatType< TPI >>> options_; // one for each dimension
       std::vector< std::vector< TPI >> buffers_; // one for each thread
       FloatType< TPI > scale_;
+      bool inverse_;
+      bool shift_;
 };
 
 } // namespace
@@ -118,28 +134,34 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
 void FourierTransform(
       Image const& in,
       Image& out,
-      StringArray const& options,
+      StringSet const& options,
       BooleanArray process
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   // Read `options` array
-   bool padding = false; // pad the image to a "nice" size?
+   // Read `options` set
    bool inverse = false; // forward or inverse transform?
    bool real = false; // real-valued output?
-   for( dip::uint ii = 0; ii < options.size(); ++ii ) {
-      if( options[ ii ] == "inverse" ) {
+   bool fast = false; // pad the image to a "nice" size?
+   bool corner = false;
+   bool symmetric = false;
+   for( auto& option : options ) {
+      if( option == "inverse" ) {
          inverse = true;
-      } else if( options[ ii ] == "real" ) {
+      } else if( option == "real" ) {
          // TODO: We should probably write code to do real -> 1/2 plane complex, and 1/2 plane complex -> real DFTs.
          // TODO: If so, we'll need to write our own loop code here, we won't be able to depend on Framework::Separable (unless we add some options there...)
          real = true;
-      } else if( options[ ii ] == "fast" ) {
-         padding = true;
+      } else if( option == "fast" ) {
+         fast = true;
+      } else if( option == "corner" ) {
+         corner = true;
+      } else if( option == "symmetric" ) {
+         symmetric = true;
       } else {
-         DIP_THROW_IF( options[ ii ] != "forward", E::INVALID_FLAG );
+         DIP_THROW( E::INVALID_FLAG );
       }
    }
    if( !in.DataType().IsComplex() ) {
@@ -156,8 +178,8 @@ void FourierTransform(
    // Determine output size and create `border` array
    UnsignedArray outSize = in.Sizes();
    UnsignedArray border( nDims, 0 );
-   BoundaryConditionArray bc{ BoundaryCondition::ADD_ZEROS };
-   if( padding ) {
+   BoundaryConditionArray bc{ BoundaryCondition::ZERO_ORDER_EXTRAPOLATE }; // Is this the least damaging boundary condition?
+   if( fast ) {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( process[ ii ] ) {
             dip::uint sz;
@@ -183,7 +205,7 @@ void FourierTransform(
    DIP_START_STACK_TRACE
       // Get callback function
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-      DIP_OVL_NEW_COMPLEX( lineFilter, DFTLineFilter, ( outSize, process, inverse ), dtype );
+      DIP_OVL_NEW_COMPLEX( lineFilter, DFTLineFilter, ( outSize, process, inverse, corner, symmetric ), dtype );
       Framework::Separable(
             in_copy,
             out,
