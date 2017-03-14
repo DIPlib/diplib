@@ -97,3 +97,6 @@ grey values are directly used as structuring element values. Set pixels to negat
 exclude them from the structuring element (the result would be the same by setting them to
 a value lower than the range of the input image, but the algorithm should be more efficient if
 those pixels are excluded).
+
+As elsewhere, the origin of `se` is in the middle of the image, on the pixel to the right of
+the center in case of an even-sized image.

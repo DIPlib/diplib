@@ -199,3 +199,7 @@ over.
   the boundary condition through a global parameter, which no longer exists. If you never
   touched the global parameter, nothing should change for you. If you did change this global
   parameter in a program, you now need to pass the value to the relevant functions instead.
+
+- `dilation_se`, `erosion_se`, etc. are now folded into `dilation`, `erosion`, etc. For
+  functions with an `_se` appended to the name, remove the `_se`. Alternatively, the `alias`
+  sub-directory contains these names and forwards the calls to the correct functions.

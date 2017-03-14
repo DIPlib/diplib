@@ -360,29 +360,11 @@ void GeneralConvolution(
       filter.ExpandDimensionality( in.Dimensionality() );
    }
    DIP_THROW_IF( !( filter.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
-   // Mirror the filter
    filter.Mirror();
-   // Generate the pixel table
    dip::uint procDim = Framework::OptimalProcessingDim( in, filter.Sizes() );
    PixelTable pixelTable( filter != 0, {}, procDim );
    pixelTable.AddWeights( filter );
-   /*
-   double s = 0;
-   for( auto w : pixelTable.Weights() ) {
-      s += w;
-   }
-   std::cout << "Sum of filter values = " << s << std::endl;
-   */
-   // Shift the pixel table's origin if it is even in size (so the mirrored filter keeps it origin)
-   auto sizes = pixelTable.Sizes();
-   IntegerArray offset( sizes.size(), 0 );
-   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
-      if( !( sizes[ ii ] & 1 )) {
-         offset[ ii ] = -1;
-      }
-   }
-   pixelTable.ShiftOrigin( offset );
-   // Do the filtering
+   pixelTable.MirrorOrigin();
    BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
    DataType dtype = DataType::SuggestFlex( in.DataType() );
    DIP_START_STACK_TRACE

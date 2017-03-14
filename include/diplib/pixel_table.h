@@ -201,7 +201,7 @@ class PixelTable {
       /// Returns the origin of the neighborhood w.r.t. the top-left corner of the bounding box
       IntegerArray const& Origin() const { return origin_; }
 
-      /// Returns the size of the boundary extension along each dimension that is necessary to accommodate the
+      /// \brief Returns the size of the boundary extension along each dimension that is necessary to accommodate the
       /// neighborhood on the edge pixels of the image
       UnsignedArray Boundary() const {
          dip::uint nDims = sizes_.size();
@@ -213,7 +213,26 @@ class PixelTable {
       }
 
       /// Shifts the origin of the neighborhood by the given amount
-      void ShiftOrigin( IntegerArray const& shift );
+      void ShiftOrigin( IntegerArray const& shift ) {
+         dip::uint nDims = origin_.size();
+         DIP_THROW_IF( shift.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
+         origin_ += shift;
+         for( auto& run : runs_ ) {
+            run.coordinates -= shift;
+         }
+      }
+
+      /// \brief Shifts the origin of the neighborhood by one pixel to the left for even-sized dimensions.
+      /// This is useful for neighborhoods with their origin in the default location, that have been mirrored.
+      void MirrorOrigin() {
+         IntegerArray offset( sizes_.size(), 0 );
+         for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
+            if( !( sizes_[ ii ] & 1 ) ) {
+               offset[ ii ] = -1;
+            }
+         }
+         ShiftOrigin( offset );
+      }
 
       /// Returns the number of pixels in the neighborhood
       dip::uint NumberOfPixels() const { return nPixels_; }

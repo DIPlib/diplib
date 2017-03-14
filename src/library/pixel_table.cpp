@@ -302,15 +302,6 @@ void PixelTable::AsImage( Image& out ) const {
    }
 }
 
-// Shift the origin
-void PixelTable::ShiftOrigin( IntegerArray const& shift ) {
-   dip::uint nDims = origin_.size();
-   DIP_THROW_IF( shift.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
-   origin_ += shift;
-   for( auto& run : runs_ ) {
-      run.coordinates -= shift;
-   }
-}
 
 template< typename TPI >
 void dip__AddWeights(

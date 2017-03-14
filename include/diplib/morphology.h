@@ -37,7 +37,7 @@ namespace dip {
 /// \brief Functions that implement mathematical morphology
 /// \{
 
-// TODO: some functions are \ingroup segmentation!
+// TODO: some functions are \ingroup segmentation! Add some links in that group's documentation to these.
 
 /// \brief Applies the dilation with a standard structuring element.
 ///
