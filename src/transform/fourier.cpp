@@ -226,6 +226,7 @@ void FourierTransform(
    if( real ) {
       out.Copy( out.Real() );
    }
+   // TODO: set output pixel sizes
 }
 
 

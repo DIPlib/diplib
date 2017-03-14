@@ -65,46 +65,48 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      dip::OneDimensionalFilterArray filterArray;
       mxArray const* mxFilter = prhs[ 1 ];
-      if( mxIsCell( mxFilter )) {
-         DIP_THROW_IF( !dml::IsVector( mxFilter ), wrongFilter );
-         dip::uint n = mxGetNumberOfElements( mxFilter );
-         filterArray.resize( n );
-         for( dip::uint ii = 0; ii < n; ++ii ) {
-            mxArray const* elem = mxGetCell( mxFilter, ii );
-            try {
-               filterArray[ ii ].filter = dml::GetFloatArray( elem );
-            } catch( dip::Error& ) {
-               DIP_THROW( wrongFilter );
+      if( mxIsNumeric( mxFilter ) || mxIsClass( mxFilter, "dip_image" )) {
+
+         dip::Image const psf = dml::GetImage( mxFilter );
+
+         dip::ConvolveFT( in, psf, out );
+
+      } else {
+
+         dip::OneDimensionalFilterArray filterArray;
+         if( mxIsCell( mxFilter ) ) {
+            DIP_THROW_IF( !dml::IsVector( mxFilter ), wrongFilter );
+            dip::uint n = mxGetNumberOfElements( mxFilter );
+            filterArray.resize( n );
+            for( dip::uint ii = 0; ii < n; ++ii ) {
+               mxArray const* elem = mxGetCell( mxFilter, ii );
+               try {
+                  filterArray[ ii ].filter = dml::GetFloatArray( elem );
+               } catch( dip::Error& ) {
+                  DIP_THROW( wrongFilter );
+               }
+            }
+         } else if( mxIsStruct( mxFilter ) ) {
+            dip::uint n = mxGetNumberOfElements( mxFilter );
+            filterArray.resize( n );
+            for( dip::uint ii = 0; ii < n; ++ii ) {
+               try {
+                  filterArray[ ii ] = GetFilter( mxFilter, ii );
+               } catch( dip::Error& ) {
+                  DIP_THROW( wrongFilter );
+               }
             }
          }
-      } else if( mxIsNumeric( mxFilter )) {
-         DIP_THROW_IF( !dml::IsVector( mxFilter ), wrongFilter );
-         filterArray.resize( 1 );
-         try {
-            filterArray[ 0 ].filter = dml::GetFloatArray( mxFilter );
-         } catch( dip::Error& ) {
-            DIP_THROW( wrongFilter );
-         }
-      } else if( mxIsStruct( mxFilter )) {
-         dip::uint n = mxGetNumberOfElements( mxFilter );
-         filterArray.resize( n );
-         for( dip::uint ii = 0; ii < n; ++ii ) {
-            try {
-               filterArray[ ii ] = GetFilter( mxFilter, ii );
-            } catch( dip::Error& ) {
-               DIP_THROW( wrongFilter );
-            }
-         }
-      }
 
-      dip::StringArray bc;
-      if( nrhs > 2 ) {
-         bc = dml::GetStringArray( prhs[ 2 ]);
-      }
+         dip::StringArray bc;
+         if( nrhs > 2 ) {
+            bc = dml::GetStringArray( prhs[ 2 ] );
+         }
 
-      dip::SeparableConvolution( in, out, filterArray, bc );
+         dip::SeparableConvolution( in, out, filterArray, bc );
+
+      }
 
       plhs[ 0 ] = mi.GetArray( out );
 

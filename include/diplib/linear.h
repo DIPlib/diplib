@@ -81,6 +81,8 @@ struct OneDimensionalFilter {
 /// \brief An array of 1D filters
 using OneDimensionalFilterArray = std::vector< OneDimensionalFilter >;
 
+// TODO: Implement code to separate an image into 1D filters to be applied with SeparableConvolution
+OneDimensionalFilterArray SeparateKernel( Image const& kernel );
 
 /// \brief Applies a convolution with a filter kernel (PSF) that is separable.
 ///
@@ -108,16 +110,25 @@ inline Image SeparableConvolution(
    return out;
 }
 
-// TODO: implement code to separate an image into 1D filters to be applied with SeparableConvolution.
-
 void ConvolveFT(
       Image const& in,
-      Image const& filter,
+      Image const& kernel,
       Image& out,
-      String const& inRepresentation,
-      String const& filterRepresentation,
-      String const& outRepresentation
+      String const& inRepresentation = "spatial",
+      String const& kernelRepresentation = "spatial",
+      String const& outRepresentation = "spatial"
 );
+inline Image ConvolveFT(
+      Image const& in,
+      Image const& kernel,
+      String const& inRepresentation = "spatial",
+      String const& kernelRepresentation = "spatial",
+      String const& outRepresentation = "spatial"
+) {
+   Image out;
+   ConvolveFT( in, kernel, out, inRepresentation, kernelRepresentation, outRepresentation );
+   return out;
+}
 
 void GeneralConvolution(
       Image const& in,
@@ -173,6 +184,16 @@ void GaussIIR(
       IntegerArray filterOrder = {},
       dip::uint designMethod = 0, // should be a string
       dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
+);
+
+void GaborFIR(
+      Image const& in,
+      Image& out,
+      FloatArray sigmas,
+      FloatArray frequencies,
+      StringArray const& boundaryCondition = {},
+      BooleanArray process = {},
+      dfloat truncation = 3
 );
 
 void GaborIIR(

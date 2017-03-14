@@ -43,7 +43,7 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
          forwardBuffers_.resize( threads );
          backwardBuffers_.resize( threads );
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) {
+      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          dip::sint inStride = params.inBuffer.stride;
@@ -174,7 +174,7 @@ template< typename TPI >
 class PixelTableMorphologyLineFilter : public Framework::FullLineFilter {
    public:
       PixelTableMorphologyLineFilter( bool dilation ) : dilation_( dilation ) {}
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) {
+      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
@@ -266,7 +266,7 @@ template< typename TPI >
 class GreyValueSEMorphologyLineFilter : public Framework::FullLineFilter {
    public:
       GreyValueSEMorphologyLineFilter( bool dilation ) : dilation_( dilation ) {}
-      virtual void Filter( Framework::FullLineFilterParameters const& params ) {
+      virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
@@ -351,7 +351,7 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) {
+      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
          dip::sint inStride = params.inBuffer.stride;
@@ -748,13 +748,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
 
    // Grey-value SE morphology
    se.ReForge( { 5, 6 }, 1, dip::DT_SFLOAT );
-   se = std::numeric_limits< dip::dfloat >::infinity;
+   se = std::numeric_limits< dip::dfloat >::infinity();
    se.At( 0, 0 ) = 0;
    se.At( 4, 5 ) = 5;
    se.At( 0, 5 ) = 5;
    se.At( 4, 0 ) = -5;
    dip::BasicMorphology( in, se, out, {}, true /*compute dilation*/ );
-   DOCTEST_CHECK(( dip::dfloat )dip::Sum( out ) == 250 - 150 - 150 + 250 );
+   DOCTEST_CHECK(( dip::dfloat )dip::Sum( out ) == 100 + 105 + 105 + 95 );
    dip::BasicMorphology( out, se, out, {}, false /*compute erosion*/, true );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
    DOCTEST_CHECK(( dip::sint )out.At( 127, 35 ) == 100 ); // Is that pixel in the right place?

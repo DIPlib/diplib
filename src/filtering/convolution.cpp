@@ -20,6 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/linear.h"
+#include "diplib/transform.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 
@@ -266,6 +267,49 @@ void SeparableConvolution(
 }
 
 
+void ConvolveFT(
+      Image const& in,
+      Image const& kernel,
+      Image& out,
+      String const& inRepresentation,
+      String const& kernelRepresentation,
+      String const& outRepresentation
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !kernel.IsForged(), E::IMAGE_NOT_FORGED );
+   bool real = true;
+   Image inFT;
+   if( inRepresentation == "spatial" ) {
+      real &= in.DataType().IsReal();
+      FourierTransform( in, inFT );
+   } else {
+      real = false;
+      inFT = in.QuickCopy();
+   }
+   Image kernelFT = kernel.QuickCopy();
+   if( kernelFT.Dimensionality() < in.Dimensionality() ) {
+      kernelFT.ExpandDimensionality( in.Dimensionality() );
+   }
+   DIP_THROW_IF( !(kernelFT.Sizes() <= in.Sizes()), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
+   kernelFT = kernelFT.Pad( in.Sizes() );
+   if( kernelRepresentation == "spatial" ) {
+      real &= kernelFT.DataType().IsReal();
+      FourierTransform( kernelFT, kernelFT );
+   } else {
+      real = false;
+   }
+   DataType dt = inFT.DataType();
+   MultiplySampleWise( inFT, kernelFT, out, dt );
+   if( outRepresentation == "spatial" ) {
+      StringSet options{ "inverse" };
+      if( real ) {
+         options.insert( "real" );
+      }
+      FourierTransform( out, out, options );
+   }
+}
+
+
 } // namespace dip
 
 
@@ -281,36 +325,36 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
       DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
       std::random_device rd;
       std::mt19937 gen( rd() );
-      std::normal_distribution< float > normDist( 9563.0, 500.0 );
+      std::normal_distribution< dip::dfloat > normDist( 9563.0, 500.0 );
       dip::ImageIterator< dip::uint16 > it( img );
       do {
-         * it = dip::clamp_cast< dip::uint16 >( normDist( gen ) );
-      } while( false /* ++it */ );
+         *it = dip::clamp_cast< dip::uint16 >( normDist( gen ) );
+      } while( ++it );
    }
-   // Comparing general to even
    dip::Image out1;
+   dip::Image out2;
+   // Comparing general to even
    dip::OneDimensionalFilterArray filterArray( 1 );
    filterArray[ 0 ].filter = {
          1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0,
          6.0 / 49.0, 5.0 / 49.0, 4.0 / 49.0, 3.0 / 49.0, 2.0 / 49.0, 1.0 / 49.0
    };
-   filterArray[ 0 ].origin = 0;
+   filterArray[ 0 ].origin = -1;
    filterArray[ 0 ].symmetry = "general";
    dip::SeparableConvolution( img, out1, filterArray );
-   dip::Image out2;
    filterArray[ 0 ].filter = {
          1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0
    };
    filterArray[ 0 ].symmetry = "even";
    dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( double( dip::MeanAbs( out1 - out2 )) < 1e-7 );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::MeanAbs( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
 
    // Comparing general to odd
    filterArray[ 0 ].filter = {
          1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0,
          -6.0 / 49.0, -5.0 / 49.0, -4.0 / 49.0, -3.0 / 49.0, -2.0 / 49.0, -1.0 / 49.0
    };
-   filterArray[ 0 ].origin = 0;
+   filterArray[ 0 ].origin = -1;
    filterArray[ 0 ].symmetry = "general";
    dip::SeparableConvolution( img, out1, filterArray );
    filterArray[ 0 ].filter = {
@@ -318,14 +362,14 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].symmetry = "odd";
    dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( double( dip::MeanAbs( out1 - out2 )) < 1e-7 );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::MeanAbs( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
 
    // Comparing general to d-even
    filterArray[ 0 ].filter = {
          1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0,
          7.0 / 49.0, 6.0 / 49.0, 5.0 / 49.0, 4.0 / 49.0, 3.0 / 49.0, 2.0 / 49.0, 1.0 / 49.0
    };
-   filterArray[ 0 ].origin = 0;
+   filterArray[ 0 ].origin = -1;
    filterArray[ 0 ].symmetry = "general";
    dip::SeparableConvolution( img, out1, filterArray );
    filterArray[ 0 ].filter = {
@@ -333,14 +377,14 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].symmetry = "d-even";
    dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( double( dip::MeanAbs( out1 - out2 )) < 1e-7 );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::MeanAbs( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
 
    // Comparing general to d-odd
    filterArray[ 0 ].filter = {
          1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0,
          -7.0 / 49.0, -6.0 / 49.0, -5.0 / 49.0, -4.0 / 49.0, -3.0 / 49.0, -2.0 / 49.0, -1.0 / 49.0
    };
-   filterArray[ 0 ].origin = 0;
+   filterArray[ 0 ].origin = -1;
    filterArray[ 0 ].symmetry = "general";
    dip::SeparableConvolution( img, out1, filterArray );
    filterArray[ 0 ].filter = {
@@ -348,7 +392,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].symmetry = "d-odd";
    dip::SeparableConvolution( img, out2, filterArray );
-   DOCTEST_CHECK( double( dip::MeanAbs( out1 - out2 )) < 1e-7 );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::MeanAbs( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
 }
 
 #endif // DIP__ENABLE_DOCTEST

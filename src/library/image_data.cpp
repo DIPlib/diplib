@@ -106,10 +106,15 @@ static bool FindSimpleStrideSizeAndStart(
    } else {
       // Find the simple stride
       sstride = std::numeric_limits< dip::uint >::max();
+      bool updated = false;
       for( dip::uint ii = 0; ii < strides.size(); ++ii ) {
          if( sizes[ ii ] > 1 ) {
             sstride = std::min( sstride, static_cast< dip::uint >( std::abs( strides[ ii ] ) ) );
+            updated = true;
          }
+      }
+      if( !updated ) {
+         sstride = 1;
       }
       FindDataBlockSizeAndStart( strides, sizes, size, start );
       if( size != ( FindNumberOfPixels( sizes ) - 1 ) * sstride + 1 ) {
