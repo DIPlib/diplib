@@ -200,26 +200,14 @@ void Opening(
 
 // --- TODO functions below here ---
 
-enum dip_MphEdgeType {
-   DIP_MPH_TEXTURE = 1,
-   DIP_MPH_OBJECT = 2,
-   DIP_MPH_BOTH = 3,
-   DIP_MPH_DYNAMIC = 3
-};
-
-enum dip_MphTophatPolarity {
-   DIP_MPH_BLACK = 1,
-   DIP_MPH_WHITE = 2
-};
-
 void Tophat(
       Image const& in,
       Image const& se,
       Image& out,
-      FloatArray const& filterParam = {7},
+      FloatArray const& filterParam = { 7 },
       String const& filterShape = "elliptic",
-      dip_MphEdgeType edgeType = DIP_MPH_TEXTURE, // should be a string
-      dip_MphTophatPolarity = DIP_MPH_WHITE, // should be a string
+      String const& edgeType = "texture", // "object", "both", "dynamic"=="both"
+      String const& polarity = "white", // "black"
       StringArray const& boundaryCondition = {}
 );
 
@@ -227,9 +215,9 @@ void MorphologicalThreshold(
       Image const& in,
       Image const& se,
       Image& out,
-      FloatArray const& filterParam = {7},
+      FloatArray const& filterParam = { 7 },
       String const& filterShape = "elliptic",
-      dip_MphEdgeType edgeType = DIP_MPH_TEXTURE, // should be a string
+      String const& edgeType = "texture",
       StringArray const& boundaryCondition = {}
 );
 
@@ -237,9 +225,9 @@ void MorphologicalGist(
       Image const& in,
       Image const& se,
       Image& out,
-      FloatArray const& filterParam = {7},
+      FloatArray const& filterParam = { 7 },
       String const& filterShape = "elliptic",
-      dip_MphEdgeType edgeType = DIP_MPH_TEXTURE, // should be a string
+      String const& edgeType = "texture",
       StringArray const& boundaryCondition = {}
 );
 
@@ -247,9 +235,9 @@ void MorphologicalRange(
       Image const& in,
       Image const& se,
       Image& out,
-      FloatArray const& filterParam = {7},
+      FloatArray const& filterParam = { 7 },
       String const& filterShape = "elliptic",
-      dip_MphEdgeType edgeType = DIP_MPH_TEXTURE, // should be a string
+      String const& edgeType = "texture",
       StringArray const& boundaryCondition = {}
 );
 
@@ -257,41 +245,30 @@ void MorphologicalGradientMagnitude(
       Image const& in,
       Image const& se,
       Image& out,
-      FloatArray const& filterParam = {7},
+      FloatArray const& filterParam = { 7 },
       String const& filterShape = "elliptic",
-      dip_MphEdgeType edgeType = DIP_MPH_TEXTURE, // should be a string
+      String const& edgeType = "texture",
       StringArray const& boundaryCondition = {}
 );
-
-enum dipf_LeeSign {
-   DIP_LEE_UNSIGNED = 1,
-   DIP_LEE_SIGNED = 2
-};
 
 void Lee(
       Image const& in,
       Image const& se,
       Image& out,
-      FloatArray const& filterParam = {7},
+      FloatArray const& filterParam = { 7 },
       String const& filterShape = "elliptic",
-      dip_MphEdgeType edgeType = DIP_MPH_TEXTURE, // should be a string
-      dipf_LeeSign flags = DIP_LEE_UNSIGNED, // should be a string
+      String const& edgeType = "texture",
+      String const& sign = "unsigned", // "signed"
       StringArray const& boundaryCondition = {}
 );
-
-enum dipf_MphSmoothing {
-   DIP_MPH_OPEN_CLOSE = 1,
-   DIP_MPH_CLOSE_OPEN = 2,
-   DIP_MPH_AVERAGE = 3
-};
 
 void MorphologicalSmoothing(
       Image const& in,
       Image const& se,
       Image& out,
-      FloatArray const& filterParam = {7},
+      FloatArray const& filterParam = { 7 },
       String const& filterShape = "elliptic",
-      dipf_MphSmoothing = DIP_MPH_AVERAGE, // should be a string
+      String const& mode = "average", // "open-close", "close-open"
       StringArray const& boundaryCondition = {}
 );
 
@@ -309,7 +286,7 @@ void MorphologicalLaplace(
       Image const& in,
       Image const& se,
       Image& out,
-      FloatArray const& filterParam = {7},
+      FloatArray const& filterParam = { 7 },
       String const& filterShape = "elliptic",
       StringArray const& boundaryCondition = {}
 );
@@ -321,20 +298,19 @@ void Watershed(
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
-      bool binaryOutput = true // should be a string
+      String const& output = "binary"
 );
 
-enum dipf_GreyValueSortOrder {A};
 void SeededWatershed(
       Image const&,
       Image const&,
       Image const&,
       Image const&,
       dip::uint connectivity = 1,
-      dipf_GreyValueSortOrder sortOrder = A, // should be a string
+      String const& sortOrder = "low first",
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
-      bool binaryOutput = true // should be a string
+      String const& output = "binary"
 );
 
 void LocalMinima(
@@ -344,7 +320,7 @@ void LocalMinima(
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
-      bool binaryOutput = true // should be a string
+      String const& output = "binary"
 );
 
 void UpperEnvelope(

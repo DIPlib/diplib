@@ -1,8 +1,8 @@
-%EROSION   Grey-value erosion
+%OPENING   Grey-value opening
 %
 % SYNOPSIS:
-%  image_out = erosion(image_in,filterSize,filterShape,boundary_condition)
-%  image_out = erosion(image_in,image_se,boundary_condition)
+%  image_out = opening(image_in,filterSize,filterShape,boundary_condition)
+%  image_out = opening(image_in,image_se,boundary_condition)
 %
 % PARAMETERS:
 %  filterShape: 'rectangular', 'elliptic', 'diamond', 'parabolic'
@@ -11,23 +11,19 @@
 % DEFAULTS:
 %  filterSize = 7
 %  filterShape = 'elliptic'
-%  boundary_condition = {} (equivalent to 'add min')
+%  boundary_condition = {} (equivalent to 'add min' in the dilation and 'add max' in
+%                           the erosion)
 %
 %  The structuring element can be specified in two ways: through FILTERSIZE
 %  and FILTERSHAPE, specifying one of the default shapes, or through IMAGE_SE,
 %  providing a custom binary or grey-value shape.
 %
-%  The IMAGE_SE is applied as-is as a neighborhood, without mirroring. Therefore,
-%  the composition of DILATION and EROSION only forms an opening or closing if
-%  the structuring element is symmetric. For non-symmetric structuring elements,
-%  mirror the structuring element in one of the two operations.
-%
 %  BOUNDARY_CONDITION is a string or a cell array of strings (one per image
-%  dimension) specifying how the erosion handles pixel values outside
+%  dimension) specifying how the dilation handles pixel values outside
 %  of the image domain.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Erosion.
+%  This function calls the DIPlib functions dip::Opening.
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

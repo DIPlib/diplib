@@ -13,7 +13,7 @@
 %  filterShape = 'elliptic'
 %  boundary_condition = {} (equivalent to 'add min')
 %
-%  The dilation structuring element can be specified in two ways: through FILTERSIZE
+%  The structuring element can be specified in two ways: through FILTERSIZE
 %  and FILTERSHAPE, specifying one of the default shapes, or through IMAGE_SE,
 %  providing a custom binary or grey-value shape.
 %
