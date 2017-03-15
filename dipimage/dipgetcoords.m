@@ -57,7 +57,7 @@ else % nargin == 2
    end
    N = arg2;
 end
-if prod(size(N))~=1 || ~isnumeric(N) || fix(N)~=N || N<1
+if numel(N)~=1 || ~isnumeric(N) || fix(N)~=N || N<1
    error('N must be a positive integer.');
 end
 

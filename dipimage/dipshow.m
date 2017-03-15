@@ -1289,9 +1289,9 @@ if ~isfield(udata,'computed') || ~isfield(udata.computed,'lin')
          % Don't worry about this. It cannot happen.
       else
          cdata = udata.slices;
-         cdata = mapcomplexdata(cdata,udata.complexmapping);
       end
    end
+   cdata = mapcomplexdata(cdata,udata.complexmapping);
    udata.computed.lin = getmaximumandminimum(cdata);
 end
 
@@ -1303,9 +1303,9 @@ if ~isfield(udata,'computed') || ~isfield(udata.computed,'percentile')
          % Don't worry about this. It cannot happen.
       else
          cdata = udata.slices;
-         cdata = mapcomplexdata(cdata,udata.complexmapping);
       end
    end
+   cdata = mapcomplexdata(cdata,udata.complexmapping);
    udata.computed.percentile = [percentile(cdata,5),percentile(cdata,95)];
 end
 

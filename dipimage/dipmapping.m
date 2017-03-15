@@ -169,7 +169,7 @@ while ii<=N
             error('Argument must be a valid figure handle.')
          end
       else
-         if ~isnumeric(arg) || ~(isempty(arg) || prod(size(arg))==2)
+         if ~isnumeric(arg) || ~(isempty(arg) || numel(arg)==2)
             error('Arguments should be strings or two-element vectors.')
          end
          if hasrange

@@ -40,7 +40,7 @@ else
       end
    end
    I = logical(zeros(size(h)));
-   for ii=1:prod(size(I))
+   for ii=1:numel(I)
       if ischar(h{ii})
          h{ii} = dipfig('-get',h{ii});
       end

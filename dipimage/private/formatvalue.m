@@ -22,7 +22,7 @@
 % limitations under the License.
 
 function str = formatvalue(p)
-if ~isnumeric(p) || prod(size(p))~=1
+if ~isnumeric(p) || numel(p)~=1
    error('Expected numeric argument.')
 end
 if isreal(p)

@@ -71,7 +71,7 @@ else
          tight = 1;
          if nargin>ii
             ii = ii+1;
-            if isnumeric(varargin{ii}) && prod(size(varargin{ii}))==1
+            if isnumeric(varargin{ii}) && numel(varargin{ii})==1
                zoom = varargin{ii}/100;
             else
                error('Percentage expected.')
@@ -86,7 +86,7 @@ else
       else
          error('Illegal mode string.')
       end
-   elseif isnumeric(varargin{ii}) && prod(size(varargin{ii}))==1
+   elseif isnumeric(varargin{ii}) && numel(varargin{ii})==1
       zoom = varargin{ii}/100;
    else
       error('Percentage expected.')

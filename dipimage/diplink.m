@@ -124,7 +124,7 @@ else
    
    if iscell(list)
       jj = 1;
-      for ii=1:prod(size(list))
+      for ii=1:numel(list)
          try
             newlist(jj) = getfigh(list{ii});
             jj = jj+1;
@@ -132,7 +132,7 @@ else
       end
    elseif isnumeric(list)
       jj = 1;
-      for ii=1:prod(size(list))
+      for ii=1:numel(list)
          try
             newlist(jj) = getfigh(list(ii));
             jj = jj+1;

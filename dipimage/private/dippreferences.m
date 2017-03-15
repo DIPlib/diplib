@@ -157,7 +157,7 @@ switch varargin{1}
             if ~isnumeric(value) || any(mod(value,1))
                error(['Integer value expected for preference ',name,'.'])
             end
-            if prod(size(value))~=N
+            if numel(value)~=N
                error([num2str(N),' values expected for preference ',name,'.'])
             end
             data.value = value(:)';
@@ -165,7 +165,7 @@ switch varargin{1}
             if ~isnumeric(value)
                error(['Numeric value expected for preference ',name,'.'])
             end
-            if prod(size(value))~=N
+            if numel(value)~=N
                error([num2str(N),' values expected for preference ',name,'.'])
             end
             data.value = value(:)';
