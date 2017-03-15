@@ -235,7 +235,8 @@ inline Image Divide(
 
 /// \brief Computes the modulo of two images, sample-wise, with singleton expansion.
 ///
-/// Out will have the type `dt`. Works for all real types (i.e. not complex).
+/// Out will have the type `dt`. Works for all real types (i.e. not complex). For floating-point
+/// types, uses `std::fmod`.
 ///
 /// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, operator%
 void Modulo(
@@ -247,7 +248,8 @@ void Modulo(
 
 /// \brief Computes the modulo of each sample in an image with a constant.
 ///
-/// Out will have the type `dt`. Works for all real types (i.e. not complex).
+/// Out will have the type `dt`. Works for all real types (i.e. not complex). For floating-point
+/// types, uses `std::fmod`.
 ///
 /// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator%
 template< typename T >
@@ -268,6 +270,45 @@ inline Image Modulo(
 ) {
    Image out;
    Modulo( lhs, rhs, out, dt );
+   return out;
+}
+
+
+/// \brief Elevates `lhs` to the power of `rhs`, sample-wise, with singleton expansion.
+///
+/// Out will have the type `dt`, as long as `dt` is a floating-point or complex type.
+///
+/// \see Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator+
+void Power(
+      Image const& lhs,
+      Image const& rhs,
+      Image& out,
+      DataType dt
+);
+
+/// \brief Adds a constant to each sample in an image.
+///
+/// Out will have the type `dt`.
+///
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator+
+template< typename T >
+inline void Power(
+      Image const& lhs,
+      T const& rhs,
+      Image& out,
+      DataType dt
+) {
+   Power( lhs, Image{ rhs }, out, dt );
+}
+
+template< typename T >
+inline Image Power(
+      Image const& lhs,
+      T const& rhs,
+      DataType dt
+) {
+   Image out;
+   Power( lhs, rhs, out, dt );
    return out;
 }
 

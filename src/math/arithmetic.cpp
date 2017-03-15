@@ -159,7 +159,6 @@ void Divide(
       Image& out,
       DataType dt
 ) {
-   DIP_THROW_IF( rhs.TensorElements() != 1, "Divisor must be scalar image" );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_div( *its[ 0 ], *its[ 1 ] ); }
@@ -174,10 +173,30 @@ void Modulo(
       Image& out,
       DataType dt
 ) {
-   DIP_THROW_IF( rhs.TensorElements() != 1, "Divisor must be scalar image" );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
-         []( auto its ) { return std::fmod( *its[ 0 ], *its[ 1 ] ); } // output is always dfloat, rather than of type dt, let's hope the compiler quietly casts...
+   if( dt.IsFloat() ) {
+      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+            []( auto its ) { return std::fmod( *its[ 0 ], *its[ 1 ] ); }
+      ), dt );
+   } else {
+      DIP_OVL_CALL_ASSIGN_INTEGER( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+            []( auto its ) { return *its[ 0 ] % *its[ 1 ]; }
+      ), dt );
+   }
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
+}
+
+//
+void Power(
+      Image const& lhs,
+      Image const& rhs,
+      Image& out,
+      DataType dt
+) {
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   dt = DataType::SuggestFlex( dt );
+   DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+         []( auto its ) { return std::pow( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
    Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
