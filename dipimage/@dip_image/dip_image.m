@@ -1402,6 +1402,21 @@ classdef dip_image
          out = dip_operators('/',lhs,rhs);
       end
 
+      function out = mod(lhs,rhs)
+         out = dip_operators('%',lhs,rhs);
+      end
+
+      function out = power(lhs,rhs) % .^
+         out = dip_operators('^',lhs,rhs);
+      end
+
+      function out = mpower(lhs,rhs) % ^
+         if ~isscalar(lhs) || ~isscalar(rhs)
+            error('Not implented');
+         end
+         out = dip_operators('^',lhs,rhs);
+      end
+
       function out = eq(lhs,rhs) % ==
          out = dip_operators('=',lhs,rhs);
       end
@@ -1435,7 +1450,7 @@ classdef dip_image
       end
 
       function out = xor(lhs,rhs)
-         out = dip_operators('^',lhs,rhs);
+         out = dip_operators('x',lhs,rhs);
       end
 
       function in = not(in)
@@ -1480,6 +1495,114 @@ classdef dip_image
             sz(1) = 1;
             in.Data = reshape(in.Data(2,:),sz);
          end
+      end
+
+      function in = abs(in)
+         in = dip_operators('ma',in);
+      end
+
+      function in = angle(in)
+         in = dip_operators('mc',in);
+      end
+
+      function in = phase(in)
+         in = dip_operators('mc',in);
+      end
+
+      function in = round(in)
+         in = dip_operators('md',in);
+      end
+
+      function in = ceil(in)
+         in = dip_operators('me',in);
+      end
+
+      function in = floor(in)
+         in = dip_operators('mf',in);
+      end
+
+      function in = fix(in)
+         in = dip_operators('mg',in);
+      end
+
+      function in = sign(in)
+         in = dip_operators('mh',in);
+      end
+
+      function in = cos(in)
+         in = dip_operators('mA',in);
+      end
+
+      function in = sin(in)
+         in = dip_operators('mB',in);
+      end
+
+      function in = tan(in)
+         in = dip_operators('mC',in);
+      end
+
+      function in = acos(in)
+         in = dip_operators('mD',in);
+      end
+
+      function in = asin(in)
+         in = dip_operators('mE',in);
+      end
+
+      function in = atan(in)
+         in = dip_operators('mF',in);
+      end
+
+      function in = cosh(in)
+         in = dip_operators('mG',in);
+      end
+
+      function in = sinh(in)
+         in = dip_operators('mH',in);
+      end
+
+      function in = tanh(in)
+         in = dip_operators('mI',in);
+      end
+
+      function in = sqrt(in)
+         in = dip_operators('m1',in);
+      end
+
+      function in = exp(in)
+         in = dip_operators('m2',in);
+      end
+
+      function in = pow10(in)
+         in = dip_operators('m3',in);
+      end
+
+      function in = pow2(in)
+         in = dip_operators('m4',in);
+      end
+
+      function in = log(in)
+         in = dip_operators('m5',in);
+      end
+
+      function in = log10(in)
+         in = dip_operators('m6',in);
+      end
+
+      function in = log2(in)
+         in = dip_operators('m7',in);
+      end
+
+      function in = erf(in)
+         in = dip_operators('m!',in);
+      end
+
+      function in = erfc(in)
+         in = dip_operators('m@',in);
+      end
+
+      function in = gammaln(in)
+         in = dip_operators('m#',in);
       end
 
    end

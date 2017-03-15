@@ -28,16 +28,9 @@ filtering:
    rotate.m
 
 arithmetic:
-   abs.m
-   acos.m
-   angle.m
-   asin.m
-   atan.m
    atan2.m
    besselj.m
-   ceil.m
    circshift.m
-   cos.m
    cross.m
    curl.m
    det.m
@@ -46,32 +39,15 @@ arithmetic:
    dot.m
    eig_largest.m
    eig.m
-   erf.m
-   exp.m
    eye.m
-   fix.m
-   floor.m
    hypot.m
    inner.m
    inv.m
    isfinite.m
    isinf.m
    isnan.m
-   log.m
-   log10.m
-   log2.m
-   mod.m
    norm.m
    outer.m
-   phase.m
    pinv.m
-   pow10.m
-   pow2.m
-   power.m
-   round.m
-   sign.m
-   sin.m
-   sqrt.m
    svd.m
-   tan.m
    trace.m

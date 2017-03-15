@@ -49,6 +49,20 @@ DIP_DT_INFO_SUGGEST_4         // not used
 
 namespace dip {
 
+DataType DataType::SuggestInteger( DataType type ) {
+   switch( type ) {
+      case DT_BIN:
+         return DT_UINT8;
+      case DT_SFLOAT:
+      case DT_DFLOAT:
+      case DT_SCOMPLEX:
+      case DT_DCOMPLEX:
+         return DT_SINT32;
+      default:
+         return type;
+   }
+}
+
 DataType DataType::SuggestFloat( DataType type ) {
    switch( type ) {
       default:
@@ -189,8 +203,12 @@ constexpr DataType::Classes DataType::Class_Integer;
 constexpr DataType::Classes DataType::Class_Float;
 constexpr DataType::Classes DataType::Class_Real;
 constexpr DataType::Classes DataType::Class_Complex;
+constexpr DataType::Classes DataType::Class_Flex;
+constexpr DataType::Classes DataType::Class_FlexBin;
 constexpr DataType::Classes DataType::Class_Unsigned;
 constexpr DataType::Classes DataType::Class_Signed;
+constexpr DataType::Classes DataType::Class_NonBinary;
+constexpr DataType::Classes DataType::Class_NonComplex;
 constexpr DataType::Classes DataType::Class_Any;
 
 } // namespace dip

@@ -23,14 +23,14 @@
  *
  * out = dip_operators(operator,lhs,rhs)
  *
- * operator = a single character (see switch statement below)
+ * operator = one or two characters (see switch statement below)
  * lhs = first operand
  * rhs = second operand (some operators use only one operand)
  */
 
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "dip_matlab_interface.h"
-
+#include "diplib/math.h"
 
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
@@ -48,7 +48,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
 
       // Get images
       lhs = dml::GetImage( prhs[ 1 ] );
-      if(( *ch == '~' ) || ( *ch == 'u' ) || ( *ch == '\'' )) {
+      if(( *ch == '~' ) || ( *ch == 'u' ) || ( *ch == '\'' ) || ( *ch == 'm' )) {
          DIP_THROW_IF( nrhs != 2, "Wrong number of input arguments." );
       } else {
          DIP_THROW_IF( nrhs != 3, "Wrong number of input arguments." );
@@ -58,7 +58,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       // Apply operator
       switch( *ch ) {
       // Arithmetic operators
-         case '+': // +=
+         case '+': // +
             dip::Add( lhs, rhs, out, dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
             break;
          case '-': // -
@@ -70,8 +70,14 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          case '.': // .*
             dip::MultiplySampleWise( lhs, rhs, out, dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
             break;
-         case '/': // /
+         case '/': // ./
             dip::Divide( lhs, rhs, out, dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
+            break;
+         case '%': // mod
+            dip::Modulo( lhs, rhs, out, lhs.DataType() );
+            break;
+         case '^': // .^
+            dip::Power( lhs, rhs, out, lhs.DataType() );
             break;
       // Comparison operators
          case '=': // ==
@@ -99,7 +105,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          case '|': // or : for binary images only (but does bit-wise for integers too)
             dip::Or( lhs, rhs, out );
             break;
-         case '^': // xor : for binary images only (but does bit-wise for integers too)
+         case 'x': // xor : for binary images only (but does bit-wise for integers too)
             dip::Xor( lhs, rhs, out );
             break;
       // Unary operators
@@ -110,8 +116,96 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
             dip::Invert( lhs, out );
             break;
          case '\'': // unary (post) ' : transpose
-            out.Copy( lhs );
-            out.Transpose();
+         {
+            dip::Image tmp = lhs.QuickCopy();
+            tmp.Transpose();
+            out = tmp; // triggers data copy!
+            break;
+         }
+      // Monadic operators
+         case 'm': // These are all the monadic operators, defined by the second letter
+            switch( ch[ 1 ] ) {
+               case 'a': // abs
+                  dip::Abs( lhs, out );
+                  break;
+               case 'c': // phase
+                  dip::Phase( lhs, out );
+                  break;
+               case 'd': // round
+                  dip::Round( lhs, out );
+                  break;
+               case 'e': // ceil
+                  dip::Ceil( lhs, out );
+                  break;
+               case 'f': // floor
+                  dip::Floor( lhs, out );
+                  break;
+               case 'g': // fix
+                  dip::Truncate( lhs, out );
+                  break;
+               case 'h': // sign
+                  dip::Sign( lhs, out );
+                  break;
+               case 'A': // cos
+                  dip::Cos( lhs, out );
+                  break;
+               case 'B': // sin
+                  dip::Sin( lhs, out );
+                  break;
+               case 'C': // tan
+                  dip::Tan( lhs, out );
+                  break;
+               case 'D': // acos
+                  dip::Acos( lhs, out );
+                  break;
+               case 'E': // asin
+                  dip::Asin( lhs, out );
+                  break;
+               case 'F': // atan
+                  dip::Atan( lhs, out );
+                  break;
+               case 'G': // cosh
+                  dip::Cosh( lhs, out );
+                  break;
+               case 'H': // sinh
+                  dip::Sinh( lhs, out );
+                  break;
+               case 'I': // tanh
+                  dip::Tanh( lhs, out );
+                  break;
+               case '1': // sqrt
+                  dip::Sqrt( lhs, out );
+                  break;
+               case '2': // exp
+                  dip::Exp( lhs, out );
+                  break;
+               case '3': // pow10
+                  dip::Exp10( lhs, out );
+                  break;
+               case '4': // pow2
+                  dip::Exp2( lhs, out );
+                  break;
+               case '5': // log
+                  dip::Ln( lhs, out );
+                  break;
+               case '6': // log10
+                  dip::Log10( lhs, out );
+                  break;
+               case '7': // log2
+                  dip::Log2( lhs, out );
+                  break;
+               case '!': // erf
+                  dip::Erf( lhs, out );
+                  break;
+               case '@': // erfc
+                  dip::Erfc( lhs, out );
+                  break;
+               case '#': // gammaln
+                  dip::LnGamma( lhs, out );
+                  break;
+               default:
+                  DIP_THROW( "Unknown operator." );
+            }
             break;
       // That's it!
          default:

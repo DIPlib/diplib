@@ -309,6 +309,8 @@ struct DataType {
    static DIP_DEFINE_OPTION( Classes, Class_FlexBin, Class_Flex + Class_Bin );
    static DIP_DEFINE_OPTION( Classes, Class_Unsigned, Class_Bin + Class_UInt );
    static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
+   static DIP_DEFINE_OPTION( Classes, Class_NonBinary, Class_Real + Class_Complex );
+   static DIP_DEFINE_OPTION( Classes, Class_NonComplex, Class_Binary + Class_Real );
    static DIP_DEFINE_OPTION( Classes, Class_Any, Class_Binary + Class_Real + Class_Complex ); // == Class_Unsigned + Class_Signed
 
    /// \brief Implicit conversion to `dip::DataType::Classes` options class.
@@ -317,6 +319,9 @@ struct DataType {
    //
    // Functions to suggest an output data type for all types of filters and operators
    //
+
+   /// \brief Returns an integer type that is most suitable to hold samples of `type`.
+   static DataType SuggestInteger( DataType type );
 
    /// \brief Returns a suitable floating-point type that can hold the samples of `type`.
    static DataType SuggestFloat( DataType type );

@@ -32,14 +32,14 @@
 namespace dip {
 
 
-//
-// Basic image queries
-//
-
-
 /// \defgroup math Image math and statistics functions
 /// \brief The image math and statistics functions, except basic arithmetic and comparison, which are in module \ref operators.
 /// \{
+
+
+//
+// Basic image queries
+//
 
 
 /// \brief Counts the number of non-zero pixels in a scalar image.
@@ -70,6 +70,44 @@ MinMaxAccumulator GetMaximumAndMinimum( Image const& in, Image const& mask = {} 
 
 // TODO: We need functions dip::All() dip::Any() that apply to samples within a tensor. This combines with equality: dip::All( a == b ), for a, b tensor images.
 // TODO: We need similar functions that apply to all pixels in an image.
+
+
+//
+// Arithmetic, trigonometric and similar monadic operators
+//
+
+
+#include "monadic_operators.private"
+
+/// \brief Computes the modulus (absolute value) of each sample. `%dip::Modulus` is an alias for `dip::Abs`.
+inline void Modulus( Image const& in, Image& out ) { Abs( in, out ); }
+inline Image Modulus( Image const& in ) { return Abs( in ); }
+
+inline Image Real( Image const& in ) { return in.DataType().IsComplex() ? in.Real() : in; }
+/// \brief Returns the real component of a complex image. Returns `dip::Image::Real` if the input is complex.
+inline void Real( Image const& in, Image& out ) { out = Real( in ); }
+
+inline Image Imaginary( Image const& in ) { return in.DataType().IsComplex() ? in.Imaginary() : in; }
+/// \brief Returns the imaginary component of a complex image. Returns `dip::Image::Imaginary` if the input is complex
+inline void Imaginary( Image const& in, Image& out ) { out = Imaginary( in ); }
+
+/// \brief Computes the sign of each sample. Only defined for signed real data types (signed integers
+/// and floating-point types). Output is of type `dip::DT_SINT8`, containing values -1, 0 and 1.
+void Sign( Image const& in, Image& out );
+inline Image Sign( Image const& in ) {
+   Image out;
+   Sign( in, out );
+   return out;
+}
+
+/// \brief Computes the integer closest to the value of each sample.
+/// Only defined for floating-point types, the output is of type `dip::DT_SINT32`.
+void NearestInt( Image const& in, Image& out );
+inline Image NearestInt( Image const& in ) {
+   Image out;
+   NearestInt( in, out );
+   return out;
+}
 
 
 //
@@ -425,6 +463,7 @@ inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
    return out;
 }
 
+// TODO: Max, Min over two or more input images
 
 /// \}
 
