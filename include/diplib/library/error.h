@@ -129,6 +129,7 @@ constexpr char const* IMAGE_NOT_FORGED = "Image is not forged";
 // image data type errors
 constexpr char const* DATA_TYPE_NOT_SUPPORTED = "Data type not supported";
 constexpr char const* WRONG_DATA_TYPE = "Data type does not match";
+constexpr char const* IMAGE_NOT_BINARY = "Image is not binary";
 
 // image dimensionality and dimensions error
 constexpr char const* SIZE_EXCEEDS_LIMIT = "Size exceeds address limit";

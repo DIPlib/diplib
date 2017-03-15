@@ -191,7 +191,8 @@ void Uniform(
       Image const& in,
       Image const& neighborhood,
       Image& out,
-      StringArray const& boundaryCondition = {}
+      StringArray const& boundaryCondition = {},
+      String const& mode = "" // set to "convolution" to mirror `neighborhood`
 );
 
 void Gauss(

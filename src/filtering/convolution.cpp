@@ -240,7 +240,7 @@ void SeparableConvolution(
       }
    } else {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         if( IsMeaninglessFilter( filterData[ ii ] )) {
+         if( IsMeaninglessFilter( filterData[ ii ] ) || ( in.Size( ii ) <= 1 )) {
             process[ ii ] = false;
          }
       }
@@ -352,7 +352,7 @@ void GeneralConvolution(
    DIP_THROW_IF( !c_filter.IsForged(), E::IMAGE_NOT_FORGED );
    if( c_filter.DataType().IsBinary() ) {
       // For binary filters, apply a uniform filter.
-      Uniform( in, c_filter, out, boundaryCondition );
+      Uniform( in, c_filter, out, boundaryCondition, "convolution" );
       return;
    }
    Image filter = c_filter.QuickCopy();

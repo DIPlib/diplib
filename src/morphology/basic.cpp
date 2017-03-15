@@ -142,7 +142,7 @@ void RectangularMorphology(
    UnsignedArray sizes( nDims, 1 );
    UnsignedArray border( nDims, 0 );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      if( filterParam[ ii ] > 1.0 ) {
+      if(( filterParam[ ii ] > 1.0 ) && ( in.Size( ii ) > 1 )) {
          sizes[ ii ] = static_cast< dip::uint >( std::round( filterParam[ ii ] ));
          process[ ii ] = true;
          border[ ii ] = sizes[ ii ] / 2;

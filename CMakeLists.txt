@@ -114,6 +114,8 @@ endif()
 
 ### DIPimage toolbox for MATLAB
 
+# TODO: MEX-files are huge with the statically-linked DIPlib. We need to do dynamic linking here.
+
 if(Matlab_FOUND)
    # Install M-files
    install(DIRECTORY dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m") # could also do PATTERN "*.cpp" EXCLUDE
