@@ -57,6 +57,8 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
 -   The Fourier transform ( based on the code out of OpenCV, much faster than the code in
     the old *DIPlib*).
 
+-   An increasing number of filters and operators based on the various frameworks.
+
 -   *MATLAB* interface.
 
 -   *DIPimage* toolbox: The `dip_image` object is defined and has a few functions,
@@ -98,7 +100,7 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
 -   Pixel-based algorithms built on `dip::Framework::Scan`: monadic and
     diadic operators (i.e. the stuff in the old dip_math.h), statistics, etc. This is
     mostly porting old code to the new framework.
-    - dip_math.h
+    - dip_math.h (many already done)
     - dip_noise.h
     - dip_point.h
 
@@ -148,18 +150,12 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     - dip_filtering.h
     - dip_rankfilters.h
 
--   Algorithms built on `dip::Framework::Separable` and `dip::Framework::Full`:
-    Filters that are separable for some filter shapes and non-separable for others,
-    such as dilation and erosion, uniform filter, etc. Simply porting old code.
-    - dip_morphology.h (parts)
-    - dip_linear.h (parts)
-
 -   Algorithms that do not depend on any framework: all binary morphology, the
     watershed, labelling, region growing, distance transforms, etc.
     Simply porting old code.
     - dip_binary.h
     - dip_distance.h
-    - dip_morphology.h (parts)
+    - dip_morphology.h (the parts that are not yet ported)
     - dip_paint.h
     - dip_pgst.h
     - dip_regions.h

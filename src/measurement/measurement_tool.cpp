@@ -73,44 +73,44 @@ namespace dip {
 
 MeasurementTool::MeasurementTool() {
    // Size
-   Register( dip::Feature::Pointer( new Feature::FeatureSize ));
-   Register( dip::Feature::Pointer( new Feature::FeatureMinimum ));
-   Register( dip::Feature::Pointer( new Feature::FeatureMaximum ));
-   Register( dip::Feature::Pointer( new Feature::FeatureCartesianBox ));
-   Register( dip::Feature::Pointer( new Feature::FeaturePerimeter ));
-   Register( dip::Feature::Pointer( new Feature::FeatureSurfaceArea ));
-   Register( dip::Feature::Pointer( new Feature::FeatureFeret ));
-   Register( dip::Feature::Pointer( new Feature::FeatureConvexArea ));
-   Register( dip::Feature::Pointer( new Feature::FeatureConvexPerimeter ));
+   Register( Feature::Pointer( new Feature::FeatureSize ));
+   Register( Feature::Pointer( new Feature::FeatureMinimum ));
+   Register( Feature::Pointer( new Feature::FeatureMaximum ));
+   Register( Feature::Pointer( new Feature::FeatureCartesianBox ));
+   Register( Feature::Pointer( new Feature::FeaturePerimeter ));
+   Register( Feature::Pointer( new Feature::FeatureSurfaceArea ));
+   Register( Feature::Pointer( new Feature::FeatureFeret ));
+   Register( Feature::Pointer( new Feature::FeatureConvexArea ));
+   Register( Feature::Pointer( new Feature::FeatureConvexPerimeter ));
    // Shape
-   Register( dip::Feature::Pointer( new Feature::FeatureAspectRatioFeret ));
-   Register( dip::Feature::Pointer( new Feature::FeatureRadius ));
-   Register( dip::Feature::Pointer( new Feature::FeatureEllipseVariance ));
-   Register( dip::Feature::Pointer( new Feature::FeatureP2A ));
-   Register( dip::Feature::Pointer( new Feature::FeaturePodczeckShapes ));
-   Register( dip::Feature::Pointer( new Feature::FeatureConvexity ));
-   Register( dip::Feature::Pointer( new Feature::FeatureBendingEnergy ));
-   // Intensity
-   Register( dip::Feature::Pointer( new Feature::FeatureMass ));
-   Register( dip::Feature::Pointer( new Feature::FeatureMean ));
-   Register( dip::Feature::Pointer( new Feature::FeatureStandardDeviation ));
-   Register( dip::Feature::Pointer( new Feature::FeatureStatistics ));
-   Register( dip::Feature::Pointer( new Feature::FeatureMaxVal ));
-   Register( dip::Feature::Pointer( new Feature::FeatureMinVal ));
-   // Binary moments
-   Register( dip::Feature::Pointer( new Feature::FeatureCenter ));
-   Register( dip::Feature::Pointer( new Feature::FeatureMu ));
-   Register( dip::Feature::Pointer( new Feature::FeatureInertia ));
-   Register( dip::Feature::Pointer( new Feature::FeatureMajorAxes ));
-   Register( dip::Feature::Pointer( new Feature::FeatureDimensionsCube ));
-   Register( dip::Feature::Pointer( new Feature::FeatureDimensionsEllipsoid ));
-   // Grey-value moments
-   Register( dip::Feature::Pointer( new Feature::FeatureGravity ));
-   Register( dip::Feature::Pointer( new Feature::FeatureGreyMu ));
-   Register( dip::Feature::Pointer( new Feature::FeatureGreyInertia ));
-   Register( dip::Feature::Pointer( new Feature::FeatureGreyMajorAxes ));
-   Register( dip::Feature::Pointer( new Feature::FeatureGreyDimensionsCube ));
-   Register( dip::Feature::Pointer( new Feature::FeatureGreyDimensionsEllipsoid ));
+   Register( Feature::Pointer( new Feature::FeatureAspectRatioFeret ));
+   Register( Feature::Pointer( new Feature::FeatureRadius ));
+   Register( Feature::Pointer( new Feature::FeatureEllipseVariance ));
+   Register( Feature::Pointer( new Feature::FeatureP2A ));
+   Register( Feature::Pointer( new Feature::FeaturePodczeckShapes ));
+   Register( Feature::Pointer( new Feature::FeatureConvexity ));
+   Register( Feature::Pointer( new Feature::FeatureBendingEnergy ));
+   // Intensi
+   Register( Feature::Pointer( new Feature::FeatureMass ));
+   Register( Feature::Pointer( new Feature::FeatureMean ));
+   Register( Feature::Pointer( new Feature::FeatureStandardDeviation ));
+   Register( Feature::Pointer( new Feature::FeatureStatistics ));
+   Register( Feature::Pointer( new Feature::FeatureMaxVal ));
+   Register( Feature::Pointer( new Feature::FeatureMinVal ));
+   // Binary ts
+   Register( Feature::Pointer( new Feature::FeatureCenter ));
+   Register( Feature::Pointer( new Feature::FeatureMu ));
+   Register( Feature::Pointer( new Feature::FeatureInertia ));
+   Register( Feature::Pointer( new Feature::FeatureMajorAxes ));
+   Register( Feature::Pointer( new Feature::FeatureDimensionsCube ));
+   Register( Feature::Pointer( new Feature::FeatureDimensionsEllipsoid ));
+   // Grey-vaoments
+   Register( Feature::Pointer( new Feature::FeatureGravity ));
+   Register( Feature::Pointer( new Feature::FeatureGreyMu ));
+   Register( Feature::Pointer( new Feature::FeatureGreyInertia ));
+   Register( Feature::Pointer( new Feature::FeatureGreyMajorAxes ));
+   Register( Feature::Pointer( new Feature::FeatureGreyDimensionsCube ));
+   Register( Feature::Pointer( new Feature::FeatureGreyDimensionsEllipsoid ));
 }
 
 using LineBasedFeatureArray = std::vector< Feature::LineBased* >;

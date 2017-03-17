@@ -39,6 +39,7 @@ namespace dip {
 /// \addtogroup infrastructure
 /// \{
 
+/*
 
 /// \brief An object to encapsulate the white point array.
 ///
@@ -73,15 +74,47 @@ class WhitePoint {
       MatrixValues matrix_;
 };
 
-// Prototype function for conversion between two color spaces.
-// TODO: This should be an abstract base class where converters derive from, with a Convert() function
-// TODO: The converter class should also have a Configure() function, as the measurement features have, where the user can, e.g., set the whitepoint matrix.
-// (and maybe also a Cost() function?)
-using ColorSpaceConverter = void ( * )(
-      dfloat const* input,    // pointer to input data, holding a known number of elements
-      dfloat* output,         // pointer to output data, holding a known number of elements
-      dfloat const* matrix    // pointer to the whitepoint array, its inverse, or any other relevant array
-);
+*/
+
+/// \brief Base class for conversion between two color spaces. Classes that convert between color spaces must
+/// derive from this and overload all the pure virtual functions.
+class ColorSpaceConverter {
+   public:
+      /// \brief Returns the source color space name.
+      virtual String InputColorSpace() const = 0;
+
+      /// \brief Returns the destination color space name.
+      virtual String OutputColorSpace() const = 0;
+
+      /// \brief Returns the cost of the conversion. This cost includes computational cost as well as precision loss.
+      ///
+      /// The cost is used to avoid pathways such as "RGB"->"grey"->"Lab" instead of "RGB"->"XYZ"->"Yxy"->"Lab".
+      /// Conversion to grey therefor must always have a high cost. It is not necessary to define this method,
+      /// the default implementation returns a cost of 1.
+      virtual dip::uint Cost() const { return 1; }
+
+      /// \brief This is the method that performs the conversion for one pixel.
+      ///
+      /// `input` and `output` point to buffers with the number of samples corresponding to the two color
+      /// spaces, as determined by the `InputColorSpace` and `OutputColorSpace` method.
+      // TODO: This will be a lot more efficient if we pass a whole image line at a time.
+      virtual void Convert(
+            dfloat const* input,    // pointer to input data, holding a known number of elements
+            dfloat* output
+      ) = 0;
+
+      /// \brief The user can access this method through `dip::ColorSpaceManager::Configure`.
+      /// It is not necessary to define this method.
+      virtual void Configure( String const& parameter, dfloat value ) {
+         DIP_THROW( "ColorSpaceConverter not configurable" );
+      }
+
+      virtual ~ColorSpaceConverter() {}
+};
+
+/// \brief A pointer to a color space conversion object
+using ColorSpaceConverterPointer = std::unique_ptr< ColorSpaceConverter >;
+
 
 /// \brief An object of this class is used to convert images between color spaces.
 ///
@@ -101,12 +134,12 @@ using ColorSpaceConverter = void ( * )(
 ///
 ///     csm.Define( "Frank", 4 );                   // A new color space with 4 channels
 ///     csm.DefineAlias( "f", "Frank" );            // "f" is an alias for "Frank"
-///     csm.Register( frank2xyz, "f", "XYZ", 2 );   // a function that converts from Frank to XYZ
-///     csm.Register( yxy2frank, "Yxy", "f", 3 );   // a function that converts from Yxy to Frank
+///     csm.Register( frank2xyz );                  // an object that converts from Frank to XYZ
+///     csm.Register( yxy2frank );                  // an object that converts from Yxy to Frank
 ///     csm.Convert( img, "f" );                    // img will be converted from Lab to Frank
 /// ```
 ///
-/// The known color spaces are:
+/// The color spaces known by default are:
 /// * CMY
 /// * CMYK
 /// * grey (or gray)
@@ -118,7 +151,8 @@ using ColorSpaceConverter = void ( * )(
 /// * nlRGB (or R'G'B')
 /// * XYZ
 /// * Yxy
-// Also known: Piet's color spaces: art and LCh (or L*C*h*). What to do with those? Are they even published?
+// TODO: Also known: Piet's color spaces: art and LCh (or L*C*h*). What to do with those? Are they even published?
+// TODO: Add Serra's HSI.
 class ColorSpaceManager {
 
    public:
@@ -126,86 +160,81 @@ class ColorSpaceManager {
       /// \brief Constructor, registers the default color spaces.
       ColorSpaceManager();
 
-      /// \brief Defines a new color space, that requires `chans` channels.
-      void Define( String const& name, dip::uint chans ) {
-         DIP_THROW_IF( IsDefined( name ), "Color space name already defined" );
-         nodes_.emplace_back( name, chans );
-         names_[ name ] = nodes_.size() - 1;
+      /// \brief Defines a new color space, that requires `nChannels` channels.
+      void Define( String const& colorSpaceName, dip::uint nChannels ) {
+         DIP_THROW_IF( IsDefined( colorSpaceName ), "Color space name already defined" );
+         colorSpaces_.emplace_back( colorSpaceName, nChannels );
+         names_[ colorSpaceName ] = colorSpaces_.size() - 1;
       }
 
       /// \brief Defines an alias for a defined color space name.
-      void DefineAlias( String const& alias, String const& name ) {
+      void DefineAlias( String const& alias, String const& colorSpaceName ) {
          DIP_THROW_IF( IsDefined( alias ), "Alias name already defined" );
-         names_[ alias ] = Index( name );
+         names_[ alias ] = Index( colorSpaceName );
       }
 
-      /// \brief Registers a function to translate from one color space to another.
-      ///
-      /// The conversion function converts a single pixel, and has the following
-      /// signature:
-      ///
-      /// ```cpp
-      ///     void ColorSpaceConverter(
-      ///         dip::dfloat const*  input,
-      ///         dip::dfloat*        output,
-      ///         dip::dfloat const*  matrix);
-      /// ```
-      ///
-      /// `input` is a pointer to a set of sample values composing the pixel, and
-      /// `output` is where the result of the conversion is to be placed. Both
-      /// arrays have a number of values corresponding to the channels used by
-      /// the corresponding color space.
-      void Register( ColorSpaceConverter func, String const& source, String const& destination, dip::uint cost = 1 ) {
-         nodes_[ Index( source ) ].edges[ Index( destination ) ] = { func, cost }; // updates the edge if it was already there
+      /// \brief Registers a function object to translate from one color space to another.
+      void Register( ColorSpaceConverterPointer converter ) {
+         dip::uint source = Index( converter->InputColorSpace() );
+         dip::uint destination = Index( converter->OutputColorSpace() );
+         auto& edges = colorSpaces_[ source ].edges;
+         auto it = edges.find( destination );
+         if( it == edges.end() ) {
+            // emplace
+            edges.emplace( destination, std::move( converter ));
+         } else {
+            // replace
+            it->second = std::move( converter );
+         }
       }
 
       /// \brief Returns the number of channels used by the given color space.
-      dip::uint NumberOfChannels( String const& name ) const {
-         return nodes_[ Index( name ) ].chans;
+      dip::uint NumberOfChannels( String const& colorSpaceName ) const {
+         return colorSpaces_[ Index( colorSpaceName ) ].chans;
       }
 
-      /// \brief Returns the cannonical name for the given color space (i.e. looks up name aliases).
-      const String& CannonicalName( String const& name ) const {
-         return nodes_[ Index( name ) ].name;
+      /// \brief Returns the canonical name for the given color space (i.e. looks up name aliases).
+      const String& CanonicalName( String const& colorSpaceName ) const {
+         return colorSpaces_[ Index( colorSpaceName ) ].name;
       }
-
-      /// \brief Sets the color space of a non-color image.
-      ///
-      /// The image must have the right
-      /// number of channels for the given color space, and the color space name
-      /// must be one of the color spaces known by the ColorSpaceManager object.
-      void Set( Image& in, String const& name ) const;
 
       /// \brief Converts an image to a different color space.
       ///
-      /// Both the source and destination
-      /// color spaces must be known, and a path of registered conversion functions
-      /// must exist between the two.
-      void Convert( Image const& in, Image const& out, String const& name, WhitePoint const& whitepoint ) const;
-
-      Image Convert( Image const& in, String const& name, WhitePoint const& whitepoint ) const {
+      /// Both the source (`in.ColorSpace`) and destination (`colorSpaceName`) color spaces must be known,
+      /// and a path of registered conversion functions must exist between the two.
+      ///
+      /// Note that it is possible to assign an arbitrary string as a color space name in an image. Setting
+      /// an image's color space property is always possible, and gives no guarantee that the image has the
+      /// right number of tensor elements (color channels).
+      ///
+      /// When converting from one color channel to another, the input image is checked for number of color
+      /// channels. If it doesn't match the number expected for its color space, an exception will be thrown.
+      ///
+      /// If the input color space name is an empty string, and the image is scalar, it will be assumed that
+      /// the color space is "grey". If the image has the same number of color channels as expected for
+      /// `colorSpaceName`, then the color space will be set to that name. Otherwise, an exception will be
+      /// thrown.
+      ///
+      /// If `colorSpaceName` is an empty string, "grey" is assumed.
+      void Convert( Image const& in, Image const& out, String const& colorSpaceName = "" ) const;
+      Image Convert( Image const& in, String const& colorSpaceName = "" ) const {
          Image out;
-         Convert( in, out, name, whitepoint );
+         Convert( in, out, colorSpaceName );
          return out;
       }
 
    private:
 
-      struct Edge {
-         ColorSpaceConverter func;
-         dip::uint cost;
-      };
-
-      struct Node {
+      struct ColorSpace {
          String name;
          dip::uint chans;
-         std::map< dip::uint, Edge > edges;  // The key is the target color space index
-         Node( String const& name, dip::uint chans ) :
+         std::map< dip::uint, ColorSpaceConverterPointer > edges;  // The key is the target color space index
+         ColorSpace( String const& name, dip::uint chans ) :
                name( name ), chans( chans ) {}
       };
 
       std::map< String, dip::uint > names_;
-      std::vector< Node > nodes_;
+      std::vector< ColorSpace > colorSpaces_;
 
       dip::uint Index( String const& name ) const {
          auto it = names_.find( name );
@@ -217,12 +246,12 @@ class ColorSpaceManager {
          return names_.count( name ) != 0;
       }
 
-      // The std::map `names_` translates known color space names to an index into the `nodes_` array.
+      // The std::map `names_` translates known color space names to an index into the `colorSpaces_` array.
       // This array index is how we refer to color spaces internally. Externally, we always use
       // names. This way, different `ColorSpaceManager` objects can be used interchangeably (as long
       // as they contain the given color space name).
       //
-      // We construct a graph among the color spaces. Elements of `nodes_` as the nodes, and their
+      // We construct a graph among the color spaces. Elements of `colorSpaces_` as the nodes, and their
       // `edges` element are outgoing edges. Through `FindPath()` it is possible to find an optimal
       // path from any source color space to any other destination color space (assuming there are
       // conversion functions defined that allow this). This path is a string of conversion functions

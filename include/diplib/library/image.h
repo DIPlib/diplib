@@ -669,8 +669,8 @@ class Image {
          return !colorSpace_.empty();
       }
 
-      /// \brief Sets the image's color space name. This causes the image to be a color
-      /// image, but will cause errors to occur if the number of tensor elements
+      /// \brief Sets the image's color space name. This causes the image to be a color image,
+      /// but will cause errors to occur (eventally, not immediately) if the number of tensor elements
       /// does not match the expected number of channels for the given color space.
       void SetColorSpace( String const& cs ) {
          colorSpace_ = cs;
