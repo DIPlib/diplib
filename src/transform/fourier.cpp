@@ -57,7 +57,11 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
          buffers_.resize( threads );
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-         DFTOptions< FloatType< TPI >> const& opts = options_[ params.dimension ];
+         dip::uint procDim = params.dimension;
+         if( params.tensorToSpatial ) {
+            --procDim;
+         }
+         DFTOptions< FloatType< TPI >> const& opts = options_[ procDim ];
          if( buffers_[ params.thread ].size() != static_cast< dip::uint >( opts.bufferSize() )) {
             buffers_[ params.thread ].resize( static_cast< dip::uint >( opts.bufferSize() ));
          }
@@ -138,7 +142,6 @@ void FourierTransform(
       BooleanArray process
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    // Read `options` set
@@ -167,7 +170,6 @@ void FourierTransform(
    if( !in.DataType().IsComplex() ) {
       real = false; // we cannot have real output if the input is real
    }
-   // TODO: should we add options for different forms of normalization? For letting the origin be at (0,0)?
    // Handle `process` array
    if( process.empty() ) {
       process.resize( nDims, true );
@@ -217,7 +219,8 @@ void FourierTransform(
             *lineFilter,
             Framework::Separable_UseInputBuffer +   // input stride is always 1
             Framework::Separable_UseOutputBuffer +  // output stride is always 1
-            Framework::Separable_DontResizeOutput   // output is potentially larger than input, if padding with zeros
+            Framework::Separable_DontResizeOutput + // output is potentially larger than input, if padding with zeros
+            Framework::Separable_AsScalarImage      // each tensor element processed separately
       );
    DIP_END_STACK_TRACE
    // Produce real-valued output
@@ -226,7 +229,16 @@ void FourierTransform(
    if( real ) {
       out.Copy( out.Real() );
    }
-   // TODO: set output pixel sizes
+   // Set output pixel sizes
+   PixelSize pixelSize = in_copy.PixelSize();
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      if( process[ ii ] ) {
+         pixelSize.Scale( ii, out.Size( ii ) );
+         pixelSize.Invert( ii );
+      }
+   }
+   pixelSize.Resize( nDims );
+   out.SetPixelSize( pixelSize );
 }
 
 

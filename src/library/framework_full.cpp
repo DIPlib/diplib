@@ -161,7 +161,9 @@ void Full(
 
    // Loop over all image lines
    GenericJointImageIterator it( input, output, processingDim );
-   FullLineFilterParameters fullLineFilterParameters{ inBuffer, outBuffer, lineLength, processingDim, it.Coordinates(), pixelTableOffsets, thread }; // Takes inBuffer, outBuffer, it.Coordinates() as references
+   FullLineFilterParameters fullLineFilterParameters{
+         inBuffer, outBuffer, lineLength, processingDim, it.Coordinates(), pixelTableOffsets, thread
+   }; // Takes inBuffer, outBuffer, it.Coordinates() as references
    do {
       // Loop over all tensor components
       for( dip::uint ii = 0; ii < nTElems; ++ii ) {

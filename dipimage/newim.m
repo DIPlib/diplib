@@ -59,8 +59,7 @@ if N ~= 0
    elseif N == 1
       n = varargin{1};
       if isa(n,'dip_image')
-         %psize = n.pixelsize;
-         %punit = n.pixelunits; % TODO pixel sizes!
+         psize = n.PixelSize;
          n = imsize(n);
       elseif ~isnumeric(n)
          error('Size vector must be a row vector with integer elements')
@@ -74,7 +73,6 @@ if N ~= 0
 end
 out = dip_image(0,dt);
 out = repmat(out,n);
-%if ~isempty(psize)
-   %out.pixelsize = psize;
-   %out.pixelunits = punit; % TODO pixel size!
-%end
+if ~isempty(psize)
+   out.PixelSize = psize;
+end

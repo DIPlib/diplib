@@ -97,6 +97,7 @@ void Separable(
       if( !input.IsScalar() ) {
          input.TensorToSpatial( 0 );
          process.insert( 0, false );
+         border.insert( 0, 0 );
          tensorToSpatial = true;
          ++nDims;
          inSizes = input.Sizes();
@@ -108,6 +109,8 @@ void Separable(
          colorSpace.clear(); // the output tensor shape is different from the input's, the color space presumably doesn't match
       }
    }
+
+   //std::cout << "Input image: " << c_in << std::endl;
 
    // Adjust output if necessary (and possible)
    DIP_START_STACK_TRACE
@@ -122,6 +125,8 @@ void Separable(
          c_out.SetColorSpace( colorSpace );
       }
    DIP_END_STACK_TRACE
+
+   //std::cout << "Output image: " << c_out << std::endl;
 
    // Make simplified copies of output image headers so we can modify them at will
    Image output = c_out.QuickCopy();
@@ -218,13 +223,13 @@ void Separable(
       sizes[ processingDim ] = outSizes[ processingDim ];
       outImage.dip__SetSizes( sizes );
 
-      // std::cout << "dip::Framework::Separable(), processingDim = " << processingDim << std::endl;
-      // std::cout << "   inImage.Origin() = " << inImage.Origin() << std::endl;
-      // std::cout << "   inImage.Sizes() = " << inImage.Sizes() << std::endl;
-      // std::cout << "   inImage.Strides() = " << inImage.Strides() << std::endl;
-      // std::cout << "   outImage.Origin() = " << outImage.Origin() << std::endl;
-      // std::cout << "   outImage.Sizes() = " << outImage.Sizes() << std::endl;
-      // std::cout << "   outImage.Strides() = " << outImage.Strides() << std::endl;
+      //std::cout << "dip::Framework::Separable(), processingDim = " << processingDim << std::endl;
+      //std::cout << "   inImage.Origin() = " << inImage.Origin() << std::endl;
+      //std::cout << "   inImage.Sizes() = " << inImage.Sizes() << std::endl;
+      //std::cout << "   inImage.Strides() = " << inImage.Strides() << std::endl;
+      //std::cout << "   outImage.Origin() = " << outImage.Origin() << std::endl;
+      //std::cout << "   outImage.Sizes() = " << outImage.Sizes() << std::endl;
+      //std::cout << "   outImage.Strides() = " << outImage.Strides() << std::endl;
 
       // Some values to use during this iteration
       dip::uint inLength = inSizes[ processingDim ]; DIP_ASSERT( inLength == inImage.Size( processingDim ) );
@@ -288,7 +293,9 @@ void Separable(
 
       // Iterate over all lines in the image. This loop to be parallelized.
       auto it = dip::GenericJointImageIterator( inImage, outImage, processingDim );
-      SeparableLineFilterParameters separableLineFilterParams{ inBuffer, outBuffer, processingDim, rep, order.size(), it.Coordinates(), thread }; // Takes inBuffer, outBuffer, it.Coordinates() as references
+      SeparableLineFilterParameters separableLineFilterParams{
+            inBuffer, outBuffer, processingDim, rep, order.size(), it.Coordinates(), tensorToSpatial, thread
+      }; // Takes inBuffer, outBuffer, it.Coordinates() as references
       do {
          // Get pointers to input and ouput lines
          if( inUseBuffer ) {

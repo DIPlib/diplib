@@ -75,6 +75,8 @@ namespace dip {
 ///     are normalized by the same amount. Each transform is multiplied by `1/sqrt(size)` for each
 ///     dimension. This makes the transform identical to how it was in versions of *DIPlib* prior to
 ///     version 3.0.
+///
+/// For tensor images, each plane is transformed independently.
 void FourierTransform(
       Image const& in,
       Image& out,

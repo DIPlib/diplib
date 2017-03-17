@@ -84,7 +84,13 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
-         dip::uint procDim = filter_.size() == 1 ? 0 : params.dimension;
+         dip::uint procDim = 0;
+         if( filter_.size() > 1 ) {
+            procDim = params.dimension;
+            if( params.tensorToSpatial ) {
+               --procDim;
+            }
+         }
          FloatArray const& filter = filter_[ procDim ].filter;
          dip::uint origin = filter_[ procDim ].origin;
          dip::uint filterSize = filter_[ procDim ].size;
@@ -275,7 +281,6 @@ void ConvolveFT(
       String const& filterRepresentation,
       String const& outRepresentation
 ) {
-   // TODO: Fix for tensor images
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !filter.IsForged(), E::IMAGE_NOT_FORGED );
    bool real = true;

@@ -40,6 +40,9 @@ class RectangularUniformLineFilter : public Framework::SeparableLineFilter {
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
          dip::uint procDim = params.dimension;
+         if( params.tensorToSpatial ) {
+            --procDim;
+         }
          dip::uint filterSize = sizes_[ procDim ];
          FloatType< TPI > norm = 1 / static_cast< FloatType< TPI >>( filterSize );
          TPI* left = in - ( filterSize / 2 ) * inStride; // the leftmost pixel in the filter

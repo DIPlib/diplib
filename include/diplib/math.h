@@ -111,6 +111,25 @@ inline Image NearestInt( Image const& in ) {
 
 
 //
+// Arithmetic dyadic operators that are not already declared in diplib/library/operators.h
+//
+
+// TODO: Atan2, Hypot.
+// These lead to cool things such as:
+//    Phase( im ) = Atan2( im.Imaginary(), im.Real() );  // phase of complex values
+//    Atan2( im[ 1 ], im[ 0 ] );                         // angle of a 2-vector
+
+
+//
+// Tensor operators
+//
+
+// TODO: products: CrossProduct, DotProduct (AKA inner product) (last one should be easy using Multiply).
+// TODO: reductions: Determinant, EigenValues, EigenDecomposition, Norm, Trace, Rank
+// TODO: other: Curl, Divergence, Inverse, PseudoInverse, SingularValues, SingularValueDecomposition, Identity
+
+
+//
 // The following functions project along one or more (or all) dimensions
 //
 

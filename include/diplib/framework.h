@@ -167,12 +167,19 @@ struct ScanBuffer {
 ///
 /// We have put all the parameters to the line filter `dip::Framework::ScanLineFilter::Filter` into
 /// a single struct to simplify writing those functions.
+///
+/// Note that `dimension` and `position` are within the images that have had their tensor dimension
+/// converted to spatial dimension, if `dip::Framework::Scan_TensorAsSpatialDim` was given and at least
+/// one input or output image is not scalar. In this case, `tensorToSpatial` is `true`, and the first dimension
+/// (`dimension=0`, and `position[0]`) correspond to the tensor dimension. `dimension` will never be
+/// equal to 0 in this case.
 struct ScanLineFilterParameters {
    std::vector< ScanBuffer > const& inBuffer;   ///< Input buffers (1D)
    std::vector< ScanBuffer >& outBuffer;        ///< Output buffers (1D)
    dip::uint bufferLength;                      ///< Number of pixels in each buffer
    dip::uint dimension;                         ///< Dimension along which the line filter is applied
    UnsignedArray const& position;               ///< Coordinates of first pixel in line
+   bool tensorToSpatial;                        ///< `true` if the tensor dimension was converted to spatial dimension
    dip::uint thread;                            ///< Thread number
 };
 
@@ -605,13 +612,20 @@ struct SeparableBuffer {
 ///
 /// We have put all the parameters to the line filter `dip::Framework::SeparableLineFilter::Filter` into
 /// a single struct to simplify writing those functions.
+///
+/// Note that `dimension` and `position` are within the images that have had their tensor dimension
+/// converted to spatial dimension, if `dip::Framework::Separable_AsScalarImage` was given and the
+/// input is not scalar. In this case, `tensorToSpatial` is `true`, and the first dimension
+/// (`dimension=0`, and `position[0]`) correspond to the tensor dimension. `dimension` will never be
+/// equal to 0 in this case.
 struct SeparableLineFilterParameters {
    SeparableBuffer const& inBuffer;   ///< Input buffer (1D)
    SeparableBuffer& outBuffer;        ///< Output buffer (1D)
    dip::uint dimension;               ///< Dimension along which the line filter is applied
-   dip::uint pass;                    ///< Pass number (0..nPasses), useful to know when it's the first pass,
+   dip::uint pass;                    ///< Pass number (0..nPasses-1)
    dip::uint nPasses;                 ///< Number of passes (typically nDims)
    UnsignedArray const& position;     ///< Coordinates of first pixel in line
+   bool tensorToSpatial;              ///< `true` if the tensor dimension was converted to spatial dimension
    dip::uint thread;                  ///< Thread number
 };
 

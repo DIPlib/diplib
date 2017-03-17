@@ -137,6 +137,8 @@ class dip__Measure : public Framework::ScanLineFilter {
          }
 
          for( auto const& feature : features ) {
+            // NOTE! params.dimension here works as long as params.tensorToSpatial is false.
+            // As is now, MeasurementTool::Measure only works with scalar images, so we don't need to test here.
             feature->ScanLine( label, grey, params.position, params.dimension, objectIndices );
          }
       }
@@ -157,7 +159,7 @@ Measurement MeasurementTool::Measure(
 ) const {
 
    // Check input
-   DIP_THROW_IF( label.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
    if( grey.IsForged() ) {
       DIP_THROW_IF( !grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );

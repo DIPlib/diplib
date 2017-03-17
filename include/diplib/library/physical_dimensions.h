@@ -402,6 +402,14 @@ struct PhysicalQuantity {
       return out;
    }
 
+   /// Computes a physical quantity to the power of -1.
+   PhysicalQuantity Invert() const {
+      PhysicalQuantity out = *this;
+      out.units.Power( -1 );
+      out.magnitude = 1.0 / magnitude;
+      return out;
+   }
+
    /// Unary negation.
    PhysicalQuantity operator-() const {
       return { -magnitude, units };
@@ -522,7 +530,7 @@ inline PhysicalQuantity operator/( PhysicalQuantity lhs, double rhs ) {
 }
 /// Scaling of a physical quantity.
 inline PhysicalQuantity operator/( double lhs, PhysicalQuantity rhs ) {
-   rhs = rhs.Power( -1 );
+   rhs = rhs.Invert();
    rhs *= lhs;
    return rhs;
 }
@@ -730,6 +738,24 @@ class PixelSize {
                if( !size_[ ii ].IsDimensionless() ) {
                   size_[ ii ] *= s[ ii ];
                }
+            }
+         }
+      }
+
+      /// Inverts the pixel size in the given dimension, if it is defined.
+      void Invert( dip::uint d ) {
+         if( ( !size_.empty() ) && !Get( d ).IsDimensionless() ) {
+            // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
+            EnsureDimensionality( d + 2 );
+            size_[ d ] = size_[ d ].Invert();
+         }
+      }
+
+      /// Inverts the pixel size in all dimensions, where defined.
+      void Invert() {
+         for( dip::uint ii = 0; ii < size_.size(); ++ii ) {
+            if( !size_[ ii ].IsDimensionless() ) {
+               size_[ ii ] = size_[ ii ].Invert();
             }
          }
       }

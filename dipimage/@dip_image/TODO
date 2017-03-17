@@ -26,11 +26,19 @@ filtering:
    convhull.m
    gradient.m
    rotate.m
+   circshift.m
+
+per-sample tests:
+   isfinite.m
+   isinf.m
+   isnan.m
 
 arithmetic:
-   atan2.m
-   besselj.m
-   circshift.m
+   atan2.m (how do we implement this for 2-vector images?)
+   hypot.m (how do we implement this for 2-vector images?)
+   besselj.m (was this ever used?)
+
+tensor arithmetic:
    cross.m
    curl.m
    det.m
@@ -40,12 +48,8 @@ arithmetic:
    eig_largest.m
    eig.m
    eye.m
-   hypot.m
    inner.m
    inv.m
-   isfinite.m
-   isinf.m
-   isnan.m
    norm.m
    outer.m
    pinv.m

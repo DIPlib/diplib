@@ -134,9 +134,6 @@ void Scan(
       if( tmp.IsForged() && tmp.IsOverlappingView( in )) {
          tmp.Strip();
       }
-      if( tmp.IsForged() && tensorToSpatial ) {
-         tmp.TensorToSpatial( 0 );
-      }
       tmp.ReForge( sizes, nTensor, outImageTypes[ ii ], Option::AcceptDataTypeChange::DO_ALLOW );
       // Set pixel size and color space
       tmp.SetPixelSize( pixelSize );
@@ -346,7 +343,9 @@ void Scan(
    UnsignedArray position( sizes.size(), 0 );
    IntegerArray inIndices( nIn, 0 );
    IntegerArray outIndices( nOut, 0 );
-   ScanLineFilterParameters scanLineFilterParams{ inBuffers, outBuffers, 0, processingDim, position, thread }; // Takes inBuffers, outBuffers, position as references
+   ScanLineFilterParameters scanLineFilterParams{
+         inBuffers, outBuffers, 0, processingDim, position, tensorToSpatial, thread
+   }; // Takes inBuffers, outBuffers, position as references
    for( ;; ) {
 
       // Iterate over line sections, if bufferSize < sizes[processingDim]

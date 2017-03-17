@@ -11,9 +11,9 @@
 %  in the spatial domain using NDIMS(IMAGE_IN) one-dimensional convolutions.
 %  If it is not separable, the convolution is computed either through the
 %  Fourier Domain or by direct implementation of the convolution sum,
-%  depending on the size of the kernel. The function uses the number of pixels
-%  in the kernel and the number of pixels in the image to determine which
-%  method is the most efficient.
+%  depending on the size of the kernel. Currently, a kernel with more than
+%  49 elements (i.e. larger than a 7x7 kernel) is computed through the
+%  Fourier Domain.
 %  For example:
 %      a = readim('cermet');
 %      k = ones(5,5);

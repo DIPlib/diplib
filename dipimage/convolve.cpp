@@ -69,9 +69,13 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       if( mxIsNumeric( mxFilter ) || mxIsClass( mxFilter, "dip_image" )) {
 
          dip::Image const filter = dml::GetImage( mxFilter );
+         // TODO: Try to separate `filter` into 1D filters. If successful call dip::SeparableConvolution()
 
-         dip::ConvolveFT( in, filter, out );
-         //dip::GeneralConvolution( in, filter, out );
+         if( filter.NumberOfPixels() > 7*7 ) {
+            dip::ConvolveFT( in, filter, out );
+         } else {
+            dip::GeneralConvolution( in, filter, out );
+         }
 
       } else {
 

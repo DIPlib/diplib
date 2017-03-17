@@ -43,7 +43,6 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::BooleanArray process;
       if( nrhs > 2 ) {
          process = dml::GetProcessArray( prhs[ 2 ], in.Dimensionality() );
-         std::cout << "process = " << process << std::endl;
       }
 
       dip::FourierTransform( in, out, options, process );
