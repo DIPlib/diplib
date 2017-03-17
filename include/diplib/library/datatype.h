@@ -93,17 +93,16 @@ struct DataType {
    constexpr DataType() : dt( DT::SFLOAT ) {}
    constexpr DataType( DT _dt ) : dt( _dt ) {}
 
-   constexpr explicit DataType( bin      ) : dt( DT::BIN      ) {}
-   constexpr explicit DataType( uint8    ) : dt( DT::UINT8    ) {}
-   constexpr explicit DataType( sint8    ) : dt( DT::SINT8    ) {}
-   constexpr explicit DataType( uint16   ) : dt( DT::UINT16   ) {}
-   constexpr explicit DataType( sint16   ) : dt( DT::SINT16   ) {}
-   constexpr explicit DataType( uint32   ) : dt( DT::UINT32   ) {}
-   constexpr explicit DataType( sint32   ) : dt( DT::SINT32   ) {}
-   constexpr explicit DataType( sfloat   ) : dt( DT::SFLOAT   ) {}
-   constexpr explicit DataType( dfloat   ) : dt( DT::DFLOAT   ) {}
-   constexpr explicit DataType( scomplex ) : dt( DT::SCOMPLEX ) {}
-   constexpr explicit DataType( dcomplex ) : dt( DT::DCOMPLEX ) {}
+   // This is to get the template below to not compile -- please ignore
+   template< typename T >
+   struct assert_false : std::false_type {};
+
+   /// \brief Get the data type value of any expression, as long as that expression is of one of the known data types
+   template< typename T >
+   constexpr explicit DataType( T ) {
+      // This constructor is not valid. Only the specializations towards the bottom of this file are.
+      static_assert( assert_false< T >::value, "You need to cast your constant to one of the known data types" );
+   }
 
    /// \brief A string can be cast to a data type. The recognized names are identical to the enumerator names in `dip::DataType::DT`.
    explicit DataType( String name ) {
@@ -285,7 +284,7 @@ struct DataType {
    /// Class_Signed     | Class_SInt + Class_Float + Class_Complex;
    /// Class_Any        | Class_Binary + Class_Real + Class_Complex;
    ///
-   /// Note that you can add these constants together, for example `dip::Class_Bin + dip::Class_UInt`.
+   /// Note that you can add these constants together, for example `dip::DataType::Class_UInt8 + dip::DataType::Class_UInt16`.
    DIP_DECLARE_OPTIONS( Classes );
    static DIP_DEFINE_OPTION( Classes, Class_Bin, static_cast<dip::uint>( DT::BIN ) );
    static DIP_DEFINE_OPTION( Classes, Class_UInt8, static_cast<dip::uint>( DT::UINT8 ) );
@@ -346,6 +345,19 @@ struct DataType {
 inline void swap( DataType& v1, DataType& v2 ) {
    v1.swap( v2 );
 }
+
+// Here are the specializations for the templated constructor
+template<> constexpr DataType::DataType( bin      ) : dt( DT::BIN      ) {}
+template<> constexpr DataType::DataType( uint8    ) : dt( DT::UINT8    ) {}
+template<> constexpr DataType::DataType( sint8    ) : dt( DT::SINT8    ) {}
+template<> constexpr DataType::DataType( uint16   ) : dt( DT::UINT16   ) {}
+template<> constexpr DataType::DataType( sint16   ) : dt( DT::SINT16   ) {}
+template<> constexpr DataType::DataType( uint32   ) : dt( DT::UINT32   ) {}
+template<> constexpr DataType::DataType( sint32   ) : dt( DT::SINT32   ) {}
+template<> constexpr DataType::DataType( sfloat   ) : dt( DT::SFLOAT   ) {}
+template<> constexpr DataType::DataType( dfloat   ) : dt( DT::DFLOAT   ) {}
+template<> constexpr DataType::DataType( scomplex ) : dt( DT::SCOMPLEX ) {}
+template<> constexpr DataType::DataType( dcomplex ) : dt( DT::DCOMPLEX ) {}
 
 /// \brief An array to hold data types
 using DataTypeArray = std::vector< DataType >;

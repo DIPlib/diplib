@@ -199,7 +199,7 @@ class Image {
          Forge();
       }
 
-      /// \brief Create a 0-D image with the value and data type of `p`.
+      /// \brief Create a 0-D image with the value and data type of `p`. `p` must be of one of the valid pixel data types.
       template< typename T >
       explicit Image( T p ) {
          dataType_ = dip::DataType( p );
@@ -207,7 +207,7 @@ class Image {
          *static_cast< T* >( origin_ ) = p;
       }
 
-      /// \brief Create a 0-D vector image with the values and data type of `plist`.
+      /// \brief Create a 0-D vector image with the values and data type of `plist`. `plist` must be of one of the valid pixel data types.
       template< typename T >
       explicit Image( std::initializer_list< T > const& plist ) {
          tensor_.SetVector( plist.size() );  // will throw if p.size()==0
