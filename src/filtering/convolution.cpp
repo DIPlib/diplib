@@ -400,7 +400,7 @@ void GeneralConvolution(
 #include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
-   dip::Image img{ dip::UnsignedArray{ 80, 20, 30 }, 1, dip::DT_UINT16 };
+   dip::Image img{ dip::UnsignedArray{ 80, 6, 5 }, 1, dip::DT_UINT16 };
    {
       DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
       std::random_device rd;
@@ -414,7 +414,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    dip::Image out1;
    dip::Image out2;
    // Comparing general to even
-   dip::OneDimensionalFilterArray filterArray( 1 );
+   dip::OneDimensionalFilterArray filterArray( 3 );
    filterArray[ 0 ].filter = {
          1.0 / 49.0, 2.0 / 49.0, 3.0 / 49.0, 4.0 / 49.0, 5.0 / 49.0, 6.0 / 49.0, 7.0 / 49.0,
          6.0 / 49.0, 5.0 / 49.0, 4.0 / 49.0, 3.0 / 49.0, 2.0 / 49.0, 1.0 / 49.0
@@ -475,9 +475,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
 
    // Comparing that last filter to GeneralConvolution
-   dip::Image filter{ dip::UnsignedArray{ 19, 19, 19 }, 1, dip::DT_DFLOAT };
+   dip::Image filter{ dip::UnsignedArray{ 19, 1, 1 }, 1, dip::DT_DFLOAT };
    filter.Fill( 0 );
-   filter.At( 19/2, 19/2, 19/2 ) = 1;
+   filter.At( 19/2, 0, 0 ) = 1;
    dip::SeparableConvolution( filter, filter, filterArray, { "add zeros" } );
    dip::GeneralConvolution( img, filter, out2, { "periodic" } );
    DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );

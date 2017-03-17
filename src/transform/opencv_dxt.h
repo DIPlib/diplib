@@ -876,15 +876,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing the DFT function") {
    // Test a few different sizes that have all different radixes.
    DOCTEST_CHECK( doctest::Approx( dotest< float >( 32 )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< double >( 32 )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 1024 )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< double >( 1024 )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< float >( 1152 )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 1152 )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 840 )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< double >( 840 )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< float >( 1023 )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< double >( 1023 )) == 0 );
-   DOCTEST_CHECK( doctest::Approx( dotest< float >( 840, true )) == 0 );
    DOCTEST_CHECK( doctest::Approx( dotest< double >( 840, true )) == 0 );
 }
 

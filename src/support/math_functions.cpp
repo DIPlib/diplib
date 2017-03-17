@@ -265,12 +265,7 @@ static void gser(
       dfloat* gln
 ) {
    *gln = LnGamma( a );
-   if( x <= 0.0 ) {
-      if( x < 0.0 ) {
-         return;
-      }
-      *gamser = 0.0;
-   } else {
+   if( x > 0.0 ) {
       dfloat ap = a;
       dfloat del = 1.0 / a;
       dfloat sum = del;
@@ -280,10 +275,11 @@ static void gser(
          sum += del;
          if( std::abs( del ) < std::abs( sum ) * EPS ) {
             *gamser = sum * std::exp( -x + a * std::log( x ) - ( *gln ));
-            break;
+            return;
          }
       }
    }
+   *gamser = 0.0;
 }
 
 static void gcf(
@@ -309,21 +305,18 @@ static void gcf(
       dfloat del = d * c;
       h *= del;
       if( std::abs( del - 1.0 ) < EPS ) {
-         break;
+         *gammcf = std::exp( -x + a * std::log( x ) - ( *gln )) * h;
+         return;
       }
    }
-   if( i > ITMAX ) {
-      *gammcf = 0.0;
-      return;
-   }
-   *gammcf = std::exp( -x + a * std::log( x ) - ( *gln )) * h;
+   *gammcf = 0.0;
 }
 
 dfloat GammaP(
       dfloat a,
       dfloat x
 ) {
-   if( x < 0.0 || a <= 0.0 ) {
+   if(( x < 0.0 ) || ( a <= 0.0 )) {
       return 0.0;
    }
    if( x < ( a + 1.0 )) {
@@ -344,7 +337,7 @@ dfloat GammaQ(
       dfloat a,
       dfloat x
 ) {
-   if( x < 0.0 || a <= 0.0 ) {
+   if(( x < 0.0 ) || ( a <= 0.0 )) {
       return 0.0;
    }
    if( x < ( a + 1.0 )) {
