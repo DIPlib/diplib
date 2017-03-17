@@ -37,9 +37,9 @@ Important `cmake` command-line arguments:
 
     cmake -DCMAKE_INSTALL_PREFIX=$HOME/dip     # choose an instal location
     cmake -DCMAKE_BUILD_TYPE=Debug             # by default it's release
-    cmake -DEXCEPTIONS_RECORD_STACK_TRACE=Off  # to disable stack trace generation on exception
-    cmake -DENABLE_ASSERT=Off                  # to disable asserts
-    cmake -DENABLE_DOCTEST=Off                 # to disable doctest within DIPlib
+    cmake -DDIP_EXCEPTIONS_RECORD_STACK_TRACE=Off  # to disable stack trace generation on exception
+    cmake -DDIP_ENABLE_ASSERT=Off              # to disable asserts
+    cmake -DDIP_ENABLE_DOCTEST=Off             # to disable doctest within DIPlib
 
 Under Windows you can follow a similar process, but I have never used CMake under
 Windows, so I'll let someone else write this bit.

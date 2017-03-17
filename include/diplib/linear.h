@@ -183,9 +183,9 @@ inline Image GeneralConvolution(
 /// \brief Applies a convolution with a kernel with uniform weights, leading to an average (mean) filter.
 ///
 /// The size and shape of the kernel is given by `filterSize` and `filterShape`. `filterShape` can be any
-/// of the strings recognized by `dip::PixelTable`: "rectangular", "elliptic", and "diamond". `filterSize`
-/// is the diameter of the circle (sphere/hypersphere) in the corresponding metric: L<sub>inf</sub>, L<sub>2</sub>,
-/// and L<sub>1</sub>.
+/// of the strings recognized by `dip::PixelTable`: `"rectangular"`, `"elliptic"`, and `"diamond"`. `filterSize`
+/// is the diameter of the circle (sphere/hypersphere) in the corresponding metric: \f$L^\infty\f$, \f$L^2\f$,
+/// and \f$L^1\f$.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///

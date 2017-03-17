@@ -19,11 +19,11 @@
  */
 
 #include "diplib.h"
-#include "diplib/morphology.h"
 #include "diplib/pixel_table.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/saturated_arithmetic.h"
+#include "diplib/morphology.h"
 
 
 namespace dip {
@@ -224,7 +224,7 @@ class PixelTableMorphologyLineFilter : public Framework::FullLineFilter {
 void PixelTableMorphology(
       Image const& in,
       Image& out,
-      PixelTable& pixelTable,
+      PixelTable const& pixelTable,
       BoundaryConditionArray const& bc,
       bool dilation // true = dilation, false = erosion
 ) {
@@ -297,7 +297,7 @@ class GreyValueSEMorphologyLineFilter : public Framework::FullLineFilter {
 void GreyValueSEMorphology(
       Image const& in,
       Image& out,
-      PixelTable& pixelTable,
+      PixelTable const& pixelTable,
       BoundaryConditionArray const& bc,
       bool dilation // true = dilation, false = erosion
 ) {
@@ -495,8 +495,7 @@ void LineMorphology(
 void BasicMorphology(
       Image const& in,
       Image& out,
-      FloatArray filterParam,
-      String const& filterShape,
+      StructuringElement se, // we make a copy...
       StringArray const& boundaryCondition,
       bool dilation, // true = dilation, false = erosion
       bool mirror = false // mirror the SE?
@@ -504,68 +503,26 @@ void BasicMorphology(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
-      ArrayUseParameter( filterParam, in.Dimensionality(), 1.0 );
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       if( bc.empty() ) {
          bc.resize( 1 );
          bc[ 0 ] = dilation ? BoundaryCondition::ADD_MIN_VALUE : BoundaryCondition::ADD_MAX_VALUE;
       }
-      if( filterShape == "rectangular" ) {
-            RectangularMorphology(in, out, filterParam, bc, dilation, mirror );
-      } else if( filterShape == "parabolic" ) {
-            ParabolicMorphology(in, out, filterParam, bc, dilation );
-      } else if( filterShape == "interpolated line" ) {
-            LineMorphology(in, out, filterParam, bc, true, dilation );
-      } else if( filterShape == "discrete line" ) {
-            LineMorphology(in, out, filterParam, bc, false, dilation );
+      if( se.IsRectangular() ) {
+         RectangularMorphology( in, out, se.Sizes( in ), bc, dilation, mirror );
+      } else if( se.IsParabolic() ) {
+         ParabolicMorphology( in, out, se.Sizes( in ), bc, dilation );
+      } else if( se.IsInterpolatedLine() ) {
+         LineMorphology( in, out, se.Sizes( in ), bc, true, dilation );
+      } else if( se.IsDiscreteLine() ) {
+         LineMorphology( in, out, se.Sizes( in ), bc, false, dilation );
       } else {
-         dip::uint procDim = Framework::OptimalProcessingDim( in, UnsignedArray{ filterParam } );
-         PixelTable pixelTable( filterShape, filterParam, procDim );
-         if( mirror ) {
-            pixelTable.MirrorOrigin();
+         PixelTable pixelTable = se.PixelTable( in, mirror );
+         if( pixelTable.HasWeights() ) {
+            GreyValueSEMorphology( in, out, pixelTable, bc, dilation );
+         } else {
+            PixelTableMorphology( in, out, pixelTable, bc, dilation );
          }
-         PixelTableMorphology( in, out, pixelTable, bc, dilation );
-      }
-   DIP_END_STACK_TRACE
-}
-
-void BasicMorphology(
-      Image const& in,
-      Image const& c_se,
-      Image& out,
-      StringArray const& boundaryCondition,
-      bool dilation, // true = dilation, false = erosion
-      bool mirror = false // mirror the SE?
-) {
-   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !c_se.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_se.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_START_STACK_TRACE
-      Image se = c_se.QuickCopy();
-      if( se.Dimensionality() < in.Dimensionality() ) {
-         se.ExpandDimensionality( in.Dimensionality() );
-      }
-      DIP_THROW_IF( se.Dimensionality() != in.Dimensionality(), E::DIMENSIONALITIES_DONT_MATCH );
-      BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
-      dip::uint procDim = Framework::OptimalProcessingDim( in, se.Sizes() );
-      if( mirror ) {
-         se.Mirror();
-      }
-      if( se.DataType().IsBinary() ) {
-         PixelTable pixelTable( se, {}, procDim );
-         if( mirror ) {
-            pixelTable.MirrorOrigin();
-         }
-         PixelTableMorphology( in, out, pixelTable, bc, dilation );
-      } else {
-         // TODO: make a pixel table of IsFinite(se).
-         PixelTable pixelTable( se > -1e15, {}, procDim );
-         pixelTable.AddWeights( se );
-         if( mirror ) {
-            pixelTable.MirrorOrigin();
-         }
-         GreyValueSEMorphology( in, out, pixelTable, bc, dilation );
       }
    DIP_END_STACK_TRACE
 }
@@ -577,46 +534,22 @@ void BasicMorphology(
 void Dilation(
       Image const& in,
       Image& out,
-      FloatArray const& filterParam,
-      String const& filterShape,
+      StructuringElement const& se,
       StringArray const& boundaryCondition
 ) {
    DIP_START_STACK_TRACE
-      BasicMorphology( in, out, filterParam, filterShape, boundaryCondition, true );
-   DIP_END_STACK_TRACE
-}
-
-void Dilation(
-      Image const& in,
-      Image const& se,
-      Image& out,
-      StringArray const& boundaryCondition
-) {
-   DIP_START_STACK_TRACE
-      BasicMorphology( in, se, out, boundaryCondition, true );
+      BasicMorphology( in, out, se, boundaryCondition, true );
    DIP_END_STACK_TRACE
 }
 
 void Erosion(
       Image const& in,
       Image& out,
-      FloatArray const& filterParam,
-      String const& filterShape,
+      StructuringElement const& se,
       StringArray const& boundaryCondition
 ) {
    DIP_START_STACK_TRACE
-      BasicMorphology( in, out, filterParam, filterShape, boundaryCondition, false );
-   DIP_END_STACK_TRACE
-}
-
-void Erosion(
-      Image const& in,
-      Image const& se,
-      Image& out,
-      StringArray const& boundaryCondition
-) {
-   DIP_START_STACK_TRACE
-      BasicMorphology( in, se, out, boundaryCondition, false );
+      BasicMorphology( in, out, se, boundaryCondition, false );
    DIP_END_STACK_TRACE
 }
 
@@ -625,50 +558,24 @@ void Erosion(
 void Opening(
       Image const& in,
       Image& out,
-      FloatArray const& filterParam,
-      String const& filterShape,
+      StructuringElement const& se,
       StringArray const& boundaryCondition
 ) {
    DIP_START_STACK_TRACE
-      BasicMorphology( in, out, filterParam, filterShape, boundaryCondition, false, false );
-      BasicMorphology( out, out, filterParam, filterShape, boundaryCondition, true, true );
-   DIP_END_STACK_TRACE
-}
-
-void Opening(
-      Image const& in,
-      Image const& se,
-      Image& out,
-      StringArray const& boundaryCondition
-) {
-   DIP_START_STACK_TRACE
-      BasicMorphology( in, se, out, boundaryCondition, false, false );
-      BasicMorphology( out, se, out, boundaryCondition, true, true );
+      BasicMorphology( in, out, se, boundaryCondition, false, false );
+      BasicMorphology( out, out, se, boundaryCondition, true, true );
    DIP_END_STACK_TRACE
 }
 
 void Closing(
       Image const& in,
       Image& out,
-      FloatArray const& filterParam,
-      String const& filterShape,
+      StructuringElement const& se,
       StringArray const& boundaryCondition
 ) {
    DIP_START_STACK_TRACE
-      BasicMorphology( in, out, filterParam, filterShape, boundaryCondition, true, false );
-      BasicMorphology( out, out, filterParam, filterShape, boundaryCondition, false, true );
-   DIP_END_STACK_TRACE
-}
-
-void Closing(
-      Image const& in,
-      Image const& se,
-      Image& out,
-      StringArray const& boundaryCondition
-) {
-   DIP_START_STACK_TRACE
-      BasicMorphology( in, se, out, boundaryCondition, true, false );
-      BasicMorphology( out, se, out, boundaryCondition, false, true );
+      BasicMorphology( in, out, se, boundaryCondition, true, false );
+      BasicMorphology( out, out, se, boundaryCondition, false, true );
    DIP_END_STACK_TRACE
 }
 
@@ -678,62 +585,64 @@ void Closing(
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/math.h"
+#include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
-   dip::Image in( { 256, 69 }, 1, dip::DT_UINT8 );
+   dip::Image in( { 128, 69 }, 1, dip::DT_UINT8 );
    in = 0;
-   in.At( 127, 35 ) = 100;
+   dip::uint pval = 5 * 5;
+   in.At( 64, 35 ) = pval;
    dip::Image out;
 
    // Rectangular morphology
-   dip::BasicMorphology( in, out, { 10, 1 }, "rectangular", {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 10, 1 }, "rectangular" }, {}, true /*compute dilation*/ );
    DOCTEST_CHECK( dip::Count( out ) == 10 );
-   dip::BasicMorphology( in, out, { 11, 1 }, "rectangular", {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 11, 1 }, "rectangular" }, {}, true /*compute dilation*/ );
    DOCTEST_CHECK( dip::Count( out ) == 11 );
-   dip::BasicMorphology( in, out, { 10, 11 }, "rectangular", {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 10, 11 }, "rectangular" }, {}, true /*compute dilation*/ );
    DOCTEST_CHECK( dip::Count( out ) == 10*11 );
-   dip::BasicMorphology( out, out, { 10, 11 }, "rectangular", {}, false /*compute erosion*/, true /* mirror */ );
+   dip::BasicMorphology( out, out, { { 10, 11 }, "rectangular" }, {}, false /*compute erosion*/, true /* mirror */ );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK(( dip::sint )out.At( 127, 35 ) == 100 ); // Is that pixel in the right place?
+   DOCTEST_CHECK(( dip::sint )out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
 
    // PixelTable morphology
-   dip::BasicMorphology( in, out, { 1, 10 }, "elliptic", {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 1, 10 }, "elliptic" }, {}, true /*compute dilation*/ );
    DOCTEST_CHECK( dip::Count( out ) == 11 ); // rounded!
-   dip::BasicMorphology( in, out, { 1, 11 }, "elliptic", {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 1, 11 }, "elliptic" }, {}, true /*compute dilation*/ );
    DOCTEST_CHECK( dip::Count( out ) == 11 );
-   dip::BasicMorphology( in, out, { 10, 11 }, "elliptic", {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 10, 11 }, "elliptic" }, {}, true /*compute dilation*/ );
    DOCTEST_CHECK( dip::Count( out ) == 89 );
-   dip::BasicMorphology( out, out, { 10, 11 }, "elliptic", {}, false /*compute erosion*/, true /* mirror */ );
+   dip::BasicMorphology( out, out, { { 10, 11 }, "elliptic" }, {}, false /*compute erosion*/, true /* mirror */ );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK(( dip::sint )out.At( 127, 35 ) == 100 ); // Is that pixel in the right place?
+   DOCTEST_CHECK(( dip::sint )out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
 
    // PixelTable morphology -- mirroring
    dip::Image se( { 10, 10 }, 1, dip::DT_BIN );
    se = 1;
-   dip::BasicMorphology( in, se, out, {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, se, {}, true /*compute dilation*/ );
    DOCTEST_CHECK( dip::Count( out ) == 100 );
-   dip::BasicMorphology( out, se, out, {}, false /*compute erosion*/, true /* mirror */ );
+   dip::BasicMorphology( out, out, se, {}, false /*compute erosion*/, true /* mirror */ );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK(( dip::sint )out.At( 127, 35 ) == 100 ); // Is that pixel in the right place?
+   DOCTEST_CHECK(( dip::sint )out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
 
    // Parabolic morphology
-   dip::BasicMorphology( in, out, { 10.0, 0.0 }, "parabolic", {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 10.0, 0.0 }, "parabolic" }, {}, true /*compute dilation*/ );
    dip::dfloat result = 0.0;
-   for( dip::uint ii = 1; ii < 100; ++ii ) {
-      result += 100.0 - ii * ii / 100.0;
+   for( dip::uint ii = 1; ii < 50; ++ii ) { // 50 = 10.0 * sqrt( pval )
+      result += dip::dfloat( pval ) - dip::dfloat( ii * ii ) / 100.0;
    }
-   result = 100.0 + result * 2.0;
+   result = pval + result * 2.0;
    DOCTEST_CHECK(( dip::dfloat )dip::Sum( out ) == doctest::Approx( result ) );
-   DOCTEST_CHECK(( dip::dfloat )out.At( 127, 35 ) == 100.0 ); // Is the origin in the right place?
+   DOCTEST_CHECK(( dip::dfloat )out.At( 64, 35 ) == pval ); // Is the origin in the right place?
 
-   dip::BasicMorphology( out, out, { 10.0, 0.0 }, "parabolic", {}, false /*compute erosion*/, true /* mirror */ );
+   dip::BasicMorphology( out, out, { { 10.0, 0.0 }, "parabolic" }, {}, false /*compute erosion*/, true /* mirror */ );
    result = 0.0;
-   for( dip::uint ii = 1; ii < 100; ++ii ) {
-      result += ii * ii / 100.0;
+   for( dip::uint ii = 1; ii < 50; ++ii ) { // 50 = 10.0 * sqrt( pval )
+      result += dip::dfloat( ii * ii ) / 100.0; // 100.0 = 10.0 * 10.0
    }
-   result = 100.0 + result * 2.0;
+   result = pval + result * 2.0;
    DOCTEST_CHECK(( dip::dfloat )dip::Sum( out ) == doctest::Approx( result ) );
-   DOCTEST_CHECK(( dip::dfloat )out.At( 127, 35 ) == 100.0 ); // Is the origin in the right place?
+   DOCTEST_CHECK(( dip::dfloat )out.At( 64, 35 ) == pval ); // Is the origin in the right place?
 
    // Grey-value SE morphology
    se.ReForge( { 5, 6 }, 1, dip::DT_SFLOAT );
@@ -742,11 +651,12 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    se.At( 4, 5 ) = -5;
    se.At( 0, 5 ) = -5;
    se.At( 4, 0 ) = -10;
-   dip::BasicMorphology( in, se, out, {}, true /*compute dilation*/ );
-   DOCTEST_CHECK(( dip::sint )dip::Sum( out ) == 100 + 95 + 95 + 90 );
-   dip::BasicMorphology( out, se, out, {}, false /*compute erosion*/, true /* mirror */ );
-   DOCTEST_CHECK( dip::Count( out ) == 4 ); // The erosion should still leave 4 non-zero pixels
-   DOCTEST_CHECK(( dip::sint )out.At( 127, 35 ) == 100 ); // Is the main pixel in the right place and with the right value?
+   se.At( 2, 3 ) = 0;
+   dip::BasicMorphology( in, out, se, {}, true /*compute dilation*/ );
+   DOCTEST_CHECK(( dip::sint )dip::Sum( out ) == 5 * pval - 5 - 5 - 10 );
+   dip::BasicMorphology( out, out, se, {}, false /*compute erosion*/, true /* mirror */ );
+   DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
+   DOCTEST_CHECK(( dip::sint )out.At( 64, 35 ) == pval ); // Is the main pixel in the right place and with the right value?
 }
 
 #endif // DIP__ENABLE_DOCTEST

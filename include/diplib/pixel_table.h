@@ -159,19 +159,22 @@ class PixelTable {
 
       /// \brief Construct a pixel table for default filter shapes.
       ///
-      /// The known default `shape`s are "rectangular", "elliptic", and "diamond",
-      /// which correspond to a unit circle in the L<sub>infinity</sub> norm, the L<sub>2</sub> norm,
-      /// and the L<sub>1</sub> norm.
+      /// The known default `shape`s are `"rectangular"`, `"elliptic"`, and `"diamond"`,
+      /// which correspond to a unit circle in the \f$L^\infty\f$ norm, the \f$L^2\f$ norm,
+      /// and the \f$L^1\f$ norm.
       ///
       /// The `size` array determines the size and dimensionality. It gives the diameter of the neighborhood (not
       /// the radius!); the neighborhood contains all pixels at a distance equal or smaller than half the diameter
       /// from the origin. This means that not only integer sizes are meaningful.
-      /// The exception is for the "rectangular" shape, where the sizes are rounded down to the nearest integer,
+      /// The exception is for the `"rectangular"` shape, where the sizes are rounded down to the nearest integer,
       /// yielding rectangle sides that are either even or odd in length. For even sizes, one can imagine that the
       /// origin is shifted by half a pixel to accommodate the requested size (thought the origin is set to the pixel
-      /// that is right of the center). For the "diamond" and "elliptic" shapes, the bounding box always has odd
+      /// that is right of the center). For the `"diamond"` and `"elliptic"` shapes, the bounding box always has odd
       /// sizes, and the origin is always centered on one pixel. To accomplish the same for the "rectangular" shape,
-      /// simply round the sizes array to an odd integer: `size[ ii ] = std::floor( size[ ii ] / 2 ) * 2 + 1`.
+      /// simply round the sizes array to an odd integer:
+      /// ```cpp
+      ///     size[ ii ] = std::floor( size[ ii ] / 2 ) * 2 + 1
+      /// ```
       ///
       /// `procDim` indicates the processing dimension.
       PixelTable( String const& shape, FloatArray size, dip::uint procDim = 0 );
