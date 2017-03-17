@@ -88,6 +88,7 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
          if( filter_.size() > 1 ) {
             procDim = params.dimension;
             if( params.tensorToSpatial ) {
+               DIP_ASSERT( procDim > 0 );
                --procDim;
             }
          }
@@ -222,13 +223,11 @@ void SeparableConvolution(
       dip::uint sz = filterData[ 0 ].size;
       dip::uint b = filterData[ 0 ].origin;
       b = std::max( b, sz - b - 1 ); // note that b < sz.
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         border[ ii ] = b;
-      }
+      border.fill( b );
    } else {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          dip::uint sz = filterData[ ii ].size;
-         dip::uint b = filterData[ 0 ].origin;
+         dip::uint b = filterData[ ii ].origin;
          b = std::max( b, sz - b - 1 ); // note that b < sz.
          border[ ii ] = b;
       }
@@ -401,7 +400,7 @@ void GeneralConvolution(
 #include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
-   dip::Image img{ dip::UnsignedArray{ 200, 50, 30 }, 1, dip::DT_UINT16 };
+   dip::Image img{ dip::UnsignedArray{ 80, 20, 30 }, 1, dip::DT_UINT16 };
    {
       DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
       std::random_device rd;

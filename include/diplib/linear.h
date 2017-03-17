@@ -180,6 +180,16 @@ inline Image GeneralConvolution(
    return out;
 }
 
+/// \brief Applies a convolution with a kernel with uniform weights, leading to an average (mean) filter.
+///
+/// The size and shape of the kernel is given by `filterSize` and `filterShape`. `filterShape` can be any
+/// of the strings recognized by `dip::PixelTable`: "rectangular", "elliptic", and "diamond". `filterSize`
+/// is the diameter of the circle (sphere/hypersphere) in the corresponding metric: L<sub>inf</sub>, L<sub>2</sub>,
+/// and L<sub>1</sub>.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// \see dip::ConvolveFT, dip::SeparableConvolution, dip::GeneralConvolution
 void Uniform(
       Image const& in,
       Image& out,
@@ -187,6 +197,25 @@ void Uniform(
       String const& filterShape = "elliptic",
       StringArray const& boundaryCondition = {}
 );
+inline Image Uniform(
+      Image const& in,
+      FloatArray filterSize = { 7 },
+      String const& filterShape = "elliptic",
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   Uniform( in, out, filterSize, filterShape, boundaryCondition );
+   return out;
+}
+
+/// \brief Applies a convolution with a kernel with uniform weights, leading to an average (mean) filter.
+///
+/// The kernel is given by the binary image `neighborhood`. Note that the kernel is not mirrored, as it would
+/// be in the convolution, inless `mode` is equal to the string `"convolution"`.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// \see dip::ConvolveFT, dip::SeparableConvolution, dip::GeneralConvolution
 void Uniform(
       Image const& in,
       Image const& neighborhood,
@@ -194,12 +223,23 @@ void Uniform(
       StringArray const& boundaryCondition = {},
       String const& mode = "" // set to "convolution" to mirror `neighborhood`
 );
+inline Image Uniform(
+      Image const& in,
+      Image const& neighborhood,
+      StringArray const& boundaryCondition = {},
+      String const& mode = "" // set to "convolution" to mirror `neighborhood`
+) {
+   Image out;
+   Uniform( in, neighborhood, out, boundaryCondition, mode );
+   return out;
+
+}
 
 void Gauss(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1 },
-      IntegerArray const& derivativeOrder = { 0 },
+      FloatArray const& sigmas = { 1.0 },
+      UnsignedArray const& derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {}, // ignored if GaussFT
       BooleanArray const& process = {},
       String const& method = "optimal" // "FIR","IIR","FT","optimal"
@@ -209,7 +249,7 @@ void GaussFIR(
       Image const& in,
       Image& out,
       FloatArray sigmas,
-      IntegerArray derivativeOrder = { 0 },
+      UnsignedArray derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
       BooleanArray process = {},
       dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
@@ -218,16 +258,16 @@ void GaussFIR(
 void GaussFT(
       Image const& in,
       Image& out,
-      FloatArray sigmas,
-      IntegerArray derivativeOrder = { 0 },
+      FloatArray sigmas = { 1.0 },
+      UnsignedArray derivativeOrder = { 0 },
       dfloat truncation = 0
 );
 
 void GaussIIR(
       Image const& in,
       Image& out,
-      FloatArray sigmas = { 1 },
-      IntegerArray derivativeOrder = { 0 },
+      FloatArray sigmas = { 1.0 },
+      UnsignedArray derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
       BooleanArray process = {},
       IntegerArray filterOrder = {},
