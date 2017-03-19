@@ -508,13 +508,13 @@ inline bool operator==( DimensionArray< T > const& lhs, DimensionArray< T > cons
    }
    auto lhsp = lhs.begin();
    auto rhsp = rhs.begin();
-   do {
+   while( lhsp != lhs.end() ) {
       if( *lhsp != *rhsp ) {
          return false;
       }
       ++lhsp;
       ++rhsp;
-   } while( lhsp != lhs.end() );
+   };
    return true;
 }
 /// \brief Compares two arrays, returns true if they have different size and/or contain different values.
@@ -535,13 +535,13 @@ inline bool operator>( DimensionArray< T > const& lhs, DimensionArray< T > const
    }
    auto lhsp = lhs.begin();
    auto rhsp = rhs.begin();
-   do {
+   while( lhsp != lhs.end() ) {
       if( *lhsp <= *rhsp ) {
          return false;
       }
       ++lhsp;
       ++rhsp;
-   } while( lhsp != lhs.end() );
+   };
    return true;
 }
 /// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are smaller
@@ -553,13 +553,13 @@ inline bool operator<( DimensionArray< T > const& lhs, DimensionArray< T > const
    }
    auto lhsp = lhs.begin();
    auto rhsp = rhs.begin();
-   do {
+   while( lhsp != lhs.end() ) {
       if( *lhsp >= *rhsp ) {
          return false;
       }
       ++lhsp;
       ++rhsp;
-   } while( lhsp != lhs.end() );
+   };
    return true;
 }
 /// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are larger
@@ -571,13 +571,13 @@ inline bool operator>=( DimensionArray< T > const& lhs, DimensionArray< T > cons
    }
    auto lhsp = lhs.begin();
    auto rhsp = rhs.begin();
-   do {
+   while( lhsp != lhs.end() ) {
       if( *lhsp < *rhsp ) {
          return false;
       }
       ++lhsp;
       ++rhsp;
-   } while( lhsp != lhs.end() );
+   };
    return true;
 }
 /// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are smaller
@@ -589,13 +589,13 @@ inline bool operator<=( DimensionArray< T > const& lhs, DimensionArray< T > cons
    }
    auto lhsp = lhs.begin();
    auto rhsp = rhs.begin();
-   do {
+   while( lhsp != lhs.end() ) {
       if( *lhsp > *rhsp ) {
          return false;
       }
       ++lhsp;
       ++rhsp;
-   } while( lhsp != lhs.end() );
+   };
    return true;
 }
 
