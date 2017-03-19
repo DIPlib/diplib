@@ -117,8 +117,7 @@ using ColorSpaceConverterPointer = std::unique_ptr< ColorSpaceConverter >;
 /// paths, defined by these conversion functions, to convert between color spaces. Thus,
 /// it is not necessary to create functions that translate from your new color space to
 /// all known color spaces, it is sufficient to register two function that translate to
-/// and from your new color space to any existing color space.
-///
+/// and from your new color space to any existing color space:
 /// ```cpp
 ///     dip::ColorSpaceManager csm;
 ///     dip::Image img = ...
@@ -131,21 +130,27 @@ using ColorSpaceConverterPointer = std::unique_ptr< ColorSpaceConverter >;
 ///     csm.Register( yxy2frank );                  // an object that converts from Yxy to Frank
 ///     img = csm.Convert( img, "f" );              // img will be converted from Lab to Frank
 /// ```
+/// In the code snippet above, `frank2xyz` and `yxy2frank` are objects derived from `dip::ColorSpaceConverter`.
 ///
-/// The color spaces known by default are:
-/// * "grey" (or "gray"); an empty string is also interpreted as grey.
-/// * "RGB": linear RGB
-/// * "R'G'B'" (or "nlRGB"): non-linear RGB, equal to linear RGB to the power of 2.5.
-/// * "CMY": Cyan-Magenta-Yellow, subtractive colors, defined simply as 1-RGB.
-/// * "CMYK": Cyan-Magenta-Yellow-blacK, subtractive colors with black added. Note that printers need a more complex mapping to CMYK to work correctly.
-/// * "HCV": Hue-Chroma-Value (TODO: add description)
-/// * "HSV": Hue-Saturation-Value (TODO: add description)
-/// * "XYZ": CIE 1931 XYZ, standard observer tristimulus values. A rotation of the RGB cube that aligns Y with the luminance axis.
-/// * "Yxy": CIE Yxy, where x and y are normalized X and Y. They are the chromacity coordinates.
-/// * "Lab" (or "L*a*b*", "CIELAB"): Lightness and two chromacity coordinates, closer to perceptually uniform than Yxy.
-/// * "Luv" (or "L*u*v*", "CIELUV"): Lightness and two chromacity coordinates, an alternative definition to Lab.
-/// * "LCH": Lightness-Chroma-Hue, computed from Lab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
-/// Color space names are case-sensitive, but aliases are registered for all these names using all-lowercase.
+/// The color spaces known by default are given in the table below. Color space names are case-sensitive,
+/// but aliases are registered for all these names using all-lowercase.
+///
+/// Name     | Aliases  | Description
+/// -------- | -------- | --------------
+/// "grey"   | "gray"   | An empty string is also interpreted as grey. Defined to be in the range [0,255].
+/// "RGB"    |          | Linear RGB, defined in the range [0,255].
+/// "R'G'B'" | "nlRGB"  | Non-linear RGB, equal to linear RGB to the power of 2.5, which makes each channel more or less perceptually uniform. Values in the range is [0,255].
+/// "CMY"    |          | Cyan-Magenta-Yellow .Subtractive colors, defined simply as 255-RGB. Values in the range is [0,255].
+/// "CMYK"   |          | Cyan-Magenta-Yellow-blacK. Subtractive colors with black added. Note that printers need a more complex mapping to CMYK to work correctly.
+/// "HSI"    |          | Hue-Saturation-Intensity. This polar decomposition of the RGB cube is more suited to image analysis than HSV or HCV. S and I are in the range [0,255], H is an angle in degrees. Defined by Hanbury and Serra, "Colour image analysis in 3d-polar coordinates", Joint Pattern Recognition Symposium, 2003.
+/// "HCV"    |          | Hue-Chroma-Value. C and V are in range [0,255], H is an angle in degrees.
+/// "HSV"    |          | Hue-Saturation-Value. S us in range [0,1] and V in range [0,255], H is an angle in degrees.
+/// "XYZ"    |          | CIE 1931 XYZ, standard observer tristimulus values. A rotation of the RGB cube that aligns Y with the luminance axis.
+/// "Yxy"    |          | CIE Yxy, where x and y are normalized X and Y. They are the chromacity coordinates.
+/// "Lab"    | "L*a*b*", "CIELAB" | Lightness and two chromacity coordinates. A color space that is much closer to being perceptually uniform than Yxy.
+/// "Luv"    | "L*u*v*", "CIELUV" | Lightness and two chromacity coordinates. An alternative to CIE Lab.
+/// "LCH"    | "L*C*H*" | Lightness-Chroma-Hue. Computed from Lab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
+//
 // TODO: Also known: Piet's color space: art. What to do with this? Is it even published?
 // TODO: Add Serra's HSI.
 class ColorSpaceManager {
@@ -238,8 +243,8 @@ class ColorSpaceManager {
       /// ```
       /// In this case, all computations are still performed as double-precision floating-point computations,
       /// but the result is cast to 8-bit unsigned integers when written to the output image. Some color spaces,
-      /// such as RGB and HSV are defined to use the [0,255] range of 8-bit unsigned integers. Other colorspaces
-      /// such as Lab and nlRGB are not. For those color spaces, casting to an integer will destroy the data.
+      /// such as RGB and CMYK are defined to use the [0,255] range of 8-bit unsigned integers. Other colorspaces
+      /// such as Lab and XYZ are not. For those color spaces, casting to an integer will destroy the data.
       void Convert( Image const& in, Image& out, String const& colorSpaceName = "" ) const;
       Image Convert( Image const& in, String const& colorSpaceName = "" ) const {
          Image out;

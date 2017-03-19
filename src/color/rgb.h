@@ -58,9 +58,9 @@ class rgb2nlrgb : public ColorSpaceConverter {
       virtual String OutputColorSpace() const override { return "nlRGB"; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            output[ 0 ] = std::pow( input[ 0 ] * ( 1.0 / 255.0 ), 2.5 ) * 255.0;
-            output[ 1 ] = std::pow( input[ 1 ] * ( 1.0 / 255.0 ), 2.5 ) * 255.0;
-            output[ 2 ] = std::pow( input[ 2 ] * ( 1.0 / 255.0 ), 2.5 ) * 255.0;
+            output[ 0 ] = std::pow( input[ 0 ] / 255.0, 2.5 ) * 255.0;
+            output[ 1 ] = std::pow( input[ 1 ] / 255.0, 2.5 ) * 255.0;
+            output[ 2 ] = std::pow( input[ 2 ] / 255.0, 2.5 ) * 255.0;
          } while( ++input, ++output );
       }
 };
@@ -71,9 +71,9 @@ class nlrgb2rgb : public ColorSpaceConverter {
       virtual String OutputColorSpace() const override { return "RGB"; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            output[ 0 ] = std::pow( input[ 0 ] * ( 1.0 / 255.0 ), 0.4 ) * 255.0;
-            output[ 1 ] = std::pow( input[ 1 ] * ( 1.0 / 255.0 ), 0.4 ) * 255.0;
-            output[ 2 ] = std::pow( input[ 2 ] * ( 1.0 / 255.0 ), 0.4 ) * 255.0;
+            output[ 0 ] = std::pow( input[ 0 ] / 255.0, 0.4 ) * 255.0;
+            output[ 1 ] = std::pow( input[ 1 ] / 255.0, 0.4 ) * 255.0;
+            output[ 2 ] = std::pow( input[ 2 ] / 255.0, 0.4 ) * 255.0;
          } while( ++input, ++output );
       }
 };

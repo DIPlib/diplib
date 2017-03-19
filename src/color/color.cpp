@@ -25,6 +25,8 @@
 
 #include "rgb.h"
 #include "cmyk.h"
+#include "hsi.h"
+#include "hcv.h"
 #include "xyz.h"
 #include "lab.h"
 
@@ -54,16 +56,23 @@ ColorSpaceManager::ColorSpaceManager() {
    DefineAlias( "cmyk", "CMYK" );
    Register( ColorSpaceConverterPointer( new cmy2cmyk ));
    Register( ColorSpaceConverterPointer( new cmyk2cmy ));
+   // HSI
+   Define( "HSI", 3 );
+   DefineAlias( "hsi", "HSI" );
+   Register( ColorSpaceConverterPointer( new grey2hsi ));
+   Register( ColorSpaceConverterPointer( new hsi2grey ));
+   Register( ColorSpaceConverterPointer( new rgb2hsi ));
+   Register( ColorSpaceConverterPointer( new hsi2rgb ));
    // HCV
    Define( "HCV", 3 );
    DefineAlias( "hcv", "HCV" );
-   //Register( ColorSpaceConverterPointer( new rgb2hcv ));
-   //Register( ColorSpaceConverterPointer( new hcv2rgb ));
+   Register( ColorSpaceConverterPointer( new rgb2hcv ));
+   Register( ColorSpaceConverterPointer( new hcv2rgb ));
    // HSV
    Define( "HSV", 3 );
    DefineAlias( "hsv", "HSV" );
-   //Register( ColorSpaceConverterPointer( new hcv2hsv ));
-   //Register( ColorSpaceConverterPointer( new hsv2hcv ));
+   Register( ColorSpaceConverterPointer( new hcv2hsv ));
+   Register( ColorSpaceConverterPointer( new hsv2hcv ));
    // XYZ
    Define( "XYZ", 3 );
    DefineAlias( "xyz", "XYZ" );
@@ -102,6 +111,8 @@ ColorSpaceManager::ColorSpaceManager() {
    // LCH
    Define( "LCH", 3 );
    DefineAlias( "lch", "LCH" );
+   DefineAlias( "L*C*H*", "LCH" );
+   DefineAlias( "l*c*h*", "LCH" );
    Register( ColorSpaceConverterPointer( new grey2lch ));
    Register( ColorSpaceConverterPointer( new lab2lch ));
    Register( ColorSpaceConverterPointer( new lch2lab ));
