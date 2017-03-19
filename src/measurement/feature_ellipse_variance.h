@@ -17,8 +17,6 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
-#include "diplib/measurement.h"
 
 namespace dip {
 namespace Feature {

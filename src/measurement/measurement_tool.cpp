@@ -117,9 +117,11 @@ using LineBasedFeatureArray = std::vector< Feature::LineBased* >;
 using FeatureArray = std::vector< Feature::Base* >;
 
 
+namespace {
+
 // dip::Framework::ScanFilter function, not overloaded because the Feature::LineBased::ScanLine functions
 // that we call here are not overloaded.
-class dip__Measure : public Framework::ScanLineFilter {
+class MeasureLineFilter : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          LineIterator< uint32 > label(
@@ -142,13 +144,14 @@ class dip__Measure : public Framework::ScanLineFilter {
             feature->ScanLine( label, grey, params.position, params.dimension, objectIndices );
          }
       }
-      dip__Measure( LineBasedFeatureArray const& features, ObjectIdToIndexMap const& objectIndices ) :
+      MeasureLineFilter( LineBasedFeatureArray const& features, ObjectIdToIndexMap const& objectIndices ) :
             features( features ), objectIndices( objectIndices ) {}
    private:
       LineBasedFeatureArray const& features;
       ObjectIdToIndexMap const& objectIndices;
 };
 
+} // namespace
 
 Measurement MeasurementTool::Measure(
       Image const& label,
@@ -260,7 +263,7 @@ Measurement MeasurementTool::Measure(
       UnsignedArray nElem{};
 
       // Do the scan, which calls dip::Feature::LineBased::ScanLine()
-      dip__Measure functor{ lineBasedFeatures, measurement.ObjectIndices() };
+      MeasureLineFilter functor{ lineBasedFeatures, measurement.ObjectIndices() };
       Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, functor,
             Framework::Scan_NoMultiThreading + Framework::Scan_NeedCoordinates );
 

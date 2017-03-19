@@ -18,10 +18,6 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
-#include "diplib/measurement.h"
-
-#include <Eigen/Eigenvalues>
 
 namespace dip {
 namespace Feature {
