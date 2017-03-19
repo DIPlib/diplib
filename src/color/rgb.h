@@ -18,60 +18,63 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
-#include "diplib/measurement.h"
-
 namespace dip {
 
 namespace {
 
 class rgb2grey : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const { return "RGB"; }
-      virtual String OutputColorSpace() const { return "grey"; }
-      virtual dip::uint Cost() const { return 100; }
-      virtual void Convert( dfloat const* input, dfloat* output ) {
-         // TODO: configure white point
-         output[ 0 ] = input[ 0 ] * 0.357580 +
-                       input[ 0 ] * 0.715160 +
-                       input[ 0 ] * 0.119193;
+      virtual String InputColorSpace() const override { return "RGB"; }
+      virtual String OutputColorSpace() const override { return "grey"; }
+      virtual dip::uint Cost() const override { return 100; }
+      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+         do {
+            // TODO: configure white point
+            // We use the second row (Y) of the XYZ matrix here
+            output[ 0 ] = input[ 0 ] * 0.212671 +
+                          input[ 1 ] * 0.715160 +
+                          input[ 2 ] * 0.072169;
+         } while( ++input, ++output );
       }
 };
 
 class grey2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const { return "grey"; }
-      virtual String OutputColorSpace() const { return "RGB"; }
-      virtual dip::uint Cost() const { return 100; }
-      virtual void Convert( dfloat const* input, dfloat* output ) {
-         // TODO: configure white point
-         output[ 0 ] = input[ 0 ];
-         output[ 1 ] = input[ 0 ];
-         output[ 2 ] = input[ 0 ];
+      virtual String InputColorSpace() const override { return "grey"; }
+      virtual String OutputColorSpace() const override { return "RGB"; }
+      virtual dip::uint Cost() const override { return 100; }
+      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+         do {
+            output[ 0 ] = input[ 0 ];
+            output[ 1 ] = input[ 0 ];
+            output[ 2 ] = input[ 0 ];
+         } while( ++input, ++output );
       }
 };
 
 class rgb2nlrgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const { return "RGB"; }
-      virtual String OutputColorSpace() const { return "nlRGB"; }
-      virtual dip::uint Cost() const { return 100; }
-      virtual void Convert( dfloat const* input, dfloat* output ) {
-         output[ 0 ] = std::pow( input[ 0 ] * ( 1.0 / 255.0 ), 2.5 ) * 255.0;
-         output[ 1 ] = std::pow( input[ 1 ] * ( 1.0 / 255.0 ), 2.5 ) * 255.0;
-         output[ 2 ] = std::pow( input[ 2 ] * ( 1.0 / 255.0 ), 2.5 ) * 255.0;
+      virtual String InputColorSpace() const override { return "RGB"; }
+      virtual String OutputColorSpace() const override { return "nlRGB"; }
+      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+         do {
+            output[ 0 ] = std::pow( input[ 0 ] * ( 1.0 / 255.0 ), 2.5 ) * 255.0;
+            output[ 1 ] = std::pow( input[ 1 ] * ( 1.0 / 255.0 ), 2.5 ) * 255.0;
+            output[ 2 ] = std::pow( input[ 2 ] * ( 1.0 / 255.0 ), 2.5 ) * 255.0;
+         } while( ++input, ++output );
       }
 };
 
 class nlrgb2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const { return "nlRGB"; }
-      virtual String OutputColorSpace() const { return "RGB"; }
-      virtual dip::uint Cost() const { return 100; }
-      virtual void Convert( dfloat const* input, dfloat* output ) {
-         output[ 0 ] = std::pow( input[ 0 ] * ( 1.0 / 255.0 ), 0.4 ) * 255.0;
-         output[ 1 ] = std::pow( input[ 1 ] * ( 1.0 / 255.0 ), 0.4 ) * 255.0;
-         output[ 2 ] = std::pow( input[ 2 ] * ( 1.0 / 255.0 ), 0.4 ) * 255.0;
+      virtual String InputColorSpace() const override { return "nlRGB"; }
+      virtual String OutputColorSpace() const override { return "RGB"; }
+      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+         do {
+            output[ 0 ] = std::pow( input[ 0 ] * ( 1.0 / 255.0 ), 0.4 ) * 255.0;
+            output[ 1 ] = std::pow( input[ 1 ] * ( 1.0 / 255.0 ), 0.4 ) * 255.0;
+            output[ 2 ] = std::pow( input[ 2 ] * ( 1.0 / 255.0 ), 0.4 ) * 255.0;
+         } while( ++input, ++output );
       }
 };
 

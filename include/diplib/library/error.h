@@ -139,12 +139,13 @@ constexpr char const* DIMENSIONALITIES_DONT_MATCH = "Dimensionalities don't matc
 constexpr char const* ILLEGAL_DIMENSION = "Illegal dimension";
 constexpr char const* SIZES_DONT_MATCH = "Sizes don't match";
 constexpr char const* IMAGE_NOT_SCALAR = "Image is not scalar";
-constexpr char const* IMAGE_NOT_COLOR = "Image is not color";
 constexpr char const* IMAGE_NOT_TENSOR = "Image is not tensor";
 constexpr char const* NTENSORELEM_DONT_MATCH = "Number of tensor elements doesn't match";
 
 // image properties errors
 constexpr char const* NO_NORMAL_STRIDE = "Image has a non-normal stride";
+constexpr char const* IMAGE_NOT_COLOR = "Image is not color";
+constexpr char const* INCONSISTENT_COLORSPACE = "Image's number of tensor elements and color space are inconsistent";
 
 // mask image properties errors
 constexpr char const* MASK_NOT_BINARY = "Mask image not binary";

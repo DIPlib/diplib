@@ -18,65 +18,65 @@
  * limitations under the License.
  */
 
-#include "diplib.h"
-#include "diplib/measurement.h"
-
 namespace dip {
 
 namespace {
 
 class rgb2cmy : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const { return "RGB"; }
-      virtual String OutputColorSpace() const { return "CMY"; }
-      virtual dip::uint Cost() const { return 100; }
-      virtual void Convert( dfloat const* input, dfloat* output ) {
-         output[ 0 ] = ( 255.0 - input[ 0 ] ) * ( 1.0 / 255.0 );
-         output[ 1 ] = ( 255.0 - input[ 1 ] ) * ( 1.0 / 255.0 );
-         output[ 2 ] = ( 255.0 - input[ 2 ] ) * ( 1.0 / 255.0 );
+      virtual String InputColorSpace() const override { return "RGB"; }
+      virtual String OutputColorSpace() const override { return "CMY"; }
+      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+         do {
+            output[ 0 ] = ( 255.0 - input[ 0 ] ) * ( 1.0 / 255.0 );
+            output[ 1 ] = ( 255.0 - input[ 1 ] ) * ( 1.0 / 255.0 );
+            output[ 2 ] = ( 255.0 - input[ 2 ] ) * ( 1.0 / 255.0 );
+         } while( ++input, ++output );
       }
 };
 
 class cmy2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const { return "CMY"; }
-      virtual String OutputColorSpace() const { return "RGB"; }
-      virtual dip::uint Cost() const { return 100; }
-      virtual void Convert( dfloat const* input, dfloat* output ) {
-         output[ 0 ] = ( 1.0 - input[ 0 ] ) * 255.0;
-         output[ 1 ] = ( 1.0 - input[ 1 ] ) * 255.0;
-         output[ 2 ] = ( 1.0 - input[ 2 ] ) * 255.0;
+      virtual String InputColorSpace() const override { return "CMY"; }
+      virtual String OutputColorSpace() const override { return "RGB"; }
+      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+         do {
+            output[ 0 ] = ( 1.0 - input[ 0 ] ) * 255.0;
+            output[ 1 ] = ( 1.0 - input[ 1 ] ) * 255.0;
+            output[ 2 ] = ( 1.0 - input[ 2 ] ) * 255.0;
+         } while( ++input, ++output );
       }
 };
 
 class cmy2cmyk : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const { return "CMY"; }
-      virtual String OutputColorSpace() const { return "CMYK"; }
-      virtual dip::uint Cost() const { return 100; }
-      virtual void Convert( dfloat const* input, dfloat* output ) {
-         dfloat k = std::min( std::min( input[ 0 ], input[ 1 ] ), input[ 2 ] );
-         k = clamp( k, 0.0, 0.99999 );
-         // The alternative definition doesn't divide by 1-k.
-         output[ 0 ] = ( input[ 0 ] - k ) / ( 1.0 - k );
-         output[ 1 ] = ( input[ 1 ] - k ) / ( 1.0 - k );
-         output[ 2 ] = ( input[ 2 ] - k ) / ( 1.0 - k );
-         output[ 3 ] = k;
+      virtual String InputColorSpace() const override { return "CMY"; }
+      virtual String OutputColorSpace() const override { return "CMYK"; }
+      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+         do {
+            dfloat k = std::min( std::min( input[ 0 ], input[ 1 ] ), input[ 2 ] );
+            k = clamp( k, 0.0, 0.99999 );
+            // The alternative definition doesn't divide by 1-k.
+            output[ 0 ] = ( input[ 0 ] - k ) / ( 1.0 - k );
+            output[ 1 ] = ( input[ 1 ] - k ) / ( 1.0 - k );
+            output[ 2 ] = ( input[ 2 ] - k ) / ( 1.0 - k );
+            output[ 3 ] = k;
+         } while( ++input, ++output );
       }
 };
 
 class cmyk2cmy : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const { return "CMYK"; }
-      virtual String OutputColorSpace() const { return "CMY"; }
-      virtual dip::uint Cost() const { return 100; }
-      virtual void Convert( dfloat const* input, dfloat* output ) {
-         dfloat k = std::min( std::min( input[ 0 ], input[ 1 ] ), input[ 2 ] );
-         k = clamp( k, 0.0, 0.99999 );
-         // The alternative definition doesn't multiply by 1-k, and therefore doesn't need the `std::min` either.
-         output[ 0 ] = std::min( input[ 0 ] * ( 1.0 - k ) + k, 1.0 );
-         output[ 1 ] = std::min( input[ 1 ] * ( 1.0 - k ) + k, 1.0 );
-         output[ 2 ] = std::min( input[ 2 ] * ( 1.0 - k ) + k, 1.0 );
+      virtual String InputColorSpace() const override { return "CMYK"; }
+      virtual String OutputColorSpace() const override { return "CMY"; }
+      virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
+         do {
+            dfloat k = input[ 3 ];
+            // The alternative definition doesn't multiply by 1-k, and therefore doesn't need the `std::min` either.
+            output[ 0 ] = std::min( input[ 0 ] * ( 1.0 - k ) + k, 1.0 );
+            output[ 1 ] = std::min( input[ 1 ] * ( 1.0 - k ) + k, 1.0 );
+            output[ 2 ] = std::min( input[ 2 ] * ( 1.0 - k ) + k, 1.0 );
+         } while( ++input, ++output );
       }
 };
 
