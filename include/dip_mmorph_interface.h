@@ -264,7 +264,7 @@ class ExternalInterface : public dip::ExternalInterface {
          // DIPlib always writes 1 for true.
          if( out->isbinary() ) {
             long N = out->width() * out->height() * out->depth();
-            uchar* mptr = (uchar*) out->raster();
+            dip::uint8* mptr = (dip::uint8*) out->raster();
             for( long ii = 0; ii < N; ++ii, ++mptr ) {
                if( *mptr ) {
                   *mptr = 255;
