@@ -23,6 +23,7 @@ namespace dip {
 namespace {
 
 constexpr dfloat epsilon = 0.008856;
+constexpr dfloat epsilon1_3 = 0.206893; // ==  std::cbrt( epsilon );
 constexpr dfloat kappa = 903.3;
 
 class lab2grey : public ColorSpaceConverter {
@@ -58,7 +59,7 @@ class grey2lab : public ColorSpaceConverter {
             constexpr dfloat Yn = 1.00000;
             dfloat y = input[ 0 ] / ( 255 * Yn );
             output[ 0 ] = y > epsilon
-                          ? 116.0 * std::pow( y, 1.0 / 3.0 ) - 16.0
+                          ? 116.0 * std::cbrt( y ) - 16.0
                           : kappa * y;
             output[ 1 ] = 0;
             output[ 2 ] = 0;
@@ -79,14 +80,13 @@ class lab2xyz : public ColorSpaceConverter {
             dfloat fy = ( input[ 0 ] + 16.0 ) / 116.0;
             dfloat fx = input[ 1 ] / 500.0 + fy;
             dfloat fz = fy - input[ 2 ] / 200.0;
-            constexpr dfloat epsilon3 = std::pow( epsilon, 1.0/3.0 );
-            dfloat x = fx > epsilon3
+            dfloat x = fx > epsilon1_3
                        ? fx * fx * fx
                        : ( 116.0 * fx - 16.0 ) / kappa;
-            dfloat y = fy > epsilon3
+            dfloat y = fy > epsilon1_3
                        ? fy * fy * fy
                        : input[ 0 ] / kappa;
-            dfloat z = fz > epsilon3
+            dfloat z = fz > epsilon1_3
                        ? fz * fz * fz
                        : ( 116.0 * fz - 16.0 ) / kappa;
             output[ 0 ] = x * Xn;
@@ -110,13 +110,13 @@ class xyz2lab : public ColorSpaceConverter {
             dfloat y = input[ 1 ] / Yn;
             dfloat z = input[ 2 ] / Zn;
             dfloat fx = x > epsilon
-                        ? std::pow( x, 1.0 / 3.0 )
+                        ? std::cbrt( x )
                         : ( kappa * x + 16.0 ) / 116.0;
             dfloat fy = y > epsilon
-                        ? std::pow( y, 1.0 / 3.0 )
+                        ? std::cbrt( y )
                         : ( kappa * y + 16.0 ) / 116.0;
             dfloat fz = z > epsilon
-                        ? std::pow( z, 1.0 / 3.0 )
+                        ? std::cbrt( z )
                         : ( kappa * z + 16.0 ) / 116.0;
             output[ 0 ] = 116.0 * fy - 16.0;
             output[ 1 ] = 500.0 * ( fx - fy );
@@ -186,7 +186,7 @@ class xyz2luv : public ColorSpaceConverter {
             dfloat v = 9 * input[ 1 ] / sum;
             dfloat y = input[ 1 ] / Yn;
             dfloat L = y > epsilon
-                          ? 116.0 * std::pow( y, 1.0 / 3.0 ) - 16.0
+                          ? 116.0 * std::cbrt( y ) - 16.0
                           : kappa * y;
             output[ 0 ] = L;
             output[ 1 ] = 13.0 * L * ( u - un );
