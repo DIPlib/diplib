@@ -232,9 +232,11 @@ inline Image Uniform(
    Image out;
    Uniform( in, neighborhood, out, boundaryCondition, mode );
    return out;
-
 }
 
+/// \brief Convolution with a Gaussian kernel and its derivatives
+///
+// TODO: document
 void Gauss(
       Image const& in,
       Image& out,
@@ -242,19 +244,37 @@ void Gauss(
       UnsignedArray const& derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {}, // ignored if GaussFT
       BooleanArray const& process = {},
-      String const& method = "optimal" // "FIR","IIR","FT","optimal"
+      String const& method = "best" // "FIR","IIR","FT","best"
 );
 
+/// \brief Finite impulse response implementation of the Gaussian filter and its derivatives
+///
+// TODO: document
 void GaussFIR(
       Image const& in,
       Image& out,
-      FloatArray sigmas,
+      FloatArray sigmas = { 1.0 },
       UnsignedArray derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
       BooleanArray process = {},
       dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
 );
+inline Image GaussFIR(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      UnsignedArray const& derivativeOrder = { 0 },
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
+) {
+   Image out;
+   GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, process, truncation );
+   return out;
+}
 
+/// \brief Fourier implementation of the Gaussian filter and its derivatives
+///
+// TODO: document
 void GaussFT(
       Image const& in,
       Image& out,
@@ -263,6 +283,9 @@ void GaussFT(
       dfloat truncation = 0
 );
 
+/// \brief Infinite impulse response implementation of the Gaussian filter and its derivatives
+///
+// TODO: document
 void GaussIIR(
       Image const& in,
       Image& out,
@@ -270,9 +293,142 @@ void GaussIIR(
       UnsignedArray derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
       BooleanArray process = {},
-      IntegerArray filterOrder = {},
-      dip::uint designMethod = 0, // should be a string
+      UnsignedArray filterOrder = {}, // means compute order depending on derivativeOrder.
+      String const& designMethod = "", // default is "discrete time fit", alt is "forward backward".
       dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
+);
+inline Image GaussIIR(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      UnsignedArray const& derivativeOrder = { 0 },
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      UnsignedArray const& filterOrder = {},
+      String const& designMethod = "",
+      dfloat truncation = 3
+) {
+   Image out;
+   GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, process, filterOrder, designMethod, truncation );
+   return out;
+}
+
+void FiniteDifference(
+      Image const& in,
+      Image& out,
+      IntegerArray derivativeOrder = { 0 },
+      bool smoothFlag = true, // Should be a string
+      StringArray const& boundaryCondition = {},
+      BooleanArray process = {}
+);
+
+void SobelGradient( // this is a call to FiniteDifference
+      Image const& in,
+      Image& out,
+      dip::uint dimension = 0,
+      StringArray const& boundaryCondition = {}
+);
+
+void Derivative(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigma,
+      IntegerArray const& order,
+      String const& method = "gaussfir", // "gaussiir", "gaussft", "finitediff", "best"
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+);
+
+// Dx, Dy, Dz, Dxx, Dxy, Dxz, Dyy, Dyz, Dzz
+
+void Gradient(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigma = { 1.0 },
+      String const& method = "gaussfir", // "gaussiir", "gaussft", "finitediff", "best"
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+);
+
+// Same as Norm(Gradient()), but more efficient
+void GradientMagnitude(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigma = { 1.0 },
+      String const& method = "gaussfir", // "gaussiir", "gaussft", "finitediff", "best"
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+);
+
+// 2D only. Implemented as Atan2(Dy(),Dx()).
+void GradientDirection2D(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigma = { 1.0 },
+      String const& method = "gaussfir", // "gaussiir", "gaussft", "finitediff", "best"
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+);
+
+void Hessian (
+      Image const& in,
+      Image& out,
+      FloatArray const& sigma = { 1.0 },
+      String const& method = "gaussfir", // "gaussiir", "gaussft", "finitediff", "best"
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+);
+
+// Same as Trace(Hessian()), but more efficient. If "finintediff", uses the well-known 3-by-3 matrix.
+void Laplace (
+      Image const& in,
+      Image& out,
+      FloatArray const& sigma = { 1.0 },
+      String const& method = "gaussfir", // "gaussiir", "gaussft", "finitediff", "best"
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+);
+
+void Dgg(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigma = { 1.0 },
+      String const& method = "gaussfir", // "gaussiir", "gaussft", "finitediff", "best"
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+);
+
+void LaplacePlusDgg(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigma = { 1.0 },
+      String const& method = "gaussfir", // "gaussiir", "gaussft", "finitediff", "best"
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+);
+
+void LaplaceMinDgg(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigma = { 1.0 },
+      String const& method = "gaussfir", // "gaussiir", "gaussft", "finitediff", "best"
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+);
+
+void OrientedGauss(
+      Image const& in,
+      Image& out,
+      FloatArray,
+      FloatArray
 );
 
 void GaborFIR(
@@ -294,29 +450,6 @@ void GaborIIR(
       BooleanArray process = {},
       IntegerArray filterOrder = {},
       dfloat truncation = 3
-);
-
-void OrientedGauss(
-      Image const& in,
-      Image& out,
-      FloatArray,
-      FloatArray
-);
-
-void SobelGradient( // this is a call to FiniteDifference
-      Image const& in,
-      Image& out,
-      dip::uint dimension = 0,
-      StringArray const& boundaryCondition = {}
-);
-
-void FiniteDifference(
-      Image const& in,
-      Image& out,
-      IntegerArray derivativeOrder = { 0 },
-      bool smoothFlag = true, // Should be a string
-      StringArray const& boundaryCondition = {},
-      BooleanArray process = {}
 );
 
 /// \}

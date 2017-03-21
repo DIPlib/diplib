@@ -20,8 +20,6 @@
 
 #include "diplib.h"
 #include "diplib/linear.h"
-#include "diplib/framework.h"
-#include "diplib/overload.h"
 
 namespace dip {
 
@@ -159,21 +157,25 @@ void GaussFIR(
    OneDimensionalFilterArray filter( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( process[ ii ] ) {
-         switch( order[ ii ] ) {
-            case 0:
-            case 2:
-               filter[ ii ].symmetry = "even";
-               break;
-            case 1:
-            case 3:
-               filter[ ii ].symmetry = "odd";
-               break;
-            default:
-               DIP_THROW( "Gaussian FIR filter not implemented for order > 3" );
+         if( sigmas[ ii ] <= 0 ) {
+            process[ ii ] = false;
+         } else {
+            switch( order[ ii ] ) {
+               case 0:
+               case 2:
+                  filter[ ii ].symmetry = "even";
+                  break;
+               case 1:
+               case 3:
+                  filter[ ii ].symmetry = "odd";
+                  break;
+               default:
+                  DIP_THROW( "Gaussian FIR filter not implemented for order > 3" );
+            }
+            filter[ ii ].filter = MakeHalfGaussian( sigmas[ ii ], order[ ii ],
+                                                    HalfGaussianSize( sigmas[ ii ], order[ ii ], truncation ) );
+            // NOTE: origin defaults to the middle of the filter, so we don't need to set it explicitly here.
          }
-         filter[ ii ].filter = MakeHalfGaussian( sigmas[ ii ], order[ ii ],
-                                                 HalfGaussianSize( sigmas[ ii ], order[ ii ], truncation ));
-         // NOTE: origin defaults to the middle of the filter, so we don't need to set it explicitly here.
       }
    }
    SeparableConvolution( in, out, filter, boundaryCondition, process );
@@ -230,6 +232,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filter") {
    DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Sum( out )) == doctest::Approx( static_cast< dip::dfloat >( dip::Sum( img ))));
    dip::GaussFIR( img, out, { 5, 1 }, { 0 } );
    DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Sum( out )) == doctest::Approx( static_cast< dip::dfloat >( dip::Sum( img ))));
+   // TODO: add tests for various derivatives.
 }
 
 #endif // DIP__ENABLE_DOCTEST
