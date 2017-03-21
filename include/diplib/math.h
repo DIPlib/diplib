@@ -124,9 +124,110 @@ inline Image NearestInt( Image const& in ) {
 // Tensor operators
 //
 
-// TODO: products: CrossProduct, DotProduct (AKA inner product) (last one should be easy using Multiply).
-// TODO: reductions: Determinant, EigenValues, EigenDecomposition, Norm, Trace, Rank
-// TODO: other: Curl, Divergence, Inverse, PseudoInverse, SingularValues, SingularValueDecomposition, Identity
+/// \brief Computes the conjugate transpose of the tensor image `in`.
+inline void ConjugateTranspose( Image const& in, Image& out ) {
+   Conjugate( in, out );
+   out.Transpose();
+}
+inline Image ConjugateTranspose( Image const& in ) {
+   return Conjugate( in ).Transpose();
+}
+
+/// \brief Computes the dot product (inner product) of two vector images.
+void DotProduct( Image const& lhs, Image const& rhs, Image& out );
+inline Image DotProduct( Image const& lhs, Image const& rhs ) {
+   Image out;
+   DotProduct( lhs, rhs, out );
+   return out;
+}
+
+/// \brief Computes the cross product (inner product) of two vector images.
+///
+/// Input image tensors must be 2-vectors or 3-vectors. For 3-vectors, the cross product is as
+/// commonly defined in 3D. For 2-vectors, we define the cross product as the z-component
+/// of the cross product of the 3D vectors obtained by adding a 0 z-component to the inputs.
+/// That is, it is the area of the parallelogram formed by the two 2D vectors.
+void CrossProduct( Image const& lhs, Image const& rhs, Image& out );
+inline Image CrossProduct( Image const& lhs, Image const& rhs ) {
+   Image out;
+   CrossProduct( lhs, rhs, out );
+   return out;
+}
+
+/// \brief Computes the determinant of the square matrix at each pixel in image `in`.
+void Determinant( Image const& in, Image& out );
+
+/// \brief Computes the norm of the vector at each pixel in image `in`.
+void Norm( Image const& in, Image& out );
+
+/// \brief Computes the trace of the square matrix at each pixel in image `in`.
+void Trace( Image const& in, Image& out );
+
+/// \brief Computes the rank of the square matrix at each pixel in image `in`.
+void Rank( Image const& in, Image& out );
+
+/// \brief Computes the eigenvalues of the square matrix at each pixel in image `in`.
+///
+/// `out` is a vector image containing the eigenvalues. If `in` is symmetric and
+/// real-valued, then `out` is real-valued, and the eigenvalues are in descending
+/// order. Otherwise, `out` is complex-valued, and not sorted in any specific way.
+void EigenValues( Image const& in, Image& out );
+
+/// \brief Computes the eigenvalues and eigenvectors of the square matrix at each pixel in image `in`.
+///
+/// The decomposition is such that `in * eigenvectors == `eigenvectors * out`.
+/// `eigenvectors` is almost always invertible, in which case one can write
+/// `in == eigenvectors * out * Invert( eigenvectors )`.
+///
+/// `out` is a diagonal matrix image containing the eigenvalues. If `in` is symmetric and
+/// real-valued, then `out` is real-valued, and the eigenvalues are in descending
+/// order. Otherwise, `out` is complex-valued, and not sorted in any specific way.
+///
+/// The eigenvectors are the columns `eigenvectors`. It has the same data type as `out`.
+void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors );
+
+/// \brief Computes the inverse of the square matrix at each pixel in image `in`.
+void Inverse( Image const& in, Image& out );
+
+/// \brief Computes the inverse of the matrix at each pixel in image `in`.
+void PseudoInverse( Image const& in, Image& out );
+
+/// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
+///
+/// For an input image `A` with a tensor size of NxP, and with M the smaller of N and P, `S` is a
+/// square diagonal MxM matrix, `U` is a NxM matrix, and V is a PxM matrix. These matrices satisfy
+/// the relation \f$A = USV^*\f$.
+///
+/// The (diagonal) elemenst of `S` are the singular values, sorted in decreasing order.
+/// You can use `dip::SingularValues` if you are not interested in computing `U` and `V`.
+void SingularValueDecomposition( Image const& A, Image& U, Image& S, Image& V );
+
+/// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
+///
+/// For an input image `in` with a tensor size of NxP, and with M the smaller of N and P, `out` is a
+/// vector image with M elements, corresponding to the singular values, sorted in decreasing order.
+///
+/// Use `dip::SingularValueDecomposition` if you need the full decomposition.
+void SingularValueDecomposition( Image const& in, Image& out );
+
+/// \brief Creates an image whose pixels are identity matrices.
+///
+/// `out` will have the same sizes as `in`, and with a tensor representation of a diagonal matrix
+/// with a size concordant to that of the tensor representation of `in`. For example, for an N-vector
+/// image, the resulting output matrix image will be NxN. `out` will be of type `dip::DT_SFLOAT`.
+inline void Identity( Image const& in, Image& out ) {
+   dip::uint telems = std::max( in.TensorColumns(), in.TensorRows() );
+   Tensor tensor( Tensor::Shape::DIAGONAL_MATRIX, telems, telems );
+   out.ReForge( in.Sizes(), telems, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
+   out.Fill( 1.0 );
+}
+inline Image Identity( Image const& in ) {
+   Image out;
+   Identity( in, out );
+   return out;
+}
+
+// TODO: other: Curl, Divergence.
 
 
 //

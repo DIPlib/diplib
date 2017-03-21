@@ -71,6 +71,9 @@ DIP__MONADIC_OPERATOR_FLOAT( Truncate, []( auto its ) { return std::trunc( *its[
 /// Only defined for floating-point types, the output is the same type.
 DIP__MONADIC_OPERATOR_FLOAT( Fraction, []( auto its ) { return dipm__Fraction( *its[ 0 ] ); }, DataType::Class_Float )
 
+/// \brief Computes the complex conjugate of each sample.
+DIP__MONADIC_OPERATOR_FLEX( Conjugate, []( auto its ) { return std::conj( *its[ 0 ] ); }, DataType::Class_NonBinary )
+
 /// \brief Computes the sine of each sample.
 DIP__MONADIC_OPERATOR_FLEX( Sin, []( auto its ) { return std::sin( *its[ 0 ] ); }, DataType::Class_NonBinary )
 
