@@ -46,7 +46,7 @@ namespace dip_mmorph {
 
 
 // A deleter that doesn't delete.
-void VoidStripHandler( void const* p ) {};
+inline void VoidStripHandler( void const* p ) {};
 
 /// \brief Creates a *DIPlib* image around an *MMorph* image, without taking ownership of the data.
 ///
@@ -59,7 +59,7 @@ void VoidStripHandler( void const* p ) {};
 /// are simply re-interpreted as unsigned integer. This is useful for the output of `mmLabel`, which is either
 /// `MM_USHORT` or `MM_INT`, but always contains only non-negative integers, considering that DIPlib expects
 /// labelled images to be unsigned.
-dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
+inline dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
    // Find image properties
    if( mm.isnull() ) {
       return {};
