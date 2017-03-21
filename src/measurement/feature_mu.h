@@ -40,7 +40,17 @@ class FeatureMu : public LineBased {
          dip::uint kk = 0;
          constexpr char const* dims = "xyz";
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            for( dip::uint jj = ii; jj < nD_; ++jj ) {
+            PhysicalQuantity pq1 = label.PixelSize( ii );
+            if( !pq1.IsPhysical() ) {
+               pq1 = PhysicalQuantity::Pixel();
+            }
+            scales_[ kk ] = pq1.magnitude * pq1.magnitude;
+            out[ kk ].units = pq1.units * pq1.units;
+            out[ kk ].name = String( "Mu_" ) + dims[ ii ] + dims[ ii ];
+            ++kk;
+         }
+         for( dip::uint ii = 1; ii < nD_; ++ii ) {
+            for( dip::uint jj = 0; jj < ii; ++jj ) {
                PhysicalQuantity pq1 = label.PixelSize( ii );
                if( !pq1.IsPhysical() ) {
                   pq1 = PhysicalQuantity::Pixel();
@@ -111,8 +121,8 @@ class FeatureMu : public LineBased {
                dfloat x = data[ 0 ] / n;
                dfloat y = data[ 1 ] / n;
                output[ 0 ] =  ( data[ 4 ] / n - ( y * y )) * scales_[ 0 ];
-               output[ 1 ] = -( data[ 3 ] / n - ( x * y )) * scales_[ 1 ];
-               output[ 2 ] =  ( data[ 2 ] / n - ( x * x )) * scales_[ 2 ];
+               output[ 1 ] =  ( data[ 2 ] / n - ( x * x )) * scales_[ 2 ];
+               output[ 2 ] = -( data[ 3 ] / n - ( x * y )) * scales_[ 1 ];
             } else { // nD_ == 3
                // 3D Mu tensor, as defined in G. Lohmann, Volumetric Image Analysis, pp 55
                dfloat x = data[ 0 ] / n;
@@ -122,11 +132,11 @@ class FeatureMu : public LineBased {
                dfloat yy = ( data[ 6 ] / n - ( y * y ));
                dfloat zz = ( data[ 8 ] / n - ( z * z ));
                output[ 0 ] =  ( yy + zz )                   * scales_[ 0 ];
-               output[ 1 ] = -( data[ 4 ] / n - ( x * y ))  * scales_[ 1 ];
-               output[ 2 ] = -( data[ 5 ] / n - ( x * z ))  * scales_[ 2 ];
-               output[ 3 ] =  ( xx + zz )                   * scales_[ 3 ];
-               output[ 4 ] = -( data[ 7 ] / n - ( y * z ))  * scales_[ 4 ];
-               output[ 5 ] =  ( xx + yy )                   * scales_[ 5 ];
+               output[ 1 ] =  ( xx + zz )                   * scales_[ 1 ];
+               output[ 2 ] =  ( xx + yy )                   * scales_[ 2 ];
+               output[ 3 ] = -( data[ 4 ] / n - ( x * y ))  * scales_[ 3 ];
+               output[ 4 ] = -( data[ 5 ] / n - ( x * z ))  * scales_[ 4 ];
+               output[ 5 ] = -( data[ 7 ] / n - ( y * z ))  * scales_[ 5 ];
             }
          }
       }
@@ -144,6 +154,7 @@ class FeatureMu : public LineBased {
       std::vector< dfloat > data_; // size of this array is nObjects * nValues_. Index as data_[ objectIndex * nValues_ ]
       // Format 2D: x y xx xy yy sum
       // Format 3D: x y z xx xy xz yy yz zz sum
+      // Note that the second order moments in `data_` are stored in a different order than we present them to the output.
 };
 
 

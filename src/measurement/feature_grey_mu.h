@@ -41,7 +41,17 @@ class FeatureGreyMu : public LineBased {
          dip::uint kk = 0;
          constexpr char const* dims = "xyz";
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
-            for( dip::uint jj = ii; jj < nD_; ++jj ) {
+            PhysicalQuantity pq1 = label.PixelSize( ii );
+            if( !pq1.IsPhysical() ) {
+               pq1 = PhysicalQuantity::Pixel();
+            }
+            scales_[ kk ] = pq1.magnitude * pq1.magnitude;
+            out[ kk ].units = pq1.units * pq1.units;
+            out[ kk ].name = String( "Mu_" ) + dims[ ii ] + dims[ ii ];
+            ++kk;
+         }
+         for( dip::uint ii = 1; ii < nD_; ++ii ) {
+            for( dip::uint jj = 0; jj < ii; ++jj ) {
                PhysicalQuantity pq1 = label.PixelSize( ii );
                if( !pq1.IsPhysical() ) {
                   pq1 = PhysicalQuantity::Pixel();

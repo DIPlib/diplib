@@ -55,11 +55,7 @@ class FeatureGreyMajorAxes : public Composite {
          }
          dfloat const* data = &it[ muIndex_ ];
          dfloat tmp[ 3 ];
-         if( nD_ == 2 ) {
-            SymmetricEigenSystem2DPacked( data, tmp, output );
-         } else { // nD_ == 3
-            SymmetricEigenSystem3DPacked( data, tmp, output );
-         }
+         SymmetricEigenDecompositionPacked( nD_, data, tmp, output );
       }
 
    private:

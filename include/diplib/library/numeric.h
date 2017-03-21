@@ -32,6 +32,7 @@
 #include <algorithm>
 
 #include "diplib/library/types.h"
+#include "diplib/library/sample_iterator.h"
 
 
 /// \file
@@ -194,129 +195,241 @@ inline dfloat Sinc( dfloat x ) {
    return x == 0.0 ? 1.0 : std::sin( x ) / x;
 }
 
-/// \brief Finds the eigenvalues of a 2D symmetric matrix.
+/// \brief Finds the eigenvalues and eigenvectors of a symmetric real matrix.
 ///
-/// `input` is a pointer to 4 values, in column-major order; only the lower triangle will be used.
-/// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
-void SymmetricEigenValues2D( dfloat const* input, dfloat* lambdas );
-
-/// \brief Finds the eigenvalues of a 2D symmetric matrix, where only the unique values are given.
+/// `input` is a pointer to `n*n` values, in column-major order; only the lower triangle will be used.
 ///
-/// `input` is a pointer to 3 values: { xx, xy, yy }.
-/// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
-inline void SymmetricEigenValues2DPacked( dfloat const* input, dfloat* lambdas ) {
-   dfloat matrix[ 4 ];
-   matrix[ 0 ] = input[ 0 ];
-   matrix[ 1 ] = input[ 1 ];
-   // matrix[ 2 ] is never used
-   matrix[ 3 ] = input[ 2 ];
-   SymmetricEigenValues2D( matrix, lambdas );
-}
-
-/// \brief Finds the eigenvalues and eigenvectors of a 2D symmetric matrix.
-///
-/// `input` is a pointer to 4 values, in column-major order; only the lower triangle will be used.
-/// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
-/// `vectors` is a pointer to space for 4 values and will receive the 2 eigenvectors. The eigenvectors
-/// can be accessed at `&vectors[ 0 ]` and `&vectors[ 2 ]`.
-void SymmetricEigenSystem2D( dfloat const* input, dfloat* lambdas, dfloat* vectors );
-
-/// \brief Finds the eigenvalues and eigenvectors of a 2D symmetric matrix, where only the unique values are given.
-///
-/// `input` is a pointer to 3 values: { xx, xy, yy }.
-/// `lambdas` is a pointer to space for 2 values, which will be written sorted largest to smallest.
-/// `vectors` is a pointer to space for 4 values and will receive the 2 eigenvectors. The eigenvectors
-/// can be accessed at `&vectors[ 0 ]` and `&vectors[ 2 ]`.
-inline void SymmetricEigenSystem2DPacked( dfloat const* input, dfloat* lambdas, dfloat* vectors ) {
-   dfloat matrix[ 4 ];
-   matrix[ 0 ] = input[ 0 ];
-   matrix[ 1 ] = input[ 1 ];
-   // matrix[ 2 ] is never used
-   matrix[ 3 ] = input[ 2 ];
-   SymmetricEigenSystem2D( matrix, lambdas, vectors );
-}
-
-
-/// \brief Finds the eigenvalues of a 3D symmetric matrix.
-///
-/// `input` is a pointer to 9 values, in column-major order; only the lower triangle will be used.
-/// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
-void SymmetricEigenValues3D( dfloat const* input, dfloat* lambdas );
-
-/// \brief Finds the eigenvalues of a 3D symmetric matrix, where only the unique values are given.
-///
-/// `input` is a pointer to 6 values: { xx, xy, xz, yy, yz, zz }.
-/// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
-inline void SymmetricEigenValues3DPacked( dfloat const* input, dfloat* lambdas ) {
-   dfloat matrix[ 9 ];
-   matrix[ 0 ] = input[ 0 ];
-   matrix[ 1 ] = input[ 1 ];
-   matrix[ 2 ] = input[ 2 ];
-   // matrix[ 3 ] is never used
-   matrix[ 4 ] = input[ 3 ];
-   matrix[ 5 ] = input[ 4 ];
-   // matrix[ 6 ] is never used
-   // matrix[ 7 ] is never used
-   matrix[ 8 ] = input[ 5 ];
-   SymmetricEigenValues3D( matrix, lambdas );
-}
-
-/// \brief Finds the eigenvalues and eigenvectors of a 3D symmetric matrix.
-///
-/// `input` is a pointer to 9 values, in column-major order; only the lower triangle will be used.
-/// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
-/// `vectors` is a pointer to space for 9 values and will receive the 3 eigenvectors. The eigenvectors
-/// can be accessed at `&vectors[ 0 ]`, `&vectors[ 3 ]` and `&vectors[ 6 ]`.
-void SymmetricEigenSystem3D( dfloat const* input, dfloat* lambdas, dfloat* vectors );
-
-/// \brief Finds the eigenvalues and eigenvectors of a 3D symmetric matrix, where only the unique values are given.
-///
-/// `input` is a pointer to 6 values: { xx, xy, xz, yy, yz, zz }.
-/// `lambdas` is a pointer to space for 3 values, which will be written sorted largest to smallest.
-/// `vectors` is a pointer to space for 9 values and will receive the 3 eigenvectors. The eigenvectors
-/// can be accessed at `&vectors[ 0 ]`, `&vectors[ 3 ]` and `&vectors[ 6 ]`.
-inline void SymmetricEigenSystem3DPacked( dfloat const* input, dfloat* lambdas, dfloat* vectors ) {
-   dfloat matrix[ 9 ];
-   matrix[ 0 ] = input[ 0 ];
-   matrix[ 1 ] = input[ 1 ];
-   matrix[ 2 ] = input[ 2 ];
-   // matrix[ 3 ] is never used
-   matrix[ 4 ] = input[ 3 ];
-   matrix[ 5 ] = input[ 4 ];
-   // matrix[ 6 ] is never used
-   // matrix[ 7 ] is never used
-   matrix[ 8 ] = input[ 5 ];
-   SymmetricEigenSystem3D( matrix, lambdas, vectors );
-}
-
-
-/// \brief Finds the eigenvalues of a square matrix.
-///
-/// `input` is a pointer to `n`*`n` values, in column-major order.
 /// `lambdas` is a pointer to space for `n` values, which will be written sorted largest to smallest.
-void EigenValues( dip::uint n, dfloat const* input, dcomplex* lambdas );
-
-/// \brief Finds the eigenvalues of a square complex matrix.
 ///
-/// `input` is a pointer to `n`*`n` values, in column-major order.
-/// `lambdas` is a pointer to space for `n` values, which will be written sorted largest to smallest.
-void EigenValues( dip::uint n, dcomplex const* input, dcomplex* lambdas );
-
-/// \brief Finds the eigenvalues and eigenvectors of a square matrix.
-///
-/// `input` is a pointer to `n`*`n` values, in column-major order.
-/// `lambdas` is a pointer to space for `n` values, which will be written sorted largest to smallest.
-/// `vectors` is a pointer to space for `n`*`n` values and will receive the `n` eigenvectors. The eigenvectors
+/// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
-void EigenSystem( dip::uint n, dfloat const* input, dcomplex* lambdas, dcomplex* vectors );
+/// If `vectors` is `false`, no eigenvectors are computed.
+void SymmetricEigenDecomposition(
+      dip::uint n,
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > lambdas,
+      SampleIterator< dfloat > vectors = nullptr
+);
+
+/// \brief Finds the eigenvalues and eigenvectors of a symmetric real matrix, where only the unique values are given.
+///
+/// Calls `dip::SymmetricEigenDecomposition` after copying over the input values to a temporary buffer. `n`
+/// must be either 2 or 3.
+///
+/// `input` is a pointer to 3 or 6 values: { xx, yy, xy }, { xx, yy, zz, xy, xz, yz }.
+///
+/// See `dip::SymmetricEigenDecomposition` for information on `lambdas` and `vectors`.
+inline void SymmetricEigenDecompositionPacked(
+      dip::uint n,
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > lambdas,
+      SampleIterator< dfloat > vectors = nullptr
+) {
+   dfloat matrix[ 9 ];
+   if( n == 2 ) {
+      matrix[ 0 ] = input[ 0 ];
+      matrix[ 1 ] = input[ 2 ];
+      // matrix[ 2 ] is never used
+      matrix[ 3 ] = input[ 1 ];
+   } else if( n == 3 ) {
+      matrix[ 0 ] = input[ 0 ];
+      matrix[ 1 ] = input[ 3 ];
+      matrix[ 2 ] = input[ 4 ];
+      // matrix[ 3 ] is never used
+      matrix[ 4 ] = input[ 1 ];
+      matrix[ 5 ] = input[ 5 ];
+      // matrix[ 6 ] is never used
+      // matrix[ 7 ] is never used
+      matrix[ 8 ] = input[ 2 ];
+   } else {
+      DIP_THROW( "dip::SymmetricEigenDecompositionPacked only defined for n=2 or n=3" );
+   }
+   SymmetricEigenDecomposition( n, matrix, lambdas, vectors );
+}
+
+/// \brief Finds the eigenvalues and eigenvectors of a square real matrix.
+///
+/// `input` is a pointer to `n*n` values, in column-major order.
+///
+/// `lambdas` is a pointer to space for `n` values, which don't have any specific ordering.
+///
+/// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
+/// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
+/// If `vectors` is `false`, no eigenvectors are computed.
+void EigenDecomposition(
+      dip::uint n,
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dcomplex > lambdas,
+      SampleIterator< dcomplex > vectors = nullptr
+);
 
 /// \brief Finds the eigenvalues and eigenvectors of a square complex matrix.
 ///
-/// `input` is a pointer to `n`*`n` values, in column-major order.
-/// `lambdas` is a pointer to space for `n` values, which will be written sorted largest to smallest.
-/// `vectors` is a pointer to space for `n`*`n` values and will receive the `n` eigenvectors. The eigenvectors
+/// `input` is a pointer to `n*n` values, in column-major order.
+///
+/// `lambdas` is a pointer to space for `n` values, which don't have any specific ordering.
+///
+/// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
-void EigenSystem( dip::uint n, dcomplex const* input, dcomplex* lambdas, dcomplex* vectors );
+/// If `vectors` is `false`, no eigenvectors are computed.
+void EigenDecomposition(
+      dip::uint n,
+      ConstSampleIterator< dcomplex > input,
+      SampleIterator< dcomplex > lambdas,
+      SampleIterator< dcomplex > vectors = nullptr
+);
+
+/// \brief Computes the sum of the values of a vector.
+///
+/// `input` is a pointer to `n` values.
+template< typename T >
+inline T Sum( dip::uint n, ConstSampleIterator< T > input ) {
+   return std::accumulate( input, input + n, T( 0.0 ));
+}
+
+/// \brief Computes the sum of the square of the values of a vector.
+///
+/// `input` is a pointer to `n` values.
+template< typename T >
+inline FloatType< T > SumAbsSquare( dip::uint n, ConstSampleIterator< T > input ) {
+   return std::accumulate( input, input + n, 0.0, []( FloatType< T > a, T b ){ return a + std::abs( b ) * std::abs( b ); } );
+}
+
+/// \brief Computes the norm of a vector.
+///
+/// `input` is a pointer to `n` values.
+template< typename T >
+inline FloatType< T > Norm( dip::uint n, ConstSampleIterator< T > input ) {
+   return std::sqrt( SumAbsSquare( n, input ));
+}
+
+/// \brief Computes the determinant of a square real matrix.
+///
+/// `input` is a pointer to `n*n` values, in column-major order.
+dfloat Determinant( dip::uint n, ConstSampleIterator< dfloat > input );
+
+/// \brief Computes the determinant of a square complex matrix.
+///
+/// `input` is a pointer to `n*n` values, in column-major order.
+dcomplex Determinant( dip::uint n, ConstSampleIterator< dcomplex > input );
+
+/// \brief Computes the determinant of a diagonal real matrix.
+///
+/// `input` is a pointer to `n` values, representing the matrix's main diagonal.
+inline dfloat DeterminantDiagonal( dip::uint n, ConstSampleIterator< dfloat > input ) {
+   return std::accumulate( input, input + n, 1.0, std::multiplies< dfloat >());
+}
+
+/// \brief Computes the determinant of a diagonal complex matrix.
+///
+/// `input` is a pointer to `n` values, representing the matrix's main diagonal.
+inline dcomplex DeterminantDiagonal( dip::uint n, ConstSampleIterator< dcomplex > input ) {
+   return std::accumulate( input, input + n, dcomplex( 1.0 ), std::multiplies< dcomplex >());
+}
+
+/// \brief Computes the trace of a square real matrix.
+///
+/// `input` is a pointer to `n*n` values, in column-major order.
+inline dfloat Trace( dip::uint n, ConstSampleIterator< dfloat > input ) {
+   return Sum( n, ConstSampleIterator< dfloat >( input.Pointer(), input.Stride() * ( n + 1 )) );
+}
+
+/// \brief Computes the trace of a square complex matrix.
+///
+/// `input` is a pointer to `n*n` values, in column-major order.
+inline dcomplex Trace( dip::uint n, ConstSampleIterator< dcomplex > input ) {
+   return Sum( n, ConstSampleIterator< dcomplex >( input.Pointer(), input.Stride() * ( n + 1 )) );
+}
+
+/// \brief Computes the trace of a diagonal real matrix.
+///
+/// `input` is a pointer to `n` values, representing the matrix's main diagonal.
+inline dfloat TraceDiagonal( dip::uint n, ConstSampleIterator< dfloat > input ) {
+   return Sum( n, input );
+}
+
+/// \brief Computes the trace of a diagonal complex matrix.
+///
+/// `input` is a pointer to `n` values, representing the matrix's main diagonal.
+inline dcomplex TraceDiagonal( dip::uint n, ConstSampleIterator< dcomplex > input ) {
+   return Sum( n, input );
+}
+
+/// \brief Computes the "thin" singular value decomposition of a real matrix
+///
+/// `input` is a pointer to `m*n` values, in column-major order.
+///
+/// `output` is a pointer to `p` values, where `p = std::min( m, n )`. It contains the
+/// singular values of `input`, sorted in decreasing order.
+///
+/// `U` and `V` are pointers to `m*p` and `n*p` values, respectively. The left and right
+/// singular vectors will be written to then.
+/// If either of them is `false`, neither is computed, and only `output` is filled.
+void SingularValueDecomposition(
+      dip::uint m,
+      dip::uint n,
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > output,
+      SampleIterator< dfloat > U = nullptr,
+      SampleIterator< dfloat > V = nullptr
+);
+
+/// \brief Computes the "thin" singular value decomposition of a complex matrix
+///
+/// `input` is a pointer to `m*n` values, in column-major order.
+///
+/// `output` is a pointer to `p` values, where `p = std::min( m, n )`. It contains the
+/// singular values of `input`, sorted in decreasing order.
+///
+/// `U` and `V` are pointers to `m*p` and `n*p` values, respectively. The left and right
+/// singular vectors will be written to then.
+/// If either of them is `false`, neither is computed, and only `output` is filled.
+void SingularValueDecomposition(
+      dip::uint m,
+      dip::uint n,
+      ConstSampleIterator< dcomplex > input,
+      SampleIterator< dcomplex > output,
+      SampleIterator< dcomplex > U = nullptr,
+      SampleIterator< dcomplex > V = nullptr
+);
+
+/// \brief Computes the inverse of a square real matrix.
+///
+/// `input` and `output` are pointers to `n*n` values, in column-major order.
+void Inverse( dip::uint n, ConstSampleIterator< dfloat > input, SampleIterator< dfloat > output );
+
+/// \brief Computes the inverse of a square complex matrix.
+///
+/// `input` and `output` are pointers to `n*n` values, in column-major order.
+void Inverse( dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output );
+
+/// \brief Computes the pseudo-inverse of a real matrix.
+///
+/// `input` is a pointer to `m*n` values, in column-major order.
+///
+/// `output` is a pointer to `n*m` values, in column-major order.
+void PseudoInverse( dip::uint m, dip::uint n, ConstSampleIterator< dfloat > input, SampleIterator< dfloat > output );
+
+/// \brief Computes the pseudo-inverse of a complex matrix.
+///
+/// `input` and `output` are pointers to `m*n` values, in column-major order.
+///
+/// `output` is a pointer to `n*m` values, in column-major order.
+void PseudoInverse( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output );
+
+/// \brief Computes the rank of a real matrix.
+///
+/// `input` is a pointer to `m*n` values, in column-major order.
+dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dfloat > input );
+
+/// \brief Computes the rank of a complex matrix.
+///
+/// `input` is a pointer to `m*n` values, in column-major order.
+dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input );
+
+
+
+/// \brief Computes the rank of the square matrix at each pixel in image `in`.
 
 
 /// \brief `%StatisticsAccumulator` computes population statistics by accumulating the first four central moments.
