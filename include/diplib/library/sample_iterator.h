@@ -72,7 +72,7 @@ class SampleIterator {
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       SampleIterator() : stride_( 1 ), ptr_( nullptr ) {}
       /// To construct a useful iterator, provide a pointer and a stride
-      SampleIterator( pointer ptr, dip::sint stride ) : stride_( stride ), ptr_( ptr ) {}
+      SampleIterator( pointer ptr, dip::sint stride = 1 ) : stride_( stride ), ptr_( ptr ) {}
       /// Swap
       void swap( SampleIterator& other ) {
          using std::swap;
@@ -125,6 +125,12 @@ class SampleIterator {
       difference_type operator-( SampleIterator const& it ) const {
          return ( ptr_ - it.ptr_ ) / stride_;
       }
+      // Test returns false if the iterator cannot be dereferenced (is a null pointer)
+      explicit operator bool() const { return ptr_ != nullptr; }
+      // Returns the stride
+      dip::sint Stride() const { return stride_; }
+      // Returns the pointer
+      pointer Pointer() const { return ptr_; }
       /// Equality comparison
       bool operator==( SampleIterator const& other ) const { return ptr_ == other.ptr_; }
       /// Inequality comparison

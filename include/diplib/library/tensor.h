@@ -138,6 +138,24 @@ class Tensor {
       bool IsTriangular() const {
          return ( shape_ == Shape::UPPTRIANG_MATRIX ) || ( shape_ == Shape::LOWTRIANG_MATRIX );
       }
+      /// True if the matrix is square, independently from how it is stored.
+      bool IsSquare() const {
+         switch( shape_ ) {
+            case Shape::COL_VECTOR:
+            case Shape::ROW_VECTOR:
+               return elements_ == 1;
+            case Shape::COL_MAJOR_MATRIX:
+            case Shape::ROW_MAJOR_MATRIX:
+               return elements_ == rows_ * rows_;
+            case Shape::DIAGONAL_MATRIX:
+            case Shape::SYMMETRIC_MATRIX:
+            case Shape::UPPTRIANG_MATRIX:
+            case Shape::LOWTRIANG_MATRIX:
+               return true;        // these are all square matrices
+         }
+         // This should never happen:
+         DIP_THROW( "Unknown tensor shape" );
+      }
       /// Returns tensor shape.
       enum Shape TensorShape() const {
          return shape_;
@@ -167,7 +185,7 @@ class Tensor {
                return rows_;        // these are all square matrices
          }
          // This should never happen:
-         DIP_THROW( "Unknown tensor shape" ); // WTF GCC???
+         DIP_THROW( "Unknown tensor shape" );
       }
       /// Gets the tensor size.
       UnsignedArray Sizes() const {

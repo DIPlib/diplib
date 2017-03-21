@@ -299,13 +299,8 @@ inline void ScanSingleOutput(
       ScanLineFilter& lineFilter,      ///< Function object to call for each image line
       ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
-   ImageConstRefArray inar{};
    ImageRefArray outar{ out };
-   DataTypeArray inBufT{};
-   DataTypeArray outBufT{ outImageType };
-   DataTypeArray outImT{ outImageType };
-   UnsignedArray nElem{ nTensorElements };
-   Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, opts );
+   Scan( {}, outar, {}, { outImageType }, { outImageType }, { nTensorElements }, lineFilter, opts );
 }
 
 /// \brief Calls `dip::Framework::Scan` with one input image and a mask image.
@@ -339,10 +334,7 @@ inline void ScanSingleInput(
       inBufT.push_back( tmp.DataType() );
    }
    ImageRefArray outar{};
-   DataTypeArray outBufT{};
-   DataTypeArray outImT{};
-   UnsignedArray nElem{};
-   Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, opts );
+   Scan( inar, outar, {}, {}, {}, {}, lineFilter, opts );
 }
 
 /// \brief Calls `dip::Framework::Scan` with one input image and one output image.
@@ -355,13 +347,8 @@ inline void ScanMonadic(
       ScanLineFilter& lineFilter,      ///< Function object to call for each image line
       ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
-   ImageConstRefArray inar{ in };
    ImageRefArray outar{ out };
-   DataTypeArray inBufT{ bufferTypes };
-   DataTypeArray outBufT{ bufferTypes };
-   DataTypeArray outImT{ outImageType };
-   UnsignedArray nElem{ nTensorElements };
-   Scan( inar, outar, inBufT, outBufT, outImT, nElem, lineFilter, opts );
+   Scan( { in }, outar, { bufferTypes }, { bufferTypes }, { outImageType }, { nTensorElements }, lineFilter, opts );
 }
 
 /// \brief Calls `dip::Framework::Scan` with two input images and one output image.
