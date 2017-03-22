@@ -615,6 +615,11 @@ class Image {
          return tensor_.IsVector();
       }
 
+      /// \brief True for square matrix images, independent from how they are stored.
+      bool IsSquare() const {
+         return tensor_.IsSquare();
+      }
+
       /// \brief Set tensor sizes. The image must be raw.
       void SetTensorSizes( UnsignedArray const& tdims ) {
          DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );

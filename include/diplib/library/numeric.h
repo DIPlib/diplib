@@ -314,45 +314,27 @@ dfloat Determinant( dip::uint n, ConstSampleIterator< dfloat > input );
 /// `input` is a pointer to `n*n` values, in column-major order.
 dcomplex Determinant( dip::uint n, ConstSampleIterator< dcomplex > input );
 
-/// \brief Computes the determinant of a diagonal real matrix.
+/// \brief Computes the determinant of a diagonal matrix.
 ///
 /// `input` is a pointer to `n` values, representing the matrix's main diagonal.
-inline dfloat DeterminantDiagonal( dip::uint n, ConstSampleIterator< dfloat > input ) {
-   return std::accumulate( input, input + n, 1.0, std::multiplies< dfloat >());
+template< typename T >
+inline T DeterminantDiagonal( dip::uint n, ConstSampleIterator< T > input ) {
+   return std::accumulate( input, input + n, T( 1.0 ), std::multiplies< T >());
 }
 
-/// \brief Computes the determinant of a diagonal complex matrix.
-///
-/// `input` is a pointer to `n` values, representing the matrix's main diagonal.
-inline dcomplex DeterminantDiagonal( dip::uint n, ConstSampleIterator< dcomplex > input ) {
-   return std::accumulate( input, input + n, dcomplex( 1.0 ), std::multiplies< dcomplex >());
-}
-
-/// \brief Computes the trace of a square real matrix.
+/// \brief Computes the trace of a square matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order.
-inline dfloat Trace( dip::uint n, ConstSampleIterator< dfloat > input ) {
-   return Sum( n, ConstSampleIterator< dfloat >( input.Pointer(), input.Stride() * ( n + 1 )) );
+template< typename T >
+inline T Trace( dip::uint n, ConstSampleIterator< T > input ) {
+   return Sum( n, ConstSampleIterator< T >( input.Pointer(), input.Stride() * ( n + 1 )) );
 }
 
-/// \brief Computes the trace of a square complex matrix.
-///
-/// `input` is a pointer to `n*n` values, in column-major order.
-inline dcomplex Trace( dip::uint n, ConstSampleIterator< dcomplex > input ) {
-   return Sum( n, ConstSampleIterator< dcomplex >( input.Pointer(), input.Stride() * ( n + 1 )) );
-}
-
-/// \brief Computes the trace of a diagonal real matrix.
+/// \brief Computes the trace of a diagonal matrix.
 ///
 /// `input` is a pointer to `n` values, representing the matrix's main diagonal.
-inline dfloat TraceDiagonal( dip::uint n, ConstSampleIterator< dfloat > input ) {
-   return Sum( n, input );
-}
-
-/// \brief Computes the trace of a diagonal complex matrix.
-///
-/// `input` is a pointer to `n` values, representing the matrix's main diagonal.
-inline dcomplex TraceDiagonal( dip::uint n, ConstSampleIterator< dcomplex > input ) {
+template< typename T >
+inline T TraceDiagonal( dip::uint n, ConstSampleIterator< T > input ) {
    return Sum( n, input );
 }
 

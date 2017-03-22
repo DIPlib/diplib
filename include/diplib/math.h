@@ -177,6 +177,7 @@ void Norm( Image const& in, Image& out );
 void Trace( Image const& in, Image& out );
 
 /// \brief Computes the rank of the square matrix at each pixel in image `in`.
+/// The output is DT_UINT8, under the assumption that we won't have tensor images with a rank higher than 255.
 void Rank( Image const& in, Image& out );
 
 /// \brief Computes the eigenvalues of the square matrix at each pixel in image `in`.
@@ -184,7 +185,7 @@ void Rank( Image const& in, Image& out );
 /// `out` is a vector image containing the eigenvalues. If `in` is symmetric and
 /// real-valued, then `out` is real-valued, and the eigenvalues are in descending
 /// order. Otherwise, `out` is complex-valued, and not sorted in any specific way.
-void EigenValues( Image const& in, Image& out );
+void Eigenvalues( Image const& in, Image& out );
 
 /// \brief Computes the eigenvalues and eigenvectors of the square matrix at each pixel in image `in`.
 ///
@@ -202,8 +203,16 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors );
 /// \brief Computes the inverse of the square matrix at each pixel in image `in`.
 void Inverse( Image const& in, Image& out );
 
-/// \brief Computes the inverse of the matrix at each pixel in image `in`.
+/// \brief Computes the pseudo-inverse of the matrix at each pixel in image `in`.
 void PseudoInverse( Image const& in, Image& out );
+
+/// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
+///
+/// For an input image `in` with a tensor size of NxP, and with M the smaller of N and P, `out` is a
+/// vector image with M elements, corresponding to the singular values, sorted in decreasing order.
+///
+/// Use `dip::SingularValueDecomposition` if you need the full decomposition.
+void SingularValues( Image const& in, Image& out );
 
 /// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
 ///
@@ -214,14 +223,6 @@ void PseudoInverse( Image const& in, Image& out );
 /// The (diagonal) elemenst of `S` are the singular values, sorted in decreasing order.
 /// You can use `dip::SingularValues` if you are not interested in computing `U` and `V`.
 void SingularValueDecomposition( Image const& A, Image& U, Image& S, Image& V );
-
-/// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
-///
-/// For an input image `in` with a tensor size of NxP, and with M the smaller of N and P, `out` is a
-/// vector image with M elements, corresponding to the singular values, sorted in decreasing order.
-///
-/// Use `dip::SingularValueDecomposition` if you need the full decomposition.
-void SingularValueDecomposition( Image const& in, Image& out );
 
 /// \brief Creates an image whose pixels are identity matrices.
 ///

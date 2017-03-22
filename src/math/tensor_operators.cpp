@@ -56,7 +56,7 @@ class TensorMonadicScanLineFilter : public Framework::ScanLineFilter {
       F const& func_;
 };
 
-template< typename TPI, typename TPO, typename F >
+template< typename TPI, typename TPO = TPI, typename F >
 std::unique_ptr< Framework::ScanLineFilter > NewTensorMonadicScanLineFilter( F func ) {
    return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorMonadicScanLineFilter< TPI, TPO, F >( func ));
 }
@@ -147,7 +147,7 @@ void CrossProduct( Image const& lhs, Image const& rhs, Image& out ) {
 
 void Determinant( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.Tensor().IsSquare(), "The determinant can only be computed from square matrices" );
-   dip::uint n = in.TensorElements();
+   dip::uint n = in.TensorRows();
    if( n == 1 ) {
       out = in;
    } else {
@@ -209,20 +209,174 @@ void Norm( Image const& in, Image& out ) {
    }
 }
 
-void Trace( Image const& in, Image& out );
+void Trace( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsSquare(), "Trace only defined for square matrix images" );
+   if( in.TensorElements() == 1 ) {
+      out = in;
+   } else {
+      DataType dtype = DataType::SuggestFlex( in.DataType() );
+      dip::uint n = in.TensorElements();
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      switch( in.TensorShape() ) {
+         case Tensor::Shape::DIAGONAL_MATRIX:
+         case Tensor::Shape::SYMMETRIC_MATRIX:
+         case Tensor::Shape::UPPTRIANG_MATRIX:
+         case Tensor::Shape::LOWTRIANG_MATRIX: {
+            DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
+                  [ n ]( auto const& pin, auto const& pout ) { *pout = TraceDiagonal( n, pin ); }
+            ), dtype );
+            break;
+         }
+         default: {
+            DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
+                  [ n ]( auto const& pin, auto const& pout ) { *pout = Trace( n, pin ); }
+            ), dtype );
+            break;
+         }
+      }
+      ImageRefArray outar{ out };
+      Framework::Scan( { in }, outar, { dtype }, { dtype }, { dtype }, { 1 }, *scanLineFilter );
+   }
 
-void Rank( Image const& in, Image& out );
+}
 
-void EigenValues( Image const& in, Image& out );
+void Rank( Image const& in, Image& out ) {
+   dip::uint m = in.TensorRows();
+   dip::uint n = in.TensorColumns();
+   DataType intype;
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   if( in.DataType().IsComplex() ) {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, uint8 >(
+            [ m, n ]( auto const& pin, auto const& pout ) { *pout = clamp_cast< uint8 >( Rank( m, n, pin )); }
+      );
+      intype = DT_DCOMPLEX;
+   } else {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, uint8 >(
+            [ m, n ]( auto const& pin, auto const& pout ) { *pout = clamp_cast< uint8 >( Rank( m, n, pin )); }
+      );
+      intype = DT_DFLOAT;
+   }
+   ImageRefArray outar{ out };
+   Framework::Scan( { in }, outar, { intype }, { DT_UINT8 }, { DT_UINT8 }, { 1 }, *scanLineFilter,
+                    Framework::Scan_ExpandTensorInBuffer );
+}
 
-void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors );
+void Eigenvalues( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.Tensor().IsSquare(), "The eigenvalues can only be computed from square matrices" );
+   dip::uint n = in.TensorRows();
+   if( n == 1 ) {
+      out = in;
+   //} else if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
+   //   out = in.Diagonal();
+   //   TODO: This will only work if we can sort the values.
+   } else {
+      DataType intype = in.DataType();
+      DataType inbuffertype;
+      DataType outbuffertype;
+      DataType outtype;
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      if(( in.TensorShape() == Tensor::Shape::SYMMETRIC_MATRIX ) && ( !intype.IsComplex() )) {
+         scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+               [ n ]( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition( n, pin, pout ); }
+         );
+         inbuffertype = outbuffertype = DT_DFLOAT;
+         outtype = intype;
+      } else {
+         if( intype.IsComplex() ) {
+            scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
+                  [ n ]( auto const& pin, auto const& pout ) { EigenDecomposition( n, pin, pout ); }
+            );
+            inbuffertype = outbuffertype = DT_DCOMPLEX;
+         } else {
+            scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dcomplex >(
+                  [ n ]( auto const& pin, auto const& pout ) { EigenDecomposition( n, pin, pout ); }
+            );
+            inbuffertype = DT_DFLOAT;
+            outbuffertype = DT_DCOMPLEX;
+         }
+         outtype = DataType::SuggestComplex( intype );
+      }
+      ImageRefArray outar{ out };
+      Framework::Scan( { in }, outar, { inbuffertype }, { outbuffertype }, { outtype }, { n }, *scanLineFilter,
+                       Framework::Scan_ExpandTensorInBuffer );
+   }
+}
 
-void Inverse( Image const& in, Image& out );
+void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
 
-void PseudoInverse( Image const& in, Image& out );
+}
 
-void SingularValueDecomposition( Image const& A, Image& U, Image& S, Image& V );
+void Inverse( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.Tensor().IsSquare(), "The regular inverse can only be computed from square matrices" );
+   dip::uint n = in.TensorRows();
+   DataType outtype = DataType::SuggestFlex( in.DataType() );
+   DataType buffertype;
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   if( outtype.IsComplex() ) {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
+            [ n ]( auto const& pin, auto const& pout ) { Inverse( n, pin, pout ); }
+      );
+      buffertype = DT_DCOMPLEX;
+   } else {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+            [ n ]( auto const& pin, auto const& pout ) { Inverse( n, pin, pout ); }
+      );
+      buffertype = DT_DFLOAT;
+   }
+   ImageRefArray outar{ out };
+   Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { n * n }, *scanLineFilter,
+                    Framework::Scan_ExpandTensorInBuffer );
+   out.ReshapeTensor( n, n );
+}
 
-void SingularValueDecomposition( Image const& in, Image& out );
+void PseudoInverse( Image const& in, Image& out ) {
+   dip::uint m = in.TensorRows();
+   dip::uint n = in.TensorColumns();
+   DataType outtype = DataType::SuggestFlex( in.DataType() );
+   DataType buffertype;
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   if( outtype.IsComplex() ) {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
+            [ m, n ]( auto const& pin, auto const& pout ) { PseudoInverse( m, n, pin, pout ); }
+      );
+      buffertype = DT_DCOMPLEX;
+   } else {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+            [ m, n ]( auto const& pin, auto const& pout ) { PseudoInverse( m, n, pin, pout ); }
+      );
+      buffertype = DT_DFLOAT;
+   }
+   ImageRefArray outar{ out };
+   Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { n * m }, *scanLineFilter,
+                    Framework::Scan_ExpandTensorInBuffer );
+   out.ReshapeTensor( n, m );
+}
+
+void SingularValues( Image const& in, Image& out ) {
+   dip::uint m = in.TensorRows();
+   dip::uint n = in.TensorColumns();
+   dip::uint p = std::min( m, n );
+   DataType outtype = DataType::SuggestFlex( in.DataType() );
+   DataType buffertype;
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   if( outtype.IsComplex() ) {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
+            [ m, n ]( auto const& pin, auto const& pout ) { SingularValueDecomposition( m, n, pin, pout ); }
+      );
+      buffertype = DT_DCOMPLEX;
+   } else {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+            [ m, n ]( auto const& pin, auto const& pout ) { SingularValueDecomposition( m, n, pin, pout ); }
+      );
+      buffertype = DT_DFLOAT;
+   }
+   ImageRefArray outar{ out };
+   Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { p }, *scanLineFilter,
+                    Framework::Scan_ExpandTensorInBuffer );
+}
+
+void SingularValueDecomposition( Image const& in, Image& U, Image& out, Image& V ) {
+}
+
 
 } // namespace dip
