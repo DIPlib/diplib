@@ -74,46 +74,82 @@ void DotProduct( Image const& lhs, Image const& rhs, Image& out ) {
    Multiply( a, b, out, DataType::SuggestArithmetic( a.DataType(), b.DataType() ));
 }
 
+//
+namespace {
+template< typename TPI >
+class CrossProductLineFilter : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dip::uint const bufferLength = params.bufferLength;
+         ConstLineIterator< TPI > lhs(
+               static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
+               bufferLength,
+               params.inBuffer[ 0 ].stride,
+               params.outBuffer[ 0 ].tensorLength,
+               params.inBuffer[ 0 ].tensorStride
+         );
+         ConstLineIterator< TPI > rhs(
+               static_cast< TPI const* >( params.inBuffer[ 1 ].buffer ),
+               bufferLength,
+               params.inBuffer[ 1 ].stride,
+               params.outBuffer[ 1 ].tensorLength,
+               params.inBuffer[ 1 ].tensorStride
+         );
+         LineIterator< TPI > out(
+               static_cast< TPI* >( params.outBuffer[ 0 ].buffer ),
+               bufferLength,
+               params.outBuffer[ 0 ].stride,
+               params.outBuffer[ 0 ].tensorLength,
+               params.outBuffer[ 0 ].tensorStride
+         );
+         DIP_ASSERT( params.inBuffer[ 0 ].tensorLength == params.inBuffer[ 1 ].tensorLength );
+         switch( params.inBuffer[ 0 ].tensorLength ) {
+            case 2:
+            DIP_ASSERT( params.outBuffer[ 0 ].tensorLength == 1 );
+               do {
+                  out[ 0 ] = lhs[ 0 ] * rhs[ 1 ] - lhs[ 1 ] * rhs[ 0 ];
+               } while( ++lhs, ++rhs, ++out );
+               break;
+            case 3:
+               DIP_ASSERT( params.outBuffer[ 0 ].tensorLength == 3 );
+               do {
+                  out[ 0 ] = lhs[ 1 ] * rhs[ 2 ] - lhs[ 2 ] * rhs[ 1 ];
+                  out[ 1 ] = lhs[ 2 ] * rhs[ 0 ] - lhs[ 0 ] * rhs[ 2 ];
+                  out[ 2 ] = lhs[ 0 ] * rhs[ 1 ] - lhs[ 1 ] * rhs[ 0 ];
+               } while( ++lhs, ++rhs, ++out );
+               break;
+            default:
+               DIP_THROW_ASSERTION( "This should not happen" );
+         }
+      }
+};
+} // namespace
+
 void CrossProduct( Image const& lhs, Image const& rhs, Image& out ) {
    DIP_THROW_IF( !lhs.IsForged() || !rhs.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( lhs.TensorElements() != rhs.TensorElements(), E::NTENSORELEM_DONT_MATCH );
    DIP_THROW_IF( !lhs.IsVector() || !rhs.IsVector(), "The cross product is only defined for 2D and 3D vector images" );
-   Image a = lhs.QuickCopy();
-   Image b = rhs.QuickCopy();
-   DataType dtype = DataType::SuggestArithmetic( a.DataType(), b.DataType() );
+   DataType dtype = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
+   dip::uint nElem;
    if( lhs.TensorElements() == 2 ) {
-      // We could write `out = a[ 0 ] * b[ 1 ] - a[ 1 ] * b[ 0 ]` if we didn't care about potentially copying pixels to `out`.
-      MultiplySampleWise( a[ 0 ], b[ 1 ], out, dtype );
-      out -= a[ 1 ] * b[ 0 ];
+      nElem = 1;
    } else if( lhs.TensorElements() == 3 ) {
-      UnsignedArray sizes = a.Sizes();
-      Framework::SingletonExpandedSize( sizes, b.Sizes() );
-      out.ReForge( sizes, 3, dtype, Option::AcceptDataTypeChange::DO_ALLOW );
-      //
-      Image tmp = out[ 0 ];
-      tmp.Protect();
-      MultiplySampleWise( a[ 1 ], b[ 2 ], tmp, dtype );
-      tmp -= a[ 2 ] * b[ 1 ];
-      //
-      tmp = out[ 1 ];
-      tmp.Protect();
-      MultiplySampleWise( a[ 2 ], b[ 0 ], tmp, dtype );
-      tmp -= a[ 0 ] * b[ 2 ];
-      //
-      tmp = out[ 2 ];
-      tmp.Protect();
-      MultiplySampleWise( a[ 0 ], b[ 1 ], tmp, dtype );
-      tmp -= a[ 1 ] * b[ 0 ];
+      nElem = 3;
    } else {
       DIP_THROW( "The cross product is only defined for 2D and 3D vector images" );
    }
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   DIP_OVL_NEW_FLEXBIN( scanLineFilter, CrossProductLineFilter, (), dtype );
+   ImageConstRefArray inar{ lhs, rhs };
+   ImageRefArray outar{ out };
+   Framework::Scan( inar, outar, { dtype, dtype }, { dtype }, { dtype }, { nElem }, *scanLineFilter );
 }
 
 void Determinant( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.Tensor().IsSquare(), "The determinant can only be computed from square matrices" );
    dip::uint n = in.TensorElements();
    if( n == 1 ) {
-      out.Copy( in );
+      out = in;
    } else {
       DataType outtype = DataType::SuggestFlex( in.DataType() );
       DataType buffertype;
