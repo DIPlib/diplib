@@ -334,7 +334,7 @@ inline void ScanSingleInput(
       inBufT.push_back( tmp.DataType() );
    }
    ImageRefArray outar{};
-   Scan( inar, outar, {}, {}, {}, {}, lineFilter, opts );
+   Scan( inar, outar, inBufT, {}, {}, {}, lineFilter, opts );
 }
 
 /// \brief Calls `dip::Framework::Scan` with one input image and one output image.

@@ -258,13 +258,10 @@ Measurement MeasurementTool::Measure(
          inBufT.emplace_back( DT_DFLOAT );
       }
       ImageRefArray outar{};
-      DataTypeArray outBufT{};
-      DataTypeArray outImT{};
-      UnsignedArray nElem{};
 
       // Do the scan, which calls dip::Feature::LineBased::ScanLine()
       MeasureLineFilter functor{ lineBasedFeatures, measurement.ObjectIndices() };
-      Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, functor,
+      Framework::Scan( inar, outar, inBufT, {}, {}, {}, functor,
             Framework::Scan_NoMultiThreading + Framework::Scan_NeedCoordinates );
 
       // Call dip::Feature::LineBased::Finish()

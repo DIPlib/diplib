@@ -127,15 +127,11 @@ void Multiply(
       DIP_THROW( "Inner tensor dimensions must match in multiplication" );
    }
    Tensor outTensor = Tensor( lhs.TensorRows(), rhs.TensorColumns() );
-   ImageConstRefArray inar{ lhs, rhs };
-   ImageRefArray outar{ out };
-   DataTypeArray inBufT{ dt, dt };
-   DataTypeArray outBufT{ dt };
-   DataTypeArray outImT{ dt };
-   UnsignedArray nElem{ outTensor.Elements() };
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    DIP_OVL_NEW_ALL( scanLineFilter, MultiplyLineFilter, ( lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() ), dt );
-   Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
+   ImageConstRefArray inar{ lhs, rhs };
+   ImageRefArray outar{ out };
+   Framework::Scan( inar, outar, { dt, dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
    out.ReshapeTensor( outTensor );
 }
 

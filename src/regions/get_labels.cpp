@@ -92,9 +92,6 @@ UnsignedArray GetObjectLabels(
       inBufT.emplace_back( mask.DataType() ); // All but guarantees that data won't be copied.
    }
    ImageRefArray outar{};
-   DataTypeArray outBufT{};
-   DataTypeArray outImT{};
-   UnsignedArray nElem{};
 
    LabelSet objectIDs; // output
 
@@ -103,11 +100,7 @@ UnsignedArray GetObjectLabels(
    DIP_OVL_NEW_UINT( scanLineFilter, dip__GetLabels, ( objectIDs ), label.DataType() );
 
    // Do the scan
-   Framework::Scan(
-         inar, outar, inBufT, outBufT, outImT, nElem,
-         *scanLineFilter,
-         Framework::Scan_NoMultiThreading
-   );
+   Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter, Framework::Scan_NoMultiThreading );
 
    // Copy the labels to output array
    UnsignedArray out;
