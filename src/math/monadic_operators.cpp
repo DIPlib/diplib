@@ -75,6 +75,22 @@ T dipm__Reciprocal( T v ) { return v == T( 0 ) ? T( 0 ) : T( 1 ) / v; }
 #include "diplib/monadic_operators.private"
 
 
+void Conjugate( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DataType dtype = in.DataType();
+   if( dtype.IsComplex() ) {
+      std::unique_ptr <Framework::ScanLineFilter> scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_COMPLEX( scanLineFilter, Framework::NewMonadicScanLineFilter, (
+            []( auto its ) { return std::conj( *its[ 0 ] ); }
+      ), dtype );
+      Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter,
+                              Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
+   } else {
+      out = in;
+   }
+}
+
+
 namespace {
 
 template< typename TPI >
@@ -103,13 +119,10 @@ void Sign( Image const& in, Image& out ) {
    DIP_OVL_NEW_REAL( scanLineFilter, SignLineFilter, (), dtype );
    ImageConstRefArray inar{ in };
    ImageRefArray outar{ out };
-   DataTypeArray inBufT{ dtype };
-   DataTypeArray outBufT{ DT_SINT8 };
-   DataTypeArray outImT{ DT_SINT8 };
-   UnsignedArray nElem{ 1 }; // ignored
-   Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, *scanLineFilter,
+   Framework::Scan( inar, outar, { dtype }, { DT_SINT8 }, { DT_SINT8 }, { 1 }, *scanLineFilter,
                     Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
 }
+
 
 namespace {
 
@@ -139,11 +152,7 @@ void NearestInt( Image const& in, Image& out ) {
    DIP_OVL_NEW_FLOAT( scanLineFilter, NearestIntLineFilter, (), dtype );
    ImageConstRefArray inar{ in };
    ImageRefArray outar{ out };
-   DataTypeArray inBufT{ dtype };
-   DataTypeArray outBufT{ DT_SINT32 };
-   DataTypeArray outImT{ DT_SINT32 };
-   UnsignedArray nElem{ 1 }; // ignored
-   Framework::Scan( inar, outar, inBufT, outBufT, outImT, nElem, *scanLineFilter,
+   Framework::Scan( inar, outar, { dtype }, { DT_SINT32 }, { DT_SINT32 }, { 1 }, *scanLineFilter,
                     Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
 }
 

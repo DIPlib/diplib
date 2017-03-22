@@ -91,6 +91,14 @@ inline Image Imaginary( Image const& in ) { return in.DataType().IsComplex() ? i
 /// \brief Returns the imaginary component of a complex image. Returns `dip::Image::Imaginary` if the input is complex
 inline void Imaginary( Image const& in, Image& out ) { out = Imaginary( in ); }
 
+/// \brief Computes the complex conjugate of each sample.
+void Conjugate( Image const& in, Image& out );
+inline Image Conjugate( Image const& in ) {
+   Image out;
+   Conjugate( in, out );
+   return out;
+}
+
 /// \brief Computes the sign of each sample. Only defined for signed real data types (signed integers
 /// and floating-point types). Output is of type `dip::DT_SINT8`, containing values -1, 0 and 1.
 void Sign( Image const& in, Image& out );
@@ -123,6 +131,11 @@ inline Image NearestInt( Image const& in ) {
 //
 // Tensor operators
 //
+
+/// \brief Transposes the tensor image, the data is not copied.
+inline Image Transpose( Image in ) {
+   return in.Transpose();
+}
 
 /// \brief Computes the conjugate transpose of the tensor image `in`.
 inline void ConjugateTranspose( Image const& in, Image& out ) {
