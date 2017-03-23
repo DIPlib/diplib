@@ -680,7 +680,7 @@ either to have `dip::Image::Data`, `dip::Image::Origin`, and `dip::Image::Pointe
 return const pointers when applied to a const image.
 
 Thus, there is nothing prevent you from modifying the pixel values of a const image.
-However, none of the functions in DIPlib will do so. A const image (usually
+However, none of the functions in *DIPlib* will do so. A const image (usually
 the input images to functions are marked const) will not be modified.
 
 

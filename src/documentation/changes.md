@@ -47,7 +47,7 @@ over.
      2nd dimension), and the dimension of that dimension (the size of the image along that
      axis).
 
-   - Images now can have a tensor as pixel value, as was possible in DIPimage. To port old
+   - Images now can have a tensor as pixel value, as was possible in *DIPimage*. To port old
      functions, you can test for `dip::Image::IsScalar` and ignore this new feature, or
      modify the old function to work with tensor values.
 
@@ -152,9 +152,9 @@ over.
 ## Changes from DIPimage 2.x (the old DIPimage)
 
 - The `dip_image` object has changed completely internally. Pixel data is stored differently:
-  tensor images have all samples in the same MATLAB array. Complex images are stored as a
+  tensor images have all samples in the same *MATLAB* array. Complex images are stored as a
   single real matrix, with real and complex samples next to each other (this translates
-  much more nicely to DIPlib, where complex data is stored in that same way).
+  much more nicely to *DIPlib*, where complex data is stored in that same way).
 
   Consequently, the `dip_image_array` pseudo-class no longer exists. Both scalar and tensor
   images report to be of class `dip_image`. If you need to store multiple images in one

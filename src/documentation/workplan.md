@@ -98,7 +98,7 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     do this for: OpenCV, ITK, SimpleITK. Any other libraries of interest?
 
 -   Pixel-based algorithms built on `dip::Framework::Scan`: monadic and
-    diadic operators (i.e. the stuff in the old dip_math.h), statistics, etc. This is
+    dyadic operators (i.e. the stuff in the old dip_math.h), statistics, etc. This is
     mostly porting old code to the new framework.
     - dip_math.h (many already done)
     - dip_noise.h

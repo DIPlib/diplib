@@ -53,7 +53,7 @@ without having to allocate a temporary pixel buffer as would be the case for:
 This is a huge advantage both in speed and memory usage. However, resulting
 programs are not as easy to read (which parameters are inputs and which are
 outputs?) and not as pretty as with style 2. For example, style 2 allows
-for a very elegant chaingin of operations:
+for a very elegant chaining of operations:
 
 ```cpp
     dip::Image img = ...
@@ -261,7 +261,7 @@ Such a line function is passed to the framework function, and the framework
 function calls the line function for every image line. The line function might
 need a state (parameters, intermediate data, output data). Furthermore, intermediate
 and output data (i.e. data that the line function writes) must be separate for each
-thread calling the line function. The old DIPlib did this in the typical C fashion:
+thread calling the line function. The old *DIPlib* did this in the typical C fashion:
 a function pointer and a `void*` to the state. The framework function passed the
 `void*` to the line function, which would cast it back to its original type. C++11
 offers several alternatives that are more type-safe, and offer greater flexibility.
