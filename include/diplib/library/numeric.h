@@ -348,6 +348,9 @@ inline T TraceDiagonal( dip::uint n, ConstSampleIterator< T > input ) {
 /// `U` and `V` are pointers to `m*p` and `n*p` values, respectively. The left and right
 /// singular vectors will be written to then.
 /// If either of them is `false`, neither is computed, and only `output` is filled.
+///
+/// `%SingularValueDecomposition` uses the two-sided Jacobi SVD decomposition algorithm.
+/// This is efficient for small matrices only.
 void SingularValueDecomposition(
       dip::uint m,
       dip::uint n,
@@ -367,6 +370,9 @@ void SingularValueDecomposition(
 /// `U` and `V` are pointers to `m*p` and `n*p` values, respectively. The left and right
 /// singular vectors will be written to then.
 /// If either of them is `false`, neither is computed, and only `output` is filled.
+///
+/// `%SingularValueDecomposition` uses the two-sided Jacobi SVD decomposition algorithm.
+/// This is efficient for small matrices only.
 void SingularValueDecomposition(
       dip::uint m,
       dip::uint n,
@@ -379,11 +385,15 @@ void SingularValueDecomposition(
 /// \brief Computes the inverse of a square real matrix.
 ///
 /// `input` and `output` are pointers to `n*n` values, in column-major order.
+///
+/// The result is undetermined if the matrix is not invertible.
 void Inverse( dip::uint n, ConstSampleIterator< dfloat > input, SampleIterator< dfloat > output );
 
 /// \brief Computes the inverse of a square complex matrix.
 ///
 /// `input` and `output` are pointers to `n*n` values, in column-major order.
+///
+/// The result is undetermined if the matrix is not invertible.
 void Inverse( dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output );
 
 /// \brief Computes the pseudo-inverse of a real matrix.

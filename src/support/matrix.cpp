@@ -105,14 +105,20 @@ void SingularValueDecomposition(
       dip::uint m,
       dip::uint n,
       ConstSampleIterator< dfloat > input,
-      SampleIterator< dfloat > output,
-      SampleIterator< dfloat > U,
-      SampleIterator< dfloat > V
+      SampleIterator< dfloat > Sout,
+      SampleIterator< dfloat > Uout,
+      SampleIterator< dfloat > Vout
 ) {
-   if( U && V ) {
-      // TODO
-   } else {
-      // TODO
+   dip::uint p = std::min( m, n );
+   Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > M( input.Pointer(), m, n, Eigen::InnerStride<>( input.Stride() ));
+   Eigen::JacobiSVD< Eigen::MatrixXd > svd( M, Eigen::ComputeThinU | Eigen::ComputeThinV );
+   Eigen::Map< Eigen::VectorXd, 0, Eigen::InnerStride<> > S( Sout.Pointer(), p, Eigen::InnerStride<>( Sout.Stride() ));
+   S = svd.singularValues();
+   if( Uout && Vout ) {
+      Eigen::Map< Eigen::MatrixXd, 0, Eigen::InnerStride<> > U( Uout.Pointer(), m, p, Eigen::InnerStride<>( Uout.Stride() ));
+      Eigen::Map< Eigen::MatrixXd, 0, Eigen::InnerStride<> > V( Vout.Pointer(), n, p, Eigen::InnerStride<>( Vout.Stride() ));
+      U = svd.matrixU();
+      V = svd.matrixV();
    }
 }
 
@@ -120,14 +126,20 @@ void SingularValueDecomposition(
       dip::uint m,
       dip::uint n,
       ConstSampleIterator< dcomplex > input,
-      SampleIterator< dcomplex > output,
-      SampleIterator< dcomplex > U,
-      SampleIterator< dcomplex > V
+      SampleIterator< dcomplex > Sout,
+      SampleIterator< dcomplex > Uout,
+      SampleIterator< dcomplex > Vout
 ) {
-   if( U && V ) {
-      // TODO
-   } else {
-      // TODO
+   dip::uint p = std::min( m, n );
+   Eigen::Map< Eigen::MatrixXcd const, 0, Eigen::InnerStride<> > M( input.Pointer(), m, n, Eigen::InnerStride<>( input.Stride() ));
+   Eigen::JacobiSVD< Eigen::MatrixXcd > svd( M, Eigen::ComputeThinU | Eigen::ComputeThinV );
+   Eigen::Map< Eigen::VectorXcd, 0, Eigen::InnerStride<> > S( Sout.Pointer(), p, Eigen::InnerStride<>( Sout.Stride() ));
+   S = svd.singularValues();
+   if( Uout && Vout ) {
+      Eigen::Map< Eigen::MatrixXcd, 0, Eigen::InnerStride<> > U( Uout.Pointer(), m, p, Eigen::InnerStride<>( Uout.Stride() ));
+      Eigen::Map< Eigen::MatrixXcd, 0, Eigen::InnerStride<> > V( Vout.Pointer(), n, p, Eigen::InnerStride<>( Vout.Stride() ));
+      U = svd.matrixU();
+      V = svd.matrixV();
    }
 }
 
@@ -175,10 +187,10 @@ dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input 
 
 #ifdef DIP__ENABLE_DOCTEST
 
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::SymmetricEigenXXX functions") {
-   double matrix2[] = { 4, 8, 0 };
-   double lambdas[ 3 ];
-   double vectors[ 9 ];
+DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
+   dip::dfloat matrix2[] = { 4, 8, 0 };
+   dip::dfloat lambdas[ 3 ];
+   dip::dfloat vectors[ 9 ];
    dip::SymmetricEigenDecompositionPacked( 2, matrix2, lambdas );
    DOCTEST_CHECK( lambdas[ 0 ] == 8 );
    DOCTEST_CHECK( lambdas[ 1 ] == 4 );
@@ -210,12 +222,12 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::SymmetricEigenXXX functions") {
    dip::SymmetricEigenDecompositionPacked( 2, matrix2, lambdas, vectors );
    DOCTEST_CHECK( lambdas[ 0 ] == 4 );
    DOCTEST_CHECK( lambdas[ 1 ] == 2 );
-   DOCTEST_CHECK( vectors[ 0 ] == doctest::Approx(  cos( M_PI/4 )) ); // signs might be different here...
-   DOCTEST_CHECK( vectors[ 1 ] == doctest::Approx( -sin( M_PI/4 )) );
-   DOCTEST_CHECK( vectors[ 2 ] == doctest::Approx(  sin( M_PI/4 )) );
-   DOCTEST_CHECK( vectors[ 3 ] == doctest::Approx(  cos( M_PI/4 )) );
+   DOCTEST_CHECK( vectors[ 0 ] == doctest::Approx(  cos( M_PI/4 ))); // signs might be different here...
+   DOCTEST_CHECK( vectors[ 1 ] == doctest::Approx( -sin( M_PI/4 )));
+   DOCTEST_CHECK( vectors[ 2 ] == doctest::Approx(  sin( M_PI/4 )));
+   DOCTEST_CHECK( vectors[ 3 ] == doctest::Approx(  cos( M_PI/4 )));
 
-   double matrix3[] = { 4, 8, 6, 0, 0, 0 };
+   dip::dfloat matrix3[] = { 4, 8, 6, 0, 0, 0 };
    dip::SymmetricEigenDecompositionPacked( 3, matrix3, lambdas );
    DOCTEST_CHECK( lambdas[ 0 ] == 8 );
    DOCTEST_CHECK( lambdas[ 1 ] == 6 );
@@ -233,6 +245,68 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::SymmetricEigenXXX functions") {
    DOCTEST_CHECK( vectors[ 6 ] == 1 );
    DOCTEST_CHECK( vectors[ 7 ] == 0 );
    DOCTEST_CHECK( vectors[ 8 ] == 0 );
+
+   dip::dfloat matrix22[] = { 3, -1, -1, 3 };
+   dip::dcomplex c_lambdas[ 2 ];
+   dip::dcomplex c_vectors[ 4 ];
+   dip::EigenDecomposition( 2, matrix22, c_lambdas, c_vectors );
+   DOCTEST_CHECK( c_lambdas[ 0 ].real() == doctest::Approx( 4.0 ));
+   DOCTEST_CHECK( c_lambdas[ 1 ].real() == doctest::Approx( 2.0 ));
+   DOCTEST_CHECK( c_vectors[ 0 ].real() == doctest::Approx(  cos( M_PI/4 ))); // signs might be different here...
+   DOCTEST_CHECK( c_vectors[ 1 ].real() == doctest::Approx( -sin( M_PI/4 )));
+   DOCTEST_CHECK( c_vectors[ 2 ].real() == doctest::Approx(  sin( M_PI/4 )));
+   DOCTEST_CHECK( c_vectors[ 3 ].real() == doctest::Approx(  cos( M_PI/4 )));
+   DOCTEST_CHECK( c_lambdas[ 0 ].imag() == 0 );
+   DOCTEST_CHECK( c_lambdas[ 1 ].imag() == 0 );
+   DOCTEST_CHECK( c_vectors[ 0 ].imag() == 0 );
+   DOCTEST_CHECK( c_vectors[ 1 ].imag() == 0 );
+   DOCTEST_CHECK( c_vectors[ 2 ].imag() == 0 );
+   DOCTEST_CHECK( c_vectors[ 3 ].imag() == 0 );
+
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the SingularValueDecomposition and related functions") {
+   dip::dfloat matrix22[] = { 4, 0, 0, 8 };
+   dip::dfloat S[ 2 ];
+   dip::dfloat U[ 4 ];
+   dip::dfloat V[ 6 ];
+   dip::SingularValueDecomposition( 2, 2, matrix22, S, U, V );
+   DOCTEST_CHECK( S[ 0 ] == 8 );
+   DOCTEST_CHECK( S[ 1 ] == 4 );
+   DOCTEST_CHECK( U[ 0 ] == 0 );
+   DOCTEST_CHECK( U[ 1 ] == 1 );
+   DOCTEST_CHECK( U[ 2 ] == 1 );
+   DOCTEST_CHECK( U[ 3 ] == 0 );
+   DOCTEST_CHECK( V[ 0 ] == 0 );
+   DOCTEST_CHECK( V[ 1 ] == 1 );
+   DOCTEST_CHECK( V[ 2 ] == 1 );
+   DOCTEST_CHECK( V[ 3 ] == 0 );
+
+   dip::dfloat matrix23[] = { 3, 2, 2, 3, 2, -2 };
+   dip::SingularValueDecomposition( 2, 3, matrix23, S, U, V );
+   DOCTEST_CHECK( S[ 0 ] == doctest::Approx( 5.0 ));
+   DOCTEST_CHECK( S[ 1 ] == doctest::Approx( 3.0 ));
+   DOCTEST_CHECK( U[ 0 ] == doctest::Approx( -1.0 / std::sqrt( 2 ))); // signs might be different here...
+   DOCTEST_CHECK( U[ 1 ] == doctest::Approx( -1.0 / std::sqrt( 2 )));
+   DOCTEST_CHECK( U[ 2 ] == doctest::Approx( 1.0 / std::sqrt( 2 )));
+   DOCTEST_CHECK( U[ 3 ] == doctest::Approx( -1.0 / std::sqrt( 2 )));
+   DOCTEST_CHECK( V[ 0 ] == doctest::Approx( -1.0 / std::sqrt( 2 )));
+   DOCTEST_CHECK( V[ 1 ] == doctest::Approx( -1.0 / std::sqrt( 2 )));
+   DOCTEST_CHECK( V[ 2 ] == doctest::Approx( 0.0 ));
+   DOCTEST_CHECK( V[ 3 ] == doctest::Approx( 1.0 / std::sqrt( 18 )));
+   DOCTEST_CHECK( V[ 4 ] == doctest::Approx( -1.0 / std::sqrt( 18 )));
+   DOCTEST_CHECK( V[ 5 ] == doctest::Approx( 4.0 / std::sqrt( 18 )));
+
+   DOCTEST_CHECK( dip::Rank( 2, 3, matrix23 ) == 2 );
+
+   dip::dfloat matrix32[ 6 ];
+   dip::PseudoInverse( 2, 3, matrix23, matrix32 );
+   DOCTEST_CHECK( matrix32[ 0 ] == doctest::Approx( 28.0 / 180.0 ));
+   DOCTEST_CHECK( matrix32[ 1 ] == doctest::Approx(  8.0 / 180.0 ));
+   DOCTEST_CHECK( matrix32[ 2 ] == doctest::Approx( 40.0 / 180.0 ));
+   DOCTEST_CHECK( matrix32[ 3 ] == doctest::Approx(  8.0 / 180.0 ));
+   DOCTEST_CHECK( matrix32[ 4 ] == doctest::Approx( 28.0 / 180.0 ));
+   DOCTEST_CHECK( matrix32[ 5 ] == doctest::Approx(-40.0 / 180.0 ));
 }
 
 #endif // DIP__ENABLE_DOCTEST

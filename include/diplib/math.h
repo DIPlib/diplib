@@ -201,6 +201,8 @@ void Eigenvalues( Image const& in, Image& out );
 void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors );
 
 /// \brief Computes the inverse of the square matrix at each pixel in image `in`.
+///
+/// The result is undetermined if the matrix is not invertible.
 void Inverse( Image const& in, Image& out );
 
 /// \brief Computes the pseudo-inverse of the matrix at each pixel in image `in`.
@@ -212,6 +214,9 @@ void PseudoInverse( Image const& in, Image& out );
 /// vector image with M elements, corresponding to the singular values, sorted in decreasing order.
 ///
 /// Use `dip::SingularValueDecomposition` if you need the full decomposition.
+///
+/// This function uses the two-sided Jacobi SVD decomposition algorithm.
+/// This is efficient for small matrices only.
 void SingularValues( Image const& in, Image& out );
 
 /// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
@@ -220,8 +225,11 @@ void SingularValues( Image const& in, Image& out );
 /// square diagonal MxM matrix, `U` is a NxM matrix, and V is a PxM matrix. These matrices satisfy
 /// the relation \f$A = USV^*\f$.
 ///
-/// The (diagonal) elemenst of `S` are the singular values, sorted in decreasing order.
+/// The (diagonal) elements of `S` are the singular values, sorted in decreasing order.
 /// You can use `dip::SingularValues` if you are not interested in computing `U` and `V`.
+///
+/// This function uses the two-sided Jacobi SVD decomposition algorithm.
+/// This is efficient for small matrices only.
 void SingularValueDecomposition( Image const& A, Image& U, Image& S, Image& V );
 
 /// \brief Creates an image whose pixels are identity matrices.

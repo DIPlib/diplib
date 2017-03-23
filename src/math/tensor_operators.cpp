@@ -61,6 +61,94 @@ std::unique_ptr< Framework::ScanLineFilter > NewTensorMonadicScanLineFilter( F f
    return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorMonadicScanLineFilter< TPI, TPO, F >( func ));
 }
 
+template< typename TPI, typename TPO, typename F >
+class TensorDyadicScanLineFilter : public Framework::ScanLineFilter {
+   public:
+      TensorDyadicScanLineFilter( F func ) : func_( func ) {}
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dip::uint const bufferLength = params.bufferLength;
+         ConstLineIterator< TPI > in(
+               static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
+               bufferLength,
+               params.inBuffer[ 0 ].stride,
+               params.outBuffer[ 0 ].tensorLength,
+               params.inBuffer[ 0 ].tensorStride
+         );
+         LineIterator< TPO > out1(
+               static_cast< TPO* >( params.outBuffer[ 0 ].buffer ),
+               bufferLength,
+               params.outBuffer[ 0 ].stride,
+               params.outBuffer[ 0 ].tensorLength,
+               params.outBuffer[ 0 ].tensorStride
+         );
+         LineIterator< TPO > out2(
+               static_cast< TPO* >( params.outBuffer[ 1 ].buffer ),
+               bufferLength,
+               params.outBuffer[ 1 ].stride,
+               params.outBuffer[ 1 ].tensorLength,
+               params.outBuffer[ 1 ].tensorStride
+         );
+         do {
+            func_( in.begin(), out1.begin(), out2.begin() );
+         } while( ++in, ++out1, ++out2 );
+      }
+   private:
+      F const& func_;
+};
+
+template< typename TPI, typename TPO = TPI, typename F >
+std::unique_ptr< Framework::ScanLineFilter > NewTensorDyadicScanLineFilter( F func ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorDyadicScanLineFilter< TPI, TPO, F >( func ));
+}
+
+template< typename TPI, typename TPO, typename F >
+class TensorTriadicScanLineFilter : public Framework::ScanLineFilter {
+   public:
+      TensorTriadicScanLineFilter( F func ) : func_( func ) {}
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dip::uint const bufferLength = params.bufferLength;
+         ConstLineIterator< TPI > in(
+               static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
+               bufferLength,
+               params.inBuffer[ 0 ].stride,
+               params.outBuffer[ 0 ].tensorLength,
+               params.inBuffer[ 0 ].tensorStride
+         );
+         LineIterator< TPO > out1(
+               static_cast< TPO* >( params.outBuffer[ 0 ].buffer ),
+               bufferLength,
+               params.outBuffer[ 0 ].stride,
+               params.outBuffer[ 0 ].tensorLength,
+               params.outBuffer[ 0 ].tensorStride
+         );
+         LineIterator< TPO > out2(
+               static_cast< TPO* >( params.outBuffer[ 1 ].buffer ),
+               bufferLength,
+               params.outBuffer[ 1 ].stride,
+               params.outBuffer[ 1 ].tensorLength,
+               params.outBuffer[ 1 ].tensorStride
+         );
+         LineIterator< TPO > out3(
+               static_cast< TPO* >( params.outBuffer[ 2 ].buffer ),
+               bufferLength,
+               params.outBuffer[ 2 ].stride,
+               params.outBuffer[ 2 ].tensorLength,
+               params.outBuffer[ 2 ].tensorStride
+         );
+         do {
+            func_( in.begin(), out1.begin(), out2.begin(), out3.begin() );
+         } while( ++in, ++out1, ++out2, ++out3 );
+      }
+   private:
+      F const& func_;
+};
+
+template< typename TPI, typename TPO = TPI, typename F >
+std::unique_ptr< Framework::ScanLineFilter > NewTensorTriadicScanLineFilter( F func ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorTriadicScanLineFilter< TPI, TPO, F >( func ));
+}
+
+
 } // namespace
 
 void DotProduct( Image const& lhs, Image const& rhs, Image& out ) {
@@ -267,8 +355,8 @@ void Eigenvalues( Image const& in, Image& out ) {
    if( n == 1 ) {
       out = in;
    //} else if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
-   //   out = in.Diagonal();
-   //   TODO: This will only work if we can sort the values.
+      // out = in.Diagonal();
+      // TODO: This will only work if we can sort the values.
    } else {
       DataType intype = in.DataType();
       DataType inbuffertype;
@@ -303,7 +391,47 @@ void Eigenvalues( Image const& in, Image& out ) {
 }
 
 void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
-
+   DIP_THROW_IF( !in.Tensor().IsSquare(), "The eigenvalues can only be computed from square matrices" );
+   dip::uint n = in.TensorRows();
+   if( n == 1 ) {
+      out = in;
+      eigenvectors.ReForge( in, Option::AcceptDataTypeChange::DO_ALLOW );
+      eigenvectors.Fill( 1.0 );
+   //} else if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
+      // out = in.Diagonal();
+      // TODO: This will only work if we can sort the values.
+   } else {
+      DataType intype = in.DataType();
+      DataType inbuffertype;
+      DataType outbuffertype;
+      DataType outtype;
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      if(( in.TensorShape() == Tensor::Shape::SYMMETRIC_MATRIX ) && ( !intype.IsComplex() )) {
+         scanLineFilter = NewTensorDyadicScanLineFilter< dfloat, dfloat >(
+               [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { SymmetricEigenDecomposition( n, pin, pout1, pout2 ); }
+         );
+         inbuffertype = outbuffertype = DT_DFLOAT;
+         outtype = intype;
+      } else {
+         if( intype.IsComplex() ) {
+            scanLineFilter = NewTensorDyadicScanLineFilter< dcomplex, dcomplex >(
+                  [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { EigenDecomposition( n, pin, pout1, pout2 ); }
+            );
+            inbuffertype = outbuffertype = DT_DCOMPLEX;
+         } else {
+            scanLineFilter = NewTensorDyadicScanLineFilter< dfloat, dcomplex >(
+                  [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { EigenDecomposition( n, pin, pout1, pout2 ); }
+            );
+            inbuffertype = DT_DFLOAT;
+            outbuffertype = DT_DCOMPLEX;
+         }
+         outtype = DataType::SuggestComplex( intype );
+      }
+      ImageRefArray outar{ out, eigenvectors };
+      Framework::Scan( { in }, outar, { inbuffertype }, { outbuffertype, outbuffertype }, { outtype, outtype },
+                       { n, n * n }, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
+      eigenvectors.ReshapeTensor( n, n );
+   }
 }
 
 void Inverse( Image const& in, Image& out ) {
@@ -376,6 +504,28 @@ void SingularValues( Image const& in, Image& out ) {
 }
 
 void SingularValueDecomposition( Image const& in, Image& U, Image& out, Image& V ) {
+   dip::uint m = in.TensorRows();
+   dip::uint n = in.TensorColumns();
+   dip::uint p = std::min( m, n );
+   DataType outtype = DataType::SuggestFlex( in.DataType() );
+   DataType buffertype;
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   if( outtype.IsComplex() ) {
+      scanLineFilter = NewTensorTriadicScanLineFilter< dcomplex, dcomplex >(
+            [ m, n ]( auto const& pin, auto const& pout1, auto const& pout2, auto const& pout3 ) { SingularValueDecomposition( m, n, pin, pout1, pout2, pout3 ); }
+      );
+      buffertype = DT_DCOMPLEX;
+   } else {
+      scanLineFilter = NewTensorTriadicScanLineFilter< dfloat, dfloat >(
+            [ m, n ]( auto const& pin, auto const& pout1, auto const& pout2, auto const& pout3 ) { SingularValueDecomposition( m, n, pin, pout1, pout2, pout3 ); }
+      );
+      buffertype = DT_DFLOAT;
+   }
+   ImageRefArray outar{ out, U, V };
+   Framework::Scan( { in }, outar, { buffertype }, { buffertype, buffertype, buffertype }, { outtype, outtype, outtype },
+                    { p, m * p, n * p }, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
+   U.ReshapeTensor( m, p );
+   V.ReshapeTensor( n, p );
 }
 
 
