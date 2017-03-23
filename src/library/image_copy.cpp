@@ -420,7 +420,7 @@ void Image::Copy( Image const& src ) {
    // Otherwise, make nD loop
    //std::cout << "dip::Image::Copy: nD loop\n";
    dip::uint processingDim = Framework::OptimalProcessingDim( src );
-   auto it = dip::GenericJointImageIterator( src, *this, processingDim );
+   auto it = GenericJointImageIterator( src, *this, processingDim );
    dip::sint srcStride = src.strides_[ processingDim ];
    dip::sint destStride = strides_[ processingDim ];
    dip::uint nPixels = sizes_[ processingDim ];
@@ -443,27 +443,27 @@ void Image::Copy( Image const& src ) {
 
 
 //
-void ExpandTensor(
-      Image const& src,
-      Image& dest
-) {
-   DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
-   if( src.Tensor().HasNormalOrder() ) {
-      dest.Copy( src );
-   } else {
-      // Prepare data
-      std::vector< dip::sint > lookUpTable = src.Tensor().LookUpTable();
-      Tensor tensor{ src.Tensor().Rows(), src.Tensor().Columns() };
-      Image source = src.QuickCopy(); // preserve the image in case `&src`==`&dest`.
-      PixelSize pixelSize = src.PixelSize();
+void Image::ExpandTensor() {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   if( !Tensor().HasNormalOrder() ) {
+      //if( TensorShape() == dip::Tensor::Shape::ROW_MAJOR_MATRIX ) {
+         // Shuffle the data
+         // TODO
+         // return
+      //}
+      // Copy the data into a new segment
+      std::vector< dip::sint > lookUpTable = Tensor().LookUpTable();
+      dip::Tensor tensor{ Tensor().Rows(), Tensor().Columns() };
+      dip::PixelSize pixelSize = pixelSize_;
+      Image source = QuickCopy();
       // Prepare output image
-      dest.ReForge( source.Sizes(), tensor.Elements(), source.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
-      dest.ReshapeTensor( tensor );
-      dest.SetPixelSize( pixelSize );
+      ReForge( source.Sizes(), tensor.Elements(), source.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
+      tensor_ = tensor;
+      pixelSize_ = pixelSize;
       // A single CopyBuffer call if both images have simple strides and same dimension order
       dip::uint sstride_d;
       void* porigin_d;
-      dest.GetSimpleStrideAndOrigin( sstride_d, porigin_d );
+      GetSimpleStrideAndOrigin( sstride_d, porigin_d );
       if( porigin_d ) {
          //std::cout << "dip::ExpandTensor: destination has simple strides\n";
          dip::uint sstride_s;
@@ -471,7 +471,7 @@ void ExpandTensor(
          source.GetSimpleStrideAndOrigin( sstride_s, porigin_s );
          if( porigin_s ) {
             //std::cout << "dip::ExpandTensor: source has simple strides\n";
-            if( dest.HasSameDimensionOrder( source )) {
+            if( HasSameDimensionOrder( source )) {
                // No need to loop
                //std::cout << "dip::ExpandTensor: no need to loop\n";
                CopyBuffer(
@@ -480,11 +480,11 @@ void ExpandTensor(
                      static_cast< dip::sint >( sstride_s ),
                      source.TensorStride(),
                      porigin_d,
-                     dest.DataType(),
+                     DataType(),
                      static_cast< dip::sint >( sstride_d ),
-                     dest.TensorStride(),
-                     dest.NumberOfPixels(),
-                     dest.TensorElements(),
+                     TensorStride(),
+                     NumberOfPixels(),
+                     TensorElements(),
                      lookUpTable
                );
                return;
@@ -494,15 +494,15 @@ void ExpandTensor(
       // Otherwise, make nD loop
       //std::cout << "dip::ExpandTensor: nD loop\n";
       dip::uint processingDim = Framework::OptimalProcessingDim( source );
-      auto it = dip::GenericJointImageIterator( source, dest, processingDim );
-      DataType srcDataType = source.DataType();
+      auto it = GenericJointImageIterator( source, *this, processingDim );
+      dip::DataType srcDataType = source.DataType();
       dip::sint srcStride = source.Stride( processingDim );
       dip::sint srcTStride = source.TensorStride();
-      DataType destDataType = dest.DataType();
-      dip::sint destStride = dest.Stride( processingDim );
-      dip::sint destTStride = dest.TensorStride();
-      dip::uint nPixels = dest.Size( processingDim );
-      dip::uint nTElems = dest.TensorElements();
+      dip::DataType destDataType = DataType();
+      dip::sint destStride = Stride( processingDim );
+      dip::sint destTStride = TensorStride();
+      dip::uint nPixels = Size( processingDim );
+      dip::uint nTElems = TensorElements();
       do {
          CopyBuffer(
                it.InPointer(),

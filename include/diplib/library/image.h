@@ -1540,6 +1540,16 @@ class Image {
       /// \brief Extracts the tensor elements along the diagonal. The image must be forged.
       Image Diagonal() const;
 
+      /// \brief Extracts the tensor elements along the given row. The image must be forged and the tensor
+      /// representation must be full (i.e. no symmetric or triangular matrices). Use `dip::Image::ExpandTensor`
+      /// to obtain a full representation.
+      Image TensorRow( dip::uint index ) const;
+
+      /// \brief Extracts the tensor elements along the given column. The image must be forged and the tensor
+      /// representation must be full (i.e. no symmetric or triangular matrices). Use `dip::Image::ExpandTensor`
+      /// to obtain a full representation.
+      Image TensorColumn( dip::uint index ) const;
+
       /// \brief Extracts the pixel at the given coordinates. The image must be forged.
       Image At( UnsignedArray const& coords ) const;
 
@@ -1718,6 +1728,15 @@ class Image {
       /// types have the same size and it is not shared with other images.
       /// If the data segment is replaced, strides are set to normal.
       void Convert( dip::DataType dt );
+
+      /// \brief Expands the image's tensor, such that the tensor representation is a column-major matrix.
+      ///
+      /// If the image has a non-full tensor representation (diagonal, symmetric, triangular), or
+      /// a row-major ordering, then the data segment is replaced by a new one. Otherwise, nothing is done.
+      ///
+      /// After calling this method, the object always has `dip::Tensor::HasNormalOrder` equal `true`.
+      /// This method simplifies manipulating tensors by normalizing their storage.
+      void ExpandTensor();
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
@@ -2142,21 +2161,22 @@ inline Image Copy( Image const& src ) {
 ///
 /// If the tensor representation in `src` is one of those that do not save symmetric or zero values, to save space,
 /// a new data segment will be allocated for `dest`, where the tensor representation is a column-major matrix
-/// (`dest` will have `dip::Tensor::HasNormalOrder` be true).
+/// (`dest` will have `dip::Tensor::HasNormalOrder` be true). Otherwise, `dest` will share the data segment with `src`.
 /// This function simplifies manipulating tensors by normalizing their storage.
 ///
-/// Creates an identical copy, if the tensor representation is scalar, vector, or a column-major matrix. Note that
-/// this copy does not share data, a new data segment is always used, unless `src` and `dest` are the same object.
-///
-/// If `dest` is protected, it will keep its data type, and the data will be converted as usual to the destination
-/// data type.
-///
-/// \see Copy, Convert
-void ExpandTensor( Image const& src, Image& dest );
+/// \see dip::Copy, dip::Convert, dip::Image::ExpandTensor
+inline void ExpandTensor( Image const& src, Image& dest ) {
+   if( &src == &dest ) {
+      dest.ExpandTensor();
+   } else {
+      dest = src;
+      dest.ExpandTensor();
+   }
+}
 
 inline Image ExpandTensor( Image const& src ) {
-   Image dest;
-   ExpandTensor( src, dest );
+   Image dest = src;
+   dest.ExpandTensor();
    return dest;
 }
 

@@ -72,6 +72,60 @@ Image Image::Diagonal() const {
    return out;
 }
 
+Image Image::TensorRow( dip::uint index ) const {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint M = tensor_.Rows();
+   dip::uint N = tensor_.Columns();
+   DIP_THROW_IF( index >= M, E::INDEX_OUT_OF_RANGE );
+   Image out = *this;
+   out.tensor_.SetShape( Tensor::Shape::ROW_VECTOR, 1, N );
+   switch( tensor_.TensorShape() ) {
+      case Tensor::Shape::COL_VECTOR:
+      case Tensor::Shape::COL_MAJOR_MATRIX:
+         out.origin_ = Pointer( index * tensorStride_ );
+         out.tensorStride_ = M * tensorStride_;
+         break;
+      case Tensor::Shape::ROW_VECTOR:
+      case Tensor::Shape::ROW_MAJOR_MATRIX:
+         out.origin_ = Pointer( index * N * tensorStride_ );
+         // stride doesn't change
+         break;
+      default:
+         DIP_THROW( "Cannot obtain row for non-full tensor representation." );
+   }
+   if( out.tensor_.Elements() != tensor_.Elements() ) {
+      out.ResetColorSpace();
+   }
+   return out;
+}
+
+Image Image::TensorColumn( dip::uint index ) const {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint M = tensor_.Rows();
+   dip::uint N = tensor_.Columns();
+   DIP_THROW_IF( index >= N, E::INDEX_OUT_OF_RANGE );
+   Image out = *this;
+   out.tensor_.SetShape( Tensor::Shape::COL_VECTOR, M, 1 );
+   switch( tensor_.TensorShape() ) {
+      case Tensor::Shape::COL_VECTOR:
+      case Tensor::Shape::COL_MAJOR_MATRIX:
+         out.origin_ = Pointer( index * M * tensorStride_ );
+         // stride doesn't change
+         break;
+      case Tensor::Shape::ROW_VECTOR:
+      case Tensor::Shape::ROW_MAJOR_MATRIX:
+         out.origin_ = Pointer( index * tensorStride_ );
+         out.tensorStride_ = N * tensorStride_;
+         break;
+      default:
+         DIP_THROW( "Cannot obtain row for non-full tensor representation." );
+   }
+   if( out.tensor_.Elements() != tensor_.Elements() ) {
+      out.ResetColorSpace();
+   }
+   return out;
+}
+
 Image Image::At( UnsignedArray const& coords ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
