@@ -22,11 +22,119 @@
 
 namespace dip {
 
+namespace {
+
+#ifdef DIP__ENABLE_UNICODE
+
+constexpr char const micron[] = "\u00B5";
+static_assert( sizeof( micron ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
+
+constexpr char const cdot[] = "\u00B7";
+static_assert( sizeof( cdot ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
+
+constexpr char const superN[] = "\u207B";
+static_assert( sizeof( superN ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
+constexpr char const super0[] = "\u2070";
+static_assert( sizeof( super0 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
+constexpr char const super1[] = "\u00B9";
+static_assert( sizeof( super1 ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
+constexpr char const super2[] = "\u00B2";
+static_assert( sizeof( super2 ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
+constexpr char const super3[] = "\u00B3";
+static_assert( sizeof( super3 ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
+constexpr char const super4[] = "\u2074";
+static_assert( sizeof( super4 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
+constexpr char const super5[] = "\u2075";
+static_assert( sizeof( super5 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
+constexpr char const super6[] = "\u2076";
+static_assert( sizeof( super6 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
+constexpr char const super7[] = "\u2077";
+static_assert( sizeof( super7 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
+constexpr char const super8[] = "\u2078";
+static_assert( sizeof( super8 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
+constexpr char const super9[] = "\u2079";
+static_assert( sizeof( super9 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
+
+#else
+
+constexpr char const cdot[] = ".";
+
+#endif
+
+} // namespace
+
+// --- READING UNITS ---
+
+namespace {
+
+bool ParsePower( dip::String const& string, dip::uint& ii, int& power ) {
+   power = 0;
+   if( string[ ii ] == '^' ) {
+      ++ii;
+      dip::uint n = 0;
+      if( string[ ii + n ] == '-' ) { ++n; }
+      while( isdigit( string[ ii + n ] )) { ++n; }
+      if( n == 0 ) {
+         return false;
+      }
+      power = std::atoi( &( string[ ii ] ) );
+      ii += n;
+   }
+#ifdef DIP__ENABLE_UNICODE
+   else {
+      bool neg = false;
+      if(( string[ ii ] == superN[ 0 ] ) && ( string[ ii + 1 ] == superN[ 1 ] ) && ( string[ ii + 2 ] == superN[ 2 ] )) {
+         neg = true;
+         ii += 3;
+      }
+      int p = 0;
+      while( true ) {
+         if(( string[ ii ] == super0[ 0 ] ) && ( string[ ii + 1 ] == super0[ 1 ] ) && ( string[ ii + 2 ] == super0[ 2 ] )) {
+            p *= 10;
+            ii += 3;
+         } else if(( string[ ii ] == super1[ 0 ] ) && ( string[ ii + 1 ] == super1[ 1 ] )) {
+            p = p * 10 + 1;
+            ii += 2;
+         } else if(( string[ ii ] == super2[ 0 ] ) && ( string[ ii + 1 ] == super2[ 1 ] )) {
+            p = p * 10 + 2;
+            ii += 2;
+         } else if(( string[ ii ] == super3[ 0 ] ) && ( string[ ii + 1 ] == super3[ 1 ] )) {
+            p = p * 10 + 3;
+            ii += 2;
+         } else if(( string[ ii ] == super4[ 0 ] ) && ( string[ ii + 1 ] == super4[ 1 ] ) && ( string[ ii + 2 ] == super4[ 2 ] )) {
+            p = p * 10 + 4;
+            ii += 3;
+         } else if(( string[ ii ] == super5[ 0 ] ) && ( string[ ii + 1 ] == super5[ 1 ] ) && ( string[ ii + 2 ] == super5[ 2 ] )) {
+            p = p * 10 + 5;
+            ii += 3;
+         } else if(( string[ ii ] == super6[ 0 ] ) && ( string[ ii + 1 ] == super6[ 1 ] ) && ( string[ ii + 2 ] == super6[ 2 ] )) {
+            p = p * 10 + 6;
+            ii += 3;
+         } else if(( string[ ii ] == super7[ 0 ] ) && ( string[ ii + 1 ] == super7[ 1 ] ) && ( string[ ii + 2 ] == super7[ 2 ] )) {
+            p = p * 10 + 7;
+            ii += 3;
+         } else if(( string[ ii ] == super8[ 0 ] ) && ( string[ ii + 1 ] == super8[ 1 ] ) && ( string[ ii + 2 ] == super8[ 2 ] )) {
+            p = p * 10 + 8;
+            ii += 3;
+         } else if(( string[ ii ] == super9[ 0 ] ) && ( string[ ii + 1 ] == super9[ 1 ] ) && ( string[ ii + 2 ] == super9[ 2 ] )) {
+            p = p * 10 + 9;
+            ii += 3;
+         } else {
+            power = neg ? -p : p;
+            return !( neg && ( p == 0 ));
+         }
+      }
+   }
+#endif
+   return true;
+}
+
 // Parses a part of a string respresentation of units.
-static bool ParseComponent( dip::String const& string, dip::uint& ii, Units::BaseUnits& bu, int& power ) {
-   // <component> = <units>[^<N>]
+bool ParseComponent( dip::String const& string, dip::uint& ii, Units::BaseUnits& bu, int& power ) {
+   // <component> = <units>[ { ^<N> | <n> } ]
    // <units> = {m|g|s|A|K|cd|rad|px}
    // <N> = small integer
+   // <n> = small integer, written in UTF-8 superscript numbers
    switch( string[ ii ] ) {
       case 'm': bu = Units::BaseUnits::LENGTH; break;
       case 'g': bu = Units::BaseUnits::MASS; break;
@@ -47,48 +155,56 @@ static bool ParseComponent( dip::String const& string, dip::uint& ii, Units::Bas
          return false;
    }
    ++ii;
-   power = 1;
-   if( string[ ii ] == '^' ) {
-      ++ii;
-      dip::uint n = 0;
-      if( string[ ii + n ] == '-' ) { ++n; }
-      while( isdigit( string[ ii + n ] )) { ++n; }
-      if( n == 0 ) { return false; }
-      power = std::atoi( &(string[ ii ] ));
-      ii += n;
+   if( !ParsePower( string, ii, power )) {
+      return false;
+   }
+   if( power == 0 ) { // This means that there was no power, we take power == 1
+      power = 1;
    }
    return true;
 }
+
+bool ExpectCDot( dip::String const& string, dip::uint& ii ) {
+   if( string[ ii ] == '.' ) {
+      ++ii;
+      return true;
+   }
+#ifdef DIP__ENABLE_UNICODE
+   if(( string[ ii ] == cdot[ 0 ] ) && ( string[ ii + 1 ] == cdot[ 1 ] )) {
+      ii += 2;
+      return true;
+   }
+#endif
+   return false;
+}
+
+} // namespace
 
 // Constructs a new Units using a string representation of those units.
 Units::Units( dip::String const& string ) {
    power_.fill( 0 );
    // Parse the string.
-   // Format: [10^<3N>.][<prefix>]<component>[{.|/}<component>]
+   // Format: [ '10' { '^' <3N> | <3n> } <cdot> ][ <prefix> ] <component> [ { <cdot> | '/' } <component> ]
    // <component> = <units>[^<N>]
    // <prefix> = {f|p|n|u|m|k|M|G|T|P|E}
    // <units> = {m|g|s|A|K|cd|rad|px}
-   // <N> = [-] small integer
-   // <3N> = [-] small integer multiple of 3
+   // <N> = small integer
+   // <n> = small integer, written in Unicode superscript numbers
+   // <3N> = small integer multiple of 3
+   // <3n> = small integer multiple of 3, written in Unicode superscript numbers
+   // <cdot> = '.' or Unicode MIDDLE DOT character
    // note that "m" is the only difficult component to distinguish: if it's followed by a letter, it's the prefix!
    // TODO: accept more general strings, to let users type something? e.g. allow prefixes on any component?
    // TODO: allow alternative units? e.g. inches, Hz, ...
    constexpr char const* errorMessage = "Ill-formed Units string";
    dip::uint ii = 0;
-   dip::uint N = string.size();
-   if( ( string[ ii ] == '1' ) && ( N > 5 ) ) {
-      // Starts with 10^<N>.
-      DIP_THROW_IF( string[ ii + 1 ] != '0' || string[ ii + 2 ] != '^', errorMessage );
-      ii += 3;
-      dip::uint n = 0;
-      if( string[ ii + n ] == '-' ) { ++n; }
-      while( isdigit( string[ ii + n ] ) ) { ++n; }
-      DIP_THROW_IF( n == 0, errorMessage );
-      int power = std::atoi( & ( string[ ii ] ) );
-      DIP_THROW_IF( ( power / 3 ) * 3 != power, errorMessage );
-      ii += n;
-      DIP_THROW_IF( string[ ii ] != '.', errorMessage );
-      ++ii;
+   if(( string[ ii ] == '1' ) && ( string[ ii + 1 ] == '0' )) {
+      // Starts with 10^{<N>|<n>}.
+      ii += 2;
+      int power;
+      DIP_THROW_IF( !ParsePower( string, ii, power ), errorMessage );
+      DIP_THROW_IF(( power == 0 ) || (( power % 3 ) != 0 ), errorMessage );
+      DIP_THROW_IF( !ExpectCDot( string, ii ), errorMessage );
       power_[ int( BaseUnits::THOUSANDS ) ] += power / 3;
    }
    int thousands = 0;
@@ -100,6 +216,10 @@ Units::Units( dip::String const& string ) {
          thousands = -3; ++ii; break;
       case 'u':
          thousands = -2; ++ii; break;
+#ifdef DIP__ENABLE_UNICODE
+      case micron[ 0 ]:
+         if( string[ ii + 1 ] == micron[ 1 ] ) { thousands = -2; ii += 2; } break; // the micron character takes 2 bytes
+#endif
       case 'm':
          if( isalpha( string[ ii + 1 ] ) ) { thousands = -1; ++ii; } break; // could be mili or meter
       case 'k':
@@ -124,23 +244,55 @@ Units::Units( dip::String const& string ) {
    power_[ int( bu ) ] += power;
    while( string[ ii ] != '\0' ) {
       bool neg = string[ ii ] == '/';
-      DIP_THROW_IF( !neg && ( string[ ii ] != '.' ), errorMessage );
-      ++ii;
+      if( neg ) {
+         ++ii;
+      } else {
+         DIP_THROW_IF( !ExpectCDot( string, ii ), errorMessage );
+      }
       DIP_THROW_IF( !ParseComponent( string, ii, bu, power ), errorMessage );
       power_[ int( bu ) ] += neg ? -power : power;
    }
 }
 
+// --- WRITING UNITS ---
+
+namespace {
+
+std::string PowerAsString( dip::sint p ) {
+#ifdef DIP__ENABLE_UNICODE
+   std::string str = std::to_string( p );
+   std::string out;
+   for( auto c : str ) {
+      switch( c ) {
+         case '-': out += superN; break;
+         case '0': out += super0; break;
+         case '1': out += super1; break;
+         case '2': out += super2; break;
+         case '3': out += super3; break;
+         case '4': out += super4; break;
+         case '5': out += super5; break;
+         case '6': out += super6; break;
+         case '7': out += super7; break;
+         case '8': out += super8; break;
+         case '9': out += super9; break;
+         default: out += c; break; // This shouldn't happen
+      }
+   }
+   return out;
+#else
+   return "^" + std::to_string( p );
+#endif
+}
+
 // Appends a unit with a positive power to the string `out`.
-static bool WritePositivePower( dip::String& out, const char* s, dip::sint8 p, bool prefix ) {
+bool WritePositivePower( dip::String& out, const char* s, dip::sint p, bool prefix ) {
    if( p > 0 ) {
       if( prefix ) {
-         out += '.'; // TODO: output 'cdot' character?
+         out += cdot;
       }
       out += s;
       if( p != 1 ) {
-         out += '^';
-         out += std::to_string( p );
+         out += PowerAsString( p );
       }
       prefix = true;
    }
@@ -148,7 +300,7 @@ static bool WritePositivePower( dip::String& out, const char* s, dip::sint8 p, b
 }
 
 // Appends a unit with a negative power to the string `out`.
-static bool WriteNegativePower( dip::String& out, const char* s, dip::sint8 p, bool prefix ) {
+bool WriteNegativePower( dip::String& out, const char* s, dip::sint p, bool prefix ) {
    if( p < 0 ) {
       if( prefix ) {
          out += '/';
@@ -156,13 +308,14 @@ static bool WriteNegativePower( dip::String& out, const char* s, dip::sint8 p, b
       }
       out += s;
       if( p != 1 ) {
-         out += '^';
-         out += std::to_string( p );
+         out += PowerAsString( p );
       }
       prefix = true;
    }
    return prefix;
 }
+
+} // namespace
 
 // Creates a string representation of the units.
 dip::String Units::String() const {
@@ -180,16 +333,34 @@ dip::String Units::String() const {
          p = ( power_[ 0 ] - n * p ) * 3;     // dip::PhysicalQuantity should make sure that p is 0 here, using AdjustThousands()
       }
       if( p != 0 ) {
-         out += dip::String( "10^" ) + std::to_string( p );
+         out += "10" + PowerAsString( p );
          prefix = true;
       }
       if( n != 0 ) {
          if( prefix ) {
-            out += '.'; // TODO: output 'cdot' character?
+            out += cdot;
          }
-         constexpr char const* prefixes = "fpnum kMGTPE"; // TODO: output 'mu' character instead of 'u'?
+#ifdef DIP__ENABLE_UNICODE
+         switch( n ) {
+            case -5: out += "f"; break;
+            case -4: out += "p"; break;
+            case -3: out += "n"; break;
+            case -2: out += micron; break; // This is two bytes, so we can't do the trick we do when plain ASCII is enabled.
+            case -1: out += "m"; break;
+            default: // Should not happen!
+            case 0: break;
+            case 1: out += "k"; break;
+            case 2: out += "M"; break;
+            case 3: out += "G"; break;
+            case 4: out += "T"; break;
+            case 5: out += "P"; break;
+            case 6: out += "E"; break;
+         }
+#else
+         constexpr char const* prefixes = "fpnum kMGTPE";
          out += prefixes[ n + 5 ];
-         prefix = false; // next thing should not output a '.' first.
+#endif
+         prefix = false; // next thing should not output a cdot first.
       }
    }
    // We write out positive powers first
@@ -224,6 +395,66 @@ dip::String Units::String() const {
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
    // We only test the string conversion functions here
    // Other workings are tested at the same time as dip::PhysicalQuantity below
+
+#ifdef DIP__ENABLE_UNICODE
+
+   dip::Units f = dip::Units::Meter();
+   DOCTEST_CHECK( ( f ).String() == "m" );
+   DOCTEST_CHECK( ( f * f ).String() == "m\u00B2" );
+   DOCTEST_CHECK( ( f * f * f ).String() == "m\u00B3" );
+   DOCTEST_CHECK( ( f * f * f * f ).String() == "m\u2074" );
+   DOCTEST_CHECK( ( dip::Units() / f ).String() == "m\u207B\u00B9" );
+   DOCTEST_CHECK( ( dip::Units() / f / f ).String() == "m\u207B\u00B2" );
+   DOCTEST_CHECK( ( dip::Units() / f / f / f ).String() == "m\u207B\u00B3" );
+   DOCTEST_CHECK( ( dip::Units() / f / f / f / f ).String() == "m\u207B\u2074" );
+   DOCTEST_CHECK( f == dip::Units( "m" ));
+   DOCTEST_CHECK( f * f == dip::Units( "m\u00B2" ));
+   DOCTEST_CHECK( f * f * f == dip::Units( "m\u00B3" ));
+   DOCTEST_CHECK( f * f * f * f == dip::Units( "m\u2074" ));
+   DOCTEST_CHECK( dip::Units() / f == dip::Units( "m\u207B\u00B9" ));
+   DOCTEST_CHECK( dip::Units() / f / f == dip::Units( "m\u207B\u00B2" ));
+   DOCTEST_CHECK( dip::Units() / f / f / f == dip::Units( "m\u207B\u00B3" ));
+   DOCTEST_CHECK( dip::Units() / f / f / f / f == dip::Units( "m\u207B\u2074" ));
+
+   dip::Units g = dip::Units::Second();
+   DOCTEST_CHECK( ( f / g ).String() == "m/s" );
+   DOCTEST_CHECK( ( f / g / g ).String() == "m/s\u00B2" );
+   DOCTEST_CHECK( ( f / g / g / g ).String() == "m/s\u00B3" );
+   DOCTEST_CHECK( ( f / g / g / g / g ).String() == "m/s\u2074" );
+   DOCTEST_CHECK( ( g / f ).String() == "s/m" );
+   DOCTEST_CHECK( ( g / f / f ).String() == "s/m\u00B2" );
+   DOCTEST_CHECK( ( g * g / f ).String() == "s\u00B2/m" );
+   DOCTEST_CHECK( ( g * f ).String() == "m\u00B7s" );
+   DOCTEST_CHECK( f / g == dip::Units( "m/s" ));
+   DOCTEST_CHECK( f / g / g == dip::Units( "m/s\u00B2" ));
+   DOCTEST_CHECK( f / g / g / g == dip::Units( "m/s\u00B3" ));
+   DOCTEST_CHECK( f / g / g / g / g == dip::Units( "m/s\u2074" ));
+   DOCTEST_CHECK( g / f == dip::Units( "s/m" ));
+   DOCTEST_CHECK( g / f / f == dip::Units( "s/m\u00B2" ));
+   DOCTEST_CHECK( g * g / f == dip::Units( "s\u00B2/m" ));
+   DOCTEST_CHECK( g * f == dip::Units( "m\u00B7s" ));
+
+   DOCTEST_CHECK( ( dip::Units::Millimeter() ).String() == "mm" );
+   DOCTEST_CHECK( ( dip::Units::Millimeter() * dip::Units::Millimeter() ).String() == "mm\u00B2" );
+   DOCTEST_CHECK( ( dip::Units::Millimeter() * dip::Units::Meter() ).String() == "10\u00B3\u00B7mm\u00B2" );
+   DOCTEST_CHECK( ( dip::Units::Kilometer() * dip::Units::Meter() ).String() == "10\u00B3\u00B7m\u00B2" );
+   DOCTEST_CHECK( dip::Units::Millimeter() == dip::Units( "mm" ));
+   DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Millimeter() == dip::Units( "mm\u00B2" ));
+   DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Meter() == dip::Units( "10\u00B3\u00B7mm\u00B2" ));
+   DOCTEST_CHECK( dip::Units::Kilometer() * dip::Units::Meter() == dip::Units( "10\u00B3\u00B7m\u00B2" ));
+
+   DOCTEST_CHECK( ( dip::Units( "10\u2076\u00B7mm\u00B2" )).String() == "m\u00B2" );
+   DOCTEST_CHECK( ( dip::Units( "km/s" )).String() == "km/s" );
+   DOCTEST_CHECK( ( dip::Units( "km\u00B7cd\u00B7rad\u00B7px" )).String() == "km\u00B7cd\u00B7rad\u00B7px" );
+   DOCTEST_CHECK( ( dip::Units( "km\u00B7cd/rad\u00B7px" )).String() == "km\u00B7cd\u00B7px/rad" );
+   DOCTEST_CHECK( ( dip::Units( "10\u00B3\u00B7km\u207B\u00B9\u00B7cd\u207B\u00B2/K" )).String() == "m\u207B\u00B9/K/cd\u00B2" );
+
+   DOCTEST_CHECK( ( dip::Units( "10^6.mm^2" )).String() == "m\u00B2" );
+   DOCTEST_CHECK( ( dip::Units( "km.cd.rad.px" )).String() == "km\u00B7cd\u00B7rad\u00B7px" );
+   DOCTEST_CHECK( ( dip::Units( "km.cd/rad.px" )).String() == "km\u00B7cd\u00B7px/rad" );
+   DOCTEST_CHECK( ( dip::Units( "10^3.km^-1.cd^-2/K" )).String() == "m\u207B\u00B9/K/cd\u00B2" );
+
+#else
 
    dip::Units f = dip::Units::Meter();
    DOCTEST_CHECK( ( f ).String() == "m" );
@@ -275,6 +506,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
    DOCTEST_CHECK( ( dip::Units( "km.cd.rad.px" )).String() == "km.cd.rad.px" );
    DOCTEST_CHECK( ( dip::Units( "km.cd/rad.px" )).String() == "km.cd.px/rad" );
    DOCTEST_CHECK( ( dip::Units( "10^3.km^-1.cd^-2/K" )).String() == "m^-1/K/cd^2" );
+
+#endif
+
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::PhysicalQuantity class") {

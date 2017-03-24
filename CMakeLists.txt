@@ -33,7 +33,7 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN hidden)
 # This optimizes things for GCC and CLANG, but presumably shouldn't be here for MSVC++.
 set(CMAKE_CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
 
 # Do we have __PRETTY_FUNCTION__ ?
 include(CheckCXXSourceCompiles)
@@ -60,6 +60,12 @@ set(DIP_ENABLE_DOCTEST ON CACHE BOOL "Turn off to not include doctest.h in the l
 if(DIP_ENABLE_DOCTEST)
    include_directories(dependencies/doctest)
    add_definitions(-DDIP__ENABLE_DOCTEST -DDOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
+endif()
+
+# UFT-8 or plain old ASCII?
+set(DIP_ENABLE_UNICODE ON CACHE BOOL "Enable UTF-8 encoded strings, if disabled, some text output will look more 'primitive'")
+if(DIP_ENABLE_UNICODE)
+   add_definitions(-DDIP__ENABLE_UNICODE)
 endif()
 
 # Eigen

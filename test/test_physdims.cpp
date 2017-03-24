@@ -126,6 +126,20 @@ int main() {
    std::cout << "1 s/m^2 = " << (g / f / f).Normalize() << std::endl;
    std::cout << "1 s^2/m = " << (g * g / f).Normalize() << std::endl;
 
+   std::cout << "10^6.m^2 = " << dip::Units( "10^6.mm^2" ) << std::endl;
+   std::cout << "km/s = " << dip::Units( "km/s" ) << std::endl;
+   std::cout << "km.cd.rad.px = " << dip::Units( "km.cd.rad.px" ) << std::endl;
+   std::cout << "km.cd/rad.px = " << dip::Units( "km.cd/rad.px" ) << std::endl;
+   std::cout << "10^3.km^-1.cd^-2/K = " << dip::Units( "10^3.km^-1.cd^-2/K" ) << std::endl;
+
+#ifdef DIP__ENABLE_UNICODE
+   std::cout << "10\u2076\u00B7mm\u00B2 = " << dip::Units( "10\u2076\u00B7mm\u00B2" ) << std::endl;
+   std::cout << "km/s = " << dip::Units( "km/s" ) << std::endl;
+   std::cout << "km\u00B7cd\u00B7rad\u00B7px = " << dip::Units( "km\u00B7cd\u00B7rad\u00B7px" ) << std::endl;
+   std::cout << "km\u00B7cd/rad\u00B7px = " << dip::Units( "km\u00B7cd/rad\u00B7px" ) << std::endl;
+   std::cout << "10\u00B3\u00B7km\u207B\u00B9\u00B7cd\u207B\u00B2/K = " << dip::Units( "10\u00B3\u00B7km\u207B\u00B9\u00B7cd\u207B\u00B2/K" ) << std::endl;
+#endif
+
    dip::PixelSize sz;
    std::cout << "Default-constructed PixelSize: ";
    PrintPixelSize( sz );
