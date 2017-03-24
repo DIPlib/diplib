@@ -37,8 +37,8 @@ struct dip__GaussIIRParams {
    dip::uint derivative;
    dfloat sigma;
    dip::uint border;
-   std::array< dip::sint, 6 > iir_order_num;
-   std::array< dip::sint, 6 > iir_order_den;
+   std::array< dip::uint, 6 > iir_order_num;
+   std::array< dip::uint, 6 > iir_order_den;
    std::array< dfloat, MAX_IIR_ORDER > a1;
    std::array< dfloat, MAX_IIR_ORDER > a2;
    std::array< dfloat, MAX_IIR_ORDER > b1;
@@ -394,22 +394,22 @@ dip__GaussIIRParams dip__FillGaussIIRParams(
             break;
       }
 
-      params.iir_order_num.fill( -1 );
+      params.iir_order_num.fill( MAX_IIR_ORDER + 1 );
       for( dip::uint jj = 0; jj < MAX_IIR_ORDER; ++jj ) {
-         if(( params.a1[ jj ] != 0.0 ) && ( params.iir_order_num[ 1 ] == -1 )) {
+         if(( params.a1[ jj ] != 0.0 ) && ( params.iir_order_num[ 1 ] > MAX_IIR_ORDER )) {
             params.iir_order_num[ 1 ] = jj;
          }
-         if(( params.a2[ jj ] != 0.0 ) && ( params.iir_order_num[ 4 ] == -1 )) {
+         if(( params.a2[ jj ] != 0.0 ) && ( params.iir_order_num[ 4 ] > MAX_IIR_ORDER )) {
             params.iir_order_num[ 4 ] = jj;
          }
       }
 
       for( dip::uint jj = MAX_IIR_ORDER; jj > 0; ) {
          --jj;
-         if(( params.a1[ jj ] != 0.0 ) && ( params.iir_order_num[ 2 ] == -1 )) {
+         if(( params.a1[ jj ] != 0.0 ) && ( params.iir_order_num[ 2 ] > MAX_IIR_ORDER )) {
             params.iir_order_num[ 2 ] = jj;
          }
-         if(( params.a2[ jj ] != 0.0 ) && ( params.iir_order_num[ 5 ] == -1 )) {
+         if(( params.a2[ jj ] != 0.0 ) && ( params.iir_order_num[ 5 ] > MAX_IIR_ORDER )) {
             params.iir_order_num[ 5 ] = jj;
          }
       }
@@ -475,8 +475,8 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
 
          auto const& orderMA = fParams.iir_order_num;
          auto const& orderAR = fParams.iir_order_den;
-         dip::sint order1 = std::max( orderAR[ 0 ], orderMA[ 0 ] );
-         dip::sint order2 = std::max( orderAR[ 3 ], orderMA[ 3 ] );
+         dip::uint order1 = std::max( orderAR[ 0 ], orderMA[ 0 ] );
+         dip::uint order2 = std::max( orderAR[ 3 ], orderMA[ 3 ] );
          bool copy_forward = false;
          bool copy_backward = false;
          if( ( orderMA[ 0 ] == 0 ) && ( a1[ 0 ] == 1.0 ) ) {
@@ -575,7 +575,7 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
 
          // Compute the first order1 values for arbitrary coeffitients a & b
          dfloat val = 0.0;
-         for( dip::sint jj = orderMA[ 1 ]; jj <= orderMA[ 2 ]; ++jj ) {
+         for( dip::uint jj = orderMA[ 1 ]; jj <= orderMA[ 2 ]; ++jj ) {
             val += ( a1[ jj ] * p0[ orderMA[ 2 ] - jj ] );
          }
          r1 = val / ( 1.0 + b1[ 1 ] + b1[ 2 ] + b1[ 3 ] + b1[ 4 ] + b1[ 5 ] );
@@ -585,13 +585,13 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
          for( ; ii < length; ++ii ) {
             if( !copy_forward ) {
                val = 0.0;
-               for( dip::sint jj = orderMA[ 1 ]; jj <= orderMA[ 2 ]; ++jj ) {
+               for( dip::uint jj = orderMA[ 1 ]; jj <= orderMA[ 2 ]; ++jj ) {
                   val += ( a1[ jj ] * p0[ ii - jj ] );
                }
             } else {
                val = p0[ ii ];
             }
-            for( dip::sint jj = orderAR[ 1 ]; jj <= orderAR[ 2 ]; ++jj ) {
+            for( dip::uint jj = orderAR[ 1 ]; jj <= orderAR[ 2 ]; ++jj ) {
                val -= ( b1[ jj ] * p1[ ii - jj ] );
             }
             p1[ ii ] = val;
@@ -686,7 +686,7 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
 
          // Compute the first order2 values for arbitrary coefficients a & b
          val = 0.0;
-         for( dip::sint jj = orderMA[ 4 ]; jj <= orderMA[ 5 ]; ++jj ) {
+         for( dip::uint jj = orderMA[ 4 ]; jj <= orderMA[ 5 ]; ++jj ) {
             val += ( a2[ jj ] * p1[ length - 1 - orderMA[ 5 ] + jj ] );
          }
          r1 = val / ( 1.0 + b2[ 1 ] + b2[ 2 ] + b2[ 3 ] + b2[ 4 ] + b2[ 5 ] );
@@ -698,7 +698,7 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
             --ii;
             if( !copy_backward ) {
                val = 0.0;
-               for( dip::sint jj = orderMA[ 4 ]; jj <= orderMA[ 5 ]; ++jj ) {
+               for( dip::uint jj = orderMA[ 4 ]; jj <= orderMA[ 5 ]; ++jj ) {
                   val += ( a2[ jj ] * p1[ ii + jj ] );
                }
                val = c * val;
@@ -706,7 +706,7 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
                val = c * p1[ ii ];
             }
 
-            for( dip::sint jj = orderAR[ 4 ]; jj <= orderAR[ 5 ]; ++jj ) {
+            for( dip::uint jj = orderAR[ 4 ]; jj <= orderAR[ 5 ]; ++jj ) {
                val -= ( b2[ jj ] * p2[ ii + jj ] );
             }
             p2[ ii ] = val;
