@@ -30,11 +30,9 @@ class lab2grey : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return "Lab"; }
       virtual String OutputColorSpace() const override { return "grey"; }
-      virtual dip::uint Cost() const override { return 100; }
+      virtual dip::uint Cost() const override { return 101; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            // TODO: configure white point
-            constexpr dfloat Yn = 1.00000;
             dfloat L = input[ 0 ];
             dfloat y;
             if( L > kappa * epsilon ) {
@@ -43,7 +41,7 @@ class lab2grey : public ColorSpaceConverter {
             } else {
                y = L / kappa;
             }
-            output[ 0 ] = y * Yn * 255;
+            output[ 0 ] = y * 255; // Yn == 1.000 by definition
          } while( ++input, ++output );
       }
 };
@@ -52,12 +50,10 @@ class grey2lab : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return "grey"; }
       virtual String OutputColorSpace() const override { return "Lab"; }
-      virtual dip::uint Cost() const override { return 100; }
+      virtual dip::uint Cost() const override { return 3; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            // TODO: configure white point
-            constexpr dfloat Yn = 1.00000;
-            dfloat y = input[ 0 ] / ( 255 * Yn );
+            dfloat y = input[ 0 ] / 255;  // Yn == 1.000 by definition
             output[ 0 ] = y > epsilon
                           ? 116.0 * std::cbrt( y ) - 16.0
                           : kappa * y;
@@ -71,12 +67,9 @@ class lab2xyz : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return "Lab"; }
       virtual String OutputColorSpace() const override { return "XYZ"; }
+      virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            // TODO: configure white point
-            constexpr dfloat Xn = 0.95046;
-            constexpr dfloat Yn = 1.00000;
-            constexpr dfloat Zn = 1.08875;
             dfloat fy = ( input[ 0 ] + 16.0 ) / 116.0;
             dfloat fx = input[ 1 ] / 500.0 + fy;
             dfloat fz = fy - input[ 2 ] / 200.0;
@@ -89,26 +82,32 @@ class lab2xyz : public ColorSpaceConverter {
             dfloat z = fz > epsilon1_3
                        ? fz * fz * fz
                        : ( 116.0 * fz - 16.0 ) / kappa;
-            output[ 0 ] = x * Xn;
-            output[ 1 ] = y * Yn;
-            output[ 2 ] = z * Zn;
+            output[ 0 ] = x * Xn_;
+            output[ 1 ] = y * Yn_;
+            output[ 2 ] = z * Zn_;
          } while( ++input, ++output );
       }
+      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
+         Xn_ = whitePoint[ 0 ] + whitePoint[ 3 ] + whitePoint[ 6 ];
+         Yn_ = whitePoint[ 1 ] + whitePoint[ 4 ] + whitePoint[ 7 ];
+         Zn_ = whitePoint[ 2 ] + whitePoint[ 5 ] + whitePoint[ 8 ];
+      }
+   private:
+      dfloat Xn_ = 0.9504700;
+      dfloat Yn_ = 1.0000000;
+      dfloat Zn_ = 1.0888299;
 };
 
 class xyz2lab : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return "XYZ"; }
       virtual String OutputColorSpace() const override { return "Lab"; }
+      virtual dip::uint Cost() const override { return 3; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            // TODO: configure white point
-            constexpr dfloat Xn = 0.95046;
-            constexpr dfloat Yn = 1.00000;
-            constexpr dfloat Zn = 1.08875;
-            dfloat x = input[ 0 ] / Xn;
-            dfloat y = input[ 1 ] / Yn;
-            dfloat z = input[ 2 ] / Zn;
+            dfloat x = input[ 0 ] / Xn_;
+            dfloat y = input[ 1 ] / Yn_;
+            dfloat z = input[ 2 ] / Zn_;
             dfloat fx = x > epsilon
                         ? std::cbrt( x )
                         : ( kappa * x + 16.0 ) / 116.0;
@@ -123,6 +122,15 @@ class xyz2lab : public ColorSpaceConverter {
             output[ 2 ] = 200.0 * ( fy - fz );
          } while( ++input, ++output );
       }
+      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
+         Xn_ = whitePoint[ 0 ] + whitePoint[ 3 ] + whitePoint[ 6 ];
+         Yn_ = whitePoint[ 1 ] + whitePoint[ 4 ] + whitePoint[ 7 ];
+         Zn_ = whitePoint[ 2 ] + whitePoint[ 5 ] + whitePoint[ 8 ];
+      }
+   private:
+      dfloat Xn_ = 0.9504700;
+      dfloat Yn_ = 1.0000000;
+      dfloat Zn_ = 1.0888299;
 };
 
 class luv2grey : public lab2grey {
@@ -141,22 +149,19 @@ class luv2xyz : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return "Luv"; }
       virtual String OutputColorSpace() const override { return "XYZ"; }
+      virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            // TODO: configure white point
-            constexpr dfloat Xn = 0.95046;
-            constexpr dfloat Yn = 1.00000;
-            constexpr dfloat Zn = 1.08875;
-            dfloat sum = Xn + 15 * Yn + 3 * Zn;
-            dfloat un = 4 * Xn / sum;
-            dfloat vn = 9 * Yn / sum;
+            dfloat sum = Xn_ + 15 * Yn_ + 3 * Zn_;
+            dfloat un = 4 * Xn_ / sum;
+            dfloat vn = 9 * Yn_ / sum;
             dfloat L = input[ 0 ];
             dfloat Y;
             if( L > kappa * epsilon ) {
                Y = ( L + 16.0 ) / 116.0;
-               Y = Y * Y * Y * Yn;
+               Y = Y * Y * Y * Yn_;
             } else {
-               Y = L / kappa * Yn;
+               Y = L / kappa * Yn_;
             }
             dfloat a = 52 / 3.0 * L / ( input[ 1 ] + 13 * L * un );
             dfloat d = Y * 39 * L / ( input[ 2 ] + 13 * L * vn );
@@ -166,25 +171,31 @@ class luv2xyz : public ColorSpaceConverter {
             output[ 2 ] = X * ( a - 1.0/3.0 ) - 5 * Y;
          } while( ++input, ++output );
       }
+      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
+         Xn_ = whitePoint[ 0 ] + whitePoint[ 3 ] + whitePoint[ 6 ];
+         Yn_ = whitePoint[ 1 ] + whitePoint[ 4 ] + whitePoint[ 7 ];
+         Zn_ = whitePoint[ 2 ] + whitePoint[ 5 ] + whitePoint[ 8 ];
+      }
+   private:
+      dfloat Xn_ = 0.9504700;
+      dfloat Yn_ = 1.0000000;
+      dfloat Zn_ = 1.0888299;
 };
 
 class xyz2luv : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return "XYZ"; }
       virtual String OutputColorSpace() const override { return "Luv"; }
+      virtual dip::uint Cost() const override { return 3; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            // TODO: configure white point
-            constexpr dfloat Xn = 0.95046;
-            constexpr dfloat Yn = 1.00000;
-            constexpr dfloat Zn = 1.08875;
-            dfloat sum = Xn + 15 * Yn + 3 * Zn;
-            dfloat un = 4 * Xn / sum;
-            dfloat vn = 9 * Yn / sum;
+            dfloat sum = Xn_ + 15 * Yn_ + 3 * Zn_;
+            dfloat un = 4 * Xn_ / sum;
+            dfloat vn = 9 * Yn_ / sum;
             sum = input[ 0 ] + 15 * input[ 1 ] + 3 * input[ 2 ];
             dfloat u = 4 * input[ 0 ] / sum;
             dfloat v = 9 * input[ 1 ] / sum;
-            dfloat y = input[ 1 ] / Yn;
+            dfloat y = input[ 1 ] / Yn_;
             dfloat L = y > epsilon
                           ? 116.0 * std::cbrt( y ) - 16.0
                           : kappa * y;
@@ -193,6 +204,15 @@ class xyz2luv : public ColorSpaceConverter {
             output[ 2 ] = 13.0 * L * ( v - vn );
          } while( ++input, ++output );
       }
+      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
+         Xn_ = whitePoint[ 0 ] + whitePoint[ 3 ] + whitePoint[ 6 ];
+         Yn_ = whitePoint[ 1 ] + whitePoint[ 4 ] + whitePoint[ 7 ];
+         Zn_ = whitePoint[ 2 ] + whitePoint[ 5 ] + whitePoint[ 8 ];
+      }
+   private:
+      dfloat Xn_ = 0.9504700;
+      dfloat Yn_ = 1.0000000;
+      dfloat Zn_ = 1.0888299;
 };
 
 class lch2grey : public lab2grey {
@@ -211,6 +231,7 @@ class lch2lab : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return "LCH"; }
       virtual String OutputColorSpace() const override { return "Lab"; }
+      virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
@@ -225,6 +246,7 @@ class lab2lch : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return "Lab"; }
       virtual String OutputColorSpace() const override { return "LCH"; }
+      virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];

@@ -40,43 +40,6 @@ namespace dip {
 /// \addtogroup infrastructure
 /// \{
 
-/*
-
-/// \brief An object to encapsulate the white point array.
-///
-/// It defines how R, G and B are to be combined to form X, Y and Z:
-///
-/// ```
-///     XYZ = WhitePoint * RGB
-///     RGB = inv(WhitePoint) * XYZ
-/// ```
-class WhitePoint {
-
-   public:
-
-      using MatrixValues = std::array< dfloat, 9 >;
-
-      /// \brief The default white point is the Standard Illuminant D65.
-      WhitePoint() :
-            matrix_{{ 0.412453, 0.212671, 0.019334, 0.357580, 0.715160, 0.119193, 0.180423, 0.072169, 0.950227 }} {};
-      /// \brief Any 3x3 array can be used as white point (column-major).
-      WhitePoint( MatrixValues m ) {
-         std::copy( m.begin(), m.end(), matrix_.begin() );
-      }
-
-      /// \brief Get the 3x3 white point array, for conversion from RGB to XYZ.
-      MatrixValues const& Matrix() { return matrix_; }
-
-      /// \brief Get the inverse of the 3x3 white point array, for conversion from XYZ to RGB.
-      MatrixValues InverseMatrix();
-
-   private:
-
-      MatrixValues matrix_;
-};
-
-*/
-
 /// \brief Base class for conversion between two color spaces.
 ///
 /// Classes that convert between color spaces must derive from this and overload all the pure virtual functions.
@@ -152,7 +115,6 @@ using ColorSpaceConverterPointer = std::unique_ptr< ColorSpaceConverter >;
 /// "LCH"    | "L*C*H*" | Lightness-Chroma-Hue. Computed from Lab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
 //
 // TODO: Also known: Piet's color space: art. What to do with this? Is it even published?
-// TODO: Add Serra's HSI.
 class ColorSpaceManager {
 
    public:
@@ -189,7 +151,7 @@ class ColorSpaceManager {
       }
 
       /// \brief Gets a pointer to a color space converter object registered with this `%ColorSpaceManager`.
-      /// Use this to access the object to modfiy it, for example configure a parameter.
+      /// Use this to access the object to modify it, for example configure a parameter.
       ColorSpaceConverter* GetColorSpaceConverter(
             String const& inputColorSpaceName,
             String const& outputColorSpaceName
@@ -251,6 +213,35 @@ class ColorSpaceManager {
          Convert( in, out, colorSpaceName );
          return out;
       }
+
+      /// \brief The white point array, a 3x3 array stored in column-major format.
+      ///
+      /// It defines how R, G and B are to be combined to form X, Y and Z:
+      /// ```
+      ///     XYZ = WhitePoint * RGB
+      ///     RGB = inv(WhitePoint) * XYZ
+      /// ```
+      ///
+      /// The default white point is the Standard Illuminant D65. Configure the `dip::ColorSpaceManager`
+      /// object through its `SetWhitePoint` method.
+      using WhitePointMatrix = std::array< dfloat, 9 >;
+
+      /// \brief The CIE Standard Illuminant D65 (noon daylight, color temperature is about 6500 K).
+      static constexpr WhitePointMatrix IlluminantD65{{ 0.4124564, 0.2126729, 0.0193339, 0.3575761, 0.7151521, 0.1191920, 0.1804375, 0.0721750, 0.9503040 }};
+
+      /// \brief The CIE Standard Illuminant D50 (morning or evening daylight, color temperature is about 5000 K).
+      static constexpr WhitePointMatrix IlluminantD50{{ 0.4360747, 0.2225045, 0.0139322, 0.3850649, 0.7168786, 0.0971045, 0.1430804, 0.0606169, 0.7141733 }};
+
+      /// \brief Configure the conversion functions to use the given white point array.
+      ///
+      /// This will configure each of the converter functions that use the white point information
+      /// (grey <-> RGB <-> XYZ <-> Lab, Luv). The default white point is the Standard Illuminant D65
+      /// (`dip::ColorSpaceManager::IlluminantD65`).
+      ///
+      /// Functions that convert to/from grey and only need the sum of the Y-row of the matrix are not
+      /// configured. These functions assume that the row adds up to 1.0. For consistency, make sure that
+      /// any matrix you pass here has a middle row that adds up to 1.0.
+      void SetWhitePoint( WhitePointMatrix const& whitePointMatrix );
 
    private:
 

@@ -43,15 +43,22 @@ class grey2xyz : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return "grey"; }
       virtual String OutputColorSpace() const override { return "XYZ"; }
-      virtual dip::uint Cost() const override { return 100; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            // TODO: configure white point
-            output[ 0 ] = input[ 0 ] * 0.95046 / 255;
-            output[ 1 ] = input[ 0 ] * 1.00000 / 255;
-            output[ 2 ] = input[ 0 ] * 1.08875 / 255;
+            output[ 0 ] = input[ 0 ] * Xn_ / 255;
+            output[ 1 ] = input[ 0 ] * Yn_ / 255;
+            output[ 2 ] = input[ 0 ] * Zn_ / 255;
          } while( ++input, ++output );
       }
+      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
+         Xn_ = whitePoint[ 0 ] + whitePoint[ 3 ] + whitePoint[ 6 ];
+         Yn_ = whitePoint[ 1 ] + whitePoint[ 4 ] + whitePoint[ 7 ];
+         Zn_ = whitePoint[ 2 ] + whitePoint[ 5 ] + whitePoint[ 8 ];
+      }
+   private:
+      dfloat Xn_ = 0.9504700;
+      dfloat Yn_ = 1.0000000;
+      dfloat Zn_ = 1.0888299;
 };
 
 class rgb2xyz : public ColorSpaceConverter {
@@ -60,12 +67,16 @@ class rgb2xyz : public ColorSpaceConverter {
       virtual String OutputColorSpace() const override { return "XYZ"; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            // TODO: configure white point
-            output[ 0 ] = ( input[ 0 ] * 0.412453 + input[ 1 ] * 0.357580 + input[ 2 ] * 0.180423 ) / 255;
-            output[ 1 ] = ( input[ 0 ] * 0.212671 + input[ 1 ] * 0.715160 + input[ 2 ] * 0.072169 ) / 255;
-            output[ 2 ] = ( input[ 0 ] * 0.019334 + input[ 1 ] * 0.119193 + input[ 2 ] * 0.950227 ) / 255;
+            output[ 0 ] = ( input[ 0 ] * matrix_[ 0 ] + input[ 1 ] * matrix_[ 3 ] + input[ 2 ] * matrix_[ 6 ] ) / 255;
+            output[ 1 ] = ( input[ 0 ] * matrix_[ 1 ] + input[ 1 ] * matrix_[ 4 ] + input[ 2 ] * matrix_[ 7 ] ) / 255;
+            output[ 2 ] = ( input[ 0 ] * matrix_[ 2 ] + input[ 1 ] * matrix_[ 5 ] + input[ 2 ] * matrix_[ 8 ] ) / 255;
          } while( ++input, ++output );
       }
+      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
+         matrix_ = whitePoint;
+      }
+   private:
+      ColorSpaceManager::WhitePointMatrix matrix_{{ 0.4124564, 0.2126729, 0.0193339, 0.3575761, 0.7151521, 0.1191920, 0.1804375, 0.0721750, 0.9503040 }};
 };
 
 class xyz2rgb : public ColorSpaceConverter {
@@ -74,12 +85,16 @@ class xyz2rgb : public ColorSpaceConverter {
       virtual String OutputColorSpace() const override { return "RGB"; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            // TODO: configure white point
-            output[ 0 ] = ( input[ 0 ] *  3.240479 + input[ 1 ] * -1.537150 + input[ 2 ] * -0.498535 ) * 255;
-            output[ 1 ] = ( input[ 0 ] * -0.969256 + input[ 1 ] *  1.875992 + input[ 2 ] *  0.041556 ) * 255;
-            output[ 2 ] = ( input[ 0 ] *  0.055648 + input[ 1 ] * -0.204043 + input[ 2 ] *  1.057311 ) * 255;
+            output[ 0 ] = ( input[ 0 ] * invMatrix_[ 0 ] + input[ 1 ] * invMatrix_[ 3 ] + input[ 2 ] * invMatrix_[ 6 ] ) * 255;
+            output[ 1 ] = ( input[ 0 ] * invMatrix_[ 1 ] + input[ 1 ] * invMatrix_[ 4 ] + input[ 2 ] * invMatrix_[ 7 ] ) * 255;
+            output[ 2 ] = ( input[ 0 ] * invMatrix_[ 2 ] + input[ 1 ] * invMatrix_[ 5 ] + input[ 2 ] * invMatrix_[ 8 ] ) * 255;
          } while( ++input, ++output );
       }
+      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
+         Inverse( 3, whitePoint.data(), invMatrix_.data() );
+      }
+   private:
+      ColorSpaceManager::WhitePointMatrix invMatrix_{{ 3.2404550, -0.9692666, 0.0556434, -1.5371391, 1.8760113, -0.2040259, -0.4985316, 0.0415561, 1.0572253 }};
 };
 
 class yxy2xyz : public ColorSpaceConverter {

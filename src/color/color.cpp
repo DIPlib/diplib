@@ -32,6 +32,11 @@
 
 namespace dip {
 
+// These need an address in memory
+constexpr ColorSpaceManager::WhitePointMatrix ColorSpaceManager::IlluminantD65;
+constexpr ColorSpaceManager::WhitePointMatrix ColorSpaceManager::IlluminantD50;
+
+
 ColorSpaceManager::ColorSpaceManager() {
    // grey (or gray)
    Define( "grey", 1 );
@@ -122,17 +127,17 @@ ColorSpaceManager::ColorSpaceManager() {
 
 namespace {
 
-struct ConvertionStep {
+struct ConversionStep {
    ColorSpaceConverter const* converterFunction;
    dip::uint nOutputChannels;
    bool last = false;
 };
 
-using ConvertionStepArray = std::vector< ConvertionStep >;
+using ConversionStepArray = std::vector< ConversionStep >;
 
 class ConverterLineFilter : public Framework::ScanLineFilter {
    public:
-      ConverterLineFilter( ConvertionStepArray const& steps ) : steps_( steps ) {
+      ConverterLineFilter( ConversionStepArray const& steps ) : steps_( steps ) {
          maxIntermediateChannels = steps[ 0 ].nOutputChannels;
          for( dip::uint ii = 1; ii < steps.size() - 1; ++ii ) {
             maxIntermediateChannels = std::max( maxIntermediateChannels, steps[ 1 ].nOutputChannels );
@@ -148,7 +153,6 @@ class ConverterLineFilter : public Framework::ScanLineFilter {
          dip::uint nPixels = params.bufferLength;
          if( nBuffers > 0 ) {
             if( buffer1_[ thread ].size() != nPixels * maxIntermediateChannels ) {
-               // TODO: we might need 0, 1 or 2 buffers.
                buffer1_[ thread ].resize( nPixels * maxIntermediateChannels );
                if( nBuffers > 1 ) {
                   buffer2_[ thread ].resize( nPixels * maxIntermediateChannels );
@@ -181,7 +185,7 @@ class ConverterLineFilter : public Framework::ScanLineFilter {
          }
       }
    private:
-      ConvertionStepArray const& steps_;
+      ConversionStepArray const& steps_;
       dip::uint maxIntermediateChannels;
       dip::uint nBuffers;
       std::vector< std::vector< dfloat >> buffer1_; // one for each thread
@@ -221,7 +225,7 @@ void ColorSpaceManager::Convert(
       DIP_ASSERT( path.size() > 1 ); // It should have at least start and stop on it!
       // Collect information about the converter functions along the path
       dip::uint nSteps = path.size() - 1;
-      ConvertionStepArray steps( nSteps );
+      ConversionStepArray steps( nSteps );
       //std::cout << "Found path: ";
       for( dip::uint ii = 0; ii < nSteps; ++ii ) {
          //std::cout << colorSpaces_[ path[ ii ] ].name << " -> ";
@@ -300,11 +304,23 @@ std::vector< dip::uint > ColorSpaceManager::FindPath( dip::uint start, dip::uint
    return path;
 }
 
+void ColorSpaceManager::SetWhitePoint( WhitePointMatrix const& whitePointMatrix ) {
+   static_cast< rgb2grey* >( GetColorSpaceConverter( "RGB",  "grey" ) )->SetWhitePoint( whitePointMatrix );
+   static_cast< grey2xyz* >( GetColorSpaceConverter( "grey", "XYZ"  ) )->SetWhitePoint( whitePointMatrix );
+   static_cast< rgb2xyz*  >( GetColorSpaceConverter( "RGB",  "XYZ"  ) )->SetWhitePoint( whitePointMatrix );
+   static_cast< xyz2rgb*  >( GetColorSpaceConverter( "XYZ",  "RGB"  ) )->SetWhitePoint( whitePointMatrix );
+   static_cast< xyz2lab*  >( GetColorSpaceConverter( "XYZ",  "Lab"  ) )->SetWhitePoint( whitePointMatrix );
+   static_cast< lab2xyz*  >( GetColorSpaceConverter( "Lab",  "XYZ"  ) )->SetWhitePoint( whitePointMatrix );
+   static_cast< xyz2luv*  >( GetColorSpaceConverter( "XYZ",  "Luv"  ) )->SetWhitePoint( whitePointMatrix );
+   static_cast< luv2xyz*  >( GetColorSpaceConverter( "Luv",  "XYZ"  ) )->SetWhitePoint( whitePointMatrix );
+}
+
 } // namespace dip
 
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
+#include "diplib/math.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    dip::ColorSpaceManager csm;
@@ -327,6 +343,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    csm.Convert( img, out, "LCH" ); // This is the longest path we have so far.
    DOCTEST_CHECK( out.ColorSpace() == "LCH" );
    DOCTEST_CHECK( out.TensorElements() == 3 );
+   csm.SetWhitePoint( dip::ColorSpaceManager::IlluminantD50 );
+   csm.Convert( out, img, "RGB" );
+   csm.SetWhitePoint( dip::ColorSpaceManager::IlluminantD65 );
+   csm.Convert( img, img, "LCH" );
+   DOCTEST_CHECK_FALSE( dip::Count( img = out ) == 0 );
 }
 
 #endif // DIP__ENABLE_DOCTEST

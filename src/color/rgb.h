@@ -29,20 +29,24 @@ class rgb2grey : public ColorSpaceConverter {
       virtual dip::uint Cost() const override { return 100; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            // TODO: configure white point
-            // We use the second row (Y) of the XYZ matrix here
-            output[ 0 ] = input[ 0 ] * 0.212671 +
-                          input[ 1 ] * 0.715160 +
-                          input[ 2 ] * 0.072169;
+            output[ 0 ] = input[ 0 ] * Y_[ 0 ] +
+                          input[ 1 ] * Y_[ 1 ] +
+                          input[ 2 ] * Y_[ 2 ];
          } while( ++input, ++output );
       }
+      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
+         Y_[ 0 ] = whitePoint[ 1 ];
+         Y_[ 1 ] = whitePoint[ 4 ];
+         Y_[ 2 ] = whitePoint[ 7 ];
+      }
+   private:
+      std::array< dfloat, 3 > Y_{{ 0.2126729, 0.7151521, 0.072175 }}; // The Y row of the XYZ matrix
 };
 
 class grey2rgb : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return "grey"; }
       virtual String OutputColorSpace() const override { return "RGB"; }
-      virtual dip::uint Cost() const override { return 100; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
             output[ 0 ] = input[ 0 ];
