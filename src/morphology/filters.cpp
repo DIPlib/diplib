@@ -77,7 +77,7 @@ void Tophat(
             } else {
                Image c_in = in.QuickCopy();
                Dilation( c_in, out, se, boundaryCondition );
-               Subtract( out, c_in, out, out.DataType() );
+               out -= c_in;
             }
             break;
          case EdgeType::TEXTURE:
@@ -88,7 +88,7 @@ void Tophat(
             } else {
                Image c_in = in.QuickCopy();
                Closing( c_in, out, se, boundaryCondition );
-               Subtract( out, c_in, out, out.DataType() );
+               out -= c_in;
             }
             break;
          case EdgeType::OBJECT:
@@ -96,7 +96,7 @@ void Tophat(
                Image tmp;
                Erosion( in, tmp, se, boundaryCondition );
                Dilation( tmp, out, se, boundaryCondition );
-               Subtract( out, tmp, out, out.DataType() );
+               out -= tmp;
             } else {
                Image tmp;
                Dilation( in, tmp, se, boundaryCondition );
@@ -123,14 +123,14 @@ void MorphologicalThreshold(
          //case EdgeType::BOTH: // Annoying: CLion complains that the default case is useless, GCC complains that there's no default case.
             Dilation( in, tmp, se, boundaryCondition );
             Erosion( in, out, se, boundaryCondition );
-            Add( out, tmp, out, out.DataType() );
-            Divide( out, 2, out, out.DataType() );
+            out += tmp;
+            out /= 2;
             break;
          case EdgeType::TEXTURE:
             Closing( in, tmp, se, boundaryCondition );
             Opening( in, out, se, boundaryCondition );
-            Add( out, tmp, out, out.DataType() );
-            Divide( out, 2, out, out.DataType() );
+            out += tmp;
+            out /= 2;
             break;
          case EdgeType::OBJECT: {
             Image c_in = in.QuickCopy();
@@ -138,11 +138,11 @@ void MorphologicalThreshold(
             Erosion( tmp, out, se, boundaryCondition );
             Subtract( tmp, out, out, out.DataType() );
             Erosion( c_in, tmp, se, boundaryCondition );
-            Add( out, tmp, out, out.DataType() );
+            out += tmp;
             Dilation( tmp, tmp, se, boundaryCondition );
-            Subtract( out, tmp, out, out.DataType() );
-            Divide( out, 2, out, out.DataType() );
-            Add( c_in, out, out, out.DataType() );
+            out -= tmp;
+            out /= 2;
+            out += c_in;
             break;
          }
       }
@@ -165,26 +165,26 @@ void MorphologicalGist(
          //case EdgeType::BOTH: // Annoying: CLion complains that the default case is useless, GCC complains that there's no default case.
             Dilation( c_in, tmp, se, boundaryCondition );
             Erosion( c_in, out, se, boundaryCondition );
-            Add( tmp, out, out, out.DataType() );
-            Divide( out, 2, out, out.DataType() );
+            out += tmp;
+            out /= 2;
             Subtract( c_in, out, out, out.DataType() );
             break;
          case EdgeType::TEXTURE:
             Closing( c_in, tmp, se, boundaryCondition );
             Opening( c_in, out, se, boundaryCondition );
-            Add( tmp, out, out, out.DataType() );
-            Divide( out, 2, out, out.DataType() );
+            out += tmp;
+            out /= 2;
             Subtract( c_in, out, out, out.DataType() );
             break;
          case EdgeType::OBJECT:
             Dilation( c_in, tmp, se, boundaryCondition );
             Erosion( tmp, out, se, boundaryCondition );
-            Subtract( out, tmp, out, out.DataType() );
+            out -= tmp;
             Erosion( c_in, tmp, se, boundaryCondition );
-            Subtract( out, tmp, out, out.DataType() );
+            out -= tmp;
             Dilation( tmp, tmp, se, boundaryCondition );
-            Add( out, tmp, out, out.DataType() );
-            Divide( out, 2, out, out.DataType() );
+            out += tmp;
+            out /= 2;
             break;
       }
    DIP_END_STACK_TRACE
@@ -218,9 +218,9 @@ void MorphologicalRange(
             Erosion( tmp, out, se, boundaryCondition );
             Subtract( tmp, out, out, out.DataType() );
             Erosion( c_in, tmp, se, boundaryCondition );
-            Subtract( out, tmp, out, out.DataType() );
+            out -= tmp;
             Dilation( tmp, tmp, se, boundaryCondition );
-            Add( out, tmp, out, out.DataType() );
+            out += tmp;
             break;
          }
       }
@@ -243,13 +243,13 @@ void Lee(
          default:
          //case EdgeType::BOTH: // Annoying: CLion complains that the default case is useless, GCC complains that there's no default case.
             Dilation( c_in, out, se, boundaryCondition );
-            Subtract( out, c_in, out, out.DataType() );
+            out -= c_in;
             Erosion( c_in, out2, se, boundaryCondition );
             Subtract( c_in, out2, out2, out2.DataType() );
             break;
          case EdgeType::TEXTURE:
             Closing( c_in, out, se, boundaryCondition );
-            Subtract( out, c_in, out, out.DataType() );
+            out -= c_in;
             Opening( c_in, out2, se, boundaryCondition );
             Subtract( c_in, out2, out2, out2.DataType() );
             break;
@@ -260,7 +260,7 @@ void Lee(
             Subtract( tmp, out, out, out.DataType() );
             Erosion( c_in, tmp, se, boundaryCondition );
             Dilation( tmp, out2, se, boundaryCondition );
-            Subtract( out2, tmp, out2, out2.DataType() );
+            out2 -= tmp;
             break;
          }
       }
@@ -293,8 +293,8 @@ void MorphologicalSmoothing(
       Closing( tmp, tmp, se, boundaryCondition );
       Closing( in, out, se, boundaryCondition );
       Opening( out, out, se, boundaryCondition );
-      Add( tmp, out, out, out.DataType() );
-      Divide( out, 2, out, out.DataType() );
+      out += tmp;
+      out /= 2;
    } else {
       DIP_THROW( E::INVALID_FLAG );
    }
@@ -325,11 +325,11 @@ void MultiScaleMorphologicalGradient(
          first = false;
       } else {
          Erosion( eros, eros, se2, boundaryCondition );
-         Add( eros, out, out, out.DataType() );
+         out += eros;
       }
    }
-   Divide( out, static_cast< uint32 >( upperSize - lowerSize + 1 ), out.DataType() );
-   // About the cast to uint32: we can't make an Image with a dip::uint data type, so we need to cast to a posisble type.
+   out /= static_cast< uint32 >( upperSize - lowerSize + 1 );
+   // About the cast to uint32: we can't make an Image with a dip::uint data type, so we need to cast to a pixel type.
    // It doesn't really matter which type we pick, as long as there's no loss. We could pick uint8 here too, as it's
    // unlikely that anyone would use a filtersize larger than 255. But uint32 is the safest option, and it won't
    // affect performance, it's just a 0D image.
@@ -345,9 +345,9 @@ void MorphologicalLaplace(
    Image tmp;
    Dilation( c_in, tmp, se, boundaryCondition );
    Erosion( c_in, out, se, boundaryCondition );
-   Add( tmp, out, out, out.DataType() );
-   Divide( out, 2, out, out.DataType() );
-   Subtract( out, c_in, out, out.DataType() );
+   out += tmp;
+   out /= 2;
+   out -= c_in;
 }
 
 } // namespace dip

@@ -159,7 +159,7 @@ void DotProduct( Image const& lhs, Image const& rhs, Image& out ) {
    a.ReshapeTensor( 1, a.TensorElements() );
    Image b = rhs.QuickCopy();
    b.ReshapeTensor( b.TensorElements(), 1 );
-   Multiply( a, b, out, DataType::SuggestArithmetic( a.DataType(), b.DataType() ));
+   Multiply( a, b, out );
 }
 
 //

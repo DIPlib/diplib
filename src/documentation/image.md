@@ -710,8 +710,8 @@ function:
 The fourth argument specifies the data type of the output image. The computation
 is performed in that data type, meaning that both inputs are first cast to that
 data type (with clamping). The operation is then performed with saturation. This
-means that adding -5 and 10 in an unsigned integer format will not yield 5, but 0,
-because the -5 is first cast to unsigned. Also, adding 200 and 200 in an 8-bit
+means that adding -5 and 10 in an unsigned integer format will not yield 5, but 10,
+because the -5 is first cast to unsigned, becoming 0. Also, adding 200 and 200 in an 8-bit
 unsigned integer format will yield 255, there is no dropping of the higher-order
 bit as in standard C++ arithmetic.
 
@@ -795,17 +795,14 @@ There are three ways in which the pixel size can be used:
 2. The `dip::Image::PhysicalToPixels` method converts a filter size in physical
    units to one in pixels, suitable to pass to a filtering function. For example,
    to apply a filter with a sigma of 1 micron to an image:
-
    ```cpp
        dip::PhysicalQuantityArray fsz_phys{ 1 * dip::PhysicalQuantity::Micrometer() };
-       dip::FloatArray fsz_pix = img.PhysicalToPixels( fsz_phys );
-       dip::Filter( img, img, fsz_pix );
+       dip::Filter( img, img, img.PhysicalToPixels( fsz_phys ));
    ```
 
 3. The `dip::Image::PixelsToPhysical` method converts coordinates in pixels to
    coordinates in physical units. For example, to determine the position in
    physical units of a pixel w.r.t. the top left pixel:
-
    ```cpp
        dip::FloatArray pos_pix{ 40, 24 };
        dip::PhysicalQuantityArray pos_phys = img.PixelsToPhysical( pos_pix );

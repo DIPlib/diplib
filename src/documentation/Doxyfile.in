@@ -2005,7 +2005,11 @@ PREDEFINED             = DIP__ENABLE_ASSERT DIP__EXCEPTIONS_RECORD_STACK_TRACE
 # definition found in the source code.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-EXPAND_AS_DEFINED      = DIP__MONADIC_OPERATOR_FLEX DIP__MONADIC_OPERATOR_FLOAT DIP__MONADIC_OPERATOR_FLOAT_WITH_PARAM
+EXPAND_AS_DEFINED      = DIP__MONADIC_OPERATOR_FLEX \
+                         DIP__MONADIC_OPERATOR_FLOAT \
+                         DIP__MONADIC_OPERATOR_FLOAT_WITH_PARAM \
+                         DIP__DEFINE_ARITHMETIC_OVERLOADS \
+                         DIP__DEFINE_DYADIC_OVERLOADS
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES then doxygen's preprocessor will
 # remove all references to function-like macros that are alone on a line, have

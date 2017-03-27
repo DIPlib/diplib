@@ -41,7 +41,7 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     These frameworks are the core of most algorithms. They will be tested more thoroughly
     through the functions that use it. Not yet parallelized.
 
--   Arithmetic, bitwise and comparison operators (dependent on `dip::Framework::Scan`)
+-   Arithmetic, bitwise and comparison operators.
 
 -   Image iterators. Need to be tested more thoroughly, some features have not been
     tested at all...
@@ -54,28 +54,26 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     All measurement features have been ported, including the previously only defined in
     *DIPimage*.
 
--   The Fourier transform ( based on the code out of OpenCV, much faster than the code in
+-   The Fourier transform (based on the code out of OpenCV, much faster than the code in
     the old *DIPlib*).
 
 -   An increasing number of filters and operators based on the various frameworks.
 
+-   Color support. More color spaces could be added in time.
+    
 -   *MATLAB* interface.
 
--   *DIPimage* toolbox: The `dip_image` object is defined and has a few functions,
-    including all binary and unary operators in one MEX-file, and the `measure` function
-    in another MEX-file.
+-   *DIPimage* toolbox: The `dip_image` object is defined and has most methods defined.
+    The `dipshow` function works, but needs further testing and refinement.
+    More to be added as the corresponding *DIPlib* functions are implemented.
 
 ## What still needs to be done:
 
--   Test framework. We need to add many more tests for existing features.
+-   Test framework. We need to add more tests for the stuff that's already implemented.
 
 -   Image I/O. Has high priority because it will make testing other functions easier.
     Porting current code in dipIO to read TIFF and ICS files. Interfacing to
     BioFormats.
-
--   Color support. **Design work done**. Port existing *MATLAB* code within
-    current framework, and use `dip::Framework::Scan` to apply conversions to all
-    pixels in an image.
 
 -   Parallelization of frameworks. **Requires special expertise**. Decision:
     OpenMP or Intel TBB? The `dip::Framework::Scan` and `dip::Framework::Separable`
@@ -83,8 +81,8 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
 
 -   *MATLAB* interface and *DIPimage* toolbox. **Requires special expertise**.
     MEX-files for *DIPlib* functions to be added as these functions are written.
-    The `dip_measurement` class needs to be rewritten.
-    `dipshow` to use a *DIPlib* function to generate an RGB image for display.
+    The `dip_measurement` class needs to be rewritten. The `dipimage` GUI needs to
+    be ported, with function input parameter definitions to be provided by `dipmenus`.
 
 -   Python interface. **Requires special expertise**. Using one of the C++/Python
     interface generators. Write interactive image display and GUI as exists in
@@ -97,9 +95,8 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     (either as a view over the same data segment, or by copying the data). We'll
     do this for: OpenCV, ITK, SimpleITK. Any other libraries of interest?
 
--   Pixel-based algorithms built on `dip::Framework::Scan`: monadic and
-    dyadic operators (i.e. the stuff in the old dip_math.h), statistics, etc. This is
-    mostly porting old code to the new framework.
+-   Pixel-based algorithms built on `dip::Framework::Scan`: monadic and dyadic
+    operators, statistics, etc. This is mostly porting old code to the new framework.
     - dip_math.h (many already done)
     - dip_noise.h
     - dip_point.h

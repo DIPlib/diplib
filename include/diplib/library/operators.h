@@ -44,382 +44,149 @@ namespace dip {
 /// \brief Operators that work on a `dip::Image`, and the functions that implement their functionality.
 /// \{
 
+#define DIP__DEFINE_ARITHMETIC_OVERLOADS( name ) \
+void name( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
+inline void name( Image const& lhs, Image const& rhs, Image& out ) { name( lhs, rhs, out, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )); } \
+template< typename T > inline void name( Image const& lhs, T const& rhs, Image& out, DataType dt ) { name( lhs, Image{ rhs }, out, dt ); } \
+template< typename T > inline void name( Image const& lhs, T const& rhs, Image& out ) { name( lhs, Image{ rhs }, out ); } \
+template< typename T > inline Image name( Image const& lhs, T const& rhs, DataType dt ) { Image out; name( lhs, rhs, out, dt ); return out; } \
+template< typename T > inline Image name( Image const& lhs, T const& rhs ) { Image out; name( lhs, rhs, out ); return out; }
+
+#define DIP__DEFINE_DYADIC_OVERLOADS( name ) \
+void name( Image const& lhs, Image const& rhs, Image& out ); \
+template< typename T > inline void name( Image const& lhs, T const& rhs, Image& out ) { name( lhs, Image{ rhs }, out ); } \
+template< typename T > inline Image name( Image const& lhs, T const& rhs ) { Image out; name( lhs, rhs, out ); return out; }
+
 
 //
 // Functions for arithmetic operations
 //
 
-
 /// \brief Adds two images, sample-wise, with singleton expansion.
 ///
-/// Out will have the type `dt`.
+/// The image `out` will have the type `dt`, which defaults to
+/// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
-/// \see Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator+
-void Add(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out,
-      DataType dt
-);
-
-/// \brief Adds a constant to each sample in an image.
+/// `rhs` can be a scalar value of any of the supported pixel types.
 ///
-/// Out will have the type `dt`.
-///
-/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator+
-template< typename T >
-inline void Add(
-      Image const& lhs,
-      T const& rhs,
-      Image& out,
-      DataType dt
-) {
-   Add( lhs, Image{ rhs }, out, dt );
-}
-
-template< typename T >
-inline Image Add(
-      Image const& lhs,
-      T const& rhs,
-      DataType dt
-) {
-   Image out;
-   Add( lhs, rhs, out, dt );
-   return out;
-}
-
+/// \see Subtract, Multiply, MultiplySampleWise, Divide, Modulo, Power, operator+(Image const&, T const&)
+DIP__DEFINE_ARITHMETIC_OVERLOADS( Add )
 
 /// \brief Subtracts two images, sample-wise, with singleton expansion.
 ///
-/// Out will have the type `dt`.
+/// The image `out` will have the type `dt`, which defaults to
+/// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
-/// \see Add, Multiply, MultiplySampleWise, Divide, Modulo, operator-
-void Subtract(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out,
-      DataType dt
-);
-
-/// \brief Subtracts a constant from each sample in an image.
+/// `rhs` can be a scalar value of any of the supported pixel types.
 ///
-/// Out will have the type `dt`.
-///
-/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator-
-template< typename T >
-inline void Subtract(
-      Image const& lhs,
-      T const& rhs,
-      Image& out,
-      DataType dt
-) {
-   Subtract( lhs, Image{ rhs }, out, dt );
-}
-
-template< typename T >
-inline Image Subtract(
-      Image const& lhs,
-      T const& rhs,
-      DataType dt
-) {
-   Image out;
-   Subtract( lhs, rhs, out, dt );
-   return out;
-}
-
+/// \see Add, Multiply, MultiplySampleWise, Divide, Modulo, Power, operator-(Image const&, T const&)
+DIP__DEFINE_ARITHMETIC_OVERLOADS( Subtract )
 
 /// \brief Multiplies two images, pixel-wise, with singleton expansion.
 ///
 /// %Tensor dimensions
 /// of the two images must have identical inner dimensions, and the output at
 /// each pixel will be the matrix multiplication of the two input pixels.
-/// Out will have the type `dt`.
 ///
 /// To obtain a sample-wise multiplication, Use `dip::MultiplySampleWise` instead.
 ///
-/// \see Add, Subtract, MultiplySampleWise, Divide, Modulo, operator*
-void Multiply(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out,
-      DataType dt
-);
-
-/// \brief Multiplies each sample in an image by a constant.
+/// The image `out` will have the type `dt`, which defaults to
+/// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
-/// Out will have the type `dt`.
+/// `rhs` can be a scalar value of any of the supported pixel types.
 ///
-/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator*
-template< typename T >
-inline void Multiply(
-      Image const& lhs,
-      T const& rhs,
-      Image& out,
-      DataType dt
-) {
-   Multiply( lhs, Image{ rhs }, out, dt );
-}
-
-template< typename T >
-inline Image Multiply(
-      Image const& lhs,
-      T const& rhs,
-      DataType dt
-) {
-   Image out;
-   Multiply( lhs, rhs, out, dt );
-   return out;
-}
+/// \see Add, Subtract, MultiplySampleWise, Divide, Modulo, Power, operator*(Image const&, T const&)
+DIP__DEFINE_ARITHMETIC_OVERLOADS( Multiply )
 
 /// \brief Multiplies two images, sample-wise, with singleton expansion.
 ///
-/// Out will have the type `dt`.
+/// The image `out` will have the type `dt`, which defaults to
+/// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
-/// \see Add, Subtract, Multiply, Divide, Modulo
-void MultiplySampleWise(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out,
-      DataType dt
-);
-
-inline Image MultiplySampleWise(
-      Image const& lhs,
-      Image const& rhs,
-      DataType dt
-) {
-   Image out;
-   MultiplySampleWise( lhs, rhs, out, dt );
-   return out;
-}
-
+/// `rhs` can be a scalar value of any of the supported pixel types.
+///
+/// \see Add, Subtract, Multiply, Divide, Modulo, Power
+DIP__DEFINE_ARITHMETIC_OVERLOADS( MultiplySampleWise )
 
 /// \brief Divides two images, sample-wise, with singleton expansion.
 ///
-/// Out will have the type `dt`.
+/// The image `out` will have the type `dt`, which defaults to
+/// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
-/// \see Add, Subtract, Multiply, MultiplySampleWise, Modulo, operator/
-void Divide(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out,
-      DataType dt
-);
-
-/// \brief Divides each sample in an image by a constant.
+/// `rhs` can be a scalar value of any of the supported pixel types.
 ///
-/// Out will have the type `dt`.
-///
-/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator/
-template< typename T >
-inline void Divide(
-      Image const& lhs,
-      T const& rhs,
-      Image& out,
-      DataType dt
-) {
-   Divide( lhs, Image{ rhs }, out, dt );
-}
-
-template< typename T >
-inline Image Divide(
-      Image const& lhs,
-      T const& rhs,
-      DataType dt
-) {
-   Image out;
-   Divide( lhs, rhs, out, dt );
-   return out;
-}
-
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Modulo, Power, operator/(Image const&, T const&)
+DIP__DEFINE_ARITHMETIC_OVERLOADS( Divide )
 
 /// \brief Computes the modulo of two images, sample-wise, with singleton expansion.
 ///
-/// Out will have the type `dt`. Works for all real types (i.e. not complex). For floating-point
-/// types, uses `std::fmod`.
+/// The image `out` will have the type `dt`, which defaults to `lhs.DataType()` if left out.
+/// Works for all real types (i.e. not complex). For floating-point types, uses `std::fmod`.
 ///
-/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, operator%
-void Modulo(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out,
-      DataType dt
-);
-
-/// \brief Computes the modulo of each sample in an image with a constant.
+/// `rhs` can be a scalar value of any of the supported pixel types.
 ///
-/// Out will have the type `dt`. Works for all real types (i.e. not complex). For floating-point
-/// types, uses `std::fmod`.
-///
-/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator%
-template< typename T >
-inline void Modulo(
-      Image const& lhs,
-      T const& rhs,
-      Image& out,
-      DataType dt
-) {
-   Modulo( lhs, Image{ rhs }, out, dt );
-}
-
-template< typename T >
-inline Image Modulo(
-      Image const& lhs,
-      T const& rhs,
-      DataType dt
-) {
-   Image out;
-   Modulo( lhs, rhs, out, dt );
-   return out;
-}
-
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Power, operator%(Image const&, T const&)
+void Modulo( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
+inline void Modulo( Image const& lhs, Image const& rhs, Image& out ) { Modulo( lhs, rhs, out, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )); } \
+template< typename T > inline void Modulo( Image const& lhs, T const& rhs, Image& out, DataType dt ) { Modulo( lhs, Image{ rhs }, out, dt ); } \
+template< typename T > inline void Modulo( Image const& lhs, T const& rhs, Image& out ) { Modulo( lhs, Image{ rhs }, out ); } \
+template< typename T > inline Image Modulo( Image const& lhs, T const& rhs, DataType dt ) { Image out; Modulo( lhs, rhs, out, dt ); return out; } \
+template< typename T > inline Image Modulo( Image const& lhs, T const& rhs ) { Image out; Modulo( lhs, rhs, out ); return out; }
 
 /// \brief Elevates `lhs` to the power of `rhs`, sample-wise, with singleton expansion.
 ///
-/// Out will have the type `dt`, as long as `dt` is a floating-point or complex type.
+/// The image `out` will have the type `dt`, as long as `dt` is a floating-point or complex type.
+/// It defaults to `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
-/// \see Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator+
-void Power(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out,
-      DataType dt
-);
-
-/// \brief Adds a constant to each sample in an image.
+/// `rhs` can be a scalar value of any of the supported pixel types.
 ///
-/// Out will have the type `dt`.
-///
-/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, operator+
-template< typename T >
-inline void Power(
-      Image const& lhs,
-      T const& rhs,
-      Image& out,
-      DataType dt
-) {
-   Power( lhs, Image{ rhs }, out, dt );
-}
-
-template< typename T >
-inline Image Power(
-      Image const& lhs,
-      T const& rhs,
-      DataType dt
-) {
-   Image out;
-   Power( lhs, rhs, out, dt );
-   return out;
-}
-
+/// \see Subtract, Multiply, MultiplySampleWise, Divide, Modulo
+DIP__DEFINE_ARITHMETIC_OVERLOADS( Power )
 
 /// \brief Inverts each sample of the input image, yielding an image of the same type.
 ///
 /// For unsigned images, the output is `std::numeric_limits::max() - in`. For
 /// signed and complex types, it is `0 - in`. For binary types it is the same as `dip::Not`.
 ///
-/// \see operator-, Not
-void Invert(
-      Image const& in,
-      Image& out
-);
-
-inline Image Invert(
-      Image const& in
-) {
-   Image out;
-   Invert( in, out );
-   return out;
-}
+/// \see operator-(Image const&), Not
+void Invert( Image const& in, Image& out );
+inline Image Invert( Image const& in ) { Image out; Invert( in, out ); return out; }
 
 
 //
 // Functions for bit-wise operations
 //
 
-
 /// \brief Bit-wise and of two binary or integer images, sample-wise, with singleton expansion.
 ///
 /// Out will have the type of `lhs`, and `rhs` will be converted to that type
 /// before applying the operation.
 ///
-/// \see Or, Xor, operator&
-void And(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out
-);
-
-inline Image And(
-      Image const& lhs,
-      Image const& rhs
-) {
-   Image out;
-   And( lhs, rhs, out );
-   return out;
-}
-
+/// \see Or, Xor, operator&(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( And )
 
 /// \brief Bit-wise or of two binary or integer images, sample-wise, with singleton expansion.
 ///
 /// Out will have the type of `lhs`, and `rhs` will be converted to that type
 /// before applying the operation.
 ///
-/// \see And, Xor, operator|
-void Or(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out
-);
-
-inline Image Or(
-      Image const& lhs,
-      Image const& rhs
-) {
-   Image out;
-   Or( lhs, rhs, out );
-   return out;
-}
-
+/// \see And, Xor, operator|(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( Or )
 
 /// \brief Bit-wise exclusive-or of two binary or integer images, sample-wise, with singleton expansion.
 ///
 /// Out will have the type of `lhs`, and `rhs` will be converted to that type
 /// before applying the operation.
 ///
-/// \see And, Or, operator^
-void Xor(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out
-);
-
-inline Image Xor(
-      Image const& lhs,
-      Image const& rhs
-) {
-   Image out;
-   Xor( lhs, rhs, out );
-   return out;
-}
-
+/// \see And, Or, operator^(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( Xor )
 
 /// \brief Applies bit-wise negation to each sample of the input image, yielding an
 /// image of the same type.
 ///
-/// \see operator!, operator~, Invert
-void Not(
-      Image const& in,
-      Image& out
-);
-
-inline Image Not(
-      Image const& in
-) {
-   Image out;
-   Not( in, out );
-   return out;
-}
+/// \see operator!(Image const&), operator~(Image const&), Invert
+void Not( Image const& in, Image& out );
+inline Image Not( Image const& in ) { Image out; Not( in, out ); return out; }
 
 
 //
@@ -430,215 +197,47 @@ inline Image Not(
 ///
 /// Out will be binary.
 ///
-/// \see NotEqual, Lesser, Greater, NotGreater, NotLesser, operator==
-void Equal(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out
-);
-
-/// \brief Equality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see NotEqual, Lesser, Greater, NotGreater, NotLesser, operator==
-template< typename T >
-inline void Equal(
-      Image const& lhs,
-      T const& rhs,
-      Image& out
-) {
-   Equal( lhs, Image{ rhs }, out );
-}
-
-template< typename T >
-inline Image Equal(
-      Image const& lhs,
-      T const& rhs
-) {
-   Image out;
-   Equal( lhs, rhs, out );
-   return out;
-}
-
+/// \see NotEqual, Lesser, Greater, NotGreater, NotLesser, operator==(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( Equal )
 
 /// \brief Inequality comparison, sample-wise, with singleton expansion.
 ///
 /// Out will be binary.
 ///
-/// \see Equal, Lesser, Greater, NotGreater, NotLesser, operator!=
-void NotEqual(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out
-);
+/// \see Equal, Lesser, Greater, NotGreater, NotLesser, operator!=(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( NotEqual )
 
 /// \brief Inequality comparison, sample-wise, with singleton expansion.
 ///
 /// Out will be binary.
 ///
-/// \see Equal, Lesser, Greater, NotGreater, NotLesser, operator!=
-template< typename T >
-inline void NotEqual(
-      Image const& lhs,
-      T const& rhs,
-      Image& out
-) {
-   NotEqual( lhs, Image{ rhs }, out );
-}
-
-template< typename T >
-inline Image NotEqual(
-      Image const& lhs,
-      T const& rhs
-) {
-   Image out;
-   NotEqual( lhs, rhs, out );
-   return out;
-}
-
+/// \see Equal, NotEqual, Greater, NotGreater, NotLesser, operator<(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( Lesser )
 
 /// \brief Inequality comparison, sample-wise, with singleton expansion.
 ///
 /// Out will be binary.
 ///
-/// \see Equal, NotEqual, Greater, NotGreater, NotLesser, operator<
-void Lesser(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out
-);
+/// \see Equal, NotEqual, Lesser, NotGreater, NotLesser, operator>(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( Greater )
 
 /// \brief Inequality comparison, sample-wise, with singleton expansion.
 ///
 /// Out will be binary.
 ///
-/// \see Equal, NotEqual, Greater, NotGreater, NotLesser, operator<
-template< typename T >
-inline void Lesser(
-      Image const& lhs,
-      T const& rhs,
-      Image& out
-) {
-   Lesser( lhs, Image{ rhs }, out );
-}
-
-template< typename T >
-inline Image Lesser(
-      Image const& lhs,
-      T const& rhs
-) {
-   Image out;
-   Lesser( lhs, rhs, out );
-   return out;
-}
-
+/// \see Equal, NotEqual, Lesser, Greater, NotLesser, operator<=(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( NotGreater )
 
 /// \brief Inequality comparison, sample-wise, with singleton expansion.
 ///
 /// Out will be binary.
 ///
-/// \see Equal, NotEqual, Lesser, NotGreater, NotLesser, operator>
-void Greater(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out
-);
-
-/// \brief Inequality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see Equal, NotEqual, Lesser, NotGreater, NotLesser, operator>
-template< typename T >
-inline void Greater(
-      Image const& lhs,
-      T const& rhs,
-      Image& out
-) {
-   Greater( lhs, Image{ rhs }, out );
-}
-
-template< typename T >
-inline Image Greater(
-      Image const& lhs,
-      T const& rhs
-) {
-   Image out;
-   Greater( lhs, rhs, out );
-   return out;
-}
+/// \see Equal, NotEqual, Lesser, Greater, NotGreater, operator>=(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( NotLesser )
 
 
-/// \brief Inequality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see Equal, NotEqual, Lesser, Greater, NotLesser, operator<=
-void NotGreater(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out
-);
-
-/// \brief Inequality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see Equal, NotEqual, Lesser, Greater, NotLesser, operator<=
-template< typename T >
-inline void NotGreater(
-      Image const& lhs,
-      T const& rhs,
-      Image& out
-) {
-   NotGreater( lhs, Image{ rhs }, out );
-}
-
-template< typename T >
-inline Image NotGreater(
-      Image const& lhs,
-      T const& rhs
-) {
-   Image out;
-   NotGreater( lhs, rhs, out );
-   return out;
-}
-
-/// \brief Inequality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see Equal, NotEqual, Lesser, Greater, NotGreater, operator>=
-void NotLesser(
-      Image const& lhs,
-      Image const& rhs,
-      Image& out
-);
-
-/// \brief Inequality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see Equal, NotEqual, Lesser, Greater, NotGreater, operator>=
-template< typename T >
-inline void NotLesser(
-      Image const& lhs,
-      T const& rhs,
-      Image& out
-) {
-   NotLesser( lhs, Image{ rhs }, out );
-}
-
-template< typename T >
-inline Image NotLesser(
-      Image const& lhs,
-      T const& rhs
-) {
-   Image out;
-   NotLesser( lhs, rhs, out );
-   return out;
-}
+#undef DIP__DEFINE_ARITHMETIC_OVERLOADS
+#undef DIP__DEFINE_DYADIC_OVERLOADS
 
 
 //
@@ -646,58 +245,33 @@ inline Image NotLesser(
 //
 
 /// \brief Arithmetic operator, calls `dip::Add`.
-inline Image operator+( Image const& lhs, Image const& rhs ) {
-   return Add( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
-}
-
-/// \brief Arithmetic operator, calls `dip::Add`.
 template< typename T >
 inline Image operator+( Image const& lhs, T const& rhs ) {
-   return Add( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
-}
-
-/// \brief Arithmetic operator, calls `dip::Subtract`.
-inline Image operator-( Image const& lhs, Image const& rhs ) {
-   return Subtract( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
+   return Add( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls `dip::Subtract`.
 template< typename T >
 inline Image operator-( Image const& lhs, T const& rhs ) {
-   return Subtract( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
-}
-
-/// \brief Arithmetic operator, calls `dip::Multiply`.
-inline Image operator*( Image const& lhs, Image const& rhs ) {
-   return Multiply( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
+   return Subtract( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls `dip::Multiply`.
 template< typename T >
 inline Image operator*( Image const& lhs, T const& rhs ) {
-   return Multiply( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
-}
-
-/// \brief Arithmetic operator, calls `dip::Divide`.
-inline Image operator/( Image const& lhs, Image const& rhs ) {
-   return Divide( lhs, rhs, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ) );
+   return Multiply( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls `dip::Divide`.
 template< typename T >
 inline Image operator/( Image const& lhs, T const& rhs ) {
-   return Divide( lhs, Image{ rhs }, DataType::SuggestArithmetic( lhs.DataType(), DataType( rhs ) ) );
-}
-
-/// \brief Arithmetic operator, calls `dip::Modulo`.
-inline Image operator%( Image const& lhs, Image const& rhs ) {
-   return Modulo( lhs, rhs, lhs.DataType() );
+   return Divide( lhs, rhs );
 }
 
 /// \brief Arithmetic operator, calls `dip::Modulo`.
 template< typename T >
 inline Image operator%( Image const& lhs, T const& rhs ) {
-   return Modulo( lhs, Image{ rhs }, lhs.DataType() );
+   return Modulo( lhs, rhs );
 }
 
 
@@ -706,17 +280,20 @@ inline Image operator%( Image const& lhs, T const& rhs ) {
 //
 
 /// \brief Bit-wise operator, calls `dip::And`.
-inline Image operator&( Image const& lhs, Image const& rhs ) {
+template< typename T >
+inline Image operator&( Image const& lhs, T const& rhs ) {
    return And( lhs, rhs );
 }
 
 /// \brief Bit-wise operator, calls `dip::Or`.
-inline Image operator|( Image const& lhs, Image const& rhs ) {
+template< typename T >
+inline Image operator|( Image const& lhs, T const& rhs ) {
    return Or( lhs, rhs );
 }
 
 /// \brief Bit-wise operator, calls `dip::Xor`.
-inline Image operator^( Image const& lhs, Image const& rhs ) {
+template< typename T >
+inline Image operator^( Image const& lhs, T const& rhs ) {
    return Xor( lhs, rhs );
 }
 
@@ -741,6 +318,7 @@ inline Image operator!( Image const& in ) {
    DIP_THROW_IF( !in.DataType().IsBinary(), "Boolean unary not operator only applicable to binary images" );
    return Not( in );
 }
+
 
 //
 // Comparison operators
@@ -781,6 +359,7 @@ template< typename T >
 inline Image operator>=( Image const& lhs, T const& rhs ) {
    return NotLesser( lhs, rhs );
 }
+
 
 //
 // Compound assignment operators
@@ -851,7 +430,7 @@ inline Image& operator%=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
-/// \brief Bit-wise Compound assignment operator.
+/// \brief Bit-wise compound assignment operator.
 ///
 /// Equivalent, but usually faster, than `lhs = lhs & rhs`. See `dip::And`.
 ///
@@ -863,7 +442,7 @@ inline Image& operator&=( Image& lhs, Image const& rhs ) {
    return lhs;
 }
 
-/// \brief Bit-wise Compound assignment operator.
+/// \brief Bit-wise compound assignment operator.
 ///
 /// Equivalent, but usually faster, than `lhs = lhs | rhs`. See `dip::Or`.
 ///
@@ -875,7 +454,7 @@ inline Image& operator|=( Image& lhs, Image const& rhs ) {
    return lhs;
 }
 
-/// \brief Bit-wise Compound assignment operator.
+/// \brief Bit-wise compound assignment operator.
 ///
 /// Equivalent, but usually faster, than `lhs = lhs ^ rhs`. See `dip::Xor`.
 ///
@@ -886,6 +465,7 @@ inline Image& operator^=( Image& lhs, Image const& rhs ) {
    Xor( lhs, rhs, lhs );
    return lhs;
 }
+
 
 /// \}
 
