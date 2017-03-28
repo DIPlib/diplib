@@ -26,6 +26,7 @@
 #include "rgb.h"
 #include "cmyk.h"
 #include "hsi.h"
+#include "ish.h"
 #include "hcv.h"
 #include "xyz.h"
 #include "lab.h"
