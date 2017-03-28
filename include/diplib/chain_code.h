@@ -40,7 +40,7 @@ namespace dip {
 
 
 /// \brief Contains the various %Feret diameters as returned by `dip::ConvexHull::Feret` and `dip::ChainCode::Feret`.
-struct FeretValues {
+struct DIP_NO_EXPORT FeretValues {
    dfloat maxDiameter = 0.0;        ///< The maximum %Feret diameter
    dfloat minDiameter = 0.0;        ///< The minimum %Feret diameter
    dfloat maxPerpendicular = 0.0;   ///< The %Feret diameter perpendicular to `minDiameter`
@@ -49,7 +49,7 @@ struct FeretValues {
 };
 
 /// \brief Holds the various output values of the `dip::RadiusStatistics` and `dip::ConvexHull::RadiusStatistics` function.
-struct RadiusValues {
+struct DIP_NO_EXPORT RadiusValues {
    dfloat mean = 0.0;   ///< Mean radius
    dfloat var = 0.0;    ///< Radius variance
    dfloat max = 0.0;    ///< Maximum radius
@@ -68,7 +68,7 @@ struct RadiusValues {
 
 /// \brief Encodes a location in a 2D image
 template< typename T >
-struct Vertex {
+struct DIP_NO_EXPORT Vertex {
    T x;   ///< The x-coordinate
    T y;   ///< The y-coordinate
 
@@ -131,46 +131,46 @@ inline bool operator!=( Vertex< T > v1, Vertex< T > v2 ) {
 
 /// \brief The norm of the vector v2-v1.
 template< typename T >
-dfloat Distance( Vertex< T > const& v1, Vertex< T > const& v2 ) {
+inline dfloat Distance( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    Vertex< T > v = v2 - v1;
    return std::hypot( v.x, v.y );
 }
 
 /// \brief The square norm of the vector v2-v1.
 template< typename T >
-dfloat DistanceSquare( Vertex< T > const& v1, Vertex< T > const& v2 ) {
+inline dfloat DistanceSquare( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    Vertex< T > v = v2 - v1;
    return v.x * v.x + v.y * v.y;
 }
 
 /// \brief The angle of the vector v2-v1.
 template< typename T >
-dfloat Angle( Vertex< T > const& v1, Vertex< T > const& v2 ) {
+inline dfloat Angle( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    Vertex< T > v = v2 - v1;
    return std::atan2( v.y, v.x );
 }
 
 /// \brief Compute the z component of the cross product of vectors v1 and v2
 template< typename T >
-dfloat CrossProduct( Vertex< T > const& v1, Vertex< T > const& v2 ) {
+inline dfloat CrossProduct( Vertex< T > const& v1, Vertex< T > const& v2 ) {
    return v1.x * v2.y - v1.y * v2.x;
 }
 
 /// \brief Compute the z component of the cross product of vectors v2-v1 and v3-v1
 template< typename T >
-dfloat ParallelogramSignedArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
+inline dfloat ParallelogramSignedArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return CrossProduct( v2 - v1, v3 - v1 );
 }
 
 /// \brief Compute the area of the triangle formed by vertices v1, v2 and v3
 template< typename T >
-dfloat TriangleArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
+inline dfloat TriangleArea( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / 2.0 );
 }
 
 /// \brief Compute the height of the triangle formed by vertices v1, v2 and v3, with v3 the tip
 template< typename T >
-dfloat TriangleHeight( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
+inline dfloat TriangleHeight( Vertex< T > const& v1, Vertex< T > const& v2, Vertex< T > const& v3 ) {
    return std::abs( ParallelogramSignedArea< T >( v1, v2, v3 ) / Distance< T >( v1, v2 ));
 }
 
@@ -179,7 +179,7 @@ using VertexInteger = Vertex< dip::sint >;   ///< A vertex with integer coordina
 
 /// \brief Add two vertices together, with identical types
 template< typename T >
-Vertex< T > operator+( Vertex< T > lhs, Vertex< T > const& rhs ) {
+inline Vertex< T > operator+( Vertex< T > lhs, Vertex< T > const& rhs ) {
    lhs += rhs;
    return lhs;
 }
@@ -198,7 +198,7 @@ inline VertexFloat operator+( VertexInteger const& lhs, VertexFloat rhs ) {
 
 /// \brief Subtract two vertices from each other
 template< typename T >
-Vertex< T > operator-( Vertex< T > lhs, Vertex< T > const& rhs ) {
+inline Vertex< T > operator-( Vertex< T > lhs, Vertex< T > const& rhs ) {
    lhs -= rhs;
    return lhs;
 }
@@ -219,34 +219,34 @@ inline VertexFloat operator-( VertexInteger const& lhs, VertexFloat const& rhs )
 
 /// \brief Add a vertex and a constant
 template< typename T, typename S >
-Vertex< T > operator+( Vertex< T > v, S n ) {
+inline Vertex< T > operator+( Vertex< T > v, S n ) {
    v += T( n );
    return v;
 }
 
 /// \brief Subtract a vertex and a constant
 template< typename T, typename S >
-Vertex< T > operator-( Vertex< T > v, S n ) {
+inline Vertex< T > operator-( Vertex< T > v, S n ) {
    v -= T( n );
    return v;
 }
 
 /// \brief Multiply a vertex and a constant
 template< typename T >
-Vertex< T > operator*( Vertex< T > v, dfloat n ) {
+inline Vertex< T > operator*( Vertex< T > v, dfloat n ) {
    v *= n;
    return v;
 }
 
 /// \brief Divide a vertex by a constant
 template< typename T >
-Vertex< T > operator/( Vertex< T > v, dfloat n ) {
+inline Vertex< T > operator/( Vertex< T > v, dfloat n ) {
    v /= n;
    return v;
 }
 
 /// \brief Encodes a bounding box in a 2D image by the top left and bottom right corners (both coordinates included in the box).
-struct BoundingBox {
+struct DIP_NO_EXPORT BoundingBox {
    VertexInteger topLeft;
    VertexInteger bottomRight;
    /// Default constructor
@@ -302,7 +302,7 @@ struct BoundingBox {
 ///
 /// The elements stored are `xx`, `xy` and `yy`, with `xx` the top-left element, and `xy` both
 /// the off-diagonal elements, which are equal by definition.
-class CovarianceMatrix {
+class DIP_NO_EXPORT CovarianceMatrix {
    public:
       /// \brief Default-initialized covariance matrix is all zeros
       CovarianceMatrix() : xx_( 0 ), xy_( 0 ), yy_( 0 ) {}
@@ -402,10 +402,10 @@ class CovarianceMatrix {
 //
 
 
-class ConvexHull; // Forward declaration
+class DIP_NO_EXPORT ConvexHull; // Forward declaration
 
 /// \brief A polygon with floating-point vertices.
-struct Polygon {
+struct DIP_NO_EXPORT Polygon {
 
    std::vector< VertexFloat > vertices;  ///< The vertices
 
@@ -470,14 +470,14 @@ struct Polygon {
 
    /// \brief Returns statistics on the radii of the polygon. The radii are the distances between the centroid
    /// and each of the vertices.
-   RadiusValues RadiusStatistics() const;
+   DIP_EXPORT RadiusValues RadiusStatistics() const;
 
    /// \brief Compares a polygon to the ellipse with the same covariance matrix, returning the coefficient of
    /// variation of the distance of vertices to the ellipse.
    ///
    /// See: M. Yang, K. Kpalma and J. Ronsin, "A Survey of Shape Feature Extraction Techniques",
    /// in: Pattern Recognition Techniques, Technology and Applications, P.Y. Yin (Editor), I-Tech, 2008.
-   inline dfloat EllipseVariance() const {
+   dfloat EllipseVariance() const {
        // Covariance matrix of polygon vertices
        VertexFloat g = Centroid();
        dip::CovarianceMatrix C = this->CovarianceMatrix(g);
@@ -486,21 +486,21 @@ struct Polygon {
 
    /// \brief Compares a polygon to the ellipse described by the given centroid and covariance matrix, returning
    /// the coefficient of variation of the distance of vertices to the ellipse.
-   dfloat EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const;
+   DIP_EXPORT dfloat EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const;
 
    /// \brief Returns the convex hull of the polygon.
-   dip::ConvexHull ConvexHull() const;
+   DIP_EXPORT dip::ConvexHull ConvexHull() const;
 };
 
 /// \brief A convex hull as a sequence of vertices (i.e. a closed polygon).
-class ConvexHull {
+class DIP_NO_EXPORT ConvexHull {
    public:
 
       /// Default-constructed ConvexHull (without vertices)
       ConvexHull() {};
 
       /// Constructs a convex hull of a polygon
-      ConvexHull( dip::Polygon const&& polygon );
+      DIP_EXPORT ConvexHull( dip::Polygon const&& polygon );
 
       /// Retrive the vertices that represent the convex hull
       std::vector< VertexFloat > const& Vertices() const {
@@ -518,7 +518,7 @@ class ConvexHull {
       }
 
       /// Returns the %Feret diameters of the convex hull
-      FeretValues Feret() const;
+      DIP_EXPORT FeretValues Feret() const;
 
       /// Returns the centroid of the convex hull
       VertexFloat Centroid() const {
@@ -559,7 +559,7 @@ inline dip::ConvexHull Polygon::ConvexHull() const {
 
 
 /// \brief The contour of an object as a chain code sequence.
-struct ChainCode {
+struct DIP_NO_EXPORT ChainCode {
 
    static constexpr VertexInteger deltas4[4] = { {  1,  0 },
                                                  {  0, -1 },
@@ -585,7 +585,7 @@ struct ChainCode {
    ///
    /// No checking is done when indexing. If the `%CodeTable` is derived from a 4-connected chain code, only the
    /// first four table elements can be used. Otherwise, eight table elements exist and are valid.
-   struct CodeTable {
+   struct DIP_NO_EXPORT CodeTable {
          VertexInteger const* pos; ///< Array with position offsets for each chain code.
          std::array< dip::sint, 8 > offset; ///< Array with pointer offsets for each chain code.
       private:
@@ -609,7 +609,7 @@ struct ChainCode {
 
    /// \brief Encodes a single chain code, as used by `dip::ChainCode`. Chain codes are between 0 and 3 for connectivity = 1,
    /// and between 0 and 7 for connectivity = 2. The border flag marks pixels at the border of the image.
-   class Code {
+   class DIP_NO_EXPORT Code {
       public:
          /// Default constructor
          Code() : value( 0 ) {}
@@ -662,14 +662,14 @@ struct ChainCode {
 
    /// \brief Returns the length of the chain code using the method by Vossepoel and Smeulders. If the chain code
    /// represents the closed contour of an object, add pi to the result to determine the object's perimeter.
-   dfloat Length() const;
+   DIP_EXPORT dfloat Length() const;
 
    /// \brief Returns the %Feret diameters, using an angular step size in radian of `angleStep`.
    /// It is better to use `this->ConvexHull().Feret()`.
-   FeretValues Feret( dfloat angleStep ) const;
+   DIP_EXPORT FeretValues Feret( dfloat angleStep ) const;
 
    /// Computes the bending energy.
-   dfloat BendingEnergy() const;
+   DIP_EXPORT dfloat BendingEnergy() const;
 
    /// \brief Computes the area of the solid object described by the chain code. Uses the result of
    /// `dip::ChainCode::Polygon`, so if you plan to do multiple similar measures, extract the polygon and
@@ -688,10 +688,10 @@ struct ChainCode {
    }
 
    /// \brief Finds the bounding box for the object described by the chain code
-   dip::BoundingBox BoundingBox() const;
+   DIP_EXPORT dip::BoundingBox BoundingBox() const;
 
    /// Returns the length of the longest run of identical chain codes.
-   dip::uint LongestRun() const;
+   DIP_EXPORT dip::uint LongestRun() const;
 
    /// \brief Returns a polygon representation of the object.
    ///
@@ -702,7 +702,7 @@ struct ChainCode {
    ///
    /// This idea comes from Steve Eddins:
    /// http://blogs.mathworks.com/steve/2011/10/04/binary-image-convex-hull-algorithm-notes/
-   dip::Polygon Polygon() const;
+   DIP_EXPORT dip::Polygon Polygon() const;
 
    /// Returns the convex hull of the object, see `dip::ChainCode::Polygon`.
    dip::ConvexHull ConvexHull() const {
@@ -711,7 +711,7 @@ struct ChainCode {
 
    /// \brief Paints the pixels traced by the chain code in a binary image. The image has the size of the
    /// `dip::ChainCode::BoundingBox`.
-   void Image( dip::Image& out ) const;
+   DIP_EXPORT void Image( dip::Image& out ) const;
    dip::Image Image() const {
       dip::Image out;
       Image( out );
@@ -721,7 +721,7 @@ struct ChainCode {
    /// \brief Create a new chain code that goes around the object in the same direction, but traces the background
    /// pixels that are 4-connected to the object. That is, it grows the object by one pixel. Only defined for
    /// 8-connected chain codes.
-   ChainCode Offset() const;
+   DIP_EXPORT ChainCode Offset() const;
 };
 
 /// \brief A collection of object contours
@@ -734,7 +734,7 @@ using ChainCodeArray = std::vector< ChainCode >;
 ///
 /// `objectIDs` is a list with object IDs present in the labelled image. If an empty array is given, all objects in
 /// the image are used.
-ChainCodeArray GetImageChainCodes(
+ChainCodeArray DIP_NO_EXPORT GetImageChainCodes(
       Image const& labels,             ///< Labelled image, unsigned integer type
       UnsignedArray const& objectIDs,  ///< A list of object IDs to get chain codes for
       dip::uint connectivity = 2       ///< Connectivity, see \ref connectivity
@@ -747,7 +747,7 @@ ChainCodeArray GetImageChainCodes(
 ///
 /// `startCoord` is the 2D coordinates of a boundary pixel. If it points to a zero-valued pixel or a pixel not on
 /// the boundary of an object, an exception will be thrown.
-ChainCode GetSingleChainCode(
+ChainCode DIP_NO_EXPORT GetSingleChainCode(
       Image const& labels,             ///< Labelled or binary image (unsigned integer type or binary type)
       UnsignedArray const& startCoord, ///< The starting coordinates for the chain code; must point to a non-zero pixel in `labels`
       dip::uint connectivity = 2       ///< Connectivity, see \ref connectivity

@@ -37,7 +37,7 @@ namespace dip {
 /// \{
 
 
-class PixelTable; // forward declaration, it's defined a little lower down.
+class DIP_NO_EXPORT PixelTable; // forward declaration, it's defined a little lower down.
 
 /// \brief Represents an arbitrarily-shaped neighborhood (filter support)
 /// in an arbitrary number of dimensions.
@@ -55,22 +55,22 @@ class PixelTable; // forward declaration, it's defined a little lower down.
 /// Its iterator dereferences to an offset rather than coordinates.
 ///
 /// \see dip::PixelTable, dip::NeighborList, dip::Framework::Full, dip::ImageIterator
-class PixelTableOffsets {
+class DIP_NO_EXPORT PixelTableOffsets {
    public:
 
       /// The pixel table is formed of pixel runs, represented by this strucuture
-      struct PixelRun {
+      struct DIP_NO_EXPORT PixelRun {
          dip::sint offset;          ///< the offset of the first pixel in a run, w.r.t. the origin
          dip::uint length;          ///< the length of the run
       };
 
-      class iterator;
+      class DIP_NO_EXPORT iterator;
 
       /// A default-constructed pixel table is kinda useless
       PixelTableOffsets() {};
 
       /// A pixel table with offsets is constructed from a `dip::PixelTable` and a `dip::Image`.
-      PixelTableOffsets( PixelTable const& pt, Image const& image );
+      DIP_EXPORT PixelTableOffsets( PixelTable const& pt, Image const& image );
 
       /// Returns the vector of runs
       std::vector< PixelRun > const& Runs() const { return runs_; }
@@ -142,17 +142,17 @@ class PixelTableOffsets {
 /// TODO: Add an example somewhere.
 ///
 /// \see dip::PixelTableOffsets, dip::NeighborList, dip::Framework::Full, dip::ImageIterator
-class PixelTable {
+class DIP_NO_EXPORT PixelTable {
    public:
 
       /// The pixel table is formed of pixel runs, represented by this strucuture
-      struct PixelRun {
+      struct DIP_NO_EXPORT PixelRun {
          IntegerArray coordinates;  ///< the coordinates of the first pixel in a run, w.r.t. the origin
          dip::uint length;          ///< the length of the run
          PixelRun( IntegerArray const& coordinates, dip::uint length ) : coordinates( coordinates ), length( length ) {}
       };
 
-      class iterator;
+      class DIP_NO_EXPORT iterator;
 
       /// A default-constructed pixel table is kinda useless
       PixelTable() {};
@@ -177,7 +177,7 @@ class PixelTable {
       /// ```
       ///
       /// `procDim` indicates the processing dimension.
-      PixelTable( String const& shape, FloatArray size, dip::uint procDim = 0 );
+      DIP_EXPORT PixelTable( String const& shape, FloatArray size, dip::uint procDim = 0 );
 
       /// \brief Construct a pixel table for an arbitrary shape defined by a binary image.
       ///
@@ -190,7 +190,7 @@ class PixelTable {
       /// exact middle.
       ///
       /// `procDim` indicates the processing dimension.
-      PixelTable( Image const& mask, IntegerArray const& origin = {}, dip::uint procDim = 0 );
+      DIP_EXPORT PixelTable( Image const& mask, IntegerArray const& origin = {}, dip::uint procDim = 0 );
 
       /// Returns the vector of runs
       std::vector< PixelRun > const& Runs() const { return runs_; }
@@ -244,10 +244,10 @@ class PixelTable {
       dip::uint ProcessingDimension() const { return procDim_; }
 
       /// A const iterator to the first pixel in the neighborhood
-      iterator begin() const;
+      DIP_NO_EXPORT iterator begin() const;
 
       /// A const iterator to one past the last pixel in the neighborhood
-      iterator end() const;
+      DIP_NO_EXPORT iterator end() const;
 
       /// \brief Creates a binary image representing the neighborhood, or a `dfloat` one if
       /// there are weights associated.
@@ -258,7 +258,7 @@ class PixelTable {
       }
 
       /// Same as previous overload, but writing into the given image.
-      void AsImage( Image& out ) const;
+      DIP_EXPORT void AsImage( Image& out ) const;
 
       /// \brief Prepare the pixel table to be applied to a specific image.
       ///
@@ -273,12 +273,12 @@ class PixelTable {
       /// sizes as the `%PixelTable`'s bounding box (i.e. the image used to construct the pixel table), and of a
       /// real type (i.e. integer or float).
       // TODO: Do we need to support complex weights? Tensor weights?
-      void AddWeights( Image const& image );
+      DIP_EXPORT void AddWeights( Image const& image );
 
       /// \brief Add weights to each pixel in the neighborhood, using the Euclidean distance to the origin
       /// as the weight. This is useful for algorithms that need to, for example, sort the pixels in the
       /// neighborhood by distance to the origin.
-      void AddDistanceToOriginAsWeights();
+      DIP_EXPORT void AddDistanceToOriginAsWeights();
 
       /// Tests if there are weights associated to each pixel in the neighborhood.
       bool HasWeights() const { return !weights_.empty(); }
@@ -299,7 +299,7 @@ class PixelTable {
 ///
 /// Dereferencing the iterator returns the coordinates of the pixel.
 /// Satisfies the requirements for ForwardIterator.
-class PixelTable::iterator {
+class DIP_NO_EXPORT PixelTable::iterator {
    public:
 
       using iterator_category = std::forward_iterator_tag;
@@ -400,7 +400,7 @@ inline PixelTable::iterator PixelTable::end() const {
 ///
 /// Dereferencing the iterator returns an offset.
 /// Satisfies the requirements for ForwardIterator.
-class PixelTableOffsets::iterator {
+class DIP_NO_EXPORT PixelTableOffsets::iterator {
    public:
 
       using iterator_category = std::forward_iterator_tag;

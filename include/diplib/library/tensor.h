@@ -52,7 +52,7 @@ namespace dip {
 ///
 /// Used internally by the `dip::Image` objects.
 /// It is default-constructible, movable and copiable.
-class Tensor {
+class DIP_NO_EXPORT Tensor {
 
    public:
 

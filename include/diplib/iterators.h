@@ -73,7 +73,7 @@ namespace dip {
 ///
 /// \see ImageIterator, JointImageIterator, SampleIterator
 template< typename T >
-class LineIterator {
+class DIP_NO_EXPORT LineIterator {
    public:
       using iterator_category = std::forward_iterator_tag;
       using value_type = T;               ///< The data type of the pixel, obtained when dereferencing the iterator
@@ -304,7 +304,7 @@ using ConstLineIterator = LineIterator< T const >;
 ///
 /// \see JointImageIterator, LineIterator, SampleIterator, GenericImageIterator
 template< typename T >
-class ImageIterator {
+class DIP_NO_EXPORT ImageIterator {
    public:
       using iterator_category = std::forward_iterator_tag;
       using value_type = T;               ///< The data type of the pixel, obtained when dereferencing the iterator
@@ -537,7 +537,7 @@ using ConstImageIterator = ImageIterator< T const >;
 /// \see ImageIterator, LineIterator, SampleIterator, GenericJointImageIterator
 // TODO: This would look better in some cases (see src/math/projection.cpp) if it was `first` and `second` instead of `in` and `out`.
 template< typename inT, typename outT >
-class JointImageIterator {
+class DIP_NO_EXPORT JointImageIterator {
    public:
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       JointImageIterator() {}
@@ -784,7 +784,7 @@ inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, 
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
 /// \see ImageIterator, GenericJointImageIterator
-class GenericImageIterator {
+class DIP_NO_EXPORT GenericImageIterator {
    public:
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       GenericImageIterator() {}
@@ -933,7 +933,7 @@ inline void swap( GenericImageIterator& v1, GenericImageIterator& v2 ) {
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
 /// \see JointImageIterator, GenericImageIterator
-class GenericJointImageIterator {
+class DIP_NO_EXPORT GenericJointImageIterator {
    public:
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       GenericJointImageIterator() {}
@@ -1115,7 +1115,7 @@ inline void swap( GenericJointImageIterator& v1, GenericJointImageIterator& v2 )
 /// which would be less efficient in use and therefore it's better to not offer it.
 ///
 /// \see ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
-class ImageSliceIterator {
+class DIP_NO_EXPORT ImageSliceIterator {
    public:
       using iterator_category = std::forward_iterator_tag;
       using value_type = Image;           ///< The type obtained when dereferencing the iterator

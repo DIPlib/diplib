@@ -29,15 +29,15 @@
 #ifndef DIP__MONADIC_OPERATOR_FLEX
 
 #define DIP__MONADIC_OPERATOR_FLEX( functionName_, functionLambda_, inputDomain_ ) \
-   void functionName_( Image const& in, Image& out ); \
+   DIP_EXPORT void functionName_( Image const& in, Image& out ); \
    inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
 
 #define DIP__MONADIC_OPERATOR_FLOAT( functionName_, functionLambda_, inputDomain_ ) \
-   void functionName_( Image const& in, Image& out ); \
+   DIP_EXPORT void functionName_( Image const& in, Image& out ); \
    inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
 
 #define DIP__MONADIC_OPERATOR_FLOAT_WITH_PARAM( functionName_, paramType_, paramName_, functionLambda_, inputDomain_ ) \
-   void functionName_( Image const& in, Image& out, paramType_ paramName_ ); \
+   DIP_EXPORT void functionName_( Image const& in, Image& out, paramType_ paramName_ ); \
    inline Image functionName_( Image const& in, paramType_ paramName_ ) { Image out; functionName_( in, out, paramName_ ); return out; }
 
 #endif

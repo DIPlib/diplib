@@ -45,7 +45,7 @@ namespace dip {
 /// \{
 
 #define DIP__DEFINE_ARITHMETIC_OVERLOADS( name ) \
-void name( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
+DIP_EXPORT void name( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
 inline void name( Image const& lhs, Image const& rhs, Image& out ) { name( lhs, rhs, out, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )); } \
 template< typename T > inline void name( Image const& lhs, T const& rhs, Image& out, DataType dt ) { name( lhs, Image{ rhs }, out, dt ); } \
 template< typename T > inline void name( Image const& lhs, T const& rhs, Image& out ) { name( lhs, Image{ rhs }, out ); } \
@@ -53,7 +53,7 @@ template< typename T > inline Image name( Image const& lhs, T const& rhs, DataTy
 template< typename T > inline Image name( Image const& lhs, T const& rhs ) { Image out; name( lhs, rhs, out ); return out; }
 
 #define DIP__DEFINE_DYADIC_OVERLOADS( name ) \
-void name( Image const& lhs, Image const& rhs, Image& out ); \
+DIP_EXPORT void name( Image const& lhs, Image const& rhs, Image& out ); \
 template< typename T > inline void name( Image const& lhs, T const& rhs, Image& out ) { name( lhs, Image{ rhs }, out ); } \
 template< typename T > inline Image name( Image const& lhs, T const& rhs ) { Image out; name( lhs, rhs, out ); return out; }
 
@@ -126,7 +126,7 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( Divide )
 /// `rhs` can be a scalar value of any of the supported pixel types.
 ///
 /// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Power, operator%(Image const&, T const&)
-void Modulo( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
+DIP_EXPORT void Modulo( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
 inline void Modulo( Image const& lhs, Image const& rhs, Image& out ) { Modulo( lhs, rhs, out, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )); } \
 template< typename T > inline void Modulo( Image const& lhs, T const& rhs, Image& out, DataType dt ) { Modulo( lhs, Image{ rhs }, out, dt ); } \
 template< typename T > inline void Modulo( Image const& lhs, T const& rhs, Image& out ) { Modulo( lhs, Image{ rhs }, out ); } \
@@ -149,7 +149,7 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( Power )
 /// signed and complex types, it is `0 - in`. For binary types it is the same as `dip::Not`.
 ///
 /// \see operator-(Image const&), Not
-void Invert( Image const& in, Image& out );
+DIP_EXPORT void Invert( Image const& in, Image& out );
 inline Image Invert( Image const& in ) { Image out; Invert( in, out ); return out; }
 
 
@@ -185,7 +185,7 @@ DIP__DEFINE_DYADIC_OVERLOADS( Xor )
 /// image of the same type.
 ///
 /// \see operator!(Image const&), operator~(Image const&), Invert
-void Not( Image const& in, Image& out );
+DIP_EXPORT void Not( Image const& in, Image& out );
 inline Image Not( Image const& in ) { Image out; Not( in, out ); return out; }
 
 

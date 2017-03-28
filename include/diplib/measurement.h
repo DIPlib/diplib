@@ -49,7 +49,7 @@ namespace dip {
 namespace Feature {
 
 /// \brief The types of measurement features
-enum class Type {
+enum class DIP_NO_EXPORT Type {
       LINE_BASED, ///< The feature is derived from `dip::Feature::LineBased`
       IMAGE_BASED, ///< The feature is derived from `dip::Feature::ImageBased`
       CHAINCODE_BASED, ///< The feature is derived from `dip::Feature::ChainCodeBased`
@@ -59,7 +59,7 @@ enum class Type {
 };
 
 /// \brief %Information about a measurement feature
-struct Information {
+struct DIP_NO_EXPORT Information {
    String name;               ///< The name of the feature, used to identify it
    String description;        ///< A description of the feature, to be shown to the user
    bool needsGreyValue;       ///< Does the feature need a grey-value image?
@@ -72,7 +72,7 @@ struct Information {
 using InformationArray = std::vector< Information >;
 
 /// \brief %Information about a measurement value, one of the components of a feature
-struct ValueInformation {
+struct DIP_NO_EXPORT ValueInformation {
    String name; ///< A short string that identifies the value
    Units units; ///< The units for the value
 };
@@ -114,13 +114,13 @@ using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
 /// (or all rows), iterate over each of the cell groups within a column group (or within a row), and
 /// iterate over the values within a cell group.
 // TODO: Provide some examples on indexing.
-class Measurement {
+class DIP_NO_EXPORT Measurement {
    public:
       using ValueType = dfloat;           ///< The type of the measurement data
       using ValueIterator = ValueType*;   ///< A pointer to measurement data, which we can treat as an iterator
 
       /// \brief Structre containing information about the features stored in a `dip::Measurement` object
-      struct FeatureInfo {
+      struct DIP_NO_EXPORT FeatureInfo {
          String name;            ///< Name of the feature
          dip::uint startColumn;  ///< Column for first value of feature
          dip::uint numberValues; ///< Number of vales in feature
@@ -140,7 +140,7 @@ class Measurement {
       /// hadn't been called. When indexing a subset feature using an object ID, the resulting table cell is
       /// the same subset of the cell, as one would expect. Thus, subsetting can be used to look at only one
       /// value of a feature as if that feature had produced only one value.
-      class IteratorFeature {
+      class DIP_NO_EXPORT IteratorFeature {
          public:
             friend class Measurement;
             /// \brief An iterator to visit all objects (rows) within a feature (column group) of the `dip::Measurement` table.
@@ -233,7 +233,7 @@ class Measurement {
       /// The iterator can be indexed with an feature name to access the table cell group that contains the object's
       /// values for that feature. It is also possible to iterate over all features. See `dip::Measurement` for
       /// examples of using this class.
-      class IteratorObject {
+      class DIP_NO_EXPORT IteratorObject {
          public:
             friend class Measurement;
             /// \brief An iterator to visit all features (columns) within an object (row) of the `dip::Measurement` table.
@@ -484,13 +484,13 @@ class Measurement {
 
 /// \brief You can output a `dip::Image` to `std::cout` or any other stream. Some
 /// information about the image is printed.
-std::ostream& operator<<( std::ostream& os, Measurement const& msr );
+DIP_EXPORT std::ostream& operator<<( std::ostream& os, Measurement const& msr );
 
 
 namespace Feature {
 
 /// \brief The pure virtual base class for all measurement features.
-class Base {
+class DIP_EXPORT Base {
    public:
       Information const information; ///< Information on the feature
       Type const type; ///< The type of the measurement
@@ -537,7 +537,7 @@ class Base {
 using Pointer = std::unique_ptr< Base >;
 
 /// \brief The pure virtual base class for all line-based measurement features.
-class LineBased : public Base {
+class DIP_EXPORT LineBased : public Base {
    public:
       LineBased( Information const& information ) : Base( information, Type::LINE_BASED ) {};
 
@@ -566,7 +566,7 @@ class LineBased : public Base {
 };
 
 /// \brief The pure virtual base class for all image-based measurement features.
-class ImageBased : public Base {
+class DIP_EXPORT ImageBased : public Base {
    public:
       ImageBased( Information const& information ) : Base( information, Type::IMAGE_BASED ) {};
 
@@ -575,7 +575,7 @@ class ImageBased : public Base {
 };
 
 /// \brief The pure virtual base class for all chain-code--based measurement features.
-class ChainCodeBased : public Base {
+class DIP_EXPORT ChainCodeBased : public Base {
    public:
       ChainCodeBased( Information const& information ) : Base( information, Type::CHAINCODE_BASED ) {};
 
@@ -584,7 +584,7 @@ class ChainCodeBased : public Base {
 };
 
 /// \brief The pure virtual base class for all polygon-based measurement features.
-class PolygonBased : public Base {
+class DIP_EXPORT PolygonBased : public Base {
    public:
       PolygonBased( Information const& information ) : Base( information, Type::POLYGON_BASED ) {};
 
@@ -593,7 +593,7 @@ class PolygonBased : public Base {
 };
 
 /// \brief The pure virtual base class for all convex-hull--based measurement features.
-class ConvexHullBased : public Base {
+class DIP_EXPORT ConvexHullBased : public Base {
    public:
       ConvexHullBased( Information const& information ) : Base( information, Type::CONVEXHULL_BASED ) {};
 
@@ -602,7 +602,7 @@ class ConvexHullBased : public Base {
 };
 
 /// \brief The pure virtual base class for all composite measurement features.
-class Composite : public Base {
+class DIP_EXPORT Composite : public Base {
    public:
       Composite( Information const& information ) : Base( information, Type::COMPOSITE ) {};
 
@@ -695,11 +695,11 @@ class Composite : public Base {
 // TODO: Document how to create your own feature and register it with the MeasurementTool.
 // TODO: Document each feature in more detail in a separate page.
 // TODO: Create a DirectionalStatistics feature that computes directional mean, std dev and variance.
-class MeasurementTool {
+class DIP_NO_EXPORT MeasurementTool {
    public:
 
       /// \brief Constructor.
-      MeasurementTool();
+      DIP_EXPORT MeasurementTool();
 
       /// \brief Registers a feature with this `%MeasurementTool`. The feature object becomes property of the tool.
       ///
@@ -757,7 +757,7 @@ class MeasurementTool {
       /// the `label` image into account. Those of `grey` are ignored. Some measurements require
       /// isotropic pixel sizes, if `label` is not isotropic, the pixel size is ignored and these
       /// measures will return values in pixels instead.
-      Measurement Measure(
+      DIP_EXPORT Measurement Measure(
             Image const& label,
             Image const& grey,
             StringArray features, // we take a copy of this array
@@ -815,7 +815,7 @@ class MeasurementTool {
 ///
 /// If the selected feature has more than one value, then `out` will be a vector image with as many tensor elements
 /// as values are in the feature.
-void ObjectToMeasurement(
+DIP_EXPORT void ObjectToMeasurement(
       Image const& label,
       Image& out,
       Measurement::IteratorFeature const& featureValues

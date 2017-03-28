@@ -74,7 +74,7 @@ namespace dip {
 /// ```cpp
 ///     dip::DT_BIN.SizeOf();
 /// ```
-struct DataType {
+struct DIP_NO_EXPORT DataType {
 
    enum class DT {
          BIN,
@@ -320,25 +320,25 @@ struct DataType {
    //
 
    /// \brief Returns an integer type that is most suitable to hold samples of `type`.
-   static DataType SuggestInteger( DataType type );
+   DIP_EXPORT static DataType SuggestInteger( DataType type );
 
    /// \brief Returns a suitable floating-point type that can hold the samples of `type`.
-   static DataType SuggestFloat( DataType type );
+   DIP_EXPORT static DataType SuggestFloat( DataType type );
 
    /// \brief Returns a suitable complex type that can hold the samples of `type`.
-   static DataType SuggestComplex( DataType type );
+   DIP_EXPORT static DataType SuggestComplex( DataType type );
 
    /// \brief Returns a suitable floating-point or complex type that can hold the samples of `type`.
-   static DataType SuggestFlex( DataType type );
+   DIP_EXPORT static DataType SuggestFlex( DataType type );
 
    /// \brief Returns a suitable floating-point, complex or binary type that can hold the samples of `type`.
-   static DataType SuggestFlexBin( DataType type );
+   DIP_EXPORT static DataType SuggestFlexBin( DataType type );
 
    /// \brief Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed with the two datatypes.
-   static DataType SuggestArithmetic( DataType type1, DataType type2 );
+   DIP_EXPORT static DataType SuggestArithmetic( DataType type1, DataType type2 );
 
    /// \brief Returns a suitable type that can hold any samples of the two datatypes.
-   static DataType SuggestDyadicOperation( DataType type1, DataType type2 );
+   DIP_EXPORT static DataType SuggestDyadicOperation( DataType type1, DataType type2 );
 
 };
 

@@ -44,7 +44,7 @@ namespace dip {
 ///
 /// Classes that convert between color spaces must derive from this and overload all the pure virtual functions.
 /// See `dip::ColorSpaceManager` for how to use these converters.
-class ColorSpaceConverter {
+class DIP_EXPORT ColorSpaceConverter {
    public:
       /// \brief Returns the source color space name.
       virtual String InputColorSpace() const = 0;
@@ -115,12 +115,12 @@ using ColorSpaceConverterPointer = std::unique_ptr< ColorSpaceConverter >;
 /// "LCH"    | "L*C*H*" | Lightness-Chroma-Hue. Computed from Lab, where C and H are the polar coordinates to a and b. H is an angle in degrees.
 //
 // TODO: Also known: Piet's color space: art. What to do with this? Is it even published?
-class ColorSpaceManager {
+class DIP_NO_EXPORT ColorSpaceManager {
 
    public:
 
       /// \brief Constructor, registers the default color spaces.
-      ColorSpaceManager();
+      DIP_EXPORT ColorSpaceManager();
 
       /// \brief Defines a new color space, that requires `nChannels` channels.
       void Define( String const& colorSpaceName, dip::uint nChannels ) {
@@ -227,10 +227,10 @@ class ColorSpaceManager {
       using WhitePointMatrix = std::array< dfloat, 9 >;
 
       /// \brief The CIE Standard Illuminant D65 (noon daylight, color temperature is about 6500 K).
-      static constexpr WhitePointMatrix IlluminantD65{{ 0.4124564, 0.2126729, 0.0193339, 0.3575761, 0.7151521, 0.1191920, 0.1804375, 0.0721750, 0.9503040 }};
+      DIP_EXPORT static constexpr WhitePointMatrix IlluminantD65{{ 0.4124564, 0.2126729, 0.0193339, 0.3575761, 0.7151521, 0.1191920, 0.1804375, 0.0721750, 0.9503040 }};
 
       /// \brief The CIE Standard Illuminant D50 (morning or evening daylight, color temperature is about 5000 K).
-      static constexpr WhitePointMatrix IlluminantD50{{ 0.4360747, 0.2225045, 0.0139322, 0.3850649, 0.7168786, 0.0971045, 0.1430804, 0.0606169, 0.7141733 }};
+      DIP_EXPORT static constexpr WhitePointMatrix IlluminantD50{{ 0.4360747, 0.2225045, 0.0139322, 0.3850649, 0.7168786, 0.0971045, 0.1430804, 0.0606169, 0.7141733 }};
 
       /// \brief Configure the conversion functions to use the given white point array.
       ///
@@ -241,7 +241,7 @@ class ColorSpaceManager {
       /// Functions that convert to/from grey and only need the sum of the Y-row of the matrix are not
       /// configured. These functions assume that the row adds up to 1.0. For consistency, make sure that
       /// any matrix you pass here has a middle row that adds up to 1.0.
-      void SetWhitePoint( WhitePointMatrix const& whitePointMatrix );
+      DIP_EXPORT void SetWhitePoint( WhitePointMatrix const& whitePointMatrix );
 
    private:
 
@@ -279,7 +279,7 @@ class ColorSpaceManager {
 
       // Find an optimal path between two color spaces, given by their indices. Returns a list of color space
       // indices including `start` and `stop`.
-      std::vector< dip::uint > FindPath( dip::uint start, dip::uint stop ) const;
+      DIP_NO_EXPORT std::vector< dip::uint > FindPath( dip::uint start, dip::uint stop ) const;
 };
 
 /// \}

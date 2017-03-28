@@ -36,8 +36,9 @@
 #include <set>
 #include <queue>
 
+#include "dip_export.h"
 #include "diplib/library/dimension_array.h"
-#include "error.h"
+#include "diplib/library/error.h"
 
 
 /// \file
@@ -84,7 +85,7 @@ using scomplex = std::complex< sfloat >;   ///< Type for samples in a 64-bit com
 using dcomplex = std::complex< dfloat >;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
 
 /// \brief Type for samples in a binary image. Can store 0 or 1. Ocupies 1 byte.
-class bin {
+class DIP_NO_EXPORT bin {
    // Binary data stored in a single byte (don't use bool for pixels, it has
    // implementation-defined size). We define this class for binary data so
    // that we can overload functions differently for bin and for uint8.
@@ -126,42 +127,42 @@ static_assert( sizeof( dip::bin ) == 1, "The binary type is not a single byte!" 
 //
 
 template< typename T >
-struct DataTypeCalculator {
+struct DIP_NO_EXPORT DataTypeCalculator {
    using float_type = sfloat;
    using complex_type = scomplex;
    using flex_type = sfloat;
 };
 
 template<>
-struct DataTypeCalculator< uint32 > {
+struct DIP_NO_EXPORT DataTypeCalculator< uint32 > {
    using float_type = dfloat;
    using complex_type = dcomplex;
    using flex_type = dfloat;
 };
 
 template<>
-struct DataTypeCalculator< sint32 > {
+struct DIP_NO_EXPORT DataTypeCalculator< sint32 > {
    using float_type = dfloat;
    using complex_type = dcomplex;
    using flex_type = dfloat;
 };
 
 template<>
-struct DataTypeCalculator< dfloat > {
+struct DIP_NO_EXPORT DataTypeCalculator< dfloat > {
    using float_type = dfloat;
    using complex_type = dcomplex;
    using flex_type = dfloat;
 };
 
 template<>
-struct DataTypeCalculator< scomplex > {
+struct DIP_NO_EXPORT DataTypeCalculator< scomplex > {
    using float_type = sfloat;
    using complex_type = scomplex;
    using flex_type = scomplex;
 };
 
 template<>
-struct DataTypeCalculator< dcomplex > {
+struct DIP_NO_EXPORT DataTypeCalculator< dcomplex > {
    using float_type = dfloat;
    using complex_type = dcomplex;
    using flex_type = dcomplex;
@@ -269,7 +270,7 @@ using StringSet = std::set< String >;       ///< A collection of strings, used t
 /// the reverse order. That is, negative steps are taken to go from `start` to `stop`.
 /// `step` is always a positive integer, the direction of the steps is given
 /// soley by the ordering of `start` and `stop`.
-struct Range {
+struct DIP_NO_EXPORT Range {
    dip::sint start;    ///< First index included in range
    dip::sint stop;     ///< Last index included in range
    dip::uint step;     ///< Step size when going from start to stop
@@ -335,7 +336,7 @@ using RangeArray = DimensionArray< Range >;  ///< An array of ranges
 //
 
 template< typename E >
-class dip__Options {
+class DIP_NO_EXPORT dip__Options {
       using value_type = unsigned long;
       value_type values;
       constexpr dip__Options( value_type v, int ) : values{ v } {} // used by operator+
@@ -409,25 +410,25 @@ namespace Option {
 
 /// \brief Some functions that check for a condition optionally throw an exception
 /// if that condition is not met.
-enum class ThrowException {
+enum class DIP_NO_EXPORT ThrowException {
    DONT_THROW, ///< Do not throw and exception, return false if the condition is not met.
    DO_THROW    ///< Throw an exception if the condition is not met.
 };
 
 /// \brief The function `dip::Image::CheckIsMask` takes this option to control how sizes are compared.
-enum class AllowSingletonExpansion {
+enum class DIP_NO_EXPORT AllowSingletonExpansion {
    DONT_ALLOW, ///< Do not allow singleton expansion.
    DO_ALLOW    ///< Allow singleton expansion.
 };
 
 /// \brief The function `dip::Image::ReForge` takes this option to control how to handle protected images.
-enum class AcceptDataTypeChange {
+enum class DIP_NO_EXPORT AcceptDataTypeChange {
    DONT_ALLOW, ///< Do not allow data type change, the output image is always of the requested type.
    DO_ALLOW    ///< Allow data type change, if the output image is protected, it will be used as is.
 };
 
 /// \brief The function `dip::Image::Crop` takes this option to control which pixels are taken.
-enum class CropLocation {
+enum class DIP_NO_EXPORT CropLocation {
    CENTER,        ///< The pixel at the origin of the input image is also at the origin in the output image.
    MIRROR_CENTER, ///< Same as `%CENTER`, but for even-sized images, the origin is presumed to be left of center, rather than right of center.
    TOP_LEFT,      ///< The corner of the image at coordinates {0,0,0...} is kept in the corner.

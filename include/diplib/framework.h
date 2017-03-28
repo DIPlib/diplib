@@ -69,7 +69,7 @@ constexpr dip::uint MAX_BUFFER_SIZE = 256 * 1024;
 /// function can be used to check if such expansion is possible, and what the resulting
 /// sizes would be. `size1` is adjusted. An exception is thrown if the singleton
 /// expansion is not possible.
-void SingletonExpandedSize( UnsignedArray& size1, UnsignedArray const& size2 );
+DIP_EXPORT void SingletonExpandedSize( UnsignedArray& size1, UnsignedArray const& size2 );
 
 /// \brief Determines if images can be singleton-expanded to the same size, and what
 /// that size would be.
@@ -80,7 +80,7 @@ void SingletonExpandedSize( UnsignedArray& size1, UnsignedArray const& size2 );
 /// singleton expansion cannot make them all the same size, an exception is
 /// thrown. Use `dip::Image::ExpandSingletonDimensions` to apply the transform
 /// to one image.
-UnsignedArray SingletonExpandedSize( ImageConstRefArray const& in );
+DIP_EXPORT UnsignedArray SingletonExpandedSize( ImageConstRefArray const& in );
 
 /// \brief Determines if images can be singleton-expanded to the same size, and what
 /// that size would be.
@@ -91,7 +91,7 @@ UnsignedArray SingletonExpandedSize( ImageConstRefArray const& in );
 /// singleton expansion cannot make them all the same size, an exception is
 /// thrown. Use `dip::Image::ExpandSingletonDimensions` to apply the transform
 /// to one image.
-UnsignedArray SingletonExpandedSize( ImageArray const& in );
+DIP_EXPORT UnsignedArray SingletonExpandedSize( ImageArray const& in );
 
 /// \brief Determines if tensors in images can be singleton-expanded to the same
 /// size, and what that size would be.
@@ -102,21 +102,21 @@ UnsignedArray SingletonExpandedSize( ImageArray const& in );
 /// data segment. If singleton expansion cannot make them all the same size, an
 /// exception is thrown. Use `dip::Image::ExpandSingletonTensor` to apply the
 /// transform to one image.
-dip::uint SingletonExpendedTensorElements( ImageArray const& in );
+DIP_EXPORT dip::uint SingletonExpendedTensorElements( ImageArray const& in );
 
 /// \brief Determines the best processing dimension, which is the one with the
 /// smallest stride, except if that dimension is very small and there's a
 /// longer dimension.
-dip::uint OptimalProcessingDim( Image const& in );
+DIP_EXPORT dip::uint OptimalProcessingDim( Image const& in );
 
 /// \brief Determines the best processing dimension as above, but giving preference
 /// to a dimension where `kernelSizes` is large also.
-dip::uint OptimalProcessingDim( Image const& in, UnsignedArray const& kernelSizes );
+DIP_EXPORT dip::uint OptimalProcessingDim( Image const& in, UnsignedArray const& kernelSizes );
 
 /// \brief Determines which color space names to assign to each output image, by finding
 /// the first input image with the same number of tensor elements as each output
 /// image.
-StringArray OutputColorSpaces(
+DIP_EXPORT StringArray OutputColorSpaces(
       ImageConstRefArray const& c_in,
       UnsignedArray const& nTensorElements
 );
@@ -156,7 +156,7 @@ DIP_DEFINE_OPTION( ScanOptions, Scan_NoSingletonExpansion, 4 );
 /// is given in a separate argument to the line filter. Depending on the
 /// arguments given to the framework function, you might assume that `tensorLength`
 /// is always 1, and consequently ignore also `tensorStride`.
-struct ScanBuffer {
+struct DIP_NO_EXPORT ScanBuffer {
    void* buffer;           ///< Pointer to pixel data for image line, to be cast to expected data type.
    dip::sint stride;       ///< Stride to walk along pixels.
    dip::sint tensorStride; ///< Stride to walk along tensor elements.
@@ -173,7 +173,7 @@ struct ScanBuffer {
 /// one input or output image is not scalar. In this case, `tensorToSpatial` is `true`, and the first dimension
 /// (`dimension=0`, and `position[0]`) correspond to the tensor dimension. `dimension` will never be
 /// equal to 0 in this case.
-struct ScanLineFilterParameters {
+struct DIP_NO_EXPORT ScanLineFilterParameters {
    std::vector< ScanBuffer > const& inBuffer;   ///< Input buffers (1D)
    std::vector< ScanBuffer >& outBuffer;        ///< Output buffers (1D)
    dip::uint bufferLength;                      ///< Number of pixels in each buffer
@@ -192,7 +192,7 @@ struct ScanLineFilterParameters {
 /// or that hold intermediate buffers. The `dip::Framework::ScanLineFilter::SetNumberOfThreads` method is
 /// called once before any processing starts. This is a good place to allocate space for output values, such
 /// that each threads has its own output variables that the calling function can later combine (reduce).
-class ScanLineFilter {
+class DIP_EXPORT ScanLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( ScanLineFilterParameters const& params ) = 0;
@@ -280,7 +280,7 @@ class ScanLineFilter {
 /// the `SetNumberOfThreads` method to `lineFilter` will be called once before
 /// the processing starts, when `%dip::Framework::Scan` has determined how many
 /// threads will be used in the scan.
-void Scan(
+DIP_EXPORT void Scan(
       ImageConstRefArray const& in,             ///< Input images
       ImageRefArray& out,                       ///< Output images
       DataTypeArray const& inBufferTypes,       ///< Data types for input buffers
@@ -465,7 +465,7 @@ inline void ScanDyadic(
 /// `dip::Framework::NewMonadicScanLineFilter`, `dip::Framework::NewDyadicScanLineFilter`,
 /// `dip::Framework::NewTriadicScanLineFilter`, `dip::Framework::NewTetradicScanLineFilter`.
 template< dip::uint N, typename TPI, typename F >
-class NadicScanLineFilter : public ScanLineFilter {
+class DIP_EXPORT NadicScanLineFilter : public ScanLineFilter {
    // Note that N is a compile-time constant, and consequently the compiler should be able to optimize all the loops
    // over N.
    public:
@@ -523,28 +523,28 @@ class NadicScanLineFilter : public ScanLineFilter {
 /// \brief Support for quickly defining monadic operators (1 input image, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
 template< typename TPI, typename F >
-std::unique_ptr< ScanLineFilter > NewMonadicScanLineFilter( F func ) {
+inline std::unique_ptr< ScanLineFilter > NewMonadicScanLineFilter( F func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 1, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining dyadic operators (2 input images, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
 template< typename TPI, typename F >
-std::unique_ptr< ScanLineFilter > NewDyadicScanLineFilter( F func ) {
+inline std::unique_ptr< ScanLineFilter > NewDyadicScanLineFilter( F func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 2, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining triadic operators (3 input images, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
 template< typename TPI, typename F >
-std::unique_ptr< ScanLineFilter > NewTriadicScanLineFilter( F func ) {
+inline std::unique_ptr< ScanLineFilter > NewTriadicScanLineFilter( F func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 3, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining tetradic operators (4 input images, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
 template< typename TPI, typename F >
-std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F func ) {
+inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 4, TPI, F >( func ));
 }
 
@@ -586,7 +586,7 @@ DIP_DEFINE_OPTION( SeparableOptions, Separable_UseOutputBuffer, 6 );
 /// is given in a separate argument to the line filter. Depending on the
 /// arguments given to the framework function, you might assume that `tensorLength`
 /// is always 1, and consequently ignore also `tensorStride`.
-struct SeparableBuffer {
+struct DIP_NO_EXPORT SeparableBuffer {
    void* buffer;           ///< Pointer to pixel data for image line, to be cast to expected data type.
    dip::uint length;       ///< Length of the buffer, not counting the expanded boundary
    dip::uint border;       ///< Length of the expanded boundary at each side of the buffer.
@@ -605,7 +605,7 @@ struct SeparableBuffer {
 /// input is not scalar. In this case, `tensorToSpatial` is `true`, and the first dimension
 /// (`dimension=0`, and `position[0]`) correspond to the tensor dimension. `dimension` will never be
 /// equal to 0 in this case.
-struct SeparableLineFilterParameters {
+struct DIP_NO_EXPORT SeparableLineFilterParameters {
    SeparableBuffer const& inBuffer;   ///< Input buffer (1D)
    SeparableBuffer& outBuffer;        ///< Output buffer (1D)
    dip::uint dimension;               ///< Dimension along which the line filter is applied
@@ -625,7 +625,7 @@ struct SeparableLineFilterParameters {
 /// or that hold intermediate buffers. The `dip::Framework::SeparableLineFilter::SetNumberOfThreads` method is
 /// called once before any processing starts. This is a good place to allocate space for temporary buffers, such
 /// that each threads has its own buffers to write in.
-class SeparableLineFilter {
+class DIP_EXPORT SeparableLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( SeparableLineFilterParameters const& params ) = 0;
@@ -747,7 +747,7 @@ class SeparableLineFilter {
 /// the `SetNumberOfThreads` method to `lineFilter` will be called once before
 /// the processing starts, when `%dip::Framework::Separable` has determined how many
 /// threads will be used in the processing.
-void Separable(
+DIP_EXPORT void Separable(
       Image const& in,                 ///< Input image
       Image& out,                      ///< Output image
       DataType bufferType,             ///< Data type for input and output buffer
@@ -788,7 +788,7 @@ DIP_DEFINE_OPTION( FullOptions, Full_ExpandTensorInBuffer, 2 );
 ///
 /// Depending on the arguments given to the framework function, you might assume that
 /// `tensorLength` is always 1, and consequently ignore also `tensorStride`.
-struct FullBuffer {
+struct DIP_NO_EXPORT FullBuffer {
    void* buffer;           ///< Pointer to pixel data for image line, to be cast to expected data type.
    dip::sint stride;       ///< Stride to walk along pixels.
    dip::sint tensorStride; ///< Stride to walk along tensor elements.
@@ -799,7 +799,7 @@ struct FullBuffer {
 ///
 /// We have put all the parameters to the line filter `dip::Framework::FullLineFilter::Filter` into
 /// a single struct to simplify writing those functions.
-struct FullLineFilterParameters {
+struct DIP_NO_EXPORT FullLineFilterParameters {
    FullBuffer const& inBuffer;            ///< Input buffer (1D)
    FullBuffer& outBuffer;                 ///< Output buffer (1D)
    dip::uint bufferLength;                ///< Number of pixels in each buffer
@@ -818,7 +818,7 @@ struct FullLineFilterParameters {
 /// or that hold intermediate buffers. The `dip::Framework::FullLineFilter::SetNumberOfThreads` method is
 /// called once before any processing starts. This is a good place to allocate space for temporary buffers, such
 /// that each threads has its own buffers to write in.
-class FullLineFilter {
+class DIP_EXPORT FullLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( FullLineFilterParameters const& params ) = 0;
@@ -913,7 +913,7 @@ class FullLineFilter {
 /// the `SetNumberOfThreads` method to `lineFilter` will be called once before
 /// the processing starts, when `%dip::Framework::Full` has determined how many
 /// threads will be used in the scan.
-void Full(
+DIP_EXPORT void Full(
       Image const& in,                 ///< Input image
       Image& out,                      ///< Output image
       DataType inBufferType,           ///< Data types for input buffer

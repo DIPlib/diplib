@@ -95,7 +95,7 @@ namespace dip {
 ///
 /// As elsewhere, the origin of the structuring element is in the middle of the image, on the pixel to
 /// the right of the center in case of an even-sized image.
-class StructuringElement{
+class DIP_NO_EXPORT StructuringElement{
       // TODO: In the old DIPlib, line SEs used filterParam = [length,angle], and only applied to 2D images!
       // TODO: Implement the discrete line for 2D without skews, so it's more efficient.
       // TODO: Implement periodic lines, construct translation-invariant discrete lines using periodic lines
@@ -208,7 +208,7 @@ class StructuringElement{
 /// The default value, and most meaningful one, is `"add min"`, but any value can be used.
 ///
 /// \see dip::Erosion, dip::Opening, dip::Closing
-void Dilation(
+DIP_EXPORT void Dilation(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
@@ -232,7 +232,7 @@ inline Image Dilation(
 /// The default value, and most meaningful one, is `"add max"`, but any value can be used.
 ///
 /// \see dip::Dilation, dip::Opening, dip::Closing
-void Erosion(
+DIP_EXPORT void Erosion(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
@@ -258,7 +258,7 @@ inline Image Erosion(
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
 ///
 /// \see dip::Dilation, dip::Erosion, dip::Opening
-void Closing(
+DIP_EXPORT void Closing(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
@@ -284,7 +284,7 @@ inline Image Closing(
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
 ///
 /// \see dip::Dilation, dip::Erosion, dip::Closing
-void Opening(
+DIP_EXPORT void Opening(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
@@ -326,7 +326,7 @@ inline Image Opening(
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
 /// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
 /// of these parameters.
-void Tophat(
+DIP_EXPORT void Tophat(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
@@ -359,7 +359,7 @@ inline Image Tophat(
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
 /// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
 /// of these parameters.
-void MorphologicalThreshold(
+DIP_EXPORT void MorphologicalThreshold(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
@@ -378,7 +378,7 @@ inline Image MorphologicalThreshold(
 }
 
 // TODO: Document MorphologicalGist. It was undocumented in the old DIPlib.
-void MorphologicalGist(
+DIP_EXPORT void MorphologicalGist(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
@@ -409,7 +409,7 @@ inline Image MorphologicalGist(
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
 /// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
 /// of these parameters.
-void MorphologicalRange(
+DIP_EXPORT void MorphologicalRange(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
@@ -466,7 +466,7 @@ inline Image MorphologicalGradientMagnitude(
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
 /// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
 /// of these parameters.
-void Lee(
+DIP_EXPORT void Lee(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
@@ -499,7 +499,7 @@ inline Image Lee(
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
 /// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
 /// of these parameters.
-void MorphologicalSmoothing(
+DIP_EXPORT void MorphologicalSmoothing(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
@@ -530,7 +530,7 @@ inline Image MorphologicalSmoothing(
 /// `boundaryCondition` determines the boundary conditions. See `dip::BoundaryCondition`.
 /// The default empty array causes the function to use `"add min"` with the dilation
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
-void MultiScaleMorphologicalGradient(
+DIP_EXPORT void MultiScaleMorphologicalGradient(
       Image const& in,
       Image& out,
       dip::uint upperSize = 9,
@@ -560,7 +560,7 @@ inline Image MultiScaleMorphologicalGradient(
 /// `se` defines the structuring element, and `boundaryCondition` the boundary conditions.
 /// See `dip::Dilation`, `dip::Erosion`, `dip::Opening` and/or `dip::Closing` for a description
 /// of these parameters.
-void MorphologicalLaplace(
+DIP_EXPORT void MorphologicalLaplace(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
@@ -582,7 +582,7 @@ inline Image MorphologicalLaplace(
 //
 
 
-void Watershed(
+DIP_EXPORT void Watershed(
       Image const& in,
       Image const& mask,
       Image& out,
@@ -592,7 +592,7 @@ void Watershed(
       String const& output = "binary"
 );
 
-void SeededWatershed(
+DIP_EXPORT void SeededWatershed(
       Image const&,
       Image const&,
       Image const&,
@@ -604,7 +604,7 @@ void SeededWatershed(
       String const& output = "binary"
 );
 
-void LocalMinima(
+DIP_EXPORT void LocalMinima(
       Image const&,
       Image const&,
       Image const&,
@@ -614,7 +614,7 @@ void LocalMinima(
       String const& output = "binary"
 );
 
-void UpperEnvelope(
+DIP_EXPORT void UpperEnvelope(
       Image const& in,
       Image& out,
       Image& bottom,
@@ -624,7 +624,7 @@ void UpperEnvelope(
       dip::uint maxSize = 0
 );
 
-void MorphologicalReconstruction(
+DIP_EXPORT void MorphologicalReconstruction(
       Image const& marker,
       Image const& in, // grey-value mask
       Image& out,
@@ -632,7 +632,7 @@ void MorphologicalReconstruction(
 );
 // TODO: MorphologicalReconstruction should have a flag to invert the operation, so it does reconstruction by erosions.
 
-void AreaOpening(
+DIP_EXPORT void AreaOpening(
       Image const& in,
       Image const& mask,
       Image& out,
@@ -642,7 +642,7 @@ void AreaOpening(
 );
 
 
-void PathOpening(
+DIP_EXPORT void PathOpening(
       Image const& in,
       Image const& mask,
       Image& out,
@@ -651,7 +651,7 @@ void PathOpening(
       bool constrained = true // should be a string
 );
 
-void DirectedPathOpening(
+DIP_EXPORT void DirectedPathOpening(
       Image const& in,
       Image const& mask,
       Image& out,

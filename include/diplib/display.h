@@ -28,7 +28,7 @@ namespace dip {
 
 
 /// \brief Parameters to the `dip::ImageDisplay` function.
-struct ImageDisplayParams {
+struct DIP_NO_EXPORT ImageDisplayParams {
    String mode; ///< "lin" (for linear), "log" (for logarithmic), "based" (for based at 0, where 0 is anchored at grey value 128.
    String complex; ///< "mag" (for magnitude) or "abs", "phase", "real", "imag".
    String projection; ///< "slice", "max", "mean".
@@ -52,7 +52,7 @@ struct ImageDisplayParams {
 ///
 /// If `in` is a color image, it will be converted to RGB, and each of the three channels will be handled identically.
 /// Other tensor images are not supported.
-void ImageDisplay(
+DIP_EXPORT void ImageDisplay(
       Image const& in,
       Image& out,
       UnsignedArray const& coordinates,

@@ -34,6 +34,7 @@
 #include <utility>
 #include <iostream>
 
+#include "dip_export.h"
 #include "error.h"
 
 
@@ -86,7 +87,7 @@ namespace dip {
 /// do any of these things! The implementation could change. Plus, you're just
 /// being silly and making unreadable code.
 template< typename T >
-class DimensionArray {
+class DIP_NO_EXPORT DimensionArray {
    public:
       // Types for consistency with STL containers
       using value_type = T;

@@ -155,31 +155,31 @@ inline dfloat pow10( dip::sint power ) {
 }
 
 /// \brief Computes the Bessel function J of the order 0.
-dfloat BesselJ0( dfloat x );
+DIP_EXPORT dfloat BesselJ0( dfloat x );
 
 /// \brief Computes the Bessel function J of the order 1.
-dfloat BesselJ1( dfloat x );
+DIP_EXPORT dfloat BesselJ1( dfloat x );
 
 /// \brief Computes the Bessel function J of the order `n`.
-dfloat BesselJN( dfloat x, dip::uint n );
+DIP_EXPORT dfloat BesselJN( dfloat x, dip::uint n );
 
 /// \brief Computes the Bessel function Y of the order 0.
-dfloat BesselY0( dfloat x );
+DIP_EXPORT dfloat BesselY0( dfloat x );
 
 /// \brief Computes the Bessel function Y of the order 1.
-dfloat BesselY1( dfloat x );
+DIP_EXPORT dfloat BesselY1( dfloat x );
 
 /// \brief Computes the Bessel function Y of the order `n`.
-dfloat BesselYN( dfloat x, dip::uint n );
+DIP_EXPORT dfloat BesselYN( dfloat x, dip::uint n );
 
 /// \brief Computes the natural logarithm of the gamma function.
-dfloat LnGamma( dfloat value );
+DIP_EXPORT dfloat LnGamma( dfloat value );
 
 /// \brief Computes the incomplete gamma function.
-dfloat GammaP( dfloat a, dfloat x );
+DIP_EXPORT dfloat GammaP( dfloat a, dfloat x );
 
 /// \brief Computes the complementary incomplete gamma function.
-dfloat GammaQ( dfloat a, dfloat x );
+DIP_EXPORT dfloat GammaQ( dfloat a, dfloat x );
 
 /// \brief Computes the error function.
 inline dfloat Erf( dfloat x ) {
@@ -205,7 +205,7 @@ inline dfloat Sinc( dfloat x ) {
 /// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
 /// If `vectors` is `false`, no eigenvectors are computed.
-void SymmetricEigenDecomposition(
+DIP_EXPORT void SymmetricEigenDecomposition(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dfloat > lambdas,
@@ -257,7 +257,7 @@ inline void SymmetricEigenDecompositionPacked(
 /// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
 /// If `vectors` is `false`, no eigenvectors are computed.
-void EigenDecomposition(
+DIP_EXPORT void EigenDecomposition(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
       SampleIterator< dcomplex > lambdas,
@@ -273,7 +273,7 @@ void EigenDecomposition(
 /// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
 /// If `vectors` is `false`, no eigenvectors are computed.
-void EigenDecomposition(
+DIP_EXPORT void EigenDecomposition(
       dip::uint n,
       ConstSampleIterator< dcomplex > input,
       SampleIterator< dcomplex > lambdas,
@@ -307,12 +307,12 @@ inline FloatType< T > Norm( dip::uint n, ConstSampleIterator< T > input ) {
 /// \brief Computes the determinant of a square real matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order.
-dfloat Determinant( dip::uint n, ConstSampleIterator< dfloat > input );
+DIP_EXPORT dfloat Determinant( dip::uint n, ConstSampleIterator< dfloat > input );
 
 /// \brief Computes the determinant of a square complex matrix.
 ///
 /// `input` is a pointer to `n*n` values, in column-major order.
-dcomplex Determinant( dip::uint n, ConstSampleIterator< dcomplex > input );
+DIP_EXPORT dcomplex Determinant( dip::uint n, ConstSampleIterator< dcomplex > input );
 
 /// \brief Computes the determinant of a diagonal matrix.
 ///
@@ -351,7 +351,7 @@ inline T TraceDiagonal( dip::uint n, ConstSampleIterator< T > input ) {
 ///
 /// `%SingularValueDecomposition` uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
-void SingularValueDecomposition(
+DIP_EXPORT void SingularValueDecomposition(
       dip::uint m,
       dip::uint n,
       ConstSampleIterator< dfloat > input,
@@ -373,7 +373,7 @@ void SingularValueDecomposition(
 ///
 /// `%SingularValueDecomposition` uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
-void SingularValueDecomposition(
+DIP_EXPORT void SingularValueDecomposition(
       dip::uint m,
       dip::uint n,
       ConstSampleIterator< dcomplex > input,
@@ -387,38 +387,38 @@ void SingularValueDecomposition(
 /// `input` and `output` are pointers to `n*n` values, in column-major order.
 ///
 /// The result is undetermined if the matrix is not invertible.
-void Inverse( dip::uint n, ConstSampleIterator< dfloat > input, SampleIterator< dfloat > output );
+DIP_EXPORT void Inverse( dip::uint n, ConstSampleIterator< dfloat > input, SampleIterator< dfloat > output );
 
 /// \brief Computes the inverse of a square complex matrix.
 ///
 /// `input` and `output` are pointers to `n*n` values, in column-major order.
 ///
 /// The result is undetermined if the matrix is not invertible.
-void Inverse( dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output );
+DIP_EXPORT void Inverse( dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output );
 
 /// \brief Computes the pseudo-inverse of a real matrix.
 ///
 /// `input` is a pointer to `m*n` values, in column-major order.
 ///
 /// `output` is a pointer to `n*m` values, in column-major order.
-void PseudoInverse( dip::uint m, dip::uint n, ConstSampleIterator< dfloat > input, SampleIterator< dfloat > output );
+DIP_EXPORT void PseudoInverse( dip::uint m, dip::uint n, ConstSampleIterator< dfloat > input, SampleIterator< dfloat > output );
 
 /// \brief Computes the pseudo-inverse of a complex matrix.
 ///
 /// `input` and `output` are pointers to `m*n` values, in column-major order.
 ///
 /// `output` is a pointer to `n*m` values, in column-major order.
-void PseudoInverse( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output );
+DIP_EXPORT void PseudoInverse( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output );
 
 /// \brief Computes the rank of a real matrix.
 ///
 /// `input` is a pointer to `m*n` values, in column-major order.
-dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dfloat > input );
+DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dfloat > input );
 
 /// \brief Computes the rank of a complex matrix.
 ///
 /// `input` is a pointer to `m*n` values, in column-major order.
-dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input );
+DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input );
 
 
 
@@ -452,7 +452,7 @@ dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input 
 /// Computation of statistics from moments according to Wikipedia:
 ///    <a href="https://en.wikipedia.org/wiki/Skewness#Sample_skewness">Skewness</a> and
 ///    <a href="https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis">Kurtosis</a>.
-class StatisticsAccumulator {
+class DIP_NO_EXPORT StatisticsAccumulator {
    public:
       /// Add a sample to the accumulator
       void Push( dfloat x ) {
@@ -553,7 +553,7 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
 /// ### Source
 ///
 /// Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3rd Ed., 1998.
-class VarianceAccumulator {
+class DIP_NO_EXPORT VarianceAccumulator {
    public:
       /// Add a sample to the accumulator
       void Push( dfloat x ) {
@@ -611,7 +611,7 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
 /// and add the accumulators together using the `+` operator.
 ///
 /// \see StatisticsAccumulator, VarianceAccumulator
-class MinMaxAccumulator {
+class DIP_NO_EXPORT MinMaxAccumulator {
    public:
       /// Add a sample to the accumulator
       void Push( dfloat x ) {

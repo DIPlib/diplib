@@ -65,7 +65,7 @@ namespace dip {
 /// The caller will maintain ownership of the interface.
 ///
 /// See dip_matlab_interface.h for an example of how to create an ExternalInterface.
-class ExternalInterface {
+class DIP_EXPORT ExternalInterface {
    public:
       /// Allocates the data for an image. The function is free to modify
       /// `strides` and `tstride` if desired, though they will be set
@@ -100,7 +100,7 @@ class ExternalInterface {
 ///
 /// Note that the coordinates must be inside the image domain, if the offset given
 /// does not correspond to one of the image's pixels, the result is meaningless.
-class CoordinatesComputer {
+class DIP_NO_EXPORT CoordinatesComputer {
    public:
       CoordinatesComputer( UnsignedArray const& sizes, IntegerArray const& strides );
 
@@ -119,8 +119,8 @@ class CoordinatesComputer {
 //
 
 // Forward declarations
-class Image;
-class ImageSliceIterator;
+class DIP_NO_EXPORT Image;
+class DIP_NO_EXPORT ImageSliceIterator;
 
 /// \brief An array of images
 using ImageArray = std::vector< Image >;
@@ -135,7 +135,7 @@ using ImageRefArray = std::vector< std::reference_wrapper< Image >>;
 using ImageConstRefArray = std::vector< std::reference_wrapper< Image const >>;
 
 // The class is documented in the file src/documentation/image.md
-class Image {
+class DIP_NO_EXPORT Image {
 
    public:
 
@@ -506,7 +506,7 @@ class Image {
       }
 
       /// \brief Test if strides are as by default. The image must be forged.
-      bool HasNormalStrides() const;
+      DIP_EXPORT bool HasNormalStrides() const;
 
       /// \brief Test if the image has been singleton expanded.
       ///
@@ -515,7 +515,7 @@ class Image {
       /// `dip::Image::ExpandSingletonTensor` create such dimensions.
       ///
       /// See HasContiguousData, HasNormalStrides, ExpandSingletonDimension, ExpandSingletonTensor.
-      bool IsSingletonExpanded() const;
+      DIP_EXPORT bool IsSingletonExpanded() const;
 
       /// \brief Test if the whole image can be traversed with a single stride
       /// value.
@@ -546,7 +546,7 @@ class Image {
       /// The image must be forged.
       ///
       /// \see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
-      void GetSimpleStrideAndOrigin( dip::uint& stride, void*& origin ) const;
+      DIP_EXPORT void GetSimpleStrideAndOrigin( dip::uint& stride, void*& origin ) const;
 
       /// \brief Checks to see if `other` and `this` have their dimensions ordered in
       /// the same way.
@@ -559,7 +559,7 @@ class Image {
       /// The images must be forged.
       ///
       /// \see HasSimpleStride, GetSimpleStrideAndOrigin, HasContiguousData.
-      bool HasSameDimensionOrder( Image const& other ) const;
+      DIP_EXPORT bool HasSameDimensionOrder( Image const& other ) const;
 
       /// \}
 
@@ -749,21 +749,21 @@ class Image {
 
       /// \brief Compare properties of an image against a template, either
       /// returns true/false or throws an error.
-      bool CompareProperties(
+      DIP_EXPORT bool CompareProperties(
             Image const& src,
             Option::CmpProps cmpProps,
             Option::ThrowException throwException = Option::ThrowException::DO_THROW
       ) const;
 
       /// \brief Check image properties, either returns true/false or throws an error.
-      bool CheckProperties(
+      DIP_EXPORT bool CheckProperties(
             dip::uint ndims,
             dip::DataType::Classes dts,
             Option::ThrowException throwException = Option::ThrowException::DO_THROW
       ) const;
 
       /// \brief Check image properties, either returns true/false or throws an error.
-      bool CheckProperties(
+      DIP_EXPORT bool CheckProperties(
             dip::uint ndims,
             dip::uint tensorElements,
             dip::DataType::Classes dts,
@@ -771,14 +771,14 @@ class Image {
       ) const;
 
       /// \brief Check image properties, either returns true/false or throws an error.
-      bool CheckProperties(
+      DIP_EXPORT bool CheckProperties(
             UnsignedArray const& sizes,
             dip::DataType::Classes dts,
             Option::ThrowException throwException = Option::ThrowException::DO_THROW
       ) const;
 
       /// \brief Check image properties, either returns true/false or throws an error.
-      bool CheckProperties(
+      DIP_EXPORT bool CheckProperties(
             UnsignedArray const& sizes,
             dip::uint tensorElements,
             dip::DataType::Classes dts,
@@ -786,7 +786,7 @@ class Image {
       ) const;
 
       /// \brief Check image properties for a mask image, either returns true/false or throws an error.
-      bool CheckIsMask(
+      DIP_EXPORT bool CheckIsMask(
             UnsignedArray const& sizes,
             Option::AllowSingletonExpansion allowSingletonExpansion = Option::AllowSingletonExpansion::DONT_ALLOW,
             Option::ThrowException throwException = Option::ThrowException::DO_THROW
@@ -917,7 +917,7 @@ class Image {
       /// Both images must be forged.
       ///
       /// \see SharesData, IsIdenticalView, IsOverlappingView, Alias.
-      bool Aliases( Image const& other ) const;
+      DIP_EXPORT bool Aliases( Image const& other ) const;
 
       /// \brief Determine if `this` and `other` offer an identical view of the
       /// same set of pixels.
@@ -1010,7 +1010,7 @@ class Image {
       /// external interface is registered for this image, that interface
       /// may create whatever strides are suitable, may honor or not the
       /// exising stride array, and may or may not produce normal strides.
-      void Forge();
+      DIP_EXPORT void Forge();
 
       /// \brief Modify image properties and forge the image.
       ///
@@ -1081,7 +1081,7 @@ class Image {
       /// is different from `dt`. Note that other properties much still match
       /// if `this` was forged. Thus, this flag allows `this` to control the
       /// data type of the image, ignoring any requested data type here.
-      void ReForge(
+      DIP_EXPORT void ReForge(
             UnsignedArray const& sizes,
             dip::uint tensorElems = 1,
             dip::DataType dt = DT_SFLOAT,
@@ -1229,7 +1229,16 @@ class Image {
       /// The image must be forged.
       ///
       /// \see Origin, Pointer, OffsetToCoordinates
-      dip::sint Offset( UnsignedArray const& coords ) const;
+      dip::sint Offset( UnsignedArray const& coords ) const {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
+         dip::sint offset = 0;
+         for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
+            DIP_THROW_IF( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
+            offset += coords[ ii ] * strides_[ ii ];
+         }
+         return offset;
+      }
 
       /// \brief Compute offset given coordinates.
       ///
@@ -1242,7 +1251,15 @@ class Image {
       /// The image must be forged.
       ///
       /// \see Origin, Pointer, OffsetToCoordinates
-      dip::sint Offset( IntegerArray const& coords ) const;
+      dip::sint Offset( IntegerArray const& coords ) const {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
+         dip::sint offset = 0;
+         for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
+            offset += coords[ ii ] * strides_[ ii ];
+         }
+         return offset;
+      }
 
       /// \brief Compute coordinates given an offset.
       ///
@@ -1257,7 +1274,10 @@ class Image {
       /// The image must be forged.
       ///
       /// \see Offset, OffsetToCoordinatesComputer, IndexToCoordinates
-      UnsignedArray OffsetToCoordinates( dip::sint offset ) const;
+      UnsignedArray OffsetToCoordinates( dip::sint offset ) const  {
+         CoordinatesComputer comp = OffsetToCoordinatesComputer();
+         return comp( offset );
+      }
 
       /// \brief Returns a functor that computes coordinates given an offset.
       ///
@@ -1268,7 +1288,10 @@ class Image {
       /// The image must be forged.
       ///
       /// \see Offset, OffsetToCoordinates, IndexToCoordinates, IndexToCoordinatesComputer
-      CoordinatesComputer OffsetToCoordinatesComputer() const;
+      CoordinatesComputer OffsetToCoordinatesComputer() const {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         return CoordinatesComputer( sizes_, strides_ );
+      }
 
       /// \brief Compute linear index (not offset) given coordinates.
       ///
@@ -1279,7 +1302,18 @@ class Image {
       /// The image must be forged.
       ///
       /// \see IndexToCoordinates, Offset
-      dip::uint Index( UnsignedArray const& coords ) const;
+      dip::uint Index( UnsignedArray const& coords ) const {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
+         dip::uint index = 0;
+         for( dip::uint ii = sizes_.size(); ii > 0; ) {
+            --ii;
+            DIP_THROW_IF( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
+            index *= sizes_[ ii ];
+            index += coords[ ii ];
+         }
+         return index;
+      }
 
       /// \brief Compute coordinates given a linear index.
       ///
@@ -1294,7 +1328,10 @@ class Image {
       /// The image must be forged.
       ///
       /// \see Index, Offset, IndexToCoordinatesComputer, OffsetToCoordinates
-      UnsignedArray IndexToCoordinates( dip::uint index ) const;
+      UnsignedArray IndexToCoordinates( dip::uint index ) const {
+         CoordinatesComputer comp = IndexToCoordinatesComputer();
+         return comp( index );
+      }
 
       /// \brief Returns a functor that computes coordinates given a linear index.
       ///
@@ -1335,7 +1372,7 @@ class Image {
       /// be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see SwapDimensions, Squeeze, AddSingleton, ExpandDimensionality, Flatten.
-      Image& PermuteDimensions( UnsignedArray const& order );
+      DIP_EXPORT Image& PermuteDimensions( UnsignedArray const& order );
 
       /// \brief Swap dimensions d1 and d2. This is a simplified version of the
       /// PermuteDimensions.
@@ -1344,7 +1381,7 @@ class Image {
       /// be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see PermuteDimensions.
-      Image& SwapDimensions( dip::uint dim1, dip::uint dim2 );
+      DIP_EXPORT Image& SwapDimensions( dip::uint dim1, dip::uint dim2 );
 
       /// \brief Make image 1D.
       ///
@@ -1355,7 +1392,7 @@ class Image {
       /// follow the same order as linear indices.
       ///
       /// \see PermuteDimensions, ExpandDimensionality.
-      Image& Flatten();
+      DIP_EXPORT Image& Flatten();
 
       /// \brief Remove singleton dimensions (dimensions with size==1).
       ///
@@ -1363,7 +1400,7 @@ class Image {
       /// be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see AddSingleton, ExpandDimensionality, PermuteDimensions, UnexpandSingletonDimensions.
-      Image& Squeeze();
+      DIP_EXPORT Image& Squeeze();
 
       /// \brief Add a singleton dimension (with size==1) to the image.
       ///
@@ -1378,7 +1415,7 @@ class Image {
       /// sizes `{ 4, 1, 5, 6 }`.
       ///
       /// \see Squeeze, ExpandDimensionality, PermuteDimensions.
-      Image& AddSingleton( dip::uint dim );
+      DIP_EXPORT Image& AddSingleton( dip::uint dim );
 
       /// \brief Append singleton dimensions to increase the image dimensionality.
       ///
@@ -1389,7 +1426,7 @@ class Image {
       /// be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see AddSingleton, ExpandSingletonDimension, Squeeze, PermuteDimensions, Flatten.
-      Image& ExpandDimensionality( dip::uint dim );
+      DIP_EXPORT Image& ExpandDimensionality( dip::uint dim );
 
       /// \brief Expand singleton dimension `dim` to `sz` pixels, setting the corresponding
       /// stride to 0.
@@ -1400,7 +1437,7 @@ class Image {
       /// be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see ExpandSingletonDimensions, ExpandSingletonTensor, IsSingletonExpanded, UnexpandSingletonDimensions, AddSingleton, ExpandDimensionality.
-      Image& ExpandSingletonDimension( dip::uint dim, dip::uint sz );
+      DIP_EXPORT Image& ExpandSingletonDimension( dip::uint dim, dip::uint sz );
 
       /// \brief Performs singleton expansion.
       ///
@@ -1410,7 +1447,7 @@ class Image {
       /// `size` is the array as returned by `dip::Framework::SingletonExpandedSize`.
       ///
       /// \see ExpandSingletonDimension, ExpandSingletonTensor, IsSingletonExpanded, UnexpandSingletonDimensions.
-      Image& ExpandSingletonDimensions( UnsignedArray const& newSizes );
+      DIP_EXPORT Image& ExpandSingletonDimensions( UnsignedArray const& newSizes );
 
       /// \brief Unexpands singleton-expanded dimensions.
       ///
@@ -1418,12 +1455,12 @@ class Image {
       /// That is, the resulting image will no longer be `dip::Image::IsSingletonExpanded`.
       ///
       /// \see ExpandSingletonDimension, ExpandSingletonTensor, IsSingletonExpanded, Squeeze.
-      Image& UnexpandSingletonDimensions();
+      DIP_EXPORT Image& UnexpandSingletonDimensions();
 
       /// \brief Tests if the image can be singleton-expanded to `size`.
       ///
       /// \see ExpandSingletonDimensions, ExpandSingletonTensor, IsSingletonExpanded.
-      bool IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const;
+      DIP_EXPORT bool IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const;
 
       /// \brief Expand singleton tensor dimension `sz` samples, setting the tensor
       /// stride to 0.
@@ -1434,7 +1471,7 @@ class Image {
       /// quick and cheap operation).
       ///
       /// \see ExpandSingletonDimension, IsSingletonExpanded.
-      Image& ExpandSingletonTensor( dip::uint sz );
+      DIP_EXPORT Image& ExpandSingletonTensor( dip::uint sz );
 
       /// \brief Mirror de image about selected axes.
       ///
@@ -1443,7 +1480,7 @@ class Image {
       ///
       /// `process` indicates which axes to mirror. If `process` is an empty array, all
       /// axes will be mirrored.
-      Image& Mirror( BooleanArray process = {} );
+      DIP_EXPORT Image& Mirror( BooleanArray process = {} );
 
       /// \brief Change the tensor shape, without changing the number of tensor elements.
       Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {
@@ -1484,7 +1521,7 @@ class Image {
       /// `dim` should not be larger than the number of dimensions. If `dim`
       /// is negative, the new dimension will be the last one. The image must
       /// be forged.
-      Image& TensorToSpatial( dip::sint dim = -1 );
+      DIP_EXPORT Image& TensorToSpatial( dip::sint dim = -1 );
 
       /// \brief Convert spatial dimension to tensor dimensions. The image must be scalar.
       ///
@@ -1492,7 +1529,7 @@ class Image {
       /// image along dimension `dim`. If both are zero, a default column tensor
       /// is created. If `dim` is negative, the last dimension is used. The
       /// image must be forged.
-      Image& SpatialToTensor( dip::sint dim = -1, dip::uint rows = 0, dip::uint cols = 0 );
+      DIP_EXPORT Image& SpatialToTensor( dip::sint dim = -1, dip::uint rows = 0, dip::uint cols = 0 );
 
       /// \brief Split the two values in a complex sample into separate samples,
       /// creating a new spatial dimension of size 2.
@@ -1501,22 +1538,22 @@ class Image {
       /// dimension, subsequent dimensions will be shifted over. `dim` should
       /// not be larger than the number of dimensions. If `dim` is negative,
       /// the new dimension will be the last one. The image must be forged.
-      Image& SplitComplex( dip::sint dim = -1 );
+      DIP_EXPORT Image& SplitComplex( dip::sint dim = -1 );
 
       /// \brief Merge the two samples along dimension `dim` into a single complex-valued sample.
       ///
       /// Dimension `dim` must have size 2 and a stride of 1. If `dim` is negative, the last
       /// dimension is used. The image must be forged.
-      Image& MergeComplex( dip::sint dim = -1 );
+      DIP_EXPORT Image& MergeComplex( dip::sint dim = -1 );
 
       /// \brief Split the two values in a complex sample into separate samples of
       /// a tensor. The image must be scalar and forged.
-      Image& SplitComplexToTensor();
+      DIP_EXPORT Image& SplitComplexToTensor();
 
       /// \brief Merge the two samples in the tensor into a single complex-valued sample.
       ///
       /// The image must have two tensor elements, a tensor stride of 1, and be forged.
-      Image& MergeTensorToComplex();
+      DIP_EXPORT Image& MergeTensorToComplex();
 
       /// \}
 
@@ -1532,41 +1569,41 @@ class Image {
       /// \{
 
       /// \brief Extract a tensor element, `indices` must have one or two elements. The image must be forged.
-      Image operator[]( UnsignedArray const& indices ) const;
+      DIP_EXPORT Image operator[]( UnsignedArray const& indices ) const;
 
       /// \brief Extract a tensor element using linear indexing. The image must be forged.
-      Image operator[]( dip::uint index ) const;
+      DIP_EXPORT Image operator[]( dip::uint index ) const;
 
       /// \brief Extracts the tensor elements along the diagonal. The image must be forged.
-      Image Diagonal() const;
+      DIP_EXPORT Image Diagonal() const;
 
       /// \brief Extracts the tensor elements along the given row. The image must be forged and the tensor
       /// representation must be full (i.e. no symmetric or triangular matrices). Use `dip::Image::ExpandTensor`
       /// to obtain a full representation.
-      Image TensorRow( dip::uint index ) const;
+      DIP_EXPORT Image TensorRow( dip::uint index ) const;
 
       /// \brief Extracts the tensor elements along the given column. The image must be forged and the tensor
       /// representation must be full (i.e. no symmetric or triangular matrices). Use `dip::Image::ExpandTensor`
       /// to obtain a full representation.
-      Image TensorColumn( dip::uint index ) const;
+      DIP_EXPORT Image TensorColumn( dip::uint index ) const;
 
       /// \brief Extracts the pixel at the given coordinates. The image must be forged.
-      Image At( UnsignedArray const& coords ) const;
+      DIP_EXPORT Image At( UnsignedArray const& coords ) const;
 
       /// \brief Extracts the pixel at the given linear index (inneficient!). The image must be forged.
-      Image At( dip::uint index ) const;
+      DIP_EXPORT Image At( dip::uint index ) const;
 
       /// \brief Extracts a subset of pixels from a 1D image. The image must be forged.
-      Image At( Range x_range ) const;
+      DIP_EXPORT Image At( Range x_range ) const;
 
       /// \brief Extracts a subset of pixels from a 2D image. The image must be forged.
-      Image At( Range x_range, Range y_range ) const;
+      DIP_EXPORT Image At( Range x_range, Range y_range ) const;
 
       /// \brief Extracts a subset of pixels from a 3D image. The image must be forged.
-      Image At( Range x_range, Range y_range, Range z_range ) const;
+      DIP_EXPORT Image At( Range x_range, Range y_range, Range z_range ) const;
 
       /// \brief Extracts a subset of pixels from an image. The image must be forged.
-      Image At( RangeArray ranges ) const;
+      DIP_EXPORT Image At( RangeArray ranges ) const;
 
       /// \brief Extracts a subset of pixels from an image.
       ///
@@ -1578,13 +1615,13 @@ class Image {
       /// `dip::Image::Pad` does the inverse operation.
       ///
       /// The image must be forged.
-      Image Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
+      DIP_EXPORT Image Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
 
       /// \brief Extracts the real component of a complex-typed image. The image must be forged.
-      Image Real() const;
+      DIP_EXPORT Image Real() const;
 
       /// \brief Extracts the imaginary component of a complex-typed image. The image must be forged.
-      Image Imaginary() const;
+      DIP_EXPORT Image Imaginary() const;
 
       /// \brief Quick copy, returns a new image that points at the same data as `this`,
       /// and has mostly the same properties.
@@ -1621,7 +1658,7 @@ class Image {
       /// as `this`, but have only one dimension. Pixels will be read from `mask` in the linear index order.
       ///
       /// `this` must be forged and be of equal size as `mask`. `mask` is a scalar binary image.
-      Image CopyAt( Image const& mask ) const;
+      DIP_EXPORT Image CopyAt( Image const& mask ) const;
 
       /// \brief Creates a 1D image containing the pixels selected by `indices`.
       ///
@@ -1633,7 +1670,7 @@ class Image {
       /// trivial operation; prefer to use the version of this function that uses coordinates.
       ///
       /// `this` must be forged.
-      Image CopyAt( UnsignedArray const& indices ) const;
+      DIP_EXPORT Image CopyAt( UnsignedArray const& indices ) const;
 
       /// \brief Creates a 1D image containing the pixels selected by `coordinates`.
       ///
@@ -1644,7 +1681,7 @@ class Image {
       /// Each of the coordinates must have the same number of dimensions as `this`.
       ///
       /// `this` must be forged.
-      Image CopyAt( CoordinateArray const& coordinates ) const;
+      DIP_EXPORT Image CopyAt( CoordinateArray const& coordinates ) const;
 
       /// \brief Copies the pixel values from `source` into `this`, to the pixels selected by `mask`.
       ///
@@ -1662,7 +1699,7 @@ class Image {
       /// pixels selected by `mask` have been written to.
       ///
       /// `this` must be forged and be of equal size as `mask`. `mask` is a scalar binary image.
-      void CopyAt( Image const& source, Image const& mask, Option::ThrowException throws = Option::ThrowException::DONT_THROW );
+      DIP_EXPORT void CopyAt( Image const& source, Image const& mask, Option::ThrowException throws = Option::ThrowException::DONT_THROW );
 
       /// \brief Copies the pixel values from `source` into `this`, to the pixels selected by `indices`.
       ///
@@ -1676,7 +1713,7 @@ class Image {
       /// into offsets is not a trivial operation; prefer to use the version of this function that uses coordinates.
       ///
       /// `this` must be forged.
-      void CopyAt( Image const& source, UnsignedArray const& indices );
+      DIP_EXPORT void CopyAt( Image const& source, UnsignedArray const& indices );
 
       /// \brief Copies the pixel values from `source` into `this`, to the pixels selected by `coordinates`.
       ///
@@ -1689,7 +1726,7 @@ class Image {
       /// in the same order. Each of the coordinates must have the same number of dimensions as `this`.
       ///
       /// `this` must be forged.
-      void CopyAt( Image const& source, CoordinateArray const& coordinates );
+      DIP_EXPORT void CopyAt( Image const& source, CoordinateArray const& coordinates );
 
       /// \brief Extends the image by padding with zeros.
       ///
@@ -1704,7 +1741,7 @@ class Image {
       /// `dip::Image::Crop` does the inverse operation.
       ///
       /// The image must be forged.
-      Image Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
+      DIP_EXPORT Image Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
 
       /// \brief Deep copy, `this` will become a copy of `src` with its own data.
       ///
@@ -1720,14 +1757,14 @@ class Image {
       /// be copied over.
       ///
       /// `src` must be forged.
-      void Copy( Image const& src );
+      DIP_EXPORT void Copy( Image const& src );
 
       /// \brief Converts the image to another data type.
       ///
       /// The data segment is replaced by a new one, unless the old and new data
       /// types have the same size and it is not shared with other images.
       /// If the data segment is replaced, strides are set to normal.
-      void Convert( dip::DataType dt );
+      DIP_EXPORT void Convert( dip::DataType dt );
 
       /// \brief Expands the image's tensor, such that the tensor representation is a column-major matrix.
       ///
@@ -1736,7 +1773,7 @@ class Image {
       ///
       /// After calling this method, the object always has `dip::Tensor::HasNormalOrder` equal `true`.
       /// This method simplifies manipulating tensors by normalizing their storage.
-      void ExpandTensor();
+      DIP_EXPORT void ExpandTensor();
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
@@ -1744,7 +1781,7 @@ class Image {
       /// dip::dfloat (double), and dip::dcomplex.
       /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
-      void Fill( bool v );
+      DIP_EXPORT void Fill( bool v );
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
@@ -1752,7 +1789,7 @@ class Image {
       /// dip::dfloat (double), and dip::dcomplex.
       /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
-      void Fill( int v );
+      DIP_EXPORT void Fill( int v );
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
@@ -1760,7 +1797,7 @@ class Image {
       /// dip::dfloat (double), and dip::dcomplex.
       /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
-      void Fill( dip::uint v );
+      DIP_EXPORT void Fill( dip::uint v );
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
@@ -1768,7 +1805,7 @@ class Image {
       /// dip::dfloat (double), and dip::dcomplex.
       /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
-      void Fill( dip::sint v );
+      DIP_EXPORT void Fill( dip::sint v );
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
@@ -1776,7 +1813,7 @@ class Image {
       /// dip::dfloat (double), and dip::dcomplex.
       /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
-      void Fill( dfloat v );
+      DIP_EXPORT void Fill( dfloat v );
 
       /// \brief Sets all samples in the image to the value `v`.
       ///
@@ -1784,7 +1821,7 @@ class Image {
       /// dip::dfloat (double), and dip::dcomplex.
       /// The value will be clipped to the target range and/or truncated, as applicable.
       /// The image must be forged.
-      void Fill( dcomplex v );
+      DIP_EXPORT void Fill( dcomplex v );
 
       /// \brief Sets all pixels in the image to the values `vlist`.
       ///
@@ -2041,16 +2078,16 @@ class Image {
       /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), casted
       /// to a signed integer of maximum width. For complex values
       /// returns the absolute value.
-      explicit operator dip::sint() const;
+      DIP_EXPORT explicit operator dip::sint() const;
 
       /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), casted
       /// to a double-precision floating-point value. For complex values
       /// returns the absolute value.
-      explicit operator dfloat() const;
+      DIP_EXPORT explicit operator dfloat() const;
 
       /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), casted
       /// to a double-precision complex floating-point value.
-      explicit operator dcomplex() const;
+      DIP_EXPORT explicit operator dcomplex() const;
 
       /// \}
 
@@ -2079,13 +2116,13 @@ class Image {
       // Some private functions
       //
 
-      bool HasValidStrides() const;       // Are the strides such that no two samples are in the same memory cell?
+      DIP_NO_EXPORT bool HasValidStrides() const;       // Are the strides such that no two samples are in the same memory cell?
 
-      void SetNormalStrides();            // Fill in all strides.
+      DIP_NO_EXPORT void SetNormalStrides();            // Fill in all strides.
 
-      void GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const;
+      DIP_NO_EXPORT void GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const;
 
-      void GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const;
+      DIP_NO_EXPORT void GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const;
       // size is the distance between top left and bottom right corners.
       // start is the distance between top left corner and origin
       // (will be <0 if any strides[ii] < 0). All measured in samples.
@@ -2099,7 +2136,7 @@ class Image {
 
 /// \brief You can output a `dip::Image` to `std::cout` or any other stream. Some
 /// information about the image is printed.
-std::ostream& operator<<( std::ostream& os, Image const& img );
+DIP_EXPORT std::ostream& operator<<( std::ostream& os, Image const& img );
 
 //
 // Utility functions
@@ -2127,7 +2164,7 @@ inline bool Alias( Image const& img1, Image const& img2 ) {
 /// ```cpp
 ///     DefineROI( src, dest, {}, {}, { 2 } );
 /// ```
-void DefineROI(
+DIP_EXPORT void DefineROI(
       Image const& src,
       Image& dest,
       UnsignedArray origin = {},

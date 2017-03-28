@@ -17,6 +17,12 @@ else()
    message(WARNING "Not configured for release or debugging!: ${CMAKE_BUILD_TYPE}")
 endif()
 
+# Static or dynamic?
+set(DIP_SHARED_LIBRARY ON CACHE BOOL "Build a shared library (off for static library)")
+if(DIP_SHARED_LIBRARY)
+   set(BUILD_SHARED_LIBS On)
+endif()
+
 # Installation path
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BUILD_TYPE}" CACHE PATH "Installation directory")
 set(DOCUMENTATION_OUTPUT ${CMAKE_INSTALL_PREFIX}/share/doc/DIPlib)
@@ -27,7 +33,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid settings mismatch with the MEX files
-set(CMAKE_VISIBILITY_INLINES_HIDDEN hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
    # Safe Clang compiler and architecture flags across all Intel and AMD processors (circa 2015)
@@ -36,7 +42,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    # Safe GCC compiler and architecture flags across all Intel and AMD processors (circa 2015)
-   set(CMAKE_CXX_FLAGS "-Wall")
+   set(CMAKE_CXX_FLAGS "-Wall -Wno-attributes") # Wattributes: "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
    set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
@@ -72,6 +78,9 @@ set(DIP_ENABLE_DOCTEST ON CACHE BOOL "Turn off to not include doctest.h in the l
 if(DIP_ENABLE_DOCTEST)
    include_directories(dependencies/doctest)
    add_definitions(-DDIP__ENABLE_DOCTEST -DDOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
+   if(DIP_SHARED_LIBRARY)
+      add_definitions(-DDIP__DOCTEST_IN_SHARED_LIB)
+   endif()
 endif()
 
 # UFT-8 or plain old ASCII?
@@ -107,13 +116,13 @@ file(
       "include/diplib/*.h"
       "include/diplib/library/*.h"
 )
-add_library(DIP STATIC ${SOURCES} ${HEADERS})
+add_library(DIP ${SOURCES} ${HEADERS})
+include(GenerateExportHeader)
+include_directories(${PROJECT_BINARY_DIR})
+generate_export_header(DIP BASE_NAME dip)
 install(TARGETS DIP DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
-
-#add_library(DIP DYNAMIC ${SOURCES} ${HEADERS})
-# If you want to compile a dynamic library, you need to set export properties for all public functions.
-# See CMake command GenerateExportHeader()
+install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
 
 
 ### DIPlib unit tests
@@ -121,18 +130,18 @@ install(DIRECTORY include/ DESTINATION include)
 if(DIP_ENABLE_DOCTEST)
    add_custom_target(check COMMAND ./unit_tests)
    enable_testing()
-   add_executable (unit_tests EXCLUDE_FROM_ALL test/test.cpp)
+   add_executable (unit_tests EXCLUDE_FROM_ALL test/unit_tests.cpp)
    target_link_libraries(unit_tests DIP)
    add_test(NAME unit_tests COMMAND unit_tests)
    add_dependencies(check unit_tests)
-   include(dependencies/doctest/doctest_force_link_static_lib_in_target.cmake)
-   doctest_force_link_static_lib_in_target(unit_tests DIP) # This pulls in all object files from the static DIP library
+   if(NOT DIP_SHARED_LIBRARY)
+      include(dependencies/doctest/doctest_force_link_static_lib_in_target.cmake)
+      doctest_force_link_static_lib_in_target(unit_tests DIP) # This pulls in all object files from the static DIP library
+   endif()
 endif()
 
 
 ### DIPimage toolbox for MATLAB
-
-# TODO: MEX-files are huge with the statically-linked DIPlib. We need to do dynamic linking here.
 
 if(Matlab_FOUND)
    # Install M-files
@@ -208,43 +217,6 @@ add_custom_target(
       test_fft_kissfft test_fft_opencv
 )
 
-if(Matlab_FOUND)
-
-   matlab_add_mex(NAME mextest SRC test/mextest.cpp LINK_TO DIP)
-   set_target_properties(mextest PROPERTIES EXCLUDE_FROM_ALL 1)
-   # Does: mex ../test/mextest.cpp -I../include -I../dependencies/doctest/ -largeArrayDims libDIP.a -DDIP__ENABLE_DOCTEST -DDOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
-
-   matlab_add_mex(NAME mextest_function SRC test/mextest_function.cpp LINK_TO DIP)
-   set_target_properties(mextest_function PROPERTIES EXCLUDE_FROM_ALL 1)
-
-   matlab_add_mex(NAME mextest_iterators SRC test/mextest_iterators.cpp LINK_TO DIP)
-   set_target_properties(mextest_iterators PROPERTIES EXCLUDE_FROM_ALL 1)
-
-   matlab_add_mex(NAME mextest_measure SRC test/mextest_measure.cpp LINK_TO DIP)
-   set_target_properties(mextest_measure PROPERTIES EXCLUDE_FROM_ALL 1)
-
-   matlab_add_mex(NAME mextest_maxmin SRC test/mextest_maxmin.cpp LINK_TO DIP)
-   set_target_properties(mextest_maxmin PROPERTIES EXCLUDE_FROM_ALL 1)
-
-   matlab_add_mex(NAME mextest_pixel_table SRC test/mextest_pixel_table.cpp LINK_TO DIP)
-   set_target_properties(mextest_pixel_table PROPERTIES EXCLUDE_FROM_ALL 1)
-
-   matlab_add_mex(NAME mextest_dip_image SRC test/mextest_dip_image.cpp LINK_TO DIP)
-   set_target_properties(mextest_dip_image PROPERTIES EXCLUDE_FROM_ALL 1)
-
-   add_custom_target(
-         mex DEPENDS
-         mextest
-         mextest_function
-         mextest_iterators
-         mextest_measure
-         mextest_maxmin
-         mextest_pixel_table
-         mextest_dip_image
-   )
-
-endif(Matlab_FOUND)
-
 
 ### DIPlib documentation
 
@@ -271,18 +243,69 @@ add_custom_command(
       DEPENDS ${DIPthoughts.md}
 )
 
-add_custom_command(
-      OUTPUT ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf
-      COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
-      COMMAND pandoc -s DIPproposal.md -o ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf
-      --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
-      --toc --listings -H pandoc/listings_setup.tex --number-sections
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPENDS ${DIPproposal.md}
-)
-
 add_custom_target(
       docs DEPENDS
       ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
-      ${DOCUMENTATION_OUTPUT}/DIPproposal.pdf
 )
+
+
+### Status report
+
+message("")
+message("--------------------------------------")
+message("   CONFIGURATION REPORT")
+message("")
+
+if(CMAKE_BUILD_TYPE MATCHES "^Release$")
+   message(" * Configured for release")
+elseif(CMAKE_BUILD_TYPE MATCHES "^Debug$")
+   message(" * Configured for debugging")
+endif()
+
+if(DIP_SHARED_LIBRARY)
+   message(" * Building shared library")
+else()
+   message(" * Building static library")
+endif()
+message(" * Library installed to: ${CMAKE_INSTALL_PREFIX}/lib")
+message(" * Header files installed to: ${CMAKE_INSTALL_PREFIX}/include")
+
+if(DIP_EXCEPTIONS_RECORD_STACK_TRACE)
+   message(" * Stack trace recording enabled")
+else()
+   message(" * Stack trace recording disabled")
+endif()
+if(DIP_ENABLE_ASSERT)
+   message(" * Asserts enabled")
+else()
+   message(" * Asserts disabled")
+endif()
+if(DIP_ENABLE_UNICODE)
+   message(" * Unicode support enabled")
+else()
+   message(" * Unicode support disabled")
+endif()
+
+if(DIP_ENABLE_DOCTEST)
+   message(" * Unit test code included")
+else()
+   message(" * Unit test code excluded")
+endif()
+
+if (DOXYGEN_FOUND)
+   message(" * Doxygen found, 'apidoc' target available")
+   message(" * Documentation installed to: ${DOCUMENTATION_OUTPUT}")
+else()
+   message(" * Doxygen not found, 'apidoc' target not available")
+endif()
+
+if(Matlab_FOUND)
+   message(" * MATLAB found, DIPimage added to ALL target")
+   message(" * DIPimage installed to: ${DIPIMAGE_INSTALL_PATH}")
+else()
+   message(" * MATLAB not found, DIPimage cannot be compiled")
+endif()
+
+message("")
+message("--------------------------------------")
+message("")

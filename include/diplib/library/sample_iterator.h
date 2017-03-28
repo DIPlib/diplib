@@ -61,7 +61,7 @@ namespace dip {
 ///
 /// \see ImageIterator, JointImageIterator, LineIterator
 template< typename T >
-class SampleIterator {
+class DIP_NO_EXPORT SampleIterator {
    public:
       using iterator_category = std::random_access_iterator_tag;
       using value_type = T;               ///< The data type of the pixel, obtained when dereferencing the iterator

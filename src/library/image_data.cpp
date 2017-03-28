@@ -649,61 +649,6 @@ void Image::ReForge(
 
 
 //
-dip::sint Image::Offset( UnsignedArray const& coords ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-   dip::sint offset = 0;
-   for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
-      DIP_THROW_IF( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
-      offset += coords[ ii ] * strides_[ ii ];
-   }
-   return offset;
-}
-
-//
-dip::sint Image::Offset( IntegerArray const& coords ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-   dip::sint offset = 0;
-   for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
-      offset += coords[ ii ] * strides_[ ii ];
-   }
-   return offset;
-}
-
-//
-UnsignedArray Image::OffsetToCoordinates( dip::sint offset ) const {
-   CoordinatesComputer comp = OffsetToCoordinatesComputer();
-   return comp( offset );
-}
-
-//
-CoordinatesComputer Image::OffsetToCoordinatesComputer() const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   return CoordinatesComputer( sizes_, strides_ );
-}
-
-//
-dip::uint Image::Index( UnsignedArray const& coords ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-   dip::uint index = 0;
-   for( dip::uint ii = sizes_.size(); ii > 0; ) {
-      --ii;
-      DIP_THROW_IF( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
-      index *= sizes_[ ii ];
-      index += coords[ ii ];
-   }
-   return index;
-}
-
-//
-UnsignedArray Image::IndexToCoordinates( dip::uint index ) const {
-   CoordinatesComputer comp = IndexToCoordinatesComputer();
-   return comp( index );
-}
-
-//
 CoordinatesComputer Image::IndexToCoordinatesComputer() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    IntegerArray fake_strides;

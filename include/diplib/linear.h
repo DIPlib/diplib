@@ -72,7 +72,7 @@ namespace dip {
 ///
 /// The convolution is applied to each tensor component separately, which is always the correct behavior for linear
 /// filters.
-struct OneDimensionalFilter {
+struct DIP_NO_EXPORT OneDimensionalFilter {
    FloatArray filter;            ///< Filter weights
    dip::sint origin = -1;        ///< Origin of the filter if non-negative
    String symmetry = "";         ///< Filter shape: `""` == `"general"`, `"even"`, `"odd"`, `"d-even"` or `"d-odd"`
@@ -82,7 +82,7 @@ struct OneDimensionalFilter {
 using OneDimensionalFilterArray = std::vector< OneDimensionalFilter >;
 
 // TODO: Implement code to separate an image into 1D filters to be applied with SeparableConvolution
-OneDimensionalFilterArray SeparateFilter( Image const& filter );
+DIP_EXPORT OneDimensionalFilterArray SeparateFilter( Image const& filter );
 
 /// \brief Applies a convolution with a filter kernel (PSF) that is separable.
 ///
@@ -94,7 +94,7 @@ OneDimensionalFilterArray SeparateFilter( Image const& filter );
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
 /// \see dip::SeparateFilter, dip::GeneralConvolution, dip::ConvolveFT, dip::Framework::Separable
-void SeparableConvolution(
+DIP_EXPORT void SeparableConvolution(
       Image const& in,                    ///< Input image
       Image& out,                         ///< Output image
       OneDimensionalFilterArray const& filterArray, ///< The filter
@@ -126,7 +126,7 @@ inline Image SeparableConvolution(
 /// the frequency domain.
 ///
 /// \see dip::GeneralConvolution, dip::SeparableConvolution
-void ConvolveFT(
+DIP_EXPORT void ConvolveFT(
       Image const& in,
       Image const& filter,
       Image& out,
@@ -164,7 +164,7 @@ inline Image ConvolveFT(
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
 /// \see dip::ConvolveFT, dip::SeparableConvolution, dip::SeparateFilter, dip::Uniform
-void GeneralConvolution(
+DIP_EXPORT void GeneralConvolution(
       Image const& in,
       Image const& filter,
       Image& out,
@@ -190,7 +190,7 @@ inline Image GeneralConvolution(
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
 /// \see dip::ConvolveFT, dip::SeparableConvolution, dip::GeneralConvolution
-void Uniform(
+DIP_EXPORT void Uniform(
       Image const& in,
       Image& out,
       FloatArray filterSize = { 7 }, // TODO: generalize the dip::StructuringElement class to dip::Filter or something like that, so we can use it here and in many other places
@@ -216,7 +216,7 @@ inline Image Uniform(
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
 /// \see dip::ConvolveFT, dip::SeparableConvolution, dip::GeneralConvolution
-void Uniform(
+DIP_EXPORT void Uniform(
       Image const& in,
       Image const& neighborhood,
       Image& out,
@@ -258,7 +258,7 @@ inline Image Uniform(
 /// `sigmas` to 0 or a negative value.
 ///
 /// \see dip::Gauss, dip::GaussIIR, dip::GaussFT, dip::Derivative, dip::FiniteDifference, dip::Uniform
-void GaussFIR(
+DIP_EXPORT void GaussFIR(
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
@@ -295,7 +295,7 @@ inline Image GaussFIR(
 /// `sigmas` to 0 or a negative value.
 ///
 /// \see dip::Gauss, dip::GaussFIR, dip::GaussIIR, dip::Derivative, dip::FiniteDifference, dip::Uniform
-void GaussFT(
+DIP_EXPORT void GaussFT(
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
@@ -345,7 +345,7 @@ inline Image GaussFT(
 ///
 /// See: L.J. van Vliet, I.T. Young and P.W. Verbeek, Recursive Gaussian Derivative Filters,
 /// in: Proc. 14th Int. Conference on Pattern Recognition, IEEE Computer Society Press, 1998, 509-514.
-void GaussIIR(
+DIP_EXPORT void GaussIIR(
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
@@ -393,7 +393,7 @@ inline Image GaussIIR(
 /// `sigmas` to 0 or a negative value.
 ///
 /// \see dip::GaussFIR, dip::GaussFT, dip::GaussIIR, dip::Derivative, dip::FiniteDifference, dip::Uniform
-void Gauss(
+DIP_EXPORT void Gauss(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -433,7 +433,7 @@ inline Image Gauss(
 /// Set `process` to false for those dimensions that should not be filtered.
 ///
 /// \see dip::Derivative, dip::SobelGradient
-void FiniteDifference(
+DIP_EXPORT void FiniteDifference(
       Image const& in,
       Image& out,
       UnsignedArray derivativeOrder = { 0 },
@@ -510,7 +510,7 @@ inline Image SobelGradient(
 /// `sigmas` to 0 or a negative value.
 ///
 /// \see dip::Gauss, dip::FiniteDifference
-void Derivative(
+DIP_EXPORT void Derivative(
       Image const& in,
       Image& out,
       UnsignedArray const& derivativeOrder,
@@ -717,7 +717,7 @@ inline Image Dyz(
    return out;
 }
 
-void Gradient(
+DIP_EXPORT void Gradient(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -728,7 +728,7 @@ void Gradient(
 );
 
 // Same as Norm(Gradient()), but more efficient
-void GradientMagnitude(
+DIP_EXPORT void GradientMagnitude(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -739,7 +739,7 @@ void GradientMagnitude(
 );
 
 // 2D only. Implemented as Atan2(Dy(),Dx()).
-void GradientDirection2D(
+DIP_EXPORT void GradientDirection2D(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -749,7 +749,7 @@ void GradientDirection2D(
       dfloat truncation = 3
 );
 
-void Hessian (
+DIP_EXPORT void Hessian (
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -760,7 +760,7 @@ void Hessian (
 );
 
 // Same as Trace(Hessian()), but more efficient. If "finitediff", uses the well-known 3-by-3 matrix.
-void Laplace (
+DIP_EXPORT void Laplace (
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -770,7 +770,7 @@ void Laplace (
       dfloat truncation = 3
 );
 
-void Dgg(
+DIP_EXPORT void Dgg(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -780,7 +780,7 @@ void Dgg(
       dfloat truncation = 3
 );
 
-void LaplacePlusDgg(
+DIP_EXPORT void LaplacePlusDgg(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -790,7 +790,7 @@ void LaplacePlusDgg(
       dfloat truncation = 3
 );
 
-void LaplaceMinDgg(
+DIP_EXPORT void LaplaceMinDgg(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -800,14 +800,14 @@ void LaplaceMinDgg(
       dfloat truncation = 3
 );
 
-void OrientedGauss(
+DIP_EXPORT void OrientedGauss(
       Image const& in,
       Image& out,
       FloatArray,
       FloatArray
 );
 
-void GaborFIR(
+DIP_EXPORT void GaborFIR(
       Image const& in,
       Image& out,
       FloatArray sigmas,
@@ -817,7 +817,7 @@ void GaborFIR(
       dfloat truncation = 3
 );
 
-void GaborIIR(
+DIP_EXPORT void GaborIIR(
       Image const& in,
       Image& out,
       FloatArray sigmas,

@@ -60,7 +60,7 @@ namespace dip {
 /// `SECOND_ORDER_EXTRAPOLATE` | "second order"           | A quadratic function is defined based on the two values closest to the border, the function reaches zero at the end of the extended boundary.
 /// `THIRD_ORDER_EXTRAPOLATE`  | "third order"            | A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
 /// `DEFAULT`                  | "default" or ""          | The default value, currently equal to `SYMMETRIC_MIRROR`.
-enum class BoundaryCondition {
+enum class DIP_NO_EXPORT BoundaryCondition {
       SYMMETRIC_MIRROR,
       ASYMMETRIC_MIRROR,
       PERIODIC,
@@ -129,7 +129,7 @@ inline void BoundaryArrayUseParameter( BoundaryConditionArray& bc, dip::uint nDi
 /// is impossible to reproduce in this simple function. Use `dip::ExtendImage` to get the functionality
 /// of these boundary conditions.
 template< typename DataType, typename OutputIterator >
-void ReadPixelWithBoundaryCondition(
+inline void ReadPixelWithBoundaryCondition(
       Image const& img,
       OutputIterator it,
       IntegerArray coords, // getting a local copy so we can modify it
@@ -213,7 +213,7 @@ static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_ExpandTensor, 1 );
 ///
 /// Is identical to `dip::ExtendImage`, except it uses boundary condition constants instead of strings, and
 /// option constants instead of strings. This version is meant to be used by low-level library functions.
-void ExtendImageLowLevel(
+DIP_EXPORT void ExtendImageLowLevel(
       Image const& in,
       Image& out,
       UnsignedArray borderSizes,

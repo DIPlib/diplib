@@ -71,7 +71,7 @@ namespace dip {
 /// The `BaseUnits::PIXEL` value is not to be associated with a pixel size in
 /// an image. `dip::MeasurementTool` uses it when an image has no pixel size.
 /// `IsPhysical` tests whether there are pixel units present or not.
-class Units {
+class DIP_NO_EXPORT Units {
       // Note: this class encapsulates units defined at run time, not at
       // compile time as in most C++ unit libraries:
       //   https://github.com/martinmoene/PhysUnits-CT-Cpp11
@@ -111,9 +111,8 @@ class Units {
 
       /// \brief Construct a `%Units` from a string representation of units. The string representation should be as
       /// producted by `dip::Units::String`.
+      DIP_EXPORT
       explicit Units( dip::String const& string );
-
-   public:
 
       // Specific useful powers
       /// Dimensionless nano magnitude (n)
@@ -262,6 +261,7 @@ class Units {
 
       /// \brief Cast physical units to a string representation.
       /// No attempt is (yet?) made to produce derived SI units or to translate to different units.
+      DIP_EXPORT
       dip::String String() const;
 
       /// Swaps the values of `this` and `other`.
@@ -324,7 +324,7 @@ inline void swap( Units& v1, Units& v2 ) {
 /// ```cpp
 ///     dip::PhysicalQuantity a = 50 * dip::Units( dip::Units::BaseUnits::LENGTH );
 /// ```
-struct PhysicalQuantity {
+struct DIP_NO_EXPORT PhysicalQuantity {
 
    /// A default-constructed `%PhysicalQuantity` has magnitude 0 and is unitless.
    PhysicalQuantity() {};
@@ -596,7 +596,7 @@ inline PhysicalQuantity operator*( double lhs, Units const& rhs ) {
 /// though not actually dimensionless, are considered so and treated as an "undefined"
 /// size. Thus, any physical quantity represented in an object of this class must be
 /// `dip::PhysicalQuantity::IsPhysical`.
-class PixelSize {
+class DIP_NO_EXPORT PixelSize {
 
    public:
 

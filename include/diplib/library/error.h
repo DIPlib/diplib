@@ -32,6 +32,8 @@
 #include <vector>
 #include <string>
 
+#include "dip_export.h"
+
 /// \file
 /// \brief Defines error macros and default error strings. This file is always included through `diplib.h`.
 /// \see infrastructure
@@ -49,7 +51,7 @@ namespace dip {
 /// You can catch this exception at the top level, where you can communicate the problem to the user,
 /// and only if you want to prevent your program from exiting abnormally.
 /// This class is derived from `std::exception`, so you can choose to catch that instead.
-class Error : public std::exception {
+class DIP_EXPORT Error : public std::exception {
 
    public:
 
@@ -91,7 +93,7 @@ class Error : public std::exception {
 /// You shouldn't need to catch exceptions of this type.
 ///
 /// To throw an exception of this type, use the `#DIP_THROW_ASSERTION` and `#DIP_ASSERT` macros.
-class AssertionError : public Error {
+class DIP_EXPORT AssertionError : public Error {
       using Error::Error;
 };
 
@@ -101,7 +103,7 @@ class AssertionError : public Error {
 /// Catch exceptions of this type only if you don't control the input arguments (i.e. in a use interface).
 ///
 /// To throw an exception of this type, use the `#DIP_THROW` and `#DIP_THROW_IF` macros.
-class ParameterError : public Error {
+class DIP_EXPORT ParameterError : public Error {
       using Error::Error;
 };
 
@@ -112,7 +114,7 @@ class ParameterError : public Error {
 /// library functions catch and translate this exception.
 ///
 /// To throw an exception of this type, use the `#DIP_THROW_RUNTIME` macro.
-class RunTimeError : public Error {
+class DIP_EXPORT RunTimeError : public Error {
       using Error::Error;
 };
 

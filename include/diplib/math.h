@@ -43,7 +43,7 @@ namespace dip {
 
 
 /// \brief Counts the number of non-zero pixels in a scalar image.
-dip::uint Count( Image const& in, Image const& mask = {} );
+DIP_EXPORT dip::uint Count( Image const& in, Image const& mask = {} );
 
 
 /// \brief Calculates the cumulative sum of the pixel values over all those dimensions which are specified by `process`.
@@ -52,7 +52,7 @@ dip::uint Count( Image const& in, Image const& mask = {} );
 /// For tensor images, the output has the same tensor size and shape as the input.
 ///
 /// If `mask` is forged, those pixels not selected by the mask are presumed to be 0.
-void CumulativeSum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void CumulativeSum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
    CumulativeSum( in, mask, out, process );
@@ -65,7 +65,7 @@ inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArra
 /// If `mask` is not forged, all input pixels are considered. In case of a tensor
 /// image, returns the maximum and minimum sample values. In case of a complex
 /// samples, treats real and imaginary components as individual samples.
-MinMaxAccumulator GetMaximumAndMinimum( Image const& in, Image const& mask = {} );
+DIP_EXPORT MinMaxAccumulator GetMaximumAndMinimum( Image const& in, Image const& mask = {} );
 
 
 // TODO: We need functions dip::All() dip::Any() that apply to samples within a tensor. This combines with equality: dip::All( a == b ), for a, b tensor images.
@@ -92,7 +92,7 @@ inline Image Imaginary( Image const& in ) { return in.DataType().IsComplex() ? i
 inline void Imaginary( Image const& in, Image& out ) { out = Imaginary( in ); }
 
 /// \brief Computes the complex conjugate of each sample.
-void Conjugate( Image const& in, Image& out );
+DIP_EXPORT void Conjugate( Image const& in, Image& out );
 inline Image Conjugate( Image const& in ) {
    Image out;
    Conjugate( in, out );
@@ -101,7 +101,7 @@ inline Image Conjugate( Image const& in ) {
 
 /// \brief Computes the sign of each sample. Only defined for signed real data types (signed integers
 /// and floating-point types). Output is of type `dip::DT_SINT8`, containing values -1, 0 and 1.
-void Sign( Image const& in, Image& out );
+DIP_EXPORT void Sign( Image const& in, Image& out );
 inline Image Sign( Image const& in ) {
    Image out;
    Sign( in, out );
@@ -110,7 +110,7 @@ inline Image Sign( Image const& in ) {
 
 /// \brief Computes the integer closest to the value of each sample.
 /// Only defined for floating-point types, the output is of type `dip::DT_SINT32`.
-void NearestInt( Image const& in, Image& out );
+DIP_EXPORT void NearestInt( Image const& in, Image& out );
 inline Image NearestInt( Image const& in ) {
    Image out;
    NearestInt( in, out );
@@ -147,7 +147,7 @@ inline Image ConjugateTranspose( Image const& in ) {
 }
 
 /// \brief Computes the dot product (inner product) of two vector images.
-void DotProduct( Image const& lhs, Image const& rhs, Image& out );
+DIP_EXPORT void DotProduct( Image const& lhs, Image const& rhs, Image& out );
 inline Image DotProduct( Image const& lhs, Image const& rhs ) {
    Image out;
    DotProduct( lhs, rhs, out );
@@ -160,7 +160,7 @@ inline Image DotProduct( Image const& lhs, Image const& rhs ) {
 /// commonly defined in 3D. For 2-vectors, we define the cross product as the z-component
 /// of the cross product of the 3D vectors obtained by adding a 0 z-component to the inputs.
 /// That is, it is the area of the parallelogram formed by the two 2D vectors.
-void CrossProduct( Image const& lhs, Image const& rhs, Image& out );
+DIP_EXPORT void CrossProduct( Image const& lhs, Image const& rhs, Image& out );
 inline Image CrossProduct( Image const& lhs, Image const& rhs ) {
    Image out;
    CrossProduct( lhs, rhs, out );
@@ -168,24 +168,24 @@ inline Image CrossProduct( Image const& lhs, Image const& rhs ) {
 }
 
 /// \brief Computes the determinant of the square matrix at each pixel in image `in`.
-void Determinant( Image const& in, Image& out );
+DIP_EXPORT void Determinant( Image const& in, Image& out );
 
 /// \brief Computes the norm of the vector at each pixel in image `in`.
-void Norm( Image const& in, Image& out );
+DIP_EXPORT void Norm( Image const& in, Image& out );
 
 /// \brief Computes the trace of the square matrix at each pixel in image `in`.
-void Trace( Image const& in, Image& out );
+DIP_EXPORT void Trace( Image const& in, Image& out );
 
 /// \brief Computes the rank of the square matrix at each pixel in image `in`.
 /// The output is DT_UINT8, under the assumption that we won't have tensor images with a rank higher than 255.
-void Rank( Image const& in, Image& out );
+DIP_EXPORT void Rank( Image const& in, Image& out );
 
 /// \brief Computes the eigenvalues of the square matrix at each pixel in image `in`.
 ///
 /// `out` is a vector image containing the eigenvalues. If `in` is symmetric and
 /// real-valued, then `out` is real-valued, and the eigenvalues are in descending
 /// order. Otherwise, `out` is complex-valued, and not sorted in any specific way.
-void Eigenvalues( Image const& in, Image& out );
+DIP_EXPORT void Eigenvalues( Image const& in, Image& out );
 
 /// \brief Computes the eigenvalues and eigenvectors of the square matrix at each pixel in image `in`.
 ///
@@ -198,15 +198,15 @@ void Eigenvalues( Image const& in, Image& out );
 /// order. Otherwise, `out` is complex-valued, and not sorted in any specific way.
 ///
 /// The eigenvectors are the columns `eigenvectors`. It has the same data type as `out`.
-void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors );
+DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors );
 
 /// \brief Computes the inverse of the square matrix at each pixel in image `in`.
 ///
 /// The result is undetermined if the matrix is not invertible.
-void Inverse( Image const& in, Image& out );
+DIP_EXPORT void Inverse( Image const& in, Image& out );
 
 /// \brief Computes the pseudo-inverse of the matrix at each pixel in image `in`.
-void PseudoInverse( Image const& in, Image& out );
+DIP_EXPORT void PseudoInverse( Image const& in, Image& out );
 
 /// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
 ///
@@ -217,7 +217,7 @@ void PseudoInverse( Image const& in, Image& out );
 ///
 /// This function uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
-void SingularValues( Image const& in, Image& out );
+DIP_EXPORT void SingularValues( Image const& in, Image& out );
 
 /// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
 ///
@@ -230,7 +230,7 @@ void SingularValues( Image const& in, Image& out );
 ///
 /// This function uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
-void SingularValueDecomposition( Image const& A, Image& U, Image& S, Image& V );
+DIP_EXPORT void SingularValueDecomposition( Image const& A, Image& U, Image& S, Image& V );
 
 /// \brief Creates an image whose pixels are identity matrices.
 ///
@@ -272,7 +272,7 @@ inline Image Identity( Image const& in ) {
 /// For directional statistics, the input must be floating point.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-void Mean( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray process = {} );
+DIP_EXPORT void Mean( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray process = {} );
 inline Image Mean( Image const& in, Image const& mask = {}, String const& mode = "", BooleanArray process = {} ) {
    Image out;
    Mean( in, mask, out, mode, process );
@@ -290,7 +290,7 @@ inline Image Mean( Image const& in, Image const& mask = {}, String const& mode =
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-void Sum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void Sum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image Sum( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
    Sum( in, mask, out, process );
@@ -310,7 +310,7 @@ inline Image Sum( Image const& in, Image const& mask = {}, BooleanArray process 
 /// For tensor images, the product is computed for each element independently.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-void Product( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void Product( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image Product( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
    Product( in, mask, out, process );
@@ -328,7 +328,7 @@ inline Image Product( Image const& in, Image const& mask = {}, BooleanArray proc
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-void MeanAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void MeanAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image MeanAbs( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
    MeanAbs( in, mask, out, process );
@@ -346,7 +346,7 @@ inline Image MeanAbs( Image const& in, Image const& mask = {}, BooleanArray proc
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-void SumAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void SumAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image SumAbs( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
    SumAbs( in, mask, out, process );
@@ -366,7 +366,7 @@ inline Image SumAbs( Image const& in, Image const& mask = {}, BooleanArray proce
 /// For tensor images, the result is computed for each element independently.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-void MeanSquare( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void MeanSquare( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image MeanSquare( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
    MeanSquare( in, mask, out, process );
@@ -386,7 +386,7 @@ inline Image MeanSquare( Image const& in, Image const& mask = {}, BooleanArray p
 /// For tensor images, the result is computed for each element independently.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-void SumSquare( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void SumSquare( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image SumSquare( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
    SumSquare( in, mask, out, process );
@@ -411,7 +411,7 @@ inline Image SumSquare( Image const& in, Image const& mask = {}, BooleanArray pr
 /// directional statistics it must be floating point.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-void Variance( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray process = {} );
+DIP_EXPORT void Variance( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray process = {} );
 inline Image Variance( Image const& in, Image const& mask = {}, String const& mode = "", BooleanArray process = {} ) {
    Image out;
    Variance( in, mask, out, mode, process );
@@ -436,7 +436,7 @@ inline Image Variance( Image const& in, Image const& mask = {}, String const& mo
 /// directional statistics it must be floating point.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-void StandardDeviation( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray process = {} );
+DIP_EXPORT void StandardDeviation( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray process = {} );
 inline Image StandardDeviation( Image const& in, Image const& mask = {}, String const& mode = "", BooleanArray process = {} ) {
    Image out;
    StandardDeviation( in, mask, out, mode, process );
@@ -458,7 +458,7 @@ inline Image StandardDeviation( Image const& in, Image const& mask = {}, String 
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
 /// \see dip::GetMaximumAndMinimum
-void Maximum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void Maximum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image Maximum( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
    Maximum( in, mask, out, process );
@@ -480,7 +480,7 @@ inline Image Maximum( Image const& in, Image const& mask = {}, BooleanArray proc
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
 /// \see dip::GetMaximumAndMinimum
-void Minimum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void Minimum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image Minimum( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
    Minimum( in, mask, out, process );
@@ -500,7 +500,7 @@ inline Image Minimum( Image const& in, Image const& mask = {}, BooleanArray proc
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-void Percentile( Image const& in, Image const& mask, Image& out, dfloat percentile, BooleanArray process = {} );
+DIP_EXPORT void Percentile( Image const& in, Image const& mask, Image& out, dfloat percentile, BooleanArray process = {} );
 inline Image Percentile( Image const& in, Image const& mask, dfloat percentile, BooleanArray process = {} ) {
    Image out;
    Percentile( in, mask, out, percentile, process );
@@ -565,7 +565,7 @@ inline Image Median( Image const& in, Image const& mask = {}, BooleanArray proce
 /// ```cpp
 ///     dip::DataType::SuggestDyadicOperation( in3.DataType(), in4.DataType() );
 /// ```
-void Select( Image const& in1, Image const& in2, Image const& in3, Image const& in4, Image& out, String const& selector );
+DIP_EXPORT void Select( Image const& in1, Image const& in2, Image const& in3, Image const& in4, Image& out, String const& selector );
 inline Image Select( Image const& in1, Image const& in2, Image const& in3, Image const& in4, String const& selector ) {
    Image out;
    Select( in1, in2, in3, in4, out, selector );
@@ -598,7 +598,7 @@ inline Image Select( Image const& in1, Image const& in2, Image const& in3, Image
 /// ```cpp
 ///     dip::DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
 /// ```
-void Select( Image const& in1, Image const& in2, Image const& mask, Image& out );
+DIP_EXPORT void Select( Image const& in1, Image const& in2, Image const& mask, Image& out );
 inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
    Image out;
    Select( in1, in2, mask, out );

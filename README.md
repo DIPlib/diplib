@@ -33,7 +33,6 @@ Available `make` targets:
     install     # builds and installs DIPlib and DIPimage
     docs        # makes some PDF project documentation files
     tests       # deprecated -- old test functions
-    mex         # deprecated -- mex test functions
 
 Important `cmake` command-line arguments:
 
