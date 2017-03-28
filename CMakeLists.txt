@@ -29,11 +29,23 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid settings mismatch with the MEX files
 set(CMAKE_VISIBILITY_INLINES_HIDDEN hidden)
 
-# Safe gcc compiler and architecture flags across all Intel and AMD processors (circa 2015)
-# This optimizes things for GCC and CLANG, but presumably shouldn't be here for MSVC++.
-set(CMAKE_CXX_FLAGS "-Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
-set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
+   # Safe Clang compiler and architecture flags across all Intel and AMD processors (circa 2015)
+   set(CMAKE_CXX_FLAGS "-Wall")
+   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
+   set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+   # Safe GCC compiler and architecture flags across all Intel and AMD processors (circa 2015)
+   set(CMAKE_CXX_FLAGS "-Wall")
+   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
+   set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+   # using Intel C++
+   # TODO: compiler flags for Intel compiler
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+   # using Visual Studio C++
+   # TODO: compiler flags for MSVC compiler
+endif()
 
 # Do we have __PRETTY_FUNCTION__ ?
 include(CheckCXXSourceCompiles)
