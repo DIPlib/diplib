@@ -26,33 +26,33 @@ namespace {
 
 #ifdef DIP__ENABLE_UNICODE
 
-constexpr char const micron[] = "\u00B5";
+constexpr char const micron[] = u8"\u00B5";
 static_assert( sizeof( micron ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
 
-constexpr char const cdot[] = "\u00B7";
+constexpr char const cdot[] = u8"\u00B7";
 static_assert( sizeof( cdot ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
 
-constexpr char const superN[] = "\u207B";
+constexpr char const superN[] = u8"\u207B";
 static_assert( sizeof( superN ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
-constexpr char const super0[] = "\u2070";
+constexpr char const super0[] = u8"\u2070";
 static_assert( sizeof( super0 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
-constexpr char const super1[] = "\u00B9";
+constexpr char const super1[] = u8"\u00B9";
 static_assert( sizeof( super1 ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
-constexpr char const super2[] = "\u00B2";
+constexpr char const super2[] = u8"\u00B2";
 static_assert( sizeof( super2 ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
-constexpr char const super3[] = "\u00B3";
+constexpr char const super3[] = u8"\u00B3";
 static_assert( sizeof( super3 ) == 2+1, "UTF-8 encoded symbol is of different size than expected." );
-constexpr char const super4[] = "\u2074";
+constexpr char const super4[] = u8"\u2074";
 static_assert( sizeof( super4 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
-constexpr char const super5[] = "\u2075";
+constexpr char const super5[] = u8"\u2075";
 static_assert( sizeof( super5 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
-constexpr char const super6[] = "\u2076";
+constexpr char const super6[] = u8"\u2076";
 static_assert( sizeof( super6 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
-constexpr char const super7[] = "\u2077";
+constexpr char const super7[] = u8"\u2077";
 static_assert( sizeof( super7 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
-constexpr char const super8[] = "\u2078";
+constexpr char const super8[] = u8"\u2078";
 static_assert( sizeof( super8 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
-constexpr char const super9[] = "\u2079";
+constexpr char const super9[] = u8"\u2079";
 static_assert( sizeof( super9 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
 
 #else
@@ -400,59 +400,59 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
 
    dip::Units f = dip::Units::Meter();
    DOCTEST_CHECK( ( f ).String() == "m" );
-   DOCTEST_CHECK( ( f * f ).String() == "m\u00B2" );
-   DOCTEST_CHECK( ( f * f * f ).String() == "m\u00B3" );
-   DOCTEST_CHECK( ( f * f * f * f ).String() == "m\u2074" );
-   DOCTEST_CHECK( ( dip::Units() / f ).String() == "m\u207B\u00B9" );
-   DOCTEST_CHECK( ( dip::Units() / f / f ).String() == "m\u207B\u00B2" );
-   DOCTEST_CHECK( ( dip::Units() / f / f / f ).String() == "m\u207B\u00B3" );
-   DOCTEST_CHECK( ( dip::Units() / f / f / f / f ).String() == "m\u207B\u2074" );
+   DOCTEST_CHECK( ( f * f ).String() == u8"m\u00B2" );
+   DOCTEST_CHECK( ( f * f * f ).String() == u8"m\u00B3" );
+   DOCTEST_CHECK( ( f * f * f * f ).String() == u8"m\u2074" );
+   DOCTEST_CHECK( ( dip::Units() / f ).String() == u8"m\u207B\u00B9" );
+   DOCTEST_CHECK( ( dip::Units() / f / f ).String() == u8"m\u207B\u00B2" );
+   DOCTEST_CHECK( ( dip::Units() / f / f / f ).String() == u8"m\u207B\u00B3" );
+   DOCTEST_CHECK( ( dip::Units() / f / f / f / f ).String() == u8"m\u207B\u2074" );
    DOCTEST_CHECK( f == dip::Units( "m" ));
-   DOCTEST_CHECK( f * f == dip::Units( "m\u00B2" ));
-   DOCTEST_CHECK( f * f * f == dip::Units( "m\u00B3" ));
-   DOCTEST_CHECK( f * f * f * f == dip::Units( "m\u2074" ));
-   DOCTEST_CHECK( dip::Units() / f == dip::Units( "m\u207B\u00B9" ));
-   DOCTEST_CHECK( dip::Units() / f / f == dip::Units( "m\u207B\u00B2" ));
-   DOCTEST_CHECK( dip::Units() / f / f / f == dip::Units( "m\u207B\u00B3" ));
-   DOCTEST_CHECK( dip::Units() / f / f / f / f == dip::Units( "m\u207B\u2074" ));
+   DOCTEST_CHECK( f * f == dip::Units( u8"m\u00B2" ));
+   DOCTEST_CHECK( f * f * f == dip::Units( u8"m\u00B3" ));
+   DOCTEST_CHECK( f * f * f * f == dip::Units( u8"m\u2074" ));
+   DOCTEST_CHECK( dip::Units() / f == dip::Units( u8"m\u207B\u00B9" ));
+   DOCTEST_CHECK( dip::Units() / f / f == dip::Units( u8"m\u207B\u00B2" ));
+   DOCTEST_CHECK( dip::Units() / f / f / f == dip::Units( u8"m\u207B\u00B3" ));
+   DOCTEST_CHECK( dip::Units() / f / f / f / f == dip::Units( u8"m\u207B\u2074" ));
 
    dip::Units g = dip::Units::Second();
    DOCTEST_CHECK( ( f / g ).String() == "m/s" );
-   DOCTEST_CHECK( ( f / g / g ).String() == "m/s\u00B2" );
-   DOCTEST_CHECK( ( f / g / g / g ).String() == "m/s\u00B3" );
-   DOCTEST_CHECK( ( f / g / g / g / g ).String() == "m/s\u2074" );
+   DOCTEST_CHECK( ( f / g / g ).String() == u8"m/s\u00B2" );
+   DOCTEST_CHECK( ( f / g / g / g ).String() == u8"m/s\u00B3" );
+   DOCTEST_CHECK( ( f / g / g / g / g ).String() == u8"m/s\u2074" );
    DOCTEST_CHECK( ( g / f ).String() == "s/m" );
-   DOCTEST_CHECK( ( g / f / f ).String() == "s/m\u00B2" );
-   DOCTEST_CHECK( ( g * g / f ).String() == "s\u00B2/m" );
-   DOCTEST_CHECK( ( g * f ).String() == "m\u00B7s" );
+   DOCTEST_CHECK( ( g / f / f ).String() == u8"s/m\u00B2" );
+   DOCTEST_CHECK( ( g * g / f ).String() == u8"s\u00B2/m" );
+   DOCTEST_CHECK( ( g * f ).String() == u8"m\u00B7s" );
    DOCTEST_CHECK( f / g == dip::Units( "m/s" ));
-   DOCTEST_CHECK( f / g / g == dip::Units( "m/s\u00B2" ));
-   DOCTEST_CHECK( f / g / g / g == dip::Units( "m/s\u00B3" ));
-   DOCTEST_CHECK( f / g / g / g / g == dip::Units( "m/s\u2074" ));
+   DOCTEST_CHECK( f / g / g == dip::Units( u8"m/s\u00B2" ));
+   DOCTEST_CHECK( f / g / g / g == dip::Units( u8"m/s\u00B3" ));
+   DOCTEST_CHECK( f / g / g / g / g == dip::Units( u8"m/s\u2074" ));
    DOCTEST_CHECK( g / f == dip::Units( "s/m" ));
-   DOCTEST_CHECK( g / f / f == dip::Units( "s/m\u00B2" ));
-   DOCTEST_CHECK( g * g / f == dip::Units( "s\u00B2/m" ));
-   DOCTEST_CHECK( g * f == dip::Units( "m\u00B7s" ));
+   DOCTEST_CHECK( g / f / f == dip::Units( u8"s/m\u00B2" ));
+   DOCTEST_CHECK( g * g / f == dip::Units( u8"s\u00B2/m" ));
+   DOCTEST_CHECK( g * f == dip::Units( u8"m\u00B7s" ));
 
    DOCTEST_CHECK( ( dip::Units::Millimeter() ).String() == "mm" );
-   DOCTEST_CHECK( ( dip::Units::Millimeter() * dip::Units::Millimeter() ).String() == "mm\u00B2" );
-   DOCTEST_CHECK( ( dip::Units::Millimeter() * dip::Units::Meter() ).String() == "10\u00B3\u00B7mm\u00B2" );
-   DOCTEST_CHECK( ( dip::Units::Kilometer() * dip::Units::Meter() ).String() == "10\u00B3\u00B7m\u00B2" );
+   DOCTEST_CHECK( ( dip::Units::Millimeter() * dip::Units::Millimeter() ).String() == u8"mm\u00B2" );
+   DOCTEST_CHECK( ( dip::Units::Millimeter() * dip::Units::Meter() ).String() == u8"10\u00B3\u00B7mm\u00B2" );
+   DOCTEST_CHECK( ( dip::Units::Kilometer() * dip::Units::Meter() ).String() == u8"10\u00B3\u00B7m\u00B2" );
    DOCTEST_CHECK( dip::Units::Millimeter() == dip::Units( "mm" ));
-   DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Millimeter() == dip::Units( "mm\u00B2" ));
-   DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Meter() == dip::Units( "10\u00B3\u00B7mm\u00B2" ));
-   DOCTEST_CHECK( dip::Units::Kilometer() * dip::Units::Meter() == dip::Units( "10\u00B3\u00B7m\u00B2" ));
+   DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Millimeter() == dip::Units( u8"mm\u00B2" ));
+   DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Meter() == dip::Units( u8"10\u00B3\u00B7mm\u00B2" ));
+   DOCTEST_CHECK( dip::Units::Kilometer() * dip::Units::Meter() == dip::Units( u8"10\u00B3\u00B7m\u00B2" ));
 
-   DOCTEST_CHECK( ( dip::Units( "10\u2076\u00B7mm\u00B2" )).String() == "m\u00B2" );
+   DOCTEST_CHECK( ( dip::Units( u8"10\u2076\u00B7mm\u00B2" )).String() == u8"m\u00B2" );
    DOCTEST_CHECK( ( dip::Units( "km/s" )).String() == "km/s" );
-   DOCTEST_CHECK( ( dip::Units( "km\u00B7cd\u00B7rad\u00B7px" )).String() == "km\u00B7cd\u00B7rad\u00B7px" );
-   DOCTEST_CHECK( ( dip::Units( "km\u00B7cd/rad\u00B7px" )).String() == "km\u00B7cd\u00B7px/rad" );
-   DOCTEST_CHECK( ( dip::Units( "10\u00B3\u00B7km\u207B\u00B9\u00B7cd\u207B\u00B2/K" )).String() == "m\u207B\u00B9/K/cd\u00B2" );
+   DOCTEST_CHECK( ( dip::Units( u8"km\u00B7cd\u00B7rad\u00B7px" )).String() == u8"km\u00B7cd\u00B7rad\u00B7px" );
+   DOCTEST_CHECK( ( dip::Units( u8"km\u00B7cd/rad\u00B7px" )).String() == u8"km\u00B7cd\u00B7px/rad" );
+   DOCTEST_CHECK( ( dip::Units( u8"10\u00B3\u00B7km\u207B\u00B9\u00B7cd\u207B\u00B2/K" )).String() == u8"m\u207B\u00B9/K/cd\u00B2" );
 
-   DOCTEST_CHECK( ( dip::Units( "10^6.mm^2" )).String() == "m\u00B2" );
-   DOCTEST_CHECK( ( dip::Units( "km.cd.rad.px" )).String() == "km\u00B7cd\u00B7rad\u00B7px" );
-   DOCTEST_CHECK( ( dip::Units( "km.cd/rad.px" )).String() == "km\u00B7cd\u00B7px/rad" );
-   DOCTEST_CHECK( ( dip::Units( "10^3.km^-1.cd^-2/K" )).String() == "m\u207B\u00B9/K/cd\u00B2" );
+   DOCTEST_CHECK( ( dip::Units( "10^6.mm^2" )).String() == u8"m\u00B2" );
+   DOCTEST_CHECK( ( dip::Units( "km.cd.rad.px" )).String() == u8"km\u00B7cd\u00B7rad\u00B7px" );
+   DOCTEST_CHECK( ( dip::Units( "km.cd/rad.px" )).String() == u8"km\u00B7cd\u00B7px/rad" );
+   DOCTEST_CHECK( ( dip::Units( "10^3.km^-1.cd^-2/K" )).String() == u8"m\u207B\u00B9/K/cd\u00B2" );
 
 #else
 

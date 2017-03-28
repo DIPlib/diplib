@@ -26,6 +26,9 @@
 #include <streambuf>
 #include <iostream>
 #include <cstring>
+#ifdef DIP__ENABLE_UNICODE
+#include <codecvt>
+#endif
 
 #include "mex.h"
 // Undocumented functions in libmx
@@ -480,6 +483,23 @@ inline dip::String GetString( mxArray const* mx ) {
    DIP_THROW( "String expected" );
 }
 
+/// \brief Convert a string from `mxArray` to a UTF-8 encoded `dip::String` by copy.
+inline dip::String GetStringUnicode( mxArray const* mx ) {
+#ifdef DIP__ENABLE_UNICODE
+   if( mxIsChar( mx ) && IsVector( mx )) {
+      char* str = mxArrayToUTF8String( mx );
+      if( str ) {
+         dip::String out( str );
+         mxFree( str );
+         return out;
+      }
+   }
+   DIP_THROW( "String expected" );
+#else
+   return GetString( mx );
+#endif
+}
+
 /// \brief Convert a cell array of strings from `mxArray` to `dip::StringArray` by copy.
 inline dip::StringArray GetStringArray( mxArray const* mx ) {
    try {
@@ -656,6 +676,20 @@ inline mxArray* GetArray( dip::CoordinateArray const& in ) {
 /// \brief Convert a string from `dip::String` to `mxArray` by copy.
 inline mxArray* GetArray( dip::String const& in ) {
    return mxCreateString( in.c_str() );
+}
+
+/// \brief Convert a UTF-8 encoded string from `dip::String` to `mxArray` by copy.
+inline mxArray* GetArrayUnicode( dip::String const& in ) {
+#ifdef DIP__ENABLE_UNICODE
+   static_assert( sizeof( char16_t ) == sizeof( mxChar ), "MATLAB's mxChar is not 16 bits." );
+   std::u16string u16str = std::wstring_convert< std::codecvt_utf8_utf16< char16_t >, char16_t >{}.from_bytes( in );
+   dip::uint sz[ 2 ] = { 1, u16str.size() + 1 };
+   mxArray* out = mxCreateCharArray( 2, sz );
+   std::copy( u16str.begin(), u16str.end() + 1, mxGetChars( out ) ); // copy one past the end, to copy null terminator.
+   return out;
+#else
+   return GetArray( in );
+#endif
 }
 
 // TODO: GetArray( dip::Distribution const& in) (when we define it)
@@ -859,14 +893,14 @@ class MatlabInterface : public dip::ExternalInterface {
             dip::PixelSize const& pixelSize = img.PixelSize();
             mxArray* pxsz = mxCreateStructMatrix( pixelSize.Size(), 1, nPxsizeStructFields, pxsizeStructFields );
             for( dip::uint ii = 0; ii < pixelSize.Size(); ++ii ) {
-               mxSetField( pxsz, ii, pxsizeStructFields[ 0 ], dml::GetArray( pixelSize[ ii ].magnitude ) );
-               mxSetField( pxsz, ii, pxsizeStructFields[ 1 ], dml::GetArray( pixelSize[ ii ].units.String() ) );
+               mxSetField( pxsz, ii, pxsizeStructFields[ 0 ], dml::GetArray( pixelSize[ ii ].magnitude ));
+               mxSetField( pxsz, ii, pxsizeStructFields[ 1 ], dml::GetArrayUnicode( pixelSize[ ii ].units.String() ));
             }
             mxSetPropertyShared( out, 0, pxsizePropertyName, pxsz );
          }
          // Set ColorSpace property
          if( img.IsColor() ) {
-            mxSetPropertyShared( out, 0, colspPropertyName, dml::GetArray( img.ColorSpace() ) );
+            mxSetPropertyShared( out, 0, colspPropertyName, dml::GetArray( img.ColorSpace() ));
          }
 
 #ifdef DIP__ENABLE_ASSERT__SKIP_THIS // This assertion fails consistently for images with a single pixel. Maybe MATLAB doesn't delay copies when it's just a single value?
@@ -961,7 +995,7 @@ inline dip::Image GetImage( mxArray const* mx ) {
          mxArray* magnitude = mxGetField( pxsz, ii, pxsizeStructFields[ 0 ] );
          mxArray* units = mxGetField( pxsz, ii, pxsizeStructFields[ 1 ] );
          if( magnitude && units ) {
-            pq[ ii ] = { GetFloat( magnitude ), dip::Units( GetString( units ) ) };
+            pq[ ii ] = { GetFloat( magnitude ), dip::Units( GetStringUnicode( units )) };
          }
       }
       pixelSize.Set( pq );
