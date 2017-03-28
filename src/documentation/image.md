@@ -407,7 +407,10 @@ Both `img1` and `img2` point at the same data, meaning that changing one
 image's pixel values also affects the other image. The data segment will
 exist as long as one image references it. That is, if `img1` goes out
 of scope, `img2` will still point at a valid data segment, which will not
-be freed until `img2` goes out of scope (or is stripped).
+be freed until `img2` goes out of scope (or is stripped). This is useful
+behavior, but can cause unexpected results at times. See \ref aliasing
+for how to write image filters that are robust against images with shared
+data.
 
 The copy constructor does the same thing. The following three statements
 all invoke the copy constructor:

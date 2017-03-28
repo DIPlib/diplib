@@ -8,63 +8,11 @@ copyright: (c)2014-2017, Cris Luengo.
 
 ## Fourier Transform
 
-The function `FourierTransform` will have an extra option: "fast" or "fastest", which
-causes the algorithm to pad the data with zeros before doing the transform. "fast"
-pads to a multiple of 2, 3 and/or 5, "fastest" to a multiple of 2. Note that the output
-Fourier domain will be larger too, and cannot be simply cropped. This is sometimes OK,
-for example when computing convolutions. The convolution result will be different
-because of the zero padding, but the effects would be relevant only near the image
-edges.
-
 If the *FFTW* library is installed on the user's system, *DIPlib* will link against it
 and use it to compute the FT. The CMakeLists script will have a setting that disables
 this behaviour, as *FFTW* uses a GNU license and we want *DIPlib* to be totally
 unencumbered by licenses. When not using *FFTW*, the built-in FFT algorithm is used.
-We'll copy the FFT from *OpenCV*, which uses the MIT license. *KissFFT* is also
-an option, though seemed slower in my first test (to be repeated).
 
-## Colour space conversion
-
-    dip::ColourConverter colourConverter;
-    colourConverter.Define( "newspace", 3 );
-                                    // "newspace" has 3 channels.
-    colourConverter.Register( rgb2new, "rgb", "newspace", cost );
-                                    // cost is optional, default = 1
-    colourConverter.Register( new2rgb, "newspace", "rgb" );
-    colourConverter.Register( new2grey, "newspace", "grey" );
-                                    // cost is optional, default = 1e9
-    colourConverter.Register( grey2new, "grey", "newspace" );
-    colourConverter.Convert( img, img, "newspace" );
-                                    // convert img to 'newspace', write output in img
-
-The object constructor registers the standard colour conversion
-functions, the user can allocate new functions. These functions compute
-the conversion for a single pixel (or a whole buffer of them?), and have
-the form
-
-    rgb2new( FloatArray in, FloatArray out )
-
-...or something more similar to what `dip::Framework::Scan` uses.
-
-The color converion functions could be objects derived from a base class.
-Making them into objects allows them to carry information, and lets the
-user interact with them in ways that otherwise must be made explicit in
-the `dip::ColourConverter` class. For example, the RGB converter could
-carry a whitepoint value, that the user can set by interacting directly
-with the RGB object. (It's not really clear yet how...) This seems better
-than my original idea of having the whitepoint attached to the image
-(which is also how we do it in *DIPimage*).
-
-With the conversion path as a list of function/object pointers, we call the
-point-scanning framework and for each pixel we call each of the
-functions in the path. For efficiency, these functions could iterate
-over a line, like all the other FrameWork callback functions do. We'd
-generate a temporary buffer that is large enough to contain the largest
-vector representation along the conversion path. For example: RGB->CMYK->QWT
-requires the intermediate CMYK pixel data to be stored somewhere. It does
-not fit into the buffer for QWT (ficticious), which has only space for 3
-values per pixel, so an intermediate buffer with 4 values per pixel must
-be made.
 
 ## Processing images -- how to access and modify pixels
 
@@ -124,56 +72,6 @@ be filled with the distance of the neighbor (different options should be availab
     }
 
 
-## Alias handler
-
-Many of the current *DIPlib* functions (the ones that cannot work
-in-place) use a function `ImagesSeparate()` to create temporary images
-when output images are also input images. The resource handler takes
-care of moving the data blocks from the temporary images to the output
-images when the function ends. With the current design of shared pointers
-to the data, this is no longer necessary. Say a function is called with
-
-    dip::Image A;
-    dip::Gauss(A, A, 4);
-
-Then the function `dip::Gauss()` does this:
-
-    void dip::Gauss(const dip::Image &in_, dip::Image &out, double size) {
-       Image in = in_;
-       out.Strip();
-       // do more processing ...
-    }
-
-What happens here is that the new image `in` is a copy of the input image, `A`,
-pointing at the same data segment. The image `out` is a refernce to image `A`.
-When we strip `A`, the new image `in` still points at the original data segment,
-which will not be freed until `in` goes out of scope. Thus, the copy `in`
-preserves the original image data, leaving the output image, actually the
-image `A` in the caller's space, available for modifying.
-
-However, if `out` is not stripped, and data is written into it, then `in` is
-changed during processing. So if the function cannot work in plance, it should
-always test for aliasing of image data, and strip/forge the output image if
-necessary:
-
-    void dip::Gauss(const dip::Image &in_, dip::Image &out, double size) {
-       Image in = in_;                 // preserve original input data
-       bool needReForge = false;
-       if (out does not have the required properties) {
-          needReForge = true;
-       } else if (in and out share data) {
-          needReForge = true;
-       }
-       if (needReForge) {
-          out.Strip();                 // create new data segment for output
-          out.SetDimensions(...);
-          ...
-          out.Forge();
-       }
-       // do more processing ...
-    }
-
-
 ## Python interface
 
 We will define a Python class as a thin layer over the `dip::Image` C++
@@ -195,13 +93,14 @@ The *MATLAB* toolbox will be significantly simplified:
 -   No need for the `libdml.so` / `libdml.dll` library, as there are no
     globals to store, and not much code to compile.
 
--   Basically, all the code from that library will sit in a single
+-   Basically, all the code from that library sits in a single
     header file to be included in each of the MEX-files:
 
     -   Casting an `mxArray` input to: `Image`, `IntegerArray`,
         `FloatArray`, `String`, `sint`, `uint`, or `double`.
+        (**DONE**)
 
-    -   Casting those types to an `mxArray` output.
+    -   Casting those types to an `mxArray` output. (**DONE**)
 
 -   We won't need to convert strings to `enum`s, as [that will be done
     in the *DIPlib* library][Passing options to a function].
@@ -212,6 +111,11 @@ The *MATLAB* toolbox will be significantly simplified:
 -   The few functions in the current *DIPlib* that use an `ImageArray` as
     input or output will use tensor images instead.
 
+-   It seems that, at least in debug mode, the MEX-files with statically
+    linked DIPlib are quite large. If the $rpath feature works well, we
+    could keep DIPlib as a shared object, but if we need to set any
+    runtime LD_LIBRARY_PATH again, we'll do static linking.
+
 The M-file code will need to be adapted:
 
 -   The `dip_image` object will not also double as `dip_image_array`
@@ -220,6 +124,7 @@ The M-file code will need to be adapted:
     will have to be rewritten, and some functions that use image arrays
     will have to be adapted. For an array of images, use a cell array.
     On the other hand, more functionality could be deferred to *DIPlib*.
+    (**DONE**)
 
 -   Much of the code for the `dip_measurement` object will change also,
     as its representation will likely change with the changes in
@@ -231,11 +136,11 @@ The M-file code will need to be adapted:
     through *DIPlib* also.
 
 -   `dipshow` will be simplified, as simple calls to a *DIPlib* display
-    function will generate the 2D array for display.
+    function will generate the 2D array for display. (**DONE**)
 
 ### Issues with the current *MATLAB* interface
 
-Currently (version 2), complex images need to be copied over in the
+In *DIPimage* version 2.x, complex images need to be copied over in the
 interface, as *DIPlib* and *MATLAB* represent them differently. There are
 two solutions: *DIPlib* represents them as *MATLAB* does (which seems like
 a really bad idea to me), or we cast them to a non-complex array that
@@ -247,7 +152,7 @@ a size of 1). The new tensor dimension would then be the second dimension
 (for scalar images, again of size 1). Thus, the mxArray would always be:
 [complex, tensor, x, y, z, ...]. A reshape would get rid of the first
 dimension to translate to a *MATLAB* array, in case of a real image.
-A complex image would need a simple copy.
+A complex image would need a simple copy. (**DONE**)
 
 If we go this route, we might as well go all the way, and always have
 a one-dimensional uint8 array inside the `dip_image` object. Each of the
@@ -261,41 +166,27 @@ as it is in the old *DIPimage*, but should be avoided anyway. The only
 place where this step needs to be efficient is in the generation of a
 display image, which could be arranged by creating that image as an
 encapsulated `mxArray` with the right dimensions and strides for *MATLAB*
-to show it.
+to show it. (**WE WON'T DO THIS**)
 
 
-## 3^rd^ party libraries
-
-We should use [*FFTW*](http://www.fftw.org) for the Fourier transform.
-But it's GPL licensed, meaning that we won't be able to include it
-without making the library GPL also? We might be able to include it as
-an "optional" element, let the user download *FFTW* for him/herself. It
-is not clear whether that breaks the GPL license terms. And what does
-the poor soul do that wants to create non-GPL software with this? An
-alternative could be [*djbfft*](http://cr.yp.to/djbfft.html), which
-looks like it hasn't been updated in a while (since 1999!), but is
-claimed by the author to be faster than *FFTW2* and any other library
-at that time. I'm sure this is good enough for us. There are no
-indications of a license at all... Another alternative is
-[*Kiss FFT*](https://sourceforge.net/projects/kissfft/), a simple FFT
-written in a single C++ header file and BSD licensed, and presumably
-quite a bit faster than the current FFT implementation in *DIPlib*.
-However, the implementation on OpenCV is 4 to 10 times faster than
-*Kiss FFT* in my quick test with various array sizes (even if less precise).
-
-[*Tina's Random Number Generator Library*](http://numbercrunch.de/trng/)
-for RNG? (does parallel RNG also). Update: apparently the C++11
-standard library includes the concepts and ideas from this library.
+## Image file formats
 
 We will keep the TIFF and ICS readers/writers we currently have, using
 [*libtiff*](http://www.remotesensing.org/libtiff/) and
-[*libics*](http://libics.sourceforge.net). For other file types, we
-could use *Bio-Formats*. That one is a Java library, we'll probably use
+[*libics*](http://libics.sourceforge.net).
+
+For other file types, we could use [*Bio-Formats*](http://www.openmicroscopy.org/site/products/bio-formats).
+It is a Java library, we'll probably use
 [JNI](http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html)
 to interface between C++ and Java, see for example
 [this tutorial](https://www.codeproject.com/Articles/993067/Calling-Java-from-Cplusplus-with-JNI).
+See also [this ITK module](https://github.com/scifio/scifio-imageio) for 
+interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
 
-[*Eigen*](http://eigen.tuxfamily.org) is a pretty sweet linear algebra
-library. It's stable, very efficient, and templated like the standard
-library. We will be able to wrap a pixel (with its strides) as an
-*Eigen* matrix and do computations.
+We currently also have JPEG and GIF readers/writers, which are not very
+useful and can be done away with. We have simplistic code to write Postscript
+and CSV, which also aren't useful enough. The BioRad PIC reader is out of date,
+nobody uses that format any more. Finally, we have an LSM reader based on the
+TIFF reader, but if we use *Bio-Formats* it won't be necessary to maintain that
+one either.
+

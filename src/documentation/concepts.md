@@ -56,3 +56,52 @@ Connectivity | Classical denominations | Structuring element shape
 3            | 26 connectivity         | cube
 -1           | 6-26 connectivity       | small rhombicuboctahedron
 -3           | 26-6 connectivity       | small rhombicuboctahedron
+
+
+[//]: # (--------------------------------------------------------------)
+
+\section aliasing Handling input and output images that alias each other
+
+Many of the current *DIPlib* functions (the ones that cannot work
+in-place) use a function `dip_ImagesSeparate()` to create temporary images
+when output images are also input images. The resource handler takes
+care of moving the data blocks from the temporary images to the output
+images when the function ends. With the current design of shared pointers
+to the data, this is no longer necessary. Say a function is called with
+```cpp
+    dip::Image A;
+    dip::Filter( A, A, params );
+```
+
+Then the function `dip::Filter()` does this:
+```cpp
+    void dip::Filter( const dip::Image &in_, dip::Image &out, ... ) {
+       Image in = in_.QuickCopy();
+       out.Strip();
+       // do more processing ...
+    }
+```
+
+What happens here is that the new image `in` is a copy of the input image, `A`,
+pointing at the same data segment. The image `out` is a reference to image `A`.
+When we strip `A`, the new image `in` still points at the original data segment,
+which will not be freed until `in` goes out of scope. Thus, the copy `in`
+preserves the original image data, leaving the output image, actually the
+image `A` in the caller's space, available for modifying.
+
+However, if `out` is not stripped, and data is written into it, then `in` is
+changed during processing. So if the function cannot work in place, it should
+always test for aliasing of image data, and strip/forge the output image if
+necessary:
+```cpp
+    void dip::Filter( const dip::Image &in_, dip::Image &out, ... ) {
+       Image in = in_QuickCopy();
+       if( in.Aliases( out )) {
+          out.Strip();     // Force out to not point at data we still need 
+       }
+       out.ReForge( ... );   // create new data segment for output
+       // do more processing ...
+    }
+```
+
+Note that the `dip::Framework` functions take care of this.
