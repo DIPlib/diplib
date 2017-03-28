@@ -11,7 +11,7 @@
 %    - 'ft':   Convolution via a multiplication in the Fourier Domain.
 %    - 'best': Chooses the best option above for your kernel.
 %  boundary_condition: TODO
-%  truncation: Determines the size of the FIR filter: truncation*2*sigma+1
+%  truncation: Determines the size of the Gaussian filters.
 %
 % DEFAULTS:
 %  sigma = 1
@@ -22,11 +22,14 @@
 % NOTES:
 %  See DERIVATIVE for an explanation of the option 'best'.
 %
+%  If SIGMA==0 for a particular dimension, that dimension is not processed.
+%
 % SEE ALSO:
-%  smooth, derivative, dipsetpref('DerivativeFlavour'), dipsetpref('Truncation')
+%  derivative
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::Gauss.
+%  This function calls the DIPlib function dip::Derivative, which calls dip::GaussFIR,
+%  dip::GaussIIR, and dip::GaussFT.
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -43,3 +46,23 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function image_out = gaussf(image_in,sigma,method,boundary_condition,truncation)
+% The code below looks a little silly, but it's an easy way to not parse input arguments twice.
+if nargin < 1, error('Need an input image'); end
+elseif nargin < 2
+   image_out = derivative(image_in);
+elseif nargin < 3
+   image_out = derivative(image_in,[0],sigma);
+else
+   if method ~= 'best'
+      method = ['gauss',method];
+   end
+   if nargin < 4
+      image_out = derivative(image_in,[0],sigma,method);
+   elseif nargin < 5
+      image_out = derivative(image_in,[0],sigma,method,boundary_condition);
+   else
+      image_out = derivative(image_in,[0],sigma,method,boundary_condition,truncation);
+   end
+end

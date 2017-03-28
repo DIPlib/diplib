@@ -200,6 +200,7 @@ void dip__FillPoleCoef (
             break;
          case 3:
          default:
+            pp[ 0 ] = { 3.0, 0.0 };
             pp[ 1 ] = { 2.1078345, 1.4058574 };
             pp[ 2 ] = { 2.1078345, -1.4058574 };
             pp[ 3 ] = { 2.1668048, 0.0 };
@@ -294,10 +295,10 @@ dip__GaussIIRParams dip__FillGaussIIRParams(
          }
       } else if( method == DesignMethod::DISCRETE_TIME_FIT ) {
          q = std::fabs( sigma ) / 2.0;
-         for( dfloat q0 = q, qs = q2sigma( nn, pp, q );
-              std::fabs( std::fabs( sigma ) - qs ) > 0.000001; ) {
-            dfloat dq = qs / 2.0 - q;
-            q = q0 - dq;
+         dfloat q0 = q;
+         dfloat qs = q2sigma( nn, pp, q );
+         while( std::fabs( std::fabs( sigma ) - qs ) > 0.000001 ) {
+            q += q0 - qs / 2.0;
             qs = q2sigma( nn, pp, q );
          }
       } else {
@@ -371,8 +372,10 @@ dip__GaussIIRParams dip__FillGaussIIRParams(
             params.a2[ 1 ] = 1.0;
             break;
          case 2:
-            params.a1[ 0 ] = params.a2[ 1 ] = 1.0;
-            params.a1[ 1 ] = params.a2[ 0 ] = -1.0;
+            params.a1[ 0 ] = 1.0;
+            params.a1[ 1 ] = -1.0;
+            params.a2[ 1 ] = 1.0;
+            params.a2[ 0 ] = -1.0;
             break;
          case 3:
             params.a1[ 0 ] = 1.0;
@@ -759,7 +762,17 @@ void GaussIIR(
    UnsignedArray border( nDims );
    for( dip::uint ii = 0; ii < nDims; ii++ ) {
       if( process[ ii ] && ( sigmas[ ii ] > 0.0 ) && ( in.Size( ii ) > 1 )) {
-         filterParams[ ii ] = dip__FillGaussIIRParams( in.Size( ii ), sigmas[ ii ], order[ ii ], filterOrder[ ii ], method, truncation );
+         bool found = false;
+         for( dip::uint jj = 0; jj < ii; ++jj ) {
+            if( process[ jj ] && ( sigmas[ jj ] == sigmas[ ii ] ) && ( order[ jj ] == order[ ii ] ) && ( filterOrder[ jj ] == filterOrder[ ii ] )) {
+               filterParams[ ii ] = filterParams[ jj ];
+               found = true;
+               break;
+            }
+         }
+         if( !found ) {
+            filterParams[ ii ] = dip__FillGaussIIRParams( in.Size( ii ), sigmas[ ii ], order[ ii ], filterOrder[ ii ], method, truncation );
+         }
          border[ ii ] = filterParams[ ii ].border;
       } else {
          process[ ii ] = false;
