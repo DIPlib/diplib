@@ -203,3 +203,6 @@ over.
 - `dilation_se`, `erosion_se`, etc. are now folded into `dilation`, `erosion`, etc. For
   functions with an `_se` appended to the name, remove the `_se`. Alternatively, the `alias`
   sub-directory contains these names and forwards the calls to the correct functions.
+
+- `smooth` is no longer relevant, moved to the `alias` directory. `derivative` has the 2nd
+  and 3rd arguments switched, it makes more sense having the order first.

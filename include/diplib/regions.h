@@ -77,7 +77,7 @@ DIP_ERROR dip_GrowRegionsWeighted
 ///
 /// The boundary conditions are generally ignored (labeling stops at the boundary). The exception
 /// is `dip::BoundaryCondition::PERIODIC`, which is the only one that makes sense for this algorithm.
-dip::uint Label(
+DIP_EXPORT dip::uint Label(
       Image const& binary,
       Image& out,
       dip::uint connectivity,
@@ -101,7 +101,7 @@ inline Image Label(
 }
 
 /// \brief Gets a list of object labels in the labelled image. A labelled image must be of an unsigned type.
-UnsignedArray GetObjectLabels(
+DIP_EXPORT UnsignedArray GetObjectLabels(
       Image const& label,
       Image const& mask,
       bool nullIsObject

@@ -2122,7 +2122,7 @@ class DIP_NO_EXPORT Image {
 
       DIP_NO_EXPORT void GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const;
 
-      DIP_NO_EXPORT void GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const;
+      DIP_EXPORT void GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const; // exported because used in inlined function.
       // size is the distance between top left and bottom right corners.
       // start is the distance between top left corner and origin
       // (will be <0 if any strides[ii] < 0). All measured in samples.

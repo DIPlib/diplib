@@ -77,7 +77,7 @@ namespace dip {
 ///     version 3.0.
 ///
 /// For tensor images, each plane is transformed independently.
-void FourierTransform(
+DIP_EXPORT void FourierTransform(
       Image const& in,
       Image& out,
       StringSet const& options = {},

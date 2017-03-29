@@ -31,7 +31,6 @@ set(DIPIMAGE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/share/dipimage)
 # Compiler flags
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
-set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid settings mismatch with the MEX files
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
@@ -51,6 +50,16 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
    # using Visual Studio C++
    # TODO: compiler flags for MSVC compiler
+endif()
+
+# RPATH
+set(CMAKE_SKIP_BUILD_RPATH  FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# the RPATH to be used when installing, but only if it's not a system directory
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
 # Do we have __PRETTY_FUNCTION__ ?
@@ -123,6 +132,7 @@ generate_export_header(DIP BASE_NAME dip)
 install(TARGETS DIP DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
+# To examine symbol table of the shared library on MacOSX: nm -g -p -U libDIP.dylib
 
 
 ### DIPlib unit tests
