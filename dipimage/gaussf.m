@@ -49,7 +49,8 @@
 
 function image_out = gaussf(image_in,sigma,method,boundary_condition,truncation)
 % The code below looks a little silly, but it's an easy way to not parse input arguments twice.
-if nargin < 1, error('Need an input image'); end
+if nargin < 1
+   error('Need an input image');
 elseif nargin < 2
    image_out = derivative(image_in);
 elseif nargin < 3
