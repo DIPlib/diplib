@@ -717,6 +717,16 @@ inline Image Dyz(
    return out;
 }
 
+/// \brief Computes the gradient of the image, resulting in an *N*-vector image, if the input was *N*-dimensional.
+///
+/// Each tensor component corresponds to the first derivative along the given dimension: `out[ 0 ]` is the
+/// derivative along *x* (dimension with index 0), `out[ 1 ]` is the derivative along *y* (dimension with index 1),
+/// etc.
+///
+/// By default uses Gaussian derivatives in the computation. Set `method = "finitediff"` for finite difference
+/// approximations to the gradient. See `dip::Derivative` for more information on the other parameters.
+///
+/// \see dip::Derivative, dip::Hessian, dip::GradientMagnitude, dip::GradientDirection2D
 DIP_EXPORT void Gradient(
       Image const& in,
       Image& out,
@@ -726,6 +736,18 @@ DIP_EXPORT void Gradient(
       BooleanArray const& process = {},
       dfloat truncation = 3
 );
+inline Image Gradient(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   Gradient( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
 
 // Same as Norm(Gradient()), but more efficient
 DIP_EXPORT void GradientMagnitude(
@@ -749,6 +771,20 @@ DIP_EXPORT void GradientDirection2D(
       dfloat truncation = 3
 );
 
+/// \brief Computes the Hessian of the image, resulting in a symmetric *NxN* tensor image, if the input was *N*-dimensional.
+///
+/// Each tensor component corresponds to the a second-order derivative. For a 3D image, the Hessian is given by:
+/// ```
+///     | dxx dxy dxz |
+/// H = | dxy dyy dyz |
+///     | dxz dyz dzz |
+/// ```
+/// Note that duplicate entries are not stored in the symmetric tensor image.
+///
+/// By default uses Gaussian derivatives in the computation. Set `method = "finitediff"` for finite difference
+/// approximations to the gradient. See `dip::Derivative` for more information on the other parameters.
+///
+/// \see dip::Derivative, dip::Gradient, dip::Laplace
 DIP_EXPORT void Hessian (
       Image const& in,
       Image& out,
@@ -758,6 +794,18 @@ DIP_EXPORT void Hessian (
       BooleanArray const& process = {},
       dfloat truncation = 3
 );
+inline Image Hessian(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   Hessian( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
 
 // Same as Trace(Hessian()), but more efficient. If "finitediff", uses the well-known 3-by-3 matrix.
 DIP_EXPORT void Laplace (
