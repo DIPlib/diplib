@@ -23,6 +23,13 @@
 #include "diplib/color.h"
 #include "diplib/framework.h"
 
+namespace dip {
+namespace {
+// XYZ matrix for conversion between RGB and XYZ.
+using XYZMatrix = std::array< dfloat, 9 >;
+}
+}
+
 #include "rgb.h"
 #include "cmyk.h"
 #include "hsi.h"
@@ -33,10 +40,11 @@
 
 namespace dip {
 
-// These need an address in memory
-constexpr ColorSpaceManager::WhitePointMatrix ColorSpaceManager::IlluminantD65;
-constexpr ColorSpaceManager::WhitePointMatrix ColorSpaceManager::IlluminantD50;
-
+constexpr ColorSpaceManager::XYZ ColorSpaceManager::IlluminantA;
+constexpr ColorSpaceManager::XYZ ColorSpaceManager::IlluminantD50;
+constexpr ColorSpaceManager::XYZ ColorSpaceManager::IlluminantD55;
+constexpr ColorSpaceManager::XYZ ColorSpaceManager::IlluminantD65;
+constexpr ColorSpaceManager::XYZ ColorSpaceManager::IlluminantE;
 
 ColorSpaceManager::ColorSpaceManager() {
    // grey (or gray)
@@ -48,10 +56,10 @@ ColorSpaceManager::ColorSpaceManager() {
    Register( ColorSpaceConverterPointer( new grey2rgb ));
    Register( ColorSpaceConverterPointer( new rgb2grey ));
    // nlRGB (or R'G'B')
-   Define( "R'G'B'", 3 );
-   DefineAlias( "nlRGB", "R'G'B'" );
-   Register( ColorSpaceConverterPointer( new rgb2nlrgb ));
-   Register( ColorSpaceConverterPointer( new nlrgb2rgb ));
+   Define( "sRGB", 3 );
+   DefineAlias( "srgb", "sRGB" );
+   Register( ColorSpaceConverterPointer( new rgb2srgb ));
+   Register( ColorSpaceConverterPointer( new srgb2rgb ));
    // CMY
    Define( "CMY", 3 );
    DefineAlias( "cmy", "CMY" );
@@ -305,15 +313,45 @@ std::vector< dip::uint > ColorSpaceManager::FindPath( dip::uint start, dip::uint
    return path;
 }
 
-void ColorSpaceManager::SetWhitePoint( WhitePointMatrix const& whitePointMatrix ) {
-   static_cast< rgb2grey* >( GetColorSpaceConverter( "RGB",  "grey" ) )->SetWhitePoint( whitePointMatrix );
-   static_cast< grey2xyz* >( GetColorSpaceConverter( "grey", "XYZ"  ) )->SetWhitePoint( whitePointMatrix );
-   static_cast< rgb2xyz*  >( GetColorSpaceConverter( "RGB",  "XYZ"  ) )->SetWhitePoint( whitePointMatrix );
-   static_cast< xyz2rgb*  >( GetColorSpaceConverter( "XYZ",  "RGB"  ) )->SetWhitePoint( whitePointMatrix );
-   static_cast< xyz2lab*  >( GetColorSpaceConverter( "XYZ",  "Lab"  ) )->SetWhitePoint( whitePointMatrix );
-   static_cast< lab2xyz*  >( GetColorSpaceConverter( "Lab",  "XYZ"  ) )->SetWhitePoint( whitePointMatrix );
-   static_cast< xyz2luv*  >( GetColorSpaceConverter( "XYZ",  "Luv"  ) )->SetWhitePoint( whitePointMatrix );
-   static_cast< luv2xyz*  >( GetColorSpaceConverter( "Luv",  "XYZ"  ) )->SetWhitePoint( whitePointMatrix );
+namespace {
+
+// RGB primaries according to ITU-R Recommendation BT.709 (used in HDTV, but valid for computer monitors too).
+constexpr std::array< dfloat, 9 > primaries{{ 0.64, 0.33, 0.03,   0.30, 0.60, 0.10,   0.15, 0.06, 0.79 }};
+
+// Computes the RGB/XYZ transformation matrix based on the primaries
+XYZMatrix ComputeXYZMatrix( ColorSpaceManager::XYZ const& whitePoint ) {
+   XYZMatrix matrix;
+   Inverse( 3, primaries.data(), matrix.data() );
+   dfloat a1 = matrix[ 0 ] * whitePoint[ 0 ] + matrix[ 3 ] * whitePoint[ 1 ] + matrix[ 6 ] * whitePoint[ 2 ];
+   dfloat a2 = matrix[ 1 ] * whitePoint[ 0 ] + matrix[ 4 ] * whitePoint[ 1 ] + matrix[ 7 ] * whitePoint[ 2 ];
+   dfloat a3 = matrix[ 2 ] * whitePoint[ 0 ] + matrix[ 5 ] * whitePoint[ 1 ] + matrix[ 8 ] * whitePoint[ 2 ];
+   matrix[ 0 ] = primaries[ 0 ] * a1;
+   matrix[ 1 ] = primaries[ 1 ] * a1;
+   matrix[ 2 ] = primaries[ 2 ] * a1;
+   matrix[ 3 ] = primaries[ 3 ] * a2;
+   matrix[ 4 ] = primaries[ 4 ] * a2;
+   matrix[ 5 ] = primaries[ 5 ] * a2;
+   matrix[ 6 ] = primaries[ 6 ] * a3;
+   matrix[ 7 ] = primaries[ 7 ] * a3;
+   matrix[ 8 ] = primaries[ 8 ] * a3;
+   return matrix;
+}
+
+} // namespace
+
+void ColorSpaceManager::SetWhitePoint( XYZ whitePoint ) {
+   whitePoint[ 0 ] /= whitePoint[ 1 ]; // Xn
+   whitePoint[ 2 ] /= whitePoint[ 1 ]; // Zn
+   whitePoint[ 1 ] = 1.0;              // Yn
+   XYZMatrix matrix = ComputeXYZMatrix( whitePoint );
+   static_cast< rgb2grey* >( GetColorSpaceConverter( "RGB",  "grey" ) )->SetWhitePoint( matrix );
+   static_cast< grey2xyz* >( GetColorSpaceConverter( "grey", "XYZ"  ) )->SetWhitePoint( whitePoint );
+   static_cast< rgb2xyz*  >( GetColorSpaceConverter( "RGB",  "XYZ"  ) )->SetWhitePoint( matrix );
+   static_cast< xyz2rgb*  >( GetColorSpaceConverter( "XYZ",  "RGB"  ) )->SetWhitePoint( matrix );
+   static_cast< xyz2lab*  >( GetColorSpaceConverter( "XYZ",  "Lab"  ) )->SetWhitePoint( whitePoint );
+   static_cast< lab2xyz*  >( GetColorSpaceConverter( "Lab",  "XYZ"  ) )->SetWhitePoint( whitePoint );
+   static_cast< xyz2luv*  >( GetColorSpaceConverter( "XYZ",  "Luv"  ) )->SetWhitePoint( whitePoint );
+   static_cast< luv2xyz*  >( GetColorSpaceConverter( "Luv",  "XYZ"  ) )->SetWhitePoint( whitePoint );
 }
 
 } // namespace dip
@@ -331,24 +369,42 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    DOCTEST_CHECK( csm.CanonicalName( "CIELUV" ) == "Luv" );
    DOCTEST_CHECK( csm.GetColorSpaceConverter( "rgb", "cmy" )->Cost() == 1 );
    DOCTEST_CHECK( csm.GetColorSpaceConverter( "rgb", "grey" )->Cost() == 100 );
+   // Test grey->RGB conversion
    dip::Image img( {}, 1 );
    img.Fill( 0 );
    dip::Image out = csm.Convert( img, "RGB" );
    DOCTEST_CHECK( out.ColorSpace() == "RGB" );
    DOCTEST_CHECK( out.TensorElements() == 3 );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 0 ] ) == doctest::Approx( 0.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 1 ] ) == doctest::Approx( 0.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 2 ] ) == doctest::Approx( 0.0 ));
+   // CMYK should have 4 tensor elements, not 3!
    img.SetColorSpace( "CMYK" );
-   DOCTEST_CHECK_THROWS( csm.Convert( img, "nlRGB" ) );
+   DOCTEST_CHECK_THROWS( csm.Convert( img, "RGB" ) );
+   // Run through a long conversion chain, probably just for Valgrind.
    img = dip::Image( {}, 4 );
    img.Fill( 0 );
    img.SetColorSpace( "CMYK" );
    csm.Convert( img, out, "LCH" ); // This is the longest path we have so far.
    DOCTEST_CHECK( out.ColorSpace() == "LCH" );
    DOCTEST_CHECK( out.TensorElements() == 3 );
+   // Check that converting RGB->XYZ using default settings, and then XYZ->RGB using D65, yields the input image again.
+   // This tests the white point setting functions do what they should.
+   img = dip::Image( {}, 3 );
+   img = { 200, 150, 100 };
+   img.SetColorSpace( "RGB" );
+   dip::Image xyz = csm.Convert( img, "XYZ" );
+   csm.SetWhitePoint( dip::ColorSpaceManager::IlluminantD65 ); // same as default values!
+   csm.Convert( xyz, out, "RGB" );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( img[ 0 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 0 ] )));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( img[ 1 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 1 ] )));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( img[ 2 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 2 ] )));
+   // Check that RGB->XYZ yields something different when using a different white point.
    csm.SetWhitePoint( dip::ColorSpaceManager::IlluminantD50 );
-   csm.Convert( out, img, "RGB" );
-   csm.SetWhitePoint( dip::ColorSpaceManager::IlluminantD65 );
-   csm.Convert( img, img, "LCH" );
-   DOCTEST_CHECK_FALSE( dip::Count( img = out ) == 0 );
+   csm.Convert( img, out, "XYZ" );
+   DOCTEST_CHECK_FALSE( static_cast< dip::dfloat >( xyz[ 0 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 0 ] )));
+   DOCTEST_CHECK_FALSE( static_cast< dip::dfloat >( xyz[ 1 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 1 ] )));
+   DOCTEST_CHECK_FALSE( static_cast< dip::dfloat >( xyz[ 2 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 2 ] )));
 }
 
 #endif // DIP__ENABLE_DOCTEST

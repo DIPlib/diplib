@@ -45,20 +45,16 @@ class grey2xyz : public ColorSpaceConverter {
       virtual String OutputColorSpace() const override { return "XYZ"; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            output[ 0 ] = input[ 0 ] * Xn_ / 255;
-            output[ 1 ] = input[ 0 ] * Yn_ / 255;
-            output[ 2 ] = input[ 0 ] * Zn_ / 255;
+            output[ 0 ] = input[ 0 ] * whitePoint_[ 0 ] / 255;
+            output[ 1 ] = input[ 0 ] * whitePoint_[ 1 ] / 255;
+            output[ 2 ] = input[ 0 ] * whitePoint_[ 2 ] / 255;
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
-         Xn_ = whitePoint[ 0 ] + whitePoint[ 3 ] + whitePoint[ 6 ];
-         Yn_ = whitePoint[ 1 ] + whitePoint[ 4 ] + whitePoint[ 7 ];
-         Zn_ = whitePoint[ 2 ] + whitePoint[ 5 ] + whitePoint[ 8 ];
+      void SetWhitePoint( ColorSpaceManager::XYZ const& whitePoint ) {
+         whitePoint_ = whitePoint;
       }
    private:
-      dfloat Xn_ = 0.9504700;
-      dfloat Yn_ = 1.0000000;
-      dfloat Zn_ = 1.0888299;
+      ColorSpaceManager::XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
 };
 
 class rgb2xyz : public ColorSpaceConverter {
@@ -72,11 +68,23 @@ class rgb2xyz : public ColorSpaceConverter {
             output[ 2 ] = ( input[ 0 ] * matrix_[ 2 ] + input[ 1 ] * matrix_[ 5 ] + input[ 2 ] * matrix_[ 8 ] ) / 255;
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
-         matrix_ = whitePoint;
+      void SetWhitePoint( XYZMatrix const& matrix ) {
+         matrix_ = matrix;
+         /*
+         std::cout << "matrix = "
+                   << matrix_[0] << ","
+                   << matrix_[1] << ","
+                   << matrix_[2] << ","
+                   << matrix_[3] << ","
+                   << matrix_[4] << ","
+                   << matrix_[5] << ","
+                   << matrix_[6] << ","
+                   << matrix_[7] << ","
+                   << matrix_[8] << std::endl;
+         */
       }
    private:
-      ColorSpaceManager::WhitePointMatrix matrix_{{ 0.4124564, 0.2126729, 0.0193339, 0.3575761, 0.7151521, 0.1191920, 0.1804375, 0.0721750, 0.9503040 }};
+      XYZMatrix matrix_{{ 0.412348, 0.212617, 0.0193288, 0.357601, 0.715203, 0.119200, 0.180450, 0.0721801, 0.950371 }};
 };
 
 class xyz2rgb : public ColorSpaceConverter {
@@ -90,11 +98,23 @@ class xyz2rgb : public ColorSpaceConverter {
             output[ 2 ] = ( input[ 0 ] * invMatrix_[ 2 ] + input[ 1 ] * invMatrix_[ 5 ] + input[ 2 ] * invMatrix_[ 8 ] ) * 255;
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
-         Inverse( 3, whitePoint.data(), invMatrix_.data() );
+      void SetWhitePoint( XYZMatrix const& matrix ) {
+         Inverse( 3, matrix.data(), invMatrix_.data() );
+         /*
+         std::cout << "invMatrix_ = "
+                   << invMatrix_[0] << ","
+                   << invMatrix_[1] << ","
+                   << invMatrix_[2] << ","
+                   << invMatrix_[3] << ","
+                   << invMatrix_[4] << ","
+                   << invMatrix_[5] << ","
+                   << invMatrix_[6] << ","
+                   << invMatrix_[7] << ","
+                   << invMatrix_[8] << std::endl;
+         */
       }
    private:
-      ColorSpaceManager::WhitePointMatrix invMatrix_{{ 3.2404550, -0.9692666, 0.0556434, -1.5371391, 1.8760113, -0.2040259, -0.4985316, 0.0415561, 1.0572253 }};
+      XYZMatrix invMatrix_{{ 3.241300, -0.969197, 0.0556395, -1.53754, 1.87588, -0.204012, -0.498662, 0.0415531, 1.05715 }};
 };
 
 class yxy2xyz : public ColorSpaceConverter {

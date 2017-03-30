@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file defines the "RGB" and "nlRGB" color spaces
+ * This file defines the "RGB" and "sRGB" color spaces
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
@@ -34,10 +34,10 @@ class rgb2grey : public ColorSpaceConverter {
                           input[ 2 ] * Y_[ 2 ];
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
-         Y_[ 0 ] = whitePoint[ 1 ];
-         Y_[ 1 ] = whitePoint[ 4 ];
-         Y_[ 2 ] = whitePoint[ 7 ];
+      void SetWhitePoint( XYZMatrix const& matrix ) {
+         Y_[ 0 ] = matrix[ 1 ];
+         Y_[ 1 ] = matrix[ 4 ];
+         Y_[ 2 ] = matrix[ 7 ];
       }
    private:
       std::array< dfloat, 3 > Y_{{ 0.2126729, 0.7151521, 0.072175 }}; // The Y row of the XYZ matrix
@@ -56,28 +56,55 @@ class grey2rgb : public ColorSpaceConverter {
       }
 };
 
-class rgb2nlrgb : public ColorSpaceConverter {
+// sRGB transformations
+
+constexpr double a = 0.055;
+constexpr double gamma = 2.4;
+constexpr double K_0 = a / ( gamma - 1 );
+constexpr double phi = 12.923210180787853; // == std::pow(( 1 + a ) / gamma, gamma ) * std::pow(( gamma - 1 ) / a, gamma - 1 );
+
+// Linear to sRGB
+inline dfloat LinearToS( dfloat in ) {
+   if( in <= K_0 / phi ) {
+      return in * phi;
+   } else {
+      return ( 1 + a ) * std::pow( in, 1.0 / gamma ) - a;
+   }
+}
+
+// sRGB to Linear
+inline dfloat SToLinear( dfloat in ) {
+   if( in <= K_0 ) {
+      return in / phi;
+   } else {
+      return std::pow(( in + a ) / ( 1 + a ), gamma );
+   }
+}
+
+class rgb2srgb : public ColorSpaceConverter {
    public:
       virtual String InputColorSpace() const override { return "RGB"; }
-      virtual String OutputColorSpace() const override { return "nlRGB"; }
+      virtual String OutputColorSpace() const override { return "sRGB"; }
+      virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            output[ 0 ] = std::pow( input[ 0 ] / 255.0, 2.5 ) * 255.0;
-            output[ 1 ] = std::pow( input[ 1 ] / 255.0, 2.5 ) * 255.0;
-            output[ 2 ] = std::pow( input[ 2 ] / 255.0, 2.5 ) * 255.0;
+            output[ 0 ] = LinearToS( input[ 0 ] / 255.0 ) * 255.0;
+            output[ 1 ] = LinearToS( input[ 1 ] / 255.0 ) * 255.0;
+            output[ 2 ] = LinearToS( input[ 2 ] / 255.0 ) * 255.0;
          } while( ++input, ++output );
       }
 };
 
-class nlrgb2rgb : public ColorSpaceConverter {
+class srgb2rgb : public ColorSpaceConverter {
    public:
-      virtual String InputColorSpace() const override { return "nlRGB"; }
+      virtual String InputColorSpace() const override { return "sRGB"; }
       virtual String OutputColorSpace() const override { return "RGB"; }
+      virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            output[ 0 ] = std::pow( input[ 0 ] / 255.0, 0.4 ) * 255.0;
-            output[ 1 ] = std::pow( input[ 1 ] / 255.0, 0.4 ) * 255.0;
-            output[ 2 ] = std::pow( input[ 2 ] / 255.0, 0.4 ) * 255.0;
+            output[ 0 ] = SToLinear( input[ 0 ] / 255.0 ) * 255.0;
+            output[ 1 ] = SToLinear( input[ 1 ] / 255.0 ) * 255.0;
+            output[ 2 ] = SToLinear( input[ 2 ] / 255.0 ) * 255.0;
          } while( ++input, ++output );
       }
 };

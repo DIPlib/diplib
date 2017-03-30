@@ -102,8 +102,8 @@ using ColorSpaceConverterPointer = std::unique_ptr< ColorSpaceConverter >;
 /// -------- | -------- | --------------
 /// "grey"   | "gray"   | An empty string is also interpreted as grey. Defined to be in the range [0,255].
 /// "RGB"    |          | Linear RGB, defined in the range [0,255].
-/// "R'G'B'" | "nlRGB"  | Non-linear RGB, equal to linear RGB to the power of 2.5, which makes each channel more or less perceptually uniform. Values in the range is [0,255].
-/// "CMY"    |          | Cyan-Magenta-Yellow .Subtractive colors, defined simply as 255-RGB. Values in the range is [0,255].
+/// "sRGB"   |          | Industry-standard non-linear RGB, gamma-corrected linear RGB (average gamma is approximately 2.2, with a linear segment near 0). Values in the range is [0,255].
+/// "CMY"    |          | Cyan-Magenta-Yellow. Subtractive colors, defined simply as 255-RGB. Values in the range is [0,255].
 /// "CMYK"   |          | Cyan-Magenta-Yellow-blacK. Subtractive colors with black added. Note that printers need a more complex mapping to CMYK to work correctly.
 /// "HSI"    |          | Hue-Saturation-Intensity. \f$L^1\f$ norm polar decomposition of the RGB cube, more suited to image analysis than HSV or HCV. S and I are in the range [0,255], H is an angle in degrees. Defined by Hanbury and Serra, "Colour image analysis in 3d-polar coordinates", Joint Pattern Recognition Symposium, 2003.
 /// "ICH"    |          | Intensity-Chroma-Hue. Rotation of the RGB cube, where I is along the black-white diagonal of the cube, and the CH-plane is perpendicular. I is in the range [0,255], H is an angle in degrees.
@@ -216,34 +216,45 @@ class DIP_NO_EXPORT ColorSpaceManager {
          return out;
       }
 
-      /// \brief The white point array, a 3x3 array stored in column-major format.
-      ///
-      /// It defines how R, G and B are to be combined to form X, Y and Z:
-      /// ```
-      ///     XYZ = WhitePoint * RGB
-      ///     RGB = inv(WhitePoint) * XYZ
-      /// ```
+      /// \brief The white point, as an XYZ triplet.
       ///
       /// The default white point is the Standard Illuminant D65. Configure the `dip::ColorSpaceManager`
       /// object through its `SetWhitePoint` method.
-      using WhitePointMatrix = std::array< dfloat, 9 >;
+      using XYZ = std::array< dfloat, 3 >;
 
-      /// \brief The CIE Standard Illuminant D65 (noon daylight, color temperature is about 6500 K).
-      DIP_EXPORT static constexpr WhitePointMatrix IlluminantD65{{ 0.4124564, 0.2126729, 0.0193339, 0.3575761, 0.7151521, 0.1191920, 0.1804375, 0.0721750, 0.9503040 }};
+      /// \brief The white point, as (x,y) chromacity coordinates.
+      using xy = std::array< dfloat, 2 >;
 
-      /// \brief The CIE Standard Illuminant D50 (morning or evening daylight, color temperature is about 5000 K).
-      DIP_EXPORT static constexpr WhitePointMatrix IlluminantD50{{ 0.4360747, 0.2225045, 0.0139322, 0.3850649, 0.7168786, 0.0971045, 0.1430804, 0.0606169, 0.7141733 }};
+      /// \brief The CIE Standard Illuminant A (typical, domestic, tungsten-filament lighting).
+      DIP_EXPORT static constexpr XYZ IlluminantA{{ 1.0985, 1.0000, 0.3558 }};
 
-      /// \brief Configure the conversion functions to use the given white point array.
+      /// \brief The CIE Standard Illuminant D50 (mid-morning or mid-afternoon daylight, color temperature is about 5000 K).
+      DIP_EXPORT static constexpr XYZ IlluminantD50{{ 0.9642, 1.0000, 0.8252 }};
+
+      /// \brief The CIE Standard Illuminant D55 (morning or evening daylight, color temperature is about 5500 K).
+      DIP_EXPORT static constexpr XYZ IlluminantD55{{ 0.9568, 1.0000, 0.9215 }};
+
+      /// \brief The CIE Standard Illuminant D65 (noon daylight, color temperature is about 6500 K). This is also used in the sRGB standard.
+      DIP_EXPORT static constexpr XYZ IlluminantD65{{ 0.9504, 1.0000, 1.0889 }};
+
+      /// \brief The CIE Standard Illuminant E (synthetic, equal energy illuminant).
+      DIP_EXPORT static constexpr XYZ IlluminantE{{ 1.0000, 1.0000, 1.0000 }};
+
+      /// \brief Configure the conversion functions to use the given white point.
       ///
       /// This will configure each of the converter functions that use the white point information
       /// (grey <-> RGB <-> XYZ <-> Lab, Luv). The default white point is the Standard Illuminant D65
       /// (`dip::ColorSpaceManager::IlluminantD65`).
       ///
-      /// Functions that convert to/from grey and only need the sum of the Y-row of the matrix are not
-      /// configured. These functions assume that the row adds up to 1.0. For consistency, make sure that
-      /// any matrix you pass here has a middle row that adds up to 1.0.
-      DIP_EXPORT void SetWhitePoint( WhitePointMatrix const& whitePointMatrix );
+      /// The white point is given as an XYZ triplet or (x,y) chromacity coordinates.
+      DIP_EXPORT void SetWhitePoint( XYZ whitePoint );
+      void SetWhitePoint( xy const& whitePoint ) {
+         XYZ triplet;
+         triplet[ 0 ] = whitePoint[ 0 ];
+         triplet[ 1 ] = whitePoint[ 1 ];
+         triplet[ 2 ] = 1 - whitePoint[ 0 ] - whitePoint[ 1 ];
+         SetWhitePoint( triplet );
+      }
 
    private:
 

@@ -82,20 +82,16 @@ class lab2xyz : public ColorSpaceConverter {
             dfloat z = fz > epsilon1_3
                        ? fz * fz * fz
                        : ( 116.0 * fz - 16.0 ) / kappa;
-            output[ 0 ] = x * Xn_;
-            output[ 1 ] = y * Yn_;
-            output[ 2 ] = z * Zn_;
+            output[ 0 ] = x * whitePoint_[ 0 ];
+            output[ 1 ] = y * whitePoint_[ 1 ];
+            output[ 2 ] = z * whitePoint_[ 2 ];
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
-         Xn_ = whitePoint[ 0 ] + whitePoint[ 3 ] + whitePoint[ 6 ];
-         Yn_ = whitePoint[ 1 ] + whitePoint[ 4 ] + whitePoint[ 7 ];
-         Zn_ = whitePoint[ 2 ] + whitePoint[ 5 ] + whitePoint[ 8 ];
+      void SetWhitePoint( ColorSpaceManager::XYZ const& whitePoint ) {
+         whitePoint_ = whitePoint;
       }
    private:
-      dfloat Xn_ = 0.9504700;
-      dfloat Yn_ = 1.0000000;
-      dfloat Zn_ = 1.0888299;
+      ColorSpaceManager::XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
 };
 
 class xyz2lab : public ColorSpaceConverter {
@@ -105,9 +101,9 @@ class xyz2lab : public ColorSpaceConverter {
       virtual dip::uint Cost() const override { return 3; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            dfloat x = input[ 0 ] / Xn_;
-            dfloat y = input[ 1 ] / Yn_;
-            dfloat z = input[ 2 ] / Zn_;
+            dfloat x = input[ 0 ] / whitePoint_[ 0 ];
+            dfloat y = input[ 1 ] / whitePoint_[ 1 ];
+            dfloat z = input[ 2 ] / whitePoint_[ 2 ];
             dfloat fx = x > epsilon
                         ? std::cbrt( x )
                         : ( kappa * x + 16.0 ) / 116.0;
@@ -122,15 +118,11 @@ class xyz2lab : public ColorSpaceConverter {
             output[ 2 ] = 200.0 * ( fy - fz );
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
-         Xn_ = whitePoint[ 0 ] + whitePoint[ 3 ] + whitePoint[ 6 ];
-         Yn_ = whitePoint[ 1 ] + whitePoint[ 4 ] + whitePoint[ 7 ];
-         Zn_ = whitePoint[ 2 ] + whitePoint[ 5 ] + whitePoint[ 8 ];
+      void SetWhitePoint( ColorSpaceManager::XYZ const& whitePoint ) {
+         whitePoint_ = whitePoint;
       }
    private:
-      dfloat Xn_ = 0.9504700;
-      dfloat Yn_ = 1.0000000;
-      dfloat Zn_ = 1.0888299;
+      ColorSpaceManager::XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
 };
 
 class luv2grey : public lab2grey {
@@ -152,16 +144,16 @@ class luv2xyz : public ColorSpaceConverter {
       virtual dip::uint Cost() const override { return 2; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            dfloat sum = Xn_ + 15 * Yn_ + 3 * Zn_;
-            dfloat un = 4 * Xn_ / sum;
-            dfloat vn = 9 * Yn_ / sum;
+            dfloat sum = whitePoint_[ 0 ] + 15 + 3 * whitePoint_[ 2 ];
+            dfloat un = 4 * whitePoint_[ 0 ] / sum;
+            dfloat vn = 9 / sum;
             dfloat L = input[ 0 ];
             dfloat Y;
             if( L > kappa * epsilon ) {
                Y = ( L + 16.0 ) / 116.0;
-               Y = Y * Y * Y * Yn_;
+               Y = Y * Y * Y;
             } else {
-               Y = L / kappa * Yn_;
+               Y = L / kappa;
             }
             dfloat a = 52 / 3.0 * L / ( input[ 1 ] + 13 * L * un );
             dfloat d = Y * 39 * L / ( input[ 2 ] + 13 * L * vn );
@@ -171,15 +163,11 @@ class luv2xyz : public ColorSpaceConverter {
             output[ 2 ] = X * ( a - 1.0/3.0 ) - 5 * Y;
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
-         Xn_ = whitePoint[ 0 ] + whitePoint[ 3 ] + whitePoint[ 6 ];
-         Yn_ = whitePoint[ 1 ] + whitePoint[ 4 ] + whitePoint[ 7 ];
-         Zn_ = whitePoint[ 2 ] + whitePoint[ 5 ] + whitePoint[ 8 ];
+      void SetWhitePoint( ColorSpaceManager::XYZ const& whitePoint ) {
+         whitePoint_ = whitePoint;
       }
    private:
-      dfloat Xn_ = 0.9504700;
-      dfloat Yn_ = 1.0000000;
-      dfloat Zn_ = 1.0888299;
+      ColorSpaceManager::XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
 };
 
 class xyz2luv : public ColorSpaceConverter {
@@ -189,13 +177,13 @@ class xyz2luv : public ColorSpaceConverter {
       virtual dip::uint Cost() const override { return 3; }
       virtual void Convert( ConstLineIterator< dfloat >& input, LineIterator< dfloat >& output ) const override {
          do {
-            dfloat sum = Xn_ + 15 * Yn_ + 3 * Zn_;
-            dfloat un = 4 * Xn_ / sum;
-            dfloat vn = 9 * Yn_ / sum;
+            dfloat sum = whitePoint_[ 0 ] + 15 + 3 * whitePoint_[ 2 ];
+            dfloat un = 4 * whitePoint_[ 0 ] / sum;
+            dfloat vn = 9 / sum;
             sum = input[ 0 ] + 15 * input[ 1 ] + 3 * input[ 2 ];
             dfloat u = 4 * input[ 0 ] / sum;
             dfloat v = 9 * input[ 1 ] / sum;
-            dfloat y = input[ 1 ] / Yn_;
+            dfloat y = input[ 1 ];
             dfloat L = y > epsilon
                           ? 116.0 * std::cbrt( y ) - 16.0
                           : kappa * y;
@@ -204,15 +192,11 @@ class xyz2luv : public ColorSpaceConverter {
             output[ 2 ] = 13.0 * L * ( v - vn );
          } while( ++input, ++output );
       }
-      void SetWhitePoint( ColorSpaceManager::WhitePointMatrix const& whitePoint ) {
-         Xn_ = whitePoint[ 0 ] + whitePoint[ 3 ] + whitePoint[ 6 ];
-         Yn_ = whitePoint[ 1 ] + whitePoint[ 4 ] + whitePoint[ 7 ];
-         Zn_ = whitePoint[ 2 ] + whitePoint[ 5 ] + whitePoint[ 8 ];
+      void SetWhitePoint( ColorSpaceManager::XYZ const& whitePoint ) {
+         whitePoint_ = whitePoint;
       }
    private:
-      dfloat Xn_ = 0.9504700;
-      dfloat Yn_ = 1.0000000;
-      dfloat Zn_ = 1.0888299;
+      ColorSpaceManager::XYZ whitePoint_ = ColorSpaceManager::IlluminantD65;
 };
 
 class lch2grey : public lab2grey {

@@ -191,7 +191,7 @@ DIP_EXPORT void Eigenvalues( Image const& in, Image& out );
 ///
 /// The decomposition is such that `in * eigenvectors == `eigenvectors * out`.
 /// `eigenvectors` is almost always invertible, in which case one can write
-/// `in == eigenvectors * out * Invert( eigenvectors )`.
+/// `in == eigenvectors * out * Inverse( eigenvectors )`.
 ///
 /// `out` is a diagonal matrix image containing the eigenvalues. If `in` is symmetric and
 /// real-valued, then `out` is real-valued, and the eigenvalues are in descending
