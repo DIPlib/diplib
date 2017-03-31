@@ -26,6 +26,10 @@
 
 namespace dip {
 
+// TODO: separate this function into various modules:
+//   - Compute max/min given selected slice, min-max/percentile, etc.
+//   - Extract 2D slice from nD image
+//   - Scale slice and produce 2D uint8 image
 
 /// \brief Parameters to the `dip::ImageDisplay` function.
 struct DIP_NO_EXPORT ImageDisplayParams {
@@ -50,8 +54,9 @@ struct DIP_NO_EXPORT ImageDisplayParams {
 /// With the "based" mode, the lower and upper bounds will be adjusted such that 0 is mapped to middle grey. Note that
 /// the upper bound must be stricly greater than the lower bound.
 ///
-/// If `in` is a color image, it will be converted to RGB, and each of the three channels will be handled identically.
-/// Other tensor images are not supported.
+/// If `in` has up to three tensor elements, each tensor element will be scaled identically. This will work for RGB
+/// images, but the color space is not checked. An exception will be thrown for images with more than three tensor
+/// elements.
 DIP_EXPORT void ImageDisplay(
       Image const& in,
       Image& out,

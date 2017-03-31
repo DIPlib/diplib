@@ -41,6 +41,7 @@ template< typename T >
 dfloat convert( T v, ComplexToReal /*method*/ ) {
    return v;
 }
+
 template<>
 dfloat convert( dcomplex v, ComplexToReal method ) {
    if( method == ComplexToReal::Magnitude ) {
@@ -49,6 +50,7 @@ dfloat convert( dcomplex v, ComplexToReal method ) {
       return std::arg( v );
    }
 }
+
 template<>
 dfloat convert( scomplex v, ComplexToReal method ) {
    if( method == ComplexToReal::Magnitude ) {
@@ -84,7 +86,7 @@ void dip__ImageDisplay(
          uint8* oPtr = outPtr;
          if( mapping == Mapping::Linear ) {
             for( dip::uint ii = 0; ii < width; ++ii ) {
-               *oPtr = clamp_cast< uint8 >( ( convert( *iPtr, complexToReal ) - offset ) * scale );
+               *oPtr = clamp_cast< uint8 >(( convert( *iPtr, complexToReal ) - offset ) * scale );
                iPtr += sliceStride0;
                oPtr += outStride0;
             }
@@ -114,7 +116,7 @@ void ImageDisplay(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( !in.IsScalar() && !in.IsColor(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( in.TensorElements() > 3, "ImageDisplay only works for tensor images with up to three components." );
 
    // Compute projection
    Image slice = in.QuickCopy();
@@ -144,11 +146,6 @@ void ImageDisplay(
          DIP_THROW( E::INVALID_FLAG );
       }
       slice.PermuteDimensions( { dim1, dim2 } );
-   }
-
-   // Convert color image to RGB
-   if( in.IsColor() ) {
-      // TODO
    }
 
    // How do we convert from complex to real?
