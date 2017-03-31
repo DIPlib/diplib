@@ -194,14 +194,23 @@ void Hessian (
    out.ReForge( in.Sizes(), tensor.Elements(), DataType::SuggestFlex( in.DataType() ));
    out.ReshapeTensor( tensor );
    dip::UnsignedArray order( nDims, 0 );
-   for( dip::uint jj = 0; jj < nDims; ++jj ) {
-      for( dip::uint ii = 0; ii <= jj; ++ii ) {
-         ++order[ ii ];
-         ++order[ jj ];
-         Image tmp = out[ { ii, jj } ];
+   dip::uint outIndex = 0; // TODO: Create dip::TensorIterator and use it here.
+   for( dip::uint ii = 0; ii < nDims; ++ii ) { // Symmetric matrix stores diagonal elements first
+      order[ ii ] = 2;
+      Image tmp = out[ outIndex ];
+      Derivative( in, tmp, order, sigmas, method, boundaryCondition, process, truncation );
+      order[ ii ] = 0;
+      ++outIndex;
+   }
+   for( dip::uint jj = 1; jj < nDims; ++jj ) { // Elements above diagonal stored column-wise
+      for( dip::uint ii = 0; ii < jj; ++ii ) {
+         order[ ii ] = 1;
+         order[ jj ] = 1;
+         Image tmp = out[ outIndex ];
          Derivative( in, tmp, order, sigmas, method, boundaryCondition, process, truncation );
          order[ ii ] = 0;
          order[ jj ] = 0;
+         ++outIndex;
       }
    }
    out.SetPixelSize( ps );
