@@ -1,8 +1,5 @@
 These functions were overloaded in DIPimage 2.x, and haven't yet been overloaded in 3.0
 
-requires core DIPlib work:
-   colorspace.m
-
 pure MATLAB stuff:
    plot.m
 
@@ -24,7 +21,6 @@ new projections:
 
 filtering:
    convhull.m
-   gradient.m
    rotate.m
    circshift.m
 
@@ -42,7 +38,6 @@ tensor arithmetic:
    cross.m
    curl.m
    det.m
-   diag.m
    divergence.m
    dot.m
    eig_largest.m

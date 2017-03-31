@@ -209,7 +209,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
       /// but the result is cast to 8-bit unsigned integers when written to the output image. Some color spaces,
       /// such as RGB and CMYK are defined to use the [0,255] range of 8-bit unsigned integers. Other colorspaces
       /// such as Lab and XYZ are not. For those color spaces, casting to an integer will destroy the data.
-      void Convert( Image const& in, Image& out, String const& colorSpaceName = "" ) const;
+      DIP_EXPORT void Convert( Image const& in, Image& out, String const& colorSpaceName = "" ) const;
       Image Convert( Image const& in, String const& colorSpaceName = "" ) const {
          Image out;
          Convert( in, out, colorSpaceName );

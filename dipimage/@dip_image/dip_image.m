@@ -759,9 +759,59 @@ classdef dip_image
          res = ~isempty(obj.ColorSpace);
       end
 
-      function res = colorspace(obj)
-         %colorspace   Returns the name of the color space, or an empty string if ~ISCOLOR(OBJ).
-         res = obj.ColorSpace;
+      function obj = colorspace(obj,col)
+         %COLORSPACE   Gets/sets/changes the color space.
+         %    IN = COLORSPACE(IN,COL), with IN a color image, changes the color
+         %    space of image IN to COL, converting the pixel values as required.
+         %    If COL is 'grey', a scalar image is returned with the luminosity (Y).
+         %
+         %    IN = COLORSPACE(IN,COL), with IN a tensor image, sets the color
+         %    space of image IN to COL.
+         %
+         %    COL = COLORSPACE(IN) returns the name of the color space of the
+         %    image IN.
+         %
+         %    Converting to a color-space-less tensor image is done by
+         %    specifying the empty string as a color space. This action only
+         %    changes the color space information, and does not change any
+         %    pixel values. Thus, to change from one color space to another
+         %    without converting the pixel values themselves, change first to
+         %    a color-space-less tensor image, and then to the final color
+         %    space.
+         %
+         %    A color space is any string recognized by the system. It is
+         %    possible to specify any other string as color space, but no
+         %    conversion of pixel values can be made, since the system doesn't
+         %    know about that color space. Color space names are not case
+         %    sensitive. Recognized color spaces are:
+         %
+         %       grey (or gray)
+         %       RGB
+         %       sRGB
+         %       CMY
+         %       CMYK
+         %       HSI
+         %       ICH
+         %       ISH
+         %       HCV
+         %       HSV
+         %       XYZ
+         %       Yxy
+         %       Lab (or L*a*b*, CIELAB)
+         %       Luv (or L*u*v*, "CIELUV)
+         %       LCH (or L*C*H*)
+         %
+         %    See the DIPlib documentation for dip::ColorSpaceManager for more
+         %    information on the color spaces.
+         %
+         %    See also: dip_image/iscolor
+         if nargin==1
+            obj = obj.ColorSpace;
+         elseif ~isempty(col) && (iscolor(obj) || isscalar(obj))
+            obj = colorspacemanager(obj,col);
+         else
+            obj.ColorSpace = col;
+         end
       end
 
       function display(obj)
@@ -981,6 +1031,7 @@ classdef dip_image
             a = builtin('subsref',a,s); % Call built-in method to access properties
             return
          end
+         telems = numtensorel(a);
          % Find the indices to use
          sz = imsize(a);
          [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a);
@@ -992,6 +1043,9 @@ classdef dip_image
          a.NDims = ndims;
          a.TensorShapeInternal = tsh;
          a.TensorSizeInternal = tsz;
+         if numtensorel(a) ~= telems
+            a.ColorSpace = '';
+         end
       end
 
       function a = subsasgn(a,s,b)
@@ -1023,6 +1077,34 @@ classdef dip_image
          a.Data = subsasgn(a.Data,s,b);
          if ndims == 1 && length(sz) > 1
             a.Data = reshape(a.Data,[size(a.Data,1),size(a.Data,2),sz]);
+         end
+      end
+
+      function a = diag(a,k)
+         if nargin > 1 && k ~= 0
+            error('Only main diagonal access supported')
+         end
+         if ~isscalar(a)
+            if isvector(a)
+               a.TensorShape = 'diagonal matrix';
+            else
+               sz = a.TensorSizeInternal;
+               if sz(1) ~= sz(2)
+                  error('Image is not a square tensor');
+               end
+               N = sz(1);
+               s = substruct('()',repmat({':'},1,ndims(a.Data)));
+               if a.TensorShapeInternal == 'column-major matrix' || a.TensorShapeInternal == 'row-major matrix'
+                  s.subs{2} = [1:N+1:N*N];
+               else % diagonal, symmetric and triangular matrices store diagonal elements first
+                  s.subs{2} = [1:N];
+               end
+               if numtensorel(a) ~= N
+                  a.ColorSpace = '';
+               end
+               a.Data = subsref(a.Data,s);
+               a.TensorShape = 'column vector';
+            end
          end
       end
 
