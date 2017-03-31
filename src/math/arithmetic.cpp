@@ -57,6 +57,7 @@ void Subtract(
 
 //
 namespace {
+
 template< typename TPI >
 class MultiplyLineFilter : public Framework::ScanLineFilter {
    public:
@@ -85,13 +86,13 @@ class MultiplyLineFilter : public Framework::ScanLineFilter {
                for( dip::uint row = 0; row < nRows; ++row ) {
                   TPI const* lhsTT = lhsT;
                   TPI const* rhsTT = rhsT;
-                  TPI v = 0;
+                  FlexType< TPI > v = 0;
                   for( dip::uint jj = 0; jj < nInner; ++jj ) {
-                     v = saturated_add( v, saturated_mul( *lhsTT, *rhsTT ));
+                     v += *lhsTT * *rhsTT;
                      lhsTT += nRows * lhsTensorStride;
                      rhsTT += rhsTensorStride;
                   }
-                  *outT = v;
+                  *outT = clamp_cast< TPI >( v );
                   lhsT += lhsTensorStride;
                   outT += outTensorStride;
                }
@@ -109,6 +110,67 @@ class MultiplyLineFilter : public Framework::ScanLineFilter {
       dip::uint nColumns;  // == rhs.TensorColumns
       dip::uint nInner;    // == lhs.TensorColumns == rhs.TensorRows
 };
+
+template< typename TPI >
+class MultiplySymmetricLineFilter : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         // This function is only called for one non-scalar image.
+         DIP_ASSERT( params.inBuffer.size() == 1 ); // RHS matrix, meaning the inner dimension is the columns
+         DIP_ASSERT( params.outBuffer.size() == 1 );
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint const inStride = params.inBuffer[ 0 ].stride;
+         dip::sint const outStride = params.outBuffer[ 0 ].stride;
+         dip::sint const inTensorStride = params.inBuffer[ 0 ].tensorStride;
+         dip::sint const outTensorStride = params.outBuffer[ 0 ].tensorStride;
+         DIP_ASSERT( params.inBuffer[ 0 ].tensorLength == nOuter * nInner );
+         DIP_ASSERT( params.outBuffer[ 0 ].tensorLength == ( nOuter * ( nOuter + 1 )) / 2 );
+         dip::uint const bufferLength = params.bufferLength;
+         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+            TPI const* inT = in;
+            TPI* outT = out;
+            // Compute diagonal elements first
+            for( dip::uint col = 0; col < nOuter; ++col ) {
+               FlexType< TPI > v = 0;
+               for( dip::uint jj = 0; jj < nInner; ++jj ) {
+                  v += *inT * *inT;
+                  inT += inTensorStride;
+               }
+               *outT = clamp_cast< TPI >( v );
+               outT += outTensorStride;
+            }
+            // Elements above diagonal are stored column-wise
+            dip::sint colSkip = nInner * inTensorStride;
+            TPI const* rhsT = in + colSkip;
+            for( dip::uint col = 1; col < nOuter; ++col ) { // Elements above diagonal stored column-wise
+               TPI const* lhsT = in;
+               for( dip::uint row = 0; row < col; ++row ) {
+                  TPI const* lhsTT = lhsT;
+                  TPI const* rhsTT = rhsT;
+                  FlexType< TPI > v = 0;
+                  for( dip::uint jj = 0; jj < nInner; ++jj ) {
+                     v += *lhsTT * *rhsTT;
+                     lhsTT += inTensorStride;
+                     rhsTT += inTensorStride;
+                  }
+                  *outT = clamp_cast< TPI >( v );
+                  lhsT += colSkip;
+                  outT += outTensorStride;
+               }
+               rhsT += colSkip;
+            }
+            in += inStride;
+            out += outStride;
+         }
+      }
+      MultiplySymmetricLineFilter( dip::uint nOuter, dip::uint nInner )
+            : nOuter( nOuter ), nInner( nInner ) {}
+   private:
+      dip::uint nOuter;    // == lhs.TensorRows == rhs.TensorColumns
+      dip::uint nInner;    // == lhs.TensorColumns == rhs.TensorRows
+};
+
 } // namespace
 
 void Multiply(
@@ -117,8 +179,6 @@ void Multiply(
       Image& out,
       DataType dt
 ) {
-   // TODO: If lhs == rhs.Transpose(), we should create a symmetric matrix! lhs.IsIdenticalView(rhs) && lhs.Tensor() == rhs.Tensor().Transpose()
-   //       Special cases of these are the dot product and the inner product of vectors
    // TODO: Another special case could be for diagonal matrices, where each row/column of the other matrix is multiplied by the same value.
    if( lhs.IsScalar() || rhs.IsScalar() ) {
       MultiplySampleWise( lhs, rhs, out, dt );
@@ -126,13 +186,31 @@ void Multiply(
    } else if( lhs.TensorColumns() != rhs.TensorRows() ) {
       DIP_THROW( "Inner tensor dimensions must match in multiplication" );
    }
-   Tensor outTensor = Tensor( lhs.TensorRows(), rhs.TensorColumns() );
-   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-   DIP_OVL_NEW_ALL( scanLineFilter, MultiplyLineFilter, ( lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() ), dt );
-   ImageConstRefArray inar{ lhs, rhs };
-   ImageRefArray outar{ out };
-   Framework::Scan( inar, outar, { dt, dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
-   out.ReshapeTensor( outTensor );
+   Tensor lhsTensorTransposed = lhs.Tensor();
+   lhsTensorTransposed.Transpose();
+   if(( lhsTensorTransposed == rhs.Tensor() ) && lhs.IsIdenticalView( rhs )) {
+      // a' * a  or  a * a' : produces a symmetric matrix
+      dip::uint nOuter = lhs.TensorRows();
+      dip::uint nInner = lhs.TensorColumns();
+      Tensor outTensor = Tensor( Tensor::Shape::SYMMETRIC_MATRIX, nOuter, nOuter );
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_NEW_ALL( scanLineFilter, MultiplySymmetricLineFilter,
+                       ( nOuter, nInner ), dt );
+      ImageRefArray outar{ out };
+      Framework::Scan( { rhs }, outar, { dt }, { dt }, { dt }, { outTensor.Elements() }, * scanLineFilter,
+                       Framework::Scan_ExpandTensorInBuffer );
+      out.ReshapeTensor( outTensor );
+   } else {
+      // General case
+      Tensor outTensor = Tensor( lhs.TensorRows(), rhs.TensorColumns() );
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_NEW_ALL( scanLineFilter, MultiplyLineFilter,
+                       ( lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() ), dt );
+      ImageRefArray outar{ out };
+      Framework::Scan( { lhs, rhs }, outar, { dt, dt }, { dt }, { dt }, { outTensor.Elements() }, * scanLineFilter,
+                       Framework::Scan_ExpandTensorInBuffer );
+      out.ReshapeTensor( outTensor );
+   }
 }
 
 void MultiplySampleWise(
@@ -230,3 +308,43 @@ void Invert(
 
 
 } // namespace dip
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include <random>
+#include "diplib/math.h"
+#include "diplib/iterators.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing the matrix multiplication operation") {
+   dip::Image lhs { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+   lhs.ReshapeTensor( 2, 3 );
+   dip::Image rhs { 1.0, 10.0, 100.0 };
+   rhs.ReshapeTensor( dip::Tensor( dip::Tensor::Shape::DIAGONAL_MATRIX, 3, 3 ));
+   dip::Image out = lhs * rhs;
+   DOCTEST_REQUIRE( out.TensorElements() == 6 );
+   DOCTEST_CHECK( out.TensorShape() == dip::Tensor::Shape::COL_MAJOR_MATRIX );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 0 ] ) == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 1 ] ) == doctest::Approx( 2.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 2 ] ) == doctest::Approx( 30.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 3 ] ) == doctest::Approx( 40.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 4 ] ) == doctest::Approx( 500.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 5 ] ) == doctest::Approx( 600.0 ));
+   DOCTEST_CHECK_THROWS( lhs * lhs );
+   out = lhs * Transpose( lhs );
+   DOCTEST_REQUIRE( out.TensorElements() == 3 );
+   DOCTEST_CHECK( out.TensorShape() == dip::Tensor::Shape::SYMMETRIC_MATRIX );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 0 ] ) == doctest::Approx( 35.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 1 ] ) == doctest::Approx( 56.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 2 ] ) == doctest::Approx( 44.0 ));
+   out = Transpose( lhs ) * lhs;
+   DOCTEST_REQUIRE( out.TensorElements() == 6 );
+   DOCTEST_CHECK( out.TensorShape() == dip::Tensor::Shape::SYMMETRIC_MATRIX );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 0 ] ) == doctest::Approx( 5.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 1 ] ) == doctest::Approx( 25.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 2 ] ) == doctest::Approx( 61.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 3 ] ) == doctest::Approx( 11.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 4 ] ) == doctest::Approx( 17.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 5 ] ) == doctest::Approx( 39.0 ));
+}
+
+#endif // DIP__ENABLE_DOCTEST

@@ -90,10 +90,26 @@ class DIP_NO_EXPORT Tensor {
       /// any tensor element given the row and column number. This function
       /// should help make more generic functions that can access tensor elements
       /// without paying attention to the tensor's Shape value.
+      ///
+      /// To access each of the elements of a symmetric or triangular matrix, use the
+      /// following code:
+      /// ```cpp
+      ///     dip::uint index = 0;
+      ///     for( dip::uint ii = 0; ii < nDims; ++ii ) { // Symmetric matrix stores diagonal elements first
+      ///        // value at index * tensorStride is tensor element ( ii, ii ).
+      ///        ++index;
+      ///     }
+      ///     for( dip::uint jj = 1; jj < nDims; ++jj ) { // Elements above diagonal stored column-wise
+      ///        for( dip::uint ii = 0; ii < jj; ++ii ) {
+      ///           // value at index * tensorStride is tensor element ( ii, jj ).
+      ///           ++index;
+      ///        }
+      ///     }
+      /// ```
       enum class Shape {
-            COL_VECTOR = 0,   ///< a vector (stores n elements)
+            COL_VECTOR = 0,   ///< a vector (stores n elements), default vector shape
             ROW_VECTOR,       ///< a row vector (stores n elements)
-            COL_MAJOR_MATRIX, ///< a matrix (stores n x m elements)
+            COL_MAJOR_MATRIX, ///< a matrix (stores n x m elements), default matrix shape
             ROW_MAJOR_MATRIX, ///< a row-major matrix (stores n x m elements)
             DIAGONAL_MATRIX,  ///< a diagonal matrix (stores n elements)
             SYMMETRIC_MATRIX, ///< a symmetric matrix (stores n(n+1)/2 elements)

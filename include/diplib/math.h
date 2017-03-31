@@ -134,7 +134,9 @@ inline Image NearestInt( Image const& in ) {
 
 /// \brief Transposes the tensor image, the data is not copied.
 inline Image Transpose( Image in ) {
-   return in.Transpose();
+   Image out = in;
+   out.Transpose();
+   return out;
 }
 
 /// \brief Computes the conjugate transpose of the tensor image `in`.
