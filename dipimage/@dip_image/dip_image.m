@@ -1552,11 +1552,29 @@ classdef dip_image
       end
 
       function in = ctranspose(in) % '
-         in = conj(dip_operators('''',in));
+         in = conj(transpose(in));
       end
 
       function in = transpose(in) % .'
-         in = dip_operators('''',in);
+         switch in.TensorShapeInternal
+            case 'column vector'
+                in.TensorShapeInternal = 'row vector';
+            case 'row vector'
+                in.TensorShapeInternal = 'column vector';
+            case 'column-major matrix'
+                in.TensorShapeInternal = 'row-major matrix';
+            case 'row-major matrix'
+                in.TensorShapeInternal = 'column-major matrix';
+            case 'diagonal matrix'
+                %in.TensorShapeInternal = 'diagonal matrix';
+            case 'symmetric matrix'
+                %in.TensorShapeInternal = 'symmetric matrix';
+            case 'upper triangular matrix'
+                in.TensorShapeInternal = 'lower triangular matrix';
+            case 'lower triangular matrix'
+                in.TensorShapeInternal = 'upper triangular matrix';
+         end
+         in.TensorSizeInternal = in.TensorSizeInternal([2,1]);
       end
 
       function in = conj(in)

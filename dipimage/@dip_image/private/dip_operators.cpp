@@ -115,13 +115,6 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          case 'u': // unary - : invert
             dip::Invert( lhs, out );
             break;
-         case '\'': // unary (post) ' : transpose
-         {
-            dip::Image tmp = lhs.QuickCopy();
-            tmp.Transpose();
-            out = tmp; // triggers data copy!
-            break;
-         }
       // Monadic operators
          case 'm': // These are all the monadic operators, defined by the second letter
             switch( ch[ 1 ] ) {
