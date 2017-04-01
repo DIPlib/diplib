@@ -208,7 +208,10 @@ DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvec
 DIP_EXPORT void Inverse( Image const& in, Image& out );
 
 /// \brief Computes the pseudo-inverse of the matrix at each pixel in image `in`.
-DIP_EXPORT void PseudoInverse( Image const& in, Image& out );
+///
+/// Computes the Moore-Penrose pseudo-inverse using `tolerance`. Singular values smaller than
+/// `tolerance * max(rows,cols)` times the largest singular value will be set to zero in the inverse.
+DIP_EXPORT void PseudoInverse( Image const& in, Image& out, dfloat tolerance = 1e-7 );
 
 /// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
 ///

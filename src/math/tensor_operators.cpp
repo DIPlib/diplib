@@ -457,7 +457,7 @@ void Inverse( Image const& in, Image& out ) {
    out.ReshapeTensor( n, n );
 }
 
-void PseudoInverse( Image const& in, Image& out ) {
+void PseudoInverse( Image const& in, Image& out, dfloat tolerance ) {
    dip::uint m = in.TensorRows();
    dip::uint n = in.TensorColumns();
    DataType outtype = DataType::SuggestFlex( in.DataType() );
@@ -470,7 +470,7 @@ void PseudoInverse( Image const& in, Image& out ) {
       buffertype = DT_DCOMPLEX;
    } else {
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-            [ m, n ]( auto const& pin, auto const& pout ) { PseudoInverse( m, n, pin, pout ); }
+            [ m, n, tolerance ]( auto const& pin, auto const& pout ) { PseudoInverse( m, n, pin, pout, tolerance ); }
       );
       buffertype = DT_DFLOAT;
    }

@@ -155,18 +155,38 @@ void Inverse( dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator
    result = matrix.inverse();
 }
 
-void PseudoInverse( dip::uint m, dip::uint n, ConstSampleIterator< dfloat > input, SampleIterator< dfloat > output ) {
+void PseudoInverse(
+      dip::uint m,
+      dip::uint n,
+      ConstSampleIterator< dfloat > input,
+      SampleIterator< dfloat > output,
+      dfloat tolerance
+) {
    Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), m, n, Eigen::InnerStride<>( input.Stride() ));
-   Eigen::CompleteOrthogonalDecomposition< Eigen::MatrixXd > decomposition( matrix );
+   Eigen::JacobiSVD< Eigen::MatrixXd > svd( matrix, Eigen::ComputeThinU | Eigen::ComputeThinV );
+   tolerance = tolerance * std::max( m, n ) * svd.singularValues().array().abs()( 0 );
    Eigen::Map< Eigen::MatrixXd, 0, Eigen::InnerStride<> > result( output.Pointer(), n, m, Eigen::InnerStride<>( output.Stride() ));
-   result = decomposition.pseudoInverse();
+   result = svd.matrixV() *
+            ( svd.singularValues().array().abs() > tolerance ).select( svd.singularValues().array().inverse(), 0 )
+                                                              .matrix().asDiagonal()
+            * svd.matrixU().adjoint();
 }
 
-void PseudoInverse( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output ) {
+void PseudoInverse(
+      dip::uint m,
+      dip::uint n,
+      ConstSampleIterator< dcomplex > input,
+      SampleIterator< dcomplex > output,
+      dfloat tolerance
+) {
    Eigen::Map< Eigen::MatrixXcd const, 0, Eigen::InnerStride<> > matrix( input.Pointer(), m, n, Eigen::InnerStride<>( input.Stride() ));
-   Eigen::CompleteOrthogonalDecomposition< Eigen::MatrixXcd > decomposition( matrix );
+   Eigen::JacobiSVD< Eigen::MatrixXcd > svd( matrix, Eigen::ComputeThinU | Eigen::ComputeThinV );
+   tolerance = tolerance * std::max( m, n ) * svd.singularValues().array().abs()( 0 );
    Eigen::Map< Eigen::MatrixXcd, 0, Eigen::InnerStride<> > result( output.Pointer(), n, m, Eigen::InnerStride<>( output.Stride() ));
-   result = decomposition.pseudoInverse();
+   result = svd.matrixV() *
+            ( svd.singularValues().array().abs() > tolerance ).select( svd.singularValues().array().inverse(), 0 )
+                                                              .matrix().asDiagonal()
+            * svd.matrixU().adjoint();
 }
 
 dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dfloat > input ) {
