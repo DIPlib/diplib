@@ -35,18 +35,16 @@ arithmetic:
    besselj.m (was this ever used?)
 
 tensor arithmetic:
-   cross.m
    curl.m
-   det.m
    divergence.m
+
+   cross.m
+   det.m
    dot.m
-   eig_largest.m
    eig.m
    eye.m
-   inner.m
    inv.m
    norm.m
-   outer.m
    pinv.m
    svd.m
    trace.m

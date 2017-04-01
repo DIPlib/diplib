@@ -1,7 +1,14 @@
 %NEWTENSORIM   Creates a tensor dip_image
 %   NEWTENSORIM(N) is a 0D vector image with N elements.
 %
-%   NEWTENSORIM(N,M) or NEWTENSORIM([N,M]) is a 0D image with a N-by-M tensor.
+%   NEWTENSORIM([N,M]) is a 0D image with a N-by-M tensor.
+%
+%   NEWTENSORIM([N,M],[P,Q,...],) is a image of size P-by-Q-by-... with a
+%   N-by-M tensor.
+%
+%   NEWIM(...,TYPE) sets the data type of the new image to TYPE.
+%   TYPE can be any of the type parameters allowed by DIP_IMAGE. The
+%   default data type is 'single'.
 %
 %   NEWTENSORIM(A) is an image identical to the tensor image A, set to 0.
 %
@@ -28,31 +35,54 @@
 % limitations under the License.
 
 function out = newtensorim(varargin)
-if nargin > 1
-   imgs = false;
-   for ii=1:nargin
-      if isa(varargin{ii},'dip_image') || numel(varargin{ii}) ~= 1
-         imgs = true;
-         break;
-      end
-   end
-   if imgs
-      out = dip_image(varargin);
-      return;
-   else
-      n = [varargin{:}];
-   end
-elseif nargin == 1
-   n = varargin{1};
-   if isa(n,'dip_image')
-      out = n;
-      out(:) = 0;
-      return;
-   end
-else
+tsize = [];
+imsize = [];
+dtype = 'sfloat';
+if nargin == 0
    error('Argument expected')
 end
-if ~isnumeric(n) || numel(n) < 1 || numel(n) > 2 || any(fix(n)~=n)
+imgs = false;
+for ii=1:nargin
+   if isa(varargin{ii},'dip_image') || ~isvector(varargin{ii})
+      imgs = true;
+      break;
+   end
+end
+if imgs
+   if nargin==1
+      out = varargin{1};
+      out(:) = 0;
+   else
+      out = dip_image(varargin);
+   end
+   return;
+end
+tsize = varargin{1};
+if ~isnumeric(tsize) || numel(tsize) < 1 || numel(tsize) > 2 || any(fix(tsize)~=tsize)
    error('Size vector must be a row vector with at most 2 integer elements')
 end
-out = dip_image(zeros(prod(n),1,'single'),n);
+N = 2;
+while nargin >= N
+   if isempty(imsize) && isnumeric(varargin{N})
+      imsize = varargin{N};
+      if (~isempty(imsize) && ~isvector(imsize)) || any(fix(imsize)~=imsize)
+         error('Size vector must be a row vector with at most 2 integer elements')
+      end
+      N = N+1;
+   else
+      dtype = varargin{N};
+      if ~ischar(dtype) || ~isvector(dtype)
+         error('Data type must be a string')
+      end
+      if nargin > N
+         error('Too many input arguments')
+      end
+      break;
+   end
+end
+tsize
+imsize
+out = dip_image(zeros(prod(tsize),1),tsize,dtype);
+if ~isempty(imsize)
+   out = repmat(out,imsize);
+end
