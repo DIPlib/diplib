@@ -470,7 +470,7 @@ class DIP_EXPORT NadicScanLineFilter : public ScanLineFilter {
    // over N.
    public:
       static_assert( N > 0, "NadicScanLineFilter does not work without input images" );
-      NadicScanLineFilter( F func ) : func_( func ) {}
+      NadicScanLineFilter( F const& func ) : func_( func ) {}
       virtual void Filter( ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( params.inBuffer.size() == N );
          DIP_ASSERT( params.outBuffer.size() == 1 );
@@ -523,28 +523,28 @@ class DIP_EXPORT NadicScanLineFilter : public ScanLineFilter {
 /// \brief Support for quickly defining monadic operators (1 input image, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
 template< typename TPI, typename F >
-inline std::unique_ptr< ScanLineFilter > NewMonadicScanLineFilter( F func ) {
+inline std::unique_ptr< ScanLineFilter > NewMonadicScanLineFilter( F const& func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 1, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining dyadic operators (2 input images, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
 template< typename TPI, typename F >
-inline std::unique_ptr< ScanLineFilter > NewDyadicScanLineFilter( F func ) {
+inline std::unique_ptr< ScanLineFilter > NewDyadicScanLineFilter( F const& func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 2, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining triadic operators (3 input images, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
 template< typename TPI, typename F >
-inline std::unique_ptr< ScanLineFilter > NewTriadicScanLineFilter( F func ) {
+inline std::unique_ptr< ScanLineFilter > NewTriadicScanLineFilter( F const& func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 3, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining tetradic operators (4 input images, 1 output image).
 /// See `dip::Framework::NadicScanLineFilter`.
 template< typename TPI, typename F >
-inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F func ) {
+inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F const& func ) {
    return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 4, TPI, F >( func ));
 }
 

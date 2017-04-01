@@ -1,28 +1,13 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <iostream>
 #include "diplib.h"
+#include "diplib/math.h"
 
 // Testing the scan framework through the dip_Add and dip_Mul functions.
 
 int main() {
    bool error = false;
    try {
-
-      /*
-      dip::Image lhs{ dip::UnsignedArray{}, 4, dip::DT_DCOMPLEX };
-      lhs = { dip::dcomplex( 5, 6 ), dip::dcomplex( 2, -4 ), dip::dcomplex( 5 ), dip::dcomplex( 0, 1 ) };
-      std::cout << lhs;
-
-      dip::Image rhs{ dip::UnsignedArray{ 6 }, 1, dip::DT_DFLOAT };
-      for( dip::uint ii = 0; ii < 6; ++ii ) {
-         rhs.At( ii ) = ii + 1;
-      }
-      std::cout << rhs;
-
-      dip::Image out = lhs + rhs;
-
-      std::cout << out;
-      */
 
       dip::Tensor example( dip::Tensor::Shape::SYMMETRIC_MATRIX, 2, 2 );
 

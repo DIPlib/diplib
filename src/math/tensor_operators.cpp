@@ -31,7 +31,7 @@ namespace {
 template< typename TPI, typename TPO, typename F >
 class TensorMonadicScanLineFilter : public Framework::ScanLineFilter {
    public:
-      TensorMonadicScanLineFilter( F func ) : func_( func ) {}
+      TensorMonadicScanLineFilter( F const& func ) : func_( func ) {}
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -57,14 +57,14 @@ class TensorMonadicScanLineFilter : public Framework::ScanLineFilter {
 };
 
 template< typename TPI, typename TPO = TPI, typename F >
-std::unique_ptr< Framework::ScanLineFilter > NewTensorMonadicScanLineFilter( F func ) {
+std::unique_ptr< Framework::ScanLineFilter > NewTensorMonadicScanLineFilter( F const& func ) {
    return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorMonadicScanLineFilter< TPI, TPO, F >( func ));
 }
 
 template< typename TPI, typename TPO, typename F >
 class TensorDyadicScanLineFilter : public Framework::ScanLineFilter {
    public:
-      TensorDyadicScanLineFilter( F func ) : func_( func ) {}
+      TensorDyadicScanLineFilter( F const& func ) : func_( func ) {}
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -97,14 +97,14 @@ class TensorDyadicScanLineFilter : public Framework::ScanLineFilter {
 };
 
 template< typename TPI, typename TPO = TPI, typename F >
-std::unique_ptr< Framework::ScanLineFilter > NewTensorDyadicScanLineFilter( F func ) {
+std::unique_ptr< Framework::ScanLineFilter > NewTensorDyadicScanLineFilter( F const& func ) {
    return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorDyadicScanLineFilter< TPI, TPO, F >( func ));
 }
 
 template< typename TPI, typename TPO, typename F >
 class TensorTriadicScanLineFilter : public Framework::ScanLineFilter {
    public:
-      TensorTriadicScanLineFilter( F func ) : func_( func ) {}
+      TensorTriadicScanLineFilter( F const& func ) : func_( func ) {}
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -144,7 +144,7 @@ class TensorTriadicScanLineFilter : public Framework::ScanLineFilter {
 };
 
 template< typename TPI, typename TPO = TPI, typename F >
-std::unique_ptr< Framework::ScanLineFilter > NewTensorTriadicScanLineFilter( F func ) {
+std::unique_ptr< Framework::ScanLineFilter > NewTensorTriadicScanLineFilter( F const& func ) {
    return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorTriadicScanLineFilter< TPI, TPO, F >( func ));
 }
 
@@ -245,12 +245,12 @@ void Determinant( Image const& in, Image& out ) {
       if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
          if( outtype.IsComplex() ) {
             scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
-                  [ n ]( auto const& pin, auto const& pout ) { * pout = DeterminantDiagonal( n, pin ); }
+                  [ n ]( auto const& pin, auto const& pout ) { *pout = DeterminantDiagonal( n, pin ); }
             );
             buffertype = DT_DCOMPLEX;
          } else {
             scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-                  [ n ]( auto const& pin, auto const& pout ) { * pout = DeterminantDiagonal( n, pin ); }
+                  [ n ]( auto const& pin, auto const& pout ) { *pout = DeterminantDiagonal( n, pin ); }
             );
             buffertype = DT_DFLOAT;
          }
@@ -274,7 +274,7 @@ void Determinant( Image const& in, Image& out ) {
 
 void Norm( Image const& in, Image& out ) {
    DIP_THROW_IF( !in.IsVector(), "Norm only defined for vector images" );
-   dip::uint n = in.TensorElements();
+   dip::uint n = in.TensorRows();
    if( n == 1 ) {
       Abs( in, out );
    } else {
@@ -303,7 +303,7 @@ void Trace( Image const& in, Image& out ) {
       out = in;
    } else {
       DataType dtype = DataType::SuggestFlex( in.DataType() );
-      dip::uint n = in.TensorElements();
+      dip::uint n = in.TensorRows();
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       switch( in.TensorShape() ) {
          case Tensor::Shape::DIAGONAL_MATRIX:
@@ -431,6 +431,7 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
       Framework::Scan( { in }, outar, { inbuffertype }, { outbuffertype, outbuffertype }, { outtype, outtype },
                        { n, n * n }, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
       eigenvectors.ReshapeTensor( n, n );
+      out.ReshapeTensorAsDiagonal();
    }
 }
 
@@ -526,6 +527,7 @@ void SingularValueDecomposition( Image const& in, Image& U, Image& out, Image& V
                     { p, m * p, n * p }, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
    U.ReshapeTensor( m, p );
    V.ReshapeTensor( n, p );
+   out.ReshapeTensorAsDiagonal();
 }
 
 

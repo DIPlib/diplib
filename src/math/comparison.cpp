@@ -33,7 +33,7 @@ class NadicScanLineFilterBinOut : public Framework::ScanLineFilter {
    // over N.
    public:
       static_assert( N > 0, "NadicScanLineFilterBinOut does not work without input images" );
-      NadicScanLineFilterBinOut( F func ) : func_( func ) {}
+      NadicScanLineFilterBinOut( F const& func ) : func_( func ) {}
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( params.inBuffer.size() == N );
          DIP_ASSERT( params.outBuffer.size() == 1 );
@@ -84,7 +84,7 @@ class NadicScanLineFilterBinOut : public Framework::ScanLineFilter {
 };
 
 template< typename TPI, typename F >
-std::unique_ptr< Framework::ScanLineFilter > NewDyadicScanLineFilterBinOut( F func ) {
+std::unique_ptr< Framework::ScanLineFilter > NewDyadicScanLineFilterBinOut( F const& func ) {
    return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new NadicScanLineFilterBinOut< 2, TPI, F >( func ));
 }
 
