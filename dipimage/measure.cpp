@@ -26,6 +26,16 @@
 #include "diplib/measurement.h"
 #include "diplib/regions.h"
 
+dip::MeasurementTool* measurementTool = nullptr;
+
+// Destroy MeasurementTool object when MEX-file is removed from memory
+static void AtExit(void) {
+   if( measurementTool ) {
+      //mexPrintf( "Deleting MeasurementTool.\n" );
+      delete measurementTool;
+      measurementTool = nullptr;
+   }
+}
 
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dml::streambuf streambuf;
@@ -34,7 +44,12 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
       DML_MIN_ARGS( 1 );
 
-      dip::MeasurementTool measurementTool;
+      // Create MeasurementTool object
+      if( !measurementTool ) {
+         //mexPrintf( "Creating MeasurementTool.\n" );
+         measurementTool = new dip::MeasurementTool;
+         mexAtExit( AtExit );
+      }
 
       if( mxIsChar( prhs[ 0 ] )) {
 
@@ -42,7 +57,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          if( str == "help" ) {
             DML_MAX_ARGS( 1 );
             std::cout << "\nAvailable measurement features:\n";
-            auto features = measurementTool.Features();
+            auto features = measurementTool->Features();
             std::cout << features.size() << " features." << std::endl;
             for( auto const& feature : features ) {
                std::cout << " - '" << feature.name << "': " << feature.description;
@@ -82,7 +97,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
             dip::Label( label, tmp, connectivity );
          }
 
-         dip::Measurement msr = measurementTool.Measure( label, grey, features, objectIDs, connectivity );
+         dip::Measurement msr = measurementTool->Measure( label, grey, features, objectIDs, connectivity );
 
          plhs[ 0 ] = mxCreateDoubleMatrix( msr.NumberOfValues(), msr.NumberOfObjects(), mxREAL );
          double* data = mxGetPr( plhs[ 0 ] );
