@@ -214,9 +214,14 @@ void ColorSpaceManager::Convert(
       Image& out,
       String const& endColorSpace
 ) const {
-   DIP_START_STACK_TRACE
-      // Make sure the input color space is consistent
-      String const& startColorSpace = in.ColorSpace();
+   // Make sure the input color space is consistent
+   String const& startColorSpace = in.ColorSpace();
+   if( startColorSpace.empty() && in.TensorElements() > 1 ) {
+      dip::uint endIndex = Index( endColorSpace.empty() ? "grey" : endColorSpace );
+      DIP_THROW_IF( colorSpaces_[ endIndex].nChannels != in.TensorElements(), E::INCONSISTENT_COLORSPACE );
+      out = in;
+      out.SetColorSpace( colorSpaces_[ endIndex ].name );
+   } else {
       dip::uint startIndex = Index( startColorSpace.empty() ? "grey" : startColorSpace );
       DIP_THROW_IF( in.TensorElements() != colorSpaces_[ startIndex ].nChannels, E::INCONSISTENT_COLORSPACE );
       // Get the output color space
@@ -246,17 +251,19 @@ void ColorSpaceManager::Convert(
       steps.back().last = true;
       //std::cout << colorSpaces_[ path.back() ].name << std::endl;
       // Call scan framework
-      ConverterLineFilter lineFilter( steps );
-      Framework::ScanMonadic(
-            in,
-            out,
-            DT_DFLOAT,
-            DataType::SuggestFloat( in.DataType() ),
-            steps.back().nOutputChannels,
-            lineFilter
-      );
+      DIP_START_STACK_TRACE
+         ConverterLineFilter lineFilter( steps );
+         Framework::ScanMonadic(
+               in,
+               out,
+               DT_DFLOAT,
+               DataType::SuggestFloat( in.DataType() ),
+               steps.back().nOutputChannels,
+               lineFilter
+         );
+      DIP_END_STACK_TRACE
       out.SetColorSpace( colorSpaces_[ endIndex ].name );
-   DIP_END_STACK_TRACE
+   }
 }
 
 namespace {

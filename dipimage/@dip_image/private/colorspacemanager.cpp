@@ -28,6 +28,7 @@
  */
 
 #define DOCTEST_CONFIG_IMPLEMENT
+
 #include "dip_matlab_interface.h"
 #include "diplib/color.h"
 
@@ -36,7 +37,7 @@ dip::ColorSpaceManager* csm = nullptr;
 // Destroy CSM object when MEX-file is removed from memory
 static void AtExit(void) {
    if( csm ) {
-      mexPrintf( "Deleting CSM.\n" );
+      //mexPrintf( "Deleting CSM.\n" );
       delete csm;
       csm = nullptr;
    }
@@ -50,18 +51,26 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
 
       // Create CSM object
       if( !csm ) {
-         mexPrintf( "Creating CSM.\n" );
+         //mexPrintf( "Creating CSM.\n" );
          csm = new dip::ColorSpaceManager;
          mexAtExit( AtExit );
       }
 
-      // Convert the color space
-      dml::MatlabInterface mi;
       dip::Image in = dml::GetImage( prhs[ 0 ] );
-      dip::Image out = mi.NewImage();
       dip::String col = dml::GetString( prhs[ 1 ] );
-      csm->Convert( in, out, col );
-      plhs[ 0 ] = mi.GetArray( out );
+
+      if( !in.IsColor() && in.TensorElements() > 1 ) {
+         // Set the color space, if correct number of tensor elements
+         DIP_THROW_IF( csm->NumberOfChannels( col ) != in.TensorElements(), dip::E::INCONSISTENT_COLORSPACE );
+         plhs[ 0 ] = mxCreateSharedDataCopy( prhs[ 0 ] );
+         mxSetPropertyShared( plhs[ 0 ], 0, dml::colspPropertyName, dml::GetArray( csm->CanonicalName( col )));
+      } else {
+         // Convert the color space
+         dml::MatlabInterface mi;
+         dip::Image out = mi.NewImage();
+         csm->Convert( in, out, col );
+         plhs[ 0 ] = mi.GetArray( out );
+      }
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

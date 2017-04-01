@@ -764,26 +764,28 @@ classdef dip_image
          %    IN = COLORSPACE(IN,COL), with IN a color image, changes the color
          %    space of image IN to COL, converting the pixel values as required.
          %    If COL is 'grey', a scalar image is returned with the luminosity (Y).
+         %    If COL is '', no transformation is made, the color space information
+         %    is simply removed.
          %
          %    IN = COLORSPACE(IN,COL), with IN a tensor image, sets the color
-         %    space of image IN to COL.
+         %    space of image IN to COL. IN must have the right number of tensor
+         %    elements expected for colorspace COL.
          %
          %    COL = COLORSPACE(IN) returns the name of the color space of the
          %    image IN.
          %
-         %    Converting to a color-space-less tensor image is done by
-         %    specifying the empty string as a color space. This action only
-         %    changes the color space information, and does not change any
-         %    pixel values. Thus, to change from one color space to another
-         %    without converting the pixel values themselves, change first to
-         %    a color-space-less tensor image, and then to the final color
-         %    space.
+         %    Converting to a color-space-less tensor image is done by specifying
+         %    the empty string as a color space. This action only changes the color
+         %    space information, and does not change any pixel values. Thus, to
+         %    change from one color space to another without converting the pixel
+         %    values themselves, change first to a color-space-less tensor image,
+         %    and then to the final color space.
          %
-         %    A color space is any string recognized by the system. It is
-         %    possible to specify any other string as color space, but no
-         %    conversion of pixel values can be made, since the system doesn't
-         %    know about that color space. Color space names are not case
-         %    sensitive. Recognized color spaces are:
+         %    A color space is any string recognized by the system. It is possible
+         %    to specify any other string as color space, but no conversion of pixel
+         %    values can be made, since the system doesn't know about that color
+         %    space. Color space names are not case sensitive. Recognized color
+         %    spaces are:
          %
          %       grey (or gray)
          %       RGB
@@ -807,10 +809,10 @@ classdef dip_image
          %    See also: dip_image/iscolor
          if nargin==1
             obj = obj.ColorSpace;
-         elseif ~isempty(col) && (iscolor(obj) || isscalar(obj))
-            obj = colorspacemanager(obj,col);
+         elseif isempty(col)
+            obj.ColorSpace = '';
          else
-            obj.ColorSpace = col;
+            obj = colorspacemanager(obj,col);
          end
       end
 
