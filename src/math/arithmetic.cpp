@@ -319,7 +319,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the matrix multiplication operation") {
    dip::Image lhs { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
    lhs.ReshapeTensor( 2, 3 );
    dip::Image rhs { 1.0, 10.0, 100.0 };
-   rhs.ReshapeTensor( dip::Tensor( dip::Tensor::Shape::DIAGONAL_MATRIX, 3, 3 ));
+   rhs.ReshapeTensorAsDiagonal();
    dip::Image out = lhs * rhs;
    DOCTEST_REQUIRE( out.TensorElements() == 6 );
    DOCTEST_CHECK( out.TensorShape() == dip::Tensor::Shape::COL_MAJOR_MATRIX );

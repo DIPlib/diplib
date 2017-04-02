@@ -169,18 +169,94 @@ inline Image CrossProduct( Image const& lhs, Image const& rhs ) {
    return out;
 }
 
-/// \brief Computes the determinant of the square matrix at each pixel in image `in`.
-DIP_EXPORT void Determinant( Image const& in, Image& out );
-
 /// \brief Computes the norm of the vector at each pixel in image `in`.
 DIP_EXPORT void Norm( Image const& in, Image& out );
+inline Image Norm( Image const& in ) {
+   Image out;
+   Norm( in, out );
+   return out;
+}
+
+/// \brief Computes the angle of the vector at each pixel in image `in`.
+///
+/// `in` must be a 2-vector or a 3-vector. For a 2-vector, `out` is a scalar image representing
+/// *phi*, the angle from the x-axis. For a 3-vector, `out` has 2 tensor components, corresponding
+/// to *phi* and *theta*. *phi*, as in the 2D case, is the angle from the x-axis within the x-y plane
+/// (azimuth). *theta* is the angle from the z-axis (inclination). See `dip::CartesianToPolar` for
+/// more details. This function yields the same output as `dip::CartesianToPolar`, but without
+/// the first tensor component.
+///
+/// \see dip::Norm, dip::PolarToCartesian, dip::CartesianToPolar
+DIP_EXPORT void Angle( Image const& in, Image& out );
+inline Image Angle( Image const& in ) {
+   Image out;
+   Angle( in, out );
+   return out;
+}
+
+/// \brief Converts the vector at each pixel in image `in` from cartesian coordinates to polar coordinates.
+///
+/// `in` must be a 2-vector or a 3-vector. `out` is a same-size vector containing *r* and *phi*
+/// in the 2D case, and *r*, *phi* and *theta* in the 3D case. *phi* is the angle to the x-axis
+/// within the x-y plane (azimuth). *theta* is the angle from the z-axis (inclination).
+///
+/// That is, in 2D:
+/// ```cpp
+///     in[ 0 ] == out[ 0 ] * Cos( out[ 1 ] );
+///     in[ 1 ] == out[ 0 ] * Sin( out[ 1 ] );
+/// ```
+/// and in 3D:
+/// ```cpp
+///     in[ 0 ] == out[ 0 ] * Cos( out[ 1 ] ) * Sin( out[ 2 ] );
+///     in[ 1 ] == out[ 0 ] * Sin( out[ 1 ] ) * Sin( out[ 2 ] );
+///     in[ 2 ] == out[ 0 ] * Cos( out[ 2 ] );
+/// ```
+///
+/// \see dip::PolarToCartesian, dip::Norm, dip::Angle
+DIP_EXPORT void CartesianToPolar( Image const& in, Image& out );
+inline Image CartesianToPolar( Image const& in ) {
+   Image out;
+   CartesianToPolar( in, out );
+   return out;
+}
+
+/// \brief Converts the vector at each pixel in image `in` from polar coordinates to cartesian coordinates.
+///
+/// `in` must be a 2-vector or a 3-vector. See `dip::CartesianToPolar` for a description of the polar
+/// coordinates used.
+///
+/// \see dip::CartesianToPolar, dip::Norm, dip::Angle
+DIP_EXPORT void PolarToCartesian( Image const& in, Image& out );
+inline Image PolarToCartesian( Image const& in ) {
+   Image out;
+   PolarToCartesian( in, out );
+   return out;
+}
+
+/// \brief Computes the determinant of the square matrix at each pixel in image `in`.
+DIP_EXPORT void Determinant( Image const& in, Image& out );
+inline Image Determinant( Image const& in ) {
+   Image out;
+   Determinant( in, out );
+   return out;
+}
 
 /// \brief Computes the trace of the square matrix at each pixel in image `in`.
 DIP_EXPORT void Trace( Image const& in, Image& out );
+inline Image Trace( Image const& in ) {
+   Image out;
+   Trace( in, out );
+   return out;
+}
 
 /// \brief Computes the rank of the square matrix at each pixel in image `in`.
 /// The output is DT_UINT8, under the assumption that we won't have tensor images with a rank higher than 255.
 DIP_EXPORT void Rank( Image const& in, Image& out );
+inline Image Rank( Image const& in ) {
+   Image out;
+   Rank( in, out );
+   return out;
+}
 
 /// \brief Computes the eigenvalues of the square matrix at each pixel in image `in`.
 ///
@@ -188,6 +264,11 @@ DIP_EXPORT void Rank( Image const& in, Image& out );
 /// real-valued, then `out` is real-valued, and the eigenvalues are in descending
 /// order. Otherwise, `out` is complex-valued, and not sorted in any specific way.
 DIP_EXPORT void Eigenvalues( Image const& in, Image& out );
+inline Image Eigenvalues( Image const& in ) {
+   Image out;
+   Eigenvalues( in, out );
+   return out;
+}
 
 /// \brief Computes the eigenvalues and eigenvectors of the square matrix at each pixel in image `in`.
 ///
@@ -206,12 +287,22 @@ DIP_EXPORT void EigenDecomposition( Image const& in, Image& out, Image& eigenvec
 ///
 /// The result is undetermined if the matrix is not invertible.
 DIP_EXPORT void Inverse( Image const& in, Image& out );
+inline Image Inverse( Image const& in ) {
+   Image out;
+   Inverse( in, out );
+   return out;
+}
 
 /// \brief Computes the pseudo-inverse of the matrix at each pixel in image `in`.
 ///
 /// Computes the Moore-Penrose pseudo-inverse using `tolerance`. Singular values smaller than
 /// `tolerance * max(rows,cols)` times the largest singular value will be set to zero in the inverse.
 DIP_EXPORT void PseudoInverse( Image const& in, Image& out, dfloat tolerance = 1e-7 );
+inline Image PseudoInverse( Image const& in ) {
+   Image out;
+   PseudoInverse( in, out );
+   return out;
+}
 
 /// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
 ///
@@ -223,6 +314,11 @@ DIP_EXPORT void PseudoInverse( Image const& in, Image& out, dfloat tolerance = 1
 /// This function uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
 DIP_EXPORT void SingularValues( Image const& in, Image& out );
+inline Image SingularValues( Image const& in ) {
+   Image out;
+   SingularValues( in, out );
+   return out;
+}
 
 /// \brief Computes the "thin" singular value decomposition of the matrix at each pixel in image `in`.
 ///
@@ -244,17 +340,15 @@ DIP_EXPORT void SingularValueDecomposition( Image const& A, Image& U, Image& S, 
 /// image, the resulting output matrix image will be NxN. `out` will be of type `dip::DT_SFLOAT`.
 inline void Identity( Image const& in, Image& out ) {
    dip::uint telems = std::max( in.TensorColumns(), in.TensorRows() );
-   Tensor tensor( Tensor::Shape::DIAGONAL_MATRIX, telems, telems );
    out.ReForge( in.Sizes(), telems, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
    out.Fill( 1.0 );
+   out.ReshapeTensorAsDiagonal();
 }
 inline Image Identity( Image const& in ) {
    Image out;
    Identity( in, out );
    return out;
 }
-
-// TODO: other: Curl, Divergence.
 
 
 //

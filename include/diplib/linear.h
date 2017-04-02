@@ -723,6 +723,12 @@ inline Image Dyz(
 /// derivative along *x* (dimension with index 0), `out[ 1 ]` is the derivative along *y* (dimension with index 1),
 /// etc.
 ///
+/// The input image must be scalar.
+///
+/// Set `process` to false for those dimensions that should not be filtered. Alternatively, set
+/// `sigmas` to 0 or a negative value. No derivative will be computed along the dimensions excluded from
+/// processing. That is, a 3D image that is only processed along one dimension will have a scalar gradient.
+///
 /// By default uses Gaussian derivatives in the computation. Set `method = "finitediff"` for finite difference
 /// approximations to the gradient. See `dip::Derivative` for more information on the other parameters.
 ///
@@ -749,7 +755,11 @@ inline Image Gradient(
    return out;
 }
 
-// Same as Norm(Gradient()), but more efficient
+/// \brief Computes the gradient magnitude of the image, equivalent to `dip::Norm( dip::Gradient( in ))`.
+///
+/// The input image must be scalar. See `dip::Gradient` for information on the parameters.
+///
+/// \see dip::Gradient, dip::Norm, dip::Derivative, dip::GradientDirection
 DIP_EXPORT void GradientMagnitude(
       Image const& in,
       Image& out,
@@ -759,9 +769,29 @@ DIP_EXPORT void GradientMagnitude(
       BooleanArray const& process = {},
       dfloat truncation = 3
 );
+inline Image GradientMagnitude(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   GradientMagnitude( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
 
-// 2D only. Implemented as Atan2(Dy(),Dx()).
-DIP_EXPORT void GradientDirection2D(
+/// \brief Computes the direction of the gradient of the image, equivalent to `dip::Angle( dip::Gradient( in ))`.
+///
+/// The input image must be scalar. For a 2D image, the output is scalar also, containing the angle of the
+/// gradient to the x-axis. For a 3D image, the output has two tensor components, containing the azimuth and
+/// inclination. See `dip::Angle` for an explanation.
+///
+/// See `dip::Gradient` for information on the parameters.
+///
+/// \see dip::Gradient, dip::Angle, dip::Derivative, dip::GradientMagnitude
+DIP_EXPORT void GradientDirection(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
@@ -770,6 +800,76 @@ DIP_EXPORT void GradientDirection2D(
       BooleanArray const& process = {},
       dfloat truncation = 3
 );
+inline Image GradientDirection(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   GradientDirection( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
+
+/// \brief Computes the rotation of the 2D or 3D vector field `in`.
+///
+/// `in` is expected to be a 2D or 3D image with a 2-vector or a 3-vector tensor representation, respectively.
+/// However, the image can have more dimensions if they are excluded from processing through `process` or by setting
+/// `sigmas` to 0. See `dip::Gradient` for information on the parameters.ß
+///
+/// \see dip::Gradient, dip::Divergence
+DIP_EXPORT void Curl(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+);
+inline Image Curl(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   Curl( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
+
+/// \brief Computes the divergence of the vector field `in`.
+///
+/// `in` is expected to have as many dimensions as tensor components. However, the image
+/// can have more dimensions if they are excluded from processing through `process` or by setting
+/// `sigmas` to 0. See `dip::Gradient` for information on the parameters.
+///
+/// \see dip::Gradient, dip::Curl
+DIP_EXPORT void Divergence(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+);
+inline Image Divergence(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   Divergence( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
 
 /// \brief Computes the Hessian of the image, resulting in a symmetric *NxN* tensor image, if the input was *N*-dimensional.
 ///
@@ -783,6 +883,8 @@ DIP_EXPORT void GradientDirection2D(
 ///
 /// By default uses Gaussian derivatives in the computation. Set `method = "finitediff"` for finite difference
 /// approximations to the gradient. See `dip::Derivative` for more information on the other parameters.
+///
+/// The input image must be scalar.
 ///
 /// \see dip::Derivative, dip::Gradient, dip::Laplace
 DIP_EXPORT void Hessian (

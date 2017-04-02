@@ -20,9 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/linear.h"
-#include <diplib/framework.h>
-#include <diplib/overload.h>
-#include <diplib/transform.h>
+#include <diplib/math.h>
 
 namespace dip {
 
@@ -158,17 +156,170 @@ void Gradient(
    Image in = c_in.QuickCopy();
    PixelSize ps = c_in.PixelSize();
    dip::uint nDims = in.Dimensionality();
+   DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    if( out.IsForged() && in.Aliases( out )) {
       out.Strip();
    }
+   // TODO: only compute the derivative along the dimensions specified by `process`.
    out.ReForge( in.Sizes(), nDims, DataType::SuggestFlex( in.DataType() ));
    // TODO: Create dip::TensorIterator and use it here.
-   dip::UnsignedArray order( nDims, 0 );
+   UnsignedArray order( nDims, 0 );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       order[ ii ] = 1;
       Image tmp = out[ ii ];
       Derivative( in, tmp, order, sigmas, method, boundaryCondition, process, truncation );
       order[ ii ] = 0;
+   }
+   out.SetPixelSize( ps );
+}
+
+void GradientMagnitude(
+      Image const& c_in,
+      Image& out,
+      FloatArray const& sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      BooleanArray const& process,
+      dfloat truncation
+) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   dip::uint nDims = c_in.Dimensionality();
+   DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+   Image in = c_in.QuickCopy();
+   PixelSize ps = c_in.PixelSize();
+   if( out.IsForged() && in.Aliases( out ) ) {
+      out.Strip();
+   }
+   // TODO: only compute the derivative along the dimensions specified by `process`.
+   UnsignedArray order( nDims, 0 );
+   order[ 0 ] = 1;
+   Derivative( in, out, order, sigmas, method, boundaryCondition, process, truncation );
+   if( nDims > 1 ) {
+      order[ 0 ] = 0;
+      Multiply( out, out, out, out.DataType() );
+      Image tmp;
+      for( dip::uint ii = 1; ii < nDims; ++ii ) {
+         order[ ii ] = 1;
+         Derivative( in, tmp, order, sigmas, method, boundaryCondition, process, truncation );
+         order[ ii ] = 0;
+         Multiply( tmp, tmp, tmp, tmp.DataType() );
+         Add( out, tmp, out, out.DataType() );
+      }
+      Sqrt( out, out );
+   } else {
+      Abs( out, out );
+   }
+   out.SetPixelSize( ps );
+}
+
+void GradientDirection(
+      Image const& in,
+      Image& out,
+      FloatArray const& sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      BooleanArray const& process,
+      dfloat truncation
+) {
+   DIP_START_STACK_TRACE
+      Image tmp = Gradient( in, sigmas, method, boundaryCondition, process, truncation );
+      Angle( tmp, out );
+   DIP_END_STACK_TRACE
+}
+
+void Curl(
+      Image const& c_in,
+      Image& out,
+      FloatArray const& sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      BooleanArray const& process,
+      dfloat truncation
+) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = c_in.TensorElements();
+   DIP_THROW_IF( !c_in.IsVector() || ( nDims < 2 ) || ( nDims > 3 ), E::TENSOR_NOT_2_OR_3 );
+   // TODO: only compute the derivative along the dimensions specified by `process`.
+   DIP_THROW_IF( c_in.Dimensionality() != nDims, E::NTENSORELEM_DONT_MATCH );
+   if( nDims == 2 ) {
+      UnsignedArray order( 2, 0 );
+      order[ 1 ] = 1;
+      Image dy = Derivative( c_in[ 0 ], order, sigmas, method, boundaryCondition, process, truncation );
+      order[ 0 ] = 1;
+      order[ 1 ] = 0;
+      Derivative( c_in[ 1 ], out, order, sigmas, method, boundaryCondition, process, truncation );
+      out -= dy;
+   } else { // nDims == 3
+      Image in = c_in.QuickCopy();
+      PixelSize ps = c_in.PixelSize();
+      out.ReForge( in.Sizes(), 3, DataType::SuggestFlex( in.DataType() ));
+      UnsignedArray order( 3, 0 );
+      Image d;
+
+      Image tmp = out[ 0 ];
+      order[ 1 ] = 1;
+      Derivative( in[ 2 ], tmp, order, sigmas, method, boundaryCondition, process, truncation );
+      order[ 1 ] = 0;
+      order[ 2 ] = 1;
+      Derivative( in[ 1 ], d, order, sigmas, method, boundaryCondition, process, truncation );
+      order[ 2 ] = 0;
+      tmp -= d;
+
+      tmp = out[ 1 ];
+      order[ 2 ] = 1;
+      Derivative( in[ 0 ], tmp, order, sigmas, method, boundaryCondition, process, truncation );
+      order[ 2 ] = 0;
+      order[ 0 ] = 1;
+      Derivative( in[ 2 ], d, order, sigmas, method, boundaryCondition, process, truncation );
+      order[ 0 ] = 0;
+      tmp -= d;
+
+      tmp = out[ 2 ];
+      order[ 0 ] = 1;
+      Derivative( in[ 1 ], tmp, order, sigmas, method, boundaryCondition, process, truncation );
+      order[ 0 ] = 0;
+      order[ 1 ] = 1;
+      Derivative( in[ 0 ], d, order, sigmas, method, boundaryCondition, process, truncation );
+      order[ 1 ] = 0;
+      tmp -= d;
+
+      out.SetPixelSize( ps );
+   }
+}
+
+void Divergence(
+      Image const& c_in,
+      Image& out,
+      FloatArray const& sigmas,
+      String const& method,
+      StringArray const& boundaryCondition,
+      BooleanArray const& process,
+      dfloat truncation
+) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = c_in.TensorElements();
+   DIP_THROW_IF( !c_in.IsVector(), E::IMAGE_NOT_VECTOR );
+   // TODO: only compute the derivative along the dimensions specified by `process`.
+   DIP_THROW_IF( c_in.Dimensionality() != nDims, E::NTENSORELEM_DONT_MATCH );
+   Image in = c_in.QuickCopy();
+   PixelSize ps = c_in.PixelSize();
+   if( out.IsForged() && in.Aliases( out ) ) {
+      out.Strip();
+   }
+   // TODO: only compute the derivative along the dimensions specified by `process`.
+   UnsignedArray order( nDims, 0 );
+   order[ 0 ] = 1;
+   Derivative( in[ 0 ], out, order, sigmas, method, boundaryCondition, process, truncation );
+   if( nDims > 1 ) {
+      order[ 0 ] = 0;
+      Image tmp;
+      for( dip::uint ii = 1; ii < nDims; ++ii ) {
+         order[ ii ] = 1;
+         Derivative( in[ ii ], tmp, order, sigmas, method, boundaryCondition, process, truncation );
+         order[ ii ] = 0;
+         Add( out, tmp, out, out.DataType() );
+      }
    }
    out.SetPixelSize( ps );
 }
@@ -187,13 +338,14 @@ void Hessian (
    Image in = c_in.QuickCopy();
    PixelSize ps = c_in.PixelSize();
    dip::uint nDims = in.Dimensionality();
+   DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    if( out.IsForged() && in.Aliases( out )) {
       out.Strip();
    }
    Tensor tensor( Tensor::Shape::SYMMETRIC_MATRIX, nDims, nDims );
    out.ReForge( in.Sizes(), tensor.Elements(), DataType::SuggestFlex( in.DataType() ));
    out.ReshapeTensor( tensor );
-   dip::UnsignedArray order( nDims, 0 );
+   UnsignedArray order( nDims, 0 );
    dip::uint outIndex = 0; // TODO: Create dip::TensorIterator and use it here.
    for( dip::uint ii = 0; ii < nDims; ++ii ) { // Symmetric matrix stores diagonal elements first
       order[ ii ] = 2;

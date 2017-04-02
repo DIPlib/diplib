@@ -140,8 +140,12 @@ constexpr char const* DIMENSIONALITY_NOT_SUPPORTED = "Dimensionality not support
 constexpr char const* DIMENSIONALITIES_DONT_MATCH = "Dimensionalities don't match";
 constexpr char const* ILLEGAL_DIMENSION = "Illegal dimension";
 constexpr char const* SIZES_DONT_MATCH = "Sizes don't match";
+
+// image tensor sizes error
 constexpr char const* IMAGE_NOT_SCALAR = "Image is not scalar";
 constexpr char const* IMAGE_NOT_TENSOR = "Image is not tensor";
+constexpr char const* IMAGE_NOT_VECTOR = "Image is not vector";
+constexpr char const* TENSOR_NOT_2_OR_3 = "Only defined for 2- and 3-vector images";
 constexpr char const* NTENSORELEM_DONT_MATCH = "Number of tensor elements doesn't match";
 
 // image properties errors

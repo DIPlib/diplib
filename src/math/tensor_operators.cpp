@@ -153,7 +153,7 @@ std::unique_ptr< Framework::ScanLineFilter > NewTensorTriadicScanLineFilter( F c
 
 void DotProduct( Image const& lhs, Image const& rhs, Image& out ) {
    DIP_THROW_IF( !lhs.IsForged() || !rhs.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !lhs.IsVector() || !rhs.IsVector(), "The dot product is only defined for vector images" );
+   DIP_THROW_IF( !lhs.IsVector() || !rhs.IsVector(), E::IMAGE_NOT_VECTOR );
    DIP_THROW_IF( lhs.TensorElements() != rhs.TensorElements(), E::NTENSORELEM_DONT_MATCH );
    Image a = lhs.QuickCopy();
    a.ReshapeTensor( 1, a.TensorElements() );
@@ -216,7 +216,7 @@ class CrossProductLineFilter : public Framework::ScanLineFilter {
 void CrossProduct( Image const& lhs, Image const& rhs, Image& out ) {
    DIP_THROW_IF( !lhs.IsForged() || !rhs.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( lhs.TensorElements() != rhs.TensorElements(), E::NTENSORELEM_DONT_MATCH );
-   DIP_THROW_IF( !lhs.IsVector() || !rhs.IsVector(), "The cross product is only defined for 2D and 3D vector images" );
+   DIP_THROW_IF( !lhs.IsVector() || !rhs.IsVector(), E::TENSOR_NOT_2_OR_3 );
    DataType dtype = DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() );
    dip::uint nElem;
    if( lhs.TensorElements() == 2 ) {
@@ -224,13 +224,116 @@ void CrossProduct( Image const& lhs, Image const& rhs, Image& out ) {
    } else if( lhs.TensorElements() == 3 ) {
       nElem = 3;
    } else {
-      DIP_THROW( "The cross product is only defined for 2D and 3D vector images" );
+      DIP_THROW( E::TENSOR_NOT_2_OR_3 );
    }
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    DIP_OVL_NEW_FLEXBIN( scanLineFilter, CrossProductLineFilter, (), dtype );
    ImageConstRefArray inar{ lhs, rhs };
    ImageRefArray outar{ out };
    Framework::Scan( inar, outar, { dtype, dtype }, { dtype }, { dtype }, { nElem }, *scanLineFilter );
+}
+
+void Norm( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsVector(), E::IMAGE_NOT_VECTOR );
+   dip::uint n = in.TensorRows();
+   if( n == 1 ) {
+      Abs( in, out );
+   } else {
+      DataType outtype = DataType::SuggestFloat( in.DataType() );
+      DataType intype;
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      if( in.DataType().IsComplex() ) {
+         scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dfloat >(
+               [ n ]( auto const& pin, auto const& pout ) { *pout = Norm( n, pin ); }
+         );
+         intype = DT_DCOMPLEX;
+      } else {
+         scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+               [ n ]( auto const& pin, auto const& pout ) { *pout = Norm( n, pin ); }
+         );
+         intype = DT_DFLOAT;
+      }
+      ImageRefArray outar{ out };
+      Framework::Scan( { in }, outar, { intype }, { DT_DFLOAT }, { outtype }, { 1 }, *scanLineFilter );
+   }
+}
+
+void Angle( Image const& in, Image& out ) {
+   dip::uint n = in.TensorElements();
+   DIP_THROW_IF( !in.IsVector() || ( n < 2 ) || ( n > 3 ), E::TENSOR_NOT_2_OR_3 );
+   DIP_THROW_IF( in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DataType outtype = DataType::SuggestFloat( in.DataType() );
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   dip::uint outTensorElem;
+   if( n == 2 ) {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+            [ n ]( auto const& pin, auto const& pout ) { *pout = std::atan2( pin[ 1 ], pin[ 0 ] ); }
+      );
+      outTensorElem = 1;
+   } else { // n == 3
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+            [ n ]( auto const& pin, auto const& pout ) {
+               pout[ 0 ] = std::atan2( pin[ 1 ], pin[ 0 ] );
+               pout[ 1 ] = std::acos( pin[ 2 ] / Norm( 3, pin ) );
+            }
+      );
+      outTensorElem = 2;
+   }
+   ImageRefArray outar{ out };
+   Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { outTensorElem }, *scanLineFilter );
+}
+
+void CartesianToPolar( Image const& in, Image& out ) {
+   dip::uint n = in.TensorElements();
+   DIP_THROW_IF( !in.IsVector() || ( n < 2 ) || ( n > 3 ), E::TENSOR_NOT_2_OR_3 );
+   DIP_THROW_IF( in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DataType outtype = DataType::SuggestFloat( in.DataType() );
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   if( n == 2 ) {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+            [ n ]( auto const& pin, auto const& pout ) {
+               pout[ 0 ] = Norm( 2, pin );
+               pout[ 1 ] = std::atan2( pin[ 1 ], pin[ 0 ] );
+            }
+      );
+   } else { // n == 3
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+            [ n ]( auto const& pin, auto const& pout ) {
+               pout[ 0 ] = Norm( 3, pin );
+               pout[ 1 ] = std::atan2( pin[ 1 ], pin[ 0 ] );
+               pout[ 2 ] = std::acos( pin[ 2 ] / pout[ 0 ] );
+            }
+      );
+   }
+   ImageRefArray outar{ out };
+   Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { n }, *scanLineFilter );
+}
+
+void PolarToCartesian( Image const& in, Image& out ) {
+   dip::uint n = in.TensorElements();
+   DIP_THROW_IF( !in.IsVector() || ( n < 2 ) || ( n > 3 ), E::TENSOR_NOT_2_OR_3 );
+   DIP_THROW_IF( in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DataType outtype = DataType::SuggestFloat( in.DataType() );
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   if( n == 2 ) {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+            [ n ]( auto const& pin, auto const& pout ) {
+               pout[ 0 ] = pin[ 0 ] * std::cos( pin[ 1 ] );
+               pout[ 1 ] = pin[ 0 ] * std::sin( pin[ 1 ] );
+            }
+      );
+   } else { // n == 3
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+            [ n ]( auto const& pin, auto const& pout ) {
+               dfloat sintheta = std::sin( pin[ 2 ] );
+               pout[ 0 ] = pin[ 0 ] * std::cos( pin[ 1 ] ) * sintheta;
+               pout[ 1 ] = pin[ 0 ] * std::sin( pin[ 1 ] ) * sintheta;
+               pout[ 2 ] = pin[ 0 ] * std::cos( pin[ 2 ] );
+            }
+      );
+   }
+   ImageRefArray outar{ out };
+   Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { n }, *scanLineFilter );
 }
 
 void Determinant( Image const& in, Image& out ) {
@@ -269,31 +372,6 @@ void Determinant( Image const& in, Image& out ) {
          }
          Framework::ScanMonadic( in, out, buffertype, outtype, 1, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
       }
-   }
-}
-
-void Norm( Image const& in, Image& out ) {
-   DIP_THROW_IF( !in.IsVector(), "Norm only defined for vector images" );
-   dip::uint n = in.TensorRows();
-   if( n == 1 ) {
-      Abs( in, out );
-   } else {
-      DataType outtype = DataType::SuggestFloat( in.DataType() );
-      DataType intype;
-      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-      if( in.DataType().IsComplex() ) {
-         scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dfloat >(
-               [ n ]( auto const& pin, auto const& pout ) { *pout = Norm( n, pin ); }
-         );
-         intype = DT_DCOMPLEX;
-      } else {
-         scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-               [ n ]( auto const& pin, auto const& pout ) { *pout = Norm( n, pin ); }
-         );
-         intype = DT_DFLOAT;
-      }
-      ImageRefArray outar{ out };
-      Framework::Scan( { in }, outar, { intype }, { DT_DFLOAT }, { outtype }, { 1 }, *scanLineFilter );
    }
 }
 
