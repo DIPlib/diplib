@@ -16,8 +16,11 @@
 %   the 10th percentile over the pixel values along the third dimension (z).
 %   DIM can be an array with any number of dimensions. M can be [].
 %
-%   (TODO) [VALUE,POSITION] = PERCENTILE(B,P,...) returns the position of the found
-%   values as well. With this syntax, DIM can specify just one dimension.
+%   COMPATIBILITY NOTE:
+%   In DIPimage 2.x, PERCENTILE(B), with B a tensor image, would work over all tensor
+%   components, yielding a scalar image of the same size as B. To obtain
+%   the old behavior:
+%      reshape(percentile(tensortospatial(B),[],2),imsize(B));
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

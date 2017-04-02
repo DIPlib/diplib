@@ -5,8 +5,11 @@
 %  image_out = erosion(image_in,image_se,boundary_condition)
 %
 % PARAMETERS:
+%  filterSize:  sizes of the filter along each image dimension
 %  filterShape: 'rectangular', 'elliptic', 'diamond', 'parabolic'
-%  image_se: binary or grey-value image with the shape for the structuring element
+%  image_se:    binary or grey-value image with the shape for the structuring element
+%  boundary_condition: Defines how the boundary of the image is handled.
+%                      See HELP BOUNDARY_CONDITION
 %
 % DEFAULTS:
 %  filterSize = 7
@@ -21,10 +24,6 @@
 %  the composition of DILATION and EROSION only forms an opening or closing if
 %  the structuring element is symmetric. For non-symmetric structuring elements,
 %  mirror the structuring element in one of the two operations.
-%
-%  BOUNDARY_CONDITION is a string or a cell array of strings (one per image
-%  dimension) specifying how the erosion handles pixel values outside
-%  of the image domain.
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::Erosion.

@@ -5,8 +5,11 @@
 %  image_out = closing(image_in,image_se,boundary_condition)
 %
 % PARAMETERS:
+%  filterSize:  sizes of the filter along each image dimension
 %  filterShape: 'rectangular', 'elliptic', 'diamond', 'parabolic'
-%  image_se: binary or grey-value image with the shape for the structuring element
+%  image_se:    binary or grey-value image with the shape for the structuring element
+%  boundary_condition: Defines how the boundary of the image is handled.
+%                      See HELP BOUNDARY_CONDITION
 %
 % DEFAULTS:
 %  filterSize = 7
@@ -17,10 +20,6 @@
 %  The structuring element can be specified in two ways: through FILTERSIZE
 %  and FILTERSHAPE, specifying one of the default shapes, or through IMAGE_SE,
 %  providing a custom binary or grey-value shape.
-%
-%  BOUNDARY_CONDITION is a string or a cell array of strings (one per image
-%  dimension) specifying how the dilation handles pixel values outside
-%  of the image domain.
 %
 % DIPlib:
 %  This function calls the DIPlib functions dip::Closing.

@@ -5,8 +5,11 @@
 %  image_out = unif(image_in,neighborhood,boundary_condition)
 %
 % PARAMETERS:
-%  filterShape: 'rectangular', 'elliptic', 'diamond'
+%  filterSize:   sizes of the filter along each image dimension
+%  filterShape:  'rectangular', 'elliptic', 'diamond'
 %  neighborhood: binary or grey-value image with the shape for the structuring element
+%  boundary_condition: Defines how the boundary of the image is handled.
+%                      See HELP BOUNDARY_CONDITION
 %
 %  The filter kernel can be specified in two ways: through FILTERSIZE
 %  and FILTERSHAPE, specifying one of the default shapes, or through NEIGHBORHOOD,
@@ -18,11 +21,7 @@
 % DEFAULTS:
 %  filterSize = 7
 %  filterShape = 'elliptic'
-%  boundary_condition = {} (equivalent to 'mirror')
-%
-%  BOUNDARY_CONDITION is a string or a cell array of strings (one per image
-%  dimension) specifying how the filter handles pixel values outside
-%  of the image domain.
+%  boundary_condition = 'mirror'
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::Uniform.

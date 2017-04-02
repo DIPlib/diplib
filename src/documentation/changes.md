@@ -179,6 +179,10 @@ over.
     Now `end` will always work for spatial dimensions, and cannot be used with tensor indexing.
     That is, `end` will work in `()` indexing, but not in `{}` indexing.
 
+  - Methods that changed behavior for scalar and tensor images (i.e. `sum`, `max`, etc.) now
+    always operate only along spatial dimensions. To sum over the tensor dimension, convert
+    it to a spatial dimension using `tensortospatial`.
+
   - The `reshape` method now takes pixels column-wise instead of row-wise from the input. This
     is the natural way of doing it, as it doesn't require data copy. I don't remember why it
     was row-wise in the old *DIPimage*, and I presume there are few (if any) programs that

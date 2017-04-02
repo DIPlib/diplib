@@ -22,22 +22,36 @@
 %   for tensor indexing.
 %
 %   To create an image, you can call the constructor DIP_IMAGE/DIP_IMAGE,
-%   or you can use the functions NEWIM or NEWCOLORIM.
+%   or you can use the functions NEWIM, NEWTENSORIM or NEWCOLORIM.
 %
 %   To determine the size of the image, use IMSIZE, and to determine the
 %   size of the tensor, use TENSORSIZE. Many methods that work on numeric
 %   arrays also work on DIP_IMAGE objects, though not always identically.
 %   For example, NDIMS will return 0 or 1 for some images. ISVECTOR tests 
-%   the tensor shape, not the shape of the image. Some other methods also
-%   work on the tensor, such as the transpose operator A' and the matrix
-%   multiplication A*B.
+%   the tensor shape, not the shape of the image.
+%
+%   Matrix operators (i.e. A*B, DIAG(A), EIG(A), etc.) apply to the tensor
+%   at each pixel. That is, the image itself is not seen as a matrix, but
+%   the value at each pixel is. To apply matrix operations to an image as
+%   if the image itself were a matrix, extract the image data using the
+%   DIP_ARRAY method. This method only copies the data if the image is
+%   complex. The method DOUBLE converts the pixel data to class double.
+%
+%   An image A has NUMPIXELS(A) pixels, NUMTENSOREL(A) tensor elements,
+%   and NUMEL(A) samples. Note that:
+%      NUMEL(A) == NUMPIXELS(A)*NUMTENSOREL(A)
+%      NUMPIXELS(A) == PROD(IMSIZE(A)) == PROD(SIZE(A))
+%      NUMTENSOREL(A) ~= PROD(TENSORSIZE(A))
+%   The tensor size inequality is due to the compact representation of
+%   symmetric, diagonal and triangular tensors. For example, a 3x3 diagonal
+%   tensor image has only 3 tensor elements (we don't store the 0-valued
+%   off-diagonal elements). For information on how specific tensor shapes
+%   are stored, see the DIPlib documentation: dip::Tensor::Shape.
 %
 %   A statement that returns a DIP_IMAGE object, when not terminated with a
 %   semicolon, will not dump the pixel values to the command line, but
 %   instead show the image in an interactive display window. See DIPSHOW to
 %   learn more about that window.
-%
-%   TODO: Add more documentation for this class
 %
 %   NOTE:
 %   The dimensions of an image start at 1. A 2D image has dimensions 1 and
@@ -591,7 +605,16 @@ classdef dip_image
          %
          %   If B is a scalar image, TENSORSIZE returns [1,1].
          %
-         %   See also dip_image.imsize, dip_image.size
+         %   NUMTENSOREL(IMG) is not the same as PROD(TENSORSIZE(IMG)), since it
+         %   depends on IMG.TensorShape how the tensor is stored. For example, a
+         %   diagonal tensor of size 3x3 has TENSORSIZE == [3,3], and
+         %   NUMTENSOREL == 3.
+         %
+         %   When using linear tensor indexing IMG{I}, I must be between 1 and
+         %   NUMTENSOREL. When using matrix tensor indexing IMG{I,J}, I and J are
+         %   bounded by TENSORSIZE.
+         %
+         %   See also dip_image.imsize, dip_image.size, dip_image.numtensorel
          sz = obj.TensorSizeInternal;
          if nargout > 1
             if nargin ~= 1, error('Unknown command option'); end
@@ -607,25 +630,13 @@ classdef dip_image
       end
 
       function varargout = imarsize(obj)
-         %IMARSIZE   Size of the image's tensor.
-         %   IMARSIZE(B) returns a 2D array containing the length of the
-         %   two tensor dimensions in the tensor image B.
-         %
-         %   IMARSIZE(B,DIM) returns the length of the dimension specified
-         %   by the scalar DIM.
-         %
-         %   [M,N] = IMARSIZE(B) returns the number of rows and columns in
-         %   separate output variables.
-         %
-         %   If B is a scalar image, IMARSIZE returns [1,1].
-         %
-         %   IMARSIZE is identical to TENSORSIZE.
+         %IMARSIZE   Alias of TENSORSIZE for backwards compatibility.
          varargout = cell(1,nargout);
          [varargout{:}] = tensorsize(varargin);
       end
 
       function n = numel(obj)
-         %NUMEL   Returns the number of samples in the image
+         %NUMEL   Returns the number of samples in the image.
          %
          %   NUMEL(IMG) == NUMPIXELS(IMG) * NUMTENSOREL(IMG)
          %
@@ -637,23 +648,37 @@ classdef dip_image
       end
 
       function n = ndims(obj)
-         %NDIMS   Returns the number of spatial dimensions
+         %NDIMS   Returns the number of spatial dimensions.
+         %
+         %   As opposed to standard MATLAB arrays, NDIMS(IMG) for DIP_IMAGE objects
+         %   can return 0 or 1. NDIMS(IMG) is always equal to LENGTH(IMSIZE(IMG))
          n = obj.NDims;
       end
 
       function n = numtensorel(obj)
-         %NUMTENSOREL   Returns the number of tensor elements in the image
+         %NUMTENSOREL   Returns the number of tensor elements in the image.
          %
          %   NUMEL(IMG) == NUMPIXELS(IMG) * NUMTENSOREL(IMG)
          %
-         %   See also dip_image.numel, dip_image.numpixels
+         %   NUMTENSOREL(IMG) is not the same as PROD(TENSORSIZE(IMG)), since it
+         %   depends on IMG.TensorShape how the tensor is stored. For example, a
+         %   diagonal tensor of size 3x3 has TENSORSIZE == [3,3], and
+         %   NUMTENSOREL == 3.
+         %
+         %   When using linear tensor indexing IMG{I}, I must be between 1 and
+         %   NUMTENSOREL. When using matrix tensor indexing IMG{I,J}, I and J are
+         %   bounded by TENSORSIZE.
+         %
+         %   See also dip_image.numel, dip_image.numpixels, dip_image.TensorShape
          n = size(obj.Data,2);
       end
 
       function n = numpixels(obj)
-         %NUMPIXELS   Returns the number of pixels in the image
+         %NUMPIXELS   Returns the number of pixels in the image.
          %
          %   NUMEL(IMG) == NUMPIXELS(IMG) * NUMTENSOREL(IMG)
+         %
+         %   NUMPIXELS(IMG) == PROD(IMSIZE(IMG))
          %
          %   See also dip_image.numel, dip_image.numtensorel, dip_image.ndims
          if isempty(obj)
@@ -665,12 +690,12 @@ classdef dip_image
       end
 
       function res = isempty(obj)
-         %ISEMPTY   Returns true if there are no pixels in the image
+         %ISEMPTY   Returns true if there are no pixels in the image.
          res = isempty(obj.Data);
       end
 
       function dt = datatype(obj)
-         %DATATYPE   Returns a string representing  the data type of the samples
+         %DATATYPE   Returns a string representing the data type of the samples.
          %
          %   These are the strings it returns, and the corresponding MATLAB
          %   classes:
@@ -689,73 +714,79 @@ classdef dip_image
       end
 
       function res = isfloat(obj)
-         %ISFLOAT   Returns true if the image is of a floating-point type (complex or not)
+         %ISFLOAT   Returns true if the image is of a floating-point type (complex or not).
          res = isfloat(obj.Data);
       end
 
       function res = isinteger(obj)
-         %ISINTEGER   Returns true if the image is of an integer type
+         %ISINTEGER   Returns true if the image is of an integer type.
          res = isinteger(obj.Data);
       end
 
       function res = issigned(obj)
-         %ISSIGNED   Returns true if the image is of a signed integer type
+         %ISSIGNED   Returns true if the image is of a signed integer type.
          res = isa(obj.Data,'int8') || isa(obj.Data,'int16') || isa(obj.Data,'int32');
       end
 
       function res = isunsigned(obj)
-         %ISUNSIGNED   Returns true if the image is of an unsigned integer type
+         %ISUNSIGNED   Returns true if the image is of an unsigned integer type.
          res = isa(obj.Data,'uint8') || isa(obj.Data,'uint16') || isa(obj.Data,'uint32');
       end
 
       function res = islogical(obj)
-         %ISLOGICAL   Returns true if the image is binary
+         %ISLOGICAL   Returns true if the image is binary.
          res = islogical(obj.Data);
       end
 
       function res = isreal(obj)
-         %ISREAL   Returns true if the image is of a non-complex type
+         %ISREAL   Returns true if the image is of a non-complex type.
          res = ~iscomplex(obj);
       end
 
       function res = iscomplex(obj)
-         %ISCOMPLEX   Returns true if the image is of a complex type
+         %ISCOMPLEX   Returns true if the image is of a complex type.
          res = size(obj.Data,1) > 1;
       end
 
       function res = isscalar(obj)
-         %isscalar   Returns true if the image is scalar
+         %ISSCALAR   Returns true if the image is scalar (has a single tensor component).
          res = size(obj.Data,2) == 1;
       end
 
       function res = istensor(~)
-         %istensor   Returns true (always) -- for backwards compatibility
+         %ISTENSOR   Returns true (always) -- for backwards compatibility.
          res = true;
       end
 
       function res = isvector(obj)
-         %isvector   Returns true if it is a vector image; scalar images are vectors
+         %ISVECTOR   Returns true if it is a vector image.
+         %
+         %   Note that scalar images are vector images.
          res = strcmp(obj.TensorShapeInternal,'column vector') || ...
                strcmp(obj.TensorShapeInternal,'row vector');
       end
 
       function res = iscolumn(obj)
-         %iscolumn   Returns true if it is a column vector image; scalar images are column vectors
+         %ISCOLUMN   Returns true if it is a column vector image.
+         %
+         %   Note that scalar images are column vector images.
          res = strcmp(obj.TensorShapeInternal,'column vector');
       end
 
       function res = isrow(obj)
-         %isrow   Returns true if it is a row vector image
+         %ISROW   Returns true if it is a row vector image.
+         %
+         %   Note that scalar images are usually not row vector images.
          res = strcmp(obj.TensorShapeInternal,'row vector');
       end
 
       function res = ismatrix(~)
-         %ismatrix   Returns true (always) -- for backwards compatibility
+         %ISMATRIX   Returns true (always) -- for backwards compatibility.
          res = true;
       end
 
       function res = iscolor(obj)
-         %ISCOLOR   Returns true if color image
+         %ISCOLOR   Returns true if color image.
          res = ~isempty(obj.ColorSpace);
       end
 
@@ -817,7 +848,7 @@ classdef dip_image
       end
 
       function display(obj)
-         %DISPLAY   Called when not terminating a statement with a semicolon
+         %DISPLAY   Called when not terminating a statement with a semicolon.
          if ~isempty(obj) && dipgetpref('DisplayToFigure') && (isscalar(obj) || iscolor(obj))
             sz = imsize(squeeze(obj));
             dims = length(sz);
@@ -847,7 +878,7 @@ classdef dip_image
       end
 
       function disp(obj)
-         % DISP   Display array
+         % DISP   Display information on the DIP_IMAGE object.
          if ~isscalar(obj)
             sz = obj.TensorSizeInternal;
             shape = obj.TensorShapeInternal;
@@ -1014,10 +1045,12 @@ classdef dip_image
       % ------- INDEXING -------
 
       function n = numArgumentsFromSubscript(~,~,~)
+         %numArgumentsFromSubscript   Overload for internal use by MATLAB
          n = 1; % Indexing into a dip_image object always returns a single object.
       end
 
       function a = subsref(a,s)
+         %SUBSREF   Overload for indexing syntax A{I,J}(X,Y,Z).
          if isempty(a)
             error('Cannot index into empty image')
          end
@@ -1051,6 +1084,7 @@ classdef dip_image
       end
 
       function a = subsasgn(a,s,b)
+         %SUBSASGN   Overload for indexing syntax A{I,J}(X,Y,Z) = B.
          if isempty(a)
             error('Cannot index into empty image')
          end
@@ -1083,6 +1117,13 @@ classdef dip_image
       end
 
       function a = diag(a,k)
+         %DIAG    Diagonal matrices and diagonals of a matrix.
+         %   DIAG(V) when V is a vector image with N tensor elements is a diagonal
+         %   tensor image of tensor size [N,N]. Note that no data is copied, and
+         %   the output still has only N tensor elements.
+         %
+         %   DIAG(X) when X is a matrix is a column vector formed from the elements
+         %   of the main diagonal of X. In this case, data is copied.
          if nargin > 1 && k ~= 0
             error('Only main diagonal access supported')
          end
@@ -1111,6 +1152,16 @@ classdef dip_image
       end
 
       function ii = end(a,k,n)
+         %END   Overload for using END in indexing.
+         %
+         %   Use END in spatial indexing of a DIP_IMAGE object. For example, in
+         %   A(5:END,3:4), END is equal to IMSIZE(A,1)-1. A(0:END) is the same as
+         %   A(:).
+         %
+         %   Do not use END in tensor indexing. A{END} will most likely give an
+         %   out-of-bounds indexing error, but might also simply give the wrong
+         %   anser. There is no way for this overloaded function to know the
+         %   shape of the braces in which it is used.
          if n == 1
             ii = numpixels(a)-1;
          else
@@ -1122,6 +1173,7 @@ classdef dip_image
       end
 
       function a = subsindex(a)
+         %SUBSINDEX   Overload for indexing syntax M{A), where A is a DIP_IMAGE.
          if ~isscalar(a) || ~islogical(a)
             error('Can only index using scalar, binary images')
          end
@@ -1131,40 +1183,83 @@ classdef dip_image
       % ------- RESHAPING -------
 
       function in = tensortospatial(in,dim)
-         if ~isintscalar(dim) || dim < 1, error('Dimension argument must be a positive scalar integer'), end
-         nd = in.NDims;
-         dim = dim+2;
-         n = 1:max(ndims(in.Data)+1,dim);
-         if length(n) > 4
-            n = n([1:2,4,3,5:end]);
+         %TENSORTOSPATIAL   Converts the tensor dimension to a spatial dimension.
+         %
+         %   B = TENSORTOSPATIAL(A) converts the tensor image A into a scalar image B
+         %   without copying pixel data. The tensor dimension becomes the second
+         %   spatial dimension (due to the order in which MATLAB stores pixel data).
+         %
+         %   B = TENSORTOSPATIAL(A,DIM) converts the tensor image A into a scalar
+         %   image B copying the pixel data. The tensor dimension becomes the
+         %   spatial dimension DIM.
+         if nargin < 2 || isequal(dim,2)
+            nd = in.NDims;
+            sz = size(in.Data);
+            sz = [sz(1),1,sz(2:end)];
+            in.Data = reshape(in.Data,sz);
+            in.NDims = nd + 1;
+            if ~isempty(in.PixelSize)
+               in = insertPixelSizeElement(in,2,defaultPixelSize);
+            end
+         else
+            if ~isintscalar(dim) || dim < 1, error('Dimension argument must be a positive scalar integer'), end
+            nd = in.NDims;
+            dim = dim+2;
+            n = 1:max(ndims(in.Data)+1,dim);
+            if length(n) > 4
+               n = n([1:2,4,3,5:end]);
+            end
+            n = [n(1:dim-1),2,n(dim:end)];
+            n(2) = n(end);
+            n(end) = [];
+            if length(n) > 2
+               n = n([1:2,4,3,5:end]);
+            end
+            in.Data = permute(in.Data,n);
+            in.NDims = nd + 1;
+            if ~isempty(in.PixelSize)
+               in = insertPixelSizeElement(in,dim-2,defaultPixelSize);
+            end
          end
-         n = [n(1:dim-1),2,n(dim:end)];
-         n(2) = n(end);
-         n(end) = [];
-         if length(n) > 2
-            n = n([1:2,4,3,5:end]);
-         end
-         in.Data = permute(in.Data,n);
-         in.NDims = nd + 1;
-         in = insertPixelSizeElement(in,dim-2,defaultPixelSize);
       end
 
       function in = spatialtotensor(in,dim)
+         %SPATIALTOTENSOR   Converts a spatial dimension to the tensor dimension.
+         %
+         %   B = SPATIALTOTENSOR(A) converts the scalar image A into a tensor image B
+         %   without copying pixel data. The second spatial dimension becomes the tensor
+         %   dimension (due to the order in which MATLAB stores pixel data).
+         %
+         %   B = SPATIALTOTENSOR(A,DIM) converts the scalar image A into a tensor
+         %   image B copying the pixel data. The spatial dimension DIM becomes the
+         %   tensor dimension.
          if ~isscalar(in), error('Cannot create a tensor dimension, image is not scalar'), end
-         nd = in.NDims;
-         if ~isintscalar(dim) || dim < 1 || dim > nd, error('Dimension argument must be a positive scalar integer in the indexing range'), end
-         dim = dim+2;
-         n = 1:ndims(in.Data);
-         if length(n) > 4
-            n = n([1:2,4,3,5:end]);
+         if nargin < 2 || isequal(dim,2)
+            nd = in.NDims;
+            sz = size(in.Data);
+            sz = sz([1,3:end]);
+            if length(sz)<2
+               sz = [sz,1];
+            end
+            in.Data = reshape(in.Data,sz);
+            in.NDims = nd - 1;
+            in = removePixelSizeElement(in,2);
+         else
+            nd = in.NDims;
+            if ~isintscalar(dim) || dim < 1 || dim > nd, error('Dimension argument must be a positive scalar integer in the indexing range'), end
+            dim = dim+2;
+            n = 1:ndims(in.Data);
+            if length(n) > 4
+               n = n([1:2,4,3,5:end]);
+            end
+            n = n([1,dim,3:dim-1,dim+1:end,2]);
+            if length(n) > 2
+               n = n([1:2,4,3,5:end]);
+            end
+            in.Data = permute(in.Data,n);
+            in.NDims = nd - 1;
+            in = removePixelSizeElement(in,dim-2);
          end
-         n = n([1,dim,3:dim-1,dim+1:end,2]);
-         if length(n) > 2
-            n = n([1:2,4,3,5:end]);
-         end
-         in.Data = permute(in.Data,n);
-         in.NDims = nd - 1;
-         in = removePixelSizeElement(in,dim-2);
       end
 
       function in = expanddim(in,dims)
@@ -1229,8 +1324,11 @@ classdef dip_image
          end
          in.Data = permute(in.Data,[1,2,k+2]);
          in.NDims = nd;
-         pxsz = ensurePixelSizeDimensionality(in.PixelSize,nd);
-         in.PixelSize = pxsz(k);
+         pxsz = in.PixelSize;
+         if ~isempty(pxsz)
+            pxsz = ensurePixelSizeDimensionality(pxsz,nd);
+            in.PixelSize = pxsz(k);
+         end
       end
 
       function [in,nshifts] = shiftdim(in,n)
@@ -1421,10 +1519,12 @@ classdef dip_image
       end
 
       function a = horzcat(varargin)
+         %HORZCAT   Equal to CAT(1,...).
          a = cat(1,varargin{:});
       end
 
       function a = vertcat(varargin)
+         %VERTCAT   Equal to CAT(2,...).
          a = cat(2,varargin{:});
       end
 
@@ -1459,103 +1559,131 @@ classdef dip_image
 
       % ------- OPERATORS -------
 
-      function out = plus(lhs,rhs) % +
+      function out = plus(lhs,rhs)
+         %PLUS   Overload for operator +
          out = dip_operators('+',lhs,rhs);
       end
 
-      function out = minus(lhs,rhs) % -
+      function out = minus(lhs,rhs)
+         %MINUS   Overload for operator -
          out = dip_operators('-',lhs,rhs);
       end
 
-      function out = mtimes(lhs,rhs) % *
+      function out = mtimes(lhs,rhs)
+         %MTIMES   Overload for operator *
+         %   Computes the matrix multiplication of the tensors at each corresponding pixel.
          out = dip_operators('*',lhs,rhs);
       end
 
-      function out = times(lhs,rhs) % .*
+      function out = times(lhs,rhs)
+         %TIMES   Overload for operator .*
          out = dip_operators('.',lhs,rhs);
       end
 
-      function out = mrdivide(lhs,rhs) % /
+      function out = mrdivide(lhs,rhs)
+         %MRDIVIDE   Overload for operator /
          if ~isscalar(rhs)
             error('Not implented');
          end
          out = dip_operators('/',lhs,rhs);
       end
 
-      function out = rdivide(lhs,rhs) % ./
+      function out = rdivide(lhs,rhs)
+         %RDIVIDE   Overload for operator ./
          out = dip_operators('/',lhs,rhs);
       end
 
       function out = mod(lhs,rhs)
+         %MOD   Modulus after division.
          out = dip_operators('%',lhs,rhs);
       end
 
-      function out = power(lhs,rhs) % .^
+      function out = power(lhs,rhs)
+         %POWER   Overload for operator .^
          out = dip_operators('^',lhs,rhs);
       end
 
-      function out = mpower(lhs,rhs) % ^
+      function out = mpower(lhs,rhs)
+         %MPOWER   Overload for operator ^
          if ~isscalar(lhs) || ~isscalar(rhs)
             error('Not implented');
          end
          out = dip_operators('^',lhs,rhs);
       end
 
-      function out = eq(lhs,rhs) % ==
+      function out = eq(lhs,rhs)
+         %EQ   Overload for operator ==
          out = dip_operators('=',lhs,rhs);
       end
 
-      function out = gt(lhs,rhs) % >
+      function out = gt(lhs,rhs)
+         %GT   Overload for operator >
          out = dip_operators('>',lhs,rhs);
       end
 
-      function out = lt(lhs,rhs) % <
+      function out = lt(lhs,rhs)
+         %LT   Overload for operator <
          out = dip_operators('<',lhs,rhs);
       end
 
-      function out = ge(lhs,rhs) % >=
+      function out = ge(lhs,rhs)
+         %GE   Overload for operator >=
          out = dip_operators('g',lhs,rhs);
       end
 
-      function out = le(lhs,rhs) % <=
+      function out = le(lhs,rhs)
+         %LE   Overload for operator <=
          out = dip_operators('l',lhs,rhs);
       end
 
-      function out = ne(lhs,rhs) % ~=
+      function out = ne(lhs,rhs)
+         %NE   Overload for operator ~=
          out = dip_operators('n',lhs,rhs);
       end
 
-      function out = and(lhs,rhs) % &
+      function out = and(lhs,rhs)
+         %AND   Overload for operator &
          out = dip_operators('&',lhs,rhs);
       end
 
-      function out = or(lhs,rhs) % |
+      function out = or(lhs,rhs)
+         %OR   Overload for operator |
          out = dip_operators('|',lhs,rhs);
       end
 
       function out = xor(lhs,rhs)
+         %XOR   Overload for operator XOR
          out = dip_operators('x',lhs,rhs);
       end
 
       function in = not(in)
+         %NOT   Overload for unary operator ~
          in = dip_operators('~',in);
       end
 
-      function in = uminus(in) % -
+      function in = uminus(in)
+         %UMINUS   Overload for unary operator -
          in = dip_operators('u',in);
       end
 
-      function in = uplus(in) % +
+      function in = uplus(in)
+         %UPLUS   Overload for unary operator + (converts binary image to UINT8)
          if islogical(in.Data)
             in.Data = uint8(in.Data);
          end
       end
 
-      function in = ctranspose(in) % '
+      function in = ctranspose(in)
+         %CTRANSPOSE   Overload for unary operator '
+         %   Returns the complex conjugate transpose of the tensor at each pixel.
          in = conj(transpose(in));
       end
 
-      function in = transpose(in) % .'
+      function in = transpose(in)
+         %TRANSPOSE   Overload for unary operator .'
+         %   Returns the non-conjugate transpose of the tensor at each pixel.
+         %   No data is copied, the transposition is accomplished by changing the
+         %   TensorShape property of the image.
          switch in.TensorShapeInternal
             case 'column vector'
                 in.TensorShapeInternal = 'row vector';
@@ -1578,12 +1706,14 @@ classdef dip_image
       end
 
       function in = conj(in)
+         %CONJ   Complex conjugate.
          if iscomplex(in)
             in.Data(2,:) = -in.Data(2,:);
          end
       end
 
       function in = real(in)
+         %REAL   Complex real part.
          if iscomplex(in)
             sz = size(in.Data);
             sz(1) = 1;
@@ -1592,6 +1722,7 @@ classdef dip_image
       end
 
       function in = imag(in)
+         %IMAG   Complex imaginary part.
          if iscomplex(in)
             sz = size(in.Data);
             sz(1) = 1;
@@ -1600,110 +1731,137 @@ classdef dip_image
       end
 
       function in = abs(in)
+         %ABS   Absolute value.
          in = dip_operators('ma',in);
       end
 
       function in = angle(in)
+         %ANGLE   Phase angle.
          in = dip_operators('mc',in);
       end
 
       function in = phase(in)
+         %PHASE   Phase angle, equivalent to DIP_IMAGE/ANGLE.
          in = dip_operators('mc',in);
       end
 
       function in = round(in)
+         %ROUND   Round to nearest integer.
          in = dip_operators('md',in);
       end
 
       function in = ceil(in)
+         %CEIL   Round up.
          in = dip_operators('me',in);
       end
 
       function in = floor(in)
+         %FLOOR   Round down.
          in = dip_operators('mf',in);
       end
 
       function in = fix(in)
+         %FIX   Round towards zero.
          in = dip_operators('mg',in);
       end
 
       function in = sign(in)
+         %SIGN   Signum function.
          in = dip_operators('mh',in);
       end
 
       function in = cos(in)
+         %COS   Cosine.
          in = dip_operators('mA',in);
       end
 
       function in = sin(in)
+         %SIN   Sine.
          in = dip_operators('mB',in);
       end
 
       function in = tan(in)
+         %TAN   Tangent.
          in = dip_operators('mC',in);
       end
 
       function in = acos(in)
+         %ACOS   Inverse cosine.
          in = dip_operators('mD',in);
       end
 
       function in = asin(in)
+         %ASIN   Inverse sine.
          in = dip_operators('mE',in);
       end
 
       function in = atan(in)
+         %ATAN   Inverse tangent.
          in = dip_operators('mF',in);
       end
 
       function in = cosh(in)
+         %COSH   Hyperbolic cosine.
          in = dip_operators('mG',in);
       end
 
       function in = sinh(in)
+         %SINH   Hyperbolic sine.
          in = dip_operators('mH',in);
       end
 
       function in = tanh(in)
+         %TANH   Hyperbolic tangent.
          in = dip_operators('mI',in);
       end
 
       function in = sqrt(in)
+         %SQRT   Square root.
          in = dip_operators('m1',in);
       end
 
       function in = exp(in)
+         %EXP   Base e power.
          in = dip_operators('m2',in);
       end
 
       function in = pow10(in)
+         %POW10   Base 10 power.
          in = dip_operators('m3',in);
       end
 
       function in = pow2(in)
+         %POW2   Base 2 power.
          in = dip_operators('m4',in);
       end
 
       function in = log(in)
+         %LOG   Natural (base e) logarithm.
          in = dip_operators('m5',in);
       end
 
       function in = log10(in)
+         %LOG10   Base 10 logarithm.
          in = dip_operators('m6',in);
       end
 
       function in = log2(in)
+         %LOG2   Base 2 logarithm.
          in = dip_operators('m7',in);
       end
 
       function in = erf(in)
+         %ERF   Error function.
          in = dip_operators('m!',in);
       end
 
       function in = erfc(in)
+         %ERFC   Complementary error function.
          in = dip_operators('m@',in);
       end
 
       function in = gammaln(in)
+         %GAMMALN   Logarithm of gamma function.
          in = dip_operators('m#',in);
       end
 

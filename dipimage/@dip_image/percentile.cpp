@@ -59,7 +59,6 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       if( nrhs > 3 ) {
          plhs[ 0 ] = mi.GetArray( out );
       } else {
-         // TODO: we must either take the max over all tensor elements, or return the max for each tensor element.
          plhs[ 0 ] = dml::GetArray( static_cast< dip::dfloat >( out ));
       }
 

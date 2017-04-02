@@ -10,7 +10,8 @@
 %    - 'iir':  Infinte Impulse Response filter (recursive filtering).
 %    - 'ft':   Convolution via a multiplication in the Fourier Domain.
 %    - 'best': Chooses the best option above for your kernel.
-%  boundary_condition: TODO
+%  boundary_condition: Defines how the boundary of the image is handled.
+%                      See HELP BOUNDARY_CONDITION
 %  truncation: Determines the size of the Gaussian filters.
 %
 % DEFAULTS:

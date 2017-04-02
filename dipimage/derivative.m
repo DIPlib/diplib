@@ -4,15 +4,16 @@
 %  image_out = derivative(image_in,order,sigma,method,boundary_condition,truncation)
 %
 % PARAMETERS:
-%  order: The derivative order for each dimension. Order = 0 only applies smoothing.
-%  sigma: Gaussian parameter for each dimension.
+%  order:  The derivative order for each dimension. Order = 0 only applies smoothing.
+%  sigma:  Gaussian parameter for each dimension.
 %  method: Method used to compute the derivative. One of:
-%    - 'gaussfir':   Finite Impulse Resonse filter (convolution with a kernel).
-%    - 'gaussiir':   Infinte Impulse Response filter (recursive filtering).
-%    - 'gaussft':    Convolution via a multiplication in the Fourier Domain.
-%    - 'finitediff': Finite difference derivative approximation.
-%    - 'best': Chooses the best option above for your kernel.
-%  boundary_condition: TODO
+%    - 'gaussfir':     Finite Impulse Resonse filter (convolution with a kernel).
+%    - 'gaussiir':     Infinte Impulse Response filter (recursive filtering).
+%    - 'gaussft':      Convolution via a multiplication in the Fourier Domain.
+%    - 'finitediff':   Finite difference derivative approximation.
+%    - 'best':         Chooses the best option above for your kernel.
+%  boundary_condition: Defines how the boundary of the image is handled.
+%                      See HELP BOUNDARY_CONDITION
 %  truncation: Determines the size of the Gaussian filters.
 %
 % DEFAULTS:

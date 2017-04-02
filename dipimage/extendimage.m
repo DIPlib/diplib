@@ -11,13 +11,10 @@
 %
 %  BOUNDARY_CONDITION is a string or a cell array of strings (one per image
 %  dimension) specifying how the pixel values outside of the original image
-%  domain are to be filled.
+%  domain are to be filled. See HELP BOUNDARY_CONDITION.
 %
 % DEFAULTS:
-%  boundary_condition = {} (equivalent to 'mirror')
-%
-% NOTE:
-%  See the user guide for the available boundary condition strings.
+%  boundary_condition = 'mirror'
 %
 % DIPlib:
 %  This function calls the DIPlib functions dip::ExtendImage.

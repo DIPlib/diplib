@@ -32,12 +32,12 @@
 %
 %  BOUNDARY_CONDITION is a string or a cell array of strings (one per image
 %  dimension) specifying how the convolution handles pixel values outside
-%  of the image domain. It is ignored if the convolution is best computed
-%  through the Fourier Domain, where the boundary condition is always
-%  'periodic' by construction.
+%  of the image domain. See HELP BOUNDARY_CONDITION. It is ignored if the
+%  convolution is best computed through the Fourier Domain, where the boundary
+%  condition is always 'periodic' by construction.
 %
 % DEFAULTS:
-%  boundary_condition = {} (equivalent to 'mirror')
+%  bounary_condition = 'mirror'
 %
 % NOTE:
 %  See the user guide for the available boundary condition strings.
