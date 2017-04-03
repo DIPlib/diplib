@@ -122,7 +122,6 @@ void GaussFT(
       Image& out,
       FloatArray sigmas,
       UnsignedArray order,
-      BooleanArray process,
       dfloat truncation
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -130,15 +129,14 @@ void GaussFT(
    DIP_START_STACK_TRACE
       ArrayUseParameter( sigmas, nDims, 1.0 );
       ArrayUseParameter( order, nDims, dip::uint( 0 ));
-      ArrayUseParameter( process, nDims, true );
    DIP_END_STACK_TRACE
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      if( !process[ ii ] || ( in.Size( ii ) == 1 )) {
+      if( in.Size( ii ) == 1 ) {
          sigmas[ ii ] = 0;
          order[ ii ] = 0;
       } else {
          if( sigmas[ ii ] < 0 ) {
-            sigmas[ ii ] = 0;
+            sigmas[ ii ] = 0; // no smoothing
          }
       }
    }

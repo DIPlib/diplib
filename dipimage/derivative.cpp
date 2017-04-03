@@ -57,7 +57,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          truncation = dml::GetFloat( prhs[ 5 ] );
       }
 
-      dip::Derivative( in, out, order, sigmas, method, bc, {}, truncation );
+      dip::Derivative( in, out, order, sigmas, method, bc, truncation );
 
       plhs[ 0 ] = mi.GetArray( out );
 

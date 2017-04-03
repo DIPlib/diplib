@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `curl` function
+ * This MEX-file implements the `laplace` function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -57,7 +57,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          truncation = dml::GetFloat( prhs[ 5 ] );
       }
 
-      dip::Curl( in, out, sigmas, method, bc, process, truncation );
+      dip::Laplace( in, out, sigmas, method, bc, process, truncation );
 
       plhs[ 0 ] = mi.GetArray( out );
 

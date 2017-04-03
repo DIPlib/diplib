@@ -38,6 +38,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::FloatArray sigmas = { 1 };
       dip::String method = "best";
       dip::StringArray bc = {};
+      dip::BooleanArray process = {};
       dip::dfloat truncation = 3;
 
       if( nrhs > 1 ) {
@@ -50,10 +51,13 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          bc = dml::GetStringArray( prhs[ 3 ] );
       }
       if( nrhs > 4 ) {
-         truncation = dml::GetFloat( prhs[ 4 ] );
+         process = dml::GetProcessArray( prhs[ 4 ], in.Dimensionality() );
+      }
+      if( nrhs > 5 ) {
+         truncation = dml::GetFloat( prhs[ 5 ] );
       }
 
-      dip::Hessian( in, out, sigmas, method, bc, {}, truncation );
+      dip::Hessian( in, out, sigmas, method, bc, process, truncation );
 
       plhs[ 0 ] = mi.GetArray( out );
 

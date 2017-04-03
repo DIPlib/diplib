@@ -244,7 +244,8 @@ inline Image Uniform(
 /// The value of sigma determines the smoothing effect. For values smaller than about 0.8, the
 /// result is an increasingly poor approximation to the Gaussian filter. Use `dip::GaussFT` for
 /// very small sigmas. Conversely, for very large sigmas it is more efficient to use `dip::GaussIIR`,
-/// which runs in a constant time with respect to the sigma.
+/// which runs in a constant time with respect to the sigma. Dimensions where sigma is 0 or
+/// negative are not processed, even if the derivative order is non-zero.
 ///
 /// For the smoothing filter (`derivativeOrder` is 0), the size of the kernel is given by
 /// `2 * truncation * sigma + 1`. The default value for `truncation` is 3, which assures a good
@@ -254,9 +255,6 @@ inline Image Uniform(
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
-/// Set `process` to false for those dimensions that should not be filtered. Alternatively, set
-/// `sigmas` to 0 or a negative value.
-///
 /// \see dip::Gauss, dip::GaussIIR, dip::GaussFT, dip::Derivative, dip::FiniteDifference, dip::Uniform
 DIP_EXPORT void GaussFIR(
       Image const& in,
@@ -264,7 +262,6 @@ DIP_EXPORT void GaussFIR(
       FloatArray sigmas = { 1.0 },
       UnsignedArray derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
-      BooleanArray process = {},
       dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
 );
 inline Image GaussFIR(
@@ -272,11 +269,10 @@ inline Image GaussFIR(
       FloatArray const& sigmas = { 1.0 },
       UnsignedArray const& derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, process, truncation );
+   GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation );
    return out;
 }
 
@@ -291,8 +287,8 @@ inline Image GaussFIR(
 /// minute computational difference if `truncation` were to be infinity, so it is not worth while to try to
 /// speed up the operation by decreasing `truncation`.
 ///
-/// Set `process` to false for those dimensions that should not be filtered. Alternatively, set
-/// `sigmas` to 0 or a negative value.
+/// Dimensions where sigma is 0 or negative are not smoothed. Note that it is possible to compute a derivative
+/// without smoothing in the Fourier domain.
 ///
 /// \see dip::Gauss, dip::GaussFIR, dip::GaussIIR, dip::Derivative, dip::FiniteDifference, dip::Uniform
 DIP_EXPORT void GaussFT(
@@ -300,18 +296,16 @@ DIP_EXPORT void GaussFT(
       Image& out,
       FloatArray sigmas = { 1.0 },
       UnsignedArray derivativeOrder = { 0 },
-      BooleanArray process = {},
       dfloat truncation = 3
 );
 inline Image GaussFT(
       Image const& in,
       FloatArray const& sigmas = { 1.0 },
       UnsignedArray const& derivativeOrder = { 0 },
-      BooleanArray const& process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   GaussFT( in, out, sigmas, derivativeOrder, process, truncation );
+   GaussFT( in, out, sigmas, derivativeOrder, truncation );
    return out;
 }
 
@@ -324,12 +318,10 @@ inline Image GaussFT(
 ///
 /// The value of sigma determines the smoothing effect. For smaller values, the result is an
 /// increasingly poor approximation to the Gaussian filter. This function is efficient only for
-/// very large sigmas.
+/// very large sigmas. Dimensions where sigma is 0 or negative are not processed, even if the
+/// derivative order is non-zero.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
-///
-/// Set `process` to false for those dimensions that should not be filtered. Alternatively, set
-/// `sigmas` to 0 or a negative value.
 ///
 /// The `filterOrder` and `designMethod` determine how the filter is implemented. By default,
 /// `designMethod` is "discrete time fit". This is the method described in van Vliet et al. (1998).
@@ -351,7 +343,6 @@ DIP_EXPORT void GaussIIR(
       FloatArray sigmas = { 1.0 },
       UnsignedArray derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
-      BooleanArray process = {},
       UnsignedArray filterOrder = {}, // means compute order depending on derivativeOrder.
       String const& designMethod = "", // default is "discrete time fit", alt is "forward backward".
       dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
@@ -361,13 +352,12 @@ inline Image GaussIIR(
       FloatArray const& sigmas = { 1.0 },
       UnsignedArray const& derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
       UnsignedArray const& filterOrder = {},
       String const& designMethod = "",
       dfloat truncation = 3
 ) {
    Image out;
-   GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, process, filterOrder, designMethod, truncation );
+   GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, filterOrder, designMethod, truncation );
    return out;
 }
 
@@ -375,7 +365,8 @@ inline Image GaussIIR(
 ///
 /// Convolves the image with a Gaussian kernel. For each dimension, provide a value in `sigmas` and
 /// `derivativeOrder`. The value of sigma determines the smoothing effect. The zeroth-order derivative
-/// is a plain smoothing, no derivative is computed.
+/// is a plain smoothing, no derivative is computed. Dimensions where sigma is 0 or negative are not
+/// smoothed. Only the "FT" method can compute the derivative along a dimension where sigma is zero or negative.
 ///
 /// How the convolution is computed depends on the value of `method`:
 /// - `"FIR"`: Finite inpulse response implementation, see `dip::GaussFIR`.
@@ -389,9 +380,6 @@ inline Image GaussIIR(
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
-/// Set `process` to false for those dimensions that should not be filtered. Alternatively, set
-/// `sigmas` to 0 or a negative value.
-///
 /// \see dip::GaussFIR, dip::GaussFT, dip::GaussIIR, dip::Derivative, dip::FiniteDifference, dip::Uniform
 DIP_EXPORT void Gauss(
       Image const& in,
@@ -399,7 +387,6 @@ DIP_EXPORT void Gauss(
       FloatArray const& sigmas = { 1.0 },
       UnsignedArray const& derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
       String method = "best",
       dfloat truncation = 3
 );
@@ -408,12 +395,11 @@ inline Image Gauss(
       FloatArray const& sigmas = { 1.0 },
       UnsignedArray const& derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
       String const& method = "best",
       dfloat truncation = 3
 ) {
    Image out;
-   Gauss( in, out, sigmas, derivativeOrder, boundaryCondition, process, method, truncation );
+   Gauss( in, out, sigmas, derivativeOrder, boundaryCondition, method, truncation );
    return out;
 }
 
@@ -489,6 +475,8 @@ inline Image SobelGradient(
 ///
 /// For each dimension, provide a value in `sigmas` and `derivativeOrder`. The value of sigma determines
 /// the smoothing effect. The zeroth-order derivative is a plain smoothing, no derivative is computed.
+/// Depending on `method`, dimensions where sigma is 0 or negative are not processed, even if the derivative
+/// order is non-zero. That is, sigma must be positive for the dimension(s) where the derivative is to be computed.
 ///
 /// `method` indicates which derivative filter is used:
 /// - `"best"`: A Gaussian derivative, see `dip::Gauss`.
@@ -506,10 +494,7 @@ inline Image SobelGradient(
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
-/// Set `process` to false for those dimensions that should not be filtered. Alternatively, set
-/// `sigmas` to 0 or a negative value.
-///
-/// \see dip::Gauss, dip::FiniteDifference
+/// \see dip::Gauss, dip::GaussFIR, dip::GaussIIR, dip::GaussFT, dip::FiniteDifference
 DIP_EXPORT void Derivative(
       Image const& in,
       Image& out,
@@ -517,7 +502,6 @@ DIP_EXPORT void Derivative(
       FloatArray const& sigmas = { 1.0 },
       String const& method = "best",
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
       dfloat truncation = 3
 );
 inline Image Derivative(
@@ -526,11 +510,10 @@ inline Image Derivative(
       FloatArray const& sigmas = { 1.0 },
       String const& method = "best",
       StringArray const& boundaryCondition = {},
-      BooleanArray const& process = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Derivative( in, out, derivativeOrder, sigmas, method, boundaryCondition, process, truncation );
+   Derivative( in, out, derivativeOrder, sigmas, method, boundaryCondition, truncation );
    return out;
 }
 
@@ -725,9 +708,9 @@ inline Image Dyz(
 ///
 /// The input image must be scalar.
 ///
-/// Set `process` to false for those dimensions that should not be filtered. Alternatively, set
-/// `sigmas` to 0 or a negative value. No derivative will be computed along the dimensions excluded from
-/// processing. That is, a 3D image that is only processed along one dimension will have a scalar gradient.
+/// Set `process` to false for those dimensions along which no derivative should be taken. For example, if `in` is
+/// a 3D image, and `process` is `{true,false,false}`, then `out` will be a scalar image, containing only the
+/// derivative along the *x* axis.
 ///
 /// By default uses Gaussian derivatives in the computation. Set `method = "finitediff"` for finite difference
 /// approximations to the gradient. See `dip::Derivative` for more information on the other parameters.
@@ -736,7 +719,7 @@ inline Image Dyz(
 DIP_EXPORT void Gradient(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = "best",
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
@@ -763,7 +746,7 @@ inline Image Gradient(
 DIP_EXPORT void GradientMagnitude(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = "best",
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
@@ -784,8 +767,8 @@ inline Image GradientMagnitude(
 
 /// \brief Computes the direction of the gradient of the image, equivalent to `dip::Angle( dip::Gradient( in ))`.
 ///
-/// The input image must be scalar. For a 2D image, the output is scalar also, containing the angle of the
-/// gradient to the x-axis. For a 3D image, the output has two tensor components, containing the azimuth and
+/// The input image must be scalar. For a 2D gradient, the output is scalar also, containing the angle of the
+/// gradient to the x-axis. For a 3D gradient, the output has two tensor components, containing the azimuth and
 /// inclination. See `dip::Angle` for an explanation.
 ///
 /// See `dip::Gradient` for information on the parameters.
@@ -816,14 +799,14 @@ inline Image GradientDirection(
 /// \brief Computes the rotation of the 2D or 3D vector field `in`.
 ///
 /// `in` is expected to be a 2D or 3D image with a 2-vector or a 3-vector tensor representation, respectively.
-/// However, the image can have more dimensions if they are excluded from processing through `process` or by setting
-/// `sigmas` to 0. See `dip::Gradient` for information on the parameters.ß
+/// However, the image can have more dimensions if they are excluded from processing through `process`.
+/// See `dip::Gradient` for information on the parameters.
 ///
 /// \see dip::Gradient, dip::Divergence
 DIP_EXPORT void Curl(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = "best",
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
@@ -845,14 +828,14 @@ inline Image Curl(
 /// \brief Computes the divergence of the vector field `in`.
 ///
 /// `in` is expected to have as many dimensions as tensor components. However, the image
-/// can have more dimensions if they are excluded from processing through `process` or by setting
-/// `sigmas` to 0. See `dip::Gradient` for information on the parameters.
+/// can have more dimensions if they are excluded from processing through `process`.
+/// See `dip::Gradient` for information on the parameters.
 ///
 /// \see dip::Gradient, dip::Curl
 DIP_EXPORT void Divergence(
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = "best",
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
@@ -871,7 +854,8 @@ inline Image Divergence(
    return out;
 }
 
-/// \brief Computes the Hessian of the image, resulting in a symmetric *NxN* tensor image, if the input was *N*-dimensional.
+/// \brief Computes the Hessian of the image, resulting in a symmetric *NxN* tensor image, if the input
+/// was *N*-dimensional.
 ///
 /// Each tensor component corresponds to the a second-order derivative. For a 3D image, the Hessian is given by:
 /// ```
@@ -879,7 +863,9 @@ inline Image Divergence(
 /// H = | dxy dyy dyz |
 ///     | dxz dyz dzz |
 /// ```
-/// Note that duplicate entries are not stored in the symmetric tensor image.
+/// Note that duplicate entries are not stored in the symmetric tensor image. Image dimensions for which
+/// `process` is false do not participate in the set of dimensions that form the Hessian matrix. Thus, a
+/// 5D image with only two dimensions selected by the `process` array will yield a 2-by-2 Hessian matrix.
 ///
 /// By default uses Gaussian derivatives in the computation. Set `method = "finitediff"` for finite difference
 /// approximations to the gradient. See `dip::Derivative` for more information on the other parameters.
@@ -890,7 +876,7 @@ inline Image Divergence(
 DIP_EXPORT void Hessian (
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = "best",
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
@@ -909,11 +895,24 @@ inline Image Hessian(
    return out;
 }
 
-// Same as Trace(Hessian()), but more efficient. If "finitediff", uses the well-known 3-by-3 matrix.
+/// \brief Computes the Laplacian of the image, equivalent to `dip::Trace( dip::Hessian ( in ))`, but more efficient.
+///
+/// See `dip::Gradient` for information on the parameters.
+///
+/// If `method` is "finitediff", it does not add second order derivatives, but instead computes a convolution
+/// with a 3x3(x3x...) kernel where all elements are -1 and the middle element is \f$3^d - 1\f$ (with *d* the number
+/// of image dimensions). That is, the kernel sums to 0. For a 2D image, this translates to the well-known kerel:
+/// ```
+///    | -1  -1  -1 |
+///    | -1   8  -1 |
+///    | -1  -1  -1 |
+/// ```
+///
+/// \see dip::Derivative, dip::Gradient, dip::Hessian, dip::Trace.
 DIP_EXPORT void Laplace (
       Image const& in,
       Image& out,
-      FloatArray const& sigmas = { 1.0 },
+      FloatArray sigmas = { 1.0 },
       String const& method = "best",
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},

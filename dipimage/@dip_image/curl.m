@@ -2,15 +2,17 @@
 %   CURL(A,SIGMA) returns the rotation of a vector image, resulting
 %   in a vector image with the same sizes.
 %   SIGMA is the Gaussian smoothing. SIGMA defaults to 1.
-%   A is expected to have as many dimensions as vector elements.
-%   However, dimensions excluded from processing by setting SIGMA
-%   to zero do not count towards the number of dimensions. That is,
-%   a 3D image with a 2-vector can be input if SIGMA is, for example,
-%   [1,1,0].
+%   A is expected to have as many dimensions as vector elements. The
+%   operation is only defined for 2D or 3D vectors.
 %
-%   CURL(A,SIGMA,METHOD,BOUNDARY_CONDITION,TRUNCATION) defines how
-%   the gradient is computed. See DERIVATIVE for a description of these
-%   parameters.
+%   CURL(A,SIGMA,METHOD,BOUNDARY_CONDITION,PROCESS,TRUNCATION) defines
+%   how the gradient is computed. See DERIVATIVE for a description of
+%   these parameters.
+%
+%   PROCESS determines along which dimensions to apply the operation.
+%   If A has N dimensions but only M tensor elements, and PROCESS has
+%   M unique elements, then the operation is correctly defined as
+%   M-dimensional rotation.
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

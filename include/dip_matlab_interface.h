@@ -420,19 +420,24 @@ inline dip::FloatArray GetFloatArray( mxArray const* mx ) {
 
 /// \brief Convert an unsigned integer `mxArray` to a `dip::BooleanArray`, where elements of the input are indices
 /// where the output array is set. The output array has `nDims` elements. In MATLAB, dimensions start with 1.
+/// If `mx` is empty, all dimensions are to be processed.
 inline dip::BooleanArray GetProcessArray( mxArray const* mx, dip::uint nDims ) {
-   dip::IntegerArray in;
-   try {
-      in = GetIntegerArray( mx );
-   } catch( dip::Error& ) {
-      DIP_THROW( "Process array must be an integer array" );
+   if( !mxIsEmpty( mx )) {
+      dip::IntegerArray in;
+      try {
+         in = GetIntegerArray( mx );
+      } catch( dip::Error& ) {
+         DIP_THROW( "Process array must be an integer array" );
+      }
+      dip::BooleanArray out( nDims, false );
+      for( auto ii : in ) {
+         DIP_THROW_IF( ( ii <= 0 ) || ( ii > nDims ), "Process array contains index out of range" );
+         out[ ii - 1 ] = true;
+      }
+      return out;
+   } else {
+      return dip::BooleanArray( nDims, true );
    }
-   dip::BooleanArray out( nDims, false );
-   for( auto ii : in ) {
-      DIP_THROW_IF(( ii <= 0 ) || ( ii > nDims ), "Process array contains index out of range" );
-      out[ ii - 1 ] = true;
-   }
-   return out;
 }
 
 /// \brief Convert a coordinates array from `mxArray` to `dip::CoordinateArray` by copy.

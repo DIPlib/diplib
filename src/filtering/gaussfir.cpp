@@ -124,7 +124,6 @@ void GaussFIR(
       FloatArray sigmas,
       UnsignedArray order,
       StringArray const& boundaryCondition,
-      BooleanArray process,
       dfloat truncation
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -132,11 +131,11 @@ void GaussFIR(
    DIP_START_STACK_TRACE
       ArrayUseParameter( sigmas, nDims, 1.0 );
       ArrayUseParameter( order, nDims, dip::uint( 0 ));
-      ArrayUseParameter( process, nDims, true );
    DIP_END_STACK_TRACE
    OneDimensionalFilterArray filter( nDims );
+   BooleanArray process( nDims, true );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      if( process[ ii ] ) {
+      if(( sigmas[ ii ] > 0.0 ) && ( in.Size( ii ) > 1 )) {
          bool found = false;
          for( dip::uint jj = 0; jj < ii; ++jj ) {
             if( process[ jj ] && ( sigmas[ jj ] == sigmas[ ii ] ) && ( order[ jj ] == order[ ii ] )) {
@@ -146,27 +145,25 @@ void GaussFIR(
             }
          }
          if( !found ) {
-            if( sigmas[ ii ] <= 0 ) {
-               process[ ii ] = false;
-            } else {
-               switch( order[ ii ] ) {
-                  case 0:
-                  case 2:
-                     filter[ ii ].symmetry = "even";
-                     break;
-                  case 1:
-                  case 3:
-                     filter[ ii ].symmetry = "odd";
-                     break;
-                  default:
-                     DIP_THROW( "Gaussian FIR filter not implemented for order > 3" );
-               }
-               filter[ ii ].filter = MakeHalfGaussian(
-                     sigmas[ ii ], order[ ii ],
-                     HalfGaussianSize( sigmas[ ii ], order[ ii ], truncation ) + 1 );
-               // NOTE: origin defaults to the middle of the filter, so we don't need to set it explicitly here.
+            switch( order[ ii ] ) {
+               case 0:
+               case 2:
+                  filter[ ii ].symmetry = "even";
+                  break;
+               case 1:
+               case 3:
+                  filter[ ii ].symmetry = "odd";
+                  break;
+               default:
+                  DIP_THROW( "Gaussian FIR filter not implemented for order > 3" );
             }
+            filter[ ii ].filter = MakeHalfGaussian(
+                  sigmas[ ii ], order[ ii ],
+                  HalfGaussianSize( sigmas[ ii ], order[ ii ], truncation ) + 1 );
+            // NOTE: origin defaults to the middle of the filter, so we don't need to set it explicitly here.
          }
+      } else {
+         process[ ii ] = false;
       }
    }
    SeparableConvolution( in, out, filter, boundaryCondition, process );

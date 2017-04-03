@@ -728,7 +728,6 @@ void GaussIIR(
       FloatArray sigmas,
       UnsignedArray order,
       StringArray const& boundaryCondition,
-      BooleanArray process,
       UnsignedArray filterOrder,
       String const& designMethod,
       dfloat truncation
@@ -738,7 +737,6 @@ void GaussIIR(
    DIP_START_STACK_TRACE
       ArrayUseParameter( sigmas, nDims, 1.0 );
       ArrayUseParameter( order, nDims, dip::uint( 0 ));
-      ArrayUseParameter( process, nDims, true );
    DIP_END_STACK_TRACE
    if( truncation <= 0.0 ) {
       truncation = 3;
@@ -760,8 +758,9 @@ void GaussIIR(
    // Filter parameters
    std::vector< dip__GaussIIRParams > filterParams( nDims );
    UnsignedArray border( nDims );
+   BooleanArray process( nDims, true );
    for( dip::uint ii = 0; ii < nDims; ii++ ) {
-      if( process[ ii ] && ( sigmas[ ii ] > 0.0 ) && ( in.Size( ii ) > 1 )) {
+      if(( sigmas[ ii ] > 0.0 ) && ( in.Size( ii ) > 1 )) {
          bool found = false;
          for( dip::uint jj = 0; jj < ii; ++jj ) {
             if( process[ jj ] && ( sigmas[ jj ] == sigmas[ ii ] ) && ( order[ jj ] == order[ ii ] ) && ( filterOrder[ jj ] == filterOrder[ ii ] )) {

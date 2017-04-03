@@ -98,6 +98,8 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( Subtract )
 /// \see Add, Subtract, MultiplySampleWise, Divide, Modulo, Power, operator*(Image const&, T const&)
 DIP__DEFINE_ARITHMETIC_OVERLOADS( Multiply )
 
+// TODO: Add MultiplyConjugate
+
 /// \brief Multiplies two images, sample-wise, with singleton expansion.
 ///
 /// The image `out` will have the type `dt`, which defaults to

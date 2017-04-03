@@ -1,17 +1,18 @@
-%GRADIENT   Gradient vector of an image.
-%   GRADIENT(A,SIGMA) returns the gradient vector of a scalar image.
-%   SIGMA is the Gaussian smoothing. The returned type is an N-by-1
-%   tensor image, where N is the dimensionality of A.
-%   SIGMA defaults to 1.
+%LAPLACE   Laplace operator
 %
-%   GRADIENT(A,SIGMA,METHOD,BOUNDARY_CONDITION,PROCESS,TRUNCATION) defines
-%   how the gradient is computed. See DERIVATIVE for a description of these
-%   parameters.
+% SYNOPSIS:
+%  image_out = laplace(image_in,sigma,method,boundary_condition,process,truncation)
 %
-%   PROCESS determines along which dimensions to take the derivative.
-%   For the N-dimensional image above, if PROCESS==1, then the output
-%   is a scalar image with only the derivative along the first
-%   dimension.
+%  IMAGE_IN is a scalar image with N dimensions.
+%  IMAGE_OUT is a scalar image, corresponding to the trace of the
+%  Hessian matrix: DXX(IMAGE_IN)+DYY(IMAGE_IN)+...
+%
+%  PROCESS determines along which dimensions to take the derivative.
+%
+%  See DERIVATIVE for a description of the parameters.
+%
+% DIPlib:
+%  This function calls the DIPlib function dip::Laplace.
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
