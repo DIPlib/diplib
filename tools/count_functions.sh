@@ -10,4 +10,4 @@ sed  -e 's|@DOCUMENTATION_OUTPUT@|.|g' \
       < ../src/documentation/Doxyfile.in > doxy-coverage.conf
 
 doxygen doxy-coverage.conf
-doxy-coverage.py xml
+../tools/doxy-coverage.py xml

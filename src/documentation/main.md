@@ -57,8 +57,10 @@ following three principles:
 Algorithms in *DIPlib* typically accept input images of any data type (though,
 of course, some algorithms are specific to binary images, or cannot handle
 complex images) and any number of dimensions (algorithms that are limited to
-specific dimensionalities typically show so in their name). The image data
-type and dimensionality do not need to be known at compile time. 
+one specific dimensionality typically show so in their name). The image data
+type and dimensionality do not need to be known at compile time. Images can
+have pixels that are vectors or matrices, for some examples on how this
+relates to the three points above, see \ref why_tensors.
 
 There are many other unique things about *DIPlib*, we encourage you to
 explore the documentation to learn more about it. A good place to start
