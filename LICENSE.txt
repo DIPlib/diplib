@@ -37,6 +37,11 @@ DIPlib includes the following libraries / external code:
   Intel License Agreement For Open Source Computer Vision Library
   see src/transform/opencv_dxt.h
 
+- pybind11 (not used in the DIPlib library, only used in the Python bindings)
+  Copyright (c) 2016 Wenzel Jakob <wenzel.jakob@epfl.ch>, All rights reserved.
+  BSD-style license
+  see dependencies/pybind11/LICENSE
+
 Note that all of these have permissive open-source licenses similar in spirit
 to the Apache License.
 

@@ -100,6 +100,12 @@ include_directories(dependencies/eigen3)
 add_definitions(-DEIGEN_MPL2_ONLY) # This makes sure we only use parts of the Eigen library that use the MPL2 license or more permissive ones.
 add_definitions(-DEIGEN_DONT_PARALLELIZE) # This to prevent Eigen algorithms trying to run in parallel -- we parallelize at a larger scale.
 
+# pybind11
+set(DIP_BUILD_PYTHON_MODULE ON CACHE BOOL "Build the PyDIP Python module")
+if(DIP_BUILD_PYTHON_MODULE)
+   add_subdirectory(dependencies/pybind11)
+endif()
+
 # MATLAB
 set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # This is necessary because my version of MATLAB is very recent and my version of CMake is not. Ajust as necessary.
 find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)
@@ -150,6 +156,19 @@ if(DIP_ENABLE_DOCTEST)
    endif()
    add_test(NAME unit_tests COMMAND unit_tests)
    add_dependencies(check unit_tests)
+endif()
+
+
+### PyDIP module for Python
+if(DIP_BUILD_PYTHON_MODULE)
+   pybind11_add_module(PyDIP pydip/pydip.cpp)
+   target_compile_options(PyDIP PRIVATE -Wno-deprecated-declarations)
+   target_link_libraries(PyDIP PUBLIC DIP)
+   if(APPLE)
+      set_target_properties(PyDIP PROPERTIES INSTALL_RPATH "@loader_path")
+   else()
+      set_target_properties(PyDIP PROPERTIES INSTALL_RPATH "$ORIGIN")
+   endif()
 endif()
 
 
@@ -342,6 +361,12 @@ if (DOXYGEN_FOUND)
    message(" * Documentation installed to: ${DOCUMENTATION_OUTPUT}")
 else()
    message(" * Doxygen not found, 'apidoc' target not available")
+endif()
+
+if(DIP_BUILD_PYTHON_MODULE)
+   message(" * PyDIP module added to 'all' target")
+else()
+   message(" * PyDIP module not configured")
 endif()
 
 if(Matlab_FOUND)

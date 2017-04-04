@@ -1617,6 +1617,31 @@ class DIP_NO_EXPORT Image {
       /// The image must be forged.
       DIP_EXPORT Image Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
 
+      /// \brief Extracts a subset of pixels from an image.
+      ///
+      /// This is an overloaded version of the function above, meant for use from bindings in other languages. The
+      /// string `cropLocation` is translated to one of the `dip::Option::CropLocation` values as follows:
+      ///
+      /// %CropLocation constant  | String
+      /// ----------------------- | ----------
+      /// CENTER                  | "center"
+      /// MIRROR_CENTER           | "mirror center"
+      /// TOP_LEFT                | "top left"
+      /// BOTTOM_RIGHT            | "bottom right"
+      inline Image Crop( UnsignedArray const& sizes, String const& cropLocation ) const {
+         if( cropLocation == "center" ) {
+            return Crop( sizes, Option::CropLocation::CENTER );
+         } else if( cropLocation == "mirror center" ) {
+            return Crop( sizes, Option::CropLocation::MIRROR_CENTER );
+         } else if( cropLocation == "top left" ) {
+            return Crop( sizes, Option::CropLocation::TOP_LEFT );
+         } else if( cropLocation == "bottom right" ) {
+            return Crop( sizes, Option::CropLocation::BOTTOM_RIGHT );
+         } else {
+            DIP_THROW( "Unknown crop location flag" );
+         }
+      };
+
       /// \brief Extracts the real component of a complex-typed image. The image must be forged.
       DIP_EXPORT Image Real() const;
 
@@ -1742,6 +1767,31 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       DIP_EXPORT Image Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
+
+      /// \brief Extends the image by padding with zeros.
+      ///
+      /// This is an overloaded version of the function above, meant for use from bindings in other languages. The
+      /// string `cropLocation` is translated to one of the `dip::Option::CropLocation` values as follows:
+      ///
+      /// %CropLocation constant  | String
+      /// ----------------------- | ----------
+      /// CENTER                  | "center"
+      /// MIRROR_CENTER           | "mirror center"
+      /// TOP_LEFT                | "top left"
+      /// BOTTOM_RIGHT            | "bottom right"
+      inline Image Pad( UnsignedArray const& sizes, String const& cropLocation ) const {
+         if( cropLocation == "center" ) {
+            return Pad( sizes, Option::CropLocation::CENTER );
+         } else if( cropLocation == "mirror center" ) {
+            return Pad( sizes, Option::CropLocation::MIRROR_CENTER );
+         } else if( cropLocation == "top left" ) {
+            return Pad( sizes, Option::CropLocation::TOP_LEFT );
+         } else if( cropLocation == "bottom right" ) {
+            return Pad( sizes, Option::CropLocation::BOTTOM_RIGHT );
+         } else {
+            DIP_THROW( "Unknown crop location flag" );
+         }
+      };
 
       /// \brief Deep copy, `this` will become a copy of `src` with its own data.
       ///

@@ -542,6 +542,29 @@ inline void swap( Tensor& v1, Tensor& v2 ) {
    v1.swap( v2 );
 }
 
+inline std::ostream& operator<<(
+      std::ostream& os,
+      Tensor const& tensor
+) {
+   if( tensor.IsScalar() ) {
+      os << "scalar, 1 element";
+   } else {
+      os << tensor.Rows() << "x" << tensor.Columns() << " ";
+      switch( tensor.TensorShape() ) {
+         case Tensor::Shape::COL_VECTOR:       os << "column vector";           break;
+         case Tensor::Shape::ROW_VECTOR:       os << "row vector";              break;
+         case Tensor::Shape::COL_MAJOR_MATRIX: os << "column-major matrix";     break;
+         case Tensor::Shape::ROW_MAJOR_MATRIX: os << "row-major matrix";        break;
+         case Tensor::Shape::DIAGONAL_MATRIX:  os << "diagonal matrix";         break;
+         case Tensor::Shape::SYMMETRIC_MATRIX: os << "symmetric matrix";        break;
+         case Tensor::Shape::UPPTRIANG_MATRIX: os << "upper triangular matrix"; break;
+         case Tensor::Shape::LOWTRIANG_MATRIX: os << "lower triangular matrix"; break;
+      }
+      os << ", " << tensor.Elements() << " elements";
+   }
+   return os;
+}
+
 /// \}
 
 } // namespace dip

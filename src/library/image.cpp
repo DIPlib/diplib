@@ -197,61 +197,35 @@ std::ostream& operator<<(
       std::ostream& os,
       Image const& img
 ) {
-   // Shape and other main propertiees
-   if( img.TensorElements() == 1 ) {
-      os << "Scalar image, ";
-   } else {
-      os << img.TensorRows() << "x" << img.TensorColumns() << "-tensor image, ";
-   }
-   os << img.Dimensionality() << "-D, " << img.DataType().Name();
+   // Shape and other main properties
    if( img.IsColor() ) {
-      os << ", color image: " << img.ColorSpace();
+      os << "Color image (" << img.Tensor() << ", " << img.ColorSpace() << "):";
+   } else if( !img.IsScalar() ) {
+      os << "Tensor image (" << img.Tensor() << "):";
+   } else {
+      os << "Scalar image:";
    }
    os << std::endl;
-
-   // Image size
-   os << "   sizes: " << img.Sizes() << std::endl;
-
-   // Pixel size
-   if( img.HasPixelSize() ) {
-      os << "   pixel size: ";
-      dip::PixelSize const& ps = img.PixelSize();
-      for( dip::uint ii = 0; ii < img.Dimensionality(); ++ii ) {
-         os << ( ii > 0 ? " x " : "" ) << ps[ ii ];
-      }
-      os << std::endl;
-   }
-
-   // Strides
-   os << "   strides: " << img.Strides() << std::endl;
-
-   os << "   tensor stride: " << img.TensorStride() << std::endl;
-
-   // Data segment
-   if( img.IsForged() ) {
-      os << "   data pointer:   " << img.Data() << " (shared among " << img.ShareCount() << " images)" << std::endl;
-
-      os << "   origin pointer: " << img.Origin() << std::endl;
-
-      if( img.HasContiguousData() ) {
-         if( img.HasNormalStrides() ) {
-            os << "   strides are normal" << std::endl;
-         } else {
-            os << "   data are contiguous but strides are not normal" << std::endl;
+   // Image size and pixel size
+   os << "    data type " << img.DataType().Name() << std::endl;
+   if( img.Dimensionality() == 0 ) {
+      os << "    sizes {} (0D)" << std::endl;
+   } else {
+      os << "    sizes {" << img.Sizes() << "} (" << img.Dimensionality() << "D)" << std::endl;
+      if( img.HasPixelSize() ) {
+         os << "    pixel size " << img.PixelSize( 0 );
+         for( dip::uint ii = 1; ii < img.Dimensionality(); ++ii ) {
+            os << " x " << img.PixelSize( ii );
          }
       }
-
-      dip::uint stride;
-      void* origin;
-      img.GetSimpleStrideAndOrigin( stride, origin );
-      if( origin ) {
-         os << "   simple stride: " << stride << std::endl;
-      } else {
-         os << "   strides are not simple" << std::endl;
-      }
-
+   }
+   // Data storage
+   os << "    strides {" << img.Strides() << "}, tensor stride " << img.TensorStride() << std::endl;
+   if( img.IsForged() ) {
+      os << "    data pointer:   " << img.Data() << " (shared among " << img.ShareCount() << " images)" << std::endl;
+      os << "    origin pointer: " << img.Origin() << std::endl;
    } else {
-      os << "   not forged" << std::endl;
+      os << "    not forged" << std::endl;
    }
    return os;
 }
