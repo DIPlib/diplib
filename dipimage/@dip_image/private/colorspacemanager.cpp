@@ -27,8 +27,7 @@
  * col = color space name
  */
 
-#define DOCTEST_CONFIG_IMPLEMENT
-
+#undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
 #include "diplib/color.h"
 

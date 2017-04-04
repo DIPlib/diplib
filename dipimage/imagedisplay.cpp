@@ -34,8 +34,7 @@
  * This function is intended for use solely within DIPSHOW.
  */
 
-#define DOCTEST_CONFIG_IMPLEMENT
-
+#undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
 #include "diplib/display.h"
 

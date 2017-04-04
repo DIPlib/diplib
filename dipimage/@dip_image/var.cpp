@@ -19,8 +19,7 @@
  * limitations under the License.
  */
 
-
-#define DOCTEST_CONFIG_IMPLEMENT
+#undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
 #include "diplib/math.h"
 
