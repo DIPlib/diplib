@@ -262,6 +262,7 @@ void ColorSpaceManager::Convert(
                lineFilter
          );
       DIP_END_STACK_TRACE
+      out.ReshapeTensorAsVector();
       out.SetColorSpace( colorSpaces_[ endIndex ].name );
    }
 }

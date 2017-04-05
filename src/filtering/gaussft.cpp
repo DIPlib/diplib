@@ -154,6 +154,8 @@ void GaussFT(
          opts.emplace( "real" );
       }
       FourierTransform( ft, out, opts );
+   } else {
+      out = in;
    }
 }
 

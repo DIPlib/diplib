@@ -90,9 +90,11 @@ void Scan(
    // Do singleton expansion if necessary
    UnsignedArray sizes;
    dip::uint tsize = 1;
+   Tensor outTensor;
    if( nIn == 1 ) {
       sizes = in[ 0 ].Sizes();
       tsize = in[ 0 ].TensorElements();
+      outTensor = in[ 0 ].Tensor();
    } else if( nIn > 1 ) {
       if( opts != Scan_NoSingletonExpansion ) {
          sizes = SingletonExpandedSize( in );
@@ -103,6 +105,9 @@ void Scan(
             if( in[ ii ].Sizes() != sizes ) {
                in[ ii ].ExpandSingletonDimensions( sizes );
             }
+            if( outTensor.IsScalar() ) {
+               outTensor = in[ ii ].Tensor();
+            }
             if( tensorToSpatial && ( in[ ii ].TensorElements() != tsize ) ) {
                in[ ii ].ExpandSingletonTensor( tsize );
             }
@@ -112,6 +117,9 @@ void Scan(
          for( dip::uint ii = 1; ii < nIn; ++ii ) {
             if( in[ ii ].Sizes() != sizes ) {
                DIP_THROW( E::SIZES_DONT_MATCH );
+            }
+            if( outTensor.IsScalar() ) {
+               outTensor = in[ ii ].Tensor();
             }
          }
       }
@@ -135,7 +143,9 @@ void Scan(
          tmp.Strip();
       }
       tmp.ReForge( sizes, nTensor, outImageTypes[ ii ], Option::AcceptDataTypeChange::DO_ALLOW );
-      // Set pixel size and color space
+      if( tensorToSpatial && !outTensor.IsScalar() ) {
+         tmp.ReshapeTensor( outTensor );
+      }
       tmp.SetPixelSize( pixelSize );
       tmp.SetColorSpace( colspaces[ ii ] );
    }

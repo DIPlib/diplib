@@ -240,7 +240,10 @@ class DIP_EXPORT ScanLineFilter {
 /// to match the largest input tensor. `nTensorElements` is ignored. Even with
 /// a single input image, where no singleton expantion can happen, it is
 /// beneficial to use the `dip::FrameWork::Scan_TensorAsSpatialDim` option, as
-/// `lineFilter` can be simpler and faster.
+/// `lineFilter` can be simpler and faster. Additionally, the output tensor shape
+/// is identical to the input image's. In case of multiple inputs, the first input
+/// image that has as many tensor elements as the (singleton-expanded) output
+/// will model the output tensor shape.
 ///
 /// If the option `dip::FrameWork::Scan_ExpandTensorInBuffer` is given, then
 /// the input buffers passed to `lineFilter` will contain the tensor elements as a
