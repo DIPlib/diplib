@@ -48,7 +48,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
 
       // Get images
       lhs = dml::GetImage( prhs[ 1 ] );
-      if(( *ch == '~' ) || ( *ch == 'u' ) || ( *ch == '\'' ) || ( *ch == 'm' )) {
+      if( *ch == 'm' ) {
          DIP_THROW_IF( nrhs != 2, "Wrong number of input arguments." );
       } else {
          DIP_THROW_IF( nrhs != 3, "Wrong number of input arguments." );
@@ -77,7 +77,13 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
             dip::Modulo( lhs, rhs, out, lhs.DataType() );
             break;
          case '^': // .^
-            dip::Power( lhs, rhs, out, lhs.DataType() );
+            dip::Power( lhs, rhs, out, dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() ));
+            break;
+         case 'A': // atan2
+            dip::Atan2( lhs, rhs, out );
+            break;
+         case 'H': // hypot
+            dip::Hypot( lhs, rhs, out );
             break;
       // Comparison operators
          case '=': // ==
@@ -108,16 +114,15 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          case 'x': // xor : for binary images only (but does bit-wise for integers too)
             dip::Xor( lhs, rhs, out );
             break;
-      // Unary operators
-         case '~': // unary not : negate
-            dip::Not( lhs, out );
-            break;
-         case 'u': // unary - : invert
-            dip::Invert( lhs, out );
-            break;
       // Monadic operators
          case 'm': // These are all the monadic operators, defined by the second letter
             switch( ch[ 1 ] ) {
+               case '~': // unary not : negate
+                  dip::Not( lhs, out );
+                  break;
+               case '-': // unary - : invert
+                  dip::Invert( lhs, out );
+                  break;
                case 'a': // abs
                   dip::Abs( lhs, out );
                   break;

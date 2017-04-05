@@ -122,10 +122,27 @@ inline Image NearestInt( Image const& in ) {
 // Arithmetic dyadic operators that are not already declared in diplib/library/operators.h
 //
 
-// TODO: Atan2, Hypot.
-// These lead to cool things such as:
-//    Phase( im ) = Atan2( im.Imaginary(), im.Real() );  // phase of complex values
-//    Atan2( im[ 1 ], im[ 0 ] );                         // angle of a 2-vector
+/// \brief Computes the four-quadrant arc tangent of `y/x`.
+///
+/// The operation can be understood as the angle of the vector formed by the two input images.
+/// The result is always in the range \f$[-\pi,\pi]\f$. The inputs must be a real type.
+DIP_EXPORT void Atan2( Image const& y, Image const& x, Image& out );
+inline Image Atan2( Image const& y, Image const& x ) {
+   Image out;
+   Atan2( y, x, out );
+   return out;
+}
+
+/// \brief Computes the square root of the sum of the squares of corresponding samples in `a` and `b`.
+///
+/// The computation is performed carefully, so there is no undue overflow or underflow at intermediate
+/// stages of the computation. The inputs must be a real type.
+DIP_EXPORT void Hypot( Image const& a, Image const& b, Image& out );
+inline Image Hypot( Image const& a, Image const& b ) {
+   Image out;
+   Hypot( a, b, out );
+   return out;
+}
 
 
 //

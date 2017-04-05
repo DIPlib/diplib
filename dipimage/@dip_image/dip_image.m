@@ -261,6 +261,7 @@ classdef dip_image
                % Create a new dip_image from given data
                if iscell(data)
                   % Convert cell array of scalar images to tensor dip_image
+                  % TODO: preserve shape of cell array
                   for ii=1:numel(data)
                      tmp = data{ii};
                      if ~isa(tmp,'dip_image')
@@ -1658,12 +1659,12 @@ classdef dip_image
 
       function in = not(in)
          %NOT   Overload for unary operator ~
-         in = dip_operators('~',in);
+         in = dip_operators('m~',in);
       end
 
       function in = uminus(in)
          %UMINUS   Overload for unary operator -
-         in = dip_operators('u',in);
+         in = dip_operators('m-',in);
       end
 
       function in = uplus(in)
@@ -1863,6 +1864,16 @@ classdef dip_image
       function in = gammaln(in)
          %GAMMALN   Logarithm of gamma function.
          in = dip_operators('m#',in);
+      end
+
+      function res = atan2(y,x)
+         %ATAN2   Four quadrant inverse tangent of y/x.
+         res = dip_operators('A',y,x);
+      end
+
+      function res = hypot(a,b)
+         %HYPOT   Robust computation of the square root of the sum of squares.
+         res = dip_operators('H',a,b);
       end
 
    end

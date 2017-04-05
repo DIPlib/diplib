@@ -918,6 +918,18 @@ DIP_EXPORT void Laplace (
       BooleanArray const& process = {},
       dfloat truncation = 3
 );
+inline Image Laplace(
+      Image const& in,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      BooleanArray const& process = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   Laplace( in, out, sigmas, method, boundaryCondition, process, truncation );
+   return out;
+}
 
 DIP_EXPORT void Dgg(
       Image const& in,

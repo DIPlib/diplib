@@ -57,7 +57,10 @@ elseif nargin < 2
 elseif nargin < 3
    image_out = derivative(image_in,[0],sigma);
 else
-   if method ~= 'best'
+   if ~ischar(method) && ~isvector(method)
+      error('METHOD argument must be a string');
+   end
+   if ~strcmp(method,'best')
       method = ['gauss',method];
    end
    if nargin < 4

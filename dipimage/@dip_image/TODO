@@ -33,18 +33,3 @@ arithmetic:
    atan2.m (how do we implement this for 2-vector images?)
    hypot.m (how do we implement this for 2-vector images?)
    besselj.m (was this ever used?)
-
-tensor arithmetic:
-   curl.m
-   divergence.m
-
-   cross.m
-   det.m
-   dot.m
-   eig.m
-   eye.m
-   inv.m
-   norm.m
-   pinv.m
-   svd.m
-   trace.m
