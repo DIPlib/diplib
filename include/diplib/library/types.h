@@ -96,18 +96,24 @@ class DIP_NO_EXPORT bin {
       constexpr bin() : v_( 0 ) {};
 
       /// A bool implicitly converts to bin
-      constexpr bin( bool v ) : v_( v ) {};
+      constexpr bin( bool v ) : v_( static_cast< uint8 >( v )) {};
 
       /// Any arithmetic type converts to bin by comparing to zero
       template< typename T >
-      constexpr explicit bin( T v ) : v_( !!v ) {};
+      constexpr explicit bin( T v ) : v_( static_cast< uint8 >( v != 0 )) {};
 
       /// A complex value converts to bin by comparing the absolute value to zero
-      template< typename T >
-      constexpr explicit bin( std::complex< T > v ) : v_( !!std::abs( v ) ) {};
+      //template< typename T >
+      //constexpr explicit bin( std::complex< T > v ) : v_( !!std::abs( v ) ) {};
 
       /// A bin implicitly converts to bool
       constexpr operator bool() const { return v_; }
+
+      /// Negation operators
+      constexpr bin operator!() const { return v_ == 0; }
+
+      /// Bit-wise negation is the same as regular negation
+      constexpr bin operator~() const { return v_ == 0; }
 
    private:
       uint8 v_;
