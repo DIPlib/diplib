@@ -44,11 +44,12 @@ class MatlabInterfaceUInt8 : public dip::ExternalInterface {
    public:
       mxArray* array = nullptr;
       virtual std::shared_ptr< void > AllocateData(
+            void*& origin,
+            dip::DataType datatype,
             dip::UnsignedArray const& sizes,
             dip::IntegerArray& strides,
             dip::Tensor const& tensor,
-            dip::sint& tstride,
-            dip::DataType datatype
+            dip::sint& tstride
       ) override {
          DIP_THROW_IF( datatype != dip::DT_UINT8, dip::E::DATA_TYPE_NOT_SUPPORTED );
          DIP_THROW_IF( sizes.size() != 2, dip::E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -61,8 +62,8 @@ class MatlabInterfaceUInt8 : public dip::ExternalInterface {
          strides[ 1 ] = 1;
          tstride = sizes[ 0 ] * sizes[ 1 ];
          array = mxCreateNumericArray( mlsizes.size(), mlsizes.data(), mxUINT8_CLASS, mxREAL );
-         void* p = mxGetData( array );
-         return std::shared_ptr< void >( p, dml::VoidStripHandler );
+         origin = mxGetData( array );
+         return nullptr;
       }
 };
 

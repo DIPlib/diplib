@@ -45,9 +45,6 @@
 namespace dip_mmorph {
 
 
-// A deleter that doesn't delete.
-inline void VoidStripHandler( void const* p ) {};
-
 /// \brief Creates a *DIPlib* image around an *MMorph* image, without taking ownership of the data.
 ///
 /// This function "converts" an `::%Image` object to a `dip::Image` object.
@@ -97,7 +94,7 @@ inline dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
       default:
          DIP_THROW( "MMorph image with unknown type code" );
    }
-   dip::UnsignedArray sizes = { static_cast< dip::uint >( mm.width()), static_cast< dip::uint >( mm.height()) };
+   dip::UnsignedArray sizes = { static_cast< dip::uint >( mm.width() ), static_cast< dip::uint >( mm.height() ) };
    dip::Tensor tensor; // scalar by default
    // Define proper strides
    dip::IntegerArray strides = { 1, mm.width() };
@@ -110,8 +107,7 @@ inline dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
       tstride = mm.width() * mm.height();
    }
    // Create Image object
-   std::shared_ptr< void > p(static_cast< void* >( mm.raster() ), VoidStripHandler );
-   dip::Image out( p, dt, sizes, strides, tensor, tstride, nullptr );
+   dip::Image out( nullptr, mm.raster(), dt, sizes, strides, tensor, tstride );
    return out;
 }
 
@@ -188,25 +184,28 @@ class ExternalInterface : public dip::ExternalInterface {
       //
       // A user will never call this function directly.
       virtual std::shared_ptr< void > AllocateData(
+            void*& origin,
+            dip::DataType datatype,
             dip::UnsignedArray const& sizes,
             dip::IntegerArray& strides,
             dip::Tensor const& tensor,
-            dip::sint& tstride,
-            dip::DataType datatype
+            dip::sint& tstride
       ) override {
          dip::uint ndims = sizes.size();
-         DIP_THROW_IF(( ndims != 2 ) && !(( ndims == 3 ) && tensor.IsScalar() ), dip::E::DIMENSIONALITY_NOT_SUPPORTED ); // TODO: we can do 3D scalar images or 2D tensor images.
          strides.resize( ndims );
          strides[ 0 ] = 1;
          strides[ 1 ] = sizes[ 0 ];
          dip::uint depth = 1;
          if( ndims == 3 ) {
+            DIP_THROW_IF( !tensor.IsScalar(), dip::E::DIMENSIONALITY_NOT_SUPPORTED );
             strides[ 2 ] = sizes[ 0 ] * sizes[ 1 ];
             tstride = 1;
             depth = sizes[ 2 ];
-         } else {
+         } else if( ndims == 2 ) {
             tstride = sizes[ 0 ] * sizes[ 1 ]; // tensor dimension is last ('depth')
             depth = tensor.Elements();
+         } else {
+            DIP_THROW( dip::E::DIMENSIONALITY_NOT_SUPPORTED );
          }
          char const* typestr;
          switch( datatype ) {
@@ -228,9 +227,9 @@ class ExternalInterface : public dip::ExternalInterface {
          // Create ::Image
          ImagePtr mm = ( ImagePtr )new ::Image( static_cast< int >( sizes[ 0 ] ), static_cast< int >( sizes[ 1 ] ),
                                                 static_cast< int >( depth ), typestr, 0.0 );
-         void* ptr = mm->raster();
-         images_.emplace( ptr, std::move( mm ));
-         return std::shared_ptr< void >( ptr, StripHandler( *this ));
+         origin = mm->raster();
+         images_.emplace( origin, std::move( mm ));
+         return std::shared_ptr< void >( origin, StripHandler( *this ));
       }
 
       /// \brief Returns the MMorph `::%Image` that holds the data for the `dip::Image` `img`.

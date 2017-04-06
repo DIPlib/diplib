@@ -1,16 +1,4 @@
 <code_scheme name="DIPlib">
-  <option name="OTHER_INDENT_OPTIONS">
-    <value>
-      <option name="INDENT_SIZE" value="3" />
-      <option name="CONTINUATION_INDENT_SIZE" value="8" />
-      <option name="TAB_SIZE" value="3" />
-      <option name="USE_TAB_CHARACTER" value="false" />
-      <option name="SMART_TABS" value="false" />
-      <option name="LABEL_INDENT_SIZE" value="0" />
-      <option name="LABEL_INDENT_ABSOLUTE" value="false" />
-      <option name="USE_RELATIVE_INDENTS" value="false" />
-    </value>
-  </option>
   <option name="LINE_SEPARATOR" value="&#xA;" />
   <CMakeCodeStyleSettings>
     <option name="FORCE_COMMANDS_CASE" value="1" />
@@ -51,6 +39,7 @@
     <option name="SUPERCLASS_LIST_AFTER_COLON" value="2" />
     <option name="SPACE_WITHIN_TEMPLATE_DECLARATION_LTGT" value="true" />
     <option name="SPACE_WITHIN_TEMPLATE_CALL_LTGT" value="true" />
+    <option name="SPACE_WITHIN_TEMPLATE_DOUBLE_GT" value="false" />
     <option name="SPACE_WITHIN_FUNCTION_DECLARATION_PARENTHESES" value="true" />
     <option name="SPACE_WITHIN_FUNCTION_CALL_PARENTHESES" value="true" />
     <option name="SPACE_WITHIN_LAMBDA_CAPTURE_LIST_BRACKET" value="true" />
@@ -58,8 +47,6 @@
     <option name="SPACE_AFTER_POINTER_IN_DECLARATION" value="true" />
     <option name="SPACE_BEFORE_REFERENCE_IN_DECLARATION" value="false" />
     <option name="SPACE_AFTER_REFERENCE_IN_DECLARATION" value="true" />
-    <option name="SPACE_AFTER_REFERENCE_IN_RVALUE" value="true" />
-    <option name="SPACE_BETWEEN_ADJACENT_BRACKETS" value="true" />
     <option name="DISCHARGED_SHORT_TERNARY_OPERATOR" value="true" />
     <option name="TAG_PREFIX_OF_BLOCK_COMMENT" value="BACK_SLASH" />
     <option name="GETTERS_PREFIX" value="" />

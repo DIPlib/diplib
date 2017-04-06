@@ -347,7 +347,6 @@ bool Image::HasValidStrides() const {
 
 //
 void Image::SetNormalStrides() {
-   DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
    tensorStride_ = 1;                       // We set tensor strides to 1 by default.
    ComputeStrides( sizes_, tensor_.Elements(), strides_ );
 }
@@ -376,14 +375,14 @@ bool Image::Aliases( Image const& other ) const {
    DIP_THROW_IF( !other.IsForged(), E::IMAGE_NOT_FORGED );
 
    // Different data blocks do not overlap by definition
+   // Note that if both dataBlock_ are nullptr, the data blocks might actually be different,
+   // the rest of the function should not be affected by that.
    if( dataBlock_ != other.dataBlock_ ) {
       return false;
    }
 
    // Quicky: if the origin is the same, they share at least one pixel
-   dip::uint origin1 = static_cast< uint8* >( origin_ ) - static_cast< uint8* >( dataBlock_.get() );
-   dip::uint origin2 = static_cast< uint8* >( other.origin_ ) - static_cast< uint8* >( other.dataBlock_.get() );
-   if( origin1 == origin2 ) {
+   if( origin_ == other.origin_ ) {
       return true;
    }
 
@@ -429,6 +428,10 @@ bool Image::Aliases( Image const& other ) const {
    } // else, the samples have the same size
 
    // Make origin in units of data size
+   // (the division should always be exact, because of data alignment, except in the case of complex values)
+   static_assert( sizeof( dip::uint ) == sizeof( std::uintptr_t ), "The dip::Image::Aliases function will not work on segmented memory architectures." );
+   dip::uint origin1 = reinterpret_cast< dip::uint >( origin_ );
+   dip::uint origin2 = reinterpret_cast< dip::uint >( other.origin_ );
    origin1 /= dts;
    origin2 /= dts;
 
@@ -578,14 +581,11 @@ void Image::Forge() {
                    E::SIZE_EXCEEDS_LIMIT );
       size *= TensorElements();
       if( externalInterface_ ) {
-         dataBlock_ = externalInterface_->AllocateData( sizes_, strides_, tensor_, tensorStride_, dataType_ );
-         // AllocateData() can fail by returning a nullptr. If so, we allocate data in the normal way because we remain raw.
-         if( dataBlock_ ) {
-            dip::uint sz;
-            dip::sint start;
-            GetDataBlockSizeAndStartWithTensor( sz, start );
-            origin_ = static_cast< uint8* >( dataBlock_.get() ) + start * dataType_.SizeOf();
-            //std::cout << "   Successfully forged image with external interface\n";
+         dataBlock_ = externalInterface_->AllocateData( origin_, dataType_, sizes_, strides_, tensor_, tensorStride_ );
+         // AllocateData() can fail by not setting `origin_`.
+         // If so, we allocate data in the normal way because we remain raw.
+         if( IsForged() ) {
+            externalData_ = true;
          }
       }
       if( !IsForged() ) {
@@ -625,7 +625,8 @@ void Image::ReForge(
          // It already matches, nothing to do
          return;
       }
-      if(   !protect_ &&
+      if(   !externalData_ &&
+            !protect_ &&
             !IsShared() &&
             HasContiguousData() &&
             ( sizes_.product() * tensor_.Elements() * dataType_.SizeOf() == sizes.product() * tensorElems * dt.SizeOf() )) {
@@ -635,7 +636,7 @@ void Image::ReForge(
          tensor_.SetVector( tensorElems );
          tensorStride_ = 1;                       // We set tensor strides to 1 by default.
          ComputeStrides( sizes_, tensor_.Elements(), strides_ );
-         origin_ = dataBlock_.get();
+         origin_ = dataBlock_.get(); // This only works for data segments that we allocated within DIPlib, hence the `externalData_` test.
          return;
       }
    }

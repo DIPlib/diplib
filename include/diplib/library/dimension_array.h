@@ -417,7 +417,7 @@ class DIP_NO_EXPORT DimensionArray {
          return p;
       }
 
-      /// True if all elements evaluate to true.
+      /// True if all elements evaluate to true (non-zero).
       bool all() const {
          for( size_type ii = 0; ii < size_; ++ii ) {
             if( !data_[ ii ] ) {
@@ -427,7 +427,7 @@ class DIP_NO_EXPORT DimensionArray {
          return true;
       }
 
-      /// True if one element evaluates to true.
+      /// True if one element evaluates to true (non-zero).
       bool any() const {
          for( size_type ii = 0; ii < size_; ++ii ) {
             if( data_[ ii ] ) {
@@ -437,7 +437,7 @@ class DIP_NO_EXPORT DimensionArray {
          return false;
       }
 
-      /// Count of number of elements that evaluate to true.
+      /// Count of number of elements that evaluate to true (non-zero).
       size_type count() const {
          size_type n = 0;
          for( size_type ii = 0; ii < size_; ++ii ) {

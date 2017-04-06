@@ -75,7 +75,7 @@ namespace dml {
 namespace { // This makes all these functions not visible outside the current compilation unit. Result: the MEX-file will not export these functions.
 
 // Note also that we define all functions as `inline`. Hopefully the compiler won't inline the few that are really
-// large. We need to use `inline` to prevent the compiler from complainging about unused functions.
+// large. We need to use `inline` to prevent the compiler from complaining about unused functions.
 
 /// \defgroup dip_matlab_interface *DIPlib*--*MATLAB* interface
 /// \brief Functions to convert image data, function parameters and other arrays to and from *MATLAB*.
@@ -748,22 +748,20 @@ inline mxArray* GetArrayUnicode( dip::String const& in ) {
 /// This interface handler doesn't own any image data.
 class MatlabInterface : public dip::ExternalInterface {
    private:
-      std::map< void const*, mxArray* > mla;          // This map holds mxArray pointers, we can
-      // find the right mxArray if we have the data
-      // pointer.
+      // Here we store the mxArray pointers that the interface owns.
+      std::set< mxArray* > mla;
       // This is the deleter functor we'll associate to the shared_ptr.
       class StripHandler {
          private:
             MatlabInterface& interface;
          public:
             StripHandler( MatlabInterface& mi ) : interface{ mi } {};
-            void operator()( void const* p ) {
-               if( interface.mla.count( p ) == 0 ) {
-                  //mexPrintf( "   Not destroying mxArray!\n" );
-               } else {
-                  mxDestroyArray( interface.mla[ p ] );
-                  interface.mla.erase( p );
-                  //mexPrintf( "   Destroyed mxArray!\n" );
+            void operator()( void* p ) {
+               mxArray* m = static_cast< mxArray* >( p );
+               auto it = interface.mla.find( m );
+               if( it != interface.mla.end() ) {
+                  mxDestroyArray( *it );
+                  interface.mla.erase( it );
                }
             };
       };
@@ -777,11 +775,12 @@ class MatlabInterface : public dip::ExternalInterface {
       ///
       /// A user will never call this function directly.
       virtual std::shared_ptr< void > AllocateData(
+            void*& origin,
+            dip::DataType datatype,
             dip::UnsignedArray const& sizes,
             dip::IntegerArray& strides,
             dip::Tensor const& tensor,
-            dip::sint& tstride,
-            dip::DataType datatype
+            dip::sint& tstride
       ) override {
          // Find the right MATLAB class
          mxClassID type = GetMatlabClassID( datatype );
@@ -811,18 +810,18 @@ class MatlabInterface : public dip::ExternalInterface {
             swap( strides[ 0 ], strides[ 1 ] );
          }
          // Allocate MATLAB matrix
-         void* p;
+         mxArray* m;
          if( type == mxLOGICAL_CLASS ) {
-            mxArray* m = mxCreateLogicalArray( mlsizes.size(), mlsizes.data() );
-            p = mxGetLogicals( m );
-            mla[ p ] = m;
+            m = mxCreateLogicalArray( mlsizes.size(), mlsizes.data() );
+            origin = mxGetLogicals( m );
+
          } else {
-            mxArray* m = mxCreateNumericArray( mlsizes.size(), mlsizes.data(), type, mxREAL );
-            p = mxGetData( m );
-            mla[ p ] = m;
+            m = mxCreateNumericArray( mlsizes.size(), mlsizes.data(), type, mxREAL );
+            origin = mxGetData( m );
          }
          //mexPrintf( "   Created mxArray as dip::Image data block. Data pointer = %p.\n", p );
-         return std::shared_ptr< void >( p, StripHandler( *this ));
+         mla.insert( m );
+         return std::shared_ptr< void >( m, StripHandler( *this ));
       }
 
       /// \brief Find the `mxArray` that holds the data for the dip::Image `img`,
@@ -830,39 +829,38 @@ class MatlabInterface : public dip::ExternalInterface {
       mxArray* GetArray( dip::Image const& img ) {
          //std::cout << "GetArray for image: " << img;
          DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
-         void const* ptr = img.Data();
-         void const* inputOrigin = img.Origin();
-         mxArray* mat = mla[ ptr ];
+         mxArray* mat = static_cast< mxArray* >( img.Data() );
+         auto it = mla.find( mat );
+         if( it == mla.end() ) {
+            mat = nullptr;
+         }
          if( !mat ) { mexPrintf( "   ...that image was not forged through the MATLAB interface\n" ); } // TODO: temporary warning, to be removed.
+         void* mptr = mat ? ( img.DataType().IsBinary() ? mxGetLogicals( mat ) : mxGetData( mat ) ) : nullptr;
          // Does the image point to a modified view of the mxArray or to a non-MATLAB array?
-         // TODO: added or removed singleton dimensions should not trigger a data copy, but a modification of the mxArray.
-         if( !mat || ( ptr != inputOrigin ) ||
-             !IsMatlabStrides(
-                   img.Sizes(), img.TensorElements(),
-                   img.Strides(), img.TensorStride() ) ||
-             !MatchDimensions(
-                   img.Sizes(), img.TensorElements(), img.DataType().IsComplex(),
-                   mxGetDimensions( mat ), mxGetNumberOfDimensions( mat )) ||
+         if( !mat || ( mptr != img.Origin() ) ||
+             !IsMatlabStrides( img.Sizes(), img.TensorElements(),
+                               img.Strides(), img.TensorStride() ) ||
+             !MatchDimensions( img.Sizes(), img.TensorElements(), img.DataType().IsComplex(),
+                               mxGetDimensions( mat ), mxGetNumberOfDimensions( mat )) ||
              ( mxGetClassID( mat ) != GetMatlabClassID( img.DataType() ))
-               ) {
+             // TODO: added or removed singleton dimensions should not trigger a data copy, but a modification of the mxArray.
+         ) {
             // Yes, it does. We need to make a copy of the image into a new MATLAB array.
             mexPrintf( "   Copying data from dip::Image to mxArray\n" ); // TODO: temporary warning, to be removed.
             dip::Image tmp = NewImage();
             tmp.Copy( img );
             //std::cout << "   New image: " << tmp;
-            ptr = tmp.Data();
-            inputOrigin = tmp.Origin(); // for the assertion later on.
-            mat = mla[ ptr ];
-            mla.erase( ptr );
+            mat = static_cast< mxArray* >( tmp.Data() );
+            mla.erase( mat );
          } else {
             // No, it doesn't. Directly return the mxArray.
-            mla.erase( ptr );
+            mla.erase( it );
             //mexPrintf( "   Retrieving mxArray out of output dip::Image object\n" );
          }
 
          // Create a MATLAB dip_image object with the mxArray inside.
-         // We create an empty object, then set the Array property. Calling the constructor with the mxArray for some
-         // reason causes a deep copy of the mxArray.
+         // We create an empty object, then set the Array property, because calling the constructor
+         // with the mxArray for some reason causes a deep copy of the mxArray.
          mxArray* out;
          mexCallMATLAB( 1, &out, 0, nullptr, imageClassName );
          mxSetPropertyShared( out, 0, arrayPropertyName, mat );
@@ -911,13 +909,6 @@ class MatlabInterface : public dip::ExternalInterface {
          if( img.IsColor() ) {
             mxSetPropertyShared( out, 0, colspPropertyName, dml::GetArray( img.ColorSpace() ));
          }
-
-#ifdef DIP__ENABLE_ASSERT__SKIP_THIS // This assertion fails consistently for images with a single pixel. Maybe MATLAB doesn't delay copies when it's just a single value?
-         mxArray* out_data = mxGetPropertyShared( out, 0, "Array" );
-         DIP_ASSERT( out_data );
-         DIP_ASSERT( inputOrigin == mxGetData( out_data ));
-#endif
-
          return out;
       }
 
@@ -938,11 +929,6 @@ class MatlabInterface : public dip::ExternalInterface {
 // Converting mxArray to dip::Image
 //
 
-
-// A deleter that doesn't delete.
-void VoidStripHandler( void const* p ) {
-   //mexPrintf( "   Input mxArray not being destroyed\n" );
-};
 
 /// \brief Passing an `mxArray` to *DIPlib*, keeping ownership of the data.
 ///
@@ -1095,21 +1081,20 @@ inline dip::Image GetImage( mxArray const* mx ) {
       swap( strides[ 0 ], strides[ 1 ] );
    }
    if( needCopy ) {
-      //mexPrintf("   Copying complex mxArray.\n");
       // Create 2 temporary Image objects for the real and complex component,
       // then copy them over into a new image.
       dip::Image out( sizes, 1, datatype );
       dip::DataType dt = datatype.Real();
-      std::shared_ptr< void > p_real( mxGetData( mxdata ), VoidStripHandler );
+      void* p_real = mxGetData( mxdata );
       if( p_real ) {
-         dip::Image real( p_real, dt, sizes, strides, tensor, tstride, nullptr );
+         dip::Image real( nullptr, p_real, dt, sizes, strides, tensor, tstride );
          out.Real().Copy( real );
       } else {
          out.Real().Fill( 0 );
       }
-      std::shared_ptr< void > p_imag( mxGetImagData( mxdata ), VoidStripHandler );
+      void* p_imag = mxGetImagData( mxdata );
       if( p_imag ) {
-         dip::Image imag( p_imag, dt, sizes, strides, tensor, tstride, nullptr );
+         dip::Image imag( nullptr, p_imag, dt, sizes, strides, tensor, tstride );
          out.Imaginary().Copy( imag );
       } else {
          out.Imaginary().Fill( 0 );
@@ -1118,18 +1103,14 @@ inline dip::Image GetImage( mxArray const* mx ) {
       //out.SetColorSpace( colorSpace ); // these are never defined in this case, the input was a plain matrix.
       return out;
    } else if( datatype.IsBinary() ) {
-      //mexPrintf("   Encapsulating binary image.\n");
       // Create Image object
-      std::shared_ptr< void > p( mxGetLogicals( mxdata ), VoidStripHandler );
-      dip::Image out( p, datatype, sizes, strides, tensor, tstride, nullptr );
+      dip::Image out( nullptr, mxGetLogicals( mxdata ), datatype, sizes, strides, tensor, tstride );
       out.SetPixelSize( pixelSize );
       out.SetColorSpace( colorSpace );
       return out;
    } else {
-      //mexPrintf("   Encapsulating non-complex and non-binary image.\n");
       // Create Image object
-      std::shared_ptr< void > p( mxGetData( mxdata ), VoidStripHandler );
-      dip::Image out( p, datatype, sizes, strides, tensor, tstride, nullptr );
+      dip::Image out( nullptr, mxGetData( mxdata ), datatype, sizes, strides, tensor, tstride );
       out.SetPixelSize( pixelSize );
       out.SetColorSpace( colorSpace );
       return out;

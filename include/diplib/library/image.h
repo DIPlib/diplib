@@ -61,21 +61,24 @@ namespace dip {
 /// Software using *DIPlib* might want to
 /// control how the image data is allocated. Such software should derive
 /// a class from this one, and assign a pointer to it into each of the
-/// images that it creates, through Image::SetExternalInterface().
+/// images that it creates, through `dip::Image::SetExternalInterface`.
 /// The caller will maintain ownership of the interface.
 ///
-/// See dip_matlab_interface.h for an example of how to create an ExternalInterface.
+/// See `dip_matlab_interface.h` for an example of how to create an `%ExternalInterface`.
 class DIP_EXPORT ExternalInterface {
    public:
-      /// Allocates the data for an image. The function is free to modify
-      /// `strides` and `tstride` if desired, though they will be set
-      /// to the normal values by the calling function.
+      /// Allocates the data for an image. The function is required to set `strides`,
+      /// `tensorStride` and `origin`, and returns a `std::shared_ptr` that owns the
+      /// allocated data segment. Note that `strides` and `tensorStride` might have
+      /// been set by the user before calling `dip::Image::Forge`, and should be honored
+      /// if possible.
       virtual std::shared_ptr< void > AllocateData(
+            void*& origin,
+            dip::DataType dataType,
             UnsignedArray const& sizes,
             IntegerArray& strides,
             dip::Tensor const& tensor,
-            dip::sint& tstride,
-            dip::DataType datatype
+            dip::sint& tensorStride
       ) = 0;
 };
 
@@ -173,6 +176,7 @@ class DIP_NO_EXPORT Image {
             pixelSize_ = rhs.pixelSize_;
             dataBlock_ = rhs.dataBlock_;
             origin_ = rhs.origin_;
+            externalData_ = rhs.externalData_;
             externalInterface_ = rhs.externalInterface_;
          }
          return *this;
@@ -363,13 +367,29 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Create an image around existing data.
+      ///
+      /// `data` is a `std::shared_ptr` used to manage the lifetime of the data segment.
+      /// If the image is supposed to take ownership, put a pointer to the data segment or the object
+      /// that owns it in `data`, with a deleter function that will delete the data segment or object
+      /// when the image is stripped or deletect. Otherwise, you can set `data` to `nullptr`.
+      ///
+      /// `origin` is the pointer to the first pixel. It must be a valid pointer. `dataType` and
+      /// `sizes` must be set appropriately. `strides` must either have the same number of elements
+      /// as `sizes`, or be an empty array. If `strides` is an empty array, normal strides will be
+      /// assumed (i.e. row-major, with tensor elements for one pixel stored contiguously). In this
+      /// case, `tensorStride` will be ignored. `tensor` defaults to scalar (i.e. a single tensor element).
+      /// No tests will be performed on the validity of the values in `sizes` or `strides`, except
+      /// to enforce a few class invariants.
+      ///
+      /// See \ref external_interface for information about the `externalInterface` parameter.
       Image(
-            std::shared_ptr< void > data,        // points at the data block, not necessarily the origin!
+            std::shared_ptr< void > data,
+            void* origin,
             dip::DataType dataType,
             UnsignedArray const& sizes,
-            IntegerArray const& strides,
-            dip::Tensor const& tensor,
-            dip::sint tensorStride,
+            IntegerArray const& strides = {},
+            dip::Tensor const& tensor = {},
+            dip::sint tensorStride = 1,
             dip::ExternalInterface* externalInterface = nullptr
       ) :
             dataType_( dataType ),
@@ -378,11 +398,16 @@ class DIP_NO_EXPORT Image {
             tensor_( tensor ),
             tensorStride_( tensorStride ),
             dataBlock_( data ),
+            origin_( origin ),
+            externalData_( true ),
             externalInterface_( externalInterface ) {
-         dip::uint size;
-         dip::sint start;
-         GetDataBlockSizeAndStartWithTensor( size, start );
-         origin_ = static_cast< uint8* >( dataBlock_.get() ) + start * dataType_.SizeOf();
+         dip::uint nDims = sizes_.size();
+         DIP_THROW_IF( !sizes_.all(), "Sizes must be non-zero" );
+         if( strides_.empty() ) {
+            SetNormalStrides();
+         } else {
+            DIP_THROW_IF( strides_.size() != nDims, "Strides array size does not match image dimensionality" );
+         }
       }
 
       /// \brief Create a new forged image similar to `this`. The data is not copied, and left uninitialized.
@@ -847,6 +872,7 @@ class DIP_NO_EXPORT Image {
          swap( pixelSize_, other.pixelSize_ );
          swap( dataBlock_, other.dataBlock_ );
          swap( origin_, other.origin_ );
+         swap( externalData_, other.externalData_ );
          swap( externalInterface_, other.externalInterface_ );
       }
 
@@ -866,7 +892,10 @@ class DIP_NO_EXPORT Image {
       /// the data segment, but not to access the pixel data stored in
       /// it. Use `dip::Image::Origin` instead. The image must be forged.
       ///
-      /// \see Origin, IsShared, ShareCount, SharesData.
+      /// The pointer returned could be unrelated to the data segment, if
+      /// `dip::Image::IsExternalData` is true.
+      ///
+      /// \see Origin, IsShared, ShareCount, SharesData, IsExternalData.
       void* Data() const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return dataBlock_.get();
@@ -875,18 +904,24 @@ class DIP_NO_EXPORT Image {
       /// \brief Check to see if the data segment is shared with other images.
       /// The image must be forged.
       ///
-      /// \see Data, ShareCount, SharesData.
+      /// \see Data, ShareCount, SharesData, IsExternalData.
       bool IsShared() const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         return !dataBlock_.unique();
+         return dataBlock_.use_count() > 1;
       }
 
       /// \brief Get the number of images that share their data with this image.
       ///
-      /// The count is always at least 1. If the count is 1, `dip::Image::IsShared` is
-      /// false. The image must be forged.
+      /// For normal images. the count is always at least 1. If the count is
+      /// larger than 1, `dip::Image::IsShared` is true.
       ///
-      /// \see Data, IsShared, SharesData.
+      /// If `this` encapsulates external data without owning it (i.e.
+      /// `data == nullptr`), then the share count will be 0. In this case,
+      /// `dip::Image::IsExternalData` is always true.
+      ///
+      /// The image must be forged.
+      ///
+      /// \see Data, IsShared, SharesData, IsExternalData.
       dip::uint ShareCount() const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
          return static_cast< dip::uint >( dataBlock_.use_count() );
@@ -898,15 +933,24 @@ class DIP_NO_EXPORT Image {
       /// does not imply that the two images share any pixel data, as it
       /// is possible for the two images to represent disjoint windows
       /// into the same data block. To determine if any pixels are shared,
-      /// use Aliases.
+      /// use `dip::Image::Aliases`.
+      ///
+      /// If both `this` and `other` encapsulate external data without owning
+      /// the data (i.e. `data == nullptr`), then this function will return
+      /// false even if they happen to share the data segment.
+      /// `dip::Image::Aliases` will report correctly even in this case.
       ///
       /// Both images must be forged.
       ///
-      /// \see Aliases, IsIdenticalView, IsOverlappingView, Data, IsShared, ShareCount.
+      /// \see Aliases, IsIdenticalView, IsOverlappingView, Data, IsShared, ShareCount, IsExternalData.
       bool SharesData( Image const& other ) const {
-         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( !other.IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !IsForged() || !other.IsForged(), E::IMAGE_NOT_FORGED );
          return dataBlock_ == other.dataBlock_;
+      }
+
+      /// \brief Returns true if the data segment was not allocated by DIPlib. See \ref external_interface.
+      bool IsExternalData() const {
+         return IsForged() && externalData_;
       }
 
       /// \brief Determine if `this` shares any samples with `other`.
@@ -1095,6 +1139,7 @@ class DIP_NO_EXPORT Image {
             DIP_THROW_IF( IsProtected(), "Image is protected" );
             dataBlock_ = nullptr; // Automatically frees old memory if no other pointers to it exist.
             origin_ = nullptr;    // Keep this one in sync!
+            externalData_ = false;
          }
       }
 
@@ -1131,18 +1176,18 @@ class DIP_NO_EXPORT Image {
       // Note: This function is the reason we refer to the ExternalInterface class as
       // dip::ExternalInterface everywhere inside the dip::Image class.
 
-      /// \brief Set external interface pointer. The image must be raw.
+      /// \brief Set external interface pointer. The image must be raw. See \ref external_interface.
       void SetExternalInterface( dip::ExternalInterface* ei ) {
          DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
          externalInterface_ = ei;
       }
 
-      /// \brief Get external interface pointer.
+      /// \brief Get external interface pointer. See \ref external_interface
       dip::ExternalInterface* ExternalInterface() const {
          return externalInterface_;
       }
 
-      /// \brief Test if an external interface is set.
+      /// \brief Test if an external interface is set. See \ref external_interface
       bool HasExternalInterface() const {
          return externalInterface_ != nullptr;
       }
@@ -1663,6 +1708,7 @@ class DIP_NO_EXPORT Image {
          out.tensorStride_ = tensorStride_;
          out.dataBlock_ = dataBlock_;
          out.origin_ = origin_;
+         out.externalData_ = externalData_;
          out.externalInterface_ = externalInterface_;
          return out;
       }
@@ -2160,22 +2206,24 @@ class DIP_NO_EXPORT Image {
       dip::PixelSize pixelSize_;
       std::shared_ptr< void > dataBlock_; // Holds the pixel data. Data block will be freed when last image that uses it is destroyed.
       void* origin_ = nullptr;            // Points to the origin ( pixel (0,0) ), not necessarily the first pixel of the data block.
+      bool externalData_ = false;         // Is true if origin_ points to a data segment that was not allocated by DIPlib.
       dip::ExternalInterface* externalInterface_ = nullptr; // A function that will be called instead of the default forge function.
 
       //
       // Some private functions
       //
 
-      DIP_NO_EXPORT bool HasValidStrides() const;       // Are the strides such that no two samples are in the same memory cell?
+      // Are the strides such that no two samples are in the same memory cell?
+      DIP_EXPORT bool HasValidStrides() const;
 
-      DIP_NO_EXPORT void SetNormalStrides();            // Fill in all strides.
+      // Fill in all strides.
+      DIP_EXPORT void SetNormalStrides();
 
-      DIP_NO_EXPORT void GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const;
+      DIP_EXPORT void GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const;
 
-      DIP_EXPORT void GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const; // exported because used in inlined function.
-      // size is the distance between top left and bottom right corners.
-      // start is the distance between top left corner and origin
-      // (will be <0 if any strides[ii] < 0). All measured in samples.
+      DIP_EXPORT void GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const;
+      // `size` is the distance between top left and bottom right corners. `start` is the distance between
+      // top left corner and origin (will be <0 if any strides[ii] < 0). All measured in samples.
 
 }; // class Image
 
