@@ -948,7 +948,7 @@ class DIP_NO_EXPORT Image {
          return dataBlock_ == other.dataBlock_;
       }
 
-      /// \brief Returns true if the data segment was not allocated by DIPlib. See \ref external_interface.
+      /// \brief Returns true if the data segment was not allocated by *DIPlib*. See \ref external_data_segment.
       bool IsExternalData() const {
          return IsForged() && externalData_;
       }

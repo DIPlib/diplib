@@ -759,7 +759,7 @@ indicates that the image is not a color image.
 There are no checks made when
 marking the image as a color image. For example, and RGB image is expected to
 have three channels (`img.TensorElements() == 3`).
-However, the call `img.SetColorSpace( "RGB" )` will mark `img` as an RGB image
+However, the call `img.SetColorSpace("RGB")` will mark `img` as an RGB image
 no matter how many tensor elements it has (this is because the function has
 no knowledge of color spaces). If the image has other than three
 tensor elements, errors will occur when the color space information is used,
@@ -818,7 +818,146 @@ added as necessary.
 
 [//]: # (--------------------------------------------------------------)
 
-\section external_interface Controlling data segment allocation
+\section external_data_segment Controlling data segment allocation
+
+It is possible to create `%dip::Image` objects whose pixels are not allocated
+by *DIPlib* using two different methods:
+
+1. Create an image around an existing data segment. This is used in the case
+when passing data from other imaging libraries, or from interpreted languages
+that have their own array type. Just about any data can be encapsulated by a
+a `%dip::Image` without copy.
+
+2. Define an image's allocator, so that when *DIPlib* forges the image, the
+user's allocator is called instead of `std::malloc`. This is used in the
+case when the result of *DIPlib* functions will be passed to another
+imaging library, or to an interpreted language.
+
+In both cases, `dip::Image::IsExternalData` returns true.
+
+Note that when the image needs to be reforged (sizes and/or data type do not
+match what is required for output by some function), but the data segment is
+of the correct size, `dip::Image::ReForge` would typically re-use the data
+segment if it is not shared with another image. However, when the data segment
+is external, it is always reforged.
+
+\subsection use_external_data Create an image around existing data
+
+One of the `%dip::Image` constructors takes a pointer to the first pixel of a
+data segment (i.e. pixel buffer), and image sizes and strides, and creates a new
+image that references that data. The only requirement is that all pixels are
+aligned on boundaries given by the size of the sample data type. That is,
+*DIPlib* strides are not in bytes but in samples. The resulting image is identical
+to any other image in all respects, except the behaviour of `dip::Image::ReForge`,
+as mentioned in the previous paragraph.
+
+For exmple, in this bit of code we take the data of a `std::vector` and build an
+image around it, which we can use as both an input or an output image:
+
+```cpp
+    std::vector<unsigned char> src( 256 * 256, 0 ); // existing data
+    dip::Image img(
+       nullptr,
+       src.data(),    // origin
+       dip::DT_UINT8, // dataType
+       { 256, 256 },  // sizes
+       { 1, 256 }     // strides
+    );
+    img.Protect();          // Prevent `dip::Gauss` from reallocating its output image
+    dip::Gauss( img, img ); // Apply Gaussian filter, output is written to input array
+```
+
+This constructor also takes a `std::shared_ptr` object. Use it if you want the
+`%dip::Image` object to own the resources. Otherwise, pass `nullptr` (as in the
+example above). In the example below, we do the same as above, but we transfer
+ownership of the `std::vector` to the image. When the image goes out of scope (or is
+reallocated) the `std::vector` is deleted:
+
+```cpp
+    auto src = new std::vector<unsigned char>( 256 * 256, 0 ); // existing data
+    dip::Image img(
+       std::shared_ptr{ src }, // transfer ownership of the data
+       src->data(),   // origin
+       dip::DT_UINT8, // dataType
+       { 256, 256 },  // sizes
+       { 1, 256 }     // strides
+    );
+    dip::Gauss( img, img ); // Apply Gaussian filter, output is written to a different data segment
+```
+
+After the call to `dip::Gauss`, `*src` no longer exists. `dip::Gauss` has reforged
+`img` to be of type `dip::DT_SFLOAT`, triggering the deletion of object pointed to
+by `src`.
+
+\subsection external_interface Define an image's allocator
+
+The the previous sub-section we saw how to encapsulate external data. The
+resulting image object can be used as input and output, but most *DIPlib*
+functions will reforge their output images to be of approriate size and data type.
+Unless the allocated image is of suitable size and data type, and the image is
+protected, a new data segment will be allocated. This means that the output of the
+function call will not be written into the buffer we had provided.
+
+Instead we can define an allocator class, derived from `dip::ExternalInterface`,
+and assign a pointer to an object of the allocator class to an image using
+`dip::Image::SetExternalInterface`. When that image is forged or reforged,
+the `dip::ExternalInterface::AllocateData` method is called. This method is
+free to allocate whatever objects it needs, and sets the image's origin pointer
+and strides (much like in the previous section). As before, it is possible to
+set the `std::shared_ptr` also, so that ownership of the allocated objects is
+transferred to the image object. As can be seen in the *DIPlib--MATLAB* interface
+(see `dml::MatlabInterface` in `include/dip_matlab_interface.h`), the
+`std::shared_ptr` can contain a custom deleter function that again calls the
+external interface object to take care of proper object cleaning.
+
+The external interface remains owned by the calling code, and can be linked to
+many images.
+
+Note that an image with an external interface behaves differently when assigned
+to: usual assignment causes the source and destination images to share the data
+segment (i.e. no copy of samples is made); if the destination has an external
+interface that is different from the source's, the samples are copied.
+Additionally, these images behave differently when reforged,
+\ref external_data_segment "as mentioned above".
+
+The example below is a simple external interface that allocates data using a
+`std::vector`. The `AllocateData` method returns without setting the `origin`,
+indicating to the calling `dip::Image::Forge` function that it cannot allocate
+such an image. `%Forge` will then allocate the data itself. If you prefer the
+forging to fail, simply throw an exception.
+
+```cpp
+    class VectorInterface : public dip::ExternalInterface {
+       public:
+          virtual std::shared_ptr< void > AllocateData(
+                void*& origin,
+                dip::DataType datatype,
+                dip::UnsignedArray const& sizes,
+                dip::IntegerArray& strides,
+                dip::Tensor const& tensor,
+                dip::sint& tstride
+          ) override {
+             if(( sizes.size() != 2 ) || ( !tensor.IsScalar() )) {
+                return nullptr; // We do not want to handle such images
+             }
+             auto data = new std::vector<unsigned char>( sizes[ 0 ] * sizes[ 1 ], 0 );
+             origin = data.data();
+             strides = dip::UnsignedArray{ 1, sizes[ 0 ] };
+             tstride = 1;
+             return std::shared_ptr{ data };
+          }
+    }
+```
+
+See `dml::MatlabInterface` for a more realistic example of this feature.
+That class defines an additional method that can be used to extract the
+allocated object that owns the data segment, so that it can be used after
+the `%dip::Image` object is destroyed. A simple explanation for how that
+works is as follows: The custom deleter function in the `std::shared_ptr`
+object only deletes the object pointed to if that object is in a list
+kept by the `dml::MatlabInterface` object. If one wants to keep the data
+segment, it is removed from the list, so that when the custom deleter
+function runs, it does nothing.
 
 
 [//]: # (--------------------------------------------------------------)

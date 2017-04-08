@@ -146,7 +146,7 @@ over.
 
 - `dip::FourierTransform` now does normalization in the more common way (forward transform not
   normalized, inverse transform normalized by 1/N), but an option ("symmetric") allows to change
-  the normalization to be consistent with the old DIPlib, which used a symmetric normalization
+  the normalization to be consistent with the old *DIPlib*, which used a symmetric normalization
   scheme (both forward and backward transforms use 1/N^0.5)
 
 ## Changes from DIPimage 2.x (the old DIPimage)
