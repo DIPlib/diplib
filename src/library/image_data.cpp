@@ -427,11 +427,19 @@ bool Image::Aliases( Image const& other ) const {
       ++ndims2;
    } // else, the samples have the same size
 
-   // Make origin in units of data size
-   // (the division should always be exact, because of data alignment, except in the case of complex values)
-   static_assert( sizeof( dip::uint ) == sizeof( std::uintptr_t ), "The dip::Image::Aliases function will not work on segmented memory architectures." );
+   // We'll need to play with the origin pointers, which we cannot do if we cannot cast them to comparable integers
+   static_assert( sizeof( dip::uint ) >= sizeof( std::uintptr_t ), "The dip::Image::Aliases function will not work on segmented memory architectures." );
    dip::uint origin1 = reinterpret_cast< dip::uint >( origin_ );
    dip::uint origin2 = reinterpret_cast< dip::uint >( other.origin_ );
+   if( origin1 < origin2 ) {
+      origin2 -= origin1;
+      origin1 = 0;
+   } else {
+      origin1 -= origin2;
+      origin2 = 0;
+   }
+   // Make origin in units of data size
+   // (the division should always be exact, because of data alignment, except in the case of complex values)
    origin1 /= dts;
    origin2 /= dts;
 
