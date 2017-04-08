@@ -136,7 +136,8 @@ FeretValues ChainCode::Feret( dfloat angleStep ) const {
 }
 
 dfloat ChainCode::BendingEnergy() const {
-   constexpr dfloat kulpa_weights[8] = { 0.9481, 1.3408, 0.9481, 1.3408, 0.9481, 1.3408, 0.9481, 1.3408 };
+   constexpr dfloat kulpa_weights[ 8 ] = { 0.9481, 1.3408, 0.9481, 1.3408, 0.9481, 1.3408, 0.9481, 1.3408 };
+   constexpr dfloat fourc_cornerc_weights[ 2 ] = { 0.948, 0.278 };
    dip::uint size = codes.size();
    if( size > 1 ) {
       // Compute angular difference, divide by curve element length computed using Kulpa weights.
@@ -144,7 +145,9 @@ dfloat ChainCode::BendingEnergy() const {
       FloatArray diff( size, 0 );
       FloatArray delta_s( size, 0 );
       for( dip::uint ii = 0; ii < size1; ++ii ) {
-         delta_s[ ii ] = 0.5 * ( kulpa_weights[ codes[ ii ] ] + kulpa_weights[ codes[ ii + 1 ] ] ); // TODO: does not work for 4-connected CCs
+         delta_s[ ii ] = is8connected
+                         ? 0.5 * ( kulpa_weights[ codes[ ii ] ] + kulpa_weights[ codes[ ii + 1 ] ] )
+                         : fourc_cornerc_weights[ 0 ] + fourc_cornerc_weights[ 1 ] * ( codes[ ii ] != codes[ ii + 1 ] );
          diff[ ii ] = codes[ ii + 1 ] - codes[ ii ];
          if( !is8connected ) { diff[ ii ] *= 2; }
          if( diff[ ii ] > 3 ) { diff[ ii ] -= 8; }
@@ -152,7 +155,9 @@ dfloat ChainCode::BendingEnergy() const {
          diff[ ii ] = diff[ ii ] / delta_s[ ii ];
       }
       diff[ size1 ] = codes.front() - codes.back();
-      delta_s[ size1 ] = 0.5 * ( kulpa_weights[ codes.back() ] + kulpa_weights[ codes.front() ] ); // TODO: does not work for 4-connected CCs
+      delta_s[ size1 ] = is8connected
+                         ? 0.5 * ( kulpa_weights[ codes.back() ] + kulpa_weights[ codes.front() ] )
+                         : fourc_cornerc_weights[ 0 ] + fourc_cornerc_weights[ 1 ] * ( codes.back() != codes.front() );
       // Three times uniform filtering of diff
       if( size > 5 ) {
          for( dip::uint jj = 0; jj < 3; ++jj ) {
@@ -179,7 +184,7 @@ dfloat ChainCode::BendingEnergy() const {
       // Integrate the curvature squared weighted by the curve element length
       sfloat be = 0;
       for( dip::uint ii = 0; ii < size; ++ii ) {
-         be += diff[ii] * diff[ii] * delta_s[ii];
+         be += diff[ ii ] * diff[ ii ] * delta_s[ ii ];
       }
       // Convert chain code into actual angle in radian
       be *= dip::pi * dip::pi / 16;

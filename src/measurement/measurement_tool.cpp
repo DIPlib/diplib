@@ -343,8 +343,8 @@ std::ostream& operator<<(
    const std::string sep{ " | " };
    constexpr int separatorWidth = 3;
    constexpr int minimumColumnWidth = 10; // we format numbers with at least this many spaces: '-' + 4 digits of precision + '.' + 'e+NN'
-   const int firstColumnWidth = int( std::ceil( std::log10( msr.NumberOfObjects() + 1 ) ) );
-   // TODO: find the actual largest object ID, rather than the number of objects.
+   dip::uint maxID = *std::max_element( msr.Objects().begin(), msr.Objects().end() );
+   const int firstColumnWidth = int( std::ceil( std::log10( maxID ) ) );
    auto const& values = msr.Values();
    std::vector< int > valueWidths( values.size(), 0 );
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
