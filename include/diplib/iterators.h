@@ -1108,13 +1108,14 @@ inline void swap( GenericJointImageIterator& v1, GenericJointImageIterator& v2 )
 ///     } while( it.Coordinate() != 0 );
 /// ```
 ///
-/// Note that when an image is stripped or reforged, all its iterators are invalidated.
+/// Note that when the original image is stripped or reforged, the iterator is still valid and
+/// holds on to the original data segment.
 ///
 /// Satisfies all the requirements for a mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
 /// Additionally, it behaves like a RandomAccessIterator except for the indexing operator `[]`,
 /// which would be less efficient in use and therefore it's better to not offer it.
 ///
-/// \see ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
+/// \see ImageTensorIterator, ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
 class DIP_NO_EXPORT ImageSliceIterator {
    public:
       using iterator_category = std::forward_iterator_tag;
@@ -1129,14 +1130,15 @@ class DIP_NO_EXPORT ImageSliceIterator {
             procDim_( procDim ) {
          DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( procDim_ >= image.Dimensionality(), E::ILLEGAL_DIMENSION );
+         size_ = image.Size( procDim_ );
+         stride_ = image.Stride( procDim_ );
          // copy image with shared data
          image_ = image;
          // remove the processing dimension
-         size_ = image_.sizes_[ procDim_ ];
-         stride_ = image_.strides_[ procDim_ ];
-         image_.sizes_.erase( procDim_ );
-         image_.strides_.erase( procDim_ );
-         image_.pixelSize_.EraseDimension( procDim_ );
+         UnsignedArray sizes = image_.Sizes();
+         sizes[ procDim_ ] = 1;
+         image_.dip__SetSizes( sizes );
+         image_.Squeeze( procDim_ );
          // protect the image to avoid modifications
          image_.Protect();
       }
@@ -1157,7 +1159,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
       ImageSliceIterator& operator++() {
          DIP_THROW_IF( !IsValid(), E::ITERATOR_NOT_VALID );
          ++coord_;
-         image_.origin_ = image_.Pointer( stride_ );
+         image_.dip__ShiftOrigin( stride_ );
          return *this;
       }
       /// Increment
@@ -1171,7 +1173,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
          DIP_THROW_IF( !IsValid(), E::ITERATOR_NOT_VALID );
          if( coord_ != 0 ) {
             --coord_;
-            image_.origin_ = image_.Pointer( -stride_ );
+            image_.dip__ShiftOrigin( -stride_ );
          }
          return *this;
       }
@@ -1190,10 +1192,10 @@ class DIP_NO_EXPORT ImageSliceIterator {
                n = static_cast< difference_type >( coord_ );
             }
             coord_ -= n;
-            image_.origin_ = image_.Pointer( -n * stride_ );
+            image_.dip__ShiftOrigin( -n * stride_ );
          } else {
             coord_ += n;
-            image_.origin_ = image_.Pointer( n * stride_ );
+            image_.dip__ShiftOrigin( n * stride_ );
          }
          return * this;
       }
@@ -1204,15 +1206,15 @@ class DIP_NO_EXPORT ImageSliceIterator {
       /// Difference between iterators
       difference_type operator-( ImageSliceIterator const& it2 ) const {
          DIP_THROW_IF( !IsValid() || !it2.IsValid(), E::ITERATOR_NOT_VALID );
-         DIP_THROW_IF(( image_.dataBlock_ != it2.image_.dataBlock_) ||
-                      ( image_.sizes_ != it2.image_.sizes_ ) ||
+         DIP_THROW_IF(( image_.Data() != it2.image_.Data() ) ||
+                      ( image_.Sizes() != it2.image_.Sizes() ) ||
                       ( stride_ != it2.stride_ ) ||
                       ( procDim_ != it2.procDim_ ), "Iterators index in different images or along different dimensions" );
          return coord_ - it2.coord_;
       }
       /// Equality comparison
       bool operator==( ImageSliceIterator const& other ) const {
-         return image_.origin_ == other.image_.origin_;
+         return image_.Origin() == other.image_.Origin();
       }
       /// Inequality comparison
       bool operator!=( ImageSliceIterator const& other ) const {
@@ -1279,7 +1281,33 @@ inline ImageSliceIterator ImageSliceEndIterator( Image const& image, dip::uint p
 }
 
 
-// TODO: ImageTensorIterator: like ImageSliceIterator, but creates a view over one tensor element at the time (a scalar image).
+/// \brief An iterator for element-by-element processing of a tensor image. Use it to process a tensor
+/// image as a series of scalar images.
+///
+/// This iterator is implemented as a `dip::ImageSliceIterator`, see that iterator's documentation for further
+/// information. When the iterator is dereferenced it yields a scalar image of the same size as the input image.
+/// Each of the tensor elements is visited in the order in which it is stored. For the case of symmetric and
+/// triangular tensors, this means that fewer tensor elements will be visited. See `dip::Tensor` for information
+/// on storage order.
+///
+/// ```cpp
+///     dip::ImageTensorIterator it( img );
+///     do {
+///        // do something with the image *it here.
+///     } while( ++it );
+/// ```
+///
+/// Note that when the original image is stripped or reforged, the iterator is still valid and
+/// holds on to the original data segment.
+///
+/// \see ImageSliceIterator, ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
+inline ImageSliceIterator ImageTensorIterator( Image const& image ) {
+   Image tmp = image;
+   dip::uint dim = tmp.Dimensionality();
+   tmp.TensorToSpatial( dim ); // adds the tensor dimension as the last dimension, the same as -1.
+   return ImageSliceIterator( tmp, dim );
+}
+
 
 /// \}
 

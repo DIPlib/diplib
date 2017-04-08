@@ -21,6 +21,7 @@
 #include "diplib.h"
 #include "diplib/linear.h"
 #include <diplib/math.h>
+#include <diplib/iterators.h>
 
 namespace dip {
 
@@ -182,15 +183,15 @@ void Gradient(
       out.Strip();
    }
    out.ReForge( in.Sizes(), nDims, DataType::SuggestFlex( in.DataType() ));
-   // TODO: Create dip::TensorIterator and use it here.
    UnsignedArray order( in.Dimensionality(), 0 );
+   auto it = ImageTensorIterator( out );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       order[ dims[ ii ]] = 1;
-      Image tmp = out[ ii ];
       DIP_START_STACK_TRACE
-         Derivative( in, tmp, order, sigmas, method, boundaryCondition, truncation );
+         Derivative( in, *it, order, sigmas, method, boundaryCondition, truncation );
       DIP_END_STACK_TRACE
       order[ dims[ ii ]] = 0;
+      ++it;
    }
    out.SetPixelSize( pxsz );
 }
@@ -289,31 +290,34 @@ void Curl(
          UnsignedArray order( in.Dimensionality(), 0 );
          Image d;
 
-         Image tmp = out[ 0 ];
+         auto it = ImageTensorIterator( out );
+
          order[ dims[ 1 ]] = 1;
-         Derivative( in[ 2 ], tmp, order, sigmas, method, boundaryCondition, truncation );
+         Derivative( in[ 2 ], *it, order, sigmas, method, boundaryCondition, truncation );
          order[ dims[ 1 ]] = 0;
          order[ dims[ 2 ]] = 1;
          Derivative( in[ 1 ], d, order, sigmas, method, boundaryCondition, truncation );
          order[ dims[ 2 ]] = 0;
-         tmp -= d;
+         *it -= d;
 
-         tmp = out[ 1 ];
+         ++it;
+
          order[ dims[ 2 ]] = 1;
-         Derivative( in[ 0 ], tmp, order, sigmas, method, boundaryCondition, truncation );
+         Derivative( in[ 0 ], *it, order, sigmas, method, boundaryCondition, truncation );
          order[ dims[ 2 ]] = 0;
          order[ dims[ 0 ]] = 1;
          Derivative( in[ 2 ], d, order, sigmas, method, boundaryCondition, truncation );
          order[ dims[ 0 ]] = 0;
-         tmp -= d;
+         *it -= d;
 
-         tmp = out[ 2 ];
+         ++it;
+
          order[ dims[ 0 ]] = 1;
-         Derivative( in[ 1 ], tmp, order, sigmas, method, boundaryCondition, truncation );
+         Derivative( in[ 1 ], *it, order, sigmas, method, boundaryCondition, truncation );
          order[ dims[ 0 ]] = 0;
          order[ dims[ 1 ]] = 1;
          Derivative( in[ 0 ], d, order, sigmas, method, boundaryCondition, truncation );
-         tmp -= d;
+         *it -= d;
 
          out.SetPixelSize( pxsz );
       DIP_END_STACK_TRACE
@@ -344,8 +348,9 @@ void Divergence(
    }
    UnsignedArray order( in.Dimensionality(), 0 );
    order[ dims[ 0 ]] = 1;
+   auto it = ImageTensorIterator( in );
    DIP_START_STACK_TRACE
-      Derivative( in[ 0 ], out, order, sigmas, method, boundaryCondition, truncation );
+      Derivative( *it, out, order, sigmas, method, boundaryCondition, truncation );
    DIP_END_STACK_TRACE
    if( nDims > 1 ) {
       Image tmp;
@@ -353,9 +358,10 @@ void Divergence(
          order[ dims[ ii - 1 ]] = 0;
          order[ dims[ ii ]] = 1;
          DIP_START_STACK_TRACE
-            Derivative( in[ ii ], tmp, order, sigmas, method, boundaryCondition, truncation );
+            Derivative( *it, tmp, order, sigmas, method, boundaryCondition, truncation );
          DIP_END_STACK_TRACE
          Add( out, tmp, out, out.DataType() );
+         ++it;
       }
    }
    out.SetPixelSize( pxsz );
@@ -387,27 +393,25 @@ void Hessian (
    out.ReForge( in.Sizes(), tensor.Elements(), DataType::SuggestFlex( in.DataType() ));
    out.ReshapeTensor( tensor );
    UnsignedArray order( in.Dimensionality(), 0 );
-   dip::uint outIndex = 0; // TODO: Create dip::TensorIterator and use it here.
+   auto it = ImageTensorIterator( out );
    for( dip::uint ii = 0; ii < nDims; ++ii ) { // Symmetric matrix stores diagonal elements first
       order[ dims[ ii ]] = 2;
-      Image tmp = out[ outIndex ];
       DIP_START_STACK_TRACE
-         Derivative( in, tmp, order, sigmas, method, boundaryCondition, truncation );
+         Derivative( in, *it, order, sigmas, method, boundaryCondition, truncation );
       DIP_END_STACK_TRACE
       order[ dims[ ii ]] = 0;
-      ++outIndex;
+      ++it;
    }
    for( dip::uint jj = 1; jj < nDims; ++jj ) { // Elements above diagonal stored column-wise
       for( dip::uint ii = 0; ii < jj; ++ii ) {
          order[ dims[ ii ]] = 1;
          order[ dims[ jj ]] = 1;
-         Image tmp = out[ outIndex ];
          DIP_START_STACK_TRACE
-            Derivative( in, tmp, order, sigmas, method, boundaryCondition, truncation );
+            Derivative( in, *it, order, sigmas, method, boundaryCondition, truncation );
          DIP_END_STACK_TRACE
          order[ dims[ ii ]] = 0;
          order[ dims[ jj ]] = 0;
-         ++outIndex;
+         ++it;
       }
    }
    out.SetPixelSize( pxsz );

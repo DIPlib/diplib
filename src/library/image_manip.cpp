@@ -113,6 +113,22 @@ Image& Image::Squeeze() {
 }
 
 
+Image& Image::Squeeze( dip::uint dim ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nd = sizes_.size();
+   DIP_THROW_IF(( dim >= nd ) || ( sizes_[ dim ] != 1 ), E::INVALID_PARAMETER );
+   for( dip::uint ii = dim + 1; ii < sizes_.size(); ++ii ) {
+      strides_[ ii - 1 ] = strides_[ ii ];
+      sizes_[ ii - 1 ] = sizes_[ ii ];
+      pixelSize_.Set( ii - 1, pixelSize_[ ii ] );
+   }
+   strides_.resize( nd - 1 );
+   sizes_.resize( nd - 1 );
+   pixelSize_.Resize( nd - 1 );
+   return *this;
+}
+
+
 Image& Image::AddSingleton( dip::uint dim ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = sizes_.size();

@@ -123,7 +123,6 @@ class DIP_NO_EXPORT CoordinatesComputer {
 
 // Forward declarations
 class DIP_NO_EXPORT Image;
-class DIP_NO_EXPORT ImageSliceIterator;
 
 /// \brief An array of images
 using ImageArray = std::vector< Image >;
@@ -654,6 +653,11 @@ class DIP_NO_EXPORT Image {
       /// \brief Set tensor sizes. The image must be raw.
       void SetTensorSizes( dip::uint nelems ) {
          DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
+         tensor_.SetVector( nelems );
+      }
+
+      // Sets the tensor sizes. Do not use this function unless you know what you're doing.
+      void dip__SetTensorSizes( dip::uint nelems ) {
          tensor_.SetVector( nelems );
       }
 
@@ -1447,6 +1451,14 @@ class DIP_NO_EXPORT Image {
       /// \see AddSingleton, ExpandDimensionality, PermuteDimensions, UnexpandSingletonDimensions.
       DIP_EXPORT Image& Squeeze();
 
+      /// \brief Remove singleton dimension `dim` (has size==1).
+      ///
+      /// The image must be forged, and the data will never
+      /// be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// \see Squeeze, AddSingleton, ExpandDimensionality, PermuteDimensions, UnexpandSingletonDimensions.
+      DIP_EXPORT Image& Squeeze( dip::uint dim );
+
       /// \brief Add a singleton dimension (with size==1) to the image.
       ///
       /// Dimensions `dim` to last are shifted up, dimension `dim` will
@@ -2186,9 +2198,6 @@ class DIP_NO_EXPORT Image {
       DIP_EXPORT explicit operator dcomplex() const;
 
       /// \}
-
-      // Some friend declarations
-      friend class dip::ImageSliceIterator;
 
    private:
 
