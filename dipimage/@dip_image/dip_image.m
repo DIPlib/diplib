@@ -261,7 +261,6 @@ classdef dip_image
                % Create a new dip_image from given data
                if iscell(data)
                   % Convert cell array of scalar images to tensor dip_image
-                  % TODO: preserve shape of cell array
                   for ii=1:numel(data)
                      tmp = data{ii};
                      if ~isa(tmp,'dip_image')
@@ -279,9 +278,22 @@ classdef dip_image
                   sz = size(img.Data);
                   sz = sz([1,3:end]); % make 2nd dimension the tensor dimension
                   img.Data = reshape(img.Data,sz);
-                  img.TensorSizeInternal = [size(img.Data,2),1];
+                  tshape = size(data);
+                  if length(tshape) > 2
+                     tshape = [prod(tshape),1];
+                  end
+                  if prod(tshape) ~= size(img.Data,2)
+                     tshape = [size(img.Data,2),1]; % this shouldn't happen!
+                  end
+                  img.TensorSizeInternal = tshape;
                   if isempty(tensor_shape)
-                     tensor_shape = 'column vector';
+                     if tshape(2) == 1
+                        tensor_shape = 'column vector';
+                     elseif tshape(1) == 1
+                        tensor_shape = 'row vector';
+                     else
+                        tensor_shape = 'column-major matrix';
+                     end
                   end
                   img.TensorShape = tensor_shape; % calls set.TensorShape
                   return
@@ -1063,8 +1075,34 @@ classdef dip_image
                   strcmp(name,'TensorSizeInternal')
                error('Cannot access private properties')
             end
-            % TODO: implement b = a.pixelsize(j) and b = a.pixelunits(j) for backwards compatibility
-            a = builtin('subsref',a,s); % Call built-in method to access properties
+            if strcmp(name,'pixelsize')
+               ndims = a.NDims;
+               a = [a.PixelSize.magnitude];
+               if isempty(a)
+                  a = repmat(1,1,ndims);
+               elseif length(a) < ndims
+                  a = [a,repmat(a(end),1,ndims-length(a))];
+               end
+               if length(s) > 1
+                  a = subsref(a,s(2:end));
+               end
+            elseif strcmp(name,'pixelunits')
+               ndims = a.NDims;
+               a = {a.PixelSize.units};
+               if isempty(a)
+                  a = repmat({'px'},1,ndims);
+               elseif length(a) < ndims
+                  a = [a,repmat(a(end),1,ndims-length(a))];
+               end
+               if length(s) > 1
+                  a = subsref(a,s(2:end));
+               end
+               if length(a) == 1
+                  a = a{1};
+               end
+            else
+               a = builtin('subsref',a,s); % Call built-in method to access properties
+            end
             return
          end
          telems = numtensorel(a);
@@ -1097,8 +1135,45 @@ classdef dip_image
                   strcmp(name,'TensorSizeInternal')
                error('Cannot access private properties')
             end
-            % TODO: implement a.pixelsize(j) = b and a.pixelunits(j) = b for backwards compatibility
-            a = builtin('subsasgn',a,s,b); % Call built-in method to access properties
+            if strcmp(name,'pixelsize')
+               pxsz = a.PixelSize;
+               if length(s) > 1
+                  q = [pxsz.magnitude];
+                  q = subsasgn(q,s(2:end),b);
+               else
+                  q = b;
+               end
+               q = q(:);
+               if length(q) > length(pxsz)
+                  pxsz = ensurePixelSizeDimensionality(pxsz,length(q));
+               elseif length(pxsz) > length(q)
+                  q(end+1:length(pxsz)) = q(end);
+               end
+               q = num2cell(q);
+               [pxsz.magnitude] = deal(q{:});
+               a.PixelSize = pxsz;
+            elseif strcmp(name,'pixelunits')
+               pxsz = a.PixelSize;
+               if ~iscell(b)
+                  b = {b};
+               end
+               if length(s) > 1
+                  q = {pxsz.units};
+                  q = subsasgn(q,s(2:end),b);
+               else
+                  q = b;
+               end
+               q = q(:);
+               if length(q) > length(pxsz)
+                  pxsz = ensurePixelSizeDimensionality(pxsz,length(q));
+               elseif length(pxsz) > length(q)
+                  q(end+1:length(pxsz)) = q(end);
+               end
+               [pxsz.units] = deal(q{:});
+               a.PixelSize = pxsz;
+            else
+               a = builtin('subsasgn',a,s,b); % Call built-in method to access properties
+            end
             return
          end
          % Find the indices to use

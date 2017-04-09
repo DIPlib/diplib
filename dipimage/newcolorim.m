@@ -39,11 +39,11 @@ function out = newcolorim(varargin)
 sz = [256,256];
 col = 'RGB';
 dt = 'single';
+psize = [];
 if nargin >= 1
    sz = varargin{1};
    if isa(n,'dip_image')
-      %psize = n.pixelsize;
-      %punit = n.pixelunits; % TODO pixel sizes!
+      psize = n.PixelSize;
       if iscolor(n)
          col = colorspace(n);
       end
@@ -53,7 +53,7 @@ if nargin >= 1
    elseif ~isvector(n)
       % Treat n as an image
       n = imsize(dip_image(n));
-   elseif ~isempty(n) & any(n)==0
+   elseif ~isempty(n) && any(n)==0
       error('One of the dimensions is zero');
    end
    if nargin >= 2
@@ -69,3 +69,6 @@ end
 out = dip_image(0,dt);
 out = colorspace(out,col);
 out = repmat(out,sz);
+if ~isempty(psize)
+   out.PixelSize = psize;
+end

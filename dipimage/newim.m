@@ -51,7 +51,7 @@ if N ~= 0
    end
    if N > 1
       for ii=1:N
-         if ~isnumeric(varargin{ii}) | numel(varargin{ii}) ~= 1 | mod(varargin{ii},1)
+         if ~isnumeric(varargin{ii}) || numel(varargin{ii}) ~= 1 || mod(varargin{ii},1)
             error('Input arguments must be scalar integers')
          end
       end
@@ -66,7 +66,7 @@ if N ~= 0
       elseif ~isvector(n)
          % Treat n as an image
          n = imsize(dip_image(n));
-      elseif ~isempty(n) & any(n)==0
+      elseif ~isempty(n) && any(n)==0
          error('One of the dimensions is zero');
       end
    end
