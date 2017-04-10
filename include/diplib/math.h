@@ -68,10 +68,6 @@ inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArra
 DIP_EXPORT MinMaxAccumulator GetMaximumAndMinimum( Image const& in, Image const& mask = {} );
 
 
-// TODO: We need functions dip::All() dip::Any() that apply to samples within a tensor. This combines with equality: dip::All( a == b ), for a, b tensor images.
-// TODO: We need similar functions that apply to all pixels in an image.
-
-
 //
 // Arithmetic, trigonometric and similar monadic operators
 //
@@ -642,6 +638,46 @@ inline void Median( Image const& in, Image const& mask, Image& out, BooleanArray
 inline Image Median( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
    Median( in, mask, out, process );
+   return out;
+}
+
+/// \brief Determines if all pixels have non-zero values over all those dimensions which are specified by `process`.
+///
+/// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
+/// a boolean value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
+/// and equals the "all" projection along the processing dimensions. To test if all the pixels in the image are
+/// non-zero:
+/// ```cpp
+///     static_cast< bool >( dip::All( img ));
+/// ```
+///
+/// For tensor images, the result is computed for each element independently.
+///
+/// If `mask` is forged, only those pixels selected by the mask image are used.
+DIP_EXPORT void All( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+inline Image All( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
+   Image out;
+   All( in, mask, out, process );
+   return out;
+}
+
+/// \brief Determines if any pixel has a non-zero value over all those dimensions which are specified by `process`.
+///
+/// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
+/// a boolean value. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
+/// and equals the "any" projection along the processing dimensions. To test if any pixel in the image is
+/// non-zero:
+/// ```cpp
+///     static_cast< bool >( dip::Any( img ));
+/// ```
+///
+/// For tensor images, the result is computed for each element independently.
+///
+/// If `mask` is forged, only those pixels selected by the mask image are used.
+DIP_EXPORT void Any( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+inline Image Any( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
+   Image out;
+   All( in, mask, out, process );
    return out;
 }
 

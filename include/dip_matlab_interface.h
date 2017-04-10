@@ -608,6 +608,11 @@ inline dip::RangeArray GetRangeArray( mxArray const* mx ) {
 //
 
 
+/// \brief Convert an boolean from `bool` to `mxArray` by copy.
+inline mxArray* GetArray( bool in ) {
+   return mxCreateLogicalScalar( in );
+}
+
 /// \brief Convert an unsigned integer from `dip::uint` to `mxArray` by copy.
 inline mxArray* GetArray( dip::uint in ) {
    return mxCreateDoubleScalar( in );

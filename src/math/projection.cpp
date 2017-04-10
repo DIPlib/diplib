@@ -775,6 +775,88 @@ void Percentile(
    }
 }
 
+namespace {
+
+template< typename TPI >
+class ProjectionAll : public ProjectionScanFunction {
+   public:
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+         bool all = true;
+         if( mask.IsForged() ) {
+            JointImageIterator< TPI, bin > it( in, mask );
+            do {
+               if( it.Out() && ( it.In() == TPI( 0 ))) {
+                  all = false;
+                  break;
+               }
+            } while( ++it );
+         } else {
+            ImageIterator< TPI > it( in );
+            do {
+               if( *it == TPI( 0 )) {
+                  all = false;
+                  break;
+               }
+            } while( ++it );
+         }
+         *static_cast< bin* >( out ) = all;
+      }
+};
+
+}
+
+void All(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      BooleanArray process
+) {
+   std::unique_ptr< ProjectionScanFunction > lineFilter;
+   DIP_OVL_NEW_ALL( lineFilter, ProjectionAll, (), in.DataType() );
+   ProjectionScan( in, mask, out, DT_BIN, process, *lineFilter );
+}
+
+namespace {
+
+template< typename TPI >
+class ProjectionAny : public ProjectionScanFunction {
+   public:
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+         bool any = false;
+         if( mask.IsForged() ) {
+            JointImageIterator< TPI, bin > it( in, mask );
+            do {
+               if( it.Out() && ( it.In() != TPI( 0 ))) {
+                  any = true;
+                  break;
+               }
+            } while( ++it );
+         } else {
+            ImageIterator< TPI > it( in );
+            do {
+               if( *it != TPI( 0 )) {
+                  any = true;
+                  break;
+               }
+            } while( ++it );
+         }
+         *static_cast< bin* >( out ) = any;
+      }
+};
+
+}
+
+void Any(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      BooleanArray process
+) {
+   std::unique_ptr< ProjectionScanFunction > lineFilter;
+   DIP_OVL_NEW_ALL( lineFilter, ProjectionAny, (), in.DataType() );
+   ProjectionScan( in, mask, out, DT_BIN, process, *lineFilter );
+}
+
 
 } // namespace dip
 
