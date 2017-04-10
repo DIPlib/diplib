@@ -322,6 +322,9 @@ struct DIP_NO_EXPORT DataType {
    /// \brief Returns an integer type that is most suitable to hold samples of `type`.
    DIP_EXPORT static DataType SuggestInteger( DataType type );
 
+   /// \brief Returns an integer type that is most suitable to hold samples of `type`.
+   DIP_EXPORT static DataType SuggestSigned( DataType type );
+
    /// \brief Returns a suitable floating-point type that can hold the samples of `type`.
    DIP_EXPORT static DataType SuggestFloat( DataType type );
 

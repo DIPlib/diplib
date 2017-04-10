@@ -21,30 +21,20 @@
 #include "diplib.h"
 
 
-/* These are the dip_DataTypeGetInfo() functions actually used:
-DIP_DT_INFO_SIZEOF
-DIP_DT_INFO_C2R               // Complex to real
-DIP_DT_INFO_R2C               // Real to complex
+/* These are the dip_DataTypeGetInfo() functions actually used, and what to use in the new infrastructure:
+DIP_DT_INFO_SIZEOF                  // DataType::SizeOF
+DIP_DT_INFO_C2R                     // DataType::SuggestFloat, FloatType
+DIP_DT_INFO_R2C                     // DataType::SuggestComplex, ComplexType
 DIP_DT_INFO_GET_MAXIMUM_PRECISION   // Used with dip_ImagesCheck(DIP_CKIM_MAX_PRECISION_MATCH) and in dip_DetermineDataType() in a way I don't understand.
-DIP_DT_INFO_MAXIMUM_VALUE
-DIP_DT_INFO_MINIMUM_VALUE
-DIP_DT_INFO_PROPS             // Returns flags such as 'is int', 'is real', etc.
-DIP_DT_INFO_SUGGEST_2         // A complex type that can hold the data
-DIP_DT_INFO_SUGGEST_5         // A non-binary type that can hold the data (bin->sint8, others don't change)
-DIP_DT_INFO_SUGGEST_6         // A double-precision type that can hold the data
-DIP_DT_INFO_TO_FLEX           // A float or complex type (for result of arithmetic)
-DIP_DT_INFO_TO_DIPIMAGE       // A float, complex or bin type (for result of arithmetic)
-DIP_DT_INFO_TO_FLOAT          // A float type
- * Will not need:
-DIP_DT_INFO_BITS              // SIZEOF * 8, what's the point? Used exactly in one place...
-DIP_DT_INFO_BIN_TO_INT        // Bin type to same-size uint type -- we're not using bin16 or bin32...
-DIP_DT_INFO_VALID             // won't need equivalent with "enum class".
- * Not used:
-DIP_DT_INFO_GET_DATATYPE_NAME // not used
-DIP_DT_INFO_GET_SIGNED        // not used; a signed type with same size
-DIP_DT_INFO_SIZEOF_PTR        // not used
-DIP_DT_INFO_SUGGEST_1         // not used
-DIP_DT_INFO_SUGGEST_4         // not used
+DIP_DT_INFO_MAXIMUM_VALUE           // std::numeric_limits<T>::max()
+DIP_DT_INFO_MINIMUM_VALUE           // std::numeric_limits<T>::lowest()
+DIP_DT_INFO_PROPS                   // DataType::IsReal, DataType::IsComplex, etc.
+DIP_DT_INFO_SUGGEST_2               // DataType::SuggestComplex
+DIP_DT_INFO_SUGGEST_5               // A non-binary type that can hold the data (bin->sint8, others don't change) -- we don't have this yet
+DIP_DT_INFO_SUGGEST_6               // A double-precision type that can hold the data -- we don't have this yet
+DIP_DT_INFO_TO_FLEX                 // DataType::SuggestFlex, FlexType
+DIP_DT_INFO_TO_DIPIMAGE             // DataType::SuggestFlexBin
+DIP_DT_INFO_TO_FLOAT                // DataType::SuggestFloat, FloatType
 */
 
 namespace dip {
@@ -57,6 +47,20 @@ DataType DataType::SuggestInteger( DataType type ) {
       case DT_DFLOAT:
       case DT_SCOMPLEX:
       case DT_DCOMPLEX:
+         return DT_SINT32;
+      default:
+         return type;
+   }
+}
+
+DataType DataType::SuggestSigned( DataType type ) {
+   switch( type ) {
+      case DT_BIN:
+      case DT_UINT8:
+         return DT_SINT8;
+      case DT_UINT16:
+         return DT_SINT16;
+      case DT_UINT32:
          return DT_SINT32;
       default:
          return type;
