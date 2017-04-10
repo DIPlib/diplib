@@ -27,11 +27,10 @@ namespace dip {
 
 namespace {
 
-template< typename TPI >
 class dip__Count : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
-         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         bin const* in = static_cast< bin const* >( params.inBuffer[ 0 ].buffer );
          dip::uint& count = counts[ params.thread ];
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
@@ -40,7 +39,7 @@ class dip__Count : public Framework::ScanLineFilter {
             auto maskStride = params.inBuffer[ 1 ].stride;
             bin const* mask = static_cast< bin const* >( params.inBuffer[ 1 ].buffer );
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-               if( *mask && ( *in != TPI( 0 ))) {
+               if( *mask && *in ) {
                   ++count;
                }
                in += inStride;
@@ -49,7 +48,7 @@ class dip__Count : public Framework::ScanLineFilter {
          } else {
             // Otherwise we don't.
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-               if( *in != TPI( 0 )) {
+               if( *in ) {
                   ++count;
                }
                in += inStride;
@@ -73,10 +72,9 @@ dip::uint Count(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    std::vector< dip::uint > counts;
-   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__Count, ( counts ), in.DataType() );
+   dip__Count scanLineFilter( counts );
    // Call the framework function
-   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter );
+   Framework::ScanSingleInput( in, mask, DT_BIN, scanLineFilter );
    // Reduce
    dip::uint out = counts[ 0 ];
    for( dip::uint ii = 1; ii < counts.size(); ++ii ) {
