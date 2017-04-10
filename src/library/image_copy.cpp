@@ -681,4 +681,16 @@ Image::operator dip::sint() const {
    return x;
 }
 
+// Casting the first sample (the first tensor component of the first pixel) to bool.
+template< typename TPI >
+static inline dip::sint CastValueBoolean( void* p ) {
+   return *static_cast< TPI* >( p ) != TPI( 0 );
+}
+Image::operator bool() const {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   bool x;
+   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueBoolean, ( origin_ ), dataType_ );
+   return x;
+}
+
 } // namespace dip

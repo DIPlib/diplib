@@ -2184,6 +2184,10 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), casted
+      /// to a boolean. Any non-zero value is cast to true.
+      DIP_EXPORT explicit operator bool() const;
+
+      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), casted
       /// to a signed integer of maximum width. For complex values
       /// returns the absolute value.
       DIP_EXPORT explicit operator dip::sint() const;
