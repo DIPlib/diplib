@@ -68,6 +68,12 @@ inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArra
 DIP_EXPORT MinMaxAccumulator GetMaximumAndMinimum( Image const& in, Image const& mask = {} );
 
 
+// TODO: A function that does image statistics, dip_Moments, dip_CenterOfMass
+
+// DIP_ERROR dip_MaximumPixel ( dip_Image, dip_Image, dip_IntegerArray, dip_float *, dip_Boolean );
+// DIP_ERROR dip_MinimumPixel ( dip_Image, dip_Image, dip_IntegerArray, dip_float *, dip_Boolean );
+
+
 //
 // Arithmetic, trigonometric and similar monadic operators
 //
@@ -113,6 +119,11 @@ inline Image NearestInt( Image const& in ) {
    return out;
 }
 
+// DIP_ERROR dip_AmplitudeModulation       ( dip_Image, dip_Image, dip_float *, dip_int, dip_int *, dip_int * );
+// DIP_ERROR dip_CosinAmplitudeModulation  ( dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
+// DIP_ERROR dip_CosinAmplitudeDemodulation( dip_Image, dip_Image, dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
+// DIP_ERROR dip_GeneratePhase             ( dip_Image, dip_float *, dip_int, dip_int *, dip_int * );
+
 
 //
 // Arithmetic dyadic operators that are not already declared in diplib/library/operators.h
@@ -139,6 +150,63 @@ inline Image Hypot( Image const& a, Image const& b ) {
    Hypot( a, b, out );
    return out;
 }
+
+/// \brief Computes the sample-wise supremum (maximum) over all the input images. For binary images, this is the same
+/// as the union.
+DIP_EXPORT void Supremum( ImageConstRefArray const& in, Image& out );
+inline Image Supremum( ImageConstRefArray const& in ) {
+   Image out;
+   Supremum( in, out );
+   return out;
+}
+
+/// \brief Computes the sample-wise supremum (maximum) of the two input images. For binary images, this is the same
+/// as the union.
+inline void Supremum( Image const& a, Image const& b, Image& out ) {
+   Supremum( { a, b }, out );
+}
+inline Image Supremum( Image const& a, Image const& b ) {
+   Image out;
+   Supremum( { a, b }, out );
+   return out;
+}
+
+/// \brief Computes the sample-wise infimum (minimum) over all the input images. For binary images, this is the same
+/// as the intersection.
+DIP_EXPORT void Infimum( ImageConstRefArray const& in, Image& out );
+inline Image Infimum( ImageConstRefArray const& in ) {
+   Image out;
+   Infimum( in, out );
+   return out;
+}
+
+/// \brief Computes the sample-wise infimum (minimum) of the two input images. For binary images, this is the same
+/// as the intersection.
+inline void Infimum( Image const& a, Image const& b, Image& out ) {
+   Infimum( { a, b }, out );
+}
+inline Image Infimum( Image const& a, Image const& b ) {
+   Image out;
+   Infimum( { a, b }, out );
+   return out;
+}
+
+/// \brief Computes the sample-wise signed minimum of the two input images: returns `-b` where `b < a`, a otherwise.
+DIP_EXPORT void SignedMinimum ( Image const& a, Image const& b, Image& out );
+inline Image SignedMinimum( Image const& a, Image const& b ) {
+   Image out;
+   SignedMinimum( a, b, out );
+   return out;
+}
+
+// DIP_ERROR dip_MeanError          ( dip_Image, dip_Image, dip_Image, dip_Image );
+// DIP_ERROR dip_MeanSquareError    ( dip_Image, dip_Image, dip_Image, dip_Image );
+// DIP_ERROR dip_RootMeanSquareError( dip_Image, dip_Image, dip_Image, dip_Image );
+// DIP_ERROR dip_MeanAbsoluteError  ( dip_Image, dip_Image, dip_Image, dip_Image );
+// DIP_ERROR dip_IDivergence        ( dip_Image, dip_Image, dip_Image, dip_Image );
+// DIP_ERROR dip_ULnV               ( dip_Image, dip_Image, dip_Image, dip_Image );
+// DIP_ERROR dip_InProduct          ( dip_Image, dip_Image, dip_Image, dip_Image );
+// DIP_ERROR dip_LnNormError        ( dip_Image, dip_Image, dip_Image, dip_Image, dip_float );
 
 
 //
@@ -681,6 +749,16 @@ inline Image Any( Image const& in, Image const& mask = {}, BooleanArray process 
    return out;
 }
 
+// DIP_ERROR dip_PositionMaximum   ( dip_Image, dip_Image, dip_Image, dip_int, dip_Boolean );
+// DIP_ERROR dip_PositionMinimum   ( dip_Image, dip_Image, dip_Image, dip_int, dip_Boolean );
+// DIP_ERROR dip_PositionMedian    ( dip_Image, dip_Image, dip_Image, dip_int, dip_Boolean );
+// DIP_ERROR dip_PositionPercentile( dip_Image, dip_Image, dip_Image, dip_float, dip_int, dip_Boolean );
+
+// DIP_ERROR dip_RadialMean( dip_Image, dip_Image, dip_Image, dip_BooleanArray, dip_float, dip_Boolean, dip_FloatArray );
+// DIP_ERROR dip_RadialSum( dip_Image, dip_Image, dip_Image, dip_BooleanArray, dip_float, dip_Boolean, dip_FloatArray );
+// DIP_ERROR dip_RadialMaximum( dip_Image, dip_Image, dip_Image, dip_BooleanArray, dip_float, dip_Boolean, dip_FloatArray );
+// DIP_ERROR dip_RadialMinimum( dip_Image, dip_Image, dip_Image, dip_BooleanArray, dip_float, dip_Boolean, dip_FloatArray );
+
 
 //
 // Functions that combine two source images
@@ -757,7 +835,10 @@ inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
    return out;
 }
 
-// TODO: Max, Min over two or more input images
+
+// DIP_ERROR dip_Lut( dip_float, dip_sint32, dip_float *, dip_sint32 *, dip_float *, dip_float *, dip_int );
+// DIP_ERROR dip_ImageLut( dip_Image, dip_Image, dip_Image, dip_Image );
+
 
 /// \}
 

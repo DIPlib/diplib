@@ -66,9 +66,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          }
       } else {
          // Maximum over two images
-         // TODO
-         DIP_THROW( dip::E::NOT_IMPLEMENTED );
-         //plhs[ 0 ] = mi.GetArray( out );
+         dip::Supremum( in1, in2, out );
+         plhs[ 0 ] = mi.GetArray( out );
       }
 
    } catch( const dip::Error& e ) {

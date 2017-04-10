@@ -471,7 +471,7 @@ DIP_EXPORT void Lee(
       Image& out,
       StructuringElement const& se = {},
       String const& edgeType = "texture",
-      String const& sign = "unsigned", // "signed"
+      String const& sign = "unsigned",
       StringArray const& boundaryCondition = {}
 );
 inline Image Lee(

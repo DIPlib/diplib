@@ -119,6 +119,12 @@ over.
   shortened, so instead of `dip_Sub` use `dip::Subtract`. `dip_AddInteger`, `dip_AddFloat`,
   etc. now are overloaded versions of `dip::Add` et al.
 
+- Morphological filters now use a `dip::StructuringElement` to collect three parameters
+  of the old *DIPlib*.
+
+- `dip_Min` and `dip_Max` are now `dip::Infimum` and `dip::Supremum`. There are too many
+  functions called `Maximum` and `Minimum`.
+
 ## Changes in functionality
 
 - Second order extrapolation boundary extension didn't do as advertised in the old *DIPlib*.

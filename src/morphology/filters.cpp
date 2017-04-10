@@ -21,8 +21,8 @@
 #include "diplib.h"
 #include "diplib/pixel_table.h"
 #include "diplib/framework.h"
-#include "diplib/overload.h"
 #include "diplib/saturated_arithmetic.h"
+#include "diplib/math.h"
 #include "diplib/morphology.h"
 
 namespace dip {
@@ -266,9 +266,9 @@ void Lee(
       }
    DIP_END_STACK_TRACE
    if( sign == "unsigned" ) {
-      //Min( out, out2, out ); // TODO: implement Min
+      Infimum( out, out2, out ); // TODO: implement Min
    } else if( sign == "signed" ) {
-      //SignedMinimum( out, out2, out ); // TODO: implement SignedMinimum
+      SignedMinimum( out, out2, out );
    } else {
       DIP_THROW( E::INVALID_FLAG );
    }

@@ -49,4 +49,82 @@ void Hypot( Image const& a, Image const& b, Image& out ) {
    Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
 }
 
+namespace {
+
+template< typename TPI, typename F >
+class DIP_EXPORT VariadicScanLineFilter : public Framework::ScanLineFilter {
+   public:
+      VariadicScanLineFilter( F const& func ) : func_( func ) {}
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dip::uint N = params.inBuffer.size();
+         dip::uint const bufferLength = params.bufferLength;
+         std::vector< TPI const* > in( N );
+         for( dip::uint ii = 0; ii < N; ++ii ) {
+            in[ ii ] = static_cast< TPI const* >( params.inBuffer[ ii ].buffer );
+         }
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint const outStride = params.outBuffer[ 0 ].stride;
+         for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+            TPI res = *in[ 0 ];
+            in[ 0 ] += params.inBuffer[ 0 ].stride;
+            for( dip::uint ii = 1; ii < N; ++ii ) {
+               res = func_( res, *in[ ii ] );
+               in[ ii ] += params.inBuffer[ ii ].stride;
+            }
+            *out = res;
+            out += outStride;
+         }
+      }
+   private:
+      F const& func_;
+};
+
+template< typename TPI, typename F >
+inline std::unique_ptr< Framework::ScanLineFilter > NewVariadicScanLineFilter( F const& func ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new VariadicScanLineFilter< TPI, F >( func ));
+}
+
+} // namespace
+
+void Supremum( ImageConstRefArray const& in, Image& out ) {
+   DIP_THROW_IF( in.size() < 2, "Need at least two input images" );
+   DataType dt = in[ 0 ].get().DataType();
+   for( dip::uint ii = 1; ii < in.size(); ++ii ) {
+      dt = DataType::SuggestDyadicOperation( dt, in[ ii ].get().DataType() );
+   }
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewVariadicScanLineFilter, (
+         []( auto a, auto b ) { return std::max( a, b ); }
+   ), dt );
+   ImageRefArray outar{ out };
+   DataTypeArray buftypes( in.size(), dt );
+   Framework::Scan( in, outar, buftypes, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+}
+
+void Infimum( ImageConstRefArray const& in, Image& out ) {
+   DIP_THROW_IF( in.size() < 2, "Need at least two input images" );
+   DataType dt = in[ 0 ].get().DataType();
+   for( dip::uint ii = 1; ii < in.size(); ++ii ) {
+      dt = DataType::SuggestDyadicOperation( dt, in[ ii ].get().DataType() );
+   }
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewVariadicScanLineFilter, (
+         []( auto a, auto b ) { return std::min( a, b ); }
+   ), dt );
+   ImageRefArray outar{ out };
+   DataTypeArray buftypes( in.size(), dt );
+   Framework::Scan( in, outar, buftypes, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+}
+
+void SignedMinimum ( Image const& a, Image const& b, Image& out ) {
+   DataType dt = DataType::SuggestSigned( a.DataType() );
+   dt = DataType::SuggestDyadicOperation( dt, b.DataType() );
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+         []( auto its ) { return *its[ 0 ] > *its[ 1 ] ? -( *its[ 1 ] ) : *its[ 0 ]; }
+   ), dt );
+   ImageRefArray outar{ out };
+   Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+}
+
 } // namespace dip
