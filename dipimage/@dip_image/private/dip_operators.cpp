@@ -144,6 +144,15 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
                case 'h': // sign
                   dip::Sign( lhs, out );
                   break;
+               case 'i': // isnan
+                  dip::IsNotANumber( lhs, out );
+                  break;
+               case 'j': // isinf
+                  dip::IsInfinite( lhs, out );
+                  break;
+               case 'k': // isfinite
+                  dip::IsFinite( lhs, out );
+                  break;
                case 'A': // cos
                   dip::Cos( lhs, out );
                   break;

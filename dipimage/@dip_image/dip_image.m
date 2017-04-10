@@ -1846,6 +1846,21 @@ classdef dip_image
          in = dip_operators('mh',in);
       end
 
+      function in = isnan(in)
+         %ISNAN   True for samples that are NaN.
+         in = dip_operators('mi',in);
+      end
+
+      function in = isinf(in)
+         %ISINF   True for samples that are +/- Inf.
+         in = dip_operators('mj',in);
+      end
+
+      function in = isfinite(in)
+         %ISFINITE   True for samples that are not NaN nor Inf.
+         in = dip_operators('mk',in);
+      end
+
       function in = cos(in)
          %COS   Cosine.
          in = dip_operators('mA',in);

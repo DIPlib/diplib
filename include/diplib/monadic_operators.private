@@ -40,6 +40,10 @@
    DIP_EXPORT void functionName_( Image const& in, Image& out, paramType_ paramName_ ); \
    inline Image functionName_( Image const& in, paramType_ paramName_ ) { Image out; functionName_( in, out, paramName_ ); return out; }
 
+#define DIP__MONADIC_OPERATOR_BIN( functionName_, functionLambda_, inputDomain_ ) \
+   DIP_EXPORT void functionName_( Image const& in, Image& out ); \
+   inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
+
 #endif
 
 /// \brief Computes the square of the modulus of each sample.
@@ -152,6 +156,16 @@ DIP__MONADIC_OPERATOR_FLOAT( Erfc, []( auto its ) { return Erfc( *its[ 0 ] ); },
 /// \brief Computes the sinc function of each sample. \f$\mathrm{sinc}(x) = \sin(x)/x\f$.
 DIP__MONADIC_OPERATOR_FLOAT( Sinc, []( auto its ) { return Sinc( *its[ 0 ] ); }, DataType::Class_Real )
 
+/// \brief True for each pixel that is NaN.
+DIP__MONADIC_OPERATOR_BIN( IsNotANumber, []( auto in ) { return dipm__IsNaN( in ); }, DataType::Class_Flex )
+
+/// \brief True for each pixel that is positive or negative infinity.
+DIP__MONADIC_OPERATOR_BIN( IsInfinite, []( auto in ) { return dipm__IsInf( in ); }, DataType::Class_Flex )
+
+/// \brief True for each pixel that is not NaN nor infinity.
+DIP__MONADIC_OPERATOR_BIN( IsFinite, []( auto in ) { return dipm__IsFinite( in ); }, DataType::Class_Flex )
+
 #undef DIP__MONADIC_OPERATOR_FLEX
 #undef DIP__MONADIC_OPERATOR_FLOAT
 #undef DIP__MONADIC_OPERATOR_FLOAT_WITH_PARAM
+#undef DIP__MONADIC_OPERATOR_BIN

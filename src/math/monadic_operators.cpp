@@ -40,6 +40,45 @@ T dipm__Fraction( T v ) { return v - std::trunc( v ); }
 template< typename T >
 T dipm__Reciprocal( T v ) { return v == T( 0 ) ? T( 0 ) : T( 1 ) / v; }
 
+template< typename T >
+T dipm__IsNaN( T v ) { return std::isnan( v ); }
+template< typename T >
+T dipm__IsNaN( std::complex< T > v ) { return std::isnan( v.real() ) || std::isnan( v.imag() ); }
+
+template< typename T >
+T dipm__IsInf( T v ) { return std::isinf( v ); }
+template< typename T >
+T dipm__IsInf( std::complex< T > v ) { return std::isinf( v.real() ) || std::isinf( v.imag() ); }
+
+template< typename T >
+T dipm__IsFinite( T v ) { return !dipm__IsNaN( v ) && !dipm__IsInf( v ); }
+
+template< typename TPI, typename F >
+class DIP_EXPORT BinScanLineFilter : public Framework::ScanLineFilter {
+   public:
+      BinScanLineFilter( F const& func ) : func_( func ) {}
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         dip::sint inStride = params.inBuffer[ 0 ].stride;
+         dip::uint const bufferLength = params.bufferLength;
+         bin* out = static_cast< bin* >( params.outBuffer[ 0 ].buffer );
+         dip::sint const outStride = params.outBuffer[ 0 ].stride;
+         for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+            *out = func_( *in );
+            in += inStride;
+            out += outStride;
+         }
+      }
+   private:
+      F const& func_;
+};
+
+template< typename TPI, typename F >
+inline std::unique_ptr< Framework::ScanLineFilter > NewBinScanLineFilter( F const& func ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new BinScanLineFilter< TPI, F >( func ));
+}
+
+
 } // namespace
 
 #define DIP__MONADIC_OPERATOR_FLEX( functionName_, functionLambda_, inputDomain_ ) \
@@ -70,6 +109,17 @@ T dipm__Reciprocal( T v ) { return v == T( 0 ) ? T( 0 ) : T( 1 ) / v; }
       DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_ ), dtype ); \
       Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, \
                               Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
+   }
+
+#define DIP__MONADIC_OPERATOR_BIN( functionName_, functionLambda_, inputDomain_ ) \
+   void functionName_( Image const& in, Image& out ) { \
+      DIP_THROW_IF( inputDomain_ != in.DataType(), E::DATA_TYPE_NOT_SUPPORTED ); \
+      DataType dtype = in.DataType(); \
+      std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
+      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, NewBinScanLineFilter, ( functionLambda_ ), dtype ); \
+      ImageRefArray outar{ out }; \
+      Framework::Scan( { in }, outar, { dtype }, { DT_BIN }, { DT_BIN }, { 1 }, *scanLineFilter, \
+                       Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
    }
 
 #include "diplib/monadic_operators.private"
@@ -117,9 +167,8 @@ void Sign( Image const& in, Image& out ) {
    DataType dtype = in.DataType();
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, SignLineFilter, (), dtype );
-   ImageConstRefArray inar{ in };
    ImageRefArray outar{ out };
-   Framework::Scan( inar, outar, { dtype }, { DT_SINT8 }, { DT_SINT8 }, { 1 }, *scanLineFilter,
+   Framework::Scan( { in }, outar, { dtype }, { DT_SINT8 }, { DT_SINT8 }, { 1 }, *scanLineFilter,
                     Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
 }
 
@@ -150,9 +199,8 @@ void NearestInt( Image const& in, Image& out ) {
    DataType dtype = in.DataType();
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    DIP_OVL_NEW_FLOAT( scanLineFilter, NearestIntLineFilter, (), dtype );
-   ImageConstRefArray inar{ in };
    ImageRefArray outar{ out };
-   Framework::Scan( inar, outar, { dtype }, { DT_SINT32 }, { DT_SINT32 }, { 1 }, *scanLineFilter,
+   Framework::Scan( { in }, outar, { dtype }, { DT_SINT32 }, { DT_SINT32 }, { 1 }, *scanLineFilter,
                     Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
 }
 
