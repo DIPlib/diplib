@@ -205,7 +205,7 @@ Units::Units( dip::String const& string ) {
       DIP_THROW_IF( !ParsePower( string, ii, power ), errorMessage );
       DIP_THROW_IF(( power == 0 ) || (( power % 3 ) != 0 ), errorMessage );
       DIP_THROW_IF( !ExpectCDot( string, ii ), errorMessage );
-      power_[ int( BaseUnits::THOUSANDS ) ] += power / 3;
+      power_[ unsigned( BaseUnits::THOUSANDS ) ] = static_cast< sint8 >( power_[ unsigned( BaseUnits::THOUSANDS ) ] + power / 3 );
    }
    int thousands = 0;
    switch( string[ ii ] ) {
@@ -240,8 +240,8 @@ Units::Units( dip::String const& string ) {
    int power;
    BaseUnits bu;
    DIP_THROW_IF( !ParseComponent( string, ii, bu, power ), errorMessage );
-   power_[ int( BaseUnits::THOUSANDS ) ] += thousands * power;
-   power_[ int( bu ) ] += power;
+   power_[ unsigned( BaseUnits::THOUSANDS ) ] = static_cast< sint8 >( power_[ unsigned( BaseUnits::THOUSANDS ) ]  + thousands * power );
+   power_[ unsigned( bu ) ] = static_cast< sint8 >( power_[ unsigned( bu ) ] + power );
    while( string[ ii ] != '\0' ) {
       bool neg = string[ ii ] == '/';
       if( neg ) {
@@ -250,7 +250,7 @@ Units::Units( dip::String const& string ) {
          DIP_THROW_IF( !ExpectCDot( string, ii ), errorMessage );
       }
       DIP_THROW_IF( !ParseComponent( string, ii, bu, power ), errorMessage );
-      power_[ int( bu ) ] += neg ? -power : power;
+      power_[ unsigned( bu ) ] = static_cast< sint8 >( power_[ unsigned( bu ) ] + neg ? -power : power );
    }
 }
 
@@ -364,23 +364,23 @@ dip::String Units::String() const {
       }
    }
    // We write out positive powers first
-   prefix = WritePositivePower( out, "m",   power_[ int( BaseUnits::LENGTH            ) ], prefix );
-   prefix = WritePositivePower( out, "g",   power_[ int( BaseUnits::MASS              ) ], prefix );
-   prefix = WritePositivePower( out, "s",   power_[ int( BaseUnits::TIME              ) ], prefix );
-   prefix = WritePositivePower( out, "A",   power_[ int( BaseUnits::CURRENT           ) ], prefix );
-   prefix = WritePositivePower( out, "K",   power_[ int( BaseUnits::TEMPERATURE       ) ], prefix );
-   prefix = WritePositivePower( out, "cd",  power_[ int( BaseUnits::LUMINOUSINTENSITY ) ], prefix );
-   prefix = WritePositivePower( out, "rad", power_[ int( BaseUnits::ANGLE             ) ], prefix );
-   prefix = WritePositivePower( out, "px",  power_[ int( BaseUnits::PIXEL             ) ], prefix );
+   prefix = WritePositivePower( out, "m",   power_[ unsigned( BaseUnits::LENGTH            ) ], prefix );
+   prefix = WritePositivePower( out, "g",   power_[ unsigned( BaseUnits::MASS              ) ], prefix );
+   prefix = WritePositivePower( out, "s",   power_[ unsigned( BaseUnits::TIME              ) ], prefix );
+   prefix = WritePositivePower( out, "A",   power_[ unsigned( BaseUnits::CURRENT           ) ], prefix );
+   prefix = WritePositivePower( out, "K",   power_[ unsigned( BaseUnits::TEMPERATURE       ) ], prefix );
+   prefix = WritePositivePower( out, "cd",  power_[ unsigned( BaseUnits::LUMINOUSINTENSITY ) ], prefix );
+   prefix = WritePositivePower( out, "rad", power_[ unsigned( BaseUnits::ANGLE             ) ], prefix );
+   prefix = WritePositivePower( out, "px",  power_[ unsigned( BaseUnits::PIXEL             ) ], prefix );
    // and negative powers at the end
-   prefix = WriteNegativePower( out, "m",   power_[ int( BaseUnits::LENGTH            ) ], prefix );
-   prefix = WriteNegativePower( out, "g",   power_[ int( BaseUnits::MASS              ) ], prefix );
-   prefix = WriteNegativePower( out, "s",   power_[ int( BaseUnits::TIME              ) ], prefix );
-   prefix = WriteNegativePower( out, "A",   power_[ int( BaseUnits::CURRENT           ) ], prefix );
-   prefix = WriteNegativePower( out, "K",   power_[ int( BaseUnits::TEMPERATURE       ) ], prefix );
-   prefix = WriteNegativePower( out, "cd",  power_[ int( BaseUnits::LUMINOUSINTENSITY ) ], prefix );
-   prefix = WriteNegativePower( out, "rad", power_[ int( BaseUnits::ANGLE             ) ], prefix );
-   prefix = WriteNegativePower( out, "px",  power_[ int( BaseUnits::PIXEL             ) ], prefix );
+   prefix = WriteNegativePower( out, "m",   power_[ unsigned( BaseUnits::LENGTH            ) ], prefix );
+   prefix = WriteNegativePower( out, "g",   power_[ unsigned( BaseUnits::MASS              ) ], prefix );
+   prefix = WriteNegativePower( out, "s",   power_[ unsigned( BaseUnits::TIME              ) ], prefix );
+   prefix = WriteNegativePower( out, "A",   power_[ unsigned( BaseUnits::CURRENT           ) ], prefix );
+   prefix = WriteNegativePower( out, "K",   power_[ unsigned( BaseUnits::TEMPERATURE       ) ], prefix );
+   prefix = WriteNegativePower( out, "cd",  power_[ unsigned( BaseUnits::LUMINOUSINTENSITY ) ], prefix );
+   prefix = WriteNegativePower( out, "rad", power_[ unsigned( BaseUnits::ANGLE             ) ], prefix );
+   prefix = WriteNegativePower( out, "px",  power_[ unsigned( BaseUnits::PIXEL             ) ], prefix );
    return out;
 }
 

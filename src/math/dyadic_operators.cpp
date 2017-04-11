@@ -121,7 +121,7 @@ void SignedMinimum ( Image const& a, Image const& b, Image& out ) {
    dt = DataType::SuggestDyadicOperation( dt, b.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
-         []( auto its ) { return *its[ 0 ] > *its[ 1 ] ? -( *its[ 1 ] ) : *its[ 0 ]; }
+         []( auto its ) { return *its[ 0 ] > *its[ 1 ] ? static_cast< decltype( *its[ 1 ] ) >( -( *its[ 1 ] )) : *its[ 0 ]; }
    ), dt );
    ImageRefArray outar{ out };
    Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );

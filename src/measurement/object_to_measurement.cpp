@@ -25,9 +25,9 @@ namespace dip {
 
 
 void ObjectToMeasurement(
-      Image const& label,
-      Image& out,
-      Measurement::IteratorFeature const& featureValues
+      Image const& /*label*/,
+      Image& /*out*/,
+      Measurement::IteratorFeature const& /*featureValues*/
 ) {
    // TODO
 }

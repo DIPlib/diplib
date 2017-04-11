@@ -445,7 +445,7 @@ void Laplace (
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          ksz[ ii ] /= 2; // 1/2==0, 3/2==1
       }
-      kernel.At( ksz ) = kernel.NumberOfPixels() - 1.0;
+      kernel.At( ksz ) = static_cast< dfloat >( kernel.NumberOfPixels() ) - 1.0;
       DIP_START_STACK_TRACE
          GeneralConvolution( c_in, kernel, out, boundaryCondition );
       DIP_END_STACK_TRACE

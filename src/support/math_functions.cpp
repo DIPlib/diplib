@@ -110,7 +110,7 @@ dfloat BesselJN(
       dfloat bjm = BesselJ0( ax );
       dfloat bj = BesselJ1( ax );
       for( dip::uint j = 1; j < n; j++ ) {
-         dfloat tmp = j * tox * bj - bjm;
+         dfloat tmp = static_cast< dfloat >( j ) * tox * bj - bjm;
          bjm = bj;
          bj = tmp;
       }
@@ -120,13 +120,13 @@ dfloat BesselJN(
       constexpr dfloat BIGNO = 1.0e10;
       constexpr dfloat BIGNI = 1.0e-10;
       dfloat tox = 2.0 / ax;
-      dip::uint m = 2 * (( n + static_cast< dip::uint >( std::sqrt( ACC * n ))) / 2 );
+      dip::uint m = 2 * (( n + static_cast< dip::uint >( std::sqrt( ACC * static_cast< dfloat >( n )))) / 2 );
       bool jsum = false;
       dfloat bjp = 0.0;
       dfloat sum = 0.0;
       dfloat bj = 1.0;
       for( dip::uint j = m; j > 0; j-- ) {
-         dfloat tmp = j * tox * bj - bjp;
+         dfloat tmp = static_cast< dfloat >( j ) * tox * bj - bjp;
          bjp = bj;
          bj = tmp;
          if( std::abs( bj ) > BIGNO ) {
@@ -222,8 +222,8 @@ dfloat BesselYN(
    dfloat tox = 2.0 / x;
    dfloat by = BesselY1( x );
    dfloat bym = BesselY0( x );
-   for( dip::uint j = 1; j < n; j++ ) {
-      dfloat tmp = j * tox * by - bym;
+   for( dip::uint j = 1; j < n; ++j ) {
+      dfloat tmp = static_cast< dfloat >( j ) * tox * by - bym;
       bym = by;
       by = tmp;
    }
@@ -247,7 +247,7 @@ dfloat LnGamma(
    dfloat tmp = xx + 5.5;
    tmp -= ( xx + 0.5 ) * std::log( tmp );
    dfloat ser = 1.000000000190015;
-   for( dip::uint jj = 0; jj < 6; jj++ ) {
+   for( dip::uint jj = 0; jj < 6; ++jj ) {
       ser += cof[ jj ] / ++yy;
    }
    return ( -tmp + std::log( 2.5066282746310005 * ser / xx ));
@@ -269,7 +269,7 @@ static void gser(
       dfloat ap = a;
       dfloat del = 1.0 / a;
       dfloat sum = del;
-      for( dip::uint n = 1; n <= ITMAX; n++ ) {
+      for( dip::uint n = 1; n <= ITMAX; ++n ) {
          ++ap;
          del *= x / ap;
          sum += del;
@@ -293,8 +293,7 @@ static void gcf(
    dfloat c = 1.0 / FPMIN;
    dfloat d = 1.0 / b;
    dfloat h = d;
-   dip::uint i;
-   for( i = 1; i <= ITMAX; i++ ) {
+   for( dfloat i = 1; i <= ITMAX; ++i ) {
       dfloat an = -i * ( i - a );
       b += 2.0;
       d = an * d + b;

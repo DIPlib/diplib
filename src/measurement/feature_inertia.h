@@ -27,7 +27,7 @@ class FeatureInertia : public Composite {
    public:
       FeatureInertia() : Composite( { "Inertia", "Moments of inertia of the binary object", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
+      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
          nD_ = label.Dimensionality();
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( nD_ );
@@ -49,7 +49,7 @@ class FeatureInertia : public Composite {
             out[ ii ].units = units;
             out[ ii ].name = String( "lambda_" ) + std::to_string( ii );
          }
-         muIndex_ = -1;
+         hasIndex_ = false;
          return out;
       }
 
@@ -61,7 +61,7 @@ class FeatureInertia : public Composite {
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( muIndex_ == -1 ) {
+         if( !hasIndex_ ) {
             muIndex_ = dependencies.ValueIndex( "Mu" );
          }
          dfloat const* data = &it[ muIndex_ ];
@@ -69,7 +69,8 @@ class FeatureInertia : public Composite {
       }
 
    private:
-      dip::sint muIndex_;
+      dip::uint muIndex_;
+      bool hasIndex_;
       dip::uint nD_;
 };
 

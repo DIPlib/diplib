@@ -238,7 +238,6 @@ void dip__FilterCoef (
 }
 
 dip__GaussIIRParams dip__FillGaussIIRParams(
-      dip::uint size,
       dfloat sigma,
       dip::uint order,
       dip::uint filterOrder,
@@ -770,7 +769,7 @@ void GaussIIR(
             }
          }
          if( !found ) {
-            filterParams[ ii ] = dip__FillGaussIIRParams( in.Size( ii ), sigmas[ ii ], order[ ii ], filterOrder[ ii ], method, truncation );
+            filterParams[ ii ] = dip__FillGaussIIRParams( sigmas[ ii ], order[ ii ], filterOrder[ ii ], method, truncation );
          }
          border[ ii ] = filterParams[ ii ].border;
       } else {

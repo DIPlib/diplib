@@ -31,8 +31,7 @@ class FeatureConvexity : public Composite {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
          out[ 0 ].name = "Convexity";
-         sizeIndex_ = -1;
-         convexIndex_ = -1;
+         hasIndex_ = false;
          return out;
       }
 
@@ -45,7 +44,7 @@ class FeatureConvexity : public Composite {
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( sizeIndex_ == -1 ) {
+         if( !hasIndex_ ) {
             sizeIndex_ = dependencies.ValueIndex( "Size" );
             convexIndex_ = dependencies.ValueIndex( "ConvexArea" );
          }
@@ -54,8 +53,9 @@ class FeatureConvexity : public Composite {
       }
 
    private:
-      dip::sint sizeIndex_;
-      dip::sint convexIndex_;
+      dip::uint sizeIndex_;
+      dip::uint convexIndex_;
+      bool hasIndex_;
 };
 
 

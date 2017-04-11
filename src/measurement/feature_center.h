@@ -70,7 +70,7 @@ class FeatureCenter : public LineBased {
                }
                if( data ) {
                   for( dip::uint ii = 0; ii < nD_; ii++ ) {
-                     data[ ii ] += coordinates[ ii ];
+                     data[ ii ] += static_cast< dfloat >( coordinates[ ii ] );
                   }
                   ++( data[ nD_ ] );
                }

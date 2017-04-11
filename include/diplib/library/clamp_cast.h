@@ -167,7 +167,7 @@ inline dip::sint16 clamp_cast< dip::sint16 >( dip::uint16 v ) {
 // Casting from a dip::uint32, specialize for dip::uint8, dip::uint16 and all signed types
 template< typename T >
 inline T clamp_cast( dip::uint32 v ) {
-   return static_cast< T >( v );
+   return static_cast< T >( static_cast< FloatType< T >>( v )); // two casts for the case of T = complex.
 }
 template<>
 inline dip::uint8 clamp_cast< dip::uint8 >( dip::uint32 v ) {
@@ -207,11 +207,11 @@ inline dip::dfloat clamp_cast< dip::dfloat >( dip::uint v ) {
 }
 template<>
 inline dip::scomplex clamp_cast< dip::scomplex >( dip::uint v ) {
-   return static_cast< dip::scomplex >( v );
+   return static_cast< dip::scomplex >( static_cast< dip::sfloat >( v ) );
 }
 template<>
 inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::uint v ) {
-   return static_cast< dip::dcomplex >( v );
+   return static_cast< dip::dcomplex >( static_cast< dip::dfloat >( v ) );
 }
 template<>
 inline dip::bin clamp_cast< dip::bin >( dip::uint v ) {
@@ -277,7 +277,7 @@ inline dip::uint clamp_cast< dip::uint >( dip::sint16 v ) {
 // Casting from a dip::sint32, specialize for dip::sint8, dip::sint16 and all unsigned types
 template< typename T >
 inline T clamp_cast( dip::sint32 v ) {
-   return static_cast< T >( v );
+   return static_cast< T >( static_cast< FloatType< T >>( v )); // two casts for the case of T = complex.
 }
 template<>
 inline dip::sint8 clamp_cast< dip::sint8 >( dip::sint32 v ) {
@@ -327,11 +327,11 @@ inline dip::dfloat clamp_cast< dip::dfloat >( dip::sint v ) {
 }
 template<>
 inline dip::scomplex clamp_cast< dip::scomplex >( dip::sint v ) {
-   return static_cast< dip::scomplex >( v );
+   return static_cast< dip::scomplex >( static_cast< dip::sfloat >( v ));
 }
 template<>
 inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::sint v ) {
-   return static_cast< dip::dcomplex >( v );
+   return static_cast< dip::dcomplex >( static_cast< dip::dfloat >( v ));
 }
 template<>
 inline dip::bin clamp_cast< dip::bin >( dip::sint v ) {
@@ -359,7 +359,7 @@ inline dip::scomplex clamp_cast< dip::scomplex >( dip::sfloat v ) {
 }
 template<>
 inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::sfloat v ) {
-   return static_cast< dip::dcomplex >( v );
+   return static_cast< dip::dcomplex >( static_cast< dip::dfloat >( v ));
 }
 template<>
 inline dip::bin clamp_cast< dip::bin >( dip::sfloat v ) {
@@ -382,7 +382,7 @@ inline dip::sfloat clamp_cast< dip::sfloat >( dip::dfloat v ) {
 }
 template<>
 inline dip::scomplex clamp_cast< dip::scomplex >( dip::dfloat v ) {
-   return static_cast< dip::scomplex >( v );
+   return static_cast< dip::scomplex >( static_cast< dip::sfloat >( v ));
 }
 template<>
 inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::dfloat v ) {
@@ -405,7 +405,7 @@ inline dip::scomplex clamp_cast< dip::scomplex >( dip::scomplex v ) {
 }
 template<>
 inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::scomplex v ) {
-   return dip::dcomplex{ v.real(), v.imag() };
+   return dip::dcomplex{ static_cast< dip::dfloat >( v.real() ), static_cast< dip::dfloat >( v.imag() ) };
 }
 
 /// Casting from a double-precision complex value to any other sample type.

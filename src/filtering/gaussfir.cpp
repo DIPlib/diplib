@@ -41,7 +41,8 @@ FloatArray MakeHalfGaussian(
          dfloat normalization = 0;
          filter[ r0 ] = 1.0;
          for( dip::uint rr = 1; rr < length; rr++ ) {
-            dfloat g = exp( factor * ( rr * rr ) );
+            dfloat rad = static_cast< dfloat >( rr );
+            dfloat g = exp( factor * ( rad * rad ) );
             filter[ r0 - rr ] = g;
             normalization += g;
          }
@@ -56,9 +57,10 @@ FloatArray MakeHalfGaussian(
          dfloat moment = 0.0;
          filter[ r0 ] = 0.0;
          for( dip::uint rr = 1; rr < length; rr++ ) {
-            dfloat g = rr * exp( factor * ( rr * rr ) );
+            dfloat rad = static_cast< dfloat >( rr );
+            dfloat g = rad * exp( factor * ( rad * rad ) );
             filter[ r0 - rr ] = g;
-            moment += rr * g;
+            moment += rad * g;
          }
          dfloat normalization = 1.0 / ( 2.0 * moment );
          for( dip::uint rr = 0; rr < length - 1; rr++ ) {
@@ -73,17 +75,19 @@ FloatArray MakeHalfGaussian(
          dfloat mean = 0.0;
          filter[ r0 ] = ( -1.0 / sigma2 ) * norm;
          for( dip::uint rr = 1; rr < length; rr++ ) {
-            dfloat rr2 = rr * rr;
+            dfloat rad = static_cast< dfloat >( rr );
+            dfloat rr2 = rad * rad;
             dfloat g = ( ( -1.0 / sigma2 ) + ( rr2 ) / sigma4 ) * norm * exp( -( rr2 ) / ( 2.0 * sigma2 ) );
             filter[ r0 - rr ] = g;
             mean += g;
          }
-         mean = ( mean * 2.0 + filter[ r0 ] ) / ( r0 * 2.0 + 1.0 );
+         mean = ( mean * 2.0 + filter[ r0 ] ) / ( static_cast< dfloat >( r0 ) * 2.0 + 1.0 );
          filter[ r0 ] -= mean;
          dfloat moment = 0.0;
          for( dip::uint rr = 1; rr < length; rr++ ) {
+            dfloat rad = static_cast< dfloat >( rr );
             filter[ r0 - rr ] -= mean;
-            moment += rr * rr * filter[ r0 - rr ];
+            moment += rad * rad * filter[ r0 - rr ];
          }
          dfloat normalization = 1.0 / moment;
          for( dip::uint rr = 0; rr < length; rr++ ) {
@@ -99,10 +103,11 @@ FloatArray MakeHalfGaussian(
          filter[ r0 ] = 0.0;
          dfloat moment = 0.0;
          for( dip::uint rr = 1; rr < length; rr++ ) {
-            dfloat r2 = rr * rr;
-            dfloat g = norm * exp( -r2 / ( 2.0 * sigma2 ) ) * ( rr * ( 3.0 * sigma2 - r2 ) / sigma6 );
+            dfloat rad = static_cast< dfloat >( rr );
+            dfloat r2 = rad * rad;
+            dfloat g = norm * exp( -r2 / ( 2.0 * sigma2 ) ) * ( rad * ( 3.0 * sigma2 - r2 ) / sigma6 );
             filter[ r0 - rr ] = g;
-            moment += g * r2 * rr;
+            moment += g * r2 * rad;
          }
          dfloat normalization = 3.0 / moment;
          for( dip::uint rr = 0; rr < length; rr++ ) {

@@ -458,7 +458,7 @@ static inline void ExpandBufferConstant(
       *out = leftValue;
       out -= stride;
    }
-   out = buffer + pixels * stride;
+   out = buffer + static_cast< dip::sint >( pixels ) * stride;
    for( dip::sint ii = 0; ii < dip::sint( border ); ++ii ) {
       *out = rightValue;
       out += stride;
@@ -485,8 +485,8 @@ static inline void ExpandBufferFirstOrder(
       out -= stride;
    }
    // Right side
-   in = buffer + ( pixels - 1 ) * stride;
-   out = buffer + pixels * stride;
+   in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+   out = buffer + static_cast< dip::sint >( pixels ) * stride;
    d0 = *in;
    d1 = dfloat( *in ) - dfloat( *( in - stride ));
    for( dip::uint ii = 0; ii < border; ii++ ) {
@@ -507,7 +507,7 @@ static inline void ExpandBufferSecondOrder(
       dip::uint pixels, // guaranteed larger than 1
       dip::uint border  // guaranteed larger than 0
 ) {
-   dfloat b = border + 1;
+   dfloat b = static_cast< dfloat >( border ) + 1.0;
    // Left side
    DataType* in = buffer;
    DataType* out = buffer - stride;
@@ -516,18 +516,20 @@ static inline void ExpandBufferSecondOrder(
    dfloat d1 = ( b - 1.0 ) / b * d0 - b / ( b + 1.0 ) * f1;
    dfloat d2 = -1.0 / b * d0 + 1.0 / ( b + 1.0 ) * f1;
    for( dip::uint ii = 1; ii <= border; ii++ ) {
-      *out = clamp_cast< DataType >( d0 + ii * d1 + ii * ii * d2 );
+      dfloat x = static_cast< dfloat >( ii );
+      *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 );
       out -= stride;
    }
    // Right side
-   in = buffer + ( pixels - 1 ) * stride;
-   out = buffer + pixels * stride;
+   in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+   out = buffer + static_cast< dip::sint >( pixels ) * stride;
    d0 = *in;
    f1 = *( in - stride );
    d1 = ( b - 1.0 ) / b * d0 - b / ( b + 1.0 ) * f1;
    d2 = -1.0 / b * d0 + 1.0 / ( b + 1.0 ) * f1;
    for( dip::uint ii = 1; ii <= border; ii++ ) {
-      *out = clamp_cast< DataType >( d0 + ii * d1 + ii * ii * d2 );
+      dfloat x = static_cast< dfloat >( ii );
+      *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 );
       out += stride;
    }
 }
@@ -547,7 +549,7 @@ static inline void ExpandBufferThirdOrder(
       dip::uint pixels, // guaranteed larger than 2
       dip::uint border  // guaranteed larger than 0
 ) {
-   dfloat b = border + 1;
+   dfloat b = static_cast< dfloat >( border ) + 1.0;
    dfloat b12 = ( b + 1 ) * ( b + 1 );
    // Left side
    DataType* in = buffer;
@@ -558,19 +560,21 @@ static inline void ExpandBufferThirdOrder(
    dfloat d2 = ( 2.0 * b * f1 ) / b12 - ( d0 * ( 2.0 * b - 1.0 ) ) / ( b * b );
    dfloat d3 = d0 / ( b * b ) - f1 / b12;
    for( dip::uint ii = 1; ii <= border; ii++ ) {
-      *out = clamp_cast< DataType >( d0 + ii * d1 + ii * ii * d2 + ii * ii * ii * d3 );
+      dfloat x = static_cast< dfloat >( ii );
+      *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 + x * x * x * d3 );
       out -= stride;
    }
    // Right side
-   in = buffer + ( pixels - 1 ) * stride;
-   out = buffer + pixels * stride;
+   in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+   out = buffer + static_cast< dip::sint >( pixels ) * stride;
    d0 = *in;
    f1 = *( in - stride );
    d1 = -( 2.0 * d0 ) / b + d0 - ( b * b * f1 ) / b12;
    d2 = ( 2.0 * b * f1 ) / b12 - ( d0 * ( 2.0 * b - 1.0 ) ) / ( b * b );
    d3 = d0 / ( b * b ) - f1 / b12;
    for( dip::uint ii = 1; ii <= border; ii++ ) {
-      *out = clamp_cast< DataType >( d0 + ii * d1 + ii * ii * d2 + ii * ii * ii * d3 );
+      dfloat x = static_cast< dfloat >( ii );
+      *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 + x * x * x * d3 );
       out += stride;
    }
 }
@@ -591,8 +595,8 @@ static inline void ExpandBufferMirror(
       out -= stride;
    }
    // Right side
-   in = buffer + ( pixels - 1 ) * stride;
-   out = buffer + pixels * stride;
+   in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+   out = buffer + static_cast< dip::sint >( pixels ) * stride;
    for( dip::uint ii = 0; ii < border; ii++ ) {
       *out = invert ? saturated_inv( *in ) : *in;
       in += (( ii / pixels ) & 1 ) ? stride : -stride;
@@ -608,19 +612,19 @@ static inline void ExpandBufferPeriodic(
       dip::uint border  // guaranteed larger than 0
 ) {
 // Left side
-   DataType* in = buffer + ( pixels - 1 ) * stride;
+   DataType* in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
    DataType* out = buffer - stride;
    for( dip::uint ii = 0; ii < border; ii++ ) {
       *out = invert ? saturated_inv( *in ) : *in;
       if( !( ii % pixels ) ) {
-         in = buffer + ( pixels - 1 ) * stride;
+         in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
       }
       in -= stride;
       out -= stride;
    }
    // Right side
    in = buffer;
-   out = buffer + pixels * stride;
+   out = buffer + static_cast< dip::sint >( pixels ) * stride;
    for( dip::uint ii = 0; ii < border; ii++ ) {
       *out = invert ? saturated_inv( *in ) : *in;
       if( !( ii % pixels ) ) {
@@ -730,7 +734,7 @@ static inline void ExpandBufferFromTo(
 
       case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
-            ExpandBufferConstant( buffer, stride, pixels, border, buffer[ 0 ], buffer[ ( pixels - 1 ) * stride ] );
+            ExpandBufferConstant( buffer, stride, pixels, border, buffer[ 0 ], buffer[ ( static_cast< dip::sint >( pixels ) - 1 ) * stride ] );
          }
          break;
    }

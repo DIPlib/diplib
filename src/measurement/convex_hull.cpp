@@ -33,7 +33,7 @@
 namespace dip {
 
 
-static inline void DecrementMod4( int& k ) {
+static inline void DecrementMod4( unsigned& k ) {
    k = ( k == 0 ) ? ( 3 ) : ( k - 1 );
 }
 
@@ -63,18 +63,19 @@ dip::Polygon ChainCode::Polygon() const {
       polygon.vertices.push_back( pts[ 2 ] + pos );
       polygon.vertices.push_back( pts[ 1 ] + pos );
    } else {
-      int m = codes.back();
-      for( int n : codes ) {
-         int k, l;
+      unsigned m = codes.back();
+      for( unsigned n : codes ) {
+         unsigned k, l;
          if( is8connected ) {
             k = ( m + 1 ) / 2;
             if( k == 4 ) {
                k = 0;
             }
-            l = ( n / 2 ) - k;
-            if( l < 0 ) {
+            l = n / 2;
+            if( l < k ) {
                l += 4;
             }
+            l -= k;
          } else {
             k = m;
             l = n;

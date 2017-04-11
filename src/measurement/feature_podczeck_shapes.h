@@ -35,9 +35,7 @@ class FeaturePodczeckShapes : public Composite {
          out[ 0 ].name = "Triangle";
          out[ 0 ].name = "Ellipse";
          out[ 0 ].name = "Elongation";
-         sizeIndex_ = -1;
-         feretIndex_ = -1;
-         perimeterIndex_ = -1;
+         hasIndex_ = false;
          return out;
       }
 
@@ -51,7 +49,7 @@ class FeaturePodczeckShapes : public Composite {
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( sizeIndex_ == -1 ) {
+         if( hasIndex_ ) {
             sizeIndex_ = dependencies.ValueIndex( "Size" );
             feretIndex_ = dependencies.ValueIndex( "ConvexArea" );
             perimeterIndex_ = dependencies.ValueIndex( "Perimeter" );
@@ -73,9 +71,10 @@ class FeaturePodczeckShapes : public Composite {
       }
 
    private:
-      dip::sint sizeIndex_;
-      dip::sint feretIndex_;
-      dip::sint perimeterIndex_;
+      dip::uint sizeIndex_;
+      dip::uint feretIndex_;
+      dip::uint perimeterIndex_;
+      bool hasIndex_;
 };
 
 

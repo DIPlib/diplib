@@ -300,7 +300,7 @@ void Scan(
             inBuffers[ ii ].stride = 0;
             buffers.emplace_back( inBufferTypes[ ii ].SizeOf() * inBuffers[ ii ].tensorLength );
          } else {
-            inBuffers[ ii ].stride = inBuffers[ ii ].tensorLength;
+            inBuffers[ ii ].stride = static_cast< dip::sint >( inBuffers[ ii ].tensorLength );
             buffers.emplace_back( bufferSize * inBufferTypes[ ii ].SizeOf() * inBuffers[ ii ].tensorLength );
          }
          inBuffers[ ii ].buffer = buffers.back().data();
@@ -316,7 +316,7 @@ void Scan(
       if( outUseBuffer[ ii ] ) {
          outBuffers[ ii ].tensorLength = out[ ii ].TensorElements();
          outBuffers[ ii ].tensorStride = 1;
-         outBuffers[ ii ].stride = outBuffers[ ii ].tensorLength;
+         outBuffers[ ii ].stride = static_cast< dip::sint >( outBuffers[ ii ].tensorLength );
          buffers.emplace_back( bufferSize * outBufferTypes[ ii ].SizeOf() * outBuffers[ ii ].tensorLength );
          outBuffers[ ii ].buffer = buffers.back().data();
       } else {
@@ -373,7 +373,7 @@ void Scan(
                // to copy the buffer over again. This happens with singleton-expanded input images.
                // But it's easier to copy, and also safer as the lineFilter function could be bad and write in its input!
                CopyBuffer(
-                     in[ ii ].Pointer( inIndices[ ii ] + sectionStart * in[ ii ].Stride( processingDim )),
+                     in[ ii ].Pointer( inIndices[ ii ] + static_cast< dip::sint >( sectionStart ) * in[ ii ].Stride( processingDim )),
                      in[ ii ].DataType(),
                      in[ ii ].Stride( processingDim ),
                      in[ ii ].TensorStride(),
@@ -385,13 +385,13 @@ void Scan(
                      inBuffers[ ii ].tensorLength,
                      lookUpTables[ ii ] );
             } else {
-               inBuffers[ ii ].buffer = in[ ii ].Pointer( inIndices[ ii ] + sectionStart * in[ ii ].Stride( processingDim ));
+               inBuffers[ ii ].buffer = in[ ii ].Pointer( inIndices[ ii ] + static_cast< dip::sint >( sectionStart ) * in[ ii ].Stride( processingDim ));
             }
          }
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
             //std::cout << "      outIndices[" << ii << "] = " << outIndices[ii] << std::endl;
             if( !outUseBuffer[ ii ] ) {
-               outBuffers[ ii ].buffer = out[ ii ].Pointer( outIndices[ ii ] + sectionStart * out[ ii ].Stride( processingDim ));
+               outBuffers[ ii ].buffer = out[ ii ].Pointer( outIndices[ ii ] + static_cast< dip::sint >( sectionStart ) * out[ ii ].Stride( processingDim ));
             }
          }
 
@@ -406,7 +406,7 @@ void Scan(
                      outBufferTypes[ ii ],
                      outBuffers[ ii ].stride,
                      outBuffers[ ii ].tensorStride,
-                     out[ ii ].Pointer( outIndices[ ii ] + sectionStart * out[ ii ].Stride( processingDim )),
+                     out[ ii ].Pointer( outIndices[ ii ] + static_cast< dip::sint >( sectionStart ) * out[ ii ].Stride( processingDim )),
                      out[ ii ].DataType(),
                      out[ ii ].Stride( processingDim ),
                      out[ ii ].TensorStride(),
@@ -434,10 +434,10 @@ void Scan(
             }
             // Rewind along this dimension
             for( dip::uint ii = 0; ii < nIn; ++ii ) {
-               inIndices[ ii ] -= position[ dd ] * in[ ii ].Stride( dd );
+               inIndices[ ii ] -= static_cast< dip::sint >( position[ dd ] ) * in[ ii ].Stride( dd );
             }
             for( dip::uint ii = 0; ii < nOut; ++ii ) {
-               outIndices[ ii ] -= position[ dd ] * out[ ii ].Stride( dd );
+               outIndices[ ii ] -= static_cast< dip::sint >( position[ dd ] ) * out[ ii ].Stride( dd );
             }
             position[ dd ] = 0;
             // Continue loop to increment along next dimension

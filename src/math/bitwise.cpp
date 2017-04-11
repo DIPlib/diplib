@@ -33,7 +33,7 @@ void And(
    DataType dt = lhs.DataType();
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
-         []( auto its ) { return *its[ 0 ] & *its[ 1 ]; }
+         []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] & *its[ 1 ] ); } // integer promotion causes compiler warnings
    ), dt );
    Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
@@ -47,7 +47,7 @@ void Or(
    DataType dt = lhs.DataType();
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
-         []( auto its ) { return *its[ 0 ] | *its[ 1 ]; }
+         []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] | *its[ 1 ] ); } // integer promotion causes compiler warnings
    ), dt );
    Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
@@ -61,7 +61,7 @@ void Xor(
    DataType dt = lhs.DataType();
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewDyadicScanLineFilter, (
-         []( auto its ) { return *its[ 0 ] ^ *its[ 1 ]; }
+         []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] ^ *its[ 1 ] ); } // integer promotion causes compiler warnings
    ), dt );
    Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
@@ -74,7 +74,7 @@ void Not(
    DataType dt = in.DataType();
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewMonadicScanLineFilter, (
-         []( auto its ) { return ~*its[ 0 ]; }
+         []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( ~*its[ 0 ] ); } // integer promotion causes compiler warnings
    ), dt );
    Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
 }

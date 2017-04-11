@@ -57,7 +57,7 @@ Image& Image::PermuteDimensions( UnsignedArray const& order ) {
 Image& Image::SwapDimensions( dip::uint dim1, dip::uint dim2 ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = sizes_.size();
-   DIP_THROW_IF( ( dim1 >= nd ) || ( dim2 >= nd ), E::ILLEGAL_DIMENSION );
+   DIP_THROW_IF(( dim1 >= nd ) || ( dim2 >= nd ), E::ILLEGAL_DIMENSION );
    if( dim1 != dim2 ) {
       std::swap( sizes_[ dim1 ], sizes_[ dim2 ] );
       std::swap( strides_[ dim1 ], strides_[ dim2 ] );
@@ -69,7 +69,7 @@ Image& Image::SwapDimensions( dip::uint dim1, dip::uint dim2 ) {
 
 Image& Image::Flatten() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::uint stride;
+   dip::sint stride;
    void* p;
    GetSimpleStrideAndOrigin( stride, p );
    if( !p ) {
@@ -83,7 +83,7 @@ Image& Image::Flatten() {
       DIP_THROW_IF( !p, "Copying over the image data didn't yield simple strides" );
       swap( newimg );
    }
-   strides_ = { dip::sint( stride ) };
+   strides_ = { stride };
    sizes_ = { NumberOfPixels() };
    origin_ = p;
    if( pixelSize_.IsIsotropic() ) {
@@ -199,7 +199,7 @@ bool Image::IsSingletonExpansionPossible( UnsignedArray const& newSizes ) const 
       return false;
    }
    for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
-      if( ( sizes_[ ii ] != newSizes[ ii ] ) && ( sizes_[ ii ] != 1 ) ) {
+      if(( sizes_[ ii ] != newSizes[ ii ] ) && ( sizes_[ ii ] != 1 )) {
          return false;
       }
    }
@@ -224,7 +224,7 @@ Image& Image::Mirror( BooleanArray process ) {
    DIP_END_STACK_TRACE
    for( dip::uint ii = 0; ii < nd; ++ii ) {
       if( process[ ii ] ) {
-         origin_ = Pointer( ( sizes_[ ii ] - 1 ) * strides_[ ii ] );
+         origin_ = Pointer( static_cast< dip::sint >( sizes_[ ii ] - 1 ) * strides_[ ii ] );
          strides_[ ii ] = -strides_[ ii ];
       }
    }
@@ -232,17 +232,13 @@ Image& Image::Mirror( BooleanArray process ) {
 }
 
 
-Image& Image::TensorToSpatial( dip::sint dim ) {
+Image& Image::TensorToSpatial( dip::uint dim ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = sizes_.size();
-   if( dim < 0 ) {
-      dim = nd;
-   }
-   dip::uint newdim = ( dip::uint )dim;
-   DIP_THROW_IF( newdim > nd, E::INVALID_PARAMETER );
-   sizes_.insert( newdim, tensor_.Elements() );
-   strides_.insert( newdim, tensorStride_ );
-   pixelSize_.InsertDimension( newdim );
+   DIP_THROW_IF( dim > nd, E::INVALID_PARAMETER );
+   sizes_.insert( dim, tensor_.Elements() );
+   strides_.insert( dim, tensorStride_ );
+   pixelSize_.InsertDimension( dim );
    tensor_.SetScalar();
    tensorStride_ = 1;
    ResetColorSpace();
@@ -250,42 +246,34 @@ Image& Image::TensorToSpatial( dip::sint dim ) {
 }
 
 
-Image& Image::SpatialToTensor( dip::sint dim, dip::uint rows, dip::uint cols ) {
+Image& Image::SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !IsScalar(), E::IMAGE_NOT_SCALAR );
    dip::uint nd = sizes_.size();
-   if( dim < 0 ) {
-      dim = nd;
-   }
-   dip::uint olddim = ( dip::uint )dim;
-   DIP_THROW_IF( olddim >= nd, E::INVALID_PARAMETER );
-   if( ( rows == 0 ) && ( cols == 0 ) ) {
+   DIP_THROW_IF( dim >= nd, E::INVALID_PARAMETER );
+   if(( rows == 0 ) && ( cols == 0 )) {
       rows = sizes_[ dim ];
       cols = 1;
    } else if( rows == 0 ) {
-      rows = sizes_[ olddim ] / cols;
+      rows = sizes_[ dim ] / cols;
    } else if( cols == 0 ) {
-      cols = sizes_[ olddim ] / rows;
+      cols = sizes_[ dim ] / rows;
    }
-   DIP_THROW_IF( sizes_[ olddim ] != rows * cols, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( sizes_[ dim ] != rows * cols, E::PARAMETER_OUT_OF_RANGE );
    tensor_.SetMatrix( rows, cols );
-   tensorStride_ = strides_[ olddim ];
-   sizes_.erase( olddim );
-   strides_.erase( olddim );
-   pixelSize_.EraseDimension( olddim );
+   tensorStride_ = strides_[ dim ];
+   sizes_.erase( dim );
+   strides_.erase( dim );
+   pixelSize_.EraseDimension( dim );
    ResetColorSpace();
    return *this;
 }
 
-Image& Image::SplitComplex( dip::sint dim ) {
+Image& Image::SplitComplex( dip::uint dim ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nd = sizes_.size();
-   if( dim < 0 ) {
-      dim = nd;
-   }
-   dip::uint newdim = ( dip::uint )dim;
-   DIP_THROW_IF( newdim > nd, E::INVALID_PARAMETER );
+   DIP_THROW_IF( dim > nd, E::INVALID_PARAMETER );
    // Change data type
    dataType_ = dataType_ == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
    // Sample size is halved, meaning all strides must be doubled
@@ -294,33 +282,29 @@ Image& Image::SplitComplex( dip::sint dim ) {
    }
    tensorStride_ *= 2;
    // Create new spatial dimension
-   sizes_.insert( newdim, 2 );
-   strides_.insert( newdim, 1 );
-   pixelSize_.InsertDimension( newdim );
+   sizes_.insert( dim, 2 );
+   strides_.insert( dim, 1 );
+   pixelSize_.InsertDimension( dim );
    return *this;
 }
 
-Image& Image::MergeComplex( dip::sint dim ) {
+Image& Image::MergeComplex( dip::uint dim ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nd = sizes_.size();
-   if( dim < 0 ) {
-      dim = nd;
-   }
-   dip::uint olddim = static_cast< dip::uint >( dim );
-   DIP_THROW_IF( olddim >= nd, E::INVALID_PARAMETER );
-   DIP_THROW_IF( ( sizes_[ olddim ] != 2 ) || ( strides_[ olddim ] != 1 ), E::SIZES_DONT_MATCH );
+   DIP_THROW_IF( dim >= nd, E::INVALID_PARAMETER );
+   DIP_THROW_IF(( sizes_[ dim ] != 2 ) || ( strides_[ dim ] != 1 ), E::SIZES_DONT_MATCH );
    // Change data type
    dataType_ = dataType_ == DT_SFLOAT ? DT_SCOMPLEX : DT_DCOMPLEX;
    // Delete old spatial dimension
-   sizes_.erase( olddim );
-   strides_.erase( olddim );
+   sizes_.erase( dim );
+   strides_.erase( dim );
    // Sample size is doubled, meaning all strides must be halved
    for( dip::uint ii = 0; ii < nd; ++ii ) {
       strides_[ ii ] /= 2;
    }
    tensorStride_ /= 2;
-   pixelSize_.EraseDimension( olddim );
+   pixelSize_.EraseDimension( dim );
    return *this;
 }
 
@@ -343,7 +327,7 @@ Image& Image::SplitComplexToTensor() {
 
 Image& Image::MergeTensorToComplex() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( ( tensor_.Elements() != 2 ) || ( tensorStride_ != 1 ), E::NTENSORELEM_DONT_MATCH );
+   DIP_THROW_IF(( tensor_.Elements() != 2 ) || ( tensorStride_ != 1 ), E::NTENSORELEM_DONT_MATCH );
    DIP_THROW_IF( dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
    // Change data type
    dataType_ = dataType_ == DT_SFLOAT ? DT_SCOMPLEX : DT_DCOMPLEX;

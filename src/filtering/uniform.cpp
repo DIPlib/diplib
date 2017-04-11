@@ -45,8 +45,8 @@ class RectangularUniformLineFilter : public Framework::SeparableLineFilter {
          }
          dip::uint filterSize = sizes_[ procDim ];
          FloatType< TPI > norm = 1 / static_cast< FloatType< TPI >>( filterSize );
-         TPI* left = in - ( filterSize / 2 ) * inStride; // the leftmost pixel in the filter
-         TPI* right = in + (( filterSize + 1 ) / 2 ) * inStride; // one past the rightmost pixel in the filter
+         TPI* left = in - static_cast< dip::sint >( filterSize / 2 ) * inStride; // the leftmost pixel in the filter
+         TPI* right = in + static_cast< dip::sint >(( filterSize + 1 ) / 2 ) * inStride; // one past the rightmost pixel in the filter
          TPI sum = 0;
          for( in = left; in != right; in += inStride ) {
             sum += *in;
@@ -121,7 +121,7 @@ class PixelTableUniformLineFilter : public Framework::FullLineFilter {
          for( dip::uint ii = 1; ii < length; ++ii ) {
             for( auto run : pixelTable.Runs() ) {
                sum -= in[ run.offset ];
-               sum += in[ run.offset + run.length * inStride ];
+               sum += in[ run.offset + static_cast< dip::sint >( run.length ) * inStride ];
             }
             in += inStride;
             out += outStride;

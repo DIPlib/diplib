@@ -66,7 +66,7 @@ Image Image::CopyAt( Image const& mask ) const {
    } else {
       do {
          if( *( static_cast< bin* >( srcIt.OutPointer() ) ) ) {
-            for( dip::uint ii = 0; ii < telems; ++ii ) {
+            for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
                std::memcpy( destIt.Sample( ii ), srcIt.InSample( ii ), bytes );
             }
             ++destIt;
@@ -105,12 +105,12 @@ Image Image::CopyAt( UnsignedArray const& indices ) const {
    GenericImageIterator destIt( destination );
    if( telems == 1 ) { // most frequent case, really.
       do {
-         std::memcpy( destIt.Pointer(), Pointer( coordinates( *indIt )), bytes );
+         std::memcpy( destIt.Pointer(), Pointer( coordinates( static_cast< dip::sint >( *indIt ))), bytes );
       } while( ++indIt, ++destIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
    } else {
       do {
-         dip::sint offset = Offset( coordinates( *indIt ));
-         for( dip::uint ii = 0; ii < telems; ++ii ) {
+         dip::sint offset = Offset( coordinates( static_cast< dip::sint >( *indIt )));
+         for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
             std::memcpy( destIt.Sample( ii ), Pointer( offset + ii * TensorStride() ), bytes );
          }
       } while( ++indIt, ++destIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
@@ -152,7 +152,7 @@ Image Image::CopyAt( CoordinateArray const& coordinates ) const {
    } else {
       do {
          dip::sint offset = Offset( *corIt );
-         for( dip::uint ii = 0; ii < telems; ++ii ) {
+         for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
             std::memcpy( destIt.Sample( ii ), Pointer( offset + ii * TensorStride() ), bytes );
          }
       } while( ++corIt, ++destIt ); // these two must end at the same time, we test the image iterator, as corIt should be compared with the end iterator.
@@ -197,7 +197,7 @@ void Image::CopyAt( Image const& source, Image const& mask, Option::ThrowExcepti
       } else {
          do {
             if( *( static_cast< bin* >( destIt.OutPointer() ))) {
-               for( dip::uint ii = 0; ii < telems; ++ii ) {
+               for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
                   std::memcpy( destIt.InSample( ii ), srcIt.Sample( ii ), bytes );
                }
                ++srcIt;
@@ -255,12 +255,12 @@ void Image::CopyAt( Image const& source, UnsignedArray const& indices ) {
       GenericImageIterator srcIt( source );
       if( telems == 1 ) { // most frequent case, really.
          do {
-            std::memcpy( Pointer( coordinates( *indIt )), srcIt.Pointer(), bytes );
+            std::memcpy( Pointer( coordinates( static_cast< dip::sint >( *indIt ))), srcIt.Pointer(), bytes );
          } while( ++indIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
       } else {
          do {
-            dip::sint offset = Offset( coordinates( *indIt ));
-            for( dip::uint ii = 0; ii < telems; ++ii ) {
+            dip::sint offset = Offset( coordinates( static_cast< dip::sint >( *indIt )));
+            for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
                std::memcpy( Pointer( offset + ii * TensorStride() ), srcIt.Sample( ii ), bytes );
             }
          } while( ++indIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
@@ -276,7 +276,7 @@ void Image::CopyAt( Image const& source, UnsignedArray const& indices ) {
                source.DataType(),
                1, // stride ignored, we're reading only one pixel
                source.TensorStride(),
-               Pointer( coordinates( *indIt )),
+               Pointer( coordinates( static_cast< dip::sint >( *indIt ))),
                DataType(),
                1, // stride ignored, we're reading only one pixel
                TensorStride(),
@@ -318,7 +318,7 @@ void Image::CopyAt( Image const& source, CoordinateArray const& coordinates ) {
       } else {
          do {
             dip::sint offset = Offset( *corIt );
-            for( dip::uint ii = 0; ii < telems; ++ii ) {
+            for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
                std::memcpy( Pointer( offset + ii * TensorStride() ), srcIt.Sample( ii ), bytes );
             }
          } while( ++corIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as corIt should be compared with the end iterator.
@@ -388,12 +388,12 @@ void Image::Copy( Image const& src ) {
       Forge();
    }
    // A single CopyBuffer call if both images have simple strides and same dimension order
-   dip::uint sstride_d;
+   dip::sint sstride_d;
    void* porigin_d;
    GetSimpleStrideAndOrigin( sstride_d, porigin_d );
    if( porigin_d ) {
       //std::cout << "dip::Image::Copy: destination has simple strides\n";
-      dip::uint sstride_s;
+      dip::sint sstride_s;
       void* porigin_s;
       src.GetSimpleStrideAndOrigin( sstride_s, porigin_s );
       if( porigin_s ) {
@@ -404,11 +404,11 @@ void Image::Copy( Image const& src ) {
             CopyBuffer(
                   porigin_s,
                   src.dataType_,
-                  static_cast< dip::sint >( sstride_s ),
+                  sstride_s,
                   src.tensorStride_,
                   porigin_d,
                   dataType_,
-                  static_cast< dip::sint >( sstride_d ),
+                  sstride_d,
                   tensorStride_,
                   NumberOfPixels(),
                   tensor_.Elements()
@@ -461,12 +461,12 @@ void Image::ExpandTensor() {
       tensor_ = tensor;
       pixelSize_ = pixelSize;
       // A single CopyBuffer call if both images have simple strides and same dimension order
-      dip::uint sstride_d;
+      dip::sint sstride_d;
       void* porigin_d;
       GetSimpleStrideAndOrigin( sstride_d, porigin_d );
       if( porigin_d ) {
          //std::cout << "dip::ExpandTensor: destination has simple strides\n";
-         dip::uint sstride_s;
+         dip::sint sstride_s;
          void* porigin_s;
          source.GetSimpleStrideAndOrigin( sstride_s, porigin_s );
          if( porigin_s ) {
@@ -477,11 +477,11 @@ void Image::ExpandTensor() {
                CopyBuffer(
                      porigin_s,
                      source.DataType(),
-                     static_cast< dip::sint >( sstride_s ),
+                     sstride_s,
                      source.TensorStride(),
                      porigin_d,
                      DataType(),
-                     static_cast< dip::sint >( sstride_d ),
+                     sstride_d,
                      TensorStride(),
                      NumberOfPixels(),
                      TensorElements(),
@@ -529,7 +529,7 @@ void Image::Convert( dip::DataType dt ) {
       if( !IsShared() && ( dt.SizeOf() == dataType_.SizeOf() )) {
          // The operation can happen in place.
          // Loop over all pixels, casting with clamp each of the values; finally set the data type field.
-         dip::uint sstride;
+         dip::sint sstride;
          void* porigin;
          GetSimpleStrideAndOrigin( sstride, porigin );
          if( porigin ) {
@@ -538,11 +538,11 @@ void Image::Convert( dip::DataType dt ) {
             CopyBuffer(
                   porigin,
                   dataType_,
-                  static_cast< dip::sint >( sstride ),
+                  sstride,
                   tensorStride_,
                   porigin,
                   dt,
-                  static_cast< dip::sint >( sstride ),
+                  sstride,
                   tensorStride_,
                   NumberOfPixels(),
                   tensor_.Elements()
@@ -586,7 +586,7 @@ void Image::Convert( dip::DataType dt ) {
 template< typename inT >
 static inline void InternFill( Image& dest, inT v ) {
    DIP_THROW_IF( !dest.IsForged(), E::IMAGE_NOT_FORGED );
-   dip::uint sstride_d;
+   dip::sint sstride_d;
    void* porigin_d;
    dest.GetSimpleStrideAndOrigin( sstride_d, porigin_d );
    if( porigin_d ) {

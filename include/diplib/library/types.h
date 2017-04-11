@@ -310,9 +310,9 @@ struct DIP_NO_EXPORT Range {
    /// Get the number of pixels addressed by the range (must be fixed first!).
    dip::uint Size() const {
       if( start > stop ) {
-         return 1 + ( start - stop ) / step;
+         return 1 + static_cast< dip::uint >( start - stop ) / step;
       } else {
-         return 1 + ( stop - start ) / step;
+         return 1 + static_cast< dip::uint >( stop - start ) / step;
       }
    }
 
@@ -324,9 +324,9 @@ struct DIP_NO_EXPORT Range {
    /// Get the signed step size for the range (must be fixed first!).
    dip::sint Step() const {
       if( start > stop ) {
-         return -step;
+         return -static_cast< dip::sint >( step );
       } else {
-         return step;
+         return static_cast< dip::sint >( step );
       }
    }
 

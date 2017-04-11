@@ -33,6 +33,7 @@
 #include "diplib/library/error.h"
 #include "diplib/library/types.h"
 #include "diplib/library/numeric.h"
+#include "diplib/library/clamp_cast.h"
 
 
 /// \file
@@ -106,7 +107,7 @@ class DIP_NO_EXPORT Units {
       /// Construct a `%Units` for a specific unit.
       Units( BaseUnits bu, dip::sint8 power = 1 ) {
          power_.fill( 0 );
-         power_[ int( bu ) ] = power;
+         power_[ static_cast< dip::uint >( bu ) ] = power;
       }
 
       /// \brief Construct a `%Units` from a string representation of units. The string representation should be as
@@ -172,8 +173,8 @@ class DIP_NO_EXPORT Units {
 
       /// Elevates `this` to the power `p`.
       Units& Power( dip::sint8 power ) {
-         for( auto& p : power_ ) {
-            p = p * power;
+         for( dip::sint8& p : power_ ) {
+            p = clamp_cast< dip::sint8 >( p * power );
          }
          return *this;
       }
@@ -181,7 +182,7 @@ class DIP_NO_EXPORT Units {
       /// Multiplies two units objects.
       Units& operator*=( Units const& other ) {
          for( dip::uint ii = 0; ii < ndims_; ++ii ) {
-            power_[ ii ] += other.power_[ ii ];
+            power_[ ii ] = clamp_cast< dip::sint8 >( power_[ ii ] + other.power_[ ii ] );
          }
          return *this;
       }
@@ -189,7 +190,7 @@ class DIP_NO_EXPORT Units {
       /// Divides two units objects.
       Units& operator/=( Units const& other ) {
          for( dip::uint ii = 0; ii < ndims_; ++ii ) {
-            power_[ ii ] -= other.power_[ ii ];
+            power_[ ii ] = clamp_cast< dip::sint8 >( power_[ ii ] - other.power_[ ii ] );
          }
          return *this;
       }

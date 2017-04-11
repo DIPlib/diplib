@@ -555,7 +555,7 @@ class DIP_NO_EXPORT Image {
       /// \see GetSimpleStrideAndOrigin, HasContiguousData, HasNormalStrides, Strides, TensorStride.
       bool HasSimpleStride() const {
          void* p;
-         dip::uint s;
+         dip::sint s;
          GetSimpleStrideAndOrigin( s, p );
          return p != nullptr;
       }
@@ -567,10 +567,12 @@ class DIP_NO_EXPORT Image {
       /// sets `porigin==nullptr`. Note that this only tests spatial dimesions,
       /// the tensor dimension must still be accessed separately.
       ///
+      /// The `stride` returned is always positive.
+      ///
       /// The image must be forged.
       ///
       /// \see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
-      DIP_EXPORT void GetSimpleStrideAndOrigin( dip::uint& stride, void*& origin ) const;
+      DIP_EXPORT void GetSimpleStrideAndOrigin( dip::sint& stride, void*& origin ) const;
 
       /// \brief Checks to see if `other` and `this` have their dimensions ordered in
       /// the same way.
@@ -1222,7 +1224,7 @@ class DIP_NO_EXPORT Image {
       // Shifts the pointer to the first sample in the image by offset. Do not use this
       // function unless you know what you're doing.
       void dip__ShiftOrigin( dip::sint offset ) {
-         origin_ = static_cast< uint8* >( origin_ ) + offset * dataType_.SizeOf();
+         origin_ = static_cast< uint8* >( origin_ ) + offset * static_cast< dip::sint >( dataType_.SizeOf() );
       }
 
       /// \brief Get a pointer to the pixel given by the offset.
@@ -1234,7 +1236,7 @@ class DIP_NO_EXPORT Image {
       /// \see Origin, Offset, OffsetToCoordinates
       void* Pointer( dip::sint offset ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         return static_cast< uint8* >( origin_ ) + offset * dataType_.SizeOf();
+         return static_cast< uint8* >( origin_ ) + offset * static_cast< dip::sint >( dataType_.SizeOf() );
       }
 
       /// \brief Get a pointer to the pixel given by the coordinates index.
@@ -1284,7 +1286,7 @@ class DIP_NO_EXPORT Image {
          dip::sint offset = 0;
          for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
             DIP_THROW_IF( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
-            offset += coords[ ii ] * strides_[ ii ];
+            offset += static_cast< dip::sint >( coords[ ii ] ) * strides_[ ii ];
          }
          return offset;
       }
@@ -1379,7 +1381,7 @@ class DIP_NO_EXPORT Image {
       /// \see Index, Offset, IndexToCoordinatesComputer, OffsetToCoordinates
       UnsignedArray IndexToCoordinates( dip::uint index ) const {
          CoordinatesComputer comp = IndexToCoordinatesComputer();
-         return comp( index );
+         return comp( static_cast< dip::sint >( index ));
       }
 
       /// \brief Returns a functor that computes coordinates given a linear index.
@@ -1575,33 +1577,46 @@ class DIP_NO_EXPORT Image {
       ///
       /// Works even for scalar images, creating a singleton dimension. `dim`
       /// defines the new dimension, subsequent dimensions will be shifted over.
-      /// `dim` should not be larger than the number of dimensions. If `dim`
-      /// is negative, the new dimension will be the last one. The image must
-      /// be forged.
-      DIP_EXPORT Image& TensorToSpatial( dip::sint dim = -1 );
+      /// `dim` should not be larger than the number of dimensions. `dim`
+      /// defaults to the image dimensionality, meaning that the new dimension will
+      /// be the last one. The image must be forged.
+      DIP_EXPORT Image& TensorToSpatial( dip::uint dim );
+      inline Image& TensorToSpatial() {
+         return TensorToSpatial( Dimensionality() );
+      }
 
       /// \brief Convert spatial dimension to tensor dimensions. The image must be scalar.
       ///
       /// If `rows` or `cols` is zero, its size is computed from the size of the
       /// image along dimension `dim`. If both are zero, a default column tensor
-      /// is created. If `dim` is negative, the last dimension is used. The
-      /// image must be forged.
-      DIP_EXPORT Image& SpatialToTensor( dip::sint dim = -1, dip::uint rows = 0, dip::uint cols = 0 );
+      /// is created. `dim` defaults to the last spatial dimension. The image must
+      /// be forged.
+      DIP_EXPORT Image& SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols );
+      inline Image& SpatialToTensor( dip::uint rows, dip::uint cols ) {
+         return SpatialToTensor( Dimensionality() - 1, rows, cols );
+      }
 
       /// \brief Split the two values in a complex sample into separate samples,
       /// creating a new spatial dimension of size 2.
       ///
       /// `dim` defines the new
       /// dimension, subsequent dimensions will be shifted over. `dim` should
-      /// not be larger than the number of dimensions. If `dim` is negative,
-      /// the new dimension will be the last one. The image must be forged.
-      DIP_EXPORT Image& SplitComplex( dip::sint dim = -1 );
+      /// not be larger than the number of dimensions. `dim` defaults to the
+      /// image dimensionality, meaning that the new dimension will be the last one.
+      /// The image must be forged.
+      DIP_EXPORT Image& SplitComplex( dip::uint dim );
+      inline Image& SplitComplex() {
+         return SplitComplex( Dimensionality() );
+      }
 
       /// \brief Merge the two samples along dimension `dim` into a single complex-valued sample.
       ///
-      /// Dimension `dim` must have size 2 and a stride of 1. If `dim` is negative, the last
-      /// dimension is used. The image must be forged.
-      DIP_EXPORT Image& MergeComplex( dip::sint dim = -1 );
+      /// Dimension `dim` must have size 2 and a stride of 1. `dim` defaults to the last
+      /// spatial dimension. The image must be forged.
+      DIP_EXPORT Image& MergeComplex( dip::uint dim );
+      inline Image& MergeComplex() {
+         return MergeComplex( Dimensionality() - 1 );
+      }
 
       /// \brief Split the two values in a complex sample into separate samples of
       /// a tensor. The image must be scalar and forged.

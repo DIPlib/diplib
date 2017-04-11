@@ -18,6 +18,8 @@
  * limitations under the License.
  */
 
+#include "diplib/library/clamp_cast.h"
+
 namespace dip {
 
 namespace {
@@ -27,7 +29,7 @@ inline dip::uint HalfGaussianSize(
       dip::uint order,
       dfloat truncation
 ) {
-   return static_cast< dip::uint >( std::ceil( ( truncation + 0.5 * order ) * sigma ));
+   return clamp_cast< dip::uint >( std::ceil( ( truncation + 0.5 * static_cast< dfloat >( order )) * sigma ));
 }
 
 } // namespace

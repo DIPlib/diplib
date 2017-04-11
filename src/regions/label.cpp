@@ -26,13 +26,13 @@
 namespace dip {
 
 dip::uint Label(
-      Image const& binary,
-      Image& out,
-      dip::uint connectivity,
-      String mode,
-      dip::uint minSize,
-      dip::uint maxSize,
-      BoundaryConditionArray bc
+      Image const& /*binary*/,
+      Image& /*out*/,
+      dip::uint /*connectivity*/,
+      String /*mode*/,
+      dip::uint /*minSize*/,
+      dip::uint /*maxSize*/,
+      BoundaryConditionArray /*bc*/
 ) {
    // TODO
    return 0;

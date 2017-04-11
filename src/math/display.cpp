@@ -78,7 +78,7 @@ void dip__ImageDisplay(
    dip::uint telems = slice.TensorElements();
    dip::sint sliceStrideT = slice.TensorStride();
    dip::sint outStrideT = out.TensorStride();
-   for( dip::uint kk = 0; kk < telems; ++kk ) {
+   for( dip::sint kk = 0; kk < static_cast< dip::sint >( telems ); ++kk ) {
       TPI* slicePtr = static_cast< TPI* >( slice.Pointer( sliceStrideT * kk ) );
       uint8* outPtr = static_cast< uint8* >( out.Pointer( outStrideT * kk ) );
       for( dip::uint jj = 0; jj < height; ++jj ) {
@@ -128,7 +128,7 @@ void ImageDisplay(
          RangeArray rangeArray( nDims ); // By default, covers all image pixels
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             if(( ii != dim1 ) && ( ii != dim2 )) {
-               rangeArray[ ii ] = Range( coordinates[ ii ] );
+               rangeArray[ ii ] = Range( static_cast< dip::sint >( coordinates[ ii ] ));
             }
          }
          slice = slice.At( rangeArray );

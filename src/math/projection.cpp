@@ -40,7 +40,7 @@ class ProjectionScanFunction {
       // must be cast to the requested `outImageType` in the call to `ProjectionScan`.
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint thread ) = 0;
       // The derived class can define this function if it needs this information ahead of time.
-      virtual void SetNumberOfThreads( dip::uint threads ) {}
+      virtual void SetNumberOfThreads( dip::uint /*threads*/ ) {}
       // A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~ProjectionScanFunction() {}
 };
@@ -236,11 +236,11 @@ void ProjectionScan(
             break;
          }
          // Rewind along this dimension
-         tempIn.dip__ShiftOrigin( -inStride[ dd ] * position[ dd ] );
+         tempIn.dip__ShiftOrigin( -inStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
          if( hasMask ) {
-            tempMask.dip__ShiftOrigin( -maskStride[ dd ] * position[ dd ] );
+            tempMask.dip__ShiftOrigin( -maskStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
          }
-         tempOut.dip__ShiftOrigin( -outStride[ dd ] * position[ dd ] );
+         tempOut.dip__ShiftOrigin( -outStride[ dd ] * static_cast< dip::sint >( position[ dd ] ));
          position[ dd ] = 0;
          // Continue loop to increment along next dimension
       }
@@ -268,14 +268,14 @@ class ProjectionMean : public ProjectionScanFunction {
             JointImageIterator< TPI, bin > it( in, mask );
             do {
                if( it.Out() ) {
-                  sum += it.In();
+                  sum += static_cast< FlexType< TPI >>( it.In() );
                   ++n;
                }
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
             do {
-               sum += *it;
+               sum += static_cast< FlexType< TPI >>( *it );
             } while( ++it );
             n = in.NumberOfPixels();
          }
@@ -287,16 +287,14 @@ class ProjectionMean : public ProjectionScanFunction {
       bool computeMean_ = true;
 };
 
-template< typename TPI >
-ComplexType< TPI > AngleToVector( TPI v ) { return { static_cast< FloatType< TPI >>( std::cos( v )),
-                                                     static_cast< FloatType< TPI >>( std::sin( v )) }; }
+dcomplex AngleToVector( dfloat v ) { return { std::cos( v ), std::sin( v ) }; }
 
 
 template< typename TPI >
 class ProjectionMeanDirectional : public ProjectionScanFunction {
    public:
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
-         ComplexType< TPI > sum = { 0, 0 };
+         dcomplex sum = { 0, 0 };
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
             do {
@@ -310,7 +308,7 @@ class ProjectionMeanDirectional : public ProjectionScanFunction {
                sum += AngleToVector( *it );
             } while( ++it );
          }
-         *static_cast< FloatType< TPI >* >( out ) = std::arg( sum ); // Is the same as FlexType< TPI > because TPI is not complex here.
+         *static_cast< FloatType< TPI >* >( out ) = static_cast< FloatType< TPI >>( std::arg( sum )); // Is the same as FlexType< TPI > because TPI is not complex here.
       }
 };
 
@@ -354,13 +352,13 @@ class ProjectionProduct : public ProjectionScanFunction {
             JointImageIterator< TPI, bin > it( in, mask );
             do {
                if( it.Out() ) {
-                  product *= it.In();
+                  product *= static_cast< FlexType< TPI >>( it.In() );
                }
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
             do {
-               product *= *it;
+               product *= static_cast< FlexType< TPI >>( *it );
             } while( ++it );
          }
          *static_cast< FlexType< TPI >* >( out ) = product;
@@ -393,14 +391,14 @@ class ProjectionMeanAbs : public ProjectionScanFunction {
             JointImageIterator< TPI, bin > it( in, mask );
             do {
                if( it.Out() ) {
-                  sum += std::abs( it.In() );
+                  sum += std::abs( static_cast< FlexType< TPI >>( it.In() ));
                   ++n;
                }
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
             do {
-               sum += std::abs( *it );
+               sum += std::abs( static_cast< FlexType< TPI >>( *it ));
             } while( ++it );
             n = in.NumberOfPixels();
          }
@@ -457,7 +455,7 @@ class ProjectionMeanSquare : public ProjectionScanFunction {
             JointImageIterator< TPI, bin > it( in, mask );
             do {
                if( it.Out() ) {
-                  TPI v = it.In();
+                  FlexType< TPI > v = static_cast< FlexType< TPI >>( it.In() );
                   sum += v * v;
                   ++n;
                }
@@ -465,7 +463,7 @@ class ProjectionMeanSquare : public ProjectionScanFunction {
          } else {
             ImageIterator< TPI > it( in );
             do {
-               TPI v = *it;
+               FlexType< TPI > v = static_cast< FlexType< TPI >>( *it );
                sum += v * v;
             } while( ++it );
             n = in.NumberOfPixels();
@@ -545,7 +543,7 @@ class ProjectionVarianceDirectional : public ProjectionScanFunction {
       ProjectionVarianceDirectional( bool computeStD ) : computeStD_( computeStD ) {}
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
          dip::uint n = 0;
-         ComplexType< TPI > sum = { 0, 0 };
+         dcomplex sum = { 0, 0 };
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( in, mask );
             do {
@@ -561,10 +559,10 @@ class ProjectionVarianceDirectional : public ProjectionScanFunction {
             } while( ++it );
             n = in.NumberOfPixels();
          }
-         FloatType< TPI > R = std::abs( sum );
-         *static_cast< FloatType< TPI >* >( out ) = computeStD_
-                                                    ? std::sqrt( FloatType< TPI >( -2.0 ) * std::log( R ))
-                                                    : FloatType< TPI >( 1.0 ) - R;
+         dfloat R =  std::abs( sum );
+         *static_cast< FloatType< TPI >* >( out ) = static_cast< FloatType< TPI >>(
+               computeStD_ ? std::sqrt( -2.0 * std::log( R )) : 1.0 - R
+         );
       }
    private:
       bool computeStD_ = true;
@@ -697,7 +695,7 @@ class ProjectionPercentile : public ProjectionScanFunction {
             *static_cast< TPI* >( out ) = TPI{};
             return;
          }
-         dip::uint rank = static_cast< dip::uint >( std::floor( N * percentile_ / 100.0 )); // rank < N, because percentile_ < 100
+         dip::sint rank = static_cast< dip::sint >( std::floor( static_cast< dfloat >( N ) * percentile_ / 100.0 )); // rank < N, because percentile_ < 100
          buffer_[ thread ].resize( N );
          auto begin = buffer_[ thread ].begin();
          auto leftIt = begin;

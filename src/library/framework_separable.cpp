@@ -262,7 +262,7 @@ void Separable(
             inBufferStorage.resize( bufferType.SizeOf() * inBuffer.tensorLength );
             //std::cout << "   Using input buffer, stride = 0\n";
          } else {
-            inBuffer.stride = inBuffer.tensorLength;
+            inBuffer.stride = static_cast< dip::sint >( inBuffer.tensorLength );
             inBufferStorage.resize( ( inLength + 2 * inBorder ) * bufferType.SizeOf() * inBuffer.tensorLength );
             //std::cout << "   Using input buffer, size = " << inBufferStorage.size() << std::endl;
          }
@@ -280,7 +280,7 @@ void Separable(
       outBuffer.tensorLength = outImage.TensorElements();
       if( outUseBuffer ) {
          outBuffer.tensorStride = 1;
-         outBuffer.stride = outBuffer.tensorLength;
+         outBuffer.stride = static_cast< dip::sint >( outBuffer.tensorLength );
          outBufferStorage.resize( ( outLength + 2 * outBorder ) * bufferType.SizeOf() * outBuffer.tensorLength );
          outBuffer.buffer = outBufferStorage.data() + outBorder * bufferType.SizeOf() * outBuffer.tensorLength;
          //std::cout << "   Using output buffer, size = " << outBufferStorage.size() << std::endl;

@@ -76,7 +76,7 @@ static void dip__SurfaceArea(
    UnsignedArray const& dims = label.Sizes();
    for( dip::uint zz = 0; zz < dims[ 2 ]; ++zz ) {
       for( dip::uint yy = 0; yy < dims[ 1 ]; ++yy ) {
-         dip::sint pos = zz * stride[ 2 ] + yy * stride[ 1 ];
+         dip::sint pos = static_cast< dip::sint >( zz ) * stride[ 2 ] + static_cast< dip::sint >( yy ) * stride[ 1 ];
          for( dip::uint xx = 0; xx < dims[ 0 ]; ++xx ) {
             // Check whether currect pixel value is a requested objectID
             bool requested = false;

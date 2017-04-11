@@ -98,7 +98,7 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
          dip::uint fsh = filter.size() - 1;
          switch( filter_[ procDim ].symmetry ) {
             case FilterSymmetry::GENERAL:
-               in += origin * inStride;
+               in += static_cast< dip::sint >( origin ) * inStride;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI sum = 0;
                   TPI* in_t = in;
@@ -112,7 +112,7 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
                }
                break;
             case FilterSymmetry::EVEN: // Always an odd-sized filter
-               in += ( origin - fsh ) * inStride;
+               in += static_cast< dip::sint >( origin - fsh ) * inStride;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI* in_r = in;
                   TPI sum = static_cast< FloatType< TPI >>( filter[ fsh ] ) * *in_r;
@@ -131,7 +131,7 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
                }
                break;
             case FilterSymmetry::ODD: // Always an odd-sized filter
-               in += ( origin - fsh ) * inStride;
+               in += static_cast< dip::sint >( origin - fsh ) * inStride;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI* in_r = in;
                   TPI sum = static_cast< FloatType< TPI >>( filter[ fsh ] ) * *in_r;
@@ -150,7 +150,7 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
                }
                break;
             case FilterSymmetry::D_EVEN: // Always an even-sized filter
-               in += ( origin - fsh ) * inStride;
+               in += static_cast< dip::sint >( origin - fsh ) * inStride;
                ++fsh;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI* in_r = in;
@@ -169,7 +169,7 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
                }
                break;
             case FilterSymmetry::D_ODD: // Always an even-sized filter
-               in += ( origin - fsh ) * inStride;
+               in += static_cast< dip::sint >( origin - fsh ) * inStride;
                ++fsh;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI* in_r = in;

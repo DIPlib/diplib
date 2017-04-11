@@ -186,7 +186,7 @@ class ConverterLineFilter : public Framework::ScanLineFilter {
                outTStride = params.outBuffer[ 0 ].tensorStride;
             } else {
                out = out == buffer1 ? buffer2 : buffer1;
-               outStride = outChans;
+               outStride = static_cast< dip::sint >( outChans );
                outTStride = 1;
             }
             LineIterator< dfloat > output( out, nPixels, outStride, outChans, outTStride );

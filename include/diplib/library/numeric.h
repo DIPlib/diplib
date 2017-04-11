@@ -319,7 +319,7 @@ DIP_EXPORT dcomplex Determinant( dip::uint n, ConstSampleIterator< dcomplex > in
 /// `input` is a pointer to `n` values, representing the matrix's main diagonal.
 template< typename T >
 inline T DeterminantDiagonal( dip::uint n, ConstSampleIterator< T > input ) {
-   return std::accumulate( input, input + n, T( 1.0 ), std::multiplies< T >());
+   return std::accumulate( input, input + n, T( 1.0 ), std::multiplies< T >() );
 }
 
 /// \brief Computes the trace of a square matrix.
@@ -327,7 +327,7 @@ inline T DeterminantDiagonal( dip::uint n, ConstSampleIterator< T > input ) {
 /// `input` is a pointer to `n*n` values, in column-major order.
 template< typename T >
 inline T Trace( dip::uint n, ConstSampleIterator< T > input ) {
-   return Sum( n, ConstSampleIterator< T >( input.Pointer(), input.Stride() * ( n + 1 )) );
+   return Sum( n, ConstSampleIterator< T >( input.Pointer(), input.Stride() * static_cast< dip::sint >( n + 1 )));
 }
 
 /// \brief Computes the trace of a diagonal matrix.
@@ -475,33 +475,36 @@ class DIP_NO_EXPORT StatisticsAccumulator {
       /// Add a sample to the accumulator
       void Push( dfloat x ) {
          ++n_;
+         dfloat n = static_cast< dfloat >( n_ );
          dfloat delta = x - m1_;
-         dfloat term1 = delta / n_;
+         dfloat term1 = delta / n;
          dfloat term2 = term1 * term1;
-         dfloat term3 = delta * term1 * ( n_ - 1 );
-         m4_ += term3 * term2 * ( n_ * n_ - 3.0 * n_ + 3 ) + 6.0 * term2 * m2_ - 4.0 * term1 * m3_;
-         m3_ += term3 * term1 * ( n_ - 2 ) - 3.0 * term1 * m2_; // old value used for m4_ calculation
+         dfloat term3 = delta * term1 * ( n - 1 );
+         m4_ += term3 * term2 * ( n * n - 3.0 * n + 3 ) + 6.0 * term2 * m2_ - 4.0 * term1 * m3_;
+         m3_ += term3 * term1 * ( n - 2 ) - 3.0 * term1 * m2_; // old value used for m4_ calculation
          m2_ += term3; // old value used for m3_ and m4_ calculation.
          m1_ += term1;
       }
 
       /// Combine two accumulators
       StatisticsAccumulator& operator+=( StatisticsAccumulator const& b ) {
-         dip::uint an = n_;
-         dip::uint an2 = an * an;
-         dip::uint bn2 = b.n_ * b.n_;
-         dip::uint xn2 = an * b.n_;
+         dfloat an = static_cast< dfloat >( n_ );
+         dfloat an2 = an * an;
+         dfloat bn = static_cast< dfloat >( b.n_ );
+         dfloat bn2 = bn * bn;
+         dfloat xn2 = an * bn;
          n_ += b.n_;
-         dip::uint n2 = n_ * n_;
+         dfloat nn = static_cast< dfloat >( n_ );
+         dfloat n2 = nn * nn;
          dfloat delta = b.m1_ - m1_;
          dfloat delta2 = delta * delta;
-         m4_ += b.m4_ + delta2 * delta2 * xn2 * ( an2 - xn2 + bn2 ) / ( n2 * n_ )
+         m4_ += b.m4_ + delta2 * delta2 * xn2 * ( an2 - xn2 + bn2 ) / ( n2 * nn )
                + 6.0 * delta2 * ( an2 * b.m2_ + bn2 * m2_ ) / n2
-               + 4.0 * delta * ( an * b.m3_ - b.n_ * m3_ ) / n_;
-         m3_ += b.m3_ + delta * delta2 * xn2 * ( an - b.n_ ) / n2
-                + 3.0 * delta * ( an * b.m2_ - b.n_ * m2_ ) / n_;
-         m2_ += b.m2_ + delta2 * xn2 / n_;
-         m1_ = ( an * m1_ + b.n_ * b.m1_ ) / n_;
+               + 4.0 * delta * ( an * b.m3_ - bn * m3_ ) / nn;
+         m3_ += b.m3_ + delta * delta2 * xn2 * ( an - bn ) / n2
+                + 3.0 * delta * ( an * b.m2_ - bn * m2_ ) / nn;
+         m2_ += b.m2_ + delta2 * xn2 / nn;
+         m1_ = ( an * m1_ + bn * b.m1_ ) / nn;
          return *this;
       }
 
@@ -515,7 +518,8 @@ class DIP_NO_EXPORT StatisticsAccumulator {
       }
       /// Unbiased estimator of population variance
       dfloat Variance() const {
-         return ( n_ > 1 ) ? ( m2_ / ( n_ - 1 )) : ( 0.0 );
+         dfloat n = static_cast< dfloat >( n_ );
+         return ( n_ > 1 ) ? ( m2_ / ( n - 1 )) : ( 0.0 );
       }
       /// Estimator of population standard deviation (it is not possible to derive an unbiased estimator)
       dfloat StandardDeviation() const {
@@ -525,7 +529,7 @@ class DIP_NO_EXPORT StatisticsAccumulator {
       /// (it is not possible to derive an unbiased estimator).
       dfloat Skewness() const {
          if(( n_ > 2 ) && ( m2_ != 0 )) {
-            dfloat n = n_;
+            dfloat n = static_cast< dfloat >( n_ );
             return (( n * n ) / (( n - 1 ) * ( n - 2 ))) * ( m3_ / ( n * std::pow( Variance(), 1.5 )));
          }
          return 0;
@@ -534,7 +538,7 @@ class DIP_NO_EXPORT StatisticsAccumulator {
       /// distributed data (it is not possible to derive an unbiased estimator).
       dfloat ExcessKurtosis() const {
          if( n_ > 3 && ( m2_ != 0 )) {
-            dfloat n = n_;
+            dfloat n = static_cast< dfloat >( n_ );
             return ( n - 1 ) / (( n - 2 ) * ( n - 3 )) * (( n + 1 ) * n * m4_ / ( m2_ * m2_ ) - 3 * ( n - 1 ));
          }
          return 0;
@@ -577,17 +581,19 @@ class DIP_NO_EXPORT VarianceAccumulator {
       void Push( dfloat x ) {
          ++n_;
          dfloat delta = x - m1_;
-         m1_ += delta / n_;
+         m1_ += delta / static_cast< dfloat >( n_ );
          m2_ += delta * ( x - m1_ );
       }
 
       /// Combine two accumulators
       VarianceAccumulator& operator+=( VarianceAccumulator const& b ) {
-         dip::uint oldn = n_;
+         dfloat oldn = static_cast< dfloat >( n_ );
          n_ += b.n_;
+         dfloat n = static_cast< dfloat >( n_ );
+         dfloat bn = static_cast< dfloat >( b.n_ );
          dfloat delta = b.m1_ - m1_;
-         m1_ = ( oldn * m1_ + b.n_ * b.m1_ ) / n_;
-         m2_ += b.m2_ + delta * delta * ( oldn * b.n_ ) / n_;
+         m1_ = ( oldn * m1_ + bn * b.m1_ ) / n;
+         m2_ += b.m2_ + delta * delta * ( oldn * bn ) / n;
          return *this;
       }
 
@@ -601,7 +607,8 @@ class DIP_NO_EXPORT VarianceAccumulator {
       }
       /// Unbiased estimator of population variance
       dfloat Variance() const {
-         return ( n_ > 1 ) ? ( m2_ / ( n_ - 1 )) : ( 0.0 );
+         dfloat n = static_cast< dfloat >( n_ );
+         return ( n_ > 1 ) ? ( m2_ / ( n - 1 )) : ( 0.0 );
       }
       /// Estimator of population standard deviation (it is not possible to derive an unbiased estimator)
       dfloat StandardDeviation() const {

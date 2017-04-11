@@ -27,7 +27,7 @@ class FeatureDimensionsEllipsoid : public Composite {
    public:
       FeatureDimensionsEllipsoid() : Composite( { "DimensionsEllipsoid", "Extent along the principal axes of an ellipsoid", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
+      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
          nD_ = label.Dimensionality();
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( nD_ );
@@ -48,7 +48,7 @@ class FeatureDimensionsEllipsoid : public Composite {
             out[ ii ].units = units;
             out[ ii ].name = String( "axis" ) + std::to_string( ii );
          }
-         inertiaIndex_ = -1;
+         hasIndex_ = false;
          return out;
       }
 
@@ -60,7 +60,7 @@ class FeatureDimensionsEllipsoid : public Composite {
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( inertiaIndex_ == -1 ) {
+         if( !hasIndex_ ) {
             inertiaIndex_ = dependencies.ValueIndex( "Inertia" );
          }
          dfloat const* data = &it[ inertiaIndex_ ];
@@ -75,7 +75,8 @@ class FeatureDimensionsEllipsoid : public Composite {
       }
 
    private:
-      dip::sint inertiaIndex_;
+      dip::uint inertiaIndex_;
+      bool hasIndex_;
       dip::uint nD_;
 };
 

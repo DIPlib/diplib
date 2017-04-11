@@ -27,7 +27,7 @@ class FeatureGreyInertia : public Composite {
    public:
       FeatureGreyInertia() : Composite( { "GreyInertia", "Grey-weighted moments of inertia of the object", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
+      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint /*nObjects*/ ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -50,7 +50,7 @@ class FeatureGreyInertia : public Composite {
             out[ ii ].units = units;
             out[ ii ].name = String( "lambda_" ) + std::to_string( ii );
          }
-         muIndex_ = -1;
+         hasIndex_ = false;
          return out;
       }
 
@@ -62,7 +62,7 @@ class FeatureGreyInertia : public Composite {
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( muIndex_ == -1 ) {
+         if( !hasIndex_ ) {
             muIndex_ = dependencies.ValueIndex( "GreyMu" );
          }
          dfloat const* data = &it[ muIndex_ ];
@@ -70,7 +70,8 @@ class FeatureGreyInertia : public Composite {
       }
 
    private:
-      dip::sint muIndex_;
+      dip::uint muIndex_;
+      bool hasIndex_;
       dip::uint nD_;
 };
 

@@ -63,7 +63,7 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
          TPI* forwardBuffer = forwardBuffers_[ params.thread ];
          TPI* backwardBuffer = backwardBuffers_[ params.thread ];
          // Fill forward buffer
-         in -= inStride * margin;
+         in -= inStride * static_cast< dip::sint >( margin );
          TPI* buf = forwardBuffer - margin;
          while( buf < forwardBuffer + length + margin - filterSize ) {
             *buf = *in;
@@ -185,7 +185,7 @@ class PixelTableMorphologyLineFilter : public Framework::FullLineFilter {
             if( index >= 0 ) {
                // Maximum is in filter. Check to see if a larger value came in to the filter.
                for( auto const& run : pixelTable.Runs() ) {
-                  dip::sint len = run.length - 1;
+                  dip::sint len = static_cast< dip::sint >( run.length - 1 );
                   dip::sint position = run.offset + len * inStride;
                   TPI val = in[ position ];
                   if( max == val ) {
@@ -207,7 +207,7 @@ class PixelTableMorphologyLineFilter : public Framework::FullLineFilter {
                   }
                   if( dilation_ ? val >= max : val <= max ) {
                      max = val;
-                     index = it.Index();
+                     index = static_cast< dip::sint >( it.Index() );
                   }
                }
             }
@@ -337,7 +337,7 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
          dip::uint procDim = params.dimension;
-         dfloat lambda = 1.0 / ( params_[ procDim ] * params_[ procDim ] );
+         TPI lambda = static_cast< TPI >( 1.0 / ( params_[ procDim ] * params_[ procDim ] ));
          // Allocate buffer if it's not yet there.
          if( buffers_[ params.thread ].size() != length ) {
             buffers_[ params.thread ].resize( length );
@@ -355,9 +355,9 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
                   *buf = *in;
                   index = 0;
                } else {
-                  dfloat max = std::numeric_limits< dfloat >::lowest();
+                  TPI max = std::numeric_limits< TPI >::lowest();
                   for( dip::sint jj = index; jj <= 0; ++jj ) {
-                     dfloat val = in[ jj * inStride ] - lambda * jj * jj;
+                     TPI val = in[ jj * inStride ] - lambda * static_cast< TPI >( jj * jj );
                      if( val >= max ) {
                         max = val;
                         index = jj;
@@ -369,7 +369,7 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
                ++buf;
             }
             // Now process the line from right to left
-            out += ( length - 1 ) * outStride;
+            out += static_cast< dip::sint >( length - 1 ) * outStride;
             --buf;
             *out = *buf;
             out -= outStride;
@@ -381,9 +381,9 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
                   *out = *buf;
                   index = 0;
                } else {
-                  dfloat max = std::numeric_limits< dfloat >::lowest();
+                  TPI max = std::numeric_limits< TPI >::lowest();
                   for(dip::sint jj = index; jj >= 0; --jj ) {
-                     dfloat val = buf[ jj ] - lambda * jj * jj;
+                     TPI val = buf[ jj ] - lambda * static_cast< TPI >( jj * jj );
                      if( val >= max ) {
                         max = val;
                         index = jj;
@@ -402,9 +402,9 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
                   *buf = *in;
                   index = 0;
                } else {
-                  dfloat min = std::numeric_limits< dfloat >::max();
+                  TPI min = std::numeric_limits< TPI >::max();
                   for( dip::sint jj = index; jj <= 0; ++jj ) {
-                     dfloat val = in[ jj * inStride ] + lambda * jj * jj;
+                     TPI val = in[ jj * inStride ] + lambda * static_cast< TPI >( jj * jj );
                      if( val <= min ) {
                         min = val;
                         index = jj;
@@ -416,7 +416,7 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
                ++buf;
             }
             // Now process the line from right to left
-            out += ( length - 2 ) * outStride;
+            out += static_cast< dip::sint >( length - 2 ) * outStride;
             buf -= 2;
             index = 0;
             for( dip::uint ii = 1; ii < length; ++ii ) {
@@ -425,9 +425,9 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
                   *out = *buf;
                   index = 0;
                } else {
-                  dfloat min = std::numeric_limits< dfloat >::max();
+                  TPI min = std::numeric_limits< TPI >::max();
                   for(dip::sint jj = index; jj >= 0; --jj ) {
-                     dfloat val = buf[ jj ] + lambda * jj * jj;
+                     TPI val = buf[ jj ] + lambda * static_cast< TPI >( jj * jj );
                      if( val <= min ) {
                         min = val;
                         index = jj;
@@ -480,12 +480,12 @@ void ParabolicMorphology(
 // --- Line morphology ---
 
 void LineMorphology(
-      Image const& in,
-      Image& out,
-      FloatArray const& filterParam,
-      BoundaryConditionArray const& bc,
-      bool interpolated, // true = "interpolated line", false = "discrete line"
-      bool dilation // true = dilation, false = erosion
+      Image const& /*in*/,
+      Image& /*out*/,
+      FloatArray const& /*filterParam*/,
+      BoundaryConditionArray const& /*bc*/,
+      bool /*interpolated*/, // true = "interpolated line", false = "discrete line"
+      bool /*dilation*/ // true = dilation, false = erosion
 ) {
    DIP_THROW( E::NOT_IMPLEMENTED );
 }
@@ -631,7 +631,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    for( dip::uint ii = 1; ii < 50; ++ii ) { // 50 = 10.0 * sqrt( pval )
       result += dip::dfloat( pval ) - dip::dfloat( ii * ii ) / 100.0;
    }
-   result = pval + result * 2.0;
+   result = dip::dfloat( pval ) + result * 2.0;
    DOCTEST_CHECK(( dip::dfloat )dip::Sum( out ) == doctest::Approx( result ) );
    DOCTEST_CHECK(( dip::dfloat )out.At( 64, 35 ) == pval ); // Is the origin in the right place?
 
@@ -640,7 +640,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    for( dip::uint ii = 1; ii < 50; ++ii ) { // 50 = 10.0 * sqrt( pval )
       result += dip::dfloat( ii * ii ) / 100.0; // 100.0 = 10.0 * 10.0
    }
-   result = pval + result * 2.0;
+   result = dip::dfloat( pval ) + result * 2.0;
    DOCTEST_CHECK(( dip::dfloat )dip::Sum( out ) == doctest::Approx( result ) );
    DOCTEST_CHECK(( dip::dfloat )out.At( 64, 35 ) == pval ); // Is the origin in the right place?
 

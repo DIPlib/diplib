@@ -45,7 +45,7 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
             if( process[ ii ] ) {
                options_[ ii ].DFTInit( static_cast< int >( outSize[ ii ] ), inverse );
                if( inverse || symmetric ) {
-                  scale_ /= outSize[ ii ];
+                  scale_ /= static_cast< FloatType< TPI >>( outSize[ ii ] );
                }
             }
          }
@@ -233,7 +233,7 @@ void FourierTransform(
    PixelSize pixelSize = in_copy.PixelSize();
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( process[ ii ] ) {
-         pixelSize.Scale( ii, out.Size( ii ) );
+         pixelSize.Scale( ii, static_cast< dfloat >( out.Size( ii )));
          pixelSize.Invert( ii );
       }
    }

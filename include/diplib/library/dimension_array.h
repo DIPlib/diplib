@@ -312,13 +312,7 @@ class DIP_NO_EXPORT DimensionArray {
 
       /// \brief Adds an array to `this`, element-wise. `other` must have the same number of elements.
       template< typename S >
-      DimensionArray& operator+=( DimensionArray< S > const& other ) {
-         DIP_ASSERT( size_ == other.size() );
-         for( size_type ii = 0; ii < size_; ++ii ) {
-            data_[ ii ] += other[ ii ];
-         }
-         return *this;
-      }
+      DimensionArray< T >& operator+=( DimensionArray< S > const& other );
 
       /// Subtracts a constant from each element in the array.
       DimensionArray& operator-=( T const& v ) {
@@ -330,13 +324,7 @@ class DIP_NO_EXPORT DimensionArray {
 
       /// \brief Subtracts an array from `this`, element-wise. `other` must have the same number of elements.
       template< typename S >
-      DimensionArray& operator-=( DimensionArray< S > const& other ) {
-         DIP_ASSERT( size_ == other.size() );
-         for( size_type ii = 0; ii < size_; ++ii ) {
-            data_[ ii ] -= other[ ii ];
-         }
-         return *this;
-      }
+      DimensionArray< T >& operator-=( DimensionArray< S > const& other );
 
       /// Sort the contents of the array from smallest to largest.
       void sort() {
@@ -409,7 +397,7 @@ class DIP_NO_EXPORT DimensionArray {
 
       /// Compute the sum of the squares of the elements in the array.
       double norm_square() const {
-         T p = 0;
+         double p = 0;
          for( size_type ii = 0; ii < size_; ++ii ) {
             double d = static_cast< double >( data_[ ii ] );
             p += d * d;
@@ -500,6 +488,48 @@ class DIP_NO_EXPORT DimensionArray {
       }
 
 };
+
+// The general case: cast rhs to type of lhs
+template< typename T >
+template< typename S >
+DimensionArray< T >& DimensionArray< T >::operator+=( DimensionArray< S > const& other ) {
+   DIP_ASSERT( size_ == other.size() );
+   for( size_type ii = 0; ii < size_; ++ii ) {
+      data_[ ii ] += static_cast< T >( other[ ii ] );
+   }
+   return *this;
+}
+// A special case for adding a signed array to an unsigned array
+template<>
+template<>
+inline DimensionArray< std::size_t >& DimensionArray< std::size_t >::operator+=( DimensionArray< std::ptrdiff_t > const& other ) {
+   DIP_ASSERT( size_ == other.size() );
+   for( size_type ii = 0; ii < size_; ++ii ) {
+      data_[ ii ] = static_cast< std::size_t >( static_cast< std::ptrdiff_t >( data_[ ii ] ) + other[ ii ] );
+   }
+   return *this;
+}
+
+template< typename T >
+template< typename S >
+DimensionArray< T >& DimensionArray< T >::operator-=( DimensionArray< S > const& other ) {
+   DIP_ASSERT( size_ == other.size() );
+   for( size_type ii = 0; ii < size_; ++ii ) {
+      data_[ ii ] -= static_cast< T >( other[ ii ] );
+   }
+   return *this;
+}
+// A special case for subtracting a signed array from an unsigned array
+template<>
+template<>
+inline DimensionArray< std::size_t >& DimensionArray< std::size_t >::operator-=( DimensionArray< std::ptrdiff_t > const& other ) {
+   DIP_ASSERT( size_ == other.size() );
+   for( size_type ii = 0; ii < size_; ++ii ) {
+      data_[ ii ] = static_cast< std::size_t >( static_cast< std::ptrdiff_t >( data_[ ii ] ) - other[ ii ] );
+   }
+   return *this;
+}
+
 
 /// \brief Compares two arrays, returns true only if they have the same size and contain the same values.
 template< typename T >

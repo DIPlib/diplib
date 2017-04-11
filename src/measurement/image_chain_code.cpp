@@ -56,7 +56,7 @@ static ChainCode dip__OneChainCode(
    out.is8connected = connectivity == 2;
    // Follow contour always as left as possible (i.e. ii = ii+2)
    dip::sint offset = 0;
-   int dir = 0; // start direction given by how we determine the start position!
+   unsigned dir = 0; // start direction given by how we determine the start position!
    if( !startDir0 ) {
       // In this case, we cannot be sure of the start direction. Let's look for a background pixel first.
       while( true ) {
@@ -69,7 +69,7 @@ static ChainCode dip__OneChainCode(
          DIP_THROW_IF( dir == ( out.is8connected ? 8 : 4 ), "Start coordinates not on object boundary" );
       }
    }
-   int startdir = dir;
+   unsigned startdir = dir;
    do {
       VertexInteger nc = coord + codeTable.pos[ dir ];
       dip::sint no = offset + codeTable.offset[ dir ];
@@ -224,22 +224,22 @@ ChainCode ChainCode::Offset() const {
    ChainCode out;
    out.objectID = objectID;
    out.is8connected = true;
-   int prev = codes.back();
-   out.start = start + deltas8[ ( prev + ( codes.back().IsEven() ? 2 : 3 )) % 8 ];
+   unsigned prev = codes.back();
+   out.start = start + deltas8[ ( prev + ( codes.back().IsEven() ? 2u : 3u )) % 8u ];
    for( auto code : codes ) {
-      int n = ( code - prev ) % 8;
-      if( n < -4 ) {
-         n += 8;
-      } else if( n >= 4 ) {
-         n -= 8;
+      unsigned n;
+      if( code < prev ) {
+         n = code + 8u - prev;
+      } else {
+         n = code - prev;
       }
       if( code.IsEven() ) {
          switch( n ) { // Note we fall through on purpose here
-            case -4:
-            case -3:
+            case 4: // -4
+            case 5: // -3
                out.Push( { code + 3, code.IsBorder() } );
-            case -2:
-            case -1:
+            case 6: // -2
+            case 7: // -1
                out.Push( { code + 1, code.IsBorder() } );
             case 0:
             case 1:
@@ -250,12 +250,12 @@ ChainCode ChainCode::Offset() const {
          }
       } else {
          switch( n ) { // Note we fall through on purpose here
-            case -4:
+            case 4: // -4
                out.Push( { code + 4, code.IsBorder() } );
-            case -3:
-            case -2:
+            case 5: // -3
+            case 6: // -2
                out.Push( { code + 2, code.IsBorder() } );
-            case -1:
+            case 7: // -1
             case 0:
                out.Push( code );
             case 1:

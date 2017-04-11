@@ -27,7 +27,7 @@ class FeatureGreyMajorAxes : public Composite {
    public:
       FeatureGreyMajorAxes() : Composite( { "GreyMajorAxes", "Grey-weighted principal axes of the object", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
+      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint /*nObjects*/ ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -38,7 +38,7 @@ class FeatureGreyMajorAxes : public Composite {
                out[ ii * nD_ + jj ].name = String( "v" ) + std::to_string( ii ) + "_" + dim[ jj ];
             }
          }
-         muIndex_ = -1;
+         hasIndex_ = false;
          return out;
       }
 
@@ -50,7 +50,7 @@ class FeatureGreyMajorAxes : public Composite {
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( muIndex_ == -1 ) {
+         if( !hasIndex_ ) {
             muIndex_ = dependencies.ValueIndex( "GreyMu" );
          }
          dfloat const* data = &it[ muIndex_ ];
@@ -59,7 +59,8 @@ class FeatureGreyMajorAxes : public Composite {
       }
 
    private:
-      dip::sint muIndex_;
+      dip::uint muIndex_;
+      bool hasIndex_;
       dip::uint nD_;
 };
 

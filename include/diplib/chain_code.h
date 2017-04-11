@@ -446,7 +446,7 @@ struct DIP_NO_EXPORT Polygon {
          for( auto& v : vertices ) {
             C += dip::CovarianceMatrix( v - g );
          }
-         C /= vertices.size();
+         C /= static_cast< dfloat >( vertices.size() );
       }
       return C;
    }
@@ -614,22 +614,22 @@ struct DIP_NO_EXPORT ChainCode {
          /// Default constructor
          Code() : value( 0 ) {}
          /// Constructor
-         Code( int code, bool border = false ) { value = static_cast< dip::uint8 >( code & 7 ) | (( static_cast< dip::uint8 >( border )) << 3 ); }
+         Code( unsigned code, bool border = false ) { value = static_cast< dip::uint8 >(( code & 7u ) | ( static_cast< unsigned >( border ) << 3u )); }
          /// Returns whether the border flag is set
-         bool IsBorder() const { return static_cast< bool >( value & 8 ); }
+         bool IsBorder() const { return static_cast< bool >( isBorder() ); }
          /// Returns the chain code
-         operator int() const { return value & 7; }
+         operator unsigned() const { return code8(); }
          /// Is it an even code?
-         bool IsEven() const { return !(value & 1); }
+         bool IsEven() const { return !( value & 1u ); }
          /// Is it an off code?
          bool IsOdd() const { return !IsEven(); }
          /// The change in coordinates for an 8-connected chain code
-         VertexInteger const& Delta8() const { return deltas8[value & 7]; }
+         VertexInteger const& Delta8() const { return deltas8[ code8() ]; }
          /// The change in coordinates for a 4-connected chain code
-         VertexInteger const& Delta4() const { return deltas4[value & 3]; }
+         VertexInteger const& Delta4() const { return deltas4[ code4() ]; }
          /// Compare codes
          bool operator==( Code const& c2 ) const {
-            return ( value & 7 ) == ( c2.value & 7 );
+            return code8() == c2.code8();
          }
          /// Compare codes
          bool operator!=( Code const& c2 ) const {
@@ -637,6 +637,9 @@ struct DIP_NO_EXPORT ChainCode {
          }
       private:
          dip::uint8 value;
+         unsigned code8() const { return value & 7u; }
+         unsigned code4() const { return value & 3u; }
+         bool isBorder() const { return static_cast< bool >( value & 8u ); }
    };
 
    std::vector< Code > codes;  ///< The chain codes

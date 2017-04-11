@@ -88,15 +88,15 @@ class MultiplyLineFilter : public Framework::ScanLineFilter {
                   TPI const* rhsTT = rhsT;
                   FlexType< TPI > v = 0;
                   for( dip::uint jj = 0; jj < nInner; ++jj ) {
-                     v += *lhsTT * *rhsTT;
-                     lhsTT += nRows * lhsTensorStride;
+                     v += static_cast< FlexType< TPI >>( *lhsTT ) * static_cast< FlexType< TPI >>( *rhsTT );
+                     lhsTT += static_cast< dip::sint >( nRows ) * lhsTensorStride;
                      rhsTT += rhsTensorStride;
                   }
                   *outT = clamp_cast< TPI >( v );
                   lhsT += lhsTensorStride;
                   outT += outTensorStride;
                }
-               rhsT += nInner * rhsTensorStride;
+               rhsT += static_cast< dip::sint >( nInner ) * rhsTensorStride;
             }
             lhs += lhsStride;
             rhs += rhsStride;
@@ -134,14 +134,14 @@ class MultiplySymmetricLineFilter : public Framework::ScanLineFilter {
             for( dip::uint col = 0; col < nOuter; ++col ) {
                FlexType< TPI > v = 0;
                for( dip::uint jj = 0; jj < nInner; ++jj ) {
-                  v += *inT * *inT;
+                  v += static_cast< FlexType< TPI >>( *inT ) * static_cast< FlexType< TPI >>( *inT );
                   inT += inTensorStride;
                }
                *outT = clamp_cast< TPI >( v );
                outT += outTensorStride;
             }
             // Elements above diagonal are stored column-wise
-            dip::sint colSkip = nInner * inTensorStride;
+            dip::sint colSkip = static_cast< dip::sint >( nInner ) * inTensorStride;
             TPI const* rhsT = in + colSkip;
             for( dip::uint col = 1; col < nOuter; ++col ) { // Elements above diagonal stored column-wise
                TPI const* lhsT = in;
@@ -150,7 +150,7 @@ class MultiplySymmetricLineFilter : public Framework::ScanLineFilter {
                   TPI const* rhsTT = rhsT;
                   FlexType< TPI > v = 0;
                   for( dip::uint jj = 0; jj < nInner; ++jj ) {
-                     v += *lhsTT * *rhsTT;
+                     v += static_cast< FlexType< TPI >>( *lhsTT ) * static_cast< FlexType< TPI >>( *rhsTT );
                      lhsTT += inTensorStride;
                      rhsTT += inTensorStride;
                   }
@@ -254,7 +254,7 @@ void Modulo(
       ), dt );
    } else {
       DIP_OVL_CALL_ASSIGN_INTEGER( scanLineFilter, Framework::NewDyadicScanLineFilter, (
-            []( auto its ) { return *its[ 0 ] % *its[ 1 ]; }
+            []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( *its[ 0 ] % *its[ 1 ] ); }
       ), dt );
    }
    Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );

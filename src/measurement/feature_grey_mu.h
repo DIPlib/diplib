@@ -92,12 +92,12 @@ class FeatureGreyMu : public LineBased {
                }
                if( data ) {
                   for( dip::uint ii = 0; ii < nD_; ++ii ) {
-                     data[ ii ] += coordinates[ ii ] * *grey;
+                     data[ ii ] += static_cast< dfloat >( coordinates[ ii ] ) * *grey;
                   }
                   dip::uint kk = nD_;
                   for( dip::uint ii = 0; ii < nD_; ++ii ) {
                      for( dip::uint jj = ii; jj < nD_; ++jj ) {
-                        data[ kk ] += coordinates[ ii ] * coordinates[ jj ] * *grey;
+                        data[ kk ] += static_cast< dfloat >( coordinates[ ii ] * coordinates[ jj ] ) * *grey;
                         ++kk;
                      }
                   }

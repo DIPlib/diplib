@@ -27,7 +27,7 @@ class FeatureGreyDimensionsEllipsoid : public Composite {
    public:
       FeatureGreyDimensionsEllipsoid() : Composite( { "GreyDimensionsEllipsoid", "Extent along the principal axes of an ellipsoid (grey-weighted)", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
+      virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint /*nObjects*/ ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -49,7 +49,7 @@ class FeatureGreyDimensionsEllipsoid : public Composite {
             out[ ii ].units = units;
             out[ ii ].name = String( "axis" ) + std::to_string( ii );
          }
-         inertiaIndex_ = -1;
+         hasIndex_ = false;
          return out;
       }
 
@@ -61,7 +61,7 @@ class FeatureGreyDimensionsEllipsoid : public Composite {
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( inertiaIndex_ == -1 ) {
+         if( !hasIndex_ ) {
             inertiaIndex_ = dependencies.ValueIndex( "GreyInertia" );
          }
          dfloat const* data = &it[ inertiaIndex_ ];
@@ -76,7 +76,8 @@ class FeatureGreyDimensionsEllipsoid : public Composite {
       }
 
    private:
-      dip::sint inertiaIndex_;
+      dip::uint inertiaIndex_;
+      bool hasIndex_;
       dip::uint nD_;
 };
 

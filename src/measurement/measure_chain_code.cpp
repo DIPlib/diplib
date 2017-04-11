@@ -50,7 +50,9 @@ dfloat ChainCode::Length() const {
          }
          prev = code;
       }
-      return 0.980 * Ne + 1.406 * No - 0.091 * Nc;
+      return 0.980 * static_cast< dfloat >( Ne ) +
+             1.406 * static_cast< dfloat >( No ) -
+             0.091 * static_cast< dfloat >( Nc );
    } else {
       dip::uint Ne = 0;
       dip::uint Nc = 0;
@@ -64,7 +66,7 @@ dfloat ChainCode::Length() const {
          }
          prev = code;
       }
-      return 0.948 * Ne - 0.278 * Nc;
+      return 0.948 * static_cast< dfloat >( Ne ) - 0.278 * static_cast< dfloat >( Nc );
    }
 }
 
@@ -88,21 +90,24 @@ FeretValues ChainCode::Feret( dfloat angleStep ) const {
       std::array< dfloat, 8 > sinval;
       if( is8connected ) {
          for( dip::uint ii = 0; ii < 8; ii++ ) {
-            cosval[ ii ] =  ( 1.0 + std::sqrt( 2.0 ) - 1.0 * ( ii % 2 ) ) * std::cos( ii * pi / 4.0 + angle );
-            sinval[ ii ] = -( 1.0 + std::sqrt( 2.0 ) - 1.0 * ( ii % 2 ) ) * std::sin( ii * pi / 4.0 + angle );
+            cosval[ ii ] = ( 1.0 + std::sqrt( 2.0 ) -
+                             1.0 * static_cast< dfloat >( ii % 2 )) *
+                                   std::cos( static_cast< dfloat >( ii ) * pi / 4.0 + angle );
+            sinval[ ii ] = -( 1.0 + std::sqrt( 2.0 ) -
+                              1.0 * static_cast< dfloat >( ii % 2 )) *
+                                    std::sin( static_cast< dfloat >( ii ) * pi / 4.0 + angle );
          }
       } else {
          for( dip::uint ii = 0; ii < 4; ii++ ) {
-            cosval[ ii ] =  1.0 * std::cos( ii * pi / 2.0 + angle );
-            sinval[ ii ] = -1.0 * std::sin( ii * pi / 2.0 + angle );
+            cosval[ ii ] =  1.0 * std::cos( static_cast< dfloat >( ii ) * pi / 2.0 + angle );
+            sinval[ ii ] = -1.0 * std::sin( static_cast< dfloat >( ii ) * pi / 2.0 + angle );
          }
       }
       // Rotate the chain and find bounding box
-      dfloat x, y, xMin, xMax, yMin, yMax;
-      x = y = xMin = xMax = yMin = yMax = 0;
+      dfloat x = 0.0, y = 0.0, xMin = 0.0, xMax = 0.0, yMin = 0.0, yMax = 0.0;
       for( auto const& code :codes ) {
-         x += cosval[ int( code ) ];
-         y += sinval[ int( code ) ];
+         x += cosval[ code ];
+         y += sinval[ code ];
          xMin = std::min( xMin, x );
          xMax = std::max( xMax, x );
          yMin = std::min( yMin, y );
@@ -182,7 +187,7 @@ dfloat ChainCode::BendingEnergy() const {
          }
       }
       // Integrate the curvature squared weighted by the curve element length
-      sfloat be = 0;
+      dfloat be = 0;
       for( dip::uint ii = 0; ii < size; ++ii ) {
          be += diff[ ii ] * diff[ ii ] * delta_s[ ii ];
       }

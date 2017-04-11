@@ -31,7 +31,7 @@ class FeatureAspectRatioFeret : public Composite {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
          out[ 0 ].name = "AspectRatioFeret";
-         feretIndex_ = -1;
+         hasIndex_ = false;
          return out;
       }
 
@@ -43,7 +43,7 @@ class FeatureAspectRatioFeret : public Composite {
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( feretIndex_ == -1 ) {
+         if( !hasIndex_ ) {
             feretIndex_ = dependencies.ValueIndex( "Feret" );
          }
          dfloat minDiameter = it[ feretIndex_ + 1 ];
@@ -51,7 +51,8 @@ class FeatureAspectRatioFeret : public Composite {
       }
 
    private:
-      dip::sint feretIndex_;
+      dip::uint feretIndex_;
+      bool hasIndex_;
 };
 
 

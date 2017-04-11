@@ -49,15 +49,15 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
                gaussLUTs[ ii ].resize( sizes[ ii ], TPI( 0 ));
                TPI* lut = gaussLUTs[ ii ].data();
                // ( (i*2*pi) * x / size )^o * exp( -0.5 * ( ( 2*pi * sigma ) * x / size )^2 ) == a * x^o * exp( b * x^2 )
-               dip::sint origin = sizes[ ii ] / 2;
-               TPIf b = static_cast< TPIf >( 2.0 * pi * sigmas[ ii ] / sizes[ ii ] );
+               dip::sint origin = static_cast< dip::sint >( sizes[ ii ] ) / 2;
+               TPIf b = static_cast< TPIf >( 2.0 * pi * sigmas[ ii ] ) / static_cast< TPIf >( sizes[ ii ] );
                b = -TPIf( 0.5 ) * b * b;
-               dip::uint N = b == 0 ? sizes[ ii ] : HalfGaussianSize( sizes[ ii ] / ( 2.0 * pi * sigmas[ ii ] ), order[ ii ], truncation );
-               dip::sint begin = std::max< dip::sint >( 0, origin - N );
-               dip::sint end = std::min< dip::sint >( sizes[ ii ], origin + N + 1 );
+               dip::uint N = b == 0 ? sizes[ ii ] : HalfGaussianSize( static_cast< dfloat >( sizes[ ii ] ) / ( 2.0 * pi * sigmas[ ii ] ), order[ ii ], truncation );
+               dip::sint begin = std::max( dip::sint( 0 ), origin - static_cast< dip::sint >( N ));
+               dip::sint end = std::min( static_cast< dip::sint >( sizes[ ii ] ), origin + static_cast< dip::sint >( N ) + 1 );
                if( order[ ii ] > 0 ) {
                   TPIf o = static_cast< TPIf >( order[ ii ] );
-                  TPI a = { 0, static_cast< TPIf >( 2.0 * pi / sizes[ ii ] ) };
+                  TPI a = { 0, static_cast< TPIf >( 2.0 * pi ) / static_cast< TPIf >( sizes[ ii ] ) };
                   a = std::pow( a, o );
                   if( b != 0 ) {
                      lut += begin;

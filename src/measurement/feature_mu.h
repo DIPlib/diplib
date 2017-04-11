@@ -91,12 +91,12 @@ class FeatureMu : public LineBased {
                }
                if( data ) {
                   for( dip::uint ii = 0; ii < nD_; ++ii ) {
-                     data[ ii ] += coordinates[ ii ];
+                     data[ ii ] += static_cast< dfloat >( coordinates[ ii ] );
                   }
                   dip::uint kk = nD_;
                   for( dip::uint ii = 0; ii < nD_; ++ii ) {
                      for( dip::uint jj = ii; jj < nD_; ++jj ) {
-                        data[ kk ] += coordinates[ ii ] * coordinates[ jj ];
+                        data[ kk ] += static_cast< dfloat >( coordinates[ ii ] * coordinates[ jj ] );
                         ++kk;
                      }
                   }

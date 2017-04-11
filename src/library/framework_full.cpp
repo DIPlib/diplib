@@ -143,7 +143,7 @@ void Full(
    outBuffer.tensorLength = asScalarImage ? 1 : output.TensorElements();
    if( useOutBuffer ) {
       outBuffer.tensorStride = 1;
-      outBuffer.stride = outBuffer.tensorLength;
+      outBuffer.stride = static_cast< dip::sint >( outBuffer.tensorLength );
       outputBuffer.resize( lineLength * outBufferType.SizeOf() * outBuffer.tensorLength );
       outBuffer.buffer = outputBuffer.data();
    } else {
@@ -167,10 +167,10 @@ void Full(
    do {
       // Loop over all tensor components
       for( dip::uint ii = 0; ii < nTElems; ++ii ) {
-         inBuffer.buffer = input.Pointer( it.InOffset() + ii * inBuffer.tensorStride );
+         inBuffer.buffer = input.Pointer( it.InOffset() + static_cast< dip::sint >( ii ) * inBuffer.tensorStride );
          if( !useOutBuffer ) {
             // Point output buffer to right line in output image
-            outBuffer.buffer = output.Pointer( it.OutOffset() + ii * outBuffer.tensorStride );
+            outBuffer.buffer = output.Pointer( it.OutOffset() + static_cast< dip::sint >( ii ) * outBuffer.tensorStride );
          }
          // Filter the line
          lineFilter.Filter( fullLineFilterParameters );
@@ -181,7 +181,7 @@ void Full(
                   outBufferType,
                   outBuffer.stride,
                   outBuffer.tensorStride,
-                  output.Pointer( it.OutOffset() + ii * output.TensorStride() ),
+                  output.Pointer( it.OutOffset() + static_cast< dip::sint >( ii ) * output.TensorStride() ),
                   output.DataType(),
                   output.Stride( processingDim ),
                   output.TensorStride(),

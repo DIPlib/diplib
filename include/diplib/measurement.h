@@ -154,8 +154,8 @@ class DIP_NO_EXPORT Measurement {
                   /// \brief Iterator to the first value
                   ValueIterator begin() const {
                      return feature_.measurement_.Data() +
-                           index_ * feature_.measurement_.Stride() +
-                           feature_.startColumn_;
+                            static_cast< dip::sint >( index_ ) * feature_.measurement_.Stride() +
+                            static_cast< dip::sint >( feature_.startColumn_ );
                   }
                   /// \brief Iterator one past the last value
                   ValueIterator end() const { return begin() + size(); }
@@ -247,8 +247,8 @@ class DIP_NO_EXPORT Measurement {
                   /// \brief Iterator to the first value
                   ValueIterator begin() const {
                      return object_.measurement_.Data() +
-                           object_.index_ * object_.measurement_.Stride() +
-                           Feature().startColumn;
+                            static_cast< dip::sint >( object_.index_ ) * object_.measurement_.Stride() +
+                            static_cast< dip::sint >( Feature().startColumn );
                   }
                   /// \brief Iterator one past the last value
                   ValueIterator end() const { return begin() + size(); }
@@ -371,7 +371,7 @@ class DIP_NO_EXPORT Measurement {
 
       /// \brief The stride to use to access the next row of data in the table (next object).
       dip::sint Stride() const {
-         return values_.size();
+         return static_cast< dip::sint >( values_.size() );
       }
 
       /// \brief True if the feature is available in `this`.
@@ -499,7 +499,7 @@ class DIP_EXPORT Base {
 
       /// \brief A feature can have configurable parameters. Such a feature can define a `%Configure` method
       /// that the user can access through `dip::MeasurementTool::Configure`.
-      virtual void Configure( String const& parameter, dfloat value ) {
+      virtual void Configure( String const& /*parameter*/, dfloat /*value*/ ) {
          DIP_THROW( "Feature not configurable" );
       };
 

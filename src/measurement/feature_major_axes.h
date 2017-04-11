@@ -27,7 +27,7 @@ class FeatureMajorAxes : public Composite {
    public:
       FeatureMajorAxes() : Composite( { "MajorAxes", "Principal axes of the binary object", true } ) {};
 
-      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
+      virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
          nD_ = label.Dimensionality();
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( nD_ * nD_ );
@@ -37,7 +37,7 @@ class FeatureMajorAxes : public Composite {
                out[ ii * nD_ + jj ].name = String( "v" ) + std::to_string( ii ) + "_" + dim[ jj ];
             }
          }
-         muIndex_ = -1;
+         hasIndex_ = false;
          return out;
       }
 
@@ -49,7 +49,7 @@ class FeatureMajorAxes : public Composite {
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( muIndex_ == -1 ) {
+         if( !hasIndex_ ) {
             muIndex_ = dependencies.ValueIndex( "Mu" );
          }
          dfloat const* data = &it[ muIndex_ ];
@@ -58,7 +58,8 @@ class FeatureMajorAxes : public Composite {
       }
 
    private:
-      dip::sint muIndex_;
+      dip::uint muIndex_;
+      bool hasIndex_;
       dip::uint nD_;
 };
 

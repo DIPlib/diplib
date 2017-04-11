@@ -71,7 +71,7 @@ class FeatureGravity : public LineBased {
                }
                if( data ) {
                   for( dip::uint ii = 0; ii < nD_; ii++ ) {
-                     data[ ii ] += coordinates[ ii ] * *grey;
+                     data[ ii ] += static_cast< dfloat >( coordinates[ ii ] ) * *grey;
                   }
                   data[ nD_ ] += *grey;
                }

@@ -26,9 +26,9 @@ namespace dip {
 
 Image Image::operator[]( UnsignedArray const& indices ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::uint i;
+   dip::sint i;
    DIP_START_STACK_TRACE
-      i = tensor_.Index( indices );
+      i = static_cast< dip::sint >( tensor_.Index( indices ));
    DIP_END_STACK_TRACE
    Image out = *this;
    out.tensor_.SetScalar();
@@ -42,7 +42,7 @@ Image Image::operator[]( dip::uint index ) const {
    DIP_THROW_IF( index >= tensor_.Elements(), E::INDEX_OUT_OF_RANGE );
    Image out = *this;
    out.tensor_.SetScalar();
-   out.origin_ = Pointer( index * tensorStride_ );
+   out.origin_ = Pointer( static_cast< dip::sint >( index ) * tensorStride_ );
    out.ResetColorSpace();
    return out;
 }
@@ -61,9 +61,9 @@ Image Image::Diagonal() const {
       dip::uint n = tensor_.Columns();
       out.tensor_.SetVector( std::min( m, n ) );
       if( tensor_.TensorShape() == Tensor::Shape::COL_MAJOR_MATRIX ) {
-         out.tensorStride_ = ( m + 1 ) * tensorStride_;
+         out.tensorStride_ = static_cast< dip::sint >( m + 1 ) * tensorStride_;
       } else { // row-major matrix
-         out.tensorStride_ = ( n + 1 ) * tensorStride_;
+         out.tensorStride_ = static_cast< dip::sint >( n + 1 ) * tensorStride_;
       }
    }
    if( out.tensor_.Elements() != tensor_.Elements() ) {
@@ -82,12 +82,12 @@ Image Image::TensorRow( dip::uint index ) const {
    switch( tensor_.TensorShape() ) {
       case Tensor::Shape::COL_VECTOR:
       case Tensor::Shape::COL_MAJOR_MATRIX:
-         out.origin_ = Pointer( index * tensorStride_ );
-         out.tensorStride_ = M * tensorStride_;
+         out.origin_ = Pointer( static_cast< dip::sint >( index ) * tensorStride_ );
+         out.tensorStride_ = static_cast< dip::sint >( M ) * tensorStride_;
          break;
       case Tensor::Shape::ROW_VECTOR:
       case Tensor::Shape::ROW_MAJOR_MATRIX:
-         out.origin_ = Pointer( index * N * tensorStride_ );
+         out.origin_ = Pointer( static_cast< dip::sint >( index * N ) * tensorStride_ );
          // stride doesn't change
          break;
       default:
@@ -109,13 +109,13 @@ Image Image::TensorColumn( dip::uint index ) const {
    switch( tensor_.TensorShape() ) {
       case Tensor::Shape::COL_VECTOR:
       case Tensor::Shape::COL_MAJOR_MATRIX:
-         out.origin_ = Pointer( index * M * tensorStride_ );
+         out.origin_ = Pointer( static_cast< dip::sint >( index * M ) * tensorStride_ );
          // stride doesn't change
          break;
       case Tensor::Shape::ROW_VECTOR:
       case Tensor::Shape::ROW_MAJOR_MATRIX:
-         out.origin_ = Pointer( index * tensorStride_ );
-         out.tensorStride_ = N * tensorStride_;
+         out.origin_ = Pointer( static_cast< dip::sint >( index ) * tensorStride_ );
+         out.tensorStride_ = static_cast< dip::sint >( N ) * tensorStride_;
          break;
       default:
          DIP_THROW( "Cannot obtain row for non-full tensor representation." );
@@ -158,8 +158,8 @@ Image Image::At( Range x_range ) const {
    Image out = *this;
    out.sizes_[ 0 ] = x_range.Size();
    out.strides_[ 0 ] *= x_range.Step();
-   out.pixelSize_.Scale( 0, x_range.Step() );
-   out.origin_ = Pointer( x_range.Offset() * strides_[ 0 ] );
+   out.pixelSize_.Scale( 0, static_cast< dfloat >( x_range.Step() ));
+   out.origin_ = Pointer( static_cast< dip::sint >( x_range.Offset() ) * strides_[ 0 ] );
    return out;
 }
 
@@ -173,11 +173,11 @@ Image Image::At( Range x_range, Range y_range ) const {
    out.sizes_[ 1 ] = y_range.Size();
    out.strides_[ 0 ] *= x_range.Step();
    out.strides_[ 1 ] *= y_range.Step();
-   out.pixelSize_.Scale( 0, x_range.Step() );
-   out.pixelSize_.Scale( 1, y_range.Step() );
+   out.pixelSize_.Scale( 0, static_cast< dfloat >( x_range.Step() ));
+   out.pixelSize_.Scale( 1, static_cast< dfloat >( y_range.Step() ));
    out.origin_ = Pointer(
-         x_range.Offset() * strides_[ 0 ] +
-         y_range.Offset() * strides_[ 1 ] );
+         static_cast< dip::sint >( x_range.Offset() ) * strides_[ 0 ] +
+         static_cast< dip::sint >( y_range.Offset() ) * strides_[ 1 ] );
    return out;
 }
 
@@ -194,13 +194,13 @@ Image Image::At( Range x_range, Range y_range, Range z_range ) const {
    out.strides_[ 0 ] *= x_range.Step();
    out.strides_[ 1 ] *= y_range.Step();
    out.strides_[ 2 ] *= z_range.Step();
-   out.pixelSize_.Scale( 0, x_range.Step() );
-   out.pixelSize_.Scale( 1, y_range.Step() );
-   out.pixelSize_.Scale( 2, z_range.Step() );
+   out.pixelSize_.Scale( 0, static_cast< dfloat >( x_range.Step() ));
+   out.pixelSize_.Scale( 1, static_cast< dfloat >( y_range.Step() ));
+   out.pixelSize_.Scale( 2, static_cast< dfloat >( z_range.Step() ));
    out.origin_ = Pointer(
-         x_range.Offset() * strides_[ 0 ] +
-         y_range.Offset() * strides_[ 1 ] +
-         z_range.Offset() * strides_[ 2 ] );
+         static_cast< dip::sint >( x_range.Offset() ) * strides_[ 0 ] +
+         static_cast< dip::sint >( y_range.Offset() ) * strides_[ 1 ] +
+         static_cast< dip::sint >( z_range.Offset() ) * strides_[ 2 ] );
    return out;
 }
 
@@ -215,8 +215,8 @@ Image Image::At( RangeArray ranges ) const {
    for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
       out.sizes_[ ii ] = ranges[ ii ].Size();
       out.strides_[ ii ] *= ranges[ ii ].Step();
-      out.pixelSize_.Scale( ii, ranges[ ii ].Step() );
-      offset += ranges[ ii ].Offset() * strides_[ ii ];
+      out.pixelSize_.Scale( ii, static_cast< dfloat >( ranges[ ii ].Step() ));
+      offset += static_cast< dip::sint >( ranges[ ii ].Offset() ) * strides_[ ii ];
    }
    out.origin_ = Pointer( offset );
    return out;
@@ -305,7 +305,7 @@ void DefineROI(
    ArrayUseParameter( spacing, n, dip::uint( 1 ));
    RangeArray ranges( n );
    for( dip::uint ii = 0; ii < n; ++ii ) {
-      ranges[ ii ] = Range( origin[ ii ], sizes[ ii ] + origin[ ii ] - 1, spacing[ ii ] );
+      ranges[ ii ] = Range( static_cast< dip::sint >( origin[ ii ] ), static_cast< dip::sint >( sizes[ ii ] + origin[ ii ] - 1 ), spacing[ ii ] );
    }
    dest.Strip(); // strip output image to make sure data is not copied into it.
    dest = src.At( ranges );

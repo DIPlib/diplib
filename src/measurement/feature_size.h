@@ -87,7 +87,7 @@ class FeatureSize : public LineBased {
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         *output = data_[ objectIndex ] * scale_;
+         *output = static_cast< dfloat >( data_[ objectIndex ] ) * scale_;
       }
 
       virtual void Cleanup() override {

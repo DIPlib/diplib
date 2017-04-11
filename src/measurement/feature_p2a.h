@@ -32,8 +32,7 @@ class FeatureP2A : public Composite {
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
          out[ 0 ].name = "P2A";
-         sizeIndex_ = -1;
-         perimIndex_ = -1;
+         hasIndex_ = false;
          return out;
       }
 
@@ -46,7 +45,7 @@ class FeatureP2A : public Composite {
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( sizeIndex_ == -1 ) {
+         if( !hasIndex_ ) {
             sizeIndex_ = dependencies.ValueIndex( "Size" );
             if( nD_ == 2 ) {
                perimIndex_ = dependencies.ValueIndex( "Perimeter" );
@@ -68,9 +67,10 @@ class FeatureP2A : public Composite {
       }
 
    private:
-      dip::sint sizeIndex_;
-      dip::sint perimIndex_;
+      dip::uint sizeIndex_;
+      dip::uint perimIndex_;
       dip::uint nD_;
+      bool hasIndex_;
 };
 
 

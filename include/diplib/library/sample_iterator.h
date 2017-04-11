@@ -116,10 +116,18 @@ class DIP_NO_EXPORT SampleIterator {
          ptr_ += index * stride_;
          return *this;
       }
+      /// Add integer
+      SampleIterator& operator+=( dip::uint index ) {
+         return operator+=( static_cast< difference_type >( index ));
+      }
       /// Subtract integer
       SampleIterator& operator-=( difference_type index ) {
          ptr_ -= index * stride_;
          return *this;
+      }
+      /// Subtract integer
+      SampleIterator& operator-=( dip::uint index ) {
+         return operator-=( static_cast< difference_type >( index ));
       }
       /// Difference between iterators
       difference_type operator-( SampleIterator const& it ) const {
@@ -156,15 +164,29 @@ inline SampleIterator< T > operator+( SampleIterator< T > it, dip::sint n ) {
 }
 /// \brief Add integer to a sample iterator
 template< typename T >
-inline SampleIterator< T > operator+( dip::sint n, SampleIterator< T > it ) {
-   it += n;
-   return it;
+inline SampleIterator< T > operator+( SampleIterator< T > it, dip::uint n ) {
+   return operator+( it, static_cast< dip::sint >( n ));
+}
+/// \brief Add integer to a sample iterator (int overload required by some STL functions)
+template< typename T >
+inline SampleIterator< T > operator+( SampleIterator< T > it, int n ) {
+   return operator+( it, static_cast< dip::sint >( n ));
 }
 /// \brief Subtract integer from a sample iterator
 template< typename T >
 inline SampleIterator< T > operator-( SampleIterator< T > it, dip::sint n ) {
    it -= n;
    return it;
+}
+/// \brief Subtract integer from a sample iterator
+template< typename T >
+inline SampleIterator< T > operator-( SampleIterator< T > it, dip::uint n ) {
+   return operator-( it, static_cast< dip::sint >( n ));
+}
+/// \brief Subtract integer from a sample iterator (int overload required by some STL functions)
+template< typename T >
+inline SampleIterator< T > operator-( SampleIterator< T > it, int n ) {
+   return operator-( it, static_cast< dip::sint >( n ));
 }
 
 template< typename T >

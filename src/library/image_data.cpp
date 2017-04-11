@@ -42,7 +42,7 @@ static void ComputeStrides(
    dip::uint n = sizes.size();
    strides.resize( n );
    for( dip::uint ii = 0; ii < n; ++ii ) {
-      strides[ ii ] = s;
+      strides[ ii ] = static_cast< dip::sint>( s );
       s *= sizes[ ii ];
    }
 }
@@ -74,7 +74,7 @@ static void FindDataBlockSizeAndStart(
 ) {
    dip::sint min = 0, max = 0;
    for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
-      dip::sint p = ( sizes[ ii ] - 1 ) * strides[ ii ];
+      dip::sint p = ( static_cast< dip::sint >( sizes[ ii ] ) - 1 ) * strides[ ii ];
       if( p < 0 ) {
          min += p;
       } else {
@@ -94,7 +94,7 @@ static void FindDataBlockSizeAndStart(
 static bool FindSimpleStrideSizeAndStart(
       IntegerArray const& strides,
       UnsignedArray const& sizes,
-      dip::uint& sstride,
+      dip::sint& sstride,
       dip::uint& size,
       dip::sint& start
 ) {
@@ -105,11 +105,11 @@ static bool FindSimpleStrideSizeAndStart(
       start = 0;
    } else {
       // Find the simple stride
-      sstride = std::numeric_limits< dip::uint >::max();
+      sstride = std::numeric_limits< dip::sint >::max();
       bool updated = false;
       for( dip::uint ii = 0; ii < strides.size(); ++ii ) {
          if( sizes[ ii ] > 1 ) {
-            sstride = std::min( sstride, static_cast< dip::uint >( std::abs( strides[ ii ] ) ) );
+            sstride = std::min( sstride, std::abs( strides[ ii ] ));
             updated = true;
          }
       }
@@ -117,7 +117,7 @@ static bool FindSimpleStrideSizeAndStart(
          sstride = 1;
       }
       FindDataBlockSizeAndStart( strides, sizes, size, start );
-      if( size != ( FindNumberOfPixels( sizes ) - 1 ) * sstride + 1 ) {
+      if( size != ( FindNumberOfPixels( sizes ) - 1 ) * static_cast< dip::uint >( sstride + 1 )) {
          sstride = 0;
          return false;
       }
@@ -137,8 +137,9 @@ static UnsignedArray OffsetToCoordinates(
       // This loop increases its counter at the start, a disadvantage of using
       // unsigned integers as loop counters.
       --ii;
-      coord[ ii ] = offset / strides[ ii ];
-      offset = offset % strides[ ii ];
+      dip::uint stride = static_cast< dip::uint >( strides[ ii ] );
+      coord[ ii ] = offset / stride;
+      offset = offset % stride;
    }
    return coord;
 }
@@ -175,7 +176,7 @@ CoordinatesComputer::CoordinatesComputer( UnsignedArray const& sizes, IntegerArr
    // by setting the size > 1 and stride = 0.
    dip::uint nelem = 0;
    for( dip::uint ii = 0; ii < N; ++ii ) {
-      sizes_[ ii ] = sizes[ ii ];
+      sizes_[ ii ] = static_cast< dip::sint >( sizes[ ii ] );
       if( ( sizes_[ ii ] != 1 ) && ( strides_[ ii ] != 0 ) ) {
          index_[ nelem ] = ii;
          ++nelem;
@@ -233,7 +234,7 @@ UnsignedArray CoordinatesComputer::operator()( dip::sint offset ) const {
       if( sizes_[ jj ] < 0 ) {
          // This dimension had a negative stride. The computed coordinate started
          // at the end of the line instead of the begging, so we reverse it.
-         coordinates[ jj ] = -sizes_[ jj ] - coordinates[ jj ] - 1;
+         coordinates[ jj ] = static_cast< dip::uint >( -sizes_[ jj ] ) - coordinates[ jj ] - 1;
       }
    }
    return coordinates;
@@ -247,12 +248,12 @@ bool Image::HasNormalStrides() const {
    if( tensorStride_ != 1 ) {
       return false;
    }
-   dip::sint total = tensor_.Elements();
+   dip::sint total = static_cast< dip::sint >( tensor_.Elements() );
    for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
       if( strides_[ ii ] != total ) {
          return false;
       }
-      total *= sizes_[ ii ];
+      total *= static_cast< dip::sint >( sizes_[ ii ] );
    }
    return true;
 }
@@ -274,7 +275,7 @@ bool Image::IsSingletonExpanded() const {
 
 // Return a pointer to the start of the data and a single stride to
 // walk through all pixels. If this is not possible, porigin==nullptr.
-void Image::GetSimpleStrideAndOrigin( dip::uint& sstride, void*& porigin ) const {
+void Image::GetSimpleStrideAndOrigin( dip::sint& sstride, void*& porigin ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::sint start;
    dip::uint size;
@@ -411,7 +412,7 @@ bool Image::Aliases( Image const& other ) const {
       dts = dts2;
       dip::uint n = dts1 / dts; // this is always an integer value, samples have size 1, 2, 4, 8 or 16.
       for( dip::uint ii = 0; ii < ndims1; ++ii ) {
-         strides1[ ii ] *= n;
+         strides1[ ii ] *= static_cast< dip::sint >( n );
       }
       strides1.push_back( 1 );
       sizes1.push_back( n );
@@ -420,7 +421,7 @@ bool Image::Aliases( Image const& other ) const {
       // Split the samples of 2, adding a new dimension
       dip::uint n = dts2 / dts; // this is always an integer value, samples have size 1, 2, 4, 8 or 16.
       for( dip::uint ii = 0; ii < ndims2; ++ii ) {
-         strides2[ ii ] *= n;
+         strides2[ ii ] *= static_cast< dip::sint >( n );
       }
       strides2.push_back( 1 );
       sizes2.push_back( n );
@@ -445,13 +446,13 @@ bool Image::Aliases( Image const& other ) const {
 
    // Quicky: if both have simple strides larger than one, and their offsets
    // do not differ by a multiple of that stride, they don't overlap.
-   dip::uint sstride1, sstride2;
+   dip::sint sstride1, sstride2;
    dip::uint size1, size2;
    dip::sint start1, start2;
    FindSimpleStrideSizeAndStart( strides1, sizes1, sstride1, size1, start1 );
    FindSimpleStrideSizeAndStart( strides2, sizes2, sstride2, size2, start2 );
-   start1 += origin1;
-   start2 += origin2;
+   start1 += static_cast< dip::sint >( origin1 );
+   start2 += static_cast< dip::sint >( origin2 );
    if( ( sstride1 > 1 ) && ( sstride1 == sstride2 ) ) {
       if( ( start1 - start2 ) % sstride1 != 0 ) {
          return false;
@@ -488,13 +489,13 @@ bool Image::Aliases( Image const& other ) const {
    for( dip::uint ii = 0; ii < ndims1; ++ii ) {
       if( strides1[ ii ] < 0 ) {
          strides1[ ii ] = -strides1[ ii ];
-         origin1 -= ( sizes1[ ii ] - 1 ) * strides1[ ii ];
+         origin1 -= ( sizes1[ ii ] - 1 ) * static_cast< dip::uint >( strides1[ ii ] );
       }
    }
    for( dip::uint ii = 0; ii < ndims2; ++ii ) {
       if( strides2[ ii ] < 0 ) {
          strides2[ ii ] = -strides2[ ii ];
-         origin2 -= ( sizes2[ ii ] - 1 ) * strides2[ ii ];
+         origin2 -= ( sizes2[ ii ] - 1 ) * static_cast< dip::uint >( strides2[ ii ] );
       }
    }
 
@@ -505,9 +506,9 @@ bool Image::Aliases( Image const& other ) const {
    // Walk through both stride arrays matching up dimensions
    // The assumed invariant is that stride[ii+1]>=stride[ii]*sizes[ii]
 
-   IntegerArray comstrides;  // common strides
-   IntegerArray newstrides1; // new strides img 1
-   IntegerArray newstrides2; // new strides img 2
+   IntegerArray comstrides;    // common strides
+   UnsignedArray newstrides1;  // new strides img 1
+   UnsignedArray newstrides2;  // new strides img 2
    UnsignedArray newsizes1;    // new sizes img 1
    UnsignedArray newsizes2;    // new sizes img 2
 
@@ -548,8 +549,8 @@ bool Image::Aliases( Image const& other ) const {
          ++i1;
          ++i2;
       }
-      dip::sint cs = comstrides.empty() ? 1 : gcd( s1, s2 ); // The first dimension should have stride==1
-      comstrides.push_back( cs );
+      dip::uint cs = comstrides.empty() ? 1 : static_cast< dip::uint >( gcd( s1, s2 )); // The first dimension should have stride==1
+      comstrides.push_back( static_cast< dip::sint >( cs ));
       newstrides1.push_back( s1 / cs );
       newstrides2.push_back( s2 / cs );
       newsizes1.push_back( d1 );
@@ -571,7 +572,7 @@ bool Image::Aliases( Image const& other ) const {
       }
       if( ( newstrides1[ ii ] == newstrides2[ ii ] ) &&
           ( newstrides1[ ii ] > 1 ) &&
-          ( ( static_cast< dip::sint >( neworigin1[ ii ] ) - static_cast< dip::sint >( neworigin2[ ii ] )) % newstrides1[ ii ] != 0 ) ) {
+          (( static_cast< dip::sint >( neworigin1[ ii ] ) - static_cast< dip::sint >( neworigin2[ ii ] )) % static_cast< dip::sint >( newstrides1[ ii ] ) != 0 )) {
          return false;
       }
    }
@@ -611,7 +612,7 @@ void Image::Forge() {
          void* p = std::malloc( size * sz );
          DIP_THROW_IF( !p, "Failed to allocate memory" );
          dataBlock_ = std::shared_ptr< void >( p, std::free );
-         origin_ = static_cast< uint8* >( p ) + start * sz;
+         origin_ = static_cast< uint8* >( p ) + start * static_cast< dip::sint >( sz );
          //std::cout << "   Successfully forged image\n";
       }
    }
@@ -743,12 +744,12 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
       for( dip::uint repeat2 = 0; repeat2 < 100; ++repeat2 ) {
          dip::UnsignedArray coords( ndims );
          for( dip::uint ii = 0; ii < ndims; ++ii ) {
-            coords[ ii ] = ( dip::uint )std::floor( randF( random ) * dims[ ii ] );
+            coords[ ii ] = ( dip::uint )std::floor( randF( random ) * static_cast< double >( dims[ ii ] ));
          }
          dip::sint offset = img.Offset( coords );
          error |= o2c( offset ) != coords;
          dip::uint index = img.Index( coords );
-         error |= i2c( index ) != coords;
+         error |= i2c( static_cast< dip::sint >( index )) != coords;
       }
    }
    DOCTEST_CHECK_FALSE( error );

@@ -61,6 +61,12 @@
 
 #include "diplib/library/error.h"
 
+
+// The sign conversion warnings are all related to indexing into a std::vector using an int instead of an unsigned
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
+
 namespace {
 
 constexpr static unsigned char bitrevTab[] = {
@@ -835,6 +841,9 @@ size_t getOptimalDFTSize( size_t size0 ) {
 } // namespace
 
 
+#pragma GCC diagnostic pop
+
+
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
 #include <random>
@@ -846,13 +855,14 @@ size_t getOptimalDFTSize( size_t size0 ) {
 template< typename T >
 T dotest( size_t nfft, bool inverse = false ) {
    // Initialize
-   DFTOptions< T > opts( nfft, inverse );
-   std::vector< std::complex< T >> buf( opts.bufferSize() );
+   DIP_ASSERT( nfft <= std::numeric_limits< int >::max() );
+   DFTOptions< T > opts( static_cast< int >( nfft ), inverse );
+   std::vector< std::complex< T >> buf( static_cast< size_t >( opts.bufferSize() ));
    // Create test data
-   std::vector< std::complex< T>> inbuf( nfft );
-   std::vector< std::complex< T>> outbuf( nfft );
+   std::vector< std::complex< T >> inbuf( nfft );
+   std::vector< std::complex< T >> outbuf( nfft );
    for( size_t k = 0; k < nfft; ++k ) {
-      inbuf[ k ] = std::complex< T >( std::rand(), std::rand() ) / ( T )RAND_MAX - ( T )0.5;
+      inbuf[ k ] = std::complex< T >( ( T )std::rand(), ( T )std::rand() ) / ( T )RAND_MAX - ( T )0.5;
    }
    // Do the thing
    DFT( inbuf.data(), outbuf.data(), buf.data(), opts, T( 1 ) );
@@ -861,7 +871,7 @@ T dotest( size_t nfft, bool inverse = false ) {
    long double difpower = 0;
    for( size_t k0 = 0; k0 < nfft; ++k0 ) {
       std::complex< long double > acc{ 0, 0 };
-      long double phinc = ( inverse ? 2.0 : -2.0 ) * k0 * M_PIl / nfft;
+      long double phinc = ( inverse ? 2.0l : -2.0l ) * ( long double )k0 * M_PIl / ( long double )nfft;
       for( size_t k1 = 0; k1 < nfft; ++k1 ) {
          acc += std::complex< long double >( inbuf[ k1 ] ) *
                 std::exp( std::complex< long double >( 0, ( k1 * phinc )));
@@ -869,7 +879,7 @@ T dotest( size_t nfft, bool inverse = false ) {
       totalpower += std::norm( acc );
       difpower += std::norm( acc - std::complex< long double >( outbuf[ k0 ] ));
    }
-   return std::sqrt( difpower / totalpower ); // Root mean square error
+   return ( T )std::sqrt( difpower / totalpower ); // Root mean square error
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the DFT function") {

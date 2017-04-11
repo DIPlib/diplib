@@ -243,9 +243,8 @@ PixelTable::PixelTable(
    }
    ImageIterator< dip::bin > it( mask, procDim );
    do {
-      IntegerArray position( nDims, 0 );
-      position += it.Coordinates();       // direct assignment does not work, as the one is UnsignedArray and the other IntegerArray.
-      position += origin_;
+      IntegerArray position = origin_;
+      position += it.Coordinates();
       dip::sint start = position[ procDim ];
       dip::uint length = 0;
       auto data = it.GetLineIterator();
@@ -254,7 +253,7 @@ PixelTable::PixelTable(
             ++length;
          } else {
             if( length ) {
-               position[ procDim ] = start + ( data.Coordinate() - length );
+               position[ procDim ] = start + static_cast< dip::sint >( data.Coordinate() - length );
                runs_.emplace_back( position, length );
                nPixels_ += length;
             }
@@ -262,7 +261,7 @@ PixelTable::PixelTable(
          }
       } while( ++data );
       if( length ) {
-         position[ procDim ] = start + ( data.Coordinate() - length );
+         position[ procDim ] = start + static_cast< dip::sint >( data.Coordinate() - length );
          runs_.emplace_back( position, length );
          nPixels_ += length;
       }
@@ -344,8 +343,9 @@ void PixelTable::AddDistanceToOriginAsWeights() {
       if( run.length > 1 ) {
          dfloat d = static_cast< dfloat >( position[ procDim_ ] );
          for( dip::uint ii = 1; ii < run.length; ++ii ) {
-            // new sum2 = sum2 - d^2 + (d+ii)^2 = sum2 + ii^2 - 2*ii*d
-            weights_.push_back( std::sqrt( sum2 + ii * ii + 2 * ii * d ));
+            dfloat x = static_cast< dfloat >( ii );
+            // new sum2 = sum2 - d^2 + (d+x)^2 = sum2 + x^2 - 2*x*d
+            weights_.push_back( std::sqrt( sum2 + x * x + 2 * x * d ));
          }
       }
    }
