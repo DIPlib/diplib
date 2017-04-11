@@ -28,6 +28,7 @@
 #include <cstring>
 #ifdef DIP__ENABLE_UNICODE
 #include <codecvt>
+#include <locale>
 #endif
 
 #include "mex.h"
@@ -117,7 +118,7 @@ inline bool IsMatlabStrides(
       return false;
    }
    if( sizes.size() == 1 ) {
-      if( strides[ 0 ] != telem ) {
+      if( strides[ 0 ] != static_cast< dip::sint >( telem )) {
          //mexPrintf( "IsMatlabStrides: 1D test failed\n" );
          return false;
       }
@@ -261,6 +262,8 @@ inline mxArray* CreateTensorShape( enum dip::Tensor::Shape shape ) {
       case dip::Tensor::Shape::LOWTRIANG_MATRIX:
          return mxCreateString( "lower triangular matrix" );
    }
+   
+   return NULL;
 }
 
 // Get the dip::Tensor::Shape value from a string mxArray
@@ -431,7 +434,7 @@ inline dip::BooleanArray GetProcessArray( mxArray const* mx, dip::uint nDims ) {
       }
       dip::BooleanArray out( nDims, false );
       for( auto ii : in ) {
-         DIP_THROW_IF( ( ii <= 0 ) || ( ii > nDims ), "Process array contains index out of range" );
+         DIP_THROW_IF( ( ii <= 0 ) || ( ii > static_cast< dip::sint >( nDims )), "Process array contains index out of range" );
          out[ ii - 1 ] = true;
       }
       return out;
@@ -874,7 +877,7 @@ class MatlabInterface : public dip::ExternalInterface {
          mxSetPropertyShared( out, 0, ndimsPropertyName, ndims );
          // Set TensorShape property
          if( img.TensorElements() > 1 ) {
-            mxArray* tshape;
+            mxArray* tshape=NULL;
             switch( img.TensorShape() ) {
                case dip::Tensor::Shape::COL_VECTOR:
                   tshape = CreateDouble2Vector( img.TensorElements(), 1 );
@@ -1007,7 +1010,7 @@ inline dip::Image GetImage( mxArray const* mx ) {
       }
       mxdata = mx;
       // Sizes
-      ndims = ndims = mxGetNumberOfDimensions( mxdata );
+      ndims = mxGetNumberOfDimensions( mxdata );
       psizes = mxGetDimensions( mxdata );
       if( ndims <= 2 ) {
          if( psizes[ 0 ] == 1 && psizes[ 1 ] == 1 ) {
