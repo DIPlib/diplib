@@ -68,7 +68,10 @@ using sint = std::ptrdiff_t;  ///< An integer type to be used for strides and si
 using uint = std::size_t;  ///< An integer type to be used for sizes and the like.
 // ptrdiff_t and size_t are signed and unsigned integers of the same length as
 // pointers: 32 bits on 32-bit systems, 64 bits on 64-bit systems.
-
+// NOTE: We don't allow any integer to be larger than the max value of ptrdiff_t.
+//       This is tested for in a few places (at dip::Image creation and when forging)
+//       but not everywhere.
+constexpr dip::uint maxint = static_cast< dip::uint >( std::numeric_limits< dip::sint >::max() );
 
 //
 // Types for pixel values

@@ -55,8 +55,8 @@ static dip::uint FindNumberOfPixels(
 ) {
    dip::uint n = 1;
    for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
-      DIP_THROW_IF( ( sizes[ ii ] != 0 ) && ( n > std::numeric_limits< dip::uint >::max() / sizes[ ii ] ),
-                   E::SIZE_EXCEEDS_LIMIT );
+      // Note that total size cannot exceed maximum value of `dip::sint` (not `dip::uint`)!
+      DIP_THROW_IF(( sizes[ ii ] != 0 ) && ( n > maxint / sizes[ ii ] ), E::SIZE_EXCEEDS_LIMIT );
       n *= sizes[ ii ];
    }
    return n;
@@ -117,7 +117,7 @@ static bool FindSimpleStrideSizeAndStart(
          sstride = 1;
       }
       FindDataBlockSizeAndStart( strides, sizes, size, start );
-      if( size != ( FindNumberOfPixels( sizes ) - 1 ) * static_cast< dip::uint >( sstride + 1 )) {
+      if( size != ( FindNumberOfPixels( sizes ) - 1 ) * static_cast< dip::uint >( sstride ) + 1 ) {
          sstride = 0;
          return false;
       }
@@ -626,6 +626,7 @@ void Image::ReForge(
       dip::DataType dt,
       Option::AcceptDataTypeChange acceptDataTypeChange
 ) {
+   TestSizes( sizes );
    if(( acceptDataTypeChange == dip::Option::AcceptDataTypeChange::DO_ALLOW ) && protect_ ) {
       dt = dataType_;
    }

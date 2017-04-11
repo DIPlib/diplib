@@ -199,6 +199,7 @@ class DIP_NO_EXPORT Image {
             dataType_( dt ),
             sizes_( sizes ),
             tensor_( tensorElems ) {
+         TestSizes( sizes_ );
          Forge();
       }
 
@@ -400,8 +401,8 @@ class DIP_NO_EXPORT Image {
             origin_( origin ),
             externalData_( true ),
             externalInterface_( externalInterface ) {
+         TestSizes( sizes_ );
          dip::uint nDims = sizes_.size();
-         DIP_THROW_IF( !sizes_.all(), "Sizes must be non-zero" );
          if( strides_.empty() ) {
             SetNormalStrides();
          } else {
@@ -463,6 +464,7 @@ class DIP_NO_EXPORT Image {
       /// \brief Set the image sizes. The image must be raw.
       void SetSizes( UnsignedArray const& d ) {
          DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
+         TestSizes( d );
          sizes_ = d;
       }
 
@@ -2252,6 +2254,13 @@ class DIP_NO_EXPORT Image {
       DIP_EXPORT void GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& start ) const;
       // `size` is the distance between top left and bottom right corners. `start` is the distance between
       // top left corner and origin (will be <0 if any strides[ii] < 0). All measured in samples.
+
+      // Throws is `sizes_` is not good.
+      DIP_NO_EXPORT static void TestSizes( UnsignedArray sizes ) {
+         for( auto s : sizes ) {
+            DIP_THROW_IF(( s == 0 ) || ( s > maxint ), "Sizes must be non-zero and no larger than " + std::to_string( maxint ));
+         }
+      }
 
 }; // class Image
 

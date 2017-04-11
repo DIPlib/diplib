@@ -217,6 +217,7 @@ std::ostream& operator<<(
          for( dip::uint ii = 1; ii < img.Dimensionality(); ++ii ) {
             os << " x " << img.PixelSize( ii );
          }
+         std::cout << std::endl;
       }
    }
    // Data storage
@@ -224,6 +225,16 @@ std::ostream& operator<<(
    if( img.IsForged() ) {
       os << "    data pointer:   " << img.Data() << " (shared among " << img.ShareCount() << " images)" << std::endl;
       os << "    origin pointer: " << img.Origin() << std::endl;
+      /*
+      dip::sint sstride;
+      void* porigin;
+      img.GetSimpleStrideAndOrigin( sstride, porigin );
+      if( porigin ) {
+         os << "    simple stride: " << sstride << ", origin: " << porigin << std::endl;
+      } else {
+         os << "    no simple stride" << std::endl;
+      }
+      */
    } else {
       os << "    not forged" << std::endl;
    }

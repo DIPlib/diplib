@@ -268,7 +268,7 @@ class DIP_NO_EXPORT Tensor {
       }
       /// Sets the tensor shape, results in a Shape::COL_VECTOR.
       void SetVector( dip::uint n ) {
-         DIP_THROW_IF( n == 0, "Number of vector elements must be non-zero" );
+         DIP_THROW_IF(( n == 0 ) || ( n > maxint ), "Sizes must be non-zero and no larger than " + std::to_string( maxint ));
          shape_ = Shape::COL_VECTOR;
          elements_ = rows_ = n;
       }
