@@ -383,9 +383,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    dip::Image out = csm.Convert( img, "RGB" );
    DOCTEST_CHECK( out.ColorSpace() == "RGB" );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 0 ] ) == doctest::Approx( 0.0 ));
-   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 1 ] ) == doctest::Approx( 0.0 ));
-   DOCTEST_CHECK( static_cast< dip::dfloat >( out[ 2 ] ) == doctest::Approx( 0.0 ));
+   std::cout << out;
+   auto oit = out.SampleIteratorAt< dip::sfloat >();
+   DOCTEST_CHECK( oit[ 0 ] == doctest::Approx( 0.0 ));
+   DOCTEST_CHECK( oit[ 1 ] == doctest::Approx( 0.0 ));
+   DOCTEST_CHECK( oit[ 2 ] == doctest::Approx( 0.0 ));
    // CMYK should have 4 tensor elements, not 3!
    img.SetColorSpace( "CMYK" );
    DOCTEST_CHECK_THROWS( csm.Convert( img, "RGB" ) );
@@ -404,15 +406,19 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    dip::Image xyz = csm.Convert( img, "XYZ" );
    csm.SetWhitePoint( dip::ColorSpaceManager::IlluminantD65 ); // same as default values!
    csm.Convert( xyz, out, "RGB" );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( img[ 0 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 0 ] )));
-   DOCTEST_CHECK( static_cast< dip::dfloat >( img[ 1 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 1 ] )));
-   DOCTEST_CHECK( static_cast< dip::dfloat >( img[ 2 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 2 ] )));
+   auto iit = img.SampleIteratorAt< dip::sfloat >();
+   oit = out.SampleIteratorAt< dip::sfloat >();
+   DOCTEST_CHECK( iit[ 0 ] == doctest::Approx( oit[ 0 ] ));
+   DOCTEST_CHECK( iit[ 1 ] == doctest::Approx( oit[ 1 ] ));
+   DOCTEST_CHECK( iit[ 2 ] == doctest::Approx( oit[ 2 ] ));
    // Check that RGB->XYZ yields something different when using a different white point.
    csm.SetWhitePoint( dip::ColorSpaceManager::IlluminantD50 );
    csm.Convert( img, out, "XYZ" );
-   DOCTEST_CHECK_FALSE( static_cast< dip::dfloat >( xyz[ 0 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 0 ] )));
-   DOCTEST_CHECK_FALSE( static_cast< dip::dfloat >( xyz[ 1 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 1 ] )));
-   DOCTEST_CHECK_FALSE( static_cast< dip::dfloat >( xyz[ 2 ] ) == doctest::Approx( static_cast< dip::dfloat >( out[ 2 ] )));
+   iit = xyz.SampleIteratorAt< dip::sfloat >();
+   oit = out.SampleIteratorAt< dip::sfloat >();
+   DOCTEST_CHECK_FALSE( iit[ 0 ] == doctest::Approx( oit[ 0 ] ));
+   DOCTEST_CHECK_FALSE( iit[ 1 ] == doctest::Approx( oit[ 1 ] ));
+   DOCTEST_CHECK_FALSE( iit[ 2 ] == doctest::Approx( oit[ 2 ] ));
 }
 
 #endif // DIP__ENABLE_DOCTEST

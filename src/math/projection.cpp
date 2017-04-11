@@ -874,9 +874,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.Dimensionality() == 3 );
    DOCTEST_CHECK( out.NumberOfPixels() == 1 );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 0 ] ) == 2 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 1 ] ) == 3 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 2 ] ) == 4 );
+   auto it = out.SampleIteratorAt< dip::uint8 >( 0, 0, 0 );
+   DOCTEST_CHECK( it[ 0 ] == 2  );
+   DOCTEST_CHECK( it[ 1 ] == 3 );
+   DOCTEST_CHECK( it[ 2 ] == 4 );
 
    // Project over two dimensions
    dip::BooleanArray ps( 3, true );
@@ -886,15 +887,18 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.NumberOfPixels() == 3 );
    DOCTEST_CHECK( out.Size( 0 ) == 3 );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 0 ].At( 0, 0, 0 ) ) == 2 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 1 ].At( 0, 0, 0 ) ) == 3 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 2 ].At( 0, 0, 0 ) ) == 4 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 0 ].At( 1, 0, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 1 ].At( 1, 0, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 2 ].At( 1, 0, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 0 ].At( 2, 0, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 1 ].At( 2, 0, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 2 ].At( 2, 0, 0 ) ) == 1 );
+   it = out.SampleIteratorAt< dip::uint8 >( 0, 0, 0 );
+   DOCTEST_CHECK( it[ 0 ] == 2 );
+   DOCTEST_CHECK( it[ 1 ] == 3 );
+   DOCTEST_CHECK( it[ 2 ] == 4 );
+   it = out.SampleIteratorAt< dip::uint8 >( 1, 0, 0 );
+   DOCTEST_CHECK( it[ 0 ] == 1 );
+   DOCTEST_CHECK( it[ 1 ] == 1 );
+   DOCTEST_CHECK( it[ 2 ] == 1 );
+   it = out.SampleIteratorAt< dip::uint8 >( 2, 0, 0 );
+   DOCTEST_CHECK( it[ 0 ] == 1 );
+   DOCTEST_CHECK( it[ 1 ] == 1 );
+   DOCTEST_CHECK( it[ 2 ] == 1 );
 
    // Project over another two dimensions
    ps[ 0 ] = true;
@@ -904,18 +908,22 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.NumberOfPixels() == 4 );
    DOCTEST_CHECK( out.Size( 1 ) == 4 );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 0 ].At( 0, 0, 0 ) ) == 2 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 1 ].At( 0, 0, 0 ) ) == 3 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 2 ].At( 0, 0, 0 ) ) == 4 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 0 ].At( 0, 1, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 1 ].At( 0, 1, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 2 ].At( 0, 1, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 0 ].At( 0, 2, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 1 ].At( 0, 2, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 2 ].At( 0, 2, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 0 ].At( 0, 3, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 1 ].At( 0, 3, 0 ) ) == 1 );
-   DOCTEST_CHECK( static_cast< dip::sint >( out[ 2 ].At( 0, 3, 0 ) ) == 1 );
+   it = out.SampleIteratorAt< dip::uint8 >( 0, 0, 0 );
+   DOCTEST_CHECK( it[ 0 ] == 2 );
+   DOCTEST_CHECK( it[ 1 ] == 3 );
+   DOCTEST_CHECK( it[ 2 ] == 4 );
+   it = out.SampleIteratorAt< dip::uint8 >( 0, 1, 0 );
+   DOCTEST_CHECK( it[ 0 ] == 1 );
+   DOCTEST_CHECK( it[ 1 ] == 1 );
+   DOCTEST_CHECK( it[ 2 ] == 1 );
+   it = out.SampleIteratorAt< dip::uint8 >( 0, 2, 0 );
+   DOCTEST_CHECK( it[ 0 ] == 1 );
+   DOCTEST_CHECK( it[ 1 ] == 1 );
+   DOCTEST_CHECK( it[ 2 ] == 1 );
+   it = out.SampleIteratorAt< dip::uint8 >( 0, 3, 0 );
+   DOCTEST_CHECK( it[ 0 ] == 1 );
+   DOCTEST_CHECK( it[ 1 ] == 1 );
+   DOCTEST_CHECK( it[ 2 ] == 1 );
 
    // No looping at all, we project over all dimensions and have no tensor dimension
    img = dip::Image{ dip::UnsignedArray{ 3, 4, 2 }, 1, dip::DT_SFLOAT };

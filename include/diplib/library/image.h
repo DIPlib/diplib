@@ -36,6 +36,7 @@
 #include "diplib/library/tensor.h"
 #include "diplib/library/physical_dimensions.h"
 #include "diplib/library/clamp_cast.h"
+#include "diplib/library/sample_iterator.h"
 
 #include <iostream>
 
@@ -2200,21 +2201,86 @@ class DIP_NO_EXPORT Image {
          return *this;
       }
 
-      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), casted
+      /// \brief Returns a reference to the first sample of the pixel at the given coordinates.
+      /// `T` must match the image's data type and the image must be forged.
+      template< typename T >
+      T& SampleAt( UnsignedArray const& coords ) const {
+         DIP_THROW_IF( dip::DataType( T( 0 )) != dataType_, E::WRONG_DATA_TYPE );
+         return *static_cast< T* >( Pointer( coords )); // Throws if not forged.
+      }
+
+      /// \brief Returns a reference to the first sample of the pixel at the given coordinate.
+      /// `T` must match the image's data type and the image must be forged.
+      template< typename T >
+      T& SampleAt( dip::uint x ) const {
+         return SampleAt< T >( UnsignedArray{ x } );
+      }
+
+      /// \brief Returns a reference to the first sample of the pixel at the given coordinates.
+      /// `T` must match the image's data type and the image must be forged.
+      template< typename T >
+      T& SampleAt( dip::uint x, dip::uint y ) const {
+         return SampleAt< T >( UnsignedArray{ x, y } );
+      }
+
+      /// \brief Returns a reference to the first sample of the pixel at the given coordinates.
+      /// `T` must match the image's data type and the image must be forged.
+      template< typename T >
+      T& SampleAt( dip::uint x, dip::uint y, dip::uint z ) const {
+         return SampleAt< T >( UnsignedArray{ x, y, z } );
+      }
+
+      /// \brief Returns a sample iterator to the pixel at the given coordinates.
+      /// `T` must match the image's data type and the image must be forged.
+      template< typename T >
+      SampleIterator< T > SampleIteratorAt( UnsignedArray const& coords ) const {
+         DIP_THROW_IF( dip::DataType( T( 0 )) != dataType_, E::WRONG_DATA_TYPE );
+         return { static_cast< T* >( Pointer( coords )), tensorStride_ }; // Throws if not forged.
+      }
+
+      /// \brief Returns a sample iterator to the single pixel of a 0D image.
+      /// `T` must match the image's data type and the image must be forged.
+      template< typename T >
+      SampleIterator< T > SampleIteratorAt() const {
+         return SampleIteratorAt< T >( UnsignedArray{} );
+      }
+
+      /// \brief Returns a sample iterator to the pixel at the given coordinate.
+      /// `T` must match the image's data type and the image must be forged.
+      template< typename T >
+      SampleIterator< T > SampleIteratorAt( dip::uint x ) const {
+         return SampleIteratorAt< T >( UnsignedArray{ x } );
+      }
+
+      /// \brief Returns a sample iterator to the pixel at the given coordinates.
+      /// `T` must match the image's data type and the image must be forged.
+      template< typename T >
+      SampleIterator< T > SampleIteratorAt( dip::uint x, dip::uint y ) const {
+         return SampleIteratorAt< T >( UnsignedArray{ x, y } );
+      }
+
+      /// \brief Returns a sample iterator to the pixel at the given coordinates.
+      /// `T` must match the image's data type and the image must be forged.
+      template< typename T >
+      SampleIterator< T > SampleIteratorAt( dip::uint x, dip::uint y, dip::uint z ) const {
+         return SampleIteratorAt< T >( UnsignedArray{ x, y, z } );
+      }
+
+      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), cast
       /// to a boolean. Any non-zero value is cast to true.
       DIP_EXPORT explicit operator bool() const;
 
-      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), casted
+      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), cast
       /// to a signed integer of maximum width. For complex values
       /// returns the absolute value.
       DIP_EXPORT explicit operator dip::sint() const;
 
-      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), casted
+      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), cast
       /// to a double-precision floating-point value. For complex values
       /// returns the absolute value.
       DIP_EXPORT explicit operator dfloat() const;
 
-      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), casted
+      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), cast
       /// to a double-precision complex floating-point value.
       DIP_EXPORT explicit operator dcomplex() const;
 

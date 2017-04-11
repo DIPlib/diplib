@@ -614,7 +614,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    DOCTEST_CHECK( dip::Count( out ) == 89 );
    dip::BasicMorphology( out, out, { { 10, 11 }, "elliptic" }, {}, false /*compute erosion*/, true /* mirror */ );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK(( dip::sint )out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.SampleAt< dip::uint8 >( 64, 35 ) == pval ); // Is that pixel in the right place?
 
    // PixelTable morphology -- mirroring
    dip::Image se( { 10, 10 }, 1, dip::DT_BIN );
@@ -623,7 +623,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    DOCTEST_CHECK( dip::Count( out ) == 100 );
    dip::BasicMorphology( out, out, se, {}, false /*compute erosion*/, true /* mirror */ );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK(( dip::sint )out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.SampleAt< dip::uint8 >( 64, 35 ) == pval ); // Is that pixel in the right place?
 
    // Parabolic morphology
    dip::BasicMorphology( in, out, { { 10.0, 0.0 }, "parabolic" }, {}, true /*compute dilation*/ );
@@ -633,7 +633,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    }
    result = dip::dfloat( pval ) + result * 2.0;
    DOCTEST_CHECK(( dip::dfloat )dip::Sum( out ) == doctest::Approx( result ) );
-   DOCTEST_CHECK(( dip::dfloat )out.At( 64, 35 ) == pval ); // Is the origin in the right place?
+   DOCTEST_CHECK( out.SampleAt< dip::sfloat >( 64, 35 ) == pval ); // Is the origin in the right place?
 
    dip::BasicMorphology( out, out, { { 10.0, 0.0 }, "parabolic" }, {}, false /*compute erosion*/, true /* mirror */ );
    result = 0.0;
@@ -642,7 +642,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    }
    result = dip::dfloat( pval ) + result * 2.0;
    DOCTEST_CHECK(( dip::dfloat )dip::Sum( out ) == doctest::Approx( result ) );
-   DOCTEST_CHECK(( dip::dfloat )out.At( 64, 35 ) == pval ); // Is the origin in the right place?
+   DOCTEST_CHECK( out.SampleAt< dip::sfloat >( 64, 35 ) == pval ); // Is the origin in the right place?
 
    // Grey-value SE morphology
    se.ReForge( { 5, 6 }, 1, dip::DT_SFLOAT );
@@ -656,7 +656,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    DOCTEST_CHECK(( dip::sint )dip::Sum( out ) == 5 * pval - 5 - 5 - 10 );
    dip::BasicMorphology( out, out, se, {}, false /*compute erosion*/, true /* mirror */ );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK(( dip::sint )out.At( 64, 35 ) == pval ); // Is the main pixel in the right place and with the right value?
+   DOCTEST_CHECK( out.SampleAt< dip::uint8 >( 64, 35 ) == pval ); // Is the main pixel in the right place and with the right value?
 }
 
 #endif // DIP__ENABLE_DOCTEST
