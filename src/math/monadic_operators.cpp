@@ -41,17 +41,17 @@ template< typename T >
 T dipm__Reciprocal( T v ) { return v == T( 0 ) ? T( 0 ) : T( 1 ) / v; }
 
 template< typename T >
-T dipm__IsNaN( T v ) { return std::isnan( v ); }
+bool dipm__IsNaN( T v ) { return std::isnan( v ); }
 template< typename T >
-T dipm__IsNaN( std::complex< T > v ) { return std::isnan( v.real() ) || std::isnan( v.imag() ); }
+bool dipm__IsNaN( std::complex< T > v ) { return std::isnan( v.real() ) || std::isnan( v.imag() ); }
 
 template< typename T >
-T dipm__IsInf( T v ) { return std::isinf( v ); }
+bool dipm__IsInf( T v ) { return std::isinf( v ); }
 template< typename T >
-T dipm__IsInf( std::complex< T > v ) { return std::isinf( v.real() ) || std::isinf( v.imag() ); }
+bool dipm__IsInf( std::complex< T > v ) { return std::isinf( v.real() ) || std::isinf( v.imag() ); }
 
 template< typename T >
-T dipm__IsFinite( T v ) { return !dipm__IsNaN( v ) && !dipm__IsInf( v ); }
+bool dipm__IsFinite( T v ) { return !dipm__IsNaN( v ) && !dipm__IsInf( v ); }
 
 template< typename TPI, typename F >
 class DIP_EXPORT BinScanLineFilter : public Framework::ScanLineFilter {

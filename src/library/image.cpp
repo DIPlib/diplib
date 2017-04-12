@@ -25,6 +25,7 @@
 
 namespace dip {
 
+
 //
 bool Image::CompareProperties(
       Image const& src,

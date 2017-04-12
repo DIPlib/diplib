@@ -138,7 +138,7 @@ inline void ReadPixelWithBoundaryCondition(
    DIP_THROW_IF( coords.size() != img.Dimensionality(), E::ARRAY_ILLEGAL_SIZE );
    bool invert = false;
    for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
-      dip::sint sz = img.Size( ii );
+      dip::sint sz = static_cast< dip::sint >( img.Size( ii ));
       if(( coords[ ii ] < 0 ) || ( coords[ ii ] >= sz )) {
          switch( bc[ ii ] ) {
             case BoundaryCondition::ASYMMETRIC_MIRROR:

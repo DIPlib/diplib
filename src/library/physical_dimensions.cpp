@@ -250,7 +250,7 @@ Units::Units( dip::String const& string ) {
          DIP_THROW_IF( !ExpectCDot( string, ii ), errorMessage );
       }
       DIP_THROW_IF( !ParseComponent( string, ii, bu, power ), errorMessage );
-      power_[ unsigned( bu ) ] = static_cast< sint8 >( power_[ unsigned( bu ) ] + neg ? -power : power );
+      power_[ unsigned( bu ) ] = static_cast< sint8 >( power_[ unsigned( bu ) ] + ( neg ? -power : power ));
    }
 }
 

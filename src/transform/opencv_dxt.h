@@ -62,9 +62,11 @@
 #include "diplib/library/error.h"
 
 
+#if defined(__GNUG__) || defined(__clang__)
 // The sign conversion warnings are all related to indexing into a std::vector using an int instead of an unsigned
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
 
 
 namespace {
@@ -841,7 +843,9 @@ size_t getOptimalDFTSize( size_t size0 ) {
 } // namespace
 
 
+#if defined(__GNUG__) || defined(__clang__)
 #pragma GCC diagnostic pop
+#endif
 
 
 #ifdef DIP__ENABLE_DOCTEST

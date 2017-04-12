@@ -21,9 +21,12 @@
 #include "diplib/library/numeric.h"
 
 
+#if defined(__GNUG__) || defined(__clang__)
 // For this file, turn off -Wsign-conversion, Eigen is really bad at this!
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #pragma GCC diagnostic ignored "-Wconversion"
+#endif
 
 
 #include <Eigen/Dense>
@@ -239,7 +242,9 @@ dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input 
 } // namespace dip
 
 
+#if defined(__GNUG__) || defined(__clang__)
 #pragma GCC diagnostic pop
+#endif
 
 
 #ifdef DIP__ENABLE_DOCTEST

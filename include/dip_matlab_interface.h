@@ -245,7 +245,8 @@ inline mxArray* CreateDouble2Vector( dip::dfloat v0, dip::dfloat v1 ) {
 // Create an mxArray with a string representation of the dip::Tensor::Shape argument
 inline mxArray* CreateTensorShape( enum dip::Tensor::Shape shape ) {
    switch( shape ) {
-      case dip::Tensor::Shape::COL_VECTOR:
+      default:
+      //case dip::Tensor::Shape::COL_VECTOR:
          return mxCreateString( "column vector" );
       case dip::Tensor::Shape::ROW_VECTOR:
          return mxCreateString( "row vector" );
@@ -262,8 +263,6 @@ inline mxArray* CreateTensorShape( enum dip::Tensor::Shape shape ) {
       case dip::Tensor::Shape::LOWTRIANG_MATRIX:
          return mxCreateString( "lower triangular matrix" );
    }
-   
-   return NULL;
 }
 
 // Get the dip::Tensor::Shape value from a string mxArray
@@ -435,7 +434,7 @@ inline dip::BooleanArray GetProcessArray( mxArray const* mx, dip::uint nDims ) {
       dip::BooleanArray out( nDims, false );
       for( auto ii : in ) {
          DIP_THROW_IF( ( ii <= 0 ) || ( ii > static_cast< dip::sint >( nDims )), "Process array contains index out of range" );
-         out[ ii - 1 ] = true;
+         out[ static_cast< dip::uint >( ii - 1 ) ] = true;
       }
       return out;
    } else {
@@ -805,7 +804,7 @@ class MatlabInterface : public dip::ExternalInterface {
          dip::uint s = tensor.Elements();
          strides.resize( n );
          for( dip::uint ii = 0; ii < n; ii++ ) {
-            strides[ ii ] = s;
+            strides[ ii ] = static_cast< dip::sint >( s );
             s *= mlsizes[ ii ];
          }
          // Prepend tensor dimension
@@ -877,9 +876,10 @@ class MatlabInterface : public dip::ExternalInterface {
          mxSetPropertyShared( out, 0, ndimsPropertyName, ndims );
          // Set TensorShape property
          if( img.TensorElements() > 1 ) {
-            mxArray* tshape=NULL;
+            mxArray* tshape;
             switch( img.TensorShape() ) {
-               case dip::Tensor::Shape::COL_VECTOR:
+               default:
+               //case dip::Tensor::Shape::COL_VECTOR:
                   tshape = CreateDouble2Vector( img.TensorElements(), 1 );
                   break;
                case dip::Tensor::Shape::ROW_VECTOR:
@@ -1080,7 +1080,7 @@ inline dip::Image GetImage( mxArray const* mx ) {
    dip::uint s = tensor.Elements();
    dip::IntegerArray strides( ndims );
    for( dip::uint ii = 0; ii < ndims; ii++ ) {
-      strides[ ii ] = s;
+      strides[ ii ] = static_cast< dip::sint >( s );
       s *= sizes[ ii ];
    }
    if( ndims >= 2 ) {

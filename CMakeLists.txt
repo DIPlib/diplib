@@ -36,7 +36,7 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
    # Safe Clang compiler and architecture flags across all Intel and AMD processors (circa 2015)
-   set(CMAKE_CXX_FLAGS "-Wall")
+   set(CMAKE_CXX_FLAGS "-Wall -Wconversion -Wsign-conversion")
    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

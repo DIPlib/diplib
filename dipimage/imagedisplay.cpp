@@ -58,9 +58,9 @@ class MatlabInterfaceUInt8 : public dip::ExternalInterface {
          mlsizes[ 1 ] = sizes[ 0 ];
          mlsizes[ 2 ] = tensor.Elements();
          strides.resize( 2 );
-         strides[ 0 ] = sizes[ 1 ];
+         strides[ 0 ] = static_cast< dip::sint >( sizes[ 1 ] );
          strides[ 1 ] = 1;
-         tstride = sizes[ 0 ] * sizes[ 1 ];
+         tstride = static_cast< dip::sint >( sizes[ 0 ] * sizes[ 1 ] );
          array = mxCreateNumericArray( mlsizes.size(), mlsizes.data(), mxUINT8_CLASS, mxREAL );
          origin = mxGetData( array );
          return nullptr;
