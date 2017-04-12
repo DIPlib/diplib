@@ -218,7 +218,7 @@ std::ostream& operator<<(
          for( dip::uint ii = 1; ii < img.Dimensionality(); ++ii ) {
             os << " x " << img.PixelSize( ii );
          }
-         std::cout << std::endl;
+         os << std::endl;
       }
    }
    // Data storage

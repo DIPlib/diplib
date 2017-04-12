@@ -230,45 +230,19 @@ endif()
 
 ### DIPlib tests ### TEMPORARY!
 
-if(APPLE)
-   set(DIP_TEST_INSTALL_RPATH "@loader_path")
-else()
-   set(DIP_TEST_INSTALL_RPATH "$ORIGIN")
-endif()
-add_executable(test_error EXCLUDE_FROM_ALL test/test_error.cpp)
-add_executable(test_physdims EXCLUDE_FROM_ALL test/test_physdims.cpp)
-target_link_libraries(test_physdims DIP)
-set_target_properties(test_physdims PROPERTIES INSTALL_RPATH ${DIP_TEST_INSTALL_RPATH})
-add_executable(test_image EXCLUDE_FROM_ALL test/test_image.cpp)
-target_link_libraries(test_image DIP)
-set_target_properties(test_image PROPERTIES INSTALL_RPATH ${DIP_TEST_INSTALL_RPATH})
-add_executable(test_framework_scan EXCLUDE_FROM_ALL test/test_framework_scan.cpp)
-target_link_libraries(test_framework_scan DIP)
-set_target_properties(test_framework_scan PROPERTIES INSTALL_RPATH ${DIP_TEST_INSTALL_RPATH})
-add_executable(test_lambdafun EXCLUDE_FROM_ALL test/test_lambdafun.cpp)
-target_link_libraries(test_lambdafun DIP)
-set_target_properties(test_lambdafun PROPERTIES INSTALL_RPATH ${DIP_TEST_INSTALL_RPATH})
-add_executable(test_framework_separable EXCLUDE_FROM_ALL test/test_framework_separable.cpp)
-target_link_libraries(test_framework_separable DIP)
-set_target_properties(test_framework_separable PROPERTIES INSTALL_RPATH ${DIP_TEST_INSTALL_RPATH})
-add_executable(test_framework_separable2 EXCLUDE_FROM_ALL test/test_framework_separable2.cpp)
-target_link_libraries(test_framework_separable2 DIP)
-set_target_properties(test_framework_separable2 PROPERTIES INSTALL_RPATH ${DIP_TEST_INSTALL_RPATH})
-add_executable(test_framework_full EXCLUDE_FROM_ALL test/test_framework_full.cpp)
-target_link_libraries(test_framework_full DIP)
-set_target_properties(test_framework_full PROPERTIES INSTALL_RPATH ${DIP_TEST_INSTALL_RPATH})
-add_executable(test_boundary EXCLUDE_FROM_ALL test/test_boundary.cpp)
-target_link_libraries(test_boundary DIP)
-set_target_properties(test_boundary PROPERTIES INSTALL_RPATH ${DIP_TEST_INSTALL_RPATH})
-add_executable(test_measurement EXCLUDE_FROM_ALL test/test_measurement.cpp)
-target_link_libraries(test_measurement DIP)
-set_target_properties(test_measurement PROPERTIES INSTALL_RPATH ${DIP_TEST_INSTALL_RPATH})
-add_executable(test_measuretool EXCLUDE_FROM_ALL test/test_measuretool.cpp)
-target_link_libraries(test_measuretool DIP)
-set_target_properties(test_measuretool PROPERTIES INSTALL_RPATH ${DIP_TEST_INSTALL_RPATH})
-
-add_executable(test_fft_kissfft EXCLUDE_FROM_ALL test/test_fft_kissfft.cpp test/kissfft.h)
-add_executable(test_fft_opencv EXCLUDE_FROM_ALL test/test_fft_opencv.cpp src/transform/opencv_dxt.h)
+file(GLOB DIP_TESTS "test/test_*.cpp")
+foreach(file ${DIP_TESTS})
+   get_filename_component(target ${file} NAME_WE)
+   add_executable(${target} EXCLUDE_FROM_ALL ${file})
+   target_link_libraries(${target} DIP)
+   if(DIP_SHARED_LIBRARY)
+      if(APPLE)
+         set_target_properties(${target} PROPERTIES INSTALL_RPATH "@loader_path")
+      else()
+         set_target_properties(${target} PROPERTIES INSTALL_RPATH "$ORIGIN")
+      endif()
+   endif()
+endforeach()
 
 add_custom_target(
       tests DEPENDS
@@ -278,7 +252,6 @@ add_custom_target(
       test_framework_scan test_lambdafun test_framework_separable test_framework_separable2 test_framework_full
       test_boundary
       test_measurement test_measuretool
-      test_fft_kissfft test_fft_opencv
 )
 
 

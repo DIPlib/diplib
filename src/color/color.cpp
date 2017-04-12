@@ -383,7 +383,6 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    dip::Image out = csm.Convert( img, "RGB" );
    DOCTEST_CHECK( out.ColorSpace() == "RGB" );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   std::cout << out;
    auto oit = out.SampleIteratorAt< dip::sfloat >();
    DOCTEST_CHECK( oit[ 0 ] == doctest::Approx( 0.0 ));
    DOCTEST_CHECK( oit[ 1 ] == doctest::Approx( 0.0 ));
