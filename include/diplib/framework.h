@@ -25,7 +25,7 @@
 
 #include "diplib.h"
 #include "diplib/boundary.h"
-#include "diplib/pixel_table.h"
+#include "diplib/neighborhood.h"
 
 
 /// \file
@@ -844,15 +844,8 @@ class DIP_EXPORT FullLineFilter {
 ///
 /// `lineFilter` can access the pixels on the given line for all
 /// input and output images, as well as all pixels within the neighborhood for
-/// all input images. The neighborhood is given by `pixelTable`. This object
-/// defines the size of the border extension in the input buffer, as well as
-/// the processing dimension. Use `dip::Framework::OptimalProcessingDim` to determine
-/// the processing dimension to use when generating the `pixelTable`. Though under
-/// some circumstances it might be beneficial to use a different dimension.
-///
-/// TODO: some filters benefit strongly from longer pixel runs, they'd want to
-/// decrease the number of runs by picking a processing dimension where the filter
-/// is wide.
+/// all input images. The neighborhood is given by `kernel`. This object
+/// defines the size of the border extension in the input buffer.
 ///
 /// The output image (unless protected) will be resized to match the input,
 /// and its type will be set to that specified by `outImage`.
@@ -924,7 +917,7 @@ DIP_EXPORT void Full(
       DataType outImageType,           ///< Data types for output image
       dip::uint nTensorElements,       ///< Number of tensor elements in output image
       BoundaryConditionArray boundaryConditions, ///< Filling method for the border
-      PixelTable const& pixelTable,    ///< Object describing the neighborhood
+      Kernel const& kernel,            ///< Object describing the neighborhood.
       FullLineFilter& lineFilter,      ///< Function object to call for each image line
       FullOptions opts = {}            ///< Options to control how `lineFilter` is called
 );

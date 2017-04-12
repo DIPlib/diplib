@@ -22,6 +22,7 @@
 #define DIP_LINEAR_H
 
 #include "diplib.h"
+#include "diplib/neighborhood.h"
 #include "diplib/boundary.h"
 
 
@@ -182,10 +183,8 @@ inline Image GeneralConvolution(
 
 /// \brief Applies a convolution with a kernel with uniform weights, leading to an average (mean) filter.
 ///
-/// The size and shape of the kernel is given by `filterSize` and `filterShape`. `filterShape` can be any
-/// of the strings recognized by `dip::PixelTable`: `"rectangular"`, `"elliptic"`, and `"diamond"`. `filterSize`
-/// is the diameter of the circle (sphere/hypersphere) in the corresponding metric: \f$L^\infty\f$, \f$L^2\f$,
-/// and \f$L^1\f$.
+/// The size and shape of the kernel is given by `kernelShape`, which you can define through a default
+/// shape with corresponding sizes, or through a binary image. See `dip::KernelShape`.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
@@ -193,44 +192,16 @@ inline Image GeneralConvolution(
 DIP_EXPORT void Uniform(
       Image const& in,
       Image& out,
-      FloatArray filterSize = { 7 }, // TODO: generalize the dip::StructuringElement class to dip::Filter or something like that, so we can use it here and in many other places
-      String const& filterShape = "elliptic",
+      Kernel kernel,
       StringArray const& boundaryCondition = {}
 );
 inline Image Uniform(
       Image const& in,
-      FloatArray filterSize = { 7 },
-      String const& filterShape = "elliptic",
+      Kernel kernel,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   Uniform( in, out, filterSize, filterShape, boundaryCondition );
-   return out;
-}
-
-/// \brief Applies a convolution with a kernel with uniform weights, leading to an average (mean) filter.
-///
-/// The kernel is given by the binary image `neighborhood`. Note that the kernel is not mirrored, as it would
-/// be in the convolution, inless `mode` is equal to the string `"convolution"`.
-///
-/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
-///
-/// \see dip::ConvolveFT, dip::SeparableConvolution, dip::GeneralConvolution
-DIP_EXPORT void Uniform(
-      Image const& in,
-      Image const& neighborhood,
-      Image& out,
-      StringArray const& boundaryCondition = {},
-      String const& mode = "" // set to "convolution" to mirror `neighborhood`
-);
-inline Image Uniform(
-      Image const& in,
-      Image const& neighborhood,
-      StringArray const& boundaryCondition = {},
-      String const& mode = "" // set to "convolution" to mirror `neighborhood`
-) {
-   Image out;
-   Uniform( in, neighborhood, out, boundaryCondition, mode );
+   Uniform( in, out, kernel, boundaryCondition );
    return out;
 }
 

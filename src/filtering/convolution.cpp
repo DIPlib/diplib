@@ -354,24 +354,16 @@ void GeneralConvolution(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_filter.IsForged(), E::IMAGE_NOT_FORGED );
-   if( c_filter.DataType().IsBinary() ) {
-      // For binary filters, apply a uniform filter.
-      Uniform( in, c_filter, out, boundaryCondition, "convolution" );
-      return;
-   }
-   Image filter = c_filter.QuickCopy();
-   if( filter.Dimensionality() < in.Dimensionality() ) {
-      filter.ExpandDimensionality( in.Dimensionality() );
-   }
-   DIP_THROW_IF( !( filter.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
-   filter.Mirror();
-   dip::uint procDim = Framework::OptimalProcessingDim( in, filter.Sizes() );
-   PixelTable pixelTable( filter != 0, {}, procDim );
-   pixelTable.AddWeights( filter );
-   pixelTable.MirrorOrigin();
-   BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
-   DataType dtype = DataType::SuggestFlex( in.DataType() );
    DIP_START_STACK_TRACE
+      Kernel filter{ c_filter };
+      filter.Mirror();
+      if( c_filter.DataType().IsBinary() ) {
+         // For binary filters, apply a uniform filter.
+         Uniform( in, out, filter, boundaryCondition );
+         return;
+      }
+      BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
+      DataType dtype = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
       DIP_OVL_NEW_FLEX( lineFilter, GeneralConvolutionLineFilter, (), dtype );
       Framework::Full(
@@ -382,7 +374,7 @@ void GeneralConvolution(
             dtype,
             1,
             bc,
-            pixelTable,
+            filter,
             *lineFilter,
             Framework::Full_AsScalarImage
       );

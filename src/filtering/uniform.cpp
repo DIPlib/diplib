@@ -67,7 +67,7 @@ class RectangularUniformLineFilter : public Framework::SeparableLineFilter {
 void RectangularUniform(
       Image const& in,
       Image& out,
-      FloatArray const& filterSize,
+      UnsignedArray const& filterSize,
       BoundaryConditionArray const& bc
 ) {
    dip::uint nDims = in.Dimensionality();
@@ -75,8 +75,8 @@ void RectangularUniform(
    UnsignedArray sizes( nDims, 1 );
    UnsignedArray border( nDims, 0 );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      if(( filterSize[ ii ] > 1.0 ) && ( in.Size( ii ) > 1 )) {
-         sizes[ ii ] = static_cast< dip::uint >( std::round( filterSize[ ii ] ));
+      if(( filterSize[ ii ] > 1 ) && ( in.Size( ii ) > 1 )) {
+         sizes[ ii ] = filterSize[ ii ];
          process[ ii ] = true;
          border[ ii ] = sizes[ ii ] / 2;
       }
@@ -103,7 +103,6 @@ void RectangularUniform(
 template< typename TPI >
 class PixelTableUniformLineFilter : public Framework::FullLineFilter {
    public:
-      PixelTableUniformLineFilter( dip::uint neighborhoodSize ) : norm_( 1 / static_cast< FloatType< TPI >>( neighborhoodSize )) {}
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
@@ -115,7 +114,8 @@ class PixelTableUniformLineFilter : public Framework::FullLineFilter {
          for( auto offset : pixelTable ) {
             sum += in[ offset ];
          }
-         *out = sum * norm_;
+         FloatType< TPI > norm = 1 / static_cast< FloatType< TPI >>( pixelTable.NumberOfPixels() );
+         *out = sum * norm;
          //in += inStride; // we don't increment `in` here, so that we don't have to subtract one index inside the loop
          //out += outStride; // we don't increment `out` here, we increment it in the loop before the assignment, it saves one addition! :)
          for( dip::uint ii = 1; ii < length; ++ii ) {
@@ -125,23 +125,21 @@ class PixelTableUniformLineFilter : public Framework::FullLineFilter {
             }
             in += inStride;
             out += outStride;
-            *out = sum * norm_;
+            *out = sum * norm;
          }
       }
-   private:
-      FloatType< TPI > norm_;
 };
 
 void PixelTableUniform(
       Image const& in,
       Image& out,
-      PixelTable& pixelTable,
+      Kernel const& kernel,
       BoundaryConditionArray const& bc
 ) {
    DIP_START_STACK_TRACE
       DataType dtype = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
-      DIP_OVL_NEW_FLEX( lineFilter, PixelTableUniformLineFilter, ( pixelTable.NumberOfPixels() ), dtype );
+      DIP_OVL_NEW_FLEX( lineFilter, PixelTableUniformLineFilter, (), dtype );
       Framework::Full(
             in,
             out,
@@ -150,7 +148,7 @@ void PixelTableUniform(
             dtype,
             1,
             bc,
-            pixelTable,
+            kernel,
             *lineFilter,
             Framework::Full_AsScalarImage
       );
@@ -163,53 +161,18 @@ void PixelTableUniform(
 void Uniform(
       Image const& in,
       Image& out,
-      FloatArray filterSize,
-      String const& filterShape,
+      Kernel kernel,
       StringArray const& boundaryCondition
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( kernel.HasWeights(), E::KERNEL_NOT_BINARY );
    DIP_START_STACK_TRACE
-      ArrayUseParameter( filterSize, in.Dimensionality(), 7.0 );
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
-      if( filterShape == "rectangular" ) {
-         RectangularUniform(in, out, filterSize, bc );
+      if( kernel.IsRectangular() ) {
+         RectangularUniform(in, out, kernel.Sizes( in.Sizes() ), bc );
       } else {
-         dip::uint procDim = Framework::OptimalProcessingDim( in, UnsignedArray{ filterSize } );
-         PixelTable pixelTable( filterShape, filterSize, procDim );
-         PixelTableUniform( in, out, pixelTable, bc );
+         PixelTableUniform( in, out, kernel, bc );
       }
-   DIP_END_STACK_TRACE
-}
-
-
-void Uniform(
-      Image const& in,
-      Image const& c_neighborhood,
-      Image& out,
-      StringArray const& boundaryCondition,
-      String const& mode // set to "convolution" to mirror `neighborhood`
-) {
-   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_neighborhood.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_neighborhood.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !c_neighborhood.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
-   bool mirror = mode == "convolution";
-   DIP_START_STACK_TRACE
-      Image neighborhood = c_neighborhood.QuickCopy();
-      if( neighborhood.Dimensionality() < in.Dimensionality() ) {
-         neighborhood.ExpandDimensionality( in.Dimensionality() );
-      }
-      DIP_THROW_IF( neighborhood.Dimensionality() != in.Dimensionality(), E::DIMENSIONALITIES_DONT_MATCH );
-      dip::uint procDim = Framework::OptimalProcessingDim( in, neighborhood.Sizes() );
-      if( mirror ) {
-         neighborhood.Mirror();
-      }
-      PixelTable pixelTable( neighborhood, {}, procDim );
-      if( mirror ) {
-         pixelTable.MirrorOrigin();
-      }
-      BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
-      PixelTableUniform( in, out, pixelTable, bc );
    DIP_END_STACK_TRACE
 }
 

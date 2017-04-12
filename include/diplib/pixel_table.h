@@ -54,7 +54,7 @@ class DIP_NO_EXPORT PixelTable; // forward declaration, it's defined a little lo
 ///
 /// Its iterator dereferences to an offset rather than coordinates.
 ///
-/// \see dip::PixelTable, dip::NeighborList, dip::Framework::Full, dip::ImageIterator
+/// \see dip::PixelTable, dip::Framework::Full, dip::ImageIterator
 class DIP_NO_EXPORT PixelTableOffsets {
    public:
 
@@ -141,7 +141,8 @@ class DIP_NO_EXPORT PixelTableOffsets {
 ///
 /// TODO: Add an example somewhere.
 ///
-/// \see dip::PixelTableOffsets, dip::NeighborList, dip::Framework::Full, dip::ImageIterator
+/// \see dip::PixelTableOffsets, dip::Kernel, dip::NeighborList, dip::StructuringElement,
+/// dip::Framework::Full, dip::ImageIterator
 class DIP_NO_EXPORT PixelTable {
    public:
 

@@ -84,11 +84,10 @@ int main() {
       dip::Image out;
       //out.SetDataType( dip::DT_UINT16 );
       //out.Protect();
-      dip::PixelTable pixelTable( "elliptic", { 5, 7 } );
       dip::Framework::Full(
             img, out, dip::DT_SFLOAT, dip::DT_SFLOAT, dip::DT_SFLOAT, 1,
             dip::BoundaryConditionArray{ dip::BoundaryCondition::SYMMETRIC_MIRROR },
-            pixelTable, lineFilter, dip::Framework::Full_AsScalarImage );
+            dip::FloatArray{ 5, 7 }, lineFilter, dip::Framework::Full_AsScalarImage );
 
       PrintPixelValues< dip::sfloat >( out );
       //PrintPixelValues< dip::uint16 >( out );

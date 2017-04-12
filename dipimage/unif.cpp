@@ -43,7 +43,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
                if( nrhs > 3 ) {
                   bc = dml::GetStringArray( prhs[ 3 ] );
                }
-               dip::Uniform( in, out, filterParam, filterShape, bc );
+               dip::Uniform( in, out, { filterParam, filterShape }, bc );
             } else {
                dip::Uniform( in, out, filterParam );
             }
@@ -55,7 +55,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
             if( nrhs > 2 ) {
                bc = dml::GetStringArray( prhs[ 2 ] );
             }
-            dip::Uniform( in, neighborhood, out, bc );
+            dip::Uniform( in, out, neighborhood, bc );
          }
       } else {
          dip::Uniform( in, out );

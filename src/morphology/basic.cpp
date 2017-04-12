@@ -168,9 +168,9 @@ void RectangularMorphology(
 // --- Pixel table morphology ---
 
 template< typename TPI >
-class PixelTableMorphologyLineFilter : public Framework::FullLineFilter {
+class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
    public:
-      PixelTableMorphologyLineFilter( bool dilation ) : dilation_( dilation ) {}
+      FlatSEMorphologyLineFilter( bool dilation ) : dilation_( dilation ) {}
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
@@ -221,17 +221,17 @@ class PixelTableMorphologyLineFilter : public Framework::FullLineFilter {
       bool dilation_;
 };
 
-void PixelTableMorphology(
+void FlatSEMorphology(
       Image const& in,
       Image& out,
-      PixelTable const& pixelTable,
+      Kernel const& kernel,
       BoundaryConditionArray const& bc,
       bool dilation // true = dilation, false = erosion
 ) {
    DIP_START_STACK_TRACE
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
-      DIP_OVL_NEW_NONCOMPLEX( lineFilter, PixelTableMorphologyLineFilter, ( dilation ), dtype );
+      DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( dilation ), dtype );
       Framework::Full(
             in,
             out,
@@ -240,7 +240,7 @@ void PixelTableMorphology(
             dtype,
             1,
             bc,
-            pixelTable,
+            kernel,
             *lineFilter
       );
    DIP_END_STACK_TRACE
@@ -297,11 +297,11 @@ class GreyValueSEMorphologyLineFilter : public Framework::FullLineFilter {
 void GreyValueSEMorphology(
       Image const& in,
       Image& out,
-      PixelTable const& pixelTable,
+      Kernel const& kernel,
       BoundaryConditionArray const& bc,
       bool dilation // true = dilation, false = erosion
 ) {
-   DIP_ASSERT( pixelTable.HasWeights() );
+   DIP_ASSERT( kernel.HasWeights() );
    DIP_START_STACK_TRACE
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
@@ -314,7 +314,7 @@ void GreyValueSEMorphology(
             dtype,
             1,
             bc,
-            pixelTable,
+            kernel,
             *lineFilter
       );
    DIP_END_STACK_TRACE
@@ -495,7 +495,7 @@ void LineMorphology(
 void BasicMorphology(
       Image const& in,
       Image& out,
-      StructuringElement se, // we make a copy...
+      StructuringElement const& se,
       StringArray const& boundaryCondition,
       bool dilation, // true = dilation, false = erosion
       bool mirror = false // mirror the SE?
@@ -509,19 +509,22 @@ void BasicMorphology(
          bc[ 0 ] = dilation ? BoundaryCondition::ADD_MIN_VALUE : BoundaryCondition::ADD_MAX_VALUE;
       }
       if( se.IsRectangular() ) {
-         RectangularMorphology( in, out, se.Sizes( in ), bc, dilation, mirror );
+         RectangularMorphology( in, out, se.Sizes( in.Sizes() ), bc, dilation, mirror );
       } else if( se.IsParabolic() ) {
-         ParabolicMorphology( in, out, se.Sizes( in ), bc, dilation );
+         ParabolicMorphology( in, out, se.Sizes( in.Sizes() ), bc, dilation );
       } else if( se.IsInterpolatedLine() ) {
-         LineMorphology( in, out, se.Sizes( in ), bc, true, dilation );
+         LineMorphology( in, out, se.Sizes( in.Sizes() ), bc, true, dilation );
       } else if( se.IsDiscreteLine() ) {
-         LineMorphology( in, out, se.Sizes( in ), bc, false, dilation );
+         LineMorphology( in, out, se.Sizes( in.Sizes() ), bc, false, dilation );
       } else {
-         PixelTable pixelTable = se.PixelTable( in, mirror );
-         if( pixelTable.HasWeights() ) {
-            GreyValueSEMorphology( in, out, pixelTable, bc, dilation );
+         Kernel kernel = se.Kernel();
+         if( mirror ) {
+            kernel.Mirror();
+         }
+         if( kernel.HasWeights() ) {
+            GreyValueSEMorphology( in, out, kernel, bc, dilation );
          } else {
-            PixelTableMorphology( in, out, pixelTable, bc, dilation );
+            FlatSEMorphology( in, out, kernel, bc, dilation );
          }
       }
    DIP_END_STACK_TRACE

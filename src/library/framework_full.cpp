@@ -38,19 +38,18 @@ void Full(
       DataType outImageType,
       dip::uint nTensorElements,
       BoundaryConditionArray boundaryConditions,
-      PixelTable const& pixelTable,
+      Kernel const& kernel,
       FullLineFilter& lineFilter,
       FullOptions opts
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    UnsignedArray sizes = c_in.Sizes();
-   dip::uint nDims = sizes.size();
 
    // Check inputs
-   DIP_THROW_IF( pixelTable.Dimensionality() != nDims, "Pixel table dimensionality does not match image" );
-
-   // Determine the processing dimension.
-   dip::uint processingDim = pixelTable.ProcessingDimension();
+   UnsignedArray kernelSizes;
+   DIP_START_STACK_TRACE
+      kernelSizes = kernel.Sizes( sizes );
+   DIP_END_STACK_TRACE
 
    // Store these because they can get lost when ReForging `output` (it could be the same image as `c_in`)
    PixelSize pixelSize = c_in.PixelSize();
@@ -72,7 +71,10 @@ void Full(
    }
 
    // Determine boundary sizes
-   UnsignedArray boundary = pixelTable.Boundary();
+   UnsignedArray boundary = kernelSizes;
+   for( dip::uint& b : boundary ) {
+      b /= 2;
+   }
 
    // Copy input if necessary (this is the input buffer!)
    Image input;
@@ -83,8 +85,6 @@ void Full(
       input.Protect();
    }
    if( dataTypeChange || expandTensor || boundary.any() ) {
-      // TODO: Make sure that the stride order stays the same when we do ExtendImageLowLevel. How???
-      //       Or better, set the stride along processingDim to 1 (or rather to TensorElements()), we don't care about the rest.
       Option::ExtendImage options = Option::ExtendImage_Masked;
       if( expandTensor ) {
          options += Option::ExtendImage_ExpandTensor;
@@ -111,7 +111,12 @@ void Full(
    DIP_END_STACK_TRACE
 
    // Create a pixel table suitable to be applied to `input`
-   PixelTableOffsets pixelTableOffsets( pixelTable, input );
+   dip::uint processingDim = OptimalProcessingDim( input, kernelSizes );
+   PixelTable pixelTable;
+   DIP_START_STACK_TRACE
+      pixelTable = kernel.PixelTable( sizes, processingDim );
+   DIP_END_STACK_TRACE
+   PixelTableOffsets pixelTableOffsets = pixelTable.Prepare( input );
 
    // TODO: Determine the number of threads we'll be using. The size of the data
    //       has an influence. We can cut an image line in parts if necessary.
