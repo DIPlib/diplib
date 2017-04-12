@@ -436,17 +436,6 @@ class DIP_NO_EXPORT DimensionArray {
          return n;
       }
 
-      /// True if all elements are equal or smaller than those in other
-      bool allSmallerOrEqual( DimensionArray const& other ) const {
-         DIP_ASSERT( size_ == other.size_ );
-         for( size_type ii = 0; ii < size_; ++ii ) {
-            if( data_[ ii ] > other.data_[ ii] ) {
-               return false;
-            }
-         }
-         return true;
-      }
-
       /// Assigns one same value to each element in the array
       void fill( T const& value ) {
          for( size_type ii = 0; ii < size_; ++ii ) {

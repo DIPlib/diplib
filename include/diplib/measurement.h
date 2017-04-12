@@ -26,7 +26,7 @@
 #include <memory> // for unique_ptr
 
 #include "diplib.h"
-#include "chain_code.h"
+#include "diplib/chain_code.h"
 #include "diplib/iterators.h"
 
 

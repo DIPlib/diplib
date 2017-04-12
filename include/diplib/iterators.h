@@ -24,7 +24,7 @@
 #include <utility>
 
 #include "diplib.h"
-#include "boundary.h"
+#include "diplib/boundary.h"
 
 
 /// \file

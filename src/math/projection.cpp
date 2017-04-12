@@ -24,7 +24,7 @@
 #include "diplib/math.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
-#include <diplib/iterators.h>
+#include "diplib/iterators.h"
 
 #include "../library/copy_buffer.h"
 
