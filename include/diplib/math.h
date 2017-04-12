@@ -45,6 +45,17 @@ namespace dip {
 /// \brief Counts the number of non-zero pixels in a scalar image.
 DIP_EXPORT dip::uint Count( Image const& in, Image const& mask = {} );
 
+/// \brief Returns the coordinates of the maximum pixel in the image.
+///
+/// The image must be scalar and real-valued. If `positionFlag` is `"first"`, the first
+/// maximum is found, in linear index order. If it is `"last"`, the last one is found.
+DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask, String const& positionFlag = "first" );
+
+/// \brief Returns the coordinates of the minimum pixel in the image.
+///
+/// The image must be scalar and real-valued. If `positionFlag` is `"first"`, the first
+/// minimum is found, in linear index order. If it is `"last"`, the last one is found.
+DIP_EXPORT UnsignedArray MinimumPixel( Image const& in, Image const& mask, String const& positionFlag = "first" );
 
 /// \brief Calculates the cumulative sum of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -67,11 +78,14 @@ inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArra
 /// samples, treats real and imaginary components as individual samples.
 DIP_EXPORT MinMaxAccumulator GetMaximumAndMinimum( Image const& in, Image const& mask = {} );
 
+/// \brief Computes the first four central moments of the pixel intensities, within an optional mask.
+///
+/// If `mask` is not forged, all input pixels are considered. In case of a tensor
+/// image, returns the maximum and minimum sample values. The image must be real-valued.
+DIP_EXPORT StatisticsAccumulator GetSampleStatistics( Image const& in, Image const& mask = {} );
 
-// TODO: A function that does image statistics, dip_Moments, dip_CenterOfMass
-
-// DIP_ERROR dip_MaximumPixel ( dip_Image, dip_Image, dip_IntegerArray, dip_float *, dip_Boolean );
-// DIP_ERROR dip_MinimumPixel ( dip_Image, dip_Image, dip_IntegerArray, dip_float *, dip_Boolean );
+// DIP_ERROR dip_Moments ( dip_Image, dip_Image, dip_IntegerArray, dip_FloatArray, dip_complex * ); // first 4 central moments
+// DIP_ERROR dip_CenterOfMass( dip_Image, dip_Image, dip_FloatArray, dip_FloatArray ); // 1st order moments
 
 
 //
@@ -122,7 +136,6 @@ inline Image NearestInt( Image const& in ) {
 // DIP_ERROR dip_AmplitudeModulation       ( dip_Image, dip_Image, dip_float *, dip_int, dip_int *, dip_int * );
 // DIP_ERROR dip_CosinAmplitudeModulation  ( dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
 // DIP_ERROR dip_CosinAmplitudeDemodulation( dip_Image, dip_Image, dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
-// DIP_ERROR dip_GeneratePhase             ( dip_Image, dip_float *, dip_int, dip_int *, dip_int * );
 
 
 //

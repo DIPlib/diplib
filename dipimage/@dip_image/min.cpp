@@ -44,24 +44,28 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
 
       // Get optional process array
       dip::BooleanArray process;
+      bool hasProcess = false;
       if( nrhs > 2 ) {
          process = dml::GetProcessArray( prhs[ 2 ], in1.Dimensionality() );
+         hasProcess = true;
       }
 
       // Operation mode
       if( !in2.IsForged() || in2.DataType().IsBinary() ) {
          // Maximum pixel projection
+         dip::Minimum( in1, in2, out, process );
+         if( hasProcess ) {
+            plhs[ 0 ] = mi.GetArray( out );
+         } else {
+            plhs[ 0 ] = dml::GetArray( static_cast< dip::dfloat >( out ));
+         }
          if( nlhs > 1 ) {
             // Compute position also
-            // TODO
-            DIP_THROW( dip::E::NOT_IMPLEMENTED );
-         } else {
-            // Simply get the maximum projection
-            dip::Minimum( in1, in2, out, process );
-            if( nrhs > 2 ) {
-               plhs[ 0 ] = mi.GetArray( out );
+            if( hasProcess ) {
+               // TODO: minimum position projection
+               DIP_THROW( dip::E::NOT_IMPLEMENTED );
             } else {
-               plhs[ 0 ] = dml::GetArray( static_cast< dip::dfloat >( out ));
+               plhs[ 1 ] = dml::GetArray( dip::MinimumPixel( in1, in2 ));
             }
          }
       } else {

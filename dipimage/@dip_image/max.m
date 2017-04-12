@@ -2,8 +2,6 @@
 %   [VALUE,POSITION] = MAX(B) gets the value and postion of the first
 %   maximum in image B.
 %
-%   (TODO: The POSITION output value is not yet implemented)
-%
 %   [VALUE,POSITION] = MAX(B,M) gets the value and postion of the first
 %   maximum in image B masked by M. M may be [] for no mask.
 %
@@ -13,8 +11,9 @@
 %
 %   [VALUE,POSITION] = MAX(B,M,DIM) gets the value and position of
 %   the first maximum along dimension DIM. DIM is a single dimension.
+%   TODO: This syntax is not yet implemented.
 %
-%   (TODO) VALUE = MAX(B,C) is the pixel-by-pixel maximum operator. It returns
+%   VALUE = MAX(B,C) is the pixel-by-pixel maximum operator. It returns
 %   an image with each pixel the largest taken from B or C. C must not
 %   be a binary image, or it will be taken as a mask image (see syntax
 %   above).
