@@ -1407,6 +1407,25 @@ classdef dip_image
          end
       end
 
+      function in = swapdim(in,dim1,dim2)
+         %SWAPDIM   Swap two image dimensions.
+         %   B = SWAPDIM(A,DIM1,DIM2) swaps DIM1 and DIM2.
+         %   See PERMUTE.
+         if nargin~=3
+            error('Requires three arguments.')
+         end
+         if ~isnumeric(dim1) || length(dim1)~=1 || fix(dim1)~=dim1 || dim1<1 || dim1>in.NDims
+            error('DIM1 must be a positive integer.')
+         end
+         if ~isnumeric(dim2) || length(dim2)~=1 || fix(dim2)~=dim2 || dim2<1 || dim2>in.NDims
+            error('DIM2 must be a positive integer.')
+         end
+         order = 1:in.NDims;
+         order(dim1) = dim2;
+         order(dim2) = dim1;
+         in = permute(in,order);
+      end
+
       function [in,nshifts] = shiftdim(in,n)
          %SHIFTDIM   Shift dimensions (reorients/flips an image).
          %   B = SHIFTDIM(X,N) shifts the dimensions of X by N. When N is
@@ -1538,6 +1557,70 @@ classdef dip_image
             sz = sz([2,1,3:end]);
          end
          in = reshape(in,sz);
+      end
+
+      function b = flip(b,dim)
+         %FLIP   Flips an image along specified dimension, same as FLIPDIM.
+         if nargin~=2
+            error('Requires two arguments.')
+         end
+         if ~isnumeric(dim) || length(dim)~=1 || fix(dim)~=dim || dim<1
+            error('DIM must be a positive integer.')
+         end
+         if b.NDims < dim
+            error('Cannot flip along non-existent dimension.')
+         end
+         if dim == 2
+            dim = 1;
+         elseif dim == 1 && b.NDims > 1
+            dim = 2;
+         end
+         b.Data = flip(b.Data,dim+2);
+      end
+
+      function b = flipdim(b,dim)
+         %FLIPDIM   Flips an image along specified dimension, same as FLIP.
+         b = flip(b,dim);
+      end
+
+      function b = fliplr(b)
+         %FLIPLR   Flips an image left/right.
+         if b.NDims < 1
+            error('Cannot flip left/right with less than one dimension.')
+         end
+         b.Data = flip(b.Data,4);
+      end
+
+      function b = flipud(b)
+         %FLIPUD   Flips an image up/down.
+         if b.NDims < 2
+            error('Cannot flip up/down with less than two dimensions.')
+         end
+         b.Data = flip(b.Data,3);
+      end
+
+      function b = rot90(b,k)
+         %ROT90  Rotate image 90 degrees.
+         %   ROT90(A) is the 90 degree counterclockwise rotation of image A.
+         %   ROT90(A,K) is the K*90 degree rotation of A, K = +-1,+-2,...
+         if nargin == 1
+             k = 1;
+         else
+            if ~isnumeric(k) || length(k)~=1 || fix(k)~=k
+               error('k must be a scalar.');
+            end
+            k = mod(k,4);
+         end
+         if k == 1
+            b = swapdim(b,1,2);
+            b = flipdim(b,1);
+         elseif k == 2
+            b = flipdim(flipdim(b,1),2);
+         elseif k == 3
+            b = flipdim(b,1);
+            b = swapdim(b,1,2);
+         % else k==0, we do nothing.
+         end
       end
 
       function out = cat(dim,varargin)

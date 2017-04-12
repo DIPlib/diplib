@@ -9,11 +9,6 @@ pure MATLAB stuff:
    find.m
    findcoord.m
 
-   flipdim.m
-   fliplr.m
-   flipud.m
-   rot90.m
-
 filtering:
    convhull.m
    rotate.m
