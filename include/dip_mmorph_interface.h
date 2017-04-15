@@ -107,7 +107,7 @@ inline dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
       tstride = mm.width() * mm.height();
    }
    // Create Image object
-   dip::Image out( nullptr, mm.raster(), dt, sizes, strides, tensor, tstride );
+   dip::Image out( dip::NonOwnedRefToDataSegment( &mm ), mm.raster(), dt, sizes, strides, tensor, tstride );
    return out;
 }
 
@@ -163,7 +163,7 @@ class ExternalInterface : public dip::ExternalInterface {
    private:
       // This map holds ::Images, we can find the right one if we have the data pointer.
       std::map< void const*, ImagePtr > images_;
-      // This is the deleter functor we'll associate to the shared_ptr.
+      // This is the deleter functor we'll associate to the dip::DataSegment.
       class StripHandler {
          private:
             ExternalInterface& interface;
@@ -177,13 +177,13 @@ class ExternalInterface : public dip::ExternalInterface {
    public:
       // This function overrides `dip::ExternalInterface::AllocateData`.
       // It is called when an image with this `ExternalInterface` is forged.
-      // It allocates a *MMorph* `::Image` and returns a `std::shared_ptr` to the
+      // It allocates a *MMorph* `::Image` and returns a `dip::DataSegment` to the
       // data pointer, with a custom deleter functor. Strides are forced to
       // the only option available in *MMorph*, and an exception is thrown if
       // the data type or dimensionality is not supported.
       //
       // A user will never call this function directly.
-      virtual std::shared_ptr< void > AllocateData(
+      virtual dip::DataSegment AllocateData(
             void*& origin,
             dip::DataType datatype,
             dip::UnsignedArray const& sizes,
@@ -229,7 +229,7 @@ class ExternalInterface : public dip::ExternalInterface {
                                                 static_cast< int >( depth ), typestr, 0.0 );
          origin = mm->raster();
          images_.emplace( origin, std::move( mm ));
-         return std::shared_ptr< void >( origin, StripHandler( *this ));
+         return dip::DataSegment{ origin, StripHandler( *this ) };
       }
 
       /// \brief Returns the MMorph `::%Image` that holds the data for the `dip::Image` `img`.

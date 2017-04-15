@@ -57,23 +57,29 @@ namespace dip {
 // Support for external interfaces
 //
 
+/// \brief a `dip::Image` holds a shared pointer to the data segment using this type.
+using DataSegment = std::shared_ptr< void >;
+
+inline DataSegment NonOwnedRefToDataSegment( void* ptr ) {
+   return DataSegment{ ptr, []( void* ){} };
+}
+
 /// \brief Support for external interfaces.
 ///
-/// Software using *DIPlib* might want to
-/// control how the image data is allocated. Such software should derive
-/// a class from this one, and assign a pointer to it into each of the
-/// images that it creates, through `dip::Image::SetExternalInterface`.
-/// The caller will maintain ownership of the interface.
+/// Software using *DIPlib* might want to control how the image data is allocated. Such software
+/// should derive a class from this one, and assign a pointer to it into each of the images that
+/// it creates, through `dip::Image::SetExternalInterface`. The caller will maintain ownership of
+/// the interface.
 ///
-/// See `dip_matlab_interface.h` for an example of how to create an `%ExternalInterface`.
+/// See \ref external_interface for details on how to use the external interfaces.
 class DIP_EXPORT ExternalInterface {
    public:
       /// Allocates the data for an image. The function is required to set `strides`,
-      /// `tensorStride` and `origin`, and returns a `std::shared_ptr` that owns the
+      /// `tensorStride` and `origin`, and return a `dip:::DataSegment` that owns the
       /// allocated data segment. Note that `strides` and `tensorStride` might have
       /// been set by the user before calling `dip::Image::Forge`, and should be honored
       /// if possible.
-      virtual std::shared_ptr< void > AllocateData(
+      virtual DataSegment AllocateData(
             void*& origin,
             dip::DataType dataType,
             UnsignedArray const& sizes,
@@ -369,22 +375,27 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Create an image around existing data.
       ///
-      /// `data` is a `std::shared_ptr` used to manage the lifetime of the data segment.
+      /// `data` is a shared pointer used to manage the lifetime of the data segment.
       /// If the image is supposed to take ownership, put a pointer to the data segment or the object
       /// that owns it in `data`, with a deleter function that will delete the data segment or object
-      /// when the image is stripped or deletect. Otherwise, you can set `data` to `nullptr`.
+      /// when the image is stripped or deletect. Otherwise, use `dip::NonOwnedRefToDataSegment` to
+      /// create a shared pointer witouth a deleter function, implying ownership is not transfered.
       ///
-      /// `origin` is the pointer to the first pixel. It must be a valid pointer. `dataType` and
-      /// `sizes` must be set appropriately. `strides` must either have the same number of elements
-      /// as `sizes`, or be an empty array. If `strides` is an empty array, normal strides will be
-      /// assumed (i.e. row-major, with tensor elements for one pixel stored contiguously). In this
-      /// case, `tensorStride` will be ignored. `tensor` defaults to scalar (i.e. a single tensor element).
-      /// No tests will be performed on the validity of the values in `sizes` or `strides`, except
-      /// to enforce a few class invariants.
+      /// `origin` is the pointer to the first pixel. It must be a valid pointer. This is typically,
+      /// but not necessarily, the same pointer as used in `data`.
+      ///
+      /// `dataType` and `sizes` must be set appropriately. `strides` must either have the same number
+      /// of elements as `sizes`, or be an empty array. If `strides` is an empty array, normal strides
+      /// will be assumed (i.e. row-major, with tensor elements for one pixel stored contiguously). In
+      /// this case, `tensorStride` will be ignored. `tensor` defaults to scalar (i.e. a single tensor
+      /// element). No tests will be performed on the validity of the values passed in,
+      /// except to enforce a few class invariants.
       ///
       /// See \ref external_interface for information about the `externalInterface` parameter.
+      ///
+      /// See \ref use_external_data for more information on how to use this function.
       Image(
-            std::shared_ptr< void > data,
+            DataSegment data,
             void* origin,
             dip::DataType dataType,
             UnsignedArray const& sizes,
@@ -402,6 +413,8 @@ class DIP_NO_EXPORT Image {
             origin_( origin ),
             externalData_( true ),
             externalInterface_( externalInterface ) {
+         DIP_THROW_IF( data.get() == nullptr, "Bad data pointer" );
+         DIP_THROW_IF( origin == nullptr, "Bad origin pointer" );
          TestSizes( sizes_ );
          dip::uint nDims = sizes_.size();
          if( strides_.empty() ) {
@@ -2300,7 +2313,7 @@ class DIP_NO_EXPORT Image {
       bool protect_ = false;              // When set, don't strip image
       String colorSpace_;
       dip::PixelSize pixelSize_;
-      std::shared_ptr< void > dataBlock_; // Holds the pixel data. Data block will be freed when last image that uses it is destroyed.
+      DataSegment dataBlock_;             // Holds the pixel data. Data block will be freed when last image that uses it is destroyed.
       void* origin_ = nullptr;            // Points to the origin ( pixel (0,0) ), not necessarily the first pixel of the data block.
       bool externalData_ = false;         // Is true if origin_ points to a data segment that was not allocated by DIPlib.
       dip::ExternalInterface* externalInterface_ = nullptr; // A function that will be called instead of the default forge function.

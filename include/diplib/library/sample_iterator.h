@@ -64,10 +64,10 @@ template< typename T >
 class DIP_NO_EXPORT SampleIterator {
    public:
       using iterator_category = std::random_access_iterator_tag;
-      using value_type = T;               ///< The data type of the pixel, obtained when dereferencing the iterator
+      using value_type = T;               ///< The data type of the sample, obtained when dereferencing the iterator
       using difference_type = dip::sint;  ///< The type of distances between iterators
-      using reference = T&;               ///< The type of a reference to a pixel
-      using pointer = T*;                 ///< The type of a pointer to a pixel
+      using reference = T&;               ///< The type of a reference to a sample
+      using pointer = T*;                 ///< The type of a pointer to a sample
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced
       SampleIterator() : stride_( 1 ), ptr_( nullptr ) {}

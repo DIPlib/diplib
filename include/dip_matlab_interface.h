@@ -757,7 +757,7 @@ class MatlabInterface : public dip::ExternalInterface {
    private:
       // Here we store the mxArray pointers that the interface owns.
       std::set< mxArray* > mla;
-      // This is the deleter functor we'll associate to the shared_ptr.
+      // This is the deleter functor we'll associate to the dip::DataSegment.
       class StripHandler {
          private:
             MatlabInterface& interface;
@@ -776,12 +776,12 @@ class MatlabInterface : public dip::ExternalInterface {
    public:
       /// This function overrides dip::ExternalInterface::AllocateData().
       /// It is called when an image with this `ExternalInterface` is forged.
-      /// It allocates a *MATLAB* `mxArray` and returns a `std::shared_ptr` to the
-      /// `mxArray` data pointer, with a custom deleter functor. It also
-      /// adjusts strides to match the `mxArray` storage.
+      /// It allocates a *MATLAB* `mxArray` and returns a `dip::DataSegment`
+      /// containing a pointer to the  `mxArray` data pointer, with a custom
+      /// deleter functor. It also adjusts strides to match the `mxArray` storage.
       ///
       /// A user will never call this function directly.
-      virtual std::shared_ptr< void > AllocateData(
+      virtual dip::DataSegment AllocateData(
             void*& origin,
             dip::DataType datatype,
             dip::UnsignedArray const& sizes,
@@ -828,7 +828,7 @@ class MatlabInterface : public dip::ExternalInterface {
          }
          //mexPrintf( "   Created mxArray as dip::Image data block. Data pointer = %p.\n", p );
          mla.insert( m );
-         return std::shared_ptr< void >( m, StripHandler( *this ));
+         return dip::DataSegment{ m, StripHandler( *this ) };
       }
 
       /// \brief Find the `mxArray` that holds the data for the dip::Image `img`,
@@ -960,7 +960,7 @@ inline dip::Image GetImage( mxArray const* mx ) {
    bool needCopy = false;
    dip::Tensor tensor; // scalar by default
    mxClassID type;
-   mxArray const* mxdata;
+   mxArray* mxdata;
    dip::uint ndims;
    mwSize const* psizes;
    dip::UnsignedArray sizes;
@@ -1112,13 +1112,13 @@ inline dip::Image GetImage( mxArray const* mx ) {
       return out;
    } else if( datatype.IsBinary() ) {
       // Create Image object
-      dip::Image out( nullptr, mxGetLogicals( mxdata ), datatype, sizes, strides, tensor, tstride );
+      dip::Image out( dip::NonOwnedRefToDataSegment( mxdata ), mxGetLogicals( mxdata ), datatype, sizes, strides, tensor, tstride );
       out.SetPixelSize( pixelSize );
       out.SetColorSpace( colorSpace );
       return out;
    } else {
       // Create Image object
-      dip::Image out( nullptr, mxGetData( mxdata ), datatype, sizes, strides, tensor, tstride );
+      dip::Image out( dip::NonOwnedRefToDataSegment( mxdata ), mxGetData( mxdata ), datatype, sizes, strides, tensor, tstride );
       out.SetPixelSize( pixelSize );
       out.SetColorSpace( colorSpace );
       return out;

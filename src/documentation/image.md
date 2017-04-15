@@ -857,7 +857,7 @@ image around it, which we can use as both an input or an output image:
 ```cpp
     std::vector<unsigned char> src( 256 * 256, 0 ); // existing data
     dip::Image img(
-       nullptr,
+       NonOwnedRefToDataSegment( src.data() ),
        src.data(),    // origin
        dip::DT_UINT8, // dataType
        { 256, 256 },  // sizes
@@ -867,16 +867,19 @@ image around it, which we can use as both an input or an output image:
     dip::Gauss( img, img ); // Apply Gaussian filter, output is written to input array
 ```
 
-This constructor also takes a `std::shared_ptr` object. Use it if you want the
-`%dip::Image` object to own the resources. Otherwise, pass `nullptr` (as in the
-example above). In the example below, we do the same as above, but we transfer
-ownership of the `std::vector` to the image. When the image goes out of scope (or is
-reallocated) the `std::vector` is deleted:
+The first argument to this constructor is a `dip::DataSegment` object, which is just
+a shared pointer to void. If you want the `%dip::Image` object to own the resources,
+pass create a shared pointer with an appropriate deleter function. Otherwise, use the
+function `dip::NonOwnedRefToDataSegment` to create a shared pointer wihtout a deleter
+function (as in the example above), indicating that ownership is not to be transferred.
+In the example below, we do the same as above, but we transfer ownership of the
+`std::vector` to the image. When the image goes out of scope (or is reallocated) the
+`std::vector` is deleted:
 
 ```cpp
     auto src = new std::vector<unsigned char>( 256 * 256, 0 ); // existing data
     dip::Image img(
-       std::shared_ptr{ src }, // transfer ownership of the data
+       DataSegment{ src }, // transfer ownership of the data
        src->data(),   // origin
        dip::DT_UINT8, // dataType
        { 256, 256 },  // sizes
@@ -904,10 +907,10 @@ and assign a pointer to an object of the allocator class to an image using
 the `dip::ExternalInterface::AllocateData` method is called. This method is
 free to allocate whatever objects it needs, and sets the image's origin pointer
 and strides (much like in the previous section). As before, it is possible to
-set the `std::shared_ptr` also, so that ownership of the allocated objects is
+set the `dip::DataSegment` also, so that ownership of the allocated objects is
 transferred to the image object. As can be seen in the *DIPlib--MATLAB* interface
 (see `dml::MatlabInterface` in `include/dip_matlab_interface.h`), the
-`std::shared_ptr` can contain a custom deleter function that again calls the
+`dip::DataSegment` can contain a custom deleter function that again calls the
 external interface object to take care of proper object cleaning.
 
 The external interface remains owned by the calling code, and can be linked to
@@ -929,7 +932,7 @@ forging to fail, simply throw an exception.
 ```cpp
     class VectorInterface : public dip::ExternalInterface {
        public:
-          virtual std::shared_ptr< void > AllocateData(
+          virtual dip::DataSegment AllocateData(
                 void*& origin,
                 dip::DataType datatype,
                 dip::UnsignedArray const& sizes,
@@ -944,7 +947,7 @@ forging to fail, simply throw an exception.
              origin = data.data();
              strides = dip::UnsignedArray{ 1, sizes[ 0 ] };
              tstride = 1;
-             return std::shared_ptr{ data };
+             return dip::DataSegment{ data };
           }
     }
 ```
@@ -953,7 +956,7 @@ See `dml::MatlabInterface` for a more realistic example of this feature.
 That class defines an additional method that can be used to extract the
 allocated object that owns the data segment, so that it can be used after
 the `%dip::Image` object is destroyed. A simple explanation for how that
-works is as follows: The custom deleter function in the `std::shared_ptr`
+works is as follows: The custom deleter function in the `dip::DataSegment`
 object only deletes the object pointed to if that object is in a list
 kept by the `dml::MatlabInterface` object. If one wants to keep the data
 segment, it is removed from the list, so that when the custom deleter

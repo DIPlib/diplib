@@ -594,6 +594,7 @@ void Image::Forge() {
          // AllocateData() can fail by not setting `origin_`.
          // If so, we allocate data in the normal way because we remain raw.
          if( IsForged() ) {
+            DIP_THROW_IF( !dataBlock_, "Bad data pointer" );
             externalData_ = true;
          }
       }
@@ -611,7 +612,7 @@ void Image::Forge() {
          dip::uint sz = dataType_.SizeOf();
          void* p = std::malloc( size * sz );
          DIP_THROW_IF( !p, "Failed to allocate memory" );
-         dataBlock_ = std::shared_ptr< void >( p, std::free );
+         dataBlock_ = DataSegment{ p, std::free };
          origin_ = static_cast< uint8* >( p ) + start * static_cast< dip::sint >( sz );
          //std::cout << "   Successfully forged image\n";
       }
