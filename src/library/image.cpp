@@ -212,7 +212,7 @@ std::ostream& operator<<(
    if( img.Dimensionality() == 0 ) {
       os << "    sizes {} (0D)" << std::endl;
    } else {
-      os << "    sizes {" << img.Sizes() << "} (" << img.Dimensionality() << "D)" << std::endl;
+      os << "    sizes " << img.Sizes() << " (" << img.Dimensionality() << "D)" << std::endl;
       if( img.HasPixelSize() ) {
          os << "    pixel size " << img.PixelSize( 0 );
          for( dip::uint ii = 1; ii < img.Dimensionality(); ++ii ) {
@@ -222,7 +222,7 @@ std::ostream& operator<<(
       }
    }
    // Data storage
-   os << "    strides {" << img.Strides() << "}, tensor stride " << img.TensorStride() << std::endl;
+   os << "    strides " << img.Strides() << ", tensor stride " << img.TensorStride() << std::endl;
    if( img.IsForged() ) {
       os << "    data pointer:   " << img.Data() << " (shared among " << img.ShareCount() << " images)" << std::endl;
       os << "    origin pointer: " << img.Origin() << std::endl;

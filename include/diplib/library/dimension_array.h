@@ -625,7 +625,7 @@ inline std::ostream& operator<<(
       std::ostream& os,
       DimensionArray< T > const& array
 ) {
-   os << "[";
+   os << "{";
    auto it = array.begin();
    if( it != array.end() ) {
       os << *it;
@@ -633,7 +633,7 @@ inline std::ostream& operator<<(
          os << ", " << *it;
       };
    }
-   os << "]";
+   os << "}";
    return os;
 }
 

@@ -460,7 +460,7 @@ class DIP_NO_EXPORT Image {
          return sizes_;
       }
 
-      /// \brief Get the image size along a specific dimension.
+      /// \brief Get the image size along a specific dimension, without test for dimensionality.
       dip::uint Size( dip::uint dim ) const {
          return sizes_[ dim ];
       }
@@ -501,7 +501,7 @@ class DIP_NO_EXPORT Image {
          return strides_;
       }
 
-      /// \brief Get the stride along a specific dimension.
+      /// \brief Get the stride along a specific dimension, without test for dimensionality.
       dip::sint Stride( dip::uint dim ) const {
          return strides_[ dim ];
       }
@@ -1610,6 +1610,12 @@ class DIP_NO_EXPORT Image {
       DIP_EXPORT Image& SpatialToTensor( dip::uint dim, dip::uint rows, dip::uint cols );
       inline Image& SpatialToTensor( dip::uint rows, dip::uint cols ) {
          return SpatialToTensor( Dimensionality() - 1, rows, cols );
+      }
+      inline Image& SpatialToTensor( dip::uint dim ) {
+         return SpatialToTensor( dim, 0, 0 );
+      }
+      inline Image& SpatialToTensor() {
+         return SpatialToTensor( Dimensionality() - 1, 0, 0 );
       }
 
       /// \brief Split the two values in a complex sample into separate samples,
