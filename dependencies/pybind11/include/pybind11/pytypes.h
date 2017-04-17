@@ -10,6 +10,7 @@
 #pragma once
 
 #include "common.h"
+#include "buffer_info.h"
 #include <utility>
 #include <type_traits>
 
@@ -236,11 +237,6 @@ protected:
     // Tags for choosing constructors from raw PyObject *
     struct borrowed_t { };
     struct stolen_t { };
-    // These can cause linkage problems; see #770
-    PYBIND11_DEPRECATED("Use of the `borrowed` static variable is deprecated; use `borrowed_t{}' instead")
-    static constexpr borrowed_t borrowed{};
-    PYBIND11_DEPRECATED("Use of the `stolen` static variable is deprecated; use `stolen_t{}' instead")
-    static constexpr stolen_t stolen{};
 
     template <typename T> friend T reinterpret_borrow(handle);
     template <typename T> friend T reinterpret_steal(handle);
@@ -1165,15 +1161,15 @@ public:
         static std::vector<Py_ssize_t> py_strides { };
         static std::vector<Py_ssize_t> py_shape { };
         buf.buf = info.ptr;
-        buf.itemsize = (Py_ssize_t) info.itemsize;
+        buf.itemsize = info.itemsize;
         buf.format = const_cast<char *>(info.format.c_str());
         buf.ndim = (int) info.ndim;
-        buf.len = (Py_ssize_t) info.size;
+        buf.len = info.size;
         py_strides.clear();
         py_shape.clear();
-        for (size_t i = 0; i < info.ndim; ++i) {
-            py_strides.push_back((Py_ssize_t) info.strides[i]);
-            py_shape.push_back((Py_ssize_t) info.shape[i]);
+        for (size_t i = 0; i < (size_t) info.ndim; ++i) {
+            py_strides.push_back(info.strides[i]);
+            py_shape.push_back(info.shape[i]);
         }
         buf.strides = py_strides.data();
         buf.shape = py_shape.data();

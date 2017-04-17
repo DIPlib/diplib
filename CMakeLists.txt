@@ -27,6 +27,7 @@ endif()
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BUILD_TYPE}" CACHE PATH "Installation directory")
 set(DOCUMENTATION_OUTPUT ${CMAKE_INSTALL_PREFIX}/share/doc/DIPlib)
 set(DIPIMAGE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/share/dipimage)
+set(PYDIP_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/lib/PyDIP)
 
 # Compiler flags
 set(CMAKE_CXX_STANDARD 14)
@@ -41,7 +42,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    # Safe GCC compiler and architecture flags across all Intel and AMD processors (circa 2015)
-   set(CMAKE_CXX_FLAGS "-Wall -Wno-attributes") # Wattributes: "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
+   set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wconversion -Wsign-conversion -Wno-attributes") # Wattributes: "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
    set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
@@ -161,14 +162,20 @@ endif()
 
 ### PyDIP module for Python
 if(DIP_BUILD_PYTHON_MODULE)
-   pybind11_add_module(PyDIP pydip/pydip.cpp)
-   target_compile_options(PyDIP PRIVATE -Wno-deprecated-declarations)
-   target_link_libraries(PyDIP PUBLIC DIP)
+   file(GLOB DIP_PYTHON_SRC "pydip/*.cpp")
+   file(GLOB DIP_PYTHON_H "pydip/*.h")
+   pybind11_add_module(PyDIP_bin ${DIP_PYTHON_SRC} ${DIP_PYTHON_H})
+   #target_compile_options(PyDIP_bin PRIVATE -Wno-deprecated-declarations)
+   target_link_libraries(PyDIP_bin PUBLIC DIP)
    if(APPLE)
-      set_target_properties(PyDIP PROPERTIES INSTALL_RPATH "@loader_path")
+      set_target_properties(PyDIP_bin PROPERTIES INSTALL_RPATH "@loader_path/..")
    else()
-      set_target_properties(PyDIP PROPERTIES INSTALL_RPATH "$ORIGIN")
+      set_target_properties(PyDIP_bin PROPERTIES INSTALL_RPATH "$ORIGIN/..")
    endif()
+   install(TARGETS PyDIP_bin DESTINATION ${PYDIP_INSTALL_PATH})
+   # Install .py files
+   file(GLOB DIP_PYTHON_PY "pydip/*.py")
+   install(FILES ${DIP_PYTHON_PY} DESTINATION ${PYDIP_INSTALL_PATH})
 endif()
 
 
@@ -277,7 +284,7 @@ add_custom_command(
       --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
       --toc --listings -H pandoc/listings_setup.tex --number-sections
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPENDS ${DIPthoughts.md}
+      DEPENDS DIPthoughts.md
 )
 
 add_custom_target(
@@ -338,6 +345,7 @@ endif()
 
 if(DIP_BUILD_PYTHON_MODULE)
    message(" * PyDIP module added to 'all' target")
+   message(" * PyDIP installed to: ${PYDIP_INSTALL_PATH}")
 else()
    message(" * PyDIP module not configured")
 endif()

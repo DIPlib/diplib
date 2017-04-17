@@ -124,8 +124,15 @@ extern "C" inline int pybind11_meta_setattro(PyObject* obj, PyObject* name, PyOb
     // descriptor (`property`) instead of calling `tp_descr_get` (`property.__get__()`).
     PyObject *descr = _PyType_Lookup((PyTypeObject *) obj, name);
 
-    // Call `static_property.__set__()` instead of replacing the `static_property`.
-    if (descr && PyObject_IsInstance(descr, (PyObject *) get_internals().static_property_type)) {
+    // The following assignment combinations are possible:
+    //   1. `Type.static_prop = value`             --> descr_set: `Type.static_prop.__set__(value)`
+    //   2. `Type.static_prop = other_static_prop` --> setattro:  replace existing `static_prop`
+    //   3. `Type.regular_attribute = value`       --> setattro:  regular attribute assignment
+    const auto static_prop = (PyObject *) get_internals().static_property_type;
+    const auto call_descr_set = descr && PyObject_IsInstance(descr, static_prop)
+                                && !PyObject_IsInstance(value, static_prop);
+    if (call_descr_set) {
+        // Call `static_property.__set__()` instead of replacing the `static_property`.
 #if !defined(PYPY_VERSION)
         return Py_TYPE(descr)->tp_descr_set(descr, obj, value);
 #else
@@ -137,6 +144,7 @@ extern "C" inline int pybind11_meta_setattro(PyObject* obj, PyObject* name, PyOb
         }
 #endif
     } else {
+        // Replace existing attribute.
         return PyType_Type.tp_setattro(obj, name, value);
     }
 }
@@ -341,7 +349,7 @@ inline void enable_dynamic_attributes(PyHeapTypeObject *heap_type) {
 #endif
     type->tp_flags |= Py_TPFLAGS_HAVE_GC;
     type->tp_dictoffset = type->tp_basicsize; // place dict at the end
-    type->tp_basicsize += sizeof(PyObject *); // and allocate enough space for it
+    type->tp_basicsize += (Py_ssize_t)sizeof(PyObject *); // and allocate enough space for it
     type->tp_traverse = pybind11_traverse;
     type->tp_clear = pybind11_clear;
 
@@ -367,7 +375,7 @@ extern "C" inline int pybind11_getbuffer(PyObject *obj, Py_buffer *view, int fla
     view->ndim = 1;
     view->internal = info;
     view->buf = info->ptr;
-    view->itemsize = (ssize_t) info->itemsize;
+    view->itemsize = info->itemsize;
     view->len = view->itemsize;
     for (auto s : info->shape)
         view->len *= s;
@@ -375,8 +383,8 @@ extern "C" inline int pybind11_getbuffer(PyObject *obj, Py_buffer *view, int fla
         view->format = const_cast<char *>(info->format.c_str());
     if ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) {
         view->ndim = (int) info->ndim;
-        view->strides = (ssize_t *) &info->strides[0];
-        view->shape = (ssize_t *) &info->shape[0];
+        view->strides = &info->strides[0];
+        view->shape = &info->shape[0];
     }
     Py_INCREF(view->obj);
     return 0;

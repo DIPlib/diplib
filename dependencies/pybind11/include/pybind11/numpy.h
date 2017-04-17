@@ -146,6 +146,7 @@ struct npy_api {
         (PyTypeObject *, PyObject *, int, Py_intptr_t *,
          Py_intptr_t *, void *, int, PyObject *);
     PyObject *(*PyArray_DescrNewFromType_)(int);
+    int (*PyArray_CopyInto_)(PyObject *, PyObject *);
     PyObject *(*PyArray_NewCopy_)(PyObject *, int);
     PyTypeObject *PyArray_Type_;
     PyTypeObject *PyVoidArrType_Type_;
@@ -166,6 +167,7 @@ private:
         API_PyArray_DescrFromType = 45,
         API_PyArray_DescrFromScalar = 57,
         API_PyArray_FromAny = 69,
+        API_PyArray_CopyInto = 82,
         API_PyArray_NewCopy = 85,
         API_PyArray_NewFromDescr = 94,
         API_PyArray_DescrNewFromType = 9,
@@ -192,6 +194,7 @@ private:
         DECL_NPY_API(PyArray_DescrFromType);
         DECL_NPY_API(PyArray_DescrFromScalar);
         DECL_NPY_API(PyArray_FromAny);
+        DECL_NPY_API(PyArray_CopyInto);
         DECL_NPY_API(PyArray_NewCopy);
         DECL_NPY_API(PyArray_NewFromDescr);
         DECL_NPY_API(PyArray_DescrNewFromType);
@@ -235,9 +238,9 @@ template <typename T> using is_pod_struct = all_of<
     satisfies_none_of<T, std::is_reference, std::is_array, is_std_array, std::is_arithmetic, is_complex, std::is_enum>
 >;
 
-template <size_t Dim = 0, typename Strides> size_t byte_offset_unsafe(const Strides &) { return 0; }
-template <size_t Dim = 0, typename Strides, typename... Ix>
-size_t byte_offset_unsafe(const Strides &strides, size_t i, Ix... index) {
+template <ssize_t Dim = 0, typename Strides> ssize_t byte_offset_unsafe(const Strides &) { return 0; }
+template <ssize_t Dim = 0, typename Strides, typename... Ix>
+ssize_t byte_offset_unsafe(const Strides &strides, ssize_t i, Ix... index) {
     return i * strides[Dim] + byte_offset_unsafe<Dim + 1>(strides, index...);
 }
 
@@ -252,23 +255,23 @@ protected:
     const unsigned char *data_;
     // Storing the shape & strides in local variables (i.e. these arrays) allows the compiler to
     // make large performance gains on big, nested loops, but requires compile-time dimensions
-    conditional_t<Dynamic, const size_t *, std::array<size_t, (size_t) Dims>>
-        shape_, strides_;
-    const size_t dims_;
+    conditional_t<Dynamic, const ssize_t *, std::array<ssize_t, (size_t) Dims>> shape_;
+    conditional_t<Dynamic, const ssize_t *, std::array<ssize_t, (size_t) Dims>> strides_;
+    const ssize_t dims_;
 
     friend class pybind11::array;
     // Constructor for compile-time dimensions:
     template <bool Dyn = Dynamic>
-    unchecked_reference(const void *data, const size_t *shape, const size_t *strides, enable_if_t<!Dyn, size_t>)
+    unchecked_reference(const void *data, const ssize_t *shape, const ssize_t *strides, enable_if_t<!Dyn, ssize_t>)
     : data_{reinterpret_cast<const unsigned char *>(data)}, dims_{Dims} {
-        for (size_t i = 0; i < dims_; i++) {
+        for (size_t i = 0; i < (size_t) dims_; i++) {
             shape_[i] = shape[i];
             strides_[i] = strides[i];
         }
     }
     // Constructor for runtime dimensions:
     template <bool Dyn = Dynamic>
-    unchecked_reference(const void *data, const size_t *shape, const size_t *strides, enable_if_t<Dyn, size_t> dims)
+    unchecked_reference(const void *data, const ssize_t *shape, const ssize_t *strides, enable_if_t<Dyn, ssize_t> dims)
     : data_{reinterpret_cast<const unsigned char *>(data)}, shape_{shape}, strides_{strides}, dims_{dims} {}
 
 public:
@@ -279,39 +282,39 @@ public:
     template <typename... Ix> const T &operator()(Ix... index) const {
         static_assert(sizeof...(Ix) == Dims || Dynamic,
                 "Invalid number of indices for unchecked array reference");
-        return *reinterpret_cast<const T *>(data_ + byte_offset_unsafe(strides_, size_t(index)...));
+        return *reinterpret_cast<const T *>(data_ + byte_offset_unsafe(strides_, ssize_t(index)...));
     }
     /** Unchecked const reference access to data; this operator only participates if the reference
      * is to a 1-dimensional array.  When present, this is exactly equivalent to `obj(index)`.
      */
-    template <size_t D = Dims, typename = enable_if_t<D == 1 || Dynamic>>
-    const T &operator[](size_t index) const { return operator()(index); }
+    template <ssize_t D = Dims, typename = enable_if_t<D == 1 || Dynamic>>
+    const T &operator[](ssize_t index) const { return operator()(index); }
 
     /// Pointer access to the data at the given indices.
-    template <typename... Ix> const T *data(Ix... ix) const { return &operator()(size_t(ix)...); }
+    template <typename... Ix> const T *data(Ix... ix) const { return &operator()(ssize_t(ix)...); }
 
     /// Returns the item size, i.e. sizeof(T)
-    constexpr static size_t itemsize() { return sizeof(T); }
+    constexpr static ssize_t itemsize() { return (ssize_t) sizeof(T); }
 
     /// Returns the shape (i.e. size) of dimension `dim`
-    size_t shape(size_t dim) const { return shape_[dim]; }
+    ssize_t shape(ssize_t dim) const { return shape_[(size_t) dim]; }
 
     /// Returns the number of dimensions of the array
-    size_t ndim() const { return dims_; }
+    ssize_t ndim() const { return dims_; }
 
     /// Returns the total number of elements in the referenced array, i.e. the product of the shapes
     template <bool Dyn = Dynamic>
-    enable_if_t<!Dyn, size_t> size() const {
-        return std::accumulate(shape_.begin(), shape_.end(), (size_t) 1, std::multiplies<size_t>());
+    enable_if_t<!Dyn, ssize_t> size() const {
+        return std::accumulate(shape_.begin(), shape_.end(), (ssize_t) 1, std::multiplies<ssize_t>());
     }
     template <bool Dyn = Dynamic>
-    enable_if_t<Dyn, size_t> size() const {
-        return std::accumulate(shape_, shape_ + ndim(), (size_t) 1, std::multiplies<size_t>());
+    enable_if_t<Dyn, ssize_t> size() const {
+        return std::accumulate(shape_, shape_ + ndim(), (ssize_t) 1, std::multiplies<ssize_t>());
     }
 
     /// Returns the total number of bytes used by the referenced data.  Note that the actual span in
     /// memory may be larger if the referenced array has non-contiguous strides (e.g. for a slice).
-    size_t nbytes() const {
+    ssize_t nbytes() const {
         return size() * itemsize();
     }
 };
@@ -333,11 +336,11 @@ public:
      * reference is to a 1-dimensional array (or has runtime dimensions).  When present, this is
      * exactly equivalent to `obj(index)`.
      */
-    template <size_t D = Dims, typename = enable_if_t<D == 1 || Dynamic>>
-    T &operator[](size_t index) { return operator()(index); }
+    template <ssize_t D = Dims, typename = enable_if_t<D == 1 || Dynamic>>
+    T &operator[](ssize_t index) { return operator()(index); }
 
     /// Mutable pointer access to the data at the given indices.
-    template <typename... Ix> T *mutable_data(Ix... ix) { return &operator()(size_t(ix)...); }
+    template <typename... Ix> T *mutable_data(Ix... ix) { return &operator()(ssize_t(ix)...); }
 };
 
 template <typename T, ssize_t Dim>
@@ -365,7 +368,7 @@ public:
 
     dtype(const char *format) : dtype(std::string(format)) { }
 
-    dtype(list names, list formats, list offsets, size_t itemsize) {
+    dtype(list names, list formats, list offsets, ssize_t itemsize) {
         dict args;
         args["names"] = names;
         args["formats"] = formats;
@@ -388,8 +391,8 @@ public:
     }
 
     /// Size of the data type in bytes.
-    size_t itemsize() const {
-        return (size_t) detail::array_descriptor_proxy(m_ptr)->elsize;
+    ssize_t itemsize() const {
+        return (ssize_t) detail::array_descriptor_proxy(m_ptr)->elsize;
     }
 
     /// Returns true for structured data types.
@@ -409,7 +412,7 @@ private:
         return reinterpret_borrow<object>(obj);
     }
 
-    dtype strip_padding(size_t itemsize) {
+    dtype strip_padding(ssize_t itemsize) {
         // Recursively strip all void fields with empty names that are generated for
         // padding fields (as of NumPy v1.11).
         if (!has_fields())
@@ -455,12 +458,18 @@ public:
 
     array() : array(0, static_cast<const double *>(nullptr)) {}
 
-    array(const pybind11::dtype &dt, const std::vector<size_t> &shape,
-          const std::vector<size_t> &strides, const void *ptr = nullptr,
-          handle base = handle()) {
-        auto& api = detail::npy_api::get();
-        auto ndim = shape.size();
-        if (shape.size() != strides.size())
+    using ShapeContainer = detail::any_container<Py_intptr_t>;
+    using StridesContainer = detail::any_container<Py_intptr_t>;
+
+    // Constructs an array taking shape/strides from arbitrary container types
+    array(const pybind11::dtype &dt, ShapeContainer shape, StridesContainer strides,
+          const void *ptr = nullptr, handle base = handle()) {
+
+        if (strides->empty())
+            *strides = default_strides(*shape, dt.itemsize());
+
+        auto ndim = shape->size();
+        if (ndim != strides->size())
             pybind11_fail("NumPy: shape ndim doesn't match strides ndim");
         auto descr = dt;
 
@@ -474,10 +483,9 @@ public:
                 flags = detail::npy_api::NPY_ARRAY_WRITEABLE_;
         }
 
+        auto &api = detail::npy_api::get();
         auto tmp = reinterpret_steal<object>(api.PyArray_NewFromDescr_(
-            api.PyArray_Type_, descr.release().ptr(), (int) ndim,
-            reinterpret_cast<Py_intptr_t *>(const_cast<size_t*>(shape.data())),
-            reinterpret_cast<Py_intptr_t *>(const_cast<size_t*>(strides.data())),
+            api.PyArray_Type_, descr.release().ptr(), (int) ndim, shape->data(), strides->data(),
             const_cast<void *>(ptr), flags, nullptr));
         if (!tmp)
             pybind11_fail("NumPy: unable to create array!");
@@ -491,27 +499,23 @@ public:
         m_ptr = tmp.release().ptr();
     }
 
-    array(const pybind11::dtype &dt, const std::vector<size_t> &shape,
-          const void *ptr = nullptr, handle base = handle())
-        : array(dt, shape, default_strides(shape, dt.itemsize()), ptr, base) { }
+    array(const pybind11::dtype &dt, ShapeContainer shape, const void *ptr = nullptr, handle base = handle())
+        : array(dt, std::move(shape), {}, ptr, base) { }
 
-    array(const pybind11::dtype &dt, size_t count, const void *ptr = nullptr,
-          handle base = handle())
-        : array(dt, std::vector<size_t>{ count }, ptr, base) { }
-
-    template<typename T> array(const std::vector<size_t>& shape,
-                               const std::vector<size_t>& strides,
-                               const T* ptr, handle base = handle())
-    : array(pybind11::dtype::of<T>(), shape, strides, (const void *) ptr, base) { }
+    // This constructor is only needed to avoid ambiguity with the deprecated (handle, bool)
+    // constructor that comes from PYBIND11_OBJECT_CVT; once that is gone, the above constructor can
+    // handle it (because ShapeContainer is implicitly constructible from arithmetic types)
+    template <typename T, typename = detail::enable_if_t<std::is_arithmetic<T>::value && !std::is_same<bool, T>::value>>
+    array(const pybind11::dtype &dt, T count)
+        : array(dt, count, nullptr) { }
 
     template <typename T>
-    array(const std::vector<size_t> &shape, const T *ptr,
-          handle base = handle())
-        : array(shape, default_strides(shape, sizeof(T)), ptr, base) { }
+    array(ShapeContainer shape, StridesContainer strides, const T *ptr, handle base = handle())
+        : array(pybind11::dtype::of<T>(), std::move(shape), std::move(strides), ptr, base) { }
 
     template <typename T>
-    array(size_t count, const T *ptr, handle base = handle())
-        : array(std::vector<size_t>{ count }, ptr, base) { }
+    array(ShapeContainer shape, const T *ptr, handle base = handle())
+        : array(std::move(shape), {}, ptr, base) { }
 
     explicit array(const buffer_info &info)
     : array(pybind11::dtype(info), info.shape, info.strides, info.ptr) { }
@@ -522,23 +526,23 @@ public:
     }
 
     /// Total number of elements
-    size_t size() const {
-        return std::accumulate(shape(), shape() + ndim(), (size_t) 1, std::multiplies<size_t>());
+    ssize_t size() const {
+        return std::accumulate(shape(), shape() + ndim(), (ssize_t) 1, std::multiplies<ssize_t>());
     }
 
     /// Byte size of a single element
-    size_t itemsize() const {
-        return (size_t) detail::array_descriptor_proxy(detail::array_proxy(m_ptr)->descr)->elsize;
+    ssize_t itemsize() const {
+        return (ssize_t) detail::array_descriptor_proxy(detail::array_proxy(m_ptr)->descr)->elsize;
     }
 
     /// Total number of bytes
-    size_t nbytes() const {
+    ssize_t nbytes() const {
         return size() * itemsize();
     }
 
     /// Number of dimensions
-    size_t ndim() const {
-        return (size_t) detail::array_proxy(m_ptr)->nd;
+    ssize_t ndim() const {
+        return (ssize_t) detail::array_proxy(m_ptr)->nd;
     }
 
     /// Base object
@@ -547,24 +551,24 @@ public:
     }
 
     /// Dimensions of the array
-    const size_t* shape() const {
-        return reinterpret_cast<const size_t *>(detail::array_proxy(m_ptr)->dimensions);
+    const ssize_t* shape() const {
+        return detail::array_proxy(m_ptr)->dimensions;
     }
 
     /// Dimension along a given axis
-    size_t shape(size_t dim) const {
+    ssize_t shape(ssize_t dim) const {
         if (dim >= ndim())
             fail_dim_check(dim, "invalid axis");
         return shape()[dim];
     }
 
     /// Strides of the array
-    const size_t* strides() const {
-        return reinterpret_cast<const size_t *>(detail::array_proxy(m_ptr)->strides);
+    const ssize_t* strides() const {
+        return detail::array_proxy(m_ptr)->strides;
     }
 
     /// Stride along a given axis
-    size_t strides(size_t dim) const {
+    ssize_t strides(ssize_t dim) const {
         if (dim >= ndim())
             fail_dim_check(dim, "invalid axis");
         return strides()[dim];
@@ -601,17 +605,17 @@ public:
 
     /// Byte offset from beginning of the array to a given index (full or partial).
     /// May throw if the index would lead to out of bounds access.
-    template<typename... Ix> size_t offset_at(Ix... index) const {
-        if (sizeof...(index) > ndim())
+    template<typename... Ix> ssize_t offset_at(Ix... index) const {
+        if ((ssize_t) sizeof...(index) > ndim())
             fail_dim_check(sizeof...(index), "too many indices for an array");
-        return byte_offset(size_t(index)...);
+        return byte_offset(ssize_t(index)...);
     }
 
-    size_t offset_at() const { return 0; }
+    ssize_t offset_at() const { return 0; }
 
     /// Item count from beginning of the array to a given index (full or partial).
     /// May throw if the index would lead to out of bounds access.
-    template<typename... Ix> size_t index_at(Ix... index) const {
+    template<typename... Ix> ssize_t index_at(Ix... index) const {
         return offset_at(index...) / itemsize();
     }
 
@@ -621,7 +625,7 @@ public:
      * and the caller must take care not to access invalid dimensions or dimension indices.
      */
     template <typename T, ssize_t Dims = -1> detail::unchecked_mutable_reference<T, Dims> mutable_unchecked() {
-        if (Dims >= 0 && ndim() != (size_t) Dims)
+        if (Dims >= 0 && ndim() != Dims)
             throw std::domain_error("array has incorrect number of dimensions: " + std::to_string(ndim()) +
                     "; expected " + std::to_string(Dims));
         return detail::unchecked_mutable_reference<T, Dims>(mutable_data(), shape(), strides(), ndim());
@@ -634,7 +638,7 @@ public:
      * invalid dimensions or dimension indices.
      */
     template <typename T, ssize_t Dims = -1> detail::unchecked_reference<T, Dims> unchecked() const {
-        if (Dims >= 0 && ndim() != (size_t) Dims)
+        if (Dims >= 0 && ndim() != Dims)
             throw std::domain_error("array has incorrect number of dimensions: " + std::to_string(ndim()) +
                     "; expected " + std::to_string(Dims));
         return detail::unchecked_reference<T, Dims>(data(), shape(), strides(), ndim());
@@ -658,14 +662,14 @@ public:
 protected:
     template<typename, typename> friend struct detail::npy_format_descriptor;
 
-    void fail_dim_check(size_t dim, const std::string& msg) const {
+    void fail_dim_check(ssize_t dim, const std::string& msg) const {
         throw index_error(msg + ": " + std::to_string(dim) +
                           " (ndim = " + std::to_string(ndim()) + ")");
     }
 
-    template<typename... Ix> size_t byte_offset(Ix... index) const {
+    template<typename... Ix> ssize_t byte_offset(Ix... index) const {
         check_dimensions(index...);
-        return detail::byte_offset_unsafe(strides(), size_t(index)...);
+        return detail::byte_offset_unsafe(strides(), ssize_t(index)...);
     }
 
     void check_writeable() const {
@@ -673,9 +677,9 @@ protected:
             throw std::domain_error("array is not writeable");
     }
 
-    static std::vector<size_t> default_strides(const std::vector<size_t>& shape, size_t itemsize) {
+    static std::vector<Py_intptr_t> default_strides(const std::vector<Py_intptr_t>& shape, ssize_t itemsize) {
         auto ndim = shape.size();
-        std::vector<size_t> strides(ndim);
+        std::vector<Py_intptr_t> strides(ndim);
         if (ndim) {
             std::fill(strides.begin(), strides.end(), itemsize);
             for (size_t i = 0; i < ndim - 1; i++)
@@ -686,12 +690,12 @@ protected:
     }
 
     template<typename... Ix> void check_dimensions(Ix... index) const {
-        check_dimensions_impl(size_t(0), shape(), size_t(index)...);
+        check_dimensions_impl(ssize_t(0), shape(), ssize_t(index)...);
     }
 
-    void check_dimensions_impl(size_t, const size_t*) const { }
+    void check_dimensions_impl(ssize_t, const ssize_t*) const { }
 
-    template<typename... Ix> void check_dimensions_impl(size_t axis, const size_t* shape, size_t i, Ix... index) const {
+    template<typename... Ix> void check_dimensions_impl(ssize_t axis, const ssize_t* shape, ssize_t i, Ix... index) const {
         if (i >= *shape) {
             throw index_error(std::string("index ") + std::to_string(i) +
                               " is out of bounds for axis " + std::to_string(axis) +
@@ -702,8 +706,10 @@ protected:
 
     /// Create array from any object -- always returns a new reference
     static PyObject *raw_array(PyObject *ptr, int ExtraFlags = 0) {
-        if (ptr == nullptr)
+        if (ptr == nullptr) {
+            PyErr_SetString(PyExc_ValueError, "cannot create a pybind11::array from a nullptr");
             return nullptr;
+        }
         return detail::npy_api::get().PyArray_FromAny_(
             ptr, nullptr, 0, 0, detail::npy_api::NPY_ARRAY_ENSUREARRAY_ | ExtraFlags, nullptr);
     }
@@ -729,23 +735,17 @@ public:
 
     explicit array_t(const buffer_info& info) : array(info) { }
 
-    array_t(const std::vector<size_t> &shape,
-            const std::vector<size_t> &strides, const T *ptr = nullptr,
-            handle base = handle())
-        : array(shape, strides, ptr, base) { }
+    array_t(ShapeContainer shape, StridesContainer strides, const T *ptr = nullptr, handle base = handle())
+        : array(std::move(shape), std::move(strides), ptr, base) { }
 
-    explicit array_t(const std::vector<size_t> &shape, const T *ptr = nullptr,
-            handle base = handle())
-        : array(shape, ptr, base) { }
+    explicit array_t(ShapeContainer shape, const T *ptr = nullptr, handle base = handle())
+        : array(std::move(shape), ptr, base) { }
 
-    explicit array_t(size_t count, const T *ptr = nullptr, handle base = handle())
-        : array(count, ptr, base) { }
-
-    constexpr size_t itemsize() const {
-        return sizeof(T);
+    constexpr ssize_t itemsize() const {
+        return (ssize_t) sizeof(T);
     }
 
-    template<typename... Ix> size_t index_at(Ix... index) const {
+    template<typename... Ix> ssize_t index_at(Ix... index) const {
         return offset_at(index...) / itemsize();
     }
 
@@ -761,14 +761,14 @@ public:
     template<typename... Ix> const T& at(Ix... index) const {
         if (sizeof...(index) != ndim())
             fail_dim_check(sizeof...(index), "index dimension mismatch");
-        return *(static_cast<const T*>(array::data()) + byte_offset(size_t(index)...) / itemsize());
+        return *(static_cast<const T*>(array::data()) + byte_offset(ssize_t(index)...) / itemsize());
     }
 
     // Mutable reference to element at a given index
     template<typename... Ix> T& mutable_at(Ix... index) {
         if (sizeof...(index) != ndim())
             fail_dim_check(sizeof...(index), "index dimension mismatch");
-        return *(static_cast<T*>(array::mutable_data()) + byte_offset(size_t(index)...) / itemsize());
+        return *(static_cast<T*>(array::mutable_data()) + byte_offset(ssize_t(index)...) / itemsize());
     }
 
     /** Returns a proxy object that provides access to the array's data without bounds or
@@ -808,8 +808,10 @@ public:
 protected:
     /// Create array from any object -- always returns a new reference
     static PyObject *raw_array_t(PyObject *ptr) {
-        if (ptr == nullptr)
+        if (ptr == nullptr) {
+            PyErr_SetString(PyExc_ValueError, "cannot create a pybind11::array_t from a nullptr");
             return nullptr;
+        }
         return detail::npy_api::get().PyArray_FromAny_(
             ptr, dtype::of<T>().release().ptr(), 0, 0,
             detail::npy_api::NPY_ARRAY_ENSUREARRAY_ | ExtraFlags, nullptr);
@@ -916,16 +918,16 @@ public:
 
 struct field_descriptor {
     const char *name;
-    size_t offset;
-    size_t size;
-    size_t alignment;
+    ssize_t offset;
+    ssize_t size;
+    ssize_t alignment;
     std::string format;
     dtype descr;
 };
 
 inline PYBIND11_NOINLINE void register_structured_dtype(
     const std::initializer_list<field_descriptor>& fields,
-    const std::type_info& tinfo, size_t itemsize,
+    const std::type_info& tinfo, ssize_t itemsize,
     bool (*direct_converter)(PyObject *, void *&)) {
 
     auto& numpy_internals = get_numpy_internals();
@@ -953,7 +955,7 @@ inline PYBIND11_NOINLINE void register_structured_dtype(
     std::vector<field_descriptor> ordered_fields(fields);
     std::sort(ordered_fields.begin(), ordered_fields.end(),
         [](const field_descriptor &a, const field_descriptor &b) { return a.offset < b.offset; });
-    size_t offset = 0;
+    ssize_t offset = 0;
     std::ostringstream oss;
     oss << "T{";
     for (auto& field : ordered_fields) {
@@ -1103,13 +1105,13 @@ array_iterator<T> array_end(const buffer_info& buffer) {
 
 class common_iterator {
 public:
-    using container_type = std::vector<size_t>;
+    using container_type = std::vector<ssize_t>;
     using value_type = container_type::value_type;
     using size_type = container_type::size_type;
 
     common_iterator() : p_ptr(0), m_strides() {}
 
-    common_iterator(void* ptr, const container_type& strides, const std::vector<size_t>& shape)
+    common_iterator(void* ptr, const container_type& strides, const container_type& shape)
         : p_ptr(reinterpret_cast<char*>(ptr)), m_strides(strides.size()) {
         m_strides.back() = static_cast<value_type>(strides.back());
         for (size_type i = m_strides.size() - 1; i != 0; --i) {
@@ -1134,16 +1136,16 @@ private:
 
 template <size_t N> class multi_array_iterator {
 public:
-    using container_type = std::vector<size_t>;
+    using container_type = std::vector<ssize_t>;
 
     multi_array_iterator(const std::array<buffer_info, N> &buffers,
-                         const std::vector<size_t> &shape)
+                         const container_type &shape)
         : m_shape(shape.size()), m_index(shape.size(), 0),
           m_common_iterator() {
 
         // Manual copy to avoid conversion warning if using std::copy
         for (size_t i = 0; i < shape.size(); ++i)
-            m_shape[i] = static_cast<container_type::value_type>(shape[i]);
+            m_shape[i] = shape[i];
 
         container_type strides(shape.size());
         for (size_t i = 0; i < N; ++i)
@@ -1172,8 +1174,9 @@ private:
     using common_iter = common_iterator;
 
     void init_common_iterator(const buffer_info &buffer,
-                              const std::vector<size_t> &shape,
-                              common_iter &iterator, container_type &strides) {
+                              const container_type &shape,
+                              common_iter &iterator,
+                              container_type &strides) {
         auto buffer_shape_iter = buffer.shape.rbegin();
         auto buffer_strides_iter = buffer.strides.rbegin();
         auto shape_iter = shape.rbegin();
@@ -1181,7 +1184,7 @@ private:
 
         while (buffer_shape_iter != buffer.shape.rend()) {
             if (*shape_iter == *buffer_shape_iter)
-                *strides_iter = static_cast<size_t>(*buffer_strides_iter);
+                *strides_iter = *buffer_strides_iter;
             else
                 *strides_iter = 0;
 
@@ -1212,13 +1215,14 @@ enum class broadcast_trivial { non_trivial, c_trivial, f_trivial };
 // singleton or a full-size, C-contiguous (`c_trivial`) or Fortran-contiguous (`f_trivial`) storage
 // buffer; returns `non_trivial` otherwise.
 template <size_t N>
-broadcast_trivial broadcast(const std::array<buffer_info, N> &buffers, size_t &ndim, std::vector<size_t> &shape) {
-    ndim = std::accumulate(buffers.begin(), buffers.end(), size_t(0), [](size_t res, const buffer_info& buf) {
-        return std::max(res, buf.ndim);
-    });
+broadcast_trivial broadcast(const std::array<buffer_info, N> &buffers, ssize_t &ndim, std::vector<ssize_t> &shape) {
+    ndim = std::accumulate(buffers.begin(), buffers.end(), ssize_t(0),
+                           [](ssize_t res, const buffer_info& buf) {
+                               return std::max(res, buf.ndim);
+                           });
 
     shape.clear();
-    shape.resize(ndim, 1);
+    shape.resize((size_t) ndim, 1);
 
     // Figure out the output size, and make sure all input arrays conform (i.e. are either size 1 or
     // the full size).
@@ -1253,10 +1257,11 @@ broadcast_trivial broadcast(const std::array<buffer_info, N> &buffers, size_t &n
 
         // Check for C contiguity (but only if previous inputs were also C contiguous)
         if (trivial_broadcast_c) {
-            size_t expect_stride = buffers[i].itemsize;
+            ssize_t expect_stride = buffers[i].itemsize;
             auto end = buffers[i].shape.crend();
-            for (auto shape_iter = buffers[i].shape.crbegin(), stride_iter = buffers[i].strides.crbegin();
-                    trivial_broadcast_c && shape_iter != end; ++shape_iter, ++stride_iter) {
+            auto shape_iter = buffers[i].shape.crbegin();
+            auto stride_iter = buffers[i].strides.crbegin();
+            for (; trivial_broadcast_c && shape_iter != end; ++shape_iter, ++stride_iter) {
                 if (expect_stride == *stride_iter)
                     expect_stride *= *shape_iter;
                 else
@@ -1266,10 +1271,11 @@ broadcast_trivial broadcast(const std::array<buffer_info, N> &buffers, size_t &n
 
         // Check for Fortran contiguity (if previous inputs were also F contiguous)
         if (trivial_broadcast_f) {
-            size_t expect_stride = buffers[i].itemsize;
+            ssize_t expect_stride = buffers[i].itemsize;
             auto end = buffers[i].shape.cend();
-            for (auto shape_iter = buffers[i].shape.cbegin(), stride_iter = buffers[i].strides.cbegin();
-                    trivial_broadcast_f && shape_iter != end; ++shape_iter, ++stride_iter) {
+            auto shape_iter = buffers[i].shape.cbegin();
+            auto stride_iter = buffers[i].strides.cbegin();
+            for (; trivial_broadcast_f && shape_iter != end; ++shape_iter, ++stride_iter) {
                 if (expect_stride == *stride_iter)
                     expect_stride *= *shape_iter;
                 else
@@ -1301,15 +1307,16 @@ struct vectorize_helper {
         std::array<buffer_info, N> buffers {{ args.request()... }};
 
         /* Determine dimensions parameters of output array */
-        size_t ndim = 0;
-        std::vector<size_t> shape(0);
-        auto trivial = broadcast(buffers, ndim, shape);
+        ssize_t nd = 0;
+        std::vector<ssize_t> shape(0);
+        auto trivial = broadcast(buffers, nd, shape);
+        size_t ndim = (size_t) nd;
 
-        size_t size = 1;
-        std::vector<size_t> strides(ndim);
+        ssize_t size = 1;
+        std::vector<ssize_t> strides(ndim);
         if (ndim > 0) {
             if (trivial == broadcast_trivial::f_trivial) {
-                strides[0] = sizeof(Return);
+                strides[0] = (ssize_t) sizeof(Return);
                 for (size_t i = 1; i < ndim; ++i) {
                     strides[i] = strides[i - 1] * shape[i - 1];
                     size *= shape[i - 1];
@@ -1317,7 +1324,7 @@ struct vectorize_helper {
                 size *= shape[ndim - 1];
             }
             else {
-                strides[ndim-1] = sizeof(Return);
+                strides[ndim-1] = (ssize_t) sizeof(Return);
                 for (size_t i = ndim - 1; i > 0; --i) {
                     strides[i - 1] = strides[i] * shape[i];
                     size *= shape[i];
@@ -1337,7 +1344,7 @@ struct vectorize_helper {
         if (trivial == broadcast_trivial::non_trivial) {
             apply_broadcast<Index...>(buffers, buf, index);
         } else {
-            for (size_t i = 0; i < size; ++i)
+            for (ssize_t i = 0; i < size; ++i)
                 output[i] = f((reinterpret_cast<Args *>(buffers[Index].ptr)[buffers[Index].size == 1 ? 0 : i])...);
         }
 

@@ -75,15 +75,15 @@ def test_mutator_descriptors():
     fixed_mutator_a(zc)
     with pytest.raises(TypeError) as excinfo:
         fixed_mutator_r(zc)
-    assert ('(numpy.ndarray[float32[5, 6], flags.writeable, flags.c_contiguous]) -> arg0: None'
+    assert ('(arg0: numpy.ndarray[float32[5, 6], flags.writeable, flags.c_contiguous]) -> None'
             in str(excinfo.value))
     with pytest.raises(TypeError) as excinfo:
         fixed_mutator_c(zr)
-    assert ('(numpy.ndarray[float32[5, 6], flags.writeable, flags.f_contiguous]) -> arg0: None'
+    assert ('(arg0: numpy.ndarray[float32[5, 6], flags.writeable, flags.f_contiguous]) -> None'
             in str(excinfo.value))
     with pytest.raises(TypeError) as excinfo:
         fixed_mutator_a(np.array([[1, 2], [3, 4]], dtype='float32'))
-    assert ('(numpy.ndarray[float32[5, 6], flags.writeable]) -> arg0: None'
+    assert ('(arg0: numpy.ndarray[float32[5, 6], flags.writeable]) -> None'
             in str(excinfo.value))
     zr.flags.writeable = False
     with pytest.raises(TypeError):
@@ -152,6 +152,53 @@ def test_nonunit_stride_from_python():
     double_threer(second_row)
     double_threec(second_col)
     np.testing.assert_array_equal(counting_mat, [[0., 2, 2], [6, 16, 10], [6, 14, 8]])
+
+
+def test_negative_stride_from_python(msg):
+    from pybind11_tests import (
+        double_row, double_col, double_complex, double_mat_cm, double_mat_rm,
+        double_threec, double_threer)
+
+    # Eigen doesn't support (as of yet) negative strides. When a function takes an Eigen
+    # matrix by copy or const reference, we can pass a numpy array that has negative strides.
+    # Otherwise, an exception will be thrown as Eigen will not be able to map the numpy array.
+
+    counting_mat = np.arange(9.0, dtype=np.float32).reshape((3, 3))
+    counting_mat = counting_mat[::-1, ::-1]
+    second_row = counting_mat[1, :]
+    second_col = counting_mat[:, 1]
+    np.testing.assert_array_equal(double_row(second_row), 2.0 * second_row)
+    np.testing.assert_array_equal(double_col(second_row), 2.0 * second_row)
+    np.testing.assert_array_equal(double_complex(second_row), 2.0 * second_row)
+    np.testing.assert_array_equal(double_row(second_col), 2.0 * second_col)
+    np.testing.assert_array_equal(double_col(second_col), 2.0 * second_col)
+    np.testing.assert_array_equal(double_complex(second_col), 2.0 * second_col)
+
+    counting_3d = np.arange(27.0, dtype=np.float32).reshape((3, 3, 3))
+    counting_3d = counting_3d[::-1, ::-1, ::-1]
+    slices = [counting_3d[0, :, :], counting_3d[:, 0, :], counting_3d[:, :, 0]]
+    for slice_idx, ref_mat in enumerate(slices):
+        np.testing.assert_array_equal(double_mat_cm(ref_mat), 2.0 * ref_mat)
+        np.testing.assert_array_equal(double_mat_rm(ref_mat), 2.0 * ref_mat)
+
+    # Mutator:
+    with pytest.raises(TypeError) as excinfo:
+        double_threer(second_row)
+    assert msg(excinfo.value) == """
+    double_threer(): incompatible function arguments. The following argument types are supported:
+        1. (arg0: numpy.ndarray[float32[1, 3], flags.writeable]) -> None
+
+    Invoked with: array([ 5.,  4.,  3.], dtype=float32)
+"""
+
+    with pytest.raises(TypeError) as excinfo:
+        double_threec(second_col)
+    assert msg(excinfo.value) == """
+    double_threec(): incompatible function arguments. The following argument types are supported:
+        1. (arg0: numpy.ndarray[float32[3, 1], flags.writeable]) -> None
+
+    Invoked with: array([ 7.,  4.,  1.], dtype=float32)
+"""
 
 
 def test_nonunit_stride_to_python():
@@ -580,6 +627,29 @@ def test_dense_signature(doc):
     assert doc(double_mat_rm) == """
         double_mat_rm(arg0: numpy.ndarray[float32[m, n]]) -> numpy.ndarray[float32[m, n]]
     """
+
+
+def test_named_arguments():
+    from pybind11_tests import matrix_multiply
+
+    a = np.array([[1.0, 2], [3, 4], [5, 6]])
+    b = np.ones((2, 1))
+
+    assert np.all(matrix_multiply(a, b) == np.array([[3.], [7], [11]]))
+    assert np.all(matrix_multiply(A=a, B=b) == np.array([[3.], [7], [11]]))
+    assert np.all(matrix_multiply(B=b, A=a) == np.array([[3.], [7], [11]]))
+
+    with pytest.raises(ValueError) as excinfo:
+        matrix_multiply(b, a)
+    assert str(excinfo.value) == 'Nonconformable matrices!'
+
+    with pytest.raises(ValueError) as excinfo:
+        matrix_multiply(A=b, B=a)
+    assert str(excinfo.value) == 'Nonconformable matrices!'
+
+    with pytest.raises(ValueError) as excinfo:
+        matrix_multiply(B=a, A=b)
+    assert str(excinfo.value) == 'Nonconformable matrices!'
 
 
 @pytest.requires_eigen_and_scipy

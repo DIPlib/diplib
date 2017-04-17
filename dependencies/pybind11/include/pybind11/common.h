@@ -286,69 +286,6 @@ enum class return_value_policy : uint8_t {
     reference_internal
 };
 
-/// Information record describing a Python buffer object
-struct buffer_info {
-    void *ptr = nullptr;         // Pointer to the underlying storage
-    size_t itemsize = 0;         // Size of individual items in bytes
-    size_t size = 0;             // Total number of entries
-    std::string format;          // For homogeneous buffers, this should be set to format_descriptor<T>::format()
-    size_t ndim = 0;             // Number of dimensions
-    std::vector<size_t> shape;   // Shape of the tensor (1 entry per dimension)
-    std::vector<size_t> strides; // Number of entries between adjacent entries (for each per dimension)
-
-    buffer_info() { }
-
-    buffer_info(void *ptr, size_t itemsize, const std::string &format, size_t ndim,
-                const std::vector<size_t> &shape, const std::vector<size_t> &strides)
-        : ptr(ptr), itemsize(itemsize), size(1), format(format),
-          ndim(ndim), shape(shape), strides(strides) {
-        for (size_t i = 0; i < ndim; ++i)
-            size *= shape[i];
-    }
-
-    buffer_info(void *ptr, size_t itemsize, const std::string &format, size_t size)
-    : buffer_info(ptr, itemsize, format, 1, std::vector<size_t> { size },
-                  std::vector<size_t> { itemsize }) { }
-
-    explicit buffer_info(Py_buffer *view, bool ownview = true)
-        : ptr(view->buf), itemsize((size_t) view->itemsize), size(1), format(view->format),
-          ndim((size_t) view->ndim), shape((size_t) view->ndim), strides((size_t) view->ndim), view(view), ownview(ownview) {
-        for (size_t i = 0; i < (size_t) view->ndim; ++i) {
-            shape[i] = (size_t) view->shape[i];
-            strides[i] = (size_t) view->strides[i];
-            size *= shape[i];
-        }
-    }
-
-    buffer_info(const buffer_info &) = delete;
-    buffer_info& operator=(const buffer_info &) = delete;
-
-    buffer_info(buffer_info &&other) {
-        (*this) = std::move(other);
-    }
-
-    buffer_info& operator=(buffer_info &&rhs) {
-        ptr = rhs.ptr;
-        itemsize = rhs.itemsize;
-        size = rhs.size;
-        format = std::move(rhs.format);
-        ndim = rhs.ndim;
-        shape = std::move(rhs.shape);
-        strides = std::move(rhs.strides);
-        std::swap(view, rhs.view);
-        std::swap(ownview, rhs.ownview);
-        return *this;
-    }
-
-    ~buffer_info() {
-        if (view && ownview) { PyBuffer_Release(view); delete view; }
-    }
-
-private:
-    Py_buffer *view = nullptr;
-    bool ownview = false;
-};
-
 NAMESPACE_BEGIN(detail)
 
 inline static constexpr int log2(size_t n, int k = 0) { return (n <= 1) ? k : log2(n >> 1, k + 1); }
@@ -553,6 +490,12 @@ struct is_instantiation<Class, Class<Us...>> : std::true_type { };
 /// Check if T is std::shared_ptr<U> where U can be anything
 template <typename T> using is_shared_ptr = is_instantiation<std::shared_ptr, T>;
 
+/// Check if T looks like an input iterator
+template <typename T, typename = void> struct is_input_iterator : std::false_type {};
+template <typename T>
+struct is_input_iterator<T, void_t<decltype(*std::declval<T &>()), decltype(++std::declval<T &>())>>
+    : std::true_type {};
+
 /// Ignore that a variable is unused in compiler warnings
 inline void ignore_unused(const int *) { }
 
@@ -669,24 +612,6 @@ template <typename T> struct format_descriptor<T, detail::enable_if_t<detail::is
 template <typename T> constexpr const char format_descriptor<
     T, detail::enable_if_t<detail::is_fmt_numeric<T>::value>>::value[2];
 
-NAMESPACE_BEGIN(detail)
-
-template <typename T, typename SFINAE = void> struct compare_buffer_info {
-    static bool compare(const buffer_info& b) {
-        return b.format == format_descriptor<T>::format() && b.itemsize == sizeof(T);
-    }
-};
-
-template <typename T> struct compare_buffer_info<T, detail::enable_if_t<std::is_integral<T>::value>> {
-    static bool compare(const buffer_info& b) {
-        return b.itemsize == sizeof(T) && (b.format == format_descriptor<T>::value ||
-            ((sizeof(T) == sizeof(long)) && b.format == (std::is_unsigned<T>::value ? "L" : "l")) ||
-            ((sizeof(T) == sizeof(size_t)) && b.format == (std::is_unsigned<T>::value ? "N" : "n")));
-    }
-};
-
-NAMESPACE_END(detail)
-
 /// RAII wrapper that temporarily clears any Python error state
 struct error_scope {
     PyObject *type, *value, *trace;
@@ -731,5 +656,53 @@ static constexpr detail::overload_cast_impl<Args...> overload_cast = {};
 static constexpr auto const_ = std::true_type{};
 
 #endif // overload_cast
+
+NAMESPACE_BEGIN(detail)
+
+// Adaptor for converting arbitrary container arguments into a vector; implicitly convertible from
+// any standard container (or C-style array) supporting std::begin/std::end, any singleton
+// arithmetic type (if T is arithmetic), or explicitly constructible from an iterator pair.
+template <typename T>
+class any_container {
+    std::vector<T> v;
+public:
+    any_container() = default;
+
+    // Can construct from a pair of iterators
+    template <typename It, typename = enable_if_t<is_input_iterator<It>::value>>
+    any_container(It first, It last) : v(first, last) { }
+
+    // Implicit conversion constructor from any arbitrary container type with values convertible to T
+    template <typename Container, typename = enable_if_t<std::is_convertible<decltype(*std::begin(std::declval<const Container &>())), T>::value>>
+    any_container(const Container &c) : any_container(std::begin(c), std::end(c)) { }
+
+    // initializer_list's aren't deducible, so don't get matched by the above template; we need this
+    // to explicitly allow implicit conversion from one:
+    template <typename TIn, typename = enable_if_t<std::is_convertible<TIn, T>::value>>
+    any_container(const std::initializer_list<TIn> &c) : any_container(c.begin(), c.end()) { }
+
+    // Implicit conversion constructor from any arithmetic type (only participates if T is also
+    // arithmetic).
+    template <typename TIn, typename = enable_if_t<std::is_arithmetic<T>::value && std::is_arithmetic<TIn>::value>>
+    any_container(TIn singleton) : v(1, static_cast<T>(singleton)) { }
+
+    // Avoid copying if given an rvalue vector of the correct type.
+    any_container(std::vector<T> &&v) : v(std::move(v)) { }
+
+    // Moves the vector out of an rvalue any_container
+    operator std::vector<T> &&() && { return std::move(v); }
+
+    // Dereferencing obtains a reference to the underlying vector
+    std::vector<T> &operator*() { return v; }
+    const std::vector<T> &operator*() const { return v; }
+
+    // -> lets you call methods on the underlying vector
+    std::vector<T> *operator->() { return &v; }
+    const std::vector<T> *operator->() const { return &v; }
+};
+
+NAMESPACE_END(detail)
+
+
 
 NAMESPACE_END(pybind11)
