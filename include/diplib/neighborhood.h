@@ -74,18 +74,38 @@ namespace dip {
 /// See dip::StructuringElement, dip::NeighborList, dip::PixelTable
 class DIP_NO_EXPORT Kernel{
    public:
-      /// \brief Default constructor leads to a circle with a diameter of 7 pixels.
-      Kernel() {}
+      enum class ShapeCode {
+            RECTANGULAR,
+            ELLIPTIC,
+            DIAMOND,
+            CUSTOM
+      };
 
-      /// \brief A string implicitly converts to a structuring element, it is interpreted as a shape.
-      Kernel( String const& shape ) : shape_( shape ) {}
+      /// \brief The default kernel is a disk with a diameter of 7 pixels.
+      Kernel() : shape_( ShapeCode::ELLIPTIC ), params_( { 7 } ) {}
 
-      /// \brief A `dip::FloatArray` implicitly converts to a structuring element, it is interpreted as the
-      /// sizes along each dimension. A second argument specifies the shape.
-      Kernel( FloatArray const& size, String const& shape = "elliptic" ) : size_( size ), shape_( shape ) {}
+      /// \brief A string implicitly converts to a kernel, it is interpreted as a shape.
+      Kernel( String const& shape ) : params_( { 7 } ) {
+         SetShape( shape );
+      }
+
+      /// \brief A `dip::FloatArray` implicitly converts to a kernel, it is interpreted as the
+      /// parameter for each dimension. A second argument specifies the shape.
+      Kernel( FloatArray const& params, String const& shape = "elliptic" ) : params_( params ) {
+         SetShape( shape );
+      }
+
+      /// \brief A floating-point value implicitly converts to a kernel, it is interpreted as the
+      /// parameter for all dimensions. A second argument specifies the shape.
+      Kernel( dfloat param, String const& shape = "elliptic" ) : params_( FloatArray{ param } ) {
+         SetShape( shape );
+      }
+
+      /// \brief Low-level constructor mostly for internal use.
+      Kernel( ShapeCode shape, FloatArray const& params ) : shape_( shape ), params_( params ) {}
 
       /// \brief An image implicitly converts to a kernel, optionally with weights.
-      Kernel( Image const& image ) : image_( image.QuickCopy() ), shape_( "custom" ) {
+      Kernel( Image const& image ) : shape_( ShapeCode::CUSTOM ), image_( image.QuickCopy() ) {
          DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !image_.IsScalar(), E::IMAGE_NOT_SCALAR );
          DIP_THROW_IF( image_.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -122,10 +142,10 @@ class DIP_NO_EXPORT Kernel{
                pixelTable.MirrorOrigin();
             }
          } else {
-            FloatArray sz = size_;
+            FloatArray sz = params_;
             DIP_START_STACK_TRACE
                ArrayUseParameter( sz, nDim, 1.0 );
-               pixelTable = { shape_, sz, procDim };
+               pixelTable = { ShapeString(), sz, procDim };
             DIP_END_STACK_TRACE
             if( mirror_ ) {
                pixelTable.MirrorOrigin();
@@ -134,7 +154,7 @@ class DIP_NO_EXPORT Kernel{
          return pixelTable;
       }
 
-      /// \brief Retrieves the size array, adjusted to an image of size `imsz`.
+      /// \brief Retrieves the size of the kernel, adjusted to an image of size `imsz`.
       UnsignedArray Sizes( UnsignedArray const& imsz ) const {
          dip::uint nDim = imsz.size();
          DIP_THROW_IF( nDim < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -144,7 +164,7 @@ class DIP_NO_EXPORT Kernel{
             out = image_.Sizes();
             out.resize( nDim, 1 ); // expand dimensionality by adding singletons
          } else {
-            FloatArray sz = size_;
+            FloatArray sz = params_;
             DIP_START_STACK_TRACE
                ArrayUseParameter( sz, nDim, 1.0 );
             DIP_END_STACK_TRACE
@@ -159,22 +179,55 @@ class DIP_NO_EXPORT Kernel{
          return out;
       }
 
+      /// \brief Returns the kernel parameters, not adjusted to image dimensionality.
+      FloatArray const& Params() const { return params_; }
+
+      /// \brief Returns the kernel shape
+      ShapeCode const& Shape() const { return shape_; }
+
+      /// \brief Returns the kernel shape
+      String ShapeString() const {
+         switch( shape_ ) {
+            case ShapeCode::RECTANGULAR:
+               return "rectangular";
+            case ShapeCode::ELLIPTIC:
+               return "elliptic";
+            case ShapeCode::DIAMOND:
+               return "diamond";
+            //case ShapeCode::CUSTOM:
+            default:
+               return "custom";
+         }
+      }
+
       /// \brief Tests to see if the kernel is rectangular
-      bool IsRectangular() const { return shape_ == "rectangular"; }
+      bool IsRectangular() const { return shape_ == ShapeCode::RECTANGULAR; }
 
       /// \brief Tests to see if the kernel is a custom shape
-      bool IsCustom() const { return shape_ == "custom"; }
+      bool IsCustom() const { return shape_ == ShapeCode::CUSTOM; }
 
       /// \brief Tests to see if the kernel has weights
       bool HasWeights() const {
-         return ( shape_ == "custom" ) && !image_.DataType().IsBinary();
+         return ( shape_ == ShapeCode::CUSTOM ) && !image_.DataType().IsBinary();
       }
 
    private:
+      ShapeCode shape_;
+      FloatArray params_;
       Image image_;
-      FloatArray size_ = { 7 };
-      String shape_ = "elliptic";
       bool mirror_ = false;
+
+      void SetShape( String const& shape ) {
+         if( shape == "elliptic" ) {
+            shape_ = ShapeCode::ELLIPTIC;
+         } else if( shape == "rectangular" ) {
+            shape_ = ShapeCode::RECTANGULAR;
+         } else if( shape == "diamond" ) {
+            shape_ = ShapeCode::DIAMOND;
+         } else {
+            DIP_THROW( E::INVALID_FLAG );
+         }
+      }
 };
 
 
@@ -313,8 +366,8 @@ class DIP_NO_EXPORT NeighborList {
       /// \brief Iterates over the neighbors in the `%NeighborList`.
       class Iterator {
             using iterator_category = std::forward_iterator_tag;
-            using value_type = IntegerArray;       ///< The type that the iterator points at
-            using reference = IntegerArray const&; ///< The type you get when you dereference
+            using value_type = dfloat;             ///< The type that the iterator points at
+            using reference = value_type const&;   ///< The type you get when you dereference
          public:
             Iterator() {}
             Iterator( NeighborListIterator const& it ) : it_( it ) {}
@@ -323,10 +376,10 @@ class DIP_NO_EXPORT NeighborList {
                using std::swap;
                swap( it_, other.it_ );
             }
-            /// Dereference, yields the coordinates of the neighbor
-            reference operator*() const { return it_->coords; }
-            /// Get the distance associated to the current neighbor
-            dfloat Distance() const { return it_->distance; }
+            /// Dereference, yields the distance to the neighbor
+            reference operator*() const { return it_->distance; }
+            /// Get the coordinates for the current neighbor
+            IntegerArray Coordinates() const { return it_->coords; }
             /// Increment
             Iterator& operator++() {
                ++it_;
@@ -443,7 +496,7 @@ class DIP_NO_EXPORT NeighborList {
             }
             if( use ) {
                for( ii = 0; ii < dimensionality; ++ii ) {
-                  dfloat tmp = coords[ ii ] * pixelSize[ ii ];
+                  dfloat tmp = static_cast< dfloat >( coords[ ii ] ) * pixelSize[ ii ];
                   dist2 += tmp * tmp;
                }
                neighbors_.push_back( { coords, std::sqrt( dist2 ) } );
@@ -469,7 +522,7 @@ class DIP_NO_EXPORT NeighborList {
          IntegerArray offset( dimensionality, 0 );
          for( dip::uint ii = 0; ii < dimensionality; ++ii ) {
             DIP_THROW_IF( !( metric.Size( ii ) & 1 ), "Metric image must be odd in size (so I know where the center is)" );
-            offset[ ii ] = metric.Size( ii ) / 2;
+            offset[ ii ] = static_cast< dip::sint >( metric.Size( ii ) / 2 );
          }
          if( metric.DataType() != DT_DFLOAT ) {
             metric.Convert( DT_DFLOAT );
@@ -507,14 +560,14 @@ DOCTEST_TEST_CASE("[DIPlib] testing the NeighborList class") {
    dip::NeighborList list( dip::Metric( "connected", 2, pxsz ), 2 );
    DOCTEST_REQUIRE( list.Size() == 8 );
    auto it = list.begin();
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( y ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( x ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( x ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( y ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( y ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( x ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( x ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( y ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
    dip::IntegerArray strides{ 1, 10 };
    dip::IntegerArray offsets = list.ComputeOffsets( strides );
    DOCTEST_REQUIRE( offsets.size() == 8 );
@@ -531,22 +584,22 @@ DOCTEST_TEST_CASE("[DIPlib] testing the NeighborList class") {
    list = dip::NeighborList( dip::Metric( "chamfer", 2, pxsz ), 2 );
    DOCTEST_REQUIRE( list.Size() == 16 );
    it = list.begin();
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag_v ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag_v ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag_h ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( y ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag_h ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( x ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( x ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag_h ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( y ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag_h ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag_v ));
-   DOCTEST_CHECK( (it++).Distance() == doctest::Approx( diag_v ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_v ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_v ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_h ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( y ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_h ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( x ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( x ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_h ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( y ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_h ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_v ));
+   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_v ));
    offsets = list.ComputeOffsets( strides );
    DOCTEST_REQUIRE( offsets.size() == 16 );
    ot = offsets.begin();
@@ -569,21 +622,21 @@ DOCTEST_TEST_CASE("[DIPlib] testing the NeighborList class") {
 
    dip::Image m( { 3, 3 }, 1, dip::DT_UINT8 );
    dip::uint8* ptr = ( dip::uint8* )m.Origin();
-   for( dip::uint ii = 1; ii < 9; ++ii ) {
+   for( dip::uint ii = 1; ii <= 9; ++ii ) {
       *( ptr++ ) = ( dip::uint8 )ii;
    }
-   ptr[ 4 ] = 0;
+   ptr[ -5 ] = 0;
    list = dip::NeighborList( m, 2 );
    DOCTEST_REQUIRE( list.Size() == 8 );
    it = list.begin();
-   DOCTEST_CHECK( (it++).Distance() == 1 );
-   DOCTEST_CHECK( (it++).Distance() == 2 );
-   DOCTEST_CHECK( (it++).Distance() == 3 );
-   DOCTEST_CHECK( (it++).Distance() == 4 );
-   DOCTEST_CHECK( (it++).Distance() == 6 );
-   DOCTEST_CHECK( (it++).Distance() == 7 );
-   DOCTEST_CHECK( (it++).Distance() == 8 );
-   DOCTEST_CHECK( (it++).Distance() == 9 );
+   DOCTEST_CHECK( *(it++) == 1 );
+   DOCTEST_CHECK( *(it++) == 2 );
+   DOCTEST_CHECK( *(it++) == 3 );
+   DOCTEST_CHECK( *(it++) == 4 );
+   DOCTEST_CHECK( *(it++) == 6 );
+   DOCTEST_CHECK( *(it++) == 7 );
+   DOCTEST_CHECK( *(it++) == 8 );
+   DOCTEST_CHECK( *(it++) == 9 );
    offsets = list.ComputeOffsets( strides );
    DOCTEST_REQUIRE( offsets.size() == 8 );
    ot = offsets.begin();

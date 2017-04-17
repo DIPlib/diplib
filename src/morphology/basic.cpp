@@ -508,23 +508,30 @@ void BasicMorphology(
          bc.resize( 1 );
          bc[ 0 ] = dilation ? BoundaryCondition::ADD_MIN_VALUE : BoundaryCondition::ADD_MAX_VALUE;
       }
-      if( se.IsRectangular() ) {
-         RectangularMorphology( in, out, se.Sizes( in.Sizes() ), bc, dilation, mirror );
-      } else if( se.IsParabolic() ) {
-         ParabolicMorphology( in, out, se.Sizes( in.Sizes() ), bc, dilation );
-      } else if( se.IsInterpolatedLine() ) {
-         LineMorphology( in, out, se.Sizes( in.Sizes() ), bc, true, dilation );
-      } else if( se.IsDiscreteLine() ) {
-         LineMorphology( in, out, se.Sizes( in.Sizes() ), bc, false, dilation );
-      } else {
-         Kernel kernel = se.Kernel();
-         if( mirror ) {
-            kernel.Mirror();
-         }
-         if( kernel.HasWeights() ) {
-            GreyValueSEMorphology( in, out, kernel, bc, dilation );
-         } else {
-            FlatSEMorphology( in, out, kernel, bc, dilation );
+      switch( se.Shape() ) {
+         case StructuringElement::ShapeCode::RECTANGULAR:
+            RectangularMorphology( in, out, se.Params( in.Sizes() ), bc, dilation, mirror );
+            break;
+         case StructuringElement::ShapeCode::PARABOLIC:
+            ParabolicMorphology( in, out, se.Params( in.Sizes() ), bc, dilation );
+            break;
+         case StructuringElement::ShapeCode::INTERPOLATED_LINE:
+            LineMorphology( in, out, se.Params( in.Sizes() ), bc, true, dilation );
+            break;
+         case StructuringElement::ShapeCode::DISCRETE_LINE:
+            LineMorphology( in, out, se.Params( in.Sizes() ), bc, false, dilation );
+            break;
+         default: {
+            Kernel kernel = se.Kernel();
+            if( mirror ) {
+               kernel.Mirror();
+            }
+            if( kernel.HasWeights()) {
+               GreyValueSEMorphology( in, out, kernel, bc, dilation );
+            } else {
+               FlatSEMorphology( in, out, kernel, bc, dilation );
+            }
+            break;
          }
       }
    DIP_END_STACK_TRACE

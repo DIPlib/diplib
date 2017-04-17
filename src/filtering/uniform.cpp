@@ -161,7 +161,7 @@ void PixelTableUniform(
 void Uniform(
       Image const& in,
       Image& out,
-      Kernel kernel,
+      Kernel const& kernel,
       StringArray const& boundaryCondition
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );

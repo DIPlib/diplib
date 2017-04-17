@@ -107,18 +107,38 @@ class DIP_NO_EXPORT StructuringElement{
       // TODO: Implement periodic lines, construct translation-invariant discrete lines using periodic lines
       // TODO: Construct diamond SE and approximations to elliptic SE using lines
    public:
-      /// \brief Default constructor leads to a circle with a diameter of 7 pixels.
-      StructuringElement() {}
+      enum class ShapeCode {
+            RECTANGULAR,
+            ELLIPTIC,
+            DIAMOND,
+            PARABOLIC,
+            INTERPOLATED_LINE,
+            DISCRETE_LINE,
+            CUSTOM
+      };
+
+      /// \brief The default structuring element is a disk with a diameter of 7 pixels.
+      StructuringElement() : shape_( ShapeCode::ELLIPTIC ), params_( { 7 } ) {}
 
       /// \brief A string implicitly converts to a structuring element, it is interpreted as a shape.
-      StructuringElement( String const& shape ) : shape_( shape ) {}
+      StructuringElement( String const& shape ) : params_( { 7 } ) {
+         SetShape( shape );
+      }
+
+      /// \brief A floating-point value implicitly converts to a structuring element, it is interpreted as the
+      /// parameter of the SE along each dimension. A second argument specifies the shape.
+      StructuringElement( FloatArray const& params, String const& shape = "elliptic" ) : params_( params ) {
+         SetShape( shape );
+      }
 
       /// \brief A `dip::FloatArray` implicitly converts to a structuring element, it is interpreted as the
-      /// sizes along each dimension. A second argument specifies the shape.
-      StructuringElement( FloatArray size, String const& shape = "elliptic" ) : size_( size ), shape_( shape ) {}
+      /// parameter of the SE for all dimensions. A second argument specifies the shape.
+      StructuringElement( dfloat param, String const& shape = "elliptic" ) : params_( FloatArray{ param } ) {
+         SetShape( shape );
+      }
 
       /// \brief An image implicitly converts to a structuring element.
-      StructuringElement( Image const& image ) : image_( image.QuickCopy() ), shape_( "custom" ) {
+      StructuringElement( Image const& image ) : shape_( ShapeCode::CUSTOM ), image_( image.QuickCopy() ) {
          DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !image_.IsScalar(), E::IMAGE_NOT_SCALAR );
          DIP_THROW_IF( image_.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -133,10 +153,21 @@ class DIP_NO_EXPORT StructuringElement{
       // NOTE: When we go to SEs that are sequences of kernels, this function will change!
       dip::Kernel Kernel() const {
          dip::Kernel out;
-         if( IsCustom() ) {
-            out = { image_ };
-         } else {
-            out = { size_, shape_ };
+         switch( shape_ ) {
+            case ShapeCode::RECTANGULAR:
+               out = { Kernel::ShapeCode::RECTANGULAR, params_ };
+               break;
+            case ShapeCode::ELLIPTIC:
+               out = { Kernel::ShapeCode::ELLIPTIC, params_ };
+               break;
+            case ShapeCode::DIAMOND:
+               out = { Kernel::ShapeCode::DIAMOND, params_ };
+               break;
+            case ShapeCode::CUSTOM:
+               out = { image_ };
+               break;
+            default:
+               DIP_THROW( "Cannot create kernel for this structuring element shape" );
          }
          if( mirror_ ) {
             out.Mirror();
@@ -145,7 +176,7 @@ class DIP_NO_EXPORT StructuringElement{
       }
 
       /// \brief Retrieves the size array, adjusted to an image of size `imsz`.
-      FloatArray Sizes( UnsignedArray const& imsz ) const {
+      FloatArray Params( UnsignedArray const& imsz ) const {
          dip::uint nDim = imsz.size();
          DIP_THROW_IF( nDim < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
          FloatArray out;
@@ -154,7 +185,7 @@ class DIP_NO_EXPORT StructuringElement{
             out = FloatArray{ image_.Sizes() };
             out.resize( nDim, 1 ); // expand dimensionality by adding singletons
          } else {
-            out = size_;
+            out = params_;
             DIP_START_STACK_TRACE
                ArrayUseParameter( out, nDim, 1.0 );
             DIP_END_STACK_TRACE
@@ -162,35 +193,47 @@ class DIP_NO_EXPORT StructuringElement{
          return out;
       }
 
-      /// \brief Tests to see if the structuring element is parabolic
-      bool IsParabolic() const { return shape_ == "parabolic"; }
+      /// \brief Returns the structuring element parameters, not adjusted to image dimensionality.
+      FloatArray const& Params() const { return params_; }
 
-      /// \brief Tests to see if the structuring element is rectangular
-      bool IsRectangular() const { return shape_ == "rectangular"; }
-
-      /// \brief Tests to see if the structuring element is an interpolated line
-      bool IsInterpolatedLine() const { return shape_ == "interpolated line"; }
-
-      /// \brief Tests to see if the structuring element is a discrete line
-      bool IsDiscreteLine() const { return shape_ == "discrete line"; }
+      /// \brief Returns the structuring element shape
+      ShapeCode Shape() const { return shape_; }
 
       /// \brief Tests to see if the kernel is a custom shape
-      bool IsCustom() const { return shape_ == "custom"; }
+      bool IsCustom() const { return shape_ == ShapeCode::CUSTOM; }
 
       /// \brief Tests to see if the structuring element is flat or grey-valued
       bool IsFlat() const {
-         if( shape_ == "custom" ) {
+         if( IsCustom() ) {
             return image_.DataType().IsBinary();
          } else {
-            return shape_ != "parabolic";
+            return shape_ != ShapeCode::PARABOLIC;
          }
       }
 
    private:
+      ShapeCode shape_;
+      FloatArray params_;
       Image image_;
-      FloatArray size_ = { 7 };
-      String shape_ = "elliptic";
       bool mirror_ = false;
+
+      void SetShape( String const& shape ) {
+         if( shape == "elliptic" ) {
+            shape_ = ShapeCode::ELLIPTIC;
+         } else if( shape == "rectangular" ) {
+            shape_ = ShapeCode::RECTANGULAR;
+         } else if( shape == "diamond" ) {
+            shape_ = ShapeCode::DIAMOND;
+         } else if( shape == "parabolic" ) {
+            shape_ = ShapeCode::PARABOLIC;
+         } else if( shape == "interpolated line" ) {
+            shape_ = ShapeCode::INTERPOLATED_LINE;
+         } else if( shape == "discrete line" ) {
+            shape_ = ShapeCode::DISCRETE_LINE;
+         } else {
+            DIP_THROW( E::INVALID_FLAG );
+         }
+      }
 };
 
 

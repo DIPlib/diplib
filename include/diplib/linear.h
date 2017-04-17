@@ -192,12 +192,12 @@ inline Image GeneralConvolution(
 DIP_EXPORT void Uniform(
       Image const& in,
       Image& out,
-      Kernel kernel,
+      Kernel const& kernel = {},
       StringArray const& boundaryCondition = {}
 );
 inline Image Uniform(
       Image const& in,
-      Kernel kernel,
+      Kernel const& kernel = {},
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
