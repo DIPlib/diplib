@@ -125,14 +125,14 @@ class DIP_NO_EXPORT StructuringElement{
          SetShape( shape );
       }
 
-      /// \brief A floating-point value implicitly converts to a structuring element, it is interpreted as the
-      /// parameter of the SE along each dimension. A second argument specifies the shape.
+      /// \brief A `dip::FloatArray` implicitly converts to a structuring element, it is interpreted as the
+      /// parameter of the SE for all dimensions. A second argument specifies the shape.
       StructuringElement( FloatArray const& params, String const& shape = "elliptic" ) : params_( params ) {
          SetShape( shape );
       }
 
-      /// \brief A `dip::FloatArray` implicitly converts to a structuring element, it is interpreted as the
-      /// parameter of the SE for all dimensions. A second argument specifies the shape.
+      /// \brief A floating-point value implicitly converts to a structuring element, it is interpreted as the
+      /// parameter of the SE along each dimension. A second argument specifies the shape.
       StructuringElement( dfloat param, String const& shape = "elliptic" ) : params_( FloatArray{ param } ) {
          SetShape( shape );
       }
@@ -629,32 +629,78 @@ DIP_EXPORT void Watershed(
       Image const& mask,
       Image& out,
       dip::uint connectivity = 1,
-      dfloat maxDepth = 1,
+      dfloat maxDepth = 0, // only merging within plateaus
       dip::uint maxSize = 0,
-      String const& output = "binary"
+      StringSet const& flags = {} // "labels" / "binary"(default), "low first"(default) / "high first", "fast"(default) / "correct"
 );
-
-DIP_EXPORT void SeededWatershed(
-      Image const&,
-      Image const&,
-      Image const&,
-      Image const&,
+inline Image Watershed(
+      Image const& in,
+      Image const& mask,
       dip::uint connectivity = 1,
-      String const& sortOrder = "low first",
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
-      String const& output = "binary"
-);
+      StringSet const& flags = {}
+) {
+   Image out;
+   Watershed( in, mask, out, connectivity, maxDepth, maxSize, flags );
+   return out;
+}
 
 DIP_EXPORT void LocalMinima(
-      Image const&,
-      Image const&,
-      Image const&,
+      Image const& in,
+      Image const& mask,
+      Image& out,
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
+      StringSet const& flags = {}
+);
+
+DIP_EXPORT void LocalMaxima(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint connectivity = 1,
+      dfloat maxDepth = 1,
+      dip::uint maxSize = 0,
+      StringSet const& flags = {}
+);
+
+DIP_EXPORT void Minima(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint connectivity = 1,
       String const& output = "binary"
 );
+inline Image Minima(
+      Image const& in,
+      Image const& mask,
+      dip::uint connectivity = 1,
+      String const& output = "binary"
+) {
+   Image out;
+   Minima( in, mask, out, connectivity, output );
+   return out;
+}
+
+DIP_EXPORT void Maxima(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint connectivity = 1,
+      String const& output = "binary"
+);
+inline Image Maxima(
+      Image const& in,
+      Image const& mask,
+      dip::uint connectivity = 1,
+      String const& output = "binary"
+) {
+   Image out;
+   Maxima( in, mask, out, connectivity, output );
+   return out;
+}
 
 DIP_EXPORT void UpperEnvelope(
       Image const& in,
@@ -702,10 +748,9 @@ DIP_EXPORT void DirectedPathOpening(
       bool constrained = true // should be a string
 );
 
-// TODO: Union, Intersection (for binary images), Supremum, Infimum (for grey-value images), Max, Min (idem) -> These are all the same two functions...
 // TODO: h-minima & h-maxima, opening and closing by reconstruction
 // TODO: alternating sequential open-close filter (3 versions: with structural opening, opening by reconstruction, and area opening)
-// TODO: hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees.
+// TODO: hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees (360 degrees means no rotation).
 // TODO: thinning & thickening, to be implemented as iterated hit'n'miss.
 // TODO: levelling
 
