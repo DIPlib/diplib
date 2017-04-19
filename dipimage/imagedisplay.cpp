@@ -63,7 +63,7 @@ class MatlabInterfaceUInt8 : public dip::ExternalInterface {
          tstride = static_cast< dip::sint >( sizes[ 0 ] * sizes[ 1 ] );
          array = mxCreateNumericArray( mlsizes.size(), mlsizes.data(), mxUINT8_CLASS, mxREAL );
          origin = mxGetData( array );
-         return nullptr;
+         return dip::NonOwnedRefToDataSegment( array );
       }
 };
 

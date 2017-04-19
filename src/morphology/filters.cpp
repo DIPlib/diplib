@@ -315,8 +315,8 @@ void MultiScaleMorphologicalGradient(
    Image dila;
    Image eros;
    for( dip::uint ii = lowerSize; ii <= upperSize; ++ii ) {
-      StructuringElement se1( { 2.0 * static_cast< dfloat >( ii ) + 1.0 }, shape );
-      StructuringElement se2( { 2.0 * static_cast< dfloat >( ii - 1 ) + 1.0 }, shape );
+      StructuringElement se1( 2.0 * static_cast< dfloat >( ii ) + 1.0, shape );
+      StructuringElement se2( 2.0 * static_cast< dfloat >( ii - 1 ) + 1.0, shape );
       Dilation( in, dila, se1, boundaryCondition );
       Erosion( in, eros, se1, boundaryCondition );
       Subtract( dila, eros, eros, dila.DataType() );

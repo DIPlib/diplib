@@ -239,8 +239,8 @@ class DIP_NO_EXPORT Metric {
             IMAGE
       };
 
-      /// \brief Default constructor leads to the city distance (\f$L^1\f$ metric).
-      Metric() : type_( TypeCode::CONNECTED ), param_( 1 ) {}
+      /// \brief The default metric is the city distance (\f$L^1\f$ metric).
+      Metric( TypeCode type = TypeCode::CONNECTED, dip::uint param = 1 ) : type_( type ), param_( param ) {}
 
       /// \brief A string implicitly converts to a metric.
       ///
@@ -415,7 +415,7 @@ class DIP_NO_EXPORT NeighborList {
       IntegerArray ComputeOffsets( IntegerArray const& strides ) const {
          dip::uint ndims = strides.size();
          DIP_THROW_IF( ndims != neighbors_[ 0 ].coords.size(), E::ARRAY_SIZES_DONT_MATCH );
-         IntegerArray out( neighbors_.size());
+         IntegerArray out( neighbors_.size() );
          for( dip::uint jj = 0; jj < neighbors_.size(); ++jj ) {
             auto const& coords = neighbors_[ jj ].coords;
             dip::sint offset = 0;

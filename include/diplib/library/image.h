@@ -63,6 +63,9 @@ using DataSegment = std::shared_ptr< void >;
 inline DataSegment NonOwnedRefToDataSegment( void* ptr ) {
    return DataSegment{ ptr, []( void* ){} };
 }
+inline DataSegment NonOwnedRefToDataSegment( void const* ptr ) {
+   return DataSegment{ const_cast< void* >( ptr ), []( void* ){} };
+}
 
 /// \brief Support for external interfaces.
 ///

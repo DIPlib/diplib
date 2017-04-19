@@ -120,32 +120,26 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     - dip_generation.h
     - dip_paint.h
 
--   Algorithms built on `dip::Framework::Separable`: Gaussian filter, Fourier
-    and other transforms, derivative filters, projections, etc. This is mostly porting
-    old code to the new framework.
-    - dip_derivatives.h
-    - dip_iir.h
+-   Filters. This is mostly porting old code to the new frameworks.
+    - dip_derivatives.h (a few functions left)
+    - dip_iir.h (Gabor)
     - dip_interpolation.h
-    - dip_linear.h (parts)
-    - dip_manipulation.h (some functions, most are already implemented in `class dip::Image`)
+    - dip_linear.h (a few functions left)
+    - dip_manipulation.h (a few functions, most are already implemented in `dip::Image`)
+    - dip_adaptive.h
+    - dip_bilateral.h
+    - dip_filtering.h
+    - dip_rankfilters.h
 
 -   The Fourier transform: Use *FFTW* when a compile switch is set, we must be able to
     disable that so *DIPlib* can be used in non-open-source projects. Further improvements
     could be making specific paths for real input or output (could mean a small increase in
     performance).
 
--   **DEP**
-    Algorithms built on derivatives: the gradient, the structure tensor, etc.
+-   RadialAngular filters, orientation space, structure tensor.
     Mostly porting old code, but some changes expected due to output not being an
     image array, but a single tensor image.
     - dip_structure.h
-
--   Algorithms built on `dip::Framework::Full`: Rank filters, adaptive filters, etc.
-    Simply porting old code.
-    - dip_adaptive.h
-    - dip_bilateral.h
-    - dip_filtering.h
-    - dip_rankfilters.h
 
 -   Algorithms that do not depend on any framework: all binary morphology, the
     watershed, labelling, region growing, distance transforms, etc.
@@ -162,7 +156,6 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     I haven't looked yet into how it's implemented. Simply porting old code.
     - dip_analysis.h
     - dip_detection.h
-    - dip_display.h
     - dip_findshift.h
     - dip_microscopy.h
     - dip_restoration.h

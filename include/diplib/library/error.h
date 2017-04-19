@@ -181,6 +181,7 @@ constexpr char const* ARRAY_PARAMETER_WRONG_LENGTH = "Array parameter has the wr
 constexpr char const* FILTER_SHAPE_NOT_SUPPORTED = "Filter shape is not supported";
 constexpr char const* KERNEL_NOT_BINARY = "Kernel has weights, a binary kernel is expected";
 constexpr char const* CONNECTIVITY_NOT_SUPPORTED = "Connectivity is not supported";
+constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 
 }
 

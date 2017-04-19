@@ -78,7 +78,7 @@ void ProjectionScan(
    Image mask;
    bool hasMask = false;
    if( c_mask.IsForged() ) {
-      mask = mask.QuickCopy();
+      mask = c_mask.QuickCopy();
       DIP_START_STACK_TRACE
          mask.CheckIsMask( inSizes, Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
          mask.ExpandSingletonDimensions( inSizes );

@@ -960,7 +960,7 @@ inline dip::Image GetImage( mxArray const* mx ) {
    bool needCopy = false;
    dip::Tensor tensor; // scalar by default
    mxClassID type;
-   mxArray* mxdata;
+   mxArray const* mxdata;
    dip::uint ndims;
    mwSize const* psizes;
    dip::UnsignedArray sizes;
