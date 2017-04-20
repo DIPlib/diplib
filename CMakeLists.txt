@@ -205,7 +205,7 @@ if(DIP_BUILD_DIPIMAGE)
    # Install M-files
    install(DIRECTORY dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m") # could also do PATTERN "*.cpp" EXCLUDE
 
-   # Compile and install MEX-files in @dip_image/private
+   # Compile and install MEX-files in dipimage/@dip_image/private
    file(GLOB DIP_PRIVATE "dipimage/@dip_image/private/*.cpp")
    if(APPLE)
       set(LIB_REL_PATH "@loader_path/../../../../lib/")
@@ -221,7 +221,7 @@ if(DIP_BUILD_DIPIMAGE)
    endforeach()
    install(TARGETS ${DIP_PRIVATE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private)
 
-   # Compile and install MEX-files in @dip_image
+   # Compile and install MEX-files in dipimage/@dip_image
    file(GLOB DIP_IMAGE "dipimage/@dip_image/*.cpp")
    if(APPLE)
       set(LIB_REL_PATH "@loader_path/../../../lib/")
@@ -237,7 +237,23 @@ if(DIP_BUILD_DIPIMAGE)
    endforeach()
    install(TARGETS ${DIP_IMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image)
 
-   # Compile and install MEX-files in toolbox directory
+   # Compile and install MEX-files in dipimage/private
+   file(GLOB DIPIMAGE "dipimage/private/*.cpp")
+   if(APPLE)
+      set(LIB_REL_PATH "@loader_path/../../../lib/")
+   else()
+      set(LIB_REL_PATH "$ORIGIN/../../../lib/")
+   endif()
+   set(DIPIMAGE_TARGETS "")
+   foreach(file ${DIPIMAGE})
+      get_filename_component(target ${file} NAME_WE)
+      matlab_add_mex(NAME MEX_${target} SRC ${file} OUTPUT_NAME ${target} LINK_TO DIP)
+      set_target_properties(MEX_${target} PROPERTIES INSTALL_RPATH "${LIB_REL_PATH}")
+      set(DIPIMAGE_TARGETS ${DIPIMAGE_TARGETS} MEX_${target})
+   endforeach()
+   install(TARGETS ${DIPIMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/private)
+
+   # Compile and install MEX-files in dipimage/
    file(GLOB DIPIMAGE "dipimage/*.cpp")
    if(APPLE)
       set(LIB_REL_PATH "@loader_path/../../lib/")

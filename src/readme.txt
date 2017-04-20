@@ -30,7 +30,7 @@ adaptfilters/  -> filtering
 bilateral/     -> filtering
 derivatives/   -> filtering
 detection/     -> analysis
-display/       -> math
+display/       -> library
 distribution/  -> library
 findshift/     -> analysis
 framework/     -> library
