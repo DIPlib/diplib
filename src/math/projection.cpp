@@ -130,6 +130,7 @@ void ProjectionScan(
       process.insert( 0, false );
       outSizes = output.Sizes(); // == outSizes.insert( 0, outTensor.Elements() );
       procSizes.insert( 0, 1 );
+      nDims = outSizes.size();
    }
 
    // Do we need to loop at all?

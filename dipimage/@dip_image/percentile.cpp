@@ -55,7 +55,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       dip::Percentile( in, mask, out, percentile, process );
 
       // Done
-      if( nrhs > 3 ) {
+      if(( nrhs > 3 ) || !out.IsScalar() ) {
          plhs[ 0 ] = mi.GetArray( out );
       } else {
          plhs[ 0 ] = dml::GetArray( static_cast< dip::dfloat >( out ));
