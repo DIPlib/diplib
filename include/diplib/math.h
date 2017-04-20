@@ -93,7 +93,7 @@ DIP_EXPORT StatisticsAccumulator GetSampleStatistics( Image const& in, Image con
 //
 
 
-#include "monadic_operators.private"
+#include "include/diplib/private/monadic_operators.h"
 
 /// \brief Computes the modulus (absolute value) of each sample. `%dip::Modulus` is an alias for `dip::Abs`.
 inline void Modulus( Image const& in, Image& out ) { Abs( in, out ); }

@@ -25,6 +25,11 @@
 // Note that this file generates function declarations when included by `include/diplib/math.h`,
 // and function definitions when included by `src/math/monadic_operators.cpp`.
 
+#if !defined(DIP_MATH_H) || defined(DIP__MONADIC_OPERATORS_PRIVATE)
+#error Do not include the 'diplib/monadic_operators.private' file directly!
+#endif
+
+#define DIP__MONADIC_OPERATORS_PRIVATE
 
 #ifndef DIP__MONADIC_OPERATOR_FLEX
 

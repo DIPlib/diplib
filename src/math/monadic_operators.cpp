@@ -122,7 +122,8 @@ inline std::unique_ptr< Framework::ScanLineFilter > NewBinScanLineFilter( F cons
                        Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
    }
 
-#include "diplib/monadic_operators.private"
+#undef DIP__MONADIC_OPERATORS_PRIVATE
+#include "diplib/private/monadic_operators.h"
 
 
 void Conjugate( Image const& in, Image& out ) {

@@ -128,6 +128,7 @@ file(
       "include/*.h"
       "include/diplib/*.h"
       "include/diplib/library/*.h"
+      "include/diplib/private/*.h"
 )
 add_library(DIP ${SOURCES} ${HEADERS})
 include(GenerateExportHeader)
