@@ -296,7 +296,7 @@ using ConstLineIterator = LineIterator< T const >;
 ///
 /// copies the pixel values at the current position + `coords` over to a temporary buffer, using the
 /// iterator's boundary condition if that location falls outside the image domain. This method is not
-/// the most efficient way of accessing neighbor pixels, but can be convienient at times.
+/// the most efficient way of accessing neighbor pixels, but can be convenient at times.
 ///
 /// Satisfies all the requirements for a mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
 ///
@@ -380,7 +380,7 @@ class DIP_NO_EXPORT ImageIterator {
          return *( ptr_ + index * image_->TensorStride() );
       }
       /// \brief Copy the samples of a neighbor with relative coordinates of `coords`, using the
-      /// boundary condition if that neighbor is outside of the iamge domain.
+      /// boundary condition if that neighbor is outside of the image domain.
       ///
       /// It is relatively expensive to test for a pixel to be outside the image domain,
       /// if you can be sure that the neighbor exists, use `*( dip::ImageIterator::Pointer() + offset )`
@@ -863,7 +863,7 @@ class DIP_NO_EXPORT GenericImageIterator {
       void* operator[]( dip::sint index ) const {
          return Sample( index );
       }
-      /// Pointer to a sampe of the current pixel
+      /// Pointer to a sample of the current pixel
       void* Sample( dip::sint index ) const {
          DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
          return image_->Pointer( offset_ + index * image_->TensorStride() );
@@ -1025,12 +1025,12 @@ class DIP_NO_EXPORT GenericJointImageIterator {
          swap( coords_, other.coords_ );
          swap( procDim_, other.procDim_ );
       }
-      /// Pointer to a sampe of the current pixel for the in image.
+      /// Pointer to a sample of the current pixel for the in image.
       void* InSample( dip::sint index ) const {
          DIP_THROW_IF( !inImage_, E::ITERATOR_NOT_VALID );
          return inImage_->Pointer( inOffset_ + index * inImage_->TensorStride() );
       }
-      /// Pointer to a sampe of the current pixel for the out image.
+      /// Pointer to a sample of the current pixel for the out image.
       void* OutSample( dip::sint index ) const {
          DIP_THROW_IF( !outImage_, E::ITERATOR_NOT_VALID );
          return outImage_->Pointer( outOffset_ + index * outImage_->TensorStride() );
@@ -1300,7 +1300,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
       bool operator>=( ImageSliceIterator const& other ) const { return ( *this - other ) >= 0; }
       /// Not larger than comparison
       bool operator<=( ImageSliceIterator const& other ) const { return ( *this - other ) <= 0; }
-      /// Test to see if the iterator is valid (i.e. not default-constructed); it can still be at end, and thus not dereferenceble
+      /// Test to see if the iterator is valid (i.e. not default-constructed); it can still be at end, and thus not dereferenceable
       bool IsValid() const { return size_ > 0; }
       /// Test to see if the iterator reached past the last plane
       bool IsAtEnd() const { return coord_ >= size_; }
@@ -1349,7 +1349,7 @@ inline void swap( ImageSliceIterator& v1, ImageSliceIterator& v2 ) {
 
 /// Constructs an end iterator corresponding to a `dip::ImageSliceIterator`
 inline ImageSliceIterator ImageSliceEndIterator( Image const& image, dip::uint procDim ) {
-   ImageSliceIterator out { image, procDim }; // Tests for `procDim` to be Ok
+   ImageSliceIterator out { image, procDim }; // Tests for `procDim` to be OK
    out += static_cast< dip::sint >( image.Size( procDim ));
    return out;
 }

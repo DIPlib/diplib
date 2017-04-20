@@ -44,14 +44,14 @@ namespace dip {
 /// at index `filter.size() / 2` if `origin` is negative. This location is either the middle pixel if the filter is
 /// odd in length, or the pixel to the right of the center if it is even in length:
 ///
-///     filter size is odd :      filter data :  x x x x x        orgin = -1
+///     filter size is odd :      filter data :  x x x x x        origin = -1
 ///                                                  ^
 ///                                                  0
 ///
-///     filter size is even :     filter data :  x x x x x x      orgin = -1
+///     filter size is even :     filter data :  x x x x x x      origin = -1
 ///                                                    ^
 ///                                                    0
-///     origin specified :        filter data :  x x x x x x      orgin = 1
+///     origin specified :        filter data :  x x x x x x      origin = 1
 ///                                                ^
 ///                                                0
 ///
@@ -59,7 +59,7 @@ namespace dip {
 ///
 /// `symmetry` indicates the filter shape: `"general"` (or an empty string) indicates no symmetry.
 /// `"even"` indicates even symmetry, and `"odd"` indicates odd symmetry. In both cases, the filter represents
-/// the left half of the full filter, with the righmost element at the origin (and not repeated). The full filter
+/// the left half of the full filter, with the rightmost element at the origin (and not repeated). The full filter
 /// is thus always odd in size. `"d-even"` and `"d-odd"` are similar, but duplicate the rightmost element, yielding
 /// an even-sized filter. The origin for the symmetric filters is handled identically to the general filter case.
 ///
@@ -89,7 +89,7 @@ DIP_EXPORT OneDimensionalFilterArray SeparateFilter( Image const& filter );
 ///
 /// `filter` is an array with exactly one element for each dimension of `in`. Alternatively, it can have a single
 /// element, which will be used unchanged for each dimension. For the dimensions that are not processed (`process` is
-/// `false` for those dimensions), the `filter` array can have non-sensical data or a zero-length filter weights array.
+/// `false` for those dimensions), the `filter` array can have nonsensical data or a zero-length filter weights array.
 /// Any `filter` array that is zero size or the equivalent of `{1}` will not be applied either.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
@@ -340,8 +340,8 @@ inline Image GaussIIR(
 /// smoothed. Only the "FT" method can compute the derivative along a dimension where sigma is zero or negative.
 ///
 /// How the convolution is computed depends on the value of `method`:
-/// - `"FIR"`: Finite inpulse response implementation, see `dip::GaussFIR`.
-/// - `"IIR"`: Infinite inpulse response implementation, see `dip::GaussIIR`.
+/// - `"FIR"`: Finite impulse response implementation, see `dip::GaussFIR`.
+/// - `"IIR"`: Infinite impulse response implementation, see `dip::GaussIIR`.
 /// - `"FT"`: Fourier domain implementation, see `dip::GaussFT`.
 /// - `"best"`: Picks the best method, according to the values of `sigmas` and `derivativeOrder`:
 ///     - if any `derivativeOrder` is larger than 3, use the FT method,
@@ -377,7 +377,7 @@ inline Image Gauss(
 /// \brief Finite difference derivatives
 ///
 /// Computes derivatives using the finite difference method. Set a `derivativeOrder` for each dimension.
-/// Derivatives of oder up to 2 can be computed with this function. The zeroth-order derivative implies either
+/// Derivatives of order up to 2 can be computed with this function. The zeroth-order derivative implies either
 /// a smoothing is applied (`smoothFlag == "smooth"`) or the dimension is not processed at all.
 ///
 /// The smoothing filter is `[1,2,1]/4` (as in the Sobel filter), the first order derivative is `[1,0,-1]/2`
@@ -872,7 +872,7 @@ inline Image Hessian(
 ///
 /// If `method` is "finitediff", it does not add second order derivatives, but instead computes a convolution
 /// with a 3x3(x3x...) kernel where all elements are -1 and the middle element is \f$3^d - 1\f$ (with *d* the number
-/// of image dimensions). That is, the kernel sums to 0. For a 2D image, this translates to the well-known kerel:
+/// of image dimensions). That is, the kernel sums to 0. For a 2D image, this translates to the well-known kernel:
 /// ```
 ///    | -1  -1  -1 |
 ///    | -1   8  -1 |

@@ -39,7 +39,7 @@ namespace dip {
 
 /// \brief Objects of class `%KernelShape` represent the shape and size of a filtering kernel.
 ///
-/// Some image filters allow the specificiation of arbitrary kernels: the user can specify the shape
+/// Some image filters allow the specification of arbitrary kernels: the user can specify the shape
 /// name and the size of a pre-defined kernel, or the user can pass an image containing the kernel.
 ///
 /// Objects of type `dip::Image`, `dip::FloatArray` and `dip::String` implicitly convert to
@@ -264,7 +264,7 @@ class DIP_NO_EXPORT Metric {
       ///
       /// - `"8-connected"` is equivalent to `"connected"` with `param=2`.
       ///
-      /// - `"6-connected"` is equivalent tto `"connected"` with `param=1`.
+      /// - `"6-connected"` is equivalent to `"connected"` with `param=1`.
       ///
       /// - `"18-connected"` is equivalent to `"connected"` with `param=2`.
       ///
@@ -319,10 +319,10 @@ class DIP_NO_EXPORT Metric {
          DIP_THROW_IF( image_.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
       }
 
-      /// \brief Retrive the type string.
+      /// \brief Retrieve the type string.
       TypeCode Type() const { return type_; }
 
-      /// \brief Retrive the parameter.
+      /// \brief Retrieve the parameter.
       dip::uint Param() const { return param_; }
 
       /// \brief Retrieve the image.

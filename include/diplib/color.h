@@ -55,7 +55,7 @@ class DIP_EXPORT ColorSpaceConverter {
       /// \brief Returns the cost of the conversion. This cost includes computational cost as well as precision loss.
       ///
       /// The cost is used to avoid pathways such as "RGB"->"grey"->"Lab" instead of "RGB"->"XYZ"->"Yxy"->"Lab".
-      /// Conversion to grey therefor must always have a high cost. It is not necessary to define this method,
+      /// Conversion to grey therefore must always have a high cost. It is not necessary to define this method,
       /// the default implementation returns a cost of 1.
       virtual dip::uint Cost() const { return 1; }
 
@@ -207,7 +207,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
       /// ```
       /// In this case, all computations are still performed as double-precision floating-point computations,
       /// but the result is cast to 8-bit unsigned integers when written to the output image. Some color spaces,
-      /// such as RGB and CMYK are defined to use the [0,255] range of 8-bit unsigned integers. Other colorspaces
+      /// such as RGB and CMYK are defined to use the [0,255] range of 8-bit unsigned integers. Other color spaces
       /// such as Lab and XYZ are not. For those color spaces, casting to an integer will destroy the data.
       DIP_EXPORT void Convert( Image const& in, Image& out, String const& colorSpaceName = "" ) const;
       Image Convert( Image const& in, String const& colorSpaceName = "" ) const {

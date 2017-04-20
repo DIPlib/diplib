@@ -947,7 +947,7 @@ class MatlabInterface : public dip::ExternalInterface {
 /// case, the dip::Image object will own its own data block.
 ///
 /// When calling GetImage with a `prhs` argument in `mexFunction()`, use a const
-/// modifier for the output argument. This should prevent acidentally modifying
+/// modifier for the output argument. This should prevent accidentally modifying
 /// an input array, which is supposed to be illegal in `mexFunction()`:
 /// ```cpp
 ///     dip::Image const in1 = dml::GetImage( prhs[ 0 ] );

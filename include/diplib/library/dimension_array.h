@@ -544,7 +544,7 @@ inline bool operator!=( DimensionArray< T > const& lhs, DimensionArray< T > cons
 }
 
 // Note on ordering operators: These have a non-standard meaning, because they all return false if the arrays
-// are not of the same lenght. Therefore, it is not possible to define operator<= in terms of operator>, etc.
+// are not of the same length. Therefore, it is not possible to define operator<= in terms of operator>, etc.
 
 /// \brief Compares two arrays, returns true only if they have the same size and all `lhs` elements are larger
 /// than all `rhs` elements.
@@ -784,7 +784,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
    DOCTEST_SUBCASE("sorting I") {
       dip::DimensionArray< int > b{ 0, 2, 4, 1, 3, 5 };
       DOCTEST_REQUIRE( b.size() == a.size() );
-      b.sort( a ); // sorts b, keeps a in synch. so a should be: { 1, 8, 2, 16, 4, 32 }
+      b.sort( a ); // sorts b, keeps a in sync. so a should be: { 1, 8, 2, 16, 4, 32 }
       DOCTEST_CHECK( a[ 0 ] == 1 );
       DOCTEST_CHECK( a[ 1 ] == 8 );
       DOCTEST_CHECK( a[ 2 ] == 2 );

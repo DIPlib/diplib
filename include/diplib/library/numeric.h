@@ -54,7 +54,7 @@ namespace dip {
 
 /// \brief The constant pi.
 constexpr dfloat pi = 3.14159265358979323846264338327950288;
-// std::acos( -1 ) is the good way of definig pi, but it's not constexpr.
+// std::acos( -1 ) is the good way of defining pi, but it's not constexpr.
 
 /// \brief Compute the greatest common denominator of two positive integers.
 // `std::gcd` will be available in C++17.
@@ -525,7 +525,7 @@ class DIP_NO_EXPORT StatisticsAccumulator {
       dfloat StandardDeviation() const {
          return std::sqrt( Variance() );
       }
-      /// \brief Estimator of population skewness. This estimator is unbiased only for symetric distributions
+      /// \brief Estimator of population skewness. This estimator is unbiased only for symmetric distributions
       /// (it is not possible to derive an unbiased estimator).
       dfloat Skewness() const {
          if(( n_ > 2 ) && ( m2_ != 0 )) {

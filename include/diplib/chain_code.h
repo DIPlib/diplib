@@ -109,7 +109,7 @@ struct DIP_NO_EXPORT Vertex {
       y = T( dfloat( y ) * n );
       return *this;
    }
-   /// Scale by the invese of a constant, isotropically
+   /// Scale by the inverse of a constant, isotropically
    Vertex& operator/=( dfloat n ) {
       x = T( dfloat( x ) / n );
       y = T( dfloat( y ) / n );
@@ -353,7 +353,7 @@ class DIP_NO_EXPORT CovarianceMatrix {
       struct Eigenvalues {
          dfloat largest;   ///< Largest eigenvalue
          dfloat smallest;  ///< Smallest eigenvalue
-         /// \brief Computes eccentricity using the two eigenvalues of the covarance matrix.
+         /// \brief Computes eccentricity using the two eigenvalues of the covariance matrix.
          dfloat Eccentricity() const {
             // Eccentricity according to https://en.wikipedia.org/wiki/Image_moment
             if( largest <= 0 ) {    // largest == 0 really, it cannot be negative.
@@ -502,7 +502,7 @@ class DIP_NO_EXPORT ConvexHull {
       /// Constructs a convex hull of a polygon
       DIP_EXPORT ConvexHull( dip::Polygon const&& polygon );
 
-      /// Retrive the vertices that represent the convex hull
+      /// Retrieve the vertices that represent the convex hull
       std::vector< VertexFloat > const& Vertices() const {
          return vertices_.vertices;
       }
@@ -530,8 +530,8 @@ class DIP_NO_EXPORT ConvexHull {
          return vertices_.RadiusStatistics();
       }
 
-      /// \brief Returns the coeffient of variation of the distance of vertices to the ellipse with identical
-      /// covarianace matrix, see `dip::Polygon::EllipseVariance`.
+      /// \brief Returns the coefficient of variation of the distance of vertices to the ellipse with identical
+      /// covariance matrix, see `dip::Polygon::EllipseVariance`.
       dfloat EllipseVariance() const {
          return vertices_.EllipseVariance();
       }
@@ -644,7 +644,7 @@ struct DIP_NO_EXPORT ChainCode {
 
    std::vector< Code > codes;  ///< The chain codes
    VertexInteger start = { 0, 0 };  ///< The coordinates of the start pixel
-   dip::uint objectID;              ///< The label of the object from which this chaincode is taken
+   dip::uint objectID;              ///< The label of the object from which this chain code is taken
    bool is8connected = true;        ///< Is false when connectivity = 1, true when connectivity = 2
 
    /// Adds a code to the end of the chain.
@@ -730,20 +730,20 @@ struct DIP_NO_EXPORT ChainCode {
 /// \brief A collection of object contours
 using ChainCodeArray = std::vector< ChainCode >;
 
-/// \brief Returns the set of chain codes sequences that encode the contours of the given objects in a labelled image.
+/// \brief Returns the set of chain codes sequences that encode the contours of the given objects in a labeled image.
 ///
 /// Note that only the first closed contour for each label is found; if an object has multiple connected components,
 /// only part of it is found. The chain code traces the outer perimeter of the object, holes are ignored.
 ///
-/// `objectIDs` is a list with object IDs present in the labelled image. If an empty array is given, all objects in
+/// `objectIDs` is a list with object IDs present in the labeled image. If an empty array is given, all objects in
 /// the image are used.
 ChainCodeArray DIP_NO_EXPORT GetImageChainCodes(
-      Image const& labels,             ///< Labelled image, unsigned integer type
+      Image const& labels,             ///< Labeled image, unsigned integer type
       UnsignedArray const& objectIDs,  ///< A list of object IDs to get chain codes for
       dip::uint connectivity = 2       ///< Connectivity, see \ref connectivity
 );
 
-/// \brief Returns the chain codes sequence that encodes the contour of one object in a binary or labelled image.
+/// \brief Returns the chain codes sequence that encodes the contour of one object in a binary or labeled image.
 ///
 /// Note that only one closed contour is found; if the object has multiple connected components,
 /// only part of it is found. The chain code traces the outer perimeter of the object, holes are ignored.
@@ -751,7 +751,7 @@ ChainCodeArray DIP_NO_EXPORT GetImageChainCodes(
 /// `startCoord` is the 2D coordinates of a boundary pixel. If it points to a zero-valued pixel or a pixel not on
 /// the boundary of an object, an exception will be thrown.
 ChainCode DIP_NO_EXPORT GetSingleChainCode(
-      Image const& labels,             ///< Labelled or binary image (unsigned integer type or binary type)
+      Image const& labels,             ///< Labeled or binary image (unsigned integer type or binary type)
       UnsignedArray const& startCoord, ///< The starting coordinates for the chain code; must point to a non-zero pixel in `labels`
       dip::uint connectivity = 2       ///< Connectivity, see \ref connectivity
 );

@@ -220,7 +220,7 @@ struct DIP_NO_EXPORT DataType {
       return IsInteger() || IsFloat();
    }
 
-   /// vReturns `true` if the data type is complex.
+   /// \brief Returns `true` if the data type is complex.
    bool IsComplex() const {
       switch( dt ) {
          case DT::SCOMPLEX:
@@ -337,10 +337,10 @@ struct DIP_NO_EXPORT DataType {
    /// \brief Returns a suitable floating-point, complex or binary type that can hold the samples of `type`.
    DIP_EXPORT static DataType SuggestFlexBin( DataType type );
 
-   /// \brief Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed with the two datatypes.
+   /// \brief Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed with the two data types.
    DIP_EXPORT static DataType SuggestArithmetic( DataType type1, DataType type2 );
 
-   /// \brief Returns a suitable type that can hold any samples of the two datatypes.
+   /// \brief Returns a suitable type that can hold any samples of the two data types.
    DIP_EXPORT static DataType SuggestDyadicOperation( DataType type1, DataType type2 );
 
 };

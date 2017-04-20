@@ -97,10 +97,10 @@ using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
 /// forged, it is no longer possible to add features or objects. As with a `dip::Image`,
 /// the method `IsForged` can be used to test if the object has been forged.
 ///
-/// A forged `%Measurement` can be read from in various ways, and a writeable pointer to the
-/// data can be obtained. As with the `dip::Image` class, data pointes are always writeable,
+/// A forged `%Measurement` can be read from in various ways, and a writable pointer to the
+/// data can be obtained. As with the `dip::Image` class, data pointers are always writable,
 /// even if the object is const-qualified. This simplifies the code, at the expense of opening
-/// the door to undesireable modifications to data. *DIPlib* will never modify the data of a
+/// the door to undesirable modifications to data. *DIPlib* will never modify the data of a
 /// const `%Measurement`.
 ///
 /// The columns of the `%Measurement` table are the feature values. Since each feature can have multiple
@@ -119,7 +119,7 @@ class DIP_NO_EXPORT Measurement {
       using ValueType = dfloat;           ///< The type of the measurement data
       using ValueIterator = ValueType*;   ///< A pointer to measurement data, which we can treat as an iterator
 
-      /// \brief Structre containing information about the features stored in a `dip::Measurement` object
+      /// \brief Structure containing information about the features stored in a `dip::Measurement` object
       struct DIP_NO_EXPORT FeatureInfo {
          String name;            ///< Name of the feature
          dip::uint startColumn;  ///< Column for first value of feature
@@ -149,7 +149,7 @@ class DIP_NO_EXPORT Measurement {
             class Iterator {
                public:
                   friend class IteratorFeature;
-                  /// \brief Index to acess a specific value
+                  /// \brief Index to access a specific value
                   ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
                   /// \brief Iterator to the first value
                   ValueIterator begin() const {
@@ -242,7 +242,7 @@ class DIP_NO_EXPORT Measurement {
             class Iterator {
                public:
                   friend class IteratorObject;
-                  /// \brief Index to acess a specific value
+                  /// \brief Index to access a specific value
                   ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
                   /// \brief Iterator to the first value
                   ValueIterator begin() const {
@@ -348,16 +348,16 @@ class DIP_NO_EXPORT Measurement {
       /// \brief Creates an iterator (view) to the first object
       IteratorObject FirstObject() const { return IteratorObject( *this, 0 ); }
 
-      /// \brief Creats and iterator (view) to the given object
+      /// \brief Creates and iterator (view) to the given object
       IteratorObject operator[]( dip::uint objectID ) const { return IteratorObject( *this, ObjectIndex( objectID )); }
 
-      /// \brief Creats and iterator (view) to the first feature
+      /// \brief Creates and iterator (view) to the first feature
       IteratorFeature FirstFeature() const { return IteratorFeature( *this, 0 ); }
 
-      /// \brief Creats and iterator (view) to the given feature
+      /// \brief Creates and iterator (view) to the given feature
       IteratorFeature operator[]( String const& name ) const { return IteratorFeature( *this, FeatureIndex( name )); }
 
-      /// \brief Creats and iterator (view) to a subset of feature values
+      /// \brief Creates and iterator (view) to a subset of feature values
       IteratorFeature FeatureValuesView( dip::uint startValue, dip::uint numberValues = 1 ) const {
          DIP_THROW_IF( startValue + numberValues > NumberOfValues(), "Subset out of range" );
          return IteratorFeature( *this, startValue, numberValues );
@@ -469,7 +469,7 @@ class DIP_NO_EXPORT Measurement {
       }
       UnsignedArray objects_;                         // the rows of the table (maps row indices to objectIDs)
       ObjectIdToIndexMap objectIndices_;              // maps object IDs to row indices
-      std::vector< FeatureInfo > features_;           // the column groups of the table (maps column group indices to feature names and contains other indo also)
+      std::vector< FeatureInfo > features_;           // the column groups of the table (maps column group indices to feature names and contains other info also)
       Feature::ValueInformationArray values_;         // the columns of the table
       std::map< String, dip::uint > featureIndices_;  // maps feature names to column group indices
       std::vector< ValueType > mutable data_;         // this is mutable so that a const object doesn't have const data -- the only reason for this is to avoid making const versions of the iterators, which seems pointless
@@ -554,7 +554,7 @@ class DIP_EXPORT LineBased : public Base {
       /// function is called after the whole image has been scanned, and should provide the
       /// final measurement result for one object given its index (not object ID).
       virtual void ScanLine(
-            LineIterator< uint32 > label, ///< Pointer to the line in the labelled image (always scalar)
+            LineIterator< uint32 > label, ///< Pointer to the line in the labeled image (always scalar)
             LineIterator< dfloat > grey, ///< Pointer to the line in the grey-value image (if given, invalid otherwise)
             UnsignedArray coordinates, ///< Coordinates of the first pixel on the line (by copy, so it can be modified)
             dip::uint dimension, ///< Along which dimension the line runs
@@ -704,7 +704,7 @@ class DIP_NO_EXPORT MeasurementTool {
       /// \brief Registers a feature with this `%MeasurementTool`. The feature object becomes property of the tool.
       ///
       /// Create an instance of the feature class on the heap using `new`. The feature class must be
-      /// derived from one of the five classes dervied from `dip::Feature::Base` (thus not directly from `Base`).
+      /// derived from one of the five classes derived from `dip::Feature::Base` (thus not directly from `Base`).
       /// Note that the pointer returned by `new` must be explicitly converted to a `dip::Feature::Pointer`:
       ///
       /// ```cpp
@@ -736,10 +736,10 @@ class DIP_NO_EXPORT MeasurementTool {
          features_[ Index( feature ) ]->Configure( parameter, value );
       }
 
-      /// \brief Measures one or more features on one or more objects in the labelled image.
+      /// \brief Measures one or more features on one or more objects in the labeled image.
       ///
-      /// `label` is a labelled image (any unsigned integer type, and scalar), and `grey` is either a raw
-      /// image (not forged, without pixel data), or an real-valued image with the same dimensionaliry and
+      /// `label` is a labeled image (any unsigned integer type, and scalar), and `grey` is either a raw
+      /// image (not forged, without pixel data), or an real-valued image with the same dimensionality and
       /// sizes as `label`. If any selected features require a grey-value image, then it must be provided.
       ///
       /// `features` is an array with feature names. See the `dip::MeasurementTool::Features` method for
@@ -749,9 +749,9 @@ class DIP_NO_EXPORT MeasurementTool {
       ///
       /// `objectIDs` is an array with the IDs of objects to measure, If any of the IDs is not a label
       /// in the `label` image, the resulting measures will be zero or otherwise marked as invalid. If
-      /// an empty array is given, all objects in the labelled image are measured.
+      /// an empty array is given, all objects in the labeled image are measured.
       ///
-      /// `connectivity` should match the value used when creating the labelled image `label`.
+      /// `connectivity` should match the value used when creating the labeled image `label`.
       ///
       /// The output `dip::Measurement` structure contains measurements that take the pixel size of
       /// the `label` image into account. Those of `grey` are ignored. Some measurements require

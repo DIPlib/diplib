@@ -58,7 +58,7 @@ class DIP_NO_EXPORT PixelTable; // forward declaration, it's defined a little lo
 class DIP_NO_EXPORT PixelTableOffsets {
    public:
 
-      /// The pixel table is formed of pixel runs, represented by this strucuture
+      /// The pixel table is formed of pixel runs, represented by this structure
       struct DIP_NO_EXPORT PixelRun {
          dip::sint offset;          ///< the offset of the first pixel in a run, w.r.t. the origin
          dip::uint length;          ///< the length of the run
@@ -146,7 +146,7 @@ class DIP_NO_EXPORT PixelTableOffsets {
 class DIP_NO_EXPORT PixelTable {
    public:
 
-      /// The pixel table is formed of pixel runs, represented by this strucuture
+      /// The pixel table is formed of pixel runs, represented by this structure
       struct DIP_NO_EXPORT PixelRun {
          IntegerArray coordinates;  ///< the coordinates of the first pixel in a run, w.r.t. the origin
          dip::uint length;          ///< the length of the run

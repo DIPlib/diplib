@@ -381,8 +381,8 @@ class DIP_NO_EXPORT Image {
       /// `data` is a shared pointer used to manage the lifetime of the data segment.
       /// If the image is supposed to take ownership, put a pointer to the data segment or the object
       /// that owns it in `data`, with a deleter function that will delete the data segment or object
-      /// when the image is stripped or deletect. Otherwise, use `dip::NonOwnedRefToDataSegment` to
-      /// create a shared pointer witouth a deleter function, implying ownership is not transfered.
+      /// when the image is stripped or deleted. Otherwise, use `dip::NonOwnedRefToDataSegment` to
+      /// create a shared pointer without a deleter function, implying ownership is not transferred.
       ///
       /// `origin` is the pointer to the first pixel. It must be a valid pointer. This is typically,
       /// but not necessarily, the same pointer as used in `data`.
@@ -529,7 +529,7 @@ class DIP_NO_EXPORT Image {
       /// \brief Test if all the pixels are contiguous.
       ///
       /// If all pixels are contiguous, you can traverse the whole image,
-      /// accessing each of the pixles, using a single stride with a value
+      /// accessing each of the pixels, using a single stride with a value
       /// of 1. To do so, you don't necessarily start at the origin: if any
       /// of the strides is negative, the origin of the contiguous data will
       /// be elsewhere.
@@ -567,7 +567,7 @@ class DIP_NO_EXPORT Image {
       /// value can be larger than 1.
       /// Use `dip::Image::GetSimpleStrideAndOrigin` to get a pointer to the origin
       /// of the contiguous data. Note that this only tests spatial
-      /// dimesions, the tensor dimension must still be accessed separately.
+      /// dimensions, the tensor dimension must still be accessed separately.
       ///
       /// The image must be forged.
       ///
@@ -583,7 +583,7 @@ class DIP_NO_EXPORT Image {
       /// walk through all pixels.
       ///
       /// If this is not possible, the function
-      /// sets `porigin==nullptr`. Note that this only tests spatial dimesions,
+      /// sets `porigin==nullptr`. Note that this only tests spatial dimensions,
       /// the tensor dimension must still be accessed separately.
       ///
       /// The `stride` returned is always positive.
@@ -725,7 +725,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Sets the image's color space name. This causes the image to be a color image,
-      /// but will cause errors to occur (eventally, not immediately) if the number of tensor elements
+      /// but will cause errors to occur (eventually, not immediately) if the number of tensor elements
       /// does not match the expected number of channels for the given color space.
       void SetColorSpace( String const& cs ) {
          colorSpace_ = cs;
@@ -748,22 +748,22 @@ class DIP_NO_EXPORT Image {
       // Note: This function is the reason we refer to the PixelSize class as
       // dip::PixelSize everywhere in this file.
 
-      /// \brief Get the pixels's size in physical units, by reference, allowing to modify it at will.
+      /// \brief Get the pixels' size in physical units, by reference, allowing to modify it at will.
       dip::PixelSize& PixelSize() {
          return pixelSize_;
       }
 
-      /// \brief Get the pixels's size in physical units.
+      /// \brief Get the pixels' size in physical units.
       dip::PixelSize const& PixelSize() const {
          return pixelSize_;
       }
 
-      /// \brief Get the pixels's size in physical units along the given dimension.
+      /// \brief Get the pixels' size in physical units along the given dimension.
       PhysicalQuantity PixelSize( dip::uint dim ) const {
          return pixelSize_[ dim ];
       }
 
-      /// \brief Set the pixels's size.
+      /// \brief Set the pixels' size.
       void SetPixelSize( dip::PixelSize const& ps ) {
          pixelSize_ = ps;
       }
@@ -778,7 +778,7 @@ class DIP_NO_EXPORT Image {
          return pixelSize_.IsIsotropic();
       }
 
-      /// \brief Converts a size in pixels to a size in phyical units.
+      /// \brief Converts a size in pixels to a size in physical units.
       PhysicalQuantityArray PixelsToPhysical( FloatArray const& in ) const {
          return pixelSize_.ToPhysical( in );
       }
@@ -1078,13 +1078,13 @@ class DIP_NO_EXPORT Image {
       /// leads to an image that `dip::Image::HasNormalStrides`. If an
       /// external interface is registered for this image, that interface
       /// may create whatever strides are suitable, may honor or not the
-      /// exising stride array, and may or may not produce normal strides.
+      /// existing stride array, and may or may not produce normal strides.
       DIP_EXPORT void Forge();
 
       /// \brief Modify image properties and forge the image.
       ///
-      /// ReForge has three
-      /// signatures that match three image constructors. ReForge will try
+      /// `%ReForge` has three
+      /// signatures that match three image constructors. `%ReForge` will try
       /// to avoid freeing the current data segment and allocating a new one.
       /// This version will cause `this` to be an identical copy of `src`,
       /// but with uninitialized data. The external interface of `src` is
@@ -1108,8 +1108,8 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Modify image properties and forge the image.
       ///
-      /// ReForge has three
-      /// signatures that match three image constructors. ReForge will try
+      /// `%ReForge` has three
+      /// signatures that match three image constructors. `%ReForge` will try
       /// to avoid freeing the current data segment and allocating a new one.
       /// This version will cause `this` to be an identical copy of `src`,
       /// but with a different data type and uninitialized data. The
@@ -1135,8 +1135,8 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Modify image properties and forge the image.
       ///
-      /// ReForge has three
-      /// signatures that match three image constructors. ReForge will try
+      /// `%ReForge` has three
+      /// signatures that match three image constructors. `%ReForge` will try
       /// to avoid freeing the current data segment and allocating a new one.
       /// This version will cause `this` to be of the requested sizes and
       /// data type.
@@ -1157,7 +1157,7 @@ class DIP_NO_EXPORT Image {
             Option::AcceptDataTypeChange acceptDataTypeChange = Option::AcceptDataTypeChange::DONT_ALLOW
       );
 
-      /// \brief Dissasociate the data segment from the image. If there are no
+      /// \brief Disassociate the data segment from the image. If there are no
       /// other images using the same data segment, it will be freed.
       void Strip() {
          if( IsForged() ) {
@@ -1175,7 +1175,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Set protection flag.
       ///
-      /// A protected image cannot be stripped or reforged. See \ref protect "the \"protect\" flag" for more information.
+      /// A protected image cannot be stripped or reforged. See \ref protect for more information.
       ///
       /// Returns the old setting. This can be used as follows to temporarily
       /// protect an image:
@@ -1551,7 +1551,7 @@ class DIP_NO_EXPORT Image {
       /// \see ExpandSingletonDimension, IsSingletonExpanded.
       DIP_EXPORT Image& ExpandSingletonTensor( dip::uint sz );
 
-      /// \brief Mirror de image about selected axes.
+      /// \brief Mirror the image about selected axes.
       ///
       /// The image must be forged, and the data will never
       /// be copied (i.e. this is a quick and cheap operation).
@@ -1687,7 +1687,7 @@ class DIP_NO_EXPORT Image {
       /// \brief Extracts the pixel at the given coordinates. The image must be forged.
       DIP_EXPORT Image At( UnsignedArray const& coords ) const;
 
-      /// \brief Extracts the pixel at the given linear index (inneficient!). The image must be forged.
+      /// \brief Extracts the pixel at the given linear index (inefficient!). The image must be forged.
       DIP_EXPORT Image At( dip::uint index ) const;
 
       /// \brief Extracts a subset of pixels from a 1D image. The image must be forged.
@@ -1922,6 +1922,8 @@ class DIP_NO_EXPORT Image {
       /// After calling this method, the object always has `dip::Tensor::HasNormalOrder` equal `true`.
       /// This method simplifies manipulating tensors by normalizing their storage.
       DIP_EXPORT void ExpandTensor();
+
+      // TODO: ForceNormalStrides(), possibly with an option to determine how the tensor is to be stored.
 
       /// \brief Sets all samples in the image to the value `v`.
       ///

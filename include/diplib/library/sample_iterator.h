@@ -54,7 +54,7 @@ namespace dip {
 /// This means that you can increment and decrement the iterator, add or subtract an
 /// integer from it, dereference it, index it using the `[]` operator, as well as compare
 /// two iterators or take the difference between them (as long as they reference samples
-/// within the same data segment). It is default constructable and swappable, but the
+/// within the same data segment). It is default constructible and swappable, but the
 /// default constructed iterator is invalid and should not be dereferenced.
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.

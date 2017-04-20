@@ -135,7 +135,7 @@ DIP_EXPORT StringArray OutputColorSpaces(
 ///
 /// `ScanOptions` constant      | Meaning
 /// --------------------------- | ----------
-/// `Scan_NoMultiThreading`     | Do not call the line filter simultaneouly from multiple threads (it is not thread safe).
+/// `Scan_NoMultiThreading`     | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
 /// `Scan_NeedCoordinates`      | The line filter needs the coordinates to the first pixel in the buffer.
 /// `Scan_TensorAsSpatialDim`   | Tensor dimensions are treated as a spatial dimension for scanning, ensuring that the line scan filter always gets scalar pixels.
 /// `Scan_ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
@@ -238,7 +238,7 @@ class DIP_EXPORT ScanLineFilter {
 /// applied. Thus, `lineFilter` does not need to check `inTensorLength` or
 /// `outTensorLength` (they will be 1), and the output tensor size is guaranteed
 /// to match the largest input tensor. `nTensorElements` is ignored. Even with
-/// a single input image, where no singleton expantion can happen, it is
+/// a single input image, where no singleton expansion can happen, it is
 /// beneficial to use the `dip::FrameWork::Scan_TensorAsSpatialDim` option, as
 /// `lineFilter` can be simpler and faster. Additionally, the output tensor shape
 /// is identical to the input image's. In case of multiple inputs, the first input
@@ -434,7 +434,7 @@ inline void ScanDyadic(
 /// first pointer will point at a sample in the `lhs` input image, and the second to the corresponding sample in the
 /// `rhs` input image. The return value of the lambda will be assigned to the corresponding sample in the output image.
 /// Note that to access the sample values, you need to use the syntax `*its[ 0 ]`, where the `0` is the index into
-/// the array, yielding a pointer, which is derefferenced by the `*` operator to access the sample value.
+/// the array, yielding a pointer, which is dereferenced by the `*` operator to access the sample value.
 ///
 /// To use the `%NadicScanLineFilter` with dynamic data type dispatch, it is necessary to use an auxiliary function.
 /// Such an auxiliary function also simplifies the use of the class template:
@@ -564,7 +564,7 @@ inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F const& fun
 ///
 /// `SeparableOptions` constant      | Meaning
 /// -------------------------------- | ----------
-/// `Separable_NoMultiThreading`     | Do not call the line filter simultaneouly from multiple threads (it is not thread safe).
+/// `Separable_NoMultiThreading`     | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
 /// `Separable_AsScalarImage`        | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
 /// `Separable_ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
 /// `Separable_UseOutputBorder`      | The output line buffer also has space allocated for a border.
@@ -681,7 +681,7 @@ class DIP_EXPORT SeparableLineFilter {
 /// standard, column-major matrix, and the output image will be a full matrix of
 /// that size. If the input image has tensors stored differently, buffers will be
 /// used when processing the first dimension; for subsequent dimensions, the
-/// intermetidate result will already contain the full matrix. Use this option if
+/// intermediate result will already contain the full matrix. Use this option if
 /// you need to do computations with the tensors, but do not want to bother with
 /// all the different tensor shapes, which are meant only to save memory.
 ///
@@ -737,7 +737,7 @@ class DIP_EXPORT SeparableLineFilter {
 /// With the `dip::FrameWork::Separable_UseInputBuffer` option, the input buffer
 /// never points to the input image, the input data is always copied to a temporary
 /// buffer. This allows the `lineFilter` to modify the input, which is useful for,
-/// for exaple, computing the median of the input data by sorting.
+/// for example, computing the median of the input data by sorting.
 ///
 /// If `in` and `out` share their data segments (e.g. they are the same image),
 /// then the filtering operation can be applied completely in place, without any
@@ -776,7 +776,7 @@ DIP_EXPORT void Separable(
 ///
 /// `FullOptions` constant      | Meaning
 /// --------------------------- | ----------
-/// `Full_NoMultiThreading`     | Do not call the line filter simultaneouly from multiple threads (it is not thread safe).
+/// `Full_NoMultiThreading`     | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
 /// `Full_AsScalarImage`        | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
 /// `Full_ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
 ///

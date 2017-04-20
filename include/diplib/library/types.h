@@ -87,7 +87,7 @@ using dfloat = double;           ///< Type for samples in a 64-bit floating poin
 using scomplex = std::complex< sfloat >;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
 using dcomplex = std::complex< dfloat >;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
 
-/// \brief Type for samples in a binary image. Can store 0 or 1. Ocupies 1 byte.
+/// \brief Type for samples in a binary image. Can store 0 or 1. Occupies 1 byte.
 class DIP_NO_EXPORT bin {
    // Binary data stored in a single byte (don't use bool for pixels, it has
    // implementation-defined size). We define this class for binary data so
@@ -278,7 +278,7 @@ using StringSet = std::set< String >;       ///< A collection of strings, used t
 /// If `stop` comes before `start`, then the range generates pixel indicates in
 /// the reverse order. That is, negative steps are taken to go from `start` to `stop`.
 /// `step` is always a positive integer, the direction of the steps is given
-/// soley by the ordering of `start` and `stop`.
+/// solely by the ordering of `start` and `stop`.
 struct DIP_NO_EXPORT Range {
    dip::sint start;    ///< First index included in range
    dip::sint stop;     ///< Last index included in range

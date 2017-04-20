@@ -55,7 +55,7 @@ namespace dip_mmorph {
 /// The optional second input argument serves to force an `MM_INT` image to be `DT_UINT32`. The pixel values
 /// are simply re-interpreted as unsigned integer. This is useful for the output of `mmLabel`, which is either
 /// `MM_USHORT` or `MM_INT`, but always contains only non-negative integers, considering that *DIPlib* expects
-/// labelled images to be unsigned.
+/// labeled images to be unsigned.
 inline dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
    // Find image properties
    if( mm.isnull() ) {
@@ -158,7 +158,7 @@ using ImagePtr = std::unique_ptr< ::Image >;
 /// In the first case, `in1 + in2` is computed into a temporary image, whose
 /// pixels are then copied into the `::%Image` created for `img_out0`. In the
 /// second case, the result of the operation is directly written into the
-/// `mxArray`, no copies are necessary.
+/// `::%Image`, no copies are necessary.
 class ExternalInterface : public dip::ExternalInterface {
    private:
       // This map holds ::Images, we can find the right one if we have the data pointer.

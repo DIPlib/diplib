@@ -25,8 +25,8 @@
 //
 
 
-#ifndef DIP_PHYSDIMS_H
-#define DIP_PHYSDIMS_H
+#ifndef DIP_PHYSICAL_DIMENSIONS_H
+#define DIP_PHYSICAL_DIMENSIONS_H
 
 #include <array>
 
@@ -111,7 +111,7 @@ class DIP_NO_EXPORT Units {
       }
 
       /// \brief Construct a `%Units` from a string representation of units. The string representation should be as
-      /// producted by `dip::Units::String`.
+      /// produced by `dip::Units::String`.
       DIP_EXPORT
       explicit Units( dip::String const& string );
 
@@ -315,10 +315,10 @@ inline void swap( Units& v1, Units& v2 ) {
 }
 
 
-/// \brief Encapsulates a quantity with phyisical units.
+/// \brief Encapsulates a quantity with physical units.
 ///
 /// Multiplying a double by a
-/// `dip::Units` object yields a `%PhysicalQuantity` object. Numbers and units implicity
+/// `dip::Units` object yields a `%PhysicalQuantity` object. Numbers and units implicitly
 /// convert to a `%PhysicalQuantity`. It is possible to multiply and divide any physical
 /// quantities, but adding and subtracting is only possible if the units match.
 ///
@@ -422,11 +422,11 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       dip::sint this1000 = units.Thousands();
       dip::sint other1000 = other.units.Thousands();
       if( this1000 > other1000 ) {
-         // bring magnitude of other in synch with this
+         // bring magnitude of other in sync with this
          double otherMag = other.magnitude * pow10( 3 * ( other1000 - this1000 ));
          magnitude += otherMag;
       } else if( this1000 < other1000 ) {
-         // bring magnitude of this in synch with other
+         // bring magnitude of this in sync with other
          magnitude *= pow10( 3 * ( this1000 - other1000 ));
          magnitude += other.magnitude;
          units = other.units;
@@ -486,7 +486,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       return *this;
    }
 
-   /// Retrieve the magnitude, discaring units.
+   /// Retrieve the magnitude, discarding units.
    explicit operator double() const { return magnitude; };
 
    /// A physical quantity tests true if it is different from 0.
@@ -785,7 +785,7 @@ class DIP_NO_EXPORT PixelSize {
 
       /// Erases a dimension
       void EraseDimension( dip::uint d ) {
-         // we don't erase the last element in the array, since that would change all subsequent elemtns too.
+         // we don't erase the last element in the array, since that would change all subsequent elements too.
          if( d + 1 < size_.size() ) {
             size_.erase( d );
          }
@@ -916,4 +916,4 @@ inline void swap( PixelSize& v1, PixelSize& v2 ) {
 
 } // namespace dip
 
-#endif // DIP_PHYSDIMS_H
+#endif // DIP_PHYSICAL_DIMENSIONS_H

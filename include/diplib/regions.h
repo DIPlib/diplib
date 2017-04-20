@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains declarations for functions that work with labelled images.
+ * This file contains declarations for functions that work with labeled images.
  *
  * (c)2016, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -26,14 +26,14 @@
 
 
 /// \file
-/// \brief Declares image processing functions that work with labelled images.
+/// \brief Declares image processing functions that work with labeled images.
 
 
 namespace dip {
 
 
-/// \defgroup regions Labelled image functions
-/// \brief Functions that work on labelled images.
+/// \defgroup regions Labeled image functions
+/// \brief Functions that work on labeled images.
 /// \{
 
 // TODO: functions to add:
@@ -70,7 +70,7 @@ DIP_ERROR dip_GrowRegionsWeighted
 /// The `minSize` and `maxSize` set limits on the size of the objects: Objects smaller than `minSize`
 /// or larger than `maxSize` do not receive a label and the corresponding pixels in the output
 /// image are set to zero. Setting either to zero disables the corresponding check. Setting both
-/// to zero causes all objects to be labelled, irrespective of size.
+/// to zero causes all objects to be labeled, irrespective of size.
 ///
 /// If `mode` is "LabelIsSize", the objects' labels are set to the objects' sizes. Normal operation
 /// is obtained with an empty string.
@@ -100,7 +100,7 @@ inline Image Label(
    return out;
 }
 
-/// \brief Gets a list of object labels in the labelled image. A labelled image must be of an unsigned type.
+/// \brief Gets a list of object labels in the labeled image. A labeled image must be of an unsigned type.
 DIP_EXPORT UnsignedArray GetObjectLabels(
       Image const& label,
       Image const& mask,
