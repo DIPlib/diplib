@@ -26,12 +26,12 @@ namespace dip {
 namespace {
 
 void Extrema(
-      Image const& in,
-      Image const& mask,
-      Image& out,
-      dip::uint connectivity,
-      String const& output,
-      bool maxima
+      Image const& /*in*/,
+      Image const& /*mask*/,
+      Image& /*out*/,
+      dip::uint /*connectivity*/,
+      String const& /*output*/,
+      bool /*maxima*/
 ) {
    // TODO
 }

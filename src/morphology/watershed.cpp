@@ -77,7 +77,7 @@ class WatershedRegionList {
 
 template< typename TPI >
 TPI AbsDiff( TPI a, TPI b ) {
-   return a > b ? a - b : b - a;
+   return a > b ? TPI( a - b ) : TPI( b - a ); // casting back to TPI, because of inane default casts.
 }
 
 template< typename TPI >
@@ -86,7 +86,7 @@ bool WatershedShouldMerge(
       TPI value,
       WatershedRegionList< TPI > const& regions,
       dfloat maxDepth,
-      dfloat maxSize
+      dip::uint maxSize
 ) {
    return ( AbsDiff( value, regions[ lab ].lowest ) <= maxDepth ) &&
           (( maxSize == 0 ) || ( regions[ lab ].size <= maxSize ));
@@ -140,7 +140,7 @@ void dip__FastWatershed(
       std::vector< dip::sint > const& offsets,
       IntegerArray const& neighborOffsets,
       dfloat maxDepth,
-      dfloat maxSize,
+      dip::uint maxSize,
       bool binaryOutput
 ) {
    TPI* in = static_cast< TPI* >( c_in.Origin() );
