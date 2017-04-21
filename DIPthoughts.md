@@ -16,74 +16,76 @@ unencumbered by licenses. When not using *FFTW*, the built-in FFT algorithm is u
 
 ## Processing images -- how to access and modify pixels
 
-The old *DIPlib* does most processing through the [frameworks][Frameworks].
-These are great because they handle a lot of things -- creating the output
-image(s), dealing with different data types and dimensionalities, apply
-filters using multithreading, etc. But the frameworks can use some
-refactoring, as described below. Also, the documentation is out of date
-(and so does not correctly describe the functionality as implemented),
-there are a slew of aliases that complicate the landscape, and there are
-options that are never used, some are not even implemented.
+The code already documents the frameworks, iterators and neighbor lists, all
+of which offer different ways of accessing pixels by abstracting strides.
 
-The [second sub-section][Image iterators] describes an alternative that
-leaves more to the user, but might be easier to use under certain circumstances.
+One more way of accessing pixels, though not efficient, would be as follows:
 
-We also discuss how to [describe a neighborhood][Neighborhood lists], which
-is done in different ways in the old code.
+The `dip::Pixel` class references a pixel in an image. It does not own the
+shared pointer to the data segment, so it depends on the image existing.
 
+```cpp
+dip::Pixel px = img.PixelAt( x, y, z );
+```
 
-### Frameworks
+The pixel can then be indexed to access the various tensor elements, in the
+same way that the image would be. It could hold a reference to the image's
+`dip::Tensor` object and stride array to avoid the copies?
 
-This is already described in the code.
+```cpp
+dip::Image px1 = img.At( x, y, z );
+dip::dfloat sample = static_cast< dip::dfloat >( px1[ i ] );
+px1[ i ] = 10;
 
+dip::Pixel px2 = img.PixelAt( x, y, z );
+dip::dfloat sample = static_cast< dip::dfloat >( px2[ i ] );
+px2[ i ] = 10;
+```
 
-### Image iterators
+The two bits of code above are identical, but `px2` would be quite a bit cheaper
+to generate and to assign into.
 
-This is already described in the code.
+A disadvantage would be that we need to allow all sorts of arithmetic on
+`dip::Pixel` objects, and also in combination with `dip::Image`. It could be
+possible to simplifiy this a little bit by implicit conversion of `dip::Pixel`
+to `dip::Image`. For this, `dip::Pixel` would have a weak pointer to the
+data segment of the image it came from. That way we can create a new shared
+pointer when casting to an image:
 
+```cpp
+class Pixel {
+   private:
+      std::weak_ptr< void > dataBlock_; // always check dataBlock_.expired() before dereferencing origin_.
+      void* origin_;
+      dip::DataType dataType_;
+      dip::Tensor const& tensor_; // const reference, so no shenanigans with this one
+      dip::sint tensorStride_;
+   public:
+      Pixel( std::shared_ptr& dataBlock, void* origin, dip::DataType dataType,
+             dip::Tensor const& tensor, dip::sint tensorStride ) :
+             dataBlock_( dataBlock ), origin_( origin ), dataType_( dataType ),
+             tensor_( tensor ), tensorStride_( tensorStride ) {}
+      operator Image() {
+         return { dataBlock_, origin_, dataType_, {}, {}, tensor_, tensorStride_ };
+         // This does set externalData_ = true, which is not true...
+         // The alternative is to make a construtor for dip::Image that takes a dip::Pixel.
+      }
+      // functions to get data type, tensor elements, tensor shape, etc.
+      template< typename T > SampleIterator< T > begin() { ... }
+      template< typename T > SampleIterator< T > end() { ... }
+      dfloat operator[]( dip::uint index ) { ... } // pixel[ i ] => casts to dfloat
+      template< typename T > T ValueAt() { ... } // pixel.ValueAt< uint8 >( i ) => casts to any type
+      template< typename T > T& At() { ... } // pixel.At< uint8 >( i ) = 8 => type must match
+};
+```
 
-### Neighborhood lists
-
-Current code uses two different ways to describe a neighborhood:
-
-- A list (actually two, one containing coordinates for each neighbor, one containing their
-  corresponding offsets).
-  It describes the immediate neighborhood of a pixel (given by the dimensionality and the
-  connectivity), and is used in algorithms that process images using priority queues
-  (watershed, region growing, skeleton, labelling, etc.). Most of these algorithms use their
-  own version of these lists, not all need the coordinates, for example.
-
-- A pixel table (a list of pixel runs).
-  This is already described in the code.
-
-We should keep both methods, and standardize the first one.
-
-The `NeighborhoodList` will be an array with a `Coordinates`, an `Offset`, and a `Weight`
-element for each neighbor pixel. An option of the constructor will leave the coordinates
-empty if they are not needed. It would be nice to have an iterator for this list, but if
-it is build on a `std::vector` that will come automatically. The `Weight` element would
-be filled with the distance of the neighbor (different options should be available there).
-
-    NeighborhoodList neighbors ( image, connectivity );
-    for( auto img_it = ImageIterator<dip::sfloat>( image ); img_it.IsAtEnd(); ++img_it ) {
-       for( auto n_it = neighbors.begin(); n_it != neighbors.end(); ++n_it ) {
-          img_it.atOffset( *n_it );
-       }
-    }
-
-
-## Python interface
-
-We will define a Python class as a thin layer over the `dip::Image` C++
-object. Allocating, indexing, etc. etc. through calls to C++. We'd
-create a method to convert to and from *NumPy* arrays, simply passing
-the pointer to the data. We'd have to make sure that deallocation
-occurs in the right place (data ownership). A *DIPlib* function to
-extract a 2D slice ready for display would be needed also, make display
-super-fast!
-
-[pybind11](https://github.com/pybind/pybind11), a C++11 Python binding
-library, seems to me to be the way to go.
+The implicit cast to `dip::Image` (or non-explicit `dip::Image` constructor) would allow
+a `dip::Pixel` to be used everywhere a 0D `dip::Image` can be used, including arithmetic. But:
+it's less efficient than it needs to (`pixel1 + pixel2` would create two images, add them, then
+return an image!). So, the pixel class would not be meant for computations where a matrix is
+really required. It would be better to offer a cast from a `dip::Pixel` to an `eigen::Matrix`
+(or `eigen::Map`). This cast would have to be defined in a header file to be explicitly included
+when needed, to avoid pulling in Eigen into all compilation units.
 
 
 ## *MATLAB* interface
@@ -112,9 +114,8 @@ The *MATLAB* toolbox will be significantly simplified:
     input or output will use tensor images instead.
 
 -   It seems that, at least in debug mode, the MEX-files with statically
-    linked DIPlib are quite large. If the $rpath feature works well, we
-    could keep DIPlib as a shared object, but if we need to set any
-    runtime LD_LIBRARY_PATH again, we'll do static linking.
+    linked *DIPlib* are quite large. If the $rpath feature works well, we
+    could keep *DIPlib* as a shared object. (**DONE**)
 
 The M-file code will need to be adapted:
 
@@ -132,8 +133,8 @@ The M-file code will need to be adapted:
 
 -   The colour conversion code will be replaced with a single call to
     *DIPlib*, as will some other functionality that will be translated
-    from MATALB to C++. Much of the tensor arithmetic should be done
-    through *DIPlib* also.
+    from *MATLAB* to C++. Much of the tensor arithmetic should be done
+    through *DIPlib* also. (**DONE**)
 
 -   `dipshow` will be simplified, as simple calls to a *DIPlib* display
     function will generate the 2D array for display. (**DONE**)
@@ -154,20 +155,6 @@ a size of 1). The new tensor dimension would then be the second dimension
 dimension to translate to a *MATLAB* array, in case of a real image.
 A complex image would need a simple copy. (**DONE**)
 
-If we go this route, we might as well go all the way, and always have
-a one-dimensional uint8 array inside the `dip_image` object. Each of the
-`dip::Image` member elements would be copied into the `dip_image` object,
-to make the conversion back and forth in the interface as trivial as possible.
-All indexing and basic operations that are computed in *MATLAB* in the
-old implementation would go through *DIPlib* in the new implementation.
-The `dml` interface would also copy the image data into an `mxArray`
-(or two for complex images). This step would then not be as efficient
-as it is in the old *DIPimage*, but should be avoided anyway. The only
-place where this step needs to be efficient is in the generation of a
-display image, which could be arranged by creating that image as an
-encapsulated `mxArray` with the right dimensions and strides for *MATLAB*
-to show it. (**WE WON'T DO THIS**)
-
 
 ## Image file formats
 
@@ -180,7 +167,7 @@ It is a Java library, we'll probably use
 [JNI](http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html)
 to interface between C++ and Java, see for example
 [this tutorial](https://www.codeproject.com/Articles/993067/Calling-Java-from-Cplusplus-with-JNI).
-See also [this ITK module](https://github.com/scifio/scifio-imageio) for 
+See also [this ITK module](https://github.com/scifio/scifio-imageio) for
 interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
 
 We currently also have JPEG and GIF readers/writers, which are not very
@@ -189,4 +176,3 @@ and CSV, which also aren't useful enough. The BioRad PIC reader is out of date,
 nobody uses that format any more. Finally, we have an LSM reader based on the
 TIFF reader, but if we use *Bio-Formats* it won't be necessary to maintain that
 one either.
-
