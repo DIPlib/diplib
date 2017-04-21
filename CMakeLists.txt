@@ -1,5 +1,4 @@
 # CMakeLists file for DIPlib 3
-
 cmake_minimum_required (VERSION 3.5) # It might work with older versions, but this is the version I'm testing with.
 
 project (DIPlib VERSION 3.0)
@@ -43,7 +42,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    # Safe GCC compiler and architecture flags across all Intel and AMD processors (circa 2015)
    set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wconversion -Wsign-conversion -Wno-attributes") # Wattributes: "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
-   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
+   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
+#   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
    set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
    # using Intel C++
@@ -107,6 +107,14 @@ if(DIP_BUILD_PYTHON_MODULE)
    add_subdirectory(dependencies/pybind11)
 endif()
 
+# viewer
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/viewer/cmake)
+find_package(OpenGL)
+find_package(FreeGLUT)
+if (OPENGL_FOUND AND FREEGLUT_FOUND)
+  set(DIP_BUILD_VIEWER_MODULE ON CACHE BOOL "Build the viewer module")
+endif()
+
 # MATLAB
 set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # This is necessary because my version of MATLAB is very recent and my version of CMake is not. Ajust as necessary.
 find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)
@@ -138,7 +146,6 @@ install(DIRECTORY include/ DESTINATION include)
 install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
 # To examine symbol table of the shared library on MacOSX: nm -g -p -U libDIP.dylib
 
-
 ### DIPlib unit tests
 
 if(DIP_ENABLE_DOCTEST)
@@ -160,7 +167,6 @@ if(DIP_ENABLE_DOCTEST)
    add_dependencies(check unit_tests)
 endif()
 
-
 ### PyDIP module for Python
 if(DIP_BUILD_PYTHON_MODULE)
    file(GLOB DIP_PYTHON_SRC "pydip/*.cpp")
@@ -179,6 +185,17 @@ if(DIP_BUILD_PYTHON_MODULE)
    install(FILES ${DIP_PYTHON_PY} DESTINATION ${PYDIP_INSTALL_PATH})
 endif()
 
+### GLUT viewer
+if(DIP_BUILD_VIEWER_MODULE)
+   file(GLOB DIP_VIEWER_SRC "viewer/src/*.cpp")
+   file(GLOB DIP_VIEWER_H "viewer/include/diplib/viewer/*.h")
+
+   include_directories(${FREEGLUT_INCLUDE_DIR} viewer/include)
+   add_library(DIPviewer ${DIP_VIEWER_SRC} ${DIP_VIEWER_H})
+   target_link_libraries(DIPviewer DIP ${FREEGLUT_LIBRARIES} ${OPENGL_LIBRARIES} -lpthread)
+   install(TARGETS DIPviewer DESTINATION lib)
+   install(DIRECTORY viewer/include/ DESTINATION include)
+endif()
 
 ### DIPimage toolbox for MATLAB
 
@@ -251,6 +268,7 @@ foreach(file ${DIP_TESTS})
       endif()
    endif()
 endforeach()
+target_link_libraries(test_viewer DIPviewer)
 
 add_custom_target(
       tests DEPENDS
@@ -260,6 +278,7 @@ add_custom_target(
       test_framework_scan test_lambdafun test_framework_separable test_framework_separable2 test_framework_full
       test_boundary
       test_measurement test_measuretool
+      test_viewer
 )
 
 
@@ -349,6 +368,12 @@ if(DIP_BUILD_PYTHON_MODULE)
    message(" * PyDIP installed to: ${PYDIP_INSTALL_PATH}")
 else()
    message(" * PyDIP module not configured")
+endif()
+
+if(DIP_BUILD_VIEWER_MODULE)
+   message(" * Viewer module added to 'all' target")
+else()
+   message(" * Viewer module not configured")
 endif()
 
 if(Matlab_FOUND)
