@@ -294,4 +294,25 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code conversion to image and back") {
    }
 }
 
+#include "diplib/pixel_table.h"
+#include "diplib/morphology.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing ChainCode::Offset") {
+   try {
+      dip::Image img = dip::PixelTable( "elliptic", { 29, 29 } ).AsImage(); // Currently the easiest way of generating an image...
+      img = img.Pad( { 33, 33 } );
+      dip::ChainCode cc1 = dip::GetSingleChainCode( img, { 16, 2 }, 2 );
+      cc1 = cc1.Offset();
+      img = dip::Dilation( img, { 3, "diamond" } );
+      dip::ChainCode cc2 = dip::GetSingleChainCode( img, { 16, 1 }, 2 );
+      DOCTEST_REQUIRE( cc1.codes.size() == cc2.codes.size());
+      for( dip::uint ii = 0; ii < cc1.codes.size(); ++ii ) {
+         DOCTEST_CHECK( cc1.codes[ ii ] == cc2.codes[ ii ] );
+      }
+   } catch( dip::Error& e ) {
+      std::cout << e.what();
+      throw;
+   }
+}
+
 #endif // DIP__ENABLE_DOCTEST
