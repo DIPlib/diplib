@@ -801,4 +801,81 @@ void GaussIIR(
 
 } // namespace dip
 
-// TODO: add unit tests
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include <random>
+#include "diplib/math.h"
+#include "diplib/iterators.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing the IIR Gaussian filter") {
+
+   // Test 0th order
+   dip::Image img{ dip::UnsignedArray{ 256 }, 1, dip::DT_DFLOAT };
+   img.Fill( 0.0 );
+   img.At( 128 ) = 1.0;
+   dip::dfloat sigma = 5.0;
+   dip::dfloat amplitude = 1.0 / ( std::sqrt( 2.0 * dip::pi ) * sigma );
+
+   dip::Image r1 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 5 }, "discrete time fit" );
+   DOCTEST_CHECK( std::abs( r1.SampleAt< dip::dfloat >( 128 ) - amplitude ) < 0.00015 );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Sum( r1 )) == doctest::Approx( 1.0 ));
+   dip::Image r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 4 }, "discrete time fit"  );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Maximum( r1 - r2 ))) < 0.0002 );
+   r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 3 }, "discrete time fit"  );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Maximum( r1 - r2 ))) < 0.001 );
+   r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 2 }, "discrete time fit"  );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Maximum( r1 - r2 ))) < 0.004 );
+   r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 5 }, "forward backward"  );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Maximum( r1 - r2 ))) < 0.002 );
+   r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 4 }, "forward backward"  );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Maximum( r1 - r2 ))) < 0.002 );
+   r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 3 }, "forward backward"  );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Maximum( r1 - r2 ))) < 0.004 );
+
+   // Test first order derivative
+   dip::ImageIterator< dip::dfloat > it( img );
+   for( dip::dfloat x = -128; it; ++it, ++x ) {
+      *it = x;
+   }
+   r1 = dip::GaussIIR( img, { sigma }, { 1 }, {}, { 5 }, "discrete time fit" );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 1.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 1 }, {}, { 4 }, "discrete time fit"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 1.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 1 }, {}, { 3 }, "discrete time fit"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 1.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 1 }, {}, { 5 }, "forward backward"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 1.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 1 }, {}, { 4 }, "forward backward"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 1.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 1 }, {}, { 3 }, "forward backward"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 1.0 ));
+
+   // Test second order derivative
+   dip::Image grad = img;
+   img = img * img;
+   r1 = dip::GaussIIR( img, { sigma }, { 2 }, {}, { 5 }, "discrete time fit" );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 2.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 2 }, {}, { 4 }, "discrete time fit"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 2.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 2 }, {}, { 3 }, "discrete time fit"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 2.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 2 }, {}, { 5 }, "forward backward"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 2.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 2 }, {}, { 4 }, "forward backward"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 2.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 2 }, {}, { 3 }, "forward backward"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 2.0 ));
+
+   // Test third order derivative
+   img = img * grad;
+   r1 = dip::GaussIIR( img, { sigma }, { 3 }, {}, { 5 }, "discrete time fit" );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 6.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 3 }, {}, { 4 }, "discrete time fit"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 6.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 3 }, {}, { 5 }, "forward backward"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 6.0 ));
+   r1 = dip::GaussIIR( img, { sigma }, { 3 }, {}, { 4 }, "forward backward"  );
+   DOCTEST_CHECK( r1.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 6.0 ));
+}
+
+#endif // DIP__ENABLE_DOCTEST

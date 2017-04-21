@@ -183,6 +183,8 @@ void GaussFIR(
 #include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
+
+   // Test smoothing for the 3 filters
    dip::Image img{ dip::UnsignedArray{ 256 }, 1, dip::DT_DFLOAT };
    img.Fill( 0.0 );
    img.At( 128 ) = 1.0;
@@ -195,6 +197,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
    DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Maximum( fir - ft ))) < 0.0003 );
    dip::Image iir = dip::GaussIIR( img, { sigma }, { 0 } );
    DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Maximum( iir - ft ))) < 0.0015 );
+
+   // Test first derivative for the 3 filters
    dip::ImageIterator< dip::dfloat > it( img );
    for( dip::dfloat x = -128; it; ++it, ++x ) {
       *it = x;
@@ -205,6 +209,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
    DOCTEST_CHECK( fir.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 1.0 ));
    iir = dip::GaussIIR( img, { sigma }, { 1 } );
    DOCTEST_CHECK( iir.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 1.0 ));
+
+   // Test second derivative for the 3 filters
    img = img * img;
    ft = dip::GaussFT( img, { sigma }, { 2 } );
    DOCTEST_CHECK( std::abs( ft.SampleAt< dip::dfloat >( 128 ) - 2.0 ) < 0.0005 );
