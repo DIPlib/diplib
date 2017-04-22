@@ -682,6 +682,93 @@ void Minimum(
 namespace {
 
 template< typename TPI >
+class ProjectionMaximumAbs : public ProjectionScanFunction {
+   public:
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+         AbsType< TPI > max = 0;
+         if( mask.IsForged() ) {
+            JointImageIterator< TPI, bin > it( in, mask );
+            do {
+               if( it.Out() ) {
+                  max = std::max( max, static_cast< AbsType< TPI >>( abs( it.In() )));
+               }
+            } while( ++it );
+         } else {
+            ImageIterator< TPI > it( in );
+            do {
+               max = std::max( max, static_cast< AbsType< TPI >>( abs( *it )));
+            } while( ++it );
+         }
+         *static_cast< AbsType< TPI >* >( out ) = max;
+      }
+};
+
+}
+
+void MaximumAbs(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      BooleanArray process
+) {
+   std::unique_ptr< ProjectionScanFunction > lineFilter;
+   DataType dt = in.DataType();
+   if( dt.IsUnsigned() ) {
+      DIP_OVL_NEW_UNSIGNED( lineFilter, ProjectionMaximum, (), dt );
+   } else {
+      DIP_OVL_NEW_SIGNED( lineFilter, ProjectionMaximumAbs, (), dt );
+   }
+   dt = DataType::SuggestAbs( dt );
+   ProjectionScan( in, mask, out, dt, process, *lineFilter );
+}
+
+namespace {
+
+template< typename TPI >
+class ProjectionMinimumAbs : public ProjectionScanFunction {
+      using TPO = AbsType< TPI >;
+   public:
+      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
+         AbsType< TPI > min = std::numeric_limits< AbsType< TPI >>::max();
+         if( mask.IsForged() ) {
+            JointImageIterator< TPI, bin > it( in, mask );
+            do {
+               if( it.Out() ) {
+                  min = std::min( min, static_cast< AbsType< TPI >>( abs( it.In() )));
+               }
+            } while( ++it );
+         } else {
+            ImageIterator< TPI > it( in );
+            do {
+               min = std::min( min, static_cast< AbsType< TPI >>( abs( *it )));
+            } while( ++it );
+         }
+         *static_cast< AbsType< TPI >* >( out ) = min;
+      }
+};
+
+}
+
+void MinimumAbs(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      BooleanArray process
+) {
+   std::unique_ptr< ProjectionScanFunction > lineFilter;
+   DataType dt = in.DataType();
+   if( dt.IsUnsigned() ) {
+      DIP_OVL_NEW_UNSIGNED( lineFilter, ProjectionMinimum, (), dt );
+   } else {
+      DIP_OVL_NEW_SIGNED( lineFilter, ProjectionMinimumAbs, (), dt );
+   }
+   dt = DataType::SuggestAbs( dt );
+   ProjectionScan( in, mask, out, dt, process, *lineFilter );
+}
+
+namespace {
+
+template< typename TPI >
 class ProjectionPercentile : public ProjectionScanFunction {
    public:
       ProjectionPercentile( dfloat percentile ) : percentile_( percentile ) {}

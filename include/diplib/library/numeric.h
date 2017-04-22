@@ -121,6 +121,29 @@ inline dip::sint div_round( dip::sint lhs, dip::sint rhs ) {
    return div_floor( lhs + rhs / 2, rhs );
 }
 
+/// \brief Computes the absolute value in such a way that the result is always correct for pixel types.
+/// For `dip::sint` use `std::abs` instead.
+///
+/// Note that, for signed integer types, `std::abs` returns an implementation-defined value when
+/// the input is equal to the smallest possible value, since its positive counterpart cannot be
+/// represented. For example, the absolute value of `dip::sint8(-128)` cannot be represented
+/// as an 8-bit signed value. `dip::abs` would return an 8-bit unsigned value of 128.
+///
+/// The return type is the same as the input type, except if the input is a signed integer,
+/// in which case the return type is the unsigned counterpart.
+template< typename T, typename std::enable_if< !std::is_integral< T >::value, int >::type = 0 >
+AbsType< T > abs( T value ) {
+   return static_cast< AbsType< T >>( std::abs( value ));
+}
+template< typename T, typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value, int >::type = 0 >
+T abs( T value ) {
+   return value;
+}
+template< typename T, typename std::enable_if< std::is_integral< T >::value && std::is_signed< T >::value, int >::type = 0 >
+AbsType< T > abs( T value ) {
+   return static_cast< AbsType< T >>( std::abs( static_cast< dfloat >( value )));
+}
+template<> inline bin abs( bin value ) { return value; }
 
 /// \brief Clamps a value between a min and max value (a.k.a. clip, saturate, etc.).
 // `std::clamp` will be available in C++17.
@@ -293,7 +316,7 @@ inline T Sum( dip::uint n, ConstSampleIterator< T > input ) {
 /// `input` is a pointer to `n` values.
 template< typename T >
 inline FloatType< T > SumAbsSquare( dip::uint n, ConstSampleIterator< T > input ) {
-   return std::accumulate( input, input + n, 0.0, []( FloatType< T > a, T b ){ return a + std::abs( b ) * std::abs( b ); } );
+   return std::accumulate( input, input + n, FloatType< T >( 0.0 ), []( FloatType< T > a, T b ){ return a + std::abs( b ) * std::abs( b ); } );
 }
 
 /// \brief Computes the norm of a vector.
@@ -677,10 +700,6 @@ class DIP_NO_EXPORT MinMaxAccumulator {
       dfloat max_ = std::numeric_limits< dfloat >::lowest();
 };
 
-
-
-
-
 /// \}
 
 } // namespace dip
@@ -765,6 +784,20 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::pow10 function") {
    DOCTEST_CHECK( dip::pow10( 0 ) == std::pow( 10, 0 ) );
    DOCTEST_CHECK( dip::pow10( -5 ) == std::pow( 10, -5 ) );
    DOCTEST_CHECK( dip::pow10( -21 ) == doctest::Approx( std::pow( 10, -21 )) );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::abs function") {
+   DOCTEST_CHECK( dip::abs( dip::uint8( 25 )) == dip::uint8( 25 ) );
+   DOCTEST_CHECK( dip::abs( dip::sint8( 25 )) == dip::uint8( 25 ) );
+   DOCTEST_CHECK( dip::abs( dip::sint8( -25 )) == dip::uint8( 25 ) );
+   DOCTEST_CHECK( dip::abs( dip::sint8( -128 )) == dip::uint8( 128 ) );
+   DOCTEST_CHECK( dip::abs( dip::uint32( 25 )) == dip::uint32( 25 ) );
+   DOCTEST_CHECK( dip::abs( dip::sint32( 25 )) == dip::uint32( 25 ) );
+   DOCTEST_CHECK( dip::abs( dip::sint32( -25 )) == dip::uint32( 25 ) );
+   DOCTEST_CHECK( dip::abs( dip::sint32( -2147483648 )) == dip::uint32( 2147483648u ) );
+   DOCTEST_CHECK( dip::abs( dip::sfloat( 25.6 )) == dip::sfloat( 25.6 ) );
+   DOCTEST_CHECK( dip::abs( dip::sfloat( -25.6 )) == dip::sfloat( 25.6 ) );
+   DOCTEST_CHECK( dip::abs( dip::scomplex{ 1.2f, 5.3f } ) == std::hypot( 1.2f, 5.3f ) );
 }
 
 #endif // DIP__ENABLE_DOCTEST

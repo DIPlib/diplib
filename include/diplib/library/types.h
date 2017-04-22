@@ -135,59 +135,41 @@ static_assert( sizeof( dip::bin ) == 1, "The binary type is not a single byte!" 
 // Templates that help get the right types in template functions and template classes
 //
 
-template< typename T >
-struct DIP_NO_EXPORT DataTypeCalculator {
-   using float_type = sfloat;
-   using complex_type = scomplex;
-   using flex_type = sfloat;
-};
-
-template<>
-struct DIP_NO_EXPORT DataTypeCalculator< uint32 > {
-   using float_type = dfloat;
-   using complex_type = dcomplex;
-   using flex_type = dfloat;
-};
-
-template<>
-struct DIP_NO_EXPORT DataTypeCalculator< sint32 > {
-   using float_type = dfloat;
-   using complex_type = dcomplex;
-   using flex_type = dfloat;
-};
-
-template<>
-struct DIP_NO_EXPORT DataTypeCalculator< dfloat > {
-   using float_type = dfloat;
-   using complex_type = dcomplex;
-   using flex_type = dfloat;
-};
-
-template<>
-struct DIP_NO_EXPORT DataTypeCalculator< scomplex > {
-   using float_type = sfloat;
-   using complex_type = scomplex;
-   using flex_type = scomplex;
-};
-
-template<>
-struct DIP_NO_EXPORT DataTypeCalculator< dcomplex > {
-   using float_type = dfloat;
-   using complex_type = dcomplex;
-   using flex_type = dcomplex;
-};
-
+template< typename T > struct FloatTypeCalculator { using type = sfloat; };
+template<> struct FloatTypeCalculator< uint32 > { using type = dfloat; };
+template<> struct FloatTypeCalculator< sint32 > { using type = dfloat; };
+template<> struct FloatTypeCalculator< dfloat > { using type = dfloat; };
+template<> struct FloatTypeCalculator< dcomplex > { using type = dfloat; };
 /// \brief The type to use in calculations when a floating-point type is needed. Matches `dip::DataType::SuggestFloat`.
-template< typename T >
-using FloatType = typename DataTypeCalculator< T >::float_type;
+template< typename T > using FloatType = typename FloatTypeCalculator< T >::type;
 
+template< typename T > struct ComplexTypeCalculator { using type = scomplex; };
+template<> struct ComplexTypeCalculator< uint32 > { using type = dcomplex; };
+template<> struct ComplexTypeCalculator< sint32 > { using type = dcomplex; };
+template<> struct ComplexTypeCalculator< dfloat > { using type = dcomplex; };
+template<> struct ComplexTypeCalculator< dcomplex > { using type = dcomplex; };
 /// \brief The type to use in calculations when a complex type is needed. Matches `dip::DataType::SuggestComplex`.
-template< typename T >
-using ComplexType = typename DataTypeCalculator< T >::complex_type;
+template< typename T > using ComplexType = typename ComplexTypeCalculator< T >::type;
 
+template< typename T > struct FlexTypeCalculator { using type = FloatType< T >; };
+template<> struct FlexTypeCalculator< scomplex > { using type = scomplex; };
+template<> struct FlexTypeCalculator< dcomplex > { using type = dcomplex; };
 /// \brief The type to use in calculations. Matches `dip::DataType::SuggestFlex`.
-template< typename T >
-using FlexType = typename DataTypeCalculator< T >::flex_type;
+template< typename T > using FlexType = typename FlexTypeCalculator< T >::type;
+
+template< typename T > struct FlexBinTypeCalculator { using type = FlexType< T >; };
+template<> struct FlexBinTypeCalculator< bin > { using type = bin; };
+/// \brief The type to use in calculations. Matches `dip::DataType::SuggestFlexBin`.
+template< typename T > using FlexBinType = typename FlexBinTypeCalculator< T >::type;
+
+template< typename T > struct AbsTypeCalculator { using type = T; };
+template<> struct AbsTypeCalculator< sint8 > { using type = uint8; };
+template<> struct AbsTypeCalculator< sint16 > { using type = uint16; };
+template<> struct AbsTypeCalculator< sint32 > { using type = uint32; };
+template<> struct AbsTypeCalculator< scomplex > { using type = sfloat; };
+template<> struct AbsTypeCalculator< dcomplex > { using type = dfloat; };
+/// \brief The type to use for the output of abs operations. Matches `dip::DataType::SuggestAbs`.
+template< typename T > using AbsType = typename AbsTypeCalculator< T >::type;
 
 
 //

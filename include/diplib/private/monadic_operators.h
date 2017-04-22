@@ -51,14 +51,21 @@
 
 #endif
 
+namespace dip {
+
+/// \addtogroup math
+/// \{
+
+/// \name Arithmetic, trigonometric and similar monadic operators
+/// \{
+
 /// \brief Computes the square of the modulus of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( SquareModulus, []( auto its ) { return dipm__SquareModulus( *its[ 0 ] ); }, DataType::Class_NonBinary )
+DIP__MONADIC_OPERATOR_FLOAT( SquareModulus,
+                             []( auto its ) { return dipm__SquareModulus( *its[ 0 ] ); },
+                             DataType::Class_NonBinary )
 
 /// \brief Computes the phase (angle on complex plane, through `std::arg`) of each sample.
 DIP__MONADIC_OPERATOR_FLOAT( Phase, []( auto its ) { return std::arg( *its[ 0 ] ); }, DataType::Class_NonBinary )
-
-/// \brief Computes the absolute value of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( Abs, []( auto its ) { return std::abs( *its[ 0 ] ); }, DataType::Class_NonBinary )
 
 /// \brief Computes the nearest integer to each sample (rounds).
 /// Only defined for floating-point types, the output is the same type.
@@ -169,6 +176,12 @@ DIP__MONADIC_OPERATOR_BIN( IsInfinite, []( auto in ) { return dipm__IsInf( in );
 
 /// \brief True for each pixel that is not NaN nor infinity.
 DIP__MONADIC_OPERATOR_BIN( IsFinite, []( auto in ) { return dipm__IsFinite( in ); }, DataType::Class_Flex )
+
+/// \}
+
+/// \}
+
+} // namespace dip
 
 #undef DIP__MONADIC_OPERATOR_FLEX
 #undef DIP__MONADIC_OPERATOR_FLOAT

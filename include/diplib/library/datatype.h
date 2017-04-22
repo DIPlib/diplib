@@ -276,15 +276,21 @@ struct DIP_NO_EXPORT DataType {
    /// Class_SInt       | Class_SInt8 + Class_SInt16 + Class_SInt32;
    /// Class_Integer    | Class_UInt + Class_SInt;
    /// Class_Float      | Class_SFloat + Class_DFloat;
-   /// Class_Real       | Class_Integer + Class_Float;
    /// Class_Complex    | Class_SComplex + Class_DComplex;
+   /// Class_IntOrBin   | Class_Integer + Class_Binary
+   /// Class_Real       | Class_Integer + Class_Float;
    /// Class_Flex       | Class_Float + Class_Complex;
-   /// Class_FlexBin    | Class_Flex + Class_Bin;
-   /// Class_Unsigned   | Class_Bin + Class_UInt;
+   /// Class_FlexBin    | Class_Flex + Class_Binary;
+   /// Class_Unsigned   | Class_Binary + Class_UInt;
    /// Class_Signed     | Class_SInt + Class_Float + Class_Complex;
+   /// Class_NonBinary  | Class_Real + Class_Complex
+   /// Class_NonComplex | Class_Binary + Class_Real
    /// Class_Any        | Class_Binary + Class_Real + Class_Complex;
    ///
    /// Note that you can add these constants together, for example `dip::DataType::Class_UInt8 + dip::DataType::Class_UInt16`.
+   ///
+   /// Note also that `Class_Unsigned` and `Class_Signed` are oposites, as are `Class_Complex` and `Class_NonComplex`,
+   /// `Class_Binary` and `Class_NonBinary`, and `Class_FlexBin` and `Class_Integer`.
    DIP_DECLARE_OPTIONS( Classes );
    static DIP_DEFINE_OPTION( Classes, Class_Bin, static_cast<dip::uint>( DT::BIN ) );
    static DIP_DEFINE_OPTION( Classes, Class_UInt8, static_cast<dip::uint>( DT::UINT8 ) );
@@ -301,12 +307,13 @@ struct DIP_NO_EXPORT DataType {
    static DIP_DEFINE_OPTION( Classes, Class_UInt, Class_UInt8 + Class_UInt16 + Class_UInt32 );
    static DIP_DEFINE_OPTION( Classes, Class_SInt, Class_SInt8 + Class_SInt16 + Class_SInt32 );
    static DIP_DEFINE_OPTION( Classes, Class_Integer, Class_UInt + Class_SInt );
+   static DIP_DEFINE_OPTION( Classes, Class_IntOrBin, Class_Integer + Class_Binary );
    static DIP_DEFINE_OPTION( Classes, Class_Float, Class_SFloat + Class_DFloat );
    static DIP_DEFINE_OPTION( Classes, Class_Real, Class_Integer + Class_Float );
    static DIP_DEFINE_OPTION( Classes, Class_Complex, Class_SComplex + Class_DComplex );
    static DIP_DEFINE_OPTION( Classes, Class_Flex, Class_Float + Class_Complex );
-   static DIP_DEFINE_OPTION( Classes, Class_FlexBin, Class_Flex + Class_Bin );
-   static DIP_DEFINE_OPTION( Classes, Class_Unsigned, Class_Bin + Class_UInt );
+   static DIP_DEFINE_OPTION( Classes, Class_FlexBin, Class_Flex + Class_Binary );
+   static DIP_DEFINE_OPTION( Classes, Class_Unsigned, Class_Binary + Class_UInt );
    static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
    static DIP_DEFINE_OPTION( Classes, Class_NonBinary, Class_Real + Class_Complex );
    static DIP_DEFINE_OPTION( Classes, Class_NonComplex, Class_Binary + Class_Real );
@@ -336,6 +343,9 @@ struct DIP_NO_EXPORT DataType {
 
    /// \brief Returns a suitable floating-point, complex or binary type that can hold the samples of `type`.
    DIP_EXPORT static DataType SuggestFlexBin( DataType type );
+
+   /// \brief Returns a suitable type that can hold samples of type `abs(type)`.
+   DIP_EXPORT static DataType SuggestAbs( DataType type );
 
    /// \brief Returns a suitable floating-point, complex or binary type that can hold the result of an arithmetic computation performed with the two data types.
    DIP_EXPORT static DataType SuggestArithmetic( DataType type1, DataType type2 );

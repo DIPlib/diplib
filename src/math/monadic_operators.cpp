@@ -81,6 +81,8 @@ inline std::unique_ptr< Framework::ScanLineFilter > NewBinScanLineFilter( F cons
 
 } // namespace
 
+} // namespace dip
+
 #define DIP__MONADIC_OPERATOR_FLEX( functionName_, functionLambda_, inputDomain_ ) \
    void functionName_( Image const& in, Image& out ) { \
       DIP_THROW_IF( inputDomain_ != in.DataType(), E::DATA_TYPE_NOT_SUPPORTED ); \
@@ -124,6 +126,46 @@ inline std::unique_ptr< Framework::ScanLineFilter > NewBinScanLineFilter( F cons
 
 #undef DIP__MONADIC_OPERATORS_PRIVATE
 #include "diplib/private/monadic_operators.h"
+
+
+namespace dip {
+
+
+namespace {
+
+template< typename TPI >
+class AbsLineFilter : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         dip::sint inStride = params.inBuffer[ 0 ].stride;;
+         dip::uint const bufferLength = params.bufferLength;
+         AbsType< TPI >* out = static_cast< AbsType< TPI >* >( params.outBuffer[ 0 ].buffer );
+         dip::sint const outStride = params.outBuffer[ 0 ].stride;
+         for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+            *out = abs( *in );
+            in += inStride;
+            out += outStride;
+         }
+      }
+};
+
+} // namespace
+
+void Abs( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DataType dtype = in.DataType();
+   if( dtype.IsSigned() ) {
+      DataType otype = DataType::SuggestAbs( dtype );
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_NEW_REAL( scanLineFilter, AbsLineFilter, (), dtype );
+      ImageRefArray outar{ out };
+      Framework::Scan( { in }, outar, { dtype }, { otype }, { otype }, { 1 }, *scanLineFilter,
+                       Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
+   } else {
+      out = in;
+   }
+}
 
 
 void Conjugate( Image const& in, Image& out ) {

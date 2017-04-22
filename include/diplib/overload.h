@@ -64,7 +64,7 @@
 /// result of `new` is cast to the declaration type of the variable being
 /// assigned to, so that one can assign e.g. into a `std::unique_ptr`.
 ///
-/// There are four groups of macros defined in this file:
+/// There are four groups of macros defined in `diplib/overload.h`:
 /// - `DIP_OVL_CALL_xxx` calls a function, discarding any return value.
 /// - `DIP_OVL_CALL_ASSIGN_xxx` calls a function, assigning the return
 ///   value in a variable.
@@ -72,6 +72,26 @@
 ///   calling the function.
 /// - `DIP_OVL_NEW_xxx` allocates an object of a templated class, assigns
 ///   to pointer to a variable.
+///
+/// Each of the four groups of macros exist in the following flavors:
+///
+/// Macro name `xxx` | Corresponding `dip::DataType::Classes` value
+/// ---------------- | ----------
+/// `BIN`            | `dip::DataType::Class_Binary`
+/// `UINT`           | `dip::DataType::Class_UInt`
+/// `SINT`           | `dip::DataType::Class_SInt`
+/// `INTEGER`        | `dip::DataType::Class_Integer`
+/// `INT_OR_BIN`     | `dip::DataType::Class_IntOrBin`
+/// `FLOAT`          | `dip::DataType::Class_Float`
+/// `REAL`           | `dip::DataType::Class_Real`
+/// `COMPLEX`        | `dip::DataType::Class_Complex`
+/// `FLEX`           | `dip::DataType::Class_Flex`
+/// `FLEXBIN`        | `dip::DataType::Class_FlexBin`
+/// `UNSIGNED`       | `dip::DataType::Class_Unsigned`
+/// `SIGNED`         | `dip::DataType::Class_Signed`
+/// `NONBINARY`      | `dip::DataType::Class_NonBinary`
+/// `NONCOMPLEX`     | `dip::DataType::Class_NonComplex`
+/// `ALL`            | `dip::DataType::Class_Any`
 /// \{
 
 #define DIP__OVL__HEAD( dtype ) \

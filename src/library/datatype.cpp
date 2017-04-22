@@ -124,6 +124,23 @@ DataType DataType::SuggestFlexBin( DataType type ) {
    }
 }
 
+DataType DataType::SuggestAbs( DataType type ) {
+   switch( type ) {
+      default:
+         return type;
+      case DT_SINT8:
+         return DT_UINT8;
+      case DT_SINT16:
+         return DT_UINT16;
+      case DT_SINT32:
+         return DT_UINT32;
+      case DT_SCOMPLEX:
+         return DT_SFLOAT;
+      case DT_DCOMPLEX:
+         return DT_DFLOAT;
+   }
+}
+
 DataType DataType::SuggestArithmetic( DataType type1, DataType type2 ) {
    type1 = DataType::SuggestFlexBin( type1 );
    type2 = DataType::SuggestFlexBin( type2 );

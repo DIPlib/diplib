@@ -41,6 +41,9 @@ namespace dip {
 // Basic image queries
 //
 
+/// \name Basic image queries
+/// \{
+
 
 /// \brief Counts the number of non-zero pixels in a scalar image.
 DIP_EXPORT dip::uint Count( Image const& in, Image const& mask = {} );
@@ -87,13 +90,29 @@ DIP_EXPORT StatisticsAccumulator GetSampleStatistics( Image const& in, Image con
 // DIP_ERROR dip_Moments ( dip_Image, dip_Image, dip_IntegerArray, dip_FloatArray, dip_complex * ); // first 4 central moments
 // DIP_ERROR dip_CenterOfMass( dip_Image, dip_Image, dip_FloatArray, dip_FloatArray ); // 1st order moments
 
+/// \}
+
+} // namespace dip
+
 
 //
 // Arithmetic, trigonometric and similar monadic operators
 //
 
-
 #include "diplib/private/monadic_operators.h"
+
+namespace dip {
+
+/// \name Arithmetic, trigonometric and similar monadic operators
+/// \{
+
+/// \brief Computes the absolute value of each sample.
+DIP_EXPORT void Abs( Image const& in, Image& out );
+inline Image Abs( Image const& in ) {
+   Image out;
+   Abs( in, out );
+   return out;
+}
 
 /// \brief Computes the modulus (absolute value) of each sample. `%dip::Modulus` is an alias for `dip::Abs`.
 inline void Modulus( Image const& in, Image& out ) { Abs( in, out ); }
@@ -137,10 +156,15 @@ inline Image NearestInt( Image const& in ) {
 // DIP_ERROR dip_CosinAmplitudeModulation  ( dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
 // DIP_ERROR dip_CosinAmplitudeDemodulation( dip_Image, dip_Image, dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
 
+/// \}
+
 
 //
 // Arithmetic dyadic operators that are not already declared in diplib/library/operators.h
 //
+
+/// \name Arithmetic diadic operators, see also \ref operators
+/// \{
 
 /// \brief Computes the four-quadrant arc tangent of `y/x`.
 ///
@@ -221,10 +245,15 @@ inline Image SignedMinimum( Image const& a, Image const& b ) {
 // DIP_ERROR dip_InProduct          ( dip_Image, dip_Image, dip_Image, dip_Image );
 // DIP_ERROR dip_LnNormError        ( dip_Image, dip_Image, dip_Image, dip_Image, dip_float );
 
+/// \}
+
 
 //
 // Tensor operators
 //
+
+/// \name Tensor operators
+/// \{
 
 /// \brief Transposes the tensor image, the data is not copied.
 inline Image Transpose( Image in ) {
@@ -444,11 +473,14 @@ inline Image Identity( Image const& in ) {
    return out;
 }
 
+/// \}
 
 //
 // The following functions project along one or more (or all) dimensions
 //
 
+/// \name Projection operators, also compute image statistics
+/// \{
 
 /// \brief Calculates the mean of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -680,6 +712,50 @@ inline Image Minimum( Image const& in, Image const& mask = {}, BooleanArray proc
    return out;
 }
 
+/// \brief Calculates the maximum of the absolute pixel values over all those dimensions which are specified by `process`.
+///
+/// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
+/// the maximum of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
+/// and equals the maximum projection along the processing dimensions. To get the maximum of all pixels in the
+/// image:
+/// ```cpp
+///     static_cast< double >( dip::Maximum( img ));
+/// ```
+///
+/// For tensor images, the result is computed for each element independently.
+///
+/// If `mask` is forged, only those pixels selected by the mask image are used.
+///
+/// \see dip::GetMaximumAndMinimum
+DIP_EXPORT void MaximumAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+inline Image MaximumAbs( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
+   Image out;
+   MaximumAbs( in, mask, out, process );
+   return out;
+}
+
+/// \brief Calculates the minimum of the absolute pixel values over all those dimensions which are specified by `process`.
+///
+/// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
+/// the minimum of the pixel values. Otherwise, the output has as many dimensions as elements in `process` that are `false`,
+/// and equals the minimum projection along the processing dimensions. To get the minimum of all pixels in the
+/// image:
+/// ```cpp
+///     static_cast< double >( dip::Minimum( img ));
+/// ```
+///
+/// For tensor images, the result is computed for each element independently.
+///
+/// If `mask` is forged, only those pixels selected by the mask image are used.
+///
+/// \see dip::GetMaximumAndMinimum
+DIP_EXPORT void MinimumAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+inline Image MinimumAbs( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
+   Image out;
+   MinimumAbs( in, mask, out, process );
+   return out;
+}
+
 /// \brief Calculates the percentile of the pixel values over all those dimensions which are specified by `process`.
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
@@ -772,10 +848,15 @@ inline Image Any( Image const& in, Image const& mask = {}, BooleanArray process 
 // DIP_ERROR dip_RadialMaximum( dip_Image, dip_Image, dip_Image, dip_BooleanArray, dip_float, dip_Boolean, dip_FloatArray );
 // DIP_ERROR dip_RadialMinimum( dip_Image, dip_Image, dip_Image, dip_BooleanArray, dip_float, dip_Boolean, dip_FloatArray );
 
+/// \}
+
 
 //
 // Functions that combine two source images
 //
+
+/// \name Other
+/// \{
 
 
 /// \brief Compares `in1` to `in2` according to `selector`, and writes `in3` or `in4` to `out` depending on the result.
@@ -851,6 +932,8 @@ inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
 
 // DIP_ERROR dip_Lut( dip_float, dip_sint32, dip_float *, dip_sint32 *, dip_float *, dip_float *, dip_int );
 // DIP_ERROR dip_ImageLut( dip_Image, dip_Image, dip_Image, dip_Image );
+
+/// \}
 
 
 /// \}
