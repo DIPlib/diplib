@@ -119,7 +119,11 @@ void ImageDisplay::UpdateSlice() {
                BooleanArray process( nDims, true );
                process[ dim1_ ] = false;
                process[ dim2_ ] = false;
-               Maximum( image_, {}, slice_, process );
+               if( image_.DataType().IsComplex() ) {
+                  MaximumAbs( image_, {}, slice_, process );
+               } else {
+                  Maximum( image_, {}, slice_, process );
+               }
                break;
             }
             case ProjectionMode::MEAN: {

@@ -132,6 +132,9 @@ class DIP_NO_EXPORT ImageDisplay{
             if( projectionMode_ != ProjectionMode::SLICE ) {
                globalStretch_ = false;
             }
+            if( projectionMode_ == ProjectionMode::MAX ) {
+               complexMode_ = ComplexMode::MAGNITUDE;
+            }
          }
       }
 
@@ -141,6 +144,11 @@ class DIP_NO_EXPORT ImageDisplay{
       /// - "slice": the 2D image shown is a slice through the nD image.
       /// - "max": the 2D image shown is the max projection of the nD image.
       /// - "mean": the 2D image shown is the mean projection of the nD image.
+      ///
+      /// For an image with complex samples, setting the projection mode to "max"
+      /// forces the complex to real mapping mode to "magnitude".
+      ///
+      /// For projection modes other than "slice", turns off global stretch mode.
       void SetProjectionMode( String const& projectionMode ) {
          if( projectionMode == "slice" ) {
             SetProjectionMode( ProjectionMode::SLICE );
@@ -153,15 +161,15 @@ class DIP_NO_EXPORT ImageDisplay{
          }
       }
 
-      /// \brief Sets the complex to real mapping mode.
+      /// \brief Sets the complex to real mapping mode. Has no effect when projection mode is set to "max".
       void SetComplexMode( ComplexMode complexMode ) {
-         if( complexMode_ != complexMode ) {
+         if(( projectionMode_ != ProjectionMode::MAX ) && ( complexMode_ != complexMode )) {
             complexMode_ = complexMode;
             outputIsDirty_ = true;
          }
       }
 
-      /// \brief Sets the complex to real mapping mode.
+      /// \brief Sets the complex to real mapping mode. Has no effect when projection mode is set to "max".
       ///
       /// Valid complex to real mapping modes are:
       /// - "magnitude": the intensity displayed is the magnitude of the complex values
