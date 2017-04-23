@@ -20,6 +20,7 @@
 #include <chrono>
 
 #include <GL/glu.h>
+#include <GL/glut.h>
 
 #include "diplib/math.h"
 #include "diplib/overload.h"
@@ -143,8 +144,9 @@ void SliceView::map()
   if (projected_.Dimensionality() == 1)
   {
     // Line data
-    colored_ = Image({projected_.Size(0), 100}, 3, DT_UINT8);
-    colored_.Fill(0);
+    Image line;
+    line = Image({projected_.Size(0), 100}, 3, DT_UINT8);
+    line.Fill(0);
     
     dip::uint width = projected_.Size( 0 );
     dip::sint stride = projected_.Stride( 0 );
@@ -158,21 +160,26 @@ void SliceView::map()
         dip::uint8 color[3];
         colorMap(ptr, tstride, color, o);
         for (size_t kk=0; kk < 3; ++kk)
-          *((dip::uint8*)colored_.Pointer(UnsignedArray{ii, 99-color[kk]*100U/256})+kk) = 255;
+          *((dip::uint8*)line.Pointer(UnsignedArray{ii, 99-color[kk]*100U/256})+kk) = 255;
       }
       else
       {
         dip::uint8 color = (dip::uint8)(rangeMap(ptr[(dip::sint)o.element_*tstride], o)*255);
       
         for (size_t kk=0; kk < 3; ++kk)
-          *((dip::uint8*)colored_.Pointer(UnsignedArray{ii, 99-color*100U/256})+kk) = 255;
+          *((dip::uint8*)line.Pointer(UnsignedArray{ii, 99-color*100U/256})+kk) = 255;
       }
     }
     
     // For left view, show vertically.
-    // TODO: Doesn't work
     if (o.dims_[dimx_] == -1)
-      colored_.PermuteDimensions({1, 0});
+    {
+      line.PermuteDimensions({1, 0});
+      colored_ = Image({100, projected_.Size(0)}, 3, DT_UINT8);
+      colored_.Copy(line);
+    }
+    else
+      colored_ = line;
   }
   else
   {
@@ -256,10 +263,34 @@ void SliceViewPort::render()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_, viewer()->height()-y_-height_, width_, height_);
+  gluOrtho2D(0, width_, height_, 0);
+  glMatrixMode(GL_MODELVIEW);
+  
+  int width = width_, height = height_;
+  unsigned char dimchars[] = "xyzw56789)!@#$%%^&*()";
+  
+  glColor3f(1., 1., 1.);
+  if (view()->dimx() == 0)
+  {
+    glRasterPos2i((GLint)width_-9, (GLint)height_/2-7);
+    glutBitmapCharacter(GLUT_BITMAP_8_BY_13, dy==-1?'-':dimchars[dy]);
+    width -= 10;
+  }
+  if (view()->dimy() == 1)
+  {
+    glRasterPos2i((GLint)width_/2-4, (GLint)height_-4);
+    glutBitmapCharacter(GLUT_BITMAP_8_BY_13, dx==-1?'-':dimchars[dx]);
+    height -= 12;
+  }
+  
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glViewport(x_, viewer()->height()-y_-height, width, height);
   gluOrtho2D(odx, odx + (dip::dfloat)view()->size(0)/zdx,
              ody + (dip::dfloat)view()->size(1)/zdy, ody);
              
   glMatrixMode(GL_MODELVIEW);
+  
   view()->render();
 }
 
@@ -285,67 +316,106 @@ void SliceViewPort::click(int button, int state, int x, int y)
 
       viewer()->refresh();
     }
+    
     if (button == 2)
     {
-      // Right mouse button: change visualized dimensions
+      // Right mouse button: change visualized dimension
       auto &d = viewer()->options().dims_;
-    
-      if (x-x_ < 20 || x-x_ > width_-20)
-      {
-        dy++;
-        if (view()->dimx() == 2)      // left
-          while (dy == d[0] || dy == d[2]) dy++;
-        else if (view()->dimy() == 3) // top
-          while (dy == d[0]) dy++;
-        else                          // main
-          while (dy == d[0] || dy == d[2]) dy++;
       
-        if (dy >= (int)viewer()->options().operating_point_.size())
-          dy = -1;
-          
-        d[view()->dimy()] = dy;
-      }
-      else if (y-y_ < 20 || y-y_ > height_-20)
+      if (view()->dimx() == 0 && x > x_+width_-10)
       {
-        dx++;
-        if (view()->dimx() == 2)      // left
-          while (dx == d[1]) dx++;
-        else if (view()->dimy() == 3) // top
-          while (dx == d[1] || dx == d[3]) dx++;
-        else                          // main
-          while (dx == d[1] || dx == d[3]) dx++;
-      
-        if (dx >= (int)viewer()->options().operating_point_.size())
-          dx = -1;
-          
-        d[view()->dimx()] = dx;
+        if (std::abs(y-y_-height_/2+13) < 7)
+        {
+          // Change vertical dimension
+          dy++;
+          if (view()->dimx() == 2)      // left
+            while (dy == d[0] || dy == d[2]) dy++;
+          else if (view()->dimy() == 3) // top
+            while (dy == d[0]) dy++;
+          else                          // main
+            while (dy == d[0] || dy == d[2]) dy++;
+        
+          if (dy >= (int)viewer()->options().operating_point_.size())
+            dy = -1;
+            
+          d[view()->dimy()] = dy;
+        }
       }
+      else if (view()->dimy() == 1 && y > y_+height_-14)
+      {
+        if (std::abs(x-x_-width_/2) < 5)
+        {
+          // Change horizontal dimension
+          dx++;
+          if (view()->dimx() == 2)      // left
+            while (dx == d[1]) dx++;
+          else if (view()->dimy() == 3) // top
+            while (dx == d[1] || dx == d[3]) dx++;
+          else                          // main
+            while (dx == d[1] || dx == d[3]) dx++;
+        
+          if (dx >= (int)viewer()->options().operating_point_.size())
+            dx = -1;
+            
+          d[view()->dimx()] = dx;
+        }
+      }
+
+      viewer()->refresh();
     }
+    
     if (button == 3 || button == 4)
     {
       // Mouse wheel: zoom
-      if (button == 3)
-      {
-        for (size_t ii=0; ii < viewer()->options().zoom_.size(); ++ii)
-          viewer()->options().zoom_[ii] *= 1.5;
-          
-        viewer()->refresh();
-      }
+      double factor = 1.5;
       if (button == 4)
-      {
-        for (size_t ii=0; ii < viewer()->options().zoom_.size(); ++ii)
-          viewer()->options().zoom_[ii] /= 1.5;
+        factor = 1./factor;
+        
+      if (view()->dimy() == 1 && dx != -1) viewer()->options().zoom_[(dip::uint)dx] *= factor;
+      if (view()->dimx() == 0 && dy != -1) viewer()->options().zoom_[(dip::uint)dy] *= factor;
 
-        viewer()->refresh();
-      }
       // Zoom around current position
       screenToView(x, y, &nix, &niy);
       if (dx != -1) viewer()->options().origin_[(dip::uint)dx] += ix - nix;
       if (dy != -1) viewer()->options().origin_[(dip::uint)dy] += iy - niy;
+
+      viewer()->refresh();
     }
     
     drag_x_ = x;
     drag_y_ = y;
+  }
+  
+  if (state == 1)
+  {
+    if (button == 0)
+    {
+      // Set title to current position and value. We do it here because
+      // somehow calling glutSetWindowTitle is very slow and we can't do
+      // it every draw.
+      auto op = viewer()->options().operating_point_;
+      auto te = viewer()->image().TensorElements();
+      
+      std::ostringstream oss;
+      oss << "SliceViewer (";
+      for (dip::uint ii=0; ii < op.size(); ++ii)
+      {
+        oss << op[ii];
+        if (ii < op.size()-1)
+          oss << ", ";
+      }
+      oss << "): ";
+      if (te > 1) oss << "[";
+      for (dip::uint ii=0; ii < te; ++ii)
+      {
+        oss << (dip::dfloat) viewer()->image()[ii].At(op);
+        if (ii < te-1)
+          oss << ", ";
+      }
+      if (te > 1) oss << "]";
+
+      viewer()->setWindowTitle(oss.str().c_str());
+    }
   }
 }
 
@@ -453,6 +523,7 @@ void SliceViewer::reshape(int width, int height)
 
 void SliceViewer::draw()
 {
+  // Actual drawing
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
   if (updated_)

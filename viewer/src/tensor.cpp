@@ -54,10 +54,10 @@ void TensorViewPort::render()
         // Tensor element value
         glColor3f(rv, rv, rv);
         glBegin(GL_QUADS);
-          glVertex2f((GLfloat)ii*cwidth,         (GLfloat)jj*cheight);
+          glVertex2f((GLfloat)ii*cwidth+1.f,     (GLfloat)jj*cheight);
           glVertex2f((GLfloat)(ii+1)*cwidth-1.f, (GLfloat)jj*cheight);
           glVertex2f((GLfloat)(ii+1)*cwidth-1.f, (GLfloat)(jj+1)*cheight-1.f);
-          glVertex2f((GLfloat)ii*cwidth,         (GLfloat)(jj+1)*cheight-1.f);
+          glVertex2f((GLfloat)ii*cwidth+1.f,     (GLfloat)(jj+1)*cheight-1.f);
         glEnd();
         
         // Draw box around selected element(s)
@@ -78,10 +78,10 @@ void TensorViewPort::render()
           glColor3f(0., 0., 0.);
         
         glBegin(GL_LINE_LOOP);
-          glVertex2f((GLfloat)ii*cwidth,         (GLfloat)jj*cheight);
+          glVertex2f((GLfloat)ii*cwidth+1.f,     (GLfloat)jj*cheight);
           glVertex2f((GLfloat)(ii+1)*cwidth-1.f, (GLfloat)jj*cheight);
           glVertex2f((GLfloat)(ii+1)*cwidth-1.f, (GLfloat)(jj+1)*cheight-1.f);
-          glVertex2f((GLfloat)ii*cwidth,         (GLfloat)(jj+1)*cheight-1.f);
+          glVertex2f((GLfloat)ii*cwidth+1.f,     (GLfloat)(jj+1)*cheight-1.f);
         glEnd();
       }
     }

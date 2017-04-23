@@ -223,6 +223,8 @@ class DIP_EXPORT Viewer : public glutwm::Window
 
     virtual int width() = 0;
     virtual int height() = 0;
+    
+    virtual void setWindowTitle(const char *name) { title(name); }
 };
 
 inline void jet(dip::sfloat v, dip::uint8 *out)

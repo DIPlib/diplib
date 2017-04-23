@@ -18,6 +18,7 @@
  */
 
 #include <GL/glu.h>
+#include <GL/freeglut.h>
 
 #include "diplib/math.h"
 #include "diplib/viewer/histogram.h"
@@ -131,6 +132,22 @@ void HistogramViewPort::render()
       glVertex2f(1., (GLfloat)((val-o.range_.first)/(o.range_.second-o.range_.first)));
     glEnd();
   }
+  
+  // Display range
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glViewport(x_+24, viewer()->height()-y_-height_, width_-24, height_);
+  gluOrtho2D(0, width_-24, height_, 0);
+  glMatrixMode(GL_MODELVIEW);
+
+  char buf[20];
+  glColor3f(.5, .5, .5);
+  glRasterPos2i(1, 11);
+  sprintf(buf, "%9.2e", o.range_.second);
+  glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buf);
+  glRasterPos2i(1, height_-3);
+  sprintf(buf, "%9.2e", o.range_.first);
+  glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buf);
 }
 
 void HistogramViewPort::click(int button, int state, int x, int y)
