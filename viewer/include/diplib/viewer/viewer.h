@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#undef DIP__ENABLE_DOCTEST
 #include "diplib.h"
 #include "diplib/viewer/glutwm.h"
 

@@ -1,4 +1,4 @@
-#define DOCTEST_CONFIG_IMPLEMENT
+#undef DIP__ENABLE_DOCTEST
 #include <diplib/linear.h>
 #include <diplib/viewer/slice.h>
 #include <diplib/viewer/image.h>

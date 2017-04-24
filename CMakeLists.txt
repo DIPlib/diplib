@@ -112,7 +112,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/viewer/cm
 find_package(OpenGL)
 find_package(FreeGLUT)
 if (OPENGL_FOUND AND FREEGLUT_FOUND)
-  set(DIP_BUILD_VIEWER_MODULE ON CACHE BOOL "Build the viewer module")
+   set(DIP_BUILD_VIEWER_MODULE ON CACHE BOOL "Build the viewer module")
 endif()
 
 # MATLAB
@@ -189,9 +189,8 @@ endif()
 if(DIP_BUILD_VIEWER_MODULE)
    file(GLOB DIP_VIEWER_SRC "viewer/src/*.cpp")
    file(GLOB DIP_VIEWER_H "viewer/include/diplib/viewer/*.h")
-
-   include_directories(${FREEGLUT_INCLUDE_DIR} viewer/include)
    add_library(DIPviewer ${DIP_VIEWER_SRC} ${DIP_VIEWER_H})
+   target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR} PUBLIC viewer/include)
    target_link_libraries(DIPviewer DIP ${FREEGLUT_LIBRARIES} ${OPENGL_LIBRARIES} -lpthread)
    install(TARGETS DIPviewer DESTINATION lib)
    install(DIRECTORY viewer/include/ DESTINATION include)

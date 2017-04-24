@@ -19,9 +19,14 @@
 
 #include <chrono>
 
+#ifdef __APPLE__
+#include <OpenGL/glu.h>
+#else
 #include <GL/glu.h>
+#endif
 #include <GL/glut.h>
 
+#undef DIP__ENABLE_DOCTEST
 #include "diplib/math.h"
 #include "diplib/overload.h"
 #include "diplib/viewer/slice.h"

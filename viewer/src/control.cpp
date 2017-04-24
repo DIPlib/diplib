@@ -17,7 +17,11 @@
  * limitations under the License.
  */
 
+#ifdef __APPLE__
+#include <OpenGL/glu.h>
+#else
 #include <GL/glu.h>
+#endif
 #include <GL/freeglut.h>
 
 #include "diplib/viewer/control.h"
