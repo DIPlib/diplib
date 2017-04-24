@@ -1,4 +1,4 @@
-\page design DIPlib 3.0 design decisions
+# DIPlib 3.0 design decisions {#design}
 
 [//]: # (DIPlib 3.0)
 

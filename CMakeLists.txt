@@ -40,10 +40,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-   # Safe GCC compiler and architecture flags across all Intel and AMD processors (circa 2015)
    set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wconversion -Wsign-conversion -Wno-attributes") # Wattributes: "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
-   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
-#   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
+   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native") # To see which flags are enabled: gcc -march=native -Q --help=target
    set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
    # using Intel C++
@@ -101,23 +99,26 @@ include_directories(dependencies/eigen3)
 add_definitions(-DEIGEN_MPL2_ONLY) # This makes sure we only use parts of the Eigen library that use the MPL2 license or more permissive ones.
 add_definitions(-DEIGEN_DONT_PARALLELIZE) # This to prevent Eigen algorithms trying to run in parallel -- we parallelize at a larger scale.
 
-# pybind11
-set(DIP_BUILD_PYTHON_MODULE ON CACHE BOOL "Build the PyDIP Python module")
-if(DIP_BUILD_PYTHON_MODULE)
-   add_subdirectory(dependencies/pybind11)
-endif()
-
-# viewer
+# OpenGL and FreeGLUT
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/viewer/cmake)
 find_package(OpenGL)
 find_package(FreeGLUT)
 if (OPENGL_FOUND AND FREEGLUT_FOUND)
-   set(DIP_BUILD_VIEWER_MODULE ON CACHE BOOL "Build the viewer module")
+   set(DIP_BUILD_DIPVIEWER ON CACHE BOOL "Build the viewer module")
+endif()
+
+# pybind11
+set(DIP_BUILD_PYDIP ON CACHE BOOL "Build the PyDIP Python module")
+if(DIP_BUILD_PYDIP)
+   add_subdirectory(dependencies/pybind11)
 endif()
 
 # MATLAB
 set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # This is necessary because my version of MATLAB is very recent and my version of CMake is not. Ajust as necessary.
 find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)
+if (Matlab_FOUND)
+   set(DIP_BUILD_DIPIMAGE ON CACHE BOOL "Build the DIPimage toolbox")
+endif()
 
 # Doxygen
 find_package(Doxygen)
@@ -167,8 +168,21 @@ if(DIP_ENABLE_DOCTEST)
    add_dependencies(check unit_tests)
 endif()
 
+### DIPviewer
+
+if(DIP_BUILD_DIPVIEWER)
+   file(GLOB DIP_VIEWER_SRC "viewer/src/*.cpp")
+   file(GLOB DIP_VIEWER_H "viewer/include/diplib/viewer/*.h")
+   add_library(DIPviewer ${DIP_VIEWER_SRC} ${DIP_VIEWER_H})
+   target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR} PUBLIC viewer/include)
+   target_link_libraries(DIPviewer DIP ${FREEGLUT_LIBRARIES} ${OPENGL_LIBRARIES} -lpthread)
+   install(TARGETS DIPviewer DESTINATION lib)
+   install(DIRECTORY viewer/include/ DESTINATION include)
+endif()
+
 ### PyDIP module for Python
-if(DIP_BUILD_PYTHON_MODULE)
+
+if(DIP_BUILD_PYDIP)
    file(GLOB DIP_PYTHON_SRC "pydip/*.cpp")
    file(GLOB DIP_PYTHON_H "pydip/*.h")
    pybind11_add_module(PyDIP_bin ${DIP_PYTHON_SRC} ${DIP_PYTHON_H})
@@ -185,20 +199,9 @@ if(DIP_BUILD_PYTHON_MODULE)
    install(FILES ${DIP_PYTHON_PY} DESTINATION ${PYDIP_INSTALL_PATH})
 endif()
 
-### GLUT viewer
-if(DIP_BUILD_VIEWER_MODULE)
-   file(GLOB DIP_VIEWER_SRC "viewer/src/*.cpp")
-   file(GLOB DIP_VIEWER_H "viewer/include/diplib/viewer/*.h")
-   add_library(DIPviewer ${DIP_VIEWER_SRC} ${DIP_VIEWER_H})
-   target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR} PUBLIC viewer/include)
-   target_link_libraries(DIPviewer DIP ${FREEGLUT_LIBRARIES} ${OPENGL_LIBRARIES} -lpthread)
-   install(TARGETS DIPviewer DESTINATION lib)
-   install(DIRECTORY viewer/include/ DESTINATION include)
-endif()
-
 ### DIPimage toolbox for MATLAB
 
-if(Matlab_FOUND)
+if(DIP_BUILD_DIPIMAGE)
    # Install M-files
    install(DIRECTORY dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m") # could also do PATTERN "*.cpp" EXCLUDE
 
@@ -252,7 +255,7 @@ if(Matlab_FOUND)
 endif()
 
 
-### DIPlib tests ### TEMPORARY!
+### DIPlib tests ### TEMPORARY! -- This should become an 'examples' directory
 
 file(GLOB DIP_TESTS "test/test_*.cpp")
 foreach(file ${DIP_TESTS})
@@ -355,31 +358,31 @@ else()
    message(" * Unit test code excluded")
 endif()
 
-if (DOXYGEN_FOUND)
-   message(" * Doxygen found, 'apidoc' target available")
-   message(" * Documentation installed to: ${DOCUMENTATION_OUTPUT}")
+if(DIP_BUILD_DIPVIEWER)
+   message(" * DIPviewer module added to 'all' target")
 else()
-   message(" * Doxygen not found, 'apidoc' target not available")
+   message(" * DIPviewer module not configured")
 endif()
 
-if(DIP_BUILD_PYTHON_MODULE)
+if(DIP_BUILD_PYDIP)
    message(" * PyDIP module added to 'all' target")
    message(" * PyDIP installed to: ${PYDIP_INSTALL_PATH}")
 else()
    message(" * PyDIP module not configured")
 endif()
 
-if(DIP_BUILD_VIEWER_MODULE)
-   message(" * Viewer module added to 'all' target")
+if(DIP_BUILD_DIPIMAGE)
+   message(" * DIPimage toolbox added to 'all' target")
+   message(" * DIPimage toolbox installed to: ${DIPIMAGE_INSTALL_PATH}")
 else()
-   message(" * Viewer module not configured")
+   message(" * DIPimage toolbox cannot be compiled")
 endif()
 
-if(Matlab_FOUND)
-   message(" * MATLAB found, DIPimage added to 'all' target")
-   message(" * DIPimage installed to: ${DIPIMAGE_INSTALL_PATH}")
+if (DOXYGEN_FOUND)
+   message(" * Doxygen found, 'apidoc' target available")
+   message(" * Documentation installed to: ${DOCUMENTATION_OUTPUT}")
 else()
-   message(" * MATLAB not found, DIPimage cannot be compiled")
+   message(" * Doxygen not found, 'apidoc' target not available")
 endif()
 
 message("")

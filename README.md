@@ -6,7 +6,10 @@ represents a complete rewrite in C++ of the library infrastructure, with most of
 the image processing and analysis algorithms ported unmodified from the previous
 version.
 
-*DIPlib* is distributed under the Apache 2.0 license. See the LICENCE.txt file.
+[Status](https://diplib.github.io/diplib-docs/workplan.html):
+we have built most of the new infrastructure, and are in the process of
+porting algorithms over. It's a slow process, but
+[you can help](https://diplib.github.io/diplib-docs/workplan.html)!
 
 See the [documentation](https://diplib.github.io/diplib-docs/) for more information.
 
@@ -26,12 +29,14 @@ To change which compilers CMake uses:
 
 Available `make` targets:
 
-    <default>   # builds DIPlib and DIPimage MEX-files
+    <default>   # builds all targets
     DIP         # builds the DIPlib library only
+    DIPviewer   # builds the DIPviewer module only (plus the DIPlib library)
     PyDIP       # builds the PyDIP Python module only (plus the DIPlib library)
+    DIPimage    # builds the DIPimage MATLAB toolbox only (plus the DIPlib library)
     check       # builds the unit_tests program and runs it
     apidoc      # Doxygen HTML documentation for the library API
-    install     # builds and installs DIPlib, PyDIP and DIPimage
+    install     # builds and installs all targets
     docs        # makes some PDF project documentation files
     tests       # deprecated -- old test functions
 
@@ -43,8 +48,39 @@ Important `cmake` command-line arguments:
     -DDIP_ENABLE_ASSERT=Off                 # to disable asserts
     -DDIP_ENABLE_DOCTEST=Off                # to disable doctest within DIPlib
     -DDIP_ENABLE_UNICODE=Off                # to disable UFT-8 strings within DIPlib
-    -DDIP_BUILD_PYTHON_MODULE=Off           # to not build the PyDIP Python module
+    -DDIP_BUILD_DIPVIEWER=Off               # to not build/install the DIPviewer module
+    -DDIP_BUILD_PYDIP=Off                   # to not build/install the PyDIP Python module
+    -DDIP_BUILD_DIPIMAGE=Off                # to not build/install the DIPimage MATLAB toolbox
     -DPYBIND11_PYTHON_VERSION=3             # to compile PyDIP agains Python 3
 
 Under Windows you can follow a similar process, but I have never used CMake under
 Windows, so I'll let someone else write this bit.
+
+## License
+
+*DIPlib* is distributed under the Apache 2.0 license. See the LICENCE.txt file.
+
+DIPlib includes the following libraries / external code:
+
+- Eigen 3
+  Mozilla Public License Version 2.0
+  see dependencies/eigen3/LICENSE.txt
+  (we do not use any of the components with more restrictive licenses)
+
+- DocTest
+  Copyright (c) 2016 Viktor Kirilov
+  The MIT License (MIT)
+  see dependencies/doctest/LICENSE.txt
+
+- The DFT algorithm out of OpenCV 3.1
+  Copyright (C) 2000, Intel Corporation
+  Intel License Agreement For Open Source Computer Vision Library
+  see src/transform/opencv_dxt.h
+
+- pybind11 (not used in the DIPlib library, only used in the Python bindings)
+  Copyright (c) 2016 Wenzel Jakob <wenzel.jakob@epfl.ch>, All rights reserved.
+  BSD-style license
+  see dependencies/pybind11/LICENSE
+
+Note that all of these have permissive open-source licenses similar in spirit
+to the Apache License.

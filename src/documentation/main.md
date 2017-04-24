@@ -112,23 +112,25 @@ some (most?) of the low-level interface will change. The internal
 representation of images will also change. However, we will strive
 to keep the high-level toolbox functions identical.
 
-Main contributors to the *DIPlib* project were:
+Main contributors to the original *DIPlib* project were:
 * Geert van Kempen
 * Michael van Ginkel
 * Lucas van Vliet
 * Cris Luengo
 * Bernd Rieger
 
-Additional contributions by:
+With additional contributions by:
 * Ben Verwer
-* Frank Faas
 * Hans Netten
 * J.W. Brandenburg
 * Judith Dijk
-* Kees van Wijk
 * Niels van den Brink
-* Ronald Ligteringen
+* Frank Faas
+* Kees van Wijk
 * Tuan Pham
+* Ronald Ligteringen
+
+See \ref contributors.
 
 ## Contributing
 

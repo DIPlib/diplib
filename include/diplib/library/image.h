@@ -57,12 +57,15 @@ namespace dip {
 // Support for external interfaces
 //
 
-/// \brief a `dip::Image` holds a shared pointer to the data segment using this type.
+/// \brief A `dip::Image` holds a shared pointer to the data segment using this type.
 using DataSegment = std::shared_ptr< void >;
 
+/// \brief This function converts a pointer to a `dip::DataSegment` that does not own the data pointed to.
 inline DataSegment NonOwnedRefToDataSegment( void* ptr ) {
    return DataSegment{ ptr, []( void* ){} };
 }
+
+/// \brief This function converts a pointer to a `dip::DataSegment` that does not own the data pointed to.
 inline DataSegment NonOwnedRefToDataSegment( void const* ptr ) {
    return DataSegment{ const_cast< void* >( ptr ), []( void* ){} };
 }
@@ -78,7 +81,7 @@ inline DataSegment NonOwnedRefToDataSegment( void const* ptr ) {
 class DIP_EXPORT ExternalInterface {
    public:
       /// Allocates the data for an image. The function is required to set `strides`,
-      /// `tensorStride` and `origin`, and return a `dip:::DataSegment` that owns the
+      /// `tensorStride` and `origin`, and return a `dip::DataSegment` that owns the
       /// allocated data segment. Note that `strides` and `tensorStride` might have
       /// been set by the user before calling `dip::Image::Forge`, and should be honored
       /// if possible.

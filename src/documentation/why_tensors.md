@@ -1,4 +1,4 @@
-\page why_tensors Why tensors?
+# Why tensors? {#why_tensors}
 
 [//]: # (DIPlib 3.0)
 

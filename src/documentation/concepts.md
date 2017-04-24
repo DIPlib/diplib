@@ -1,4 +1,4 @@
-\page concepts Assorted concepts used in DIPlib 3.0.
+# Assorted concepts used in DIPlib 3.0 {#concepts}
 
 [//]: # (DIPlib 3.0)
 

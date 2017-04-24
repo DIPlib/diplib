@@ -1,4 +1,4 @@
-\page using_iterators Using iterators to implement filters
+# Using iterators to implement filters {#using_iterators}
 
 [//]: # (DIPlib 3.0)
 

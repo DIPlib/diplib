@@ -19,34 +19,6 @@ limitations under the License.
 
 -------------------------------------------------------------------------------
 
-DIPlib includes the following libraries / external code:
-========================================================
-
-- Eigen 3
-  Mozilla Public License Version 2.0
-  see dependencies/eigen3/LICENSE.txt
-  (we do not use any of the components with more restrictive licenses)
-
-- DocTest
-  Copyright (c) 2016 Viktor Kirilov
-  The MIT License (MIT)
-  see dependencies/doctest/LICENSE.txt
-
-- The DFT algorithm out of OpenCV 3.1
-  Copyright (C) 2000, Intel Corporation
-  Intel License Agreement For Open Source Computer Vision Library
-  see src/transform/opencv_dxt.h
-
-- pybind11 (not used in the DIPlib library, only used in the Python bindings)
-  Copyright (c) 2016 Wenzel Jakob <wenzel.jakob@epfl.ch>, All rights reserved.
-  BSD-style license
-  see dependencies/pybind11/LICENSE
-
-Note that all of these have permissive open-source licenses similar in spirit
-to the Apache License.
-
--------------------------------------------------------------------------------
-
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
