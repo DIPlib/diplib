@@ -379,7 +379,7 @@ class DIP_NO_EXPORT NeighborList {
             /// Dereference, yields the distance to the neighbor
             reference operator*() const { return it_->distance; }
             /// Get the coordinates for the current neighbor
-            IntegerArray Coordinates() const { return it_->coords; }
+            IntegerArray const& Coordinates() const { return it_->coords; }
             /// Increment
             Iterator& operator++() {
                ++it_;

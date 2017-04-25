@@ -637,12 +637,36 @@ inline Image Watershed(
       Image const& in,
       Image const& mask,
       dip::uint connectivity = 1,
-      dfloat maxDepth = 1,
+      dfloat maxDepth = 1.0,
       dip::uint maxSize = 0,
       StringSet const& flags = {}
 ) {
    Image out;
    Watershed( in, mask, out, connectivity, maxDepth, maxSize, flags );
+   return out;
+}
+
+DIP_EXPORT void SeededWatershed(
+      Image const& in,
+      Image const& seeds,
+      Image const& mask,
+      Image& out,
+      dip::uint connectivity = 1,
+      dfloat maxDepth = 1.0,
+      dip::uint maxSize = 0,
+      StringSet const& flags = {}
+);
+inline Image SeededWatershed(
+      Image const& in,
+      Image const& seeds,
+      Image const& mask,
+      dip::uint connectivity = 1,
+      dfloat maxDepth = 1.0,
+      dip::uint maxSize = 0,
+      StringSet const& flags = {}
+) {
+   Image out;
+   SeededWatershed( in, seeds, mask, out, connectivity, maxDepth, maxSize, flags );
    return out;
 }
 
