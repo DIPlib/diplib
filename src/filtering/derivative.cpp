@@ -66,8 +66,8 @@ void Gauss(
       Image& out,
       FloatArray const& sigmas,
       UnsignedArray const& derivativeOrder,
-      StringArray const& boundaryCondition,
       String method,
+      StringArray const& boundaryCondition,
       dfloat truncation
 ) {
    if( method == "best" ) {

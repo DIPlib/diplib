@@ -357,20 +357,20 @@ DIP_EXPORT void Gauss(
       Image& out,
       FloatArray const& sigmas = { 1.0 },
       UnsignedArray const& derivativeOrder = { 0 },
-      StringArray const& boundaryCondition = {},
       String method = "best",
+      StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 );
 inline Image Gauss(
       Image const& in,
       FloatArray const& sigmas = { 1.0 },
       UnsignedArray const& derivativeOrder = { 0 },
-      StringArray const& boundaryCondition = {},
       String const& method = "best",
+      StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
    Image out;
-   Gauss( in, out, sigmas, derivativeOrder, boundaryCondition, method, truncation );
+   Gauss( in, out, sigmas, derivativeOrder, method, boundaryCondition, truncation );
    return out;
 }
 
