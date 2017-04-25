@@ -47,6 +47,7 @@ class DIP_EXPORT Window
     virtual ~Window() { }
 
     void refresh();
+    void drawString(const char *string);
   protected:
     Manager *manager() { return manager_; }
     int  id() { return id_; }  

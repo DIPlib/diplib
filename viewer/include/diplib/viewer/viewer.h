@@ -20,9 +20,10 @@
 #ifndef DIP_VIEWER_H
 #define DIP_VIEWER_H
 
-#include <vector>
 #include <stdint.h>
 #include <unistd.h>
+
+#include <vector>
 
 #undef DIP__ENABLE_DOCTEST
 #include "diplib.h"

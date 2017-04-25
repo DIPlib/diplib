@@ -17,11 +17,6 @@
  * limitations under the License.
  */
 
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
 #include <GL/freeglut.h>
 
 #include "diplib/viewer/control.h"
@@ -33,7 +28,7 @@ void ControlViewPort::render()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_, viewer()->height()-y_-height_, width_, height_);
-  gluOrtho2D(0, width(), height(), 0);
+  glOrtho(0, width(), height(), 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
 
   glColor3f(1., 1., 1.);
@@ -64,8 +59,8 @@ void ControlViewPort::render()
       else
         glColor3f(1., 1., 1.);
       
-      glRasterPos2i((GLint)ii*width()/(GLint)lists_.size(), (GLint)(jj+1)*glutBitmapHeight(GLUT_BITMAP_8_BY_13));
-      glutBitmapString(GLUT_BITMAP_8_BY_13, (const unsigned char*)list[jj].c_str());
+      glRasterPos2i((GLint)ii*width()/(GLint)lists_.size(), (GLint)(jj+1)*13);
+      viewer()->drawString(list[jj].c_str());
     }
   }
 }
@@ -79,7 +74,7 @@ void ControlViewPort::click(int button, int state, int x, int y)
     screenToView(x, y, &ix, &iy);
     
     int list = (x-x_)*(int)lists_.size()/width();
-    int opt  = (y-y_)/glutBitmapHeight(GLUT_BITMAP_8_BY_13);
+    int opt  = (y-y_)/13;
     
     if (list < 0 || list >= (int)lists_.size())
       return;
@@ -124,5 +119,7 @@ void ControlViewPort::click(int button, int state, int x, int y)
         break;
     }
   }
+  
+  viewer()->refresh();
 }
 

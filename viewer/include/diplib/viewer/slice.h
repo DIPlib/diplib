@@ -20,11 +20,7 @@
 #ifndef DIP_VIEWER_SLICE_H
 #define DIP_VIEWER_SLICE_H
 
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+#include <GL/freeglut.h>
 
 #include "diplib/viewer/glutwm.h"
 #include "diplib/viewer/viewer.h"

@@ -18,8 +18,9 @@
  */
 
 #include <unistd.h>
-#include <GL/freeglut.h>
 #include <exception>
+
+#include <GL/freeglut.h>
 
 #include "diplib/viewer/glutwm.h"
 
@@ -37,6 +38,12 @@ void Window::title(const char *name)
 void Window::swap()
 {
   glutSwapBuffers();
+}
+
+void Window::drawString(const char *string)
+{
+  for (; *string; ++string)
+    glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *string);
 }
 
 void Window::refresh()

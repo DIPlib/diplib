@@ -17,11 +17,7 @@
  * limitations under the License.
  */
 
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
+#include <GL/freeglut.h>
 
 #include "diplib/viewer/image.h"
 
@@ -68,7 +64,7 @@ void ImageViewPort::render()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_, viewer()->height()-y_-height_, width_, height_);
-  gluOrtho2D(0, (GLdouble)view()->size(0), (GLdouble)view()->size(1), 0);
+  glOrtho(0, (GLdouble)view()->size(0), (GLdouble)view()->size(1), 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   
   view()->render();

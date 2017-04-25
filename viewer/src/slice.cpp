@@ -17,14 +17,7 @@
  * limitations under the License.
  */
 
-#include <chrono>
-
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 
 #undef DIP__ENABLE_DOCTEST
 #include "diplib/math.h"
@@ -74,7 +67,7 @@ void viewer__ColorMap(Image const& slice, Image& out, ViewingOptions &options)
       case ViewingOptions::LookupTable::ColorSpace:
         // TODO: Need to know color space. Is there even a per-pixel version in diplib?
         for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
-          out[0] = out[1] = out[2] = 0;
+          oPtr[0] = oPtr[1] = oPtr[2] = 0;
         break;
       case ViewingOptions::LookupTable::RGB:
         for (dip::uint kk=0; kk < 3; ++kk)
@@ -268,7 +261,7 @@ void SliceViewPort::render()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_, viewer()->height()-y_-height_, width_, height_);
-  gluOrtho2D(0, width_, height_, 0);
+  glOrtho(0, width_, height_, 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   
   int width = width_, height = height_;
@@ -291,8 +284,8 @@ void SliceViewPort::render()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_, viewer()->height()-y_-height, width, height);
-  gluOrtho2D(odx, odx + (dip::dfloat)view()->size(0)/zdx,
-             ody + (dip::dfloat)view()->size(1)/zdy, ody);
+  glOrtho(odx, odx + (dip::dfloat)view()->size(0)/zdx,
+             ody + (dip::dfloat)view()->size(1)/zdy, ody, -1, 1);
              
   glMatrixMode(GL_MODELVIEW);
   

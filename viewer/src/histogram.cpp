@@ -17,11 +17,6 @@
  * limitations under the License.
  */
 
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
 #include <GL/freeglut.h>
 
 #undef DIP__ENABLE_DOCTEST
@@ -66,7 +61,7 @@ void HistogramViewPort::render()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_, viewer()->height()-y_-height_, 24, height_);
-  gluOrtho2D(0, 24, 0, height_);
+  glOrtho(0, 24, 0, height_, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   colorbar_.render();
   
@@ -78,7 +73,7 @@ void HistogramViewPort::render()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_+24, viewer()->height()-y_-height_, width_-24, height_);
-  gluOrtho2D(0, 1, 0, 1);
+  glOrtho(0, 1, 0, 1, -1, 1);
   glMatrixMode(GL_MODELVIEW);
 
   // Calculate maximum value
@@ -142,17 +137,17 @@ void HistogramViewPort::render()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_+24, viewer()->height()-y_-height_, width_-24, height_);
-  gluOrtho2D(0, width_-24, height_, 0);
+  glOrtho(0, width_-24, height_, 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
 
   char buf[20];
   glColor3f(.5, .5, .5);
   glRasterPos2i(1, 11);
   sprintf(buf, "%9.2e", o.range_.second);
-  glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buf);
+  viewer()->drawString(buf);
   glRasterPos2i(1, height_-3);
   sprintf(buf, "%9.2e", o.range_.first);
-  glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buf);
+  viewer()->drawString(buf);
 }
 
 void HistogramViewPort::click(int button, int state, int x, int y)
