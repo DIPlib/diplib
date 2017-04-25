@@ -122,4 +122,24 @@ void init_morphology( py::module& m ) {
           "maxDepth"_a = 1.0,
           "maxSize"_a = 0,
           "flags"_a = dip::StringSet{} );
+
+   m.def( "Maxima", py::overload_cast<
+                dip::Image const&,
+                dip::Image const&,
+                dip::uint,
+                dip::String const& >( &dip::Maxima ),
+          "in"_a,
+          "mask"_a = dip::Image{},
+          "connectivity"_a = 1,
+          "output"_a = "binary" );
+
+   m.def( "Minima", py::overload_cast<
+                dip::Image const&,
+                dip::Image const&,
+                dip::uint,
+                dip::String const& >( &dip::Minima ),
+          "in"_a,
+          "mask"_a = dip::Image{},
+          "connectivity"_a = 1,
+          "output"_a = "binary" );
 }

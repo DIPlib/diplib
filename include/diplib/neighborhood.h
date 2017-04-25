@@ -395,6 +395,18 @@ class DIP_NO_EXPORT NeighborList {
             bool operator==( Iterator const& other ) const { return it_ == other.it_; }
             /// Inequality comparison
             bool operator!=( Iterator const& other ) const { return it_ != other.it_; }
+            /// Returns true if the neighbor pointed to is within the image
+            bool IsInImage( UnsignedArray const& coords, UnsignedArray const& imsz ) const {
+               for( dip::uint ii = 0; ii < it_->coords.size(); ii++ ) {
+                  // We're assuming it_->coords is very small w.r.t. the image size.
+                  // Unsigned addition of uint + {..,-1,0,1,..}, works just fine: 0+(-1), yields a very large value.
+                  dip::uint pos = coords[ ii ] + static_cast< dip::uint >( it_->coords[ ii ] );
+                  if( pos >= imsz[ ii ] ) {
+                     return false;
+                  }
+               }
+               return true;
+            }
          private:
             NeighborListIterator it_;
       };

@@ -110,15 +110,7 @@ bool PixelHasForegroundNeighbour(
 ) {
    auto it = neighbors.begin();
    for( dip::uint jj = 0; jj < neighborsLabels.size(); ++jj, ++it ) {
-      bool skip = false;
-      for( dip::uint ii = 0; ii < coords.size(); ii++ ) {
-         dip::uint pos = coords[ ii ] + static_cast< dip::uint >( it.Coordinates()[ ii ] ); // unsigned addition of uint + {-1,0,1}, works just fine. In case of 0+(-1), yields a very large value.
-         if( pos >= imsz[ ii ] ) {
-            skip = true;
-            break;
-         }
-      }
-      if( !skip ) {
+      if( it.IsInImage( coords, imsz ) ) {
          if(( *( label + neighborsLabels[ jj ] ) > 0 ) &&
             ( !mask || *( mask + neighborsMask[ jj ] ) != 0 )) {
             return true;
@@ -379,7 +371,6 @@ void dip__SeededWatershed(
 
    dip::uint nNeigh = neighborOffsetsLabels.size();
    UnsignedArray const& imsz = c_grey.Sizes();
-   dip::uint nDims = imsz.size();
 
    // Walk over the entire image & put all the background border pixels on the heap
    JointImageIterator< TPI, LabelType > it( c_grey, c_labels ); // it.In = grey, it.Out = labels
@@ -426,6 +417,7 @@ void dip__SeededWatershed(
    BooleanArray skipar( nNeigh );
    while( !Q.empty() ) {
       dip::sint offsetLabels = Q.top().offset;
+      Q.pop();
       UnsignedArray coords = coordinatesComputer( offsetLabels );
       dip::sint offsetGrey = c_grey.Offset( coords );
       if( PixelIsInfinite( grey[ offsetGrey ] )) {
@@ -433,16 +425,9 @@ void dip__SeededWatershed(
          break; // we're done
       }
       neighborLabels.Reset();
-      for( dip::uint jj = 0; jj < nNeigh; ++jj ) {
-         skipar[ jj ] = false;
-         auto lit = neighborList.begin();
-         for( dip::uint ii = 0; ii < nDims; ++ii, ++lit ) {
-            dip::uint pos = coords[ ii ] + static_cast< dip::uint >( lit.Coordinates()[ ii ] ); // unsigned addition of uint + {-1,0,1}, works just fine. In case of 0+(-1), yields a very large value.
-            if( pos >= imsz[ ii ] ) {
-               skipar[ jj ] = true;
-               break;
-            }
-         }
+      auto lit = neighborList.begin();
+      for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
+         skipar[ jj ] = lit.IsInImage( coords, imsz );
          if( !skipar[ jj ] ) {
             if( !mask || *( mask + neighborOffsetsMask[ jj ] )) {
                LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
@@ -543,9 +528,6 @@ void SeededWatershed(
    UnsignedArray inSizes = c_in.Sizes();
    dip::uint nDims = inSizes.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   for( auto sz : inSizes ) {
-      DIP_THROW_IF( sz < 3, "Input image is too small" );
-   }
    DIP_THROW_IF( inSizes != c_seeds.Sizes(), E::SIZES_DONT_MATCH );
    DIP_THROW_IF(( connectivity < 1 ) || ( connectivity > nDims ), E::ILLEGAL_CONNECTIVITY );
    if( maxDepth < 0 ) {
@@ -580,16 +562,16 @@ void SeededWatershed(
    Convert( c_seeds, out, DT_LABEL );
 
    // Create array with offsets to neighbours
-   NeighborList neighbors( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
-   IntegerArray neighborsIn = neighbors.ComputeOffsets( in.Strides() );
-   IntegerArray neighborsOut = neighbors.ComputeOffsets( out.Strides() );
-   IntegerArray neighborsMask;
+   NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
+   IntegerArray neighborOffsetsIn = neighborList.ComputeOffsets( in.Strides() );
+   IntegerArray neighborOffsetsOut = neighborList.ComputeOffsets( out.Strides() );
+   IntegerArray neighborOffsetsMask;
    if( mask.IsForged() ) {
-      neighborsMask = neighbors.ComputeOffsets( mask.Strides());
+      neighborOffsetsMask = neighborList.ComputeOffsets( mask.Strides());
    }
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( dip__SeededWatershed, ( in, mask, out, neighborsIn, neighborsMask, neighborsOut, neighbors, numlabs, maxDepth, maxSize, lowFirst, binaryOutput ), in.DataType() );
+   DIP_OVL_CALL_REAL( dip__SeededWatershed, ( in, mask, out, neighborOffsetsIn, neighborOffsetsMask, neighborOffsetsOut, neighborList, numlabs, maxDepth, maxSize, lowFirst, binaryOutput ), in.DataType() );
 
    if( binaryOutput ) {
       // Convert the labels into watershed lines
