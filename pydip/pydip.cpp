@@ -55,6 +55,7 @@ PYBIND11_PLUGIN( PyDIP_bin ) {
    init_image( m );
    init_math( m );
    init_linear( m );
+   init_morphology( m );
 
    return m.ptr();
 }

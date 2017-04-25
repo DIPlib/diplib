@@ -123,3 +123,4 @@ struct type_caster< dip::Image > {
 void init_image( py::module& m );
 void init_math( py::module& m );
 void init_linear( py::module& m );
+void init_morphology( py::module& m );
