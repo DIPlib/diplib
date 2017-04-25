@@ -624,6 +624,49 @@ inline Image MorphologicalLaplace(
 //
 
 
+/// \brief Computes the watershed of `in` within `mask`, with on-line merging of regions.
+///
+/// The watershed is a segmentation algorithm that divides the image according to its grey-value
+/// ridges.
+///
+/// `connectivity` determines which pixels are considered neighbors; the default value of 1 leads
+/// to vertex-connected watershed lines (i.e. thinnest possible result).
+///
+/// `flags` determines how the output is computed. There are three options:
+/// - "labels" or "binary": returns either the labels used during processing, with the watershed
+///   lines as background (value 0), or a binary image where the watershed lines are set and the
+///   regions are not set. "binary" is the default. In the "labels" case, labels used are not
+///   necessarily consecutive (i.e. not all label values between 1 and the largest label are
+///   necessarily used).
+/// - "low first" or "high first": determines the sort order of pixels. The default of "low first"
+///   yields the normal watershed, where local minima are origin of the basins, and the watershed
+///   lines run along the high ridges in the image. "high first" simply inverts the definition,
+///   such that local maxima are at the centers of the basins, and the watershed lines run along
+///   the low valleys.
+/// - "fast" or "correct": determines which algorithm is used: "fast" is an algorithm that takes
+///   a few shortcuts, but usually manages to produce good results any way. One shortcut leads to
+///   all border pixels being marked as watershed lines. It is possible to extend the image by one
+///   pixel before processing to circumvent this. The other shortcut means that plateaus are not
+///   handled correctly. A plateau is a region in the image where pixels have exactly the same
+///   value. This is usually seen as watershed lines not running through the middle of the
+///   plateaus, instead being shifted to one side. Adding a little bit of noise to the image, and
+///   setting `maxDepth` to the range of the noise, usually improves the results in these cases
+///   a little bit. "correct" is an algorithm that first finds the local minima through
+///   `dip::Minima` (or maxima if "high first" is set), and then applies `dip::SeededWatershed`.
+///   This always produces correct results, but is significantly slower.
+///
+/// The on-line region merging works as follows: When two regions first meet, a decision is
+/// made on whether to keep the regions separate (and thus put a watershed pixel at that point),
+/// or to merge the regions. If one of the regions is no deeper than `maxDepth` (i.e. the intensity
+/// difference between the region's minimum and the pixel where the region meets another), and is
+/// no larger than `maxSize` (i.e. the number of pixels belonging to the region and that have been
+/// seen so far), then it can be merged. The merged region is subsequently treated as a single
+/// region, and their labels are considered equal. If `maxSize` is zero, no test for size is done.
+/// In this case, the merging is exactly equivalent to applying an H-minima transform to the image
+/// before computing the watershed.
+///
+/// Any pixel that is infinity will be part of the watershed lines, as is any pixel not within
+/// `mask`.
 DIP_EXPORT void Watershed(
       Image const& in,
       Image const& mask,
@@ -646,6 +689,22 @@ inline Image Watershed(
    return out;
 }
 
+/// \brief Computes the watershed of `in` within `mask`, starting at `seeds`, with on-line merging of regions.
+///
+/// `seeds` is a binary or labeled image (if binary, it is labeled using `connectivity`). These labels are
+/// iteratively expanded in the watershed order (i.e. pixels that have a low value in `in` go first) until
+/// they meet. Pixels where two regions meet are marked as the watershed lines. `seeds` is commonly used
+/// to direct the segmentation, and merging is consequently not necessary. However, this algorithm does
+/// include on-line merging. Note that two labeled regions in `seeds` that do not have a grey-value ridge
+/// between them (i.e. they are on the same plateau) will always be merged. Merged labels will be painted
+/// with the label of one of the originating seeds, and the other labels will not be present in the output
+/// (only if `flags` contains "labels").
+///
+/// `connectivity` determines which pixels are considered neighbors; the default value of 1 leads
+/// to vertex-connected watershed lines (i.e. thinnest possible result).
+///
+/// See `dip::Watershed` for a description of the merging parameters (`maxDepth`, `maxSize`), and the
+/// `flags` parameter.
 DIP_EXPORT void SeededWatershed(
       Image const& in,
       Image const& seeds,
@@ -670,6 +729,14 @@ inline Image SeededWatershed(
    return out;
 }
 
+/// \brief Marks significant local minima.
+///
+/// This algorithm works exactly like `dip::Watershed` with the "fast" flag set. The minimum point within
+/// each watershed basin is a local minimum. See `dip::Watershed` for a description of all the parameters.
+///
+/// `output` can be "binary" or "labels", and determines whether the algorithm outputs a binary image or
+/// a labeled image. Note that the labels are not necessarily consecutive (i.e. not all label values between
+/// 1 and the largest label are necessarily used).
 DIP_EXPORT void LocalMinima(
       Image const& in,
       Image const& mask,
@@ -677,9 +744,30 @@ DIP_EXPORT void LocalMinima(
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
-      StringSet const& flags = {}
+      String const& output = "binary"
 );
+inline Image LocalMinima(
+      Image const& in,
+      Image const& mask,
+      dip::uint connectivity = 1,
+      dfloat maxDepth = 1,
+      dip::uint maxSize = 0,
+      String const& output = "binary"
+) {
+   Image out;
+   LocalMinima( in, mask, out, connectivity, maxDepth, maxSize, output );
+   return out;
+}
 
+/// \brief Marks significant local maxima.
+///
+/// This algorithm works exactly like `dip::Watershed` with the "fast" and "high first" flags set. The maximum
+/// point within each watershed basin is a local maximum. See `dip::Watershed` for a description of all the
+/// parameters.
+///
+/// `output` can be "binary" or "labels", and determines whether the algorithm outputs a binary image or
+/// a labeled image. Note that the labels are not necessarily consecutive (i.e. not all label values between
+/// 1 and the largest label are necessarily used).
 DIP_EXPORT void LocalMaxima(
       Image const& in,
       Image const& mask,
@@ -687,9 +775,33 @@ DIP_EXPORT void LocalMaxima(
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
-      StringSet const& flags = {}
+      String const& output = "binary"
 );
+inline Image LocalMaxima(
+      Image const& in,
+      Image const& mask,
+      dip::uint connectivity = 1,
+      dfloat maxDepth = 1,
+      dip::uint maxSize = 0,
+      String const& output = "binary"
+) {
+   Image out;
+   LocalMaxima( in, mask, out, connectivity, maxDepth, maxSize, output );
+   return out;
+}
 
+/// \brief Marks local minima.
+///
+/// This algorithm finds single pixels or plateaus (connected groups of pixels with identical value) that are
+/// surrounded by pixels with a higher value. If `output` is "binary", the result is a binary image where these
+/// pixels and plateaus are set. If `output` is "labels", the result is a labeled image, where the labels used
+/// are not necessarily consecutive (i.e. not all label values between 1 and the largest label are necessarily used).
+///
+/// If `mask` is given, it restricts the area in the image that is searched.
+///
+/// For images that have large plateaus (regions of constant value) that are not local minima, this function can
+/// be quite slow. For example, an image that is zero everywhere except for a small valley. For such an image
+/// it is recommended to use the `mask` input, for example with the output of a threshold operation.
 DIP_EXPORT void Minima(
       Image const& in,
       Image const& mask,
@@ -708,6 +820,18 @@ inline Image Minima(
    return out;
 }
 
+/// \brief Marks local maxima.
+///
+/// This algorithm finds single pixels or plateaus (connected groups of pixels with identical value) that are
+/// surrounded by pixels with a lower value. If `output` is "binary", the result is a binary image where these
+/// pixels and plateaus are set. If `output` is "labels", the result is a labeled image, where the labels used
+/// are not necessarily consecutive (i.e. not all label values between 1 and the largest label are necessarily used).
+///
+/// If `mask` is given, it restricts the area in the image that is searched.
+///
+/// For images that have large plateaus (regions of constant value) that are not local maxima, this function can
+/// be quite slow. For example, an image that is zero everywhere except for a small peak. For such an image
+/// it is recommended to use the `mask` input, for example with the output of a threshold operation.
 DIP_EXPORT void Maxima(
       Image const& in,
       Image const& mask,

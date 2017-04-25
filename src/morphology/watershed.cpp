@@ -29,6 +29,11 @@ namespace dip {
 
 namespace {
 
+enum class FastWatershedOperation {
+      WATERSHED,
+      EXTREMA
+};
+
 using LabelType = dip::uint32;
 constexpr auto DT_LABEL = DT_UINT32;
 constexpr LabelType WATERSHED_LABEL = std::numeric_limits< LabelType >::max();
@@ -165,12 +170,14 @@ template< typename TPI >
 void dip__FastWatershed(
       Image const& c_in,
       Image& c_labels,
+      Image& c_binary,
       std::vector< dip::sint > const& offsets,
       IntegerArray const& neighborOffsets,
       dfloat maxDepth,
       dip::uint maxSize,
       bool lowFirst,
-      bool binaryOutput
+      bool binaryOutput,
+      FastWatershedOperation operation
 ) {
    TPI* in = static_cast< TPI* >( c_in.Origin() );
    LabelType* labels = static_cast< LabelType* >( c_labels.Origin() );
@@ -214,7 +221,7 @@ void dip__FastWatershed(
                }
             }
             LabelType lab = neighborLabels.Label( 0 );
-            if( realRegionCount < 2 ) {
+            if( realRegionCount <= 1 ) {
                // At most one is a "real" region: merge all
                for( dip::uint jj = 1; jj < neighborLabels.Size(); ++jj ) {
                   regions.MergeRegions( lab, neighborLabels.Label( jj ), lowFirst );
@@ -229,19 +236,54 @@ void dip__FastWatershed(
       }
    }
 
-   if( !binaryOutput ) {
-      // Process label image
-      // if binaryOutput it doesn't matter - we're thresholding this label image anyways
-      ImageIterator< LabelType > it( c_labels );
-      do {
-         LabelType lab1 = *it;
-         if( lab1 > 0 ) {
-            LabelType lab2 = regions[ lab1 ].mapped;
-            if( lab1 != lab2 ) {
-               *it = lab2;
+   if( operation == FastWatershedOperation::WATERSHED ) {
+      if( binaryOutput ) {
+         // Process binary output image
+         JointImageIterator< LabelType, bin > it( c_labels, c_binary );
+         do {
+            if( it.In() > 0 ) {
+               it.Out() = true;
             }
-         }
-      } while( ++it );
+         } while( ++it );
+      } else {
+         // Process labels output image
+         ImageIterator< LabelType > it( c_labels );
+         do {
+            LabelType lab1 = *it;
+            if( lab1 > 0 ) {
+               LabelType lab2 = regions[ lab1 ].mapped;
+               if( lab1 != lab2 ) {
+                  *it = lab2;
+               }
+            }
+         } while( ++it );
+      }
+   } else { // operation == FastWatershedOperation::EXTREMA
+      if( binaryOutput ) {
+         // Process binary output image
+         ImageIterator< LabelType > lit( c_labels );
+         ImageIterator< TPI > iit( c_in );
+         ImageIterator< bin > bit( c_binary ); // TODO: we need a triple image iterator here (and elsewhere too)
+         do {
+            LabelType lab = *lit;
+            if( lab > 0 ) {
+               lab = regions[ lab ].mapped;
+               if( *iit == regions[ lab ].lowest ) {
+                  *bit = true;
+               }
+            }
+         } while( ++lit, ++iit, ++bit );
+      } else {
+         // Process labels output image
+         JointImageIterator< TPI, LabelType > it( c_in, c_labels );
+         do {
+            LabelType lab = it.Out();
+            if( lab > 0 ) {
+               lab = regions[ lab ].mapped;
+               it.Out() = it.In() == regions[ lab ].lowest ? lab : LabelType( 0 );
+            }
+         } while( ++it );
+      }
    }
 }
 
@@ -252,7 +294,8 @@ void FastWatershed(
       dip::uint connectivity,
       dfloat maxDepth,
       dip::uint maxSize,
-      StringSet const& flags
+      StringSet const& flags,
+      FastWatershedOperation operation
 ) {
    // Check input
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -303,23 +346,32 @@ void FastWatershed(
       out.Strip();
       out.SetStrides( in.Strides() );
    }
-   out.ReForge( in, DT_LABEL );
-   DIP_THROW_IF( in.Strides() != out.Strides(), "Cannot reforge output image with same strides as input" );
+   Image binary;
+   Image labels;
+   if( binaryOutput ) {
+      out.ReForge( in, DT_BIN );
+      binary = out.QuickCopy();
+      binary.Fill( false );
+      labels.SetStrides( in.Strides() );
+      labels.ReForge( in, DT_LABEL );
+   } else {
+      out.ReForge( in, DT_LABEL );
+      labels = out.QuickCopy();
+      // binary remains unforged.
+   }
+   DIP_THROW_IF( in.Strides() != labels.Strides(), "Cannot reforge labels image with same strides as input" );
+   DIP_THROW_IF( binaryOutput && ( in.Strides() != binary.Strides() ), "Cannot reforge output image with same strides as input" );
    // TODO: We could create a temporary image here, with the needed strides, and then copy (or move) to out.
    // TODO: Alternatively, we could copy the input if it doesn't have compact strides.
-   out.Fill( 0 );
+   labels.Fill( 0 );
 
    // Create array with offsets to neighbours
    NeighborList neighbors( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
    IntegerArray neighborOffsets = neighbors.ComputeOffsets( in.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( dip__FastWatershed, ( in, out, offsets, neighborOffsets, maxDepth, maxSize, lowFirst, binaryOutput ), in.DataType() );
-
-   if( binaryOutput ) {
-      // Convert the labels into watershed lines
-      Equal( out, 0, out );
-   }
+   DIP_OVL_CALL_REAL( dip__FastWatershed, ( in, labels, binary, offsets, neighborOffsets,
+         maxDepth, maxSize, lowFirst, binaryOutput, operation ), in.DataType() );
 }
 
 template< typename TPI >
@@ -597,8 +649,32 @@ void Watershed(
       }
       SeededWatershed( in, seeds, mask, out, connectivity, maxDepth, maxSize, flags );
    } else {
-      FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, flags );
+      FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, flags, FastWatershedOperation::WATERSHED );
    }
+}
+
+void LocalMinima(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint connectivity,
+      dfloat maxDepth,
+      dip::uint maxSize,
+      String const& output
+) {
+   FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "low first" }, FastWatershedOperation::EXTREMA );
+}
+
+void LocalMaxima(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint connectivity,
+      dfloat maxDepth,
+      dip::uint maxSize,
+      String const& output
+) {
+   FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "high first" }, FastWatershedOperation::EXTREMA );
 }
 
 } // namespace dip

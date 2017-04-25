@@ -289,8 +289,14 @@ struct DIP_NO_EXPORT DataType {
    ///
    /// Note that you can add these constants together, for example `dip::DataType::Class_UInt8 + dip::DataType::Class_UInt16`.
    ///
-   /// Note also that `Class_Unsigned` and `Class_Signed` are oposites, as are `Class_Complex` and `Class_NonComplex`,
-   /// `Class_Binary` and `Class_NonBinary`, and `Class_FlexBin` and `Class_Integer`.
+   /// The following combination of classes cover all data types, and are non-intersecting:
+   /// - `Class_Unsigned` and `Class_Signed`
+   /// - `Class_Complex` and `Class_NonComplex`
+   /// - `Class_Binary` and `Class_NonBinary`
+   /// - `Class_FlexBin` and `Class_Integer`
+   /// - `Class_Flex` and `Class_IntOrBin`
+   /// - `Class_Binary`, `Class_Real` and `Class_Complex`
+   /// - `Class_Binary`, `Class_Integer`, `Class_Float` and `Class_Complex`
    DIP_DECLARE_OPTIONS( Classes );
    static DIP_DEFINE_OPTION( Classes, Class_Bin, static_cast<dip::uint>( DT::BIN ) );
    static DIP_DEFINE_OPTION( Classes, Class_UInt8, static_cast<dip::uint>( DT::UINT8 ) );
