@@ -43,10 +43,10 @@ namespace dip {
 /// image to a form suitable for display.
 ///
 /// An object is created for a particular image; the image cannot be replaced. Different display options can then
-/// be set. When the `dip::ImageDisplay::Output` method is called, a 2D, UINT8 image is prepared for display. A
-/// const reference to this image is returned. The image is updated every time the `%Output` method is called,
-/// not when display options are set. The display options are designed to be settable by a user using the image
-/// display window.
+/// be set. When the `dip::ImageDisplay::Output` method is called, a 1D or 2D, grey-value or RGB, UINT8 image is
+/// prepared for display. A const reference to this image is returned. The image is updated every time the
+/// `%Output` method is called, not when display options are set. The display options are designed to be
+/// settable by a user using the image display window.
 ///
 /// See the `dipimage/imagedisplay.cpp` file implementing the MATLAB interface to this class, and the
 /// `dipimage/dipshow.m` function, for an example of how this can be used.
@@ -67,18 +67,44 @@ class DIP_NO_EXPORT ImageDisplay{
       ImageDisplay( ImageDisplay const& ) = delete;
       ImageDisplay& operator=( const ImageDisplay& ) = delete;
 
-      /// \brief The constructor takes an image with at least 2 dimensions. If it is a non-color tensor image,
-      /// no more than three tensor elements are allowed, which are interpreted as RGB values.
+      /// \brief The constructor takes an image with at least 1 dimension.
       ImageDisplay( Image const& image, ExternalInterface* externalInterface = nullptr ) :
             image_( image.QuickCopy() ), colorspace_( image.ColorSpace() ) {
          DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
+         // Dimensionality
          dip::uint nDims = image_.Dimensionality();
-         DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-         if( colorspace_.empty() ) {
-            DIP_THROW_IF( image_.TensorElements() > 3, "ImageDisplay only works for tensor images with up to three components." );
-            if( !image_.IsScalar() ) {
-               colorspace_ = "RGB";
+         DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+         if( nDims == 1 ) {
+            twoDimOut_ = false;
+            dim2_ = dim1_;
+         } else if( nDims > 2 ) {
+            FillOrthogonal();
+         }
+         // Tensor dimension
+         if( image_.IsScalar() ) {
+            // grey-value image
+            colorspace_.clear();
+         } else {
+            if(( colorspace_ == "RGB" ) && ( image_.TensorElements() != 3 )) {
+               colorspace_.clear();
             }
+            if( colorspace_.empty() ) {
+               // tensor image
+               green_ = 1;
+               if( image_.TensorElements() > 2 ) {
+                  blue_ = 2;
+               }
+            } else {
+               // color image, shown as RGB
+               green_ = 1;
+               blue_ = 2;
+            }
+         }
+         // Data type
+         if( IsBinary() ) {
+            range_ = { 0.0, 1.0 }; // Different default for binary images
+         } else if( IsComplex() ) {
+            complexMode_ = ComplexMode::MAGNITUDE; // Different default for complex images
          }
          coordinates_.resize( image_.Dimensionality(), 0 );
          if( externalInterface ) {
@@ -86,25 +112,60 @@ class DIP_NO_EXPORT ImageDisplay{
          }
       }
 
+      /// \brief Retrives a reference to the input image.
+      Image const& Input() const {
+         return image_;
+      }
+
+      /// \brief Retrives a reference to the raw slice image. This function also causes an update of the slice
+      /// if the projection changed. The raw slice image contains the input data for the what is shown in
+      /// `Output`.
+      DIP_EXPORT Image const& Slice();
+
       /// \brief Retrives a reference to the output image. This function also causes an update of the output if
       /// any of the modes changed.
       DIP_EXPORT Image const& Output();
 
+      /// \brief Returns true if the next call to `Output` will yield a different result from the previous one.
+      /// That is, the display needs to be redrawn.
+      bool OutIsDirty() const { return outputIsDirty_ || rgbSliceIsDirty_ || sliceIsDirty_; }
+
+      /// \brief Returns true if the next call to `Output` will yield a different slice, which means that the
+      /// output image could have a different size (and be reallocated).
+      bool SliceIsDirty() const { return sliceIsDirty_; }
+
       /// \brief Gets input image intensities at a given 2D point (automatically finds corresponding nD location).
       /// Because the pixel can be of different types (integer, float, complex) and can have up to three samples,
-      /// a string is returned with appropriately formatted values.
-      DIP_EXPORT String Pixel( dip::uint x, dip::uint y );
+      /// a string is returned with appropriately formatted values. In case of a 1D `Output`, `y` is ignored.
+      DIP_EXPORT String Pixel( dip::uint x, dip::uint y = 0 );
 
       /// \brief Sets the projection/slicing direction, as the two image dimensions to show along the x and y axis
-      /// of the display.
+      /// of the 2D display. If `dim1==dim2`, a 1D output is produced.
       void SetDirection( dip::uint dim1, dip::uint dim2 ) {
          dip::uint nDim = image_.Dimensionality();
          DIP_THROW_IF(( dim1 >= nDim ) || ( dim2 >= nDim ), E::ILLEGAL_DIMENSION );
-         DIP_THROW_IF( dim1 == dim2, "Two different dimensions are needed for display" );
-         if(( dim1_ != dim1 ) || ( dim2_ != dim2 )) {
-            dim1_ = dim1;
-            dim2_ = dim2;
+         bool update = false;
+         if( dim1 == dim2 ) {
+            if( twoDimOut_ || ( dim1_ != dim1 )) {
+               twoDimOut_ = false;
+               dim1_ = dim1;
+               dim2_ = dim1; // set same as dim1_ so SetCoordinates() is easier.
+               update = true;
+            }
+         } else {
+            if( !twoDimOut_ || ( dim1_ != dim1 ) || ( dim2_ != dim2 )) {
+               twoDimOut_ = true;
+               dim1_ = dim1;
+               dim2_ = dim2;
+               update = true;
+            }
+         }
+         if( update ) {
             sliceIsDirty_ = true;
+            if( twoDimOut_ && nDim == 2 ) { // Make sure projection mode is always "slice" if ndims(img)==ndims(out)
+               projectionMode_ = ProjectionMode::SLICE;
+            }
+            FillOrthogonal();
          }
       }
 
@@ -112,21 +173,21 @@ class DIP_NO_EXPORT ImageDisplay{
       void SetCoordinates( UnsignedArray coordinates ) {
          DIP_THROW_IF( coordinates.size() != coordinates_.size(), E::ARRAY_ILLEGAL_SIZE );
          for( dip::uint ii = 0; ii < coordinates_.size(); ++ii ) {
-            if( coordinates[ ii ] >= image_.Size( ii ) ) {
+            if( coordinates[ ii ] >= image_.Size( ii )) {
                coordinates[ ii ] = image_.Size( ii ) - 1;
             }
             if( coordinates_[ ii ] != coordinates[ ii ] ) {
                coordinates_[ ii ] = coordinates[ ii ];
-               if(( ii != dim1_ ) && ( ii != dim2_ )) {
+               if(( projectionMode_ == ProjectionMode::SLICE ) && ( ii != dim1_ ) && ( ii != dim2_ )) {
                   sliceIsDirty_ = true;
                }
             }
          }
       }
 
-      /// \brief Sets the projection mode. Has no effect on 2D images.
+      /// \brief Sets the projection mode. Has no effect if image dimensionality is equal to projection dimensionality.
       void SetProjectionMode( ProjectionMode projectionMode ) {
-         if(( image_.Dimensionality() > 2 ) && ( projectionMode_ != projectionMode )) {
+         if(( image_.Dimensionality() > ( twoDimOut_ ? 2 : 1 )) && ( projectionMode_ != projectionMode )) {
             projectionMode_ = projectionMode;
             sliceIsDirty_ = true;
             if( projectionMode_ != ProjectionMode::SLICE ) {
@@ -138,12 +199,12 @@ class DIP_NO_EXPORT ImageDisplay{
          }
       }
 
-      /// \brief Sets the projection mode. Has no effect on 2D images.
+      /// \brief Sets the projection mode. Has no effect if image dimensionality is equal to projection dimensionality.
       ///
       /// Valid projection modes are:
-      /// - "slice": the 2D image shown is a slice through the nD image.
-      /// - "max": the 2D image shown is the max projection of the nD image.
-      /// - "mean": the 2D image shown is the mean projection of the nD image.
+      /// - "slice": the 1D/2D image shown is a slice through the nD image.
+      /// - "max": the 1D/2D image shown is the max projection of the nD image.
+      /// - "mean": the 1D/2D image shown is the mean projection of the nD image.
       ///
       /// For an image with complex samples, setting the projection mode to "max"
       /// forces the complex to real mapping mode to "magnitude".
@@ -161,15 +222,17 @@ class DIP_NO_EXPORT ImageDisplay{
          }
       }
 
-      /// \brief Sets the complex to real mapping mode. Has no effect when projection mode is set to "max".
+      /// \brief Sets the complex to real mapping mode. Has no effect when projection mode is set to "max", or for
+      /// non-complex images.
       void SetComplexMode( ComplexMode complexMode ) {
-         if(( projectionMode_ != ProjectionMode::MAX ) && ( complexMode_ != complexMode )) {
+         if( IsComplex() && ( projectionMode_ != ProjectionMode::MAX ) && ( complexMode_ != complexMode )) {
             complexMode_ = complexMode;
             outputIsDirty_ = true;
          }
       }
 
-      /// \brief Sets the complex to real mapping mode. Has no effect when projection mode is set to "max".
+      /// \brief Sets the complex to real mapping mode. Has no effect when projection mode is set to "max", or for
+      /// non-complex images.
       ///
       /// Valid complex to real mapping modes are:
       /// - "magnitude": the intensity displayed is the magnitude of the complex values
@@ -193,26 +256,30 @@ class DIP_NO_EXPORT ImageDisplay{
          }
       }
 
-      /// \brief Sets the intensity mapping mode.
+      /// \brief Sets the intensity mapping mode. Has no effect for binary images.
       void SetMappingMode( MappingMode mappingMode ) {
-         if( mappingMode_ != mappingMode ) {
+         if( !IsBinary() && ( mappingMode_ != mappingMode )) {
             mappingMode_ = mappingMode;
             outputIsDirty_ = true;
          }
       }
 
       /// \brief Sets the range of intensities to be mapped to the output range. Forces intensity mapping mode to linear.
+      /// Has no effect for binary images.
       void SetRange( Limits range ) {
          DIP_THROW_IF( range.lower >= range.upper, E::PARAMETER_OUT_OF_RANGE );
-         mappingMode_ = MappingMode::MANUAL;
-         if(( range_.lower != range.lower ) ||
-            ( range_.upper != range.upper )) {
-            range_ = range;
-            outputIsDirty_ = true;
+         if( !IsBinary() ) {
+            mappingMode_ = MappingMode::MANUAL;
+            if(( range_.lower != range.lower ) ||
+               ( range_.upper != range.upper )) {
+               range_ = range;
+               outputIsDirty_ = true;
+            }
          }
       }
 
       /// \brief Sets the range of intensities to be mapped to the output range. Forces intensity mapping mode to linear.
+      /// Has no effect for binary images.
       ///
       /// Valid range modes are:
       /// - "unit": [0, 1].
@@ -273,25 +340,37 @@ class DIP_NO_EXPORT ImageDisplay{
          }
       };
 
-      /// \brief Sets the global stretch mode. Has no effect on 2D images.
+      /// \brief Sets the global stretch mode. Has no effect on 2D images or when the projection mode is not "slice"
       ///
       /// Valid global stretch modes are:
-      /// - "yes": intensity stretching is computed using all values in the image.
-      /// - "no": intensity stretching is computed using only values visible in the current slice.
+      /// - "yes"/"on": intensity stretching is computed using all values in the image.
+      /// - "no"/"off": intensity stretching is computed using only values visible in the current slice.
       void SetGlobalStretch( String const& globalStretch ) {
-         if( globalStretch == "yes" ) {
+         if(( globalStretch == "yes" ) || ( globalStretch == "on" )) {
             SetGlobalStretch( true );
-         } else if( globalStretch == "no" ) {
+         } else if(( globalStretch == "no" ) || ( globalStretch == "off" )){
             SetGlobalStretch( false );
          } else {
             DIP_THROW( E::INVALID_FLAG );
          }
       }
 
-      /// \brief Get the projection/slicing direction.
+      /// \brief Get the projection/slicing direction. The two values returned are identical when output is 1D.
       std::pair< dip::uint, dip::uint > GetDirection() const { return { dim1_, dim2_ }; };
+
+      /// \brief Returns the array of dimensions orthogonal to those returned by `GetDirection`. These are the
+      /// dimensions not displayed.
+      UnsignedArray const& GetOrhthogonal() const { return orthogonal_; }
+
       /// \brief Get the current coordinates.
-      UnsignedArray GetCoordinates() const { return coordinates_; }
+      UnsignedArray const& GetCoordinates() const { return coordinates_; }
+
+      /// \brief Get the image sizes.
+      UnsignedArray const& GetSizes() const { return image_.Sizes(); }
+
+      /// \brief Get the image dimensionality.
+      dip::uint Dimensionality() const { return image_.Dimensionality(); }
+
       /// \brief Get the current projection mode.
       String GetProjectionMode() const {
          switch( projectionMode_ ) {
@@ -301,6 +380,7 @@ class DIP_NO_EXPORT ImageDisplay{
             case ProjectionMode::MEAN:  return "mean";
          }
       }
+
       /// \brief Get the current complex to real mapping mode.
       String GetComplexMode() const {
          switch( complexMode_ ) {
@@ -311,6 +391,7 @@ class DIP_NO_EXPORT ImageDisplay{
             case ComplexMode::IMAG:    return "imag";
          }
       }
+
       /// \brief Get the current intensity mapping mode.
       String GetMappingMode() const {
          switch( mappingMode_ ) {
@@ -322,40 +403,55 @@ class DIP_NO_EXPORT ImageDisplay{
             case MappingMode::LOGARITHMIC:   return "log";
          }
       }
+
       /// \brief Get the current intensity range.
       Limits GetRange() const { return range_; }
+
+      /// \brief Gets the image intensity range (that selected with "lin") for the current slicing and complex
+      /// mapping modes. If `compute` is true, it computes them if they're not yet computed.
+      DIP_EXPORT Limits GetLimits( bool compute );
+
       /// \brief Get the current global stretch mode.
       bool GetGlobalStretch() const { return globalStretch_; }
 
    private:
 
-      // A copy of the original image, so we're not dependent on the original image still existing. This is where data
-      // is fetched when slice mode, direction or location is changed.
+      // A copy of the original image, so we're not dependent on the original image still existing. This is where
+      // data is fetched when slice mode, direction or location is changed.
       Image image_;
-      // The 2D slice to be displayed (could be either shared data with the image, or in case of a projection,
-      // owning its own data). This is where intensity lookup is performed.
+      // The 1D/2D slice to be displayed (could be either shared data with the image, or in case of a projection,
+      // owning its own data). This is where intensity lookup is performed. Contains all the same tensor elements
+      // as `image_`
       Image slice_;
-      // Another 2D slice, either identical to the previous, or converted to RGB if it was a color image.
-      // This prevents repeated (possibly expensive) conversion to RGB when changing mapping modes.
+      // Another 1D/2D slice, either identical to slice_, or converted to RGB if slice_ is in a different color
+      // space, or with selected tensor elements for display (has 1 or 3 tensor elements). This is where output_
+      // is computed from when e.g. the mapping mode changes.
       Image rgbSlice_;
-      // The output image: 2D UINT8.
-      // The external interface controls how the color channel dimension is configured.
+      // The output image: 1D/2D UINT8, 1 or 3 tensor elements.
+      // The external interface controls allocation of the data segment for this image.
       Image output_;
 
       // Changing display flags causes one or more "dirty" flags to be set. This indicates that the corresponding
       // image needs to be recomputed.
-      bool sliceIsDirty_ = true;  // corresponds to slice_ and rgbSlice_
-      bool outputIsDirty_ = true; // corresponds to output_
+      bool sliceIsDirty_ = true;    // corresponds to slice_
+      bool rgbSliceIsDirty_ = true; // corresponds to rgbSlice_
+      bool outputIsDirty_ = true;   // corresponds to output_
 
       // The color space of the input image
       String colorspace_;
 
       // Display flags
-      dip::uint dim1_ = 0;        // slicing direction
-      dip::uint dim2_ = 1;        // slicing direction
+      dip::uint dim1_ = 0;        // slicing direction x
+      dip::uint dim2_ = 1;        // slicing direction y (keep identical to dim1_ if `!twoDimOut_`)
+      UnsignedArray orthogonal_;  // dimensions orthogonal to dim1_ and dim2_.
+      bool twoDimOut_ = true;     // slice is 1D or 2D?
+      dip::sint red_ = 0;         // tensor element to display in the red channel (or in the grey-value image)
+      dip::sint green_ = -1;      // tensor element to display in the green channel
+      dip::sint blue_ = -1;       // tensor element to display in the blue channel
+      // TODO: functions to set and get which tensor elements are shown in which channel
       UnsignedArray coordinates_; // coordinates through which the slice is taken
       ProjectionMode projectionMode_ = ProjectionMode::SLICE;
-      ComplexMode complexMode_ = ComplexMode::MAGNITUDE;
+      ComplexMode complexMode_ = ComplexMode::REAL;
       MappingMode mappingMode_ = MappingMode::MANUAL;
       Limits range_ = { 0.0, 255.0 };
       bool globalStretch_ = false;
@@ -371,11 +467,29 @@ class DIP_NO_EXPORT ImageDisplay{
       std::array< LimitsLists, 4 > sliceLimits_;  // Limits to use when !globalStretch_
       std::array< LimitsLists, 4 > globalLimits_; // Limits to use when globalStretch_
 
-      DIP_NO_EXPORT void ComputeLimits(); // computes limits for current mode, if they hadn't been computed yet
+      bool IsComplex() { return image_.DataType().IsComplex(); }
+      bool IsBinary() { return image_.DataType().IsBinary(); }
+
+      // Computes limits for current mode, if they hadn't been computed yet.
+      // If `set`, sets the range_ value to the limits for the current mode.
+      DIP_NO_EXPORT void ComputeLimits( bool set = true );
+
       DIP_NO_EXPORT void InvalidateSliceLimits();
 
       DIP_NO_EXPORT void UpdateSlice();
+      DIP_NO_EXPORT void UpdateRgbSlice();
       DIP_NO_EXPORT void UpdateOutput();
+
+      void FillOrthogonal() {
+         dip::uint nDims = image_.Dimensionality();
+         orthogonal_.resize( nDims - ( twoDimOut_ ? 2 : 1 ));
+         dip::uint jj = 0;
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            if(( ii != dim1_ ) && ( ii != dim2_ )) {
+               orthogonal_[ jj++ ] = ii;
+            }
+         }
+      }
 };
 
 

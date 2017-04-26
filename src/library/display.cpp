@@ -31,7 +31,7 @@ namespace dip {
 static ColorSpaceManager colorSpaceManager;
 
 // Don't call this function if mappingMode_ == MappingMode::MANUAL!
-void ImageDisplay::ComputeLimits() {
+void ImageDisplay::ComputeLimits( bool set ) {
    Limits* lims;
    Image tmp;
    if( globalStretch_ ) {
@@ -62,33 +62,41 @@ void ImageDisplay::ComputeLimits() {
    }
    if( tmp.IsForged() ) {
       // Compute!
-      if( tmp.DataType().IsComplex()) {
-         switch( complexMode_ ) {
-            //case ComplexMode::MAGNITUDE:
-            default:
-               tmp = Abs( tmp );
-               break;
-            case ComplexMode::PHASE:
-               tmp = Phase( tmp );
-               break;
-            case ComplexMode::REAL:
-               tmp = tmp.Real();
-               break;
-            case ComplexMode::IMAG:
-               tmp = tmp.Imaginary();
-               break;
-         }
-      }
-      if( mappingMode_ == MappingMode::PERCENTILE ) {
-         lims->lower = static_cast< dfloat >( Percentile( tmp, {}, 5.0 ));
-         lims->upper = static_cast< dfloat >( Percentile( tmp, {}, 95.0 ));
+      if( tmp.DataType().IsBinary() ) {
+         lims->lower = 0.0;
+         lims->upper = 1.0;
       } else {
-         MinMaxAccumulator res = GetMaximumAndMinimum( tmp );
-         lims->lower = res.Minimum();
-         lims->upper = res.Maximum();
+         if( tmp.DataType().IsComplex()) {
+            switch( complexMode_ ) {
+               //case ComplexMode::MAGNITUDE:
+               default:
+                  tmp = Abs( tmp );
+                  break;
+               case ComplexMode::PHASE:
+                  tmp = Phase( tmp );
+                  break;
+               case ComplexMode::REAL:
+                  tmp = tmp.Real();
+                  break;
+               case ComplexMode::IMAG:
+                  tmp = tmp.Imaginary();
+                  break;
+            }
+         }
+         if( mappingMode_ == MappingMode::PERCENTILE ) {
+            lims->lower = static_cast< dfloat >( Percentile( tmp, {}, 5.0 ));
+            lims->upper = static_cast< dfloat >( Percentile( tmp, {}, 95.0 ));
+         } else {
+            MinMaxAccumulator res = GetMaximumAndMinimum( tmp );
+            lims->lower = res.Minimum();
+            lims->upper = res.Maximum();
+         }
+         // TODO: make sure lims doesn't have a NaN in it.
       }
    }
-   range_ = *lims;
+   if( set ) {
+      range_ = *lims;
+   }
 }
 
 void ImageDisplay::InvalidateSliceLimits() {
@@ -96,6 +104,22 @@ void ImageDisplay::InvalidateSliceLimits() {
       lim.maxMin = { NaN, NaN };
       lim.percentile = { NaN, NaN };
    }
+}
+
+ImageDisplay::Limits ImageDisplay::GetLimits( bool compute ) {
+   Limits* lims;
+   if( globalStretch_ ) {
+      lims = &( globalLimits_[ static_cast< unsigned >( complexMode_ ) ].maxMin );
+   } else {
+      lims = &( sliceLimits_[ static_cast< unsigned >( complexMode_ ) ].maxMin );
+   }
+   if( compute && std::isnan( lims->lower )) {
+      auto tmp = mappingMode_;
+      mappingMode_ = MappingMode::MAXMIN;
+      ComputeLimits( false ); // updates the value that `lims` points to, but doesn't update `range_`.
+      mappingMode_ = tmp;
+   }
+   return *lims;
 }
 
 // Compute projection
@@ -134,28 +158,49 @@ void ImageDisplay::UpdateSlice() {
                break;
             }
          }
-         slice_.PermuteDimensions( { dim1_, dim2_ } );
+         if( dim1_ == dim2_ ) {
+            slice_.PermuteDimensions( { dim1_ } );
+         } else {
+            slice_.PermuteDimensions( { dim1_, dim2_ } );
+         }
       } else {
          slice_ = image_.QuickCopy();
       }
-      if( colorspace_.empty() ) {
+      sliceIsDirty_ = false;
+      rgbSliceIsDirty_ = true;
+   }
+}
+
+void ImageDisplay::UpdateRgbSlice() {
+   UpdateSlice();
+   if( rgbSliceIsDirty_ ) {
+      if( slice_.IsScalar() || ( colorspace_ == "RGB" )) {
          rgbSlice_ = slice_.QuickCopy();
-      } else if( colorspace_ == "RGB" ) {
-         rgbSlice_ = slice_.QuickCopy();
-         if( rgbSlice_.TensorElements() < 3 ) {
-            Image tmp( rgbSlice_.Sizes(), 3, rgbSlice_.DataType() );
-            tmp.Fill( 0 );
-            tmp[ 0 ].Copy( rgbSlice_[ 0 ] );
-            if( rgbSlice_.TensorElements() > 1 ) {
-               tmp[ 1 ].Copy( rgbSlice_[ 1 ] );
-            }
-            rgbSlice_ = std::move( tmp );
+      } else if( colorspace_.empty() ) {
+         if( rgbSlice_.SharesData( slice_ )) {
+            rgbSlice_.Strip();
+         }
+         rgbSlice_.ReForge( slice_.Sizes(), 3, slice_.DataType() );
+         if( red_ >= 0 ) {
+            rgbSlice_[ 0 ].Copy( slice_[ static_cast< dip::uint >( red_ ) ] );
+         } else {
+            rgbSlice_[ 0 ].Fill( 0 );
+         }
+         if( green_ >= 0 ) {
+            rgbSlice_[ 1 ].Copy( slice_[ static_cast< dip::uint >( green_ ) ] );
+         } else {
+            rgbSlice_[ 1 ].Fill( 0 );
+         }
+         if( blue_ >= 0 ) {
+            rgbSlice_[ 2 ].Copy( slice_[ static_cast< dip::uint >( blue_ ) ] );
+         } else {
+            rgbSlice_[ 2 ].Fill( 0 );
          }
       } else {
          slice_.SetColorSpace( colorspace_ );
          colorSpaceManager.Convert( slice_, rgbSlice_, "RGB" );
       }
-      sliceIsDirty_ = false;
+      rgbSliceIsDirty_ = false;
       outputIsDirty_ = true;
       InvalidateSliceLimits();
    }
@@ -187,7 +232,7 @@ void CastToUint8(
       dip::dfloat scale
 ) {
    dip::uint width = slice.Size( 0 );
-   dip::uint height = slice.Size( 1 );
+   dip::uint height = slice.Dimensionality() == 2 ? slice.Size( 1 ) : 1;
    dip::sint sliceStride0 = slice.Stride( 0 );
    dip::sint sliceStride1 = slice.Stride( 1 );
    dip::sint outStride0 = out.Stride( 0 );
@@ -219,10 +264,45 @@ void CastToUint8(
       }
    }
 }
+template<>
+void CastToUint8< bin >(
+      Image const& slice,
+      Image& out,
+      bool /*usePhase*/,
+      bool /*logarithmic*/,
+      dip::dfloat /*offset*/,
+      dip::dfloat /*scale*/
+) {
+   dip::uint width = slice.Size( 0 );
+   dip::uint height = slice.Dimensionality() == 2 ? slice.Size( 1 ) : 1;
+   dip::sint sliceStride0 = slice.Stride( 0 );
+   dip::sint sliceStride1 = slice.Stride( 1 );
+   dip::sint outStride0 = out.Stride( 0 );
+   dip::sint outStride1 = out.Stride( 1 );
+   dip::uint telems = slice.TensorElements();
+   dip::sint sliceStrideT = slice.TensorStride();
+   dip::sint outStrideT = out.TensorStride();
+   for( dip::sint kk = 0; kk < static_cast< dip::sint >( telems ); ++kk ) {
+      bin* slicePtr = static_cast< bin* >( slice.Pointer( sliceStrideT * kk ) );
+      uint8* outPtr = static_cast< uint8* >( out.Pointer( outStrideT * kk ) );
+      for( dip::uint jj = 0; jj < height; ++jj ) {
+         bin* iPtr = slicePtr;
+         uint8* oPtr = outPtr;
+         for( dip::uint ii = 0; ii < width; ++ii ) {
+            *oPtr = *iPtr ? uint8( 255 ) : uint8( 0 );
+            iPtr += sliceStride0;
+            oPtr += outStride0;
+         }
+         slicePtr += sliceStride1;
+         outPtr += outStride1;
+      }
+   }
+}
 
 } // namespace
 
 void ImageDisplay::UpdateOutput() {
+   UpdateRgbSlice();
    if( outputIsDirty_ ) {
       // Input range to map to output
       if( mappingMode_ != MappingMode::MANUAL ) {
@@ -266,7 +346,7 @@ void ImageDisplay::UpdateOutput() {
          }
       }
       // Create output
-      DIP_ASSERT( slice.Dimensionality() == 2 );
+      DIP_ASSERT(( !twoDimOut_ && ( slice.Dimensionality() == 1 )) || ( twoDimOut_ && ( slice.Dimensionality() == 2 )));
       output_.ReForge( slice.Sizes(), slice.TensorElements(), DT_UINT8 );
       // Stretch and convert the data
       DIP_OVL_CALL_ALL( CastToUint8, ( slice, output_, usePhase, logarithmic, offset, scale ), slice.DataType() );
@@ -274,8 +354,12 @@ void ImageDisplay::UpdateOutput() {
    }
 }
 
-Image const& ImageDisplay::Output() {
+Image const& ImageDisplay::Slice() {
    UpdateSlice();
+   return slice_;
+}
+
+Image const& ImageDisplay::Output() {
    UpdateOutput();
    return output_;
 }
