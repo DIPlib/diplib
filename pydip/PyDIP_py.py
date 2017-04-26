@@ -37,7 +37,8 @@ def Show(img, mode=None):
    elif mode=='log':
       kwargs['bounds'] = dip.GetMaximumAndMinimum(img)
       kwargs['mode'] = 'log'
-   pp.imshow(dip.Display(img, **kwargs))
-   pp.show(block=False)
+   #pp.imshow(dip.Display(img, **kwargs))
+   #pp.show(block=False)
+   # TODO: Fix dip.Display
 
 dip.Image.Show = Show

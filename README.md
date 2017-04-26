@@ -32,7 +32,7 @@ Available `make` targets:
     <default>   # builds all targets
     DIP         # builds the DIPlib library only
     DIPviewer   # builds the DIPviewer module only (plus the DIPlib library)
-    PyDIP       # builds the PyDIP Python module only (plus the DIPlib library)
+    PyDIP_bin   # builds the PyDIP Python module only (plus the DIPlib library)
     DIPimage    # builds the DIPimage MATLAB toolbox only (plus the DIPlib library)
     check       # builds the unit_tests program and runs it
     apidoc      # Doxygen HTML documentation for the library API
