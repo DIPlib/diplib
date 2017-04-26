@@ -930,12 +930,10 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Check to see if the data segment is shared with other images.
-      /// The image must be forged.
       ///
       /// \see Data, ShareCount, SharesData, IsExternalData.
       bool IsShared() const {
-         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         return dataBlock_.use_count() > 1;
+         return IsForged() && ( dataBlock_.use_count() > 1 );
       }
 
       /// \brief Get the number of images that share their data with this image.
@@ -943,9 +941,9 @@ class DIP_NO_EXPORT Image {
       /// For normal images. the count is always at least 1. If the count is
       /// larger than 1, `dip::Image::IsShared` is true.
       ///
-      /// If `this` encapsulates external data without owning it (i.e.
-      /// `data == nullptr`), then the share count will be 0. In this case,
-      /// `dip::Image::IsExternalData` is always true.
+      /// If `this` encapsulates external data (`dip::Image::IsExternalData` is true),
+      /// then the share count is not necessarily correct, as it might not count
+      /// the uses of the source data.
       ///
       /// The image must be forged.
       ///
@@ -963,17 +961,9 @@ class DIP_NO_EXPORT Image {
       /// into the same data block. To determine if any pixels are shared,
       /// use `dip::Image::Aliases`.
       ///
-      /// If both `this` and `other` encapsulate external data without owning
-      /// the data (i.e. `data == nullptr`), then this function will return
-      /// false even if they happen to share the data segment.
-      /// `dip::Image::Aliases` will report correctly even in this case.
-      ///
-      /// Both images must be forged.
-      ///
       /// \see Aliases, IsIdenticalView, IsOverlappingView, Data, IsShared, ShareCount, IsExternalData.
       bool SharesData( Image const& other ) const {
-         DIP_THROW_IF( !IsForged() || !other.IsForged(), E::IMAGE_NOT_FORGED );
-         return dataBlock_ == other.dataBlock_;
+         return IsForged() && other.IsForged() && ( dataBlock_ == other.dataBlock_ );
       }
 
       /// \brief Returns true if the data segment was not allocated by *DIPlib*. See \ref external_data_segment.
