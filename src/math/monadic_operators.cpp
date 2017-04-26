@@ -158,7 +158,7 @@ void Abs( Image const& in, Image& out ) {
    if( dtype.IsSigned() ) {
       DataType otype = DataType::SuggestAbs( dtype );
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-      DIP_OVL_NEW_REAL( scanLineFilter, AbsLineFilter, (), dtype );
+      DIP_OVL_NEW_SIGNED( scanLineFilter, AbsLineFilter, (), dtype );
       ImageRefArray outar{ out };
       Framework::Scan( { in }, outar, { dtype }, { otype }, { otype }, { 1 }, *scanLineFilter,
                        Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
