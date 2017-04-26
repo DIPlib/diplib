@@ -33,12 +33,11 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = dipanimate(varargin)
+function dipanimate(varargin)
 
 % Parse input
 loop = 0;
 t = 0.05;
-fig = [];
 N = nargin;
 if N>3
    error('Too many input arguments.')
@@ -118,6 +117,7 @@ while 1
       else
          dipshow(fig,'ch_time',ii);
       end
+      drawnow;
       pause(t);
       newch = get(fig,'CurrentCharacter');
       if ~isempty(newch) && double(newch)==27 % 'Esc' terminates.

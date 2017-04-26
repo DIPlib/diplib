@@ -29,7 +29,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function menu_out = diptest(arg1,arg2)
+function diptest(arg1,arg2)
 
 if nargin == 0
    fig = get(0,'CurrentFigure');
@@ -39,40 +39,11 @@ if nargin == 0
    action = 'toggle';
 elseif nargin == 1
    if ischar(arg1)
-      fig = gcbf;
-      if ~isempty(fig)
-         switch lower(arg1)
-         case 'down'
-            diptestButtonDownFcn(fig);
-            return
-         case 'motion'
-            diptestMotionFcn(fig);
-            return
-         case 'motionr'
-            diptestMotionRFcn(fig);
-            return
-         case 'up'
-            diptestButtonUpFcn(fig);
-            return
-         case 'down1'
-            diptestButtonDown1Fcn(fig);
-            return
-         case 'motion1'
-            diptestMotion1Fcn(fig);
-            return
-         case 'up1'
-            diptestButtonUp1Fcn(fig);
-            return
-         otherwise
-            action = lower(arg1);
-         end
-      else
-         fig = get(0,'CurrentFigure');
-         if isempty(fig)
-            error('No figure window open to do operation on.')
-         end
-         action = lower(arg1);
+      fig = get(0,'CurrentFigure');
+      if isempty(fig)
+         error('No figure window open to do operation on.')
       end
+      action = lower(arg1);
    else
       try
          fig = getfigh(arg1);
@@ -120,9 +91,9 @@ end
 function makeDIPtestObj(fig,udata,OneD)
 udata.state = 'diptest';
 if OneD
-   set(fig,'WindowButtonDownFcn','diptest(''down1'')');
+   set(fig,'WindowButtonDownFcn',@diptestButtonDown1Fcn);
 else
-   set(fig,'WindowButtonDownFcn','diptest(''down'')');
+   set(fig,'WindowButtonDownFcn',@diptestButtonDownFcn);
 end
 set(fig,'WindowButtonUpFcn','',...
         'WindowButtonMotionFcn','',...
@@ -136,7 +107,7 @@ dipfig_set_action_check(fig,udata.state);
 %
 % Callback function for mouse down in images
 %
-function diptestButtonDownFcn(fig)
+function diptestButtonDownFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    img = get(fig,'CurrentObject');
    if strcmp(get(img,'Type'),'image')
@@ -155,15 +126,15 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
             udata.lineh = line([udata.coords(1),udata.coords(1)],...
                 [udata.coords(2),udata.coords(2)],'EraseMode','xor','Color',[0,0,0.8]);
          end
-         set(fig,'WindowButtonMotionFcn','diptest(''motionR'')',...
-                 'WindowButtonUpFcn','diptest(''up'')',...
+         set(fig,'WindowButtonMotionFcn',@diptestMotionRFcn,...
+                 'WindowButtonUpFcn',@diptestButtonUpFcn,...
                  'NumberTitle','off','UserData',[]);   % Solve MATLAB bug!
          set(fig,'UserData',udata);
          updateDisplayR(fig,udata.ax,udata);
       else
          % Left mouse button
-         set(fig,'WindowButtonMotionFcn','diptest(''motion'')',...
-                 'WindowButtonUpFcn','diptest(''up'')',...
+         set(fig,'WindowButtonMotionFcn',@diptestMotionFcn,...
+                 'WindowButtonUpFcn',@diptestButtonUpFcn,...
                  'NumberTitle','off','UserData',[]);   % Solve MATLAB bug!
          set(fig,'UserData',udata);
          updateDisplay(fig,udata.ax,udata);
@@ -175,7 +146,7 @@ end
 %
 % Callback function for mouse move in images
 %
-function diptestMotionFcn(fig)
+function diptestMotionFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    if strcmp(get(get(fig,'CurrentObject'),'Type'),'image')
       udata = get(fig,'UserData');
@@ -183,7 +154,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
    end
 end
 
-function diptestMotionRFcn(fig)
+function diptestMotionRFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    if strcmp(get(get(fig,'CurrentObject'),'Type'),'image')
       udata = get(fig,'UserData');
@@ -195,7 +166,7 @@ end
 %
 % Callback function for mouse up in images
 %
-function diptestButtonUpFcn(fig)
+function diptestButtonUpFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    %if isfield(udata,'ax')
@@ -219,127 +190,34 @@ end
 %
 function updateDisplay(fig,ax,udata)
 pt = dipfig_getcurpos(ax);
-if ~isempty(udata.colspace)
-   if isempty(udata.slicing) %2D image
-      str = ['(',num2str(pt(1)),',',num2str(pt(2)),') : ',udata.colspace,' = ['];
-   elseif isfield(udata,'curtime')%4Dimages
-      switch udata.slicing
-         case 'xy'
-      str = ['(' num2str(pt(1)) ',' num2str(pt(2)),',' num2str(udata.curslice) ...
-             ',' num2str(udata.curtime) ') : ',udata.colspace,' = ['];   
-         case 'xz'
-      str = ['(' num2str(pt(1)) ',' num2str(udata.curslice) ',' num2str(pt(2)) ...
-             ',' num2str(udata.curtime) ') : ',udata.colspace,' = ['];
-         case 'yz'
-      str = ['(' num2str(udata.curslice) ',' num2str(pt(1)),',' num2str(pt(2)) ...
-             ',' num2str(udata.curtime) ') : ',udata.colspace,' = ['];
-         case 'xt'
-      str = ['(' num2str(pt(1)) ',' num2str(udata.curslice) ',' num2str(udata.curtime)  ...
-             ',' num2str(pt(2)) ') : ',udata.colspace,' = ['];   
-         case 'yt'
-      str = ['(' num2str(udata.curslice) ',' num2str(pt(1)) ',' num2str(udata.curtime) ...
-             ',' num2str(pt(2)) ') : ',udata.colspace,' = ['];
-         case 'zt'
-      str = ['(' num2str(udata.curslice) ',' num2str(udata.curtime) ',' num2str(pt(1)) ...
-             ',' num2str(pt(2)) ') : ',udata.colspace,' = ['];
-      end
-   else
-      switch udata.slicing
-         case 'xy'
-      str = ['(' num2str(pt(1)) ',' num2str(pt(2)),',' num2str(udata.curslice) ') : ',udata.colspace,' = ['];   
-         case 'xz'
-      str = ['(' num2str(pt(1)) ',' num2str(udata.curslice) ',' num2str(pt(2)) ') : ',udata.colspace,' = ['];
-         case 'yz'
-      str = ['(' num2str(udata.curslice) ',' num2str(pt(1)),',' num2str(pt(2)) ') : ',udata.colspace,' = ['];
-      end
-   end
-   
-   data = double(udata.colordata(pt(1),pt(2)));
-   for ii=1:length(data)
-      str = [str,formatvalue(data(ii)),','];
-   end
-   str(end) = ']';
-   set(fig,'Name',str);
-else
-   if ndims(udata.imagedata)==0
-      value = 0; % Empty display!
-   else
-      value = double(udata.imagedata(pt(1),pt(2)));
-      if ~isreal(value)
-         if strcmp(dipgetpref('ComplexMappingDisplay'),'r/phi')
-            if strcmp(udata.complexmapping,'abs')
-               value = norm(value);
-            elseif strcmp(udata.complexmapping,'phase')
-               value = double(phase(dip_image(value)));
-            end
-         end
-      end
-   end
-   if isempty(udata.slicing) %2D image
-      set(fig,'Name',['(',num2str(pt(1)),',',num2str(pt(2)),') : ',formatvalue(value)]);
-   elseif isfield(udata,'curtime')%4Dimages
-      switch udata.slicing
-         case 'xy'
-      str = ['(' num2str(pt(1)) ',' num2str(pt(2)),',' num2str(udata.curslice) ...
-             ',' num2str(udata.curtime) ') : ',formatvalue(value)];   
-         case 'xz'
-      str = ['(' num2str(pt(1)) ',' num2str(udata.curslice) ',' num2str(pt(2)) ...
-             ',' num2str(udata.curtime) ') : ',formatvalue(value)];
-         case 'yz'
-      str = ['(' num2str(udata.curslice) ',' num2str(pt(1)),',' num2str(pt(2)) ...
-             ',' num2str(udata.curtime) ') : ', formatvalue(value)];
-         case 'xt'
-      str = ['(' num2str(pt(1)) ',' num2str(udata.curslice) ',' num2str(udata.curtime)  ...
-             ',' num2str(pt(2)) ') : ',formatvalue(value)];   
-         case 'yt'
-      str = ['(' num2str(udata.curslice) ',' num2str(pt(1)) ',' num2str(udata.curtime) ...
-             ',' num2str(pt(2)) ') : ',formatvalue(value)];
-         case 'zt'
-      str = ['(' num2str(udata.curslice) ',' num2str(udata.curtime) ',' num2str(pt(1)) ...
-             ',' num2str(pt(2)) ') : ', formatvalue(value)];
-      end 
-       set(fig,'Name',str);
-   else
-      switch udata.slicing
-         case 'xy'
-      set(fig,'Name',['(' num2str(pt(1)) ',' num2str(pt(2)),',' num2str(udata.curslice) ') : ',formatvalue(value)]);   
-         case 'xz'
-      set(fig,'Name',['(' num2str(pt(1)) ',' num2str(udata.curslice) ',' num2str(pt(2)) ') : ',formatvalue(value)]);
-         case 'yz'
-      set(fig,'Name',['(' num2str(udata.curslice) ',' num2str(pt(1)),',' num2str(pt(2)) ') : ',formatvalue(value)]);
-      end
-   end
-end
+handle = udata.handle;
+coords = imagedisplay(handle,'coordinates');
+slicing = imagedisplay(handle,'slicing');
+coords(slicing(1)) = pt(1);
+coords(slicing(2)) = pt(2);
+coords = mat2str(coords);
+value = imagedisplay(handle,pt);
+str = [coords,' : ',value];
+set(fig,'Name',str);
+% TODO: what if empty display?
+% TODO: what with dipgetpref('ComplexMappingDisplay')?
 
 function updateDisplayR(fig,ax,udata) %right click for distance measurements in plane
 pt = dipfig_getcurpos(ax);
 set(udata.lineh,'XData',[udata.coords(1),pt(1)],'YData',[udata.coords(2),pt(2)]);
 delta = pt - udata.coords;
+coords = mat2str(delta);
 len = sqrt(sum(delta.^2));
-if ~isempty(udata.colspace)
-   str = ['(',num2str(delta(1)),',',num2str(delta(2)),') ',num2str(len),' : ',...
-          udata.colspace,' = ['];
-   data = double(udata.colordata(pt(1),pt(2)));
-   for ii=1:length(data)
-      str = [str,formatvalue(data(ii)),','];
-   end
-   str(end) = ']';
-   set(fig,'Name',str);
-else
-   if ndims(udata.imagedata)==0
-      value = 0; % Empty display!
-   else
-      value = double(udata.imagedata(pt(1),pt(2)));
-   end
-   set(fig,'Name',['(',num2str(delta(1)),',',num2str(delta(2)),') ',...
-       num2str(len),' : ',formatvalue(value)]);
-end
+handle = udata.handle;
+value = imagedisplay(handle,pt);
+str = [coords,' ',num2str(len),' : ',value];
+set(fig,'Name',str);
 
 
 %
 % Callback function for mouse down in 1D images
 %
-function diptestButtonDown1Fcn(fig)
+function diptestButtonDown1Fcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image_1D',12)
    ax = findobj(fig,'Type','axes');
    if length(ax)==1
@@ -363,8 +241,8 @@ if strncmp(get(fig,'Tag'),'DIP_Image_1D',12)
             udata.lineh = line([udata.coords(1),udata.coords(1)],get(ax,'YLim'),...
                                'EraseMode','xor','Color',[0,0,0.8]);
          end
-         set(fig,'WindowButtonMotionFcn','diptest(''motion1'')',...
-                 'WindowButtonUpFcn','diptest(''up1'')',...
+         set(fig,'WindowButtonMotionFcn',@diptestMotion1Fcn,...
+                 'WindowButtonUpFcn',@diptestButtonUp1Fcn,...
                  'NumberTitle','off','UserData',[]);   % Solve MATLAB bug!
          set(fig,'UserData',udata);
          updateDisplay1(fig,ax,udata);
@@ -375,8 +253,8 @@ if strncmp(get(fig,'Tag'),'DIP_Image_1D',12)
          else
             udata.lineh = line([0,0],get(ax,'YLim'),'EraseMode','xor','Color',[0,0,0.8]);
          end
-         set(fig,'WindowButtonMotionFcn','diptest(''motion1'')',...
-                 'WindowButtonUpFcn','diptest(''up1'')',...
+         set(fig,'WindowButtonMotionFcn',@diptestMotion1Fcn,...
+                 'WindowButtonUpFcn',@diptestButtonUp1Fcn,...
                  'NumberTitle','off','UserData',[]);   % Solve MATLAB bug!
          set(fig,'UserData',udata);
          updateDisplay1(fig,ax,udata);
@@ -388,7 +266,7 @@ end
 %
 % Callback functions for mouse move in 1D images
 %
-function diptestMotion1Fcn(fig)
+function diptestMotion1Fcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image_1D',12)
    udata = get(fig,'UserData');
    updateDisplay1(fig,udata.ax,udata);
@@ -398,7 +276,7 @@ end
 %
 % Callback function for mouse up in 1D images
 %
-function diptestButtonUp1Fcn(fig)
+function diptestButtonUp1Fcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image_1D',12)
    udata = get(fig,'UserData');
    set(udata.ax,'Units',udata.oldAxesUnits);

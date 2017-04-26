@@ -35,7 +35,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function menu_out = dipstep(arg1,arg2)
+function dipstep(arg1,arg2)
 
 if nargin == 0
    fig = get(0,'CurrentFigure');
@@ -66,7 +66,7 @@ else
    end
    action = lower(arg2);
 end
-if strncmp(get(fig,'Tag'),'DIP_Image_3D',12) | strncmp(get(fig,'Tag'),'DIP_Image_4D',12)
+if strncmp(get(fig,'Tag'),'DIP_Image_3D',12) || strncmp(get(fig,'Tag'),'DIP_Image_4D',12)
    udata = get(fig,'UserData');
    switch (action)
    case 'toggle'
@@ -93,7 +93,7 @@ end
 function makeDIPstepObj(fig,udata)
 udata.state = 'dipstep';
 set(fig,'pointer','arrow',...
-        'WindowButtonDownFcn','dipshow DIP_callback dipstepWindowButtonDownFcn',...
+        'WindowButtonDownFcn',dipshow('DIP_callback','dipstepWindowButtonDownFcn'),...
         'WindowButtonUpFcn','',...
         'WindowButtonMotionFcn','',...
         'ButtonDownFcn','',...

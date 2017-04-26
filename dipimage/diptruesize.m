@@ -41,7 +41,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = diptruesize(varargin)
+function diptruesize(varargin)
 
 % Parse input
 state = 1;
@@ -157,7 +157,8 @@ if length(udata.imsize)==1
       figPos = get(fig,'Position');
       if figPos(3) == newimsz
          % We're not resizing; call the callback manually.
-         dipshow('DIP_callback','ResizeFcn',fig);
+         f = get(fig,'ResizeFcn');
+         f(fig);
       else
          % We're resizing; the callback will be called automatically.
          figPos(3) = newimsz;
@@ -220,7 +221,8 @@ else
       figPos = get(fig,'Position');
       if figPos(3:4) == newimsz
          % We're not resizing; call the callback manually.
-         dipshow('DIP_callback','ResizeFcn',fig);
+         f = get(fig,'ResizeFcn');
+         f(fig);
       else
          % We're resizing; the callback will be called automatically.
          figPos(2) = max(border(2),figPos(2)+figPos(4)-newimsz(2));

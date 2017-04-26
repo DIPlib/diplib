@@ -31,7 +31,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function menu_out = dipsetpref(varargin)
+function dipsetpref(varargin)
 
 if nargin==1 && ischar(varargin{1}) && strcmpi(varargin{1},'-unload')
    dippreferences('unload');

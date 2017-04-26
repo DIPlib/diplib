@@ -89,9 +89,13 @@ set(fig,'WindowButtonDownFcn','',...
 dipfig_setpointer(fig,'cross');
 set(ax,'Units','pixels');
 
+% Get info on image
+udata = get(fig,'UserData');
+handle = udata.handle;
+
 % Do your stuff
 coords = [];
-done =0;
+done = false;
 ii=0;
 while ~done
 %for ii=1:N
@@ -103,37 +107,6 @@ while ~done
       if ~ishandle(fig)
          error('You closed the window! That wasn''t the deal!')
       end
-      udata = get(fig,'UserData');
-      if length(udata.imsize)==3
-         switch udata.slicing
-            case 'yz'
-               slicepos = 1;
-            case 'xz'
-               slicepos = 2;
-            otherwise % case 'xy'
-               slicepos = 3;
-         end
-      elseif length(udata.imsize)==4
-         switch udata.slicing
-            case 'yz'
-               slicepos = 11;
-            case 'xz'
-               slicepos = 12;
-            case 'xt'
-               slicepos = 13;
-            case 'yt'
-               slicepos = 14;
-            case 'zt'
-               slicepos = 15;
-            otherwise % case 'xy'
-               slicepos = 16;
-         end
-      elseif length(udata.imsize)==1
-         slicepos = -1; % meaning the image is 1D -> only keep first coordinate
-      else
-         slicepos = 0; % meaning no slice info must be added
-      end
-
       if ~strcmp(get(fig,'WindowButtonDownFcn'),'Click!')
          % The user just changed the state. Store the new settings and revert to our own...
          wbdF = get(fig,'WindowButtonDownFcn');
@@ -150,52 +123,28 @@ while ~done
          dipfig_setpointer(fig,'cross');
          set(ax,'Units','pixels');
       else
-           switch get(fig,'SelectionType');
-               case 'normal' %left click
-                    pt = dipfig_getcurpos(ax);
-               case 'alt' %right
-                    pt= repmat(-1,1,length(udata.imsize));
-                    done =1;
-                    slicepos = 0;
-           end
-       end
+         switch get(fig,'SelectionType');
+            case 'normal' % left click
+               pt = dipfig_getcurpos(ax);
+            case 'alt' % right
+               coords = [-1,-1];
+               done = true;
+         end
+      end
    end
-   switch slicepos
-      case -1
-         pt = pt(1);
-      case 0
-      case 1
-         udata = get(fig,'UserData');
-         pt = [udata.curslice,pt];
-      case 2
-         udata = get(fig,'UserData');
-         pt = [pt(1),udata.curslice,pt(2)];
-      case 3
-         udata = get(fig,'UserData');
-         pt = [pt,udata.curslice];
-      case 11 %yz
-         udata = get(fig,'UserData');
-         pt = [udata.curslice,pt, udata.curtime];
-      case 12 %xz
-         udata = get(fig,'UserData');
-         pt = [pt(1),udata.curslice,pt(2), udata.curtime];
-      case 13 %xt
-         udata = get(fig,'UserData');
-         pt = [pt(1),udata.curslice,udata.curtime,pt(2)];
-      case 14 %yt
-         udata = get(fig,'UserData');
-         pt = [udata.curslice,pt(1),udata.curtime,pt(2)];
-      case 15 %zt
-         udata = get(fig,'UserData');
-         pt = [udata.curslice,udata.curtime,pt];   
-      case 16 %xy
-         udata = get(fig,'UserData');
-         pt = [pt,udata.curslice, udata.curtime];
-   end
-   coords = [coords;pt];
-   ii = ii +1;
-   if ii == N
-       done =1;
+   if ~done
+      slicing = imagedisplay(handle,'slicing');
+      dcoords = imagedisplay(handle,'coordinates');
+      if length(dcoords)==1
+         dcoords = pt(1);
+      else
+         dcoords(slicing) = pt;
+      end
+      coords = [coords;dcoords];
+      ii = ii + 1;
+      if ii == N
+         done = true;
+      end
    end
 end
 

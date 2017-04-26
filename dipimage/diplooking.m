@@ -27,7 +27,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function menu_out = diplooking(arg1,arg2)
+function diplooking(arg1,arg2)
 
 if nargin == 0
    fig = get(0,'CurrentFigure');
@@ -41,19 +41,7 @@ elseif nargin == 1
       if isempty(fig)
          error('No figure window open to do operation on.')
       end
-      switch lower(arg1)
-         case 'down'
-            diplookingButtonDownFcn(fig);
-            return
-         case 'motion'
-            diplookingButtonMotionFcn(fig);
-            return
-         case 'up'
-            diplookingButtonUpFcn(fig);
-            return
-         otherwise
-            action = lower(arg1);
-      end
+      action = lower(arg1);
    else
       try
          fig = getfigh(arg1);
@@ -100,7 +88,7 @@ function makeDIPlookingObj(fig,udata)
 width = 30;     % size of area in looking glass. repeated in diplookingButtonDownFcn() and diplookingUpdateMiniWindow()!
 %
 udata.state = 'diplooking';
-set(fig,'WindowButtonDownFcn','diplooking(''down'')',...
+set(fig,'WindowButtonDownFcn',@diplookingButtonDownFcn,...
         'WindowButtonUpFcn','',...
         'WindowButtonMotionFcn','',...
         'ButtonDownFcn','',...
@@ -116,7 +104,7 @@ set(fig,'DoubleBuffer','on');
 %
 % Callback function for mouse down in images
 %
-function diplookingButtonDownFcn(fig)
+function diplookingButtonDownFcn(fig,~)
 % constants
 width = 30;     % size of area in looking glass. repeated in makeDIPlookingObj() and diplookingUpdateMiniWindow()!
 %
@@ -150,14 +138,14 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
       udata.lookfigsize = figpos(3:4);
       udata = diplookingUpdateMiniWindow(fig,udata);
       set(fig,'WindowButtonDownFcn','',...
-              'WindowButtonUpFcn','diplooking(''up'')',...
-              'WindowButtonMotionFcn','diplooking(''motion'')',...
+              'WindowButtonUpFcn',@diplookingButtonUpFcn,...
+              'WindowButtonMotionFcn',@diplookingButtonMotionFcn,...
               'UserData',[]);   % Solve MATLAB bug!
       set(fig,'UserData',udata);
    end
 end
 
-function diplookingButtonUpFcn(fig)
+function diplookingButtonUpFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    h = udata.lookaxes;
@@ -174,7 +162,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
    set(fig,'UserData',udata);
 end
 
-function diplookingButtonMotionFcn(fig)
+function diplookingButtonMotionFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    udata = diplookingUpdateMiniWindow(fig,udata);
@@ -206,9 +194,9 @@ if any(mi<0)
 end
 cdata = get(findobj(udata.ax,'type','image'),'CData');
 if ndims(cdata)==3
-   cdata = cdata(mi(2)+[1:width],mi(1)+[1:width],:);%color images
+   cdata = cdata(mi(2)+(1:width),mi(1)+(1:width),:);%color images
 else
-   cdata = cdata(mi(2)+[1:width],mi(1)+[1:width]);
+   cdata = cdata(mi(2)+(1:width),mi(1)+(1:width));
 end      
 set(findobj(udata.lookaxes,'type','image'),'cdata',cdata);
 set(udata.lookaxes,'Position',[co,w_width*aspect]);

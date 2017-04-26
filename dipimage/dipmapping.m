@@ -58,23 +58,13 @@
 
 % Undocumented:
 %   DIPMAPPING('manual') brings up a dialog box that allows the user to
-%   select an upper and lower bound for the range. It is used as a callback to the
-%   'Manual...' menu item under 'Mappings'.
+%   select an upper and lower bound for the range. It is used as a callback
+%   to the 'Manual...' menu item under 'Mappings'.
 %   DIPMAPPING('custom') brings up a dialog box that allows the user to
-%   select a colormap. It is used as a callback to the 'Custom...' menu item under
-%   'Mappings'.
+%   select a colormap. It is used as a callback to the 'Custom...' menu
+%   item under 'Mappings'.
 
-function menu_out = dipmapping(varargin)
-
-if nargin == 2 && ischar(varargin{1})
-   if strcmp(varargin{1},'DIP_RangeDlg_Callback')
-      rangecallbacks(varargin{2});
-      return
-   elseif strcmp(varargin{1},'DIP_ColmapDlg_Callback')
-      colmapcallbacks(varargin{2});
-      return
-   end
-end
+function dipmapping(varargin)
 
 % Defaults...
 fig = [];
@@ -202,51 +192,29 @@ if manual
    end
    % Get slider range
    udata = get(fig,'UserData');
-   currange = [];
-   if length(udata.imsize)>=3 && ~udata.globalstretch
-      % A 3D image without global stretch: look for globalcomputed
-      if isreal(udata.imagedata)
-         if isfield(udata,'globalcomputed') && isfield(udata.globalcomputed.computed,'lin')
-            currange = udata.globalcomputed.computed.lin;
+   computedrange = false;
+   currange = [0,255];
+   low = 0;
+   high = 255;
+   if isfield(udata,'handle')
+      limits = imagedisplay(udata.handle,'limits_or_nan');
+      if ~any(isnan(limits))
+         currange = limits;
+         if currange(1)==currange(2)
+            currange = currange+[-1,1];
          end
-      else
-         if isfield(udata,'globalcomputed') && isfield(udata.globalcomputed,['computed_',complexmapping])
-            tmp = getfield(udata.globalcomputed,['computed_',complexmapping]);
-            if isfield(tmp,'lin')
-               currange = tmp.lin;
-            end
-         end
+         computedrange = true;
       end
-   else
-      if isfield(udata,'computed') && isfield(udata.computed,'lin')
-         currange = udata.computed.lin;
-      end
-   end
-   if isempty(currange)
-      computedrange = 0;
-      currange = [0,255];
-   else
-      computedrange = 1;
-   end
-   % Get current slider position
-   if strcmp(udata.mappingmode,'log')
-      low = 0;
-      high = 255;
-   else
-      low = udata.currange(1);
-      high = udata.currange(2);
-   end
-   if ~computedrange
+      range = imagedisplay(udata.handle,'range');
+      low = range(1);
+      high = range(2);
       currange(1) = min(currange(1),low);
       currange(2) = max(currange(2),high);
-   end
-   if currange(1)==currange(2)
-      currange = currange+[-1,1];
    end
    % Create dialog box
    h = figure('Visible','off',...
               'Color',get(0,'defaultuicontrolbackgroundcolor'),...
-              'KeyPressFcn','dipmapping DIP_RangeDlg_Callback KeyPressFcn',...
+              'KeyPressFcn',@rangeKeyPressFcn,...
               'MenuBar','none',...
               'Name','DIPimage',...
               'NumberTitle','off',...
@@ -255,7 +223,7 @@ if manual
               );
    % Create controls
    okbutton =   uicontrol(h,'Style','pushbutton','String','OK',...
-                          'Callback',['set(gcbf,''UserData'',''ok'');'],'units','pixels');
+                          'Callback',@(~,~)set(gcbf,'UserData','ok'),'units','pixels');
    textlow =    uicontrol(h,'Style','text','units','pixels','HorizontalAlignment','left',...
                           'String','Lower bound');
    sliderlow =  uicontrol(h,'Style','slider','units','pixels','SliderStep',[0.01,0.1],...
@@ -275,7 +243,7 @@ if manual
    labelline =  uicontrol(h,'Style','frame','units','pixels','BackgroundColor',[0,0,0]);
    if ~computedrange
       computebutton = uicontrol(h,'Style','pushbutton','String','Compute Range',...
-                                'Callback','dipmapping DIP_RangeDlg_Callback ComputeRange','units','pixels');
+                                'Callback',@ComputeRange,'units','pixels');
    end
    udata = [];
    udata.editlow = editlow;
@@ -286,10 +254,10 @@ if manual
    udata.labelline = labelline;
    set(h,'UserData',udata);
    % Callbacks
-   set(editlow,'UserData',sliderlow,'Callback','dipmapping DIP_RangeDlg_Callback editlow');
-   set(edithigh,'UserData',sliderhigh,'Callback','dipmapping DIP_RangeDlg_Callback edithigh');
-   set(sliderlow,'UserData',editlow,'Callback','dipmapping DIP_RangeDlg_Callback sliderlow');
-   set(sliderhigh,'UserData',edithigh,'Callback','dipmapping DIP_RangeDlg_Callback sliderhigh');
+   set(editlow,'UserData',sliderlow,'Callback',@rangeEditCallback);
+   set(edithigh,'UserData',sliderhigh,'Callback',@rangeEditCallback);
+   set(sliderlow,'UserData',editlow,'Callback',@rangeSliderCallback);
+   set(sliderhigh,'UserData',edithigh,'Callback',@rangeSliderCallback);
    % Set sizes and positions       % (Copied from DIPimage)
    sizes.leftmargin = 20;          % Space between left edge and controls
    sizes.internalmargin = 10;      % Horizontal space between controls
@@ -366,7 +334,7 @@ elseif custom
    % Create dialog box
    h = figure('Visible','off',...
               'Color',get(0,'defaultuicontrolbackgroundcolor'),...
-              'KeyPressFcn','dipmapping DIP_ColmapDlg_Callback KeyPressFcn',...
+              'KeyPressFcn',@colmapKeyPressFcn,...
               'MenuBar','none',...
               'Name','DIPimage',...
               'NumberTitle','off',...
@@ -375,9 +343,9 @@ elseif custom
               );
    % Create controls
    okbutton     = uicontrol(h,'Style','pushbutton','String','OK',...
-                        'Callback',['set(gcbf,''UserData'',''ok'');'],'units','pixels');
+                        'Callback',@(~,~)set(gcbf,'UserData','ok'),'units','pixels');
    cancelbutton = uicontrol(h,'Style','pushbutton','String','Cancel',...
-                        'Callback',['set(gcbf,''UserData'',''cancel'');'],'units','pixels');
+                        'Callback',@(~,~)set(gcbf,'UserData','cancel'),'units','pixels');
    textbox      =  uicontrol(h,'Style','text','units','pixels','HorizontalAlignment','left',...
                         'String','Command to generate colormap (ex: hot, copper, winter, etc.)');
    editbox      =  uicontrol(h,'Style','edit','units','pixels','HorizontalAlignment','left',...
@@ -385,7 +353,7 @@ elseif custom
    udata = [];
    set(h,'UserData',udata);
    % Callbacks
-   set(editbox,'Callback','dipmapping DIP_ColmapDlg_Callback editbox');
+   set(editbox,'Callback',@colmapKeyPressFcn);
    % Set sizes and positions       % (Copied from DIPimage)
    sizes.leftmargin = 20;          % Space between left edge and controls
    sizes.internalmargin = 10;      % Horizontal space between controls
@@ -473,65 +441,53 @@ else
    if ~isempty(newslice)
       params{ii} = 'ch_slice';
       params{ii+1} = newslice;
-      ii = ii+2;
+      %ii = ii+2;
    end
    dipshow(fig,params{:});
 
 end
 
+%
 % Manual stretch callbacks
-function rangecallbacks(string)
-[h,fig] = gcbo;
-switch string
-case {'editlow','edithigh'}
-   slider = get(h,'UserData');
-   val = str2double(get(h,'String'));
-   if isfinite(val)
-      val = min(max(val,get(slider,'Min')),get(slider,'Max'));
-      set(slider,'Value',val);
-      updatedisplay(fig);
+%
+
+function rangeEditCallback(h,~)
+slider = get(h,'UserData');
+val = str2double(get(h,'String'));
+if isfinite(val)
+   val = min(max(val,get(slider,'Min')),get(slider,'Max'));
+   set(slider,'Value',val);
+   updatedisplay(gcbf);
+end
+
+function rangeSliderCallback(h,~)
+edt = get(h,'UserData');
+val = get(h,'Value');
+set(edt,'String',num2str(val));
+updatedisplay(gcbf);
+
+function updatedisplay(fig)
+udata = get(fig,'UserData');
+low = str2double(get(udata.editlow,'String'));
+high = str2double(get(udata.edithigh,'String'));
+dipshow(udata.fig,'ch_mappingmode',[low,high]);
+
+function rangeKeyPressFcn(fig,~)
+ch = double(get(fig,'CurrentCharacter'));
+if ~isempty(ch)
+   switch ch
+   case 13
+      set(fig,'UserData','ok');
+   case 27
+      set(fig,'UserData','cancel');
    end
-case {'sliderlow','sliderhigh'}
-   edt = get(h,'UserData');
-   val = get(h,'Value');
-   set(edt,'String',num2str(val));
-   updatedisplay(fig);
-case 'KeyPressFcn'
-   ch = double(get(fig,'CurrentCharacter'));
-   if ~isempty(ch)
-      switch ch
-      case 13
-         set(gcbf,'UserData','ok');
-      case 27
-         set(gcbf,'UserData','cancel');
-      end
-   end
-case 'ComputeRange'
-   udata = get(fig,'UserData');
-   imgudata = get(udata.fig,'UserData');
-   if ~isempty(imgudata.colspace)
-      cdata = cat(3,imgudata.imagedata);
-   elseif length(imgudata.imsize)==3
-      cdata = imgudata.slices;
-   else
-      cdata = imgudata.imagedata;
-   end
-   if ~isreal(cdata)
-      switch imgudata.complexmapping
-         case 'real'
-            cdata = real(cdata);
-         case 'imag'
-            cdata = imag(cdata);
-         case 'phase'
-            cdata = phase(cdata);
-         otherwise
-            cdata = abs(cdata);
-      end
-   end
-   currange = [min(cdata),max(cdata)];
-   imgudata.computed.lin = currange;
-   set(udata.fig,'UserData',[]);
-   set(udata.fig,'UserData',imgudata);
+end
+
+function ComputeRange(h,~)
+udata = get(gcbf,'UserData');
+imgudata = get(udata.fig,'UserData');
+if isfield(imgudata,'handle')
+   currange = imagedisplay(imgudata.handle,'limits');
    if currange(1)==currange(2)
       currange = currange+[-1,1];
    end
@@ -582,23 +538,18 @@ case 'ComputeRange'
    dipshow(udata.fig,'ch_mappingmode',[low,high]);
 end
 
-function updatedisplay(fig)
-udata = get(fig,'UserData');
-low = str2num(get(udata.editlow,'String'));
-high = str2num(get(udata.edithigh,'String'));
-dipshow(udata.fig,'ch_mappingmode',[low,high]);
-
+%
 % Colormap selection callbacks
-function colmapcallbacks(string)
-[h,fig] = gcbo;
-if strcmp(string,'KeyPressFcn')
-   ch = double(get(fig,'CurrentCharacter'));
-   if ~isempty(ch)
-      switch ch
-      case 13
-         set(gcbf,'UserData','ok');
-      case 27
-         set(gcbf,'UserData','cancel');
-      end
+%
+
+function colmapKeyPressFcn(~,~)
+fig = gcbf;
+ch = double(get(fig,'CurrentCharacter'));
+if ~isempty(ch)
+   switch ch
+   case 13
+      set(fig,'UserData','ok');
+   case 27
+      set(fig,'UserData','cancel');
    end
 end

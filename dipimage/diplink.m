@@ -37,7 +37,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function menu_out = diplink(arg1,arg2)
+function diplink(arg1,arg2)
 
 list = NaN;
 if nargin == 0
@@ -85,7 +85,8 @@ else
       action = 'on';
    end
 end
-if strncmp(get(fig,'Tag'),'DIP_Image_2D',12) || strncmp(get(fig,'Tag'),'DIP_Image_3D',12) || strncmp(get(fig,'Tag'),'DIP_Image_4D',12)
+tag = get(fig,'Tag');
+if strncmp(tag,'DIP_Image_2D',12) || strncmp(tag,'DIP_Image_3D',12) || strncmp(tag,'DIP_Image_4D',12)
    udata = get(fig,'UserData');
    switch (action)
    case 'toggle'
@@ -108,20 +109,15 @@ end
 % Link display
 %
 function makeDIPlinkObj(fig,udata,list)
-nD = length(udata.imsize);
+tag = get(fig,'Tag');
+nD = tag(11);
 if isnumeric(list) && isnan(list)
-   switch nD
-      case {2,3,4}
-         newlist = handleselect(['Select a ' num2str(nD) 'D image display'],fig,udata.linkdisplay,[ num2str(nD) 'D']);
-      otherwise
-         error('Should not happen.')
-   end
+   newlist = handleselect(['Select a ',nD,'D image display'],fig,udata.linkdisplay,[nD,'D']);
    if ischar(newlist)
       return
    end
 else
    newlist = [];
-   
    if iscell(list)
       jj = 1;
       for ii=1:numel(list)
@@ -145,7 +141,6 @@ else
    else
       return
    end
-   
    valid = zeros(size(newlist));
    for ii=1:length(newlist)   
        valid(ii) = strncmp(get(newlist(ii),'Tag'),['DIP_Image_' num2str(nD) 'D'],12);    
@@ -156,7 +151,7 @@ else
    end
 end
 udata.linkdisplay = newlist;
-set(fig,'UserData',[]);% Solve MATLAB bug!
+set(fig,'UserData',[]); % Solve MATLAB bug!
 set(fig,'UserData',udata);
 if isempty(newlist)
    set(findobj(fig,'Tag','diplink'),'Checked','off');
@@ -171,6 +166,6 @@ end
 %
 function deleteDIPlinkObj(fig,udata)
 udata.linkdisplay = [];
-set(fig,'UserData',[]);% Solve MATLAB bug!
+set(fig,'UserData',[]); % Solve MATLAB bug!
 set(fig,'UserData',udata);
 set(findobj(fig,'Tag','diplink'),'Checked','off');

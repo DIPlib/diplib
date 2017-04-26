@@ -50,22 +50,6 @@
 
 function coords = dipdrawpolygon(varargin)
 
-% Parse input
-d = struct('menu','Display',...
-          'display','Draw polygon over image',...
-          'inparams',struct('name',       {'fig'},...
-                            'description',{'Figure window'},...
-                            'type',       {'handle'},...
-                            'dim_check',  {0},...
-                            'range_check',{{'2D','3D','4D'}},...
-                            'required',   {0},...
-                            'default',    {[]}...
-                           ),...
-          'outparams',struct('name',{'vertices'},...
-                             'description',{'Vertices'},...
-                             'type',{'array'}...
-                             )...
-         );
 if nargin == 1
    s = varargin{1};
    if ischar(s)
@@ -82,15 +66,16 @@ if nargin == 1
       case 'dip_dp_MovePoint_ButtonUp'
          dip_dp_MovePoint_ButtonUp
          return
-   end
-end
-try
-   fig = getparams(d,varargin{:});
-catch
-   if ~isempty(paramerror)
-      error(paramerror)
+      end
+   elseif ishandle(s)
+      fig = s;
    else
-      error(lasterr)
+      error('Illegal input');
+   end
+else
+   fig = get(0,'CurrentFigure');
+   if isempty(fig)
+      error('No figure window open to do operation on.')
    end
 end
 
@@ -119,9 +104,9 @@ nt = get(fig,'NumberTitle');
 figure(fig);
 set(fig,'WindowButtonDownFcn','',...
         'WindowButtonUpFcn','',...
-        'WindowButtonMotionFcn','dipdrawpolygon(''dip_dp_MotionFcn'')',...
+        'WindowButtonMotionFcn',@dip_dp_MotionFcn,...
         'ButtonDownFcn','',...
-        'KeyPressFcn','set(gcbf,''WindowButtonDownFcn'',''Key!'')',...
+        'KeyPressFcn',@(~,~)set(gcbf,'WindowButtonDownFcn','Key!'),...
         'NumberTitle','off');
 dipfig_setpointer(fig,'cross');
 set(ax,'Units','pixels');
@@ -137,9 +122,9 @@ done = 0;
 escape = 0;
 while ~done
    if udata.mode==0
-      set(fig,'WindowButtonDownFcn','set(gcbf,''WindowButtonDownFcn'',''Click!'')');
+      set(fig,'WindowButtonDownFcn',@(~,~)set(gcbf,'WindowButtonDownFcn','Click!'));
    else
-      set(fig,'WindowButtonDownFcn','dipdrawpolygon(''dip_dp_MovePoint_ButtonDown'')');
+      set(fig,'WindowButtonDownFcn',@dip_dp_MovePoint_ButtonDown);
    end
    waitfor(fig,'WindowButtonDownFcn'); % The ButtonDown callback changes the callback.
                                        % This way, we also detect a change in state!
@@ -171,7 +156,7 @@ while ~done
             pt = dipfig_getcurpos(ax);
             if ~isempty(coords)
                lstpt = coords(end,:);
-               [v,I] = min(abs(lstpt-pt));
+               [~,I] = min(abs(lstpt-pt));
                pt(I) = lstpt(I);
             end
             coords = [coords;pt];
@@ -252,7 +237,7 @@ while ~done
                      udata.mode = 0;
                      set(fig,'WindowButtonDownFcn','',...
                              'WindowButtonUpFcn','',...
-                             'WindowButtonMotionFcn','dipdrawpolygon(''dip_dp_MotionFcn'')');
+                             'WindowButtonMotionFcn',@dip_dp_MotionFcn);
                      xd = get(udata.lineh,'XData');
                      yd = get(udata.lineh,'YData');
                      coords = [xd(:),yd(:)]; % get the new coords from the line
@@ -292,9 +277,9 @@ while ~done
               'WindowButtonUpFcn','',...
               'WindowButtonMotionFcn','',...
               'ButtonDownFcn','',...
-              'KeyPressFcn','set(gcbf,''WindowButtonDownFcn'',''Key!'')');
+              'KeyPressFcn',@(~,~)set(gcbf,'WindowButtonDownFcn','Key!'));
       if udata.mode==0
-         set(fig,'WindowButtonMotionFcn','dipdrawpolygon(''dip_dp_MotionFcn'')');
+         set(fig,'WindowButtonMotionFcn',@dip_dp_MotionFcn);
          dipfig_setpointer(fig,'cross');
       else
          dipfig_setpointer(fig,'hand_finger');
@@ -332,8 +317,7 @@ end
 %
 % Callback funtion for mouse move
 %
-function dip_dp_MotionFcn
-fig = gcbf;
+function dip_dp_MotionFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    pt = dipfig_getcurpos(udata.ax);
@@ -351,8 +335,7 @@ end
 %
 % Callback functions for mode==1, where we allow the user to move points around
 %
-function dip_dp_MovePoint_ButtonDown
-fig = gcbf;
+function dip_dp_MovePoint_ButtonDown(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    if isfield(udata,'lineh')
@@ -371,8 +354,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
    end
 end
 
-function dip_dp_MovePoint_ButtonMotion
-fig = gcbf;
+function dip_dp_MovePoint_ButtonMotion(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    if isfield(udata,'lineh') && isfield(udata,'selectedptindex')
@@ -387,8 +369,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
    end
 end
 
-function dip_dp_MovePoint_ButtonUp
-fig = gcbf;
+function dip_dp_MovePoint_ButtonUp(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    if isfield(udata,'selectedptindex')

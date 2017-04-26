@@ -87,19 +87,27 @@
 %   with [W H]. In the last case, the X and Y position is not changed.
 %   This disables the truesize setting.
 %
+%   DIPSHOW(H,'updatelinked',[]) causes the figures liked with H to be
+%   updated.
+%
 %   If IN is [], the image is made black, and the zoom factor is not shown.
 %   This is used by DIPFIG, together with the 'position' option, to create
 %   a figure window.
 %
-%   DIPSHOW(H,'ch_mappingmode',RANGE), DIPSHOW(H,'ch_mappingmode',MAPPINGMODE),
-%   DIPSHOW(H,'ch_colormap', COLORMAP), DIPSHOW(H,'ch_globalstretch',BOOLEAN),
-%   DIPSHOW(H,'ch_complexmapping',COMPLEXMAP), DIPSHOW(H,'ch_slicing',SLICING),
-%   DIPSHOW(H,'ch_slice',SLICE), DIPSHOW(H,'ch_time',SLICE).
+%      DIPSHOW(H,'ch_mappingmode',RANGE)
+%      DIPSHOW(H,'ch_mappingmode',MAPPINGMODE)
 %   RANGE or MAPPINGMODE are as defined above for regular DIPSHOW syntax.
+%      DIPSHOW(H,'ch_colormap', COLORMAP)
 %   COLORMAP is 'grey', 'periodic', 'saturation', 'labels' or a colormap.
-%   BOOLEAN is 'yes', 'no', 'on', 'off', 1 or 0.
-%   COMPLEXMAP is one of: 'abs', 'real', 'imag', 'phase'.
+%      DIPSHOW(H,'ch_globalstretch',BOOLEAN)
+%   BOOLEAN is 'yes', 'no', 'on', 'off', 1, 0, true or false.
+%      DIPSHOW(H,'ch_complexmapping',COMPLEXMAP)
+%   COMPLEXMAP is one of: 'magnitude', 'abs', 'real', 'imag', 'phase'.
+%      DIPSHOW(H,'ch_slicing',SLICING)
 %   SLICING is one of: 'xy', 'xz', 'yz', 'xt', 'yt', 'zt'.
+%      DIPSHOW(H,'ch_slicemode',SLICEMODE)
+%   SLICEMODE is one of: 'slice', 'max', 'mean'.
+%      DIPSHOW(H,'ch_slice',SLICE), DIPSHOW(H,'ch_time',SLICE)
 %   SLICE is a slice number.
 %   H is a handle to a figure window, and is optional. (although sometimes...)
 %   These cause the image to be re-displayed using the requested mode, and
@@ -111,56 +119,26 @@
 %
 % The figure window created contains:
 % - A Tag, composed of the string 'DIP_Image' and one of each of these:
-%       - '_1D', '_2D' or '_3D'.
+%       - '_1D', '_2D', '_3D' or '_4D'.
 %       - '_Binary', '_Grey', '_Color'.
 % - A group of Uimenu objects, defined in CREATE_MENUS.
 % - An Axes object with:
 %   - An Image object.
 % - A UserData object with:
 %   - For all images:
-%      - udata.mappingmode    -> String representing mapping mode: 'normal', 'lin', 'log', etc.
-%                                Equal to '' means that udata.currange is to be used as-is.
-%      - udata.currange       -> 2 values with the current display range.
-%      - udata.complexmapping -> String representing complex to real mapping: 'abs', 'real',
-%                                'imag', 'phase'.
-%      - udata.computed       -> The values computed for the different mapping modes, if they
-%                                have been computed (it might not exist!). It is a structure
-%                                with a field for each of the mappingmode strings. Only the
-%                                elements that have been computed exist.
-%      - udata.computed_XXX   -> For complex images, these contain a copy of udata.computed
-%                                computed for each of the complexmapping strings (XXX). Only
-%                                those that have been used exists.
-%      - udata.slicing        -> String representing 3D to 2D mapping: '' (for 1D/2D images),
-%                                'xy', 'xz', 'yz', 'xt', 'yt', 'zt'.
+%      - udata.handle         -> dip_imagedisplay handle.
+%      - udata.imsize         -> Size of the display in pixels ([x] for 1D images, [x,y] for others).
 %      - udata.colmap         -> String representing the colormap: 'grey', 'periodic', 'saturation',
 %                                'zerobased', 'labels', 'custom'.
-%      - udata.imagedata      -> Original dip_image object (or slice out of the 3D volume),
-%                                converted to RGB colorspace in case of color image.
-%                                A color image has the color along the 3rd. dimension.
-%      - udata.imsize         -> image size: [x,y,z] for 3D, [x,y] for 2D, [x] for 1D.
-%                                The x and y components are the slice dimensions, thus this
-%                                array is re-arranged when changing the udata.slicing.
 %      - udata.colspace       -> Name of color space: '' (for grey), 'RGB', 'Lab', 'XYZ', etc.
 %      - udata.zoom           -> Pixel size or [] if aspect ratio is not 1:1. If 0, don't show zoom!
 %      - udata.state          -> Action state: 'none', 'dipstep', 'diptest', 'dipzoom', etc.
 %      - udata.imname         -> Name to be displayed in title bar.
-%   - For 3D images:
-%      - udata.maxslice       -> Highest slice available (udata.imsize(3)-1).
-%      - udata.curslice       -> Slice currently displayed.
-%      - udata.slices         -> Originial dip_image object, in case of color image it's
-%                                in the original color space.
+%   - For 1D images:
+%      - udata.imagedata      -> input data, used to recompute the display. In case of 1D images,
+%                                udata.handle is used only to manage the display settings.
+%   - For 3/4D images:
 %      - udata.linkdisplay    -> If linked, list of figure handles, else [].
-%      - udata.globalstretch  -> 0 or 1, indicating if stretching is computed on one slice or
-%                                the whole thing.
-%      - udata.globalcomputed -> Copy of udata.computed computed on global stuff. Or, with complex
-%                                images, copies of udata.computed_XXX.
-%   - For 4D images the same stuff as in 3D, but also:
-%      - udata.maxtime        -> Highest slice available (udata.imsize(4)-1).
-%      - udata.curtime        -> Slice currently displayed.
-%   - For color images
-%      - udata.colordata      -> dip_image object in original colorspace. In case of
-%                                3D image, it is a slice out of udata.slices.
-%      - udata.channels       -> Number of channels (== length(udata.colordata)).
 %   - In function KeyPressFcn:
 %      - udata.nextslice      -> String being typed by user containing a number.
 %      - udata.lastkeypress   -> String containing last keypress
@@ -176,10 +154,6 @@
 
 % COMMON PHRASES
 %
-% Tests using the UserData property:
-%  Dimensionality :       length(udata.imsize)
-%  Is color:              ~isempty(udata.colspace)
-%  Is binary:             islogical(udata.imagedata)
 % Tests using the Tag property:
 %  Is created by DIPSHOW: strncmp(tag,'DIP_Image',9)
 %  Is grey:               length(tag)==17 && tag(14:17)=='Grey')
@@ -200,13 +174,11 @@ function h = dipshow(varargin)
 %   dipshow_1D                    Core for 1D images
 %   display_data_1D               Send 1D image to display
 %   stretchYaxis_1D               Adjust display mode for 1D image
-%   dipshow_core                  Core for 2D and 3D images
-%   update_slice                  Update the current slice for a 3D image display
-%   update_linked                 Update the slice in linked displays
-%   display_data                  Send 2D data to display (2D image or slice out of 3D image)
-%   set_udata_computed_lin        Set the udata.computed.lin field.
-%   set_udata_computed_percentile Set the udata.computed.percentile field.
 %   mapcomplexdata                Map complex data to the real domain
+%   dipshow_core                  Core for 2D and 3D images
+%   change_slice                  Change the slice to be shown, does not update the display
+%   update_display                Update the 2D display
+%   update_linked                 Update the slice in linked displays
 %   clearnreset                   Delete all figure children and reset properties to DIPSHOW defaults
 %   create_menus                  Create menus for figure window (contains callback definitions)
 %   find_action_state             Find the correct action state for the current image
@@ -215,7 +187,7 @@ function h = dipshow(varargin)
 %   set_global_check              Set the checkmark to the global stretch menu item
 %   change_mapping                Set the mapping modes (does some user-input parsing too)
 %   change_keyboard_state         Enable or disable the keyboard callback for a figure window
-%   save_figure_window            Callback for the File->Save... menu item
+%   save_figure_window            Callback for the "File->Save..." menu item
 %   dipzoomWindowButtonDownFcn    (callback, DIPZOOM)
 %   dipzoomWindowButtonMotionFcn  (callback, DIPZOOM)
 %   dipzoomWindowButtonUpFcn      (callback, DIPZOOM)
@@ -228,49 +200,24 @@ function h = dipshow(varargin)
 %   KeyPressFcn                   (callback)
 %   ResizeFcn                     (callback)
 %   position_axes                 Puts the axes in the right location
+%   default_figure_size           Callback for "Sizes->Default window size" menu item
 
 
-% We need to handle some callbacks
-if nargin == 2
-   if ischar(varargin{1}) && ischar(varargin{2}) && strcmp(varargin{1},'DIP_callback')
-      switch varargin{2}
-         case 'menu_actions_none_cb'
-            change_action_state(gcbf,'none');
-         case 'menu_actions_keyboard_cb'
-            change_keyboard_state(gcbf,'toggle');
-         case 'menu_file_save_cb'
-            save_figure_window(gcbf);
-         case 'dipzoomWindowButtonDownFcn'
-            dipzoomWindowButtonDownFcn(gcbf);
-         case 'dipzoomWindowButtonMotionFcn'
-            dipzoomWindowButtonMotionFcn(gcbf);
-         case 'dipzoomWindowButtonUpFcn'
-            dipzoomWindowButtonUpFcn(gcbf);
-         case 'dipstepWindowButtonDownFcn'
-            dipstepWindowButtonDownFcn(gcbf);
-         case 'dipstepWindowButtonMotionFcn'
-            dipstepWindowButtonMotionFcn(gcbf);
-         case 'dipstepWindowButtonUpFcn'
-            dipstepWindowButtonUpFcn(gcbf);
-         case 'KeyPressFcn'
-            KeyPressFcn(gcbf);
-         case 'ResizeFcn'
-            ResizeFcn(gcbf);
-         otherwise
-            error('Unknown callback function.')
-      end
-      return
+% We need to handle some "callbacks"
+if nargin == 2 && ischar(varargin{1}) && ischar(varargin{2}) && strcmp(varargin{1},'DIP_callback')
+   switch varargin{2}
+      case 'dipzoomWindowButtonDownFcn'
+         h = @dipzoomWindowButtonDownFcn;
+      case 'dipstepWindowButtonDownFcn'
+         h = @dipstepWindowButtonDownFcn;
+      case 'clear'
+         close all
+         imagedisplay('unlock')
+         clear imagedisplay
+      otherwise
+         error('Unknown callback function.')
    end
-elseif nargin == 3
-   if ischar(varargin{1}) && ischar(varargin{2}) && strcmp(varargin{1},'DIP_callback')
-      switch varargin{2}
-         case 'ResizeFcn'
-            ResizeFcn(varargin{3});
-         otherwise
-            error('Unknown callback function.')
-      end
-      return
-   end
+   return
 end
 
 % Parse input
@@ -318,7 +265,16 @@ if nargin >= n
             error('Argument must be a valid figure handle.')
          end
       end
-      change_mapping(fig,varargin{n:end});
+      if strcmp(in,'updatelinked')
+         udata = get(fig,'UserData');
+         handle = udata.handle;
+         coords = imagedisplay(handle,'coordinates');
+         slicing = imagedisplay(handle,'slicing');
+         udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
+         set(fig,'UserData',udata)
+      else
+         change_mapping(fig,varargin{n:end});
+      end
       return
    end
    if ~isnumeric(in) || ~isempty(in)
@@ -483,10 +439,6 @@ if isnumeric(in) && isempty(in)
    % Maybe we don't want to display any image
    dipshow_core(fig,dip_image(0),imname,currange,mappingmode,colmap,colmapdata,complexmapping,slicing,state,keys,0,1);
 else
-   % Check input image
-   if ~isscalar(in) && ~iscolor(in)
-      error('Cannot show tensor image.')
-   end
    % Display images
    if ndims(in)==1
       dipshow_1D(fig,in,imname,currange,mappingmode,complexmapping,state,keys,truesz,dontshowzoom);
@@ -518,7 +470,7 @@ currange = [];
 colmap = dipgetpref('DefaultColorMap');
 colmapdata = [];
 complexmapping = dipgetpref('DefaultComplexMapping');
-slicing = dipgetpref('DefaultSlicing');
+slicing = parse_slicing(dipgetpref('DefaultSlicing'));
 state = dipgetpref('DefaultActionState');
 if dipgetpref('EnableKeyboard')
    keys = 'on';
@@ -528,11 +480,16 @@ end
 % change defaults according to current settings
 if ishandle(fig)
    udata = get(fig,'UserData');
-   if isfield(udata,'mappingmode')
-      mappingmode = udata.mappingmode;
+   if isfield(udata,'handle')
+      handle = udata.handle;
+      mappingmode = imagedisplay(handle,'mappingmode');
+      if strcmp(mappingmode,'manual')
+         currange = imagedisplay(handle,'range');
+      end
+      complexmapping = imagedisplay(handle,'complexmapping');
    end
-   if isempty(mappingmode) && isfield(udata,'currange')
-      currange = udata.currange;
+   if isfield(udata,'state')
+      state = udata.state;
    end
    if isfield(udata,'colmap')
       colmap = udata.colmap;
@@ -551,15 +508,6 @@ if ishandle(fig)
             colmapdata = gray(256);
       end
    end
-   if isfield(udata,'complexmapping')
-      complexmapping = udata.complexmapping;
-   end
-   if isfield(udata,'slicing')
-      slicing = udata.slicing;
-   end
-   if isfield(udata,'state')
-      state = udata.state;
-   end
 end
 
 
@@ -572,28 +520,11 @@ if ischar(currange)
    mappingmode = lower(currange);
    currange = [];
    switch mappingmode
-      case 'all'
-         mappingmode = 'lin';
-      case {'8bit','u8bit'}
-         mappingmode = 'normal';
-      case 'u12bit'
-         mappingmode = '12bit';
-      case 'u16bit'
-         mappingmode = '16bit';
-      case {'normal','unit','lin','12bit','16bit','s8bit','s12bit','s16bit'}
-      case 'log'
-      case 'percentile'
-      case 'base'
+      case {'base','based'}
          colmap = 'zerobased';
-      case 'angle'
-         colmap = 'periodic';
-      case 'orientation'
-         colmap = 'periodic';
       case 'labels'
          mappingmode = 'normal';
          colmap = 'labels';
-      otherwise
-         error(['Illegal argument ''',mappingmode,'''.'])
    end
 else
    if isempty(currange)
@@ -606,27 +537,6 @@ else
          tmp = currange(1);
          currange(1) = currange(2);
          currange(2) = tmp;
-      end
-      if currange(1) == 0
-         if currange(2) == 255
-            currange = [];
-            mappingmode = 'normal';
-         elseif currange(2) == 4095
-            currange = [];
-            mappingmode = '12bit';
-         elseif currange(2) == 65535
-            currange = [];
-            mappingmode = '16bit';
-         end
-      elseif currange(1) == -128 && currange(2) == 127
-            currange = [];
-            mappingmode = 's8bit';
-      elseif currange(1) == -2048 && currange(2) == 2047
-            currange = [];
-            mappingmode = 's12bit';
-      elseif currange(1) == -32768 && currange(2) == 32767
-            currange = [];
-            mappingmode = 's16bit';
       end
    end
 end
@@ -667,6 +577,38 @@ end
 
 
 %
+% Parse the input parameter SLICING
+%
+function slicing = parse_slicing(str)
+if ischar(str)
+   if numel(str) ~= 2
+      error('Illegal slicing argument.')
+   end
+   slicing = [get__slicing__dim(str(1)), get__slicing__dim(str(2))];
+   if slicing(1)==slicing(2)
+      error('Illegal slicing argument.')
+   end
+else
+   slicing = str;
+   if numel(slicing) ~= 2 || ~isnumeric(slicing)
+      error('Illegal slicing argument.')
+   end
+end
+
+function n = get__slicing__dim(c)
+switch c
+   case 'x'
+      n = 1;
+   case 'y'
+      n = 2;
+   case 'z'
+      n = 3;
+   otherwise % case 't'
+      n = 4;
+end
+
+
+%
 % DIPSHOW core for 1D images.
 %
 function dipshow_1D(fig,in,imname,currange,mappingmode,complexmapping,state,keys,truesz,dontshowzoom)
@@ -689,27 +631,25 @@ axh = axes('Parent',fig,'Visible','on','XGrid','off','YGrid','off',...
 create_menus(fig,1,iscomp,iscol,isbin);
 change_keyboard_state(fig,keys);
 % Create UserData stuff
-udata.state = ''; % Make sure the state is updated later on.
-udata.currange = currange;
-udata.mappingmode = mappingmode;
-udata.complexmapping = complexmapping;
-udata.colspace = colorspace(in);
-udata.imsize = sz;
-if iscol
-   udata.channels = length(in);
-   udata.colordata = in;
-   udata.imagedata = cat(3,in);
+udata.imagedata = in;
+udata.imsize = imsize(in);
+handle = imagedisplay(in);
+udata.handle = handle;
+imagedisplay(handle,'complexmapping',complexmapping)
+if strcmp(mappingmode,'manual')
+   imagedisplay(handle,'mappingmode',currange)
 else
-   udata.imagedata = in;
+   imagedisplay(handle,'mappingmode',mappingmode)
 end
-udata.slicing = '';
+udata.state = ''; % Make sure the state is updated later on.
+udata.colspace = colorspace(in);
 udata.colmap = '';
 udata.linkdisplay = [];
 % Display 1D image
 udata = display_data_1D(axh,udata);
 set(axh,'XLim',[0,sz]-0.5);
 % Set figure properties
-set_mode_check(fig,udata.mappingmode,'',udata.complexmapping,udata.slicing);
+set_mode_check(fig,imagedisplay(handle,'mappingmode'),'',imagedisplay(handle,'complexmapping'),[]);
 if dontshowzoom
    udata.zoom = 0;
 else
@@ -723,7 +663,7 @@ end
 if iscol
    udata.imname = [udata.imname,' (',udata.colspace,')'];
 end
-tag = ['DIP_Image_1D'];
+tag = 'DIP_Image_1D';
 if iscol
    tag = [tag,'_Color'];
 elseif isbin
@@ -755,25 +695,23 @@ if strcmp(get(fig,'Visible'),'off') && ~dipgetpref('RespectVisibility')
    set(fig,'Visible','on');
 end
 
+
 %
 % Calculate the display data for a 1D image
 %
 function udata = display_data_1D(axh,udata)
-cdata = mapcomplexdata(udata.imagedata,udata.complexmapping);
+cdata = mapcomplexdata(udata.imagedata,imagedisplay(udata.handle,'complexmapping'));
+sz = imsize(cdata);
 delete(get(axh,'Children'));
-cdata = double(cdata);
-xdata = [0:udata.imsize]-0.5;
-xdata = reshape(repmat(xdata,2,1),[1,udata.imsize*2+2]);
+cdata = squeeze(double(cdata))';
+xdata = (0:sz)-0.5;
+xdata = reshape(repmat(xdata,2,1),[1,sz*2+2]);
 xdata = xdata(2:end-1);
-if ~isempty(udata.colspace);
-   colors = [1,0,0;0,1,0;0,0,1;0,0,0];
-   for ii=1:udata.channels
-      ydata = reshape(repmat(cdata(1,:,ii),2,1),[1,udata.imsize*2]);
-      line('xdata',xdata,'ydata',ydata,'color',colors(min(ii,4),:),'linestyle','-');
-   end
-else
-   ydata = reshape(repmat(cdata,2,1),[1,udata.imsize*2]);
-   line('xdata',xdata,'ydata',ydata,'color',[0,0,0],'linestyle','-');
+colors = get(0,'DefaultAxesColorOrder');
+for ii=1:size(cdata,2)
+   ydata = reshape(repmat(cdata(:,ii),2,1),[1,sz*2]);
+   jj = mod(ii-1,size(colors,1))+1;
+   line('xdata',xdata,'ydata',ydata,'color',colors(jj,:),'linestyle','-');
 end
 udata = stretchYaxis_1D(axh,udata);
 
@@ -782,78 +720,42 @@ udata = stretchYaxis_1D(axh,udata);
 % Set the Y-axis properties for 1D image
 %
 function udata = stretchYaxis_1D(axh,udata)
-cdata = mapcomplexdata(udata.imagedata,udata.complexmapping);
+handle = udata.handle;
+complexmapping = imagedisplay(handle,'complexmapping');
+cdata = mapcomplexdata(udata.imagedata,complexmapping);
 logmode = 0;
 if islogical(cdata)
-   mappingmode = 'normal';
    currange = [-0.2,1.2];
 else
-   mappingmode = udata.mappingmode;
+   mappingmode = imagedisplay(handle,'mappingmode');
    switch mappingmode
-      case 'angle'
-         currange = [-pi,pi];
-      case 'orientation'
-         currange = [-pi,pi]/2;
       case 'log'
          % won't work if any pixel is non-finite, nor if there are non-positive values
-         if ~isfield(udata,'computed') || ~isfield(udata.computed,'canlog')
-            if any(~isfinite(cdata))
-               udata.computed.canlog = 'non-finite values';
-            elseif any(cdata<0)
-               udata.computed.canlog = 'negative values';
-            else
-               udata.computed.canlog = '';
-            end
+         if any(~isfinite(cdata))
+            canlog = 'non-finite values';
+         elseif any(cdata<0)
+            canlog = 'negative values';
+         else
+            canlog = '';
          end
-         if ~isempty(udata.computed.canlog)
-            warning(['Image contains ',udata.computed.canlog,'. Cannot perform log stretch.'])
-            mappingmode = 'normal';
+         if ~isempty(canlog)
+            warning(['Image contains ',canlog,'. Cannot perform log stretch.'])
             currange = [0,255];
+            imagedisplay(handle,'range',currange);
          else
             logmode = 1;
-            udata = set_udata_computed_lin(udata,cdata);
-            currange = udata.computed.lin;
+            currange = getmaximumandminimum(cdata);
          end
-      case 'base'
-         if ~isfield(udata,'computed') || ~isfield(udata.computed,'base')
-            udata = set_udata_computed_lin(udata,cdata);
-            currange = udata.computed.lin;
-            currange(2) = max(abs(currange));
-            currange(1) = -currange(2);
-            udata.computed.base = currange;
-         else
-            currange = udata.computed.base;
-         end
+      case 'based'
+         currange = getmaximumandminimum(cdata);
+         currange(2) = max(abs(currange));
+         currange(1) = -currange(2);
       case 'percentile'
-         udata = set_udata_computed_percentile(udata,cdata);
-         currange = udata.computed.percentile;
+         currange = [percentile(cdata,5),percentile(cdata,95)];
       case 'lin'
-         udata = set_udata_computed_lin(udata,cdata);
-         currange = udata.computed.lin;
-      case 'unit'
-         currange = [0,1];
-      case 'normal'
-         currange = [0,255];
-      case '12bit'
-         currange = [0,4095];
-      case '16bit'
-         currange = [0,65535];
-      case 's8bit'
-         currange = [-128,127];
-      case 's12bit'
-         currange = [-2048,2047];
-      case 's16bit'
-         currange = [-32768,32767];
-      case {'','manual'}
-         % use existing currange
-         currange = udata.currange;
-         if length(currange)~=2
-            currange = [0,255];
-            mappingmode = 'normal';
-         end
+         currange = getmaximumandminimum(cdata);
       otherwise
-         currange = [0,255];
-         mappingmode = 'normal';
+         currange = imagedisplay(handle,'range');
    end
    if currange(1) == currange(2)
       currange = currange + [-1,1];
@@ -861,13 +763,29 @@ else
       currange = currange([2,1]);
    end
 end
-udata.mappingmode = mappingmode;
-udata.currange = currange;
 set(axh,'Ylim',currange);
 if logmode
    set(axh,'YScale','log');
 else
    set(axh,'YScale','lin');
+end
+
+
+%
+% Map complex data to the real domain
+%
+function cdata = mapcomplexdata(cdata,complexmapping)
+if ~isreal(cdata)
+   switch complexmapping
+      case 'real'
+         cdata = real(cdata);
+      case 'imag'
+         cdata = imag(cdata);
+      case 'phase'
+         cdata = phase(cdata);
+      otherwise
+         cdata = abs(cdata);
+   end
 end
 
 
@@ -887,24 +805,26 @@ sz = imsize(in);
 nD = length(sz);
 % Get some data out of the figure window before resetting
 linkdisplay=[];
+coords = [];
 if nD>=3
    udata = get(fig,'UserData');
-   newslice = 0;
-   newtime = 0;
    globalstretch = dipgetpref('DefaultGlobalStretch');
-   if isfield(udata,'curslice')
-      newslice = udata.curslice;
+   if isfield(udata,'handle')
+      handle = udata.handle;
+      newcoords = imagedisplay(handle,'coordinates');
+      if length(newcoords) == nD
+         slicing = imagedisplay(handle,'slicing');
+         globalstretch = imagedisplay(handle,'globalstretch');
+         coords = newcoords;
+      end
    end
    if isfield(udata,'linkdisplay')
       linkdisplay = udata.linkdisplay;
    end
-   if isfield(udata,'globalstretch') % We don't want global stretching on color images yet.
-      globalstretch = udata.globalstretch;
-   end
    udata = [];
 elseif nD==0
-   sz = [1,1];
    nD = 2; % Default figure: nice menus and stuff.
+   in.expanddim(2);
 end
 % Set up figure window.
 clearnreset(fig);
@@ -913,117 +833,46 @@ axh = axes('Parent',fig,'Visible','off','XGrid','off','YGrid','off','YDir','reve
 imh = image('BusyAction','cancel','Parent',axh,'Interruptible','off','CDataMapping','direct','CData',[]);
 create_menus(fig,nD,iscomp,iscol,isbin);
 change_keyboard_state(fig,keys);
+% Create imagedisplay object, set properties
+handle = imagedisplay(in);
+if nD>=3
+   imagedisplay(handle,'globalstretch',globalstretch)
+   imagedisplay(handle,'slicing',slicing);
+   if ~isempty(coords)
+      imagedisplay(handle,'coordinates',coords);
+   end
+end
+imagedisplay(handle,'complexmapping',complexmapping)
+if strcmp(mappingmode,'manual')
+   imagedisplay(handle,'mappingmode',currange)
+else
+   imagedisplay(handle,'mappingmode',mappingmode)
+end
+   %if iscol
+      %g = dipgetpref('Gamma');
+   %else
+      %g = dipgetpref('GammaGrey');
+   %end
+   % TODO: use `g` in `imagedisplay`.
 % Create UserData stuff
 udata.state = ''; % Make sure the state is updated later on.
-udata.currange = currange;
-udata.mappingmode = mappingmode;
+udata.handle = handle;
 udata.colmap = colmap;
-udata.complexmapping = complexmapping;
 udata.colspace = colorspace(in);
 udata.linkdisplay = linkdisplay;
-if nD==3
-   if isempty(udata.colspace) || strcmp(udata.colspace,'RGB')
-      udata.globalstretch = globalstretch;
-   else
-      if globalstretch
-         warning('Cannot perform global stretching on non-RGB color images.')
-      end
-      udata.globalstretch = 0;
-   end
-   switch slicing
-      case 'yz'
-         udata.maxslice = sz(1)-1;
-         udata.imsize = sz([2,3,1]);
-      case 'xz'
-         udata.maxslice = sz(2)-1;
-         udata.imsize = sz([1,3,2]);
-      otherwise % case 'xy', ''
-         slicing = 'xy';
-         udata.maxslice = sz(3)-1;
-         udata.imsize = sz([1,2,3]);
-   end
-   udata.slices = in;
-   if iscol
-      udata.channels = length(in);
-   end
-   udata.curslice = -1;  % else UPDATE_SLICE might not update
-   udata.slicing = slicing;
-
-   % Show 3D image slice
-   udata = update_slice(fig,imh,udata,newslice);
-elseif nD==4
-   if isempty(udata.colspace) || strcmp(udata.colspace,'RGB')
-      udata.globalstretch = globalstretch;
-   else
-      if globalstretch
-         warning('Cannot perform global stretching on non-RGB color images.')
-      end
-      udata.globalstretch = 0;
-   end
-   switch slicing
-      case 'yz'
-         udata.maxslice = sz(1)-1;%step n/p
-         udata.maxtime  = sz(4)-1;%step b/f
-         udata.imsize = sz([2,3,1,4]);
-      case 'xz'
-         udata.maxslice = sz(2)-1;
-         udata.maxtime  = sz(4)-1;
-         udata.imsize = sz([1,3,2,4]);
-      case 'xt'
-         udata.maxslice = sz(2)-1;
-         udata.maxtime  = sz(3)-1;
-         udata.imsize = sz([1,4,3,2]);
-      case 'yt'
-         udata.maxslice = sz(1)-1;
-         udata.maxtime  = sz(3)-1;
-         udata.imsize = sz([2,4,1,3]);
-      case 'zt'
-         udata.maxslice = sz(1)-1;
-         udata.maxtime  = sz(2)-1;
-         udata.imsize = sz([3,4,1,2]);
-      otherwise % case 'xy', ''
-         slicing = 'xy';
-         udata.maxslice = sz(3)-1;
-         udata.imsize = sz([1,2,3,4]);
-         udata.maxtime = sz(4)-1;
-   end
-   udata.slices = in;
-   if iscol
-      udata.channels = length(in);
-   end
-   udata.curslice = -1;  % else UPDATE_SLICE might not update
-   udata.curtime = -1;
-   udata.slicing = slicing;
-   % Show 4D image slice
-   udata = update_slice(fig,imh,udata,[newslice,newtime]);
-else
-   udata.imsize = sz;
-   if iscol
-      udata.channels = length(in);
-      udata.colordata = in;
-      udata.imagedata = cat(3,colorspace(in,'RGB'));
-   else
-      udata.imagedata = in;
-   end
-   udata.slicing = '';
-   % Show 2D image
-   udata = display_data(fig,imh,udata);
-end
+udata = update_display(udata,imh,handle);
 if isbin
    colmapdata = [0,0,0;dipgetpref('BinaryDisplayColor')];
 else
    if isempty(colmapdata)
-      [colmap,colmapdata] = parse_colmapstr(udata.colmap);
+      [~,colmapdata] = parse_colmapstr(udata.colmap);
    end
 end
 set(fig,'Colormap',colmapdata);
-% Set axes and image properties
-set(imh,'XData',[0,udata.imsize(1)-1],'YData',[0,udata.imsize(2)-1]);
-set(axh,'XLim',[0,udata.imsize(1)]-0.5,'Ylim',[0,udata.imsize(2)]-0.5);
 % Set figure properties
-set_mode_check(fig,udata.mappingmode,udata.colmap,udata.complexmapping,udata.slicing);
+set_mode_check(fig,imagedisplay(handle,'mappingmode'),udata.colmap,imagedisplay(handle,'complexmapping'),imagedisplay(handle,'slicing'));
 if nD>=3
-   set_global_check(fig,udata.globalstretch);
+   set_global_check(fig,imagedisplay(handle,'globalstretch'));
    if ~isempty(udata.linkdisplay)
       set(findobj(fig,'Tag','diplink'),'Checked','on');
    end
@@ -1075,105 +924,79 @@ end
 
 
 %
-% Show a new slice of a 3D/4D image.
+% Changes the current slice (for 2/3/4D images), doesn't update the display
 %
-function udata = update_slice(fig,imh,udata,new_slice)
+function change_slice(udata,newslice)
+handle = udata.handle;
+sz = imagedisplay(handle,'sizes');
+nD = length(sz);
+if nD>2
+   coords = imagedisplay(handle,'coordinates');
+   k = imagedisplay(handle,'orthogonal');
+   if newslice(1)>=0
+      coords(k(1)) = newslice(1);
+   end
+   if nD>3
+      if newslice(2)>=0
+         coords(k(2)) = newslice(2);
+      end
+   end
+   imagedisplay(handle,'coordinates',coords)
+end
 
-newslice = new_slice(1); %--BR----changed lastp parameter in function to [newslice newtime]---
-if newslice > udata.maxslice
-   newslice = udata.maxslice;
-elseif newslice < 0
-   newslice = 0;
-end
-is4D = length(udata.imsize)==4;
-if ~is4D
-   if newslice == udata.curslice
-      return
-   end
-   switch udata.slicing
-      case 'yz'
-         udata.imagedata = squeeze(udata.slices(newslice,:,:));
-      case 'xz'
-         udata.imagedata = squeeze(udata.slices(:,newslice,:));
-      otherwise % case 'xy'
-         udata.imagedata = squeeze(udata.slices(:,:,newslice));
-   end
-else
-   newtime = new_slice(2);
-   if newtime > udata.maxtime
-      newtime = udata.maxtime;
-   elseif newtime < 0
-      newtime = 0;
-   end
-   if (newslice == udata.curslice) && (newtime == udata.curtime)
-      return
-   end
-   switch udata.slicing
-      case 'yz'
-         udata.imagedata = squeeze(udata.slices(newslice,:,:,newtime));
-      case 'xz'
-         udata.imagedata = squeeze(udata.slices(:,newslice,:,newtime));
-      case 'xt'
-         udata.imagedata = squeeze(udata.slices(:,newslice,newtime,:));
-      case 'yt'
-         udata.imagedata = squeeze(udata.slices(newslice,:,newtime,:));
-      case 'zt'
-         udata.imagedata = squeeze(udata.slices(newslice,newtime,:,:));
-      otherwise % case 'xy'
-         udata.imagedata = squeeze(udata.slices(:,:,newslice,newtime));
+
+%
+% Updates the 2D display
+%
+function udata = update_display(udata,imh,handle)
+if imagedisplay(handle,'dirty')
+   change = imagedisplay(handle,'change');
+   set(imh,'cdata',imagedisplay(handle));
+   if change
+      axh = get(imh,'Parent');
+      sz = imagedisplay(handle,'sizes');
+      slicing = imagedisplay(handle,'slicing');
+      xsz = sz(slicing(1));
+      ysz = sz(slicing(2));
+      set(imh,'XData',[0,xsz-1],'YData',[0,ysz-1]);
+      set(axh,'XLim',[0,xsz]-0.5,'Ylim',[0,ysz]-0.5);
+      udata.imsize = [xsz,ysz];
    end
 end
-if iscolor(udata.imagedata)
-   udata.colordata = udata.imagedata;
-   udata.imagedata = cat(3,colorspace(udata.colordata,'RGB'));
-end
-if ~udata.globalstretch && isfield(udata,'computed')
-   udata = rmfield(udata,'computed');
-end
-udata.curslice = newslice;
-if is4D
-   udata.curtime = newtime;
-end
-udata = display_data(fig,imh,udata);
 
 
 %
 % Update slices in linked displays
 %
-function hlist = update_linked(fig,hlist,newslice,newslicing,curzoom)
-%input of newslice,newslicing is only required for 3D, 4D images
+function hlist = update_linked(fig,hlist,newcoords,newslicing,curzoom)
+%input of newcoords and newslicing is only required for 3D, 4D images
 
 keep = ones(size(hlist));
 curax = findobj(fig,'Type','axes');
 curxlim = get(curax,'xlim');
 curylim = get(curax,'ylim');
 
+tag = get(fig,'Tag');
 for ii=1:length(hlist)
-   if ~isfigh(hlist(ii)) || (~strncmp(get(hlist(ii),'Tag'),'DIP_Image_2D',12) ...
-      && ~strncmp(get(hlist(ii),'Tag'),'DIP_Image_3D',12) && ~strncmp(get(hlist(ii),'Tag'),'DIP_Image_4D',12))
-      disp(['Warning: the linked display ',num2str(hlist(ii)),' is no longer 2/3/4D.']);
+   if ~isfigh(hlist(ii)) || ~strncmp(get(hlist(ii),'Tag'),tag,12)
+      disp(['Warning: the linked display ',num2str(hlist(ii)),' no longer matches this one.']);
       keep(ii) = 0;
    else
       udata = get(hlist(ii),'UserData');
-      if ~isempty(newslice)
-         if length(udata.imsize)==3 %3D display
-            if ~strcmp(udata.slicing,newslicing)
-               change_mapping(hlist(ii),'ch_slice',newslice,'ch_slicing',newslicing);
-            elseif udata.curslice ~= newslice
-               change_mapping(hlist(ii),'ch_slice',newslice);
-            end
-         elseif length(udata.imsize)==4 %4D display
-            if ~strcmp(udata.slicing,newslicing)
-               change_mapping(hlist(ii),'ch_slice',newslice(1),'ch_time',newslice(2),'ch_slicing',newslicing);
-            elseif udata.curslice ~= newslice(1) || udata.curtime ~=newslice(2)
-               change_mapping(hlist(ii),'ch_slice',newslice(1),'ch_time',newslice(2));
-            end
-         end
+      if ~isempty(newcoords) && isfield(udata,'handle')
+         imh = findobj(hlist(ii),'Type','image');
+         if length(imh)~=1, return, end
+         handle = udata.handle;
+         imagedisplay(handle,'coordinates',newcoords);
+         imagedisplay(handle,'slicing',newslicing);
+         udata = update_display(udata,imh,handle);
+         % TODO: axes don't resize?
+         set(hlist(ii),'UserData',[]);    % Solve MATLAB bug!
+         set(hlist(ii),'UserData',udata);
       end
-      %change the axis and zoom also for 2D data
+      % Change the axis and zoom also for 2D data
       ax = findobj(hlist(ii),'Type','axes');
       if udata.zoom ~= curzoom
-         ax = findobj(hlist(ii),'Type','axes');
          au = get(ax,'Units');
          set(ax,'Units','pixels');
          set(hlist(ii),'Units','pixels');
@@ -1185,146 +1008,16 @@ for ii=1:length(hlist)
          set(hlist(ii),'UserData',[]);    % Solve MATLAB bug!
          set(hlist(ii),'UserData',udata);
          dipfig_titlebar(hlist(ii),udata);
+         set(ax,'Units',au);
       end
-      ax = findobj(hlist(ii),'Type','axes');
       set(ax,'xlim',curxlim);
       set(ax,'ylim',curylim);
+      % TODO: Update the displays linked by this display!
    end
 end
-hlist = hlist(find(keep));
+hlist = hlist(keep);
 if isempty(hlist)
    diplink(fig,'off');
-end
-
-
-%
-% Calculate the display data for a 2D image / slice
-%
-function udata = display_data(fig,imh,udata)
-cdata = udata.imagedata;
-iscol = ~isempty(udata.colspace);
-if ~iscol && islogical(cdata)
-   cdata = uint8(cdata);
-   mappingmode = 'normal';
-   currange = [0,1];
-else
-   params.mode = 'lin';
-   params.complex = udata.complexmapping;
-   params.projection = 'slice';
-   mappingmode = udata.mappingmode;
-   switch mappingmode
-      case 'angle'
-         currange = [-pi,pi];
-      case 'orientation'
-         currange = [-pi,pi]/2;
-      case 'log'
-         udata = set_udata_computed_lin(udata,cdata);
-         currange = udata.computed.lin;
-         params.mode = 'log';
-      case 'base'
-         if ~isfield(udata,'computed') || ~isfield(udata.computed,'lin')
-            udata = set_udata_computed_lin(udata,cdata);
-         end
-         currange = udata.computed.lin;
-         params.mode = 'based';
-      case 'percentile'
-         udata = set_udata_computed_percentile(udata,cdata);
-         currange = udata.computed.percentile;
-      case 'lin'
-         udata = set_udata_computed_lin(udata,cdata);
-         currange = udata.computed.lin;
-      case 'unit'
-         currange = [0,1];
-      case 'normal'
-         currange = [0,255];
-      case '12bit'
-         currange = [0,4095];
-      case '16bit'
-         currange = [0,65535];
-      case 's8bit'
-         currange = [-128,127];
-      case 's12bit'
-         currange = [-2048,2047];
-      case 's16bit'
-         currange = [-32768,32767];
-      case {'','manual'}
-         % use existing currange
-         currange = udata.currange;
-         if length(currange)~=2
-            currange = [0,255];
-            mappingmode = 'normal';
-         end
-      otherwise % not supposed to happen
-         currange = [0,255];
-         mappingmode = 'normal';
-   end
-   if currange(1) == currange(2)
-      currange = currange + [-1,1];
-   elseif currange(1) > currange(2)
-      currange = currange([2,1]);
-   end
-   params.lowerBound = currange(1);
-   params.upperBound = currange(2);
-   %if iscol
-      %g = dipgetpref('Gamma');
-   %else
-      %g = dipgetpref('GammaGrey');
-   %end
-   % TODO: use `g` in `imagedisplay`.
-   cdata = imagedisplay(cdata,[],0,1,params);
-end
-set(imh,'cdata',cdata);
-udata.mappingmode = mappingmode;
-udata.currange = currange;
-
-
-%
-% Fill-in udata.computed elements, if they don't exist yet.
-%
-function udata = set_udata_computed_lin(udata,cdata)
-if ~isfield(udata,'computed') || ~isfield(udata.computed,'lin')
-   if length(udata.imsize)>=3 && udata.globalstretch
-      if ~isempty(udata.colspace) && ~strcmp(udata.colspace,'RGB')
-         warning('Cannot perform global stretching on non-RGB color images.')
-         % Don't worry about this. It cannot happen.
-      else
-         cdata = udata.slices;
-      end
-   end
-   cdata = mapcomplexdata(cdata,udata.complexmapping);
-   udata.computed.lin = getmaximumandminimum(cdata);
-end
-
-function udata = set_udata_computed_percentile(udata,cdata)
-if ~isfield(udata,'computed') || ~isfield(udata.computed,'percentile')
-   if length(udata.imsize)>=3 && udata.globalstretch
-      if ~isempty(udata.colspace) && ~strcmp(udata.colspace,'RGB')
-         warning('Cannot perform global stretching on non-RGB color images.')
-         % Don't worry about this. It cannot happen.
-      else
-         cdata = udata.slices;
-      end
-   end
-   cdata = mapcomplexdata(cdata,udata.complexmapping);
-   udata.computed.percentile = [percentile(cdata,5),percentile(cdata,95)];
-end
-
-
-%
-% Map complex data to the real domain
-%
-function cdata = mapcomplexdata(cdata,complexmapping)
-if ~isreal(cdata)
-   switch complexmapping
-      case 'real'
-         cdata = real(cdata);
-      case 'imag'
-         cdata = imag(cdata);
-      case 'phase'
-         cdata = phase(cdata);
-      otherwise
-         cdata = abs(cdata);
-   end
 end
 
 
@@ -1352,7 +1045,7 @@ set(fig,...
    'Pointer','arrow',...
    'RendererMode','auto',...
    'Resize','on',...
-   'ResizeFcn','dipshow DIP_callback ResizeFcn',...
+   'ResizeFcn',@ResizeFcn,...
    'UIContextMenu',[],...
    'Units','pixels',...
    'UserData',[],...
@@ -1372,134 +1065,130 @@ if ~isempty(h)
 end
 % Create 'File' menu
 h = uimenu(fig,'Label','File','Tag','file');
-uimenu(h,'Label','Save display ...','Tag','save','Callback','dipshow DIP_callback menu_file_save_cb',...
+uimenu(h,'Label','Save display ...','Tag','save','Callback',@save_figure_window,...
        'Accelerator','s');
 if ~isunix
-   uimenu(h,'Label','Copy display','Tag','copy','Callback','print(gcbf,''-dbitmap'')','Accelerator','c');
+   uimenu(h,'Label','Copy display','Tag','copy','Callback',@(~,~)print(gcbf,'-dbitmap'),'Accelerator','c');
 end
-uimenu(h,'Label','Clear','Tag','clear','Callback','dipclf(gcbf)','Separator','on','Accelerator','x');
-uimenu(h,'Label','Close','Tag','close','Callback','close(gcbf)','Separator','on','Accelerator','w');
+uimenu(h,'Label','Clear','Tag','clear','Callback',@(~,~)dipclf(gcbf),'Separator','on','Accelerator','x');
+uimenu(h,'Label','Close','Tag','close','Callback',@(~,~)close(gcbf),'Separator','on','Accelerator','w');
 % Create 'Sizes' menu
 h = uimenu(fig,'Label','Sizes','Tag','sizes');
-uimenu(h,'Label','10%','Tag','10','Callback','diptruesize(gcbf,10)');
-uimenu(h,'Label','25%','Tag','25','Callback','diptruesize(gcbf,25)');
-uimenu(h,'Label','50%','Tag','50','Callback','diptruesize(gcbf,50)','Accelerator','5');
-uimenu(h,'Label','100%','Tag','100','Callback','diptruesize(gcbf,100)','Accelerator','1');
-uimenu(h,'Label','200%','Tag','200','Callback','diptruesize(gcbf,200)','Accelerator','2');
-uimenu(h,'Label','400%','Tag','400','Callback','diptruesize(gcbf,400)');
-uimenu(h,'Label','1000%','Tag','1000','Callback','diptruesize(gcbf,1000)');
-uimenu(h,'Label','Stretch to fill','Tag','off','Callback','diptruesize(gcbf,''off'')','Accelerator','0');
+uimenu(h,'Label','10%','Tag','10','Callback',@(~,~)diptruesize(gcbf,10));
+uimenu(h,'Label','25%','Tag','25','Callback',@(~,~)diptruesize(gcbf,25));
+uimenu(h,'Label','50%','Tag','50','Callback',@(~,~)diptruesize(gcbf,50),'Accelerator','5');
+uimenu(h,'Label','100%','Tag','100','Callback',@(~,~)diptruesize(gcbf,100),'Accelerator','1');
+uimenu(h,'Label','200%','Tag','200','Callback',@(~,~)diptruesize(gcbf,200),'Accelerator','2');
+uimenu(h,'Label','400%','Tag','400','Callback',@(~,~)diptruesize(gcbf,400));
+uimenu(h,'Label','1000%','Tag','1000','Callback',@(~,~)diptruesize(gcbf,1000));
+uimenu(h,'Label','Stretch to fill','Tag','off','Callback',@(~,~)diptruesize(gcbf,'off'),'Accelerator','0');
 uimenu(h,'Label','Default window size','Tag','defaultsize','Separator','on','Callback',...
-         ['set(gcbf,''Units'',''pixels'');DIP_figure_CB_pos=get(gcbf,''position'');',...
-          'DIP_figure_CB_pos(2)=DIP_figure_CB_pos(2)+DIP_figure_CB_pos(4);',...
-          'DIP_figure_CB_pos(3:4)=[dipgetpref(''DefaultFigureWidth''),dipgetpref(''DefaultFigureHeight'')];',...
-          'DIP_figure_CB_pos(2)=DIP_figure_CB_pos(2)-DIP_figure_CB_pos(4);',...
-          'set(gcbf,''position'',DIP_figure_CB_pos);clear DIP_figure_CB_pos']);
+       @(~,~)default_figure_size(gcbf));
 % Create 'Mappings' menu
 h = uimenu(fig,'Label','Mappings','Tag','mappings');
 if isbin
    uimenu(h,'Label','Normal','Tag','normal','Callback',...
-          'dipshow(gcbf,''ch_mappingmode'',''normal'')');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','normal'));
 else
    uimenu(h,'Label','Unit [0,1]','Tag','unit','Callback',...
-          'dipshow(gcbf,''ch_mappingmode'',''unit'')');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','unit'));
    uimenu(h,'Label','Normal [0,255]','Tag','normal','Callback',...
-          'dipshow(gcbf,''ch_mappingmode'',''normal'')');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','normal'));
    uimenu(h,'Label','12-bit [0,4095]','Tag','12bit','Callback',...
-          'dipshow(gcbf,''ch_mappingmode'',''12bit'')');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','12bit'));
    uimenu(h,'Label','16-bit [0,65535]','Tag','16bit','Callback',...
-          'dipshow(gcbf,''ch_mappingmode'',''16bit'')');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','16bit'));
    uimenu(h,'Label','Linear stretch','Tag','lin','Callback',...
-          'dipshow(gcbf,''ch_mappingmode'',''lin'')','Accelerator','L');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','lin'),'Accelerator','L');
    uimenu(h,'Label','Percentile stretch','Tag','percentile','Callback',...
-          'dipshow(gcbf,''ch_mappingmode'',''percentile'')');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','percentile'));
    uimenu(h,'Label','Log stretch','Tag','log','Callback',...
-          'dipshow(gcbf,''ch_mappingmode'',''log'')');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','log'));
    uimenu(h,'Label','Based at 0','Tag','base','Callback',...
-          'dipshow(gcbf,''ch_mappingmode'',''base'')');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','base'));
    uimenu(h,'Label','Angle','Tag','angle','Callback',...
-          'dipshow(gcbf,''ch_mappingmode'',''angle'')');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','angle'));
    uimenu(h,'Label','Orientation','Tag','orientation','Callback',...
-          'dipshow(gcbf,''ch_mappingmode'',''orientation'')');
+          @(~,~)dipshow(gcbf,'ch_mappingmode','orientation'));
    uimenu(h,'Label','Manual ...','Tag','manual','Callback',...
-          'dipmapping(gcbf,''manual'')');
+          @(~,~)dipmapping(gcbf,'manual'));
    if nD>=3
       uimenu(h,'Label','Global stretch','Tag','globalstretch','Callback',...
-             'dipshow(gcbf,''ch_globalstretch'',1)','Separator','on');
+             @(~,~)dipshow(gcbf,'ch_globalstretch',true),'Separator','on');
    end
    if ~iscol && nD>1
       uimenu(h,'Label','Grey','Tag','grey','Callback',...
-             'dipshow(gcbf,''ch_colormap'',''grey'')','Separator','on');
+             @(~,~)dipshow(gcbf,'ch_colormap','grey'),'Separator','on');
       uimenu(h,'Label','Saturation','Tag','saturation','Callback',...
-             'dipshow(gcbf,''ch_colormap'',''saturation'')');
+             @(~,~)dipshow(gcbf,'ch_colormap','saturation'));
       uimenu(h,'Label','Zero-based','Tag','zerobased','Callback',...
-             'dipshow(gcbf,''ch_colormap'',''zerobased'')');
+             @(~,~)dipshow(gcbf,'ch_colormap','zerobased'));
       uimenu(h,'Label','Periodic','Tag','periodic','Callback',...
-             'dipshow(gcbf,''ch_colormap'',''periodic'')');
+             @(~,~)dipshow(gcbf,'ch_colormap','periodic'));
       uimenu(h,'Label','Labels','Tag','labels','Callback',...
-             'dipshow(gcbf,''ch_mappingmode'',''labels'')');
+             @(~,~)dipshow(gcbf,'ch_mappingmode','labels'));
       uimenu(h,'Label','Custom...','Tag','custom','Callback',...
-             'dipmapping(gcbf,''custom'')');
+             @(~,~)dipmapping(gcbf,'custom'));
    end
    if iscomp
       uimenu(h,'Label','Magnitude','Tag','abs','Callback',...
-             'dipshow(gcbf,''ch_complexmapping'',''abs'')','Separator','on');
+             @(~,~)dipshow(gcbf,'ch_complexmapping','abs'),'Separator','on');
       uimenu(h,'Label','Phase','Tag','phase','Callback',...
-             'dipshow(gcbf,''ch_complexmapping'',''phase'')');
+             @(~,~)dipshow(gcbf,'ch_complexmapping','phase'));
       uimenu(h,'Label','Real part','Tag','real','Callback',...
-             'dipshow(gcbf,''ch_complexmapping'',''real'')');
+             @(~,~)dipshow(gcbf,'ch_complexmapping','real'));
       uimenu(h,'Label','Imaginary part','Tag','imag','Callback',...
-             'dipshow(gcbf,''ch_complexmapping'',''imag'')');
+             @(~,~)dipshow(gcbf,'ch_complexmapping','imag'));
    end
 end
 if nD>=3
    uimenu(h,'Label','X-Y slice','Tag','xy','Callback',...
-          'dipshow(gcbf,''ch_slicing'',''xy'')','Separator','on');
+          @(~,~)dipshow(gcbf,'ch_slicing','xy'),'Separator','on');
    uimenu(h,'Label','X-Z slice','Tag','xz','Callback',...
-          'dipshow(gcbf,''ch_slicing'',''xz'')');
+          @(~,~)dipshow(gcbf,'ch_slicing','xz'));
    uimenu(h,'Label','Y-Z slice','Tag','yz','Callback',...
-          'dipshow(gcbf,''ch_slicing'',''yz'')');
+          @(~,~)dipshow(gcbf,'ch_slicing','yz'));
 end
 if nD==4
    uimenu(h,'Label','X-T slice','Tag','xt','Callback',...
-          'dipshow(gcbf,''ch_slicing'',''xt'')');
+          @(~,~)dipshow(gcbf,'ch_slicing','xt'));
    uimenu(h,'Label','Y-T slice','Tag','yt','Callback',...
-          'dipshow(gcbf,''ch_slicing'',''yt'')');
+          @(~,~)dipshow(gcbf,'ch_slicing','yt'));
    uimenu(h,'Label','Z-T slice','Tag','zt','Callback',...
-          'dipshow(gcbf,''ch_slicing'',''zt'')');
+          @(~,~)dipshow(gcbf,'ch_slicing','zt'));
 end
 % TODO: add slice / max projection / mean projection as options for nD>=3
 
 % Create 'Actions' menu
 h = uimenu(fig,'Label','Actions','Tag','actions');
 uimenu(h,'Label','None','Tag','mouse_none','Callback',...
-       'dipshow DIP_callback menu_actions_none_cb');
-uimenu(h,'Label','Pixel testing','Tag','mouse_diptest','Callback','diptest(gcbf,''on'')',...
+       @(~,~)change_action_state(gcbf,'none'));
+uimenu(h,'Label','Pixel testing','Tag','mouse_diptest','Callback',@(~,~)diptest(gcbf,'on'),...
        'Accelerator','i');
-uimenu(h,'Label','Zoom','Tag','mouse_dipzoom','Callback','dipzoom(gcbf,''on'')',...
+uimenu(h,'Label','Zoom','Tag','mouse_dipzoom','Callback',@(~,~)dipzoom(gcbf,'on'),...
        'Accelerator','z');
-uimenu(h,'Label','Looking Glass','Tag','mouse_diplooking','Callback','diplooking(gcbf,''on'')');
-uimenu(h,'Label','Pan','Tag','mouse_dippan','Callback','dippan(gcbf,''on'')',...
+uimenu(h,'Label','Looking Glass','Tag','mouse_diplooking','Callback',@(~,~)diplooking(gcbf,'on'));
+uimenu(h,'Label','Pan','Tag','mouse_dippan','Callback',@(~,~)dippan(gcbf,'on'),...
        'Accelerator','p');
 if nD>=2
-      uimenu(h,'Label','Link displays ...','Tag','diplink','Callback','diplink(gcbf,''on'')',...
+      uimenu(h,'Label','Link displays ...','Tag','diplink','Callback',@(~,~)diplink(gcbf,'on'),...
           'Separator','on');
    % too lazy to also include it for 1D images (BR)
 end
 if nD>=3
-   uimenu(h,'Label','Step through slices','Tag','mouse_dipstep','Callback','dipstep(gcbf,''on'')',...
+   uimenu(h,'Label','Step through slices','Tag','mouse_dipstep','Callback',@(~,~)dipstep(gcbf,'on'),...
           'Accelerator','o');
-   uimenu(h,'Label','Animate','Tag','dipanimate','Callback','dipanimate(gcbf)');
+   uimenu(h,'Label','Animate','Tag','dipanimate','Callback',@(~,~)dipanimate(gcbf));
    if nD==3 && ~iscol
-      uimenu(h,'Label','Isosurface plot ...','Tag','dipiso','Callback','dipisosurface(gcbf)');
+      uimenu(h,'Label','Isosurface plot ...','Tag','dipiso','Callback',@(~,~)dipisosurface(gcbf));
    end
 
 end
 if nD > 1 && exist('javachk','file') && isempty(javachk('jvm'))
-   uimenu(h,'Label','View5d','Tag','viewer5d','Callback','view5d(gcbf);');
+   uimenu(h,'Label','View5d','Tag','viewer5d','Callback',@(~,~)view5d(gcbf));
 end
 uimenu(h,'Label','Enable keyboard','Tag','keyboard','Separator','on',...
-         'Callback','dipshow DIP_callback menu_actions_keyboard_cb','Accelerator','k');
+         'Callback',@(~,~)change_keyboard_state(gcbf,'toggle'),'Accelerator','k');
 % Work around a bug in MATLAB 7.1 (R14SP3) (solution # 1-1XPN82).
 h = uimenu(fig);drawnow;delete(h);
 
@@ -1507,15 +1196,15 @@ h = uimenu(fig);drawnow;delete(h);
 %
 % Find the correct action state for the current image
 %
-function state = find_action_state(state,nD,iscomp,iscol)
+function state = find_action_state(state,nD,iscomplex,iscolor)
 switch state
    case 'diptest'
    case 'diporien'
-      if nD~=2 || iscol, state = 'none'; end
+      if nD~=2 || iscolor, state = 'none'; end
    case 'dipzoom'
    case 'dippan'
    case 'dipstep'
-      if nD~=3 && nD~=4
+      if nD<3
          state = 'none';
        end
    otherwise
@@ -1562,7 +1251,8 @@ if ~isempty(complexmapping)
    set(findobj(m,'Tag',complexmapping),'Checked','on');
 end
 if ~isempty(slicing)
-   set(findobj(m,'Tag',slicing),'Checked','on');
+   map = 'xyzt';
+   set(findobj(m,'Tag',map(slicing)),'Checked','on');
 end
 
 
@@ -1573,9 +1263,9 @@ end
 function set_global_check(fig,globalstretch)
 m = findobj(get(fig,'Children'),'Tag','globalstretch');
 if globalstretch
-   set(m,'Checked','on','Callback','dipshow(gcbf,''ch_globalstretch'',0)');
+   set(m,'Checked','on','Callback',@(~,~)dipshow(gcbf,'ch_globalstretch',false));
 else
-   set(m,'Checked','off','Callback','dipshow(gcbf,''ch_globalstretch'',1)');
+   set(m,'Checked','off','Callback',@(~,~)dipshow(gcbf,'ch_globalstretch',true));
 end
 
 
@@ -1584,15 +1274,11 @@ end
 %
 function change_mapping(fig,varargin)
 N = nargin-1;
-currange = [];
-complexmapping = [];
-slicing = [];
-newtime =[];
-globalstretch = [];
-newslice = [];
-colmap = [];
 ii = 1;
-
+udata = get(fig,'UserData');
+handle = udata.handle;
+disp1D = false;
+colmap = [];
 while ii<=N
    item = varargin{ii};
    if ~ischar(item)
@@ -1608,132 +1294,57 @@ while ii<=N
          if ~ischar(currange) && ~isnumeric(currange)
             error('Illegal argument for mappingmode')
          end
+         [currange,mappingmode,colmap] = parse_rangestr(currange);
+         if strcmp(colmap,udata.colmap)
+            colmap = [];
+         elseif strcmp(colmap,'grey') && ~strcmp(udata.colmap,'labels')
+            colmap = [];
+         end
+         if ~isempty(colmap)
+            [udata.colmap,colmap] = parse_colmapstr(colmap);
+         end
+         if strcmp(mappingmode,'manual')
+            if ~isempty(currange)
+               imagedisplay(handle,'mappingmode',currange);
+            end
+         else
+            imagedisplay(handle,'mappingmode',mappingmode);
+         end
       case 'ch_colormap'
          colmap = varargin{ii};
          if ~ischar(colmap) && ~isnumeric(colmap)
             error('Illegal argument for colormap')
          end
+         [udata.colmap,colmap] = parse_colmapstr(colmap);
       case 'ch_complexmapping'
-         complexmapping = varargin{ii};
-         if ~ischar(complexmapping) || ~any(strcmp(complexmapping,{'abs','real','imag','phase'}))
-            error('Illegal argument for complexmapping')
-         end
+         imagedisplay(handle,'complexmapping',varargin{ii});
+         disp1D = true;
       case 'ch_slicing'
-         slicing = varargin{ii};
-         if ~ischar(slicing) || ...
-            ~any(strcmp(slicing,{'xy','xz','yz','xt','yt','zt'}))
-            error('Illegal argument for slice mapping.')
-         end
+         slicing = parse_slicing(varargin{ii});
+         imagedisplay(handle,'slicing',slicing);
       case 'ch_globalstretch'
-         globalstretch = varargin{ii};
-         if isnumeric(globalstretch) && length(globalstretch)==1
-            if globalstretch
-               globalstretch = 1;
-            else
-               globalstretch = 0;
-            end
-         elseif ischar(globalstretch)
-            switch lower(globalstretch)
-            case {'on','yes'}
-               globalstretch = 1;
-            case {'off','no'}
-               globalstretch = 0;
-            otherwise
-               globalstretch = [];
-            end
-         end
-         if isempty(globalstretch)
-            error('Illegal argument for global stretch')
-         end
+         imagedisplay(handle,'globalstretch',varargin{ii});
       case 'ch_slice'
          newslice = varargin{ii};
          if ~isnumeric(newslice) || length(newslice)>1
-            error('Illegal argument for slice number selction')
+            error('Illegal argument for slice number selection')
          end
+         change_slice(udata,[newslice,-1])
       case  'ch_time'
-         %cannot just do this in ch_slice as switching is not possible
-         %on array [slice time]
          newtime = varargin{ii};
          if ~isnumeric(newtime) || length(newtime)>1
-            error('Illegal argument for time number selction')
+            error('Illegal argument for time number selection')
          end
-      case 'updatelinked'
-         udata = get(fig,'UserData');
-         slice = [];
-         nD = length(udata.imsize);
-         if nD>=3
-            slice = udata.curslice;
-            if nD>=4
-               slice(2) = udata.curtime;
-            end
-         end
-         udata.linkdisplay = update_linked(fig,udata.linkdisplay,slice,udata.slicing,udata.zoom);
-         return;
+         change_slice(udata,[-1,newtime])
       otherwise
          error('Illegal argument to change mapping in dipshow.')
    end
    ii = ii+1;
 end
 
-disp1D = 0;
-disp3D = 0;    % re-desplay 3D data
-disp3Dx = 0;   % re-desplay 3D data and adjust axes
-udata = get(fig,'UserData');
-if ~isempty(currange)
-   if isempty(colmap)
-      [udata.currange,udata.mappingmode,colmap] = parse_rangestr(currange);
-      if strcmp(colmap,udata.colmap)
-         colmap = [];
-      elseif strcmp(colmap,'grey') && ~strcmp(udata.colmap,'labels')
-         colmap = [];
-      end
-   else
-      [udata.currange,udata.mappingmode] = parse_rangestr(currange);
-   end
-end
-if ~isempty(colmap)
-   [udata.colmap,colmap] = parse_colmapstr(colmap);
-end
-if ~isempty(complexmapping)
-   if ~strcmp(udata.complexmapping,complexmapping)
-      if ~isreal(udata.imagedata)
-         % Switch udata.computed around for different complexmapping modes.
-         if isfield(udata,'computed')
-            udata = setfield(udata,['computed_',udata.complexmapping],udata.computed);
-         end
-         if isfield(udata,['computed_',complexmapping])
-            udata.computed = getfield(udata,['computed_',complexmapping]);
-         elseif isfield(udata,'computed')
-            udata = rmfield(udata,'computed');
-         end
-         disp1D = 1;
-      end
-      udata.complexmapping = complexmapping; % We set this value even if the image is real.
-   end
-end
-if ~isempty(slicing)
-   if ~strcmp(udata.slicing,slicing)
-      udata.slicing = slicing;
-      disp3D = 1;
-      disp3Dx = 1;
-   end
-end
-if ~isempty(globalstretch)
-   if length(udata.imsize)<3
-      globalstretch = [];
-   elseif ~isempty(udata.colspace) && ~strcmp(udata.colspace,'RGB')
-      % weird set of elseifs: this way the warning is fired at the right moment.
-      warning('Cannot perform global stretching on non-RGB color images.')
-      globalstretch = [];
-   elseif udata.globalstretch == globalstretch;
-      globalstretch = [];
-   end
-end
-if ~isempty(newslice) || ~isempty(newtime)
-   disp3D = 1;
-end
-
-if length(udata.imsize)==1 %1D display
+change = false;
+dolinked = false;
+if isfield(udata,'imagedata') %1D display
    axh = findobj(fig,'Type','axes');
    if length(axh)~=1, return, end
    if disp1D
@@ -1744,155 +1355,30 @@ if length(udata.imsize)==1 %1D display
       udata = stretchYaxis_1D(axh,udata);
    end
 else %other dimensionality
+   change = imagedisplay(handle,'change'); % update axes?
+   dolinked = imagedisplay(handle,'dirty');  % update linked displays?
    imh = findobj(fig,'Type','image');
    if length(imh)~=1, return, end
-   if ~isempty(globalstretch)
-      % Changing globalstretch
-      udata.globalstretch = globalstretch;
-      if globalstretch
-         % Turning on: get globally computed values if available, delete previous local ones
-         if isreal(udata.imagedata)
-            if isfield(udata,'globalcomputed')
-               udata.computed = udata.globalcomputed.computed;
-            elseif isfield(udata,'computed')
-               udata = rmfield(udata,'computed');
-            end
-         else
-            fn = fieldnames(udata);
-            fn = fn(find(strncmp(fn,'computed',8)));
-            for ii=1:length(fn)
-               udata = rmfield(udata,fn{ii});
-            end
-            if isfield(udata,'globalcomputed')
-               fn = fieldnames(udata.globalcomputed);
-               for ii=1:length(fn)
-                  udata = setfield(udata,fn{ii},getfield(udata.globalcomputed,fn{ii}));
-               end
-            end
-            if isfield(udata,['computed_',udata.complexmapping])
-               udata.computed = getfield(udata,['computed_',udata.complexmapping]);
-            end
-         end
-      else
-         % Turning off: store globally computed values & delete locally
-         if isreal(udata.imagedata)
-            if isfield(udata,'computed')
-               udata.globalcomputed.computed = udata.computed;
-               udata = rmfield(udata,'computed');
-            end
-         else
-            if isfield(udata,'computed')
-               udata = setfield(udata,['computed_',udata.complexmapping],udata.computed);
-               udata = rmfield(udata,'computed');
-            end
-            fn = fieldnames(udata);
-            fn = fn(find(strncmp(fn,'computed',8)));
-            udata.globalcomputed = [];
-            for ii=1:length(fn)
-               udata.globalcomputed = setfield(udata.globalcomputed,fn{ii},getfield(udata,fn{ii}));
-               udata = rmfield(udata,fn{ii});
-            end
-         end
-      end
-   end
-
-   if disp3D && length(udata.imsize)==3
-      % 3D slice change
-      axh = get(imh,'Parent');
-      sz = imsize(udata.slices);
-      switch udata.slicing
-         case 'yz'
-            udata.maxslice = sz(1)-1;
-            udata.imsize = sz([2,3,1]);
-         case 'xz'
-            udata.maxslice = sz(2)-1;
-            udata.imsize = sz([1,3,2]);
-         otherwise % case 'xy', ''
-            slicing = 'xy';
-            udata.maxslice = sz(3)-1;
-            udata.imsize = sz([1,2,3]);
-      end
-      if isempty(newslice)
-         newslice = udata.curslice;
-      end
-      udata.curslice = -1;  % else UPDATE_SLICE might not update
-      udata = update_slice(fig,imh,udata,newslice);
-      if disp3Dx
-         set(imh,'XData',[0,udata.imsize(1)-1],'YData',[0,udata.imsize(2)-1]);
-         set(axh,'XLim',[0,udata.imsize(1)]-0.5,'Ylim',[0,udata.imsize(2)]-0.5);
-      end
-   elseif disp3D && length(udata.imsize)==4
-      axh = get(imh,'Parent');
-      sz = imsize(udata.slices);
-      switch udata.slicing
-      case 'yz'
-         udata.maxslice = sz(1)-1;%step n/p
-         udata.maxtime  = sz(4)-1;%step b/f
-         udata.imsize = sz([2,3,1,4]);
-      case 'xz'
-         udata.maxslice = sz(2)-1;
-         udata.maxtime  = sz(4)-1;
-         udata.imsize = sz([1,3,2,4]);
-      case 'xt'
-         udata.maxslice = sz(2)-1;
-         udata.maxtime  = sz(3)-1;
-         udata.imsize = sz([1,4,3,2]);
-      case 'yt'
-         udata.maxslice = sz(1)-1;
-         udata.maxtime  = sz(3)-1;
-         udata.imsize = sz([2,4,1,3]);
-      case 'zt'
-         udata.maxslice = sz(1)-1;
-         udata.maxtime  = sz(2)-1;
-         udata.imsize = sz([3,4,1,2]);
-      otherwise % case 'xy', ''
-         slicing = 'xy';
-         udata.maxslice = sz(3)-1;
-         udata.imsize = sz([1,2,3,4]);
-         udata.maxtime = sz(4)-1;
-      end
-      if isempty(newslice)
-         newslice = udata.curslice;
-      end
-      if isempty(newtime)
-         newtime = udata.curtime;
-      end
-      udata.curslice = -1;  % else UPDATE_SLICE might not update
-      udata.curtime = -1;
-      udata = update_slice(fig,imh,udata,[newslice newtime]);
-      if disp3Dx
-         set(imh,'XData',[0,udata.imsize(1)-1],'YData',[0,udata.imsize(2)-1]);
-         set(axh,'XLim',[0,udata.imsize(1)]-0.5,'Ylim',[0,udata.imsize(2)]-0.5);
-      end
-   else
-      % 2D/3D range change
-      udata = display_data(fig,imh,udata);
-   end
+   udata = update_display(udata,imh,handle);
    if ~isempty(colmap)
       set(fig,'Colormap',colmap);
    end
 end
-set_mode_check(fig,udata.mappingmode,udata.colmap,udata.complexmapping,udata.slicing);
-if length(udata.imsize)>=3
-   set_global_check(fig,udata.globalstretch)
+set_mode_check(fig,imagedisplay(handle,'mappingmode'),udata.colmap,imagedisplay(handle,'complexmapping'),imagedisplay(handle,'slicing'));
+if imagedisplay(handle,'dimensionality')>=3
+   set_global_check(fig,imagedisplay(handle,'globalstretch'))
 end
 set(fig,'UserData',[]);    % Solve MATLAB bug!
 set(fig,'UserData',udata);
-if disp3Dx && ~isempty(udata.zoom)
+if change && ~isempty(udata.zoom)
    diptruesize(fig,udata.zoom*100);
 else
    dipfig_titlebar(fig,udata);
 end
-if disp3D && length(udata.imsize)==3 && ~isempty(udata.linkdisplay)
-   newlinks = update_linked(fig,udata.linkdisplay,udata.curslice,udata.slicing,udata.zoom);
-   if ~isequal(newlinks,udata.linkdisplay)
-      udata.linkdisplay = newlinks;
-      set(fig,'UserData',[]);    % Solve MATLAB bug!
-      set(fig,'UserData',udata);
-   end
-end
-if disp3D && length(udata.imsize)==4 && ~isempty(udata.linkdisplay)
-   newlinks = update_linked(fig,udata.linkdisplay,[udata.curslice udata.curtime],udata.slicing,udata.zoom);
+if dolinked && ~isempty(udata.linkdisplay)
+   coords = imagedisplay(handle,'coordinates');
+   slicing = imagedisplay(handle,'slicing');
+   newlinks = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
    if ~isequal(newlinks,udata.linkdisplay)
       udata.linkdisplay = newlinks;
       set(fig,'UserData',[]);    % Solve MATLAB bug!
@@ -1913,7 +1399,7 @@ if strcmp(cmd,'toggle')
    end
 end
 if strcmp(cmd,'on')
-   set(fig,'KeyPressFcn','dipshow DIP_callback KeyPressFcn');
+   set(fig,'KeyPressFcn',@KeyPressFcn);
    set(findobj(fig,'tag','keyboard'),'Checked','on');
 else
    set(fig,'KeyPressFcn','');
@@ -1924,7 +1410,8 @@ end
 %
 % Callback functions for File->Save... menu item
 %
-function save_figure_window(fig)
+function save_figure_window(~,~)
+fig = gcbf;
 p = dipgetpref('CurrentImageSaveDir');
 curp = cd;
 if isempty(p) || strcmp(p,curp)
@@ -1956,7 +1443,7 @@ if ischar(filename)
       dipsetpref('CurrentImageSaveDir',p);
    end
    % Figure out the format from the extension
-   [tmp,tmp,ext] = fileparts(filename);
+   [~,~,ext] = fileparts(filename);
    switch lower(ext)
    case {'.tif','.tiff'}
       format = '-dtiff';
@@ -1979,7 +1466,7 @@ end
 %
 % Callback functions for DIPZOOM
 %
-function dipzoomWindowButtonDownFcn(fig)
+function dipzoomWindowButtonDownFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    ax = findobj(fig,'Type','axes');
@@ -1994,7 +1481,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata.figsz = get(fig,'position');
    udata.figsz = udata.figsz(3:4);
    udata.coords = dipfig_getcurpos(ax); % Always over image!
-   if length(udata.imsize)==1
+   if isfield(udata,'imagedata') % 1D
       ylim = get(ax,'YLim');
       pos = [udata.coords(1)-0.5,ylim(1)-1,1,diff(ylim)+3];
    else
@@ -2005,33 +1492,33 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
    else
       udata.recth = rectangle('Position',pos,'EraseMode','xor','EdgeColor',[0,0,0.8]);
    end
-   set(fig,'WindowButtonMotionFcn','dipshow DIP_callback dipzoomWindowButtonMotionFcn',...
-           'WindowButtonUpFcn','dipshow DIP_callback dipzoomWindowButtonUpFcn',...
+   set(fig,'WindowButtonMotionFcn',@dipzoomWindowButtonMotionFcn,...
+           'WindowButtonUpFcn',@dipzoomWindowButtonUpFcn,...
            'NumberTitle','off',...
            'UserData',[]);   % Solve MATLAB bug!
    set(fig,'UserData',udata);
    dipzoomUpdateDisplay(fig,ax,udata);
 end
 
-function dipzoomWindowButtonMotionFcn(fig)
+function dipzoomWindowButtonMotionFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    dipzoomUpdateDisplay(fig,udata.ax,udata);
 end
 
-function dipzoomWindowButtonUpFcn(fig)
+function dipzoomWindowButtonUpFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    delete(udata.recth);
    pt = dipfig_getcurpos(udata.ax);
-   if length(udata.imsize)==1
+   if isfield(udata,'imagedata')
       pt = pt(1);
       udata.coords = udata.coords(1);
    end
    if abs(pt-udata.coords) > 2
       % Dragged a rectangle
-      axpos = get(udata.ax,'Position');
-      if length(udata.imsize)==1
+      %axpos = get(udata.ax,'Position');
+      if isfield(udata,'imagedata')
          delta = abs(pt-udata.coords)+1;
          pt = min(pt,udata.coords);
          set(udata.ax,'XLim',pt+[0,delta]-0.5);
@@ -2055,7 +1542,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
          case 'open'
             % set to 100%
             dipzoomZoom(0,pt,udata.ax,udata,udata.figsz);
-            %if length(udata.imsize)==1
+            %if isfield(udata,'imagedata')
             %   set(udata.ax,'XLim',[0,udata.imsize]-0.5,...
             %       'Units','normalized','Position',[0,0,1,1]);
             %else
@@ -2085,7 +1572,7 @@ end
 
 function dipzoomUpdateDisplay(fig,ax,udata)
 pt = dipfig_getcurpos(ax);
-if length(udata.imsize) == 1
+if isfield(udata,'imagedata')
    delta = abs(pt(1)-udata.coords(1))+1;
    pos = get(udata.recth,'Position');
    pos(1) = min(pt(1),udata.coords(1))-0.5;
@@ -2108,7 +1595,7 @@ delta = floor(max(delta./udata.figsz)*udata.figsz);
 pt = udata.coords + (delta-1).*direction;
 % Constrain size to not exceed image dimensions
 pt = max(pt,0);
-pt = min(pt,udata.imsize(1:2)-1);
+pt = min(pt,udata.imsize-1);
 % Again constrain proportions, this time take smallest rectangle
 direction = sign(pt-udata.coords);
 delta = abs(pt-udata.coords)+1;
@@ -2118,29 +1605,28 @@ pt = udata.coords + (delta-1).*direction;
 function dipzoomZoom(zoom,pt,ax,udata,winsize)
 axpos = get(ax,'Position');
 dispsize = winsize;
-if length(udata.imsize) == 1
+if isfield(udata,'imagedata')
    curxlim = get(ax,'XLim');
    pelsize = axpos(3)/diff(curxlim);
-   imsize = udata.imsize;
    winsize = winsize(1);
 else
    axsize = axpos([3,4]);
-   axpos = axpos([1,2]);
+   %axpos = axpos([1,2]);
    curxlim = get(ax,'XLim'); curxrange = diff(curxlim);
    curylim = get(ax,'YLim'); curyrange = diff(curylim);
    pelsize = [(axsize(1)/curxrange),(axsize(2)/curyrange)];
-   imsize = udata.imsize([1,2]);
 end
+imsz = udata.imsize;
 newpelsize = pelsize*zoom;
 if zoom==0
    newpelsize(:) = 1;
 end
-sz = min(imsize,ceil(winsize./(newpelsize)));
+sz = min(imsz,ceil(winsize./(newpelsize)));
 sz = max(sz,1); % Minimum image size: 1 pixel.
 pt = round(pt-sz/2);
 pt = max(pt,0);
-pt = min(pt,imsize-sz);
-if length(udata.imsize) == 1
+pt = min(pt,imsz-sz);
+if length(imsz) == 1
    set(ax,'XLim',pt+[0,sz]-0.5);
 else
    set(ax,'XLim',pt(1)+[0,sz(1)]-0.5,'YLim',pt(2)+[0,sz(2)]-0.5);
@@ -2151,7 +1637,7 @@ position_axes(ax,newpelsize,sz,dispsize);
 %
 % Callback function for DIPSTEP
 %
-function dipstepWindowButtonDownFcn(fig)
+function dipstepWindowButtonDownFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image_3D',12) || strncmp(get(fig,'Tag'),'DIP_Image_4D',12)
    udata = get(fig,'UserData');
    ax = findobj(fig,'Type','axes');
@@ -2164,78 +1650,74 @@ if strncmp(get(fig,'Tag'),'DIP_Image_3D',12) || strncmp(get(fig,'Tag'),'DIP_Imag
    set(ax,'Units','pixels');
    pt = get(0,'PointerLocation');
    udata.coords = [pt(1,1),-pt(1,2)];
-   udata.startslice = udata.curslice;
-   if length(udata.imsize)==4
-      udata.starttime = udata.curtime;
-   end
+   coords = imagedisplay(udata.handle,'coordinates');
+   k = imagedisplay(udata.handle,'orthogonal');
+   udata.startslice = coords(k);
    udata.moved = 0;
-   set(fig,'WindowButtonMotionFcn','dipshow DIP_callback dipstepWindowButtonMotionFcn',...
-           'WindowButtonUpFcn','dipshow DIP_callback dipstepWindowButtonUpFcn',...
+   set(fig,'WindowButtonMotionFcn',@dipstepWindowButtonMotionFcn,...
+           'WindowButtonUpFcn',@dipstepWindowButtonUpFcn,...
            'UserData',[]);   % Solve MATLAB bug!
    set(fig,'UserData',udata);
 end
 
-function dipstepWindowButtonMotionFcn(fig)
+function dipstepWindowButtonMotionFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image_3D',12) || strncmp(get(fig,'Tag'),'DIP_Image_4D',12)
    udata = get(fig,'UserData');
    pt = get(0,'PointerLocation');
    pt = [pt(1,1),-pt(1,2)];
    delta = (pt-udata.coords)/3; % move one slice for each 3 pixel cursor movement
-   [dir,dir] = max(abs(delta));
+   [~,dir] = max(abs(delta));
    delta = round(delta(dir));
    udata.moved = 1;
-   if length(udata.imsize)==4
+   newslice = udata.startslice;
+   if length(udata.startslice)==2
       switch get(fig,'SelectionType')
          case 'alt'
-            newslice = [udata.startslice,udata.starttime+delta];
+            newslice(1) = newslice(1)+delta;
          otherwise
-            newslice = [udata.startslice+delta,udata.starttime];
+            newslice(2) = newslice(2)+delta;
       end
    else
-      newslice = udata.startslice+delta;
+      newslice = newslice+delta;
    end
-   udata = update_slice(fig,udata.imh,udata,newslice);
+   change_slice(udata,newslice)
+   udata = update_display(udata,udata.imh,udata.handle);
    dipfig_titlebar(fig,udata);
    set(fig,'UserData',[]);   % Solve MATLAB bug!
    set(fig,'UserData',udata);
 end
 
-function dipstepWindowButtonUpFcn(fig)
+function dipstepWindowButtonUpFcn(fig,~)
 udata = get(fig,'UserData');
 if strncmp(get(fig,'Tag'),'DIP_Image_3D',12) || strncmp(get(fig,'Tag'),'DIP_Image_4D',12)
    if ~udata.moved
+      newslice = udata.startslice;
       switch get(fig,'SelectionType')
          case {'normal','extend'}
-            newslice = udata.curslice+1;
+            newslice(1) = newslice(1)+1;
             udata.prevclick = 1;
          case 'alt'
-            newslice = udata.curslice-1;
+            newslice(1) = newslice(1)-1;
             udata.prevclick = -1;
          case 'open' %double-click: repeat last click
-            newslice = udata.curslice+udata.prevclick;
+            newslice(1) = newslice(1)+udata.prevclick;
          otherwise
             return
       end
-      if length(udata.imsize)==4
-         newslice = [newslice,udata.curtime];
-      end
-      udata = update_slice(fig,udata.imh,udata,newslice);
+      change_slice(udata,newslice)
+      udata = update_display(udata,udata.imh,udata.handle);
       dipfig_titlebar(fig,udata);
    end
    if ~isempty(udata.linkdisplay)
-      if length(udata.imsize)==3
-         udata.linkdisplay = update_linked(fig,udata.linkdisplay,udata.curslice,udata.slicing,udata.zoom);
-      else
-         udata.linkdisplay = update_linked(fig,udata.linkdisplay,[udata.curslice udata.curtime],udata.slicing,udata.zoom);
-      end
+      handle = udata.handle;
+      coords = imagedisplay(handle,'coordinates');
+      slicing = imagedisplay(handle,'slicing');
+      udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
    end
    % Clean up
    set(udata.ax,'Units',udata.oldAxesUnits);
    set(fig,'WindowButtonMotionFcn','','WindowButtonUpFcn','');
    udata = rmfield(udata,{'ax','imh','oldAxesUnits','moved','coords','startslice'});
-   if isfield(udata,'starttime')
-      udata = rmfield(udata,'starttime');
-   end
    set(fig,'UserData',[]);    % Solve MATLAB bug!
    set(fig,'UserData',udata);
 end
@@ -2244,15 +1726,15 @@ end
 %
 % Callback function for keyboard event
 %
-function KeyPressFcn(fig)
+function KeyPressFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
-   nD = length(udata.imsize);
+   nD = imagedisplay(udata.handle,'dimensionality');
    ch = get(fig,'CurrentCharacter');
    if ~isempty(ch)
-     udata.lastkeypress=upper(ch);
-     set(fig,'UserData',[]);
-     set(fig,'UserData',udata);
+      udata.lastkeypress=upper(ch);
+      set(fig,'UserData',[]);
+      set(fig,'UserData',udata);
       switch ch
          case {'0','1','2','3','4','5','6','7','8','9'}
             if nD>=3
@@ -2264,35 +1746,23 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                set(fig,'UserData',[]);    % Solve MATLAB bug!
                set(fig,'UserData',udata);
             end
-         case {char(13)} % Enter: go to selected slice
+         case {char(13),';'} % Enter: go to selected slice
             if (nD>=3) && isfield(udata,'nextslice') && ~isempty(udata.nextslice)
                newslice = str2double(udata.nextslice);
                if ~isnan(newslice)
                   imh = findobj(fig,'Type','image');
-                  if nD>=4
-                     newslice(2) = udata.curtime;
+                  if (nD>3) && ch==';'
+                     change_slice(udata,[-1,newslice])
+                  else
+                     change_slice(udata,[newslice,-1])
                   end
-                  udata = update_slice(fig,imh,udata,newslice);
+                  udata = update_display(udata,imh,udata.handle);
                   dipfig_titlebar(fig,udata);
                   if ~isempty(udata.linkdisplay)
-                     udata.linkdisplay = update_linked(fig,udata.linkdisplay,newslice,udata.slicing,udata.zoom);
-                  end
-               end
-               udata.nextslice = '';
-               set(fig,'UserData',[]);    % Solve MATLAB bug!
-               set(fig,'UserData',udata);
-            end
-         % ; for advance in time direction with 'number + ;
-         case {';'} % Enter: go to selected slice
-            if (nD>=4) && isfield(udata,'nextslice') && ~isempty(udata.nextslice)
-               tmp = str2double(udata.nextslice);
-               if ~isnan(tmp)
-                  imh = findobj(fig,'Type','image');
-                  newslice = [udata.curslice,tmp];
-                  udata = update_slice(fig,imh,udata,newslice);
-                  dipfig_titlebar(fig,udata);
-                  if ~isempty(udata.linkdisplay)
-                     udata.linkdisplay = update_linked(fig,udata.linkdisplay,newslice,udata.slicing,udata.zoom);
+                     handle = udata.handle;
+                     coords = imagedisplay(handle,'coordinates');
+                     slicing = imagedisplay(handle,'slicing');
+                     udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
                   end
                end
                udata.nextslice = '';
@@ -2301,19 +1771,24 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
             end
          case {'p','P','n','N'} % Previous/next slice
             if nD>=3
-               imh = findobj(fig,'Type','image');
+               handle = udata.handle;
+               dim3 = imagedisplay(handle,'orthogonal');
+               dim3 = dim3(1);
+               newslice = imagedisplay(handle,'coordinates');
+               newslice = newslice(dim3);
                if upper(ch)=='P'
-                  newslice = udata.curslice-1;
+                  newslice = newslice-1;
                else
-                  newslice = udata.curslice+1;
+                  newslice = newslice+1;
                end
-               if nD>=4
-                  newslice(2) = udata.curtime;
-               end
-               udata = update_slice(fig,imh,udata,newslice);
+               change_slice(udata,[newslice,-1])
+               imh = findobj(fig,'Type','image');
+               udata = update_display(udata,imh,udata.handle);
                dipfig_titlebar(fig,udata);
                if ~isempty(udata.linkdisplay)
-                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,newslice,udata.slicing,udata.zoom);
+                  coords = imagedisplay(handle,'coordinates');
+                  slicing = imagedisplay(handle,'slicing');
+                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
                end
                udata.nextslice = '';
                set(fig,'UserData',[]);    % Solve MATLAB bug!
@@ -2321,18 +1796,24 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
             end
          case {'f','b','F','B'}
             if nD>=4
-               imh = findobj(fig,'Type','image');
-               newslice = udata.curslice;
-               if upper(ch)=='B'
-                  newslice(2) = udata.curtime-1;
+               handle = udata.handle;
+               dim4 = imagedisplay(handle,'orthogonal');
+               dim4 = dim4(2);
+               newslice = imagedisplay(handle,'coordinates');
+               newslice = newslice(dim4);
+               if upper(ch)=='P'
+                  newslice = newslice-1;
                else
-                  newslice(2) = udata.curtime+1;
+                  newslice = newslice+1;
                end
-               %newslice
-               udata = update_slice(fig,imh,udata,newslice);
+               change_slice(udata,[-1,newslice])
+               imh = findobj(fig,'Type','image');
+               udata = update_display(udata,imh,udata.handle);
                dipfig_titlebar(fig,udata);
                if ~isempty(udata.linkdisplay)
-                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,newslice,udata.slicing,udata.zoom);
+                  coords = imagedisplay(handle,'coordinates');
+                  slicing = imagedisplay(handle,'slicing');
+                  udata.linkdisplay = update_linked(fig,udata.linkdisplay,coords,slicing,udata.zoom);
                end
                udata.nextslice = '';
                set(fig,'UserData',[]);    % Solve MATLAB bug!
@@ -2430,7 +1911,7 @@ end
 %
 % Callback function for resizing windows
 %
-function ResizeFcn(fig)
+function ResizeFcn(fig,~)
 udata = get(fig,'UserData');
 % 27-10-2006 MvG -- ResizeFcn gets called while the "construction" of the
 % display data is still ongoing. This was originally not the case, because
@@ -2439,11 +1920,9 @@ udata = get(fig,'UserData');
 % 'BringToFrontOnDisplay' off, we cannot turn off the window's visibility
 % and therefore this callback gets called. We can simply test whether udata
 % is empty or not to ignore the callback during the construction phase.
-%fprintf(1,'.\n');
 if isempty(udata)
    return;
 end
-%fprintf(1,'ResizeFcn\n');
 if ~isequal(udata.zoom,0)
    ax = findobj(fig,'Type','axes');
    if length(ax)==1
@@ -2512,3 +1991,11 @@ else
    buttomgutter = figsz(2)-(axsz(2)+floor((ifigsz(2)-axsz(2))/2))*zoom(2);
    set(ax,'Position',[leftgutter+1,buttomgutter+1,axsz.*zoom]);
 end
+
+function default_figure_size(fig)
+set(fig,'Units','pixels');
+pos = get(fig,'position');
+pos(2) = pos(2)+pos(4);
+pos(3:4) = [dipgetpref('DefaultFigureWidth'),dipgetpref('DefaultFigureHeight')];
+pos(2) = pos(2)-pos(4);
+set(fig,'position',pos);

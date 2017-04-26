@@ -22,7 +22,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function d = dipclf(h)
+function dipclf(h)
 
 if nargin < 1 || isequal(h,0)
    h = findobj('Type','figure');
@@ -39,7 +39,7 @@ else
          error('Array with figure handles expected')
       end
    end
-   I = logical(zeros(size(h)));
+   I = false(size(h));
    for ii=1:numel(I)
       if ischar(h{ii})
          h{ii} = dipfig('-get',h{ii});

@@ -62,7 +62,6 @@ function h = dipfig(varargin)
 if nargin < 1
    error('Variable name expected.')
 end
-name = '';
 fig = 0;
 pos = [];
 n = 1;
@@ -75,7 +74,7 @@ if isnumeric(varargin{n}) && length(varargin{n})==1
 end
 if nargin >= n && ischar(varargin{n})
    name = varargin{n};
-   if length(name)>0 && name(1)=='-'
+   if ~isempty(name) && name(1)=='-'
       switch lower(name)
          case '-unlink'
             dip__fig('-unlink');
@@ -100,7 +99,7 @@ if nargin >= n && ischar(varargin{n})
    if nargin >= n
       pos = varargin{n};
       pos = pos(:)';
-      if ~isnumeric(pos) | all(length(pos)~=[2,4])
+      if ~isnumeric(pos) || all(length(pos)~=[2,4])
          error('Position matrix must have 2 or 4 elements.')
       end
    end

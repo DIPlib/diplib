@@ -38,6 +38,7 @@
  *    imagedisplay(handle,'mappingmode',[a,b])      % map the given range
  *
  * Get display modes.
+ *    mode = imagedisplay(handle,'sizes')
  *    mode = imagedisplay(handle,'coordinates')
  *    mode = imagedisplay(handle,'slicing')
  *    mode = imagedisplay(handle,'slicemode')
@@ -178,6 +179,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
             dip::Image const& out = object->Output();
             plhs[ 0 ] = externalInterface.GetArray( out );
 
+            std::cout << "Producing output for handle " << handle << std::endl;
+
          } else {
             if( mxIsChar( prhs[ 1 ] )) {
 
@@ -196,9 +199,40 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
                   DML_MAX_ARGS( 2 );
                   objects.erase( it );
 
+                  std::cout << "Destroying handle " << handle << std::endl;
+
+                  // --- Get static properties ---
+
+               } else if( key == "sizes" ) {
+                  DML_MAX_ARGS( 2 );
+                  plhs[ 0 ] = dml::GetArray( object->GetSizes() );
+               } else if( key == "dirty" ) {
+                  DML_MAX_ARGS( 2 );
+                  plhs[ 0 ] = dml::GetArray( object->OutIsDirty() );
+               } else if( key == "change" ) {
+                  DML_MAX_ARGS( 2 );
+                  plhs[ 0 ] = dml::GetArray( object->SliceIsDirty() );
+               } else if( key == "orthogonal" ) {
+                  DML_MAX_ARGS( 2 );
+                  plhs[ 0 ] = dml::GetArray( object->GetOrhthogonal() );
+                  auto data = mxGetPr( plhs[ 0 ] );
+                  for( dip::uint ii = 0; ii < mxGetNumberOfElements( plhs[ 0 ] ); ++ii ) {
+                     ++( data[ ii ] );
+                  }
+               } else if( key == "dimensionality" ) {
+                  DML_MAX_ARGS( 2 );
+                  plhs[ 0 ] = dml::GetArray( object->Dimensionality() );
+               } else if( key == "limits_or_nan" ) {
+                  DML_MAX_ARGS( 2 );
+                  auto lims = object->GetLimits( false );
+                  plhs[ 0 ] = dml::CreateDouble2Vector( lims.lower, lims.upper );
+               } else if( key == "limits" ) {
+                  DML_MAX_ARGS( 2 );
+                  auto lims = object->GetLimits( true );
+                  plhs[ 0 ] = dml::CreateDouble2Vector( lims.lower, lims.upper );
                } else {
 
-                  // --- Get/Set properties ---
+                  // --- Get/Set dynamic properties ---
 
                   DML_MAX_ARGS( 3 );
                   if( key == "coordinates" ) {
@@ -227,13 +261,13 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
                      }
                   } else if( key == "globalstretch" ) {
                      if( nrhs == 2 ) {
-                        if( object->GetGlobalStretch() ) {
-                           plhs[ 0 ] = mxCreateString( "yes" );
-                        } else {
-                           plhs[ 0 ] = mxCreateString( "no" );
-                        }
+                        plhs[ 0 ] = dml::GetArray( object->GetGlobalStretch() );
                      } else {
-                        object->SetGlobalStretch( dml::GetString( prhs[ 2 ] ));
+                        if( mxIsChar( prhs[ 2 ] )) {
+                           object->SetGlobalStretch( dml::GetString( prhs[ 2 ] ));
+                        } else {
+                           object->SetGlobalStretch( dml::GetBoolean( prhs[ 2 ] ));
+                        }
                      }
                   } else if( key == "complexmapping" ) {
                      if( nrhs == 2 ) {
@@ -293,6 +327,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          Object object = std::make_shared< dip::ImageDisplay >( in, &externalInterface );
          objects.emplace( newHandle, object );
          plhs[ 0 ] = CreateHandle( newHandle );
+
+         std::cout << "Constructing handle " << newHandle << std::endl;
+
          ++newHandle;
 
       } else {

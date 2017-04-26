@@ -26,7 +26,7 @@
 
 % TODO: make the window resizable, and add a Resize callback to position the controls
 
-function menu_out = dipisosurface(in,value)
+function dipisosurface(in,value)
 
 %Tread the callbacks first
 if nargin == 1 && ischar(in)

@@ -29,7 +29,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function menu_out = dippan(arg1,arg2)
+function dippan(arg1,arg2)
 
 if nargin == 0
    fig = get(0,'CurrentFigure');
@@ -39,28 +39,11 @@ if nargin == 0
    action = 'toggle';
 elseif nargin == 1
    if ischar(arg1)
-      fig = gcbf;
-      if ~isempty(fig)
-         switch lower(arg1)
-         case 'down'
-            dippanButtonDownFcn(fig);
-            return
-         case 'motion'
-            dippanMotionFcn(fig);
-            return
-         case 'up'
-            dippanButtonUpFcn(fig);
-            return
-         otherwise
-            action = lower(arg1);
-         end
-      else
-         fig = get(0,'CurrentFigure');
-         if isempty(fig)
-            error('No figure window open to do operation on.')
-         end
-         action = lower(arg1);
+      fig = get(0,'CurrentFigure');
+      if isempty(fig)
+         error('No figure window open to do operation on.')
       end
+      action = lower(arg1);
    else
       try
          fig = getfigh(arg1);
@@ -106,7 +89,7 @@ end
 %
 function makeDIPpanObj(fig,udata)
 udata.state = 'dippan';
-set(fig,'WindowButtonDownFcn','dippan(''down'')');
+set(fig,'WindowButtonDownFcn',@dippanButtonDownFcn);
 set(fig,'WindowButtonUpFcn','',...
         'WindowButtonMotionFcn','',...
         'ButtonDownFcn','',...
@@ -119,7 +102,7 @@ dipfig_set_action_check(fig,udata.state);
 %
 % Callback function for mouse down in images
 %
-function dippanButtonDownFcn(fig)
+function dippanButtonDownFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    ax = findobj(fig,'Type','axes');
    if length(ax)==1
@@ -129,8 +112,8 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
       udata.oldAxesUnits = get(udata.ax,'Units');
       set(udata.ax,'Units','pixels');
       udata.coords = dipfig_getcurpos(udata.ax,0);
-      set(fig,'WindowButtonMotionFcn','dippan(''motion'')',...
-              'WindowButtonUpFcn','dippan(''up'')',...
+      set(fig,'WindowButtonMotionFcn',@dippanMotionFcn,...
+              'WindowButtonUpFcn',@dippanButtonUpFcn,...
               'UserData',[]);   % Solve MATLAB bug!
       set(fig,'UserData',udata);
    end
@@ -140,7 +123,7 @@ end
 %
 % Callback function for mouse move in images
 %
-function dippanMotionFcn(fig)
+function dippanMotionFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    stepsize = udata.coords - dipfig_getcurpos(udata.ax,0);
@@ -171,7 +154,7 @@ end
 %
 % Callback function for mouse up in images
 %
-function dippanButtonUpFcn(fig)
+function dippanButtonUpFcn(fig,~)
 if strncmp(get(fig,'Tag'),'DIP_Image',9)
    udata = get(fig,'UserData');
    set(udata.ax,'Units',udata.oldAxesUnits);

@@ -30,7 +30,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function menu_out = dipzoom(arg1,arg2)
+function dipzoom(arg1,arg2)
 
 if nargin == 0
    fig = get(0,'CurrentFigure');
@@ -87,7 +87,7 @@ end
 %
 function makeDIPzoomObj(fig,udata)
 udata.state = 'dipzoom';
-set(fig,'WindowButtonDownFcn','dipshow DIP_callback dipzoomWindowButtonDownFcn',...
+set(fig,'WindowButtonDownFcn',dipshow('DIP_callback','dipzoomWindowButtonDownFcn'),...
         'WindowButtonUpFcn','',...
         'WindowButtonMotionFcn','',...
         'ButtonDownFcn','',...
