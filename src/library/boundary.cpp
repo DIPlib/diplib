@@ -19,7 +19,7 @@
  */
 
 #include "diplib.h"
-#include "diplib/iterators.h"
+#include "diplib/generic_iterators.h"
 
 #include "copy_buffer.h"
 

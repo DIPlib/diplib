@@ -20,10 +20,10 @@
 
 #include <new>
 #include <iostream>
-#include <diplib/iterators.h>
 
 #include "diplib.h"
 #include "diplib/framework.h"
+#include "diplib/generic_iterators.h"
 
 #include "copy_buffer.h"
 

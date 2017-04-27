@@ -21,7 +21,7 @@
 #include "diplib.h"
 #include "diplib/linear.h"
 #include <diplib/math.h>
-#include <diplib/iterators.h>
+#include <diplib/generic_iterators.h>
 
 namespace dip {
 

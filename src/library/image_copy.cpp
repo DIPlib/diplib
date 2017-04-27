@@ -21,7 +21,7 @@
 #include <cstring> // std::memcpy
 
 #include "diplib.h"
-#include "diplib/iterators.h"
+#include "diplib/generic_iterators.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/math.h"
