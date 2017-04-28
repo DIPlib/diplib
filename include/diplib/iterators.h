@@ -22,6 +22,7 @@
 #define DIP_ITERATORS_H
 
 #include <utility>
+#include <tuple>
 
 #include "diplib.h"
 #include "diplib/boundary.h"
@@ -322,41 +323,22 @@ class DIP_NO_EXPORT ImageIterator {
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       ImageIterator() {}
-      /// To construct a useful iterator, provide an image and a processing dimension
-      ImageIterator( Image const& image, dip::uint procDim ) :
+      /// To construct a useful iterator, provide an image and optionally a processing dimension
+      ImageIterator( Image const& image, dip::uint procDim = std::numeric_limits< dip::uint >::max() ) :
             image_( &image ),
             ptr_( static_cast< pointer >( image.Origin() )),
             coords_( image.Dimensionality(), 0 ),
-            procDim_( static_cast< dip::sint >( procDim )),
+            procDim_( procDim ),
             boundaryCondition_( image.Dimensionality(), BoundaryCondition::DEFAULT ) {
          DIP_THROW_IF( !image_->IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( image_->DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
       }
-      /// To construct a useful iterator, provide an image
-      ImageIterator( Image const& image ) :
+      /// To construct a useful iterator, provide an image, a boundary condition array, and optionally a processing dimension
+      ImageIterator( Image const& image, BoundaryConditionArray const& bc, dip::uint procDim = std::numeric_limits< dip::uint >::max() ) :
             image_( &image ),
             ptr_( static_cast< pointer >( image.Origin() )),
             coords_( image.Dimensionality(), 0 ),
-            boundaryCondition_( image.Dimensionality(), BoundaryCondition::DEFAULT ) {
-         DIP_THROW_IF( !image_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( image_->DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
-      }
-      /// To construct a useful iterator, provide an image, a boundary condition array, and a processing dimension
-      ImageIterator( Image const& image, BoundaryConditionArray const& bc, dip::uint procDim ) :
-            image_( &image ),
-            ptr_( static_cast< pointer >( image.Origin() )),
-            coords_( image.Dimensionality(), 0 ),
-            procDim_( static_cast< dip::sint >( procDim )),
-            boundaryCondition_( bc ) {
-         DIP_THROW_IF( !image_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( image_->DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
-         BoundaryArrayUseParameter( boundaryCondition_, image_->Dimensionality() );
-      }
-      /// To construct a useful iterator, provide an image, and a boundary condition array
-      ImageIterator( Image const& image, BoundaryConditionArray const& bc ) :
-            image_( &image ),
-            ptr_( static_cast< pointer >( image.Origin() )),
-            coords_( image.Dimensionality(), 0 ),
+            procDim_( procDim ),
             boundaryCondition_( bc ) {
          DIP_THROW_IF( !image_->IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( image_->DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
@@ -375,7 +357,7 @@ class DIP_NO_EXPORT ImageIterator {
       /// Convert from non-const iterator to const iterator
       operator ImageIterator< value_type const >() const {
          DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
-         ImageIterator< value_type const > out( *image_, boundaryCondition_, static_cast< dip::uint >( procDim_ ));
+         ImageIterator< value_type const > out( *image_, boundaryCondition_, procDim_ );
          // static_cast above: the constructor will cast back to `sint`, yielding the same original value on
          // two's complement machines. On other types of machines, this will presumably also be OK, as it is
          // unlikely to turn into a value that is in the range [0,nDims).
@@ -402,7 +384,7 @@ class DIP_NO_EXPORT ImageIterator {
       ///
       /// \see dip::ReadPixelWithBoundaryCondition
       template< typename OutputIterator >
-      void PixelAt( IntegerArray coords, OutputIterator it ) {
+      void PixelAt( IntegerArray const& coords, OutputIterator& it ) {
          DIP_THROW_IF( coords.size() != coords_.size(), E::ARRAY_ILLEGAL_SIZE );
          for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
             coords[ ii ] += coords_[ ii ];
@@ -413,10 +395,9 @@ class DIP_NO_EXPORT ImageIterator {
       /// Increment
       ImageIterator& operator++() {
          if( ptr_ ) {
-            DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
             dip::uint dd;
             for( dd = 0; dd < coords_.size(); ++dd ) {
-               if( static_cast< dip::sint >( dd ) != procDim_ ) {
+               if( dd != procDim_ ) {
                   // Increment coordinate and adjust pointer
                   ++coords_[ dd ];
                   ptr_ += image_->Stride( dd );
@@ -459,12 +440,12 @@ class DIP_NO_EXPORT ImageIterator {
       /// Get an iterator over the current line
       LineIterator< value_type > GetLineIterator() const {
          DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return LineIterator< value_type >( *image_, coords_, static_cast< dip::uint >( procDim_ ) );
+         return LineIterator< value_type >( *image_, coords_, procDim_ );
       }
       /// Get a const iterator over the current line
       ConstLineIterator< value_type > GetConstLineIterator() const {
          DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return ConstLineIterator< value_type >( *image_, coords_, static_cast< dip::uint >( procDim_ ) );
+         return ConstLineIterator< value_type >( *image_, coords_, procDim_ );
       }
 
       /// Equality comparison
@@ -484,7 +465,7 @@ class DIP_NO_EXPORT ImageIterator {
       /// Return the current coordinates
       UnsignedArray const& Coordinates() const { return coords_; }
       /// Set the iterator to point at a different location in the image
-      void SetCoordinates( UnsignedArray coords ) {
+      void SetCoordinates( UnsignedArray const& coords ) {
          DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
          if( HasProcessingDimension() && ( coords.size() > procDim_ )) {
             coords[ procDim_ ] = 0;
@@ -509,17 +490,17 @@ class DIP_NO_EXPORT ImageIterator {
       /// True if the processing dimension is set
       bool HasProcessingDimension() const {
          if( image_ ) {
-            return ( procDim_ >= 0 ) && ( procDim_ < static_cast< dip::sint >( image_->Dimensionality() ));
+            return procDim_ < image_->Dimensionality();
          } else {
             return false;
          }
       }
       /// Return the processing dimension, the direction of the lines over which the iterator iterates
-      dip::sint ProcessingDimension() const { return HasProcessingDimension() ? procDim_ : -1; }
+      dip::sint ProcessingDimension() const { return HasProcessingDimension() ? static_cast< dip::sint >( procDim_ ) : -1; }
+
       /// \brief Set the boundary condition for accessing pixels outside the image boundary. An empty array sets
       /// all dimensions to the default value, and an array with a single element sets all dimensions to
       /// that value.
-
       void SetBoundaryCondition( BoundaryConditionArray const& bc ) {
          boundaryCondition_ = bc;
          BoundaryArrayUseParameter( boundaryCondition_, image_->Dimensionality() );
@@ -534,8 +515,8 @@ class DIP_NO_EXPORT ImageIterator {
    private:
       Image const* image_ = nullptr;
       pointer ptr_ = nullptr;
-      UnsignedArray coords_ = {};
-      dip::sint procDim_ = -1;
+      UnsignedArray coords_;
+      dip::uint procDim_;
       BoundaryConditionArray boundaryCondition_ = {};
 };
 
@@ -557,162 +538,149 @@ using ConstImageIterator = ImageIterator< T const >;
 // Image iterator, does nD loops over all pixels in an image
 //
 
+namespace detail {
 
-/// \brief An iterator to iterate over all pixels of two images, with read-only access of the first image (input)
-/// and write access of the second (output).
+// Used by JointImageIterator<> constructor, tests to see if all input images have the right data type
+template< typename T = void, typename... OtherTs >
+void TestDataType( Image const* images[] ) {
+   if(( *images )->IsForged() ) {
+      DIP_THROW_IF(( *images )->DataType() != DataType( T( 0 )), E::WRONG_DATA_TYPE );
+   }
+   TestDataType< OtherTs... >( images + 1 );
+}
+template<>
+inline void TestDataType<>( Image const* /*images*/[] ) {} // End of iteration
+
+} // namespace detail
+
+/// \brief An iterator to iterate over all pixels of multiple images.
 ///
-/// The two images must have the same sizes except along the
-/// processing dimension. It behaves similarly to `dip::ImageIterator` with the following differences:
+/// The images must have the same sizes except along the processing dimension. It behaves similarly to
+/// `dip::ImageIterator` with the following differences:
 ///
-/// This iterator is not dereferenceable. The reason is that it points at two pixels at the same time
-/// (that is, one pixel in each image). Instead, use the `In` and `Out` methods to obtain references to
-/// to the first sample of each pixel. Use the `InSample` and `OutSample` methods instead of the `[]`
-/// operator to access the other samples.
+/// - This iterator is not dereferenceable and has no `[]` operator. The reason is that it points at multiple
+/// pixels at the same time (that is, one pixel in each image). Instead, use the `Sample<N>` method to obtain
+/// a reference to a sample of the pixel in image `N`.
 ///
-/// Instead of `GetLineIterator`, use `GetInLineIterator` and `GetOutLineIterator`. Likewise, instead of
-/// `Pointer` and `Offset` methods, use `InPointer`, `OutPointer`, `InOffset` and `OutOffset`.
+/// - The `GetLineIterator`, `Pointer` and `Offset` methods are templated also, requiring a template parameter
+/// `N` as in `Offset<N>`.
 ///
-/// The `PixelAt` method reads pixels from the input image.
+/// - There is no `PixelAt` method, and no boundary condition parameters.
+///
+/// The first image in the set must be forged. Other images can be empty, but dereferencing them will lead to
+/// undefined behavior.
+///
+/// Note that, within templated code, calling the `Sample<N>` and similar templated methods requires specifying
+/// that the method is a template:
+/// ```cpp
+///     template< typename TPI >
+///     void Function( ... ) {
+///        JointImageIterator< TPI, bin > it( { in, mask } );
+///        do {
+///           if( it.template Sample< 1 >() ) {  // Note `template` on this line
+///              it.template Sample< 0 >() = 0;  // Note `template` on this line
+///           }
+///        } while( ++it );
+///     }
+/// ```
+///
+/// There exist aliases `InXxx` for `Xxx<0>`, and `OutXxx` for `Xxx<1>`, where `Xxx` is `Sample`, `Pointer` or `Offset`.
+/// `In()` is an alias for `Sample<0>(0)` and `Out()` is an alias for `Sample<1>(0)`.
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
 /// \see ImageIterator, LineIterator, SampleIterator, GenericJointImageIterator
-// TODO: This would look better in some cases (see src/math/projection.cpp) if it was `first` and `second` instead of `in` and `out`.
-template< typename inT, typename outT >
+template< typename... Types >
 class DIP_NO_EXPORT JointImageIterator {
    public:
+      using iterator_category = std::forward_iterator_tag;
+      template< dip::uint I > using value_type = typename std::tuple_element< I, std::tuple< Types ... >>::type;
+      ///< The data type of the pixel, obtained when dereferencing the iterator
+      using difference_type = dip::sint;                          ///< The type of distances between iterators
+      template< dip::uint I > using reference = value_type< I >&; ///< The type of a reference to a pixel
+      template< dip::uint I > using pointer = value_type< I >*;   ///< The type of a pointer to a pixel
 
-      /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
-      JointImageIterator() {}
-      /// To construct a useful iterator, provide two images, and a processing dimension
-      JointImageIterator( Image const& input, Image const& output, dip::uint procDim ) :
-            inImage_( &input ),
-            outImage_( &output ),
-            inPtr_( static_cast< inT* >( input.Origin() )),
-            outPtr_( static_cast< outT* >( output.Origin() )),
-            coords_( input.Dimensionality(), 0 ),
-            procDim_( static_cast< dip::sint >( procDim )),
-            boundaryCondition_( input.Dimensionality(), BoundaryCondition::DEFAULT ) {
-         DIP_THROW_IF( !inImage_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( !outImage_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( inImage_->DataType() != DataType( inT(0) ), E::WRONG_DATA_TYPE );
-         DIP_THROW_IF( outImage_->DataType() != DataType( outT(0) ), E::WRONG_DATA_TYPE );
-         DIP_THROW_IF( !CompareSizes(), E::SIZES_DONT_MATCH );
+      /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an
+      /// end iterator.
+      JointImageIterator() : atEnd_( true ) {
+         images_.fill( nullptr );
+         offsets_.fill( 0 );
       }
-      /// To construct a useful iterator, provide two images
-      JointImageIterator( Image const& input, Image const& output ) :
-            inImage_( &input ),
-            outImage_( &output ),
-            inPtr_( static_cast< inT* >( input.Origin() )),
-            outPtr_( static_cast< outT* >( output.Origin() )),
-            coords_( input.Dimensionality(), 0 ),
-            boundaryCondition_( input.Dimensionality(), BoundaryCondition::DEFAULT ) {
-         DIP_THROW_IF( !inImage_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( !outImage_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( inImage_->DataType() != DataType( inT(0) ), E::WRONG_DATA_TYPE );
-         DIP_THROW_IF( outImage_->DataType() != DataType( outT(0) ), E::WRONG_DATA_TYPE );
-         DIP_THROW_IF( !CompareSizes(), E::SIZES_DONT_MATCH );
-      }
-      /// To construct a useful iterator, provide two images, a boundary condition array, and a processing dimension
-      JointImageIterator( Image const& input, Image const& output, BoundaryConditionArray const& bc, dip::uint procDim ) :
-            inImage_( &input ),
-            outImage_( &output ),
-            inPtr_( static_cast< inT* >( input.Origin() )),
-            outPtr_( static_cast< outT* >( output.Origin() )),
-            coords_( input.Dimensionality(), 0 ),
-            procDim_( static_cast< dip::sint >( procDim )),
-            boundaryCondition_( bc ) {
-         DIP_THROW_IF( !inImage_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( !outImage_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( inImage_->DataType() != DataType( inT(0) ), E::WRONG_DATA_TYPE );
-         DIP_THROW_IF( outImage_->DataType() != DataType( outT(0) ), E::WRONG_DATA_TYPE );
-         DIP_THROW_IF( !CompareSizes(), E::SIZES_DONT_MATCH );
-         BoundaryArrayUseParameter( boundaryCondition_, inImage_->Dimensionality() );
-      }
-      /// To construct a useful iterator, provide two images, and a boundary condition array
-      JointImageIterator( Image const& input, Image const& output, BoundaryConditionArray const& bc ) :
-            inImage_( &input ),
-            outImage_( &output ),
-            inPtr_( static_cast< inT* >( input.Origin() )),
-            outPtr_( static_cast< outT* >( output.Origin() )),
-            coords_( input.Dimensionality(), 0 ),
-            boundaryCondition_( bc ) {
-         DIP_THROW_IF( !inImage_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( !outImage_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( inImage_->DataType() != DataType( inT(0) ), E::WRONG_DATA_TYPE );
-         DIP_THROW_IF( outImage_->DataType() != DataType( outT(0) ), E::WRONG_DATA_TYPE );
-         DIP_THROW_IF( !CompareSizes(), E::SIZES_DONT_MATCH );
-         BoundaryArrayUseParameter( boundaryCondition_, inImage_->Dimensionality() );
+      /// To construct a useful iterator, provide `N` images (`N` equal to the number of template parameters),
+      /// and optionally a processing dimension.
+      JointImageIterator( ImageConstRefArray const& input, dip::uint procDim = std::numeric_limits< dip::uint >::max() ):
+            procDim_( procDim ), atEnd_( false ) {
+         DIP_THROW_IF( input.size() != N, E::ARRAY_ILLEGAL_SIZE );
+         images_[ 0 ] = &( input[ 0 ].get() );
+         DIP_THROW_IF( !images_[ 0 ]->IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( images_[ 0 ]->DataType() != DataType( value_type< 0 >( 0 )), E::WRONG_DATA_TYPE );
+         coords_.resize( images_[ 0 ]->Dimensionality(), 0 );
+         dummy_.SetStrides( IntegerArray( coords_.size(), 0 ));
+         offsets_.fill( 0 );
+         for( dip::uint ii = 1; ii < N; ++ii ) {
+            images_[ ii ] = &( input[ ii ].get() );
+            if( !images_[ ii ]->IsForged() ) {
+               images_[ ii ] = &dummy_;
+            }
+         }
+         detail::TestDataType< Types... >( images_.data() );
       }
 
       /// Swap
       void swap( JointImageIterator& other ) {
          using std::swap;
-         swap( inImage_, other.inImage_ );
-         swap( outImage_, other.outImage_ );
-         swap( inPtr_, other.inPtr_ );
-         swap( outPtr_, other.outPtr_ );
+         swap( images_, other.images_ );
+         swap( offsets_, other.offsets_ );
+         swap( dummy_, other.dummy_ );
          swap( coords_, other.coords_ );
          swap( procDim_, other.procDim_ );
-         swap( boundaryCondition_, other.boundaryCondition_ );
       }
 
-      /// Dereference input image
-      inT const& In() const { return *inPtr_; }
-      /// Dereference output image
-      outT& Out() const { return *outPtr_; }
-      /// Index into input tensor.
-      inT const& InSample( dip::sint index ) const {
-         DIP_THROW_IF( !inImage_, E::ITERATOR_NOT_VALID );
-         return *( inPtr_ + index * inImage_->TensorStride() );
+      /// Index into image tensor for image `I`
+      template< dip::uint I >
+      reference< I > Sample( dip::sint index ) const {
+         DIP_THROW_IF( !images_[ I ], E::ITERATOR_NOT_VALID );
+         return *( static_cast< pointer< I >>( images_[ I ]->Origin() ) + offsets_[ I ] + index * images_[ I ]->TensorStride() );
       }
-      /// Index into output tensor.
-      outT& OutSample( dip::sint index ) const {
-         DIP_THROW_IF( !outImage_, E::ITERATOR_NOT_VALID );
-         return *( outPtr_ + index * outImage_->TensorStride() );
+      /// Index into image tensor for image 0.
+      reference< 0 > InSample( dip::sint index ) const { return Sample< 0 >( index ); }
+      /// Index into image tensor for image 1.
+      reference< 1 > OutSample( dip::sint index ) const { return Sample< 1 >( index ); }
+      /// Get first tensor element for image `I`.
+      template< dip::uint I >
+      reference< I > Sample() const {
+         DIP_THROW_IF( !images_[ I ], E::ITERATOR_NOT_VALID );
+         return *( static_cast< pointer< I >>( images_[ I ]->Origin() ) + offsets_[ I ] );
       }
-
-      /// \brief Copy the input samples of a neighbor pixel with relative coordinates of `coords`, using the
-      /// boundary condition if that neighbor is outside of the image domain.
-      ///
-      /// It is relatively expensive to test for a pixel to be outside the image domain,
-      /// if you can be sure that the neighbor exists, use `*( dip::JointImageIterator::InPointer() + offset )`
-      /// instead.
-      ///
-      /// \see dip::ReadPixelWithBoundaryCondition
-      template< typename OutputIterator >
-      void PixelAt( IntegerArray coords, OutputIterator it ) {
-         DIP_THROW_IF( coords.size() != coords_.size(), E::ARRAY_ILLEGAL_SIZE );
-         for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
-            coords[ ii ] += coords_[ ii ];
-         }
-         ReadPixelWithBoundaryCondition< inT >( *inImage_, it, coords, boundaryCondition_ );
-      }
+      /// Get first tensor element for image 0.
+      reference< 0 > In() const { return Sample< 0 >(); }
+      /// Get first tensor element for image 1.
+      reference< 1 > Out() const { return Sample< 1 >(); }
 
       /// Increment
       JointImageIterator& operator++() {
-         if( inPtr_ ) {
-            DIP_THROW_IF( !inImage_ || !outImage_, E::ITERATOR_NOT_VALID );
+         if( *this ) {
             dip::uint dd;
             for( dd = 0; dd < coords_.size(); ++dd ) {
-               if( static_cast< dip::sint >( dd ) != procDim_ ) {
+               if( dd != procDim_ ) {
                   // Increment coordinate and adjust pointer
                   ++coords_[ dd ];
-                  inPtr_ += inImage_->Stride( dd );
-                  outPtr_ += outImage_->Stride( dd );
+                  for( dip::uint ii = 0; ii < N; ++ii ) {
+                     offsets_[ ii ] += images_[ ii ]->Stride( dd );
+                  }
                   // Check whether we reached the last pixel of the line
-                  if( coords_[ dd ] < inImage_->Size( dd ) ) {
+                  if( coords_[ dd ] < images_[ 0 ]->Size( dd )) {
                      break;
                   }
                   // Rewind, the next loop iteration will increment the next coordinate
-                  inPtr_ -= static_cast< dip::sint >( coords_[ dd ] ) * inImage_->Stride( dd );
-                  outPtr_ -= static_cast< dip::sint >( coords_[ dd ] ) * outImage_->Stride( dd );
+                  for( dip::uint ii = 0; ii < N; ++ii ) {
+                     offsets_[ ii ] -= static_cast< dip::sint >( coords_[ dd ] ) * images_[ ii ]->Stride( dd );
+                  }
                   coords_[ dd ] = 0;
                }
             }
             if( dd == coords_.size() ) {
-               inPtr_ = nullptr;
-               outPtr_ = nullptr;
+               atEnd_ = true;
             }
          }
          return *this;
@@ -724,103 +692,123 @@ class DIP_NO_EXPORT JointImageIterator {
          return tmp;
       }
 
-      /// Get an iterator over the current line of the input image
-      ConstLineIterator< inT > GetInLineIterator() const {
-         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return ConstLineIterator< inT >( *inImage_, coords_, static_cast< dip::uint >( procDim_ ) );
+      /// Get an iterator over the tensor for the current pixel of image `I`
+      template< dip::uint I >
+      SampleIterator <value_type< I >> begin() const {
+         DIP_THROW_IF( !images_[ I ], E::ITERATOR_NOT_VALID );
+         return SampleIterator< value_type< I >>( Pointer< I >(), images_[ I ]->TensorStride() ); // will yield a const iterator if value_type is const!
       }
-      /// Get an iterator over the current line of the output image
-      LineIterator< outT > GetOutLineIterator() const {
-         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return LineIterator< outT >( *outImage_, coords_, static_cast< dip::uint >( procDim_ ) );
+      /// Get an end iterator over the tensor for the current pixel of image `I`
+      template< dip::uint I >
+      SampleIterator <value_type< I >> end() const { return begin() + images_[ I ]->TensorElements(); }
+      /// Get a const iterator over the tensor for the current pixel of image `I`
+      template< dip::uint I >
+      ConstSampleIterator <value_type< I >> cbegin() const {
+         DIP_THROW_IF( !images_[ I ], E::ITERATOR_NOT_VALID );
+         return ConstSampleIterator< value_type< I >>( Pointer< I >(), images_[ I ]->TensorStride() );
+      }
+      /// Get an end const iterator over the tensor for the current pixel of image `I`
+      template< dip::uint I >
+      ConstSampleIterator <value_type< I >> cend() const { return cbegin() + images_[ I ]->TensorElements(); }
+      /// Get an iterator over the current line of image `I`
+      template< dip::uint I >
+      LineIterator< value_type< I >> GetLineIterator() const {
+         DIP_THROW_IF( !HasProcessingDimension(),
+                       "Cannot get a line iterator if there's no valid processing dimension" );
+         return LineIterator< value_type< I >>( *images_[ I ], coords_, procDim_ );
+      }
+      /// Get a const iterator over the current line of image `I`
+      template< dip::uint I >
+      ConstLineIterator< value_type< I >> GetConstLineIterator() const {
+         DIP_THROW_IF( !HasProcessingDimension(),
+                       "Cannot get a line iterator if there's no valid processing dimension" );
+         return ConstLineIterator< value_type< I >>( *images_[ I ], coords_, procDim_ );
       }
 
-      /// Equality comparison
-      bool operator==( JointImageIterator const& other ) const {
-         return ( inPtr_ == other.inPtr_ ) && ( outPtr_ == other.outPtr_ );
+      /// Equality comparison, is equal if the two iterators have the same coordinates. It is possible to compare
+      /// JointImageIterators with different images and different types.
+      template< typename... OtherTypes >
+      bool operator==( JointImageIterator< OtherTypes... > const& other ) const {
+         return ( atEnd_ == other.atEnd_ ) && ( coords_ == other.coords_ );
       }
       /// Inequality comparison
-      bool operator!=( JointImageIterator const& other ) const {
-         return ( inPtr_ != other.inPtr_ ) && ( outPtr_ != other.outPtr_ );
+      template< typename... OtherTypes >
+      bool operator!=( JointImageIterator< OtherTypes... > const& other ) const {
+         return !operator==( other );
       }
 
       /// Test to see if the iterator reached past the last pixel
-      bool IsAtEnd() const { return inPtr_ == nullptr; }
+      bool IsAtEnd() const { return atEnd_; }
       /// Test to see if the iterator is still pointing at a pixel
-      explicit operator bool() const { return inPtr_ != nullptr; }
+      explicit operator bool() const { return !atEnd_; }
 
       /// Return the current coordinates
       UnsignedArray const& Coordinates() const { return coords_; }
       /// Set the iterator to point at a different location in the image
-      void SetCoordinates( UnsignedArray coords ) {
-         DIP_THROW_IF( !inImage_ || !outImage_, E::ITERATOR_NOT_VALID );
+      void SetCoordinates( UnsignedArray const& coords ) {
+         DIP_THROW_IF( !images_[ 0 ], E::ITERATOR_NOT_VALID );
          if( HasProcessingDimension() && ( coords.size() > procDim_ )) {
             coords[ procDim_ ] = 0;
          }
-         inPtr_ = inImage_->Pointer( coords ); // tests for coords to be correct
-         outPtr_ = outImage_->Pointer( coords );
+         for( dip::uint ii = 0; ii < N; ++ii ) {
+            offsets_[ ii ] = images_[ ii ]->Offset( coords );
+         }
          coords_ = coords;
       }
 
-      /// Return the current pointer for the input image
-      inT const* InPointer() const { return inPtr_; }
-      /// Return the current pointer for the output image
-      outT* OutPointer() const { return outPtr_; }
-      /// Return the current offset for the input image
-      dip::sint InOffset() const {
-         DIP_THROW_IF( !inImage_, E::ITERATOR_NOT_VALID );
-         return inPtr_ - static_cast< inT* >( inImage_->Origin() );
+      /// Return the current pointer for image `I`
+      template< dip::uint I >
+      pointer< I > Pointer() const {
+         DIP_ASSERT( images_[ I ] );
+         return static_cast< pointer< I >>( images_[ I ]->Origin() ) + offsets_[ I ];
       }
-      /// Return the current offset for the output image
-      dip::sint OutOffset() const {
-         DIP_THROW_IF( !outImage_, E::ITERATOR_NOT_VALID );
-         return outPtr_ - static_cast< outT* >( outImage_->Origin() );
-      }
+      /// Return the current pointer for image 0.
+      pointer< 0 > InPointer() const { return Pointer< 0 >(); }
+      /// Return the current pointer for image 1.
+      pointer< 1 > OutPointer() const { return Pointer< 1 >(); }
+      /// Return the current offset for image `I`
+      template< dip::uint I >
+      dip::sint Offset() const { return offsets_[ I ]; }
+      /// Index into image tensor for image 0.
+      dip::sint InOffset() const { return offsets_[ 0]; }
+      /// Index into image tensor for image 1.
+      dip::sint OutOffset() const { return offsets_[ 1 ]; }
       /// Return the current index, which is computed: this function is not trivial
       dip::uint Index() const {
-         DIP_THROW_IF( !inImage_, E::ITERATOR_NOT_VALID );
-         return inImage_->Index( coords_ );
+         DIP_THROW_IF( !images_[ 0 ], E::ITERATOR_NOT_VALID );
+         return images_[ 0 ]->Index( coords_ );
       }
 
       /// True if the processing dimension is set
       bool HasProcessingDimension() const {
-         if( inImage_ ) {
-            return ( procDim_ >= 0 ) && ( procDim_ < static_cast< dip::sint >( inImage_->Dimensionality() ));
+         if( images_[ 0 ] ) {
+            return procDim_ < images_[ 0 ]->Dimensionality();
          } else {
             return false;
          }
       }
       /// Return the processing dimension, the direction of the lines over which the iterator iterates
-      dip::sint ProcessingDimension() const { return HasProcessingDimension() ? procDim_ : -1; }
-
-      /// \brief Set the boundary condition for accessing pixels outside the image boundary.
-      /// Dimensions not specified will use the default boundary condition.
-      void SetBoundaryCondition( BoundaryConditionArray const& bc ) {
-         boundaryCondition_ = bc;
-         BoundaryArrayUseParameter( boundaryCondition_, inImage_->Dimensionality() );
-      }
-      /// Set the boundary condition for accessing pixels outside the image boundary, for the given dimension
-      void SetBoundaryCondition( dip::uint d, BoundaryCondition bc ) {
-         if( d < boundaryCondition_.size() ) {
-            boundaryCondition_[ d ] = bc;
-         }
+      dip::sint ProcessingDimension() const {
+         return HasProcessingDimension() ? static_cast< dip::sint >( procDim_ ) : -1;
       }
 
    private:
-      Image const* inImage_ = nullptr;
-      Image const* outImage_ = nullptr;
-      inT* inPtr_ = nullptr;
-      outT* outPtr_ = nullptr;
-      UnsignedArray coords_ = {};
-      dip::sint procDim_ = -1;
-      BoundaryConditionArray boundaryCondition_ = {};
+      constexpr static dip::uint N = sizeof...( Types );
+      static_assert( N > 1, "JointImageIterator needs at least one type template argument" );
+      std::array< Image const*, N > images_;
+      std::array< dip::sint, N > offsets_;
+      Image dummy_;
+      UnsignedArray coords_;
+      dip::uint procDim_;
+      bool atEnd_;
 
-      bool CompareSizes() const {
-         if( inImage_->Dimensionality() != outImage_->Dimensionality() ) {
+      // Compares size of image n to first
+      bool CompareSizes( dip::uint n ) const {
+         if( images_[ 0 ]->Dimensionality() != images_[ n ]->Dimensionality() ) {
             return false;
          }
-         for( dip::uint ii = 0; ii < inImage_->Dimensionality(); ++ii ) {
-            if(( static_cast< dip::sint >( ii ) != procDim_ ) && ( inImage_->Size( ii ) != outImage_->Size( ii ) )) {
+         for( dip::uint ii = 0; ii < images_[ 0 ]->Dimensionality(); ++ii ) {
+            if(( ii != procDim_ ) && ( images_[ 0 ]->Size( ii ) != images_[ n ]->Size( ii ))) {
                return false;
             }
          }
@@ -828,10 +816,10 @@ class DIP_NO_EXPORT JointImageIterator {
       }
 };
 
-template< typename inT, typename outT >
-inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, outT >& v2 ) {
-   v1.swap( v2 );
-}
+      template< typename inT, typename outT >
+      inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, outT >& v2 ) {
+         v1.swap( v2 );
+      }
 
 
 /// \}

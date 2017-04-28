@@ -51,7 +51,7 @@ int main() {
    dip::uint nValues = msr.NumberOfValues();
    dip::uint nObjects = msr.NumberOfObjects();
    for( dip::uint ii = 0; ii < nValues * nObjects; ++ii ) {
-      *v = ii;
+      *v = static_cast< dip::Measurement::ValueType >( ii );
       ++v;
    }
 

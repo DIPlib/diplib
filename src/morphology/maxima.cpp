@@ -58,14 +58,10 @@ void dip__Extrema(
    dip::uint nNeigh = neighborOffsetsIn.size();
    UnsignedArray const& imsz = c_in.Sizes();
 
-   JointImageIterator< TPI, LabelType > it( c_in, c_out );
-   ImageIterator< bin > it_mask;
+   JointImageIterator< TPI, LabelType, bin > it( { c_in, c_out, c_mask } );
    bool hasMask = c_mask.IsForged();
-   if( hasMask ) {
-      it_mask = ImageIterator< bin >( c_mask );
-   }
    do {
-      if( !hasMask || *it_mask ) {
+      if( !hasMask || it.template Sample< 2 >() ) {
          LabelType lab = it.Out();
          if( lab == 0 ) {
             // Does it satisfy: all its neighbours are of equal or lower value?
@@ -75,7 +71,7 @@ void dip__Extrema(
             auto nit = neighborList.begin();
             for( dip::uint jj = 0; jj < nNeigh; ++jj, ++nit ) {
                if( nit.IsInImage( coords, imsz ) ) {
-                  if( !hasMask || *( it_mask.Pointer() + neighborOffsetsMask[ jj ] )) {
+                  if( !hasMask || *( it.template Pointer< 2 >() + neighborOffsetsMask[ jj ] )) {
                      if( maxima ? *( it.InPointer() + neighborOffsetsIn[ jj ] ) > val
                                 : *( it.InPointer() + neighborOffsetsIn[ jj ] ) < val ) {
                         doit = false;
@@ -131,7 +127,7 @@ void dip__Extrema(
             }
          }
       }
-   } while( ++it_mask, ++it );
+   } while( ++it );
    // Loop over all image pixels again, erase labels marked bad
    ImageIterator< LabelType > oit( c_out );
    do {

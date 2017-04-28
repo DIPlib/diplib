@@ -239,10 +239,10 @@ void dip__FastWatershed(
    if( operation == FastWatershedOperation::WATERSHED ) {
       if( binaryOutput ) {
          // Process binary output image
-         JointImageIterator< LabelType, bin > it( c_labels, c_binary );
+         JointImageIterator< LabelType, bin > it( { c_labels, c_binary } );
          do {
-            if( it.In() > 0 ) {
-               it.Out() = true;
+            if( it.template Sample< 0 >() > 0 ) {
+               it.template Sample< 1 >() = true;
             }
          } while( ++it );
       } else {
@@ -261,21 +261,19 @@ void dip__FastWatershed(
    } else { // operation == FastWatershedOperation::EXTREMA
       if( binaryOutput ) {
          // Process binary output image
-         ImageIterator< LabelType > lit( c_labels );
-         ImageIterator< TPI > iit( c_in );
-         ImageIterator< bin > bit( c_binary ); // TODO: we need a triple image iterator here (and elsewhere too)
+         JointImageIterator< LabelType, TPI, bin > it( { c_labels, c_in, c_binary } );
          do {
-            LabelType lab = *lit;
+            LabelType lab = it.template Sample< 0 >();
             if( lab > 0 ) {
                lab = regions[ lab ].mapped;
-               if( *iit == regions[ lab ].lowest ) {
-                  *bit = true;
+               if( it.template Sample< 1 >() == regions[ lab ].lowest ) {
+                  it.template Sample< 2 >() = true;
                }
             }
-         } while( ++lit, ++iit, ++bit );
+         } while( ++it );
       } else {
          // Process labels output image
-         JointImageIterator< TPI, LabelType > it( c_in, c_labels );
+         JointImageIterator< TPI, LabelType > it( { c_in, c_labels } );
          do {
             LabelType lab = it.Out();
             if( lab > 0 ) {
@@ -425,37 +423,35 @@ void dip__SeededWatershed(
    UnsignedArray const& imsz = c_grey.Sizes();
 
    // Walk over the entire image & put all the background border pixels on the heap
-   JointImageIterator< TPI, LabelType > it( c_grey, c_labels ); // it.In = grey, it.Out = labels
-   ImageIterator< bin > it_mask;
-   if( c_mask.IsForged() ) {
-      it_mask = ImageIterator< bin >( c_mask );
-   }
+   JointImageIterator< TPI, LabelType, bin > it( { c_grey, c_labels, c_mask } );
+   bool hasMask = c_mask.IsForged();
    dip::uint order = 0;
    do {
-      if( !it_mask || *it_mask ) {
-         LabelType lab = it.Out();
+      if( !hasMask || it.template Sample< 2 >() ) {
+         LabelType lab = it.template Sample< 1 >();
          if( lab == 0 ) {
-            if( PixelHasForegroundNeighbour( it.OutPointer(), it_mask.Pointer(), neighborList,
+            if( PixelHasForegroundNeighbour( it.template Pointer< 1 >(), it.template Pointer< 2 >(), neighborList,
                                              neighborOffsetsLabels, neighborOffsetsMask,
                                              it.Coordinates(), imsz )) {
-               Q.push( Qitem< TPI >{ it.In(), order++, it.OutOffset() } );
-               it.Out() = PIXEL_ON_STACK;
+               Q.push( Qitem< TPI >{ it.template Sample< 0 >(), order++, it.template Offset< 1 >() } );
+               it.template Sample< 1 >() = PIXEL_ON_STACK;
             }
          } else { /* lab > 0 */
             DIP_ASSERT( lab <= numlabs ); // Not really necessary, is it?
             ++( regions[ lab ].size );
+            TPI value = it.template Sample< 0 >();
             if( regions[ lab ].mapped == 0 ) {
                regions[ lab ].mapped = lab;
-               regions[ lab ].lowest = it.In();
+               regions[ lab ].lowest = value;
             } else {
-               if( lowFirst ? ( regions[ lab ].lowest > it.In() )
-                            : ( regions[ lab ].lowest < it.In() )) {
-                  regions[ lab ].lowest = it.In();
+               if( lowFirst ? ( regions[ lab ].lowest > value )
+                            : ( regions[ lab ].lowest < value )) {
+                  regions[ lab ].lowest = value;
                }
             }
          }
       }
-   } while( ++it_mask, ++it );
+   } while( ++it );
 
    // Start processing pixels
    TPI* grey = static_cast< TPI* >( c_grey.Origin() );

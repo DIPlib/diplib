@@ -39,11 +39,11 @@ class LineFilter : public dip::Framework::FullLineFilter {
                params.outBuffer.stride );
          if( params.pixelTable.HasWeights() ) {
             for( dip::uint ii = 0; ii < params.bufferLength; ++ii ) {
-               float res = 0;
+               dip::sfloat res = 0;
                auto filter = params.pixelTable.begin();
                auto weight = params.pixelTable.Weights().begin();
                do {
-                  res += in[ *filter ] * *weight;
+                  res += static_cast< dip::sfloat >( in[ *filter ] * *weight );
                } while( ++weight, ++filter );
                *out = res;
                ++in;
@@ -51,12 +51,12 @@ class LineFilter : public dip::Framework::FullLineFilter {
             }
          } else {
             for( dip::uint ii = 0; ii < params.bufferLength; ++ii ) {
-               float res = 0;
+               dip::sfloat res = 0;
                auto filter = params.pixelTable.begin();
                do {
                   res += in[ *filter ];
                } while( ++filter );
-               *out = res / params.pixelTable.NumberOfPixels();
+               *out = res / static_cast< dip::sfloat >( params.pixelTable.NumberOfPixels() );
                ++in;
                ++out;
             }

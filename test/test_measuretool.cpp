@@ -9,7 +9,7 @@ class FeatureTest : public dip::Feature::ImageBased {
    public:
       FeatureTest() : ImageBased( { "Test", "Test feature", false } ) {};
 
-      virtual dip::Feature::ValueInformationArray Initialize( dip::Image const& label, dip::Image const&, dip::uint ) override {
+      virtual dip::Feature::ValueInformationArray Initialize( dip::Image const&, dip::Image const&, dip::uint ) override {
          dip::Feature::ValueInformationArray out( 1 );
          out[ 0 ].name = "testing";
          return out;

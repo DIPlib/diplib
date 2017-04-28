@@ -86,7 +86,7 @@ int main() {
             dip::uint mean = sum / lit.Length();
             lit = it.GetLineIterator();
             do {
-               dip::uint res = mean == 0 ? 0 : ( *lit * 1000 ) / mean;
+               dip::uint res = mean == 0 ? 0 : ( *lit * 1000u ) / mean;
                *lit = dip::clamp_cast< dip::uint16 >( res );
             } while( ++lit );
          } while( ++it );
@@ -101,10 +101,10 @@ int main() {
          DIP_THROW_IF( out.DataType() != dip::DT_SFLOAT, "Expecting single-precision float image" );
          constexpr dip::uint N = 2;
          std::array< double, 2 * N + 1 > filter{ { 1.0 / 9.0, 2.0 / 9.0, 3.0 / 9.0, 2.0 / 9.0, 1.0 / 9.0 } };
-         dip::JointImageIterator< dip::uint16, dip::sfloat > it( img, out, 0 );
+         dip::JointImageIterator< dip::uint16, dip::sfloat > it( { img, out }, 0 );
          do {
-            auto iit = it.GetInLineIterator();
-            auto oit = it.GetOutLineIterator();
+            auto iit = it.template GetLineIterator< 0 >();
+            auto oit = it.template GetLineIterator< 1 >();
             // At the beginning of the line the filter has only partial support within the image
             for( dip::uint ii = N; ii > 0; --ii, ++oit ) {
                *oit = std::inner_product( filter.begin() + ii, filter.end(), iit, 0.0f );
