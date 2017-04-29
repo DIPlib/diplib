@@ -56,18 +56,18 @@ class DIP_EXPORT GLFWManager : public Manager
     void setWindowTitle(Window* window, const char *name);
 
     void run();
-    WindowPtr getWindow(class GLFWwindow *window);
+    WindowPtr getWindow(struct GLFWwindow *window);
     void destroyWindow(WindowPtr window, bool external);
     void getCursorPos(Window *window, double *x, double *y);
     void makeCurrent(Window *window);
 
     // Delegates
-    static void refresh(class GLFWwindow */*window*/)
+    static void refresh(struct GLFWwindow */*window*/)
     {
       instance_->refresh_ = true;
     }
     
-    static void reshape(class GLFWwindow *window, int width, int height) 
+    static void reshape(struct GLFWwindow *window, int width, int height)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -77,7 +77,7 @@ class DIP_EXPORT GLFWManager : public Manager
       }
     }
     
-    static void iconify(class GLFWwindow *window, int iconified)
+    static void iconify(struct GLFWwindow *window, int iconified)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -87,7 +87,7 @@ class DIP_EXPORT GLFWManager : public Manager
       }
     }
     
-    static void close(class GLFWwindow *window)
+    static void close(struct GLFWwindow *window)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -98,7 +98,7 @@ class DIP_EXPORT GLFWManager : public Manager
       }
     }
 
-    static void key(class GLFWwindow *window, unsigned int k)
+    static void key(struct GLFWwindow *window, unsigned int k)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -110,7 +110,7 @@ class DIP_EXPORT GLFWManager : public Manager
       }
     }
     
-    static void click(class GLFWwindow *window, int button, int state, int /*mods*/)
+    static void click(struct GLFWwindow *window, int button, int state, int /*mods*/)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -122,7 +122,7 @@ class DIP_EXPORT GLFWManager : public Manager
       }
     }
 
-    static void scroll(class GLFWwindow *window, double /*xoffset*/, double yoffset)
+    static void scroll(struct GLFWwindow *window, double /*xoffset*/, double yoffset)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -140,7 +140,7 @@ class DIP_EXPORT GLFWManager : public Manager
       }
     }
 
-    static void motion(class GLFWwindow *window, double x, double y)
+    static void motion(struct GLFWwindow *window, double x, double y)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
