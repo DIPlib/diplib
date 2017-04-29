@@ -292,7 +292,7 @@ void Separable(
       }
 
       // Iterate over all lines in the image. This loop to be parallelized.
-      auto it = dip::GenericJointImageIterator( inImage, outImage, processingDim );
+      GenericJointImageIterator< 2 > it( { inImage, outImage }, processingDim );
       SeparableLineFilterParameters separableLineFilterParams{
             inBuffer, outBuffer, processingDim, rep, order.size(), it.Coordinates(), tensorToSpatial, thread
       }; // Takes inBuffer, outBuffer, it.Coordinates() as references

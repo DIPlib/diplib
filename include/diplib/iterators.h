@@ -356,7 +356,7 @@ class DIP_NO_EXPORT ImageIterator {
       }
       /// Convert from non-const iterator to const iterator
       operator ImageIterator< value_type const >() const {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( image_ );
          ImageIterator< value_type const > out( *image_, boundaryCondition_, procDim_ );
          // static_cast above: the constructor will cast back to `sint`, yielding the same original value on
          // two's complement machines. On other types of machines, this will presumably also be OK, as it is
@@ -371,7 +371,7 @@ class DIP_NO_EXPORT ImageIterator {
       pointer operator->() const { return ptr_; }
       /// Index into tensor, `it[0]` is equal to `*it`, but `it[1]` is not equal to `*(++it)`.
       reference operator[]( difference_type index ) const {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( image_ );
          return *( ptr_ + index * image_->TensorStride() );
       }
 
@@ -425,14 +425,14 @@ class DIP_NO_EXPORT ImageIterator {
 
       /// Get an iterator over the tensor for the current pixel
       SampleIterator< value_type > begin() const {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( image_ );
          return SampleIterator< value_type >( ptr_, image_->TensorStride() ); // will yield a const iterator if value_type is const!
       }
       /// Get an end iterator over the tensor for the current pixel
       SampleIterator< value_type > end() const { return begin() + image_->TensorElements(); }
       /// Get a const iterator over the tensor for the current pixel
       ConstSampleIterator< value_type > cbegin() const {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( image_ );
          return ConstSampleIterator< value_type >( ptr_, image_->TensorStride() );
       }
       /// Get an end const iterator over the tensor for the current pixel
@@ -454,7 +454,7 @@ class DIP_NO_EXPORT ImageIterator {
       }
       /// Inequality comparison
       bool operator!=( ImageIterator const& other ) const {
-         return ptr_ != other.ptr_;
+         return !operator==( other );
       }
 
       /// Test to see if the iterator reached past the last pixel
@@ -465,8 +465,8 @@ class DIP_NO_EXPORT ImageIterator {
       /// Return the current coordinates
       UnsignedArray const& Coordinates() const { return coords_; }
       /// Set the iterator to point at a different location in the image
-      void SetCoordinates( UnsignedArray const& coords ) {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
+      void SetCoordinates( UnsignedArray coords ) {
+         DIP_ASSERT( image_ );
          if( HasProcessingDimension() && ( coords.size() > procDim_ )) {
             coords[ procDim_ ] = 0;
          }
@@ -478,12 +478,12 @@ class DIP_NO_EXPORT ImageIterator {
       pointer Pointer() const { return ptr_; }
       /// Return the current offset
       dip::sint Offset() const {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( image_ );
          return ptr_ - static_cast< pointer >( image_->Origin() );
       }
       /// Return the current index, which is computed: this function is not trivial
       dip::uint Index() const {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( image_ );
          return image_->Index( coords_ );
       }
 
@@ -608,17 +608,17 @@ class DIP_NO_EXPORT JointImageIterator {
       }
       /// To construct a useful iterator, provide `N` images (`N` equal to the number of template parameters),
       /// and optionally a processing dimension.
-      JointImageIterator( ImageConstRefArray const& input, dip::uint procDim = std::numeric_limits< dip::uint >::max() ):
+      JointImageIterator( ImageConstRefArray const& images, dip::uint procDim = std::numeric_limits< dip::uint >::max() ):
             procDim_( procDim ), atEnd_( false ) {
-         DIP_THROW_IF( input.size() != N, E::ARRAY_ILLEGAL_SIZE );
-         images_[ 0 ] = &( input[ 0 ].get() );
+         DIP_THROW_IF( images.size() != N, E::ARRAY_ILLEGAL_SIZE );
+         images_[ 0 ] = &( images[ 0 ].get() );
          DIP_THROW_IF( !images_[ 0 ]->IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( images_[ 0 ]->DataType() != DataType( value_type< 0 >( 0 )), E::WRONG_DATA_TYPE );
          coords_.resize( images_[ 0 ]->Dimensionality(), 0 );
          dummy_.SetStrides( IntegerArray( coords_.size(), 0 ));
          offsets_.fill( 0 );
          for( dip::uint ii = 1; ii < N; ++ii ) {
-            images_[ ii ] = &( input[ ii ].get() );
+            images_[ ii ] = &( images[ ii ].get() );
             if( !images_[ ii ]->IsForged() ) {
                images_[ ii ] = &dummy_;
             }
@@ -634,22 +634,24 @@ class DIP_NO_EXPORT JointImageIterator {
          swap( dummy_, other.dummy_ );
          swap( coords_, other.coords_ );
          swap( procDim_, other.procDim_ );
+         swap( atEnd_, other.atEnd_ );
       }
 
       /// Index into image tensor for image `I`
       template< dip::uint I >
-      reference< I > Sample( dip::sint index ) const {
-         DIP_THROW_IF( !images_[ I ], E::ITERATOR_NOT_VALID );
-         return *( static_cast< pointer< I >>( images_[ I ]->Origin() ) + offsets_[ I ] + index * images_[ I ]->TensorStride() );
+      reference< I > Sample( dip::uint index ) const {
+         DIP_ASSERT( images_[ I ] );
+         return *( static_cast< pointer< I >>( images_[ I ]->Origin()) + offsets_[ I ] +
+                   static_cast< dip::sint >( index ) * images_[ I ]->TensorStride());
       }
       /// Index into image tensor for image 0.
-      reference< 0 > InSample( dip::sint index ) const { return Sample< 0 >( index ); }
+      reference< 0 > InSample( dip::uint index ) const { return Sample< 0 >( index ); }
       /// Index into image tensor for image 1.
-      reference< 1 > OutSample( dip::sint index ) const { return Sample< 1 >( index ); }
+      reference< 1 > OutSample( dip::uint index ) const { return Sample< 1 >( index ); }
       /// Get first tensor element for image `I`.
       template< dip::uint I >
       reference< I > Sample() const {
-         DIP_THROW_IF( !images_[ I ], E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( images_[ I ] );
          return *( static_cast< pointer< I >>( images_[ I ]->Origin() ) + offsets_[ I ] );
       }
       /// Get first tensor element for image 0.
@@ -695,7 +697,7 @@ class DIP_NO_EXPORT JointImageIterator {
       /// Get an iterator over the tensor for the current pixel of image `I`
       template< dip::uint I >
       SampleIterator <value_type< I >> begin() const {
-         DIP_THROW_IF( !images_[ I ], E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( images_[ I ] );
          return SampleIterator< value_type< I >>( Pointer< I >(), images_[ I ]->TensorStride() ); // will yield a const iterator if value_type is const!
       }
       /// Get an end iterator over the tensor for the current pixel of image `I`
@@ -704,7 +706,7 @@ class DIP_NO_EXPORT JointImageIterator {
       /// Get a const iterator over the tensor for the current pixel of image `I`
       template< dip::uint I >
       ConstSampleIterator <value_type< I >> cbegin() const {
-         DIP_THROW_IF( !images_[ I ], E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( images_[ I ] );
          return ConstSampleIterator< value_type< I >>( Pointer< I >(), images_[ I ]->TensorStride() );
       }
       /// Get an end const iterator over the tensor for the current pixel of image `I`
@@ -745,8 +747,8 @@ class DIP_NO_EXPORT JointImageIterator {
       /// Return the current coordinates
       UnsignedArray const& Coordinates() const { return coords_; }
       /// Set the iterator to point at a different location in the image
-      void SetCoordinates( UnsignedArray const& coords ) {
-         DIP_THROW_IF( !images_[ 0 ], E::ITERATOR_NOT_VALID );
+      void SetCoordinates( UnsignedArray coords ) {
+         DIP_ASSERT( images_[ 0 ] );
          if( HasProcessingDimension() && ( coords.size() > procDim_ )) {
             coords[ procDim_ ] = 0;
          }
@@ -775,7 +777,7 @@ class DIP_NO_EXPORT JointImageIterator {
       dip::sint OutOffset() const { return offsets_[ 1 ]; }
       /// Return the current index, which is computed: this function is not trivial
       dip::uint Index() const {
-         DIP_THROW_IF( !images_[ 0 ], E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( images_[ 0 ] );
          return images_[ 0 ]->Index( coords_ );
       }
 
@@ -816,10 +818,10 @@ class DIP_NO_EXPORT JointImageIterator {
       }
 };
 
-      template< typename inT, typename outT >
-      inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, outT >& v2 ) {
-         v1.swap( v2 );
-      }
+template< typename inT, typename outT >
+inline void swap( JointImageIterator< inT, outT >& v1, JointImageIterator< inT, outT >& v2 ) {
+   v1.swap( v2 );
+}
 
 
 /// \}

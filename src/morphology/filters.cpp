@@ -266,7 +266,7 @@ void Lee(
       }
    DIP_END_STACK_TRACE
    if( sign == "unsigned" ) {
-      Infimum( out, out2, out ); // TODO: implement Min
+      Infimum( out, out2, out );
    } else if( sign == "signed" ) {
       SignedMinimum( out, out2, out );
    } else {

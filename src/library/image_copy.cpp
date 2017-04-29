@@ -54,20 +54,20 @@ Image Image::CopyAt( Image const& mask ) const {
       telems = 1;
    }
    // Iterate over *this and mask, copying pixels to destination
-   GenericJointImageIterator srcIt( *this, mask ); // srcIt.InXXX is for *this, srcIt.OutXXX is for mask
+   GenericJointImageIterator< 2 > srcIt( { *this, mask } );
    GenericImageIterator destIt( destination );
    if( telems == 1 ) { // most frequent case, really.
       do {
-         if( *( static_cast< bin* >( srcIt.OutPointer() ) ) ) {
-            std::memcpy( destIt.Pointer(), srcIt.InPointer(), bytes );
+         if( *( static_cast< bin* >( srcIt.Pointer< 1 >() ) ) ) {
+            std::memcpy( destIt.Pointer(), srcIt.Pointer< 0 >(), bytes );
             ++destIt;
          }
       } while( ++srcIt );
    } else {
       do {
-         if( *( static_cast< bin* >( srcIt.OutPointer() ) ) ) {
-            for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
-               std::memcpy( destIt.Sample( ii ), srcIt.InSample( ii ), bytes );
+         if( *( static_cast< bin* >( srcIt.Pointer< 1 >() ) ) ) {
+            for( dip::uint ii = 0; ii < telems; ++ii ) {
+               std::memcpy( destIt.Sample( ii ), srcIt.Pointer< 0 >( ii ), bytes );
             }
             ++destIt;
          }
@@ -110,8 +110,8 @@ Image Image::CopyAt( UnsignedArray const& indices ) const {
    } else {
       do {
          dip::sint offset = Offset( coordinates( static_cast< dip::sint >( *indIt )));
-         for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
-            std::memcpy( destIt.Sample( ii ), Pointer( offset + ii * TensorStride() ), bytes );
+         for( dip::uint ii = 0; ii < telems; ++ii ) {
+            std::memcpy( destIt.Sample( ii ), Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), bytes );
          }
       } while( ++indIt, ++destIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
    }
@@ -152,8 +152,8 @@ Image Image::CopyAt( CoordinateArray const& coordinates ) const {
    } else {
       do {
          dip::sint offset = Offset( *corIt );
-         for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
-            std::memcpy( destIt.Sample( ii ), Pointer( offset + ii * TensorStride() ), bytes );
+         for( dip::uint ii = 0; ii < telems; ++ii ) {
+            std::memcpy( destIt.Sample( ii ), Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), bytes );
          }
       } while( ++corIt, ++destIt ); // these two must end at the same time, we test the image iterator, as corIt should be compared with the end iterator.
    }
@@ -185,20 +185,20 @@ void Image::CopyAt( Image const& source, Image const& mask, Option::ThrowExcepti
          telems = 1;
       }
       // Iterate over *this and mask, copying pixels from source
-      GenericJointImageIterator destIt( *this, mask ); // destIt.InXXX is for *this, destIt.OutXXX is for mask
+      GenericJointImageIterator< 2 > destIt( { *this, mask } );
       GenericImageIterator srcIt( source );
       if( telems == 1 ) { // most frequent case, really.
          do {
-            if( *( static_cast< bin* >( destIt.OutPointer() ))) {
-               std::memcpy( destIt.InPointer(), srcIt.Pointer(), bytes );
+            if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
+               std::memcpy( destIt.Pointer< 0 >(), srcIt.Pointer(), bytes );
                ++srcIt;
             }
          } while( ++destIt );
       } else {
          do {
-            if( *( static_cast< bin* >( destIt.OutPointer() ))) {
-               for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
-                  std::memcpy( destIt.InSample( ii ), srcIt.Sample( ii ), bytes );
+            if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
+               for( dip::uint ii = 0; ii < telems; ++ii ) {
+                  std::memcpy( destIt.Pointer< 0 >( ii ), srcIt.Sample( ii ), bytes );
                }
                ++srcIt;
             }
@@ -206,17 +206,17 @@ void Image::CopyAt( Image const& source, Image const& mask, Option::ThrowExcepti
       }
    } else {
       // Iterate over *this and mask, copying pixels from source
-      GenericJointImageIterator destIt( *this, mask ); // destIt.InXXX is for *this, destIt.OutXXX is for mask
+      GenericJointImageIterator< 2 > destIt( { *this, mask } );
       GenericImageIterator srcIt( source );
       do {
-         if( *( static_cast< bin* >( destIt.OutPointer() ))) {
+         if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
             // This might not be the most efficient way, but it's effective and prevents us from defining yet another chain of 2 templated functions.
             CopyBuffer(
                   srcIt.Pointer(),
                   source.DataType(),
                   1, // stride ignored, we're reading only one pixel
                   source.TensorStride(),
-                  destIt.InPointer(),
+                  destIt.Pointer< 0 >(),
                   DataType(),
                   1, // stride ignored, we're reading only one pixel
                   TensorStride(),
@@ -260,8 +260,8 @@ void Image::CopyAt( Image const& source, UnsignedArray const& indices ) {
       } else {
          do {
             dip::sint offset = Offset( coordinates( static_cast< dip::sint >( *indIt )));
-            for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
-               std::memcpy( Pointer( offset + ii * TensorStride() ), srcIt.Sample( ii ), bytes );
+            for( dip::uint ii = 0; ii < telems; ++ii ) {
+               std::memcpy( Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), srcIt.Sample( ii ), bytes );
             }
          } while( ++indIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
       }
@@ -318,8 +318,8 @@ void Image::CopyAt( Image const& source, CoordinateArray const& coordinates ) {
       } else {
          do {
             dip::sint offset = Offset( *corIt );
-            for( dip::sint ii = 0; ii < static_cast< dip::sint >( telems ); ++ii ) {
-               std::memcpy( Pointer( offset + ii * TensorStride() ), srcIt.Sample( ii ), bytes );
+            for( dip::uint ii = 0; ii < telems; ++ii ) {
+               std::memcpy( Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), srcIt.Sample( ii ), bytes );
             }
          } while( ++corIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as corIt should be compared with the end iterator.
       }
@@ -420,7 +420,7 @@ void Image::Copy( Image const& src ) {
    // Otherwise, make nD loop
    //std::cout << "dip::Image::Copy: nD loop\n";
    dip::uint processingDim = Framework::OptimalProcessingDim( src );
-   auto it = GenericJointImageIterator( src, *this, processingDim );
+   GenericJointImageIterator< 2 > it( { src, *this }, processingDim );
    dip::sint srcStride = src.strides_[ processingDim ];
    dip::sint destStride = strides_[ processingDim ];
    dip::uint nPixels = sizes_[ processingDim ];
@@ -494,7 +494,7 @@ void Image::ExpandTensor() {
       // Otherwise, make nD loop
       //std::cout << "dip::ExpandTensor: nD loop\n";
       dip::uint processingDim = Framework::OptimalProcessingDim( source );
-      auto it = GenericJointImageIterator( source, *this, processingDim );
+      GenericJointImageIterator< 2 > it( { source, *this }, processingDim );
       dip::DataType srcDataType = source.DataType();
       dip::sint srcStride = source.Stride( processingDim );
       dip::sint srcTStride = source.TensorStride();
