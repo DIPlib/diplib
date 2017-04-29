@@ -17,97 +17,33 @@
  * limitations under the License.
  */
 
-#ifndef GLUTWM_H_
-#define GLUTWM_H_
-
-#include <string.h>
+#ifndef DIP_VIEWER_GLUT_H_
+#define DIP_VIEWER_GLUT_H_
 
 #include <thread>
 #include <mutex>
-#include <iostream>
 #include <map>
-#include <memory>
 
-#include "dip_export.h"
-
-namespace glutwm
-{
-
-/// Simple GL window
-class DIP_EXPORT Window
-{
-  friend class Manager;
-
-  private:
-    int id_;
-    class Manager *manager_;
-    
-  public:
-    Window() : id_(-1), manager_(NULL) { }
-    virtual ~Window() { }
-
-    void refresh();
-    void drawString(const char *string);
-  protected:
-    Manager *manager() { return manager_; }
-    int  id() { return id_; }  
-    
-    void title(const char *name);
-    void swap();
-    
-    /// Callback that draws the visualization.
-    virtual void draw() { }
-    
-    /// Callback that is called periodically to allow for animation.
-    virtual void idle() { }
-    
-    /// Callback that is called when the window shape is changed.
-    virtual void reshape(int /*width*/, int /*height*/) { }
-    
-    /// Callback that is called when the window visibility changes.
-    virtual void visible(int /*vis*/) { }
-    
-    /// Callback that is called when the window is created.
-    virtual void create() { }
-    
-    /// Callback that is called when the window is closed.
-    virtual void close() { }
-
-    /// Callback that is called when a key is pressed.
-    virtual void key(unsigned char /*k*/, int /*x*/, int /*y*/) { }
-    
-    /// Callback that is called when a mouse button is clicked.
-    virtual void click(int /*button*/, int /*state*/, int /*x*/, int /*y*/) { }
-    
-    /// Callback that is called when the mouse is moved while a button is clicked.
-    virtual void motion(int /*x*/, int /*y*/) { }
-    
-  private:
-    void manager(Manager *_manager) { manager_ = _manager; }
-    void id(int _id) { id_ = _id; }
-  
-};
-
-typedef std::shared_ptr<Window> WindowPtr;
+#include "manager.h"
 
 /// Simple GLUT window manager
-class DIP_EXPORT Manager
+class DIP_EXPORT GLUTManager : public Manager
 {
   protected:
     std::thread thread_;
     std::mutex mutex_;
     bool continue_;
   
-    typedef std::map<int, WindowPtr> WindowMap;
+    typedef std::map<void*, WindowPtr> WindowMap;
     WindowMap windows_;
     
     WindowPtr new_window_, destroyed_window_;
     
-    static Manager *instance_;
+    static GLUTManager *instance_;
     
   public:
-    Manager();
-    ~Manager();
+    GLUTManager();
+    ~GLUTManager();
   
     void createWindow(WindowPtr window);
     void destroyWindow(WindowPtr window);
@@ -115,6 +51,10 @@ class DIP_EXPORT Manager
     size_t activeWindows() { return windows_.size(); }
     
   protected:    
+    void drawString(Window* window, const char *string);
+    void swapBuffers(Window* window);
+    void setWindowTitle(Window* window, const char *name);
+
     void run();
     WindowPtr getCurrentWindow();
     void destroyWindow(WindowPtr window, bool glutDestroy);
@@ -151,7 +91,10 @@ class DIP_EXPORT Manager
     {
       WindowPtr window = instance_->getCurrentWindow();
       if (window)
+      {
+        window->close();
         instance_->destroyWindow(window, false);
+      }
     }
 
     static void key(unsigned char k, int x, int y)
@@ -176,6 +119,4 @@ class DIP_EXPORT Manager
     }
 };
 
-}
-
-#endif /* GLUTWM_H_ */
+#endif /* DIP_VIEWER_GLUT_H_ */

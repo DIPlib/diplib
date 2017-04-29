@@ -17,7 +17,11 @@
  * limitations under the License.
  */
 
-#include <GL/freeglut.h>
+#ifdef __APPLE__
+  #include <OpenGL/gl.h>
+#else
+  #include <GL/gl.h>
+#endif
 
 #include "diplib/viewer/image.h"
 

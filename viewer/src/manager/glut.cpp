@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0 viewer
- * This file contains functionality for a redamentary GLUT window manager.
+ * This file contains functionality for a rudamentary GLUT window manager.
  *
  * (c)2017, Wouter Caarls
  *
@@ -18,40 +18,20 @@
  */
 
 #include <unistd.h>
+#include <string.h>
+
+#include <cstdint>
 #include <exception>
 
 #include <GL/freeglut.h>
 
-#include "diplib/viewer/glutwm.h"
+#include "diplib/viewer/glut.h"
 
 #define EPS 0.001
 
-using namespace glutwm;
+GLUTManager *GLUTManager::instance_ = NULL;
 
-Manager *Manager::instance_ = NULL;
-
-void Window::title(const char *name)
-{
-  glutSetWindowTitle(name);
-}
-
-void Window::swap()
-{
-  glutSwapBuffers();
-}
-
-void Window::drawString(const char *string)
-{
-  for (; *string; ++string)
-    glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *string);
-}
-
-void Window::refresh()
-{
-  glutPostWindowRedisplay(id());
-}
-
-Manager::Manager()
+GLUTManager::GLUTManager()
 {
   if (instance_)
     throw std::bad_alloc();
@@ -60,10 +40,10 @@ Manager::Manager()
   continue_ = true;
   
   mutex_.lock();
-  thread_ = std::thread(&Manager::run, this);
+  thread_ = std::thread(&GLUTManager::run, this);
 }
 
-Manager::~Manager()
+GLUTManager::~GLUTManager()
 {
   if (continue_)
   {
@@ -74,7 +54,7 @@ Manager::~Manager()
   instance_ = NULL;
 }
 
-void Manager::createWindow(WindowPtr window)
+void GLUTManager::createWindow(WindowPtr window)
 {
   mutex_.lock();
   
@@ -90,24 +70,24 @@ void Manager::createWindow(WindowPtr window)
   mutex_.unlock();
 }
     
-void Manager::destroyWindow(WindowPtr window)
+void GLUTManager::destroyWindow(WindowPtr window)
 {
   mutex_.lock();
   destroyWindow(window, true);
   mutex_.unlock();
 }
 
-void Manager::refreshWindow(WindowPtr window)
+void GLUTManager::refreshWindow(WindowPtr window)
 {
-  glutPostWindowRedisplay(window->id());
+  glutPostWindowRedisplay((int)(intptr_t)window->id());
 }
 
-void Manager::run()
+void GLUTManager::run()
 {
   int argc = 1;
   char argv1[256], *argv[]={argv1};
       
-  strncpy(argv1, "Manager", 256);
+  strncpy(argv1, "GLUTManager", 256);
   
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
@@ -136,7 +116,8 @@ void Manager::run()
       glutMouseFunc(click);
       glutMotionFunc(motion);
     
-      new_window_->id(glutGetWindow());
+      new_window_->manager(this);
+      new_window_->id((void*)(intptr_t)glutGetWindow());
       windows_[new_window_->id()] = new_window_;
       new_window_->create();
 
@@ -145,7 +126,7 @@ void Manager::run()
     
     if (destroyed_window_)
     {
-      glutDestroyWindow(destroyed_window_->id());
+      glutDestroyWindow((int)(intptr_t)destroyed_window_->id());
       destroyed_window_ = NULL;
     }
     
@@ -160,9 +141,9 @@ void Manager::run()
   glutExit();
 }
     
-WindowPtr Manager::getCurrentWindow()
+WindowPtr GLUTManager::getCurrentWindow()
 {
-  WindowMap::iterator it = windows_.find(glutGetWindow());
+  WindowMap::iterator it = windows_.find((void*)(intptr_t)glutGetWindow());
   if (it != windows_.end())
     return it->second;
   else
@@ -170,7 +151,7 @@ WindowPtr Manager::getCurrentWindow()
 }
 
 // Must be called under lock
-void Manager::destroyWindow(WindowPtr window, bool glutDestroy)
+void GLUTManager::destroyWindow(WindowPtr window, bool glutDestroy)
 {
   windows_.erase(window->id());
   
@@ -182,4 +163,20 @@ void Manager::destroyWindow(WindowPtr window, bool glutDestroy)
       usleep(0);
     mutex_.lock();
   }
+}
+
+void GLUTManager::drawString(Window* /*window*/, const char *string)
+{
+  for (; *string; ++string)
+    glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *string);
+}
+
+void GLUTManager::swapBuffers(Window* /*window*/)
+{
+  glutSwapBuffers();
+}
+
+void GLUTManager::setWindowTitle(Window* /*window*/, const char *name)
+{
+  glutSetWindowTitle(name);
 }

@@ -20,9 +20,10 @@
 #ifndef DIP_VIEWER_SLICE_H
 #define DIP_VIEWER_SLICE_H
 
-#include <GL/freeglut.h>
+#include <thread>
+#include <mutex>
 
-#include "diplib/viewer/glutwm.h"
+#include "diplib/viewer/manager.h"
 #include "diplib/viewer/viewer.h"
 #include "diplib/viewer/image.h"
 #include "diplib/viewer/tensor.h"
@@ -36,7 +37,7 @@ class DIP_EXPORT SliceView : public View
                colored_;   ///< Colored (RGB) image.
 
     dip::uint dimx_, dimy_;      ///< Indices in options.dims_.             
-    GLuint texture_;       ///< OpenGL texture identifier.
+    unsigned int texture_;       ///< OpenGL texture identifier.
 
   public:
     SliceView(ViewPort *viewport, dip::uint dimx, dip::uint dimy) : View(viewport), dimx_(dimx), dimy_(dimy), texture_(0) { }

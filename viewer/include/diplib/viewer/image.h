@@ -20,9 +20,7 @@
 #ifndef DIP_VIEWER_IMAGE_H
 #define DIP_VIEWER_IMAGE_H
 
-#include <GL/freeglut.h>
-
-#include "diplib/viewer/glutwm.h"
+#include "diplib/viewer/manager.h"
 #include "diplib/viewer/viewer.h"
 
 class DIP_EXPORT ImageView : public View
@@ -30,7 +28,7 @@ class DIP_EXPORT ImageView : public View
   protected:
     class ViewPort *viewport_;
     dip::Image image_;     ///< 2D RGB image
-    GLuint texture_;       ///< OpenGL texture identifier.
+    unsigned int texture_;       ///< OpenGL texture identifier.
 
   public:
     ImageView(ViewPort *viewport) : View(viewport), texture_(0) { }

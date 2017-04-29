@@ -1,11 +1,20 @@
 #undef DIP__ENABLE_DOCTEST
+
 #include <diplib/linear.h>
-#include <diplib/viewer/slice.h>
+
+#include <diplib/viewer/glut.h>
+#include <diplib/viewer/glfw.h>
+
 #include <diplib/viewer/image.h>
+#include <diplib/viewer/slice.h>
 
 int main(void)
 {
-  glutwm::Manager manager;
+#ifdef DIP__HAS_GLFW
+  GLFWManager manager;
+#else
+  GLUTManager manager;
+#endif
   
   dip::Image image { dip::UnsignedArray{ 500, 400, 50 }, 2, dip::DT_DFLOAT };  
   image[0] = 0;
@@ -17,12 +26,12 @@ int main(void)
   
   image = Gauss(image, {10}) * 10000;
   
-  manager.createWindow(glutwm::WindowPtr(new SliceViewer(image)));
+  manager.createWindow(WindowPtr(new SliceViewer(image)));
   
   dip::Image image2 { dip::UnsignedArray{ 50, 40 }, 3, dip::DT_UINT8 };  
   image2 = 128;
   
-  manager.createWindow(glutwm::WindowPtr(new ImageViewer(image2)));
+  manager.createWindow(WindowPtr(new ImageViewer(image2)));
   
   while (manager.activeWindows()) usleep(10);
 

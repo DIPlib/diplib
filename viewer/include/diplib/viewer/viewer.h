@@ -27,7 +27,7 @@
 
 #undef DIP__ENABLE_DOCTEST
 #include "diplib.h"
-#include "diplib/viewer/glutwm.h"
+#include "diplib/viewer/manager.h"
 
 //#define GL_SAFE_CALL(x) DIP_THROW_IF((x) != 0, dip::String(#x))
 
@@ -217,7 +217,7 @@ class DIP_EXPORT ViewPort
     int height() { return height_; }
 };
 
-class DIP_EXPORT Viewer : public glutwm::Window
+class DIP_EXPORT Viewer : public Window
 {
   public:
     virtual ViewingOptions &options() = 0;

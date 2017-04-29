@@ -17,7 +17,11 @@
  * limitations under the License.
  */
 
-#include <GL/freeglut.h>
+#ifdef __APPLE__
+  #include <OpenGL/gl.h>
+#else
+  #include <GL/gl.h>
+#endif
 
 #undef DIP__ENABLE_DOCTEST
 #include "diplib/math.h"
@@ -265,19 +269,23 @@ void SliceViewPort::render()
   glMatrixMode(GL_MODELVIEW);
   
   int width = width_, height = height_;
-  unsigned char dimchars[] = "xyzw56789)!@#$%%^&*()";
+  char dimchars[] = "xyzw56789)!@#$%%^&*()";
   
   glColor3f(1., 1., 1.);
   if (view()->dimx() == 0)
   {
+    char buf[] = {dy==-1?'-':dimchars[dy], 0};
+
     glRasterPos2i((GLint)width_-9, (GLint)height_/2-7);
-    glutBitmapCharacter(GLUT_BITMAP_8_BY_13, dy==-1?'-':dimchars[dy]);
+    viewer()->drawString(buf);
     width -= 10;
   }
   if (view()->dimy() == 1)
   {
+    char buf[] = {dx==-1?'-':dimchars[dx], 0};
+    
     glRasterPos2i((GLint)width_/2-4, (GLint)height_-4);
-    glutBitmapCharacter(GLUT_BITMAP_8_BY_13, dx==-1?'-':dimchars[dx]);
+    viewer()->drawString(buf);
     height -= 12;
   }
   
@@ -465,7 +473,7 @@ void SliceViewPort::screenToView(int x, int y, double *ix, double *iy)
     *iy = (y-y_)/viewer()->options().zoom_[(dip::uint)dy]*(double)view()->size(1)/(double)height_ + viewer()->options().origin_[(dip::uint)dy];
 }
 
-SliceViewer::SliceViewer(const dip::Image &image) : options_(image), continue_(false), updated_(false), original_(image), image_(image)
+SliceViewer::SliceViewer(const dip::Image &image) : options_(image), continue_(false), updated_(false), original_(image), image_(image), drag_viewport_(NULL)
 {
   main_ = new SliceViewPort(this);
   main_->setView(new SliceView(main_, 0, 1));
@@ -497,7 +505,7 @@ void SliceViewer::create()
   thread_ = std::thread(&SliceViewer::calculateTextures, this);
   
   // Wait for first projection
-  while (!updated_) sleep(0);
+  while (!updated_) usleep(1000);
   
   reshape(512, 512);
 }
@@ -576,7 +584,7 @@ void SliceViewer::calculateTextures()
   while (continue_)
   {
     // Make sure we don't lose updates
-    while (updated_) sleep(0);
+    while (updated_) usleep(1000);
   
     mutex_.lock();
     ViewingOptions::Diff diff = options.diff(options_);
@@ -652,6 +660,6 @@ void SliceViewer::calculateTextures()
       refresh();
     }
 
-    sleep(0);
+    usleep(1000);
   }
 }
