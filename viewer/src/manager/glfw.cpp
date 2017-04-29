@@ -71,45 +71,44 @@ GLFWManager::GLFWManager()
     throw std::bad_alloc();
 
   instance_ = this;
-  continue_ = true;
   refresh_ = true;
-  
-  mutex_.lock();
-  thread_ = std::thread(&GLFWManager::run, this);
+
+  glfwInit();
 }
 
 GLFWManager::~GLFWManager()
 {
-  if (continue_)
-  {
-    continue_ = false;
-    thread_.join();
-  }
-  
+  windows_.clear();
+  glfwTerminate();
+
   instance_ = NULL;
 }
 
 void GLFWManager::createWindow(WindowPtr window)
 {
-  mutex_.lock();
+  GLFWwindow *wdw = glfwCreateWindow(512, 512, "", NULL, NULL);
   
-  new_window_ = window;
+  glfwSetWindowRefreshCallback(wdw, refresh);
+  glfwSetFramebufferSizeCallback(wdw, reshape);
+  glfwSetWindowIconifyCallback(wdw, iconify);
+  glfwSetWindowCloseCallback(wdw, close);
+  glfwSetCharCallback(wdw, key);
+  glfwSetMouseButtonCallback(wdw, click);
+  glfwSetScrollCallback(wdw, scroll);
+  glfwSetCursorPosCallback(wdw, motion);
+
+  window->manager(this);
+  window->id((void*)wdw);
+  windows_[window->id()] = window;
+  window->create();
+  window->reshape(512, 512);
   
-  while (new_window_)
-  {
-    mutex_.unlock();
-    usleep(1000);
-    mutex_.lock();
-  }
-  
-  mutex_.unlock();
+  refresh_ = true;
 }
     
 void GLFWManager::destroyWindow(WindowPtr window)
 {
-  mutex_.lock();
-  destroyWindow(window, true);
-  mutex_.unlock();
+  glfwSetWindowShouldClose((GLFWwindow*)window->id(), 1);
 }
 
 void GLFWManager::refreshWindow(WindowPtr /*window*/)
@@ -117,65 +116,32 @@ void GLFWManager::refreshWindow(WindowPtr /*window*/)
   refresh_ = true;
 }
 
-void GLFWManager::run()
+void GLFWManager::processEvents()
 {
-  glfwInit();
+  glfwPollEvents();
   
-  mutex_.unlock();
-      
-  while (continue_)
+  if (refresh_)
   {
-    mutex_.lock();
-
-    glfwPollEvents();
+    refresh_ = false;
     
-    if (new_window_)
+    for (auto e: windows_)
     {
-      GLFWwindow *window = glfwCreateWindow(512, 512, "", NULL, NULL);
-      
-      glfwSetWindowRefreshCallback(window, refresh);
-      glfwSetFramebufferSizeCallback(window, reshape);
-      glfwSetWindowIconifyCallback(window, iconify);
-      glfwSetWindowCloseCallback(window, close);
-      glfwSetCharCallback(window, key);
-      glfwSetMouseButtonCallback(window, click);
-      glfwSetScrollCallback(window, scroll);
-      glfwSetCursorPosCallback(window, motion);
-    
-      new_window_->manager(this);
-      new_window_->id((void*)window);
-      windows_[new_window_->id()] = new_window_;
-      new_window_->create();
-      new_window_->reshape(512, 512);
-      refresh_ = true;
-      
-      new_window_ = NULL;
+      makeCurrent(e.second.get());
+      e.second->draw();
     }
-    
-    if (destroyed_window_)
-    {
-      glfwDestroyWindow((GLFWwindow*)destroyed_window_->id());
-      destroyed_window_ = NULL;
-    }
-    
-    if (refresh_)
-    {
-      refresh_ = false;
-      
-      for (auto e: windows_)
-      {
-        makeCurrent(e.second.get());
-        e.second->draw();
-      }
-    }
-    
-    mutex_.unlock();
-    usleep(1000);
   }
-  
-  windows_.clear();
-  
-  glfwTerminate();
+      
+  for (auto it = windows_.begin(); it != windows_.end();)
+  {
+    if (glfwWindowShouldClose((GLFWwindow*)it->first))
+    {
+      glfwDestroyWindow((GLFWwindow*)it->first);
+      it = windows_.erase(it);
+      break;
+    }
+    else
+      ++it;
+  }
 }
 
 WindowPtr GLFWManager::getWindow(GLFWwindow *window)
@@ -185,21 +151,6 @@ WindowPtr GLFWManager::getWindow(GLFWwindow *window)
     return it->second;
   else
     return NULL;
-}
-
-// Must be called under lock
-void GLFWManager::destroyWindow(WindowPtr window, bool external)
-{
-  windows_.erase(window->id());
-  destroyed_window_ = window;
-  
-  if (external)
-  {
-    mutex_.unlock();
-    while (destroyed_window_)
-      usleep(1000);
-    mutex_.lock();
-  }
 }
 
 void GLFWManager::drawString(Window* /*window*/, const char *string)

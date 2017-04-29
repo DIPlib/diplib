@@ -49,6 +49,7 @@ class DIP_EXPORT GLUTManager : public Manager
     void destroyWindow(WindowPtr window);
     void refreshWindow(WindowPtr window);
     size_t activeWindows() { return windows_.size(); }
+    void processEvents() { }
     
   protected:    
     void drawString(Window* window, const char *string);

@@ -33,7 +33,12 @@ int main(void)
   
   manager.createWindow(WindowPtr(new ImageViewer(image2)));
   
-  while (manager.activeWindows()) usleep(10);
+  while (manager.activeWindows())
+  {
+    // Only necessary for GLFW
+    manager.processEvents();
+    usleep(10);
+  }
 
   return 0;  
 }

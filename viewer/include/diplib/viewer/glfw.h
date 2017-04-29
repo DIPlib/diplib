@@ -30,14 +30,10 @@
 class DIP_EXPORT GLFWManager : public Manager
 {
   protected:
-    std::thread thread_;
-    std::mutex mutex_;
-    bool continue_, refresh_;
+    bool refresh_;
   
     typedef std::map<void *, WindowPtr> WindowMap;
     WindowMap windows_;
-    
-    WindowPtr new_window_, destroyed_window_;
     
     static GLFWManager *instance_;
     
@@ -49,6 +45,7 @@ class DIP_EXPORT GLFWManager : public Manager
     void destroyWindow(WindowPtr window);
     void refreshWindow(WindowPtr window);
     size_t activeWindows() { return windows_.size(); }
+    void processEvents();
     
   protected:    
     void drawString(Window* window, const char *string);
@@ -57,7 +54,6 @@ class DIP_EXPORT GLFWManager : public Manager
 
     void run();
     WindowPtr getWindow(struct GLFWwindow *window);
-    void destroyWindow(WindowPtr window, bool external);
     void getCursorPos(Window *window, double *x, double *y);
     void makeCurrent(Window *window);
 
@@ -94,7 +90,6 @@ class DIP_EXPORT GLFWManager : public Manager
       {
         instance_->makeCurrent(wdw.get());
         wdw->close();
-        instance_->destroyWindow(wdw, false);
       }
     }
 
