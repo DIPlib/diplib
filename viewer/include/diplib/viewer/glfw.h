@@ -54,7 +54,7 @@ class DIP_EXPORT GLFWManager : public Manager
 
     void run();
     WindowPtr getWindow(struct GLFWwindow *window);
-    void getCursorPos(Window *window, double *x, double *y);
+    void getCursorPos(Window *window, int *x, int *y);
     void makeCurrent(Window *window);
 
     // Delegates
@@ -98,10 +98,10 @@ class DIP_EXPORT GLFWManager : public Manager
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
       {
-        double x, y;
+        int x, y;
         instance_->makeCurrent(wdw.get());
         instance_->getCursorPos(wdw.get(), &x, &y);
-        wdw->key((unsigned char)k, (int)x, (int)y);
+        wdw->key((unsigned char)k, x, y);
       }
     }
     
@@ -110,10 +110,10 @@ class DIP_EXPORT GLFWManager : public Manager
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
       {
-        double x, y;
+        int x, y;
         instance_->makeCurrent(wdw.get());
         instance_->getCursorPos(wdw.get(), &x, &y);
-        wdw->click(button==1?2:button==2?1:0, state==0, (int)x, (int)y);
+        wdw->click(button==1?2:button==2?1:0, state==0, x, y);
       }
     }
 
@@ -122,26 +122,28 @@ class DIP_EXPORT GLFWManager : public Manager
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
       {
-        double x, y;
+        int x, y;
         instance_->makeCurrent(wdw.get());
         instance_->getCursorPos(wdw.get(), &x, &y);
                 
         int button = 3 + (yoffset < 0);
         if (yoffset != 0)
         {
-          wdw->click(button, 1, (int)x, (int)y);
-          wdw->click(button, 0, (int)x, (int)y);
+          wdw->click(button, 1, x, y);
+          wdw->click(button, 0, x, y);
         }
       }
     }
 
-    static void motion(struct GLFWwindow *window, double x, double y)
+    static void motion(struct GLFWwindow *window, double /*x*/, double /*y*/)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
       {
+        int x, y;
         instance_->makeCurrent(wdw.get());
-        wdw->motion((int)x, (int)y);
+        instance_->getCursorPos(wdw.get(), &x, &y);
+        wdw->motion(x, y);
       }
     }
 };

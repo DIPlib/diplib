@@ -101,7 +101,10 @@ void GLFWManager::createWindow(WindowPtr window)
   window->id((void*)wdw);
   windows_[window->id()] = window;
   window->create();
-  window->reshape(512, 512);
+  
+  int width, height;
+  glfwGetFramebufferSize(wdw, &width, &height);
+  window->reshape(width, height);
   
   refresh_ = true;
 }
@@ -174,7 +177,17 @@ void GLFWManager::makeCurrent(Window *window)
   glfwMakeContextCurrent((GLFWwindow*)window->id());
 }
 
-void GLFWManager::getCursorPos(Window *window, double *x, double *y)
+/// Get cursor position in framebuffer coordinates.
+void GLFWManager::getCursorPos(Window *window, int *x, int *y)
 {
-  glfwGetCursorPos((GLFWwindow*)window->id(), x, y);
+  int fb_width, fb_height, wdw_width, wdw_height;
+  
+  glfwGetWindowSize((GLFWwindow*)window->id(), &wdw_width, &wdw_height);
+  glfwGetFramebufferSize((GLFWwindow*)window->id(), &fb_width, &fb_height);
+
+  double wdw_x, wdw_y;
+  glfwGetCursorPos((GLFWwindow*)window->id(), &wdw_x, &wdw_y);
+  
+  *x = (int)(wdw_x * (double)fb_width/(double)wdw_width);
+  *y = (int)(wdw_y * (double)fb_height/(double)wdw_height);
 }
