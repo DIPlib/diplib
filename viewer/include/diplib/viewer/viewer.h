@@ -40,7 +40,7 @@ struct DIP_EXPORT ViewingOptions
   enum class Mapping { ZeroOne, Normal, Linear, Symmetric, Logarithmic };
   enum class Projection { None, Min, Mean, Max };
   enum class LookupTable { ColorSpace, RGB, Grey, Jet };
-  enum class Diff { None, Draw, Mapping, Projection, Complex };
+  enum class Diff { None, Draw, Place, Mapping, Projection, Complex };
 
   // Projection
   dip::IntegerArray dims_;             ///< Dimensions to visualize (MainX, MainY, LeftX, TopY).
@@ -57,7 +57,10 @@ struct DIP_EXPORT ViewingOptions
   dip::uint element_;                  ///< Tensor element to visualize.
   LookupTable lut_;                    ///< from [0, 1] to [0, 0, 0]-[255, 255, 255].
   dip::IntegerArray color_elements_;   ///< Which tensor element is R, G, and B.
-  
+
+  // Placement  
+  dip::FloatArray split_;              ///< Split point between projections.
+
   // Display
   dip::FloatArray zoom_;               ///< Zoom factor per dimension (from physical dimensions + user).
                                        ///< Also determines relative viewport sizes.
@@ -100,6 +103,7 @@ struct DIP_EXPORT ViewingOptions
       zoom_[ii] = (dip::sfloat)image.Size(ii)/(dip::sfloat)maxsz;
     
     origin_ = dip::FloatArray(image.Dimensionality(), 0.);
+    split_ = {0.25, 0.25};
   }
   
   Diff diff(const ViewingOptions &options) const
@@ -118,8 +122,10 @@ struct DIP_EXPORT ViewingOptions
     if (element_ != options.element_) return Diff::Mapping;
     if (lut_ != options.lut_) return Diff::Mapping;
     if (color_elements_ != options.color_elements_) return Diff::Mapping;
+    if (split_ != options.split_) return Diff::Place;
     if (zoom_ != options.zoom_) return Diff::Draw;
     if (origin_ != options.origin_) return Diff::Draw;
+    if (split_ != options.split_) return Diff::Draw;
     
     return Diff::None;
   }

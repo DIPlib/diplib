@@ -79,8 +79,6 @@ class DIP_EXPORT SliceViewPort : public ViewPort
 
 class DIP_EXPORT SliceViewer : public Viewer
 {
-  friend ViewPort;
-
   protected:
     ViewingOptions options_;
     std::mutex mutex_;  
@@ -116,6 +114,7 @@ class DIP_EXPORT SliceViewer : public Viewer
     
     int width() { return width_; }
     int height() { return height_; }
+    void place();
   
   protected:
     void create();

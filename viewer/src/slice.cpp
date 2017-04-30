@@ -457,6 +457,24 @@ void SliceViewPort::motion(int button, int x, int y)
 
     viewer()->refresh();
   }
+
+  if (button == 2)
+  {
+    // Right mouse button: change split
+    int dx = x-drag_x_, dy = y-drag_y_;
+    
+    double splitx = viewer()->options().split_[0] + (double)dx/(double)(viewer()->width()-100);
+    double splity = viewer()->options().split_[1] + (double)dy/(double)(viewer()->height());
+    
+    splitx = std::min(std::max(splitx, 100./(double)(viewer()->width()-100)), 0.5);
+    splity = std::min(std::max(splity, 100./(double)(viewer()->height())), 0.5);
+    
+    viewer()->options().split_[0] = splitx;
+    viewer()->options().split_[1] = splity;
+    
+    drag_x_ = x;
+    drag_y_ = y;
+  }
 }
 
 void SliceViewPort::screenToView(int x, int y, double *ix, double *iy)
@@ -473,7 +491,7 @@ void SliceViewPort::screenToView(int x, int y, double *ix, double *iy)
     *iy = (y-y_)/viewer()->options().zoom_[(dip::uint)dy]*(double)view()->size(1)/(double)height_ + viewer()->options().origin_[(dip::uint)dy];
 }
 
-SliceViewer::SliceViewer(const dip::Image &image) : options_(image), continue_(false), updated_(false), original_(image), image_(image), drag_viewport_(NULL)
+SliceViewer::SliceViewer(const dip::Image &image) : options_(image), continue_(false), updated_(false), original_(image), image_(image), drag_viewport_(NULL), width_(512), height_(512)
 {
   main_ = new SliceViewPort(this);
   main_->setView(new SliceView(main_, 0, 1));
@@ -506,18 +524,12 @@ void SliceViewer::create()
   
   // Wait for first projection
   while (!updated_) usleep(1000);
-  
-  reshape(512, 512);
 }
 
-void SliceViewer::reshape(int width, int height)
+void SliceViewer::place()
 {
-  // TODO: Sizes aren't available yet on first call...
-  int splitx = 100; //(width_-100)*left_.size(0)/main_.size(0);
-  int splity = 100; //height_*top_.size(1)/main_.size(1);
-
-  width_ = width;
-  height_ = height;
+  int splitx = std::max((int) (options_.split_[0]*(double)(width_-100)), 100);
+  int splity = std::max((int) (options_.split_[1]*(double)height_), 100);
   
   main_->place     (splitx    , splity, width_-100-splitx, height_-splity);
   left_->place     (0         , splity, splitx           , height_-splity);
@@ -525,6 +537,14 @@ void SliceViewer::reshape(int width, int height)
   tensor_->place   (0         , 0     , splitx           , splity);
   control_->place  (width_-100, 0     , 100              , splity);
   histogram_->place(width_-100, splity, 100              , height_-splity);
+}
+
+void SliceViewer::reshape(int width, int height)
+{
+  width_ = width;
+  height_ = height;
+  
+  place();
 }
 
 void SliceViewer::draw()
@@ -653,7 +673,13 @@ void SliceViewer::calculateTextures()
       top_->view()->map();
     }
     
-    if (diff > ViewingOptions::Diff::Draw)
+    if (diff >= ViewingOptions::Diff::Place)
+    {
+      // Need to replace viewports
+      place();
+    }
+    
+    if (diff >= ViewingOptions::Diff::Draw)
     {
       // Just redraw
       updated_ = true;

@@ -33,15 +33,20 @@ void HistogramViewPort::render()
 {
   auto &o = viewer()->options();
   
+  int width = width_, height = height_;
+  
+  if (width < 1 || height < 1)
+    return;
+  
   // Colorbar
   // TODO: only do this when lut changed  
-  dip::Image cb { dip::UnsignedArray{ 24, (dip::uint)height_ }, 3, dip::DT_UINT8 };
+  dip::Image cb { dip::UnsignedArray{ 24, (dip::uint)height }, 3, dip::DT_UINT8 };
   cb = 0;
   
   dip::uint8 *data = (dip::uint8*)cb.Origin();
-  for (size_t ii=0; ii < (dip::uint)height_; ++ii)
+  for (size_t ii=0; ii < (dip::uint)height; ++ii)
   {
-    dip::sfloat val = (dip::sfloat) (o.range_.first + (double)ii*(o.range_.second-o.range_.first)/(double)height_);
+    dip::sfloat val = (dip::sfloat) (o.range_.first + (double)ii*(o.range_.second-o.range_.first)/(double)height);
     dip::uint8 out[3] = {0, 0, 0};
     
     colorMap(&val, 0, out, o);
@@ -64,8 +69,8 @@ void HistogramViewPort::render()
   
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glViewport(x_, viewer()->height()-y_-height_, 24, height_);
-  glOrtho(0, 24, 0, height_, -1, 1);
+  glViewport(x_, viewer()->height()-y_-height, 24, height);
+  glOrtho(0, 24, 0, height, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   colorbar_.render();
   
@@ -76,7 +81,7 @@ void HistogramViewPort::render()
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glViewport(x_+24, viewer()->height()-y_-height_, width_-24, height_);
+  glViewport(x_+24, viewer()->height()-y_-height, width-24, height);
   glOrtho(0, 1, 0, 1, -1, 1);
   glMatrixMode(GL_MODELVIEW);
 
@@ -140,8 +145,8 @@ void HistogramViewPort::render()
   // Display range
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glViewport(x_+24, viewer()->height()-y_-height_, width_-24, height_);
-  glOrtho(0, width_-24, height_, 0, -1, 1);
+  glViewport(x_+24, viewer()->height()-y_-height, width-24, height);
+  glOrtho(0, width-24, height, 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
 
   char buf[20];
@@ -149,7 +154,7 @@ void HistogramViewPort::render()
   glRasterPos2i(1, 11);
   sprintf(buf, "%9.2e", o.range_.second);
   viewer()->drawString(buf);
-  glRasterPos2i(1, height_-3);
+  glRasterPos2i(1, height-3);
   sprintf(buf, "%9.2e", o.range_.first);
   viewer()->drawString(buf);
 }
