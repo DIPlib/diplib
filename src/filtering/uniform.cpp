@@ -51,6 +51,7 @@ class RectangularUniformLineFilter : public Framework::SeparableLineFilter {
          for( in = left; in != right; in += inStride ) {
             sum += *in;
          }
+         *out = sum * norm;
          for( dip::uint ii = 1; ii < length; ++ii ) {
             sum -= *left;
             sum += *right;
