@@ -471,19 +471,6 @@ static DIP_DEFINE_OPTION( CmpProps, CmpProps_All,
 } // namespace Option
 
 
-//
-// Priority Queues
-//
-
-/// \brief A priority queue that outputs lowest values first.
-template< typename T >
-using PriorityQueueLowFirst = std::priority_queue< T, std::vector< T >, std::greater< T >>;
-
-/// \brief A priority queue that outputs highest values first.
-template< typename T >
-using PriorityQueueHighFirst = std::priority_queue< T, std::vector< T >, std::less< T >>;
-
-
 /// \}
 
 } // namespace dip

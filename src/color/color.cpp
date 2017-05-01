@@ -273,13 +273,14 @@ struct QueueElement {
    dip::uint index;
    bool operator >( QueueElement const& other ) const { return cost > other.cost; }
 };
+using PriorityQueueLowFirst = std::priority_queue< QueueElement, std::vector< QueueElement >, std::greater< QueueElement >>;
 } // namespace
 
 std::vector< dip::uint > ColorSpaceManager::FindPath( dip::uint start, dip::uint stop ) const {
    constexpr dip::uint NOT_VISITED = std::numeric_limits< dip::uint >::max();
    std::vector< dip::uint > cost( colorSpaces_.size(), NOT_VISITED );
    std::vector< dip::uint > previous( colorSpaces_.size(), 0 );
-   PriorityQueueLowFirst< QueueElement > queue;
+   PriorityQueueLowFirst queue;
    queue.push( { 0, start } );
    cost[ start ] = 0;
    while( !queue.empty() ) {
