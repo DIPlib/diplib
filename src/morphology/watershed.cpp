@@ -475,7 +475,7 @@ void dip__SeededWatershed(
       neighborLabels.Reset();
       auto lit = neighborList.begin();
       for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
-         skipar[ jj ] = lit.IsInImage( coords, imsz );
+         skipar[ jj ] = !lit.IsInImage( coords, imsz );
          if( !skipar[ jj ] ) {
             if( !mask || *( mask + neighborOffsetsMask[ jj ] )) {
                LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
@@ -619,7 +619,9 @@ void SeededWatershed(
    }
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( dip__SeededWatershed, ( in, mask, out, neighborOffsetsIn, neighborOffsetsMask, neighborOffsetsOut, neighborList, numlabs, maxDepth, maxSize, lowFirst, binaryOutput ), in.DataType() );
+   DIP_OVL_CALL_REAL( dip__SeededWatershed, ( in, mask, out,
+         neighborOffsetsIn, neighborOffsetsMask, neighborOffsetsOut, neighborList,
+         numlabs, maxDepth, maxSize, lowFirst, binaryOutput ), in.DataType() );
 
    if( binaryOutput ) {
       // Convert the labels into watershed lines

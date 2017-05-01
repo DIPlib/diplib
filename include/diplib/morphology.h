@@ -864,9 +864,19 @@ DIP_EXPORT void MorphologicalReconstruction(
       Image const& marker,
       Image const& in, // grey-value mask
       Image& out,
-      dip::uint connectivity = 1
+      dip::uint connectivity = 1,
+      String direction = "dilation" // alt: "erosion"
 );
-// TODO: MorphologicalReconstruction should have a flag to invert the operation, so it does reconstruction by erosions.
+inline Image MorphologicalReconstruction(
+      Image const& marker,
+      Image const& in,
+      dip::uint connectivity = 1,
+      String direction = "dilation"
+) {
+   Image out;
+   MorphologicalReconstruction( marker, in, out, connectivity, direction );
+   return out;
+}
 
 DIP_EXPORT void AreaOpening(
       Image const& in,
