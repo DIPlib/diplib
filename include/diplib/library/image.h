@@ -217,7 +217,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Create a 0-D image with the value and data type of `p`. `p` must be of one of the valid pixel data types.
-      template< typename T >
+      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
       explicit Image( T p ) {
          dataType_ = dip::DataType( p );
          Forge();                            // sizes is empty by default
@@ -225,7 +225,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Create a 0-D vector image with the values and data type of `plist`. `plist` must be of one of the valid pixel data types.
-      template< typename T >
+      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
       explicit Image( std::initializer_list< T > const& plist ) {
          tensor_.SetVector( plist.size() );  // will throw if p.size()==0
          dataType_ = dip::DataType( *( plist.begin() ));
@@ -238,7 +238,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Create a 0-D image with the value of `p` and the given data type.
-      template< typename T >
+      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
       Image( T p, dip::DataType dt ) {
          dataType_ = dt;
          Forge();                            // sizes is empty by default
@@ -281,7 +281,7 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Create a 0-D vector image with the values of `plist` and the given data type.
-      template< typename T >
+      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
       Image( std::initializer_list< T > const& plist, dip::DataType dt ) {
          tensor_.SetVector( plist.size() );  // will throw if p.size()==0
          dataType_ = dt;

@@ -76,6 +76,7 @@ constexpr dip::uint maxint = static_cast< dip::uint >( std::numeric_limits< dip:
 //
 // Types for pixel values
 //
+class DIP_NO_EXPORT bin;
 using uint8 = std::uint8_t;      ///< Type for samples in an 8-bit unsigned integer image; also to be used as single byte for pointer arithmetic
 using uint16 = std::uint16_t;    ///< Type for samples in a 16-bit unsigned integer image
 using uint32 = std::uint32_t;    ///< Type for samples in a 32-bit unsigned integer image
@@ -87,12 +88,43 @@ using dfloat = double;           ///< Type for samples in a 64-bit floating poin
 using scomplex = std::complex< sfloat >;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
 using dcomplex = std::complex< dfloat >;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
 
+namespace detail {
+template< typename T > struct IsSampleType { static constexpr bool value = false; };
+template<> struct IsSampleType< bin > { static constexpr bool value = true; };
+template<> struct IsSampleType< uint8 > { static constexpr bool value = true; };
+template<> struct IsSampleType< uint16 > { static constexpr bool value = true; };
+template<> struct IsSampleType< uint32 > { static constexpr bool value = true; };
+template<> struct IsSampleType< sint8 > { static constexpr bool value = true; };
+template<> struct IsSampleType< sint16 > { static constexpr bool value = true; };
+template<> struct IsSampleType< sint32 > { static constexpr bool value = true; };
+template<> struct IsSampleType< sfloat > { static constexpr bool value = true; };
+template<> struct IsSampleType< dfloat > { static constexpr bool value = true; };
+template<> struct IsSampleType< scomplex > { static constexpr bool value = true; };
+template<> struct IsSampleType< dcomplex > { static constexpr bool value = true; };
+} // namespace detail
+
+/// \brief For use with `std::enable_if` to enable templates only for types that are valid for image samples.
+///
+/// One example usage is as follows:
+///
+/// ```cpp
+///     template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+///     void MyFunction( T value ) { ... }
+/// ```
+template< typename T > struct IsSampleType : public detail::IsSampleType< typename std::remove_cv< T >::type > {};
+
 /// \brief Type for samples in a binary image. Can store 0 or 1. Occupies 1 byte.
 class DIP_NO_EXPORT bin {
    // Binary data stored in a single byte (don't use bool for pixels, it has
    // implementation-defined size). We define this class for binary data so
    // that we can overload functions differently for bin and for uint8.
    public:
+
+      // Default copy and move constructors, just in case the templated constructor overrides one of these.
+      constexpr bin( bin const& ) = default;
+      constexpr bin( bin&& ) = default;
+      bin& operator=( bin const& ) = default;
+      bin& operator=( bin&& ) = default;
 
       // Overload constructors to make sure we always write 0 or 1 in the bin.
       /// The default value is 0 (false)
@@ -102,7 +134,7 @@ class DIP_NO_EXPORT bin {
       constexpr bin( bool v ) : v_( static_cast< uint8 >( v )) {};
 
       /// Any arithmetic type converts to bin by comparing to zero
-      template< typename T >
+      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
       constexpr explicit bin( T v ) : v_( static_cast< uint8 >( v != 0 )) {};
 
       /// A complex value converts to bin by comparing the absolute value to zero
@@ -122,6 +154,14 @@ class DIP_NO_EXPORT bin {
       uint8 v_;
 };
 
+inline std::ostream& operator<<(
+      std::ostream& os,
+      bin const& v
+) {
+   os << static_cast< bool >( v );
+   return os;
+}
+
 // if 8 bits is not a byte...
 static_assert( sizeof( dip::uint8 ) == 1, "8 bits is not a byte in your system!" );
 // Seriously, though. We rely on this property, and there is no guarantee
@@ -135,41 +175,56 @@ static_assert( sizeof( dip::bin ) == 1, "The binary type is not a single byte!" 
 // Templates that help get the right types in template functions and template classes
 //
 
-template< typename T > struct FloatTypeCalculator { using type = sfloat; };
-template<> struct FloatTypeCalculator< uint32 > { using type = dfloat; };
-template<> struct FloatTypeCalculator< sint32 > { using type = dfloat; };
-template<> struct FloatTypeCalculator< dfloat > { using type = dfloat; };
-template<> struct FloatTypeCalculator< dcomplex > { using type = dfloat; };
+namespace detail {
+template< typename T >
+struct FloatTypeCalculator { using type = sfloat; };
+template<>
+struct FloatTypeCalculator< uint32 > { using type = dfloat; };
+template<>
+struct FloatTypeCalculator< sint32 > { using type = dfloat; };
+template<>
+struct FloatTypeCalculator< dfloat > { using type = dfloat; };
+template<>
+struct FloatTypeCalculator< dcomplex > { using type = dfloat; };
+} // namespace detail
 /// \brief The type to use in calculations when a floating-point type is needed. Matches `dip::DataType::SuggestFloat`.
-template< typename T > using FloatType = typename FloatTypeCalculator< T >::type;
+template< typename T > using FloatType = typename detail::FloatTypeCalculator< T >::type;
 
+namespace detail {
 template< typename T > struct ComplexTypeCalculator { using type = scomplex; };
 template<> struct ComplexTypeCalculator< uint32 > { using type = dcomplex; };
 template<> struct ComplexTypeCalculator< sint32 > { using type = dcomplex; };
 template<> struct ComplexTypeCalculator< dfloat > { using type = dcomplex; };
 template<> struct ComplexTypeCalculator< dcomplex > { using type = dcomplex; };
+} // namespace detail
 /// \brief The type to use in calculations when a complex type is needed. Matches `dip::DataType::SuggestComplex`.
-template< typename T > using ComplexType = typename ComplexTypeCalculator< T >::type;
+template< typename T > using ComplexType = typename detail::ComplexTypeCalculator< T >::type;
 
+namespace detail {
 template< typename T > struct FlexTypeCalculator { using type = FloatType< T >; };
 template<> struct FlexTypeCalculator< scomplex > { using type = scomplex; };
 template<> struct FlexTypeCalculator< dcomplex > { using type = dcomplex; };
+} // namespace detail
 /// \brief The type to use in calculations. Matches `dip::DataType::SuggestFlex`.
-template< typename T > using FlexType = typename FlexTypeCalculator< T >::type;
+template< typename T > using FlexType = typename detail::FlexTypeCalculator< T >::type;
 
+namespace detail {
 template< typename T > struct FlexBinTypeCalculator { using type = FlexType< T >; };
 template<> struct FlexBinTypeCalculator< bin > { using type = bin; };
+} // namespace detail
 /// \brief The type to use in calculations. Matches `dip::DataType::SuggestFlexBin`.
-template< typename T > using FlexBinType = typename FlexBinTypeCalculator< T >::type;
+template< typename T > using FlexBinType = typename detail::FlexBinTypeCalculator< T >::type;
 
+namespace detail {
 template< typename T > struct AbsTypeCalculator { using type = T; };
 template<> struct AbsTypeCalculator< sint8 > { using type = uint8; };
 template<> struct AbsTypeCalculator< sint16 > { using type = uint16; };
 template<> struct AbsTypeCalculator< sint32 > { using type = uint32; };
 template<> struct AbsTypeCalculator< scomplex > { using type = sfloat; };
 template<> struct AbsTypeCalculator< dcomplex > { using type = dfloat; };
+} // namespace detail
 /// \brief The type to use for the output of abs operations. Matches `dip::DataType::SuggestAbs`.
-template< typename T > using AbsType = typename AbsTypeCalculator< T >::type;
+template< typename T > using AbsType = typename detail::AbsTypeCalculator< T >::type;
 
 
 //
@@ -326,6 +381,8 @@ using RangeArray = DimensionArray< Range >;  ///< An array of ranges
 // not be used directly, only through the macros defined below it.
 //
 
+namespace detail {
+
 template< typename E >
 class DIP_NO_EXPORT dip__Options {
       using value_type = unsigned long;
@@ -352,6 +409,8 @@ class DIP_NO_EXPORT dip__Options {
          return *this;
       }
 };
+
+} // namespace detail
 
 /// \brief Declare a type used to pass options to a function or class.
 ///
@@ -385,7 +444,7 @@ class DIP_NO_EXPORT dip__Options {
 /// ```
 ///
 /// For class member values, add `static` in front of `DIP_DEFINE_OPTION`.
-#define DIP_DECLARE_OPTIONS( name ) class name##__Tag; using name = dip::dip__Options< name##__Tag >
+#define DIP_DECLARE_OPTIONS( name ) class name##__Tag; using name = dip::detail::dip__Options< name##__Tag >
 
 /// \brief Use in conjunction with `DIP_DECLARE_OPTIONS`. `index` should be no higher than 31.
 #define DIP_DEFINE_OPTION( name, option, index ) constexpr name option { index }

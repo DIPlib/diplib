@@ -72,12 +72,6 @@ extern "C" {
 // It might be implemented at some point: http://stackoverflow.com/questions/14166416/doxygen-c-how-to-link-to-anonymous-namespace-variables
 namespace dml {
 
-/// \brief Everything in the `#dml` namespace is defined within this anonymous namespace.
-namespace { // This makes all these functions not visible outside the current compilation unit. Result: the MEX-file will not export these functions.
-
-// Note also that we define all functions as `inline`. Hopefully the compiler won't inline the few that are really
-// large. We need to use `inline` to prevent the compiler from complaining about unused functions.
-
 /// \defgroup dip_matlab_interface *DIPlib*--*MATLAB* interface
 /// \brief Functions to convert image data, function parameters and other arrays to and from *MATLAB*.
 ///
@@ -1167,7 +1161,6 @@ class streambuf : public std::streambuf {
 
 /// \}
 
-} // namespace
 } // namespace dml
 
 #endif
