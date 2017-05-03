@@ -581,116 +581,61 @@ void Image::Convert( dip::DataType dt ) {
    }
 }
 
-
 //
-template< typename inT >
-static inline void InternFill( Image& dest, inT v ) {
+
+namespace {
+
+template< typename TPI >
+static inline void InternFill( Image& dest, TPI value ) {
    DIP_THROW_IF( !dest.IsForged(), E::IMAGE_NOT_FORGED );
    dip::sint sstride_d;
    void* porigin_d;
    dest.GetSimpleStrideAndOrigin( sstride_d, porigin_d );
    if( porigin_d ) {
       // No need to loop
-      FillBuffer(
-            porigin_d,
-            dest.DataType(),
-            sstride_d,
-            dest.TensorStride(),
-            dest.NumberOfPixels(),
-            dest.TensorElements(),
-            v
-      );
+      FillBufferFromTo( static_cast< TPI* >( porigin_d ), sstride_d, dest.TensorStride(), dest.NumberOfPixels(), dest.TensorElements(), value );
    } else {
       // Make nD loop
       dip::uint processingDim = Framework::OptimalProcessingDim( dest );
-      auto it = GenericImageIterator( dest, processingDim );
+      auto it = ImageIterator< TPI >( dest, processingDim );
       do {
-         FillBuffer(
-               it.Pointer(),
-               dest.DataType(),
-               dest.Stride( processingDim ),
-               dest.TensorStride(),
-               dest.Size( processingDim ),
-               dest.TensorElements(),
-               v
-         );
+         FillBufferFromTo( it.Pointer(), dest.Stride( processingDim ), dest.TensorStride(), dest.Size( processingDim ), dest.TensorElements(), value );
       } while( ++it );
    }
 }
 
-void Image::Fill( bool v ) {
-   InternFill( *this, static_cast< dip::sint >( v ));
-}
+} // namespace
 
-void Image::Fill( int v ) {
-   InternFill( *this, static_cast< dip::sint >( v ));
-}
-
-void Image::Fill( dip::uint v ) {
-   InternFill( *this, clamp_cast< dip::sint >( v ));
-   // `v` could potentially be clamped here, but:
-   //  - it would be clamped anyway for any integer typed image.
-   //  - if the image is float type, they should use the `dfloat` overload.
-}
-
-void Image::Fill( dip::sint v ) {
-   InternFill( *this, v );
-}
-
-void Image::Fill( dfloat v ) {
-   InternFill( *this, v );
-}
-
-void Image::Fill( dcomplex v ) {
-   InternFill( *this, v );
-}
-
-// Casting the first sample (the first tensor component of the first pixel) to dcomplex.
-template< typename TPI >
-static inline dcomplex CastValueComplex( void* p ) {
-   return clamp_cast< dcomplex >( *static_cast< TPI* >( p ));
-}
-Image::operator dcomplex() const {
+void Image::Fill( Image::Pixel const& pixel ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dcomplex x;
-   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueComplex, ( origin_ ), dataType_ );
-   return x;
+   dip::uint N = tensor_.Elements();
+   DIP_THROW_IF( pixel.TensorElements() != N, E::NTENSORELEM_DONT_MATCH );
+   Image tmp = QuickCopy();
+   tmp.tensor_.SetScalar();
+   for( dip::uint ii = 0; ii < N; ++ii, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
+      // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
+      // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
+      // were a pointer to the correct data type.
+      tmp.Fill( pixel[ ii ] );
+   }
 }
 
-// Casting the first sample (the first tensor component of the first pixel) to dfloat.
-template< typename TPI >
-static inline dfloat CastValueDouble( void* p ) {
-   return clamp_cast< dfloat >( *static_cast< TPI* >( p ));
-}
-Image::operator dfloat() const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dfloat x;
-   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueDouble, ( origin_ ), dataType_ );
-   return x;
-}
-
-// Casting the first sample (the first tensor component of the first pixel) to sint.
-template< typename TPI >
-static inline dip::sint CastValueInteger( void* p ) {
-   return clamp_cast< dip::sint >( *static_cast< TPI* >( p ));
-}
-Image::operator dip::sint() const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::sint x;
-   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueInteger, ( origin_ ), dataType_ );
-   return x;
-}
-
-// Casting the first sample (the first tensor component of the first pixel) to bool.
-template< typename TPI >
-static inline dip::sint CastValueBoolean( void* p ) {
-   return *static_cast< TPI* >( p ) != TPI( 0 );
-}
-Image::operator bool() const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   bool x;
-   DIP_OVL_CALL_ASSIGN_ALL( x, CastValueBoolean, ( origin_ ), dataType_ );
-   return x;
+void Image::Fill( Image::SampleRef const& sample ) {
+   switch( dataType_ ) {
+      case DT_BIN:      InternFill( *this, static_cast< bin      >( sample )); break;
+      case DT_UINT8:    InternFill( *this, static_cast< uint8    >( sample )); break;
+      case DT_SINT8:    InternFill( *this, static_cast< sint8    >( sample )); break;
+      case DT_UINT16:   InternFill( *this, static_cast< uint16   >( sample )); break;
+      case DT_SINT16:   InternFill( *this, static_cast< sint16   >( sample )); break;
+      case DT_UINT32:   InternFill( *this, static_cast< uint32   >( sample )); break;
+      case DT_SINT32:   InternFill( *this, static_cast< sint32   >( sample )); break;
+      case DT_SFLOAT:   InternFill( *this, static_cast< sfloat   >( sample )); break;
+      case DT_DFLOAT:   InternFill( *this, static_cast< dfloat   >( sample )); break;
+      case DT_SCOMPLEX: InternFill( *this, static_cast< scomplex >( sample )); break;
+      case DT_DCOMPLEX: InternFill( *this, static_cast< dcomplex >( sample )); break;
+      default:
+         DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
+   }
 }
 
 } // namespace dip

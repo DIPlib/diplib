@@ -82,17 +82,17 @@ DOCTEST_TEST_CASE("[DIPlib] testing the finite difference filter") {
    img.Fill( 0.0 );
    img.At( 128 ) = 1.0;
    dip::Image out = dip::FiniteDifference( img, { 0 } );
-   DOCTEST_CHECK( out.SampleAt< dip::dfloat >( 128 ) == 0.5 );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Sum( out )) == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out.At( 128 )[ 0 ] ) == 0.5 ); // TODO: INDEXING IS TEMPORARY
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Sum( out ).At( 0 )[ 0 ]) == doctest::Approx( 1.0 ));
    dip::ImageIterator< dip::dfloat > it( img );
    for( dip::dfloat x = -128; it; ++it, ++x ) {
       *it = x;
    }
    out = dip::FiniteDifference( img, { 1 } );
-   DOCTEST_CHECK( out.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out.At( 128 )[ 0 ]) == doctest::Approx( 1.0 ));
    img = img * img;
    out = dip::FiniteDifference( img, { 2 } );
-   DOCTEST_CHECK( out.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 2.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( out.At( 128 )[ 0 ]) == doctest::Approx( 2.0 ));
 }
 
 #endif // DIP__ENABLE_DOCTEST

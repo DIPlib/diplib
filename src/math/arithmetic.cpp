@@ -316,38 +316,42 @@ void Invert(
 #include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the matrix multiplication operation") {
-   dip::Image lhs{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+   try {
+   dip::Image lhs( dip::Image::Pixel{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 } );
    lhs.ReshapeTensor( 2, 3 );
-   dip::Image rhs{ 1.0, 10.0, 100.0 };
+   dip::Image rhs( dip::Image::Pixel{ 1.0, 10.0, 100.0 } );
    rhs.ReshapeTensorAsDiagonal();
    dip::Image out = lhs * rhs;
    DOCTEST_REQUIRE( out.TensorElements() == 6 );
    DOCTEST_CHECK( out.TensorShape() == dip::Tensor::Shape::COL_MAJOR_MATRIX );
-   auto it = out.SampleIteratorAt< dip::dfloat >( dip::UnsignedArray{} );
-   DOCTEST_CHECK( it[ 0 ] == doctest::Approx( 1.0 ));
-   DOCTEST_CHECK( it[ 1 ] == doctest::Approx( 2.0 ));
-   DOCTEST_CHECK( it[ 2 ] == doctest::Approx( 30.0 ));
-   DOCTEST_CHECK( it[ 3 ] == doctest::Approx( 40.0 ));
-   DOCTEST_CHECK( it[ 4 ] == doctest::Approx( 500.0 ));
-   DOCTEST_CHECK( it[ 5 ] == doctest::Approx( 600.0 ));
+   auto it = out.At( 0 );
+   DOCTEST_CHECK( double( it[ 0 ] ) == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( double( it[ 1 ] ) == doctest::Approx( 2.0 ));
+   DOCTEST_CHECK( double( it[ 2 ] ) == doctest::Approx( 30.0 ));
+   DOCTEST_CHECK( double( it[ 3 ] ) == doctest::Approx( 40.0 ));
+   DOCTEST_CHECK( double( it[ 4 ] ) == doctest::Approx( 500.0 ));
+   DOCTEST_CHECK( double( it[ 5 ] ) == doctest::Approx( 600.0 ));
    DOCTEST_CHECK_THROWS( lhs * lhs );
    out = lhs * Transpose( lhs );
    DOCTEST_REQUIRE( out.TensorElements() == 3 );
    DOCTEST_CHECK( out.TensorShape() == dip::Tensor::Shape::SYMMETRIC_MATRIX );
-   it = out.SampleIteratorAt< dip::dfloat >();
-   DOCTEST_CHECK( it[ 0 ] == doctest::Approx( 35.0 ));
-   DOCTEST_CHECK( it[ 1 ] == doctest::Approx( 56.0 ));
-   DOCTEST_CHECK( it[ 2 ] == doctest::Approx( 44.0 ));
+   it = out.At( 0 );
+   DOCTEST_CHECK( double( it[ 0 ] ) == doctest::Approx( 35.0 ));
+   DOCTEST_CHECK( double( it[ 1 ] ) == doctest::Approx( 56.0 ));
+   DOCTEST_CHECK( double( it[ 2 ] ) == doctest::Approx( 44.0 ));
    out = Transpose( lhs ) * lhs;
    DOCTEST_REQUIRE( out.TensorElements() == 6 );
    DOCTEST_CHECK( out.TensorShape() == dip::Tensor::Shape::SYMMETRIC_MATRIX );
-   it = out.SampleIteratorAt< dip::dfloat >();
-   DOCTEST_CHECK( it[ 0 ] == doctest::Approx( 5.0 ));
-   DOCTEST_CHECK( it[ 1 ] == doctest::Approx( 25.0 ));
-   DOCTEST_CHECK( it[ 2 ] == doctest::Approx( 61.0 ));
-   DOCTEST_CHECK( it[ 3 ] == doctest::Approx( 11.0 ));
-   DOCTEST_CHECK( it[ 4 ] == doctest::Approx( 17.0 ));
-   DOCTEST_CHECK( it[ 5 ] == doctest::Approx( 39.0 ));
+   it = out.At( 0 );
+   DOCTEST_CHECK( double( it[ 0 ] ) == doctest::Approx( 5.0 ));
+   DOCTEST_CHECK( double( it[ 1 ] ) == doctest::Approx( 25.0 ));
+   DOCTEST_CHECK( double( it[ 2 ] ) == doctest::Approx( 61.0 ));
+   DOCTEST_CHECK( double( it[ 3 ] ) == doctest::Approx( 11.0 ));
+   DOCTEST_CHECK( double( it[ 4 ] ) == doctest::Approx( 17.0 ));
+   DOCTEST_CHECK( double( it[ 5 ] ) == doctest::Approx( 39.0 ));
+   } catch ( dip::Error& e ){
+      std::cout << e.what() << std::endl;
+   }
 }
 
 #endif // DIP__ENABLE_DOCTEST

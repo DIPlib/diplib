@@ -325,7 +325,7 @@ struct DIP_NO_EXPORT Range {
    Range() : start{ 0 }, stop{ -1 }, step{ 1 } {}
 
    /// Create a range that indicates a single pixel
-   Range( dip::sint i ) : start{ i }, stop{ i }, step{ 1 } {}
+   explicit Range( dip::sint i ) : start{ i }, stop{ i }, step{ 1 } {}
 
    /// \brief Create a range using two or three values; it indicates all pixels between `i` and `j`, both inclusive.
    /// The step size defaults to 1.

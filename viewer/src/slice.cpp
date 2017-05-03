@@ -414,7 +414,7 @@ void SliceViewPort::click(int button, int state, int x, int y)
       if (te > 1) oss << "[";
       for (dip::uint ii=0; ii < te; ++ii)
       {
-        oss << (dip::dfloat) viewer()->image()[ii].At(op);
+        oss << (dip::dfloat) viewer()->image().At(op)[ii];
         if (ii < te-1)
           oss << ", ";
       }

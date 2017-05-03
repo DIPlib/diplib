@@ -25,6 +25,7 @@
 
 #include "diplib/library/types.h"
 #include "diplib/library/numeric.h"
+#include "diplib/library/datatype.h"
 
 
 /// \file
@@ -424,6 +425,42 @@ inline dip::scomplex clamp_cast< dip::scomplex >( dip::dcomplex v ) {
 }
 
 /// \}
+
+namespace detail {
+template< typename T >
+T CastSample( DataType dataType, void const* data ) {
+   switch( dataType ) {
+      case dip::DT_BIN      : return clamp_cast< T >( *static_cast< bin const* >( data ));
+      case dip::DT_UINT8    : return clamp_cast< T >( *static_cast< uint8 const* >( data ));
+      case dip::DT_UINT16   : return clamp_cast< T >( *static_cast< uint16 const* >( data ));
+      case dip::DT_UINT32   : return clamp_cast< T >( *static_cast< uint32 const* >( data ));
+      case dip::DT_SINT8    : return clamp_cast< T >( *static_cast< sint8 const* >( data ));
+      case dip::DT_SINT16   : return clamp_cast< T >( *static_cast< sint16 const* >( data ));
+      case dip::DT_SINT32   : return clamp_cast< T >( *static_cast< sint32 const* >( data ));
+      case dip::DT_SFLOAT   : return clamp_cast< T >( *static_cast< sfloat const* >( data ));
+      case dip::DT_DFLOAT   : return clamp_cast< T >( *static_cast< dfloat const* >( data ));
+      case dip::DT_SCOMPLEX : return clamp_cast< T >( *static_cast< scomplex const* >( data ));
+      case dip::DT_DCOMPLEX : return clamp_cast< T >( *static_cast< dcomplex const* >( data ));
+      default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+   }
+}
+inline void CastSample( DataType srcType, void const* src, DataType destType, void* dest ) {
+   switch( destType ) {
+      case dip::DT_BIN      : *static_cast< bin* >( dest ) = CastSample< bin >( srcType, src ); break;
+      case dip::DT_UINT8    : *static_cast< uint8* >( dest ) = CastSample< uint8 >( srcType, src ); break;
+      case dip::DT_UINT16   : *static_cast< uint16* >( dest ) = CastSample< uint16 >( srcType, src ); break;
+      case dip::DT_UINT32   : *static_cast< uint32* >( dest ) = CastSample< uint32 >( srcType, src ); break;
+      case dip::DT_SINT8    : *static_cast< sint8* >( dest ) = CastSample< sint8 >( srcType, src ); break;
+      case dip::DT_SINT16   : *static_cast< sint16* >( dest ) = CastSample< sint16 >( srcType, src ); break;
+      case dip::DT_SINT32   : *static_cast< sint32* >( dest ) = CastSample< sint32 >( srcType, src ); break;
+      case dip::DT_SFLOAT   : *static_cast< sfloat* >( dest ) = CastSample< sfloat >( srcType, src ); break;
+      case dip::DT_DFLOAT   : *static_cast< dfloat* >( dest ) = CastSample< dfloat >( srcType, src ); break;
+      case dip::DT_SCOMPLEX : *static_cast< scomplex* >( dest ) = CastSample< scomplex >( srcType, src ); break;
+      case dip::DT_DCOMPLEX : *static_cast< dcomplex* >( dest ) = CastSample< dcomplex >( srcType, src ); break;
+      default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+   }
+}
+} // namespace detail
 
 } // namespace dip
 

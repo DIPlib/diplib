@@ -65,19 +65,25 @@ void ExpandBuffer(
 
 // Fills one 1D buffer with a constant value `value`.
 //
-// Available types `inT` are: dip::sint, dip::dfloat, dip::dcomplex.
-// Make sure you don't use a different type, or you'll get linker errors.
-//
 // This function is not available to the library user.
-template< typename inT >
-void FillBuffer(
-      void* outBuffer,
-      DataType outType,
+template< typename outT >
+static inline void FillBufferFromTo(
+      outT* outBuffer,
       dip::sint outStride,
       dip::sint outTensorStride,
       dip::uint pixels,
       dip::uint tensorElements,
-      inT value
-);
+      outT value
+) {
+   // TODO: use memset when stride == 1, etc.
+   for( dip::uint pp = 0; pp < pixels; ++pp ) {
+      outT* out = outBuffer;
+      for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
+         *out = value;
+         out += outTensorStride;
+      }
+      outBuffer += outStride;
+   }
+}
 
 } // namespace dip

@@ -191,12 +191,12 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
    dip::dfloat sigma = 5.0;
    dip::dfloat amplitude = 1.0 / ( std::sqrt( 2.0 * dip::pi ) * sigma );
    dip::Image ft = dip::GaussFT( img, { sigma }, { 0 } );
-   DOCTEST_CHECK( std::abs( ft.SampleAt< dip::dfloat >( 128 ) - amplitude ) < 0.00015 );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Sum( ft )) == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( std::abs( double( ft.At( 128 )[ 0 ]) - amplitude ) < 0.00015 );
+   DOCTEST_CHECK( static_cast< double >( dip::Image::SampleRef( dip::Sum( ft ))) == doctest::Approx( 1.0 )); // TODO: INDEXING TEMPORARY
    dip::Image fir = dip::GaussFIR( img, { sigma }, { 0 } );
-   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Maximum( fir - ft ))) < 0.0003 );
+   DOCTEST_CHECK( std::abs( double( dip::Image::SampleRef( dip::Maximum( fir - ft )))) < 0.0003 );
    dip::Image iir = dip::GaussIIR( img, { sigma }, { 0 } );
-   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Maximum( iir - ft ))) < 0.0015 );
+   DOCTEST_CHECK( std::abs( double( dip::Image::SampleRef( dip::Maximum( iir - ft )))) < 0.0015 );
 
    // Test first derivative for the 3 filters
    dip::ImageIterator< dip::dfloat > it( img );
@@ -204,20 +204,20 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
       *it = x;
    }
    ft = dip::GaussFT( img, { sigma }, { 1 } );
-   DOCTEST_CHECK( std::abs( ft.SampleAt< dip::dfloat >( 128 ) - 1.0 ) < 0.0015 ); // Affected by edge effects?
+   DOCTEST_CHECK( std::abs( double( ft.At( 128 )[ 0 ]) - 1.0 ) < 0.0015 ); // Affected by edge effects?
    fir = dip::GaussFIR( img, { sigma }, { 1 } );
-   DOCTEST_CHECK( fir.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( double( fir.At( 128 )[ 0 ]) == doctest::Approx( 1.0 ));
    iir = dip::GaussIIR( img, { sigma }, { 1 } );
-   DOCTEST_CHECK( iir.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( double( iir.At( 128 )[ 0 ]) == doctest::Approx( 1.0 ));
 
    // Test second derivative for the 3 filters
    img = img * img;
    ft = dip::GaussFT( img, { sigma }, { 2 } );
-   DOCTEST_CHECK( std::abs( ft.SampleAt< dip::dfloat >( 128 ) - 2.0 ) < 0.0005 );
+   DOCTEST_CHECK( std::abs( double( ft.At( 128 )[ 0 ]) - 2.0 ) < 0.0005 );
    fir = dip::GaussFIR( img, { sigma }, { 2 } );
-   DOCTEST_CHECK( fir.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 2.0 ));
+   DOCTEST_CHECK( double( fir.At( 128 )[ 0 ]) == doctest::Approx( 2.0 ));
    iir = dip::GaussIIR( img, { sigma }, { 2 } );
-   DOCTEST_CHECK( iir.SampleAt< dip::dfloat >( 128 ) == doctest::Approx( 2.0 ));
+   DOCTEST_CHECK( double( iir.At( 128 )[ 0 ]) == doctest::Approx( 2.0 ));
 }
 
 #endif // DIP__ENABLE_DOCTEST

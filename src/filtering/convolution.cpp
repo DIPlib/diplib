@@ -392,12 +392,13 @@ void GeneralConvolution(
 #include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
+   dip::dfloat meanval = 9563.0;
    dip::Image img{ dip::UnsignedArray{ 80, 6, 5 }, 1, dip::DT_UINT16 };
    {
       DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
       std::random_device rd;
       std::mt19937 gen( rd() );
-      std::normal_distribution< dip::dfloat > normDist( 9563.0, 500.0 );
+      std::normal_distribution< dip::dfloat > normDist( meanval, 500.0 );
       dip::ImageIterator< dip::uint16 > it( img );
       do {
          *it = dip::clamp_cast< dip::uint16 >( normDist( gen ) );
@@ -419,7 +420,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].symmetry = "even";
    dip::SeparableConvolution( img, out2, filterArray, { "periodic" } );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Mean( out1 - out2 ))) / meanval == doctest::Approx( 0.0f ) ); // TODO: INDEXING IS TEMPORARY
 
    // Comparing general to odd
    filterArray[ 0 ].filter = {
@@ -434,7 +435,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].symmetry = "odd";
    dip::SeparableConvolution( img, out2, filterArray, { "periodic" } );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Mean( out1 - out2 ))) / meanval == doctest::Approx( 0.0f ) );
 
    // Comparing general to d-even
    filterArray[ 0 ].filter = {
@@ -449,7 +450,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].symmetry = "d-even";
    dip::SeparableConvolution( img, out2, filterArray, { "periodic" } );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Mean( out1 - out2 ))) / meanval == doctest::Approx( 0.0f ) );
 
    // Comparing general to d-odd
    filterArray[ 0 ].filter = {
@@ -464,7 +465,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    };
    filterArray[ 0 ].symmetry = "d-odd";
    dip::SeparableConvolution( img, out2, filterArray, { "periodic" } );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Mean( out1 - out2 ))) / meanval == doctest::Approx( 0.0f ) );
 
    // Comparing that last filter to GeneralConvolution
    dip::Image filter{ dip::UnsignedArray{ 19, 1, 1 }, 1, dip::DT_DFLOAT };
@@ -472,12 +473,12 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    filter.At( 19/2, 0, 0 ) = 1;
    dip::SeparableConvolution( filter, filter, filterArray, { "add zeros" } );
    dip::GeneralConvolution( img, filter, out2, { "periodic" } );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Mean( out1 - out2 ))) / meanval == doctest::Approx( 0.0f ) );
 
    // Comparing that one again, against ConvolveFT
    // Note that we can do this because we've used "periodic" boundary condition everywhere else
    dip::ConvolveFT( img, filter, out2 );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Mean( out1 - out2 ) / out2 ) == doctest::Approx( 0.0f ) );
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Mean( out1 - out2 ))) / meanval == doctest::Approx( 0.0f ) );
 }
 
 #endif // DIP__ENABLE_DOCTEST

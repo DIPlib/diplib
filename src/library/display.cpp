@@ -84,8 +84,8 @@ void ImageDisplay::ComputeLimits( bool set ) {
             }
          }
          if( mappingMode_ == MappingMode::PERCENTILE ) {
-            lims->lower = static_cast< dfloat >( Percentile( tmp, {}, 5.0 ));
-            lims->upper = static_cast< dfloat >( Percentile( tmp, {}, 95.0 ));
+            lims->lower = static_cast< dfloat >( Image::SampleRef( Percentile( tmp, {}, 5.0 )));
+            lims->upper = static_cast< dfloat >( Image::SampleRef( Percentile( tmp, {}, 95.0 )));
          } else {
             MinMaxAccumulator res = GetMaximumAndMinimum( tmp );
             lims->lower = res.Minimum();

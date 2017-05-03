@@ -155,6 +155,243 @@ class DIP_NO_EXPORT Image {
    public:
 
       //
+      // Pixels and Samples. Find the implementation of some functions towards the end of the file.
+      //
+
+      class Sample;
+      class PixelRef;
+      class Pixel;
+      class PixelIterator;
+
+      ///
+      class SampleRef {
+         public:
+
+            SampleRef( Pixel const& pixel );
+            SampleRef( PixelRef const& pixel );
+            explicit SampleRef( Sample const& sample ); // This one mostly for internal use
+            explicit SampleRef( Image const& image ) : origin_( image.Origin()), dataType_( image.DataType()) {}
+
+            void swap( SampleRef& other ) {
+               using std::swap;
+               swap( origin_, other.origin_ );
+               swap( dataType_, other.dataType_ );
+            }
+
+            SampleRef& operator=( SampleRef const& sample );
+            SampleRef& operator=( Sample const& sample );
+
+            explicit operator bool() const { return detail::CastSample< bin >( dataType_, origin_ ); }
+            explicit operator bin() const { return detail::CastSample< bin >( dataType_, origin_ ); }
+            explicit operator uint8() const { return detail::CastSample< uint8 >( dataType_, origin_ ); }
+            explicit operator sint8() const { return detail::CastSample< sint8 >( dataType_, origin_ ); }
+            explicit operator uint16() const { return detail::CastSample< uint16 >( dataType_, origin_ ); }
+            explicit operator sint16() const { return detail::CastSample< sint16 >( dataType_, origin_ ); }
+            explicit operator uint32() const { return detail::CastSample< uint32 >( dataType_, origin_ ); }
+            explicit operator sint32() const { return detail::CastSample< sint32 >( dataType_, origin_ ); }
+            explicit operator sfloat() const { return detail::CastSample< sfloat >( dataType_, origin_ ); }
+            explicit operator dfloat() const { return detail::CastSample< dfloat >( dataType_, origin_ ); }
+            explicit operator scomplex() const { return detail::CastSample< scomplex >( dataType_, origin_ ); }
+            explicit operator dcomplex() const { return detail::CastSample< dcomplex >( dataType_, origin_ ); }
+            #if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict with s/uint32 casts above.
+            explicit operator dip::uint() const { return detail::CastSample< dip::uint >( dataType_, origin_ ); }
+            explicit operator dip::sint() const { return detail::CastSample< dip::sint >( dataType_, origin_ ); }
+            #endif
+
+            void* Origin() const { return origin_; }
+            dip::DataType DataType() const { return dataType_; }
+
+         private:
+            void* origin_;
+            dip::DataType dataType_;
+
+            // These two need to use the private constructor.
+            friend class PixelRef;
+            friend class Pixel;
+            friend class PixelIterator;
+
+            SampleRef( void* data, dip::DataType dataType ) : origin_( data ), dataType_( dataType ) {}
+      };
+
+      ///
+      class Sample {
+         public:
+
+            template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+            Sample( T value ) {
+               dataType_ = dip::DataType( T( 0 ));
+               *reinterpret_cast< T* >( buffer_.data() ) = value;
+            }
+            Sample( bool value ) : dataType_( DT_BIN ) {
+               *reinterpret_cast< bin* >( buffer_.data() ) = value;
+            }
+            #if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict with s/uint32 constructors above.
+            Sample( dip::uint value ) : dataType_( DT_UINT32 ) {
+               *reinterpret_cast< uint32* >( buffer_.data() ) = clamp_cast< uint32 >( value );
+            }
+            Sample( dip::sint value ) : dataType_( DT_SINT32 ) {
+               *reinterpret_cast< sint32* >( buffer_.data()) = clamp_cast< sint32 >( value );
+            }
+            #endif
+            Sample( SampleRef const& sample );
+
+            void swap( Sample& other ) {
+               using std::swap;
+               swap( buffer_, other.buffer_ );
+               swap( dataType_, other.dataType_ );
+            }
+
+            explicit operator bool() const { return detail::CastSample< bin >( dataType_, buffer_.data() ); }
+            explicit operator bin() const { return detail::CastSample< bin >( dataType_, buffer_.data() ); }
+            explicit operator uint8() const { return detail::CastSample< uint8 >( dataType_, buffer_.data() ); }
+            explicit operator sint8() const { return detail::CastSample< sint8 >( dataType_, buffer_.data() ); }
+            explicit operator uint16() const { return detail::CastSample< uint16 >( dataType_, buffer_.data() ); }
+            explicit operator sint16() const { return detail::CastSample< sint16 >( dataType_, buffer_.data() ); }
+            explicit operator uint32() const { return detail::CastSample< uint32 >( dataType_, buffer_.data() ); }
+            explicit operator sint32() const { return detail::CastSample< sint32 >( dataType_, buffer_.data() ); }
+            explicit operator sfloat() const { return detail::CastSample< sfloat >( dataType_, buffer_.data() ); }
+            explicit operator dfloat() const { return detail::CastSample< dfloat >( dataType_, buffer_.data() ); }
+            explicit operator scomplex() const { return detail::CastSample< scomplex >( dataType_, buffer_.data() ); }
+            explicit operator dcomplex() const { return detail::CastSample< dcomplex >( dataType_, buffer_.data() ); }
+            #if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict with s/uint32 casts above.
+            explicit operator dip::uint() const { return detail::CastSample< dip::uint >( dataType_, buffer_.data() ); }
+            explicit operator dip::sint() const { return detail::CastSample< dip::sint >( dataType_, buffer_.data() ); }
+            #endif
+
+            void* Origin() const { return const_cast< uint8* >( buffer_.data() ); }
+            dip::DataType DataType() const { return dataType_; }
+
+         private:
+            struct alignas( dcomplex ) { std::array< uint8, sizeof( dcomplex ) > buffer_; };
+            dip::DataType dataType_;
+      };
+
+      ///
+      class PixelRef {
+         public:
+
+            explicit PixelRef( Image const& image ) :
+                  origin_( image.Origin() ),
+                  dataType_( image.DataType() ),
+                  tensor_( image.Tensor() ),
+                  tensorStride_( image.TensorStride() ) {}
+
+            void swap( PixelRef& other ) {
+               using std::swap;
+               swap( origin_, other.origin_ );
+               swap( dataType_, other.dataType_ );
+               swap( tensor_, other.tensor_ );
+               swap( tensorStride_, other.tensorStride_ );
+            }
+
+            PixelRef& operator=( PixelRef const& pixel );
+            PixelRef& operator=( Pixel const& pixel );
+            PixelRef& operator=( SampleRef const& sample );
+            PixelRef& operator=( Sample const& sample );
+
+            void* Origin() const { return origin_; }
+            dip::DataType DataType() const { return dataType_; }
+            dip::Tensor const& Tensor() const { return tensor_; }
+            dip::uint TensorElements() const { return tensor_.Elements(); }
+            dip::sint TensorStride() const { return tensorStride_; }
+
+            SampleRef operator[]( dip::uint index ) const;
+            PixelIterator begin() const;
+            PixelIterator end() const;
+
+         private:
+            void* origin_;
+            dip::DataType dataType_;
+            dip::Tensor tensor_;
+            dip::sint tensorStride_;
+
+            // `dip::Image` needs to use the private constructor.
+            friend class Image;
+
+            PixelRef( void* data, dip::DataType dataType, dip::Tensor const& tensor, dip::sint tensorStride ) :
+                  origin_( data ), dataType_( dataType ), tensor_( tensor ), tensorStride_( tensorStride ) {}
+      };
+
+      ///
+      class Pixel {
+         public:
+
+            Pixel( Sample const& sample );
+            Pixel( PixelRef const& pixel );
+            template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+            Pixel( std::initializer_list< T > values );
+            Pixel( std::initializer_list< Sample > samples );
+
+            void swap( Pixel& other ) {
+               using std::swap;
+               swap( buffer_, other.buffer_ );
+               swap( dataType_, other.dataType_ );
+               swap( tensor_, other.tensor_ );
+            }
+
+            Pixel& operator=( Sample const& sample );
+
+            void* Origin() const { return const_cast< uint8* >( buffer_.data() ); }
+            dip::DataType DataType() const { return dataType_; }
+            dip::Tensor const& Tensor() const { return tensor_; }
+            dip::uint TensorElements() const { return tensor_.Elements(); }
+            dip::sint TensorStride() const { return 1; }
+
+            SampleRef operator[]( dip::uint index ) const;
+            PixelIterator begin() const;
+            PixelIterator end() const;
+
+         private:
+            std::vector< uint8 > buffer_; // alignment???
+            dip::DataType dataType_;
+            dip::Tensor tensor_;
+      };
+
+      class PixelIterator {
+         public:
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = SampleRef;
+            using difference_type = dip::sint;
+            using reference = value_type&;
+            using pointer = value_type*;
+
+            PixelIterator() : value_( nullptr, DT_BIN ), tensorStride_( 0 ) {}
+            explicit PixelIterator( PixelRef const& pixel, dip::uint index = 0 ) :
+                  value_( static_cast< uint8* >( pixel.Origin() ) +
+                                pixel.TensorStride() * static_cast< dip::sint >( pixel.DataType().SizeOf() ),
+                          pixel.DataType() ),
+                  tensorStride_( pixel.TensorStride() ) {}
+            explicit PixelIterator( Pixel const& pixel, dip::uint index = 0 ) :
+                  value_( static_cast< uint8* >( pixel.Origin() ) +
+                                pixel.TensorStride() * static_cast< dip::sint >( pixel.DataType().SizeOf() ),
+                          pixel.DataType() ),
+                  tensorStride_( pixel.TensorStride() ) {}
+
+            void swap( PixelIterator& other ) {
+               using std::swap;
+               swap( value_, other.value_ );
+               swap( tensorStride_, other.tensorStride_ );
+            }
+
+            reference operator*() { return value_; }
+            pointer operator->() { return &value_; }
+
+            PixelIterator& operator++() {
+               value_.origin_ = static_cast< uint8* >( value_.origin_ ) +
+                     tensorStride_ * static_cast< dip::sint >( value_.dataType_.SizeOf() );
+               return *this;
+            }
+            PixelIterator operator++( int ) { PixelIterator tmp( *this ); operator++(); return tmp; }
+
+            bool operator==( PixelIterator const& other ) { return value_.Origin() == other.value_.Origin(); }
+            bool operator!=( PixelIterator const& other ) { return !operator==( other ); }
+
+         private:
+            value_type value_;
+            dip::sint tensorStride_;
+      };
+
+      //
       // Constructor
       //
 
@@ -216,167 +453,84 @@ class DIP_NO_EXPORT Image {
          Forge();
       }
 
-      /// \brief Create a 0-D image with the value and data type of `p`. `p` must be of one of the valid pixel data types.
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
-      explicit Image( T p ) {
-         dataType_ = dip::DataType( p );
-         Forge();                            // sizes is empty by default
-         *static_cast< T* >( origin_ ) = p;
-      }
-
-      /// \brief Create a 0-D vector image with the values and data type of `plist`. `plist` must be of one of the valid pixel data types.
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
-      explicit Image( std::initializer_list< T > const& plist ) {
-         tensor_.SetVector( plist.size() );  // will throw if p.size()==0
-         dataType_ = dip::DataType( *( plist.begin() ));
-         Forge();                            // sizes is empty by default
-         T* ptr = static_cast< T* >( origin_ );
-         for( T const& p : plist ) {
-            *ptr = p;
-            ptr += tensorStride_;
+      /// \brief Create a 0-D image with the data type, tensor shape, and values of `pixel`.
+      explicit Image( PixelRef const& pixel ) :
+            dataType_( pixel.DataType() ),
+            tensor_( pixel.Tensor() ),
+            tensorStride_( 1 ) {
+         Forge();
+         uint8 const* src = static_cast< uint8 const* >( pixel.Origin() );
+         uint8* dest = static_cast< uint8* >( origin_ );
+         dip::sint sz = static_cast< dip::sint >( dataType_.SizeOf() );
+         dip::sint srcStep = pixel.TensorStride() * sz;
+         dip::sint destStep = tensorStride_ * sz;
+         for( dip::uint ii = 0; ii < tensor_.Elements(); ++ii ) {
+            std::copy( src, src + sz, dest );
+            src += srcStep;
+            dest += destStep;
          }
       }
 
-      /// \brief Create a 0-D image with the value of `p` and the given data type.
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
-      Image( T p, dip::DataType dt ) {
-         dataType_ = dt;
-         Forge();                            // sizes is empty by default
-         switch( dataType_ ) {
-            case dip::DT_BIN:
-               *static_cast< bin* >( origin_ ) = clamp_cast< bin >( p );
-               break;
-            case dip::DT_UINT8:
-               *static_cast< uint8* >( origin_ ) = clamp_cast< uint8 >( p );
-               break;
-            case dip::DT_UINT16:
-               *static_cast< uint16* >( origin_ ) = clamp_cast< uint16 >( p );
-               break;
-            case dip::DT_UINT32:
-               *static_cast< uint32* >( origin_ ) = clamp_cast< uint32 >( p );
-               break;
-            case dip::DT_SINT8:
-               *static_cast< sint8* >( origin_ ) = clamp_cast< sint8 >( p );
-               break;
-            case dip::DT_SINT16:
-               *static_cast< sint16* >( origin_ ) = clamp_cast< sint16 >( p );
-               break;
-            case dip::DT_SINT32:
-               *static_cast< sint32* >( origin_ ) = clamp_cast< sint32 >( p );
-               break;
-            case dip::DT_SFLOAT:
-               *static_cast< sfloat* >( origin_ ) = clamp_cast< sfloat >( p );
-               break;
-            case dip::DT_DFLOAT:
-               *static_cast< dfloat* >( origin_ ) = clamp_cast< dfloat >( p );
-               break;
-            case dip::DT_SCOMPLEX:
-               *static_cast< scomplex* >( origin_ ) = clamp_cast< scomplex >( p );
-               break;
-            case dip::DT_DCOMPLEX:
-               *static_cast< dcomplex* >( origin_ ) = clamp_cast< dcomplex >( p );
-               break;
-            default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+      /// \brief Create a 0-D image with the data type, tensor shape, and values of `pixel`.
+      ///
+      /// Note that `pixel` can be created through an initializer list. Thus, the following
+      /// is a valid way of creating a 0-D tensor image with 3 tensor components:
+      /// ```cpp
+      ///     dip::Image image( { 10.0f, 1, 0 } ); // will be of type `dip::DT_SFLOAT`
+      /// ```
+      explicit Image( Pixel const& pixel ) :
+            dataType_( pixel.DataType() ),
+            tensor_( pixel.Tensor() ),
+            tensorStride_( 1 ) {
+         Forge();
+         uint8 const* src = static_cast< uint8 const* >( pixel.Origin() );
+         uint8* dest = static_cast< uint8* >( origin_ );
+         dip::sint sz = static_cast< dip::sint >( dataType_.SizeOf() );
+         dip::sint srcStep = sz;
+         dip::sint destStep = tensorStride_ * sz;
+         for( dip::uint ii = 0; ii < tensor_.Elements(); ++ii ) {
+            std::copy( src, src + sz, dest );
+            src += srcStep;
+            dest += destStep;
          }
       }
 
-      /// \brief Create a 0-D vector image with the values of `plist` and the given data type.
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
-      Image( std::initializer_list< T > const& plist, dip::DataType dt ) {
-         tensor_.SetVector( plist.size() );  // will throw if p.size()==0
-         dataType_ = dt;
-         Forge();                            // sizes is empty by default
-         switch( dataType_ ) {
-            case dip::DT_BIN: {
-               bin* ptr = static_cast< bin* >( origin_ );
-               for( T const& p : plist ) {
-                  *ptr = clamp_cast< bin >( p );
-                  ptr += tensorStride_;
-               }
-               break;
-            }
-            case dip::DT_UINT8: {
-               uint8* ptr = static_cast< uint8* >( origin_ );
-               for( T const& p : plist ) {
-                  *ptr = clamp_cast< uint8 >( p );
-                  ptr += tensorStride_;
-               }
-               break;
-            }
-            case dip::DT_UINT16: {
-               uint16* ptr = static_cast< uint16* >( origin_ );
-               for( T const& p : plist ) {
-                  *ptr = clamp_cast< uint16 >( p );
-                  ptr += tensorStride_;
-               }
-               break;
-            }
-            case dip::DT_UINT32: {
-               uint32* ptr = static_cast< uint32* >( origin_ );
-               for( T const& p : plist ) {
-                  *ptr = clamp_cast< uint32 >( p );
-                  ptr += tensorStride_;
-               }
-               break;
-            }
-            case dip::DT_SINT8: {
-               sint8* ptr = static_cast< sint8* >( origin_ );
-               for( T const& p : plist ) {
-                  *ptr = clamp_cast< sint8 >( p );
-                  ptr += tensorStride_;
-               }
-               break;
-            }
-            case dip::DT_SINT16: {
-               sint16* ptr = static_cast< sint16* >( origin_ );
-               for( T const& p : plist ) {
-                  *ptr = clamp_cast< sint16 >( p );
-                  ptr += tensorStride_;
-               }
-               break;
-            }
-            case dip::DT_SINT32: {
-               sint32* ptr = static_cast< sint32* >( origin_ );
-               for( T const& p : plist ) {
-                  *ptr = clamp_cast< sint32 >( p );
-                  ptr += tensorStride_;
-               }
-               break;
-            }
-            case dip::DT_SFLOAT: {
-               sfloat* ptr = static_cast< sfloat* >( origin_ );
-               for( T const& p : plist ) {
-                  *ptr = clamp_cast< sfloat >( p );
-                  ptr += tensorStride_;
-               }
-               break;
-            }
-            case dip::DT_DFLOAT: {
-               dfloat* ptr = static_cast< dfloat* >( origin_ );
-               for( T const& p : plist ) {
-                  *ptr = clamp_cast< dfloat >( p );
-                  ptr += tensorStride_;
-               }
-               break;
-            }
-            case dip::DT_SCOMPLEX: {
-               scomplex* ptr = static_cast< scomplex* >( origin_ );
-               for( T const& p : plist ) {
-                  *ptr = clamp_cast< scomplex >( p );
-                  ptr += tensorStride_;
-               }
-               break;
-            }
-            case dip::DT_DCOMPLEX: {
-               dcomplex* ptr = static_cast< dcomplex* >( origin_ );
-               for( T const& p : plist ) {
-                  *ptr = clamp_cast< dcomplex >( p );
-                  ptr += tensorStride_;
-               }
-               break;
-            }
-            default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
-         }
+      /// \brief Create a 0-D image with the data type and value of `sample`.
+      explicit Image( SampleRef const& sample ) :
+            dataType_( sample.DataType() ) {
+         Forge();
+         uint8 const* src = static_cast< uint8 const* >( sample.Origin() );
+         dip::uint sz = dataType_.SizeOf();
+         std::copy( src, src + sz, static_cast< uint8* >( origin_ ));
+      }
+
+      /// \brief Create a 0-D image with the data type and value of `sample`.
+      ///
+      /// Note that `sample` can be created by implicit cast from any numeric value. Thus, the following
+      /// is a valid way of creating a 0-D image:
+      /// ```cpp
+      ///     dip::Image image( 10.0f ); // will be of type `dip::DT_SFLOAT`
+      ///     dip::Image complex_image( dip::dcomplex( 3, 4 ));
+      /// ```
+      explicit Image( Sample const& sample ) :
+            dataType_( sample.DataType() ) {
+         Forge();
+         uint8 const* src = static_cast< uint8 const* >( sample.Origin() );
+         dip::uint sz = dataType_.SizeOf();
+         std::copy( src, src + sz, static_cast< uint8* >( origin_ ));
+      }
+
+      /// \brief Create a 0-D image with data type `dt` and value of `sample`.
+      ///
+      /// Note that `sample` can be created by implicit cast from any numeric value. Thus, the following
+      /// is a valid way of creating a 0-D image:
+      /// ```cpp
+      ///     dip::Image image( 10, dip::DT_SFLOAT ); // will be of type `dip::DT_SFLOAT`
+      /// ```
+      explicit Image( Sample const& sample, dip::DataType dt ) :
+            dataType_( dt ) {
+         Forge();
+         detail::CastSample( sample.DataType(), sample.Origin(), dataType_, origin_ );
       }
 
       /// \brief Create an image around existing data.
@@ -1678,10 +1832,16 @@ class DIP_NO_EXPORT Image {
       DIP_EXPORT Image TensorColumn( dip::uint index ) const;
 
       /// \brief Extracts the pixel at the given coordinates. The image must be forged.
-      DIP_EXPORT Image At( UnsignedArray const& coords ) const;
+      DIP_EXPORT PixelRef At( UnsignedArray const& coords ) const;
 
-      /// \brief Extracts the pixel at the given linear index (inefficient!). The image must be forged.
-      DIP_EXPORT Image At( dip::uint index ) const;
+      /// \brief Extracts the pixel at the given linear index (inefficient if image is not 1D!). The image must be forged.
+      DIP_EXPORT PixelRef At( dip::uint index ) const;
+
+      /// \brief Extracts the pixel at the given coordinates from a 2D image. The image must be forged.
+      DIP_EXPORT PixelRef At( dip::uint x_index, dip::uint y_index ) const;
+
+      /// \brief Extracts the pixel at the given coordinates from a 3D image. The image must be forged.
+      DIP_EXPORT PixelRef At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const;
 
       /// \brief Extracts a subset of pixels from a 1D image. The image must be forged.
       DIP_EXPORT Image At( Range x_range ) const;
@@ -1918,388 +2078,55 @@ class DIP_NO_EXPORT Image {
 
       // TODO: ForceNormalStrides(), possibly with an option to determine how the tensor is to be stored.
 
-      /// \brief Sets all samples in the image to the value `v`.
+      /// \brief Sets all pixels in the image to the value `pixel`.
       ///
-      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
-      /// The value will be clipped to the target range and/or truncated, as applicable.
+      /// `pixel` must have the same number of tensor elements as the image. Its values will be
+      /// clipped to the target range and/or truncated, as applicable.
+      ///
       /// The image must be forged.
-      DIP_EXPORT void Fill( bool v );
-
-      /// \brief Sets all samples in the image to the value `v`.
-      ///
-      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
-      /// The value will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged.
-      DIP_EXPORT void Fill( int v );
-
-      /// \brief Sets all samples in the image to the value `v`.
-      ///
-      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
-      /// The value will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged.
-      DIP_EXPORT void Fill( dip::uint v );
-
-      /// \brief Sets all samples in the image to the value `v`.
-      ///
-      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
-      /// The value will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged.
-      DIP_EXPORT void Fill( dip::sint v );
-
-      /// \brief Sets all samples in the image to the value `v`.
-      ///
-      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
-      /// The value will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged.
-      DIP_EXPORT void Fill( dfloat v );
-
-      /// \brief Sets all samples in the image to the value `v`.
-      ///
-      /// The function is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
-      /// The value will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged.
-      DIP_EXPORT void Fill( dcomplex v );
-
-      /// \brief Sets all pixels in the image to the values `vlist`.
-      ///
-      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      void Fill( std::initializer_list< bool > const& vlist ) {
-         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
-         Image tmp = QuickCopy();
-         tmp.tensor_.SetScalar();
-         for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
-            // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
-            // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
-            // were a pointer to the correct data type.
-            tmp.Fill( *v );
-         }
+      DIP_EXPORT void Fill( Pixel const& pixel );
+      void Fill( PixelRef const& pixel ) {
+         Fill( Pixel( pixel ));
       }
 
-      /// \brief Sets all pixels in the image to the values `vlist`.
+      DIP_EXPORT void Fill( SampleRef const& sample );
+      /// \brief Sets all samples in the image to the value `sample`.
       ///
-      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      void Fill( std::initializer_list< int > const& vlist ) {
-         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
-         Image tmp = QuickCopy();
-         tmp.tensor_.SetScalar();
-         for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
-            // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
-            // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
-            // were a pointer to the correct data type.
-            tmp.Fill( *v );
-         }
-      }
-
-      /// \brief Sets all pixels in the image to the values `vlist`.
-      ///
-      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      void Fill( std::initializer_list< dip::uint > const& vlist ) {
-         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
-         Image tmp = QuickCopy();
-         tmp.tensor_.SetScalar();
-         for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
-            // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
-            // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
-            // were a pointer to the correct data type.
-            tmp.Fill( *v );
-         }
-      }
-
-      /// \brief Sets all pixels in the image to the values `vlist`.
-      ///
-      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      void Fill( std::initializer_list< dip::sint > const& vlist ) {
-         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
-         Image tmp = QuickCopy();
-         tmp.tensor_.SetScalar();
-         for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
-            // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
-            // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
-            // were a pointer to the correct data type.
-            tmp.Fill( *v );
-         }
-      }
-
-      /// \brief Sets all pixels in the image to the values `vlist`.
-      ///
-      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      void Fill( std::initializer_list< dfloat > const& vlist ) {
-         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
-         Image tmp = QuickCopy();
-         tmp.tensor_.SetScalar();
-         for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
-            tmp.Fill( *v );
-         }
-      }
-
-      /// \brief Sets all pixels in the image to the values `vlist`.
-      ///
-      /// The function is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      void Fill( std::initializer_list< dcomplex > const& vlist ) {
-         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( vlist.size() != tensor_.Elements(), E::INITIALIZERLIST_ILLEGAL_SIZE );
-         Image tmp = QuickCopy();
-         tmp.tensor_.SetScalar();
-         for( auto v = vlist.begin(); v != vlist.end(); ++v, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
-            tmp.Fill( *v );
-         }
-      }
-
-      /// \brief Sets all samples in the image to the value `v`.
-      ///
-      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
       /// The value will be clipped to the target range and/or truncated, as applicable.
+      ///
       /// The image must be forged.
-      Image& operator=( bool v ) {
-         Fill( v );
+      void Fill( Sample const& sample ) {
+         Fill( SampleRef( sample ));
+      }
+
+      /// \brief Sets all pixels in the image to the value `pixel`.
+      ///
+      /// `pixel` must have the same number of tensor elements as the image. Its values will be
+      /// clipped to the target range and/or truncated, as applicable.
+      ///
+      /// The image must be forged.
+      Image& operator=( Pixel const& pixel ) {
+         Fill( pixel );
+         return *this;
+      }
+      Image& operator=( PixelRef const& pixel ) {
+         Fill( pixel );
          return *this;
       }
 
-      /// \brief Sets all samples in the image to the value `v`.
+      /// \brief Sets all samples in the image to the value `sample`.
       ///
-      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
       /// The value will be clipped to the target range and/or truncated, as applicable.
+      ///
       /// The image must be forged.
-      Image& operator=( int v ) {
-         Fill( v );
+      Image& operator=( Sample const& sample ) {
+         Fill( sample );
          return *this;
       }
-
-      /// \brief Sets all samples in the image to the value `v`.
-      ///
-      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
-      /// The value will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged.
-      Image& operator=( dip::uint v ) {
-         Fill( v );
+      Image& operator=( SampleRef const& sample ) {
+         Fill( sample );
          return *this;
       }
-
-      /// \brief Sets all samples in the image to the value `v`.
-      ///
-      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
-      /// The value will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged.
-      Image& operator=( dip::sint v ) {
-         Fill( v );
-         return *this;
-      }
-
-      /// \brief Sets all samples in the image to the value `v`.
-      ///
-      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
-      /// The value will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged.
-      Image& operator=( dfloat v ) {
-         Fill( v );
-         return *this;
-      }
-
-      /// \brief Sets all samples in the image to the value `v`.
-      ///
-      /// The operator is defined for values `v` of type bool, int, dip::uint, dip::sint,
-      /// dip::dfloat (double), and dip::dcomplex.
-      /// The value will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged.
-      Image& operator=( dcomplex v ) {
-         Fill( v );
-         return *this;
-      }
-
-      /// \brief Sets all pixels in the image to the values `vlist`.
-      ///
-      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      Image& operator=( std::initializer_list< bool > const& vlist ) {
-         Fill( vlist );
-         return *this;
-      }
-
-      /// \brief Sets all pixels in the image to the values `vlist`.
-      ///
-      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      Image& operator=( std::initializer_list< int > const& vlist ) {
-         Fill( vlist );
-         return *this;
-      }
-
-      /// \brief Sets all pixels in the image to the values `vlist`.
-      ///
-      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      Image& operator=( std::initializer_list< dip::uint > const& vlist ) {
-         Fill( vlist );
-         return *this;
-      }
-
-      /// \brief Sets all pixels in the image to the values `vlist`.
-      ///
-      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      Image& operator=( std::initializer_list< dip::sint > const& vlist ) {
-         Fill( vlist );
-         return *this;
-      }
-
-      /// \brief Sets all pixels in the image to the values `vlist`.
-      ///
-      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      Image& operator=( std::initializer_list< dfloat > const& vlist ) {
-         Fill( vlist );
-         return *this;
-      }
-
-      /// \brief Sets all pixels in the image to the values `vlist`.
-      ///
-      /// The operator is defined for initializer lists `vlist` of type bool, int, dip::uint,
-      /// dip::sint, dip::dfloat (double), and dip::dcomplex.
-      /// The values will be clipped to the target range and/or truncated, as applicable.
-      /// The image must be forged and have the same number of tensor elements as
-      /// elements in `vlist`.
-      Image& operator=( std::initializer_list< dcomplex > const& vlist ) {
-         Fill( vlist );
-         return *this;
-      }
-
-      /// \brief Returns a reference to the first sample of the pixel at the given coordinates.
-      /// `T` must match the image's data type and the image must be forged.
-      template< typename T >
-      T& SampleAt( UnsignedArray const& coords ) const {
-         DIP_THROW_IF( dip::DataType( T( 0 )) != dataType_, E::WRONG_DATA_TYPE );
-         return *static_cast< T* >( Pointer( coords )); // Throws if not forged.
-      }
-
-      /// \brief Returns a reference to the first sample of the pixel at the given coordinate.
-      /// `T` must match the image's data type and the image must be forged.
-      template< typename T >
-      T& SampleAt( dip::uint x ) const {
-         return SampleAt< T >( UnsignedArray{ x } );
-      }
-
-      /// \brief Returns a reference to the first sample of the pixel at the given coordinates.
-      /// `T` must match the image's data type and the image must be forged.
-      template< typename T >
-      T& SampleAt( dip::uint x, dip::uint y ) const {
-         return SampleAt< T >( UnsignedArray{ x, y } );
-      }
-
-      /// \brief Returns a reference to the first sample of the pixel at the given coordinates.
-      /// `T` must match the image's data type and the image must be forged.
-      template< typename T >
-      T& SampleAt( dip::uint x, dip::uint y, dip::uint z ) const {
-         return SampleAt< T >( UnsignedArray{ x, y, z } );
-      }
-
-      /// \brief Returns a sample iterator to the pixel at the given coordinates.
-      /// `T` must match the image's data type and the image must be forged.
-      template< typename T >
-      SampleIterator< T > SampleIteratorAt( UnsignedArray const& coords ) const {
-         DIP_THROW_IF( dip::DataType( T( 0 )) != dataType_, E::WRONG_DATA_TYPE );
-         return { static_cast< T* >( Pointer( coords )), tensorStride_ }; // Throws if not forged.
-      }
-
-      /// \brief Returns a sample iterator to the single pixel of a 0D image.
-      /// `T` must match the image's data type and the image must be forged.
-      template< typename T >
-      SampleIterator< T > SampleIteratorAt() const {
-         return SampleIteratorAt< T >( UnsignedArray{} );
-      }
-
-      /// \brief Returns a sample iterator to the pixel at the given coordinate.
-      /// `T` must match the image's data type and the image must be forged.
-      template< typename T >
-      SampleIterator< T > SampleIteratorAt( dip::uint x ) const {
-         return SampleIteratorAt< T >( UnsignedArray{ x } );
-      }
-
-      /// \brief Returns a sample iterator to the pixel at the given coordinates.
-      /// `T` must match the image's data type and the image must be forged.
-      template< typename T >
-      SampleIterator< T > SampleIteratorAt( dip::uint x, dip::uint y ) const {
-         return SampleIteratorAt< T >( UnsignedArray{ x, y } );
-      }
-
-      /// \brief Returns a sample iterator to the pixel at the given coordinates.
-      /// `T` must match the image's data type and the image must be forged.
-      template< typename T >
-      SampleIterator< T > SampleIteratorAt( dip::uint x, dip::uint y, dip::uint z ) const {
-         return SampleIteratorAt< T >( UnsignedArray{ x, y, z } );
-      }
-
-      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), cast
-      /// to a boolean. Any non-zero value is cast to true.
-      DIP_EXPORT explicit operator bool() const;
-
-      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), cast
-      /// to a signed integer of maximum width. For complex values
-      /// returns the absolute value.
-      DIP_EXPORT explicit operator dip::sint() const;
-
-      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), cast
-      /// to a double-precision floating-point value. For complex values
-      /// returns the absolute value.
-      DIP_EXPORT explicit operator dfloat() const;
-
-      /// \brief Extracts the fist sample in the first pixel (At(0,0)[0]), cast
-      /// to a double-precision complex floating-point value.
-      DIP_EXPORT explicit operator dcomplex() const;
 
       /// \}
 
@@ -2349,8 +2176,212 @@ class DIP_NO_EXPORT Image {
 
 
 //
-// Overloaded operators
+// Implementation of Pixels and Samples
 //
+
+inline Image::SampleRef::SampleRef( Image::Pixel const& pixel ) : origin_( pixel.Origin() ), dataType_( pixel.DataType() ) {}
+inline Image::SampleRef::SampleRef( Image::PixelRef const& pixel ) : origin_( pixel.Origin() ), dataType_( pixel.DataType() ) {}
+inline Image::SampleRef::SampleRef( Image::Sample const& sample ) : origin_( sample.Origin() ), dataType_( sample.DataType() ) {}
+inline Image::SampleRef& Image::SampleRef::operator=( Image::SampleRef const& sample ) {
+   detail::CastSample( sample.dataType_, sample.origin_, dataType_, origin_ );
+   return *this;
+}
+inline Image::SampleRef& Image::SampleRef::operator=( Image::Sample const& sample ) {
+   detail::CastSample( sample.DataType(), sample.Origin(), dataType_, origin_ );
+   return *this;
+}
+inline void swap( Image::SampleRef& v1, Image::SampleRef& v2 ) { v1.swap( v2 ); }
+
+inline Image::Sample::Sample( Image::SampleRef const& sample ) {
+   dataType_ = sample.DataType();
+   uint8 const* src = static_cast< uint8 const* >( sample.Origin());
+   std::copy( src, src + dataType_.SizeOf(), buffer_.data() );
+}
+inline void swap( Image::Sample& v1, Image::Sample& v2 ) { v1.swap( v2 ); }
+
+
+inline Image::PixelRef& Image::PixelRef::operator=( Image::PixelRef const& pixel ) {
+   dip::uint N = tensor_.Elements();
+   DIP_THROW_IF( pixel.TensorElements() != N, E::NTENSORELEM_DONT_MATCH );
+   dip::sint srcSz = static_cast< dip::sint >( pixel.DataType().SizeOf() );
+   dip::sint destSz = static_cast< dip::sint >( dataType_.SizeOf() );
+   uint8* src = static_cast< uint8* >( pixel.Origin() );
+   uint8* dest = static_cast< uint8* >( origin_ );
+   for( dip::uint ii = 0; ii < N; ++ii ) {
+      detail::CastSample( pixel.DataType(), src, dataType_, dest );
+      src += srcSz * pixel.TensorStride();
+      dest += destSz * tensorStride_;
+   }
+   return *this;
+}
+inline Image::PixelRef& Image::PixelRef::operator=( Image::Pixel const& pixel ) {
+   dip::uint N = tensor_.Elements();
+   DIP_THROW_IF( pixel.TensorElements() != N, E::NTENSORELEM_DONT_MATCH );
+   dip::uint srcSz = pixel.DataType().SizeOf();
+   dip::sint destSz = static_cast< dip::sint >( dataType_.SizeOf() );
+   uint8* src = static_cast< uint8* >( pixel.Origin() );
+   uint8* dest = static_cast< uint8* >( origin_ );
+   for( dip::uint ii = 0; ii < N; ++ii ) {
+      detail::CastSample( pixel.DataType(), src, dataType_, dest );
+      src += srcSz;
+      dest += destSz * tensorStride_;
+   }
+   return *this;
+}
+inline Image::PixelRef& Image::PixelRef::operator=( Image::SampleRef const& sample ) {
+   dip::uint N = tensor_.Elements();
+   dip::uint sz = dataType_.SizeOf();
+   uint8* dest = static_cast< uint8* >( origin_ );
+   detail::CastSample( sample.DataType(), sample.Origin(), dataType_, dest );
+   uint8* src = dest;
+   for( dip::uint ii = 1; ii < N; ++ii ) {
+      std::copy( src, src + sz, dest );
+      dest += static_cast< dip::sint >( sz ) * tensorStride_;
+   }
+   return *this;
+}
+inline Image::PixelRef&  Image::PixelRef::operator=( Image::Sample const& sample ) {
+   dip::uint N = tensor_.Elements();
+   dip::uint sz = dataType_.SizeOf();
+   uint8* dest = static_cast< uint8* >( origin_ );
+   detail::CastSample( sample.DataType(), sample.Origin(), dataType_, dest );
+   uint8* src = dest;
+   for( dip::uint ii = 1; ii < N; ++ii ) {
+      std::copy( src, src + sz, dest );
+      dest += static_cast< dip::sint >( sz ) * tensorStride_;
+   }
+   return *this;
+}
+inline Image::SampleRef Image::PixelRef::operator[]( dip::uint index ) const {
+   DIP_ASSERT( index < tensor_.Elements() );
+   dip::uint sz = dataType_.SizeOf();
+   return SampleRef( static_cast< uint8* >( origin_ ) + static_cast< dip::sint >( sz * index ) * tensorStride_, dataType_ );
+}
+inline Image::PixelIterator Image::PixelRef::begin() const { return PixelIterator( *this ); }
+inline Image::PixelIterator Image::PixelRef::end() const { return PixelIterator( *this, tensor_.Elements() ); }
+inline void swap( Image::PixelRef& v1, Image::PixelRef& v2 ) { v1.swap( v2 ); }
+
+inline Image::Pixel::Pixel( Image::Sample const& sample ) {
+   dataType_ = sample.DataType();
+   buffer_.resize( dataType_.SizeOf());
+   uint8 const* src = static_cast< uint8 const* >( sample.Origin());
+   std::copy( src, src + dataType_.SizeOf(), buffer_.data());
+}
+inline Image::Pixel::Pixel( Image::PixelRef const& pixel ) {
+   dataType_ = pixel.DataType();
+   tensor_ = pixel.Tensor();
+   dip::uint N = tensor_.Elements();
+   dip::uint sz = dataType_.SizeOf();
+   buffer_.resize( sz * N );
+   uint8 const* src = static_cast< uint8 const* >( pixel.Origin());
+   uint8* dest = buffer_.data();
+   for( dip::uint ii = 0; ii < N; ++ii ) {
+      std::copy( src, src + sz, dest );
+      src += pixel.TensorStride() * static_cast< dip::sint >( sz );
+      dest += sz;
+   }
+}
+template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type >
+inline Image::Pixel::Pixel( std::initializer_list< T > values ) {
+   dip::uint N = values.size();
+   tensor_.SetVector( N );
+   dataType_ = dip::DataType( T( 0 ));
+   dip::uint sz = dataType_.SizeOf();
+   buffer_.resize( sz * N );
+   uint8* dest = buffer_.data();
+   for( auto it = values.begin(); it != values.end(); ++it ) {
+      uint8 const* src = reinterpret_cast< uint8 const* >( &*it );
+      std::copy( src, src + sz, dest );
+      dest += sz;
+   }
+}
+inline Image::Pixel::Pixel( std::initializer_list< Image::Sample > samples ) {
+   dip::uint N = samples.size();
+   tensor_.SetVector( N );
+   auto it = samples.begin();
+   dataType_ = it->DataType();
+   dip::uint sz = dataType_.SizeOf();
+   buffer_.resize( sz * N );
+   for( dip::uint ii = 1; ii < N; ++ii ) {
+      ++it;
+      DIP_THROW_IF( it->DataType() != dataType_, E::DATA_TYPES_DONT_MATCH );
+   }
+   uint8* dest = buffer_.data();
+   for( it = samples.begin(); it != samples.end(); ++it ) {
+      uint8 const* src = static_cast< uint8 const* >( it->Origin());
+      std::copy( src, src + sz, dest );
+      dest += sz;
+   }
+}
+inline Image::Pixel& Image::Pixel::operator=( Image::Sample const& sample ) {
+   dip::uint N = tensor_.Elements();
+   dip::uint sz = dataType_.SizeOf();
+   uint8* dest = buffer_.data();
+   detail::CastSample( sample.DataType(), sample.Origin(), dataType_, dest );
+   uint8* src = dest;
+   for( dip::uint ii = 1; ii < N; ++ii ) {
+      std::copy( src, src + sz, dest );
+      dest += sz;
+   }
+   return *this;
+}
+inline Image::SampleRef Image::Pixel::operator[]( dip::uint index ) const {
+   DIP_ASSERT( index < tensor_.Elements() );
+   dip::uint sz = dataType_.SizeOf();
+   return SampleRef( const_cast< uint8* >( buffer_.data() ) + sz * index, dataType_ );
+}
+inline Image::PixelIterator Image::Pixel::begin() const { return PixelIterator( *this ); }
+inline Image::PixelIterator Image::Pixel::end() const { return PixelIterator( *this, tensor_.Elements() ); }
+inline void swap( Image::Pixel& v1, Image::Pixel& v2 ) { v1.swap( v2 ); }
+
+//
+// Overloaded stream output operators
+//
+
+/// \brief You can output a `dip::Image::Sample` or `dip::Image::SampleRef` to `std::cout` or any other stream.
+/// It is printed like any numeric value of the same type.
+inline std::ostream& operator<<(
+      std::ostream& os,
+      Image::Sample const& sample
+) {
+   switch( sample.DataType() ) {
+      case DT_BIN:
+         os << static_cast< bin >( sample ); break;
+      case DT_UINT8:
+      case DT_UINT16:
+      case DT_UINT32:
+         os << static_cast< uint32 >( sample ); break;
+      case DT_SINT8:
+      case DT_SINT16:
+      case DT_SINT32:
+         os << static_cast< sint32 >( sample ); break;
+      case DT_SFLOAT:
+      case DT_DFLOAT:
+         os << static_cast< dfloat >( sample ); break;
+      case DT_SCOMPLEX:
+      case DT_DCOMPLEX:
+         os << static_cast< dcomplex >( sample ); break;
+   }
+   return os;
+}
+
+/// \brief You can output a `dip::Image::Pixel` or `dip::Image::PixelRef` to `std::cout` or any other stream.
+/// It is printed as a sequence of values, prepended with "Pixel with values:".
+inline std::ostream& operator<<(
+      std::ostream& os,
+      Image::Pixel const& pixel
+) {
+   dip::uint N = pixel.TensorElements();
+   if( N == 1 ) {
+      os << "Pixel with value: " << pixel[ 0 ];
+   } else {
+      os << "Pixel with values: " << pixel[ 0 ];
+      for( dip::uint ii = 1; ii < N; ++ii ) {
+         os << ", " << pixel[ ii ];
+      }
+   }
+   return os;
+}
 
 /// \brief You can output a `dip::Image` to `std::cout` or any other stream. Some
 /// information about the image is printed.

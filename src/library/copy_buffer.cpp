@@ -27,121 +27,10 @@ namespace dip {
 
 
 //
-// FillBuffer()
-//
-
-
-template< typename outT >
-static inline void FillBufferFromTo(
-      outT* outBuffer,
-      dip::sint outStride,
-      dip::sint outTensorStride,
-      dip::uint pixels,
-      dip::uint tensorElements,
-      outT value
-) {
-   // TODO: use memset when stride == 1, etc.
-   for( dip::uint pp = 0; pp < pixels; ++pp ) {
-      outT* out = outBuffer;
-      for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
-         *out = value;
-         out += outTensorStride;
-      }
-      outBuffer += outStride;
-   }
-}
-
-template< typename inT >
-void FillBuffer(
-      void* outBuffer,
-      DataType outType,
-      dip::sint outStride,
-      dip::sint outTensorStride,
-      dip::uint pixels,
-      dip::uint tensorElements,
-      inT value
-) {
-   if( outStride == 0 ) {
-      pixels = 1;
-   }
-   if( outTensorStride == 0 ) {
-      tensorElements = 1;
-   }
-   switch( outType ) {
-      case dip::DT_BIN:
-         FillBufferFromTo( static_cast< bin* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< bin >( value ));
-         break;
-      case dip::DT_UINT8:
-         FillBufferFromTo( static_cast< uint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint8 >( value ) );
-         break;
-      case dip::DT_UINT16:
-         FillBufferFromTo( static_cast< uint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint16 >( value ) );
-         break;
-      case dip::DT_UINT32:
-         FillBufferFromTo( static_cast< uint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< uint32 >( value ) );
-         break;
-      case dip::DT_SINT8:
-         FillBufferFromTo( static_cast< sint8* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint8 >( value ) );
-         break;
-      case dip::DT_SINT16:
-         FillBufferFromTo( static_cast< sint16* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint16 >( value ) );
-         break;
-      case dip::DT_SINT32:
-         FillBufferFromTo( static_cast< sint32* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sint32 >( value ) );
-         break;
-      case dip::DT_SFLOAT:
-         FillBufferFromTo( static_cast< sfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< sfloat >( value ) );
-         break;
-      case dip::DT_DFLOAT:
-         FillBufferFromTo( static_cast< dfloat* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< dfloat >( value ) );
-         break;
-      case dip::DT_SCOMPLEX:
-         FillBufferFromTo( static_cast< scomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< scomplex >( value ) );
-         break;
-      case dip::DT_DCOMPLEX:
-         FillBufferFromTo( static_cast< dcomplex* >( outBuffer ), outStride, outTensorStride, pixels, tensorElements, clamp_cast< dcomplex >( value ) );
-         break;
-   }
-}
-
-// Explicit instantiations:
-template
-void FillBuffer(
-      void* outBuffer,
-      DataType outType,
-      dip::sint outStride,
-      dip::sint outTensorStride,
-      dip::uint pixels,
-      dip::uint tensorElements,
-      dip::sint value
-);
-
-template
-void FillBuffer(
-      void* outBuffer,
-      DataType outType,
-      dip::sint outStride,
-      dip::sint outTensorStride,
-      dip::uint pixels,
-      dip::uint tensorElements,
-      dfloat value
-);
-
-template
-void FillBuffer(
-      void* outBuffer,
-      DataType outType,
-      dip::sint outStride,
-      dip::sint outTensorStride,
-      dip::uint pixels,
-      dip::uint tensorElements,
-      dcomplex value
-);
-
-
-//
 // CopyBuffer()
 //
+
+namespace {
 
 template< class inT, class outT >
 static inline void cast_copy( ConstSampleIterator< inT > in, ConstSampleIterator< inT > end, SampleIterator< outT > out ) {
@@ -380,6 +269,8 @@ static inline void CopyBufferFrom(
    }
 }
 
+} // namespace
+
 void CopyBuffer(
       void const* inBuffer,
       DataType inType,
@@ -443,6 +334,7 @@ void CopyBuffer(
 // ExpandBuffer()
 //
 
+namespace {
 
 template< typename DataType >
 static inline void ExpandBufferConstant(
@@ -739,6 +631,8 @@ static inline void ExpandBufferFromTo(
          break;
    }
 }
+
+} // namespace
 
 void ExpandBuffer(
       void* buffer,
