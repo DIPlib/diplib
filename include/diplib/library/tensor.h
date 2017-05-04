@@ -348,6 +348,74 @@ class DIP_NO_EXPORT Tensor {
                break;
          }
       }
+      /// \brief Transforms the tensor such that it becomes a vector referencing the elements along the diagonal.
+      /// The value of `stride` is adjusted.
+      void ExtractDiagonal( dip::sint& stride ) {
+         if( IsScalar() || IsDiagonal() ) {
+            ChangeShape();                // The diagonal is all elements.
+         } else if( IsVector() ) {
+            SetScalar();                  // Keep the first tensor element only.
+         } else if( IsSymmetric() || IsTriangular() ) {
+            SetVector( rows_ );           // The diagonal elements are the first ones.
+         } else { // matrix
+            dip::uint m = rows_;
+            dip::uint n = Columns();
+            SetVector( std::min( m, n ) );
+            if( shape_ == Tensor::Shape::COL_MAJOR_MATRIX ) {
+               stride = static_cast< dip::sint >( m + 1 ) * stride;
+            } else { // row-major matrix
+               stride = static_cast< dip::sint >( n + 1 ) * stride;
+            }
+         }
+      }
+      /// \brief Transforms the tensor such that it becomes a vector referencing the elements along the given
+      /// row. The value of `stride` is adjusted. The tensor representation must be full (i.e. no symmetric or
+      /// triangular matrices).
+      dip::sint ExtractRow( dip::uint index, dip::sint& stride ) {
+         DIP_THROW_IF( index >= rows_, E::INDEX_OUT_OF_RANGE );
+         dip::uint N = Columns();
+         dip::sint offset = 0;
+         switch( TensorShape() ) {
+            case Tensor::Shape::COL_VECTOR:
+            case Tensor::Shape::COL_MAJOR_MATRIX:
+               offset = static_cast< dip::sint >( index ) * stride;
+               stride *= static_cast< dip::sint >( rows_ );
+               break;
+            case Tensor::Shape::ROW_VECTOR:
+            case Tensor::Shape::ROW_MAJOR_MATRIX:
+               offset = static_cast< dip::sint >( index * N ) * stride;
+               // stride doesn't change
+               break;
+            default:
+               DIP_THROW( "Cannot obtain row for non-full tensor representation." );
+         }
+         SetShape( Tensor::Shape::ROW_VECTOR, 1, N );
+         return offset;
+      }
+      /// \brief Transforms the tensor such that it becomes a vector referencing the elements along the given
+      /// column. The value of `stride` is adjusted. The tensor representation must be full (i.e. no symmetric or
+      /// triangular matrices).
+      dip::sint ExtractColumn( dip::uint index, dip::sint& stride ) {
+         dip::uint N = Columns();
+         DIP_THROW_IF( index >= N, E::INDEX_OUT_OF_RANGE );
+         dip::sint offset = 0;
+         switch( TensorShape() ) {
+            case Tensor::Shape::COL_VECTOR:
+            case Tensor::Shape::COL_MAJOR_MATRIX:
+               offset = static_cast< dip::sint >( index * rows_ ) * stride;
+               // stride doesn't change
+               break;
+            case Tensor::Shape::ROW_VECTOR:
+            case Tensor::Shape::ROW_MAJOR_MATRIX:
+               offset = static_cast< dip::sint >( index ) * stride;
+               stride *= static_cast< dip::sint >( N );
+               break;
+            default:
+               DIP_THROW( "Cannot obtain row for non-full tensor representation." );
+         }
+         SetShape( Tensor::Shape::COL_VECTOR, rows_, 1 );
+         return offset;
+      }
 
       /// \brief Returns true for tensors that are stored in column-major order (all
       /// vectors and non-transposed full tensors).

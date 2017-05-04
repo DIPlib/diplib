@@ -192,11 +192,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
    dip::dfloat amplitude = 1.0 / ( std::sqrt( 2.0 * dip::pi ) * sigma );
    dip::Image ft = dip::GaussFT( img, { sigma }, { 0 } );
    DOCTEST_CHECK( std::abs( double( ft.At( 128 )[ 0 ]) - amplitude ) < 0.00015 );
-   DOCTEST_CHECK( static_cast< double >( dip::Image::SampleRef( dip::Sum( ft ))) == doctest::Approx( 1.0 )); // TODO: INDEXING TEMPORARY
+   DOCTEST_CHECK( static_cast< double >( dip::Image::Sample( dip::Sum( ft ))) == doctest::Approx( 1.0 )); // TODO: INDEXING TEMPORARY
    dip::Image fir = dip::GaussFIR( img, { sigma }, { 0 } );
-   DOCTEST_CHECK( std::abs( double( dip::Image::SampleRef( dip::Maximum( fir - ft )))) < 0.0003 );
+   DOCTEST_CHECK( std::abs( double( dip::Image::Sample( dip::Maximum( fir - ft )))) < 0.0003 );
    dip::Image iir = dip::GaussIIR( img, { sigma }, { 0 } );
-   DOCTEST_CHECK( std::abs( double( dip::Image::SampleRef( dip::Maximum( iir - ft )))) < 0.0015 );
+   DOCTEST_CHECK( std::abs( double( dip::Image::Sample( dip::Maximum( iir - ft )))) < 0.0015 );
 
    // Test first derivative for the 3 filters
    dip::ImageIterator< dip::dfloat > it( img );

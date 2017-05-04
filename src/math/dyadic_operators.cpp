@@ -18,8 +18,6 @@
  * limitations under the License.
  */
 
-#include <array>
-
 #include "diplib.h"
 #include "diplib/math.h"
 #include "diplib/framework.h"

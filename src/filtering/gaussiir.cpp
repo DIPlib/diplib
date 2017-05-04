@@ -818,19 +818,19 @@ DOCTEST_TEST_CASE("[DIPlib] testing the IIR Gaussian filter") {
 
    dip::Image r1 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 5 }, "discrete time fit" );
    DOCTEST_CHECK( std::abs( double( r1.At( 128 )[ 0 ] ) - amplitude ) < 0.00015 );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Sum( r1 ))) == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( static_cast< dip::dfloat >( dip::Image::Sample( dip::Sum( r1 ))) == doctest::Approx( 1.0 ));
    dip::Image r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 4 }, "discrete time fit"  );
-   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Maximum( r1 - r2 )))) < 0.0002 );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::Sample( dip::Maximum( r1 - r2 )))) < 0.0002 );
    r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 3 }, "discrete time fit"  );
-   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Maximum( r1 - r2 )))) < 0.001 );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::Sample( dip::Maximum( r1 - r2 )))) < 0.001 );
    r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 2 }, "discrete time fit"  );
-   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Maximum( r1 - r2 )))) < 0.004 );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::Sample( dip::Maximum( r1 - r2 )))) < 0.004 );
    r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 5 }, "forward backward"  );
-   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Maximum( r1 - r2 )))) < 0.002 );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::Sample( dip::Maximum( r1 - r2 )))) < 0.002 );
    r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 4 }, "forward backward"  );
-   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Maximum( r1 - r2 )))) < 0.002 );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::Sample( dip::Maximum( r1 - r2 )))) < 0.002 );
    r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 3 }, "forward backward"  );
-   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::SampleRef( dip::Maximum( r1 - r2 )))) < 0.004 );
+   DOCTEST_CHECK( std::abs( static_cast< dip::dfloat >( dip::Image::Sample( dip::Maximum( r1 - r2 )))) < 0.004 );
 
    // Test first order derivative
    dip::ImageIterator< dip::dfloat > it( img );

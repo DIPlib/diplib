@@ -26,15 +26,10 @@ namespace dip {
 
 Image Image::operator[]( UnsignedArray const& indices ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::sint i;
    DIP_START_STACK_TRACE
-      i = static_cast< dip::sint >( tensor_.Index( indices ));
+      dip::uint index = tensor_.Index( indices );
+      return operator[]( index );
    DIP_END_STACK_TRACE
-   Image out = *this;
-   out.tensor_.SetScalar();
-   out.origin_ = Pointer( i * tensorStride_ );
-   out.ResetColorSpace();
-   return out;
 }
 
 Image Image::operator[]( dip::uint index ) const {
@@ -50,22 +45,7 @@ Image Image::operator[]( dip::uint index ) const {
 Image Image::Diagonal() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    Image out = *this;
-   if( tensor_.IsScalar() || tensor_.IsDiagonal() ) {
-      out.tensor_.SetVector( tensor_.Elements() );
-   } else if( tensor_.IsVector() ) {
-      out.tensor_.SetScalar();                // Keep the first tensor element only
-   } else if( tensor_.IsSymmetric() || tensor_.IsTriangular() ) {
-      out.tensor_.SetVector( tensor_.Rows() );   // The diagonal elements are the first ones.
-   } else { // matrix
-      dip::uint m = tensor_.Rows();
-      dip::uint n = tensor_.Columns();
-      out.tensor_.SetVector( std::min( m, n ) );
-      if( tensor_.TensorShape() == Tensor::Shape::COL_MAJOR_MATRIX ) {
-         out.tensorStride_ = static_cast< dip::sint >( m + 1 ) * tensorStride_;
-      } else { // row-major matrix
-         out.tensorStride_ = static_cast< dip::sint >( n + 1 ) * tensorStride_;
-      }
-   }
+   out.tensor_.ExtractDiagonal( out.tensorStride_ );
    if( out.tensor_.Elements() != tensor_.Elements() ) {
       out.ResetColorSpace();
    }
@@ -74,25 +54,10 @@ Image Image::Diagonal() const {
 
 Image Image::TensorRow( dip::uint index ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::uint M = tensor_.Rows();
-   dip::uint N = tensor_.Columns();
-   DIP_THROW_IF( index >= M, E::INDEX_OUT_OF_RANGE );
+   DIP_THROW_IF( index >= tensor_.Rows(), E::INDEX_OUT_OF_RANGE );
    Image out = *this;
-   out.tensor_.SetShape( Tensor::Shape::ROW_VECTOR, 1, N );
-   switch( tensor_.TensorShape() ) {
-      case Tensor::Shape::COL_VECTOR:
-      case Tensor::Shape::COL_MAJOR_MATRIX:
-         out.origin_ = Pointer( static_cast< dip::sint >( index ) * tensorStride_ );
-         out.tensorStride_ = static_cast< dip::sint >( M ) * tensorStride_;
-         break;
-      case Tensor::Shape::ROW_VECTOR:
-      case Tensor::Shape::ROW_MAJOR_MATRIX:
-         out.origin_ = Pointer( static_cast< dip::sint >( index * N ) * tensorStride_ );
-         // stride doesn't change
-         break;
-      default:
-         DIP_THROW( "Cannot obtain row for non-full tensor representation." );
-   }
+   dip::sint offset = out.tensor_.ExtractRow( index, out.tensorStride_ );
+   out.origin_ = Pointer( offset );
    if( out.tensor_.Elements() != tensor_.Elements() ) {
       out.ResetColorSpace();
    }
@@ -101,65 +66,50 @@ Image Image::TensorRow( dip::uint index ) const {
 
 Image Image::TensorColumn( dip::uint index ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::uint M = tensor_.Rows();
-   dip::uint N = tensor_.Columns();
-   DIP_THROW_IF( index >= N, E::INDEX_OUT_OF_RANGE );
+   DIP_THROW_IF( index >= tensor_.Columns(), E::INDEX_OUT_OF_RANGE );
    Image out = *this;
-   out.tensor_.SetShape( Tensor::Shape::COL_VECTOR, M, 1 );
-   switch( tensor_.TensorShape() ) {
-      case Tensor::Shape::COL_VECTOR:
-      case Tensor::Shape::COL_MAJOR_MATRIX:
-         out.origin_ = Pointer( static_cast< dip::sint >( index * M ) * tensorStride_ );
-         // stride doesn't change
-         break;
-      case Tensor::Shape::ROW_VECTOR:
-      case Tensor::Shape::ROW_MAJOR_MATRIX:
-         out.origin_ = Pointer( static_cast< dip::sint >( index ) * tensorStride_ );
-         out.tensorStride_ = static_cast< dip::sint >( N ) * tensorStride_;
-         break;
-      default:
-         DIP_THROW( "Cannot obtain row for non-full tensor representation." );
-   }
+   dip::sint offset = out.tensor_.ExtractColumn( index, out.tensorStride_ );
+   out.origin_ = Pointer( offset );
    if( out.tensor_.Elements() != tensor_.Elements() ) {
       out.ResetColorSpace();
    }
    return out;
 }
 
-Image::PixelRef Image::At( UnsignedArray const& coords ) const {
+Image::Pixel Image::At( UnsignedArray const& coords ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-   return PixelRef( Pointer( coords ), dataType_, tensor_, tensorStride_ );
+   return Pixel( Pointer( coords ), dataType_, tensor_, tensorStride_ );
 }
 
-Image::PixelRef Image::At( dip::uint index ) const {
+Image::Pixel Image::At( dip::uint index ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    if( sizes_.size() < 2 ) {
       dip::uint n = sizes_.size() == 0 ? 1 : sizes_[ 0 ];
       DIP_THROW_IF( index >= n, E::INDEX_OUT_OF_RANGE );
-      return PixelRef( Pointer( static_cast< dip::sint >( index ) * strides_[ 0 ] ), dataType_, tensor_, tensorStride_ );
+      return Pixel( Pointer( static_cast< dip::sint >( index ) * strides_[ 0 ] ), dataType_, tensor_, tensorStride_ );
    } else {
       return At( IndexToCoordinates( index ) );
    }
 }
 
-Image::PixelRef Image::At( dip::uint x_index, dip::uint y_index ) const {
+Image::Pixel Image::At( dip::uint x_index, dip::uint y_index ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( sizes_.size() != 2, E::ILLEGAL_DIMENSIONALITY );
    DIP_THROW_IF( x_index >= sizes_[ 0 ], E::INDEX_OUT_OF_RANGE );
    DIP_THROW_IF( y_index >= sizes_[ 1 ], E::INDEX_OUT_OF_RANGE );
-   return PixelRef( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
+   return Pixel( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
                              static_cast< dip::sint >( y_index ) * strides_[ 1 ] ),
                     dataType_, tensor_, tensorStride_ );
 }
 
-Image::PixelRef Image::At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const {
+Image::Pixel Image::At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( sizes_.size() != 3, E::ILLEGAL_DIMENSIONALITY );
    DIP_THROW_IF( x_index >= sizes_[ 0 ], E::INDEX_OUT_OF_RANGE );
    DIP_THROW_IF( y_index >= sizes_[ 1 ], E::INDEX_OUT_OF_RANGE );
    DIP_THROW_IF( z_index >= sizes_[ 2 ], E::INDEX_OUT_OF_RANGE );
-   return PixelRef( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
+   return Pixel( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
                              static_cast< dip::sint >( y_index ) * strides_[ 1 ] +
                              static_cast< dip::sint >( z_index ) * strides_[ 2 ] ),
                     dataType_, tensor_, tensorStride_ );

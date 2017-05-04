@@ -21,6 +21,7 @@
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/overload.h"
+#include "diplib/iterators.h"
 
 namespace dip {
 

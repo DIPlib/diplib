@@ -962,9 +962,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.Dimensionality() == 3 );
    DOCTEST_CHECK( out.NumberOfPixels() == 1 );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 0, 0 )[ 0 ] ) == 2 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 0, 0 )[ 1 ] ) == 3 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 0, 0 )[ 2 ] ) == 4 );
+   DOCTEST_CHECK( out.At( 0, 0, 0 )[ 0 ].As< dip::uint >() == 2 );
+   DOCTEST_CHECK( out.At( 0, 0, 0 )[ 1 ].As< dip::uint >() == 3 );
+   DOCTEST_CHECK( out.At( 0, 0, 0 )[ 2 ].As< dip::uint >() == 4 );
 
    // Project over two dimensions
    dip::BooleanArray ps( 3, true );
@@ -974,15 +974,15 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.NumberOfPixels() == 3 );
    DOCTEST_CHECK( out.Size( 0 ) == 3 );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 0, 0 )[ 0 ] ) == 2 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 0, 0 )[ 1 ] ) == 3 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 0, 0 )[ 2 ] ) == 4 );
-   DOCTEST_CHECK( dip::uint( out.At( 1, 0, 0 )[ 0 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 1, 0, 0 )[ 1 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 1, 0, 0 )[ 2 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 2, 0, 0 )[ 0 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 2, 0, 0 )[ 1 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 2, 0, 0 )[ 2 ] ) == 1 );
+   DOCTEST_CHECK( out.At( 0, 0, 0 )[ 0 ].As< dip::uint >() == 2 );
+   DOCTEST_CHECK( out.At( 0, 0, 0 )[ 1 ].As< dip::uint >() == 3 );
+   DOCTEST_CHECK( out.At( 0, 0, 0 )[ 2 ].As< dip::uint >() == 4 );
+   DOCTEST_CHECK( out.At( 1, 0, 0 )[ 0 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 1, 0, 0 )[ 1 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 1, 0, 0 )[ 2 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 2, 0, 0 )[ 0 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 2, 0, 0 )[ 1 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 2, 0, 0 )[ 2 ].As< dip::uint >() == 1 );
 
    // Project over another two dimensions
    ps[ 0 ] = true;
@@ -992,18 +992,18 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.NumberOfPixels() == 4 );
    DOCTEST_CHECK( out.Size( 1 ) == 4 );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 0, 0 )[ 0 ] ) == 2 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 0, 0 )[ 1 ] ) == 3 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 0, 0 )[ 2 ] ) == 4 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 1, 0 )[ 0 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 1, 0 )[ 1 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 1, 0 )[ 2 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 2, 0 )[ 0 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 2, 0 )[ 1 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 2, 0 )[ 2 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 3, 0 )[ 0 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 3, 0 )[ 1 ] ) == 1 );
-   DOCTEST_CHECK( dip::uint( out.At( 0, 3, 0 )[ 2 ] ) == 1 );
+   DOCTEST_CHECK( out.At( 0, 0, 0 )[ 0 ].As< dip::uint >() == 2 );
+   DOCTEST_CHECK( out.At( 0, 0, 0 )[ 1 ].As< dip::uint >() == 3 );
+   DOCTEST_CHECK( out.At( 0, 0, 0 )[ 2 ].As< dip::uint >() == 4 );
+   DOCTEST_CHECK( out.At( 0, 1, 0 )[ 0 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 0, 1, 0 )[ 1 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 0, 1, 0 )[ 2 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 0, 2, 0 )[ 0 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 0, 2, 0 )[ 1 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 0, 2, 0 )[ 2 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 0, 3, 0 )[ 0 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 0, 3, 0 )[ 1 ].As< dip::uint >() == 1 );
+   DOCTEST_CHECK( out.At( 0, 3, 0 )[ 2 ].As< dip::uint >() == 1 );
 
    // No looping at all, we project over all dimensions and have no tensor dimension
    img = dip::Image{ dip::UnsignedArray{ 3, 4, 2 }, 1, dip::DT_SFLOAT };
@@ -1014,13 +1014,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the projection functions") {
    DOCTEST_CHECK( out.Dimensionality() == 3 );
    DOCTEST_CHECK( out.NumberOfPixels() == 1 );
    DOCTEST_CHECK( out.TensorElements() == 1 );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( out.At( 0 )[ 0 ] ) == doctest::Approx( 1.0 / ( 3.0 * 4.0 * 2.0 )));
+   DOCTEST_CHECK( out.At( 0 )[ 0 ].As< dip::dfloat >() == doctest::Approx( 1.0 / ( 3.0 * 4.0 * 2.0 )));
    out = dip::Mean( img, {}, "directional" );
    DOCTEST_CHECK( out.DataType() == dip::DT_SFLOAT );
    DOCTEST_CHECK( out.Dimensionality() == 3 );
    DOCTEST_CHECK( out.NumberOfPixels() == 1 );
    DOCTEST_CHECK( out.TensorElements() == 1 );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( out.At( 0 )[ 0 ] ) == doctest::Approx(
+   DOCTEST_CHECK( out.At( 0 )[ 0 ].As< dip::dfloat >() == doctest::Approx(
          std::atan2( std::sin( 1 ), std::cos( 1 ) + ( 3 * 4 * 2 - 1 ))));
 }
 

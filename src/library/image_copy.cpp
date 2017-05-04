@@ -23,8 +23,7 @@
 #include "diplib.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/framework.h"
-#include "diplib/overload.h"
-#include "diplib/math.h"
+#include "diplib/iterators.h"
 #include "copy_buffer.h"
 
 
@@ -620,19 +619,19 @@ void Image::Fill( Image::Pixel const& pixel ) {
    }
 }
 
-void Image::Fill( Image::SampleRef const& sample ) {
+void Image::Fill( Image::Sample const& sample ) {
    switch( dataType_ ) {
-      case DT_BIN:      InternFill( *this, static_cast< bin      >( sample )); break;
-      case DT_UINT8:    InternFill( *this, static_cast< uint8    >( sample )); break;
-      case DT_SINT8:    InternFill( *this, static_cast< sint8    >( sample )); break;
-      case DT_UINT16:   InternFill( *this, static_cast< uint16   >( sample )); break;
-      case DT_SINT16:   InternFill( *this, static_cast< sint16   >( sample )); break;
-      case DT_UINT32:   InternFill( *this, static_cast< uint32   >( sample )); break;
-      case DT_SINT32:   InternFill( *this, static_cast< sint32   >( sample )); break;
-      case DT_SFLOAT:   InternFill( *this, static_cast< sfloat   >( sample )); break;
-      case DT_DFLOAT:   InternFill( *this, static_cast< dfloat   >( sample )); break;
-      case DT_SCOMPLEX: InternFill( *this, static_cast< scomplex >( sample )); break;
-      case DT_DCOMPLEX: InternFill( *this, static_cast< dcomplex >( sample )); break;
+      case DT_BIN:      InternFill( *this, sample.As< bin      >() ); break;
+      case DT_UINT8:    InternFill( *this, sample.As< uint8    >() ); break;
+      case DT_SINT8:    InternFill( *this, sample.As< sint8    >() ); break;
+      case DT_UINT16:   InternFill( *this, sample.As< uint16   >() ); break;
+      case DT_SINT16:   InternFill( *this, sample.As< sint16   >() ); break;
+      case DT_UINT32:   InternFill( *this, sample.As< uint32   >() ); break;
+      case DT_SINT32:   InternFill( *this, sample.As< sint32   >() ); break;
+      case DT_SFLOAT:   InternFill( *this, sample.As< sfloat   >() ); break;
+      case DT_DFLOAT:   InternFill( *this, sample.As< dfloat   >() ); break;
+      case DT_SCOMPLEX: InternFill( *this, sample.As< scomplex >() ); break;
+      case DT_DCOMPLEX: InternFill( *this, sample.As< dcomplex >() ); break;
       default:
          DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
    }
