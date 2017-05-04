@@ -430,8 +430,9 @@ void dip__SeededWatershed(
       if( !hasMask || it.template Sample< 2 >() ) {
          LabelType lab = it.template Sample< 1 >();
          if( lab == 0 ) {
-            if( PixelHasForegroundNeighbour( it.template Pointer< 1 >(), it.template Pointer< 2 >(), neighborList,
-                                             neighborOffsetsLabels, neighborOffsetsMask,
+            if( PixelHasForegroundNeighbour( it.template Pointer< 1 >(),
+                                             hasMask ? it.template Pointer< 2 >() : nullptr,
+                                             neighborList, neighborOffsetsLabels, neighborOffsetsMask,
                                              it.Coordinates(), imsz )) {
                Q.push( Qitem< TPI >{ it.template Sample< 0 >(), order++, it.template Offset< 1 >() } );
                it.template Sample< 1 >() = PIXEL_ON_STACK;
@@ -479,7 +480,7 @@ void dip__SeededWatershed(
          if( !skipar[ jj ] ) {
             if( !mask || *( mask + neighborOffsetsMask[ jj ] )) {
                LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
-               if( lab > 0 ) {
+               if(( lab > 0 ) && ( lab < PIXEL_ON_STACK )) {
                   neighborLabels.Push( regions[ lab ].mapped );
                }
             }
@@ -488,7 +489,7 @@ void dip__SeededWatershed(
       switch( neighborLabels.Size() ) {
          case 0:
             // Not touching a label: what?
-            DIP_THROW( "This should not have happened: there's a pixel on the stack with all background neighbours!" );
+            //DIP_THROW( "This should not have happened: there's a pixel on the stack with all background neighbours!" );
             break;
          case 1: {
             // Touching a single label: grow
@@ -518,7 +519,7 @@ void dip__SeededWatershed(
             dip::uint realRegionCount = 0;
             for( dip::uint jj = 0; jj < neighborLabels.Size(); ++jj ) {
                LabelType lab = neighborLabels.Label( jj );
-               if( !WatershedShouldMerge( lab, grey[ offsetGrey + neighborOffsetsGrey[ jj ]], regions, maxDepth, maxSize )) {
+               if( !WatershedShouldMerge( lab, grey[ offsetGrey ], regions, maxDepth, maxSize )) {
                   ++realRegionCount;
                }
             }
@@ -542,18 +543,18 @@ void dip__SeededWatershed(
    if( !binaryOutput ) {
       // Process label image
       // if binaryOutput it doesn't matter - we're thresholding this label image anyways
-      ImageIterator< LabelType > it( c_labels );
+      ImageIterator< LabelType > lit( c_labels );
       do {
-         LabelType lab1 = *it;
+         LabelType lab1 = *lit;
          if( lab1 == WATERSHED_LABEL ) {
-            *it = 0;
+            *lit = 0;
          } else if( lab1 > 0 ) {
             LabelType lab2 = regions[ lab1 ].mapped;
             if( lab1 != lab2 ) {
-               *it = lab2;
+               *lit = lab2;
             }
          }
-      } while( ++it );
+      } while( ++lit );
    }
 }
 

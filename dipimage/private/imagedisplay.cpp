@@ -75,6 +75,8 @@
 #include "dip_matlab_interface.h"
 #include "diplib/display.h"
 
+//#define DEBUG_MODE
+
 // This is a simplified version of dml::MatlabInterface that creates 2D UINT8 images only.
 //  - The tensor dimension is always at the end.
 //  - The mxArray is made persistent, and always destroyed when the dip::Image is destroyed.
@@ -179,18 +181,22 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
             dip::Image const& out = object->Output();
             plhs[ 0 ] = externalInterface.GetArray( out );
 
-            std::cout << "Producing output for handle " << handle << std::endl;
+#ifdef DEBUG_MODE
+            mexPrintf( "Producing output for handle %llu\n", handle );
+#endif
 
          } else {
             if( mxIsChar( prhs[ 1 ] )) {
 
                dip::String key = dml::GetString( prhs[ 1 ] );
 
+#ifdef DEBUG_MODE
                if( nrhs == 2 ) {
-                  std::cout << "Getting property " << key << " for handle " << handle << std::endl;
+                  mexPrintf( "Getting property %s for handle %llu\n", key, handle );
                } else {
-                  std::cout << "Setting property " << key << " for handle " << handle << std::endl;
+                  mexPrintf( "Setting property %s for handle %llu\n", key, handle );
                }
+#endif
 
                if( key == "clear" ) {
 
@@ -199,7 +205,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
                   DML_MAX_ARGS( 2 );
                   objects.erase( it );
 
-                  std::cout << "Destroying handle " << handle << std::endl;
+#ifdef DEBUG_MODE
+                  mexPrintf( "Destroying handle %llu\n", handle );
+#endif
 
                   // --- Get static properties ---
 
@@ -307,7 +315,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
                // --- Get pixel values at given coordinates ---
 
-               std::cout << "Getting pixel values at given coordinates" << std::endl;
+#ifdef DEBUG_MODE
+               mexPrintf( "Getting pixel values at given coordinates\n" );
+#endif
 
                DML_MAX_ARGS( 2 );
                dip::UnsignedArray coords = dml::GetUnsignedArray( prhs[ 1 ] );
@@ -328,7 +338,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          objects.emplace( newHandle, object );
          plhs[ 0 ] = CreateHandle( newHandle );
 
-         std::cout << "Constructing handle " << newHandle << std::endl;
+#ifdef DEBUG_MODE
+         mexPrintf( "Constructing handle %llu\n", newHandle );
+#endif
 
          ++newHandle;
 

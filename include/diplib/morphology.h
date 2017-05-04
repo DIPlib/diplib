@@ -667,6 +667,8 @@ inline Image MorphologicalLaplace(
 ///
 /// Any pixel that is infinity will be part of the watershed lines, as is any pixel not within
 /// `mask`.
+///
+/// See \ref connectivity for information on the connectivy parameter.
 DIP_EXPORT void Watershed(
       Image const& in,
       Image const& mask,
@@ -678,7 +680,7 @@ DIP_EXPORT void Watershed(
 );
 inline Image Watershed(
       Image const& in,
-      Image const& mask,
+      Image const& mask = {},
       dip::uint connectivity = 1,
       dfloat maxDepth = 1.0,
       dip::uint maxSize = 0,
@@ -705,6 +707,8 @@ inline Image Watershed(
 ///
 /// See `dip::Watershed` for a description of the merging parameters (`maxDepth`, `maxSize`), and the
 /// `flags` parameter.
+///
+/// See \ref connectivity for information on the connectivy parameter.
 DIP_EXPORT void SeededWatershed(
       Image const& in,
       Image const& seeds,
@@ -718,7 +722,7 @@ DIP_EXPORT void SeededWatershed(
 inline Image SeededWatershed(
       Image const& in,
       Image const& seeds,
-      Image const& mask,
+      Image const& mask = {},
       dip::uint connectivity = 1,
       dfloat maxDepth = 1.0,
       dip::uint maxSize = 0,
@@ -737,6 +741,8 @@ inline Image SeededWatershed(
 /// `output` can be "binary" or "labels", and determines whether the algorithm outputs a binary image or
 /// a labeled image. Note that the labels are not necessarily consecutive (i.e. not all label values between
 /// 1 and the largest label are necessarily used).
+///
+/// See \ref connectivity for information on the connectivy parameter.
 DIP_EXPORT void LocalMinima(
       Image const& in,
       Image const& mask,
@@ -748,7 +754,7 @@ DIP_EXPORT void LocalMinima(
 );
 inline Image LocalMinima(
       Image const& in,
-      Image const& mask,
+      Image const& mask = {},
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
@@ -768,6 +774,8 @@ inline Image LocalMinima(
 /// `output` can be "binary" or "labels", and determines whether the algorithm outputs a binary image or
 /// a labeled image. Note that the labels are not necessarily consecutive (i.e. not all label values between
 /// 1 and the largest label are necessarily used).
+///
+/// See \ref connectivity for information on the connectivy parameter.
 DIP_EXPORT void LocalMaxima(
       Image const& in,
       Image const& mask,
@@ -779,7 +787,7 @@ DIP_EXPORT void LocalMaxima(
 );
 inline Image LocalMaxima(
       Image const& in,
-      Image const& mask,
+      Image const& mask = {},
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
@@ -802,6 +810,8 @@ inline Image LocalMaxima(
 /// For images that have large plateaus (regions of constant value) that are not local minima, this function can
 /// be quite slow. For example, an image that is zero everywhere except for a small valley. For such an image
 /// it is recommended to use the `mask` input, for example with the output of a threshold operation.
+///
+/// See \ref connectivity for information on the connectivy parameter.
 DIP_EXPORT void Minima(
       Image const& in,
       Image const& mask,
@@ -811,7 +821,7 @@ DIP_EXPORT void Minima(
 );
 inline Image Minima(
       Image const& in,
-      Image const& mask,
+      Image const& mask = {},
       dip::uint connectivity = 1,
       String const& output = "binary"
 ) {
@@ -832,6 +842,8 @@ inline Image Minima(
 /// For images that have large plateaus (regions of constant value) that are not local maxima, this function can
 /// be quite slow. For example, an image that is zero everywhere except for a small peak. For such an image
 /// it is recommended to use the `mask` input, for example with the output of a threshold operation.
+///
+/// See \ref connectivity for information on the connectivy parameter.
 DIP_EXPORT void Maxima(
       Image const& in,
       Image const& mask,
@@ -841,7 +853,7 @@ DIP_EXPORT void Maxima(
 );
 inline Image Maxima(
       Image const& in,
-      Image const& mask,
+      Image const& mask = {},
       dip::uint connectivity = 1,
       String const& output = "binary"
 ) {
@@ -860,6 +872,16 @@ DIP_EXPORT void UpperEnvelope(
       dip::uint maxSize = 0
 );
 
+/// \brief Reconstruction by dilation or erosion.
+///
+/// Iteratively dilates (erodes) the image `marker` such that it remains lower (higher) than `in` everywhere, until
+/// stability. This is implemented with an efficient priority-queue--based method. `direction` indicates which of
+/// the two operations to apply ("dilation" or "erosion").
+///
+/// See \ref connectivity for information on the connectivy parameter.
+///
+/// Literature: K. Robinson and P.F. Whelan: Efficient morphological reconstruction: a downhill filter,
+/// Pattern Recognition Letters 25:1759-1767, 2004.
 DIP_EXPORT void MorphologicalReconstruction(
       Image const& marker,
       Image const& in, // grey-value mask

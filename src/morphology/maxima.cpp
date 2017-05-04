@@ -135,7 +135,7 @@ void dip__Extrema(
       if(( lab == PIXEL_NOT_EXTREMUM ) || (( lab > 0 ) && ( !labmap[ lab ] ))) {
          *oit = 0;
       }
-   } while( ++it );
+   } while( ++oit );
 }
 
 void Extrema(

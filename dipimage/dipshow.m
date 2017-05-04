@@ -114,6 +114,9 @@
 %   are used as callback for the 'Mappings' menu items. They can be joined
 %   in a single command:
 %      DIPSHOW('ch_mappingmode','lin','ch_complexmapping','abs').
+%
+%   DIPSHOW('DIP_callback','clear') clears the MEX-file from memory, freeing
+%   also the DIPlib shared library. It also closes all figure windows.
 
 % ORGANIZATION
 %

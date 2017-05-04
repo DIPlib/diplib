@@ -1,7 +1,12 @@
-%WATERSHED   Watershed
+%WATERSEED   Watershed initialized with a seed image
+%
+% WATERSEED performs a watershed on the image GREY_IMAGE, starting with
+% the seeds in the labelled SEED_IMAGE. The labelled regions are grown
+% by addressing their neighbors (defined by CONNECTIVITY) in the order
+% of the grey-values in GREY_IMAGE.
 %
 % SYNOPSIS:
-%  image_out = watershed(image_in,connectivity,max_depth,max_size,flags)
+%  image_out = waterseed(seed_image,grey_image,connectivity,max_depth,max_size,flags)
 %
 % PARAMETERS:
 %  connectivity: defines which pixels are considered neighbours: up to
@@ -19,7 +24,6 @@
 %     the H-minima transform before the watershed.
 %  flags: a cell array of strings, choose from:
 %     - 'high first': reverse the sorting order.
-%     - 'correct': compute the correct watershed (slower), see note below.
 %     - 'labels': output a labelled image rather than a binary image.
 %
 % DEFAULTS:
@@ -28,31 +32,27 @@
 %  max_size = 0 (any size)
 %  flags = {}
 %
-% NOTE:
-%  By default, this function uses a fast watershed algorithm that yields
-%  poor results if there are plateaus in the image (regions with constant
-%  grey-value). It is possible to break up plateaus by adding nose to the
-%  image and setting 'max_depth' to some small value. The alternative
-%  is to provide the 'correct' flag, which causes this function to use
-%  a slower algorithm that always yields correct results.
+% NOTE 1:
+%  Two seeds will always be merged if there is no "grey-value barrier"
+%  between them. Simply adding a little bit of noise to the image will
+%  avoid merging of seeds.
 %
 % NOTE 2:
-%  The fast algorithm also skips all edge pixels, marking them as watershed
-%  pixels. If this is undesireable, extend the image by one pixel on all
-%  sides. The alternative is to provide the 'correct' flag, which causes this
-%  function to use a slower algorithm that does correctly address all edge
-%  pixels.
-%
-% NOTE 3:
-%  Pixels in IMAGE_IN with a value of +INF are not processed, and will be
+%  Pixels in GREY_IMAGE with a value of +INF are not processed, and will be
 %  marked as watershed pixels. Use this to mask out parts of the image you
 %  don't need processed.
 %
+% EXAMPLE:
+%  a = readim('cermet');
+%  b = minima(gaussf(a,10),2,'labels');
+%  c = waterseed(b,a,1);
+%  overlay(a,c)
+%
 % SEE ALSO:
-%  waterseed, maxima, minima
+%  watershed, maxima, minima
 %
 % DIPlib:
-%  This function calls the DIPlib functions dip::Watershed.
+%  This function calls the DIPlib functions dip::SeededWatershed.
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
