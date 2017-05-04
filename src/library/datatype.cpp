@@ -22,7 +22,7 @@
 
 
 /* These are the dip_DataTypeGetInfo() functions actually used, and what to use in the new infrastructure:
-DIP_DT_INFO_SIZEOF                  // DataType::SizeOF
+DIP_DT_INFO_SIZEOF                  // DataType::SizeOf
 DIP_DT_INFO_C2R                     // DataType::SuggestFloat, FloatType
 DIP_DT_INFO_R2C                     // DataType::SuggestComplex, ComplexType
 DIP_DT_INFO_GET_MAXIMUM_PRECISION   // Used with dip_ImagesCheck(DIP_CKIM_MAX_PRECISION_MATCH) and in dip_DetermineDataType() in a way I don't understand.
@@ -33,7 +33,7 @@ DIP_DT_INFO_SUGGEST_2               // DataType::SuggestComplex
 DIP_DT_INFO_SUGGEST_5               // A non-binary type that can hold the data (bin->sint8, others don't change) -- we don't have this yet
 DIP_DT_INFO_SUGGEST_6               // A double-precision type that can hold the data -- we don't have this yet
 DIP_DT_INFO_TO_FLEX                 // DataType::SuggestFlex, FlexType
-DIP_DT_INFO_TO_DIPIMAGE             // DataType::SuggestFlexBin
+DIP_DT_INFO_TO_DIPIMAGE             // DataType::SuggestFlexBin, FlexBinType
 DIP_DT_INFO_TO_FLOAT                // DataType::SuggestFloat, FloatType
 */
 
@@ -230,6 +230,6 @@ constexpr DataType::Classes DataType::Class_Unsigned;
 constexpr DataType::Classes DataType::Class_Signed;
 constexpr DataType::Classes DataType::Class_NonBinary;
 constexpr DataType::Classes DataType::Class_NonComplex;
-constexpr DataType::Classes DataType::Class_Any;
+constexpr DataType::Classes DataType::Class_All;
 
 } // namespace dip

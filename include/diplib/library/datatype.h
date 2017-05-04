@@ -285,7 +285,7 @@ struct DIP_NO_EXPORT DataType {
    /// Class_Signed     | Class_SInt + Class_Float + Class_Complex;
    /// Class_NonBinary  | Class_Real + Class_Complex
    /// Class_NonComplex | Class_Binary + Class_Real
-   /// Class_Any        | Class_Binary + Class_Real + Class_Complex;
+   /// Class_All        | Class_Binary + Class_Real + Class_Complex;
    ///
    /// Note that you can add these constants together, for example `dip::DataType::Class_UInt8 + dip::DataType::Class_UInt16`.
    ///
@@ -323,7 +323,7 @@ struct DIP_NO_EXPORT DataType {
    static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
    static DIP_DEFINE_OPTION( Classes, Class_NonBinary, Class_Real + Class_Complex );
    static DIP_DEFINE_OPTION( Classes, Class_NonComplex, Class_Binary + Class_Real );
-   static DIP_DEFINE_OPTION( Classes, Class_Any, Class_Binary + Class_Real + Class_Complex ); // == Class_Unsigned + Class_Signed
+   static DIP_DEFINE_OPTION( Classes, Class_All, Class_Binary + Class_Real + Class_Complex ); // == Class_Unsigned + Class_Signed
 
    /// \brief Implicit conversion to `dip::DataType::Classes` options class.
    operator Classes() const { return { static_cast<dip::uint>( dt ) }; }

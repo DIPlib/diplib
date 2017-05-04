@@ -91,7 +91,7 @@
 /// `SIGNED`         | `dip::DataType::Class_Signed`
 /// `NONBINARY`      | `dip::DataType::Class_NonBinary`
 /// `NONCOMPLEX`     | `dip::DataType::Class_NonComplex`
-/// `ALL`            | `dip::DataType::Class_Any`
+/// `ALL`            | `dip::DataType::Class_All`
 /// \{
 
 #define DIP__OVL__HEAD( dtype ) \
