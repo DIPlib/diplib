@@ -96,6 +96,8 @@ static_assert( sizeof( mxLogical ) == sizeof( dip::bin ), "mxLogical is not one 
 // Private functions
 //
 
+namespace detail {
+
 // Are the strides consistent for how we create them in this interface?
 inline bool IsMatlabStrides(
       dip::UnsignedArray const& sizes,
@@ -276,6 +278,7 @@ inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
    DIP_THROW( "TensorShape property returned wrong data!" );
 }
 
+} // namespace detail
 
 //
 // Get input arguments: convert mxArray to various dip:: types
@@ -784,7 +787,7 @@ class MatlabInterface : public dip::ExternalInterface {
             dip::sint& tstride
       ) override {
          // Find the right MATLAB class
-         mxClassID type = GetMatlabClassID( datatype );
+         mxClassID type = detail::GetMatlabClassID( datatype );
          // Copy size array
          dip::UnsignedArray mlsizes = sizes;
          dip::uint n = sizes.size();
@@ -839,11 +842,11 @@ class MatlabInterface : public dip::ExternalInterface {
          void* mptr = mat ? ( img.DataType().IsBinary() ? mxGetLogicals( mat ) : mxGetData( mat ) ) : nullptr;
          // Does the image point to a modified view of the mxArray or to a non-MATLAB array?
          if( !mat || ( mptr != img.Origin() ) ||
-             !IsMatlabStrides( img.Sizes(), img.TensorElements(),
+             !detail::IsMatlabStrides( img.Sizes(), img.TensorElements(),
                                img.Strides(), img.TensorStride() ) ||
-             !MatchDimensions( img.Sizes(), img.TensorElements(), img.DataType().IsComplex(),
+             !detail::MatchDimensions( img.Sizes(), img.TensorElements(), img.DataType().IsComplex(),
                                mxGetDimensions( mat ), mxGetNumberOfDimensions( mat )) ||
-             ( mxGetClassID( mat ) != GetMatlabClassID( img.DataType() ))
+             ( mxGetClassID( mat ) != detail::GetMatlabClassID( img.DataType() ))
              // TODO: added or removed singleton dimensions should not trigger a data copy, but a modification of the mxArray.
          ) {
             // Yes, it does. We need to make a copy of the image into a new MATLAB array.
@@ -874,25 +877,25 @@ class MatlabInterface : public dip::ExternalInterface {
             switch( img.TensorShape() ) {
                default:
                //case dip::Tensor::Shape::COL_VECTOR:
-                  tshape = CreateDouble2Vector( img.TensorElements(), 1 );
+                  tshape = detail::CreateDouble2Vector( img.TensorElements(), 1 );
                   break;
                case dip::Tensor::Shape::ROW_VECTOR:
-                  tshape = CreateDouble2Vector( 1, img.TensorElements() );
+                  tshape = detail::CreateDouble2Vector( 1, img.TensorElements() );
                   break;
                case dip::Tensor::Shape::COL_MAJOR_MATRIX:
-                  tshape = CreateDouble2Vector( img.TensorRows(), img.TensorColumns() );
+                  tshape = detail::CreateDouble2Vector( img.TensorRows(), img.TensorColumns() );
                   break;
                case dip::Tensor::Shape::ROW_MAJOR_MATRIX:
                   // requires property to be set twice
-                  tshape = CreateTensorShape( img.TensorShape() );
+                  tshape = detail::CreateTensorShape( img.TensorShape() );
                   mxSetPropertyShared( out, 0, tshapePropertyName, tshape );
-                  tshape = CreateDouble2Vector( img.TensorRows(), img.TensorColumns() );
+                  tshape = detail::CreateDouble2Vector( img.TensorRows(), img.TensorColumns() );
                   break;
                case dip::Tensor::Shape::DIAGONAL_MATRIX:
                case dip::Tensor::Shape::SYMMETRIC_MATRIX:
                case dip::Tensor::Shape::UPPTRIANG_MATRIX:
                case dip::Tensor::Shape::LOWTRIANG_MATRIX:
-                  tshape = CreateTensorShape( img.TensorShape() );
+                  tshape = detail::CreateTensorShape( img.TensorShape() );
                   break;
             }
             mxSetPropertyShared( out, 0, tshapePropertyName, tshape );
@@ -982,7 +985,7 @@ inline dip::Image GetImage( mxArray const* mx ) {
       if( !tensor.IsScalar() ) {
          dip::UnsignedArray tsize = GetUnsignedArray( mxGetPropertyShared( mx, 0, tsizePropertyName ));
          DIP_THROW_IF( tsize.size() != 2, "Error in tensor size property" );
-         enum dip::Tensor::Shape tshape = GetTensorShape( mxGetPropertyShared( mx, 0, tshapePropertyName ));
+         enum dip::Tensor::Shape tshape = detail::GetTensorShape( mxGetPropertyShared( mx, 0, tshapePropertyName ));
          tensor.ChangeShape( dip::Tensor( tshape, tsize[ 0 ], tsize[ 1 ] ));
       }
       mxArray* pxsz = mxGetPropertyShared( mx, 0, pxsizePropertyName );
