@@ -24,7 +24,6 @@
 #include "diplib.h"
 #include "diplib/pixel_table.h"
 #include "diplib/math.h"
-#include "iterators.h"
 
 
 /// \file
@@ -455,100 +454,9 @@ class DIP_NO_EXPORT NeighborList {
       }
 
    private:
-
-      void ConstructConnectivity( dip::uint dimensionality, dip::uint connectivity, FloatArray pixelSize ) {
-         DIP_THROW_IF( dimensionality < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-         DIP_THROW_IF( connectivity > dimensionality, E::PARAMETER_OUT_OF_RANGE );
-         if( connectivity == 0 ) {
-            connectivity = dimensionality;
-         }
-         for( auto& pxsz : pixelSize ) {
-            pxsz *= pxsz;
-         }
-         IntegerArray coords( dimensionality, -1 );
-         for (;;) {
-            dip::uint ii, kk = 0;
-            dfloat dist2 = 0.0;
-            for( ii = 0; ii < dimensionality; ++ii ) {
-               if( coords[ ii ] != 0 ) {
-                  ++kk;
-                  dist2 += pixelSize[ ii ];
-               }
-            }
-            if(( kk <= connectivity ) && ( kk > 0 )) {
-               neighbors_.push_back( { coords, std::sqrt( dist2 ) } );
-            }
-            for( ii = 0; ii < dimensionality; ++ii ) {
-               ++coords[ ii ];
-               if( coords[ ii ] <= 1 ) {
-                  break;
-               }
-               coords[ ii ] = -1;
-            }
-            if( ii == dimensionality ) {
-               break;
-            }
-         }
-      }
-
-      void ConstructChamfer( dip::uint dimensionality, dip::uint maxDistance, FloatArray pixelSize ) {
-         DIP_THROW_IF( dimensionality < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-         DIP_THROW_IF( maxDistance < 1, E::PARAMETER_OUT_OF_RANGE );
-         dip::sint lim = static_cast< dip::sint >( maxDistance );
-         IntegerArray coords( dimensionality, -lim );
-         for( ;; ) {
-            bool use = false;
-            dip::uint ii;
-            dfloat dist2 = 0.0;
-            for( ii = 0; ii < dimensionality; ++ii ) {
-               if( std::abs( coords[ ii ] ) == 1 ) {
-                  use = true;
-                  break;
-               }
-            }
-            if( use ) {
-               for( ii = 0; ii < dimensionality; ++ii ) {
-                  dfloat tmp = static_cast< dfloat >( coords[ ii ] ) * pixelSize[ ii ];
-                  dist2 += tmp * tmp;
-               }
-               neighbors_.push_back( { coords, std::sqrt( dist2 ) } );
-            }
-            for( ii = 0; ii < dimensionality; ++ii ) {
-               ++coords[ ii ];
-               if( coords[ ii ] <= lim ) {
-                  break;
-               }
-               coords[ ii ] = -lim;
-            }
-            if( ii == dimensionality ) {
-               break;
-            }
-         }
-      }
-
-      void ConstructImage( dip::uint dimensionality, Image const& c_metric ) {
-         DIP_THROW_IF( dimensionality < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-         DIP_THROW_IF( c_metric.Dimensionality() > dimensionality, E::DIMENSIONALITIES_DONT_MATCH );
-         Image metric = c_metric.QuickCopy();
-         metric.ExpandDimensionality( dimensionality );
-         IntegerArray offset( dimensionality, 0 );
-         for( dip::uint ii = 0; ii < dimensionality; ++ii ) {
-            DIP_THROW_IF( !( metric.Size( ii ) & 1 ), "Metric image must be odd in size (so I know where the center is)" );
-            offset[ ii ] = static_cast< dip::sint >( metric.Size( ii ) / 2 );
-         }
-         if( metric.DataType() != DT_DFLOAT ) {
-            metric.Convert( DT_DFLOAT );
-         }
-         ImageIterator< dfloat > it( metric );
-         do {
-            if( *it > 0 ) {
-               IntegerArray coords{ it.Coordinates() };
-               coords -= offset;
-               DIP_THROW_IF( !coords.any(), "Metric image must have a distance of 0 in the middle" );
-               neighbors_.push_back( { coords, *it } );
-            }
-         } while( ++it );
-      }
+      DIP_EXPORT void ConstructConnectivity( dip::uint dimensionality, dip::uint connectivity, FloatArray pixelSize );
+      DIP_EXPORT void ConstructChamfer( dip::uint dimensionality, dip::uint maxDistance, FloatArray pixelSize );
+      DIP_EXPORT void ConstructImage( dip::uint dimensionality, Image const& c_metric );
 };
 
 inline void swap( NeighborList::Iterator& v1, NeighborList::Iterator& v2 ) {
