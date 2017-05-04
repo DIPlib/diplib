@@ -129,7 +129,7 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( Divide )
 ///
 /// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Power, operator%(Image const&, T const&)
 DIP_EXPORT void Modulo( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
-inline void Modulo( Image const& lhs, Image const& rhs, Image& out ) { Modulo( lhs, rhs, out, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )); } \
+inline void Modulo( Image const& lhs, Image const& rhs, Image& out ) { Modulo( lhs, rhs, out, lhs.DataType() ); } \
 template< typename T > inline void Modulo( Image const& lhs, T const& rhs, Image& out, DataType dt ) { Modulo( lhs, Image{ rhs }, out, dt ); } \
 template< typename T > inline void Modulo( Image const& lhs, T const& rhs, Image& out ) { Modulo( lhs, Image{ rhs }, out ); } \
 template< typename T > inline Image Modulo( Image const& lhs, T const& rhs, DataType dt ) { Image out; Modulo( lhs, rhs, out, dt ); return out; } \
@@ -439,7 +439,8 @@ inline Image& operator%=( Image& lhs, T const& rhs ) {
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
-inline Image& operator&=( Image& lhs, Image const& rhs ) {
+template< typename T >
+inline Image& operator&=( Image& lhs, T const& rhs ) {
    And( lhs, rhs, lhs );
    return lhs;
 }
@@ -451,7 +452,8 @@ inline Image& operator&=( Image& lhs, Image const& rhs ) {
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
-inline Image& operator|=( Image& lhs, Image const& rhs ) {
+template< typename T >
+inline Image& operator|=( Image& lhs, T const& rhs ) {
    Or( lhs, rhs, lhs );
    return lhs;
 }
@@ -463,7 +465,8 @@ inline Image& operator|=( Image& lhs, Image const& rhs ) {
 /// The operation is performed in-place only
 /// if size is not changed by the operation. Singleton expansion
 /// could change the size of `lhs`.
-inline Image& operator^=( Image& lhs, Image const& rhs ) {
+template< typename T >
+inline Image& operator^=( Image& lhs, T const& rhs ) {
    Xor( lhs, rhs, lhs );
    return lhs;
 }
