@@ -101,6 +101,9 @@ template<> struct IsSampleType< sfloat > { static constexpr bool value = true; }
 template<> struct IsSampleType< dfloat > { static constexpr bool value = true; };
 template<> struct IsSampleType< scomplex > { static constexpr bool value = true; };
 template<> struct IsSampleType< dcomplex > { static constexpr bool value = true; };
+template< typename T > struct IsNumericType { static constexpr bool value = IsSampleType< T >::value; };
+template<> struct IsNumericType< dip::uint > { static constexpr bool value = true; };
+template<> struct IsNumericType< dip::sint > { static constexpr bool value = true; };
 } // namespace detail
 
 /// \brief For use with `std::enable_if` to enable templates only for types that are valid for image samples.
@@ -112,6 +115,17 @@ template<> struct IsSampleType< dcomplex > { static constexpr bool value = true;
 ///     void MyFunction( T value ) { ... }
 /// ```
 template< typename T > struct IsSampleType : public detail::IsSampleType< typename std::remove_cv< T >::type > {};
+
+/// \brief For use with `std::enable_if` to enable templates only for types that are numeric types, similar to
+/// `std::is_arithmetic` but also true for complex types.
+///
+/// One example usage is as follows:
+///
+/// ```cpp
+///     template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+///     void MyFunction( T value ) { ... }
+/// ```
+template< typename T > struct IsNumericType : public detail::IsNumericType< typename std::remove_cv< T >::type > {};
 
 /// \brief Type for samples in a binary image. Can store 0 or 1. Occupies 1 byte.
 class DIP_NO_EXPORT bin {
@@ -134,7 +148,7 @@ class DIP_NO_EXPORT bin {
       constexpr bin( bool v ) : v_( static_cast< uint8 >( v )) {};
 
       /// Any arithmetic type converts to bin by comparing to zero
-      template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+      template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
       constexpr explicit bin( T v ) : v_( static_cast< uint8 >( v != 0 )) {};
 
       /// A complex value converts to bin by comparing the absolute value to zero
