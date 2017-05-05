@@ -527,11 +527,59 @@ of the tensor, yielding a vector image.
 // TODO: we need to document the image reshaping functions also!
 
 
+\subsection pixel_indexing Single-pixel indexing
+
+The function `dip::Image::At` extracts a single pixel from the image. It has different
+forms, accepting either a `dip::UnsignedArray` representing the coordinates of the pixel,
+one to three indices for 1D to 3D images, or a (linear) index to the pixel. The latter
+form is less efficient because the linear index needs to be translated to coordinates,
+as the linear index is not necessarily related to the order in which pixels are stored
+in memory.
+
+```cpp
+    image1D.At( 5 );          // indexes pixel at coordinate 5
+    image2D.At( 0, 10 );      // indexes the pixel at coordinates (0, 10)
+    image2D.At( { 0, 10 } );  // indexes the pixel at coordinates (0, 10)
+    image2D.At( 20 );         // indexes the pixel with linear index 20
+```
+
+These forms result in an object of type `dip::Image::Pixel`. The object contains a
+reference to the original image pixels, so writing to the reference changes the pixel
+values in the image:
+
+```cpp
+    image.At( 0, 10 ) += 1;
+```
+
+Combining tensor and spatial indexing can be done in either order, but the results are
+not identical:
+
+```cpp
+    image.At( 0, 10 )[ 1 ];
+    image[ 1 ].At( 0, 10 );
+```
+
+The first line above uses `[]` to index into the `dip::Image::Pixel` object, yielding
+a `dip::Image::Sample`. Again, this is a reference to the sample in the image, and can
+be written to to change the image. The second line first uses `[]` to create a scalar
+image, and then extracts a pixel from it. The result is a `dip::Image::Pixel` object,
+not a `dip::Image::Sample`, though the pixel object references a single sample in the
+input image. In practice, these are equally useful, though the second form is less
+efficient because an intermediate image is generated.
+
+See the documentation to `dip::Image::Sample` and `dip::Image::Pixel` for more information
+on how these objects can be used. Note however, that this is not an efficient way of
+accessing pixels in an image. It is much more efficient to use pointers into the
+data segment. However, pointers require knowledge of the data type at compile time.
+The indexing described here is a convenient way to read a particular value in a
+data-type agnostic way. To access all pixels in a data-type agnostic way, use the
+`dip::GenericImageIterator`.
+
+
 \subsection regular_indexing Regular indexing (windows, ROI processing, subsampling)
 
-The function `dip::Image::At` is used for creating views that represent a subset of
-pixels. It has different forms, accepting either a `dip::UnsignedArray` representing
-the coordinates of one pixel, an index to a pixel, or a set of `dip::Range` objects
+The function `dip::Image::At` is also used for creating views that represent a subset of
+pixels. In this form, it accepts a set of `dip::Range` objects, or a `dip::RangeArray`,
 representing regular pixel intervals along one dimension through a start, stop and
 step value. That is, a range indicates a portion of an image line, with optional
 subsampling. For example, indexing into a 1D image:
@@ -553,15 +601,15 @@ shares data with the original image, and therefore can be used to write to the
 selected subset of pixels:
 
 ```cpp
-    image.At( dip::UnsignedArray{ 5, 10 } ) += 1;
+    image.At( dip::Range{ 0, 10 }, dip::Range{ 20, 30 } ) += 1;
 ```
 
 Combining tensor and spatial indexing can be done in either order, with identical
 results:
 
 ```cpp
-    image.At( dip::UnsignedArray{ 5, 10 } )[ 1 ];
-    image[ 1 ].At( dip::UnsignedArray{ 5, 10 } );
+    image.At( { 0, 10 }, { 20, 30 } )[ 1 ];
+    image[ 1 ].At( { 0, 10 }, { 20, 30 } );
 ```
 
 

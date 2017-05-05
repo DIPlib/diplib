@@ -618,8 +618,10 @@ class DIP_NO_EXPORT Image {
       /// is a valid way of creating a 0-D tensor image with 3 tensor components:
       ///
       /// ```cpp
-      ///     dip::Image image( { 10.0f, 1.0f, 0.0f } ); // will be of type `dip::DT_SFLOAT`
+      ///     dip::Image image( { 10.0f, 1.0f, 0.0f } );
       /// ```
+      ///
+      /// The image in the example above will be of type `dip::DT_SFLOAT`.
       explicit Image( Pixel const& pixel ) :
             dataType_( pixel.DataType() ),
             tensor_( pixel.Tensor() ),
@@ -643,8 +645,10 @@ class DIP_NO_EXPORT Image {
       /// is a valid way of creating a 0-D tensor image with 3 tensor components:
       ///
       /// ```cpp
-      ///     dip::Image image( { 10, 1, 0 }, dip::DT_SFLOA ); // will be of type `dip::DT_SFLOAT`
+      ///     dip::Image image( { 10, 1, 0 }, dip::DT_SFLOAT );
       /// ```
+      ///
+      /// The image in the example above will be of type `dip::DT_SFLOAT`.
       explicit Image( Pixel const& pixel, dip::DataType dt ) :
             dataType_( dt ),
             tensor_( pixel.Tensor() ),
@@ -667,9 +671,11 @@ class DIP_NO_EXPORT Image {
       /// are valid ways of creating a 0-D image:
       ///
       /// ```cpp
-      ///     dip::Image image( 10.0f ); // will be of type `dip::DT_SFLOAT`
+      ///     dip::Image image( 10.0f );
       ///     dip::Image complex_image( dip::dcomplex( 3, 4 ));
       /// ```
+      ///
+      /// The images in the examples above will be of type `dip::DT_SFLOAT` and `dip::DCOMPLEX`.
       explicit Image( Sample const& sample ) :
             dataType_( sample.DataType() ) {
          Forge();
@@ -684,8 +690,10 @@ class DIP_NO_EXPORT Image {
       /// is a valid way of creating a 0-D image:
       ///
       /// ```cpp
-      ///     dip::Image image( 10, dip::DT_SFLOAT ); // will be of type `dip::DT_SFLOAT`
+      ///     dip::Image image( 10, dip::DT_SFLOAT );
       /// ```
+      ///
+      /// The image in the example above will be of type `dip::DT_SFLOAT`.
       explicit Image( Sample const& sample, dip::DataType dt ) :
             dataType_( dt ) {
          Forge();

@@ -135,24 +135,25 @@ should be processed. There are two ways of doing so:
 
 \section iterate_two_images Processing an image using a separate output image
 
-The `dip::JointImageIterator` loops over both an input and an output image
-at the same time. The two images must have the same sizes:
+The `dip::JointImageIterator` loops over multiple images at the same time. The images
+must all have the same sizes:
 
 ```cpp
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image out = img.Similar( dip::DT_SFLOAT );
-    dip::JointImageIterator< dip::uint16, dip::sfloat > it( img, out );
+    dip::JointImageIterator< dip::uint16, dip::sfloat > it( { img, out } );
     do {
        it.Out() = 2 * it.In();
     } while( ++it );
 ```
 
-Note that `it.In()` returns a const reference to the sample, indicating that
-it is meant as the input image. The joint image iterator cannot be dereferenced,
-as it points at two samples at the same time.
+Note that `it.In()` returns a reference to the sample in the first image, and `it.Out()`
+to the same sample in the second image. These are aliases for the generic `it.Sample<N>()`.
+The joint image iterator cannot be dereferenced, as it points at multiple samples at the
+same time.
 
-To access the various tensor elements, use the `InSample()` and `OutSample()`
-methods.
+To access the various tensor elements, use the `it.InSample(index)`, `it.OutSample(index)`,
+or the generic `it.Sample<N>(index)` methods.
 
 There is also a `dip::GenericJointImageIterator`, which, just like
 `dip::GenericImageIterator`, is a non-templated version of the iterator that
@@ -192,11 +193,11 @@ A one-dimensional filter can be implemented using the line iterator as an array:
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image out = img.Similar( dip::DT_SFLOAT );
     constexpr dip::uint N = 2;
-    std::array< dip::dfloat, 2 * N + 1 > filter{ { 1.0 / 9.0, 2.0 / 9.0, 3.0 / 9.0, 2.0 / 9.0, 1.0 / 9.0 } };
-    dip::JointImageIterator< dip::uint16, dip::sfloat > it( img, out, 0 );
+    std::array< double, 2 * N + 1 > filter{ { 1.0 / 9.0, 2.0 / 9.0, 3.0 / 9.0, 2.0 / 9.0, 1.0 / 9.0 } };
+    dip::JointImageIterator< dip::uint16, dip::sfloat > it( { img, out }, 0 );
     do {
-       auto iit = it.GetInLineIterator();
-       auto oit = it.GetOutLineIterator();
+       auto iit = it.GetLineIterator< 0 >();
+       auto oit = it.GetLineIterator< 1 >();
        // At the beginning of the line the filter has only partial support within the image
        for( dip::uint ii = N; ii > 0; --ii, ++oit ) {
           *oit = std::inner_product( filter.begin() + ii, filter.end(), iit, 0.0f );
@@ -226,7 +227,8 @@ Simpler:
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image out = img.Similar( dip::DT_UINT16 );
     dip::PixelTable kernel( "elliptic", { 5, 5 } );
-    dip::JointImageIterator< dip::uint16, dip::uint16 > it( img, out );
+    dip::ImageIterator< dip::uint16 > it( img );
+    dip::ImageIterator< dip::uint16 > ot( out );
     do {
        dip::uint value = 0;
        for( auto kit = kernel.begin(); kit != kernel.end(); ++kit ) {
@@ -234,46 +236,45 @@ Simpler:
           it.PixelAt( *kit, &pix );
           value += pix;
        }
-       it.Out() = value / kernel.NumberOfPixels();
-    } while( ++it );
+       *ot = static_cast< dip::uint16 >( value / kernel.NumberOfPixels() );
+    } while( ++ot, ++it );
 ```
 
 We iterate over every pixel in the input and output images. At each pixel we read all pixels
 in the kernel, with each read checking for the location to be inside the image domain, and
 applying the default boundary condition if not. We write the average pixel value within the
-kernel at each output pixel.
+kernel at each output pixel. Note that we need to use two iterators, rather than a single
+`dip::JointImageIterator`, because the latter doesn't have the `PixelAt` method
 
 Better:
 
 ```cpp
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image in = dip::ExtendImage( img, { 2, 2 }, {}, { "masked" } ); // a copy of the input image with data ouside of its domain
-    dip::Image out = img.Similar( dip::DT_UINT16 );
+    dip::Image out = in.Similar( dip::DT_UINT16 );
     dip::PixelTable kernel( "elliptic", { 5, 5 }, 0 );
-    dip::PixelTableOffsets offsets = kernel.Prepare( img );
-    dip::JointImageIterator< dip::uint16, dip::uint16 > it( img, out, 0 );
+    dip::PixelTableOffsets offsets = kernel.Prepare( in );
+    dip::JointImageIterator< dip::uint16, dip::uint16 > it( { in, out }, 0 );
+    dip::sint inStride = in.Stride( 0 );
     do {
-       auto iit = it.GetInLineIterator();
-       auto oit = it.GetOutLineIterator();
+       auto iit = it.GetLineIterator< 0 >();
+       auto oit = it.GetLineIterator< 1 >();
        // Compute the sum across all pixels in the kernels for the first point on the line only
        dip::uint value = 0;
-       for( auto kit = offsets.begin();  kit != kernel.end(); ++kit ) {
-          value += *( iit.Pointer() + *kit );
+       for( auto offset : offsets ) {
+          value += *( iit.Pointer() + offset );
        }
-       *oit = value / kernel.NumberOfPixels();
+       *oit = static_cast< dip::uint16 >( value / kernel.NumberOfPixels() );
        ++oit;
        do {
           // Subtract the pixels that will exit the kernel when it moves
-          for( auto kit = offsets.Runs().begin(); kit != offsets.Runs().end(); ++kit ) {
-             value -= *( iit.Pointer() + kit->First() );
+          // Add the pixels that will enter the kernel when it moves
+          for( auto run : offsets.Runs() ) {
+             value -= *( iit.Pointer() + run.offset );
+             value += *( iit.Pointer() + run.offset + static_cast< dip::sint >( run.length ) * inStride );
           }
-          ++iit;
-          // Add the pixels that entered the kernel when it moved
-          for( auto kit = offsets.Runs().begin(); kit != offsets.Runs().end(); ++kit ) {
-             value += *( iit.Pointer() + kit->Last() );
-          }
-          *oit = value / kernel.NumberOfPixels();
-       } while( ++oit ); // (the two images are of the same size, the line iterators reach the end at the same time
+          *oit = static_cast< dip::uint16 >( value / kernel.NumberOfPixels() );
+       } while( ++iit, ++oit ); // the two images are of the same size, the line iterators reach the end at the same time
     } while( ++it );
 ```
 
@@ -295,7 +296,7 @@ many efficient algorithm.
 
 \section iterate_slices Processing an image slice by slice
 
-That for example the case of a time series image, a 3D image where the 3rd dimension is
+Take for example the case of a time series image, a 3D image where the 3rd dimension is
 time. One might want to filter each of the 2D slices in the same way, but not mix
 information from one slice to another. Some image processing functions allow to specify
 which dimensions are to be processed, one can choose to process only the first two dimensions.
@@ -331,7 +332,7 @@ loop using indexing:
     // Identical result to the previous code block, but less efficient
     dip::RangeArray ra( 3 );
     for( dip::sint ii = 0; ii < img.Size( 2 ); ++ii ) {
-       ra[2] = Range( ii );
+       ra[ 2 ] = Range( ii );
        dip::Image slice = img.At( ra );
        slice.Squeeze();
        dip::EuclideanSkeleton( slice, slice, "natural", true );

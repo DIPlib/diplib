@@ -80,17 +80,67 @@ int main() {
 
       PrintPixelValues< dip::uint16 >( img );
 
+      dip::Image out = img.Similar( dip::DT_UINT16 );
+      {
+         // Copied from src/documentation/iterators.md
+         DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
+         DIP_THROW_IF( out.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
+         dip::PixelTable kernel( "elliptic", { 5, 5 } );
+         dip::ImageIterator< dip::uint16 > it( img );
+         dip::ImageIterator< dip::uint16 > ot( out );
+         do {
+            dip::uint value = 0;
+            for( auto kit = kernel.begin(); kit != kernel.end(); ++kit ) {
+               dip::uint16 pix; // If the image is not scalar, we need to provide an array here.
+               it.PixelAt( *kit, &pix );
+               value += pix;
+            }
+            *ot = static_cast< dip::uint16 >( value / kernel.NumberOfPixels() );
+         } while( ++ot, ++it );
+      }
+
+      PrintPixelValues< dip::uint16 >( out );
+
+      {
+         // Copied from src/documentation/iterators.md
+         DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
+         DIP_THROW_IF( out.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
+         dip::Image in = dip::ExtendImage( img, { 2, 2 }, {}, { "masked" } ); // a copy of the input image with data ouside of its domain
+         dip::PixelTable kernel( "elliptic", { 5, 5 }, 0 );
+         dip::PixelTableOffsets offsets = kernel.Prepare( in );
+         dip::JointImageIterator< dip::uint16, dip::uint16 > it( { in, out }, 0 );
+         dip::sint inStride = in.Stride( 0 );
+         do {
+            auto iit = it.GetLineIterator< 0 >();
+            auto oit = it.GetLineIterator< 1 >();
+            // Compute the sum across all pixels in the kernels for the first point on the line only
+            dip::uint value = 0;
+            for( auto offset : offsets ) {
+               value += *( iit.Pointer() + offset );
+            }
+            *oit = static_cast< dip::uint16 >( value / kernel.NumberOfPixels() );
+            ++oit;
+            do {
+               // Subtract the pixels that will exit the kernel when it moves
+               // Add the pixels that will enter the kernel when it moves
+               for( auto run : offsets.Runs() ) {
+                  value -= *( iit.Pointer() + run.offset );
+                  value += *( iit.Pointer() + run.offset + static_cast< dip::sint >( run.length ) * inStride );
+               }
+               *oit = static_cast< dip::uint16 >( value / kernel.NumberOfPixels() );
+            } while( ++iit, ++oit ); // the two images are of the same size, the line iterators reach the end at the same time
+         } while( ++it );
+      }
+
+      PrintPixelValues< dip::uint16 >( out );
+
       LineFilter lineFilter;
-      dip::Image out;
-      //out.SetDataType( dip::DT_UINT16 );
-      //out.Protect();
       dip::Framework::Full(
             img, out, dip::DT_SFLOAT, dip::DT_SFLOAT, dip::DT_SFLOAT, 1,
             dip::BoundaryConditionArray{ dip::BoundaryCondition::SYMMETRIC_MIRROR },
             dip::FloatArray{ 5, 7 }, lineFilter, dip::Framework::Full_AsScalarImage );
 
       PrintPixelValues< dip::sfloat >( out );
-      //PrintPixelValues< dip::uint16 >( out );
 
    } catch( dip::Error e ) {
       std::cout << "DIPlib error: " << e.what() << std::endl;

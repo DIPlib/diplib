@@ -103,8 +103,8 @@ int main() {
          std::array< double, 2 * N + 1 > filter{ { 1.0 / 9.0, 2.0 / 9.0, 3.0 / 9.0, 2.0 / 9.0, 1.0 / 9.0 } };
          dip::JointImageIterator< dip::uint16, dip::sfloat > it( { img, out }, 0 );
          do {
-            auto iit = it.template GetLineIterator< 0 >();
-            auto oit = it.template GetLineIterator< 1 >();
+            auto iit = it.GetLineIterator< 0 >();
+            auto oit = it.GetLineIterator< 1 >();
             // At the beginning of the line the filter has only partial support within the image
             for( dip::uint ii = N; ii > 0; --ii, ++oit ) {
                *oit = std::inner_product( filter.begin() + ii, filter.end(), iit, 0.0f );
@@ -121,8 +121,8 @@ int main() {
       }
 
       PrintPixelValues< dip::sfloat >( out );
-      LineFilter lineFilter;
 
+      LineFilter lineFilter;
       dip::Framework::Separable( img, out, dip::DT_SFLOAT, dip::DT_SFLOAT,
             dip::BooleanArray{ true, false }, { 2 },
             dip::BoundaryConditionArray{ dip::BoundaryCondition::ADD_ZEROS },

@@ -489,7 +489,7 @@ inline Image Identity( Image const& in ) {
 /// and equals the mean projection along the processing dimensions. To get the mean value of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::Mean( img ));
+///     dip::Mean( img ).As< double >();
 /// ```
 ///
 /// If `mode` is `"directional"`, the data in `in` is assumed to be angles, and directional statistics are used.
@@ -511,7 +511,7 @@ inline Image Mean( Image const& in, Image const& mask = {}, String const& mode =
 /// and equals the sum projection along the processing dimensions. To get the sum of all pixel values in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::Sum( img ));
+///     dip::Sum( img ).As< double >();
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
@@ -529,7 +529,7 @@ inline Image Sum( Image const& in, Image const& mask = {}, BooleanArray process 
 /// and equals the product projection along the processing dimensions. To get the product of all pixel values in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::Product( img ));
+///     dip::Product( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the product is computed for each element independently.
@@ -549,7 +549,7 @@ inline Image Product( Image const& in, Image const& mask = {}, BooleanArray proc
 /// and equals the mean absolute projection along the processing dimensions. To get the mean absolute value of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::MeanAbs( img ));
+///     dip::MeanAbs( img ).As< double >();
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
@@ -567,7 +567,7 @@ inline Image MeanAbs( Image const& in, Image const& mask = {}, BooleanArray proc
 /// and equals the sum absolute projection along the processing dimensions. To get the sum absolute value of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::SumAbs( img ));
+///     dip::SumAbs( img ).As< double >();
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
@@ -585,7 +585,7 @@ inline Image SumAbs( Image const& in, Image const& mask = {}, BooleanArray proce
 /// and equals the mean square projection along the processing dimensions. To get the mean square value of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::MeanSquare( img ));
+///     dip::MeanSquare( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
@@ -605,7 +605,7 @@ inline Image MeanSquare( Image const& in, Image const& mask = {}, BooleanArray p
 /// and equals the sum square projection along the processing dimensions. To get the sum square value of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::SumSquare( img ));
+///     dip::SumSquare( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
@@ -625,7 +625,7 @@ inline Image SumSquare( Image const& in, Image const& mask = {}, BooleanArray pr
 /// and equals the variance projection along the processing dimensions. To get the variance of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::Variance( img ));
+///     dip::Variance( img ).As< double >();
 /// ```
 ///
 /// If `mode` is `"directional"`, the data in `in` is assumed to be angles, and directional statistics are used.
@@ -650,7 +650,7 @@ inline Image Variance( Image const& in, Image const& mask = {}, String const& mo
 /// and equals the standard deviation projection along the processing dimensions. To get the standard deviation of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::StandardDeviation( img ));
+///     dip::StandardDeviation( img ).As< double >();
 /// ```
 ///
 /// If `mode` is `"directional"`, the data in `in` is assumed to be angles, and directional statistics are used.
@@ -675,7 +675,7 @@ inline Image StandardDeviation( Image const& in, Image const& mask = {}, String 
 /// and equals the maximum projection along the processing dimensions. To get the maximum of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::Maximum( img ));
+///     dip::Maximum( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
@@ -697,7 +697,7 @@ inline Image Maximum( Image const& in, Image const& mask = {}, BooleanArray proc
 /// and equals the minimum projection along the processing dimensions. To get the minimum of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::Minimum( img ));
+///     dip::Minimum( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
@@ -719,7 +719,7 @@ inline Image Minimum( Image const& in, Image const& mask = {}, BooleanArray proc
 /// and equals the maximum projection along the processing dimensions. To get the maximum of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::Maximum( img ));
+///     dip::Maximum( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
@@ -741,7 +741,7 @@ inline Image MaximumAbs( Image const& in, Image const& mask = {}, BooleanArray p
 /// and equals the minimum projection along the processing dimensions. To get the minimum of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::Minimum( img ));
+///     dip::Minimum( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
@@ -763,7 +763,7 @@ inline Image MinimumAbs( Image const& in, Image const& mask = {}, BooleanArray p
 /// and equals the percentile projection along the processing dimensions. To get the 30th percentile of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::Percentile( img, {}, 30.0 ));
+///     dip::Percentile( img, {}, 30.0 ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
@@ -783,7 +783,7 @@ inline Image Percentile( Image const& in, Image const& mask, dfloat percentile, 
 /// and equals the median projection along the processing dimensions. To get the median of all pixels in the
 /// image:
 /// ```cpp
-///     static_cast< double >( dip::Median( img ));
+///     dip::Median( img ).As< double >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
@@ -805,7 +805,7 @@ inline Image Median( Image const& in, Image const& mask = {}, BooleanArray proce
 /// and equals the "all" projection along the processing dimensions. To test if all the pixels in the image are
 /// non-zero:
 /// ```cpp
-///     static_cast< bool >( dip::All( img ));
+///     dip::All( img ).As< bool >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
@@ -825,7 +825,7 @@ inline Image All( Image const& in, Image const& mask = {}, BooleanArray process 
 /// and equals the "any" projection along the processing dimensions. To test if any pixel in the image is
 /// non-zero:
 /// ```cpp
-///     static_cast< bool >( dip::Any( img ));
+///     dip::Any( img ).As< bool >();
 /// ```
 ///
 /// For tensor images, the result is computed for each element independently.
