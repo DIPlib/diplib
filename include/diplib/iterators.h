@@ -384,10 +384,10 @@ class DIP_NO_EXPORT ImageIterator {
       ///
       /// \see dip::ReadPixelWithBoundaryCondition
       template< typename OutputIterator >
-      void PixelAt( IntegerArray const& coords, OutputIterator& it ) {
+      void PixelAt( IntegerArray coords, OutputIterator it ) {
          DIP_THROW_IF( coords.size() != coords_.size(), E::ARRAY_ILLEGAL_SIZE );
          for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
-            coords[ ii ] += coords_[ ii ];
+            coords[ ii ] += static_cast< dip::sint >( coords_[ ii ] );
          }
          ReadPixelWithBoundaryCondition< value_type >( *image_, it, coords, boundaryCondition_ );
       }

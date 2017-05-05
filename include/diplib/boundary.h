@@ -24,6 +24,7 @@
 #include <limits>
 
 #include "diplib.h"
+#include "diplib/saturated_arithmetic.h"
 
 
 /// \file
@@ -183,7 +184,7 @@ inline void ReadPixelWithBoundaryCondition(
    }
    DataType* in = static_cast< DataType* >( img.Pointer( coords ));
    for( dip::uint jj = 0; jj < img.TensorElements(); ++jj ) {
-      *it = invert ? ( - *in ) : ( *in );
+      *it = invert ? saturated_inv( *in ) : ( *in );
       ++it;
       in += img.TensorStride();
    }
