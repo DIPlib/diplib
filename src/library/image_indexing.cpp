@@ -84,7 +84,9 @@ Image::Pixel Image::At( UnsignedArray const& coords ) const {
 
 Image::Pixel Image::At( dip::uint index ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   if( sizes_.size() < 2 ) {
+   if( index == 0 ) { // shortcut to the first pixel
+      return Pixel( Origin(), dataType_, tensor_, tensorStride_ );
+   } else if( sizes_.size() < 2 ) {
       dip::uint n = sizes_.size() == 0 ? 1 : sizes_[ 0 ];
       DIP_THROW_IF( index >= n, E::INDEX_OUT_OF_RANGE );
       return Pixel( Pointer( static_cast< dip::sint >( index ) * strides_[ 0 ] ), dataType_, tensor_, tensorStride_ );
@@ -295,29 +297,29 @@ DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
    img[ 0 ].At( 6 ) = 4.0;
    img[ 1 ].At( 6 ) = 5.0;
    img[ 0 ].At( 7 ) = 6.0;
-   DOCTEST_CHECK( static_cast< dip::sint >( img[ 0 ].At( 6 )[ 0 ]) == 4 );
-   DOCTEST_CHECK( static_cast< dip::sint >( img[ 1 ].At( 6 )[ 0 ]) == 5 );
-   DOCTEST_CHECK( static_cast< dip::sint >( img[ 0 ].At( 7 )[ 0 ]) == 6 );
+   DOCTEST_CHECK( img.At( 6 )[ 0 ] == 4 );
+   DOCTEST_CHECK( img.At( 6 )[ 1 ] == 5 );
+   DOCTEST_CHECK( img.At( 7 )[ 0 ] == 6 );
    DOCTEST_CHECK_THROWS( img.At( img.NumberOfPixels() ));
    DOCTEST_CHECK_THROWS( img[ 4 ] );
    // Indexing in a 1D image, also tests range with negative values
    dip::Image img2 = img;
    img2.Flatten();
    img2.At( dip::Range{ -1 } ) = 8.0;
-   DOCTEST_CHECK( static_cast< dip::sint >( img2.At( img2.NumberOfPixels() - 1 )[ 0 ] ) == 8 );
+   DOCTEST_CHECK( img2.At( img2.NumberOfPixels() - 1 ) == 8 );
    // Creating a window
    img2 = img.At( dip::Range{ 5, 10 }, dip::Range{ 0, -1, 2 }, dip::Range{ -1, 6 } );
    DOCTEST_CHECK( img2.Sizes() == dip::UnsignedArray( { 6, 10, 4 } ));
    DOCTEST_CHECK( img2.TensorElements() == 3 );
    img2.Fill( 20 );
    // Tests that the window shares data, and that indexing with coordinates works
-   DOCTEST_CHECK( static_cast< dip::sint >( img.At( 6, 2, 6 )[ 0 ] ) == 20 );
-   DOCTEST_CHECK( static_cast< dip::sint >( img.At( 6, 1, 6 )[ 0 ] ) == 0 );
+   DOCTEST_CHECK( img.At( 6, 2, 6 ) == 20 );
+   DOCTEST_CHECK( img.At( 6, 1, 6 ) == 0 );
    // Tests Crop
    img.Fill( 0 );
    img.At( 15/2, 20/2, 10/2 ) = 1;
    dip::Image cropped = img.Crop( { 10, 10, 9 } );
-   DOCTEST_CHECK( static_cast< dip::sint >( cropped.At( 10/2, 10/2, 9/2 )[ 0 ] ) == 1 );
+   DOCTEST_CHECK( cropped.At( 10/2, 10/2, 9/2 ) == 1 );
 }
 
 #endif // DIP__ENABLE_DOCTEST

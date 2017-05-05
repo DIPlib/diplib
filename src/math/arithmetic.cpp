@@ -314,42 +314,23 @@ void Invert(
 #include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the matrix multiplication operation") {
-   try {
-   dip::Image lhs( dip::Image::Pixel{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 } );
+   dip::Image lhs( { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 } );
    lhs.ReshapeTensor( 2, 3 );
-   dip::Image rhs( dip::Image::Pixel{ 1.0, 10.0, 100.0 } );
+   dip::Image rhs( { 1.0, 10.0, 100.0 } );
    rhs.ReshapeTensorAsDiagonal();
    dip::Image out = lhs * rhs;
    DOCTEST_REQUIRE( out.TensorElements() == 6 );
    DOCTEST_CHECK( out.TensorShape() == dip::Tensor::Shape::COL_MAJOR_MATRIX );
-   auto it = out.At( 0 );
-   DOCTEST_CHECK( double( it[ 0 ] ) == doctest::Approx( 1.0 ));
-   DOCTEST_CHECK( double( it[ 1 ] ) == doctest::Approx( 2.0 ));
-   DOCTEST_CHECK( double( it[ 2 ] ) == doctest::Approx( 30.0 ));
-   DOCTEST_CHECK( double( it[ 3 ] ) == doctest::Approx( 40.0 ));
-   DOCTEST_CHECK( double( it[ 4 ] ) == doctest::Approx( 500.0 ));
-   DOCTEST_CHECK( double( it[ 5 ] ) == doctest::Approx( 600.0 ));
+   DOCTEST_CHECK( out.At( 0 ) == dip::Image::Pixel( { 1.0, 2.0, 30.0, 40.0, 500.0, 600.0 } ));
    DOCTEST_CHECK_THROWS( lhs * lhs );
    out = lhs * Transpose( lhs );
    DOCTEST_REQUIRE( out.TensorElements() == 3 );
    DOCTEST_CHECK( out.TensorShape() == dip::Tensor::Shape::SYMMETRIC_MATRIX );
-   it = out.At( 0 );
-   DOCTEST_CHECK( double( it[ 0 ] ) == doctest::Approx( 35.0 ));
-   DOCTEST_CHECK( double( it[ 1 ] ) == doctest::Approx( 56.0 ));
-   DOCTEST_CHECK( double( it[ 2 ] ) == doctest::Approx( 44.0 ));
+   DOCTEST_CHECK( out.At( 0 ) == dip::Image::Pixel( { 35.0, 56.0, 44.0 } ));
    out = Transpose( lhs ) * lhs;
    DOCTEST_REQUIRE( out.TensorElements() == 6 );
    DOCTEST_CHECK( out.TensorShape() == dip::Tensor::Shape::SYMMETRIC_MATRIX );
-   it = out.At( 0 );
-   DOCTEST_CHECK( double( it[ 0 ] ) == doctest::Approx( 5.0 ));
-   DOCTEST_CHECK( double( it[ 1 ] ) == doctest::Approx( 25.0 ));
-   DOCTEST_CHECK( double( it[ 2 ] ) == doctest::Approx( 61.0 ));
-   DOCTEST_CHECK( double( it[ 3 ] ) == doctest::Approx( 11.0 ));
-   DOCTEST_CHECK( double( it[ 4 ] ) == doctest::Approx( 17.0 ));
-   DOCTEST_CHECK( double( it[ 5 ] ) == doctest::Approx( 39.0 ));
-   } catch ( dip::Error& e ){
-      std::cout << e.what() << std::endl;
-   }
+   DOCTEST_CHECK( out.At( 0 ) == dip::Image::Pixel( { 5.0, 25.0, 61.0, 11.0, 17.0, 39.0 } ));
 }
 
 #endif // DIP__ENABLE_DOCTEST

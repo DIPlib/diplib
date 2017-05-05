@@ -608,14 +608,18 @@ static inline void InternFill( Image& dest, TPI value ) {
 void Image::Fill( Image::Pixel const& pixel ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint N = tensor_.Elements();
-   DIP_THROW_IF( pixel.TensorElements() != N, E::NTENSORELEM_DONT_MATCH );
-   Image tmp = QuickCopy();
-   tmp.tensor_.SetScalar();
-   for( dip::uint ii = 0; ii < N; ++ii, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
-      // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
-      // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
-      // were a pointer to the correct data type.
-      tmp.Fill( pixel[ ii ] );
+   if( pixel.TensorElements() == 1 ) {
+      Fill( pixel[ 0 ] );
+   } else {
+      DIP_THROW_IF( pixel.TensorElements() != N, E::NTENSORELEM_DONT_MATCH );
+      Image tmp = QuickCopy();
+      tmp.tensor_.SetScalar();
+      for( dip::uint ii = 0; ii < N; ++ii, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
+         // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
+         // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
+         // were a pointer to the correct data type.
+         tmp.Fill( pixel[ ii ] );
+      }
    }
 }
 

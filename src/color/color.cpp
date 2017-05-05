@@ -380,14 +380,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    DOCTEST_CHECK( csm.GetColorSpaceConverter( "rgb", "grey" )->Cost() == 100 );
    // Test grey->RGB conversion
    dip::Image img( {}, 1 );
-   img.Fill( 0 );
+   img.Fill( 100 );
    dip::Image out = csm.Convert( img, "RGB" );
    DOCTEST_CHECK( out.ColorSpace() == "RGB" );
    DOCTEST_CHECK( out.TensorElements() == 3 );
-   auto oit = out.At( 0 );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( oit[ 0 ] ) == doctest::Approx( 0.0 ));
-   DOCTEST_CHECK( static_cast< dip::dfloat >( oit[ 1 ] ) == doctest::Approx( 0.0 ));
-   DOCTEST_CHECK( static_cast< dip::dfloat >( oit[ 2 ] ) == doctest::Approx( 0.0 ));
+   DOCTEST_CHECK( out.At( 0 ) == dip::Image::Pixel( { 100, 100, 100 } ));
    // CMYK should have 4 tensor elements, not 3!
    img.SetColorSpace( "CMYK" );
    DOCTEST_CHECK_THROWS( csm.Convert( img, "RGB" ) );
@@ -406,19 +403,13 @@ DOCTEST_TEST_CASE("[DIPlib] testing the ColorSpaceManager class") {
    dip::Image xyz = csm.Convert( img, "XYZ" );
    csm.SetWhitePoint( dip::ColorSpaceManager::IlluminantD65 ); // same as default values!
    csm.Convert( xyz, out, "RGB" );
-   auto iit = img.At( 0 );
-   oit = out.At( 0 );
-   DOCTEST_CHECK( static_cast< dip::dfloat >( iit[ 0 ] ) == doctest::Approx( static_cast< dip::dfloat >( oit[ 0 ] )));
-   DOCTEST_CHECK( static_cast< dip::dfloat >( iit[ 1 ] ) == doctest::Approx( static_cast< dip::dfloat >( oit[ 1 ] )));
-   DOCTEST_CHECK( static_cast< dip::dfloat >( iit[ 2 ] ) == doctest::Approx( static_cast< dip::dfloat >( oit[ 2 ] )));
+   DOCTEST_CHECK( img.At( 0 )[ 0 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 0 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 1 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 1 ].As< dip::dfloat >() ));
+   DOCTEST_CHECK( img.At( 0 )[ 2 ].As< dip::dfloat >() == doctest::Approx( out.At( 0 )[ 2 ].As< dip::dfloat >() ));
    // Check that RGB->XYZ yields something different when using a different white point.
    csm.SetWhitePoint( dip::ColorSpaceManager::IlluminantD50 );
    csm.Convert( img, out, "XYZ" );
-   iit = xyz.At( 0 );
-   oit = out.At( 0 );
-   DOCTEST_CHECK_FALSE( static_cast< dip::dfloat >( iit[ 0 ] ) == doctest::Approx( static_cast< dip::dfloat >( oit[ 0 ] )));
-   DOCTEST_CHECK_FALSE( static_cast< dip::dfloat >( iit[ 1 ] ) == doctest::Approx( static_cast< dip::dfloat >( oit[ 1 ] )));
-   DOCTEST_CHECK_FALSE( static_cast< dip::dfloat >( iit[ 2 ] ) == doctest::Approx( static_cast< dip::dfloat >( oit[ 2 ] )));
+   DOCTEST_CHECK_FALSE( xyz.At( 0 ) == out.At( 0 ));
 }
 
 #endif // DIP__ENABLE_DOCTEST

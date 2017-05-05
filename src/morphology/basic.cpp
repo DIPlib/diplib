@@ -613,7 +613,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    DOCTEST_CHECK( dip::Count( out ) == 10*11 );
    dip::BasicMorphology( out, out, { { 10, 11 }, "rectangular" }, {}, false /*compute erosion*/, true /* mirror */ );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 )[ 0 ].As< dip::uint >() == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
 
    // PixelTable morphology
    dip::BasicMorphology( in, out, { { 1, 10 }, "elliptic" }, {}, true /*compute dilation*/ );
@@ -624,7 +624,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    DOCTEST_CHECK( dip::Count( out ) == 89 );
    dip::BasicMorphology( out, out, { { 10, 11 }, "elliptic" }, {}, false /*compute erosion*/, true /* mirror */ );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 )[ 0 ].As< dip::uint >() == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
 
    // PixelTable morphology -- mirroring
    dip::Image se( { 10, 10 }, 1, dip::DT_BIN );
@@ -633,7 +633,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    DOCTEST_CHECK( dip::Count( out ) == 100 );
    dip::BasicMorphology( out, out, se, {}, false /*compute erosion*/, true /* mirror */ );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 )[ 0 ].As< dip::uint >() == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
 
    // Parabolic morphology
    dip::BasicMorphology( in, out, { { 10.0, 0.0 }, "parabolic" }, {}, true /*compute dilation*/ );
@@ -642,8 +642,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
       result += dip::dfloat( pval ) - dip::dfloat( ii * ii ) / 100.0;
    }
    result = dip::dfloat( pval ) + result * 2.0;
-   DOCTEST_CHECK(( dip::dfloat )dip::Sum( out ).At( 0 )[ 0 ] == doctest::Approx( result ));
-   DOCTEST_CHECK( out.At( 64, 35 )[ 0 ].As< dip::uint >() == pval ); // Is the origin in the right place?
+   DOCTEST_CHECK( dip::Sum( out ).As< dip::dfloat >() == doctest::Approx( result ));
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is the origin in the right place?
 
    dip::BasicMorphology( out, out, { { 10.0, 0.0 }, "parabolic" }, {}, false /*compute erosion*/, true /* mirror */ );
    result = 0.0;
@@ -651,8 +651,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
       result += dip::dfloat( ii * ii ) / 100.0; // 100.0 = 10.0 * 10.0
    }
    result = dip::dfloat( pval ) + result * 2.0;
-   DOCTEST_CHECK(( dip::dfloat )dip::Sum( out ).At( 0 )[ 0 ] == doctest::Approx( result ));
-   DOCTEST_CHECK( out.At( 64, 35 )[ 0 ].As< dip::uint >() == pval ); // Is the origin in the right place?
+   DOCTEST_CHECK( dip::Sum( out ).As< dip::dfloat >() == doctest::Approx( result ));
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is the origin in the right place?
 
    // Grey-value SE morphology
    se.ReForge( { 5, 6 }, 1, dip::DT_SFLOAT );
@@ -663,10 +663,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    se.At( 4, 0 ) = -10;
    se.At( 2, 3 ) = 0;
    dip::BasicMorphology( in, out, se, {}, true /*compute dilation*/ );
-   DOCTEST_CHECK(( dip::sint )dip::Sum( out ).At( 0 )[ 0 ] == 5 * pval - 5 - 5 - 10 );
+   DOCTEST_CHECK( dip::Sum( out ).As< dip::dfloat >() == 5 * pval - 5 - 5 - 10 );
    dip::BasicMorphology( out, out, se, {}, false /*compute erosion*/, true /* mirror */ );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 )[ 0 ].As< dip::uint >() == pval ); // Is the main pixel in the right place and with the right value?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is the main pixel in the right place and with the right value?
 }
 
 #endif // DIP__ENABLE_DOCTEST

@@ -104,6 +104,7 @@ template<> struct IsSampleType< dcomplex > { static constexpr bool value = true;
 template< typename T > struct IsNumericType { static constexpr bool value = IsSampleType< T >::value; };
 template<> struct IsNumericType< dip::uint > { static constexpr bool value = true; };
 template<> struct IsNumericType< dip::sint > { static constexpr bool value = true; };
+template<> struct IsNumericType< bool > { static constexpr bool value = true; };
 } // namespace detail
 
 /// \brief For use with `std::enable_if` to enable templates only for types that are valid for image samples.
