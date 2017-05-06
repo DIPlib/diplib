@@ -229,15 +229,6 @@ inline mxClassID GetMatlabClassID(
    return type;
 }
 
-// Create a two-element mxArray and write the two values in it
-inline mxArray* CreateDouble2Vector( dip::dfloat v0, dip::dfloat v1 ) {
-   mxArray* out = mxCreateDoubleMatrix( 1, 2, mxREAL );
-   double* p = mxGetPr( out );
-   p[ 0 ] = v0;
-   p[ 1 ] = v1;
-   return out;
-}
-
 // Create an mxArray with a string representation of the dip::Tensor::Shape argument
 inline mxArray* CreateTensorShape( enum dip::Tensor::Shape shape ) {
    switch( shape ) {
@@ -606,6 +597,14 @@ inline dip::RangeArray GetRangeArray( mxArray const* mx ) {
 // Put output values: convert various dip:: types to mxArray
 //
 
+/// \brief Create a two-element mxArray and write the two values in it.
+inline mxArray* CreateDouble2Vector( dip::dfloat v0, dip::dfloat v1 ) {
+   mxArray* out = mxCreateDoubleMatrix( 1, 2, mxREAL );
+   double* p = mxGetPr( out );
+   p[ 0 ] = v0;
+   p[ 1 ] = v1;
+   return out;
+}
 
 /// \brief Convert an boolean from `bool` to `mxArray` by copy.
 inline mxArray* GetArray( bool in ) {
@@ -877,19 +876,19 @@ class MatlabInterface : public dip::ExternalInterface {
             switch( img.TensorShape() ) {
                default:
                //case dip::Tensor::Shape::COL_VECTOR:
-                  tshape = detail::CreateDouble2Vector( img.TensorElements(), 1 );
+                  tshape = CreateDouble2Vector( img.TensorElements(), 1 );
                   break;
                case dip::Tensor::Shape::ROW_VECTOR:
-                  tshape = detail::CreateDouble2Vector( 1, img.TensorElements() );
+                  tshape = CreateDouble2Vector( 1, img.TensorElements() );
                   break;
                case dip::Tensor::Shape::COL_MAJOR_MATRIX:
-                  tshape = detail::CreateDouble2Vector( img.TensorRows(), img.TensorColumns() );
+                  tshape = CreateDouble2Vector( img.TensorRows(), img.TensorColumns() );
                   break;
                case dip::Tensor::Shape::ROW_MAJOR_MATRIX:
                   // requires property to be set twice
                   tshape = detail::CreateTensorShape( img.TensorShape() );
                   mxSetPropertyShared( out, 0, tshapePropertyName, tshape );
-                  tshape = detail::CreateDouble2Vector( img.TensorRows(), img.TensorColumns() );
+                  tshape = CreateDouble2Vector( img.TensorRows(), img.TensorColumns() );
                   break;
                case dip::Tensor::Shape::DIAGONAL_MATRIX:
                case dip::Tensor::Shape::SYMMETRIC_MATRIX:
