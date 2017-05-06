@@ -58,7 +58,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       if(( nrhs > 3 ) || !out.IsScalar() ) {
          plhs[ 0 ] = mi.GetArray( out );
       } else {
-         plhs[ 0 ] = dml::GetArray( static_cast< dip::dfloat >( out ));
+         plhs[ 0 ] = dml::GetArray( out.As< dip::dfloat >() );
       }
 
    } catch( const dip::Error& e ) {
