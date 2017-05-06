@@ -30,7 +30,7 @@ namespace dip {
 
 static ColorSpaceManager colorSpaceManager;
 
-// Don't call this function if mappingMode_ == MappingMode::MANUAL!
+// Don't call this function if mappingMode_ == MappingMode::MANUAL or mappingMode_ == MappingMode::MODULO!
 void ImageDisplay::ComputeLimits( bool set ) {
    Limits* lims;
    Image tmp;
@@ -222,12 +222,27 @@ dfloat convert( std::complex< T > v, bool usePhase ) {
    }
 }
 
+template< typename T >
+T ToReal( T v, bool /*usePhase*/ ) {
+   return v;
+}
+
+template< typename T >
+T ToReal( std::complex< T > v, bool usePhase ) {
+   if( usePhase ) {
+      return std::arg( v );
+   } else {
+      return std::abs( v );
+   }
+}
+
 template< typename TPI >
 void CastToUint8(
       Image const& slice,
       Image& out,
       bool usePhase,
       bool logarithmic,
+      bool useModulo,
       dip::dfloat offset,
       dip::dfloat scale
 ) {
@@ -252,6 +267,14 @@ void CastToUint8(
                iPtr += sliceStride0;
                oPtr += outStride0;
             }
+         } else if( useModulo ) {
+            for( dip::uint ii = 0; ii < width; ++ii ) {
+               dfloat scaled = ( convert( *iPtr, usePhase ) + offset ) * scale;
+               scaled = scaled == 0 ? 0 : ( std::fmod( scaled - 1, 255.0 ) + 1 );
+               *oPtr = clamp_cast< uint8 >( scaled );
+               iPtr += sliceStride0;
+               oPtr += outStride0;
+            }
          } else {
             for( dip::uint ii = 0; ii < width; ++ii ) {
                *oPtr = clamp_cast< uint8 >(( convert( *iPtr, usePhase ) + offset ) * scale );
@@ -270,6 +293,7 @@ void CastToUint8< bin >(
       Image& out,
       bool /*usePhase*/,
       bool /*logarithmic*/,
+      bool /*useModulo*/,
       dip::dfloat /*offset*/,
       dip::dfloat /*scale*/
 ) {
@@ -305,7 +329,7 @@ void ImageDisplay::UpdateOutput() {
    UpdateRgbSlice();
    if( outputIsDirty_ ) {
       // Input range to map to output
-      if( mappingMode_ != MappingMode::MANUAL ) {
+      if(( mappingMode_ != MappingMode::MANUAL ) && ( mappingMode_ != MappingMode::MODULO )) {
          ComputeLimits();
          if( mappingMode_ == MappingMode::BASED ) {
             dfloat bound = std::max( std::abs( range_.lower ), std::abs( range_.upper ));
@@ -313,15 +337,14 @@ void ImageDisplay::UpdateOutput() {
          }
       }
       // Mapping function
-      bool logarithmic;
+      bool logarithmic = mappingMode_ == MappingMode::LOGARITHMIC;
+      bool useModulo = mappingMode_ == MappingMode::MODULO;
       dfloat offset;
       dfloat scale;
-      if( mappingMode_ == MappingMode::LOGARITHMIC ) {
-         logarithmic = true;
+      if( logarithmic ) {
          offset = 1.0 - range_.lower;
          scale = 255.0 / std::log( range_.upper + offset );
       } else {
-         logarithmic = false;
          offset = -range_.lower;
          scale = 255.0 / ( range_.upper - range_.lower );
       }
@@ -349,7 +372,7 @@ void ImageDisplay::UpdateOutput() {
       DIP_ASSERT(( !twoDimOut_ && ( slice.Dimensionality() == 1 )) || ( twoDimOut_ && ( slice.Dimensionality() == 2 )));
       output_.ReForge( slice.Sizes(), slice.TensorElements(), DT_UINT8 );
       // Stretch and convert the data
-      DIP_OVL_CALL_ALL( CastToUint8, ( slice, output_, usePhase, logarithmic, offset, scale ), slice.DataType() );
+      DIP_OVL_CALL_ALL( CastToUint8, ( slice, output_, usePhase, logarithmic, useModulo, offset, scale ), slice.DataType() );
       outputIsDirty_ = false;
    }
 }

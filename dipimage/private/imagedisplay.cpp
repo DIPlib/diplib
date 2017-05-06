@@ -334,7 +334,14 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          DML_MAX_ARGS( 1 );
 
          dip::Image const in = dml::GetImage( prhs[ 0 ] );
-         Object object = std::make_shared< dip::ImageDisplay >( in, &externalInterface );
+         // NOTE: `in` references a MATLAB array, but doesn't own it. We need to keep this reference until the
+         //       corresponding handle is cleared. But the MATLAB array can be cleared and/or rewritten in between
+         //       calls to this function.
+         //       One option is to make it persistent, I don't know how well that works with input arrays (not
+         //       allocated here), and we'd also need to register it somewhere so it can be cleared when necessary.
+         //       The option we follow here instead is to simply make a deep copy of the image.
+         dip::Image copy = dip::Copy( in );
+         Object object = std::make_shared< dip::ImageDisplay >( copy, &externalInterface );
          objects.emplace( newHandle, object );
          plhs[ 0 ] = CreateHandle( newHandle );
 

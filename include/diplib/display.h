@@ -55,7 +55,7 @@ class DIP_NO_EXPORT ImageDisplay{
 
       enum class ProjectionMode : unsigned char { SLICE, MAX, MEAN };
       enum class ComplexMode : unsigned char { MAGNITUDE, PHASE, REAL, IMAG };
-      enum class MappingMode : unsigned char { MANUAL, MAXMIN, PERCENTILE, BASED, LOGARITHMIC };
+      enum class MappingMode : unsigned char { MANUAL, MAXMIN, PERCENTILE, BASED, LOGARITHMIC, MODULO };
       struct Limits {
          dfloat lower;
          dfloat upper;
@@ -261,13 +261,15 @@ class DIP_NO_EXPORT ImageDisplay{
          if( !IsBinary() && ( mappingMode_ != mappingMode )) {
             mappingMode_ = mappingMode;
             outputIsDirty_ = true;
+            if( mappingMode_ == MappingMode::MODULO ) {
+               range_ = { 0.0, 255.0 };
+            }
          }
       }
 
       /// \brief Sets the range of intensities to be mapped to the output range. Forces intensity mapping mode to linear.
       /// Has no effect for binary images.
       void SetRange( Limits range ) {
-         DIP_THROW_IF( range.lower >= range.upper, E::PARAMETER_OUT_OF_RANGE );
          if( !IsBinary() ) {
             mappingMode_ = MappingMode::MANUAL;
             if(( range_.lower != range.lower ) ||
@@ -298,6 +300,8 @@ class DIP_NO_EXPORT ImageDisplay{
       /// - "base": uses the full range of the image (or slice), but keeps 0 at the middle of the output range.
       /// - "based": same as "base".
       /// - "log": the logarithm of the intensities are mapped to the full output range.
+      /// - "modulo": the integer input values are mapped modulo the output range.
+      /// - "labels": same as "modulo".
       void SetRange( String const& range ) {
          if( range == "unit" ) {
             SetRange( Limits{ 0.0, 1.0 } );
@@ -325,6 +329,8 @@ class DIP_NO_EXPORT ImageDisplay{
             SetMappingMode( MappingMode::BASED );
          } else if( range == "log" ) {
             SetMappingMode( MappingMode::LOGARITHMIC );
+         } else if(( range == "modulo" ) || ( range == "labels" )) {
+            SetMappingMode( MappingMode::MODULO );
          } else {
             DIP_THROW( E::INVALID_FLAG );
          }
@@ -401,6 +407,7 @@ class DIP_NO_EXPORT ImageDisplay{
             case MappingMode::PERCENTILE :   return "percentile";
             case MappingMode::BASED :        return "based";
             case MappingMode::LOGARITHMIC:   return "log";
+            case MappingMode::MODULO:        return "modulo";
          }
       }
 
@@ -469,6 +476,7 @@ class DIP_NO_EXPORT ImageDisplay{
 
       bool IsComplex() { return image_.DataType().IsComplex(); }
       bool IsBinary() { return image_.DataType().IsBinary(); }
+      bool IsInteger() { return image_.DataType().IsInteger(); }
 
       // Computes limits for current mode, if they hadn't been computed yet.
       // If `set`, sets the range_ value to the limits for the current mode.

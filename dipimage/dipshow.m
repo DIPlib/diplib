@@ -526,7 +526,7 @@ if ischar(currange)
       case {'base','based'}
          colmap = 'zerobased';
       case 'labels'
-         mappingmode = 'normal';
+         mappingmode = 'modulo';
          colmap = 'labels';
    end
 else
