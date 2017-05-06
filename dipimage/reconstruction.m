@@ -11,7 +11,7 @@
 %     * 1 indicates city-block metric, or a diamond-shaped S.E in 2D.
 %     * 2 indicates chessboard metric, or a square structuring element in 2D.
 %     For 3D images use 1, 2 or 3.
-%  flag:         a string, either "dilation" or "erosion".
+%  flag:         a string, either 'dilation' or 'erosion'.
 %
 % DEFAULTS:
 %  connectivity = 1

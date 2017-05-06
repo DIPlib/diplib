@@ -33,21 +33,13 @@ struct Qitem {
    dip::sint offset;       // offset into `done` image
 };
 template< typename TPI >
-struct QitemComparator {
-   virtual bool operator()( Qitem< TPI > const&, Qitem< TPI > const& ) { return false; }; // just to silence the linker
-};
+bool QitemComparator_LowFirst( Qitem< TPI > const& a, Qitem< TPI > const& b ) {
+   return a.value > b.value;
+}
 template< typename TPI >
-struct QitemComparator_LowFirst : public QitemComparator< TPI > {
-   virtual bool operator()( Qitem< TPI > const& a, Qitem< TPI > const& b ) override {
-      return a.value > b.value;
-   }
-};
-template< typename TPI >
-struct QitemComparator_HighFirst : public QitemComparator< TPI > {
-   virtual bool operator()( Qitem< TPI > const& a, Qitem< TPI > const& b ) override {
-      return a.value < b.value;
-   }
-};
+bool QitemComparator_HighFirst ( Qitem< TPI > const& a, Qitem< TPI > const& b ) {
+   return a.value < b.value;
+}
 
 template< typename TPI >
 void dip__MorphologicalReconstruction(
@@ -61,13 +53,8 @@ void dip__MorphologicalReconstruction(
       Image const& c_minval,
       bool dilation
 ) {
-   QitemComparator< TPI > comparator;
-   if( dilation ) {
-      comparator = QitemComparator_HighFirst< TPI >();
-   } else {
-      comparator = QitemComparator_LowFirst< TPI >();
-   }
-   std::priority_queue< Qitem< TPI >, std::vector< Qitem< TPI >>, QitemComparator< TPI >> Q( comparator );
+   std::priority_queue< Qitem< TPI >, std::vector< Qitem< TPI >>, bool ( * )( Qitem< TPI > const&, Qitem< TPI > const& ) >
+         Q( dilation ? &QitemComparator_HighFirst< TPI > : &QitemComparator_LowFirst< TPI > );
 
    dip::uint nNeigh = neighborList.Size();
    UnsignedArray const& imsz = c_in.Sizes();

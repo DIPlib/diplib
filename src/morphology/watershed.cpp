@@ -241,7 +241,7 @@ void dip__FastWatershed(
          // Process binary output image
          JointImageIterator< LabelType, bin > it( { c_labels, c_binary } );
          do {
-            if( it.template Sample< 0 >() > 0 ) {
+            if( it.template Sample< 0 >() == 0 ) {
                it.template Sample< 1 >() = true;
             }
          } while( ++it );
@@ -357,6 +357,7 @@ void FastWatershed(
       labels = out.QuickCopy();
       // binary remains unforged.
    }
+   out.SetPixelSize( pixelSize );
    DIP_THROW_IF( in.Strides() != labels.Strides(), "Cannot reforge labels image with same strides as input" );
    DIP_THROW_IF( binaryOutput && ( in.Strides() != binary.Strides() ), "Cannot reforge output image with same strides as input" );
    // TODO: We could create a temporary image here, with the needed strides, and then copy (or move) to out.
@@ -374,26 +375,18 @@ void FastWatershed(
 
 template< typename TPI >
 struct Qitem {
-   TPI value;           // pixel value - used for sorting */
-   dip::uint insertOrder;  // order of insertion - used for sorting */
+   TPI value;              // pixel value - used for sorting
+   dip::uint insertOrder;  // order of insertion - used for sorting
    dip::sint offset;       // offset into labels image
 };
 template< typename TPI >
-struct QitemComparator {
-   virtual bool operator()( Qitem< TPI > const&, Qitem< TPI > const& ) { return false; }; // just to silence the linker
-};
+bool QitemComparator_LowFirst( Qitem< TPI > const& a, Qitem< TPI > const& b ) {
+   return ( a.value > b.value ) || (( a.value == b.value ) && ( a.insertOrder > b.insertOrder )); // NOTE comparison on insertOrder! It's always "low first"
+}
 template< typename TPI >
-struct QitemComparator_LowFirst : public QitemComparator< TPI > {
-   virtual bool operator()( Qitem< TPI > const& a, Qitem< TPI > const& b ) override {
-      return ( a.value > b.value ) || (( a.value == b.value ) && ( a.insertOrder < b.insertOrder )); // NOTE comparison on insertOrder!
-   }
-};
-template< typename TPI >
-struct QitemComparator_HighFirst : public QitemComparator< TPI > {
-   virtual bool operator()( Qitem< TPI > const& a, Qitem< TPI > const& b ) override {
-      return ( a.value < b.value ) || (( a.value == b.value ) && ( a.insertOrder < b.insertOrder ));
-   }
-};
+bool QitemComparator_HighFirst ( Qitem< TPI > const& a, Qitem< TPI > const& b ) {
+   return ( a.value < b.value ) || (( a.value == b.value ) && ( a.insertOrder > b.insertOrder )); // NOTE comparison on insertOrder! It's always "low first"
+}
 
 template< typename TPI >
 void dip__SeededWatershed(
@@ -411,13 +404,8 @@ void dip__SeededWatershed(
       bool binaryOutput
 ) {
    WatershedRegionList< TPI > regions( numlabs );
-   QitemComparator< TPI > comparator;
-   if( lowFirst ) {
-      comparator = QitemComparator_LowFirst< TPI >();
-   } else {
-      comparator = QitemComparator_HighFirst< TPI >();
-   }
-   std::priority_queue< Qitem< TPI >, std::vector< Qitem< TPI >>, QitemComparator< TPI >> Q( comparator );
+   std::priority_queue< Qitem< TPI >, std::vector< Qitem< TPI >>, bool(*)( Qitem< TPI > const&, Qitem< TPI > const& ) >
+         Q( lowFirst ? &QitemComparator_LowFirst< TPI > : &QitemComparator_HighFirst< TPI > );
 
    dip::uint nNeigh = neighborOffsetsLabels.size();
    UnsignedArray const& imsz = c_grey.Sizes();
@@ -463,12 +451,13 @@ void dip__SeededWatershed(
    LabelType* labels = static_cast< LabelType* >( c_labels.Origin() );
    auto coordinatesComputer = c_labels.OffsetToCoordinatesComputer();
    NeighborLabels neighborLabels;
-   BooleanArray skipar( nNeigh );
+   BooleanArray useNeighbor( nNeigh );
    while( !Q.empty() ) {
       dip::sint offsetLabels = Q.top().offset;
       Q.pop();
       UnsignedArray coords = coordinatesComputer( offsetLabels );
       dip::sint offsetGrey = c_grey.Offset( coords );
+      dip::sint offsetMask = mask ? c_mask.Offset( coords ) : 0;
       if( PixelIsInfinite( grey[ offsetGrey ] )) {
          // TODO: in case of reverse ordered watershed, we need to test for minus infinity
          break; // we're done
@@ -476,9 +465,9 @@ void dip__SeededWatershed(
       neighborLabels.Reset();
       auto lit = neighborList.begin();
       for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
-         skipar[ jj ] = !lit.IsInImage( coords, imsz );
-         if( !skipar[ jj ] ) {
-            if( !mask || *( mask + neighborOffsetsMask[ jj ] )) {
+         useNeighbor[ jj ] = lit.IsInImage( coords, imsz );
+         if( useNeighbor[ jj ] ) {
+            if( !mask || mask[ offsetMask + neighborOffsetsMask[ jj ]] ) {
                LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
                if(( lab > 0 ) && ( lab < PIXEL_ON_STACK )) {
                   neighborLabels.Push( regions[ lab ].mapped );
@@ -490,20 +479,22 @@ void dip__SeededWatershed(
          case 0:
             // Not touching a label: what?
             //DIP_THROW( "This should not have happened: there's a pixel on the stack with all background neighbours!" );
+            labels[ offsetLabels ] = 0;
             break;
          case 1: {
             // Touching a single label: grow
             LabelType lab = neighborLabels.Label( 0 );
             labels[ offsetLabels ] = lab;
             ++( regions[ lab ].size );
-            if( lowFirst ? ( regions[ lab ].lowest > grey[ offsetGrey ] )
-                         : ( regions[ lab ].lowest < grey[ offsetGrey ] )) {
-               regions[ lab ].lowest = grey[ offsetGrey ];
+            TPI greyValue = grey[ offsetGrey ];
+            if( lowFirst ? ( regions[ lab ].lowest > greyValue )
+                         : ( regions[ lab ].lowest < greyValue )) {
+               regions[ lab ].lowest = greyValue;
             }
             // Add all unprocessed neighbours to heap
             for( dip::uint jj = 0; jj < nNeigh; ++jj ) {
-               if( !skipar[ jj ] ) {
-                  if( !mask || *( mask + neighborOffsetsMask[ jj ] )) {
+               if( useNeighbor[ jj ] ) {
+                  if( !mask || mask[ offsetMask + neighborOffsetsMask[ jj ]] ) {
                      dip::sint neighOffset = offsetLabels + neighborOffsetsLabels[ jj ];
                      if( labels[ neighOffset ] == 0 ) {
                         Q.push( Qitem< TPI >{ grey[ offsetGrey + neighborOffsetsGrey[ jj ]], order++, neighOffset } );
@@ -548,7 +539,7 @@ void dip__SeededWatershed(
          LabelType lab1 = *lit;
          if( lab1 == WATERSHED_LABEL ) {
             *lit = 0;
-         } else if( lab1 > 0 ) {
+         } else if(( lab1 > 0 ) && ( lab1 < PIXEL_ON_STACK )) {
             LabelType lab2 = regions[ lab1 ].mapped;
             if( lab1 != lab2 ) {
                *lit = lab2;
@@ -609,6 +600,7 @@ void SeededWatershed(
 
    // Prepare output image
    Convert( c_seeds, out, DT_LABEL );
+   out.SetPixelSize( pixelSize );
 
    // Create array with offsets to neighbours
    NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
