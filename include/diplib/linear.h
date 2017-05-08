@@ -23,7 +23,6 @@
 
 #include "diplib.h"
 #include "diplib/neighborhood.h"
-#include "diplib/boundary.h"
 
 
 /// \file
