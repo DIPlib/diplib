@@ -288,9 +288,11 @@ void CopyBuffer(
    // TODO: should we throw instead?
    if( outStride == 0 ) {
       pixels = 1;
+      outStride = 1;
    }
    if( outTensorStride == 0 ) {
       tensorElements = 1;
+      outTensorStride = 1;
    }
    switch( inType ) {
       case dip::DT_BIN:

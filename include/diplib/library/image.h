@@ -135,7 +135,10 @@ class DIP_NO_EXPORT CoordinatesComputer {
 //
 
 // Forward declarations
-class DIP_NO_EXPORT Image;
+class DIP_NO_EXPORT Image;                      // in this file
+class DIP_NO_EXPORT GenericImageIterator;       // in `generic_iterators.h`, include explicitly if needed
+template< dip::uint N >
+class DIP_NO_EXPORT GenericJointImageIterator;  // in `generic_iterators.h`, include explicitly if needed
 
 /// \brief An array of images
 using ImageArray = std::vector< Image >;
@@ -160,7 +163,7 @@ class DIP_NO_EXPORT Image {
 
       class Pixel;
 
-      /// A sample represents a single numeric value in an image, see \ref image_representation.
+      /// \brief A sample represents a single numeric value in an image, see \ref image_representation.
       ///
       /// Objects of this class are meant as an interface between images and numbers. These objects are
       /// not actually how values are stored in an image, but rather represent a reference to a sample
@@ -240,12 +243,15 @@ class DIP_NO_EXPORT Image {
             void* origin_ = &buffer_;
             dip::DataType dataType_;
 
-            // `dip::Image::Pixel` needs to use the private constructor.
+            // `dip::Image::Pixel` needs to use the private constructor, as do the generic image iterators.
             friend class Pixel;
+            friend class dip::GenericImageIterator;
+            template< dip::uint N >
+            friend class dip::GenericJointImageIterator;
             Sample( void* data, dip::DataType dataType ) : origin_( data ), dataType_( dataType ) {}
       };
 
-      /// A pixel represents a set of numeric value in an image, see \ref image_representation.
+      /// \brief A pixel represents a set of numeric value in an image, see \ref image_representation.
       ///
       /// Objects of this class are meant as an interface between images and numbers. These objects are
       /// not actually how pixels are stored in an image, but rather represent a reference to a pixel
@@ -470,15 +476,18 @@ class DIP_NO_EXPORT Image {
                   }
                   Iterator operator++( int ) { Iterator tmp( *this ); operator++(); return tmp; }
 
-                  bool operator==( Iterator const& other ) { return value_.Origin() == other.value_.Origin(); }
-                  bool operator!=( Iterator const& other ) { return !operator==( other ); }
+                  bool operator==( Iterator const& other ) const { return value_.Origin() == other.value_.Origin(); }
+                  bool operator!=( Iterator const& other ) const { return !operator==( other ); }
 
                private:
                   value_type value_;
                   dip::sint tensorStride_;
 
-                  // `dip::Image::Pixel` needs to use the private constructor.
+                  // `dip::Image::Pixel` needs to use the private constructor, as do the generic image iterators.
                   friend class Pixel;
+                  friend class dip::GenericImageIterator;
+                  template< dip::uint N >
+                  friend class dip::GenericJointImageIterator;
                   Iterator( void* origin, dip::DataType dataType, dip::sint tensorStride ):
                         value_( origin, dataType ),
                         tensorStride_( tensorStride ) {}
@@ -546,6 +555,9 @@ class DIP_NO_EXPORT Image {
 
             // `dip::Image` needs to use the private constructor.
             friend class Image;
+            friend class dip::GenericImageIterator;
+            template< dip::uint N >
+            friend class dip::GenericJointImageIterator;
             Pixel( void* data, dip::DataType dataType, dip::Tensor const& tensor, dip::sint tensorStride ) :
                   origin_( data ), dataType_( dataType ), tensor_( tensor ), tensorStride_( tensorStride ) {}
       };
@@ -2013,7 +2025,10 @@ class DIP_NO_EXPORT Image {
       DIP_EXPORT Image TensorColumn( dip::uint index ) const;
 
       /// \brief Extracts the pixel at the given coordinates. The image must be forged.
-      DIP_EXPORT Pixel At( UnsignedArray const& coords ) const;
+      Pixel At( UnsignedArray const& coords ) const {
+         DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
+         return Pixel( Pointer( coords ), dataType_, tensor_, tensorStride_ );
+      }
 
       /// \brief Extracts the pixel at the given linear index (inefficient if image is not 1D!). The image must be forged.
       DIP_EXPORT Pixel At( dip::uint index ) const;

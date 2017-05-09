@@ -66,7 +66,7 @@ Image Image::CopyAt( Image const& mask ) const {
       do {
          if( *( static_cast< bin* >( srcIt.Pointer< 1 >() ) ) ) {
             for( dip::uint ii = 0; ii < telems; ++ii ) {
-               std::memcpy( destIt.Sample( ii ), srcIt.Pointer< 0 >( ii ), bytes );
+               std::memcpy( destIt.Pointer( ii ), srcIt.Pointer< 0 >( ii ), bytes );
             }
             ++destIt;
          }
@@ -110,7 +110,7 @@ Image Image::CopyAt( UnsignedArray const& indices ) const {
       do {
          dip::sint offset = Offset( coordinates( static_cast< dip::sint >( *indIt )));
          for( dip::uint ii = 0; ii < telems; ++ii ) {
-            std::memcpy( destIt.Sample( ii ), Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), bytes );
+            std::memcpy( destIt.Pointer( ii ), Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), bytes );
          }
       } while( ++indIt, ++destIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
    }
@@ -152,7 +152,7 @@ Image Image::CopyAt( CoordinateArray const& coordinates ) const {
       do {
          dip::sint offset = Offset( *corIt );
          for( dip::uint ii = 0; ii < telems; ++ii ) {
-            std::memcpy( destIt.Sample( ii ), Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), bytes );
+            std::memcpy( destIt.Pointer( ii ), Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), bytes );
          }
       } while( ++corIt, ++destIt ); // these two must end at the same time, we test the image iterator, as corIt should be compared with the end iterator.
    }
@@ -197,7 +197,7 @@ void Image::CopyAt( Image const& source, Image const& mask, Option::ThrowExcepti
          do {
             if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
                for( dip::uint ii = 0; ii < telems; ++ii ) {
-                  std::memcpy( destIt.Pointer< 0 >( ii ), srcIt.Sample( ii ), bytes );
+                  std::memcpy( destIt.Pointer< 0 >( ii ), srcIt.Pointer( ii ), bytes );
                }
                ++srcIt;
             }
@@ -260,7 +260,7 @@ void Image::CopyAt( Image const& source, UnsignedArray const& indices ) {
          do {
             dip::sint offset = Offset( coordinates( static_cast< dip::sint >( *indIt )));
             for( dip::uint ii = 0; ii < telems; ++ii ) {
-               std::memcpy( Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), srcIt.Sample( ii ), bytes );
+               std::memcpy( Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), srcIt.Pointer( ii ), bytes );
             }
          } while( ++indIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
       }
@@ -318,7 +318,7 @@ void Image::CopyAt( Image const& source, CoordinateArray const& coordinates ) {
          do {
             dip::sint offset = Offset( *corIt );
             for( dip::uint ii = 0; ii < telems; ++ii ) {
-               std::memcpy( Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), srcIt.Sample( ii ), bytes );
+               std::memcpy( Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), srcIt.Pointer( ii ), bytes );
             }
          } while( ++corIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as corIt should be compared with the end iterator.
       }

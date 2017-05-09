@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains support for 1D and nD iterators.
+ * This file contains support for nD iterators that are independent of image data type.
  *
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -24,7 +24,7 @@
 #include <utility>
 
 #include "diplib.h"
-#include "diplib/boundary.h"
+#include "diplib/iterators.h"
 
 
 /// \file
@@ -42,28 +42,23 @@ namespace dip {
 /// \brief A data-type--agnostic version of `dip::ImageIterator`. Use this iterator only to write code that
 /// does not know at compile-time what the data type of the image is.
 ///
-/// This iterator works similarly to `dip::ImageIterator` except it is not dereferenceable. Use the
-/// `Pointer` method to obtain a `void` pointer to the first sample in the pixel. The `[]` operator returns
-/// a `void` pointer to any other sample.
+/// This iterator works similarly to `dip::ImageIterator`. The `Pointer` method returns a `void` pointer to
+/// the first sample in the pixel. This is the more efficient way of using the iterator.
 ///
-/// It is not possible to obtain line or sample iterators from this iterator, and it has no support for
-/// accessing pixels in the neighborhood of the referenced pixel.
+/// Dereferencing the iterator returns a `dip::Image::Pixel` object, and the `[]` operator return a
+/// `dip::Image::Sample` object. These objects reference the pixel or sample, assigning to them changes the
+/// pixel's values in the image. They are convenient in use, but not very efficient.
+///
+/// There is no `%PixelAt` method, and no boundary condition can be set.
 ///
 /// Example usage from `dip::Image::Fill`:
 ///
 /// ```cpp
 ///     dip::uint processingDim = Framework::OptimalProcessingDim( dest );
-///     auto it = GenericImageIterator( dest, processingDim );
-///        do {
-///        FillBuffer(
-///              it.Pointer(),
-///              dest.DataType(),
-///              dest.Stride( processingDim ),
-///              dest.TensorStride(),
-///              dest.Size( processingDim ),
-///              dest.TensorElements(),
-///              v
-///        );
+///     auto it = ImageIterator< TPI >( dest, processingDim );
+///     do {
+///        FillBufferFromTo( it.Pointer(), dest.Stride( processingDim ), dest.TensorStride(),
+///                          dest.Size( processingDim ), dest.TensorElements(), value );
 ///     } while( ++it );
 /// ```
 ///
@@ -72,6 +67,11 @@ namespace dip {
 /// \see ImageIterator, GenericJointImageIterator
 class DIP_NO_EXPORT GenericImageIterator {
    public:
+      using iterator_category = std::forward_iterator_tag;
+      using value_type = Image::Pixel;    ///< The type of the pixel, obtained when dereferencing the iterator
+      using difference_type = dip::sint;  ///< The type of distances between iterators
+      using reference = value_type;       ///< The type of a reference to a pixel (note dip::Image::Sample referneces a value in the image)
+      using pointer = value_type*;        ///< The type of a pointer to a pixel
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       GenericImageIterator() : atEnd_( true ) {}
@@ -95,25 +95,20 @@ class DIP_NO_EXPORT GenericImageIterator {
          swap( atEnd_, other.atEnd_ );
       }
 
-      /// Tensor indexing returns a pointer to the sample
-      void* operator[]( dip::uint index ) const {
-         return Sample( index );
-      }
-      /// Pointer to a sample of the current pixel
-      void* Sample( dip::uint index ) const {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
-         return image_->Pointer( offset_ + static_cast< dip::sint >( index ) * image_->TensorStride() );
-      }
-
-      /// Pointer to the first sample of the current pixel
-      void* Sample() const {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
-         return image_->Pointer( offset_ );
+      /// Dereference
+      Image::Pixel operator*() const { return Image::Pixel( image_->Pointer( offset_ ), image_->DataType(), image_->Tensor(), image_->TensorStride() ); }
+      /// Dereference
+      Image::Pixel operator->() const { return Image::Pixel( image_->Pointer( offset_ ), image_->DataType(), image_->Tensor(), image_->TensorStride() ); }
+      /// Index into tensor, `it[index]` is equal to `(*it)[index]`.
+      Image::Sample operator[]( dip::uint index ) const {
+         DIP_ASSERT( image_ );
+         return Image::Sample( image_->Pointer( offset_ + static_cast< dip::sint >( index ) * image_->TensorStride() ),
+                               image_->DataType() );
       }
 
       /// Increment
       GenericImageIterator& operator++() {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( image_ );
          dip::uint dd;
          for( dd = 0; dd < coords_.size(); ++dd ) {
             if( dd != procDim_ ) {
@@ -141,6 +136,27 @@ class DIP_NO_EXPORT GenericImageIterator {
          return tmp;
       }
 
+      /// Get an iterator over the tensor for the current pixel, `it.begin()` is equal to `(*it).begin()`.
+      Image::Pixel::Iterator begin() const {
+         return Image::Pixel::Iterator( Pointer(), image_->DataType(), image_->TensorStride() );
+      }
+      /// Get an end iterator over the tensor for the current pixel
+      Image::Pixel::Iterator end() const {
+         return Image::Pixel::Iterator( Pointer(), image_->DataType(), image_->TensorStride(), image_->TensorElements() );
+      }
+      /// Get an iterator over the current line
+      template< typename T >
+      LineIterator< T > GetLineIterator() const {
+         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
+         return LineIterator< T >( *image_, coords_, procDim_ );
+      }
+      /// Get a const iterator over the current line
+      template< typename T >
+      ConstLineIterator< T > GetConstLineIterator() const {
+         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
+         return ConstLineIterator< T >( *image_, coords_, procDim_ );
+      }
+
       /// Equality comparison, is equal if the two iterators have the same coordinates. It is possible to compare
       /// GenericImageIterator with different images.
       bool operator==( GenericImageIterator const& other ) const {
@@ -160,7 +176,7 @@ class DIP_NO_EXPORT GenericImageIterator {
       UnsignedArray const& Coordinates() const { return coords_; }
       /// Set the iterator to point at a different location in the image
       void SetCoordinates( UnsignedArray coords ) {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( image_ );
          if( HasProcessingDimension() && ( coords.size() > procDim_ )) {
             coords[ procDim_ ] = 0;
          }
@@ -170,14 +186,19 @@ class DIP_NO_EXPORT GenericImageIterator {
 
       /// Return the current pointer
       void* Pointer() const {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( image_ );
          return image_->Pointer( offset_ );
+      }
+      /// Return a pointer to the tensor element `index`
+      void* Pointer( dip::uint index ) const {
+         DIP_ASSERT( image_ );
+         return image_->Pointer( offset_ + static_cast< dip::sint >( index ) * image_->TensorStride() );
       }
       /// Return the current offset
       dip::sint Offset() const { return offset_; }
       /// Return the current index, which is computed: this function is not trivial
       dip::uint Index() const {
-         DIP_THROW_IF( !image_, E::ITERATOR_NOT_VALID );
+         DIP_ASSERT( image_ );
          return image_->Index( coords_ );
       }
 
@@ -210,13 +231,12 @@ inline void swap( GenericImageIterator& v1, GenericImageIterator& v2 ) {
 /// \brief A data-type--agnostic version of `dip::JointImageIterator`. Use this iterator only to write code that
 /// does not know at compile-time what the data type of the image is.
 ///
-/// This iterator works similarly to `dip::JointImageIterator` except it does not have the `Sample`
-/// methods to obtain references to samples. Instead, use the `Pointer` methods to obtain
-/// a `void` pointer to the first sample in the pixels. An optional argument indexes into the tensor
-/// dimension.
+/// This iterator works similarly to `dip::JointImageIterator`. The `Pointer<N>` method returns a `void`
+/// pointer to the first sample in the pixel for image `N`. This is the more efficient way of using the
+/// iterator.
 ///
-/// It is not possible to obtain line or sample iterators from this iterator, and it has no support for
-/// accessing pixels in the neighborhood of the referenced pixel.
+/// The `Sample<N>` method returns a `dip::Image::Sample` object. This object references the sample, so that
+/// assigning to it changes the samples's value in the image. It is convenient in use, but not very efficient.
 ///
 /// Example usage from `dip::Image::Copy`:
 ///
@@ -234,8 +254,7 @@ inline void swap( GenericImageIterator& v1, GenericImageIterator& v2 ) {
 ///              strides_[ processingDim ],
 ///              tensorStride_,
 ///              sizes_[ processingDim ],
-///              tensor_.Elements(),
-///              std::vector< dip::sint > {}
+///              tensor_.Elements()
 ///        );
 ///     } while( ++it );
 /// ```
@@ -246,6 +265,11 @@ inline void swap( GenericImageIterator& v1, GenericImageIterator& v2 ) {
 template< dip::uint N >
 class DIP_NO_EXPORT GenericJointImageIterator {
    public:
+      using iterator_category = std::forward_iterator_tag;
+      using value_type = Image::Pixel;    ///< The type of the pixel, obtained when dereferencing the iterator
+      using difference_type = dip::sint;  ///< The type of distances between iterators
+      using reference = value_type;       ///< The type of a reference to a pixel (note dip::Image::Sample referneces a value in the image)
+      using pointer = value_type*;        ///< The type of a pointer to a pixel
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       GenericJointImageIterator() : atEnd_( true ) {
@@ -280,6 +304,25 @@ class DIP_NO_EXPORT GenericJointImageIterator {
          swap( atEnd_, other.atEnd_ );
       }
 
+      /// Index into image tensor for image `I`
+      template< dip::uint I >
+      Image::Sample Sample( dip::uint index ) const {
+         return *( Pointer< I >( index ), images_[ I ]->DataType() );
+      }
+      /// Index into image tensor for image 0.
+      Image::Sample InSample( dip::uint index ) const { return Sample< 0 >( index ); }
+      /// Index into image tensor for image 1.
+      Image::Sample OutSample( dip::uint index ) const { return Sample< 1 >( index ); }
+      /// Get first tensor element for image `I`.
+      template< dip::uint I >
+      Image::Sample Sample() const {
+         return *( Pointer< I >(), images_[ I ]->DataType() );
+      }
+      /// Get first tensor element for image 0.
+      Image::Sample In() const { return Sample< 0 >(); }
+      /// Get first tensor element for image 1.
+      Image::Sample Out() const { return Sample< 1 >(); }
+
       /// Increment
       GenericJointImageIterator& operator++() {
          if( *this ) {
@@ -313,6 +356,31 @@ class DIP_NO_EXPORT GenericJointImageIterator {
          GenericJointImageIterator tmp( *this );
          operator++();
          return tmp;
+      }
+
+      /// Get an iterator over the tensor for the current pixel of image `I`
+      template< dip::uint I >
+      Image::Pixel::Iterator begin() const {
+         DIP_ASSERT( images_[ I ] );
+         return Image::Pixel::Iterator( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->TensorStride() );
+      }
+      /// Get an end iterator over the tensor for the current pixel of image `I`
+      template< dip::uint I >
+      Image::Pixel::Iterator end() const {
+         DIP_ASSERT( images_[ I ] );
+         return Image::Pixel::Iterator( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->TensorStride(), images_[ I ]->TensorElements() );
+      }
+      /// Get an iterator over the current line of image `I`
+      template< dip::uint I, typename T >
+      LineIterator< T > GetLineIterator() const {
+         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
+         return LineIterator< T >( *images_[ I ], coords_, procDim_ );
+      }
+      /// Get a const iterator over the current line of image `I`
+      template< dip::uint I, typename T >
+      ConstLineIterator< T > GetConstLineIterator() const {
+         DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
+         return ConstLineIterator< T >( *images_[ I ], coords_, procDim_ );
       }
 
       /// Equality comparison, is equal if the two iterators have the same coordinates.
@@ -669,5 +737,63 @@ inline ImageSliceIterator ImageTensorIterator( Image const& image ) {
 /// \}
 
 } // namespace dip
+
+
+#ifdef DIP__ENABLE_DOCTEST
+
+DOCTEST_TEST_CASE("[DIPlib] testing ImageIterator and GenericImageIterator") {
+   dip::Image img{ dip::UnsignedArray{ 3, 2, 4 }, 1, dip::DT_UINT16 };
+   {
+      DOCTEST_REQUIRE( img.DataType() == dip::DT_UINT16 );
+      dip::ImageIterator< dip::uint16 > it( img );
+      dip::sint counter = 0;
+      do {
+         *it = static_cast< dip::uint16 >( counter++ );
+      } while( ++it );
+   }
+   {
+      dip::GenericImageIterator it( img );
+      dip::sint counter = 0;
+      do {
+         DOCTEST_CHECK( *it == counter++ );
+      } while( ++it );
+   }
+   dip::Image img2{ dip::UnsignedArray{ 3, 4 }, 3, dip::DT_SINT32 };
+   {
+      DOCTEST_REQUIRE( img2.DataType() == dip::DT_SINT32 );
+      dip::ImageIterator< dip::sint32 > it( img2 );
+      dip::sint counter = 0;
+      do {
+         it[ 0 ] = static_cast< dip::sint32 >( counter );
+         it[ 1 ] = static_cast< dip::sint32 >( counter * 1000 );
+         it[ 2 ] = static_cast< dip::sint32 >( counter * -10000 );
+         ++counter;
+      } while( ++it );
+   }
+   {
+      dip::GenericImageIterator it( img2 );
+      dip::sint counter = 0;
+      do {
+         DOCTEST_CHECK( it[ 0 ] == counter );
+         DOCTEST_CHECK( it[ 1 ] == counter * 1000 );
+         DOCTEST_CHECK( it[ 2 ] == counter * -10000 );
+         ++counter;
+      } while( ++it );
+   }
+   {
+      dip::GenericImageIterator it( img2 );
+      ++it;
+      auto iit = it.begin();
+      DOCTEST_CHECK( *iit == 1 );
+      ++iit;
+      DOCTEST_CHECK( *iit == 1000 );
+      ++iit;
+      DOCTEST_CHECK( *iit == -10000 );
+      ++iit;
+      DOCTEST_CHECK( iit == it.end() );
+   }
+}
+
+#endif // DIP__ENABLE_DOCTEST
 
 #endif // DIP_GENERIC_ITERATORS_H

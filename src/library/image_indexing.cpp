@@ -76,12 +76,6 @@ Image Image::TensorColumn( dip::uint index ) const {
    return out;
 }
 
-Image::Pixel Image::At( UnsignedArray const& coords ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-   return Pixel( Pointer( coords ), dataType_, tensor_, tensorStride_ );
-}
-
 Image::Pixel Image::At( dip::uint index ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    if( index == 0 ) { // shortcut to the first pixel

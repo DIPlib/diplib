@@ -20,7 +20,7 @@
 
 #undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
-#include "diplib/linear.h"
+#include "diplib/boundary.h"
 
 void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    //dml::streambuf streambuf;

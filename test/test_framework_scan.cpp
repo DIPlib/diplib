@@ -19,9 +19,9 @@ int main() {
       rhs.ReshapeTensor( example );
 
       lhs.Fill( 1 );                     // all values
-      lhs[ 2 ].At( 3, 4, 5 ).Fill( 9 );  // off-diagonal values for this pixel only
+      lhs[ 2 ].At( 3, 4, 5 ) =  9;       // off-diagonal values for this pixel only
       rhs.Fill( 4 );                     // diagonal values for all pixels
-      rhs[ 0 ].At( 2, 0, 3 ).Fill( 6 );  // first element for this pixel only
+      rhs[ 0 ].At( 2, 0, 3 ) = 6;        // first element for this pixel only
 
       dip::Image out = lhs + rhs;
       std::cout << out;
@@ -40,54 +40,54 @@ int main() {
          error |= true;
       }
 
-      if( double( out[ 0 ].At( 0, 0, 0 ) ) != 1 + 4 ) {
-         std::cout << "Output value [0](0,0,0) not as expected\n";
+      if( out.At( 0, 0, 0 )[ 0 ] != 1 + 4 ) {
+         std::cout << "Output value (0,0,0)[0] not as expected\n";
          error |= true;
       }
-      if( double( out[ 1 ].At( 0, 0, 0 ) ) != 1 + 0 ) {
-         std::cout << "Output value [1](0,0,0) not as expected\n";
+      if( out.At( 0, 0, 0 )[ 1 ] != 1 + 0 ) {
+         std::cout << "Output value (0,0,0)[1] not as expected\n";
          error |= true;
       }
-      if( double( out[ 2 ].At( 0, 0, 0 ) ) != 1 + 0 ) {
-         std::cout << "Output value [2](0,0,0) not as expected\n";
+      if( out.At( 0, 0, 0 )[ 2 ] != 1 + 0 ) {
+         std::cout << "Output value (0,0,0)[2] not as expected\n";
          error |= true;
       }
-      if( double( out[ 3 ].At( 0, 0, 0 ) ) != 1 + 4 ) {
-         std::cout << "Output value [3](0,0,0) not as expected\n";
-         error |= true;
-      }
-
-      if( double( out[ 0 ].At( 3, 4, 5 ) ) != 1 + 4 ) {
-         std::cout << "Output value [0](3,4,5) not as expected\n";
-         error |= true;
-      }
-      if( double( out[ 1 ].At( 3, 4, 5 ) ) != 9 + 0 ) {
-         std::cout << "Output value [1](3,4,5) not as expected\n";
-         error |= true;
-      }
-      if( double( out[ 2 ].At( 3, 4, 5 ) ) != 9 + 0 ) {
-         std::cout << "Output value [2](3,4,5) not as expected\n";
-         error |= true;
-      }
-      if( double( out[ 3 ].At( 3, 4, 5 ) ) != 1 + 4 ) {
-         std::cout << "Output value [3](3,4,5) not as expected\n";
+      if( out.At( 0, 0, 0 )[ 3 ] != 1 + 4 ) {
+         std::cout << "Output value (0,0,0)[3] not as expected\n";
          error |= true;
       }
 
-      if( double( out[ 0 ].At( 2, 10, 3 ) ) != 1 + 6 ) {
-         std::cout << "Output value [0](2,10,3) not as expected\n";
+      if( out.At( 3, 4, 5 )[ 0 ] != 1 + 4 ) {
+         std::cout << "Output value (3,4,5)[0] not as expected\n";
          error |= true;
       }
-      if( double( out[ 1 ].At( 2, 10, 3 ) ) != 1 + 0 ) {
-         std::cout << "Output value [1](2,10,3) not as expected\n";
+      if( out.At( 3, 4, 5 )[ 1 ] != 9 + 0 ) {
+         std::cout << "Output value (3,4,5)[1] not as expected\n";
          error |= true;
       }
-      if( double( out[ 2 ].At( 2, 10, 3 ) ) != 1 + 0 ) {
-         std::cout << "Output value [2](2,10,3) not as expected\n";
+      if( out.At( 3, 4, 5 )[ 2 ] != 9 + 0 ) {
+         std::cout << "Output value (3,4,5)[2] not as expected\n";
          error |= true;
       }
-      if( double( out[ 3 ].At( 2, 10, 3 ) ) != 1 + 4 ) {
-         std::cout << "Output value [3](2,10,3) not as expected\n";
+      if( out.At( 3, 4, 5 )[ 3 ] != 1 + 4 ) {
+         std::cout << "Output value (3,4,5)[3] not as expected\n";
+         error |= true;
+      }
+
+      if( out.At( 2, 10, 3 )[ 0 ] != 1 + 6 ) {
+         std::cout << "Output value (2,10,3)[0] not as expected\n";
+         error |= true;
+      }
+      if( out.At( 2, 10, 3 )[ 1 ] != 1 + 0 ) {
+         std::cout << "Output value (2,10,3)[1] not as expected\n";
+         error |= true;
+      }
+      if( out.At( 2, 10, 3 )[ 2 ] != 1 + 0 ) {
+         std::cout << "Output value (2,10,3)[2] not as expected\n";
+         error |= true;
+      }
+      if( out.At( 2, 10, 3 )[ 3 ] != 1 + 4 ) {
+         std::cout << "Output value (2,10,3)[3] not as expected\n";
          error |= true;
       }
 

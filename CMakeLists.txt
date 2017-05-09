@@ -307,16 +307,7 @@ foreach(file ${DIP_TESTS})
 endforeach()
 target_link_libraries(test_viewer DIPviewer)
 
-add_custom_target(
-      tests DEPENDS
-      test_error
-      test_physdims
-      test_image
-      test_framework_scan test_lambdafun test_framework_separable test_framework_separable2 test_framework_full
-      test_boundary
-      test_measurement test_measuretool
-      test_viewer
-)
+add_custom_target(tests DEPENDS ${DIP_TESTS})
 
 
 ### DIPlib documentation

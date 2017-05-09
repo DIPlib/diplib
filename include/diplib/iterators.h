@@ -316,9 +316,9 @@ template< typename T >
 class DIP_NO_EXPORT ImageIterator {
    public:
       using iterator_category = std::forward_iterator_tag;
-      using value_type = T;               ///< The data type of the pixel, obtained when dereferencing the iterator
+      using value_type = T;               ///< The data type of the sample, obtained when dereferencing the iterator
       using difference_type = dip::sint;  ///< The type of distances between iterators
-      using reference = T&;               ///< The type of a reference to a pixel
+      using reference = T&;               ///< The type of a reference to a sample
       using pointer = T*;                 ///< The type of a pointer to a pixel
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
@@ -585,7 +585,7 @@ inline void TestDataType<>( Image const* /*images*/[] ) {} // End of iteration
 /// ```
 ///
 /// There exist aliases `InXxx` for `Xxx<0>`, and `OutXxx` for `Xxx<1>`, where `Xxx` is `Sample`, `Pointer` or `Offset`.
-/// `In()` is an alias for `Sample<0>(0)` and `Out()` is an alias for `Sample<1>(0)`.
+/// `In()` is an alias for `Sample<0>()` and `Out()` is an alias for `Sample<1>()`.
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
@@ -595,10 +595,10 @@ class DIP_NO_EXPORT JointImageIterator {
    public:
       using iterator_category = std::forward_iterator_tag;
       template< dip::uint I > using value_type = typename std::tuple_element< I, std::tuple< Types ... >>::type;
-      ///< The data type of the pixel, obtained when dereferencing the iterator
-      using difference_type = dip::sint;                          ///< The type of distances between iterators
-      template< dip::uint I > using reference = value_type< I >&; ///< The type of a reference to a pixel
-      template< dip::uint I > using pointer = value_type< I >*;   ///< The type of a pointer to a pixel
+      ///< The data type of the sample, obtained when dereferencing the iterator
+      using difference_type = dip::sint;                ///< The type of distances between iterators
+      template< dip::uint I > using reference = value_type< I >&; ///< The type of a reference to a sample
+      template< dip::uint I > using pointer = value_type< I >*;   ///< The type of a pointer to a sample
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an
       /// end iterator.
