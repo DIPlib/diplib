@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions of a few functions from dip::NeighborList
+ * This file contains definitions of a few functions from dip::Kernel and dip::NeighborList
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -20,8 +20,46 @@
 
 #include "diplib/neighborhood.h"
 #include "diplib/iterators.h"
+#include "diplib/math.h"
 
 namespace dip {
+
+dip::PixelTable Kernel::PixelTable( UnsignedArray const& imsz, dip::uint procDim ) const {
+   dip::uint nDim = imsz.size();
+   DIP_THROW_IF( nDim < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+   dip::PixelTable pixelTable;
+   if( IsCustom() ) {
+      DIP_THROW_IF( image_.Dimensionality() > nDim, E::DIMENSIONALITIES_DONT_MATCH );
+      Image kernel = image_.QuickCopy();
+      kernel.ExpandDimensionality( nDim );
+      if( mirror_ ) {
+         kernel.Mirror();
+      }
+      if( kernel.DataType().IsBinary()) {
+         DIP_START_STACK_TRACE
+            pixelTable = { kernel, {}, procDim };
+         DIP_END_STACK_TRACE
+      } else {
+         DIP_START_STACK_TRACE
+            pixelTable = { IsFinite( kernel ), {}, procDim };
+            pixelTable.AddWeights( kernel );
+         DIP_END_STACK_TRACE
+      }
+      if( mirror_ ) {
+         pixelTable.MirrorOrigin();
+      }
+   } else {
+      FloatArray sz = params_;
+      DIP_START_STACK_TRACE
+         ArrayUseParameter( sz, nDim, 1.0 );
+         pixelTable = { ShapeString(), sz, procDim };
+      DIP_END_STACK_TRACE
+      if( mirror_ ) {
+         pixelTable.MirrorOrigin();
+      }
+   }
+   return pixelTable;
+}
 
 void NeighborList::ConstructConnectivity( dip::uint dimensionality, dip::uint connectivity, FloatArray pixelSize ) {
    DIP_THROW_IF( dimensionality < 1, E::DIMENSIONALITY_NOT_SUPPORTED );

@@ -22,10 +22,7 @@
 #define DIP_MORPHOLOGY_H
 
 #include "diplib.h"
-#include "diplib/boundary.h"
-#include "diplib/framework.h"
 #include "diplib/neighborhood.h"
-#include "diplib/math.h"
 
 
 /// \file

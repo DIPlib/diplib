@@ -23,7 +23,6 @@
 
 #include "diplib.h"
 #include "diplib/pixel_table.h"
-#include "diplib/math.h"
 
 
 /// \file
@@ -115,43 +114,8 @@ class DIP_NO_EXPORT Kernel{
          mirror_ = !mirror_;
       }
 
-      /// \brief Creates a `dip::PixelTable` structure representing the shape of the SE
-      dip::PixelTable PixelTable( UnsignedArray const& imsz, dip::uint procDim ) const {
-         dip::uint nDim = imsz.size();
-         DIP_THROW_IF( nDim < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-         dip::PixelTable pixelTable;
-         if( IsCustom() ) {
-            DIP_THROW_IF( image_.Dimensionality() > nDim, E::DIMENSIONALITIES_DONT_MATCH );
-            Image kernel = image_.QuickCopy();
-            kernel.ExpandDimensionality( nDim );
-            if( mirror_ ) {
-               kernel.Mirror();
-            }
-            if( kernel.DataType().IsBinary()) {
-               DIP_START_STACK_TRACE
-                  pixelTable = { kernel, {}, procDim };
-               DIP_END_STACK_TRACE
-            } else {
-               DIP_START_STACK_TRACE
-                  pixelTable = { IsFinite( kernel ), {}, procDim };
-                  pixelTable.AddWeights( kernel );
-               DIP_END_STACK_TRACE
-            }
-            if( mirror_ ) {
-               pixelTable.MirrorOrigin();
-            }
-         } else {
-            FloatArray sz = params_;
-            DIP_START_STACK_TRACE
-               ArrayUseParameter( sz, nDim, 1.0 );
-               pixelTable = { ShapeString(), sz, procDim };
-            DIP_END_STACK_TRACE
-            if( mirror_ ) {
-               pixelTable.MirrorOrigin();
-            }
-         }
-         return pixelTable;
-      }
+      /// \brief Creates a `dip::PixelTable` structure representing the shape of the kernel
+      dip::PixelTable PixelTable( UnsignedArray const& imsz, dip::uint procDim ) const;
 
       /// \brief Retrieves the size of the kernel, adjusted to an image of size `imsz`.
       UnsignedArray Sizes( UnsignedArray const& imsz ) const {

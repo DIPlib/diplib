@@ -22,6 +22,7 @@
 
 #include "diplib.h"
 #include "diplib/morphology.h"
+#include "diplib/math.h"
 #include "diplib/overload.h"
 #include "offsets.h"
 
