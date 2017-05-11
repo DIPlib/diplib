@@ -31,6 +31,8 @@
 #include <memory>
 #include <functional>
 #include <utility>
+#include <cstring> // std::memcpy
+#include <iostream>
 
 #include "diplib/library/datatype.h"
 #include "diplib/library/tensor.h"
@@ -38,7 +40,6 @@
 #include "diplib/library/clamp_cast.h"
 #include "diplib/library/sample_iterator.h"
 
-#include <iostream>
 
 /// \file
 /// \brief Defines the `dip::Image` class and support functions. This file is always included through `diplib.h`.
@@ -368,9 +369,7 @@ class DIP_NO_EXPORT Image {
             Pixel( Sample const& sample ) : dataType_( sample.DataType() ) { // tensor_ is scalar by default
                buffer_.resize( dataType_.SizeOf() );
                origin_ = buffer_.data();
-               uint8 const* src = static_cast< uint8 const* >( sample.Origin() );
-               uint8* dest = buffer_.data();
-               std::copy( src, src + dataType_.SizeOf(), dest );
+               std::memcpy( buffer_.data(), sample.Origin(), dataType_.SizeOf() );
             }
 
             /// \brief A `%Pixel` can be constructed from an initializer list, yielding a pixel with the same data
@@ -385,8 +384,7 @@ class DIP_NO_EXPORT Image {
                origin_ = buffer_.data();
                uint8* dest = buffer_.data();
                for( auto it = values.begin(); it != values.end(); ++it ) {
-                  uint8 const* src = reinterpret_cast< uint8 const* >( &*it );
-                  std::copy( src, src + sz, dest );
+                  std::memcpy( dest, &*it, sz );
                   dest += sz;
                }
             }
@@ -436,7 +434,7 @@ class DIP_NO_EXPORT Image {
                uint8* src = dest;
                for( dip::uint ii = 1; ii < N; ++ii ) {
                   dest += static_cast< dip::sint >( sz ) * tensorStride_;
-                  std::copy( src, src + sz, dest );
+                  std::memcpy( dest, src, sz );
                }
                return *this;
             }
@@ -793,11 +791,11 @@ class DIP_NO_EXPORT Image {
          Forge();
          uint8 const* src = static_cast< uint8 const* >( pixel.Origin() );
          uint8* dest = static_cast< uint8* >( origin_ );
-         dip::sint sz = static_cast< dip::sint >( dataType_.SizeOf() );
-         dip::sint srcStep = pixel.TensorStride() * sz;
-         dip::sint destStep = tensorStride_ * sz;
+         dip::uint sz = dataType_.SizeOf();
+         dip::sint srcStep = pixel.TensorStride() * static_cast< dip::sint >( sz );
+         dip::sint destStep = tensorStride_ * static_cast< dip::sint >( sz );
          for( dip::uint ii = 0; ii < tensor_.Elements(); ++ii ) {
-            std::copy( src, src + sz, dest );
+            std::memcpy( dest, src, sz );
             src += srcStep;
             dest += destStep;
          }
@@ -845,7 +843,7 @@ class DIP_NO_EXPORT Image {
          Forge();
          uint8 const* src = static_cast< uint8 const* >( sample.Origin());
          dip::uint sz = dataType_.SizeOf();
-         std::copy( src, src + sz, static_cast< uint8* >( origin_ ));
+         std::memcpy( origin_, src, sz );
       }
 
       /// \brief Create a 0-D image with data type `dt` and value of `sample`.
