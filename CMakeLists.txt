@@ -166,6 +166,10 @@ install(DIRECTORY include/ DESTINATION include)
 install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
 # To examine symbol table of the shared library on MacOSX: nm -g -p -U libDIP.dylib
 
+# Uncomment next line to see compile times for each source file (make without -j).
+#set_property(TARGET DIP PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
+
+
 ### DIPlib unit tests
 
 if(DIP_ENABLE_DOCTEST)

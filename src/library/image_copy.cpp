@@ -55,7 +55,7 @@ Image Image::CopyAt( Image const& mask ) const {
    }
    // Iterate over *this and mask, copying pixels to destination
    GenericJointImageIterator< 2 > srcIt( { *this, mask } );
-   GenericImageIterator destIt( destination );
+   GenericImageIterator<> destIt( destination );
    if( telems == 1 ) { // most frequent case, really.
       do {
          if( *( static_cast< bin* >( srcIt.Pointer< 1 >() ) ) ) {
@@ -102,7 +102,7 @@ Image Image::CopyAt( UnsignedArray const& indices ) const {
    }
    // Iterate over indices and destination, copying pixels to destination
    auto indIt = indices.begin();
-   GenericImageIterator destIt( destination );
+   GenericImageIterator<> destIt( destination );
    if( telems == 1 ) { // most frequent case, really.
       do {
          std::memcpy( destIt.Pointer(), Pointer( coordinates( static_cast< dip::sint >( *indIt ))), bytes );
@@ -144,7 +144,7 @@ Image Image::CopyAt( CoordinateArray const& coordinates ) const {
    }
    // Iterate over coordinates and destination, copying pixels to destination
    auto corIt = coordinates.begin();
-   GenericImageIterator destIt( destination );
+   GenericImageIterator<> destIt( destination );
    if( telems == 1 ) { // most frequent case, really.
       do {
          std::memcpy( destIt.Pointer(), Pointer( *corIt ), bytes );
@@ -186,7 +186,7 @@ void Image::CopyAt( Image const& source, Image const& mask, Option::ThrowExcepti
       }
       // Iterate over *this and mask, copying pixels from source
       GenericJointImageIterator< 2 > destIt( { *this, mask } );
-      GenericImageIterator srcIt( source );
+      GenericImageIterator<> srcIt( source );
       if( telems == 1 ) { // most frequent case, really.
          do {
             if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
@@ -207,7 +207,7 @@ void Image::CopyAt( Image const& source, Image const& mask, Option::ThrowExcepti
    } else {
       // Iterate over *this and mask, copying pixels from source
       GenericJointImageIterator< 2 > destIt( { *this, mask } );
-      GenericImageIterator srcIt( source );
+      GenericImageIterator<> srcIt( source );
       do {
          if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
             // This might not be the most efficient way, but it's effective and prevents us from defining yet another chain of 2 templated functions.
@@ -252,7 +252,7 @@ void Image::CopyAt( Image const& source, UnsignedArray const& indices ) {
       }
       // Iterate over indices and source, copying pixels from source
       auto indIt = indices.begin();
-      GenericImageIterator srcIt( source );
+      GenericImageIterator<> srcIt( source );
       if( telems == 1 ) { // most frequent case, really.
          do {
             std::memcpy( Pointer( coordinates( static_cast< dip::sint >( *indIt ))), srcIt.Pointer(), bytes );
@@ -268,7 +268,7 @@ void Image::CopyAt( Image const& source, UnsignedArray const& indices ) {
    } else {
       // Iterate over indices and source, copying pixels from source
       auto indIt = indices.begin();
-      GenericImageIterator srcIt( source );
+      GenericImageIterator<> srcIt( source );
       do {
          // This might not be the most efficient way, but it's effective and prevents us from defining yet another chain of 2 templated functions.
          CopyBuffer(
@@ -310,7 +310,7 @@ void Image::CopyAt( Image const& source, CoordinateArray const& coordinates ) {
       }
       // Iterate over coordinates and source, copying pixels from source
       auto corIt = coordinates.begin();
-      GenericImageIterator srcIt( source );
+      GenericImageIterator<> srcIt( source );
       if( telems == 1 ) { // most frequent case, really.
          do {
             std::memcpy( Pointer( *corIt ), srcIt.Pointer(), bytes );
@@ -326,7 +326,7 @@ void Image::CopyAt( Image const& source, CoordinateArray const& coordinates ) {
    } else {
       // Iterate over coordinates and source, copying pixels from source
       auto corIt = coordinates.begin();
-      GenericImageIterator srcIt( source );
+      GenericImageIterator<> srcIt( source );
       do {
          // This might not be the most efficient way, but it's effective and prevents us from defining yet another chain of 2 templated functions.
          CopyBuffer(
@@ -551,7 +551,7 @@ void Image::Convert( dip::DataType dt ) {
             // Make nD loop
             //std::cout << "dip::Image::Convert: in-place, nD loop\n";
             dip::uint processingDim = Framework::OptimalProcessingDim( *this );
-            auto it = GenericImageIterator( *this, processingDim );
+            auto it = GenericImageIterator<>( *this, processingDim );
             do {
                CopyBuffer(
                      it.Pointer(),

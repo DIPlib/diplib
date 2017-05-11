@@ -137,8 +137,9 @@ class DIP_NO_EXPORT CoordinatesComputer {
 
 // Forward declarations
 class DIP_NO_EXPORT Image;                      // in this file
+template< typename T >
 class DIP_NO_EXPORT GenericImageIterator;       // in `generic_iterators.h`, include explicitly if needed
-template< dip::uint N >
+template< dip::uint N, typename T >
 class DIP_NO_EXPORT GenericJointImageIterator;  // in `generic_iterators.h`, include explicitly if needed
 
 /// \brief An array of images
@@ -312,16 +313,15 @@ class DIP_NO_EXPORT Image {
             template< typename T >
             Sample& operator^=( T const& rhs );
 
-         private:
+         protected:
             dcomplex buffer_;
             void* origin_ = &buffer_;
             dip::DataType dataType_;
 
             // `dip::Image::Pixel` needs to use the private constructor, as do the generic image iterators.
             friend class Pixel;
-            friend class dip::GenericImageIterator;
-            template< dip::uint N >
-            friend class dip::GenericJointImageIterator;
+            template< typename T > friend class dip::GenericImageIterator;
+            template< dip::uint N, typename T > friend class dip::GenericJointImageIterator;
 
             Sample( void* data, dip::DataType dataType ) : origin_( data ), dataType_( dataType ) {}
       };
@@ -588,15 +588,14 @@ class DIP_NO_EXPORT Image {
                   bool operator==( Iterator const& other ) const { return value_.Origin() == other.value_.Origin(); }
                   bool operator!=( Iterator const& other ) const { return !operator==( other ); }
 
-               private:
+               protected:
                   value_type value_;
                   dip::sint tensorStride_;
 
                   // `dip::Image::Pixel` needs to use the private constructor, as do the generic image iterators.
                   friend class Pixel;
-                  friend class dip::GenericImageIterator;
-                  template< dip::uint N >
-                  friend class dip::GenericJointImageIterator;
+                  template< typename T > friend class dip::GenericImageIterator;
+                  template< dip::uint N, typename T > friend class dip::GenericJointImageIterator;
 
                   Iterator( void* origin, dip::DataType dataType, dip::sint tensorStride ):
                         value_( origin, dataType ),
@@ -656,7 +655,7 @@ class DIP_NO_EXPORT Image {
             template< typename T >
             Pixel& operator^=( T const& rhs );
 
-         private:
+         protected:
             std::vector< uint8 > buffer_; // alignment???
             void* origin_;
             dip::DataType dataType_;
@@ -665,9 +664,8 @@ class DIP_NO_EXPORT Image {
 
             // `dip::Image` needs to use the private constructor.
             friend class Image;
-            friend class dip::GenericImageIterator;
-            template< dip::uint N >
-            friend class dip::GenericJointImageIterator;
+            template< typename T > friend class dip::GenericImageIterator;
+            template< dip::uint N, typename T > friend class dip::GenericJointImageIterator;
 
             Pixel( void* data, dip::DataType dataType, dip::Tensor const& tensor, dip::sint tensorStride ) :
                   origin_( data ), dataType_( dataType ), tensor_( tensor ), tensorStride_( tensorStride ) {}
@@ -677,6 +675,8 @@ class DIP_NO_EXPORT Image {
       template< class T >
       class CastSample : public Sample {
             friend class Image;
+            template< typename S > friend class dip::GenericImageIterator;
+            template< dip::uint N, typename S > friend class dip::GenericJointImageIterator;
          public:
             using Sample::Sample;
             // Default copy and move constructors, otherwise they're implicitly deleted by assignment operators deleted below.
@@ -695,6 +695,8 @@ class DIP_NO_EXPORT Image {
       template< class T >
       class CastPixel : public Pixel {
             friend class Image;
+            template< typename S > friend class dip::GenericImageIterator;
+            template< dip::uint N, typename S > friend class dip::GenericJointImageIterator;
          public:
             using Pixel::Pixel;
             // Default copy and move constructors, otherwise they're implicitly deleted by assignment operators deleted below.

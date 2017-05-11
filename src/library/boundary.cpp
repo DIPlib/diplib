@@ -86,7 +86,7 @@ void ExtendImageLowLevel(
       if( borderSizes[ dim ] > 0 ) {
          // Iterate over all image lines along this dimension
          // The iterator iterates over the lines with data only
-         GenericImageIterator it( tmp, dim );
+         GenericImageIterator<> it( tmp, dim );
          do {
             // This is the function that does the actual boundary extension. It's defined in copy_buffer.cpp
             ExpandBuffer(
