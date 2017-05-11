@@ -118,9 +118,9 @@ class DIP_EXPORT ExternalInterface {
 /// does not correspond to one of the image's pixels, the result is meaningless.
 class DIP_NO_EXPORT CoordinatesComputer {
    public:
-      CoordinatesComputer( UnsignedArray const& sizes, IntegerArray const& strides );
+      DIP_EXPORT CoordinatesComputer( UnsignedArray const& sizes, IntegerArray const& strides );
 
-      UnsignedArray operator()( dip::sint offset ) const;
+      DIP_EXPORT UnsignedArray operator()( dip::sint offset ) const;
 
    private:
       IntegerArray strides_; // a copy of the image's strides array, but with all positive values
@@ -162,6 +162,8 @@ class DIP_NO_EXPORT Image {
       //
 
       class Pixel;
+      template< typename T > class CastSample;
+      template< typename T > class CastPixel;
 
       /// \brief A sample represents a single numeric value in an image, see \ref image_representation.
       ///
@@ -179,14 +181,23 @@ class DIP_NO_EXPORT Image {
       ///
       /// See \ref indexing for more information.
       ///
-      /// \see dip::Image::Pixel.
+      /// \see dip::Image::Pixel, dip::Image::CastPixel, dip::Image::CastSample
       class Sample {
          public:
+
+            // Default copy constructor doesn't do what we need
+            Sample( Sample const& sample ) : dataType_( sample.dataType_ ) {
+               origin_ = &buffer_;
+               std::memcpy( origin_, sample.origin_, dataType_.SizeOf() );
+            }
+
+            // Default move constructor, otherwise it's implicitly deleted.
+            Sample( Sample&& ) = default;
 
             /// A numeric value implicitly converts to a `%Sample`.
             template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
             Sample( T value ) {
-               dataType_ = dip::DataType( T( 0 ));
+               dataType_ = dip::DataType( value );
                *static_cast< T* >( origin_ ) = value;
             }
             Sample( bool value ) : dataType_( DT_BIN ) {
@@ -218,12 +229,19 @@ class DIP_NO_EXPORT Image {
             /// Returns the value of the sample as the given numeric type, similar to using `static_cast`.
             template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
             T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
+
             /// A `%Sample` can be cast to basic numerical types.
             explicit operator bool() const { return detail::CastSample< bin >( dataType_, origin_ ); }
             /// A `%Sample` can be cast to basic numerical types.
+            explicit operator dip::uint() const { return detail::CastSample< dip::uint >( dataType_, origin_ ); }
+            /// A `%Sample` can be cast to basic numerical types.
             explicit operator dip::sint() const { return detail::CastSample< dip::sint >( dataType_, origin_ ); }
             /// A `%Sample` can be cast to basic numerical types.
+            explicit operator sfloat() const { return detail::CastSample< sfloat >( dataType_, origin_ ); }
+            /// A `%Sample` can be cast to basic numerical types.
             explicit operator dfloat() const { return detail::CastSample< dfloat >( dataType_, origin_ ); }
+            /// A `%Sample` can be cast to basic numerical types.
+            explicit operator scomplex() const { return detail::CastSample< scomplex >( dataType_, origin_ ); }
             /// A `%Sample` can be cast to basic numerical types.
             explicit operator dcomplex() const { return detail::CastSample< dcomplex >( dataType_, origin_ ); }
 
@@ -232,11 +250,66 @@ class DIP_NO_EXPORT Image {
                detail::CastSample( sample.dataType_, sample.origin_, dataType_, origin_ );
                return *this;
             }
+            Sample& operator=( Sample&& sample ) {
+               detail::CastSample( sample.dataType_, sample.origin_, dataType_, origin_ );
+               return *this;
+            }
+            template< typename T >
+            Sample& operator=( CastSample< T > const& sample ) {
+               return operator=( static_cast< Sample const& >( sample ));
+            }
+            /// It is also possible to assign a constant directly.
+            template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+            Sample& operator=( T value ) {
+               detail::CastSample( dip::DataType( value ), &value, dataType_, origin_ );
+               return *this;
+            }
+            Sample& operator=( bool value ) {
+               detail::CastSample( DT_BIN, &value, dataType_, origin_ );
+               return *this;
+            }
+            #if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict with s/uint32 constructors above.
+            Sample& operator=( dip::uint value ) {
+               uint32 tmp = clamp_cast< uint32 >( value );
+               detail::CastSample( DT_UINT32, &tmp, dataType_, origin_ );
+               return *this;
+            }
+            Sample& operator=( dip::sint value ) {
+               sint32 tmp = clamp_cast< sint32 >( value );
+               detail::CastSample( DT_SINT32, &tmp, dataType_, origin_ );
+               return *this;
+            }
+            #endif
 
             /// Returns a pointer to the sample referenced.
             void* Origin() const { return origin_; }
             /// The data type of the sample referenced.
             dip::DataType DataType() const { return dataType_; }
+
+            /// \brief Compound assignment operator.
+            template< typename T >
+            Sample& operator+=( T const& rhs );
+            /// \brief Compound assignment operator.
+            template< typename T >
+            Sample& operator-=( T const& rhs );
+            /// \brief Compound assignment operator.
+            template< typename T >
+            Sample& operator*=( T const& rhs );
+            /// \brief Compound assignment operator.
+            template< typename T >
+            Sample& operator/=( T const& rhs );
+            /// \brief Compound assignment operator.
+            template< typename T >
+            Sample& operator%=( T const& rhs );
+            /// \brief Bit-wise compound assignment operator.
+            template< typename T >
+            Sample& operator&=( T const& rhs );
+            /// \brief Bit-wise compound assignment operator.
+            template< typename T >
+            Sample& operator|=( T const& rhs );
+            /// \brief Bit-wise compound assignment operator.
+            template< typename T >
+            Sample& operator^=( T const& rhs );
 
          private:
             dcomplex buffer_;
@@ -248,6 +321,7 @@ class DIP_NO_EXPORT Image {
             friend class dip::GenericImageIterator;
             template< dip::uint N >
             friend class dip::GenericJointImageIterator;
+
             Sample( void* data, dip::DataType dataType ) : origin_( data ), dataType_( dataType ) {}
       };
 
@@ -267,9 +341,19 @@ class DIP_NO_EXPORT Image {
       ///
       /// See \ref indexing for more information.
       ///
-      /// \see dip::Image::Sample.
+      /// \see dip::Image::Sample, dip::Image::CastSample, dip::Image::CastPixel
       class Pixel {
          public:
+
+            // Default copy constructor doesn't do what we need
+            Pixel( Pixel const& pixel ) : dataType_( pixel.dataType_ ), tensor_( pixel.tensor_ ) {
+               buffer_.resize( dataType_.SizeOf() * tensor_.Elements() );
+               origin_ = buffer_.data();
+               operator=( pixel );
+            }
+
+            // Default move constructor, otherwise it's implicitly deleted.
+            Pixel( Pixel&& ) = default;
 
             /// Construct a new `%Pixel` by giving data type and number of tensor elements. Initialized to 0.
             explicit Pixel( dip::DataType dataType, dip::uint tensorElements = 1 ) :
@@ -279,7 +363,7 @@ class DIP_NO_EXPORT Image {
                origin_ = buffer_.data();
             }
 
-            /// A `%Pixel` can be constructed from a single sample, yielding a scalar pixel with the same
+            /// \brief A `%Pixel` can be constructed from a single sample, yielding a scalar pixel with the same
             /// data type as the sample.
             Pixel( Sample const& sample ) : dataType_( sample.DataType() ) { // tensor_ is scalar by default
                buffer_.resize( dataType_.SizeOf() );
@@ -289,7 +373,7 @@ class DIP_NO_EXPORT Image {
                std::copy( src, src + dataType_.SizeOf(), dest );
             }
 
-            /// A `%Pixel` can be constructed from an initializer list, yielding a pixel with the same data
+            /// \brief A `%Pixel` can be constructed from an initializer list, yielding a pixel with the same data
             /// type and number of tensor elements as the initializer list. The pixel will be a column vector.
             template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
             Pixel( std::initializer_list< T > values ) {
@@ -327,12 +411,19 @@ class DIP_NO_EXPORT Image {
             /// Returns the value of the first sample in the pixel as the given numeric type, similar to using `static_cast`.
             template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
             T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
+
             /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
             explicit operator bool() const { return detail::CastSample< bin >( dataType_, origin_ ); }
             /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
+            explicit operator dip::uint() const { return detail::CastSample< dip::uint >( dataType_, origin_ ); }
+            /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
             explicit operator dip::sint() const { return detail::CastSample< dip::sint >( dataType_, origin_ ); }
             /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
+            explicit operator sfloat() const { return detail::CastSample< sfloat >( dataType_, origin_ ); }
+            /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
             explicit operator dfloat() const { return detail::CastSample< dfloat >( dataType_, origin_ ); }
+            /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
+            explicit operator scomplex() const { return detail::CastSample< scomplex >( dataType_, origin_ ); }
             /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
             explicit operator dcomplex() const { return detail::CastSample< dcomplex >( dataType_, origin_ ); }
 
@@ -360,6 +451,27 @@ class DIP_NO_EXPORT Image {
                for( dip::uint ii = 0; ii < N; ++ii ) {
                   detail::CastSample( pixel.DataType(), src, dataType_, dest );
                   src += srcSz * pixel.TensorStride();
+                  dest += destSz * tensorStride_;
+               }
+               return *this;
+            }
+            Pixel& operator=( Pixel&& pixel ) {
+               return operator=( const_cast< Pixel const& >( pixel )); // Call copy assignment instead
+            }
+            template< typename T >
+            Pixel& operator=( CastPixel< T > const& pixel ) {
+               return operator=( static_cast< Pixel const& >( pixel ));
+            }
+            /// It is also possible to assign from an initializer list.
+            template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+            Pixel& operator=( std::initializer_list< T > values ) {
+               dip::uint N = tensor_.Elements();
+               DIP_THROW_IF( values.size() != N, E::NTENSORELEM_DONT_MATCH );
+               dip::DataType srcDT = dip::DataType( T( 0 ));
+               dip::sint destSz = static_cast< dip::sint >( dataType_.SizeOf() );
+               uint8* dest = static_cast< uint8* >( origin_ );
+               for( auto it = values.begin(); it != values.end(); ++it ) {
+                  detail::CastSample( srcDT, &(*it), dataType_, dest );
                   dest += destSz * tensorStride_;
                }
                return *this;
@@ -420,7 +532,7 @@ class DIP_NO_EXPORT Image {
 
             /// \brief Extracts the tensor elements along the diagonal.
             Pixel Diagonal() const {
-               Pixel out = *this;
+               Pixel out( *this );
                out.tensor_.ExtractDiagonal( out.tensorStride_ );
                return out;
             }
@@ -449,7 +561,7 @@ class DIP_NO_EXPORT Image {
                return out;
             }
 
-            /// An iterator to iterate over the samples in the pixel. Mutable forward iterator.
+            /// \brief An iterator to iterate over the samples in the pixel. Mutable forward iterator.
             class Iterator {
                public:
                   using iterator_category = std::forward_iterator_tag;
@@ -461,9 +573,8 @@ class DIP_NO_EXPORT Image {
                   Iterator() : value_( nullptr, DT_BIN ), tensorStride_( 0 ) {}
 
                   void swap( Iterator& other ) {
-                     using std::swap;
-                     swap( value_, other.value_ );
-                     swap( tensorStride_, other.tensorStride_ );
+                     value_.swap( other.value_ );
+                     std::swap( tensorStride_, other.tensorStride_ );
                   }
 
                   reference operator*() { return value_; }
@@ -488,6 +599,7 @@ class DIP_NO_EXPORT Image {
                   friend class dip::GenericImageIterator;
                   template< dip::uint N >
                   friend class dip::GenericJointImageIterator;
+
                   Iterator( void* origin, dip::DataType dataType, dip::sint tensorStride ):
                         value_( origin, dataType ),
                         tensorStride_( tensorStride ) {}
@@ -522,28 +634,28 @@ class DIP_NO_EXPORT Image {
             }
 
             /// \brief Compound assignment operator.
-            template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+            template< typename T >
             Pixel& operator+=( T const& rhs );
             /// \brief Compound assignment operator.
-            template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+            template< typename T >
             Pixel& operator-=( T const& rhs );
             /// \brief Compound assignment operator.
-            template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+            template< typename T >
             Pixel& operator*=( T const& rhs );
             /// \brief Compound assignment operator.
-            template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+            template< typename T >
             Pixel& operator/=( T const& rhs );
             /// \brief Compound assignment operator.
-            template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+            template< typename T >
             Pixel& operator%=( T const& rhs );
             /// \brief Bit-wise compound assignment operator.
-            template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+            template< typename T >
             Pixel& operator&=( T const& rhs );
             /// \brief Bit-wise compound assignment operator.
-            template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+            template< typename T >
             Pixel& operator|=( T const& rhs );
             /// \brief Bit-wise compound assignment operator.
-            template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
+            template< typename T >
             Pixel& operator^=( T const& rhs );
 
          private:
@@ -558,8 +670,48 @@ class DIP_NO_EXPORT Image {
             friend class dip::GenericImageIterator;
             template< dip::uint N >
             friend class dip::GenericJointImageIterator;
+
             Pixel( void* data, dip::DataType dataType, dip::Tensor const& tensor, dip::sint tensorStride ) :
                   origin_( data ), dataType_( dataType ), tensor_( tensor ), tensorStride_( tensorStride ) {}
+      };
+
+      /// \brief Derived from `dip::Image::Sample`, works identically except it implicitly converts to type `T`.
+      template< class T >
+      class CastSample : public Sample {
+            friend class Image;
+         public:
+            using Sample::Sample;
+            // Default copy and move constructors, otherwise they're implicitly deleted by assignment operators deleted below.
+            //CastSample( CastSample const& ) = default;
+            //CastSample( CastSample&& ) = default;
+            CastSample( Sample&& sample ) : Sample( std::move( sample )) {}
+
+            //CastSample& operator=( CastSample const& ) = delete;
+            //CastSample& operator=( CastSample&& ) = delete;
+            using Sample::operator=;
+
+            operator T() { return As< T >(); }
+      };
+
+      /// \brief Derived from `dip::Image::Pixel`, works identically except it implicitly converts to type `T`.
+      template< class T >
+      class CastPixel : public Pixel {
+            friend class Image;
+         public:
+            using Pixel::Pixel;
+            // Default copy and move constructors, otherwise they're implicitly deleted by assignment operators deleted below.
+            //CastPixel( CastPixel const& ) = default;
+            //CastPixel( CastPixel&& ) = default;
+            CastPixel( Pixel&& pixel ) : Pixel( std::move( pixel )) {}
+
+            //CastPixel& operator=( CastPixel const& ) = delete;
+            //CastPixel& operator=( CastPixel&& ) = delete;
+            using Pixel::operator=;
+
+            operator T() const { return As< T >(); }
+
+            CastSample< T > operator[]( dip::uint index ) const { return Pixel::operator[]( index ); }
+            CastSample< T > operator[]( UnsignedArray const& indices ) const { return Pixel::operator[]( indices ); }
       };
 
       //
@@ -1752,7 +1904,7 @@ class DIP_NO_EXPORT Image {
       /// The image must be forged.
       ///
       /// \see Index, Offset, IndexToCoordinates, OffsetToCoordinates, OffsetToCoordinatesComputer
-      CoordinatesComputer IndexToCoordinatesComputer() const;
+      DIP_EXPORT CoordinatesComputer IndexToCoordinatesComputer() const;
 
       /// \}
 
@@ -2025,19 +2177,50 @@ class DIP_NO_EXPORT Image {
       DIP_EXPORT Image TensorColumn( dip::uint index ) const;
 
       /// \brief Extracts the pixel at the given coordinates. The image must be forged.
-      Pixel At( UnsignedArray const& coords ) const {
+      template< typename T = dfloat >
+      CastPixel< T > At( UnsignedArray const& coords ) const {
          DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-         return Pixel( Pointer( coords ), dataType_, tensor_, tensorStride_ );
+         return CastPixel< T >( Pointer( coords ), dataType_, tensor_, tensorStride_ );
       }
 
       /// \brief Extracts the pixel at the given linear index (inefficient if image is not 1D!). The image must be forged.
-      DIP_EXPORT Pixel At( dip::uint index ) const;
+      template< typename T = dfloat >
+      CastPixel< T > At( dip::uint index ) const {
+         if( index == 0 ) { // shortcut to the first pixel
+            return CastPixel< T >( Origin(), dataType_, tensor_, tensorStride_ );
+         } else if( sizes_.size() < 2 ) {
+            dip::uint n = sizes_.size() == 0 ? 1 : sizes_[ 0 ];
+            DIP_THROW_IF( index >= n, E::INDEX_OUT_OF_RANGE );
+            return CastPixel< T >( Pointer( static_cast< dip::sint >( index ) * strides_[ 0 ] ),
+                          dataType_, tensor_, tensorStride_ );
+         } else {
+            return At< T >( IndexToCoordinates( index ) );
+         }
+      }
 
       /// \brief Extracts the pixel at the given coordinates from a 2D image. The image must be forged.
-      DIP_EXPORT Pixel At( dip::uint x_index, dip::uint y_index ) const;
+      template< typename T = dfloat >
+      CastPixel< T > At( dip::uint x_index, dip::uint y_index ) const {
+         DIP_THROW_IF( sizes_.size() != 2, E::ILLEGAL_DIMENSIONALITY );
+         DIP_THROW_IF( x_index >= sizes_[ 0 ], E::INDEX_OUT_OF_RANGE );
+         DIP_THROW_IF( y_index >= sizes_[ 1 ], E::INDEX_OUT_OF_RANGE );
+         return CastPixel< T >( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
+                                static_cast< dip::sint >( y_index ) * strides_[ 1 ] ),
+                       dataType_, tensor_, tensorStride_ );
+      }
 
       /// \brief Extracts the pixel at the given coordinates from a 3D image. The image must be forged.
-      DIP_EXPORT Pixel At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const;
+      template< typename T = dfloat >
+      CastPixel< T > At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const {
+         DIP_THROW_IF( sizes_.size() != 3, E::ILLEGAL_DIMENSIONALITY );
+         DIP_THROW_IF( x_index >= sizes_[ 0 ], E::INDEX_OUT_OF_RANGE );
+         DIP_THROW_IF( y_index >= sizes_[ 1 ], E::INDEX_OUT_OF_RANGE );
+         DIP_THROW_IF( z_index >= sizes_[ 2 ], E::INDEX_OUT_OF_RANGE );
+         return CastPixel< T >( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
+                                static_cast< dip::sint >( y_index ) * strides_[ 1 ] +
+                                static_cast< dip::sint >( z_index ) * strides_[ 2 ] ),
+                       dataType_, tensor_, tensorStride_ );
+      }
 
       /// \brief Extracts a subset of pixels from a 1D image. The image must be forged.
       DIP_EXPORT Image At( Range x_range ) const;
@@ -2438,30 +2621,57 @@ bool operator<=( Image::Pixel const& lhs, T const& rhs ) { return operator<=( lh
 DIP_EXPORT bool operator>=( Image::Pixel const& lhs, Image::Pixel const& rhs );
 template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
 bool operator>=( Image::Pixel const& lhs, T const& rhs ) { return operator>=( lhs, Image::Pixel{ rhs } ); }
-/// \brief Compound assignment operator.
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type>
+
+template< typename T >
 Image::Pixel& Image::Pixel::operator+=( T const& rhs ) { return *this = operator+( *this, rhs ); }
-/// \brief Compound assignment operator.
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type>
+template< typename T >
 Image::Pixel& Image::Pixel::operator-=( T const& rhs ) { return *this = operator-( *this, rhs ); }
-/// \brief Compound assignment operator.
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type>
+template< typename T >
 Image::Pixel& Image::Pixel::operator*=( T const& rhs ) { return *this = operator*( *this, rhs ); }
-/// \brief Compound assignment operator.
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type>
+template< typename T >
 Image::Pixel& Image::Pixel::operator/=( T const& rhs ) { return *this = operator/( *this, rhs ); }
-/// \brief Compound assignment operator.
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type>
+template< typename T >
 Image::Pixel& Image::Pixel::operator%=( T const& rhs ) { return *this = operator%( *this, rhs ); }
-/// \brief Bit-wise compound assignment operator.
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type>
+template< typename T >
 Image::Pixel& Image::Pixel::operator&=( T const& rhs ) { return *this = operator&( *this, rhs ); }
-/// \brief Bit-wise compound assignment operator.
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type>
+template< typename T >
 Image::Pixel& Image::Pixel::operator|=( T const& rhs ) { return *this = operator|( *this, rhs ); }
-/// \brief Bit-wise compound assignment operator.
-template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type>
+template< typename T >
 Image::Pixel& Image::Pixel::operator^=( T const& rhs ) { return *this = operator^( *this, rhs ); }
+
+template< typename T >
+Image::Sample& Image::Sample::operator+=( T const& rhs ) {
+   return *this = dataType_.IsComplex()
+                  ? detail::CastSample< dcomplex >( dataType_, origin_ ) + static_cast< dcomplex >( rhs )
+                  : detail::CastSample< dfloat >( dataType_, origin_ ) + rhs;
+}
+template< typename T >
+Image::Sample& Image::Sample::operator-=( T const& rhs ) {
+   return *this = dataType_.IsComplex()
+                  ? detail::CastSample< dcomplex >( dataType_, origin_ ) - static_cast< dcomplex >( rhs )
+                  : detail::CastSample< dfloat >( dataType_, origin_ ) - rhs;
+}
+template< typename T >
+Image::Sample& Image::Sample::operator*=( T const& rhs ) {
+   return *this = dataType_.IsComplex()
+                  ? detail::CastSample< dcomplex >( dataType_, origin_ ) * static_cast< dcomplex >( rhs )
+                  : detail::CastSample< dfloat >( dataType_, origin_ ) * rhs;
+}
+template< typename T >
+Image::Sample& Image::Sample::operator/=( T const& rhs ) {
+   return *this = dataType_.IsComplex()
+                  ? detail::CastSample< dcomplex >( dataType_, origin_ ) / static_cast< dcomplex >( rhs )
+                  : detail::CastSample< dfloat >( dataType_, origin_ ) / rhs;
+}
+// Operators below are too difficult to implement with only dcomplex and dfloat types.
+template< typename T >
+Image::Sample& Image::Sample::operator%=( T const& rhs ) { return *this = operator%( Image::Pixel( *this ), rhs )[ 0 ]; }
+template< typename T >
+Image::Sample& Image::Sample::operator&=( T const& rhs ) { return *this = operator&( Image::Pixel( *this ), rhs )[ 0 ]; }
+template< typename T >
+Image::Sample& Image::Sample::operator|=( T const& rhs ) { return *this = operator|( Image::Pixel( *this ), rhs )[ 0 ]; }
+template< typename T >
+Image::Sample& Image::Sample::operator^=( T const& rhs ) { return *this = operator^( Image::Pixel( *this ), rhs )[ 0 ]; }
 
 
 //

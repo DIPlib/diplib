@@ -551,6 +551,23 @@ values in the image:
     image.At( 0, 10 ) += 1;
 ```
 
+The single-pixel forms of `dip::Image::At` take an optional template argument, which
+defaults to `dip::dfloat`.
+The `dip::Image::Pixel` object returned is actually a `dip::Image::CastPixel` object,
+which behaves identically to a `dip::Image::Pixel` but aditionally has an implicit
+cast to one numeric type. The template argument to `dip::Image::At` determines this type.
+This implicit cast makes its use a little simpler in a setting combined with numbers
+of that type. However, the object itself is not tied to the type, and it is still possible
+to access (read or write) the pixel as other types. For exmaple, this code will print
+"( 1.0, -3.0 )" to the standard output, the template argument to `%At` has no influence
+on the results:
+
+```cpp
+    dip::Image image( { 256, 256 }, 1, dip::DT_SCOMPLEX );
+    image.At< dip::uint8 >( 85, 43 ) = dip::dcomplex{ 1.0, -3.0 );
+    std::cout << image.At< dip::sint32 >( 85, 43 );
+```
+
 Combining tensor and spatial indexing can be done in either order, but the results are
 not identical:
 

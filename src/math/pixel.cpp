@@ -408,3 +408,108 @@ bool operator>=( Image::Pixel const& lhs, Image::Pixel const& rhs ) {
 }
 
 } // namespace dip
+
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Pixel and related classes" ) {
+
+   // Constructing, indexing, comparing
+
+   dip::Image::Sample s{ 4.6 };
+   DOCTEST_CHECK( s.DataType() == dip::DT_DFLOAT );
+   dip::Image::Sample c{ dip::dcomplex{ 4.1, 2.1 }};
+   dip::Image::Pixel p{ dip::dcomplex{ 4.1, 2.1 }, dip::dcomplex{ 4.6 } };
+   DOCTEST_CHECK( p.DataType() == dip::DT_DCOMPLEX );
+   DOCTEST_CHECK( p.TensorElements() == 2 );
+   DOCTEST_CHECK( p[ 0 ] == c );
+   DOCTEST_CHECK( p[ 1 ] == s );
+
+   // Assigning into
+   dip::Image image( { 3, 4 }, 3, dip::DT_UINT16 );
+   image = 3;
+   DOCTEST_CHECK( image.At( 0 )[ 0 ] == 3 ); // fist sample
+   DOCTEST_CHECK( image.At( 0 ) == 3 );      // fist pixel
+   DOCTEST_CHECK( image.At( 2, 3 )[ 2 ] == 3 ); // last sample
+   image.At( 0 ) = 4;
+   dip::Image::Pixel expect1{ 4, 4, 4 };
+   DOCTEST_CHECK( image.At( 0 ) == 4 );
+   DOCTEST_CHECK( image.At( 0 ) == expect1 );
+   DOCTEST_CHECK_FALSE( image.At( 0 ) == 0 );
+   DOCTEST_CHECK_FALSE( image.At( 1 ) == expect1 );
+   DOCTEST_CHECK_FALSE( image.At( 1 )[ 1 ] == 4 );
+   DOCTEST_CHECK( image.At( 0 )[ 1 ] == 4 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+   image.At( 0 )[ 2 ] = 5;
+   dip::Image::Pixel expect2 = expect1;
+   expect2[ 2 ] = 5;
+   DOCTEST_CHECK( image.At( 0 ) == expect2 );
+   DOCTEST_CHECK( image.At( 0 )[ 1 ] == 4 );
+   DOCTEST_CHECK( image.At( 0 )[ 2 ] == 5 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+   image.At( 0 ) = { 8, 9, 0 };
+   dip::Image::Pixel expect3{ 8, 9, 0 };
+   DOCTEST_CHECK( image.At( 0 ) == expect3 );
+   DOCTEST_CHECK( image.At( 0 )[ 1 ] == 9 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+   image.At( 1 ) = expect3;
+   DOCTEST_CHECK( image.At( 1 ) == expect3 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+   image.At( 2, 0 ) = image.At( 0 );
+   DOCTEST_CHECK( image.At( 2, 0 ) == expect3 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+   image.At( 2, 0 ) = image.At( 0 )[ 0 ];
+   DOCTEST_CHECK( image.At( 2, 0 ) == 8 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+
+   // Reading out
+   dip::uint8 v1 = image.At< dip::uint8 >( 2, 0 )[ 0 ];
+   dip::sint16 v2 = image.At< dip::sint16 >( 2, 0 )[ 0 ];
+   dip::scomplex v3 = image.At< dip::scomplex >( 2, 0 )[ 0 ];
+   DOCTEST_CHECK( v1 == 8 );
+   DOCTEST_CHECK( v2 == 8 );
+   DOCTEST_CHECK( v3 == 8.0f );
+
+   // Arithmetic
+   expect3 = expect3 * 2;
+   DOCTEST_CHECK( expect3[ 0 ] == 16 );
+   DOCTEST_CHECK( expect3[ 1 ] == 18 );
+   DOCTEST_CHECK( expect3[ 2 ] == 0 );
+   DOCTEST_CHECK( image.At< dip::uint8 >( 1 ) * 2 == expect3 );
+   DOCTEST_CHECK( image.At< dip::sint16 >( 1 ) * 2 == expect3 );
+   DOCTEST_CHECK( image.At< dip::scomplex >( 1 ) * 2 == expect3 );
+   DOCTEST_CHECK( image.At< dip::uint8 >( 1 )[ 0 ] * 2 == 16 );
+   DOCTEST_CHECK( image.At< dip::sint16 >( 1 )[ 0 ] * 2 == 16 );
+   DOCTEST_CHECK( image.At< dip::scomplex >( 1 )[ 0 ] * 2 == 16 );
+
+   // Compound assignment
+   expect3 += 5;
+   DOCTEST_CHECK( expect3[ 0 ] == 21 );
+   DOCTEST_CHECK( expect3[ 1 ] == 23 );
+   DOCTEST_CHECK( expect3[ 2 ] == 5 );
+   expect3 += expect2;
+   DOCTEST_CHECK( expect3[ 0 ] == 25 );
+   DOCTEST_CHECK( expect3[ 1 ] == 27 );
+   DOCTEST_CHECK( expect3[ 2 ] == 10 );
+   image.At( 2, 0 ) -= 4;
+   DOCTEST_CHECK( image.At( 2, 0 ) == expect1 );
+   image.At( 2, 0 )[ 2 ] += 1;
+   DOCTEST_CHECK( image.At( 2, 0 ) == expect2 );
+   image.At( 2, 0 )[ 2 ] &= 4;
+   DOCTEST_CHECK( image.At( 2, 0 ) == expect1 );
+
+   // Iterator
+   image.At( 0 ) = expect3;
+   auto it1 = image.At( 0 ).begin();
+   auto it2 = expect3.begin();
+   DOCTEST_CHECK( *it1 == *it2 );
+   ++it1; ++it2;
+   DOCTEST_CHECK( *it1 == *it2 );
+   ++it1; ++it2;
+   DOCTEST_CHECK( *it1 == *it2 );
+   ++it1; ++it2;
+   DOCTEST_CHECK( it2 == expect3.end() );
+}
+
+#endif // DIP__ENABLE_DOCTEST

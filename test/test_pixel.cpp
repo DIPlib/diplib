@@ -47,10 +47,12 @@ int main() {
    ValueFunction( 0 );
    ValueFunction( static_cast< dip::dcomplex >( sampleRef2 ));
    ValueFunction( static_cast< dip::dcomplex >( pixelRef[ 0 ] ));
-   ValueFunction( static_cast< dip::dcomplex >( image.At( 0 )[ 0 ] ));
+   ValueFunction( image.At< dip::dcomplex >( 0 )[ 0 ] );
+   ValueFunction( image.At( 0 )[ 0 ].As< dip::dcomplex>() );
    ValueFunction( static_cast< dip::dcomplex >( dip::Image::Sample( image )));
    ValueFunction( image.As< dip::dcomplex>() );
-   ValueFunction( static_cast< dip::dcomplex >( image.At( 0 ) ));
+   ValueFunction( image.At< dip::dcomplex >( 0 ) );
+   ValueFunction( image.At( 0 ).As< dip::dcomplex >() );
 
    // ASSIGNING
 
@@ -75,20 +77,29 @@ int main() {
    image.At( 0 ) = sample;
    image.At( 0 ) = pixel;
    image.At( 0 )[ 0 ] = sample;
+   image.At( 0 ) = 1;
+   image.At( 0 ) = { 2 };
+   image.At( 0 )[ 0 ] = 3;
 
    // USING
 
    dip::Image::Pixel p1 = image.At( 0 ) + 2;
-   dip::Image::Pixel p2 = image.At( 0 )[ 0 ] + 2;
+   //dip::Image::Pixel p2 = image.At( 0 )[ 0 ] + 2;
 
    image.At( 0 ) += 2;
 
-   //dip::dfloat f1 = image.At( 0 ) + 2;        // Illegal: we cannot implement implicit cast to double
-   dip::dfloat f2 = image.At( 0 ).As< double >() + 2;
-   //dip::dfloat f3 = image.At( 0 )[ 0 ] + 2;   // Illegal: we cannot implement implicit cast to double
-   dip::dfloat f4 = image.At( 0 )[ 0 ].As< double >() + 2;
+   dip::dfloat f1 = static_cast< double >( image.At( 0 ) + 2 );
+   dip::dfloat f2 = image.At( 0 ).As< double >() + f1;
+   dip::dfloat f3 = image.At( 0 )[ 0 ] + f2;
+   dip::dfloat f4 = image.At( 0 )[ 0 ].As< double >() + f3;
 
-   if( image.At( 0 )[ 0 ] ) {}
+   dip::sfloat f5 = static_cast< float >( image.At< float >( 0 ) + f4 );
+   dip::sfloat f6 = image.At( 0 ).As< float >() + f5;
+   dip::sfloat f7 = image.At< float >( 0 )[ 0 ] + f6;
+   f1 = image.At< float >( 0 )[ 0 ].As< float >() + f7;
+
+   if( (bool)image.At( 0 )[ 0 ] ) {}
+   if( image.At< bool >( 0 )[ 0 ] ) {}
    if( image.At( 0 )[ 0 ] == 0 ) {}
    if( image.At( 0 )[ 0 ].As< int >() == 0 ) {}
    if( image.At( 0 )[ 0 ] == sample ) {}

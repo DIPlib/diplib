@@ -76,42 +76,6 @@ Image Image::TensorColumn( dip::uint index ) const {
    return out;
 }
 
-Image::Pixel Image::At( dip::uint index ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   if( index == 0 ) { // shortcut to the first pixel
-      return Pixel( Origin(), dataType_, tensor_, tensorStride_ );
-   } else if( sizes_.size() < 2 ) {
-      dip::uint n = sizes_.size() == 0 ? 1 : sizes_[ 0 ];
-      DIP_THROW_IF( index >= n, E::INDEX_OUT_OF_RANGE );
-      return Pixel( Pointer( static_cast< dip::sint >( index ) * strides_[ 0 ] ),
-                    dataType_, tensor_, tensorStride_ );
-   } else {
-      return At( IndexToCoordinates( index ) );
-   }
-}
-
-Image::Pixel Image::At( dip::uint x_index, dip::uint y_index ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( sizes_.size() != 2, E::ILLEGAL_DIMENSIONALITY );
-   DIP_THROW_IF( x_index >= sizes_[ 0 ], E::INDEX_OUT_OF_RANGE );
-   DIP_THROW_IF( y_index >= sizes_[ 1 ], E::INDEX_OUT_OF_RANGE );
-   return Pixel( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
-                          static_cast< dip::sint >( y_index ) * strides_[ 1 ] ),
-                 dataType_, tensor_, tensorStride_ );
-}
-
-Image::Pixel Image::At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( sizes_.size() != 3, E::ILLEGAL_DIMENSIONALITY );
-   DIP_THROW_IF( x_index >= sizes_[ 0 ], E::INDEX_OUT_OF_RANGE );
-   DIP_THROW_IF( y_index >= sizes_[ 1 ], E::INDEX_OUT_OF_RANGE );
-   DIP_THROW_IF( z_index >= sizes_[ 2 ], E::INDEX_OUT_OF_RANGE );
-   return Pixel( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
-                          static_cast< dip::sint >( y_index ) * strides_[ 1 ] +
-                          static_cast< dip::sint >( z_index ) * strides_[ 2 ] ),
-                 dataType_, tensor_, tensorStride_ );
-}
-
 Image Image::At( Range x_range ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( sizes_.size() != 1, E::ILLEGAL_DIMENSIONALITY );
