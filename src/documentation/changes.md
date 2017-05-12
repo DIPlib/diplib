@@ -120,10 +120,11 @@ over.
   etc. now are overloaded versions of `dip::Add` et al.
 
 - Morphological filters now use a `dip::StructuringElement` to collect three parameters
-  of the old *DIPlib*.
+  of the old *DIPlib*. Other filters that had a filter shape argument now use a
+  `dip::Kernel` to collect three parameters.
 
 - `dip_Min` and `dip_Max` are now `dip::Infimum` and `dip::Supremum`. There are too many
-  functions called `Maximum` and `Minimum`.
+  functions with `Maximum` and `Minimum` in their name.
 
 ## Changes in functionality
 
@@ -148,7 +149,7 @@ over.
 - `dip::SeparableConvolution` treats input filter definitions slightly differently, and there
   no longer are "left" and "right" options.
 
-- `dip::ImageDisplay` no longer does any spatial scaling.
+- `dip::ImageDisplay` no longer does any spatial scaling. Also, it's a class, not a function.
 
 - `dip::FourierTransform` now does normalization in the more common way (forward transform not
   normalized, inverse transform normalized by 1/N), but an option ("symmetric") allows to change

@@ -152,6 +152,11 @@ class DIP_NO_EXPORT ColorSpaceManager {
          }
       }
 
+      /// \brief Check to see if a color space name is defined.
+      bool IsDefined( String const& colorSpaceName ) const {
+         return names_.count( colorSpaceName ) != 0;
+      }
+
       /// \brief Gets a pointer to a color space converter object registered with this `%ColorSpaceManager`.
       /// Use this to access the object to modify it, for example configure a parameter.
       ColorSpaceConverter* GetColorSpaceConverter(
@@ -273,10 +278,6 @@ class DIP_NO_EXPORT ColorSpaceManager {
          auto it = names_.find( name );
          DIP_THROW_IF( it == names_.end(), "Color space name not defined" );
          return it->second;
-      }
-
-      bool IsDefined( String const& name ) const {
-         return names_.count( name ) != 0;
       }
 
       // The std::map `names_` translates known color space names to an index into the `colorSpaces_` array.

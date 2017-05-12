@@ -24,11 +24,8 @@
 #include "diplib/display.h"
 #include "diplib/math.h"
 #include "diplib/overload.h"
-#include "diplib/color.h"
 
 namespace dip {
-
-static ColorSpaceManager colorSpaceManager;
 
 // Don't call this function if mappingMode_ == MappingMode::MANUAL or mappingMode_ == MappingMode::MODULO!
 void ImageDisplay::ComputeLimits( bool set ) {
@@ -43,9 +40,9 @@ void ImageDisplay::ComputeLimits( bool set ) {
       if( std::isnan( lims->lower )) {
          // Compute from image_
          tmp = image_.QuickCopy();
-         if( colorspace_ != "RGB" ) {
+         if( !colorspace_.empty() && ( colorspace_ != "RGB" )) {
             tmp.SetColorSpace( colorspace_ );
-            colorSpaceManager.Convert( tmp, tmp, "RGB" );
+            colorSpaceManager_->Convert( tmp, tmp, "RGB" );
          };
       }
    } else {
@@ -198,7 +195,7 @@ void ImageDisplay::UpdateRgbSlice() {
          }
       } else {
          slice_.SetColorSpace( colorspace_ );
-         colorSpaceManager.Convert( slice_, rgbSlice_, "RGB" );
+         colorSpaceManager_->Convert( slice_, rgbSlice_, "RGB" );
       }
       rgbSliceIsDirty_ = false;
       outputIsDirty_ = true;

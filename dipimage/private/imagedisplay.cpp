@@ -135,6 +135,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
    // This data is kept in memory
    static MatlabInterfaceUInt8 externalInterface;
+   static dip::ColorSpaceManager colorSpaceManager;
    using Handle = dip::uint;
    using Object = std::shared_ptr< dip::ImageDisplay >;
    using ObjectMap = std::map< Handle, Object >;
@@ -341,7 +342,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          //       allocated here), and we'd also need to register it somewhere so it can be cleared when necessary.
          //       The option we follow here instead is to simply make a deep copy of the image.
          dip::Image copy = dip::Copy( in );
-         Object object = std::make_shared< dip::ImageDisplay >( copy, &externalInterface );
+         Object object = std::make_shared< dip::ImageDisplay >( copy, &colorSpaceManager, &externalInterface );
          objects.emplace( newHandle, object );
          plhs[ 0 ] = CreateHandle( newHandle );
 

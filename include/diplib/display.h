@@ -22,6 +22,7 @@
 #define DIP_DISPLAY_H
 
 #include "diplib.h"
+#include "diplib/color.h"
 
 
 /// \file
@@ -48,6 +49,10 @@ namespace dip {
 /// `%Output` method is called, not when display options are set. The display options are designed to be
 /// settable by a user using the image display window.
 ///
+/// For a scalar input image, the output is always scalar (grey-value). For a color image, if it can be converted
+/// to RGB, and RGB output image is produced. For other tensor images, an RGB image is also produced, the user
+/// can select which tensor element is shown in each of the three color channels.
+///
 /// See the `dipimage/imagedisplay.cpp` file implementing the MATLAB interface to this class, and the
 /// `dipimage/dipshow.m` function, for an example of how this can be used.
 class DIP_NO_EXPORT ImageDisplay{
@@ -68,8 +73,19 @@ class DIP_NO_EXPORT ImageDisplay{
       ImageDisplay& operator=( const ImageDisplay& ) = delete;
 
       /// \brief The constructor takes an image with at least 1 dimension.
-      ImageDisplay( Image const& image, ExternalInterface* externalInterface = nullptr ) :
-            image_( image.QuickCopy() ), colorspace_( image.ColorSpace() ) {
+      ///
+      /// If `colorSpaceManager` is not `nullptr`, it points to the color space manager object to be
+      /// used to convert the color image `image` to RGB. If `image` is not color, or is RGB, the color
+      /// space manager is not used. If no color space manager is given, `image` will be shown as is,
+      /// no color space conversion is applied.
+      ///
+      /// If `externalInterface` is not `nullptr`, then it is used to allocate the data segment for the
+      /// output image.
+      ///
+      /// Both `colorSpaceManager` and `externalInterface`, if given, must exist for as long as the
+      /// `%ImageDisplay` object exists.
+      ImageDisplay( Image const& image, ColorSpaceManager* colorSpaceManager = nullptr, ExternalInterface* externalInterface = nullptr ) :
+            image_( image.QuickCopy() ), colorspace_( image.ColorSpace() ), colorSpaceManager_( colorSpaceManager ) {
          DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
          // Dimensionality
          dip::uint nDims = image_.Dimensionality();
@@ -84,9 +100,15 @@ class DIP_NO_EXPORT ImageDisplay{
          if( image_.IsScalar() ) {
             // grey-value image
             colorspace_.clear();
+            colorSpaceManager_ = nullptr;
          } else {
-            if(( colorspace_ == "RGB" ) && ( image_.TensorElements() != 3 )) {
-               colorspace_.clear();
+            if( !colorspace_.empty() ) {
+               if( !colorSpaceManager_ ||
+                   !colorSpaceManager_->IsDefined( colorspace_ ) ||
+                    colorSpaceManager_->NumberOfChannels( colorspace_ ) != image_.TensorElements()) {
+                  // We won't be able to convert this image to RGB, let's treat it as a tensor image.
+                  colorspace_.clear();
+               }
             }
             if( colorspace_.empty() ) {
                // tensor image
@@ -94,6 +116,7 @@ class DIP_NO_EXPORT ImageDisplay{
                if( image_.TensorElements() > 2 ) {
                   blue_ = 2;
                }
+               colorSpaceManager_ = nullptr;
             } else {
                // color image, shown as RGB
                green_ = 1;
@@ -117,13 +140,18 @@ class DIP_NO_EXPORT ImageDisplay{
          return image_;
       }
 
-      /// \brief Retrives a reference to the raw slice image. This function also causes an update of the slice
-      /// if the projection changed. The raw slice image contains the input data for the what is shown in
-      /// `Output`.
+      /// \brief Retrives a reference to the raw slice image.
+      ///
+      /// This function also causes an update of the slice if the projection changed. The raw slice image contains
+      /// the input data for the what is shown in `Output`.
       DIP_EXPORT Image const& Slice();
 
-      /// \brief Retrives a reference to the output image. This function also causes an update of the output if
-      /// any of the modes changed.
+      /// \brief Retrives a reference to the output image.
+      ///
+      /// This function also causes an update of the output if any of the modes changed.
+      ///
+      /// The output image data segment will be allocated using the external interface provided to the
+      /// `%ImageDisplay` constructor.
       DIP_EXPORT Image const& Output();
 
       /// \brief Returns true if the next call to `Output` will yield a different result from the previous one.
@@ -135,6 +163,7 @@ class DIP_NO_EXPORT ImageDisplay{
       bool SliceIsDirty() const { return sliceIsDirty_; }
 
       /// \brief Gets input image intensities at a given 2D point (automatically finds corresponding nD location).
+      ///
       /// Because the pixel can be of different types (integer, float, complex) and can have up to three samples,
       /// a string is returned with appropriately formatted values. In case of a 1D `Output`, `y` is ignored.
       DIP_EXPORT String Pixel( dip::uint x, dip::uint y = 0 );
@@ -182,6 +211,18 @@ class DIP_NO_EXPORT ImageDisplay{
                   sliceIsDirty_ = true;
                }
             }
+         }
+      }
+
+      /// \brief Sets the tensor element to be shown in each of the three output channels.
+      ///
+      /// This function only has an effect for tensor images without a color space.
+      void SetTensorElements( dip::sint red, dip::sint green = -1, dip::sint blue = -1 ) {
+         dip::sint N = static_cast< dip::sint >( image_.TensorElements() );
+         if(( N > 1 ) && colorspace_.empty() ) {
+            red_ = red < N ? red : -1;
+            green_ = green < N ? green : -1;
+            blue_ = blue < N ? blue : -1;
          }
       }
 
@@ -377,6 +418,13 @@ class DIP_NO_EXPORT ImageDisplay{
       /// \brief Get the image dimensionality.
       dip::uint Dimensionality() const { return image_.Dimensionality(); }
 
+      /// \brief Get the tensor element to be shown in the red channel.
+      dip::sint GetRedTensorElement() { return red_; }
+      /// \brief Get the tensor element to be shown in the green channel.
+      dip::sint GetGreenTensorElement() { return green_; }
+      /// \brief Get the tensor element to be shown in the blue channel.
+      dip::sint GetBlueTensorElement() { return blue_; }
+
       /// \brief Get the current projection mode.
       String GetProjectionMode() const {
          switch( projectionMode_ ) {
@@ -446,6 +494,7 @@ class DIP_NO_EXPORT ImageDisplay{
 
       // The color space of the input image
       String colorspace_;
+      ColorSpaceManager* colorSpaceManager_;
 
       // Display flags
       dip::uint dim1_ = 0;        // slicing direction x
