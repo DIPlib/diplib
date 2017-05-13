@@ -704,6 +704,36 @@ inline mxArray* GetArrayUnicode( dip::String const& in ) {
 #endif
 }
 
+inline mxArray* GetArray( dip::Image::Sample const& in ) {
+   if( in.DataType().IsBinary() ) { // logical array
+      return GetArray( dip::detail::CastSample< bool >( in.DataType(), in.Origin() ));
+   } else if( in.DataType().IsComplex() ) { // double complex array
+      return GetArray( dip::detail::CastSample< dip::dcomplex >( in.DataType(), in.Origin() ));
+   } else { // integer or floating-point : double array
+      return GetArray( dip::detail::CastSample< dip::dfloat >( in.DataType(), in.Origin() ));
+   }
+}
+
+inline mxArray* GetArray( dip::Image::Pixel const& in ) {
+   mxArray* out;
+   if( in.DataType().IsBinary() ) { // logical array
+      out = mxCreateLogicalMatrix( 1, in.TensorElements() );
+      dip::Image::Pixel map( mxGetLogicals( out ), DT_BIN, in.Tensor(), 1 );
+      map = in; // copy samples over
+   } else if( in.DataType().IsComplex() ) { // double complex array
+      out = mxCreateDoubleMatrix( 1, in.TensorElements(), mxCOMPLEX );
+      dip::Image::Pixel mapReal( mxGetPr( out ), DT_BIN, in.Tensor(), 1 );
+      dip::Image::Pixel mapImag( mxGetIm( out ), DT_BIN, in.Tensor(), 1 );
+      mapReal = in.Real(); // copy samples over
+      mapImag = in.Imaginary(); // copy samples over
+   } else { // integer or floating-point : double array
+      out = mxCreateDoubleMatrix( 1, in.TensorElements(), mxREAL );
+      dip::Image::Pixel map( mxGetPr( out ), DT_BIN, in.Tensor(), 1 );
+      map = in; // copy samples over
+   }
+   return out;
+}
+
 // TODO: GetArray( dip::Distribution const& in) (when we define it)
 
 

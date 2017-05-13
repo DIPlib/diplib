@@ -166,7 +166,23 @@ class DIP_NO_EXPORT ImageDisplay{
       ///
       /// Because the pixel can be of different types (integer, float, complex) and can have up to three samples,
       /// a string is returned with appropriately formatted values. In case of a 1D `Output`, `y` is ignored.
-      DIP_EXPORT String Pixel( dip::uint x, dip::uint y = 0 );
+      template< typename T >
+      DIP_EXPORT Image::CastPixel< T > Pixel( dip::uint x, dip::uint y = 0 ) {
+         UpdateSlice();
+         if( x >= slice_.Size( 0 )) {
+            x = slice_.Size( 0 ) - 1;
+         }
+         if( slice_.Dimensionality() == 1 ) {
+            // 1D slice
+            return slice_.At< T >( x );
+         } else {
+            // 2D slice
+            if( y >= slice_.Size( 1 )) {
+               y = slice_.Size( 1 ) - 1;
+            }
+            return slice_.At< T >( x, y );
+         }
+      }
 
       /// \brief Sets the projection/slicing direction, as the two image dimensions to show along the x and y axis
       /// of the 2D display. If `dim1==dim2`, a 1D output is produced.

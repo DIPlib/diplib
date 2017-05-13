@@ -185,6 +185,8 @@ class DIP_NO_EXPORT Image {
       ///
       /// \see dip::Image::Pixel, dip::Image::CastPixel, dip::Image::CastSample
       class Sample {
+            friend class Pixel; // This is necessary so that Pixel::Iterator can modify origin_.
+
          public:
 
             // Default copy constructor doesn't do what we need
@@ -195,6 +197,10 @@ class DIP_NO_EXPORT Image {
 
             // Default move constructor, otherwise it's implicitly deleted.
             Sample( Sample&& ) = default;
+
+            // Construct a Sample over existing data, used by dip::Image, dip::GenericImageIterator,
+            // dip::GenericJointImageIterator.
+            Sample( void* data, dip::DataType dataType ) : origin_( data ), dataType_( dataType ) {}
 
             /// A numeric value implicitly converts to a `%Sample`.
             template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
@@ -317,13 +323,6 @@ class DIP_NO_EXPORT Image {
             dcomplex buffer_;
             void* origin_ = &buffer_;
             dip::DataType dataType_;
-
-            // `dip::Image::Pixel` needs to use the private constructor, as do the generic image iterators.
-            friend class Pixel;
-            template< typename T > friend class dip::GenericImageIterator;
-            template< dip::uint N, typename T > friend class dip::GenericJointImageIterator;
-
-            Sample( void* data, dip::DataType dataType ) : origin_( data ), dataType_( dataType ) {}
       };
 
       /// \brief A pixel represents a set of numeric value in an image, see \ref image_representation.
@@ -355,6 +354,11 @@ class DIP_NO_EXPORT Image {
 
             // Default move constructor, otherwise it's implicitly deleted.
             Pixel( Pixel&& ) = default;
+
+            // Construct a Pixel over existing data, used by dip::Image, dip::GenericImageIterator,
+            // dip::GenericJointImageIterator, dml::GetArray.
+            Pixel( void* data, dip::DataType dataType, dip::Tensor const& tensor, dip::sint tensorStride ) :
+                  origin_( data ), dataType_( dataType ), tensor_( tensor ), tensorStride_( tensorStride ) {}
 
             /// Construct a new `%Pixel` by giving data type and number of tensor elements. Initialized to 0.
             explicit Pixel( dip::DataType dataType, dip::uint tensorElements = 1 ) :
@@ -559,6 +563,33 @@ class DIP_NO_EXPORT Image {
                return out;
             }
 
+            /// \brief Extracts the real component of the pixel values, returns an identical copy if the data type is
+            /// not complex.
+            Pixel Real() const {
+               Pixel out = *this;
+               if( dataType_.IsComplex() ) {
+                  // Change data type
+                  out.dataType_ = dataType_ == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
+                  // Sample size is halved, meaning stride must be doubled
+                  out.tensorStride_ *= 2;
+               }
+               return out;
+            }
+
+            /// \brief Extracts the imaginary component of the pixel values, throws an exception if the data type
+            /// is not complex.
+            Pixel Imaginary() const {
+               DIP_THROW_IF( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+               Pixel out = *this;
+               // Change data type
+               out.dataType_ = dataType_ == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
+               // Sample size is halved, meaning stride must be doubled
+               out.tensorStride_ *= 2;
+               // Change the offset
+               out.origin_ = static_cast< uint8* >( out.origin_ ) + static_cast< dip::sint >( dataType_.SizeOf() );
+               return out;
+            }
+
             /// \brief An iterator to iterate over the samples in the pixel. Mutable forward iterator.
             class Iterator {
                public:
@@ -661,14 +692,6 @@ class DIP_NO_EXPORT Image {
             dip::DataType dataType_;
             dip::Tensor tensor_;
             dip::sint tensorStride_ = 1;
-
-            // `dip::Image` needs to use the private constructor.
-            friend class Image;
-            template< typename T > friend class dip::GenericImageIterator;
-            template< dip::uint N, typename T > friend class dip::GenericJointImageIterator;
-
-            Pixel( void* data, dip::DataType dataType, dip::Tensor const& tensor, dip::sint tensorStride ) :
-                  origin_( data ), dataType_( dataType ), tensor_( tensor ), tensorStride_( tensorStride ) {}
       };
 
       /// \brief Derived from `dip::Image::Sample`, works identically except it implicitly converts to type `T`.
