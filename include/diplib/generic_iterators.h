@@ -741,7 +741,7 @@ inline ImageSliceIterator ImageSliceEndIterator( Image const& image, dip::uint p
 /// on storage order.
 ///
 /// ```cpp
-///     dip::ImageTensorIterator it( img );
+///     auto it = dip::ImageTensorIterator( img );
 ///     do {
 ///        // do something with the image *it here.
 ///     } while( ++it );

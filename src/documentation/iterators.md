@@ -341,3 +341,26 @@ loop using indexing:
 
 The difference in efficiency might or might not be important depending on
 the cost of the function being applied to each 2D slice.
+
+[//]: # (--------------------------------------------------------------)
+
+\section iterate_tensor Processing an image tensor element by tensor element
+
+The `dip::ImageSliceIterator` can also be used to iterate over the tensor elements
+of an image. In this case, dereferencing the iterator yields a scalar image
+corresponding to `img[ ii ]`. The two following pieces of code are equivalent:
+
+```cpp
+    auto it = dip::ImageTensorIterator( img );
+    do {
+       dip::Dilation( *it, *it, 7 );
+    } while( ++it );
+
+    for( dip::uint ii = 0; ii < img.TensorElements(); ++ii ) {
+       dip::Dilation( img[ ii ], img[ ii ], 7 );
+    }
+```
+
+As in the previous section, the difference in efficiency (the iterator is more
+efficient) might not be important depending on the cost of the function being
+called.
