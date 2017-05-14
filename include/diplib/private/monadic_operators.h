@@ -45,7 +45,7 @@
    DIP_EXPORT void functionName_( Image const& in, Image& out, paramType_ paramName_ ); \
    inline Image functionName_( Image const& in, paramType_ paramName_ ) { Image out; functionName_( in, out, paramName_ ); return out; }
 
-#define DIP__MONADIC_OPERATOR_BIN( functionName_, functionLambda_, inputDomain_ ) \
+#define DIP__MONADIC_OPERATOR_BIN( functionName_, functionLambda_, inputDomain_, defaultValue_ ) \
    DIP_EXPORT void functionName_( Image const& in, Image& out ); \
    inline Image functionName_( Image const& in ) { Image out; functionName_( in, out ); return out; }
 
@@ -169,13 +169,13 @@ DIP__MONADIC_OPERATOR_FLOAT( Erfc, []( auto its ) { return static_cast< decltype
 DIP__MONADIC_OPERATOR_FLOAT( Sinc, []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( Sinc( *its[ 0 ] )); }, DataType::Class_Real )
 
 /// \brief True for each pixel that is NaN.
-DIP__MONADIC_OPERATOR_BIN( IsNotANumber, []( auto in ) { return dipm__IsNaN( in ); }, DataType::Class_Flex )
+DIP__MONADIC_OPERATOR_BIN( IsNotANumber, []( auto in ) { return dipm__IsNaN( in ); }, DataType::Class_Flex, false )
 
 /// \brief True for each pixel that is positive or negative infinity.
-DIP__MONADIC_OPERATOR_BIN( IsInfinite, []( auto in ) { return dipm__IsInf( in ); }, DataType::Class_Flex )
+DIP__MONADIC_OPERATOR_BIN( IsInfinite, []( auto in ) { return dipm__IsInf( in ); }, DataType::Class_Flex, false )
 
 /// \brief True for each pixel that is not NaN nor infinity.
-DIP__MONADIC_OPERATOR_BIN( IsFinite, []( auto in ) { return dipm__IsFinite( in ); }, DataType::Class_Flex )
+DIP__MONADIC_OPERATOR_BIN( IsFinite, []( auto in ) { return dipm__IsFinite( in ); }, DataType::Class_Flex, true )
 
 /// \}
 

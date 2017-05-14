@@ -113,15 +113,21 @@ inline std::unique_ptr< Framework::ScanLineFilter > NewBinScanLineFilter( F cons
                               Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
    }
 
-#define DIP__MONADIC_OPERATOR_BIN( functionName_, functionLambda_, inputDomain_ ) \
+#define DIP__MONADIC_OPERATOR_BIN( functionName_, functionLambda_, inputDomain_, defaultValue_ ) \
    void functionName_( Image const& in, Image& out ) { \
-      DIP_THROW_IF( inputDomain_ != in.DataType(), E::DATA_TYPE_NOT_SUPPORTED ); \
       DataType dtype = in.DataType(); \
-      std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
-      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, NewBinScanLineFilter, ( functionLambda_ ), dtype ); \
-      ImageRefArray outar{ out }; \
-      Framework::Scan( { in }, outar, { dtype }, { DT_BIN }, { DT_BIN }, { 1 }, *scanLineFilter, \
-                       Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
+      if( inputDomain_ == dtype ) { \
+         std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
+         DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewBinScanLineFilter, ( functionLambda_ ), dtype ); \
+         ImageRefArray outar{ out }; \
+         Framework::Scan( { in }, outar, { dtype }, { DT_BIN }, { DT_BIN }, { 1 }, *scanLineFilter, \
+                          Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
+      } else { \
+         out.ReForge( in, DT_BIN ); \
+         out.SetPixelSize( in.PixelSize() ); \
+         out.SetColorSpace( in.ColorSpace() ); \
+         out.Fill( defaultValue_ ); \
+      } \
    }
 
 #undef DIP__MONADIC_OPERATORS_PRIVATE
