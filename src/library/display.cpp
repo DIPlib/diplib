@@ -88,7 +88,12 @@ void ImageDisplay::ComputeLimits( bool set ) {
             lims->lower = res.Minimum();
             lims->upper = res.Maximum();
          }
-         // TODO: make sure lims doesn't have a NaN in it.
+         if( std::isnan( lims->lower )) {
+            lims->lower = 0.0;
+         }
+         if( std::isnan( lims->upper )) {
+            lims->upper = 255.0;
+         }
       }
    }
    if( set ) {
@@ -382,6 +387,99 @@ Image const& ImageDisplay::Slice() {
 Image const& ImageDisplay::Output() {
    UpdateOutput();
    return output_;
+}
+
+namespace {
+
+void MapPixelValues(
+      Image::Pixel const& input,
+      Image::Pixel const& output,
+      dfloat offset, dfloat scale,
+      bool usePhase, bool logarithmic, bool useModulo
+) {
+   // Input and output both always have 3 tensor elements
+   for( dip::uint ii = 0; ii < 3; ++ii ) {
+      double value = usePhase
+                     ? std::arg( input[ ii ].As< dcomplex >())
+                     : input[ ii ].As< dfloat >();
+      value += offset;
+      if( logarithmic ) {
+         output[ ii ] = clamp_cast< uint8 >( std::log( value ) * scale );
+      } else if( useModulo ) {
+         value = value == 0 ? 0 : ( std::fmod( value * scale - 1, 255.0 ) + 1 );
+         output[ ii ] = clamp_cast< uint8 >( value );
+      } else {
+         output[ ii ] = clamp_cast< uint8 >( value * scale );
+      }
+   }
+}
+
+} // namespace
+
+
+Image::Pixel ImageDisplay::MapSinglePixel( Image::Pixel const& input ) {
+   DIP_THROW_IF( input.TensorElements() != image_.TensorElements(), E::NTENSORELEM_DONT_MATCH );
+   UpdateOutput(); // needed to have `range_` updated, etc.
+   Image::Pixel rgb( input.DataType(), 3 );
+   if( slice_.IsScalar() || ( colorspace_ == "RGB" ) ) {
+      rgb = input;
+   } else if( colorspace_.empty() ) {
+      if( red_ >= 0 ) {
+         rgb[ 0 ] = input[ static_cast< dip::uint >( red_ ) ];
+      } else {
+         rgb[ 0 ] = 0;
+      }
+      if( green_ >= 0 ) {
+         rgb[ 1 ] = input[ static_cast< dip::uint >( green_ ) ];
+      } else {
+         rgb[ 1 ] = 0;
+      }
+      if( blue_ >= 0 ) {
+         rgb[ 2 ] = input[ static_cast< dip::uint >( blue_ ) ];
+      } else {
+         rgb[ 2 ] = 0;
+      }
+   } else {
+      Image tmp( input );
+      tmp.SetColorSpace( colorspace_ );
+      tmp = colorSpaceManager_->Convert( tmp, "RGB" );
+      rgb = tmp.At( 0 );
+   }
+   // Mapping function
+   bool logarithmic = mappingMode_ == MappingMode::LOGARITHMIC;
+   bool useModulo = mappingMode_ == MappingMode::MODULO;
+   dfloat offset;
+   dfloat scale;
+   if( logarithmic ) {
+      offset = 1.0 - range_.lower;
+      scale = 255.0 / std::log( range_.upper + offset );
+   } else {
+      offset = -range_.lower;
+      scale = 255.0 / ( range_.upper - range_.lower );
+   }
+   Image::Pixel output( DT_UINT8, 3 );
+   if( rgb.DataType().IsComplex() ) {
+      switch( complexMode_ ) {
+         //case ComplexMode::MAGNITUDE:
+         default:
+            MapPixelValues( rgb, output, offset, scale, false, logarithmic, useModulo );
+            break;
+         case ComplexMode::PHASE:
+            MapPixelValues( rgb, output, offset, scale, true, logarithmic, useModulo );
+            break;
+         case ComplexMode::REAL:
+            MapPixelValues( rgb.Real(), output, offset, scale, false, logarithmic, useModulo );
+            break;
+         case ComplexMode::IMAG:
+            MapPixelValues( rgb.Imaginary(), output, offset, scale, false, logarithmic, useModulo );
+            break;
+      }
+   }
+   if( image_.IsScalar() ) {
+      return output[ 0 ];
+   } else {
+      return output;
+   }
 }
 
 } // namespace dip

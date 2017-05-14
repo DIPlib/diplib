@@ -37,9 +37,6 @@ namespace dip {
 /// \{
 
 
-// TODO: need a way to pass a color space manager.
-
-
 /// \brief Encapsulates state of an image in a display window, and provides the functionality for converting the
 /// image to a form suitable for display.
 ///
@@ -153,6 +150,9 @@ class DIP_NO_EXPORT ImageDisplay{
       /// The output image data segment will be allocated using the external interface provided to the
       /// `%ImageDisplay` constructor.
       DIP_EXPORT Image const& Output();
+
+      /// \brief Puts a single pixel through the same mapping the image will go through to become `Output`.
+      DIP_EXPORT Image::Pixel MapSinglePixel( Image::Pixel const& input );
 
       /// \brief Returns true if the next call to `Output` will yield a different result from the previous one.
       /// That is, the display needs to be redrawn.
@@ -520,7 +520,6 @@ class DIP_NO_EXPORT ImageDisplay{
       dip::sint red_ = 0;         // tensor element to display in the red channel (or in the grey-value image)
       dip::sint green_ = -1;      // tensor element to display in the green channel
       dip::sint blue_ = -1;       // tensor element to display in the blue channel
-      // TODO: functions to set and get which tensor elements are shown in which channel
       UnsignedArray coordinates_; // coordinates through which the slice is taken
       ProjectionMode projectionMode_ = ProjectionMode::SLICE;
       ComplexMode complexMode_ = ComplexMode::REAL;
