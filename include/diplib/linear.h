@@ -81,7 +81,11 @@ struct DIP_NO_EXPORT OneDimensionalFilter {
 /// \brief An array of 1D filters
 using OneDimensionalFilterArray = std::vector< OneDimensionalFilter >;
 
-// TODO: Implement code to separate an image into 1D filters to be applied with SeparableConvolution
+/// \brief Separates a linear filter (convolution kernel) into a set of 1D filters that can be applied using
+/// `dip::SeparableConvolution`.
+///
+/// If `filter` does not represent a separable kernel, the output `dip::OneDimensionalFilterArray` object is
+/// empty (it's `empty` method returns true, and it's `size` method return 0).
 DIP_EXPORT OneDimensionalFilterArray SeparateFilter( Image const& filter );
 
 /// \brief Applies a convolution with a filter kernel (PSF) that is separable.
