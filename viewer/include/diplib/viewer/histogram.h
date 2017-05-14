@@ -56,7 +56,7 @@ class viewer__Histogram : public dip::Framework::ScanLineFilter
   
     virtual void Filter( dip::Framework::ScanLineFilterParameters const& params ) override
     {
-      dip::sfloat const* in = static_cast< dip::sfloat const* >( params.inBuffer[ 0 ].buffer );
+      T const* in = static_cast< T const* >( params.inBuffer[ 0 ].buffer );
       dip::uint32 * out = static_cast< dip::uint32 * >( histogram_.Origin() );
       
       auto bufferLength = params.bufferLength;

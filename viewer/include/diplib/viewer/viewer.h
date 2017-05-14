@@ -261,9 +261,10 @@ inline dip::sfloat rangeMap(T val, const ViewingOptions &options)
     return (dip::sfloat)(std::min(std::max(((double)val-options.mapping_range_.first)/(options.mapping_range_.second-options.mapping_range_.first), 0.), 1.));
 }
 
-template<typename T>
-inline void colorMap(const T *in, dip::sint tstride, dip::uint8 *out, const ViewingOptions &options)
+inline void colorMap(const dip::Image::Pixel &in, dip::uint8 *out, const ViewingOptions &options)
 {
+  dip::uint hasElements = (in.TensorElements() > 1);
+
   switch (options.lut_)
   {
     case ViewingOptions::LookupTable::ColorSpace:
@@ -275,16 +276,16 @@ inline void colorMap(const T *in, dip::sint tstride, dip::uint8 *out, const View
       {
         dip::sint elem = options.color_elements_[kk];
         if (elem >= 0)
-          out[kk] = (dip::uint8)(rangeMap(in[elem*tstride], options)*255);
+          out[kk] = (dip::uint8)(rangeMap((double)in[(dip::uint)elem*hasElements], options)*255);
         else
           out[kk] = 0;
       }
       break;
     case ViewingOptions::LookupTable::Grey:
-      out[0] = out[1] = out[2] = (dip::uint8)(rangeMap(in[(dip::sint)options.element_*tstride], options)*255);
+      out[0] = out[1] = out[2] = (dip::uint8)(rangeMap((double)in[options.element_*hasElements], options)*255);
       break;
     case ViewingOptions::LookupTable::Jet:
-      jet(rangeMap(in[(dip::sint)options.element_*tstride], options), out);
+      jet(rangeMap((double)in[options.element_*hasElements], options), out);
       break;
   }
 }

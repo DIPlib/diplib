@@ -39,9 +39,7 @@ void TensorViewPort::render()
   Image &image = viewer()->image();
   
   Tensor t = image.Tensor();
-  dip::sfloat *p = (dip::sfloat*)image.Pointer(o.operating_point_);
-  dip::sint tstride = image.TensorStride();
-  
+  auto p = image.At<dip::sfloat>(o.operating_point_);
   std::vector<dip::sint> lut = t.LookUpTable();
   
   for (size_t jj=0; jj < t.Rows(); ++jj)
@@ -50,7 +48,7 @@ void TensorViewPort::render()
       dip::sint idx = lut[ii*t.Rows()+jj];
       if (idx != -1)
       {
-        dip::sfloat val = *(p + idx*tstride);
+        dip::sfloat val = p[(dip::uint)idx];
         dip::sfloat rv = rangeMap(val, o);
         GLfloat cwidth = (GLfloat)width()/(GLfloat)t.Columns(),
                 cheight = (GLfloat)height()/(GLfloat)t.Rows();

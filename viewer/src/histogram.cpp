@@ -25,6 +25,8 @@
 
 #undef DIP__ENABLE_DOCTEST
 #include "diplib/math.h"
+#include "diplib/iterators.h"
+#include "diplib/overload.h"
 #include "diplib/viewer/histogram.h"
 
 using namespace dip;
@@ -43,24 +45,24 @@ void HistogramViewPort::render()
   dip::Image cb { dip::UnsignedArray{ 24, (dip::uint)height }, 3, dip::DT_UINT8 };
   cb = 0;
   
-  dip::uint8 *data = (dip::uint8*)cb.Origin();
+  ImageIterator<dip::uint8> it(cb);
   for (size_t ii=0; ii < (dip::uint)height; ++ii)
   {
-    dip::sfloat val = (dip::sfloat) (o.range_.first + (double)ii*(o.range_.second-o.range_.first)/(double)height);
+    dip::Image::Pixel val((o.range_.first + (double)ii*(o.range_.second-o.range_.first)/(double)height));
     dip::uint8 out[3] = {0, 0, 0};
+    colorMap(val, out, o);
     
-    colorMap(&val, 0, out, o);
     if (o.lut_ == ViewingOptions::LookupTable::RGB)
     {
-      for (size_t jj=0; jj < 8; ++jj)
-        for (size_t kk=0; kk < 3; ++kk)
-          data[(ii*24+8*kk+jj)*3+kk] = out[kk];
+      for (dip::sint kk=0; kk < 3; ++kk)
+        for (size_t jj=0; jj < 8; ++jj, ++it)
+          it[kk] = out[kk];
     }
     else
     {
-      for (size_t jj=0; jj < 24; ++jj)
-        for (size_t kk=0; kk < 3; ++kk)
-          data[(ii*24+jj)*3+kk] = out[kk];
+      for (size_t jj=0; jj < 24; ++jj, ++it)
+        for (dip::sint kk=0; kk < 3; ++kk)
+          it[kk] = out[kk];
     }
   }    
   
@@ -90,10 +92,7 @@ void HistogramViewPort::render()
   copy.TensorToSpatial();
   dip::MinMaxAccumulator acc = GetMaximumAndMinimum(copy);
   GLfloat maxhist = (GLfloat)acc.Maximum();
-
-  dip::uint32 *hdata = static_cast< dip::uint32 * >( histogram_.Origin() );
-  dip::sfloat *p = (dip::sfloat*)viewer()->image().Pointer(o.operating_point_);
-  dip::sint tstride = viewer()->image().TensorStride();
+  auto p = viewer()->image().At<GLfloat>(o.operating_point_);
   
   if (o.lut_ == ViewingOptions::LookupTable::RGB)
   {
@@ -106,18 +105,19 @@ void HistogramViewPort::render()
         // Histogram
         glColor3f(ii==0, ii==1, ii==2);
         glBegin(GL_TRIANGLE_STRIP);
-        for (size_t jj=0; jj < histogram_.Size(0); ++jj)
+        
+        ImageIterator<dip::uint32> it(histogram_[(dip::uint)o.color_elements_[ii]]);
+        for (size_t jj=0; jj < histogram_.Size(0); ++jj, ++it)
         {
           glVertex2f(0., (GLfloat)jj/(GLfloat)histogram_.Size(0));
-          glVertex2f((GLfloat)hdata[(dip::sint)jj*histogram_.Stride(0)+o.color_elements_[ii]]/maxhist, (GLfloat)jj/(GLfloat)histogram_.Size(0));
+          glVertex2f((GLfloat)*it/maxhist, (GLfloat)jj/(GLfloat)histogram_.Size(0));
         }
         glEnd();
       
         // Current value
-        double val = (double) *(p + o.color_elements_[ii]*tstride);
         glBegin(GL_LINES);
-          glVertex2f(0., (GLfloat)((val-o.range_.first)/(o.range_.second-o.range_.first)));
-          glVertex2f(1., (GLfloat)((val-o.range_.first)/(o.range_.second-o.range_.first)));
+          glVertex2f(0., (GLfloat)((p[(dip::uint)o.color_elements_[ii]]-o.range_.first)/(o.range_.second-o.range_.first)));
+          glVertex2f(1., (GLfloat)((p[(dip::uint)o.color_elements_[ii]]-o.range_.first)/(o.range_.second-o.range_.first)));
         glEnd();
       }
     glDisable(GL_BLEND);
@@ -127,18 +127,19 @@ void HistogramViewPort::render()
     // Histogram
     glColor3f(1., 1., 1.);
     glBegin(GL_TRIANGLE_STRIP);
-    for (size_t ii=0; ii < histogram_.Size(0); ++ii)
+    
+    ImageIterator<dip::uint32> it(histogram_[o.element_]);
+    for (size_t ii=0; ii < histogram_.Size(0); ++ii, ++it)
     {
       glVertex2f(0., (GLfloat)ii/(GLfloat)histogram_.Size(0));
-      glVertex2f((GLfloat)hdata[(dip::sint)ii*histogram_.Stride(0)+(dip::sint)o.element_]/maxhist, (GLfloat)ii/(GLfloat)histogram_.Size(0));
+      glVertex2f((GLfloat)*it/maxhist, (GLfloat)ii/(GLfloat)histogram_.Size(0));
     }
     glEnd();
     
     // Current value
-    double val = (GLfloat) *(p + (dip::sint)o.element_*tstride);
     glBegin(GL_LINES);
-      glVertex2f(0., (GLfloat)((val-o.range_.first)/(o.range_.second-o.range_.first)));
-      glVertex2f(1., (GLfloat)((val-o.range_.first)/(o.range_.second-o.range_.first)));
+      glVertex2f(0., (GLfloat)((p[o.element_]-o.range_.first)/(o.range_.second-o.range_.first)));
+      glVertex2f(1., (GLfloat)((p[o.element_]-o.range_.first)/(o.range_.second-o.range_.first)));
     glEnd();
   }
   
@@ -178,11 +179,12 @@ void HistogramViewPort::motion(int button, int x, int y)
 
 void HistogramViewPort::calculate()
 {
-  auto &i = viewer()->image();
+  auto &in = viewer()->image();
   
-  histogram_ = dip::Image { dip::UnsignedArray{ 100 }, i.TensorElements(), dip::DT_UINT32 };  
+  histogram_ = dip::Image { dip::UnsignedArray{ 100 }, in.TensorElements(), dip::DT_UINT32 };  
   histogram_ = 0;
-  
-  viewer__Histogram<dip::sfloat> scanLineFilter(histogram_, viewer()->options().range_);
-  dip::Framework::ScanSingleInput(i, {}, DT_SFLOAT, scanLineFilter);
+
+  std::unique_ptr< dip::Framework::ScanLineFilter > scanLineFilter;
+  DIP_OVL_NEW_REAL( scanLineFilter, viewer__Histogram, ( histogram_, viewer()->options().range_ ), in.DataType() );
+  dip::Framework::ScanSingleInput(in, {}, in.DataType(), *scanLineFilter);
 }

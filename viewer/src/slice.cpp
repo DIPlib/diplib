@@ -25,6 +25,7 @@
 
 #undef DIP__ENABLE_DOCTEST
 #include "diplib/math.h"
+#include "diplib/generic_iterators.h"
 #include "diplib/overload.h"
 #include "diplib/viewer/slice.h"
 
@@ -151,25 +152,25 @@ void SliceView::map()
     line.Fill(0);
     
     dip::uint width = projected_.Size( 0 );
-    dip::sint stride = projected_.Stride( 0 );
-    dip::sint tstride = projected_.TensorStride();
     
-    dip::sfloat *ptr = (dip::sfloat*)projected_.Origin();
-    for( dip::uint ii = 0; ii < width; ++ii, ptr += stride)
+    GenericImageIterator<> it(projected_);
+    for( dip::uint ii = 0; ii < width; ++ii, ++it)
     {
       if (o.lut_ == ViewingOptions::LookupTable::RGB)
       {
         dip::uint8 color[3];
-        colorMap(ptr, tstride, color, o);
+        colorMap(*it, color, o);
+        
         for (size_t kk=0; kk < 3; ++kk)
-          *((dip::uint8*)line.Pointer(UnsignedArray{ii, 99-color[kk]*100U/256})+kk) = 255;
+          line.At<dip::uint8>({ii, 99-color[kk]*100U/256})[kk] = 255;
       }
       else
       {
-        dip::uint8 color = (dip::uint8)(rangeMap(ptr[(dip::sint)o.element_*tstride], o)*255);
+        dip::uint8 color = (dip::uint8)(rangeMap(it[o.element_], o)*255);
       
+        auto p = line.At<dip::uint8>({ii, 99-color*100U/256});
         for (size_t kk=0; kk < 3; ++kk)
-          *((dip::uint8*)line.Pointer(UnsignedArray{ii, 99-color*100U/256})+kk) = 255;
+          p[kk] = 255;
       }
     }
     
@@ -639,9 +640,6 @@ void SliceViewer::calculateTextures()
       else
         image_ = original_;
         
-      // TODO: Make the whole thing datatype agnostic?
-      image_.Convert(DT_SFLOAT);
-      
       // Get range
       dip::Image copy = image_;
       copy.TensorToSpatial();
