@@ -75,14 +75,20 @@ static inline void FillBufferFromTo(
       dip::uint tensorElements,
       outT value
 ) {
-   // TODO: use memset when stride == 1, etc.
-   for( dip::uint pp = 0; pp < pixels; ++pp ) {
-      outT* out = outBuffer;
-      for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
-         *out = value;
-         out += outTensorStride;
+   if( tensorElements == 1 ) {
+      for( dip::uint pp = 0; pp < pixels; ++pp ) {
+         *outBuffer = value;
+         outBuffer += outStride;
       }
-      outBuffer += outStride;
+   } else {
+      for( dip::uint pp = 0; pp < pixels; ++pp ) {
+         outT* out = outBuffer;
+         for( dip::uint tt = 0; tt < tensorElements; ++tt ) {
+            *out = value;
+            out += outTensorStride;
+         }
+         outBuffer += outStride;
+      }
    }
 }
 

@@ -58,9 +58,9 @@ with 1 million pixels and 3 samples per pixel has a total of 3 million samples.
 If the tensor is 0D (a single sample), the image is a standard
 gray-value image. A 1D tensor (a vector) can be used to represent color
 images (e.g. an RGB image has three samples per pixel), but also for example
-the image gradient (TODO: add reference to the gradient function). With
+the image gradient (see `dip::Gradient`). With
 a 2D tensor (a matrix) it is possible to represent concepts such as the
-Hessian and the structure tensor. For example, the Hessian of a 3D image
+Hessian and the structure tensor (see \ref why_tensors). For example, the Hessian of a 3D image
 has 9 samples per pixel. For more details on how tensor elements are stored,
 see the section on \ref tensors.
 

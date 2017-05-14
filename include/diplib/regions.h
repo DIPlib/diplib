@@ -41,7 +41,6 @@ namespace dip {
 DIP_ERROR dip_Label          ( dip_Image, dip_Image, dip_int, dip_int,
                                dip_int, dip_int, dip_int *, dip_BoundaryArray );
 DIP_ERROR dip_LabelSetBorder ( dip_Image, dip_Image );
-DIP_ERROR dip_PlaneDoEdge    ( dip_Image, dip_int, dip_int );
 DIP_ERROR dip_ImageDoEdge    ( dip_Image, dip_int );
 DIP_ERROR dip_RegionConnectivity
                              ( dip_Image, dip_Image,

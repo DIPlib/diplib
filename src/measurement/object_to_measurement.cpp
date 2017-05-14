@@ -29,7 +29,7 @@ void ObjectToMeasurement(
       Image& /*out*/,
       Measurement::IteratorFeature const& /*featureValues*/
 ) {
-   // TODO
+   // TODO, requires LUT function.
 }
 
 

@@ -81,7 +81,6 @@ using BoundaryConditionArray = DimensionArray< BoundaryCondition >; ///< An arra
 
 /// \brief Convert a string to a boundary condition.
 inline BoundaryCondition StringToBoundaryCondition( String bc ) {
-   // TODO: This is not the most efficient way of looking up a string. What are good alternatives? Perfect hash? Hard-coded trie (==prefix tree)?
    if( bc.empty() ) { return BoundaryCondition::DEFAULT; }
    else if( bc == "default" ) { return BoundaryCondition::DEFAULT; }
    else if( bc == "mirror" ) { return BoundaryCondition::SYMMETRIC_MIRROR; }

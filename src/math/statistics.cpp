@@ -346,10 +346,15 @@ class dip__GetMaximumAndMinimum : public dip__GetMaximumAndMinimumBase {
             }
          } else {
             // Otherwise we don't.
-            // TODO: algorithm can be more efficient by pushing pairs of values into the accumulator.
-            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-               vars.Push( *in );
+            dip::uint ii = 0;
+            for( ; ii < bufferLength - 1; ii += 2 ) {
+               TPI v = *in;
                in += inStride;
+               vars.Push( v, *in );
+               in += inStride;
+            }
+            if( ii < bufferLength ) {
+               vars.Push( *in );
             }
          }
       }

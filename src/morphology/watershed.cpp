@@ -22,6 +22,7 @@
 
 #include "diplib.h"
 #include "diplib/morphology.h"
+#include "diplib/regions.h"
 #include "diplib/math.h"
 #include "diplib/overload.h"
 #include "offsets.h"
@@ -159,12 +160,19 @@ class NeighborLabels{
 };
 
 template< typename TPI, typename std::enable_if< !std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
-bool PixelIsInfinite( TPI /*value*/ ) {
+bool PixelIsInfinity( TPI /*value*/ ) {
    return false;
 }
 template< typename TPI, typename std::enable_if< std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
-bool PixelIsInfinite( TPI value ) {
+bool PixelIsInfinity( TPI value ) {
    return value == std::numeric_limits< dfloat >::infinity();
+}template< typename TPI, typename std::enable_if< !std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+bool PixelIsMinusInfinity( TPI /*value*/ ) {
+   return false;
+}
+template< typename TPI, typename std::enable_if< std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+bool PixelIsMinusInfinity( TPI value ) {
+   return value == -std::numeric_limits< dfloat >::infinity();
 }
 
 template< typename TPI >
@@ -192,8 +200,7 @@ void dip__FastWatershed(
    // Process other pixels
    for( dip::uint ii = 1; ii < offsets.size(); ++ii ) {
       dip::sint offset = offsets[ ii ];
-      if( PixelIsInfinite( in[ offset ] )) {
-         // TODO: in case of reverse ordered watershed, we need to test for minus infinity
+      if( lowFirst ? PixelIsInfinity( in[ offset ] ) : PixelIsMinusInfinity( in[ offset ] )) {
          break; // we're done
       }
       neighborLabels.Reset();
@@ -459,8 +466,7 @@ void dip__SeededWatershed(
       UnsignedArray coords = coordinatesComputer( offsetLabels );
       dip::sint offsetGrey = c_grey.Offset( coords );
       dip::sint offsetMask = mask ? c_mask.Offset( coords ) : 0;
-      if( PixelIsInfinite( grey[ offsetGrey ] )) {
-         // TODO: in case of reverse ordered watershed, we need to test for minus infinity
+      if( lowFirst ? PixelIsInfinity( grey[ offsetGrey ] ) : PixelIsMinusInfinity( grey[ offsetGrey ] )) {
          break; // we're done
       }
       neighborLabels.Reset();
@@ -565,7 +571,7 @@ void SeededWatershed(
    // Check input
    DIP_THROW_IF( !c_in.IsForged() || !c_seeds.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar() || !c_seeds.IsScalar(), E::IMAGE_NOT_SCALAR );
-   DIP_THROW_IF( !c_seeds.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );    // TODO: If seeds is binary, label it.
+   DIP_THROW_IF( !c_seeds.DataType().IsUInt() && !c_seeds.DataType().IsBinary(), E::DATA_TYPE_NOT_SUPPORTED );
    UnsignedArray inSizes = c_in.Sizes();
    dip::uint nDims = inSizes.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -594,13 +600,15 @@ void SeededWatershed(
       DIP_END_STACK_TRACE
    }
 
-   // What is the largest label?
-   // TODO: If c_seeds was binary and we labeled it, we already have this value!
-   auto m = GetMaximumAndMinimum( c_seeds, c_mask );
-   dip::uint numlabs = static_cast< dip::uint >( m.Maximum() );
-
    // Prepare output image
-   Convert( c_seeds, out, DT_LABEL );
+   dip::uint numlabs;
+   if( c_seeds.DataType().IsBinary() ) {
+      numlabs = Label( c_seeds, out, connectivity );
+   } else {
+      Convert( c_seeds, out, DT_LABEL );
+      auto m = GetMaximumAndMinimum( out, c_mask );
+      numlabs = static_cast< dip::uint >( m.Maximum() );
+   }
    out.SetPixelSize( pixelSize );
 
    // Create array with offsets to neighbours
