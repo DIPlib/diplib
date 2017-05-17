@@ -126,6 +126,9 @@ over.
 - `dip_Min` and `dip_Max` are now `dip::Infimum` and `dip::Supremum`. There are too many
   functions with `Maximum` and `Minimum` in their name.
 
+- `dip_MultiDimensionalHistogram` and `dip_ImageToHistogram` have been merged into the
+  constructor for `dip::Histogram`, which replaces both `dip_Distribution` and `dip_Histogram`.
+
 ## Changes in functionality
 
 - Second order extrapolation boundary extension didn't do as advertised in the old *DIPlib*.

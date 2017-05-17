@@ -1,7 +1,7 @@
 Source files are spread out over subdirectories just to keep some order.
 
 library/          Core library functionality
-support/          Support functionality used by some image analysis routines
+support/          Functions that don't work on images
 
 analysis/         Analysis (shift estimation, pair correlations, etc.)
 binary/           Binary image processing
@@ -31,7 +31,7 @@ bilateral/     -> filtering
 derivatives/   -> filtering
 detection/     -> analysis
 display/       -> library
-distribution/  -> library
+distribution/  -> histogram
 findshift/     -> analysis
 framework/     -> library
 infra/         -> library
