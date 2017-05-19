@@ -462,10 +462,6 @@ DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dfloat
 DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input );
 
 
-
-/// \brief Computes the rank of the square matrix at each pixel in image `in`.
-
-
 /// \brief `%StatisticsAccumulator` computes population statistics by accumulating the first four central moments.
 ///
 /// Samples are added one by one, using the `Push` method. Other members are used to retrieve estimates of

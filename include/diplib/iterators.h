@@ -182,7 +182,7 @@ class DIP_NO_EXPORT LineIterator {
       /// Dereference
       pointer operator->() const { return ptr_; }
       /// Index into tensor, `it[0]` is equal to `*it`, but `it[1]` is not equal to `*(++it)`.
-      reference operator[]( difference_type index ) const { return *( ptr_ + index * tensorStride_ ); }
+      reference operator[]( dip::uint index ) const { return *( ptr_ + static_cast< dip::sint >( index ) * tensorStride_ ); }
 
       /// Increment
       LineIterator& operator++() {
@@ -370,9 +370,9 @@ class DIP_NO_EXPORT ImageIterator {
       /// Dereference
       pointer operator->() const { return ptr_; }
       /// Index into tensor, `it[0]` is equal to `*it`, but `it[1]` is not equal to `*(++it)`.
-      reference operator[]( difference_type index ) const {
+      reference operator[]( dip::uint index ) const {
          DIP_ASSERT( image_ );
-         return *( ptr_ + index * image_->TensorStride() );
+         return *( ptr_ + static_cast< dip::sint >( index ) * image_->TensorStride() );
       }
 
       /// \brief Copy the samples of a neighbor with relative coordinates of `coords`, using the
