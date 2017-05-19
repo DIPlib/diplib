@@ -102,7 +102,7 @@ class DIP_NO_EXPORT Histogram {
       /// `configuration` should have as many elements as tensor elements in `input`. If `configuration` has only
       /// one element, it will be used for all histogram dimensions. The default configuration yields a histogram
       /// with 256 bins per dimension, and limits [0,256].
-      Histogram( dip::Image const& input, dip::Image const& mask, ConfigurationArray configuration ) {
+      Histogram( Image const& input, Image const& mask, ConfigurationArray configuration ) {
          DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
          dip::uint ndims = input.TensorElements();
@@ -118,7 +118,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief This version of the constructor is identical to the previous one, but with a single configuration
       /// parameter.
-      explicit Histogram( dip::Image const& input, dip::Image const& mask = {}, Configuration configuration = {} ) {
+      explicit Histogram( Image const& input, Image const& mask = {}, Configuration configuration = {} ) {
          DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
          dip::uint ndims = input.TensorElements();
@@ -258,6 +258,11 @@ class DIP_NO_EXPORT Histogram {
          return *static_cast< uint32* >( data_.Pointer( bin )); // Does all the checking
       }
 
+      /// \brief Get the image that holds the bin counts. The image is always scalar and of type `dip::DT_UINT32`.
+      Image const& GetImage() const {
+         return data_;
+      }
+
       /// \brief Returns an iterator to the first bin
       ConstImageIterator< uint32 > begin() const {
          return { data_ };
@@ -280,7 +285,7 @@ class DIP_NO_EXPORT Histogram {
       ///
       /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
       /// computing the statictic on data rounded to the bin centers.
-      DIP_EXPORT dfloat Mean() const;
+      DIP_EXPORT Image::Pixel Mean() const;
 
       /// \brief Computes the covariance matrix of the data represented by the histogram.
       ///
@@ -305,9 +310,8 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Returns the mode, the bin with the largest count. The return value is the
       ///
-      /// When multiple bins have the same, largest count, the bin closest to the middle of the histogram is
-      /// returned. When multiple of these bins are at the same distance to the middle, the first one encountered
-      /// is returned; this is the bin with the lowest linear index, and is closest to the origin.
+      /// When multiple bins have the same, largest count, the first bin encontered is returned. This is the bin
+      /// with the lowest linear index, and is closest to the origin.
       DIP_EXPORT Image::Pixel Mode() const;
 
       /// \brief Returns a new histogram containing, for each bin, the sum of that bin with all the previous ones.
@@ -319,6 +323,13 @@ class DIP_NO_EXPORT Histogram {
       /// with indices equal or smaller to i, j and k: bin(1..i,1..j,1..k). It is computed through the
       /// `dip::CumulativeSum` function.
       DIP_EXPORT Histogram Cumulative() const;
+
+      /// \brief Returns the marginal histogram for dimension `dim`.
+      ///
+      /// The maginal histogram represents the marginal intensity distribution. It is a 1D histogram determined
+      /// by summing over all dimensions except `dim`, and is equivalent to the histogram for tensor element
+      /// `dim`.
+      DIP_EXPORT Histogram MarginalHistogram( dip::uint dim ) const;
 
    private:
       Image data_;             // This is where the bins are stored. Always scalar and DT_UINT32.
@@ -334,6 +345,9 @@ class DIP_NO_EXPORT Histogram {
       dip::uint FindClampedBin( dfloat value, dip::uint dim ) const {
          dfloat bin = clamp( FindBin( value, dim ), 0.0, static_cast< dfloat >( data_.Size( dim ) - 1 ));
          return static_cast< dip::uint >( bin );
+      }
+      dfloat BinCenter( dip::uint bin, dip::uint dim = 0 ) const {
+         return lowerBounds_[ dim ] + ( static_cast< dfloat >( bin ) + 0.5 ) * binSizes_[ dim ];
       }
 
       DIP_EXPORT void ScalarImageHistogram( Image const& input, Image const& mask, Configuration& configuration );

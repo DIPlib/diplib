@@ -74,8 +74,8 @@ void CompleteConfiguration( Image const& input, Image const& mask, Histogram::Co
 inline dfloat FindBin( dfloat value, dfloat lowerBound, dfloat binSize ) {
    return std::floor(( value - lowerBound ) / binSize );
 }
-inline dfloat ClampedBin( dfloat bin, dip::uint lastBin ) {
-   return clamp( bin, 0.0, static_cast< dfloat >( lastBin ));
+inline dfloat ClampedBin( dfloat bin, dip::uint nBins ) {
+   return clamp( bin, 0.0, static_cast< dfloat >( nBins - 1 ));
 }
 
 template< typename TPI >
@@ -105,7 +105,7 @@ class dip__ScalarImageHistogram : public Framework::ScanLineFilter {
                   if( *mask ) {
                      ++data[ static_cast< dip::uint >( ClampedBin(
                                     FindBin( *in, configuration_.lowerBound, configuration_.binSize ),
-                                    configuration_.nBins - 1 )) ];
+                                    configuration_.nBins )) ];
                   }
                   in += inStride;
                   mask += maskStride;
@@ -125,7 +125,7 @@ class dip__ScalarImageHistogram : public Framework::ScanLineFilter {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   ++data[ static_cast< dip::uint >( ClampedBin(
                                 FindBin( *in, configuration_.lowerBound, configuration_.binSize ),
-                                configuration_.nBins - 1 )) ];
+                                configuration_.nBins )) ];
                   in += inStride;
                }
             }
@@ -173,10 +173,10 @@ class dip__TensorImageHistogram : public Framework::ScanLineFilter {
                            include = false;
                            break;
                         }
-                        bin = FindBin( *in, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize  );
+                        bin = FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize );
                      } else {
                         bin = ClampedBin( FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize ),
-                                          configuration_[ jj ].nBins - 1 );
+                                          configuration_[ jj ].nBins );
                      }
                      offset += image_.Stride( jj ) * static_cast< dip::sint >( bin );
                      tin += tensorStride;
@@ -201,10 +201,10 @@ class dip__TensorImageHistogram : public Framework::ScanLineFilter {
                         include = false;
                         break;
                      }
-                     bin = FindBin( *in, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize  );
+                     bin = FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize );
                   } else {
                      bin = ClampedBin( FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize ),
-                                       configuration_[ jj ].nBins - 1 );
+                                       configuration_[ jj ].nBins );
                   }
                   offset += image_.Stride( jj ) * static_cast< dip::sint >( bin );
                   tin += tensorStride;
@@ -285,26 +285,126 @@ dip::uint Histogram::Count() const {
    return Sum( data_ ).As< dip::uint >();
 }
 
-dfloat Histogram::Mean() const {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+Image::Pixel Histogram::Mean() const {
+   dip::uint nDims = Dimensionality();
+   Image::Pixel mean( DT_DFLOAT, nDims );
+   mean = 0;
+   dfloat* pmean = static_cast< dfloat* >( mean.Origin() );
+   dfloat weight = 0;
+   ImageIterator< uint32 > it( data_ );
+   do {
+      UnsignedArray const& coord = it.Coordinates();
+      dfloat v = static_cast< dfloat >( *it );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         dfloat bin = BinCenter( coord[ ii ], ii );
+         pmean[ ii ] += bin * v;
+      }
+      weight += v;
+   } while( ++it );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      pmean[ ii ] /= weight;
+   }
+   return mean;
 }
 
 Image::Pixel Histogram::Covariance() const {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   dip::uint nDims = Dimensionality();
+   Tensor tensor( Tensor::Shape::SYMMETRIC_MATRIX, nDims, nDims );
+   Image::Pixel mean = Mean();
+   dfloat* pmean = static_cast< dfloat* >( mean.Origin() );
+   dfloat weight = 0;
+   Image::Pixel cov( DT_DFLOAT, tensor.Elements() );
+   cov.ReshapeTensor( tensor );
+   std::vector< dip::sint > lut = tensor.LookUpTable();
+   cov = 0;
+   dfloat* pcov = static_cast< dfloat* >( cov.Origin() );
+   ImageIterator< uint32 > it( data_ );
+   FloatArray diff( nDims, 0 );
+   do {
+      UnsignedArray const& coord = it.Coordinates();
+      dfloat w = static_cast< dfloat >( *it );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         diff[ ii ] = BinCenter( coord[ ii ], ii ) - pmean[ ii ];
+      }
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         for( dip::uint jj = 0; jj <= ii; ++jj ) {
+            pcov[ static_cast< dip::uint >( lut[ ii * nDims + jj ] ) ] += diff[ ii ] * diff[ jj ] * w;
+         }
+      }
+      weight += w;
+   } while( ++it );
+   dfloat norm = 1.0 / ( weight - 1 );
+   for( dip::uint ii = 0; ii < mean.TensorElements(); ++ii ) {
+      pcov[ ii ] *= norm;
+   }
+   return cov;
 }
 
 Image::Pixel Histogram::MarginalMedian() const {
-   // Uses the cumulative histogram, look at the last line along each dimension
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   dip::uint nDims = Dimensionality();
+   Image::Pixel median( DT_DFLOAT, nDims );
+   dfloat* pmedian = static_cast< dfloat* >( median.Origin() );
+   Histogram cum = Cumulative(); // we look along the last line in each direction
+   uint32* pcum = static_cast< uint32* >( cum.data_.Origin() );
+   dfloat n = static_cast< dfloat >( pcum[ cum.data_.NumberOfPixels() - 1 ] );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      pcum = static_cast< uint32* >( cum.data_.Origin() );
+      for( dip::uint jj = 0; jj < nDims; ++jj ) {
+         if( jj != ii ) {
+            pcum += static_cast< dip::sint >( cum.data_.Size( jj ) - 1 ) * cum.data_.Stride( jj );
+         }
+      }
+      dip::sint stride = cum.data_.Stride( ii );
+      dip::sint jj = 0;
+      while( static_cast< dfloat >( *pcum ) / n < 0.5 ) {
+         ++jj;
+         pcum += stride;
+      }
+      pmedian[ ii ] = BinCenter( static_cast< dip::uint >( jj ), ii );
+   }
+   return median;
 }
 
 DIP_EXPORT Image::Pixel Histogram::Mode() const {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   dip::uint nDims = Dimensionality();
+   UnsignedArray coord( nDims, 0 );
+   uint32 maxVal = 0;
+   ImageIterator< uint32 > it( data_ );
+   do {
+      if( *it > maxVal ) {
+         maxVal = *it;
+         coord = it.Coordinates();
+      }
+   } while( ++it );
+   Image::Pixel mode( DT_DFLOAT, nDims );
+   dfloat* pmode = static_cast< dfloat* >( mode.Origin() );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      pmode[ ii ] = BinCenter( coord[ ii ], ii );
+   }
+   return mode;
 }
 
 Histogram Histogram::Cumulative() const {
    Histogram out = *this;
-   out.data_ = CumulativeSum( data_ );
+   out.data_.Strip();
+   out.data_.Protect();
+   CumulativeSum( data_, {}, out.data_ );
+   out.data_.Protect( false );
+   return out;
+}
+
+Histogram Histogram::MarginalHistogram( dip::uint dim ) const {
+   DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+   Histogram out = *this;
+   BooleanArray ps( Dimensionality(), true );
+   ps[ dim ] = false;
+   out.data_.Strip();
+   out.data_.Protect(); // so that Sum() produces a DT_UINT32 image.
+   Sum( data_, {}, out.data_, ps );
+   out.data_.Protect( false );
+   out.data_.PermuteDimensions( { dim } );
+   out.lowerBounds_ = { lowerBounds_[ dim ] };
+   out.binSizes_ = { binSizes_[ dim ] };
    return out;
 }
 
@@ -329,7 +429,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( zeroH.At( 1 ) == 0 );
 
    dip::dfloat meanval = 2000.0;
-   dip::Image img( { 80, 6, 5 }, 1, dip::DT_UINT16 );
+   dip::Image img( { 180, 260, 150 }, 1, dip::DT_UINT16 );
    {
       std::random_device rd;
       std::mt19937 gen( rd() );
@@ -346,8 +446,12 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( gaussH.BinSize() == 20.0 );
    DOCTEST_CHECK( gaussH.LowerBound() == 0.0 );
    DOCTEST_CHECK( gaussH.UpperBound() == 4000.0 );
-   DOCTEST_CHECK( gaussH.Count() == 80 * 6 * 5 );
-   // TODO: add calls to statistics functions.
+   DOCTEST_CHECK( gaussH.Count() == img.NumberOfPixels() );
+   DOCTEST_CHECK( std::abs( gaussH.Mean().As< dip::dfloat >() - meanval ) < 1.0 ); // less than 0.05% error.
+   DOCTEST_CHECK( std::abs( gaussH.MarginalMedian().As< dip::dfloat >() - meanval ) <= 20.0 ); // at most 1 bin away?
+   DOCTEST_CHECK( std::abs( gaussH.Mode().As< dip::dfloat >() - meanval ) <= 60.0 ); // at most 3 bins away?
+   // TODO: Statistics functions should return a CastPixel?
+   DOCTEST_CHECK( std::abs( gaussH.Covariance().As< dip::dfloat >() - 500.0 * 500.0 ) < 250.0 ); // less than 0.1% error.
 
    dip::Image mask = img > meanval;
    dip::Histogram halfGaussH( img, mask, settings );
@@ -368,10 +472,10 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
       std::random_device rd;
       std::mt19937 gen( rd() );
       std::normal_distribution< dip::dfloat > normDist( meanval, 500.0 );
-      dip::ImageIterator< dip::uint16 > it( img );
+      dip::ImageIterator< dip::sint32 > it( tensorIm );
       do {
-         it[ 0 ] = dip::clamp_cast< dip::uint16 >( normDist( gen ) );
-         it[ 1 ] = dip::clamp_cast< dip::uint16 >( normDist( gen ) );
+         it[ 0 ] = dip::clamp_cast< dip::sint32 >( normDist( gen ) );
+         it[ 1 ] = dip::clamp_cast< dip::sint32 >( normDist( gen ) );
          it[ 2 ] = 1000;
       } while( ++it );
    }
@@ -390,7 +494,16 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( tensorH.LowerBound( 2 ) == 0.0 );
    DOCTEST_CHECK( tensorH.UpperBound( 2 ) == 4000.0 );
    DOCTEST_CHECK( tensorH.Count() == 75 * 25 );
-
+   dip::Histogram tensorM = tensorH.MarginalHistogram( 2 );
+   DOCTEST_CHECK( tensorM.Dimensionality() == 1 );
+   DOCTEST_CHECK( tensorM.Bins() == 200 );
+   DOCTEST_CHECK( tensorM.BinSize() == 20.0 );
+   DOCTEST_CHECK( tensorM.LowerBound() == 0.0 );
+   DOCTEST_CHECK( tensorM.UpperBound() == 4000.0 );
+   DOCTEST_CHECK( tensorM.Count() == 75 * 25 );
+   DOCTEST_CHECK( tensorM.Bin( 1000.0 ) == 50 );
+   auto bounds = tensorH.BinBoundaries();
+   DOCTEST_CHECK( tensorM.At( 50.0 ) == 75 * 25 );
 }
 
 #endif // DIP__ENABLE_DOCTEST
