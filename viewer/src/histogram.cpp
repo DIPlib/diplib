@@ -54,14 +54,14 @@ void HistogramViewPort::render()
     
     if (o.lut_ == ViewingOptions::LookupTable::RGB)
     {
-      for (dip::sint kk=0; kk < 3; ++kk)
+      for (dip::uint kk=0; kk < 3; ++kk)
         for (size_t jj=0; jj < 8; ++jj, ++it)
           it[kk] = out[kk];
     }
     else
     {
       for (size_t jj=0; jj < 24; ++jj, ++it)
-        for (dip::sint kk=0; kk < 3; ++kk)
+        for (dip::uint kk=0; kk < 3; ++kk)
           it[kk] = out[kk];
     }
   }    
