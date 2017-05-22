@@ -15,8 +15,7 @@ int main() {
       dip::Image img{ dip::UnsignedArray{ 200, 50, 30 }, 1, dip::DT_UINT16 };
       {
          DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
-         std::random_device rd;
-         std::mt19937 gen( rd() );
+         std::mt19937 gen;
          std::normal_distribution< float > normDist( 9563.0, 500.0 );
          dip::ImageIterator< dip::uint16 > it( img );
          do {

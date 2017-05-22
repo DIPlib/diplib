@@ -396,8 +396,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the separable convolution") {
    dip::Image img{ dip::UnsignedArray{ 80, 6, 5 }, 1, dip::DT_UINT16 };
    {
       DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
-      std::random_device rd;
-      std::mt19937 gen( rd() );
+      std::mt19937 gen;
       std::normal_distribution< dip::dfloat > normDist( meanval, 500.0 );
       dip::ImageIterator< dip::uint16 > it( img );
       do {

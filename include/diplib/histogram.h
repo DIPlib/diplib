@@ -285,7 +285,7 @@ class DIP_NO_EXPORT Histogram {
       ///
       /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
       /// computing the statictic on data rounded to the bin centers.
-      DIP_EXPORT Image::Pixel Mean() const;
+      DIP_EXPORT Image::CastPixel< dfloat > Mean() const;
 
       /// \brief Computes the covariance matrix of the data represented by the histogram.
       ///
@@ -294,7 +294,7 @@ class DIP_NO_EXPORT Histogram {
       ///
       /// The returned pixel is a symmetric tensor, containing n*(n+1)/2 tensor elements (with n the
       /// histogram dimensionality).
-      DIP_EXPORT Image::Pixel Covariance() const;
+      DIP_EXPORT Image::CastPixel< dfloat > Covariance() const;
 
       /// \brief Computes the marginal median value of the data represented by the histogram. The marginal median
       /// is a median computed independently on each pixel, and thus is not one of the input values.
@@ -306,13 +306,13 @@ class DIP_NO_EXPORT Histogram {
       ///
       /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
       /// computing the statictic on data rounded to the bin centers.
-      DIP_EXPORT Image::Pixel MarginalMedian() const;
+      DIP_EXPORT Image::CastPixel< dfloat > MarginalMedian() const;
 
       /// \brief Returns the mode, the bin with the largest count. The return value is the
       ///
       /// When multiple bins have the same, largest count, the first bin encontered is returned. This is the bin
       /// with the lowest linear index, and is closest to the origin.
-      DIP_EXPORT Image::Pixel Mode() const;
+      DIP_EXPORT Image::CastPixel< dfloat > Mode() const;
 
       /// \brief Returns a new histogram containing, for each bin, the sum of that bin with all the previous ones.
       ///
