@@ -43,6 +43,8 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
    DIP_THROW_IF( ndims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    OneDimensionalFilterArray out( ndims );
    Image filter = Convert( c_in, DT_DFLOAT ); // Filter is DFLOAT and has normal strides
+   DIP_ASSERT( filter.HasNormalStrides() );
+   dfloat* data = static_cast< dfloat* >( filter.Origin() );
    UnsignedArray sizes = filter.Sizes();
    dip::uint nPixels = sizes.product();
    // Shave dimensions off the filter from the end
@@ -50,12 +52,10 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
       dip::uint dim = ndims - 1; // Current dimension
       dip::uint length = sizes[ dim ]; // Number of pixels in 1D filter for this dimension
       nPixels /= length; // Number of pixels in remainder
-      if( length == 1 ) {
-         //out[ dim ].filter.clear(); // This is the default
-         filter.Squeeze( dim );
-      } else {
+      if( length > 1 ) {
          // Make a matrix out of `filter` that has `nPixel` rows and `length` columns
-         Eigen::Map< Eigen::MatrixXd > matrix( static_cast< dfloat* >( filter.Origin() ), nPixels, length );
+         Eigen::Map< Eigen::MatrixXd > matrix( data, static_cast< Eigen::Index >( nPixels ),
+                                                     static_cast< Eigen::Index >( length ));
          // Compute SVD
          Eigen::JacobiSVD< Eigen::MatrixXd > svd( matrix, Eigen::ComputeThinU | Eigen::ComputeThinV );
          // Expect all but first singular value to be close to 0. If not, it's not separable, and we return {}.
@@ -70,18 +70,18 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
          }
          // 1D filter is first column of V -- write V into 1D filter buffer
          out[ dim ].filter.resize( length );
-         Eigen::Map< Eigen::VectorXd > oneDFilter( out[ dim ].filter.data(), length );
+         Eigen::Map< Eigen::VectorXd > oneDFilter( out[ dim ].filter.data(), static_cast< Eigen::Index >( length ));
          oneDFilter = svd.matrixV().col( 0 );
          // The ndims-1--dimensional remainder is the first column of U * singular value --
          // write U * s1 back into input image, we'll use fewer pixels than before
-         Eigen::Map< Eigen::VectorXd > remainder( static_cast< dfloat* >( filter.Origin() ), nPixels );
+         Eigen::Map< Eigen::VectorXd > remainder( data, static_cast< Eigen::Index >( nPixels ));
          remainder = svd.matrixU().col( 0 ) * s1;
       }
+      // else: the output filter will have size 0, and we continue as usual.
       --ndims;
    }
    out[ 0 ].filter.resize( nPixels );
-   dfloat* src = static_cast< dfloat* >( filter.Origin() );
-   std::copy( src, src + nPixels, out[ 0 ].filter.data() );
+   std::copy( data, data + nPixels, out[ 0 ].filter.data() );
    return out;
 }
 
@@ -95,6 +95,7 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
 
 DOCTEST_TEST_CASE("[DIPlib] testing the filter separation") {
    dip::Image delta3D( { 30, 30, 30 }, 1, dip::DT_SFLOAT );
+   delta3D.Fill( 0 );
    delta3D.At( 15, 15, 15 ) = 1;
 
    auto rectPt = dip::PixelTable( "rectangular", { 10, 11, 5 } );

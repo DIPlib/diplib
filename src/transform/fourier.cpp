@@ -242,4 +242,63 @@ void FourierTransform(
 }
 
 
+dip::uint OptimalFourierTransformSize( dip::uint size ) {
+   size = getOptimalDFTSize( size );
+   DIP_THROW_IF( size == 0, E::SIZE_EXCEEDS_LIMIT );
+   return size;
+}
+
+
 } // namespace dip
+
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include <random>
+
+#ifndef M_PIl
+#define M_PIl 3.1415926535897932384626433832795029L
+#endif
+
+template< typename T >
+T dotest( size_t nfft, bool inverse = false ) {
+   // Initialize
+   DIP_ASSERT( nfft <= std::numeric_limits< int >::max() );
+   DFTOptions< T > opts( static_cast< int >( nfft ), inverse );
+   std::vector< std::complex< T >> buf( static_cast< size_t >( opts.bufferSize() ));
+   // Create test data
+   std::vector< std::complex< T >> inbuf( nfft );
+   std::vector< std::complex< T >> outbuf( nfft );
+   for( size_t k = 0; k < nfft; ++k ) {
+      inbuf[ k ] = std::complex< T >( ( T )std::rand(), ( T )std::rand() ) / ( T )RAND_MAX - ( T )0.5;
+   }
+   // Do the thing
+   DFT( inbuf.data(), outbuf.data(), buf.data(), opts, T( 1 ) );
+   // Check
+   long double totalpower = 0;
+   long double difpower = 0;
+   for( size_t k0 = 0; k0 < nfft; ++k0 ) {
+      std::complex< long double > acc{ 0, 0 };
+      long double phinc = ( inverse ? 2.0l : -2.0l ) * ( long double )k0 * M_PIl / ( long double )nfft;
+      for( size_t k1 = 0; k1 < nfft; ++k1 ) {
+         acc += std::complex< long double >( inbuf[ k1 ] ) *
+                std::exp( std::complex< long double >( 0, ( k1 * phinc )));
+      }
+      totalpower += std::norm( acc );
+      difpower += std::norm( acc - std::complex< long double >( outbuf[ k0 ] ));
+   }
+   return ( T )std::sqrt( difpower / totalpower ); // Root mean square error
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the DFT function") {
+   // Test a few different sizes that have all different radixes.
+   DOCTEST_CHECK( doctest::Approx( dotest< float >( 32 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( dotest< double >( 32 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( dotest< double >( 1024 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( dotest< float >( 1152 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( dotest< double >( 840 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( dotest< float >( 1023 )) == 0 );
+   DOCTEST_CHECK( doctest::Approx( dotest< double >( 840, true )) == 0 );
+}
+
+#endif // DIP__ENABLE_DOCTEST

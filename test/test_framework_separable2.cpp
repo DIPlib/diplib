@@ -20,7 +20,7 @@ int main() {
          dip::ImageIterator< dip::uint16 > it( img );
          do {
             *it = dip::clamp_cast< dip::uint16 >( normDist( gen ));
-         } while( false /* ++it */ );
+         } while( ++it );
       }
 
       // General

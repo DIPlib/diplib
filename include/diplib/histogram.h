@@ -168,7 +168,7 @@ class DIP_NO_EXPORT Histogram {
       /// \brief Returns the upper bound of the histogram for dimension `dim`
       dfloat UpperBound( dip::uint dim = 0 ) const {
          DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
-         return lowerBounds_[ dim ] + data_.Size( dim ) * binSizes_[ dim ];
+         return lowerBounds_[ dim ] + static_cast< dfloat >( data_.Size( dim )) * binSizes_[ dim ];
       }
 
       /// \brief Returns the bin boundaries along dimension `dim` (`Bins(dim)+1` values).
@@ -178,8 +178,8 @@ class DIP_NO_EXPORT Histogram {
          dfloat offset = lowerBounds_[ dim ];
          dfloat scale = binSizes_[ dim ];
          for( dip::uint ii = 0; ii < boundaries.size(); ++ii ) {
-            boundaries[ ii ] = offset + ii * scale;
-            // NOTE: this is safer than `boundaries[ii]=boundaries[ii-1]+scale`, because of numerical innacuracy.
+            boundaries[ ii ] = offset + static_cast< dfloat >( ii ) * scale;
+            // NOTE: this is safer than `boundaries[ii]=boundaries[ii-1]+scale`, because of numerical inaccuracy.
          }
          return boundaries;
       }
@@ -191,7 +191,7 @@ class DIP_NO_EXPORT Histogram {
          dfloat scale = binSizes_[ dim ];
          dfloat offset = lowerBounds_[ dim ] + scale / 2;
          for( dip::uint ii = 0; ii < centers.size(); ++ii ) {
-            centers[ ii ] = offset + ii * scale;
+            centers[ ii ] = offset + static_cast< dfloat >( ii ) * scale;
          }
          return centers;
       }

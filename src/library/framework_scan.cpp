@@ -97,21 +97,23 @@ void Scan(
       outTensor = in[ 0 ].Tensor();
    } else if( nIn > 1 ) {
       if( opts != Scan_NoSingletonExpansion ) {
-         sizes = SingletonExpandedSize( in );
-         if( tensorToSpatial ) {
-            tsize = SingletonExpendedTensorElements( in );
-         }
-         for( dip::uint ii = 0; ii < nIn; ++ii ) {
-            if( in[ ii ].Sizes() != sizes ) {
-               in[ ii ].ExpandSingletonDimensions( sizes );
+         DIP_START_STACK_TRACE
+            sizes = SingletonExpandedSize( in );
+            if( tensorToSpatial ) {
+               tsize = SingletonExpendedTensorElements( in );
             }
-            if( outTensor.IsScalar() ) {
-               outTensor = in[ ii ].Tensor();
+            for( dip::uint ii = 0; ii < nIn; ++ii ) {
+               if( in[ ii ].Sizes() != sizes ) {
+                  in[ ii ].ExpandSingletonDimensions( sizes );
+               }
+               if( outTensor.IsScalar() ) {
+                  outTensor = in[ ii ].Tensor();
+               }
+               if( tensorToSpatial && ( in[ ii ].TensorElements() != tsize ) ) {
+                  in[ ii ].ExpandSingletonTensor( tsize );
+               }
             }
-            if( tensorToSpatial && ( in[ ii ].TensorElements() != tsize ) ) {
-               in[ ii ].ExpandSingletonTensor( tsize );
-            }
-         }
+         DIP_END_STACK_TRACE
       } else {
          sizes = in[ 0 ].Sizes();
          for( dip::uint ii = 1; ii < nIn; ++ii ) {
@@ -279,7 +281,9 @@ void Scan(
    //       the lineFilter does per pixel. If the caller can provide that estimate,
    //       we'd be able to use that to determine the threading schedule.
 
-   lineFilter.SetNumberOfThreads( 1 );
+   DIP_START_STACK_TRACE
+      lineFilter.SetNumberOfThreads( 1 );
+   DIP_END_STACK_TRACE
 
    // TODO: Start threads, each thread makes its own buffers.
    dip::uint thread = 0;
@@ -396,7 +400,9 @@ void Scan(
          }
 
          // Filter the line
-         lineFilter.Filter( scanLineFilterParams );
+         DIP_START_STACK_TRACE
+            lineFilter.Filter( scanLineFilterParams );
+         DIP_END_STACK_TRACE
 
          // Copy back the line from output buffer to the image
          for( dip::uint ii = 0; ii < nOut; ++ii ) {

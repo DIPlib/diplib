@@ -128,7 +128,7 @@ inline void BoundaryArrayUseParameter( BoundaryConditionArray& bc, dip::uint nDi
 /// First, second and third order interpolations are not implemented, because their functionality
 /// is impossible to reproduce in this simple function. Use `dip::ExtendImage` to get the functionality
 /// of these boundary conditions.
-template< typename DataType, typename OutputIterator >
+template< typename TPI, typename OutputIterator >
 inline void ReadPixelWithBoundaryCondition(
       Image const& img,
       OutputIterator it,
@@ -136,6 +136,7 @@ inline void ReadPixelWithBoundaryCondition(
       BoundaryConditionArray const& bc
 ) {
    DIP_THROW_IF( coords.size() != img.Dimensionality(), E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( img.DataType() != DataType( TPI( 0 )), E::WRONG_DATA_TYPE );
    bool invert = false;
    for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
       dip::sint sz = static_cast< dip::sint >( img.Size( ii ));
@@ -145,7 +146,7 @@ inline void ReadPixelWithBoundaryCondition(
                invert = true;
                // fall-through on purpose!
             case BoundaryCondition::SYMMETRIC_MIRROR:
-               coords[ ii ] = coords[ ii ] % ( sz * 2 );
+               coords[ ii ] = modulo( coords[ ii ], sz * 2 );
                if( coords[ ii ] >= sz ) {
                   coords[ ii ] = 2 * sz - coords[ ii ] - 1;
                }
@@ -154,7 +155,7 @@ inline void ReadPixelWithBoundaryCondition(
                invert = true;
                // fall-through on purpose!
             case BoundaryCondition::PERIODIC:
-               coords[ ii ] = coords[ ii ] % ( sz );
+               coords[ ii ] = modulo( coords[ ii ], sz );
                break;
             case BoundaryCondition::ADD_ZEROS:
                for( dip::uint jj = 0; jj < img.TensorElements(); ++jj, ++it ) {
@@ -163,12 +164,12 @@ inline void ReadPixelWithBoundaryCondition(
                return; // We're done!
             case BoundaryCondition::ADD_MAX_VALUE:
                for( dip::uint jj = 0; jj < img.TensorElements(); ++jj, ++it ) {
-                  *it = std::numeric_limits< DataType >::max();
+                  *it = std::numeric_limits< TPI >::max();
                }
                return; // We're done!
             case BoundaryCondition::ADD_MIN_VALUE:
                for( dip::uint jj = 0; jj < img.TensorElements(); ++jj, ++it ) {
-                  *it = std::numeric_limits< DataType >::lowest();
+                  *it = std::numeric_limits< TPI >::lowest();
                }
                return; // We're done!
             case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
@@ -181,7 +182,7 @@ inline void ReadPixelWithBoundaryCondition(
          }
       }
    }
-   DataType* in = static_cast< DataType* >( img.Pointer( coords ));
+   TPI* in = static_cast< TPI* >( img.Pointer( coords ));
    for( dip::uint jj = 0; jj < img.TensorElements(); ++jj ) {
       *it = invert ? saturated_inv( *in ) : ( *in );
       ++it;

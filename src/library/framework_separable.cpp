@@ -202,7 +202,9 @@ void Separable(
 
    // TODO: Determine the number of threads we'll be using.
 
-   lineFilter.SetNumberOfThreads( 1 );
+   DIP_START_STACK_TRACE
+      lineFilter.SetNumberOfThreads( 1 );
+   DIP_END_STACK_TRACE
 
    // TODO: Start threads, each thread makes its own buffers.
    dip::uint thread = 0;
@@ -299,9 +301,6 @@ void Separable(
       do {
          // Get pointers to input and ouput lines
          if( inUseBuffer ) {
-            // If inIndex[ii] is the same as in the previous iteration, we don't need
-            // to copy the buffer over again. This happens with singleton-expanded input images.
-            // But it's easier to copy, and also safer as the lineFilter function could be bad and write in its input!
             CopyBuffer(
                   it.InPointer(),
                   inImage.DataType(),
@@ -333,7 +332,9 @@ void Separable(
          }
 
          // Filter the line
-         lineFilter.Filter( separableLineFilterParams );
+         DIP_START_STACK_TRACE
+            lineFilter.Filter( separableLineFilterParams );
+         DIP_END_STACK_TRACE
 
          // Copy back the line from output buffer to the image
          if( outUseBuffer ) {

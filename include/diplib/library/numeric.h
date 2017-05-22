@@ -121,6 +121,16 @@ inline dip::sint div_round( dip::sint lhs, dip::sint rhs ) {
    return div_floor( lhs + rhs / 2, rhs );
 }
 
+/// \brief Integer modulo, result is always positive, as opposed to % operator.
+inline dip::uint modulo( dip::uint value, dip::uint period ) {
+   return value % period;
+}
+
+/// \brief Integer modulo, result is always positive, as opposed to % operator.
+inline dip::sint modulo( dip::sint value, dip::sint period ) {
+   return ( value < 0 ) ? ( period - ( -value % period )) : ( value % period );
+}
+
 /// \brief Computes the absolute value in such a way that the result is always correct for pixel types.
 /// For `dip::sint` use `std::abs` instead.
 ///

@@ -460,7 +460,7 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       template< dip::uint I >
       dip::sint Offset() const { return offsets_[ I ]; }
       /// Index into image tensor for image 0.
-      dip::sint InOffset() const { return offsets_[ 0]; }
+      dip::sint InOffset() const { return offsets_[ 0 ]; }
       /// Index into image tensor for image 1.
       dip::sint OutOffset() const { return offsets_[ 1 ]; }
       /// Return the current index, which is computed: this function is not trivial

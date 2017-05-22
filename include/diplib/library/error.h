@@ -276,7 +276,9 @@ constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 ///     DIP_END_STACK_TRACE
 /// ```
 ///
-/// This expands to the exact same code as shown under `#DIP_ADD_STACK_TRACE`.
+/// This expands to the exact same code as shown under `#DIP_ADD_STACK_TRACE`, but with an additional `catch`
+/// statement that catches `std::exception`, and throws a `dip::RunTimeError` with the original exception's `what()`
+/// string.
 ///
 /// NOTE! `DIP_START_STACK_TRACE` starts a try/catch block, which must be closed with `DIP_END_STACK_TRACE` to
 /// prevent malformed syntax. Thus you should never use one of these two macros without the other one.
@@ -294,7 +296,7 @@ constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 #define DIP_START_STACK_TRACE try {
 
 // NOTE! Yes, we start with a closing brace here. This macro always needs to be paired with DIP_START_STACK_TRACE.
-#define DIP_END_STACK_TRACE } catch( dip::Error& e ) { DIP_ADD_STACK_TRACE( e ); throw; }
+#define DIP_END_STACK_TRACE } catch( dip::Error& e ) { DIP_ADD_STACK_TRACE( e ); throw; } catch( std::exception const& stde ) { DIP_THROW_RUNTIME( stde.what() ); }
 
 #else
 

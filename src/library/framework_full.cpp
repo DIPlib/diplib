@@ -124,7 +124,9 @@ void Full(
    //       the lineFilter does per pixel. If the caller can provide that estimate,
    //       we'd be able to use that to determine the threading schedule.
 
-   lineFilter.SetNumberOfThreads( 1 );
+   DIP_START_STACK_TRACE
+      lineFilter.SetNumberOfThreads( 1 );
+   DIP_END_STACK_TRACE
 
    // TODO: Start threads, each thread makes its own buffers.
    dip::uint thread = 0;
@@ -178,7 +180,9 @@ void Full(
             outBuffer.buffer = output.Pointer( it.OutOffset() + static_cast< dip::sint >( ii ) * outBuffer.tensorStride );
          }
          // Filter the line
-         lineFilter.Filter( fullLineFilterParameters );
+         DIP_START_STACK_TRACE
+            lineFilter.Filter( fullLineFilterParameters );
+         DIP_END_STACK_TRACE
          if( useOutBuffer ) {
             // Copy output buffer to output image
             CopyBuffer(

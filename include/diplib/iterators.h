@@ -87,7 +87,7 @@ class DIP_NO_EXPORT LineIterator {
       /// To construct a useful iterator, provide an image, the coordinate of the start pixel, and the processing dimension
       LineIterator( Image const& image, UnsignedArray const& coords, dip::uint procDim ) {
          DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( image.DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
+         DIP_THROW_IF( image.DataType() != DataType( value_type( 0 )), E::WRONG_DATA_TYPE );
          DIP_THROW_IF( procDim >= image.Dimensionality(), E::ILLEGAL_DIMENSION );
          ptr_ = static_cast< pointer >( image.Pointer( coords )); // throws if coords are outside of image
          coord_ = coords[ procDim ];
@@ -331,7 +331,7 @@ class DIP_NO_EXPORT ImageIterator {
             procDim_( procDim ),
             boundaryCondition_( image.Dimensionality(), BoundaryCondition::DEFAULT ) {
          DIP_THROW_IF( !image_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( image_->DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
+         DIP_THROW_IF( image_->DataType() != DataType( value_type( 0 )), E::WRONG_DATA_TYPE );
       }
       /// To construct a useful iterator, provide an image, a boundary condition array, and optionally a processing dimension
       ImageIterator( Image const& image, BoundaryConditionArray const& bc, dip::uint procDim = std::numeric_limits< dip::uint >::max() ) :
@@ -341,7 +341,7 @@ class DIP_NO_EXPORT ImageIterator {
             procDim_( procDim ),
             boundaryCondition_( bc ) {
          DIP_THROW_IF( !image_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( image_->DataType() != DataType( value_type(0) ), E::WRONG_DATA_TYPE );
+         DIP_THROW_IF( image_->DataType() != DataType( value_type( 0 )), E::WRONG_DATA_TYPE );
          BoundaryArrayUseParameter( boundaryCondition_, image_->Dimensionality() );
       }
 
@@ -385,6 +385,7 @@ class DIP_NO_EXPORT ImageIterator {
       /// \see dip::ReadPixelWithBoundaryCondition
       template< typename OutputIterator >
       void PixelAt( IntegerArray coords, OutputIterator it ) {
+         // TODO: This should return a dip::Image::CastPixel< value_type >, rather than copy over the values
          DIP_THROW_IF( coords.size() != coords_.size(), E::ARRAY_ILLEGAL_SIZE );
          for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
             coords[ ii ] += static_cast< dip::sint >( coords_[ ii ] );

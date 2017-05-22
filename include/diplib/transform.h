@@ -77,6 +77,11 @@ namespace dip {
 ///     version 3.0.
 ///
 /// For tensor images, each plane is transformed independently.
+///
+/// **Known Limitation:** the largest size that can be transformed is 2^31-1. In DIPlib, image sizes are
+/// represented by a `dip::uint`, which on a 64-bit system can hold values up to 2^64-1. But this function
+/// uses `int` internally to represent sizes, and therefore has a more strict limit to image sizes. Note
+/// that this limit refers to the size of one image dimension, not to the total number of pixels in the image.
 DIP_EXPORT void FourierTransform(
       Image const& in,
       Image& out,
@@ -93,6 +98,9 @@ inline Image FourierTransform(
    return out;
 }
 
+/// \brief Returns the next higher multiple of {2, 3, 5}. The largest value that can be returned is 2125764000
+/// (smaller than 2^31-1, the largest possible value of an `int` on most platforms).
+DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size );
 
 /// \}
 

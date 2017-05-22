@@ -315,7 +315,7 @@ inline void ScanSingleOutput(
 /// not of type `bufferType`.
 inline void ScanSingleInput(
       Image const& in,                 ///< Input image
-      Image const& mask,               ///< Mask image
+      Image const& c_mask,             ///< Mask image
       DataType bufferType,             ///< Data type for input buffer
       ScanLineFilter& lineFilter,      ///< Function object to call for each image line
       ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
@@ -326,18 +326,21 @@ inline void ScanSingleInput(
    DataTypeArray inBufT;
    inBufT.reserve( 2 );
    inBufT.push_back( bufferType );
-   if( mask.IsForged() ) {
+   Image mask;
+   if( c_mask.IsForged() ) {
       // If we have a mask, add it to the input array.
-      Image tmp = mask.QuickCopy();
+      mask = c_mask.QuickCopy();
       DIP_START_STACK_TRACE
-         tmp.CheckIsMask( in.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
-         tmp.ExpandSingletonDimensions( in.Sizes() );
+         mask.CheckIsMask( in.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
+         mask.ExpandSingletonDimensions( in.Sizes() );
       DIP_END_STACK_TRACE
-      inar.push_back( tmp );
-      inBufT.push_back( tmp.DataType() );
+      inar.push_back( mask );
+      inBufT.push_back( mask.DataType() );
    }
    ImageRefArray outar{};
-   Scan( inar, outar, inBufT, {}, {}, {}, lineFilter, opts );
+   DIP_START_STACK_TRACE
+      Scan( inar, outar, inBufT, {}, {}, {}, lineFilter, opts );
+   DIP_END_STACK_TRACE
 }
 
 /// \brief Calls `dip::Framework::Scan` with one input image and one output image.
