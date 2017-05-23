@@ -331,6 +331,19 @@ class DIP_NO_EXPORT Histogram {
       /// `dim`.
       DIP_EXPORT Histogram MarginalHistogram( dip::uint dim ) const;
 
+      /// \brief Returns a smoothed version of the histogram, using Gaussian smoothing with parameters `sigma`.
+      ///
+      /// Set a single sigma value, or one value per image dimension. The value is in bins, yielding a Gaussian kernel
+      /// of size `2 * std::ceil( 3 * sigma ) + 1` bins. See `dip::GaussFIR` for information on the smoothing operation applied.
+      /// `sigma` defaults to 1.
+      ///
+      /// The output histogram is larger than the input histogram: it is extended by `std::ceil( 3 * sigma )` below and
+      /// above the input bounds.
+      DIP_EXPORT Histogram Smooth( FloatArray sigma ) const;
+      DIP_EXPORT Histogram Smooth( dfloat sigma = 1 ) const {
+         return Smooth( FloatArray{ sigma } );
+      }
+
    private:
       Image data_;             // This is where the bins are stored. Always scalar and DT_UINT32.
       FloatArray lowerBounds_; // These are the lower bounds of the histogram along each dimension.

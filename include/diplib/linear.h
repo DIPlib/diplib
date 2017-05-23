@@ -222,7 +222,7 @@ inline Image Uniform(
 /// negative are not processed, even if the derivative order is non-zero.
 ///
 /// For the smoothing filter (`derivativeOrder` is 0), the size of the kernel is given by
-/// `2 * truncation * sigma + 1`. The default value for `truncation` is 3, which assures a good
+/// `2 * std::ceil( truncation * sigma ) + 1`. The default value for `truncation` is 3, which assures a good
 /// approximation of the Gaussian kernel without unnecessary expense. It is possible to reduce
 /// computation slightly by decreasing this parameter, but it is not recommended. For derivatives,
 /// the value of `truncation` is increased by `0.5 * derivativeOrder`.
@@ -257,7 +257,7 @@ inline Image GaussFIR(
 /// the smoothing effect. The zeroth-order derivative is a plain smoothing, no derivative is computed.
 ///
 /// The values of `sigmas` are translated to the Fourier domain, and a Fourier-domain Gaussian is computed.
-/// Frequencies above `2 * ( truncation + 0.5 * derivativeOrder ) * FDsigma` are set to 0. It is a relatively
+/// Frequencies above `std::ceil(( truncation + 0.5 * derivativeOrder ) * FDsigma )` are set to 0. It is a relatively
 /// minute computational difference if `truncation` were to be infinity, so it is not worth while to try to
 /// speed up the operation by decreasing `truncation`.
 ///

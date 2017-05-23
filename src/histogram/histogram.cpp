@@ -22,6 +22,7 @@
 #include "diplib/histogram.h"
 #include "diplib/framework.h"
 #include "diplib/math.h"
+#include "diplib/linear.h"
 #include "diplib/overload.h"
 
 namespace dip {
@@ -33,7 +34,8 @@ void CompleteConfiguration( Image const& input, Image const& mask, Histogram::Co
       configuration.lowerBound = Percentile( input, mask, configuration.lowerBound ).As< dfloat >();
    }
    if( configuration.upperIsPercentile && configuration.mode != Histogram::Configuration::Mode::COMPUTE_UPPER ) {
-      configuration.upperBound = Percentile( input, mask, configuration.upperBound ).As< dfloat >();
+      // NOTE: we increase the upper bound when computed as a percentile, because we do lowerBound <= value < upperBound.
+      configuration.upperBound = Percentile( input, mask, configuration.upperBound ).As< dfloat >() * ( 1.0 + 1e-15 );
    }
    if( configuration.mode != Histogram::Configuration::Mode::COMPUTE_BINS ) {
       if( configuration.nBins < 1 ) {
@@ -71,11 +73,8 @@ void CompleteConfiguration( Image const& input, Image const& mask, Histogram::Co
    }
 }
 
-inline dfloat FindBin( dfloat value, dfloat lowerBound, dfloat binSize ) {
-   return std::floor(( value - lowerBound ) / binSize );
-}
-inline dfloat ClampedBin( dfloat bin, dip::uint nBins ) {
-   return clamp( bin, 0.0, static_cast< dfloat >( nBins - 1 ));
+inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::uint nBins ) {
+   return static_cast< dip::sint >( clamp( std::floor(( value - lowerBound ) / binSize ), 0.0, static_cast< dfloat >( nBins - 1 )));
 }
 
 template< typename TPI >
@@ -94,8 +93,7 @@ class dip__ScalarImageHistogram : public Framework::ScanLineFilter {
             if( configuration_.excludeOutOfBoundValues ) {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   if( *mask && ( *in >= configuration_.lowerBound ) && ( *in < configuration_.upperBound )) {
-                     ++data[ static_cast< dip::uint >(
-                                   FindBin( *in, configuration_.lowerBound, configuration_.binSize  )) ];
+                     ++data[ FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
                   }
                   in += inStride;
                   mask += maskStride;
@@ -103,9 +101,7 @@ class dip__ScalarImageHistogram : public Framework::ScanLineFilter {
             } else {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   if( *mask ) {
-                     ++data[ static_cast< dip::uint >( ClampedBin(
-                                    FindBin( *in, configuration_.lowerBound, configuration_.binSize ),
-                                    configuration_.nBins )) ];
+                     ++data[ FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
                   }
                   in += inStride;
                   mask += maskStride;
@@ -116,16 +112,13 @@ class dip__ScalarImageHistogram : public Framework::ScanLineFilter {
             if( configuration_.excludeOutOfBoundValues ) {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   if(( *in >= configuration_.lowerBound ) && ( *in < configuration_.upperBound )) {
-                     ++data[ static_cast< dip::uint >(
-                                   FindBin( *in, configuration_.lowerBound, configuration_.binSize  )) ];
+                     ++data[ FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
                   }
                   in += inStride;
                }
             } else {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-                  ++data[ static_cast< dip::uint >( ClampedBin(
-                                FindBin( *in, configuration_.lowerBound, configuration_.binSize ),
-                                configuration_.nBins )) ];
+                  ++data[ FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
                   in += inStride;
                }
             }
@@ -167,18 +160,14 @@ class dip__TensorImageHistogram : public Framework::ScanLineFilter {
                   dip::sint offset = 0;
                   bool include = true;
                   for( dip::uint jj = 0; jj < tensorLength; ++jj ) {
-                     dfloat bin;
                      if( configuration_[ jj ].excludeOutOfBoundValues ) {
                         if(( *tin < configuration_[ jj ].lowerBound ) || ( *tin >= configuration_[ jj ].upperBound )) {
                            include = false;
                            break;
                         }
-                        bin = FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize );
-                     } else {
-                        bin = ClampedBin( FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize ),
-                                          configuration_[ jj ].nBins );
                      }
-                     offset += image_.Stride( jj ) * static_cast< dip::sint >( bin );
+                     offset += image_.Stride( jj ) *
+                               FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
                      tin += tensorStride;
                   }
                   if( include ) {
@@ -195,18 +184,14 @@ class dip__TensorImageHistogram : public Framework::ScanLineFilter {
                dip::sint offset = 0;
                bool include = true;
                for( dip::uint jj = 0; jj < tensorLength; ++jj ) {
-                  dfloat bin;
                   if( configuration_[ jj ].excludeOutOfBoundValues ) {
                      if(( *tin < configuration_[ jj ].lowerBound ) || ( *tin >= configuration_[ jj ].upperBound )) {
                         include = false;
                         break;
                      }
-                     bin = FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize );
-                  } else {
-                     bin = ClampedBin( FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize ),
-                                       configuration_[ jj ].nBins );
                   }
-                  offset += image_.Stride( jj ) * static_cast< dip::sint >( bin );
+                  offset += image_.Stride( jj ) *
+                            FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
                   tin += tensorStride;
                }
                if( include ) {
@@ -408,6 +393,24 @@ Histogram Histogram::MarginalHistogram( dip::uint dim ) const {
    return out;
 }
 
+Histogram Histogram::Smooth( FloatArray sigma ) const {
+   Histogram out = *this;
+   UnsignedArray sizes = out.data_.Sizes();
+   dip::uint nDims = sizes.size();
+   DIP_START_STACK_TRACE
+      ArrayUseParameter( sigma, nDims, 1.0 );
+   DIP_END_STACK_TRACE
+   dfloat truncation = 3.0;
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      dfloat extension = std::ceil( sigma[ ii ] * truncation );
+      sizes[ ii ] += 2 * static_cast< dip::uint >( extension );
+      out.lowerBounds_[ ii ] -= out.binSizes_[ ii ] * extension;
+   }
+   out.data_.Pad( sizes );
+   GaussFIR( out.data_, out.data_, sigma, { 0 }, { "add zeros" }, truncation );
+   return out;
+}
+
 } // namespace dip
 
 
@@ -480,6 +483,9 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
          it[ 2 ] = 1000;
       } while( ++it );
    }
+   nBins = 100;
+   settings.nBins = nBins;
+   binSize = upperBound / static_cast< dip::dfloat >( nBins );
    dip::Histogram tensorH( tensorIm, {}, settings );
    DOCTEST_CHECK( tensorH.Dimensionality() == 3 );
    DOCTEST_CHECK( tensorH.Bins( 0 ) == nBins );
@@ -502,13 +508,14 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( tensorM.LowerBound() == 0.0 );
    DOCTEST_CHECK( tensorM.UpperBound() == upperBound );
    DOCTEST_CHECK( tensorM.Count() == tensorIm.NumberOfPixels() );
-   DOCTEST_CHECK( tensorM.Bin( 1000.0 ) == 50 );
+   dip::uint bin1000 = static_cast< dip::uint >( std::floor( 1000.0 / binSize ));
+   DOCTEST_CHECK( tensorM.Bin( 1000.0 ) == bin1000 );
    auto bounds = tensorM.BinBoundaries();
    DOCTEST_CHECK( bounds[ 0 ] == 0.0 );
    DOCTEST_CHECK( bounds[ 1 ] == binSize );
    DOCTEST_CHECK( bounds[ 2 ] == binSize * 2.0 );
    DOCTEST_CHECK( bounds.back() == upperBound );
-   DOCTEST_CHECK( tensorM.At( 50.0 ) == tensorIm.NumberOfPixels() );
+   DOCTEST_CHECK( tensorM.At( bin1000 ) == tensorIm.NumberOfPixels() );
    auto tensorMean = tensorH.Mean();
    DOCTEST_CHECK( std::abs( tensorMean[ 0 ] - meanval ) < 5.0 );
    DOCTEST_CHECK( std::abs( tensorMean[ 1 ] - meanval ) < 5.0 );
