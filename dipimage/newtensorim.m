@@ -3,19 +3,19 @@
 %
 %   NEWTENSORIM([N,M]) is a 0D image with a N-by-M tensor.
 %
-%   NEWTENSORIM([N,M],[P,Q,...],) is a image of size P-by-Q-by-... with a
+%   NEWTENSORIM([N,M],[P,Q,...]) is a image of size P-by-Q-by-... with a
 %   N-by-M tensor.
 %
-%   NEWIM(...,TYPE) sets the data type of the new image to TYPE.
+%   NEWTENSORIM(...,TYPE) sets the data type of the new image to TYPE.
 %   TYPE can be any of the type parameters allowed by DIP_IMAGE. The
 %   default data type is 'single'.
 %
 %   NEWTENSORIM(A) is an image identical to the tensor image A, set to 0.
 %
-%   NEWTENSORIM(A,B,C) is a vector image where the tensor components are the
-%   scalar images A, B and C. This mode is used whenever there is more than
-%   one input parameter, and any one of them is not scalar.
-%   You can also use DIP_IMAGE({A,B,C}).
+%   NEWTENSORIM(A,B,C) is a vector image where the tensor components are
+%   the scalar images A, B and C. This mode is used whenever there is
+%   more than one input parameter, and any one of them is not a scalar
+%   or vector array. You can also use DIP_IMAGE({A,B,C}).
 %
 %  SEE ALSO: newim, newcolorim, dip_image
 
