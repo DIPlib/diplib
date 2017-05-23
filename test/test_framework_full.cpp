@@ -91,9 +91,7 @@ int main() {
          do {
             dip::uint value = 0;
             for( auto kit = kernel.begin(); kit != kernel.end(); ++kit ) {
-               dip::uint16 pix; // If the image is not scalar, we need to provide an array here.
-               it.PixelAt( *kit, &pix );
-               value += pix;
+               value += it.PixelAt( *kit );
             }
             *ot = static_cast< dip::uint16 >( value / kernel.NumberOfPixels() );
          } while( ++ot, ++it );

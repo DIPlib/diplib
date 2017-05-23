@@ -119,25 +119,23 @@ inline void BoundaryArrayUseParameter( BoundaryConditionArray& bc, dip::uint nDi
 }
 
 
-/// \brief Copies the sample values at `coords` into the output iterator `it`.
+/// \brief Returns a pixel with a copy of the sample values at `coords`.
 ///
-/// The output iterator needs to have `tensorElements` spaces available. Note that a simple pointer can
-/// be used here. If `coords` falls outside the image, then the boundary condition `bc` is used to
-/// determine what values to write into the output iterator.
+/// If `coords` falls outside the image, then the boundary condition `bc` is used to determine what values to write
+/// into the output pixel.
 ///
 /// First, second and third order interpolations are not implemented, because their functionality
 /// is impossible to reproduce in this simple function. Use `dip::ExtendImage` to get the functionality
 /// of these boundary conditions.
-template< typename TPI, typename OutputIterator >
-inline void ReadPixelWithBoundaryCondition(
+inline Image::Pixel ReadPixelWithBoundaryCondition(
       Image const& img,
-      OutputIterator it,
       IntegerArray coords, // getting a local copy so we can modify it
       BoundaryConditionArray const& bc
 ) {
    DIP_THROW_IF( coords.size() != img.Dimensionality(), E::ARRAY_ILLEGAL_SIZE );
-   DIP_THROW_IF( img.DataType() != DataType( TPI( 0 )), E::WRONG_DATA_TYPE );
    bool invert = false;
+   Image::Pixel out( DataType::SuggestFlex( img.DataType() ), img.TensorElements() );
+   out.ReshapeTensor( img.Tensor() );
    for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
       dip::sint sz = static_cast< dip::sint >( img.Size( ii ));
       if(( coords[ ii ] < 0 ) || ( coords[ ii ] >= sz )) {
@@ -158,20 +156,14 @@ inline void ReadPixelWithBoundaryCondition(
                coords[ ii ] = modulo( coords[ ii ], sz );
                break;
             case BoundaryCondition::ADD_ZEROS:
-               for( dip::uint jj = 0; jj < img.TensorElements(); ++jj, ++it ) {
-                  *it = 0;
-               }
-               return; // We're done!
+               out = 0;
+               return out; // We're done!
             case BoundaryCondition::ADD_MAX_VALUE:
-               for( dip::uint jj = 0; jj < img.TensorElements(); ++jj, ++it ) {
-                  *it = std::numeric_limits< TPI >::max();
-               }
-               return; // We're done!
+               out = std::numeric_limits< dfloat >::infinity();
+               return out; // We're done!
             case BoundaryCondition::ADD_MIN_VALUE:
-               for( dip::uint jj = 0; jj < img.TensorElements(); ++jj, ++it ) {
-                  *it = std::numeric_limits< TPI >::lowest();
-               }
-               return; // We're done!
+               out = -std::numeric_limits< dfloat >::infinity();
+               return out; // We're done!
             case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
                coords[ ii ] = clamp( coords[ ii ], dip::sint( 0 ), sz - 1 );
                break;
@@ -182,13 +174,9 @@ inline void ReadPixelWithBoundaryCondition(
          }
       }
    }
-   TPI* in = static_cast< TPI* >( img.Pointer( coords ));
-   for( dip::uint jj = 0; jj < img.TensorElements(); ++jj ) {
-      *it = invert ? saturated_inv( *in ) : ( *in );
-      ++it;
-      in += img.TensorStride();
-   }
-   return; // We're done!
+   Image::Pixel tmp( img.Pointer( coords ), img.DataType(), img.Tensor(), img.TensorStride() );
+   out = invert ? -tmp : tmp; // copy pixel values over from `tmp`, which references them.
+   return out;
 }
 
 
