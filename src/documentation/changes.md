@@ -159,6 +159,9 @@ over.
   the normalization to be consistent with the old *DIPlib*, which used a symmetric normalization
   scheme (both forward and backward transforms use 1/N^0.5)
 
+- `dip::Histogram` misses a few of the options that `dip_MultiDimensionalHistogram` had, but I
+  don't think they are relevant. They can be added easily if necessary.
+
 ## Changes from DIPimage 2.x (the old DIPimage)
 
 - The `dip_image` object has changed completely internally. Pixel data is stored differently:
@@ -220,3 +223,6 @@ over.
 
 - `smooth` is no longer relevant, moved to the `alias` directory. `derivative` has the 2nd
   and 3rd arguments switched, it makes more sense having the order first.
+
+- `mdhistogram` has fewer options, but should still be able to produce the same results as
+  previously.
