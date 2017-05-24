@@ -379,16 +379,6 @@ void ImageDisplay::UpdateOutput() {
    }
 }
 
-Image const& ImageDisplay::Slice() {
-   UpdateSlice();
-   return slice_;
-}
-
-Image const& ImageDisplay::Output() {
-   UpdateOutput();
-   return output_;
-}
-
 namespace {
 
 void MapPixelValues(
@@ -415,7 +405,6 @@ void MapPixelValues(
 }
 
 } // namespace
-
 
 Image::Pixel ImageDisplay::MapSinglePixel( Image::Pixel const& input ) {
    DIP_THROW_IF( input.TensorElements() != image_.TensorElements(), E::NTENSORELEM_DONT_MATCH );

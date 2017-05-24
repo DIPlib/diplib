@@ -718,17 +718,17 @@ inline mxArray* GetArray( dip::Image::Pixel const& in ) {
    mxArray* out;
    if( in.DataType().IsBinary() ) { // logical array
       out = mxCreateLogicalMatrix( 1, in.TensorElements() );
-      dip::Image::Pixel map( mxGetLogicals( out ), DT_BIN, in.Tensor(), 1 );
+      dip::Image::Pixel map( mxGetLogicals( out ), dip::DT_BIN, in.Tensor(), 1 );
       map = in; // copy samples over
    } else if( in.DataType().IsComplex() ) { // double complex array
       out = mxCreateDoubleMatrix( 1, in.TensorElements(), mxCOMPLEX );
-      dip::Image::Pixel mapReal( mxGetPr( out ), DT_BIN, in.Tensor(), 1 );
-      dip::Image::Pixel mapImag( mxGetIm( out ), DT_BIN, in.Tensor(), 1 );
+      dip::Image::Pixel mapReal( mxGetPr( out ), dip::DT_BIN, in.Tensor(), 1 );
+      dip::Image::Pixel mapImag( mxGetPi( out ), dip::DT_BIN, in.Tensor(), 1 );
       mapReal = in.Real(); // copy samples over
       mapImag = in.Imaginary(); // copy samples over
    } else { // integer or floating-point : double array
       out = mxCreateDoubleMatrix( 1, in.TensorElements(), mxREAL );
-      dip::Image::Pixel map( mxGetPr( out ), DT_BIN, in.Tensor(), 1 );
+      dip::Image::Pixel map( mxGetPr( out ), dip::DT_BIN, in.Tensor(), 1 );
       map = in; // copy samples over
    }
    return out;

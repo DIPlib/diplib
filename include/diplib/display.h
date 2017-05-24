@@ -141,7 +141,10 @@ class DIP_NO_EXPORT ImageDisplay{
       ///
       /// This function also causes an update of the slice if the projection changed. The raw slice image contains
       /// the input data for the what is shown in `Output`.
-      DIP_EXPORT Image const& Slice();
+      Image const& Slice(){
+         UpdateSlice();
+         return slice_;
+      }
 
       /// \brief Retrives a reference to the output image.
       ///
@@ -149,7 +152,10 @@ class DIP_NO_EXPORT ImageDisplay{
       ///
       /// The output image data segment will be allocated using the external interface provided to the
       /// `%ImageDisplay` constructor.
-      DIP_EXPORT Image const& Output();
+      Image const& Output() {
+         UpdateOutput();
+         return output_;
+      }
 
       /// \brief Puts a single pixel through the same mapping the image will go through to become `Output`.
       DIP_EXPORT Image::Pixel MapSinglePixel( Image::Pixel const& input );
@@ -163,10 +169,8 @@ class DIP_NO_EXPORT ImageDisplay{
       bool SliceIsDirty() const { return sliceIsDirty_; }
 
       /// \brief Gets input image intensities at a given 2D point (automatically finds corresponding nD location).
-      ///
-      /// Because the pixel can be of different types (integer, float, complex) and can have up to three samples,
-      /// a string is returned with appropriately formatted values. In case of a 1D `Output`, `y` is ignored.
-      template< typename T >
+      /// In case of a 1D `Output`, `y` is ignored.
+      template< typename T = dfloat >
       DIP_EXPORT Image::CastPixel< T > Pixel( dip::uint x, dip::uint y = 0 ) {
          UpdateSlice();
          if( x >= slice_.Size( 0 )) {
@@ -548,9 +552,9 @@ class DIP_NO_EXPORT ImageDisplay{
 
       DIP_NO_EXPORT void InvalidateSliceLimits();
 
-      DIP_NO_EXPORT void UpdateSlice();
+      DIP_EXPORT void UpdateSlice();
       DIP_NO_EXPORT void UpdateRgbSlice();
-      DIP_NO_EXPORT void UpdateOutput();
+      DIP_EXPORT void UpdateOutput();
 
       void FillOrthogonal() {
          dip::uint nDims = image_.Dimensionality();
