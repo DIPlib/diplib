@@ -54,13 +54,17 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     All measurement features have been ported, including the previously only defined in
     *DIPimage*.
 
+-   Histograms, including multi-dimensional histograms constructed from tensor images.
+
 -   The Fourier transform (based on the code out of OpenCV, much faster than the code in
     the old *DIPlib*).
 
 -   An increasing number of filters and operators based on the various frameworks.
 
 -   Color support. More color spaces could be added in time.
-    
+
+-   Interactive image display, as a separate module DIPviewer.
+
 -   *MATLAB* interface.
 
 -   *DIPimage* toolbox: The `dip_image` object is defined and has most methods defined.
@@ -107,13 +111,7 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     - dip_lookup_table.h
     - dip_imarlut.h
 
--   Histograms. **Some design work needed** (a class to hold the histogram data, possibly
-    based on `dip::Image` as is the case in the old *DIPlib*). The multi-dimensional
-    histogram will work on tensor images. Depends on `dip::Framework::Scan`.
-    - dip_histogram.h
-
--   **DEP**
-    Global threshold algorithms, depending on the histogram, currently implemented
+-   Global threshold algorithms, depending on the histogram, currently implemented
     in dipimage/threshold.m (Otsu, triangle, background, etc.).
 
 -   Image generation algorithms using `dip::Framework::ScanSingleOutput`.
@@ -141,8 +139,8 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     image array, but a single tensor image.
     - dip_structure.h
 
--   Algorithms that do not depend on any framework: all binary morphology, the
-    watershed, labelling, region growing, distance transforms, etc.
+-   Algorithms that do not depend on any framework: all binary morphology, labelling,
+    region growing, distance transforms, etc.
     Simply porting old code.
     - dip_binary.h
     - dip_distance.h
@@ -167,8 +165,7 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
       tensor image (based on `dip::Framework::ScanSingleOutput`)
 
 -   Other stuff that's not in the old *DIPlib* (see below).
-    **Requires special expertise**, and presumably depends on frameworks and other
-    infrastructure to be available.
+    **Requires special expertise**.
 
 
 ## Functionality currently not in *DIPlib* that would be important to include
@@ -177,10 +174,6 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
   color image.
 
 - Stain unmixing for bright-field microscopy.
-
-- Some form of image display for development and debugging. We can have the users resort
-  to third-party libraries or saving intermediate images to file, or we can try to copy
-  *OpenCV*'s image display into *dipIO*.
 
 - Some filters that are trivial to add:
     - Scharr (slightly better than Sobel)

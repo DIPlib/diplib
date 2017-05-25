@@ -406,7 +406,7 @@ Histogram Histogram::Smooth( FloatArray sigma ) const {
       sizes[ ii ] += 2 * static_cast< dip::uint >( extension );
       out.lowerBounds_[ ii ] -= out.binSizes_[ ii ] * extension;
    }
-   out.data_.Pad( sizes );
+   out.data_ = out.data_.Pad( sizes );
    GaussFIR( out.data_, out.data_, sigma, { 0 }, { "add zeros" }, truncation );
    return out;
 }

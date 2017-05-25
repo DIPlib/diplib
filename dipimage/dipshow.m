@@ -712,7 +712,7 @@ xdata = reshape(repmat(xdata,2,1),[1,sz*2+2]);
 xdata = xdata(2:end-1);
 colors = get(0,'DefaultAxesColorOrder');
 for ii=1:size(cdata,2)
-   ydata = reshape(repmat(cdata(:,ii),2,1),[1,sz*2]);
+   ydata = reshape(repmat(cdata(:,ii)',2,1),[1,sz*2]);
    jj = mod(ii-1,size(colors,1))+1;
    line('xdata',xdata,'ydata',ydata,'color',colors(jj,:),'linestyle','-');
 end
