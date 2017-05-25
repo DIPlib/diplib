@@ -482,7 +482,7 @@ DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcompl
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see VarianceAccumulator, MinMaxAccumulator
+/// \see VarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator
 ///
 /// ###Source
 ///
@@ -599,7 +599,7 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see StatisticsAccumulator, MinMaxAccumulator
+/// \see StatisticsAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator
 ///
 /// ### Source
 ///
@@ -657,6 +657,62 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
 }
 
 
+/// \brief `%DirectionalStatisticsAccumulator` computes directional mean and standard deviation by accumulating
+/// a unit vector with the input value as angle.
+///
+/// Samples are added one by one, using the `Push` method. Other members are used to retrieve estimates of
+/// the sample statistics based on the samples seen up to that point.
+///
+/// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
+/// and add the accumulators together using the `+` operator.
+///
+/// \see StatisticsAccumulator, VarianceAccumulator, MinMaxAccumulator
+class DIP_NO_EXPORT DirectionalStatisticsAccumulator {
+   public:
+      /// Add a sample to the accumulator
+      void Push( dfloat x ) {
+         ++n_;
+         sum_ += dcomplex{ std::cos( x ), std::sin( x ) };
+      }
+
+      /// Combine two accumulators
+      DirectionalStatisticsAccumulator& operator+=( DirectionalStatisticsAccumulator const& b ) {
+         n_ += b.n_;
+         sum_ += b.sum_;
+         return *this;
+      }
+
+      /// Number of samples
+      dip::uint Number() const {
+         return n_;
+      }
+      /// Unbiased estimator of population mean
+      dfloat Mean() const {
+         return std::arg( sum_ );
+      }
+      /// Unbiased estimator of population variance
+      dfloat Variance() const {
+         dfloat n = static_cast< dfloat >( n_ );
+         return ( n_ > 0 ) ? ( 1.0 - std::abs( sum_ ) / n ) : ( 0.0 );
+      }
+      /// Estimator of population standard deviation (it is not possible to derive an unbiased estimator)
+      dfloat StandardDeviation() const {
+         dfloat n = static_cast< dfloat >( n_ );
+         return ( n_ > 0 ) ? ( std::sqrt( -2.0 * std::log( std::abs( sum_ ) / n ))) : ( 0.0 );
+      }
+
+   private:
+      dip::uint n_ = 0; // number of values x collected
+      dcomplex sum_ = 0; // sum of values exp(i x)
+};
+
+/// \brief Combine two accumulators
+inline DirectionalStatisticsAccumulator operator+( DirectionalStatisticsAccumulator lhs, DirectionalStatisticsAccumulator const& rhs ) {
+   lhs += rhs;
+   return lhs;
+}
+
+
 /// \brief `%MinMaxAccumulator` computes minimum and maximum values of a sequence of values.
 ///
 /// Samples are added one by one or two by two, using the `Push` method. Other members are used to retrieve the results.
@@ -664,7 +720,7 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see StatisticsAccumulator, VarianceAccumulator
+/// \see StatisticsAccumulator, VarianceAccumulator, DirectionalStatisticsAccumulator
 class DIP_NO_EXPORT MinMaxAccumulator {
    public:
       /// Add a sample to the accumulator

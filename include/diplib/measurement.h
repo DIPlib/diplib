@@ -694,7 +694,6 @@ class DIP_EXPORT Composite : public Base {
 /// method just like any of the default features.
 // TODO: Document how to create your own feature and register it with the MeasurementTool.
 // TODO: Document each feature in more detail in a separate page.
-// TODO: Create a DirectionalStatistics feature that computes directional mean, std dev and variance.
 class DIP_NO_EXPORT MeasurementTool {
    public:
 

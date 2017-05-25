@@ -51,6 +51,7 @@
 #include "feature_mean.h"
 #include "feature_stdandard_deviation.h"
 #include "feature_statistics.h"
+#include "feature_directional_statistics.h"
 #include "feature_max_val.h"
 #include "feature_min_val.h"
 // Binary moments
@@ -90,21 +91,22 @@ MeasurementTool::MeasurementTool() {
    Register( Feature::Pointer( new Feature::FeaturePodczeckShapes ));
    Register( Feature::Pointer( new Feature::FeatureConvexity ));
    Register( Feature::Pointer( new Feature::FeatureBendingEnergy ));
-   // Intensi
+   // Intensity
    Register( Feature::Pointer( new Feature::FeatureMass ));
    Register( Feature::Pointer( new Feature::FeatureMean ));
    Register( Feature::Pointer( new Feature::FeatureStandardDeviation ));
    Register( Feature::Pointer( new Feature::FeatureStatistics ));
+   Register( Feature::Pointer( new Feature::FeatureDirectionalStatistics ));
    Register( Feature::Pointer( new Feature::FeatureMaxVal ));
    Register( Feature::Pointer( new Feature::FeatureMinVal ));
-   // Binary ts
+   // Binary moments
    Register( Feature::Pointer( new Feature::FeatureCenter ));
    Register( Feature::Pointer( new Feature::FeatureMu ));
    Register( Feature::Pointer( new Feature::FeatureInertia ));
    Register( Feature::Pointer( new Feature::FeatureMajorAxes ));
    Register( Feature::Pointer( new Feature::FeatureDimensionsCube ));
    Register( Feature::Pointer( new Feature::FeatureDimensionsEllipsoid ));
-   // Grey-vaoments
+   // Grey-value moments
    Register( Feature::Pointer( new Feature::FeatureGravity ));
    Register( Feature::Pointer( new Feature::FeatureGreyMu ));
    Register( Feature::Pointer( new Feature::FeatureGreyInertia ));
