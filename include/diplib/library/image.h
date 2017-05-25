@@ -1082,7 +1082,7 @@ class DIP_NO_EXPORT Image {
       /// across that dimension. The methods `dip::Image::ExpandSingletonDimension` and
       /// `dip::Image::ExpandSingletonTensor` create such dimensions.
       ///
-      /// See HasContiguousData, HasNormalStrides, ExpandSingletonDimension, ExpandSingletonTensor.
+      /// \see HasContiguousData, HasNormalStrides, ExpandSingletonDimension, ExpandSingletonTensor.
       DIP_EXPORT bool IsSingletonExpanded() const;
 
       /// \brief Test if the whole image can be traversed with a single stride
@@ -2478,7 +2478,23 @@ class DIP_NO_EXPORT Image {
       /// This method simplifies manipulating tensors by normalizing their storage.
       DIP_EXPORT void ExpandTensor();
 
-      // TODO: ForceNormalStrides(), possibly with an option to determine how the tensor is to be stored.
+      /// \brief Copies pixel data over to a new data segment if the strides are not normal.
+      ///
+      /// Will throw an exception if reallocating the data segment does not yield normal strides.
+      /// This can happen only if there is an external interface.
+      ///
+      /// The image must be forged.
+      ///
+      /// \see HasNormalStrides.
+      void ForceNormalStrides() {
+         if( !HasNormalStrides() ) {
+            Image out;
+            out.externalInterface_ = externalInterface_;
+            out.ReForge( *this ); // This way we don't copy the strides. out.Copy( *this ) would do so if out is not yet forged!
+            DIP_THROW_IF( !out.HasNormalStrides(), "Cannot strides to normal." );
+            out.Copy( *this );
+         }
+      }
 
       /// \brief Sets all pixels in the image to the value `pixel`.
       ///
