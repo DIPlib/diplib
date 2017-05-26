@@ -37,7 +37,7 @@ framework/     -> library
 infra/         -> library
 linear/        -> filtering
 manipulation/  -> interpolation
-noise/         -> generation? math?
+noise/         -> generation
 numerical/     -> support
 paint/         -> generation
 pgst/          -> filtering

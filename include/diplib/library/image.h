@@ -488,7 +488,7 @@ class DIP_NO_EXPORT Image {
             /// The number of samples in the pixel referenced.
             dip::uint TensorElements() const { return tensor_.Elements(); }
             /// The stride to use to access the various samples in the pixel referenced.
-            dip::sint TensorStride() const { return 1; }
+            dip::sint TensorStride() const { return tensorStride_; }
 
             /// \brief Change the tensor shape, without changing the number of tensor elements.
             Pixel& ReshapeTensor( dip::uint rows, dip::uint cols ) {
