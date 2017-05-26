@@ -504,8 +504,6 @@ inline Image Mean( Image const& in, Image const& mask = {}, String const& mode =
    return out;
 }
 
-// TODO: process is not an optional parameter. Make alternate function without the process parameter that returns a number. The function does tensor to scalar first.
-
 /// \brief Calculates the sum of the pixel values over all those dimensions which are specified by `process`.
 ///
 /// If `process` is an empty array, all dimensions are processed, and a 0D output image is generated containing
@@ -931,9 +929,6 @@ inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
    return out;
 }
 
-
-// DIP_ERROR dip_Lut( dip_float, dip_sint32, dip_float *, dip_sint32 *, dip_float *, dip_float *, dip_int );
-// DIP_ERROR dip_ImageLut( dip_Image, dip_Image, dip_Image, dip_Image );
 
 /// \}
 

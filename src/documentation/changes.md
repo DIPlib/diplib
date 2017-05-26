@@ -101,6 +101,10 @@ over.
   argument list. We try to sort arguments such that the ones most commonly left with default
   values appear at the end, and the boundary condition is not commonly changed.
 
+- Function names are often simplified, since in C++ it's possible to overload functions for
+  different types. For example, `dip_BesselJ0` and `dipm_BesselJ0` are now both called
+  `dip::BesselJ0`.
+
 - `dip_Measure` is now `dip::MeasurementTool::Measure`, with `dip::MeasurementTool` an object
   that knows about defined measurement features.
 
@@ -128,6 +132,9 @@ over.
 
 - `dip_MultiDimensionalHistogram` and `dip_ImageToHistogram` have been merged into the
   constructor for `dip::Histogram`, which replaces both `dip_Distribution` and `dip_Histogram`.
+
+- The `dip_ImageLookup` function has been merged with the `dip_LookupTable` object, and
+  includes the functionality of `dip_ImageLut`.
 
 ## Changes in functionality
 
