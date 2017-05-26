@@ -2488,11 +2488,12 @@ class DIP_NO_EXPORT Image {
       /// \see HasNormalStrides.
       void ForceNormalStrides() {
          if( !HasNormalStrides() ) {
-            Image out;
-            out.externalInterface_ = externalInterface_;
-            out.ReForge( *this ); // This way we don't copy the strides. out.Copy( *this ) would do so if out is not yet forged!
-            DIP_THROW_IF( !out.HasNormalStrides(), "Cannot strides to normal." );
-            out.Copy( *this );
+            Image tmp;
+            tmp.externalInterface_ = externalInterface_;
+            tmp.ReForge( *this ); // This way we don't copy the strides. out.Copy( *this ) would do so if out is not yet forged!
+            DIP_THROW_IF( !tmp.HasNormalStrides(), "Cannot force strides to normal." );
+            tmp.Copy( *this );
+            swap( tmp );
          }
       }
 
