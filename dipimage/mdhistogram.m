@@ -56,6 +56,12 @@
 %      {'lower',0,'upper',256,'bins',256,'lower_abs','upper_abs'}});
 % This is equivalent to:
 %  histim = mdhistogram(mchim)
+%
+% SEE ALSO:
+%  diphist, diphist2d
+%
+% DIPlib:
+%  This function calls the DIPlib function dip::Maxima.
 
 % TODO: I've removed some options and syntax from the original version of
 % this function. Should these be added back in?

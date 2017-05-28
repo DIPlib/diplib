@@ -19,6 +19,9 @@
 %   values and bin centers. The histogram is not displayed if
 %   an output value is given, unless one of the plot mode
 %   strings is also given.
+%
+%   See also: MDHISTOGRAM, DIPHIST2D
+
 
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.

@@ -136,6 +136,9 @@ over.
 - The `dip_ImageLookup` function has been merged with the `dip_LookupTable` object, and
   includes the functionality of `dip_ImageLut`.
 
+- `dip_Threshold` is now `dip::FixedThreshold`. `dip::Threshold` is a function that allows
+  to select an automated threshold method.
+
 ## Changes in functionality
 
 - Second order extrapolation boundary extension didn't do as advertised in the old *DIPlib*.

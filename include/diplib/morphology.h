@@ -37,8 +37,6 @@ namespace dip {
 /// \brief Functions that implement mathematical morphology
 /// \{
 
-// TODO: some functions are \ingroup segmentation! Add some links in that group's documentation to these.
-
 /// \brief Objects of class `%StructuringElement` represent the shape and size of a structuring element.
 ///
 /// Many functions in the Mathematical Morphology module require a structuring element definition.
