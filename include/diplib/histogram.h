@@ -54,9 +54,11 @@ class DIP_NO_EXPORT Histogram {
       /// \brief Configuration information for how the histogram is computed.
       ///
       /// Note that if `mode == Mode::COMPUTE_BINS`, `binSize` will be adjusted so that a whole number of bins
-      /// fits between the bounds.
+      /// fits between the bounds. If `binSize` was set to zero or a negative value, and the input image is of
+      /// any integer type, then `binSize` will be computed to be an integer power of two, and such that there
+      /// are no more than 256 bins in the histogram.
       ///
-      /// Any illegal values in the configuration will silently be replaced with the defalt values.
+      /// Any illegal values in the configuration will silently be replaced with the default values.
       ///
       /// Constructors exist to set different subsets of the configuration; write upper bound and bin size
       /// as a floating point number so the right constructor can be selected (they differ in the location
@@ -82,6 +84,7 @@ class DIP_NO_EXPORT Histogram {
          bool lowerIsPercentile = false; ///< If set, `lowerBound` is replaced by the given percentile pixel value.
          bool upperIsPercentile = false; ///< If set, `upperBound` is replaced by the given percentile pixel value.
          bool excludeOutOfBoundValues = false; ///< If set, pixels outside of the histogram bounds are not counted.
+
          /// \brief Default-constructed configuration defines 256 bins in the range [0,256].
          Configuration() {}
          /// \brief A constructor takes a lower and upper bounds, and the bin size. The numbr of bins are computed.
@@ -100,35 +103,51 @@ class DIP_NO_EXPORT Histogram {
       /// dimension.
       ///
       /// `configuration` should have as many elements as tensor elements in `input`. If `configuration` has only
-      /// one element, it will be used for all histogram dimensions. The default configuration yields a histogram
-      /// with 256 bins per dimension, and limits [0,256].
+      /// one element, it will be used for all histogram dimensions.
       Histogram( Image const& input, Image const& mask, ConfigurationArray configuration ) {
          DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-         dip::uint ndims = input.TensorElements();
          DIP_START_STACK_TRACE
-            ArrayUseParameter( configuration, ndims, Configuration{} );
-            if( ndims == 1 ) {
-               ScalarImageHistogram( input, mask, configuration[ 0 ] );
-            } else {
-               TensorImageHistogram( input, mask, configuration );
-            }
+            Construct( input, mask, configuration );
          DIP_END_STACK_TRACE
       }
 
       /// \brief This version of the constructor is identical to the previous one, but with a single configuration
       /// parameter.
-      explicit Histogram( Image const& input, Image const& mask = {}, Configuration configuration = {} ) {
+      explicit Histogram( Image const& input, Image const& mask, Configuration configuration ) {
          DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-         dip::uint ndims = input.TensorElements();
          DIP_START_STACK_TRACE
-            if( ndims == 1 ) {
-               ScalarImageHistogram( input, mask, configuration );
-            } else {
-               ConfigurationArray newConfig( ndims, configuration );
-               TensorImageHistogram( input, mask, newConfig );
-            }
+            Construct( input, mask, configuration );
+         DIP_END_STACK_TRACE
+      }
+
+      /// \brief This version of the constructor is identical to the previous one, but with default configuration
+      /// parameters. The histogram parameters will depend on the image's data type:
+      ///  - For 8-bit images, the histogram always has 256 bins, one for each possible input value.
+      ///  - For other integer-valued images, the histogram has up to 256 bins, stretching from the lowest value
+      ///    in the image to the highest, and with bin size a power of two. This is the simplest way of correctly
+      ///    handling data from 10-bit, 12-bit and 16-bit sensors that can put data in the lower or the upper bits
+      ///    of the 16-bit words, and will handle other integer data correctly as well.
+      ///  - For floating-point images, the histogram always has 256 bins, stretching from the lowest value in the
+      ///    image to the highest.
+      explicit Histogram( Image const& input, Image const& mask = {} ) {
+         DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+         Configuration configuration;
+         if(( input.DataType() == DT_UINT8 ) || ( input.DataType() == DT_SINT8 )) {
+            configuration = Configuration( 0.0, 256.0, 256 ); // nBins==256
+         } else if( input.DataType().IsInteger() ) {
+            configuration = Configuration( 0.0, 100.0, 0.0 ); // binSize==0.0 indicates to compute bins as an integer power of two.
+            configuration.lowerIsPercentile = true;
+            configuration.upperIsPercentile = true;
+         } else {
+            configuration = Configuration( 0.0, 100.0, 256 ); // nBins==256
+            configuration.lowerIsPercentile = true;
+            configuration.upperIsPercentile = true;
+         }
+         DIP_START_STACK_TRACE
+            Construct( input, mask, configuration );
          DIP_END_STACK_TRACE
       }
 
@@ -365,6 +384,25 @@ class DIP_NO_EXPORT Histogram {
 
       DIP_EXPORT void ScalarImageHistogram( Image const& input, Image const& mask, Configuration& configuration );
       DIP_EXPORT void TensorImageHistogram( Image const& input, Image const& mask, ConfigurationArray& configuration );
+
+      void Construct( Image const& input, Image const& mask, ConfigurationArray configuration ) {
+         dip::uint ndims = input.TensorElements();
+         ArrayUseParameter( configuration, ndims, Configuration{} );
+         if( ndims == 1 ) {
+            ScalarImageHistogram( input, mask, configuration[ 0 ] );
+         } else {
+            TensorImageHistogram( input, mask, configuration );
+         }
+      }
+      void Construct( Image const& input, Image const& mask, Configuration configuration ) {
+         dip::uint ndims = input.TensorElements();
+         if( ndims == 1 ) {
+            ScalarImageHistogram( input, mask, configuration );
+         } else {
+            ConfigurationArray newConfig( ndims, configuration );
+            TensorImageHistogram( input, mask, newConfig );
+         }
+      }
 };
 
 /// \brief Determines a set of `nThresholds` thresholds using the Isodata algorithm (k-means clustering)

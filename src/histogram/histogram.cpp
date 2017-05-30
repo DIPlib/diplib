@@ -42,9 +42,11 @@ void CompleteConfiguration( Image const& input, Image const& mask, Histogram::Co
          configuration.nBins = 256;
       }
    }
+   bool hasNoBinSize = false;
    if( configuration.mode != Histogram::Configuration::Mode::COMPUTE_BINSIZE ) {
-      if( configuration.binSize <= 0 ) {
-         configuration.binSize = 1;
+      if( configuration.binSize <= 0.0 ) {
+         hasNoBinSize = true;
+         configuration.binSize = 1.0;
       }
    }
    if(( configuration.mode != Histogram::Configuration::Mode::COMPUTE_LOWER ) &&
@@ -52,7 +54,7 @@ void CompleteConfiguration( Image const& input, Image const& mask, Histogram::Co
       if( configuration.upperBound < configuration.lowerBound ) {
          std::swap( configuration.upperBound, configuration.lowerBound );
       } else if( configuration.upperBound == configuration.lowerBound ) {
-         configuration.upperBound += 1;
+         configuration.upperBound += 1.0;
       }
    }
    switch( configuration.mode ) {
@@ -61,8 +63,22 @@ void CompleteConfiguration( Image const& input, Image const& mask, Histogram::Co
          configuration.binSize = ( configuration.upperBound - configuration.lowerBound ) / static_cast< dfloat >( configuration.nBins );
          break;
       case Histogram::Configuration::Mode::COMPUTE_BINS:
-         configuration.nBins = static_cast< dip::uint >( std::round( configuration.upperBound - configuration.lowerBound ) / configuration.binSize );
-         configuration.binSize = ( configuration.upperBound - configuration.lowerBound ) / static_cast< dfloat >( configuration.nBins );
+         if( hasNoBinSize && input.DataType().IsInteger() ) {
+            // Find a suitable bin size that is power of 2:
+            dfloat range = configuration.upperBound - configuration.lowerBound; // an integer value...
+            configuration.binSize = std::pow( 2.0, std::ceil( std::log2( range / 256.0 )));
+            // Shift lower bound to be a multiple of the binSize:
+            configuration.lowerBound = std::floor( configuration.lowerBound / configuration.binSize ) * configuration.binSize;
+            // Update range in case we shifted lower bound:
+            range = configuration.upperBound - configuration.lowerBound;
+            // Find number of bins we need to use:
+            configuration.nBins = static_cast< dip::uint >( std::ceil( range / configuration.binSize ));
+            // Update upper bound so that it matches what the histogram class would compute:
+            configuration.upperBound = configuration.lowerBound + static_cast< dfloat >( configuration.nBins ) * configuration.binSize;
+         } else {
+            configuration.nBins = static_cast< dip::uint >( std::round( configuration.upperBound - configuration.lowerBound ) / configuration.binSize );
+            configuration.binSize = ( configuration.upperBound - configuration.lowerBound ) / static_cast< dfloat >( configuration.nBins );
+         }
          break;
       case Histogram::Configuration::Mode::COMPUTE_LOWER:
          configuration.lowerBound = configuration.upperBound - static_cast< dfloat >( configuration.nBins ) * configuration.binSize;
@@ -424,9 +440,9 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    dip::Histogram zeroH( zero );
    DOCTEST_CHECK( zeroH.Dimensionality() == 1 );
    DOCTEST_CHECK( zeroH.Bins() == 256 );
-   DOCTEST_CHECK( zeroH.BinSize() == 1.0 );
+   DOCTEST_CHECK( zeroH.BinSize() == 1.0 / 256.0 );
    DOCTEST_CHECK( zeroH.LowerBound() == 0.0 );
-   DOCTEST_CHECK( zeroH.UpperBound() == 256.0 );
+   DOCTEST_CHECK( zeroH.UpperBound() == 1.0 );
    DOCTEST_CHECK( zeroH.Count() == 1 );
    DOCTEST_CHECK( zeroH.At( 0 ) == 1 );
    DOCTEST_CHECK( zeroH.At( 1 ) == 0 );
