@@ -47,15 +47,10 @@ inline void CopyPixel( TPI const* in, TPI* out, dip::uint length, dip::sint inSt
 template< typename TPI >
 inline void CopyPixelWithInterpolation( TPI const* in, TPI* out, dip::uint length, dip::sint inStride,
                                         dip::sint outStride, dfloat fraction, dip::sint interpStride ) {
-   if( fraction > 0.0 ) {
-      for( dip::uint ii = 0; ii < length; ++ii ) {
-         *out = static_cast< TPI >( *in * ( 1 - fraction ) + *( in + interpStride ) * fraction );
-         in += inStride;
-         out += outStride;
-      }
-   } else {
-      // not just to avoid the extra computation, it especially avoids out-of-bounds indexing if in points at the last LUT element.
-      CopyPixel( in, out, length, inStride, outStride );
+   for( dip::uint ii = 0; ii < length; ++ii ) {
+      *out = static_cast< TPI >( *in * ( 1 - fraction ) + *( in + interpStride ) * fraction );
+      in += inStride;
+      out += outStride;
    }
 }
 
@@ -141,21 +136,48 @@ class dip__DirectLUT_Float : public Framework::ScanLineFilter {
                      break;
                }
             } else {
-               dip::uint index = clamp_cast< dip::uint >( *in );
-               dfloat fraction = *in - static_cast< dfloat >( index );
-               CopyPixelWithInterpolation( values + static_cast< dip::sint >( index ) * valuesStride, out,
-                                           tensorLength, valuesTensorStride, outTensorStride, fraction, valuesStride );
+               switch( interpolation_ ) {
+                  case LookupTable::InterpolationMode::LINEAR: {
+                     dip::uint index = clamp_cast< dip::uint >( *in );
+                     dfloat fraction = *in - static_cast< dfloat >( index );
+                     if( fraction == 0.0 ) {
+                        // not just to avoid the extra computation, it especially avoids out-of-bounds indexing if in points at the last LUT element.
+                        CopyPixel( values + static_cast< dip::sint >( index ) * valuesStride, out, tensorLength,
+                                   valuesTensorStride, outTensorStride );
+                     } else {
+                        CopyPixelWithInterpolation( values + static_cast< dip::sint >( index ) * valuesStride,
+                                                    out, tensorLength, valuesTensorStride, outTensorStride,
+                                                    fraction, valuesStride );
+                     }
+                     break;
+                  }
+                  case LookupTable::InterpolationMode::NEAREST_NEIGHBOR: {
+                     dip::uint index = clamp_cast< dip::uint >( std::round( *in ));
+                     CopyPixel( values + static_cast< dip::sint >( index ) * valuesStride, out, tensorLength,
+                                valuesTensorStride, outTensorStride );
+                     break;
+                  }
+                  case LookupTable::InterpolationMode::ZERO_ORDER_HOLD: {
+                     dip::uint index = clamp_cast< dip::uint >( *in );
+                     CopyPixel( values + static_cast< dip::sint >( index ) * valuesStride, out, tensorLength,
+                                valuesTensorStride, outTensorStride );
+                     break;
+                  }
+               }
             }
             in += inStride;
             out += outStride;
          }
       }
-      dip__DirectLUT_Float( Image const& values, LookupTable::OutOfBoundsMode outOfBoundsMode, dfloat outOfBoundsValue )
-            : values_( values ), outOfBoundsMode_( outOfBoundsMode ), outOfBoundsValue_( clamp_cast< TPI >( outOfBoundsValue )) {}
+      dip__DirectLUT_Float( Image const& values, LookupTable::OutOfBoundsMode outOfBoundsMode,
+                            dfloat outOfBoundsValue, LookupTable::InterpolationMode interpolation )
+            : values_( values ), outOfBoundsMode_( outOfBoundsMode ),
+              outOfBoundsValue_( clamp_cast< TPI >( outOfBoundsValue )), interpolation_( interpolation ) {}
    private:
       Image const& values_;
       LookupTable::OutOfBoundsMode outOfBoundsMode_;
       TPI outOfBoundsValue_;
+      LookupTable::InterpolationMode interpolation_;
 };
 
 template< typename TPI >
@@ -192,29 +214,52 @@ class dip__IndexedLUT_Float : public Framework::ScanLineFilter {
                      break;
                }
             } else {
-               auto upper = std::upper_bound( index_.begin(), index_.end(), *in );
-               dip::uint index = static_cast< dip::uint >( std::distance( index_.begin(), upper )) - 1;
+               auto upper = std::upper_bound( index_.begin(), index_.end(), *in ); // index_[upper] > *in
+               dip::uint index = static_cast< dip::uint >( std::distance( index_.begin(), upper )) - 1; // index_[index] <= *in
                // Because *in >= index_.front(), we can always subtract 1 from the distance.
-               dfloat fraction = *in - index_[ index ];
-               CopyPixelWithInterpolation( values + static_cast< dip::sint >( index ) * valuesStride, out,
-                                           tensorLength, valuesTensorStride, outTensorStride, fraction, valuesStride);
+               switch( interpolation_ ) {
+                  case LookupTable::InterpolationMode::LINEAR:
+                     if( *in == index_[ index ] ) {
+                        CopyPixel( values + static_cast< dip::sint >( index ) * valuesStride, out, tensorLength,
+                                   valuesTensorStride, outTensorStride );
+                     } else {
+                        dfloat fraction = ( *in - index_[ index ] ) / ( index_[ index + 1 ] - index_[ index ] );
+                        CopyPixelWithInterpolation( values + static_cast< dip::sint >( index ) * valuesStride,
+                                                    out, tensorLength, valuesTensorStride, outTensorStride,
+                                                    fraction, valuesStride );
+                     }
+                     break;
+                  case LookupTable::InterpolationMode::NEAREST_NEIGHBOR:
+                     if(( *in != index_[ index ] ) && (( *in - index_[ index ] ) > ( index_[ index + 1 ] - *in ))) {
+                        // (the `!=` test above is to avoid out-of-bounds indexing with `index+1`)
+                        ++index;
+                     }
+                     // fall through on purpose!
+                  case LookupTable::InterpolationMode::ZERO_ORDER_HOLD:
+                     CopyPixel( values + static_cast< dip::sint >( index ) * valuesStride, out, tensorLength,
+                                valuesTensorStride, outTensorStride );
+                     break;
+               }
             }
             in += inStride;
             out += outStride;
          }
       }
-      dip__IndexedLUT_Float( Image const& values, FloatArray const& index, LookupTable::OutOfBoundsMode outOfBoundsMode, dfloat outOfBoundsValue )
-            : values_( values ), index_( index ), outOfBoundsMode_( outOfBoundsMode ), outOfBoundsValue_( clamp_cast< TPI >( outOfBoundsValue )) {}
+      dip__IndexedLUT_Float( Image const& values, FloatArray const& index, LookupTable::OutOfBoundsMode outOfBoundsMode,
+                             dfloat outOfBoundsValue, LookupTable::InterpolationMode interpolation )
+            : values_( values ), index_( index ), outOfBoundsMode_( outOfBoundsMode ),
+              outOfBoundsValue_( clamp_cast< TPI >( outOfBoundsValue )), interpolation_( interpolation ) {}
    private:
       Image const& values_;
       FloatArray const& index_;
       LookupTable::OutOfBoundsMode outOfBoundsMode_;
       TPI outOfBoundsValue_;
+      LookupTable::InterpolationMode interpolation_;
 };
 
 }
 
-void LookupTable::Apply( Image const& in, Image& out ) const {
+void LookupTable::Apply( Image const& in, Image& out, InterpolationMode interpolation ) const {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
@@ -222,14 +267,14 @@ void LookupTable::Apply( Image const& in, Image& out ) const {
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    dip::DataType inBufType;
    if( HasIndex() ) {
-      DIP_OVL_NEW_REAL( scanLineFilter, dip__IndexedLUT_Float, ( values_, index_, outOfBoundsMode_, outOfBoundsValue_), values_.DataType() );
+      DIP_OVL_NEW_REAL( scanLineFilter, dip__IndexedLUT_Float, ( values_, index_, outOfBoundsMode_, outOfBoundsValue_, interpolation ), values_.DataType() );
       inBufType = DT_DFLOAT;
    } else {
       if( in.DataType().IsUnsigned() ) {
-         DIP_OVL_NEW_REAL( scanLineFilter, dip__DirectLUT_Integer, ( values_, outOfBoundsMode_, outOfBoundsValue_), values_.DataType() );
+         DIP_OVL_NEW_REAL( scanLineFilter, dip__DirectLUT_Integer, ( values_, outOfBoundsMode_, outOfBoundsValue_ ), values_.DataType() );
          inBufType = DT_UINT32;
       } else {
-         DIP_OVL_NEW_REAL( scanLineFilter, dip__DirectLUT_Float, ( values_, outOfBoundsMode_, outOfBoundsValue_), values_.DataType() );
+         DIP_OVL_NEW_REAL( scanLineFilter, dip__DirectLUT_Float, ( values_, outOfBoundsMode_, outOfBoundsValue_, interpolation ), values_.DataType() );
          inBufType = DT_DFLOAT;
       }
    }
@@ -240,12 +285,12 @@ void LookupTable::Apply( Image const& in, Image& out ) const {
    out.SetColorSpace( values_.ColorSpace() );
 }
 
-Image::Pixel LookupTable::Apply( dfloat value ) const {
+Image::Pixel LookupTable::Apply( dfloat value, InterpolationMode interpolation ) const {
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    if( HasIndex() ) {
-      DIP_OVL_NEW_REAL( scanLineFilter, dip__IndexedLUT_Float, ( values_, index_, outOfBoundsMode_, outOfBoundsValue_), values_.DataType() );
+      DIP_OVL_NEW_REAL( scanLineFilter, dip__IndexedLUT_Float, ( values_, index_, outOfBoundsMode_, outOfBoundsValue_, interpolation ), values_.DataType() );
    } else {
-      DIP_OVL_NEW_REAL( scanLineFilter, dip__DirectLUT_Float, ( values_, outOfBoundsMode_, outOfBoundsValue_), values_.DataType() );
+      DIP_OVL_NEW_REAL( scanLineFilter, dip__DirectLUT_Float, ( values_, outOfBoundsMode_, outOfBoundsValue_, interpolation ), values_.DataType() );
    }
    Image::Pixel out( values_.DataType(), values_.TensorElements() );
    out.ReshapeTensor( values_.Tensor() );

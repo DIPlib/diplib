@@ -47,8 +47,8 @@ namespace dip {
 ///
 /// If `HasIndex` is false, the value of each input pixel is directly interpreted as a location in the LUT.
 /// For a floating-point input image, interpolation is used to find the corresponding LUT value. For an
-/// integer-valued input image, the pixel value is directly considered the index into the LUT.
-/// Note that, in these cases, the first LUT value is at index 0.
+/// integer-valued input image, the pixel value is directly considered the index into the LUT (as interpolation
+/// makes no sense here). Note that the first LUT value is at index 0.
 ///
 /// The LUT can contain tensor values, yielding a tensor output image. This is useful to produce e.g. an
 /// RGB image from an index representation, as used in GIF files and some TIFF files. It is also useful,
@@ -67,6 +67,18 @@ namespace dip {
 /// is available for a similar result.
 class DIP_NO_EXPORT LookupTable{
    public:
+
+      enum class OutOfBoundsMode {
+            USE_OUT_OF_BOUNDS_VALUE,
+            KEEP_INPUT_VALUE,
+            CLAMP_TO_RANGE
+      };
+
+      enum class InterpolationMode {
+            LINEAR,
+            NEAREST_NEIGHBOR,
+            ZERO_ORDER_HOLD
+      };
 
       /// \brief The look-up table values are provided through an image. Optionally, provide the index.
       ///
@@ -110,22 +122,37 @@ class DIP_NO_EXPORT LookupTable{
          outOfBoundsMode_ = OutOfBoundsMode::CLAMP_TO_RANGE;
       }
 
+      DIP_EXPORT void Apply( Image const& in, Image& out, InterpolationMode interpolation = InterpolationMode::LINEAR ) const;
+
       /// \brief Apply the LUT to a scalar, real-valued image.
-      DIP_EXPORT void Apply( Image const& in, Image& out ) const;
-      Image Apply( Image const& in ) const {
+      ///
+      /// See the description for `dip::LookupTable` for how this function works. `interpolation` can be one of:
+      ///  - `"linear"`: the default, uses linear interpolation.
+      ///  - `"nearest"`: uses nearest neighbor interpolation (i.e. rounds the input value to the nearest index).
+      ///  - `"zero order"`: uses zero order hold interpolation (i.e. uses the `floor` of the input value).
+      void Apply( Image const& in, Image& out, String const& interpolation ) const {
+         InterpolationMode mode;
+         DIP_START_STACK_TRACE
+            mode = DecodeInterpolationMode( interpolation );
+         DIP_END_STACK_TRACE
+         Apply( in, out, mode );
+      }
+      Image Apply( Image const& in, String const& interpolation = "linear"  ) const {
          Image out;
-         Apply( in, out );
+         Apply( in, out, interpolation );
          return out;
       }
 
-      /// \brief Apply the LUT to a scalar value.
-      DIP_EXPORT Image::Pixel Apply( dfloat value ) const;
+      DIP_EXPORT Image::Pixel Apply( dfloat value, InterpolationMode interpolation = InterpolationMode::LINEAR ) const;
 
-      enum class OutOfBoundsMode {
-            USE_OUT_OF_BOUNDS_VALUE,
-            KEEP_INPUT_VALUE,
-            CLAMP_TO_RANGE
-      };
+      /// \brief Apply the LUT to a scalar value.
+      Image::Pixel Apply( dfloat value, String const& interpolation ) const {
+         InterpolationMode mode;
+         DIP_START_STACK_TRACE
+            mode = DecodeInterpolationMode( interpolation );
+         DIP_END_STACK_TRACE
+         return Apply( value, mode );
+      }
 
    private:
       Image values_;       // The table containing the output values. 1D image, any type, possibly tensor-valued.
@@ -136,6 +163,18 @@ class DIP_NO_EXPORT LookupTable{
 
       OutOfBoundsMode outOfBoundsMode_ = OutOfBoundsMode::CLAMP_TO_RANGE;
       dfloat outOfBoundsValue_;  // Used when outOfBoundsMode_==OutOfBoundsMode::USE_OUT_OF_BOUNDS_VALUE
+
+      static InterpolationMode DecodeInterpolationMode( String const& interpolation ) {
+         if( interpolation == "linear" ) {
+            return InterpolationMode::LINEAR;
+         } else if( interpolation == "nearest" ) {
+            return InterpolationMode::NEAREST_NEIGHBOR;
+         } else if( interpolation == "zero order" ) {
+            return InterpolationMode::ZERO_ORDER_HOLD;
+         } else {
+            DIP_THROW( E::INVALID_FLAG );
+         }
+      }
 };
 
 // Original LUT functions:
