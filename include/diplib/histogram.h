@@ -405,34 +405,84 @@ class DIP_NO_EXPORT Histogram {
       }
 };
 
-/// \brief Determines a set of `nThresholds` thresholds using the Isodata algorithm (k-means clustering)
-/// on the histogram `in`.
+/// \brief Determines a set of `nThresholds` thresholds using the Isodata algorithm (k-means clustering),
+/// and the image's histogram `in`.
 ///
-/// The Isodata algorithm was proposed by Ridler and Calvard (1978).
+/// The algorithm uses k-means clustering (with k set to `nThresholds + 1`) to separate the histogram into
+/// compact, similarly-weighted segments. This means that, for each class, the histogram should have a clearly
+/// visible mode, and all modes should be similarly sized. A class that has many fewer pixels than another class
+/// will likely not be segmented correctly.
+///
 /// The implementation here uses initial seeds distributed evenly over the histogram range, rather than
 /// the more common random seeds. This fixed initialization makes this a deterministic algorithm.
+///
+/// Note that the original Isodata algorithm (referenced below) does not use the image histogram, but instead
+/// works directly on the image. 2-means clustering on the histogram yields an identical result to the original
+/// Isodata algorithm, but is much more efficient. The implementation here generalizes to multiple thresholds
+/// becuase k-means clustering allows any number of thresholds.
+///
+/// Literature: T.W. Ridler, and S. Calvard, "Picture Thresholding Using an Iterative Selection Method",
+/// IEEE Transactions on Systems, Man, and Cybernetics 8(8):630-632, 1978.
+/// (1978).
 DIP_EXPORT FloatArray IsodataThreshold(
       Histogram const& in,
       dip::uint nThresholds = 1
 );
 
+/// \brief Determines a threshold using the maximal inter-class variance method by Otsu, and the image's histogram `in`.
+///
+/// This method assumes a bimodal distribution. It finds the threshold that maximizes the inter-class variance, which
+/// is equivalent to minimizing the inter-class variances. That is, the two parts of the histogram generated when
+/// splitting at the threshold value are as compact as possible.
+///
+/// Literature: N. Otsu, "A threshold selection method from gray-level histograms", IEEE Transactions on Systems,
+/// Man, and Cybernetics 9(1):62-66, 1979.
 DIP_EXPORT dfloat OtsuThreshold(
       Histogram const& in
 );
 
+/// \brief Determines a threshold using the minimal error method method, and the image's histogram `in`.
+///
+/// This method assumes a bimodal distribution, composed of two Gaussian distributions with (potentially) different
+/// variances, and finds the threshold that minimizes the classification error. The algorithm, however, doesn't try
+/// to fit two Gaussians to the data, instead uses an error measure that depends on the second order central moment
+/// for the two regions of the histogram obtained by dividing it at a given threshold value. The threshold with the
+/// lowest error measure is returned.
+///
+/// Literature: J. Kittler, and J. Illingworth, "Minimum error thresholding", Pattern Recognition 19(1):41-47, 1986.
 DIP_EXPORT dfloat MinimumErrorThreshold(
       Histogram const& in
 );
 
+/// \brief Determines a threshold using the using the chord method (a.k.a. skewed bi-modality, maximum distance
+/// to triangle), and the image's histogram `in`.
+///
+/// This method finds the point along the intensity distribution that is furthest from the line between the peak and
+/// either of the histogram ends. This typically coincides or is close to the inflection point of a unimodal distribution
+/// where the background forms the large peak, and the foreground contributes a small amount to the histogram and is
+/// spread out. For example, small fluorescent dots typically yield such a distribution, as does any thin line drawing.
+///
+/// Literature: G.W. Zack, W.E. Rogers, and S.A. Latt, "Automatic measurement of sister chromatid exchange frequency",
+/// Journal of Histochemistry and Cytochemistry 25(7):741-753, 1977.
+///
+/// Literature: P.L. Rosin, "Unimodal thresholding", Pattern Recognition 34(11):2083-2096, 2001.
 DIP_EXPORT dfloat TriangleThreshold(
       Histogram const& in
 );
 
+/// \brief Determines a threshold using the unimodal background-symmetry method, and the image's histogram `in`.
+///
+/// The method finds the peak in the intensity distribution, characterizes its half-width at half-maximum, then sets
+/// the threshold at `distance` times the half-width.
+///
+/// This method assumes a unimodal distribution, where the background forms the large peak, and the foreground
+/// contributes a small amount to the histogram and is spread out. For example, small fluorescent dots typically
+/// yield such a distribution, as does any thin line drawing. The background peak can be at either end of the
+/// histogram.
 DIP_EXPORT dfloat BackgroundThreshold(
       Histogram const& in,
       dfloat distance = 2.0
 );
-
 
 
 /// \}

@@ -20,6 +20,8 @@
 
 #include "diplib.h"
 #include "diplib/histogram.h"
+#include "diplib/math.h"
+#include "diplib/chain_code.h" // for VertexFloat, TriangleHeight, etc.
 
 
 namespace dip {
@@ -45,11 +47,11 @@ FloatArray IsodataThreshold(
       Histogram const& in,
       dip::uint nThresholds
 ) {
+   DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image const& hist = in.GetImage();
    DIP_ASSERT( hist.IsForged() );
    DIP_ASSERT( hist.DataType() == DT_UINT32 );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
-   DIP_THROW_IF( hist.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    dip::uint nBins = hist.Size( 0 );
    FloatArray thresholds( nThresholds );
    for( dip::uint ii = 0; ii < nThresholds; ++ii ) {
@@ -95,29 +97,28 @@ FloatArray IsodataThreshold(
 dfloat OtsuThreshold(
       Histogram const& in
 ) {
+   DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image const& hist = in.GetImage();
    DIP_ASSERT( hist.IsForged());
    DIP_ASSERT( hist.DataType() == DT_UINT32 );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
-   DIP_THROW_IF( hist.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    dip::uint nBins = hist.Size( 0 );
    FloatArray bins = in.BinCenters();
-   auto histIt = ImageIterator< uint32 >( hist );
-   auto histEnd = ImageIterator< uint32 >();
-   auto binIt = bins.begin();
+   uint32 const* data = static_cast< uint32 const* >( hist.Origin() );
+   dfloat const* binPtr = bins.data();
    // w1(ii), w2(ii) are the probabilities of each of the halves of the histogram thresholded between bins(ii) and bins(ii+1)
    dfloat w1 = 0;
-   dfloat w2 = std::accumulate( histIt, histEnd, 0.0 );
+   dfloat w2 = std::accumulate( data, data + nBins, 0.0 );
    // m1(ii), m2(ii) are the corresponding first order moments
    dfloat m1 = 0;
-   dfloat m2 = std::inner_product( histIt, histEnd, binIt, 0.0 );
+   dfloat m2 = std::inner_product( data, data + nBins, binPtr, 0.0 );
    // Here we accumulate the max.
    dfloat ssMax = -1e6;
    dip::uint maxInd = 0;
    for( dip::uint ii = 0; ii < nBins - 1; ++ii ) {
-      w1 += *histIt;
-      w2 -= *histIt;
-      dfloat tmp = *histIt * *binIt;
+      w1 += *data;
+      w2 -= *data;
+      dfloat tmp = *data * *binPtr;
       m1 += tmp;
       m2 -= tmp;
       // c1(ii), c2(ii) are the centers of gravity
@@ -130,8 +131,8 @@ dfloat OtsuThreshold(
          ssMax = ss;
          maxInd = ii;
       }
-      ++histIt;
-      ++binIt;
+      ++data;
+      ++binPtr;
    }
    DIP_THROW_IF( ssMax == -1e6, "Could not find a maximum in Otsu's measure for inter-class variance" );
    return ( bins[ maxInd ] + bins[ maxInd + 1 ] ) / 2.0;
@@ -140,28 +141,27 @@ dfloat OtsuThreshold(
 dfloat MinimumErrorThreshold(
       Histogram const& in
 ) {
+   DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image const& hist = in.GetImage();
    DIP_ASSERT( hist.IsForged());
    DIP_ASSERT( hist.DataType() == DT_UINT32 );
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
-   DIP_THROW_IF( hist.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    dip::uint nBins = hist.Size( 0 );
    FloatArray bins = in.BinCenters();
-   auto histIt = ImageIterator< uint32 >( hist );
-   auto histEnd = ImageIterator< uint32 >();
-   auto binIt = bins.begin();
+   uint32 const* data = static_cast< uint32* >( hist.Origin() );
+   dfloat const* binPtr = bins.data();
    // w1(ii), w2(ii) are the probabilities of each of the halves of the histogram thresholded between bins(ii) and bins(ii+1)
    dfloat w1 = 0;
-   dfloat w2 = std::accumulate( histIt, histEnd, 0.0 );
+   dfloat w2 = std::accumulate( data, data + nBins, 0.0 );
    // m1(ii), m2(ii) are the corresponding first order moments
    dfloat m1 = 0;
-   dfloat m2 = std::inner_product( histIt, histEnd, binIt, 0.0 );
+   dfloat m2 = std::inner_product( data, data + nBins, binPtr, 0.0 );
    // Here we accumulate the error measure.
    FloatArray J( nBins - 1 );
    for( dip::uint ii = 0; ii < nBins - 1; ++ii ) {
-      w1 += *histIt;
-      w2 -= *histIt;
-      dfloat tmp = *histIt * *binIt;
+      w1 += *data;
+      w2 -= *data;
+      dfloat tmp = *data * *binPtr;
       m1 += tmp;
       m2 -= tmp;
       // c1(ii), c2(ii) are the centers of gravity
@@ -169,7 +169,7 @@ dfloat MinimumErrorThreshold(
       dfloat c2 = m2 / w2;
       // v1(ii), v2(ii) are the corresponding second order central moments
       dfloat v1 = 0;
-      auto it = ImageIterator< uint32 >( hist );
+      uint32 const* it = static_cast< uint32* >( hist.Origin() );
       for( dip::uint jj = 0; jj <= ii; ++jj ) {
          dfloat d = bins[ jj ] - c1;
          v1 += *it * d * d;
@@ -185,8 +185,8 @@ dfloat MinimumErrorThreshold(
       v2 /= w2;
       // J(ii) is the measure for error
       J[ ii ] = 1.0 + w1 * std::log( v1 ) + w2 * std::log( v2 ) - 2.0 * ( w1 * std::log( w1 ) + w2 * std::log( w2 ));
-      ++histIt;
-      ++binIt;
+      ++data;
+      ++binPtr;
    }
    // Now we need to find the minimum in J, but ignore the values at the edges, if they are lowest.
    dip::uint begin = 0;
@@ -215,16 +215,91 @@ dfloat MinimumErrorThreshold(
 dfloat TriangleThreshold(
       Histogram const& in
 ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO
+   DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+   Histogram smoothIn = in.Smooth( 4 );
+   Image const& hist = smoothIn.GetImage();
+   DIP_ASSERT( hist.IsForged());
+   DIP_ASSERT( hist.DataType() == DT_UINT32 );
+   DIP_ASSERT( hist.Stride( 0 ) == 1 );
+   dip::uint nBins = hist.Size( 0 );
+   uint32 const* data = static_cast< uint32 const* >( hist.Origin() );
+   // Find the peak
+   UnsignedArray maxCoords = MaximumPixel( hist );
+   dip::uint maxElement = maxCoords[ 0 ];
+   uint32 maxValue = data[ maxElement ];
+   // Define: start, peak, stop positions in histogram
+   VertexFloat left_bin{ 0.0, static_cast< dfloat >( data[ 0 ] ) };
+   VertexFloat right_bin{ static_cast< dfloat >( nBins - 1 ), static_cast< dfloat >( data[ nBins - 1 ] ) };
+   VertexFloat top_bin{ static_cast< dfloat >( maxElement ), static_cast< dfloat >( maxValue ) };
+   // Find the location of the maximum distance to the triangle
+   dip::uint bin = 0;
+   dfloat maxDistance = 0;
+   for( dip::uint ii = 1; ii < maxElement; ++ii ) {
+      VertexFloat pos{ static_cast< dfloat >( ii ), static_cast< dfloat >( data[ ii ] ) };
+      dfloat distance = TriangleHeight( left_bin, top_bin, pos );
+      if( distance > maxDistance ) {
+         maxDistance = distance;
+         bin = ii;
+      }
+   }
+   for( dip::uint ii = maxElement + 1; ii < nBins - 1; ++ii ) {
+      VertexFloat pos{ static_cast< dfloat >( ii ), static_cast< dfloat >( data[ ii ] ) };
+      dfloat distance = TriangleHeight( right_bin, top_bin, pos );
+      if( distance > maxDistance ) {
+         maxDistance = distance;
+         bin = ii;
+      }
+   }
+   return smoothIn.BinCenters()[ bin ];
 }
 
 dfloat BackgroundThreshold(
       Histogram const& in,
       dfloat distance
 ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO
+   DIP_THROW_IF( distance <= 0, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( in.Dimensionality() != 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+   Histogram smoothIn = in.Smooth( 4 );
+   Image const& hist = smoothIn.GetImage();
+   DIP_ASSERT( hist.IsForged());
+   DIP_ASSERT( hist.DataType() == DT_UINT32 );
+   DIP_ASSERT( hist.Stride( 0 ) == 1 );
+   dip::uint nBins = hist.Size( 0 );
+   uint32 const* data = static_cast< uint32 const* >( hist.Origin() );
+   // Find the peak
+   UnsignedArray maxCoords = MaximumPixel( hist );
+   dip::uint maxElement = maxCoords[ 0 ];
+   uint32 maxValue = data[ maxElement ];
+   dfloat threshold = smoothIn.BinCenters()[ maxElement ];
+   // Is the peak on the left or right side of the histogram?
+   bool rightPeak = maxElement > ( nBins / 2 );
+   // Find the 50% height & the threshold
+   if( rightPeak ) {
+      dip::uint sigma = nBins - 1;
+      for( ; sigma >= maxElement; --sigma ) {
+         if( data[ sigma ] > maxValue / 2 ) {
+            break;
+         }
+      }
+      sigma -= maxElement;
+      if( sigma == 0 ) {
+         sigma = 1;
+      }
+      threshold -= static_cast< dfloat >( sigma ) * distance;
+   } else {
+      dip::uint sigma = 0;
+      for( ; sigma <= maxElement; ++sigma ) {
+         if( data[ sigma ] > maxValue / 2 ) {
+            break;
+         }
+      }
+      sigma = maxElement - sigma;
+      if( sigma == 0 ) {
+         sigma = 1;
+      }
+      threshold += static_cast< dfloat >( sigma ) * distance;
+   }
+   return threshold;
 }
 
 } // namespace dip
