@@ -23,15 +23,19 @@
 #include "diplib/histogram.h"
 #include "diplib/math.h"
 #include "diplib/morphology.h"
+#include "diplib/framework.h"
+#include "diplib/overload.h"
+#include "diplib/lookup_table.h"
+#include "diplib/generation.h"
 
 
 namespace dip {
 
 
 void KMeansClustering(
-      Image const& in,
-      Image& out,
-      dip::uint nClusters
+      Image const& /*in*/,
+      Image& /*out*/,
+      dip::uint /*nClusters*/
 ) {
    DIP_THROW( E::NOT_IMPLEMENTED );
    // TODO
@@ -48,11 +52,7 @@ FloatArray IsodataThreshold(
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    // TODO: if the input image is not scalar, we can apply KMeansClustering to the histogram, then do an inverse mapping (not yet implemented).
    DIP_START_STACK_TRACE
-      Histogram::Configuration conf( 0.0, 100.0, 200 );
-      conf.lowerIsPercentile = true;
-      conf.upperIsPercentile = true;
-      Histogram hist( in, mask, conf );
-      FloatArray thresholds = IsodataThreshold( hist, nThresholds );
+      FloatArray thresholds = IsodataThreshold( Histogram( in, mask ), nThresholds );
       if( nThresholds == 1 ) {
          FixedThreshold( in, out, thresholds[ 0 ] );
       } else {
@@ -68,11 +68,7 @@ dfloat OtsuThreshold(
       Image& out
 ) {
    DIP_START_STACK_TRACE
-      Histogram::Configuration conf( 0.0, 100.0, 200 );
-      conf.lowerIsPercentile = true;
-      conf.upperIsPercentile = true;
-      Histogram hist( in, mask, conf );
-      dfloat threshold = OtsuThreshold( hist );
+      dfloat threshold = OtsuThreshold( Histogram( in, mask ) );
       FixedThreshold( in, out, threshold );
       return threshold;
    DIP_END_STACK_TRACE
@@ -84,11 +80,7 @@ dfloat MinimumErrorThreshold(
       Image& out
 ) {
    DIP_START_STACK_TRACE
-      Histogram::Configuration conf( 0.0, 100.0, 200 );
-      conf.lowerIsPercentile = true;
-      conf.upperIsPercentile = true;
-      Histogram hist( in, mask, conf );
-      dfloat threshold = MinimumErrorThreshold( hist );
+      dfloat threshold = MinimumErrorThreshold( Histogram( in, mask ) );
       FixedThreshold( in, out, threshold );
       return threshold;
    DIP_END_STACK_TRACE
@@ -99,8 +91,11 @@ dfloat TriangleThreshold(
       Image const& mask,
       Image& out
 ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO
+   DIP_START_STACK_TRACE
+      dfloat threshold = TriangleThreshold( Histogram( in, mask ) );
+      FixedThreshold( in, out, threshold );
+      return threshold;
+   DIP_END_STACK_TRACE
 }
 
 dfloat BackgroundThreshold(
@@ -109,8 +104,11 @@ dfloat BackgroundThreshold(
       Image& out,
       dfloat distance
 ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO
+   DIP_START_STACK_TRACE
+      dfloat threshold = BackgroundThreshold( Histogram( in, mask ), distance );
+      FixedThreshold( in, out, threshold );
+      return threshold;
+   DIP_END_STACK_TRACE
 }
 
 dfloat VolumeThreshold(
@@ -152,6 +150,35 @@ void FixedThreshold(
    DIP_END_STACK_TRACE
 }
 
+
+namespace {
+
+template< typename TPI >
+class RangeThresholdScanLineFilter : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint const inStride = params.inBuffer[ 0 ].stride;
+         dip::sint const outStride = params.outBuffer[ 0 ].stride;
+         dip::uint const bufferLength = params.bufferLength;
+         for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+            *out = (( *in >= lowerBound_ ) && ( *in <= upperBound_ )) ? foreground_ : background_;
+            in += inStride;
+            out += outStride;
+         }
+      }
+      RangeThresholdScanLineFilter( dfloat lowerBound, dfloat upperBound, dfloat foreground, dfloat background ) :
+            lowerBound_( clamp_cast< TPI >( lowerBound )),
+            upperBound_( clamp_cast< TPI >( upperBound )),
+            foreground_( clamp_cast< TPI >( foreground )),
+            background_( clamp_cast< TPI >( background )) {}
+   private:
+      TPI lowerBound_, upperBound_, foreground_, background_;
+};
+
+} // namespace
+
 void RangeThreshold(
       Image const& in,
       Image& out,
@@ -161,8 +188,27 @@ void RangeThreshold(
       dfloat background,
       String const& output
 ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO
+   if( output == "binary" ) {
+      DIP_START_STACK_TRACE
+         if( foreground == 0.0 ) {
+            // out = in <= lowerBound || in >= upperBound
+            OutOfRange( in, Image{ lowerBound, in.DataType() }, Image{ upperBound, in.DataType() }, out );
+         } else {
+            // out = in >= lowerBound && in <= upperBound
+            InRange( in, Image{ lowerBound, in.DataType() }, Image{ upperBound, in.DataType() }, out );
+         }
+      DIP_END_STACK_TRACE
+   } else {
+      // out = in >= lowerBound && in <= upperBound ? foreground : background
+      DataType dataType = in.DataType();
+      DIP_THROW_IF( !dataType.IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+      std::unique_ptr< Framework::ScanLineFilter > lineFilter;
+      DIP_OVL_NEW_REAL( lineFilter, RangeThresholdScanLineFilter, ( lowerBound, upperBound, foreground, background ), dataType );
+      DIP_START_STACK_TRACE
+         ImageRefArray outar{ out };
+         Framework::Scan( { in }, outar, { DT_DFLOAT }, { dataType }, { dataType }, { 0 }, *lineFilter, Framework::Scan_TensorAsSpatialDim );
+      DIP_END_STACK_TRACE
+   }
 }
 
 void HysteresisThreshold(
@@ -183,8 +229,20 @@ void MultipleThresholds(
       Image& out,
       FloatArray const& thresholds
 ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO
+   dip::uint nLabels = thresholds.size() + 1;
+   DataType dataType = DT_UINT8;
+   if( nLabels > std::numeric_limits< uint16 >::max() ) {
+      dataType = DT_UINT32;
+   } else if( nLabels > std::numeric_limits< uint8 >::max() ) {
+      dataType = DT_UINT16;
+   }
+   Image values( { nLabels }, 1, dataType );
+   FillRamp( values, 0 );
+   LookupTable lut( values, thresholds );
+   lut.SetOutOfBoundsValue( 0 );
+   DIP_START_STACK_TRACE
+      lut.Apply( in, out, LookupTable::InterpolationMode::ZERO_ORDER_HOLD );
+   DIP_END_STACK_TRACE
 }
 
 } // namespace dip

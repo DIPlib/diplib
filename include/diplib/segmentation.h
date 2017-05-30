@@ -52,11 +52,7 @@ DIP_EXPORT void KMeansClustering( // TODO: return the cluster centers?
 
 
 /// \brief Thresholds the image `in` using `nThresholds` thresholds, determined using the Isodata algorithm
-/// (k-means clustering) on the histogram of `in`.
-///
-/// The Isodata algorithm was proposed by Ridler and Calvard (1978).
-/// The implementation here uses initial seeds distributed evenly over the histogram range, rather than
-/// the more common random seeds. This fixed initialization makes this a deterministic algorithm.
+/// (k-means clustering), and the histogram of `in`.
 ///
 /// Only those pixels in `mask` are used to determine the histogram on which the Isodata algorithm is applied,
 /// but the threshold is applied to the whole image. `in` must be scalar and real-valued.
@@ -64,6 +60,8 @@ DIP_EXPORT void KMeansClustering( // TODO: return the cluster centers?
 /// If `nThresholds` is 1, then `out` is a binary image. With more thresholds, the output image is labeled.
 ///
 /// The output array contains the thresholds used.
+///
+/// \see IsodataThreshold(Histogram const&,dip::uint) for more information on the algorithm used.
 DIP_EXPORT FloatArray IsodataThreshold(
       Image const& in,
       Image const& mask,
@@ -80,7 +78,14 @@ inline Image IsodataThreshold(
    return out;
 }
 
-// Thresholding using the maximal inter-class variance method by Otsu (1979).
+/// \brief Thresholds the image `in` using the maximal inter-class variance method by Otsu, and the histogram of `in`.
+///
+/// Only those pixels in `mask` are used to determine the histogram on which the threshold estimation algorithm
+/// is applied, but the threshold is applied to the whole image. `in` must be scalar and real-valued.
+///
+/// Returns the threshold value used.
+///
+/// \see OtsuThreshold(Histogram const&) for more information on the algorithm used.
 DIP_EXPORT dfloat OtsuThreshold(
       Image const& in,
       Image const& mask,
@@ -95,7 +100,14 @@ inline Image OtsuThreshold(
    return out;
 }
 
-// Thresholding using the minimal error method by Kittler and Illingworth (1986).
+/// \brief Thresholds the image `in` using the minimal error method by Kittler and Illingworth, and the histogram of `in`.
+///
+/// Only those pixels in `mask` are used to determine the histogram on which the threshold estimation algorithm
+/// is applied, but the threshold is applied to the whole image. `in` must be scalar and real-valued.
+///
+/// Returns the threshold value used.
+///
+/// \see MinimumErrorThreshold(Histogram const&) for more information on the algorithm used.
 DIP_EXPORT dfloat MinimumErrorThreshold(
       Image const& in,
       Image const& mask,
@@ -110,7 +122,15 @@ inline Image MinimumErrorThreshold(
    return out;
 }
 
-// Thresholding using the chord method (a.k.a. skewed bi-modality, maximum distance to triangle) by Zack, Rogers and Latt (1977).
+/// \brief Thresholds the image `in` using the chord method (a.k.a. skewed bi-modality, maximum distance to triangle),
+/// and the histogram of `in`.
+///
+/// Only those pixels in `mask` are used to determine the histogram on which the threshold estimation algorithm
+/// is applied, but the threshold is applied to the whole image. `in` must be scalar and real-valued.
+///
+/// Returns the threshold value used.
+///
+/// \see TriangleThreshold(Histogram const&) for more information on the algorithm used.
 DIP_EXPORT dfloat TriangleThreshold(
       Image const& in,
       Image const& mask,
@@ -125,7 +145,14 @@ inline Image TriangleThreshold(
    return out;
 }
 
-// Thresholding using unimodal background-symmetry method.
+/// \brief Thresholds the image `in` using the unimodal background-symmetry method, and the histogram of `in`.
+///
+/// Only those pixels in `mask` are used to determine the histogram on which the threshold estimation algorithm
+/// is applied, but the threshold is applied to the whole image. `in` must be scalar and real-valued.
+///
+/// Returns the threshold value used.
+///
+/// \see BackgroundThreshold(Histogram const&,dfloat) for more information on the algorithm used.
 DIP_EXPORT dfloat BackgroundThreshold(
       Image const& in,
       Image const& mask,
@@ -169,7 +196,7 @@ inline Image VolumeThreshold(
 /// If `output` is `"binary"` (the default), `%FixedThreshold` will produce a binary image. Otherwise an
 /// image of the same type as the input image is produced, with the pixels set to either
 /// `foreground` or `background`. In other words, on a pixel-per-pixel basis the following is applied:
-/// `out = ( in >= threshold ? foreground : background )`.
+/// `out = ( in >= threshold ) ? foreground : background`.
 ///
 /// `in` must be scalar and real-valued.
 ///
@@ -179,7 +206,7 @@ inline Image VolumeThreshold(
 ///     out = in >= threshold;
 /// ```
 ///
-/// \see dip::Select
+/// \see dip::NotGreater, dip::NotLesser, dip::Select
 DIP_EXPORT void FixedThreshold(
       Image const& in,
       Image& out,
@@ -205,9 +232,11 @@ inline Image FixedThreshold(
 /// If `output` is `"binary"` (the default), `%RangeThreshold` will produce a binary image. Otherwise an
 /// image of the same type as the input image is produced, with the pixels set to either
 /// `foreground` or `background`. In other words, on a pixel-per-pixel basis the following is applied:
-/// `out = ( lowerBound <= in && in <= upperBound ? foreground : background )`.
+/// `out = ( lowerBound <= in && in <= upperBound ) ? foreground : background`.
 ///
 /// `in` must be scalar and real-valued.
+///
+/// \see dip::InRange, dip::OutOfRange
 DIP_EXPORT void RangeThreshold(
       Image const& in,
       Image& out,
@@ -294,7 +323,7 @@ inline dfloat Threshold(
       Image const& in,
       Image& out,
       String const& method = "otsu",
-      dfloat parameter = std::numeric_limits< dfloat >::infinity()
+      dfloat parameter = infinity
 ) {
    if( method == "isodata" ) {
       FloatArray values = IsodataThreshold( in, {}, out, 1 );
@@ -306,19 +335,19 @@ inline dfloat Threshold(
    } else if( method == "triangle" ) {
       return TriangleThreshold( in, {}, out );
    } else if( method == "background" ) {
-      if( parameter == std::numeric_limits< dfloat >::infinity() ) {
+      if( parameter == infinity ) {
          return BackgroundThreshold( in, {}, out );
       } else {
          return BackgroundThreshold( in, {}, out, parameter );
       }
    } else if( method == "volume" ) {
-      if( parameter == std::numeric_limits< dfloat >::infinity() ) {
+      if( parameter == infinity ) {
          return VolumeThreshold( in, {}, out );
       } else {
          return VolumeThreshold( in, {}, out, parameter );
       }
    } else if( method == "fixed" ) {
-      if( parameter == std::numeric_limits< dfloat >::infinity() ) {
+      if( parameter == infinity ) {
          parameter = 128.0;
       }
       FixedThreshold( in, out, parameter );
@@ -330,7 +359,7 @@ inline dfloat Threshold(
 inline Image Threshold(
       Image const& in,
       String const& method = "otsu",
-      dfloat parameter = std::numeric_limits< dfloat >::infinity()
+      dfloat parameter = infinity
 ) {
    Image out;
    Threshold( in, out, method, parameter );
