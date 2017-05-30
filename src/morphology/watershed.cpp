@@ -165,14 +165,14 @@ bool PixelIsInfinity( TPI /*value*/ ) {
 }
 template< typename TPI, typename std::enable_if< std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
 bool PixelIsInfinity( TPI value ) {
-   return value == std::numeric_limits< dfloat >::infinity();
+   return value == std::numeric_limits< TPI >::infinity();
 }template< typename TPI, typename std::enable_if< !std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
 bool PixelIsMinusInfinity( TPI /*value*/ ) {
    return false;
 }
 template< typename TPI, typename std::enable_if< std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
 bool PixelIsMinusInfinity( TPI value ) {
-   return value == -std::numeric_limits< dfloat >::infinity();
+   return value == -std::numeric_limits< TPI >::infinity();
 }
 
 template< typename TPI >

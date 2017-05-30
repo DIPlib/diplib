@@ -49,7 +49,7 @@ class FeatureConvexity : public Composite {
             convexIndex_ = dependencies.ValueIndex( "ConvexArea" );
          }
          dfloat convArea = it[ convexIndex_ ];
-         *output = convArea == 0 ? std::nan( "" ) : it[ sizeIndex_ ] / convArea;
+         *output = convArea == 0 ? nan : it[ sizeIndex_ ] / convArea;
       }
 
    private:

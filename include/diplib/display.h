@@ -534,10 +534,9 @@ class DIP_NO_EXPORT ImageDisplay{
       // Information about the image:
       //    sliceLimits_[ (int)REAL ].maxMin -> max and min values to use when in REAL complex mapping mode.
       // When limits are NaN, it means they haven't been computed yet.
-      constexpr static dfloat NaN = std::numeric_limits< dfloat >::quiet_NaN();
       struct LimitsLists {
-         Limits maxMin = { NaN, NaN };
-         Limits percentile = { NaN, NaN };
+         Limits maxMin = { nan, nan };
+         Limits percentile = { nan, nan };
       };
       std::array< LimitsLists, 4 > sliceLimits_;  // Limits to use when !globalStretch_
       std::array< LimitsLists, 4 > globalLimits_; // Limits to use when globalStretch_

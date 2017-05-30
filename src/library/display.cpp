@@ -103,8 +103,8 @@ void ImageDisplay::ComputeLimits( bool set ) {
 
 void ImageDisplay::InvalidateSliceLimits() {
    for( auto& lim : sliceLimits_ ) {
-      lim.maxMin = { NaN, NaN };
-      lim.percentile = { NaN, NaN };
+      lim.maxMin = { nan, nan };
+      lim.percentile = { nan, nan };
    }
 }
 

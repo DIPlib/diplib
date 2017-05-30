@@ -47,7 +47,7 @@ class FeatureAspectRatioFeret : public Composite {
             feretIndex_ = dependencies.ValueIndex( "Feret" );
          }
          dfloat minDiameter = it[ feretIndex_ + 1 ];
-         *output = minDiameter == 0 ? std::nan( "" ) : it[ feretIndex_ + 2 ] / minDiameter;
+         *output = minDiameter == 0 ? nan : it[ feretIndex_ + 2 ] / minDiameter;
       }
 
    private:

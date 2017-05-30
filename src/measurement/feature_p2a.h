@@ -55,7 +55,7 @@ class FeatureP2A : public Composite {
          }
          dfloat area = it[ sizeIndex_ ];
          if( area == 0 ) {
-            *output = std::nan( "" );
+            *output = nan;
          } else {
             dfloat perimeter = it[ perimIndex_ ];
             if( nD_ == 2 ) {

@@ -56,7 +56,7 @@ class FeaturePodczeckShapes : public Composite {
          }
          dfloat area = it[ sizeIndex_ ];
          if( area == 0 ) {
-            output[ 0 ] = output[ 1 ] = output[ 2 ] = output[ 3 ] = output[ 4 ] = std::nan( "" );
+            output[ 0 ] = output[ 1 ] = output[ 2 ] = output[ 3 ] = output[ 4 ] = nan;
          } else {
             dfloat length = it[ feretIndex_ ];
             dfloat boxWidth = it[ feretIndex_ + 1 ];

@@ -656,7 +656,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
 
    // Grey-value SE morphology
    se.ReForge( { 5, 6 }, 1, dip::DT_SFLOAT );
-   se = -std::numeric_limits< dip::dfloat >::infinity();
+   se = -dip::infinity;
    se.At( 0, 0 ) = 0;
    se.At( 4, 5 ) = -5;
    se.At( 0, 5 ) = -5;

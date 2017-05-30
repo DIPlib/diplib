@@ -56,6 +56,13 @@ namespace dip {
 constexpr dfloat pi = 3.14159265358979323846264338327950288;
 // std::acos( -1 ) is the good way of defining pi, but it's not constexpr.
 
+/// \brief A NaN value.
+constexpr dfloat nan = std::numeric_limits< dfloat >::quiet_NaN();
+
+/// \brief Infinity.
+constexpr dfloat infinity = std::numeric_limits< dfloat >::infinity();
+
+
 /// \brief Compute the greatest common denominator of two positive integers.
 // `std::gcd` will be available in C++17.
 inline dip::uint gcd( dip::uint a, dip::uint b ) {

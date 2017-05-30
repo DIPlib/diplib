@@ -159,10 +159,10 @@ inline Image::Pixel ReadPixelWithBoundaryCondition(
                out = 0;
                return out; // We're done!
             case BoundaryCondition::ADD_MAX_VALUE:
-               out = std::numeric_limits< dfloat >::infinity();
+               out = infinity;
                return out; // We're done!
             case BoundaryCondition::ADD_MIN_VALUE:
-               out = -std::numeric_limits< dfloat >::infinity();
+               out = -infinity;
                return out; // We're done!
             case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
                coords[ ii ] = clamp( coords[ ii ], dip::sint( 0 ), sz - 1 );
