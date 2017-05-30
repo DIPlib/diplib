@@ -87,6 +87,10 @@ template< typename TPI, typename F >
 std::unique_ptr< Framework::ScanLineFilter > NewDyadicScanLineFilterBinOut( F const& func ) {
    return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new NadicScanLineFilterBinOut< 2, TPI, F >( func ));
 }
+template< typename TPI, typename F >
+std::unique_ptr< Framework::ScanLineFilter > NewTriadicScanLineFilterBinOut( F const& func ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new NadicScanLineFilterBinOut< 3, TPI, F >( func ));
+}
 
 } // namespace
 
@@ -177,6 +181,55 @@ void NotLesser(
          []( auto its ) { return *its[ 0 ] >= *its[ 1 ]; }
    ), dt );
    Framework::ScanDyadic( lhs, rhs, out, dt, DT_BIN, *scanLineFilter );
+}
+
+
+//
+void InRange(
+      Image const& in,
+      Image const& lhs,
+      Image const& rhs,
+      Image& out
+) {
+   DataType dt = DataType::SuggestDyadicOperation( lhs.DataType(), rhs.DataType() );
+   dt = DataType::SuggestDyadicOperation( in.DataType(), dt );
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewTriadicScanLineFilterBinOut, (
+         []( auto its ) { return ( *its[ 0 ] >= *its[ 1 ] ) && ( *its[ 0 ] <= *its[ 2 ] ); }
+   ), dt );
+   Tensor outTensor = in.Tensor();
+   ImageConstRefArray inar{ in, lhs, rhs };
+   ImageRefArray outar{ out };
+   DataTypeArray inTypes{ dt, dt, dt };
+   DataTypeArray outType{ DT_BIN };
+   DataTypeArray outImT{ DT_BIN };
+   UnsignedArray nElem{ outTensor.Elements() };
+   Framework::Scan( inar, outar, inTypes, outType, outType, nElem, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   out.ReshapeTensor( outTensor );
+}
+
+//
+void OutOfRange(
+      Image const& in,
+      Image const& lhs,
+      Image const& rhs,
+      Image& out
+) {
+   DataType dt = DataType::SuggestDyadicOperation( lhs.DataType(), rhs.DataType() );
+   dt = DataType::SuggestDyadicOperation( in.DataType(), dt );
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewTriadicScanLineFilterBinOut, (
+         []( auto its ) { return ( *its[ 0 ] < *its[ 1 ] ) || ( *its[ 0 ] > *its[ 2 ] ); }
+   ), dt );
+   Tensor outTensor = in.Tensor();
+   ImageConstRefArray inar{ in, lhs, rhs };
+   ImageRefArray outar{ out };
+   DataTypeArray inTypes{ dt, dt, dt };
+   DataTypeArray outType{ DT_BIN };
+   DataTypeArray outImT{ DT_BIN };
+   UnsignedArray nElem{ outTensor.Elements() };
+   Framework::Scan( inar, outar, inTypes, outType, outType, nElem, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   out.ReshapeTensor( outTensor );
 }
 
 

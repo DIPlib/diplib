@@ -57,6 +57,11 @@ DIP_EXPORT void name( Image const& lhs, Image const& rhs, Image& out ); \
 template< typename T > inline void name( Image const& lhs, T const& rhs, Image& out ) { name( lhs, Image{ rhs }, out ); } \
 template< typename T > inline Image name( Image const& lhs, T const& rhs ) { Image out; name( lhs, rhs, out ); return out; }
 
+#define DIP__DEFINE_TRIADIC_OVERLOADS( name ) \
+DIP_EXPORT void name( Image const& in, Image const& lhs, Image const& rhs, Image& out ); \
+template< typename T > inline void name( Image const& in, T const& lhs, T const& rhs, Image& out ) { name( in, Image{ lhs }, Image{ rhs }, out ); } \
+template< typename T > inline Image name( Image const& in, T const& lhs, T const& rhs ) { Image out; name( in, lhs, rhs, out ); return out; }
+
 
 //
 // Functions for arithmetic operations
@@ -237,9 +242,32 @@ DIP__DEFINE_DYADIC_OVERLOADS( NotGreater )
 /// \see Equal, NotEqual, Lesser, Greater, NotGreater, operator>=(Image const&, T const&)
 DIP__DEFINE_DYADIC_OVERLOADS( NotLesser )
 
+/// \brief In-range ternary comparison, sample-wise, with singleton expansion.
+///
+/// Computes
+///
+/// ```cpp
+///     out = ( in >= lhs ) && ( in <= rhs );
+/// ```
+///
+/// Out will be binary.
+DIP__DEFINE_TRIADIC_OVERLOADS( InRange )
+
+/// \brief Out-of-range ternary comparison, sample-wise, with singleton expansion.
+///
+/// Computes
+///
+/// ```cpp
+///     out = ( in < lhs ) || ( in > rhs );
+/// ```
+///
+/// Out will be binary.
+DIP__DEFINE_TRIADIC_OVERLOADS( OutOfRange )
+
 
 #undef DIP__DEFINE_ARITHMETIC_OVERLOADS
 #undef DIP__DEFINE_DYADIC_OVERLOADS
+#undef DIP__DEFINE_TRIADIC_OVERLOADS
 
 
 //

@@ -2011,7 +2011,8 @@ EXPAND_AS_DEFINED      = DIP__MONADIC_OPERATOR_FLEX \
                          DIP__MONADIC_OPERATOR_FLOAT_WITH_PARAM \
                          DIP__MONADIC_OPERATOR_BIN \
                          DIP__DEFINE_ARITHMETIC_OVERLOADS \
-                         DIP__DEFINE_DYADIC_OVERLOADS
+                         DIP__DEFINE_DYADIC_OVERLOADS \
+                         DIP__DEFINE_TRIADIC_OVERLOADS
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES then doxygen's preprocessor will
 # remove all references to function-like macros that are alone on a line, have
