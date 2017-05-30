@@ -22,7 +22,6 @@
 #define DIP_SEGMENTATION_H
 
 #include "diplib.h"
-#include "diplib/histogram.h"
 
 
 /// \file
@@ -51,17 +50,6 @@ DIP_EXPORT void KMeansClustering( // TODO: return the cluster centers?
       dip::uint nClusters = 2
 );
 
-
-/// \brief Determines a set of `nThresholds` thresholds using the Isodata algorithm (k-means clustering)
-/// on the histogram `in`.
-///
-/// The Isodata algorithm was proposed by Ridler and Calvard (1978).
-/// The implementation here uses initial seeds distributed evenly over the histogram range, rather than
-/// the more common random seeds. This fixed initialization makes this a deterministic algorithm.
-DIP_EXPORT FloatArray IsodataThreshold(
-      Histogram const& in,
-      dip::uint nThresholds = 1
-);
 
 /// \brief Thresholds the image `in` using `nThresholds` thresholds, determined using the Isodata algorithm
 /// (k-means clustering) on the histogram of `in`.
@@ -92,14 +80,20 @@ inline Image IsodataThreshold(
    return out;
 }
 
-
 // Thresholding using the maximal inter-class variance method by Otsu (1979).
 DIP_EXPORT dfloat OtsuThreshold(
       Image const& in,
       Image const& mask,
       Image& out
 );
-
+inline Image OtsuThreshold(
+      Image const& in,
+      Image const& mask
+) {
+   Image out;
+   OtsuThreshold( in, mask, out );
+   return out;
+}
 
 // Thresholding using the minimal error method by Kittler and Illingworth (1986).
 DIP_EXPORT dfloat MinimumErrorThreshold(
@@ -107,7 +101,14 @@ DIP_EXPORT dfloat MinimumErrorThreshold(
       Image const& mask,
       Image& out
 );
-
+inline Image MinimumErrorThreshold(
+      Image const& in,
+      Image const& mask
+) {
+   Image out;
+   MinimumErrorThreshold( in, mask, out );
+   return out;
+}
 
 // Thresholding using the chord method (a.k.a. skewed bi-modality, maximum distance to triangle) by Zack, Rogers and Latt (1977).
 DIP_EXPORT dfloat TriangleThreshold(
@@ -115,7 +116,14 @@ DIP_EXPORT dfloat TriangleThreshold(
       Image const& mask,
       Image& out
 );
-
+inline Image TriangleThreshold(
+      Image const& in,
+      Image const& mask
+) {
+   Image out;
+   TriangleThreshold( in, mask, out );
+   return out;
+}
 
 // Thresholding using unimodal background-symmetry method.
 DIP_EXPORT dfloat BackgroundThreshold(
@@ -124,7 +132,15 @@ DIP_EXPORT dfloat BackgroundThreshold(
       Image& out,
       dfloat distance = 2.0
 );
-
+inline Image BackgroundThreshold(
+      Image const& in,
+      Image const& mask,
+      dfloat distance = 2.0
+) {
+   Image out;
+   BackgroundThreshold( in, mask, out, distance );
+   return out;
+}
 
 /// \brief Thresholds an image such that a fraction `volumeFraction` of pixels is foreground.
 ///
@@ -138,7 +154,15 @@ DIP_EXPORT dfloat VolumeThreshold(
       Image& out,
       dfloat volumeFraction = 0.5
 );
-
+inline Image VolumeThreshold(
+      Image const& in,
+      Image const& mask,
+      dfloat volumeFraction = 0.5
+) {
+   Image out;
+   VolumeThreshold( in, mask, out, volumeFraction );
+   return out;
+}
 
 /// \brief Thresholds an image at the `threshold` value.
 ///
@@ -176,7 +200,6 @@ inline Image FixedThreshold(
    return out;
 }
 
-
 /// \brief Thresholds an image at two values, equivalent to `lowerBound <= in && in <= upperBound`.
 ///
 /// If `output` is `"binary"` (the default), `%RangeThreshold` will produce a binary image. Otherwise an
@@ -207,7 +230,6 @@ inline Image RangeThreshold(
    return out;
 }
 
-
 /// \brief Hysteresis threshold.
 ///
 /// From the binary image `in >= lowThreshold` only those regions are selected for which at least one
@@ -232,7 +254,6 @@ inline Image HysteresisThreshold(
    return out;
 }
 
-
 /// \brief Thresholds an image at multiple values, yielding a labeled image.
 ///
 /// `out` will be a `dip::DT_UINT8`, `dip::DT_UINT16` or `dip::DT_UINT32` image, depending on the length
@@ -254,7 +275,6 @@ inline Image MultipleThresholds(
    MultipleThresholds( in, out, thresholds );
    return out;
 }
-
 
 /// \brief Automated threshold using `method`.
 ///

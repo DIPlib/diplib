@@ -340,7 +340,7 @@ class DIP_NO_EXPORT Histogram {
       /// The output histogram is larger than the input histogram: it is extended by `std::ceil( 3 * sigma )` below and
       /// above the input bounds.
       DIP_EXPORT Histogram Smooth( FloatArray sigma ) const;
-      DIP_EXPORT Histogram Smooth( dfloat sigma = 1 ) const {
+      Histogram Smooth( dfloat sigma = 1 ) const {
          return Smooth( FloatArray{ sigma } );
       }
 
@@ -366,6 +366,35 @@ class DIP_NO_EXPORT Histogram {
       DIP_EXPORT void ScalarImageHistogram( Image const& input, Image const& mask, Configuration& configuration );
       DIP_EXPORT void TensorImageHistogram( Image const& input, Image const& mask, ConfigurationArray& configuration );
 };
+
+/// \brief Determines a set of `nThresholds` thresholds using the Isodata algorithm (k-means clustering)
+/// on the histogram `in`.
+///
+/// The Isodata algorithm was proposed by Ridler and Calvard (1978).
+/// The implementation here uses initial seeds distributed evenly over the histogram range, rather than
+/// the more common random seeds. This fixed initialization makes this a deterministic algorithm.
+DIP_EXPORT FloatArray IsodataThreshold(
+      Histogram const& in,
+      dip::uint nThresholds = 1
+);
+
+DIP_EXPORT dfloat OtsuThreshold(
+      Histogram const& in
+);
+
+DIP_EXPORT dfloat MinimumErrorThreshold(
+      Histogram const& in
+);
+
+DIP_EXPORT dfloat TriangleThreshold(
+      Histogram const& in
+);
+
+DIP_EXPORT dfloat BackgroundThreshold(
+      Histogram const& in,
+      dfloat distance = 2.0
+);
+
 
 
 /// \}
