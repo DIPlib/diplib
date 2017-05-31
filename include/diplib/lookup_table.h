@@ -58,7 +58,7 @@ namespace dip {
 ///
 /// **Out-of-bounds handling:**
 /// When an input value is outside the bounds provided by the index, it is clamped to the index range.
-/// This behavior can be modified using the `SetOutOfBoundsValue` method (uses the given value for all
+/// This behavior can be modified using the `SetOutOfBoundsValue` method (uses the given value or values for all
 /// pixels that are out of bounds), or  the `KeepInputValueOnOutOfBounds` method (which sets the output
 /// value to the original input value). The `ClampOutOfBoundsValues` method returns behavior to the
 /// default.
@@ -108,7 +108,15 @@ class DIP_NO_EXPORT LookupTable{
 
       /// \brief Sets out-of-bounds behavior to using `value`.
       void SetOutOfBoundsValue( dfloat value ) {
-         outOfBoundsValue_ = value;
+         outOfBoundsLowerValue_ = value;
+         outOfBoundsUpperValue_ = value;
+         outOfBoundsMode_ = OutOfBoundsMode::USE_OUT_OF_BOUNDS_VALUE;
+      }
+
+      /// \brief Sets out-of-bounds behavior to using `lowerValue` and `upperValue`.
+      void SetOutOfBoundsValue( dfloat lowerValue, dfloat upperValue ) {
+         outOfBoundsLowerValue_ = lowerValue;
+         outOfBoundsUpperValue_ = upperValue;
          outOfBoundsMode_ = OutOfBoundsMode::USE_OUT_OF_BOUNDS_VALUE;
       }
 
@@ -162,7 +170,8 @@ class DIP_NO_EXPORT LookupTable{
       // `values_` is found, again using interpolation. Interpolation is always linear.
 
       OutOfBoundsMode outOfBoundsMode_ = OutOfBoundsMode::CLAMP_TO_RANGE;
-      dfloat outOfBoundsValue_;  // Used when outOfBoundsMode_==OutOfBoundsMode::USE_OUT_OF_BOUNDS_VALUE
+      dfloat outOfBoundsLowerValue_;  // Used when outOfBoundsMode_==OutOfBoundsMode::USE_OUT_OF_BOUNDS_VALUE
+      dfloat outOfBoundsUpperValue_;  // LowerValue is for below the lower bound, UpperValue for above the upper bound
 
       static InterpolationMode DecodeInterpolationMode( String const& interpolation ) {
          if( interpolation == "linear" ) {

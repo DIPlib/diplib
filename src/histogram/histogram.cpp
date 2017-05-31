@@ -423,7 +423,9 @@ Histogram Histogram::Smooth( FloatArray sigma ) const {
       out.lowerBounds_[ ii ] -= out.binSizes_[ ii ] * extension;
    }
    out.data_ = out.data_.Pad( sizes );
+   out.data_.Protect(); // so that GaussFIR() produces a DT_UINT32 image.
    GaussFIR( out.data_, out.data_, sigma, { 0 }, { "add zeros" }, truncation );
+   out.data_.Protect( false );
    return out;
 }
 

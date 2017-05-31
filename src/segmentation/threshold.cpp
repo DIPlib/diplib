@@ -238,8 +238,9 @@ void MultipleThresholds(
    }
    Image values( { nLabels }, 1, dataType );
    FillRamp( values, 0 );
+   values = values.At( Range{ 1, -1 } ); // remove first label, use the out-of-bounds value for this label
    LookupTable lut( values, thresholds );
-   lut.SetOutOfBoundsValue( 0 );
+   lut.SetOutOfBoundsValue( 0, static_cast< dfloat >( nLabels - 1 ));
    DIP_START_STACK_TRACE
       lut.Apply( in, out, LookupTable::InterpolationMode::ZERO_ORDER_HOLD );
    DIP_END_STACK_TRACE
