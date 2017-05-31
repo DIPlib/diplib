@@ -196,7 +196,7 @@ slicing = imagedisplay(handle,'slicing');
 coords(slicing(1)) = pt(1);
 coords(slicing(2)) = pt(2);
 coords = mat2str(coords);
-value = imagedisplay(handle,pt);
+value = mat2str(imagedisplay(handle,pt));
 str = [coords,' : ',value];
 set(fig,'Name',str);
 % TODO: what if empty display?
