@@ -294,16 +294,15 @@ DIP_EXPORT void Scan(
       ScanOptions opts = {}                     ///< Options to control how `lineFilter` is called
 );
 
-/// \brief Calls `dip::Framework::Scan` with one output image.
+/// \brief Calls `dip::Framework::Scan` with one output image, which is already forged.
 inline void ScanSingleOutput(
       Image& out,                      ///< Output image
-      DataType outImageType,           ///< Data type for output image, buffer will have this type also
-      dip::uint nTensorElements,       ///< Number of tensor elements in output image
+      DataType bufferType,             ///< Data type for the buffer
       ScanLineFilter& lineFilter,      ///< Function object to call for each image line
       ScanOptions opts = {}            ///< Options to control how `lineFilter` is called
 ) {
    ImageRefArray outar{ out };
-   Scan( {}, outar, {}, { outImageType }, { outImageType }, { nTensorElements }, lineFilter, opts );
+   Scan( {}, outar, {}, { bufferType }, { out.DataType() }, { out.TensorElements() }, lineFilter, opts );
 }
 
 /// \brief Calls `dip::Framework::Scan` with one input image and a mask image.

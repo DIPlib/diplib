@@ -128,6 +128,7 @@ void Scan(
    } else {
       // nOut > 0, as was checked way at the top of this function.
       sizes = c_out[ 0 ].get().Sizes();
+      tsize = c_out[ 0 ].get().TensorElements();
    }
 
    // Adjust output if necessary (and possible)
