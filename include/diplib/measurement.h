@@ -139,7 +139,13 @@ class DIP_NO_EXPORT Measurement {
       /// the iterator: incrementing it will select the next feature in the same way it would have if `Subset`
       /// hadn't been called. When indexing a subset feature using an object ID, the resulting table cell is
       /// the same subset of the cell, as one would expect. Thus, subsetting can be used to look at only one
-      /// value of a feature as if that feature had produced only one value.
+      /// value of a feature as if that feature had produced only one value. For example:
+      ///
+      /// ```cpp
+      ///     dip::Measurement msr = measureTool.Measure( label, grey, {"Feret"}, {} );
+      ///     auto featureValues = msr[ "Feret" ];
+      ///     featureValues.Subset( 1 ); // Select the "FeretMin" column only
+      /// ```
       class DIP_NO_EXPORT IteratorFeature {
          public:
             friend class Measurement;
@@ -151,6 +157,8 @@ class DIP_NO_EXPORT Measurement {
                   friend class IteratorFeature;
                   /// \brief Index to access a specific value
                   ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
+                  /// \brief Dereference to access the first value
+                  ValueType& operator*() const { return *begin(); }
                   /// \brief Iterator to the first value
                   ValueIterator begin() const {
                      return feature_.measurement_.Data() +
@@ -160,11 +168,13 @@ class DIP_NO_EXPORT Measurement {
                   /// \brief Iterator one past the last value
                   ValueIterator end() const { return begin() + size(); }
                   /// \brief A pointer to the first value
-                  ValueIterator data() const { return begin(); }
+                  ValueType* data() const { return begin(); }
                   /// \brief Number of values
                   dip::uint size() const { return feature_.numberValues_; }
                   /// \brief Increment, to access the next object
                   Iterator& operator++() { ++index_; return *this; }
+                  /// \brief Increment, to access the next object
+                  Iterator operator++( int ) { Iterator tmp( *this ); operator++(); return tmp; }
                   /// \brief True if done iterating (do not call other methods if this is true!)
                   bool IsAtEnd() const { return index_ >= feature_.NumberOfObjects(); }
                   /// \brief True if the iterator is valid and can be used
@@ -191,6 +201,8 @@ class DIP_NO_EXPORT Measurement {
                numberValues_ = measurement_.features_[ index_ ].numberValues;
                return *this;
             }
+            /// \brief Increment, to access the next feature
+            IteratorFeature operator++( int ) { IteratorFeature tmp( *this ); operator++(); return tmp; }
             /// \brief Selects a subset of values from the current feature. This does not invalidate the iterator.
             IteratorFeature& Subset( dip::uint first, dip::uint number = 1 ) {
                DIP_THROW_IF( first >= Feature().numberValues, E::INDEX_OUT_OF_RANGE );
@@ -205,6 +217,8 @@ class DIP_NO_EXPORT Measurement {
             explicit operator bool() const { return !IsAtEnd(); }
             /// \brief Name of the feature
             String const& FeatureName() const { return Feature().name; }
+            /// \brief Number of values
+            dip::uint NumberOfValues() const { return numberValues_; }
             /// \brief Number of objects
             dip::uint NumberOfObjects() const { return measurement_.NumberOfObjects(); }
             /// \brief Returns a list of object IDs
@@ -244,6 +258,8 @@ class DIP_NO_EXPORT Measurement {
                   friend class IteratorObject;
                   /// \brief Index to access a specific value
                   ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
+                  /// \brief Dereference to access the first value
+                  ValueType& operator*() const { return *begin(); }
                   /// \brief Iterator to the first value
                   ValueIterator begin() const {
                      return object_.measurement_.Data() +
@@ -253,11 +269,13 @@ class DIP_NO_EXPORT Measurement {
                   /// \brief Iterator one past the last value
                   ValueIterator end() const { return begin() + size(); }
                   /// \brief A pointer to the first value
-                  ValueIterator data() const { return begin(); }
+                  ValueType* data() const { return begin(); }
                   /// \brief Number of values
                   dip::uint size() const { return Feature().numberValues; }
                   /// \brief Increment, to access the next feature
                   Iterator& operator++() { ++index_; return *this; }
+                  /// \brief Increment, to access the next feature
+                  Iterator operator++( int ) { Iterator tmp( *this ); operator++(); return tmp; }
                   /// \brief True if done iterating (do not call other methods if this is true!)
                   bool IsAtEnd() const { return index_ >= object_.NumberOfFeatures(); }
                   /// \brief True if the iterator is valid and can be used
@@ -280,6 +298,8 @@ class DIP_NO_EXPORT Measurement {
             Iterator operator[]( String const& name ) const { return Iterator( *this, FeatureIndex( name )); }
             /// \brief Increment, to access the next object
             IteratorObject& operator++() { ++index_; return *this; }
+            /// \brief Increment, to access the next object
+            IteratorObject operator++( int ) { IteratorObject tmp( *this ); operator++(); return tmp; }
             /// \brief True if done iterating (do not call other methods if this is true!)
             bool IsAtEnd() const { return index_ >= NumberOfObjects(); }
             /// \brief True if the iterator is valid and can be used
@@ -358,6 +378,13 @@ class DIP_NO_EXPORT Measurement {
       IteratorFeature operator[]( String const& name ) const { return IteratorFeature( *this, FeatureIndex( name )); }
 
       /// \brief Creates and iterator (view) to a subset of feature values
+      ///
+      /// Example:
+      ///
+      /// ```cpp
+      ///     dip::Measurement msr = measureTool.Measure( label, grey, {"Feret"}, {} );
+      ///     auto featureValues = msr.FeatureValuesView( 1, 1 ); // Select the "FeretMin" column only
+      /// ```
       IteratorFeature FeatureValuesView( dip::uint startValue, dip::uint numberValues = 1 ) const {
          DIP_THROW_IF( startValue + numberValues > NumberOfValues(), "Subset out of range" );
          return IteratorFeature( *this, startValue, numberValues );
@@ -796,24 +823,21 @@ class DIP_NO_EXPORT MeasurementTool {
 /// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object.
 /// It is assumed that that measurement object was obtained through measurement of the input `label` image.
 /// To obtain such a view, use the measurement's `[]` indexing with a feature name. Alternatively, use the
-/// `dip::Measurement::FeatureValuesView` method to select an arbitrary subset of feature value columns:
-///
-/// ```cpp
-///     dip::Measurement msr = measureTool.Measure( label, grey, {"Feret"}, {} );
-///     auto featureValues = msr.FeatureValuesView( 1, 1 ); // Select the "FeretMin" column only
-///     dip::Image objectWidth = ObjectToMeasurement( label, featureValues );
-/// ```
-///
-/// The `dip::Measurement::IteratorFeature::Subset` method can be used to select a subset of columns
-/// of the current feature, leading to the same result as above:
-///
-/// ```cpp
-///     auto featureValues = msr[ "Feret" ];
-///     featureValues.Subset( 1 ); // Select the "FeretMin" column only
-/// ```
+/// `dip::Measurement::FeatureValuesView` method to select an arbitrary subset of feature value columns.
+/// The `dip::Measurement::IteratorFeature::Subset` method can be used for the same purpose.
 ///
 /// If the selected feature has more than one value, then `out` will be a vector image with as many tensor elements
 /// as values are in the feature.
+///
+/// `out` will be of type `DT_SFLOAT`. To change the data type, set the data type of `out` and set its protect
+/// flag before calling this function:
+///
+/// ```cpp
+///     dip::Image out;
+///     out.SetDataType( dip::DT_UINT32 );
+///     out.Protect();
+///     ObjectToMeasurement( label, out, featureValues );
+/// ```
 DIP_EXPORT void ObjectToMeasurement(
       Image const& label,
       Image& out,
@@ -828,6 +852,65 @@ inline Image ObjectToMeasurement(
    ObjectToMeasurement( label, out, featureValues );
    return out;
 }
+
+
+/// \brief Returns the smallest feature value in the first column of `featureValues`.
+///
+/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// first value of the feature is used. For features with multiple values, select a value using the
+/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
+/// directly using `dip::Measurement::FeatureValuesView`.
+DIP_EXPORT dfloat Minimum( Measurement::IteratorFeature const& featureValues );
+
+/// \brief Returns the largest feature value in the first column of `featureValues`.
+///
+/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// first value of the feature is used. For features with multiple values, select a value using the
+/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
+/// directly using `dip::Measurement::FeatureValuesView`.
+DIP_EXPORT dfloat Maximum( Measurement::IteratorFeature const& featureValues );
+
+/// \brief Returns the `percentile` feature value in the first column of `featureValues`.
+///
+/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// first value of the feature is used. For features with multiple values, select a value using the
+/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
+/// directly using `dip::Measurement::FeatureValuesView`.
+DIP_EXPORT dfloat Percentile( Measurement::IteratorFeature const& featureValues, dfloat percentile );
+
+/// \brief Returns the median feature value in the first column of `featureValues`.
+///
+/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// first value of the feature is used. For features with multiple values, select a value using the
+/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
+/// directly using `dip::Measurement::FeatureValuesView`.
+inline dfloat Median( Measurement::IteratorFeature const& featureValues ) {
+   return Percentile( featureValues, 50.0 );
+}
+
+/// \brief Returns the mean feature value in the first column of `featureValues`.
+///
+/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// first value of the feature is used. For features with multiple values, select a value using the
+/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
+/// directly using `dip::Measurement::FeatureValuesView`.
+DIP_EXPORT dfloat Mean( Measurement::IteratorFeature const& featureValues );
+
+/// \brief Returns the maximum and minimum feature values in the first column of `featureValues`.
+///
+/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// first value of the feature is used. For features with multiple values, select a value using the
+/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
+/// directly using `dip::Measurement::FeatureValuesView`.
+DIP_EXPORT MinMaxAccumulator GetMaximumAndMinimum( Measurement::IteratorFeature const& featureValues );
+
+/// \brief Returns the first four central moments of the feature values in the first column of `featureValues`.
+///
+/// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
+/// first value of the feature is used. For features with multiple values, select a value using the
+/// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
+/// directly using `dip::Measurement::FeatureValuesView`.
+DIP_EXPORT StatisticsAccumulator GetSampleStatistics( Measurement::IteratorFeature const& featureValues );
 
 /// \}
 
