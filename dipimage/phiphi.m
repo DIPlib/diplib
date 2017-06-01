@@ -1,10 +1,11 @@
-%RAMP   Creates an image with one cartesian coordinate
-%   RAMP(SIZE,DIM) returns an image of size SIZE with the value of the
-%   DIM dimension's coordinate as the pixel values.
+%PHIPHI   Creates an image with the phi component of polar or spherical coordinates
+%   PHIPHI(SIZE) returns an image of size SIZE with the value of the
+%   phi component of the polar/spherical coordinate as the pixel values. Phi is
+%   the angle to the x-axis in the x-y plane. SIZE must have 2 or 3 components.
 %
-%   RAMP(IMG,DIM) is the same as RAMP(SIZE(IMG),DIM).
+%   PHIPHI(IMG) is the same as PHIPHI(SIZE(IMG)).
 %
-%   RAMP(...,ORIGIN) allows specifying where the origin is:
+%   PHIPHI(...,ORIGIN) allows specifying where the origin is:
 %    - 'left':        The pixel to the left of the true center.
 %    - 'right':       The pixel to the right of the true center (default).
 %    - 'true':        The true center, between pixels if required.
@@ -13,21 +14,21 @@
 %                     corresponds to coordinate system used by FT.
 %   Note that the first three are identical if the size is odd.
 %
-%   RAMP(...,ORIGIN,OPTIONS) further specifies one or both of these options:
+%   PHIPHI(...,ORIGIN,OPTIONS) further specifies one or both of these options:
 %    - 'radial':      When 'frequency' is selected as the origin, causes it to
 %                     use radial frequencies instead, making the range [-pi,pi).
 %    - 'math':        Let the Y coordinate increase upwards instead of downwards.
 %   To provide both options, join the strings in a cell array
 %
 %  It is possible to set ORIGIN to 'radfreq', which combines 'frequency' with
-% 'radial'.
+%  'radial'.
 %
 %  Prepending an 'm' to any option for ORIGIN is equivalent to setting the
-%  'math' option. That is, RAMP(...,'mleft') is equivalent to
-%  RAMP(...,'left','math').
+%  'math' option. That is, PHIPHI(...,'mleft') is equivalent to
+%  PHIPHI(...,'left','math').
 %
 % SEE ALSO:
-%  coordinates, xx, yy, zz, rr, phiphi, thetatheta
+%  coordinates, ramp, xx, yy, zz, rr, thetatheta
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -45,13 +46,8 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = ramp(sz,dim,varargin)
+function out = phiphi(sz,varargin)
 if nargin<1
    sz = [256,256];
 end
-if nargin<2
-   dim = 1;
-end
-out = coordinates(sz,dim,varargin{:});
-% We pass the arguments directly too COORDINATES. This means that you can set
-% DIM to be a string, but let's not tell people they can do that. :)
+out = coordinates(sz,'phi',varargin{:});

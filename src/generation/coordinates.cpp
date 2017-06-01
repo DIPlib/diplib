@@ -27,8 +27,8 @@ namespace dip {
 namespace {
 
 enum class CoordinateSystem {
-      LEFT,
       RIGHT,
+      LEFT,
       TRUE,
       CORNER,
       FREQUENCY,
@@ -40,13 +40,13 @@ struct CoordinateMode {
 };
 
 CoordinateMode ParseMode( StringSet const& mode ) {
-   CoordinateMode coordinateMode{ CoordinateSystem::CORNER, false };
+   CoordinateMode coordinateMode{ CoordinateSystem::RIGHT, false };
    bool hasRadial = false;
    for( auto& option : mode ) {
-      if( option == "left" ) {
-         coordinateMode.system = CoordinateSystem::LEFT;
-      } else if( option == "right" ) {
+      if( option == "right" ) {
          coordinateMode.system = CoordinateSystem::RIGHT;
+      } else if( option == "left" ) {
+         coordinateMode.system = CoordinateSystem::LEFT;
       } else if( option == "true" ) {
          coordinateMode.system = CoordinateSystem::TRUE;
       } else if( option == "corner" ) {
@@ -74,16 +74,19 @@ struct Transformation {
    dfloat offset; // applied first
    dfloat scale;  // applied after
 };
+using TransformationArray = DimensionArray< Transformation >;
 
 Transformation FindTransformation( dip::uint size, dip::uint dim, CoordinateMode coordinateMode ) {
    Transformation out;
+   bool invert = ( dim == 1 ) && coordinateMode.invertedY;
    switch( coordinateMode.system ) {
-      case CoordinateSystem::LEFT:
-         out.offset = static_cast< dfloat >(( size - 1 ) / 2 );
+      default:
+      //case CoordinateSystem::RIGHT:
+         out.offset = static_cast< dfloat >( size / 2 );
          out.scale = 1.0;
          break;
-      case CoordinateSystem::RIGHT:
-         out.offset = static_cast< dfloat >( size / 2 );
+      case CoordinateSystem::LEFT:
+         out.offset = static_cast< dfloat >(( size - 1 ) / 2 );
          out.scale = 1.0;
          break;
       case CoordinateSystem::TRUE:
@@ -91,7 +94,7 @@ Transformation FindTransformation( dip::uint size, dip::uint dim, CoordinateMode
          out.scale = 1.0;
          break;
       case CoordinateSystem::CORNER:
-         out.offset = 0.0;
+         out.offset = invert ? static_cast< dfloat >( size - 1 ) : 0.0;
          out.scale = 1.0;
          break;
       case CoordinateSystem::FREQUENCY:
@@ -103,11 +106,49 @@ Transformation FindTransformation( dip::uint size, dip::uint dim, CoordinateMode
          out.scale = 2.0 * pi / static_cast< dfloat >( size );
          break;
    }
-   if(( dim == 1 ) && coordinateMode.invertedY ) {
+   if( invert ) {
       out.scale = -out.scale;
    }
    return out;
 }
+
+} // namespace
+
+void FillDelta( Image& out, String const& origin ) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_FORGED );
+   CoordinateSystem system = CoordinateSystem::RIGHT;
+   if( origin.empty() || ( origin == "right" )) {
+      system = CoordinateSystem::RIGHT;
+   } else if( origin == "left" ) {
+      system = CoordinateSystem::LEFT;
+   } else if( origin == "corner" ) {
+      system = CoordinateSystem::CORNER;
+   } else {
+      DIP_THROW( E::INVALID_FLAG );
+   }
+   DIP_START_STACK_TRACE
+      out.Fill( 0 );
+      UnsignedArray pos = out.Sizes();
+      for( auto& p : pos ) {
+         switch( system ) {
+            default:
+            //case CoordinateSystem::RIGHT:
+               p = p / 2;
+               break;
+            case CoordinateSystem::LEFT:
+               p = ( p - 1 ) / 2;
+               break;
+            case CoordinateSystem::CORNER:
+               p = 0;
+               break;
+         }
+      }
+      out.At( pos ) = 1;
+   DIP_END_STACK_TRACE
+}
+
+namespace {
 
 class dip__Ramp : public Framework::ScanLineFilter {
    public:
@@ -115,14 +156,16 @@ class dip__Ramp : public Framework::ScanLineFilter {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;
-         dip::uint pos = params.position[ index_ ];
+         dip::uint pp = params.position[ index_ ];
          if( params.dimension == index_ ) {
-            for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pos ) {
-               *out = ( static_cast< dfloat >( pos ) - offset_ ) * scale_;
+            // Filling along dimension where the coordinate changes at every step
+            for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pp ) {
+               *out = ( static_cast< dfloat >( pp ) - offset_ ) * scale_;
                out += stride;
             }
          } else {
-            dfloat v = ( static_cast< dfloat >( pos ) - offset_ ) * scale_;
+            // Filling along a dimension where the coordinate is constant
+            dfloat v = ( static_cast< dfloat >( pp ) - offset_ ) * scale_;
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                *out = v;
                out += stride;
@@ -143,71 +186,291 @@ void FillRamp( Image& out, dip::uint dimension, StringSet const& mode ) {
    DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( dimension >= out.Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
-   CoordinateMode coordinateMode = ParseMode( mode );
-   Transformation transformation = FindTransformation( out.Size( dimension ), dimension, coordinateMode );
-   std::cout << "[FillRamp] offset = " << transformation.offset << ", scale = " << transformation.scale << std::endl;
-   dip__Ramp scanLineFilter( dimension, transformation );
-   Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
-}
-
-void FillRadiusCoordinate( Image& /*out*/, StringSet const& /*mode*/ ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO
-}
-
-void FillPhiCoordinate( Image& /*out*/, StringSet const& /*mode*/ ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO
-}
-
-void FillThetaCoordinate( Image& /*out*/, StringSet const& /*mode*/ ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO
+   DIP_START_STACK_TRACE
+      CoordinateMode coordinateMode = ParseMode( mode );
+      Transformation transformation = FindTransformation( out.Size( dimension ), dimension, coordinateMode );
+      dip__Ramp scanLineFilter( dimension, transformation );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_END_STACK_TRACE
 }
 
 namespace {
 
-/*
-class dip__CartesianCoordinates : public Framework::ScanLineFilter {
+class dip__Radius : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;
-         dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
-
-         UnsignedArray position = params.position;
          dip::uint dim = params.dimension;
-         DIP_ASSERT( tensorLength == position.size());
-         auto tensorStride = params.outBuffer[ 0 ].tensorStride;
-         if( cartesian_ ) {
-            // Cartesian coordinates
-            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-               std::copy( position.begin(), position.end(), SampleIterator( out, tensorStride ));
-               ++position[ dim ];
-               out += stride;
+         dfloat d2 = 0;
+         for( dip::uint ii = 0; ii < params.position.size(); ++ii ) {
+            if( ii != dim ) {
+               dfloat d = ( static_cast< dfloat >( params.position[ ii ] ) - transformation_[ ii ].offset ) * transformation_[ ii ].scale;
+               d2 += d * d;
             }
-         } else {
-            // Polar coordinates
-            pout[ 0 ] = Norm( 3, pin );
-            pout[ 1 ] = std::atan2( pin[ 1 ], pin[ 0 ] );
-            pout[ 2 ] = std::acos( pin[ 2 ] / pout[ 0 ] );
+         }
+         dip::uint pp = params.position[ dim ];
+         for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pp ) {
+            dfloat d = ( static_cast< dfloat >( pp ) - transformation_[ dim ].offset ) * transformation_[ dim ].scale;
+            *out = std::sqrt( d2 + d * d );
+            out += stride;
          }
       }
-      dip__CartesianCoordinates( dip::uint index, bool cartesian ) : index_( index ), cartesian_( cartesian ) {}
+      dip__Radius( TransformationArray transformation ) : transformation_( transformation ) {}
    private:
-      dip::uint index_; // the index into the coordinates array to write into the scalar output
-      bool cartesian_; // false means polar coordinates
-      // For polar coordinates, index_=0 means radius, 1 means phi, 2 means theta (see dip::CartesianToPolar)
-      // If the input is a tensor image, all coordinates are written (should match).
+      TransformationArray transformation_;
 };
-*/
 
 } // namespace
 
-void FillCoordinates( Image& /*out*/, StringSet const& /*mode*/ ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO
+void FillRadiusCoordinate( Image& out, StringSet const& mode ) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_START_STACK_TRACE
+      CoordinateMode coordinateMode = ParseMode( mode );
+      dip::uint nDims = out.Dimensionality();
+      TransformationArray transformation( nDims );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode );
+      }
+      dip__Radius scanLineFilter( transformation );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_END_STACK_TRACE
+}
+
+namespace {
+
+class dip__Phi : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
+         dip::sint stride = params.outBuffer[ 0 ].stride;
+         dip::uint bufferLength = params.bufferLength;
+         dip::uint dim = params.dimension;
+         if( dim == 2 ) {
+            // In case of 3D image, filling along z axis, all values are identical
+            dfloat x = ( static_cast< dfloat >( params.position[ 0 ] ) - transformation_[ 0 ].offset ) * transformation_[ 0 ].scale;
+            dfloat y = ( static_cast< dfloat >( params.position[ 1 ] ) - transformation_[ 1 ].offset ) * transformation_[ 1 ].scale;
+            dfloat phi = std::atan2( y, x );
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               *out = phi;
+               out += stride;
+            }
+         } else {
+            // Otherwise, either x or y changes at every step
+            dfloat pos[ 2 ];
+            dip::uint altdim = dim == 0 ? 1 : 0;
+            pos[ altdim ] = ( static_cast< dfloat >( params.position[ altdim ] ) - transformation_[ altdim ].offset ) * transformation_[ altdim ].scale;
+            dip::uint pp = params.position[ dim ];
+            for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pp ) {
+               pos[ dim ] = ( static_cast< dfloat >( pp ) - transformation_[ dim ].offset ) * transformation_[ dim ].scale;
+               *out = std::atan2( pos[ 1 ], pos[ 0 ] );
+               out += stride;
+            }
+         }
+      }
+      dip__Phi( TransformationArray transformation ) : transformation_( transformation ) {}
+   private:
+      TransformationArray transformation_;
+};
+
+} // namespace
+
+void FillPhiCoordinate( Image& out, StringSet const& mode ) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   dip::uint nDims = out.Dimensionality();
+   DIP_THROW_IF(( nDims < 2 ) || ( nDims > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_START_STACK_TRACE
+      CoordinateMode coordinateMode = ParseMode( mode );
+      TransformationArray transformation( nDims );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode );
+      }
+      dip__Phi scanLineFilter( transformation );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_END_STACK_TRACE
+}
+
+namespace {
+
+class dip__Theta : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         DIP_ASSERT( params.position.size() == 3 );
+         dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
+         dip::sint stride = params.outBuffer[ 0 ].stride;
+         dip::uint bufferLength = params.bufferLength;
+         dip::uint dim = params.dimension;
+         dfloat d2 = 0;
+         dfloat z;
+         for( dip::uint ii = 0; ii < 3; ++ii ) {
+            if( ii != dim ) {
+               z = ( static_cast< dfloat >( params.position[ ii ] ) - transformation_[ ii ].offset ) * transformation_[ ii ].scale;
+               d2 += z * z;
+            }
+         }
+         dip::uint pp = params.position[ dim ];
+         if( dim == 2 ) {
+            // Filling along dimension where the z coordinate changes at every step
+            for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pp ) {
+               z = ( static_cast< dfloat >( pp ) - transformation_[ 2 ].offset ) * transformation_[ 2 ].scale;
+               dfloat norm = std::sqrt( d2 + z * z );
+               *out = norm == 0.0 ? pi / 2.0 : std::acos( z / norm );
+               out += stride;
+            }
+         } else {
+            // Filling along dimension where the z coordinate is constant
+            // dim!=2, which means that z has been filled with the current coordinate for the z-axis.
+            for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pp ) {
+               dfloat x = ( static_cast< dfloat >( pp ) - transformation_[ dim ].offset ) * transformation_[ dim ].scale;
+               // We call it x, but it could be y also
+               dfloat norm = std::sqrt( d2 + x * x );
+               *out = norm == 0.0 ? pi / 2.0 : std::acos( z / norm );
+               out += stride;
+            }
+         }
+      }
+      dip__Theta( TransformationArray transformation ) : transformation_( transformation ) {}
+   private:
+      TransformationArray transformation_;
+};
+
+} // namespace
+
+void FillThetaCoordinate( Image& out, StringSet const& mode ) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   dip::uint nDims = out.Dimensionality();
+   DIP_THROW_IF( nDims != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_START_STACK_TRACE
+      CoordinateMode coordinateMode = ParseMode( mode );
+      TransformationArray transformation( nDims );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode );
+      }
+      dip__Theta scanLineFilter( transformation );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_END_STACK_TRACE
+}
+
+namespace {
+
+class dip__Coordinates : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
+         dip::sint stride = params.outBuffer[ 0 ].stride;
+         dip::sint tensorStride = params.outBuffer[ 0 ].tensorStride;
+         dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
+         DIP_ASSERT( tensorLength == params.position.size() );
+         dip::uint bufferLength = params.bufferLength;
+         dip::uint dim = params.dimension;
+         if( spherical_ ) {
+            if( tensorLength == 2 ) {
+               // Polar coordinates
+               dfloat d2 = 0;
+               dfloat coord[ 2 ];
+               for( dip::uint ii = 0; ii < 2; ++ii ) {
+                  if( ii != dim ) {
+                     coord[ ii ] = ( static_cast< dfloat >( params.position[ ii ] ) - transformation_[ ii ].offset ) * transformation_[ ii ].scale;
+                     d2 += coord[ ii ] * coord[ ii ];
+                  }
+               }
+               dip::uint pp = params.position[ dim ];
+               for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pp ) {
+                  coord[ dim ] = ( static_cast< dfloat >( pp ) - transformation_[ dim ].offset ) * transformation_[ dim ].scale;
+                  dfloat norm = std::sqrt( d2 + coord[ dim ] * coord[ dim ] );
+                  dfloat* it = out;
+                  *it = norm;
+                  it += tensorStride;
+                  *it = std::atan2( coord[ 1 ], coord[ 0 ] );
+                  out += stride;
+               }
+            } else {
+               // Spherical coordinates
+               dfloat d2 = 0;
+               dfloat coord[ 3 ];
+               for( dip::uint ii = 0; ii < 3; ++ii ) {
+                  if( ii != dim ) {
+                     coord[ ii ] = ( static_cast< dfloat >( params.position[ ii ] ) - transformation_[ ii ].offset ) * transformation_[ ii ].scale;
+                     d2 += coord[ ii ] * coord[ ii ];
+                  }
+               }
+               dip::uint pp = params.position[ dim ];
+               if( dim == 2 ) {
+                  // Filling along dimension where the phi is constant
+                  dfloat phi = std::atan2( coord[ 1 ], coord[ 0 ] );
+                  for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pp ) {
+                     coord[ 2 ] = ( static_cast< dfloat >( pp ) - transformation_[ 2 ].offset ) * transformation_[ 2 ].scale;
+                     dfloat norm = std::sqrt( d2 + coord[ 2 ] * coord[ 2 ] );
+                     dfloat* it = out;
+                     *it = norm;
+                     it += tensorStride;
+                     *it = phi;
+                     it += tensorStride;
+                     *it = norm == 0.0 ? pi / 2.0 : std::acos( coord[ 2 ] / norm );
+                     out += stride;
+                  }
+               } else {
+                  // Filling along dimension where the z coordinate is constant
+                  for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pp ) {
+                     coord[ dim ] = ( static_cast< dfloat >( pp ) - transformation_[ dim ].offset ) * transformation_[ dim ].scale;
+                     dfloat norm = std::sqrt( d2 + coord[ dim ] * coord[ dim ] );
+                     dfloat* it = out;
+                     *it = norm;
+                     it += tensorStride;
+                     *it = std::atan2( coord[ 1 ], coord[ 0 ] );
+                     it += tensorStride;
+                     *it = norm == 0.0 ? pi / 2.0 : std::acos( coord[ 2 ] / norm );
+                     out += stride;
+                  }
+               }
+            }
+         } else {
+            // Cartesian coordinates
+            FloatArray coord( tensorLength );
+            for( dip::uint ii = 0; ii < tensorLength; ++ii ) {
+               if( ii != dim ) {
+                  coord[ ii ] = ( static_cast< dfloat >( params.position[ ii ] ) - transformation_[ ii ].offset ) * transformation_[ ii ].scale;
+               }
+            }
+            dip::uint pp = params.position[ dim ];
+            for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pp ) {
+               coord[ dim ] = ( static_cast< dfloat >( pp ) - transformation_[ dim ].offset ) * transformation_[ dim ].scale;
+               std::copy( coord.begin(), coord.end(), SampleIterator< dfloat >( out, tensorStride ));
+               out += stride;
+            }
+         }
+      }
+      dip__Coordinates( bool spherical, TransformationArray transformation ) : transformation_( transformation ), spherical_( spherical ) {}
+   private:
+      TransformationArray transformation_;
+      bool spherical_; // true for polar/spherical coordinates, false for cartesian coordinates
+};
+
+} // namespace
+
+void FillCoordinates( Image& out, StringSet const& mode, String const& system ) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   dip::uint nDims = out.Dimensionality();
+   DIP_THROW_IF( out.TensorElements() != nDims, E::NTENSORELEM_DONT_MATCH );
+   bool spherical = system == "spherical";
+   DIP_THROW_IF( spherical && (( nDims < 2 ) || ( nDims > 3 )), E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_START_STACK_TRACE
+      CoordinateMode coordinateMode = ParseMode( mode );
+      TransformationArray transformation( nDims );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode );
+      }
+      dip__Coordinates scanLineFilter( spherical, transformation );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_END_STACK_TRACE
 }
 
 } // namespace dip
