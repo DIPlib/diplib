@@ -276,11 +276,12 @@ void Scan(
       }
    }
 
-   // TODO: Determine the number of threads we'll be using. The size of the data
-   //       has an influence. We can cut an image line in parts if necessary.
+   // TODO: Determine the number of threads we'll be using.
+   //       The size of the data has an influence. We can cut an image line in parts if necessary.
    //       I guess it would be useful to get an idea of the amount of work that
    //       the lineFilter does per pixel. If the caller can provide that estimate,
    //       we'd be able to use that to determine the threading schedule.
+   //       Don't forget to check for opts==Scan_NoMultiThreading!
 
    DIP_START_STACK_TRACE
       lineFilter.SetNumberOfThreads( 1 );

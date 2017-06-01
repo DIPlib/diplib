@@ -201,6 +201,7 @@ void Separable(
    }
 
    // TODO: Determine the number of threads we'll be using.
+   // Don't forget to check for opts==Separable_NoMultiThreading!
 
    DIP_START_STACK_TRACE
       lineFilter.SetNumberOfThreads( 1 );

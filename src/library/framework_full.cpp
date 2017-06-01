@@ -118,11 +118,8 @@ void Full(
    DIP_END_STACK_TRACE
    PixelTableOffsets pixelTableOffsets = pixelTable.Prepare( input );
 
-   // TODO: Determine the number of threads we'll be using. The size of the data
-   //       has an influence. We can cut an image line in parts if necessary.
-   //       I guess it would be useful to get an idea of the amount of work that
-   //       the lineFilter does per pixel. If the caller can provide that estimate,
-   //       we'd be able to use that to determine the threading schedule.
+   // TODO: Determine the number of threads we'll be using.
+   // Don't forget to check for opts==Full_NoMultiThreading!
 
    DIP_START_STACK_TRACE
       lineFilter.SetNumberOfThreads( 1 );

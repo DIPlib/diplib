@@ -191,12 +191,13 @@ struct DIP_NO_EXPORT ScanLineFilterParameters {
 /// A derived class can have data members that hold parameters to the line filter, that hold output values,
 /// or that hold intermediate buffers. The `dip::Framework::ScanLineFilter::SetNumberOfThreads` method is
 /// called once before any processing starts. This is a good place to allocate space for output values, such
-/// that each threads has its own output variables that the calling function can later combine (reduce).
+/// that each threads has its own output variables that the calling function can later combine (reduce). Note
+/// that this function is called even if `dip::Framework::Scan_NoMultiThreading` is given.
 class DIP_EXPORT ScanLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( ScanLineFilterParameters const& params ) = 0;
-      /// \brief The derived class can define this function if it needs this information ahead of time.
+      /// \brief The derived class can define this function for setting up the processing.
       virtual void SetNumberOfThreads( dip::uint /*threads*/ ) {}
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~ScanLineFilter() {}
@@ -282,7 +283,8 @@ class DIP_EXPORT ScanLineFilter {
 /// thread safe, specify `dip::FrameWork::Scan_NoMultiThreading` as an option.
 /// the `SetNumberOfThreads` method to `lineFilter` will be called once before
 /// the processing starts, when `%dip::Framework::Scan` has determined how many
-/// threads will be used in the scan.
+/// threads will be used in the scan, even if `dip::FrameWork::Scan_NoMultiThreading`
+/// was specified.
 DIP_EXPORT void Scan(
       ImageConstRefArray const& in,             ///< Input images
       ImageRefArray& out,                       ///< Output images
@@ -629,12 +631,13 @@ struct DIP_NO_EXPORT SeparableLineFilterParameters {
 /// A derived class can have data members that hold parameters to the line filter, that hold output values,
 /// or that hold intermediate buffers. The `dip::Framework::SeparableLineFilter::SetNumberOfThreads` method is
 /// called once before any processing starts. This is a good place to allocate space for temporary buffers, such
-/// that each threads has its own buffers to write in.
+/// that each threads has its own buffers to write in. Note that this function is called even if
+/// `dip::Framework::Separable_NoMultiThreading` is given.
 class DIP_EXPORT SeparableLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( SeparableLineFilterParameters const& params ) = 0;
-      /// \brief The derived class can define this function if it needs this information ahead of time.
+      /// \brief The derived class can define this function for setting up the processing.
       virtual void SetNumberOfThreads( dip::uint /*threads*/ ) {}
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~SeparableLineFilter() {}
@@ -751,7 +754,8 @@ class DIP_EXPORT SeparableLineFilter {
 /// thread safe, specify `dip::FrameWork::Separable_NoMultiThreading` as an option.
 /// the `SetNumberOfThreads` method to `lineFilter` will be called once before
 /// the processing starts, when `%dip::Framework::Separable` has determined how many
-/// threads will be used in the processing.
+/// threads will be used in the processing, even if `dip::FrameWork::Separable_NoMultiThreading`
+/// was specified.
 DIP_EXPORT void Separable(
       Image const& in,                 ///< Input image
       Image& out,                      ///< Output image
@@ -821,13 +825,14 @@ struct DIP_NO_EXPORT FullLineFilterParameters {
 ///
 /// A derived class can have data members that hold parameters to the line filter, that hold output values,
 /// or that hold intermediate buffers. The `dip::Framework::FullLineFilter::SetNumberOfThreads` method is
-/// called once before any processing starts. This is a good place to allocate space for temporary buffers, such
-/// that each threads has its own buffers to write in.
+/// called once before any processing starts. This is a good place to allocate space for temporary buffers,
+/// such that each threads has its own buffers to write in. Note that this function is called even if
+/// `dip::Framework::Full_NoMultiThreading` is given.
 class DIP_EXPORT FullLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( FullLineFilterParameters const& params ) = 0;
-      /// \brief The derived class can define this function if it needs this information ahead of time.
+      /// \brief The derived class can define this function for setting up the processing.
       virtual void SetNumberOfThreads( dip::uint /*threads*/ ) {}
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~FullLineFilter() {}
@@ -910,7 +915,8 @@ class DIP_EXPORT FullLineFilter {
 /// thread safe, specify `dip::FrameWork::Full_NoMultiThreading` as an option.
 /// the `SetNumberOfThreads` method to `lineFilter` will be called once before
 /// the processing starts, when `%dip::Framework::Full` has determined how many
-/// threads will be used in the scan.
+/// threads will be used in the scan, even if `dip::FrameWork::Full_NoMultiThreading`
+/// was specified.
 DIP_EXPORT void Full(
       Image const& in,                 ///< Input image
       Image& out,                      ///< Output image
