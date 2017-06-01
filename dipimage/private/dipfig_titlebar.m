@@ -18,12 +18,15 @@
 
 function dipfig_titlebar(fig,udata)
 tit = udata.imname;
-if isfield(udata,'curslice')
-   tit = [tit,' (',num2str(udata.curslice),')'];
-end
-if isfield(udata,'curtime')
-   tit = udata.imname;
-   tit = [tit,' (' num2str(udata.curslice) ',' num2str(udata.curtime),')'];
+coords = imagedisplay(udata.handle,'coordinates');
+nD = length(coords);
+if nD>2
+   k = imagedisplay(udata.handle,'orthogonal');
+   tit = [tit,' (',num2str(coords(k(1)))];
+   if nD>3
+      tit = [tit,',',num2str(coords(k(2)))];
+   end
+   tit = [tit,')'];
 end
 if isfield(udata,'zoom') && ~isempty(udata.zoom) && udata.zoom~=0
    tit = [tit,' (',num2str(udata.zoom*100),'%)'];

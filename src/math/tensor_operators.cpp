@@ -273,8 +273,9 @@ void Angle( Image const& in, Image& out ) {
    } else { // n == 3
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
             [ n ]( auto const& pin, auto const& pout ) {
+               dfloat norm = Norm( 3, pin );
                pout[ 0 ] = std::atan2( pin[ 1 ], pin[ 0 ] );
-               pout[ 1 ] = std::acos( pin[ 2 ] / Norm( 3, pin ) );
+               pout[ 1 ] = norm == 0.0 ? pi / 2.0 : std::acos( pin[ 2 ] / norm );
             }
       );
       outTensorElem = 2;
@@ -299,9 +300,10 @@ void CartesianToPolar( Image const& in, Image& out ) {
    } else { // n == 3
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
             [ n ]( auto const& pin, auto const& pout ) {
-               pout[ 0 ] = Norm( 3, pin );
+               dfloat norm = Norm( 3, pin );
+               pout[ 0 ] = norm;
                pout[ 1 ] = std::atan2( pin[ 1 ], pin[ 0 ] );
-               pout[ 2 ] = std::acos( pin[ 2 ] / pout[ 0 ] );
+               pout[ 2 ] = norm == 0.0 ? pi / 2.0 : std::acos( pin[ 2 ] / norm );
             }
       );
    }

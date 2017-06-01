@@ -61,7 +61,7 @@ DIP_EXPORT void KMeansClustering( // TODO: return the cluster centers?
 ///
 /// The output array contains the thresholds used.
 ///
-/// \see IsodataThreshold(Histogram const&,dip::uint) for more information on the algorithm used.
+/// See IsodataThreshold(Histogram const&,dip::uint) for more information on the algorithm used.
 DIP_EXPORT FloatArray IsodataThreshold(
       Image const& in,
       Image const& mask,
@@ -85,7 +85,7 @@ inline Image IsodataThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// \see OtsuThreshold(Histogram const&) for more information on the algorithm used.
+/// See OtsuThreshold(Histogram const&) for more information on the algorithm used.
 DIP_EXPORT dfloat OtsuThreshold(
       Image const& in,
       Image const& mask,
@@ -107,7 +107,7 @@ inline Image OtsuThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// \see MinimumErrorThreshold(Histogram const&) for more information on the algorithm used.
+/// See MinimumErrorThreshold(Histogram const&) for more information on the algorithm used.
 DIP_EXPORT dfloat MinimumErrorThreshold(
       Image const& in,
       Image const& mask,
@@ -130,7 +130,7 @@ inline Image MinimumErrorThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// \see TriangleThreshold(Histogram const&) for more information on the algorithm used.
+/// See TriangleThreshold(Histogram const&) for more information on the algorithm used.
 DIP_EXPORT dfloat TriangleThreshold(
       Image const& in,
       Image const& mask,
@@ -152,7 +152,7 @@ inline Image TriangleThreshold(
 ///
 /// Returns the threshold value used.
 ///
-/// \see BackgroundThreshold(Histogram const&,dfloat) for more information on the algorithm used.
+/// See BackgroundThreshold(Histogram const&,dfloat) for more information on the algorithm used.
 DIP_EXPORT dfloat BackgroundThreshold(
       Image const& in,
       Image const& mask,

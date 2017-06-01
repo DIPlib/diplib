@@ -21,13 +21,17 @@ This is a list of tasks that need to be done, in order of dependencies.
 This list includes dependencies and an estimate of how much design work needs
 to be done before that component can be implemented.
 
-Header files mentioned are from *DIPlib* 2.0 ("the old *DIPlib*").
+Header files mentioned are from *DIPlib* 2.x ("the old *DIPlib*").
 
 Priority for these items to be discussed. Framework and other infrastructure
 elements have highest priority, because other things depend on them. Some filters
 and algorithms are much more important than others.
 
 The **DEP** markers indicate points that depend on functionality not yet implemented.
+
+**NOTE:** The online documentation is not updated continuously, please see
+<a href="https://github.com/DIPlib/diplib/blob/master/src/documentation/workplan.md">this
+document's source</a> for the most up-to-date version.
 
 ## What is already done:
 
@@ -54,10 +58,15 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     All measurement features have been ported, including the previously only defined in
     *DIPimage*.
 
--   Histograms, including multi-dimensional histograms constructed from tensor images.
-
 -   The Fourier transform (based on the code out of OpenCV, much faster than the code in
     the old *DIPlib*).
+
+-   Histograms, including multi-dimensional histograms constructed from tensor images.
+
+-   Look-up table, a single object that includes functionality of various related look-up
+    functions in the old *DIPlib*.
+
+-   Global threshold algorithms, ported from a *DIPimage* M-file.
 
 -   An increasing number of filters and operators based on the various frameworks.
 
@@ -88,10 +97,9 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     The `dip_measurement` class needs to be rewritten. The `dipimage` GUI needs to
     be ported, with function input parameter definitions to be provided by `dipmenus`.
 
--   Python interface. **Requires special expertise**. Using one of the C++/Python
-    interface generators. Write interactive image display and GUI as exists in
-    *MATLAB*. This can be developed in parallel to the *MATLAB* interface, or after
-    the *MATLAB* interface is complete.
+-   Python interface. **Requires special expertise**. Using Pybind11. We already have
+    a start for this. Write interactive image display and GUI as exists in
+    *MATLAB*.
 
 -   Other interfaces. **Requires special expertise**. Header files that define
     functions to create a `dip::Image` object around image data from other libraries,
@@ -104,15 +112,6 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
     - dip_math.h (many already done)
     - dip_noise.h
     - dip_point.h
-
--   Lookup table: we should have a single lookup table function that handles scalar,
-    tensor and color images, with floating-point images using interpolation.
-    **Requires design work**. Depends on `dip::Framework::Scan`.
-    - dip_lookup_table.h
-    - dip_imarlut.h
-
--   Global threshold algorithms, depending on the histogram, currently implemented
-    in dipimage/threshold.m (Otsu, triangle, background, etc.).
 
 -   Image generation algorithms using `dip::Framework::ScanSingleOutput`.
     - dip_generation.h
@@ -161,8 +160,6 @@ The **DEP** markers indicate points that depend on functionality not yet impleme
 -   Stuff that is in *DIPimage*:
     - **DEP** 2D snakes (**requires design work**)
     - general 2D affine transformation, 3D rotation (is already C code)
-    - xx, yy, zz, rr, phiphi, ramp; extend this to `dip::Coordinates`, which makes a
-      tensor image (based on `dip::Framework::ScanSingleOutput`)
 
 -   Other stuff that's not in the old *DIPlib* (see below).
     **Requires special expertise**.

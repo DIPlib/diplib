@@ -317,7 +317,8 @@ inline Image Angle( Image const& in ) {
    return out;
 }
 
-/// \brief Converts the vector at each pixel in image `in` from Cartesian coordinates to polar coordinates.
+/// \brief Converts the vector at each pixel in image `in` from Cartesian coordinates to polar
+/// (or spherical) coordinates.
 ///
 /// `in` must be a 2-vector or a 3-vector. `out` is a same-size vector containing *r* and *phi*
 /// in the 2D case, and *r*, *phi* and *theta* in the 3D case. *phi* is the angle to the x-axis
@@ -343,7 +344,8 @@ inline Image CartesianToPolar( Image const& in ) {
    return out;
 }
 
-/// \brief Converts the vector at each pixel in image `in` from polar coordinates to Cartesian coordinates.
+/// \brief Converts the vector at each pixel in image `in` from polar (or spherical) coordinates to
+/// Cartesian coordinates.
 ///
 /// `in` must be a 2-vector or a 3-vector. See `dip::CartesianToPolar` for a description of the polar
 /// coordinates used.

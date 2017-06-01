@@ -18,7 +18,7 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
-*DIPlib* 3.0 is a complete rewrite in C++ of the *DIPlib* 2.0 infrastructure, which was written
+*DIPlib* 3.0 is a complete rewrite in C++ of the *DIPlib* 1.x/2.x infrastructure, which was written
 in C; only the code that implements actual image processing and analysis algorithms is ported
 over. 
 
