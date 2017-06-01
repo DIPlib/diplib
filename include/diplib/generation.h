@@ -113,7 +113,7 @@ inline void FillXCoordinate( Image& out, StringSet const& mode = {} ) {
 /// for the x-axis.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateXCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
-   CreateRamp( out, 0, mode );
+   CreateRamp( in, out, 0, mode );
 }
 inline Image CreateXCoordinate( Image const& in, StringSet const& mode = {} ) {
    Image out;
@@ -139,7 +139,7 @@ inline void FillYCoordinate( Image& out, StringSet const& mode = {} ) {
 /// for the y-axis. `in` must have at least two dimensions.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateYCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
-   CreateRamp( out, 1, mode );
+   CreateRamp( in, out, 1, mode );
 }
 inline Image CreateYCoordinate( Image const& in, StringSet const& mode = {} ) {
    Image out;
@@ -165,7 +165,7 @@ inline void FillZCoordinate( Image& out, StringSet const& mode = {} ) {
 /// for the z-axis. `in` must have at least three dimensions.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateZCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
-   CreateRamp( out, 2, mode );
+   CreateRamp( in, out, 2, mode );
 }
 inline Image CreateZCoordinate( Image const& in, StringSet const& mode = {} ) {
    Image out;
