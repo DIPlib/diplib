@@ -29,14 +29,7 @@ namespace dip {
 
 namespace {
 
-void CompleteConfiguration( Image const& input, Image const& mask, Histogram::Configuration& configuration ) {
-   if( configuration.lowerIsPercentile && configuration.mode != Histogram::Configuration::Mode::COMPUTE_LOWER ) {
-      configuration.lowerBound = Percentile( input, mask, configuration.lowerBound ).As< dfloat >();
-   }
-   if( configuration.upperIsPercentile && configuration.mode != Histogram::Configuration::Mode::COMPUTE_UPPER ) {
-      // NOTE: we increase the upper bound when computed as a percentile, because we do lowerBound <= value < upperBound.
-      configuration.upperBound = Percentile( input, mask, configuration.upperBound ).As< dfloat >() * ( 1.0 + 1e-15 );
-   }
+void CompleteConfiguration( Histogram::Configuration& configuration, bool isInteger ) {
    if( configuration.mode != Histogram::Configuration::Mode::COMPUTE_BINS ) {
       if( configuration.nBins < 1 ) {
          configuration.nBins = 256;
@@ -59,11 +52,11 @@ void CompleteConfiguration( Image const& input, Image const& mask, Histogram::Co
    }
    switch( configuration.mode ) {
       default:
-      //case Histogram::Configuration::Mode::COMPUTE_BINSIZE:
+         //case Histogram::Configuration::Mode::COMPUTE_BINSIZE:
          configuration.binSize = ( configuration.upperBound - configuration.lowerBound ) / static_cast< dfloat >( configuration.nBins );
          break;
       case Histogram::Configuration::Mode::COMPUTE_BINS:
-         if( hasNoBinSize && input.DataType().IsInteger() ) {
+         if( hasNoBinSize && isInteger ) {
             // Find a suitable bin size that is power of 2:
             dfloat range = configuration.upperBound - configuration.lowerBound; // an integer value...
             configuration.binSize = std::pow( 2.0, std::ceil( std::log2( range / 256.0 )));
@@ -87,6 +80,28 @@ void CompleteConfiguration( Image const& input, Image const& mask, Histogram::Co
          configuration.upperBound = configuration.lowerBound + static_cast< dfloat >( configuration.nBins ) * configuration.binSize;
          break;
    }
+}
+
+void CompleteConfiguration( Image const& input, Image const& mask, Histogram::Configuration& configuration ) {
+   if( configuration.lowerIsPercentile && configuration.mode != Histogram::Configuration::Mode::COMPUTE_LOWER ) {
+      configuration.lowerBound = Percentile( input, mask, configuration.lowerBound ).As< dfloat >();
+   }
+   if( configuration.upperIsPercentile && configuration.mode != Histogram::Configuration::Mode::COMPUTE_UPPER ) {
+      // NOTE: we increase the upper bound when computed as a percentile, because we do lowerBound <= value < upperBound.
+      configuration.upperBound = Percentile( input, mask, configuration.upperBound ).As< dfloat >() * ( 1.0 + 1e-15 );
+   }
+   CompleteConfiguration( configuration, input.DataType().IsInteger() );
+}
+
+void CompleteConfiguration( Measurement::IteratorFeature const& featureValues, Histogram::Configuration& configuration ) {
+   if( configuration.lowerIsPercentile && configuration.mode != Histogram::Configuration::Mode::COMPUTE_LOWER ) {
+      configuration.lowerBound = Percentile( featureValues, configuration.lowerBound );
+   }
+   if( configuration.upperIsPercentile && configuration.mode != Histogram::Configuration::Mode::COMPUTE_UPPER ) {
+      // NOTE: we increase the upper bound when computed as a percentile, because we do lowerBound <= value < upperBound.
+      configuration.upperBound = Percentile( featureValues, configuration.upperBound ) * ( 1.0 + 1e-15 );
+   }
+   CompleteConfiguration( configuration, false );
 }
 
 inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::uint nBins ) {
@@ -280,6 +295,47 @@ void Histogram::TensorImageHistogram( Image const& input, Image const& mask, His
       data_ = Sum( data_, {}, process );
    }
    data_.Squeeze( ndims );
+}
+
+void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const& featureValues, Histogram::ConfigurationArray& configuration ) {
+   dip::uint ndims = featureValues.NumberOfValues();
+   lowerBounds_.resize( ndims );
+   binSizes_.resize( ndims );
+   UnsignedArray sizes( ndims );
+   for( dip::uint ii = 0; ii < ndims; ++ii ) {
+      DIP_START_STACK_TRACE
+         Measurement::IteratorFeature featureColumn = featureValues;
+         featureColumn.Subset( ii );
+         CompleteConfiguration( featureColumn, configuration[ ii ] );
+      DIP_END_STACK_TRACE
+      lowerBounds_[ ii ] = configuration[ ii ].lowerBound;
+      binSizes_[ ii ] = configuration[ ii ].binSize;
+      sizes[ ii ] = configuration[ ii ].nBins;
+   }
+   data_.SetSizes( sizes );
+   data_.SetDataType( DT_UINT32 );
+   uint32* data = static_cast< uint32* >( data_.Origin() );
+   auto in = featureValues.FirstObject();
+   while( in ) {
+      auto tin = in.begin();
+      dip::sint offset = 0;
+      bool include = true;
+      for( dip::uint jj = 0; jj < ndims; ++jj ) {
+         if( configuration[ jj ].excludeOutOfBoundValues ) {
+            if(( *tin < configuration[ jj ].lowerBound ) || ( *tin >= configuration[ jj ].upperBound )) {
+               include = false;
+               break;
+            }
+         }
+         offset += data_.Stride( jj ) *
+                   dip::FindBin( *tin, configuration[ jj ].lowerBound, configuration[ jj ].binSize, configuration[ jj ].nBins );
+         ++tin;
+      }
+      if( include ) {
+         ++data[ offset ];
+      }
+      ++in;
+   }
 }
 
 dip::uint Histogram::Count() const {

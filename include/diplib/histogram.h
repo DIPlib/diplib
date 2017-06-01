@@ -23,6 +23,7 @@
 
 #include "diplib.h"
 #include "diplib/iterators.h"
+#include "diplib/measurement.h"
 
 
 /// \file
@@ -42,10 +43,10 @@ namespace dip {
 ///
 /// A histogram can have multiple dimensions. In general, a scalar image will yield a classical
 /// one-dimensional histogram, and a tensor image will yield a multi-dimensional histogram, with
-/// one dimension per tensor elment. The first tensor element determines the index along the first
+/// one dimension per tensor element. The first tensor element determines the index along the first
 /// dimension, the second tensor element that along the second dimension, etc.
 ///
-/// To facilitate useage for one-dimensional histograms, all getter functions that return a value
+/// To facilitate usage for one-dimensional histograms, all getter functions that return a value
 /// for a given dimension, default to dimension 0, so can be called without arguments.
 ///
 /// TODO: A histogram can also be constructed from a measurement feature.
@@ -114,7 +115,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief This version of the constructor is identical to the previous one, but with a single configuration
       /// parameter.
-      explicit Histogram( Image const& input, Image const& mask, Configuration configuration ) {
+      Histogram( Image const& input, Image const& mask, Configuration configuration ) {
          DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
          DIP_START_STACK_TRACE
@@ -148,6 +149,22 @@ class DIP_NO_EXPORT Histogram {
          }
          DIP_START_STACK_TRACE
             Construct( input, mask, configuration );
+         DIP_END_STACK_TRACE
+      }
+
+      /// \brief The constructor takes an `%IteratorFeature` of a `dip::Measurement` object, and configuration
+      /// options for each histogram dimension.
+      ///
+      /// `configuration` should have as many elements as values in `featureValues`. If `configuration` has only
+      /// one element, it will be used for all histogram dimensions. In the default configuration, the histogram
+      /// will stretch from lowest to highest value, in 100 bins.
+      explicit Histogram( Measurement::IteratorFeature const& featureValues, ConfigurationArray configuration = {} ) {
+         Configuration defaultConf( 0.0, 100.0, 100 ); // nBins==100
+         defaultConf.lowerIsPercentile = true;
+         defaultConf.upperIsPercentile = true;
+         DIP_START_STACK_TRACE
+            ArrayUseParameter( configuration, featureValues.NumberOfValues(), defaultConf );
+            MeasurementFeatureHistogram( featureValues, configuration );
          DIP_END_STACK_TRACE
       }
 
@@ -303,13 +320,13 @@ class DIP_NO_EXPORT Histogram {
       /// \brief Computes the mean value of the data represented by the histogram.
       ///
       /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
-      /// computing the statictic on data rounded to the bin centers.
+      /// computing the statistic on data rounded to the bin centers.
       DIP_EXPORT Image::CastPixel< dfloat > Mean() const;
 
       /// \brief Computes the covariance matrix of the data represented by the histogram.
       ///
       /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
-      /// computing the statictic on data rounded to the bin centers.
+      /// computing the statistic on data rounded to the bin centers.
       ///
       /// The returned pixel is a symmetric tensor, containing n*(n+1)/2 tensor elements (with n the
       /// histogram dimensionality).
@@ -324,12 +341,12 @@ class DIP_NO_EXPORT Histogram {
       /// of the 1D projections of the histogram.
       ///
       /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
-      /// computing the statictic on data rounded to the bin centers.
+      /// computing the statistic on data rounded to the bin centers.
       DIP_EXPORT Image::CastPixel< dfloat > MarginalMedian() const;
 
       /// \brief Returns the mode, the bin with the largest count. The return value is the
       ///
-      /// When multiple bins have the same, largest count, the first bin encontered is returned. This is the bin
+      /// When multiple bins have the same, largest count, the first bin encountered is returned. This is the bin
       /// with the lowest linear index, and is closest to the origin.
       DIP_EXPORT Image::CastPixel< dfloat > Mode() const;
 
@@ -345,7 +362,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Returns the marginal histogram for dimension `dim`.
       ///
-      /// The maginal histogram represents the marginal intensity distribution. It is a 1D histogram determined
+      /// The marginal histogram represents the marginal intensity distribution. It is a 1D histogram determined
       /// by summing over all dimensions except `dim`, and is equivalent to the histogram for tensor element
       /// `dim`.
       DIP_EXPORT Histogram MarginalHistogram( dip::uint dim ) const;
@@ -384,8 +401,9 @@ class DIP_NO_EXPORT Histogram {
 
       DIP_EXPORT void ScalarImageHistogram( Image const& input, Image const& mask, Configuration& configuration );
       DIP_EXPORT void TensorImageHistogram( Image const& input, Image const& mask, ConfigurationArray& configuration );
+      DIP_EXPORT void MeasurementFeatureHistogram( Measurement::IteratorFeature const& featureValues, ConfigurationArray& configuration );
 
-      void Construct( Image const& input, Image const& mask, ConfigurationArray configuration ) {
+      void Construct( Image const& input, Image const& mask, ConfigurationArray& configuration ) {
          dip::uint ndims = input.TensorElements();
          ArrayUseParameter( configuration, ndims, Configuration{} );
          if( ndims == 1 ) {
@@ -394,7 +412,7 @@ class DIP_NO_EXPORT Histogram {
             TensorImageHistogram( input, mask, configuration );
          }
       }
-      void Construct( Image const& input, Image const& mask, Configuration configuration ) {
+      void Construct( Image const& input, Image const& mask, Configuration& configuration ) {
          dip::uint ndims = input.TensorElements();
          if( ndims == 1 ) {
             ScalarImageHistogram( input, mask, configuration );
@@ -419,7 +437,7 @@ class DIP_NO_EXPORT Histogram {
 /// Note that the original Isodata algorithm (referenced below) does not use the image histogram, but instead
 /// works directly on the image. 2-means clustering on the histogram yields an identical result to the original
 /// Isodata algorithm, but is much more efficient. The implementation here generalizes to multiple thresholds
-/// becuase k-means clustering allows any number of thresholds.
+/// because k-means clustering allows any number of thresholds.
 ///
 /// Literature: T.W. Ridler, and S. Calvard, "Picture Thresholding Using an Iterative Selection Method",
 /// IEEE Transactions on Systems, Man, and Cybernetics 8(8):630-632, 1978.
