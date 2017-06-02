@@ -212,25 +212,6 @@ DIP_EXPORT dfloat BesselY1( dfloat x );
 /// \brief Computes the Bessel function Y of the order `n`.
 DIP_EXPORT dfloat BesselYN( dfloat x, dip::uint n );
 
-/// \brief Computes the natural logarithm of the gamma function.
-DIP_EXPORT dfloat LnGamma( dfloat value );
-
-/// \brief Computes the incomplete gamma function.
-DIP_EXPORT dfloat GammaP( dfloat a, dfloat x );
-
-/// \brief Computes the complementary incomplete gamma function.
-DIP_EXPORT dfloat GammaQ( dfloat a, dfloat x );
-
-/// \brief Computes the error function.
-inline dfloat Erf( dfloat x ) {
-   return ( x < 0.0 ? -GammaP( 0.5, x * x ) : GammaP( 0.5, x * x ));
-}
-
-/// \brief Computes the complementary error function.
-inline dfloat Erfc( dfloat x ) {
-   return ( x < 0.0 ? 1.0 + GammaP( 0.5, x * x ) : GammaQ( 0.5, x * x ));
-}
-
 /// \brief Computes the sinc function.
 inline dfloat Sinc( dfloat x ) {
    return x == 0.0 ? 1.0 : std::sin( x ) / x;

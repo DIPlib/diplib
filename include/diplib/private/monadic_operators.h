@@ -157,13 +157,13 @@ DIP__MONADIC_OPERATOR_FLOAT( BesselY1, []( auto its ) { return static_cast< decl
 DIP__MONADIC_OPERATOR_FLOAT_WITH_PARAM( BesselYN, dip::uint, alpha, [ alpha ]( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( BesselYN( *its[ 0 ], alpha )); }, DataType::Class_Real )
 
 /// \brief Computes the natural logarithm of the gamma function of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( LnGamma, []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( LnGamma( *its[ 0 ] )); }, DataType::Class_Real )
+DIP__MONADIC_OPERATOR_FLOAT( LnGamma, []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( std::lgamma( *its[ 0 ] )); }, DataType::Class_Real )
 
 /// \brief Computes the error function of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( Erf, []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( Erf( *its[ 0 ] )); }, DataType::Class_Real )
+DIP__MONADIC_OPERATOR_FLOAT( Erf, []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( std::erf( *its[ 0 ] )); }, DataType::Class_Real )
 
 /// \brief Computes the complementary error function of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( Erfc, []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( Erfc( *its[ 0 ] )); }, DataType::Class_Real )
+DIP__MONADIC_OPERATOR_FLOAT( Erfc, []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( std::erfc( *its[ 0 ] )); }, DataType::Class_Real )
 
 /// \brief Computes the sinc function of each sample. \f$\mathrm{sinc}(x) = \sin(x)/x\f$.
 DIP__MONADIC_OPERATOR_FLOAT( Sinc, []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( Sinc( *its[ 0 ] )); }, DataType::Class_Real )
