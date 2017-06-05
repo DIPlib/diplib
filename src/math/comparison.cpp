@@ -26,14 +26,14 @@ namespace dip {
 
 namespace {
 
-// This are the same class as Framework::NadicScanLineFilter, but with a binary output.
+// This are the same class as Framework::VariadicScanLineFilter, but with a binary output.
 template< dip::uint N, typename TPI, typename F >
-class NadicScanLineFilterBinOut : public Framework::ScanLineFilter {
+class VariadicScanLineFilterBinOut : public Framework::ScanLineFilter {
    // Note that N is a compile-time constant, and consequently the compiler should be able to optimize all the loops
    // over N.
    public:
-      static_assert( N > 0, "NadicScanLineFilterBinOut does not work without input images" );
-      NadicScanLineFilterBinOut( F const& func ) : func_( func ) {}
+      static_assert( N > 0, "VariadicScanLineFilterBinOut does not work without input images" );
+      VariadicScanLineFilterBinOut( F const& func ) : func_( func ) {}
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( params.inBuffer.size() == N );
          DIP_ASSERT( params.outBuffer.size() == 1 );
@@ -85,11 +85,11 @@ class NadicScanLineFilterBinOut : public Framework::ScanLineFilter {
 
 template< typename TPI, typename F >
 std::unique_ptr< Framework::ScanLineFilter > NewDyadicScanLineFilterBinOut( F const& func ) {
-   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new NadicScanLineFilterBinOut< 2, TPI, F >( func ));
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new VariadicScanLineFilterBinOut< 2, TPI, F >( func ));
 }
 template< typename TPI, typename F >
 std::unique_ptr< Framework::ScanLineFilter > NewTriadicScanLineFilterBinOut( F const& func ) {
-   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new NadicScanLineFilterBinOut< 3, TPI, F >( func ));
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new VariadicScanLineFilterBinOut< 3, TPI, F >( func ));
 }
 
 } // namespace

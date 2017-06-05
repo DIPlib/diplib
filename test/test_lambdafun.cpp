@@ -13,7 +13,7 @@
 
 template< class TPI, class F >
 std::unique_ptr< dip::Framework::ScanLineFilter > NewFilter( F func ) {
-   return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::NadicScanLineFilter< 1, TPI, F >( func ));
+   return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::VariadicScanLineFilter< 1, TPI, F >( func ));
 }
 
 int main( void ) {
@@ -45,11 +45,11 @@ int main( void ) {
    dip::Add( in1, in2, out, dt );
    std::cout << "Add: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
 
-   // Complex dyadic, following example in documentation to `class NadicScanLineFilter`
+   // Complex dyadic, following example in documentation to `class VariadicScanLineFilter`
 
    start = std::chrono::steady_clock::now();
    auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) { return (decltype(*its[0]))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset ); };
-   dip::Framework::NadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
+   dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
    dip::Framework::ScanDyadic( in1, in2, out, dip::DT_SFLOAT, dip::DT_SFLOAT, scanLineFilter );
    std::cout << "scanLineFilter: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
 
@@ -90,7 +90,7 @@ int main( void ) {
       }
    }
 
-   // Monadic, following example in documentation to `class NadicScanLineFilter`
+   // Monadic, following example in documentation to `class VariadicScanLineFilter`
 
    start = std::chrono::steady_clock::now();
    std::unique_ptr< dip::Framework::ScanLineFilter > monfilt;

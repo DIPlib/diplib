@@ -5,7 +5,7 @@
  * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
- * Credit to Wouter Caarls for suggesting what is now `NadicScanLineFilter`.
+ * Credit to Wouter Caarls for suggesting what is now `VariadicScanLineFilter`.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -429,7 +429,7 @@ inline void ScanDyadic(
 ///     dip::Image out;
 ///     dip::dfloat offset = 40;
 ///     auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) { return ( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset; };
-///     dip::Framework::NadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
+///     dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
 ///     dip::Framework::ScanDyadic( lhs, rhs, out, dip::DT_SFLOAT, dip::DT_SFLOAT, scanLineFilter );
 /// ```
 ///
@@ -440,13 +440,13 @@ inline void ScanDyadic(
 /// Note that to access the sample values, you need to use the syntax `*its[ 0 ]`, where the `0` is the index into
 /// the array, yielding a pointer, which is dereferenced by the `*` operator to access the sample value.
 ///
-/// To use the `%NadicScanLineFilter` with dynamic data type dispatch, it is necessary to use an auxiliary function.
+/// To use the `%VariadicScanLineFilter` with dynamic data type dispatch, it is necessary to use an auxiliary function.
 /// Such an auxiliary function also simplifies the use of the class template:
 ///
 /// ```cpp
 ///     template< typename TPI, typename F >
 ///     std::unique_ptr< dip::Framework::ScanLineFilter > NewFilter( F func ) {
-///        return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::NadicScanLineFilter< 1, TPI, F >( func ));
+///        return static_cast< std::unique_ptr< dip::Framework::ScanLineFilter >>( new dip::Framework::VariadicScanLineFilter< 1, TPI, F >( func ));
 ///     }
 ///     // ...
 ///     dip::Image in = ...;
@@ -461,7 +461,7 @@ inline void ScanDyadic(
 ///
 /// Notice in this case we used a generic lambda, i.e. its input parameter has type `auto`. It will be compiled
 /// differently for each allowed data type. The function template `%NewFilter` that we defined specifies the `N` in
-/// the `%NadicScanLineFilter` template, and helps pass on the type of the lambda, which is automatically determined
+/// the `%VariadicScanLineFilter` template, and helps pass on the type of the lambda, which is automatically determined
 /// by the compiler and filled out. That is, the function can be called as `NewFilter< dip::sfloat >( sampleOperator )`.
 /// The object is allocated in free memory, and its lifetime is managed by `std::unique_ptr`, meaning that there is
 /// no need to explicitly delete the object. Next, we use the `DIP_OVL_CALL_ASSIGN_REAL` macro to call different
@@ -472,12 +472,12 @@ inline void ScanDyadic(
 /// `dip::Framework::NewMonadicScanLineFilter`, `dip::Framework::NewDyadicScanLineFilter`,
 /// `dip::Framework::NewTriadicScanLineFilter`, `dip::Framework::NewTetradicScanLineFilter`.
 template< dip::uint N, typename TPI, typename F >
-class DIP_EXPORT NadicScanLineFilter : public ScanLineFilter {
+class DIP_EXPORT VariadicScanLineFilter : public ScanLineFilter {
    // Note that N is a compile-time constant, and consequently the compiler should be able to optimize all the loops
    // over N.
    public:
-      static_assert( N > 0, "NadicScanLineFilter does not work without input images" );
-      NadicScanLineFilter( F const& func ) : func_( func ) {}
+      static_assert( N > 0, "VariadicScanLineFilter does not work without input images" );
+      VariadicScanLineFilter( F const& func ) : func_( func ) {}
       virtual void Filter( ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( params.inBuffer.size() == N );
          DIP_ASSERT( params.outBuffer.size() == 1 );
@@ -528,31 +528,31 @@ class DIP_EXPORT NadicScanLineFilter : public ScanLineFilter {
 };
 
 /// \brief Support for quickly defining monadic operators (1 input image, 1 output image).
-/// See `dip::Framework::NadicScanLineFilter`.
+/// See `dip::Framework::VariadicScanLineFilter`.
 template< typename TPI, typename F >
 inline std::unique_ptr< ScanLineFilter > NewMonadicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 1, TPI, F >( func ));
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 1, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining dyadic operators (2 input images, 1 output image).
-/// See `dip::Framework::NadicScanLineFilter`.
+/// See `dip::Framework::VariadicScanLineFilter`.
 template< typename TPI, typename F >
 inline std::unique_ptr< ScanLineFilter > NewDyadicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 2, TPI, F >( func ));
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 2, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining triadic operators (3 input images, 1 output image).
-/// See `dip::Framework::NadicScanLineFilter`.
+/// See `dip::Framework::VariadicScanLineFilter`.
 template< typename TPI, typename F >
 inline std::unique_ptr< ScanLineFilter > NewTriadicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 3, TPI, F >( func ));
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 3, TPI, F >( func ));
 }
 
 /// \brief Support for quickly defining tetradic operators (4 input images, 1 output image).
-/// See `dip::Framework::NadicScanLineFilter`.
+/// See `dip::Framework::VariadicScanLineFilter`.
 template< typename TPI, typename F >
 inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< ScanLineFilter >>( new NadicScanLineFilter< 4, TPI, F >( func ));
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 4, TPI, F >( func ));
 }
 
 //

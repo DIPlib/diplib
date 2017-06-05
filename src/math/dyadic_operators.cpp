@@ -50,9 +50,9 @@ void Hypot( Image const& a, Image const& b, Image& out ) {
 namespace {
 
 template< typename TPI, typename F >
-class DIP_EXPORT VariadicScanLineFilter : public Framework::ScanLineFilter {
+class DIP_EXPORT MultiScanLineFilter : public Framework::ScanLineFilter {
    public:
-      VariadicScanLineFilter( F const& func ) : func_( func ) {}
+      MultiScanLineFilter( F const& func ) : func_( func ) {}
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint N = params.inBuffer.size();
          dip::uint const bufferLength = params.bufferLength;
@@ -78,8 +78,8 @@ class DIP_EXPORT VariadicScanLineFilter : public Framework::ScanLineFilter {
 };
 
 template< typename TPI, typename F >
-inline std::unique_ptr< Framework::ScanLineFilter > NewVariadicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new VariadicScanLineFilter< TPI, F >( func ));
+inline std::unique_ptr< Framework::ScanLineFilter > NewMultiScanLineFilter( F const& func ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new MultiScanLineFilter< TPI, F >( func ));
 }
 
 } // namespace
@@ -91,7 +91,7 @@ void Supremum( ImageConstRefArray const& in, Image& out ) {
       dt = DataType::SuggestDyadicOperation( dt, in[ ii ].get().DataType() );
    }
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewVariadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewMultiScanLineFilter, (
          []( auto a, auto b ) { return std::max( a, b ); }
    ), dt );
    ImageRefArray outar{ out };
@@ -106,7 +106,7 @@ void Infimum( ImageConstRefArray const& in, Image& out ) {
       dt = DataType::SuggestDyadicOperation( dt, in[ ii ].get().DataType() );
    }
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewVariadicScanLineFilter, (
+   DIP_OVL_CALL_ASSIGN_NONCOMPLEX( scanLineFilter, NewMultiScanLineFilter, (
          []( auto a, auto b ) { return std::min( a, b ); }
    ), dt );
    ImageRefArray outar{ out };
