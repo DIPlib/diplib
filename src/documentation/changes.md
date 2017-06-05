@@ -44,7 +44,7 @@ over.
 
    - We used to call the image size its dimension. `dip_Dimensions` is now `dip::Image::Sizes`.
      The reason is that it was too confusing talking about a dimension as an image axis (the
-     2nd dimension), and the dimension of that dimension (the size of the image along that
+     2<sup>nd</sup> dimension), and the dimension of that dimension (the size of the image along that
      axis).
 
    - Images now can have a tensor as pixel value, as was possible in *DIPimage*. To port old
@@ -139,11 +139,16 @@ over.
 - `dip_Threshold` is now `dip::FixedThreshold`. `dip::Threshold` is a function that allows
   to select an automated threshold method.
 
+- `dip_RandomXxx` functions are now methods to the `dip::Random` class. `dip_UniformRandomVariable`
+  and similar functions are now classes `dip::UniformRandomGenerator` and similar.
+  `dip::GaussianRandomGenerator` produces a single output value, the object stores the
+  second one for the next call.
+
 ## Changes in functionality
 
 - Second order extrapolation boundary extension didn't do as advertised in the old *DIPlib*.
   Also the first order extrapolation couldn't have worked correctly with unsigned integers.
-  The new implementation fits a 2nd order polynomial that reaches 0 at the end of the extended
+  The new implementation fits a 2<sup>nd</sup> order polynomial that reaches 0 at the end of the extended
   boundary, yielding a continuous first derivative at the boundary. A third order extrapolation
   has been added, which works similarly but yields a continuous second derivative at the boundary.
   These functions are quite noise sensitive, however, and I expect they might produce high
@@ -167,10 +172,17 @@ over.
 - `dip::FourierTransform` now does normalization in the more common way (forward transform not
   normalized, inverse transform normalized by 1/N), but an option ("symmetric") allows to change
   the normalization to be consistent with the old *DIPlib*, which used a symmetric normalization
-  scheme (both forward and backward transforms use 1/N^0.5)
+  scheme (both forward and backward transforms use 1/N<sup>1/2</sup>)
 
 - `dip::Histogram` misses a few of the options that `dip_MultiDimensionalHistogram` had, but I
   don't think they are relevant. They can be added easily if necessary.
+
+- `dip::Random` uses a different pseudo-random number generator. Previous versions used the
+  Mersenne Twister. We now use the PCG scheme (permuted linear congruential generator), which
+  is much faster than the Mersenne Twister, has a much smaller internal state, and produces
+  better quality randomness, though with the given parameters, the period is not as large as
+  that of the Mersenne Twister (2<sup>128</sup> vs 2<sup>19937</sup>, but do note that 
+  2<sup>128</sup> is a very, very long period).
 
 ## Changes from DIPimage 2.x (the old DIPimage)
 
@@ -231,8 +243,8 @@ over.
   functions with an `_se` appended to the name, remove the `_se`. Alternatively, the `alias`
   sub-directory contains these names and forwards the calls to the correct functions.
 
-- `smooth` is no longer relevant, moved to the `alias` directory. `derivative` has the 2nd
-  and 3rd arguments switched, it makes more sense having the order first.
+- `smooth` is no longer relevant, moved to the `alias` directory. `derivative` has the 2<sup>nd</sup>
+  and 3<sup>rd</sup> arguments switched, it makes more sense having the order first.
 
 - `mdhistogram` has fewer options, but should still be able to produce the same results as
   previously.

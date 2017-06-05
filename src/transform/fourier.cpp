@@ -167,9 +167,6 @@ void FourierTransform(
          DIP_THROW( E::INVALID_FLAG );
       }
    }
-   if( !in.DataType().IsComplex() ) {
-      real = false; // we cannot have real output if the input is real
-   }
    // Handle `process` array
    if( process.empty() ) {
       process.resize( nDims, true );

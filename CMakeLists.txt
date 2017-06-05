@@ -60,10 +60,7 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH 1) # Prevent relinking when installing
 
 # Do we have __PRETTY_FUNCTION__ ?
 include(CheckCXXSourceCompiles)
-check_cxx_source_compiles(
-      "int main() { char const* name = __PRETTY_FUNCTION__; return 0; }"
-      HAS_PRETTY_FUNCTION
-)
+check_cxx_source_compiles("int main() { char const* name = __PRETTY_FUNCTION__; return 0; }" HAS_PRETTY_FUNCTION)
 if(HAS_PRETTY_FUNCTION)
    add_definitions(-DDIP__HAS_PRETTY_FUNCTION)
 endif()
@@ -92,6 +89,16 @@ endif()
 set(DIP_ENABLE_UNICODE ON CACHE BOOL "Enable UTF-8 encoded strings, if disabled, some text output will look more 'primitive'")
 if(DIP_ENABLE_UNICODE)
    add_definitions(-DDIP__ENABLE_UNICODE)
+endif()
+
+# Force 128-bit PRNG?
+set(DIP_ALWAYS_128_PRNG OFF CACHE BOOL "Use the 128-bit PRNG code even if 128-bit integers are not natively supported by your platform")
+if(DIP_ALWAYS_128_PRNG)
+   add_definitions(-DDIP_ALWAYS_128_PRNG)
+   set(HAS_128_INT TRUE)
+else()
+   # We'll display later if we will use 64-bit of 128-bit PRNG.
+   check_cxx_source_compiles("int main() { int v = __SIZEOF_INT128__; return 0; }" HAS_128_INT)
 endif()
 
 # Eigen
@@ -380,6 +387,11 @@ if(DIP_ENABLE_UNICODE)
    message(" * Unicode support enabled")
 else()
    message(" * Unicode support disabled")
+endif()
+if(HAS_128_INT)
+   message(" * Using 128-bit PRNG")
+else()
+   message(" * Using 64-bit PRNG")
 endif()
 
 if(DIP_ENABLE_DOCTEST)

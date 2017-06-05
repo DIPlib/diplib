@@ -34,14 +34,14 @@ enum class CoordinateSystem {
       FREQUENCY
 };
 struct CoordinateMode {
-   CoordinateSystem system;
-   bool invertedY;
-   bool physical;
-   bool radialFrequency;
+   CoordinateSystem system = CoordinateSystem::RIGHT;
+   bool invertedY = false;
+   bool physical = false;
+   bool radialFrequency = false;
 };
 
 CoordinateMode ParseMode( StringSet const& mode ) {
-   CoordinateMode coordinateMode{ CoordinateSystem::RIGHT, false, false };
+   CoordinateMode coordinateMode;
    for( auto& option : mode ) {
       if( option == "right" ) {
          coordinateMode.system = CoordinateSystem::RIGHT;

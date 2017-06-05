@@ -48,6 +48,8 @@ Important `cmake` command-line arguments:
     -DDIP_ENABLE_ASSERT=Off                 # to disable asserts
     -DDIP_ENABLE_DOCTEST=Off                # to disable doctest within DIPlib
     -DDIP_ENABLE_UNICODE=Off                # to disable UFT-8 strings within DIPlib
+    -DDIP_ALWAYS_128_PRNG=On                # to use the 128-bit PRNG code even if 128-bit
+                                            # integers are not natively supported by your platform
     -DDIP_BUILD_DIPVIEWER=Off               # to not build/install the DIPviewer module
     -DDIP_BUILD_PYDIP=Off                   # to not build/install the PyDIP Python module
     -DDIP_BUILD_DIPIMAGE=Off                # to not build/install the DIPimage MATLAB toolbox
@@ -76,6 +78,11 @@ DIPlib includes the following libraries / external code:
   Copyright (C) 2000, Intel Corporation
   Intel License Agreement For Open Source Computer Vision Library
   see src/transform/opencv_dxt.h
+
+- PCG Random Number Generation for C++
+  Copyright 2014-2017 Melissa O'Neill and the PCG Project contributors
+  Apache 2.0 License, or The MIT License, at your option
+  see include/diplib/private/pcg_*.hpp
 
 - pybind11 (not used in the DIPlib library, only used in the Python bindings)
   Copyright (c) 2016 Wenzel Jakob <wenzel.jakob@epfl.ch>, All rights reserved.

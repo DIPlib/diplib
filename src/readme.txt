@@ -21,6 +21,9 @@ transform/        Fourier and other transform
 
 documentation/    Markdown files
 
+../dependencies/* External code needed for compilation of DIPlib and/or components,
+                  but not necessary to compile code that uses DIPlib.
+
 ---
 
 The old DIPlib sources have these additional directories, I thought

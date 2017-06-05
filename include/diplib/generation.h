@@ -22,6 +22,7 @@
 #define DIP_GENERATION_H
 
 #include "diplib.h"
+#include "random.h"
 
 
 /// \file
@@ -282,12 +283,14 @@ inline Image CreateThetaCoordinate( Image const& in, StringSet const& mode = {} 
 ///  - `"corner"`: The origin is on the first pixel.
 ///  - `"frequency"`: The coordinates used are as for the Fourier transform.
 ///    The origin is as for `"right"`, and the coordinates are in the range [0.5,0.5).
-/// Aditionally, `mode` can contain the following strings:
+/// Additionally, `mode` can contain the following strings:
 ///  - `"math"`: The y axis is inverted, such that it increases upwards.
 ///  - `"radial"`: In combination with "frequency", changes the range to [-pi,pi), as with radial
 ///    frequencies.
 ///  - `"physical"`: The coordinate system is in phyisical units rather than providing indices.
-///    That is, instead of unit increments between pixels, the pixel size is used to scale distances.
+///    That is, instead of unit increments between pixels, the pixel size magnitudes are used to
+///    scale distances. Units are ignored, so if they differ, polar/spherical coordinates might
+///    not make sense.
 ///    In combination with `"frequency"`, yields the same result as in combination with `"right"`.
 /// The string `"radfreq"` is equivalent to both `"frequency"` and `"radial"`.
 DIP_EXPORT void FillCoordinates( Image& out, StringSet const& mode = {}, String const& system = "" );
