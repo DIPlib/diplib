@@ -2,7 +2,7 @@
 #include <random>
 #include <chrono>
 
-#include "diplib/private/pcg_random.h"
+#include "diplib/private/pcg_random.hpp"
 #include "prng_engine.hpp"
 
 #undef DIP__ENABLE_DOCTEST

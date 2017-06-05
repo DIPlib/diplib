@@ -314,6 +314,96 @@ inline Image CreateCoordinates( Image const& in, StringSet const& mode = {}, Str
 }
 
 
+/// \brief Adds uniformly distributed noise to the input image.
+///
+/// The uniformly distributed noise added to the image is in the range `lowerBound` to `upperBound`. That is,
+/// for each pixel it does `in += uniformRandomGenerator( lowerBound, upperBound )`. The output image is of the
+/// same type as the input image.
+///
+/// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
+/// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
+/// which is essentially a copy of `random` set to a different random stream. Given a `dip::Random` object in an
+/// identical state before calling this function, the output image will be different depending on the number of
+/// threads used.
+///
+/// \see dip::UniformRandomGenerator.
+DIP_EXPORT void UniformNoise( Image const& in, Image& out, Random& random, dfloat lowerBound = 0.0, dfloat upperBound = 1.0 );
+inline Image UniformNoise( Image const& in, Random& random, dfloat lowerBound = 0.0, dfloat upperBound = 1.0 ) {
+   Image out;
+   UniformNoise( in, out, random, lowerBound, upperBound );
+   return out;
+}
+
+/// \brief Adds normally distributed noise to the input image.
+///
+/// The normally distributed noise added to the image is defined by `variance`, and has a zero mean. That is,
+/// for each pixel it does `in += gaussianRandomGenerator( 0, std::sqrt( variance ))`. The output image is of the
+/// same type as the input image.
+///
+/// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
+/// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
+/// which is essentially a copy of `random` set to a different random stream. Given a `dip::Random` object in an
+/// identical state before calling this function, the output image will be different depending on the number of
+/// threads used.
+///
+/// \see dip::GaussianRandomGenerator.
+DIP_EXPORT void GaussianNoise( Image const& in, Image& out, Random& random, dfloat variance = 1.0 );
+inline Image GaussianNoise( Image const& in, Random& random, dfloat variance = 1.0 ) {
+   Image out;
+   GaussianNoise( in, out, random, variance );
+   return out;
+}
+
+/// \brief Adds Poisson-distributed noise to the input image.
+///
+/// The Poisson-distributed noise is added to the image scaled by `conversion`. That is,
+/// for each pixel it does `in = poissonRandomGenerator( in * conversion ) / conversion`.
+/// `conversion` can be used to relate the pixel values with the number of counts. For example, the simulate a
+/// photon-limited image acquired by a CCD camera, the conversion factor specifies the relation between the number
+/// of photons recorded and the pixel value.
+///
+/// The output image is of the same type as the input image.
+///
+/// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
+/// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
+/// which is essentially a copy of `random` set to a different random stream. Given a `dip::Random` object in an
+/// identical state before calling this function, the output image will be different depending on the number of
+/// threads used.
+///
+/// \see dip::PoissonRandomGenerator.
+DIP_EXPORT void PoissonNoise( Image const& in, Image& out, Random& random, dfloat conversion = 1.0 );
+inline Image PoissonNoise( Image const& in, Random& random, dfloat conversion = 1.0 ) {
+   Image out;
+   PoissonNoise( in, out, random, conversion );
+   return out;
+}
+
+/// \brief Adds noise to the binary input image.
+///
+/// The noise added to the binary image is described by the two probabilities `p10` and `p01`. `p10` is the
+/// probability that a foreground pixel transitions to background (probability of 1 &rarr; 0 transition), and `p01`
+/// is the probability that a background pixel transitions to foreground (probability to 0 &rarr; 1 transition).
+/// Thus, `p10` indicates the probability for each foreground pixel in the input image to be set to background,
+/// and `p01` indicates the probability that a background pixel in the input image is set to foreground. It is
+/// possible to set either of these to 0, to limit the noise to only one of the phases: for example,
+/// `BinaryNoise( in, 0.05, 0.0 )` limits the noise to the foreground components, and does not add noise to
+/// the background.
+///
+/// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
+/// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
+/// which is essentially a copy of `random` set to a different random stream. Given a `dip::Random` object in an
+/// identical state before calling this function, the output image will be different depending on the number of
+/// threads used.
+///
+/// \see dip::BinaryRandomGenerator.
+DIP_EXPORT void BinaryNoise( Image const& in, Image& out, Random& random, dfloat p10 = 0.05, dfloat p01 = 0.05 );
+inline Image BinaryNoise( Image const& in, Random& random, dfloat p10 = 0.05, dfloat p01 = 0.05 ) {
+   Image out;
+   BinaryNoise( in, out, random, p10, p01 );
+   return out;
+}
+
+
 /// \}
 
 

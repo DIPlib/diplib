@@ -202,10 +202,16 @@ DIP_NO_EXPORT class BinaryRandomGenerator {
    public:
       BinaryRandomGenerator( Random& generator ) : generator_( generator ) {}
       bin operator()( dfloat p ) {
-         return std::generate_canonical< dfloat, std::numeric_limits< dfloat >::digits, Random >( generator_ ) < p;
-         // The above is slow, potentially requires multiple random numbers to be generated. Instead, we could do
-         // the following, though the casts loose precision and therefore probabilities might not be as requested:
-         // return static_cast< long double >( generator_() ) < ( static_cast< long double >( Random::max() ) + 1 ) * p;
+         if( p <= 0.0 ) {
+            return false;
+         } else if( p >= 1.0 ) {
+            return true;
+         } else {
+            return std::generate_canonical< dfloat, std::numeric_limits< dfloat >::digits, Random >( generator_ ) < p;
+            // The above is slow, potentially requires multiple random numbers to be generated. Instead, we could do
+            // the following, though the casts loose precision and therefore probabilities might not be as requested:
+            // return static_cast< long double >( generator_() ) < ( static_cast< long double >( Random::max() ) + 1 ) * p;
+         }
       }
    private:
       Random& generator_;
