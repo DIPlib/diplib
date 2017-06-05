@@ -286,6 +286,9 @@ inline Image CreateThetaCoordinate( Image const& in, StringSet const& mode = {} 
 ///  - `"math"`: The y axis is inverted, such that it increases upwards.
 ///  - `"radial"`: In combination with "frequency", changes the range to [-pi,pi), as with radial
 ///    frequencies.
+///  - `"physical"`: The coordinate system is in phyisical units rather than providing indices.
+///    That is, instead of unit increments between pixels, the pixel size is used to scale distances.
+///    In combination with `"frequency"`, yields the same result as in combination with `"right"`.
 /// The string `"radfreq"` is equivalent to both `"frequency"` and `"radial"`.
 DIP_EXPORT void FillCoordinates( Image& out, StringSet const& mode = {}, String const& system = "" );
 

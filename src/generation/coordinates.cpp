@@ -31,17 +31,17 @@ enum class CoordinateSystem {
       LEFT,
       TRUE,
       CORNER,
-      FREQUENCY,
-      RADIAL_FREQUENCY
+      FREQUENCY
 };
 struct CoordinateMode {
    CoordinateSystem system;
    bool invertedY;
+   bool physical;
+   bool radialFrequency;
 };
 
 CoordinateMode ParseMode( StringSet const& mode ) {
-   CoordinateMode coordinateMode{ CoordinateSystem::RIGHT, false };
-   bool hasRadial = false;
+   CoordinateMode coordinateMode{ CoordinateSystem::RIGHT, false, false };
    for( auto& option : mode ) {
       if( option == "right" ) {
          coordinateMode.system = CoordinateSystem::RIGHT;
@@ -55,17 +55,16 @@ CoordinateMode ParseMode( StringSet const& mode ) {
          coordinateMode.system = CoordinateSystem::FREQUENCY;
       } else if( option == "radfreq" ) {
          coordinateMode.system = CoordinateSystem::FREQUENCY;
-         hasRadial = true;
+         coordinateMode.radialFrequency = true;
       } else if( option == "radial" ) {
-         hasRadial = true;
+         coordinateMode.radialFrequency = true;
       } else if( option == "math" ) {
          coordinateMode.invertedY = true;
+      } else if( option == "physical" ) {
+         coordinateMode.physical = true;
       } else {
          DIP_THROW( E::INVALID_FLAG );
       }
-   }
-   if( hasRadial && ( coordinateMode.system == CoordinateSystem::FREQUENCY )) {
-      coordinateMode.system = CoordinateSystem::RADIAL_FREQUENCY;
    }
    return coordinateMode;
 }
@@ -76,35 +75,34 @@ struct Transformation {
 };
 using TransformationArray = DimensionArray< Transformation >;
 
-Transformation FindTransformation( dip::uint size, dip::uint dim, CoordinateMode coordinateMode ) {
+Transformation FindTransformation( dip::uint size, dip::uint dim, CoordinateMode coordinateMode, PhysicalQuantity pixelSize ) {
    Transformation out;
    bool invert = ( dim == 1 ) && coordinateMode.invertedY;
    switch( coordinateMode.system ) {
       default:
       //case CoordinateSystem::RIGHT:
+      //case CoordinateSystem::FREQUENCY:
          out.offset = static_cast< dfloat >( size / 2 );
-         out.scale = 1.0;
          break;
       case CoordinateSystem::LEFT:
          out.offset = static_cast< dfloat >(( size - 1 ) / 2 );
-         out.scale = 1.0;
          break;
       case CoordinateSystem::TRUE:
          out.offset = static_cast< dfloat >( size - 1 ) / 2.0;
-         out.scale = 1.0;
          break;
       case CoordinateSystem::CORNER:
          out.offset = invert ? static_cast< dfloat >( size - 1 ) : 0.0;
-         out.scale = 1.0;
          break;
-      case CoordinateSystem::FREQUENCY:
-         out.offset = static_cast< dfloat >( size / 2 );
-         out.scale = 1.0 / static_cast< dfloat >( size );
-         break;
-      case CoordinateSystem::RADIAL_FREQUENCY:
-         out.offset = static_cast< dfloat >( size / 2 );
-         out.scale = 2.0 * pi / static_cast< dfloat >( size );
-         break;
+   }
+   if( coordinateMode.physical ) {
+      out.scale = pixelSize.magnitude;
+   } else if( coordinateMode.system == CoordinateSystem::FREQUENCY ) {
+      out.scale = 1.0 / static_cast< dfloat >( size );
+      if( coordinateMode.radialFrequency ) {
+         out.scale *= 2.0 * pi;
+      }
+   } else {
+      out.scale = 1.0;
    }
    if( invert ) {
       out.scale = -out.scale;
@@ -188,7 +186,7 @@ void FillRamp( Image& out, dip::uint dimension, StringSet const& mode ) {
    DIP_THROW_IF( dimension >= out.Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
    DIP_START_STACK_TRACE
       CoordinateMode coordinateMode = ParseMode( mode );
-      Transformation transformation = FindTransformation( out.Size( dimension ), dimension, coordinateMode );
+      Transformation transformation = FindTransformation( out.Size( dimension ), dimension, coordinateMode, out.PixelSize( dimension ) );
       dip__Ramp scanLineFilter( dimension, transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
    DIP_END_STACK_TRACE
@@ -233,7 +231,7 @@ void FillRadiusCoordinate( Image& out, StringSet const& mode ) {
       dip::uint nDims = out.Dimensionality();
       TransformationArray transformation( nDims );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode );
+         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ) );
       }
       dip__Radius scanLineFilter( transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
@@ -288,7 +286,7 @@ void FillPhiCoordinate( Image& out, StringSet const& mode ) {
       CoordinateMode coordinateMode = ParseMode( mode );
       TransformationArray transformation( nDims );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode );
+         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ) );
       }
       dip__Phi scanLineFilter( transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
@@ -351,7 +349,7 @@ void FillThetaCoordinate( Image& out, StringSet const& mode ) {
       CoordinateMode coordinateMode = ParseMode( mode );
       TransformationArray transformation( nDims );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode );
+         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ) );
       }
       dip__Theta scanLineFilter( transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
@@ -466,7 +464,7 @@ void FillCoordinates( Image& out, StringSet const& mode, String const& system ) 
       CoordinateMode coordinateMode = ParseMode( mode );
       TransformationArray transformation( nDims );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode );
+         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ) );
       }
       dip__Coordinates scanLineFilter( spherical, transformation );
       Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
