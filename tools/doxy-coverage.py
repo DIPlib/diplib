@@ -68,6 +68,10 @@ def parse_file(fullpath):
          definition.get('static') == 'yes'):
          continue
 
+      # [CL] skip private methods and variables
+      if (definition.get('prot') == 'private'):
+         continue
+
       # Is the definition documented?
       documented = False
       for k in ('briefdescription', 'detaileddescription', 'inbodydescription'):
@@ -75,23 +79,24 @@ def parse_file(fullpath):
             documented = True
             break
 
-      # Name
-      d_def = definition.find('./definition')
-      d_nam = definition.find('./name')
-
       if not sourcefile:
          l = definition.find('./location')
          if l is not None:
             sourcefile = l.get('file')
 
-      if d_def is not None:
-         name = d_def.text
-      elif d_nam is not None:
-         name = d_nam.text
-      else:
-         name = definition.get('id')
+      # Name
+      #d_def = definition.find('./definition')
+      #d_nam = definition.find('./name')
+      #if d_def is not None:
+      #   name = d_def.text
+      #elif d_nam is not None:
+      #   name = d_nam.text
+      #else:
+      #   name = definition.get('id')
 
       # Aggregate
+      # [CL] always use ID, otherwise only the last of a series of overloads counts
+      name = definition.get('id')
       definitions[name] = documented
 
    if not sourcefile:
@@ -114,7 +119,11 @@ def parse(path):
 
       file_fp = os.path.join (path, "%s.xml" %(entry.get('refid')))
       tmp = parse_file (file_fp)
-      files[tmp[0]] = tmp[1]
+      # [CL] each file generates multiple xml files, so we need to join the resulting dicts, not overwrite!
+      if tmp[0] in files:
+         files[tmp[0]].update(tmp[1])
+      else:
+         files[tmp[0]] = tmp[1]
 
    return files
 

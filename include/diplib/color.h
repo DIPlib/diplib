@@ -54,7 +54,7 @@ class DIP_EXPORT ColorSpaceConverter {
 
       /// \brief Returns the cost of the conversion. This cost includes computational cost as well as precision loss.
       ///
-      /// The cost is used to avoid pathways such as "RGB"->"grey"->"Lab" instead of "RGB"->"XYZ"->"Yxy"->"Lab".
+      /// The cost is used to avoid pathways such as "RGB" &rarr; "grey" &rarr; "Lab" instead of "RGB" &rarr; "XYZ" &rarr; "Yxy" &rarr; "Lab".
       /// Conversion to grey therefore must always have a high cost. It is not necessary to define this method,
       /// the default implementation returns a cost of 1.
       virtual dip::uint Cost() const { return 1; }
@@ -248,7 +248,7 @@ class DIP_NO_EXPORT ColorSpaceManager {
       /// \brief Configure the conversion functions to use the given white point.
       ///
       /// This will configure each of the converter functions that use the white point information
-      /// (grey <-> RGB <-> XYZ <-> Lab, Luv). The default white point is the Standard Illuminant D65
+      /// (grey &harr; RGB &harr; XYZ &harr; Lab/Luv). The default white point is the Standard Illuminant D65
       /// (`dip::ColorSpaceManager::IlluminantD65`).
       ///
       /// The white point is given as an XYZ triplet or (x,y) chromacity coordinates.

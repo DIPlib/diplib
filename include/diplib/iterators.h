@@ -40,7 +40,7 @@ namespace dip {
 /// \ingroup infrastructure
 /// \brief Objects to iterate over images and image lines in different ways.
 ///
-/// See \ref using_iterators "Using iterators to implement filters"
+/// See \ref using_iterators
 /// for a mini-tutorial on how to use each of the different iterator types. Next, read the documentation
 /// for the iterator you plan to use, to learn about additional options and possibilities.
 /// \{

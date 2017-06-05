@@ -73,6 +73,14 @@ using uint = std::size_t;  ///< An integer type to be used for sizes and the lik
 //       but not everywhere.
 constexpr dip::uint maxint = static_cast< dip::uint >( std::numeric_limits< dip::sint >::max() );
 
+
+/// \}
+
+
+/// \addtogroup types
+/// \{
+
+
 //
 // Types for pixel values
 //
@@ -240,6 +248,13 @@ template<> struct AbsTypeCalculator< dcomplex > { using type = dfloat; };
 } // namespace detail
 /// \brief The type to use for the output of abs operations. Matches `dip::DataType::SuggestAbs`.
 template< typename T > using AbsType = typename detail::AbsTypeCalculator< T >::type;
+
+
+/// \}
+
+
+/// \addtogroup infrastructure
+/// \{
 
 
 //

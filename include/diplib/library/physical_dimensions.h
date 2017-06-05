@@ -44,7 +44,9 @@
 namespace dip {
 
 
-/// \addtogroup infrastructure
+/// \defgroup physical_dimensions Physical dimensions
+/// \brief Support for units, physical quantities and pixel sizes.
+/// \ingroup infrastructure
 /// \{
 
 

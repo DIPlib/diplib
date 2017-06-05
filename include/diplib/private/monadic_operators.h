@@ -53,10 +53,7 @@
 
 namespace dip {
 
-/// \addtogroup math
-/// \{
-
-/// \name Arithmetic, trigonometric and similar monadic operators
+/// \addtogroup math_arithmetic
 /// \{
 
 /// \brief Computes the square of the modulus of each sample.
@@ -87,6 +84,35 @@ DIP__MONADIC_OPERATOR_FLOAT( Truncate, []( auto its ) { return std::trunc( *its[
 /// Only defined for floating-point types, the output is the same type.
 DIP__MONADIC_OPERATOR_FLOAT( Fraction, []( auto its ) { return dipm__Fraction( *its[ 0 ] ); }, DataType::Class_Float )
 
+/// \brief Computes the reciprocal of each sample: out = in == 0 ? 0 : 1/in.
+DIP__MONADIC_OPERATOR_FLEX( Reciprocal, []( auto its ) { return dipm__Reciprocal( *its[ 0 ] ); }, DataType::Class_NonBinary )   // x==0 ? 0 : 1/x
+
+/// \brief Computes the square root of each sample.
+DIP__MONADIC_OPERATOR_FLOAT( Sqrt, []( auto its ) { return std::sqrt( *its[ 0 ] ); }, DataType::Class_Real )
+
+/// \brief Computes the base e exponent (natural exponential) of each sample.
+DIP__MONADIC_OPERATOR_FLEX( Exp, []( auto its ) { return std::exp( *its[ 0 ] ); }, DataType::Class_NonBinary )
+
+/// \brief Computes the base 2 exponent of each sample.
+DIP__MONADIC_OPERATOR_FLOAT( Exp2, []( auto its ) { return std::exp2( *its[ 0 ] ); }, DataType::Class_Real )
+
+/// \brief Computes the base 10 exponent of each sample.
+DIP__MONADIC_OPERATOR_FLOAT( Exp10, []( auto its ) { return std::pow( decltype( *its[ 0 ] )( 10 ), *its[ 0 ] ); }, DataType::Class_Real )
+
+/// \brief Computes the natural logarithm (base e logarithm) of each sample.
+DIP__MONADIC_OPERATOR_FLEX( Ln, []( auto its ) { return std::log( *its[ 0 ] ); }, DataType::Class_NonBinary )
+
+/// \brief Computes the base 2 logarithm of each sample.
+DIP__MONADIC_OPERATOR_FLOAT( Log2, []( auto its ) { return std::log( *its[ 0 ] ); }, DataType::Class_Real )
+
+/// \brief Computes the base 10 logarithm of each sample.
+DIP__MONADIC_OPERATOR_FLOAT( Log10, []( auto its ) { return std::log10( *its[ 0 ] ); }, DataType::Class_Real )
+
+/// \}
+
+/// \addtogroup math_trigonometric
+/// \{
+
 /// \brief Computes the sine of each sample.
 DIP__MONADIC_OPERATOR_FLEX( Sin, []( auto its ) { return std::sin( *its[ 0 ] ); }, DataType::Class_NonBinary )
 
@@ -113,30 +139,6 @@ DIP__MONADIC_OPERATOR_FLOAT( Cosh, []( auto its ) { return std::cosh( *its[ 0 ] 
 
 /// \brief Computes the hyperbolic tangent of each sample.
 DIP__MONADIC_OPERATOR_FLOAT( Tanh, []( auto its ) { return std::tanh( *its[ 0 ] ); }, DataType::Class_Real )
-
-/// \brief Computes the reciprocal of each sample: out = in == 0 ? 0 : 1/in.
-DIP__MONADIC_OPERATOR_FLEX( Reciprocal, []( auto its ) { return dipm__Reciprocal( *its[ 0 ] ); }, DataType::Class_NonBinary )   // x==0 ? 0 : 1/x
-
-/// \brief Computes the square root of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( Sqrt, []( auto its ) { return std::sqrt( *its[ 0 ] ); }, DataType::Class_Real )
-
-/// \brief Computes the base e exponent (natural exponential) of each sample.
-DIP__MONADIC_OPERATOR_FLEX( Exp, []( auto its ) { return std::exp( *its[ 0 ] ); }, DataType::Class_NonBinary )
-
-/// \brief Computes the base 2 exponent of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( Exp2, []( auto its ) { return std::exp2( *its[ 0 ] ); }, DataType::Class_Real )
-
-/// \brief Computes the base 10 exponent of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( Exp10, []( auto its ) { return std::pow( decltype( *its[ 0 ] )( 10 ), *its[ 0 ] ); }, DataType::Class_Real )
-
-/// \brief Computes the natural logarithm (base e logarithm) of each sample.
-DIP__MONADIC_OPERATOR_FLEX( Ln, []( auto its ) { return std::log( *its[ 0 ] ); }, DataType::Class_NonBinary )
-
-/// \brief Computes the base 2 logarithm of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( Log2, []( auto its ) { return std::log( *its[ 0 ] ); }, DataType::Class_Real )
-
-/// \brief Computes the base 10 logarithm of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( Log10, []( auto its ) { return std::log10( *its[ 0 ] ); }, DataType::Class_Real )
 
 /// \brief Computes the Bessel functions of the first kind of each sample, of order alpha = 0.
 DIP__MONADIC_OPERATOR_FLOAT( BesselJ0, []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( BesselJ0( *its[ 0 ] )); }, DataType::Class_Real )
@@ -168,6 +170,11 @@ DIP__MONADIC_OPERATOR_FLOAT( Erfc, []( auto its ) { return static_cast< decltype
 /// \brief Computes the sinc function of each sample. \f$\mathrm{sinc}(x) = \sin(x)/x\f$.
 DIP__MONADIC_OPERATOR_FLOAT( Sinc, []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( Sinc( *its[ 0 ] )); }, DataType::Class_Real )
 
+/// \}
+
+/// \addtogroup math_comparison
+/// \{
+
 /// \brief True for each pixel that is NaN.
 DIP__MONADIC_OPERATOR_BIN( IsNotANumber, []( auto in ) { return dipm__IsNaN( in ); }, DataType::Class_Flex, false )
 
@@ -176,8 +183,6 @@ DIP__MONADIC_OPERATOR_BIN( IsInfinite, []( auto in ) { return dipm__IsInf( in );
 
 /// \brief True for each pixel that is not NaN nor infinity.
 DIP__MONADIC_OPERATOR_BIN( IsFinite, []( auto in ) { return dipm__IsFinite( in ); }, DataType::Class_Flex, true )
-
-/// \}
 
 /// \}
 

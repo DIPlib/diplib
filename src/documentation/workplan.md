@@ -35,6 +35,8 @@ document's source</a> for the most up-to-date version.
 
 ## What is already done:
 
+(2017/06/05) We just passed the 2000 documented entities mark!
+
 -   CMake compilation environment.
 
 -   Test framework. We need to add more tests for the stuff that's already implemented.
@@ -67,6 +69,8 @@ document's source</a> for the most up-to-date version.
     functions in the old *DIPlib*.
 
 -   Global threshold algorithms, ported from a *DIPimage* M-file.
+
+-   Random number generation. 
 
 -   An increasing number of filters and operators based on the various frameworks.
 
@@ -110,7 +114,6 @@ document's source</a> for the most up-to-date version.
 -   Pixel-based algorithms built on `dip::Framework::Scan`: monadic and dyadic
     operators, statistics, etc. This is mostly porting old code to the new framework.
     - dip_math.h (many already done)
-    - dip_noise.h
     - dip_point.h
 
 -   Image generation algorithms using `dip::Framework::ScanSingleOutput`.

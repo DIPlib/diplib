@@ -20,7 +20,7 @@
 
 *DIPlib* 3.0 is a complete rewrite in C++ of the *DIPlib* 1.x/2.x infrastructure, which was written
 in C; only the code that implements actual image processing and analysis algorithms is ported
-over. 
+over.
 
 ## Core/infrastructure changes
 
@@ -61,15 +61,15 @@ over.
      library!
 
 - The framework functions all have different names:
-    - `dip_SeparableFrameWork` -> `dip::Framework::Separable`
-    - `dip_MonadicFrameWork` -> `dip::Framework::ScanMonadic` / `dip::Framework::SeparableMonadic`
-    - `dip_MonadicPoint` -> `dip::Framework::ScanMonadic`
-    - `dip_MonadicPointData` -> `dip::Framework::ScanMonadic`
-    - `dip_PixelTableArrayFrameWork` -> doesn't exist any more, was used meaningfully only in `dip_GeneralisedKuwaharaImproved`
-    - `dip_PixelTableFrameWork` -> `dip::Framework::Full`
-    - `dip_ScanFrameWork` -> `dip::Framework::Scan()` / `dip::Framework::ScanDyadic`
-    - `dip_SingleOutputFrameWork` -> `dip::Framework::ScanSingleOutput`
-    - `dip_SingleOutputPoint` -> `dip::Framework::ScanSingleOutput`
+    - `dip_SeparableFrameWork` &rarr; `dip::Framework::Separable`
+    - `dip_MonadicFrameWork` &rarr; `dip::Framework::ScanMonadic` / `dip::Framework::SeparableMonadic`
+    - `dip_MonadicPoint` &rarr; `dip::Framework::ScanMonadic`
+    - `dip_MonadicPointData` &rarr; `dip::Framework::ScanMonadic`
+    - `dip_PixelTableArrayFrameWork` &rarr; doesn't exist any more, was used meaningfully only in `dip_GeneralisedKuwaharaImproved`
+    - `dip_PixelTableFrameWork` &rarr; `dip::Framework::Full`
+    - `dip_ScanFrameWork` &rarr; `dip::Framework::Scan()` / `dip::Framework::ScanDyadic`
+    - `dip_SingleOutputFrameWork` &rarr; `dip::Framework::ScanSingleOutput`
+    - `dip_SingleOutputPoint` &rarr; `dip::Framework::ScanSingleOutput`
 
   Their interfaces are not exactly compatible, but it should be relatively straightforward
   to port old line functions to use the new framework, yielding shorter code.
@@ -97,9 +97,11 @@ over.
 
 - Output arguments are now always on the left-hand side, except for output images.
 
-- The boundary condition array input argument is now typically further to the right in the
-  argument list. We try to sort arguments such that the ones most commonly left with default
-  values appear at the end, and the boundary condition is not commonly changed.
+- We try to sort the arguments most commonly left with default values at the end of the
+  argument lists. This caused some functions to have a different parameter order.
+  For example, the boundary condition is not commonly changed, and so the boundary condition
+  array input argument is now typically further to the right in (usually at the end of ) the
+  argument list.
 
 - Function names are often simplified, since in C++ it's possible to overload functions for
   different types. For example, `dip_BesselJ0` and `dipm_BesselJ0` are now both called
@@ -142,7 +144,7 @@ over.
 - `dip_RandomXxx` functions are now methods to the `dip::Random` class. `dip_UniformRandomVariable`
   and similar functions are now classes `dip::UniformRandomGenerator` and similar.
   `dip::GaussianRandomGenerator` produces a single output value, the object stores the
-  second one for the next call.
+  second value for the next call.
 
 ## Changes in functionality
 
@@ -181,7 +183,7 @@ over.
   Mersenne Twister. We now use the PCG scheme (permuted linear congruential generator), which
   is much faster than the Mersenne Twister, has a much smaller internal state, and produces
   better quality randomness, though with the given parameters, the period is not as large as
-  that of the Mersenne Twister (2<sup>128</sup> vs 2<sup>19937</sup>, but do note that 
+  that of the Mersenne Twister (2<sup>128</sup> vs 2<sup>19937</sup>, but do note that
   2<sup>128</sup> is a very, very long period).
 
 ## Changes from DIPimage 2.x (the old DIPimage)
@@ -197,7 +199,7 @@ over.
 
   Additionally, the tensor no longer can hold arbitrary number of dimensions, it is limited
   to vectors and matrices, as it is in *DIPlib*. I don't expect this to impact any user's code,
-  and I'd be happy to hear if you actually used tensors with more than two dimensions. 
+  and I'd be happy to hear if you actually used tensors with more than two dimensions.
 
   We tried keeping how the `dip_image` object is used as similar as possible to how it was
   in the old *DIPimage*, so that users need not change their code. Nonetheless, some changes

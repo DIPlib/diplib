@@ -40,10 +40,6 @@
 namespace dip {
 
 
-/// \defgroup operators Arithmetic, logical and comparison operators
-/// \brief Operators that work on a `dip::Image`, and the functions that implement their functionality.
-/// \{
-
 #define DIP__DEFINE_ARITHMETIC_OVERLOADS( name ) \
 DIP_EXPORT void name( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
 inline void name( Image const& lhs, Image const& rhs, Image& out ) { name( lhs, rhs, out, DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )); } \
@@ -61,6 +57,10 @@ template< typename T > inline Image name( Image const& lhs, T const& rhs ) { Ima
 DIP_EXPORT void name( Image const& in, Image const& lhs, Image const& rhs, Image& out ); \
 template< typename T > inline void name( Image const& in, T const& lhs, T const& rhs, Image& out ) { name( in, Image{ lhs }, Image{ rhs }, out ); } \
 template< typename T > inline Image name( Image const& in, T const& lhs, T const& rhs ) { Image out; name( in, lhs, rhs, out ); return out; }
+
+
+/// \ingroup math_arithmetic
+/// \{
 
 
 //
@@ -197,81 +197,7 @@ inline Image Not( Image const& in ) { Image out; Not( in, out ); return out; }
 
 
 //
-// Functions for comparison
-//
-
-/// \brief Equality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see NotEqual, Lesser, Greater, NotGreater, NotLesser, operator==(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( Equal )
-
-/// \brief Inequality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see Equal, Lesser, Greater, NotGreater, NotLesser, operator!=(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( NotEqual )
-
-/// \brief Inequality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see Equal, NotEqual, Greater, NotGreater, NotLesser, operator<(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( Lesser )
-
-/// \brief Inequality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see Equal, NotEqual, Lesser, NotGreater, NotLesser, operator>(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( Greater )
-
-/// \brief Inequality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see Equal, NotEqual, Lesser, Greater, NotLesser, operator<=(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( NotGreater )
-
-/// \brief Inequality comparison, sample-wise, with singleton expansion.
-///
-/// Out will be binary.
-///
-/// \see Equal, NotEqual, Lesser, Greater, NotGreater, operator>=(Image const&, T const&)
-DIP__DEFINE_DYADIC_OVERLOADS( NotLesser )
-
-/// \brief In-range ternary comparison, sample-wise, with singleton expansion.
-///
-/// Computes
-///
-/// ```cpp
-///     out = ( in >= lhs ) && ( in <= rhs );
-/// ```
-///
-/// Out will be binary.
-DIP__DEFINE_TRIADIC_OVERLOADS( InRange )
-
-/// \brief Out-of-range ternary comparison, sample-wise, with singleton expansion.
-///
-/// Computes
-///
-/// ```cpp
-///     out = ( in < lhs ) || ( in > rhs );
-/// ```
-///
-/// Out will be binary.
-DIP__DEFINE_TRIADIC_OVERLOADS( OutOfRange )
-
-
-#undef DIP__DEFINE_ARITHMETIC_OVERLOADS
-#undef DIP__DEFINE_DYADIC_OVERLOADS
-#undef DIP__DEFINE_TRIADIC_OVERLOADS
-
-
-//
-// Arithmetic operators
+// Arithmetic operator overloads
 //
 
 /// \brief Arithmetic operator, calls `dip::Add`.
@@ -304,11 +230,6 @@ inline Image operator%( Image const& lhs, T const& rhs ) {
    return Modulo( lhs, rhs );
 }
 
-
-//
-// Bit-wise operators
-//
-
 /// \brief Bit-wise operator, calls `dip::And`.
 template< typename T >
 inline Image operator&( Image const& lhs, T const& rhs ) {
@@ -326,11 +247,6 @@ template< typename T >
 inline Image operator^( Image const& lhs, T const& rhs ) {
    return Xor( lhs, rhs );
 }
-
-
-//
-// Unary operators
-//
 
 /// \brief Unary operator, calls `dip::Invert`.
 inline Image operator-( Image const& in ) {
@@ -351,48 +267,7 @@ inline Image operator!( Image const& in ) {
 
 
 //
-// Comparison operators
-//
-
-/// \brief Comparison operator, calls `dip::Equal`.
-template< typename T >
-inline Image operator==( Image const& lhs, T const& rhs ) {
-   return Equal( lhs, rhs );
-}
-
-/// \brief Comparison operator, calls `dip::NotEqual`.
-template< typename T >
-inline Image operator!=( Image const& lhs, T const& rhs ) {
-   return NotEqual( lhs, rhs );
-}
-
-/// \brief Comparison operator, calls `dip::Lesser`.
-template< typename T >
-inline Image operator<( Image const& lhs, T const& rhs ) {
-   return Lesser( lhs, rhs );
-}
-
-/// \brief Comparison operator, calls `dip::Greater`.
-template< typename T >
-inline Image operator>( Image const& lhs, T const& rhs ) {
-   return Greater( lhs, rhs );
-}
-
-/// \brief Comparison operator, calls `dip::NotGreater`.
-template< typename T >
-inline Image operator<=( Image const& lhs, T const& rhs ) {
-   return NotGreater( lhs, rhs );
-}
-
-/// \brief Comparison operator, calls `dip::NotLesser`.
-template< typename T >
-inline Image operator>=( Image const& lhs, T const& rhs ) {
-   return NotLesser( lhs, rhs );
-}
-
-
-//
-// Compound assignment operators
+// Compound assignment operator overload
 //
 
 /// \brief Compound assignment operator.
@@ -501,6 +376,129 @@ inline Image& operator^=( Image& lhs, T const& rhs ) {
 
 
 /// \}
+
+
+/// \ingroup math_comparison
+/// \{
+
+
+//
+// Functions for comparison
+//
+
+/// \brief Equality comparison, sample-wise, with singleton expansion.
+///
+/// Out will be binary.
+///
+/// \see NotEqual, Lesser, Greater, NotGreater, NotLesser, operator==(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( Equal )
+
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
+/// Out will be binary.
+///
+/// \see Equal, Lesser, Greater, NotGreater, NotLesser, operator!=(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( NotEqual )
+
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
+/// Out will be binary.
+///
+/// \see Equal, NotEqual, Greater, NotGreater, NotLesser, operator<(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( Lesser )
+
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
+/// Out will be binary.
+///
+/// \see Equal, NotEqual, Lesser, NotGreater, NotLesser, operator>(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( Greater )
+
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
+/// Out will be binary.
+///
+/// \see Equal, NotEqual, Lesser, Greater, NotLesser, operator<=(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( NotGreater )
+
+/// \brief Inequality comparison, sample-wise, with singleton expansion.
+///
+/// Out will be binary.
+///
+/// \see Equal, NotEqual, Lesser, Greater, NotGreater, operator>=(Image const&, T const&)
+DIP__DEFINE_DYADIC_OVERLOADS( NotLesser )
+
+/// \brief In-range ternary comparison, sample-wise, with singleton expansion.
+///
+/// Computes
+///
+/// ```cpp
+///     out = ( in >= lhs ) && ( in <= rhs );
+/// ```
+///
+/// Out will be binary.
+DIP__DEFINE_TRIADIC_OVERLOADS( InRange )
+
+/// \brief Out-of-range ternary comparison, sample-wise, with singleton expansion.
+///
+/// Computes
+///
+/// ```cpp
+///     out = ( in < lhs ) || ( in > rhs );
+/// ```
+///
+/// Out will be binary.
+DIP__DEFINE_TRIADIC_OVERLOADS( OutOfRange )
+
+
+//
+// Comparison operator overloads
+//
+
+/// \brief Comparison operator, calls `dip::Equal`.
+template< typename T >
+inline Image operator==( Image const& lhs, T const& rhs ) {
+   return Equal( lhs, rhs );
+}
+
+/// \brief Comparison operator, calls `dip::NotEqual`.
+template< typename T >
+inline Image operator!=( Image const& lhs, T const& rhs ) {
+   return NotEqual( lhs, rhs );
+}
+
+/// \brief Comparison operator, calls `dip::Lesser`.
+template< typename T >
+inline Image operator<( Image const& lhs, T const& rhs ) {
+   return Lesser( lhs, rhs );
+}
+
+/// \brief Comparison operator, calls `dip::Greater`.
+template< typename T >
+inline Image operator>( Image const& lhs, T const& rhs ) {
+   return Greater( lhs, rhs );
+}
+
+/// \brief Comparison operator, calls `dip::NotGreater`.
+template< typename T >
+inline Image operator<=( Image const& lhs, T const& rhs ) {
+   return NotGreater( lhs, rhs );
+}
+
+/// \brief Comparison operator, calls `dip::NotLesser`.
+template< typename T >
+inline Image operator>=( Image const& lhs, T const& rhs ) {
+   return NotLesser( lhs, rhs );
+}
+
+
+/// \}
+
+
+#undef DIP__DEFINE_ARITHMETIC_OVERLOADS
+#undef DIP__DEFINE_DYADIC_OVERLOADS
+#undef DIP__DEFINE_TRIADIC_OVERLOADS
+
 
 } // namespace dip
 

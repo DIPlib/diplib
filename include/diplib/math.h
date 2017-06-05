@@ -32,8 +32,8 @@
 namespace dip {
 
 
-/// \defgroup math Image math and statistics functions
-/// \brief The image math and statistics functions, except basic arithmetic and comparison, which are in module \ref operators.
+/// \defgroup math Image math and statistics
+/// \brief The image math and statistics functions and operators.
 /// \{
 
 
@@ -41,7 +41,8 @@ namespace dip {
 // Basic image queries
 //
 
-/// \name Basic image queries
+/// \defgroup math_statistics Statistics
+/// \brief %Image sample statistics, see also \ref math_projection.
 /// \{
 
 
@@ -73,7 +74,6 @@ inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArra
    return out;
 }
 
-
 /// \brief Finds the largest and smallest value in the image, within an optional mask.
 ///
 /// If `mask` is not forged, all input pixels are considered. In case of a tensor
@@ -92,18 +92,19 @@ DIP_EXPORT StatisticsAccumulator GetSampleStatistics( Image const& in, Image con
 
 /// \}
 
-} // namespace dip
-
 
 //
 // Arithmetic, trigonometric and similar monadic operators
 //
 
+} // namespace dip
+
 #include "diplib/private/monadic_operators.h"
 
 namespace dip {
 
-/// \name Arithmetic, trigonometric and similar monadic operators
+/// \defgroup math_arithmetic Arithmetic operators
+/// \brief Monadic and dyadic image arithmetic operators.
 /// \{
 
 /// \brief Computes the absolute value of each sample.
@@ -149,42 +150,6 @@ DIP_EXPORT void NearestInt( Image const& in, Image& out );
 inline Image NearestInt( Image const& in ) {
    Image out;
    NearestInt( in, out );
-   return out;
-}
-
-// DIP_ERROR dip_AmplitudeModulation       ( dip_Image, dip_Image, dip_float *, dip_int, dip_int *, dip_int * );
-// DIP_ERROR dip_CosinAmplitudeModulation  ( dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
-// DIP_ERROR dip_CosinAmplitudeDemodulation( dip_Image, dip_Image, dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
-
-/// \}
-
-
-//
-// Arithmetic dyadic operators that are not already declared in diplib/library/operators.h
-//
-
-/// \name Arithmetic diadic operators, see also \ref operators
-/// \{
-
-/// \brief Computes the four-quadrant arc tangent of `y/x`.
-///
-/// The operation can be understood as the angle of the vector formed by the two input images.
-/// The result is always in the range \f$[-\pi,\pi]\f$. The inputs must be a real type.
-DIP_EXPORT void Atan2( Image const& y, Image const& x, Image& out );
-inline Image Atan2( Image const& y, Image const& x ) {
-   Image out;
-   Atan2( y, x, out );
-   return out;
-}
-
-/// \brief Computes the square root of the sum of the squares of corresponding samples in `a` and `b`.
-///
-/// The computation is performed carefully, so there is no undue overflow or underflow at intermediate
-/// stages of the computation. The inputs must be a real type.
-DIP_EXPORT void Hypot( Image const& a, Image const& b, Image& out );
-inline Image Hypot( Image const& a, Image const& b ) {
-   Image out;
-   Hypot( a, b, out );
    return out;
 }
 
@@ -249,10 +214,48 @@ inline Image SignedMinimum( Image const& a, Image const& b ) {
 
 
 //
+// Arithmetic dyadic operators that are not already declared in diplib/library/operators.h
+//
+
+/// \defgroup math_trigonometric Trigonometric operators
+/// \brief Monadic and dyadic image trigonometric operators and other complex functions.
+/// \{
+
+/// \brief Computes the four-quadrant arc tangent of `y/x`.
+///
+/// The operation can be understood as the angle of the vector formed by the two input images.
+/// The result is always in the range \f$[-\pi,\pi]\f$. The inputs must be a real type.
+DIP_EXPORT void Atan2( Image const& y, Image const& x, Image& out );
+inline Image Atan2( Image const& y, Image const& x ) {
+   Image out;
+   Atan2( y, x, out );
+   return out;
+}
+
+/// \brief Computes the square root of the sum of the squares of corresponding samples in `a` and `b`.
+///
+/// The computation is performed carefully, so there is no undue overflow or underflow at intermediate
+/// stages of the computation. The inputs must be a real type.
+DIP_EXPORT void Hypot( Image const& a, Image const& b, Image& out );
+inline Image Hypot( Image const& a, Image const& b ) {
+   Image out;
+   Hypot( a, b, out );
+   return out;
+}
+
+// DIP_ERROR dip_AmplitudeModulation       ( dip_Image, dip_Image, dip_float *, dip_int, dip_int *, dip_int * );
+// DIP_ERROR dip_CosinAmplitudeModulation  ( dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
+// DIP_ERROR dip_CosinAmplitudeDemodulation( dip_Image, dip_Image, dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
+
+/// \}
+
+
+//
 // Tensor operators
 //
 
-/// \name Tensor operators
+/// \defgroup math_tensor Tensor operators
+/// \brief Operators specific to tensor images.
 /// \{
 
 /// \brief Transposes the tensor image, the data is not copied.
@@ -477,11 +480,13 @@ inline Image Identity( Image const& in ) {
 
 /// \}
 
+
 //
 // The following functions project along one or more (or all) dimensions
 //
 
-/// \name Projection operators, also compute image statistics
+/// \defgroup math_projection Projection operators
+/// \brief Operators that project the image data onto fewer spatial dimensions. They can also be used to compute image statistics.
 /// \{
 
 /// \brief Calculates the mean of the pixel values over all those dimensions which are specified by `process`.
@@ -857,9 +862,9 @@ inline Image Any( Image const& in, Image const& mask = {}, BooleanArray process 
 // Functions that combine two source images
 //
 
-/// \name Other
+/// \defgroup math_comparison Comparison operators
+/// \brief Monadic and dyadic image comparison operators.
 /// \{
-
 
 /// \brief Compares `in1` to `in2` according to `selector`, and writes `in3` or `in4` to `out` depending on the result.
 ///
@@ -930,7 +935,6 @@ inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
    Select( in1, in2, mask, out );
    return out;
 }
-
 
 /// \}
 

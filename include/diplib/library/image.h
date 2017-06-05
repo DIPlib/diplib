@@ -50,6 +50,14 @@
 namespace dip {
 
 
+// Forward declarations
+class DIP_NO_EXPORT Image;                      // in this file
+template< typename T >
+class DIP_NO_EXPORT GenericImageIterator;       // in `generic_iterators.h`, include explicitly if needed
+template< dip::uint N, typename T >
+class DIP_NO_EXPORT GenericJointImageIterator;  // in `generic_iterators.h`, include explicitly if needed
+
+
 /// \addtogroup infrastructure
 /// \{
 
@@ -135,12 +143,6 @@ class DIP_NO_EXPORT CoordinatesComputer {
 // The Image class
 //
 
-// Forward declarations
-class DIP_NO_EXPORT Image;                      // in this file
-template< typename T >
-class DIP_NO_EXPORT GenericImageIterator;       // in `generic_iterators.h`, include explicitly if needed
-template< dip::uint N, typename T >
-class DIP_NO_EXPORT GenericJointImageIterator;  // in `generic_iterators.h`, include explicitly if needed
 
 /// \brief An array of images
 using ImageArray = std::vector< Image >;

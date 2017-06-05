@@ -42,7 +42,9 @@
 namespace dip {
 
 
-/// \addtogroup infrastructure
+/// \defgroup types Pixel data types
+/// \brief Types used for image samples (pixels), and related support functionality
+/// \ingroup infrastructure
 /// \{
 
 
@@ -50,7 +52,7 @@ namespace dip {
 // The DataType class.
 //
 
-/// \brief DataType objects are used to indicate what the data type of
+/// \brief `%DataType` objects are used to indicate what the data type of
 /// an image is.
 ///
 /// It is a simple enumeration type, but with some added
@@ -69,7 +71,7 @@ namespace dip {
 /// * `dip::DT_SCOMPLEX`
 /// * `dip::DT_DCOMPLEX`
 ///
-/// It is possible to call DataType member functions on these constants:
+/// It is possible to call `%DataType` member functions on these constants:
 ///
 /// ```cpp
 ///     dip::DT_BIN.SizeOf();
@@ -128,10 +130,10 @@ struct DIP_NO_EXPORT DataType {
       swap( dt, other.dt );
    }
 
-   /// \brief DataType objects implicitly convert to the enumeration integer.
+   /// \brief `%DataType` objects implicitly convert to the enumeration integer.
    constexpr operator int() const { return static_cast< int >( dt ); }   // This one allows the use of DataType in a switch() statement
 
-   /// \brief DataType objects can be compared.
+   /// \brief `%DataType` objects can be compared.
    bool operator==( DataType other ) const { return dt == other.dt; }
 
    /// \brief Returns a C-style string constant with a representation of the data type name.

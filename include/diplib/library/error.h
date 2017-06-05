@@ -42,7 +42,9 @@
 namespace dip {
 
 
-/// \addtogroup infrastructure
+/// \defgroup error Error management
+/// \brief Exception classes and error management functionality
+/// \ingroup infrastructure
 /// \{
 
 

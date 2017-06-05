@@ -25,7 +25,7 @@
 /// \brief Help with instantiating function templates for different pixel data types.
 
 
-/// \defgroup overload Support for overloaded functions and classes
+/// \defgroup overload Overloading
 /// \ingroup infrastructure
 /// \brief Help with instantiating function templates and class templates for different pixel data types.
 ///

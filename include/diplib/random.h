@@ -22,7 +22,7 @@
 #define DIP_RANDOM_H
 
 #include "diplib.h"
-#include "diplib/private/pcg_random.h"
+#include "diplib/private/pcg_random.hpp"
 #include "chain_code.h"
 
 
@@ -33,7 +33,9 @@
 namespace dip {
 
 
-/// \addtogroup infrastructure
+/// \defgroup random Random
+/// \brief Pseudo-random generator and probability distributions.
+/// \ingroup infrastructure
 /// \{
 
 
@@ -41,15 +43,15 @@ namespace dip {
 ///
 /// The `operator()` method returns the next random integer in the sequence.
 ///
-/// The default `%RandomGenerator` is initialized using `std::random_device`, but it is also possible to
+/// The default `%Random` is initialized using `std::random_device`, but it is also possible to
 /// use a `dip::uint` seed value when creating the generator to be able to replicate the same pseudo-random
-/// sequence. In multi-threaded code, algorithms can use `dip::RandomGenerator::Split` to split off separate
+/// sequence. In multi-threaded code, algorithms can use `dip::Random::Split` to split off separate
 /// streams. This causes those algorithms to not replicate the same sequence when run with a different number
 /// of threads. Thus, even if seeded with the same value, the same algorithm can yield different results
 /// when run on a different computer with a different number of cores. To guarantee exact replicability,
 /// run your code single-threaded.
 ///
-/// `%RandomGenerator` has a 128-bit internal state, and produces 64-bit output with a period of 2<sup>128</sup>.
+/// `%Random` has a 128-bit internal state, and produces 64-bit output with a period of 2<sup>128</sup>.
 /// On architectures where 128-bit integers are not natively supported, this changes to have a 64-bit internal state,
 /// and produce 32-bit output with a period of 2<sup>64</sup>. This lesser PRNG still has very good statistical
 /// properties. Defining `DIP_ALWAYS_128_PRNG` causes the better 128-bit PRNG engine to be used, using emulated
