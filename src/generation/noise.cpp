@@ -19,8 +19,9 @@
  */
 
 #include "diplib.h"
-#include "diplib/random.h"
 #include "diplib/generation.h"
+#include "diplib/random.h"
+#include "diplib/math.h"
 #include "diplib/framework.h"
 
 namespace dip {
@@ -45,7 +46,7 @@ class DIP_EXPORT UniformScanLineFilter : public Framework::ScanLineFilter {
          generatorArray_.resize( threads );
          generatorArray_[ 0 ] = std::make_unique< UniformRandomGenerator >( random_ );
          if( threads > 1 ) {
-            randomArray_.resize( threads - 1 );
+            randomArray_.resize( threads - 1, Random( 0 ));
             for( dip::uint ii = 1; ii < threads; ++ii ) {
                randomArray_[ ii - 1 ] = random_.Split();
                generatorArray_[ ii ] = std::make_unique< UniformRandomGenerator >( randomArray_[ ii - 1 ] );
@@ -68,7 +69,7 @@ void UniformNoise( Image const& in, Image& out, Random& random, dfloat lowerBoun
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    UniformScanLineFilter filter( random, lowerBound, upperBound );
    DataType dt = in.DataType();
-   Framework::ScanMonadic( in, out, DataType::SuggestFloat( dt ), dt, 1, filter, Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, DT_DFLOAT, dt, 1, filter, Framework::Scan_TensorAsSpatialDim );
 }
 
 namespace {
@@ -80,7 +81,7 @@ class DIP_EXPORT GaussianScanLineFilter : public Framework::ScanLineFilter {
          dip::uint const bufferLength = params.bufferLength;
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint const outStride = params.outBuffer[ 0 ].stride;
-         GaussianRandomGenerator& generator = *generatorArray_[ params.thread ];
+         GaussianRandomGenerator& generator = *( generatorArray_[ params.thread ] );
          for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
             *out = generator( *in, std_ );
             in += inStride;
@@ -89,9 +90,9 @@ class DIP_EXPORT GaussianScanLineFilter : public Framework::ScanLineFilter {
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override  {
          generatorArray_.resize( threads );
-         generatorArray_[ 0 ] = std::make_unique< GaussianRandomGenerator >( random_ );
+         generatorArray_[ 0 ] = std::unique_ptr< GaussianRandomGenerator >( new GaussianRandomGenerator( random_ ));
          if( threads > 1 ) {
-            randomArray_.resize( threads - 1 );
+            randomArray_.resize( threads - 1, Random( 0 ));
             for( dip::uint ii = 1; ii < threads; ++ii ) {
                randomArray_[ ii - 1 ] = random_.Split();
                generatorArray_[ ii ] = std::make_unique< GaussianRandomGenerator >( randomArray_[ ii - 1 ] );
@@ -113,7 +114,7 @@ void GaussianNoise( Image const& in, Image& out, Random& random, dfloat variance
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    GaussianScanLineFilter filter( random, std::sqrt( variance ));
    DataType dt = in.DataType();
-   Framework::ScanMonadic( in, out, DataType::SuggestFloat( dt ), dt, 1, filter, Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, DT_DFLOAT, dt, 1, filter, Framework::Scan_TensorAsSpatialDim );
 }
 
 namespace {
@@ -136,7 +137,7 @@ class DIP_EXPORT PoissonScanLineFilter : public Framework::ScanLineFilter {
          generatorArray_.resize( threads );
          generatorArray_[ 0 ] = std::make_unique< PoissonRandomGenerator >( random_ );
          if( threads > 1 ) {
-            randomArray_.resize( threads - 1 );
+            randomArray_.resize( threads - 1, Random( 0 ));
             for( dip::uint ii = 1; ii < threads; ++ii ) {
                randomArray_[ ii - 1 ] = random_.Split();
                generatorArray_[ ii ] = std::make_unique< PoissonRandomGenerator >( randomArray_[ ii - 1 ] );
@@ -158,7 +159,7 @@ void PoissonNoise( Image const& in, Image& out, Random& random, dfloat conversio
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    PoissonScanLineFilter filter( random, conversion );
    DataType dt = in.DataType();
-   Framework::ScanMonadic( in, out, DataType::SuggestFloat( dt ), dt, 1, filter, Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, DT_DFLOAT, dt, 1, filter, Framework::Scan_TensorAsSpatialDim );
 }
 
 namespace {
@@ -172,7 +173,7 @@ class DIP_EXPORT BinaryScanLineFilter : public Framework::ScanLineFilter {
          dip::sint const outStride = params.outBuffer[ 0 ].stride;
          BinaryRandomGenerator& generator = *generatorArray_[ params.thread ];
          for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
-            *out = generator( *in ? p10_ : p01_ );
+            *out = generator( *in ? pForeground : pBackground );
             in += inStride;
             out += outStride;
          }
@@ -181,7 +182,7 @@ class DIP_EXPORT BinaryScanLineFilter : public Framework::ScanLineFilter {
          generatorArray_.resize( threads );
          generatorArray_[ 0 ] = std::make_unique< BinaryRandomGenerator >( random_ );
          if( threads > 1 ) {
-            randomArray_.resize( threads - 1 );
+            randomArray_.resize( threads - 1, Random( 0 ));
             for( dip::uint ii = 1; ii < threads; ++ii ) {
                randomArray_[ ii - 1 ] = random_.Split();
                generatorArray_[ ii ] = std::make_unique< BinaryRandomGenerator >( randomArray_[ ii - 1 ] );
@@ -189,13 +190,13 @@ class DIP_EXPORT BinaryScanLineFilter : public Framework::ScanLineFilter {
          }
       }
       BinaryScanLineFilter( Random& random, dfloat p10, dfloat p01 ) :
-            random_( random ), p10_( p10 ), p01_( p01 ) {}
+            random_( random ), pForeground( 1.0 - p10 ), pBackground( p01 ) {}
    private:
       Random& random_;
       std::vector< Random > randomArray_;
       std::vector< std::unique_ptr< BinaryRandomGenerator >> generatorArray_;
-      dfloat p10_;
-      dfloat p01_;
+      dfloat pForeground;
+      dfloat pBackground;
 };
 } // namespace
 
@@ -204,6 +205,37 @@ void BinaryNoise( Image const& in, Image& out, Random& random, dfloat p10, dfloa
    DIP_THROW_IF( !in.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    BinaryScanLineFilter filter( random, p10, p01 );
    Framework::ScanMonadic( in, out, DT_BIN, DT_BIN, 1, filter, Framework::Scan_TensorAsSpatialDim );
+}
+
+void FillColoredNoise( Image& out, Random& random, dfloat variance, dfloat color ) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   // White noise in the Fourier Domain
+   // Note: Ideally we'd generate an image with conjugate symmetry in the Fourier domain. Instead, we'll generate twice the
+   // number of random values, and throw away the imaginary component after inverse transform.
+   Image fd( out.Sizes(), out.TensorElements(), DT_DCOMPLEX );
+   fd.SplitComplex();
+   fd.Fill( 0.0 );
+   GaussianNoise( fd, fd, random, 1.0 );
+   fd.MergeComplex();
+   // Frequency spectrum modulation function
+   Image modulation = CreateRadiusSquareCoordinate( out, { "radfreq" } );
+   dfloat power = color / 2.0; // divide by 2.0 because we haven't done the square root in the "radfreq" image yet.
+   // TODO: According to wikipedia, pink noise in 2D is 1/f^2, not 1/f as it is in 1D. This doesn't look right to me...
+   Power( modulation, power, modulation );
+   // The value at the origin must be 0 for zero mean in spatial domain
+   auto origin = modulation.Sizes();
+   for( auto& o : origin ) {
+      o /= 2;
+   }
+   modulation.At( origin ) = 0;
+   // Normalize modulation function
+   dfloat w = SumSquare( modulation ).As< dfloat >();
+   w = std::sqrt( std::sqrt( variance ) / w ) * static_cast< dfloat >( modulation.Sizes().product() );
+   modulation *= w;
+   // Modulate and inverse transform
+   fd *= modulation;
+   FourierTransform( fd, out, { "inverse", "real" } ); // We set "real" so only the real component is written to `out`.
 }
 
 } // namespace dip

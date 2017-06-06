@@ -240,6 +240,52 @@ void FillRadiusCoordinate( Image& out, StringSet const& mode ) {
 
 namespace {
 
+class dip__RadiusSquare : public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
+         dip::sint stride = params.outBuffer[ 0 ].stride;
+         dip::uint bufferLength = params.bufferLength;
+         dip::uint dim = params.dimension;
+         dfloat d2 = 0;
+         for( dip::uint ii = 0; ii < params.position.size(); ++ii ) {
+            if( ii != dim ) {
+               dfloat d = ( static_cast< dfloat >( params.position[ ii ] ) - transformation_[ ii ].offset ) * transformation_[ ii ].scale;
+               d2 += d * d;
+            }
+         }
+         dip::uint pp = params.position[ dim ];
+         for( dip::uint ii = 0; ii < bufferLength; ++ii, ++pp ) {
+            dfloat d = ( static_cast< dfloat >( pp ) - transformation_[ dim ].offset ) * transformation_[ dim ].scale;
+            *out = d2 + d * d;
+            out += stride;
+         }
+      }
+      dip__RadiusSquare( TransformationArray transformation ) : transformation_( transformation ) {}
+   private:
+      TransformationArray transformation_;
+};
+
+} // namespace
+
+void FillRadiusSquareCoordinate( Image& out, StringSet const& mode ) {
+   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_START_STACK_TRACE
+      CoordinateMode coordinateMode = ParseMode( mode );
+      dip::uint nDims = out.Dimensionality();
+      TransformationArray transformation( nDims );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ) );
+      }
+      dip__RadiusSquare scanLineFilter( transformation );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_END_STACK_TRACE
+}
+
+namespace {
+
 class dip__Phi : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {

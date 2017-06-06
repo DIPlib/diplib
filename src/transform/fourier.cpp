@@ -199,7 +199,13 @@ void FourierTransform(
    DataType dtype = DataType::SuggestComplex( in.DataType() );
    // Allocate output image, so that it has the right (padded) size. If we don't do padding, then we're just doing the framework's work here
    Image const in_copy = in; // Make a copy of the header to preserve image in case in == out
-   out.ReForge( outSize, 1, dtype );
+   Image tmp;
+   if( real ) {
+      tmp.ReForge( outSize, 1, dtype );
+   } else {
+      out.ReForge( outSize, 1, dtype );
+      tmp = out.QuickCopy();
+   }
    // Do the processing
    DIP_START_STACK_TRACE
       // Get callback function
@@ -207,7 +213,7 @@ void FourierTransform(
       DIP_OVL_NEW_COMPLEX( lineFilter, DFTLineFilter, ( outSize, process, inverse, corner, symmetric ), dtype );
       Framework::Separable(
             in_copy,
-            out,
+            tmp,
             dtype,
             dtype,
             process,
@@ -224,7 +230,7 @@ void FourierTransform(
    // TODO: OpenCV has code for a DFT that takes complex data but reads only half the array, assumes symmetry, and produces a real ouput. We should use that here.
    // TODO: We should also use the code that takes real data in.
    if( real ) {
-      out.Copy( out.Real() );
+      out.Copy( tmp.Real() );
    }
    // Set output pixel sizes
    PixelSize pixelSize = in_copy.PixelSize();

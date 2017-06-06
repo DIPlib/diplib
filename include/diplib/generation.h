@@ -59,8 +59,8 @@ DIP_EXPORT void FillDelta( Image& out, String const& origin = "" );
 /// See `dip::FillDelta` for the meaning of `origin`.
 inline void CreateDelta( Image const& in, Image& out, String const& origin = "" ) {
    out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillDelta( out, origin );
    out.SetPixelSize( in.PixelSize() );
+   FillDelta( out, origin );
 }
 inline Image CreateDelta( Image const& in, String const& origin = "" ) {
    Image out;
@@ -87,8 +87,8 @@ DIP_EXPORT void FillRamp( Image& out, dip::uint dimension, StringSet const& mode
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateRamp( Image const& in, Image& out, dip::uint dimension, StringSet const& mode = {} ) {
    out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillRamp( out, dimension, mode );
    out.SetPixelSize( in.PixelSize() );
+   FillRamp( out, dimension, mode );
 }
 inline Image CreateRamp( Image const& in, dip::uint dimension, StringSet const& mode = {} ) {
    Image out;
@@ -193,12 +193,40 @@ DIP_EXPORT void FillRadiusCoordinate( Image& out, StringSet const& mode = {} );
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateRadiusCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
    out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillRadiusCoordinate( out, mode );
    out.SetPixelSize( in.PixelSize() );
+   FillRadiusCoordinate( out, mode );
 }
 inline Image CreateRadiusCoordinate( Image const& in, StringSet const& mode = {} ) {
    Image out;
    CreateRadiusCoordinate( in, out, mode );
+   return out;
+}
+
+
+/// \brief Fills an image with the square distance to the origin.
+///
+/// The distance function is equivalent to the radius component of the polar or spherical
+/// coordinate system.
+/// `out` must be forged, scalar, and of a real type.
+/// See `dip::FillCoordinates` for the meaning of `mode`.
+DIP_EXPORT void FillRadiusSquareCoordinate( Image& out, StringSet const& mode = {} );
+
+/// \brief Creates an image of the same size as `in`, filled with the square distance to the origin.
+///
+/// `out` will have the same sizes as `in`, scalar, and of type `dip::DT_SFLOAT`.
+/// The pixel size of `in` will be copied over.
+///
+/// The distance function is equivalent to the radius component of the polar or spherical
+/// coordinate system.
+/// See `dip::FillCoordinates` for the meaning of `mode`.
+inline void CreateRadiusSquareCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
+   out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
+   out.SetPixelSize( in.PixelSize() );
+   FillRadiusSquareCoordinate( out, mode );
+}
+inline Image CreateRadiusSquareCoordinate( Image const& in, StringSet const& mode = {} ) {
+   Image out;
+   CreateRadiusSquareCoordinate( in, out, mode );
    return out;
 }
 
@@ -222,8 +250,8 @@ DIP_EXPORT void FillPhiCoordinate( Image& out, StringSet const& mode = {} );
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreatePhiCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
    out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillPhiCoordinate( out, mode );
    out.SetPixelSize( in.PixelSize() );
+   FillPhiCoordinate( out, mode );
 }
 inline Image CreatePhiCoordinate( Image const& in, StringSet const& mode = {} ) {
    Image out;
@@ -249,8 +277,8 @@ DIP_EXPORT void FillThetaCoordinate( Image& out, StringSet const& mode = {} );
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateThetaCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
    out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillThetaCoordinate( out, mode );
    out.SetPixelSize( in.PixelSize() );
+   FillThetaCoordinate( out, mode );
 }
 inline Image CreateThetaCoordinate( Image const& in, StringSet const& mode = {} ) {
    Image out;
@@ -304,8 +332,8 @@ DIP_EXPORT void FillCoordinates( Image& out, StringSet const& mode = {}, String 
 /// See `dip::FillCoordinates` for the meaning of `mode` and `system`.
 inline void CreateCoordinates( Image const& in, Image& out, StringSet const& mode = {}, String const& system = "" ) {
    out.ReForge( in.Sizes(), in.Dimensionality(), DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   FillCoordinates( out, mode, system );
    out.SetPixelSize( in.PixelSize() );
+   FillCoordinates( out, mode, system );
 }
 inline Image CreateCoordinates( Image const& in, StringSet const& mode = {}, String const& system = "" ) {
    Image out;
@@ -314,7 +342,7 @@ inline Image CreateCoordinates( Image const& in, StringSet const& mode = {}, Str
 }
 
 
-/// \brief Adds uniformly distributed noise to the input image.
+/// \brief Adds uniformly distributed white noise to the input image.
 ///
 /// The uniformly distributed noise added to the image is in the range `lowerBound` to `upperBound`. That is,
 /// for each pixel it does `in += uniformRandomGenerator( lowerBound, upperBound )`. The output image is of the
@@ -334,7 +362,7 @@ inline Image UniformNoise( Image const& in, Random& random, dfloat lowerBound = 
    return out;
 }
 
-/// \brief Adds normally distributed noise to the input image.
+/// \brief Adds normally distributed white noise to the input image.
 ///
 /// The normally distributed noise added to the image is defined by `variance`, and has a zero mean. That is,
 /// for each pixel it does `in += gaussianRandomGenerator( 0, std::sqrt( variance ))`. The output image is of the
@@ -354,7 +382,7 @@ inline Image GaussianNoise( Image const& in, Random& random, dfloat variance = 1
    return out;
 }
 
-/// \brief Adds Poisson-distributed noise to the input image.
+/// \brief Adds Poisson-distributed white noise to the input image.
 ///
 /// The Poisson-distributed noise is added to the image scaled by `conversion`. That is,
 /// for each pixel it does `in = poissonRandomGenerator( in * conversion ) / conversion`.
@@ -400,6 +428,35 @@ DIP_EXPORT void BinaryNoise( Image const& in, Image& out, Random& random, dfloat
 inline Image BinaryNoise( Image const& in, Random& random, dfloat p10 = 0.05, dfloat p01 = 0.05 ) {
    Image out;
    BinaryNoise( in, out, random, p10, p01 );
+   return out;
+}
+
+/// \brief Fills `out` with colored (Brownian, pink, blue, violet) noise.
+///
+/// The output image will have a variance of `variance`. `color` indicates the color of the noise (and is equal to
+/// the power of the function used to modulate the frequency spectrum):
+/// - -2.0: Brownian noise (a.k.a. brown or red noise), with a frequency spectrum proportional to \$1/f^2\$.
+/// - -1.0: pink noise, with a frequency spectrum proportional to \$1/f\$.
+/// - 0.0: white noise, equal to `dip::GaussianNoise` (but much more expensive).
+/// - 1.0: blue noise, with a frequency spectrum proportional to \$f\$.
+/// - 2.0: violet noise, with a frequency spectrum proportional to \$f^2\$.
+/// Note that the power further increased by the image dimensionality, such that e.g. pink noise has a frequency
+/// spectrum proportional to \$f^{-3}\$ in a 3D image.
+DIP_EXPORT void FillColoredNoise( Image& out, Random& random, dfloat variance = 1.0, dfloat color = -2 );
+
+/// \brief Adds colored (Brownian, pink, blue, violet) noise to `in`.
+///
+/// Equivalent to adding the output of `dip::FillColoredNoise` to `in`. See the referrnce for that function for
+/// information on the input parameters. `out` will have the data type of `in`.
+inline void ColoredNoise( Image const& in, Image& out, Random& random, dfloat variance = 1.0, dfloat color = -2 ) {
+   out.ReForge( in.Sizes(), in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
+   out.CopyNonDataProperties( in );
+   FillColoredNoise( out, random, variance, color );
+   out += in;
+}
+inline Image ColoredNoise( Image const& in, Random& random, dfloat variance = 1.0, dfloat color = -2 ) {
+   Image out;
+   ColoredNoise( in, out, random, variance, color );
    return out;
 }
 

@@ -21,6 +21,9 @@
 #ifndef DIP_RANDOM_H
 #define DIP_RANDOM_H
 
+
+#include <random>
+
 #include "diplib.h"
 #include "diplib/private/pcg_random.hpp"
 #include "chain_code.h"
@@ -59,7 +62,7 @@ namespace dip {
 /// compiled with this flag, or bad things will happen.
 ///
 /// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::PoissonRandomGenerator, dip::BinaryRandomGenerator.
-DIP_NO_EXPORT class Random {
+class DIP_NO_EXPORT Random {
 #if defined(__SIZEOF_INT128__) || defined(DIP_ALWAYS_128_PRNG)
       using Engine = pcg64;
 #else
@@ -135,10 +138,10 @@ DIP_NO_EXPORT class Random {
 /// to produce the randomness. That object needs to exist for as long as this one exists.
 ///
 /// \see dip::GaussianRandomGenerator, dip::PoissonRandomGenerator, dip::BinaryRandomGenerator.
-DIP_NO_EXPORT class UniformRandomGenerator {
+class DIP_NO_EXPORT UniformRandomGenerator {
       using Distribution = std::uniform_real_distribution< dfloat >;
    public:
-      UniformRandomGenerator( Random& generator ) : generator_( generator ) {}
+      explicit UniformRandomGenerator( Random& generator ) : generator_( generator ) {}
       dfloat operator()( dfloat lowerBound, dfloat upperBound ) {
          return distribution_( generator_, Distribution::param_type( lowerBound, upperBound ));
       }
@@ -156,10 +159,10 @@ DIP_NO_EXPORT class UniformRandomGenerator {
 /// to produce the randomness. That object needs to exist for as long as this one exists.
 ///
 /// \see dip::UniformRandomGenerator, dip::PoissonRandomGenerator, dip::BinaryRandomGenerator.
-DIP_NO_EXPORT class GaussianRandomGenerator {
+class DIP_NO_EXPORT GaussianRandomGenerator {
       using Distribution = std::normal_distribution< dfloat >;
    public:
-      GaussianRandomGenerator( Random& generator ) : generator_( generator ) {}
+      explicit GaussianRandomGenerator( Random& generator ) : generator_( generator ) {}
       dfloat operator()( dfloat mean, dfloat standardDeviation ) {
          return distribution_( generator_, Distribution::param_type( mean, standardDeviation ));
       }
@@ -177,10 +180,10 @@ DIP_NO_EXPORT class GaussianRandomGenerator {
 /// to produce the randomness. That object needs to exist for as long as this one exists.
 ///
 /// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::BinaryRandomGenerator.
-DIP_NO_EXPORT class PoissonRandomGenerator {
+class DIP_NO_EXPORT PoissonRandomGenerator {
       using Distribution = std::poisson_distribution< dip::uint >;
    public:
-      PoissonRandomGenerator( Random& generator ) : generator_( generator ) {}
+      explicit PoissonRandomGenerator( Random& generator ) : generator_( generator ) {}
       dip::uint operator()( dfloat mean ) {
          return distribution_( generator_, Distribution::param_type( mean ));
       }
@@ -198,9 +201,9 @@ DIP_NO_EXPORT class PoissonRandomGenerator {
 /// to produce the randomness. That object needs to exist for as long as this one exists.
 ///
 /// \see dip::UniformRandomGenerator, dip::GaussianRandomGenerator, dip::PoissonRandomGenerator.
-DIP_NO_EXPORT class BinaryRandomGenerator {
+class DIP_NO_EXPORT BinaryRandomGenerator {
    public:
-      BinaryRandomGenerator( Random& generator ) : generator_( generator ) {}
+      explicit BinaryRandomGenerator( Random& generator ) : generator_( generator ) {}
       bin operator()( dfloat p ) {
          if( p <= 0.0 ) {
             return false;
@@ -281,7 +284,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
       acc2_poisson.Push( static_cast< dip::dfloat >( poisson( 2000.0 )));
    }
    DOCTEST_CHECK( std::abs( acc2_poisson.Mean() - 2000.0 ) < 1.0 );
-   DOCTEST_CHECK( std::abs( acc2_poisson.Variance() - 2000.0 ) < 10.0 );
+   DOCTEST_CHECK( std::abs( acc2_poisson.Variance() - 2000.0 ) < 15.0 );
    // Test binary distribution
    dip::BinaryRandomGenerator binary( rng );
    dip::uint count = 0;
