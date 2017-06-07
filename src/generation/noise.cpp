@@ -231,7 +231,7 @@ void FillColoredNoise( Image& out, Random& random, dfloat variance, dfloat color
    modulation.At( origin ) = 0;
    // Normalize modulation function
    dfloat w = SumSquare( modulation ).As< dfloat >();
-   w = std::sqrt( std::sqrt( variance ) / w ) * static_cast< dfloat >( modulation.Sizes().product() );
+   w = std::sqrt( variance / w ) * static_cast< dfloat >( modulation.Sizes().product() );
    modulation *= w;
    // Modulate and inverse transform
    fd *= modulation;

@@ -60,19 +60,19 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       } else if( type == "saltpepper" ) {
          DIP_THROW( dip::E::NOT_IMPLEMENTED );
       } else if( type == "brownian" ) {
-         dip::ColoredNoise( in, out, random, param1 * param1 , -2.0 );
+         dip::ColoredNoise( in, out, random, param1 * param1, -2.0 );
       } else if( type == "pink" ) {
          if( param2 <= 0.0 ) {
             param2 = 1.0;
          }
-         dip::ColoredNoise( in, out, random, param1 * param1 , -param2 );
+         dip::ColoredNoise( in, out, random, param1 * param1, -param2 );
       } else if( type == "blue" ) {
          if( param2 <= 0.0 ) {
             param2 = 1.0;
          }
-         dip::ColoredNoise( in, out, random, param1 * param1 , param2 );
+         dip::ColoredNoise( in, out, random, param1 * param1, param2 );
       } else if( type == "violet" ) {
-         dip::ColoredNoise( in, out, random, param1 * param1 , 2.0 );
+         dip::ColoredNoise( in, out, random, param1 * param1, 2.0 );
       } else {
          DIP_THROW( dip::E::INVALID_FLAG );
       }
