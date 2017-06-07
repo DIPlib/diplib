@@ -6,10 +6,10 @@ represents a complete rewrite in C++ of the library infrastructure, with most of
 the image processing and analysis algorithms ported unmodified from the previous
 version.
 
-[Status](https://diplib.github.io/diplib-docs/workplan.html):
+[Status](blob/master/src/documentation/workplan.md):
 we have built most of the new infrastructure, and are in the process of
 porting algorithms over. It's a slow process, but
-[you can help](https://diplib.github.io/diplib-docs/workplan.html)!
+[you can help](blob/master/src/documentation/workplan.md)!
 
 See the [documentation](https://diplib.github.io/diplib-docs/) for more information.
 
@@ -64,29 +64,29 @@ Windows, so I'll let someone else write this bit.
 
 DIPlib includes the following libraries / external code:
 
-- Eigen 3
-  Mozilla Public License Version 2.0
-  see dependencies/eigen3/LICENSE.txt
+- Eigen 3  
+  Mozilla Public License Version 2.0  
+  see dependencies/eigen3/LICENSE.txt  
   (we do not use any of the components with more restrictive licenses)
 
-- DocTest
-  Copyright (c) 2016 Viktor Kirilov
-  The MIT License (MIT)
+- DocTest  
+  Copyright (c) 2016 Viktor Kirilov  
+  The MIT License (MIT)  
   see dependencies/doctest/LICENSE.txt
 
-- The DFT algorithm out of OpenCV 3.1
-  Copyright (C) 2000, Intel Corporation
-  Intel License Agreement For Open Source Computer Vision Library
+- The DFT algorithm out of OpenCV 3.1  
+  Copyright (C) 2000, Intel Corporation  
+  Intel License Agreement For Open Source Computer Vision Library  
   see src/transform/opencv_dxt.h
 
-- PCG Random Number Generation for C++
-  Copyright 2014-2017 Melissa O'Neill and the PCG Project contributors
-  Apache 2.0 License, or The MIT License, at your option
+- PCG Random Number Generation for C++  
+  Copyright 2014-2017 Melissa O'Neill and the PCG Project contributors  
+  Apache 2.0 License, or The MIT License, at your option  
   see include/diplib/private/pcg_*.hpp
 
-- pybind11 (not used in the DIPlib library, only used in the Python bindings)
-  Copyright (c) 2016 Wenzel Jakob <wenzel.jakob@epfl.ch>, All rights reserved.
-  BSD-style license
+- pybind11 (not used in the DIPlib library, only used in the Python bindings)  
+  Copyright (c) 2016 Wenzel Jakob <wenzel.jakob@epfl.ch>, All rights reserved  
+  BSD-style license  
   see dependencies/pybind11/LICENSE
 
 Note that all of these have permissive open-source licenses similar in spirit
