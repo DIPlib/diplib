@@ -105,7 +105,8 @@ over.
 
 - Function names are often simplified, since in C++ it's possible to overload functions for
   different types. For example, `dip_BesselJ0` and `dipm_BesselJ0` are now both called
-  `dip::BesselJ0`.
+  `dip::BesselJ0`. `dip_BooleanArrayUseParameter`, `dip_IntegerArrayUseParameter`, etc. are
+  now all `dip::ArrayUseParameter`.
 
 - `dip_Measure` is now `dip::MeasurementTool::Measure`, with `dip::MeasurementTool` an object
   that knows about defined measurement features.

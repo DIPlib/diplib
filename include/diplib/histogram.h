@@ -48,8 +48,6 @@ namespace dip {
 ///
 /// To facilitate usage for one-dimensional histograms, all getter functions that return a value
 /// for a given dimension, default to dimension 0, so can be called without arguments.
-///
-/// TODO: A histogram can also be constructed from a measurement feature.
 class DIP_NO_EXPORT Histogram {
    public:
       /// \brief Configuration information for how the histogram is computed.
