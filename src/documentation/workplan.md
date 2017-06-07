@@ -65,7 +65,7 @@ document's source</a> for the most up-to-date version.
 
 -   Global threshold algorithms, ported from a *DIPimage* M-file.
 
--   Random number generation.
+-   Random number generation, using the new PCG scheme.
 
 -   An increasing number of filters and operators based on the various frameworks.
 
@@ -86,19 +86,27 @@ document's source</a> for the most up-to-date version.
     the test framework was integrated.
 
 -   Image I/O. Has high priority because it will make testing other functions easier.
-    Porting current code in dipIO to read TIFF and ICS files. Interfacing to
-    BioFormats.
+    - Porting current code in dipIO to read TIFF and ICS files, using libraries
+      [*libtiff*](http://www.remotesensing.org/libtiff/) and
+      [*libics*](https://github.com/svi-opensource/libics). 
+    - Interfacing to [*Bio-Formats*](http://www.openmicroscopy.org/site/products/bio-formats),
+      using [JNI](http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html)
+      to interface between C++ and Java, see for example
+      [this tutorial](https://www.codeproject.com/Articles/993067/Calling-Java-from-Cplusplus-with-JNI).
+      See also [this ITK module](https://github.com/scifio/scifio-imageio) for
+      interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
 
 -   Measurement I/O. Write as CSV is the most important feature here.
 
--   Parallelization of frameworks. Decision: OpenMP or Intel TBB?
+-   Parallelization of frameworks. Decision: *OpenMP* or *Intel TBB*?
 
 -   Porting filters, analysis routines, etc. See the list at the bottom of this page.
 
--   The Fourier transform: Use *FFTW* when a compile switch is set, we must be able to
-    disable that so *DIPlib* can be used in non-open-source projects. Further improvements
-    could be making specific paths for real input or output (could mean a small increase in
-    performance).
+-   The Fourier transform: Use [*FFTW*](http://www.fftw.org) when a compile switch is set.
+    We must be able to disable *FFTW* because it's GPL, and we want to allow people to use
+    *DIPlib* in non-GPL environments.
+    Further improvements could be making specific paths for real input or output (could mean
+    a small increase in performance).
 
 -   Stuff that is in *DIPimage*:
     - 2D snakes
@@ -118,7 +126,7 @@ document's source</a> for the most up-to-date version.
     functions to create a `dip::Image` object around image data from other libraries,
     as well as functions to convert a `dip::Image` to an image of that library
     (either as a view over the same data segment, or by copying the data). We'll
-    do this for: OpenCV, ITK, SimpleITK. Any other libraries of interest?
+    do this for: *OpenCV*, *ITK*, *SimpleITK*. Any other libraries of interest?
 
 
 ## Functionality currently not in *DIPlib* that would be important to include
@@ -150,6 +158,11 @@ document's source</a> for the most up-to-date version.
 
 - Level-set segmentation, graph-cut segmentation.
 
+- Super pixels.
+
+- Building graph out of labeled image (e.g. from watershed). Graph format?
+  Graph manipulation functions, e.g. MST (external lib?), region merging, etc.
+
 - Wavelet transforms.
 
 - The `dip::Label` function should return the number of labels. It could optionally also
@@ -158,8 +171,7 @@ document's source</a> for the most up-to-date version.
   algorithm, which is likely to be optimal for this application (Mike's code uses a
   priority queue, union-find doesn't need it).
 
-- The FreeType 2 library is really cool. I'd like to write a *DIPlib* function
-  that can write text into an image.
+- A function to write text into an image, using the [*FreeType*](https://www.freetype.org) library.
 
 
 ## List of old *DIPlib* functions that still need to be ported
@@ -183,7 +195,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_ProbabilisticPairCorrelation (dip_analysis.h)
     - dip_ChordLength (dip_analysis.h)
     - dip_RadialDistribution (dip_analysis.h)
-    - dip_CorrelationWrite (dip_analysis.h)
     - dip_StructureAnalysis (dip_analysis.h)
     - dip_SubpixelMaxima (dip_analysis.h)
     - dip_SubpixelMinima (dip_analysis.h)
@@ -191,21 +202,10 @@ Some of the following functions already have their prototype written in the new 
     - dip_Canny (dip_detection.h) (or in diplib/segmentation.h?)
     - dip_FindShift (dip_findshift.h)
     - dip_CrossCorrelationFT (dip_findshift.h)
-    - dip_FtRadialAngularSeparableFilter (dip_structure.h)
-    - dip_RARadialPoweredGaussian (dip_structure.h)
-    - dip_RARadialGaussian (dip_structure.h)
-    - dip_RAAngularPsinc (dip_structure.h)
-    - dip_RAAngularGaussian (dip_structure.h)
-    - dip_RAAngularDerivative (dip_structure.h)
-    - dip_RAAngularTrueDerivative (dip_structure.h)
-    - dip_RAAngularCosine (dip_structure.h)
-    - dip_RALineEndings (dip_structure.h)
     - dip_OrientationSpace (dip_structure.h)
     - dip_ExtendedOrientationSpace (dip_structure.h)
-    - dip_StructureTensor2D (dip_structure.h)
-    - dip_StructureDerivatives2D (dip_structure.h)
-    - dip_StructureTensor3D (dip_structure.h)
-    - dip_StructureDerivatives3D (dip_structure.h)
+    - dip_StructureTensor2D (dip_structure.h) (trivial using existing functionality, generalize to nD)
+    - dip_StructureTensor3D (dip_structure.h) (see dip_StructureTensor2D)
     - dip_CurvatureFromTilt (dip_structure.h)
     - dip_OSEmphasizeLinearStructures (dip_structure.h)
     - dip_DanielsonLineDetector (dip_structure.h)
@@ -224,8 +224,8 @@ Some of the following functions already have their prototype written in the new 
     - dip_EuclideanDistanceTransform (dip_distance.h)
     - dip_VectorDistanceTransform (dip_distance.h)
     - dip_GreyWeightedDistanceTransform (dip_distance.h)
-    - dip_FastMarching_PlaneWave (dip_distance.h)
-    - dip_FastMarching_SphericalWave (dip_distance.h)
+    - dip_FastMarching_PlaneWave (dip_distance.h) (this function needs some input image checking!)
+    - dip_FastMarching_SphericalWave (dip_distance.h) (this function needs some input image checking!)
 
 - diplib/filtering.h
     - dip_PercentileFilter (dip_rankfilter.h)
@@ -241,9 +241,9 @@ Some of the following functions already have their prototype written in the new 
     - dip_GaussianSigma (dip_filtering.h)
     - dip_NonMaximumSuppression (dip_filtering.h)
     - dip_ArcFilter (dip_bilateral.h)
-    - dip_Bilateral (dip_bilateral.h) (all three flavours into one function!)
-    - dip_BilateralFilter (dip_bilateral.h)
-    - dip_QuantizedBilateralFilter (dip_bilateral.h)
+    - dip_Bilateral (dip_bilateral.h) (all three flavours into one function)
+    - dip_BilateralFilter (dip_bilateral.h) (all three flavours into one function)
+    - dip_QuantizedBilateralFilter (dip_bilateral.h) (all three flavours into one function)
     - dip_AdaptiveGauss (dip_adaptive.h)
     - dip_AdaptiveBanana (dip_adaptive.h)
     - dip_StructureAdaptiveGauss (dip_adaptive.h)
@@ -259,9 +259,9 @@ Some of the following functions already have their prototype written in the new 
     - dip_FTGaussian (dip_generation.h)
     - dip_FTEllipsoid (dip_generation.h)
     - dip_FTCross (dip_generation.h)
-    - dip_EuclideanDistanceToPoint (dip_generation.h)
-    - dip_EllipticDistanceToPoint (dip_generation.h)
-    - dip_CityBlockDistanceToPoint (dip_generation.h)
+    - dip_EuclideanDistanceToPoint (dip_generation.h) (related to dip::FillRadiusCoordinate)
+    - dip_EllipticDistanceToPoint (dip_generation.h) (related to dip::FillRadiusCoordinate)
+    - dip_CityBlockDistanceToPoint (dip_generation.h) (related to dip::FillRadiusCoordinate)
     - dip_TestObjectCreate (dip_generation.h)
     - dip_TestObjectModulate (dip_generation.h)
     - dip_TestObjectBlur (dip_generation.h)
@@ -270,10 +270,10 @@ Some of the following functions already have their prototype written in the new 
     - dip_ObjectEdge (dip_generation.h)
     - dip_ObjectPlane (dip_generation.h)
     - dip_ObjectEllipsoid (dip_generation.h)
-    - dip_DrawLineFloat (dip_paint.h)
-    - dip_DrawLineComplex (dip_paint.h) (merge with dip_DrawLineFloat)
-    - dip_DrawLinesFloat (dip_paint.h)
-    - dip_DrawLinesComplex (dip_paint.h) (merge with dip_DrawLinesFloat)
+    - dip_DrawLineFloat (dip_paint.h) (merge into a single dip::DrawLine)
+    - dip_DrawLineComplex (dip_paint.h) (merge into a single dip::DrawLine)
+    - dip_DrawLinesFloat (dip_paint.h) (merge into a single dip::DrawLine)
+    - dip_DrawLinesComplex (dip_paint.h) (merge into a single dip::DrawLine)
     - dip_PaintEllipsoid (dip_paint.h)
     - dip_PaintDiamond (dip_paint.h)
     - dip_PaintBox (dip_paint.h)
@@ -309,7 +309,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_ContrastStretch (dip_point.h)
     - dip_RemapOrientation (dip_point.h)
     - dip_MulConjugate (dip_math.h)
-    - dip_NormaliseSum (dip_math.h) (it's rather trivial, worth it?)
     - dip_WeightedAdd (dip_math.h)
     - dip_WeightedSub (dip_math.h)
     - dip_WeightedMul (dip_math.h)
@@ -322,14 +321,14 @@ Some of the following functions already have their prototype written in the new 
     - dip_PositionMinimum (dip_math.h)
     - dip_PositionMedian (dip_math.h)
     - dip_PositionPercentile (dip_math.h)
-    - dip_MeanError (dip_math.h)
-    - dip_MeanSquareError (dip_math.h)
-    - dip_RootMeanSquareError (dip_math.h)
-    - dip_MeanAbsoluteError (dip_math.h)
-    - dip_IDivergence (dip_math.h)
-    - dip_ULnV (dip_math.h)
-    - dip_InProduct (dip_math.h)
-    - dip_LnNormError (dip_math.h)
+    - dip_MeanError (dip_math.h) (implement using existing functions, trivial)
+    - dip_MeanSquareError (dip_math.h) (implement using existing functions, trivial)
+    - dip_RootMeanSquareError (dip_math.h) (implement using existing functions, trivial)
+    - dip_MeanAbsoluteError (dip_math.h) (implement using existing functions, trivial)
+    - dip_IDivergence (dip_math.h) (implement using existing functions, trivial)
+    - dip_ULnV (dip_math.h) (implement using existing functions, trivial)
+    - dip_InProduct (dip_math.h) (implement using existing functions, trivial)
+    - dip_LnNormError (dip_math.h) (implement using existing functions, trivial)
     - dip_RadialMean (dip_math.h)
     - dip_RadialSum (dip_math.h)
     - dip_RadialMaximum (dip_math.h)
@@ -340,6 +339,11 @@ Some of the following functions already have their prototype written in the new 
     - dip_SimpleGaussFitImage (dip_numerical.h)
     - dip_EmFitGaussians (dip_numerical.h)
     - dip_EmGaussTest (dip_numerical.h)
+    - dip_LabelSetBorder (dip_regions.h) (merge with ImageDoEdge, call it SetBorder)
+    - dip_ImageDoEdge (dip_regions.h) (merge with LabelSetBorder, call it SetBorder)
+
+- diplib/measurement.h
+    - dipio_MeasurementWriteCSV (dipio_msrcsv.h)
 
 - diplib/microscopy.h
     - dip_IncoherentPSF (dip_microscopy.h)
@@ -362,11 +366,9 @@ Some of the following functions already have their prototype written in the new 
 
 - diplib/regions.h
     - dip_Label (dip_regions.h)
-    - dip_LabelSetBorder (dip_regions.h)
-    - dip_ImageDoEdge (dip_regions.h)
-    - dip_RegionConnectivit (dip_regions.h)
+    - dip_RegionConnectivity (dip_regions.h)
     - dip_GrowRegions (dip_regions.h)
-    - dip_GrowRegionsWeighte (dip_regions.h)
+    - dip_GrowRegionsWeighted (dip_regions.h)
     - dip_SmallObjectsRemove (dip_measurement.h)
 
 - diplib/segmentation.h
@@ -394,4 +396,3 @@ Some of the following functions already have their prototype written in the new 
     - dipio_ImageReadTIFFInfo (dipio_tiff.h)
     - dipio_ImageIsTIFF (dipio_tiff.h)
     - dipio_ImageWriteTIFF (dipio_tiff.h)
-    - dipio_MeasurementWriteCSV (dipio_msrcsv.h)

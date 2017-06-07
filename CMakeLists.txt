@@ -336,20 +336,20 @@ if (DOXYGEN_FOUND)
    )
 endif (DOXYGEN_FOUND)
 
-add_custom_command(
-      OUTPUT ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
-      COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
-      COMMAND pandoc -s DIPthoughts.md -o ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
-      --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
-      --toc --listings -H pandoc/listings_setup.tex --number-sections
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPENDS DIPthoughts.md
-)
-
-add_custom_target(
-      docs DEPENDS
-      ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
-)
+#add_custom_command(
+#      OUTPUT ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
+#      COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
+#      COMMAND pandoc -s DIPthoughts.md -o ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
+#      --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
+#      --toc --listings -H pandoc/listings_setup.tex --number-sections
+#      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#      DEPENDS DIPthoughts.md
+#)
+#
+#add_custom_target(
+#      docs DEPENDS
+#      ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
+#)
 
 
 ### Status report
