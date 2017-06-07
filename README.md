@@ -6,10 +6,10 @@ represents a complete rewrite in C++ of the library infrastructure, with most of
 the image processing and analysis algorithms ported unmodified from the previous
 version.
 
-[Status](blob/master/src/documentation/workplan.md):
+[Status](src/documentation/workplan.md):
 we have built most of the new infrastructure, and are in the process of
 porting algorithms over. It's a slow process, but
-[you can help](blob/master/src/documentation/workplan.md)!
+[you can help](src/documentation/workplan.md)!
 
 See the [documentation](https://diplib.github.io/diplib-docs/) for more information.
 
