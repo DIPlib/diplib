@@ -935,6 +935,57 @@ DIP_EXPORT void LaplaceMinDgg(
       dfloat truncation = 3
 );
 
+/// \brief Sharpens `in` by subtracting the Laplacian of the image.
+///
+/// The actual operation applied is:
+///
+/// ```cpp
+///     out = in - dip::Laplace( in ) * weight;
+/// ```
+///
+/// See `dip::Laplace` and `dip::Gradient` for information on the parameters.
+///
+/// \see dip::Laplace, dip::UnsharpMask
+inline void Sharpen(
+         Image const& in,
+         Image& out,
+         dfloat weight = 1.0,
+         FloatArray const& sigmas = { 1.0 },
+         String const& method = "best",
+         StringArray const& boundaryCondition = {},
+         dfloat truncation = 3
+) {
+   Laplace( in, out, sigmas, method, boundaryCondition, {}, truncation );
+   out *= weight; // TODO: once we have implemented a WeightedSubtract, this and the next operation can be merged.
+   Subtract( in, out, out );
+}
+
+/// \brief Sharpens `in` by subtracting the smoothed image.
+///
+/// The actual operation applied is:
+///
+/// ```cpp
+///     out = in * ( 1+weight) - dip::Gauss( in ) * weight;
+/// ```
+///
+/// See `dip::Gauss` and `dip::Gradient` for information on the parameters.
+///
+/// \see dip::Gauss, dip::Sharpen
+inline void UnsharpMask(
+         Image const& in,
+         Image& out,
+         dfloat weight = 1.0,
+         FloatArray const& sigmas = { 1.0 },
+         String const& method = "best",
+         StringArray const& boundaryCondition = {},
+         dfloat truncation = 3
+) {
+   Gauss( in, out, sigmas, { 0 }, method, boundaryCondition, truncation );
+   Subtract( in, out, out );
+   out *= weight; // TODO: once we have implemented a WeightedSubtract, this and the next operation can be merged.
+   Add( in, out, out );
+}
+
 DIP_EXPORT void OrientedGauss(
       Image const& in,
       Image& out,
