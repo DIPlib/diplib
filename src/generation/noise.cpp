@@ -19,9 +19,9 @@
  */
 
 #include "diplib.h"
-#include "diplib/generation.h"
 #include "diplib/random.h"
-#include "diplib/math.h"
+#include "diplib/generation.h"
+#include "diplib/statistics.h"
 #include "diplib/framework.h"
 
 namespace dip {

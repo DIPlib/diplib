@@ -20,8 +20,6 @@
 
 #include "diplib.h"
 #include "diplib/linear.h"
-#include "diplib/math.h"
-#include "diplib/iterators.h"
 
 #if defined(__GNUG__) || defined(__clang__)
 // For this file, turn off -Wsign-conversion, Eigen is really bad at this!
@@ -91,7 +89,7 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
-//#include <chrono>
+#include "diplib/statistics.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the filter separation") {
    dip::Image delta3D( { 30, 30, 30 }, 1, dip::DT_SFLOAT );

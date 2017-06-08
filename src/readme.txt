@@ -14,7 +14,7 @@ geometry/         Interpolation and geometric transformations (diplib/geometry.h
 generation/       Creating image data (diplib/generation.h)
 histogram/        Histograms (diplib/histogram.h)
 lookup_table/     Look-up tables (diplib/lookup_table.h)
-math/             Pixel math (diplib/math.h)
+math/             Pixel math (diplib/math.h, diplib/statistics.h)
 measurement/      Measurement infrastructure and functions (diplib/measurement.h, diplib/chain_code.h)
 microscopy/       Deconvolution, attenuation correction, stain unmixing, etc. (diplib/microscopy.h)
 morphology/       Mathematical morphology (diplib/morphology.h)

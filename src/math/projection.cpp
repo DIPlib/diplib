@@ -21,7 +21,7 @@
 #include <cmath>
 
 #include "diplib.h"
-#include "diplib/math.h"
+#include "diplib/statistics.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/iterators.h"

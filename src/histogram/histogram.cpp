@@ -20,9 +20,9 @@
 
 #include "diplib.h"
 #include "diplib/histogram.h"
-#include "diplib/framework.h"
-#include "diplib/math.h"
+#include "diplib/statistics.h"
 #include "diplib/linear.h"
+#include "diplib/framework.h"
 #include "diplib/overload.h"
 
 namespace dip {

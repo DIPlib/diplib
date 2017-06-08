@@ -20,7 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/histogram.h"
-#include "diplib/math.h"
+#include "diplib/statistics.h"
 #include "diplib/chain_code.h" // for VertexFloat, TriangleHeight, etc.
 
 

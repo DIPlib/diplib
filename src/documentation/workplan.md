@@ -277,7 +277,7 @@ Some of the following functions already have their prototype written in the new 
     - dip_LaplacePlusDgg (dip_derivatives.h)
     - dip_LaplaceMinDgg (dip_derivatives.h)
 
-- diplib/math.h (should we split this one into two files?)
+- diplib/math.h
     - dip_Clip (dip_point.h)
     - dip_ErfClip (dip_point.h)
     - dip_ContrastStretch (dip_point.h)
@@ -290,10 +290,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_AmplitudeModulation (dip_math.h)
     - dip_CosinAmplitudeModulation (dip_math.h)
     - dip_CosinAmplitudeDemodulation (dip_math.h)
-    - dip_PositionMaximum (dip_math.h)
-    - dip_PositionMinimum (dip_math.h)
-    - dip_PositionMedian (dip_math.h)
-    - dip_PositionPercentile (dip_math.h)
     - dip_MeanError (dip_math.h) (implement using existing functions, trivial)
     - dip_MeanSquareError (dip_math.h) (implement using existing functions, trivial)
     - dip_RootMeanSquareError (dip_math.h) (implement using existing functions, trivial)
@@ -302,12 +298,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_ULnV (dip_math.h) (implement using existing functions, trivial)
     - dip_InProduct (dip_math.h) (implement using existing functions, trivial)
     - dip_LnNormError (dip_math.h) (implement using existing functions, trivial)
-    - dip_RadialMean (dip_math.h)
-    - dip_RadialSum (dip_math.h)
-    - dip_RadialMaximum (dip_math.h)
-    - dip_RadialMinimum (dip_math.h)
-    - dip_Moments (dip_math.h)
-    - dip_CenterOfMass (dip_math.h)
     - dip_ChangeByteOrder (dip_manipulation.h)
     - dip_SimpleGaussFitImage (dip_numerical.h)
     - dip_EmFitGaussians (dip_numerical.h)
@@ -371,6 +361,18 @@ Some of the following functions already have their prototype written in the new 
 
 - diplib/segmentation.h
     - dip_KMeansClustering (dip_analysis.h)
+
+- diplib/statistics.h
+    - dip_PositionMaximum (dip_math.h)
+    - dip_PositionMinimum (dip_math.h)
+    - dip_PositionMedian (dip_math.h)
+    - dip_PositionPercentile (dip_math.h)
+    - dip_RadialMean (dip_math.h)
+    - dip_RadialSum (dip_math.h)
+    - dip_RadialMaximum (dip_math.h)
+    - dip_RadialMinimum (dip_math.h)
+    - dip_Moments (dip_math.h)
+    - dip_CenterOfMass (dip_math.h)
 
 - diplib/transform.h
     - dip_HartleyTransform (dip_transform.h)

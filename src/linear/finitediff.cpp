@@ -74,7 +74,7 @@ void FiniteDifference(
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
 #include <random>
-#include "diplib/math.h"
+#include "diplib/statistics.h"
 #include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the finite difference filter") {

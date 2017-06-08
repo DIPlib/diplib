@@ -102,9 +102,10 @@ inline Image FourierTransform(
 /// (smaller than 2^31-1, the largest possible value of an `int` on most platforms).
 DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size );
 
-// TODO: port dip_HartleyTransform (dip_transform.h)
 
+// TODO: port dip_HartleyTransform (dip_transform.h)
 // TODO: have dip::FourierTransform call FFTW if the relevant compiler flag is given
+// TODO: add wavelet transforms
 
 /// \}
 

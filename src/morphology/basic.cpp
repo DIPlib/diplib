@@ -594,7 +594,7 @@ void Closing(
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
-#include "diplib/math.h"
+#include "diplib/statistics.h"
 #include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {

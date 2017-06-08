@@ -23,6 +23,7 @@
 #include "diplib.h"
 #include "diplib/display.h"
 #include "diplib/math.h"
+#include "diplib/statistics.h"
 #include "diplib/overload.h"
 
 namespace dip {
