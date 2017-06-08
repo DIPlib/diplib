@@ -1,23 +1,27 @@
 Source files are spread out over subdirectories just to keep some order.
 
-library/          Core library functionality
-support/          Functions that don't work on images
+library/          Core library functionality (diplib/library/*.h, diplib/boundary.h, diplib/display.h,
+                                              diplib/framework.h, diplib/neighborhood.h, diplib/pixel_table.h)
+support/          Functions that don't work on images (diplib/library/numeric.h)
 
-analysis/         Analysis (shift estimation, pair correlations, etc.)
-binary/           Binary image processing
-color/            Color spaces and transforms
-distance/         Distance transforms
-filtering/        Filters (linear & nonlinear smoothing, derivatives)
-generation/       Creating image data
-histogram/        Histograms
-interpolation/    Interpolation and geometric transformations
-math/             Pixel math
-measurement/      Measurement infrastructure and functions
-microscopy/       Deconvolution, attenuation correction, stain unmixing, etc.
-morphology/       Mathematical morphology
-regions/          Labeling and labeled image processing
-segmentation/     Segmentation
-transform/        Fourier and other transform
+analysis/         Analysis (diplib/analysis.h)
+binary/           Binary image processing (diplib/binary.h)
+color/            Color spaces and transforms (diplib/color.h)
+distance/         Distance transforms (diplib/distance.h)
+file_io/          Image file I/O (diplib/file_io.h)
+linear/           Linear filters (diplib/linear.h)
+geometry/         Interpolation and geometric transformations (diplib/geometry.h)
+generation/       Creating image data (diplib/generation.h)
+histogram/        Histograms (diplib/histogram.h)
+lookup_table/     Look-up tables (diplib/lookup_table.h)
+math/             Pixel math (diplib/math.h)
+measurement/      Measurement infrastructure and functions (diplib/measurement.h, diplib/chain_code.h)
+microscopy/       Deconvolution, attenuation correction, stain unmixing, etc. (diplib/microscopy.h)
+morphology/       Mathematical morphology (diplib/morphology.h)
+nonlinear/        Non-linear filters (diplib/nonlinear.h)
+regions/          Labeling and labeled image processing (diplib/regions.h)
+segmentation/     Segmentation (diplib/segmentation.h)
+transform/        Fourier and other transforms (diplib/transform.h)
 
 documentation/    Markdown files
 
