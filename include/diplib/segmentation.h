@@ -32,7 +32,7 @@ namespace dip {
 
 
 /// \defgroup segmentation Segmentation
-/// \brief Functions for segmentation and binarization
+/// \brief Segmentation and binarization algorithms.
 ///
 /// See also watershed functions in the \ref morphology group: `dip::Watershed`, `dip::SeededWatershed`.
 /// \{
@@ -49,7 +49,7 @@ DIP_EXPORT void KMeansClustering( // TODO: return the cluster centers?
       Image& out,
       dip::uint nClusters = 2
 );
-
+// TODO: port dip_KMeansClustering (dip_analysis.h)
 
 /// \brief Thresholds the image `in` using `nThresholds` thresholds, determined using the Isodata algorithm
 /// (k-means clustering), and the histogram of `in`.

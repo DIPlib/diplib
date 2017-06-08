@@ -48,7 +48,7 @@
 /// \defgroup infrastructure The library infrastructure
 /// \brief The nuts and bolts that make it all work
 
-/// \defgroup filtering Image filters
-/// \brief Functions that implement linear and non-linear filters
+/// \defgroup filtering Filtering
+/// \brief Linear and non-linear filters for smoothing, sharpening and detection
 
 #endif // DIPLIB_H

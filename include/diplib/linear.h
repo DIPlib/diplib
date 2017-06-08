@@ -34,7 +34,7 @@ namespace dip {
 
 /// \defgroup linear Linear filters
 /// \ingroup filtering
-/// \brief Functions that implement linear filters
+/// \brief Linear smoothing, sharpening and derivative filters.
 /// \{
 
 /// \brief Describes a 1D filter
@@ -1013,6 +1013,15 @@ DIP_EXPORT void GaborIIR(
       IntegerArray filterOrder = {},
       dfloat truncation = 3
 );
+
+// TODO: functions to port:
+/*
+   dip_OrientedGauss (dip_linear.h)
+   dip_GaborIIR (dip_iir.h)
+   dip_Dgg (dip_derivatives.h)
+   dip_LaplacePlusDgg (dip_derivatives.h)
+   dip_LaplaceMinDgg (dip_derivatives.h)
+*/
 
 /// \}
 

@@ -32,30 +32,17 @@
 namespace dip {
 
 
-/// \defgroup regions Labeled image functions
-/// \brief Functions that work on labeled images.
+/// \defgroup regions Connected component analysis
+/// \brief Label connected component and process labeled images.
 /// \{
 
-// TODO: functions to add:
+// TODO: functions to port:
 /*
-DIP_ERROR dip_Label          ( dip_Image, dip_Image, dip_int, dip_int,
-                               dip_int, dip_int, dip_int *, dip_BoundaryArray );
-DIP_ERROR dip_LabelSetBorder ( dip_Image, dip_Image );
-DIP_ERROR dip_ImageDoEdge    ( dip_Image, dip_int );
-DIP_ERROR dip_RegionConnectivity
-                             ( dip_Image, dip_Image,
-                               dip_sint32 ***, dip_sint32 ***,
-                               dip_sint32 ***, dip_sint32 ***,
-                               dip_int, dip_int, dip_int,
-                               dip_int *, dip_int *, dip_int *,
-                               dip_int *, dip_int *, dip_int *,
-                               dip_BoundaryArray, dip_Resources );
-
-DIP_ERROR dip_GrowRegions    ( dip_Image, dip_Image, dip_Image, dip_Image,
-                               dip_int, dip_int, dipf_GreyValueSortOrder );
-DIP_ERROR dip_GrowRegionsWeighted
-                             ( dip_Image, dip_Image, dip_Image, dip_Image,
-                               dip_Image, dip_FloatArray, dip_int, dip_Image );
+   dip_Label (dip_regions.h)
+   dip_RegionConnectivity (dip_regions.h)
+   dip_GrowRegions (dip_regions.h)
+   dip_GrowRegionsWeighted (dip_regions.h)
+   dip_SmallObjectsRemove (dip_measurement.h)
 */
 
 /// \brief Labels the connected components in a binary image

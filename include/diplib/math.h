@@ -87,8 +87,11 @@ DIP_EXPORT MinMaxAccumulator GetMaximumAndMinimum( Image const& in, Image const&
 /// image, returns the maximum and minimum sample values. The image must be real-valued.
 DIP_EXPORT StatisticsAccumulator GetSampleStatistics( Image const& in, Image const& mask = {} );
 
-// DIP_ERROR dip_Moments ( dip_Image, dip_Image, dip_IntegerArray, dip_FloatArray, dip_complex * ); // first 4 central moments
-// DIP_ERROR dip_CenterOfMass( dip_Image, dip_Image, dip_FloatArray, dip_FloatArray ); // 1st order moments
+// TODO: functions to port:
+/*
+   dip_Moments (dip_math.h)
+   dip_CenterOfMass (dip_math.h)
+*/
 
 /// \}
 
@@ -201,14 +204,22 @@ inline Image SignedMinimum( Image const& a, Image const& b ) {
    return out;
 }
 
-// DIP_ERROR dip_MeanError          ( dip_Image, dip_Image, dip_Image, dip_Image );
-// DIP_ERROR dip_MeanSquareError    ( dip_Image, dip_Image, dip_Image, dip_Image );
-// DIP_ERROR dip_RootMeanSquareError( dip_Image, dip_Image, dip_Image, dip_Image );
-// DIP_ERROR dip_MeanAbsoluteError  ( dip_Image, dip_Image, dip_Image, dip_Image );
-// DIP_ERROR dip_IDivergence        ( dip_Image, dip_Image, dip_Image, dip_Image );
-// DIP_ERROR dip_ULnV               ( dip_Image, dip_Image, dip_Image, dip_Image );
-// DIP_ERROR dip_InProduct          ( dip_Image, dip_Image, dip_Image, dip_Image );
-// DIP_ERROR dip_LnNormError        ( dip_Image, dip_Image, dip_Image, dip_Image, dip_float );
+// TODO: functions to port:
+/*
+   dip_MulConjugate (dip_math.h) -> in diplib/library/operators.h
+   dip_WeightedAdd (dip_math.h)
+   dip_WeightedSub (dip_math.h)
+   dip_WeightedMul (dip_math.h)
+   dip_WeightedDiv (dip_math.h)
+   dip_MeanError (dip_math.h) (implement using existing functions, trivial)
+   dip_MeanSquareError (dip_math.h) (implement using existing functions, trivial)
+   dip_RootMeanSquareError (dip_math.h) (implement using existing functions, trivial)
+   dip_MeanAbsoluteError (dip_math.h) (implement using existing functions, trivial)
+   dip_IDivergence (dip_math.h) (implement using existing functions, trivial)
+   dip_ULnV (dip_math.h) (implement using existing functions, trivial)
+   dip_InProduct (dip_math.h) (implement using existing functions, trivial)
+   dip_LnNormError (dip_math.h) (implement using existing functions, trivial)
+*/
 
 /// \}
 
@@ -243,9 +254,12 @@ inline Image Hypot( Image const& a, Image const& b ) {
    return out;
 }
 
-// DIP_ERROR dip_AmplitudeModulation       ( dip_Image, dip_Image, dip_float *, dip_int, dip_int *, dip_int * );
-// DIP_ERROR dip_CosinAmplitudeModulation  ( dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
-// DIP_ERROR dip_CosinAmplitudeDemodulation( dip_Image, dip_Image, dip_Image, dip_Image, dip_float *, dip_int, dip_int, dip_int *, dip_int * );
+// TODO: functions to port:
+/*
+   dip_AmplitudeModulation (dip_math.h)
+   dip_CosinAmplitudeModulation (dip_math.h)
+   dip_CosinAmplitudeDemodulation (dip_math.h)
+*/
 
 /// \}
 
@@ -486,7 +500,7 @@ inline Image Identity( Image const& in ) {
 //
 
 /// \defgroup math_projection Projection operators
-/// \brief Operators that project the image data onto fewer spatial dimensions. They can also be used to compute image statistics.
+/// \brief Operators that project the image data onto fewer spatial dimensions, computing image statistics.
 /// \{
 
 /// \brief Calculates the mean of the pixel values over all those dimensions which are specified by `process`.
@@ -845,15 +859,17 @@ inline Image Any( Image const& in, Image const& mask = {}, BooleanArray process 
    return out;
 }
 
-// DIP_ERROR dip_PositionMaximum   ( dip_Image, dip_Image, dip_Image, dip_int, dip_Boolean );
-// DIP_ERROR dip_PositionMinimum   ( dip_Image, dip_Image, dip_Image, dip_int, dip_Boolean );
-// DIP_ERROR dip_PositionMedian    ( dip_Image, dip_Image, dip_Image, dip_int, dip_Boolean );
-// DIP_ERROR dip_PositionPercentile( dip_Image, dip_Image, dip_Image, dip_float, dip_int, dip_Boolean );
-
-// DIP_ERROR dip_RadialMean( dip_Image, dip_Image, dip_Image, dip_BooleanArray, dip_float, dip_Boolean, dip_FloatArray );
-// DIP_ERROR dip_RadialSum( dip_Image, dip_Image, dip_Image, dip_BooleanArray, dip_float, dip_Boolean, dip_FloatArray );
-// DIP_ERROR dip_RadialMaximum( dip_Image, dip_Image, dip_Image, dip_BooleanArray, dip_float, dip_Boolean, dip_FloatArray );
-// DIP_ERROR dip_RadialMinimum( dip_Image, dip_Image, dip_Image, dip_BooleanArray, dip_float, dip_Boolean, dip_FloatArray );
+// TODO: functions to port:
+/*
+   dip_PositionMaximum (dip_math.h)
+   dip_PositionMinimum (dip_math.h)
+   dip_PositionMedian (dip_math.h)
+   dip_PositionPercentile (dip_math.h)
+   dip_RadialMean (dip_math.h)
+   dip_RadialSum (dip_math.h)
+   dip_RadialMaximum (dip_math.h)
+   dip_RadialMinimum (dip_math.h)
+*/
 
 /// \}
 
@@ -938,6 +954,17 @@ inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
 
 /// \}
 
+// TODO: functions to port:
+/*
+   dip_Clip (dip_point.h)
+   dip_ErfClip (dip_point.h)
+   dip_ContrastStretch (dip_point.h)
+   dip_RemapOrientation (dip_point.h)
+   dip_ChangeByteOrder (dip_manipulation.h)
+   dip_SimpleGaussFitImage (dip_numerical.h)
+   dip_EmFitGaussians (dip_numerical.h)
+   dip_EmGaussTest (dip_numerical.h)
+*/
 
 /// \}
 

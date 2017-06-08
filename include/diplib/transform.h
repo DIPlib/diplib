@@ -32,7 +32,7 @@ namespace dip {
 
 
 /// \defgroup transform Transforms
-/// \brief Functions that implement the Fourier and other transforms
+/// \brief The Fourier and other transforms.
 /// \{
 
 
@@ -101,6 +101,10 @@ inline Image FourierTransform(
 /// \brief Returns the next higher multiple of {2, 3, 5}. The largest value that can be returned is 2125764000
 /// (smaller than 2^31-1, the largest possible value of an `int` on most platforms).
 DIP_EXPORT dip::uint OptimalFourierTransformSize( dip::uint size );
+
+// TODO: port dip_HartleyTransform (dip_transform.h)
+
+// TODO: have dip::FourierTransform call FFTW if the relevant compiler flag is given
 
 /// \}
 

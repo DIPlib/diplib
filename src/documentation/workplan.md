@@ -186,7 +186,7 @@ it should not be ported (or already is ported).
 
 Some of the following functions already have their prototype written in the new library.
 
-- diplib.h
+- diplib.h (or in diplib/framework.h?)
     - dip_GlobalNumberOfThreadsGet (dip_globals.h) (we don't do globals in DIPlib 3.0, but this could be an exception)
     - dip_GlobalNumberOfThreadsSet (dip_globals.h)
 
@@ -226,31 +226,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_GreyWeightedDistanceTransform (dip_distance.h)
     - dip_FastMarching_PlaneWave (dip_distance.h) (this function needs some input image checking!)
     - dip_FastMarching_SphericalWave (dip_distance.h) (this function needs some input image checking!)
-
-- diplib/filtering.h
-    - dip_PercentileFilter (dip_rankfilter.h)
-    - dip_MedianFilter (dip_rankfilter.h)
-    - dip_RankContrastFilter (dip_rankfilters.h)
-    - dip_VarianceFilter (dip_filtering.h)
-    - dip_Kuwahara (dip_filtering.h)
-    - dip_GeneralisedKuwahara (dip_filtering.h)
-    - dip_KuwaharaImproved (dip_filtering.h) (merge into dip_Kuwahara)
-    - dip_GeneralisedKuwaharaImproved (dip_filtering.h) (merge into dip_GeneralisedKuwahara)
-    - dip_Sigma (dip_filtering.h)
-    - dip_BiasedSigma (dip_filtering.h)
-    - dip_GaussianSigma (dip_filtering.h)
-    - dip_NonMaximumSuppression (dip_filtering.h)
-    - dip_ArcFilter (dip_bilateral.h)
-    - dip_Bilateral (dip_bilateral.h) (all three flavours into one function)
-    - dip_BilateralFilter (dip_bilateral.h) (all three flavours into one function)
-    - dip_QuantizedBilateralFilter (dip_bilateral.h) (all three flavours into one function)
-    - dip_AdaptiveGauss (dip_adaptive.h)
-    - dip_AdaptiveBanana (dip_adaptive.h)
-    - dip_StructureAdaptiveGauss (dip_adaptive.h)
-    - dip_AdaptivePercentile (dip_adaptive.h)
-    - dip_AdaptivePercentileBanana (dip_adaptive.h)
-    - dip_PGST3DLine (dip_pgst.h) (this could have a better name!)
-    - dip_PGST3DSurface (dip_pgst.h) (this could have a better name!)
 
 - diplib/generation.h
     - dip_FTSphere (dip_generation.h)
@@ -301,7 +276,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_Dgg (dip_derivatives.h)
     - dip_LaplacePlusDgg (dip_derivatives.h)
     - dip_LaplaceMinDgg (dip_derivatives.h)
-    - dip_Sharpen (dip_derivatives.h)
 
 - diplib/math.h (should we split this one into two files?)
     - dip_Clip (dip_point.h)
@@ -316,7 +290,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_AmplitudeModulation (dip_math.h)
     - dip_CosinAmplitudeModulation (dip_math.h)
     - dip_CosinAmplitudeDemodulation (dip_math.h)
-    - dip_GeneratePhase (dip_math.h)
     - dip_PositionMaximum (dip_math.h)
     - dip_PositionMinimum (dip_math.h)
     - dip_PositionMedian (dip_math.h)
@@ -364,6 +337,31 @@ Some of the following functions already have their prototype written in the new 
     - dip_DirectedPathOpening (dip_morphology.h)
     - dip_UpperSkeleton2D (dip_binary.h)
 
+- diplib/nonlinear.h
+    - dip_PercentileFilter (dip_rankfilter.h)
+    - dip_MedianFilter (dip_rankfilter.h)
+    - dip_RankContrastFilter (dip_rankfilters.h)
+    - dip_VarianceFilter (dip_filtering.h)
+    - dip_Kuwahara (dip_filtering.h)
+    - dip_GeneralisedKuwahara (dip_filtering.h)
+    - dip_KuwaharaImproved (dip_filtering.h) (merge into dip_Kuwahara)
+    - dip_GeneralisedKuwaharaImproved (dip_filtering.h) (merge into dip_GeneralisedKuwahara)
+    - dip_Sigma (dip_filtering.h)
+    - dip_BiasedSigma (dip_filtering.h)
+    - dip_GaussianSigma (dip_filtering.h)
+    - dip_NonMaximumSuppression (dip_filtering.h)
+    - dip_ArcFilter (dip_bilateral.h)
+    - dip_Bilateral (dip_bilateral.h) (all three flavours into one function)
+    - dip_BilateralFilter (dip_bilateral.h) (all three flavours into one function)
+    - dip_QuantizedBilateralFilter (dip_bilateral.h) (all three flavours into one function)
+    - dip_AdaptiveGauss (dip_adaptive.h)
+    - dip_AdaptiveBanana (dip_adaptive.h)
+    - dip_StructureAdaptiveGauss (dip_adaptive.h)
+    - dip_AdaptivePercentile (dip_adaptive.h)
+    - dip_AdaptivePercentileBanana (dip_adaptive.h)
+    - dip_PGST3DLine (dip_pgst.h) (this could have a better name!)
+    - dip_PGST3DSurface (dip_pgst.h) (this could have a better name!)
+
 - diplib/regions.h
     - dip_Label (dip_regions.h)
     - dip_RegionConnectivity (dip_regions.h)
@@ -377,7 +375,7 @@ Some of the following functions already have their prototype written in the new 
 - diplib/transform.h
     - dip_HartleyTransform (dip_transform.h)
 
-- diplib/io.h (file.h?)
+- diplib/file_io.h
     - dipio_ImageRead (dipio_image.h) (should always return color image)
     - dipio_ImageReadColourSeries (dipio_image.h) (should be named ImageReadSeries)
     - dipio_ImageReadROI (dipio_image.h)

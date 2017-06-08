@@ -34,7 +34,7 @@ namespace dip {
 
 /// \defgroup morphology Mathematical morphology
 /// \ingroup filtering
-/// \brief Functions that implement mathematical morphology
+/// \brief Morphological filters for smoothing, sharpening, detection and more, and the watershed transform.
 /// \{
 
 /// \brief Objects of class `%StructuringElement` represent the shape and size of a structuring element.
@@ -923,11 +923,22 @@ DIP_EXPORT void DirectedPathOpening(
       bool constrained = true // should be a string
 );
 
+// TODO: functions to port:
+/*
+dip_UpperEnvelope (dip_morphology.h)
+dip_AreaOpening (dip_morphology.h)
+dip_PathOpening (dip_morphology.h)
+dip_DirectedPathOpening (dip_morphology.h)
+dip_UpperSkeleton2D (dip_binary.h)
+*/
+
 // TODO: h-minima & h-maxima, opening and closing by reconstruction
 // TODO: alternating sequential open-close filter (3 versions: with structural opening, opening by reconstruction, and area opening)
 // TODO: hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees (360 degrees means no rotation).
 // TODO: thinning & thickening, to be implemented as iterated hit'n'miss.
 // TODO: levelling
+
+// TODO: link documentation to dip::PercentileFilter (when written) as a rank filter, and implement rank-min and rank-max operators
 
 /// \}
 

@@ -33,7 +33,7 @@ namespace dip {
 
 
 /// \defgroup generation Image generation
-/// \brief Functions for filling images with generated data, and creating test images
+/// \brief Filling images with generated data, and creating test images.
 /// \{
 
 
@@ -417,6 +417,38 @@ inline Image PoissonNoise( Image const& in, Random& random, dfloat conversion = 
 /// `BinaryNoise( in, 0.05, 0.0 )` limits the noise to the foreground components, and does not add noise to
 /// the background.
 ///
+/// Note that the noise generated corresponds to a Poisson point process. The distances between changed pixels
+/// have a Poisson distribution. For example, the following bit of code yields a Poisson process with a density
+/// governed by `D`.
+///
+/// ```cpp
+///     dip::Random random;
+///     dip::dfloat D = 0.001;
+///     dip::Image poissonPoint( { 256, 256 }, 1, dip::DT_BIN );
+///     poissonPoint.Fill( 0 );
+///     BinaryNoise( poissonPoint, poissonPoint, random, 0, D );
+/// ```
+///
+/// The binary noise added to an all-zero image as in the code snippet above is equivalent to thresholding
+/// uniformly-distributed noise at a fraction `D` of the noise range, from the max value:
+///
+/// ```cpp
+///     dip::Image poissonPoint2( { 256, 256 }, 1, dip::DT_SFLOAT );
+///     poissonPoint2.Fill( 0 );
+///     UniformNoise( poissonPoint2, poissonPoint2, random, 0, 1 );
+///     poissonPoint2 = poissonPoint2 >= ( 1 - D );
+/// ```
+///
+/// Using blue noise it is possible to create a point process with similar density, but more equally-distributed
+/// points:
+///
+/// ```cpp
+///     dip::Image poissonPoint3( { 256, 256 }, 1, dip::DT_SFLOAT );
+///     FillColoredNoise( poissonPoint3, random, 1, 1 );
+///     dip::dfloat threshold = Percentile( poissonPoint3, {}, 100 * ( 1 - D )).As< dip::dfloat >();
+///     poissonPoint3 = poissonPoint3 >= threshold;
+/// ```
+///
 /// `random` is used to generate the random values needed by the first thread. If the algorithm runs in multiple
 /// threads, portions of the image processed by additional threads take their random values from `random.Split()`,
 /// which is essentially a copy of `random` set to a different random stream. Given a `dip::Random` object in an
@@ -433,6 +465,8 @@ inline Image BinaryNoise( Image const& in, Random& random, dfloat p10 = 0.05, df
 
 /// \brief Fills `out` with colored (Brownian, pink, blue, violet) noise.
 ///
+/// Colored noise is correlated, as opposed to white nose, which is uncorrelated.
+///
 /// The output image will have a variance of `variance`. `color` indicates the color of the noise (and is equal to
 /// the power of the function used to modulate the frequency spectrum):
 /// - -2.0: Brownian noise (a.k.a. brown or red noise), with a frequency spectrum proportional to \$1/f^2\$.
@@ -440,26 +474,65 @@ inline Image BinaryNoise( Image const& in, Random& random, dfloat p10 = 0.05, df
 /// - 0.0: white noise, equal to `dip::GaussianNoise` (but much more expensive).
 /// - 1.0: blue noise, with a frequency spectrum proportional to \$f\$.
 /// - 2.0: violet noise, with a frequency spectrum proportional to \$f^2\$.
-/// Note that the power further increased by the image dimensionality, such that e.g. pink noise has a frequency
-/// spectrum proportional to \$f^{-3}\$ in a 3D image.
-DIP_EXPORT void FillColoredNoise( Image& out, Random& random, dfloat variance = 1.0, dfloat color = -2 );
+/// It is possible to specify any values in between these, to tune the color more precisely. Values larger than
+/// 2.0 and smaller than -2.0 are possible also, but the results become less interesting quickly as the magnitude
+/// increases.
+///
+/// With pink and Brownian noise, nearby pixels will be positively correlated. That is, the noise changes slowly
+/// across the image. This is because it has more power in the lower frequencies, which represent slow changes.
+/// These forms of noise can add texture to an image. The variance of the output image is given by `variance`, but
+/// the computed population variance will differ from it more strongly than with white noise. The differences are
+/// stronger for smaller images.
+///
+/// With blue and violet noise, nearby pixels will be negatively correlated. That is, large-scale changes across
+/// the image are weaker. The resulting noise looks more uniform than white noise. Because of this, the computed
+/// population variance in the output will be much closer to `variance` than with white noise.
+DIP_EXPORT void FillColoredNoise( Image& out, Random& random, dfloat variance = 1.0, dfloat color = -2.0 );
 
 /// \brief Adds colored (Brownian, pink, blue, violet) noise to `in`.
 ///
-/// Equivalent to adding the output of `dip::FillColoredNoise` to `in`. See the referrnce for that function for
+/// Equivalent to adding the output of `dip::FillColoredNoise` to `in`. See the reference for that function for
 /// information on the input parameters. `out` will have the data type of `in`.
-inline void ColoredNoise( Image const& in, Image& out, Random& random, dfloat variance = 1.0, dfloat color = -2 ) {
+inline void ColoredNoise( Image const& in, Image& out, Random& random, dfloat variance = 1.0, dfloat color = -2.0 ) {
    out.ReForge( in.Sizes(), in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
    out.CopyNonDataProperties( in );
    FillColoredNoise( out, random, variance, color );
    out += in;
 }
-inline Image ColoredNoise( Image const& in, Random& random, dfloat variance = 1.0, dfloat color = -2 ) {
+inline Image ColoredNoise( Image const& in, Random& random, dfloat variance = 1.0, dfloat color = -2.0 ) {
    Image out;
    ColoredNoise( in, out, random, variance, color );
    return out;
 }
 
+
+// TODO: functions to port:
+/*
+   dip_FTSphere (dip_generation.h)
+   dip_FTBox (dip_generation.h)
+   dip_FTCube (dip_generation.h)
+   dip_FTGaussian (dip_generation.h)
+   dip_FTEllipsoid (dip_generation.h)
+   dip_FTCross (dip_generation.h)
+   dip_EuclideanDistanceToPoint (dip_generation.h) (related to dip::FillRadiusCoordinate)
+   dip_EllipticDistanceToPoint (dip_generation.h) (related to dip::FillRadiusCoordinate)
+   dip_CityBlockDistanceToPoint (dip_generation.h) (related to dip::FillRadiusCoordinate)
+   dip_TestObjectCreate (dip_generation.h)
+   dip_TestObjectModulate (dip_generation.h)
+   dip_TestObjectBlur (dip_generation.h)
+   dip_TestObjectAddNoise (dip_generation.h)
+   dip_ObjectCylinder (dip_generation.h)
+   dip_ObjectEdge (dip_generation.h)
+   dip_ObjectPlane (dip_generation.h)
+   dip_ObjectEllipsoid (dip_generation.h)
+   dip_DrawLineFloat (dip_paint.h) (merge into a single dip::DrawLine)
+   dip_DrawLineComplex (dip_paint.h) (merge into a single dip::DrawLine)
+   dip_DrawLinesFloat (dip_paint.h) (merge into a single dip::DrawLine)
+   dip_DrawLinesComplex (dip_paint.h) (merge into a single dip::DrawLine)
+   dip_PaintEllipsoid (dip_paint.h)
+   dip_PaintDiamond (dip_paint.h)
+   dip_PaintBox (dip_paint.h)
+*/
 
 /// \}
 

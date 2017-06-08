@@ -39,8 +39,7 @@ namespace dip {
 
 
 /// \defgroup measurement Measurement
-/// \brief The measurement infrastructure and functionality, based around the `dip::MeasurementTool` class and the
-/// `dip::Measurement` class.
+/// \brief The measurement infrastructure and functionality.
 /// \{
 
 
@@ -481,6 +480,8 @@ class DIP_NO_EXPORT Measurement {
       dip::uint NumberOfObjects() const {
          return objects_.size();
       }
+
+      // TODO: port dipio_MeasurementWriteCSV as a method to dip::Measurement
 
    private:
 
