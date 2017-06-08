@@ -87,18 +87,30 @@ class DIP_NO_EXPORT LookupTable{
       /// elements as `values`.
       ///
       /// If `index` is given, it must have the same number of elements as pixels are in `values`, and it
-      /// must be sorted small to large. No check is done on the sort order if `index`. If `index` is given,
+      /// must be sorted small to large. No check is done on the sort order of `index`. If `index` is given,
       /// `HasIndex` will be true.
       LookupTable( Image const& values, FloatArray const& index = {} ) : values_( values ), index_( index ) {
          DIP_THROW_IF( !values_.IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( values_.Dimensionality() != 1, "The look-up table must be one-dimensional." );
+         DIP_THROW_IF( values_.Dimensionality() != 1, "The look-up table must be one-dimensional" );
          if( !index_.empty() ) {
             DIP_THROW_IF( index_.size() != values_.Size( 0 ), E::SIZES_DONT_MATCH );
             // TODO: check that `index_` is sorted?
          }
       }
 
-      // TODO: constructor from an iterator pair
+      template< typename InputIterator >
+      LookupTable( InputIterator begin, InputIterator end, FloatArray const& index = {} ) : index_( index ) {
+         using TPI = typename InputIterator::value_type;
+         dip::sint n = std::distance( begin, end );
+         DIP_THROW_IF( n <= 0, "The iterator range is empty" );
+         if( !index_.empty() ) {
+            DIP_THROW_IF( index_.size() != static_cast< dip::uint >( n ), E::SIZES_DONT_MATCH );
+            // TODO: check that `index_` is sorted?
+         }
+         values_.ReForge( { static_cast< dip::uint >( n ) }, 1, dip::DataType( TPI() ));
+         TPI* dest = static_cast< TPI* >( values_.Origin() );
+         std::copy( begin, end, dest );
+      }
 
       /// \brief True if the LUT has an index.
       bool HasIndex() const { return !index_.empty(); }

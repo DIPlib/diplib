@@ -707,8 +707,6 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
 
    // 1- Copying with identical types
 
-   // TODO: add test cases for stride==0: mode 1, 4, 5, 10, 12
-
    std::fill( output.begin(), output.end(), 101 );
    dip::CopyBuffer( // mode 1
          input.data(), dip::DT_UINT8, 0, 1,

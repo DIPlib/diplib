@@ -448,7 +448,7 @@ void Image::ExpandTensor() {
    if( !Tensor().HasNormalOrder() ) {
       //if( TensorShape() == dip::Tensor::Shape::ROW_MAJOR_MATRIX ) {
          // Shuffle the data
-         // TODO
+         // TODO: shuffle the data instead of copying it over to a new image.
          // return
       //}
       // Copy the data into a new segment

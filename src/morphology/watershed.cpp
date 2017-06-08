@@ -326,6 +326,11 @@ void FastWatershed(
    Image in = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();
 
+   // We need the input image to have contiguous data, so that we can allocate other images with the
+   // same strides. This call will copy data if `in` is an ROI in another image, or for some other
+   // reason has non-contiguous data.
+   in.ForceContiguousData();
+
    // Check mask, expand mask singleton dimensions if necessary
    Image mask;
    bool hasMask = false;
@@ -356,21 +361,20 @@ void FastWatershed(
    Image labels;
    if( binaryOutput ) {
       out.ReForge( in, DT_BIN );
+      DIP_ASSERT( in.Strides() == out.Strides() );
       binary = out.QuickCopy();
       binary.Fill( false );
       labels.SetStrides( in.Strides() );
       labels.ReForge( in, DT_LABEL );
+      DIP_ASSERT( in.Strides() == labels.Strides() );
    } else {
       out.ReForge( in, DT_LABEL );
+      DIP_ASSERT( in.Strides() == out.Strides() );
       labels = out.QuickCopy();
       // binary remains unforged.
    }
-   out.SetPixelSize( pixelSize );
-   DIP_THROW_IF( in.Strides() != labels.Strides(), "Cannot reforge labels image with same strides as input" );
-   DIP_THROW_IF( binaryOutput && ( in.Strides() != binary.Strides() ), "Cannot reforge output image with same strides as input" );
-   // TODO: We could create a temporary image here, with the needed strides, and then copy (or move) to out.
-   // TODO: Alternatively, we could copy the input if it doesn't have compact strides.
    labels.Fill( 0 );
+   out.SetPixelSize( pixelSize );
 
    // Create array with offsets to neighbours
    NeighborList neighbors( { Metric::TypeCode::CONNECTED, connectivity }, nDims );

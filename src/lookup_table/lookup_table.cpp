@@ -315,18 +315,20 @@ Image::Pixel LookupTable::Apply( dfloat value, InterpolationMode interpolation )
 #include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::LookupTable" ) {
-   // Case 1: uint image
-   dip::Image lutIm1( { 10 }, 3, dip::DT_UINT8 );
-   dip::ImageIterator< dip::uint8 > lutIt1( lutIm1 );
-   dip::uint8 v = 10;
+   // LUT without index
+   dip::Image lutIm( { 10 }, 3, dip::DT_SFLOAT );
+   dip::ImageIterator< dip::sfloat > lutIt( lutIm );
+   dip::sfloat v = 10;
    do {
-      *lutIt1 = v;
+      *lutIt = v;
       ++v;
-   } while( ++lutIt1 );
-   dip::LookupTable lut1( lutIm1 );
+   } while( ++lutIt );
+   dip::LookupTable lut1( lutIm );
    lut1.SetOutOfBoundsValue( 255 );
-   DOCTEST_CHECK( lut1.HasIndex() == false );
-   DOCTEST_CHECK( lut1.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( !lut1.HasIndex());
+   DOCTEST_CHECK( lut1.DataType() == dip::DT_SFLOAT );
+
+   // Case 1: uint image
    dip::Image img1( { 5, 3 }, 1, dip::DT_UINT16 );
    dip::ImageIterator< dip::uint16 > imgIt1( img1 );
    dip::uint16 ii = 0;
@@ -335,26 +337,72 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::LookupTable" ) {
       ++ii;
    } while( ++imgIt1 );
    dip::Image out1 = lut1.Apply( img1 );
-   DOCTEST_REQUIRE( out1.DataType() == dip::DT_UINT8 );
+   DOCTEST_REQUIRE( out1.DataType() == dip::DT_SFLOAT );
    DOCTEST_REQUIRE( out1.TensorElements() == 3 );
    DOCTEST_REQUIRE( out1.Sizes() == img1.Sizes() );
-   dip::ImageIterator< dip::uint8 > outIt1( out1 );
+   dip::ImageIterator< dip::sfloat > outIt1( out1 );
    ii = 0;
    do {
-      if( ii < 10 ) {
-         DOCTEST_CHECK( *outIt1 == ii + 10 );
+      if( ii <= 9 ) {
+         DOCTEST_CHECK( *outIt1 == static_cast< dip::sfloat >( ii + 10 ));
       } else {
-         DOCTEST_CHECK( *outIt1 == 255 );
+         DOCTEST_CHECK( *outIt1 == 255.0f );
       }
       ++ii;
    } while( ++outIt1 );
 
    // Case 2: float image
-   // TODO
+   dip::Image img2( { 5, 3 }, 1, dip::DT_DFLOAT );
+   dip::ImageIterator< dip::dfloat > imgIt2( img2 );
+   dip::dfloat d = 2.3;
+   do {
+      *imgIt2 = d;
+      d += 0.8;
+   } while( ++imgIt2 );
+   dip::Image out2 = lut1.Apply( img2 );
+   DOCTEST_REQUIRE( out2.DataType() == dip::DT_SFLOAT );
+   DOCTEST_REQUIRE( out2.TensorElements() == 3 );
+   DOCTEST_REQUIRE( out2.Sizes() == img2.Sizes() );
+   dip::ImageIterator< dip::sfloat > outIt2( out2 );
+   d = 2.3;
+   do {
+      if( d <= 9.0 ) {
+         DOCTEST_CHECK( *outIt2 == static_cast< dip::sfloat >( d + 10.0 ));
+      } else {
+         DOCTEST_CHECK( *outIt2 == 255.0f );
+      }
+      d += 0.8;
+   } while( ++outIt2 );
+
+   // LUT with index
+   dip::FloatArray index( lutIm.Size( 0 ), 0 );
+   d = 8.0;
+   for( auto& ind : index ) {
+      ind = d;
+      d += 0.5;
+   }
+   dip::LookupTable lut2(  dip::ImageIterator< dip::sfloat >( lutIm ),
+                           dip::ImageIterator< dip::sfloat >(),
+                           index ); // note that this is inefficient, this is just to test the functionality.
+   lut2.SetOutOfBoundsValue( 255 );
+   DOCTEST_CHECK( lut2.HasIndex());
+   DOCTEST_CHECK( lut2.DataType() == dip::DT_SFLOAT );
 
    // Case 3: float image with index
-   // TODO
-
+   dip::Image out3 = lut2.Apply( img2 );
+   DOCTEST_REQUIRE( out3.DataType() == dip::DT_SFLOAT );
+   DOCTEST_REQUIRE( out3.TensorElements() == 1 );
+   DOCTEST_REQUIRE( out3.Sizes() == img2.Sizes() );
+   dip::ImageIterator< dip::sfloat > outIt3( out3 );
+   d = 2.3;
+   do {
+      if(( d >= 8.0 ) && ( d <= 12.5 )) {
+         DOCTEST_CHECK( *outIt3 == static_cast< dip::sfloat >(( d - 8.0 ) * 2.0 + 10.0 ));
+      } else {
+         DOCTEST_CHECK( *outIt3 == 255.0f );
+      }
+      d += 0.8;
+   } while( ++outIt3 );
 }
 
 #endif // DIP__ENABLE_DOCTEST

@@ -38,7 +38,7 @@ void KMeansClustering(
       dip::uint /*nClusters*/
 ) {
    DIP_THROW( E::NOT_IMPLEMENTED );
-   // TODO
+   // TODO: implement KMeansClustering
 }
 
 

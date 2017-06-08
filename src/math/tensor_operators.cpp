@@ -479,6 +479,7 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
       eigenvectors.Fill( 1.0 );
    //} else if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
       // out = in.Diagonal();
+      // Identity( in, eigenvectors );
       // TODO: This will only work if we can sort the values.
    } else {
       DataType intype = in.DataType();

@@ -2487,13 +2487,29 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       ///
-      /// \see HasNormalStrides.
+      /// \see HasNormalStrides, ForceContiguousData.
       void ForceNormalStrides() {
          if( !HasNormalStrides() ) {
             Image tmp;
             tmp.externalInterface_ = externalInterface_;
             tmp.ReForge( *this ); // This way we don't copy the strides. out.Copy( *this ) would do so if out is not yet forged!
             DIP_THROW_IF( !tmp.HasNormalStrides(), "Cannot force strides to normal." );
+            tmp.Copy( *this );
+            swap( tmp );
+         }
+      }
+
+      /// \brief Copies pixel data over to a new data segment if the data is not contiguous.
+      ///
+      /// The image must be forged.
+      ///
+      /// \see HasContiguousData, ForceNormalStrides.
+      void ForceContiguousData() {
+         if( !HasContiguousData() ) {
+            Image tmp;
+            tmp.externalInterface_ = externalInterface_;
+            tmp.ReForge( *this ); // This way we don't copy the strides. out.Copy( *this ) would do so if out is not yet forged!
+            DIP_ASSERT( tmp.HasContiguousData() );
             tmp.Copy( *this );
             swap( tmp );
          }
