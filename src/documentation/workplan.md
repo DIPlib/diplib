@@ -302,8 +302,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_SimpleGaussFitImage (dip_numerical.h)
     - dip_EmFitGaussians (dip_numerical.h)
     - dip_EmGaussTest (dip_numerical.h)
-    - dip_LabelSetBorder (dip_regions.h) (merge with ImageDoEdge, call it SetBorder)
-    - dip_ImageDoEdge (dip_regions.h) (merge with LabelSetBorder, call it SetBorder)
 
 - diplib/measurement.h
     - dipio_MeasurementWriteCSV (dipio_msrcsv.h)

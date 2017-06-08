@@ -69,6 +69,11 @@ inline Image CreateDelta( Image const& in, String const& origin = "" ) {
 }
 
 
+/// \brief Sets the pixels at the border of `out` to `value`. `size` indicates how many pixels in from the
+/// border are set.
+DIP_EXPORT void SetBorder( Image& out, Image::Pixel value = { 0 }, dip::uint size = 1 );
+
+
 /// \brief Fills an image with a ramp function.
 ///
 /// The ramp function increases along dimension `dimension`, and is

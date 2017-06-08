@@ -147,6 +147,10 @@ over.
   `dip::GaussianRandomGenerator` produces a single output value, the object stores the
   second value for the next call.
 
+- `dip_LabelSetBorder`, `dip_ImageDoEdge` and `dip_PlaneDoEdge` are merged into `dip::SetBorder`,
+  which additionally can specify the border size.
+
+
 ## Changes in functionality
 
 - Second order extrapolation boundary extension didn't do as advertised in the old *DIPlib*.

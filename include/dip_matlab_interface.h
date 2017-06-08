@@ -592,6 +592,28 @@ inline dip::RangeArray GetRangeArray( mxArray const* mx ) {
    }
 }
 
+/// \brief Convert a numeric array from `mxArray` to `dip::Image::Pixel` by copy.
+inline dip::Image::Pixel GetPixel( mxArray const* mx ) {
+   DIP_THROW_IF( !mxIsDouble( mx ) || !IsVector( mx ), "Pixel value expected" );
+   dip::uint n = mxGetNumberOfElements( mx );
+   if( mxIsComplex( mx )) {
+      dip::Image::Pixel out( dip::DT_DCOMPLEX, n );
+      auto pr = mxGetPr( mx );
+      auto pi = mxGetPi( mx );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         out[ ii ] = dip::dcomplex( pr[ ii ], pi[ ii ] );
+      }
+      return out;
+   } else {
+      dip::Image::Pixel out( dip::DT_DFLOAT, n );
+      auto pr = mxGetPr( mx );
+      for( dip::uint ii = 0; ii < n; ++ii ) {
+         out[ ii ] = pr[ ii ];
+      }
+      return out;
+   }
+}
+
 
 //
 // Put output values: convert various dip:: types to mxArray
