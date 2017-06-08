@@ -202,22 +202,22 @@ class DIP_NO_EXPORT Image {
 
             // Construct a Sample over existing data, used by dip::Image, dip::GenericImageIterator,
             // dip::GenericJointImageIterator.
-            Sample( void* data, dip::DataType dataType ) : origin_( data ), dataType_( dataType ) {}
+            constexpr Sample( void* data, dip::DataType dataType ) : origin_( data ), dataType_( dataType ) {}
 
             /// A numeric value implicitly converts to a `%Sample`.
             template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
-            Sample( T value ) {
+            constexpr Sample( T value ) {
                dataType_ = dip::DataType( value );
                *static_cast< T* >( origin_ ) = value;
             }
-            Sample( bool value ) : dataType_( DT_BIN ) {
+            constexpr Sample( bool value ) : dataType_( DT_BIN ) {
                *static_cast< bin* >( origin_ ) = value;
             }
             #if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict with s/uint32 constructors above.
-            Sample( dip::uint value ) : dataType_( DT_UINT32 ) {
+            constexpr Sample( dip::uint value ) : dataType_( DT_UINT32 ) {
                *static_cast< uint32* >( origin_ ) = clamp_cast< uint32 >( value );
             }
-            Sample( dip::sint value ) : dataType_( DT_SINT32 ) {
+            constexpr Sample( dip::sint value ) : dataType_( DT_SINT32 ) {
                *static_cast< sint32* >( origin_ ) = clamp_cast< sint32 >( value );
             }
             #endif
@@ -238,53 +238,53 @@ class DIP_NO_EXPORT Image {
 
             /// Returns the value of the sample as the given numeric type, similar to using `static_cast`.
             template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
-            T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
+            constexpr T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
 
             /// A `%Sample` can be cast to basic numerical types.
-            explicit operator bool() const { return detail::CastSample< bin >( dataType_, origin_ ); }
+            constexpr explicit operator bool() const { return detail::CastSample< bin >( dataType_, origin_ ); }
             /// A `%Sample` can be cast to basic numerical types.
-            explicit operator dip::uint() const { return detail::CastSample< dip::uint >( dataType_, origin_ ); }
+            constexpr explicit operator dip::uint() const { return detail::CastSample< dip::uint >( dataType_, origin_ ); }
             /// A `%Sample` can be cast to basic numerical types.
-            explicit operator dip::sint() const { return detail::CastSample< dip::sint >( dataType_, origin_ ); }
+            constexpr explicit operator dip::sint() const { return detail::CastSample< dip::sint >( dataType_, origin_ ); }
             /// A `%Sample` can be cast to basic numerical types.
-            explicit operator sfloat() const { return detail::CastSample< sfloat >( dataType_, origin_ ); }
+            constexpr explicit operator sfloat() const { return detail::CastSample< sfloat >( dataType_, origin_ ); }
             /// A `%Sample` can be cast to basic numerical types.
-            explicit operator dfloat() const { return detail::CastSample< dfloat >( dataType_, origin_ ); }
+            constexpr explicit operator dfloat() const { return detail::CastSample< dfloat >( dataType_, origin_ ); }
             /// A `%Sample` can be cast to basic numerical types.
-            explicit operator scomplex() const { return detail::CastSample< scomplex >( dataType_, origin_ ); }
+            constexpr explicit operator scomplex() const { return detail::CastSample< scomplex >( dataType_, origin_ ); }
             /// A `%Sample` can be cast to basic numerical types.
-            explicit operator dcomplex() const { return detail::CastSample< dcomplex >( dataType_, origin_ ); }
+            constexpr explicit operator dcomplex() const { return detail::CastSample< dcomplex >( dataType_, origin_ ); }
 
             /// Assigning to a `%Sample` copies the value over to the sample referenced.
-            Sample& operator=( Sample const& sample ) {
+            constexpr Sample& operator=( Sample const& sample ) {
                detail::CastSample( sample.dataType_, sample.origin_, dataType_, origin_ );
                return *this;
             }
-            Sample& operator=( Sample&& sample ) {
+            constexpr Sample& operator=( Sample&& sample ) {
                detail::CastSample( sample.dataType_, sample.origin_, dataType_, origin_ );
                return *this;
             }
             template< typename T >
-            Sample& operator=( CastSample< T > const& sample ) {
+            constexpr Sample& operator=( CastSample< T > const& sample ) {
                return operator=( static_cast< Sample const& >( sample ));
             }
             /// It is also possible to assign a constant directly.
             template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
-            Sample& operator=( T value ) {
+            constexpr Sample& operator=( T value ) {
                detail::CastSample( dip::DataType( value ), &value, dataType_, origin_ );
                return *this;
             }
-            Sample& operator=( bool value ) {
+            constexpr Sample& operator=( bool value ) {
                detail::CastSample( DT_BIN, &value, dataType_, origin_ );
                return *this;
             }
             #if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict with s/uint32 constructors above.
-            Sample& operator=( dip::uint value ) {
+            constexpr Sample& operator=( dip::uint value ) {
                uint32 tmp = clamp_cast< uint32 >( value );
                detail::CastSample( DT_UINT32, &tmp, dataType_, origin_ );
                return *this;
             }
-            Sample& operator=( dip::sint value ) {
+            constexpr Sample& operator=( dip::sint value ) {
                sint32 tmp = clamp_cast< sint32 >( value );
                detail::CastSample( DT_SINT32, &tmp, dataType_, origin_ );
                return *this;
@@ -292,9 +292,9 @@ class DIP_NO_EXPORT Image {
             #endif
 
             /// Returns a pointer to the sample referenced.
-            void* Origin() const { return origin_; }
+            constexpr void* Origin() const { return origin_; }
             /// The data type of the sample referenced.
-            dip::DataType DataType() const { return dataType_; }
+            constexpr dip::DataType DataType() const { return dataType_; }
 
             /// \brief Compound assignment operator.
             template< typename T >
@@ -489,6 +489,8 @@ class DIP_NO_EXPORT Image {
             dip::Tensor const& Tensor() const { return tensor_; }
             /// The number of samples in the pixel referenced.
             dip::uint TensorElements() const { return tensor_.Elements(); }
+            /// Is it a scalar pixel?
+            bool IsScalar() const { return tensor_.IsScalar(); }
             /// The stride to use to access the various samples in the pixel referenced.
             dip::sint TensorStride() const { return tensorStride_; }
 

@@ -122,72 +122,72 @@ constexpr inline const T clamp_cast_basis( S const& v ) {
 /// Casting from a binary value to any other sample type.
 // Casting from dip::bin is always OK, except when casting to complex values
 template< typename T >
-inline T clamp_cast( dip::bin v ) {
+constexpr inline T clamp_cast( dip::bin v ) {
    return T( v );
 }
 template<>
-inline dip::scomplex clamp_cast< dip::scomplex >( dip::bin v ) {
+constexpr inline dip::scomplex clamp_cast< dip::scomplex >( dip::bin v ) {
    return { static_cast< dip::sfloat >( v ), 0.0f };
 }
 template<>
-inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::bin v ) {
+constexpr inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::bin v ) {
    return { static_cast< dip::dfloat >( v ), 0.0 };
 }
 
 /// Casting from a 8-bit unsigned value to any other sample type.
 // Casting from dip::uint8, specialize for dip::sint8
 template< typename T >
-inline T clamp_cast( dip::uint8 v ) {
+constexpr inline T clamp_cast( dip::uint8 v ) {
    return static_cast< T >( v );
 }
 template<>
-inline dip::sint8 clamp_cast< dip::sint8 >( dip::uint8 v ) {
+constexpr inline dip::sint8 clamp_cast< dip::sint8 >( dip::uint8 v ) {
    return clamp_upper< dip::sint8, dip::uint8 >( v );
 }
 
 /// Casting from a 16-bit unsigned value to any other sample type.
 // Casting from a dip::uint16, specialize for dip::uint8, dip::sint8 and dip::sint16
 template< typename T >
-inline T clamp_cast( dip::uint16 v ) {
+constexpr inline T clamp_cast( dip::uint16 v ) {
    return static_cast< T >( v );
 }
 template<>
-inline dip::uint8 clamp_cast< dip::uint8 >( dip::uint16 v ) {
+constexpr inline dip::uint8 clamp_cast< dip::uint8 >( dip::uint16 v ) {
    return clamp_upper< dip::uint8, dip::uint16 >( v );
 }
 template<>
-inline dip::sint8 clamp_cast< dip::sint8 >( dip::uint16 v ) {
+constexpr inline dip::sint8 clamp_cast< dip::sint8 >( dip::uint16 v ) {
    return clamp_upper< dip::sint8, dip::uint16 >( v );
 }
 template<>
-inline dip::sint16 clamp_cast< dip::sint16 >( dip::uint16 v ) {
+constexpr inline dip::sint16 clamp_cast< dip::sint16 >( dip::uint16 v ) {
    return clamp_upper< dip::sint16, dip::uint16 >( v );
 }
 
 /// Casting from a 32-bit unsigned value to any other sample type.
 // Casting from a dip::uint32, specialize for dip::uint8, dip::uint16 and all signed types
 template< typename T >
-inline T clamp_cast( dip::uint32 v ) {
+constexpr inline T clamp_cast( dip::uint32 v ) {
    return static_cast< T >( static_cast< FloatType< T >>( v )); // two casts for the case of T = complex.
 }
 template<>
-inline dip::uint8 clamp_cast< dip::uint8 >( dip::uint32 v ) {
+constexpr inline dip::uint8 clamp_cast< dip::uint8 >( dip::uint32 v ) {
    return clamp_upper< dip::uint8, dip::uint32 >( v );
 }
 template<>
-inline dip::uint16 clamp_cast< dip::uint16 >( dip::uint32 v ) {
+constexpr inline dip::uint16 clamp_cast< dip::uint16 >( dip::uint32 v ) {
    return clamp_upper< dip::uint16, dip::uint32 >( v );
 }
 template<>
-inline dip::sint8 clamp_cast< dip::sint8 >( dip::uint32 v ) {
+constexpr inline dip::sint8 clamp_cast< dip::sint8 >( dip::uint32 v ) {
    return clamp_upper< dip::sint8, dip::uint32 >( v );
 }
 template<>
-inline dip::sint16 clamp_cast< dip::sint16 >( dip::uint32 v ) {
+constexpr inline dip::sint16 clamp_cast< dip::sint16 >( dip::uint32 v ) {
    return clamp_upper< dip::sint16, dip::uint32 >( v );
 }
 template<>
-inline dip::sint32 clamp_cast< dip::sint32 >( dip::uint32 v ) {
+constexpr inline dip::sint32 clamp_cast< dip::sint32 >( dip::uint32 v ) {
    return clamp_upper< dip::sint32, dip::uint32 >( v );
 }
 
@@ -195,27 +195,27 @@ inline dip::sint32 clamp_cast< dip::sint32 >( dip::uint32 v ) {
 /// Casting from a machine-width unsigned value to any other sample type.
 // Casting from a dip::uint, we don't do checks if casting to a float, complex or bin
 template< typename T >
-inline T clamp_cast( dip::uint v ) {
+constexpr inline T clamp_cast( dip::uint v ) {
    return clamp_upper< T, dip::uint >( v );
 }
 template<>
-inline dip::sfloat clamp_cast< dip::sfloat >( dip::uint v ) {
+constexpr inline dip::sfloat clamp_cast< dip::sfloat >( dip::uint v ) {
    return static_cast< dip::sfloat >( v );
 }
 template<>
-inline dip::dfloat clamp_cast< dip::dfloat >( dip::uint v ) {
+constexpr inline dip::dfloat clamp_cast< dip::dfloat >( dip::uint v ) {
    return static_cast< dip::dfloat >( v );
 }
 template<>
-inline dip::scomplex clamp_cast< dip::scomplex >( dip::uint v ) {
+constexpr inline dip::scomplex clamp_cast< dip::scomplex >( dip::uint v ) {
    return static_cast< dip::scomplex >( static_cast< dip::sfloat >( v ) );
 }
 template<>
-inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::uint v ) {
+constexpr inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::uint v ) {
    return static_cast< dip::dcomplex >( static_cast< dip::dfloat >( v ) );
 }
 template<>
-inline dip::bin clamp_cast< dip::bin >( dip::uint v ) {
+constexpr inline dip::bin clamp_cast< dip::bin >( dip::uint v ) {
    return static_cast< dip::bin >( v );
 }
 #endif
@@ -223,24 +223,24 @@ inline dip::bin clamp_cast< dip::bin >( dip::uint v ) {
 /// Casting from a 8-bit signed value to any other sample type.
 // Casting from dip::sint8, specialize for all unsigned types
 template< typename T >
-inline T clamp_cast( dip::sint8 v ) {
+constexpr inline T clamp_cast( dip::sint8 v ) {
    return static_cast< T >( v );
 }
 template<>
-inline dip::uint8 clamp_cast< dip::uint8 >( dip::sint8 v ) {
+constexpr inline dip::uint8 clamp_cast< dip::uint8 >( dip::sint8 v ) {
    return clamp_lower< dip::uint8, dip::sint8 >( v );
 }
 template<>
-inline dip::uint16 clamp_cast< dip::uint16 >( dip::sint8 v ) {
+constexpr inline dip::uint16 clamp_cast< dip::uint16 >( dip::sint8 v ) {
    return clamp_lower< dip::uint16, dip::sint8 >( v );
 }
 template<>
-inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint8 v ) {
+constexpr inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint8 v ) {
    return clamp_lower< dip::uint32, dip::sint8 >( v );
 }
 #if SIZE_MAX != UINT32_MAX // we don't want to compile this segment on 32-bit machines, they'd conflict with the segment above.
 template<>
-inline dip::uint clamp_cast< dip::uint >( dip::sint8 v ) {
+constexpr inline dip::uint clamp_cast< dip::uint >( dip::sint8 v ) {
    return clamp_lower< dip::uint, dip::sint8 >( v );
 }
 #endif
@@ -248,28 +248,28 @@ inline dip::uint clamp_cast< dip::uint >( dip::sint8 v ) {
 /// Casting from a 16-bit signed value to any other sample type.
 // Casting from a dip::sint16, specialize for dip::sint8 and all unsigned types
 template< typename T >
-inline T clamp_cast( dip::sint16 v ) {
+constexpr inline T clamp_cast( dip::sint16 v ) {
    return static_cast< T >( v );
 }
 template<>
-inline dip::sint8 clamp_cast< dip::sint8 >( dip::sint16 v ) {
+constexpr inline dip::sint8 clamp_cast< dip::sint8 >( dip::sint16 v ) {
    return clamp_both< dip::sint8, dip::sint16 >( v );
 }
 template<>
-inline dip::uint8 clamp_cast< dip::uint8 >( dip::sint16 v ) {
+constexpr inline dip::uint8 clamp_cast< dip::uint8 >( dip::sint16 v ) {
    return clamp_both< dip::uint8, dip::sint16 >( v );
 }
 template<>
-inline dip::uint16 clamp_cast< dip::uint16 >( dip::sint16 v ) {
+constexpr inline dip::uint16 clamp_cast< dip::uint16 >( dip::sint16 v ) {
    return clamp_lower< dip::uint16, dip::sint16 >( v );
 }
 template<>
-inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint16 v ) {
+constexpr inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint16 v ) {
    return clamp_lower< dip::uint32, dip::sint16 >( v );
 }
 #if SIZE_MAX != UINT32_MAX // we don't want to compile this segment on 32-bit machines, they'd conflict with the segment above.
 template<>
-inline dip::uint clamp_cast< dip::uint >( dip::sint16 v ) {
+constexpr inline dip::uint clamp_cast< dip::uint >( dip::sint16 v ) {
    return clamp_lower< dip::uint, dip::sint16 >( v );
 }
 #endif
@@ -277,32 +277,32 @@ inline dip::uint clamp_cast< dip::uint >( dip::sint16 v ) {
 /// Casting from a 32-bit signed value to any other sample type.
 // Casting from a dip::sint32, specialize for dip::sint8, dip::sint16 and all unsigned types
 template< typename T >
-inline T clamp_cast( dip::sint32 v ) {
+constexpr inline T clamp_cast( dip::sint32 v ) {
    return static_cast< T >( static_cast< FloatType< T >>( v )); // two casts for the case of T = complex.
 }
 template<>
-inline dip::sint8 clamp_cast< dip::sint8 >( dip::sint32 v ) {
+constexpr inline dip::sint8 clamp_cast< dip::sint8 >( dip::sint32 v ) {
    return clamp_both< dip::sint8, dip::sint32 >( v );
 }
 template<>
-inline dip::sint16 clamp_cast< dip::sint16 >( dip::sint32 v ) {
+constexpr inline dip::sint16 clamp_cast< dip::sint16 >( dip::sint32 v ) {
    return clamp_both< dip::sint16, dip::sint32 >( v );
 }
 template<>
-inline dip::uint8 clamp_cast< dip::uint8 >( dip::sint32 v ) {
+constexpr inline dip::uint8 clamp_cast< dip::uint8 >( dip::sint32 v ) {
    return clamp_both< dip::uint8, dip::sint32 >( v );
 }
 template<>
-inline dip::uint16 clamp_cast< dip::uint16 >( dip::sint32 v ) {
+constexpr inline dip::uint16 clamp_cast< dip::uint16 >( dip::sint32 v ) {
    return clamp_both< dip::uint16, dip::sint32 >( v );
 }
 template<>
-inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint32 v ) {
+constexpr inline dip::uint32 clamp_cast< dip::uint32 >( dip::sint32 v ) {
    return clamp_lower< dip::uint32, dip::sint32 >( v );
 }
 #if SIZE_MAX != UINT32_MAX // we don't want to compile this segment on 32-bit machines, they'd conflict with the segment above.
 template<>
-inline dip::uint clamp_cast< dip::uint >( dip::sint32 v ) {
+constexpr inline dip::uint clamp_cast< dip::uint >( dip::sint32 v ) {
    return clamp_lower< dip::uint, dip::sint32 >( v );
 }
 #endif
@@ -311,31 +311,31 @@ inline dip::uint clamp_cast< dip::uint >( dip::sint32 v ) {
 /// Casting from a machine-width signed value to any other sample type.
 // Casting from a dip::sint, we don't do checks if casting to a float, complex or bin
 template< typename T >
-inline T clamp_cast( dip::sint v ) {
+constexpr inline T clamp_cast( dip::sint v ) {
    return clamp_both< T, dip::sint >( v );
 }
 template<>
-inline dip::uint clamp_cast< dip::uint >( dip::sint v ) {
+constexpr inline dip::uint clamp_cast< dip::uint >( dip::sint v ) {
    return clamp_lower< dip::uint, dip::sint >( v );
 }
 template<>
-inline dip::sfloat clamp_cast< dip::sfloat >( dip::sint v ) {
+constexpr inline dip::sfloat clamp_cast< dip::sfloat >( dip::sint v ) {
    return static_cast< dip::sfloat >( v );
 }
 template<>
-inline dip::dfloat clamp_cast< dip::dfloat >( dip::sint v ) {
+constexpr inline dip::dfloat clamp_cast< dip::dfloat >( dip::sint v ) {
    return static_cast< dip::dfloat >( v );
 }
 template<>
-inline dip::scomplex clamp_cast< dip::scomplex >( dip::sint v ) {
+constexpr inline dip::scomplex clamp_cast< dip::scomplex >( dip::sint v ) {
    return static_cast< dip::scomplex >( static_cast< dip::sfloat >( v ));
 }
 template<>
-inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::sint v ) {
+constexpr inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::sint v ) {
    return static_cast< dip::dcomplex >( static_cast< dip::dfloat >( v ));
 }
 template<>
-inline dip::bin clamp_cast< dip::bin >( dip::sint v ) {
+constexpr inline dip::bin clamp_cast< dip::bin >( dip::sint v ) {
    return static_cast< dip::bin >( v );
 }
 #endif
@@ -343,84 +343,84 @@ inline dip::bin clamp_cast< dip::bin >( dip::sint v ) {
 /// Casting from a single-precision float value to any other sample type.
 // Casting from a dip::sfloat, we don't do checks if casting to a float, complex or bin
 template< typename T >
-inline T clamp_cast( dip::sfloat v ) {
+constexpr inline T clamp_cast( dip::sfloat v ) {
    return clamp_both< T, dip::sfloat >( v );
 }
 template<>
-inline dip::sfloat clamp_cast< dip::sfloat >( dip::sfloat v ) {
+constexpr inline dip::sfloat clamp_cast< dip::sfloat >( dip::sfloat v ) {
    return v;
 }
 template<>
-inline dip::dfloat clamp_cast< dip::dfloat >( dip::sfloat v ) {
+constexpr inline dip::dfloat clamp_cast< dip::dfloat >( dip::sfloat v ) {
    return static_cast< dip::dfloat >( v );
 }
 template<>
-inline dip::scomplex clamp_cast< dip::scomplex >( dip::sfloat v ) {
+constexpr inline dip::scomplex clamp_cast< dip::scomplex >( dip::sfloat v ) {
    return static_cast< dip::scomplex >( v );
 }
 template<>
-inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::sfloat v ) {
+constexpr inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::sfloat v ) {
    return static_cast< dip::dcomplex >( static_cast< dip::dfloat >( v ));
 }
 template<>
-inline dip::bin clamp_cast< dip::bin >( dip::sfloat v ) {
+constexpr inline dip::bin clamp_cast< dip::bin >( dip::sfloat v ) {
    return static_cast< dip::bin >( v );
 }
 
 /// Casting from a double-precision float value to any other sample type.
 // Casting from a dip::dfloat, we don't do checks if casting to a float, complex or bin
 template< typename T >
-inline T clamp_cast( dip::dfloat v ) {
+constexpr inline T clamp_cast( dip::dfloat v ) {
    return clamp_both< T, dip::dfloat >( v );
 }
 template<>
-inline dip::dfloat clamp_cast< dip::dfloat >( dip::dfloat v ) {
+constexpr inline dip::dfloat clamp_cast< dip::dfloat >( dip::dfloat v ) {
    return v;
 }
 template<>
-inline dip::sfloat clamp_cast< dip::sfloat >( dip::dfloat v ) {
+constexpr inline dip::sfloat clamp_cast< dip::sfloat >( dip::dfloat v ) {
    return static_cast< dip::sfloat >( v );
 }
 template<>
-inline dip::scomplex clamp_cast< dip::scomplex >( dip::dfloat v ) {
+constexpr inline dip::scomplex clamp_cast< dip::scomplex >( dip::dfloat v ) {
    return static_cast< dip::scomplex >( static_cast< dip::sfloat >( v ));
 }
 template<>
-inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::dfloat v ) {
+constexpr inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::dfloat v ) {
    return static_cast< dip::dcomplex >( v );
 }
 template<>
-inline dip::bin clamp_cast< dip::bin >( dip::dfloat v ) {
+constexpr inline dip::bin clamp_cast< dip::bin >( dip::dfloat v ) {
    return static_cast< dip::bin >( v );
 }
 
 /// Casting from a single-precision complex value to any other sample type.
 // Casting from an dip::scomplex, we take the absolute value and cast as if from a float
 template< typename T >
-inline T clamp_cast( dip::scomplex v ) {
+constexpr inline T clamp_cast( dip::scomplex v ) {
    return clamp_cast< T >( std::abs( v ) );
 }
 template<>
-inline dip::scomplex clamp_cast< dip::scomplex >( dip::scomplex v ) {
+constexpr inline dip::scomplex clamp_cast< dip::scomplex >( dip::scomplex v ) {
    return v;
 }
 template<>
-inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::scomplex v ) {
+constexpr inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::scomplex v ) {
    return dip::dcomplex{ static_cast< dip::dfloat >( v.real() ), static_cast< dip::dfloat >( v.imag() ) };
 }
 
 /// Casting from a double-precision complex value to any other sample type.
 // Casting from a dip::dcomplex, we take the absolute value and cast as if from a float
 template< typename T >
-inline T clamp_cast( dip::dcomplex v ) {
+constexpr inline T clamp_cast( dip::dcomplex v ) {
    return clamp_cast< T >( std::abs( v ) );
 }
 template<>
-inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::dcomplex v ) {
+constexpr inline dip::dcomplex clamp_cast< dip::dcomplex >( dip::dcomplex v ) {
    return v;
 }
 template<>
-inline dip::scomplex clamp_cast< dip::scomplex >( dip::dcomplex v ) {
+constexpr inline dip::scomplex clamp_cast< dip::scomplex >( dip::dcomplex v ) {
    return dip::scomplex{ static_cast< dip::sfloat >( v.real() ), static_cast< dip::sfloat >( v.imag() ) };
 }
 
@@ -428,7 +428,7 @@ inline dip::scomplex clamp_cast< dip::scomplex >( dip::dcomplex v ) {
 
 namespace detail {
 template< typename T >
-T CastSample( DataType dataType, void const* data ) {
+constexpr T CastSample( DataType dataType, void const* data ) {
    switch( dataType ) {
       case dip::DT_BIN      : return clamp_cast< T >( *static_cast< bin const* >( data ));
       case dip::DT_UINT8    : return clamp_cast< T >( *static_cast< uint8 const* >( data ));
@@ -441,10 +441,10 @@ T CastSample( DataType dataType, void const* data ) {
       case dip::DT_DFLOAT   : return clamp_cast< T >( *static_cast< dfloat const* >( data ));
       case dip::DT_SCOMPLEX : return clamp_cast< T >( *static_cast< scomplex const* >( data ));
       case dip::DT_DCOMPLEX : return clamp_cast< T >( *static_cast< dcomplex const* >( data ));
-      default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+      default: return 0; // DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
    }
 }
-inline void CastSample( DataType srcType, void const* src, DataType destType, void* dest ) {
+constexpr inline void CastSample( DataType srcType, void const* src, DataType destType, void* dest ) {
    switch( destType ) {
       case dip::DT_BIN      : *static_cast< bin* >( dest ) = CastSample< bin >( srcType, src ); break;
       case dip::DT_UINT8    : *static_cast< uint8* >( dest ) = CastSample< uint8 >( srcType, src ); break;
@@ -457,7 +457,7 @@ inline void CastSample( DataType srcType, void const* src, DataType destType, vo
       case dip::DT_DFLOAT   : *static_cast< dfloat* >( dest ) = CastSample< dfloat >( srcType, src ); break;
       case dip::DT_SCOMPLEX : *static_cast< scomplex* >( dest ) = CastSample< scomplex >( srcType, src ); break;
       case dip::DT_DCOMPLEX : *static_cast< dcomplex* >( dest ) = CastSample< dcomplex >( srcType, src ); break;
-      default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+      // default: DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
    }
 }
 } // namespace detail
