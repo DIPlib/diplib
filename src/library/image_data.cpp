@@ -372,8 +372,9 @@ void Image::GetDataBlockSizeAndStartWithTensor( dip::uint& size, dip::sint& star
 
 // Does writing in this image change the data of the other image?
 bool Image::Aliases( Image const& other ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !other.IsForged(), E::IMAGE_NOT_FORGED );
+   if( !IsForged() || !other.IsForged() ) {
+      return false;
+   }
 
    // Different data blocks do not overlap by definition
    // Note that if both dataBlock_ are nullptr, the data blocks might actually be different,

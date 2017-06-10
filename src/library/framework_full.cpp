@@ -99,7 +99,7 @@ void Full(
    // Adjust output if necessary (and possible)
    // NOTE: Don't use c_in any more from here on. It has possibly been reforged!
    DIP_START_STACK_TRACE
-      if( output.IsForged() && output.IsOverlappingView( input ) ) {
+      if( output.IsOverlappingView( input ) ) {
          output.Strip();
       }
       output.ReForge( sizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );

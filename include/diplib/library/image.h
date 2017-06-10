@@ -1502,8 +1502,6 @@ class DIP_NO_EXPORT Image {
       /// If `true`, writing into this image will change the data in
       /// `other`, and vice-versa.
       ///
-      /// Both images must be forged.
-      ///
       /// \see SharesData, IsIdenticalView, IsOverlappingView, Alias.
       DIP_EXPORT bool Aliases( Image const& other ) const;
 
@@ -1512,17 +1510,15 @@ class DIP_NO_EXPORT Image {
       ///
       /// If `true`, changing one sample in this image will change the same sample in `other`.
       ///
-      /// Both images must be forged.
-      ///
       /// \see SharesData, Aliases, IsOverlappingView.
       bool IsIdenticalView( Image const& other ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( !other.IsForged(), E::IMAGE_NOT_FORGED );
          // We don't need to check dataBlock_ here, as origin_ is a pointer, not an offset.
-         return ( origin_ == other.origin_ ) &&
+         return IsForged() && other.IsForged() &&
+                ( origin_ == other.origin_ ) &&
                 ( dataType_ == other.dataType_ ) &&
                 ( sizes_ == other.sizes_ ) &&
-                ( tensor_.Elements() == other.tensor_.Elements() ) &&
+                ( tensor_.Elements() == other.tensor_.Elements()) &&
                 ( strides_ == other.strides_ ) &&
                 ( tensorStride_ == other.tensorStride_ );
       }
@@ -1535,8 +1531,6 @@ class DIP_NO_EXPORT Image {
       /// An image with an overlapping view of an input image cannot be used as output to a
       /// filter, as it might change input data that still needs to be used. Use this function
       /// to test whether to use the existing data segment or allocate a new one.
-      ///
-      /// Both images must be forged.
       ///
       /// \see SharesData, Aliases, IsIdenticalView.
       bool IsOverlappingView( Image const& other ) const {
@@ -1553,13 +1547,11 @@ class DIP_NO_EXPORT Image {
       /// filter, as it might change input data that still needs to be used. Use this function
       /// to test whether to use the existing data segment or allocate a new one.
       ///
-      /// `this` must be forged.
-      ///
       /// \see SharesData, Aliases, IsIdenticalView.
       bool IsOverlappingView( ImageConstRefArray const& other ) const {
          for( dip::uint ii = 0; ii < other.size(); ++ii ) {
             Image const& tmp = other[ ii ].get();
-            if( tmp.IsForged() && IsOverlappingView( tmp )) {
+            if( IsOverlappingView( tmp )) {
                return true;
             }
          }
@@ -1575,13 +1567,11 @@ class DIP_NO_EXPORT Image {
       /// filter, as it might change input data that still needs to be used. Use this function
       /// to test whether to use the existing data segment or allocate a new one.
       ///
-      /// `this` must be forged.
-      ///
       /// \see SharesData, Aliases, IsIdenticalView.
       bool IsOverlappingView( ImageArray const& other ) const {
          for( dip::uint ii = 0; ii < other.size(); ++ii ) {
             Image const& tmp = other[ ii ];
-            if( tmp.IsForged() && IsOverlappingView( tmp )) {
+            if( IsOverlappingView( tmp )) {
                return true;
             }
          }

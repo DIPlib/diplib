@@ -179,7 +179,7 @@ void Gradient(
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in.QuickCopy();
    PixelSize pxsz = c_in.PixelSize();
-   if( out.IsForged() && in.Aliases( out )) {
+   if( in.Aliases( out )) {
       out.Strip();
    }
    out.ReForge( in.Sizes(), nDims, DataType::SuggestFlex( in.DataType() ));
@@ -215,7 +215,7 @@ void GradientMagnitude(
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in.QuickCopy();
    PixelSize pxsz = c_in.PixelSize();
-   if( out.IsForged() && in.Aliases( out ) ) {
+   if( in.Aliases( out ) ) {
       out.Strip();
    }
    UnsignedArray order( in.Dimensionality(), 0 );
@@ -343,7 +343,7 @@ void Divergence(
    DIP_THROW_IF( dims.size() != nDims, E::NTENSORELEM_DONT_MATCH );
    Image in = c_in.QuickCopy();
    PixelSize pxsz = c_in.PixelSize();
-   if( out.IsForged() && in.Aliases( out ) ) {
+   if( in.Aliases( out ) ) {
       out.Strip();
    }
    UnsignedArray order( in.Dimensionality(), 0 );
@@ -386,7 +386,7 @@ void Hessian (
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in.QuickCopy();
    PixelSize pxsz = c_in.PixelSize();
-   if( out.IsForged() && in.Aliases( out )) {
+   if( in.Aliases( out )) {
       out.Strip();
    }
    Tensor tensor( Tensor::Shape::SYMMETRIC_MATRIX, nDims, nDims );
@@ -452,7 +452,7 @@ void Laplace (
    } else {
       Image in = c_in.QuickCopy();
       PixelSize pxsz = c_in.PixelSize();
-      if( out.IsForged() && in.Aliases( out ) ) {
+      if( in.Aliases( out ) ) {
          out.Strip();
       }
       UnsignedArray order( in.Dimensionality(), 0 );

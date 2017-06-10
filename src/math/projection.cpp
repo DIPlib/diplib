@@ -109,7 +109,7 @@ void ProjectionScan(
 
    // Adjust output if necessary (and possible)
    DIP_START_STACK_TRACE
-      if( c_out.IsForged() && ( c_out.IsOverlappingView( input ) || ( hasMask && c_out.IsOverlappingView( mask )))) {
+      if( c_out.IsOverlappingView( input ) || c_out.IsOverlappingView( mask )) {
          c_out.Strip();
       }
       c_out.ReForge( outSizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
