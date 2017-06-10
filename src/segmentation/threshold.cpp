@@ -21,12 +21,13 @@
 #include "diplib.h"
 #include "diplib/segmentation.h"
 #include "diplib/histogram.h"
+#include "diplib/math.h"
 #include "diplib/statistics.h"
 #include "diplib/morphology.h"
+#include "diplib/generation.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/lookup_table.h"
-#include "diplib/generation.h"
 
 
 namespace dip {

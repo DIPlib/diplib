@@ -19,6 +19,7 @@
  */
 
 #include "diplib.h"
+#include "diplib/statistics.h"
 #include "diplib/math.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"

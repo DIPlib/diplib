@@ -22,6 +22,7 @@
 #include "diplib/random.h"
 #include "diplib/generation.h"
 #include "diplib/statistics.h"
+#include "diplib/transform.h"
 #include "diplib/framework.h"
 
 namespace dip {

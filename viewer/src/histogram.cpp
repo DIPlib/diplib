@@ -24,7 +24,7 @@
 #endif
 
 #undef DIP__ENABLE_DOCTEST
-#include "diplib/math.h"
+#include "diplib/statistics.h"
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
 #include "diplib/viewer/histogram.h"
