@@ -180,8 +180,6 @@ install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
 ### DIPlib unit tests
 
 if(DIP_ENABLE_DOCTEST)
-   add_custom_target(check COMMAND ./unit_tests)
-   enable_testing()
    add_executable (unit_tests EXCLUDE_FROM_ALL test/unit_tests.cpp)
    target_link_libraries(unit_tests DIP)
    if(DIP_SHARED_LIBRARY)
@@ -194,8 +192,10 @@ if(DIP_ENABLE_DOCTEST)
       include(dependencies/doctest/doctest_force_link_static_lib_in_target.cmake)
       doctest_force_link_static_lib_in_target(unit_tests DIP) # This pulls in all object files from the static DIP library
    endif()
-   add_test(NAME unit_tests COMMAND unit_tests)
+   add_custom_target(check COMMAND ./unit_tests)
    add_dependencies(check unit_tests)
+   add_custom_target(check_memory COMMAND valgrind ./unit_tests)
+   add_dependencies(check_memory unit_tests)
 endif()
 
 ### DIPviewer

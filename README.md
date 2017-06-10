@@ -29,16 +29,17 @@ To change which compilers CMake uses:
 
 Available `make` targets:
 
-    <default>   # builds all targets
-    DIP         # builds the DIPlib library only
-    DIPviewer   # builds the DIPviewer module only (plus the DIPlib library)
-    PyDIP_bin   # builds the PyDIP Python module only (plus the DIPlib library)
-    DIPimage    # builds the DIPimage MATLAB toolbox only (plus the DIPlib library)
-    check       # builds the unit_tests program and runs it
-    apidoc      # Doxygen HTML documentation for the library API
-    install     # builds and installs all targets
-    docs        # makes some PDF project documentation files
-    tests       # deprecated -- old test functions
+    <default>    # builds all targets
+    DIP          # builds the DIPlib library only
+    DIPviewer    # builds the DIPviewer module only (plus the DIPlib library)
+    PyDIP_bin    # builds the PyDIP Python module only (plus the DIPlib library)
+    DIPimage     # builds the DIPimage MATLAB toolbox only (plus the DIPlib library)
+    check        # builds the unit_tests program and runs it
+    check_memory # ...and runs it under valgrind
+    apidoc       # Doxygen HTML documentation for the library API
+    install      # builds and installs all targets
+    docs         # makes some PDF project documentation files
+    tests        # deprecated -- old test functions
 
 Important `cmake` command-line arguments:
 
