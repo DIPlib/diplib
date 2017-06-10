@@ -321,8 +321,6 @@ Some of the following functions already have their prototype written in the new 
 - diplib/morphology.h
     - dip_UpperEnvelope (dip_morphology.h)
     - dip_AreaOpening (dip_morphology.h)
-    - dip_PathOpening (dip_morphology.h)
-    - dip_DirectedPathOpening (dip_morphology.h)
     - dip_UpperSkeleton2D (dip_binary.h)
 
 - diplib/nonlinear.h

@@ -905,23 +905,67 @@ DIP_EXPORT void AreaOpening(
 );
 
 
+/// \brief Applies a path opening in all possible directions
+///
+/// `length` is the length of the path. All `filterParam` arguments to `dip::DirectedPathOpening` that yield a
+/// lenght of `length` and represent unique directions are generated, and the directed path opening is computed
+/// for each of them. The supremum (when `polarity` is `"opening"`) or infimum (when it is `"closing"`) is
+/// computed over all results. See `dip::DirectedPathOpening` for a description of the algorithm and the parameters.
 DIP_EXPORT void PathOpening(
       Image const& in,
       Image const& mask,
       Image& out,
       dip::uint length = 7,
-      bool closing = false, // should be a string
-      bool constrained = true // should be a string
+      String const& polarity = "opening",
+      String const& mode = "normal"
 );
 
+/// \brief Applies a path opening in a specific direction.
+///
+/// The path opening is an opening over all possible paths of a specific length and general direction. A path
+/// direction represents a 90 degree cone within which paths are generated. The paths are formed by single pixel
+/// steps in one of three directions (in 2D): the main direction, or 45 degrees to the left or right. That is,
+/// if the main direction is [1,0] (to the right), then [1,-1] and [1,1] (diagonal up or down) are also possible
+/// steps. This leads to a number of different paths that is exponential in its lengths. However, the opening over
+/// all these paths can be computed in \f$O(n \log(n))\f$ time, with *n* the path length.
+///
+/// The direction description above can be generalized to any number of dimensions by realizing that the main direction
+/// can be specified by any of the neighbors of a central pixel, and then the other allowed steps are the neighbor
+/// pixels that are also neighbor to the pixel that represents the main direction. In 3D, this leads to 6 or 8 alternate
+/// steps.
+///
+/// There are 4 possible path directions in 2D, and 13 in 3D. Both length and direction are specified through
+/// the `filterParam` argument, see below. Note that the path length is given by the number of pixels in the path,
+/// not the Euclidean length of the path.
+///
+/// When `mode` is `"constrained"`, the path construction described above is modified such that, after every alternate
+/// step, a step in the main direction must be taken. This constraint avoids a zig-zag line that causes the path
+/// opening to yield much shorter lines for the diagonal directions if the lines in the image are thicker than one pixel.
+/// See the paper by Luengo referenced below. It also reduces the cone size from 90 degrees to 45 degrees, making the
+/// algorithm more directionally-selective. The constrained mode increases computation time a little, but is highly
+/// recommended when using the path opening in a granulometry.
+///
+/// **Definition of `filterSize`:** `length = max(abs(filterSize))` is the number of pixels in the line.
+/// The path direction is determined by translating `filterSize` to an array with -1, 0 and 1 values using
+/// `direction = round(filterSize/length)`. For example, if `filterSize=[7,0]`, then `length` is 7, and
+/// `direction` is `[1,0]` (to the right), with `[1,1]` and `[1,-1]` as alternate directions.
+///
+/// Literature:
+///  - H. Heijmans, M. Buckley and H. Talbot, "Path Openings and Closings", Journal of Mathematical Imaging and Vision 22:107-119, 2005.
+///  - H. Talbot, B. Appleton, "Efficient complete and incomplete path openings and closings", Image and Vision Computing 25:416-425, 2007.
+///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings", IEEE Transactions on Image Processing 19(6):1587–1595, 2010.
 DIP_EXPORT void DirectedPathOpening(
       Image const& in,
       Image const& mask,
       Image& out,
-      FloatArray const& filterParam = {7, 0},
-      bool closing = false, // should be a string
-      bool constrained = true // should be a string
+      IntegerArray filterParam,
+      String const& polarity = "opening", // vs "closing"
+      String const& mode = "normal"  // vs "constrained"
 );
+
+// TODO: Have dip::Opening(in,{n,"path"}) call dip::PathOpening(in,n)   --   The SE should not be valid in
+// TODO: Have dip::Opening(in,{[n,m],"path"}) call dip::PathOpening(in,[n,m])
+
 
 // TODO: functions to port:
 /*
