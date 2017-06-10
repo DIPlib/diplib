@@ -74,7 +74,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       } else if( type == "violet" ) {
          dip::ColoredNoise( in, out, random, param1 * param1, 2.0 );
       } else {
-         DIP_THROW( dip::E::INVALID_FLAG );
+         DIP_THROW_INVALID_FLAG( type );
       }
 
       plhs[ 0 ] = mi.GetArray( out );

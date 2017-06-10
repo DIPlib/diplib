@@ -65,7 +65,7 @@ CoordinateMode ParseMode( StringSet const& mode ) {
       } else if( option == "physical" ) {
          coordinateMode.physical = true;
       } else {
-         DIP_THROW( E::INVALID_FLAG );
+         DIP_THROW_INVALID_FLAG( option );
       }
    }
    return coordinateMode;
@@ -125,7 +125,7 @@ void FillDelta( Image& out, String const& origin ) {
    } else if( origin == "corner" ) {
       system = CoordinateSystem::CORNER;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( origin );
    }
    DIP_START_STACK_TRACE
       out.Fill( 0 );
@@ -153,11 +153,8 @@ namespace {
 template< typename TPI >
 void dip__SetBorder( Image& out, Image::Pixel& c_value, dip::uint size ) {
    dip::uint nDim = out.Dimensionality();
-   std::cout << "[SetBorder] nDim = " << nDim << std::endl;
    UnsignedArray const& sizes = out.Sizes();
-   std::cout << "[SetBorder] sizes = " << sizes << std::endl;
    dip::uint nTensor = out.TensorElements();
-   std::cout << "[SetBorder] nTensor = " << nTensor << std::endl;
    // Copy c_value into an array with the right number of elements, and of the right data type
    std::vector< TPI > values( nTensor, c_value[ 0 ].As< TPI >() );
    if( !c_value.IsScalar() ) {
@@ -167,10 +164,7 @@ void dip__SetBorder( Image& out, Image::Pixel& c_value, dip::uint size ) {
    }
    // Iterate over all image lines
    dip::uint procDim = Framework::OptimalProcessingDim( out );
-   std::cout << "[SetBorder] procDim = " << procDim << std::endl;
    dip::sint stride = out.Stride( procDim );
-   std::cout << "[SetBorder] stride = " << stride << std::endl;
-   std::cout << "[SetBorder] size = " << size << std::endl;
    dip::sint lastOffset = ( static_cast< dip::sint >( out.Size( procDim )) - 1 ) * stride;
    dip::sint tensorStride = out.TensorStride();
    ImageIterator< TPI > it( out, procDim );
@@ -571,7 +565,10 @@ void FillCoordinates( Image& out, StringSet const& mode, String const& system ) 
    DIP_THROW_IF( !out.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nDims = out.Dimensionality();
    DIP_THROW_IF( out.TensorElements() != nDims, E::NTENSORELEM_DONT_MATCH );
-   bool spherical = system == "spherical";
+   bool spherical;
+   DIP_START_STACK_TRACE
+      spherical = BooleanFromString( system, "spherical", "cartesian" );
+   DIP_END_STACK_TRACE
    DIP_THROW_IF( spherical && (( nDims < 2 ) || ( nDims > 3 )), E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_START_STACK_TRACE
       CoordinateMode coordinateMode = ParseMode( mode );

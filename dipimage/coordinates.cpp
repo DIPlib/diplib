@@ -90,7 +90,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
             out.Forge();
             dip::FillThetaCoordinate( out, mode );
          } else {
-            DIP_THROW( dip::E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( value );
          }
       }
 

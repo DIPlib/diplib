@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains the various watershed implementations and related functions.
+ * This file contains the morphological reconstruction and related functions.
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -134,7 +134,7 @@ void MorphologicalReconstruction (
       Image const& c_in, // grey-value mask
       Image& out,
       dip::uint connectivity,
-      String direction // "dilataion" / "erosion"
+      String const& direction // "dilataion" / "erosion"
 ) {
    // Check input
    DIP_THROW_IF( !c_marker.IsForged() || !c_in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -144,7 +144,10 @@ void MorphologicalReconstruction (
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( inSizes != c_marker.Sizes(), E::SIZES_DONT_MATCH );
    DIP_THROW_IF(( connectivity < 1 ) || ( connectivity > nDims ), E::ILLEGAL_CONNECTIVITY );
-   bool dilation = direction == "dilation";
+   bool dilation;
+   DIP_START_STACK_TRACE
+      dilation = BooleanFromString( direction, "dilation", "erosion" );
+   DIP_END_STACK_TRACE
 
    // Make simplified copy of input image header so we can modify it at will.
    // This also effectively separates input and output images. They still point

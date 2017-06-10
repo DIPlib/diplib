@@ -36,7 +36,7 @@ DIP_NO_EXPORT std::vector< dip::sint > CreateOffsetsArray( UnsignedArray const& 
 // pixels set in `mask` are indexed. Pixels at the image boundary are excluded.
 DIP_NO_EXPORT std::vector< dip::sint > CreateOffsetsArray( Image const& mask, IntegerArray const& strides );
 
-// Sorts the list of offsets by the greyvalue they index.
+// Sorts the list of offsets by the grey value they index.
 DIP_NO_EXPORT void SortOffsets( Image const& img, std::vector< dip::sint >& offsets, bool lowFirst );
 
 } // namespace dip

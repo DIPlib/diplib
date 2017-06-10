@@ -353,7 +353,7 @@ inline dfloat Threshold(
       FixedThreshold( in, out, parameter );
       return parameter;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( method );
    }
 }
 inline Image Threshold(

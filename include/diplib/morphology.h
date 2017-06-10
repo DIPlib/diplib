@@ -226,7 +226,7 @@ class DIP_NO_EXPORT StructuringElement{
          } else if( shape == "discrete line" ) {
             shape_ = ShapeCode::DISCRETE_LINE;
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( shape );
          }
       }
 };
@@ -671,7 +671,7 @@ DIP_EXPORT void Watershed(
       dip::uint connectivity = 1,
       dfloat maxDepth = 0, // only merging within plateaus
       dip::uint maxSize = 0,
-      StringSet const& flags = {} // "labels" / "binary"(default), "low first"(default) / "high first", "fast"(default) / "correct"
+      StringSet flags = {} // "labels" / "binary"(default), "low first"(default) / "high first", "fast"(default) / "correct"
 );
 inline Image Watershed(
       Image const& in,
@@ -882,13 +882,13 @@ DIP_EXPORT void MorphologicalReconstruction(
       Image const& in, // grey-value mask
       Image& out,
       dip::uint connectivity = 1,
-      String direction = "dilation" // alt: "erosion"
+      String const& direction = "dilation" // alt: "erosion"
 );
 inline Image MorphologicalReconstruction(
       Image const& marker,
       Image const& in,
       dip::uint connectivity = 1,
-      String direction = "dilation"
+      String const& direction = "dilation"
 ) {
    Image out;
    MorphologicalReconstruction( marker, in, out, connectivity, direction );
@@ -901,7 +901,7 @@ DIP_EXPORT void AreaOpening(
       Image& out,
       dip::uint filterSize,
       dip::uint connectivity = 1,
-      bool closing = false // should be a string
+      String const& polarity = "opening" // vs "closing"
 );
 
 
@@ -934,9 +934,10 @@ dip_UpperSkeleton2D (dip_binary.h)
 
 // TODO: h-minima & h-maxima, opening and closing by reconstruction
 // TODO: alternating sequential open-close filter (3 versions: with structural opening, opening by reconstruction, and area opening)
-// TODO: hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees (360 degrees means no rotation).
+// TODO: hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees (360 degrees means no rotations).
 // TODO: thinning & thickening, to be implemented as iterated hit'n'miss.
 // TODO: levelling
+// TODO: granulometries (isotropic and path opening)
 
 // TODO: link documentation to dip::PercentileFilter (when written) as a rank filter, and implement rank-min and rank-max operators
 

@@ -193,7 +193,7 @@ class DIP_NO_EXPORT LookupTable{
          } else if( interpolation == "zero order" ) {
             return InterpolationMode::ZERO_ORDER_HOLD;
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( interpolation );
          }
       }
 };

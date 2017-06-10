@@ -222,6 +222,9 @@ constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 /// \brief Throw a `dip::ParameterError`.
 #define DIP_THROW( str ) do { auto e = dip::ParameterError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
 
+/// \brief Throw a `dip::ParameterError` that reads "Invalid flag: <flag>".
+#define DIP_THROW_INVALID_FLAG( flag ) DIP_THROW( dip::String( "Invalid flag: " ) + flag );
+
 /// \brief Test a condition, throw a `dip::ParameterError` if the condition is met.
 #define DIP_THROW_IF( test, str ) do { if( test ) DIP_THROW( str ); } while( false )
 

@@ -36,7 +36,7 @@ enum class FastWatershedOperation {
       EXTREMA
 };
 
-using LabelType = dip::uint32;
+using LabelType = uint32;
 constexpr auto DT_LABEL = DT_UINT32;
 constexpr LabelType WATERSHED_LABEL = std::numeric_limits< LabelType >::max();
 constexpr LabelType PIXEL_ON_STACK = WATERSHED_LABEL - 1;
@@ -106,7 +106,7 @@ bool WatershedShouldMerge(
 }
 
 // Returns true if a pixel in the neighbor list is foreground and has the mask set
-bool PixelHasForegroundNeighbour(
+bool PixelHasForegroundNeighbor(
       LabelType* label,
       bin* mask,
       NeighborList neighbors,
@@ -127,8 +127,8 @@ bool PixelHasForegroundNeighbour(
    return false;
 }
 
-// This class manages a list of neighbour labels.
-// There are never more than N neighbours added at a time, N being defined
+// This class manages a list of neighbor labels.
+// There are never more than N neighbors added at a time, N being defined
 // by the dimensionality and the connectivity. However, typically there are
 // only one or two labels added. Therefore, no effort has been put into making
 // this class clever. We could keep a sorted list, but the sorting might costs
@@ -316,8 +316,21 @@ void FastWatershed(
    if( maxDepth < 0 ) {
       maxDepth = 0;
    }
-   bool binaryOutput = flags.count( "labels" ) == 0;
-   bool lowFirst = flags.count( "high first" ) == 0;
+   bool binaryOutput = true;
+   bool lowFirst = true;
+   for( auto& flag : flags ) {
+      if( flag == "labels" ) {
+         binaryOutput = false;
+      } else if( flag == "binary" ) {
+         binaryOutput = true;
+      } else if( flag == "low first" ) {
+         lowFirst = true;
+      } else if( flag == "high first" ) {
+         lowFirst = false;
+      } else {
+         DIP_THROW_INVALID_FLAG( flag );
+      }
+   }
 
    // Make simplified copy of input image header so we can modify it at will.
    // This also effectively separates input and output images. They still point
@@ -376,7 +389,7 @@ void FastWatershed(
    labels.Fill( 0 );
    out.SetPixelSize( pixelSize );
 
-   // Create array with offsets to neighbours
+   // Create array with offsets to neighbors
    NeighborList neighbors( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
    IntegerArray neighborOffsets = neighbors.ComputeOffsets( in.Strides() );
 
@@ -430,7 +443,7 @@ void dip__SeededWatershed(
       if( !hasMask || it.template Sample< 2 >() ) {
          LabelType lab = it.template Sample< 1 >();
          if( lab == 0 ) {
-            if( PixelHasForegroundNeighbour( it.template Pointer< 1 >(),
+            if( PixelHasForegroundNeighbor( it.template Pointer< 1 >(),
                                              hasMask ? it.template Pointer< 2 >() : nullptr,
                                              neighborList, neighborOffsetsLabels, neighborOffsetsMask,
                                              it.Coordinates(), imsz )) {
@@ -489,7 +502,7 @@ void dip__SeededWatershed(
       switch( neighborLabels.Size() ) {
          case 0:
             // Not touching a label: what?
-            //DIP_THROW( "This should not have happened: there's a pixel on the stack with all background neighbours!" );
+            //DIP_THROW( "This should not have happened: there's a pixel on the stack with all background neighbors!" );
             labels[ offsetLabels ] = 0;
             break;
          case 1: {
@@ -502,7 +515,7 @@ void dip__SeededWatershed(
                          : ( regions[ lab ].lowest < greyValue )) {
                regions[ lab ].lowest = greyValue;
             }
-            // Add all unprocessed neighbours to heap
+            // Add all unprocessed neighbors to heap
             for( dip::uint jj = 0; jj < nNeigh; ++jj ) {
                if( useNeighbor[ jj ] ) {
                   if( !mask || mask[ offsetMask + neighborOffsetsMask[ jj ]] ) {
@@ -584,8 +597,21 @@ void SeededWatershed(
    if( maxDepth < 0 ) {
       maxDepth = 0;
    }
-   bool binaryOutput = flags.count( "labels" ) == 0;
-   bool lowFirst = flags.count( "high first" ) == 0;
+   bool binaryOutput = true;
+   bool lowFirst = true;
+   for( auto& flag : flags ) {
+      if( flag == "labels" ) {
+         binaryOutput = false;
+      } else if( flag == "binary" ) {
+         binaryOutput = true;
+      } else if( flag == "low first" ) {
+         lowFirst = true;
+      } else if( flag == "high first" ) {
+         lowFirst = false;
+      } else {
+         DIP_THROW_INVALID_FLAG( flag );
+      }
+   }
 
    // Make simplified copy of input image header so we can modify it at will.
    // This also effectively separates input and output images. They still point
@@ -615,7 +641,7 @@ void SeededWatershed(
    }
    out.SetPixelSize( pixelSize );
 
-   // Create array with offsets to neighbours
+   // Create array with offsets to neighbors
    NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
    IntegerArray neighborOffsetsIn = neighborList.ComputeOffsets( in.Strides() );
    IntegerArray neighborOffsetsOut = neighborList.ComputeOffsets( out.Strides() );
@@ -642,19 +668,25 @@ void Watershed(
       dip::uint connectivity,
       dfloat maxDepth,
       dip::uint maxSize,
-      StringSet const& flags // "labels" / "binary", "low first" / "high first", "fast" / "correct"
+      StringSet flags // by copy so we can modify it
 ) {
-   if( flags.count( "correct" )) {
-      Image seeds;
-      if( flags.count( "high first" )) {
-         seeds = Maxima( in, mask, connectivity, "labels" );
+   bool correct = flags.count( "correct" ) != 0;
+   // we remove these two elements if there, so we don't throw an error later when we see them.
+   flags.erase( "correct" );
+   flags.erase( "fast" );
+   DIP_START_STACK_TRACE
+      if( correct ) {
+         Image seeds;
+         if( flags.count( "high first" )) {
+            seeds = Maxima( in, mask, connectivity, "labels" );
+         } else {
+            seeds = Minima( in, mask, connectivity, "labels" );
+         }
+         SeededWatershed( in, seeds, mask, out, connectivity, maxDepth, maxSize, flags );
       } else {
-         seeds = Minima( in, mask, connectivity, "labels" );
+         FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, flags, FastWatershedOperation::WATERSHED );
       }
-      SeededWatershed( in, seeds, mask, out, connectivity, maxDepth, maxSize, flags );
-   } else {
-      FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, flags, FastWatershedOperation::WATERSHED );
-   }
+   DIP_END_STACK_TRACE
 }
 
 void LocalMinima(
@@ -666,7 +698,9 @@ void LocalMinima(
       dip::uint maxSize,
       String const& output
 ) {
-   FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "low first" }, FastWatershedOperation::EXTREMA );
+   DIP_START_STACK_TRACE
+      FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "low first" }, FastWatershedOperation::EXTREMA );
+   DIP_END_STACK_TRACE
 }
 
 void LocalMaxima(
@@ -678,7 +712,9 @@ void LocalMaxima(
       dip::uint maxSize,
       String const& output
 ) {
-   FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "high first" }, FastWatershedOperation::EXTREMA );
+   DIP_START_STACK_TRACE
+      FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "high first" }, FastWatershedOperation::EXTREMA );
+   DIP_END_STACK_TRACE
 }
 
 } // namespace dip

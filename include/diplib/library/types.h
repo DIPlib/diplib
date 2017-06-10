@@ -295,6 +295,27 @@ using String = std::string;                 ///< A string, used to specify an op
 using StringArray = std::vector< String >;  ///< An array of strings, used to specify an option per dimension
 using StringSet = std::set< String >;       ///< A collection of strings, used to specify multiple independent options
 
+/// \brief Translates a string input parameter that is meant as a boolean value.
+inline bool BooleanFromString( String const& input, String const& trueString, String const& falseString ) {
+   if( input == trueString ) {
+      return true;
+   } else if( input == falseString ) {
+      return false;
+   } else {
+      DIP_THROW_INVALID_FLAG( input );
+   }
+}
+// An overload so that we don't construct a `String` object from string literals
+inline bool BooleanFromString( String const& input, String::value_type const* trueString, String::value_type const* falseString ) {
+   if( input == trueString ) {
+      return true;
+   } else if( input == falseString ) {
+      return false;
+   } else {
+      DIP_THROW_INVALID_FLAG( input );
+   }
+}
+
 //
 // Ranges, used for indexing
 //

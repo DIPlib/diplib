@@ -164,7 +164,7 @@ void FourierTransform(
       } else if( option == "symmetric" ) {
          symmetric = true;
       } else {
-         DIP_THROW( E::INVALID_FLAG );
+         DIP_THROW_INVALID_FLAG( option );
       }
    }
    // Handle `process` array

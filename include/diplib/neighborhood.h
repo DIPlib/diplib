@@ -188,7 +188,7 @@ class DIP_NO_EXPORT Kernel{
          } else if( shape == "diamond" ) {
             shape_ = ShapeCode::DIAMOND;
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( shape );
          }
       }
 };
@@ -259,7 +259,7 @@ class DIP_NO_EXPORT Metric {
             } else if( type == "28-connected" ) {
                param_ = 3;
             } else {
-               DIP_THROW( E::INVALID_FLAG );
+               DIP_THROW_INVALID_FLAG( type );
             }
          }
          if( pixelSize.IsDefined() ) {

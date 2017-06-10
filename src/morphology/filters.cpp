@@ -44,7 +44,7 @@ EdgeType GetEdgeType( String const& edgeType ) {
    } else if(( edgeType == "both" ) || ( edgeType == "dynamic" )) {
       return EdgeType::BOTH;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( edgeType );
    }
 }
 
@@ -59,13 +59,8 @@ void Tophat(
       String const& polarity,
       StringArray const& boundaryCondition
 ) {
-   bool white = true;
-   if( polarity == "black" ) {
-      white = false;
-   } else if( polarity != "white" ) {
-      DIP_THROW( E::INVALID_FLAG );
-   }
    DIP_START_STACK_TRACE
+      bool white = BooleanFromString( polarity, "white", "black" );
       EdgeType decodedEdgeType = GetEdgeType( edgeType );
       switch( decodedEdgeType ) {
          default:
@@ -235,8 +230,8 @@ void Lee(
       String const& sign,
       StringArray const& boundaryCondition
 ) {
-   Image out2;
    DIP_START_STACK_TRACE
+      Image out2;
       EdgeType decodedEdgeType = GetEdgeType( edgeType );
       Image c_in = in.QuickCopy();
       switch( decodedEdgeType ) {
@@ -264,14 +259,12 @@ void Lee(
             break;
          }
       }
+      if( BooleanFromString( sign, "signed", "unsigned" )) {
+         SignedMinimum( out, out2, out );
+      } else {
+         Infimum( out, out2, out );
+      }
    DIP_END_STACK_TRACE
-   if( sign == "unsigned" ) {
-      Infimum( out, out2, out );
-   } else if( sign == "signed" ) {
-      SignedMinimum( out, out2, out );
-   } else {
-      DIP_THROW( E::INVALID_FLAG );
-   }
 }
 
 void MorphologicalSmoothing(
@@ -296,7 +289,7 @@ void MorphologicalSmoothing(
       out += tmp;
       out /= 2;
    } else {
-      DIP_THROW( E::INVALID_FLAG );
+      DIP_THROW_INVALID_FLAG( mode );
    }
 }
 

@@ -279,7 +279,7 @@ class DIP_NO_EXPORT ImageDisplay{
          } else if( projectionMode == "mean" ) {
             SetProjectionMode( ProjectionMode::MEAN );
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( projectionMode );
          }
       }
 
@@ -313,7 +313,7 @@ class DIP_NO_EXPORT ImageDisplay{
          } else if( complexMode == "imag" ) {
             SetComplexMode( ComplexMode::IMAG );
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( complexMode );
          }
       }
 
@@ -393,7 +393,7 @@ class DIP_NO_EXPORT ImageDisplay{
          } else if(( range == "modulo" ) || ( range == "labels" )) {
             SetMappingMode( MappingMode::MODULO );
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( range );
          }
       }
 
@@ -418,7 +418,7 @@ class DIP_NO_EXPORT ImageDisplay{
          } else if(( globalStretch == "no" ) || ( globalStretch == "off" )){
             SetGlobalStretch( false );
          } else {
-            DIP_THROW( E::INVALID_FLAG );
+            DIP_THROW_INVALID_FLAG( globalStretch );
          }
       }
 
