@@ -17,6 +17,9 @@
 %  connectivity = 1
 %  flag = 'dilation'
 %
+% NOTE:
+%  See the user guide for the definition of connectivity in DIPimage.
+%
 % EXAMPLE:
 %  a = -readim('cermet')
 %  b = erosion(a,20)

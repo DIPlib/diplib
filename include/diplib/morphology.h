@@ -873,6 +873,9 @@ DIP_EXPORT void UpperEnvelope(
 /// stability. This is implemented with an efficient priority-queue--based method. `direction` indicates which of
 /// the two operations to apply ("dilation" or "erosion").
 ///
+/// `out` will have the data type of `in`, and `marker` will be cast to that same type (with clamping to the target
+/// range, see `dip::Convert`).
+///
 /// See \ref connectivity for information on the connectivy parameter.
 ///
 /// Literature: K. Robinson and P.F. Whelan: Efficient morphological reconstruction: a downhill filter,
@@ -895,6 +898,62 @@ inline Image MorphologicalReconstruction(
    return out;
 }
 
+/// \brief Computes the H-Minima filtered image
+///
+/// The H-Minima filtered image has all local minima with a depth less than `h` removed:
+///
+/// ```cpp
+///     HMinima = dip::MorphologicalReconstruction( in + h, in, connectivity, "erosion" );
+/// ```
+///
+/// \see dip::MorphologicalReconstruction, dip::Minima, dip::HMaxima
+inline void HMinima(
+      Image const& in,
+      Image& out,
+      dfloat h,
+      dip::uint connectivity = 1
+) {
+   Image tmp = Add( in, h, in.DataType() );
+   MorphologicalReconstruction( tmp, in, out, connectivity, "erosion" );
+}
+inline Image HMinima(
+      Image const& in,
+      dfloat h,
+      dip::uint connectivity = 1
+) {
+   Image out;
+   HMinima( in, out, h, connectivity );
+   return out;
+}
+
+/// \brief Computes the H-Maxima filtered image
+///
+/// The H-Maxima filtered image has all local maxima with a height less than `h` removed:
+///
+/// ```cpp
+///     HMinima = dip::MorphologicalReconstruction( in - h, in, connectivity, "dilation" );
+/// ```
+///
+/// \see dip::MorphologicalReconstruction, dip::Maxima, dip::Hminima
+inline void HMaxima(
+      Image const& in,
+      Image& out,
+      dfloat h,
+      dip::uint connectivity = 1
+) {
+   Image tmp = Subtract( in, h, in.DataType() );
+   MorphologicalReconstruction( tmp, in, out, connectivity, "dilation" );
+}
+inline Image HMaxima(
+      Image const& in,
+      dfloat h,
+      dip::uint connectivity = 1
+) {
+   Image out;
+   HMaxima( in, out, h, connectivity );
+   return out;
+}
+
 DIP_EXPORT void AreaOpening(
       Image const& in,
       Image const& mask,
@@ -903,7 +962,6 @@ DIP_EXPORT void AreaOpening(
       dip::uint connectivity = 1,
       String const& polarity = "opening" // vs "closing"
 );
-
 
 /// \brief Applies a path opening in all possible directions
 ///
@@ -919,6 +977,17 @@ DIP_EXPORT void PathOpening(
       String const& polarity = "opening",
       String const& mode = "normal"
 );
+inline Image PathOpening(
+      Image const& in,
+      Image const& mask,
+      dip::uint length = 7,
+      String const& polarity = "opening",
+      String const& mode = "normal"
+) {
+   Image out;
+   PathOpening( in, mask, out, length, polarity, mode );
+   return out;
+}
 
 /// \brief Applies a path opening in a specific direction.
 ///
@@ -962,6 +1031,17 @@ DIP_EXPORT void DirectedPathOpening(
       String const& polarity = "opening", // vs "closing"
       String const& mode = "normal"  // vs "constrained"
 );
+inline Image DirectedPathOpening(
+      Image const& in,
+      Image const& mask,
+      IntegerArray filterParam,
+      String const& polarity = "opening", // vs "closing"
+      String const& mode = "normal"  // vs "constrained"
+) {
+   Image out;
+   DirectedPathOpening( in, mask, out, filterParam, polarity, mode );
+   return out;
+}
 
 // TODO: Have dip::Opening(in,{n,"path"}) call dip::PathOpening(in,n)   --   The SE should not be valid in
 // TODO: Have dip::Opening(in,{[n,m],"path"}) call dip::PathOpening(in,[n,m])
@@ -971,8 +1051,6 @@ DIP_EXPORT void DirectedPathOpening(
 /*
 dip_UpperEnvelope (dip_morphology.h)
 dip_AreaOpening (dip_morphology.h)
-dip_PathOpening (dip_morphology.h)
-dip_DirectedPathOpening (dip_morphology.h)
 dip_UpperSkeleton2D (dip_binary.h)
 */
 

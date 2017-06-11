@@ -4,14 +4,11 @@
 %  image_out = watershed(image_in,connectivity,max_depth,max_size,flags)
 %
 % PARAMETERS:
-%  connectivity: defines which pixels are considered neighbours: up to
-%     'connectivity' coordinates can differ by maximally 1. Thus:
-%     * A connectivity of 1 indicates 4-connected neighbours in a 2D image
-%       and 6-connected in 3D.
-%     * A connectivity of 2 indicates 8-connected neighbourhood in 2D, and
-%       18 in 3D.
-%     * A connectivity of 3 indicates a 26-connected neighbourhood in 3D.
-%     Connectivity can never be larger than the image dimensionality.
+%  connectivity: defines the metric, that is, the shape of the structuring
+%     element.
+%     * 1 indicates city-block metric, or a diamond-shaped S.E in 2D.
+%     * 2 indicates chessboard metric, or a square structuring element in 2D.
+%     For 3D images use 1, 2 or 3.
 %  max_depth, max_size: determine merging of regions.
 %     A region up to 'max_size' pixels and up to 'max_depth' grey-value
 %     difference will be merged. Set 'max_size' to 0 to not include size
@@ -36,17 +33,20 @@
 %  is to provide the 'correct' flag, which causes this function to use
 %  a slower algorithm that always yields correct results.
 %
-% NOTE 2:
+% NOTE:
 %  The fast algorithm also skips all edge pixels, marking them as watershed
 %  pixels. If this is undesireable, extend the image by one pixel on all
 %  sides. The alternative is to provide the 'correct' flag, which causes this
 %  function to use a slower algorithm that does correctly address all edge
 %  pixels.
 %
-% NOTE 3:
+% NOTE:
 %  Pixels in IMAGE_IN with a value of +INF are not processed, and will be
 %  marked as watershed pixels. Use this to mask out parts of the image you
 %  don't need processed.
+%
+% NOTE:
+%  See the user guide for the definition of connectivity in DIPimage.
 %
 % SEE ALSO:
 %  waterseed, maxima, minima

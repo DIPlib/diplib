@@ -7,14 +7,11 @@
 %  image_out = minima(image_in,connectivity,flag)
 %
 % PARAMETERS:
-%  connectivity: defines which pixels are considered neighbours: up to
-%     'connectivity' coordinates can differ by maximally 1. Thus:
-%     * A connectivity of 1 indicates 4-connected neighbours in a 2D image
-%       and 6-connected in 3D.
-%     * A connectivity of 2 indicates 8-connected neighbourhood in 2D, and
-%       18 in 3D.
-%     * A connectivity of 3 indicates a 26-connected neighbourhood in 3D.
-%     Connectivity can never be larger than the image dimensionality.
+%  connectivity: defines the metric, that is, the shape of the structuring
+%     element.
+%     * 1 indicates city-block metric, or a diamond-shaped S.E in 2D.
+%     * 2 indicates chessboard metric, or a square structuring element in 2D.
+%     For 3D images use 1, 2 or 3.
 %  flag: set to 'labels' to return a labelled output image.
 %
 % DEFAULTS:
@@ -27,6 +24,9 @@
 %     a = label(minima(in,2),2)
 %  except that labels are not necessarily contiguous (that is, not all values
 %  between 1 and the maximum label value are used).
+%
+% NOTE:
+%  See the user guide for the definition of connectivity in DIPimage.
 %
 % SEE ALSO:
 %  maxima

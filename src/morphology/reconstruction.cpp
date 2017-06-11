@@ -70,6 +70,7 @@ void dip__MorphologicalReconstruction(
          it.Out() = std::min( it.Out(), it.In() );
          if( it.Out() > minval ) {
             Q.push( Qitem< TPI >{ it.Out(), it.template Offset< 2 >() } ); // offset pushed is that of `done`, so we can test it fast.
+            //std::cout << " - Pushed " << it.Out();
          }
          it.template Sample< 2 >() = false;
       } while( ++it );
@@ -78,6 +79,7 @@ void dip__MorphologicalReconstruction(
          it.Out() = std::max( it.Out(), it.In() );
          if( it.Out() < minval ) {
             Q.push( Qitem< TPI >{ it.Out(), it.template Offset< 2 >() } ); // offset pushed is that of `done`, so we can test it fast.
+            //std::cout << " - Pushed " << it.Out();
          }
          it.template Sample< 2 >() = false;
       } while( ++it );
@@ -96,6 +98,7 @@ void dip__MorphologicalReconstruction(
          UnsignedArray coords = coordinatesComputer( offsetDone );
          dip::sint offsetIn = c_in.Offset( coords );
          dip::sint offsetOut = c_out.Offset( coords );
+         //std::cout << " - Popped " << offsetDone << " (" << out[ offsetOut ] << ")";
          // Iterate over all neighbors
          auto lit = neighborList.begin();
          for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
@@ -109,6 +112,7 @@ void dip__MorphologicalReconstruction(
                         out[ offsetOut + neighborOffsetsOut[ jj ]] = newval;
                         // Add the updated neighbours to the heap
                         Q.push( Qitem< TPI >{ newval, offsetDone + neighborOffsetsDone[ jj ] } );
+                        //std::cout << " - Pushed " << newval;
                      }
                   } else {
                      newval = std::max( newval, out[ offsetOut ] );
@@ -116,6 +120,7 @@ void dip__MorphologicalReconstruction(
                         out[ offsetOut + neighborOffsetsOut[ jj ]] = newval;
                         // Add the updated neighbours to the heap
                         Q.push( Qitem< TPI >{ newval, offsetDone + neighborOffsetsDone[ jj ] } );
+                        //std::cout << " - Pushed " << newval;
                      }
                   }
                }
@@ -158,7 +163,7 @@ void MorphologicalReconstruction (
 
    // Prepare output image
    Convert( c_marker, out, in.DataType() );
-   Image minval = Minimum( out ); // same data type as `out`
+   Image minval = dilation ? Minimum( out ) : Maximum( out ); // same data type as `out`
 
    // Intermediate image
    Image done( out.Sizes(), 1, DT_BIN );

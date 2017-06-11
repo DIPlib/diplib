@@ -2458,6 +2458,9 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Converts the image to another data type.
       ///
+      /// The data type conversion clips values to the target range and/or truncates them, as applicable.
+      /// Complex values are converted to non-complex values by taking the absolute value.
+      ///
       /// The data segment is replaced by a new one, unless the old and new data
       /// types have the same size and it is not shared with other images.
       /// If the data segment is replaced, strides are set to normal.
@@ -2860,6 +2863,9 @@ inline Image ExpandTensor( Image const& src ) {
 /// has the same size as number of tensor elements as `src`, and has data type `dt`, then
 /// its data segment is reused. If `src` and `dest` are the same object, its `dip::Image::Convert`
 /// method is called instead.
+///
+/// The data type conversion clips values to the target range and/or truncates them, as applicable.
+/// Complex values are converted to non-complex values by taking the absolute value.
 inline void Convert(
       Image const& src,
       Image& dest,
