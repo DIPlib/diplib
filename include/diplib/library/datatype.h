@@ -172,77 +172,6 @@ struct DIP_NO_EXPORT DataType {
       DIP_THROW( "Unknown data type" ); // This should never happen, but GCC complains.
    }
 
-   /// \brief Returns `true` if the data type is binary.
-   bool IsBinary() const {
-      return dt == DT::BIN;
-   }
-
-   /// \brief Returns `true` if the data type is an unsigned integer type.
-   bool IsUInt() const {
-      switch( dt ) {
-         case DT::UINT8:
-         case DT::UINT16:
-         case DT::UINT32:
-            return true;
-         default:
-            return false;
-      };
-   }
-
-   /// \brief Returns `true` if the data type is a signed integer type.
-   bool IsSInt() const {
-      switch( dt ) {
-         case DT::SINT8:
-         case DT::SINT16:
-         case DT::SINT32:
-            return true;
-         default:
-            return false;
-      };
-   }
-
-   /// \brief Returns `true` if the data type is an integer type.
-   bool IsInteger() const {
-      return IsUInt() || IsSInt();
-   }
-
-   /// \brief Returns `true` if the data type is a floating point type.
-   bool IsFloat() const {
-      switch( dt ) {
-         case DT::SFLOAT:
-         case DT::DFLOAT:
-            return true;
-         default:
-            return false;
-      };
-   }
-
-   /// \brief Returns `true` if the data type is real (floating point or integer).
-   bool IsReal() const {
-      return IsInteger() || IsFloat();
-   }
-
-   /// \brief Returns `true` if the data type is complex.
-   bool IsComplex() const {
-      switch( dt ) {
-         case DT::SCOMPLEX:
-         case DT::DCOMPLEX:
-            return true;
-         default:
-            return false;
-      };
-   }
-
-   /// \brief Returns `true` if the data type is an unsigned type (binary or unsigned integer).
-   bool IsUnsigned() const {
-      return IsUInt() || IsBinary();
-   }
-
-   /// \brief Returns `true` if the data type is a signed type (signed integer, floating point or complex)
-   bool IsSigned() const {
-      return IsSInt() || IsFloat() || IsComplex();
-   }
-
    /// \brief Returns the real data type corresponding to a complex data type
    DataType Real() {
       switch( dt ) {
@@ -300,17 +229,17 @@ struct DIP_NO_EXPORT DataType {
    /// - `Class_Binary`, `Class_Real` and `Class_Complex`
    /// - `Class_Binary`, `Class_Integer`, `Class_Float` and `Class_Complex`
    DIP_DECLARE_OPTIONS( Classes );
-   static DIP_DEFINE_OPTION( Classes, Class_Bin, static_cast<dip::uint>( DT::BIN ) );
-   static DIP_DEFINE_OPTION( Classes, Class_UInt8, static_cast<dip::uint>( DT::UINT8 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_SInt8, static_cast<dip::uint>( DT::SINT8 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_UInt16, static_cast<dip::uint>( DT::UINT16 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_SInt16, static_cast<dip::uint>( DT::SINT16 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_UInt32, static_cast<dip::uint>( DT::UINT32 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_SInt32, static_cast<dip::uint>( DT::SINT32 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_SFloat, static_cast<dip::uint>( DT::SFLOAT ) );
-   static DIP_DEFINE_OPTION( Classes, Class_DFloat, static_cast<dip::uint>( DT::DFLOAT ) );
-   static DIP_DEFINE_OPTION( Classes, Class_SComplex, static_cast<dip::uint>( DT::SCOMPLEX ) );
-   static DIP_DEFINE_OPTION( Classes, Class_DComplex, static_cast<dip::uint>( DT::DCOMPLEX ) );
+   static DIP_DEFINE_OPTION( Classes, Class_Bin, static_cast< dip::uint >( DT::BIN ) );
+   static DIP_DEFINE_OPTION( Classes, Class_UInt8, static_cast< dip::uint >( DT::UINT8 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_SInt8, static_cast< dip::uint >( DT::SINT8 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_UInt16, static_cast< dip::uint >( DT::UINT16 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_SInt16, static_cast< dip::uint >( DT::SINT16 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_UInt32, static_cast< dip::uint >( DT::UINT32 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_SInt32, static_cast< dip::uint >( DT::SINT32 ) );
+   static DIP_DEFINE_OPTION( Classes, Class_SFloat, static_cast< dip::uint >( DT::SFLOAT ) );
+   static DIP_DEFINE_OPTION( Classes, Class_DFloat, static_cast< dip::uint >( DT::DFLOAT ) );
+   static DIP_DEFINE_OPTION( Classes, Class_SComplex, static_cast< dip::uint >( DT::SCOMPLEX ) );
+   static DIP_DEFINE_OPTION( Classes, Class_DComplex, static_cast< dip::uint >( DT::DCOMPLEX ) );
    static DIP_DEFINE_OPTION( Classes, Class_Binary, Class_Bin );
    static DIP_DEFINE_OPTION( Classes, Class_UInt, Class_UInt8 + Class_UInt16 + Class_UInt32 );
    static DIP_DEFINE_OPTION( Classes, Class_SInt, Class_SInt8 + Class_SInt16 + Class_SInt32 );
@@ -328,7 +257,56 @@ struct DIP_NO_EXPORT DataType {
    static DIP_DEFINE_OPTION( Classes, Class_All, Class_Binary + Class_Real + Class_Complex ); // == Class_Unsigned + Class_Signed
 
    /// \brief Implicit conversion to `dip::DataType::Classes` options class.
-   operator Classes() const { return { static_cast<dip::uint>( dt ) }; }
+   operator Classes() const { return { static_cast< dip::uint >( dt ) }; }
+
+   //
+   // Functions to query the data type class
+   //
+
+   /// \brief Returns `true` if the data type is binary.
+   bool IsBinary() const {
+      return dt == DT::BIN;
+   }
+
+   /// \brief Returns `true` if the data type is an unsigned integer type.
+   bool IsUInt() const {
+      return Class_UInt == *this;
+   }
+
+   /// \brief Returns `true` if the data type is a signed integer type.
+   bool IsSInt() const {
+      return Class_SInt == *this;
+   }
+
+   /// \brief Returns `true` if the data type is an integer type.
+   bool IsInteger() const {
+      return Class_Integer == *this;
+   }
+
+   /// \brief Returns `true` if the data type is a floating point type.
+   bool IsFloat() const {
+      return Class_Float == *this;
+   }
+
+   /// \brief Returns `true` if the data type is real (floating point or integer).
+   bool IsReal() const {
+      return Class_Real == *this;
+   }
+
+   /// \brief Returns `true` if the data type is complex.
+   bool IsComplex() const {
+      return Class_Complex == *this;
+   }
+
+   /// \brief Returns `true` if the data type is an unsigned type (binary or unsigned integer).
+   bool IsUnsigned() const {
+      return Class_Unsigned == *this;
+   }
+
+   /// \brief Returns `true` if the data type is a signed type (signed integer, floating point or complex)
+   bool IsSigned() const {
+      return Class_Signed == *this;
+   }
 
    //
    // Functions to suggest an output data type for all types of filters and operators
