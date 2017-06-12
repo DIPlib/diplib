@@ -132,11 +132,11 @@ inline Image Infimum( Image const& a, Image const& b ) {
    return out;
 }
 
-/// \brief Computes the sample-wise signed minimum of the two input images: returns `-b` where `b < a`, a otherwise.
-DIP_EXPORT void SignedMinimum ( Image const& a, Image const& b, Image& out );
-inline Image SignedMinimum( Image const& a, Image const& b ) {
+/// \brief Computes the sample-wise signed infimum (minimum) of the two input images: returns `-b` where `b < a`, a otherwise.
+DIP_EXPORT void SignedInfimum( Image const& a, Image const& b, Image& out );
+inline Image SignedInfimum( Image const& a, Image const& b ) {
    Image out;
-   SignedMinimum( a, b, out );
+   SignedInfimum( a, b, out );
    return out;
 }
 

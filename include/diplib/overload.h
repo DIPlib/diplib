@@ -145,6 +145,10 @@
    DIP__OVL__SINT( assign_name, paramlist )  \
    DIP__OVL__FLOAT( assign_name, paramlist )
 
+#define DIP__OVL__SIGNEDREAL( assign_name, paramlist ) \
+   DIP__OVL__SINT( assign_name, paramlist )   \
+   DIP__OVL__FLOAT( assign_name, paramlist )
+
 #define DIP__OVL__NONCOMPLEX( assign_name, paramlist ) \
    DIP__OVL__BIN( assign_name, paramlist )  \
    DIP__OVL__UINT( assign_name, paramlist ) \
@@ -235,6 +239,12 @@
 #define DIP_OVL_CALL_REAL( fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )       \
    DIP__OVL__REAL( fname, paramlist )    \
+   DIP__OVL__FOOT }
+
+/// \brief Calls the overloaded function for all signed real (integer + float) types.
+#define DIP_OVL_CALL_SIGNEDREAL( fname, paramlist, dtype ) \
+{  DIP__OVL__HEAD( dtype )       \
+   DIP__OVL__SIGNEDREAL( fname, paramlist )  \
    DIP__OVL__FOOT }
 
 /// \brief Calls the overloaded function for all non-complex types.
@@ -331,6 +341,12 @@
    DIP__OVL__REAL( x = fname, paramlist )    \
    DIP__OVL__FOOT }
 
+/// \brief Calls the overloaded function for all signed real (integer + float) types, and assigns the output value to variable `x`.
+#define DIP_OVL_CALL_ASSIGN_SIGNEDREAL( x, fname, paramlist, dtype ) \
+{  DIP__OVL__HEAD( dtype )       \
+   DIP__OVL__SIGNEDREAL( x = fname, paramlist )  \
+   DIP__OVL__FOOT }
+
 /// \brief Calls the overloaded function for all non-complex types, and assigns the output value to variable `x`.
 #define DIP_OVL_CALL_ASSIGN_NONCOMPLEX( x, fname, paramlist, dtype ) \
 {  DIP__OVL__HEAD( dtype )          \
@@ -425,6 +441,12 @@
    DIP__OVL__REAL( f = fname, ) \
    DIP__OVL__FOOT
 
+/// \brief Assigns a pointer to the overloaded function for all signed real (integer + float) types to the variable `f`.
+#define DIP_OVL_ASSIGN_SIGNEDREAL( f, fname, dtype ) \
+   DIP__OVL__HEAD( dtype )      \
+   DIP__OVL__SIGNEDREAL( f = fname, ) \
+   DIP__OVL__FOOT
+
 /// \brief Assigns a pointer to the overloaded function for all non-complex types to the variable `f`.
 #define DIP_OVL_ASSIGN_NONCOMPLEX( f, fname, dtype ) \
    DIP__OVL__HEAD( dtype )          \
@@ -517,6 +539,12 @@
 #define DIP_OVL_NEW_REAL( x, cname, paramlist, dtype ) \
    DIP__OVL__HEAD( dtype )    \
    DIP__OVL__REAL( x = ( decltype( x )) new cname, paramlist ) \
+   DIP__OVL__FOOT
+
+/// \brief Assigns a pointer to the overloaded class for all signed real (integer + float) types to the variable `x`.
+#define DIP_OVL_NEW_SIGNEDREAL( x, cname, paramlist, dtype ) \
+   DIP__OVL__HEAD( dtype )      \
+   DIP__OVL__SIGNEDREAL( x = ( decltype( x )) new cname, paramlist ) \
    DIP__OVL__FOOT
 
 /// \brief Assigns a pointer to the overloaded class for all non-complex types to the variable `x`.

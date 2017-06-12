@@ -21,7 +21,6 @@
 #include "diplib.h"
 #include "diplib/pixel_table.h"
 #include "diplib/framework.h"
-#include "diplib/saturated_arithmetic.h"
 #include "diplib/math.h"
 #include "diplib/morphology.h"
 
@@ -260,7 +259,7 @@ void Lee(
          }
       }
       if( BooleanFromString( sign, "signed", "unsigned" )) {
-         SignedMinimum( out, out2, out );
+         SignedInfimum( out, out2, out );
       } else {
          Infimum( out, out2, out );
       }
