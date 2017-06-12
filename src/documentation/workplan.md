@@ -145,7 +145,7 @@ document's source</a> for the most up-to-date version.
       opening by reconstruction, and area opening)
 
 - Dilation/erosion by a rotated line is currently implemented by first skewing the image,
-  applying filter along rows or columns, then skewing back. We can add a 2D-specific
+  applying the filter along rows or columns, then skewing back. We can add a 2D-specific
   version that operates directly over rotated lines. The diamond structuring element can
   then be decomposed into two of these operations. We can also add approximations of the
   circle with such lines.
@@ -161,7 +161,7 @@ document's source</a> for the most up-to-date version.
 
 - Super pixels.
 
-- Building graph out of labeled image (e.g. from watershed). Graph format?
+- Building a graph out of a labeled image (e.g. from watershed). Graph format?
   Graph manipulation functions, e.g. MST (external lib?), region merging, etc.
 
 - Wavelet transforms.
@@ -178,7 +178,7 @@ document's source</a> for the most up-to-date version.
 ## List of old *DIPlib* functions that still need to be ported
 
 Between brackets is the name of the old header file it's declared in. They are grouped by
-header file they should probably be declared in in the new library.
+the new header file they should be declared in.
 
 Many of the following functions are not documented. Undocumented functions have a very
 low priority in the porting process, and some might not be ported at all. It being listed

@@ -174,15 +174,16 @@ def report (files, exclude_dirs):
       #defs_sorted = defs.keys()
       #defs_sorted.sort()
       #for d in defs_sorted:
-      #	if not defs[d]:
-      #		print ("\t", d)
+      #  if not defs[d]:
+      #    print ("\t", d)
 
    total_all = total_yes + total_no
    total_per = total_yes * 100 / total_all
    print()
    # [CL] showng the total number of documented functions
-   #print("%d%% API documentation coverage" %(total_per))
-   print ('%3d%% API documentation coverage (%d of %d)'%(total_per, total_yes, total_all))
+   print ("%d total public functions/classes/types/macros/constants"%(total_all))
+   print ("%d documented functions/classes/types/macros/constants"%(total_yes))
+   print("%d%% API documentation coverage" %(total_per))
    return (ns.threshold - total_per, 0)[total_per > ns.threshold]
 
 

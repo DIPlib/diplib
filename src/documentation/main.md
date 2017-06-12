@@ -37,7 +37,7 @@ following three principles:
 
 2. **Ease of use**
 
-   We use modern C++11 features to provide a simple and intuitive interface
+   We use modern C++ features to provide a simple and intuitive interface
    to algorithms, with expressive syntax, default values, and little
    boiler-plate code required from the user. There is no need to be aware of
    an image's data type to use the algorithms effectively.
@@ -51,7 +51,7 @@ following three principles:
 
    We implement the most efficient known algorithms, as long as they don't
    compromise precision. Ease-of-use features might also incur a slight overhead
-   in execution times. The library can be used in high-throughput analysis
+   in execution times. The library can be used in high-throughput quantitative analysis
    pipelines, but is not designed for real-time video processing.
 
 Algorithms in *DIPlib* typically accept input images of any data type (though,
@@ -96,20 +96,20 @@ algorithms. That same year, a user-friendly GUI in the spirit of
 *DIPlib* library.
 
 *DIPlib* 3.0 represents the first major rewrite of the *DIPlib* code base.
-We have rewritten the infrastructure in C++11, using all of the original
+We have rewritten the infrastructure in C++14, using all of the original
 ideas and concepts, but adding tensor images, color support, and other
-ideas we had developed within the *DIPimage* toolbox. C++11 allows the
+ideas we had developed within the *DIPimage* toolbox. C++14 allows the
 user to write code that is almost as simple as the equivalent *MATLAB*
 code, making it simpler to use the library even for rapid prototyping.
 Hopefully, the new infrastructure is much easier to read, maintain, and
-contribute to. All of the image analysis routines (have been / will be)
+contribute to. All of the image analysis routines will be ( have been)
 ported to use the new infrastructure. See \ref workplan for progress and
 a detailed list of what still needs to be done.
 
-The *DIPimage* toolbox will change to optimally use *DIPlib* 3.0. This means
-that some of the *MATLAB* code will be replaced with calls to *DIPlib*, and
-some (most?) of the low-level interface will change. The internal
-representation of images will also change. However, we will strive
+The *DIPimage* toolbox is being updated to optimally use *DIPlib* 3.0. This means
+that some of the *MATLAB* code is being replaced with calls to *DIPlib*, and
+the low-level interface (dip_* functions) disappears. The internal
+representation of images has also changed. However, we strive
 to keep the high-level toolbox functions identical.
 
 Main contributors to the original *DIPlib* project were:
@@ -144,14 +144,14 @@ ways of doing so:
 - Write new algorithms. If you have an algorithm that you'd like to contribute
   to the project, we'll be happy to see it!
 
-- Create an interface to another libraries or scripting language
+- Create an interface to another library or scripting language
 
 - Fix bugs, improve documentation, add code to the unit tests
 
 - Create a nice Doxygen theme for the documentation, create a logo for the project
 
 In any of these cases, fork the project, create a new branch for your contribution,
-and send a pull request to Cris Luengo. Do also read \ref styleguide, and make sure
+and send a pull request. Do also read \ref styleguide, and make sure
 you adhere to it. Don't be offended if you receive requests for modifications
 before your work is merged with the project.
 
@@ -160,8 +160,7 @@ you keep the copyright to any substantial contribution.
 
 ## License
 
-```
-Copyright 2014-2017 Cris Luengo  
+Copyright 2014-2017 Cris Luengo<br>
 Copyright 1995-2014 Delft University of Technology
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -175,7 +174,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-```
 
 ### Non-legalese description of license
 

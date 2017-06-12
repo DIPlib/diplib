@@ -2,7 +2,7 @@
 
 *DIPlib* is a library for quantitative image analysis. It has been in development
 at Delft University of Technology in The Netherlands since 1995. The 3.0 release
-represents a complete rewrite in C++ of the library infrastructure, with most of
+represents a complete rewrite in modern C++ of the library infrastructure, with most of
 the image processing and analysis algorithms ported unmodified from the previous
 version.
 
@@ -15,7 +15,7 @@ See the [documentation](https://diplib.github.io/diplib-docs/) for more informat
 
 ## Building the library
 
-To build the library under Unix or MacOS, you will need a C++ compiler and CMake.
+To build the library under Unix or MacOS, you will need a C++14 compliant compiler and CMake.
 Use the following commands to build:
 
     mkdir target
