@@ -675,7 +675,7 @@ CoordinatesComputer Image::IndexToCoordinatesComputer() const {
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
-#include <random> // used in one of the tests
+#include "diplib/random.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the Alias function") {
    dip::Image img1{ dip::UnsignedArray{ 50, 80, 30 }, 3 };
@@ -712,17 +712,16 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Alias function") {
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
-   std::default_random_engine random;
-   std::uniform_int_distribution< dip::uint > randD( 1, 8 );
-   std::uniform_int_distribution< dip::uint > randSz( 1, 30 );
-   std::uniform_int_distribution< dip::uint > randSSz( 1, 10 ); // Smaller size for 7 or 8 dimensions
+   dip::Random random;
+   using unif_int = std::uniform_int_distribution< dip::uint >;
+   unif_int uniform( 1, 8 );
    std::uniform_real_distribution< double > randF( 0, 1 );
    bool error = false;
    for( dip::uint repeat = 0; repeat < 1000; ++repeat ) {
-      dip::uint ndims = randD( random );
+      dip::uint ndims = uniform( random );
       dip::UnsignedArray sz( ndims );
       for( dip::uint ii = 0; ii < ndims; ++ii ) {
-         sz[ ii ] = ndims > 6 ? randSSz( random ) : randSz( random );
+         sz[ ii ] = uniform( random, unif_int::param_type( 1, ndims > 6 ? 10 : 30 ));
       }
       dip::Image img;
       img.SetSizes( sz );
@@ -732,9 +731,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
          std::cout << "Couldn't forge an image of size " << sz << std::endl;
          continue;
       }
-      std::uniform_int_distribution< dip::uint > randD2( 0, ndims - 1 );
-      for( dip::uint ii = 0; ii < randD2( random ); ++ii ) {
-         img.SwapDimensions( randD2( random ), randD2( random ) );
+      std::uniform_int_distribution< dip::uint > uniform2( 0, ndims - 1 );
+      for( dip::uint ii = 0; ii < uniform2( random ); ++ii ) {
+         img.SwapDimensions( uniform2( random ), uniform2( random ) );
       }
       dip::BooleanArray mirror( ndims );
       for( dip::uint ii = 0; ii < ndims; ++ii ) {

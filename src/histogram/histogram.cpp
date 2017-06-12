@@ -490,7 +490,7 @@ Histogram Histogram::Smooth( FloatArray sigma ) const {
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
-#include <random>
+#include "diplib/random.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    dip::Image zero( {}, 1, dip::DT_SFLOAT );
@@ -509,11 +509,11 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    dip::dfloat sigma = 500.0;
    dip::Image img( { 180, 160, 80 }, 1, dip::DT_UINT16 );
    {
-      std::mt19937 gen;
-      std::normal_distribution< dip::dfloat > normDist( meanval, sigma );
+      dip::Random random;
+      dip::GaussianRandomGenerator normDist( random );
       dip::ImageIterator< dip::uint16 > it( img );
       do {
-         *it = dip::clamp_cast< dip::uint16 >( normDist( gen ) );
+         *it = dip::clamp_cast< dip::uint16 >( normDist( meanval, sigma ) );
       } while( ++it );
    }
    dip::dfloat upperBound = 2 * meanval;
@@ -548,12 +548,12 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
 
    dip::Image tensorIm( { 275, 225 }, 3, dip::DT_SINT32 );
    {
-      std::mt19937 gen;
-      std::normal_distribution< dip::dfloat > normDist( meanval, sigma );
+      dip::Random random;
+      dip::GaussianRandomGenerator normDist( random );
       dip::ImageIterator< dip::sint32 > it( tensorIm );
       do {
-         it[ 0 ] = dip::clamp_cast< dip::sint32 >( normDist( gen ) );
-         it[ 1 ] = dip::clamp_cast< dip::sint32 >( normDist( gen ) );
+         it[ 0 ] = dip::clamp_cast< dip::sint32 >( normDist( meanval, sigma ) );
+         it[ 1 ] = dip::clamp_cast< dip::sint32 >( normDist( meanval, sigma ) );
          it[ 2 ] = 1000;
       } while( ++it );
    }

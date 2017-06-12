@@ -309,9 +309,7 @@ void Invert(
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
-#include <random>
 #include "diplib/math.h"
-#include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the matrix multiplication operation") {
    dip::Image lhs( { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 } );

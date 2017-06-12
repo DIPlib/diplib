@@ -257,7 +257,7 @@ dip::uint OptimalFourierTransformSize( dip::uint size ) {
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
-#include <random>
+#include "diplib/random.h"
 
 #ifndef M_PIl
 #define M_PIl 3.1415926535897932384626433832795029L
@@ -272,8 +272,9 @@ T dotest( size_t nfft, bool inverse = false ) {
    // Create test data
    std::vector< std::complex< T >> inbuf( nfft );
    std::vector< std::complex< T >> outbuf( nfft );
+   dip::Random random;
    for( size_t k = 0; k < nfft; ++k ) {
-      inbuf[ k ] = std::complex< T >( ( T )std::rand(), ( T )std::rand() ) / ( T )RAND_MAX - ( T )0.5;
+      inbuf[ k ] = std::complex< T >( static_cast< T >( random() ), static_cast< T >( random() ) ) / static_cast< T >( random.max() ) - T( 0.5 );
    }
    // Do the thing
    DFT( inbuf.data(), outbuf.data(), buf.data(), opts, T( 1 ) );

@@ -73,7 +73,6 @@ void FiniteDifference(
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
-#include <random>
 #include "diplib/statistics.h"
 #include "diplib/iterators.h"
 

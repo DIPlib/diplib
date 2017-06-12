@@ -22,7 +22,7 @@
 #define DIP_GENERATION_H
 
 #include "diplib.h"
-#include "random.h"
+#include "diplib/random.h"
 
 
 /// \file

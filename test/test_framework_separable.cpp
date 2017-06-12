@@ -1,8 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <iostream>
-#include <numeric>
-#include <random>
 #include "diplib.h"
+#include "diplib/generation.h"
 #include "diplib/iterators.h"
 #include "diplib/framework.h"
 
@@ -60,15 +59,9 @@ class LineFilter : public dip::Framework::SeparableLineFilter {
 int main() {
    try {
       dip::Image img{ dip::UnsignedArray{ 20, 15 }, 1, dip::DT_UINT16 };
-      {
-         DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
-         std::mt19937 gen;
-         std::normal_distribution< float > normDist( 9563.0, 500.0 );
-         dip::ImageIterator< dip::uint16 > it( img );
-         do {
-            *it = dip::clamp_cast< dip::uint16 >( normDist( gen ));
-         } while( ++it );
-      }
+      img.Fill( 9563 );
+      dip::Random random( 0 );
+      dip::GaussianNoise( img, img, random, 500.0 );
 
       PrintPixelValues< dip::uint16 >( img );
 

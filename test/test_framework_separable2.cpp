@@ -1,11 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <iostream>
-#include <numeric>
-#include <random>
 #include "diplib.h"
 #include "diplib/iterators.h"
 #include "diplib/linear.h"
 #include "diplib/statistics.h"
+#include "diplib/generation.h"
 #include "diplib/timer.h"
 
 // Timing the separable convolution
@@ -13,15 +12,9 @@
 int main() {
    try {
       dip::Image img{ dip::UnsignedArray{ 200, 50, 30 }, 1, dip::DT_UINT16 };
-      {
-         DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
-         std::mt19937 gen;
-         std::normal_distribution< float > normDist( 9563.0, 500.0 );
-         dip::ImageIterator< dip::uint16 > it( img );
-         do {
-            *it = dip::clamp_cast< dip::uint16 >( normDist( gen ));
-         } while( ++it );
-      }
+      img.Fill( 9563 );
+      dip::Random random( 0 );
+      dip::GaussianNoise( img, img, random, 500.0 );
 
       // General
 
