@@ -118,6 +118,11 @@ constexpr uint8 DIP__PO_CHANGED = 4;
 
 using PixelQueue = std::queue< dip::sint >;
 
+#if defined(__GNUG__) // GCC seems to thing that `uint8 |= uint8` needs a conversion warning just because the computation is performed with an int.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
+
 void ConstrainedPropagateChanges(
       uint8* active,
       PathLenType* straight_length,
@@ -288,8 +293,8 @@ void dip__ConstrainedPathOpening(
          changed.pop();
          uint8* aptr = active + index;
          *aptr &= ~DIP__PO_CHANGED;
-         if(( slup[ index ] + oldn[ index ] - 1 < length ) &&
-            ( olup[ index ] + sldn[ index ] - 1 < length )) {
+         if(( slup[ index ] + oldn[ index ] < length + 1 ) &&
+            ( olup[ index ] + sldn[ index ] < length + 1 )) {
             grey[ index ] = grey[ offset ];
             active[ index ] &= ~DIP__PO_ACTIVE;
             slup[ index ] = 0;
@@ -336,7 +341,7 @@ void dip__PathOpening(
          changed.pop();
          uint8* aptr = active + index;
          *aptr &= ~DIP__PO_CHANGED;
-         if( lup[ index ] + ldn[ index ] - 1 < length ) {
+         if( lup[ index ] + ldn[ index ] < length + 1 ) {
             grey[ index ] = grey[ offset ];
             active[ index ] &= ~DIP__PO_ACTIVE;
             lup[ index ] = 0;
@@ -346,6 +351,10 @@ void dip__PathOpening(
       active[ offset ] &= ~DIP__PO_ACTIVE;
    }
 }
+
+#if defined(__GNUG__)
+#pragma GCC diagnostic pop
+#endif
 
 } // namespace
 
