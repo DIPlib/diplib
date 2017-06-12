@@ -140,13 +140,63 @@ inline Image SignedInfimum( Image const& a, Image const& b ) {
    return out;
 }
 
+/// \brief Computes the linear combination of the two images, sample-wise.
+///
+/// The actual operation applied is:
+///
+/// ```cpp
+///     out = a * aWeight + b * bWeight;
+/// ```
+///
+/// With defaults weights of 0.5, the function computes the average of two images.
+DIP_EXPORT void LinearCombination(
+      Image const& a,
+      Image const& b,
+      Image& out,
+      dfloat aWeight = 0.5,
+      dfloat bWeight = 0.5
+);
+inline Image LinearCombination(
+      Image const& a,
+      Image const& b,
+      dfloat aWeight = 0.5,
+      dfloat bWeight = 0.5
+) {
+   Image out;
+   LinearCombination( a, b, out, aWeight, bWeight );
+   return out;
+}
+
+/// \brief Computes the linear combination of the two complex images, sample-wise, yielding a complex output,
+///
+/// The actual operation applied is:
+///
+/// ```cpp
+///     out = a * aWeight + b * bWeight;
+/// ```
+///
+/// The images `a` and `b` do not necessarily need to be complex, but the computation will be performed with
+/// complex arithmetic.
+DIP_EXPORT void LinearCombination(
+      Image const& a,
+      Image const& b,
+      Image& out,
+      dcomplex aWeight,
+      dcomplex bWeight
+);
+inline Image LinearCombination(
+      Image const& a,
+      Image const& b,
+      dcomplex aWeight,
+      dcomplex bWeight
+) {
+   Image out;
+   LinearCombination( a, b, out, aWeight, bWeight );
+   return out;
+}
+
 // TODO: functions to port:
 /*
-   dip_MulConjugate (dip_math.h) -> in diplib/library/operators.h
-   dip_WeightedAdd (dip_math.h)
-   dip_WeightedSub (dip_math.h)
-   dip_WeightedMul (dip_math.h)
-   dip_WeightedDiv (dip_math.h)
    dip_MeanError (dip_math.h) (implement using existing functions, trivial)
    dip_MeanSquareError (dip_math.h) (implement using existing functions, trivial)
    dip_RootMeanSquareError (dip_math.h) (implement using existing functions, trivial)

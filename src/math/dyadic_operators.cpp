@@ -125,4 +125,54 @@ void SignedInfimum( Image const& a, Image const& b, Image& out ) {
    Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
 }
 
+namespace {
+
+template< typename TPI >
+class DIP_EXPORT LinearCombinationScanLineFilter: public Framework::ScanLineFilter {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dip::uint const bufferLength = params.bufferLength;
+         TPI const* a = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         dip::sint const aStride = params.inBuffer[ 0 ].stride;
+         TPI const* b = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
+         dip::sint const bStride = params.inBuffer[ 1 ].stride;
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint const outStride = params.outBuffer[ 0 ].stride;
+         for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+            *out = *a * a_weight_ + *b * b_weight_;
+            a += aStride;
+            b += bStride;
+            out += outStride;
+         }
+      }
+      LinearCombinationScanLineFilter( dfloat aWeight, dfloat bWeight ) :
+            a_weight_( static_cast< FloatType< TPI >>( aWeight )),
+            b_weight_( static_cast< FloatType< TPI >>( bWeight )) {}
+      LinearCombinationScanLineFilter( dcomplex aWeight, dcomplex bWeight ):
+            a_weight_( static_cast< TPI >( aWeight )),
+            b_weight_( static_cast< TPI >( bWeight )) {} // When we use complex weights, TPI is a complex type
+   private:
+      TPI a_weight_;
+      TPI b_weight_;
+};
+
+}
+
+void LinearCombination( Image const& a, Image const& b, Image& out, dfloat aWeight, dfloat bWeight ) {
+   DataType dt = DataType::SuggestArithmetic( a.DataType(), b.DataType() );
+   if( dt.IsBinary() ) {
+      dt = DT_SFLOAT;   // Suggest arithmetic will return DT_BIN in both inputs are binary, but we don't want to do binary arithmetic here.
+   }
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_NEW_FLEX( scanLineFilter, LinearCombinationScanLineFilter, ( aWeight, bWeight ), dt );
+   Framework::ScanDyadic( a, b, out, dt, dt, *scanLineFilter );
+}
+
+void LinearCombination( Image const& a, Image const& b, Image& out, dcomplex aWeight, dcomplex bWeight ) {
+   DataType dt = DataType::SuggestArithmetic( DataType::SuggestComplex( a.DataType() ), DataType::SuggestComplex( b.DataType() ));
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_NEW_COMPLEX( scanLineFilter, LinearCombinationScanLineFilter, ( aWeight, bWeight ), dt );
+   Framework::ScanDyadic( a, b, out, dt, dt, *scanLineFilter );
+}
+
 } // namespace dip

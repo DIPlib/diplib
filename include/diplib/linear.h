@@ -946,7 +946,7 @@ DIP_EXPORT void LaplaceMinDgg(
 /// See `dip::Laplace` and `dip::Gradient` for information on the parameters.
 ///
 /// \see dip::Laplace, dip::UnsharpMask
-inline void Sharpen(
+DIP_EXPORT void Sharpen(
          Image const& in,
          Image& out,
          dfloat weight = 1.0,
@@ -954,10 +954,18 @@ inline void Sharpen(
          String const& method = "best",
          StringArray const& boundaryCondition = {},
          dfloat truncation = 3
+);
+inline Image Sharpen(
+      Image const& in,
+      dfloat weight = 1.0,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      dfloat truncation = 3
 ) {
-   Laplace( in, out, sigmas, method, boundaryCondition, {}, truncation );
-   out *= weight; // TODO: once we have implemented a WeightedSubtract, this and the next operation can be merged.
-   Subtract( in, out, out );
+   Image out;
+   Sharpen( in, out, weight, sigmas, method, boundaryCondition, truncation );
+   return out;
 }
 
 /// \brief Sharpens `in` by subtracting the smoothed image.
@@ -965,13 +973,13 @@ inline void Sharpen(
 /// The actual operation applied is:
 ///
 /// ```cpp
-///     out = in * ( 1+weight) - dip::Gauss( in ) * weight;
+///     out = in * ( 1+weight ) - dip::Gauss( in ) * weight;
 /// ```
 ///
 /// See `dip::Gauss` and `dip::Gradient` for information on the parameters.
 ///
 /// \see dip::Gauss, dip::Sharpen
-inline void UnsharpMask(
+DIP_EXPORT void UnsharpMask(
          Image const& in,
          Image& out,
          dfloat weight = 1.0,
@@ -979,11 +987,18 @@ inline void UnsharpMask(
          String const& method = "best",
          StringArray const& boundaryCondition = {},
          dfloat truncation = 3
+);
+inline Image UnsharpMask(
+      Image const& in,
+      dfloat weight = 1.0,
+      FloatArray const& sigmas = { 1.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      dfloat truncation = 3
 ) {
-   Gauss( in, out, sigmas, { 0 }, method, boundaryCondition, truncation );
-   Subtract( in, out, out );
-   out *= weight; // TODO: once we have implemented a WeightedSubtract, this and the next operation can be merged.
-   Add( in, out, out );
+   Image out;
+   UnsharpMask( in, out, weight, sigmas, method, boundaryCondition, truncation );
+   return out;
 }
 
 DIP_EXPORT void OrientedGauss(

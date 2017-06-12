@@ -126,12 +126,17 @@ over.
   shortened, so instead of `dip_Sub` use `dip::Subtract`. `dip_AddInteger`, `dip_AddFloat`,
   etc. now are overloaded versions of `dip::Add` et al.
 
+- `dip_WeightedAdd` is now generalized to `dip::LinearCombination`.
+  `dip_WeightedSub` can be emulated by setting a negative weight.
+  `dip_WeightedMul` and `dip_WeightedDiv` were not used anywhere, and don't seem very useful.
+
 - Morphological filters now use a `dip::StructuringElement` to collect three parameters
   of the old *DIPlib*. Other filters that had a filter shape argument now use a
   `dip::Kernel` to collect three parameters.
 
-- `dip_Min` and `dip_Max` are now `dip::Infimum` and `dip::Supremum`. There are too many
-  functions with `Maximum` and `Minimum` in their name.
+- `dip_Min` and `dip_Max` are now `dip::Infimum` and `dip::Supremum`, and `dip_SignedMinimum`
+  is now `dip::SignedInfimum`. There are too many functions with "Maximum" and "Minimum" in
+  their name.
 
 - `dip_MultiDimensionalHistogram` and `dip_ImageToHistogram` have been merged into the
   constructor for `dip::Histogram`, which replaces both `dip_Distribution` and `dip_Histogram`.

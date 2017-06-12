@@ -128,6 +128,7 @@ document's source</a> for the most up-to-date version.
     (either as a view over the same data segment, or by copying the data). We'll
     do this for: *OpenCV*, *ITK*, *SimpleITK*. Any other libraries of interest?
 
+-   Style sheets for the documentation.
 
 ## Functionality currently not in *DIPlib* that would be important to include
 
@@ -282,11 +283,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_ErfClip (dip_point.h)
     - dip_ContrastStretch (dip_point.h)
     - dip_RemapOrientation (dip_point.h)
-    - dip_MulConjugate (dip_math.h)
-    - dip_WeightedAdd (dip_math.h)
-    - dip_WeightedSub (dip_math.h)
-    - dip_WeightedMul (dip_math.h)
-    - dip_WeightedDiv (dip_math.h)
     - dip_AmplitudeModulation (dip_math.h)
     - dip_CosinAmplitudeModulation (dip_math.h)
     - dip_CosinAmplitudeDemodulation (dip_math.h)
