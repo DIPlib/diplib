@@ -90,6 +90,7 @@ OneDimensionalFilterArray SeparateFilter( Image const& c_in ) {
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
 #include "diplib/statistics.h"
+//#include "diplib/timer.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the filter separation") {
    dip::Image delta3D( { 30, 30, 30 }, 1, dip::DT_SFLOAT );
@@ -98,19 +99,22 @@ DOCTEST_TEST_CASE("[DIPlib] testing the filter separation") {
 
    auto rectPt = dip::PixelTable( "rectangular", { 10, 11, 5 } );
    dip::Image rect = dip::Convert( rectPt.AsImage(), dip::DT_UINT8 );
-   //auto clock = std::chrono::steady_clock::now();
+   //dip::Timer timer;
    dip::OneDimensionalFilterArray rect1 = dip::SeparateFilter( rect );
-   //std::cout << "Separating filter: " << std::chrono::duration_cast< std::chrono::milliseconds >( std::chrono::steady_clock::now() - clock ).count() << std::endl;
+   //timer.Stop();
+   //std::cout << "Separating filter: " << timer << std::endl;
    DOCTEST_REQUIRE( rect1.size() == 3 );
    DOCTEST_CHECK( rect1[ 0 ].filter.size() == 10 );
    DOCTEST_CHECK( rect1[ 1 ].filter.size() == 11 );
    DOCTEST_CHECK( rect1[ 2 ].filter.size() == 5 );
-   //clock = std::chrono::steady_clock::now();
+   //timer.Reset();
    //dip::Image tmp1 = dip::SeparableConvolution( delta3D, rect1 );
-   //std::cout << "Apply separated filter: " << std::chrono::duration_cast< std::chrono::milliseconds >( std::chrono::steady_clock::now() - clock ).count() << std::endl;
-   //clock = std::chrono::steady_clock::now();
+   //timer.Stop();
+   //std::cout << "Apply separated filter: " << timer << std::endl;
+   //timer.Reset();
    //dip::Image tmp2 = dip::GeneralConvolution( delta3D, rect );
-   //std::cout << "Apply full filter: " << std::chrono::duration_cast< std::chrono::milliseconds >( std::chrono::steady_clock::now() - clock ).count() << std::endl;
+   //timer.Stop();
+   //std::cout << "Apply full filter: " << timer << std::endl;
    //DOCTEST_CHECK( dip::All( tmp1 == tmp2 ).As< bool >() );
    bool correct = true;
    for( dip::uint ii = 0; ii < 3; ++ii ) {
@@ -126,24 +130,30 @@ DOCTEST_TEST_CASE("[DIPlib] testing the filter separation") {
 
    auto circPt = dip::PixelTable( "elliptic", { 10, 11, 5 } );
    dip::Image circ = dip::Convert( circPt.AsImage(), dip::DT_UINT8 );
-   //clock = std::chrono::steady_clock::now();
+   //timer.Reset();
    dip::OneDimensionalFilterArray circ1 = dip::SeparateFilter( circ );
+   //timer.Stop();
+   //std::cout << "Separating filter: " << timer << std::endl;
    DOCTEST_CHECK( circ1.size() == 0 );
 
-   //clock = std::chrono::steady_clock::now();
+   //timer.Reset();
    dip::Image gaussRes = dip::GaussFIR( delta3D, { 3, 2, 3 }, { 1, 0, 2 } );
-   //std::cout << "Compute Gaussian: " << std::chrono::duration_cast< std::chrono::milliseconds >( std::chrono::steady_clock::now() - clock ).count() << std::endl;
+   //timer.Stop();
+   //std::cout << "Compute Gaussian: " << timer << std::endl;
    dip::Image gauss = gaussRes.Crop( { 3*6+1, 2*6+1, 3*6+1 } );
-   //clock = std::chrono::steady_clock::now();
+   //timer.Reset();
    dip::OneDimensionalFilterArray gauss1 = dip::SeparateFilter( gauss );
-   //std::cout << "Separating filter: " << std::chrono::duration_cast< std::chrono::milliseconds >( std::chrono::steady_clock::now() - clock ).count() << std::endl;
+   //timer.Stop();
+   //std::cout << "Separating filter: " << timer << std::endl;
    DOCTEST_REQUIRE( gauss1.size() == 3 );
-   //clock = std::chrono::steady_clock::now();
+   //timer.Reset();
    dip::Image tmp3 = dip::SeparableConvolution( delta3D, gauss1 );
-   //std::cout << "Apply separated filter: " << std::chrono::duration_cast< std::chrono::milliseconds >( std::chrono::steady_clock::now() - clock ).count() << std::endl;
-   //clock = std::chrono::steady_clock::now();
+   //timer.Stop();
+   //std::cout << "Apply separated filter: " << timer << std::endl;
+   //timer.Reset();
    //tmp2 = dip::GeneralConvolution( delta3D, gauss );
-   //std::cout << "Apply full filter: " << std::chrono::duration_cast< std::chrono::milliseconds >( std::chrono::steady_clock::now() - clock ).count() << std::endl;
+   //timer.Stop();
+   //std::cout << "Apply full filter: " << timer << std::endl;
    tmp3 -= gaussRes;
    auto m = dip::GetMaximumAndMinimum( tmp3 );
    DOCTEST_CHECK( m.Minimum() > -1e-5 );

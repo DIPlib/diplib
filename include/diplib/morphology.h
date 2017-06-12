@@ -664,6 +664,7 @@ inline Image MorphologicalLaplace(
 /// `mask`.
 ///
 /// See \ref connectivity for information on the connectivy parameter.
+// TODO: "fast" is a factor ~6 faster for small images (256x256), but a factor ~2.5 slower for large images (100x larger)
 DIP_EXPORT void Watershed(
       Image const& in,
       Image const& mask,
@@ -1054,7 +1055,7 @@ dip_AreaOpening (dip_morphology.h)
 dip_UpperSkeleton2D (dip_binary.h)
 */
 
-// TODO: h-minima & h-maxima, opening and closing by reconstruction
+// TODO: opening and closing by reconstruction
 // TODO: alternating sequential open-close filter (3 versions: with structural opening, opening by reconstruction, and area opening)
 // TODO: hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees (360 degrees means no rotations).
 // TODO: thinning & thickening, to be implemented as iterated hit'n'miss.

@@ -304,6 +304,7 @@ endif()
 ### DIPlib tests ### TEMPORARY! -- This should become an 'examples' directory
 
 file(GLOB DIP_TESTS "test/test_*.cpp")
+set(TESTS_TARGETS "")
 foreach(file ${DIP_TESTS})
    get_filename_component(target ${file} NAME_WE)
    add_executable(${target} EXCLUDE_FROM_ALL ${file})
@@ -315,10 +316,11 @@ foreach(file ${DIP_TESTS})
          set_target_properties(${target} PROPERTIES INSTALL_RPATH "$ORIGIN")
       endif()
    endif()
+   set(TESTS_TARGETS ${TESTS_TARGETS} ${target})
 endforeach()
 target_link_libraries(test_viewer DIPviewer)
 
-add_custom_target(tests DEPENDS ${DIP_TESTS})
+add_custom_target(tests DEPENDS ${TESTS_TARGETS})
 
 
 ### DIPlib documentation

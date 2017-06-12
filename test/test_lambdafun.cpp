@@ -1,12 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 
-#include <chrono>
-
 #include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/saturated_arithmetic.h"
-#include "diplib/math.h"
+#include "diplib/statistics.h"
+#include "diplib/timer.h"
 
 // NOTE! As a timing test, remember to compile with
 //     cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCTEST=OFF ..
@@ -17,51 +16,58 @@ std::unique_ptr< dip::Framework::ScanLineFilter > NewFilter( F func ) {
 }
 
 int main( void ) {
-   dip::Image in1( { 5000, 4000 }, 3, dip::DT_UINT16 );
+   dip::Image in1( { 5000, 4000 }, 3, dip::DT_SFLOAT );
    in1 = 10;
-   dip::Image in2( { 5000, 4000 }, 3, dip::DT_UINT8 );
+   dip::Image in2( { 5000, 4000 }, 3, dip::DT_SFLOAT );
    in2 = 40;
-   dip::DataType dt = dip::DataType::SuggestArithmetic( in1.DataType(), in2.DataType() );
+   dip::DataType dt = dip::DataType::SuggestArithmetic( in1.DataType(), in2.DataType());
    dip::Image out = in1.Similar( dt );
    out = 0; // initialize memory, forcing it to be available
 
-   dip::dfloat offset = 40;
+   dip::sfloat offset = 40;
 
    // Dyadic, timing comparison with `Add`. (Note that this was relevant before we rewrote `Add` to work exactly like below.)
 
-   auto start = std::chrono::steady_clock::now();
+   dip::Timer timer;
    dip::Add( in1, in2, out, dt );
-   std::cout << "Add: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
+   timer.Stop();
+   std::cout << "Add: " << timer << std::endl;
 
-   start = std::chrono::steady_clock::now();
+   timer.Reset();
    std::unique_ptr< dip::Framework::ScanLineFilter > dyadicScanLineFilter;
    DIP_OVL_CALL_ASSIGN_REAL( dyadicScanLineFilter, dip::Framework::NewDyadicScanLineFilter, (
          []( auto its ) { return dip::saturated_add( *its[ 0 ], *its[ 1 ] ); }
    ), dt );
    dip::Framework::ScanDyadic( in1, in2, out, dt, dt, *dyadicScanLineFilter );
-   std::cout << "dyadicScanLineFilter: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
+   timer.Stop();
+   std::cout << "dyadicScanLineFilter: " << timer << std::endl;
 
-   start = std::chrono::steady_clock::now();
+   timer.Reset();
    dip::Add( in1, in2, out, dt );
-   std::cout << "Add: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
+   timer.Stop();
+   std::cout << "Add: " << timer << std::endl;
 
    // Complex dyadic, following example in documentation to `class VariadicScanLineFilter`
 
-   start = std::chrono::steady_clock::now();
-   auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) { return (decltype(*its[0]))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset ); };
+   timer.Reset();
+   auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) {
+      return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset );
+   };
    dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
    dip::Framework::ScanDyadic( in1, in2, out, dip::DT_SFLOAT, dip::DT_SFLOAT, scanLineFilter );
-   std::cout << "scanLineFilter: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
+   timer.Stop();
+   std::cout << "scanLineFilter: " << timer << std::endl;
 
    // idem, but with dynamic dispatch
 
-   start = std::chrono::steady_clock::now();
+   timer.Reset();
    std::unique_ptr< dip::Framework::ScanLineFilter > scanLineFilter2;
    DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter2, dip::Framework::NewDyadicScanLineFilter, (
-         [ = ]( auto its ) { return (decltype(*its[0]))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset ); }
+         [ = ]( auto its ) { return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset ); }
    ), dt );
    dip::Framework::ScanDyadic( in1, in2, out, dt, dt, *scanLineFilter2 );
-   std::cout << "scanLineFilter2: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
+   timer.Stop();
+   std::cout << "scanLineFilter2: " << timer << std::endl;
 
    // Trivial implementation of the same
 
@@ -69,36 +75,40 @@ int main( void ) {
       dip::Image tmp_in1 = in1; tmp_in1.TensorToSpatial( 0 );
       dip::Image tmp_in2 = in2; tmp_in2.TensorToSpatial( 0 );
       dip::Image tmp_out = out; tmp_out.TensorToSpatial( 0 );
-      start = std::chrono::steady_clock::now();
-      dip::Image tmp = ( tmp_in1 * 100 ) / ( tmp_in2 * 10 ) + offset;
-      std::cout << "trivial version: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
-      if( dip::Count( tmp_out == tmp ) > 0 ) {
+      timer.Reset();
+      dip::Image tmp = ( tmp_in1 * 100.0f ) / ( tmp_in2 * 10.0f ) + offset;
+      // Note that we use `100.0f` here, not `100`, as that leads to a sint32 image, which turns computation results into doubles
+      timer.Stop();
+      std::cout << "trivial version: " << timer << std::endl;
+      if( dip::Count( tmp_out != tmp ) > 0 ) {
          std::cout << "results are not identical!\n";
       }
 
-      start = std::chrono::steady_clock::now();
+      timer.Reset();
       tmp_in1 *= 100; // this modifies in1 and in2 also...
       tmp_in2 *= 10;
       tmp_in1 /= tmp_in2;
       tmp_in1 += offset;
-      std::cout << "efficient trivial version: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
-      if( dip::Count( tmp_in1 == tmp ) > 0 ) {
-         std::cout << "results are not identical!\n";
+      timer.Stop();
+      std::cout << "efficient trivial version: " << timer << std::endl;
+      if( dip::Count( tmp_in1 != tmp_out ) > 0 ) {
+         std::cout << "   results are not identical!\n"; // Note that the result here is UINT16, which can't represent the result
       }
-      if(( tmp_in1.Origin() != in1.Origin() ) || ( tmp_in2.Origin() != in2.Origin() )) {
-         std::cout << "images were copied!?\n";
+      if(( tmp_in1.Origin() != in1.Origin()) || ( tmp_in2.Origin() != in2.Origin())) {
+         std::cout << "   images were copied!?\n";
       }
    }
 
    // Monadic, following example in documentation to `class VariadicScanLineFilter`
 
-   start = std::chrono::steady_clock::now();
+   timer.Reset();
    std::unique_ptr< dip::Framework::ScanLineFilter > monfilt;
    DIP_OVL_CALL_ASSIGN_REAL( monfilt, NewFilter, (
-         [ = ]( auto its ) { return (decltype(*its[0]))(( std::cos( *its[ 0 ] ) * 100 ) + offset ); }
+         [ = ]( auto its ) { return ( decltype( *its[ 0 ] ))(( std::cos( *its[ 0 ] ) * 100 ) + offset ); }
    ), dt );
    dip::Framework::ScanMonadic( in1, out, dt, dt, in1.TensorElements(), *monfilt, dip::Framework::Scan_TensorAsSpatialDim );
-   std::cout << "monfilt: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
+   timer.Stop();
+   std::cout << "monfilt: " << timer << std::endl;
 
    return 0;
 }

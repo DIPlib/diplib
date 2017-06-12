@@ -2,11 +2,11 @@
 #include <iostream>
 #include <numeric>
 #include <random>
-#include <chrono>
 #include "diplib.h"
 #include "diplib/iterators.h"
 #include "diplib/linear.h"
-#include "diplib/math.h"
+#include "diplib/statistics.h"
+#include "diplib/timer.h"
 
 // Timing the separable convolution
 
@@ -34,9 +34,10 @@ int main() {
       filterArray[ 0 ].origin = 0;
       filterArray[ 0 ].symmetry = "general";
 
-      auto start = std::chrono::steady_clock::now();
+      dip::Timer timer;
       dip::SeparableConvolution( img, out1, filterArray );
-      std::cout << "General: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
+      timer.Stop();
+      std::cout << "General: " << timer << std::endl;
 
       dip::Image out2;
       filterArray[ 0 ].filter = {
@@ -44,9 +45,10 @@ int main() {
       };
       filterArray[ 0 ].symmetry = "even";
 
-      start = std::chrono::steady_clock::now();
+      timer.Reset();
       dip::SeparableConvolution( img, out2, filterArray );
-      std::cout << "General: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() << " ms" << std::endl;
+      timer.Stop();
+      std::cout << "Even: " << timer << std::endl;
 
       if( dip::Count( out1 != out2 ) > 0 ) {
          std::cout << "Results are not identical.";
