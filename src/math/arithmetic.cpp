@@ -224,6 +224,23 @@ void MultiplySampleWise(
    Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }
 
+void MultiplyConjugate(
+      Image const& lhs,
+      Image const& rhs,
+      Image& out,
+      DataType dt
+) {
+   if( rhs.DataType().IsComplex() && dt.IsComplex() ) {
+      std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+      DIP_OVL_CALL_ASSIGN_COMPLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+            []( auto its ) { return dip::saturated_mul( *its[ 0 ], std::conj( *its[ 1 ] )); }
+      ), dt );
+      Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
+   } else {
+      MultiplySampleWise( lhs, rhs, out, dt );
+   }
+}
+
 //
 void Divide(
       Image const& lhs,

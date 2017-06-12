@@ -67,27 +67,31 @@ template< typename T > inline Image name( Image const& in, T const& lhs, T const
 // Functions for arithmetic operations
 //
 
-/// \brief Adds two images, sample-wise, with singleton expansion.
+/// \brief Adds two images, sample-wise, with singleton expansion, and using saturated arithmetic.
 ///
 /// The image `out` will have the type `dt`, which defaults to
 /// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
 /// `rhs` can be a scalar value of any of the supported pixel types.
+///
+/// For binary types, saturated addition is equivalent to the Boolean OR operation.
 ///
 /// \see Subtract, Multiply, MultiplySampleWise, Divide, Modulo, Power, operator+(Image const&, T const&)
 DIP__DEFINE_ARITHMETIC_OVERLOADS( Add )
 
-/// \brief Subtracts two images, sample-wise, with singleton expansion.
+/// \brief Subtracts two images, sample-wise, with singleton expansion, and using saturated arithmetic.
 ///
 /// The image `out` will have the type `dt`, which defaults to
 /// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
 /// `rhs` can be a scalar value of any of the supported pixel types.
 ///
+/// For binary types, saturated subtraction is equivalent to the Boolean AND NOT operation.
+///
 /// \see Add, Multiply, MultiplySampleWise, Divide, Modulo, Power, operator-(Image const&, T const&)
 DIP__DEFINE_ARITHMETIC_OVERLOADS( Subtract )
 
-/// \brief Multiplies two images, pixel-wise, with singleton expansion.
+/// \brief Multiplies two images, pixel-wise, with singleton expansion, and using saturated arithmetic.
 ///
 /// %Tensor dimensions
 /// of the two images must have identical inner dimensions, and the output at
@@ -100,20 +104,35 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( Subtract )
 ///
 /// `rhs` can be a scalar value of any of the supported pixel types.
 ///
-/// \see Add, Subtract, MultiplySampleWise, Divide, Modulo, Power, operator*(Image const&, T const&)
+/// For binary types, saturated multiplication is equivalent to the Boolean AND operation.
+///
+/// \see Add, Subtract, MultiplySampleWise, MultiplyConjugate, Divide, Modulo, Power, operator*(Image const&, T const&)
 DIP__DEFINE_ARITHMETIC_OVERLOADS( Multiply )
 
-// TODO: Add MultiplyConjugate
-
-/// \brief Multiplies two images, sample-wise, with singleton expansion.
+/// \brief Multiplies two images, sample-wise, with singleton expansion, and using saturated arithmetic.
 ///
 /// The image `out` will have the type `dt`, which defaults to
 /// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
 /// `rhs` can be a scalar value of any of the supported pixel types.
 ///
+/// For binary types, saturated multiplication is equivalent to the Boolean AND operation.
+///
 /// \see Add, Subtract, Multiply, Divide, Modulo, Power
 DIP__DEFINE_ARITHMETIC_OVERLOADS( MultiplySampleWise )
+
+/// \brief Multiplies two images with complex conjugation, sample-wise, with singleton expansion.
+///
+/// The image `out` will have the type `dt`, which defaults to
+/// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
+///
+/// `rhs` can be a scalar value of any of the supported pixel types.
+///
+/// 'rhs' will be complex-conjugated before the multiplication. This requires that it is complex
+/// and that `dt` is a complex type. Otherwise, `dip::MultiplySampleWise` will be called instead.
+///
+/// \see Add, Subtract, Multiply, Divide, Modulo, Power
+DIP__DEFINE_ARITHMETIC_OVERLOADS( MultiplyConjugate )
 
 /// \brief Divides two images, sample-wise, with singleton expansion.
 ///
@@ -121,6 +140,8 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( MultiplySampleWise )
 /// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
 ///
 /// `rhs` can be a scalar value of any of the supported pixel types.
+///
+/// For binary types, saturated division is equivalent to the Boolean OR NOT operation.
 ///
 /// \see Add, Subtract, Multiply, MultiplySampleWise, Modulo, Power, operator/(Image const&, T const&)
 DIP__DEFINE_ARITHMETIC_OVERLOADS( Divide )

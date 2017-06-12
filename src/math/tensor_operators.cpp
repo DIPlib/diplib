@@ -159,7 +159,11 @@ void DotProduct( Image const& lhs, Image const& rhs, Image& out ) {
    a.ReshapeTensor( 1, a.TensorElements() );
    Image b = rhs.QuickCopy();
    b.ReshapeTensor( b.TensorElements(), 1 );
-   Multiply( a, b, out ); // TODO: This should probably be MultiplyConjugate.
+   // TODO: should use MultiplyConjugate, except that one does sample-wise multiplication at the moment
+   if( b.DataType().IsComplex() ) {
+      b = Conjugate( b ); // If we use `Conjugate( b, b )`, it would write into `rhs`, which we don't want to do.
+   }
+   Multiply( a, b, out );
 }
 
 //

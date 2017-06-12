@@ -95,7 +95,7 @@ constexpr inline sint8 saturated_add( sint8 const& lhs, sint8 const& rhs ) {
 // Binary addition is equivalent to OR.
 template<>
 constexpr inline bin saturated_add( bin const& lhs, bin const& rhs ) {
-   return lhs | rhs;
+   return lhs || rhs;
 }
 
 
@@ -143,7 +143,7 @@ constexpr inline sint8 saturated_sub( sint8 const& lhs, sint8 const& rhs ) {
 // Binary subtraction is equivalent to AND NOT
 template<>
 constexpr inline bin saturated_sub( bin const& lhs, bin const& rhs ) {
-   return lhs & !rhs;
+   return lhs && !rhs;
 }
 
 
@@ -186,7 +186,7 @@ constexpr inline sint8 saturated_mul( sint8 const& lhs, sint8 const& rhs ) {
 // Binary multiplication is equivalent to AND
 template<>
 constexpr inline bin saturated_mul( bin const& lhs, bin const& rhs ) {
-   return lhs & rhs;
+   return lhs && rhs;
 }
 
 
@@ -200,10 +200,10 @@ template< typename T >
 constexpr inline T saturated_div( T const& lhs, T const& rhs ) {
    return static_cast< T >( lhs / rhs ); // There's an implicit conversion to unsigned/int for smaller types
 }
-// Binary division is equivalent to XOR (just to pick something... is this meaningful?).
+// Binary division is equivalent to OR NOT (just to pick something... is this meaningful?).
 template<>
 constexpr inline bin saturated_div( bin const& lhs, bin const& rhs ) {
-   return lhs ^ rhs;
+   return lhs || !rhs;
 }
 
 
