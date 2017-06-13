@@ -221,6 +221,7 @@ constexpr DataType::Classes DataType::Class_Binary;
 constexpr DataType::Classes DataType::Class_UInt;
 constexpr DataType::Classes DataType::Class_SInt;
 constexpr DataType::Classes DataType::Class_Integer;
+constexpr DataType::Classes DataType::Class_IntOrBin;
 constexpr DataType::Classes DataType::Class_Float;
 constexpr DataType::Classes DataType::Class_Real;
 constexpr DataType::Classes DataType::Class_Complex;

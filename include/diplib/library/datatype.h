@@ -229,32 +229,32 @@ struct DIP_NO_EXPORT DataType {
    /// - `Class_Binary`, `Class_Real` and `Class_Complex`
    /// - `Class_Binary`, `Class_Integer`, `Class_Float` and `Class_Complex`
    DIP_DECLARE_OPTIONS( Classes );
-   static DIP_DEFINE_OPTION( Classes, Class_Bin, static_cast< dip::uint >( DT::BIN ) );
-   static DIP_DEFINE_OPTION( Classes, Class_UInt8, static_cast< dip::uint >( DT::UINT8 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_SInt8, static_cast< dip::uint >( DT::SINT8 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_UInt16, static_cast< dip::uint >( DT::UINT16 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_SInt16, static_cast< dip::uint >( DT::SINT16 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_UInt32, static_cast< dip::uint >( DT::UINT32 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_SInt32, static_cast< dip::uint >( DT::SINT32 ) );
-   static DIP_DEFINE_OPTION( Classes, Class_SFloat, static_cast< dip::uint >( DT::SFLOAT ) );
-   static DIP_DEFINE_OPTION( Classes, Class_DFloat, static_cast< dip::uint >( DT::DFLOAT ) );
-   static DIP_DEFINE_OPTION( Classes, Class_SComplex, static_cast< dip::uint >( DT::SCOMPLEX ) );
-   static DIP_DEFINE_OPTION( Classes, Class_DComplex, static_cast< dip::uint >( DT::DCOMPLEX ) );
-   static DIP_DEFINE_OPTION( Classes, Class_Binary, Class_Bin );
-   static DIP_DEFINE_OPTION( Classes, Class_UInt, Class_UInt8 + Class_UInt16 + Class_UInt32 );
-   static DIP_DEFINE_OPTION( Classes, Class_SInt, Class_SInt8 + Class_SInt16 + Class_SInt32 );
-   static DIP_DEFINE_OPTION( Classes, Class_Integer, Class_UInt + Class_SInt );
-   static DIP_DEFINE_OPTION( Classes, Class_IntOrBin, Class_Integer + Class_Binary );
-   static DIP_DEFINE_OPTION( Classes, Class_Float, Class_SFloat + Class_DFloat );
-   static DIP_DEFINE_OPTION( Classes, Class_Real, Class_Integer + Class_Float );
-   static DIP_DEFINE_OPTION( Classes, Class_Complex, Class_SComplex + Class_DComplex );
-   static DIP_DEFINE_OPTION( Classes, Class_Flex, Class_Float + Class_Complex );
-   static DIP_DEFINE_OPTION( Classes, Class_FlexBin, Class_Flex + Class_Binary );
-   static DIP_DEFINE_OPTION( Classes, Class_Unsigned, Class_Binary + Class_UInt );
-   static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
-   static DIP_DEFINE_OPTION( Classes, Class_NonBinary, Class_Real + Class_Complex );
-   static DIP_DEFINE_OPTION( Classes, Class_NonComplex, Class_Binary + Class_Real );
-   static DIP_DEFINE_OPTION( Classes, Class_All, Class_Binary + Class_Real + Class_Complex ); // == Class_Unsigned + Class_Signed
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Bin, static_cast< dip::uint >( DT::BIN ) );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_UInt8, static_cast< dip::uint >( DT::UINT8 ) );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SInt8, static_cast< dip::uint >( DT::SINT8 ) );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_UInt16, static_cast< dip::uint >( DT::UINT16 ) );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SInt16, static_cast< dip::uint >( DT::SINT16 ) );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_UInt32, static_cast< dip::uint >( DT::UINT32 ) );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SInt32, static_cast< dip::uint >( DT::SINT32 ) );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SFloat, static_cast< dip::uint >( DT::SFLOAT ) );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_DFloat, static_cast< dip::uint >( DT::DFLOAT ) );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SComplex, static_cast< dip::uint >( DT::SCOMPLEX ) );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_DComplex, static_cast< dip::uint >( DT::DCOMPLEX ) );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Binary, Class_Bin );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_UInt, Class_UInt8 + Class_UInt16 + Class_UInt32 );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SInt, Class_SInt8 + Class_SInt16 + Class_SInt32 );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Integer, Class_UInt + Class_SInt );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_IntOrBin, Class_Integer + Class_Binary );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Float, Class_SFloat + Class_DFloat );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Real, Class_Integer + Class_Float );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Complex, Class_SComplex + Class_DComplex );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Flex, Class_Float + Class_Complex );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_FlexBin, Class_Flex + Class_Binary );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Unsigned, Class_Binary + Class_UInt );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_NonBinary, Class_Real + Class_Complex );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_NonComplex, Class_Binary + Class_Real );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_All, Class_Binary + Class_Real + Class_Complex ); // == Class_Unsigned + Class_Signed
 
    /// \brief Implicit conversion to `dip::DataType::Classes` options class.
    operator Classes() const { return { static_cast< dip::uint >( dt ) }; }

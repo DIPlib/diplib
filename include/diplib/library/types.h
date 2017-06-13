@@ -442,20 +442,20 @@ class DIP_NO_EXPORT dip__Options {
    public:
       constexpr dip__Options() : values( 0 ) {}
       constexpr dip__Options( dip::uint n ) : values{ 1UL << n } {}
-      constexpr bool operator==( dip__Options const& other ) const {
+      constexpr bool operator==( dip__Options const other ) const {
          return ( values & other.values ) == other.values;
       }
-      constexpr bool operator!=( dip__Options const& other ) const {
+      constexpr bool operator!=( dip__Options const other ) const {
          return !operator==( other );
       }
-      constexpr dip__Options operator+( dip__Options const& other ) const {
+      constexpr dip__Options operator+( dip__Options const other ) const {
          return { values | other.values, 0 };
       }
-      dip__Options& operator+=( dip__Options const& other ) {
+      dip__Options& operator+=( dip__Options const other ) {
          values |= other.values;
          return *this;
       }
-      dip__Options& operator-=( dip__Options const& other ) {
+      dip__Options& operator-=( dip__Options const other ) {
          values &= ~other.values;
          return *this;
       }
