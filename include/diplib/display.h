@@ -567,6 +567,37 @@ class DIP_NO_EXPORT ImageDisplay{
       }
 };
 
+/// \brief Applies a color map to an image prepared for display using `dip::ImageDisplay`.
+///
+/// `in` is a scalar, 8-bit unsigned image. `out` will be an image of the same size and type
+/// but with three tensor components, and in the "RGB" color space.
+///
+/// `colorMap` can currently be one of the following color maps:
+///  - `"grey"`: Each grey level maps to an RGB value that represents the same grey level.
+///  - `"saturation"`: Each grey level maps to an RGB value that represents the same grey level, except pixels
+///    with a value 0 and 255, which are colored blue and red respectively. This can be used to show which
+///    pixels were likely saturated during aquisition.
+///  - `"divergent"`: A two-color color map, where the middle value maps to a neutral grey-value, positive
+///    values map to increasingly bright yellows, and negative values map to increasingly bright blues. This
+///    is meant to be used in combination with the `"base"` range mode of `dip::ImageDisplay`.
+///  - `"label"`: For labeled images, each grey value gets a color that can easily be distinguished from
+///    that of nearby grey values. 16 different colors are used. The 0 grey value is considered background
+///    and colored black. Use with the `"modulo"` range mode of `dip::ImageDisplay`.
+///
+/// For more information regarding the range modes of `dip::ImageDisplay`, see `dip::ImageDisplay::SetRange`.
+DIP_EXPORT void ApplyColorMap(
+      Image const& in,
+      Image& out,
+      String const& colorMap = "grey"
+);
+inline Image ApplyColorMap(
+      Image const& in,
+      String const& colorMap
+) {
+   Image out;
+   ApplyColorMap( in, out, colorMap );
+   return out;
+}
 
 // \}
 

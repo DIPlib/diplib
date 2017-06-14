@@ -67,7 +67,7 @@ document's source</a> for the most up-to-date version.
 
 -   Random number generation, using the new PCG scheme.
 
--   An increasing number of filters and operators based on the various frameworks.
+-   An increasing number of filters and operators.
 
 -   Color support. More color spaces could be added in time.
 
