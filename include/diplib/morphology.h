@@ -663,8 +663,7 @@ inline Image MorphologicalLaplace(
 /// Any pixel that is infinity will be part of the watershed lines, as is any pixel not within
 /// `mask`.
 ///
-/// See \ref connectivity for information on the connectivy parameter.
-// TODO: "fast" is a factor ~6 faster for small images (256x256), but a factor ~2.5 slower for large images (100x larger)
+/// See \ref connectivity for information on the connectivity parameter.
 DIP_EXPORT void Watershed(
       Image const& in,
       Image const& mask,
@@ -704,7 +703,7 @@ inline Image Watershed(
 /// See `dip::Watershed` for a description of the merging parameters (`maxDepth`, `maxSize`), and the
 /// `flags` parameter.
 ///
-/// See \ref connectivity for information on the connectivy parameter.
+/// See \ref connectivity for information on the connectivity parameter.
 DIP_EXPORT void SeededWatershed(
       Image const& in,
       Image const& seeds,
@@ -731,15 +730,19 @@ inline Image SeededWatershed(
 
 /// \brief Marks significant local minima.
 ///
-/// This algorithm works exactly like `dip::Watershed` with the "fast" flag set. The minimum point within
-/// each watershed basin is a local minimum. See `dip::Watershed` for a description of all the parameters.
+/// This algorithm works exactly like `dip::Watershed` with the "fast" flag set. All pixels with a value
+/// equal to the lowest value within each watershed basin form a local minimum. Note that they can form
+/// disconnected regions, use the "labels" flag to recognize such disconnected regions as a single local
+/// minimum. See `dip::Watershed` for a description of all the parameters.
 ///
 /// `output` can be "binary" or "labels", and determines whether the algorithm outputs a binary image or
 /// a labeled image. Note that the labels are not necessarily consecutive (i.e. not all label values between
 /// 1 and the largest label are necessarily used).
 ///
-/// See \ref connectivity for information on the connectivy parameter.
-DIP_EXPORT void LocalMinima(
+/// See \ref connectivity for information on the connectivity parameter.
+///
+/// \see  WatershedMaxima, Minima, Maxima.
+DIP_EXPORT void WatershedMinima(
       Image const& in,
       Image const& mask,
       Image& out,
@@ -748,7 +751,7 @@ DIP_EXPORT void LocalMinima(
       dip::uint maxSize = 0,
       String const& output = "binary"
 );
-inline Image LocalMinima(
+inline Image WatershedMinima(
       Image const& in,
       Image const& mask = {},
       dip::uint connectivity = 1,
@@ -757,22 +760,25 @@ inline Image LocalMinima(
       String const& output = "binary"
 ) {
    Image out;
-   LocalMinima( in, mask, out, connectivity, maxDepth, maxSize, output );
+   WatershedMinima( in, mask, out, connectivity, maxDepth, maxSize, output );
    return out;
 }
 
 /// \brief Marks significant local maxima.
 ///
-/// This algorithm works exactly like `dip::Watershed` with the "fast" and "high first" flags set. The maximum
-/// point within each watershed basin is a local maximum. See `dip::Watershed` for a description of all the
-/// parameters.
+/// This algorithm works exactly like `dip::Watershed` with the "fast" flag set. All pixels with a value
+/// equal to the highest value within each watershed basin form a local maximum. Note that they can form
+/// disconnected regions, use the "labels" flag to recognize such disconnected regions as a single local
+/// maximum. See `dip::Watershed` for a description of all the parameters.
 ///
 /// `output` can be "binary" or "labels", and determines whether the algorithm outputs a binary image or
 /// a labeled image. Note that the labels are not necessarily consecutive (i.e. not all label values between
 /// 1 and the largest label are necessarily used).
 ///
-/// See \ref connectivity for information on the connectivy parameter.
-DIP_EXPORT void LocalMaxima(
+/// See \ref connectivity for information on the connectivity parameter.
+///
+/// \see  WatershedMinima, Maxima, Minima.
+DIP_EXPORT void WatershedMaxima(
       Image const& in,
       Image const& mask,
       Image& out,
@@ -781,7 +787,7 @@ DIP_EXPORT void LocalMaxima(
       dip::uint maxSize = 0,
       String const& output = "binary"
 );
-inline Image LocalMaxima(
+inline Image WatershedMaxima(
       Image const& in,
       Image const& mask = {},
       dip::uint connectivity = 1,
@@ -790,7 +796,7 @@ inline Image LocalMaxima(
       String const& output = "binary"
 ) {
    Image out;
-   LocalMaxima( in, mask, out, connectivity, maxDepth, maxSize, output );
+   WatershedMaxima( in, mask, out, connectivity, maxDepth, maxSize, output );
    return out;
 }
 
@@ -808,6 +814,8 @@ inline Image LocalMaxima(
 /// it is recommended to use the `mask` input, for example with the output of a threshold operation.
 ///
 /// See \ref connectivity for information on the connectivy parameter.
+///
+/// \see  Maxima, WatershedMinima, WatershedMaxima.
 DIP_EXPORT void Minima(
       Image const& in,
       Image const& mask,
@@ -840,6 +848,8 @@ inline Image Minima(
 /// it is recommended to use the `mask` input, for example with the output of a threshold operation.
 ///
 /// See \ref connectivity for information on the connectivy parameter.
+///
+/// \see  Minima, WatershedMaxima, WatershedMinima.
 DIP_EXPORT void Maxima(
       Image const& in,
       Image const& mask,
@@ -858,6 +868,7 @@ inline Image Maxima(
    return out;
 }
 
+// TODO: Port and document UpperEnvelope
 DIP_EXPORT void UpperEnvelope(
       Image const& in,
       Image& out,
@@ -877,7 +888,7 @@ DIP_EXPORT void UpperEnvelope(
 /// `out` will have the data type of `in`, and `marker` will be cast to that same type (with clamping to the target
 /// range, see `dip::Convert`).
 ///
-/// See \ref connectivity for information on the connectivy parameter.
+/// See \ref connectivity for information on the connectivity parameter.
 ///
 /// Literature: K. Robinson and P.F. Whelan: Efficient morphological reconstruction: a downhill filter,
 /// Pattern Recognition Letters 25:1759-1767, 2004.

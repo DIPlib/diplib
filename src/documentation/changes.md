@@ -155,6 +155,7 @@ over.
 - `dip_LabelSetBorder`, `dip_ImageDoEdge` and `dip_PlaneDoEdge` are merged into `dip::SetBorder`,
   which additionally can specify the border size.
 
+- `dip_LocalMinima` is now called `dip::WatershedMinima`. There's also a maxima variant.
 
 ## Changes in functionality
 

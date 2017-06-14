@@ -709,7 +709,7 @@ void Watershed(
    DIP_END_STACK_TRACE
 }
 
-void LocalMinima(
+void WatershedMinima(
       Image const& in,
       Image const& mask,
       Image& out,
@@ -723,7 +723,7 @@ void LocalMinima(
    DIP_END_STACK_TRACE
 }
 
-void LocalMaxima(
+void WatershedMaxima(
       Image const& in,
       Image const& mask,
       Image& out,
