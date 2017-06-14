@@ -261,6 +261,7 @@ bool Image::HasNormalStrides() const {
 
 // If any stride is 0, the image has been singleton-expanded.
 bool Image::IsSingletonExpanded() const {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    if(( tensor_.Elements() > 1 ) && ( tensorStride_ == 0 )) {
       return true;
    }

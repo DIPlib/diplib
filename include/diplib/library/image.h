@@ -1086,6 +1086,8 @@ class DIP_NO_EXPORT Image {
       /// across that dimension. The methods `dip::Image::ExpandSingletonDimension` and
       /// `dip::Image::ExpandSingletonTensor` create such dimensions.
       ///
+      /// The image must be forged.
+      ///
       /// \see HasContiguousData, HasNormalStrides, ExpandSingletonDimension, ExpandSingletonTensor.
       DIP_EXPORT bool IsSingletonExpanded() const;
 
@@ -2410,7 +2412,7 @@ class DIP_NO_EXPORT Image {
       /// The object is not modified, a new image is created, with identical properties, but of the requested
       /// size.
       ///
-      /// `dip::Image::Crop` does the inverse operation.
+      /// `dip::Image::Crop` does the inverse operation. See also `dip::ExtendImage`.
       ///
       /// The image must be forged.
       DIP_EXPORT Image Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
