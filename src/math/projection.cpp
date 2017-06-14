@@ -785,8 +785,8 @@ class ProjectionPercentile : public ProjectionScanFunction {
          }
          dip::sint rank = static_cast< dip::sint >( std::floor( static_cast< dfloat >( N ) * percentile_ / 100.0 )); // rank < N, because percentile_ < 100
          buffer_[ thread ].resize( N );
-         auto begin = buffer_[ thread ].begin();
-         auto leftIt = begin;
+#if 0 // Strategy 1: Copy data to buffer, and partition at the same time. The issue is finding a good pivot
+         auto leftIt = buffer_[ thread ].begin();
          auto rightIt = buffer_[ thread ].rbegin();
          TPI pivot{};
          if( mask.IsForged() ) {
@@ -822,14 +822,32 @@ class ProjectionPercentile : public ProjectionScanFunction {
          }
          DIP_ASSERT( &*leftIt == &*rightIt ); // They should both be pointing to the same array element.
          *leftIt = pivot;
-         auto ourGuy = begin + rank;
+         auto ourGuy = buffer_[ thread ].begin() + rank;
          if( ourGuy < leftIt ) {
             // our guy is to the left
-            std::nth_element( begin, ourGuy, leftIt );
+            std::nth_element( buffer_[ thread ].begin(), ourGuy, leftIt );
          } else if( ourGuy > leftIt ){
             // our guy is to the right
             std::nth_element( ++leftIt, ourGuy, buffer_[ thread ].end() );
          } // else: ourGuy == leftIt, which is already sorted correctly.
+#else // Strategy 1: Copy data to buffer, let std lib do the partitioning using its OK pivot strategy
+         auto outIt = buffer_[ thread ].begin();
+         if( mask.IsForged() ) {
+            JointImageIterator< TPI, bin > it( { in, mask } );
+            do {
+               if( it.template Sample< 1 >() ) {
+                  *( outIt++ ) = it.template Sample< 0 >();
+               }
+            } while( ++it );
+         } else {
+            ImageIterator< TPI > it( in );
+            do {
+               *( outIt++ ) = *it;
+            } while( ++it );
+         }
+         auto ourGuy = buffer_[ thread ].begin() + rank;
+         std::nth_element( buffer_[ thread ].begin(), ourGuy, buffer_[ thread ].end() );
+#endif
          *static_cast< TPI* >( out ) = *ourGuy;
       }
       void SetNumberOfThreads( dip::uint threads ) override {
