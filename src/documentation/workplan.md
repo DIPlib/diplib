@@ -139,8 +139,6 @@ document's source</a> for the most up-to-date version.
 
 - Some filters that are trivial to add:
     - Scharr (slightly better than Sobel)
-    - h-minima & h-maxima
-    - opening by reconstruction
     - alternating sequential open-close filter (3 versions: with structural opening,
       opening by reconstruction, and area opening)
 
@@ -316,7 +314,6 @@ Some of the following functions already have their prototype written in the new 
 
 - diplib/morphology.h
     - dip_UpperEnvelope (dip_morphology.h)
-    - dip_AreaOpening (dip_morphology.h)
     - dip_UpperSkeleton2D (dip_binary.h)
 
 - diplib/nonlinear.h

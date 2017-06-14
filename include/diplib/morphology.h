@@ -879,7 +879,7 @@ DIP_EXPORT void UpperEnvelope(
       dip::uint maxSize = 0
 );
 
-/// \brief Reconstruction by dilation or erosion.
+/// \brief Reconstruction by dilation or erosion, also known as inf-reconstruction and sup-reconstruction
 ///
 /// Iteratively dilates (erodes) the image `marker` such that it remains lower (higher) than `in` everywhere, until
 /// stability. This is implemented with an efficient priority-queue--based method. `direction` indicates which of
@@ -1009,6 +1009,27 @@ inline Image AreaOpening(
    return out;
 }
 
+/// \brief Computes the area closing, calling `dip::AreaOpening` with `polarity="closing"`.
+inline void AreaClosing(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint filterSize,
+      dip::uint connectivity = 1
+) {
+   AreaOpening( in, mask, out, filterSize, connectivity, "closing" );
+}
+inline Image AreaClosing(
+      Image const& in,
+      Image const& mask,
+      dip::uint filterSize,
+      dip::uint connectivity = 1
+) {
+   Image out;
+   AreaClosing( in, mask, out, filterSize, connectivity );
+   return out;
+}
+
 /// \brief Applies a path opening in all possible directions
 ///
 /// `length` is the length of the path. All `filterParam` arguments to `dip::DirectedPathOpening` that yield a
@@ -1092,15 +1113,71 @@ inline Image DirectedPathOpening(
 // TODO: Have dip::Opening(in,{n,"path"}) call dip::PathOpening(in,n)   --   The SE should not be valid in
 // TODO: Have dip::Opening(in,{[n,m],"path"}) call dip::PathOpening(in,[n,m])
 
+/// \brief Opening by reconstruction
+///
+/// Applies a structural erosion followed by a reconstruction by dilation.
+///
+/// See `dip::Erosion` and `dip::MorphologicalReconstruction` for a description of the parameters.
+inline void OpeningByReconstruction(
+      Image const& in,
+      Image& out,
+      StructuringElement const& se = {},
+      dip::uint connectivity = 1,
+      StringArray const& boundaryCondition = {}
+) {
+   DIP_START_STACK_TRACE
+      Erosion( in, out, se, boundaryCondition );
+      MorphologicalReconstruction( out, in, out, connectivity, "dilation" );
+   DIP_END_STACK_TRACE
+
+}
+inline Image OpeningByReconstruction(
+      Image const& in,
+      StructuringElement const& se = {},
+      dip::uint connectivity = 1,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   OpeningByReconstruction( in, out, se, connectivity, boundaryCondition );
+   return out;
+}
+
+/// \brief Closing by reconstruction
+///
+/// Applies a structural dilation followed by a reconstruction by erosion.
+///
+/// See `dip::Dilation` and `dip::MorphologicalReconstruction` for a description of the parameters.
+inline void ClosingByReconstruction(
+      Image const& in,
+      Image& out,
+      StructuringElement const& se = {},
+      dip::uint connectivity = 1,
+      StringArray const& boundaryCondition = {}
+) {
+   DIP_START_STACK_TRACE
+      Dilation( in, out, se, boundaryCondition );
+      MorphologicalReconstruction( out, in, out, connectivity, "erosion" );
+   DIP_END_STACK_TRACE
+}
+inline Image ClosingByReconstruction(
+      Image const& in,
+      StructuringElement const& se = {},
+      dip::uint connectivity = 1,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   ClosingByReconstruction( in, out, se, connectivity, boundaryCondition );
+   return out;
+}
+
+
 
 // TODO: functions to port:
 /*
 dip_UpperEnvelope (dip_morphology.h)
-dip_AreaOpening (dip_morphology.h)
 dip_UpperSkeleton2D (dip_binary.h)
 */
 
-// TODO: opening and closing by reconstruction
 // TODO: alternating sequential open-close filter (3 versions: with structural opening, opening by reconstruction, and area opening)
 // TODO: hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees (360 degrees means no rotations).
 // TODO: thinning & thickening, to be implemented as iterated hit'n'miss.
