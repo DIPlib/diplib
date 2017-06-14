@@ -136,6 +136,25 @@ template< typename T > struct IsSampleType : public detail::IsSampleType< typena
 /// ```
 template< typename T > struct IsNumericType : public detail::IsNumericType< typename std::remove_cv< T >::type > {};
 
+/// \brief A templated function to check for positive infinity, which works also for integer types (always returning false)
+template< typename TPI, typename std::enable_if< !std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+bool PixelIsInfinity( TPI /*value*/ ) {
+   return false;
+}
+template< typename TPI, typename std::enable_if< std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+bool PixelIsInfinity( TPI value ) {
+   return value == std::numeric_limits< TPI >::infinity();
+}template< typename TPI, typename std::enable_if< !std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+
+/// \brief A templated function to check for negative infinity, which works also for integer types (always returning false)
+bool PixelIsMinusInfinity( TPI /*value*/ ) {
+   return false;
+}
+template< typename TPI, typename std::enable_if< std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+bool PixelIsMinusInfinity( TPI value ) {
+   return value == -std::numeric_limits< TPI >::infinity();
+}
+
 /// \brief Type for samples in a binary image. Can store 0 or 1. Occupies 1 byte.
 class DIP_NO_EXPORT bin {
    // Binary data stored in a single byte (don't use bool for pixels, it has
