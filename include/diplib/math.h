@@ -31,7 +31,6 @@
 
 /// \defgroup math Image math and statistics
 /// \brief The image math and statistics functions and operators.
-/// \{
 
 
 //
@@ -43,6 +42,7 @@
 namespace dip {
 
 /// \defgroup math_arithmetic Arithmetic operators
+/// \ingroup math
 /// \brief Monadic and dyadic image arithmetic operators.
 /// \{
 
@@ -215,6 +215,7 @@ inline Image LinearCombination(
 //
 
 /// \defgroup math_trigonometric Trigonometric operators
+/// \ingroup math
 /// \brief Monadic and dyadic image trigonometric operators and other complex functions.
 /// \{
 
@@ -255,6 +256,7 @@ inline Image Hypot( Image const& a, Image const& b ) {
 //
 
 /// \defgroup math_tensor Tensor operators
+/// \ingroup math
 /// \brief Operators specific to tensor images.
 /// \{
 
@@ -486,6 +488,7 @@ inline Image Identity( Image const& in ) {
 //
 
 /// \defgroup math_comparison Comparison operators
+/// \ingroup math
 /// \brief Monadic and dyadic image comparison operators.
 /// \{
 
@@ -572,8 +575,6 @@ inline Image Select( Image const& in1, Image const& in2, Image const& mask ) {
    dip_EmFitGaussians (dip_numerical.h)
    dip_EmGaussTest (dip_numerical.h)
 */
-
-/// \}
 
 } // namespace dip
 

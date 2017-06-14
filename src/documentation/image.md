@@ -758,8 +758,8 @@ the input images to functions are marked const) will not be modified.
 
 Arithmetic operations, logical operations, and comparisons
 can all be performed using operators, but there are also functions defined
-that perform the same function with more flexibility. See \ref operators
-for a full list of these functions.
+that perform the same function with more flexibility. See \ref math_arithmetic
+and \ref math_comparison for a full list of these functions.
 
 For example, to add two images `a` and `b`, one can simply do:
 
