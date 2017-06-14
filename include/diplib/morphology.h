@@ -966,6 +966,29 @@ inline Image HMaxima(
    return out;
 }
 
+/// \brief Computes the area opening or closing
+///
+/// The area opening removes all local maxima that have an area smaller than the given parameter `filterSize`,
+/// and is equivalent to the supremum of openings with all possible connected flat structuring elements of that area.
+/// The output has all maxima being connected components with a size of at least `filterSize`.
+///
+/// `mask` restricts the image regions used for the operation.
+///
+/// `connectivity` determines what a connected component is. See \ref connectivity for information on the
+/// connectivity parameter.
+///
+/// When `polarity` is set to `"closing"`, the area closing is computed instead.
+///
+/// We use a union-find implementation similar to that described my Meijster and Wilkinson (2002), and is based on
+/// the algorithm for our fast watershed (`"fast"` mode to `dip::Watershed`).
+///
+/// Literature:
+///  - L. Vincent, "Grayscale area openings and closings, their efficient implementation and applications",
+///    Mathematical Morphology and Its Applications to Signal Processing, pp. 22-27, 1993.
+///  - A. Meijster and M.H.F. Wilkinson, "A Comparison of Algorithms for Connected Set Openings and Closings",
+///    IEEE Transactions on Pattern Analysis and Machine Intelligence 24(4):484-494, 2002.
+///
+/// \see PathOpening, DirectedPathOpening, Opening, Closing, Maxima, Minima
 DIP_EXPORT void AreaOpening(
       Image const& in,
       Image const& mask,
@@ -974,6 +997,17 @@ DIP_EXPORT void AreaOpening(
       dip::uint connectivity = 1,
       String const& polarity = "opening" // vs "closing"
 );
+inline Image AreaOpening(
+      Image const& in,
+      Image const& mask,
+      dip::uint filterSize,
+      dip::uint connectivity = 1,
+      String const& polarity = "opening" // vs "closing"
+) {
+   Image out;
+   AreaOpening( in, mask, out, filterSize, connectivity, polarity );
+   return out;
+}
 
 /// \brief Applies a path opening in all possible directions
 ///

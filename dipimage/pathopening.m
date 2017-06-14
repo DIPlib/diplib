@@ -1,4 +1,4 @@
-%PATHOPENING   Path opening
+%PATHOPENING   Path opening and closing
 %
 % SYNOPSIS:
 %  image_out = pathopening(image_in,filterParams,polarity,mode)
