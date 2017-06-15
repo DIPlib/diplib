@@ -21,6 +21,7 @@
 #include "diplib/morphology.h"
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
+#include "diplib/union_find.h"
 #include "offsets.h"
 #include "label_image_tools.h"
 
@@ -35,59 +36,40 @@ This value can then be used to paint all pixels that are larger/smaller within t
 */
 
 template< typename TPI >
-class AreaOpenRegionList {
-   public:
-      AreaOpenRegionList() {
-         region.reserve( 1000 );
-         region.push_back( { 0, 0, 0 } ); // This element will not be used.
-      }
-      LabelType RootLabel( LabelType index ) const {
-         if( region[ index ].parent == 0 ) {
-            return index;
-         } else {
-            // Note we update the parent node here to point directly to the root.
-            return region[ index ].parent = RootLabel( region[ index ].parent );
-         }
-      }
-      LabelType Create( TPI value ) {
-         if( region.size() > std::numeric_limits< LabelType >::max() ) {
-            // TODO: remap?
-            DIP_THROW( "Cannot create more regions!" );
-         }
-         LabelType index = static_cast< LabelType >( region.size() );
-         region.push_back( { 1, value, 0 } );
-         return index;
-      }
-      void Merge( LabelType label, LabelType other, bool lowFirst ) {
-         label = RootLabel( label );
-         other = RootLabel( other );
-         region[ label ].lowest = lowFirst ? std::min( region[ label ].lowest, region[ other ].lowest )
-                                                 : std::max( region[ label ].lowest, region[ other ].lowest );
-         region[ label ].size += region[ other ].size;
-         region[ other ].parent = label;
-      }
-      dip::uint Size( LabelType index ) const { return region[ RootLabel( index ) ].size; }
-      TPI Lowest( LabelType index ) const { return region[ RootLabel( index ) ].lowest; }
-      void AddPixel( LabelType index, TPI value, dip::uint filterSize ) {
-         index = RootLabel( index );
-         if( region[ index ].size < filterSize ) {
-            ++( region[ index ].size );
-            region[ index ].lowest = value;
-         }
-      }
-      void AddSize( LabelType label, LabelType other ) {
-         label = RootLabel( label );
-         other = RootLabel( other );
-         region[ label ].size += region[ other ].size;
-      }
-   private:
-      struct Region {
-         dip::uint size;
-         TPI lowest;
-         mutable LabelType parent; // index to the parent, which should be the label of this region. A value of 0 indicates the root.
-      };
-      std::vector< Region > region;
+struct AreaOpenRegion {
+   dip::uint size;
+   TPI lowest;
+   AreaOpenRegion(): size( 0 ), lowest( 0 ) {}
+   AreaOpenRegion( TPI value ): size( 1 ), lowest( value ) {}
+   AreaOpenRegion( dip::uint sz, TPI value ): size( sz ), lowest( value ) {}
 };
+template< typename TPI >
+AreaOpenRegion< TPI > AddRegionsLowFist( AreaOpenRegion< TPI > const& region1, AreaOpenRegion< TPI > const& region2 ) {
+   return { region1.size + region2.size, std::max( region1.lowest, region2.lowest ) };
+}
+template< typename TPI >
+AreaOpenRegion< TPI > AddRegionsHighFist( AreaOpenRegion< TPI > const& region1, AreaOpenRegion< TPI > const& region2 ) {
+   return { region1.size + region2.size, std::min( region1.lowest, region2.lowest ) };
+}
+
+template< typename TPI, typename UnionFunction >
+using AreaOpenRegionList = UnionFind< LabelType, AreaOpenRegion< TPI >, UnionFunction >;
+
+template< typename TPI, typename UnionFunction >
+void AddPixel( AreaOpenRegionList< TPI, UnionFunction >& list, LabelType index, TPI value, dip::uint filterSize ) {
+   AreaOpenRegion< TPI >& region = list.Value( index );
+   if( region.size < filterSize ) {
+      ++( region.size );
+      region.lowest = value;
+   }
+}
+
+template< typename TPI, typename UnionFunction >
+void AddSizes( AreaOpenRegionList< TPI, UnionFunction >& list, LabelType label, LabelType other ) {
+   AreaOpenRegion< TPI >& region1 = list.Value( label );
+   AreaOpenRegion< TPI >& region2 = list.Value( other );
+   region1.size += region2.size;
+}
 
 template< typename TPI >
 void dip__AreaOpening(
@@ -95,19 +77,15 @@ void dip__AreaOpening(
       Image& c_labels,
       std::vector< dip::sint > const& offsets,
       IntegerArray const& neighborOffsets,
-      NeighborList const& neighborList,
       dip::uint filterSize,
       bool lowFirst
 ) {
    TPI* grey = static_cast< TPI* >( c_grey.Origin() );
    LabelType* labels = static_cast< LabelType* >( c_labels.Origin() );
 
-   AreaOpenRegionList< TPI > regions;
+   auto AddRegions = lowFirst ? AddRegionsLowFist< TPI > : AddRegionsHighFist< TPI >;
+   AreaOpenRegionList< TPI, decltype( AddRegions ) > regions( AddRegions );
    NeighborLabels neighborLabels;
-
-   //dip::uint nNeigh = neighborOffsets.size();
-   //UnsignedArray const& imsz = c_grey.Sizes();
-   //auto coordComp = c_grey.OffsetToCoordinatesComputer();
 
    // Process first pixel
    labels[ offsets[ 0 ]] = regions.Create( grey[ offsets[ 0 ]] );
@@ -120,15 +98,8 @@ void dip__AreaOpening(
       }
       neighborLabels.Reset();
       for( auto o : neighborOffsets ) {
-         neighborLabels.Push( regions.RootLabel( labels[ offset + o ] ));
+         neighborLabels.Push( regions.FindRoot( labels[ offset + o ] ));
       }
-      //auto nit = neighborList.begin();
-      //for( dip::uint jj = 0; jj < nNeigh; ++jj, ++nit ) {
-      //   dip::sint oo = offset + neighborOffsets[ jj ];
-      //   if( nit.IsInImage( coordComp( oo ), imsz ) ) {
-      //      neighborLabels.Push( regions.RootLabel( labels[ oo ] ));
-      //   }
-      //}
       switch( neighborLabels.Size() ) {
          case 0:
             // Not touching a label: new label
@@ -138,34 +109,34 @@ void dip__AreaOpening(
             // Touching a single label: grow
             LabelType lab = neighborLabels.Label( 0 );
             labels[ offset ] = lab;
-            regions.AddPixel( lab, grey[ offset ], filterSize );
+            AddPixel( regions, lab, grey[ offset ], filterSize );
             break;
          }
          default: {
             // Touching two or more labels
             // Find a small region, if it exists
-            LabelType lab;
+            LabelType lab = 0; // GCC's "may be used uninitialized" warning is way off here!
             for( dip::uint jj = 0; jj < neighborLabels.Size(); ++jj ) {
                lab = neighborLabels.Label( jj );
-               if( regions.Size( lab ) < filterSize ) {
+               if( regions.Value( lab ).size < filterSize ) {
                   break;
                }
             }
             // If there was a small region, assign this pixel to it, then combine information from the other regions
-            if( regions.Size( lab ) < filterSize ) {
+            if( regions.Value( lab ).size < filterSize ) {
                labels[ offset ] = lab;
-               regions.AddPixel( lab, grey[ offset ], filterSize );
+               AddPixel( regions, lab, grey[ offset ], filterSize );
                // This region is small, let's merge all other small regions into it, and increase the size
                // with that of the large regions as well.
                for( dip::uint jj = 0; jj < neighborLabels.Size(); ++jj ) {
                   LabelType lab2 = neighborLabels.Label( jj );
                   if( lab != lab2 ) {
-                     if( regions.Size( lab2 ) < filterSize ) {
+                     if( regions.Value( lab2 ).size < filterSize ) {
                         // A small neighboring region should be merged in
-                        regions.Merge( lab, lab2, lowFirst );
+                        regions.Union( lab, lab2 );
                      } else {
                         // A large neighboring region should lend its size to the small regions
-                        regions.AddSize( lab, lab2 );
+                        AddSizes( regions, lab, lab2 );
                      }
                   }
                }
@@ -183,7 +154,7 @@ void dip__AreaOpening(
       do {
          LabelType lab = it.template Sample< 1 >();
          if( lab > 0 ) {
-            TPI v = regions.Lowest( lab );
+            TPI v = regions.Value( lab ).lowest;
             if( it.template Sample< 0 >() < v ) {
                it.template Sample< 0 >() = v;
             }
@@ -193,7 +164,7 @@ void dip__AreaOpening(
       do {
          LabelType lab = it.template Sample< 1 >();
          if( lab > 0 ) {
-            TPI v = regions.Lowest( lab );
+            TPI v = regions.Value( lab ).lowest;
             if( it.template Sample< 0 >() > v ) {
                it.template Sample< 0 >() = v;
             }
@@ -270,7 +241,7 @@ void AreaOpening(
    IntegerArray neighborOffsets = neighbors.ComputeOffsets( grey.Strides() );
 
    // Do the data-type-dependent thing
-   DIP_OVL_CALL_REAL( dip__AreaOpening, ( grey, labels, offsets, neighborOffsets, neighbors, filterSize, lowFirst ), grey.DataType() );
+   DIP_OVL_CALL_REAL( dip__AreaOpening, ( grey, labels, offsets, neighborOffsets, filterSize, lowFirst ), grey.DataType() );
 
    // Copy result to output
    grey = grey.Crop( c_in.Sizes() );

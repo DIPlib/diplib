@@ -54,8 +54,8 @@ void dip__MorphologicalReconstruction(
       Image const& c_minval,
       bool dilation
 ) {
-   std::priority_queue< Qitem< TPI >, std::vector< Qitem< TPI >>, bool ( * )( Qitem< TPI > const&, Qitem< TPI > const& ) >
-         Q( dilation ? &QitemComparator_HighFirst< TPI > : &QitemComparator_LowFirst< TPI > );
+   auto QitemComparator = dilation ? QitemComparator_HighFirst< TPI > : QitemComparator_LowFirst< TPI >;
+   std::priority_queue< Qitem< TPI >, std::vector< Qitem< TPI >>, decltype( QitemComparator ) > Q( QitemComparator );
 
    dip::uint nNeigh = neighborList.Size();
    UnsignedArray const& imsz = c_in.Sizes();

@@ -25,6 +25,7 @@
 #include "diplib/regions.h"
 #include "diplib/statistics.h"
 #include "diplib/overload.h"
+#include "diplib/union_find.h"
 #include "offsets.h"
 #include "label_image_tools.h"
 
@@ -41,68 +42,49 @@ constexpr LabelType WATERSHED_LABEL = std::numeric_limits< LabelType >::max();
 constexpr LabelType PIXEL_ON_STACK = WATERSHED_LABEL - 1;
 constexpr LabelType MAX_LABEL = WATERSHED_LABEL - 2;
 
-template< typename TPI >
-class WatershedRegionList {
-   public:
-      struct RegionProps {
-         dip::uint size;
-         TPI lowest;
-      };
-      WatershedRegionList() {
-         region.reserve( 1000 );
-         region.push_back( { RegionProps{ 0, 0 }, 0 } ); // This element will not be used.
-      }
-      explicit WatershedRegionList( dip::uint n, TPI lowest ) {
-         region.resize( n + 1, { RegionProps{ 0, lowest }, 0 } );
-      }
-      LabelType RootLabel( LabelType index ) const {
-         if( region[ index ].parent == 0 ) {
-            return index;
-         } else {
-            // Note we update the parent node here to point directly to the root.
-            return region[ index ].parent = RootLabel( region[ index ].parent );
-         }
-      }
-      LabelType Create( TPI value ) {
-         if( region.size() > MAX_LABEL ) {
-            // TODO: remap?
-            DIP_THROW( "Cannot create more regions!" );
-         }
-         LabelType index = static_cast< LabelType >( region.size() );
-         region.push_back( { RegionProps{ 1, value }, 0 } );
-         return index;
-      }
-      void Merge( LabelType label, LabelType other, bool lowFirst ) {
-         label = RootLabel( label );
-         other = RootLabel( other );
-         region[ label ].props.lowest = lowFirst ? std::min( region[ label ].props.lowest, region[ other ].props.lowest )
-                                                 : std::max( region[ label ].props.lowest, region[ other ].props.lowest );
-         region[ label ].props.size += region[ other ].props.size;
-         region[ other ].parent = label;
-      }
-      RegionProps const& Properties( LabelType index ) const { return region[ RootLabel( index ) ].props; }
-      dip::uint Size( LabelType index ) const { return region[ RootLabel( index ) ].props.size; }
-      TPI Lowest( LabelType index ) const { return region[ RootLabel( index ) ].props.lowest; }
-      void AddPixel( LabelType index, TPI value, bool lowFirst ) {
-         index = RootLabel( index );
-         ++( region[ index ].props.size );
-         if( lowFirst ? ( region[ index ].props.lowest > value )
-                      : ( region[ index ].props.lowest < value )) {
-            region[ index ].props.lowest = value;
-         }
 
-      }
-      void AddPixel( LabelType index ) {
-         index = RootLabel( index );
-         ++( region[ index ].props.size );
-      }
-   private:
-      struct Region {
-         RegionProps props;
-         mutable LabelType parent; // index to the parent, which should be the label of this region. A value of 0 indicates the root.
-      };
-      std::vector< Region > region;
+template< typename TPI >
+struct WatershedRegion {
+   dip::uint size;
+   TPI lowest;
+   WatershedRegion(): size( 0 ), lowest( 0 ) {}
+   WatershedRegion( TPI value ): size( 1 ), lowest( value ) {}
+   WatershedRegion( dip::uint sz, TPI value ): size( sz ), lowest( value ) {}
 };
+template< typename TPI >
+WatershedRegion< TPI > AddRegionsLowFist( WatershedRegion< TPI > const& region1, WatershedRegion< TPI > const& region2 ) {
+   return { region1.size + region2.size, std::min( region1.lowest, region2.lowest ) };
+}
+template< typename TPI >
+WatershedRegion< TPI > AddRegionsHighFist( WatershedRegion< TPI > const& region1, WatershedRegion< TPI > const& region2 ) {
+   return { region1.size + region2.size, std::max( region1.lowest, region2.lowest ) };
+}
+
+template< typename TPI, typename UnionFunction >
+using WatershedRegionList = UnionFind< LabelType, WatershedRegion< TPI >, UnionFunction >;
+
+template< typename TPI, typename UnionFunction >
+void AddPixel( WatershedRegionList< TPI, UnionFunction >& list, LabelType index, TPI value, bool lowFirst ) {
+   WatershedRegion< TPI >& region = list.Value( index );
+   ++( region.size );
+   if( lowFirst ? ( region.lowest > value )
+                : ( region.lowest < value )) {
+      region.lowest = value;
+   }
+}
+template< typename TPI, typename UnionFunction >
+void AddPixel( WatershedRegionList< TPI, UnionFunction >& list, LabelType index ) {
+   WatershedRegion< TPI >& region = list.Value( index );
+   ++( region.size );
+}
+
+template< typename TPI, typename UnionFunction >
+void AddSizes( WatershedRegionList< TPI, UnionFunction >& list, LabelType label, LabelType other ) {
+   WatershedRegion< TPI >& region1 = list.Value( label );
+   WatershedRegion< TPI >& region2 = list.Value( other );
+   region1.size += region2.size;
+}
+
 
 template< typename TPI >
 TPI AbsDiff( TPI a, TPI b ) {
@@ -110,20 +92,19 @@ TPI AbsDiff( TPI a, TPI b ) {
 }
 
 template< typename TPI >
-bool WatershedShouldMerge(
-      LabelType lab,
+inline bool WatershedShouldMerge(
       TPI value,
-      WatershedRegionList< TPI > const& regions,
+      WatershedRegion< TPI > const& region,
       dfloat maxDepth,
       dip::uint maxSize
 ) {
-   auto const& props = regions.Properties( lab );
-   return ( AbsDiff( value, props.lowest ) <= maxDepth ) &&
-          (( maxSize == 0 ) || ( props.size <= maxSize ));
+   return ( AbsDiff( value, region.lowest ) <= maxDepth ) &&
+          (( maxSize == 0 ) || ( region.size <= maxSize ));
 }
 
+
 // Returns true if a pixel in the neighbor list is foreground and has the mask set
-bool PixelHasForegroundNeighbor(
+inline bool PixelHasForegroundNeighbor(
       LabelType* label,
       bin* mask,
       NeighborList neighbors,
@@ -160,7 +141,8 @@ void dip__FastWatershed(
    TPI* in = static_cast< TPI* >( c_in.Origin() );
    LabelType* labels = static_cast< LabelType* >( c_labels.Origin() );
 
-   WatershedRegionList< TPI > regions;
+   auto AddRegions = lowFirst ? AddRegionsLowFist< TPI > : AddRegionsHighFist< TPI >;
+   WatershedRegionList< TPI, decltype( AddRegions ) > regions( AddRegions );
    NeighborLabels neighborLabels;
 
    // Process first pixel
@@ -174,7 +156,7 @@ void dip__FastWatershed(
       }
       neighborLabels.Reset();
       for( auto o : neighborOffsets ) {
-         neighborLabels.Push( regions.RootLabel( labels[ offset + o ] ));
+         neighborLabels.Push( regions.FindRoot( labels[ offset + o ] ));
       }
       switch( neighborLabels.Size() ) {
          case 0:
@@ -185,7 +167,7 @@ void dip__FastWatershed(
             // Touching a single label: grow
             LabelType lab = neighborLabels.Label( 0 );
             labels[ offset ] = lab;
-            regions.AddPixel( lab );
+            AddPixel( regions, lab );
             break;
          }
          default: {
@@ -193,7 +175,7 @@ void dip__FastWatershed(
             dip::uint realRegionCount = 0;
             for( dip::uint jj = 0; jj < neighborLabels.Size(); ++jj ) {
                LabelType lab = neighborLabels.Label( jj );
-               if( !WatershedShouldMerge( lab, in[ offset ], regions, maxDepth, maxSize )) {
+               if( !WatershedShouldMerge( in[ offset ], regions.Value( lab ), maxDepth, maxSize )) {
                   ++realRegionCount;
                }
             }
@@ -201,10 +183,10 @@ void dip__FastWatershed(
             if( realRegionCount <= 1 ) {
                // At most one is a "real" region: merge all
                for( dip::uint jj = 1; jj < neighborLabels.Size(); ++jj ) {
-                  regions.Merge( lab, neighborLabels.Label( jj ), lowFirst );
+                  regions.Union( lab, neighborLabels.Label( jj ) );
                }
                labels[ offset ] = lab;
-               regions.AddPixel( lab );
+               AddPixel( regions, lab );
             }
             // Else don't merge, set as watershed label
             //labels[ offset ] = WATERSHED_LABEL;
@@ -224,14 +206,13 @@ void dip__FastWatershed(
          } while( ++it );
       } else {
          // Process labels output image
+         regions.Relabel();
          ImageIterator< LabelType > it( c_labels );
          do {
             LabelType lab1 = *it;
             if( lab1 > 0 ) {
-               LabelType lab2 = regions.RootLabel( lab1 );
-               if( lab1 != lab2 ) {
-                  *it = lab2;
-               }
+               LabelType lab2 = regions.Label( lab1 );
+               *it = lab2;
             }
          } while( ++it );
       }
@@ -242,7 +223,7 @@ void dip__FastWatershed(
          do {
             LabelType lab = it.template Sample< 0 >();
             if( lab > 0 ) {
-               if( it.template Sample< 1 >() == regions.Lowest( lab )) {
+               if( it.template Sample< 1 >() == regions.Value( lab ).lowest ) {
                   it.template Sample< 2 >() = true;
                }
             }
@@ -253,7 +234,7 @@ void dip__FastWatershed(
          do {
             LabelType lab = it.Out();
             if( lab > 0 ) {
-               it.Out() = it.In() == regions.Lowest( lab ) ? lab : LabelType( 0 );
+               it.Out() = it.In() == regions.Value( lab ).lowest ? lab : LabelType( 0 );
             }
          } while( ++it );
       }
@@ -396,11 +377,14 @@ void dip__SeededWatershed(
       bool lowFirst,
       bool binaryOutput
 ) {
-   WatershedRegionList< TPI > regions( numlabs, lowFirst
-                                                ? std::numeric_limits< TPI >::max()
-                                                : std::numeric_limits< TPI >::lowest() );
-   std::priority_queue< Qitem< TPI >, std::vector< Qitem< TPI >>, bool(*)( Qitem< TPI > const&, Qitem< TPI > const& ) >
-         Q( lowFirst ? &QitemComparator_LowFirst< TPI > : &QitemComparator_HighFirst< TPI > );
+   auto AddRegions = lowFirst ? AddRegionsLowFist< TPI > : AddRegionsHighFist< TPI >;
+   WatershedRegion< TPI > defaultRegion( 0, lowFirst
+                                            ? std::numeric_limits< TPI >::max()
+                                            : std::numeric_limits< TPI >::lowest() );
+   WatershedRegionList< TPI, decltype( AddRegions ) > regions( numlabs, defaultRegion, AddRegions );
+
+   auto QitemComparator = lowFirst ? QitemComparator_LowFirst< TPI > : QitemComparator_HighFirst< TPI >;
+   std::priority_queue< Qitem< TPI >, std::vector< Qitem< TPI >>, decltype( QitemComparator ) > Q( QitemComparator );
 
    dip::uint nNeigh = neighborOffsetsLabels.size();
    UnsignedArray const& imsz = c_grey.Sizes();
@@ -422,7 +406,7 @@ void dip__SeededWatershed(
             }
          } else { /* lab > 0 */
             DIP_ASSERT( lab <= numlabs ); // Not really necessary, is it?
-            regions.AddPixel( lab, it.template Sample< 0 >(), lowFirst );
+            AddPixel( regions, lab, it.template Sample< 0 >(), lowFirst );
          }
       }
    } while( ++it );
@@ -454,7 +438,7 @@ void dip__SeededWatershed(
             if( !mask || mask[ offsetMask + neighborOffsetsMask[ jj ]] ) {
                LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
                if(( lab > 0 ) && ( lab < PIXEL_ON_STACK )) {
-                  neighborLabels.Push( regions.RootLabel( lab ));
+                  neighborLabels.Push( regions.FindRoot( lab ));
                }
             }
          }
@@ -469,7 +453,7 @@ void dip__SeededWatershed(
             // Touching a single label: grow
             LabelType lab = neighborLabels.Label( 0 );
             labels[ offsetLabels ] = lab;
-            regions.AddPixel( lab, grey[ offsetGrey ], lowFirst );
+            AddPixel( regions, lab, grey[ offsetGrey ], lowFirst );
             // Add all unprocessed neighbors to heap
             for( dip::uint jj = 0; jj < nNeigh; ++jj ) {
                if( useNeighbor[ jj ] ) {
@@ -489,7 +473,7 @@ void dip__SeededWatershed(
             dip::uint realRegionCount = 0;
             for( dip::uint jj = 0; jj < neighborLabels.Size(); ++jj ) {
                LabelType lab = neighborLabels.Label( jj );
-               if( !WatershedShouldMerge( lab, grey[ offsetGrey ], regions, maxDepth, maxSize )) {
+               if( !WatershedShouldMerge( grey[ offsetGrey ], regions.Value( lab ), maxDepth, maxSize )) {
                   ++realRegionCount;
                }
             }
@@ -497,10 +481,10 @@ void dip__SeededWatershed(
             if( realRegionCount < 2 ) {
                // At most one is a "real" region: merge all
                for( dip::uint jj = 1; jj < neighborLabels.Size(); ++jj ) {
-                  regions.Merge( lab, neighborLabels.Label( jj ), lowFirst );
+                  regions.Union( lab, neighborLabels.Label( jj ) );
                }
                labels[ offsetLabels ] = lab;
-               regions.AddPixel( lab );
+               AddPixel( regions, lab );
             } else {
                // Else don't merge, set as watershed label
                labels[ offsetLabels ] = WATERSHED_LABEL;
@@ -519,7 +503,7 @@ void dip__SeededWatershed(
          if( lab1 == WATERSHED_LABEL ) {
             *lit = 0;
          } else if(( lab1 > 0 ) && ( lab1 < PIXEL_ON_STACK )) {
-            LabelType lab2 = regions.RootLabel( lab1 );
+            LabelType lab2 = regions.FindRoot( lab1 );
             if( lab1 != lab2 ) {
                *lit = lab2;
             }
