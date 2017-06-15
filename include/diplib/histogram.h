@@ -50,6 +50,8 @@ namespace dip {
 /// for a given dimension, default to dimension 0, so can be called without arguments.
 class DIP_NO_EXPORT Histogram {
    public:
+      using CountType = uint32;
+
       /// \brief Configuration information for how the histogram is computed.
       ///
       /// Note that if `mode == Mode::COMPUTE_BINS`, `binSize` will be adjusted so that a whole number of bins
@@ -262,34 +264,34 @@ class DIP_NO_EXPORT Histogram {
       }
 
       /// \brief Get the value at the given bin in a 1D histogram
-      uint32 At( dip::uint x ) const {
+      CountType At( dip::uint x ) const {
          DIP_THROW_IF( Dimensionality() != 1, E::ILLEGAL_DIMENSIONALITY );
          DIP_THROW_IF( x >= data_.Size( 0 ), E::INDEX_OUT_OF_RANGE );
-         return *static_cast< uint32* >( data_.Pointer( static_cast< dip::sint >( x ) * data_.Stride( 0 ) ));
+         return *static_cast< CountType* >( data_.Pointer( static_cast< dip::sint >( x ) * data_.Stride( 0 ) ));
       }
       /// \brief Get the value at the given bin in a 2D histogram
-      uint32 At( dip::uint x, dip::uint y ) const {
+      CountType At( dip::uint x, dip::uint y ) const {
          DIP_THROW_IF( Dimensionality() != 2, E::ILLEGAL_DIMENSIONALITY );
          DIP_THROW_IF( x >= data_.Size( 0 ), E::INDEX_OUT_OF_RANGE );
          DIP_THROW_IF( y >= data_.Size( 1 ), E::INDEX_OUT_OF_RANGE );
-         return *static_cast< uint32* >( data_.Pointer( static_cast< dip::sint >( x ) * data_.Stride( 0 ) +
-                                                        static_cast< dip::sint >( y ) * data_.Stride( 1 )));
+         return *static_cast< CountType* >( data_.Pointer( static_cast< dip::sint >( x ) * data_.Stride( 0 ) +
+                                                           static_cast< dip::sint >( y ) * data_.Stride( 1 )));
       }
 
       /// \brief Get the value at the given bin in a 3D histogram
-      uint32 At( dip::uint x, dip::uint y, dip::uint z ) const {
+      CountType At( dip::uint x, dip::uint y, dip::uint z ) const {
          DIP_THROW_IF( Dimensionality() != 3, E::ILLEGAL_DIMENSIONALITY );
          DIP_THROW_IF( x >= data_.Size( 0 ), E::INDEX_OUT_OF_RANGE );
          DIP_THROW_IF( y >= data_.Size( 1 ), E::INDEX_OUT_OF_RANGE );
          DIP_THROW_IF( z >= data_.Size( 2 ), E::INDEX_OUT_OF_RANGE );
-         return *static_cast< uint32* >( data_.Pointer( static_cast< dip::sint >( x ) * data_.Stride( 0 ) +
-                                                        static_cast< dip::sint >( y ) * data_.Stride( 1 ) +
-                                                        static_cast< dip::sint >( z ) * data_.Stride( 2 )));
+         return *static_cast< CountType* >( data_.Pointer( static_cast< dip::sint >( x ) * data_.Stride( 0 ) +
+                                                           static_cast< dip::sint >( y ) * data_.Stride( 1 ) +
+                                                           static_cast< dip::sint >( z ) * data_.Stride( 2 )));
       }
 
       /// \brief Get the value at the given bin
-      uint32 At( UnsignedArray const& bin ) const {
-         return *static_cast< uint32* >( data_.Pointer( bin )); // Does all the checking
+      CountType At( UnsignedArray const& bin ) const {
+         return *static_cast< CountType* >( data_.Pointer( bin )); // Does all the checking
       }
 
       /// \brief Get the image that holds the bin counts. The image is always scalar and of type `dip::DT_UINT32`.
@@ -298,17 +300,17 @@ class DIP_NO_EXPORT Histogram {
       }
 
       /// \brief Returns an iterator to the first bin
-      ConstImageIterator< uint32 > begin() const {
+      ConstImageIterator< CountType > begin() const {
          return { data_ };
       }
 
       /// \brief Returns an end iterator
-      ConstImageIterator< uint32 > end() const {
+      ConstImageIterator< CountType > end() const {
          return {};
       }
 
       /// \brief Returns a pointer to the first bin
-      uint32 const* Origin() const { return static_cast< uint32 const* >( data_.Origin() ); }
+      CountType const* Origin() const { return static_cast< CountType const* >( data_.Origin() ); }
 
       // Functions below require stuff in math.h, we implement them in the CPP file to avoid including math.h here.
 

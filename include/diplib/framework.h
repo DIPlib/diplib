@@ -25,7 +25,8 @@
 
 #include "diplib.h"
 #include "diplib/boundary.h"
-#include "diplib/neighborhood.h"
+#include "diplib/pixel_table.h"
+#include "diplib/kernel.h"
 
 
 /// \file

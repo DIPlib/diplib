@@ -19,15 +19,47 @@
  */
 
 #include "diplib.h"
-#include "diplib/pixel_table.h"
+#include "diplib/morphology.h"
+#include "diplib/kernel.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
-#include "diplib/saturated_arithmetic.h"
-#include "diplib/morphology.h"
 
 
 namespace dip {
 
+// This function defined here, not in the header, to avoid pulling in kernel.h and its dependencies there.
+dip::Kernel StructuringElement::Kernel() const {
+   dip::Kernel out;
+   switch( shape_ ) {
+      case ShapeCode::RECTANGULAR:
+         out = { Kernel::ShapeCode::RECTANGULAR, params_ };
+         break;
+      case ShapeCode::ELLIPTIC:
+         out = { Kernel::ShapeCode::ELLIPTIC, params_ };
+         break;
+      case ShapeCode::DIAMOND:
+         out = { Kernel::ShapeCode::DIAMOND, params_ };
+         break;
+      case ShapeCode::CUSTOM:
+         out = { image_ };
+         break;
+      default:
+         DIP_THROW( "Cannot create kernel for this structuring element shape" );
+   }
+   if( mirror_ ) {
+      out.Mirror();
+   }
+   return out;
+}
+
+enum class Polarity {
+      DILATION,
+      EROSION
+};
+enum class Mirror {
+      NO,
+      YES
+};
 
 namespace {
 
@@ -36,8 +68,8 @@ namespace {
 template< typename TPI >
 class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
    public:
-      RectangularMorphologyLineFilter( UnsignedArray const& sizes, bool dilation, bool mirror ) :
-            sizes_( sizes ), dilation_( dilation ), mirror_( mirror ) {}
+      RectangularMorphologyLineFilter( UnsignedArray const& sizes, Polarity polarity, Mirror mirror ) :
+            sizes_( sizes ), dilation_( polarity == Polarity::DILATION ), mirror_( mirror == Mirror::YES ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
          forwardBuffers_.resize( threads );
@@ -85,7 +117,7 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
             ++buf;
          }
          // Fill backward buffer
-         in -= inStride; /* undo last increment */
+         in -= inStride; // undo last increment
          buf = backwardBuffer + length + margin - 1;
          *buf = *in;
          in -= inStride;
@@ -134,8 +166,8 @@ void RectangularMorphology(
       Image& out,
       FloatArray const& filterParam,
       BoundaryConditionArray const& bc,
-      bool dilation, // true = dilation, false = erosion
-      bool mirror // mirror the SE? -- this changes where the origin is placed in the even-sized rectangle
+      Polarity polarity,
+      Mirror mirror // this changes where the origin is placed in the even-sized rectangle
 ) {
    dip::uint nDims = in.Dimensionality();
    BooleanArray process( nDims, false );
@@ -151,7 +183,7 @@ void RectangularMorphology(
    DIP_START_STACK_TRACE
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-      DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, dilation, mirror ), dtype );
+      DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, polarity, mirror ), dtype );
       Framework::Separable(
             in,
             out,
@@ -170,7 +202,7 @@ void RectangularMorphology(
 template< typename TPI >
 class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
    public:
-      FlatSEMorphologyLineFilter( bool dilation ) : dilation_( dilation ) {}
+      FlatSEMorphologyLineFilter( Polarity polarity ) : dilation_( polarity == Polarity::DILATION ) {}
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
@@ -226,12 +258,12 @@ void FlatSEMorphology(
       Image& out,
       Kernel const& kernel,
       BoundaryConditionArray const& bc,
-      bool dilation // true = dilation, false = erosion
+      Polarity polarity
 ) {
    DIP_START_STACK_TRACE
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
-      DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( dilation ), dtype );
+      DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( polarity ), dtype );
       Framework::Full(
             in,
             out,
@@ -251,7 +283,7 @@ void FlatSEMorphology(
 template< typename TPI >
 class GreyValueSEMorphologyLineFilter : public Framework::FullLineFilter {
    public:
-      GreyValueSEMorphologyLineFilter( bool dilation ) : dilation_( dilation ) {}
+      GreyValueSEMorphologyLineFilter( Polarity polarity ) : dilation_( polarity == Polarity::DILATION ) {}
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
@@ -299,13 +331,13 @@ void GreyValueSEMorphology(
       Image& out,
       Kernel const& kernel,
       BoundaryConditionArray const& bc,
-      bool dilation // true = dilation, false = erosion
+      Polarity polarity
 ) {
    DIP_ASSERT( kernel.HasWeights() );
    DIP_START_STACK_TRACE
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
-      DIP_OVL_NEW_REAL( lineFilter, GreyValueSEMorphologyLineFilter, ( dilation ), dtype );
+      DIP_OVL_NEW_REAL( lineFilter, GreyValueSEMorphologyLineFilter, ( polarity ), dtype );
       Framework::Full(
             in,
             out,
@@ -325,8 +357,8 @@ void GreyValueSEMorphology(
 template< typename TPI >
 class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
    public:
-      ParabolicMorphologyLineFilter( FloatArray const& params, bool dilation ) :
-            params_( params ), dilation_( dilation ) {}
+      ParabolicMorphologyLineFilter( FloatArray const& params, Polarity polarity ) :
+            params_( params ), dilation_( polarity == Polarity::DILATION ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
@@ -451,7 +483,7 @@ void ParabolicMorphology(
       Image& out,
       FloatArray const& filterParam,
       BoundaryConditionArray const& bc, // will not be used, as border==0.
-      bool dilation // true = dilation, false = erosion
+      Polarity polarity
 ) {
    dip::uint nDims = in.Dimensionality();
    BooleanArray process( nDims, false );
@@ -463,7 +495,7 @@ void ParabolicMorphology(
    DIP_START_STACK_TRACE
       DataType dtype = DataType::SuggestFlex( in.DataType() ); // Returns either float or complex. If complex, DIP_OVL_NEW_FLOAT will throw.
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-      DIP_OVL_NEW_FLOAT( lineFilter, ParabolicMorphologyLineFilter, ( filterParam, dilation ), dtype );
+      DIP_OVL_NEW_FLOAT( lineFilter, ParabolicMorphologyLineFilter, ( filterParam, polarity ), dtype );
       Framework::Separable(
             in,
             out,
@@ -485,7 +517,7 @@ void LineMorphology(
       FloatArray const& /*filterParam*/,
       BoundaryConditionArray const& /*bc*/,
       bool /*interpolated*/, // true = "interpolated line", false = "discrete line"
-      bool /*dilation*/ // true = dilation, false = erosion
+      Polarity /*polarity*/
 ) {
    DIP_THROW( E::NOT_IMPLEMENTED );
 }
@@ -497,8 +529,8 @@ void BasicMorphology(
       Image& out,
       StructuringElement const& se,
       StringArray const& boundaryCondition,
-      bool dilation, // true = dilation, false = erosion
-      bool mirror = false // mirror the SE?
+      Polarity polarity,
+      Mirror mirror = Mirror::NO
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -506,30 +538,30 @@ void BasicMorphology(
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       if( bc.empty() ) {
          bc.resize( 1 );
-         bc[ 0 ] = dilation ? BoundaryCondition::ADD_MIN_VALUE : BoundaryCondition::ADD_MAX_VALUE;
+         bc[ 0 ] = polarity == Polarity::DILATION ? BoundaryCondition::ADD_MIN_VALUE : BoundaryCondition::ADD_MAX_VALUE;
       }
       switch( se.Shape() ) {
          case StructuringElement::ShapeCode::RECTANGULAR:
-            RectangularMorphology( in, out, se.Params( in.Sizes() ), bc, dilation, mirror );
+            RectangularMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
             break;
          case StructuringElement::ShapeCode::PARABOLIC:
-            ParabolicMorphology( in, out, se.Params( in.Sizes() ), bc, dilation );
+            ParabolicMorphology( in, out, se.Params( in.Sizes() ), bc, polarity );
             break;
          case StructuringElement::ShapeCode::INTERPOLATED_LINE:
-            LineMorphology( in, out, se.Params( in.Sizes() ), bc, true, dilation );
+            LineMorphology( in, out, se.Params( in.Sizes() ), bc, true, polarity );
             break;
          case StructuringElement::ShapeCode::DISCRETE_LINE:
-            LineMorphology( in, out, se.Params( in.Sizes() ), bc, false, dilation );
+            LineMorphology( in, out, se.Params( in.Sizes() ), bc, false, polarity );
             break;
          default: {
             Kernel kernel = se.Kernel();
-            if( mirror ) {
+            if( mirror == Mirror::YES ) {
                kernel.Mirror();
             }
             if( kernel.HasWeights()) {
-               GreyValueSEMorphology( in, out, kernel, bc, dilation );
+               GreyValueSEMorphology( in, out, kernel, bc, polarity );
             } else {
-               FlatSEMorphology( in, out, kernel, bc, dilation );
+               FlatSEMorphology( in, out, kernel, bc, polarity );
             }
             break;
          }
@@ -548,7 +580,7 @@ void Dilation(
       StringArray const& boundaryCondition
 ) {
    DIP_START_STACK_TRACE
-      BasicMorphology( in, out, se, boundaryCondition, true );
+      BasicMorphology( in, out, se, boundaryCondition, Polarity::DILATION );
    DIP_END_STACK_TRACE
 }
 
@@ -559,7 +591,7 @@ void Erosion(
       StringArray const& boundaryCondition
 ) {
    DIP_START_STACK_TRACE
-      BasicMorphology( in, out, se, boundaryCondition, false );
+      BasicMorphology( in, out, se, boundaryCondition, Polarity::EROSION );
    DIP_END_STACK_TRACE
 }
 
@@ -572,8 +604,8 @@ void Opening(
       StringArray const& boundaryCondition
 ) {
    DIP_START_STACK_TRACE
-      BasicMorphology( in, out, se, boundaryCondition, false, false );
-      BasicMorphology( out, out, se, boundaryCondition, true, true );
+      BasicMorphology( in, out, se, boundaryCondition, Polarity::EROSION, Mirror::NO );
+      BasicMorphology( out, out, se, boundaryCondition, Polarity::DILATION, Mirror::YES );
    DIP_END_STACK_TRACE
 }
 
@@ -584,8 +616,8 @@ void Closing(
       StringArray const& boundaryCondition
 ) {
    DIP_START_STACK_TRACE
-      BasicMorphology( in, out, se, boundaryCondition, true, false );
-      BasicMorphology( out, out, se, boundaryCondition, false, true );
+      BasicMorphology( in, out, se, boundaryCondition, Polarity::DILATION, Mirror::NO );
+      BasicMorphology( out, out, se, boundaryCondition, Polarity::EROSION, Mirror::YES );
    DIP_END_STACK_TRACE
 }
 
@@ -605,38 +637,38 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    dip::Image out;
 
    // Rectangular morphology
-   dip::BasicMorphology( in, out, { { 10, 1 }, "rectangular" }, {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 10, 1 }, "rectangular" }, {}, dip::Polarity::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 10 );
-   dip::BasicMorphology( in, out, { { 11, 1 }, "rectangular" }, {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 11, 1 }, "rectangular" }, {}, dip::Polarity::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 11 );
-   dip::BasicMorphology( in, out, { { 10, 11 }, "rectangular" }, {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 10, 11 }, "rectangular" }, {}, dip::Polarity::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 10*11 );
-   dip::BasicMorphology( out, out, { { 10, 11 }, "rectangular" }, {}, false /*compute erosion*/, true /* mirror */ );
+   dip::BasicMorphology( out, out, { { 10, 11 }, "rectangular" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
    DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
 
    // PixelTable morphology
-   dip::BasicMorphology( in, out, { { 1, 10 }, "elliptic" }, {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 1, 10 }, "elliptic" }, {}, dip::Polarity::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 11 ); // rounded!
-   dip::BasicMorphology( in, out, { { 1, 11 }, "elliptic" }, {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 1, 11 }, "elliptic" }, {}, dip::Polarity::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 11 );
-   dip::BasicMorphology( in, out, { { 10, 11 }, "elliptic" }, {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 10, 11 }, "elliptic" }, {}, dip::Polarity::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 89 );
-   dip::BasicMorphology( out, out, { { 10, 11 }, "elliptic" }, {}, false /*compute erosion*/, true /* mirror */ );
+   dip::BasicMorphology( out, out, { { 10, 11 }, "elliptic" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
    DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
 
    // PixelTable morphology -- mirroring
    dip::Image se( { 10, 10 }, 1, dip::DT_BIN );
    se = 1;
-   dip::BasicMorphology( in, out, se, {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, se, {}, dip::Polarity::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 100 );
-   dip::BasicMorphology( out, out, se, {}, false /*compute erosion*/, true /* mirror */ );
+   dip::BasicMorphology( out, out, se, {}, dip::Polarity::EROSION, dip::Mirror::YES );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
    DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
 
    // Parabolic morphology
-   dip::BasicMorphology( in, out, { { 10.0, 0.0 }, "parabolic" }, {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, { { 10.0, 0.0 }, "parabolic" }, {}, dip::Polarity::DILATION );
    dip::dfloat result = 0.0;
    for( dip::uint ii = 1; ii < 50; ++ii ) { // 50 = 10.0 * sqrt( pval )
       result += dip::dfloat( pval ) - dip::dfloat( ii * ii ) / 100.0;
@@ -645,7 +677,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    DOCTEST_CHECK( dip::Sum( out ).As< dip::dfloat >() == doctest::Approx( result ));
    DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is the origin in the right place?
 
-   dip::BasicMorphology( out, out, { { 10.0, 0.0 }, "parabolic" }, {}, false /*compute erosion*/, true /* mirror */ );
+   dip::BasicMorphology( out, out, { { 10.0, 0.0 }, "parabolic" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
    result = 0.0;
    for( dip::uint ii = 1; ii < 50; ++ii ) { // 50 = 10.0 * sqrt( pval )
       result += dip::dfloat( ii * ii ) / 100.0; // 100.0 = 10.0 * 10.0
@@ -662,9 +694,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    se.At( 0, 5 ) = -5;
    se.At( 4, 0 ) = -10;
    se.At( 2, 3 ) = 0;
-   dip::BasicMorphology( in, out, se, {}, true /*compute dilation*/ );
+   dip::BasicMorphology( in, out, se, {}, dip::Polarity::DILATION );
    DOCTEST_CHECK( dip::Sum( out ).As< dip::dfloat >() == 5 * pval - 5 - 5 - 10 );
-   dip::BasicMorphology( out, out, se, {}, false /*compute erosion*/, true /* mirror */ );
+   dip::BasicMorphology( out, out, se, {}, dip::Polarity::EROSION, dip::Mirror::YES );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
    DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is the main pixel in the right place and with the right value?
 }

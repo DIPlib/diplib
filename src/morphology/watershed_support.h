@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file declares functions to create and manipulate offset lists.
+ * This file declares support functionality used by dip::Watershed and similar functions.
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -18,15 +18,12 @@
  * limitations under the License.
  */
 
-#ifndef DIP_OFFSETS_H
-#define DIP_OFFSETS_H
+#ifndef DIP_WATERSHED_SUPPORT_H
+#define DIP_WATERSHED_SUPPORT_H
 
 #include "diplib.h"
-#include "diplib/iterators.h"
-
 
 namespace dip {
-
 
 // Creates a list of offsets into an image with the given sizes and strides. Pixels at the image
 // boundary are excluded.
@@ -39,6 +36,38 @@ DIP_NO_EXPORT std::vector< dip::sint > CreateOffsetsArray( Image const& mask, In
 // Sorts the list of offsets by the grey value they index.
 DIP_NO_EXPORT void SortOffsets( Image const& img, std::vector< dip::sint >& offsets, bool lowFirst );
 
+// This class manages a list of neighbor labels.
+// There are never more than N neighbors added at a time, N being defined
+// by the dimensionality and the connectivity. However, typically there are
+// only one or two labels added. Therefore, no effort has been put into making
+// this class clever. We could keep a sorted list, but the sorting might costs
+// more effort than it would save in checking if a label is present (would it?)
+class DIP_NO_EXPORT NeighborLabels{
+   public:
+      void Reset() { labels.clear(); }
+      void Push( LabelType value ) {
+         if(( value != 0 ) && !Contains( value )) {
+            labels.push_back( value );
+         }
+      }
+      bool Contains( LabelType value ) const {
+         for( auto l : labels ) {
+            if( l == value ) {
+               return true;
+            }
+         }
+         return false;
+      }
+      dip::uint Size() const {
+         return labels.size();
+      }
+      LabelType Label( dip::uint index ) const {
+         return labels[ index ];
+      }
+   private:
+      std::vector< LabelType > labels;
+};
+
 } // namespace dip
 
-#endif // DIP_OFFSETS_H
+#endif // DIP_WATERSHED_SUPPORT_H

@@ -377,6 +377,8 @@ constexpr DataType DT_DFLOAT{ DataType::DT::DFLOAT };
 constexpr DataType DT_SCOMPLEX{ DataType::DT::SCOMPLEX };
 constexpr DataType DT_DCOMPLEX{ DataType::DT::DCOMPLEX };
 
+constexpr DataType DT_LABEL = DT_UINT32; ///< Type currently used for all labeled images, see `dip::LabelType`.
+
 /// \}
 
 } // namespace dip

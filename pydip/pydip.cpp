@@ -17,7 +17,7 @@
  */
 
 #include "pydip.h"
-#include "diplib/neighborhood.h"
+#include "diplib/neighborlist.h"
 
 static_assert( sizeof( bool ) == sizeof( dip::bin ), "bool is not one byte, how can I work with logical Python buffers?" );
 

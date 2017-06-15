@@ -22,8 +22,7 @@
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
 #include "diplib/union_find.h"
-#include "offsets.h"
-#include "label_image_tools.h"
+#include "watershed_support.h"
 
 namespace dip {
 

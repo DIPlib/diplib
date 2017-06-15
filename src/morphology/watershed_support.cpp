@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file defines functions to create and manipulate offset lists.
+ * This file defines support functionality used by dip::Watershed and similar functions.
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-#include "offsets.h"
+#include "watershed_support.h"
 #include "diplib/overload.h"
 
 namespace dip {

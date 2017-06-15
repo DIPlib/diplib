@@ -20,6 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/linear.h"
+#include "diplib/pixel_table.h"
 
 #if defined(__GNUG__) || defined(__clang__)
 // For this file, turn off -Wsign-conversion, Eigen is really bad at this!

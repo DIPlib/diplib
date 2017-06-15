@@ -198,47 +198,6 @@ class DIP_NO_EXPORT LookupTable{
       }
 };
 
-// Original LUT functions:
-
-//DIP_ERROR dip_ImageLookup(
-//    dip_Image in,
-//    dip_Image out,
-//    dip_LookupTable lookupTable,
-//    dip_float value,
-//    dip_Boolean copyImVal   // if false, use `value` when out-of-bounds, if true, use original image value
-//);
-// DIP_ERROR dip_Lut(         // In numeric.h
-//    dip_float  arg,
-//    dip_sint32 index,
-//    dip_float  *out,
-//    dip_sint32 *found,
-//    dip_float  *argArray,
-//    dip_float  *funcArray,
-//    dip_int    size
-// );
-// DIP_ERROR dip_ImageLut(
-//    dip_Image in,
-//    dip_Image out,
-//    dip_Image arg,
-//    dip_Image funcVal
-// );
-// DIP_ERROR dip_ImageArrayLUT(
-//    dip_Image in,
-//    dip_Image out,
-//    dip_FloatArray bins,
-//    dip_ImageArray vals,
-//    dipf_Interpolation method
-// );
-//
-// DIP_ERROR dip_ArrayLUT(
-//    dip_Image in,
-//    dip_Image out,
-//    dip_sfloat *bins,
-//    dip_sfloat *vals,
-//    dip_int nbins,
-//    dipf_Interpolation method
-// );
-
 
 /// \}
 

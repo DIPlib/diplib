@@ -33,21 +33,20 @@ documentation/    Markdown files
 The old DIPlib sources have these additional directories, I thought
 we could condense the directory structure a little bit:
 
-adaptfilters/  -> filtering
-bilateral/     -> filtering
-derivatives/   -> filtering
+adaptfilters/  -> nonlinear
+bilateral/     -> nonlinear
+derivatives/   -> linear
 detection/     -> analysis
 display/       -> library
 distribution/  -> histogram
 findshift/     -> analysis
 framework/     -> library
 infra/         -> library
-linear/        -> filtering
 manipulation/  -> interpolation
 noise/         -> generation
 numerical/     -> support
 paint/         -> generation
-pgst/          -> filtering
+pgst/          -> nonlinear
 pixel_table/   -> library
 point/         -> math (threshold to segmentation)
 restoration/   -> microscopy

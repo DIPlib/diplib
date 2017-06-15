@@ -21,8 +21,9 @@
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/statistics.h"
+#include "diplib/iterators.h"
 #include "diplib/overload.h"
-#include "offsets.h"
+#include "watershed_support.h"
 
 namespace dip {
 
@@ -30,7 +31,7 @@ namespace {
 
 template< typename TPI >
 struct Qitem {
-   TPI value;              // pixel value - used for sorting */
+   TPI value;              // pixel value - used for sorting
    dip::sint offset;       // offset into `done` image
 };
 template< typename TPI >

@@ -96,6 +96,8 @@ using dfloat = double;           ///< Type for samples in a 64-bit floating poin
 using scomplex = std::complex< sfloat >;   ///< Type for samples in a 64-bit complex-valued (single-precision) image
 using dcomplex = std::complex< dfloat >;   ///< Type for samples in a 128-bit complex-valued (double-precision) image
 
+using LabelType = uint32;        ///< Type currently used for all labeled images, see `dip::DT_LABEL`.
+
 namespace detail {
 template< typename T > struct IsSampleType { static constexpr bool value = false; };
 template<> struct IsSampleType< bin > { static constexpr bool value = true; };

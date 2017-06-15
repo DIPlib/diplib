@@ -18,7 +18,9 @@
  * limitations under the License.
  */
 
-#include "diplib/neighborhood.h"
+#include "diplib/kernel.h"
+#include "diplib/neighborlist.h"
+#include "diplib/pixel_table.h"
 #include "diplib/iterators.h"
 #include "diplib/math.h"
 

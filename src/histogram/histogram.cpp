@@ -29,6 +29,10 @@ namespace dip {
 
 namespace {
 
+using CountType = Histogram::CountType;
+
+constexpr auto DT_COUNT = DT_UINT32;
+
 void CompleteConfiguration( Histogram::Configuration& configuration, bool isInteger ) {
    if( configuration.mode != Histogram::Configuration::Mode::COMPUTE_BINS ) {
       if( configuration.nBins < 1 ) {
@@ -115,7 +119,7 @@ class dip__ScalarImageHistogram : public Framework::ScanLineFilter {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
-         uint32* data = static_cast< uint32* >( image_.Origin() ) + image_.Stride( 1 ) * static_cast< dip::sint >( params.thread );
+         CountType* data = static_cast< CountType* >( image_.Origin() ) + image_.Stride( 1 ) * static_cast< dip::sint >( params.thread );
          // Note: `image_` strides are always normal.
          if( params.inBuffer.size() > 1 ) {
             // If there's two input buffers, we have a mask image.
@@ -180,7 +184,7 @@ class dip__TensorImageHistogram : public Framework::ScanLineFilter {
          auto inStride = params.inBuffer[ 0 ].stride;
          auto tensorLength = params.inBuffer[ 0 ].tensorLength;
          auto tensorStride = params.inBuffer[ 0 ].tensorStride;
-         uint32* data = static_cast< uint32* >( image_.Origin() ) + image_.Strides().back() * static_cast< dip::sint >( params.thread );
+         CountType* data = static_cast< CountType* >( image_.Origin() ) + image_.Strides().back() * static_cast< dip::sint >( params.thread );
          if( params.inBuffer.size() > 1 ) {
             // If there's two input buffers, we have a mask image.
             bin const* mask = static_cast< bin const* >( params.inBuffer[ 1 ].buffer );
@@ -257,7 +261,7 @@ void Histogram::ScalarImageHistogram( Image const& input, Image const& mask, His
    lowerBounds_ = { configuration.lowerBound };
    binSizes_ = { configuration.binSize };
    data_.SetSizes( { configuration.nBins, 1 } );
-   data_.SetDataType( DT_UINT32 );
+   data_.SetDataType( DT_COUNT );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__ScalarImageHistogram, ( data_, configuration ), input.DataType() );
    DIP_START_STACK_TRACE
@@ -283,7 +287,7 @@ void Histogram::TensorImageHistogram( Image const& input, Image const& mask, His
       sizes[ ii ] = configuration[ ii ].nBins;
    }
    data_.SetSizes( sizes );
-   data_.SetDataType( DT_UINT32 );
+   data_.SetDataType( DT_COUNT );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__TensorImageHistogram, ( data_, configuration ), input.DataType() );
    DIP_START_STACK_TRACE
@@ -313,8 +317,8 @@ void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const&
       sizes[ ii ] = configuration[ ii ].nBins;
    }
    data_.SetSizes( sizes );
-   data_.SetDataType( DT_UINT32 );
-   uint32* data = static_cast< uint32* >( data_.Origin() );
+   data_.SetDataType( DT_COUNT );
+   CountType* data = static_cast< CountType* >( data_.Origin() );
    auto in = featureValues.FirstObject();
    while( in ) {
       auto tin = in.begin();
@@ -348,7 +352,7 @@ Image::CastPixel< dfloat > Histogram::Mean() const {
    mean = 0;
    dfloat* pmean = static_cast< dfloat* >( mean.Origin() );
    dfloat weight = 0;
-   ImageIterator< uint32 > it( data_ );
+   ImageIterator< CountType > it( data_ );
    do {
       UnsignedArray const& coord = it.Coordinates();
       dfloat v = static_cast< dfloat >( *it );
@@ -375,7 +379,7 @@ Image::CastPixel< dfloat > Histogram::Covariance() const {
    std::vector< dip::sint > lut = tensor.LookUpTable();
    cov = 0;
    dfloat* pcov = static_cast< dfloat* >( cov.Origin() );
-   ImageIterator< uint32 > it( data_ );
+   ImageIterator< CountType > it( data_ );
    FloatArray diff( nDims, 0 );
    do {
       UnsignedArray const& coord = it.Coordinates();
@@ -402,10 +406,10 @@ Image::CastPixel< dfloat > Histogram::MarginalMedian() const {
    Image::CastPixel< dfloat > median( DT_DFLOAT, nDims );
    dfloat* pmedian = static_cast< dfloat* >( median.Origin() );
    Histogram cum = Cumulative(); // we look along the last line in each direction
-   uint32* pcum = static_cast< uint32* >( cum.data_.Origin() );
+   CountType* pcum = static_cast< CountType* >( cum.data_.Origin() );
    dfloat n = static_cast< dfloat >( pcum[ cum.data_.NumberOfPixels() - 1 ] );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      pcum = static_cast< uint32* >( cum.data_.Origin() );
+      pcum = static_cast< CountType* >( cum.data_.Origin() );
       for( dip::uint jj = 0; jj < nDims; ++jj ) {
          if( jj != ii ) {
             pcum += static_cast< dip::sint >( cum.data_.Size( jj ) - 1 ) * cum.data_.Stride( jj );
@@ -425,8 +429,8 @@ Image::CastPixel< dfloat > Histogram::MarginalMedian() const {
 DIP_EXPORT Image::CastPixel< dfloat > Histogram::Mode() const {
    dip::uint nDims = Dimensionality();
    UnsignedArray coord( nDims, 0 );
-   uint32 maxVal = 0;
-   ImageIterator< uint32 > it( data_ );
+   CountType maxVal = 0;
+   ImageIterator< CountType > it( data_ );
    do {
       if( *it > maxVal ) {
          maxVal = *it;
@@ -456,7 +460,7 @@ Histogram Histogram::MarginalHistogram( dip::uint dim ) const {
    BooleanArray ps( Dimensionality(), true );
    ps[ dim ] = false;
    out.data_.Strip();
-   out.data_.Protect(); // so that Sum() produces a DT_UINT32 image.
+   out.data_.Protect(); // so that Sum() produces a DT_COUNT image.
    Sum( data_, {}, out.data_, ps );
    out.data_.Protect( false );
    out.data_.PermuteDimensions( { dim } );
@@ -479,7 +483,7 @@ Histogram Histogram::Smooth( FloatArray sigma ) const {
       out.lowerBounds_[ ii ] -= out.binSizes_[ ii ] * extension;
    }
    out.data_ = out.data_.Pad( sizes );
-   out.data_.Protect(); // so that GaussFIR() produces a DT_UINT32 image.
+   out.data_.Protect(); // so that GaussFIR() produces a DT_COUNT image.
    GaussFIR( out.data_, out.data_, sigma, { 0 }, { "add zeros" }, truncation );
    out.data_.Protect( false );
    return out;

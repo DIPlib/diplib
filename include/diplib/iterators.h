@@ -260,6 +260,18 @@ using ConstLineIterator = LineIterator< T const >;
 // Image iterator, does nD loops over all pixels in an image
 //
 
+// TODO: ImageIterator and JointImageIterator could track if they're pointing at a pixel at the edge of the image
+// e.g.:
+//    LineIsOnEdge (line being the pixels along the dimension that changes most quickly)
+//    PixelIsOnEdge = LineIsOnEdge && ( pos == 0 || pos == last )
+// IsInImage would then be simpler when dealing with nearest neighbors: if it's not on the edge, we don't need to call it at all.
+// Keeping track of this location of course adds some expense, so we could enable/disable it through a template bool parameter.
+//    template< typename T, bool TrackEdge = false > class ImageIterator { ... };
+
+// TODO: All image iterators could pick processing order by sorting the strides. Now we always iterate in linear index order, which is not always optimal.
+// At the same time, make it possible to set the processing dimension to the optimal one (i.e. the one with the smallest stride).
+
+// TODO: It's increasingly silly to me the idea of adding a boundary condition to the iterator. PixelAt() adds a little convenience, but is way expensive compared to ExtendImage().
 
 /// \brief An iterator to iterate over all pixels of an image, or all lines of an image.
 ///

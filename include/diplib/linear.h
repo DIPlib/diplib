@@ -22,7 +22,7 @@
 #define DIP_LINEAR_H
 
 #include "diplib.h"
-#include "diplib/neighborhood.h"
+#include "diplib/kernel.h"
 
 
 /// \file

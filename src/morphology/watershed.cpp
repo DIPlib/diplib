@@ -24,10 +24,10 @@
 #include "diplib/morphology.h"
 #include "diplib/regions.h"
 #include "diplib/statistics.h"
+#include "diplib/iterators.h"
 #include "diplib/overload.h"
 #include "diplib/union_find.h"
-#include "offsets.h"
-#include "label_image_tools.h"
+#include "watershed_support.h"
 
 namespace dip {
 
@@ -404,7 +404,7 @@ void dip__SeededWatershed(
                Q.push( Qitem< TPI >{ it.template Sample< 0 >(), order++, it.template Offset< 1 >() } );
                it.template Sample< 1 >() = PIXEL_ON_STACK;
             }
-         } else { /* lab > 0 */
+         } else { // lab > 0
             DIP_ASSERT( lab <= numlabs ); // Not really necessary, is it?
             AddPixel( regions, lab, it.template Sample< 0 >(), lowFirst );
          }

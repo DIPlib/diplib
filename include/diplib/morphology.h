@@ -22,7 +22,7 @@
 #define DIP_MORPHOLOGY_H
 
 #include "diplib.h"
-#include "diplib/neighborhood.h"
+#include "diplib/neighborlist.h"
 
 
 /// \file
@@ -32,12 +32,17 @@
 namespace dip {
 
 
+// Forward declaration, from diplib/kernel.h
+class DIP_NO_EXPORT Kernel;
+
+
 /// \defgroup morphology Mathematical morphology
 /// \ingroup filtering
 /// \brief Morphological filters for smoothing, sharpening, detection and more, and the watershed transform.
 /// \{
 
-/// \brief Objects of class `%StructuringElement` represent the shape and size of a structuring element.
+
+/// \brief Represents the shape and size of a structuring element.
 ///
 /// Many functions in the Mathematical Morphology module require a structuring element definition.
 /// There are two ways to define a structuring element: the user can specify the shape name and the size
@@ -100,7 +105,7 @@ class DIP_NO_EXPORT StructuringElement{
       // TODO: In the old DIPlib, line SEs used filterParam = [length,angle], and only applied to 2D images!
       // TODO: Implement the discrete line for 2D without skews, so it's more efficient.
       // TODO: Implement periodic lines, construct translation-invariant discrete lines using periodic lines
-      // TODO: Construct diamond SE and approximations to elliptic SE using lines
+      // TODO: Construct diamond SE and approximations to elliptic SE (ShapeCode::APPROX_ELLIPTIC) using lines
    public:
       enum class ShapeCode {
             RECTANGULAR,
@@ -146,29 +151,7 @@ class DIP_NO_EXPORT StructuringElement{
 
       /// \brief Converts the Structuring element into a kernel
       // NOTE: When we go to SEs that are sequences of kernels, this function will change!
-      dip::Kernel Kernel() const {
-         dip::Kernel out;
-         switch( shape_ ) {
-            case ShapeCode::RECTANGULAR:
-               out = { Kernel::ShapeCode::RECTANGULAR, params_ };
-               break;
-            case ShapeCode::ELLIPTIC:
-               out = { Kernel::ShapeCode::ELLIPTIC, params_ };
-               break;
-            case ShapeCode::DIAMOND:
-               out = { Kernel::ShapeCode::DIAMOND, params_ };
-               break;
-            case ShapeCode::CUSTOM:
-               out = { image_ };
-               break;
-            default:
-               DIP_THROW( "Cannot create kernel for this structuring element shape" );
-         }
-         if( mirror_ ) {
-            out.Mirror();
-         }
-         return out;
-      }
+      DIP_EXPORT dip::Kernel Kernel() const;
 
       /// \brief Retrieves the size array, adjusted to an image of size `imsz`.
       FloatArray Params( UnsignedArray const& imsz ) const {
@@ -562,7 +545,7 @@ inline Image MorphologicalSmoothing(
 /// the diameter of the structuring element is `2 * lowerSize + 1`.
 ///
 /// `filterShape` can be either `"rectangular"`, `"elliptic"`, and `"diamond"`, as described in
-/// `dip::PixelTable::PixelTable( String const&, FloatArray, dip::uint )`.
+/// `dip::StructuringElement`.
 ///
 /// `boundaryCondition` determines the boundary conditions. See `dip::BoundaryCondition`.
 /// The default empty array causes the function to use `"add min"` with the dilation

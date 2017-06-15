@@ -23,7 +23,7 @@
 #include "diplib/math.h"
 #include "diplib/overload.h"
 
-#include "offsets.h"
+#include "watershed_support.h"
 
 namespace dip {
 
