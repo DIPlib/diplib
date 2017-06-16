@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains main functionality for color image support.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPimage code: (c)2014, Cris Luengo;
  *                                  (c)1999-2014, Delft University of Technology.
  *
