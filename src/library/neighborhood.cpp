@@ -47,18 +47,22 @@ dip::PixelTable Kernel::PixelTable( UnsignedArray const& imsz, dip::uint procDim
             pixelTable.AddWeights( kernel );
          DIP_END_STACK_TRACE
       }
-      if( mirror_ ) {
-         pixelTable.MirrorOrigin();
-      }
    } else {
       FloatArray sz = params_;
       DIP_START_STACK_TRACE
          ArrayUseParameter( sz, nDim, 1.0 );
          pixelTable = { ShapeString(), sz, procDim };
       DIP_END_STACK_TRACE
-      if( mirror_ ) {
-         pixelTable.MirrorOrigin();
-      }
+   }
+   if( !shift_.empty() ) {
+      IntegerArray shift = shift_;
+      DIP_START_STACK_TRACE
+         ArrayUseParameter( shift, nDim, dip::sint( 0 ));
+         pixelTable.ShiftOrigin( shift_ );
+      DIP_END_STACK_TRACE
+   }
+   if( mirror_ ) {
+      pixelTable.MirrorOrigin();
    }
    return pixelTable;
 }

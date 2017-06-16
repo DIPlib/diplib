@@ -43,178 +43,281 @@ PixelTableOffsets::PixelTableOffsets(
    weights_ = pt.Weights();
 }
 
-// Construct a pixel table from a unit circle in different metrics
+// Construct a pixel table from a given shape and size
 PixelTable::PixelTable(
       String const& shape,
       FloatArray size, // by copy
       dip::uint procDim
 ) {
-   // Make sure filter is at least 1px in each dimension
-   for( auto& s : size ) {
-      s = std::max( 1.0, s );
-   }
    dip::uint nDims = size.size();
+   DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( procDim >= nDims, E::PARAMETER_OUT_OF_RANGE );
    procDim_ = procDim;
 
-   if( shape == "rectangular" ) {
-      // A rectangle has all runs of the same length, easy!
+   if( shape == "line" ) {
 
-      // Initialize sizes and origin
+      //
+      // Construct a pixel table from a Bresenham line
+      //
+      // Ideally runs go along the longest dimension of the line.
+      // Worst case is when they go along the shortest, then all runs have length 1.
+
+      // Initialize sizes and origin, modify `size` to be the total step to take from start to end of line.
       sizes_.resize( nDims, 0 );
       origin_.resize( nDims, 0 );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         sizes_[ ii ] = static_cast< dip::uint >( size[ ii ] );
+         if( size[ ii ] < 0 ) {
+            size[ ii ] = std::min( std::round( size[ ii ] ) + 1.0, 0.0 );
+            sizes_[ ii ] = static_cast< dip::uint >( -size[ ii ] ) + 1;
+         } else {
+            size[ ii ] = std::max( std::round( size[ ii ] ) - 1.0, 0.0 );
+            sizes_[ ii ] = static_cast< dip::uint >( size[ ii ] ) + 1;
+         }
          origin_[ ii ] = -static_cast< dip::sint >( sizes_[ ii ] ) / 2;
       }
 
-      // Determine number of pixel table runs
-      dip::uint nRuns = 1;
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         if( ii != procDim ) {
-            nRuns *= sizes_[ ii ];
-         }
-      }
-      runs_.reserve( nRuns );
-      dip::uint length = sizes_[ procDim ];
-      nPixels_ = nRuns * length;
-
-      // Fill the pixel table runs
-      IntegerArray cor = origin_;
-      for( ;; ) {
-
-         // Fill next pixel table run
-         runs_.emplace_back( cor, length );
-
-         // Some nD looping bookkeeping stuff
-         dip::uint ii = 0;
-         for( ; ii < nDims; ++ii ) {
-            if( ii == procDim ) {
-               continue;
-            }
-            ++cor[ ii ];
-            if( cor[ ii ] >= origin_[ ii ] + static_cast< dip::sint >( sizes_[ ii ] )) {
-               cor[ ii ] = origin_[ ii ];
-               continue;
-            }
-            break;
-         }
-         if( ii >= nDims ) {
-            break;
-         }
-      }
-
-   } else if( shape == "elliptic" ) {
-      // A unit circle in Euclidean space, normalized by the sizes.
-
-      // Initialize sizes and origin
-      sizes_.resize( nDims, 0 );
-      origin_.resize( nDims, 0 );
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         sizes_[ ii ] = ( static_cast< dip::uint >( size[ ii ] ) / 2 ) * 2 + 1;
-         origin_[ ii ] = -static_cast< dip::sint >( sizes_[ ii ] ) / 2;
-         size[ ii ] /= 2;
-      }
-
-      // Fill the pixel table runs
-      dfloat sz = size[ procDim ];
-      IntegerArray cor = origin_;
-      for( ;; ) { // Loop over image lines
-
-         // Find the square distance from the origin for the pixel in the middle of this line
-         dfloat distance2 = 0.0;
+      // Find the number of steps from start to end of line
+      dip::uint maxSize = *std::max_element( sizes_.begin(), sizes_.end() ) - 1;
+      if( maxSize >= 1 ) {
+         // Compute step size along each dimension, and find the start point
+         FloatArray stepSize( nDims );
+         FloatArray pos( nDims );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            if( ii != procDim ) {
-               dfloat tmp = static_cast< dfloat >( cor[ ii ] ) / size[ ii ];
-               distance2 += tmp * tmp;
-            }
+            stepSize[ ii ] = size[ ii ] / static_cast< dfloat >( maxSize );
+            pos[ ii ] = static_cast< dfloat >( origin_[ ii ] ) +
+                        ( size[ ii ] < 0 ? static_cast< dfloat >( sizes_[ ii ] - 1 ) : 0.0 ) + 1.0e-8;
+                        // we add a very small value here, to force rounding to happen in the right direction.
          }
-         // If we're still within the radius, this line intersects the ellipsoid
-         if( distance2 <= 1.0 ) {
-            // Find the distance from the origin, along this line, that we can go and still stay within the ellipsoid
-            dip::sint length = static_cast< dip::sint >( std::floor( sz * std::sqrt( 1.0 - distance2 )));
-            // Determine and fill the run for this line
-            IntegerArray coordinate = cor;
-            coordinate[ procDim ] = -length;
-            dip::uint len = static_cast< dip::uint >( 2 * length + 1 );
-            runs_.emplace_back( coordinate, len );
-            nPixels_ += len;
-         }
-
-         // Some nD looping bookkeeping stuff
-         dip::uint ii = 0;
-         for( ; ii < nDims; ++ii ) {
-            if( ii == procDim ) {
-               continue;
-            }
-            ++cor[ ii ];
-            if( cor[ ii ] >= origin_[ ii ] + static_cast< dip::sint >( sizes_[ ii ] )) {
-               cor[ ii ] = origin_[ ii ];
-               continue;
-            }
-            break;
-         }
-         if( ii >= nDims ) {
-            break;
-         }
-      }
-
-   } else if( shape == "diamond" ) {
-      // Same as "elliptic" but with L1 norm.
-
-      // Initialize sizes and origin
-      sizes_.resize( nDims, 0 );
-      origin_.resize( nDims, 0 );
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         sizes_[ ii ] = ( static_cast< dip::uint >( size[ ii ] ) / 2 ) * 2 + 1;
-         origin_[ ii ] = -static_cast< dip::sint >( sizes_[ ii ] ) / 2;
-         size[ ii ] /= 2;
-      }
-
-      // Fill the pixel table runs
-      dfloat sz = size[ procDim ];
-      IntegerArray cor = origin_;
-      for( ;; ) { // Loop over image lines
-
-         // Find the L1 distance from the origin for the pixel in the middle of this line
-         dfloat distance = 0.0;
+         // We need the line to go through the origin, which can be done by setting `origin_` properly,
+         // but predicting what it needs to be is a little complex, depending on even/odd lengths in combinations
+         // of dimensions. For now we just record the coordinates when we reach the origin along the processing
+         // dimension, and shift the origin later on.
+         IntegerArray shift;
+         // Walk the line, extract runs
+         IntegerArray coords( nDims );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            if( ii != procDim ) {
-               distance += static_cast< dfloat >( std::abs( cor[ ii ] )) / size[ ii ];
+            coords[ ii ] = static_cast< dip::sint >( std::round( pos[ ii ] ));
+         }
+         dip::uint runLength = 1;
+         for( dip::uint step = 0; step < maxSize; ++step ) {
+            pos += stepSize;
+            // Are all integer coordinates the same except for the one along procDim_?
+            bool same = true;
+            for( dip::uint ii = 0; ii < nDims; ++ii ) {
+               if(( ii != procDim_ ) && ( static_cast< dip::sint >( std::round( pos[ ii ] )) != coords[ ii ] )) {
+                  same = false;
+                  break;
+               }
+            }
+            if( !same ) {
+               // Save run
+               runs_.emplace_back( coords, runLength );
+               nPixels_ += runLength;
+               // Start new run
+               for( dip::uint ii = 0; ii < nDims; ++ii ) {
+                  coords[ ii ] = static_cast< dip::sint >( std::round( pos[ ii ] ));
+               }
+               runLength = 1;
+            } else {
+               ++runLength;
+            }
+            // Are we at the origin?
+            if( std::round( pos[ procDim_ ] ) == 0.0 ) {
+               bool needShift = false;
+               shift.resize( nDims );
+               for( dip::uint ii = 0; ii < nDims; ++ii ) {
+                  shift[ ii ] = 0;
+                  if(( ii != procDim_ ) && ( coords[ ii ] != 0 )) {
+                     shift[ ii ] = coords[ ii ];
+                     needShift = true;
+                  }
+               }
+               if( !needShift ) {
+                  shift.clear();
+               }
             }
          }
-         // If we're still within the radius, this line intersects the diamond-oid
-         if( distance <= 1.0 ) {
-            // Find the distance from the origin, along this line, that we can go and still stay within the ellipsoid
-            dip::sint length = static_cast< dip::sint >( std::floor( sz * ( 1.0 - distance )));
-            // Determine and fill the run for this line
-            IntegerArray coordinate = cor;
-            coordinate[ procDim ] = -length;
-            dip::uint len = static_cast< dip::uint >( 2 * length + 1 );
-            runs_.emplace_back( coordinate, len );
-            nPixels_ += len;
+         runs_.emplace_back( coords, runLength );
+         nPixels_ += runLength;
+         if( !shift.empty() ) {
+            ShiftOrigin( shift );
          }
-
-         // some nD looping bookkeeping stuff
-         dip::uint ii = 0;
-         for( ; ii < nDims; ++ii ) {
-            if( ii == procDim ) {
-               continue;
-            }
-            ++cor[ ii ];
-            if( cor[ ii ] >= origin_[ ii ] + static_cast< dip::sint >( sizes_[ ii ] ) ) {
-               cor[ ii ] = origin_[ ii ];
-               continue;
-            }
-            break;
-         }
-         if( ii >= nDims ) {
-            break;
-         }
+      } else {
+         // A single point!
+         runs_.emplace_back( origin_, 1 );
+         nPixels_ = 1;
       }
 
    } else {
-      DIP_THROW( "Neighborhood shape name not recognized: " + shape );
+
+      //
+      // Construct a pixel table from a unit circle in different metrics
+      //
+
+      // Make sure filter is at least 1px in each dimension
+      for( auto& s : size ) {
+         s = std::max( 1.0, s );
+      }
+
+      if( shape == "rectangular" ) {
+         // A rectangle has all runs of the same length, easy!
+
+         // Initialize sizes and origin
+         sizes_.resize( nDims, 0 );
+         origin_.resize( nDims, 0 );
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            sizes_[ ii ] = static_cast< dip::uint >( size[ ii ] );
+            origin_[ ii ] = -static_cast< dip::sint >( sizes_[ ii ] ) / 2;
+         }
+
+         // Determine number of pixel table runs
+         dip::uint nRuns = 1;
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            if( ii != procDim ) {
+               nRuns *= sizes_[ ii ];
+            }
+         }
+         runs_.reserve( nRuns );
+         dip::uint length = sizes_[ procDim ];
+         nPixels_ = nRuns * length;
+
+         // Fill the pixel table runs
+         IntegerArray cor = origin_;
+         for( ;; ) {
+
+            // Fill next pixel table run
+            runs_.emplace_back( cor, length );
+
+            // Some nD looping bookkeeping stuff
+            dip::uint ii = 0;
+            for( ; ii < nDims; ++ii ) {
+               if( ii == procDim ) {
+                  continue;
+               }
+               ++cor[ ii ];
+               if( cor[ ii ] >= origin_[ ii ] + static_cast< dip::sint >( sizes_[ ii ] )) {
+                  cor[ ii ] = origin_[ ii ];
+                  continue;
+               }
+               break;
+            }
+            if( ii >= nDims ) {
+               break;
+            }
+         }
+
+      } else if( shape == "elliptic" ) {
+         // A unit circle in Euclidean space, normalized by the sizes.
+
+         // Initialize sizes and origin
+         sizes_.resize( nDims, 0 );
+         origin_.resize( nDims, 0 );
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            sizes_[ ii ] = ( static_cast< dip::uint >( size[ ii ] ) / 2 ) * 2 + 1;
+            origin_[ ii ] = -static_cast< dip::sint >( sizes_[ ii ] ) / 2;
+            size[ ii ] /= 2;
+         }
+
+         // Fill the pixel table runs
+         dfloat sz = size[ procDim ];
+         IntegerArray cor = origin_;
+         for( ;; ) { // Loop over image lines
+
+            // Find the square distance from the origin for the pixel in the middle of this line
+            dfloat distance2 = 0.0;
+            for( dip::uint ii = 0; ii < nDims; ++ii ) {
+               if( ii != procDim ) {
+                  dfloat tmp = static_cast< dfloat >( cor[ ii ] ) / size[ ii ];
+                  distance2 += tmp * tmp;
+               }
+            }
+            // If we're still within the radius, this line intersects the ellipsoid
+            if( distance2 <= 1.0 ) {
+               // Find the distance from the origin, along this line, that we can go and still stay within the ellipsoid
+               dip::sint length = static_cast< dip::sint >( std::floor( sz * std::sqrt( 1.0 - distance2 )));
+               // Determine and fill the run for this line
+               IntegerArray coordinate = cor;
+               coordinate[ procDim ] = -length;
+               dip::uint len = static_cast< dip::uint >( 2 * length + 1 );
+               runs_.emplace_back( coordinate, len );
+               nPixels_ += len;
+            }
+
+            // Some nD looping bookkeeping stuff
+            dip::uint ii = 0;
+            for( ; ii < nDims; ++ii ) {
+               if( ii == procDim ) {
+                  continue;
+               }
+               ++cor[ ii ];
+               if( cor[ ii ] >= origin_[ ii ] + static_cast< dip::sint >( sizes_[ ii ] )) {
+                  cor[ ii ] = origin_[ ii ];
+                  continue;
+               }
+               break;
+            }
+            if( ii >= nDims ) {
+               break;
+            }
+         }
+
+      } else if( shape == "diamond" ) {
+         // Same as "elliptic" but with L1 norm.
+
+         // Initialize sizes and origin
+         sizes_.resize( nDims, 0 );
+         origin_.resize( nDims, 0 );
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            sizes_[ ii ] = ( static_cast< dip::uint >( size[ ii ] ) / 2 ) * 2 + 1;
+            origin_[ ii ] = -static_cast< dip::sint >( sizes_[ ii ] ) / 2;
+            size[ ii ] /= 2;
+         }
+
+         // Fill the pixel table runs
+         dfloat sz = size[ procDim ];
+         IntegerArray cor = origin_;
+         for( ;; ) { // Loop over image lines
+
+            // Find the L1 distance from the origin for the pixel in the middle of this line
+            dfloat distance = 0.0;
+            for( dip::uint ii = 0; ii < nDims; ++ii ) {
+               if( ii != procDim ) {
+                  distance += static_cast< dfloat >( std::abs( cor[ ii ] )) / size[ ii ];
+               }
+            }
+            // If we're still within the radius, this line intersects the diamond-oid
+            if( distance <= 1.0 ) {
+               // Find the distance from the origin, along this line, that we can go and still stay within the ellipsoid
+               dip::sint length = static_cast< dip::sint >( std::floor( sz * ( 1.0 - distance )));
+               // Determine and fill the run for this line
+               IntegerArray coordinate = cor;
+               coordinate[ procDim ] = -length;
+               dip::uint len = static_cast< dip::uint >( 2 * length + 1 );
+               runs_.emplace_back( coordinate, len );
+               nPixels_ += len;
+            }
+
+            // some nD looping bookkeeping stuff
+            dip::uint ii = 0;
+            for( ; ii < nDims; ++ii ) {
+               if( ii == procDim ) {
+                  continue;
+               }
+               ++cor[ ii ];
+               if( cor[ ii ] >= origin_[ ii ] + static_cast< dip::sint >( sizes_[ ii ] )) {
+                  cor[ ii ] = origin_[ ii ];
+                  continue;
+               }
+               break;
+            }
+            if( ii >= nDims ) {
+               break;
+            }
+         }
+
+      } else {
+         DIP_THROW( "Neighborhood shape name not recognized: " + shape );
+      }
    }
 }
 
@@ -239,7 +342,10 @@ PixelTable::PixelTable(
       }
    } else {
       DIP_THROW_IF( origin.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
-      origin_ = origin;
+      origin_.resize( nDims, 0 );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         origin_[ ii ] = -origin[ ii ];
+      }
    }
    ImageIterator< dip::bin > it( mask, procDim );
    do {
@@ -413,6 +519,20 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
    DOCTEST_CHECK( pt4.NumberOfPixels() == 127 );
    DOCTEST_CHECK( pt4.ProcessingDimension() == 2 );
    DOCTEST_CHECK_FALSE( pt4.HasWeights() );
+
+   dip::PixelTable pt5( "line", dip::FloatArray{ 14.1, -4.2, 7.9 }, 0 );
+   DOCTEST_REQUIRE( pt5.Sizes().size() == 3 );
+   DOCTEST_CHECK( pt5.Sizes()[ 0 ] == 14 );
+   DOCTEST_CHECK( pt5.Sizes()[ 1 ] == 4 );
+   DOCTEST_CHECK( pt5.Sizes()[ 2 ] == 8 );
+   DOCTEST_REQUIRE( pt5.Origin().size() == 3 );
+   DOCTEST_CHECK( pt5.Origin()[ 0 ] == -7 );
+   DOCTEST_CHECK( pt5.Origin()[ 1 ] == -1 );
+   DOCTEST_CHECK( pt5.Origin()[ 2 ] == -4 );
+   DOCTEST_CHECK( pt5.Runs().size() == 8 );
+   DOCTEST_CHECK( pt5.NumberOfPixels() == 14 );
+   DOCTEST_CHECK( pt5.ProcessingDimension() == 0 );
+   DOCTEST_CHECK_FALSE( pt5.HasWeights() );
 }
 
 #endif // DIP__ENABLE_DOCTEST

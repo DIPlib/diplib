@@ -79,6 +79,7 @@ class DIP_NO_EXPORT Kernel{
             RECTANGULAR,
             ELLIPTIC,
             DIAMOND,
+            LINE,
             CUSTOM
       };
 
@@ -112,15 +113,35 @@ class DIP_NO_EXPORT Kernel{
          DIP_THROW_IF( image_.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
       }
 
+      /// Shifts the kernel by the given amount along each of the axes.
+      ///
+      /// Note that the shift if not cumulative, any previous shift is ignored.
+      ///
+      /// Note also that the shift is only used when converting the kernel to a pixel table. Some algorithms
+      /// will ignore the shift for some kernel shapes.
+      ///
+      /// Big shifts can be very expensive, it is recommended to use this feature only for shifting by one pixel
+      /// to adjust the location of even-sized kernels.
+      void Shift( IntegerArray const& shift ) {
+         shift_ = shift;
+      }
+
+      /// Retrieves the amount that the is shifted.
+      IntegerArray const& Shift() const { return shift_; }
+
       /// \brief Mirrors the kernel. This has no effect on elliptic or diamond kernels, which are always symmetric.
       void Mirror() {
          mirror_ = !mirror_;
+         for( auto& s : shift_ ) {
+            s = -s;
+         }
       }
 
       /// \brief Creates a `dip::PixelTable` structure representing the shape of the kernel
       dip::PixelTable PixelTable( UnsignedArray const& imsz, dip::uint procDim ) const;
 
-      /// \brief Retrieves the size of the kernel, adjusted to an image of size `imsz`.
+      /// \brief Retrieves the size of the kernel, adjusted to an image of size `imsz`. When computing required
+      /// boundary extension, remember to take `Shift` into account.
       UnsignedArray Sizes( UnsignedArray const& imsz ) const {
          dip::uint nDim = imsz.size();
          DIP_THROW_IF( nDim < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
@@ -135,11 +156,18 @@ class DIP_NO_EXPORT Kernel{
                ArrayUseParameter( sz, nDim, 1.0 );
             DIP_END_STACK_TRACE
             out.resize( nDim );
-            bool rect = IsRectangular();
-            for( dip::uint ii = 0; ii < nDim; ++ii ) {
-               out[ ii ] = rect
-                           ? static_cast< dip::uint >( sz[ ii ] )
-                           : ( static_cast< dip::uint >( sz[ ii ] ) / 2 ) * 2 + 1;
+            if( IsLine() ) {
+               for( dip::uint ii = 0; ii < nDim; ++ii ) {
+                  out[ ii ] = std::max( static_cast< dip::uint >( std::round( std::abs( sz[ ii ] ))), dip::uint( 1 ));
+               }
+            } else if( IsRectangular() ) {
+               for( dip::uint ii = 0; ii < nDim; ++ii ) {
+                  out[ ii ] = sz[ ii ] > 1.0 ? static_cast< dip::uint >( sz[ ii ] ) : 1;
+               }
+            } else {
+               for( dip::uint ii = 0; ii < nDim; ++ii ) {
+                  out[ ii ] = sz[ ii ] > 1.0 ? ( static_cast< dip::uint >( sz[ ii ] ) / 2 ) * 2 + 1 : 1;
+               }
             }
          }
          return out;
@@ -160,6 +188,8 @@ class DIP_NO_EXPORT Kernel{
                return "elliptic";
             case ShapeCode::DIAMOND:
                return "diamond";
+            case ShapeCode::LINE:
+               return "line";
             //case ShapeCode::CUSTOM:
             default:
                return "custom";
@@ -168,6 +198,9 @@ class DIP_NO_EXPORT Kernel{
 
       /// \brief Tests to see if the kernel is rectangular
       bool IsRectangular() const { return shape_ == ShapeCode::RECTANGULAR; }
+
+      /// \brief Tests to see if the kernel is a line
+      bool IsLine() const { return shape_ == ShapeCode::LINE; }
 
       /// \brief Tests to see if the kernel is a custom shape
       bool IsCustom() const { return shape_ == ShapeCode::CUSTOM; }
@@ -180,6 +213,7 @@ class DIP_NO_EXPORT Kernel{
    private:
       ShapeCode shape_;
       FloatArray params_;
+      IntegerArray shift_;
       Image image_;
       bool mirror_ = false;
 
@@ -190,6 +224,8 @@ class DIP_NO_EXPORT Kernel{
             shape_ = ShapeCode::RECTANGULAR;
          } else if( shape == "diamond" ) {
             shape_ = ShapeCode::DIAMOND;
+         } else if( shape == "line" ) {
+            shape_ = ShapeCode::LINE;
          } else {
             DIP_THROW_INVALID_FLAG( shape );
          }

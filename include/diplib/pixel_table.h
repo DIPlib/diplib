@@ -119,9 +119,8 @@ class DIP_NO_EXPORT PixelTableOffsets {
 /// and a length (number of pixels). The runs all go along the same dimension, given by
 /// `dip::PixelTable::ProcessingDimension`.
 ///
-/// It is simple to create a pixel table for
-/// unit circles (spheres) in different norms, and any other shape can be created through
-/// a binary image.
+/// It is simple to create a pixel table for unit circles (spheres) in different norms, and for
+/// straight lines. And any other shape can be created through a binary image.
 ///
 /// The processing dimension defines the dimension along which the pixel runs are taken.
 /// By default it is dimension 0, but it could be beneficial to set it to the dimension
@@ -161,21 +160,26 @@ class DIP_NO_EXPORT PixelTable {
       /// \brief Construct a pixel table for default filter shapes.
       ///
       /// The known default `shape`s are `"rectangular"`, `"elliptic"`, and `"diamond"`,
-      /// which correspond to a unit circle in the \f$L^\infty\f$ norm, the \f$L^2\f$ norm,
-      /// and the \f$L^1\f$ norm.
+      /// which correspond to a unit circle in the \f$L^\infty\f$, \f$L^2\f$ and \f$L^1\f$ norms; and
+      /// `"line"`, which is a single-pixel thick line.
       ///
-      /// The `size` array determines the size and dimensionality. It gives the diameter of the neighborhood (not
-      /// the radius!); the neighborhood contains all pixels at a distance equal or smaller than half the diameter
-      /// from the origin. This means that not only integer sizes are meaningful.
+      /// The `size` array determines the size and dimensionality. For unit circles, it gives the diameter of the
+      /// neighborhood (not the radius!); the neighborhood contains all pixels at a distance equal or smaller than
+      /// half the diameter from the origin. This means that non-integer sizes can be meaningful.
       /// The exception is for the `"rectangular"` shape, where the sizes are rounded down to the nearest integer,
       /// yielding rectangle sides that are either even or odd in length. For even sizes, one can imagine that the
-      /// origin is shifted by half a pixel to accommodate the requested size (thought the origin is set to the pixel
+      /// origin is shifted by half a pixel to accommodate the requested size (though the origin is set to the pixel
       /// that is right of the center). For the `"diamond"` and `"elliptic"` shapes, the bounding box always has odd
       /// sizes, and the origin is always centered on one pixel. To accomplish the same for the "rectangular" shape,
       /// simply round the sizes array to an odd integer:
       /// ```cpp
       ///     size[ ii ] = std::floor( size[ ii ] / 2 ) * 2 + 1
       /// ```
+      ///
+      /// For the line, the `size` array gives the size of the bounding box (rounded to the nearest integer), as
+      /// well as the direction of the line. A negative value for one dimension means that the line runs from
+      /// high to low along that dimension. The line will always run from one corner of the bounding box to the
+      /// opposite corner, and run through the origin.
       ///
       /// `procDim` indicates the processing dimension.
       DIP_EXPORT PixelTable( String const& shape, FloatArray size, dip::uint procDim = 0 );
@@ -202,7 +206,7 @@ class DIP_NO_EXPORT PixelTable {
       /// Returns the size of the bounding box of the neighborhood
       UnsignedArray const& Sizes() const { return sizes_; }
 
-      /// Returns the origin of the neighborhood w.r.t. the top-left corner of the bounding box
+      /// Returns the coordinates of the top-left corner of the bounding box w.r.t. the origin.
       IntegerArray const& Origin() const { return origin_; }
 
       /// \brief Returns the size of the boundary extension along each dimension that is necessary to accommodate the
@@ -220,7 +224,7 @@ class DIP_NO_EXPORT PixelTable {
       void ShiftOrigin( IntegerArray const& shift ) {
          dip::uint nDims = origin_.size();
          DIP_THROW_IF( shift.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
-         origin_ += shift;
+         origin_ -= shift;
          for( auto& run : runs_ ) {
             run.coordinates -= shift;
          }
