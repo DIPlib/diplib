@@ -40,6 +40,9 @@ dip::Kernel StructuringElement::Kernel() const {
       case ShapeCode::DIAMOND:
          out = { Kernel::ShapeCode::DIAMOND, params_ };
          break;
+      case ShapeCode::DISCRETE_LINE:
+         out = { Kernel::ShapeCode::LINE, params_ };
+         break;
       case ShapeCode::CUSTOM:
          out = { image_ };
          break;
@@ -184,16 +187,7 @@ void RectangularMorphology(
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, polarity, mirror ), dtype );
-      Framework::Separable(
-            in,
-            out,
-            dtype,
-            dtype,
-            process,
-            border,
-            bc,
-            *lineFilter
-      );
+      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
    DIP_END_STACK_TRACE
 }
 
@@ -264,17 +258,7 @@ void FlatSEMorphology(
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
       DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( polarity ), dtype );
-      Framework::Full(
-            in,
-            out,
-            dtype,
-            dtype,
-            dtype,
-            1,
-            bc,
-            kernel,
-            *lineFilter
-      );
+      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
    DIP_END_STACK_TRACE
 }
 
@@ -338,17 +322,7 @@ void GreyValueSEMorphology(
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
       DIP_OVL_NEW_REAL( lineFilter, GreyValueSEMorphologyLineFilter, ( polarity ), dtype );
-      Framework::Full(
-            in,
-            out,
-            dtype,
-            dtype,
-            dtype,
-            1,
-            bc,
-            kernel,
-            *lineFilter
-      );
+      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
    DIP_END_STACK_TRACE
 }
 
@@ -496,30 +470,154 @@ void ParabolicMorphology(
       DataType dtype = DataType::SuggestFlex( in.DataType() ); // Returns either float or complex. If complex, DIP_OVL_NEW_FLOAT will throw.
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_FLOAT( lineFilter, ParabolicMorphologyLineFilter, ( filterParam, polarity ), dtype );
-      Framework::Separable(
-            in,
-            out,
-            dtype,
-            dtype,
-            process,
-            { 0 },
-            bc,
-            *lineFilter
-      );
+      Framework::Separable( in, out, dtype, dtype, process, { 0 }, bc, *lineFilter );
    DIP_END_STACK_TRACE
 }
 
 // --- Line morphology ---
 
-void LineMorphology(
+void SkewLineMorphology(
       Image const& /*in*/,
       Image& /*out*/,
       FloatArray const& /*filterParam*/,
       BoundaryConditionArray const& /*bc*/,
-      bool /*interpolated*/, // true = "interpolated line", false = "discrete line"
-      Polarity /*polarity*/
+      StructuringElement::ShapeCode /*mode*/,
+      Polarity /*polarity*/,
+      Mirror /*mirror*/
 ) {
+   // 1- Skew (using interpolation if INTERPOLATED_LINE)
+   // 2- Call RectangularMorphology (or a different, new function if PERIODIC_LINE)
+   // 3- Skew back (using interpolation if INTERPOLATED_LINE)
+   // TODO: Implement SkewLineMorphology (requires implementing Skewing() first)
    DIP_THROW( E::NOT_IMPLEMENTED );
+}
+
+void LineMorphology(
+      Image const& in,
+      Image& out,
+      FloatArray filterParam,
+      BoundaryConditionArray const& bc,
+      Polarity polarity,
+      Mirror mirror
+) {
+   // TEMPORARY:
+   Kernel se( Kernel::ShapeCode::LINE, filterParam );
+   if( mirror == Mirror::YES ) {
+      se.Mirror();
+   }
+   FlatSEMorphology( in, out, se, bc, polarity );
+   //
+
+   /*
+   dip::uint maxSize = 0;
+   dip::uint steps = 0;
+   for( dip::uint ii = 0; ii < filterParam.size(); ++ii ) {
+      dip::uint length = static_cast< dip::uint >( std::abs( std::round( filterParam[ ii ] )));
+      maxSize = std::max( maxSize, length );
+      if( steps > 0 ) {
+         steps = gcd( steps, length );
+      } else {
+         steps = length;
+      }
+   }
+   if( steps == 1 ) {
+      // This means that one of the sizes is 1.
+      // TODO: don't take the size==1 into account when doing the gcd()!
+      // TODO: call RectangularMorphology
+   } else if( steps == maxSize ){
+      // This means that all filterParam are the same
+      // TODO: we should get here too if some size==1, but all the rest are equal.
+      // TODO: call SkewLineMorphology with FAST_LINE
+   } else {
+      SkewLineMorphology( in, out, filterParam, bc, StructuringElement::ShapeCode::PERIODIC_LINE, polarity, mirror );
+      for( dip::uint ii = 0; ii < filterParam.size(); ++ii ) {
+         filterParam[ ii ] = std::round( filterParam[ ii ] ) / static_cast< dfloat >( steps );
+      }
+      Kernel se( Kernel::ShapeCode::LINE, filterParam );
+      if( mirror == Mirror::YES ) {
+         se.Mirror();
+      }
+      FlatSEMorphology( out, out, se, bc, polarity );
+   }
+   */
+}
+
+void DiamondMorphology(
+      Image const& in,
+      Image& out,
+      FloatArray size, // by copy
+      BoundaryConditionArray const& bc,
+      Polarity polarity,
+      Mirror mirror = Mirror::NO
+) {
+   // TODO: This still doesn't work.
+   // We need to go back to unitSize = 3, size = (size - 1)/2, but that only works for isotropic diamonds.
+   // -> compute slope of edge of diamond, make unitSize have that slope, and lines also. How???
+   DIP_START_STACK_TRACE
+      // Determine values for all operations
+      bool skipOperation1 = true;
+      bool skipOperation2 = true;
+      FloatArray unitSize( size.size(), 1.0 );
+      IntegerArray shift( size.size(), 0 );
+      bool needShift = false;
+      for( dip::uint ii = 0; ii < size.size(); ++ii ) {
+         if( std::round( size[ ii ] ) > 4.0 ) {
+            // at least 5 pixels in this dimension
+            skipOperation1 = false;
+            skipOperation2 = false;
+            dfloat halfSize = std::max( 3.0, std::floor( size[ ii ] / 4.0 ) * 2.0 + 1.0 ); // an odd value
+            unitSize[ ii ] = halfSize;
+            size[ ii ] = static_cast< dfloat >(( static_cast< dip::uint >( size[ ii ] - halfSize ) + 1 ) / 2 ) + 1;
+            if( !(static_cast< dip::sint >( size[ ii ] ) & 1 )) {
+               shift[ ii ] = -1;
+               needShift = true;
+            }
+         } else if( size[ ii ] < 3.0 ) {
+            // a single pixel in this dimension
+            size[ ii ] = 1.0;
+         } else {
+            // three pixels in this dimension
+            skipOperation1 = false;
+            unitSize[ ii ] = 3.0;
+            size[ ii ] = 1.0;
+         }
+      }
+      if( skipOperation1 ) {
+         std::cout << "[DiamondMorphology] nothing to do!\n";
+         out.Copy( in );
+      } else {
+         // Step 1: apply operation with a unit diamond
+         std::cout << "[DiamondMorphology] unit diamond size = " << unitSize << std::endl;
+         Kernel unitDiamond{ Kernel::ShapeCode::DIAMOND, unitSize };
+         if( needShift ) {
+            std::cout << "[DiamondMorphology] unit diamond shift = " << shift << std::endl;
+            unitDiamond.Shift( shift );
+         }
+         FlatSEMorphology( in, out, unitDiamond, bc, polarity );
+         if( !skipOperation2 ) {
+            // Step 2: apply operation with line SEs
+            // To get all directions, we flip signs on all elements of size array except the first one.
+            // This is exponential in the number of dimensions: 2 in 2D, 4 in 3D, 8 in 4D, etc.
+            dip::uint nDims = size.size();
+            while( true ) {
+               std::cout << "[DiamondMorphology] line = " << size << std::endl;
+               LineMorphology( out, out, size, bc, polarity, mirror );
+               dip::uint dd;
+               for( dd = 1; dd < nDims; ++dd ) {
+                  if( std::abs( size[ dd ] ) > 1.0 ) {
+                     size[ dd ] = -size[ dd ];
+                     if( size[ dd ] < 0 ) {
+                        break;
+                     }
+                  }
+               }
+               if( dd == nDims ) {
+                  break;
+               }
+            }
+         } // else we're done!
+      }
+   DIP_END_STACK_TRACE
 }
 
 // --- Dispatch ---
@@ -544,14 +642,23 @@ void BasicMorphology(
          case StructuringElement::ShapeCode::RECTANGULAR:
             RectangularMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
             break;
+         case StructuringElement::ShapeCode::DIAMOND:
+            DiamondMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
+            break;
+         case StructuringElement::ShapeCode::OCTAGON:
+            // Call RectangularMorphology, and then DiamondMorphology
+            DIP_THROW( E::NOT_IMPLEMENTED );
+            break;
+         case StructuringElement::ShapeCode::LINE:
+            LineMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
+            break;
+         case StructuringElement::ShapeCode::FAST_LINE:
+         case StructuringElement::ShapeCode::PERIODIC_LINE:
+         case StructuringElement::ShapeCode::INTERPOLATED_LINE:
+            SkewLineMorphology( in, out, se.Params( in.Sizes() ), bc, se.Shape(), polarity, mirror );
+            break;
          case StructuringElement::ShapeCode::PARABOLIC:
             ParabolicMorphology( in, out, se.Params( in.Sizes() ), bc, polarity );
-            break;
-         case StructuringElement::ShapeCode::INTERPOLATED_LINE:
-            LineMorphology( in, out, se.Params( in.Sizes() ), bc, true, polarity );
-            break;
-         case StructuringElement::ShapeCode::DISCRETE_LINE:
-            LineMorphology( in, out, se.Params( in.Sizes() ), bc, false, polarity );
             break;
          default: {
             Kernel kernel = se.Kernel();

@@ -197,6 +197,13 @@ over.
   that of the Mersenne Twister (2<sup>128</sup> vs 2<sup>19937</sup>, but do note that
   2<sup>128</sup> is a very, very long period).
 
+- Morphological filters define line structuring elements differently than before. They used to
+  be available only for 2D images, now they are generalized to nD. The filter parameter, instead
+  of being a length and an angle, now represents the bounding box, with direction encoded by the
+  signs. Besides the discrete line and the interpolated line, we now have several other options,
+  including the periodic line, which makes translation-invariant operations with line SEs much
+  more efficient.
+
 ## Changes from DIPimage 2.x (the old DIPimage)
 
 - The `dip_image` object has changed completely internally. Pixel data is stored differently:

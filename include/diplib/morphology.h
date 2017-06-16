@@ -39,6 +39,44 @@ class DIP_NO_EXPORT Kernel;
 /// \defgroup morphology Mathematical morphology
 /// \ingroup filtering
 /// \brief Morphological filters for smoothing, sharpening, detection and more, and the watershed transform.
+///
+/// \section line_morphology Line Morphology
+///
+/// There are various different ways of applying dilations, erosions, openings and closings with line
+/// structuring elements. The `dip::StructuringElement` class accepts five different strings each
+/// providing a different definition of the line structuring element. Further, there is also the
+/// `dip::PathOpening` function, which provides path openings and closings. Here we describe the five
+/// different line structuring elements implemented in *DIPlib*.
+///
+/// - `"line"`: This is an efficient implementation that yields the same results as the traditional line
+///   structuring element. It is implemented as a combination of `"periodic line"` and `"discrete line"`
+///   (see Soille, 1996).
+///
+/// - `"fast line"`: This is a faster algorithm that applies a 1D operation along Bresenham lines, yielding
+///   a non-translation-invariant result. It is implemented by skewing the image, applying the operation
+///   along one of the image axes using the `"rectangular"` structuring element, and skewing the result back.
+///
+/// - `"periodic line"`: This is a line formed of only a subset of the pixels along the Bresenham line,
+///   such that it can be computed as a 1D operation along Bresenham lines, but still yields a
+///   translation-invariant result. It might not be very useful on its own, but when combined with the
+///   `"discrete line"`, it provides a more efficient implementation of the traditional line structuring
+///   element.
+///
+/// - `"discrete line"`: This is the traditional line structuring element, drawn using the Bresenham algorithm
+///   and applied brute-force.
+///
+/// - `"interpolated line"`: This is the same algorithm as `"fast line"`, but the skew operation uses interpolation.
+///   This greatly improves the results in e.g. a granulometry when the input image is band limited. However,
+///   the result of morphological operations is not band limited, and so the second, reverse skew operation will
+///   lose some precision.
+///
+/// For `"fast line"`, `"periodic line"` and `"interpolated line"`, which are computed by skewing the input
+/// image, setting the boundary condition to `"periodic"` or `"asym periodic"` allows the operation to occur
+/// completely in place; other boundary conditions lead to a larger intermediate image, and thus will always
+/// require additional, temporary storage.
+///
+/// Literature: P. Soille, E. J. Breen and R. Jones, "Recursive implementation of erosions and dilations along
+/// discrete lines at arbitrary angles," in IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
 /// \{
 
 
@@ -65,18 +103,22 @@ class DIP_NO_EXPORT Kernel;
 ///    but the box can be even in size also, meaning that the origin is in between pixels.
 ///    Any size array element that is smaller or equal to 1 causes that dimension to not be processed.
 ///
+/// -  `"octagon"`: an approximation to the ellipse in 2D only.
+///
 /// -  `"parabolic"`: the parabolic structuring element is the morphological equivalent to the Gaussian
 ///    kernel in linear filtering. It is separable and perfectly isotropic. The size array corresponds
 ///    to the scaling of the parabola (i.e. the \f$a\f$ in \f$a^{-2} x^2\f$). A value equal
 ///    or smaller to 0 causes that dimension to not be processed. The boundary condition is ignored
 ///    for operators with this structuring element, and the output image is always a floating-point type.
 ///
-/// -  `"interpolated line"`, `"discrete line"`: these are straight lines, using different implementations.
+/// -  `"line"`, `"fast line"`, `"periodic line"`, `"discrete line"`, `"interpolated line"`:
+///    these are straight lines, using different implementations.
 ///    The size array corresponds to the size of the bounding box of the line, with signs indicating
 ///    the direction. Thus, if the size array is `[2,2]`, the line goes right and down two pixels,
 ///    meaning that the line is formed by two pixels at an angle of 45 degrees down. If the size array
 ///    is `[-2,2]`, then the line is again two pixels, but at an angle of 125 degrees. (Note that
-///    in images, angles increase clockwise from the x-axis, as the y-axis is inverted).
+///    in images, angles increase clockwise from the x-axis, as the y-axis is inverted). For a description
+///    of the meaning of these various line implementations, see \ref line_morphology.
 ///
 /// To define a structuring element through an image, provide either a binary or grey-value image.
 /// If the image is binary, the "set" pixels form the structuring element. If the image is a grey-value
@@ -101,7 +143,7 @@ class DIP_NO_EXPORT Kernel;
 /// the right of the center in case of an even-sized image.
 ///
 /// See dip::Kernel, dip::PixelTable
-class DIP_NO_EXPORT StructuringElement{
+class DIP_NO_EXPORT StructuringElement {
       // TODO: In the old DIPlib, line SEs used filterParam = [length,angle], and only applied to 2D images!
       // TODO: Implement the discrete line for 2D without skews, so it's more efficient.
       // TODO: Implement periodic lines, construct translation-invariant discrete lines using periodic lines
@@ -111,9 +153,13 @@ class DIP_NO_EXPORT StructuringElement{
             RECTANGULAR,
             ELLIPTIC,
             DIAMOND,
-            PARABOLIC,
-            INTERPOLATED_LINE,
+            OCTAGON,
+            LINE,
+            FAST_LINE,
+            PERIODIC_LINE,
             DISCRETE_LINE,
+            INTERPOLATED_LINE,
+            PARABOLIC,
             CUSTOM
       };
 
@@ -202,12 +248,20 @@ class DIP_NO_EXPORT StructuringElement{
             shape_ = ShapeCode::RECTANGULAR;
          } else if( shape == "diamond" ) {
             shape_ = ShapeCode::DIAMOND;
-         } else if( shape == "parabolic" ) {
-            shape_ = ShapeCode::PARABOLIC;
-         } else if( shape == "interpolated line" ) {
-            shape_ = ShapeCode::INTERPOLATED_LINE;
+         } else if( shape == "octagon" ) {
+            shape_ = ShapeCode::OCTAGON;
+         } else if( shape == "line" ) {
+            shape_ = ShapeCode::LINE;
+         } else if( shape == "fast line" ) {
+            shape_ = ShapeCode::FAST_LINE;
+         } else if( shape == "periodic line" ) {
+            shape_ = ShapeCode::PERIODIC_LINE;
          } else if( shape == "discrete line" ) {
             shape_ = ShapeCode::DISCRETE_LINE;
+         } else if( shape == "interpolated line" ) {
+            shape_ = ShapeCode::INTERPOLATED_LINE;
+         } else if( shape == "parabolic" ) {
+            shape_ = ShapeCode::PARABOLIC;
          } else {
             DIP_THROW_INVALID_FLAG( shape );
          }
