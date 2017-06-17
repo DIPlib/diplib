@@ -33,15 +33,7 @@ namespace dip {
 
 namespace {
 
-enum class FastWatershedOperation {
-      WATERSHED,
-      EXTREMA
-};
-
-constexpr LabelType WATERSHED_LABEL = std::numeric_limits< LabelType >::max();
-constexpr LabelType PIXEL_ON_STACK = WATERSHED_LABEL - 1;
-constexpr LabelType MAX_LABEL = WATERSHED_LABEL - 2;
-
+// --- COMMON TO BOTH WATERSHED ALGORITHMS ---
 
 template< typename TPI >
 struct WatershedRegion {
@@ -85,7 +77,6 @@ void AddSizes( WatershedRegionList< TPI, UnionFunction >& list, LabelType label,
    region1.size += region2.size;
 }
 
-
 template< typename TPI >
 TPI AbsDiff( TPI a, TPI b ) {
    return a > b ? TPI( a - b ) : TPI( b - a ); // casting back to TPI, because of inane default casts.
@@ -102,6 +93,12 @@ inline bool WatershedShouldMerge(
           (( maxSize == 0 ) || ( region.size <= maxSize ));
 }
 
+// --- FAST WATERSHED ---
+
+enum class FastWatershedOperation {
+      WATERSHED,
+      EXTREMA
+};
 
 // Returns true if a pixel in the neighbor list is foreground and has the mask set
 inline bool PixelHasForegroundNeighbor(
@@ -188,8 +185,7 @@ void dip__FastWatershed(
                labels[ offset ] = lab;
                AddPixel( regions, lab );
             }
-            // Else don't merge, set as watershed label
-            //labels[ offset ] = WATERSHED_LABEL;
+            // Else don't merge, leave at 0 to indicate watershed label
             break;
          }
       }
@@ -346,6 +342,12 @@ void FastWatershed(
    DIP_OVL_CALL_REAL( dip__FastWatershed, ( in, labels, binary, offsets, neighborOffsets,
          maxDepth, maxSize, lowFirst, binaryOutput, operation ), in.DataType() );
 }
+
+// --- SEEDED WATERSHED ---
+
+constexpr LabelType WATERSHED_LABEL = std::numeric_limits< LabelType >::max();
+constexpr LabelType PIXEL_ON_STACK = WATERSHED_LABEL - 1;
+constexpr LabelType MAX_LABEL = WATERSHED_LABEL - 2;
 
 template< typename TPI >
 struct Qitem {
@@ -579,6 +581,7 @@ void SeededWatershed(
       auto m = GetMaximumAndMinimum( out, c_mask );
       numlabs = static_cast< dip::uint >( m.Maximum() );
    }
+   DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );
    out.SetPixelSize( pixelSize );
 
    // Create array with offsets to neighbors
@@ -600,6 +603,8 @@ void SeededWatershed(
       Equal( out, WATERSHED_LABEL, out );
    }
 }
+
+// --- DISPATCH FUNCTIONS ---
 
 void Watershed(
       Image const& in,

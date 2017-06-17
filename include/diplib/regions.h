@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for functions that work with labeled images.
  *
- * (c)2016, Cris Luengo.
+ * (c)2016-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,31 +58,26 @@ namespace dip {
 /// image are set to zero. Setting either to zero disables the corresponding check. Setting both
 /// to zero causes all objects to be labeled, irrespective of size.
 ///
-/// If `mode` is "LabelIsSize", the objects' labels are set to the objects' sizes. Normal operation
-/// is obtained with an empty string.
-///
 /// The boundary conditions are generally ignored (labeling stops at the boundary). The exception
-/// is `dip::BoundaryCondition::PERIODIC`, which is the only one that makes sense for this algorithm.
+/// is `"periodic"`, which is the only one that makes sense for this algorithm.
 DIP_EXPORT dip::uint Label(
       Image const& binary,
       Image& out,
       dip::uint connectivity,
-      String mode = "",
       dip::uint minSize = 0,
       dip::uint maxSize = 0,
-      BoundaryConditionArray bc = {}
+      StringArray const& boundaryCondition = {}
 );
 
 inline Image Label(
       Image const& binary,
       dip::uint connectivity,
-      String mode = "",
       dip::uint minSize = 0,
       dip::uint maxSize = 0,
-      BoundaryConditionArray bc = {}
+      StringArray const& boundaryCondition = {}
 ) {
    Image out;
-   Label( binary, out, connectivity, mode, minSize, maxSize, bc );
+   Label( binary, out, connectivity, minSize, maxSize, boundaryCondition );
    return out;
 }
 

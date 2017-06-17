@@ -103,12 +103,16 @@ class UnionFind {
       IndexType Union( IndexType index1, IndexType index2 ) {
          index1 = FindRoot( index1 );
          index2 = FindRoot( index2 );
-         // We take the lower of the two labels as root.
-         IndexType root = std::min( index1, index2 );
-         IndexType leaf = std::max( index1, index2 );
-         list[ root ].value = unionFunction_( list[ root ].value, list[ leaf ].value );
-         list[ leaf ].parent = root;
-         return root;
+         if( index1 == index2 ) {
+            return index1;
+         } else {
+            // We take the lower of the two labels as root.
+            IndexType root = std::min( index1, index2 );
+            IndexType leaf = std::max( index1, index2 );
+            list[ root ].value = unionFunction_( list[ root ].value, list[ leaf ].value );
+            list[ leaf ].parent = root;
+            return root;
+         }
       }
 
       /// \brief Returns a reference to the value associated to the tree that contains `index`.
@@ -127,6 +131,34 @@ class UnionFind {
          for( IndexType ii = 1; ii < maxLab; ++ii ) {
             IndexType index = FindRoot( ii );
             if( newLabels[ index ] == 0 ) {
+               newLabels[ index ] = ++lab;
+            }
+         }
+         // Write the new labels to the list.
+         for( IndexType ii = 1; ii < maxLab; ++ii ) {
+            // Note that we've called FindRoot on each list element, so they all directly point at their root now.
+            list[ ii ].parent = newLabels[ list[ ii ].parent ];
+         }
+         return lab;
+      }
+
+      /// \brief Assigns a new label to the trees that satisfy `constraint`, and 0 to the remainder.
+      ///
+      /// This function destroys the tree structure. After this call, only use `Label`!
+      ///
+      /// `constraint` is a function or function object that takes the `ValueType` associated to a tree,
+      /// and returns `true` if the tree is to be kept.
+      ///
+      /// Returns the number of unique labels.
+      template< typename Constraint >
+      dip::uint Relabel( Constraint constraint ) {
+         std::vector< IndexType > newLabels( list.size(), 0 );
+         IndexType lab = 0;
+         IndexType maxLab = static_cast< IndexType >( list.size() );
+         // Assign a new, unique and consecutive label to each tree.
+         for( IndexType ii = 1; ii < maxLab; ++ii ) {
+            IndexType index = FindRoot( ii );
+            if( constraint( list[ index ].value ) && ( newLabels[ index ] == 0 )) {
                newLabels[ index ] = ++lab;
             }
          }
