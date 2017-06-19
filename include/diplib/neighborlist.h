@@ -174,6 +174,8 @@ class DIP_NO_EXPORT NeighborList {
 
       NeighborListData neighbors_;
 
+      NeighborList() {} // Creating a default-initialized object only allowd by class methods.
+
    public:
 
       /// \brief Iterates over the neighbors in the `%NeighborList`.
@@ -251,6 +253,14 @@ class DIP_NO_EXPORT NeighborList {
          }
          return out;
       }
+
+      /// \brief Returns a new `%NeighborList` object containing only those neighbors that would be processed earlier
+      /// if processing as `ImageIterator` and the like would. `procDim` must be the iterator's processing dimension.
+      DIP_EXPORT NeighborList SelectBackward( dip::uint procDim = 0 ) const;
+
+      /// \brief Returns a new `%NeighborList` object containing only those neighbors that would be processed later
+      /// if processing as `ImageIterator` and the like would. `procDim` must be the iterator's processing dimension.
+      DIP_EXPORT NeighborList SelectForward( dip::uint procDim = 0 ) const;
 
       /// \brief Returns the number of neighbors.
       dip::uint Size() const {

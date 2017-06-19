@@ -74,7 +74,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          DML_MAX_ARGS( 5 );
 
          dml::MatlabInterface mi;
-         dip::Image const label = dml::GetImage( prhs[ 0 ] );
+         dip::Image label = dml::GetImage( prhs[ 0 ] ); // Non-const, we might want to modify the image (not the data pointed at)
          dip::Image const grey = nrhs > 1 ? dml::GetImage( prhs[ 1 ] ) : dip::Image();
          dip::StringArray features;
          if( nrhs > 2 ) {
@@ -88,11 +88,12 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          }
          dip::uint connectivity = nrhs > 4 ? dml::GetUnsigned( prhs[ 4 ] ) : label.Dimensionality();
 
-         dip::Image tmp;
          if( !label.DataType().IsUInt() ) {
             // Not yet labeled
-            DIP_THROW_IF( label.DataType().IsBinary(), "Object input image must be either labelled or binary." );
-            dip::Label( label, tmp, connectivity );
+            DIP_THROW_IF( !label.DataType().IsBinary(), "Object input image must be either labelled or binary." );
+            dip::Image tmp = dip::Label( label, connectivity ); // using this form so that we don't overwrite input data.
+            label.Strip();
+            label = tmp;
          }
 
          dip::Measurement msr = measurementTool->Measure( label, grey, features, objectIDs, connectivity );

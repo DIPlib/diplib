@@ -161,4 +161,50 @@ void NeighborList::ConstructImage( dip::uint dimensionality, Image const& c_metr
    } while( ++it );
 }
 
+namespace {
+
+bool IsProcessed( IntegerArray const& coords, dip::uint procDim ) {
+   dip::uint ii = coords.size();
+   while( ii > 0 ) {
+      --ii;
+      if( ii != procDim ) {
+         if( coords[ ii ] > 0 ) {
+            return false;
+         } else if( coords[ ii ] < 0 ) {
+            return true;
+         } // If 0, it depends on a previous coordinate.
+      }
+   }
+   return coords[ procDim ] < 0;
+   // Note that coords[ procDim ] will not be 0 here, as coords={0,0,0,...} is never a part of the neighborhood.
+}
+
+} // namespace
+
+NeighborList NeighborList::SelectBackward( dip::uint procDim ) const {
+   if( procDim >= neighbors_[ 0 ].coords.size() ) {
+      procDim = 0;
+   }
+   NeighborList out;
+   for( auto& neighbor : neighbors_ ) {
+      if( IsProcessed( neighbor.coords, procDim )) {
+         out.neighbors_.push_back( neighbor );
+      }
+   }
+   return out;
+}
+
+NeighborList NeighborList::SelectForward( dip::uint procDim ) const {
+   if( procDim >= neighbors_[ 0 ].coords.size() ) {
+      procDim = 0;
+   }
+   NeighborList out;
+   for( auto& neighbor : neighbors_ ) {
+      if( !IsProcessed( neighbor.coords, procDim )) {
+         out.neighbors_.push_back( neighbor );
+      }
+   }
+   return out;
+}
+
 } // namespace dip

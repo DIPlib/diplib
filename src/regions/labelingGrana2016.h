@@ -30,7 +30,7 @@
 // https://github.com/prittt/YACCLAB
 // Modifications (c)2017 Cris Luengo:
 //    - Only keept the function that does the first pass
-//    - Renamed it to dip::LabelingGrana2016
+//    - Renamed it to dip::LabelFirstPass_Grana2016, added namespaces
 //    - Replaced OpenCV types with DIPlib types
 //    - Replaced indexing with pre-computed offsets and pointer arithmetic, and using strides
 //    - Using my own dip::UnionFind class instead of the functions provided with YACCLAB
@@ -48,7 +48,7 @@ using LabelRegionList = UnionFind< LabelType, dip::uint, std::plus< dip::uint >>
 
 namespace {
 
-void LabelingGrana2016( Image const& c_in, Image& c_out, LabelRegionList& regions ) {
+void LabelFirstPass_Grana2016( Image const& c_in, Image& c_out, LabelRegionList& regions ) {
    dip::sint w = static_cast< dip::sint >( c_in.Size( 0 ));
    dip::sint h = static_cast< dip::sint >( c_in.Size( 1 ));
    dip::sint xInStride = c_in.Stride( 0 );

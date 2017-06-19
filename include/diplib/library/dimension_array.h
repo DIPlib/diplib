@@ -258,7 +258,7 @@ class DIP_NO_EXPORT DimensionArray {
       /// Returns a reverse iterator to the beginning
       reverse_iterator rbegin() { return reverse_iterator( end() ); }
       /// Returns a reverse iterator to the beginning
-      const_reverse_iterator rbegin() const { return const_reverse_iterator( begin() ); }
+      const_reverse_iterator rbegin() const { return const_reverse_iterator( end() ); }
       /// Returns a reverse iterator to the end
       reverse_iterator rend() { return reverse_iterator( begin() ); }
       /// Returns a reverse iterator to the end

@@ -130,7 +130,7 @@ class UnionFind {
          // Assign a new, unique and consecutive label to each tree.
          for( IndexType ii = 1; ii < maxLab; ++ii ) {
             IndexType index = FindRoot( ii );
-            if( newLabels[ index ] == 0 ) {
+            if(( index > 0 ) && ( newLabels[ index ] == 0 )) {
                newLabels[ index ] = ++lab;
             }
          }
@@ -158,7 +158,7 @@ class UnionFind {
          // Assign a new, unique and consecutive label to each tree.
          for( IndexType ii = 1; ii < maxLab; ++ii ) {
             IndexType index = FindRoot( ii );
-            if( constraint( list[ index ].value ) && ( newLabels[ index ] == 0 )) {
+            if(( index > 0 ) && ( newLabels[ index ] == 0 ) && constraint( list[ index ].value )) {
                newLabels[ index ] = ++lab;
             }
          }
