@@ -29,7 +29,7 @@
 // Taken from YACCLAB: Yet Another Connected Components Labeling Benchmark
 // https://github.com/prittt/YACCLAB
 // Modifications (c)2017 Cris Luengo:
-//    - Only keept the function that does the first pass
+//    - Only kept the function that does the first pass
 //    - Renamed it to dip::LabelFirstPass_Grana2016, added namespaces
 //    - Replaced OpenCV types with DIPlib types
 //    - Replaced indexing with pre-computed offsets and pointer arithmetic, and using strides

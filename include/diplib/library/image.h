@@ -1934,7 +1934,7 @@ class DIP_NO_EXPORT Image {
 
       /// \name Reshaping forged image
       /// These functions change the image object, providing a differently-shaped version of the same data.
-      /// No data is copied, and the result contains the same set of samples as the input.
+      /// No data is copied, and the image contains the same set of samples as before the method call.
       /// \{
 
       /// \brief Permute dimensions.
@@ -2070,6 +2070,17 @@ class DIP_NO_EXPORT Image {
       /// `process` indicates which axes to mirror. If `process` is an empty array, all
       /// axes will be mirrored.
       DIP_EXPORT Image& Mirror( BooleanArray process = {} );
+
+      /// \brief Undo the effects of `Mirror` and `PermuteDimensions`.
+      ///
+      /// Modifies the image such that all strides are positive and sorted smaller to larger. The first
+      /// dimension will have the smallest stride. Visiting pixels in linear indexing order (as is done
+      /// through `dip::ImageIterator`) will be most efficient after calling this function.
+      ///
+      /// Note that strides are not necessarily normal after this call, if the image is a view over a
+      /// larger image, if singleton dimensions were created or expanded, etc. Use `ForceNormalStrides`
+      /// to ensure that strides are normal.
+      DIP_EXPORT Image& StandardizeStrides();
 
       /// \brief Change the tensor shape, without changing the number of tensor elements.
       Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {
@@ -2323,7 +2334,7 @@ class DIP_NO_EXPORT Image {
       // Defined in src/library/image_data.cpp
       //
 
-      /// \name Getting and setting pixel values
+      /// \name Getting and setting pixel values, copying
       /// \{
 
       /// \brief Creates a 1D image containing the pixels selected by `mask`.

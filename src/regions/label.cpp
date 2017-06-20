@@ -61,7 +61,7 @@ void LabelFirstPass(
       NeighborList const& c_neighborList,
       dip::uint connectivity
 ) {
-   dip::uint procDim = Framework::OptimalProcessingDim( c_img );
+   dip::uint procDim = Framework::OptimalProcessingDim( c_img ); // this will typically be 0, because we've "standardized the strides".
    // Select only those neighbors that are processed earlier
    NeighborList neighborList = c_neighborList.SelectBackward( procDim );
    // Prepare other needed data
@@ -202,7 +202,7 @@ void LabelFirstPass(
 
 dip::uint Label(
       Image const& c_in,
-      Image& out,
+      Image& c_out,
       dip::uint connectivity,
       dip::uint minSize,
       dip::uint maxSize,
@@ -216,8 +216,10 @@ dip::uint Label(
 
    Image in = c_in.QuickCopy();
    auto pixelSize = in.PixelSize();
-   out.ReForge( in, DT_LABEL );
-   out.SetPixelSize( pixelSize );
+   c_out.ReForge( in, DT_LABEL );
+   c_out.SetPixelSize( pixelSize );
+   Image out = c_out.QuickCopy();
+   out.StandardizeStrides(); // Reorder dimensions so the looping is more efficient.
 
    LabelRegionList regions{ std::plus< dip::uint >{} };
    NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
@@ -225,12 +227,11 @@ dip::uint Label(
    // First scan
    if(( nDims == 2 ) && ( connectivity == 2 )) {
       out.Fill( 0 );
-      LabelFirstPass_Grana2016( in, out, regions );
-      // TODO: Do we want to keep the Grana2016 code?
-      // This actually only saves ~10% on an image 2k x 2k pixels: 0.071s vs 0.078s
+      LabelFirstPass_Grana2016( in, c_out, regions ); // Note use of `c_out` here, not `out`, because dimensions must agree with `in`.
+      // This saves ~20% on an image 2k x 2k pixels: 0.0559 vs 0.0658s
       // (including MATLAB overhead, probably slightly larger relative difference without that overhead).
    } else {
-      out.Copy( in );
+      c_out.Copy( in ); // Copy `in` into `c_out`, not into `out`, which could be reshaped.
       LabelFirstPass( out, regions, neighborList, connectivity );
       regions.Union( 0, 1 ); // This gets rid of label 1, which we used internally, but otherwise causes the first region to get label 2.
    }
@@ -240,19 +241,49 @@ dip::uint Label(
       BoundaryConditionArray bc;
       DIP_START_STACK_TRACE
          bc = StringArrayToBoundaryConditionArray( boundaryCondition );
-         ArrayUseParameter( bc, nDims, BoundaryCondition::ADD_ZEROS ); // any default that is not PERIODIC will do...
+         ArrayUseParameter( bc, nDims, BoundaryCondition::DEFAULT ); // any default that is not PERIODIC will do...
       DIP_END_STACK_TRACE
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( bc[ ii ] == BoundaryCondition::PERIODIC ) {
             // Merge labels for objects touching opposite sides of image along this dimension
-            // TODO: take connectivity into account, now we do connectivity==1 only.
-            dip::sint lastPixelOffset = out.Stride( ii ) * static_cast< dip::sint >( out.Size( ii ) - 1 );
-            auto it = ImageIterator< LabelType >( out, ii );
+            // We use `c_out` here, not `out`, because we need to be sure of which dimension is being processed.
+            // We also do a lot of out-of-bounds testing, which is relatively expensive. But this is a not-so-commonly
+            // used feature, it's OK if it's not super-fast.
+            IntegerArray neighborOffsets = neighborList.ComputeOffsets( c_out.Strides() );
+            IntegerArray otherSideOffsets;
+            std::vector< IntegerArray > otherSideCoords;
+            dip::sint acrossImage = c_out.Stride( ii ) * static_cast< dip::sint >( c_out.Size( ii ));
+            auto nl = neighborList.begin();
+            auto no = neighborOffsets.begin();
+            for( ; nl != neighborList.end(); ++no, ++nl ) {
+               if( nl.Coordinates()[ ii ] == -1 ) {
+                  // This neighbor wraps around the image
+                  otherSideOffsets.push_back( *no + acrossImage );
+                  IntegerArray coords = nl.Coordinates();
+                  coords[ ii ] += static_cast< dip::sint >( c_out.Size( ii ));
+                  otherSideCoords.push_back( coords );
+               }
+            }
+            auto it = ImageIterator< LabelType >( c_out, ii );
             do {
-               LabelType lab1 = *it;
-               LabelType lab2 = *( it.Pointer() + lastPixelOffset );
-               if(( lab1 > 0 ) && ( lab2 > 0 )) {
-                  regions.Union( lab1, lab2 );
+               for( dip::uint kk = 0; kk < otherSideOffsets.size(); ++kk ) {
+                  // I this neighbor in the image?
+                  IntegerArray coords = otherSideCoords[ kk ];
+                  coords += it.Coordinates();
+                  bool use = true;
+                  for( dip::uint dd = 0; dd < nDims; ++dd ) {
+                     if(( coords[ dd ] < 0 ) || ( coords[ dd ] >= c_out.Size( dd ))) {
+                        use = false;
+                        break;
+                     }
+                  }
+                  if( use ) {
+                     LabelType lab1 = *it;
+                     LabelType lab2 = *( it.Pointer() + otherSideOffsets[ kk ] );
+                     if(( lab1 > 0 ) && ( lab2 > 0 )) {
+                        regions.Union( lab1, lab2 );
+                     }
+                  }
                }
             } while( ++it );
 

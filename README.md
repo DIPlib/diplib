@@ -85,6 +85,11 @@ DIPlib includes the following libraries / external code:
   Apache 2.0 License, or The MIT License, at your option  
   see include/diplib/private/pcg_*.hpp
 
+- A fast 2D labeling algorithm out of YACCLAB  
+  Copyright(c) 2016 - 2017 Costantino Grana, Federico Bolelli, Lorenzo Baraldi and Roberto Vezzani  
+  The MIT License (MIT)  
+  see include/diplib/regions/labelingGranan2016.h
+
 - pybind11 (not used in the DIPlib library, only used in the Python bindings)  
   Copyright (c) 2016 Wenzel Jakob <wenzel.jakob@epfl.ch>, All rights reserved  
   BSD-style license  

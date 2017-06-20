@@ -49,7 +49,9 @@ Image& Image::PermuteDimensions( UnsignedArray const& order ) {
    }
    sizes_ = newsizes;
    strides_ = newstrides;
-   pixelSize_ = newpixelsz;
+   if( pixelSize_.IsDefined()) {
+      pixelSize_ = newpixelsz;
+   }
    return *this;
 }
 
@@ -226,6 +228,37 @@ Image& Image::Mirror( BooleanArray process ) {
       if( process[ ii ] ) {
          origin_ = Pointer( static_cast< dip::sint >( sizes_[ ii ] - 1 ) * strides_[ ii ] );
          strides_[ ii ] = -strides_[ ii ];
+      }
+   }
+   return *this;
+}
+
+
+Image& Image::StandardizeStrides() {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nd = sizes_.size();
+   // Un-mirror
+   for( dip::uint ii = 0; ii < nd; ++ii ) {
+      if( strides_[ ii ] < 0 ) {
+         origin_ = Pointer( static_cast< dip::sint >( sizes_[ ii ] - 1 ) * strides_[ ii ] );
+         strides_[ ii ] = -strides_[ ii ];
+      }
+   }
+   // Sort strides
+   if( !std::is_sorted( strides_.begin(), strides_.end() )) {
+      UnsignedArray order = strides_.sortedIndices();
+      UnsignedArray newsizes( nd, 0 );
+      IntegerArray newstrides( nd, 0 );
+      dip::PixelSize newpixelsz;
+      for( dip::uint ii = 0; ii < nd; ++ii ) {
+         newsizes[ ii ] = sizes_[ order[ ii ]];
+         newstrides[ ii ] = strides_[ order[ ii ]];
+         newpixelsz.Set( ii, pixelSize_[ order[ ii ]] );
+      }
+      sizes_ = newsizes;
+      strides_ = newstrides;
+      if( pixelSize_.IsDefined()) {
+         pixelSize_ = newpixelsz;
       }
    }
    return *this;
