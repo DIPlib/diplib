@@ -55,6 +55,50 @@ bool IsPrevious( IntegerArray const& coords, dip::uint procDim ) {
    return true;
 }
 
+// A trivial connected component analysis routine that works for any dimensionality and any connectivity,
+// to be used only for images that are too small for `LabelFirstPass`. This is the case when the largest
+// dimension has size 1 or 2.
+void LabelFirstPassTinyImage(
+      Image& c_img,
+      LabelRegionList& regions,
+      NeighborList const& c_neighborList
+) {
+   // Select only those neighbors that are processed earlier
+   NeighborList neighborList = c_neighborList.SelectBackward();
+   IntegerArray neighborOffsets = neighborList.ComputeOffsets( c_img.Strides() );
+   // Prepare other needed data
+   LabelType lastLabel = regions.Create( 0 ); // This is the region for label 1, which we cannot use because unprocessed pixels have this value
+   DIP_ASSERT( lastLabel == 1 );
+   // Loop over every image line
+   ImageIterator< LabelType > it( c_img );
+   do {
+      if( *it ) {
+         lastLabel = 0;
+         auto nl = neighborList.begin();
+         auto no = neighborOffsets.begin();
+         for( ; nl != neighborList.end(); ++no, ++nl ) {
+            if( nl.IsInImage( it.Coordinates(), c_img.Sizes() )) {
+               LabelType lab = it.Pointer()[ *no ];
+               if( lab ) {
+                  if( lastLabel ) {
+                     lastLabel = regions.Union( lastLabel, lab );
+                  } else {
+                     lastLabel = lab;
+                  }
+               }
+            }
+         }
+         if( lastLabel ) {
+            ++( regions.Value( lastLabel ));
+         } else {
+            lastLabel = regions.Create( 1 );
+         }
+         *it = lastLabel;
+      }
+   } while( ++it );
+}
+
+// A union-find connected component analysis routine that works for any dimensionality and any connectivity.
 void LabelFirstPass(
       Image& c_img,
       LabelRegionList& regions,
@@ -62,20 +106,22 @@ void LabelFirstPass(
       dip::uint connectivity
 ) {
    dip::uint procDim = Framework::OptimalProcessingDim( c_img ); // this will typically be 0, because we've "standardized the strides".
+   dip::uint length = c_img.Size( procDim );
+   if( length < 3 ) {
+      // Note that if length < 3, the image is very small all around, because `OptimalProcessingDim` will return a larger dimension if it exists.
+      LabelFirstPassTinyImage( c_img, regions, c_neighborList );
+      return;
+   }
    // Select only those neighbors that are processed earlier
    NeighborList neighborList = c_neighborList.SelectBackward( procDim );
-   // Prepare other needed data
    IntegerArray neighborOffsets = neighborList.ComputeOffsets( c_img.Strides() );
-   ImageIterator< LabelType > it( c_img, procDim );
-   dip::uint length = c_img.Size( procDim );
-   DIP_THROW_IF( length < 3, "The image is too small for the labeling routine to work correctly" );
-   // Note that if length < 3, the image is very small all around, because `OptimalProcessingDim` will return a larger dimension if it exists.
-   // TODO: make a trivial labeling routine for tiny images like this.
+   // Prepare other needed data
    dip::sint stride = c_img.Stride( procDim );
    dip::sint endOffset = stride * static_cast< dip::sint >( length  - 1 );
    LabelType lastLabel = regions.Create( 0 ); // This is the region for label 1, which we cannot use because unprocessed pixels have this value
    DIP_ASSERT( lastLabel == 1 );
    // Loop over every image line
+   ImageIterator< LabelType > it( c_img, procDim );
    do {
       // Which neighbors can we use on this line?
       //    +-+-+-+  `x` = current pixel

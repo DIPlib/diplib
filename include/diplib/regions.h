@@ -38,7 +38,6 @@ namespace dip {
 
 // TODO: functions to port:
 /*
-   dip_Label (dip_regions.h)
    dip_RegionConnectivity (dip_regions.h)
    dip_GrowRegions (dip_regions.h)
    dip_GrowRegionsWeighted (dip_regions.h)
