@@ -1177,6 +1177,7 @@ classdef dip_image
             return
          end
          % Find the indices to use
+         orig_sz = size(a.Data);
          sz = imsize(a);
          [s,~,~,ndims] = construct_subs_struct(s,sz,a);
          if ndims == 1 && length(sz) > 1
@@ -1188,7 +1189,7 @@ classdef dip_image
          end
          a.Data = subsasgn(a.Data,s,b);
          if ndims == 1 && length(sz) > 1
-            a.Data = reshape(a.Data,[size(a.Data,1),size(a.Data,2),sz]);
+            a.Data = reshape(a.Data,orig_sz);
          end
       end
 
