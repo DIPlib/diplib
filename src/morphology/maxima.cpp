@@ -27,8 +27,6 @@ namespace dip {
 
 namespace {
 
-using LabelType = dip::uint32;
-constexpr auto DT_LABEL = DT_UINT32;
 constexpr LabelType PIXEL_NOT_EXTREMUM = std::numeric_limits< LabelType >::max();
 constexpr LabelType MAX_LABEL = PIXEL_NOT_EXTREMUM - 1;
 
@@ -129,13 +127,22 @@ void dip__Extrema(
          }
       }
    } while( ++it );
-   // Loop over all image pixels again, erase labels marked bad
-   ImageIterator< LabelType > oit( c_out );
+   // Relabel regions so labels are consecutive
+   dip::uint nLabs = labmap.size();
+   std::vector< LabelType >mapping( nLabs, 0 ); // Matching labmap
+   curlab = 0;
+   for( dip::uint ii = 0; ii < nLabs; ++ii ) {
+      if( labmap[ ii ] ) {
+         mapping[ ii ] = ++curlab;
+      }
+   }
+   // Loop over all image pixels again, apply `mapping`.
+   Image out = c_out.QuickCopy();
+   out.StandardizeStrides(); // This will make the loop below optimal
+   ImageIterator< LabelType > oit( out );
    do {
       LabelType lab = *oit;
-      if(( lab == PIXEL_NOT_EXTREMUM ) || (( lab > 0 ) && ( !labmap[ lab ] ))) {
-         *oit = 0;
-      }
+      *oit = lab == PIXEL_NOT_EXTREMUM ? 0 : mapping[ lab ];
    } while( ++oit );
 }
 

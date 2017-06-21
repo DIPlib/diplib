@@ -1,7 +1,7 @@
 %WATERSEED   Watershed initialized with a seed image
 %
 % WATERSEED performs a watershed on the image GREY_IMAGE, starting with
-% the seeds in the labelled SEED_IMAGE. The labelled regions are grown
+% the seeds in the labeled SEED_IMAGE. The labeled regions are grown
 % by addressing their neighbors (defined by CONNECTIVITY) in the order
 % of the grey-values in GREY_IMAGE.
 %
@@ -21,7 +21,7 @@
 %     the H-minima transform before the watershed.
 %  flags: a cell array of strings, choose from:
 %     - 'high first': reverse the sorting order.
-%     - 'labels': output a labelled image rather than a binary image.
+%     - 'labels': output a labeled image rather than a binary image.
 %
 % DEFAULTS:
 %  connectivity = 1

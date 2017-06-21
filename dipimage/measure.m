@@ -4,7 +4,7 @@
 %  msr = measure(object,gray,measurmentIDs,objectIDs,connectivity)
 %
 % PARAMETERS:
-%  object: binary or labelled image holding the objects.
+%  object: binary or labeled image holding the objects.
 %  gray: (original) gray value image of object_in. It is needed for
 %        several types of measurements. Otherwise you can use [].
 %  featureIDs: measurements to be performed, either a single string

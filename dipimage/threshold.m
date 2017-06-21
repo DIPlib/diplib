@@ -22,14 +22,14 @@
 %                   selected for which at least one pixel is (in>high).
 %
 %  parameter ('isodata'):    The number of thresholds to compute. If not
-%                            equal to 1, the output image is a labelled image
+%                            equal to 1, the output image is a labeled image
 %                            rather than binary. Inf means 1.
 %            ('background'): Distance to the peak where we cut off, in
 %                            terms of the half-width at half the maximum.
 %                            Inf selects the default value, which is 2.
 %            ('fixed'):      Threshold value. Inf means halfway between
 %                            minimum and maximum value. Use a vector with
-%                            multiple values to produce a labelled image
+%                            multiple values to produce a labeled image
 %                            with multiple classes.
 %            ('volume'):     Parameter = the volume fraction. Inf means 0.5.
 %            ('double'):     Two threshold values. Inf means

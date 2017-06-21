@@ -226,6 +226,7 @@ void dip__FastWatershed(
          } while( ++it );
       } else {
          // Process labels output image
+         regions.Relabel();
          JointImageIterator< TPI, LabelType > it( { c_in, c_labels } );
          do {
             LabelType lab = it.Out();
@@ -333,6 +334,15 @@ void FastWatershed(
    }
    labels.Fill( 0 );
    out.SetPixelSize( pixelSize );
+   // Resort strides to make looping over the image optimal. All images have the same strides, so will be
+   // transformed in an identical way.
+   // We can use the offset array we computed above because pixels don't move around in memory, we just
+   // change their coordinates.
+   in.StandardizeStrides();
+   labels.StandardizeStrides();
+   if( binary.IsForged() ) {
+      binary.StandardizeStrides();
+   }
 
    // Create array with offsets to neighbors
    NeighborList neighbors( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
@@ -392,6 +402,7 @@ void dip__SeededWatershed(
    UnsignedArray const& imsz = c_grey.Sizes();
 
    // Walk over the entire image & put all the background border pixels on the heap
+   // TODO: StandardizeStrides() across multiple images?
    JointImageIterator< TPI, LabelType, bin > it( { c_grey, c_labels, c_mask } );
    bool hasMask = c_mask.IsForged();
    dip::uint order = 0;
@@ -499,7 +510,9 @@ void dip__SeededWatershed(
    if( !binaryOutput ) {
       // Process label image
       // if binaryOutput it doesn't matter - we're thresholding this label image anyways
-      ImageIterator< LabelType > lit( c_labels );
+      Image labels = c_labels.QuickCopy();
+      labels.StandardizeStrides();
+      ImageIterator< LabelType > lit( labels );
       do {
          LabelType lab1 = *lit;
          if( lab1 == WATERSHED_LABEL ) {

@@ -17,7 +17,7 @@
 %  flags: a cell array of strings, choose from:
 %     - 'high first': reverse the sorting order.
 %     - 'correct': compute the correct watershed (slower), see note below.
-%     - 'labels': output a labelled image rather than a binary image.
+%     - 'labels': output a labeled image rather than a binary image.
 %
 % DEFAULTS:
 %  connectivity = 1

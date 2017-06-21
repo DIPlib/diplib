@@ -667,9 +667,7 @@ inline Image MorphologicalLaplace(
 /// `flags` determines how the output is computed. There are three options:
 /// - "labels" or "binary": returns either the labels used during processing, with the watershed
 ///   lines as background (value 0), or a binary image where the watershed lines are set and the
-///   regions are not set. "binary" is the default. In the "labels" case, labels used are not
-///   necessarily consecutive (i.e. not all label values between 1 and the largest label are
-///   necessarily used).
+///   regions are not set. "binary" is the default.
 /// - "low first" or "high first": determines the sort order of pixels. The default of "low first"
 ///   yields the normal watershed, where local minima are origin of the basins, and the watershed
 ///   lines run along the high ridges in the image. "high first" simply inverts the definition,
@@ -773,8 +771,7 @@ inline Image SeededWatershed(
 /// minimum. See `dip::Watershed` for a description of all the parameters.
 ///
 /// `output` can be "binary" or "labels", and determines whether the algorithm outputs a binary image or
-/// a labeled image. Note that the labels are not necessarily consecutive (i.e. not all label values between
-/// 1 and the largest label are necessarily used).
+/// a labeled image.
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
@@ -809,8 +806,7 @@ inline Image WatershedMinima(
 /// maximum. See `dip::Watershed` for a description of all the parameters.
 ///
 /// `output` can be "binary" or "labels", and determines whether the algorithm outputs a binary image or
-/// a labeled image. Note that the labels are not necessarily consecutive (i.e. not all label values between
-/// 1 and the largest label are necessarily used).
+/// a labeled image.
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
@@ -841,8 +837,7 @@ inline Image WatershedMaxima(
 ///
 /// This algorithm finds single pixels or plateaus (connected groups of pixels with identical value) that are
 /// surrounded by pixels with a higher value. If `output` is "binary", the result is a binary image where these
-/// pixels and plateaus are set. If `output` is "labels", the result is a labeled image, where the labels used
-/// are not necessarily consecutive (i.e. not all label values between 1 and the largest label are necessarily used).
+/// pixels and plateaus are set. If `output` is "labels", the result is a labeled image.
 ///
 /// If `mask` is given, it restricts the area in the image that is searched.
 ///
@@ -875,8 +870,7 @@ inline Image Minima(
 ///
 /// This algorithm finds single pixels or plateaus (connected groups of pixels with identical value) that are
 /// surrounded by pixels with a lower value. If `output` is "binary", the result is a binary image where these
-/// pixels and plateaus are set. If `output` is "labels", the result is a labeled image, where the labels used
-/// are not necessarily consecutive (i.e. not all label values between 1 and the largest label are necessarily used).
+/// pixels and plateaus are set. If `output` is "labels", the result is a labeled image.
 ///
 /// If `mask` is given, it restricts the area in the image that is searched.
 ///
