@@ -318,7 +318,9 @@ dip::uint Label(
                   coords += it.Coordinates();
                   bool use = true;
                   for( dip::uint dd = 0; dd < nDims; ++dd ) {
-                     if(( coords[ dd ] < 0 ) || ( coords[ dd ] >= c_out.Size( dd ))) {
+                     // Relying on 2's complement conversion, coords can be a small negative value, which will
+                     // convert to a very large unsigned value, and test larger than the image size.
+                     if( static_cast< dip::uint >( coords[ dd ] ) >= c_out.Size( dd )) {
                         use = false;
                         break;
                      }
