@@ -32,13 +32,12 @@ Available `make` targets:
     <default>    # builds all targets
     DIP          # builds the DIPlib library only
     DIPviewer    # builds the DIPviewer module only (plus the DIPlib library)
-    PyDIP_bin    # builds the PyDIP Python module only (plus the DIPlib library)
+    PyDIP        # builds the PyDIP Python module only (plus the DIPlib library)
     DIPimage     # builds the DIPimage MATLAB toolbox only (plus the DIPlib library)
     check        # builds the unit_tests program and runs it
     check_memory # ...and runs it under valgrind
     apidoc       # Doxygen HTML documentation for the library API
     install      # builds and installs all targets
-    docs         # makes some PDF project documentation files
     tests        # deprecated -- old test functions
 
 Important `cmake` command-line arguments:
@@ -71,12 +70,12 @@ DIPlib includes the following libraries / external code:
   (we do not use any of the components with more restrictive licenses)
 
 - DocTest  
-  Copyright (c) 2016 Viktor Kirilov  
+  Copyright 2016 Viktor Kirilov  
   The MIT License (MIT)  
   see dependencies/doctest/LICENSE.txt
 
 - The DFT algorithm out of OpenCV 3.1  
-  Copyright (C) 2000, Intel Corporation  
+  Copyright 2000, Intel Corporation  
   Intel License Agreement For Open Source Computer Vision Library  
   see src/transform/opencv_dxt.h
 
@@ -86,13 +85,13 @@ DIPlib includes the following libraries / external code:
   see include/diplib/private/pcg_*.hpp
 
 - A fast 2D labeling algorithm out of YACCLAB  
-  Copyright(c) 2016 - 2017 Costantino Grana, Federico Bolelli, Lorenzo Baraldi and Roberto Vezzani  
-  The MIT License (MIT)  
+  Copyright 2016-2017 Costantino Grana, Federico Bolelli, Lorenzo Baraldi and Roberto Vezzani  
+  3-Clause BSD License  
   see include/diplib/regions/labelingGranan2016.h
 
 - pybind11 (not used in the DIPlib library, only used in the Python bindings)  
-  Copyright (c) 2016 Wenzel Jakob <wenzel.jakob@epfl.ch>, All rights reserved  
-  BSD-style license  
+  Copyright 2016 Wenzel Jakob, All rights reserved  
+  3-Clause BSD License  
   see dependencies/pybind11/LICENSE
 
 Note that all of these have permissive open-source licenses similar in spirit

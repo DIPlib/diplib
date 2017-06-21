@@ -227,6 +227,7 @@ if(DIP_BUILD_PYDIP)
    # Install .py files
    file(GLOB DIP_PYTHON_PY "pydip/*.py")
    install(FILES ${DIP_PYTHON_PY} DESTINATION ${PYDIP_INSTALL_PATH})
+   add_custom_target(PyDIP DEPENDS PyDIP_bin)
 endif()
 
 ### DIPimage toolbox for MATLAB

@@ -17,8 +17,8 @@
  */
 
 #include "pydip.h"
-#include "diplib/display.h"
 #include "diplib/math.h"
+#include "diplib/statistics.h"
 
 void init_math( py::module& m ) {
    m.def( "GetMaximumAndMinimum", []( dip::Image const& in, dip::Image const& mask ) {
