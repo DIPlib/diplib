@@ -112,9 +112,18 @@ template<> struct IsSampleType< dfloat > { static constexpr bool value = true; }
 template<> struct IsSampleType< scomplex > { static constexpr bool value = true; };
 template<> struct IsSampleType< dcomplex > { static constexpr bool value = true; };
 template< typename T > struct IsNumericType { static constexpr bool value = IsSampleType< T >::value; };
+#if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict.
 template<> struct IsNumericType< dip::uint > { static constexpr bool value = true; };
 template<> struct IsNumericType< dip::sint > { static constexpr bool value = true; };
+#endif
 template<> struct IsNumericType< bool > { static constexpr bool value = true; };
+template< typename T > struct IsIndexingType { static constexpr bool value = false; };
+template<> struct IsIndexingType< signed int > { static constexpr bool value = true; };
+template<> struct IsIndexingType< unsigned int > { static constexpr bool value = true; };
+#if SIZE_MAX != UINT32_MAX // we don't want to compile the next two on 32-bit machines, they'd conflict.
+template<> struct IsIndexingType< dip::uint > { static constexpr bool value = true; };
+template<> struct IsIndexingType< dip::sint > { static constexpr bool value = true; };
+#endif
 } // namespace detail
 
 /// \brief For use with `std::enable_if` to enable templates only for types that are valid for image samples.
@@ -133,10 +142,21 @@ template< typename T > struct IsSampleType : public detail::IsSampleType< typena
 /// One example usage is as follows:
 ///
 /// ```cpp
-///     template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
+///     template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
 ///     void MyFunction( T value ) { ... }
 /// ```
 template< typename T > struct IsNumericType : public detail::IsNumericType< typename std::remove_cv< T >::type > {};
+
+/// \brief For use with `std::enable_if` to enable templates only for types that are indexing types, true for
+/// signed and unsigned integers.
+///
+/// One example usage is as follows:
+///
+/// ```cpp
+///     template< typename T, typename std::enable_if< IsIndexingType< T >::value, int >::type = 0 >
+///     void MyFunction( T value ) { ... }
+/// ```
+template< typename T > struct IsIndexingType : public detail::IsIndexingType< typename std::remove_cv< T >::type > {};
 
 /// \brief A templated function to check for positive infinity, which works also for integer types (always returning false)
 template< typename TPI, typename std::enable_if< !std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
