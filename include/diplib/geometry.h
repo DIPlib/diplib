@@ -54,6 +54,8 @@ namespace dip {
    dip_ResamplingFT (dip_manipulation.h)
 */
 
+// TODO: port also rot_euler_low.c and affine_trans_low.c from DIPimage
+
 /// \}
 
 } // namespace dip
