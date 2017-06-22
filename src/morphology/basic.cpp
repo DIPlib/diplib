@@ -802,7 +802,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    se.At( 4, 0 ) = -10;
    se.At( 2, 3 ) = 0;
    dip::BasicMorphology( in, out, se, {}, dip::Polarity::DILATION );
-   DOCTEST_CHECK( dip::Sum( out ).As< dip::dfloat >() == 5 * pval - 5 - 5 - 10 );
+   DOCTEST_CHECK( dip::Sum( out ).As< dip::uint >() == 5 * pval - 5 - 5 - 10 );
    dip::BasicMorphology( out, out, se, {}, dip::Polarity::EROSION, dip::Mirror::YES );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
    DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is the main pixel in the right place and with the right value?

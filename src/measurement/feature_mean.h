@@ -69,7 +69,7 @@ class FeatureMean : public LineBased {
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
          Data data = data_[ objectIndex ];
-         *output = ( data.number != 0.0 ) ? ( data.sum / static_cast< dfloat >( data.number )) : ( 0.0 );
+         *output = ( data.number != 0 ) ? ( data.sum / static_cast< dfloat >( data.number )) : ( 0.0 );
       }
 
       virtual void Cleanup() override {

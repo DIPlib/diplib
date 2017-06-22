@@ -300,8 +300,6 @@ void MultiScaleMorphologicalGradient(
       String const& shape,
       StringArray const& boundaryCondition
 ) {
-   DIP_THROW_IF( lowerSize < 0.0, "lowerSize out-of-range" );
-   DIP_THROW_IF( upperSize < 0.0, "upperSize out-of-range" );
    DIP_THROW_IF( lowerSize > upperSize, "lowerSize > upperSize" );
    bool first = true;
    Image dila;

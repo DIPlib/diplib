@@ -293,8 +293,8 @@ void dip__ConstrainedPathOpening(
          changed.pop();
          uint8* aptr = active + index;
          *aptr &= ~DIP__PO_CHANGED;
-         if(( slup[ index ] + oldn[ index ] < length + 1 ) &&
-            ( olup[ index ] + sldn[ index ] < length + 1 )) {
+         if(( static_cast< dip::uint >( slup[ index ] + oldn[ index ] ) < length + 1 ) &&
+            ( static_cast< dip::uint >( olup[ index ] + sldn[ index ] ) < length + 1 )) {
             grey[ index ] = grey[ offset ];
             active[ index ] &= ~DIP__PO_ACTIVE;
             slup[ index ] = 0;
@@ -341,7 +341,7 @@ void dip__PathOpening(
          changed.pop();
          uint8* aptr = active + index;
          *aptr &= ~DIP__PO_CHANGED;
-         if( lup[ index ] + ldn[ index ] < length + 1 ) {
+         if( static_cast< dip::uint >( lup[ index ] + ldn[ index ] ) < length + 1 ) {
             grey[ index ] = grey[ offset ];
             active[ index ] &= ~DIP__PO_ACTIVE;
             lup[ index ] = 0;
