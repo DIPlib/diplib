@@ -1955,11 +1955,9 @@ class DIP_NO_EXPORT Image {
       /// \see SwapDimensions, Squeeze, AddSingleton, ExpandDimensionality, Flatten.
       DIP_EXPORT Image& PermuteDimensions( UnsignedArray const& order );
 
-      /// \brief Swap dimensions d1 and d2. This is a simplified version of the
-      /// PermuteDimensions.
+      /// \brief Swap dimensions d1 and d2. This is a simplified version of `PermuteDimensions`.
       ///
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see PermuteDimensions.
       DIP_EXPORT Image& SwapDimensions( dip::uint dim1, dip::uint dim2 );
@@ -1977,27 +1975,23 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Remove singleton dimensions (dimensions with size==1).
       ///
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see AddSingleton, ExpandDimensionality, PermuteDimensions, UnexpandSingletonDimensions.
       DIP_EXPORT Image& Squeeze();
 
       /// \brief Remove singleton dimension `dim` (has size==1).
       ///
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see Squeeze, AddSingleton, ExpandDimensionality, PermuteDimensions, UnexpandSingletonDimensions.
       DIP_EXPORT Image& Squeeze( dip::uint dim );
 
       /// \brief Add a singleton dimension (with size==1) to the image.
       ///
-      /// Dimensions `dim` to last are shifted up, dimension `dim` will
-      /// have a size of 1.
+      /// Dimensions `dim` to last are shifted up, dimension `dim` will have a size of 1.
       ///
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
       /// Example: to an image with sizes `{ 4, 5, 6 }` we add a
       /// singleton dimension `dim == 1`. The image will now have
@@ -2011,19 +2005,16 @@ class DIP_NO_EXPORT Image {
       /// The image will have `n` dimensions. However, if the image already
       /// has `n` or more dimensions, nothing happens.
       ///
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see AddSingleton, ExpandSingletonDimension, Squeeze, PermuteDimensions, Flatten.
       DIP_EXPORT Image& ExpandDimensionality( dip::uint dim );
 
-      /// \brief Expand singleton dimension `dim` to `sz` pixels, setting the corresponding
-      /// stride to 0.
+      /// \brief Expand singleton dimension `dim` to `sz` pixels, setting the corresponding stride to 0.
       ///
       /// If `dim` is not a singleton dimension (size==1), an exception is thrown.
       ///
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see ExpandSingletonDimensions, ExpandSingletonTensor, IsSingletonExpanded, UnexpandSingletonDimensions, AddSingleton, ExpandDimensionality.
       DIP_EXPORT Image& ExpandSingletonDimension( dip::uint dim, dip::uint sz );
@@ -2056,22 +2047,65 @@ class DIP_NO_EXPORT Image {
       ///
       /// If there is more than one tensor element, an exception is thrown.
       ///
-      /// The image must be forged, and the data will never be copied (i.e. this is a
-      /// quick and cheap operation).
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
       /// \see ExpandSingletonDimension, IsSingletonExpanded.
       DIP_EXPORT Image& ExpandSingletonTensor( dip::uint sz );
 
       /// \brief Mirror the image about selected axes.
       ///
-      /// The image must be forged, and the data will never
-      /// be copied (i.e. this is a quick and cheap operation).
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
       ///
       /// `process` indicates which axes to mirror. If `process` is an empty array, all
       /// axes will be mirrored.
       DIP_EXPORT Image& Mirror( BooleanArray process = {} );
 
-      /// \brief Undo the effects of `Mirror` and `PermuteDimensions`.
+      /// \brief Rotates the image by `n` times 90 degrees, in the plane defined by dimensions
+      /// `dimension1` and `dimension2`.
+      ///
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
+      ///
+      /// The rotation occurs in the direction of positive angles, as defined in the image coordinate system.
+      /// That is, if `dimension1` is 0 (x-axis) and `dimension2` is 1 (y-axis), and considering the y-axis is
+      /// positive in the up direction, then the rotation happens in counter-clockwise direction. A negative
+      /// value for `n` inverts the direction of rotation.
+      DIP_EXPORT Image& Rotation90( dip::sint n, dip::uint dimension1, dip::uint dimension2 );
+
+      /// \brief Rotates the image by `n` times 90 degrees, in the plane perpendicular to dimension `axis`.
+      ///
+      /// The image must be forged and have three dimensions. The data will never be copied
+      /// (i.e. this is a quick and cheap operation).
+      Image& Rotation90( dip::sint n, dip::uint axis ) {
+         DIP_THROW_IF( Dimensionality() != 3, E::DIMENSIONALITY_NOT_SUPPORTED );
+         dip::uint dim1, dim2;
+         switch( axis ) {
+            case 0: // x-axis
+               dim1 = 1;
+               dim2 = 2;
+               break;
+            case 1: // y-axis
+               dim1 = 2;
+               dim2 = 0;
+               break;
+            case 2: // z-axis
+               dim1 = 0;
+               dim2 = 1;
+               break;
+            default:
+               DIP_THROW( E::PARAMETER_OUT_OF_RANGE );
+         }
+         return Rotation90( n, dim1, dim2 );
+      }
+
+      /// \brief Rotates the image by `n` times 90 degrees, in the x-y plane.
+      ///
+      /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
+      Image& Rotation90( dip::sint n ) {
+         return Rotation90( n, 0, 1 );
+      }
+
+
+      /// \brief Undo the effects of `Mirror`, `Rotation90` and `PermuteDimensions`.
       ///
       /// Modifies the image such that all strides are positive and sorted smaller to larger. The first
       /// dimension will have the smallest stride. Visiting pixels in linear indexing order (as is done

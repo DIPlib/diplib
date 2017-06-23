@@ -86,7 +86,8 @@ int main() {
          img1.SetSizes( { 50, 80, 30 } );
          img1.SetTensorSizes( 3 );
          img1.SetPixelSize( {{ dip::PhysicalQuantity::Micrometer(),
-                               3 * dip::PhysicalQuantity::Micrometer(), dip::PhysicalQuantity::Radian() }} );
+                               3 * dip::PhysicalQuantity::Micrometer(),
+                               dip::PhysicalQuantity::Radian() }} );
          img1.Forge();
          std::cout << img1;
          img1.PermuteDimensions( { 2, 1, 0 } );
@@ -100,6 +101,10 @@ int main() {
          img1.AddSingleton( 0 );
          std::cout << img1;
          img1.Squeeze();
+         std::cout << img1;
+         img1.Rotation90( 1 );
+         std::cout << img1;
+         img1.Rotation90( -1 );
          std::cout << img1;
          img1.Strip();
          img1.SetStrides( {} );

@@ -234,6 +234,40 @@ Image& Image::Mirror( BooleanArray process ) {
 }
 
 
+Image& Image::Rotation90( dip::sint n, dip::uint dimension1, dip::uint dimension2 ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nd = sizes_.size();
+   DIP_THROW_IF(( dimension1 >= nd ) || ( dimension2 >= nd ), E::PARAMETER_OUT_OF_RANGE );
+   n = n % 4;
+   if( n < 0 ) {
+      n += 4;
+   }
+   BooleanArray process( nd, false );
+   switch( n ) {
+      default:
+      case 0:
+         // Do nothing
+         break;
+      case 1: // 90 degrees counter-clockwise
+         process[ dimension2 ] = true;
+         Mirror( process );
+         SwapDimensions( dimension1, dimension2 );
+         break;
+      case 2: // 180 degrees
+         process[ dimension1 ] = true;
+         process[ dimension2 ] = true;
+         Mirror( process );
+         break;
+      case 3: // 270 degrees (== 90 degrees clockwise)
+         process[ dimension1 ] = true;
+         Mirror( process );
+         SwapDimensions( dimension1, dimension2 );
+         break;
+   }
+   return *this;
+}
+
+
 Image& Image::StandardizeStrides() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = sizes_.size();
