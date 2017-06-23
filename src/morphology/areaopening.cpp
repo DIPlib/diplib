@@ -20,6 +20,7 @@
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/iterators.h"
+#include "diplib/boundary.h"
 #include "diplib/overload.h"
 #include "diplib/union_find.h"
 #include "watershed_support.h"

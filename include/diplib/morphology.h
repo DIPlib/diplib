@@ -144,10 +144,6 @@ class DIP_NO_EXPORT Kernel;
 ///
 /// See dip::Kernel, dip::PixelTable
 class DIP_NO_EXPORT StructuringElement {
-      // TODO: In the old DIPlib, line SEs used filterParam = [length,angle], and only applied to 2D images!
-      // TODO: Implement the discrete line for 2D without skews, so it's more efficient.
-      // TODO: Implement periodic lines, construct translation-invariant discrete lines using periodic lines
-      // TODO: Construct diamond SE and approximations to elliptic SE (ShapeCode::APPROX_ELLIPTIC) using lines
    public:
       enum class ShapeCode {
             RECTANGULAR,
@@ -1140,9 +1136,6 @@ inline Image DirectedPathOpening(
    DirectedPathOpening( in, mask, out, filterParam, polarity, mode );
    return out;
 }
-
-// TODO: Have dip::Opening(in,{n,"path"}) call dip::PathOpening(in,n)   --   The SE should not be valid in
-// TODO: Have dip::Opening(in,{[n,m],"path"}) call dip::PathOpening(in,[n,m])
 
 /// \brief Opening by reconstruction
 ///

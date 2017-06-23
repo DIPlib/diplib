@@ -55,6 +55,8 @@ dip::Kernel StructuringElement::Kernel() const {
    return out;
 }
 
+namespace {
+
 enum class Polarity {
       DILATION,
       EROSION
@@ -64,7 +66,20 @@ enum class Mirror {
       YES
 };
 
-namespace {
+bool IsIsotropic( FloatArray params ) {
+   dfloat param = 0.0;
+   for( dfloat p : params ) {
+      p = std::abs( p );
+      if( p > 1.0 ) {
+         if( param == 0.0 ) {
+            param = p;
+         } else if( p != param ) {
+            return false;
+         }
+      }
+   }
+   return true;
+}
 
 // --- Rectangular morphology ---
 
@@ -488,7 +503,7 @@ void SkewLineMorphology(
    // 1- Skew (using interpolation if INTERPOLATED_LINE)
    // 2- Call RectangularMorphology (or a different, new function if PERIODIC_LINE)
    // 3- Skew back (using interpolation if INTERPOLATED_LINE)
-   // TODO: Implement SkewLineMorphology (requires implementing Skewing() first)
+   // TODO: Implement SkewLineMorphology (requires implementing Skew() first)
    DIP_THROW( E::NOT_IMPLEMENTED );
 }
 
@@ -547,12 +562,13 @@ void DiamondMorphology(
       Image& out,
       FloatArray size, // by copy
       BoundaryConditionArray const& bc,
-      Polarity polarity,
-      Mirror mirror = Mirror::NO
+      Polarity polarity
 ) {
-   // TODO: This still doesn't work.
-   // We need to go back to unitSize = 3, size = (size - 1)/2, but that only works for isotropic diamonds.
-   // -> compute slope of edge of diamond, make unitSize have that slope, and lines also. How???
+   if( !IsIsotropic( size )) {
+      Kernel kernel{ Kernel::ShapeCode::DIAMOND, size };
+      FlatSEMorphology( in, out, kernel, bc, polarity );
+      return;
+   }
    DIP_START_STACK_TRACE
       // Determine values for all operations
       bool skipOperation1 = true;
@@ -583,14 +599,11 @@ void DiamondMorphology(
          }
       }
       if( skipOperation1 ) {
-         std::cout << "[DiamondMorphology] nothing to do!\n";
          out.Copy( in );
       } else {
          // Step 1: apply operation with a unit diamond
-         std::cout << "[DiamondMorphology] unit diamond size = " << unitSize << std::endl;
          Kernel unitDiamond{ Kernel::ShapeCode::DIAMOND, unitSize };
          if( needShift ) {
-            std::cout << "[DiamondMorphology] unit diamond shift = " << shift << std::endl;
             unitDiamond.Shift( shift );
          }
          FlatSEMorphology( in, out, unitDiamond, bc, polarity );
@@ -600,8 +613,8 @@ void DiamondMorphology(
             // This is exponential in the number of dimensions: 2 in 2D, 4 in 3D, 8 in 4D, etc.
             dip::uint nDims = size.size();
             while( true ) {
-               std::cout << "[DiamondMorphology] line = " << size << std::endl;
-               LineMorphology( out, out, size, bc, polarity, mirror );
+               // TODO: this can be the fast skew line morphology, since lines are always at 0 or 45 degrees.
+               LineMorphology( out, out, size, bc, polarity, Mirror::NO );
                dip::uint dd;
                for( dd = 1; dd < nDims; ++dd ) {
                   if( std::abs( size[ dd ] ) > 1.0 ) {
@@ -616,6 +629,62 @@ void DiamondMorphology(
                }
             }
          } // else we're done!
+      }
+   DIP_END_STACK_TRACE
+}
+
+void OctagonMorphology(
+      Image const& in,
+      Image& out,
+      FloatArray size, // by copy
+      BoundaryConditionArray const& bc,
+      Polarity polarity
+) {
+   // An octagon is formed by a diamond of size n, and a rectangle of size m = n - 2 or m = n.
+   // Both n and m are odd integers. The octagon then has a size of n + m - 1.
+   // We allow anisotropic octagons by increasing some dimensions of the rectangle (but not decreasing).
+   // That is, the diamond will be isotropic, and the rectangle will have at least one side of size m,
+   // other dimensions of the rectangle can be larger.
+   // Any dimension with an extension of 1 is not included in these calculations.
+   DIP_START_STACK_TRACE
+      // Determine the smallest dimension (excluding dimensions of size 1)
+      dfloat smallestSize = 0.0;
+      for( dfloat& sz : size ) {
+         sz = std::floor(( sz - 1 ) / 2 ) * 2 + 1; // an odd integer smaller or equal to sz.
+         if( sz >= 3.0 ) {
+            if( smallestSize == 0.0 ) {
+               smallestSize = sz;
+            } else {
+               smallestSize = std::min( smallestSize, sz );
+            }
+         } else {
+            sz = 1.0;
+         }
+      }
+      if( smallestSize == 0.0 ) {
+         // No dimension >= 3
+         out.Copy( in );
+         return;
+      }
+      // Given size = n + m + 1, determine n, the size of the diamond
+      dfloat n = 2.0 * floor(( smallestSize + 1.0 ) / 4.0 ) + 1.0;
+      bool skipRect = true;
+      FloatArray rectSize( size.size(), 1.0 );
+      for( dip::uint ii = 0; ii < size.size(); ++ii ) {
+         if( size[ ii ] >= 3.0 ) {
+            // at least 3 pixels in this dimension
+            rectSize[ ii ] = size[ ii ] - n + 1.0;
+            if( rectSize[ ii ] > 1 ) {
+               skipRect = false;
+            }
+            size[ ii ] = n;
+         }
+      }
+      // Step 1: apply operation with a diamond
+      DiamondMorphology( in, out, size, bc, polarity );
+      if( !skipRect ) {
+         // Step 2: apply operation with a rectangle
+         RectangularMorphology( out, out, rectSize, bc, polarity, Mirror::NO );
       }
    DIP_END_STACK_TRACE
 }
@@ -643,11 +712,10 @@ void BasicMorphology(
             RectangularMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
             break;
          case StructuringElement::ShapeCode::DIAMOND:
-            DiamondMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
+            DiamondMorphology( in, out, se.Params( in.Sizes() ), bc, polarity );
             break;
          case StructuringElement::ShapeCode::OCTAGON:
-            // Call RectangularMorphology, and then DiamondMorphology
-            DIP_THROW( E::NOT_IMPLEMENTED );
+            OctagonMorphology( in, out, se.Params( in.Sizes() ), bc, polarity );
             break;
          case StructuringElement::ShapeCode::LINE:
             LineMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
