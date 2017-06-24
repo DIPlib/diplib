@@ -34,7 +34,7 @@
 #undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
 
-void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
+void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
       DML_MIN_ARGS( 1 );
       DML_MAX_ARGS( 2 );
@@ -60,9 +60,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          // Get the look up table
          std::vector< dip::sint > lut = tensor.LookUpTable();
          plhs[ 0 ] = mxCreateDoubleMatrix( 1, lut.size(), mxREAL );
-         auto data = mxGetPr( plhs[ 0 ] );
+         double* data = mxGetPr( plhs[ 0 ] );
          for( dip::uint ii = 0; ii < lut.size(); ++ii ) {
-            data[ ii ] = lut[ ii ];
+            data[ ii ] = static_cast< double >( lut[ ii ] );
          }
 
       }

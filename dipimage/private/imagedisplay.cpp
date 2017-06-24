@@ -131,7 +131,7 @@ mxArray* CreateHandle( dip::uint handle ) {
    return out;
 }
 
-void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
    // This data is kept in memory
    static MatlabInterfaceUInt8 externalInterface;

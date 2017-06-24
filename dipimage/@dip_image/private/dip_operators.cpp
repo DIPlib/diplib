@@ -32,7 +32,7 @@
 #include "dip_matlab_interface.h"
 #include "diplib/math.h"
 
-void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
+void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
 
       dml::MatlabInterface mi;

@@ -42,7 +42,7 @@ static void AtExit(void) {
    }
 }
 
-void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
+void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
 
       DML_MIN_ARGS( 2 );

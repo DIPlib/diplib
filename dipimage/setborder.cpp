@@ -23,7 +23,7 @@
 #include "dip_matlab_interface.h"
 #include "diplib/generation.h"
 
-void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
       DML_MIN_ARGS( 1 );

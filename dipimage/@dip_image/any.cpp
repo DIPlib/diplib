@@ -23,7 +23,7 @@
 #include "dip_matlab_interface.h"
 #include "diplib/statistics.h"
 
-void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
+void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
 
       DML_MIN_ARGS( 1 );
@@ -54,7 +54,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       if(( nrhs > 2 ) || !out.IsScalar() ) {
          plhs[ 0 ] = mi.GetArray( out );
       } else {
-         plhs[ 0 ] = plhs[ 0 ] = dml::GetArray( out.As< bool >() );
+         plhs[ 0 ] = dml::GetArray( out.As< bool >() );
       }
 
    } catch( const dip::Error& e ) {

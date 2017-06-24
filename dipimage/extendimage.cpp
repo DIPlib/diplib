@@ -22,7 +22,7 @@
 #include "dip_matlab_interface.h"
 #include "diplib/boundary.h"
 
-void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    //dml::streambuf streambuf;
 
    try {

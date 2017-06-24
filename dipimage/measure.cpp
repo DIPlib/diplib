@@ -35,7 +35,7 @@ static void AtExit(void) {
    }
 }
 
-void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dml::streambuf streambuf;
 
    try {
