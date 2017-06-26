@@ -32,9 +32,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
       if( nrhs > 1 ) {
          dip::Image const mask = dml::GetImage( prhs[ 1 ] );
-         stats = dip::GetSampleStatistics( in, mask );
+         stats = dip::SampleStatistics( in, mask );
       } else {
-         stats = dip::GetSampleStatistics( in );
+         stats = dip::SampleStatistics( in );
       }
 
       plhs[ 0 ] = mxCreateDoubleMatrix( 1, 4, mxREAL );

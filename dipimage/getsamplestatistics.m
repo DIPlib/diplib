@@ -9,7 +9,7 @@
 %  mask = [] (all pixels are examined)
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::GetSampleStatistics.
+%  This function calls the DIPlib function dip::SampleStatistics.
 
 % (c)2017, Cris Luengo.
 %

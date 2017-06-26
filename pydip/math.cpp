@@ -21,14 +21,14 @@
 #include "diplib/statistics.h"
 
 void init_math( py::module& m ) {
-   m.def( "GetMaximumAndMinimum", []( dip::Image const& in, dip::Image const& mask ) {
-                dip::MinMaxAccumulator acc = dip::GetMaximumAndMinimum( in, mask );
+   m.def( "MaximumAndMinimum", []( dip::Image const& in, dip::Image const& mask ) {
+                dip::MinMaxAccumulator acc = dip::MaximumAndMinimum( in, mask );
                 return py::make_tuple( acc.Minimum(), acc.Maximum() );
           },
           "in"_a,
           "mask"_a = dip::Image{} );
-   m.def( "GetSampleStatistics", []( dip::Image const& in, dip::Image const& mask ) {
-                dip::StatisticsAccumulator acc = dip::GetSampleStatistics( in, mask );
+   m.def( "SampleStatistics", []( dip::Image const& in, dip::Image const& mask ) {
+                dip::StatisticsAccumulator acc = dip::SampleStatistics( in, mask );
                 return py::make_tuple( acc.Mean(), acc.Variance(), acc.Skewness(), acc.ExcessKurtosis() );
           },
           "in"_a,

@@ -157,6 +157,8 @@ over.
 
 - `dip_LocalMinima` is now called `dip::WatershedMinima`. There's also a maxima variant.
 
+- `dip_GetMaximumAndMinimum` is now called `dip::MaximumAndMinimum` for consistency.
+
 ## Changes in functionality
 
 - Second order extrapolation boundary extension didn't do as advertised in the old *DIPlib*.

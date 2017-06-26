@@ -32,9 +32,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
       if( nrhs > 1 ) {
          dip::Image const mask = dml::GetImage( prhs[ 1 ] );
-         minmax = dip::GetMaximumAndMinimum( in, mask );
+         minmax = dip::MaximumAndMinimum( in, mask );
       } else {
-         minmax = dip::GetMaximumAndMinimum( in );
+         minmax = dip::MaximumAndMinimum( in );
       }
 
       plhs[ 0 ] = mxCreateDoubleMatrix( 1, 2, mxREAL );

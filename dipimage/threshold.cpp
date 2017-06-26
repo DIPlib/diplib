@@ -49,7 +49,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
             param1 = parameter[ 0 ];
             param2 = parameter[ 1 ];
          } else {
-            auto lims = dip::GetMaximumAndMinimum( in );
+            auto lims = dip::MaximumAndMinimum( in );
             dip::dfloat range = lims.Maximum() - lims.Minimum();
             param1 = lims.Minimum() + range / 3.0;
             param2 = lims.Minimum() + 2.0 * range / 3.0;

@@ -591,7 +591,7 @@ void SeededWatershed(
       numlabs = Label( c_seeds, out, connectivity );
    } else {
       Convert( c_seeds, out, DT_LABEL );
-      auto m = GetMaximumAndMinimum( out, c_mask );
+      auto m = MaximumAndMinimum( out, c_mask );
       numlabs = static_cast< dip::uint >( m.Maximum() );
    }
    DIP_THROW_IF( numlabs > MAX_LABEL, "The seed image has too many seeds." );

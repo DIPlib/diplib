@@ -903,7 +903,7 @@ DIP_EXPORT dfloat Mean( Measurement::IteratorFeature const& featureValues );
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
 /// directly using `dip::Measurement::FeatureValuesView`.
-DIP_EXPORT MinMaxAccumulator GetMaximumAndMinimum( Measurement::IteratorFeature const& featureValues );
+DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the first four central moments of the feature values in the first column of `featureValues`.
 ///
@@ -911,7 +911,7 @@ DIP_EXPORT MinMaxAccumulator GetMaximumAndMinimum( Measurement::IteratorFeature 
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
 /// directly using `dip::Measurement::FeatureValuesView`.
-DIP_EXPORT StatisticsAccumulator GetSampleStatistics( Measurement::IteratorFeature const& featureValues );
+DIP_EXPORT StatisticsAccumulator SampleStatistics( Measurement::IteratorFeature const& featureValues );
 
 /// \}
 

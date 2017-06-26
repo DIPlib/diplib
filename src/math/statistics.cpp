@@ -321,13 +321,13 @@ void CumulativeSum(
 
 namespace {
 
-class dip__GetMaximumAndMinimumBase : public Framework::ScanLineFilter {
+class dip__MaximumAndMinimumBase : public Framework::ScanLineFilter {
    public:
       virtual MinMaxAccumulator GetResult() = 0;
 };
 
 template< typename TPI >
-class dip__GetMaximumAndMinimum : public dip__GetMaximumAndMinimumBase {
+class dip__MaximumAndMinimum : public dip__MaximumAndMinimumBase {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
@@ -375,7 +375,7 @@ class dip__GetMaximumAndMinimum : public dip__GetMaximumAndMinimumBase {
 
 } // namespace
 
-MinMaxAccumulator GetMaximumAndMinimum(
+MinMaxAccumulator MaximumAndMinimum(
       Image const& in,
       Image const& mask
 ) {
@@ -386,21 +386,21 @@ MinMaxAccumulator GetMaximumAndMinimum(
       c_in.SplitComplex();
       // Note that mask will be singleton-expanded, which allows adding dimensions at the end.
    }
-   std::unique_ptr< dip__GetMaximumAndMinimumBase >scanLineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__GetMaximumAndMinimum, (), c_in.DataType() );
+   std::unique_ptr< dip__MaximumAndMinimumBase >scanLineFilter;
+   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__MaximumAndMinimum, (), c_in.DataType() );
    Framework::ScanSingleInput( c_in, mask, c_in.DataType(), *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
    return scanLineFilter->GetResult();
 }
 
 namespace {
 
-class dip__GetSampleStatisticsBase : public Framework::ScanLineFilter {
+class dip__SampleStatisticsBase : public Framework::ScanLineFilter {
    public:
       virtual StatisticsAccumulator GetResult() = 0;
 };
 
 template< typename TPI >
-class dip__GetSampleStatistics : public dip__GetSampleStatisticsBase {
+class dip__SampleStatistics : public dip__SampleStatisticsBase {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
@@ -442,13 +442,13 @@ class dip__GetSampleStatistics : public dip__GetSampleStatisticsBase {
 
 } // namespace
 
-StatisticsAccumulator GetSampleStatistics(
+StatisticsAccumulator SampleStatistics(
       Image const& in,
       Image const& mask
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   std::unique_ptr< dip__GetSampleStatisticsBase >scanLineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__GetSampleStatistics, (), in.DataType() );
+   std::unique_ptr< dip__SampleStatisticsBase >scanLineFilter;
+   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__SampleStatistics, (), in.DataType() );
    Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
    return scanLineFilter->GetResult();
 }

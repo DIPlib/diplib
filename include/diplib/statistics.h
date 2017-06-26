@@ -78,13 +78,13 @@ inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArra
 /// If `mask` is not forged, all input pixels are considered. In case of a tensor
 /// image, returns the maximum and minimum sample values. In case of a complex
 /// samples, treats real and imaginary components as individual samples.
-DIP_EXPORT MinMaxAccumulator GetMaximumAndMinimum( Image const& in, Image const& mask = {} );
+DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Image const& in, Image const& mask = {} );
 
 /// \brief Computes the first four central moments of the pixel intensities, within an optional mask.
 ///
 /// If `mask` is not forged, all input pixels are considered. In case of a tensor
 /// image, returns the maximum and minimum sample values. The image must be real-valued.
-DIP_EXPORT StatisticsAccumulator GetSampleStatistics( Image const& in, Image const& mask = {} );
+DIP_EXPORT StatisticsAccumulator SampleStatistics( Image const& in, Image const& mask = {} );
 
 /// \brief Computes the center of mass (first order moments) of the image `in`, optionally using only
 /// those pixels selected by `mask`.
@@ -310,7 +310,7 @@ inline Image StandardDeviation( Image const& in, Image const& mask = {}, String 
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
-/// \see dip::GetMaximumAndMinimum
+/// \see dip::MaximumAndMinimum
 DIP_EXPORT void Maximum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image Maximum( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
@@ -332,7 +332,7 @@ inline Image Maximum( Image const& in, Image const& mask = {}, BooleanArray proc
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
-/// \see dip::GetMaximumAndMinimum
+/// \see dip::MaximumAndMinimum
 DIP_EXPORT void Minimum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image Minimum( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
@@ -354,7 +354,7 @@ inline Image Minimum( Image const& in, Image const& mask = {}, BooleanArray proc
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
-/// \see dip::GetMaximumAndMinimum
+/// \see dip::MaximumAndMinimum
 DIP_EXPORT void MaximumAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image MaximumAbs( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;
@@ -376,7 +376,7 @@ inline Image MaximumAbs( Image const& in, Image const& mask = {}, BooleanArray p
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
-/// \see dip::GetMaximumAndMinimum
+/// \see dip::MaximumAndMinimum
 DIP_EXPORT void MinimumAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
 inline Image MinimumAbs( Image const& in, Image const& mask = {}, BooleanArray process = {} ) {
    Image out;

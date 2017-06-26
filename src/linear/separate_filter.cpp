@@ -156,7 +156,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the filter separation") {
    //timer.Stop();
    //std::cout << "Apply full filter: " << timer << std::endl;
    tmp3 -= gaussRes;
-   auto m = dip::GetMaximumAndMinimum( tmp3 );
+   auto m = dip::MaximumAndMinimum( tmp3 );
    DOCTEST_CHECK( m.Minimum() > -1e-5 );
    DOCTEST_CHECK( m.Maximum() < 1e-5 );
 }

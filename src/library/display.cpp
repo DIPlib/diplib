@@ -86,7 +86,7 @@ void ImageDisplay::ComputeLimits( bool set ) {
             lims->lower = static_cast< dfloat >( Image::Sample( Percentile( tmp, {}, 5.0 )));
             lims->upper = static_cast< dfloat >( Image::Sample( Percentile( tmp, {}, 95.0 )));
          } else {
-            MinMaxAccumulator res = GetMaximumAndMinimum( tmp );
+            MinMaxAccumulator res = MaximumAndMinimum( tmp );
             lims->lower = res.Minimum();
             lims->upper = res.Maximum();
          }

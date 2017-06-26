@@ -643,7 +643,7 @@ void SliceViewer::calculateTextures()
       // Get range
       dip::Image copy = image_;
       copy.TensorToSpatial();
-      dip::MinMaxAccumulator acc = GetMaximumAndMinimum(copy);
+      dip::MinMaxAccumulator acc = MaximumAndMinimum( copy );
       options_.range_ = {acc.Minimum(), acc.Maximum()};
       if (options_.mapping_ == ViewingOptions::Mapping::Logarithmic)
         options_.mapping_range_ = options.range_;

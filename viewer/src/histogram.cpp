@@ -90,7 +90,7 @@ void HistogramViewPort::render()
   // Calculate maximum value
   dip::Image copy = histogram_;
   copy.TensorToSpatial();
-  dip::MinMaxAccumulator acc = GetMaximumAndMinimum(copy);
+  dip::MinMaxAccumulator acc = MaximumAndMinimum( copy );
   GLfloat maxhist = (GLfloat)acc.Maximum();
   auto p = viewer()->image().At<GLfloat>(o.operating_point_);
   

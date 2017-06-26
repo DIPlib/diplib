@@ -102,7 +102,7 @@ dfloat Mean( Measurement::IteratorFeature const& featureValues ) {
    }
 }
 
-MinMaxAccumulator GetMaximumAndMinimum( Measurement::IteratorFeature const& featureValues ) {
+MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature const& featureValues ) {
    MinMaxAccumulator acc;
    auto it = featureValues.FirstObject();
    while( it ) {
@@ -112,7 +112,7 @@ MinMaxAccumulator GetMaximumAndMinimum( Measurement::IteratorFeature const& feat
    return acc;
 }
 
-StatisticsAccumulator GetSampleStatistics( Measurement::IteratorFeature const& featureValues ) {
+StatisticsAccumulator SampleStatistics( Measurement::IteratorFeature const& featureValues ) {
    StatisticsAccumulator acc;
    auto it = featureValues.FirstObject();
    while( it ) {
