@@ -692,16 +692,16 @@ class DIP_EXPORT Composite : public Base {
 /// <tr><td> "MinVal"                  <td> Minimum object intensity <td> Scalar grey
 /// <tr><td colspan="3"> **Moments of binary object**
 /// <tr><td> "Center"                  <td> Coordinates of the geometric mean of the object <td>
-/// <tr><td> "Mu"                      <td> Elements of the inertia tensor <td> 2D & 3D
-/// <tr><td> "Inertia"                 <td> Moments of inertia of the binary object <td> 2D & 3D
-/// <tr><td> "MajorAxes"               <td> Principal axes of the binary object <td> 2D & 3D
+/// <tr><td> "Mu"                      <td> Elements of the inertia tensor <td>
+/// <tr><td> "Inertia"                 <td> Moments of inertia of the binary object <td>
+/// <tr><td> "MajorAxes"               <td> Principal axes of the binary object <td>
 /// <tr><td> "DimensionsCube"          <td> Extent along the principal axes of a cube <td> 2D & 3D
 /// <tr><td> "DimensionsEllipsoid"     <td> Extent along the principal axes of an ellipsoid <td> 2D & 3D
 /// <tr><td colspan="3"> **Moments of grey-value object**
 /// <tr><td> "Gravity"                 <td> Coordinates of the center-of-mass of the object <td> Scalar grey
-/// <tr><td> "GreyMu"                  <td> Elements of the grey-weighted inertia tensor <td> 2D & 3D, scalar grey
-/// <tr><td> "GreyInertia"             <td> Grey-weighted moments of inertia of the object <td> 2D & 3D, scalar grey
-/// <tr><td> "GreyMajorAxes"           <td> Grey-weighted principal axes of the object <td> 2D & 3D, scalar grey
+/// <tr><td> "GreyMu"                  <td> Elements of the grey-weighted inertia tensor <td> scalar grey
+/// <tr><td> "GreyInertia"             <td> Grey-weighted moments of inertia of the object <td> scalar grey
+/// <tr><td> "GreyMajorAxes"           <td> Grey-weighted principal axes of the object <td> scalar grey
 /// <tr><td> "GreyDimensionsCube"      <td> Extent along the principal axes of a cube (grey-weighted) <td> 2D & 3D, scalar grey
 /// <tr><td> "GreyDimensionsEllipsoid" <td> Extent along the principal axes of an ellipsoid (grey-weighted) <td> 2D & 3D, scalar grey
 /// </table>

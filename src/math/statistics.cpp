@@ -453,5 +453,157 @@ StatisticsAccumulator GetSampleStatistics(
    return scanLineFilter->GetResult();
 }
 
+namespace {
+
+class dip__CenterOfMassBase : public Framework::ScanLineFilter {
+   public:
+      virtual FloatArray GetResult() = 0;
+};
+
+template< typename TPI >
+class dip__CenterOfMass : public dip__CenterOfMassBase {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         FloatArray& vars = accArray_[ params.thread ];
+         auto bufferLength = params.bufferLength;
+         auto inStride = params.inBuffer[ 0 ].stride;
+         UnsignedArray pos = params.position;
+         dip::uint procDim = params.dimension;
+         if( params.inBuffer.size() > 1 ) {
+            // If there's two input buffers, we have a mask image.
+            auto maskStride = params.inBuffer[ 1 ].stride;
+            bin const* mask = static_cast< bin const* >( params.inBuffer[ 1 ].buffer );
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               if( *mask ) {
+                  for( dip::uint jj = 0; jj < nD_; ++jj ) {
+                     vars[ jj ] += static_cast< dfloat >( pos[ jj ] ) * static_cast< dfloat >( *in );
+                  }
+                  vars[ nD_ ] += static_cast< dfloat >( *in );
+               }
+               in += inStride;
+               mask += maskStride;
+               ++( pos[ procDim ] );
+            }
+         } else {
+            // Otherwise we don't.
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               for( dip::uint jj = 0; jj < nD_; ++jj ) {
+                  vars[ jj ] += static_cast< dfloat >( pos[ jj ] ) * static_cast< dfloat >( *in );
+               }
+               vars[ nD_ ] += static_cast< dfloat >( *in );
+               in += inStride;
+               ++( pos[ procDim ] );
+            }
+         }
+      }
+      dip__CenterOfMass( dip::uint nD ) : nD_( nD ) {}
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
+         accArray_.resize( threads );
+         for( dip::uint ii = 0; ii < threads; ++ii ) {
+            accArray_[ ii ].resize( nD_ + 1, 0.0 );
+         }
+      }
+      virtual FloatArray GetResult() override {
+         FloatArray out = accArray_[ 0 ];
+         for( dip::uint ii = 1; ii < accArray_.size(); ++ii ) {
+            out += accArray_[ ii ];
+         }
+         if( out[ nD_ ] != 0 ) {
+            for( dip::uint jj = 0; jj < nD_; ++jj ) {
+               out[ jj ] /= out[ nD_ ];
+            }
+         } else {
+            for( dip::uint jj = 0; jj < nD_; ++jj ) {
+               out[ jj ] = 0.0;
+            }
+         }
+         out.resize( nD_ );
+         return out;
+      }
+   private:
+      std::vector< FloatArray > accArray_; // one per thread, each one contains: sum(I*x),sum(I*y),...,sum(I)
+      dip::uint nD_;
+};
+
+} // namespace
+
+FloatArray CenterOfMass(
+      Image const& in,
+      Image const& mask
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   std::unique_ptr< dip__CenterOfMassBase >scanLineFilter;
+   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__CenterOfMass, ( in.Dimensionality() ), in.DataType() );
+   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_TensorAsSpatialDim + Framework::Scan_NeedCoordinates );
+   return scanLineFilter->GetResult();
+}
+
+namespace {
+
+class dip__MomentsBase : public Framework::ScanLineFilter {
+   public:
+      virtual MomentAccumulator GetResult() = 0;
+};
+
+template< typename TPI >
+class dip__Moments : public dip__MomentsBase {
+   public:
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         MomentAccumulator& vars = accArray_[ params.thread ];
+         auto bufferLength = params.bufferLength;
+         auto inStride = params.inBuffer[ 0 ].stride;
+         FloatArray pos{ params.position };
+         dip::uint procDim = params.dimension;
+         if( params.inBuffer.size() > 1 ) {
+            // If there's two input buffers, we have a mask image.
+            auto maskStride = params.inBuffer[ 1 ].stride;
+            bin const* mask = static_cast< bin const* >( params.inBuffer[ 1 ].buffer );
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               if( *mask ) {
+                  vars.Push( pos, *in );
+               }
+               in += inStride;
+               mask += maskStride;
+               ++( pos[ procDim ] );
+            }
+         } else {
+            // Otherwise we don't.
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               vars.Push( pos, *in );
+               in += inStride;
+               ++( pos[ procDim ] );
+            }
+         }
+      }
+      dip__Moments( dip::uint nD ) : nD_( nD ) {}
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
+         accArray_.resize( threads, MomentAccumulator( nD_ ));
+      }
+      virtual MomentAccumulator GetResult() override {
+         MomentAccumulator out = accArray_[ 0 ];
+         for( dip::uint ii = 1; ii < accArray_.size(); ++ii ) {
+            out += accArray_[ ii ];
+         }
+         return out;
+      }
+   private:
+      std::vector< MomentAccumulator > accArray_;
+      dip::uint nD_;
+};
+
+} // namespace
+
+MomentAccumulator Moments(
+      Image const& in,
+      Image const& mask
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   std::unique_ptr< dip__MomentsBase >scanLineFilter;
+   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__Moments, ( in.Dimensionality() ), in.DataType() );
+   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_TensorAsSpatialDim + Framework::Scan_NeedCoordinates );
+   return scanLineFilter->GetResult();
+}
 
 } // namespace dip

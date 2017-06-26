@@ -30,12 +30,10 @@ class FeatureGreyMajorAxes : public Composite {
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint /*nObjects*/ ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
-         DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( nD_ * nD_ );
-         constexpr char const* dim = "xyz";
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
             for( dip::uint jj = 0; jj < nD_; ++jj ) {
-               out[ ii * nD_ + jj ].name = String( "v" ) + std::to_string( ii ) + "_" + dim[ jj ];
+               out[ ii * nD_ + jj ].name = String( "v" ) + std::to_string( ii ) + "_" + std::to_string( jj );
             }
          }
          hasIndex_ = false;
@@ -54,8 +52,8 @@ class FeatureGreyMajorAxes : public Composite {
             muIndex_ = dependencies.ValueIndex( "GreyMu" );
          }
          dfloat const* data = &it[ muIndex_ ];
-         dfloat tmp[ 3 ];
-         SymmetricEigenDecompositionPacked( nD_, data, tmp, output );
+         FloatArray tmp( nD_ );
+         SymmetricEigenDecompositionPacked( nD_, data, tmp.data(), output );
       }
 
    private:

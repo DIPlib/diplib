@@ -86,11 +86,18 @@ DIP_EXPORT MinMaxAccumulator GetMaximumAndMinimum( Image const& in, Image const&
 /// image, returns the maximum and minimum sample values. The image must be real-valued.
 DIP_EXPORT StatisticsAccumulator GetSampleStatistics( Image const& in, Image const& mask = {} );
 
-// TODO: functions to port:
-/*
-   dip_Moments (dip_math.h)
-   dip_CenterOfMass (dip_math.h)
-*/
+/// \brief Computes the center of mass (first order moments) of the image `in`, optionally using only
+/// those pixels selected by `mask`.
+///
+/// If `mask` is not forged, all input pixels are considered. `in` must be scalar and real-valued.
+DIP_EXPORT FloatArray CenterOfMass( Image const& in, Image const& mask = {} );
+
+/// \brief Computes the first order moments and second order central moments of the image `in`,
+/// optionally using only those pixels selected by `mask`.
+///
+/// If `mask` is not forged, all input pixels are considered. `in` must be scalar and real-valued.
+DIP_EXPORT MomentAccumulator Moments( Image const& in, Image const& mask = {} );
+
 
 /// \}
 

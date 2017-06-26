@@ -29,7 +29,6 @@ class FeatureInertia : public Composite {
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
          nD_ = label.Dimensionality();
-         DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( nD_ );
          PhysicalQuantity pq = label.PixelSize( 0 );
          bool sameUnits = pq.IsPhysical();

@@ -235,10 +235,15 @@ DIP_EXPORT void SymmetricEigenDecomposition(
 
 /// \brief Finds the eigenvalues and eigenvectors of a symmetric real matrix, where only the unique values are given.
 ///
-/// Calls `dip::SymmetricEigenDecomposition` after copying over the input values to a temporary buffer. `n`
-/// must be either 2 or 3.
+/// Calls `dip::SymmetricEigenDecomposition` after copying over the input values to a temporary buffer.
 ///
-/// `input` is a pointer to 3 or 6 values: { xx, yy, xy }, { xx, yy, zz, xy, xz, yz }.
+/// `input` is a pointer to `n*(n+1)/2` values, stored in the same order as symmetric tensors are stored in an image
+/// (see dip::Tensor::Shape). That is, fist are the main diagonal elements, then the elements above the diagonal,
+/// column-wise. This translates to:
+///  - 2D: xx, yy, xy
+///  - 3D: xx, yy, zz, xy, xz, yz
+///  - 4D: xx, yy, zz, tt, xy, xz, yz, xt, yt, zt
+///  - etc.
 ///
 /// See `dip::SymmetricEigenDecomposition` for information on `lambdas` and `vectors`.
 inline void SymmetricEigenDecompositionPacked(
@@ -247,26 +252,21 @@ inline void SymmetricEigenDecompositionPacked(
       SampleIterator< dfloat > lambdas,
       SampleIterator< dfloat > vectors = nullptr
 ) {
-   dfloat matrix[ 9 ];
-   if( n == 2 ) {
-      matrix[ 0 ] = input[ 0 ];
-      matrix[ 1 ] = input[ 2 ];
-      // matrix[ 2 ] is never used
-      matrix[ 3 ] = input[ 1 ];
-   } else if( n == 3 ) {
-      matrix[ 0 ] = input[ 0 ];
-      matrix[ 1 ] = input[ 3 ];
-      matrix[ 2 ] = input[ 4 ];
-      // matrix[ 3 ] is never used
-      matrix[ 4 ] = input[ 1 ];
-      matrix[ 5 ] = input[ 5 ];
-      // matrix[ 6 ] is never used
-      // matrix[ 7 ] is never used
-      matrix[ 8 ] = input[ 2 ];
-   } else {
-      DIP_THROW( "dip::SymmetricEigenDecompositionPacked only defined for n=2 or n=3" );
+   FloatArray matrix( n * n );
+   // Copy over diagonal elements, which are stored sequentially at the beginning of `input`.
+   for( dip::uint ii = 0, kk = 0; ii < n; ++ii, kk += 1 + n ) {
+      matrix[ kk ] = *input;
+      ++input;
    }
-   SymmetricEigenDecomposition( n, matrix, lambdas, vectors );
+   // Copy over remaining elements, but copy to the lower triangular elements of `matrix`.
+   // The upper triangular elements won't be used.
+   for( dip::uint ii = 1; ii < n; ++ii ) {
+      for( dip::uint jj = 0; jj < ii; ++jj ) {
+         matrix[ ii + jj * n ] = *input;
+         ++input;
+      }
+   }
+   SymmetricEigenDecomposition( n, matrix.data(), lambdas, vectors );
 }
 
 /// \brief Finds the eigenvalues and eigenvectors of a square real matrix.
@@ -470,7 +470,7 @@ DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcompl
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see VarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator
+/// \see VarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
 /// ###Source
 ///
@@ -587,7 +587,7 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see StatisticsAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator
+/// \see StatisticsAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
 /// ### Source
 ///
@@ -654,7 +654,7 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see StatisticsAccumulator, VarianceAccumulator, MinMaxAccumulator
+/// \see StatisticsAccumulator, VarianceAccumulator, MinMaxAccumulator, MomentAccumulator
 class DIP_NO_EXPORT DirectionalStatisticsAccumulator {
    public:
       /// Add a sample to the accumulator
@@ -708,7 +708,7 @@ inline DirectionalStatisticsAccumulator operator+( DirectionalStatisticsAccumula
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see StatisticsAccumulator, VarianceAccumulator, DirectionalStatisticsAccumulator
+/// \see StatisticsAccumulator, VarianceAccumulator, DirectionalStatisticsAccumulator, MomentAccumulator
 class DIP_NO_EXPORT MinMaxAccumulator {
    public:
       /// Add a sample to the accumulator
@@ -749,6 +749,152 @@ class DIP_NO_EXPORT MinMaxAccumulator {
       dfloat min_ = std::numeric_limits< dfloat >::max();
       dfloat max_ = std::numeric_limits< dfloat >::lowest();
 };
+
+/// \brief Combine two accumulators
+inline MinMaxAccumulator operator+( MinMaxAccumulator lhs, MinMaxAccumulator const& rhs ) {
+   lhs += rhs;
+   return lhs;
+}
+
+
+/// \brief `%MomentAccumulator` accumulates the zeroth order moment, the first order normalized moments, and the
+/// second order central normalized moments, in `N` dimensions.
+///
+/// Samples are added one by one, using the `Push` method. Other members are used to retrieve the moments.
+///
+/// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
+/// and add the accumulators together using the `+` operator.
+///
+/// \see StatisticsAccumulator, VarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator
+class DIP_NO_EXPORT MomentAccumulator {
+   public:
+      /// The constructor determines the dimensionality for the object.
+      MomentAccumulator( dip::uint N ) {
+         DIP_THROW_IF( N < 1, E::PARAMETER_OUT_OF_RANGE );
+         m0_ = 0.0;
+         m1_.resize( N, 0.0 );
+         m2_.resize( N * ( N + 1 ) / 2, 0.0 );
+      }
+
+      /// \brief Add a sample to the accumulator. `pos` must have `N` dimensions.
+      void Push( FloatArray pos, dfloat weight ) {
+         dip::uint N = m1_.size();
+         DIP_ASSERT( pos.size() == N );
+         m0_ += weight;
+         dip::uint kk = 0;
+         for( dip::uint ii = 0; ii < N; ++ii ) {
+            m1_[ ii ] += pos[ ii ] * weight;
+            for( dip::uint jj = 0; jj <= ii; ++jj ) {
+               m2_[ kk ] += pos[ ii ] * pos[ jj ] * weight;
+               ++kk;
+            }
+         }
+      }
+
+      /// Combine two accumulators
+      MomentAccumulator& operator+=( MomentAccumulator const& b ) {
+         m0_ += b.m0_;
+         m1_ += b.m1_;
+         m2_ += b.m2_;
+         return *this;
+      }
+
+      /// Sum of weights (zeroth order moment)
+      dfloat Sum() const {
+         return m0_;
+      }
+
+      /// First order moments, normalized
+      FloatArray FirstOrder() const {
+         if( m0_ == 0 ) {
+            return FloatArray( m1_.size(), 0.0 );
+         } else {
+            FloatArray out = m1_;
+            for( dfloat& v : out ) {
+               v /= m0_;
+            }
+            return out;
+         }
+      }
+
+      /// \brief Second order central moment tensor, normalized
+      ///
+      /// The moments are stored in the same order as symmetric tensors are stored in an image
+      /// (see dip::Tensor::Shape). That is, fist are the main diagonal elements, then the elements
+      /// above the diagonal, column-wise. This translates to:
+      ///  - 2D: xx, yy, xy
+      ///  - 3D: xx, yy, zz, xy, xz, yz
+      ///  - 4D: xx, yy, zz, tt, xy, xz, yz, xt, yt, zt
+      ///  - etc.
+      ///
+      /// The second order moment tensor is defined as:
+      ///
+      ///    \f$ I = \Sigma_k m_k ((\vec{r_k} \cdot \vec{r_k}) E - \vec{r_k} \ctimes \vec{r_k}) \f$
+      ///
+      /// where \f$ E \f$ is the identity matrix ( \f$ E = \Sigma_i \vec{e_i} \ctimes \vec{e_i} \f$ ), \f$ m_k \f$
+      /// is the weight of point \f$ k \f$ , and \f$ \vec{r_k} \f$ is its position. In 2D, this leads to:
+      ///
+      ///     \f$ I_{xx} = \Sigma_k m_k y^2 \f$
+      ///     \f$ I_{yy} = \Sigma_k m_k x^2 \f$
+      ///     \f$ I_{xy} = -\Sigma_k m_k x y \f$
+      ///
+      /// In 3D, it leads to:
+      ///
+      ///     \f$ I_{xx} = \Sigma_k m_k y^2 + \Sigma_k m_k z^2 \f$
+      ///     \f$ I_{yy} = \Sigma_k m_k x^2 + \Sigma_k m_k z^2 \f$
+      ///     \f$ I_{zz} = \Sigma_k m_k x^2 + \Sigma_k m_k y^2 \f$
+      ///     \f$ I_{xy} = -\Sigma_k m_k x y \f$
+      ///     \f$ I_{xz} = -\Sigma_k m_k x z \f$
+      ///     \f$ I_{yz} = -\Sigma_k m_k y z \f$
+      ///
+      /// The equations above represent the second order moments, we compute instead the central moments, and
+      /// normalize them by the sum of weights.
+      FloatArray SecondOrder() const {
+         FloatArray out( m2_.size(), 0.0 ); // output tensor
+         if( m0_ != 0 ) {
+            dip::uint N = m1_.size();
+            FloatArray m1 = FirstOrder(); // normalized first order moments
+            FloatArray m2( N, 0.0 );      // normalized second order central moments, diagonal elements
+            for( dip::uint ii = 0, kk = 0; ii < N; ++ii, kk += 1 + ii ) {
+               m2[ ii ] = m2_[ kk ] / m0_ - m1[ ii ] * m1[ ii ];
+            }
+            for( dip::uint ii = 0; ii < N; ++ii ) {
+               dfloat acc = 0.0;
+               for( dip::uint jj = 0; jj < N; ++jj ) {
+                  if( jj != ii ) {
+                     acc += m2[ jj ];
+                  }
+               }
+               out[ ii ] = acc;
+            }
+            for( dip::uint ii = 1, kk = N, ll = 1; ii < N; ++ii, ++ll ) {
+               for( dip::uint jj = 0; jj < ii; ++jj, ++kk, ++ll ) {
+                  out[ kk ] = m1[ ii ] * m1[ jj ] - m2_[ ll ] / m0_;
+               }
+            }
+         }
+         return out;
+      }
+
+   private:
+      dfloat m0_;       // zeroth order moments accumulated here (sum of weights)
+      FloatArray m1_;   // first order moments accumulated here (N values)
+      FloatArray m2_;   // second order moments accumulated here (N*(N+1)/2 values)
+      // Second order moments are stored column-wise, after removing the symmetric elements below the main diagonal:
+      //  - 2D: xx, xy, yy
+      //  - 3D: xx, xy, yy, xz, yz, zz
+      //  - 4D: xx, xy, yy, xz, yz, zz, xt, yt, zt, tt
+      //  - etc.
+      // Note that this order is different from the one we use for the output. This is more convenient in computation,
+      // the output order matches that of pixel storage.
+};
+
+/// \brief Combine two accumulators
+inline MomentAccumulator operator+( MomentAccumulator lhs, MomentAccumulator const& rhs ) {
+   lhs += rhs;
+   return lhs;
+}
+
 
 /// \}
 

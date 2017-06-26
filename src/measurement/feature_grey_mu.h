@@ -30,16 +30,12 @@ class FeatureGreyMu : public LineBased {
       virtual ValueInformationArray Initialize( Image const& label, Image const& grey, dip::uint nObjects ) override {
          DIP_THROW_IF( !grey.IsScalar(), E::IMAGE_NOT_SCALAR );
          nD_ = label.Dimensionality();
-         DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          data_.clear();
-         dip::uint nOut = nD_ == 2 ? 3 : 6;
-         //nValues_ = nD_ == 2 ? 6 : 10;
-         nValues_  = nD_ + nOut + 1;
-         data_.resize( nObjects * nValues_, 0 );
+         dip::uint nOut = nD_ * ( nD_ + 1 ) / 2;
+         data_.resize( nObjects, MomentAccumulator( nD_ ));
          scales_.resize( nOut );
          ValueInformationArray out( nOut );
          dip::uint kk = 0;
-         constexpr char const* dims = "xyz";
          for( dip::uint ii = 0; ii < nD_; ++ii ) {
             PhysicalQuantity pq1 = label.PixelSize( ii );
             if( !pq1.IsPhysical() ) {
@@ -47,7 +43,7 @@ class FeatureGreyMu : public LineBased {
             }
             scales_[ kk ] = pq1.magnitude * pq1.magnitude;
             out[ kk ].units = pq1.units * pq1.units;
-            out[ kk ].name = String( "Mu_" ) + dims[ ii ] + dims[ ii ];
+            out[ kk ].name = String( "Mu_" ) + std::to_string( ii ) + "_" + std::to_string( ii );
             ++kk;
          }
          for( dip::uint ii = 1; ii < nD_; ++ii ) {
@@ -62,7 +58,7 @@ class FeatureGreyMu : public LineBased {
                }
                scales_[ kk ] = pq1.magnitude * pq2.magnitude;
                out[ kk ].units = pq1.units * pq2.units;
-               out[ kk ].name = String( "Mu_" ) + dims[ ii ] + dims[ jj ];
+               out[ kk ].name = String( "Mu_" ) + std::to_string( ii ) + "_" + std::to_string( jj );
                ++kk;
             }
          }
@@ -78,7 +74,8 @@ class FeatureGreyMu : public LineBased {
       ) override {
          // If new objectID is equal to previous one, we don't to fetch the data pointer again
          uint32 objectID = 0;
-         dfloat* data = nullptr;
+         MomentAccumulator* data = nullptr;
+         FloatArray pos{ coordinates };
          do {
             if( *label > 0 ) {
                if( *label != objectID ) {
@@ -87,59 +84,23 @@ class FeatureGreyMu : public LineBased {
                   if( it == objectIndices.end() ) {
                      data = nullptr;
                   } else {
-                     data = &( data_[ it->second * nValues_ ] );
+                     data = &( data_[ it->second ] );
                   }
                }
                if( data ) {
-                  for( dip::uint ii = 0; ii < nD_; ++ii ) {
-                     data[ ii ] += static_cast< dfloat >( coordinates[ ii ] ) * *grey;
-                  }
-                  dip::uint kk = nD_;
-                  for( dip::uint ii = 0; ii < nD_; ++ii ) {
-                     for( dip::uint jj = ii; jj < nD_; ++jj ) {
-                        data[ kk ] += static_cast< dfloat >( coordinates[ ii ] * coordinates[ jj ] ) * *grey;
-                        ++kk;
-                     }
-                  }
-                  data[ kk ] += *grey;
+                  data->Push( pos, *grey );
                }
             }
-            ++coordinates[ dimension ];
+            ++pos[ dimension ];
             ++grey;
          } while( ++label );
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         dfloat* data = &( data_[ objectIndex * nValues_ ] );
-         dfloat n = data[ nValues_ - 1 ];
-         if( n == 0 ) {
-            for( dip::uint ii = 0; ii < scales_.size(); ++ii ) {
-               output[ ii ] = 0;
-            }
-         } else {
-            if( nD_ == 2 ) {
-               // 2D Gmu tensor, as defined in B. Jahne, Practical Handbook on Image Processing
-               // for Scientific Applications, section 16.3.5c
-               dfloat x = data[ 0 ] / n;
-               dfloat y = data[ 1 ] / n;
-               output[ 0 ] =  ( data[ 4 ] / n - ( y * y )) * scales_[ 0 ];
-               output[ 1 ] = -( data[ 3 ] / n - ( x * y )) * scales_[ 1 ];
-               output[ 2 ] =  ( data[ 2 ] / n - ( x * x )) * scales_[ 2 ];
-            } else { // nD_ == 3
-               // 3D Gmu tensor, as defined in G. Lohmann, Volumetric Image Analysis, pp 55
-               dfloat x = data[ 0 ] / n;
-               dfloat y = data[ 1 ] / n;
-               dfloat z = data[ 2 ] / n;
-               dfloat xx = ( data[ 3 ] / n - ( x * x ));
-               dfloat yy = ( data[ 6 ] / n - ( y * y ));
-               dfloat zz = ( data[ 8 ] / n - ( z * z ));
-               output[ 0 ] =  ( yy + zz )                   * scales_[ 0 ];
-               output[ 1 ] = -( data[ 4 ] / n - ( x * y ))  * scales_[ 1 ];
-               output[ 2 ] = -( data[ 5 ] / n - ( x * z ))  * scales_[ 2 ];
-               output[ 3 ] =  ( xx + zz )                   * scales_[ 3 ];
-               output[ 4 ] = -( data[ 7 ] / n - ( y * z ))  * scales_[ 4 ];
-               output[ 5 ] =  ( xx + yy )                   * scales_[ 5 ];
-            }
+         MomentAccumulator* data = &( data_[ objectIndex ] );
+         FloatArray values = data->SecondOrder();
+         for( dip::uint ii = 0; ii < scales_.size(); ++ii ) {
+            output[ ii ] = values[ ii ] * scales_[ ii ];
          }
       }
 
@@ -151,11 +112,8 @@ class FeatureGreyMu : public LineBased {
 
    private:
       dip::uint nD_;       // number of dimensions (2 or 3).
-      dip::uint nValues_;  // number of values per object in `data_` (6 or 10).     (== nD_ + nOut + 1)
-      FloatArray scales_;  // nOut values
-      std::vector< dfloat > data_; // size of this array is nObjects * nValues_. Index as data_[ objectIndex * nValues_ ]
-      // Format 2D: x y xx xy yy sum
-      // Format 3D: x y z xx xy xz yy yz zz sum
+      FloatArray scales_;  // nOut values.
+      std::vector< MomentAccumulator > data_; // size of this array is nObjects.
 };
 
 

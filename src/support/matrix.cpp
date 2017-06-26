@@ -282,29 +282,29 @@ DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
    dip::SymmetricEigenDecompositionPacked( 2, matrix2, lambdas, vectors );
    DOCTEST_CHECK( lambdas[ 0 ] == 4 );
    DOCTEST_CHECK( lambdas[ 1 ] == 2 );
-   DOCTEST_CHECK( vectors[ 0 ] == doctest::Approx(  cos( M_PI/4 ))); // signs might be different here...
-   DOCTEST_CHECK( vectors[ 1 ] == doctest::Approx( -sin( M_PI/4 )));
-   DOCTEST_CHECK( vectors[ 2 ] == doctest::Approx(  sin( M_PI/4 )));
-   DOCTEST_CHECK( vectors[ 3 ] == doctest::Approx(  cos( M_PI/4 )));
+   DOCTEST_CHECK( vectors[ 0 ] == doctest::Approx(  std::cos( M_PI/4 ))); // signs might be different here...
+   DOCTEST_CHECK( vectors[ 1 ] == doctest::Approx( -std::sin( M_PI/4 )));
+   DOCTEST_CHECK( vectors[ 2 ] == doctest::Approx(  std::sin( M_PI/4 )));
+   DOCTEST_CHECK( vectors[ 3 ] == doctest::Approx(  std::cos( M_PI/4 )));
 
-   dip::dfloat matrix3[] = { 4, 8, 6, 0, 0, 0 };
+   dip::dfloat matrix3[] = { 3, 1.5, 1.5, 0.0, 0.0, -0.5 };
    dip::SymmetricEigenDecompositionPacked( 3, matrix3, lambdas );
-   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
-   DOCTEST_CHECK( lambdas[ 1 ] == 6 );
-   DOCTEST_CHECK( lambdas[ 2 ] == 4 );
+   DOCTEST_CHECK( lambdas[ 0 ] == 3 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 2 );
+   DOCTEST_CHECK( lambdas[ 2 ] == 1 );
    dip::SymmetricEigenDecompositionPacked( 3, matrix3, lambdas, vectors );
-   DOCTEST_CHECK( lambdas[ 0 ] == 8 );
-   DOCTEST_CHECK( lambdas[ 1 ] == 6 );
-   DOCTEST_CHECK( lambdas[ 2 ] == 4 );
-   DOCTEST_CHECK( vectors[ 0 ] == 0 );
-   DOCTEST_CHECK( vectors[ 1 ] == 1 );
-   DOCTEST_CHECK( vectors[ 2 ] == 0 );
-   DOCTEST_CHECK( vectors[ 3 ] == 0 );
-   DOCTEST_CHECK( vectors[ 4 ] == 0 );
-   DOCTEST_CHECK( vectors[ 5 ] == 1 );
-   DOCTEST_CHECK( vectors[ 6 ] == 1 );
-   DOCTEST_CHECK( vectors[ 7 ] == 0 );
-   DOCTEST_CHECK( vectors[ 8 ] == 0 );
+   DOCTEST_CHECK( lambdas[ 0 ] == 3 );
+   DOCTEST_CHECK( lambdas[ 1 ] == 2 );
+   DOCTEST_CHECK( lambdas[ 2 ] == 1 );
+   DOCTEST_CHECK( vectors[ 0 ] == doctest::Approx(  1.0 ));
+   DOCTEST_CHECK( vectors[ 1 ] == doctest::Approx(  0.0 ));
+   DOCTEST_CHECK( vectors[ 2 ] == doctest::Approx(  0.0 ));
+   DOCTEST_CHECK( vectors[ 3 ] == doctest::Approx(  0.0 ));
+   DOCTEST_CHECK( vectors[ 4 ] == doctest::Approx(  1.0 / std::sqrt( 2.0 )));
+   DOCTEST_CHECK( vectors[ 5 ] == doctest::Approx( -1.0 / std::sqrt( 2.0 )));
+   DOCTEST_CHECK( vectors[ 6 ] == doctest::Approx(  0.0 ));
+   DOCTEST_CHECK( vectors[ 7 ] == doctest::Approx(  1.0 / std::sqrt( 2.0 )));
+   DOCTEST_CHECK( vectors[ 8 ] == doctest::Approx(  1.0 / std::sqrt( 2.0 )));
 
    dip::dfloat matrix22[] = { 3, -1, -1, 3 };
    dip::dcomplex c_lambdas[ 2 ];
