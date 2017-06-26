@@ -53,8 +53,6 @@ namespace dip {
 /// know that this choice will not affect the results of reading from and assigning to the dereferenced
 /// iterator. The only difference is the type to which the dereferenced iterator can implicitly be cast to.
 ///
-/// There is no `%PixelAt` method, and no boundary condition can be set.
-///
 /// Example usage from `dip::Image::CopyAt`:
 ///
 /// ```cpp

@@ -25,7 +25,6 @@
 #include <tuple>
 
 #include "diplib.h"
-#include "diplib/boundary.h"
 
 
 /// \file
@@ -256,22 +255,44 @@ template< typename T >
 using ConstLineIterator = LineIterator< T const >;
 
 
+// TODO: Image iterators could have 4 modes of operation:
+//  1- Fast: the image is flattened as much as possible, to minimize the loop cost. Pixels are accessed in storage
+//     order. No Coordinates(), no Index(), no processing dimension, no GetLineIterator().
+//  2- With coordinates: Strides are sorted, the image is iterated not in index order but in storage order. There's
+//     access to Coordinates(), a processing dimension, and GetLineIterator(). Index() exists but doesn't increase
+//     monotonically. This is the current iterator but with sorted strides. Difficultly: do we re-sort coordinates
+//     when outputting them, or do we index coordinates for incrementing them using an index array (coord[index[ii]])?
+//  3- With neighbor tests: Idem as before, but it also keeps track of whether it's on the edge of the image. This
+//     speeds up some processing where we access nearest neighbors (not a larger neighborhood). It only needs to
+//     test if the neighbor exists if it's on the image edge. Every time an index is reset to the beginning, the
+//     onEdge flag is set, and the next time operator++() is called, there's a check to see if we're now still on
+//     the edge of the image. Every time operator++() is called when onEdge is false, we check to see if we reached
+//     the end of the line.
+//  4- In index order: Strides are not sorted. This is the current iterator. This one could also be with or without
+//     neighbor tests, I guess.
+//
+// We'd use mode #1 in functions that modify each pixel, without regard for where the pixel is or what its
+// neighbors are. Mode #2 is used when it's efficient to do stuff along image lines. Mode #3 is used when
+// neighbors need to be checked (i.e. dip::Label). Mode #4 is used when the index ordering is important, e.g.
+// when reading pixel data from file.
+//
+// For modes #2 and #3, there should be an option to automatically pick the optimal processing dimension.
+//
+// Modes #1, #2 and #4 are essentially the same iterator. We could have a function that converts the basic iterator
+// (#4) into #1 or #2 by forcing a sort of the strides.
+//
+// Option #3 adds some code to the operator++. This one could be a derived class, or made available through a
+// bool template parameter.
+//
+// The joint image iterators could sort strides for the first image, and use the same order for the other images.
+// If they happen to have the same stride order, we're all set. If not, is there a way to pick an order that will
+// be optimal in general? Iterate first over a dimension with small strides everywhere? Or one that has the most
+// unit strides?
+
+
 //
 // Image iterator, does nD loops over all pixels in an image
 //
-
-// TODO: ImageIterator and JointImageIterator could track if they're pointing at a pixel at the edge of the image
-// e.g.:
-//    LineIsOnEdge (line being the pixels along the dimension that changes most quickly)
-//    PixelIsOnEdge = LineIsOnEdge && ( pos == 0 || pos == last )
-// IsInImage would then be simpler when dealing with nearest neighbors: if it's not on the edge, we don't need to call it at all.
-// Keeping track of this location of course adds some expense, so we could enable/disable it through a template bool parameter.
-//    template< typename T, bool TrackEdge = false > class ImageIterator { ... };
-
-// TODO: All image iterators could pick processing order by sorting the strides. Now we always iterate in linear index order, which is not always optimal.
-// At the same time, make it possible to set the processing dimension to the optimal one (i.e. the one with the smallest stride).
-
-// TODO: It's increasingly silly to me the idea of adding a boundary condition to the iterator. PixelAt() adds a little convenience, but is way expensive compared to ExtendImage().
 
 /// \brief An iterator to iterate over all pixels of an image, or all lines of an image.
 ///
@@ -295,29 +316,26 @@ using ConstLineIterator = LineIterator< T const >;
 /// Alternatively, a `dip::SampleIterator` can be obtained to iterate over the samples of the tensor
 /// (`it.begin()` .. `it.end()`).
 ///
-/// It is possible to obtain neighboring pixel values using one of two methods. The simpler method is
-/// also the most dangerous:
+/// It is possible to obtain neighboring pixel values by adding the neighbor's offset to the current
+/// pointer:
 ///
 /// ```cpp
 ///     *( it.Pointer() + offset )
 /// ```
 ///
-/// accesses the neighbor at a pre-computed offset. Note that this offset can cause a read-out-of-bounds
-/// or simply access the wrong pixel if the neighbor is not within the image domain. One would have to test
-/// for `it.Coordinates()` to be far enough away from the edge of the image. This method for accessing a
-/// neighbor is best used when iterating over a window within a larger image, where one can be sure that
-/// neighbors always exist.
+/// Note that this offset can cause a read-out-of-bounds or simply access the wrong pixel if the neighbor
+/// is not within the image domain. One would have to test for `it.Coordinates()` to be far enough away
+/// from the edge of the image. The most optimal way to access neighbors is to iterate over a window
+/// within a larger image, such that one can be sure that neighbors always exist. See `dip::ExtendImage`.
 ///
-/// The more complex method is always safe but always slower:
+/// A much more expensive alternative is to use `dip::ReadPixelWithBoundaryCondition`
 ///
 /// ```cpp
-///     std::array< dip::uint8, image.TensorElements() > pixel;
-///     it.PixelAt( coords, pixel.begin() );
+///     it = dip::ImageIterator< sfloat >( image );
+///     IntegerArray neighbor{ 1, 2 };
+///     // ...
+///     neighbor = dip::ReadPixelWithBoundaryCondition( image, neighbor + it.Coordinates, boundaryCondition );
 /// ```
-///
-/// copies the pixel values at the current position + `coords` over to a temporary buffer, using the
-/// iterator's boundary condition if that location falls outside the image domain. This method is not
-/// the most efficient way of accessing neighbor pixels, but can be convenient at times.
 ///
 /// Satisfies all the requirements for a mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
 ///
@@ -340,21 +358,9 @@ class DIP_NO_EXPORT ImageIterator {
             image_( &image ),
             ptr_( static_cast< pointer >( image.Origin() )),
             coords_( image.Dimensionality(), 0 ),
-            procDim_( procDim ),
-            boundaryCondition_( image.Dimensionality(), BoundaryCondition::DEFAULT ) {
+            procDim_( procDim ) {
          DIP_THROW_IF( !image_->IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( image_->DataType() != DataType( value_type( 0 )), E::WRONG_DATA_TYPE );
-      }
-      /// To construct a useful iterator, provide an image, a boundary condition array, and optionally a processing dimension
-      ImageIterator( Image const& image, BoundaryConditionArray const& bc, dip::uint procDim = std::numeric_limits< dip::uint >::max() ) :
-            image_( &image ),
-            ptr_( static_cast< pointer >( image.Origin() )),
-            coords_( image.Dimensionality(), 0 ),
-            procDim_( procDim ),
-            boundaryCondition_( bc ) {
-         DIP_THROW_IF( !image_->IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( image_->DataType() != DataType( value_type( 0 )), E::WRONG_DATA_TYPE );
-         BoundaryArrayUseParameter( boundaryCondition_, image_->Dimensionality() );
       }
 
       /// Swap
@@ -364,12 +370,11 @@ class DIP_NO_EXPORT ImageIterator {
          swap( ptr_, other.ptr_ );
          swap( coords_, other.coords_ );
          swap( procDim_, other.procDim_ );
-         swap( boundaryCondition_, other.boundaryCondition_ );
       }
       /// Convert from non-const iterator to const iterator
       operator ImageIterator< value_type const >() const {
          DIP_ASSERT( image_ );
-         ImageIterator< value_type const > out( *image_, boundaryCondition_, procDim_ );
+         ImageIterator< value_type const > out( *image_, procDim_ );
          // static_cast above: the constructor will cast back to `sint`, yielding the same original value on
          // two's complement machines. On other types of machines, this will presumably also be OK, as it is
          // unlikely to turn into a value that is in the range [0,nDims).
@@ -385,22 +390,6 @@ class DIP_NO_EXPORT ImageIterator {
       reference operator[]( dip::uint index ) const {
          DIP_ASSERT( image_ );
          return *( ptr_ + static_cast< dip::sint >( index ) * image_->TensorStride() );
-      }
-
-      /// \brief Copy the samples of a neighbor with relative coordinates of `coords`, using the
-      /// boundary condition if that neighbor is outside of the image domain.
-      ///
-      /// It is relatively expensive to test for a pixel to be outside the image domain,
-      /// if you can be sure that the neighbor exists, use `*( dip::ImageIterator::Pointer() + offset )`
-      /// instead.
-      ///
-      /// \see dip::ReadPixelWithBoundaryCondition
-      Image::CastPixel< value_type > PixelAt( IntegerArray coords ) {
-         DIP_THROW_IF( coords.size() != coords_.size(), E::ARRAY_ILLEGAL_SIZE );
-         for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
-            coords[ ii ] += static_cast< dip::sint >( coords_[ ii ] );
-         }
-         return ReadPixelWithBoundaryCondition( *image_, coords, boundaryCondition_ );
       }
 
       /// Increment
@@ -509,26 +498,11 @@ class DIP_NO_EXPORT ImageIterator {
       /// Return the processing dimension, the direction of the lines over which the iterator iterates
       dip::sint ProcessingDimension() const { return HasProcessingDimension() ? static_cast< dip::sint >( procDim_ ) : -1; }
 
-      /// \brief Set the boundary condition for accessing pixels outside the image boundary. An empty array sets
-      /// all dimensions to the default value, and an array with a single element sets all dimensions to
-      /// that value.
-      void SetBoundaryCondition( BoundaryConditionArray const& bc ) {
-         boundaryCondition_ = bc;
-         BoundaryArrayUseParameter( boundaryCondition_, image_->Dimensionality() );
-      }
-      /// Set the boundary condition for accessing pixels outside the image boundary, for the given dimension
-      void SetBoundaryCondition( dip::uint d, BoundaryCondition bc ) {
-         if( d < boundaryCondition_.size() ) {
-            boundaryCondition_[ d ] = bc;
-         }
-      }
-
    private:
       Image const* image_ = nullptr;
       pointer ptr_ = nullptr;
       UnsignedArray coords_;
       dip::uint procDim_;
-      BoundaryConditionArray boundaryCondition_ = {};
 };
 
 template< typename T >
@@ -575,8 +549,6 @@ inline void TestDataType<>( Image const* /*images*/[] ) {} // End of iteration
 ///
 /// - The `GetLineIterator`, `Pointer` and `Offset` methods are templated also, requiring a template parameter
 /// `N` as in `Offset<N>`.
-///
-/// - There is no `PixelAt` method, and no boundary condition parameters.
 ///
 /// The first image in the set must be forged. Other images can be empty, but dereferencing them will lead to
 /// undefined behavior.
