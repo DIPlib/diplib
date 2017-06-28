@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `skew` function
+ * This MEX-file implements the `rotation` function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -37,7 +37,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::uint dimension1 = 0;
       dip::uint dimension2 = dimension1 + 1;
       dip::String method = "";
-      dip::String boundaryCondition = "";
+      dip::String boundaryCondition = "add zeros";
 
       if(( nrhs > 2 ) && ( mxIsChar( prhs[ 2 ] ))) {
          // rotation(image_in,angle,interpolation_method,boundary_condition)

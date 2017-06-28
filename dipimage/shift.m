@@ -1,15 +1,10 @@
-%ROTATION   Rotate an image within an orthogonal plane
+%SHIFT   Shift an image using interpolation
 %
 % SYNOPSIS:
-%  image_out = rotation(image_in, angle, interpolation_method, boundary_condition) % (for 2D images only)
-%  image_out = rotation(image_in, angle, axis, interpolation_method, boundary_condition) % (for 3D images only)
-%  image_out = rotation(image_in, angle, dimension1, dimension2, interpolation_method, boundary_condition) % (the general case)
+%  image_out = shift(image_in, shift, interpolation_method, boundary_condition)
 %
 % PARAMETERS:
-%  angle: Angle (in radian) to rotate over
-%  axis: Axis to rotate around (for 2D or 3D images only, for a 2D image it has to be 3).
-%  dimension1: First dimension defining the orthogonal plane
-%  dimension2: Second dimension defining the orthogonal plane
+%  shift: array containing a shift for each dimension
 %  interpolation_method: One of the following strings:
 %                        - '3-cubic' or '': third order cubic spline interpolation
 %                        - '4-cubic': fourth order cubic spline interpolation
@@ -26,24 +21,8 @@
 %                      See HELP BOUNDARY_CONDITION
 %
 % DEFAULTS:
-%  dimension1 = 1
-%  dimension2 = dimension1 + 1  (that is: axis = 3)
-%  interpolation_method = '3-cubic'
-%  boundary_condition = 'add zeros'
-%
-% The image is rotated around its center, using three skews.
-%
-% NOTES:
-%  Sign of the 2D rotation: implementation in the mathmetical sense, but
-%  note the y-axis is positive downwards! Thus: left turning has negative
-%  sign, and right positive.
-%
-%  For exact rotations of multiples of 90 degrees, use the rot90 method
-%  instead. Note that rot90 reverses the sign of the angle as compared to
-%  this function.
-%
-% DIPlib:
-%  This function calls the DIPlib function dip::Rotation.
+%  interpolation_method = ''
+%  boundary_condition = ''
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -60,3 +39,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function image_out = shift(image_in,shift,varargin)
+image_out = resample(image_in,1,shift,varargin{:});

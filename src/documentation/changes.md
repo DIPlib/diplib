@@ -214,6 +214,9 @@ over.
   including the periodic line, which makes translation-invariant operations with line SEs much
   more efficient.
 
+- `dip::Resampling` shifts the image in the opposite direction from what it did in the old
+  *DIPlib*, where the shift was unintuitive.
+
 ## Changes from DIPimage 2.x (the old DIPimage)
 
 - The `dip_image` object has changed completely internally. Pixel data is stored differently:
@@ -278,3 +281,6 @@ over.
 
 - `mdhistogram` has fewer options, but should still be able to produce the same results as
   previously.
+
+- `resample` shifts the image in the opposite direction from what it did in the old *DIPimage*,
+  where the shift was unintuitive.

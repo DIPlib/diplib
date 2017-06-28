@@ -87,13 +87,20 @@ namespace dip {
 /// \brief Shifts the input image by an integer number of pixels, wrapping the pixels around.
 ///
 /// `%dip::Wrap` is equivalent to `dip::Shift` with nearest neighbor interpolation and periodic
-/// boundary condition.
-/// TODO: but presumably faster? or should we implement it as such?
+/// boundary condition, but faster.
 DIP_EXPORT void Wrap(
       Image const& in,
       Image& out,
-      IntegerArray const& i_wrap
+      IntegerArray wrap
 );
+inline Image Wrap(
+      Image const& in,
+      IntegerArray const& wrap
+) {
+   Image out;
+   Wrap( in, out, wrap );
+   return out;
+}
 
 /// \brief Subsamples the input image.
 ///
@@ -118,19 +125,43 @@ inline Image Subsampling(
 
 /// \brief Resamples an image with the given zoom factor and sub-pixel shift.
 ///
-/// TODO: document (and implement!)
+/// The shift is applied first, and causes part of the image to shift out of the field of view.
+/// Thus, `shift` is in input pixels. `boundaryCondition` determines how the new areas are filled in.
+/// See `dip::BoundaryCondition`. Note that the shift can be in fractional pixels. There is no largest
+/// possible shift, but applying very large shifts is not optimized for, and will use more computation
+/// and temporary memory than necessary.
+///
+/// The scaling is applied next. If `zoom` is larger than 1, the output image will be larger than
+/// the input, if it is smaller than 1, it will be smaller. The output image has size
+/// `std::floor( in.Sizes( ii ) * zoom[ ii ] )` along dimension `ii`.
+///
+/// The pixel at coordinates `pos` in the output image is interpolated from the position
+/// `pos[ ii ] / zoom[ ii ] - shift[ ii ]` along dimension `ii`.
+///
+/// Output samples are computed through interpolation from the input data. Thus, with `zoom` smaller
+/// than 1, no low-pass filtering is applied first, except for the `"ft"` interpolation method, which
+/// has the low-pass filtering built in.
+///
+/// The output image has the same data type as the input image.
+///
+/// See \ref interpolation_methods for information on the `interpolationMethod` parameter. `"ft"`
+/// is not (yet) implemented.
+///
+/// **Note** that the current implementation doesn't handle the "asym" boundary conditions properly.
+/// For unsigned types, resulting samples oustide the original image domain are clamped to 0, instead
+/// of properly using the saturated inversion.
 DIP_EXPORT void Resampling(
       Image const& in,
       Image& out,
-      FloatArray const& zoom,
-      FloatArray const& shift = { 0 },
+      FloatArray zoom,
+      FloatArray shift = { 0.0 },
       String const& interpolationMethod = "",
       StringArray const& boundaryCondition = {}
 );
 inline Image Resampling(
       Image const& in,
       FloatArray const& zoom,
-      FloatArray const& shift = { 0 },
+      FloatArray const& shift = { 0.0 },
       String const& interpolationMethod = "",
       StringArray const& boundaryCondition = {}
 ) {
@@ -147,7 +178,7 @@ inline void Shift(
       String const& interpolationMethod = "ft",
       StringArray const& boundaryCondition = {}
 ) {
-   Resampling( in, out, { 1 }, shift, interpolationMethod, boundaryCondition );
+   Resampling( in, out, { 1.0 }, shift, interpolationMethod, boundaryCondition );
 }
 inline Image Shift(
       Image const& in,
@@ -167,6 +198,8 @@ inline Image Shift(
 /// `skew` is shifted by a different amount. The output image has the same dimensions as
 /// `in`, except for dimension `skew`, which will be larger. The origin of the skew is in the
 /// middle of the image.
+///
+/// The output image has the same data type as the input image.
 ///
 /// `shear` must have a magnitude smaller than pi/2.
 ///
@@ -209,8 +242,15 @@ inline Image Skew(
 /// around the center of the image.
 /// The function implements the rotation in the mathematical sense; **note** the y-axis is positive downwards!
 ///
+/// The output image has the same data type as the input image.
+///
 /// The rotation is computed by three consecutive calls to `dip::Skew`. See that function for the meaning of
 /// `interpolationMethod` and `boundaryCondition`.
+///
+/// **Note** that the `"periodic"` boundary condition currently produces an output image of the same size as
+/// the input, where the corners of the image that rotate out of the field of view are cut off and fill the
+/// sections that were outside of the input field of view. This is due to the way that `dip::Skew` handles
+/// the `"periodic"` boundary condition. TODO: This is something that we probably want to fix at some point.
 DIP_EXPORT void Rotation(
       Image const& in,
       Image& out,
@@ -218,7 +258,7 @@ DIP_EXPORT void Rotation(
       dip::uint dimension1,
       dip::uint dimension2,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = {}
+      String const& boundaryCondition = { "add zeros" }
 );
 inline Image Rotation(
       Image const& in,
@@ -226,7 +266,7 @@ inline Image Rotation(
       dip::uint dimension1,
       dip::uint dimension2,
       String const& interpolationMethod = "",
-      String const& boundaryCondition = {}
+      String const& boundaryCondition = { "add zeros" }
 ) {
    Image out;
    Rotation( in, out, angle, dimension1, dimension2, interpolationMethod, boundaryCondition );

@@ -287,7 +287,8 @@ dip::uint Label(
       BoundaryConditionArray bc;
       DIP_START_STACK_TRACE
          bc = StringArrayToBoundaryConditionArray( boundaryCondition );
-         ArrayUseParameter( bc, nDims, BoundaryCondition::DEFAULT ); // any default that is not PERIODIC will do...
+         ArrayUseParameter( bc, nDims, BoundaryCondition::ADD_ZEROS ); // any default that is not PERIODIC will do...
+         //BoundaryArrayUseParameter( bc, nDims ); // We don't use this form because what if someone changes the default to be PERIODIC?
       DIP_END_STACK_TRACE
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( bc[ ii ] == BoundaryCondition::PERIODIC ) {

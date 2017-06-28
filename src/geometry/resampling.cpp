@@ -29,15 +29,153 @@
 
 namespace dip {
 
-void Resampling(
+namespace {
+
+template< typename TPI >
+class WrapLineFilter : public Framework::SeparableLineFilter {
+   public:
+      WrapLineFilter( UnsignedArray const& wrap ) : wrap_( wrap ) {}
+      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+         SampleIterator< TPI > in{ static_cast< TPI* >( params.inBuffer.buffer ), params.inBuffer.stride };
+         SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
+         dip::uint length = params.inBuffer.length;
+         dip::uint wrap = wrap_[ params.dimension ]; // wrap > 0 && wrap < length
+         std::copy( in, in + length - wrap, out + wrap );
+         std::copy( in + length - wrap, in + length, out );
+      }
+   private:
+      UnsignedArray const& wrap_;
+};
+
+} // namespace
+
+void Wrap(
       Image const& in,
       Image& out,
-      FloatArray const& /*zoom*/,
-      FloatArray const& /*shift*/,
-      String const& /*method*/,
-      StringArray const& /*boundaryCondition*/
+      IntegerArray wrap
 ) {
-   // TODO: Resampling
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = in.Dimensionality();
+   DIP_THROW_IF( nDims == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_START_STACK_TRACE
+      ArrayUseParameter( wrap, nDims, dip::sint( 0 ));
+   DIP_END_STACK_TRACE
+
+   // Determine processing parameters
+   BooleanArray process( nDims, false );
+   UnsignedArray uWrap( nDims, 0 );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      dip::sint w = wrap[ ii ] % static_cast< dip::sint >( in.Size( ii ));
+      if( w < 0 ) {
+         w += static_cast< dip::sint >( in.Size( ii ));
+      }
+      process[ ii ] = w != 0;
+      uWrap[ ii ] = static_cast< dip::uint >( w );
+   }
+
+   // Find line filter
+   std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
+   DIP_OVL_NEW_ALL( lineFilter, WrapLineFilter, ( uWrap ), in.DataType() );
+
+   // Call line filter through framework
+   Framework::Separable( in, out, in.DataType(), in.DataType(), process, {}, {}, *lineFilter,
+                         Framework::Separable_AsScalarImage );
+}
+
+namespace {
+
+template< typename TPI >
+class ResamplingLineFilter : public Framework::SeparableLineFilter {
+   public:
+      ResamplingLineFilter( interpolation::Method method, FloatArray const& zoom, FloatArray const& shift ) :
+            method_( method ), zoom_( zoom ), shift_( shift ) {}
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
+         buffer_.resize( threads );
+      }
+      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         DIP_ASSERT( params.inBuffer.stride == 1 );
+         SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
+         dip::uint procDim = params.dimension;
+         TPI* spline1 = nullptr;
+         TPI* spline2 = nullptr;
+         if( method_ == interpolation::Method::BSPLINE ) {
+            dip::uint size = params.inBuffer.length + params.inBuffer.border;
+            std::vector< TPI >& buffer = buffer_[ params.thread ];
+            buffer.resize( 2 * size ); // NOP if already that size
+            spline1 = buffer.data();
+            spline2 = spline1 + size;
+         }
+         interpolation::Dispatch( method_, in, out, params.outBuffer.length, zoom_[ procDim ], -shift_[ procDim ], spline1, spline2 );
+      }
+   private:
+      interpolation::Method method_;
+      FloatArray const& zoom_;
+      FloatArray const& shift_;
+      std::vector< std::vector< TPI >> buffer_; // One per thread
+};
+
+} // namespace
+
+void Resampling(
+      Image const& c_in,
+      Image& out,
+      FloatArray zoom,
+      FloatArray shift,
+      String const& s_method,
+      StringArray const& boundaryCondition
+) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = c_in.Dimensionality();
+   DIP_THROW_IF( nDims == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_START_STACK_TRACE
+      ArrayUseParameter( zoom, nDims, 1.0 );
+      ArrayUseParameter( shift, nDims, 0.0 );
+   DIP_END_STACK_TRACE
+   for( auto z : zoom ) {
+      DIP_THROW_IF( z <= 0.0, E::PARAMETER_OUT_OF_RANGE );
+   }
+   interpolation::Method method;
+   BoundaryConditionArray bc;
+   DIP_START_STACK_TRACE
+      method = interpolation::ParseMethod( s_method );
+      bc = StringArrayToBoundaryConditionArray( boundaryCondition );
+   DIP_END_STACK_TRACE
+
+   // Preserve input
+   Image in = c_in.QuickCopy();
+   PixelSize pixelSize = c_in.PixelSize();
+
+   // Calculate new output sizes and other processing parameters
+   UnsignedArray outSizes = in.Sizes();
+   BooleanArray process( nDims, false );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      if( zoom[ ii ] != 1.0 ) {
+         process[ ii ] = true;
+         outSizes[ ii ] = static_cast< dip::uint >( std::floor( static_cast< dfloat >( outSizes[ ii ] ) * zoom[ ii ] + 1e-6 ));
+         // The 1e-6 is to avoid floating-point inaccuracies, ex: floor(49*(64/49))!=64
+      } else if( shift[ ii ] != 0.0 ) {
+         process[ ii ] = true;
+      }
+   }
+   dip::uint border = interpolation::GetBorderSize( method );
+   UnsignedArray borders( nDims, border );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      borders[ ii ] += static_cast< dip::uint >( std::ceil( std::abs( shift[ ii ] )));
+   }
+
+   // Create output
+   out.ReForge( outSizes, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
+   out.SetPixelSize( pixelSize );
+   DataType bufferType = DataType::SuggestFlex( out.DataType() );
+
+   // Find line filter
+   std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
+   DIP_OVL_NEW_FLEX( lineFilter, ResamplingLineFilter, ( method, zoom, shift ), bufferType );
+
+   // Call line filter through framework
+   Framework::Separable( in, out, bufferType, out.DataType(), process, borders, bc, *lineFilter,
+                         Framework::Separable_AsScalarImage + Framework::Separable_DontResizeOutput + Framework::Separable_UseInputBuffer );
 }
 
 namespace {
@@ -55,8 +193,6 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
          DIP_ASSERT( params.inBuffer.stride == 1 );
          SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
          dip::uint length = params.inBuffer.length;
-         // params.dimension == skew;
-         //params.thread;
          dfloat skew = tanShear_ * ( static_cast< dfloat >( origin_ ) - static_cast< dfloat >( params.position[ axis_ ] ));
          dip::sint offset = static_cast< dip::sint >( std::floor( skew ));
          dfloat shift = skew - static_cast< dfloat >( offset );
