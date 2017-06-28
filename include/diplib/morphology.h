@@ -40,7 +40,7 @@ class DIP_NO_EXPORT Kernel;
 /// \ingroup filtering
 /// \brief Morphological filters for smoothing, sharpening, detection and more, and the watershed transform.
 ///
-/// \section line_morphology Line Morphology
+/// \section line_morphology Line morphology
 ///
 /// There are various different ways of applying dilations, erosions, openings and closings with line
 /// structuring elements. The `dip::StructuringElement` class accepts five different strings each
@@ -75,8 +75,10 @@ class DIP_NO_EXPORT Kernel;
 /// completely in place; other boundary conditions lead to a larger intermediate image, and thus will always
 /// require additional, temporary storage.
 ///
-/// Literature: P. Soille, E. J. Breen and R. Jones, "Recursive implementation of erosions and dilations along
-/// discrete lines at arbitrary angles," in IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
+/// **Literature**
+///  - P. Soille, E. J. Breen and R. Jones, "Recursive implementation of erosions and dilations along discrete lines
+///    at arbitrary angles," in IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
+///
 /// \{
 
 
@@ -917,8 +919,9 @@ DIP_EXPORT void UpperEnvelope(
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
-/// Literature: K. Robinson and P.F. Whelan: Efficient morphological reconstruction: a downhill filter,
-/// Pattern Recognition Letters 25:1759-1767, 2004.
+/// **Literature**
+///  - K. Robinson and P.F. Whelan: Efficient morphological reconstruction: a downhill filter, Pattern Recognition
+///    Letters 25:1759-1767, 2004.
 DIP_EXPORT void MorphologicalReconstruction(
       Image const& marker,
       Image const& in, // grey-value mask
@@ -1009,7 +1012,7 @@ inline Image HMaxima(
 /// We use a union-find implementation similar to that described my Meijster and Wilkinson (2002), and is based on
 /// the algorithm for our fast watershed (`"fast"` mode to `dip::Watershed`).
 ///
-/// Literature:
+/// **Literature**
 ///  - L. Vincent, "Grayscale area openings and closings, their efficient implementation and applications",
 ///    Mathematical Morphology and Its Applications to Signal Processing, pp. 22-27, 1993.
 ///  - A. Meijster and M.H.F. Wilkinson, "A Comparison of Algorithms for Connected Set Openings and Closings",
@@ -1113,7 +1116,7 @@ inline Image PathOpening(
 /// `direction = round(filterSize/length)`. For example, if `filterSize=[7,0]`, then `length` is 7, and
 /// `direction` is `[1,0]` (to the right), with `[1,1]` and `[1,-1]` as alternate directions.
 ///
-/// Literature:
+/// **Literature**
 ///  - H. Heijmans, M. Buckley and H. Talbot, "Path Openings and Closings", Journal of Mathematical Imaging and Vision 22:107-119, 2005.
 ///  - H. Talbot, B. Appleton, "Efficient complete and incomplete path openings and closings", Image and Vision Computing 25:416-425, 2007.
 ///  - C.L. Luengo Hendriks, "Constrained and dimensionality-independent path openings", IEEE Transactions on Image Processing 19(6):1587–1595, 2010.

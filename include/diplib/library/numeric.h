@@ -472,7 +472,7 @@ DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcompl
 ///
 /// \see VarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
-/// ###Source
+/// **Source**
 ///
 /// Code modified from <a href="http://www.johndcook.com/blog/skewness_kurtosis/">John D. Cook</a>,
 /// but the same code appears on <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance">Wikipedia</a>.
@@ -589,9 +589,8 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
 ///
 /// \see StatisticsAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
-/// ### Source
-///
-/// Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3rd Ed., 1998.
+/// **Literature**
+/// - Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3rd Ed., 1998.
 class DIP_NO_EXPORT VarianceAccumulator {
    public:
       /// Add a sample to the accumulator
@@ -829,22 +828,22 @@ class DIP_NO_EXPORT MomentAccumulator {
       ///
       /// The second order moment tensor is defined as:
       ///
-      ///    \f$ I = \Sigma_k m_k ((\vec{r_k} \cdot \vec{r_k}) E - \vec{r_k} \ctimes \vec{r_k}) \f$
+      ///    \f$ I = \Sigma_k m_k ((\vec{r_k} \cdot \vec{r_k}) E - \vec{r_k} \otimes \vec{r_k}) \f$
       ///
-      /// where \f$ E \f$ is the identity matrix ( \f$ E = \Sigma_i \vec{e_i} \ctimes \vec{e_i} \f$ ), \f$ m_k \f$
+      /// where \f$ E \f$ is the identity matrix ( \f$ E = \Sigma_i \vec{e_i} \otimes \vec{e_i} \f$ ), \f$ m_k \f$
       /// is the weight of point \f$ k \f$ , and \f$ \vec{r_k} \f$ is its position. In 2D, this leads to:
       ///
-      ///     \f$ I_{xx} = \Sigma_k m_k y^2 \f$
-      ///     \f$ I_{yy} = \Sigma_k m_k x^2 \f$
+      ///     \f$ I_{xx} = \Sigma_k m_k y^2 \f$<br>
+      ///     \f$ I_{yy} = \Sigma_k m_k x^2 \f$<br>
       ///     \f$ I_{xy} = -\Sigma_k m_k x y \f$
       ///
       /// In 3D, it leads to:
       ///
-      ///     \f$ I_{xx} = \Sigma_k m_k y^2 + \Sigma_k m_k z^2 \f$
-      ///     \f$ I_{yy} = \Sigma_k m_k x^2 + \Sigma_k m_k z^2 \f$
-      ///     \f$ I_{zz} = \Sigma_k m_k x^2 + \Sigma_k m_k y^2 \f$
-      ///     \f$ I_{xy} = -\Sigma_k m_k x y \f$
-      ///     \f$ I_{xz} = -\Sigma_k m_k x z \f$
+      ///     \f$ I_{xx} = \Sigma_k m_k y^2 + \Sigma_k m_k z^2 \f$<br>
+      ///     \f$ I_{yy} = \Sigma_k m_k x^2 + \Sigma_k m_k z^2 \f$<br>
+      ///     \f$ I_{zz} = \Sigma_k m_k x^2 + \Sigma_k m_k y^2 \f$<br>
+      ///     \f$ I_{xy} = -\Sigma_k m_k x y \f$<br>
+      ///     \f$ I_{xz} = -\Sigma_k m_k x z \f$<br>
       ///     \f$ I_{yz} = -\Sigma_k m_k y z \f$
       ///
       /// The equations above represent the second order moments, we compute instead the central moments, and

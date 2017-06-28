@@ -439,9 +439,8 @@ class DIP_NO_EXPORT Histogram {
 /// Isodata algorithm, but is much more efficient. The implementation here generalizes to multiple thresholds
 /// because k-means clustering allows any number of thresholds.
 ///
-/// Literature: T.W. Ridler, and S. Calvard, "Picture Thresholding Using an Iterative Selection Method",
-/// IEEE Transactions on Systems, Man, and Cybernetics 8(8):630-632, 1978.
-/// (1978).
+/// **Literature**
+/// - T.W. Ridler, and S. Calvard, "Picture Thresholding Using an Iterative Selection Method", IEEE Transactions on Systems, Man, and Cybernetics 8(8):630-632, 1978.
 DIP_EXPORT FloatArray IsodataThreshold(
       Histogram const& in,
       dip::uint nThresholds = 1
@@ -453,8 +452,8 @@ DIP_EXPORT FloatArray IsodataThreshold(
 /// is equivalent to minimizing the inter-class variances. That is, the two parts of the histogram generated when
 /// splitting at the threshold value are as compact as possible.
 ///
-/// Literature: N. Otsu, "A threshold selection method from gray-level histograms", IEEE Transactions on Systems,
-/// Man, and Cybernetics 9(1):62-66, 1979.
+/// **Literature**
+/// - N. Otsu, "A threshold selection method from gray-level histograms", IEEE Transactions on Systems, Man, and Cybernetics 9(1):62-66, 1979.
 DIP_EXPORT dfloat OtsuThreshold(
       Histogram const& in
 );
@@ -467,7 +466,8 @@ DIP_EXPORT dfloat OtsuThreshold(
 /// for the two regions of the histogram obtained by dividing it at a given threshold value. The threshold with the
 /// lowest error measure is returned.
 ///
-/// Literature: J. Kittler, and J. Illingworth, "Minimum error thresholding", Pattern Recognition 19(1):41-47, 1986.
+/// **Literature**
+/// - J. Kittler, and J. Illingworth, "Minimum error thresholding", Pattern Recognition 19(1):41-47, 1986.
 DIP_EXPORT dfloat MinimumErrorThreshold(
       Histogram const& in
 );
@@ -480,10 +480,9 @@ DIP_EXPORT dfloat MinimumErrorThreshold(
 /// where the background forms the large peak, and the foreground contributes a small amount to the histogram and is
 /// spread out. For example, small fluorescent dots typically yield such a distribution, as does any thin line drawing.
 ///
-/// Literature: G.W. Zack, W.E. Rogers, and S.A. Latt, "Automatic measurement of sister chromatid exchange frequency",
-/// Journal of Histochemistry and Cytochemistry 25(7):741-753, 1977.
-///
-/// Literature: P.L. Rosin, "Unimodal thresholding", Pattern Recognition 34(11):2083-2096, 2001.
+/// **Literature**
+/// - G.W. Zack, W.E. Rogers, and S.A. Latt, "Automatic measurement of sister chromatid exchange frequency", Journal of Histochemistry and Cytochemistry 25(7):741-753, 1977.
+/// - P.L. Rosin, "Unimodal thresholding", Pattern Recognition 34(11):2083-2096, 2001.
 DIP_EXPORT dfloat TriangleThreshold(
       Histogram const& in
 );
