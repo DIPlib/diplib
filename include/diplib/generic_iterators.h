@@ -59,7 +59,7 @@ namespace dip {
 ///     auto indIt = indices.begin();
 ///     GenericImageIterator<> srcIt( source );
 ///     do {
-///        CopyBuffer(
+///        detail::CopyBuffer(
 ///              srcIt.Pointer(),
 ///              source.DataType(),
 ///              1, source.TensorStride(),
@@ -263,7 +263,7 @@ inline void swap( GenericImageIterator< T >& v1, GenericImageIterator< S >& v2 )
 ///     dip::uint processingDim = Framework::OptimalProcessingDim( src );
 ///     auto it = dip::GenericJointImageIterator< 2 >( { src, *this }, processingDim );
 ///     do {
-///        CopyBuffer(
+///        detail::CopyBuffer(
 ///              it.InPointer(),
 ///              src.dataType_,
 ///              src.strides_[ processingDim ],

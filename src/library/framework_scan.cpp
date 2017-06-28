@@ -23,8 +23,7 @@
 
 #include "diplib.h"
 #include "diplib/framework.h"
-
-#include "copy_buffer.h"
+#include "diplib/library/copy_buffer.h"
 
 namespace dip {
 namespace Framework {
@@ -378,7 +377,7 @@ void Scan(
                // If inIndices[ii] and sectionStart are the same as in the previous iteration, we don't need
                // to copy the buffer over again. This happens with singleton-expanded input images.
                // But it's easier to copy, and also safer as the lineFilter function could be bad and write in its input!
-               CopyBuffer(
+               detail::CopyBuffer(
                      in[ ii ].Pointer( inIndices[ ii ] + static_cast< dip::sint >( sectionStart ) * in[ ii ].Stride( processingDim )),
                      in[ ii ].DataType(),
                      in[ ii ].Stride( processingDim ),
@@ -409,7 +408,7 @@ void Scan(
          // Copy back the line from output buffer to the image
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
             if( outUseBuffer[ ii ] ) {
-               CopyBuffer(
+               detail::CopyBuffer(
                      outBuffers[ ii ].buffer,
                      outBufferTypes[ ii ],
                      outBuffers[ ii ].stride,

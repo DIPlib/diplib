@@ -24,8 +24,7 @@
 #include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/generic_iterators.h"
-
-#include "copy_buffer.h"
+#include "diplib/library/copy_buffer.h"
 
 namespace dip {
 namespace Framework {
@@ -189,7 +188,7 @@ void Full(
          DIP_END_STACK_TRACE
          if( useOutBuffer ) {
             // Copy output buffer to output image
-            CopyBuffer(
+            detail::CopyBuffer(
                   outBuffer.buffer,
                   outBufferType,
                   outBuffer.stride,

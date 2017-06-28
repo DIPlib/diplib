@@ -25,7 +25,7 @@
 #include "diplib/framework.h"
 #include "diplib/iterators.h"
 #include "diplib/generic_iterators.h"
-#include "copy_buffer.h"
+#include "diplib/library/copy_buffer.h"
 
 
 namespace dip {
@@ -211,7 +211,7 @@ void Image::CopyAt( Image const& source, Image const& mask, Option::ThrowExcepti
       do {
          if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
             // This might not be the most efficient way, but it's effective and prevents us from defining yet another chain of 2 templated functions.
-            CopyBuffer(
+            detail::CopyBuffer(
                   srcIt.Pointer(),
                   source.DataType(),
                   1, // stride ignored, we're reading only one pixel
@@ -271,7 +271,7 @@ void Image::CopyAt( Image const& source, UnsignedArray const& indices ) {
       GenericImageIterator<> srcIt( source );
       do {
          // This might not be the most efficient way, but it's effective and prevents us from defining yet another chain of 2 templated functions.
-         CopyBuffer(
+         detail::CopyBuffer(
                srcIt.Pointer(),
                source.DataType(),
                1, // stride ignored, we're reading only one pixel
@@ -329,7 +329,7 @@ void Image::CopyAt( Image const& source, CoordinateArray const& coordinates ) {
       GenericImageIterator<> srcIt( source );
       do {
          // This might not be the most efficient way, but it's effective and prevents us from defining yet another chain of 2 templated functions.
-         CopyBuffer(
+         detail::CopyBuffer(
                srcIt.Pointer(),
                source.DataType(),
                1, // stride ignored, we're reading only one pixel
@@ -401,7 +401,7 @@ void Image::Copy( Image const& src ) {
          if( HasSameDimensionOrder( src )) {
             // No need to loop
             //std::cout << "dip::Image::Copy: no need to loop\n";
-            CopyBuffer(
+            detail::CopyBuffer(
                   porigin_s,
                   src.dataType_,
                   sstride_s,
@@ -426,7 +426,7 @@ void Image::Copy( Image const& src ) {
    dip::uint nPixels = sizes_[ processingDim ];
    dip::uint nTElems = tensor_.Elements();
    do {
-      CopyBuffer(
+      detail::CopyBuffer(
             it.InPointer(),
             src.dataType_,
             srcStride,
@@ -474,7 +474,7 @@ void Image::ExpandTensor() {
             if( HasSameDimensionOrder( source )) {
                // No need to loop
                //std::cout << "dip::ExpandTensor: no need to loop\n";
-               CopyBuffer(
+               detail::CopyBuffer(
                      porigin_s,
                      source.DataType(),
                      sstride_s,
@@ -504,7 +504,7 @@ void Image::ExpandTensor() {
       dip::uint nPixels = Size( processingDim );
       dip::uint nTElems = TensorElements();
       do {
-         CopyBuffer(
+         detail::CopyBuffer(
                it.InPointer(),
                srcDataType,
                srcStride,
@@ -535,7 +535,7 @@ void Image::Convert( dip::DataType dt ) {
          if( porigin ) {
             // No need to loop
             //std::cout << "dip::Image::Convert: in-place, no need to loop\n";
-            CopyBuffer(
+            detail::CopyBuffer(
                   porigin,
                   dataType_,
                   sstride,
@@ -553,7 +553,7 @@ void Image::Convert( dip::DataType dt ) {
             dip::uint processingDim = Framework::OptimalProcessingDim( *this );
             auto it = GenericImageIterator<>( *this, processingDim );
             do {
-               CopyBuffer(
+               detail::CopyBuffer(
                      it.Pointer(),
                      dataType_,
                      strides_[ processingDim ],
@@ -593,13 +593,13 @@ static inline void InternFill( Image& dest, TPI value ) {
    dest.GetSimpleStrideAndOrigin( sstride_d, porigin_d );
    if( porigin_d ) {
       // No need to loop
-      FillBufferFromTo( static_cast< TPI* >( porigin_d ), sstride_d, dest.TensorStride(), dest.NumberOfPixels(), dest.TensorElements(), value );
+      detail::FillBufferFromTo( static_cast< TPI* >( porigin_d ), sstride_d, dest.TensorStride(), dest.NumberOfPixels(), dest.TensorElements(), value );
    } else {
       // Make nD loop
       dip::uint processingDim = Framework::OptimalProcessingDim( dest );
       auto it = ImageIterator< TPI >( dest, processingDim );
       do {
-         FillBufferFromTo( it.Pointer(), dest.Stride( processingDim ), dest.TensorStride(), dest.Size( processingDim ), dest.TensorElements(), value );
+         detail::FillBufferFromTo( it.Pointer(), dest.Stride( processingDim ), dest.TensorStride(), dest.Size( processingDim ), dest.TensorElements(), value );
       } while( ++it );
    }
 }

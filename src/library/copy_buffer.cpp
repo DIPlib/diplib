@@ -20,10 +20,12 @@
 
 #include <limits>
 
-#include "copy_buffer.h"
+#include "diplib.h"
+#include "diplib/library/copy_buffer.h"
 #include "diplib/saturated_arithmetic.h"
 
 namespace dip {
+namespace detail {
 
 
 //
@@ -343,17 +345,18 @@ static inline void ExpandBufferConstant(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels,
-      dip::uint border, // guaranteed larger than 0
+      dip::uint left,
+      dip::uint right,
       DataType leftValue,
       DataType rightValue
 ) {
    DataType* out = buffer - stride;
-   for( dip::sint ii = 0; ii < dip::sint( border ); ++ii ) {
+   for( dip::sint ii = 0; ii < dip::sint( left ); ++ii ) {
       *out = leftValue;
       out -= stride;
    }
    out = buffer + static_cast< dip::sint >( pixels ) * stride;
-   for( dip::sint ii = 0; ii < dip::sint( border ); ++ii ) {
+   for( dip::sint ii = 0; ii < dip::sint( right ); ++ii ) {
       *out = rightValue;
       out += stride;
    }
@@ -366,27 +369,32 @@ static inline void ExpandBufferFirstOrder(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels, // guaranteed larger than 1
-      dip::uint border  // guaranteed larger than 0
+      dip::uint left,
+      dip::uint right
 ) {
-   // Left side
-   DataType* in = buffer;
-   DataType* out = buffer - stride;
-   dfloat d0 = *in;
-   dfloat d1 = dfloat( *in ) - dfloat( *( in + stride ));
-   for( dip::uint ii = 0; ii < border; ii++ ) {
-      d0 += d1;
-      *out = clamp_cast< DataType >( d0 );
-      out -= stride;
+   if( left > 0 ) {
+      // Left side
+      DataType* in = buffer;
+      DataType* out = buffer - stride;
+      dfloat d0 = *in;
+      dfloat d1 = dfloat( *in ) - dfloat( *( in + stride ));
+      for( dip::uint ii = 0; ii < left; ii++ ) {
+         d0 += d1;
+         *out = clamp_cast< DataType >( d0 );
+         out -= stride;
+      }
    }
-   // Right side
-   in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
-   out = buffer + static_cast< dip::sint >( pixels ) * stride;
-   d0 = *in;
-   d1 = dfloat( *in ) - dfloat( *( in - stride ));
-   for( dip::uint ii = 0; ii < border; ii++ ) {
-      d0 += d1;
-      *out = clamp_cast< DataType >( d0 );
-      out += stride;
+   if( right > 0 ) {
+      // Right side
+      DataType* in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+      DataType* out = buffer + static_cast< dip::sint >( pixels ) * stride;
+      dfloat d0 = *in;
+      dfloat d1 = dfloat( *in ) - dfloat( *( in - stride ));
+      for( dip::uint ii = 0; ii < right; ii++ ) {
+         d0 += d1;
+         *out = clamp_cast< DataType >( d0 );
+         out += stride;
+      }
    }
 }
 
@@ -399,32 +407,38 @@ static inline void ExpandBufferSecondOrder(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels, // guaranteed larger than 1
-      dip::uint border  // guaranteed larger than 0
+      dip::uint left,
+      dip::uint right
 ) {
-   dfloat b = static_cast< dfloat >( border ) + 1.0;
-   // Left side
-   DataType* in = buffer;
-   DataType* out = buffer - stride;
-   dfloat d0 = *in;
-   dfloat f1 = *( in + stride );
-   dfloat d1 = ( b - 1.0 ) / b * d0 - b / ( b + 1.0 ) * f1;
-   dfloat d2 = -1.0 / b * d0 + 1.0 / ( b + 1.0 ) * f1;
-   for( dip::uint ii = 1; ii <= border; ii++ ) {
-      dfloat x = static_cast< dfloat >( ii );
-      *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 );
-      out -= stride;
+   if( left > 0 ) {
+      // Left side
+      DataType* in = buffer;
+      DataType* out = buffer - stride;
+      dfloat b = static_cast< dfloat >( left ) + 1.0;
+      dfloat d0 = *in;
+      dfloat f1 = *( in + stride );
+      dfloat d1 = ( b - 1.0 ) / b * d0 - b / ( b + 1.0 ) * f1;
+      dfloat d2 = -1.0 / b * d0 + 1.0 / ( b + 1.0 ) * f1;
+      for( dip::uint ii = 1; ii <= left; ii++ ) {
+         dfloat x = static_cast< dfloat >( ii );
+         *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 );
+         out -= stride;
+      }
    }
-   // Right side
-   in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
-   out = buffer + static_cast< dip::sint >( pixels ) * stride;
-   d0 = *in;
-   f1 = *( in - stride );
-   d1 = ( b - 1.0 ) / b * d0 - b / ( b + 1.0 ) * f1;
-   d2 = -1.0 / b * d0 + 1.0 / ( b + 1.0 ) * f1;
-   for( dip::uint ii = 1; ii <= border; ii++ ) {
-      dfloat x = static_cast< dfloat >( ii );
-      *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 );
-      out += stride;
+   if( right > 0 ) {
+      // Right side
+      DataType* in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+      DataType* out = buffer + static_cast< dip::sint >( pixels ) * stride;
+      dfloat b = static_cast< dfloat >( right ) + 1.0;
+      dfloat d0 = *in;
+      dfloat f1 = *( in - stride );
+      dfloat d1 = ( b - 1.0 ) / b * d0 - b / ( b + 1.0 ) * f1;
+      dfloat d2 = -1.0 / b * d0 + 1.0 / ( b + 1.0 ) * f1;
+      for( dip::uint ii = 1; ii <= right; ii++ ) {
+         dfloat x = static_cast< dfloat >( ii );
+         *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 );
+         out += stride;
+      }
    }
 }
 
@@ -441,35 +455,42 @@ static inline void ExpandBufferThirdOrder(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels, // guaranteed larger than 2
-      dip::uint border  // guaranteed larger than 0
+      dip::uint left,
+      dip::uint right
 ) {
-   dfloat b = static_cast< dfloat >( border ) + 1.0;
-   dfloat b12 = ( b + 1 ) * ( b + 1 );
-   // Left side
-   DataType* in = buffer;
-   DataType* out = buffer - stride;
-   dfloat d0 = *in;
-   dfloat f1 = *( in + stride );
-   dfloat d1 = -( 2.0 * d0 ) / b + d0 - ( b * b * f1 ) / b12;
-   dfloat d2 = ( 2.0 * b * f1 ) / b12 - ( d0 * ( 2.0 * b - 1.0 ) ) / ( b * b );
-   dfloat d3 = d0 / ( b * b ) - f1 / b12;
-   for( dip::uint ii = 1; ii <= border; ii++ ) {
-      dfloat x = static_cast< dfloat >( ii );
-      *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 + x * x * x * d3 );
-      out -= stride;
+   if( left > 0 ) {
+      // Left side
+      DataType* in = buffer;
+      DataType* out = buffer - stride;
+      dfloat b = static_cast< dfloat >( left ) + 1.0;
+      dfloat b12 = ( b + 1 ) * ( b + 1 );
+      dfloat d0 = *in;
+      dfloat f1 = *( in + stride );
+      dfloat d1 = -( 2.0 * d0 ) / b + d0 - ( b * b * f1 ) / b12;
+      dfloat d2 = ( 2.0 * b * f1 ) / b12 - ( d0 * ( 2.0 * b - 1.0 )) / ( b * b );
+      dfloat d3 = d0 / ( b * b ) - f1 / b12;
+      for( dip::uint ii = 1; ii <= left; ii++ ) {
+         dfloat x = static_cast< dfloat >( ii );
+         *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 + x * x * x * d3 );
+         out -= stride;
+      }
    }
-   // Right side
-   in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
-   out = buffer + static_cast< dip::sint >( pixels ) * stride;
-   d0 = *in;
-   f1 = *( in - stride );
-   d1 = -( 2.0 * d0 ) / b + d0 - ( b * b * f1 ) / b12;
-   d2 = ( 2.0 * b * f1 ) / b12 - ( d0 * ( 2.0 * b - 1.0 ) ) / ( b * b );
-   d3 = d0 / ( b * b ) - f1 / b12;
-   for( dip::uint ii = 1; ii <= border; ii++ ) {
-      dfloat x = static_cast< dfloat >( ii );
-      *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 + x * x * x * d3 );
-      out += stride;
+   if( right > 0 ) {
+      // Right side
+      DataType* in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+      DataType* out = buffer + static_cast< dip::sint >( pixels ) * stride;
+      dfloat b = static_cast< dfloat >( right ) + 1.0;
+      dfloat b12 = ( b + 1 ) * ( b + 1 );
+      dfloat d0 = *in;
+      dfloat f1 = *( in - stride );
+      dfloat d1 = -( 2.0 * d0 ) / b + d0 - ( b * b * f1 ) / b12;
+      dfloat d2 = ( 2.0 * b * f1 ) / b12 - ( d0 * ( 2.0 * b - 1.0 )) / ( b * b );
+      dfloat d3 = d0 / ( b * b ) - f1 / b12;
+      for( dip::uint ii = 1; ii <= right; ii++ ) {
+         dfloat x = static_cast< dfloat >( ii );
+         *out = clamp_cast< DataType >( d0 + x * d1 + x * x * d2 + x * x * x * d3 );
+         out += stride;
+      }
    }
 }
 
@@ -478,12 +499,13 @@ static inline void ExpandBufferMirror(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels, // guaranteed larger than 2
-      dip::uint border  // guaranteed larger than 0
+      dip::uint left,
+      dip::uint right
 ) {
    // Left side
    DataType* in = buffer;
    DataType* out = buffer - stride;
-   for( dip::uint ii = 0; ii < border; ii++ ) {
+   for( dip::uint ii = 0; ii < left; ii++ ) {
       *out = invert ? saturated_inv( *in ) : *in;
       in -= (( ii / pixels ) & 1 ) ? stride : -stride;
       out -= stride;
@@ -491,7 +513,7 @@ static inline void ExpandBufferMirror(
    // Right side
    in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
    out = buffer + static_cast< dip::sint >( pixels ) * stride;
-   for( dip::uint ii = 0; ii < border; ii++ ) {
+   for( dip::uint ii = 0; ii < right; ii++ ) {
       *out = invert ? saturated_inv( *in ) : *in;
       in += (( ii / pixels ) & 1 ) ? stride : -stride;
       out += stride;
@@ -503,12 +525,13 @@ static inline void ExpandBufferPeriodic(
       DataType* buffer,
       dip::sint stride,
       dip::uint pixels, // guaranteed larger than 2
-      dip::uint border  // guaranteed larger than 0
+      dip::uint left,
+      dip::uint right
 ) {
 // Left side
    DataType* in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
    DataType* out = buffer - stride;
-   for( dip::uint ii = 0; ii < border; ii++ ) {
+   for( dip::uint ii = 0; ii < left; ii++ ) {
       *out = invert ? saturated_inv( *in ) : *in;
       if( !( ii % pixels ) ) {
          in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
@@ -519,7 +542,7 @@ static inline void ExpandBufferPeriodic(
    // Right side
    in = buffer;
    out = buffer + static_cast< dip::sint >( pixels ) * stride;
-   for( dip::uint ii = 0; ii < border; ii++ ) {
+   for( dip::uint ii = 0; ii < right; ii++ ) {
       *out = invert ? saturated_inv( *in ) : *in;
       if( !( ii % pixels ) ) {
          in = buffer;
@@ -536,7 +559,8 @@ static inline void ExpandBufferFromTo(
       dip::sint tensorStride,
       dip::uint pixels,
       dip::uint tensorElements,
-      dip::uint border,
+      dip::uint left,
+      dip::uint right,
       BoundaryCondition bc
 ) {
    switch( bc ) {
@@ -544,9 +568,9 @@ static inline void ExpandBufferFromTo(
       case BoundaryCondition::SYMMETRIC_MIRROR:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
             if( pixels == 1 ) {
-               ExpandBufferConstant( buffer, stride, pixels, border, buffer[ 0 ], buffer[ 0 ] );
+               ExpandBufferConstant( buffer, stride, pixels, left, right, buffer[ 0 ], buffer[ 0 ] );
             } else {
-               ExpandBufferMirror< DataType, false >( buffer, stride, pixels, border );
+               ExpandBufferMirror< DataType, false >( buffer, stride, pixels, left, right );
             }
          }
          break;
@@ -554,9 +578,9 @@ static inline void ExpandBufferFromTo(
       case BoundaryCondition::ASYMMETRIC_MIRROR:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
             if( pixels == 1 ) {
-               ExpandBufferConstant( buffer, stride, pixels, border, saturated_inv( buffer[ 0 ] ), saturated_inv( buffer[ 0 ] ));
+               ExpandBufferConstant( buffer, stride, pixels, left, right, saturated_inv( buffer[ 0 ] ), saturated_inv( buffer[ 0 ] ));
             } else {
-               ExpandBufferMirror< DataType, true >( buffer, stride, pixels, border );
+               ExpandBufferMirror< DataType, true >( buffer, stride, pixels, left, right );
             }
          }
          break;
@@ -564,9 +588,9 @@ static inline void ExpandBufferFromTo(
       case BoundaryCondition::PERIODIC:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
             if( pixels == 1 ) {
-               ExpandBufferConstant( buffer, stride, pixels, border, buffer[ 0 ], buffer[ 0 ] );
+               ExpandBufferConstant( buffer, stride, pixels, left, right, buffer[ 0 ], buffer[ 0 ] );
             } else {
-               ExpandBufferPeriodic< DataType, false >( buffer, stride, pixels, border );
+               ExpandBufferPeriodic< DataType, false >( buffer, stride, pixels, left, right );
             }
          }
          break;
@@ -574,35 +598,35 @@ static inline void ExpandBufferFromTo(
       case BoundaryCondition::ASYMMETRIC_PERIODIC:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
             if( pixels == 1 ) {
-               ExpandBufferConstant( buffer, stride, pixels, border, saturated_inv( buffer[ 0 ] ), saturated_inv( buffer[ 0 ] ));
+               ExpandBufferConstant( buffer, stride, pixels, left, right, saturated_inv( buffer[ 0 ] ), saturated_inv( buffer[ 0 ] ));
             } else {
-               ExpandBufferPeriodic< DataType, true >( buffer, stride, pixels, border );
+               ExpandBufferPeriodic< DataType, true >( buffer, stride, pixels, left, right );
             }
          }
          break;
 
       case BoundaryCondition::ADD_ZEROS:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
-            ExpandBufferConstant( buffer, stride, pixels, border, DataType( 0 ), DataType( 0 ));
+            ExpandBufferConstant( buffer, stride, pixels, left, right, DataType( 0 ), DataType( 0 ));
          }
          break;
 
       case BoundaryCondition::ADD_MAX_VALUE:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
-            ExpandBufferConstant( buffer, stride, pixels, border, std::numeric_limits< DataType >::max(), std::numeric_limits< DataType >::max() );
+            ExpandBufferConstant( buffer, stride, pixels, left, right, std::numeric_limits< DataType >::max(), std::numeric_limits< DataType >::max() );
          }
          break;
 
       case BoundaryCondition::ADD_MIN_VALUE:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
-            ExpandBufferConstant( buffer, stride, pixels, border, std::numeric_limits< DataType >::lowest(), std::numeric_limits< DataType >::lowest() );
+            ExpandBufferConstant( buffer, stride, pixels, left, right, std::numeric_limits< DataType >::lowest(), std::numeric_limits< DataType >::lowest() );
          }
          break;
 
       case BoundaryCondition::THIRD_ORDER_EXTRAPOLATE:
          if( pixels > 2 ) {
             for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
-               ExpandBufferThirdOrder( buffer, stride, pixels, border );
+               ExpandBufferThirdOrder( buffer, stride, pixels, left, right );
             }
             break;
          }
@@ -611,7 +635,7 @@ static inline void ExpandBufferFromTo(
       case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE:
          if( pixels > 1 ) {
             for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
-               ExpandBufferSecondOrder( buffer, stride, pixels, border );
+               ExpandBufferSecondOrder( buffer, stride, pixels, left, right );
             }
             break;
          }
@@ -620,7 +644,7 @@ static inline void ExpandBufferFromTo(
       case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:
          if( pixels > 1 ) {
             for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
-               ExpandBufferFirstOrder( buffer, stride, pixels, border );
+               ExpandBufferFirstOrder( buffer, stride, pixels, left, right );
             }
             break;
          }
@@ -628,7 +652,7 @@ static inline void ExpandBufferFromTo(
 
       case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
-            ExpandBufferConstant( buffer, stride, pixels, border, buffer[ 0 ], buffer[ ( static_cast< dip::sint >( pixels ) - 1 ) * stride ] );
+            ExpandBufferConstant( buffer, stride, pixels, left, right, buffer[ 0 ], buffer[ ( static_cast< dip::sint >( pixels ) - 1 ) * stride ] );
          }
          break;
    }
@@ -643,54 +667,56 @@ void ExpandBuffer(
       dip::sint tensorStride,
       dip::uint pixels,
       dip::uint tensorElements,
-      dip::uint border,
+      dip::uint left,
+      dip::uint right,
       BoundaryCondition bc
 ) {
-   if( border == 0) {
+   if(( left == 0 ) && ( right == 0 )) {
       // We've got nothing to do
       return;
    }
    switch( type ) {
       case dip::DT_BIN:
-         ExpandBufferFromTo( static_cast< bin* >( buffer ), stride, tensorStride, pixels, tensorElements, border, bc );
+         ExpandBufferFromTo( static_cast< bin* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
       case dip::DT_UINT8:
-         ExpandBufferFromTo( static_cast< uint8* >( buffer ), stride, tensorStride, pixels, tensorElements, border, bc );
+         ExpandBufferFromTo( static_cast< uint8* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
       case dip::DT_UINT16:
-         ExpandBufferFromTo( static_cast< uint16* >( buffer ), stride, tensorStride, pixels, tensorElements, border, bc );
+         ExpandBufferFromTo( static_cast< uint16* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
       case dip::DT_UINT32:
-         ExpandBufferFromTo( static_cast< uint32* >( buffer ), stride, tensorStride, pixels, tensorElements, border, bc );
+         ExpandBufferFromTo( static_cast< uint32* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
       case dip::DT_SINT8:
-         ExpandBufferFromTo( static_cast< sint8* >( buffer ), stride, tensorStride, pixels, tensorElements, border, bc );
+         ExpandBufferFromTo( static_cast< sint8* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
       case dip::DT_SINT16:
-         ExpandBufferFromTo( static_cast< sint16* >( buffer ), stride, tensorStride, pixels, tensorElements, border, bc );
+         ExpandBufferFromTo( static_cast< sint16* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
       case dip::DT_SINT32:
-         ExpandBufferFromTo( static_cast< sint32* >( buffer ), stride, tensorStride, pixels, tensorElements, border, bc );
+         ExpandBufferFromTo( static_cast< sint32* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
       case dip::DT_SFLOAT:
-         ExpandBufferFromTo( static_cast< sfloat* >( buffer ), stride, tensorStride, pixels, tensorElements, border, bc );
+         ExpandBufferFromTo( static_cast< sfloat* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
       case dip::DT_DFLOAT:
-         ExpandBufferFromTo( static_cast< dfloat* >( buffer ), stride, tensorStride, pixels, tensorElements, border, bc );
+         ExpandBufferFromTo( static_cast< dfloat* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );
          break;
       case dip::DT_SCOMPLEX:
          // For complex values, we treat real and imaginary components separately
-         ExpandBufferFromTo( static_cast< sfloat* >( buffer ),     stride * 2, tensorStride * 2, pixels, tensorElements, border, bc );
-         ExpandBufferFromTo( static_cast< sfloat* >( buffer ) + 1, stride * 2, tensorStride * 2, pixels, tensorElements, border, bc );
+         ExpandBufferFromTo( static_cast< sfloat* >( buffer ),     stride * 2, tensorStride * 2, pixels, tensorElements, left, right, bc );
+         ExpandBufferFromTo( static_cast< sfloat* >( buffer ) + 1, stride * 2, tensorStride * 2, pixels, tensorElements, left, right, bc );
          break;
       case dip::DT_DCOMPLEX:
-         ExpandBufferFromTo( static_cast< dfloat* >( buffer ),     stride * 2, tensorStride * 2, pixels, tensorElements, border, bc );
-         ExpandBufferFromTo( static_cast< dfloat* >( buffer ) + 1, stride * 2, tensorStride * 2, pixels, tensorElements, border, bc );
+         ExpandBufferFromTo( static_cast< dfloat* >( buffer ),     stride * 2, tensorStride * 2, pixels, tensorElements, left, right, bc );
+         ExpandBufferFromTo( static_cast< dfloat* >( buffer ) + 1, stride * 2, tensorStride * 2, pixels, tensorElements, left, right, bc );
          break;
    }
 }
 
 
+} // namespace detail
 } // namespace dip
 
 
@@ -708,7 +734,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    // 1- Copying with identical types
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 1
+   dip::detail::CopyBuffer( // mode 1
          input.data(), dip::DT_UINT8, 0, 1,
          output.data(), dip::DT_UINT8, 1, 1,
          20, 1 );
@@ -719,7 +745,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 2
+   dip::detail::CopyBuffer( // mode 2
          input.data(), dip::DT_UINT8, 1, 1,
          output.data(), dip::DT_UINT8, 1, 1,
          20, 1 );
@@ -731,7 +757,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 3
+   dip::detail::CopyBuffer( // mode 3
          input.data(), dip::DT_UINT8, 1, 1,
          output.data(), dip::DT_UINT8, 3, 1,
          20, 1 );
@@ -743,7 +769,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 4
+   dip::detail::CopyBuffer( // mode 4
          input.data(), dip::DT_UINT8, 0, 0,
          output.data(), dip::DT_UINT8, 5, 1,
          20, 5 );
@@ -756,7 +782,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 5
+   dip::detail::CopyBuffer( // mode 5
          input.data(), dip::DT_UINT8, 0, 1,
          output.data(), dip::DT_UINT8, 5, 1,
          20, 5 );
@@ -770,7 +796,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 6
+   dip::detail::CopyBuffer( // mode 6
          input.data(), dip::DT_UINT8, 5, 1,
          output.data(), dip::DT_UINT8, 5, 1,
          20, 5 );
@@ -784,7 +810,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 7
+   dip::detail::CopyBuffer( // mode 7
          input.data(), dip::DT_UINT8, 5, 1,
          output.data(), dip::DT_UINT8, 6, 1,
          20, 5 );
@@ -798,7 +824,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 8
+   dip::detail::CopyBuffer( // mode 8
          input.data(), dip::DT_UINT8, 1, 20,
          output.data(), dip::DT_UINT8, 1, 20,
          20, 5 );
@@ -812,7 +838,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 9
+   dip::detail::CopyBuffer( // mode 9
          input.data(), dip::DT_UINT8, 1, 20,
          output.data(), dip::DT_UINT8, 1, 30,
          20, 5 );
@@ -826,7 +852,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 10
+   dip::detail::CopyBuffer( // mode 10
          input.data(), dip::DT_UINT8, 1, 0,
          output.data(), dip::DT_UINT8, 12, 2,
          20, 5 );
@@ -841,7 +867,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 11
+   dip::detail::CopyBuffer( // mode 11
          input.data(), dip::DT_UINT8, 5, 1,
          output.data(), dip::DT_UINT8, 12, 2,
          20, 5 );
@@ -855,7 +881,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 12
+   dip::detail::CopyBuffer( // mode 12
          input.data(), dip::DT_UINT8, 0, 1,
          output.data(), dip::DT_UINT8, 4, 1,
          20, 2, dip::Tensor{ dip::Tensor::Shape::DIAGONAL_MATRIX, 2, 2 }.LookUpTable() );
@@ -869,7 +895,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 13
+   dip::detail::CopyBuffer( // mode 13
          input.data(), dip::DT_UINT8, 2, 1,
          output.data(), dip::DT_UINT8, 4, 1,
          20, 2, dip::Tensor{ dip::Tensor::Shape::DIAGONAL_MATRIX, 2, 2 }.LookUpTable() );
@@ -886,7 +912,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    // 2- Copying with different types
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 1
+   dip::detail::CopyBuffer( // mode 1
          input.data(), dip::DT_UINT8, 0, 1,
          output.data(), dip::DT_SINT8, 3, 1,
          20, 1 );
@@ -897,7 +923,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 2
+   dip::detail::CopyBuffer( // mode 2
          input.data(), dip::DT_UINT8, 1, 1,
          output.data(), dip::DT_SINT8, 3, 1,
          20, 1 );
@@ -909,7 +935,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 3
+   dip::detail::CopyBuffer( // mode 3
          input.data(), dip::DT_UINT8, 0, 0,
          output.data(), dip::DT_SINT8, 12, 2,
          20, 5 );
@@ -922,7 +948,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 4
+   dip::detail::CopyBuffer( // mode 4
          input.data(), dip::DT_UINT8, 0, 1,
          output.data(), dip::DT_SINT8, 12, 2,
          20, 5 );
@@ -936,7 +962,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 5
+   dip::detail::CopyBuffer( // mode 5
          input.data(), dip::DT_UINT8, 1, 0,
          output.data(), dip::DT_SINT8, 12, 2,
          20, 5 );
@@ -951,7 +977,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 6
+   dip::detail::CopyBuffer( // mode 6
          input.data(), dip::DT_UINT8, 5, 1,
          output.data(), dip::DT_SINT8, 12, 2,
          20, 5 );
@@ -965,7 +991,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 7
+   dip::detail::CopyBuffer( // mode 7
          input.data(), dip::DT_UINT8, 0, 1,
          output.data(), dip::DT_SINT8, 5, 1,
          20, 2, dip::Tensor{ dip::Tensor::Shape::DIAGONAL_MATRIX, 2, 2 }.LookUpTable() );
@@ -979,7 +1005,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
    DOCTEST_CHECK_FALSE( error );
 
    std::fill( output.begin(), output.end(), 101 );
-   dip::CopyBuffer( // mode 8
+   dip::detail::CopyBuffer( // mode 8
          input.data(), dip::DT_UINT8, 2, 1,
          output.data(), dip::DT_SINT8, 5, 1,
          20, 2, dip::Tensor{ dip::Tensor::Shape::DIAGONAL_MATRIX, 2, 2 }.LookUpTable() );

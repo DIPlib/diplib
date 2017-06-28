@@ -168,15 +168,19 @@ inline Image Shift(
 /// `in`, except for dimension `skew`, which will be larger. The origin of the skew is in the
 /// middle of the image.
 ///
+/// `shear` must have a magnitude smaller than pi/2.
+///
+/// See \ref interpolation_methods for information on the `interpolationMethod` parameter. `"ft"`
+/// is not (yet) implemented.
+///
 /// `boundaryCondition` determines how data outside of the input image domain is filled in. See
 /// `dip::BoundaryCondition`. If it is `"periodic"`, a periodic skew is applied. This means that
 /// image lines are shifted using a periodic boundary condition, and wrap around. The
 /// output image does not grow along dimension `skew`.
 ///
-/// `shear` must have a magnitude smaller than pi/2.
-///
-/// See \ref interpolation_methods for information on the `interpolationMethod` parameter. `"ft"`
-/// is not (yet) implemented.
+/// **Note** that the current implementation doesn't handle the "asym" boundary conditions properly.
+/// For unsigned types, resulting samples oustide the original image domain are clamped to 0, instead
+/// of properly using the saturated inversion.
 DIP_EXPORT void Skew(
       Image const& in,
       Image& out,

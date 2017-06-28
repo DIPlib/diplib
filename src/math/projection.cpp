@@ -25,8 +25,7 @@
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/iterators.h"
-
-#include "../library/copy_buffer.h"
+#include "diplib/library/copy_buffer.h"
 
 
 namespace dip {
@@ -140,8 +139,8 @@ void ProjectionScan(
       if( output.DataType() != outImageType ) {
          Image outBuffer( {}, 1, outImageType );
          function.Project( input, mask, outBuffer.Origin(), 0 );
-         CopyBuffer( outBuffer.Origin(), outBuffer.DataType(), 1, 1,
-                     output.Origin(), output.DataType(), 1, 1, 1, 1 );
+         detail::CopyBuffer( outBuffer.Origin(), outBuffer.DataType(), 1, 1,
+                             output.Origin(), output.DataType(), 1, 1, 1, 1 );
       } else {
          function.Project( input, mask, output.Origin(), 0 );
       }
@@ -217,8 +216,8 @@ void ProjectionScan(
       if( useOutputBuffer ) {
          function.Project( tempIn, tempMask, outBuffer.Origin(), thread );
          // Copy data from output buffer to output image
-         CopyBuffer( outBuffer.Origin(), outBuffer.DataType(), 1, 1,
-                     tempOut.Origin(), tempOut.DataType(), 1, 1, 1, 1 );
+         detail::CopyBuffer( outBuffer.Origin(), outBuffer.DataType(), 1, 1,
+                             tempOut.Origin(), tempOut.DataType(), 1, 1, 1, 1 );
       } else {
          function.Project( tempIn, tempMask, tempOut.Origin(), thread );
       }

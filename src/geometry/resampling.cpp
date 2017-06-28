@@ -23,6 +23,7 @@
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/iterators.h"
+#include "diplib/library/copy_buffer.h"
 
 #include "interpolation.h"
 
@@ -96,7 +97,7 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
             DIP_ASSERT( offset >= 0 );
             out += offset;
             interpolation::Dispatch( method_, in, out, length, 1.0, -shift, spline1, spline2 );
-            // TODO: fill boundary
+            detail::ExpandBuffer( out.Pointer(), DataType( TPI( 0 )), out.Stride(), 1, length, 1, static_cast< dip::uint >( offset ), params.outBuffer.length - length - static_cast< dip::uint >( offset ), boundaryCondition_ );
          }
       }
    private:

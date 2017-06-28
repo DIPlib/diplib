@@ -20,8 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/generic_iterators.h"
-
-#include "copy_buffer.h"
+#include "diplib/library/copy_buffer.h"
 
 namespace dip {
 
@@ -89,13 +88,14 @@ void ExtendImageLowLevel(
          GenericImageIterator<> it( tmp, dim );
          do {
             // This is the function that does the actual boundary extension. It's defined in copy_buffer.cpp
-            ExpandBuffer(
+            detail::ExpandBuffer(
                   it.Pointer(),
                   tmp.DataType(),
                   tmp.Stride( dim ),
                   tmp.TensorStride(),
                   tmp.Size( dim ),
                   tmp.TensorElements(),
+                  borderSizes[ dim ],
                   borderSizes[ dim ],
                   boundaryConditions[ dim ]
             );

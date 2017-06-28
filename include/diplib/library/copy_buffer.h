@@ -18,20 +18,40 @@
  * limitations under the License.
  */
 
+
+//
+// NOTE!
+// Unlike other files in diplib/library, this file is NOT included through diplib.h.
+// However, it contains no publicly documented functionality.
+//
+
+
+#ifndef DIP_COPY_BUFFER_H
+#define DIP_COPY_BUFFER_H
+
 #include "diplib.h"
 #include "diplib/boundary.h"
 
-namespace dip {
 
-// Copies pixels from one 1D buffer to another, converting data type using clamp_cast.
+/// \file
+/// \brief Defines internal functions to copy samples to or from a buffer with
+/// type cast, and to expand the buffer with a boundary condition.
+/// None of the functions in this file are publicly documented.
+
+
+namespace dip {
+namespace detail {
+
+
+// Copies pixels from one 1D buffer to another, converting data type using `clamp_cast`.
 //
-// If inStride and/or inTensorStride are 0, The function is similar to FillBuffer along that dimension.
-// If outStride and/or outTensorStride are 0, then only one sample can be written in that dimension;
+// If `inStride` and/or `inTensorStride` are 0, The function is similar to `FillBuffer` along that dimension.
+// If `outStride` and/or `outTensorStride` are 0, then only one sample can be written in that dimension;
 // we choose here to write only the first sample from inBuffer. This is different than if all values
 // would have been written in order to that same location, where only the last write (the last
 // sample) would remain. However, neither option makes sense.
 //
-// This function is not available to the library user.
+// This is an internal function not meant to be used by the library user.
 void CopyBuffer(
       void const* inBuffer,
       DataType inType,
@@ -46,12 +66,12 @@ void CopyBuffer(
       std::vector< dip::sint > const& lookUpTable = {} // it this is null, simply copy over the tensor as is; otherwise use this to determine which tensor values to copy where
 );
 
-// Expands the boundary of a 1D buffer, which extends `boundary` pixels on either side.
-// That is, the total number of pixels in the buffer is `pixels` + 2*`boundary`, but the `buffer` pointer
-// points at the middle `pixels` elements, which are filled in. This function fills out the other 2*`boundary`
+// Expands the boundary of a 1D buffer, which extends `left` pixels on to the left, and `right` pixels to the right.
+// That is, the total number of pixels in the buffer is `pixels + left + right`, but the `buffer` pointer
+// points at the middle `pixels` elements, which are filled in. This function fills out the other `left + right`
 // pixels according to `bc`.
 //
-// This function is not available to the library user.
+// This is an internal function not meant to be used by the library user.
 void ExpandBuffer(
       void* buffer,
       DataType type,
@@ -59,13 +79,14 @@ void ExpandBuffer(
       dip::sint tensorStride,
       dip::uint pixels,          // number of pixels in the buffer
       dip::uint tensorElements,  // number of samples per pixel
-      dip::uint boundary,        // number of pixels before and after buffer to fill
+      dip::uint left,            // number of pixels before buffer to fill
+      dip::uint right,           // number of pixels after buffer to fill
       BoundaryCondition bc
 );
 
 // Fills one 1D buffer with a constant value `value`.
 //
-// This function is not available to the library user.
+// This is an internal function not meant to be used by the library user.
 template< typename outT >
 static inline void FillBufferFromTo(
       outT* outBuffer,
@@ -92,4 +113,9 @@ static inline void FillBufferFromTo(
    }
 }
 
+
+} // namespace detail
 } // namespace dip
+
+
+#endif // DIP_COPY_BUFFER_H

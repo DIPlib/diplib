@@ -526,7 +526,7 @@ T abs_diff( std::complex< T > a, std::complex< T > b ) {
    return std::abs( a - b );
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing the CopyBuffer function") {
+DOCTEST_TEST_CASE("[DIPlib] testing the interpolation functions") {
 
    // 1- Test all methods using sfloat, and unit zoom
 

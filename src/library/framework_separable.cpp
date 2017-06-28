@@ -25,8 +25,7 @@
 #include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/generic_iterators.h"
-
-#include "copy_buffer.h"
+#include "diplib/library/copy_buffer.h"
 
 namespace dip {
 namespace Framework {
@@ -302,7 +301,7 @@ void Separable(
       do {
          // Get pointers to input and ouput lines
          if( inUseBuffer ) {
-            CopyBuffer(
+            detail::CopyBuffer(
                   it.InPointer(),
                   inImage.DataType(),
                   inImage.Stride( processingDim ),
@@ -315,13 +314,14 @@ void Separable(
                   inBuffer.tensorLength,
                   lookUpTable );
             if(( inBorder > 0 ) && ( inBuffer.stride != 0 )) {
-               ExpandBuffer(
+               detail::ExpandBuffer(
                      inBuffer.buffer,
                      bufferType,
                      inBuffer.stride,
                      inBuffer.tensorStride,
                      inLength,
                      inBuffer.tensorLength,
+                     inBorder,
                      inBorder,
                      boundaryConditions[ processingDim ] );
             }
@@ -339,7 +339,7 @@ void Separable(
 
          // Copy back the line from output buffer to the image
          if( outUseBuffer ) {
-            CopyBuffer(
+            detail::CopyBuffer(
                   outBuffer.buffer,
                   bufferType,
                   outBuffer.stride,
