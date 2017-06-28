@@ -162,12 +162,12 @@ void Scan(
    // Do tensor to spatial dimension if necessary
    if( tensorToSpatial ) {
       for( dip::uint ii = 0; ii < nIn; ++ii ) {
-         in[ ii ].TensorToSpatial( 0 );
+         in[ ii ].TensorToSpatial();
       }
       for( dip::uint ii = 0; ii < nOut; ++ii ) {
-         out[ ii ].TensorToSpatial( 0 );
+         out[ ii ].TensorToSpatial();
       }
-      sizes.insert( 0, tsize );
+      sizes.push_back( tsize );
    }
 
    // Can we treat the images as if they were 1D?

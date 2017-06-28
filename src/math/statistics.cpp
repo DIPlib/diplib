@@ -256,21 +256,21 @@ class dip__MinPixel : public dip__MaxMinPixel {
 
 UnsignedArray MaximumPixel( Image const& in, Image const& mask, String const& positionFlag ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    bool first = positionFlag == "first";
    std::unique_ptr< dip__MaxMinPixel >scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__MaxPixel, ( first ), in.DataType() );
-   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter,
-                               Framework::Scan_TensorAsSpatialDim + Framework::Scan_NeedCoordinates );
+   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_NeedCoordinates );
    return scanLineFilter->GetResult();
 }
 
 UnsignedArray MinimumPixel( Image const& in, Image const& mask, String const& positionFlag ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    bool first = positionFlag == "first";
    std::unique_ptr< dip__MaxMinPixel >scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__MinPixel, ( first ), in.DataType() );
-   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter,
-                               Framework::Scan_TensorAsSpatialDim + Framework::Scan_NeedCoordinates );
+   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_NeedCoordinates );
    return scanLineFilter->GetResult();
 }
 
@@ -533,9 +533,10 @@ FloatArray CenterOfMass(
       Image const& mask
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    std::unique_ptr< dip__CenterOfMassBase >scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__CenterOfMass, ( in.Dimensionality() ), in.DataType() );
-   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_TensorAsSpatialDim + Framework::Scan_NeedCoordinates );
+   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_NeedCoordinates );
    return scanLineFilter->GetResult();
 }
 
@@ -600,9 +601,10 @@ MomentAccumulator Moments(
       Image const& mask
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    std::unique_ptr< dip__MomentsBase >scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__Moments, ( in.Dimensionality() ), in.DataType() );
-   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_TensorAsSpatialDim + Framework::Scan_NeedCoordinates );
+   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_NeedCoordinates );
    return scanLineFilter->GetResult();
 }
 

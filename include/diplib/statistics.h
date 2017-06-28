@@ -83,7 +83,7 @@ DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Image const& in, Image const& ma
 /// \brief Computes the first four central moments of the pixel intensities, within an optional mask.
 ///
 /// If `mask` is not forged, all input pixels are considered. In case of a tensor
-/// image, returns the maximum and minimum sample values. The image must be real-valued.
+/// image, returns the statistics over all sample values. The image must be real-valued.
 DIP_EXPORT StatisticsAccumulator SampleStatistics( Image const& in, Image const& mask = {} );
 
 /// \brief Computes the center of mass (first order moments) of the image `in`, optionally using only

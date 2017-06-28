@@ -57,11 +57,7 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
          buffers_.resize( threads );
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-         dip::uint procDim = params.dimension;
-         if( params.tensorToSpatial ) {
-            --procDim;
-         }
-         DFTOptions< FloatType< TPI >> const& opts = options_[ procDim ];
+         DFTOptions< FloatType< TPI >> const& opts = options_[ params.dimension ];
          if( buffers_[ params.thread ].size() != static_cast< dip::uint >( opts.bufferSize() )) {
             buffers_[ params.thread ].resize( static_cast< dip::uint >( opts.bufferSize() ));
          }

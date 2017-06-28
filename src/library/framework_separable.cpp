@@ -94,9 +94,9 @@ void Separable(
    bool tensorToSpatial = false;
    if( opts == Separable_AsScalarImage ) {
       if( !input.IsScalar() ) {
-         input.TensorToSpatial( 0 );
-         process.insert( 0, false );
-         border.insert( 0, 0 );
+         input.TensorToSpatial();
+         process.push_back( false );
+         border.push_back( 0 );
          tensorToSpatial = true;
          ++nDims;
          inSizes = input.Sizes();
@@ -132,7 +132,7 @@ void Separable(
 
    // Do tensor to spatial dimension if necessary
    if( tensorToSpatial ) {
-      output.TensorToSpatial( 0 );
+      output.TensorToSpatial();
       outSizes = output.Sizes();
    }
 

@@ -254,14 +254,14 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
          auto outStride = params.outBuffer[ 0 ].stride;
          TPI weight = 1;
-         dip::uint offset = params.tensorToSpatial ? 1 : 0;
-         for( dip::uint ii = offset; ii < params.position.size(); ++ii ) {
-            if( ii != params.dimension ) {
-               weight *= gaussLUTs[ ii - offset ][ params.position[ ii ] ];
+         dip::uint procDim = params.dimension;
+         for( dip::uint ii = 0; ii < gaussLUTs.size(); ++ii ) {
+            if( ii != procDim ) {
+               weight *= gaussLUTs[ ii ][ params.position[ ii ] ];
             }
          }
-         TPI const* lut = gaussLUTs[ params.dimension - offset ].data();
-         lut += params.position[ params.dimension ];
+         TPI const* lut = gaussLUTs[ procDim ].data();
+         lut += params.position[ procDim ];
          for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
             *out = *in * weight * *lut;
             in += inStride;

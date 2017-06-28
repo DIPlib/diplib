@@ -455,12 +455,7 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
          dfloat* out = static_cast< dfloat* >( params.outBuffer.buffer );
          DIP_ASSERT( params.inBuffer.stride == 1 );
          DIP_ASSERT( params.outBuffer.stride == 1 );
-         dip::uint procDim = params.dimension;
-         if( params.tensorToSpatial ) {
-            DIP_ASSERT( procDim > 0 );
-            --procDim;
-         }
-         dip__GaussIIRParams const& fParams = filterParams_[ procDim ];
+         dip__GaussIIRParams const& fParams = filterParams_[ params.dimension ];
          DIP_ASSERT( fParams.border == params.inBuffer.border );
 
          in -= fParams.border;

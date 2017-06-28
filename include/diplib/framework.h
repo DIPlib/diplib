@@ -171,9 +171,10 @@ struct DIP_NO_EXPORT ScanBuffer {
 ///
 /// Note that `dimension` and `position` are within the images that have had their tensor dimension
 /// converted to spatial dimension, if `dip::Framework::Scan_TensorAsSpatialDim` was given and at least
-/// one input or output image is not scalar. In this case, `tensorToSpatial` is `true`, and the first dimension
-/// (`dimension=0`, and `position[0]`) correspond to the tensor dimension. `dimension` will never be
-/// equal to 0 in this case.
+/// one input or output image is not scalar. In this case, `tensorToSpatial` is `true`, and the last dimension
+/// correspons to the tensor dimension. `dimension` will never be equal to the last dimension in this case.
+/// That is, `position` will have one more element than the original image(s) we're iterating over, but
+/// `position[ dimension ]` will always correspond to a position in the original image(s).
 struct DIP_NO_EXPORT ScanLineFilterParameters {
    std::vector< ScanBuffer > const& inBuffer;   ///< Input buffers (1D)
    std::vector< ScanBuffer >& outBuffer;        ///< Output buffers (1D)
@@ -610,9 +611,10 @@ struct DIP_NO_EXPORT SeparableBuffer {
 ///
 /// Note that `dimension` and `position` are within the images that have had their tensor dimension
 /// converted to spatial dimension, if `dip::Framework::Separable_AsScalarImage` was given and the
-/// input is not scalar. In this case, `tensorToSpatial` is `true`, and the first dimension
-/// (`dimension=0`, and `position[0]`) correspond to the tensor dimension. `dimension` will never be
-/// equal to 0 in this case.
+/// input is not scalar. In this case, `tensorToSpatial` is `true`, and the last dimension
+/// correspons to the tensor dimension. `dimension` will never be equal to the last dimension in this case.
+/// That is, `position` will have one more element than the original image(s) we're iterating over, but
+/// `position[ dimension ]` will always correspond to a position in the original image(s).
 struct DIP_NO_EXPORT SeparableLineFilterParameters {
    SeparableBuffer const& inBuffer;   ///< Input buffer (1D)
    SeparableBuffer& outBuffer;        ///< Output buffer (1D)

@@ -263,7 +263,7 @@ class dip__Radius : public Framework::ScanLineFilter {
          dip::uint bufferLength = params.bufferLength;
          dip::uint dim = params.dimension;
          dfloat d2 = 0;
-         for( dip::uint ii = 0; ii < params.position.size(); ++ii ) {
+         for( dip::uint ii = 0; ii < transformation_.size(); ++ii ) {
             if( ii != dim ) {
                dfloat d = ( static_cast< dfloat >( params.position[ ii ] ) - transformation_[ ii ].offset ) * transformation_[ ii ].scale;
                d2 += d * d;
@@ -309,7 +309,7 @@ class dip__RadiusSquare : public Framework::ScanLineFilter {
          dip::uint bufferLength = params.bufferLength;
          dip::uint dim = params.dimension;
          dfloat d2 = 0;
-         for( dip::uint ii = 0; ii < params.position.size(); ++ii ) {
+         for( dip::uint ii = 0; ii < transformation_.size(); ++ii ) {
             if( ii != dim ) {
                dfloat d = ( static_cast< dfloat >( params.position[ ii ] ) - transformation_[ ii ].offset ) * transformation_[ ii ].scale;
                d2 += d * d;
@@ -405,7 +405,7 @@ namespace {
 class dip__Theta : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
-         DIP_ASSERT( params.position.size() == 3 );
+         DIP_ASSERT( transformation_.size() == 3 );
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;
@@ -472,7 +472,7 @@ class dip__Coordinates : public Framework::ScanLineFilter {
          dip::sint stride = params.outBuffer[ 0 ].stride;
          dip::sint tensorStride = params.outBuffer[ 0 ].tensorStride;
          dip::uint tensorLength = params.outBuffer[ 0 ].tensorLength;
-         DIP_ASSERT( tensorLength == params.position.size() );
+         DIP_ASSERT( tensorLength == transformation_.size() );
          dip::uint bufferLength = params.bufferLength;
          dip::uint dim = params.dimension;
          if( spherical_ ) {

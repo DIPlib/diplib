@@ -86,10 +86,6 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
          dip::uint procDim = 0;
          if( filter_.size() > 1 ) {
             procDim = params.dimension;
-            if( params.tensorToSpatial ) {
-               DIP_ASSERT( procDim > 0 );
-               --procDim;
-            }
          }
          FloatArray const& filter = filter_[ procDim ].filter;
          dip::uint origin = filter_[ procDim ].origin;

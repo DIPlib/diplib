@@ -39,11 +39,7 @@ class RectangularUniformLineFilter : public Framework::SeparableLineFilter {
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
-         dip::uint procDim = params.dimension;
-         if( params.tensorToSpatial ) {
-            --procDim;
-         }
-         dip::uint filterSize = sizes_[ procDim ];
+         dip::uint filterSize = sizes_[ params.dimension ];
          FloatType< TPI > norm = 1 / static_cast< FloatType< TPI >>( filterSize );
          TPI* left = in - static_cast< dip::sint >( filterSize / 2 ) * inStride; // the leftmost pixel in the filter
          TPI* right = in + static_cast< dip::sint >(( filterSize + 1 ) / 2 ) * inStride; // one past the rightmost pixel in the filter
