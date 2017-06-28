@@ -237,7 +237,7 @@ Image& Image::Mirror( BooleanArray process ) {
 Image& Image::Rotation90( dip::sint n, dip::uint dimension1, dip::uint dimension2 ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = sizes_.size();
-   DIP_THROW_IF(( dimension1 >= nd ) || ( dimension2 >= nd ), E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF(( dimension1 >= nd ) || ( dimension2 >= nd ) || ( dimension1 == dimension2 ), E::PARAMETER_OUT_OF_RANGE );
    n = n % 4;
    if( n < 0 ) {
       n += 4;

@@ -159,6 +159,14 @@ over.
 
 - `dip_GetMaximumAndMinimum` is now called `dip::MaximumAndMinimum` for consistency.
 
+- `dip_ResamplingFT` is no longer a separate function, call `dip::Resampling` with "ft" as
+  method. `dip_Skewing` was renamed to `dip::Skew` for consistency. `dip_Rotation` has
+  been renamed `dip::Rotation2d`, and a generalized `dip::Rotation` is similar but takes
+  two additional integers to specify the rotation plane. `dip_Rotation3d_Axis` and
+  `dip_Rotation3d` are now both called `dip::Rotation3d`, their argument types are different.
+  `dip::Resampling`, `dip::Skew`, `dip::Rotation` and similar now take a boundary condition
+  as optional argument.
+
 ## Changes in functionality
 
 - Second order extrapolation boundary extension didn't do as advertised in the old *DIPlib*.

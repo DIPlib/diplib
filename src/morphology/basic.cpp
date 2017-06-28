@@ -90,8 +90,6 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
             sizes_( sizes ), dilation_( polarity == Polarity::DILATION ), mirror_( mirror == Mirror::YES ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
-         forwardBuffers_.resize( threads );
-         backwardBuffers_.resize( threads );
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
@@ -105,13 +103,9 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
          dip::uint margin = filterSize / 2;
          dip::uint bufferSize = length + 2 * margin;
          std::vector< TPI >& buffer = buffers_[ params.thread ];
-         if( buffer.size() != 2 * bufferSize ) {
-            buffer.resize( 2 * bufferSize );
-            forwardBuffers_[ params.thread ] = buffer.data() + margin;
-            backwardBuffers_[ params.thread ] = buffer.data() + bufferSize;
-         }
-         TPI* forwardBuffer = forwardBuffers_[ params.thread ];
-         TPI* backwardBuffer = backwardBuffers_[ params.thread ];
+         buffer.resize( 2 * bufferSize ); // does nothing if already correct size
+         TPI* forwardBuffer = buffer.data() + margin;
+         TPI* backwardBuffer = buffer.data() + bufferSize;
          // Fill forward buffer
          in -= inStride * static_cast< dip::sint >( margin );
          TPI* buf = forwardBuffer - margin;
@@ -173,8 +167,6 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
    private:
       UnsignedArray const& sizes_;
       std::vector< std::vector< TPI >> buffers_; // one for each thread
-      std::vector< TPI* > forwardBuffers_; // points to buffers_
-      std::vector< TPI* > backwardBuffers_; // points to buffers_
       bool dilation_;
       bool mirror_;
 };

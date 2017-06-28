@@ -25,43 +25,45 @@ namespace dip {
 namespace interpolation {
 
 /*
- * dip::interpolation::BSpline< T >()
+ * dip::interpolation::BSpline< TPI >()
  *    Uses a cubic B-spline interpolator. Each output sample depends on all input samples, but significantly
  *    only on 10 samples. a = 5.
  *
- * dip::interpolation::FourthOrderCubicSpline< T >()
+ * dip::interpolation::FourthOrderCubicSpline< TPI >()
  *    Uses a fourth order cubic spline convolution. Each output sample depends on 6 input samples. a = 3.
  *
- * dip::interpolation::ThirdOrderCubicSpline< T >()
+ * dip::interpolation::ThirdOrderCubicSpline< TPI >()
  *    Uses a third order cubic spline convolution. Each output sample depends on 4 input samples. a = 2.
  *
- * dip::interpolation::Linear< T >()
+ * dip::interpolation::Linear< TPI >()
  *    Uses a triangle convolution. Each output sample depends on 2 input samples. a = 1.
  *
- * dip::interpolation::NearestNeighbor< T >()
+ * dip::interpolation::NearestNeighbor< TPI >()
  *    Copies nearest pixel value. Each output sample depends on only 1 input sample. a = 0.
  *
- * dip::interpolation::Lanczos< T, a >
+ * dip::interpolation::Lanczos< TPI, a >
  *    Uses a sinc function windowed by a larger sinc function, directed by a parameter 'a'. Each output sample
  *    depends on 2a input samples. 2 <= a <= 8.
  *
  * All these functions have as parameters:
- *    ConstSampleIterator <TPI> input -- input buffer
- *    SampleIterator <TPI> output     -- output buffer
- *    dip::uint outSize               -- size of output buffer, the number of interpolated samples to generate
- *    dfloat zoom                     -- zoom factor for output w.r.t. input
- *    dfloat shift                    -- shift for output w.r.t. input
+ *    TPI* input                      -- input buffer; because we need a boundary extension, it'll always be a
+ *                                       copy and have stride 1.
+ *    SampleIterator< TPI > output    -- output buffer; using sample iterator so we can write directly in output image.
+ *    dip::uint outSize               -- size of output buffer, the number of interpolated samples to generate.
+ *    dfloat zoom                     -- zoom factor for output w.r.t. input.
+ *    dfloat shift                    -- shift for output w.r.t. input.
  * The algorithms will read the input buffer from `input[ floor( shift ) - a ]` to
  * `input[ floor( shift + outSize / zoom ) + a + 1 ]`, where `a` is the parameter of the Lanczos function, 1 for
  * linear interpolation, 2 and 3 for cubic interpolation, etc. This means that boundary extension is expected.
  *
  * TPI is expected to be a floating-point type or a complex type: sfloat, dfloat, scomplex, dcomplex.
+ * NearestNeighbor can work with any type.
  */
 
 // Computes the second derivative at each point, as required for B-spline interpolation.
 template< typename TPI >
 void SplineDerivative(
-      ConstSampleIterator <TPI> input,
+      TPI* input,
       TPI* spline1, // buffer will be filled with the estimated second derivative
       TPI* spline2, // buffer used for temporary storage
       dip::uint n   // length of input and buffers
@@ -92,8 +94,8 @@ void SplineDerivative(
 
 template< typename TPI >
 void BSpline(
-      ConstSampleIterator <TPI> input,
-      SampleIterator <TPI> output,
+      TPI* input,
+      SampleIterator< TPI > output,
       dip::uint outSize,
       dfloat zoom,
       dfloat shift,
@@ -141,8 +143,8 @@ void BSpline(
 
 template< typename TPI >
 void FourthOrderCubicSpline(
-      ConstSampleIterator <TPI> input,
-      SampleIterator <TPI> output,
+      TPI* input,
+      SampleIterator< TPI > output,
       dip::uint outSize,
       dfloat zoom,
       dfloat shift
@@ -194,8 +196,8 @@ void FourthOrderCubicSpline(
 
 template< typename TPI >
 void ThirdOrderCubicSpline(
-      ConstSampleIterator <TPI> input,
-      SampleIterator <TPI> output,
+      TPI* input,
+      SampleIterator< TPI > output,
       dip::uint outSize,
       dfloat zoom,
       dfloat shift
@@ -207,10 +209,10 @@ void ThirdOrderCubicSpline(
    if( zoom == 1.0 ) {
       TPF pos2 = pos * pos;
       TPF pos3 = pos2 * pos;
-      TPF filter_m1 = ( -pos3 + TPF( 2 ) * pos2 - pos ) * TPF( 0.5 );
-      TPF filter__0 = ( TPF( 3 ) * pos3 - TPF( 5 ) * pos2 + TPF( 2 )) * TPF( 0.5 );
-      TPF filter__1 = ( TPF( -3 ) * pos3 + TPF( 4 ) * pos2 + pos ) * TPF( 0.5 );
-      TPF filter__2 = ( pos3 - pos2 ) * TPF( 0.5 );
+      TPF filter_m1 = ( -pos3 + TPF( 2 ) * pos2 - pos ) / TPF( 2 );
+      TPF filter__0 = ( TPF( 3 ) * pos3 - TPF( 5 ) * pos2 + TPF( 2 )) / TPF( 2 );
+      TPF filter__1 = ( TPF( -3 ) * pos3 + TPF( 4 ) * pos2 + pos ) / TPF( 2 );
+      TPF filter__2 = ( pos3 - pos2 ) / TPF( 2 );
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
          *output = input[ -1 ] * filter_m1 +
                    input[  0 ] * filter__0 +
@@ -241,8 +243,8 @@ void ThirdOrderCubicSpline(
 
 template< typename TPI >
 void Linear(
-      ConstSampleIterator <TPI> input,
-      SampleIterator <TPI> output,
+      TPI* input,
+      SampleIterator< TPI > output,
       dip::uint outSize,
       dfloat zoom,
       dfloat shift
@@ -274,8 +276,8 @@ void Linear(
 
 template< typename TPI >
 void NearestNeighbor(
-      ConstSampleIterator <TPI> input,
-      SampleIterator <TPI> output,
+      TPI* input,
+      SampleIterator< TPI > output,
       dip::uint outSize,
       dfloat zoom,
       dfloat shift
@@ -306,8 +308,8 @@ void NearestNeighbor(
 
 template< typename TPI, dip::uint a = 2 > // `a` is the filter parameter
 void Lanczos(
-      ConstSampleIterator <TPI> input,
-      SampleIterator <TPI> output,
+      TPI* input,
+      SampleIterator< TPI > output,
       dip::uint outSize,
       dfloat zoom,
       dfloat shift
@@ -380,6 +382,131 @@ void Lanczos(
             input += offset;
          }
       }
+   }
+}
+
+enum class Method {
+      BSPLINE,
+      CUBIC_ORDER_4,
+      CUBIC_ORDER_3,
+      LINEAR,
+      NEAREST_NEIGHBOR,
+      LANCZOS8,
+      LANCZOS6,
+      LANCZOS4,
+      LANCZOS3,
+      LANCZOS2,
+      FT
+};
+
+Method ParseMethod( String const& method ) {
+   if( method.empty() || ( method == "3-cubic" )) {
+      return Method::CUBIC_ORDER_3;
+   } else if( method == "4-cubic" ) {
+      return Method::CUBIC_ORDER_4;
+   } else if( method == "linear" ) {
+      return Method::LINEAR;
+   } else if(( method == "nn" ) || ( method == "nearest" )) {
+      return Method::NEAREST_NEIGHBOR;
+   } else if( method == "bspline" ) {
+      return Method::BSPLINE;
+   } else if( method == "ft" ) {
+      return Method::FT;
+   } else if( method == "lanczos8" ) {
+      return Method::LANCZOS8;
+   } else if( method == "lanczos6" ) {
+      return Method::LANCZOS6;
+   } else if( method == "lanczos4" ) {
+      return Method::LANCZOS4;
+   } else if( method == "lanczos3" ) {
+      return Method::LANCZOS3;
+   } else if( method == "lanczos2" ) {
+      return Method::LANCZOS2;
+   } else {
+      DIP_THROW( E::INVALID_FLAG );
+   }
+}
+
+dip::uint GetBorderSize( Method method ) {
+   dip::uint border;
+   switch( method ) {
+      case Method::LANCZOS8:
+         border = 8;
+         break;
+      case Method::LANCZOS6:
+         border = 6;
+         break;
+      case Method::BSPLINE:
+         border = 5;
+         break;
+      case Method::LANCZOS4:
+         border = 4;
+         break;
+      case Method::LANCZOS3:
+      case Method::CUBIC_ORDER_4:
+         border = 3;
+         break;
+      case Method::LANCZOS2:
+      case Method::CUBIC_ORDER_3:
+         border = 2;
+         break;
+      case Method::LINEAR:
+         border = 1;
+         break;
+      //case Method::FT:
+      //case Method::NEAREST_NEIGHBOR:
+      default:
+         border = 0;
+         break;
+   }
+   return border;
+}
+
+template< typename TPI >
+void Dispatch(
+      Method method,
+      TPI* input,
+      SampleIterator< TPI > output,
+      dip::uint outSize,
+      dfloat zoom,
+      dfloat shift,
+      TPI* spline1, // for BSpline only
+      TPI* spline2  // for BSpline only
+) {
+   switch( method ) {
+      case Method::BSPLINE:
+         BSpline< TPI >( input, output, outSize, zoom, shift, spline1, spline2 );
+         break;
+      case Method::CUBIC_ORDER_4:
+         FourthOrderCubicSpline< TPI >( input, output, outSize, zoom, shift );
+         break;
+      case Method::CUBIC_ORDER_3:
+         ThirdOrderCubicSpline< TPI >( input, output, outSize, zoom, shift );
+         break;
+      case Method::LINEAR:
+         Linear< TPI >( input, output, outSize, zoom, shift );
+         break;
+      case Method::NEAREST_NEIGHBOR:
+         NearestNeighbor< TPI >( input, output, outSize, zoom, shift );
+         break;
+      case Method::LANCZOS2:
+         Lanczos< TPI, 2 >( input, output, outSize, zoom, shift );
+         break;
+      case Method::LANCZOS3:
+         Lanczos< TPI, 3 >( input, output, outSize, zoom, shift );
+         break;
+      case Method::LANCZOS4:
+         Lanczos< TPI, 4 >( input, output, outSize, zoom, shift );
+         break;
+      case Method::LANCZOS6:
+         Lanczos< TPI, 6 >( input, output, outSize, zoom, shift );
+         break;
+      case Method::LANCZOS8:
+         Lanczos< TPI, 8 >( input, output, outSize, zoom, shift );
+         break;
+      //case Method::FT:
+      default:
+         DIP_THROW( E::NOT_IMPLEMENTED );
    }
 }
 

@@ -2104,7 +2104,6 @@ class DIP_NO_EXPORT Image {
          return Rotation90( n, 0, 1 );
       }
 
-
       /// \brief Undo the effects of `Mirror`, `Rotation90` and `PermuteDimensions`.
       ///
       /// Modifies the image such that all strides are positive and sorted smaller to larger. The first

@@ -20,9 +20,9 @@
 
 #include "diplib.h"
 #include "diplib/geometry.h"
-//#include "diplib/framework.h"
-//#include "diplib/overload.h"
-//#include "diplib/iterators.h"
+#include "diplib/framework.h"
+#include "diplib/overload.h"
+#include "diplib/iterators.h"
 
 #include "interpolation.h"
 
@@ -30,44 +30,191 @@ namespace dip {
 
 void Resampling(
       Image const& in,
-      Image& out
+      Image& out,
+      FloatArray const& /*zoom*/,
+      FloatArray const& /*shift*/,
+      String const& /*method*/,
+      StringArray const& /*boundaryCondition*/
 ) {
-   ConstSampleIterator< sfloat > sfloatIn{ static_cast< sfloat* >( in.Origin()), in.Stride( 0 ) };
-   SampleIterator< sfloat > sfloatOut{ static_cast< sfloat* >( out.Origin()), out.Stride( 0 ) };
+   // TODO: Resampling
+}
 
-   ConstSampleIterator< dfloat > dfloatIn{ static_cast< dfloat* >( in.Origin()), in.Stride( 0 ) };
-   SampleIterator< dfloat > dfloatOut{ static_cast< dfloat* >( out.Origin()), out.Stride( 0 ) };
+namespace {
 
-   ConstSampleIterator< scomplex > scomplexIn{ static_cast< scomplex* >( in.Origin()), in.Stride( 0 ) };
-   SampleIterator< scomplex > scomplexOut{ static_cast< scomplex* >( out.Origin()), out.Stride( 0 ) };
+template< typename TPI >
+class SkewLineFilter : public Framework::SeparableLineFilter {
+   public:
+      SkewLineFilter( interpolation::Method method, dfloat tanShear, dip::uint axis, dip::uint origin, BoundaryCondition boundaryCondition ) :
+            method_( method ), tanShear_( tanShear ), axis_( axis ), origin_( origin ), boundaryCondition_( boundaryCondition ) {}
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
+         buffer_.resize( threads );
+      }
+      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         DIP_ASSERT( params.inBuffer.stride == 1 );
+         SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
+         dip::uint length = params.inBuffer.length;
+         // params.dimension == skew;
+         //params.thread;
+         dfloat skew = tanShear_ * ( static_cast< dfloat >( origin_ ) - static_cast< dfloat >( params.position[ axis_ ] ));
+         dip::sint offset = static_cast< dip::sint >( std::floor( skew ));
+         dfloat shift = skew - static_cast< dfloat >( offset );
+         if( shift > 0.5 ) {
+            shift -= 1.0;
+            ++offset;
+         }
+         TPI* spline1 = nullptr;
+         TPI* spline2 = nullptr;
+         if( method_ == interpolation::Method::BSPLINE ) {
+            dip::uint size = length + params.inBuffer.border;
+            std::vector< TPI >& buffer = buffer_[ params.thread ];
+            buffer.resize( 2 * size ); // NOP if already that size
+            spline1 = buffer.data();
+            spline2 = spline1 + size;
+         }
+         if( boundaryCondition_ == BoundaryCondition::PERIODIC ) {
+            if( offset >= 0 ) {
+               dip::uint len = length - static_cast< dip::uint >( offset );
+               auto outPtr = out + offset;
+               interpolation::Dispatch( method_, in, outPtr, len, 1.0, -shift, spline1, spline2 );
+               outPtr = out;
+               in += len;
+               len = static_cast< dip::uint >( offset );;
+               interpolation::Dispatch( method_, in, outPtr, len, 1.0, -shift, spline1, spline2 );
+            } else {
+               dip::uint len = static_cast< dip::uint >( -offset );
+               auto outPtr = out + ( length - len );
+               interpolation::Dispatch( method_, in, outPtr, len, 1.0, -shift, spline1, spline2 );
+               outPtr = out;
+               in += len;
+               len = length - len;
+               interpolation::Dispatch( method_, in, outPtr, len, 1.0, -shift, spline1, spline2 );
+            }
+         } else {
+            dip::uint skewSize = ( params.outBuffer.length - length ) / 2;
+            offset += static_cast< dip::sint >( skewSize );
+            DIP_ASSERT( offset >= 0 );
+            out += offset;
+            interpolation::Dispatch( method_, in, out, length, 1.0, -shift, spline1, spline2 );
+            // TODO: fill boundary
+         }
+      }
+   private:
+      interpolation::Method method_;
+      dfloat tanShear_;
+      dip::uint axis_;
+      dip::uint origin_;
+      BoundaryCondition boundaryCondition_;
+      std::vector< std::vector< TPI >> buffer_; // One per thread
+};
 
-   ConstSampleIterator< dcomplex > dcomplexIn{ static_cast< dcomplex* >( in.Origin()), in.Stride( 0 ) };
-   SampleIterator< dcomplex > dcomplexOut{ static_cast< dcomplex* >( out.Origin()), out.Stride( 0 ) };
+} // namespace
 
-   dip::interpolation::BSpline< sfloat >( sfloatIn, sfloatOut, 100, 2.3, 1.2, nullptr, nullptr );
-   dip::interpolation::BSpline< dfloat >( dfloatIn, dfloatOut, 100, 2.3, 1.2, nullptr, nullptr );
-   dip::interpolation::BSpline< scomplex >( scomplexIn, scomplexOut, 100, 2.3, 1.2, nullptr, nullptr );
-   dip::interpolation::BSpline< dcomplex >( dcomplexIn, dcomplexOut, 100, 2.3, 1.2, nullptr, nullptr );
-   dip::interpolation::FourthOrderCubicSpline< sfloat >( sfloatIn, sfloatOut, 100, 2.3, 1.2 );
-   dip::interpolation::FourthOrderCubicSpline< dfloat >( dfloatIn, dfloatOut, 100, 2.3, 1.2 );
-   dip::interpolation::FourthOrderCubicSpline< scomplex >( scomplexIn, scomplexOut, 100, 2.3, 1.2 );
-   dip::interpolation::FourthOrderCubicSpline< dcomplex >( dcomplexIn, dcomplexOut, 100, 2.3, 1.2 );
-   dip::interpolation::ThirdOrderCubicSpline< sfloat >( sfloatIn, sfloatOut, 100, 2.3, 1.2 );
-   dip::interpolation::ThirdOrderCubicSpline< dfloat >( dfloatIn, dfloatOut, 100, 2.3, 1.2 );
-   dip::interpolation::ThirdOrderCubicSpline< scomplex >( scomplexIn, scomplexOut, 100, 2.3, 1.2 );
-   dip::interpolation::ThirdOrderCubicSpline< dcomplex >( dcomplexIn, dcomplexOut, 100, 2.3, 1.2 );
-   dip::interpolation::Linear< sfloat >( sfloatIn, sfloatOut, 100, 2.3, 1.2 );
-   dip::interpolation::Linear< dfloat >( dfloatIn, dfloatOut, 100, 2.3, 1.2 );
-   dip::interpolation::Linear< scomplex >( scomplexIn, scomplexOut, 100, 2.3, 1.2 );
-   dip::interpolation::Linear< dcomplex >( dcomplexIn, dcomplexOut, 100, 2.3, 1.2 );
-   dip::interpolation::NearestNeighbor< sfloat >( sfloatIn, sfloatOut, 100, 2.3, 1.2 );
-   dip::interpolation::NearestNeighbor< dfloat >( dfloatIn, dfloatOut, 100, 2.3, 1.2 );
-   dip::interpolation::NearestNeighbor< scomplex >( scomplexIn, scomplexOut, 100, 2.3, 1.2 );
-   dip::interpolation::NearestNeighbor< dcomplex >( dcomplexIn, dcomplexOut, 100, 2.3, 1.2 );
-   dip::interpolation::Lanczos< sfloat, 2 >( sfloatIn, sfloatOut, 100, 2.3, 1.2 );
-   dip::interpolation::Lanczos< dfloat, 2 >( dfloatIn, dfloatOut, 100, 2.3, 1.2 );
-   dip::interpolation::Lanczos< scomplex, 5 >( scomplexIn, scomplexOut, 100, 2.3, 1.2 );
-   dip::interpolation::Lanczos< dcomplex, 5 >( dcomplexIn, dcomplexOut, 100, 2.3, 1.2 );
+void Skew(
+      Image const& c_in,
+      Image& out,
+      dfloat shear,
+      dip::uint skew,
+      dip::uint axis,
+      String const& s_method,
+      String const& boundaryCondition
+) {
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = c_in.Dimensionality();
+   DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF( axis == skew, E::INVALID_PARAMETER );
+   DIP_THROW_IF(( axis >= nDims ) || ( skew >= nDims ), E::PARAMETER_OUT_OF_RANGE );
+   interpolation::Method method;
+   BoundaryCondition bc;
+   DIP_START_STACK_TRACE
+      method = interpolation::ParseMethod( s_method );
+      bc = StringToBoundaryCondition( boundaryCondition );
+   DIP_END_STACK_TRACE
+   bool periodicSkew = bc == BoundaryCondition::PERIODIC;
+   DIP_THROW_IF( method == interpolation::Method::FT, E::NOT_IMPLEMENTED );
+   DIP_THROW_IF(( shear <= -pi / 2.0) | ( shear >= pi / 2.0), E::PARAMETER_OUT_OF_RANGE );
+
+   // Preserve input
+   Image in = c_in.QuickCopy();
+   PixelSize pixelSize = c_in.PixelSize();
+
+   // Calculate new output sizes
+   UnsignedArray outSizes = in.Sizes();
+   dip::uint origin = outSizes[ axis ] / 2;
+   dfloat tanShear = std::tan( shear );
+   if( !periodicSkew ) {
+      dip::uint skewSize = static_cast< dip::uint >( std::ceil( std::abs( static_cast<dfloat>( origin ) * tanShear )));
+      outSizes[ skew ] += 2 * skewSize;
+   }
+
+   // Determine further processing parameters
+   dip::uint border = interpolation::GetBorderSize( method );
+   BooleanArray process( nDims, false );
+   process[ skew ] = true;
+
+   // Create output
+   out.ReForge( outSizes, in.TensorElements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW );
+   out.SetPixelSize( pixelSize );
+   DataType bufferType = DataType::SuggestFlex( out.DataType() );
+
+   // Find line filter
+   std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
+   DIP_OVL_NEW_FLEX( lineFilter, SkewLineFilter, ( method, tanShear, axis, origin, bc ), bufferType );
+
+   // Call line filter through framework
+   Framework::Separable( in, out, bufferType, out.DataType(), process, { border }, { bc }, *lineFilter,
+         Framework::Separable_AsScalarImage + Framework::Separable_DontResizeOutput + Framework::Separable_UseInputBuffer );
+}
+
+void Rotation(
+      Image const& c_in,
+      Image& out,
+      dfloat angle,
+      dip::uint dimension1,
+      dip::uint dimension2,
+      String const& method,
+      String const& boundaryCondition
+) {
+   // Preserve input
+   Image in = c_in.QuickCopy();
+   PixelSize pixelSize = c_in.PixelSize();
+   // Normalize angle to [0,180)
+   angle = std::fmod( angle, 2.0 * pi );
+   if( angle < 0.0 ) {
+      angle += 2.0 * pi;
+   }
+   // Take care of multiples of 90 degrees
+   dfloat n = std::round( 2.0 * angle / pi );
+   angle -= n * pi / 2.0;
+   DIP_START_STACK_TRACE
+      // This tests for in being forged, and dim1 and dim2 being valid
+      in.Rotation90( static_cast< dip::sint >( n ), dimension1, dimension2 );
+   DIP_END_STACK_TRACE
+   // Do the last rotation, in the range [-45,45], with three skews
+   Skew( in, out, ( angle / 2.0 ), dimension1, dimension2, method, boundaryCondition );
+   Skew( out, out, std::atan( -std::sin( angle )), dimension2, dimension1, method, boundaryCondition );
+   Skew( out, out, ( angle / 2.0 ), dimension1, dimension2, method, boundaryCondition );
+   // Remove the useless borders of the image
+   dfloat cos_angle = std::abs( std::cos( angle ));
+   dfloat sin_angle = std::abs( std::sin( angle ));
+   dfloat size1 = static_cast< dfloat >( in.Size( dimension1 ));
+   dfloat size2 = static_cast< dfloat >( in.Size( dimension2 ));
+   UnsignedArray newSize = out.Sizes();
+   newSize[ dimension1 ] = std::min(
+         out.Size( dimension1 ),
+         2 * static_cast< dip::uint >( std::ceil(( size1 * cos_angle + size2 * sin_angle ) / 2.0 )) + ( in.Size( dimension1 ) & 1 ));
+   newSize[ dimension2 ] = std::min(
+         out.Size( dimension2 ),
+         2 * static_cast< dip::uint >( std::ceil(( size1 * sin_angle + size2 * cos_angle ) / 2.0 )) + ( in.Size( dimension2 ) & 1 ));
+   out = out.Crop( newSize );
+   // Fix pixel sizes
+   if( pixelSize.IsDefined() ) {
+      if( pixelSize[ dimension1 ] != pixelSize[ dimension2 ] ) {
+         pixelSize[ dimension1 ] = {};
+         pixelSize[ dimension2 ] = {};
+      }
+      out.SetPixelSize( pixelSize );
+   }
 }
 
 } // namespace dip
