@@ -60,7 +60,21 @@ Windows, so I'll let someone else write this bit.
 
 ## License
 
-*DIPlib* is distributed under the Apache 2.0 license. See the LICENCE.txt file.
+Copyright 2014-2017 Cris Luengo  
+Copyright 1995-2014 Delft University of Technology
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this library except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0  
+   (or see the LICENSE.txt file in this distribution)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
 DIPlib includes the following libraries / external code:
 
@@ -70,7 +84,7 @@ DIPlib includes the following libraries / external code:
   (we do not use any of the components with more restrictive licenses)
 
 - DocTest  
-  Copyright 2016 Viktor Kirilov  
+  Copyright 2016-2017 Viktor Kirilov  
   The MIT License (MIT)  
   see dependencies/doctest/LICENSE.txt
 
