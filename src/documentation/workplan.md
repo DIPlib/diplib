@@ -164,12 +164,6 @@ document's source</a> for the most up-to-date version.
 
 - Wavelet transforms.
 
-- The `dip::Label` function should return the number of labels. It could optionally also
-  return the sizes of the objects, since these are counted anyway. The labelling algorithm
-  by Mike is quite efficient, but we should compare with the more common union-find
-  algorithm, which is likely to be optimal for this application (Mike's code uses a
-  priority queue, union-find doesn't need it).
-
 - A function to write text into an image, using the [*FreeType*](https://www.freetype.org) library.
 
 
@@ -253,21 +247,8 @@ Some of the following functions already have their prototype written in the new 
     - dip_PaintBox (dip_paint.h)
 
 - diplib/geometry.h
-    - dip_Resampling (dip_interpolation.h)
     - dip_ResampleAt (dip_interpolation.h)
-    - dip_Subsampling (dip_interpolation.h)
-    - dip_Skewing (dip_interpolation.h)
-    - dip_SkewingWithBgval (dip_interpolation.h) (merge into dip_Skewing)
-    - dip_Rotation (dip_interpolation.h)
-    - dip_RotationWithBgval (dip_interpolation.h) (merge into dip_Rotation)
-    - dip_Rotation3d_Axis (dip_interpolation.h)
-    - dip_Rotation3d (dip_interpolation.h)
-    - dip_Rotation2d90 (dip_interpolation.h) (as method to dip::Image)
-    - dip_Rotation3d90 (dip_interpolation.h) (as method to dip::Image, generalize to nD)
-    - dip_AffineTransform (dip_interpolation.h)
-    - dip_Shift (dip_manipulation.h)
-    - dip_Wrap (dip_manipulation.h)
-    - dip_ResamplingFT (dip_manipulation.h)
+    - dip_AffineTransform (dip_interpolation.h) (was actually never finished)
 
 - diplib/linear.h
     - dip_OrientedGauss (dip_linear.h)
@@ -342,11 +323,9 @@ Some of the following functions already have their prototype written in the new 
     - dip_PGST3DSurface (dip_pgst.h) (this could have a better name!)
 
 - diplib/regions.h
-    - dip_Label (dip_regions.h)
-    - dip_RegionConnectivity (dip_regions.h)
+    - dip_RegionConnectivity (dip_regions.h) (is experimental code)
     - dip_GrowRegions (dip_regions.h)
     - dip_GrowRegionsWeighted (dip_regions.h)
-    - dip_SmallObjectsRemove (dip_measurement.h)
 
 - diplib/segmentation.h
     - dip_KMeansClustering (dip_analysis.h)
@@ -360,8 +339,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_RadialSum (dip_math.h)
     - dip_RadialMaximum (dip_math.h)
     - dip_RadialMinimum (dip_math.h)
-    - dip_Moments (dip_math.h)
-    - dip_CenterOfMass (dip_math.h)
 
 - diplib/transform.h
     - dip_HartleyTransform (dip_transform.h)

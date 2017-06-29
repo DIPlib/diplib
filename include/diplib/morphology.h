@@ -773,7 +773,7 @@ inline Image SeededWatershed(
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
-/// \see  WatershedMaxima, Minima, Maxima.
+/// \see dip::WatershedMaxima, dip::Minima, dip::Maxima.
 DIP_EXPORT void WatershedMinima(
       Image const& in,
       Image const& mask,
@@ -808,7 +808,7 @@ inline Image WatershedMinima(
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
-/// \see  WatershedMinima, Maxima, Minima.
+/// \see dip::WatershedMinima, dip::Maxima, dip::Minima.
 DIP_EXPORT void WatershedMaxima(
       Image const& in,
       Image const& mask,
@@ -845,7 +845,7 @@ inline Image WatershedMaxima(
 ///
 /// See \ref connectivity for information on the connectivy parameter.
 ///
-/// \see  Maxima, WatershedMinima, WatershedMaxima.
+/// \see dip::Maxima, dip::WatershedMinima, dip::WatershedMaxima.
 DIP_EXPORT void Minima(
       Image const& in,
       Image const& mask,
@@ -878,7 +878,7 @@ inline Image Minima(
 ///
 /// See \ref connectivity for information on the connectivy parameter.
 ///
-/// \see  Minima, WatershedMaxima, WatershedMinima.
+/// \see dip::Minima, dip::WatershedMaxima, dip::WatershedMinima.
 DIP_EXPORT void Maxima(
       Image const& in,
       Image const& mask,
@@ -1018,7 +1018,7 @@ inline Image HMaxima(
 ///  - A. Meijster and M.H.F. Wilkinson, "A Comparison of Algorithms for Connected Set Openings and Closings",
 ///    IEEE Transactions on Pattern Analysis and Machine Intelligence 24(4):484-494, 2002.
 ///
-/// \see PathOpening, DirectedPathOpening, Opening, Closing, Maxima, Minima
+/// \see dip::PathOpening, dip::DirectedPathOpening, dip::Opening, dip::Closing, dip::Maxima, dip::Minima, dip::SmallObjectsRemove
 DIP_EXPORT void AreaOpening(
       Image const& in,
       Image const& mask,

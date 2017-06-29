@@ -35,7 +35,7 @@ a connectivity of 1 leads to 4 nearest neighbors (the edge neighbors), and a con
 of 2 leads to 8 nearest neighbors (the edge and vertex neighbors).
 
 We use negative values for connectivity in some algorithms. These indicate alternating
-connectivities, which leads to more isotropic shapes in e.g. the binary dilation than
+connectivities, which leads to more isotropic shapes, in e.g. the binary dilation, than
 using the same connectivity for all iterations.
 
 In terms of the classical connectivity denominations we have, in 2D:
