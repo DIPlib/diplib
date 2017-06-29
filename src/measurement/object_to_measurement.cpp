@@ -52,6 +52,7 @@ void ObjectToMeasurement(
    while( it ) {
       dfloat* dest = data + static_cast<dip::sint>( it.ObjectID() ) * stride;
       std::copy( it.begin(), it.end(), dest );
+      ++it;
    }
    LookupTable lut( lutIm );
    lut.Apply( label, out );

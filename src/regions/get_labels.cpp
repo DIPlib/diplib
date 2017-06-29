@@ -22,6 +22,7 @@
 
 #include "diplib.h"
 #include "diplib/regions.h"
+#include "diplib/measurement.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 
@@ -102,14 +103,45 @@ UnsignedArray GetObjectLabels(
    // Do the scan
    Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter, Framework::Scan_NoMultiThreading );
 
-   // Copy the labels to output array
-   UnsignedArray out;
-   for( auto const& id : objectIDs ) {
+   // Count the number of unique labels
+   dip::uint count = 0;
+   for( auto id : objectIDs ) {
       if(( id != 0 ) || nullIsObject ) {
-         out.push_back( id );
+         ++count;
+      }
+   }
+
+   // Copy the labels to output array
+   UnsignedArray out( count );
+   count = 0;
+   for( auto id : objectIDs ) {
+      if(( id != 0 ) || nullIsObject ) {
+         out[ count ] = id;
+         ++count;
       }
    }
    return out;
+}
+
+void SmallObjectsRemove(
+      Image const& in,
+      Image& out,
+      dip::uint threshold,
+      dip::uint connectivity
+) {
+   if( in.DataType().IsBinary() ) {
+      Image tmp = Label( in, connectivity, threshold, 0 );
+      NotEqual( tmp, Image( 0, tmp.DataType() ), out );
+   } else if( in.DataType().IsUnsigned() ) {
+      MeasurementTool msr;
+      Measurement sizes = msr.Measure( in, {}, { "Size" }, {}, 1 );
+      // TODO: It would be more efficient to copy the ObjectToMeasurement function, and make a LUT that does all of the following in a single pass through the image.
+      Image tmp = ObjectToMeasurement( in, sizes[ "Size" ] );
+      tmp = tmp >= threshold;
+      Multiply( in, tmp, out, in.DataType() );
+   } else {
+      DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
+   }
 }
 
 } // namespace dip

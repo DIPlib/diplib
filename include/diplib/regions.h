@@ -34,6 +34,8 @@ namespace dip {
 
 /// \defgroup regions Connected component analysis
 /// \brief Label connected component and process labeled images.
+///
+/// Labeled images are of any unsigned integer type.
 /// \{
 
 // TODO: functions to port:
@@ -86,6 +88,34 @@ DIP_EXPORT UnsignedArray GetObjectLabels(
       Image const& mask,
       bool nullIsObject
 );
+
+/// \brief Removes small objects from a labeled or binary image.
+///
+/// If `in` is an unsigned integer image, it is assumed to be a labeled image. The size of the objects
+/// are measured using `dip::MeasurementTool`, and the labels for the objects with fewer than `threshold`
+/// pixels are removed. The `connectivity` parameter is ignored.
+///
+/// If `in` is a binary image, `dip::Label` is called with `minSize` set to `threshold`, and the result
+/// is binarized again. `connectivity` is passed to the labeling function.
+///
+/// The operation on a binary image is equivalent to an area opening with parameter `threshold`
+/// (see `dip::AreaOpening`). The same is not true for the labeled image case, if labeled regions
+/// are touching.
+DIP_EXPORT void SmallObjectsRemove(
+      Image const& in,
+      Image& out,
+      dip::uint threshold,
+      dip::uint connectivity = 1
+);
+inline Image SmallObjectsRemove(
+      Image const& in,
+      dip::uint threshold,
+      dip::uint connectivity = 1
+) {
+   Image out;
+   SmallObjectsRemove( in, out, threshold, connectivity );
+   return out;
+}
 
 /// \}
 
