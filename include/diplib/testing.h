@@ -47,7 +47,10 @@ T Round( T v, int /*digits*/) {
 
 template< typename T, typename std::enable_if< !std::is_integral< T >::value, int >::type = 0 >
 T Round( T v, int digits ) {
-   int intDigits = static_cast< int >( std::floor( std::log10( v )));
+   int intDigits = std::abs( v ) < 10.0 ? 1 : static_cast< int >( std::floor( std::log10( std::abs( v ))));
+   if( v < 0 ) {
+      ++intDigits; // we need space for the minus sign also.
+   }
    if( intDigits < digits ) {
       T multiplier = static_cast< T >( pow10( digits - intDigits - 1 ));
       return std::round( v * multiplier ) / multiplier;
@@ -80,7 +83,6 @@ void PrintPixelValues(
    dip::uint lineLength = img.Size( 0 );
    std::cout << "Image of size " << lineLength << " x " << img.Sizes().product() / lineLength << ":\n";
    dip::ImageIterator< TPI > it( img, 0 );
-   dip::uint line = 0;
    do {
       auto lit = it.GetLineIterator();
       std::cout << "[i";
@@ -93,7 +95,6 @@ void PrintPixelValues(
          std::cout << ", " << std::setw( DIGITS + 1 ) << detail::Round( *lit, DIGITS );
       }
       std::cout << std::endl;
-      ++line;
    } while( ++it );
 }
 

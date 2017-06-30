@@ -197,6 +197,11 @@ class DIP_NO_EXPORT StructuringElement {
          mirror_ = !mirror_;
       }
 
+      /// \brief True if SE is mirrored.
+      bool IsMirrored() const {
+         return mirror_;
+      }
+
       /// \brief Converts the Structuring element into a kernel
       // NOTE: When we go to SEs that are sequences of kernels, this function will change!
       DIP_EXPORT dip::Kernel Kernel() const;

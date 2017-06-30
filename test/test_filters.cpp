@@ -3,7 +3,6 @@
 #include "diplib.h"
 #include "diplib/generation.h"
 #include "diplib/morphology.h"
-//#include "diplib/geometry.h"
 #include "diplib/testing.h"
 
 int main() {
@@ -15,10 +14,11 @@ int main() {
 
       dip::testing::PrintPixelValues< dip::sfloat >( img );
 
-      //dip::Image out = dip::Uniform( img, { { 10, 7 }, "line" } );
-      dip::Image out = dip::Dilation( img, { { 17, 5 }, "interpolated line" }, { "zero order" } );
-      //dip::Image out = dip::Skew( img, dip::pi/12.0, 0, 1, "", "" );
-
+      auto se = dip::StructuringElement{ { 8, -2 }, "discrete line" };
+      dip::Image out = dip::Dilation( img, se, { "zero order" } );
+      dip::testing::PrintPixelValues< dip::sfloat >( out );
+      se.Mirror();
+      out = dip::Erosion( out, se, { "zero order" } );
       dip::testing::PrintPixelValues< dip::sfloat >( out );
 
    } catch( dip::Error e ) {

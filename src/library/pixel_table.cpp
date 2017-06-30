@@ -67,7 +67,7 @@ PixelTable::PixelTable(
       origin_.resize( nDims, 0 );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( size[ ii ] < 0 ) {
-            size[ ii ] = std::min( std::round( size[ ii ] ) + 1.0, 0.0 );
+            size[ ii ] = -std::max( std::round( -size[ ii ] ) - 1.0, 0.0 );
             sizes_[ ii ] = static_cast< dip::uint >( -size[ ii ] ) + 1;
          } else {
             size[ ii ] = std::max( std::round( size[ ii ] ) - 1.0, 0.0 );

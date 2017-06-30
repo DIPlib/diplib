@@ -18,6 +18,8 @@
  * limitations under the License.
  */
 
+#include <utility>
+
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/geometry.h"
@@ -98,8 +100,7 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
-         dip::uint procDim = params.dimension;
-         dip::uint filterSize = sizes_[ procDim ];
+         dip::uint filterSize = sizes_[ params.dimension ];
          // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once
          dip::uint margin = filterSize / 2;
          dip::uint bufferSize = length + 2 * margin;
@@ -135,30 +136,29 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
          buf = backwardBuffer + length + margin - 1;
          prev = *buf = *in;
          in -= inStride;
-         buf--;
+         --buf;
          while( buf >= backwardBuffer + syncpos ) {
             prev = *buf = dilation_ ? std::max( *in, prev ) : std::min( *in, prev );
             in -= inStride;
-            buf--;
+            --buf;
          }
          while( buf > backwardBuffer - margin ) {
             prev = *buf = *in;
             in -= inStride;
-            buf--;
+            --buf;
             for( dip::uint ii = 1; ii < filterSize; ++ii ) {
                prev = *buf = dilation_ ? std::max( *in, prev ) : std::min( *in, prev );
                in -= inStride;
-               buf--;
+               --buf;
             }
          }
-
          // Fill output
          if( mirror_ ) {
             forwardBuffer += filterSize - 1 - margin;
             backwardBuffer -= margin;
          } else {
             forwardBuffer += margin;
-            backwardBuffer -= ( filterSize - 1 - margin );
+            backwardBuffer -= filterSize - 1 - margin;
          }
          for( dip::uint ii = 0; ii < length; ++ii ) {
             *out = dilation_ ? std::max( *forwardBuffer, *backwardBuffer ) : std::min( *forwardBuffer, *backwardBuffer );
@@ -352,8 +352,7 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
-         dip::uint procDim = params.dimension;
-         TPI lambda = static_cast< TPI >( 1.0 / ( params_[ procDim ] * params_[ procDim ] ));
+         TPI lambda = static_cast< TPI >( 1.0 / ( params_[ params.dimension ] * params_[ params.dimension ] ));
          // Allocate buffer if it's not yet there.
          if( buffers_[ params.thread ].size() != length ) {
             buffers_[ params.thread ].resize( length );
@@ -486,53 +485,229 @@ void ParabolicMorphology(
 
 // --- Line morphology ---
 
-void SkewLineMorphology(
+template< typename TPI >
+class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
+      // This is an identical copy of RectangularMorphologyLineFilter, but we fill the buffers using the step size.
+   public:
+      PeriodicLineMorphologyLineFilter( dip::uint stepSize, dip::uint length, Polarity polarity, Mirror mirror ) :
+            stepSize_( stepSize ), frameLength_( length ), dilation_( polarity == Polarity::DILATION ), mirror_( mirror == Mirror::YES ) {}
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
+         buffers_.resize( threads );
+      }
+      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+         // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once
+         dip::uint length = params.inBuffer.length;
+         dip::uint margin = frameLength_ / 2;
+         dip::uint bufferSize = length + 2 * margin;
+         std::vector< TPI >& buffer = buffers_[ params.thread ];
+         buffer.resize( 2 * bufferSize ); // does nothing if already correct size
+         TPI* forwardBuffer = buffer.data() + margin;
+         TPI* backwardBuffer = forwardBuffer + bufferSize;
+         // Copy input data over to buffers, will simplify filling them later
+         dip::sint inStride = params.inBuffer.stride;
+         TPI* in = static_cast< TPI* >( params.inBuffer.buffer ) - inStride * static_cast< dip::sint >( margin );
+         TPI* buf = forwardBuffer - margin;
+         TPI* buf2 = backwardBuffer - margin;
+         while( buf < forwardBuffer + length ) {
+            *buf2 = *buf = *in;
+            in += inStride;
+            ++buf;
+            ++buf2;
+         }
+         // Fill forward buffer
+         buf = forwardBuffer - margin;
+         while( buf < forwardBuffer + length + margin - frameLength_ ) {
+            buf += stepSize_;
+            for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
+               *buf = dilation_ ? std::max( *buf, *( buf - stepSize_ )) : std::min( *buf, *( buf - stepSize_ ));
+               ++buf;
+            }
+         }
+         dip::sint syncpos = buf - forwardBuffer; // this is needed to align the two buffers
+         buf += stepSize_;
+         while( buf < forwardBuffer + length + margin ) {
+            *buf = dilation_ ? std::max( *buf, *( buf - stepSize_ )) : std::min( *buf, *( buf - stepSize_ ));
+            ++buf;
+         }
+         // Fill backward buffer
+         buf = backwardBuffer + length + margin - 1;
+         buf -= stepSize_;
+         while( buf >= backwardBuffer + syncpos ) {
+            *buf = dilation_ ? std::max( *buf, *( buf + stepSize_ )) : std::min( *buf, *( buf + stepSize_ ));
+            --buf;
+         }
+         buf = backwardBuffer + syncpos - 1; // in case `buf -= stepSize_` passed its mark, and the `while` loop didn't run at all.
+         while( buf > backwardBuffer - margin ) {
+            buf -= stepSize_;
+            for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
+               *buf = dilation_ ? std::max( *buf, *( buf + stepSize_ )) : std::min( *buf, *( buf + stepSize_ ));
+               --buf;
+            }
+         }
+         // Fill output
+         dip::uint filterLength = (( frameLength_ / stepSize_ ) - 1 ) * stepSize_ + 1;
+         margin = filterLength / 2;
+         if( mirror_ ) {
+            forwardBuffer += filterLength - 1 - margin;
+            backwardBuffer -= margin;
+         } else {
+            forwardBuffer += margin;
+            backwardBuffer -= filterLength - 1 - margin;
+         }
+         TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
+         dip::sint outStride = params.outBuffer.stride;
+         for( dip::uint ii = 0; ii < length; ++ii ) {
+            *out = dilation_ ? std::max( *forwardBuffer, *backwardBuffer ) : std::min( *forwardBuffer, *backwardBuffer );
+            out += outStride;
+            ++forwardBuffer;
+            ++backwardBuffer;
+         }
+      }
+   private:
+      dip::uint stepSize_;
+      dip::uint frameLength_;
+      std::vector< std::vector< TPI >> buffers_; // one for each thread
+      bool dilation_;
+      bool mirror_;
+};
+
+void PeriodicLineMorphology(
+      Image const& in,
+      Image& out,
+      dip::uint stepSize,
+      dip::uint length,
+      dip::uint axis,
+      BoundaryConditionArray const& bc,
+      Polarity polarity,
+      Mirror mirror // this changes where the origin is placed in the even-sized line
+) {
+   dip::uint nDims = in.Dimensionality();
+   BooleanArray process( nDims, false );
+   process[ axis ] = true; // No need to test if axis is valid.
+   UnsignedArray border( nDims, 0 );
+   border[ axis ] = length / 2;
+   DIP_START_STACK_TRACE
+      DataType dtype = in.DataType();
+      std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
+      DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, polarity, mirror ), dtype );
+      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+   DIP_END_STACK_TRACE
+}
+
+std::pair< dip::uint, dip::uint > PeriodicLineParameters( FloatArray const& filterParam ) {
+   dip::uint maxSize = 0;
+   dip::uint steps = 0;
+   for( dip::uint ii = 0; ii < filterParam.size(); ++ii ) {
+      dip::uint length = static_cast< dip::uint >( std::abs( std::round( filterParam[ ii ] )));
+      maxSize = std::max( maxSize, length );
+      if( length > 1 ) {
+         if( steps > 0 ) {
+            steps = gcd( steps, length );
+         } else {
+            steps = length;
+         }
+      }
+   }
+   if( steps == 0 ) {
+      // This happens if all length <= 1
+      DIP_ASSERT( maxSize == 0 );
+      steps = 1;
+      maxSize = 1;
+   }
+   return std::make_pair( maxSize, steps );
+}
+
+void DiscreteLineMorphology(
       Image const& in,
       Image& out,
       FloatArray const& filterParam,
       BoundaryConditionArray const& bc,
+      Polarity polarity,
+      Mirror mirror
+) {
+   Kernel se( Kernel::ShapeCode::LINE, filterParam );
+   if( mirror == Mirror::YES ) {
+      se.Mirror();
+   }
+   FlatSEMorphology( in, out, se, bc, polarity );
+   // TODO: the closing by a line [8,-2] moves the image vertically by 2. We need to set the origin correctly.
+}
+
+void SkewLineMorphology(
+      Image const& in,
+      Image& out,
+      FloatArray const& filterParam,
       StructuringElement::ShapeCode mode,
+      BoundaryConditionArray const& bc,
       Polarity polarity,
       Mirror mirror
 ) {
    dip::uint nDims = in.Dimensionality();
    dfloat length = std::round( std::abs( filterParam[ 0 ] ));
    dip::uint axis = 0;
+   dip::uint nLarger1 = length > 1.0 ? 1 : 0;
    for( dip::uint ii = 1; ii < nDims; ++ii ) {
-      if( std::round( std::abs( filterParam[ ii ] )) > length ) {
-         length = std::round( std::abs( filterParam[ ii ] ));
+      dfloat param = std::round( std::abs( filterParam[ ii ] ));
+      if( param > length ) {
+         length = param;
          axis = ii;
       }
+      nLarger1 += param > 1.0 ? 1 : 0;
    }
-   // 1- Skew (using interpolation if INTERPOLATED_LINE) in all dimensions perpendicular to `axis`
-   String method = mode == StructuringElement::ShapeCode::INTERPOLATED_LINE ? "linear" : "nn";
-   // TODO: Can we use a better interpolation method (i.e. the default "") if we stick to "zero order" boundary condition?
-   FloatArray shearArray( nDims, 0.0 );
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      if( ii != axis ) {
-         shearArray[ ii ] = std::atan2( filterParam[ ii ], length );
+   dip::uint periodicStepSize = 1;
+   if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
+      dip::uint maxSize = 0;
+      dip::uint steps = 0;
+      std::tie( maxSize, steps ) = PeriodicLineParameters( filterParam );
+      if( steps == 1 ) {
+         // The periodic line has just one point, make it so that we just copy the input below.
+         nLarger1 = 1;
+         length = 1;
+      } else {
+         periodicStepSize = maxSize / steps;
+         if( periodicStepSize == 1 ) {
+            // The periodic line is continuous.
+            mode = StructuringElement::ShapeCode::FAST_LINE;
+         }
       }
    }
-   Image tmp;
-   Skew( in, tmp, shearArray, axis, method, bc );
-   // TODO: do we need to force Skew to use the mirrored center point if `mirror` is set?
-   // 2- Call RectangularMorphology (or a different, new function if PERIODIC_LINE)
-   if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
-      // TODO: Implement the periodic line!
-      DIP_THROW( E::NOT_IMPLEMENTED );
-   } else {
+   if( nLarger1 > 1 ) {
+      // 1- Skew (using interpolation if INTERPOLATED_LINE) in all dimensions perpendicular to `axis`
+      String method = mode == StructuringElement::ShapeCode::INTERPOLATED_LINE ? "linear" : "nn";
+      // TODO: Can we use a better interpolation method (i.e. the default "") if we stick to "zero order" boundary condition?
+      FloatArray shearArray( nDims, 0.0 );
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         if( ii != axis ) {
+            shearArray[ ii ] = std::atan2( filterParam[ ii ], length );
+         }
+      }
+      Image tmp;
+      Skew( in, tmp, shearArray, axis, method, bc );
+      // TODO: we need to force Skew to use the mirrored center point if `mirror` is set
+      // 2- Call RectangularMorphology (or a different, new function if PERIODIC_LINE)
+      if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
+         PeriodicLineMorphology( tmp, tmp, periodicStepSize, static_cast< dip::uint >( length ), axis, bc, polarity, mirror );
+      } else {
+         FloatArray rectSize( nDims, 1.0 );
+         rectSize[ axis ] = length;
+         RectangularMorphology( tmp, tmp, rectSize, bc, polarity, mirror );
+      }
+      // 3- Skew back (using interpolation if INTERPOLATED_LINE) and crop to original size
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         shearArray[ ii ] = -shearArray[ ii ];
+      }
+      Skew( tmp, tmp, shearArray, axis, method, { BoundaryCondition::PERIODIC } );
+      // Using periodic boundary condition so it can be done in-place.
+      tmp = tmp.Crop( in.Sizes());
+      out.Copy( tmp );
+      out.SetPixelSize( in.PixelSize());
+   } else if( std::round( length ) > 1 ) {
       FloatArray rectSize( nDims, 1.0 );
       rectSize[ axis ] = length;
-      RectangularMorphology( tmp, tmp, rectSize, bc, polarity, mirror );
+      RectangularMorphology( in, out, rectSize, bc, polarity, mirror );
+   } else {
+      out.Copy( in );
    }
-   // 3- Skew back (using interpolation if INTERPOLATED_LINE)
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      shearArray[ ii ] = -shearArray[ ii ];
-   }
-   Skew( tmp, tmp, shearArray, axis, method, { BoundaryCondition::PERIODIC } ); // Using periodic boundary condition so it can be done in-place.
-   tmp = tmp.Crop( in.Sizes() );
-   out.Copy( tmp );
-   out.SetPixelSize( in.PixelSize() );
 }
 
 void LineMorphology(
@@ -543,46 +718,36 @@ void LineMorphology(
       Polarity polarity,
       Mirror mirror
 ) {
-   // TEMPORARY:
-   Kernel se( Kernel::ShapeCode::LINE, filterParam );
-   if( mirror == Mirror::YES ) {
-      se.Mirror();
-   }
-   FlatSEMorphology( in, out, se, bc, polarity );
-   //
-
-   /*
-   dip::uint maxSize = 0;
-   dip::uint steps = 0;
-   for( dip::uint ii = 0; ii < filterParam.size(); ++ii ) {
-      dip::uint length = static_cast< dip::uint >( std::abs( std::round( filterParam[ ii ] )));
-      maxSize = std::max( maxSize, length );
-      if( steps > 0 ) {
-         steps = gcd( steps, length );
-      } else {
-         steps = length;
-      }
-   }
-   if( steps == 1 ) {
-      // This means that one of the sizes is 1.
-      // TODO: don't take the size==1 into account when doing the gcd()!
-      // TODO: call RectangularMorphology
-   } else if( steps == maxSize ){
-      // This means that all filterParam are the same
-      // TODO: we should get here too if some size==1, but all the rest are equal.
-      // TODO: call SkewLineMorphology with FAST_LINE
+   dip::uint maxSize;
+   dip::uint steps;
+   std::tie( maxSize, steps ) = PeriodicLineParameters( filterParam );
+   if( steps == maxSize ){
+      // This means that all filterParam are the same (or 1)
+      SkewLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::FAST_LINE, bc, polarity, mirror );
    } else {
-      SkewLineMorphology( in, out, filterParam, bc, StructuringElement::ShapeCode::PERIODIC_LINE, polarity, mirror );
-      for( dip::uint ii = 0; ii < filterParam.size(); ++ii ) {
-         filterParam[ ii ] = std::round( filterParam[ ii ] ) / static_cast< dfloat >( steps );
+      if( steps > 1 ) {
+         Mirror periodicMirror = Mirror::NO;
+         if( !( steps % 1 )) {
+            // Periodic line with even number of points
+            if( mirror == Mirror::YES ) {
+               // We need to mirror the periodic line instead of the discrete line
+               mirror = Mirror::NO;
+               periodicMirror = Mirror::YES;
+            } else if( !(( maxSize / steps ) % 1 )) {
+               // Discrete line with even length: mirror it to put the origin in the right place
+               mirror = Mirror::YES;
+            }
+         }
+         // else: discrete line must be mirrored if the SE is mirrored.
+         SkewLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE, bc, polarity, periodicMirror );
+         for( dip::uint ii = 0; ii < filterParam.size(); ++ii ) {
+            filterParam[ ii ] = std::round( filterParam[ ii ] ) / static_cast< dfloat >( steps );
+         }
+         DiscreteLineMorphology( out, out, filterParam, bc, polarity, mirror );
+      } else {
+         DiscreteLineMorphology( in, out, filterParam, bc, polarity, mirror );
       }
-      Kernel se( Kernel::ShapeCode::LINE, filterParam );
-      if( mirror == Mirror::YES ) {
-         se.Mirror();
-      }
-      FlatSEMorphology( out, out, se, bc, polarity );
    }
-   */
 }
 
 void DiamondMorphology(
@@ -641,8 +806,8 @@ void DiamondMorphology(
             // This is exponential in the number of dimensions: 2 in 2D, 4 in 3D, 8 in 4D, etc.
             dip::uint nDims = size.size();
             while( true ) {
-               // TODO: this can be the fast skew line morphology, since lines are always at 0 or 45 degrees.
-               LineMorphology( out, out, size, bc, polarity, Mirror::NO );
+               // This can be the fast skew line morphology, since lines are always at 0 or 45 degrees.
+               SkewLineMorphology( out, out, size, StructuringElement::ShapeCode::FAST_LINE, bc, polarity, Mirror::NO );
                dip::uint dd;
                for( dd = 1; dd < nDims; ++dd ) {
                   if( std::abs( size[ dd ] ) > 1.0 ) {
@@ -736,6 +901,12 @@ void BasicMorphology(
          bc[ 0 ] = polarity == Polarity::DILATION ? BoundaryCondition::ADD_MIN_VALUE : BoundaryCondition::ADD_MAX_VALUE;
          // TODO: experiment with BoundaryCondition::ZERO_ORDER_EXTRAPOLATE boundary condition.
       }
+      // Compound `mirror` with SE's mirror flag
+      if( mirror == Mirror::NO ) {
+         mirror = se.IsMirrored() ? Mirror::YES : Mirror::NO;
+      } else {
+         mirror = se.IsMirrored() ? Mirror::NO : Mirror::YES;
+      }
       switch( se.Shape() ) {
          case StructuringElement::ShapeCode::RECTANGULAR:
             RectangularMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
@@ -752,7 +923,10 @@ void BasicMorphology(
          case StructuringElement::ShapeCode::FAST_LINE:
          case StructuringElement::ShapeCode::PERIODIC_LINE:
          case StructuringElement::ShapeCode::INTERPOLATED_LINE:
-            SkewLineMorphology( in, out, se.Params( in.Sizes() ), bc, se.Shape(), polarity, mirror );
+            SkewLineMorphology( in, out, se.Params( in.Sizes() ), se.Shape(), bc, polarity, mirror );
+            break;
+         case StructuringElement::ShapeCode::DISCRETE_LINE:
+            DiscreteLineMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
             break;
          case StructuringElement::ShapeCode::PARABOLIC:
             ParabolicMorphology( in, out, se.Params( in.Sizes() ), bc, polarity );
