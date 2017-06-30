@@ -22,6 +22,7 @@
 #define DIP_GEOMETRY_H
 
 #include "diplib.h"
+#include "diplib/boundary.h"
 
 
 /// \file
@@ -59,7 +60,7 @@ namespace dip {
 ///    Fourier transform of the image line. Padding with zeros increases the sampling density, cropping
 ///    reduces the sampling density, and multiplying the phase component by \f$-j s \omega\f$ shift
 ///    the image. Equivalent to interpolation with a sinc kernel. All input samples are used to compute
-///    all output samples.
+///    all output samples. **NOTE:** This method is not yet implemented.
 ///
 ///  - '"lanczos8"': Lanczos interpolation with *a* = 8, using 16 input samples to compute each output sample.
 ///    The Lanczos kernel is a sinc function windowed by a larger sinc function, where *a* is the width of
@@ -74,6 +75,7 @@ namespace dip {
 ///  - '"lanczos2"': Lanczos interpolation with *a* = 2, using 4 input samples to compute each output sample.
 ///
 /// Not all methods are available for all functions. If so, this is described in the function's documentation.
+/// For operations on binary images, the interpolation method is ignored, and `"nearest"` is always used.
 ///
 /// Interpolation methods require a boundary extension of half the number of input samples used to compute
 /// each output sample. For B-spline interpolation, a boundary extension of 5 is used. For the nearest neighbor
@@ -102,9 +104,10 @@ inline Image Wrap(
    return out;
 }
 
+
 /// \brief Subsamples the input image.
 ///
-/// The imput image is subsampled by `sample[ ii ]` along dimension `ii`. The output image shares
+/// The input image is subsampled by `sample[ ii ]` along dimension `ii`. The output image shares
 /// the data segment of the input image, meaning that no data is copied. If a data copy is required,
 /// calling `dip::Image::ForceContiguousData` after subsampling should trigger a data copy.
 inline void Subsampling(
@@ -122,6 +125,7 @@ inline Image Subsampling(
    Subsampling( in, out, sample );
    return out;
 }
+
 
 /// \brief Resamples an image with the given zoom factor and sub-pixel shift.
 ///
@@ -144,11 +148,10 @@ inline Image Subsampling(
 ///
 /// The output image has the same data type as the input image.
 ///
-/// See \ref interpolation_methods for information on the `interpolationMethod` parameter. `"ft"`
-/// is not (yet) implemented.
+/// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
 ///
 /// **Note** that the current implementation doesn't handle the "asym" boundary conditions properly.
-/// For unsigned types, resulting samples oustide the original image domain are clamped to 0, instead
+/// For unsigned types, resulting samples outside the original image domain are clamped to 0, instead
 /// of properly using the saturated inversion.
 DIP_EXPORT void Resampling(
       Image const& in,
@@ -191,20 +194,30 @@ inline Image Shift(
    return out;
 }
 
+
+// Undocumented internal function called by the other forms of Skew
+DIP_EXPORT void Skew(
+      Image const& in,
+      Image& out,
+      FloatArray const& shearArray, // value along `axis` is ignored
+      dip::uint axis,
+      String const& interpolationMethod = "",
+      BoundaryConditionArray boundaryCondition = {} // if it is "periodic", does periodic skew
+);
+
 /// \brief Skews an image
 ///
 /// The image is skewed such that a straight line along dimension `axis` is tilted by an
-/// angle of `shear` radian in the direction of dimension `skew`. Each image line along dimension
-/// `skew` is shifted by a different amount. The output image has the same dimensions as
-/// `in`, except for dimension `skew`, which will be larger. The origin of the skew is in the
-/// middle of the image.
+/// angle of `shearArray[ ii ]` radian in the direction of dimension `ii`. Each image sub-volume perpendicular
+/// to `axis` is shifted by a different amount. The output image has the same dimension as `in` in the `axis`
+/// direction, and larger dimensions in all other dimensions, such that no data is lost. The value of `shear[ axis ]`
+/// is ignored. The origin of the skew is in the middle of the image.
 ///
 /// The output image has the same data type as the input image.
 ///
 /// `shear` must have a magnitude smaller than pi/2.
 ///
-/// See \ref interpolation_methods for information on the `interpolationMethod` parameter. `"ft"`
-/// is not (yet) implemented.
+/// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
 ///
 /// `boundaryCondition` determines how data outside of the input image domain is filled in. See
 /// `dip::BoundaryCondition`. If it is `"periodic"`, a periodic skew is applied. This means that
@@ -212,9 +225,56 @@ inline Image Shift(
 /// output image does not grow along dimension `skew`.
 ///
 /// **Note** that the current implementation doesn't handle the "asym" boundary conditions properly.
-/// For unsigned types, resulting samples oustide the original image domain are clamped to 0, instead
+/// For unsigned types, resulting samples outside the original image domain are clamped to 0, instead
 /// of properly using the saturated inversion.
-DIP_EXPORT void Skew(
+inline void Skew(
+      Image const& in,
+      Image& out,
+      FloatArray shearArray,
+      dip::uint axis,
+      String const& interpolationMethod,
+      StringArray const& boundaryCondition
+) {
+   DIP_START_STACK_TRACE
+      BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
+      Skew( in, out, shearArray, axis, interpolationMethod, bc );
+   DIP_END_STACK_TRACE
+}
+inline Image Skew(
+      Image const& in,
+      FloatArray shearArray, // value along `axis` is ignored
+      dip::uint axis,
+      String const& interpolationMethod,
+      StringArray const& boundaryCondition // no default value, use this function only if `boundaryCondition` is given
+) {
+   Image out;
+   Skew( in, out, shearArray, axis, interpolationMethod, boundaryCondition );
+   return out;
+}
+
+/// \brief Skews an image
+///
+/// The image is skewed such that a straight line along dimension `axis` is tilted by an
+/// angle of `shear` radian in the direction of dimension `skew`. Each image line along dimension
+/// `skew` is shifted by a different amount. The output image has the same dimensions as
+/// `in`, except for dimension `skew`, which will be larger, such that no data is lost.
+/// The origin of the skew is in the middle of the image.
+///
+/// The output image has the same data type as the input image.
+///
+/// `shear` must have a magnitude smaller than pi/2.
+///
+/// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
+///
+/// `boundaryCondition` determines how data outside of the input image domain is filled in. See
+/// `dip::BoundaryCondition`. If it is `"periodic"`, a periodic skew is applied. This means that
+/// image lines are shifted using a periodic boundary condition, and wrap around. The
+/// output image does not grow along dimension `skew`.
+///
+/// **Note** that the current implementation doesn't handle the "asym" boundary conditions properly.
+/// For unsigned types, resulting samples outside the original image domain are clamped to 0, instead
+/// of properly using the saturated inversion.
+inline void Skew(
       Image const& in,
       Image& out,
       dfloat shear,
@@ -222,7 +282,20 @@ DIP_EXPORT void Skew(
       dip::uint axis,
       String const& interpolationMethod = "",
       String const& boundaryCondition = {} // if it is "periodic", does periodic skew
-);
+) {
+   dip::uint nDims = in.Dimensionality();
+   DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+   DIP_THROW_IF( axis == skew, E::INVALID_PARAMETER );
+   DIP_THROW_IF(( axis >= nDims ) || ( skew >= nDims ), E::PARAMETER_OUT_OF_RANGE );
+   FloatArray shearArray( nDims, 0.0 );
+   shearArray[ skew ] = shear;
+   BoundaryCondition bc;
+   DIP_START_STACK_TRACE
+      bc = StringToBoundaryCondition( boundaryCondition );
+   DIP_END_STACK_TRACE
+   BoundaryConditionArray bca( 1, bc );
+   Skew( in, out, shearArray, axis, interpolationMethod, bca );
+}
 inline Image Skew(
       Image const& in,
       dfloat shear,
@@ -235,6 +308,7 @@ inline Image Skew(
    Skew( in, out, shear, skew, axis, interpolationMethod, boundaryCondition );
    return out;
 }
+
 
 /// \brief Rotates an image in one orthogonal plane, over the center of the image.
 ///
