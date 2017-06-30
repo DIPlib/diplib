@@ -49,8 +49,10 @@ class DIP_NO_EXPORT Kernel;
 /// different line structuring elements implemented in *DIPlib*.
 ///
 /// - `"line"`: This is an efficient implementation that yields the same results as the traditional line
-///   structuring element. It is implemented as a combination of `"periodic line"` and `"discrete line"`
-///   (see Soille, 1996).
+///   structuring element (`"discrete line"`). It is implemented as a combination of `"periodic line"` and `"discrete line"`
+///   (see Soille, 1996). If the angle and length of the line are such that the periodic line has a short
+///   period, this implementation saves a lot of time. If the angle and length are such that the periodic
+///   line has only one point, this is identical to `"discrete line"`.
 ///
 /// - `"fast line"`: This is a faster algorithm that applies a 1D operation along Bresenham lines, yielding
 ///   a non-translation-invariant result. It is implemented by skewing the image, applying the operation
@@ -58,7 +60,7 @@ class DIP_NO_EXPORT Kernel;
 ///
 /// - `"periodic line"`: This is a line formed of only a subset of the pixels along the Bresenham line,
 ///   such that it can be computed as a 1D operation along Bresenham lines, but still yields a
-///   translation-invariant result. It might not be very useful on its own, but when combined with the
+///   translation-invariant result (Soille, 1996). It might not be very useful on its own, but when combined with the
 ///   `"discrete line"`, it provides a more efficient implementation of the traditional line structuring
 ///   element.
 ///
@@ -68,7 +70,7 @@ class DIP_NO_EXPORT Kernel;
 /// - `"interpolated line"`: This is the same algorithm as `"fast line"`, but the skew operation uses interpolation.
 ///   This greatly improves the results in e.g. a granulometry when the input image is band limited. However,
 ///   the result of morphological operations is not band limited, and so the second, reverse skew operation will
-///   lose some precision.
+///   lose some precision (Luengo Hendriks, 2005).
 ///
 /// For `"fast line"`, `"periodic line"` and `"interpolated line"`, which are computed by skewing the input
 /// image, setting the boundary condition to `"periodic"` or `"asym periodic"` allows the operation to occur
@@ -77,7 +79,9 @@ class DIP_NO_EXPORT Kernel;
 ///
 /// **Literature**
 ///  - P. Soille, E. J. Breen and R. Jones, "Recursive implementation of erosions and dilations along discrete lines
-///    at arbitrary angles," in IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
+///    at arbitrary angles," IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
+///  - C.L. Luengo Hendriks and L.J. van Vliet, "Using line segments as structuring elements for sampling-invariant
+///    measurements," IEEE Transactions on Pattern Analysis and Machine Intelligence 27(11):1826-1831, 2005.
 ///
 /// \{
 
@@ -132,7 +136,7 @@ class DIP_NO_EXPORT Kernel;
 /// Note that the image is directly used as neighborhood (i.e. no mirroring is applied).
 /// That is, `dip::Dilation` and `dip::Erosion` will use the same neighborhood. Their composition only
 /// leads to an opening or a closing if the structuring element is symmetric. For non-symmetric structuring
-/// elements images, you need to mirror it in one of the two function calls:
+/// element images, you need to mirror it in one of the two function calls:
 /// ```cpp
 ///     dip::Image se = ...;
 ///     dip::Image out = dip::Erosion( in, se );

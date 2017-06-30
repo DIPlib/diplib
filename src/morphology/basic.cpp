@@ -20,6 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/morphology.h"
+#include "diplib/geometry.h"
 #include "diplib/kernel.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
@@ -105,50 +106,52 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
          std::vector< TPI >& buffer = buffers_[ params.thread ];
          buffer.resize( 2 * bufferSize ); // does nothing if already correct size
          TPI* forwardBuffer = buffer.data() + margin;
-         TPI* backwardBuffer = buffer.data() + bufferSize;
+         TPI* backwardBuffer = forwardBuffer + bufferSize;
          // Fill forward buffer
          in -= inStride * static_cast< dip::sint >( margin );
          TPI* buf = forwardBuffer - margin;
+         TPI prev;
          while( buf < forwardBuffer + length + margin - filterSize ) {
-            *buf = *in;
+            prev = *buf = *in;
             in += inStride;
             ++buf;
             for( dip::uint ii = 1; ii < filterSize; ++ii ) {
-               *buf = dilation_ ? std::max( *in, *( buf - 1 )) : std::min( *in, *( buf - 1 ));
+               prev = *buf = dilation_ ? std::max( *in, prev ) : std::min( *in, prev );
                in += inStride;
                ++buf;
             }
          }
          dip::sint syncpos = buf - forwardBuffer; // this is needed to align the two buffers
-         *buf = *in;
+         prev = *buf = *in;
          in += inStride;
          ++buf;
          while( buf < forwardBuffer + length + margin ) {
-            *buf = dilation_ ? std::max( *in, *( buf - 1 )) : std::min( *in, *( buf - 1 ));
+            prev = *buf = dilation_ ? std::max( *in, prev ) : std::min( *in, prev );
             in += inStride;
             ++buf;
          }
          // Fill backward buffer
          in -= inStride; // undo last increment
          buf = backwardBuffer + length + margin - 1;
-         *buf = *in;
+         prev = *buf = *in;
          in -= inStride;
          buf--;
          while( buf >= backwardBuffer + syncpos ) {
-            *buf = dilation_ ? std::max( *in, *( buf + 1 )) : std::min( *in, *( buf + 1 ));
+            prev = *buf = dilation_ ? std::max( *in, prev ) : std::min( *in, prev );
             in -= inStride;
             buf--;
          }
          while( buf > backwardBuffer - margin ) {
-            *buf = *in;
+            prev = *buf = *in;
             in -= inStride;
             buf--;
             for( dip::uint ii = 1; ii < filterSize; ++ii ) {
-               *buf = dilation_ ? std::max( *in, *( buf + 1 )) : std::min( *in, *( buf + 1 ));
+               prev = *buf = dilation_ ? std::max( *in, prev ) : std::min( *in, prev );
                in -= inStride;
                buf--;
             }
          }
+
          // Fill output
          if( mirror_ ) {
             forwardBuffer += filterSize - 1 - margin;
@@ -484,19 +487,52 @@ void ParabolicMorphology(
 // --- Line morphology ---
 
 void SkewLineMorphology(
-      Image const& /*in*/,
-      Image& /*out*/,
-      FloatArray const& /*filterParam*/,
-      BoundaryConditionArray const& /*bc*/,
-      StructuringElement::ShapeCode /*mode*/,
-      Polarity /*polarity*/,
-      Mirror /*mirror*/
+      Image const& in,
+      Image& out,
+      FloatArray const& filterParam,
+      BoundaryConditionArray const& bc,
+      StructuringElement::ShapeCode mode,
+      Polarity polarity,
+      Mirror mirror
 ) {
-   // 1- Skew (using interpolation if INTERPOLATED_LINE)
+   dip::uint nDims = in.Dimensionality();
+   dfloat length = std::round( std::abs( filterParam[ 0 ] ));
+   dip::uint axis = 0;
+   for( dip::uint ii = 1; ii < nDims; ++ii ) {
+      if( std::round( std::abs( filterParam[ ii ] )) > length ) {
+         length = std::round( std::abs( filterParam[ ii ] ));
+         axis = ii;
+      }
+   }
+   // 1- Skew (using interpolation if INTERPOLATED_LINE) in all dimensions perpendicular to `axis`
+   String method = mode == StructuringElement::ShapeCode::INTERPOLATED_LINE ? "linear" : "nn";
+   // TODO: Can we use a better interpolation method (i.e. the default "") if we stick to "zero order" boundary condition?
+   FloatArray shearArray( nDims, 0.0 );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      if( ii != axis ) {
+         shearArray[ ii ] = std::atan2( filterParam[ ii ], length );
+      }
+   }
+   Image tmp;
+   Skew( in, tmp, shearArray, axis, method, bc );
+   // TODO: do we need to force Skew to use the mirrored center point if `mirror` is set?
    // 2- Call RectangularMorphology (or a different, new function if PERIODIC_LINE)
+   if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
+      // TODO: Implement the periodic line!
+      DIP_THROW( E::NOT_IMPLEMENTED );
+   } else {
+      FloatArray rectSize( nDims, 1.0 );
+      rectSize[ axis ] = length;
+      RectangularMorphology( tmp, tmp, rectSize, bc, polarity, mirror );
+   }
    // 3- Skew back (using interpolation if INTERPOLATED_LINE)
-   // TODO: Implement SkewLineMorphology (requires implementing Skew() first)
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      shearArray[ ii ] = -shearArray[ ii ];
+   }
+   Skew( tmp, tmp, shearArray, axis, method, { BoundaryCondition::PERIODIC } ); // Using periodic boundary condition so it can be done in-place.
+   tmp = tmp.Crop( in.Sizes() );
+   out.Copy( tmp );
+   out.SetPixelSize( in.PixelSize() );
 }
 
 void LineMorphology(
@@ -698,6 +734,7 @@ void BasicMorphology(
       if( bc.empty() ) {
          bc.resize( 1 );
          bc[ 0 ] = polarity == Polarity::DILATION ? BoundaryCondition::ADD_MIN_VALUE : BoundaryCondition::ADD_MAX_VALUE;
+         // TODO: experiment with BoundaryCondition::ZERO_ORDER_EXTRAPOLATE boundary condition.
       }
       switch( se.Shape() ) {
          case StructuringElement::ShapeCode::RECTANGULAR:
