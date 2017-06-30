@@ -4,28 +4,9 @@
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
 #include "diplib/framework.h"
+#include "diplib/testing.h"
 
 // Testing the full framework.
-
-template< typename T >
-void PrintPixelValues(
-      dip::Image img
-) {
-   DIP_THROW_IF( img.DataType() != dip::DataType( T() ), "Wrong version of PrintPixelValues() called" );
-   dip::uint linelength = img.Size( 0 );
-   std::cout << "Image of size " << linelength << " x " << img.Sizes().product() / linelength << ":\n";
-   dip::ImageIterator< T > it( img, 0 );
-   dip::uint line = 0;
-   do {
-      auto lit = it.GetLineIterator();
-      std::cout << line << ": " << *lit;
-      while( ++lit ) {
-         std::cout << ", " << *lit;
-      }
-      std::cout << std::endl;
-      ++line;
-   } while( ++it );
-}
 
 class LineFilter : public dip::Framework::FullLineFilter {
    public:
@@ -67,31 +48,13 @@ class LineFilter : public dip::Framework::FullLineFilter {
 int main() {
    try {
       dip::Image img{ dip::UnsignedArray{ 20, 15 }, 1, dip::DT_UINT16 };
-      img.Fill( 9563 );
+      img.Fill( 50 );
       dip::Random random( 0 );
-      dip::GaussianNoise( img, img, random, 500.0 );
+      dip::GaussianNoise( img, img, random, 20.0 * 20.0 );
 
-      PrintPixelValues< dip::uint16 >( img );
+      dip::testing::PrintPixelValues< dip::uint16 >( img );
 
       dip::Image out = img.Similar( dip::DT_UINT16 );
-      {
-         // Copied from src/documentation/iterators.md
-         DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
-         DIP_THROW_IF( out.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
-         dip::PixelTable kernel( "elliptic", { 5, 5 } );
-         dip::ImageIterator< dip::uint16 > it( img );
-         dip::ImageIterator< dip::uint16 > ot( out );
-         do {
-            dip::uint value = 0;
-            for( auto kit = kernel.begin(); kit != kernel.end(); ++kit ) {
-               value += it.PixelAt( *kit );
-            }
-            *ot = static_cast< dip::uint16 >( value / kernel.NumberOfPixels() );
-         } while( ++ot, ++it );
-      }
-
-      PrintPixelValues< dip::uint16 >( out );
-
       {
          // Copied from src/documentation/iterators.md
          DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
@@ -123,7 +86,7 @@ int main() {
          } while( ++it );
       }
 
-      PrintPixelValues< dip::uint16 >( out );
+      dip::testing::PrintPixelValues< dip::uint16 >( out );
 
       LineFilter lineFilter;
       dip::Framework::Full(
@@ -131,7 +94,7 @@ int main() {
             dip::BoundaryConditionArray{ dip::BoundaryCondition::SYMMETRIC_MIRROR },
             dip::FloatArray{ 5, 7 }, lineFilter, dip::Framework::Full_AsScalarImage );
 
-      PrintPixelValues< dip::sfloat >( out );
+      dip::testing::PrintPixelValues< dip::sfloat >( out );
 
    } catch( dip::Error e ) {
       std::cout << "DIPlib error: " << e.what() << std::endl;

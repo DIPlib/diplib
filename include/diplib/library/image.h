@@ -241,19 +241,19 @@ class DIP_NO_EXPORT Image {
             constexpr T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
 
             /// A `%Sample` can be cast to basic numerical types.
-            constexpr explicit operator bool() const { return detail::CastSample< bin >( dataType_, origin_ ); }
+            constexpr explicit operator bool() const { return As< bin >(); }
             /// A `%Sample` can be cast to basic numerical types.
-            constexpr explicit operator dip::uint() const { return detail::CastSample< dip::uint >( dataType_, origin_ ); }
+            constexpr explicit operator dip::uint() const { return As< dip::uint >(); }
             /// A `%Sample` can be cast to basic numerical types.
-            constexpr explicit operator dip::sint() const { return detail::CastSample< dip::sint >( dataType_, origin_ ); }
+            constexpr explicit operator dip::sint() const { return As< dip::sint >(); }
             /// A `%Sample` can be cast to basic numerical types.
-            constexpr explicit operator sfloat() const { return detail::CastSample< sfloat >( dataType_, origin_ ); }
+            constexpr explicit operator sfloat() const { return As< sfloat >(); }
             /// A `%Sample` can be cast to basic numerical types.
-            constexpr explicit operator dfloat() const { return detail::CastSample< dfloat >( dataType_, origin_ ); }
+            constexpr explicit operator dfloat() const { return As< dfloat >(); }
             /// A `%Sample` can be cast to basic numerical types.
-            constexpr explicit operator scomplex() const { return detail::CastSample< scomplex >( dataType_, origin_ ); }
+            constexpr explicit operator scomplex() const { return As< scomplex >(); }
             /// A `%Sample` can be cast to basic numerical types.
-            constexpr explicit operator dcomplex() const { return detail::CastSample< dcomplex >( dataType_, origin_ ); }
+            constexpr explicit operator dcomplex() const { return As< dcomplex >(); }
 
             /// Assigning to a `%Sample` copies the value over to the sample referenced.
             constexpr Sample& operator=( Sample const& sample ) {
@@ -417,19 +417,19 @@ class DIP_NO_EXPORT Image {
             T As() const { return detail::CastSample< T >( dataType_, origin_ ); };
 
             /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
-            explicit operator bool() const { return detail::CastSample< bin >( dataType_, origin_ ); }
+            explicit operator bool() const { return As< bin >(); }
             /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
-            explicit operator dip::uint() const { return detail::CastSample< dip::uint >( dataType_, origin_ ); }
+            explicit operator dip::uint() const { return As< dip::uint >(); }
             /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
-            explicit operator dip::sint() const { return detail::CastSample< dip::sint >( dataType_, origin_ ); }
+            explicit operator dip::sint() const { return As< dip::sint >(); }
             /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
-            explicit operator sfloat() const { return detail::CastSample< sfloat >( dataType_, origin_ ); }
+            explicit operator sfloat() const { return As< sfloat >(); }
             /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
-            explicit operator dfloat() const { return detail::CastSample< dfloat >( dataType_, origin_ ); }
+            explicit operator dfloat() const { return As< dfloat >(); }
             /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
-            explicit operator scomplex() const { return detail::CastSample< scomplex >( dataType_, origin_ ); }
+            explicit operator scomplex() const { return As< scomplex >(); }
             /// A `%Pixel` can be cast to basic numerical types. The first sample in the pixel is used.
-            explicit operator dcomplex() const { return detail::CastSample< dcomplex >( dataType_, origin_ ); }
+            explicit operator dcomplex() const { return As< dcomplex >(); }
 
             /// Assigning a number or sample to a `%Pixel` copies the value over each of the samples in the pixel.
             Pixel& operator=( Sample const& sample ) {
@@ -715,7 +715,7 @@ class DIP_NO_EXPORT Image {
             //CastSample& operator=( CastSample&& ) = delete;
             using Sample::operator=;
 
-            operator T() { return As< T >(); }
+            operator T() const { return As< T >(); }
       };
 
       /// \brief Derived from `dip::Image::Pixel`, works identically except it implicitly converts to type `T`.

@@ -2,44 +2,24 @@
 #include <iostream>
 #include "diplib.h"
 #include "diplib/generation.h"
-//#include "diplib/morphology.h"
-#include "diplib/geometry.h"
-#include "diplib/iterators.h"
-
-template< typename T >
-void PrintPixelValues(
-      dip::Image img
-) {
-   DIP_THROW_IF( img.DataType() != dip::DataType( T() ), "Wrong version of PrintPixelValues() called" );
-   dip::uint linelength = img.Size( 0 );
-   std::cout << "Image of size " << linelength << " x " << img.Sizes().product() / linelength << ":\n";
-   dip::ImageIterator< T > it( img, 0 );
-   dip::uint line = 0;
-   do {
-      auto lit = it.GetLineIterator();
-      std::cout << it.Coordinates() << ": " << std::setw(4) << *lit;
-      while( ++lit ) {
-         std::cout << ", " << std::setw(4) << *lit;
-      }
-      std::cout << std::endl;
-      ++line;
-   } while( ++it );
-}
+#include "diplib/morphology.h"
+//#include "diplib/geometry.h"
+#include "diplib/testing.h"
 
 int main() {
    try {
       dip::Image img{ dip::UnsignedArray{ 20, 15 }, 1, dip::DT_SFLOAT };
-      //dip::FillDelta( img );
-      dip::FillRadiusCoordinate( img );
+      dip::FillDelta( img );
+      img.At( 6, 2 ) = 2;
+      //dip::FillRadiusCoordinate( img );
 
-      PrintPixelValues< dip::sfloat >( img );
+      dip::testing::PrintPixelValues< dip::sfloat >( img );
 
       //dip::Image out = dip::Uniform( img, { { 10, 7 }, "line" } );
-      //dip::Image out = dip::Dilation( img, { { 17, 5 }, "diamond" } );
-      dip::Image out;
-      dip::Skew( img, out, dip::pi/12.0, 0, 1, "", "" );
+      dip::Image out = dip::Dilation( img, { { 17, 5 }, "interpolated line" }, { "zero order" } );
+      //dip::Image out = dip::Skew( img, dip::pi/12.0, 0, 1, "", "" );
 
-      PrintPixelValues< dip::sfloat >( out );
+      dip::testing::PrintPixelValues< dip::sfloat >( out );
 
    } catch( dip::Error e ) {
       std::cout << "DIPlib error: " << e.what() << std::endl;

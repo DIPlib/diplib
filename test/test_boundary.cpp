@@ -4,28 +4,9 @@
 #include "diplib.h"
 #include "diplib/boundary.h"
 #include "diplib/iterators.h"
+#include "diplib/testing.h"
 
 // Testing the BoundaryArray options and the ExtendImage function.
-
-template< typename T >
-void PrintPixelValues(
-      dip::Image img
-) {
-   DIP_THROW_IF( img.DataType() != dip::DataType( T() ), "Wrong version of PrintPixelValues() called" );
-   dip::uint linelength = img.Size( 0 );
-   std::cout << "Image of size " << linelength << " x " << img.Sizes().product() / linelength << ":\n";
-   dip::ImageIterator< T > it( img, 0 );
-   dip::uint line = 0;
-   do {
-      auto lit = it.GetLineIterator();
-      std::cout << line << ": " << *lit;
-      while( ++lit ) {
-         std::cout << ", " << *lit;
-      }
-      std::cout << std::endl;
-      ++line;
-   } while( ++it );
-}
 
 int main() {
    try {
@@ -40,14 +21,14 @@ int main() {
       }
 
       std::cout << "img = \n";
-      PrintPixelValues< dip::uint16 >( img );
+      dip::testing::PrintPixelValues< dip::uint16 >( img );
       std::cout << "\n\n";
 
       dip::Image out = dip::ExtendImage( img, { 4, 4 }, { "first order" } );
 
       std::cout << "out data type = " << out.DataType().Name() << std::endl;
       std::cout << "out = \n";
-      PrintPixelValues< dip::uint16 >( out );
+      dip::testing::PrintPixelValues< dip::uint16 >( out );
       std::cout << "\n\n";
 
       out.Strip();
@@ -58,7 +39,7 @@ int main() {
 
       std::cout << "out data type = " << out.DataType().Name() << std::endl;
       std::cout << "out = \n";
-      PrintPixelValues< dip::sfloat >( out );
+      dip::testing::PrintPixelValues< dip::sfloat >( out );
       std::cout << "\n\n";
 
    } catch( dip::Error e ) {

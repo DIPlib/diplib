@@ -98,7 +98,7 @@ int main() {
    dip::sfloat f7 = image.At< float >( 0 )[ 0 ] + f6;
    f1 = image.At< float >( 0 )[ 0 ].As< float >() + f7;
 
-   if( image.At( 0 )[ 0 ] ) {}         // gives warning, how to fix?
+   if( image.At( 0 )[ 0 ] ) {}
    if( image.At< bool >( 0 )[ 0 ] ) {}
    if( image.At( 0 )[ 0 ] == 0 ) {}
    if( image.At( 0 )[ 0 ].As< int >() == 0 ) {}

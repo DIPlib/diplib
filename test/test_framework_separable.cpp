@@ -4,28 +4,9 @@
 #include "diplib/generation.h"
 #include "diplib/iterators.h"
 #include "diplib/framework.h"
+#include "diplib/testing.h"
 
 // Testing the separable framework and the line-by-line iterators.
-
-template< typename T >
-void PrintPixelValues(
-      dip::Image img
-) {
-   DIP_THROW_IF( img.DataType() != dip::DataType( T() ), "Wrong version of PrintPixelValues() called" );
-   dip::uint linelength = img.Size( 0 );
-   std::cout << "Image of size " << linelength << " x " << img.Sizes().product() / linelength << ":\n";
-   dip::ImageIterator< T > it( img, 0 );
-   dip::uint line = 0;
-   do {
-      auto lit = it.GetLineIterator();
-      std::cout << line << ": " << *lit;
-      while( ++lit ) {
-         std::cout << ", " << *lit;
-      }
-      std::cout << std::endl;
-      ++line;
-   } while( ++it );
-}
 
 class LineFilter : public dip::Framework::SeparableLineFilter {
    public:
@@ -63,7 +44,7 @@ int main() {
       dip::Random random( 0 );
       dip::GaussianNoise( img, img, random, 500.0 );
 
-      PrintPixelValues< dip::uint16 >( img );
+      dip::testing::PrintPixelValues< dip::uint16 >( img );
 
       {
          // Copied from src/documentation/iterators.md
@@ -84,7 +65,7 @@ int main() {
          } while( ++it );
       }
 
-      PrintPixelValues< dip::uint16 >( img );
+      dip::testing::PrintPixelValues< dip::uint16 >( img );
 
       dip::Image out = img.Similar( dip::DT_SFLOAT );
       {
@@ -112,7 +93,7 @@ int main() {
          } while( ++it );
       }
 
-      PrintPixelValues< dip::sfloat >( out );
+      dip::testing::PrintPixelValues< dip::sfloat >( out );
 
       LineFilter lineFilter;
       dip::Framework::Separable( img, out, dip::DT_SFLOAT, dip::DT_SFLOAT,
@@ -120,7 +101,7 @@ int main() {
             dip::BoundaryConditionArray{ dip::BoundaryCondition::ADD_ZEROS },
             lineFilter, dip::Framework::Separable_AsScalarImage);
 
-      PrintPixelValues< dip::sfloat >( out );
+      dip::testing::PrintPixelValues< dip::sfloat >( out );
 
    } catch( dip::Error e ) {
       std::cout << "DIPlib error: " << e.what() << std::endl;
