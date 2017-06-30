@@ -513,7 +513,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    dip::dfloat sigma = 500.0;
    dip::Image img( { 180, 160, 80 }, 1, dip::DT_UINT16 );
    {
-      dip::Random random;
+      dip::Random random( 0 );
       dip::GaussianRandomGenerator normDist( random );
       dip::ImageIterator< dip::uint16 > it( img );
       do {
@@ -552,7 +552,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
 
    dip::Image tensorIm( { 275, 225 }, 3, dip::DT_SINT32 );
    {
-      dip::Random random;
+      dip::Random random( 0 );
       dip::GaussianRandomGenerator normDist( random );
       dip::ImageIterator< dip::sint32 > it( tensorIm );
       do {

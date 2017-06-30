@@ -29,8 +29,7 @@
 #ifndef DIP_COPY_BUFFER_H
 #define DIP_COPY_BUFFER_H
 
-#include "diplib.h"
-#include "diplib/boundary.h"
+#include "diplib/library/datatype.h"
 
 
 /// \file
@@ -40,6 +39,9 @@
 
 
 namespace dip {
+
+enum class DIP_NO_EXPORT BoundaryCondition; // forward declaration, defined in diplib/boundary.h
+
 namespace detail {
 
 

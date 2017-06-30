@@ -26,7 +26,6 @@
 
 #include "diplib.h"
 #include "diplib/private/pcg_random.hpp"
-#include "chain_code.h"
 
 
 /// \file

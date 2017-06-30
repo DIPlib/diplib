@@ -80,7 +80,7 @@ using BoundaryConditionArray = DimensionArray< BoundaryCondition >; ///< An arra
 
 
 /// \brief Convert a string to a boundary condition.
-inline BoundaryCondition StringToBoundaryCondition( String bc ) {
+inline BoundaryCondition StringToBoundaryCondition( String const& bc ) {
    if( bc.empty() ) { return BoundaryCondition::DEFAULT; }
    else if( bc == "default" ) { return BoundaryCondition::DEFAULT; }
    else if( bc == "mirror" ) { return BoundaryCondition::SYMMETRIC_MIRROR; }
@@ -98,7 +98,7 @@ inline BoundaryCondition StringToBoundaryCondition( String bc ) {
 }
 
 /// \brief Convert an array of strings to an array of boundary conditions.
-inline BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray bc ) {
+inline BoundaryConditionArray StringArrayToBoundaryConditionArray( StringArray const& bc ) {
    BoundaryConditionArray out( bc.size() );
    for( dip::uint ii = 0; ii < bc.size(); ++ii ) {
       out[ ii ] = StringToBoundaryCondition( bc[ ii ] );

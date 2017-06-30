@@ -19,6 +19,7 @@
  */
 
 #include "diplib.h"
+#include "diplib/boundary.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/library/copy_buffer.h"
 

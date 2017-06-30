@@ -22,6 +22,7 @@
 
 #include "diplib.h"
 #include "diplib/library/copy_buffer.h"
+#include "diplib/boundary.h"
 #include "diplib/saturated_arithmetic.h"
 
 namespace dip {
