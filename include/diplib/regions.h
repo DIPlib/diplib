@@ -40,10 +40,8 @@ namespace dip {
 
 // TODO: functions to port:
 /*
-   dip_RegionConnectivity (dip_regions.h)
    dip_GrowRegions (dip_regions.h)
    dip_GrowRegionsWeighted (dip_regions.h)
-   dip_SmallObjectsRemove (dip_measurement.h)
 */
 
 /// \brief Labels the connected components in a binary image

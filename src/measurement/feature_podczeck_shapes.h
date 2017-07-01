@@ -42,7 +42,7 @@ class FeaturePodczeckShapes : public Composite {
       virtual StringArray Dependencies() override {
          StringArray out( 3 );
          out[ 0 ] = "Size";
-         out[ 1 ] = "ConvexArea";
+         out[ 1 ] = "Feret";
          out[ 2 ] = "Perimeter";
          return out;
       }
@@ -51,7 +51,7 @@ class FeaturePodczeckShapes : public Composite {
          auto it = dependencies.FirstFeature();
          if( hasIndex_ ) {
             sizeIndex_ = dependencies.ValueIndex( "Size" );
-            feretIndex_ = dependencies.ValueIndex( "ConvexArea" );
+            feretIndex_ = dependencies.ValueIndex( "Feret" );
             perimeterIndex_ = dependencies.ValueIndex( "Perimeter" );
          }
          dfloat area = it[ sizeIndex_ ];
@@ -60,12 +60,12 @@ class FeaturePodczeckShapes : public Composite {
          } else {
             dfloat length = it[ feretIndex_ ];
             dfloat boxWidth = it[ feretIndex_ + 1 ];
-            dfloat boxLength = it[ feretIndex_ + 2 ];
+            dfloat boxHeight = it[ feretIndex_ + 2 ];
             dfloat perimeter = it[ perimeterIndex_ ];
-            output[ 0 ] = area / ( boxWidth * boxLength );
-            output[ 1 ] = area / ( 0.25 * dip::pi * boxLength * boxLength );
-            output[ 2 ] = area / ( 0.5 * boxWidth * boxLength );
-            output[ 3 ] = area / ( 0.25 * dip::pi * boxWidth * boxLength );
+            output[ 0 ] = area / ( boxWidth * boxHeight );
+            output[ 1 ] = area / ( 0.25 * dip::pi * boxHeight * boxHeight );
+            output[ 2 ] = area / ( 0.5 * boxWidth * boxHeight );
+            output[ 3 ] = area / ( 0.25 * dip::pi * boxWidth * boxHeight );
             output[ 4 ] = perimeter / length;
          }
       }

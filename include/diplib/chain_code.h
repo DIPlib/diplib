@@ -54,6 +54,7 @@ struct DIP_NO_EXPORT RadiusValues {
    dfloat var = 0.0;    ///< Radius variance
    dfloat max = 0.0;    ///< Maximum radius
    dfloat min = 0.0;    ///< Minimum radius
+
    /// Computes a circularity measure given by the coefficient of variation of the radii of the object.
    dfloat Circularity() {
       return std::sqrt( var ) / mean;
@@ -353,6 +354,7 @@ class DIP_NO_EXPORT CovarianceMatrix {
       struct Eigenvalues {
          dfloat largest;   ///< Largest eigenvalue
          dfloat smallest;  ///< Smallest eigenvalue
+
          /// \brief Computes eccentricity using the two eigenvalues of the covariance matrix.
          dfloat Eccentricity() const {
             // Eccentricity according to https://en.wikipedia.org/wiki/Image_moment
@@ -664,8 +666,14 @@ struct DIP_NO_EXPORT ChainCode {
       return CodeTable( connectivity == 2, strides );
    }
 
-   /// \brief Returns the length of the chain code using the method by Vossepoel and Smeulders. If the chain code
-   /// represents the closed contour of an object, add pi to the result to determine the object's perimeter.
+   /// \brief Returns the length of the chain code using the method by Vossepoel and Smeulders.
+   ///
+   /// If the chain code represents the closed contour of an object, add pi to the result to determine
+   /// the object's perimeter.
+   ///
+   /// **Literature**
+   /// - A.M. Vossepoel and A.W.M. Smeulders, "Vector code probability and metrication error in the representation
+   ///   of straight lines of finite length," Computer Graphics and Image Processing 20(4):347-364, 1982.
    DIP_EXPORT dfloat Length() const;
 
    /// \brief Returns the %Feret diameters, using an angular step size in radian of `angleStep`.
@@ -673,6 +681,12 @@ struct DIP_NO_EXPORT ChainCode {
    DIP_EXPORT FeretValues Feret( dfloat angleStep ) const;
 
    /// Computes the bending energy.
+   ///
+   /// **Literature**
+   /// - I.T. Young, J.E. Walker and J.E. Bowie, "An Analysis Technique for Biological Shape I,"
+   ///   Information and Control 25(4):357-370, 1974.
+   /// - J.E. Bowie and I.T. Young, "An Analysis Technique for Biological Shape - II,"
+   ///   Acta Cytologica 21(5):455-464, 1977.
    DIP_EXPORT dfloat BendingEnergy() const;
 
    /// \brief Computes the area of the solid object described by the chain code. Uses the result of

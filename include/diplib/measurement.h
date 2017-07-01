@@ -108,11 +108,38 @@ using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
 /// Indexing with a feature name produces a reference to a column group. Indexing with an object ID
 /// (an integer) produces a reference to a row. Each of these references can be indexed to
 /// produce a reference to a table cell group. A cell group contains the values produced by one feature for one
-/// object. The cell group can again be indexed to obtain each of the values. These three types of
-/// references are represented as iterators. Thus, it is also possible to iterate over all columns groups
-/// (or all rows), iterate over each of the cell groups within a column group (or within a row), and
-/// iterate over the values within a cell group.
-// TODO: Provide some examples on indexing.
+/// object. The cell group can again be indexed to obtain each of the values. For example, the following two
+/// lines are equivalent, and access the second value of the Feret feature (smallest Feret diameter) for
+/// object ID 412:
+///
+/// ```cpp
+///     dip::dfloat width = measurement[ "Feret" ][ 412 ][ 1 ];
+///     dip::dfloat width = measurement[ 412 ][ "Feret" ][ 1 ];
+/// ```
+///
+/// These three types of references are represented as iterators. Thus, it is also possible to iterate over
+/// all columns groups (or all rows), iterate over each of the cell groups within a column group (or within a row),
+/// and iterate over the values within a cell group:
+///
+/// ```cpp
+///     auto colIt = measurement[ "Feret" ];
+///     auto feretIt = colIt.FirstObject(); // iterator points at Feret value for first object
+///     dip::dfloat sum = 0.0;
+///     while( feretIt ) {
+///        sum += feretIt[ 1 ]; // read width for current object
+///        ++feretIt; // iterator points at Feret value for next object
+///     }
+///     dip::dfloat meanWidth = sum / measurement.NumberOfObjects();
+/// ```
+///
+/// ```cpp
+///     auto it = measurement[ "Feret" ][ 412 ];
+///     std::cout << "Feret values for object ID = 412:";
+///     for( auto f : it ) {
+///        std::cout << " " << f;
+///     }
+///     std::cout << std::endl;
+/// ```
 class DIP_NO_EXPORT Measurement {
    public:
       using ValueType = dfloat;           ///< The type of the measurement data
@@ -698,7 +725,7 @@ class DIP_EXPORT Composite : public Base {
 /// <tr><td> "DimensionsCube"          <td> Extent along the principal axes of a cube <td> 2D & 3D
 /// <tr><td> "DimensionsEllipsoid"     <td> Extent along the principal axes of an ellipsoid <td> 2D & 3D
 /// <tr><td colspan="3"> **Moments of grey-value object**
-/// <tr><td> "Gravity"                 <td> Coordinates of the center-of-mass of the object <td> Scalar grey
+/// <tr><td> "Gravity"                 <td> Coordinates of the center of mass of the object <td> Scalar grey
 /// <tr><td> "GreyMu"                  <td> Elements of the grey-weighted inertia tensor <td> scalar grey
 /// <tr><td> "GreyInertia"             <td> Grey-weighted moments of inertia of the object <td> scalar grey
 /// <tr><td> "GreyMajorAxes"           <td> Grey-weighted principal axes of the object <td> scalar grey
@@ -717,11 +744,11 @@ class DIP_EXPORT Composite : public Base {
 /// Features that include "Scalar grey" in the limitations column require a scalar grey-value image to be passed
 /// into the `dip::MeasurementTool::Measure` method together with the label image.
 ///
+/// See \ref features for more information on each of these features.
+///
 /// Note that you can define new measurement features, and register them with the `%MeasurementTool` through the
 /// `dip::MeasurementTool::Register` method. The new feature then becomes available in the `dip::MeasurementTool::Measure`
 /// method just like any of the default features.
-// TODO: Document how to create your own feature and register it with the MeasurementTool.
-// TODO: Document each feature in more detail in a separate page.
 class DIP_NO_EXPORT MeasurementTool {
    public:
 
@@ -741,6 +768,9 @@ class DIP_NO_EXPORT MeasurementTool {
       ///     MeasurementTool measurementTool;
       ///     measurementTool.Register( dip::Feature::Pointer( new MyFeature ));
       /// ```
+      ///
+      /// See the source files for exsiting features for examples (and a starting point) on how to write your
+      /// own feature.
       void Register(
             Feature::Pointer feature
       ) {

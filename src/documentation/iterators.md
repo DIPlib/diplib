@@ -156,7 +156,7 @@ To access the various tensor elements, use the `it.InSample(index)`, `it.OutSamp
 or the generic `it.Sample<N>(index)` methods.
 
 There is also a `dip::GenericJointImageIterator`, which, just like
-`dip::GenericImageIterator`, is a non-templated version of the iterator that
+`dip::GenericImageIterator`, is a version of the iterator that
 provides a `void` pointer to each pixel.
 
 
@@ -221,31 +221,6 @@ to compose full filters.
 
 \section iterate_neighborhood Applying an arbitrary neighborhood filter
 
-Simpler:
-
-```cpp
-    DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
-    dip::Image out = img.Similar( dip::DT_UINT16 );
-    dip::PixelTable kernel( "elliptic", { 5, 5 } );
-    dip::ImageIterator< dip::uint16 > it( img );
-    dip::ImageIterator< dip::uint16 > ot( out );
-    do {
-       dip::uint value = 0;
-       for( auto kit = kernel.begin(); kit != kernel.end(); ++kit ) {
-          value += it.PixelAt( *kit );
-       }
-       *ot = static_cast< dip::uint16 >( value / kernel.NumberOfPixels() );
-    } while( ++ot, ++it );
-```
-
-We iterate over every pixel in the input and output images. At each pixel we read all pixels
-in the kernel, with each read checking for the location to be inside the image domain, and
-applying the default boundary condition if not. We write the average pixel value within the
-kernel at each output pixel. Note that we need to use two iterators, rather than a single
-`dip::JointImageIterator`, because the latter doesn't have the `PixelAt` method
-
-Better:
-
 ```cpp
     DIP_THROW_IF( img.DataType() != dip::DT_UINT16, "Expecting 16-bit unsigned integer image" );
     dip::Image in = dip::ExtendImage( img, { 2, 2 }, {}, { "masked" } ); // a copy of the input image with data ouside of its domain
@@ -281,13 +256,13 @@ We first create a copy of the input image with expanded domain. The image `in` i
 reads being within the image domain saves a lot of time, more than making up for creating the
 copy of the input image.
 The outer loop iterates over all lines in the image (in this case, the lines lie along dimension
-0). For the first pixel in the line we do the same as before: we compute the sum of values over
+0). For the first pixel in the line we compute the sum of values over
 the kernel (note that we directly index by adding the offset to the data pointer, there's no
 checking). But for the rest of the pixels in the line, we subtract the values for the first
 pixel in each run of the kernel, then move the kernel over, and add the values for the last pixel
 in each run. This bookkeeping makes the operation much cheaper. Being able to loop over the lines
 of the image, instead of only over each pixel in the image, allows for simple implementation of
-many efficient algorithm.
+many efficient algorithms.
 
 
 [//]: # (--------------------------------------------------------------)

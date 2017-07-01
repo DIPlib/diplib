@@ -225,7 +225,7 @@ inline dfloat Sinc( dfloat x ) {
 ///
 /// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
-/// If `vectors` is `false`, no eigenvectors are computed.
+/// If `vectors` is `nullptr`, no eigenvectors are computed.
 DIP_EXPORT void SymmetricEigenDecomposition(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
@@ -277,7 +277,7 @@ inline void SymmetricEigenDecompositionPacked(
 ///
 /// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
-/// If `vectors` is `false`, no eigenvectors are computed.
+/// If `vectors` is `nullptr`, no eigenvectors are computed.
 DIP_EXPORT void EigenDecomposition(
       dip::uint n,
       ConstSampleIterator< dfloat > input,
@@ -293,7 +293,7 @@ DIP_EXPORT void EigenDecomposition(
 ///
 /// `vectors` is a pointer to space for `n*n` values and will receive the `n` eigenvectors. The eigenvectors
 /// can be accessed at `&vectors[ 0 ]`, `&vectors[ n ]`, `&vectors[ 2*n ]`, etc.
-/// If `vectors` is `false`, no eigenvectors are computed.
+/// If `vectors` is `nullptr`, no eigenvectors are computed.
 DIP_EXPORT void EigenDecomposition(
       dip::uint n,
       ConstSampleIterator< dcomplex > input,
@@ -368,7 +368,7 @@ inline T TraceDiagonal( dip::uint n, ConstSampleIterator< T > input ) {
 ///
 /// `U` and `V` are pointers to `m*p` and `n*p` values, respectively. The left and right
 /// singular vectors will be written to then.
-/// If either of them is `false`, neither is computed, and only `output` is filled.
+/// If either of them is `nullptr`, neither is computed, and only `output` is filled.
 ///
 /// `%SingularValueDecomposition` uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.
@@ -390,7 +390,7 @@ DIP_EXPORT void SingularValueDecomposition(
 ///
 /// `U` and `V` are pointers to `m*p` and `n*p` values, respectively. The left and right
 /// singular vectors will be written to then.
-/// If either of them is `false`, neither is computed, and only `output` is filled.
+/// If either of them is `nullptr`, neither is computed, and only `output` is filled.
 ///
 /// `%SingularValueDecomposition` uses the two-sided Jacobi SVD decomposition algorithm.
 /// This is efficient for small matrices only.

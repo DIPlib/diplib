@@ -127,18 +127,38 @@ class DIP_NO_EXPORT PixelTableOffsets {
 /// in which there would be fewer runs.
 ///
 /// Two ways can be used to walk through the pixel table:
-/// 1.  `dip::PixelTable::Runs` returns a vector with all the runs, which are encoded
-///     by the coordinates of the first pixel and a run length.
+///
+/// 1.  `dip::PixelTable::Runs` returns a `std::vector` with all the runs, which are encoded
+///     by the coordinates of the first pixel and a run length. Visiting each run is an efficient
+///     way to process the whole neighborhood. For example, the filter `dip::Uniform`, which
+///     computes the average over all pixels within the neighborhood, only needs to subtract
+///     the pixels on the start of each run, shift the neighborhood by one pixel, then add
+///     the pixels on the end of each run. See the example in the section \ref iterate_neighborhood.
+///
 /// 2.  `dip::PixelTable::begin` returns an iterator to the first pixel in the table,
-///     incrementing the iterator successively visits each of the pixels in the run.
+///     incrementing the iterator successively visits each of the pixels in the run. Dereferencing
+///     this iterator yields the offset to a neighbor pixel. This makes for a simple way to
+///     visit every single pixel within the neighborhood.
 ///
 /// The pixel table can optionally contain a weight for each pixel. These can be accessed
 /// only by retrieving the array containing all weights. This array is meant to be used
 /// by taking its `begin` iterator, and using that iterator in conjunction with the pixel
 /// table's iterator. Taken together, they provide both the location and the weight of each
-/// pixel in the neighborhood.
+/// pixel in the neighborhood. For example, modified from from the function `dip::GeneralConvolution`:
 ///
-/// TODO: Add an example somewhere.
+/// ```cpp
+///     sfloat* in = ...  // pointer to the current pixel in the input image
+///     sfloat* out = ... // pointer to the current pixel in the output image
+///     sfloat sum = 0;
+///     auto ito = pixelTable.begin(); // pixelTable is our neighborhood
+///     auto itw = pixelTable.Weights().begin();
+///     while( !ito.IsAtEnd() ) {
+///        sum += in[ *ito ] * static_cast< sfloat >( *itw );
+///        ++ito;
+///        ++itw;
+///     }
+///     *out = sum;
+/// ```
 ///
 /// \see dip::PixelTableOffsets, dip::Kernel, dip::NeighborList, dip::StructuringElement,
 /// dip::Framework::Full, dip::ImageIterator
@@ -232,6 +252,7 @@ class DIP_NO_EXPORT PixelTable {
 
       /// \brief Shifts the origin of the neighborhood by one pixel to the left for even-sized dimensions.
       /// This is useful for neighborhoods with their origin in the default location, that have been mirrored.
+      // TODO: We need to be able to actually mirror the neighborhood. This is useful only for symmetric neighborhoods.
       void MirrorOrigin() {
          IntegerArray offset( sizes_.size(), 0 );
          for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
