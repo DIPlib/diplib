@@ -34,9 +34,6 @@ dip::PixelTable Kernel::PixelTable( UnsignedArray const& imsz, dip::uint procDim
       DIP_THROW_IF( image_.Dimensionality() > nDim, E::DIMENSIONALITIES_DONT_MATCH );
       Image kernel = image_.QuickCopy();
       kernel.ExpandDimensionality( nDim );
-      if( mirror_ ) {
-         kernel.Mirror();
-      }
       if( kernel.DataType().IsBinary()) {
          DIP_START_STACK_TRACE
             pixelTable = { kernel, {}, procDim };
@@ -62,7 +59,7 @@ dip::PixelTable Kernel::PixelTable( UnsignedArray const& imsz, dip::uint procDim
       DIP_END_STACK_TRACE
    }
    if( mirror_ ) {
-      pixelTable.MirrorOrigin();
+      pixelTable.Mirror();
    }
    return pixelTable;
 }

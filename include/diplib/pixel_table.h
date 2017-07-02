@@ -167,8 +167,8 @@ class DIP_NO_EXPORT PixelTable {
 
       /// The pixel table is formed of pixel runs, represented by this structure
       struct DIP_NO_EXPORT PixelRun {
-         IntegerArray coordinates;  ///< the coordinates of the first pixel in a run, w.r.t. the origin
-         dip::uint length;          ///< the length of the run
+         IntegerArray coordinates;  ///< The coordinates of the first pixel in a run, w.r.t. the origin.
+         dip::uint length;          ///< The length of the run, expected to always be larger than 0.
          PixelRun( IntegerArray const& coordinates, dip::uint length ) : coordinates( coordinates ), length( length ) {}
       };
 
@@ -250,9 +250,8 @@ class DIP_NO_EXPORT PixelTable {
          }
       }
 
-      /// \brief Shifts the origin of the neighborhood by one pixel to the left for even-sized dimensions.
+      /// \brief Shifts the origin of neighborhood by one pixel to the left for even-sized dimensions.
       /// This is useful for neighborhoods with their origin in the default location, that have been mirrored.
-      // TODO: We need to be able to actually mirror the neighborhood. This is useful only for symmetric neighborhoods.
       void MirrorOrigin() {
          IntegerArray offset( sizes_.size(), 0 );
          for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
@@ -261,6 +260,20 @@ class DIP_NO_EXPORT PixelTable {
             }
          }
          ShiftOrigin( offset );
+      }
+
+      /// \brief Mirrors the neighborhood.
+      void Mirror() {
+         dip::uint nDims = sizes_.size();
+         IntegerArray origin( nDims, std::numeric_limits< dip::sint >::max() );
+         for( auto& run : runs_ ) {
+            run.coordinates[ procDim_ ] += run.length - 1; // coordinates now points at end of run
+            for( dip::uint ii = 0; ii < nDims; ++ii ) {
+               run.coordinates[ ii ] = -run.coordinates[ ii ]; // mirror coordinates, it points at beginning of run again
+               origin[ ii ] = std::min( origin[ ii ], run.coordinates[ ii ] );
+            }
+         }
+         origin_ = origin;
       }
 
       /// Returns the number of pixels in the neighborhood

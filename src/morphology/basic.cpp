@@ -154,11 +154,11 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
          }
          // Fill output
          if( mirror_ ) {
-            forwardBuffer += filterSize - 1 - margin;
-            backwardBuffer -= margin;
-         } else {
             forwardBuffer += margin;
             backwardBuffer -= filterSize - 1 - margin;
+         } else {
+            forwardBuffer += filterSize - 1 - margin;
+            backwardBuffer -= margin;
          }
          for( dip::uint ii = 0; ii < length; ++ii ) {
             *out = dilation_ ? std::max( *forwardBuffer, *backwardBuffer ) : std::min( *forwardBuffer, *backwardBuffer );
@@ -548,11 +548,11 @@ class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
          dip::uint filterLength = (( frameLength_ / stepSize_ ) - 1 ) * stepSize_ + 1;
          margin = filterLength / 2;
          if( mirror_ ) {
-            forwardBuffer += filterLength - 1 - margin;
-            backwardBuffer -= margin;
-         } else {
             forwardBuffer += margin;
             backwardBuffer -= filterLength - 1 - margin;
+         } else {
+            forwardBuffer += filterLength - 1 - margin;
+            backwardBuffer -= margin;
          }
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
@@ -630,7 +630,6 @@ void DiscreteLineMorphology(
       se.Mirror();
    }
    FlatSEMorphology( in, out, se, bc, polarity );
-   // TODO: the closing by a line [8,-2] moves the image vertically by 2. We need to set the origin correctly.
 }
 
 void SkewLineMorphology(
@@ -683,7 +682,6 @@ void SkewLineMorphology(
       }
       Image tmp;
       Skew( in, tmp, shearArray, axis, method, bc );
-      // TODO: we need to force Skew to use the mirrored center point if `mirror` is set
       // 2- Call RectangularMorphology (or a different, new function if PERIODIC_LINE)
       if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
          PeriodicLineMorphology( tmp, tmp, periodicStepSize, static_cast< dip::uint >( length ), axis, bc, polarity, mirror );
@@ -693,6 +691,7 @@ void SkewLineMorphology(
          RectangularMorphology( tmp, tmp, rectSize, bc, polarity, mirror );
       }
       // 3- Skew back (using interpolation if INTERPOLATED_LINE) and crop to original size
+      method = mode == StructuringElement::ShapeCode::INTERPOLATED_LINE ? "linear" : "nn2";
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          shearArray[ ii ] = -shearArray[ ii ];
       }
@@ -721,24 +720,29 @@ void LineMorphology(
    dip::uint maxSize;
    dip::uint steps;
    std::tie( maxSize, steps ) = PeriodicLineParameters( filterParam );
+   std::cout << "[LineMorphology] maxSize = " << maxSize << ", steps = " << steps << std::endl;
+   // TODO: don't bother decomposing if the line is short.
    if( steps == maxSize ){
       // This means that all filterParam are the same (or 1)
       SkewLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::FAST_LINE, bc, polarity, mirror );
    } else {
       if( steps > 1 ) {
-         Mirror periodicMirror = Mirror::NO;
-         if( !( steps % 1 )) {
+         Mirror periodicMirror = mirror;
+         if( !( steps & 1 )) {
             // Periodic line with even number of points
-            if( mirror == Mirror::YES ) {
-               // We need to mirror the periodic line instead of the discrete line
-               mirror = Mirror::NO;
-               periodicMirror = Mirror::YES;
-            } else if( !(( maxSize / steps ) % 1 )) {
-               // Discrete line with even length: mirror it to put the origin in the right place
-               mirror = Mirror::YES;
+            std::cout << "   Periodic line with even number of points\n";
+            if(( maxSize / steps ) & 1 ) {
+               std::cout << "   Discrete line with odd length\n";
+               // Discrete line with odd length: mirror it to put the origin in the right place.
+               // We mirror the SE by mirroring the periodic line, but not the discrete line.
+               if( mirror == Mirror::YES ) {
+                  mirror = Mirror::NO;
+               } else {
+                  mirror = Mirror::YES;
+               }
             }
-         }
-         // else: discrete line must be mirrored if the SE is mirrored.
+         } // else: discrete line must be mirrored if the SE is mirrored.
+         std::cout << "[LineMorphology] periodicMirror = " << ( periodicMirror == Mirror::YES ) << ", mirror = " << ( mirror == Mirror::YES ) << std::endl;
          SkewLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE, bc, polarity, periodicMirror );
          for( dip::uint ii = 0; ii < filterParam.size(); ++ii ) {
             filterParam[ ii ] = std::round( filterParam[ ii ] ) / static_cast< dfloat >( steps );
@@ -769,6 +773,7 @@ void DiamondMorphology(
       FloatArray unitSize( size.size(), 1.0 );
       IntegerArray shift( size.size(), 0 );
       bool needShift = false;
+      // TODO: don't bother decomposing if the SE is small. Size threshold?
       for( dip::uint ii = 0; ii < size.size(); ++ii ) {
          if( std::round( size[ ii ] ) > 4.0 ) {
             // at least 5 pixels in this dimension
@@ -1077,6 +1082,55 @@ DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
    dip::BasicMorphology( out, out, se, {}, dip::Polarity::EROSION, dip::Mirror::YES );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
    DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is the main pixel in the right place and with the right value?
+
+   // Line morphology
+   dip::BasicMorphology( in, out, { { 10, 4 }, "discrete line" }, {}, dip::Polarity::DILATION );
+   DOCTEST_CHECK( dip::Count( out ) == 10 );
+   dip::BasicMorphology( out, out, { { 10, 4 }, "discrete line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+
+   dip::BasicMorphology( in, out, { { 10, 4 }, "fast line" }, {}, dip::Polarity::DILATION );
+   DOCTEST_CHECK( dip::Count( out ) == 10 );
+   dip::BasicMorphology( out, out, { { 10, 4 }, "fast line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+
+   dip::BasicMorphology( in, out, { { 8, 4 }, "fast line" }, {}, dip::Polarity::DILATION );
+   DOCTEST_CHECK( dip::Count( out ) == 8 );
+   dip::BasicMorphology( out, out, { { 8, 4 }, "fast line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+
+   dip::BasicMorphology( in, out, { { 10, 4 }, "line" }, {}, dip::Polarity::DILATION ); // periodic component n=2, discrete line {5,2}
+   DOCTEST_CHECK( dip::Count( out ) == 10 );
+   dip::BasicMorphology( out, out, { { 10, 4 }, "line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+
+   dip::BasicMorphology( in, out, { { 8, 4 }, "line" }, {}, dip::Polarity::DILATION ); // periodic component n=4, discrete line {2,1}
+   DOCTEST_CHECK( dip::Count( out ) == 8 );
+   dip::BasicMorphology( out, out, { { 8, 4 }, "line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+
+   dip::BasicMorphology( in, out, { { 9, 6 }, "line" }, {}, dip::Polarity::DILATION ); // periodic component n=3, discrete line {3,2}
+   DOCTEST_CHECK( dip::Count( out ) == 9 );
+   dip::BasicMorphology( out, out, { { 9, 6 }, "line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+
+   dip::BasicMorphology( in, out, { { 12, 9 }, "line" }, {}, dip::Polarity::DILATION ); // periodic component n=3, discrete line {4,3}
+   DOCTEST_CHECK( dip::Count( out ) == 12 );
+   dip::BasicMorphology( out, out, { { 12, 9 }, "line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+
+   dip::BasicMorphology( in, out, { { 8, 9 }, "line" }, {}, dip::Polarity::DILATION ); // periodic component n=1, discrete line {8,9}
+   DOCTEST_CHECK( dip::Count( out ) == 9 );
+   dip::BasicMorphology( out, out, { { 8, 9 }, "line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
+   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
 }
 
 #endif // DIP__ENABLE_DOCTEST

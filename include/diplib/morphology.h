@@ -49,10 +49,10 @@ class DIP_NO_EXPORT Kernel;
 /// different line structuring elements implemented in *DIPlib*.
 ///
 /// - `"line"`: This is an efficient implementation that yields the same results as the traditional line
-///   structuring element (`"discrete line"`). It is implemented as a combination of `"periodic line"` and `"discrete line"`
-///   (see Soille, 1996). If the angle and length of the line are such that the periodic line has a short
-///   period, this implementation saves a lot of time. If the angle and length are such that the periodic
-///   line has only one point, this is identical to `"discrete line"`.
+///   structuring element (`"discrete line"`). It is implemented as a combination of `"periodic line"` and
+///   `"discrete line"`, and is called *recursive line* in the literature (see Soille, 1996). If the line
+///   parameters are such that the periodic line has a short period, this implementation saves a lot of time. If the
+///   line parameters are such that the periodic line has only one point, this is identical to `"discrete line"`.
 ///
 /// - `"fast line"`: This is a faster algorithm that applies a 1D operation along Bresenham lines, yielding
 ///   a non-translation-invariant result. It is implemented by skewing the image, applying the operation

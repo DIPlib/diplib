@@ -1,24 +1,34 @@
-% 2D
+% Old DIPlib
 
-a = readim('cermet');
-b = dip_image(label(~threshold(a)),'uint32');
-correct = measure(b,a,{'size','perimeter','feret','gravity','p2a'});
-test = mextest_measure(b,a);
+a2 = readim('cermet');
+b2 = label(~threshold(a2));
+correct2 = measure(b2,a2,{'GreyMu','Mu'});
 
-( correct.feret - test(1:5,:) ) % not identical, two cases have different sizes, not sure why?
-( correct.gravity - test(6:7,:) ) % perfect!
-( correct.p2a - test(8,:) ) % OK
-( correct.size - test(9,:) ) % perfect!
-( correct.perimeter - test(10,:) ) % not identical because we fixed a bug (we sometimes have one more corner count: -0.0910
+a3 = readim('chromo3d');
+b3 = label(threshold(a3));
+correct3 = measure(b3,a3,{'GreyMu','Mu'});
 
-% 3D
+a2 = dip_array(a2);
+b2 = dip_array(b2);
+a3 = dip_array(a3);
+b3 = dip_array(b3);
 
-a = readim('chromo3d');
-b = dip_image(label(threshold(a)),'uint32');
-correct = measure(b,a,{'size','surfacearea','gravity','p2a'});
-test = mextest_measure(b,a);
+correct2 = double(correct2);
+correct3 = double(correct3);
 
-( correct.gravity - test(1:3,:) ) % perfect!
-( correct.p2a - test(4,:) ) % perfect!
-( correct.size - test(5,:) ) % perfect!
-( correct.surfacearea - test(6,:) ) % perfect!
+save measure_test
+switch_dip
+load measure_test
+
+a2 = dip_image(a2);
+b2 = dip_image(b2,'uint32');
+a3 = dip_image(a3);
+b3 = dip_image(b3,'uint32');
+
+new2 = measure(b2,a2,{'GreyMu','Mu'})';
+diff2 = ( [correct2(:,[1,3,2 , 4,6,5]) - new2] ) ./ new2;
+max(abs(diff2(~isnan(diff2))))
+
+new3 = measure(b3,a3,{'GreyMu','Mu'})';
+diff3 = ( correct3(:,[1,4,6,2,3,5 , 7,10,12,8,9,11]) - new3 ) ./ new3;
+max(abs(diff3(~isnan(diff3))))

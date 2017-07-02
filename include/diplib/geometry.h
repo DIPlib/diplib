@@ -52,6 +52,10 @@ namespace dip {
 ///
 ///  - '"nearest"' (or '"nn"'): Nearest neighbor interpolation, samples are simply shifted and replicated.
 ///
+///  - '"inverse nearest"' (or '"nn2"'): Nearest neighbor interpolation, but resolves the rounding of x.5 in
+///    the opposite direction that `"nearest"` does. This is useful when applying the inverse of an earlier
+///    transform, to be able to obtain the original geometry back.
+///
 ///  - '"bspline"': A third-order cardinal B-spline is computed for all samples on an image line, which is
 ///    sampled anew to obtain the interpolated sample values. All input samples are used to compute all
 ///    output samples, but only about 10 input samples significantly influence each output value.

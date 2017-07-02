@@ -274,7 +274,7 @@ void Linear(
    }
 }
 
-template< typename TPI >
+template< typename TPI, bool inverse = false >
 void NearestNeighbor(
       TPI* input,
       SampleIterator< TPI > output,
@@ -282,7 +282,7 @@ void NearestNeighbor(
       dfloat zoom,
       dfloat shift
 ) {
-   dip::sint offset = static_cast< dip::sint >( std::floor( shift + 0.5 )); // we don't use std::round because it'll round x.5 up or down depending on x.
+   dip::sint offset = static_cast< dip::sint >( inverse ? std::ceil( shift - 0.5 ) : std::floor( shift + 0.5 ));
    input += offset;
    if( zoom == 1.0 ) {
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
@@ -391,6 +391,7 @@ enum class Method {
       CUBIC_ORDER_3,
       LINEAR,
       NEAREST_NEIGHBOR,
+      INVERSE_NEAREST_NEIGHBOR,
       LANCZOS8,
       LANCZOS6,
       LANCZOS4,
@@ -408,6 +409,8 @@ Method ParseMethod( String const& method ) {
       return Method::LINEAR;
    } else if(( method == "nn" ) || ( method == "nearest" )) {
       return Method::NEAREST_NEIGHBOR;
+   } else if(( method == "nn2" ) || ( method == "inverse nearest" )) {
+      return Method::INVERSE_NEAREST_NEIGHBOR;
    } else if( method == "bspline" ) {
       return Method::BSPLINE;
    } else if( method == "ft" ) {
@@ -454,7 +457,8 @@ dip::uint GetBorderSize( Method method ) {
          border = 1;
          break;
       //case Method::FT:
-      //case Method::NEAREST_NEIGHBOR:
+      //case Method::FT:
+      //case Method::INVERSE_NEAREST_NEIGHBOR:
       default:
          border = 0;
          break;
@@ -488,6 +492,9 @@ void Dispatch(
          break;
       case Method::NEAREST_NEIGHBOR:
          NearestNeighbor< TPI >( input, output, outSize, zoom, shift );
+         break;
+      case Method::INVERSE_NEAREST_NEIGHBOR:
+         NearestNeighbor< TPI, true >( input, output, outSize, zoom, shift );
          break;
       case Method::LANCZOS2:
          Lanczos< TPI, 2 >( input, output, outSize, zoom, shift );
