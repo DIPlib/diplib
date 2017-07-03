@@ -28,8 +28,6 @@
 #ifndef DIP_TENSOR_H
 #define DIP_TENSOR_H
 
-#include <utility>
-
 #include "diplib/library/types.h"
 
 

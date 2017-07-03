@@ -21,8 +21,6 @@
 #ifndef DIP_GENERIC_ITERATORS_H
 #define DIP_GENERIC_ITERATORS_H
 
-#include <utility>
-
 #include "diplib.h"
 #include "diplib/iterators.h"
 
@@ -769,14 +767,14 @@ DOCTEST_TEST_CASE("[DIPlib] testing ImageIterator and GenericImageIterator") {
    {
       DOCTEST_REQUIRE( img.DataType() == dip::DT_UINT16 );
       dip::ImageIterator< dip::uint16 > it( img );
-      dip::sint counter = 0;
+      dip::uint16 counter = 0;
       do {
          *it = static_cast< dip::uint16 >( counter++ );
       } while( ++it );
    }
    {
-      dip::GenericImageIterator<> it( img );
-      dip::sint counter = 0;
+      dip::GenericImageIterator< dip::sint32 > it( img );
+      dip::sint32 counter = 0;
       do {
          DOCTEST_CHECK( *it == counter++ );
       } while( ++it );
@@ -785,7 +783,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing ImageIterator and GenericImageIterator") {
    {
       DOCTEST_REQUIRE( img2.DataType() == dip::DT_SINT32 );
       dip::ImageIterator< dip::sint32 > it( img2 );
-      dip::sint counter = 0;
+      dip::sint32 counter = 0;
       do {
          it[ 0 ] = static_cast< dip::sint32 >( counter );
          it[ 1 ] = static_cast< dip::sint32 >( counter * 1000 );
@@ -794,8 +792,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing ImageIterator and GenericImageIterator") {
       } while( ++it );
    }
    {
-      dip::GenericImageIterator<> it( img2 );
-      dip::sint counter = 0;
+      dip::GenericImageIterator< dip::sint32 > it( img2 );
+      dip::sint32 counter = 0;
       do {
          DOCTEST_CHECK( it[ 0 ] == counter );
          DOCTEST_CHECK( it[ 1 ] == counter * 1000 );
@@ -804,7 +802,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing ImageIterator and GenericImageIterator") {
       } while( ++it );
    }
    {
-      dip::GenericImageIterator<> it( img2 );
+      dip::GenericImageIterator< dip::sint32 > it( img2 );
       ++it;
       auto iit = it.begin();
       DOCTEST_CHECK( *iit == 1 );

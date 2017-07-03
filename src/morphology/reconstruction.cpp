@@ -18,9 +18,12 @@
  * limitations under the License.
  */
 
+#include <queue>
+
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/statistics.h"
+#include "diplib/neighborlist.h"
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
 #include "watershed_support.h"

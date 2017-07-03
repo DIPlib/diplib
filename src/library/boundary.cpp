@@ -25,6 +25,58 @@
 
 namespace dip {
 
+Image::Pixel ReadPixelWithBoundaryCondition(
+      Image const& img,
+      IntegerArray coords, // getting a local copy so we can modify it
+      BoundaryConditionArray const& bc
+) {
+   DIP_THROW_IF( coords.size() != img.Dimensionality(), E::ARRAY_ILLEGAL_SIZE );
+   bool invert = false;
+   Image::Pixel out( DataType::SuggestFlex( img.DataType() ), img.TensorElements() );
+   out.ReshapeTensor( img.Tensor() );
+   for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
+      dip::sint sz = static_cast< dip::sint >( img.Size( ii ));
+      if(( coords[ ii ] < 0 ) || ( coords[ ii ] >= sz )) {
+         switch( bc[ ii ] ) {
+            case BoundaryCondition::ASYMMETRIC_MIRROR:
+               invert = true;
+               // fall-through on purpose!
+            case BoundaryCondition::SYMMETRIC_MIRROR:
+               coords[ ii ] = modulo( coords[ ii ], sz * 2 );
+               if( coords[ ii ] >= sz ) {
+                  coords[ ii ] = 2 * sz - coords[ ii ] - 1;
+               }
+               break;
+            case BoundaryCondition::ASYMMETRIC_PERIODIC:
+               invert = true;
+               // fall-through on purpose!
+            case BoundaryCondition::PERIODIC:
+               coords[ ii ] = modulo( coords[ ii ], sz );
+               break;
+            case BoundaryCondition::ADD_ZEROS:
+               out = 0;
+               return out; // We're done!
+            case BoundaryCondition::ADD_MAX_VALUE:
+               out = infinity;
+               return out; // We're done!
+            case BoundaryCondition::ADD_MIN_VALUE:
+               out = -infinity;
+               return out; // We're done!
+            case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
+               coords[ ii ] = clamp( coords[ ii ], dip::sint( 0 ), sz - 1 );
+               break;
+            case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:  // not implemented, difficult to implement in this framework.
+            case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
+            case BoundaryCondition::THIRD_ORDER_EXTRAPOLATE: // not implemented, difficult to implement in this framework.
+               DIP_THROW("Boundary condition not implemented" );
+         }
+      }
+   }
+   Image::Pixel tmp( img.Pointer( coords ), img.DataType(), img.Tensor(), img.TensorStride() );
+   out = invert ? -tmp : tmp; // copy pixel values over from `tmp`, which references them.
+   return out;
+}
+
 void ExtendImageLowLevel(
       Image const& c_in,
       Image& out,

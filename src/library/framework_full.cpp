@@ -23,6 +23,7 @@
 
 #include "diplib.h"
 #include "diplib/framework.h"
+#include "diplib/pixel_table.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/library/copy_buffer.h"
 

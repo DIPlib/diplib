@@ -22,6 +22,7 @@
 #include "diplib/linear.h"
 #include "diplib/transform.h"
 #include "diplib/framework.h"
+#include "diplib/pixel_table.h"
 #include "diplib/overload.h"
 
 namespace dip {

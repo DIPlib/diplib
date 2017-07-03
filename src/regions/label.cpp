@@ -23,6 +23,7 @@
 #include "diplib/union_find.h"
 #include "diplib/neighborlist.h"
 #include "diplib/iterators.h"
+#include "diplib/boundary.h"
 #include "diplib/framework.h" // for OptimalProcessingDim
 
 #include "labelingGrana2016.h"

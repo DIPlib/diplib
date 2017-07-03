@@ -21,7 +21,6 @@
 #ifndef DIP_ITERATORS_H
 #define DIP_ITERATORS_H
 
-#include <utility>
 #include <tuple>
 
 #include "diplib.h"

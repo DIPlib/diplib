@@ -30,9 +30,6 @@
 
 #include <array>
 
-#include "diplib/library/error.h"
-#include "diplib/library/types.h"
-#include "diplib/library/numeric.h"
 #include "diplib/library/clamp_cast.h"
 
 

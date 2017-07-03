@@ -22,12 +22,11 @@
 #ifndef DIP_COLOR_H
 #define DIP_COLOR_H
 
-#include <array>
-#include <vector>
 #include <map>
 
 #include "diplib.h"
 #include "diplib/iterators.h"
+
 
 /// \file
 /// \brief Defines `dip::ColorSpaceManager`, providing support for color images.

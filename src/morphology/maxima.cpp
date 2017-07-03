@@ -18,8 +18,11 @@
  * limitations under the License.
  */
 
+#include <queue>
+
 #include "diplib.h"
 #include "diplib/morphology.h"
+#include "diplib/neighborlist.h"
 #include "diplib/overload.h"
 #include "diplib/iterators.h"
 

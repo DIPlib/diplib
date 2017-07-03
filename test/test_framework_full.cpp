@@ -2,8 +2,9 @@
 #include <iostream>
 #include "diplib.h"
 #include "diplib/generation.h"
-#include "diplib/iterators.h"
 #include "diplib/framework.h"
+#include "diplib/pixel_table.h"
+#include "diplib/iterators.h"
 #include "diplib/testing.h"
 
 // Testing the full framework.

@@ -24,6 +24,8 @@
 
 #include "diplib.h"
 #include "diplib/measurement.h"
+#include "diplib/iterators.h"
+#include "diplib/chain_code.h"
 #include "diplib/framework.h"
 #include "diplib/regions.h"
 

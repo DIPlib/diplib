@@ -134,3 +134,22 @@ Specifically:
          BooleanArray process = {}
       );
   ```
+
+## Header files
+
+- In header files that define "modules" or parts of them (e.g. `diplib/linear.h`), always
+  first include `diplib.h`. In header files that define helper classes and don't reference
+  the `dip::Image` object, you can instead include only the minimal subset of header files
+  (e.g. include only `diplib/library/types.h`).
+
+- Try to pull in as few header files as possible in public header files. Include those
+  header files that define any function input types (e.g. in `diplib/linear.h` we include
+  `diplib/kernel.h`). Types that are output arguments can be forward-declared if that
+  makes sense. For example, `dip::Kernel` has a method that creates a `dip::PixelTable`,
+  which is used mostly internally. Most users of `dip::Kernel` will not use this method.
+  Therefore, there is no point in pulling in `diplib/pixel_table.h` for all users of
+  `diplib/kernel.h`, and we forward-declare `dip::PixelTable` instead.
+
+- Some STL containers such as `std::vector` and `std::set` are defined when including
+  `diplib.h`. There is no need to explicitly include the corresponding standard headers
+   for these.

@@ -73,7 +73,7 @@ class DIP_NO_EXPORT PixelTable;
 /// has the given weights associated to each pixel.
 ///
 /// See dip::StructuringElement, dip::NeighborList, dip::PixelTable
-class DIP_NO_EXPORT Kernel{
+class DIP_NO_EXPORT Kernel {
    public:
       enum class ShapeCode {
             RECTANGULAR,

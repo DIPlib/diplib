@@ -22,12 +22,8 @@
 #define DIP_MEASUREMENT_H
 
 #include <map>
-#include <vector>
-#include <memory> // for unique_ptr
 
 #include "diplib.h"
-#include "diplib/chain_code.h"
-#include "diplib/iterators.h"
 
 
 /// \file
@@ -37,6 +33,11 @@
 
 namespace dip {
 
+// Forward declaration
+template< typename T > class DIP_NO_EXPORT LineIterator;
+struct DIP_NO_EXPORT ChainCode;
+struct DIP_NO_EXPORT Polygon;
+class DIP_NO_EXPORT ConvexHull;
 
 /// \defgroup measurement Measurement
 /// \brief The measurement infrastructure and functionality.

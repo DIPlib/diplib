@@ -28,9 +28,7 @@
 #define DIP_CLAMP_CAST_H
 
 #include <limits>
-#include <cstdint>
 
-#include "diplib/library/types.h"
 #include "diplib/library/numeric.h"
 #include "diplib/library/datatype.h"
 

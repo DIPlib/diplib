@@ -29,10 +29,8 @@
 #define DIP_NUMERIC_H
 
 #include <cmath>
-#include <algorithm>
 #include <numeric>
 
-#include "diplib/library/types.h"
 #include "diplib/library/sample_iterator.h"
 
 

@@ -5,7 +5,7 @@
 #include "diplib/linear.h"
 #include "diplib/statistics.h"
 #include "diplib/generation.h"
-#include "diplib/timer.h"
+#include "diplib/testing.h"
 
 // Timing the separable convolution
 
@@ -27,7 +27,7 @@ int main() {
       filterArray[ 0 ].origin = 0;
       filterArray[ 0 ].symmetry = "general";
 
-      dip::Timer timer;
+      dip::testing::Timer timer;
       dip::SeparableConvolution( img, out1, filterArray );
       timer.Stop();
       std::cout << "General: " << timer << std::endl;

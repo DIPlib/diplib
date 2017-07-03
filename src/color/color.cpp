@@ -19,6 +19,8 @@
  * limitations under the License.
  */
 
+#include <queue>
+
 #include "diplib.h"
 #include "diplib/color.h"
 #include "diplib/framework.h"

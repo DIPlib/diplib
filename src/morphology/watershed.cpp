@@ -19,11 +19,13 @@
  */
 
 #include <functional>
+#include <queue>
 
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/regions.h"
 #include "diplib/statistics.h"
+#include "diplib/neighborlist.h"
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
 #include "diplib/union_find.h"

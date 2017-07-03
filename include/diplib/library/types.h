@@ -34,11 +34,8 @@
 #include <vector>
 #include <string>
 #include <set>
-#include <queue>
 
-#include "dip_export.h"
 #include "diplib/library/dimension_array.h"
-#include "diplib/library/error.h"
 
 
 /// \file

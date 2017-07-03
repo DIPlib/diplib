@@ -30,11 +30,8 @@
 
 #include <memory>
 #include <functional>
-#include <utility>
 #include <cstring> // std::memcpy
-#include <iostream>
 
-#include "diplib/library/datatype.h"
 #include "diplib/library/tensor.h"
 #include "diplib/library/physical_dimensions.h"
 #include "diplib/library/clamp_cast.h"

@@ -17,10 +17,11 @@
  * limitations under the License.
  */
 
+#include <queue>
+
 #include "diplib.h"
 #include "diplib/morphology.h"
 #include "diplib/generation.h"
-#include "diplib/math.h"
 #include "diplib/overload.h"
 
 #include "watershed_support.h"

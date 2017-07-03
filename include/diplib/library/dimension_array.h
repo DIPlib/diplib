@@ -34,7 +34,6 @@
 #include <utility>
 #include <iostream>
 
-#include "dip_export.h"
 #include "diplib/library/error.h"
 
 

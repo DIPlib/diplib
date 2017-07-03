@@ -29,7 +29,6 @@
 #define DIP_ERROR_H
 
 #include <exception>
-#include <vector>
 #include <string>
 
 #include "dip_export.h"

@@ -22,7 +22,6 @@
 #define DIP_REGIONS_H
 
 #include "diplib.h"
-#include "diplib/boundary.h"
 
 
 /// \file

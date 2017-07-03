@@ -25,7 +25,6 @@
 
 #include "diplib.h"
 #include "diplib/boundary.h"
-#include "diplib/pixel_table.h"
 #include "diplib/kernel.h"
 
 
@@ -35,6 +34,9 @@
 
 
 namespace dip {
+
+// Forward declaration
+class DIP_NO_EXPORT PixelTableOffsets;
 
 
 /// \brief Frameworks are the basis of most pixel-based processing in *DIPlib*.
@@ -56,7 +58,7 @@ namespace Framework {
 /// \{
 
 
-// Maximum number of pixels in a buffer for the framework functions
+// Maximum number of pixels in a buffer for the scan framework
 constexpr dip::uint MAX_BUFFER_SIZE = 256 * 1024;
 
 

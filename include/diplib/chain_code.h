@@ -21,9 +21,6 @@
 #ifndef DIP_CHAIN_CODE_H
 #define DIP_CHAIN_CODE_H
 
-#include <vector>
-#include <cmath>
-
 #include "diplib.h"
 
 

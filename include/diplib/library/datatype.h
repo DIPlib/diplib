@@ -28,9 +28,6 @@
 #ifndef DIP_DATATYPE_H
 #define DIP_DATATYPE_H
 
-#include <vector>
-#include <utility>
-
 #include "diplib/library/types.h"
 
 

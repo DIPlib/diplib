@@ -5,7 +5,7 @@
 #include "diplib/overload.h"
 #include "diplib/saturated_arithmetic.h"
 #include "diplib/statistics.h"
-#include "diplib/timer.h"
+#include "diplib/testing.h"
 
 // NOTE! As a timing test, remember to compile with
 //     cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCTEST=OFF ..
@@ -28,7 +28,7 @@ int main( void ) {
 
    // Dyadic, timing comparison with `Add`. (Note that this was relevant before we rewrote `Add` to work exactly like below.)
 
-   dip::Timer timer;
+   dip::testing::Timer timer;
    dip::Add( in1, in2, out, dt );
    timer.Stop();
    std::cout << "Add: " << timer << std::endl;
