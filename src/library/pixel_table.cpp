@@ -69,24 +69,22 @@ PixelTable::PixelTable(
          if( size[ ii ] < 0 ) {
             size[ ii ] = -std::max( std::round( -size[ ii ] ) - 1.0, 0.0 );
             sizes_[ ii ] = static_cast< dip::uint >( -size[ ii ] ) + 1;
+            origin_[ ii ] = static_cast< dip::sint >( size[ ii ] );
          } else {
             size[ ii ] = std::max( std::round( size[ ii ] ) - 1.0, 0.0 );
             sizes_[ ii ] = static_cast< dip::uint >( size[ ii ] ) + 1;
+            origin_[ ii ] = 0;
          }
-         origin_[ ii ] = -static_cast< dip::sint >( sizes_[ ii ] ) / 2;
       }
 
       // Find the number of steps from start to end of line
-      dip::uint maxSize = *std::max_element( sizes_.begin(), sizes_.end() ) - 1;
+      dip::uint length = *std::max_element( sizes_.begin(), sizes_.end() );
+      dip::uint maxSize = length - 1;
       if( maxSize >= 1 ) {
          // Compute step size along each dimension, and find the start point
          FloatArray stepSize( nDims );
-         FloatArray pos( nDims );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             stepSize[ ii ] = size[ ii ] / static_cast< dfloat >( maxSize );
-            pos[ ii ] = static_cast< dfloat >( origin_[ ii ] ) +
-                        ( size[ ii ] < 0 ? static_cast< dfloat >( sizes_[ ii ] - 1 ) : 0.0 ) + 1.0e-8;
-                        // we add a very small value here, to force rounding to happen in the right direction.
          }
          // We need the line to go through the origin, which can be done by setting `origin_` properly,
          // but predicting what it needs to be is a little complex, depending on even/odd lengths in combinations
@@ -94,17 +92,15 @@ PixelTable::PixelTable(
          // dimension, and shift the origin later on.
          IntegerArray shift;
          // Walk the line, extract runs
-         IntegerArray coords( nDims );
-         for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            coords[ ii ] = static_cast< dip::sint >( std::round( pos[ ii ] ));
-         }
+         FloatArray pos( nDims, 0.0 );
+         IntegerArray coords( nDims, 0 );
          dip::uint runLength = 1;
          for( dip::uint step = 0; step < maxSize; ++step ) {
             pos += stepSize;
             // Are all integer coordinates the same except for the one along procDim_?
             bool same = true;
             for( dip::uint ii = 0; ii < nDims; ++ii ) {
-               if(( ii != procDim_ ) && ( static_cast< dip::sint >( std::round( pos[ ii ] )) != coords[ ii ] )) {
+               if(( ii != procDim_ ) && ( static_cast< dip::sint >( consistent_round( pos[ ii ] )) != coords[ ii ] )) {
                   same = false;
                   break;
                }
@@ -115,25 +111,18 @@ PixelTable::PixelTable(
                nPixels_ += runLength;
                // Start new run
                for( dip::uint ii = 0; ii < nDims; ++ii ) {
-                  coords[ ii ] = static_cast< dip::sint >( std::round( pos[ ii ] ));
+                  coords[ ii ] = static_cast< dip::sint >( consistent_round( pos[ ii ] ));
                }
                runLength = 1;
             } else {
                ++runLength;
             }
             // Are we at the origin?
-            if( std::round( pos[ procDim_ ] ) == 0.0 ) {
-               bool needShift = false;
+            // Note: If length/2==0, this will never test true. But in that case, we don't need to shift.
+            if( step + 1 == length / 2 ) {
                shift.resize( nDims );
                for( dip::uint ii = 0; ii < nDims; ++ii ) {
-                  shift[ ii ] = 0;
-                  if(( ii != procDim_ ) && ( coords[ ii ] != 0 )) {
-                     shift[ ii ] = coords[ ii ];
-                     needShift = true;
-                  }
-               }
-               if( !needShift ) {
-                  shift.clear();
+                  shift[ ii ] = coords[ ii ];
                }
             }
          }

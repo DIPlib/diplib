@@ -115,10 +115,11 @@ class DIP_NO_EXPORT Kernel {
 
       /// Shifts the kernel by the given amount along each of the axes.
       ///
-      /// Note that the shift if not cumulative, any previous shift is ignored.
-      ///
-      /// Note also that the shift is only used when converting the kernel to a pixel table. Some algorithms
+      /// Note that the shift is only used when converting the kernel to a pixel table. Some algorithms
       /// will ignore the shift for some kernel shapes.
+      ///
+      /// The shift if not cumulative, any previous shift is ignored. Any mirroring is applied after the
+      /// shift, whether `Mirror` is called before or after calling `%Shift`.
       ///
       /// Big shifts can be very expensive, it is recommended to use this feature only for shifting by one pixel
       /// to adjust the location of even-sized kernels.
@@ -132,9 +133,6 @@ class DIP_NO_EXPORT Kernel {
       /// \brief Mirrors the kernel. This has no effect on elliptic or diamond kernels, which are always symmetric.
       void Mirror() {
          mirror_ = !mirror_;
-         for( auto& s : shift_ ) {
-            s = -s;
-         }
       }
 
       /// \brief Creates a `dip::PixelTable` structure representing the shape of the kernel

@@ -72,15 +72,15 @@ void Full(
 
    // Determine boundary sizes
    UnsignedArray boundary = kernelSizes;
+   for( dip::uint& b : boundary ) {
+      b /= 2;
+   }
    IntegerArray shift = kernel.Shift();
    if( !shift.empty() ) {
       dip::uint n = std::min( shift.size(), boundary.size() );
       for( dip::uint ii = 0; ii < n; ++ii ) {
          boundary[ ii ] += static_cast< dip::uint >( std::abs( shift[ ii ] ));
       }
-   }
-   for( dip::uint& b : boundary ) {
-      b /= 2;
    }
 
    // Copy input if necessary (this is the input buffer!)
