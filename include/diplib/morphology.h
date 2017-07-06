@@ -108,7 +108,7 @@ class DIP_NO_EXPORT Kernel;
 ///    but the box can be even in size also, meaning that the origin is in between pixels.
 ///    Any size array element that is smaller or equal to 1 causes that dimension to not be processed.
 ///
-/// -  `"octagon"`: an approximation to the ellipse in 2D only.
+/// -  `"octagonal"`: an approximation to the ellipse in 2D only.
 ///
 /// -  `"parabolic"`: the parabolic structuring element is the morphological equivalent to the Gaussian
 ///    kernel in linear filtering. It is separable and perfectly isotropic. The size array corresponds
@@ -154,7 +154,7 @@ class DIP_NO_EXPORT StructuringElement {
             RECTANGULAR,
             ELLIPTIC,
             DIAMOND,
-            OCTAGON,
+            OCTAGONAL,
             LINE,
             FAST_LINE,
             PERIODIC_LINE,
@@ -254,8 +254,8 @@ class DIP_NO_EXPORT StructuringElement {
             shape_ = ShapeCode::RECTANGULAR;
          } else if( shape == "diamond" ) {
             shape_ = ShapeCode::DIAMOND;
-         } else if( shape == "octagon" ) {
-            shape_ = ShapeCode::OCTAGON;
+         } else if( shape == "octagonal" ) {
+            shape_ = ShapeCode::OCTAGONAL;
          } else if( shape == "line" ) {
             shape_ = ShapeCode::LINE;
          } else if( shape == "fast line" ) {
@@ -279,6 +279,24 @@ class DIP_NO_EXPORT StructuringElement {
 // Basic operators
 //
 
+namespace detail {
+
+enum class BasicMorphologyOperation {
+      DILATION,
+      EROSION,
+      CLOSING,
+      OPENING
+};
+
+DIP_EXPORT void BasicMorphology(
+      Image const& in,
+      Image& out,
+      StructuringElement const& se,
+      StringArray const& boundaryCondition,
+      BasicMorphologyOperation operation
+);
+
+} // namespace detail
 
 /// \brief Applies the dilation.
 ///
@@ -288,12 +306,14 @@ class DIP_NO_EXPORT StructuringElement {
 /// The default value, and most meaningful one, is `"add min"`, but any value can be used.
 ///
 /// \see dip::Erosion, dip::Opening, dip::Closing
-DIP_EXPORT void Dilation(
+inline void Dilation(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
       StringArray const& boundaryCondition = {}
-);
+) {
+   detail::BasicMorphology( in, out, se, boundaryCondition, detail::BasicMorphologyOperation::DILATION );
+}
 inline Image Dilation(
       Image const& in,
       StructuringElement const& se = {},
@@ -312,12 +332,14 @@ inline Image Dilation(
 /// The default value, and most meaningful one, is `"add max"`, but any value can be used.
 ///
 /// \see dip::Dilation, dip::Opening, dip::Closing
-DIP_EXPORT void Erosion(
+inline void Erosion(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
       StringArray const& boundaryCondition = {}
-);
+) {
+   detail::BasicMorphology( in, out, se, boundaryCondition, detail::BasicMorphologyOperation::EROSION );
+}
 inline Image Erosion(
       Image const& in,
       StructuringElement const& se = {},
@@ -338,12 +360,14 @@ inline Image Erosion(
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
 ///
 /// \see dip::Dilation, dip::Erosion, dip::Opening
-DIP_EXPORT void Closing(
+inline void Closing(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
       StringArray const& boundaryCondition = {}
-);
+) {
+   detail::BasicMorphology( in, out, se, boundaryCondition, detail::BasicMorphologyOperation::CLOSING );
+}
 inline Image Closing(
       Image const& in,
       StructuringElement const& se = {},
@@ -364,12 +388,14 @@ inline Image Closing(
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
 ///
 /// \see dip::Dilation, dip::Erosion, dip::Closing
-DIP_EXPORT void Opening(
+inline void Opening(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
       StringArray const& boundaryCondition = {}
-);
+) {
+   detail::BasicMorphology( in, out, se, boundaryCondition, detail::BasicMorphologyOperation::OPENING );
+}
 inline Image Opening(
       Image const& in,
       StructuringElement const& se = {},

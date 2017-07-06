@@ -28,7 +28,6 @@
 #include "diplib/pixel_table.h"
 #include "diplib/overload.h"
 
-
 namespace dip {
 
 // This function defined here, not in the header, to avoid pulling in kernel.h and its dependencies there.
@@ -59,6 +58,8 @@ dip::Kernel StructuringElement::Kernel() const {
    return out;
 }
 
+namespace detail {
+
 namespace {
 
 enum class Polarity {
@@ -69,20 +70,11 @@ enum class Mirror {
       NO,
       YES
 };
-
-bool IsIsotropic( FloatArray params ) {
-   dfloat param = 0.0;
-   for( dfloat p : params ) {
-      p = std::abs( p );
-      if( p > 1.0 ) {
-         if( param == 0.0 ) {
-            param = p;
-         } else if( p != param ) {
-            return false;
-         }
-      }
-   }
-   return true;
+inline Mirror GetMirrorParam( bool mirror ) {
+   return mirror ? Mirror::YES : Mirror::NO;
+}
+inline Mirror InvertMirrorParam( Mirror mirror ) {
+   return mirror == Mirror::YES ? Mirror::NO : Mirror::YES;
 }
 
 // --- Rectangular morphology ---
@@ -179,27 +171,55 @@ void RectangularMorphology(
       Image const& in,
       Image& out,
       FloatArray const& filterParam,
+      Mirror mirror,
       BoundaryConditionArray const& bc,
-      Polarity polarity,
-      Mirror mirror // this changes where the origin is placed in the even-sized rectangle
+      BasicMorphologyOperation operation
 ) {
    dip::uint nDims = in.Dimensionality();
    BooleanArray process( nDims, false );
    UnsignedArray sizes( nDims, 1 );
    UnsignedArray border( nDims, 0 );
+   dip::uint nProcess = 0;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if(( filterParam[ ii ] > 1.0 ) && ( in.Size( ii ) > 1 )) {
          sizes[ ii ] = static_cast< dip::uint >( std::round( filterParam[ ii ] ));
          process[ ii ] = true;
+         ++nProcess;
          border[ ii ] = sizes[ ii ] / 2;
       }
    }
-   DIP_START_STACK_TRACE
-      DataType dtype = in.DataType();
-      std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-      DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, polarity, mirror ), dtype );
-      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
-   DIP_END_STACK_TRACE
+   DataType dtype = in.DataType();
+   std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
+   if( nProcess == 0 ) {
+      out.Copy( in );
+   //} else if( nProcess = 1 ) {
+      // TODO: apply 1D opening/closing
+   } else {
+      DIP_START_STACK_TRACE
+         switch( operation ) {
+            case BasicMorphologyOperation::DILATION:
+               DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), dtype );
+               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+               break;
+            case BasicMorphologyOperation::EROSION:
+               DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), dtype );
+               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+               break;
+            case BasicMorphologyOperation::CLOSING:
+               DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), dtype );
+               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+               DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, InvertMirrorParam( mirror )), dtype );
+               Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
+               break;
+            case BasicMorphologyOperation::OPENING:
+               DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), dtype );
+               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+               DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, InvertMirrorParam( mirror )), dtype );
+               Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
+               break;
+         }
+      DIP_END_STACK_TRACE
+   }
 }
 
 // --- Pixel table morphology ---
@@ -261,15 +281,38 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
 void FlatSEMorphology(
       Image const& in,
       Image& out,
-      Kernel const& kernel,
+      Kernel& kernel,
       BoundaryConditionArray const& bc,
-      Polarity polarity
+      BasicMorphologyOperation operation
 ) {
+   DataType dtype = in.DataType();
+   std::unique_ptr< Framework::FullLineFilter > lineFilter;
+   // TODO: Expand the input image, call Framework::Full with a new option that says the image is already expanded.
    DIP_START_STACK_TRACE
-      DataType dtype = in.DataType();
-      std::unique_ptr< Framework::FullLineFilter > lineFilter;
-      DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( polarity ), dtype );
-      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+      switch( operation ) {
+         case BasicMorphologyOperation::DILATION:
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            break;
+         case BasicMorphologyOperation::EROSION:
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            break;
+         case BasicMorphologyOperation::CLOSING:
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            kernel.Mirror();
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            break;
+         case BasicMorphologyOperation::OPENING:
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            kernel.Mirror();
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            break;
+      }
    DIP_END_STACK_TRACE
 }
 
@@ -324,16 +367,39 @@ class GreyValueSEMorphologyLineFilter : public Framework::FullLineFilter {
 void GreyValueSEMorphology(
       Image const& in,
       Image& out,
-      Kernel const& kernel,
+      Kernel& kernel,
       BoundaryConditionArray const& bc,
-      Polarity polarity
+      BasicMorphologyOperation operation
 ) {
    DIP_ASSERT( kernel.HasWeights() );
+   DataType dtype = in.DataType();
+   std::unique_ptr< Framework::FullLineFilter > lineFilter;
+   // TODO: Expand the input image, call Framework::Full with a new option that says the image is already expanded.
    DIP_START_STACK_TRACE
-      DataType dtype = in.DataType();
-      std::unique_ptr< Framework::FullLineFilter > lineFilter;
-      DIP_OVL_NEW_REAL( lineFilter, GreyValueSEMorphologyLineFilter, ( polarity ), dtype );
-      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+      switch( operation ) {
+         case BasicMorphologyOperation::DILATION:
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            break;
+         case BasicMorphologyOperation::EROSION:
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            break;
+         case BasicMorphologyOperation::CLOSING:
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            kernel.Mirror();
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            break;
+         case BasicMorphologyOperation::OPENING:
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            kernel.Mirror();
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            break;
+      }
    DIP_END_STACK_TRACE
 }
 
@@ -467,7 +533,7 @@ void ParabolicMorphology(
       Image& out,
       FloatArray const& filterParam,
       BoundaryConditionArray const& bc, // will not be used, as border==0.
-      Polarity polarity
+      BasicMorphologyOperation operation
 ) {
    dip::uint nDims = in.Dimensionality();
    BooleanArray process( nDims, false );
@@ -476,11 +542,31 @@ void ParabolicMorphology(
          process[ ii ] = true;
       }
    }
+   DataType dtype = DataType::SuggestFlex( in.DataType() ); // Returns either float or complex. If complex, DIP_OVL_NEW_FLOAT will throw.
+   std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
    DIP_START_STACK_TRACE
-      DataType dtype = DataType::SuggestFlex( in.DataType() ); // Returns either float or complex. If complex, DIP_OVL_NEW_FLOAT will throw.
-      std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-      DIP_OVL_NEW_FLOAT( lineFilter, ParabolicMorphologyLineFilter, ( filterParam, polarity ), dtype );
-      Framework::Separable( in, out, dtype, dtype, process, { 0 }, bc, *lineFilter );
+      switch( operation ) {
+         case BasicMorphologyOperation::DILATION:
+            DIP_OVL_NEW_FLOAT( lineFilter, ParabolicMorphologyLineFilter, ( filterParam, Polarity::DILATION ), dtype );
+            Framework::Separable( in, out, dtype, dtype, process, { 0 }, bc, *lineFilter );
+            break;
+         case BasicMorphologyOperation::EROSION:
+            DIP_OVL_NEW_FLOAT( lineFilter, ParabolicMorphologyLineFilter, ( filterParam, Polarity::EROSION ), dtype );
+            Framework::Separable( in, out, dtype, dtype, process, { 0 }, bc, *lineFilter );
+            break;
+         case BasicMorphologyOperation::CLOSING:
+            DIP_OVL_NEW_FLOAT( lineFilter, ParabolicMorphologyLineFilter, ( filterParam, Polarity::DILATION ), dtype );
+            Framework::Separable( in, out, dtype, dtype, process, { 0 }, bc, *lineFilter );
+            DIP_OVL_NEW_FLOAT( lineFilter, ParabolicMorphologyLineFilter, ( filterParam, Polarity::EROSION ), dtype );
+            Framework::Separable( out, out, dtype, dtype, process, { 0 }, bc, *lineFilter );
+            break;
+         case BasicMorphologyOperation::OPENING:
+            DIP_OVL_NEW_FLOAT( lineFilter, ParabolicMorphologyLineFilter, ( filterParam, Polarity::EROSION ), dtype );
+            Framework::Separable( in, out, dtype, dtype, process, { 0 }, bc, *lineFilter );
+            DIP_OVL_NEW_FLOAT( lineFilter, ParabolicMorphologyLineFilter, ( filterParam, Polarity::DILATION ), dtype );
+            Framework::Separable( out, out, dtype, dtype, process, { 0 }, bc, *lineFilter );
+            break;
+      }
    DIP_END_STACK_TRACE
 }
 
@@ -498,7 +584,7 @@ class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once
          dip::uint length = params.inBuffer.length;
-         dip::uint margin = frameLength_ / 2;
+         dip::uint margin = params.inBuffer.border;
          dip::uint bufferSize = length + 2 * margin;
          std::vector< TPI >& buffer = buffers_[ params.thread ];
          buffer.resize( 2 * bufferSize ); // does nothing if already correct size
@@ -509,7 +595,7 @@ class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer ) - inStride * static_cast< dip::sint >( margin );
          TPI* buf = forwardBuffer - margin;
          TPI* buf2 = backwardBuffer - margin;
-         while( buf < forwardBuffer + length ) {
+         while( buf < forwardBuffer + length + margin ) {
             *buf2 = *buf = *in;
             in += inStride;
             ++buf;
@@ -546,8 +632,9 @@ class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
             }
          }
          // Fill output
-         dip::uint filterLength = (( frameLength_ / stepSize_ ) - 1 ) * stepSize_ + 1;
-         margin = filterLength / 2;
+         dip::uint nSteps = frameLength_ / stepSize_;
+         dip::uint filterLength = ( nSteps - 1 ) * stepSize_ + 1;
+         margin = ( nSteps / 2 ) * stepSize_;
          if( mirror_ ) {
             forwardBuffer += margin;
             backwardBuffer -= filterLength - 1 - margin;
@@ -578,20 +665,43 @@ void PeriodicLineMorphology(
       dip::uint stepSize,
       dip::uint length,
       dip::uint axis,
+      Mirror mirror, // this changes where the origin is placed in the even-sized line
       BoundaryConditionArray const& bc,
-      Polarity polarity,
-      Mirror mirror // this changes where the origin is placed in the even-sized line
+      BasicMorphologyOperation operation
 ) {
    dip::uint nDims = in.Dimensionality();
    BooleanArray process( nDims, false );
-   process[ axis ] = true; // No need to test if axis is valid.
+   process[ axis ] = true; // No need to test if axis is valid
+   dip::uint nSteps = length / stepSize; // should always be an even division
    UnsignedArray border( nDims, 0 );
-   border[ axis ] = length / 2;
+   border[ axis ] = ( nSteps / 2 ) * stepSize;
+   DataType dtype = in.DataType();
+   std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
    DIP_START_STACK_TRACE
-      DataType dtype = in.DataType();
-      std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-      DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, polarity, mirror ), dtype );
-      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+      switch( operation ) {
+         case BasicMorphologyOperation::DILATION:
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::DILATION, mirror ), dtype );
+            Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+            break;
+         case BasicMorphologyOperation::EROSION:
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::EROSION, mirror ), dtype );
+            Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+            break;
+         case BasicMorphologyOperation::CLOSING:
+            // TODO: Apply 1D closing
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::DILATION, mirror ), dtype );
+            Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::EROSION, InvertMirrorParam( mirror )), dtype );
+            Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
+            break;
+         case BasicMorphologyOperation::OPENING:
+            // TODO: Apply 1D opening
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::EROSION, mirror ), dtype );
+            Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+            DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::DILATION, InvertMirrorParam( mirror )), dtype );
+            Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
+            break;
+      }
    DIP_END_STACK_TRACE
 }
 
@@ -618,29 +728,14 @@ std::pair< dip::uint, dip::uint > PeriodicLineParameters( FloatArray const& filt
    return std::make_pair( maxSize, steps );
 }
 
-void DiscreteLineMorphology(
-      Image const& in,
-      Image& out,
-      FloatArray const& filterParam,
-      BoundaryConditionArray const& bc,
-      Polarity polarity,
-      Mirror mirror
-) {
-   Kernel se( Kernel::ShapeCode::LINE, filterParam );
-   if( mirror == Mirror::YES ) {
-      se.Mirror();
-   }
-   FlatSEMorphology( in, out, se, bc, polarity );
-}
-
 void SkewLineMorphology(
       Image const& in,
       Image& out,
       FloatArray const& filterParam,
       StructuringElement::ShapeCode mode,
+      Mirror mirror,
       BoundaryConditionArray const& bc,
-      Polarity polarity,
-      Mirror mirror
+      BasicMorphologyOperation operation
 ) {
    dip::uint nDims = in.Dimensionality();
    dfloat length = std::round( std::abs( filterParam[ 0 ] ));
@@ -662,7 +757,7 @@ void SkewLineMorphology(
       if( steps == 1 ) {
          // The periodic line has just one point, make it so that we just copy the input below.
          nLarger1 = 1;
-         length = 1;
+         length = 1.0;
       } else {
          periodicStepSize = maxSize / steps;
          if( periodicStepSize == 1 ) {
@@ -672,39 +767,40 @@ void SkewLineMorphology(
       }
    }
    if( nLarger1 > 1 ) {
-      // 1- Skew (using interpolation if INTERPOLATED_LINE) in all dimensions perpendicular to `axis`
+      // 1- Skew in all dimensions perpendicular to `axis`
       String method = mode == StructuringElement::ShapeCode::INTERPOLATED_LINE ? "linear" : "nn";
       // TODO: Can we use a better interpolation method (i.e. the default "") if we stick to "zero order" boundary condition?
       FloatArray shearArray( nDims, 0.0 );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( ii != axis ) {
-            shearArray[ ii ] = std::atan2( filterParam[ ii ], length );
+            shearArray[ ii ] = -std::round( filterParam[ ii ] ) / length;
          }
       }
       Image tmp;
-      Skew( in, tmp, shearArray, axis, method, bc );
-      // 2- Call RectangularMorphology (or a different, new function if PERIODIC_LINE)
+      Skew( in, tmp, shearArray, axis, 0, method, bc );
+      // 2- Call RectangularMorphology or PeriodicLineMorphology
       if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
-         PeriodicLineMorphology( tmp, tmp, periodicStepSize, static_cast< dip::uint >( length ), axis, bc, polarity, mirror );
+         PeriodicLineMorphology( tmp, tmp, periodicStepSize, static_cast< dip::uint >( length ), axis, mirror, bc, operation );
       } else {
          FloatArray rectSize( nDims, 1.0 );
          rectSize[ axis ] = length;
-         RectangularMorphology( tmp, tmp, rectSize, bc, polarity, mirror );
+         RectangularMorphology( tmp, tmp, rectSize, mirror, bc, operation );
       }
-      // 3- Skew back (using interpolation if INTERPOLATED_LINE) and crop to original size
+      // 3- Skew back and crop to original size
       method = mode == StructuringElement::ShapeCode::INTERPOLATED_LINE ? "linear" : "nn2";
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          shearArray[ ii ] = -shearArray[ ii ];
       }
-      Skew( tmp, tmp, shearArray, axis, method, { BoundaryCondition::PERIODIC } );
-      // Using periodic boundary condition so it can be done in-place.
-      tmp = tmp.Crop( in.Sizes());
+      Skew( tmp, tmp, shearArray, axis, 0, method, bc );
+      //Skew( tmp, tmp, shearArray, axis, 0, method, { BoundaryCondition::PERIODIC } ); // Using periodic boundary condition so it can be done in-place.
+      // TODO: when using periodic skew to go back to original geometry, the origin needs to be computed. Image::Crop can't help us.
+      tmp = tmp.Crop( in.Sizes() );
       out.Copy( tmp );
       out.SetPixelSize( in.PixelSize());
    } else if( std::round( length ) > 1 ) {
       FloatArray rectSize( nDims, 1.0 );
       rectSize[ axis ] = length;
-      RectangularMorphology( in, out, rectSize, bc, polarity, mirror );
+      RectangularMorphology( in, out, rectSize, mirror, bc, operation );
    } else {
       out.Copy( in );
    }
@@ -713,44 +809,100 @@ void SkewLineMorphology(
 void LineMorphology(
       Image const& in,
       Image& out,
-      FloatArray filterParam,
+      StructuringElement const& se,
       BoundaryConditionArray const& bc,
-      Polarity polarity,
-      Mirror mirror
+      BasicMorphologyOperation operation
 ) {
+   FloatArray filterParam = se.Params( in.Sizes() );
    dip::uint maxSize;
    dip::uint steps;
    std::tie( maxSize, steps ) = PeriodicLineParameters( filterParam );
-   std::cout << "[LineMorphology] maxSize = " << maxSize << ", steps = " << steps << std::endl;
-   // TODO: don't bother decomposing if the line is short.
-   if( steps == maxSize ){
+   if( steps == maxSize ) {
       // This means that all filterParam are the same (or 1)
-      SkewLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::FAST_LINE, bc, polarity, mirror );
+      SkewLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::FAST_LINE, GetMirrorParam( se.IsMirrored() ), bc, operation );
    } else {
-      if( steps > 1 ) {
-         Mirror periodicMirror = mirror;
+      if(( steps > 1 ) && ( maxSize > 5 )) { // TODO: adjust the size threshold here
+         dip::uint nDims = in.Dimensionality();
+         FloatArray discreteLineParam( nDims, 0.0 );
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            discreteLineParam[ ii ] = std::round( filterParam[ ii ] ) / static_cast< dfloat >( steps );
+         }
+         Kernel discreteLineKernel( Kernel::ShapeCode::LINE, discreteLineParam );
          if( !( steps & 1 )) {
             // Periodic line with even number of points
-            std::cout << "   Periodic line with even number of points\n";
-            if(( maxSize / steps ) & 1 ) {
-               std::cout << "   Discrete line with odd length\n";
-               // Discrete line with odd length: mirror it to put the origin in the right place.
-               // We mirror the SE by mirroring the periodic line, but not the discrete line.
-               if( mirror == Mirror::YES ) {
-                  mirror = Mirror::NO;
-               } else {
-                  mirror = Mirror::YES;
-               }
+            // Discrete line has origin at left side, to correct for origin displacement of periodic line
+            IntegerArray shift( nDims, 0 );
+            for( dip::uint ii = 0; ii < nDims; ++ii ) {
+               shift[ ii ] = - static_cast< dip::sint >( discreteLineParam[ ii ] ) / 2;
             }
-         } // else: discrete line must be mirrored if the SE is mirrored.
-         std::cout << "[LineMorphology] periodicMirror = " << ( periodicMirror == Mirror::YES ) << ", mirror = " << ( mirror == Mirror::YES ) << std::endl;
-         SkewLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE, bc, polarity, periodicMirror );
-         for( dip::uint ii = 0; ii < filterParam.size(); ++ii ) {
-            filterParam[ ii ] = std::round( filterParam[ ii ] ) / static_cast< dfloat >( steps );
+            discreteLineKernel.Shift( shift );
          }
-         DiscreteLineMorphology( out, out, filterParam, bc, polarity, mirror );
+         bool mirror = se.IsMirrored();
+         if( mirror ) {
+            discreteLineKernel.Mirror();
+         }
+         switch( operation ) {
+            default:
+            //case BasicMorphologyOperation::DILATION:
+            //case BasicMorphologyOperation::EROSION:
+               FlatSEMorphology( in, out, discreteLineKernel, bc, operation );
+               SkewLineMorphology( out, out, filterParam,
+                                   StructuringElement::ShapeCode::PERIODIC_LINE, GetMirrorParam( mirror ),
+                                   bc, operation );
+               break;
+            case BasicMorphologyOperation::CLOSING:
+               FlatSEMorphology( in, out, discreteLineKernel, bc, BasicMorphologyOperation::DILATION );
+               SkewLineMorphology( out, out, filterParam,
+                                   StructuringElement::ShapeCode::PERIODIC_LINE, GetMirrorParam( mirror ),
+                                   bc, BasicMorphologyOperation::CLOSING );
+               discreteLineKernel.Mirror();
+               FlatSEMorphology( out, out, discreteLineKernel, bc, BasicMorphologyOperation::EROSION );
+               break;
+            case BasicMorphologyOperation::OPENING:
+               FlatSEMorphology( in, out, discreteLineKernel, bc, BasicMorphologyOperation::EROSION );
+               SkewLineMorphology( out, out, filterParam,
+                                   StructuringElement::ShapeCode::PERIODIC_LINE, GetMirrorParam( mirror ),
+                                   bc, BasicMorphologyOperation::OPENING );
+               discreteLineKernel.Mirror();
+               FlatSEMorphology( out, out, discreteLineKernel, bc, BasicMorphologyOperation::DILATION );
+               break;
+         }
       } else {
-         DiscreteLineMorphology( in, out, filterParam, bc, polarity, mirror );
+         // One step, no need to do a periodic line with a single point
+         Kernel kernel( Kernel::ShapeCode::LINE, filterParam );
+         if( se.IsMirrored() ) {
+            kernel.Mirror();
+         }
+         FlatSEMorphology( in, out, kernel, bc, operation );
+      }
+   }
+}
+
+void TwoStepDiamondMorphology(
+      Image& out,
+      FloatArray size, // by copy, we'll modify it again
+      dip::uint procDim,
+      BoundaryConditionArray const& bc,
+      BasicMorphologyOperation operation // should be either DILATION or EROSION.
+) {
+   // To get all directions, we flip signs on all elements of `size` array except `procDim`.
+   // This is exponential in the number of dimensions: 2 in 2D, 4 in 3D, 8 in 4D, etc.
+   // `size` array must start off with all positive elements.
+   dip::uint nDims = size.size();
+   while( true ) {
+      // This can be the fast skew line morphology, since lines are always at 0 or 45 degrees.
+      SkewLineMorphology( out, out, size, StructuringElement::ShapeCode::FAST_LINE, Mirror::NO, bc, operation );
+      dip::uint dd;
+      for( dd = 0; dd < nDims; ++dd ) {
+         if(( dd != procDim ) && ( std::abs( size[ dd ] ) > 1.0 )) {
+            size[ dd ] = -size[ dd ];
+            if( size[ dd ] < 0 ) {
+               break;
+            }
+         }
+      }
+      if( dd == nDims ) {
+         break;
       }
    }
 }
@@ -758,86 +910,88 @@ void LineMorphology(
 void DiamondMorphology(
       Image const& in,
       Image& out,
-      FloatArray size, // by copy
+      FloatArray size, // by copy, we'll modify it
       BoundaryConditionArray const& bc,
-      Polarity polarity
+      BasicMorphologyOperation operation
 ) {
-   if( !IsIsotropic( size )) {
-      Kernel kernel{ Kernel::ShapeCode::DIAMOND, size };
-      FlatSEMorphology( in, out, kernel, bc, polarity );
-      return;
+   dip::uint nDims = in.Dimensionality();
+   dfloat param = 0.0;
+   bool isotropic = true;
+   dip::uint procDim = 0;
+   dip::uint nProcDims = 0;
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      size[ ii ] = std::floor( size[ ii ] );
+      if( size[ ii ] > 1.0 ) {
+         if( param == 0.0 ) {
+            param = size[ ii ];
+            procDim = ii;
+         } else if( size[ ii ] != param ) {
+            isotropic = false;
+            break;
+         }
+         ++nProcDims;
+      }
    }
-   DIP_START_STACK_TRACE
+   if( !isotropic || ( param < 5.0 ) || ( nProcDims == 1 )) { // TODO: adjust the size threshold here
+      DIP_START_STACK_TRACE
+         Kernel kernel{ Kernel::ShapeCode::DIAMOND, size };
+         FlatSEMorphology( in, out, kernel, bc, operation );
+      DIP_END_STACK_TRACE
+   } else {
       // Determine values for all operations
-      bool skipOperation1 = true;
-      bool skipOperation2 = true;
-      FloatArray unitSize( size.size(), 1.0 );
-      IntegerArray shift( size.size(), 0 );
-      bool needShift = false;
-      // TODO: don't bother decomposing if the SE is small. Size threshold?
-      for( dip::uint ii = 0; ii < size.size(); ++ii ) {
-         if( std::round( size[ ii ] ) > 4.0 ) {
-            // at least 5 pixels in this dimension
-            skipOperation1 = false;
-            skipOperation2 = false;
-            dfloat halfSize = std::max( 3.0, std::floor( size[ ii ] / 4.0 ) * 2.0 + 1.0 ); // an odd value
+      FloatArray unitSize( nDims, 1.0 );
+      dfloat halfSize = std::max( 3.0, std::floor( param / 4.0 ) * 2.0 + 1.0 ); // an odd value
+      dfloat remainderSize = static_cast< dfloat >(( static_cast< dip::uint >( param - halfSize ) + 1 ) / 2 ) + 1;
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         if( size[ ii ] == param ) {
             unitSize[ ii ] = halfSize;
-            size[ ii ] = static_cast< dfloat >(( static_cast< dip::uint >( size[ ii ] - halfSize ) + 1 ) / 2 ) + 1;
-            if( !(static_cast< dip::sint >( size[ ii ] ) & 1 )) {
-               shift[ ii ] = -1;
-               needShift = true;
-            }
-         } else if( size[ ii ] < 3.0 ) {
-            // a single pixel in this dimension
-            size[ ii ] = 1.0;
+            size[ ii ] = remainderSize;
          } else {
-            // three pixels in this dimension
-            skipOperation1 = false;
-            unitSize[ ii ] = 3.0;
             size[ ii ] = 1.0;
          }
       }
-      if( skipOperation1 ) {
-         out.Copy( in );
-      } else {
-         // Step 1: apply operation with a unit diamond
-         Kernel unitDiamond{ Kernel::ShapeCode::DIAMOND, unitSize };
-         if( needShift ) {
-            unitDiamond.Shift( shift );
-         }
-         FlatSEMorphology( in, out, unitDiamond, bc, polarity );
-         if( !skipOperation2 ) {
-            // Step 2: apply operation with line SEs
-            // To get all directions, we flip signs on all elements of size array except the first one.
-            // This is exponential in the number of dimensions: 2 in 2D, 4 in 3D, 8 in 4D, etc.
-            dip::uint nDims = size.size();
-            while( true ) {
-               // This can be the fast skew line morphology, since lines are always at 0 or 45 degrees.
-               SkewLineMorphology( out, out, size, StructuringElement::ShapeCode::FAST_LINE, bc, polarity, Mirror::NO );
-               dip::uint dd;
-               for( dd = 1; dd < nDims; ++dd ) {
-                  if( std::abs( size[ dd ] ) > 1.0 ) {
-                     size[ dd ] = -size[ dd ];
-                     if( size[ dd ] < 0 ) {
-                        break;
-                     }
-                  }
-               }
-               if( dd == nDims ) {
-                  break;
-               }
-            }
-         } // else we're done!
+      Kernel unitDiamond{ Kernel::ShapeCode::DIAMOND, unitSize };
+      if( !( static_cast< dip::sint >( remainderSize ) & 1 )) {
+         IntegerArray shift( nDims, 0 );
+         shift[ procDim ] = -1;
+         unitDiamond.Shift( shift );
       }
-   DIP_END_STACK_TRACE
+      DIP_START_STACK_TRACE
+         switch( operation ) {
+            default:
+            //case BasicMorphologyOperation::DILATION:
+            //case BasicMorphologyOperation::EROSION:
+               // TODO: For fully correct operation, we should do boundary expansion first, then these two operations, then crop.
+               // Step 1: apply operation with a unit diamond
+               FlatSEMorphology( in, out, unitDiamond, bc, operation );
+               // Step 2: apply operation with line SEs
+               TwoStepDiamondMorphology( out, size, procDim, bc, operation );
+               break;
+            case BasicMorphologyOperation::CLOSING:
+               // TODO: It would be more efficient to apply dilation with lines first, then closing with the unit diamond, then erosion with the lines.
+               // ...but for that we need a version of TwoStepDiamond with separate input and output images.
+               FlatSEMorphology( in, out, unitDiamond, bc, BasicMorphologyOperation::DILATION );
+               TwoStepDiamondMorphology( out, size, procDim, bc, BasicMorphologyOperation::DILATION );
+               TwoStepDiamondMorphology( out, size, procDim, bc, BasicMorphologyOperation::EROSION );
+               FlatSEMorphology( out, out, unitDiamond, bc, BasicMorphologyOperation::EROSION );
+               break;
+            case BasicMorphologyOperation::OPENING:
+               FlatSEMorphology( in, out, unitDiamond, bc, BasicMorphologyOperation::EROSION );
+               TwoStepDiamondMorphology( out, size, procDim, bc, BasicMorphologyOperation::EROSION );
+               TwoStepDiamondMorphology( out, size, procDim, bc, BasicMorphologyOperation::DILATION );
+               FlatSEMorphology( out, out, unitDiamond, bc, BasicMorphologyOperation::DILATION );
+               break;
+         }
+      DIP_END_STACK_TRACE
+   }
 }
 
-void OctagonMorphology(
+void OctagonalMorphology(
       Image const& in,
       Image& out,
       FloatArray size, // by copy
       BoundaryConditionArray const& bc,
-      Polarity polarity
+      BasicMorphologyOperation operation
 ) {
    // An octagon is formed by a diamond of size n, and a rectangle of size m = n - 2 or m = n.
    // Both n and m are odd integers. The octagon then has a size of n + m - 1.
@@ -879,14 +1033,41 @@ void OctagonMorphology(
             size[ ii ] = n;
          }
       }
-      // Step 1: apply operation with a diamond
-      DiamondMorphology( in, out, size, bc, polarity );
-      if( !skipRect ) {
-         // Step 2: apply operation with a rectangle
-         RectangularMorphology( out, out, rectSize, bc, polarity, Mirror::NO );
+      switch( operation ) {
+         default:
+         //case BasicMorphologyOperation::DILATION:
+         //case BasicMorphologyOperation::EROSION:
+            // Step 1: apply operation with a diamond
+            DiamondMorphology( in, out, size, bc, operation );
+            if( !skipRect ) {
+               // Step 2: apply operation with a rectangle
+               RectangularMorphology( out, out, rectSize, Mirror::NO, bc, operation );
+            }
+            break;
+         case BasicMorphologyOperation::CLOSING:
+            if( skipRect ) {
+               DiamondMorphology( in, out, size, bc, BasicMorphologyOperation::CLOSING );
+            } else {
+               RectangularMorphology( in, out, rectSize, Mirror::NO, bc, BasicMorphologyOperation::DILATION );
+               DiamondMorphology( out, out, size, bc, BasicMorphologyOperation::CLOSING );
+               RectangularMorphology( out, out, rectSize, Mirror::YES, bc, BasicMorphologyOperation::EROSION );
+            }
+            break;
+         case BasicMorphologyOperation::OPENING:
+            if( skipRect ) {
+               DiamondMorphology( in, out, size, bc, BasicMorphologyOperation::OPENING );
+            } else {
+               RectangularMorphology( in, out, rectSize, Mirror::NO, bc, BasicMorphologyOperation::EROSION );
+               DiamondMorphology( out, out, size, bc, BasicMorphologyOperation::OPENING );
+               RectangularMorphology( out, out, rectSize, Mirror::YES, bc, BasicMorphologyOperation::DILATION );
+            }
+            break;
       }
    DIP_END_STACK_TRACE
 }
+
+} // namespace
+
 
 // --- Dispatch ---
 
@@ -895,57 +1076,43 @@ void BasicMorphology(
       Image& out,
       StructuringElement const& se,
       StringArray const& boundaryCondition,
-      Polarity polarity,
-      Mirror mirror = Mirror::NO
+      BasicMorphologyOperation operation
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_START_STACK_TRACE
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
-      if( bc.empty() ) {
-         bc.resize( 1 );
-         bc[ 0 ] = polarity == Polarity::DILATION ? BoundaryCondition::ADD_MIN_VALUE : BoundaryCondition::ADD_MAX_VALUE;
-         // TODO: experiment with BoundaryCondition::ZERO_ORDER_EXTRAPOLATE boundary condition.
-      }
-      // Compound `mirror` with SE's mirror flag
-      if( mirror == Mirror::NO ) {
-         mirror = se.IsMirrored() ? Mirror::YES : Mirror::NO;
-      } else {
-         mirror = se.IsMirrored() ? Mirror::NO : Mirror::YES;
-      }
-      switch( se.Shape() ) {
+      Mirror mirror = GetMirrorParam( se.IsMirrored() );
+      switch( se.Shape()) {
          case StructuringElement::ShapeCode::RECTANGULAR:
-            RectangularMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
+            RectangularMorphology( in, out, se.Params( in.Sizes() ), mirror, bc, operation );
             break;
          case StructuringElement::ShapeCode::DIAMOND:
-            DiamondMorphology( in, out, se.Params( in.Sizes() ), bc, polarity );
+            DiamondMorphology( in, out, se.Params( in.Sizes() ), bc, operation );
             break;
-         case StructuringElement::ShapeCode::OCTAGON:
-            OctagonMorphology( in, out, se.Params( in.Sizes() ), bc, polarity );
+         case StructuringElement::ShapeCode::OCTAGONAL:
+            OctagonalMorphology( in, out, se.Params( in.Sizes()), bc, operation );
             break;
          case StructuringElement::ShapeCode::LINE:
-            LineMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
+            LineMorphology( in, out, se, bc, operation );
             break;
          case StructuringElement::ShapeCode::FAST_LINE:
          case StructuringElement::ShapeCode::PERIODIC_LINE:
          case StructuringElement::ShapeCode::INTERPOLATED_LINE:
-            SkewLineMorphology( in, out, se.Params( in.Sizes() ), se.Shape(), bc, polarity, mirror );
-            break;
-         case StructuringElement::ShapeCode::DISCRETE_LINE:
-            DiscreteLineMorphology( in, out, se.Params( in.Sizes() ), bc, polarity, mirror );
+            SkewLineMorphology( in, out, se.Params( in.Sizes() ), se.Shape(), mirror, bc, operation );
             break;
          case StructuringElement::ShapeCode::PARABOLIC:
-            ParabolicMorphology( in, out, se.Params( in.Sizes() ), bc, polarity );
+            ParabolicMorphology( in, out, se.Params( in.Sizes() ), bc, operation );
             break;
+         //case StructuringElement::ShapeCode::DISCRETE_LINE:
+         //case StructuringElement::ShapeCode::ELLIPTIC:
+         //case StructuringElement::ShapeCode::CUSTOM:
          default: {
             Kernel kernel = se.Kernel();
-            if( mirror == Mirror::YES ) {
-               kernel.Mirror();
-            }
             if( kernel.HasWeights()) {
-               GreyValueSEMorphology( in, out, kernel, bc, polarity );
+               GreyValueSEMorphology( in, out, kernel, bc, operation );
             } else {
-               FlatSEMorphology( in, out, kernel, bc, polarity );
+               FlatSEMorphology( in, out, kernel, bc, operation );
             }
             break;
          }
@@ -953,57 +1120,7 @@ void BasicMorphology(
    DIP_END_STACK_TRACE
 }
 
-} // namespace
-
-// --- Public functions ---
-
-void Dilation(
-      Image const& in,
-      Image& out,
-      StructuringElement const& se,
-      StringArray const& boundaryCondition
-) {
-   DIP_START_STACK_TRACE
-      BasicMorphology( in, out, se, boundaryCondition, Polarity::DILATION );
-   DIP_END_STACK_TRACE
-}
-
-void Erosion(
-      Image const& in,
-      Image& out,
-      StructuringElement const& se,
-      StringArray const& boundaryCondition
-) {
-   DIP_START_STACK_TRACE
-      BasicMorphology( in, out, se, boundaryCondition, Polarity::EROSION );
-   DIP_END_STACK_TRACE
-}
-
-// TODO: For opening and closing, extend the input image, then apply the two operations without boundary extension.
-
-void Opening(
-      Image const& in,
-      Image& out,
-      StructuringElement const& se,
-      StringArray const& boundaryCondition
-) {
-   DIP_START_STACK_TRACE
-      BasicMorphology( in, out, se, boundaryCondition, Polarity::EROSION, Mirror::NO );
-      BasicMorphology( out, out, se, boundaryCondition, Polarity::DILATION, Mirror::YES );
-   DIP_END_STACK_TRACE
-}
-
-void Closing(
-      Image const& in,
-      Image& out,
-      StructuringElement const& se,
-      StringArray const& boundaryCondition
-) {
-   DIP_START_STACK_TRACE
-      BasicMorphology( in, out, se, boundaryCondition, Polarity::DILATION, Mirror::NO );
-      BasicMorphology( out, out, se, boundaryCondition, Polarity::EROSION, Mirror::YES );
-   DIP_END_STACK_TRACE
-}
+} // namespace detail
 
 } // namespace dip
 
@@ -1014,124 +1131,154 @@ void Closing(
 #include "diplib/iterators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the basic morphological filters") {
-   dip::Image in( { 128, 69 }, 1, dip::DT_UINT8 );
+   dip::Image in( { 64, 41 }, 1, dip::DT_UINT8 );
    in = 0;
-   dip::uint pval = 5 * 5;
-   in.At( 64, 35 ) = pval;
+   dip::uint pval = 3 * 3;
+   in.At( 32, 20 ) = pval;
    dip::Image out;
 
    // Rectangular morphology
-   dip::BasicMorphology( in, out, { { 10, 1 }, "rectangular" }, {}, dip::Polarity::DILATION );
+   dip::StructuringElement se = {{ 10, 1 }, "rectangular" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 10 );
-   dip::BasicMorphology( in, out, { { 11, 1 }, "rectangular" }, {}, dip::Polarity::DILATION );
+   se = {{ 11, 1 }, "rectangular" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 11 );
-   dip::BasicMorphology( in, out, { { 10, 11 }, "rectangular" }, {}, dip::Polarity::DILATION );
+   se = {{ 10, 11 }, "rectangular" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 10*11 );
-   dip::BasicMorphology( out, out, { { 10, 11 }, "rectangular" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
 
    // PixelTable morphology
-   dip::BasicMorphology( in, out, { { 1, 10 }, "elliptic" }, {}, dip::Polarity::DILATION );
+   se = {{ 1, 10 }, "elliptic" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 11 ); // rounded!
-   dip::BasicMorphology( in, out, { { 1, 11 }, "elliptic" }, {}, dip::Polarity::DILATION );
+   se = {{ 1, 11 }, "elliptic" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 11 );
-   dip::BasicMorphology( in, out, { { 10, 11 }, "elliptic" }, {}, dip::Polarity::DILATION );
+   se = {{ 10, 11 }, "elliptic" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 89 );
-   dip::BasicMorphology( out, out, { { 10, 11 }, "elliptic" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
 
    // PixelTable morphology -- mirroring
-   dip::Image se( { 10, 10 }, 1, dip::DT_BIN );
-   se = 1;
-   dip::BasicMorphology( in, out, se, {}, dip::Polarity::DILATION );
+   dip::Image seImg( { 10, 10 }, 1, dip::DT_BIN );
+   seImg.Fill( 1 );
+   se = seImg;
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 100 );
-   dip::BasicMorphology( out, out, se, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
 
    // Parabolic morphology
-   dip::BasicMorphology( in, out, { { 10.0, 0.0 }, "parabolic" }, {}, dip::Polarity::DILATION );
+   se = {{ 10.0, 0.0 }, "parabolic" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    dip::dfloat result = 0.0;
-   for( dip::uint ii = 1; ii < 50; ++ii ) { // 50 = 10.0 * sqrt( pval )
-      result += dip::dfloat( pval ) - dip::dfloat( ii * ii ) / 100.0;
+   for( dip::uint ii = 1; ii < 30; ++ii ) { // 30 = 10.0 * sqrt( pval )
+      result += dip::dfloat( pval ) - dip::dfloat( ii * ii ) / 100.0; // 100.0 = 10.0 * 10.0
    }
    result = dip::dfloat( pval ) + result * 2.0;
    DOCTEST_CHECK( dip::Sum( out ).As< dip::dfloat >() == doctest::Approx( result ));
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is the origin in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is the origin in the right place?
 
-   dip::BasicMorphology( out, out, { { 10.0, 0.0 }, "parabolic" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    result = 0.0;
-   for( dip::uint ii = 1; ii < 50; ++ii ) { // 50 = 10.0 * sqrt( pval )
+   for( dip::uint ii = 1; ii < 30; ++ii ) { // 30 = 10.0 * sqrt( pval )
       result += dip::dfloat( ii * ii ) / 100.0; // 100.0 = 10.0 * 10.0
    }
    result = dip::dfloat( pval ) + result * 2.0;
    DOCTEST_CHECK( dip::Sum( out ).As< dip::dfloat >() == doctest::Approx( result ));
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is the origin in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is the origin in the right place?
 
    // Grey-value SE morphology
-   se.ReForge( { 5, 6 }, 1, dip::DT_SFLOAT );
-   se = -dip::infinity;
-   se.At( 0, 0 ) = 0;
-   se.At( 4, 5 ) = -5;
-   se.At( 0, 5 ) = -5;
-   se.At( 4, 0 ) = -10;
-   se.At( 2, 3 ) = 0;
-   dip::BasicMorphology( in, out, se, {}, dip::Polarity::DILATION );
-   DOCTEST_CHECK( dip::Sum( out ).As< dip::uint >() == 5 * pval - 5 - 5 - 10 );
-   dip::BasicMorphology( out, out, se, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   seImg = dip::Image( { 5, 6 }, 1, dip::DT_SFLOAT );
+   seImg = -dip::infinity;
+   seImg.At( 0, 0 ) = 0;
+   seImg.At( 4, 5 ) = -5;
+   seImg.At( 0, 5 ) = -5;
+   seImg.At( 4, 0 ) = -8;
+   seImg.At( 2, 3 ) = 0;
+   se = seImg;
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
+   DOCTEST_CHECK( dip::Sum( out ).As< dip::uint >() == 5 * pval - 5 - 5 - 8 );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is the main pixel in the right place and with the right value?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is the main pixel in the right place and with the right value?
 
    // Line morphology
-   dip::BasicMorphology( in, out, { { 10, 4 }, "discrete line" }, {}, dip::Polarity::DILATION );
+   se = {{ 10, 4 }, "discrete line" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 10 );
-   dip::BasicMorphology( out, out, { { 10, 4 }, "discrete line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
 
-   dip::BasicMorphology( in, out, { { 10, 4 }, "fast line" }, {}, dip::Polarity::DILATION );
+   se = {{ 10, 4 }, "fast line" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 10 );
-   dip::BasicMorphology( out, out, { { 10, 4 }, "fast line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
 
-   dip::BasicMorphology( in, out, { { 8, 4 }, "fast line" }, {}, dip::Polarity::DILATION );
+   se = {{ 8, 4 }, "fast line" };
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 8 );
-   dip::BasicMorphology( out, out, { { 8, 4 }, "fast line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
 
-   dip::BasicMorphology( in, out, { { 10, 4 }, "line" }, {}, dip::Polarity::DILATION ); // periodic component n=2, discrete line {5,2}
+   se = {{ 10, 4 }, "line" }; // periodic component n=2, discrete line {5,2}
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 10 );
-   dip::BasicMorphology( out, out, { { 10, 4 }, "line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
 
-   dip::BasicMorphology( in, out, { { 8, 4 }, "line" }, {}, dip::Polarity::DILATION ); // periodic component n=4, discrete line {2,1}
+   se = {{ 8, 4 }, "line" }; // periodic component n=4, discrete line {2,1}
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 8 );
-   dip::BasicMorphology( out, out, { { 8, 4 }, "line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
 
-   dip::BasicMorphology( in, out, { { 9, 6 }, "line" }, {}, dip::Polarity::DILATION ); // periodic component n=3, discrete line {3,2}
+   se = {{ 9, 6 }, "line" }; // periodic component n=3, discrete line {3,2}
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 9 );
-   dip::BasicMorphology( out, out, { { 9, 6 }, "line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
 
-   dip::BasicMorphology( in, out, { { 12, 9 }, "line" }, {}, dip::Polarity::DILATION ); // periodic component n=3, discrete line {4,3}
+   se = {{ 12, 9 }, "line" }; // periodic component n=3, discrete line {4,3}
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 12 );
-   dip::BasicMorphology( out, out, { { 12, 9 }, "line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
 
-   dip::BasicMorphology( in, out, { { 8, 9 }, "line" }, {}, dip::Polarity::DILATION ); // periodic component n=1, discrete line {8,9}
+   se = {{ 8, 9 }, "line" }; // periodic component n=1, discrete line {8,9}
+   dip::detail::BasicMorphology( in, out, se, {}, dip::detail::BasicMorphologyOperation::DILATION );
    DOCTEST_CHECK( dip::Count( out ) == 9 );
-   dip::BasicMorphology( out, out, { { 8, 9 }, "line" }, {}, dip::Polarity::EROSION, dip::Mirror::YES );
+   se.Mirror();
+   dip::detail::BasicMorphology( out, out, se, {}, dip::detail::BasicMorphologyOperation::EROSION );
    DOCTEST_CHECK( dip::Count( out ) == 1 ); // Did the erosion return the image to a single pixel?
-   DOCTEST_CHECK( out.At( 64, 35 ) == pval ); // Is that pixel in the right place?
+   DOCTEST_CHECK( out.At( 32, 20 ) == pval ); // Is that pixel in the right place?
 }
 
 #endif // DIP__ENABLE_DOCTEST
