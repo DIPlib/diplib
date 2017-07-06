@@ -23,6 +23,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <iomanip>
 
 #include "diplib.h"
 #include "diplib/iterators.h"
@@ -45,6 +46,18 @@ namespace detail {
 
 template< typename T, typename std::enable_if< std::is_integral< T >::value, int >::type = 0 >
 T Round( T v, int /*digits*/) {
+   return v;
+}
+
+dip::uint32 Round( dip::uint8 v, int /*digits*/) { // prevent outputting char
+   return v;
+}
+
+dip::sint32 Round( dip::sint8 v, int /*digits*/) { // prevent outputting char
+   return v;
+}
+
+dip::sint32 Round( dip::bin v, int /*digits*/) { // dip::bin is not integral...
    return v;
 }
 

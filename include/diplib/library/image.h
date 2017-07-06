@@ -2089,7 +2089,7 @@ class DIP_NO_EXPORT Image {
                dim2 = 1;
                break;
             default:
-               DIP_THROW( E::PARAMETER_OUT_OF_RANGE );
+               DIP_THROW( E::ILLEGAL_DIMENSION );
          }
          return Rotation90( n, dim1, dim2 );
       }

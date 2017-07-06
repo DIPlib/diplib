@@ -503,12 +503,13 @@ static inline void ExpandBufferMirror(
       dip::uint left,
       dip::uint right
 ) {
+   dip::uint steps = pixels - 1;
    // Left side
    DataType* in = buffer;
    DataType* out = buffer - stride;
    for( dip::uint ii = 0; ii < left; ii++ ) {
       *out = invert ? saturated_inv( *in ) : *in;
-      in -= (( ii / pixels ) & 1 ) ? stride : -stride;
+      in -= (( ii / steps ) & 1 ) ? stride : -stride;
       out -= stride;
    }
    // Right side
@@ -516,7 +517,7 @@ static inline void ExpandBufferMirror(
    out = buffer + static_cast< dip::sint >( pixels ) * stride;
    for( dip::uint ii = 0; ii < right; ii++ ) {
       *out = invert ? saturated_inv( *in ) : *in;
-      in += (( ii / pixels ) & 1 ) ? stride : -stride;
+      in += (( ii / steps ) & 1 ) ? stride : -stride;
       out += stride;
    }
 }
