@@ -190,8 +190,8 @@ namespace {
 template< typename TPI >
 class SkewLineFilter : public Framework::SeparableLineFilter {
    public:
-      SkewLineFilter( interpolation::Method method, FloatArray const& tanShear, dip::uint axis, dip::uint origin, BoundaryConditionArray const& boundaryCondition ) :
-            method_( method ), tanShear_( tanShear ), axis_( axis ), origin_( origin ), boundaryCondition_( boundaryCondition ) {}
+      SkewLineFilter( interpolation::Method method, FloatArray const& tanShear, FloatArray const& offset, dip::uint axis, BoundaryConditionArray const& boundaryCondition ) :
+            method_( method ), tanShear_( tanShear ), offset_( offset ), axis_( axis ), boundaryCondition_( boundaryCondition ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
       }
@@ -203,13 +203,6 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
          dip::uint procDim = params.dimension;
          DIP_ASSERT( procDim != axis_ );
          DIP_ASSERT( tanShear_[ procDim ] != 0.0 );
-         dfloat shift = tanShear_[ procDim ] * ( static_cast< dfloat >( origin_ ) - static_cast< dfloat >( params.position[ axis_ ] ));
-         dip::sint offset = static_cast< dip::sint >( std::floor( shift ));
-         shift -= static_cast< dfloat >( offset );
-         if( shift > 0.5 ) {
-            shift -= 1.0;
-            ++offset;
-         }
          TPI* spline1 = nullptr;
          TPI* spline2 = nullptr;
          if( method_ == interpolation::Method::BSPLINE ) {
@@ -219,30 +212,28 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
             spline1 = buffer.data();
             spline2 = spline1 + size;
          }
+         dfloat fullShift = tanShear_[ procDim ] * static_cast< dfloat >( params.position[ axis_ ] ) + offset_[ procDim ];
+         dip::sint offset = static_cast< dip::sint >( std::floor( fullShift ));
+         dfloat shift = -( fullShift - static_cast< dfloat >( offset ));
          if( boundaryCondition_[ procDim ] == BoundaryCondition::PERIODIC ) {
-            if( offset >= 0 ) {
-               dip::uint len = length - static_cast< dip::uint >( offset );
-               auto outPtr = out + offset;
-               interpolation::Dispatch( method_, in, outPtr, len, 1.0, -shift, spline1, spline2 );
-               outPtr = out;
-               in += len;
-               len = static_cast< dip::uint >( offset );;
-               interpolation::Dispatch( method_, in, outPtr, len, 1.0, -shift, spline1, spline2 );
-            } else {
-               dip::uint len = static_cast< dip::uint >( -offset );
-               auto outPtr = out + ( length - len );
-               interpolation::Dispatch( method_, in, outPtr, len, 1.0, -shift, spline1, spline2 );
-               outPtr = out;
-               in += len;
-               len = length - len;
-               interpolation::Dispatch( method_, in, outPtr, len, 1.0, -shift, spline1, spline2 );
+            offset %= static_cast< dip::sint >( length );
+            if( offset < 0 ) {
+               offset += static_cast< dip::sint >( length );
             }
+            dip::uint len = length - static_cast< dip::uint >( offset );
+            auto outPtr = out + offset;
+            interpolation::Dispatch( method_, in, outPtr, len, 1.0, shift, spline1, spline2 );
+            outPtr = out;
+            in += len;
+            len = static_cast< dip::uint >( offset );
+            interpolation::Dispatch( method_, in, outPtr, len, 1.0, shift, spline1, spline2 );
          } else {
-            dip::uint skewSize = ( params.outBuffer.length - length ) / 2;
-            offset += static_cast< dip::sint >( skewSize );
             DIP_ASSERT( offset >= 0 );
             out += offset;
-            interpolation::Dispatch( method_, in, out, length, 1.0, -shift, spline1, spline2 );
+            if( shift < 0.0 ) {
+               ++length; // Fill in one sample more than we have in the input, so we interpolate properly.
+            }
+            interpolation::Dispatch( method_, in, out, length, 1.0, shift, spline1, spline2 );
             detail::ExpandBuffer( out.Pointer(), DataType( TPI( 0 )), out.Stride(), 1, length, 1, static_cast< dip::uint >( offset ),
                                   params.outBuffer.length - length - static_cast< dip::uint >( offset ), boundaryCondition_[ procDim ] );
          }
@@ -250,8 +241,8 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
    private:
       interpolation::Method method_;
       FloatArray const& tanShear_;
+      FloatArray const& offset_;
       dip::uint axis_;
-      dip::uint origin_;
       BoundaryConditionArray const& boundaryCondition_;
       std::vector< std::vector< TPI >> buffer_; // One per thread
 };
@@ -263,13 +254,14 @@ void Skew(
       Image& out,
       FloatArray const& shearArray,
       dip::uint axis,
+      dip::uint origin,
       String const& interpolationMethod,
       BoundaryConditionArray boundaryCondition
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = c_in.Dimensionality();
    DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( axis >= nDims , E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( axis >= nDims , E::ILLEGAL_DIMENSION );
    interpolation::Method method;
    if( c_in.DataType().IsBinary() ) {
       method = interpolation::Method::NEAREST_NEIGHBOR;
@@ -285,17 +277,25 @@ void Skew(
 
    // Calculate new output sizes and other processing parameters
    UnsignedArray outSizes = c_in.Sizes();
-   dip::uint origin = outSizes[ axis ] / 2;
-   FloatArray tanShear( nDims, 0.0 );
+   DIP_THROW_IF( origin > outSizes[ axis ], E::PARAMETER_OUT_OF_RANGE );
+   FloatArray offset( nDims, 0.0 );
    BooleanArray process( nDims, false );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if(( ii != axis ) && ( shearArray[ ii ] != 0.0 )) {
-         DIP_THROW_IF(( shearArray[ ii ] <= -pi / 2.0 ) | ( shearArray[ ii ] >= pi / 2.0 ), E::PARAMETER_OUT_OF_RANGE );
-         tanShear[ ii ] = std::tan( shearArray[ ii ] );
          process[ ii ] = true;
+         // On the line indicated by `origin` we want to do an integer shift. Adding `offset` makes the shift an integer value
+         dfloat originShift = static_cast< dfloat >( origin ) * shearArray[ ii ];
+         offset[ ii ] = ( originShift > 0.0 ? std::ceil( originShift ) : std::floor( originShift )) - originShift;
          if( boundaryCondition[ ii ] != BoundaryCondition::PERIODIC ) {
-            dip::uint skewSize = static_cast< dip::uint >( std::ceil( std::abs( static_cast< dfloat >( origin ) * tanShear[ ii ] )));
-            outSizes[ ii ] += 2 * skewSize;
+            // We need to increase the size of the output image to accommodate all the data
+            dip::uint skewSize = static_cast< dip::uint >(
+                  std::ceil( std::abs( static_cast< dfloat >( outSizes[ axis ] - 1 ) * shearArray[ ii ] + offset[ ii ] ))
+            );
+            outSizes[ ii ] += skewSize;
+            // Add to `offset` an integer number such that the computed output start locations are always positive.
+            if( shearArray[ ii ] < 0.0 ) {
+               offset[ ii ] += static_cast< dfloat >( skewSize );
+            }
          }
       }
    }
@@ -313,7 +313,7 @@ void Skew(
 
    // Find line filter
    std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-   DIP_OVL_NEW_FLEX( lineFilter, SkewLineFilter, ( method, tanShear, axis, origin, boundaryCondition ), bufferType );
+   DIP_OVL_NEW_FLEX( lineFilter, SkewLineFilter, ( method, shearArray, offset, axis, boundaryCondition ), bufferType );
 
    // Call line filter through framework
    Framework::Separable( in, out, bufferType, out.DataType(), process, { border }, boundaryCondition, *lineFilter,
@@ -351,12 +351,14 @@ void Rotation(
    DIP_END_STACK_TRACE
    // Do the last rotation, in the range [-45,45], with three skews
    FloatArray skewArray1( in.Dimensionality(), 0.0 );
-   skewArray1[ dimension1 ] = ( angle / 2.0 );
+   skewArray1[ dimension1 ] = std::tan( angle / 2.0 );
    FloatArray skewArray2( in.Dimensionality(), 0.0 );
-   skewArray2[ dimension2 ] = std::atan( -std::sin( angle ));
-   Skew( in, out, skewArray1, dimension2, method, bc );
-   Skew( out, out, skewArray2, dimension1, method, bc );
-   Skew( out, out, skewArray1, dimension2, method, bc );
+   skewArray2[ dimension2 ] = -std::sin( angle );
+   dip::uint origin1 = in.Size( dimension1 );
+   dip::uint origin2 = in.Size( dimension2 );
+   Skew( in, out, skewArray1, dimension2, origin2, method, bc );
+   Skew( out, out, skewArray2, dimension1, origin1, method, bc );
+   Skew( out, out, skewArray1, dimension2, origin2, method, bc );
    // Remove the useless borders of the image
    dfloat cos_angle = std::abs( std::cos( angle ));
    dfloat sin_angle = std::abs( std::sin( angle ));

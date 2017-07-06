@@ -205,21 +205,22 @@ DIP_EXPORT void Skew(
       Image& out,
       FloatArray const& shearArray, // value along `axis` is ignored
       dip::uint axis,
+      dip::uint origin, // where along axis the origin of the skew is
       String const& interpolationMethod = "",
       BoundaryConditionArray boundaryCondition = {} // if it is "periodic", does periodic skew
 );
 
 /// \brief Skews an image
 ///
-/// The image is skewed such that a straight line along dimension `axis` is tilted by an
-/// angle of `shearArray[ ii ]` radian in the direction of dimension `ii`. Each image sub-volume perpendicular
+/// The image is skewed such that a straight line along dimension `axis` is tilted by an angle of
+/// `atan( shearArray[ ii ] )` radian in the direction of dimension `ii`. `shearArray[ ii ]` thus represents
+/// the sub-pixel shift of a line in the direction `ii` with respect to the previous line along `axis`.
+/// Each image sub-volume perpendicular
 /// to `axis` is shifted by a different amount. The output image has the same dimension as `in` in the `axis`
 /// direction, and larger dimensions in all other dimensions, such that no data is lost. The value of `shear[ axis ]`
 /// is ignored. The origin of the skew is in the middle of the image.
 ///
 /// The output image has the same data type as the input image.
-///
-/// `shear` must have a magnitude smaller than pi/2.
 ///
 /// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
 ///
@@ -236,20 +237,22 @@ inline void Skew(
       Image& out,
       FloatArray shearArray,
       dip::uint axis,
-      String const& interpolationMethod,
-      StringArray const& boundaryCondition
+      String const& interpolationMethod = "",
+      StringArray const& boundaryCondition = {}
 ) {
+   DIP_THROW_IF( axis >= in.Dimensionality(), E::ILLEGAL_DIMENSION );
+   dip::uint origin = in.Size( axis ) / 2;
    DIP_START_STACK_TRACE
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
-      Skew( in, out, shearArray, axis, interpolationMethod, bc );
+      Skew( in, out, shearArray, axis, origin, interpolationMethod, bc );
    DIP_END_STACK_TRACE
 }
 inline Image Skew(
       Image const& in,
       FloatArray shearArray, // value along `axis` is ignored
       dip::uint axis,
-      String const& interpolationMethod,
-      StringArray const& boundaryCondition // no default value, use this function only if `boundaryCondition` is given
+      String const& interpolationMethod = "",
+      StringArray const& boundaryCondition = {}
 ) {
    Image out;
    Skew( in, out, shearArray, axis, interpolationMethod, boundaryCondition );
@@ -266,7 +269,8 @@ inline Image Skew(
 ///
 /// The output image has the same data type as the input image.
 ///
-/// `shear` must have a magnitude smaller than pi/2.
+/// `shear` must have a magnitude smaller than pi/2. Note that the definition of `shear` is different
+/// from that of `shearArray` in the other version of `dip::Skew`, documented above.
 ///
 /// See \ref interpolation_methods for information on the `interpolationMethod` parameter.
 ///
@@ -290,15 +294,17 @@ inline void Skew(
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( axis == skew, E::INVALID_PARAMETER );
-   DIP_THROW_IF(( axis >= nDims ) || ( skew >= nDims ), E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF(( axis >= nDims ) || ( skew >= nDims ), E::ILLEGAL_DIMENSION );
+   DIP_THROW_IF(( shear <= -pi / 2.0 ) | ( shear >= pi / 2.0 ), E::PARAMETER_OUT_OF_RANGE );
    FloatArray shearArray( nDims, 0.0 );
-   shearArray[ skew ] = shear;
+   shearArray[ skew ] = std::tan( shear );
+   dip::uint origin = in.Size( axis ) / 2;
    BoundaryCondition bc;
    DIP_START_STACK_TRACE
       bc = StringToBoundaryCondition( boundaryCondition );
    DIP_END_STACK_TRACE
    BoundaryConditionArray bca( 1, bc );
-   Skew( in, out, shearArray, axis, interpolationMethod, bca );
+   Skew( in, out, shearArray, axis, origin, interpolationMethod, bca );
 }
 inline Image Skew(
       Image const& in,
@@ -439,9 +445,9 @@ inline void Rotation3d(
       String const& interpolationMethod = "",
       String const& boundaryCondition = {}
 ) {
-   Rotation3d( in,  out, alpha, 2, interpolationMethod, boundaryCondition );
-   Rotation3d( out, out, beta,  1, interpolationMethod, boundaryCondition );
-   Rotation3d( out, out, gamma, 2, interpolationMethod, boundaryCondition );
+   Rotation( in,  out, alpha, 0, 1, interpolationMethod, boundaryCondition );
+   Rotation( out, out, beta,  2, 0, interpolationMethod, boundaryCondition );
+   Rotation( out, out, gamma, 0, 1, interpolationMethod, boundaryCondition );
 }
 inline Image Rotation3d(
       Image const& in,

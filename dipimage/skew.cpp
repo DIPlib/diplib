@@ -57,6 +57,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::Skew( in, out, shear, skew, axis, method, boundaryCondition );
 
+      // TODO: Implement also the other form of skew, using `shearArray`.
+
       plhs[ 0 ] = mi.GetArray( out );
 
    } catch( const dip::Error& e ) {

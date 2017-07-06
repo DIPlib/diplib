@@ -282,7 +282,7 @@ void NearestNeighbor(
       dfloat zoom,
       dfloat shift
 ) {
-   dip::sint offset = static_cast< dip::sint >( inverse ? std::ceil( shift - 0.5 ) : std::floor( shift + 0.5 ));
+   dip::sint offset = static_cast< dip::sint >( consistent_round< dfloat, inverse >( shift ));
    input += offset;
    if( zoom == 1.0 ) {
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
@@ -298,7 +298,7 @@ void NearestNeighbor(
          ++output;
          pos += step;
          if( pos >= 0.5 ) {
-            offset = static_cast< dip::sint >( std::floor( pos + 0.5 ));
+            offset = static_cast< dip::sint >( consistent_round< dfloat, inverse >( pos ));
             pos -= static_cast< dfloat >( offset );
             input += offset;
          }
@@ -454,11 +454,11 @@ dip::uint GetBorderSize( Method method ) {
          border = 2;
          break;
       case Method::LINEAR:
+      case Method::INVERSE_NEAREST_NEIGHBOR:
+      case Method::NEAREST_NEIGHBOR:
          border = 1;
          break;
       //case Method::FT:
-      //case Method::FT:
-      //case Method::INVERSE_NEAREST_NEIGHBOR:
       default:
          border = 0;
          break;

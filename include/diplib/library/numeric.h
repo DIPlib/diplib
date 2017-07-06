@@ -136,6 +136,14 @@ inline dip::sint modulo( dip::sint value, dip::sint period ) {
    return ( value < 0 ) ? ( period - ( -value % period )) : ( value % period );
 }
 
+/// \brief Consistent rounding, where half-way cases are rounded in the same direction for positive and negative
+/// values. `inverse` template parameter indicates the direction for these cases. By default, it matches
+/// `std::round` for positive values.
+template< typename T, bool inverse = false >
+inline T consistent_round( T v ) {
+   return inverse ? std::ceil( v - 0.5 ) : std::floor( v + 0.5 ); // conditional should be optimized out
+};
+
 /// \brief Computes the absolute value in such a way that the result is always correct for pixel types.
 /// For `dip::sint` use `std::abs` instead.
 ///
