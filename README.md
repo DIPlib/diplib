@@ -23,7 +23,7 @@ Use the following commands to build:
     cmake /path/to/dip/root/directory
     make -j install
 
-To change which compilers CMake uses:
+To change which compilers CMake uses (delete any `CMakeCache.txt` file in your build directory first):
 
     CC=gcc-5 CXX=g++-5 cmake /path/to/dip/root/directory
 

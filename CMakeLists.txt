@@ -76,6 +76,8 @@ if(DIP_ENABLE_ASSERT)
 endif()
 
 # Enable testing
+# It's possible to disable DocTest using `DOCTEST_CONFIG_DISABLE`, but that would also disable any tests in code
+# that uses DIPlib, hence we define a variable here that removes all of DocTest from the DIPlib sources.
 set(DIP_ENABLE_DOCTEST ON CACHE BOOL "Turn off to not include doctest.h in the library headers")
 if(DIP_ENABLE_DOCTEST)
    include_directories(dependencies/doctest)

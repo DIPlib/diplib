@@ -22,6 +22,11 @@
 in C; only the code that implements actual image processing and analysis algorithms is ported
 over.
 
+The list below describes infrastructure changes, function interface changes, and functionality
+changes in the *DIPlib* library, as well as changes to the *DIPimage* toolbox. It is possible
+that some changes were not listed here, but hopefully this list will help in porting your old
+code that used *DIPlib* or *DIPimage* to the new version.
+
 ## Core/infrastructure changes
 
 - Functions and types used to start with `dip_`, now they are in the `dip::` namespace.
@@ -87,6 +92,17 @@ over.
   using a simple image copy (the copy shares the image data with the original image, and
   makes it possible to strip the original image while still keeping the input data available).
 
+- Header files used to have names such as `dip_xxx.h`, they now are `diplib/xxx.h`. The "`xxx`"
+  part has remained the same in most cases, though some function declarations have moved to a
+  different header file. The documentation specifies which header file to include for each
+  function.
+
+- The *dipIO* library no longer exists. Some `dipio_Xxx` functions are now defined in the
+  `diplib/file_io.h` header file (reading and writing ICS and TIFF files).
+  `dipio_MeasurementWriteCSV` is now a method to `dip::Measurement` (TODO!).
+  `dipio_Colour2Gray` functionality is replaced by `dip::ColorSpaceManager`.
+  Other functionality no longer exists.
+
 ## Changes in algorithm interface
 
 - Function parameters expressing options are now represented by strings rather than
@@ -100,7 +116,7 @@ over.
 - We try to sort the arguments most commonly left with default values at the end of the
   argument lists. This caused some functions to have a different parameter order.
   For example, the boundary condition is not commonly changed, and so the boundary condition
-  array input argument is now typically further to the right in (usually at the end of ) the
+  array input argument is now typically further to the right in (usually at the end of) the
   argument list.
 
 - Function names are often simplified, since in C++ it's possible to overload functions for
@@ -121,10 +137,10 @@ over.
   this might be more flexible.
 
 - `dip_Arith` and `dip_Compare` used to implement all arithmetic and comparison operators,
-  with macros `dip_Add`, `dip_Sub`, etc. These functions no longer exist, each operator is
-  implemented by its own function. The shortened names of these functions are no longer
-  shortened, so instead of `dip_Sub` use `dip::Subtract`. `dip_AddInteger`, `dip_AddFloat`,
-  etc. now are overloaded versions of `dip::Add` et al.
+  (with convenience macros `dip_Add`, `dip_Sub`, etc.). These functions no longer exist,
+  each operator is implemented by its own function. The shortened names of these functions
+  are no longer shortened, so instead of `dip_Sub` use `dip::Subtract`. `dip_AddInteger`,
+  `dip_AddFloat`, etc. now are overloaded versions of `dip::Add` et al.
 
 - `dip_WeightedAdd` is now generalized to `dip::LinearCombination`.
   `dip_WeightedSub` can be emulated by setting a negative weight.
@@ -141,7 +157,7 @@ over.
 - `dip_MultiDimensionalHistogram` and `dip_ImageToHistogram` have been merged into the
   constructor for `dip::Histogram`, which replaces both `dip_Distribution` and `dip_Histogram`.
 
-- The `dip_ImageLookup` function has been merged with the `dip_LookupTable` object, and
+- The `dip_ImageLookup` function has been merged with the `dip::LookupTable` object, and
   includes the functionality of `dip_ImageLut`.
 
 - `dip_Threshold` is now `dip::FixedThreshold`. `dip::Threshold` is a function that allows
@@ -167,6 +183,12 @@ over.
   `dip::Resampling`, `dip::Skew`, `dip::Rotation` and similar now take a boundary condition
   as optional argument.
 
+- `dip_KuwaharaImproved` is now called `dip::Kuwahara`, and `dip_Kuwahara` is no longer
+  (C++ default values make it redundant).
+
+- `dip_GeneralisedKuwaharaImproved` is now called `dip::SelectionFilter`, and
+  `dip_GeneralisedKuwahara` is no longer (C++ default values make it redundant).
+
 ## Changes in functionality
 
 - Second order extrapolation boundary extension didn't do as advertised in the old *DIPlib*.
@@ -177,9 +199,10 @@ over.
   These functions are quite noise sensitive, however, and I expect they might produce high
   frequencies along the edge.
 
-- Fixed little bug in the perimeter measurement feature, which didn't check the corner count
+- Fixed little bug in the "Perimeter" measurement feature, which didn't check the corner count
   for the transition from the last to the first chain code, yielding a perimeter that was often
-  0.0910 pixels too long.
+  0.0910 pixels too long. The feature "Radius" now computes the center of mass of the object
+  correctly.
 
 - The measurement features "Skewness" and "ExcessKurtosis" are no longer separate features, but
   instead put together in the new "Statistics" feature, which also computes the mean and standard
@@ -187,10 +210,17 @@ over.
   The algorithms to compute these statistics have changed to be more stable. The measurement
   feature "Sum" was an alias to "Mass", and is not (yet?) available.
 
+- New measurement features: "EllipseVariance", "DimensionsCube", "DimensionsEllipsoid",
+  "GreyDimensionsCube", and "GreyDimensionsEllipsoid". The features "Mu", "Inertia", "MajorAxes",
+  and their grey-value versions have been generalized to arbitrary number of dimensions.
+
 - `dip::SeparableConvolution` treats input filter definitions slightly differently, and there
   no longer are "left" and "right" options.
 
 - `dip::ImageDisplay` no longer does any spatial scaling. Also, it's a class, not a function.
+
+- `dip::ColorSpaceManager` is functionality ported from MATLAB-code in the old *DIPimage*,
+  with a few new color spaces added.
 
 - `dip::FourierTransform` now does normalization in the more common way (forward transform not
   normalized, inverse transform normalized by 1/N), but an option ("symmetric") allows to change
@@ -199,6 +229,9 @@ over.
 
 - `dip::Histogram` misses a few of the options that `dip_MultiDimensionalHistogram` had, but I
   don't think they are relevant. They can be added easily if necessary.
+
+- Many threshold selection strategies have been ported from MATLAB code in *DIPimage*, see
+  `dip::Threshold`.
 
 - `dip::Random` uses a different pseudo-random number generator. Previous versions used the
   Mersenne Twister. We now use the PCG scheme (permuted linear congruential generator), which
@@ -212,10 +245,16 @@ over.
   of being a length and an angle, now represents the bounding box, with direction encoded by the
   signs. Besides the discrete line and the interpolated line, we now have several other options,
   including the periodic line, which makes translation-invariant operations with line SEs much
-  more efficient.
+  more efficient. The "diamond" SE is now implemented using line SEs, and we have added an
+  "octagonal" SE that is computed as a combination of a diamond SE and a rectangular SE.
+
+- New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
+  and `dip::ClosingByReconstruction`.
 
 - `dip::Resampling` shifts the image in the opposite direction from what it did in the old
-  *DIPlib*, where the shift was unintuitive.
+  *DIPlib*, where the shift was unintuitive. `dip::Skew` can now skew in multiple dimensions
+  at the same time. `dip::Rotation` now works for any number of dimensions, though it only
+  rotates around one cartesian axis.
 
 ## Changes from DIPimage 2.x (the old DIPimage)
 
@@ -284,3 +323,6 @@ over.
 
 - `resample` shifts the image in the opposite direction from what it did in the old *DIPimage*,
   where the shift was unintuitive.
+
+- Many functions have been added to match new functionality in *DIPlib*, as well as previous
+  functionality that was not accessible from MATLAB.

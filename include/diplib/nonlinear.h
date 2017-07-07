@@ -66,7 +66,7 @@ inline Image PercentileFilter(
    return out;
 }
 
-/// \brief Applies a median filter to `in`.
+/// \brief The median filter, a non-linear smoothing filter.
 ///
 /// The size and shape of the filter window is given by `kernel`, which you can define through a default
 /// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
@@ -91,6 +91,7 @@ inline Image MedianFilter(
    MedianFilter( in, out, kernel, boundaryCondition );
    return out;
 }
+
 
 /// \brief Computes, for each pixel, the sample variance within a filter window around the pixel.
 ///
@@ -117,16 +118,96 @@ inline Image VarianceFilter(
 }
 
 
+/// \brief Selects, for each pixel, a value from within the filter window, where a control image is minimal or maximal.
+///
+/// For each pixel, within the filter window, looks for the pixel with the lowest value (`mode` is `"minimum"`) or
+/// highest value (`mode` is `"maximum"`), and takes the value from `in` at that location as the output value. To
+/// prevent a stair-case effect in the output, where many pixels use the same input value, a `threshold` can be
+/// specified. If it is a positive value, then the lowest (or highest) value found must be `threshold` lower (or
+/// higher) than the central pixel, otherwise the central pixel is used.
+///
+/// Ties are solved by picking the value closest to the central pixel. Multiple control pixels with the same value
+/// and at the same distance to the central pixel are solved arbitrarily (in the current implementation, the first
+/// of these pixels encountered is used).
+///
+/// The Kuwahara-Nagao operator (see `dip::Kuwahara`) is implemented in terms of the `%SelectionFilter`:
+///
+/// ```cpp
+///     Image value = dip::Uniform( in, kernel );
+///     Image control = dip::VarianceFilter( in, kernel );
+///     kernel.Mirror();
+///     Image out = dip::SelectionFilter( value, control, kernel );
+/// ```
+///
+/// Note that the following reproduces the result of the erosion (albeit in a very costly manner):
+///
+/// ```cpp
+///     Image out = dip::SelectionFilter( in, in, kernel );
+/// ```
+///
+/// The size and shape of the filter window is given by `kernel`, which you can define through a default
+/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+DIP_EXPORT void SelectionFilter(
+      Image const& in,
+      Image const& control,
+      Image& out,
+      Kernel const& kernel = {},
+      dfloat threshold = 0.0,
+      String const& mode = "minimum",
+      StringArray const& boundaryCondition = {}
+); // TODO: implement SelectionFilter
+inline Image SelectionFilter(
+      Image const& in,
+      Image const& control,
+      Kernel const& kernel = {},
+      dfloat threshold = 0.0,
+      String const& mode = "minimum",
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   SelectionFilter( in, control, out, kernel, threshold, mode, boundaryCondition );
+   return out;
+}
+
+/// \brief The Kuwahara-Nagao operator, a non-linear smoothing filter.
+///
+/// For each pixel, shifts the filtering window such that the variance within the window is minimal, then
+/// computes the average value as the output. The shift of the window is always such that the pixel under
+/// consideration stays within the window.
+///
+/// The size and shape of the filter window is given by `kernel`, which you can define through a default
+/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// \see dip::SelectionFilter.
+DIP_EXPORT void Kuwahara(
+      Image const& in,
+      Image& out,
+      Kernel const& kernel = {},
+      dfloat threshold = 0.0,
+      StringArray const& boundaryCondition = {}
+); // TODO: implement Kuwahara
+inline Image Kuwahara(
+      Image const& in,
+      Kernel const& kernel = {},
+      dfloat threshold = 0.0,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   Kuwahara( in, out, kernel, threshold, boundaryCondition );
+   return out;
+}
+
+
 // TODO: functions to port:
 /*
    dip_RankContrastFilter (dip_rankfilters.h)
-   dip_Kuwahara (dip_filtering.h)
-   dip_GeneralisedKuwahara (dip_filtering.h)
-   dip_KuwaharaImproved (dip_filtering.h) (merge into dip_Kuwahara)
-   dip_GeneralisedKuwaharaImproved (dip_filtering.h) (merge into dip_GeneralisedKuwahara)
    dip_Sigma (dip_filtering.h)
    dip_BiasedSigma (dip_filtering.h)
-   dip_GaussianSigma (dip_filtering.h)
+   dip_GaussianSigma (dip_filtering.h) (compare dip_BilateralFilter)
    dip_NonMaximumSuppression (dip_filtering.h)
    dip_ArcFilter (dip_bilateral.h)
    dip_Bilateral (dip_bilateral.h) (all three flavours into one function)

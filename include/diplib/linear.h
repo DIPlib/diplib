@@ -186,8 +186,8 @@ inline Image GeneralConvolution(
 
 /// \brief Applies a convolution with a kernel with uniform weights, leading to an average (mean) filter.
 ///
-/// The size and shape of the kernel is given by `kernelShape`, which you can define through a default
-/// shape with corresponding sizes, or through a binary image. See `dip::KernelShape`.
+/// The size and shape of the kernel is given by `kernel`, which you can define through a default
+/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
