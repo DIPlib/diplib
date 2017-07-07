@@ -22,6 +22,7 @@
 #define DIP_NONLINEAR_H
 
 #include "diplib.h"
+#include "diplib/kernel.h"
 
 
 /// \file
@@ -36,12 +37,89 @@ namespace dip {
 /// \brief Non-linear filters for noise reduction, detection, etc., excluding morphological filters.
 /// \{
 
+
+/// \brief Applies a percentile filter (A.K.A. rank filter) to `in`.
+///
+/// Determines the `percentile` percentile within the filter window, and assigns that value to the output pixel.
+/// To find out what percentile corresponds to a specific rank, it is necessary to know the number of pixels within
+/// the neighborhood. (TODO: add such a function to `dip::Kernel`.)
+///
+/// The size and shape of the filter window is given by `kernel`, which you can define through a default
+/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+DIP_EXPORT void PercentileFilter(
+      Image const& in,
+      Image& out,
+      dfloat percentile,
+      Kernel const& kernel = {},
+      StringArray const& boundaryCondition = {}
+);
+inline Image PercentileFilter(
+      Image const& in,
+      dfloat percentile,
+      Kernel const& kernel = {},
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   PercentileFilter( in, out, percentile, kernel, boundaryCondition );
+   return out;
+}
+
+/// \brief Applies a median filter to `in`.
+///
+/// The size and shape of the filter window is given by `kernel`, which you can define through a default
+/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// Calls `dip::PercentileFilter` with the `percentile` parameter set to 50.
+inline void MedianFilter(
+      Image const& in,
+      Image& out,
+      Kernel const& kernel = {},
+      StringArray const& boundaryCondition = {}
+) {
+   PercentileFilter( in, out, 50.0, kernel, boundaryCondition );
+}
+inline Image MedianFilter(
+      Image const& in,
+      Kernel const& kernel = {},
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   MedianFilter( in, out, kernel, boundaryCondition );
+   return out;
+}
+
+/// \brief Computes, for each pixel, the sample variance within a filter window around the pixel.
+///
+/// The size and shape of the filter window is given by `kernel`, which you can define through a default
+/// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
+///
+/// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// Uses `dip::VarianceAccumulator` for the computation.
+DIP_EXPORT void VarianceFilter(
+      Image const& in,
+      Image& out,
+      Kernel const& kernel = {},
+      StringArray const& boundaryCondition = {}
+);
+inline Image VarianceFilter(
+      Image const& in,
+      Kernel const& kernel = {},
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   VarianceFilter( in, out, kernel, boundaryCondition );
+   return out;
+}
+
+
 // TODO: functions to port:
 /*
-   dip_PercentileFilter (dip_rankfilter.h)
-   dip_MedianFilter (dip_rankfilter.h)
    dip_RankContrastFilter (dip_rankfilters.h)
-   dip_VarianceFilter (dip_filtering.h)
    dip_Kuwahara (dip_filtering.h)
    dip_GeneralisedKuwahara (dip_filtering.h)
    dip_KuwaharaImproved (dip_filtering.h) (merge into dip_Kuwahara)
