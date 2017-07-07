@@ -495,6 +495,15 @@ DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcompl
 ///    <a href="https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis">Kurtosis</a>.
 class DIP_NO_EXPORT StatisticsAccumulator {
    public:
+      /// Reset the accumulator, leaving it as if newly allocated.
+      void Reset() {
+         n_ = 0;
+         m1_ = 0.0;
+         m2_ = 0.0;
+         m3_ = 0.0;
+         m4_ = 0.0;
+      }
+
       /// Add a sample to the accumulator
       void Push( dfloat x ) {
          ++n_;
@@ -527,7 +536,7 @@ class DIP_NO_EXPORT StatisticsAccumulator {
          m3_ += b.m3_ + delta * delta2 * xn2 * ( an - bn ) / n2
                 + 3.0 * delta * ( an * b.m2_ - bn * m2_ ) / nn;
          m2_ += b.m2_ + delta2 * xn2 / nn;
-         m1_ = ( an * m1_ + bn * b.m1_ ) / nn;
+         m1_ += bn * delta / nn;
          return *this;
       }
 
@@ -569,10 +578,10 @@ class DIP_NO_EXPORT StatisticsAccumulator {
 
    private:
       dip::uint n_ = 0; // number of values x collected
-      dfloat m1_ = 0;   // mean of values x
-      dfloat m2_ = 0;   // sum of (x-mean(x))^2  --  `m2_ / n_` is second order central moment
-      dfloat m3_ = 0;   // sum of (x-mean(x))^3  --  `m3_ / n_` is third order central moment
-      dfloat m4_ = 0;   // sum of (x-mean(x))^4  --  `m4_ / n_` is fourth order central moment
+      dfloat m1_ = 0.0;   // mean of values x
+      dfloat m2_ = 0.0;   // sum of (x-mean(x))^2  --  `m2_ / n_` is second order central moment
+      dfloat m3_ = 0.0;   // sum of (x-mean(x))^3  --  `m3_ / n_` is third order central moment
+      dfloat m4_ = 0.0;   // sum of (x-mean(x))^4  --  `m4_ / n_` is fourth order central moment
 };
 
 /// \brief Combine two accumulators
@@ -593,18 +602,39 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
+/// It is also possible to remove a sample from the accumulator, using the `Pop` method. It is assumed that the
+/// particular value passed to this method had been added previously to the accumulator. If this is not the case,
+/// resulting means and variances are no longer correct.
+///
 /// \see StatisticsAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
 /// **Literature**
 /// - Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3rd Ed., 1998.
 class DIP_NO_EXPORT VarianceAccumulator {
    public:
+      /// Reset the accumulator, leaving it as if newly allocated.
+      void Reset() {
+         n_ = 0;
+         m1_ = 0.0;
+         m2_ = 0.0;
+      }
+
       /// Add a sample to the accumulator
       void Push( dfloat x ) {
          ++n_;
          dfloat delta = x - m1_;
          m1_ += delta / static_cast< dfloat >( n_ );
          m2_ += delta * ( x - m1_ );
+      }
+
+      /// Remove a sample from the accumulator
+      void Pop( dfloat x ) {
+         if( n_ > 0 ) {
+            dfloat delta = x - m1_;
+            m1_ = ( m1_ * static_cast< dfloat >( n_ ) - x ) / static_cast< dfloat >( n_ - 1 );
+            m2_ -= delta * ( x - m1_ );
+            --n_;
+         }
       }
 
       /// Combine two accumulators
@@ -614,7 +644,7 @@ class DIP_NO_EXPORT VarianceAccumulator {
          dfloat n = static_cast< dfloat >( n_ );
          dfloat bn = static_cast< dfloat >( b.n_ );
          dfloat delta = b.m1_ - m1_;
-         m1_ = ( oldn * m1_ + bn * b.m1_ ) / n;
+         m1_ += bn * delta / n;
          m2_ += b.m2_ + delta * delta * ( oldn * bn ) / n;
          return *this;
       }
@@ -639,8 +669,8 @@ class DIP_NO_EXPORT VarianceAccumulator {
 
    private:
       dip::uint n_ = 0; // number of values x collected
-      dfloat m1_ = 0;   // mean of values x
-      dfloat m2_ = 0;   // sum of (x-mean(x))^2  --  `m2_ / n_` is second order central moment
+      dfloat m1_ = 0.0;   // mean of values x
+      dfloat m2_ = 0.0;   // sum of (x-mean(x))^2  --  `m2_ / n_` is second order central moment
 };
 
 /// \brief Combine two accumulators
@@ -662,6 +692,12 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
 /// \see StatisticsAccumulator, VarianceAccumulator, MinMaxAccumulator, MomentAccumulator
 class DIP_NO_EXPORT DirectionalStatisticsAccumulator {
    public:
+      /// Reset the accumulator, leaving it as if newly allocated.
+      void Reset() {
+         n_ = 0;
+         sum_ = { 0.0, 0.0 };
+      }
+
       /// Add a sample to the accumulator
       void Push( dfloat x ) {
          ++n_;
@@ -696,7 +732,7 @@ class DIP_NO_EXPORT DirectionalStatisticsAccumulator {
 
    private:
       dip::uint n_ = 0; // number of values x collected
-      dcomplex sum_ = 0; // sum of values exp(i x)
+      dcomplex sum_ = { 0.0, 0.0 }; // sum of values exp(i x)
 };
 
 /// \brief Combine two accumulators
@@ -716,6 +752,12 @@ inline DirectionalStatisticsAccumulator operator+( DirectionalStatisticsAccumula
 /// \see StatisticsAccumulator, VarianceAccumulator, DirectionalStatisticsAccumulator, MomentAccumulator
 class DIP_NO_EXPORT MinMaxAccumulator {
    public:
+      /// Reset the accumulator, leaving it as if newly allocated.
+      void Reset() {
+         min_ = std::numeric_limits< dfloat >::max();
+         max_ = std::numeric_limits< dfloat >::lowest();
+      }
+
       /// Add a sample to the accumulator
       void Push( dfloat x ) {
          max_ = std::max( max_, x );
@@ -779,6 +821,13 @@ class DIP_NO_EXPORT MomentAccumulator {
          m0_ = 0.0;
          m1_.resize( N, 0.0 );
          m2_.resize( N * ( N + 1 ) / 2, 0.0 );
+      }
+
+      /// Reset the accumulator, leaving it as if newly allocated.
+      void Reset() {
+         m0_ = 0.0;
+         m1_.fill( 0.0 );
+         m2_.fill( 0.0 );
       }
 
       /// \brief Add a sample to the accumulator. `pos` must have `N` dimensions.
@@ -918,7 +967,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::gcd function") {
    DOCTEST_CHECK( dip::gcd( 15, 10 ) == 5 );
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_ceil function") {
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_XXX functions") {
    DOCTEST_CHECK( dip::div_ceil( 11l, 11l ) == 1 );
    DOCTEST_CHECK( dip::div_ceil( 11l, 6l ) == 2 );
    DOCTEST_CHECK( dip::div_ceil( 11l, 5l ) == 3 );
@@ -936,9 +985,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_ceil function") {
    DOCTEST_CHECK( dip::div_ceil( -11l, -5l ) == 3 );
    DOCTEST_CHECK( dip::div_ceil( -11l, -4l ) == 3 );
    DOCTEST_CHECK( dip::div_ceil( -11l, -3l ) == 4 );
-}
 
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_floor function") {
    DOCTEST_CHECK( dip::div_floor( 10l, 10l ) == 1 );
    DOCTEST_CHECK( dip::div_floor( 11l, 6l ) == 1 );
    DOCTEST_CHECK( dip::div_floor( 11l, 5l ) == 2 );
@@ -956,9 +1003,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_floor function") {
    DOCTEST_CHECK( dip::div_floor( -11l, -5l ) == 2 );
    DOCTEST_CHECK( dip::div_floor( -11l, -4l ) == 2 );
    DOCTEST_CHECK( dip::div_floor( -11l, -3l ) == 3 );
-}
 
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_round function") {
    DOCTEST_CHECK( dip::div_round( 10l, 10l ) == 1 );
    DOCTEST_CHECK( dip::div_round( 11l, 6l ) == 2 );
    DOCTEST_CHECK( dip::div_round( 11l, 5l ) == 2 );
@@ -999,6 +1044,93 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::abs function") {
    DOCTEST_CHECK( dip::abs( dip::sfloat( 25.6 )) == dip::sfloat( 25.6 ) );
    DOCTEST_CHECK( dip::abs( dip::sfloat( -25.6 )) == dip::sfloat( 25.6 ) );
    DOCTEST_CHECK( dip::abs( dip::scomplex{ 1.2f, 5.3f } ) == std::hypot( 1.2f, 5.3f ) );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the statictical accumulators") {
+   {
+      dip::StatisticsAccumulator acc1;
+      acc1.Push( 1.0 );
+      acc1.Push( 1.0 );
+      acc1.Push( 1.0 );
+      DOCTEST_CHECK( acc1.Mean() == doctest::Approx( 1.0 ));
+      DOCTEST_CHECK( acc1.Variance() == doctest::Approx( 0.0 ));
+      acc1.Push( 2.0 );
+      acc1.Push( 2.0 );
+      acc1.Push( 2.0 );
+      DOCTEST_CHECK( acc1.Mean() == doctest::Approx( 1.5 ));
+      DOCTEST_CHECK( acc1.Variance() == doctest::Approx( 0.5 * 0.5 * 6.0 / 5.0 ));
+      dip::StatisticsAccumulator acc2;
+      acc2.Push( 3.0 );
+      acc2.Push( 3.0 );
+      acc2.Push( 3.0 );
+      acc1 += acc2;
+      DOCTEST_CHECK( acc1.Mean() == doctest::Approx( 2.0 ));
+      DOCTEST_CHECK( acc1.Variance() == doctest::Approx( 6.0 / 8.0 ));
+   }
+   {
+      dip::VarianceAccumulator acc1;
+      acc1.Push( 1.0 );
+      acc1.Push( 1.0 );
+      acc1.Push( 1.0 );
+      DOCTEST_CHECK( acc1.Mean() == doctest::Approx( 1.0 ));
+      DOCTEST_CHECK( acc1.Variance() == doctest::Approx( 0.0 ));
+      acc1.Push( 2.0 );
+      acc1.Push( 2.0 );
+      acc1.Push( 2.0 );
+      DOCTEST_CHECK( acc1.Mean() == doctest::Approx( 1.5 ));
+      DOCTEST_CHECK( acc1.Variance() == doctest::Approx( 0.5 * 0.5 * 6.0 / 5.0 ));
+      dip::VarianceAccumulator acc2;
+      acc2.Push( 3.0 );
+      acc2.Push( 3.0 );
+      acc2.Push( 3.0 );
+      acc1 += acc2;
+      DOCTEST_CHECK( acc1.Mean() == doctest::Approx( 2.0 ));
+      DOCTEST_CHECK( acc1.Variance() == doctest::Approx( 6.0 / 8.0 ));
+      acc1.Pop( 3.0 );
+      acc1.Pop( 3.0 );
+      acc1.Pop( 3.0 );
+      DOCTEST_CHECK( acc1.Mean() == doctest::Approx( 1.5 ));
+      DOCTEST_CHECK( acc1.Variance() == doctest::Approx( 0.5 * 0.5 * 6.0 / 5.0 ));
+   }
+   {
+      dip::DirectionalStatisticsAccumulator acc1;
+      acc1.Push( 0.0 );
+      acc1.Push( 0.0 );
+      acc1.Push( 0.0 );
+      DOCTEST_CHECK( acc1.Mean() == doctest::Approx( 0.0 ));
+      DOCTEST_CHECK( acc1.Variance() == doctest::Approx( 0.0 ));
+      acc1.Push( dip::pi / 2.0 );
+      acc1.Push( dip::pi / 2.0 );
+      acc1.Push( dip::pi / 2.0 );
+      DOCTEST_CHECK( acc1.Mean() == doctest::Approx( dip::pi / 4.0 ));
+      DOCTEST_CHECK( acc1.Variance() == doctest::Approx( 1.0 - std::sqrt( 2.0 ) / 2.0 ));
+      dip::DirectionalStatisticsAccumulator acc2;
+      acc2.Push( -dip::pi / 2.0 );
+      acc2.Push( -dip::pi / 2.0 );
+      acc2.Push( -dip::pi / 2.0 );
+      acc1 += acc2;
+      DOCTEST_CHECK( acc1.Mean() == doctest::Approx( 0.0 ));
+      DOCTEST_CHECK( acc1.Variance() == doctest::Approx( 1.0 - 3.0 / 9.0 ));
+   }
+   {
+      dip::MinMaxAccumulator acc1;
+      acc1.Push( 0.0 );
+      acc1.Push( 1.0 );
+      acc1.Push( 2.0 );
+      DOCTEST_CHECK( acc1.Maximum() == 2.0 );
+      DOCTEST_CHECK( acc1.Minimum() == 0.0 );
+      acc1.Push( 1.2, 1.4 );
+      acc1.Push( -1.0, 5.0 );
+      DOCTEST_CHECK( acc1.Maximum() == 5.0 );
+      DOCTEST_CHECK( acc1.Minimum() == -1.0 );
+      dip::MinMaxAccumulator acc2;
+      acc2.Push( 6.0 );
+      acc2.Push( 4.0 );
+      acc2.Push( 1.0 );
+      acc1 += acc2;
+      DOCTEST_CHECK( acc1.Maximum() == 6.0 );
+      DOCTEST_CHECK( acc1.Minimum() == -1.0 );
+   }
 }
 
 #endif // DIP__ENABLE_DOCTEST
