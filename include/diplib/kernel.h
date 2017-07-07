@@ -57,13 +57,21 @@ class DIP_NO_EXPORT PixelTable;
 ///
 /// - `"diamond"`: A box rotated 45 degrees, the unit circle in \f$L^\infty\f$ metric (max-norm).
 ///
-/// In each of these cases, the `size` array indicates the diameter of the circle. The value can
+/// - `"line"`: A one-pixel thick straight line.
+///
+/// In the first three of these cases, the `size` array indicates the diameter of the circle. The value can
 /// be different along each dimension, simply stretching the shape. Note that the sizes are not
 /// necessarily odd, and don't even need to be integers. Pixels included in the neighborhood are
 /// those covered by the circle, with the origin on a pixel. In the case of the rectangle, however,
 /// the box is shifted by half a pixel if `floor(size)` is even. This means that the rectangular
 /// kernel is not necessarily symmetric. Set the `size` to odd values to ensure symmetry. Any
 /// size that is smaller or equal to 1 causes the kernel to not have an extent in that direction.
+///
+/// For the case of the `"line"` kernel, the `size` array gives the size of the bounding box (rounded to
+/// the nearest integer), as well as the direction of the line. A negative value for one dimension means
+/// that the line runs from high to low along that dimension. The line will always run from one corner of
+/// the bounding box to the opposite corner, and run through the origin.
+
 ///
 /// To define a kernel through an image, provide a binary image. The "on" or "true" pixels form
 /// the kernel. Note that, for most filters, the image is directly used as neighborhood (i.e. no

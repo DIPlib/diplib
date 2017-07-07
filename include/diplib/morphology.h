@@ -38,50 +38,6 @@ class DIP_NO_EXPORT Kernel;
 /// \defgroup morphology Mathematical morphology
 /// \ingroup filtering
 /// \brief Morphological filters for smoothing, sharpening, detection and more, and the watershed transform.
-///
-/// \section line_morphology Line morphology
-///
-/// There are various different ways of applying dilations, erosions, openings and closings with line
-/// structuring elements. The `dip::StructuringElement` class accepts five different strings each
-/// providing a different definition of the line structuring element. Further, there is also the
-/// `dip::PathOpening` function, which provides path openings and closings. Here we describe the five
-/// different line structuring elements implemented in *DIPlib*.
-///
-/// - `"line"`: This is an efficient implementation that yields the same results as the traditional line
-///   structuring element (`"discrete line"`). It is implemented as a combination of `"periodic line"` and
-///   `"discrete line"`, and is called *recursive line* in the literature (see Soille, 1996). If the line
-///   parameters are such that the periodic line has a short period, this implementation saves a lot of time. If the
-///   line parameters are such that the periodic line has only one point, this is identical to `"discrete line"`.
-///
-/// - `"fast line"`: This is a faster algorithm that applies a 1D operation along Bresenham lines, yielding
-///   a non-translation-invariant result. It is implemented by skewing the image, applying the operation
-///   along one of the image axes using the `"rectangular"` structuring element, and skewing the result back.
-///
-/// - `"periodic line"`: This is a line formed of only a subset of the pixels along the Bresenham line,
-///   such that it can be computed as a 1D operation along Bresenham lines, but still yields a
-///   translation-invariant result (Soille, 1996). It might not be very useful on its own, but when combined with the
-///   `"discrete line"`, it provides a more efficient implementation of the traditional line structuring
-///   element.
-///
-/// - `"discrete line"`: This is the traditional line structuring element, drawn using the Bresenham algorithm
-///   and applied brute-force.
-///
-/// - `"interpolated line"`: This is the same algorithm as `"fast line"`, but the skew operation uses interpolation.
-///   This greatly improves the results in e.g. a granulometry when the input image is band limited. However,
-///   the result of morphological operations is not band limited, and so the second, reverse skew operation will
-///   lose some precision (Luengo Hendriks, 2005).
-///
-/// For `"fast line"`, `"periodic line"` and `"interpolated line"`, which are computed by skewing the input
-/// image, setting the boundary condition to `"periodic"` or `"asym periodic"` allows the operation to occur
-/// completely in place; other boundary conditions lead to a larger intermediate image, and thus will always
-/// require additional, temporary storage.
-///
-/// **Literature**
-///  - P. Soille, E. J. Breen and R. Jones, "Recursive implementation of erosions and dilations along discrete lines
-///    at arbitrary angles," IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
-///  - C.L. Luengo Hendriks and L.J. van Vliet, "Using line segments as structuring elements for sampling-invariant
-///    measurements," IEEE Transactions on Pattern Analysis and Machine Intelligence 27(11):1826-1831, 2005.
-///
 /// \{
 
 
@@ -148,6 +104,59 @@ class DIP_NO_EXPORT Kernel;
 /// the right of the center in case of an even-sized image.
 ///
 /// See dip::Kernel, dip::PixelTable
+///
+/// \section line_morphology Line morphology
+///
+/// There are various different ways of applying dilations, erosions, openings and closings with line
+/// structuring elements. The `dip::StructuringElement` class accepts five different strings each
+/// providing a different definition of the line structuring element. Further, there is also the
+/// `dip::PathOpening` function, which provides path openings and closings. Here we describe the five
+/// different line structuring elements implemented in *DIPlib*.
+///
+/// - `"line"`: This is an efficient implementation that yields the same results as the traditional line
+///   structuring element (`"discrete line"`). It is implemented as a combination of `"periodic line"` and
+///   `"discrete line"`, and is called *recursive line* in the literature (see Soille, 1996). If the line
+///   parameters are such that the periodic line has a short period, this implementation saves a lot of time.
+///   In this case, for a given line angle, the cost of the operation is independent of the length of the line.
+///   If the line parameters are such that the periodic line has only one point, this is identical to
+///   `"discrete line"`.
+///
+/// - `"fast line"`: This is a faster algorithm that applies a 1D operation along Bresenham lines, yielding
+///   a non-translation-invariant result. It is implemented by skewing the image, applying the operation
+///   along one of the image axes using the `"rectangular"` structuring element, and skewing the result back.
+///   Thus, the cost of this operation is always independent of the length of the line.
+///
+/// - `"periodic line"`: This is a line formed of only a subset of the pixels along the Bresenham line,
+///   such that it can be computed as a 1D operation along Bresenham lines, but still yields a
+///   translation-invariant result (Soille, 1996). It might not be very useful on its own, but when combined
+///   with the `"discrete line"`, it provides a more efficient implementation of the traditional line structuring
+///   element.
+///
+/// - `"discrete line"`: This is the traditional line structuring element, drawn using the Bresenham algorithm
+///   and applied brute-force.
+///
+/// - `"interpolated line"`: This is the same algorithm as `"fast line"`, but the skew operation uses interpolation.
+///   This greatly improves the results in e.g. a granulometry when the input image is band limited
+///   (Luengo Hendriks, 2005). However, the result of morphological operations is not band limited, and so the
+///   second, reverse skew operation will lose some precision. Note that the result of morphological operations
+///   with this SE do not strictly satisfy the corresponding properties (only by approximation) because of the
+///   interpolated values.
+///
+/// For `"fast line"`, `"periodic line"` and `"interpolated line"`, which are computed by skewing the input
+/// image, setting the boundary condition to `"periodic"` or `"asym periodic"` allows the operation to occur
+/// completely in place; other boundary conditions lead to a larger intermediate image, and thus will always
+/// require additional, temporary storage.
+///
+/// In general, a few quick experiments have shown that, depending on the angle and the direction of the line w.r.t.
+/// the image storage order, `"discrete line"` can be much faster than `"line"` (or `"fast line"`) for shorter
+/// lines (times were equal with around 50px length), or they can be much slower for even the shortest of lines.
+/// Predicting which implementation of the line will be faster for a given situation is not trivial.
+///
+/// **Literature**
+///  - P. Soille, E. J. Breen and R. Jones, "Recursive implementation of erosions and dilations along discrete lines
+///    at arbitrary angles," IEEE Transactions on Pattern Analysis and Machine Intelligence 18(5):562-567, 1996.
+///  - C.L. Luengo Hendriks and L.J. van Vliet, "Using line segments as structuring elements for sampling-invariant
+///    measurements," IEEE Transactions on Pattern Analysis and Machine Intelligence 27(11):1826-1831, 2005.
 class DIP_NO_EXPORT StructuringElement {
    public:
       enum class ShapeCode {

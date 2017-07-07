@@ -821,7 +821,7 @@ void LineMorphology(
       // This means that all filterParam are the same (or 1)
       SkewLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::FAST_LINE, GetMirrorParam( se.IsMirrored() ), bc, operation );
    } else {
-      if(( steps > 1 ) && ( maxSize > 5 )) { // TODO: adjust the size threshold here
+      if(( steps > 1 ) && ( maxSize > 5 )) { // TODO: a correct threshold here is impossible to determine. It depends on the processing dimension and the angle of the line.
          dip::uint nDims = in.Dimensionality();
          FloatArray discreteLineParam( nDims, 0.0 );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
@@ -932,7 +932,7 @@ void DiamondMorphology(
          ++nProcDims;
       }
    }
-   if( !isotropic || ( param < 5.0 ) || ( nProcDims == 1 )) { // TODO: adjust the size threshold here
+   if( !isotropic || ( param < 15.0 ) || ( nProcDims == 1 )) { // Threshold of 13 determined empirically for an image of size 1000x800, surely it's different for other image sizes and dimensionalities
       DIP_START_STACK_TRACE
          Kernel kernel{ Kernel::ShapeCode::DIAMOND, size };
          FlatSEMorphology( in, out, kernel, bc, operation );
