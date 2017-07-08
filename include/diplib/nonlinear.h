@@ -149,6 +149,9 @@ inline Image VarianceFilter(
 /// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
+///
+/// `control` must be a real-valued scalar image. `in` can be of any data type and tensor size. `out` will be of
+/// the same size, tensor size, and data type as `in`.
 DIP_EXPORT void SelectionFilter(
       Image const& in,
       Image const& control,
@@ -171,22 +174,42 @@ inline Image SelectionFilter(
    return out;
 }
 
-/// \brief The Kuwahara-Nagao operator, a non-linear smoothing filter.
+/// \brief The Kuwahara-Nagao operator, a non-linear edge-preserving smoothing filter.
 ///
 /// For each pixel, shifts the filtering window such that the variance within the window is minimal, then
 /// computes the average value as the output. The shift of the window is always such that the pixel under
 /// consideration stays within the window.
+///
+/// In the two original papers describing the method (Kuwahara et al., 1980; Nagao and Matsuyama, 1979), a limited
+/// number of sub-windows within the filtering window were examined (4 and 8, respectively). This function implements
+/// a generalized version that allows as many different shifts are pixels are in the filtering window (Bakker et al.,
+/// 1999).
+///
+/// As described by Bakker (2002), this operator produces artificial boundaries in flat regions. This is because,
+/// due to noise, one position of the filtering window will have the lowest variance in its neighborhood, and therefore
+/// that position will be selected for all output pixels in the neighborhood. The solution we implement here is
+/// requiring that the variance at the minimum be lower than the variance when the window is not shifted. The parameter
+/// `threshold` controls how much lower the minimum must be. If the neighborhood is uniform w.r.t. this threhsold
+/// parameter, then the filtering window is not shifted.
 ///
 /// The size and shape of the filter window is given by `kernel`, which you can define through a default
 /// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
+/// **Literature**
+/// - M. Kuwahara, K. Hachimura and M. Kinoshita, "Image Enhancement and Left Ventricular Contour Extraction Techniques
+///   Applied to Radioisotope Angiocardiograms", Automedica 3:107-119, 1980.
+/// - M. Nagao and T. Matsuyama, "Edge Preserving Smoothing", Computer Graphics and Image Processing 9:394-407, 1979.
+/// - P. Bakker, P.W. Verbeek and L.J. van Vliet, "Edge preserving orientation adaptive filtering", in: CVPR’99 2:535–540, 1999.
+/// - P. Bakker, "Image structure analysis for seismic interpretation", PhD Thesis, Delft University of Technology,
+///   The Netherlands, 2002.
+///
 /// \see dip::SelectionFilter.
 DIP_EXPORT void Kuwahara(
       Image const& in,
       Image& out,
-      Kernel const& kernel = {},
+      Kernel kernel = {},
       dfloat threshold = 0.0,
       StringArray const& boundaryCondition = {}
 ); // TODO: implement Kuwahara

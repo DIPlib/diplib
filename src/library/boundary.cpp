@@ -102,7 +102,6 @@ void ExtendImageLowLevel(
       sizes[ ii ] += 2 * borderSizes[ ii ];
    }
    Tensor tensor = in.Tensor();
-   std::vector< dip::sint > lookUpTable;
    bool expandTensor = false;
    if( !tensor.HasNormalOrder() && ( options == Option::ExtendImage_ExpandTensor )) {
       expandTensor = true;

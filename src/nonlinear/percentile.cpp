@@ -27,6 +27,7 @@
 namespace dip {
 
 namespace {
+
 template< typename TPI >
 class PercentileLineFilter : public Framework::FullLineFilter {
    public:
@@ -44,7 +45,7 @@ class PercentileLineFilter : public Framework::FullLineFilter {
          dip::uint N = pixelTable.NumberOfPixels();
          buffers_[ params.thread ].resize( N );
          dip::sint rank = static_cast< dip::sint >( static_cast< dfloat >( N ) * fraction_ );
-         for( dip::uint ii = 1; ii < length; ++ii ) {
+         for( dip::uint ii = 0; ii < length; ++ii ) {
             TPI* buffer = buffers_[ params.thread ].data();
             for( auto offset : pixelTable ) {
                *buffer = in[ offset ];
