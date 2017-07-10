@@ -79,7 +79,7 @@ class SelectionLineFilter : public SelectionLineFilterBase {
             } while( ++d, ++it );
             if( params.minimum ? bestValue + params.threshold < centerValue
                                : bestValue - params.threshold > centerValue ) {
-               bestOffset *= params.tensorLength;
+               bestOffset *= static_cast< dip::sint >( params.tensorLength );
             } else {
                bestOffset = 0;
             }
