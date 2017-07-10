@@ -54,7 +54,7 @@ struct DIP_NO_EXPORT RadiusValues {
 
    /// Computes a circularity measure given by the coefficient of variation of the radii of the object.
    dfloat Circularity() {
-      return std::sqrt( var ) / mean;
+      return mean == 0.0 ? 0.0 : std::sqrt( var ) / mean;
    }
 };
 
@@ -318,9 +318,11 @@ class DIP_NO_EXPORT CovarianceMatrix {
       CovarianceMatrix Inv() const {
          dfloat d = Det();
          CovarianceMatrix out;
-         out.xx_ =  yy_ / d;
-         out.xy_ = -xy_ / d;
-         out.yy_ =  xx_ / d;
+         if( d != 0.0 ) {
+            out.xx_ =  yy_ / d;
+            out.xy_ = -xy_ / d;
+            out.yy_ =  xx_ / d;
+         }
          return out;
       }
       /// \brief Add other matrix to this matrix
@@ -355,10 +357,10 @@ class DIP_NO_EXPORT CovarianceMatrix {
          /// \brief Computes eccentricity using the two eigenvalues of the covariance matrix.
          dfloat Eccentricity() const {
             // Eccentricity according to https://en.wikipedia.org/wiki/Image_moment
-            if( largest <= 0 ) {    // largest == 0 really, it cannot be negative.
-               return 0;            // if largest == 0, then smallest == 0 also.
+            if( largest <= 0.0 ) {    // largest == 0 really, it cannot be negative.
+               return 0.0;            // if largest == 0, then smallest == 0 also.
             } else {
-               return std::sqrt( 1 - smallest / largest );
+               return std::sqrt( 1.0 - smallest / largest );
             }
          }
       };
@@ -435,7 +437,7 @@ struct DIP_NO_EXPORT Polygon {
          xsum += ( vertices[ ii - 1 ].x + vertices[ ii ].x ) * v;
          ysum += ( vertices[ ii - 1 ].y + vertices[ ii ].y ) * v;
       }
-      return VertexFloat{ xsum, ysum } / ( 3 * sum );
+      return sum == 0.0 ? VertexFloat{ 0.0, 0.0 } : VertexFloat{ xsum, ysum } / ( 3 * sum );
    }
 
    /// \brief Returns the covariance matrix for the vertices of the polygon, using centroid `g`.

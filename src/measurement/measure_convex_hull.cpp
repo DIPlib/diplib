@@ -183,7 +183,7 @@ dfloat Polygon::EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix con
    }
    dfloat m = acc.Mean();
    // Ellipse variance = coefficient of variation of radius
-   return m == 0 ? 0 : acc.StandardDeviation() / m;
+   return m == 0.0 ? 0.0 : acc.StandardDeviation() / m;
 }
 
 
