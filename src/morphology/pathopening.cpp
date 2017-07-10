@@ -21,6 +21,7 @@
 
 #include "diplib.h"
 #include "diplib/morphology.h"
+#include "diplib/math.h"
 #include "diplib/generation.h"
 #include "diplib/overload.h"
 
