@@ -138,7 +138,7 @@ void SmallObjectsRemove(
       // TODO: It would be more efficient to copy the ObjectToMeasurement function, and make a LUT that does all of the following in a single pass through the image.
       Image tmp = ObjectToMeasurement( in, sizes[ "Size" ] );
       tmp = tmp >= threshold;
-      Multiply( in, tmp, out, in.DataType() );
+      MultiplySampleWise( in, tmp, out, in.DataType() );
    } else {
       DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
    }
