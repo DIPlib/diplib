@@ -195,17 +195,6 @@ inline Image LinearCombination(
    return out;
 }
 
-// TODO: functions to port:
-/*
-   dip_MeanError (dip_math.h) (implement using existing functions, trivial)
-   dip_MeanSquareError (dip_math.h) (implement using existing functions, trivial)
-   dip_RootMeanSquareError (dip_math.h) (implement using existing functions, trivial)
-   dip_MeanAbsoluteError (dip_math.h) (implement using existing functions, trivial)
-   dip_IDivergence (dip_math.h) (implement using existing functions, trivial)
-   dip_ULnV (dip_math.h) (implement using existing functions, trivial)
-   dip_InProduct (dip_math.h) (implement using existing functions, trivial)
-   dip_LnNormError (dip_math.h) (implement using existing functions, trivial)
-*/
 
 /// \}
 

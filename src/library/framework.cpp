@@ -45,7 +45,7 @@ void SingletonExpandedSize(
 
 // Figure out what the size of the images must be.
 UnsignedArray SingletonExpandedSize(
-      ImageRefArray const& in
+      ImageConstRefArray const& in
 ) {
    UnsignedArray size = in[ 0 ].get().Sizes();
    for( dip::uint ii = 1; ii < in.size(); ++ii ) {

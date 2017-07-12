@@ -4,6 +4,7 @@
  *
  * (c)2014-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
+ *                                (c)2011, Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +44,6 @@ namespace dip {
 /// \defgroup math_statistics Statistics
 /// \brief %Image sample statistics, see also \ref math_projection.
 /// \{
-
 
 /// \brief Counts the number of non-zero pixels in a scalar image.
 DIP_EXPORT dip::uint Count( Image const& in, Image const& mask = {} );
@@ -86,6 +86,8 @@ DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Image const& in, Image const& ma
 /// image, returns the statistics over all sample values. The image must be real-valued.
 DIP_EXPORT StatisticsAccumulator SampleStatistics( Image const& in, Image const& mask = {} );
 
+// TODO: Covariance, Correlation (apply to tensor images, yield a matrix out with covariance or correlation between the channels).
+
 /// \brief Computes the center of mass (first order moments) of the image `in`, optionally using only
 /// those pixels selected by `mask`.
 ///
@@ -97,7 +99,6 @@ DIP_EXPORT FloatArray CenterOfMass( Image const& in, Image const& mask = {} );
 ///
 /// If `mask` is not forged, all input pixels are considered. `in` must be scalar and real-valued.
 DIP_EXPORT MomentAccumulator Moments( Image const& in, Image const& mask = {} );
-
 
 /// \}
 
@@ -477,6 +478,123 @@ inline Image Any( Image const& in, Image const& mask = {}, BooleanArray process 
    dip_RadialMaximum (dip_math.h)
    dip_RadialMinimum (dip_math.h)
 */
+
+/// \}
+
+
+//
+// Basic image queries
+//
+
+/// \defgroup math_error Error operators
+/// \brief Quantifying the difference between images.
+/// \{
+
+/// \brief Calculates the mean error difference between corresponding sample values of `in1` and `in2`.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// Singleton expansion is applied if the image dimensionalities don't match.
+/// Complex input is not allowed, use `dip::MeanAbsoluteError` instead.
+DIP_EXPORT dfloat MeanError( Image const& in1, Image const& in2, Image const& mask = {} );
+
+/// \brief Calculates the mean square error difference between corresponding sample values of `in1` and `in2`.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// Singleton expansion is applied if the image dimensionalities don't match.
+/// For complex input, uses the modulus of the differences.
+DIP_EXPORT dfloat MeanSquareError( Image const& in1, Image const& in2, Image const& mask = {} );
+
+/// \brief Calculates the root mean square (RMS) error difference between corresponding sample values of `in1` and `in2`.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// Singleton expansion is applied if the image dimensionalities don't match.
+/// For complex input, uses the modulus of the differences.
+inline dfloat RootMeanSquareError( Image const& in1, Image const& in2, Image const& mask = {} ) {
+   return std::sqrt( MeanSquareError( in1, in2, mask ));
+}
+
+/// \brief Calculates the mean absolute error difference between corresponding sample values of `in1` and `in2`.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// Singleton expansion is applied if the image dimensionalities don't match.
+DIP_EXPORT dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image const& mask = {} );
+
+/// \brief Calculates the I-divergence between corresponding sample values of `in1` and `in2`.
+///
+/// The I-Divergence is defined as \f$I(x,y) = x \ln(x/y) - (x - y)\f$ and is divided by the number of pixels.
+/// It is the -log of a Poisson distribution \f$p(x,y) = e^{-y} / x! - y^x\f$ with the stirling approximation for
+/// \f$\ln x!\f$. For *x* = 0, the stirling approximation would fail, *y* is returned.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// Singleton expansion is applied if the image dimensionalities don't match.
+/// Complex input is not allowed.
+///
+/// **Literature**
+/// - I. Csiszar, "Why Least Squares and Maximum Entropy? An axiomatic approach to inference for linear inverse problems",
+///   The Annals of Statistics 19:2032-2066, 1991.
+DIP_EXPORT dfloat IDivergence( Image const& in1, Image const& in2, Image const& mask = {} );
+
+/// \brief Calculates the sum of the product of corresponding sample values of `in1` and `in2`.
+///
+/// The sum of the product of `in1` and `in2` corresponds to the value of the cross-correlation function at zero
+/// displacement (see `dip::CrossCorrelation`) and is a measure of correlation between the two images.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// Singleton expansion is applied if the image dimensionalities don't match.
+/// Complex input is not allowed.
+DIP_EXPORT dfloat InProduct( Image const& in1, Image const& in2, Image const& mask = {} );
+
+/// \brief Calculates the `order` norm difference between corresponding sample values of `in1` and `in2`.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// Singleton expansion is applied if the image dimensionalities don't match.
+/// For complex input, uses the modulus of the differences.
+DIP_EXPORT dfloat LnNormError( Image const& in1, Image const& in2, Image const& mask = {}, dfloat order = 2.0 );
+
+/// \brief Calculates the peak signal-to-noise ratio, in dB.
+///
+/// If `peakSignal<=0`, computes the peak signal as the difference between maximum and minimum in `reference`.
+/// PSNR is defined as `20 * log10( peakSignal / RootMeanSquareError( in, reference, mask ))`.
+///
+/// Singleton expansion is applied if the image dimensionalities don't match.
+DIP_EXPORT dfloat PSNR( Image const& in, Image const& reference, Image const& mask = {}, dfloat peakSignal = 0.0 );
+
+/// \brief Structural similarity index (a visual similarity measure)
+///
+/// Returns the average SSIM index, for the pixels in `mask`, computed locally in a Gausian window of size `sigma`,
+/// using parameters `K1` and `K2`. `mask` can be an empty array to process all pixels.
+///
+/// The two input images must be real-valued.
+///
+/// **Literature**
+/// - Z. Wang, A.C. Bovik, H.R. Sheikh and E.P. Simoncelli, "Image quality assessment: from error visibility to
+///   structural similarity", IEEE Transactions on Image Processing 13(4):600-612, 2004.
+DIP_EXPORT dfloat SSIM( Image const& in, Image const& reference, Image const& mask = {}, dfloat sigma = 1.5, dfloat K1 = 0.01, dfloat K2 = 0.03 );
+
+/// \brief Estimates the variance of white Gaussian noise in an image.
+///
+/// The method assumes white (uncorrelated) noise, with a Gaussian distribution and zero mean. It may fail if the
+/// image contains complex or fine-grained texture.
+///
+/// If `mask` is not given, creates a mask that avoids edge regions.
+///
+/// **Literature**
+/// - J. Immerk&aelig;r, "Fast Noise Variance Estimation", Computer Vision and Image Understanding 64(2):300-302, 1996.
+DIP_EXPORT dfloat EstimateNoiseVariance( Image const& in, Image const& mask = {} );
 
 /// \}
 
