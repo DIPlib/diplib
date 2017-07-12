@@ -206,7 +206,6 @@ void GradientMagnitude(
       dfloat truncation
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    UnsignedArray dims;
    DIP_START_STACK_TRACE
       dims = FindGradientDimensions( c_in.Sizes(), sigmas, process );
@@ -222,7 +221,7 @@ void GradientMagnitude(
    order[ dims[ 0 ]] = 1;
    Derivative( in, out, order, sigmas, method, boundaryCondition, truncation );
    if( nDims > 1 ) {
-      Multiply( out, out, out, out.DataType() );
+      MultiplySampleWise( out, out, out, out.DataType() );
       Image tmp;
       for( dip::uint ii = 1; ii < nDims; ++ii ) {
          order[ dims[ ii - 1 ]] = 0;
@@ -230,7 +229,7 @@ void GradientMagnitude(
          DIP_START_STACK_TRACE
             Derivative( in, tmp, order, sigmas, method, boundaryCondition, truncation );
          DIP_END_STACK_TRACE
-         Multiply( tmp, tmp, tmp, tmp.DataType() );
+         MultiplySampleWise( tmp, tmp, tmp, tmp.DataType() );
          Add( out, tmp, out, out.DataType() );
       }
       Sqrt( out, out );

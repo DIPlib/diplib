@@ -714,7 +714,7 @@ inline Image Gradient(
 
 /// \brief Computes the gradient magnitude of the image, equivalent to `dip::Norm( dip::Gradient( in ))`.
 ///
-/// The input image must be scalar. See `dip::Gradient` for information on the parameters.
+/// For non-scalar images, applies the operation to each image channel. See `dip::Gradient` for information on the parameters.
 ///
 /// \see dip::Gradient, dip::Norm, dip::Derivative, dip::GradientDirection
 DIP_EXPORT void GradientMagnitude(
