@@ -87,8 +87,11 @@ DIP__MONADIC_OPERATOR_FLOAT( Fraction, []( auto its ) { return dipm__Fraction( *
 /// \brief Computes the reciprocal of each sample: out = in == 0 ? 0 : 1/in.
 DIP__MONADIC_OPERATOR_FLEX( Reciprocal, []( auto its ) { return dipm__Reciprocal( *its[ 0 ] ); }, DataType::Class_NonBinary )   // x==0 ? 0 : 1/x
 
+/// \brief Computes the square of each sample.
+DIP__MONADIC_OPERATOR_FLEX( Square, []( auto its ) { return *its[ 0 ] * *its[ 0 ]; }, DataType::Class_NonBinary )
+
 /// \brief Computes the square root of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( Sqrt, []( auto its ) { return std::sqrt( *its[ 0 ] ); }, DataType::Class_Real )
+DIP__MONADIC_OPERATOR_FLEX( Sqrt, []( auto its ) { return std::sqrt( *its[ 0 ] ); }, DataType::Class_NonBinary )
 
 /// \brief Computes the base e exponent (natural exponential) of each sample.
 DIP__MONADIC_OPERATOR_FLEX( Exp, []( auto its ) { return std::exp( *its[ 0 ] ); }, DataType::Class_NonBinary )
