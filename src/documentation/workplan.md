@@ -142,12 +142,6 @@ document's source</a> for the most up-to-date version.
     - alternating sequential open-close filter (3 versions: with structural opening,
       opening by reconstruction, and area opening)
 
-- Dilation/erosion by a rotated line is currently implemented by first skewing the image,
-  applying the filter along rows or columns, then skewing back. We can add a 2D-specific
-  version that operates directly over rotated lines. The diamond structuring element can
-  then be decomposed into two of these operations. We can also add approximations of the
-  circle with such lines.
-
 - We're also lacking some other morphological filters:
     - hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees.
     - thinning & thickening, to be implemented as iterated hit'n'miss.
@@ -214,9 +208,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_BinarySkeleton3D (dip_binary.h) (don't port this one, it's crap; instead fix the bug in EuclideanSkeleton for 3D)
 
 - diplib/distance.h
-    - dip_EuclideanDistanceTransform (dip_distance.h)
-    - dip_VectorDistanceTransform (dip_distance.h)
-    - dip_GreyWeightedDistanceTransform (dip_distance.h)
     - dip_FastMarching_PlaneWave (dip_distance.h) (this function needs some input image checking!)
     - dip_FastMarching_SphericalWave (dip_distance.h) (this function needs some input image checking!)
 
@@ -265,14 +256,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_AmplitudeModulation (dip_math.h)
     - dip_CosinAmplitudeModulation (dip_math.h)
     - dip_CosinAmplitudeDemodulation (dip_math.h)
-    - dip_MeanError (dip_math.h) (implement using existing functions, trivial)
-    - dip_MeanSquareError (dip_math.h) (implement using existing functions, trivial)
-    - dip_RootMeanSquareError (dip_math.h) (implement using existing functions, trivial)
-    - dip_MeanAbsoluteError (dip_math.h) (implement using existing functions, trivial)
-    - dip_IDivergence (dip_math.h) (implement using existing functions, trivial)
-    - dip_ULnV (dip_math.h) (implement using existing functions, trivial)
-    - dip_InProduct (dip_math.h) (implement using existing functions, trivial)
-    - dip_LnNormError (dip_math.h) (implement using existing functions, trivial)
     - dip_ChangeByteOrder (dip_manipulation.h)
     - dip_SimpleGaussFitImage (dip_numerical.h)
     - dip_EmFitGaussians (dip_numerical.h)
@@ -298,14 +281,7 @@ Some of the following functions already have their prototype written in the new 
     - dip_UpperSkeleton2D (dip_binary.h)
 
 - diplib/nonlinear.h
-    - dip_PercentileFilter (dip_rankfilter.h)
-    - dip_MedianFilter (dip_rankfilter.h)
     - dip_RankContrastFilter (dip_rankfilters.h)
-    - dip_VarianceFilter (dip_filtering.h)
-    - dip_Kuwahara (dip_filtering.h)
-    - dip_GeneralisedKuwahara (dip_filtering.h)
-    - dip_KuwaharaImproved (dip_filtering.h) (merge into dip_Kuwahara)
-    - dip_GeneralisedKuwaharaImproved (dip_filtering.h) (merge into dip_GeneralisedKuwahara)
     - dip_Sigma (dip_filtering.h)
     - dip_BiasedSigma (dip_filtering.h)
     - dip_GaussianSigma (dip_filtering.h)
