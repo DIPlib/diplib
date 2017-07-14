@@ -167,7 +167,7 @@ file(
       "include/diplib/library/*.h"
       "include/diplib/private/*.h"
 )
-add_library(DIP ${SOURCES} ${HEADERS})
+add_library(DIP src/support/matrix.cpp ${SOURCES} ${HEADERS}) # The matrix.cpp file takes annoyingly long to compile, let's compile it first!
 include(GenerateExportHeader)
 generate_export_header(DIP BASE_NAME dip)
 install(TARGETS DIP DESTINATION lib)
