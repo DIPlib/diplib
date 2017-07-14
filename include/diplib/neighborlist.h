@@ -57,19 +57,19 @@ class DIP_NO_EXPORT Metric {
       ///
       /// Valid metrics are:
       ///
-      /// - `"city"`: \f$L^1\f$ metric, a neighborhood with connectivity = 1.
-      ///
-      /// - `"chess"`: \f$L^\infty\f$ metric, a neighborhood with connectivity = dimensionality.
+      /// - `"connected"`: here, `param` is the connectivity, see \ref connectivity for information
+      /// on the connectivity parameter. A value of 1 corresponds to the city-block metric; a value of
+      /// 0 indicates a connectivity equal to the image dimensionality is requested, and corresponds
+      /// to the chess-board metric.
       ///
       /// - `"chamfer"`: a chamfer metric. `param` indicates the neighborhood size: A value of 1
       /// gives a full 3x3 neighborhood (in 2D, or 3x3x3 in 3D, etc). A value of 2 gives the 5x5
       /// chamfer neighborhood (i.e. the 3x3 neighborhood plus the pixels that are night's move
       /// away from the origin).
       ///
-      /// - `"connected"`: here, `param` is the connectivity, see \ref connectivity for information
-      /// on the connectivity parameter. A value of 1 corresponds to the `"city"` metric; a value of
-      /// 0 indicates a connectivity equal to the image dimensionality is requested, and corresponds
-      /// to the `"chess"` metric.
+      /// - `"city"`: \f$L^1\f$ metric, equivalent to `"connected"` with `param=1`.
+      ///
+      /// - `"chess"`: \f$L^\infty\f$ metric, equivalent to `"connected"` with `param` = dimensionality.
       ///
       /// - `"4-connected"` is equivalent to `"connected"` with `param=1`.
       ///
@@ -81,8 +81,18 @@ class DIP_NO_EXPORT Metric {
       ///
       /// - `"28-connected"` is equivalent to `"connected"` with `param=3`.
       ///
+      /// The `"chamfer"` metrics (with `param` set to 1 or 2) for 2 and 3-dimensional images use optimized weights as
+      /// distances that lead to unbiased distance transforms (Verwer, 1991). All other metrics use Euclidean
+      /// distances.
+      ///
       /// The `pixelSize` parameter, if given, causes the neighbor's distances to be scaled by the
       /// pixel size. The units must be identical in all dimensions, and only the magnitude is used.
+      ///
+      /// **Literature**
+      ///  - B.J.H. Verwer, "Local distances for distance transformations in two and three dimensions", Pattern Recognition
+      ///    Letters 12(11):671-682, 1991.
+      ///  - B.J.H. Verwer, "Distance Transforms, Metrics, Algorithms, and Applications", Ph.D. thesis, Delft University
+      ///    of Technology, The Netherlands, 1991.
       Metric( String const& type, dip::uint param = 1, dip::PixelSize const& pixelSize = {} ) {
          if( type == "chamfer" ) {
             DIP_THROW_IF( param < 1, E::PARAMETER_OUT_OF_RANGE );
@@ -139,7 +149,7 @@ class DIP_NO_EXPORT Metric {
       /// \brief Retrieve the image.
       dip::Image const& Image() const { return image_; }
 
-      /// \brief Retrieve the pixel size array.
+      /// \brief Retrieve the pixel size array. Note that this could be an empty array, or have any number of elements.
       FloatArray const& PixelSize() const { return pixelSize_; }
 
    private:
@@ -171,10 +181,6 @@ class DIP_NO_EXPORT NeighborList {
       };
       using NeighborListData = std::vector< Neighbor >;
       using NeighborListIterator = std::vector< Neighbor >::const_iterator;
-
-      NeighborListData neighbors_;
-
-      NeighborList() {} // Creating a default-initialized object only allowd by class methods.
 
    public:
 
@@ -241,7 +247,7 @@ class DIP_NO_EXPORT NeighborList {
       /// image's strides array.
       IntegerArray ComputeOffsets( IntegerArray const& strides ) const {
          dip::uint ndims = strides.size();
-         DIP_THROW_IF( ndims != neighbors_[ 0 ].coords.size(), E::ARRAY_SIZES_DONT_MATCH );
+         DIP_THROW_IF( ndims != Dimensionality(), E::ARRAY_SIZES_DONT_MATCH );
          IntegerArray out( neighbors_.size() );
          for( dip::uint jj = 0; jj < neighbors_.size(); ++jj ) {
             auto const& coords = neighbors_[ jj ].coords;
@@ -250,6 +256,17 @@ class DIP_NO_EXPORT NeighborList {
                offset += coords[ ii ] * strides[ ii ];
             }
             out[ jj ] = offset;
+         }
+         return out;
+      }
+
+      /// \brief Returns an array with the distances to each of the neighbors in the list.
+      template< typename T >
+      std::vector< T > CopyDistances() const {
+         dip::uint N = neighbors_.size();
+         std::vector< T > out( N );
+         for( dip::uint ii = 0; ii < N; ++ii ) {
+            out[ ii ] = static_cast< T >( neighbors_[ ii ].distance );
          }
          return out;
       }
@@ -267,6 +284,26 @@ class DIP_NO_EXPORT NeighborList {
          return neighbors_.size();
       }
 
+      /// \brief Returns the neighborhood dimensionality
+      dip::uint Dimensionality() const {
+         DIP_ASSERT( !neighbors_.empty() );
+         return neighbors_[ 0 ].coords.size();
+      }
+
+      /// \brief Returns the number of pixels, along each dimension, that the neighborhood extends outside of its
+      /// central pixel.
+      UnsignedArray Border() const {
+         dip::uint ndims = Dimensionality();
+         UnsignedArray border( ndims, 0 );
+         for( auto const& neighbor : neighbors_ ) {
+            auto const& coords = neighbor.coords;
+            for( dip::uint ii = 0; ii < ndims; ++ii ) {
+               border[ ii ] = std::max( border[ ii ], static_cast< dip::uint >( std::abs( coords[ ii ] )));
+            }
+         }
+         return border;
+      }
+
       /// \brief A forward iterator to the first neighbor
       Iterator begin() const {
          return Iterator{ neighbors_.begin() };
@@ -278,6 +315,10 @@ class DIP_NO_EXPORT NeighborList {
       }
 
    private:
+      NeighborListData neighbors_;
+
+      NeighborList() {} // Creating a default-initialized object only allowd by class methods.
+
       DIP_EXPORT void ConstructConnectivity( dip::uint dimensionality, dip::uint connectivity, FloatArray pixelSize );
       DIP_EXPORT void ConstructChamfer( dip::uint dimensionality, dip::uint maxDistance, FloatArray pixelSize );
       DIP_EXPORT void ConstructImage( dip::uint dimensionality, Image const& c_metric );
@@ -290,110 +331,5 @@ inline void swap( NeighborList::Iterator& v1, NeighborList::Iterator& v2 ) {
 /// \}
 
 } // namespace dip
-
-
-#ifdef DIP__ENABLE_DOCTEST
-
-DOCTEST_TEST_CASE("[DIPlib] testing the NeighborList class") {
-   dip::dfloat x = 1.2;
-   dip::dfloat y = 1.6;
-   dip::dfloat diag = std::hypot( x, y );
-   dip::dfloat diag_v = std::hypot( x, 2*y );
-   dip::dfloat diag_h = std::hypot( 2*x, y );
-   dip::PixelSize pxsz{ dip::PhysicalQuantityArray{ 1.2 * dip::Units::Meter(), 1.6 * dip::Units::Meter() }};
-   dip::NeighborList list( dip::Metric( "connected", 2, pxsz ), 2 );
-   DOCTEST_REQUIRE( list.Size() == 8 );
-   auto it = list.begin();
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( y ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( x ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( x ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( y ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
-   dip::IntegerArray strides{ 1, 10 };
-   dip::IntegerArray offsets = list.ComputeOffsets( strides );
-   DOCTEST_REQUIRE( offsets.size() == 8 );
-   auto ot = offsets.begin();
-   DOCTEST_CHECK( *(ot++) == -1 -10 );
-   DOCTEST_CHECK( *(ot++) == +0 -10 );
-   DOCTEST_CHECK( *(ot++) == +1 -10 );
-   DOCTEST_CHECK( *(ot++) == -1 + 0 );
-   DOCTEST_CHECK( *(ot++) == +1 + 0 );
-   DOCTEST_CHECK( *(ot++) == -1 +10 );
-   DOCTEST_CHECK( *(ot++) == +0 +10 );
-   DOCTEST_CHECK( *(ot++) == +1 +10 );
-
-   list = dip::NeighborList( dip::Metric( "chamfer", 2, pxsz ), 2 );
-   DOCTEST_REQUIRE( list.Size() == 16 );
-   it = list.begin();
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_v ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_v ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_h ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( y ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_h ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( x ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( x ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_h ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( y ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_h ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_v ));
-   DOCTEST_CHECK( *(it++) == doctest::Approx( diag_v ));
-   offsets = list.ComputeOffsets( strides );
-   DOCTEST_REQUIRE( offsets.size() == 16 );
-   ot = offsets.begin();
-   DOCTEST_CHECK( *(ot++) == -1 -20 );
-   DOCTEST_CHECK( *(ot++) == +1 -20 );
-   DOCTEST_CHECK( *(ot++) == -2 -10 );
-   DOCTEST_CHECK( *(ot++) == -1 -10 );
-   DOCTEST_CHECK( *(ot++) == +0 -10 );
-   DOCTEST_CHECK( *(ot++) == +1 -10 );
-   DOCTEST_CHECK( *(ot++) == +2 -10 );
-   DOCTEST_CHECK( *(ot++) == -1 + 0 );
-   DOCTEST_CHECK( *(ot++) == +1 + 0 );
-   DOCTEST_CHECK( *(ot++) == -2 +10 );
-   DOCTEST_CHECK( *(ot++) == -1 +10 );
-   DOCTEST_CHECK( *(ot++) == +0 +10 );
-   DOCTEST_CHECK( *(ot++) == +1 +10 );
-   DOCTEST_CHECK( *(ot++) == +2 +10 );
-   DOCTEST_CHECK( *(ot++) == -1 +20 );
-   DOCTEST_CHECK( *(ot++) == +1 +20 );
-
-   dip::Image m( { 3, 3 }, 1, dip::DT_UINT8 );
-   dip::uint8* ptr = ( dip::uint8* )m.Origin();
-   for( dip::uint ii = 1; ii <= 9; ++ii ) {
-      *( ptr++ ) = ( dip::uint8 )ii;
-   }
-   ptr[ -5 ] = 0;
-   list = dip::NeighborList( m, 2 );
-   DOCTEST_REQUIRE( list.Size() == 8 );
-   it = list.begin();
-   DOCTEST_CHECK( *(it++) == 1 );
-   DOCTEST_CHECK( *(it++) == 2 );
-   DOCTEST_CHECK( *(it++) == 3 );
-   DOCTEST_CHECK( *(it++) == 4 );
-   DOCTEST_CHECK( *(it++) == 6 );
-   DOCTEST_CHECK( *(it++) == 7 );
-   DOCTEST_CHECK( *(it++) == 8 );
-   DOCTEST_CHECK( *(it++) == 9 );
-   offsets = list.ComputeOffsets( strides );
-   DOCTEST_REQUIRE( offsets.size() == 8 );
-   ot = offsets.begin();
-   DOCTEST_CHECK( *(ot++) == -1 -10 );
-   DOCTEST_CHECK( *(ot++) == +0 -10 );
-   DOCTEST_CHECK( *(ot++) == +1 -10 );
-   DOCTEST_CHECK( *(ot++) == -1 + 0 );
-   DOCTEST_CHECK( *(ot++) == +1 + 0 );
-   DOCTEST_CHECK( *(ot++) == -1 +10 );
-   DOCTEST_CHECK( *(ot++) == +0 +10 );
-   DOCTEST_CHECK( *(ot++) == +1 +10 );
-}
-
-#endif // DIP__ENABLE_DOCTEST
 
 #endif // DIP_NEIGHBORLIST_H
