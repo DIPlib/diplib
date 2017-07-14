@@ -149,22 +149,40 @@ endif()
 # Doxygen
 find_package(Doxygen)
 
+# Utility for automatically updating targets when a file is added to the source directories
+# from: https://stackoverflow.com/a/39971448/7328782, but modified
+# Creates a file called ${name} with the list of dependencies in it.
+# The file is updated when the list of dependencies changes.
+# If the file is updated, cmake will automatically reload.
+function(update_deps_file name deps)
+   # Normalize the list so it's the same on every machine
+   list(REMOVE_DUPLICATES deps)
+   foreach(dep IN LISTS deps)
+      file(RELATIVE_PATH rel_dep ${CMAKE_CURRENT_SOURCE_DIR} ${dep})
+      list(APPEND rel_deps ${rel_dep})
+   endforeach(dep)
+   list(SORT rel_deps)
+   # The list has to be a comment...
+   set(rel_deps "# Automatically generated, don't edit! -- ${rel_deps}\n")
+   # Compare with the old file
+   set(old_deps "")
+   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${name}")
+      file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${name}" old_deps)
+   endif()
+   if(NOT old_deps STREQUAL rel_deps)
+      file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/${name}" "${rel_deps}")
+   endif()
+   # Include the file so it's tracked as a generation dependency (we don't need the content).
+   include(${CMAKE_CURRENT_SOURCE_DIR}/${name})
+endfunction(update_deps_file)
+
 
 ### DIPlib library
 
 include_directories(include)
-file(
-      GLOB SOURCES
-      "src/*/*.h"
-      "src/*/*.cpp"
-)
-file(
-      GLOB HEADERS
-      "include/*.h"
-      "include/diplib/*.h"
-      "include/diplib/library/*.h"
-      "include/diplib/private/*.h"
-)
+file(GLOB SOURCES "src/*/*.h" "src/*/*.cpp")
+file(GLOB HEADERS "include/*.h" "include/diplib/*.h" "include/diplib/library/*.h" "include/diplib/private/*.h")
+update_deps_file("DIPlib_sources.cmake" "${SOURCES} ${HEADERS}")
 add_library(DIP src/support/matrix.cpp ${SOURCES} ${HEADERS}) # The matrix.cpp file takes annoyingly long to compile, let's compile it first!
 include(GenerateExportHeader)
 generate_export_header(DIP BASE_NAME dip)
@@ -203,6 +221,7 @@ endif()
 if(DIP_BUILD_DIPVIEWER)
    file(GLOB DIP_VIEWER_SRC "viewer/src/*.cpp" ${DIP_VIEWER_MANAGER_SRC})
    file(GLOB DIP_VIEWER_H "viewer/include/diplib/viewer/*.h")
+   update_deps_file("DIPviewer_sources.cmake" "${DIP_VIEWER_SRC} ${DIP_VIEWER_H}")
    add_library(DIPviewer ${DIP_VIEWER_SRC} ${DIP_VIEWER_H})
    target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR} ${DIP_VIEWER_MANAGER_INCLUDE_DIR} PUBLIC viewer/include)
    target_link_libraries(DIPviewer DIP ${DIP_VIEWER_MANAGER_LIBRARIES} ${OPENGL_LIBRARIES} -lpthread)
@@ -220,6 +239,8 @@ endif()
 if(DIP_BUILD_PYDIP)
    file(GLOB DIP_PYTHON_SRC "pydip/*.cpp")
    file(GLOB DIP_PYTHON_H "pydip/*.h")
+   file(GLOB DIP_PYTHON_PY "pydip/*.py")
+   update_deps_file("PyDIP_sources.cmake" "${DIP_PYTHON_SRC} ${DIP_PYTHON_H} ${DIP_PYTHON_PY}")
    pybind11_add_module(PyDIP_bin ${DIP_PYTHON_SRC} ${DIP_PYTHON_H})
    #target_compile_options(PyDIP_bin PRIVATE -Wno-deprecated-declarations)
    target_link_libraries(PyDIP_bin PUBLIC DIP)
@@ -230,7 +251,6 @@ if(DIP_BUILD_PYDIP)
    endif()
    install(TARGETS PyDIP_bin DESTINATION ${PYDIP_INSTALL_PATH})
    # Install .py files
-   file(GLOB DIP_PYTHON_PY "pydip/*.py")
    install(FILES ${DIP_PYTHON_PY} DESTINATION ${PYDIP_INSTALL_PATH})
    add_custom_target(PyDIP DEPENDS PyDIP_bin)
 endif()
@@ -242,20 +262,20 @@ if(DIP_BUILD_DIPIMAGE)
    install(DIRECTORY dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m") # could also do PATTERN "*.cpp" EXCLUDE
 
    # Compile and install MEX-files in dipimage/@dip_image/private
-   file(GLOB DIP_PRIVATE "dipimage/@dip_image/private/*.cpp")
+   file(GLOB DIP_IMAGE_PRIVATE "dipimage/@dip_image/private/*.cpp")
    if(APPLE)
       set(LIB_REL_PATH "@loader_path/../../../../lib/")
    else()
       set(LIB_REL_PATH "$ORIGIN/../../../../lib/") # doesn't do anything on Windows, so this should be OK
    endif()
-   set(DIP_PRIVATE_TARGETS "")
-   foreach(file ${DIP_PRIVATE})
+   set(DIP_IMAGE_PRIVATE_TARGETS "")
+   foreach(file ${DIP_IMAGE_PRIVATE})
       get_filename_component(target ${file} NAME_WE)
       matlab_add_mex(NAME MEX_${target} SRC ${file} OUTPUT_NAME ${target} LINK_TO DIP)
       set_target_properties(MEX_${target} PROPERTIES INSTALL_RPATH "${LIB_REL_PATH}")
-      set(DIP_PRIVATE_TARGETS ${DIP_PRIVATE_TARGETS} MEX_${target})
+      set(DIP_IMAGE_PRIVATE_TARGETS ${DIP_IMAGE_PRIVATE_TARGETS} MEX_${target})
    endforeach()
-   install(TARGETS ${DIP_PRIVATE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private)
+   install(TARGETS ${DIP_IMAGE_PRIVATE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private)
 
    # Compile and install MEX-files in dipimage/@dip_image
    file(GLOB DIP_IMAGE "dipimage/@dip_image/*.cpp")
@@ -274,18 +294,18 @@ if(DIP_BUILD_DIPIMAGE)
    install(TARGETS ${DIP_IMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image)
 
    # Compile and install MEX-files in dipimage/private
-   file(GLOB DIPIMAGE "dipimage/private/*.cpp")
+   file(GLOB DIPIMAGE_PRIVATE "dipimage/private/*.cpp")
    if(APPLE)
       set(LIB_REL_PATH "@loader_path/../../../lib/")
    else()
       set(LIB_REL_PATH "$ORIGIN/../../../lib/")
    endif()
-   set(DIPIMAGE_TARGETS "")
-   foreach(file ${DIPIMAGE})
+   set(DIPIMAGE_PRIVATE_TARGETS "")
+   foreach(file ${DIPIMAGE_PRIVATE})
       get_filename_component(target ${file} NAME_WE)
       matlab_add_mex(NAME MEX_${target} SRC ${file} OUTPUT_NAME ${target} LINK_TO DIP)
       set_target_properties(MEX_${target} PROPERTIES INSTALL_RPATH "${LIB_REL_PATH}")
-      set(DIPIMAGE_TARGETS ${DIPIMAGE_TARGETS} MEX_${target})
+      set(DIPIMAGE_PRIVATE_TARGETS ${DIPIMAGE_PRIVATE_TARGETS} MEX_${target})
    endforeach()
    install(TARGETS ${DIPIMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/private)
 
@@ -304,6 +324,9 @@ if(DIP_BUILD_DIPIMAGE)
       set(DIPIMAGE_TARGETS ${DIPIMAGE_TARGETS} MEX_${target})
    endforeach()
    install(TARGETS ${DIPIMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH})
+
+   # Keep a file with all dependencies
+   update_deps_file("DIPimage_sources.cmake" "${DIP_IMAGE_PRIVATE} ${DIP_IMAGE} ${DIPIMAGE_PRIVATE} ${DIPIMAGE}")
 endif()
 
 
