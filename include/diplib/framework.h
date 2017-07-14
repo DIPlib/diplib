@@ -528,7 +528,7 @@ class DIP_EXPORT VariadicScanLineFilter : public ScanLineFilter {
          }
       }
    private:
-      F const& func_;
+      F func_; // save a copy of the lambda, in case we want to use it with a temporary-constructed lambda that captures a variable.
 };
 
 /// \brief Support for quickly defining monadic operators (1 input image, 1 output image).

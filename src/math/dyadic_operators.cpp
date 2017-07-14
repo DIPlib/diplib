@@ -74,7 +74,7 @@ class DIP_EXPORT MultiScanLineFilter : public Framework::ScanLineFilter {
          }
       }
    private:
-      F const& func_;
+      F func_;
 };
 
 template< typename TPI, typename F >

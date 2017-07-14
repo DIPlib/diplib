@@ -38,7 +38,7 @@ class TensorMonadicScanLineFilter : public Framework::ScanLineFilter {
                static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
                bufferLength,
                params.inBuffer[ 0 ].stride,
-               params.outBuffer[ 0 ].tensorLength,
+               params.inBuffer[ 0 ].tensorLength,
                params.inBuffer[ 0 ].tensorStride
          );
          LineIterator< TPO > out(
@@ -53,7 +53,7 @@ class TensorMonadicScanLineFilter : public Framework::ScanLineFilter {
          } while( ++in, ++out );
       }
    private:
-      F const& func_;
+      F func_;
 };
 
 template< typename TPI, typename TPO = TPI, typename F >
@@ -71,7 +71,7 @@ class TensorDyadicScanLineFilter : public Framework::ScanLineFilter {
                static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
                bufferLength,
                params.inBuffer[ 0 ].stride,
-               params.outBuffer[ 0 ].tensorLength,
+               params.inBuffer[ 0 ].tensorLength,
                params.inBuffer[ 0 ].tensorStride
          );
          LineIterator< TPO > out1(
@@ -93,7 +93,7 @@ class TensorDyadicScanLineFilter : public Framework::ScanLineFilter {
          } while( ++in, ++out1, ++out2 );
       }
    private:
-      F const& func_;
+      F func_;
 };
 
 template< typename TPI, typename TPO = TPI, typename F >
@@ -111,7 +111,7 @@ class TensorTriadicScanLineFilter : public Framework::ScanLineFilter {
                static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
                bufferLength,
                params.inBuffer[ 0 ].stride,
-               params.outBuffer[ 0 ].tensorLength,
+               params.inBuffer[ 0 ].tensorLength,
                params.inBuffer[ 0 ].tensorStride
          );
          LineIterator< TPO > out1(
@@ -140,7 +140,7 @@ class TensorTriadicScanLineFilter : public Framework::ScanLineFilter {
          } while( ++in, ++out1, ++out2, ++out3 );
       }
    private:
-      F const& func_;
+      F func_;
 };
 
 template< typename TPI, typename TPO = TPI, typename F >
@@ -177,14 +177,14 @@ class CrossProductLineFilter : public Framework::ScanLineFilter {
                static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
                bufferLength,
                params.inBuffer[ 0 ].stride,
-               params.outBuffer[ 0 ].tensorLength,
+               params.inBuffer[ 0 ].tensorLength,
                params.inBuffer[ 0 ].tensorStride
          );
          ConstLineIterator< TPI > rhs(
                static_cast< TPI const* >( params.inBuffer[ 1 ].buffer ),
                bufferLength,
                params.inBuffer[ 1 ].stride,
-               params.outBuffer[ 1 ].tensorLength,
+               params.inBuffer[ 1 ].tensorLength,
                params.inBuffer[ 1 ].tensorStride
          );
          LineIterator< TPI > out(
@@ -238,11 +238,11 @@ void CrossProduct( Image const& lhs, Image const& rhs, Image& out ) {
 }
 
 void Norm( Image const& in, Image& out ) {
-   DIP_THROW_IF( !in.IsVector(), E::IMAGE_NOT_VECTOR );
-   dip::uint n = in.TensorRows();
-   if( n == 1 ) {
+   if( in.IsScalar() ) {
       Abs( in, out );
    } else {
+      DIP_THROW_IF( !in.IsVector(), E::IMAGE_NOT_VECTOR );
+      dip::uint n = in.TensorElements();
       DataType outtype = DataType::SuggestFloat( in.DataType() );
       DataType intype;
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
