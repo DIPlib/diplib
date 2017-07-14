@@ -1296,6 +1296,11 @@ class DIP_NO_EXPORT Image {
          pixelSize_ = ps;
       }
 
+      /// \brief Reset the pixels' size, so that `HasPixelSize` returns false.
+      void ResetPixelSize() {
+         pixelSize_.Clear();
+      }
+
       /// \brief Returns true if the pixel has physical dimensions.
       bool HasPixelSize() const {
          return pixelSize_.IsDefined();
