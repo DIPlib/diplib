@@ -162,28 +162,28 @@ function(update_deps_file name deps)
       list(APPEND rel_deps ${rel_dep})
    endforeach(dep)
    list(SORT rel_deps)
-   # The list has to be a comment...
-   set(rel_deps "# Automatically generated, don't edit! -- ${rel_deps}\n")
+   # Split the list into lines, and add some CMake-valid syntax so it's ignored
+   string(REPLACE ";" "\n" new_deps "${rel_deps}")
+   set(new_deps "# Automatically generated, don't edit!\nset(${name}_bogus\n${new_deps}\n)\n")
    # Compare with the old file
    set(old_deps "")
-   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${name}")
-      file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${name}" old_deps)
+   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.cmake")
+      file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${name}.cmake" old_deps)
    endif()
-   if(NOT old_deps STREQUAL rel_deps)
-      file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/${name}" "${rel_deps}")
+   if(NOT old_deps STREQUAL new_deps)
+      file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/${name}.cmake" "${new_deps}")
    endif()
    # Include the file so it's tracked as a generation dependency (we don't need the content).
-   include(${CMAKE_CURRENT_SOURCE_DIR}/${name})
+   include(${CMAKE_CURRENT_SOURCE_DIR}/${name}.cmake)
 endfunction(update_deps_file)
 
 
 ### DIPlib library
 
 include_directories(include)
-file(GLOB SOURCES "src/*/*.h" "src/*/*.cpp")
-file(GLOB HEADERS "include/*.h" "include/diplib/*.h" "include/diplib/library/*.h" "include/diplib/private/*.h")
-update_deps_file("DIPlib_sources.cmake" "${SOURCES} ${HEADERS}")
-add_library(DIP src/support/matrix.cpp ${SOURCES} ${HEADERS}) # The matrix.cpp file takes annoyingly long to compile, let's compile it first!
+file(GLOB DIPLIB_SOURCES src/*/*.h src/*/*.cpp include/*.h include/diplib/*.h include/diplib/library/*.h include/diplib/private/*.h)
+update_deps_file("DIPlib_sources" "${DIPLIB_SOURCES}")
+add_library(DIP src/support/matrix.cpp ${DIPLIB_SOURCES}) # The matrix.cpp file takes annoyingly long to compile, let's compile it first!
 include(GenerateExportHeader)
 generate_export_header(DIP BASE_NAME dip)
 install(TARGETS DIP DESTINATION lib)
@@ -219,10 +219,9 @@ endif()
 ### DIPviewer
 
 if(DIP_BUILD_DIPVIEWER)
-   file(GLOB DIP_VIEWER_SRC "viewer/src/*.cpp" ${DIP_VIEWER_MANAGER_SRC})
-   file(GLOB DIP_VIEWER_H "viewer/include/diplib/viewer/*.h")
-   update_deps_file("DIPviewer_sources.cmake" "${DIP_VIEWER_SRC} ${DIP_VIEWER_H}")
-   add_library(DIPviewer ${DIP_VIEWER_SRC} ${DIP_VIEWER_H})
+   file(GLOB DIP_VIEWER_SRC viewer/src/*.cpp ${DIP_VIEWER_MANAGER_SRC} viewer/include/diplib/viewer/*.h)
+   update_deps_file("DIPviewer_sources" "${DIP_VIEWER_SRC}")
+   add_library(DIPviewer ${DIP_VIEWER_SRC})
    target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR} ${DIP_VIEWER_MANAGER_INCLUDE_DIR} PUBLIC viewer/include)
    target_link_libraries(DIPviewer DIP ${DIP_VIEWER_MANAGER_LIBRARIES} ${OPENGL_LIBRARIES} -lpthread)
    if(APPLE)
@@ -237,11 +236,12 @@ endif()
 ### PyDIP module for Python
 
 if(DIP_BUILD_PYDIP)
-   file(GLOB DIP_PYTHON_SRC "pydip/*.cpp")
-   file(GLOB DIP_PYTHON_H "pydip/*.h")
-   file(GLOB DIP_PYTHON_PY "pydip/*.py")
-   update_deps_file("PyDIP_sources.cmake" "${DIP_PYTHON_SRC} ${DIP_PYTHON_H} ${DIP_PYTHON_PY}")
-   pybind11_add_module(PyDIP_bin ${DIP_PYTHON_SRC} ${DIP_PYTHON_H})
+   file(GLOB DIP_PYTHON_SRC pydip/*.cpp pydip/*.h)
+   file(GLOB DIP_PYTHON_PY pydip/*.py)
+   set(PyDIPdeps "${DIP_PYTHON_SRC}")
+   list(APPEND PyDIPdeps "${DIP_PYTHON_PY}")
+   update_deps_file("PyDIP_sources" "${PyDIPdeps}")
+   pybind11_add_module(PyDIP_bin ${DIP_PYTHON_SRC})
    #target_compile_options(PyDIP_bin PRIVATE -Wno-deprecated-declarations)
    target_link_libraries(PyDIP_bin PUBLIC DIP)
    if(APPLE)
@@ -262,7 +262,8 @@ if(DIP_BUILD_DIPIMAGE)
    install(DIRECTORY dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m") # could also do PATTERN "*.cpp" EXCLUDE
 
    # Compile and install MEX-files in dipimage/@dip_image/private
-   file(GLOB DIP_IMAGE_PRIVATE "dipimage/@dip_image/private/*.cpp")
+   file(GLOB DIP_IMAGE_PRIVATE dipimage/@dip_image/private/*.cpp)
+   set(DIPIMAGE_DEPS "${DIP_IMAGE_PRIVATE}")
    if(APPLE)
       set(LIB_REL_PATH "@loader_path/../../../../lib/")
    else()
@@ -278,7 +279,8 @@ if(DIP_BUILD_DIPIMAGE)
    install(TARGETS ${DIP_IMAGE_PRIVATE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private)
 
    # Compile and install MEX-files in dipimage/@dip_image
-   file(GLOB DIP_IMAGE "dipimage/@dip_image/*.cpp")
+   file(GLOB DIP_IMAGE dipimage/@dip_image/*.cpp)
+   list(APPEND DIPIMAGE_DEPS "${DIP_IMAGE}")
    if(APPLE)
       set(LIB_REL_PATH "@loader_path/../../../lib/")
    else()
@@ -294,7 +296,8 @@ if(DIP_BUILD_DIPIMAGE)
    install(TARGETS ${DIP_IMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image)
 
    # Compile and install MEX-files in dipimage/private
-   file(GLOB DIPIMAGE_PRIVATE "dipimage/private/*.cpp")
+   file(GLOB DIPIMAGE_PRIVATE dipimage/private/*.cpp)
+   list(APPEND DIPIMAGE_DEPS "${DIPIMAGE_PRIVATE}")
    if(APPLE)
       set(LIB_REL_PATH "@loader_path/../../../lib/")
    else()
@@ -310,7 +313,8 @@ if(DIP_BUILD_DIPIMAGE)
    install(TARGETS ${DIPIMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/private)
 
    # Compile and install MEX-files in dipimage/
-   file(GLOB DIPIMAGE "dipimage/*.cpp")
+   file(GLOB DIPIMAGE dipimage/*.cpp)
+   list(APPEND DIPIMAGE_DEPS "${DIPIMAGE}")
    if(APPLE)
       set(LIB_REL_PATH "@loader_path/../../lib/")
    else()
@@ -326,13 +330,13 @@ if(DIP_BUILD_DIPIMAGE)
    install(TARGETS ${DIPIMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH})
 
    # Keep a file with all dependencies
-   update_deps_file("DIPimage_sources.cmake" "${DIP_IMAGE_PRIVATE} ${DIP_IMAGE} ${DIPIMAGE_PRIVATE} ${DIPIMAGE}")
+   update_deps_file("DIPimage_sources" "${DIPIMAGE_DEPS}")
 endif()
 
 
 ### DIPlib tests ### TEMPORARY! -- This should become an 'examples' directory
 
-file(GLOB DIP_TESTS "test/test_*.cpp")
+file(GLOB DIP_TESTS test/test_*.cpp)
 set(TESTS_TARGETS "")
 foreach(file ${DIP_TESTS})
    get_filename_component(target ${file} NAME_WE)
