@@ -106,7 +106,7 @@ void VDTFast2D(
 
       *dcl++ = bp;
       for( xx = 0, px = py; xx < nx; xx++, dcl++, dbl++, px += sx ) {
-         if( ox[ px ] ) {
+         if( ox[ px ] != 0.0 ) {
             if(( dbl->x == zero.x ) && ( dbl->y == zero.y )) {
                *dcl = x0y_1;
             } else {
@@ -345,7 +345,7 @@ void VDTFast3D(
          *dcl++ = bp;
 
          for( xx = 0, px = py + pz; xx < nx; xx++, dcl++, dbl++, px += sx ) {
-            if( ox[ px ] ) {
+            if( ox[ px ] != 0.0 ) {
                if( dbl->x == zero.x && dbl->y == zero.y && dbl->z == zero.z ) {
                   dcl->x = nx;
                   dcl->y = ny;
@@ -734,7 +734,7 @@ void VDTTies2D(
 
       *dcl++ = bp;
       for( xx = 0, px = py; xx < nx; xx++, dcl++, dbl++, px += sx ) {
-         if( ox[ px ] ) {
+         if( ox[ px ] != 0.0 ) {
             *dcl = nbp;
             kk = 0;
             pnbp = pnb;
@@ -1118,7 +1118,7 @@ void VDTTies3D(
       for( yy = 0, py = 0; yy < ny; yy++, dcp += 2 + nx, dbp += 2, py += sy ) {
          *dcp++ = bp;
          for( xx = 0, px = pz + py; xx < nx; xx++, dcp++, dbp++, px += sx ) {
-            if( ox[ px ] ) {
+            if( ox[ px ] != 0.0 ) {
                *dcp = nbp;
                kk = 0;
                pnbp = pnb;
@@ -1527,11 +1527,11 @@ void VDTBruteForce2D(
    for( dip::sint yy = 0; yy < ny; yy++, py += sy ) {
       dip::sint px = py;
       for( dip::sint xx = 0; xx < nx; xx++, px += sx ) {
-         if( !( ox[ px ] )) {
-            if(( ox[ px - sy ] ) ||
-               ( ox[ px - sx ] ) ||
-               (( yy < ny - 1 ) && ( ox[ px + sy ] )) ||
-               (( xx < nx - 1 ) && ( ox[ px + sx ] ))) {
+         if( ox[ px ] == 0.0 ) {
+            if(( ox[ px - sy ] != 0.0 ) ||
+               ( ox[ px - sx ] != 0.0 ) ||
+               (( yy < ny - 1 ) && ( ox[ px + sy ] != 0.0 )) ||
+               (( xx < nx - 1 ) && ( ox[ px + sx ] != 0.0 ))) {
                bp->x = -xx;
                bp->y = -yy;
                bp++;
@@ -1544,7 +1544,7 @@ void VDTBruteForce2D(
    for( dip::sint yy = 0 ; yy < ny; yy++, py += sy ) {
       dip::sint px = py;
       for( dip::sint xx = 0; xx < nx; xx++, px += sx ) {
-         if( ox[ px ] ) {
+         if( ox[ px ] != 0.0 ) {
             sfloat newdist = maxdist;
             bp = bord.data();
             for( dip::sint k = 0; k < nbp; k++, bp++ ) {
@@ -1631,13 +1631,13 @@ void VDTBruteForce3D(
       for( dip::sint yy = 0; yy < ny; yy++, py += sy ) {
          dip::sint px = pz + py;
          for( dip::sint xx = 0; xx < nx; xx++, px += sx ) {
-            if( !( ox[ px ] )) {
-               if(( ox[ px - sz ] ) ||
-                  ( ox[ px - sy ] ) ||
-                  ( ox[ px - sx ] ) ||
-                  (( zz < nz - 1 ) && ( ox[ px + sz ] )) ||
-                  (( yy < ny - 1 ) && ( ox[ px + sy ] )) ||
-                  (( xx < nx - 1 ) && ( ox[ px + sx ] ))) {
+            if( ox[ px ] == 0.0 ) {
+               if(( ox[ px - sz ] != 0.0 ) ||
+                  ( ox[ px - sy ] != 0.0 ) ||
+                  ( ox[ px - sx ] != 0.0 ) ||
+                  (( zz < nz - 1 ) && ( ox[ px + sz ] != 0.0 )) ||
+                  (( yy < ny - 1 ) && ( ox[ px + sy ] != 0.0 )) ||
+                  (( xx < nx - 1 ) && ( ox[ px + sx ] != 0.0 ))) {
                   bp->x = -xx;
                   bp->y = -yy;
                   bp->z = -zz;
@@ -1654,7 +1654,7 @@ void VDTBruteForce3D(
       for( dip::sint yy = 0; yy < ny; yy++, py += sy ) {
          dip::sint px = pz + py;
          for( dip::sint xx = 0; xx < nx; xx++, px += sx ) {
-            if( ox[ px ] ) {
+            if( ox[ px ] != 0.0 ) {
                sfloat newdist = maxdist;
                bp = bord.data();
                for( dip::sint k = 0; k < nbp; k++, bp++ ) {

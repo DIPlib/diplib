@@ -107,7 +107,7 @@ static void EDTFast2D(
 
       *dcl++ = bp;
       for( xx = 0, px = py; xx < nx; xx++, dcl++, dbl++, px += sx ) {
-         if( oi[ px ] ) {
+         if( oi[ px ] != 0.0 ) {
             if(( dbl->x == zero.x ) && ( dbl->y == zero.y )) {
                *dcl = x0y_1;
             } else {
@@ -177,7 +177,7 @@ static void EDTFast2D(
       *dcl-- = bp;
 
       for( xx = 0, px = py + nx1sx; xx < nx; xx++, dcl--, dbl--, px -= sx ) {
-         if( oi[ px ] ) {
+         if( oi[ px ] != 0.0 ) {
             if( dbl->x == zero.x && dbl->y == zero.y ) {
                *dcl = x0y1;
             } else {
@@ -326,7 +326,7 @@ void EDTFast3D(
          *dcl++ = bp;
 
          for( xx = 0, px = py + pz; xx < nx; xx++, dcl++, dbl++, px += sx ) {
-            if( oi[ px ] ) {
+            if( oi[ px ] != 0.0 ) {
                if( dbl->x == zero.x && dbl->y == zero.y && dbl->z == zero.z ) {
                   dcl->x = nx;
                   dcl->y = ny;
@@ -436,7 +436,7 @@ void EDTFast3D(
          *dcl-- = bp;
 
          for( xx = 0, px = py + pz + nx1sx; xx < nx; xx++, dcl--, dbl--, px -= sx ) {
-            if( oi[ px ] ) {
+            if( oi[ px ] != 0.0 ) {
                if( dbl->x == zero.x && dbl->y == zero.y && dbl->z == zero.z ) {
                   dcl->x = nx;
                   dcl->y = ny;
@@ -681,7 +681,7 @@ static void EDTTies2D(
 
       *dcl++ = bp;
       for( xx = 0, px = py; xx < nx; xx++, dcl++, dbl++, px += sx ) {
-         if( oi[ px ] ) {
+         if( oi[ px ] != 0.0 ) {
             *dcl = nbp;
             kk = 0;
             pnbp = pnb;
@@ -784,7 +784,7 @@ static void EDTTies2D(
 
       *dcl-- = bp;
       for( xx = 0, px = py + nx1sx; xx < nx; xx++, dcl--, dbl--, px -= sx ) {
-         if( oi[ px ] ) {
+         if( oi[ px ] != 0.0 ) {
             *dcl = nbp;
             kk = 0;
             pnbp = pnb;
@@ -1050,7 +1050,7 @@ static void EDTTies3D(
       for( yy = 0, py = 0; yy < ny; yy++, dcp += 2 + nx, dbp += 2, py += sy ) {
          *dcp++ = bp;
          for( xx = 0, px = pz + py; xx < nx; xx++, dcp++, dbp++, px += sx ) {
-            if( oi[ px ] ) {
+            if( oi[ px ] != 0.0 ) {
                *dcp = nbp;
                kk = 0;
                pnbp = pnb;
@@ -1233,7 +1233,7 @@ static void EDTTies3D(
       for( yy = 0, py = ny1sy; yy < ny; yy++, dcp -= 2 + nx, dbp -= 2, py -= sy ) {
          *dcp-- = bp;
          for( xx = 0, px = pz + py + nx1sx; xx < nx; xx++, dcp--, dbp--, px -= sx ) {
-            if( oi[ px ] ) {
+            if( oi[ px ] != 0.0 ) {
                *dcp = nbp;
                kk = 0;
                pnbp = pnb;
@@ -1439,11 +1439,11 @@ static void EDTBruteForce2D(
    for( dip::sint yy = 0; yy < ny; yy++, py += sy ) {
       dip::sint px = py;
       for( dip::sint xx = 0; xx < nx; xx++, px += sx ) {
-         if( !( oi[ px ] )) {
-            if(( oi[ px - sy ] ) ||
-               ( oi[ px - sx ] ) ||
-               (( yy < ny - 1 ) && ( oi[ px + sy ] )) ||
-               (( xx < nx - 1 ) && ( oi[ px + sx ] ))) {
+         if( oi[ px ] == 0.0 ) {
+            if(( oi[ px - sy ] != 0.0 ) ||
+               ( oi[ px - sx ] != 0.0 ) ||
+               (( yy < ny - 1 ) && ( oi[ px + sy ] != 0.0 )) ||
+               (( xx < nx - 1 ) && ( oi[ px + sx ] != 0.0 ))) {
                bp->x = xx;
                bp->y = yy;
                bp++;
@@ -1456,7 +1456,7 @@ static void EDTBruteForce2D(
    for( dip::sint yy = 0 ; yy < ny; yy++, py += sy ) {
       dip::sint px = py;
       for( dip::sint xx = 0; xx < nx; xx++, px += sx ) {
-         if( oi[ px ] ) {
+         if( oi[ px ] != 0.0 ) {
             sfloat newdist = maxdist;
             bp = bord.data();
             for( dip::sint k = 0; k < nbp; k++, bp++ ) {
@@ -1539,13 +1539,13 @@ static void EDTBruteForce3D(
       for( dip::sint yy = 0; yy < ny; yy++, py += sy ) {
          dip::sint px = pz + py;
          for( dip::sint xx = 0; xx < nx; xx++, px += sx ) {
-            if( !( oi[ px ] )) {
-               if(( oi[ px - sz ] ) ||
-                  ( oi[ px - sy ] ) ||
-                  ( oi[ px - sx ] ) ||
-                  (( zz < nz - 1 ) && ( oi[ px + sz ] )) ||
-                  (( yy < ny - 1 ) && ( oi[ px + sy ] )) ||
-                  (( xx < nx - 1 ) && ( oi[ px + sx ] ))) {
+            if( oi[ px ] == 0.0 ) {
+               if(( oi[ px - sz ] != 0.0 ) ||
+                  ( oi[ px - sy ] != 0.0 ) ||
+                  ( oi[ px - sx ] != 0.0 ) ||
+                  (( zz < nz - 1 ) && ( oi[ px + sz ] != 0.0 )) ||
+                  (( yy < ny - 1 ) && ( oi[ px + sy ] != 0.0 )) ||
+                  (( xx < nx - 1 ) && ( oi[ px + sx ] != 0.0 ))) {
                   bp->x = xx;
                   bp->y = yy;
                   bp->z = zz;
@@ -1562,7 +1562,7 @@ static void EDTBruteForce3D(
       for( dip::sint yy = 0; yy < ny; yy++, py += sy ) {
          dip::sint px = pz + py;
          for( dip::sint xx = 0; xx < nx; xx++, px += sx ) {
-            if( oi[ px ] ) {
+            if( oi[ px ] != 0.0 ) {
                sfloat newdist = maxdist;
                bp = bord.data();
                for( dip::sint k = 0; k < nbp; k++, bp++ ) {
