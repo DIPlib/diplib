@@ -16,6 +16,7 @@
 %    - 'LnNormError': 2nd order norm difference
 %    - 'PSNR':        Peak signal-to-noise ratio, in dB.
 %    - 'SSIM':        Structural similarity index from Wang et al. (2004)
+%    - 'MutualInformation': Mutual information in bits
 %
 % DEFAULTS:
 %  method = 'MSE'
@@ -23,7 +24,7 @@
 % DIPlib:
 %  This function calls the DIPlib functions dip::MeanError, dip::MeanSquareError,
 %  dip::RootMeanSquareError, dip::MeanAbsoluteError, dip::IDivergence,
-%  dip::InProduct, dip::LnNormError, dip::PSNR, and dip::SSIM.
+%  dip::InProduct, dip::LnNormError, dip::PSNR, dip::SSIM, dip::MutualInformation.
 %  See the documentation of these functions for more information.
 %
 % LITERATURE:

@@ -5,6 +5,7 @@
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *                                (c)2011, Cris Luengo.
+ * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -255,6 +256,23 @@ dfloat SSIM( Image const& in, Image const& reference, Image const& mask, dfloat 
       error = Mean( error ); // average across tensor elements also
    }
    return error.As< dfloat >();
+}
+
+dfloat MutualInformation( Image const& in, Image const& reference, Image const& mask, dip::uint nBins ) {
+   Histogram::ConfigurationArray configuration( 2 );
+   configuration[ 0 ] = Histogram::Configuration( in.DataType() );
+   configuration[ 1 ] = Histogram::Configuration( reference.DataType() );
+   configuration[ 0 ].nBins = nBins;
+   configuration[ 1 ].nBins = nBins; // TODO: This does nothing for 16 or 32-bit integer types.
+   Histogram hist( in, reference, mask, configuration );
+   return MutualInformation( hist );
+}
+
+dfloat Entropy( Image const& in, Image const& mask, dip::uint nBins ) {
+   Histogram::Configuration configuration( in.DataType() );
+   configuration.nBins = nBins; // TODO: This does nothing for 16 or 32-bit integer types.
+   Histogram hist( in, mask, configuration );
+   return Entropy( hist );
 }
 
 dfloat EstimateNoiseVariance( Image const& in, Image const& c_mask ) {

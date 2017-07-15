@@ -61,6 +61,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          error = dip::PSNR( in, reference, mask );
       } else if( method == "SSIM" ) {
          error = dip::SSIM( in, reference, mask );
+     } else if( method == "MutualInformation" ) {
+         error = dip::MutualInformation( in, reference, mask );
       } else {
          DIP_THROW( dip::E::INVALID_FLAG );
       }

@@ -495,7 +495,7 @@ inline Image Any( Image const& in, Image const& mask = {}, BooleanArray process 
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
-/// Singleton expansion is applied if the image dimensionalities don't match.
+/// Singleton expansion is applied if the image sizes don't match.
 /// Complex input is not allowed, use `dip::MeanAbsoluteError` instead.
 DIP_EXPORT dfloat MeanError( Image const& in1, Image const& in2, Image const& mask = {} );
 
@@ -504,7 +504,7 @@ DIP_EXPORT dfloat MeanError( Image const& in1, Image const& in2, Image const& ma
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
-/// Singleton expansion is applied if the image dimensionalities don't match.
+/// Singleton expansion is applied if the image sizes don't match.
 /// For complex input, uses the modulus of the differences.
 DIP_EXPORT dfloat MeanSquareError( Image const& in1, Image const& in2, Image const& mask = {} );
 
@@ -513,7 +513,7 @@ DIP_EXPORT dfloat MeanSquareError( Image const& in1, Image const& in2, Image con
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
-/// Singleton expansion is applied if the image dimensionalities don't match.
+/// Singleton expansion is applied if the image sizes don't match.
 /// For complex input, uses the modulus of the differences.
 inline dfloat RootMeanSquareError( Image const& in1, Image const& in2, Image const& mask = {} ) {
    return std::sqrt( MeanSquareError( in1, in2, mask ));
@@ -524,7 +524,7 @@ inline dfloat RootMeanSquareError( Image const& in1, Image const& in2, Image con
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
-/// Singleton expansion is applied if the image dimensionalities don't match.
+/// Singleton expansion is applied if the image sizes don't match.
 DIP_EXPORT dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image const& mask = {} );
 
 /// \brief Calculates the I-divergence between corresponding sample values of `in1` and `in2`.
@@ -536,7 +536,7 @@ DIP_EXPORT dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image c
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
-/// Singleton expansion is applied if the image dimensionalities don't match.
+/// Singleton expansion is applied if the image sizes don't match.
 /// Complex input is not allowed.
 ///
 /// **Literature**
@@ -552,7 +552,7 @@ DIP_EXPORT dfloat IDivergence( Image const& in1, Image const& in2, Image const& 
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
-/// Singleton expansion is applied if the image dimensionalities don't match.
+/// Singleton expansion is applied if the image sizes don't match.
 /// Complex input is not allowed.
 DIP_EXPORT dfloat InProduct( Image const& in1, Image const& in2, Image const& mask = {} );
 
@@ -561,7 +561,7 @@ DIP_EXPORT dfloat InProduct( Image const& in1, Image const& in2, Image const& ma
 /// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
 /// these pixels in `mask` to zero.
 ///
-/// Singleton expansion is applied if the image dimensionalities don't match.
+/// Singleton expansion is applied if the image sizes don't match.
 /// For complex input, uses the modulus of the differences.
 DIP_EXPORT dfloat LnNormError( Image const& in1, Image const& in2, Image const& mask = {}, dfloat order = 2.0 );
 
@@ -570,20 +570,42 @@ DIP_EXPORT dfloat LnNormError( Image const& in1, Image const& in2, Image const& 
 /// If `peakSignal<=0`, computes the peak signal as the difference between maximum and minimum in `reference`.
 /// PSNR is defined as `20 * log10( peakSignal / RootMeanSquareError( in, reference, mask ))`.
 ///
-/// Singleton expansion is applied if the image dimensionalities don't match.
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// Singleton expansion is applied if the image sizes don't match.
 DIP_EXPORT dfloat PSNR( Image const& in, Image const& reference, Image const& mask = {}, dfloat peakSignal = 0.0 );
 
-/// \brief Structural similarity index (a visual similarity measure)
+/// \brief Calculates the structural similarity index (a visual similarity measure)
 ///
-/// Returns the average SSIM index, for the pixels in `mask`, computed locally in a Gausian window of size `sigma`,
-/// using parameters `K1` and `K2`. `mask` can be an empty array to process all pixels.
+/// Returns the average SSIM, computed locally in a Gausian window of size `sigma`, using constants
+/// `K1` and `K2`. These two constants should be small (<<1) positive values and serve to avoid instabilities.
 ///
-/// The two input images must be real-valued.
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// The two input images must be real-valued. Singleton expansion is applied if the image sizes don't match.
 ///
 /// **Literature**
 /// - Z. Wang, A.C. Bovik, H.R. Sheikh and E.P. Simoncelli, "Image quality assessment: from error visibility to
 ///   structural similarity", IEEE Transactions on Image Processing 13(4):600-612, 2004.
 DIP_EXPORT dfloat SSIM( Image const& in, Image const& reference, Image const& mask = {}, dfloat sigma = 1.5, dfloat K1 = 0.01, dfloat K2 = 0.03 );
+
+/// \brief Calculates the mutual information, in bits, using a histogram with `nBins`-by-`nBins` bins.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// The two input images must be real-valued and scalar. Singleton expansion is applied if the image sizes don't match.
+DIP_EXPORT dfloat MutualInformation( Image const& in, Image const& reference, Image const& mask = {}, dip::uint nBins = 256 );
+
+/// \brief Calculates the entropy, in bits, using a histogram with `nBins` bins.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// The input image must be real-valued and scalar.
+DIP_EXPORT dfloat Entropy( Image const& in, Image const& mask = {}, dip::uint nBins = 256 );
 
 /// \brief Estimates the variance of white Gaussian noise in an image.
 ///
