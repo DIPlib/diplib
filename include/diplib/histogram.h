@@ -71,6 +71,16 @@ class DIP_NO_EXPORT Histogram {
       ///     dip::Histogram::Configuration conf1( 0.0, 10.0, 10 );
       ///     dip::Histogram::Configuration conf2( 0.0, 10, 1.0 );
       /// ```
+      ///
+      /// An additional constructor takes a `dip::DataType`, and selects appropriate values for an image of the
+      /// given data type:
+      ///  - For 8-bit images, the histogram has 256 bins, one for each possible input value.
+      ///  - For other integer-valued images, the histogram has up to 256 bins, stretching from the lowest value
+      ///    in the image to the highest, and with bin size a power of two. This is the simplest way of correctly
+      ///    handling data from 10-bit, 12-bit and 16-bit sensors that can put data in the lower or the upper bits
+      ///    of the 16-bit words, and will handle other integer data correctly as well.
+      ///  - For floating-point images, the histogram always has 256 bins, stretching from the lowest value in the
+      ///    image to the highest.
       struct Configuration {
          dfloat lowerBound = 0.0;      ///< Lower bound for this dimension, corresponds to the lower bound of the first bin.
          dfloat upperBound = 256.0;    ///< Upper bound for this dimension, corresponds to the upper bound of the last bin.
@@ -97,6 +107,30 @@ class DIP_NO_EXPORT Histogram {
          /// \brief A constructor takes a lower bound, the number of bins and the bin size. The upper bound is computed.
          Configuration( dfloat lowerBound, int nBins, dfloat binSize ) :
                lowerBound( lowerBound ), nBins( static_cast< dip::uint >( nBins )), binSize( binSize ), mode( Mode::COMPUTE_UPPER ) {}
+         /// \brief A constructor takes an image data type, yielding a default histogram configuration for that data type.
+         Configuration( DataType dataType ) {
+            if( dataType == DT_UINT8 ) {
+               // 256 bins between 0 and 255, this is the default:
+            } else if ( dataType == DT_SINT8 ) {
+               // 256 bins between -128 and 128:
+               lowerBound = -128.0;
+               upperBound = 128.0;
+            } else if( dataType.IsInteger() ) {
+               // Other integer types: the complicated one.
+               lowerBound = 0.0;
+               upperBound = 100.0;
+               lowerIsPercentile = true;
+               upperIsPercentile = true;
+               binSize = 0.0; // binSize==0.0 indicates to compute bins as an integer power of two.
+               mode = Mode::COMPUTE_BINS;
+            } else {
+               // Floating-point types: 256 bins, stretched between max and min.
+               lowerBound = 0.0;
+               upperBound = 100.0;
+               lowerIsPercentile = true;
+               upperIsPercentile = true;
+            }
+         }
       };
       using ConfigurationArray = DimensionArray< Configuration >;
 
@@ -104,51 +138,53 @@ class DIP_NO_EXPORT Histogram {
       /// dimension.
       ///
       /// `configuration` should have as many elements as tensor elements in `input`. If `configuration` has only
-      /// one element, it will be used for all histogram dimensions.
-      Histogram( Image const& input, Image const& mask, ConfigurationArray configuration ) {
+      /// one element, it will be used for all histogram dimensions. If it is an empty array, appropriate configuration
+      /// values for `input` are chosen based on its data type (see `dip::Histogram::Configuration`).
+      explicit Histogram( Image const& input, Image const& mask = {}, ConfigurationArray configuration = {} ) {
          DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
          DIP_START_STACK_TRACE
-            Construct( input, mask, configuration );
+            ArrayUseParameter( configuration, input.TensorElements(), Configuration( input.DataType() ) );
+            if( input.IsScalar() ) {
+               ScalarImageHistogram( input, mask, configuration[ 0 ] );
+            } else {
+               TensorImageHistogram( input, mask, configuration );
+            }
          DIP_END_STACK_TRACE
       }
 
       /// \brief This version of the constructor is identical to the previous one, but with a single configuration
-      /// parameter.
+      /// parameter instead of an array.
       Histogram( Image const& input, Image const& mask, Configuration configuration ) {
          DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
          DIP_START_STACK_TRACE
-            Construct( input, mask, configuration );
+            if( input.IsScalar() ) {
+               ScalarImageHistogram( input, mask, configuration );
+            } else {
+               ConfigurationArray newConfig( input.TensorElements(), configuration );
+               TensorImageHistogram( input, mask, newConfig );
+            }
          DIP_END_STACK_TRACE
       }
 
-      /// \brief This version of the constructor is identical to the previous one, but with default configuration
-      /// parameters. The histogram parameters will depend on the image's data type:
-      ///  - For 8-bit images, the histogram always has 256 bins, one for each possible input value.
-      ///  - For other integer-valued images, the histogram has up to 256 bins, stretching from the lowest value
-      ///    in the image to the highest, and with bin size a power of two. This is the simplest way of correctly
-      ///    handling data from 10-bit, 12-bit and 16-bit sensors that can put data in the lower or the upper bits
-      ///    of the 16-bit words, and will handle other integer data correctly as well.
-      ///  - For floating-point images, the histogram always has 256 bins, stretching from the lowest value in the
-      ///    image to the highest.
-      explicit Histogram( Image const& input, Image const& mask = {} ) {
-         DIP_THROW_IF( !input.IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( !input.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-         Configuration configuration;
-         if(( input.DataType() == DT_UINT8 ) || ( input.DataType() == DT_SINT8 )) {
-            configuration = Configuration( 0.0, 256.0, 256 ); // nBins==256
-         } else if( input.DataType().IsInteger() ) {
-            configuration = Configuration( 0.0, 100.0, 0.0 ); // binSize==0.0 indicates to compute bins as an integer power of two.
-            configuration.lowerIsPercentile = true;
-            configuration.upperIsPercentile = true;
-         } else {
-            configuration = Configuration( 0.0, 100.0, 256 ); // nBins==256
-            configuration.lowerIsPercentile = true;
-            configuration.upperIsPercentile = true;
-         }
+      /// \brief A version of the constructor that takes two scalar input images, and constructs their joint histogram
+      /// (a 2D histogram, equal to the one obtained if the two images were the two channels of a tensor image).
+      Histogram( Image const& input1, Image const& input2, Image const& mask, ConfigurationArray configuration = {} ) {
+         // Note: `mask` cannot have a default value, it must always be given to distinguish this constructor from
+         // the first one.
+         DIP_THROW_IF( !input1.IsForged() || !input2.IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !input1.IsScalar() || !input2.IsScalar(), E::IMAGE_NOT_SCALAR );
+         DIP_THROW_IF( !input1.DataType().IsReal() || !input2.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
          DIP_START_STACK_TRACE
-            Construct( input, mask, configuration );
+            if( configuration.empty() ) {
+               configuration.resize( 2 );
+               configuration[ 0 ] = Configuration( input1.DataType() );
+               configuration[ 1 ] = Configuration( input2.DataType() );
+            } else {
+               ArrayUseParameter( configuration, 2, Configuration{} );
+            }
+            JointImageHistogram( input1, input2, mask, configuration );
          DIP_END_STACK_TRACE
       }
 
@@ -232,6 +268,12 @@ class DIP_NO_EXPORT Histogram {
          return centers;
       }
 
+      /// \brief Returns the bin center for the given `bin` along dimension `dim`
+      dfloat BinCenter( dip::uint bin, dip::uint dim = 0 ) const {
+         DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
+         return lowerBounds_[ dim ] + ( static_cast< dfloat >( bin ) + 0.5 ) * binSizes_[ dim ];
+      }
+
       /// \brief Gets the bin for `value` in a 1D histogram
       dip::uint Bin( dfloat value ) const {
          DIP_THROW_IF( Dimensionality() != 1, E::ILLEGAL_DIMENSIONALITY );
@@ -312,43 +354,8 @@ class DIP_NO_EXPORT Histogram {
       /// \brief Returns a pointer to the first bin
       CountType const* Origin() const { return static_cast< CountType const* >( data_.Origin() ); }
 
-      // Functions below require stuff in math.h, we implement them in the CPP file to avoid including math.h here.
-
       /// \brief Returns the total number of elements in the histogram (sum of bins)
       DIP_EXPORT dip::uint Count() const;
-
-      /// \brief Computes the mean value of the data represented by the histogram.
-      ///
-      /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
-      /// computing the statistic on data rounded to the bin centers.
-      DIP_EXPORT Image::CastPixel< dfloat > Mean() const;
-
-      /// \brief Computes the covariance matrix of the data represented by the histogram.
-      ///
-      /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
-      /// computing the statistic on data rounded to the bin centers.
-      ///
-      /// The returned pixel is a symmetric tensor, containing n*(n+1)/2 tensor elements (with n the
-      /// histogram dimensionality).
-      DIP_EXPORT Image::CastPixel< dfloat > Covariance() const;
-
-      /// \brief Computes the marginal median value of the data represented by the histogram. The marginal median
-      /// is a median computed independently on each pixel, and thus is not one of the input values.
-      ///
-      /// In the 1D histogram case (for scalar images) this function computes the approximate median (i.e. the
-      /// bin containing the median value). The distinction between marginal median and median is only relevant
-      /// for multivariate data (histograms from tensor images). In short, here we compute 1D medians on each
-      /// of the 1D projections of the histogram.
-      ///
-      /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
-      /// computing the statistic on data rounded to the bin centers.
-      DIP_EXPORT Image::CastPixel< dfloat > MarginalMedian() const;
-
-      /// \brief Returns the mode, the bin with the largest count. The return value is the
-      ///
-      /// When multiple bins have the same, largest count, the first bin encountered is returned. This is the bin
-      /// with the lowest linear index, and is closest to the origin.
-      DIP_EXPORT Image::CastPixel< dfloat > Mode() const;
 
       /// \brief Returns a new histogram containing, for each bin, the sum of that bin with all the previous ones.
       ///
@@ -365,7 +372,7 @@ class DIP_NO_EXPORT Histogram {
       /// The marginal histogram represents the marginal intensity distribution. It is a 1D histogram determined
       /// by summing over all dimensions except `dim`, and is equivalent to the histogram for tensor element
       /// `dim`.
-      DIP_EXPORT Histogram MarginalHistogram( dip::uint dim ) const;
+      DIP_EXPORT Histogram Marginal( dip::uint dim ) const;
 
       /// \brief Returns a smoothed version of the histogram, using Gaussian smoothing with parameters `sigma`.
       ///
@@ -395,33 +402,63 @@ class DIP_NO_EXPORT Histogram {
          dfloat bin = clamp( FindBin( value, dim ), 0.0, static_cast< dfloat >( data_.Size( dim ) - 1 ));
          return static_cast< dip::uint >( bin );
       }
-      dfloat BinCenter( dip::uint bin, dip::uint dim = 0 ) const {
-         return lowerBounds_[ dim ] + ( static_cast< dfloat >( bin ) + 0.5 ) * binSizes_[ dim ];
-      }
 
       DIP_EXPORT void ScalarImageHistogram( Image const& input, Image const& mask, Configuration& configuration );
       DIP_EXPORT void TensorImageHistogram( Image const& input, Image const& mask, ConfigurationArray& configuration );
+      DIP_EXPORT void JointImageHistogram( Image const& input1, Image const& input2, Image const& mask, ConfigurationArray& configuration );
       DIP_EXPORT void MeasurementFeatureHistogram( Measurement::IteratorFeature const& featureValues, ConfigurationArray& configuration );
-
-      void Construct( Image const& input, Image const& mask, ConfigurationArray& configuration ) {
-         dip::uint ndims = input.TensorElements();
-         ArrayUseParameter( configuration, ndims, Configuration{} );
-         if( ndims == 1 ) {
-            ScalarImageHistogram( input, mask, configuration[ 0 ] );
-         } else {
-            TensorImageHistogram( input, mask, configuration );
-         }
-      }
-      void Construct( Image const& input, Image const& mask, Configuration& configuration ) {
-         dip::uint ndims = input.TensorElements();
-         if( ndims == 1 ) {
-            ScalarImageHistogram( input, mask, configuration );
-         } else {
-            ConfigurationArray newConfig( ndims, configuration );
-            TensorImageHistogram( input, mask, newConfig );
-         }
-      }
 };
+
+//
+// Computing image statistics from the histogram
+//
+
+/// \brief Computes the mean value of the data represented by the histogram.
+///
+/// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
+/// computing the statistic on data rounded to the bin centers.
+DIP_EXPORT Image::CastPixel< dfloat > Mean( Histogram const& in );
+
+/// \brief Computes the covariance matrix of the data represented by the histogram.
+///
+/// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
+/// computing the statistic on data rounded to the bin centers.
+///
+/// The returned pixel is a symmetric tensor, containing n*(n+1)/2 tensor elements (with n the
+/// histogram dimensionality).
+DIP_EXPORT Image::CastPixel< dfloat > Covariance( Histogram const& in );
+
+/// \brief Computes the marginal median value of the data represented by the histogram. The marginal median
+/// is a median computed independently on each pixel, and thus is not one of the input values.
+///
+/// In the 1D histogram case (for scalar images) this function computes the approximate median (i.e. the
+/// bin containing the median value). The distinction between marginal median and median is only relevant
+/// for multivariate data (histograms from tensor images). In short, here we compute 1D medians on each
+/// of the 1D projections of the histogram.
+///
+/// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
+/// computing the statistic on data rounded to the bin centers.
+DIP_EXPORT Image::CastPixel< dfloat > MarginalMedian( Histogram const& in );
+
+/// \brief Returns the mode, the bin with the largest count. The return value is the
+///
+/// When multiple bins have the same, largest count, the first bin encountered is returned. This is the bin
+/// with the lowest linear index, and is closest to the origin.
+DIP_EXPORT Image::CastPixel< dfloat > Mode( Histogram const& in );
+
+/// \brief Calculates the mutual information, in bits, between two images from their joint histogram `in`.
+///
+/// `in` must be a 2D histogram. The number of bins along each axis determines the precision for the result.
+DIP_EXPORT dfloat MutualInformation( Histogram const& in );
+
+/// \brief Calculates the entropy, in bits, of an image from its histogram `in`.
+///
+/// `in` must be a 1D histogram. The number of bins determines the precision for the result.
+DIP_EXPORT dfloat Entropy( Histogram const& in );
+
+//
+// Computing image thresholds from the histogram
+//
 
 /// \brief Determines a set of `nThresholds` thresholds using the Isodata algorithm (k-means clustering),
 /// and the image's histogram `in`.

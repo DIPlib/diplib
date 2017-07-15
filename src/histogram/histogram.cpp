@@ -31,7 +31,7 @@ namespace {
 
 using CountType = Histogram::CountType;
 
-constexpr auto DT_COUNT = DT_UINT32;
+constexpr auto DT_COUNT = DataType( CountType( 0 ));
 
 void CompleteConfiguration( Histogram::Configuration& configuration, bool isInteger ) {
    if( configuration.mode != Histogram::Configuration::Mode::COMPUTE_BINS ) {
@@ -176,63 +176,85 @@ class dip__ScalarImageHistogram : public Framework::ScanLineFilter {
 };
 
 template< typename TPI >
-class dip__TensorImageHistogram : public Framework::ScanLineFilter {
+class dip__JointImageHistogram : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
-         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         std::vector< TPI const* >in;
+         std::vector< dip::sint >stride;
+         dip::uint nDims;
+         dip::uint maskBuffer;
+         if( tensorInput_ ) {
+            nDims = params.inBuffer[ 0 ].tensorLength;
+            in.resize( nDims );
+            auto tensorStride = params.inBuffer[ 0 ].tensorStride;
+            in[ 0 ] = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+            for( dip::uint ii = 1; ii < nDims; ++ii ) {
+               in[ ii ] = in[ ii - 1 ] + tensorStride;
+            }
+            stride.resize( nDims, params.inBuffer[ 0 ].stride );
+            maskBuffer = 1;
+         } else {
+            nDims = 2;
+            DIP_ASSERT( params.inBuffer.size() >= 2 );
+            in = { static_cast< TPI const* >( params.inBuffer[ 0 ].buffer ),
+                   static_cast< TPI const* >( params.inBuffer[ 1 ].buffer ) };
+            stride = { params.inBuffer[ 0 ].stride, params.inBuffer[ 1 ].stride };
+            maskBuffer = 2;
+         }
          auto bufferLength = params.bufferLength;
-         auto inStride = params.inBuffer[ 0 ].stride;
-         auto tensorLength = params.inBuffer[ 0 ].tensorLength;
-         auto tensorStride = params.inBuffer[ 0 ].tensorStride;
          CountType* data = static_cast< CountType* >( image_.Origin() ) + image_.Strides().back() * static_cast< dip::sint >( params.thread );
-         if( params.inBuffer.size() > 1 ) {
-            // If there's two input buffers, we have a mask image.
-            bin const* mask = static_cast< bin const* >( params.inBuffer[ 1 ].buffer );
-            auto maskStride = params.inBuffer[ 1 ].stride;
+         if( params.inBuffer.size() > maskBuffer ) {
+            // We have a mask image.
+            bin const* mask = static_cast< bin const* >( params.inBuffer[ maskBuffer ].buffer );
+            auto maskStride = params.inBuffer[ maskBuffer ].stride;
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                if( *mask ) {
-                  TPI const* tin = in;
-                  dip::sint offset = 0;
                   bool include = true;
-                  for( dip::uint jj = 0; jj < tensorLength; ++jj ) {
+                  for( dip::uint jj = 0; jj < nDims; ++jj ) {
                      if( configuration_[ jj ].excludeOutOfBoundValues ) {
-                        if(( *tin < configuration_[ jj ].lowerBound ) || ( *tin >= configuration_[ jj ].upperBound )) {
+                        if(( *( in[ jj ] ) < configuration_[ jj ].lowerBound ) || ( *( in[ jj ] ) >= configuration_[ jj ].upperBound )) {
                            include = false;
                            break;
                         }
                      }
-                     offset += image_.Stride( jj ) *
-                               FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
-                     tin += tensorStride;
                   }
                   if( include ) {
+                     dip::sint offset = 0;
+                     for( dip::uint jj = 0; jj < nDims; ++jj ) {
+                        offset += image_.Stride( jj ) *
+                                  FindBin( *( in[ jj ] ), configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
+                     }
                      ++data[ offset ];
                   }
                }
-               in += inStride;
+               for( dip::uint jj = 0; jj < nDims; ++jj ) {
+                  in[ jj ] += stride[ jj ];
+               }
                mask += maskStride;
             }
          } else {
-            // Otherwise we don't.
+            // We don't have a mask image.
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-               TPI const* tin = in;
-               dip::sint offset = 0;
                bool include = true;
-               for( dip::uint jj = 0; jj < tensorLength; ++jj ) {
+               for( dip::uint jj = 0; jj < nDims; ++jj ) {
                   if( configuration_[ jj ].excludeOutOfBoundValues ) {
-                     if(( *tin < configuration_[ jj ].lowerBound ) || ( *tin >= configuration_[ jj ].upperBound )) {
+                     if(( *( in[ jj ] ) < configuration_[ jj ].lowerBound ) || ( *( in[ jj ] ) >= configuration_[ jj ].upperBound )) {
                         include = false;
                         break;
                      }
                   }
-                  offset += image_.Stride( jj ) *
-                            FindBin( *tin, configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
-                  tin += tensorStride;
                }
                if( include ) {
+                  dip::sint offset = 0;
+                  for( dip::uint jj = 0; jj < nDims; ++jj ) {
+                     offset += image_.Stride( jj ) *
+                               FindBin( *( in[ jj ] ), configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
+                  }
                   ++data[ offset ];
                }
-               in += inStride;
+               for( dip::uint jj = 0; jj < nDims; ++jj ) {
+                  in[ jj ] += stride[ jj ];
+               }
             }
          }
       }
@@ -245,11 +267,12 @@ class dip__TensorImageHistogram : public Framework::ScanLineFilter {
          image_.Forge();
          image_.Fill( 0 );
       }
-      dip__TensorImageHistogram( Image& image, Histogram::ConfigurationArray const& configuration ) :
-            image_( image ), configuration_( configuration ) {}
+      dip__JointImageHistogram( Image& image, Histogram::ConfigurationArray const& configuration, bool tensorInput ) :
+            image_( image ), configuration_( configuration ), tensorInput_( tensorInput ) {}
    private:
       Image& image_;
       Histogram::ConfigurationArray const& configuration_;
+      bool tensorInput_;
 };
 
 } // namespace
@@ -289,7 +312,7 @@ void Histogram::TensorImageHistogram( Image const& input, Image const& mask, His
    data_.SetSizes( sizes );
    data_.SetDataType( DT_COUNT );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
-   DIP_OVL_NEW_REAL( scanLineFilter, dip__TensorImageHistogram, ( data_, configuration ), input.DataType() );
+   DIP_OVL_NEW_REAL( scanLineFilter, dip__JointImageHistogram, ( data_, configuration, true ), input.DataType() );
    DIP_START_STACK_TRACE
       Framework::ScanSingleInput( input, mask, input.DataType(), *scanLineFilter );
    DIP_END_STACK_TRACE
@@ -299,6 +322,44 @@ void Histogram::TensorImageHistogram( Image const& input, Image const& mask, His
       data_ = Sum( data_, {}, process );
    }
    data_.Squeeze( ndims );
+}
+
+void Histogram::JointImageHistogram( Image const& input1, Image const& input2, Image const& c_mask, Histogram::ConfigurationArray& configuration ) {
+   DIP_START_STACK_TRACE
+      CompleteConfiguration( input1, c_mask, configuration[ 0 ] );
+      CompleteConfiguration( input2, c_mask, configuration[ 1 ] );
+   DIP_END_STACK_TRACE
+   lowerBounds_ = { configuration[ 0 ].lowerBound, configuration[ 1 ].lowerBound };
+   binSizes_ = { configuration[ 0 ].binSize, configuration[ 1 ].binSize };
+   UnsignedArray sizes{ configuration[ 0 ].nBins, configuration[ 1 ].nBins, 1 };
+   data_.SetSizes( sizes );
+   data_.SetDataType( DT_COUNT );
+   DataType dtype = DataType::SuggestDyadicOperation( input1.DataType(), input2.DataType() );
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_NEW_REAL( scanLineFilter, dip__JointImageHistogram, ( data_, configuration, false ), dtype );
+   ImageConstRefArray inar{ input1, input2 };
+   DataTypeArray inBufT{ dtype, dtype };
+   Image mask;
+   if( c_mask.IsForged() ) {
+      // If we have a mask, add it to the input array.
+      mask = c_mask.QuickCopy();
+      DIP_START_STACK_TRACE
+         mask.CheckIsMask( input1.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
+         mask.ExpandSingletonDimensions( input1.Sizes() );
+      DIP_END_STACK_TRACE
+      inar.push_back( mask );
+      inBufT.push_back( mask.DataType() );
+   }
+   ImageRefArray outar{};
+   DIP_START_STACK_TRACE
+      Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter );
+   DIP_END_STACK_TRACE
+   if( data_.Size( 2 ) > 1 ) {
+      BooleanArray process( 3, false );
+      process[ 2 ] = true;
+      data_ = Sum( data_, {}, process );
+   }
+   data_.Squeeze( 2 );
 }
 
 void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const& featureValues, Histogram::ConfigurationArray& configuration ) {
@@ -346,105 +407,6 @@ dip::uint Histogram::Count() const {
    return Sum( data_ ).As< dip::uint >();
 }
 
-Image::CastPixel< dfloat > Histogram::Mean() const {
-   dip::uint nDims = Dimensionality();
-   Image::CastPixel< dfloat > mean( DT_DFLOAT, nDims );
-   mean = 0;
-   dfloat* pmean = static_cast< dfloat* >( mean.Origin() );
-   dfloat weight = 0;
-   ImageIterator< CountType > it( data_ );
-   do {
-      UnsignedArray const& coord = it.Coordinates();
-      dfloat v = static_cast< dfloat >( *it );
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         dfloat bin = BinCenter( coord[ ii ], ii );
-         pmean[ ii ] += bin * v;
-      }
-      weight += v;
-   } while( ++it );
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      pmean[ ii ] /= weight;
-   }
-   return mean;
-}
-
-Image::CastPixel< dfloat > Histogram::Covariance() const {
-   dip::uint nDims = Dimensionality();
-   Tensor tensor( Tensor::Shape::SYMMETRIC_MATRIX, nDims, nDims );
-   Image::CastPixel< dfloat > mean = Mean();
-   dfloat* pmean = static_cast< dfloat* >( mean.Origin() );
-   dfloat weight = 0;
-   Image::CastPixel< dfloat > cov( DT_DFLOAT, tensor.Elements() );
-   cov.ReshapeTensor( tensor );
-   std::vector< dip::sint > lut = tensor.LookUpTable();
-   cov = 0;
-   dfloat* pcov = static_cast< dfloat* >( cov.Origin() );
-   ImageIterator< CountType > it( data_ );
-   FloatArray diff( nDims, 0 );
-   do {
-      UnsignedArray const& coord = it.Coordinates();
-      dfloat w = static_cast< dfloat >( *it );
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         diff[ ii ] = BinCenter( coord[ ii ], ii ) - pmean[ ii ];
-      }
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         for( dip::uint jj = 0; jj <= ii; ++jj ) {
-            pcov[ static_cast< dip::uint >( lut[ ii * nDims + jj ] ) ] += diff[ ii ] * diff[ jj ] * w;
-         }
-      }
-      weight += w;
-   } while( ++it );
-   dfloat norm = 1.0 / ( weight - 1 );
-   for( dip::uint ii = 0; ii < cov.TensorElements(); ++ii ) {
-      pcov[ ii ] *= norm;
-   }
-   return cov;
-}
-
-Image::CastPixel< dfloat > Histogram::MarginalMedian() const {
-   dip::uint nDims = Dimensionality();
-   Image::CastPixel< dfloat > median( DT_DFLOAT, nDims );
-   dfloat* pmedian = static_cast< dfloat* >( median.Origin() );
-   Histogram cum = Cumulative(); // we look along the last line in each direction
-   CountType* pcum = static_cast< CountType* >( cum.data_.Origin() );
-   dfloat n = static_cast< dfloat >( pcum[ cum.data_.NumberOfPixels() - 1 ] );
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      pcum = static_cast< CountType* >( cum.data_.Origin() );
-      for( dip::uint jj = 0; jj < nDims; ++jj ) {
-         if( jj != ii ) {
-            pcum += static_cast< dip::sint >( cum.data_.Size( jj ) - 1 ) * cum.data_.Stride( jj );
-         }
-      }
-      dip::sint stride = cum.data_.Stride( ii );
-      dip::sint jj = 0;
-      while( static_cast< dfloat >( *pcum ) / n < 0.5 ) {
-         ++jj;
-         pcum += stride;
-      }
-      pmedian[ ii ] = BinCenter( static_cast< dip::uint >( jj ), ii );
-   }
-   return median;
-}
-
-DIP_EXPORT Image::CastPixel< dfloat > Histogram::Mode() const {
-   dip::uint nDims = Dimensionality();
-   UnsignedArray coord( nDims, 0 );
-   CountType maxVal = 0;
-   ImageIterator< CountType > it( data_ );
-   do {
-      if( *it > maxVal ) {
-         maxVal = *it;
-         coord = it.Coordinates();
-      }
-   } while( ++it );
-   Image::CastPixel< dfloat > mode( DT_DFLOAT, nDims );
-   dfloat* pmode = static_cast< dfloat* >( mode.Origin() );
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      pmode[ ii ] = BinCenter( coord[ ii ], ii );
-   }
-   return mode;
-}
-
 Histogram Histogram::Cumulative() const {
    Histogram out = *this;
    out.data_.Strip();
@@ -454,7 +416,7 @@ Histogram Histogram::Cumulative() const {
    return out;
 }
 
-Histogram Histogram::MarginalHistogram( dip::uint dim ) const {
+Histogram Histogram::Marginal( dip::uint dim ) const {
    DIP_THROW_IF( dim >= Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
    Histogram out = *this;
    BooleanArray ps( Dimensionality(), true );
@@ -531,10 +493,10 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( gaussH.LowerBound() == 0.0 );
    DOCTEST_CHECK( gaussH.UpperBound() == upperBound );
    DOCTEST_CHECK( gaussH.Count() == img.NumberOfPixels() );
-   DOCTEST_CHECK( std::abs( gaussH.Mean()[ 0 ] - meanval ) < 1.0 ); // less than 0.05% error.
-   DOCTEST_CHECK( std::abs( gaussH.MarginalMedian()[ 0 ] - meanval ) <= binSize );
-   DOCTEST_CHECK( std::abs( gaussH.Mode()[ 0 ] - meanval ) <= 3.0 * binSize );
-   DOCTEST_CHECK( std::abs( gaussH.Covariance()[ 0 ] - sigma * sigma ) < 500.0 ); // less than 0.2% error.
+   DOCTEST_CHECK( std::abs( Mean( gaussH )[ 0 ] - meanval ) < 1.0 ); // less than 0.05% error.
+   DOCTEST_CHECK( std::abs( MarginalMedian( gaussH )[ 0 ] - meanval ) <= binSize );
+   DOCTEST_CHECK( std::abs( Mode( gaussH )[ 0 ] - meanval ) <= 3.0 * binSize );
+   DOCTEST_CHECK( std::abs( Covariance( gaussH )[ 0 ] - sigma * sigma ) < 500.0 ); // less than 0.2% error.
 
    dip::Image mask = img > meanval;
    dip::Histogram halfGaussH( img, mask, settings );
@@ -579,7 +541,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( tensorH.LowerBound( 2 ) == 0.0 );
    DOCTEST_CHECK( tensorH.UpperBound( 2 ) == upperBound );
    DOCTEST_CHECK( tensorH.Count() == tensorIm.NumberOfPixels() );
-   dip::Histogram tensorM = tensorH.MarginalHistogram( 2 );
+   dip::Histogram tensorM = tensorH.Marginal( 2 );
    DOCTEST_CHECK( tensorM.Dimensionality() == 1 );
    DOCTEST_CHECK( tensorM.Bins() == nBins );
    DOCTEST_CHECK( tensorM.BinSize() == binSize );
@@ -593,20 +555,20 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( bounds[ 1 ] == binSize );
    DOCTEST_CHECK( bounds[ 2 ] == binSize * 2.0 );
    DOCTEST_CHECK( bounds.back() == upperBound );
-   DOCTEST_CHECK( tensorM.At( bin1000 ) == tensorIm.NumberOfPixels() );
-   auto tensorMean = tensorH.Mean();
+   DOCTEST_CHECK( tensorM.At( bin1000 ) == tensorIm.NumberOfPixels());
+   auto tensorMean = Mean( tensorH );
    DOCTEST_CHECK( std::abs( tensorMean[ 0 ] - meanval ) < 5.0 );
    DOCTEST_CHECK( std::abs( tensorMean[ 1 ] - meanval ) < 5.0 );
    DOCTEST_CHECK( tensorMean[ 2 ] == 1000.0 + 0.5 * binSize );
-   auto tensorMed = tensorH.MarginalMedian();
+   auto tensorMed = MarginalMedian( tensorH );
    DOCTEST_CHECK( std::abs( tensorMed[ 0 ] - meanval ) <= binSize );
    DOCTEST_CHECK( std::abs( tensorMed[ 1 ] - meanval ) <= binSize );
    DOCTEST_CHECK( tensorMed[ 2 ] == 1000.0 + 0.5 * binSize );
-   auto tensorMode = tensorH.Mode();
+   auto tensorMode = Mode( tensorH );
    DOCTEST_CHECK( std::abs( tensorMode[ 0 ] - meanval ) <= 15.0 * binSize ); // We've got few pixels, so this is imprecise
    DOCTEST_CHECK( std::abs( tensorMode[ 1 ] - meanval ) <= 15.0 * binSize );
    DOCTEST_CHECK( tensorMode[ 2 ] == 1000.0 + 0.5 * binSize );
-   auto tensorCov = tensorH.Covariance();
+   auto tensorCov = Covariance( tensorH );
    DOCTEST_CHECK( std::abs( tensorCov[ 0 ] - sigma * sigma ) < 5000.0 ); // variance 1st element
    DOCTEST_CHECK( std::abs( tensorCov[ 1 ] - sigma * sigma ) < 5000.0 ); // variance 2nd element
    DOCTEST_CHECK( std::abs( tensorCov[ 3 ] ) < 5000.0 ); // covariance elements 1st & 2nd
