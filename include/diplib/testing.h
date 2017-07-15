@@ -35,10 +35,6 @@
 
 namespace dip {
 
-/// \group testing Tools for testing and debugging.
-/// \ingroup infrastructure
-/// \{
-
 /// \brief Tools for testing and debugging.
 namespace testing {
 
@@ -83,6 +79,10 @@ std::complex< T > Round( std::complex< T > v, int digits ) {
 
 } // namespace detail
 
+/// \defgroup testing Testing and debugging
+/// \brief Tools for testing and debugging.
+/// \ingroup infrastructure
+/// \{
 
 /// \brief Outputs pixel values of a small image to `stdout`.
 ///
@@ -206,9 +206,9 @@ inline std::ostream& operator<<(
    return os;
 }
 
-} // namespace testing
-
 /// \}
+
+} // namespace testing
 
 } // namespace dip
 

@@ -67,7 +67,7 @@ namespace dip {
 /// **Known bugs**
 ///  - The `"true"` transform type is prone to produce an internal buffer overflow when applied to larger (almost)
 ///    spherical objects. It this case, use a different method.
-/// - The option `border` = `"background"` is not supported for the `"brute force"` method.
+///  - The option `border` = `"background"` is not supported for the `"brute force"` method.
 DIP_EXPORT void EuclideanDistanceTransform(
       Image const& in,
       Image& out,

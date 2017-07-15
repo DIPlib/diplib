@@ -597,6 +597,8 @@ DIP_EXPORT dfloat SSIM( Image const& in, Image const& reference, Image const& ma
 /// these pixels in `mask` to zero.
 ///
 /// The two input images must be real-valued and scalar. Singleton expansion is applied if the image sizes don't match.
+///
+/// \see dip::MutualInformation(Histogram const&)
 DIP_EXPORT dfloat MutualInformation( Image const& in, Image const& reference, Image const& mask = {}, dip::uint nBins = 256 );
 
 /// \brief Calculates the entropy, in bits, using a histogram with `nBins` bins.
@@ -605,6 +607,8 @@ DIP_EXPORT dfloat MutualInformation( Image const& in, Image const& reference, Im
 /// these pixels in `mask` to zero.
 ///
 /// The input image must be real-valued and scalar.
+///
+/// \see dip::Entropy(Histogram const&)
 DIP_EXPORT dfloat Entropy( Image const& in, Image const& mask = {}, dip::uint nBins = 256 );
 
 /// \brief Estimates the variance of white Gaussian noise in an image.
