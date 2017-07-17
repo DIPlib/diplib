@@ -137,8 +137,9 @@ dfloat MutualInformation( Histogram const& hist ) {
    Image const& histImg = hist.GetImage();
    dip::uint n1 = histImg.Size( 0 );
    dip::uint n2 = histImg.Size( 1 );
+   // Make sure data is contiguous as we'd expect from default strides:
    DIP_ASSERT( histImg.Stride( 0 ) == 1 );
-   DIP_ASSERT( histImg.Stride( 1 ) == n1 ); // Make sure data is contiguous as we'd expect from default strides.
+   DIP_ASSERT( histImg.Stride( 1 ) == static_cast< dip::sint >( n1 ));
 
    Histogram c1 = hist.Marginal( 0 );
    Image const& c1Img = c1.GetImage();
