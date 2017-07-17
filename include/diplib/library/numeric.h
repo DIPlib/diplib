@@ -423,7 +423,7 @@ DIP_EXPORT void Inverse( dip::uint n, ConstSampleIterator< dfloat > input, Sampl
 /// The result is undetermined if the matrix is not invertible.
 DIP_EXPORT void Inverse( dip::uint n, ConstSampleIterator< dcomplex > input, SampleIterator< dcomplex > output );
 
-/// \brief Computes the pseudo-inverse of a real matrix.
+/// \brief Computes the pseudo-inverse of a real matrix, using the Jacobi SVD decomposition.
 ///
 /// `input` is a pointer to `m*n` values, in column-major order.
 ///
@@ -439,7 +439,7 @@ DIP_EXPORT void PseudoInverse(
       dfloat tolerance = 1e-7
 );
 
-/// \brief Computes the pseudo-inverse of a complex matrix.
+/// \brief Computes the pseudo-inverse of a complex matrix, using the Jacobi SVD decomposition.
 ///
 /// `input` and `output` are pointers to `m*n` values, in column-major order.
 ///
@@ -464,6 +464,19 @@ DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dfloat
 ///
 /// `input` is a pointer to `m*n` values, in column-major order.
 DIP_EXPORT dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input );
+
+/// \brief Solves a system of real-valued equations, using the Jacobi SVD decomposition.
+///
+/// Solves \f$A x = b\f$, where `A` is an `m`x`n` matrix (stored in column-major order),
+/// and `b` is a vector with `m` values.
+/// The unknown `x` will have `n` values, and will be written to `output`.
+DIP_EXPORT void Solve(
+      dip::uint m,
+      dip::uint n,
+      ConstSampleIterator< dfloat > A,
+      ConstSampleIterator< dfloat > b,
+      SampleIterator< dfloat > output
+);
 
 
 /// \brief `%StatisticsAccumulator` computes population statistics by accumulating the first four central moments.

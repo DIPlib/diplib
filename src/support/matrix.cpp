@@ -236,6 +236,21 @@ dip::uint Rank( dip::uint m, dip::uint n, ConstSampleIterator< dcomplex > input 
    return static_cast< dip::uint >( decomposition.rank() );
 }
 
+void Solve(
+      dip::uint m,
+      dip::uint n,
+      ConstSampleIterator< dfloat > A,
+      ConstSampleIterator< dfloat > b,
+      SampleIterator< dfloat > output
+) {
+   DIP_ASSERT( A.Stride() >= 0 );
+   DIP_ASSERT( b.Stride() >= 0 );
+   Eigen::Map< Eigen::MatrixXd const, 0, Eigen::InnerStride<> > matrix( A.Pointer(), m, n, Eigen::InnerStride<>( A.Stride() ));
+   Eigen::JacobiSVD< Eigen::MatrixXd > svd( matrix, Eigen::ComputeThinU | Eigen::ComputeThinV );
+   Eigen::Map< Eigen::VectorXd const, 0, Eigen::InnerStride<> > vector( b.Pointer(), m, Eigen::InnerStride<>( b.Stride() ));
+   Eigen::Map< Eigen::VectorXd, 0, Eigen::InnerStride<> > result( output.Pointer(), n, Eigen::InnerStride<>( output.Stride() ));
+   result = svd.solve( vector );
+}
 
 } // namespace dip
 
@@ -367,6 +382,12 @@ DOCTEST_TEST_CASE("[DIPlib] testing the SingularValueDecomposition and related f
    DOCTEST_CHECK( matrix32[ 3 ] == doctest::Approx(  8.0 / 180.0 ));
    DOCTEST_CHECK( matrix32[ 4 ] == doctest::Approx( 28.0 / 180.0 ));
    DOCTEST_CHECK( matrix32[ 5 ] == doctest::Approx(-40.0 / 180.0 ));
+
+   dip::dfloat b[ 3 ] = { 44.0 / 180.0, 64.0 / 180.0, -40.0 / 180.0 };
+   dip::dfloat x[ 2 ];
+   dip::Solve( 3, 2, matrix32, b, x );
+   DOCTEST_CHECK( x[ 0 ] == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( x[ 1 ] == doctest::Approx( 2.0 ));
 }
 
 #endif // DIP__ENABLE_DOCTEST

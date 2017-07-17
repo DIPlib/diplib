@@ -819,7 +819,7 @@ class DIP_NO_EXPORT MeasurementTool {
             Image const& label,
             Image const& grey,
             StringArray features, // we take a copy of this array
-            UnsignedArray const& objectIDs,
+            UnsignedArray const& objectIDs = {},
             dip::uint connectivity = 2
       ) const;
 

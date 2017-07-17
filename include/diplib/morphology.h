@@ -886,7 +886,7 @@ inline Image WatershedMaxima(
 /// be quite slow. For example, an image that is zero everywhere except for a small valley. For such an image
 /// it is recommended to use the `mask` input, for example with the output of a threshold operation.
 ///
-/// See \ref connectivity for information on the connectivy parameter.
+/// See \ref connectivity for information on the connectivity parameter.
 ///
 /// \see dip::Maxima, dip::WatershedMinima, dip::WatershedMaxima.
 DIP_EXPORT void Minima(
@@ -919,7 +919,7 @@ inline Image Minima(
 /// be quite slow. For example, an image that is zero everywhere except for a small peak. For such an image
 /// it is recommended to use the `mask` input, for example with the output of a threshold operation.
 ///
-/// See \ref connectivity for information on the connectivy parameter.
+/// See \ref connectivity for information on the connectivity parameter.
 ///
 /// \see dip::Minima, dip::WatershedMaxima, dip::WatershedMinima.
 DIP_EXPORT void Maxima(
