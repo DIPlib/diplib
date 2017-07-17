@@ -50,6 +50,7 @@ include/diplib/statistics.h
 include/diplib/testing.h
 include/diplib/transform.h
 include/diplib/union_find.h
+src/analysis/subpixel_location.cpp
 src/color/cmyk.h
 src/color/color.cpp
 src/color/hcv.h
