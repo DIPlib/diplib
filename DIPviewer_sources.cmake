@@ -13,7 +13,9 @@ viewer/src/control.cpp
 viewer/src/histogram.cpp
 viewer/src/image.cpp
 viewer/src/manager.cpp
+viewer/src/manager/fg_font_data.h
 viewer/src/manager/glfw.cpp
+viewer/src/manager/glut.cpp
 viewer/src/slice.cpp
 viewer/src/tensor.cpp
 )

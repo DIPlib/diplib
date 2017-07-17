@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#ifdef DIP__HAS_FREEGLUT
+
 #include <unistd.h>
 #include <string.h>
 
@@ -180,3 +182,5 @@ void GLUTManager::setWindowTitle(Window* /*window*/, const char *name)
 {
   glutSetWindowTitle(name);
 }
+
+#endif // DIP__HAS_FREEGLUT

@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#ifdef DIP__HAS_GLFW
+
 #include <unistd.h>
 #include <string.h>
 
@@ -191,3 +193,5 @@ void GLFWManager::getCursorPos(Window *window, int *x, int *y)
   *x = (int)(wdw_x * (double)fb_width/(double)wdw_width);
   *y = (int)(wdw_y * (double)fb_height/(double)wdw_height);
 }
+
+#endif // DIP__HAS_GLFW
