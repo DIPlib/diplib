@@ -237,16 +237,11 @@ static_assert( sizeof( dip::bin ) == 1, "The binary type is not a single byte!" 
 //
 
 namespace detail {
-template< typename T >
-struct FloatTypeCalculator { using type = sfloat; };
-template<>
-struct FloatTypeCalculator< uint32 > { using type = dfloat; };
-template<>
-struct FloatTypeCalculator< sint32 > { using type = dfloat; };
-template<>
-struct FloatTypeCalculator< dfloat > { using type = dfloat; };
-template<>
-struct FloatTypeCalculator< dcomplex > { using type = dfloat; };
+template< typename T > struct FloatTypeCalculator { using type = sfloat; };
+template<> struct FloatTypeCalculator< uint32 > { using type = dfloat; };
+template<> struct FloatTypeCalculator< sint32 > { using type = dfloat; };
+template<> struct FloatTypeCalculator< dfloat > { using type = dfloat; };
+template<> struct FloatTypeCalculator< dcomplex > { using type = dfloat; };
 } // namespace detail
 /// \brief The type to use in calculations when a floating-point type is needed. Matches `dip::DataType::SuggestFloat`.
 template< typename T > using FloatType = typename detail::FloatTypeCalculator< T >::type;
@@ -287,6 +282,14 @@ template<> struct AbsTypeCalculator< dcomplex > { using type = dfloat; };
 /// \brief The type to use for the output of abs operations. Matches `dip::DataType::SuggestAbs`.
 template< typename T > using AbsType = typename detail::AbsTypeCalculator< T >::type;
 
+namespace detail {
+template< typename T > struct RealTypeCalculator { using type = T; };
+template<> struct RealTypeCalculator< bin > { using type = uint8; };
+template<> struct RealTypeCalculator< scomplex > { using type = sfloat; };
+template<> struct RealTypeCalculator< dcomplex > { using type = dfloat; };
+} // namespace detail
+/// \brief The type to use in calculations when a real-valued type is needed. Matches `dip::DataType::SuggestReal`.
+template< typename T > using RealType = typename detail::RealTypeCalculator< T >::type;
 
 /// \}
 

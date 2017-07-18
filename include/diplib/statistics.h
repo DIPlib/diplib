@@ -50,14 +50,16 @@ DIP_EXPORT dip::uint Count( Image const& in, Image const& mask = {} );
 
 /// \brief Returns the coordinates of the maximum pixel in the image.
 ///
-/// The image must be scalar and real-valued. If `positionFlag` is `"first"`, the first
-/// maximum is found, in linear index order. If it is `"last"`, the last one is found.
+/// The image must be scalar. If `in` is complex, the modulus of its values are used.
+/// If `positionFlag` is `"first"`, the first maximum is found, in linear index order.
+/// If it is `"last"`, the last one is found.
 DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = "first" );
 
 /// \brief Returns the coordinates of the minimum pixel in the image.
 ///
-/// The image must be scalar and real-valued. If `positionFlag` is `"first"`, the first
-/// minimum is found, in linear index order. If it is `"last"`, the last one is found.
+/// The image must be scalar. If `in` is complex, the modulus of its values are used.
+/// If `positionFlag` is `"first"`, the first minimuim is found, in linear index order.
+/// If it is `"last"`, the last one is found.
 DIP_EXPORT UnsignedArray MinimumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = "first" );
 
 /// \brief Calculates the cumulative sum of the pixel values over all those dimensions which are specified by `process`.

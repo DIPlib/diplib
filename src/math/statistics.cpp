@@ -258,9 +258,10 @@ UnsignedArray MaximumPixel( Image const& in, Image const& mask, String const& po
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    bool first = positionFlag == "first";
+   DataType dataType = DataType::SuggestReal( in.DataType() );
    std::unique_ptr< dip__MaxMinPixel >scanLineFilter;
-   DIP_OVL_NEW_REAL( scanLineFilter, dip__MaxPixel, ( first ), in.DataType() );
-   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_OVL_NEW_REAL( scanLineFilter, dip__MaxPixel, ( first ), dataType );
+   Framework::ScanSingleInput( in, mask, dataType, *scanLineFilter, Framework::Scan_NeedCoordinates );
    return scanLineFilter->GetResult();
 }
 
@@ -268,9 +269,10 @@ UnsignedArray MinimumPixel( Image const& in, Image const& mask, String const& po
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    bool first = positionFlag == "first";
+   DataType dataType = DataType::SuggestReal( in.DataType() );
    std::unique_ptr< dip__MaxMinPixel >scanLineFilter;
-   DIP_OVL_NEW_REAL( scanLineFilter, dip__MinPixel, ( first ), in.DataType() );
-   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_OVL_NEW_REAL( scanLineFilter, dip__MinPixel, ( first ), dataType );
+   Framework::ScanSingleInput( in, mask, dataType, *scanLineFilter, Framework::Scan_NeedCoordinates );
    return scanLineFilter->GetResult();
 }
 

@@ -330,6 +330,9 @@ struct DIP_NO_EXPORT DataType {
    /// \brief Returns a suitable type that can hold samples of type `abs(type)`.
    DIP_EXPORT static DataType SuggestAbs( DataType type );
 
+   /// \brief Returns a suitable real type that can hold the samples of `type`.
+   DIP_EXPORT static DataType SuggestReal( DataType type );
+
    /// \brief Returns a suitable floating-point, complex or binary type (FlexBin) that can hold the result of an arithmetic computation performed with the two data types.
    DIP_EXPORT static DataType SuggestArithmetic( DataType type1, DataType type2 );
 
