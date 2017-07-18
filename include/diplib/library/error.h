@@ -284,7 +284,7 @@ constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 /// statement that catches `std::exception`, and throws a `dip::RunTimeError` with the original exception's `what()`
 /// string.
 ///
-/// NOTE! `DIP_START_STACK_TRACE` starts a try/catch block, which must be closed with `DIP_END_STACK_TRACE` to
+/// NOTE! `DIP_START_STACK_TRACE` starts a try/catch block, which must be closed with `#DIP_END_STACK_TRACE` to
 /// prevent malformed syntax. Thus you should never use one of these two macros without the other one.
 ///
 /// When compiling with the `EXCEPTIONS_RECORD_STACK_TRACE` set to `OFF`, these macros don't do anything. Turn the
@@ -294,6 +294,25 @@ constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 /// \def DIP_END_STACK_TRACE
 /// \brief Ends a try/catch block that builds a stack trace when an exception is thrown. See `#DIP_START_STACK_TRACE`.
 
+/// \def DIP_STACK_TRACE_THIS
+/// \brief Encapsulates a statement in a try/catch block that builds a stack trace when an exception is thrown.
+///
+/// To build a stack trace, some library functions catch *DIPlib* exceptions, add their name and other info to it,
+/// then re-throw. This macro helps by catching and re-throwing exceptions thrown within a single statement:
+///
+/// ```cpp
+///     DIP_STACK_TRACE_THIS( dip::FunctionCall() );
+/// ```
+///
+/// This expands to:
+/// ```cpp
+///     DIP_START_STACK_TRACE
+///        dip::FunctionCall();
+///     DIP_END_STACK_TRACE
+/// ```
+///
+/// See `#DIP_START_STACK_TRACE` for more information.
+
 #ifdef DIP__EXCEPTIONS_RECORD_STACK_TRACE
 
 // NOTE! Yes, we've got an opening brace here and no closing brace. This macro always needs to be paired with DIP_END_STACK_TRACE.
@@ -302,10 +321,13 @@ constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 // NOTE! Yes, we start with a closing brace here. This macro always needs to be paired with DIP_START_STACK_TRACE.
 #define DIP_END_STACK_TRACE } catch( dip::Error& e ) { DIP_ADD_STACK_TRACE( e ); throw; } catch( std::exception const& stde ) { DIP_THROW_RUNTIME( stde.what() ); }
 
+#define DIP_STACK_TRACE_THIS( statement ) do { DIP_START_STACK_TRACE statement; DIP_END_STACK_TRACE } while( false )
+
 #else
 
 #define DIP_START_STACK_TRACE
 #define DIP_END_STACK_TRACE
+#define DIP_STACK_TRACE_THIS( statement ) statement
 
 #endif
 
