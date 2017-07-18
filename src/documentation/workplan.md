@@ -184,8 +184,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_RadialDistribution (dip_analysis.h)
     - dip_StructureAnalysis (dip_analysis.h)
     - dip_Canny (dip_detection.h) (or in diplib/segmentation.h?)
-    - dip_FindShift (dip_findshift.h)
-    - dip_CrossCorrelationFT (dip_findshift.h)
     - dip_OrientationSpace (dip_structure.h)
     - dip_ExtendedOrientationSpace (dip_structure.h)
     - dip_StructureTensor2D (dip_structure.h) (trivial using existing functionality, generalize to nD)

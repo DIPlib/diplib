@@ -280,7 +280,7 @@ void ConvolveFT(
    DIP_THROW_IF( !filter.IsForged(), E::IMAGE_NOT_FORGED );
    bool real = true;
    Image inFT;
-   if( inRepresentation == "spatial" ) {
+   if( BooleanFromString( inRepresentation, "spatial", "frequency" )) {
       real &= in.DataType().IsReal();
       FourierTransform( in, inFT );
    } else {
@@ -293,7 +293,7 @@ void ConvolveFT(
    }
    DIP_THROW_IF( !( filterFT.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
    filterFT = filterFT.Pad( in.Sizes() );
-   if( filterRepresentation == "spatial" ) {
+   if( BooleanFromString( filterRepresentation, "spatial", "frequency" )) {
       real &= filterFT.DataType().IsReal();
       FourierTransform( filterFT, filterFT );
    } else {
@@ -301,7 +301,7 @@ void ConvolveFT(
    }
    DataType dt = inFT.DataType();
    MultiplySampleWise( inFT, filterFT, out, dt );
-   if( outRepresentation == "spatial" ) {
+   if( BooleanFromString( outRepresentation, "spatial", "frequency" )) {
       StringSet options{ "inverse" };
       if( real ) {
          options.insert( "real" );

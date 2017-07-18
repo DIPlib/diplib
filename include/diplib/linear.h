@@ -125,9 +125,8 @@ inline Image SeparableConvolution(
 /// the center in case of an even-sized image.
 ///
 /// If `in` or `filter` is already Fourier transformed, set `inRepresentation` or `filterRepresentation`
-/// to `"frequency"` (actually, any string different from `"spatial"` will do). Similarly, if
-/// `outRepresentation` is `"frequency"`, the output will not be inverse-transformed, so will be in
-/// the frequency domain.
+/// to `"frequency"`. Similarly, if `outRepresentation` is `"frequency"`, the output will not be
+/// inverse-transformed, so will be in the frequency domain.
 ///
 /// \see dip::GeneralConvolution, dip::SeparableConvolution
 DIP_EXPORT void ConvolveFT(
