@@ -118,7 +118,7 @@ class DIP_NO_EXPORT DimensionArray {
          std::copy( other.data(), other.data() + size_, data_ );
       }
       /// Move constructor, initializes by stealing the contents of `other`.
-      DimensionArray( DimensionArray&& other ) {
+      DimensionArray( DimensionArray&& other ) noexcept {
          steal_data_from( other );
       }
 
@@ -134,7 +134,7 @@ class DIP_NO_EXPORT DimensionArray {
          return *this;
       }
       /// Move assignment, steals the contents of `other`.
-      DimensionArray& operator=( DimensionArray&& other ) {
+      DimensionArray& operator=( DimensionArray&& other ) noexcept {
          // Self-assignment is not valid for move assignment, not testing for it here.
          free_array();
          steal_data_from( other );
@@ -452,18 +452,18 @@ class DIP_NO_EXPORT DimensionArray {
       // access. Data access is most frequent, it's worth using a little bit
       // more memory to avoid that test.
 
-      bool is_dynamic() {
+      bool is_dynamic() noexcept {
          return size_ > static_size_;
       }
 
-      void free_array() {
+      void free_array() noexcept {
          if( is_dynamic() ) {
             std::free( data_ );
             //std::cout << "   DimensionArray free\n";
          }
       }
 
-      void steal_data_from( DimensionArray& other ) {
+      void steal_data_from( DimensionArray& other ) noexcept {
          size_ = other.size_;
          other.size_ = 0; // so if we steal the pointer, other won't deallocate the memory space
          if( is_dynamic() ) {
