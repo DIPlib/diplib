@@ -251,10 +251,13 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
   and `dip::ClosingByReconstruction`.
 
-- `dip::Resampling` shifts the image in the opposite direction from what it did in the old
-  *DIPlib*, where the shift was unintuitive. `dip::Skew` can now skew in multiple dimensions
-  at the same time. `dip::Rotation` now works for any number of dimensions, though it only
-  rotates around one cartesian axis.
+- `dip::Resampling` (and by extension `dip::Shift`) shifts the image in the opposite direction
+  from what it did in the old *DIPlib*, where the shift was unintuitive. `dip::Skew` can now skew
+  in multiple dimensions at the same time. `dip::Rotation` now works for any number of dimensions,
+  though it only rotates around one cartesian axis.
+
+- `dip::FindShift` now returns the shift with inverse sign compared to before, to match the reversal
+  in `dip::Shift`.
 
 ## Changes from DIPimage 2.x (the old DIPimage)
 
@@ -321,8 +324,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - `mdhistogram` has fewer options, but should still be able to produce the same results as
   previously.
 
-- `resample` shifts the image in the opposite direction from what it did in the old *DIPimage*,
-  where the shift was unintuitive.
+- `resample` and `shift` shift the image in the opposite direction from what it did in the old
+  *DIPimage*, where the shift was unintuitive.
 
 - Many functions have been added to match new functionality in *DIPlib*, as well as previous
   functionality that was not accessible from MATLAB.

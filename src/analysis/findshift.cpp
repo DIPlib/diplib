@@ -42,24 +42,18 @@ void CrossCorrelationFT(
    DIP_THROW_IF( in1.Sizes() != in2.Sizes(), E::SIZES_DONT_MATCH );
    Image in1FT;
    if( BooleanFromString( in1Representation, "spatial", "frequency" )) {
-      DIP_START_STACK_TRACE
-         FourierTransform( in1, in1FT );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( FourierTransform( in1, in1FT ));
    } else {
       in1FT = in1.QuickCopy();
    }
    Image in2FT;
    if( BooleanFromString( in2Representation, "spatial", "frequency" )) {
-      DIP_START_STACK_TRACE
-         FourierTransform( in2, in2FT );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( FourierTransform( in2, in2FT ));
    } else {
       in2FT = in2.QuickCopy();
    }
    DataType dt = in1FT.DataType();
-   DIP_START_STACK_TRACE
-      MultiplyConjugate( in1FT, in2FT, out, dt );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( MultiplyConjugate( in1FT, in2FT, out, dt ));
    if( BooleanFromString( normalize, "normalize", "don't normalize" )) {
       if( in2FT.IsShared() ) {
          in2FT.Strip(); // make sure we don't write in any input data segments. Otherwise, we re-use the data segment.
@@ -69,10 +63,7 @@ void CrossCorrelationFT(
       // TODO: prevent division by 0, if that is even possible...
    }
    if( BooleanFromString( outRepresentation, "spatial", "frequency" )) {
-      DIP_START_STACK_TRACE
-         StringSet options{ "inverse", "real" };
-         FourierTransform( out, out, options );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( FourierTransform( out, out, { "inverse", "real" } ));
    }
 }
 
@@ -89,7 +80,6 @@ FloatArray FindShift_CPF( Image const& in1, Image const& in2, dfloat maxFrequenc
    CrossCorrelationFT( in1, in2, cross, "spatial", "spatial", "frequency", "normalize" );
    DIP_ASSERT( cross.DataType() == DT_DCOMPLEX );
    DIP_ASSERT( cross.Stride( 0 ) == 1 );
-   DIP_ASSERT( cross.Stride( 1 ) == 1 );
    // Do the least squares fit
    dip::sint center_x = static_cast< dip::sint >( cross.Size( 0 ) / 2 );
    dip::sint center_y = static_cast< dip::sint >( cross.Size( 1 ) / 2 );
@@ -135,19 +125,20 @@ FloatArray FindShift_CPF( Image const& in1, Image const& in2, dfloat maxFrequenc
    dfloat value = sumuv * sumuv - sumvv * sumuu;
    DIP_THROW_IF ( value == 0, "Parameter 'value' is zero" );
    return FloatArray{
-         ( sumAu * sumvv - sumAv * sumuv ) / value,
-         ( sumAv * sumuu - sumAu * sumuv ) / value
+         ( sumAv * sumuv - sumAu * sumvv ) / value,
+         ( sumAu * sumuv - sumAv * sumuu ) / value
    };
    // TODO: Add removal of outliers as an option to this function.
 }
 
 FloatArray FindShift_MTS( Image const& in1, Image const& in2, dip::uint iterations, dfloat accuracy, dfloat sigma ) {
    dip::uint nDims = in1.Dimensionality();
-   FloatArray shift( nDims, 1e9 ); // Something large...
-   FloatArray previousShift = shift;
-   FloatArray previousPreviousShift = shift;
+   FloatArray out( nDims, 0.0 );
+   FloatArray shift( nDims, 0.0 ); 
+   FloatArray previousShift( nDims, 0.0 );
+   FloatArray previousPreviousShift( nDims, 0.0 );
 
-   // Solve: sum( gradient * gradient' ) * shift = sum(( in2 - in1 ) * gradient )
+   // Solve: sum( gradient * gradient' ) * shift = sum(( in1 - in2 ) * gradient )
    // Solve: M * shift = V
    Image in1g = Gauss( in1, { sigma } );
    Image in2g = Gauss( in2, { sigma } );
@@ -159,22 +150,31 @@ FloatArray FindShift_MTS( Image const& in1, Image const& in2, dip::uint iteratio
    // iterative Taylor with early break if accuracy is achieved
    dip::uint ii;
    for( ii = 0; ii < iterations; ii++ ) {
-      Image tmp = in2g.QuickCopy();
-      // If ii > 0, we shift in2
-      if(( ii == 1 ) || ( ii == 2 )) {
-         Shift( in2g, tmp, shift, "3-cubic" );
-      } else if( ii > 2 ) {
+      Image tmp;
+      FloatArray invShift = out;
+      for( auto& s: invShift ) {
+         s = -s;
+      }
+      if( ii == 0 ) {
+         tmp.Copy( in2g ); // Subtract later will work in-place, we don't want to overwrite in2g.
+      } else if(( ii == 1 ) || ( ii == 2 )) {
+         // If ii > 0, we shift in2
+         //std::cout << "[FindShift_MTS] shifting in2 by " << invShift << std::endl;
+         tmp = Shift( in2g, invShift, "3-cubic" );
+      } else {
          // Use non-smoothed image for iterations after the 3rd one.
-         Shift( in2, tmp, shift, "3-cubic" );
+         tmp = Shift( in2, invShift, "3-cubic" );
          in1g = in1.QuickCopy();
       }
-      tmp -= in1;
+      Subtract( in1g, tmp, tmp, tmp.DataType() );
       Image V = Sum( tmp * gradient );
       V.Convert( DT_DFLOAT );
       previousPreviousShift = previousShift;
       previousShift = shift;
       Solve( nDims, nDims, { static_cast< dfloat* >( M.Origin() ), M.TensorStride() },
                            { static_cast< dfloat* >( V.Origin() ), V.TensorStride() }, shift.begin() );
+      out += shift;
+      //std::cout << "[FindShift_MTS] iter = " << ii << ", shift = " << shift << ", out = " << out << std::endl;
       // break if desired accuracy achieved or good condition for bias correction
       if(( ii >= 2 ) && ( ii < iterations - 1 )) { // if ii == maxIter-1 => loop would end anyway
          bool done = false;
@@ -196,25 +196,28 @@ FloatArray FindShift_MTS( Image const& in1, Image const& in2, dip::uint iteratio
          }
          if( done || small ) {
             ++ii;
+            //std::cout << "[FindShift_MTS] breaking from loop\n";
             break;
          }
       }
    }
    if( ii > 2 ) {
       // shortcut bias formula
+      //std::cout << "[FindShift_MTS] using bias formula: bias = {";
       for( dip::uint kk = 0; kk < nDims; ++kk ) {
          dfloat bias = previousShift[ kk ] * previousShift[ kk ] /
                        ( previousPreviousShift[ kk ] - previousShift[ kk ] ); // beware /0 instability
+         //std::cout << " " << bias;
          if( std::abs( bias ) < std::abs( previousShift[ kk ] )) { // bias should be smaller than last incremented shift
-            shift[ kk ] += bias;
+            out[ kk ] += bias;
          }
       }
+      //std::cout << "}, out = " << out << std::endl;
    }
-   return shift;
+   return out;
 }
 
 FloatArray FindShift_PROJ( Image const& in1, Image const& in2, dip::uint iterations, dfloat accuracy, dfloat sigma ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
    dip::uint nDims = in1.Dimensionality();
    FloatArray shift( nDims, 0.0 );
    BooleanArray ps( nDims, true );
@@ -230,6 +233,7 @@ FloatArray FindShift_PROJ( Image const& in1, Image const& in2, dip::uint iterati
          shift[ ii ] = res[ 0 ];
       DIP_END_STACK_TRACE
    }
+   return shift;
 }
 
 FloatArray FindShift_CC(
@@ -241,30 +245,27 @@ FloatArray FindShift_CC(
 ) {
    dip::uint nDims = in1.Dimensionality();
    Image cross;
-   DIP_START_STACK_TRACE
-      CrossCorrelationFT( in1, in2, cross, "spatial", "spatial", "spatial", normalize );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( CrossCorrelationFT( in1, in2, cross, "spatial", "spatial", "spatial", normalize ));
+   DIP_ASSERT( cross.DataType().IsReal() );
    UnsignedArray sizes = cross.Sizes();
    bool crop = false;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( sizes[ ii ] > maxShift ) {
-         sizes[ ii ] = maxShift;
+         sizes[ ii ] = 2 * maxShift + 1;
          crop = true;
       }
    }
    if( crop ) {
-      DIP_START_STACK_TRACE
-         cross = cross.Crop( sizes );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( cross = cross.Crop( sizes ));
    }
    UnsignedArray maxPixel;
-   DIP_START_STACK_TRACE
-      maxPixel = MaximumPixel( cross, {} );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( maxPixel = MaximumPixel( cross, {} ));
    FloatArray shift;
    if( subpixelPrecision ) {
-      SubpixelLocationResult loc = SubpixelLocation( cross, maxPixel );
-      shift = loc.coordinates;
+      DIP_START_STACK_TRACE
+         SubpixelLocationResult loc = SubpixelLocation( cross, maxPixel );
+         shift = loc.coordinates;
+      DIP_END_STACK_TRACE
    } else {
       shift = FloatArray{ maxPixel };
    }
@@ -282,9 +283,7 @@ FloatArray CorrectIntegerShift(
 ) {
    dip::uint nDims = in1.Dimensionality();
    FloatArray shift;
-   DIP_START_STACK_TRACE
-      shift = FindShift_CC( in1, in2, maxShift );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( shift = FindShift_CC( in1, in2, maxShift ));
    if( shift.any() ) {
       // Shift is non-zero along at least one dimension
       // Correct for this integer shift by cropping both images
@@ -294,13 +293,13 @@ FloatArray CorrectIntegerShift(
          origin[ ii ] = shift[ ii ] > 0 ? static_cast< dip::uint >( shift[ ii ] ) : 0;
          sizes[ ii ] -= static_cast< dip::uint >( std::abs( shift[ ii ] ));
       }
-      in1.dip__SetSizes( sizes );
-      in1.dip__SetOrigin( in1.Pointer( origin ));
+      in2.dip__SetSizes( sizes );
+      in2.dip__SetOrigin( in2.Pointer( origin ));
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          origin[ ii ] = shift[ ii ] < 0 ? static_cast< dip::uint >( -shift[ ii ] ) : 0;
       }
-      in2.dip__SetSizes( sizes );
-      in2.dip__SetOrigin( in2.Pointer( origin ));
+      in1.dip__SetSizes( sizes );
+      in1.dip__SetOrigin( in1.Pointer( origin ));
    }
    return shift;
 }
@@ -360,3 +359,74 @@ FloatArray FindShift(
 }
 
 }
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include "diplib/generation.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing the FindShift fuction") {
+   // Something to shift
+   dip::Image in1( { 250, 261 }, 1, dip::DT_SFLOAT );
+   dip::FillRadiusCoordinate( in1 );
+   in1 -= 100;
+   dip::Erf( in1, in1 );
+   // A shift
+   dip::FloatArray shift{ 10.27, 6.08 };
+   dip::Image in2 = dip::Shift( in1, shift, "3-cubic" );
+   // Add a little bit of noise
+   dip::Random random( 0 );
+   dip::GaussianNoise( in1, in1, random, 0.005 * 0.005 );
+   dip::GaussianNoise( in2, in2, random, 0.005 * 0.005 );
+
+   dip::FloatArray result;
+
+   // Method: "integer only"
+   result = FindShift( in1, in2, "integer only" );
+   DOCTEST_REQUIRE( result.size() == 2 );
+   DOCTEST_CHECK( result[ 0 ] == std::round( shift[ 0 ] ));
+   DOCTEST_CHECK( result[ 1 ] == std::round( shift[ 1 ] ));
+
+   // Method: "CC"
+   result = FindShift( in1, in2, "CC" );
+   DOCTEST_REQUIRE( result.size() == 2 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.05 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.05 );
+
+   // Method: "NCC"
+   result = FindShift( in1, in2, "NCC" );
+   DOCTEST_REQUIRE( result.size() == 2 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.15 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.15 );
+
+   // Method: "CPF"
+   result = FindShift( in1, in2, "CPF" );
+   DOCTEST_REQUIRE( result.size() == 2 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.02 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.02 );
+
+   // Method: "MTS"
+   result = FindShift( in1, in2, "MTS" );
+   DOCTEST_REQUIRE( result.size() == 2 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.006 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.006 );
+
+   // Method: "ITER"
+   result = FindShift( in1, in2, "ITER" );
+   DOCTEST_REQUIRE( result.size() == 2 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.002 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.002 );
+
+   // Method: "PROJ"
+   result = FindShift( in1, in2, "PROJ" );
+   DOCTEST_REQUIRE( result.size() == 2 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.004 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.004 );
+
+   // Method: "CC", with max shift
+   result = FindShift( in1, in2, "CC", 0, 11 );
+   DOCTEST_REQUIRE( result.size() == 2 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.05 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.05 );
+}
+
+#endif // DIP__ENABLE_DOCTEST

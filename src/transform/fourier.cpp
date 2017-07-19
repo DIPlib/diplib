@@ -218,7 +218,11 @@ void FourierTransform(
    // TODO: OpenCV has code for a DFT that takes complex data but reads only half the array, assumes symmetry, and produces a real ouput. We should use that here.
    // TODO: We should also use the code that takes real data in.
    if( real ) {
-      out.Copy( tmp.Real() );
+      tmp = tmp.Real();
+      if(( out.DataType() != tmp.DataType() ) && ( !out.IsProtected() )) {
+         out.Strip(); // Avoid accidental data conversion.
+      }
+      out.Copy( tmp );
    }
    // Set output pixel sizes
    PixelSize pixelSize = in_copy.PixelSize();

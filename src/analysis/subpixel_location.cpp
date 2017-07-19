@@ -197,7 +197,7 @@ bool quadratic_fit_3x3x3(
 
 // Computes the natural logarithm of the n values pointed to by t.
 // If `invert`, it computes the log of (-t).
-static void log_transform(
+void log_transform(
       dfloat* t,
       dip::uint n,
       bool invert
@@ -455,9 +455,7 @@ SubpixelLocationArray SubpixelExtrema(
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    SubpixelExtremumMethod method;
-   DIP_START_STACK_TRACE
-      method = ParseMethod( s_method, nDims );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( method = ParseMethod( s_method, nDims ));
 
    // Find local extrema
    Image localExtrema;

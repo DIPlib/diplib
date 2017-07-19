@@ -147,8 +147,8 @@ inline Image CrossCorrelationFT(
 
 /// \brief Estimates the (sub-pixel) global shift between `in1` and `in2`.
 ///
-/// The numbers found represent the shift of `in1` with respect to `in2`, or equivalently, the position of the
-/// first pixel of `in2` in the coordinate system of `in1`. There are various methods that can be used, see below.
+/// The numbers found represent the shift of `in2` with respect to `in1`, or equivalently, the position of the
+/// top-left pixel of `in2` in the coordinate system of `in1`. There are various methods that can be used, see below.
 /// For the methods that require that the shift be small, first the integer pixel is calculated using cross
 /// correlation, and both images are cropped to the common part. `maxShift` can be used to restrict the shift
 /// found. This is useful, for example, when the images contain a repeating pattern. Noise in the images can
