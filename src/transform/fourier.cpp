@@ -72,23 +72,15 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
             scale = scale_;
          }
          if( shift_ ) {
-            if( inverse_ ) {
-               ifftshift( in, length );
-            } else {
-               fftshift( in, length );
-            }
+            ShiftCenterToCorner( in, length );
          }
          DFT( in, out, buffers_[ params.thread ].data(), opts, scale );
          if( shift_ ) {
-            if( inverse_ ) {
-               ifftshift( out, length );
-            } else {
-               fftshift( out, length );
-            }
+            ShiftCornerToCenter( out, length );
          }
       }
       // The two functions below by Alexei: http://stackoverflow.com/a/19752002/7328782
-      static void fftshift( TPI* data, dip::uint length ) {
+      static void ShiftCornerToCenter( TPI* data, dip::uint length ) { // fftshift
          dip::uint jj = length / 2;
          if( length & 1 ) { // Odd-sized transform
             TPI tmp = data[ 0 ];
@@ -103,7 +95,7 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
             }
          }
       }
-      static void ifftshift( TPI* data, dip::uint length ) {
+      static void ShiftCenterToCorner( TPI* data, dip::uint length ) { // ifftshift
          dip::uint jj = length / 2;
          if( length & 1 ) { // Odd-sized transform
             TPI tmp = data[ length - 1 ];
