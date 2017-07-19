@@ -111,8 +111,7 @@ class DIP_NO_EXPORT Units {
 
       /// \brief Construct a `%Units` from a string representation of units. The string representation should be as
       /// produced by `dip::Units::String`.
-      DIP_EXPORT
-      explicit Units( dip::String const& string );
+      DIP_EXPORT explicit Units( dip::String const& string );
 
       // Specific useful powers
       /// Dimensionless nano magnitude (n)
@@ -261,8 +260,7 @@ class DIP_NO_EXPORT Units {
 
       /// \brief Cast physical units to a string representation.
       /// No attempt is (yet?) made to produce derived SI units or to translate to different units.
-      DIP_EXPORT
-      dip::String String() const;
+      DIP_EXPORT dip::String String() const;
 
       /// Swaps the values of `this` and `other`.
       void swap( Units& other ) {

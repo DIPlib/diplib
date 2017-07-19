@@ -74,7 +74,6 @@ namespace dip {
 /// \see ImageIterator, GenericJointImageIterator
 template< typename T = dfloat >
 class DIP_NO_EXPORT GenericImageIterator {
-      //template< typename S > friend class GenericImageIterator;
    public:
       using iterator_category = std::forward_iterator_tag;
       using value_type = Image::CastPixel< T >; ///< The type of the pixel, obtained when dereferencing the iterator
@@ -281,7 +280,6 @@ inline void swap( GenericImageIterator< T >& v1, GenericImageIterator< S >& v2 )
 /// \see JointImageIterator, GenericImageIterator
 template< dip::uint N, typename T = dfloat >
 class DIP_NO_EXPORT GenericJointImageIterator {
-      //template< typename S > friend class GenericJointImageIterator;
    public:
       using iterator_category = std::forward_iterator_tag;
       using value_type = Image::CastPixel< T >; ///< The type of the pixel, obtained when dereferencing the iterator

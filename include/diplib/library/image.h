@@ -698,9 +698,6 @@ class DIP_NO_EXPORT Image {
       /// \brief Derived from `dip::Image::Sample`, works identically except it implicitly converts to type `T`.
       template< class T >
       class CastSample : public Sample {
-            friend class Image;
-            template< typename S > friend class dip::GenericImageIterator;
-            template< dip::uint N, typename S > friend class dip::GenericJointImageIterator;
          public:
             using Sample::Sample;
             // Default copy and move constructors, otherwise they're implicitly deleted by assignment operators deleted below.
