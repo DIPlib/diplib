@@ -544,7 +544,7 @@ class DIP_NO_EXPORT Image {
             /// (i.e. no symmetric or triangular matrices).
             Pixel TensorRow( dip::uint index ) const {
                DIP_THROW_IF( index >= tensor_.Rows(), E::INDEX_OUT_OF_RANGE );
-               Pixel out = *this;
+               Pixel out( *this );
                DIP_START_STACK_TRACE
                   dip::sint offset = out.tensor_.ExtractRow( index, out.tensorStride_ );
                   out.origin_ = static_cast< uint8* >( out.origin_ ) + offset * static_cast< dip::sint >( dataType_.SizeOf() );
@@ -556,7 +556,7 @@ class DIP_NO_EXPORT Image {
             /// (i.e. no symmetric or triangular matrices).
             Pixel TensorColumn( dip::uint index ) const {
                DIP_THROW_IF( index >= tensor_.Columns(), E::INDEX_OUT_OF_RANGE );
-               Pixel out = *this;
+               Pixel out( *this );
                DIP_START_STACK_TRACE
                   dip::sint offset = out.tensor_.ExtractColumn( index, out.tensorStride_ );
                   out.origin_ = static_cast< uint8* >( out.origin_ ) + offset * static_cast< dip::sint >( dataType_.SizeOf() );
@@ -587,7 +587,7 @@ class DIP_NO_EXPORT Image {
                // Sample size is halved, meaning stride must be doubled
                out.tensorStride_ *= 2;
                // Change the offset
-               out.origin_ = static_cast< uint8* >( out.origin_ ) + static_cast< dip::sint >( dataType_.SizeOf() );
+               out.origin_ = static_cast< uint8* >( out.origin_ ) + out.dataType_.SizeOf();
                return out;
             }
 

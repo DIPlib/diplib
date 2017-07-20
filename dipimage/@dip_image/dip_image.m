@@ -27,7 +27,7 @@
 %   To determine the size of the image, use IMSIZE, and to determine the
 %   size of the tensor, use TENSORSIZE. Many methods that work on numeric
 %   arrays also work on DIP_IMAGE objects, though not always identically.
-%   For example, NDIMS will return 0 or 1 for some images. ISVECTOR tests 
+%   For example, NDIMS will return 0 or 1 for some images. ISVECTOR tests
 %   the tensor shape, not the shape of the image.
 %
 %   Matrix operators (i.e. A*B, DIAG(A), EIG(A), etc.) apply to the tensor
@@ -1180,16 +1180,48 @@ classdef dip_image
          orig_sz = size(a.Data);
          sz = imsize(a);
          [s,~,~,ndims] = construct_subs_struct(s,sz,a);
-         if ndims == 1 && length(sz) > 1
-            a.Data = reshape(a.Data,size(a.Data,1),size(a.Data,2),[]);
-         end
-         % Do the indexing!
-         if isa(b,'dip_image')
-            b = b.Data;
-         end
-         a.Data = subsasgn(a.Data,s,b);
-         if ndims == 1 && length(sz) > 1
-            a.Data = reshape(a.Data,orig_sz);
+         % Complex assignment?
+         if isreal(b)
+            % Do the indexing!
+            if ndims == 1 && length(sz) > 1
+               a.Data = reshape(a.Data,size(a.Data,1),size(a.Data,2),[]);
+            end
+            % Assigning real values into a
+            if ~isreal(a)
+               % Clear imaginary part of a
+               s.subs{1} = 2;
+               a.Data = subsasgn(a.Data,s,0);
+               % Assign b into real part of a
+               s.subs{1} = 1;
+            end
+            if isa(b,'dip_image')
+               b = b.Data;
+            end
+            a.Data = subsasgn(a.Data,s,b);
+            if ndims == 1 && length(sz) > 1
+               a.Data = reshape(a.Data,orig_sz);
+            end
+         else
+            % Assigning complex values into a
+            if isreal(a)
+               error('Cannot assign complex data into real-valued image')
+            end
+            % Do the indexing!
+            if ndims == 1 && length(sz) > 1
+               a.Data = reshape(a.Data,size(a.Data,1),size(a.Data,2),[]);
+            end
+            if isa(b,'dip_image')
+               b = b.Data;
+               a.Data = subsasgn(a.Data,s,b);
+            else
+               s.subs{1} = 1;
+               a.Data = subsasgn(a.Data,s,real(b));
+               s.subs{1} = 2;
+               a.Data = subsasgn(a.Data,s,imag(b));
+            end
+            if ndims == 1 && length(sz) > 1
+               a.Data = reshape(a.Data,orig_sz);
+            end
          end
       end
 

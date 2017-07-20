@@ -111,4 +111,11 @@ int main() {
    img.At( 9, 19 )[ 0 ] = 3;
    std::cout << img.At( 10, 20 ) << std::endl;
    std::cout << img.At( 9, 19 ) << std::endl;
+
+
+   dip::Image bla( {}, 1, dip::DT_SCOMPLEX );
+   bla.Fill( dip::dcomplex( 4.4, 2.3 ));
+   std::cout << "bla.At() = " << bla.At< dip::dcomplex >( 0 ) << std::endl;
+   std::cout << "bla.At()[0] = " << bla.At< dip::dcomplex >( 0 )[ 0 ] << std::endl;
+   std::cout << "bla.As() = " << bla.As< dip::dcomplex >() << std::endl;
 }
