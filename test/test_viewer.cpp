@@ -8,7 +8,7 @@
 #include <diplib/viewer/image.h>
 #include <diplib/viewer/slice.h>
 
-int main(void)
+int main()
 {
 #ifdef DIP__HAS_GLFW
   GLFWManager manager;

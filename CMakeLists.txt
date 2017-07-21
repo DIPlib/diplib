@@ -61,91 +61,28 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH 1) # Prevent relinking when installing
 # Do we have __PRETTY_FUNCTION__ ?
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles("int main() { char const* name = __PRETTY_FUNCTION__; return 0; }" HAS_PRETTY_FUNCTION)
-if(HAS_PRETTY_FUNCTION)
-   add_definitions(-DDIP__HAS_PRETTY_FUNCTION)
-endif()
 
 # Control exceptions
 set(DIP_EXCEPTIONS_RECORD_STACK_TRACE ON CACHE BOOL "Stack trace information is added to exceptions (see the documentation for DIP_CATCH)")
-if(DIP_EXCEPTIONS_RECORD_STACK_TRACE)
-   add_definitions(-DDIP__EXCEPTIONS_RECORD_STACK_TRACE)
-endif()
 set(DIP_ENABLE_ASSERT ON CACHE BOOL "Enable assertions (see the documentation for DIP_ASSERT)")
-if(DIP_ENABLE_ASSERT)
-   add_definitions(-DDIP__ENABLE_ASSERT)
-endif()
 
 # Enable testing
 # It's possible to disable DocTest using `DOCTEST_CONFIG_DISABLE`, but that would also disable any tests in code
 # that uses DIPlib, hence we define a variable here that removes all of DocTest from the DIPlib sources.
 set(DIP_ENABLE_DOCTEST ON CACHE BOOL "Turn off to not include doctest.h in the library headers")
-if(DIP_ENABLE_DOCTEST)
-   include_directories(dependencies/doctest)
-   add_definitions(-DDIP__ENABLE_DOCTEST -DDOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
-   if(DIP_SHARED_LIBRARY)
-      add_definitions(-DDIP__DOCTEST_IN_SHARED_LIB)
-   endif()
-endif()
 
 # UFT-8 or plain old ASCII?
 set(DIP_ENABLE_UNICODE ON CACHE BOOL "Enable UTF-8 encoded strings, if disabled, some text output will look more 'primitive'")
-if(DIP_ENABLE_UNICODE)
-   add_definitions(-DDIP__ENABLE_UNICODE)
-endif()
 
 # Force 128-bit PRNG?
 set(DIP_ALWAYS_128_PRNG OFF CACHE BOOL "Use the 128-bit PRNG code even if 128-bit integers are not natively supported by your platform")
 if(DIP_ALWAYS_128_PRNG)
-   add_definitions(-DDIP_ALWAYS_128_PRNG)
+   set(FORCE_128_INT TRUE)
    set(HAS_128_INT TRUE)
 else()
    # We'll display later if we will use 64-bit of 128-bit PRNG.
    check_cxx_source_compiles("int main() { int v = __SIZEOF_INT128__; return 0; }" HAS_128_INT)
 endif()
-
-# Eigen
-include_directories(dependencies/eigen3)
-add_definitions(-DEIGEN_MPL2_ONLY) # This makes sure we only use parts of the Eigen library that use the MPL2 license or more permissive ones.
-add_definitions(-DEIGEN_DONT_PARALLELIZE) # This to prevent Eigen algorithms trying to run in parallel -- we parallelize at a larger scale.
-
-# OpenGL, FreeGLUT, GLFW
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/viewer/cmake)
-find_package(OpenGL)
-if(NOT APPLE)
-   find_package(FreeGLUT)
-endif()
-if (FREEGLUT_FOUND)
-   add_definitions(-DDIP__HAS_FREEGLUT)
-   list(APPEND DIP_VIEWER_MANAGER_INCLUDE_DIR ${FREEGLUT_INCLUDE_DIR})
-   list(APPEND DIP_VIEWER_MANAGER_LIBRARIES ${FREEGLUT_LIBRARIES})
-   list(APPEND DIP_VIEWER_MANAGERS "FreeGLUT")
-endif()
-find_package(GLFW)
-if (GLFW_FOUND)
-   add_definitions(-DDIP__HAS_GLFW)
-   list(APPEND DIP_VIEWER_MANAGER_INCLUDE_DIR ${GLFW_INCLUDE_DIRS})
-   list(APPEND DIP_VIEWER_MANAGER_LIBRARIES ${GLFW_LIBRARIES})
-   list(APPEND DIP_VIEWER_MANAGERS "GLFW")
-endif()
-if (OPENGL_FOUND AND (FREEGLUT_FOUND OR GLFW_FOUND))
-   set(DIP_BUILD_DIPVIEWER ON CACHE BOOL "Build the viewer module")
-endif()
-
-# pybind11
-set(DIP_BUILD_PYDIP ON CACHE BOOL "Build the PyDIP Python module")
-if(DIP_BUILD_PYDIP)
-   add_subdirectory(dependencies/pybind11)
-endif()
-
-# MATLAB
-set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # This is necessary because my version of MATLAB is very recent and my version of CMake is not. Ajust as necessary.
-find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)
-if (Matlab_FOUND)
-   set(DIP_BUILD_DIPIMAGE ON CACHE BOOL "Build the DIPimage toolbox")
-endif()
-
-# Doxygen
-find_package(Doxygen)
 
 # Utility for automatically updating targets when a file is added to the source directories
 # from: https://stackoverflow.com/a/39971448/7328782, but modified
@@ -178,27 +115,58 @@ endfunction(update_deps_file)
 
 ### DIPlib library
 
-include_directories(include)
 file(GLOB DIPLIB_SOURCES src/*/*.h src/*/*.cpp include/*.h include/diplib/*.h include/diplib/library/*.h include/diplib/private/*.h)
 update_deps_file("DIPlib_sources" "${DIPLIB_SOURCES}")
 add_library(DIP src/support/matrix.cpp ${DIPLIB_SOURCES}) # The matrix.cpp file takes annoyingly long to compile, let's compile it first!
+target_include_directories(DIP PUBLIC include)
 include(GenerateExportHeader)
 generate_export_header(DIP BASE_NAME dip)
+# configuration
+if(HAS_PRETTY_FUNCTION)
+   target_compile_definitions(DIP PUBLIC DIP__HAS_PRETTY_FUNCTION)
+endif()
+if(DIP_EXCEPTIONS_RECORD_STACK_TRACE)
+   target_compile_definitions(DIP PUBLIC DIP__EXCEPTIONS_RECORD_STACK_TRACE)
+endif()
+if(DIP_ENABLE_ASSERT)
+   target_compile_definitions(DIP PUBLIC DIP__ENABLE_ASSERT)
+endif()
+if(DIP_ENABLE_DOCTEST)
+   target_include_directories(DIP PRIVATE dependencies/doctest)
+   target_compile_definitions(DIP PRIVATE DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
+   if(DIP_SHARED_LIBRARY)
+      target_compile_definitions(DIP PRIVATE DIP__DOCTEST_IN_SHARED_LIB)
+   endif()
+endif()
+if(DIP_ENABLE_UNICODE)
+   target_compile_definitions(DIP PRIVATE DIP__ENABLE_UNICODE)
+endif()
+if(FORCE_128_INT)
+   target_compile_definitions(DIP PUBLIC DIP_ALWAYS_128_PRNG)
+endif()
+# Eigen
+target_include_directories(DIP PRIVATE dependencies/eigen3)
+target_compile_definitions(DIP PRIVATE EIGEN_MPL2_ONLY # This makes sure we only use parts of the Eigen library that use the MPL2 license or more permissive ones.
+        EIGEN_DONT_PARALLELIZE) # This to prevent Eigen algorithms trying to run in parallel -- we parallelize at a larger scale.
+#install
 install(TARGETS DIP DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
 # To examine symbol table of the shared library on MacOSX: nm -g -p -U libDIP.dylib
 
 # Uncomment next line to see compile times for each source file (make without -j).
-#set_property(TARGET DIP PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
+#set_target_properties(DIP PROPERTIES RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
 
 
 ### DIPlib unit tests
 
 if(DIP_ENABLE_DOCTEST)
    add_executable (unit_tests EXCLUDE_FROM_ALL test/unit_tests.cpp)
+   target_include_directories(DIP PRIVATE dependencies/doctest)
    target_link_libraries(unit_tests DIP)
+   target_compile_definitions(unit_tests PRIVATE DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
    if(DIP_SHARED_LIBRARY)
+      target_compile_definitions(unit_tests PRIVATE DIP__DOCTEST_IN_SHARED_LIB)
       if(APPLE)
          set_target_properties(unit_tests PROPERTIES INSTALL_RPATH "@loader_path")
       else()
@@ -216,12 +184,39 @@ endif()
 
 ### DIPviewer
 
+# OpenGL, FreeGLUT, GLFW
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/viewer/cmake)
+find_package(OpenGL)
+if(NOT APPLE)
+   find_package(FreeGLUT)
+endif()
+if (FREEGLUT_FOUND)
+   list(APPEND DIP_VIEWER_MANAGERS "FreeGLUT")
+endif()
+find_package(GLFW)
+if (GLFW_FOUND)
+   list(APPEND DIP_VIEWER_MANAGERS "GLFW")
+endif()
+if (OPENGL_FOUND AND (FREEGLUT_FOUND OR GLFW_FOUND))
+   set(DIP_BUILD_DIPVIEWER ON CACHE BOOL "Build the viewer module")
+endif()
+
 if(DIP_BUILD_DIPVIEWER)
    file(GLOB DIP_VIEWER_SRC viewer/src/*.cpp viewer/src/manager/* viewer/include/diplib/viewer/*.h)
    update_deps_file("DIPviewer_sources" "${DIP_VIEWER_SRC}")
    add_library(DIPviewer ${DIP_VIEWER_SRC})
-   target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR} ${DIP_VIEWER_MANAGER_INCLUDE_DIR} PUBLIC viewer/include)
-   target_link_libraries(DIPviewer DIP ${DIP_VIEWER_MANAGER_LIBRARIES} ${OPENGL_LIBRARIES} -lpthread)
+   target_include_directories(DIPviewer PUBLIC viewer/include)
+   if (FREEGLUT_FOUND)
+      target_compile_definitions(DIPviewer PUBLIC DIP__HAS_FREEGLUT)
+      target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR})
+      target_link_libraries(DIPviewer ${FREEGLUT_LIBRARIES})
+   endif()
+   if (GLFW_FOUND)
+      target_compile_definitions(DIPviewer PUBLIC DIP__HAS_GLFW)
+      target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIRS})
+      target_link_libraries(DIPviewer ${GLFW_LIBRARIES})
+   endif()
+   target_link_libraries(DIPviewer DIP ${OPENGL_LIBRARIES} -lpthread)
    if(APPLE)
       set_target_properties(DIPviewer PROPERTIES INSTALL_RPATH "@loader_path")
    else()
@@ -233,7 +228,9 @@ endif()
 
 ### PyDIP module for Python
 
+set(DIP_BUILD_PYDIP ON CACHE BOOL "Build the PyDIP Python module")
 if(DIP_BUILD_PYDIP)
+   add_subdirectory(dependencies/pybind11)
    file(GLOB DIP_PYTHON_SRC pydip/*.cpp pydip/*.h)
    file(GLOB DIP_PYTHON_PY pydip/*.py)
    set(PyDIPdeps "${DIP_PYTHON_SRC}")
@@ -255,6 +252,12 @@ endif()
 
 ### DIPimage toolbox for MATLAB
 
+set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # This is necessary because my version of MATLAB is very recent and my version of CMake is not. Ajust as necessary.
+find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)
+if (Matlab_FOUND)
+   set(DIP_BUILD_DIPIMAGE ON CACHE BOOL "Build the DIPimage toolbox")
+endif()
+
 if(DIP_BUILD_DIPIMAGE)
    # Install M-files
    install(DIRECTORY dipimage/ DESTINATION ${DIPIMAGE_INSTALL_PATH} FILES_MATCHING PATTERN "*.m") # could also do PATTERN "*.cpp" EXCLUDE
@@ -272,6 +275,9 @@ if(DIP_BUILD_DIPIMAGE)
       get_filename_component(target ${file} NAME_WE)
       matlab_add_mex(NAME MEX_${target} SRC ${file} OUTPUT_NAME ${target} LINK_TO DIP)
       set_target_properties(MEX_${target} PROPERTIES INSTALL_RPATH "${LIB_REL_PATH}")
+      if(DIP_ENABLE_UNICODE)
+         target_compile_definitions(MEX_${target} PRIVATE DIP__ENABLE_UNICODE)
+      endif()
       set(DIP_IMAGE_PRIVATE_TARGETS ${DIP_IMAGE_PRIVATE_TARGETS} MEX_${target})
    endforeach()
    install(TARGETS ${DIP_IMAGE_PRIVATE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private)
@@ -289,6 +295,9 @@ if(DIP_BUILD_DIPIMAGE)
       get_filename_component(target ${file} NAME_WE)
       matlab_add_mex(NAME MEX_${target} SRC ${file} OUTPUT_NAME ${target} LINK_TO DIP)
       set_target_properties(MEX_${target} PROPERTIES INSTALL_RPATH "${LIB_REL_PATH}")
+      if(DIP_ENABLE_UNICODE)
+         target_compile_definitions(MEX_${target} PRIVATE DIP__ENABLE_UNICODE)
+      endif()
       set(DIP_IMAGE_TARGETS ${DIP_IMAGE_TARGETS} MEX_${target})
    endforeach()
    install(TARGETS ${DIP_IMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image)
@@ -306,6 +315,9 @@ if(DIP_BUILD_DIPIMAGE)
       get_filename_component(target ${file} NAME_WE)
       matlab_add_mex(NAME MEX_${target} SRC ${file} OUTPUT_NAME ${target} LINK_TO DIP)
       set_target_properties(MEX_${target} PROPERTIES INSTALL_RPATH "${LIB_REL_PATH}")
+      if(DIP_ENABLE_UNICODE)
+         target_compile_definitions(MEX_${target} PRIVATE DIP__ENABLE_UNICODE)
+      endif()
       set(DIPIMAGE_PRIVATE_TARGETS ${DIPIMAGE_PRIVATE_TARGETS} MEX_${target})
    endforeach()
    install(TARGETS ${DIPIMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/private)
@@ -323,6 +335,9 @@ if(DIP_BUILD_DIPIMAGE)
       get_filename_component(target ${file} NAME_WE)
       matlab_add_mex(NAME MEX_${target} SRC ${file} OUTPUT_NAME ${target} LINK_TO DIP)
       set_target_properties(MEX_${target} PROPERTIES INSTALL_RPATH "${LIB_REL_PATH}")
+      if(DIP_ENABLE_UNICODE)
+         target_compile_definitions(MEX_${target} PRIVATE DIP__ENABLE_UNICODE)
+      endif()
       set(DIPIMAGE_TARGETS ${DIPIMAGE_TARGETS} MEX_${target})
    endforeach()
    install(TARGETS ${DIPIMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH})
@@ -357,6 +372,7 @@ add_custom_target(tests DEPENDS ${TESTS_TARGETS})
 
 ### DIPlib documentation
 
+find_package(Doxygen)
 if (DOXYGEN_FOUND)
    configure_file(src/documentation/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
    add_custom_target(

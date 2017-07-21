@@ -44,6 +44,7 @@ Important `cmake` command-line arguments:
 
     -DCMAKE_INSTALL_PREFIX=$HOME/dip        # choose an instal location
     -DCMAKE_BUILD_TYPE=Debug                # by default it is release
+    -DDIP_SHARED_LIBRARY=Off                # to build a static library
     -DDIP_EXCEPTIONS_RECORD_STACK_TRACE=Off # to disable stack trace generation on exception
     -DDIP_ENABLE_ASSERT=Off                 # to disable asserts
     -DDIP_ENABLE_DOCTEST=Off                # to disable doctest within DIPlib
@@ -54,6 +55,9 @@ Important `cmake` command-line arguments:
     -DDIP_BUILD_PYDIP=Off                   # to not build/install the PyDIP Python module
     -DDIP_BUILD_DIPIMAGE=Off                # to not build/install the DIPimage MATLAB toolbox
     -DPYBIND11_PYTHON_VERSION=3             # to compile PyDIP agains Python 3
+
+Note that on some platforms, the Python module requires the DIPlib library to build as a dynamic
+load library (`-DDIP_SHARED_LIBRARY=On`, which is the default).
 
 Under Windows you can follow a similar process, but I have never used CMake under
 Windows, so I'll let someone else write this bit.

@@ -163,10 +163,11 @@ bool PixelIsInfinity( TPI /*value*/ ) {
 template< typename TPI, typename std::enable_if< std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
 bool PixelIsInfinity( TPI value ) {
    return value == std::numeric_limits< TPI >::infinity();
-}template< typename TPI, typename std::enable_if< !std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+}
 
 /// \brief A templated function to check for negative infinity, which works also for integer types (always returning false)
-bool PixelIsMinusInfinity( TPI /*value*/ ) {
+template< typename TPI, typename std::enable_if< !std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
+   bool PixelIsMinusInfinity( TPI /*value*/ ) {
    return false;
 }
 template< typename TPI, typename std::enable_if< std::numeric_limits< TPI >::has_infinity, int >::type = 0 >
