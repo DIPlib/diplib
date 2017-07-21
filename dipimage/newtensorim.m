@@ -80,8 +80,6 @@ while nargin >= N
       break;
    end
 end
-tsize
-imsize
 out = dip_image(zeros(prod(tsize),1),tsize,dtype);
 if ~isempty(imsize)
    out = repmat(out,imsize);

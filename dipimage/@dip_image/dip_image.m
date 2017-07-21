@@ -1177,51 +1177,27 @@ classdef dip_image
             return
          end
          % Find the indices to use
-         orig_sz = size(a.Data);
          sz = imsize(a);
-         [s,~,~,ndims] = construct_subs_struct(s,sz,a);
-         % Complex assignment?
-         if isreal(b)
-            % Do the indexing!
-            if ndims == 1 && length(sz) > 1
-               a.Data = reshape(a.Data,size(a.Data,1),size(a.Data,2),[]);
+         [s,~,~,nd] = construct_subs_struct(s,sz,a);
+         orig_sz = size(a.Data);
+         if nd == 1 && length(sz) > 1
+            a.Data = reshape(a.Data,size(a.Data,1),size(a.Data,2),[]);
+         end
+         % Assigning a dip_image into a?
+         if isa(b,'dip_image')
+            b = b.Data;
+            if nd == 1
+               b = reshape(b,size(b,1),size(b,2),[]);
             end
-            % Assigning real values into a
-            if ~isreal(a)
-               % Clear imaginary part of a
-               s.subs{1} = 2;
-               a.Data = subsasgn(a.Data,s,0);
-               % Assign b into real part of a
-               s.subs{1} = 1;
-            end
-            if isa(b,'dip_image')
-               b = b.Data;
-            end
-            a.Data = subsasgn(a.Data,s,b);
-            if ndims == 1 && length(sz) > 1
-               a.Data = reshape(a.Data,orig_sz);
-            end
+            a.Data = subsasgn_dip(a.Data,s,b);
          else
-            % Assigning complex values into a
-            if isreal(a)
-               error('Cannot assign complex data into real-valued image')
+            if nd == 1
+               b = reshape(b,[],1);
             end
-            % Do the indexing!
-            if ndims == 1 && length(sz) > 1
-               a.Data = reshape(a.Data,size(a.Data,1),size(a.Data,2),[]);
-            end
-            if isa(b,'dip_image')
-               b = b.Data;
-               a.Data = subsasgn(a.Data,s,b);
-            else
-               s.subs{1} = 1;
-               a.Data = subsasgn(a.Data,s,real(b));
-               s.subs{1} = 2;
-               a.Data = subsasgn(a.Data,s,imag(b));
-            end
-            if ndims == 1 && length(sz) > 1
-               a.Data = reshape(a.Data,orig_sz);
-            end
+            a.Data = subsasgn_mat(a.Data,s,b);
+         end
+         if nd == 1 && length(sz) > 1
+            a.Data = reshape(a.Data,orig_sz);
          end
       end
 
@@ -2365,7 +2341,7 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
          lut = dip_tensor_indices(a);
          [ii,jj] = ndgrid(ii,jj);
          telems = lut(ii + (jj-1)*stride) + 1;
-         telems = telems(:); % make into column vector
+         telems = telems(:)'; % make into row vector
          if any(telems == 0)
             error('Indexing into non-stored tensor elements')
             % TODO: return zeros?
@@ -2440,4 +2416,70 @@ function [s,tsz,tsh,ndims] = construct_subs_struct(s,sz,a)
    end
    % Combine spatial and tensor indexing, add indexing into complex dimension
    s.subs = [{':'},{telems},s.subs];
+end
+
+% Assigns b into dip_image data segement a. b is the data matrix extracted from a dip_image
+function a = subsasgn_dip(a,s,b)
+   %fprintf('subsasgn_dip: size(b,1) = %d, size(a,1) = %d\n', size(b,1), size(a,1))
+   if size(b,1) == 1 % Assigning real values into a
+      % Assign b into real part of a
+      s.subs{1} = 1;
+      a = subsasgn_core(a,s,b);
+      if size(a,1) > 1
+         % Clear imaginary part of a
+         s.subs{1} = 2;
+         a = subsasgn_core(a,s,0);
+      end
+   else % Assigning complex values into a
+      if size(a,1) == 1
+         error('Cannot assign complex data into real-valued image')
+      end
+      a = subsasgn_core(a,s,b);
+   end
+end
+
+% Assigns b into dip_iamge data segment a. b is a standard matlab matrix
+function a = subsasgn_mat(a,s,b)
+   b = reshape(b,[1,1,size(b)]);
+   %fprintf('subsasgn_mat: size(b,1) = %d, size(a,1) = %d\n', size(b,1), size(a,1))
+   if isreal(b) % Assigning real values into a
+      % Assign b into real part of a
+      s.subs{1} = 1;
+      a = subsasgn_core(a,s,b);
+      if size(a,1) > 1
+         % Clear imaginary part of a
+         s.subs{1} = 2;
+         a = subsasgn_core(a,s,0);
+      end
+   else % Assigning complex values into a
+      if size(a,1) == 1
+         error('Cannot assign complex data into real-valued image')
+      end
+      s.subs{1} = 1;
+      a = subsasgn_core(a,s,real(b));
+      s.subs{1} = 2;
+      a = subsasgn_core(a,s,imag(b));
+   end
+end
+
+% Assigns b into dip_iamge data segment a. b is a standard matlab matrix
+function a = subsasgn_core(a,s,b)
+   %fprintf('subsasgn_core: size(b,2) = %d, size(a,2) = %d\n', size(b,2), size(a,2))
+   telems = s.subs{2};
+   if length(telems) > 1 && size(b,2) == 1
+      % Insert b into each tensor element
+      for ii = telems
+         s.subs{2} = ii;
+         %fprintf('Assigning array %s into array %s using:\n', mat2str(size(b)), mat2str(size(a)))
+         %disp(s)
+         a = subsasgn(a,s,b);
+      end
+   elseif length(telems) == size(b,2)
+      % Simple
+      %fprintf('Assigning array %s into array %s using:\n', mat2str(size(b)), mat2str(size(a)))
+      %disp(s)
+      a = subsasgn(a,s,b);
+   else
+      error('Subscripted assignment tensor sizes mismatch')
+   end
 end
