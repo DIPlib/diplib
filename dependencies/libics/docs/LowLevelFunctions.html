@@ -1,0 +1,405 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+  <head>
+    <title>libics: Low-Level Interface</title>
+    <link rel="stylesheet" href="libics.css" type="text/css" title="default">
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="iexplorefix.css" type="text/css" title="default">
+    <![endif]-->
+  </head>
+
+  <body>
+    <p class=header>libics v.1.5 Online Documentation. &copy;2000-2010 by Cris Luengo and others.</p>
+
+    <div class="navbar">
+      <ul>
+        <li><a href=".">libics home</a></li>
+        <li><a href="Documentation.html" class="selected">Documentation</a>
+          <ul>
+            <li><a href="Usage.html">Usage of libics</a></li>
+            <li><a href="TopLevelFunctions.html">Top-level interface</a></li>
+            <li><a href="LowLevelFunctions.html" class="selected">Low-level interface</a>
+              <ul>
+                <li><a href="#main">Main functionality</a></li>
+                <li><a href="#filename">File name manipulation</a></li>
+                <li><a href="#datatype">DataType query</a></li>
+                <li><a href="#support">Support functions</a></li>
+              </ul>
+            </li>
+            <li><a href="Ics_Header.html">Ics_Header</a></li>
+            <li><a href="Ics_DataRepresentation.html">Ics_DataRepresentation</a></li>
+            <li><a href="Ics_ImelRepresentation.html">Ics_ImelRepresentation</a></li>
+            <li><a href="Ics_Error.html">Ics_Error</a></li>
+            <li><a href="Enums.html">Other enums</a></li>
+          </ul>
+        </li>
+        <li><a href="Credits.html">Credits</a></li>
+        <li><a href="Links.html">Links</a></li>
+        <li><a href="https://github.com/svi-opensource/libics/releases">Download</a></li>
+        <li><a href="https://github.com/svi-opensource/libics">GitHub</a></li>
+      </ul>
+    </div>
+
+<h1>Low-level interface to libics</h1>
+
+    <p>The functions below are provided to add some flexibility to the library.
+    However, I don't see a reason to use them. They are subject to change, don't
+    provide any error checking what so ever (i.e. calling any of these in the wrong
+    order will crash your program), and you shouldn't use them unless you really need to.</p>
+
+    <p>You need to add <tt class="preprocess">#include "libics_ll.h"</tt> to your
+    source files.</p>
+
+    <p>This functions in this page are organized in the following categories,
+    and sorted alphabetically:</p>
+    <ul>
+      <li><a href="#main">Main library functionality</a></li>
+      <li><a href="#filename">File name manipulation</a></li>
+      <li><a href="#datatype">DataType structure query</a></li>
+      <li><a href="#support">Support functions</a></li>
+    </ul>
+
+<h2><a name="main"></a>Main library functionality</h2>
+
+  <h3 class="ident"><a name="IcsCloseIds"></a>IcsCloseIds</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsCloseIds</span>
+    (<span class="typeident"><a href="Ics_Header.html">Ics_Header</a></span>*&nbsp;<span class="varident">IcsStruct</span>);
+    </p>
+
+    <p>Ends image data reading initialized with
+    <tt class="typeident"><a href="#IcsOpenIds">IcsOpenIds</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_FCloseIds</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsOpenIds"></a>IcsOpenIds</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsOpenIds</span>
+    (<span class="typeident"><a href="Ics_Header.html">Ics_Header</a></span>*&nbsp;<span class="varident">IcsStruct</span>);
+    </p>
+
+    <p>Initializes image data reading. The functions
+    <tt class="typeident"><a href="#IcsReadIdsBlock">IcsReadIdsBlock</a></tt>,
+    <tt class="typeident"><a href="#IcsSkipIdsBlock">IcsSkipIdsBlock</a></tt> and
+    <tt class="typeident"><a href="#IcsSetIdsBlock">IcsSetIdsBlock</a></tt> can
+    subsequently be used to read the interesting portions of the image data. Finally,
+    the file should be closed with
+    <tt class="typeident"><a href="#IcsCloseIds">IcsCloseIds</a></tt>.
+    </p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_FOpenIds</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_MissingData</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsReadIcs"></a>IcsReadIcs</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsReadIcs</span>
+    (<span class="typeident"><a href="Ics_Header.html">Ics_Header</a></span>*&nbsp;<span class="varident">IcsStruct</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">filename</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">forcename</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">forcelocale</span>);
+    </p>
+
+    <p>Reads a .ics header file into an
+    <tt class="typeident"><a href="Ics_Header.html">Ics_Header</a></tt>
+    structure. When <tt class="varident">forcename</tt> is non-zero,
+    the <tt class="constant">".ics"</tt> extension is not added. If
+    <tt class="varident">forcelocale</tt> is 0, the locale is not forced
+    to <tt class="constant">"C"</tt>, to make it possible to read
+    ICS files written in the current locale. Note that the standard
+    requires the <tt class="constant">"C"</tt> locale to be in effect
+    when writing the ICS header.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_FCloseIcs</tt>,
+    <tt class="constant">IcsErr_FOpenIcs</tt>,
+    <tt class="constant">IcsErr_FReadIcs</tt>,
+    <tt class="constant">IcsErr_LineOverflow</tt>,
+    <tt class="constant">IcsErr_MissBits</tt>,
+    <tt class="constant">IcsErr_MissCat</tt>,
+    <tt class="constant">IcsErr_MissLayoutSubCat</tt>,
+    <tt class="constant">IcsErr_MissParamSubCat</tt>,
+    <tt class="constant">IcsErr_MissRepresSubCat</tt>,
+    <tt class="constant">IcsErr_MissSensorSubSubCat</tt>,
+    <tt class="constant">IcsErr_NotIcsFile</tt>,
+    <tt class="constant">IcsErr_TooManyChans</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsReadIds"></a>IcsReadIds</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsReadIds</span>
+    (<span class="typeident"><a href="Ics_Header.html">Ics_Header</a></span>*&nbsp;<span class="varident">IcsStruct</span>,
+    <span class="keyword">void</span>*&nbsp;<span class="varident">dest</span>,
+    <span class="typeident">size_t</span>&nbsp;<span class="varident">n</span>);
+    </p>
+
+    <p>Reads the whole image from disk.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_BitsVsSizeConfl</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_EndOfStream</tt>,
+    <tt class="constant">IcsErr_FCloseIds</tt>,
+    <tt class="constant">IcsErr_FOpenIds</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_MissingData</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsReadIdsBlock"></a>IcsReadIdsBlock</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsReadIdsBlock</span>
+    (<span class="typeident"><a href="Ics_Header.html">Ics_Header</a></span>*&nbsp;<span class="varident">IcsStruct</span>,
+    <span class="keyword">void</span>*&nbsp;<span class="varident">outbuf</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">len</span>);
+    </p>
+
+    <p>Reads image data block from disk. You need to call
+    <tt class="typeident"><a href="#IcsOpenIds">IcsOpenIds</a></tt> first.</p>
+
+    <p>When the data is compressed with
+    <tt class="constant"><a href="Enums.html#Ics_Compression">IcsCompr_compress</a></tt>,
+    this function can only be called once. That is, only one block of data, starting
+    at the beginning, can be read from the file.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_BitsVsSizeConfl</tt>,
+    <tt class="constant">IcsErr_BlockNotAllowed</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_EndOfStream</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetIdsBlock"></a>IcsSetIdsBlock</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetIdsBlock</span>
+    (<span class="typeident"><a href="Ics_Header.html">Ics_Header</a></span>*&nbsp;<span class="varident">IcsStruct</span>,
+    <span class="keyword">long</span>&nbsp;<span class="varident">offset</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">whence</span>);
+    </p>
+
+    <p>Specifies where next to read within the image data on disk. You need to
+    call <tt class="typeident"><a href="#IcsOpenIds">IcsOpenIds</a></tt> first.
+    <tt class="varident">whence</tt> is one of the
+    <tt class="funcident">fseek</tt> values <tt class="constant">SEEK_SET</tt>
+    or <tt class="constant">SEEK_CUR</tt>, defined in
+    <tt class="preprocess">&lt;stdio.h&gt;</tt>.</p>
+
+    <p>This function does currently not work when the data is compressed with
+    <tt class="constant"><a href="Enums.html#Ics_Compression">IcsCompr_compress</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_BlockNotAllowed</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_EndOfStream</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_IllParameter</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSkipIdsBlock"></a>IcsSkipIdsBlock</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSkipIdsBlock</span>
+    (<span class="typeident"><a href="Ics_Header.html">Ics_Header</a></span>*&nbsp;<span class="varident">IcsStruct</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">len</span>);
+    </p>
+
+    <p>Skips image data block on disk. You need to call
+    <tt class="typeident"><a href="#IcsOpenIds">IcsOpenIds</a></tt> first.</p>
+
+    <p>This function does currently not work when the data is compressed with
+    <tt class="constant"><a href="Enums.html#Ics_Compression">IcsCompr_compress</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_BlockNotAllowed</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_EndOfStream</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsWriteIcs"></a>IcsWriteIcs</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsWriteIcs</span>
+    (<span class="typeident"><a href="Ics_Header.html">Ics_Header</a></span>*&nbsp;<span class="varident">IcsStruct</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">filename</span>);
+    </p>
+
+    <p>Writes an <a href="Ics_Header.html">Ics_Header</a>
+    structure into a .ics file.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_FailWriteLine</tt>,
+    <tt class="constant">IcsErr_FCloseIcs</tt>,
+    <tt class="constant">IcsErr_FOpenIcs</tt>,
+    <tt class="constant">IcsErr_FWriteIcs</tt>,
+    <tt class="constant">IcsErr_NoLayout</tt>,
+    <tt class="constant">IcsErr_TooManyChans</tt>,
+    <tt class="constant">IcsErr_TooManyDims</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>,
+    <tt class="constant">IcsErr_UnknownDataType</tt>.</p>
+
+  <h3 class="ident"><a name="IcsWriteIds"></a>IcsWriteIds</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsWriteIds</span>
+    (<span class="typeident"><a href="Ics_Header.html">Ics_Header</a></span>&nbsp;<span class="keyword">const</span>*&nbsp;<span class="varident">IcsStruct</span>);
+    </p>
+
+    <p>Writes the whole image to disk.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_CompressionProblem</tt>,
+    <tt class="constant">IcsErr_FCloseIds</tt>,
+    <tt class="constant">IcsErr_FOpenIds</tt>,
+    <tt class="constant">IcsErr_FWriteIds</tt>,
+    <tt class="constant">IcsErr_MissingData</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+<h2><a name="filename"></a>File name manipulation</h2>
+
+  <h3 class="ident"><a name="IcsGetIcsName"></a>IcsGetIcsName</h3>
+
+    <p class="synopsis">
+    <span class="keyword">char</span>*&nbsp;<span class="funcident">IcsGetIcsName</span>
+    (<span class="keyword">char</span>*&nbsp;<span class="varident">dest</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">src</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">forcename</span>);
+    </p>
+
+    <p>If <tt class="varident">forcename</tt> is zero,
+    replaces an existing extension with <tt class="constant">".ics"</tt>
+    while preserving case. If no extension could be found then
+    <tt class="constant">".ics"</tt> is appended to the filename. If
+    <tt class="varident">forcename</tt> is non-zero, only the
+    <tt class="constant">".ids"</tt> extension is converted into
+    <tt class="constant">".ics"</tt>, any other extension is left intact.
+    This is to force the library to open a specific file with a wrong
+    extension.
+    </p>
+
+  <h3 class="ident"><a name="IcsGetIdsName"></a>IcsGetIdsName</h3>
+
+    <p class="synopsis">
+    <span class="keyword">char</span>*&nbsp;<span class="funcident">IcsGetIdsName</span>
+    (<span class="keyword">char</span>*&nbsp;<span class="varident">dest</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">src</span>);
+    </p>
+
+    <p>Replaces an existing extension with
+    <tt class="constant">".ids"</tt> while preserving case.
+    If no extension could be found then <tt class="constant">".ids"</tt>
+    is appended to the filename.
+    </p>
+
+  <h3 class="ident"><a name="IcsExtensionFind"></a>IcsExtensionFind</h3>
+
+    <p class="synopsis">
+    <span class="keyword">char</span>*&nbsp;<span class="funcident">IcsExtensionFind</span>
+    (<span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">str</span>);
+    </p>
+
+    <p>Finds the start of the
+    <tt class="constant">".ics"</tt>,
+    <tt class="constant">".ids"</tt>,
+    <tt class="constant">".ids.Z"</tt>, or
+    <tt class="constant">".ids.gz"</tt> extension.
+    All character comparisons are done case insensitive.
+    When no extension could be found a NULL pointer is returned.
+    </p>
+
+<h2><a name="datatype"></a>DataType structure query</h2>
+
+  <h3 class="ident"><a name="IcsGetDataTypeProps"></a>IcsGetDataTypeProps</h3>
+
+    <p class="synopsis">
+    <span class="keyword">void</span>&nbsp;<span class="funcident">IcsGetDataTypeProps</span>
+    (<span class="typeident"><a href="Enums.html#Ics_DataType">Ics_DataType</a></span>*&nbsp;<span class="varident">DataType</span>,
+    <span class="typeident"><a href="Enums.html#Ics_Format">Ics_Format</a></span>&nbsp;<span class="varident">format</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">sign</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">bits</span>);
+    </p>
+
+    <p>Gets the data type according to
+    <tt class="varident">format</tt>, <tt class="varident">sign</tt> and
+    <tt class="varident">bits</tt>.</p>
+
+<h2><a name="support"></a>Support functions</h2>
+
+  <h3 class="ident"><a name="IcsGetDataTypeSize"></a>IcsGetDataTypeSize</h3>
+
+    <p class="synopsis">
+    <span class="keyword">size_t</span>&nbsp;<span class="funcident">IcsGetDataTypeSize</span>
+    (<span class="typeident"><a href="Enums.html#Ics_DataType">Ics_DataType</a></span>&nbsp;<span class="varident">DataType</span>);
+    </p>
+
+    <p>Returns the size in bytes of the data type.</p>
+
+  <h3 class="ident"><a name="IcsGetPropsDataType"></a>IcsGetPropsDataType</h3>
+
+    <p class="synopsis">
+    <span class="keyword">void</span>&nbsp;<span class="funcident">IcsGetPropsDataType</span>
+    (<span class="typeident"><a href="Enums.html#Ics_DataType">Ics_DataType</a></span>&nbsp;<span class="varident">DataType</span>,
+    <span class="typeident"><a href="Enums.html#Ics_Format">Ics_Format</a></span>*&nbsp;<span class="varident">format</span>,
+    <span class="keyword">int</span>*&nbsp;<span class="varident">sign</span>,
+    <span class="keyword">size_t</span>*&nbsp;<span class="varident">bits</span>);
+    </p>
+
+    <p>Fills in <tt class="varident">format</tt>,
+    <tt class="varident">sign</tt> and <tt class="varident">bits</tt>
+    according to the data type.</p>
+
+  <h3 class="ident"><a name="IcsInit"></a>IcsInit</h3>
+
+    <p class="synopsis">
+    <span class="keyword">void</span>&nbsp;<span class="funcident">IcsInit</span>
+    (<span class="typeident"><a href="Ics_Header.html">Ics_Header</a></span>*&nbsp;<span class="varident">IcsStruct</span>);
+    </p>
+
+    <p>Initializes the
+    <tt class="typeident"><a href="Ics_Header.html">Ics_Header</a></tt>
+    structure to default values and zeros.</p>
+
+    <p class="info"><span class="headtxt">errors</span>: none.</p>
+
+  <h3 class="ident"><a name="IcsFreeHistory"></a>IcsFreeHistory</h3>
+
+    <p class="synopsis">
+    <span class="keyword">void</span>&nbsp;<span class="funcident">IcsFreeHistory</span>
+    (<span class="typeident"><a href="Ics_Header.html">Ics_Header</a></span>*&nbsp;<span class="varident">IcsStruct</span>);
+    </p>
+
+    <p>Frees the Histroy structure in the
+    <tt class="typeident"><a href="Ics_Header.html">Ics_Header</a></tt>
+    structure. This structure is allocated and accessed by
+    <a href="TopLevelFunctions.html#history">a set of
+    high-level interface functions</a>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>: none.</p>
+
+  </body>
+</html>
+

@@ -1,0 +1,9 @@
+/*
+ * Style file for libics documentation. (c)2005-2006 by Cris Luengo.
+ * Fixes to display these pages in a not-so-terrible way on Internet Explorer 6.
+ */
+
+div.navbar {
+  /*position: fixed;   Doesn't work in IExplorer */
+  position: absolute;
+}

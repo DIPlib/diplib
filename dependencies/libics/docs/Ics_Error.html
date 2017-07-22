@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+  <head>
+    <title>libics: Error codes</title>
+    <link rel="stylesheet" href="libics.css" type="text/css" title="default">
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="iexplorefix.css" type="text/css" title="default">
+    <![endif]-->
+  </head>
+
+  <body>
+    <p class=header>libics v.1.5 Online Documentation. &copy;2000-2010 by Cris Luengo and others.</p>
+
+    <div class="navbar">
+      <ul>
+        <li><a href=".">libics home</a></li>
+        <li><a href="Documentation.html" class="selected">Documentation</a>
+          <ul>
+            <li><a href="Usage.html">Usage of libics</a></li>
+            <li><a href="TopLevelFunctions.html">Top-level interface</a></li>
+            <li><a href="LowLevelFunctions.html">Low-level interface</a></li>
+            <li><a href="Ics_Header.html">Ics_Header</a></li>
+            <li><a href="Ics_DataRepresentation.html">Ics_DataRepresentation</a></li>
+            <li><a href="Ics_ImelRepresentation.html">Ics_ImelRepresentation</a></li>
+            <li><a href="Ics_Error.html" class="selected">Ics_Error</a></li>
+            <li><a href="Enums.html">Other enums</a></li>
+          </ul>
+        </li>
+        <li><a href="Credits.html">Credits</a></li>
+        <li><a href="Links.html">Links</a></li>
+        <li><a href="https://github.com/svi-opensource/libics/releases">Download</a></li>
+        <li><a href="https://github.com/svi-opensource/libics">GitHub</a></li>
+      </ul>
+    </div>
+
+<h1>Error codes returned by the library functions</h1>
+
+    <p><tt class="typeident">Ics_Error</tt> is an
+    <tt class="keyword">enum</tt> that represents all the error codes
+    returned by most of the functions in this library. They are sorted in alphabetical
+    order, except for the first three values, which are special.</p>
+
+  <h3 class="ident">IcsErr_Ok</h3>
+    <p>No error occurred. Its numerical value is
+    <tt class="constant">0</tt>, so you can test with
+    "<tt class="keyword">if</tt> (<tt class="varident">error</tt>) ..."</p>
+
+  <h3 class="ident">IcsErr_FSizeConflict</h3>
+    <p>Unexpected data size (non fatal error).</p>
+
+  <h3 class="ident">IcsErr_OutputNotFilled</h3>
+    <p>The output buffer could not be completely filled
+    (non fatal error). Returned by data reading functions if the buffer given
+    was larger than the amount of data read.</p>
+
+  <h3 class="ident">IcsErr_Alloc</h3>
+    <p>Memory allocation error.</p>
+
+  <h3 class="ident">IcsErr_BitsVsSizeConfl</h3>
+    <p>Image size conflicts with bits per element.</p>
+
+  <h3 class="ident">IcsErr_BlockNotAllowed</h3>
+    <p>It is not possible to read COMPRESS-compressed data in blocks.</p>
+
+  <h3 class="ident">IcsErr_BufferTooSmall</h3>
+    <p>The buffer was too small to hold the given ROI. </p>
+
+  <h3 class="ident">IcsErr_CompressionProblem</h3>
+    <p>Some error occurred during compression.</p>
+
+  <h3 class="ident">IcsErr_CorruptedStream</h3>
+    <p>The compressed input stream is currupted.</p>
+
+  <h3 class="ident">IcsErr_DecompressionProblem</h3>
+    <p>Some error occurred during decompression.</p>
+
+  <h3 class="ident">IcsErr_DuplicateData</h3>
+    <p>The <tt class="varident">Data</tt> field has
+    already been set.</p>
+
+  <h3 class="ident">IcsErr_EmptyField</h3>
+    <p>Empty field.</p>
+
+  <h3 class="ident">IcsErr_EndOfHistory</h3>
+    <p>All history lines have already been returned.</p>
+
+  <h3 class="ident">IcsErr_EndOfStream</h3>
+    <p>Unexpected end of stream.</p>
+
+  <h3 class="ident">IcsErr_FailWriteLine</h3>
+    <p>Failed to write a line in .ics file.</p>
+
+  <h3 class="ident">IcsErr_FCloseIcs</h3>
+    <p>File close error on .ics file.</p>
+
+  <h3 class="ident">IcsErr_FCloseIds</h3>
+    <p>File close error on data file.</p>
+
+  <h3 class="ident">IcsErr_FCopyIds</h3>
+    <p>Failed to copy image data from temporary file on .ics file opened for updating.</p>
+
+  <h3 class="ident">IcsErr_FOpenIcs</h3>
+    <p>File open error on .ics file.</p>
+
+  <h3 class="ident">IcsErr_FOpenIds</h3>
+    <p>File open error on data file.</p>
+
+  <h3 class="ident">IcsErr_FReadIcs</h3>
+    <p>File read error on .ics file.</p>
+
+  <h3 class="ident">IcsErr_FReadIds</h3>
+    <p>File read error on data file.</p>
+
+  <h3 class="ident">IcsErr_FTempMoveIcs</h3>
+    <p>Failed to remane .ics file opened for updating.</p>
+
+  <h3 class="ident">IcsErr_FWriteIcs</h3>
+    <p>File write error on .ics file.</p>
+
+  <h3 class="ident">IcsErr_FWriteIds</h3>
+    <p>File write error on data file.</p>
+
+  <h3 class="ident">IcsErr_IllegalROI</h3>
+    <p>The given ROI extends outside the image.</p>
+
+  <h3 class="ident">IcsErr_IllIcsToken</h3>
+    <p>Illegal ICS token detected.</p>
+
+  <h3 class="ident">IcsErr_IllParameter</h3>
+    <p>A function parameter has a value that is not legal
+    or does not match with a value previously given.</p>
+
+  <h3 class="ident">IcsErr_LineOverflow</h3>
+    <p>Line overflow writing .ics file.</p>
+
+  <h3 class="ident">IcsErr_MissBits</h3>
+    <p>Missing "bits" element in ICS file.</p>
+
+  <h3 class="ident">IcsErr_MissCat</h3>
+    <p>Missing main category.</p>
+
+  <h3 class="ident">IcsErr_MissingData</h3>
+    <p>The <tt class="varident">Data</tt> field is not
+    yet been set.</p>
+
+  <h3 class="ident">IcsErr_MissLayoutSubCat</h3>
+    <p>Missing layout subcategory.</p>
+
+  <h3 class="ident">IcsErr_MissParamSubCat</h3>
+    <p>Missing parameter subcategory.</p>
+
+  <h3 class="ident">IcsErr_MissRepresSubCat</h3>
+    <p>Missing representation subcategory.</p>
+
+  <h3 class="ident">IcsErr_MissSensorSubCat</h3>
+    <p>Missing sensor subcategory.</p>
+
+  <h3 class="ident">IcsErr_MissSensorSubSubCat</h3>
+    <p>Missing sensor subsubcategory.</p>
+
+  <h3 class="ident">IcsErr_MissSubCat</h3>
+    <p>Missing sub category.</p>
+
+  <h3 class="ident">IcsErr_NoLayout</h3>
+    <p>Layout parameters missing or not defined.</p>
+
+  <h3 class="ident">IcsErr_NoScilType</h3>
+    <p>The function
+    <tt class="funcident"><a href="TopLevelFunctions.html#IcsGuessScilType">IcsGuessScilType</a></tt>
+    could not create a SCIL_TYPE string for the image as currently defined.</p>
+
+  <h3 class="ident">IcsErr_NotIcsFile</h3>
+    <p>Not an ICS file, or unrecognized ICS version.</p>
+
+  <h3 class="ident">IcsErr_NotValidAction</h3>
+    <p>The function won't work on the ICS given. This is
+    returned by the top-level functions when a 'Set' function is called on an
+    ICS open for reading, or a 'Get' function is called on an ICS open for
+    writing.</p>
+
+  <h3 class="ident">IcsErr_ToManyChans</h3>
+    <p>Too many channels specified.</p>
+
+  <h3 class="ident">IcsErr_ToManyDims</h3>
+    <p>Too many dimensions specified.</p>
+
+  <h3 class="ident">IcsErr_UnknownCompression</h3>
+    <p>Unknown compression type.</p>
+
+  <h3 class="ident">IcsErr_UnknownDataType</h3>
+    <p>The datatype is not recognized.</p>
+
+  <h3 class="ident">IcsErr_WrongZlibVersion</h3>
+    <p>libics is linking to a different version of zlib
+    than used during compilation.</p>
+
+  </body>
+</html>
+

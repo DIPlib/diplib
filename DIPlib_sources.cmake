@@ -63,6 +63,7 @@ src/color/xyz.h
 src/distance/edt.cpp
 src/distance/gdt.cpp
 src/distance/vdt.cpp
+src/file_io/ics.cpp
 src/generation/coordinates.cpp
 src/generation/noise.cpp
 src/geometry/interpolation.h

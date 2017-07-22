@@ -1,0 +1,27 @@
+libics to do list
+-----------------
+
+- Add bzip2 support, or rather xz (through XZ Utils).
+
+- 1-bit-per-pixel data should be packed when written. Ics_DataType
+  should then add a Ics_uint1 or Ics_binary data type. Tomás Majtner
+  submitted some code that gets us pretty close to this.
+
+- IcsGetPreviewData() should look for dimensions labelled "x" and "y".
+  If one of them is not present, use first available dimension instead.
+  Read the data using IcsGetROIData(). Make sure the planes are counted
+  over the dimensions that are not considered "x" and "y".
+
+- The MATLAB MEX-files ICSREAD should also look for dimensions labelled
+  "x", "y", "z", "t" or "time" and "probe". Reorder so "probe" is at the
+  end, and x, y, z, t are in that order at the beginning.
+
+- Make a function IcsGetROIDataWithStrides(). IcsGetROIData() and
+  IcsGetDataWithStrides() should be direct calls to this function
+  with some NULL pointers. Maybe even macros?
+
+- IrfanView plugin should be updated, it still has a 3 year old bug.
+
+- test_ics2a shows an issue with endianness and the ICS file pointing to
+  an existing data file: we have no good way of determining the endianness
+  of this data file, and are stuck with using the machine's endinanness.

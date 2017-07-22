@@ -1,0 +1,1682 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+  <head>
+    <title>libics: Top-Level Interface</title>
+    <link rel="stylesheet" href="libics.css" type="text/css" title="default">
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="iexplorefix.css" type="text/css" title="default">
+    <![endif]-->
+  </head>
+
+  <body>
+    <p class=header>libics v.1.5 Online Documentation. &copy;2000-2010 by Cris Luengo and others.</p>
+
+    <div class="navbar">
+      <ul>
+        <li><a href=".">libics home</a></li>
+        <li><a href="Documentation.html" class="selected">Documentation</a>
+          <ul>
+            <li><a href="Usage.html">Usage of libics</a></li>
+            <li><a href="TopLevelFunctions.html" class="selected">Top-level interface</a>
+              <ul>
+                <li><a href="#general">General library functions</a></li>
+                <li><a href="#reading">Reading image data</a></li>
+                <li><a href="#writing">Writing image data</a></li>
+                <li><a href="#metadata">Image metadata functions</a></li>
+                <li><a href="#history">History metadata functions</a></li>
+                <li><a href="#sensor">Sensor metadata functions</a></li>
+                <li><a href="#testing">Testing functions</a></li>
+              </ul>
+            </li>
+            <li><a href="LowLevelFunctions.html">Low-level interface</a></li>
+            <li><a href="Ics_Header.html">Ics_Header</a></li>
+            <li><a href="Ics_DataRepresentation.html">Ics_DataRepresentation</a></li>
+            <li><a href="Ics_ImelRepresentation.html">Ics_ImelRepresentation</a></li>
+            <li><a href="Ics_Error.html">Ics_Error</a></li>
+            <li><a href="Enums.html">Other enums</a></li>
+          </ul>
+        </li>
+        <li><a href="Credits.html">Credits</a></li>
+        <li><a href="Links.html">Links</a></li>
+        <li><a href="https://github.com/svi-opensource/libics/releases">Download</a></li>
+        <li><a href="https://github.com/svi-opensource/libics">GitHub</a></li>
+      </ul>
+    </div>
+
+<h1>Top-level interface to libics</h1>
+
+    <p>The functions below represent the <strong>recommended</strong> way of
+    reading and writing ICS files using this library. You need to add
+    <tt class="preprocess">#include "libics.h"</tt> to your source files.</p>
+
+    <p>Most functions return an
+    <tt class="typeident"><a href="Ics_Error.html">Ics_Error</a></tt>
+    value. For these functions we have listed the values this function
+    could return. If the function completes its task successfully, it returns
+    <tt class="constant">IcsErr_Ok</tt>. Some of the error codes
+    (like <tt class="constant">IcsErr_NotValidAction</tt>) are returned when
+    "asserts" fail. These shouldn't happen if you wrote your program correctly.
+    See "<a href="Ics_Error.html">Error codes returned by the library functions</a>"
+    for a detailed description of each error code.</p>
+
+    <p>This functions in this page are organized in the following categories,
+    and sorted alphabetically:</p>
+    <ul>
+      <li><a href="#general">General library functions</a></li>
+      <li><a href="#reading">Reading image data</a></li>
+      <li><a href="#writing">Writing image data</a></li>
+      <li><a href="#metadata">Image metadata functions</a></li>
+      <li><a href="#history">History metadata functions</a></li>
+      <li><a href="#sensor">Sensor metadata functions</a></li>
+      <li><a href="#testing">Testing functions</a></li>
+    </ul>
+
+<h2><a name="general"></a>General library functions</h2>
+
+  <h3 class="ident"><a name="IcsClose"></a>IcsClose</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsClose</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>);
+    </p>
+
+    <p>Close the ICS file. The ics 'stream' is no longer
+    valid after this. No files are actually written until this function is
+    called.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_CompressionProblem</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_FailWriteLine</tt>,
+    <tt class="constant">IcsErr_FCloseIcs</tt>,
+    <tt class="constant">IcsErr_FCloseIds</tt>,
+    <tt class="constant">IcsErr_FCopyIds</tt>,
+    <tt class="constant">IcsErr_FOpenIcs</tt>,
+    <tt class="constant">IcsErr_FOpenIds</tt>,
+    <tt class="constant">IcsErr_FTempMoveIcs</tt>,
+    <tt class="constant">IcsErr_FWriteIcs</tt>,
+    <tt class="constant">IcsErr_FWriteIds</tt>,
+    <tt class="constant">IcsErr_MissingData</tt>,
+    <tt class="constant">IcsErr_NoLayout</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>,
+    <tt class="constant">IcsErr_TooManyChans</tt>,
+    <tt class="constant">IcsErr_TooManyDims</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>,
+    <tt class="constant">IcsErr_UnknownDataType</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetErrorText"></a>IcsGetErrorText</h3>
+
+    <p class="synopsis">
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="funcident">IcsGetErrorText</span>
+    (<span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="varident">error</span>);
+    </p>
+
+    <p>Returns a pointer to a textual representation of
+    the error message in <tt class="varident">error</tt>.
+
+  <h3 class="ident"><a name="IcsGetLibVersion"></a>IcsGetLibVersion</h3>
+
+    <p class="synopsis">
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="funcident">IcsGetLibVersion</span>
+    (<span class="keyword">void</span>);
+    </p>
+
+    <p>Returns a string that can be used to compare against
+    <tt class="constant">ICSLIB_VERSION</tt> to check if the version of the
+    library is the same as that of the headers.</p>
+
+  <h3 class="ident"><a name="IcsLoadPreview"></a>IcsLoadPreview</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsLoadPreview</span>
+    (<span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">filename</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">planenumber</span>,
+    <span class="keyword">void</span>**&nbsp;<span class="varident">dest</span>,
+    <span class="keyword">size_t</span>*&nbsp;<span class="varident">xsize</span>,
+    <span class="keyword">size_t</span>*&nbsp;<span class="varident">ysize</span>);
+    </p>
+
+    <p>Read a 2D preview image out of an ICS file.
+    <tt class="varident">*dest</tt> is set to a buffer that you should <tt class="funcident">free</tt>
+    yourself. <tt class="varident">*xsize</tt> and <tt class="varident">*ysize</tt> are set to the
+    image size, and the buffer is filled with a 2D slice out of the image, converted to 8-bit unsigned
+    integers. The slice is chosen with <tt class="varident">planenumber</tt> (see
+    <tt class="funcident"><a href="#IcsGetPreviewData">IcsGetPreviewData</a></tt>).
+
+    <p>This function does currently not work when the data is compressed with
+    <tt class="constant"><a href="Enums.html#Ics_Compression">IcsCompr_compress</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_BitsVsSizeConfl</tt>,
+    <tt class="constant">IcsErr_BlockNotAllowed</tt>,
+    <tt class="constant">IcsErr_BufferTooSmall</tt>,
+    <tt class="constant">IcsErr_CompressionProblem</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_EndOfStream</tt>,
+    <tt class="constant">IcsErr_FailWriteLine</tt>,
+    <tt class="constant">IcsErr_FCloseIcs</tt>,
+    <tt class="constant">IcsErr_FCloseIds</tt>,
+    <tt class="constant">IcsErr_FOpenIcs</tt>,
+    <tt class="constant">IcsErr_FOpenIds</tt>,
+    <tt class="constant">IcsErr_FReadIcs</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_FWriteIcs</tt>,
+    <tt class="constant">IcsErr_FWriteIds</tt>,
+    <tt class="constant">IcsErr_IllegalROI</tt>,
+    <tt class="constant">IcsErr_LineOverflow</tt>,
+    <tt class="constant">IcsErr_MissBits</tt>,
+    <tt class="constant">IcsErr_MissCat</tt>,
+    <tt class="constant">IcsErr_MissingData</tt>,
+    <tt class="constant">IcsErr_MissLayoutSubCat</tt>,
+    <tt class="constant">IcsErr_MissParamSubCat</tt>,
+    <tt class="constant">IcsErr_MissRepresSubCat</tt>,
+    <tt class="constant">IcsErr_MissSensorSubSubCat</tt>,
+    <tt class="constant">IcsErr_NoLayout</tt>,
+    <tt class="constant">IcsErr_NotIcsFile</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>,
+    <tt class="constant">IcsErr_OutputNotFilled</tt>,
+    <tt class="constant">IcsErr_TooManyChans</tt>,
+    <tt class="constant">IcsErr_TooManyDims</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>,
+    <tt class="constant">IcsErr_UnknownDataType</tt>.</p>
+
+  <h3 class="ident"><a name="IcsOpen"></a>IcsOpen</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsOpen</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>**&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">filename</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">mode</span>);
+    </p>
+
+    <p>Open an ICS file for reading
+    (<tt class="varident">mode</tt> = <tt class="constant">"r"</tt>)
+    or writing
+    (<tt class="varident">mode</tt> = <tt class="constant">"w"</tt>)
+    or updating
+    (<tt class="varident">mode</tt> = <tt class="constant">"rw"</tt>).
+    When writing, append a <tt class="constant">"2"</tt> to
+    <tt class="varident">mode</tt> to create an ICS version 2.0 file, or a
+    <tt class="constant">"1"</tt> for ICS v.1.0 (the default version is 2.0).
+    When reading or updating, append an <tt class="constant">"f"</tt> to
+    <tt class="varident">mode</tt> to avoid the file extension to be forced to
+    <tt class="constant">".ics"</tt>.</p>
+
+    <p>In the  <tt class="constant">"rw"</tt> mode, it is possible to change
+    all of the meta-data in the file, but not the actual data. To change the
+    data, read in the image in the normal way, change it and then write it
+    out.</p>
+
+    <p>The standard requires the <tt class="constant">"C"</tt> locale to be in
+    effect when writing the ICS header, which means that numbers are written
+    using a dot as a decimal separator, and no separator for thousands. If you
+    happen to have an ICS file written using, e.g., the German locale, which
+    would contain a number written as <tt class="constant">5.755,34</tt>
+    instead of <tt class="constant">5755.34</tt>, you can read this file by
+    setting the locale (in C this is done with <tt class="funcident">setlocale</tt>)
+    to German, then opening the file with an <tt class="constant">"l"</tt>
+    appended to the <tt class="varident">mode</tt> string:</p>
+
+    <p class="synopsis">
+    <span class="funcident">IcsOpen</span> (&amp;<span class="varident">ics</span>,
+    <tt class="constant">"germanfile.ics"</tt>, <tt class="constant">"rl"</tt>)</p>
+
+    <p>Note that this option does not work when writing a file: all ICS files
+    written by this library use the locale specified in the standard. Consequently,
+    when updating such an ICS file, it will be converted to the
+    <tt class="constant">"C"</tt> locale.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_FCloseIcs</tt>,
+    <tt class="constant">IcsErr_FOpenIcs</tt>,
+    <tt class="constant">IcsErr_FReadIcs</tt>,
+    <tt class="constant">IcsErr_IllParameter</tt>,
+    <tt class="constant">IcsErr_LineOverflow</tt>,
+    <tt class="constant">IcsErr_MissBits</tt>,
+    <tt class="constant">IcsErr_MissCat</tt>,
+    <tt class="constant">IcsErr_MissLayoutSubCat</tt>,
+    <tt class="constant">IcsErr_MissParamSubCat</tt>,
+    <tt class="constant">IcsErr_MissRepresSubCat</tt>,
+    <tt class="constant">IcsErr_MissSensorSubSubCat</tt>,
+    <tt class="constant">IcsErr_NotIcsFile</tt>,
+    <tt class="constant">IcsErr_TooManyChans</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsVersion"></a>IcsVersion</h3>
+
+    <p class="synopsis">
+    <span class="keyword">int</span>&nbsp;<span class="funcident">IcsVersion</span>
+    (<span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">filename</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">forcename</span>);
+    </p>
+
+    <p>Returns 0 if the file specified by name is not an ICS file,
+    or the version number if it is. When <tt class="varident">forcename</tt> is non-zero,
+    the <tt class="constant">".ics"</tt> extension is not added.</p>
+
+<h2><a name="reading"></a>Reading image data</h2>
+
+    <p>These functions are available on files opened for reading.</p>
+
+  <h3 class="ident"><a name="IcsGetData"></a>IcsGetData</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetData</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">void</span>*&nbsp;<span class="varident">dest</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">n</span>);
+    </p>
+
+    <p>Read the actual image data from an ICS file, as a single block.
+    <tt class="varident">n</tt> is the size of the buffer
+    <tt class="varident">dest</tt>, which must be the exact same size as
+    reported by
+    <tt class="funcident"><a href="#IcsGetDataSize">IcsGetDataSize</a></tt></p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_BitsVsSizeConfl</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_EndOfStream</tt>,
+    <tt class="constant">IcsErr_FCloseIds</tt>,
+    <tt class="constant">IcsErr_FOpenIds</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_MissingData</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetDataBlock"></a>IcsGetDataBlock</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetDataBlock</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">void</span>*&nbsp;<span class="varident">dest</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">n</span>);
+    </p>
+
+    <p>Read a portion of the actual image data from an ICS file.
+    <tt class="varident">n</tt> is the size of the buffer
+    <tt class="varident">dest</tt> in bytes.</p>
+    
+    <p>When the data is compressed with
+    <tt class="constant"><a href="Enums.html#Ics_Compression">IcsCompr_compress</a></tt>,
+    this function can only be called once. That is, only one block of data, starting
+    at the beginning, can be read from the file.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_BitsVsSizeConfl</tt>,
+    <tt class="constant">IcsErr_BlockNotAllowed</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_EndOfStream</tt>,
+    <tt class="constant">IcsErr_FOpenIds</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_MissingData</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetDataSize"></a>IcsGetDataSize</h3>
+
+    <p class="synopsis">
+    <span class="keyword">size_t</span>&nbsp;<span class="funcident">IcsGetDataSize</span>
+    (<span class="typeident"><a href= "Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>);
+    </p>
+
+    <p>Returns the size of the data block in bytes.</p>
+
+  <h3 class="ident"><a name="IcsGetDataWithStrides"></a>IcsGetDataWithStrides</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetDataWithStrides</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">void&nbsp;const</span>*&nbsp;<span class="varident">src</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">n</span>,
+    <span class="keyword">size_t&nbsp;const</span>*&nbsp;<span class="varident">strides</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">ndims</span>);
+    </p>
+
+    <p>Same as
+    <tt class="funcident"><a href="#IcsGetData">IcsGetData</a></tt>, except
+    a pointer to an array <tt class="varident">strides</tt> is also given.
+    <tt class="varident">ndims</tt> is the length of this array and should be
+    equal to the dimensionality of the data as returned by
+    <tt class="funcident"><a href="#IcsGetLayout">IcsGetLayout</a></tt></p>
+
+    <p>This function does currently not work when the data is compressed with
+    <tt class="constant"><a href="Enums.html#Ics_Compression">IcsCompr_compress</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_BitsVsSizeConfl</tt>,
+    <tt class="constant">IcsErr_BlockNotAllowed</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_EndOfStream</tt>,
+    <tt class="constant">IcsErr_FCloseIds</tt>,
+    <tt class="constant">IcsErr_FOpenIds</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_IllParameter</tt>,
+    <tt class="constant">IcsErr_MissingData</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetImageSize"></a>IcsGetImageSize</h3>
+
+    <p class="synopsis">
+    <span class="keyword">size_t</span>&nbsp;<span class="funcident">IcsGetImageSize</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>);
+    </p>
+
+    <p>Returns the size of the image in imels.</p>
+
+  <h3 class="ident"><a name="IcsGetImelSize"></a>IcsGetImelSize</h3>
+
+    <p class="synopsis">
+    <span class="keyword">size_t</span>&nbsp;<span class="funcident">IcsGetImelSize</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>);
+    </p>
+
+    <p>Returns the size of imels in bytes.</p>
+
+  <h3 class="ident"><a name="IcsGetLayout"></a>IcsGetLayout</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetLayout</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>,
+    <span class="typeident"><a href="Enums.html#Ics_DataType">Ics_DataType</a></span>*&nbsp;<span class="varident">dt</span>,
+    <span class="keyword">int</span>*&nbsp;<span class="varident">ndims</span>,
+    <span class="keyword">size_t</span>*&nbsp;<span class="varident">dims</span>);
+    </p>
+
+    <p>Retrieve the layout of an ICS image.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetPreviewData"></a>IcsGetPreviewData</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetPreviewData</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">void</span>*&nbsp;<span class="varident">dest</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">n</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">planenumber</span>);
+    </p>
+
+    <p>Read a plane of the actual image data from an ICS file, and
+    convert it to 8-bit unsigned integers.
+    <tt class="varident">n</tt> is the size of the buffer
+    <tt class="varident">dest</tt> in bytes, and should be equal to
+    <tt><span class="varident">dims</span>[<span class="constant">0</span>]*<span class="varident">dims</span>[<span class="constant">1</span>]</tt>,
+    as returned by <tt class="funcident"><a href="#IcsGetLayout">IcsGetLayout</a></tt>.
+    <tt class="varident">planenumber</tt> is the number of the 2D plane in the file. For example,
+    to read the plane defined by
+    <tt>[<span class="constant">:</span>,<span class="constant">:</span>,<span class="constant">m</span>,<span class="constant">n</span>,<span class="constant">k</span>]</tt>,
+    set <tt class="varident">planenumber</tt> to
+    <tt><span class="constant">m</span> + <span class="constant">n</span>*<span class="varident">dims</span>[<span class="constant">2</span>] +
+    <span class="constant">k</span>*<span class="varident">dims</span>[<span class="constant">2</span>]*<span class="varident">dims</span>[<span class="constant">3</span>]</tt>.</p>
+
+    <p>This function does currently not work when the data is compressed with
+    <tt class="constant"><a href="Enums.html#Ics_Compression">IcsCompr_compress</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_BitsVsSizeConfl</tt>,
+    <tt class="constant">IcsErr_BlockNotAllowed</tt>,
+    <tt class="constant">IcsErr_BufferTooSmall</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_EndOfStream</tt>,
+    <tt class="constant">IcsErr_FCloseIds</tt>,
+    <tt class="constant">IcsErr_FOpenIds</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_IllegalROI</tt>,
+    <tt class="constant">IcsErr_MissingData</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>,
+    <tt class="constant">IcsErr_OutputNotFilled</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>,
+    <tt class="constant">IcsErr_UnknownDataType</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetROIData"></a>IcsGetROIData</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetROIData</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">size_t&nbsp;const</span>*&nbsp;<span class="varident">offset</span>,
+    <span class="keyword">size_t&nbsp;const</span>*&nbsp;<span class="varident">size</span>,
+    <span class="keyword">size_t&nbsp;const</span>*&nbsp;<span class="varident">sampling</span>,
+    <span class="keyword">void</span>*&nbsp;<span class="varident">dest</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">n</span>);
+    </p>
+
+    <p>Read a square region of the actual image from an ICS file. The
+    region is defined by <tt class="varident">offset</tt> and <tt class="varident">size</tt>,
+    both of which are integer arrays with <tt class="varident">ndims</tt> elements (as
+    reported by <tt class="funcident"><a href="#IcsGetLayout">IcsGetLayout</a></tt>).
+    <tt class="varident">sampling</tt> allows you to sub-sample the image. It also is an
+    array with <tt class="varident">ndims</tt> elements. If any of these parameters is
+    set to <tt class="constant">NULL</tt>, the default is used (the offset is 0, the size
+    is equal to the image size, and the sampling is 1 in each direction).</p>
+
+    <p>This function does currently not work when the data is compressed with
+    <tt class="constant"><a href="Enums.html#Ics_Compression">IcsCompr_compress</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_BitsVsSizeConfl</tt>,
+    <tt class="constant">IcsErr_BlockNotAllowed</tt>,
+    <tt class="constant">IcsErr_BufferTooSmall</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_EndOfStream</tt>,
+    <tt class="constant">IcsErr_FCloseIds</tt>,
+    <tt class="constant">IcsErr_FOpenIds</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_IllegalROI</tt>,
+    <tt class="constant">IcsErr_MissingData</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>,
+    <tt class="constant">IcsErr_OutputNotFilled</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetSignificantBits"></a>IcsGetSignificantBits</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetSignificantBits</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">size_t</span>*&nbsp;<span class="varident">nbits</span>);
+    </p>
+
+    <p>Get the number of significant bits.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSkipDataBlock"></a>IcsSkipDataBlock</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSkipDataBlock</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">n</span>);
+    </p>
+
+    <p>Skip a portion of the actual image data in an ICS file.
+    <tt class="varident">n</tt> is the number of bytes to skip. Use this function
+    together with
+    <tt class="funcident"><a href="#IcsGetDataBlock">IcsGetDataBlock</a></tt> to
+    read in the portion of the image you are interested in. Note the function
+    <tt class="funcident"><a href="#IcsGetROIData">IcsGetROIData</a></tt>, which
+    might simplifies this task.</p>
+
+    <p>This function does currently not work when the data is compressed with
+    <tt class="constant"><a href="Enums.html#Ics_Compression">IcsCompr_compress</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_BlockNotAllowed</tt>,
+    <tt class="constant">IcsErr_CorruptedStream</tt>,
+    <tt class="constant">IcsErr_DecompressionProblem</tt>,
+    <tt class="constant">IcsErr_EndOfStream</tt>,
+    <tt class="constant">IcsErr_FOpenIds</tt>,
+    <tt class="constant">IcsErr_FReadIds</tt>,
+    <tt class="constant">IcsErr_MissingData</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>,
+    <tt class="constant">IcsErr_UnknownCompression</tt>.</p>
+
+<h2><a name="writing"></a>Writing image data</h2>
+
+    <p>These functions are available on files opened for writing.</p>
+
+  <h3 class="ident"><a name="IcsSetCompression"></a>IcsSetCompression</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetCompression</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="typeident"><a href="Enums.html#Ics_Compression">Ics_Compression</a></span>&nbsp;<span class="varident"> compression</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">level</span>);
+    </p>
+
+    <p>Set the compression method and compression
+    parameter. Data is written uncompressed by default.
+    If you try to set the compression to
+    <tt class="constant">IcsCompr_compress</tt>, you'll
+    get <tt class="constant">IcsCompr_gzip</tt> instead.
+    See available methods and significance of the parameter
+    at the <tt class="typeident"><a href="Enums.html#Ics_Compression">Ics_Compression</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetData"></a>IcsSetData</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetData</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">void&nbsp;const</span>*&nbsp;<span class="varident">src</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">n</span>);
+    </p>
+
+    <p>Set the image data for an ICS image. The pointer to
+    this data must be accessible until
+    <tt class="funcident"><a href="#IcsClose">IcsClose</a></tt> has been called.
+    If the size <tt class="varident">n</tt> of the data is not equal to what is
+    expected according to the image sizes set previously by
+    <tt class="funcident"><a href="#IcsSetLayout">IcsSetLayout</a></tt>, a value
+    of <tt class="constant">IcsErr_FSizeConflict</tt> is returned.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_DuplicateData</tt>,
+    <tt class="constant">IcsErr_FSizeConflict</tt>,
+    <tt class="constant">IcsErr_NoLayout</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetDataWithStrides"></a>IcsSetDataWithStrides</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetDataWithStrides</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">void&nbsp;const</span>*&nbsp;<span class="varident">src</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">n</span>,
+    <span class="keyword">size_t&nbsp;const</span>*&nbsp;<span class="varident">strides</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">ndims</span>);
+    </p>
+
+    <p>Same as
+    <tt class="funcident"><a href="#IcsSetData">IcsSetData</a></tt>, except
+    a pointer to an array <tt class="varident">strides</tt> is also given.
+    This array must be accesible until
+    <tt class="funcident"><a href="#IcsClose">IcsClose</a></tt> has been called.
+    <tt class="varident">ndims</tt> is the length of this array and should be
+    equal to the dimensionality of the data as specified earlier through
+    <tt class="funcident"><a href="#IcsSetLayout">IcsSetLayout</a></tt></p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_DuplicateData</tt>,
+    <tt class="constant">IcsErr_FSizeConflict</tt>,
+    <tt class="constant">IcsErr_IllParameter</tt>,
+    <tt class="constant">IcsErr_NoLayout</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetLayout"></a>IcsSetLayout</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetLayout</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="typeident"><a href="Enums.html#Ics_DataType">Ics_DataType</a></span>&nbsp;<span class="varident">dt</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">ndims</span>,
+    <span class="keyword">size_t&nbsp;const</span>*&nbsp;<span class="varident">dims</span>);
+    </p>
+
+    <p>Set the layout for an ICS image.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>,
+    <tt class="constant">IcsErr_TooManyDims</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetSignificantBits"></a>IcsSetSignificantBits</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetSignificantBits</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">nbits</span>);
+    </p>
+
+    <p>Set the number of significant bits.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NoLayout</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetSource"></a>IcsSetSource</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetSource</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">fname</span>,
+    <span class="keyword">size_t</span>&nbsp;<span class="varident">offset</span>);
+    </p>
+
+    <p>Set the image source parameter for an ICS version
+    2.0 file.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_DuplicateData</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+<h2><a name="metadata"></a>Image metadata functions</h2>
+
+  <h3 class="ident"><a name="IcsGetCoordinateSystem"></a>IcsGetCoordinateSystem</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetCoordinateSystem</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">coord</span>);
+    </p>
+
+    <p>Get the coordinate system used in the positioning of
+    the pixels. Related to <tt class="funcident"><a href="#IcsGetPosition">
+    IcsGetPosition</a></tt>. The default is <tt class="constant">
+    "video"</tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetImelUnits"></a>IcsGetImelUnits</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetImelUnits</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">double</span>*&nbsp;<span class="varident">origin</span>,
+    <span class="keyword">double</span>*&nbsp;<span class="varident">scale</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">units</span>);
+    </p>
+
+    <p>Set the position of the pixel values: the offset and
+    scaling, and the units in which to measure. If you are not interested in
+    one of the parameters, set the pointer to <tt class="constant">NULL</tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetOrder"></a>IcsGetOrder</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetOrder</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">dimension</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">order</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">label</span>);
+    </p>
+
+    <p>Get the ordering of the dimensions in the image. The
+    ordering is defined by names and labels for each dimension. The defaults
+    are x, y, z, t (time) and p (probe). Dimensions start at 0.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetPosition"></a>IcsGetPosition</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetPosition</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">dimension</span>,
+    <span class="keyword">double</span>*&nbsp;<span class="varident">origin</span>,
+    <span class="keyword">double</span>*&nbsp;<span class="varident">scale</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">units</span>);
+    </p>
+
+    <p>Get the position of the image in the real world: the
+    origin of the first pixel, the distances between pixels and the units in
+    which to measure. If you are not interested in one of the parameters, set
+    the pointer to <tt class="constant">NULL</tt>. Dimensions start at 0.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetScilType"></a>IcsGetScilType</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetScilType</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">sciltype</span>);
+    </p>
+
+    <p>Get the string for the SCIL_TYPE parameter. This string is
+    used only by SCIL_Image.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGuessScilType"></a>IcsGuessScilType</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGuessScilType</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>);
+    </p>
+
+    <p>As
+    <tt class="funcident"><a href="#IcsSetScilType">IcsSetScilType</a></tt>,
+    sets the string for the SCIL_TYPE parameter. This function creates a string
+    according to the values previously specified using
+    <tt class="funcident"><a href="#IcsSetLayout">IcsSetLayout</a></tt>.
+    It can create any of these strings:
+    <tt class="constant">"g2d"</tt>, <tt class="constant">"g3d"</tt>,
+    <tt class="constant">"f2d"</tt>, <tt class="constant">"f3d"</tt>,
+    <tt class="constant">"c2d"</tt> and <tt class="constant">"c3d"</tt>.
+    This string is used only by SCIL_Image, and is required if you want to read
+    the image using SCIL_Image. </p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NoScilType</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetCoordinateSystem"></a>IcsSetCoordinateSystem</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetCoordinateSystem</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">coord</span>);
+    </p>
+
+    <p>Set the coordinate system used in the positioning of
+    the pixels. Related to
+    <tt class="funcident"><a href="#IcsSetPosition">IcsSetPosition</a></tt>.
+    The default is <tt class="constant">"video"</tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetImelUnits"></a>IcsSetImelUnits</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetImelUnits</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">double</span>&nbsp;<span class="varident">origin</span>,
+    <span class="keyword">double</span>&nbsp;<span class="varident">scale</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">units</span>);
+    </p>
+
+    <p>Set the position of the pixel values: the offset and
+    scaling, and the units in which to measure. If units is
+    <tt class="constant">NULL</tt> or empty, it is set to the default value
+    of <tt class="constant">"relative"</tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetPosition"></a>IcsSetPosition</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetPosition</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">dimension</span>,
+    <span class="keyword">double</span>&nbsp;<span class="varident">origin</span>,
+    <span class="keyword">double</span>&nbsp;<span class="varident">scale</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">units</span>);
+    </p>
+
+    <p>Set the position of the image in the real world: the
+    origin of the first pixel, the distances between pixels and the units in
+    which to measure. If <tt class="varident">units</tt> is <tt class=
+    "constant">NULL</tt> or empty, it is set to the default value of <tt
+    class="constant">"undefined"</tt>. Dimensions start at 0.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetOrder"></a>IcsSetOrder</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetOrder</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">dimension</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">order</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">label</span>);
+    </p>
+
+    <p>Set the ordering of the dimensions in the image. The
+    ordering is defined by providing names and labels for each dimension. The
+    defaults are x, y, z, t (time) and p (probe). Dimensions start at 0.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetScilType"></a>IcsSetScilType</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsSetScilType</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">sciltype</span>);
+    </p>
+
+    <p>Set the string for the SCIL_TYPE parameter. This string
+    is used only by SCIL_Image, and is required if you want to read the image using
+    SCIL_Image.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+<h2><a name="history"></a>History metadata functions</h2>
+
+    <p>The functions below give access to the history lines. The structure
+    where these are stored is hidden from the user, making these functions
+    the only method of access. A history line in an ICS file starts with
+    the token "history", then has an optional key token, and then any
+    string. These three parts are separated by tab characters, but the
+    string can contain tab characters also, effectively allowing the user
+    even more subdivisions in the hierarchy. The history lines can contain
+    any information the user wishes to put into the file.</p>
+
+    <p>Some functions below use <tt class="typeident">Ics_HistoryIterator</tt>,
+    a struct initialized by
+    <tt class="funcident"><a href="#IcsNewHistoryIterator">IcsNewHistoryIterator</a></tt>.
+    It is always set to point to the next available string, and also contains
+    the index to the previously retrieved string. It is possible to set up an
+    iterator to fetch each of the history strings in turn, or to fetch only
+    those that have a particular key.</p>
+
+  <h3 class="ident"><a name="IcsAddHistoryString"></a>IcsAddHistoryString</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsAddHistoryString</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">key</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">value</span>);
+    </p>
+
+    <p>Add history lines to the ICS file. <tt class="varident">key</tt> can be
+    <tt class="constant">NULL</tt> or <tt class="constant">""</tt>, but value
+    must point to a string. Neither strings can contain newline characters, and
+    <tt class="varident">key</tt> cannot contain tab characters either.</p>
+
+    <p><tt class="funcident">IcsAddHistory</tt> is defined as an alias for this
+    function, for backwards compatability.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_IllParameter</tt>,
+    <tt class="constant">IcsErr_LineOverflow</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsDeleteHistory"></a>IcsDeleteHistory</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetHistory</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">key</span>);
+    </p>
+
+    <p>Delete all history lines with key <tt class="varident">key</tt>. If
+    <tt class="varident">key</tt> is <tt class="constant">NULL</tt> or
+    <tt class="constant">""</tt>, it deletes all the history lines.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    none.</p>
+
+  <h3 class="ident"><a name="IcsDeleteHistoryStringI"></a>IcsDeleteHistoryStringI</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetHistoryStringI</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="typeident">Ics_HistoryIterator</span>*&nbsp;<span class="varident">it</span>);
+    </p>
+
+    <p>Delete the last history lines retrieved through <tt class="varident">it</tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    none.</p>
+
+  <h3 class="ident"><a name="IcsGetHistoryKeyValue"></a>IcsGetHistoryKeyValue</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetHistoryKeyValue</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">key</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">value</span>,
+    <span class="typeident"><a href="Enums.html#Ics_HistoryWhich">Ics_HistoryWhich</a></span>&nbsp;<span class="varident">which</span>);
+    </p>
+
+    <p>Get the history lines from the ICS file. <tt class="varident">key</tt>
+    must have at least <tt class="constant">ICS_STRLEN_TOKEN</tt> characters
+    allocated, and <tt class="varident">value</tt> at least
+    <tt class="constant">ICS_LINE_LENGTH</tt>. <tt class="varident">key</tt>
+    can be <tt class="constant">NULL</tt>, in which case the key will be discarded.
+    The <tt class="varident">which</tt> parameter must be set to
+    <tt class="constant">IcsWhich_First</tt> to read the first string in the buffer,
+    and to <tt class="constant">IcsWhich_Next</tt> in subsequent calls to get the
+    other strings.</p>
+
+    <p><tt class="funcident">IcsGetHistoryKeyValue</tt> shares and internal iterator with
+    <tt class="funcident"><a href="#IcsGetHistoryString">IcsGetHistoryString</a></tt>,
+    and calls
+    <tt class="funcident"><a href="#IcsGetHistoryKeyValueI">IcsGetHistoryKeyValueI</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_EndOfHistory</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetHistoryKeyValueI"></a>IcsGetHistoryKeyValueI</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetHistoryKeyValueI</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="typeident">Ics_HistoryIterator</span>*&nbsp;<span class="varident">it</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">key</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">value</span>);
+    </p>
+
+    <p>Get the history lines from the ICS file. <tt class="varident">key</tt>
+    must have at least <tt class="constant">ICS_STRLEN_TOKEN</tt> characters
+    allocated, and <tt class="varident">value</tt> at least
+    <tt class="constant">ICS_LINE_LENGTH</tt>. <tt class="varident">key</tt>
+    can be <tt class="constant">NULL</tt>, in which case the key will be discarded.
+    The <tt class="varident">it</tt> parameter must point to a
+    <tt class="typeident">Ics_HistoryIterator</tt> structure initialized by
+    <tt class="funcident"><a href="#IcsNewHistoryIterator">IcsNewHistoryIterator</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_EndOfHistory</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetHistoryString"></a>IcsGetHistoryString</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetHistoryString</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">string</span>,
+    <span class="typeident"><a href="Enums.html#Ics_HistoryWhich">Ics_HistoryWhich</a></span>&nbsp;<span class="varident">which</span>);
+    </p>
+
+    <p>Get the history lines from the ICS file. <tt class="varident">string</tt>
+    must have at least <tt class="constant">ICS_LINE_LENGTH</tt> characters allocated.
+    The <tt class="varident">which</tt> parameter must be set to
+    <tt class="constant">IcsWhich_First</tt> to read the first string in the buffer,
+    and to <tt class="constant">IcsWhich_Next</tt> in subsequent calls to get the
+    other strings.</p>
+
+    <p><tt class="funcident">IcsGetHistoryString</tt> shares and internal iterator with
+    <tt class="funcident"><a href="#IcsGetHistoryKeyValue">IcsGetHistoryKeyValue</a></tt>,
+    and calls
+    <tt class="funcident"><a href="#IcsGetHistoryStringI">IcsGetHistoryStringI</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_EndOfHistory</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetHistoryStringI"></a>IcsGetHistoryStringI</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetHistoryStringI</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="typeident">Ics_HistoryIterator</span>*&nbsp;<span class="varident">it</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">string</span>);
+    </p>
+
+    <p>Get the history lines from the ICS file. <tt class="varident">string</tt>
+    must have at least <tt class="constant">ICS_LINE_LENGTH</tt> characters allocated.
+    The <tt class="varident">it</tt> parameter must point to a
+    <tt class="typeident">Ics_HistoryIterator</tt> structure initialized by
+    <tt class="funcident"><a href="#IcsNewHistoryIterator">IcsNewHistoryIterator</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_EndOfHistory</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetNumHistoryStrings"></a>IcsGetNumHistoryStrings</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetNumHistoryStrings</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">int</span>*&nbsp;<span class="varident">num</span>);
+    </p>
+
+    <p>Get the number of history lines from the ICS file. <tt class="varident">num</tt>
+    is the number of times you can call
+    <tt class="funcident"><a href="#IcsGetHistoryString">IcsGetHistoryString</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsNewHistoryIterator"></a>IcsNewHistoryIterator</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsNewHistoryIterator</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="typeident">Ics_HistoryIterator</span>*&nbsp;<span class="varident">it</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">key</span>);
+    </p>
+
+    <p>Initializes a history iterator. <tt class="varident">key</tt>
+    can be <tt class="constant">NULL</tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_EndOfHistory</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsReplaceHistoryStringI"></a>IcsReplaceHistoryStringI</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsReplaceHistoryStringI</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="typeident">Ics_HistoryIterator</span>*&nbsp;<span class="varident">it</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">key</span>,
+    <span class="keyword">char&nbsp;const</span>*&nbsp;<span class="varident">value</span>);
+    </p>
+
+    <p>Replace the last history lines retrieved through <tt class="varident">it</tt>.
+    <tt class="varident">key</tt> can be <tt class="constant">NULL</tt> or
+    <tt class="constant">""</tt>, but value must point to a string. Neither strings
+    can contain newline characters, and <tt class="varident">key</tt> cannot contain
+    tab characters either.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_Alloc</tt>,
+    <tt class="constant">IcsErr_IllParameter</tt>,
+    <tt class="constant">IcsErr_LineOverflow</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+<h2><a name="sensor"></a>Sensor metadata functions</h2>
+
+    <p>The functions below give access to the sensor parameters.
+    For each parameter both a Get and a Set function are provided.
+    The Set functions all perform error checking and insist that the ICS
+    structure is in writing or updating mode.  Please note that
+    <tt class="funcident"><a href="#IcsEnableWriteSensor">IcsEnableWriteSensor</a></tt>
+    must be called to enable writing the sensor parameters to file.
+    To use these functions you need to add
+    <tt class="preprocess">#include "libics_sensor.h"</tt>
+    to your source files.</p>
+
+  <h3 class="ident"><a name="IcsEnableWriteSensor"></a>IcsEnableWriteSensor</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsEnableWriteSensor</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">enable</span>);
+    </p>
+
+    <p>Enable (or disable) writing the sensor parameters to disk.  The second
+    parameter must be non-zero for enable, or zero for disable.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorChannels"></a>IcsGetSensorChannels</h3>
+
+    <p class="synopsis">
+    <span class="keyword">int</span>
+    <span class="funcident">IcsGetSensorChannels</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>);
+    </p>
+
+    <p>Return the number of sensor channels.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorEmissionWavelength"></a>IcsGetSensorEmissionWavelength</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorEmissionWavelength</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return the emission wavelength for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorExcitationWavelength"></a>IcsGetSensorExcitationWavelength</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorExcitationWavelength</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return the excitation wavelength for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorLensRI"></a>IcsGetSensorLensRI</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorLensRI</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>);
+    </p>
+
+    <p>Return the design medium refractive index.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorMediumRI"></a>IcsGetSensorMediumRI</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorMediumRI</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>);
+    </p>
+
+    <p>Return the embedding medium refractive index.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorModel"></a>IcsGetSensorModel</h3>
+
+    <p class="synopsis">
+    <span class="keyword">char&nbsp;const</span>*
+    <span class="funcident">IcsGetSensorModel</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>);
+    </p>
+
+    <p>Return a pointer to the sensor model string.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorNumAperture"></a>IcsGetSensorNumAperture</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorNumAperture</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>);
+    </p>
+
+    <p>Return the sensor numerical apperture.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorPhotonCount"></a>IcsGetSensorPhotonCount</h3>
+
+    <p class="synopsis">
+    <span class="keyword">int</span>
+    <span class="funcident">IcsGetSensorPhotonCount</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return the excitation photon count for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorPinholeRadius"></a>IcsGetSensorPinholeRadius</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorPinholeRadius</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return the pinhole radius for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorPinholeSpacing"></a>IcsGetSensorPinholeSpacing</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorPinholeSpacing</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>);
+    </p>
+
+    <p>Return the Nipkow Disk pinhole spacing.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorSTEDDepletionMode"></a>IcsGetSensorSTEDDepletionMode</h3>
+
+    <p class="synopsis">
+    <span class="keyword">char&nbsp;const</span>*
+    <span class="funcident">IcsGetSensorSTEDDepletionMode</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return a pointer to the STED depletion mode string for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorSTEDImmFraction"></a>IcsGetSensorSTEDImmFraction</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorSTEDImmFraction</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return the STED immunity fraction for a given channel.</p>
+    
+  <h3 class="ident"><a name="IcsGetSensorSTEDLambda"></a>IcsGetSensorSTEDLambda</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorSTEDLambda</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return the STED wavelength for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorSTEDPPMode"></a>IcsGetSensorSTEDPPMode</h3>
+
+    <p class="synopsis">
+    <span class="keyword">char&nbsp;const</span>*
+    <span class="funcident">IcsGetSensorSTEDPPMode</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return a pointer to the STED phase plate mode string for a given channel.</p>
+    
+  <h3 class="ident"><a name="IcsGetSensorSTEDSatFactor"></a>IcsGetSensorSTEDSatFactor</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorSTEDSatFactor</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return the STED saturation factor for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorSTEDVPPM"></a>IcsGetSensorSTEDVPPM</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorSTEDVPPM</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return the STED vortex to phase plate mix for a given channel.</p>
+    
+  <h3 class="ident"><a name="IcsGetSensorDetectorPPU"></a>IcsGetSensorDetectorPPU</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorDetectorPPU</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return photons per unit for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorDetectorBaseline"></a>IcsGetSensorDetectorBaseline</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorDetectorBaseline</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return the baseline for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorDetectorLineAvgCnt"></a>IcsGetSensorDetectorLineAvgCnt</h3>
+
+    <p class="synopsis">
+    <span class="keyword">double</span>
+    <span class="funcident">IcsGetSensorDetectorLineAvgCnt</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return the amount of line averaging for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsGetSensorType"></a>IcsGetSensorType</h3>
+
+    <p class="synopsis">
+    <span class="keyword">char&nbsp;const</span>*
+    <span class="funcident">IcsGetSensorType</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>
+    <span class="keyword">const</span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>);
+    </p>
+
+    <p>Return a pointer to the sensor type string for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorChannels"></a>IcsSetSensorChannels</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorChannels</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channels</span>);
+    </p>
+
+    <p>Set the number of sensor channels.  This number may not exceed
+    <tt class="constant">ICS_MAX_LAMBDA</tt>.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorEmissionWavelength"></a>IcsSetSensorEmissionWavelength</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorEmissionWavelength</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">double</span>
+    <span class="varident">wl</span>);
+    </p>
+
+    <p>Set the emission wavelength for a given channel. The channel index
+    must be less than the number of sensor channels.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorExcitationWavelength"></a>IcsSetSensorExcitationWavelength</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorExcitationWavelength</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">double</span>
+    <span class="varident">wl</span>);
+    </p>
+
+    <p>Set the excitation wavelength for a given channel. The channel index
+    must be less than the number of sensor channels.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorLensRI"></a>IcsSetSensorLensRI</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorLensRI</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">double</span>
+    <span class="varident">ri</span>);
+    </p>
+
+    <p>Set the design medium refractive index.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorMediumRI"></a>IcsSetSensorMediumRI</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorMediumRI</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">double</span>
+    <span class="varident">ri</span>);
+    </p>
+
+    <p>Set the embedding medium refractive index.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorModel"></a>IcsSetSensorModel</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorModel</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">char&nbsp;const</span>*
+    <span class="varident">sensor_model</span>);
+    </p>
+
+    <p>Set the sensor model string.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorNumAperture"></a>IcsSetSensorNumAperture</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorNumAperture</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">double</span>
+    <span class="varident">na</span>);
+    </p>
+
+    <p>Set the sensor numerical apperture.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorPhotonCount"></a>IcsSetSensorPhotonCount</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorPhotonCount</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">int</span>
+    <span class="varident">cnt</span>);
+    </p>
+
+    <p>Set the excitation photon count for a given channel. The channel index
+    must be less than the number of sensor channels.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorPinholeRadius"></a>IcsSetSensorPinholeRadius</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorPinholeRadius</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">double</span>
+    <span class="varident">radius</span>);
+    </p>
+
+    <p>Set the pinhole radius for a given channel.  The channel index
+    must be less than the number of sensor channels.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorPinholeSpacing"></a>IcsSetSensorPinholeSpacing</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorPinholeSpacing</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">double</span>
+    <span class="varident">spacing</span>);
+    </p>
+
+    <p>Set the Nipkow Disk pinhole spacing.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorSTEDDepletionMode"></a>IcsSetSensorSTEDDepletionMode</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorSTEDDepletionMode</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">char&nbsp;const</span>*
+    <span class="varident">depletion_mode</span>);
+    </p>
+
+    <p>Set the STED depletion mode for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorSTEDImmFraction"></a>IcsSetSensorSTEDImmFraction</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorSTEDImmFraction</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">double</span>
+    <span class="varident">fraction</span>);
+    </p>
+
+    <p>Set the STED immunity fraction for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorSTEDLambda"></a>IcsSetSensorSTEDLambda</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorSTEDLambda</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">double</span>
+    <span class="varident">lambda</span>);
+    </p>
+
+    <p>Set the STED wavelength for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorSTEDPPMode"></a>IcsSetSensorSTEDPPMode</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorSTEDPPMode</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">char&nbsp;const</span>*
+    <span class="varident">pp_mode</span>);
+    </p>
+
+    <p>Set the STED phase plate mode for a given channel.</p>
+    
+  <h3 class="ident"><a name="IcsSetSensorSTEDSatFactor"></a>IcsSetSensorSTEDSatFactor</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorSTEDSatFactor</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">double</span>
+    <span class="varident">factor</span>);
+    </p>
+
+    <p>Set the STED saturation factor for a given channel.</p>
+    
+  <h3 class="ident"><a name="IcsSetSensorSTEDVPPM"></a>IcsSetSensorSTEDVPPM</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorSTEDVPPM</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">double</span>
+    <span class="varident">vppm</span>);
+    </p>
+
+    <p>Set the STED vortex to phase plate mix for a given channel.</p>
+
+  <h3 class="ident"><a name="IcsSetSensorDetectorPPU"></a>IcsSetSensorDetectorPPU</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorDetectorPPU</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">double</span>
+    <span class="varident">ppu</span>);
+    </p>
+
+    <p>Set the photons per unit for a given channel.</p>
+    
+  <h3 class="ident"><a name="IcsSetSensorDetectorBaseline"></a>IcsSetSensorDetectorBaseline</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorDetectorBaseline</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">double</span>
+    <span class="varident">baseline</span>);
+    </p>
+
+    <p>Set the baseline for a given channel.</p>
+    
+  <h3 class="ident"><a name="IcsSetSensorDetectorLineAvgCnt"></a>IcsSetSensorDetectorLineAvgCnt</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorDetectorLineAvgCnt</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">double</span>
+    <span class="varident">lineAvgCnt</span>);
+    </p>
+
+    <p>Set the amount of line averaging for a given channel.</p>
+    
+  <h3 class="ident"><a name="IcsSetSensorType"></a>IcsSetSensorType</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>
+    <span class="funcident">IcsSetSensorType</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*
+    <span class="varident">ics</span>,
+    <span class="keyword">int</span>
+    <span class="varident">channel</span>,
+    <span class="keyword">char&nbsp;const</span>*
+    <span class="varident">sensor_type</span>);
+    </p>
+
+    <p>Set the sensor type string for a given channel.</p>
+
+<h2><a name="testing"></a>Testing functions</h2>
+
+    <p>The functions below allow the user to see what is happening inside libics.
+    You need to add <tt class="preprocess">#include "libics_test.h"</tt> to
+    your source files.</p>
+
+  <h3 class="ident"><a name="IcsPrintError"></a>IcsPrintError</h3>
+
+    <p class="synopsis">
+    <span class="keyword">void</span>&nbsp;<span class="funcident">IcsPrintError</span>
+    (<span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="varident">error</span>);
+    </p>
+
+    <p>Prints a textual representation of the error message
+    in <tt class="varident">error</tt> to <tt class="constant">stdout</tt>.
+    Uses <tt class="funcident"><a href="#IcsGetErrorText">IcsGetErrorText</a>
+    </tt> and <tt class="funcident">printf</tt>.</p>
+
+  <h3 class="ident"><a name="IcsPrintIcs"></a>IcsPrintIcs</h3>
+
+    <p class="synopsis">
+    <span class="keyword">void</span>&nbsp;<span class="funcident">IcsPrintIcs</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp;<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>);
+    </p>
+
+    <p>Prints the contents of the
+    <tt class="typeident"><a href="Ics_Header.html">ICS</a></tt>
+    structure in <tt class="varident">ics</tt> to <tt class="constant">stdout</tt>.
+    Uses <em>only</em> <tt class="funcident">printf</tt>.</p>
+
+  </body>
+</html>

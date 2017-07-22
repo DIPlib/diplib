@@ -1,0 +1,11 @@
+	
+ics_version	1.0
+filename	klein
+layout	parameters	4
+layout	order	bits	x	y	z
+layout	sizes	8	160	140	16
+layout	coordinates	video
+layout	significant_bits	8
+representation	format	integer
+representation	sign	unsigned
+representation	SCIL_TYPE	g3d

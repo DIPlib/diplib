@@ -1,0 +1,16 @@
+	
+ics_version	1.0
+filename	testim_c
+layout	parameters	4
+layout	order	bits	x	y	z
+layout	sizes	16	175	105	2
+layout	coordinates	video
+layout	significant_bits	16
+representation	format	integer
+representation	sign	unsigned
+representation	compression	uncompressed
+representation	byte_order	1	2
+parameter	origin	0.000000	0.000000	0.000000	0.000000
+parameter	scale	1.000000	1.000000	1.000000	1.000000
+parameter	units	relative	undefined	undefined	undefined
+parameter	labels	intensity	x-position	y-position	z-position

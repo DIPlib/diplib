@@ -58,6 +58,7 @@ dipimage/opening.cpp
 dipimage/pathopening.cpp
 dipimage/percf.cpp
 dipimage/private/imagedisplay.cpp
+dipimage/private/readics.cpp
 dipimage/reconstruction.cpp
 dipimage/resample.cpp
 dipimage/rotation.cpp

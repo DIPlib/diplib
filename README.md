@@ -87,13 +87,13 @@ DIPlib includes the following libraries / external code:
   see dependencies/eigen3/LICENSE.txt  
   (we do not use any of the components with more restrictive licenses)
 
-- DocTest  
+- DocTest (its use can be disabled)  
   Copyright 2016-2017 Viktor Kirilov  
   The MIT License (MIT)  
   see dependencies/doctest/LICENSE.txt
 
 - The DFT algorithm out of OpenCV 3.1  
-  Copyright 2000, Intel Corporation  
+  Copyright 2000 Intel Corporation  
   Intel License Agreement For Open Source Computer Vision Library  
   see src/transform/opencv_dxt.h
 
@@ -107,10 +107,27 @@ DIPlib includes the following libraries / external code:
   3-Clause BSD License  
   see include/diplib/regions/labelingGranan2016.h
 
-- pybind11 (not used in the DIPlib library, only used in the Python bindings)  
-  Copyright 2016 Wenzel Jakob, All rights reserved  
+- libics (its use can be disabled)  
+  Copyright 2015-2017 Scientific Volume Imaging Holding B.V.  
+  Copyright 2000-2013 Cris Luengo and others  
+  GNU Lesser General Public License, Version 2.1  
+  see dependencies/libics/GNU_LICENSE
+
+- pybind11 (only used in the Python bindings)  
+  Copyright 2016 Wenzel Jakob  
   3-Clause BSD License  
   see dependencies/pybind11/LICENSE
 
 Note that all of these have permissive open-source licenses similar in spirit
 to the Apache License.
+
+DIPlib also optionally links against:
+
+- LibTIFF (as installed on your system)  
+  Copyright 1988-1997 Sam Leffler  
+  Copyright 1991-1997 Silicon Graphics, Inc.  
+  MIT-style license
+
+- ZLib (as installed on your system)  
+  Copyright 1995-2017 Jean-loup Gailly and Mark Adler  
+  MIT-style license

@@ -1,0 +1,240 @@
+/*
+ * Style file for libics documentation. (c)2000-2010 by Cris Luengo.
+ */
+
+html {
+  background-color: #AAA;
+}
+
+body {
+  color: black;
+  background-color: #FFF;
+  max-width: 44em;
+  margin-left: 10em;
+  min-margin-right: 0.5em;
+  margin-top: 0em;
+  margin-bottom: 0em;
+  padding-top: 1em;
+  padding-bottom: 4em;
+  padding-left: 4em;
+  padding-right: 4em;
+  text-indent: 0em;
+  font-family: "Times New Roman", serif;
+  font-size: 100%;
+}
+
+h1, h2 {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+  font-size: 180%;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 1em;
+  padding-top: 1em;
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  background-color: #CCF;
+  border: 1px solid black;
+  color: black;
+}
+
+h1 span.subtitle { /* for title on index.html */
+  font-size: 70%;
+}
+
+h2 {
+  font-size: 150%;
+  font-weight: normal;
+  text-align: center;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  padding: 0.3em;
+  /*border-top: 0.5em solid #DDF;*/
+  /*border-bottom: 0.5em solid #DDF;*/
+  border: 1px solid black;
+  background-color: #CCF;
+}
+
+h3 {
+  font-size: 120%;
+  font-weight: normal;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+  text-align: left;
+  padding: 0.3em;
+  border: 1px solid black;
+  background-color: #EEF;
+}
+
+h3.ident { /* function / variable / constant name */
+  font-family: "Courier New", monospace;
+}
+
+p {
+  margin-top: 0em;
+  margin-bottom: 0.5em;
+  text-align: justify;
+}
+
+p.indented {
+  margin-left: 2em;
+}
+
+p.info { /* for data on functions */
+  text-align: left;
+}
+
+span.headtxt {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 80%;
+  font-weight: normal;
+  text-decoration: underline;
+}
+
+span.download {
+  font-size: 80%;
+}
+
+p.header { /* banner on the top of each page */
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 80%;
+  text-align: right;
+  margin-top: 0em;
+  margin-bottom: 0em;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid black;
+}
+
+::-moz-selection {
+   color: #FFF;
+   background-color: #666680;
+}
+::selection {
+   color: #FFF;
+   background-color: #666680;
+}
+
+:link, :visited {
+  color: #007;
+  text-decoration: underline;
+}
+a:hover {
+  color: black;
+  background-color: #CCF;
+}
+
+ul {
+  margin-left: 2em;
+  margin-top: 0em;
+  margin-bottom: 0.5em;
+  padding: 0em;
+  list-style: inside;
+}
+ul.credits {
+  list-style: none;
+}
+li {
+  margin: 0em;
+  margin-bottom: 0.5em;
+}
+
+/* Navigation bar */
+div.navbar {
+  position: fixed;
+  left: 1em;
+  top: 0em;
+  width: 11em;
+  padding: 0em;
+  margin: 0em;
+  border: none;
+  text-align: center;
+}
+div.navbar ul {
+  margin: 0ex;
+  padding: 0ex;
+  list-style-type: none;
+  list-style-position: outside;
+}
+div.navbar li {
+  margin: 1em 0em;
+  padding: 0ex;
+  background-color: #777;
+}
+div.navbar a {
+  display: block;
+  width: 100%;
+  padding: 1ex 0ex;
+  background-color: #EEE;
+  position: relative;
+  top: -0.5em;
+  left: -0.5em;
+  border: 1px solid black;
+}
+div.navbar a:hover {
+  background-color: #CCF;
+}
+div.navbar a.selected {
+  color: black;
+  text-decoration: none;
+  background-color: #CCF;
+}
+div.navbar ul ul { /* 2nd order menus */
+  background-color: #EEE;
+  margin-bottom: 1ex;
+  border: 1px solid black;
+  border-top: none;
+  position: relative;
+  top: -0.5em;
+  left: -0.5em;
+  width: 100%;
+}
+div.navbar ul ul li {
+  background-color: #CCF;
+  margin: 0ex;
+  font-size: 80%;
+}
+div.navbar ul ul li a {
+  top: 0em;
+  left: 0em;
+  border: none;
+}
+div.navbar ul ul ul { /* 3rd order menus */
+  border: 1px solid black;
+  margin: 0ex 1em;
+  padding 0ex;
+  left: 0em;
+  width: auto;
+}
+div.navbar ul ul ul li {
+  background-color: #EEE;
+  font-size: 100%;
+}
+
+/* formatted code */
+pre, tt, p.synopsis {
+  font-family: "Courier New", monospace;
+  font-size: 90%;
+}
+p.synopsis { /* for function declarations */
+  margin-left: 4em;
+  text-align: left;
+}
+pre {
+  margin-left: 2em;
+  margin-right: 2em;
+  margin-top: 2em;
+  margin-bottom: 2em;
+  text-align: left;
+  padding: 1em;
+  border: 1px solid black;
+  background-color: #EEE;
+}
+.comment { font-style: italic; color: #070; }
+.constant { color: #700; }
+.preprocess { color: #770; }
+.keyword { font-weight: bold; }
+.varident { }
+.funcident { font-style: italic; /*color: #707*/ } /* can't give these colors because of the color of the links - iexplore doesn't do "inherit" for :link. */
+.typeident { font-style: italic; /*color: #007*/ }

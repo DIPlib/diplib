@@ -35,9 +35,8 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid setting
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
-   # Safe Clang compiler and architecture flags across all Intel and AMD processors (circa 2015)
    set(CMAKE_CXX_FLAGS "-Wall -Wconversion -Wsign-conversion")
-   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -mavx2 -msse2 -mfma -mbmi")
+   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wconversion -Wsign-conversion -Wno-attributes") # Wattributes: "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
@@ -80,8 +79,17 @@ if(DIP_ALWAYS_128_PRNG)
    set(FORCE_128_INT TRUE)
    set(HAS_128_INT TRUE)
 else()
-   # We'll display later if we will use 64-bit of 128-bit PRNG.
    check_cxx_source_compiles("int main() { int v = __SIZEOF_INT128__; return 0; }" HAS_128_INT)
+endif()
+
+# Image file format libraries: libics, libtiff
+set(DIP_ENABLE_ICS ON CACHE BOOL "Enable ICS file support")
+if(DIP_ENABLE_ICS)
+   add_subdirectory(dependencies/libics EXCLUDE_FROM_ALL)
+endif()
+find_package(TIFF)
+if (TIFF_FOUND)
+   set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
 endif()
 
 # Utility for automatically updating targets when a file is added to the source directories
@@ -142,12 +150,24 @@ if(DIP_ENABLE_UNICODE)
    target_compile_definitions(DIP PRIVATE DIP__ENABLE_UNICODE)
 endif()
 if(FORCE_128_INT)
-   target_compile_definitions(DIP PUBLIC DIP_ALWAYS_128_PRNG)
+   target_compile_definitions(DIP PUBLIC DIP__ALWAYS_128_PRNG)
 endif()
 # Eigen
 target_include_directories(DIP PRIVATE dependencies/eigen3)
 target_compile_definitions(DIP PRIVATE EIGEN_MPL2_ONLY # This makes sure we only use parts of the Eigen library that use the MPL2 license or more permissive ones.
-        EIGEN_DONT_PARALLELIZE) # This to prevent Eigen algorithms trying to run in parallel -- we parallelize at a larger scale.
+                                       EIGEN_DONT_PARALLELIZE) # This to prevent Eigen algorithms trying to run in parallel -- we parallelize at a larger scale.
+# libics
+if(DIP_ENABLE_ICS)
+   target_include_directories(DIP PRIVATE dependencies/libics)
+   target_link_libraries(DIP libics_static)
+   target_compile_definitions(DIP PRIVATE DIP__HAS_ICS)
+endif()
+# libtiff
+if(DIP_ENABLE_TIFF)
+   target_include_directories(DIP PRIVATE ${TIFF_INCLUDE_DIR})
+   target_link_libraries(DIP ${TIFF_LIBRARIES})
+   target_compile_definitions(DIP PRIVATE DIP__HAS_TIFF)
+endif()
 #install
 install(TARGETS DIP DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
@@ -162,7 +182,7 @@ install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
 
 if(DIP_ENABLE_DOCTEST)
    add_executable (unit_tests EXCLUDE_FROM_ALL test/unit_tests.cpp)
-   target_include_directories(DIP PRIVATE dependencies/doctest)
+   target_include_directories(unit_tests PRIVATE dependencies/doctest)
    target_link_libraries(unit_tests DIP)
    target_compile_definitions(unit_tests PRIVATE DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
    if(DIP_SHARED_LIBRARY)
@@ -230,7 +250,7 @@ endif()
 
 set(DIP_BUILD_PYDIP ON CACHE BOOL "Build the PyDIP Python module")
 if(DIP_BUILD_PYDIP)
-   add_subdirectory(dependencies/pybind11)
+   add_subdirectory(dependencies/pybind11 EXCLUDE_FROM_ALL)
    file(GLOB DIP_PYTHON_SRC pydip/*.cpp pydip/*.h)
    file(GLOB DIP_PYTHON_PY pydip/*.py)
    set(PyDIPdeps "${DIP_PYTHON_SRC}")
@@ -320,7 +340,7 @@ if(DIP_BUILD_DIPIMAGE)
       endif()
       set(DIPIMAGE_PRIVATE_TARGETS ${DIPIMAGE_PRIVATE_TARGETS} MEX_${target})
    endforeach()
-   install(TARGETS ${DIPIMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/private)
+   install(TARGETS ${DIPIMAGE_PRIVATE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/private)
 
    # Compile and install MEX-files in dipimage/
    file(GLOB DIPIMAGE dipimage/*.cpp)
@@ -442,6 +462,17 @@ if(HAS_128_INT)
    message(" * Using 128-bit PRNG")
 else()
    message(" * Using 64-bit PRNG")
+endif()
+
+if(DIP_ENABLE_ICS)
+   message(" * ICS file IO enabled")
+else()
+   message(" * ICS file IO disabled")
+endif()
+if(DIP_ENABLE_TIFF)
+   message(" * TIFF file IO enabled")
+else()
+   message(" * TIFF file IO disabled")
 endif()
 
 if(DIP_ENABLE_DOCTEST)
