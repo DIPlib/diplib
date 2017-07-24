@@ -48,13 +48,19 @@ Important `cmake` command-line arguments:
     -DDIP_EXCEPTIONS_RECORD_STACK_TRACE=Off # to disable stack trace generation on exception
     -DDIP_ENABLE_ASSERT=Off                 # to disable asserts
     -DDIP_ENABLE_DOCTEST=Off                # to disable doctest within DIPlib
+    -DDIP_ENABLE_ICS=Off                     # to disable ICS file format support
+    -DDIP_ENABLE_TIFF=Off                    # to disable TIFF file format support
     -DDIP_ENABLE_UNICODE=Off                # to disable UFT-8 strings within DIPlib
-    -DDIP_ALWAYS_128_PRNG=On                # to use the 128-bit PRNG code even if 128-bit
-                                            # integers are not natively supported by your platform
+    -DDIP_ALWAYS_128_PRNG=On                # to use the 128-bit PRNG code where 128-bit
+                                            #    integers are not natively supported
     -DDIP_BUILD_DIPVIEWER=Off               # to not build/install the DIPviewer module
     -DDIP_BUILD_PYDIP=Off                   # to not build/install the PyDIP Python module
     -DDIP_BUILD_DIPIMAGE=Off                # to not build/install the DIPimage MATLAB toolbox
     -DPYBIND11_PYTHON_VERSION=3             # to compile PyDIP agains Python 3
+
+Some of these options might not be available on your system. For example, if you don't have
+MATLAB installed, the `DIP_BUILD_DIPIMAGE` option will not be defined. Setting it to `Off` will
+yield a warning message when running CMake.
 
 Note that on some platforms, the Python module requires the DIPlib library to build as a dynamic
 load library (`-DDIP_SHARED_LIBRARY=On`, which is the default).

@@ -18,12 +18,12 @@
  * limitations under the License.
  */
 
-#include <libics.h>
+#ifdef DIP__HAS_ICS
+
 #include "diplib.h"
 #include "diplib/file_io.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/library/copy_buffer.h"
-
 #include "libics.h"
 
 namespace dip {
@@ -423,3 +423,34 @@ void ImageWriteICS(
 }
 
 } // namespace dip
+
+#else // DIP__HAS_ICS
+
+#include "diplib.h"
+#include "diplib/file_io.h"
+
+namespace dip {
+
+FileInformation ImageReadICS( Image&, String const&, RangeArray ) {
+   DIP_THROW( E::NOT_IMPLEMENTED );
+}
+
+FileInformation ImageReadICS( Image&, String const&, UnsignedArray const&, UnsignedArray const&, UnsignedArray const& ) {
+   DIP_THROW( E::NOT_IMPLEMENTED );
+}
+
+FileInformation ImageReadICSInfo( String const& ) {
+   DIP_THROW( E::NOT_IMPLEMENTED );
+}
+
+bool ImageIsICS( String const& ) {
+   DIP_THROW( E::NOT_IMPLEMENTED );
+}
+
+void ImageWriteICS( Image const&, String const&, StringArray const&, dip::uint, StringSet const& ) {
+   DIP_THROW( E::NOT_IMPLEMENTED );
+}
+
+}
+
+#endif // DIP__HAS_ICS
