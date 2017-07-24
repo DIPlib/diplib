@@ -134,7 +134,7 @@ FloatArray FindShift_CPF( Image const& in1, Image const& in2, dfloat maxFrequenc
 FloatArray FindShift_MTS( Image const& in1, Image const& in2, dip::uint iterations, dfloat accuracy, dfloat sigma ) {
    dip::uint nDims = in1.Dimensionality();
    FloatArray out( nDims, 0.0 );
-   FloatArray shift( nDims, 0.0 ); 
+   FloatArray shift( nDims, 0.0 );
    FloatArray previousShift( nDims, 0.0 );
    FloatArray previousPreviousShift( nDims, 0.0 );
 

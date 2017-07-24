@@ -233,7 +233,7 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile, FileInformation& fileInformation ) 
       Ics_HistoryIterator it;
       DIP_THROW_IF( IcsNewHistoryIterator( icsFile, &it, 0 ) != IcsErr_Ok, "Couldn't read ICS metadata (IcsNewHistoryIterator failed)");
       char hist[ICS_LINE_LENGTH];
-      for( dip::uint ii = 0; ii < history_lines; ++ii ) {
+      for( dip::uint ii = 0; ii < static_cast< dip::uint >( history_lines ); ++ii ) {
          DIP_THROW_IF( IcsGetHistoryStringI( icsFile, &it, hist ) != IcsErr_Ok, "Couldn't read ICS metadata (IcsGetHistoryStringI failed)");
          fileInformation.history[ ii ] = hist;
       }
@@ -413,11 +413,11 @@ bool ImageIsICS( String const& filename ) {
 }
 
 void ImageWriteICS(
-      Image const& image,
-      String const& filename,
-      StringArray const& history,
-      dip::uint significantBits,
-      StringSet const& options
+      Image const& /*image*/,
+      String const& /*filename*/,
+      StringArray const& /*history*/,
+      dip::uint /*significantBits*/,
+      StringSet const& /*options*/
 ) {
    DIP_THROW( E::NOT_IMPLEMENTED );
 }

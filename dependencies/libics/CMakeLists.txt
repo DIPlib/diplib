@@ -27,6 +27,10 @@ set(CMAKE_C_STANDARD_REQUIRED on)
 set(CMAKE_C_FLAGS "-Wall")
 set(CMAKE_C_FLAGS_RELEASE "-O3 -march=native")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+   # Allowing DIPlib to link against a static libics. Not necessary for Clang
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+endif()
 
 # Debug or Release?
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
