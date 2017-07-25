@@ -80,7 +80,7 @@ constexpr char const* tshapePropertyName = "TensorShape"; // Get tensor shape en
 constexpr char const* pxsizePropertyName = "PixelSize"; // Set/get pixel size array
 constexpr char const* colspPropertyName = "ColorSpace"; // Set/get color space name
 constexpr dip::uint nPxsizeStructFields = 2;
-char const* pxsizeStructFields[nPxsizeStructFields] = { "magnitude", "units" };
+char const* pxsizeStructFields[ nPxsizeStructFields ] = { "magnitude", "units" };
 
 // Make sure that MATLAB stores logical arrays the same way we store binary images
 static_assert( sizeof( mxLogical ) == sizeof( dip::bin ), "mxLogical is not one byte!" );
@@ -223,42 +223,15 @@ inline mxClassID GetMatlabClassID(
    return type;
 }
 
-// Create an mxArray with a string representation of the dip::Tensor::Shape argument
-inline mxArray* CreateTensorShape( enum dip::Tensor::Shape shape ) {
-   switch( shape ) {
-      default:
-      //case dip::Tensor::Shape::COL_VECTOR:
-         return mxCreateString( "column vector" );
-      case dip::Tensor::Shape::ROW_VECTOR:
-         return mxCreateString( "row vector" );
-      case dip::Tensor::Shape::COL_MAJOR_MATRIX:
-         return mxCreateString( "column-major matrix" );
-      case dip::Tensor::Shape::ROW_MAJOR_MATRIX:
-         return mxCreateString( "row-major matrix" );
-      case dip::Tensor::Shape::DIAGONAL_MATRIX:
-         return mxCreateString( "diagonal matrix" );
-      case dip::Tensor::Shape::SYMMETRIC_MATRIX:
-         return mxCreateString( "symmetric matrix" );
-      case dip::Tensor::Shape::UPPTRIANG_MATRIX:
-         return mxCreateString( "upper triangular matrix" );
-      case dip::Tensor::Shape::LOWTRIANG_MATRIX:
-         return mxCreateString( "lower triangular matrix" );
-   }
-}
-
 // Get the dip::Tensor::Shape value from a string mxArray
 inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
-   char str[25];
+   char str[ 25 ];
    if( mxGetString( mx, str, 25 ) == 0 ) {
-      if( std::strcmp( str, "column vector" ) == 0 ) { return dip::Tensor::Shape::COL_VECTOR; }
-      else if( std::strcmp( str, "row vector" ) == 0 ) { return dip::Tensor::Shape::ROW_VECTOR; }
-      else if( std::strcmp( str, "column-major matrix" ) == 0 ) { return dip::Tensor::Shape::COL_MAJOR_MATRIX; }
-      else if( std::strcmp( str, "row-major matrix" ) == 0 ) { return dip::Tensor::Shape::ROW_MAJOR_MATRIX; }
-      else if( std::strcmp( str, "diagonal matrix" ) == 0 ) { return dip::Tensor::Shape::DIAGONAL_MATRIX; }
-      else if( std::strcmp( str, "symmetric matrix" ) == 0 ) { return dip::Tensor::Shape::SYMMETRIC_MATRIX; }
-      else if( std::strcmp( str, "upper triangular matrix" ) == 0 ) { return dip::Tensor::Shape::UPPTRIANG_MATRIX; }
-      else if( std::strcmp( str, "lower triangular matrix" ) == 0 ) { return dip::Tensor::Shape::LOWTRIANG_MATRIX; }
-      else { DIP_THROW( dip::String{ "TensorShape string not recognized: " } + dip::String{ str } ); }
+      try {
+         return dip::Tensor::ShapeFromString( str );
+      } catch( dip::Error& ) {
+         DIP_THROW( dip::String{ "TensorShape string not recognized: " } + dip::String{ str } );
+      }
    }
    DIP_THROW( "TensorShape property returned wrong data!" );
 }
@@ -708,6 +681,15 @@ inline mxArray* GetArray( dip::String const& in ) {
    return mxCreateString( in.c_str() );
 }
 
+/// \brief Convert a string array from `dip::StringArray` to `mxArray` by copy.
+inline mxArray* GetArray( dip::StringArray const& in ) {
+   mxArray* mx = mxCreateCellMatrix( 1, in.size() );
+   for( dip::uint ii = 0; ii < in.size(); ++ii ) {
+      mxSetCell( mx, ii, GetArray( in[ ii ] ));
+   }
+   return mx;
+}
+
 /// \brief Convert a UTF-8 encoded string from `dip::String` to `mxArray` by copy.
 inline mxArray* GetArrayUnicode( dip::String const& in ) {
 #ifdef DIP__ENABLE_UNICODE
@@ -722,6 +704,7 @@ inline mxArray* GetArrayUnicode( dip::String const& in ) {
 #endif
 }
 
+/// \brief Convert a sample from `dip::Image::Sample` to `mxArray` by copy.
 inline mxArray* GetArray( dip::Image::Sample const& in ) {
    if( in.DataType().IsBinary() ) { // logical array
       return GetArray( dip::detail::CastSample< bool >( in.DataType(), in.Origin() ));
@@ -732,6 +715,7 @@ inline mxArray* GetArray( dip::Image::Sample const& in ) {
    }
 }
 
+/// \brief Convert a set of samples from `dip::Image::Pixel` to `mxArray` by copy.
 inline mxArray* GetArray( dip::Image::Pixel const& in ) {
    mxArray* out;
    if( in.DataType().IsBinary() ) { // logical array
@@ -750,6 +734,16 @@ inline mxArray* GetArray( dip::Image::Pixel const& in ) {
       map = in; // copy samples over
    }
    return out;
+}
+
+/// \brief Convert a pixel size structure `dip::PixelSize` to `mxArray` by copy.
+inline mxArray* GetArray( dip::PixelSize const& pixelSize ) {
+   mxArray* pxsz = mxCreateStructMatrix( pixelSize.Size(), 1, nPxsizeStructFields, pxsizeStructFields );
+   for( dip::uint ii = 0; ii < pixelSize.Size(); ++ii ) {
+      mxSetField( pxsz, ii, pxsizeStructFields[ 0 ], dml::GetArray( pixelSize[ ii ].magnitude ));
+      mxSetField( pxsz, ii, pxsizeStructFields[ 1 ], dml::GetArrayUnicode( pixelSize[ ii ].units.String()));
+   }
+   return pxsz;
 }
 
 // TODO: GetArray( dip::Distribution const& in) (when we define it)
@@ -775,8 +769,8 @@ inline mxArray* GetArray( dip::Image::Pixel const& in ) {
 /// To return those images back to *MATLAB*, use the GetArray() method, which returns
 /// the `mxArray` created when the image was forged:
 /// ```cpp
-///     plhs[0] = mi.GetArray( img_out0 );
-///     plhs[1] = mi.GetArray( img_out1 );
+///     plhs[ 0 ] = mi.GetArray( img_out0 );
+///     plhs[ 1 ] = mi.GetArray( img_out1 );
 /// ```
 ///
 /// If you don't use the GetArray() method, the `mxArray` that contains
@@ -934,7 +928,7 @@ class MatlabInterface : public dip::ExternalInterface {
                   break;
                case dip::Tensor::Shape::ROW_MAJOR_MATRIX:
                   // requires property to be set twice
-                  tshape = detail::CreateTensorShape( img.TensorShape() );
+                  tshape = mxCreateString( img.Tensor().TensorShapeAsString().c_str() );
                   mxSetPropertyShared( out, 0, tshapePropertyName, tshape );
                   tshape = CreateDouble2Vector( static_cast< dip::dfloat >( img.TensorRows() ), static_cast< dip::dfloat >( img.TensorColumns() ));
                   break;
@@ -942,7 +936,7 @@ class MatlabInterface : public dip::ExternalInterface {
                case dip::Tensor::Shape::SYMMETRIC_MATRIX:
                case dip::Tensor::Shape::UPPTRIANG_MATRIX:
                case dip::Tensor::Shape::LOWTRIANG_MATRIX:
-                  tshape = detail::CreateTensorShape( img.TensorShape() );
+                  tshape = mxCreateString( img.Tensor().TensorShapeAsString().c_str() );
                   break;
             }
             mxSetPropertyShared( out, 0, tshapePropertyName, tshape );
@@ -950,11 +944,7 @@ class MatlabInterface : public dip::ExternalInterface {
          // Set PixelSize property
          if( img.HasPixelSize() ) {
             dip::PixelSize const& pixelSize = img.PixelSize();
-            mxArray* pxsz = mxCreateStructMatrix( pixelSize.Size(), 1, nPxsizeStructFields, pxsizeStructFields );
-            for( dip::uint ii = 0; ii < pixelSize.Size(); ++ii ) {
-               mxSetField( pxsz, ii, pxsizeStructFields[ 0 ], dml::GetArray( pixelSize[ ii ].magnitude ));
-               mxSetField( pxsz, ii, pxsizeStructFields[ 1 ], dml::GetArrayUnicode( pixelSize[ ii ].units.String() ));
-            }
+            mxArray* pxsz = dml::GetArray( pixelSize );
             mxSetPropertyShared( out, 0, pxsizePropertyName, pxsz );
          }
          // Set ColorSpace property

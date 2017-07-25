@@ -128,8 +128,12 @@ class DIP_NO_EXPORT Tensor {
          SetMatrix( rows, cols );
       }
       /// Constructor for arbitrary shape.
-      Tensor( enum Shape shape, dip::uint rows, dip::uint cols ) {
+      Tensor( Shape shape, dip::uint rows, dip::uint cols ) {
          SetShape( shape, rows, cols );
+      }
+      /// Constructor for arbitrary shape.
+      Tensor( String const& shape, dip::uint rows, dip::uint cols ) {
+         SetShape( ShapeFromString( shape ), rows, cols );
       }
 
       /// Tests the tensor shape.
@@ -171,7 +175,7 @@ class DIP_NO_EXPORT Tensor {
          DIP_THROW( "Unknown tensor shape" );
       }
       /// Returns tensor shape.
-      enum Shape TensorShape() const {
+      Shape TensorShape() const {
          return shape_;
       }
       /// Gets number of tensor elements.
@@ -225,7 +229,7 @@ class DIP_NO_EXPORT Tensor {
       }
 
       /// Sets the tensor shape.
-      void SetShape( enum Shape shape, dip::uint rows, dip::uint cols ) {
+      void SetShape( Shape shape, dip::uint rows, dip::uint cols ) {
          shape_ = shape;
          DIP_THROW_IF( rows == 0, "Number of rows must be non-zero" );
          DIP_THROW_IF( cols == 0, "Number of columns must be non-zero" );
@@ -584,9 +588,55 @@ class DIP_NO_EXPORT Tensor {
          swap( rows_, other.rows_ );
       }
 
+      /// Return a string representation of the tensor shape
+      String TensorShapeAsString() const {
+         switch( shape_ ) {
+            default:
+               //case Shape::COL_VECTOR:
+               return "column vector";
+            case Shape::ROW_VECTOR:
+               return "row vector";
+            case Shape::COL_MAJOR_MATRIX:
+               return "column-major matrix";
+            case Shape::ROW_MAJOR_MATRIX:
+               return "row-major matrix";
+            case Shape::DIAGONAL_MATRIX:
+               return "diagonal matrix";
+            case Shape::SYMMETRIC_MATRIX:
+               return "symmetric matrix";
+            case Shape::UPPTRIANG_MATRIX:
+               return "upper triangular matrix";
+            case Shape::LOWTRIANG_MATRIX:
+               return "lower triangular matrix";
+         }
+      }
+
+      /// Retrieve a tensor shape from a string representation of the tensor shape
+      static Shape ShapeFromString( String const& string ) {
+         if( string == "column vector" ) {
+            return dip::Tensor::Shape::COL_VECTOR;
+         } else if( string == "row vector" ) {
+            return dip::Tensor::Shape::ROW_VECTOR;
+         } else if( string == "column-major matrix" ) {
+            return dip::Tensor::Shape::COL_MAJOR_MATRIX;
+         } else if( string == "row-major matrix" ) {
+            return dip::Tensor::Shape::ROW_MAJOR_MATRIX;
+         } else if( string == "diagonal matrix" ) {
+            return dip::Tensor::Shape::DIAGONAL_MATRIX;
+         } else if( string == "symmetric matrix" ) {
+            return dip::Tensor::Shape::SYMMETRIC_MATRIX;
+         } else if( string == "upper triangular matrix" ) {
+            return dip::Tensor::Shape::UPPTRIANG_MATRIX;
+         } else if( string == "lower triangular matrix" ) {
+            return dip::Tensor::Shape::LOWTRIANG_MATRIX;
+         } else {
+            DIP_THROW( String{ "TensorShape string not recognized: " } + string );
+         }
+      }
+
    private:
 
-      enum Shape shape_ = Shape::COL_VECTOR;
+      Shape shape_ = Shape::COL_VECTOR;
       dip::uint elements_ = 1;
       dip::uint rows_ = 1;
 
@@ -615,18 +665,7 @@ inline std::ostream& operator<<(
    if( tensor.IsScalar() ) {
       os << "scalar, 1 element";
    } else {
-      os << tensor.Rows() << "x" << tensor.Columns() << " ";
-      switch( tensor.TensorShape() ) {
-         case Tensor::Shape::COL_VECTOR:       os << "column vector";           break;
-         case Tensor::Shape::ROW_VECTOR:       os << "row vector";              break;
-         case Tensor::Shape::COL_MAJOR_MATRIX: os << "column-major matrix";     break;
-         case Tensor::Shape::ROW_MAJOR_MATRIX: os << "row-major matrix";        break;
-         case Tensor::Shape::DIAGONAL_MATRIX:  os << "diagonal matrix";         break;
-         case Tensor::Shape::SYMMETRIC_MATRIX: os << "symmetric matrix";        break;
-         case Tensor::Shape::UPPTRIANG_MATRIX: os << "upper triangular matrix"; break;
-         case Tensor::Shape::LOWTRIANG_MATRIX: os << "lower triangular matrix"; break;
-      }
-      os << ", " << tensor.Elements() << " elements";
+      os << tensor.Rows() << "x" << tensor.Columns() << " " << tensor.TensorShapeAsString() << ", " << tensor.Elements() << " elements";
    }
    return os;
 }
