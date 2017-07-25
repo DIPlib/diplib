@@ -1306,6 +1306,8 @@ classdef dip_image
                in = insertPixelSizeElement(in,dim-2,defaultPixelSize);
             end
          end
+         in.TensorShapeInternal = 'column vector';
+         in.TensorSizeInternal = [1,1];
       end
 
       function in = spatialtotensor(in,dim)
@@ -1345,6 +1347,8 @@ classdef dip_image
             in.NDims = nd - 1;
             in = removePixelSizeElement(in,dim-2);
          end
+         in.TensorShapeInternal = 'column vector';
+         in.TensorSizeInternal = [size(in.Data,2),1];
       end
 
       function in = expanddim(in,dims)

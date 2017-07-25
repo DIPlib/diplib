@@ -65,3 +65,5 @@ else
    out = dip_image(varargin);
    out = colorspace(out,col);
 end
+
+% TODO: add tensor elements if required for the color space (how to know?)

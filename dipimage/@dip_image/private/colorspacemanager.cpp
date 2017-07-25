@@ -27,6 +27,8 @@
  * col = color space name
  */
 
+// TODO: Add ability to query color space (e.g. get number of required tensor elements)
+
 #undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
 #include "diplib/color.h"
@@ -61,7 +63,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       if( !in.IsColor() && in.TensorElements() > 1 ) {
          // Set the color space, if correct number of tensor elements
          DIP_THROW_IF( csm->NumberOfChannels( col ) != in.TensorElements(), dip::E::INCONSISTENT_COLORSPACE );
-         plhs[ 0 ] = mxCreateSharedDataCopy( prhs[ 0 ] );
+         plhs[ 0 ] = mxCreateSharedDataCopy( prhs[ 0 ] ); // TODO: This is broken, we're changing the input also!
          mxSetPropertyShared( plhs[ 0 ], 0, dml::colspPropertyName, dml::GetArray( csm->CanonicalName( col )));
       } else {
          // Convert the color space
