@@ -24,7 +24,14 @@
 #include "diplib/file_io.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/library/copy_buffer.h"
+
 #include "libics.h"
+
+// TODO: Use IcsGetErrorText() to get more informative error messages for the user.
+// TODO: Reorder dimensions when reading, to match standard x,y,z,t order.
+// TODO: When reading, check to see if image's strides match those in the file.
+// TODO: Option "fast" to reorder dimensions when reading, to read without strides.
+// TODO: Option "fast" to reorder dimensions when writing, to write without strides.
 
 namespace dip {
 
@@ -39,8 +46,8 @@ dip::uint FindTensorDimension(
    colorSpace = "";
    dip::uint tensorDim;
    for( tensorDim = 0; tensorDim < nDims; ++tensorDim ) {
-      char order[ ICS_STRLEN_TOKEN ];
-      DIP_THROW_IF( IcsGetOrder( ics, static_cast< int >( tensorDim ), order, 0 ) != IcsErr_Ok,
+      char const* order;
+      DIP_THROW_IF( IcsGetOrderF( ics, static_cast< int >( tensorDim ), &order, 0 ) != IcsErr_Ok,
                     "IcsGetOrder() failed: couldn't read ICS file" );
       if( strcasecmp( order, "RGB" ) == 0 ) {
          colorSpace = "RGB";
@@ -161,14 +168,14 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile, FileInformation& fileInformation ) 
    fileInformation.sizes.resize( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       fileInformation.sizes[ ii ] = icsSizes[ ii ];
-   } // TODO: reorder based on "order" strings
+   }
 
    // get pixel size
    fileInformation.pixelSize.Resize( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       double scale;
-      char units[1024];
-      DIP_THROW_IF( IcsGetPosition( icsFile, static_cast< int >( ii ), nullptr, &scale, units ) != IcsErr_Ok,
+      char const* units;
+      DIP_THROW_IF( IcsGetPositionF( icsFile, static_cast< int >( ii ), nullptr, &scale, &units ) != IcsErr_Ok,
                     "Couldn't read ICS file (IcsGetPosition failed)" );
       try {
          Units u( units );
@@ -232,9 +239,9 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile, FileInformation& fileInformation ) 
    if (history_lines>0) {
       Ics_HistoryIterator it;
       DIP_THROW_IF( IcsNewHistoryIterator( icsFile, &it, 0 ) != IcsErr_Ok, "Couldn't read ICS metadata (IcsNewHistoryIterator failed)");
-      char hist[ICS_LINE_LENGTH];
+      char const* hist;
       for( dip::uint ii = 0; ii < static_cast< dip::uint >( history_lines ); ++ii ) {
-         DIP_THROW_IF( IcsGetHistoryStringI( icsFile, &it, hist ) != IcsErr_Ok, "Couldn't read ICS metadata (IcsGetHistoryStringI failed)");
+         DIP_THROW_IF( IcsGetHistoryStringIF( icsFile, &it, &hist ) != IcsErr_Ok, "Couldn't read ICS metadata (IcsGetHistoryStringI failed)");
          fileInformation.history[ ii ] = hist;
       }
    }
@@ -248,7 +255,8 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile, FileInformation& fileInformation ) 
 FileInformation ImageReadICS(
       Image& out,
       String const& filename,
-      RangeArray roi
+      RangeArray roi,
+      Range channels
 ) {
    // open the ICS file
    IcsFile icsFile( filename, "r" );
@@ -262,6 +270,7 @@ FileInformation ImageReadICS(
 
    // check & fix ROI information
    UnsignedArray outSizes( nDims );
+   dip::uint outTensor;
    BooleanArray mirror( nDims, false );
    DIP_START_STACK_TRACE
       ArrayUseParameter( roi, nDims, Range{} );
@@ -273,21 +282,57 @@ FileInformation ImageReadICS(
          }
          outSizes[ ii ] = roi[ ii ].Size();
       }
+      channels.Fix( fileInformation.tensorElements );
+      if( channels.start > channels.stop ) {
+         std::swap( channels.start, channels.stop );
+         // We don't read the tensor dimension in reverse order
+      }
+      outTensor = channels.Size();
    DIP_END_STACK_TRACE
 
    // forge the image
-   out.ReForge( outSizes, fileInformation.tensorElements, fileInformation.dataType );
-   out.SetColorSpace( fileInformation.colorSpace );
+   out.ReForge( outSizes, outTensor, fileInformation.dataType );
+   if( outTensor == fileInformation.tensorElements ) {
+      out.SetColorSpace( fileInformation.colorSpace );
+   }
    out.SetPixelSize( fileInformation.pixelSize );
+
+   // get tensor shape if necessary
+   if(( outTensor > 1 ) && ( outTensor == fileInformation.tensorElements )) {
+      Ics_HistoryIterator it;
+      Ics_Error e = IcsNewHistoryIterator( icsFile, &it, "tensor" );
+      if( e == IcsErr_Ok ) {
+         char line[ ICS_LINE_LENGTH ];
+         e = IcsGetHistoryKeyValueI( icsFile, &it, nullptr, line );
+         if( e == IcsErr_Ok ) {
+            // parse `value`
+            char* ptr = std::strtok( line, "\t" );
+            if( ptr != nullptr ) {
+               char* shape = ptr;
+               ptr = std::strtok( nullptr, "\t" );
+               if( ptr != nullptr ) {
+                  dip::uint rows = std::stoul( ptr );
+                  ptr = std::strtok( nullptr, "\t" );
+                  if( ptr != nullptr ) {
+                     dip::uint columns = std::stoul( ptr );
+                     try {
+                        out.ReshapeTensor( Tensor{ shape, rows, columns } );
+                     } catch ( Error const& ) {
+                        // Let this error slip, we don't really care
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
 
    // make a quick copy and place the tensor dimension back where it was
    Image outRef = out.QuickCopy();
    if( fileInformation.tensorElements > 1 ) {
       outRef.TensorToSpatial( data.tensorDim );
-      Range tensorRange{};
-      tensorRange.Fix( fileInformation.tensorElements );
-      roi.insert( data.tensorDim, tensorRange );
-      sizes.insert( data.tensorDim, fileInformation.tensorElements );
+      roi.insert( data.tensorDim, channels );
+      sizes.insert( data.tensorDim, outTensor );
       ++nDims;
    }
    
@@ -413,13 +458,136 @@ bool ImageIsICS( String const& filename ) {
 }
 
 void ImageWriteICS(
-      Image const& /*image*/,
-      String const& /*filename*/,
-      StringArray const& /*history*/,
-      dip::uint /*significantBits*/,
-      StringSet const& /*options*/
+      Image const& c_image,
+      String const& filename,
+      StringArray const& history,
+      dip::uint significantBits,
+      StringSet const& options
 ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   // parse options
+   bool oldStyle = false; // true if v1
+   bool compress = true;
+   for( auto& option : options ) {
+      if( option == "v1" ) {
+         oldStyle = true;
+      } else if( option == "v2" ) {
+         oldStyle = false;
+      } else if( option == "uncompressed" ) {
+         compress = false;
+      } else if( option == "gzip" ) {
+         compress = true;
+      } else {
+         DIP_THROW_INVALID_FLAG( option );
+      }
+   }
+
+   // open the ICS file
+   IcsFile icsFile( filename, oldStyle ? "w1" : "w2" );
+
+   // set info on image
+   Ics_DataType dt;
+   dip::uint maxSignificantBits;
+   switch( c_image.DataType()) {
+      case DT_BIN:      dt = Ics_uint8;     maxSignificantBits = 1;  break;
+      case DT_UINT8:    dt = Ics_uint8;     maxSignificantBits = 8;  break;
+      case DT_UINT16:   dt = Ics_uint16;    maxSignificantBits = 16; break;
+      case DT_UINT32:   dt = Ics_uint32;    maxSignificantBits = 32; break;
+      case DT_SINT8:    dt = Ics_sint8;     maxSignificantBits = 8;  break;
+      case DT_SINT16:   dt = Ics_sint16;    maxSignificantBits = 16; break;
+      case DT_SINT32:   dt = Ics_sint32;    maxSignificantBits = 32; break;
+      case DT_SFLOAT:   dt = Ics_real32;    maxSignificantBits = 32; break;
+      case DT_DFLOAT:   dt = Ics_real64;    maxSignificantBits = 64; break;
+      case DT_SCOMPLEX: dt = Ics_complex32; maxSignificantBits = 32; break;
+      case DT_DCOMPLEX: dt = Ics_complex64; maxSignificantBits = 64; break;
+      default:
+         DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED ); // Should not happen
+   }
+   if( significantBits == 0 ) {
+      significantBits = maxSignificantBits;
+   } else {
+      significantBits = std::min( significantBits, maxSignificantBits );
+   }
+   Image image = c_image.QuickCopy();
+   bool isTensor = false;
+   if( image.TensorElements() > 1 ) {
+      isTensor = true;
+      image.TensorToSpatial(); // last dimension
+   }
+   int nDims = static_cast< int >( image.Dimensionality() );
+   DIP_THROW_IF( IcsSetLayout( icsFile, dt, nDims, image.Sizes().data() ) != IcsErr_Ok,
+                 "Couldn't write to ICS file (IcsSetLayout failed)" );
+   DIP_THROW_IF( IcsSetSignificantBits( icsFile, significantBits ) != IcsErr_Ok, "Couldn't write to ICS file (IcsSetSignificantBits failed)" );
+   if( c_image.IsColor() ) {
+      DIP_THROW_IF( IcsSetOrder( icsFile, nDims - 1, c_image.ColorSpace().c_str(), 0 ) != IcsErr_Ok,
+                    "Couldn't write to ICS file (IcsSetOrder failed)" );
+   } else if( isTensor ) {
+      DIP_THROW_IF( IcsSetOrder( icsFile, nDims - 1, "tensor", 0 ) != IcsErr_Ok,
+                    "Couldn't write to ICS file (IcsSetOrder failed)" );
+   }
+   if( c_image.HasPixelSize() ) {
+      if( isTensor ) { nDims--; }
+      for( int ii = 0; ii < nDims; ii++ ) {
+         auto pixelSize = c_image.PixelSize( static_cast< dip::uint >( ii ));
+         DIP_THROW_IF( IcsSetPosition( icsFile, ii, 0.0, pixelSize.magnitude, pixelSize.units.String().c_str() ) != IcsErr_Ok,
+                       "Couldn't write to ICS file (IcsSetPosition failed)" );
+      }
+      if( isTensor ) {
+         DIP_THROW_IF( IcsSetPosition( icsFile, nDims, 0.0, 1.0, nullptr ) != IcsErr_Ok,
+                       "Couldn't write to ICS file (IcsSetPosition failed)" );
+      }
+   }
+   if( isTensor ) {
+      String tensorShape = c_image.Tensor().TensorShapeAsString() + "\t" +
+                           std::to_string( c_image.Tensor().Rows() ) + "\t" +
+                           std::to_string( c_image.Tensor().Columns() );
+      DIP_THROW_IF( IcsAddHistory( icsFile, "tensor", tensorShape.c_str() ) != IcsErr_Ok,
+                    "Couldn't write to ICS file (IcsAddHistory() failed)" );
+   }
+
+   // set type of compression
+   DIP_THROW_IF( IcsSetCompression( icsFile, compress ? IcsCompr_gzip : IcsCompr_uncompressed, 9 ) != IcsErr_Ok,
+                 "Couldn't write to ICS file (IcsSetCompression failed)" );
+
+   // set the image data
+   bool hasPositiveStrides = false;
+   if( !image.HasNormalStrides() ) {
+      hasPositiveStrides = true;
+      for( auto stride : image.Strides()) {
+         if( stride <= 0 ) {
+            hasPositiveStrides = false;
+            break;
+         }
+      }
+   }
+   if( hasPositiveStrides ) {
+      // has non-normal strides, but they are all positive: we can write data as-is
+      UnsignedArray strides{ image.Strides() };
+      DIP_THROW_IF( IcsSetDataWithStrides( icsFile, image.Origin(), image.NumberOfPixels() * image.DataType().SizeOf(),
+                                           strides.data(), static_cast< int >( strides.size() )) != IcsErr_Ok,
+                    "Couldn't write to ICS file (IcsSetDataWithStrides failed)" );
+   } else {
+      // has either normal strides, or some negative stride
+      image.ForceNormalStrides();
+      DIP_THROW_IF( IcsSetData( icsFile, image.Origin(), image.NumberOfPixels() * image.DataType().SizeOf() ) != IcsErr_Ok,
+                    "Couldn't write to ICS file (IcsSetData failed)" );
+   }
+
+   // tag the data
+   DIP_THROW_IF( IcsAddHistory( icsFile, "software", "DIPlib" ) != IcsErr_Ok,
+                 "Couldn't write to ICS file (IcsAddHistory() failed)" );
+
+   // write history lines
+   for( auto const& line : history ) {
+      auto error = IcsAddHistory( icsFile, 0, line.c_str() );
+      if(( error == IcsErr_LineOverflow ) || // history line is too long
+         ( error == IcsErr_IllParameter )) { // history line contains illegal characters
+         // Ignore these errors, the history line will not be written.
+      }
+      DIP_THROW_IF( error != IcsErr_Ok, "Couldn't write to ICS file (IcsAddHistory() failed)" );
+   }
+
+   // write everything to file by closing it
+   icsFile.Close();
 }
 
 } // namespace dip

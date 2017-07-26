@@ -49,6 +49,33 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::FileInformation fileInformation = dip::ImageReadICS( out, filename, origin, sizes, spacing );
 
       plhs[ 0 ] = mi.GetArray( out );
+      if( nlhs > 1 ) {
+         constexpr int nFields = 10;
+         char const* fieldNames[ nFields ] = {
+               "name",
+               "fileType",
+               "dataType",
+               "significantBits",
+               "sizes",
+               "tensorElements",
+               "colorSpace",
+               "pixelSize",
+               "numberOfImages",
+               "history"
+         };
+         mwSize dims[ 2 ] = { 1, 1 };
+         plhs[ 1 ] = mxCreateStructArray( 2, dims, nFields, fieldNames );
+         mxSetField( plhs[ 1 ], 0, fieldNames[ 0 ], dml::GetArray( fileInformation.name ));
+         mxSetField( plhs[ 1 ], 0, fieldNames[ 1 ], dml::GetArray( fileInformation.fileType ));
+         mxSetField( plhs[ 1 ], 0, fieldNames[ 2 ], dml::GetArray( dip::String{ fileInformation.dataType.Name() } ));
+         mxSetField( plhs[ 1 ], 0, fieldNames[ 3 ], dml::GetArray( fileInformation.significantBits ));
+         mxSetField( plhs[ 1 ], 0, fieldNames[ 4 ], dml::GetArray( fileInformation.sizes ));
+         mxSetField( plhs[ 1 ], 0, fieldNames[ 5 ], dml::GetArray( fileInformation.tensorElements ));
+         mxSetField( plhs[ 1 ], 0, fieldNames[ 6 ], dml::GetArray( fileInformation.colorSpace ));
+         mxSetField( plhs[ 1 ], 0, fieldNames[ 7 ], dml::GetArray( fileInformation.pixelSize ));
+         mxSetField( plhs[ 1 ], 0, fieldNames[ 8 ], dml::GetArray( fileInformation.numberOfImages ));
+         mxSetField( plhs[ 1 ], 0, fieldNames[ 9 ], dml::GetArray( fileInformation.history ));
+      }
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

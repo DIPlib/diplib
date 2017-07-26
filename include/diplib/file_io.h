@@ -60,18 +60,19 @@ struct FileInformation {
 /// are not included in the `roi` parameter.
 ///
 /// Information about the file and all metadata is returned in the `FileInformation` output argument.
-// TODO: allow to read in only one tensor element (color channel, etc)?
 DIP_EXPORT FileInformation ImageReadICS(
       Image& out,
       String const& filename,
-      RangeArray roi = {}
+      RangeArray roi = {},
+      Range channels = {}
 );
 inline Image ImageReadICS(
       String const& filename,
-      RangeArray const& roi = {}
+      RangeArray const& roi = {},
+      Range channels = {}
 ) {
    Image out;
-   ImageReadICS( out, filename, roi );
+   ImageReadICS( out, filename, roi, channels );
    return out;
 }
 
@@ -134,11 +135,11 @@ DIP_EXPORT bool ImageIsICS( String const& filename );
 ///    these two pieces into a single '.ics' file. `"v2"` is the default.
 ///  = '"uncompressed"` or '"gzip"`: Determine whether to compress the pixel data or not. `"gzip"` is the default.
 DIP_EXPORT void ImageWriteICS(
-      Image const& image,
+      Image const& c_image,
       String const& filename,
-      StringArray const& history,
-      dip::uint significantBits,
-      StringSet const& options
+      StringArray const& history = {},
+      dip::uint significantBits = 0,
+      StringSet const& options = {}
 );
 
 

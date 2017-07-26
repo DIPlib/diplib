@@ -58,7 +58,7 @@ dipimage/opening.cpp
 dipimage/pathopening.cpp
 dipimage/percf.cpp
 dipimage/private/imagedisplay.cpp
-dipimage/private/readics.cpp
+dipimage/readics.cpp
 dipimage/reconstruction.cpp
 dipimage/resample.cpp
 dipimage/rotation.cpp
@@ -73,4 +73,5 @@ dipimage/unif.cpp
 dipimage/varif.cpp
 dipimage/waterseed.cpp
 dipimage/watershed.cpp
+dipimage/writeics.cpp
 )
