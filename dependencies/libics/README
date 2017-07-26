@@ -40,9 +40,8 @@ The libics library is currently maintained by Scientific Volume Imaging
 libics@svi.nl
 
    Documentation
-===================
-
-Online documentation can be found at: https://svi-opensource.github.io/libics
+==============================
+   Online documentation can be found at: https://svi-opensource.github.io/libics
 
    Installation Instructions
 ===============================
@@ -51,28 +50,75 @@ Obtain the source distribution from
    https://github.com/svi-opensource/libics
 It is recommended you also install zlib (http://www.zlib.org).
 
- - Compilation under UNIX / Linux / MacOS / Cygwin
+ - Compilation under UNIX / Linux / Mac OS X / Cygwin
 
-Run the following commands from any directory that is not the source directory:
-   cmake <path/to/sources>
+Run the following commands from the source directory:
+   ./configure
    make
-   make test
    make install
-
-The USE_ZLIB variable can be set to OFF to not include zlib, though it is automatically
-excluded if it cannot be found on your system:
-   cmake <path/to/sources> -DUSE_ZLIB=OFF
-
-The file `libics_conf.h` contains some additional options to configure.
+Read the INSTALL file for more information.
 
 The library can be tested for problems using
    make check
 
- - Compilation under Windows
+ - Compilation under Windows with Borland C++
 
-Use the command-line to run CMake (as above), or use the CMake GUI. This
-will create an .sln file that you can open in Visual Studio. Build the
-solution.
+Edit the paths defined at the beginning of Makefile.bcc, then type
+   make -f Makefile.bcc
+from a command prompt in the source directory. This will create a file
+libics.lib in the same directory. To build a dynamic library (DLL), type
+   make -f Makefile.bcc dynamic
+The dynamic library libics.dll has an import library named
+libics.dll.lib. To make a debug version add '-DDEBUG' to these commands.
+To disable zlib support, remove the definition of ZLIB_SUPPORT from the
+file Makefile.bcc.
+When compiling a program that uses the dynamic library, you need to
+define the USE_ICSLIB_DLL pre-processor variable.
+
+ - Compilation under Windows with Microsoft Visual C++ 9
+
+Edit the path to Zlib defined at the beginning of Makefile.vc9, then
+type
+   nmake /f Makefile.vc9
+from a command prompt in the source directory. This will create a
+dynamic library libics.dll in the same directory, and an import library
+libics.lib. Change the definitions of SHARED or DEBUG in the makefile to
+create static and/or debug versions of the library. To disable zlib
+support, remove the definition of ZLIB_SUPPORT from the makefile.
+When compiling a program that uses the dynamic library, you need to
+define the USE_ICSLIB_DLL pre-processor variable.
+
+ - Compilation under Windows with older versions of Microsoft Visual C++
+
+Edit the paths defined at the beginning of Makefile.vc6, then type
+   nmake /f Makefile.vc6
+from a command prompt in the source directory. This will create a file
+libics.lib in the same directory. To build a dynamic library, type
+   nmake /f Makefile.vc6 dynamic
+The dynamic library libics.dll has an import library named
+libics.dll.lib. To make a debug version add '/D DEBUG' to these
+commands. To disable zlib support, remove the definition of ZLIB_SUPPORT
+from the file Makefile.vc.
+
+ - Compilation with CMake under UNIX / Linux / Mac OS X / Cygwin
+
+Run the following commands from outside the source directory
+   cmake <path/to/libics/sources>
+   make
+   make install
+
+The library can be tested for problems using
+   make test
+
+CMake can be used with the following options:
+   cmake ... -DCMAKE_BUILD_TYPE=Debug
+   cmake ... -DUSE_ZLIB=Off
+
+ - Compilation with cmake on Windows
+
+Type on the command line
+   cmake CMakeLists.txt
+or use cmake GUI. Next, open sln file in Visual Studio and build solution.
 
 
    CREDITS
@@ -120,8 +166,11 @@ Which ultimately is based upon stuff written by:
 =============
 
 version 1.6.1
+   - Various bug-fixes.
    - Added SPIM parameters.
    - Added scattering parameters.
+   - New functions that return ICS string properties without string copying.
+   - Enable the use of negative strides.
 
 version 1.6.0
    Added functionality:

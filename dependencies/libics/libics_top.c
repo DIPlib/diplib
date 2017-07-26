@@ -536,7 +536,7 @@ Ics_Error IcsGetROIData(ICS          *ics,
 /* Read the image data into a region of your buffer. */
 Ics_Error IcsGetDataWithStrides(ICS             *ics,
                                 void            *destPtr,
-                                size_t           n, // ignored
+                                size_t           n, /* ignored */
                                 const ptrdiff_t *stridePtr,
                                 int              nDims)
 {

@@ -12,24 +12,32 @@
 #   Created by Paul Barber <paul.barber@oncology.ox.ac.uk>, Feb 2017
 #   Heavily modified by Cris Luengo, July 2017
 #
-#   To aid building on Windows 10 and with Visual Studio 2015 (VC14).
-#   Requires libics.def
-#
 ##############################################################################
 cmake_minimum_required(VERSION 3.0)
 
 project(libics VERSION 1.6.1)
 
+# Note: the version number above is not yet used anywhere.
+# TODO: rewrite the header file with this version number.
+# The line below does not work: we need the installed header file to contain the version number also.
+#add_definitions(-DICSLIB_VERSION="${libics_VERSION}")
+
 # Compiler flags
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED on)
-# TODO: These flags work for GCC and CLang, not sure about other compilers
-set(CMAKE_C_FLAGS "-Wall")
-set(CMAKE_C_FLAGS_RELEASE "-O3 -march=native")
-set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+
+if ("${CMAKE_C_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+   set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -march=native")
+elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+   set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -march=native")
    # Allowing DIPlib to link against a static libics. Not necessary for Clang
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
+   # TODO: compiler flags for Intel compiler
+elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
+   # TODO: compiler flags for MSVC compiler
 endif()
 
 # Debug or Release?
@@ -48,6 +56,7 @@ if(USE_ZLIB)
 endif()
 
 # ICS
+#configure_file(libics_conf.h.in ${CMAKE_SOURCE_DIR}/libics_conf.h COPYONLY)
 set(SOURCES
       libics_binary.c
       libics_compress.c
@@ -74,24 +83,6 @@ set(HEADERS
 
 include_directories(${CMAKE_SOURCE_DIR})
 
-include(CheckSymbolExists)
-check_symbol_exists(strcasecmp string.h HAVE_STRING_STRCASECMP)
-if(HAVE_STRING_STRCASECMP)
-   add_definitions(-DHAVE_STRING_STRCASECMP)
-   message(STATUS "strcasecmp found in string.h")
-else()
-   check_symbol_exists(strcasecmp strings.h HAVE_STRINGS_STRCASECMP)
-   if(HAVE_STRINGS_STRCASECMP)
-      add_definitions(-DHAVE_STRINGS_STRCASECMP)
-      message(STATUS "strcasecmp found in strings.h")
-   else()
-      message(STATUS "strcasecmp not found")
-   endif()
-endif()
-
-# TODO: rewrite the header file with this version number, so we don't duplicate effort.
-#add_definitions(-DICSLIB_VERSION="${libics_VERSION}")
-
 # Build a dll
 add_library(libics SHARED ${SOURCES} ${HEADERS})
 target_compile_definitions(libics PRIVATE BUILD_ICSLIB) # For Windows, when compiling DLL
@@ -100,9 +91,10 @@ target_compile_definitions(libics INTERFACE USE_ICSLIB_DLL) # For Windows, when 
 # Build a static library
 add_library(libics_static STATIC ${SOURCES} ${HEADERS})
 
+# Link against zlib
 if(USE_ZLIB)
-    target_link_libraries(libics ${ZLIB_LIBRARIES})
-    target_link_libraries(libics_static ${ZLIB_LIBRARIES})
+   target_link_libraries(libics ${ZLIB_LIBRARIES})
+   target_link_libraries(libics_static ${ZLIB_LIBRARIES})
 endif()
 
 # Install

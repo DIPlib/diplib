@@ -58,15 +58,9 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#endif
-
-#ifdef HAVE_STRINGS_STRCASECMP
-   #include <strings.h>   /* For strcasecmp() */
-#endif
-#ifndef HAVE_STRING_STRCASECMP
-#ifndef HAVE_STRINGS_STRCASECMP
-   #define strcasecmp stricmp
-#endif
+#define strcasecmp _stricmp
+#else
+#include <strings.h>   /* For strcasecmp() */
 #endif
 
 const char ICSEXT[] = ".ics";

@@ -53,7 +53,7 @@
 
 
 /* ICS_BUF_SIZE is the size of the buffer allocated to:
-   - Do the compression. This is independend from the memory allocated by zlib
+   - Do the compression. This is independent from the memory allocated by zlib
      for the dictionary.
    - Decompress stuff into when skipping a data block (IcsSetIdsBlock() for
      compressed files).
@@ -61,6 +61,28 @@
      updating. */
 #define ICS_BUF_SIZE 16384
 
+
+/* These are used internally when the precise length of a variable is needed.
+   We also use size_t for a variable that is as wide as a pointer
+   (i.e. can hold the size of any data block).
+ */
+#include <stdint.h>
+typedef uint8_t  ics_t_uint8;
+typedef int8_t   ics_t_sint8;
+typedef uint16_t ics_t_uint16;
+typedef int16_t  ics_t_sint16;
+typedef uint32_t ics_t_uint32;
+typedef int32_t  ics_t_sint32;
+typedef float ics_t_real32;
+typedef double ics_t_real64;
+
+
+#undef ICS_USING_CONFIGURE
+#if !defined(ICS_USING_CONFIGURE)
+
+/*********************************************************************
+ *** If we are not using the autoconf configure script:
+ *********************************************************************/
 
 /* If ICS_FORCE_C_LOCALE is set, the locale is set to "C" before each read or
    write operation. This ensures that the ICS header file is formatted
@@ -78,25 +100,27 @@
 #define ICS_DO_GZEXT
 
 
-/* If ICS_ZLIB is defined, the zlib dependancy is included, and the library will
+/* If ICS_ZLIB is defined, the zlib dependency is included, and the library will
    be able to read GZIP compressed files.  This variable is set by the makefile
    -- enable ZLIB support there. */
 /*#define ICS_ZLIB*/
 
 
-/* These are used internally when the precise length of a variable is needed
-   (the typedefs were needed in a time before C99).
-   We also use size_t for a variable that is as wide as a pointer
-   (i.e. can hold the size of any data block).
- */
-#include <stdint.h>
-typedef uint8_t  ics_t_uint8;
-typedef int8_t   ics_t_sint8;
-typedef uint16_t ics_t_uint16;
-typedef int16_t  ics_t_sint16;
-typedef uint32_t ics_t_uint32;
-typedef int32_t  ics_t_sint32;
-typedef float ics_t_real32;
-typedef double ics_t_real64;
+#else
+
+/*********************************************************************
+ *** If we are using the autoconf configure script:
+ *********************************************************************/
+
+/* If we should force the c locale. */
+#undef ICS_FORCE_C_LOCALE
+
+/* Whether to search for IDS files with .ids.gz or .ids.Z extension. */
+#undef ICS_DO_GZEXT
+
+/* Whether to use zlib compression. */
+#undef ICS_ZLIB
+
+#endif
 
 #endif

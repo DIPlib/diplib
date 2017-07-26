@@ -620,8 +620,8 @@ ICSEXPORT Ics_Error IcsGetOrder(const ICS *ics,
                                 char      *order,
                                 char      *label);
 
-/* Idem, but without copying the strings. Output pointers `order` and `label` set
-   to internal buffer, which will be valid until IcsClose is called. */
+/* Idem, but without copying the strings. Output pointers `order` and `label`
+   set to internal buffer, which will be valid until IcsClose is called. */
 ICSEXPORT Ics_Error IcsGetOrderF(const ICS   *ics,
                                  int          dimension,
                                  const char **order,

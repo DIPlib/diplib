@@ -243,7 +243,7 @@ Ics_Error IcsNewHistoryIterator(ICS                 *ics,
             /* Append a \t, so that the search for the key finds whole words */
         n = strlen(it->key);
         it->key[n] = ICS_FIELD_SEP;
-        it->key[n+1] = '\0';
+        it->key[n + 1] = '\0';
     }
 
     if (hist == NULL) return IcsErr_EndOfHistory;
@@ -388,7 +388,7 @@ Ics_Error IcsGetHistoryKeyValueIF(ICS                 *ics,
             memcpy(key, buf, length);
             key[length] = '\0';
         }
-        *value = ptr+1;
+        *value = ptr + 1;
     } else {
         if (key != NULL) {
             key[0] = '\0';
