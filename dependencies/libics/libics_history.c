@@ -42,7 +42,9 @@
  *   IcsGetHistoryString()
  *   IcsGetHistoryKeyValue()
  *   IcsGetHistoryStringI()
+ *   IcsGetHistoryStringIF()
  *   IcsGetHistoryKeyValueI()
+ *   IcsGetHistoryKeyValueIF()
  *   IcsDeleteHistory()
  *   IcsDeleteHistoryStringI()
  *   IcsReplaceHistoryStringI()
@@ -147,7 +149,7 @@ Ics_Error IcsInternAddHistory(Ics_Header *ics,
         char** tmp = (char**)realloc(hist->strings, n * sizeof(char*));
         if (tmp == NULL) return IcsErr_Alloc;
         hist->strings = tmp;
-        hist->length += ICS_HISTARRAY_INCREMENT;
+        hist->length = n;
     }
 
         /* Create line */
@@ -181,9 +183,12 @@ Ics_Error IcsGetNumHistoryStrings(ICS *ics,
 {
     ICSINIT;
     int          i, count = 0;
-    Ics_History *hist      = (Ics_History*)ics->history;
+    Ics_History *hist;
 
     if (ics == NULL) return IcsErr_NotValidAction;
+
+    hist = (Ics_History*)ics->history;
+
     *num = 0;
     if (hist == NULL) return IcsErr_Ok;
     for (i = 0; i < hist->nStr; i++) {
@@ -222,9 +227,11 @@ Ics_Error IcsNewHistoryIterator(ICS                 *ics,
                                 char const          *key)
 {
     ICSINIT;
-    Ics_History *hist = (Ics_History*)ics->history;
+    Ics_History *hist;
 
     if (ics == NULL) return IcsErr_NotValidAction;
+
+    hist = (Ics_History*)ics->history;
 
     it->next = -1;
     it->previous = -1;
@@ -301,9 +308,28 @@ Ics_Error IcsGetHistoryStringI(ICS                 *ics,
                                char                *string)
 {
     ICSINIT;
-    Ics_History *hist = (Ics_History*)ics->history;
+    const char *ptr;
+
+    error = IcsGetHistoryStringIF(ics, it, &ptr);
+    if (!error) {
+        IcsStrCpy(string, ptr, ICS_LINE_LENGTH);
+    }
+
+    return error;
+}
+
+/* Idem, but without copying the string. Output pointer `string` set to internal
+   buffer, which will be valid until IcsClose or IcsFreeHistory is called. */
+Ics_Error IcsGetHistoryStringIF(ICS                 *ics,
+                                Ics_HistoryIterator *it,
+                                const char         **string)
+{
+    ICSINIT;
+    Ics_History *hist;
 
     if (ics == NULL) return IcsErr_NotValidAction;
+
+    hist = (Ics_History*)ics->history;
 
     if (hist == NULL) return IcsErr_EndOfHistory;
     if ((it->next >= 0) &&(hist->strings[it->next] == NULL)) {
@@ -314,7 +340,7 @@ Ics_Error IcsGetHistoryStringI(ICS                 *ics,
         it->previous = prev;
     }
     if (it->next < 0) return IcsErr_EndOfHistory;
-    IcsStrCpy(string, hist->strings[it->next], ICS_LINE_LENGTH);
+    *string = hist->strings[it->next];
     IcsIteratorNext(hist, it);
 
     return error;
@@ -329,12 +355,30 @@ Ics_Error IcsGetHistoryKeyValueI(ICS                 *ics,
                                  char                *value)
 {
     ICSINIT;
-    size_t  length;
-    char    buf[ICS_LINE_LENGTH];
-    char   *ptr;
+    const char *ptr;
+
+    error = IcsGetHistoryKeyValueIF(ics, it, key, &ptr);
+    if (!error) {
+        IcsStrCpy(value, ptr, ICS_LINE_LENGTH);
+    }
+
+    return error;
+}
+
+/* Idem, but without copying the string. Output pointer `value` set to internal
+   buffer, which will be valid until IcsClose or IcsFreeHistory is called. */
+Ics_Error IcsGetHistoryKeyValueIF(ICS                 *ics,
+                                  Ics_HistoryIterator *it,
+                                  char                *key,
+                                  const char         **value)
+{
+    ICSINIT;
+    size_t      length;
+    const char *buf;
+    char       *ptr;
 
 
-    error = IcsGetHistoryStringI(ics, it, buf);
+    error = IcsGetHistoryStringIF(ics, it, &buf);
     if (error) return error;
 
     ptr = strchr(buf, ICS_FIELD_SEP);
@@ -344,12 +388,12 @@ Ics_Error IcsGetHistoryKeyValueI(ICS                 *ics,
             memcpy(key, buf, length);
             key[length] = '\0';
         }
-        IcsStrCpy(value, ptr+1, ICS_LINE_LENGTH);
+        *value = ptr+1;
     } else {
         if (key != NULL) {
             key[0] = '\0';
         }
-        IcsStrCpy(value, buf, ICS_LINE_LENGTH);
+        *value = buf;
     }
 
     return error;
@@ -361,13 +405,14 @@ Ics_Error IcsDeleteHistory(ICS        *ics,
                            const char *key)
 {
     ICSINIT;
-    Ics_History *hist = (Ics_History*)ics->history;
+    Ics_History *hist;
 
+    if (ics == NULL) return IcsErr_NotValidAction;
+
+    hist = (Ics_History*)ics->history;
 
     if (hist == NULL) return IcsErr_Ok;
     if (hist->nStr == 0) return IcsErr_Ok;
-
-    if (ics == NULL) return IcsErr_NotValidAction;
 
     if ((key == NULL) ||(key[0] == '\0')) {
         int i;
@@ -406,10 +451,11 @@ Ics_Error IcsDeleteHistoryStringI(ICS                 *ics,
                                   Ics_HistoryIterator *it)
 {
     ICSINIT;
-    Ics_History *hist = (Ics_History*)ics->history;
-
+    Ics_History *hist;
 
     if (ics == NULL) return IcsErr_NotValidAction;
+
+    hist = (Ics_History*)ics->history;
 
     if (hist == NULL) return IcsErr_Ok;      /* give error message? */
     if (it->previous < 0) return IcsErr_Ok;
@@ -426,7 +472,7 @@ Ics_Error IcsDeleteHistoryStringI(ICS                 *ics,
     return error;
 }
 
-/* Delete last retrieved history line(iterator still points to the same
+/* Delete last retrieved history line (iterator still points to the same
    string). Contains code duplicated from IcsInternAddHistory(). */
 Ics_Error IcsReplaceHistoryStringI(ICS                 *ics,
                                    Ics_HistoryIterator *it,
@@ -436,10 +482,11 @@ Ics_Error IcsReplaceHistoryStringI(ICS                 *ics,
     ICSINIT;
     size_t       len;
     char        *line;
-    Ics_History *hist = (Ics_History*)ics->history;
-
+    Ics_History *hist;
 
     if (ics == NULL) return IcsErr_NotValidAction;
+
+    hist = (Ics_History*)ics->history;
 
     if (hist == NULL) return IcsErr_Ok;      /* give error message? */
     if (it->previous < 0) return IcsErr_Ok;

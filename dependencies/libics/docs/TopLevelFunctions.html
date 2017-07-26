@@ -683,6 +683,24 @@
     <p class="info"><span class="headtxt">errors</span>:
     <tt class="constant">IcsErr_NotValidAction</tt>.</p>
 
+  <h3 class="ident"><a name="IcsGetImelUnitsF"></a>IcsGetImelUnitsF</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetImelUnitsF</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">double</span>*&nbsp;<span class="varident">origin</span>,
+    <span class="keyword">double</span>*&nbsp;<span class="varident">scale</span>,
+    <span class="keyword">const char</span>**&nbsp;<span class="varident">units</span>);
+    </p>
+
+    <p>Same as <tt class="funcident"><a href="#IcsGetImelUnits">IcsGetImelUnits</a></tt>,
+    but doesn't copy the units string. Output pointer <tt class="varident">units</tt>
+    is set to the internal buffer, which will be valid until
+    <tt class="funcident"><a href="#IcsClose">IcsClose</a></tt> is called.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
   <h3 class="ident"><a name="IcsGetOrder"></a>IcsGetOrder</h3>
 
     <p class="synopsis">
@@ -696,6 +714,24 @@
     <p>Get the ordering of the dimensions in the image. The
     ordering is defined by names and labels for each dimension. The defaults
     are x, y, z, t (time) and p (probe). Dimensions start at 0.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetOrderF"></a>IcsGetOrderF</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetOrderF</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">dimension</span>,
+    <span class="keyword">const char</span>**&nbsp;<span class="varident">order</span>,
+    <span class="keyword">const char</span>**&nbsp;<span class="varident">label</span>);
+    </p>
+
+    <p>Same as <tt class="funcident"><a href="#IcsGetOrder">IcsGetOrder</a></tt>,
+    but doesn't copy the order or label strings. Output pointers <tt class="varident">order</tt>
+    and <tt class="varident">label</tt> are set to the internal buffers, which will
+    be valid until <tt class="funcident"><a href="#IcsClose">IcsClose</a></tt> is called.</p>
 
     <p class="info"><span class="headtxt">errors</span>:
     <tt class="constant">IcsErr_NotValidAction</tt>.</p>
@@ -715,6 +751,25 @@
     origin of the first pixel, the distances between pixels and the units in
     which to measure. If you are not interested in one of the parameters, set
     the pointer to <tt class="constant">NULL</tt>. Dimensions start at 0.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetPositionF"></a>IcsGetPositionF</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetPositionF</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>&nbsp<span class="keyword">const</span>*&nbsp;<span class="varident">ics</span>,
+    <span class="keyword">int</span>&nbsp;<span class="varident">dimension</span>,
+    <span class="keyword">double</span>*&nbsp;<span class="varident">origin</span>,
+    <span class="keyword">double</span>*&nbsp;<span class="varident">scale</span>,
+    <span class="keyword">const char</span>**&nbsp;<span class="varident">units</span>);
+    </p>
+
+    <p>Same as <tt class="funcident"><a href="#IcsGetPosition">IcsGetPosition</a></tt>,
+    but doesn't copy the units string. Output pointer <tt class="varident">units</tt>
+    is set to the internal buffer, which will be valid until
+    <tt class="funcident"><a href="#IcsClose">IcsClose</a></tt> is called.</p>
 
     <p class="info"><span class="headtxt">errors</span>:
     <tt class="constant">IcsErr_NotValidAction</tt>.</p>
@@ -887,7 +942,7 @@
   <h3 class="ident"><a name="IcsDeleteHistory"></a>IcsDeleteHistory</h3>
 
     <p class="synopsis">
-    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetHistory</span>
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsDeleteHistory</span>
     (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
     <span class="keyword">char</span>*&nbsp;<span class="varident">key</span>);
     </p>
@@ -902,7 +957,7 @@
   <h3 class="ident"><a name="IcsDeleteHistoryStringI"></a>IcsDeleteHistoryStringI</h3>
 
     <p class="synopsis">
-    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetHistoryStringI</span>
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsDeleteHistoryStringI</span>
     (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
     <span class="typeident">Ics_HistoryIterator</span>*&nbsp;<span class="varident">it</span>);
     </p>
@@ -964,6 +1019,27 @@
     <tt class="constant">IcsErr_EndOfHistory</tt>,
     <tt class="constant">IcsErr_NotValidAction</tt>.</p>
 
+  <h3 class="ident"><a name="IcsGetHistoryKeyValueIF"></a>IcsGetHistoryKeyValueIF</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetHistoryKeyValueIF</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="typeident">Ics_HistoryIterator</span>*&nbsp;<span class="varident">it</span>,
+    <span class="keyword">char</span>*&nbsp;<span class="varident">key</span>,
+    <span class="keyword">const char</span>**&nbsp;<span class="varident">value</span>);
+    </p>
+
+    <p>Same as <tt class="funcident"><a href="#IcsGetHistoryKeyValueI">IcsGetHistoryKeyValueI</a></tt>,
+    but doesn't copy the value string. Output pointer <tt class="varident">value</tt>
+    is set to the internal buffer, which will be valid until
+    <tt class="funcident"><a href="#IcsClose">IcsClose</a></tt> or
+    <tt class="funcident"><a href="#IcsFreeHistory">IcsFreeHistory</a></tt>
+    are called.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_EndOfHistory</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
   <h3 class="ident"><a name="IcsGetHistoryString"></a>IcsGetHistoryString</h3>
 
     <p class="synopsis">
@@ -1003,6 +1079,26 @@
     The <tt class="varident">it</tt> parameter must point to a
     <tt class="typeident">Ics_HistoryIterator</tt> structure initialized by
     <tt class="funcident"><a href="#IcsNewHistoryIterator">IcsNewHistoryIterator</a></tt>.</p>
+
+    <p class="info"><span class="headtxt">errors</span>:
+    <tt class="constant">IcsErr_EndOfHistory</tt>,
+    <tt class="constant">IcsErr_NotValidAction</tt>.</p>
+
+  <h3 class="ident"><a name="IcsGetHistoryStringIF"></a>IcsGetHistoryStringIF</h3>
+
+    <p class="synopsis">
+    <span class="typeident"><a href="Ics_Error.html">Ics_Error</a></span>&nbsp;<span class="funcident">IcsGetHistoryStringIF</span>
+    (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
+    <span class="typeident">Ics_HistoryIterator</span>*&nbsp;<span class="varident">it</span>,
+    <span class="keyword">const char</span>**&nbsp;<span class="varident">string</span>);
+    </p>
+
+    <p>Same as <tt class="funcident"><a href="#IcsGetHistoryKeyValueI">IcsGetHistoryKeyValueI</a></tt>,
+    but doesn't copy the string. Output pointer <tt class="varident">string</tt>
+    is set to the internal buffer, which will be valid until
+    <tt class="funcident"><a href="#IcsClose">IcsClose</a></tt> or
+    <tt class="funcident"><a href="#IcsFreeHistory">IcsFreeHistory</a></tt>
+    are called.</p>
 
     <p class="info"><span class="headtxt">errors</span>:
     <tt class="constant">IcsErr_EndOfHistory</tt>,

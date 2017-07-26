@@ -592,6 +592,14 @@ ICSEXPORT Ics_Error IcsGetPosition(const ICS *ics,
                                    double    *scale,
                                    char*      units);
 
+/* Idem, but without copying the strings. Output pointer `units` set to internal
+   buffer, which will be valid until IcsClose is called. */
+ICSEXPORT Ics_Error IcsGetPositionF(const ICS   *ics,
+                                    int          dimension,
+                                    double      *origin,
+                                    double      *scale,
+                                    const char **units);
+
 
 /* Set the position of the image in the real world: the origin of the first
    pixel, the distances between pixels and the units in which to measure.  If
@@ -611,6 +619,13 @@ ICSEXPORT Ics_Error IcsGetOrder(const ICS *ics,
                                 int        dimension,
                                 char      *order,
                                 char      *label);
+
+/* Idem, but without copying the strings. Output pointers `order` and `label` set
+   to internal buffer, which will be valid until IcsClose is called. */
+ICSEXPORT Ics_Error IcsGetOrderF(const ICS   *ics,
+                                 int          dimension,
+                                 const char **order,
+                                 const char **label);
 
 
 /* Set the ordering of the dimensions in the image. The ordering is defined by
@@ -652,6 +667,13 @@ ICSEXPORT Ics_Error IcsGetImelUnits(const ICS *ics,
                                     double    *origin,
                                     double    *scale,
                                     char      *units);
+
+/* Idem, but without copying the strings. Output pointer `units` set to internal
+   buffer, which will be valid until IcsClose is called. */
+ICSEXPORT Ics_Error IcsGetImelUnitsF(const ICS   *ics,
+                                     double      *origin,
+                                     double      *scale,
+                                     const char **units);
 
 
 /* Set the position of the pixel values: the offset and scaling, and the units
@@ -732,6 +754,12 @@ ICSEXPORT Ics_Error IcsGetHistoryStringI(ICS                 *ics,
                                          Ics_HistoryIterator *it,
                                          char                *string);
 
+/* Idem, but without copying the string. Output pointer `string` set to internal
+   buffer, which will be valid until IcsClose or IcsFreeHistory is called. */
+ICSEXPORT Ics_Error IcsGetHistoryStringIF(ICS                 *ics,
+                                          Ics_HistoryIterator *it,
+                                          const char         **string);
+
 
 /* Get history line from the ICS file as key/value pair using iterator.  key
    must have ICS_STRLEN_TOKEN characters allocated, and value
@@ -740,6 +768,13 @@ ICSEXPORT Ics_Error IcsGetHistoryKeyValueI(ICS                 *ics,
                                            Ics_HistoryIterator *it,
                                            char                *key,
                                            char                *value);
+
+/* Idem, but without copying the string. Output pointer `value` set to internal
+   buffer, which will be valid until IcsClose or IcsFreeHistory is called. */
+ICSEXPORT Ics_Error IcsGetHistoryKeyValueIF(ICS                 *ics,
+                                            Ics_HistoryIterator *it,
+                                            char                *key,
+                                            const char         **value);
 
 
 /* Delete last retrieved history line (iterator still points to the same
