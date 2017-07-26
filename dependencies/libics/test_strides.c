@@ -9,7 +9,7 @@ int main(int argc, const char* argv[]) {
    int          ndims;
    size_t       dims[ICS_MAXDIM];
    size_t       bufsize;
-   size_t       strides[3];
+   ptrdiff_t    strides[3];
    void*        buf1;
    void*        buf2;
    void*        buf3;
@@ -30,8 +30,8 @@ int main(int argc, const char* argv[]) {
    }
    IcsGetLayout(ip, &dt, &ndims, dims);
    strides[0] = 1;
-   strides[1] = dims[0]*dims[2];
-   strides[2] = dims[0];
+   strides[1] = (ptrdiff_t)(dims[0]*dims[2]);
+   strides[2] = (ptrdiff_t)dims[0];
    bufsize = IcsGetDataSize(ip);
    buf1 = malloc(bufsize);
    if (buf1 == NULL) {

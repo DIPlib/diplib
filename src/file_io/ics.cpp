@@ -549,27 +549,13 @@ void ImageWriteICS(
                  "Couldn't write to ICS file (IcsSetCompression failed)" );
 
    // set the image data
-   bool hasPositiveStrides = false;
-   if( !image.HasNormalStrides() ) {
-      hasPositiveStrides = true;
-      for( auto stride : image.Strides()) {
-         if( stride <= 0 ) {
-            hasPositiveStrides = false;
-            break;
-         }
-      }
-   }
-   if( hasPositiveStrides ) {
-      // has non-normal strides, but they are all positive: we can write data as-is
-      UnsignedArray strides{ image.Strides() };
-      DIP_THROW_IF( IcsSetDataWithStrides( icsFile, image.Origin(), image.NumberOfPixels() * image.DataType().SizeOf(),
-                                           strides.data(), static_cast< int >( strides.size() )) != IcsErr_Ok,
-                    "Couldn't write to ICS file (IcsSetDataWithStrides failed)" );
-   } else {
-      // has either normal strides, or some negative stride
-      image.ForceNormalStrides();
+   if( image.HasNormalStrides() ) {
       DIP_THROW_IF( IcsSetData( icsFile, image.Origin(), image.NumberOfPixels() * image.DataType().SizeOf() ) != IcsErr_Ok,
                     "Couldn't write to ICS file (IcsSetData failed)" );
+   } else {
+      DIP_THROW_IF( IcsSetDataWithStrides( icsFile, image.Origin(), 0, image.Strides().data(),
+                                           static_cast< int >( image.Dimensionality() )) != IcsErr_Ok,
+                    "Couldn't write to ICS file (IcsSetDataWithStrides failed)" );
    }
 
    // tag the data

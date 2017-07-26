@@ -207,13 +207,13 @@ Ics_Error IcsWriteZip(const void *inBuf,
 
 
 /* Write ZIP compressed data, with strides. */
-Ics_Error IcsWriteZipWithStrides(const void   *src,
-                                 const size_t *dim,
-                                 const size_t *stride,
-                                 int           nDims,
-                                 int           nBytes,
-                                 FILE         *file,
-                                 int           level)
+Ics_Error IcsWriteZipWithStrides(const void      *src,
+                                 const size_t    *dim,
+                                 const ptrdiff_t *stride,
+                                 int              nDims,
+                                 int              nBytes,
+                                 FILE            *file,
+                                 int              level)
 {
 #ifdef ICS_ZLIB
     ICSINIT;
@@ -277,7 +277,7 @@ Ics_Error IcsWriteZipWithStrides(const void   *src,
     while (1) {
         data = (char const*)src;
         for (i = 1; i < nDims; i++) { /* curPos[0]==0 here */
-            data += curPos[i] * stride[i] * nBytes;
+            data += (ptrdiff_t)curPos[i] * stride[i] * nBytes;
         }
             /* Get data line */
         if (contiguousLine) {

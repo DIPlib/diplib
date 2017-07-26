@@ -125,6 +125,8 @@ add_executable(test_strides EXCLUDE_FROM_ALL test_strides.c)
 target_link_libraries(test_strides libics)
 add_executable(test_strides2 EXCLUDE_FROM_ALL test_strides2.c)
 target_link_libraries(test_strides2 libics)
+add_executable(test_strides3 EXCLUDE_FROM_ALL test_strides3.c)
+target_link_libraries(test_strides3 libics)
 add_executable(test_metadata EXCLUDE_FROM_ALL test_metadata.c)
 target_link_libraries(test_metadata libics)
 add_executable(test_history EXCLUDE_FROM_ALL test_history.c)
@@ -137,6 +139,7 @@ add_custom_target(all_tests DEPENDS
       test_compress
       test_strides
       test_strides2
+      test_strides3
       test_metadata
       test_history
       )
@@ -153,8 +156,10 @@ add_test(NAME test_compress COMMAND test_compress ${CMAKE_SOURCE_DIR}/test/testi
 set_tests_properties(test_compress PROPERTIES DEPENDS ctest_build_test_code)
 add_test(NAME test_strides COMMAND test_strides ${CMAKE_SOURCE_DIR}/test/testim.ics result_s.ics)
 set_tests_properties(test_strides PROPERTIES DEPENDS ctest_build_test_code)
-add_test(NAME test_strides2 COMMAND test_strides2 ${CMAKE_SOURCE_DIR}/test/testim.ics result_s.ics)
+add_test(NAME test_strides2 COMMAND test_strides2 ${CMAKE_SOURCE_DIR}/test/testim.ics result_s2.ics)
 set_tests_properties(test_strides2 PROPERTIES DEPENDS ctest_build_test_code)
+add_test(NAME test_strides3 COMMAND test_strides3 ${CMAKE_SOURCE_DIR}/test/testim.ics result_s3.ics)
+set_tests_properties(test_strides3 PROPERTIES DEPENDS ctest_build_test_code)
 add_test(NAME test_metadata1 COMMAND test_metadata result_v1.ics)
 set_tests_properties(test_metadata1 PROPERTIES DEPENDS test_ics1)
 add_test(NAME test_metadata2 COMMAND test_metadata result_v2a.ics)

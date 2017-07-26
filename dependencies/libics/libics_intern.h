@@ -246,12 +246,12 @@ Ics_Error IcsInternAddHistory(Ics_Header *ics,
 void IcsFillByteOrder(int bytes,
                       int machineByteOrder[ICS_MAX_IMEL_SIZE]);
 
-Ics_Error IcsWritePlainWithStrides(const void   *src,
-                                   const size_t *dim,
-                                   const size_t *stride,
-                                   int           nDims,
-                                   int           nBytes,
-                                   FILE         *file);
+Ics_Error IcsWritePlainWithStrides(const void      *src,
+                                   const size_t    *dim,
+                                   const ptrdiff_t *stride,
+                                   int              nDims,
+                                   int              nBytes,
+                                   FILE            *file);
 
 Ics_Error IcsCopyIds(const char *infilename,
                      size_t      inoffset,
@@ -263,13 +263,13 @@ Ics_Error IcsWriteZip(const void *src,
                       FILE       *fp,
                       int         CompLevel);
 
-Ics_Error IcsWriteZipWithStrides(const void   *src,
-                                 const size_t *dim,
-                                 const size_t *stride,
-                                 int           nDims,
-                                 int           nBytes,
-                                 FILE         *file,
-                                 int           level);
+Ics_Error IcsWriteZipWithStrides(const void      *src,
+                                 const size_t    *dim,
+                                 const ptrdiff_t *stride,
+                                 int              nDims,
+                                 int              nBytes,
+                                 FILE            *file,
+                                 int              level);
 
 Ics_Error IcsOpenZip(Ics_Header *IcsStruct);
 

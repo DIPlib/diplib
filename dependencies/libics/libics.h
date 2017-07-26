@@ -207,7 +207,7 @@ typedef struct _ICS {
         /* Size of the data buffer: */
     size_t                  dataLength;
         /* Pixel strides (writing only): */
-    const size_t           *dataStrides;
+    const ptrdiff_t        *dataStrides;
         /* '.ics' path/filename: */
     char                    filename[ICS_MAXPATHLEN];
         /* Number of elements in each dim: */
@@ -527,11 +527,11 @@ ICSEXPORT Ics_Error IcsGetROIData(ICS          *ics,
 /* Read the image from an ICS file into a sub-block of a memory block. To use
    the defaults in one of the parameters, set the pointer to NULL. Only valid if
    reading. */
-ICSEXPORT Ics_Error IcsGetDataWithStrides(ICS          *ics,
-                                          void         *dest,
-                                          size_t        n,
-                                          const size_t *stride,
-                                          int           nDims);
+ICSEXPORT Ics_Error IcsGetDataWithStrides(ICS             *ics,
+                                          void            *dest,
+                                          size_t           n, // ignored
+                                          const ptrdiff_t *stride,
+                                          int              nDims);
 
 
 /* Read a portion of the image data from an ICS file. Only valid if reading. */
@@ -562,11 +562,11 @@ ICSEXPORT Ics_Error IcsSetData(ICS        *ics,
 
 /* Set the image data for an ICS image. The pointer to this data must be
    accessible until IcsClose has been called. Only valid if writing. */
-ICSEXPORT Ics_Error IcsSetDataWithStrides(ICS          *ics,
-                                          const void   *src,
-                                          size_t        n,
-                                          const size_t *strides,
-                                          int           nDims);
+ICSEXPORT Ics_Error IcsSetDataWithStrides(ICS             *ics,
+                                          const void      *src,
+                                          size_t           n,
+                                          const ptrdiff_t *strides,
+                                          int              nDims);
 
 /* Set the image source parameter for an ICS version 2.0 file. Only valid if
    writing. */

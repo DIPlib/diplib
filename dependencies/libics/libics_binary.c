@@ -64,12 +64,12 @@
 
 
 /* Write uncompressed data, with strides. */
-Ics_Error IcsWritePlainWithStrides(const void   *src,
-                                   const size_t *dim,
-                                   const size_t *stride,
-                                   int           nDims,
-                                   int           nBytes,
-                                   FILE         *file)
+Ics_Error IcsWritePlainWithStrides(const void      *src,
+                                   const size_t    *dim,
+                                   const ptrdiff_t *stride,
+                                   int              nDims,
+                                   int              nBytes,
+                                   FILE            *file)
 {
     ICSINIT;
     size_t      curpos[ICS_MAXDIM];
@@ -84,7 +84,7 @@ Ics_Error IcsWritePlainWithStrides(const void   *src,
     while (1) {
         data = (char const*)src;
         for (i = 1; i < nDims; i++) {
-            data += curpos[i] * stride[i] * nBytes;
+            data += (ptrdiff_t)curpos[i] * stride[i] * nBytes;
         }
         if (stride[0] == 1) {
             if (fwrite(data, nBytes, dim[0], file) != dim[0]) {

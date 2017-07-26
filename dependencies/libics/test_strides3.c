@@ -29,9 +29,9 @@ int main(int argc, const char* argv[]) {
       exit(-1);
    }
    IcsGetLayout(ip, &dt, &ndims, dims);
-   strides[0] = (ptrdiff_t)(dims[1]*2);
-   strides[1] = 2;
-   strides[2] = (ptrdiff_t)(dims[0]*dims[1]*2);
+   strides[0] = -1;
+   strides[1] = -(ptrdiff_t)(dims[0]*dims[2]);
+   strides[2] = -(ptrdiff_t)dims[0];
    bufsize = IcsGetDataSize(ip);
    buf1 = malloc(bufsize);
    if (buf1 == NULL) {
@@ -44,12 +44,12 @@ int main(int argc, const char* argv[]) {
               IcsGetErrorText(retval));
       exit(-1);
    }
-   buf3 = malloc(2*bufsize);
+   buf3 = malloc(bufsize);
    if (buf3 == NULL) {
       fprintf(stderr, "Could not allocate memory.\n");
       exit(-1);
    }
-   retval = IcsGetDataWithStrides(ip, buf3, 2*bufsize, strides, 3);
+   retval = IcsGetDataWithStrides(ip, buf3 + bufsize - 1, 0, strides, 3);
    if (retval != IcsErr_Ok) {
       fprintf(stderr, "Could not read input image data using strides: %s\n",
               IcsGetErrorText(retval));
@@ -70,7 +70,7 @@ int main(int argc, const char* argv[]) {
       exit(-1);
    }
    IcsSetLayout(ip, dt, ndims, dims);
-   IcsSetDataWithStrides(ip, buf3, 2*bufsize, strides, 3);
+   IcsSetDataWithStrides(ip, buf3 + bufsize - 1, bufsize, strides, 3);
    IcsSetCompression(ip, IcsCompr_gzip, 6);
    retval = IcsClose(ip);
    if (retval != IcsErr_Ok) {

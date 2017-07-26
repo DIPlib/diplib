@@ -338,7 +338,7 @@
     (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
     <span class="keyword">void&nbsp;const</span>*&nbsp;<span class="varident">src</span>,
     <span class="keyword">size_t</span>&nbsp;<span class="varident">n</span>,
-    <span class="keyword">size_t&nbsp;const</span>*&nbsp;<span class="varident">strides</span>,
+    <span class="keyword">ptrdiff_t&nbsp;const</span>*&nbsp;<span class="varident">strides</span>,
     <span class="keyword">int</span>&nbsp;<span class="varident">ndims</span>);
     </p>
 
@@ -351,6 +351,8 @@
 
     <p>This function does currently not work when the data is compressed with
     <tt class="constant"><a href="Enums.html#Ics_Compression">IcsCompr_compress</a></tt>.</p>
+
+    <p>The parameter <tt class="varident">n</tt> is ignored.</p>
 
     <p class="info"><span class="headtxt">errors</span>:
     <tt class="constant">IcsErr_Alloc</tt>,
@@ -582,7 +584,7 @@
     (<span class="typeident"><a href="Ics_Header.html">ICS</a></span>*&nbsp;<span class="varident">ics</span>,
     <span class="keyword">void&nbsp;const</span>*&nbsp;<span class="varident">src</span>,
     <span class="keyword">size_t</span>&nbsp;<span class="varident">n</span>,
-    <span class="keyword">size_t&nbsp;const</span>*&nbsp;<span class="varident">strides</span>,
+    <span class="keyword">ptrdiff_t&nbsp;const</span>*&nbsp;<span class="varident">strides</span>,
     <span class="keyword">int</span>&nbsp;<span class="varident">ndims</span>);
     </p>
 
@@ -594,6 +596,8 @@
     <tt class="varident">ndims</tt> is the length of this array and should be
     equal to the dimensionality of the data as specified earlier through
     <tt class="funcident"><a href="#IcsSetLayout">IcsSetLayout</a></tt></p>
+
+    <p>The parameter <tt class="varident">n</tt> is ignored.</p>
 
     <p class="info"><span class="headtxt">errors</span>:
     <tt class="constant">IcsErr_DuplicateData</tt>,

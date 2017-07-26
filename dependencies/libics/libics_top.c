@@ -534,28 +534,28 @@ Ics_Error IcsGetROIData(ICS          *ics,
 
 
 /* Read the image data into a region of your buffer. */
-Ics_Error IcsGetDataWithStrides(ICS          *ics,
-                                void         *destPtr,
-                                size_t        n,
-                                const size_t *stridePtr,
-                                int           nDims)
+Ics_Error IcsGetDataWithStrides(ICS             *ics,
+                                void            *destPtr,
+                                size_t           n, // ignored
+                                const ptrdiff_t *stridePtr,
+                                int              nDims)
 {
     ICSINIT;
-    int           i, p;
-    size_t        j;
-    size_t        imelSize, lastpixel, bufSize;
-    size_t        curPos[ICS_MAXDIM];
-    size_t        b_stride[ICS_MAXDIM];
-    size_t const *stride;
-    char         *buf;
-    char         *dest = (char*)destPtr;
-    char         *out;
+    int              i, p;
+    size_t           j;
+    size_t           imelSize, bufSize;
+    size_t           curPos[ICS_MAXDIM];
+    ptrdiff_t        b_stride[ICS_MAXDIM];
+    ptrdiff_t const *stride;
+    char            *buf;
+    char            *dest = (char*)destPtr;
+    char            *out;
 
 
     if ((ics == NULL) || (ics->fileMode == IcsFileMode_write))
         return IcsErr_NotValidAction;
 
-    if ((n == 0) ||(dest == NULL)) return IcsErr_Ok;
+    if (dest == NULL) return IcsErr_Ok;
     p = ics->dimensions;
     if (nDims != p) return IcsErr_IllParameter;
     if (stridePtr != NULL) {
@@ -563,23 +563,18 @@ Ics_Error IcsGetDataWithStrides(ICS          *ics,
     } else {
         b_stride[0] = 1;
         for (i = 1; i < p; i++) {
-            b_stride[i] = b_stride[i - 1] * ics->dim[i - 1].size;
+            b_stride[i] = b_stride[i - 1] * (ptrdiff_t)ics->dim[i - 1].size;
         }
         stride = b_stride;
     }
     imelSize = IcsGetBytesPerSample(ics);
-    lastpixel = 0;
-    for (i = 0; i < p; i++) {
-        lastpixel +=(ics->dim[i].size - 1) * stride[i];
-    }
-    if (lastpixel * imelSize > n) return IcsErr_IllParameter;
 
     error = IcsOpenIds(ics);
     if (error) return error;
-    bufSize = imelSize*ics->dim[0].size;
-    if (stride[0] > 1) {
+    bufSize = imelSize * ics->dim[0].size;
+    if (stride[0] != 1) {
             /* We read a line in a buffer, and then copy the imels to dest */
-        buf =(char*)malloc(bufSize);
+        buf = (char*)malloc(bufSize);
         if (buf == NULL) return IcsErr_Alloc;
         for (i = 0; i < p; i++) {
             curPos[i] = 0;
@@ -587,7 +582,7 @@ Ics_Error IcsGetDataWithStrides(ICS          *ics,
         while (1) {
             out = dest;
             for (i = 1; i < p; i++) {
-                out += curPos[i] * stride[i] * imelSize;
+                out += (ptrdiff_t)curPos[i] * stride[i] * (ptrdiff_t)imelSize;
             }
             if (!error) error = IcsReadIdsBlock(ics, buf, bufSize);
             if (error != IcsErr_Ok) {
@@ -595,7 +590,7 @@ Ics_Error IcsGetDataWithStrides(ICS          *ics,
             }
             for (j = 0; j < ics->dim[0].size; j++) {
                 memcpy(out, buf + j * imelSize, imelSize);
-                out += stride[0]*imelSize;
+                out += stride[0] * (ptrdiff_t)imelSize;
             }
             for (i = 1; i < p; i++) {
                 curPos[i]++;
@@ -617,7 +612,7 @@ Ics_Error IcsGetDataWithStrides(ICS          *ics,
         while (1) {
             out = dest;
             for (i = 1; i < p; i++) {
-                out += curPos[i] * stride[i] * imelSize;
+                out += (ptrdiff_t)curPos[i] * stride[i] * (ptrdiff_t)imelSize;
             }
             if (!error) error = IcsReadIdsBlock(ics, out, bufSize);
             if (error != IcsErr_Ok) {
@@ -674,15 +669,13 @@ Ics_Error IcsSetData(ICS        *ics,
    dimension. Use this is your image data is not in one contiguous block or you
    want to swap some dimensions in the file. nDims is the length of the strides
    array and should match the dimensionality previously given. */
-Ics_Error IcsSetDataWithStrides(ICS          *ics,
-                                const void   *src,
-                                size_t        n,
-                                const size_t *strides,
-                                int           nDims)
+Ics_Error IcsSetDataWithStrides(ICS             *ics,
+                                const void      *src,
+                                size_t           n,
+                                const ptrdiff_t *strides,
+                                int              nDims)
 {
     ICSINIT;
-    size_t lastpixel;
-    int    i;
 
 
     if ((ics == NULL) || (ics->fileMode != IcsFileMode_write))
@@ -692,15 +685,6 @@ Ics_Error IcsSetDataWithStrides(ICS          *ics,
     if (ics->data != NULL) return IcsErr_DuplicateData;
     if (ics->dimensions == 0) return IcsErr_NoLayout;
     if (nDims != ics->dimensions) return IcsErr_IllParameter;
-    lastpixel = 0;
-    for (i = 0; i < nDims; i++) {
-        lastpixel +=(ics->dim[i].size-1) * strides[i];
-    }
-    if (lastpixel * IcsGetDataTypeSize(ics->imel.dataType) > n)
-        return IcsErr_IllParameter;
-    if (n != IcsGetDataSize(ics)) {
-        error = IcsErr_FSizeConflict;
-    }
     ics->data = src;
     ics->dataLength = n;
     ics->dataStrides = strides;
