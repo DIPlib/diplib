@@ -35,13 +35,15 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid setting
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
-   set(CMAKE_CXX_FLAGS "-Wall -Wconversion -Wsign-conversion")
-   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native")
-   set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+   # using Clang C++
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion")
+   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native")
+   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-   set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wconversion -Wsign-conversion -Wno-attributes") # Wattributes: "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
-   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native") # To see which flags are enabled: gcc -march=native -Q --help=target
-   set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
+   # using GNU C++
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wno-attributes") # Wattributes: "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
+   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native") # To see which flags are enabled: gcc -march=native -Q --help=target
+   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -g")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
    # using Intel C++
    # TODO: compiler flags for Intel compiler
