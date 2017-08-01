@@ -1,5 +1,6 @@
 # CMakeLists file for DIPlib 3
 cmake_minimum_required (VERSION 3.5) # It might work with older versions, but this is the version I'm testing with.
+cmake_policy(SET CMP0068 NEW)
 
 project (DIPlib VERSION 3.0)
 

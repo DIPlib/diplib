@@ -32,6 +32,7 @@
 #endif
 
 #include <mex.h>
+
 // Undocumented functions in libmx
 // See: http://www.advanpix.com/2013/07/19/undocumented-mex-api/
 // These functions allow us to get and set object properties without making deep copies, as `mxGetProperty` and
@@ -44,6 +45,7 @@ extern "C" {
 }
 
 #include "diplib.h"
+#include "diplib/file_io.h" // Definition of FileInformation
 
 /*
  * An alternative:
@@ -744,6 +746,35 @@ inline mxArray* GetArray( dip::PixelSize const& pixelSize ) {
       mxSetField( pxsz, ii, pxsizeStructFields[ 1 ], dml::GetArrayUnicode( pixelSize[ ii ].units.String()));
    }
    return pxsz;
+}
+
+inline mxArray* GetArray( dip::FileInformation const& fileInformation ) {
+   constexpr int nFields = 10;
+   char const* fieldNames[ nFields ] = {
+         "name",
+         "fileType",
+         "dataType",
+         "significantBits",
+         "sizes",
+         "tensorElements",
+         "colorSpace",
+         "pixelSize",
+         "numberOfImages",
+         "history"
+   };
+   mxArray* out;
+   out = mxCreateStructMatrix( 1, 1, nFields, fieldNames );
+   mxSetField( out, 0, fieldNames[ 0 ], dml::GetArray( fileInformation.name ));
+   mxSetField( out, 0, fieldNames[ 1 ], dml::GetArray( fileInformation.fileType ));
+   mxSetField( out, 0, fieldNames[ 2 ], dml::GetArray( dip::String{ fileInformation.dataType.Name() } ));
+   mxSetField( out, 0, fieldNames[ 3 ], dml::GetArray( fileInformation.significantBits ));
+   mxSetField( out, 0, fieldNames[ 4 ], dml::GetArray( fileInformation.sizes ));
+   mxSetField( out, 0, fieldNames[ 5 ], dml::GetArray( fileInformation.tensorElements ));
+   mxSetField( out, 0, fieldNames[ 6 ], dml::GetArray( fileInformation.colorSpace ));
+   mxSetField( out, 0, fieldNames[ 7 ], dml::GetArray( fileInformation.pixelSize ));
+   mxSetField( out, 0, fieldNames[ 8 ], dml::GetArray( fileInformation.numberOfImages ));
+   mxSetField( out, 0, fieldNames[ 9 ], dml::GetArray( fileInformation.history ));
+   return out;
 }
 
 // TODO: GetArray( dip::Distribution const& in) (when we define it)

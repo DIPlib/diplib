@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `readics` function
+ * This MEX-file implements the `readtiff` function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -27,26 +27,18 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
       DML_MIN_ARGS( 1 );
-      DML_MAX_ARGS( 4 );
+      DML_MAX_ARGS( 2 );
 
       dml::MatlabInterface mi;
       dip::Image out = mi.NewImage();
 
       dip::String const& filename = dml::GetString( prhs[ 0 ] );
 
-      dip::UnsignedArray origin = {};
-      dip::UnsignedArray sizes = {};
-      dip::UnsignedArray spacing = {};
+      dip::Range imageNumbers{ 0 };
       if( nrhs > 1 ) {
-         origin = dml::GetUnsignedArray( prhs[ 1 ] );
+         imageNumbers = dml::GetRange( prhs[ 1 ] );
       }
-      if( nrhs > 2 ) {
-         sizes = dml::GetUnsignedArray( prhs[ 2 ] );
-      }
-      if( nrhs > 3 ) {
-         spacing = dml::GetUnsignedArray( prhs[ 3 ] );
-      }
-      dip::FileInformation fileInformation = dip::ImageReadICS( out, filename, origin, sizes, spacing );
+      dip::FileInformation fileInformation = dip::ImageReadTIFF( out, filename, imageNumbers );
 
       plhs[ 0 ] = mi.GetArray( out );
       if( nlhs > 1 ) {

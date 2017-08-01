@@ -49,10 +49,13 @@ struct FileInformation {
       StringArray   history;           ///< Assorted metadata in the file, in the form of strings.
 };
 
-/// \brief Read the image in the ICS file `filename` and puts it in `image`.
+/// \brief Read the image in the ICS file `filename` and puts it in `out`.
 ///
 /// The ICS image file format (Image Cytometry Standard) can contain images with any dimensionality
 /// and data type also supported by DIPlib, and therefore is used as the default image file format.
+///
+/// The function tries to open `filename` as given first, and if that fails, it appends `.ics` to the
+/// name and tries again.
 ///
 /// `roi` can be set to read in a subset of the pixels in the file. If only one array element is given,
 /// it is used for all dimensions. An empty array indicates that all pixels should be read. Otherwise,
@@ -107,7 +110,8 @@ inline Image ImageReadICS(
    return out;
 }
 
-/// \brief Reads image information and metadata from the ICS file `filename`.
+/// \brief Reads image information and metadata from the ICS file `filename`, without reading the actual
+/// pixel data. See `dip::ImageReadICS` for more details.
 DIP_EXPORT FileInformation ImageReadICSInfo( String const& filename );
 
 /// \brief Returns true if the file `filename` is an ICS file.
@@ -118,8 +122,8 @@ DIP_EXPORT bool ImageIsICS( String const& filename );
 /// The ICS image file format (Image Cytometry Standard) can contain images with any dimensionality
 /// and data type also supported by DIPlib, and therefore is used as the default image file format.
 ///
-/// This function saves the pixel sizes, tensor dimension, and color space, but not the tensor shape.
-/// (TODO: how do we write the tensor shape? Use a History line?)
+/// This function saves the pixel sizes, tensor dimension, color space, and the tensor shape. However,
+/// the tensor shape is saved in a custom way and will not be recognized by other software.
 /// Overwrites any other file with the same name.
 ///
 /// `history` is a set of strings that are written as history lines, and will be recovered by the
@@ -135,7 +139,7 @@ DIP_EXPORT bool ImageIsICS( String const& filename );
 ///    these two pieces into a single '.ics' file. `"v2"` is the default.
 ///  = '"uncompressed"` or '"gzip"`: Determine whether to compress the pixel data or not. `"gzip"` is the default.
 DIP_EXPORT void ImageWriteICS(
-      Image const& c_image,
+      Image const& image,
       String const& filename,
       StringArray const& history = {},
       dip::uint significantBits = 0,
@@ -143,15 +147,139 @@ DIP_EXPORT void ImageWriteICS(
 );
 
 
-// TODO: functions to port:
-/*
-   dipio_ImageReadTIFF (dipio_tiff.h) (needs to support tiled images at some point!)
-   dipio_ImageReadTIFFInfo (dipio_tiff.h)
-   dipio_ImageIsTIFF (dipio_tiff.h)
-   dipio_ImageWriteTIFF (dipio_tiff.h)
+/// \brief Reads an image from the TIFF file `filename` and puts it in `out`.
+///
+/// The function tries to open `filename` as given first, and if that fails, it appends `.tif` to the
+/// name and tries again.
+///
+/// Multi-page TIFF files contain a series of 2D images, which, if they are the same size, data type and
+/// number of samples per pixel, can be regarded as a single 3D image.
+/// `imageNumbers` is a range which indicates which images from the multi-page TIFF file to read.
+/// If the range indicates a single page, it is read as a 2D image. In this case, `{0}` is the first
+/// image. Some Zeiss confocal microscopes write TIFF files (with an '.lsm' extension) in which image
+/// planes and thumbnails alternate. A range such as {0,-1,2} reads all image planes skipping the
+/// thumbnails.
+///
+/// The pixels per inch value in the TIFF file will be used to set the pixel size of `out`.
+///
+/// TIFF is a very flexible file format. We have to limit the types of images that can be read to the
+/// more common ones. These are the most obvious limitations:
+///  - Tiled images are not supported.
+///  - Only 1, 4, 8, 16 and 32 bits per pixel integer grayvalues are read, as well as 32-bit and 64-bit
+///    floating point.
+///  - Only 4 and 8 bits per pixel colormapped images are read.
+///  - Class Y images (YCbCr) and Log-compressed images (LogLuv or LogL) are not supported.
+// TODO: Support tiled images, and reading ROIs from them.
+// TODO: Option to read an indexed image without applying the color map, and reading in the color map separately.
+DIP_EXPORT FileInformation ImageReadTIFF(
+      Image& out,
+      String const& filename,
+      Range imageNumbers = Range{ 0 }
+);
+inline Image ImageReadTIFF(
+      String const& filename,
+      Range const& imageNumbers = Range{ 0 }
+) {
+   Image out;
+   ImageReadTIFF( out, filename, imageNumbers );
+   return out;
+}
 
-   dipio_ImageReadColourSeries (dipio_image.h) (should be named ImageReadTIFFSeries)
-*/
+/// \brief Reads a set of 2D TIFF images as a single 3D image.
+///
+/// `filenames` contains the paths to the TIFF files, which are read in the order given, and concatenated along the 3rd
+/// dimension. Only the first page of each TIFF file is read.
+DIP_EXPORT void ImageReadTIFFSeries(
+      Image& out,
+      StringArray const& filenames
+);
+inline Image ImageReadTIFFSeries(
+      StringArray const& filenames
+) {
+   Image out;
+   ImageReadTIFFSeries( out, filenames );
+   return out;
+}
+
+/// \brief Reads image information and metadata from the TIFF file `filename`, without reading the actual
+/// pixel data.
+DIP_EXPORT FileInformation ImageReadTIFFInfo( String const& filename, dip::uint imageNumber = 0 );
+
+/// \brief Returns true if the file `filename` is a TIFF file.
+DIP_EXPORT bool ImageIsTIFF( String const& filename );
+
+/// \brief Writes `image` as a TIFF file.
+///
+/// The TIFF image file format is very flexible in how data can be written, but is limited to multiple pages
+/// of 2D images. A 3D image will be written as a multi-page TIFF file. A tensor image will be written as an
+/// image with multiple samples per pixel, but the tensor shape will be lost. Color space information and
+/// pixel size are not saved either, though the pixel size, if in units of length, will set the pixels per
+/// inch value in the TIFF file.
+///
+/// This function saves the pixel sizes, tensor dimension, color space, and the tensor shape. However,
+/// the tensor shape is saved in a custom way and will not be recognized by other software.
+/// Overwrites any other file with the same name.
+///
+/// `compression` determines the compression method used when writing the pixel data. It can be one of the
+/// following strings:
+///  - `"none"`: no compression.
+///  - `"deflate"` or `""`: uses gzip compression. This is the better compression, but is not universally recognized.
+///  - `"LZW"`: uses LZW compression, yielding (typically) only slightly larger files than `"deflate"`. Recognized by
+///    most TIFF readers.
+///  - `"PackBits"`: uses run-length encoding, the simplest of the compression methods, and required to be recognized
+///    by compliant TIFF readers. Even small amounts of noise can cause this method to yield larger files than `"None"`.
+///  - `"JPEG"`: uses **lossy** JPEG compression.
+///
+/// If `compression` is `"JPEG"`, then `jpegLevel` determines the amount of compression applied. `jpegLevel` is an
+/// integer between 1 and 100, with increasing numbers yielding larger files and fewer compression artifacts.
+DIP_EXPORT void ImageWriteTIFF(
+      Image const& image,
+      String const& filename,
+      String const& compression = "",
+      dip::uint jpegLevel = 80
+);
+
+
+/// \brief Returns the location of the dot that separates the extension, or `dip::String::npos` if there is no dot.
+inline String::size_type FileGetExtensionPosition(
+      String const& filename
+) {
+   auto sep = filename.find_last_of( "/\\:" ); // Path separators.
+   auto pos = filename.substr( sep + 1 ).find_last_of( '.' ); // sep + 1 == 0 if no path separator.
+   if( pos == String::npos ) {
+      return String::npos;
+   }
+   return sep + 1 + pos;
+}
+
+/// \brief Gets the extension for the given file name, or an empty string if there's no extension.
+inline String FileGetExtension(
+      String const& filename
+) {
+   auto pos = FileGetExtensionPosition( filename );
+   if( pos == String::npos ) {
+      return {};
+   }
+   return filename.substr( pos + 1 );
+}
+
+/// \brief Returns true if the file has the given extension.
+inline bool FileCompareExtension(
+      String const& filename,
+      String const& extension
+) {
+   return StringCompareCaseInsensitive( FileGetExtension( filename ), extension );
+}
+
+/// \brief Adds the given extension to the file name, replacing any existing extension.
+inline String FileAddExtension(
+      String const& filename,
+      String const& extension
+) {
+   auto const pos = FileGetExtensionPosition( filename );
+   return filename.substr( 0, pos ) + String{ '.' } + extension;
+}
+
 
 /// \}
 

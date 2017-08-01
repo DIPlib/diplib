@@ -341,21 +341,34 @@ using StringSet = std::set< String >;       ///< A collection of strings, used t
 inline bool BooleanFromString( String const& input, String const& trueString, String const& falseString ) {
    if( input == trueString ) {
       return true;
-   } else if( input == falseString ) {
-      return false;
-   } else {
-      DIP_THROW_INVALID_FLAG( input );
    }
+   if( input == falseString ) {
+      return false;
+   }
+   DIP_THROW_INVALID_FLAG( input );
 }
 // An overload so that we don't construct a `String` object from string literals
 inline bool BooleanFromString( String const& input, String::value_type const* trueString, String::value_type const* falseString ) {
    if( input == trueString ) {
       return true;
-   } else if( input == falseString ) {
-      return false;
-   } else {
-      DIP_THROW_INVALID_FLAG( input );
    }
+   if( input == falseString ) {
+      return false;
+   }
+   DIP_THROW_INVALID_FLAG( input );
+}
+
+/// \brief A case-insensitive string comparison, the standard library doesn't want to meddle with case...
+inline bool StringCompareCaseInsensitive( String const& string1, String const& string2 ) {
+   if( string1.size() != string2.size() ) {
+      return false;
+   }
+   for( auto it1 = string1.begin(), it2 = string2.begin(); it1 != string1.end(); ++it1, ++it2 ) {
+      if( std::tolower( static_cast< unsigned char >( *it1 )) != std::tolower( static_cast< unsigned char >( *it2 ))) {
+         return false;
+      }
+   }
+   return true;
 }
 
 //

@@ -64,6 +64,8 @@ src/distance/edt.cpp
 src/distance/gdt.cpp
 src/distance/vdt.cpp
 src/file_io/ics.cpp
+src/file_io/tiff_read.cpp
+src/file_io/tiff_write.cpp
 src/generation/coordinates.cpp
 src/generation/noise.cpp
 src/geometry/interpolation.h

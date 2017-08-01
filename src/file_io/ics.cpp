@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for coordinate image generation
+ * This file contains definitions for ICS reading and writing
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -146,15 +146,16 @@ class IcsFile {
 };
 
 struct GetICSInfoData {
+   FileInformation fileInformation;
    dip::uint tensorDim;
 };
 
-GetICSInfoData GetICSInfo( IcsFile& icsFile, FileInformation& fileInformation ) {
-   fileInformation.name = static_cast< ICS* >( icsFile )->filename;
-   fileInformation.fileType = "ICS";
-   fileInformation.numberOfImages = 1;
-
+GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
    GetICSInfoData data;
+
+   data.fileInformation.name = static_cast< ICS* >( icsFile )->filename;
+   data.fileInformation.fileType = "ICS";
+   data.fileInformation.numberOfImages = 1;
 
    // get layout of image data
    Ics_DataType dt;
@@ -164,14 +165,14 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile, FileInformation& fileInformation ) 
    dip::uint nDims = static_cast< dip::uint >( ndims_ );
    size_t significantBits;
    DIP_THROW_IF( IcsGetSignificantBits( icsFile, &significantBits ) != IcsErr_Ok, "Couldn't read ICS file (IcsGetSignificantBits failed)" );
-   fileInformation.significantBits = significantBits;
-   fileInformation.sizes.resize( nDims );
+   data.fileInformation.significantBits = significantBits;
+   data.fileInformation.sizes.resize( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      fileInformation.sizes[ ii ] = icsSizes[ ii ];
+      data.fileInformation.sizes[ ii ] = icsSizes[ ii ];
    }
 
    // get pixel size
-   fileInformation.pixelSize.Resize( nDims );
+   data.fileInformation.pixelSize.Resize( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       double scale;
       char const* units;
@@ -179,54 +180,54 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile, FileInformation& fileInformation ) 
                     "Couldn't read ICS file (IcsGetPosition failed)" );
       try {
          Units u( units );
-         fileInformation.pixelSize[ ii ] = { scale, u };
+         data.fileInformation.pixelSize[ ii ] = { scale, u };
       } catch( ... ) {
          // `Units` failed to parse the string
-         fileInformation.pixelSize[ ii ] = { scale };
+         data.fileInformation.pixelSize[ ii ] = { scale };
       }
    }
 
    // is there a color/tensor dimension?
-   data.tensorDim = FindTensorDimension( icsFile, fileInformation.sizes, fileInformation.colorSpace );
-   fileInformation.tensorElements = 1;
+   data.tensorDim = FindTensorDimension( icsFile, data.fileInformation.sizes, data.fileInformation.colorSpace );
+   data.fileInformation.tensorElements = 1;
    if( data.tensorDim != nDims ) {
       // color or tensor dimension found
-      fileInformation.tensorElements = fileInformation.sizes[ data.tensorDim ];
-      fileInformation.sizes.erase( data.tensorDim );
-      fileInformation.pixelSize.EraseDimension( data.tensorDim );
+      data.fileInformation.tensorElements = data.fileInformation.sizes[ data.tensorDim ];
+      data.fileInformation.sizes.erase( data.tensorDim );
+      data.fileInformation.pixelSize.EraseDimension( data.tensorDim );
    }
 
    // convert ICS data type to DIPlib data type
    switch( dt ) {
       case Ics_uint8:
-         fileInformation.dataType = significantBits == 1 ? DT_BIN : DT_UINT8;
+         data.fileInformation.dataType = significantBits == 1 ? DT_BIN : DT_UINT8;
          break;
       case Ics_uint16:
-         fileInformation.dataType = DT_UINT16;
+         data.fileInformation.dataType = DT_UINT16;
          break;
       case Ics_uint32:
-         fileInformation.dataType = DT_UINT32;
+         data.fileInformation.dataType = DT_UINT32;
          break;
       case Ics_sint8:
-         fileInformation.dataType = DT_SINT8;
+         data.fileInformation.dataType = DT_SINT8;
          break;
       case Ics_sint16:
-         fileInformation.dataType = DT_SINT16;
+         data.fileInformation.dataType = DT_SINT16;
          break;
       case Ics_sint32:
-         fileInformation.dataType = DT_SINT32;
+         data.fileInformation.dataType = DT_SINT32;
          break;
       case Ics_real32:
-         fileInformation.dataType = DT_SFLOAT;
+         data.fileInformation.dataType = DT_SFLOAT;
          break;
       case Ics_real64:
-         fileInformation.dataType = DT_DFLOAT;
+         data.fileInformation.dataType = DT_DFLOAT;
          break;
       case Ics_complex32:
-         fileInformation.dataType = DT_SCOMPLEX;
+         data.fileInformation.dataType = DT_SCOMPLEX;
          break;
       case Ics_complex64:
-         fileInformation.dataType = DT_DCOMPLEX;
+         data.fileInformation.dataType = DT_DCOMPLEX;
          break;
       default:
          DIP_THROW( "Unknown ICS data type" );
@@ -235,14 +236,14 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile, FileInformation& fileInformation ) 
    // History tags
    int history_lines;
    DIP_THROW_IF( IcsGetNumHistoryStrings( icsFile, &history_lines ) != IcsErr_Ok, "Couldn't read ICS metadata (IcsGetNumHistoryStrings failed)" );
-   fileInformation.history.resize( static_cast< dip::uint >( history_lines ));
+   data.fileInformation.history.resize( static_cast< dip::uint >( history_lines ));
    if (history_lines>0) {
       Ics_HistoryIterator it;
       DIP_THROW_IF( IcsNewHistoryIterator( icsFile, &it, 0 ) != IcsErr_Ok, "Couldn't read ICS metadata (IcsNewHistoryIterator failed)");
       char const* hist;
       for( dip::uint ii = 0; ii < static_cast< dip::uint >( history_lines ); ++ii ) {
          DIP_THROW_IF( IcsGetHistoryStringIF( icsFile, &it, &hist ) != IcsErr_Ok, "Couldn't read ICS metadata (IcsGetHistoryStringI failed)");
-         fileInformation.history[ ii ] = hist;
+         data.fileInformation.history[ ii ] = hist;
       }
    }
 
@@ -262,10 +263,9 @@ FileInformation ImageReadICS(
    IcsFile icsFile( filename, "r" );
 
    // get file information
-   FileInformation fileInformation;
    GetICSInfoData data;
-   DIP_STACK_TRACE_THIS( data = GetICSInfo( icsFile, fileInformation ));
-   UnsignedArray sizes = fileInformation.sizes;
+   DIP_STACK_TRACE_THIS( data = GetICSInfo( icsFile ));
+   UnsignedArray sizes = data.fileInformation.sizes;
    dip::uint nDims = sizes.size();
 
    // check & fix ROI information
@@ -282,7 +282,7 @@ FileInformation ImageReadICS(
          }
          outSizes[ ii ] = roi[ ii ].Size();
       }
-      channels.Fix( fileInformation.tensorElements );
+      channels.Fix( data.fileInformation.tensorElements );
       if( channels.start > channels.stop ) {
          std::swap( channels.start, channels.stop );
          // We don't read the tensor dimension in reverse order
@@ -291,14 +291,14 @@ FileInformation ImageReadICS(
    DIP_END_STACK_TRACE
 
    // forge the image
-   out.ReForge( outSizes, outTensor, fileInformation.dataType );
-   if( outTensor == fileInformation.tensorElements ) {
-      out.SetColorSpace( fileInformation.colorSpace );
+   out.ReForge( outSizes, outTensor, data.fileInformation.dataType );
+   if( outTensor == data.fileInformation.tensorElements ) {
+      out.SetColorSpace( data.fileInformation.colorSpace );
    }
-   out.SetPixelSize( fileInformation.pixelSize );
+   out.SetPixelSize( data.fileInformation.pixelSize );
 
    // get tensor shape if necessary
-   if(( outTensor > 1 ) && ( outTensor == fileInformation.tensorElements )) {
+   if(( outTensor > 1 ) && ( outTensor == data.fileInformation.tensorElements )) {
       Ics_HistoryIterator it;
       Ics_Error e = IcsNewHistoryIterator( icsFile, &it, "tensor" );
       if( e == IcsErr_Ok ) {
@@ -329,7 +329,7 @@ FileInformation ImageReadICS(
 
    // make a quick copy and place the tensor dimension back where it was
    Image outRef = out.QuickCopy();
-   if( fileInformation.tensorElements > 1 ) {
+   if( data.fileInformation.tensorElements > 1 ) {
       outRef.TensorToSpatial( data.tensorDim );
       roi.insert( data.tensorDim, channels );
       sizes.insert( data.tensorDim, outTensor );
@@ -352,7 +352,7 @@ FileInformation ImageReadICS(
    nDims = outRef.Dimensionality();
 
    // prepare the buffer
-   dip::uint sizeOf = fileInformation.dataType.SizeOf();
+   dip::uint sizeOf = data.fileInformation.dataType.SizeOf();
    dip::uint bufSize = sizeOf * (( outRef.Size( 0 ) - 1 ) * roi[ 0 ].step + 1 );
    std::vector< uint8 > buffer( bufSize );
 
@@ -384,14 +384,14 @@ FileInformation ImageReadICS(
                     "Couldn't read pixel data from ICS file (IcsGetDataBlock failed)" );
       cur_loc += bufSize;
       // copy buffer to image
-      detail::CopyBuffer( buffer.data(), fileInformation.dataType, static_cast< dip::sint >( roi[ 0 ].step ), 1,
+      detail::CopyBuffer( buffer.data(), data.fileInformation.dataType, static_cast< dip::sint >( roi[ 0 ].step ), 1,
                           it.Pointer(), outRef.DataType(), outRef.Stride( 0 ), 1,
                           outRef.Size( 0 ), 1 );
    } while( ++it );
 
    // we're done
    icsFile.Close();
-   return fileInformation;
+   return data.fileInformation;
 }
 
 FileInformation ImageReadICS(
@@ -445,12 +445,12 @@ FileInformation ImageReadICSInfo( String const& filename ) {
    IcsFile icsFile( filename, "r" );
 
    // get file information
-   FileInformation fileInformation;
-   DIP_STACK_TRACE_THIS( GetICSInfo( icsFile, fileInformation ));
+   GetICSInfoData data;
+   DIP_STACK_TRACE_THIS( data = GetICSInfo( icsFile ));
 
    // done
    icsFile.Close();
-   return fileInformation;
+   return data.fileInformation;
 }
 
 bool ImageIsICS( String const& filename ) {
