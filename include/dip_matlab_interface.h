@@ -697,9 +697,9 @@ inline mxArray* GetArrayUnicode( dip::String const& in ) {
 #ifdef DIP__ENABLE_UNICODE
    static_assert( sizeof( char16_t ) == sizeof( mxChar ), "MATLAB's mxChar is not 16 bits." );
    std::u16string u16str = std::wstring_convert< std::codecvt_utf8_utf16< char16_t >, char16_t >{}.from_bytes( in );
-   dip::uint sz[ 2 ] = { 1, u16str.size() + 1 };
+   dip::uint sz[ 2 ] = { 1, u16str.size() };
    mxArray* out = mxCreateCharArray( 2, sz );
-   std::copy( u16str.begin(), u16str.end() + 1, mxGetChars( out ) ); // copy one past the end, to copy null terminator.
+   std::copy( u16str.begin(), u16str.end(), mxGetChars( out ) );
    return out;
 #else
    return GetArray( in );
@@ -743,7 +743,7 @@ inline mxArray* GetArray( dip::PixelSize const& pixelSize ) {
    mxArray* pxsz = mxCreateStructMatrix( pixelSize.Size(), 1, nPxsizeStructFields, pxsizeStructFields );
    for( dip::uint ii = 0; ii < pixelSize.Size(); ++ii ) {
       mxSetField( pxsz, ii, pxsizeStructFields[ 0 ], dml::GetArray( pixelSize[ ii ].magnitude ));
-      mxSetField( pxsz, ii, pxsizeStructFields[ 1 ], dml::GetArrayUnicode( pixelSize[ ii ].units.String()));
+      mxSetField( pxsz, ii, pxsizeStructFields[ 1 ], dml::GetArrayUnicode( pixelSize[ ii ].units.String() ));
    }
    return pxsz;
 }
