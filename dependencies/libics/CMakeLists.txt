@@ -14,7 +14,9 @@
 #
 ##############################################################################
 cmake_minimum_required(VERSION 3.0)
-cmake_policy(SET CMP0068 NEW)
+if(POLICY CMP0068)
+   cmake_policy(SET CMP0068 NEW)
+endif()
 
 project(libics VERSION 1.6.1)
 
