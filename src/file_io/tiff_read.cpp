@@ -43,7 +43,7 @@ class TiffFile {
          // Open the file for reading
          tiff_ = TIFFOpen( filename_.c_str(), "rc" ); // c == Disable the use of strip chopping when reading images.
          if( tiff_ == nullptr ) {
-            if( FileGetExtensionPosition( filename_ ) == String::npos ) {
+            if( !FileHasExtension( filename_ )) {
                filename_ = FileAddExtension( filename_, "tif" ); // Try with "tif" extension
                tiff_ = TIFFOpen( filename_.c_str(), "rc" );
                if( tiff_ == nullptr ) {
@@ -218,21 +218,22 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff ) {
          pixelSizeMultiplier = 0.01 * Units::Meter();
          break;
    }
-   pixelSizeMultiplier = pixelSizeMultiplier.Power( -1 );
    float resolution;
-   if( !TIFFGetField( tiff, TIFFTAG_YRESOLUTION, &resolution )) {
-      data.fileInformation.pixelSize[ 0 ] = 1;
-   } else {
-      data.fileInformation.pixelSize[ 0 ] = ( 1.0 / static_cast< double >( resolution )) * pixelSizeMultiplier;
+   PhysicalQuantity ps = 1;
+   if( TIFFGetField( tiff, TIFFTAG_XRESOLUTION, &resolution )) {
+      ps = ( 1.0 / static_cast< double >( resolution )) * pixelSizeMultiplier;
+      ps.Normalize();
    }
-   if( !TIFFGetField( tiff, TIFFTAG_XRESOLUTION, &resolution )) {
-      data.fileInformation.pixelSize[ 1 ] = 1;
-   } else {
-      data.fileInformation.pixelSize[ 1 ] = ( 1.0 / static_cast< double >( resolution )) * pixelSizeMultiplier;
+   data.fileInformation.pixelSize.Set( 0, ps );
+   ps = 1;
+   if( TIFFGetField( tiff, TIFFTAG_YRESOLUTION, &resolution )) {
+      ps = ( 1.0 / static_cast< double >( resolution )) * pixelSizeMultiplier;
+      ps.Normalize();
    }
+   data.fileInformation.pixelSize.Set( 1, ps );
 
    // Number of images in file
-   data.fileInformation.numberOfImages = TIFFNumberOfDirectories(tiff);
+   data.fileInformation.numberOfImages = TIFFNumberOfDirectories( tiff );
 
    return data;
 }
@@ -247,7 +248,7 @@ void ExpandColourMap4(
       dip::uint width,
       dip::uint height,
       dip::sint tensorStride,
-      IntegerArray const& stride,
+      IntegerArray const& strides,
       uint16 const* ColourMapRed,
       uint16 const* ColourMapGreen,
       uint16 const* ColourMapBlue
@@ -261,7 +262,7 @@ void ExpandColourMap4(
          *dest_pixel = ColourMapRed[ index ];
          *( dest_pixel + green ) = ColourMapGreen[ index ];
          *( dest_pixel + blue ) = ColourMapBlue[ index ];
-         dest_pixel += stride[ 0 ];
+         dest_pixel += strides[ 0 ];
          ++jj;
          if( jj >= width ) {
             ++src;
@@ -271,11 +272,11 @@ void ExpandColourMap4(
          *dest_pixel = ColourMapRed[ index ];
          *( dest_pixel + green ) = ColourMapGreen[ index ];
          *( dest_pixel + blue ) = ColourMapBlue[ index ];
-         dest_pixel += stride[ 0 ];
+         dest_pixel += strides[ 0 ];
          ++jj;
          ++src;
       }
-      dest += stride[ 1 ];
+      dest += strides[ 1 ];
    }
 }
 
@@ -285,7 +286,7 @@ void ExpandColourMap8(
       dip::uint width,
       dip::uint height,
       dip::sint tensorStride,
-      IntegerArray const& stride,
+      IntegerArray const& strides,
       uint16 const* ColourMapRed,
       uint16 const* ColourMapGreen,
       uint16 const* ColourMapBlue
@@ -298,10 +299,10 @@ void ExpandColourMap8(
          *dest_pixel = ColourMapRed[ *src ];
          *( dest_pixel + green ) = ColourMapGreen[ *src ];
          *( dest_pixel + blue ) = ColourMapBlue[ *src ];
-         dest_pixel += stride[ 0 ];
+         dest_pixel += strides[ 0 ];
          ++src;
       }
-      dest += stride[ 1 ];
+      dest += strides[ 1 ];
    }
 }
 
@@ -329,7 +330,7 @@ void ReadTIFFColorMap(
    // Read the image data stripwise
    uint32 imageWidth = static_cast< uint32 >( image.Size( 0 ));
    uint32 imageLength = static_cast< uint32 >( image.Size( 1 ));
-   dip::uint scanline = static_cast<dip::uint>( TIFFScanlineSize( tiff ));
+   dip::uint scanline = static_cast< dip::uint >( TIFFScanlineSize( tiff ));
    if( bitsPerSample == 4 ) {
       DIP_THROW_IF(( scanline != div_ceil( image.Size( 0 ), 2u )), "Wrong scanline size" );
    } else {
@@ -360,14 +361,14 @@ void CopyBuffer1(
       uint8 const* src,
       dip::uint width,
       dip::uint height,
-      IntegerArray const& stride
+      IntegerArray const& strides
 ) {
    for( dip::uint ii = 0; ii < height; ++ii ) {
       uint8* dest_pixel = dest;
       dip::sint kk = 7;
       for( dip::uint jj = 0; jj < width; ++jj ) {
          *dest_pixel = (( *src ) & ( 1 << kk )) ? 1 : 0;
-         dest_pixel += stride[ 0 ];
+         dest_pixel += strides[ 0 ];
          --kk;
          if( kk < 0 ) {
             kk = 7;
@@ -378,7 +379,7 @@ void CopyBuffer1(
          //kk = 7;
          ++src;
       }
-      dest += stride[ 1 ];
+      dest += strides[ 1 ];
    }
 }
 
@@ -387,14 +388,14 @@ void CopyBufferInv1(
       uint8 const* src,
       dip::uint width,
       dip::uint height,
-      IntegerArray const& stride
+      IntegerArray const& strides
 ) {
    for( dip::uint ii = 0; ii < height; ++ii ) {
       uint8* dest_pixel = dest;
       dip::sint kk = 7;
       for( dip::uint jj = 0; jj < width; ++jj ) {
          *dest_pixel = (( *src ) & ( 1 << kk )) ? 0 : 1;
-         dest_pixel += stride[ 0 ];
+         dest_pixel += strides[ 0 ];
          --kk;
          if( kk < 0 ) {
             kk = 7;
@@ -405,7 +406,7 @@ void CopyBufferInv1(
          //kk = 7;
          ++src;
       }
-      dest += stride[ 1 ];
+      dest += strides[ 1 ];
    }
 }
 
@@ -421,7 +422,7 @@ void ReadTIFFBinary(
    // Read the image data stripwise
    uint32 imageWidth = static_cast< uint32 >( image.Size( 0 ));
    uint32 imageLength = static_cast< uint32 >( image.Size( 1 ));
-   dip::uint scanline = static_cast<dip::uint>( TIFFScanlineSize( tiff ));
+   dip::uint scanline = static_cast< dip::uint >( TIFFScanlineSize( tiff ));
    DIP_THROW_IF(( scanline != div_ceil( image.Size( 0 ), 8u )), "Wrong scanline size" );
    std::vector< uint8 > buf( static_cast< dip::uint >( TIFFStripSize( tiff )));
    uint32 rowsPerStrip;
@@ -431,9 +432,9 @@ void ReadTIFFBinary(
       uint32 strip = TIFFComputeStrip( tiff, row, 0 );
       DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, buf.data(), static_cast< tmsize_t >( nrow * scanline )) < 0, "Error reading data" );
       if( data.photometricInterpretation == PHOTOMETRIC_MINISWHITE ) {
-         CopyBufferInv1( imagedata, buf.data(), imageWidth, nrow, image.Strides());
+         CopyBufferInv1( imagedata, buf.data(), imageWidth, nrow, image.Strides() );
       } else {
-         CopyBuffer1( imagedata, buf.data(), imageWidth, nrow, image.Strides());
+         CopyBuffer1( imagedata, buf.data(), imageWidth, nrow, image.Strides() );
       }
       imagedata += static_cast< dip::sint >( nrow ) * image.Stride( 1 );
    }
@@ -448,16 +449,16 @@ void CopyBuffer8(
       uint8 const* src,
       dip::uint width,
       dip::uint height,
-      IntegerArray const& stride
+      IntegerArray const& strides
 ) {
    for( dip::uint ii = 0; ii < height; ++ii ) {
       uint8* dest_pixel = dest;
       for( dip::uint jj = 0; jj < width; ++jj ) {
          *dest_pixel = *src;
-         dest_pixel += stride[ 0 ];
+         dest_pixel += strides[ 0 ];
          ++src;
       }
-      dest += stride[ 1 ];
+      dest += strides[ 1 ];
    }
 }
 
@@ -466,11 +467,11 @@ void CopyBufferN(
       uint8 const* src,
       dip::uint width,
       dip::uint height,
-      IntegerArray const& stride,
+      IntegerArray const& strides,
       dip::uint sizeOf
 ) {
-   dip::sint stride_row = stride[ 1 ] * static_cast< dip::sint >( sizeOf );
-   dip::sint stride_pixel = stride[ 0 ] * static_cast< dip::sint >( sizeOf );
+   dip::sint stride_row = strides[ 1 ] * static_cast< dip::sint >( sizeOf );
+   dip::sint stride_pixel = strides[ 0 ] * static_cast< dip::sint >( sizeOf );
    for( dip::uint ii = 0; ii < height; ++ii ) {
       uint8* dest_pixel = dest;
       for( dip::uint jj = 0; jj < width; ++jj ) {
@@ -489,7 +490,7 @@ void CopyBufferMultiChannel8(
       dip::uint width,
       dip::uint height,
       dip::sint tensorStride,
-      IntegerArray const& stride
+      IntegerArray const& strides
 ) {
    for( dip::uint ii = 0; ii < height; ++ii ) {
       uint8* dest_pixel = dest;
@@ -500,9 +501,9 @@ void CopyBufferMultiChannel8(
             dest_sample += tensorStride;
             ++src;
          }
-         dest_pixel += stride[ 0 ];
+         dest_pixel += strides[ 0 ];
       }
-      dest += stride[ 1 ];
+      dest += strides[ 1 ];
    }
 }
 
@@ -513,11 +514,11 @@ void CopyBufferMultiChannelN(
       dip::uint width,
       dip::uint height,
       dip::sint tensorStride,
-      IntegerArray const& stride,
+      IntegerArray const& strides,
       dip::uint sizeOf
 ) {
-   dip::sint stride_row = stride[ 1 ] * static_cast< dip::sint >( sizeOf );
-   dip::sint stride_pixel = stride[ 0 ] * static_cast< dip::sint >( sizeOf );
+   dip::sint stride_row = strides[ 1 ] * static_cast< dip::sint >( sizeOf );
+   dip::sint stride_pixel = strides[ 0 ] * static_cast< dip::sint >( sizeOf );
    dip::sint stride_sample = tensorStride * static_cast< dip::sint >( sizeOf );
    for( dip::uint ii = 0; ii < height; ++ii ) {
       uint8* dest_pixel = dest;
@@ -555,12 +556,13 @@ void ReadTIFFData(
    dip::uint sizeOf = dataType.SizeOf();
    uint32 rowsPerStrip;
    TIFFGetFieldDefaulted( tiff, TIFFTAG_ROWSPERSTRIP, &rowsPerStrip );
-   dip::uint scanline = static_cast<dip::uint>( TIFFScanlineSize( tiff ));
+   dip::uint scanline = static_cast< dip::uint >( TIFFScanlineSize( tiff ));
    tsize_t stripsize = TIFFStripSize( tiff );
    std::vector< uint8 > buf( static_cast< dip::uint >( stripsize ));
    if( planarConfiguration == PLANARCONFIG_CONTIG ) {
       // 1234123412341234....
-      // We know that tensorElements > 1
+      // We know that tensorElements > 1, otherwise we force to PLANARCONFIG_SEPARATE
+      // TODO: if strides are normal, we don't need the buffer and the expensive copying using strides
       DIP_THROW_IF(( scanline != sizes[ 0 ] * tensorElements * sizeOf ), "Wrong scanline size" );
       for( uint32 row = 0; row < sizes[ 1 ]; row += rowsPerStrip ) {
          dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
@@ -576,6 +578,7 @@ void ReadTIFFData(
       }
    } else if( planarConfiguration == PLANARCONFIG_SEPARATE ) {
       // 1111...2222...3333...4444...
+      // TODO: if strides match data in file, we don't need the buffer and the expensive copying using strides
       DIP_THROW_IF(( scanline != sizes[ 0 ] * sizeOf ), "Wrong scanline size" );
       uint8* imagebase = imagedata;
       for( uint16 s = 0; s < tensorElements; ++s ) {
@@ -606,7 +609,7 @@ void ReadTIFFGreyValue(
 ) {
    // Forge the image
    image.ReForge( data.fileInformation.sizes, data.fileInformation.tensorElements, data.fileInformation.dataType );
-   uint8* imagedata = static_cast< uint8* >( image.Origin());
+   uint8* imagedata = static_cast< uint8* >( image.Origin() );
 
    // Read the image data
    DIP_STACK_TRACE_THIS( ReadTIFFData(
@@ -625,9 +628,9 @@ void ImageReadTIFFStack(
       Range const& imageNumbers
 ) {
    // Forge the image
-   data.fileInformation.sizes.push_back( imageNumbers.Size());
+   data.fileInformation.sizes.push_back( imageNumbers.Size() );
    image.ReForge( data.fileInformation.sizes, data.fileInformation.tensorElements, data.fileInformation.dataType );
-   uint8* imagedata = static_cast< uint8* >( image.Origin());
+   uint8* imagedata = static_cast< uint8* >( image.Origin() );
    dip::sint z_stride = image.Stride( 2 ) * static_cast< dip::sint >( data.fileInformation.dataType.SizeOf() );
 
    // Read the image data for first plane
@@ -636,7 +639,7 @@ void ImageReadTIFFStack(
          image.DataType(), tiff ));
 
    // Read the image data for other planes
-   uint16 directory = static_cast< uint16 >( imageNumbers.Offset());
+   uint16 directory = static_cast< uint16 >( imageNumbers.Offset() );
    for( dip::uint ii = 1; ii < image.Size( 2 ); ++ii ) {
       imagedata += z_stride;
       if( imageNumbers.start > imageNumbers.stop ) {
@@ -725,7 +728,7 @@ FileInformation ImageReadTIFF(
       if( data.photometricInterpretation == PHOTOMETRIC_PALETTE ) {
          DIP_STACK_TRACE_THIS( ReadTIFFColorMap( out, tiff, data ));
       } else {
-         if( data.fileInformation.dataType.IsBinary()) {
+         if( data.fileInformation.dataType.IsBinary() ) {
             DIP_STACK_TRACE_THIS( ReadTIFFBinary( out, tiff, data ));
          } else {
             DIP_STACK_TRACE_THIS( ReadTIFFGreyValue( out, tiff, data ));
@@ -781,7 +784,7 @@ FileInformation ImageReadTIFFInfo(
 
    // Go to the right directory
    if( imageNumber > 0 ) {
-      DIP_THROW_IF( TIFFSetDirectory( tiff, static_cast< uint16 >(imageNumber)) == 0, TIFF_DIRECTORY_NOT_FOUND );
+      DIP_THROW_IF( TIFFSetDirectory( tiff, static_cast< uint16 >( imageNumber )) == 0, TIFF_DIRECTORY_NOT_FOUND );
    }
 
    // Get info

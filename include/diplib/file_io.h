@@ -54,7 +54,7 @@ struct FileInformation {
 /// The ICS image file format (Image Cytometry Standard) can contain images with any dimensionality
 /// and data type also supported by DIPlib, and therefore is used as the default image file format.
 ///
-/// The function tries to open `filename` as given first, and if that fails, it appends `.ics` to the
+/// The function tries to open `filename` as given first, and if that fails, it appends ".ics" to the
 /// name and tries again.
 ///
 /// `roi` can be set to read in a subset of the pixels in the file. If only one array element is given,
@@ -63,6 +63,7 @@ struct FileInformation {
 /// are not included in the `roi` parameter.
 ///
 /// Information about the file and all metadata is returned in the `FileInformation` output argument.
+// TODO: read sensor information also into the history strings
 DIP_EXPORT FileInformation ImageReadICS(
       Image& out,
       String const& filename,
@@ -124,12 +125,12 @@ DIP_EXPORT bool ImageIsICS( String const& filename );
 ///
 /// This function saves the pixel sizes, tensor dimension, color space, and the tensor shape. However,
 /// the tensor shape is saved in a custom way and will not be recognized by other software.
-/// Overwrites any other file with the same name.
+/// The ".ics" extension will be added to `filename` if it's not there. Overwrites any other file with the same name.
 ///
 /// `history` is a set of strings that are written as history lines, and will be recovered by the
 /// `dip::ImageReadICSInfo` function.
 ///
-/// Set `sigbits` only if the number of significant bits is different from the full range of the data
+/// Set `significantBits` only if the number of significant bits is different from the full range of the data
 /// type of `image` (use 0 otherwise). For example, it can be used to specifiy that a camera has produced
 /// 10-bit output, even though the image is of type `dip::DT_UINT16`.
 ///
@@ -149,14 +150,14 @@ DIP_EXPORT void ImageWriteICS(
 
 /// \brief Reads an image from the TIFF file `filename` and puts it in `out`.
 ///
-/// The function tries to open `filename` as given first, and if that fails, it appends `.tif` to the
+/// The function tries to open `filename` as given first, and if that fails, it appends ".tif" and ".tiff" to the
 /// name and tries again.
 ///
 /// Multi-page TIFF files contain a series of 2D images, which, if they are the same size, data type and
 /// number of samples per pixel, can be regarded as a single 3D image.
 /// `imageNumbers` is a range which indicates which images from the multi-page TIFF file to read.
 /// If the range indicates a single page, it is read as a 2D image. In this case, `{0}` is the first
-/// image. Some Zeiss confocal microscopes write TIFF files (with an '.lsm' extension) in which image
+/// image. Some Zeiss confocal microscopes write TIFF files (with an ".lsm" extension) in which image
 /// planes and thumbnails alternate. A range such as {0,-1,2} reads all image planes skipping the
 /// thumbnails.
 ///
@@ -211,14 +212,16 @@ DIP_EXPORT bool ImageIsTIFF( String const& filename );
 /// \brief Writes `image` as a TIFF file.
 ///
 /// The TIFF image file format is very flexible in how data can be written, but is limited to multiple pages
-/// of 2D images. A 3D image will be written as a multi-page TIFF file. A tensor image will be written as an
-/// image with multiple samples per pixel, but the tensor shape will be lost. Color space information and
-/// pixel size are not saved either, though the pixel size, if in units of length, will set the pixels per
-/// inch value in the TIFF file.
+/// of 2D images. A 3D image will be written as a multi-page TIFF file (not yet implemented).
+/// A tensor image will be written as an image with multiple samples per pixel, but the tensor shape will be lost.
+/// Color space information and pixel size are not saved either, though the pixel size, if in units of length,
+/// will set the pixels per centimeter value in the TIFF file.
 ///
-/// This function saves the pixel sizes, tensor dimension, color space, and the tensor shape. However,
-/// the tensor shape is saved in a custom way and will not be recognized by other software.
-/// Overwrites any other file with the same name.
+/// The samples of `image` are written direclty to the TIFF file, no matter what their data type is. Complex data
+/// is not supported by the TIFF format, but all binary, integer and floating-point types are. However, if the type
+/// us not binary, 8-bit or 16-bit unsigned integer, many TIFF readers will not recognize the format.
+///
+/// If `filename` does not have an extension, ".tif" will be added. Overwrites any other file with the same name.
 ///
 /// `compression` determines the compression method used when writing the pixel data. It can be one of the
 /// following strings:
@@ -227,11 +230,9 @@ DIP_EXPORT bool ImageIsTIFF( String const& filename );
 ///  - `"LZW"`: uses LZW compression, yielding (typically) only slightly larger files than `"deflate"`. Recognized by
 ///    most TIFF readers.
 ///  - `"PackBits"`: uses run-length encoding, the simplest of the compression methods, and required to be recognized
-///    by compliant TIFF readers. Even small amounts of noise can cause this method to yield larger files than `"None"`.
-///  - `"JPEG"`: uses **lossy** JPEG compression.
-///
-/// If `compression` is `"JPEG"`, then `jpegLevel` determines the amount of compression applied. `jpegLevel` is an
-/// integer between 1 and 100, with increasing numbers yielding larger files and fewer compression artifacts.
+///    by compliant TIFF readers. Even small amounts of noise can cause this method to yield larger files than `"none"`.
+///  - `"JPEG"`: uses **lossy** JPEG compression. `jpegLevel` determines the amount of compression applied. `jpegLevel`
+///    is an integer between 1 and 100, with increasing numbers yielding larger files and fewer compression artifacts.
 DIP_EXPORT void ImageWriteTIFF(
       Image const& image,
       String const& filename,
@@ -250,6 +251,13 @@ inline String::size_type FileGetExtensionPosition(
       return String::npos;
    }
    return sep + 1 + pos;
+}
+
+/// \brief Returns true if the file has an extension.
+inline bool FileHasExtension(
+      String const& filename
+) {
+   return FileGetExtensionPosition( filename ) != String::npos;
 }
 
 /// \brief Gets the extension for the given file name, or an empty string if there's no extension.

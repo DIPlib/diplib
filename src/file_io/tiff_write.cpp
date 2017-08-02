@@ -33,12 +33,16 @@ static const char* TIFF_WRITE_TAG = "Error writing tag to TIFF file";
 
 class TiffFile {
    public:
-      explicit TiffFile( String filename ) : filename_( std::move( filename )) {
+      explicit TiffFile( String const& filename ) {
          // Set error and warning handlers, these are library-wide!
-         TIFFSetErrorHandler( nullptr ); // TODO: should we set a function here that throws an error? Would that be dangerous when called from within C-code?
+         TIFFSetErrorHandler( nullptr );
          TIFFSetWarningHandler( nullptr );
-         // Open the file for reading
-         tiff_ = TIFFOpen( filename_.c_str(), "w" );
+         // Open the file for writing
+         if( FileHasExtension( filename )) {
+            tiff_ = TIFFOpen( filename.c_str(), "w" );
+         } else {
+            tiff_ = TIFFOpen( FileAddExtension( filename, "tif" ).c_str(), "w" );
+         }
          DIP_THROW_IF( tiff_ == nullptr, "Could not open the specified file" );
       }
       TiffFile( TiffFile const& ) = delete;
@@ -53,14 +57,11 @@ class TiffFile {
       }
       // Implicit cast to TIFF*
       operator TIFF*() { return tiff_; }
-      // Retrieve file name
-      String const& FileName() const { return filename_; }
    private:
       TIFF* tiff_ = nullptr;
-      String filename_;
 };
 
-static uint16 CompressionTranslate (String const& compression) {
+static uint16 CompressionTranslate( String const& compression ) {
    if( compression.empty() || ( compression == "deflate" )) {
       return COMPRESSION_DEFLATE;
    } else if( compression == "LZW" ) {
@@ -76,549 +77,287 @@ static uint16 CompressionTranslate (String const& compression) {
    }
 }
 
-#if 0
-
-static void FillBuffer8
-(
-   void* dest,
-   const void* src,
-   dip_uint width,
-   dip_uint height,        /* Number of pixels to fill */
-   dip_IntegerArray stride
-)
-{
-   dip_uint8* _dest;
-   const dip_uint8* _src;
-   dip_uint ii, jj;
-
-   _dest = (dip_uint8*)dest;
-   for (ii=0; ii<height; ii++) {
-      _src = (const dip_uint8*)src + ii*stride->array[1];
-      for (jj=0; jj<width; jj++) {
-         *_dest = *_src;
-         _dest++;
-         _src += stride->array[0];
-      }
-   }
-}
-
-static void FillBuffer
-(
-   void* dest,
-   const void* src,
-   dip_uint width,
-   dip_uint height,        /* Number of pixels to fill */
-   dip_IntegerArray stride,
-   dip_uint size
-)
-{
-   dip_uint8* _dest;
-   const dip_uint8* _src;
-   dip_uint ii, jj;
-
-   _dest = (dip_uint8*)dest;
-   for (ii=0; ii<height; ii++) {
-      _src = (const dip_uint8*)src + ii*size*stride->array[1];
-      for (jj=0; jj<width; jj++) {
-         memcpy (_dest, _src, size);
-         _dest += size;
-         _src += size*stride->array[0];
-      }
-   }
-}
-
-static void CompactBits8
-(
-   void* dest,
-   const void* src,
-   dip_uint width,
-   dip_uint height,        /* Number of pixels to fill */
-   dip_IntegerArray stride,
-   dip_int plane
-)
-{
-   dip_uint8* _dest;
-   const dip_uint8* _src;
-   dip_uint ii, jj;
-   dip_int kk = 7;
-   dip_uint8 mask = 1<<plane;
-   _dest = (dip_uint8*)dest;
-   *_dest = 0;
-   for (ii=0; ii<height; ii++) {
-      if (kk != 7) {
+void FillBuffer1(
+      uint8* dest,
+      uint8 const* src,
+      dip::uint width,
+      dip::uint height,
+      IntegerArray const& strides
+) {
+   dip::sint kk = 7;
+   uint8 byte = 0;
+   for( dip::uint ii = 0; ii < height; ++ii ) {
+      if( kk != 7 ) {
          kk = 7;
-         _dest++;
-         *_dest = 0;
+         *dest = byte;
+         ++dest;
+         byte = 0;
       }
-      _src = (const dip_uint8*)src + ii*stride->array[1];
-      for (jj=0; jj<width; jj++) {
-         if (kk < 0) {
+      uint8 const* src_pixel = src;
+      for( dip::uint jj = 0; jj < width; ++jj ) {
+         if( kk < 0 ) {
             kk = 7;
-            _dest++;
-            *_dest = 0;
+            *dest = byte;
+            ++dest;
+            byte = 0;
          }
-         *_dest |= (dip_uint8)(((*_src)&mask)?1<<kk:0);
-         _src += stride->array[0];
-         kk--;
+         byte |= *src_pixel ? 1 << kk : 0;
+         src_pixel += strides[ 0 ];
+         --kk;
       }
+      src += strides[ 1 ];
    }
 }
 
-static void CompactBits16
-(
-   void* dest,
-   const void* src,
-   dip_uint width,
-   dip_uint height,        /* Number of pixels to fill */
-   dip_IntegerArray stride,
-   dip_int plane
-)
-{
-   dip_uint8* _dest;
-   const dip_uint16* _src;
-   dip_uint ii, jj;
-   dip_int kk = 7;
-   dip_uint16 mask = 1<<plane;
-   _dest = (dip_uint8*)dest;
-   *_dest = 0;
-   for (ii=0; ii<height; ii++) {
-      if (kk != 7) {
-         kk = 7;
-         _dest++;
-         *_dest = 0;
+void FillBuffer8(
+      uint8* dest,
+      uint8 const* src,
+      dip::uint width,
+      dip::uint height,
+      IntegerArray const& strides
+) {
+   for( dip::uint ii = 0; ii < height; ++ii ) {
+      uint8 const* src_pixel = src;
+      for( dip::uint jj = 0; jj < width; ++jj ) {
+         *dest = *src_pixel;
+         ++dest;
+         src_pixel += strides[ 0 ];
       }
-      _src = (const dip_uint16*)src + ii*stride->array[1];
-      for (jj=0; jj<width; jj++) {
-         if (kk < 0) {
-            kk = 7;
-            _dest++;
-            *_dest = 0;
+      src += strides[ 1 ];
+   }
+}
+
+void FillBufferN(
+      uint8* dest,
+      uint8 const* src,
+      dip::uint width,
+      dip::uint height,
+      IntegerArray const& strides,
+      dip::uint sizeOf
+) {
+   for( dip::uint ii = 0; ii < height; ++ii ) {
+      uint8 const* src_pixel = src;
+      for( dip::uint jj = 0; jj < width; ++jj ) {
+         memcpy( dest, src_pixel, sizeOf );
+         dest += sizeOf;
+         src_pixel += static_cast< dip::sint >( sizeOf ) * strides[ 0 ];
+      }
+      src += static_cast< dip::sint >( sizeOf ) * strides[ 1 ];
+   }
+}
+
+void FillBufferMultiChannel8(
+      uint8* dest,
+      uint8 const* src,
+      dip::uint tensorElements,
+      dip::uint width,
+      dip::uint height,
+      dip::sint tensorStride,
+      IntegerArray const& strides
+) {
+   for( dip::uint ii = 0; ii < height; ++ii ) {
+      uint8 const* src_pixel = src;
+      for( dip::uint jj = 0; jj < width; ++jj ) {
+         uint8 const* src_sample = src_pixel;
+         for( dip::uint kk = 0; kk < tensorElements; ++kk ) {
+            *dest = *src_pixel;
+            ++dest;
+            src_sample += tensorStride;
          }
-         *_dest |= (dip_uint8)(((*_src)&mask)?1<<kk:0);
-         _src += stride->array[0];
-         kk--;
+         src_pixel += strides[ 0 ];
       }
+      src += strides[ 1 ];
    }
 }
 
-static void CompactBits32
-(
-   void* dest,
-   const void* src,
-   dip_uint width,
-   dip_uint height,        /* Number of pixels to fill */
-   dip_IntegerArray stride,
-   dip_int plane
-)
-{
-   dip_uint8* _dest;
-   const dip_uint32* _src;
-   dip_uint ii, jj;
-   dip_int kk = 7;
-   dip_uint32 mask = 1<<plane;
-   _dest = (dip_uint8*)dest;
-   *_dest = 0;
-   for (ii=0; ii<height; ii++) {
-      if (kk != 7) {
-         kk = 7;
-         _dest++;
-         *_dest = 0;
-      }
-      _src = (const dip_uint32*)src + ii*stride->array[1];
-      for (jj=0; jj<width; jj++) {
-         if (kk < 0) {
-            kk = 7;
-            _dest++;
-            *_dest = 0;
+void FillBufferMultiChannelN(
+      uint8* dest,
+      uint8 const* src,
+      dip::uint tensorElements,
+      dip::uint width,
+      dip::uint height,
+      dip::sint tensorStride,
+      IntegerArray const& strides,
+      dip::uint sizeOf
+) {
+   dip::sint stride_row = strides[ 1 ] * static_cast< dip::sint >( sizeOf );
+   dip::sint stride_pixel = strides[ 0 ] * static_cast< dip::sint >( sizeOf );
+   dip::sint stride_sample = tensorStride * static_cast< dip::sint >( sizeOf );
+   for( dip::uint ii = 0; ii < height; ++ii ) {
+      uint8 const* src_pixel = src;
+      for( dip::uint jj = 0; jj < width; ++jj ) {
+         uint8 const* src_sample = src_pixel;
+         for( dip::uint kk = 0; kk < tensorElements; ++kk ) {
+            memcpy( dest, src_pixel, sizeOf );
+            dest += sizeOf;
+            src_sample += stride_sample;
          }
-         *_dest |= (dip_uint8)(((*_src)&mask)?1<<kk:0);
-         _src += stride->array[0];
-         kk--;
+         src_pixel += stride_pixel;
       }
+      src += stride_row;
    }
 }
 
+void WriteTIFFStrips(
+      Image const& image,
+      TiffFile& tiff
+) {
+   dip::uint tensorElements = image.TensorElements();
+   dip::uint imageWidth = image.Size( 0 );
+   uint32 imageLength = static_cast< uint32 >( image.Size( 1 ));
+   dip::sint tensorStride = image.TensorStride();
+   IntegerArray const& strides = image.Strides();
+   dip::uint sizeOf = image.DataType().SizeOf();
+   bool binary = image.DataType().IsBinary();
 
-static dip_Error WriteTIFFBinary
-(
-   dip_Image image,
-   TIFF* tiff,
-   uint16 compmode
-)
-{
-   uint32 ImageLength, ImageWidth, RowsPerStrip, row, nrow, size;
-   dip_int plane;
-   dip_DataType datatype;
-   dip_IntegerArray dims, stride;
-   tstrip_t strip;
-   tsize_t scanline;
-   tdata_t buf = 0;
-   void* vpimagedata;
-   char* imagedata;
+   uint32 rowsPerStrip = TIFFDefaultStripSize( tiff, 0 );
+   DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_ROWSPERSTRIP, rowsPerStrip ), TIFF_WRITE_TAG );
 
-   /*DIPSJ ("Writing binary images to TIFF is buggy!!!");*/
-
-   /* Get info on image */
-   DIPXJ (dip_ImageGetDataType (image, &datatype));
-   switch (datatype) {
-      case DIP_DT_BIN8:
-         size = sizeof (dip_bin8);
-         break;
-      case DIP_DT_BIN16:
-         size = sizeof (dip_bin16);
-         break;
-      case DIP_DT_BIN32:
-         size = sizeof (dip_bin32);
-         break;
-      default:
-         DIPSJ ("Assertion failed");
+   // Write it to the file
+   tmsize_t scanline = TIFFScanlineSize( tiff );
+   if( binary ) {
+      DIP_THROW_IF(( static_cast< dip::uint >( scanline ) != div_ceil( image.Size( 0 ), 8 )), "Wrong scanline size" );
+      DIP_ASSERT( tensorElements == 1 );
+   } else {
+      DIP_THROW_IF(( static_cast< dip::uint >( scanline ) != image.Size( 0 ) * tensorElements * sizeOf ), "Wrong scanline size" );
    }
-   DIPXJ (dip_ImageGetDimensions (image, &dims, rg));
-   DIPTS (dims->size != 2, DIP_E_DIMENSIONALITY_NOT_SUPPORTED);
-   ImageWidth = dims->array[0];
-   ImageLength = dims->array[1];
-   DIPXJ (dip_ImageGetStride (image, &stride, rg));
-   DIPXJ (dip_ImageGetPlane (image, &plane));
-
-   /* Set the tags */
-   if (!TIFFSetField (tiff, TIFFTAG_IMAGEWIDTH, ImageWidth)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_IMAGELENGTH, ImageLength)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   /* Is this allowed? Is it required? */
-   if (!TIFFSetField (tiff, TIFFTAG_BITSPERSAMPLE, (uint16)1)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_PLANARCONFIG, (uint16)PLANARCONFIG_CONTIG)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_COMPRESSION, compmode)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   RowsPerStrip = TIFFDefaultStripSize (tiff, 0);
-   if (!TIFFSetField (tiff, TIFFTAG_ROWSPERSTRIP, RowsPerStrip)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-
-   /* Get the image data */
-   DIPXJ (dip__ImageGetData (image, &vpimagedata));
-   imagedata = (char*)vpimagedata;
-
-   /* Write it to the file */
-   scanline = TIFFScanlineSize(tiff);
-   DIPTS (((uint32)scanline != dipio_IntCeilDiv (ImageWidth, 8)), "Wrong scanline size");
-   buf = _TIFFmalloc(TIFFStripSize (tiff));
-   strip = 0;
-   for (row = 0; row < ImageLength; row += RowsPerStrip) {
-      nrow = (row+RowsPerStrip > ImageLength ? ImageLength-row : RowsPerStrip);
-      if (size == 4) {
-         CompactBits32 (buf, imagedata, ImageWidth, nrow, stride, plane);
+   if( image.HasNormalStrides() ) {
+      // Simple writing
+      tstrip_t strip = 0;
+      uint8* data = static_cast< uint8* >( image.Origin() );
+      for( uint32 row = 0; row < imageLength; row += rowsPerStrip ) {
+         uint32 nrow = row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip;
+         DIP_THROW_IF( TIFFWriteEncodedStrip( tiff, strip, data, nrow * scanline ) < 0, "Error writing data" );
+         data += static_cast< dip::sint >( nrow * sizeOf ) * image.Stride( 1 );
+         ++strip;
       }
-      else if (size == 2) {
-         CompactBits16 (buf, imagedata, ImageWidth, nrow, stride, plane);
-      }
-      else {
-         CompactBits8 (buf, imagedata, ImageWidth, nrow, stride, plane);
-      }
-      if (TIFFWriteEncodedStrip (tiff, strip, buf, nrow*scanline) < 0) {
-         DIPSJ ("Error writing data");
-      }
-      imagedata += nrow*size*stride->array[1];
-      strip++;
-   }
-
-dip_error:
-   if (buf) {
-      _TIFFfree(buf);
-   }
-}
-
-
-static dip_Error WriteTIFFGrayValue
-(
-   dip_Image image,
-   TIFF* tiff,
-   uint16 compmode
-)
-{
-   uint16 BitsPerSample, SampleFormat;
-   uint32 ImageLength, ImageWidth, RowsPerStrip, row, nrow;
-   dip_DataType datatype;
-   dip_IntegerArray stride, dims;
-   tstrip_t strip;
-   tsize_t scanline;
-   tdata_t buf = 0;
-   void* vpimagedata;
-   char* imagedata;
-
-   /* Get info on image */
-   DIPXJ (dip_ImageGetDataType (image, &datatype));
-   switch (datatype) {
-      case DIP_DT_BIN8:
-      case DIP_DT_BIN16:
-      case DIP_DT_BIN32:
-         /* It's binary! Call other function and quit */
-         DIPXJ (WriteTIFFBinary (image, tiff, compmode));
-         DIPSJ (DIP_OK);
-      case DIP_DT_UINT8:
-         SampleFormat = SAMPLEFORMAT_UINT;
-         BitsPerSample = sizeof(dip_uint8)*8;
-         break;
-      case DIP_DT_UINT16:
-         SampleFormat = SAMPLEFORMAT_UINT;
-         BitsPerSample = sizeof(dip_uint16)*8;
-         break;
-      case DIP_DT_UINT32:
-         SampleFormat = SAMPLEFORMAT_UINT;
-         BitsPerSample = sizeof(dip_uint32)*8;
-         break;
-      case DIP_DT_SINT8:
-         SampleFormat = SAMPLEFORMAT_INT;
-         BitsPerSample = sizeof(dip_sint8)*8;
-         break;
-      case DIP_DT_SINT16:
-         SampleFormat = SAMPLEFORMAT_INT;
-         BitsPerSample = sizeof(dip_sint16)*8;
-         break;
-      case DIP_DT_SINT32:
-         SampleFormat = SAMPLEFORMAT_INT;
-         BitsPerSample = sizeof(dip_sint32)*8;
-         break;
-      case DIP_DT_SFLOAT:
-         SampleFormat = SAMPLEFORMAT_IEEEFP;
-         BitsPerSample = sizeof(dip_sfloat)*8;
-         break;
-      case DIP_DT_DFLOAT:
-         SampleFormat = SAMPLEFORMAT_IEEEFP;
-         BitsPerSample = sizeof(dip_dfloat)*8;
-         break;
-      default:
-         DIPSJ ("Data type of image is not compatible with TIFF");
-         break;
-   }
-   DIPXJ (dip_ImageGetDimensions (image, &dims, rg));
-   ImageWidth = dims->array[0];
-   ImageLength = dims->array[1];
-   DIPXJ (dip_ImageGetStride (image, &stride, rg));
-
-   /* Set the tags */
-   if (!TIFFSetField (tiff, TIFFTAG_IMAGEWIDTH, ImageWidth)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_IMAGELENGTH, ImageLength)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_BITSPERSAMPLE, BitsPerSample)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_SAMPLEFORMAT, SampleFormat)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_PLANARCONFIG, (uint16)PLANARCONFIG_CONTIG)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_COMPRESSION, compmode)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   RowsPerStrip = TIFFDefaultStripSize (tiff, 0);
-   if (!TIFFSetField (tiff, TIFFTAG_ROWSPERSTRIP, RowsPerStrip)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-
-   /* Get the image data */
-   DIPXJ (dip__ImageGetData (image, &vpimagedata));
-
-   /* Write it to the file */
-   scanline = TIFFScanlineSize(tiff);
-   DIPTS (((uint32)scanline != ImageWidth*(BitsPerSample/8)),
-          "Wrong scanline size");
-   buf = _TIFFmalloc(TIFFStripSize (tiff));
-   strip = 0;
-   imagedata = (char*)vpimagedata;
-   for (row = 0; row < ImageLength; row += RowsPerStrip) {
-      nrow = (row+RowsPerStrip > ImageLength ? ImageLength-row : RowsPerStrip);
-      FillBuffer (buf, imagedata, ImageWidth, nrow, stride, BitsPerSample/8);
-      if (TIFFWriteEncodedStrip (tiff, strip, buf, nrow*scanline) < 0) {
-         DIPSJ ("Error writing data");
-      }
-      imagedata += nrow*(BitsPerSample/8)*stride->array[1];
-      strip++;
-   }
-
-dip_error:
-   if (buf) {
-      _TIFFfree(buf);
-   }
-}
-
-
-static dip_Error WriteTIFFFullColour
-(
-   dip_Image image,
-   TIFF* tiff,
-   uint16 compmode
-)
-{
-   uint16 SamplesPerPixel;
-   uint32 ImageLength, ImageWidth, RowsPerStrip, row, nrow;
-   dip_Image im_uint8;
-   dip_IntegerArray stride, dims;
-   tdata_t buf = 0;
-   tstrip_t strip;
-   tsize_t scanline;
-   dip_int s;
-   void* vpimagedata;
-   char* imagedata;
-
-   /* Get info on image */
-   DIPXJ (dip_ImageGetDimensions (image, &dims, rg));
-   if (dims->size != 3) {
-      DIPSJ ("Assertion failed");
-   }
-   ImageWidth = dims->array[0];
-   ImageLength = dims->array[1];
-   SamplesPerPixel = dims->array[2];
-
-   /* convert the input to uint8 for further processing */
-   DIPXJ( dip_ImageNew( &im_uint8, rg ));
-   DIPXJ( dip_ConvertDataType( image, im_uint8, DIP_DT_UINT8 ));
-   DIPXJ( dip_ImageGetStride( im_uint8, &stride, rg ));
-
-   /* Set the tags */
-   if (!TIFFSetField (tiff, TIFFTAG_IMAGEWIDTH, ImageWidth)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_IMAGELENGTH, ImageLength)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_BITSPERSAMPLE, (uint16)8)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_SAMPLESPERPIXEL, SamplesPerPixel)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   /* How can we set the panar configuration to match the strides? */
-   if (!TIFFSetField (tiff, TIFFTAG_PLANARCONFIG, (uint16)PLANARCONFIG_SEPARATE)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   if (!TIFFSetField (tiff, TIFFTAG_COMPRESSION, compmode)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-   RowsPerStrip = TIFFDefaultStripSize (tiff, 0);
-   if (!TIFFSetField (tiff, TIFFTAG_ROWSPERSTRIP, RowsPerStrip)) {
-      DIPSJ (TIFF_WRITE_TAG);
-   }
-
-   /* Get the image data */
-   DIPXJ (dip__ImageGetData (im_uint8, &vpimagedata));
-
-   /* Write it to the file */
-   scanline = TIFFScanlineSize(tiff);
-   DIPTS (((uint32)scanline != ImageWidth), "Wrong scanline size");
-   buf = _TIFFmalloc(TIFFStripSize (tiff));
-   strip = 0;
-   for (s = 0; s < SamplesPerPixel; s++) {
-      imagedata = (char*)vpimagedata + s*stride->array[2];
-      for (row = 0; row < ImageLength; row += RowsPerStrip) {
-         nrow = (row+RowsPerStrip > ImageLength ? ImageLength-row : RowsPerStrip);
-         /*strip = TIFFComputeStrip (tiff, row, s);*/
-         FillBuffer8 (buf, imagedata, ImageWidth, nrow, stride);
-         if (TIFFWriteEncodedStrip (tiff, strip, buf, nrow*scanline) < 0) {
-            DIPSJ ("Error writing data");
+   } else {
+      // Writing requires an intermediate buffer, filled using strides
+      std::vector< uint8 > buf( static_cast< dip::uint >( TIFFStripSize( tiff )));
+      tstrip_t strip = 0;
+      uint8* data = static_cast< uint8* >( image.Origin() );
+      for( uint32 row = 0; row < imageLength; row += rowsPerStrip ) {
+         uint32 nrow = row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip;
+         if( tensorElements == 1 ) {
+            if( binary) {
+               FillBuffer1( buf.data(), data, imageWidth, nrow, strides );
+            } else if( sizeOf == 1 ) {
+               FillBuffer8( buf.data(), data, imageWidth, nrow, strides );
+            } else {
+               FillBufferN( buf.data(), data, imageWidth, nrow, strides, sizeOf );
+            }
+         } else {
+            if( sizeOf == 1 ) {
+               FillBufferMultiChannel8( buf.data(), data, tensorElements, imageWidth, nrow, tensorStride, strides );
+            } else {
+               FillBufferMultiChannelN( buf.data(), data, tensorElements, imageWidth, nrow, tensorStride, strides, sizeOf );
+            }
          }
-         imagedata += nrow*stride->array[1];
-         strip++;
+         DIP_THROW_IF( TIFFWriteEncodedStrip( tiff, strip, buf.data(), nrow * scanline ) < 0, "Error writing data" );
+         data += static_cast< dip::sint >( nrow * sizeOf ) * image.Stride( 1 );
+         ++strip;
       }
    }
-
-dip_error:
-   if (buf) {
-      _TIFFfree(buf);
-   }
 }
-
-#endif
 
 } // namespace
-
-#if 0
 
 void ImageWriteTIFF(
       Image const& image,
       String const& filename,
-      String const& compression = "",
-      dip::uint jpegLevel = 80
+      String const& compression,
+      dip::uint jpegLevel
 ) {
-   TIFF* tiff = NULL;
-   dip_int dimensionality;
-   dip_dfloat xden, yden;
-   uint16 compmode;
-   dip_Boolean verdict;
+   DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( image.Dimensionality() != 2, E::IMAGE_NOT_FORGED );
+   // TODO: Implement writing of 3D images as a stack of 2D images
 
-   DIPXJ (dip_IsScalar (image, 0));
-   DIPXJ (dip_ImageGetDimensionality (image, &dimensionality));
-   if (photometric == DIPIO_PHM_GREYVALUE) {
-      DIPTS (dimensionality != 2, DIP_E_DIMENSIONALITY_NOT_SUPPORTED);
+   // Get image info and quit if we can't write
+   DIP_THROW_IF(( image.Size( 0 ) > std::numeric_limits< uint32 >::max() ) ||
+                ( image.Size( 1 ) > std::numeric_limits< uint32 >::max() ), "Image size too large for TIFF file" );
+   uint32 imageWidth = static_cast< uint32 >( image.Size( 0 ));
+   uint32 imageLength = static_cast< uint32 >( image.Size( 1 ));
+   dip::uint sizeOf = image.DataType().SizeOf();
+   uint16 bitsPerSample = 0;
+   uint16 sampleFormat = 0;
+   if( image.DataType().IsBinary() ) {
+      DIP_THROW_IF( !image.IsScalar(), E::IMAGE_NOT_SCALAR ); // Binary images should not have multiple samples per pixel
+   } else {
+      bitsPerSample = static_cast< uint16 >( sizeOf * 8 );
+      switch( image.DataType() ) {
+         case DT_UINT8:
+         case DT_UINT16:
+         case DT_UINT32:
+            sampleFormat = SAMPLEFORMAT_UINT;
+            break;
+         case DT_SINT8:
+         case DT_SINT16:
+         case DT_SINT32:
+            sampleFormat = SAMPLEFORMAT_INT;
+            break;
+         case DT_SFLOAT:
+         case DT_DFLOAT:
+            sampleFormat = SAMPLEFORMAT_IEEEFP;
+            break;
+         default:
+            DIP_THROW( "Data type of image is not compatible with TIFF" );
+            break;
+      }
    }
-   else {
-      DIPTS (dimensionality != 3, DIP_E_DIMENSIONALITY_NOT_SUPPORTED);
+   uint16 compmode = CompressionTranslate( compression );
+
+   // Create the TIFF file and set the tags
+   TiffFile tiff( filename );
+
+   if( image.DataType().IsBinary() ) {
+      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_MINISBLACK )), TIFF_WRITE_TAG );
+   } else if( image.ColorSpace() == "RGB" ) {
+      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_RGB )), TIFF_WRITE_TAG );
+   } else if( image.ColorSpace() == "Lab" ) {
+      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_CIELAB )), TIFF_WRITE_TAG );
+   } else if(( image.ColorSpace() == "CMY" ) || ( image.ColorSpace() == "CMYK" )) {
+      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_SEPARATED )), TIFF_WRITE_TAG );
+   } else {
+      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_MINISBLACK )), TIFF_WRITE_TAG );
    }
 
-   /* Open TIFF file */
-   DIPXJ (dipio_FileCompareExtension (filename, "tiff", &verdict));
-   if (!verdict) {
-      DIPXJ (dipio_FileAddExtension (filename, &filename, "tif", rg));
-   }
-   tiff = TIFFOpen (filename->string, "w");
-   if (tiff == NULL) {
-      DIPSJ ("Could not open the specified file");
+   DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_IMAGEWIDTH, imageWidth ), TIFF_WRITE_TAG );
+   DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_IMAGELENGTH, imageLength ), TIFF_WRITE_TAG );
+
+   if( !image.DataType().IsBinary() ) {
+      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_BITSPERSAMPLE, bitsPerSample ), TIFF_WRITE_TAG );
+      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_SAMPLEFORMAT, sampleFormat ), TIFF_WRITE_TAG );
+      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_SAMPLESPERPIXEL, static_cast< uint16 >( image.TensorElements())), TIFF_WRITE_TAG );
+      if( image.TensorElements() > 1 ) {
+         DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PLANARCONFIG, uint16( PLANARCONFIG_CONTIG )), TIFF_WRITE_TAG );
+         // This is the standard way of writing channels (planes), PLANARCONFIG_SEPARATE is not required to be
+         // supported by all readers.
+      }
    }
 
-   compmode = CompressionTranslate (compression.method);
-
-   switch (photometric) {
-      case DIPIO_PHM_GREYVALUE:
-         if (!TIFFSetField (tiff, TIFFTAG_PHOTOMETRIC, (uint16)PHOTOMETRIC_MINISBLACK)) {
-            DIPSJ (TIFF_WRITE_TAG);
-         }
-         DIPXJ (WriteTIFFGrayValue (image, tiff, compmode));
-         break;
-      case DIPIO_PHM_RGB:
-         if (!TIFFSetField (tiff, TIFFTAG_PHOTOMETRIC, (uint16)PHOTOMETRIC_RGB)) {
-            DIPSJ (TIFF_WRITE_TAG);
-         }
-         DIPXJ (WriteTIFFFullColour (image, tiff, compmode));
-         break;
-      case DIPIO_PHM_CIELAB:
-         if (!TIFFSetField (tiff, TIFFTAG_PHOTOMETRIC, (uint16)PHOTOMETRIC_CIELAB)) {
-            DIPSJ (TIFF_WRITE_TAG);
-         }
-         DIPXJ (WriteTIFFFullColour (image, tiff, compmode));
-         break;
-      default:
-         /*printf ("Warning: Photometric interpretation not supported in writing TIFF files. Writing as \"Separated\".");*/
-      case DIPIO_PHM_CMYK:
-         if (!TIFFSetField (tiff, TIFFTAG_PHOTOMETRIC, (uint16)PHOTOMETRIC_SEPARATED)) {
-            DIPSJ (TIFF_WRITE_TAG);
-         }
-         DIPXJ (WriteTIFFFullColour (image, tiff, compmode));
-         break;
+   DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_COMPRESSION, compmode ), TIFF_WRITE_TAG );
+   if( compmode == COMPRESSION_JPEG ) {
+      jpegLevel = clamp< dip::uint >( jpegLevel, 1, 100 );
+      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_JPEGQUALITY, static_cast< int >( jpegLevel )), TIFF_WRITE_TAG );
+      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_JPEGCOLORMODE, int( JPEGCOLORMODE_RGB )), TIFF_WRITE_TAG );
    }
-   TIFFSetField (tiff, TIFFTAG_SOFTWARE, "DIPlib with dipIO");
-   DIPXJ( dipio_PhysDimsToDPI (physDims, &xden, &yden) );
-   TIFFSetField (tiff, TIFFTAG_XRESOLUTION, (float)xden);
-   TIFFSetField (tiff, TIFFTAG_YRESOLUTION, (float)yden);
-   TIFFSetField (tiff, TIFFTAG_RESOLUTIONUNIT, (uint16)RESUNIT_INCH);
 
-dip_error:
-   if (tiff) {
-      TIFFClose (tiff);
+   DIP_STACK_TRACE_THIS( WriteTIFFStrips( image, tiff ));
+
+   TIFFSetField( tiff, TIFFTAG_SOFTWARE, "DIPlib " DIP_VERSION_STRING );
+
+   auto ps = image.PixelSize( 0 );
+   if( ps.units.HasSameDimensions( Units::Meter() )) {
+      ps.RemovePrefix();
+      TIFFSetField( tiff, TIFFTAG_XRESOLUTION, static_cast< float >( 0.01 / ps.magnitude ));
    }
+   ps = image.PixelSize( 1 );
+   if( ps.units.HasSameDimensions( Units::Meter() )) {
+      ps.RemovePrefix();
+      TIFFSetField( tiff, TIFFTAG_YRESOLUTION, static_cast< float >( 0.01 / ps.magnitude ));
+   }
+   TIFFSetField( tiff, TIFFTAG_RESOLUTIONUNIT, uint16( RESUNIT_CENTIMETER ));
 }
-
-#endif
 
 } // namespace dip
 
