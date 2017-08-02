@@ -483,6 +483,14 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       return *this;
    }
 
+   /// \brief Removes the SI prefix, such that the quantity is in base units (i.e. m rather than nm).
+   PhysicalQuantity& RemovePrefix() {
+      dip::sint thousands = units.Thousands();
+      units.AdjustThousands( -thousands );
+      magnitude *= std::pow( 10.0, 3 * thousands );
+      return *this;
+   }
+
    /// Retrieve the magnitude, discarding units.
    explicit operator double() const { return magnitude; };
 
