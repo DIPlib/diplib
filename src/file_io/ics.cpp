@@ -27,7 +27,6 @@
 
 #include "libics.h"
 
-// TODO: Use IcsGetErrorText() to get more informative error messages for the user.
 // TODO: Reorder dimensions when reading, to match standard x,y,z,t order.
 // TODO: When reading, check to see if image's strides match those in the file.
 // TODO: Option "fast" to reorder dimensions when reading, to read without strides.
@@ -36,6 +35,8 @@
 namespace dip {
 
 namespace {
+
+#define CALL_ICS( function_call, message ) do { Ics_Error error_ = function_call; if( error_ != IcsErr_Ok ) { DIP_THROW( String( message ": " ) + IcsGetErrorText( error_ )); }} while(false)
 
 dip::uint FindTensorDimension(
       ICS* ics,
@@ -47,8 +48,7 @@ dip::uint FindTensorDimension(
    dip::uint tensorDim;
    for( tensorDim = 0; tensorDim < nDims; ++tensorDim ) {
       char const* order;
-      DIP_THROW_IF( IcsGetOrderF( ics, static_cast< int >( tensorDim ), &order, 0 ) != IcsErr_Ok,
-                    "IcsGetOrder() failed: couldn't read ICS file" );
+      CALL_ICS( IcsGetOrderF( ics, static_cast< int >( tensorDim ), &order, 0 ), "Couldn't read ICS file" );
       if( strcasecmp( order, "RGB" ) == 0 ) {
          colorSpace = "RGB";
          break;
@@ -118,8 +118,7 @@ class IcsFile {
       IcsFile( String const& filename, char const* mode ) {
          // Open the file. When reading, try with the exact given name first.
          if( !(( mode[ 0 ] == 'r' ) && ( IcsOpen( &ics_, filename.c_str(), "rf" ) == IcsErr_Ok ))) {
-            DIP_THROW_IF( IcsOpen( &ics_, filename.c_str(), mode ) != IcsErr_Ok,
-                          "Couldn't open ICS file (IcsOpen failed)" );
+            CALL_ICS( IcsOpen( &ics_, filename.c_str(), mode ), "Couldn't open ICS file" );
          }
       }
       IcsFile( IcsFile const& ) = delete;
@@ -135,8 +134,12 @@ class IcsFile {
       // Always call Close(), don't let the destructor close the file if all is OK -- it won't throw if there's an error.
       void Close() {
          if( ics_ ) {
-            DIP_THROW_IF( IcsClose( ics_ ) != IcsErr_Ok, "Couldn't write to ICS file (IcsClose failed)" );
+            // Not using CALL_ICS here, we need to set `ics_` to NULL before throwing, otherwise the destructor is going to try to close again!
+            Ics_Error error = IcsClose( ics_ );
             ics_ = nullptr;
+            if( error != IcsErr_Ok ) {
+               DIP_THROW( String( "Couldn't close ICS file: " ) + IcsGetErrorText( error ) );
+            }
          }
       }
       // Implicit cast to ICS*
@@ -161,10 +164,10 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
    Ics_DataType dt;
    int ndims_;
    size_t icsSizes[ICS_MAXDIM];
-   DIP_THROW_IF( IcsGetLayout( icsFile, &dt, &ndims_, icsSizes ) != IcsErr_Ok, "Couldn't read ICS file (IcsGetLayout failed)" );
+   CALL_ICS( IcsGetLayout( icsFile, &dt, &ndims_, icsSizes ), "Couldn't read ICS file" );
    dip::uint nDims = static_cast< dip::uint >( ndims_ );
    size_t significantBits;
-   DIP_THROW_IF( IcsGetSignificantBits( icsFile, &significantBits ) != IcsErr_Ok, "Couldn't read ICS file (IcsGetSignificantBits failed)" );
+   CALL_ICS( IcsGetSignificantBits( icsFile, &significantBits ), "Couldn't read ICS file" );
    data.fileInformation.significantBits = significantBits;
    data.fileInformation.sizes.resize( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
@@ -172,18 +175,17 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
    }
 
    // get pixel size
-   data.fileInformation.pixelSize.Resize( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       double scale;
       char const* units;
-      DIP_THROW_IF( IcsGetPositionF( icsFile, static_cast< int >( ii ), nullptr, &scale, &units ) != IcsErr_Ok,
-                    "Couldn't read ICS file (IcsGetPosition failed)" );
+      CALL_ICS( IcsGetPositionF( icsFile, static_cast< int >( ii ), nullptr, &scale, &units ), "Couldn't read ICS file" );
       try {
-         Units u( units );
-         data.fileInformation.pixelSize[ ii ] = { scale, u };
+         PhysicalQuantity ps{ scale, Units{ units }};
+         ps.Normalize();
+         data.fileInformation.pixelSize.Set( ii, ps );
       } catch( ... ) {
          // `Units` failed to parse the string
-         data.fileInformation.pixelSize[ ii ] = { scale };
+         data.fileInformation.pixelSize.Set( ii, scale );
       }
    }
 
@@ -235,14 +237,14 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
 
    // History tags
    int history_lines;
-   DIP_THROW_IF( IcsGetNumHistoryStrings( icsFile, &history_lines ) != IcsErr_Ok, "Couldn't read ICS metadata (IcsGetNumHistoryStrings failed)" );
+   CALL_ICS( IcsGetNumHistoryStrings( icsFile, &history_lines ), "Couldn't read ICS metadata" );
    data.fileInformation.history.resize( static_cast< dip::uint >( history_lines ));
-   if (history_lines>0) {
+   if( history_lines > 0 ) {
       Ics_HistoryIterator it;
-      DIP_THROW_IF( IcsNewHistoryIterator( icsFile, &it, 0 ) != IcsErr_Ok, "Couldn't read ICS metadata (IcsNewHistoryIterator failed)");
+      CALL_ICS( IcsNewHistoryIterator( icsFile, &it, 0 ), "Couldn't read ICS metadata");
       char const* hist;
       for( dip::uint ii = 0; ii < static_cast< dip::uint >( history_lines ); ++ii ) {
-         DIP_THROW_IF( IcsGetHistoryStringIF( icsFile, &it, &hist ) != IcsErr_Ok, "Couldn't read ICS metadata (IcsGetHistoryStringI failed)");
+         CALL_ICS( IcsGetHistoryStringIF( icsFile, &it, &hist ), "Couldn't read ICS metadata");
          data.fileInformation.history[ ii ] = hist;
       }
    }
@@ -380,8 +382,7 @@ FileInformation ImageReadICS(
          IcsSkipDataBlock( icsFile, new_loc - cur_loc );
          cur_loc = new_loc;
       }
-      DIP_THROW_IF( IcsGetDataBlock( icsFile, buffer.data(), bufSize ) != IcsErr_Ok,
-                    "Couldn't read pixel data from ICS file (IcsGetDataBlock failed)" );
+      CALL_ICS( IcsGetDataBlock( icsFile, buffer.data(), bufSize ), "Couldn't read pixel data from ICS file" );
       cur_loc += bufSize;
       // copy buffer to image
       detail::CopyBuffer( buffer.data(), data.fileInformation.dataType, static_cast< dip::sint >( roi[ 0 ].step ), 1,
@@ -454,7 +455,7 @@ FileInformation ImageReadICSInfo( String const& filename ) {
 }
 
 bool ImageIsICS( String const& filename ) {
-   return IcsVersion(filename.c_str(), 1) != 0;
+   return IcsVersion( filename.c_str(), 1 ) != 0;
 }
 
 void ImageWriteICS(
@@ -514,53 +515,45 @@ void ImageWriteICS(
       image.TensorToSpatial(); // last dimension
    }
    int nDims = static_cast< int >( image.Dimensionality() );
-   DIP_THROW_IF( IcsSetLayout( icsFile, dt, nDims, image.Sizes().data() ) != IcsErr_Ok,
-                 "Couldn't write to ICS file (IcsSetLayout failed)" );
-   DIP_THROW_IF( IcsSetSignificantBits( icsFile, significantBits ) != IcsErr_Ok, "Couldn't write to ICS file (IcsSetSignificantBits failed)" );
+   CALL_ICS( IcsSetLayout( icsFile, dt, nDims, image.Sizes().data() ), "Couldn't write to ICS file" );
+   CALL_ICS( IcsSetSignificantBits( icsFile, significantBits ), "Couldn't write to ICS file" );
    if( c_image.IsColor() ) {
-      DIP_THROW_IF( IcsSetOrder( icsFile, nDims - 1, c_image.ColorSpace().c_str(), 0 ) != IcsErr_Ok,
-                    "Couldn't write to ICS file (IcsSetOrder failed)" );
+      CALL_ICS( IcsSetOrder( icsFile, nDims - 1, c_image.ColorSpace().c_str(), 0 ), "Couldn't write to ICS file" );
    } else if( isTensor ) {
-      DIP_THROW_IF( IcsSetOrder( icsFile, nDims - 1, "tensor", 0 ) != IcsErr_Ok,
-                    "Couldn't write to ICS file (IcsSetOrder failed)" );
+      CALL_ICS( IcsSetOrder( icsFile, nDims - 1, "tensor", 0 ), "Couldn't write to ICS file" );
    }
    if( c_image.HasPixelSize() ) {
       if( isTensor ) { nDims--; }
       for( int ii = 0; ii < nDims; ii++ ) {
          auto pixelSize = c_image.PixelSize( static_cast< dip::uint >( ii ));
-         DIP_THROW_IF( IcsSetPosition( icsFile, ii, 0.0, pixelSize.magnitude, pixelSize.units.String().c_str() ) != IcsErr_Ok,
-                       "Couldn't write to ICS file (IcsSetPosition failed)" );
+         CALL_ICS( IcsSetPosition( icsFile, ii, 0.0, pixelSize.magnitude, pixelSize.units.String().c_str() ), "Couldn't write to ICS file" );
       }
       if( isTensor ) {
-         DIP_THROW_IF( IcsSetPosition( icsFile, nDims, 0.0, 1.0, nullptr ) != IcsErr_Ok,
-                       "Couldn't write to ICS file (IcsSetPosition failed)" );
+         CALL_ICS( IcsSetPosition( icsFile, nDims, 0.0, 1.0, nullptr ), "Couldn't write to ICS file" );
       }
    }
    if( isTensor ) {
       String tensorShape = c_image.Tensor().TensorShapeAsString() + "\t" +
                            std::to_string( c_image.Tensor().Rows() ) + "\t" +
                            std::to_string( c_image.Tensor().Columns() );
-      DIP_THROW_IF( IcsAddHistory( icsFile, "tensor", tensorShape.c_str() ) != IcsErr_Ok,
-                    "Couldn't write to ICS file (IcsAddHistory() failed)" );
+      CALL_ICS( IcsAddHistory( icsFile, "tensor", tensorShape.c_str() ), "Couldn't write metadata to ICS file" );
    }
 
    // set type of compression
-   DIP_THROW_IF( IcsSetCompression( icsFile, compress ? IcsCompr_gzip : IcsCompr_uncompressed, 9 ) != IcsErr_Ok,
-                 "Couldn't write to ICS file (IcsSetCompression failed)" );
+   CALL_ICS( IcsSetCompression( icsFile, compress ? IcsCompr_gzip : IcsCompr_uncompressed, 9 ),
+                 "Couldn't write to ICS file" );
 
    // set the image data
    if( image.HasNormalStrides() ) {
-      DIP_THROW_IF( IcsSetData( icsFile, image.Origin(), image.NumberOfPixels() * image.DataType().SizeOf() ) != IcsErr_Ok,
-                    "Couldn't write to ICS file (IcsSetData failed)" );
+      CALL_ICS( IcsSetData( icsFile, image.Origin(), image.NumberOfPixels() * image.DataType().SizeOf() ), "Couldn't write data to ICS file" );
    } else {
-      DIP_THROW_IF( IcsSetDataWithStrides( icsFile, image.Origin(), 0, image.Strides().data(),
-                                           static_cast< int >( image.Dimensionality() )) != IcsErr_Ok,
-                    "Couldn't write to ICS file (IcsSetDataWithStrides failed)" );
+      CALL_ICS( IcsSetDataWithStrides( icsFile, image.Origin(), image.NumberOfPixels() * image.DataType().SizeOf(),
+                                       image.Strides().data(), static_cast< int >( image.Dimensionality() )),
+                "Couldn't write data to ICS file" );
    }
 
    // tag the data
-   DIP_THROW_IF( IcsAddHistory( icsFile, "software", "DIPlib" ) != IcsErr_Ok,
-                 "Couldn't write to ICS file (IcsAddHistory() failed)" );
+   CALL_ICS( IcsAddHistory( icsFile, "software", "DIPlib " DIP_VERSION_STRING ), "Couldn't write metadata to ICS file" );
 
    // write history lines
    for( auto const& line : history ) {
@@ -569,7 +562,7 @@ void ImageWriteICS(
          ( error == IcsErr_IllParameter )) { // history line contains illegal characters
          // Ignore these errors, the history line will not be written.
       }
-      DIP_THROW_IF( error != IcsErr_Ok, "Couldn't write to ICS file (IcsAddHistory() failed)" );
+      CALL_ICS( error, "Couldn't write metadata to ICS file" );
    }
 
    // write everything to file by closing it
