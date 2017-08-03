@@ -52,6 +52,8 @@ include/diplib/transform.h
 include/diplib/union_find.h
 src/analysis/findshift.cpp
 src/analysis/subpixel_location.cpp
+src/binary/bucket.h
+src/binary/skeleton.cpp
 src/color/cmyk.h
 src/color/color.cpp
 src/color/hcv.h

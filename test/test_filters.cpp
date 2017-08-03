@@ -1,63 +1,54 @@
-#define DOCTEST_CONFIG_IMPLEMENT
-#include <iostream>
+#undef DIP__ENABLE_DOCTEST
+
 #include "diplib.h"
 #include "diplib/generation.h"
-#include "diplib/morphology.h"
-#include "diplib/geometry.h"
-#include "diplib/pixel_table.h"
-#include "diplib/testing.h"
+//#include "diplib/distance.h"
+#include "diplib/binary.h"
+#include "diplib/math.h"
 
-int main() {
-   try {
-      if( false ) {
+#ifdef DIP__HAS_GLFW
+#include <diplib/viewer/glfw.h>
+   using ViewerManager = GLFWManager;
+#else
+#include <diplib/viewer/glut.h>
+using ViewerManager = GLUTManager;
+#endif
 
-         dip::Image img{ dip::UnsignedArray{ 64, 41 }, 1, dip::DT_UINT8 };
-         dip::FillDelta( img );
-         img.At( 7, 5 ) = 2;
-         dip::testing::PrintPixelValues< dip::uint8, 1 >( img );
+#include <diplib/viewer/image.h>
+#include <diplib/viewer/slice.h>
 
-         dip::Image out;
-         auto se = dip::StructuringElement{{ 9, 6 }, "line" };
-         dip::Dilation( img, out, se, {} );
-         dip::testing::PrintPixelValues< dip::uint8, 1 >( out );
+int main( void ) {
+   ViewerManager manager;
 
-         //se.Mirror();
-         //dip::Erosion( out, out, se, {} );
-         //out = dip::Closing( img, se, { "zero order" } );
-         //dip::testing::PrintPixelValues< dip::uint8, 1 >( out );
+   dip::Image binary( { 200, 200 }, 1, dip::DT_BIN );
+   binary.Fill( 0 );
+   dip::Random random;
+   dip::BinaryNoise( binary, binary, random, 1.0, 0.999 ); // High-density random binary image.
 
-      } else if( false ) {
+   //dip::Image grey( binary.Sizes(), 1, dip::DT_SFLOAT );
+   //dip::FillRadiusCoordinate( grey );
 
-         dip::Image img{ dip::UnsignedArray{ 20, 15 }, 1, dip::DT_SINT8 };
-         //dip::FillRadiusCoordinate( img );
-         dip::FillRamp( img, 1 );
-         dip::testing::PrintPixelValues< dip::sint8 >( img );
+   //dip::Image gt = dip::EuclideanDistanceTransform( binary, "background", "brute force" );
+   //dip::Image result = dip::EuclideanDistanceTransform( binary, "background", "fast" );
+   //result -= gt;
+   //dip::Image result = dip::VectorDistanceTransform( binary, "background", "fast" );
+   //result = dip::Norm( result ) - gt;
 
-         dip::Image out;
-         dip::Skew( img, out, { 0.0, 8.0/9.0 }, 0, 0, "nn", { dip::BoundaryCondition::ZERO_ORDER_EXTRAPOLATE } );
-         dip::testing::PrintPixelValues< dip::sint8 >( out );
+   //dip::Image result = dip::GreyWeightedDistanceTransform( grey, binary, { "chamfer", 1 } );
 
-         //dip::Skew( out, out, { 0.0, -8.0/9.0 }, 0, 0, "nn2", { dip::BoundaryCondition::ZERO_ORDER_EXTRAPOLATE } );
-         //dip::testing::PrintPixelValues< dip::sint8 >( out );
+   dip::Image result = dip::EuclideanSkeleton( binary );
 
-      } else {
-
-         dip::PixelTable pixelTable1( "line", { 8.0, 9.0 } );
-         dip::testing::PrintPixelValues< dip::bin >( pixelTable1.AsImage() );
-         std::cout << pixelTable1.Origin() << std::endl;
-
-         dip::PixelTable pixelTable2( "line", { 8.0, -9.0 } );
-         dip::testing::PrintPixelValues< dip::bin >( pixelTable2.AsImage() );
-         std::cout << pixelTable2.Origin() << std::endl;
-
-         dip::PixelTable pixelTable3( "line", { -8.0, 9.0 } );
-         dip::testing::PrintPixelValues< dip::bin >( pixelTable3.AsImage() );
-         std::cout << pixelTable3.Origin() << std::endl;
-
-      }
-   } catch( dip::Error e ) {
-      std::cout << "DIPlib error: " << e.what() << std::endl;
-      return 1;
+   binary.ExpandDimensionality( 3 ).Convert( dip::DT_UINT8 );
+   manager.createWindow( WindowPtr( new SliceViewer( binary )));
+   //grey.ExpandDimensionality( 3 );
+   //manager.createWindow( WindowPtr( new SliceViewer( grey )));
+   result.ExpandDimensionality( 3 ).Convert( dip::DT_UINT8 );
+   manager.createWindow( WindowPtr( new SliceViewer( result )));
+   while( manager.activeWindows()) {
+      // Only necessary for GLFW
+      manager.processEvents();
+      usleep( 10 );
    }
+
    return 0;
 }

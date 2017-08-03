@@ -199,8 +199,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_BinaryOpening (dip_binary.h)
     - dip_BinaryPropagation (dip_binary.h)
     - dip_EdgeObjectsRemove (dip_binary.h)
-    - dip_EuclideanSkeleton (dip_binary.h)
-    - dip_BinarySkeleton3D (dip_binary.h) (don't port this one, it's crap; instead fix the bug in EuclideanSkeleton for 3D)
 
 - diplib/distance.h
     - dip_FastMarching_PlaneWave (dip_distance.h) (this function needs some input image checking!)

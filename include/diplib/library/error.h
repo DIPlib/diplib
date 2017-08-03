@@ -135,7 +135,7 @@ constexpr char const* WRONG_DATA_TYPE = "Data type does not match";
 constexpr char const* DATA_TYPES_DONT_MATCH = "Data types don't match";
 constexpr char const* IMAGE_NOT_BINARY = "Image is not binary";
 
-// image dimensionality and dimensions error
+// image dimensionality and sizes error
 constexpr char const* SIZE_EXCEEDS_LIMIT = "Size exceeds address limit";
 constexpr char const* ILLEGAL_DIMENSIONALITY = "Illegal dimensionality";
 constexpr char const* DIMENSIONALITY_NOT_SUPPORTED = "Dimensionality not supported";
