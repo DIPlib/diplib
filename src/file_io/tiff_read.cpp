@@ -258,7 +258,7 @@ void ExpandColourMap4(
    for( dip::uint ii = 0; ii < height; ++ii ) {
       uint16* dest_pixel = dest;
       for( dip::uint jj = 0; jj < width; ) {
-         dip::uint index = (( *src ) >> 4 ) & 0x0Fu;
+         dip::uint index = ( static_cast< dip::uint >( *src ) >> 4 ) & 0x0Fu;
          *dest_pixel = ColourMapRed[ index ];
          *( dest_pixel + green ) = ColourMapGreen[ index ];
          *( dest_pixel + blue ) = ColourMapBlue[ index ];
@@ -639,7 +639,7 @@ void ImageReadTIFFStack(
          image.DataType(), tiff ));
 
    // Read the image data for other planes
-   uint16 directory = static_cast< uint16 >( imageNumbers.Offset() );
+   dip::uint directory = imageNumbers.Offset();
    for( dip::uint ii = 1; ii < image.Size( 2 ); ++ii ) {
       imagedata += z_stride;
       if( imageNumbers.start > imageNumbers.stop ) {
@@ -647,7 +647,7 @@ void ImageReadTIFFStack(
       } else {
          directory += imageNumbers.step;
       }
-      DIP_THROW_IF( TIFFSetDirectory( tiff, directory ) == 0, TIFF_DIRECTORY_NOT_FOUND );
+      DIP_THROW_IF( TIFFSetDirectory( tiff, static_cast< uint16 >( directory )) == 0, TIFF_DIRECTORY_NOT_FOUND );
 
       // Test for tiled TIFF files. These we can't handle
       uint32 tileWidth;

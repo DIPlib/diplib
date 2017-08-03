@@ -41,7 +41,7 @@ document's source</a> for the most up-to-date version.
 
 -   Test framework.
 
--   Class `dip::Image`.
+-   Class `dip::Image`, including tensor representations taken from *DIPimage* and improved.
 
 -   `dip::Framework::Scan`, `dip::Framework::Separable` and `dip::Framework::Full`.
     These frameworks are the core of most algorithms. Not yet parallelized.
@@ -55,6 +55,8 @@ document's source</a> for the most up-to-date version.
     All measurement features have been ported, including the previously only defined in
     *DIPimage*.
 
+-   Color support. More color spaces could be added in time.
+
 -   The Fourier transform (based on the code out of OpenCV, much faster than the code in
     the old *DIPlib*).
 
@@ -67,9 +69,9 @@ document's source</a> for the most up-to-date version.
 
 -   Random number generation, using the new PCG scheme.
 
--   An increasing number of filters and operators.
+-   Image I/O (ICS and TIFF formats, the plan is to not support other formats going forward).
 
--   Color support. More color spaces could be added in time.
+-   An increasing number of filters and operators.
 
 -   Interactive image display, as a separate module DIPviewer.
 
@@ -85,16 +87,13 @@ document's source</a> for the most up-to-date version.
 -   Test framework: We need to add more tests for some stuff that was implemented before
     the test framework was integrated.
 
--   Image I/O. Has high priority because it will make testing other functions easier.
-    - Porting current code in dipIO to read TIFF and ICS files, using libraries
-      [*libtiff*](http://www.remotesensing.org/libtiff/) and
-      [*libics*](https://github.com/svi-opensource/libics). 
-    - Interfacing to [*Bio-Formats*](http://www.openmicroscopy.org/site/products/bio-formats),
-      using [JNI](http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html)
-      to interface between C++ and Java, see for example
-      [this tutorial](https://www.codeproject.com/Articles/993067/Calling-Java-from-Cplusplus-with-JNI).
-      See also [this ITK module](https://github.com/scifio/scifio-imageio) for
-      interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
+-   Image I/O: Interfacing to [*Bio-Formats*](http://www.openmicroscopy.org/site/products/bio-formats),
+    using [JNI](http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html)
+    to interface between C++ and Java, see for example
+    [this tutorial](https://www.codeproject.com/Articles/993067/Calling-Java-from-Cplusplus-with-JNI).
+    See also [this ITK module](https://github.com/scifio/scifio-imageio) for
+    interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
+    This should be an optional module, as *Bio-Formats* is GPL.
 
 -   Measurement I/O. Write as CSV is the most important feature here.
 
@@ -308,23 +307,3 @@ Some of the following functions already have their prototype written in the new 
 
 - diplib/transform.h
     - dip_HartleyTransform (dip_transform.h)
-
-- diplib/file_io.h
-    - dipio_ImageRead (dipio_image.h) (should always return color image)
-    - dipio_ImageReadColourSeries (dipio_image.h) (should be named ImageReadSeries)
-    - dipio_ImageReadROI (dipio_image.h)
-    - dipio_ImageFileGetInfo (dipio_image.h)
-    - dipio_ImageWrite (dipio_image.h)
-    - dipio_FileGetExtension (dipio_image.h)
-    - dipio_FileAddExtension (dipio_image.h)
-    - dipio_FileCompareExtension (dipio_image.h)
-    - dipio_ImageFindForReading (dipio_image.h)
-    - dipio_ImageReadICS (dipio_ics.h)
-    - dipio_ImageReadICSInfo (dipio_ics.h)
-    - dipio_ImageIsICS (dipio_ics.h)
-    - dipio_AppendRawData (dipio_ics.h)
-    - dipio_ImageWriteICS (dipio_ics.h)
-    - dipio_ImageReadTIFF (dipio_tiff.h) (needs to support tiled images at some point!)
-    - dipio_ImageReadTIFFInfo (dipio_tiff.h)
-    - dipio_ImageIsTIFF (dipio_tiff.h)
-    - dipio_ImageWriteTIFF (dipio_tiff.h)

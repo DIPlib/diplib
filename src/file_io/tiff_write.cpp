@@ -101,7 +101,9 @@ void FillBuffer1(
             ++dest;
             byte = 0;
          }
-         byte |= *src_pixel ? 1 << kk : 0;
+         if( *src_pixel ) {
+            byte = static_cast< uint8 >( byte | ( 1u << kk )); // GCC likes to warn about `a |= b`, when both `a` and `b` are uint8.
+         }
          src_pixel += strides[ 0 ];
          --kk;
       }
