@@ -54,7 +54,7 @@ struct Bucket {
    Chunk* freechunk;                /* Last freed chunk */
    dip::uint freecount;             /* Number of free chunks */
    //dip::uint allocated;           /* Number of chunks allocated extra */
-   std::vector< Chunk > pextra;     /* Extra chunks allocated */
+   std::vector< std::unique_ptr< Chunk >> pextra; /* Extra chunks allocated */
 
    Bucket( dip::uint nb, dip::uint cs ) {
       nbuckets = nb;
@@ -114,8 +114,8 @@ struct Bucket {
          freecount--;
          freechunk = freechunk->lnext;
       } else {
-         pextra.emplace_back(); // allocate a new chunk
-         newchunk = &( pextra.back() );
+         pextra.emplace_back( new Chunk ); // allocate a new chunk
+         newchunk = pextra.back().get();
          newchunk->nodes.resize( chunksize );
          if( firstchunk == nullptr ) {
             firstchunk = newchunk;
@@ -129,68 +129,102 @@ struct Bucket {
       return newchunk;
    }
 
-/* Macros, display and storing and recalling from buckets */
-/* These all expect the following defines in the code that uses them:
+   //
+   // Macros, display and storing and recalling from buckets
+   //
+
    Node* pnr;  // where to read in bucket
    Node* pnw;  // where to write in bucket
    Node* pnre; // where to end reading
    Node* pnwe; // where to end writing
-*/
-#define STR( b, pointer, direction ) { \
-   pnw->pim = ( pointer ); pnw++->dirc = uint8( direction );\
-   if( pnw == pnwe ) nextwrite( b ); }
+   bool go;    // TRUE if still nodes to be read
 
-#define STRP( b, pointer ) { \
-   pnw++->pim = ( pointer ); \
-   if( pnw == pnwe ) nextwrite( b ); }
+   void STR( uint8* pointer, uint8 direction ) {
+      pnw->pim = pointer;
+      pnw++->dirc = direction;
+      if( pnw == pnwe ) {
+         nextwrite();
+      }
+   }
 
-#define RCL( b, pointer, direction ) { \
-   ( pointer ) = pnr->pim; ( direction ) = pnr++->dirc; \
-   if( pnr == pnre ) { \
-      if( pnr == ( b ).plastnode[ ( b ).rbuck ] ) go = false; \
-      else nextread( b ); }}
+   void STRP( uint8* pointer ) {
+      pnw++->pim = pointer;
+      if( pnw == pnwe ) {
+         nextwrite();
+      }
+   }
 
-#define RCLP( b, pointer ) { \
-   ( pointer ) = pnr++->pim; \
-   if( pnr == pnre ) { \
-      if( pnr == ( b ).plastnode[ ( b ).rbuck ] ) go = false; \
-      else nextread( b ); }}
+   void RCL( uint8*& pointer, uint8& direction ) {
+      pointer = pnr->pim;
+      direction = pnr++->dirc;
+      if( pnr == pnre ) {
+         if( pnr == plastnode[ rbuck ] ) {
+            go = false;
+         } else {
+            nextread();
+         }
+      }
+   }
 
-#define startwrite( b, bucknr ) { \
-   ( b ).wbuck = static_cast< dip::uint >( bucknr ) & ( b ).andmask; \
-   ( b ).pwritechunk = &(( b ).pchunk1[ ( b ).wbuck ] ); \
-   pnw = &(( b ).pwritechunk->nodes[ 0 ] ); \
-   pnwe = pnw + ( b ).chunksize; }
+   void RCLP( uint8*& pointer ) {
+      pointer = pnr++->pim;
+      if( pnr == pnre ) {
+         if( pnr == plastnode[ rbuck ] ) {
+            go = false;
+         } else {
+            nextread();
+         }
+      }
+   }
 
-#define nextwrite( b ) { \
-   ( b ).pwritechunk->bnext = ( b ).GetChunk(); \
-   ( b ).pwritechunk = ( b ).pwritechunk->bnext; \
-   /*DIP_THROW_IF((( b ).pwritechunk == nullptr), E::NO_MEMORY;)*/ \
-   pnw = &(( b ).pwritechunk->nodes[ 0 ] ); \
-   pnwe = pnw + ( b ).chunksize; }
+   void startwrite( dip::sint bucknr ) {
+      wbuck = static_cast< dip::uint >( bucknr ) & andmask;
+      pwritechunk = &( pchunk1[ wbuck ] );
+      pnw = &( pwritechunk->nodes[ 0 ] );
+      pnwe = pnw + chunksize;
+   }
 
-#define closewrite( b, pnode ) { \
-   ( b ).pwritechunk->bnext = nullptr; \
-   ( b ).plastnode[ ( b ).wbuck ] = (pnode); }
+   void nextwrite() {
+      pwritechunk->bnext = GetChunk();
+      pwritechunk = pwritechunk->bnext;
+      /*DIP_THROW_IF((pwritechunk == nullptr), E::NO_MEMORY;)*/
+      pnw = &( pwritechunk->nodes[ 0 ] );
+      pnwe = pnw + chunksize;
+   }
 
-#define startread( b, bucknr ) { \
-   ( b ).rbuck = static_cast< dip::uint >( bucknr ) & ( b ).andmask; \
-   ( b ).preadchunk = &(( b ).pchunk1[ ( b ).rbuck ] ); \
-   pnr = &(( b ).preadchunk->nodes[ 0 ] ); \
-   go = true; \
-   if(( b ).preadchunk->bnext == nullptr) { \
-      pnre = ( b ).plastnode[ ( b ).rbuck ]; \
-      if( pnr == pnre ) go = false; \
-   } else pnre = pnr + ( b ).chunksize; }
+   void closewrite() {
+      pwritechunk->bnext = nullptr;
+      plastnode[ wbuck ] = pnw;
+   }
 
-#define nextread( b ) { \
-   ( b ).preadchunk = ( b ).preadchunk->bnext; \
-   pnr = &(( b ).preadchunk->nodes[ 0 ] ); \
-   go = true; \
-   if(( b ).preadchunk->bnext == nullptr ) { \
-      pnre = ( b ).plastnode[ ( b ).rbuck ]; \
-      if( pnr == pnre ) go = false; \
-   } else pnre = pnr + b.chunksize; }
+   void startread( dip::sint bucknr ) {
+      rbuck = static_cast< dip::uint >( bucknr ) & andmask;
+      preadchunk = &( pchunk1[ rbuck ] );
+      pnr = &( preadchunk->nodes[ 0 ] );
+      go = true;
+      if( preadchunk->bnext == nullptr ) {
+         pnre = plastnode[ rbuck ];
+         if( pnr == pnre ) {
+            go = false;
+         }
+      } else {
+         pnre = pnr + chunksize;
+      }
+   }
+
+   void nextread() {
+      preadchunk = preadchunk->bnext;
+      pnr = &( preadchunk->nodes[ 0 ] );
+      go = true;
+      if( preadchunk->bnext == nullptr ) {
+         pnre = plastnode[ rbuck ];
+         if( pnr == pnre ) {
+            go = false;
+         }
+      } else {
+         pnre = pnr + chunksize;
+      }
+   }
 
 };
 

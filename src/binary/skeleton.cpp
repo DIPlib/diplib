@@ -97,6 +97,12 @@ namespace dip {
  *                     memory allocation & resource tracking functions.
  *                   - "dip_"ed the variables.
  *                   - made the code "stride-aware".
+ *  Aug 03, 2017:   Cris Luengo - C++-ified a little bit, ported to DIPlib 3.0
+ *                   - Bucket is now a class with a constructor and methods
+ *                   - turned macros to deal with Bucket into methods
+ *                   - replaced memory allocation with std::vector
+ *                   - using std::unique_ptr for the one place where operator new
+ *                     was needed
  *
  * Literature:
  *  "Improved metrics in image processing applied to the Hilditch skeleton"
@@ -187,7 +193,7 @@ void EuskSetFromPlane(
 
 // Put all background pixels 4-c to an object pixel in bucket 0
 void EuskFillBucketZero(
-      Bucket* b,
+      Bucket& b,
       uint8* pimb,
       uint8 mi,
       bool edge,
@@ -198,9 +204,7 @@ void EuskFillBucketZero(
       dip::sint strideY,
       dip::sint strideZ
 ) {
-   Node* pnw;
-   Node* pnwe;
-   startwrite( *b, 0 );
+   b.startwrite( 0 );
    /* all background pixels 4-c to object in bucket 0 */
    if( strideZ != 0 ) {
       for( dip::sint kk = 2; kk < ( sizez - 2 ); kk++ ) {
@@ -211,7 +215,7 @@ void EuskFillBucketZero(
                   if(( *( pim + strideX ) & mi ) || ( *( pim - strideX ) & mi ) ||
                      ( *( pim + strideY ) & mi ) || ( *( pim - strideY ) & mi ) ||
                      ( *( pim + strideZ ) & mi ) || ( *( pim - strideZ ) & mi )) {
-                     STR( *b, pim, 0 );
+                     b.STR( pim, 0 );
                   }
                }
                pim += strideX;
@@ -225,7 +229,7 @@ void EuskFillBucketZero(
             if(( *pim & mi ) == 0 ) {
                if(( *( pim + strideX ) & mi ) || ( *( pim - strideX ) & mi ) ||
                   ( *( pim + strideY ) & mi ) || ( *( pim - strideY ) & mi )) {
-                  STR( *b, pim, 0 );
+                  b.STR( pim, 0 );
                }
             }
             pim += strideX;
@@ -235,25 +239,25 @@ void EuskFillBucketZero(
       if( !edge ) {
          uint8* pim = pimb + 2 * strideY + 2 * strideX;
          for( dip::sint ii = sizex - 4; --ii >= 0; pim += strideX ) {
-            if( *pim & mi ) { STR( *b, pim - strideY, NORTH ); }
+            if( *pim & mi ) { b.STR( pim - strideY, NORTH ); }
          }
          pim = pimb + ( sizey - 3 ) * strideY + 2 * strideX;
          for( dip::sint ii = sizex - 4; --ii >= 0; pim += strideX ) {
-            if( *pim & mi ) { STR( *b, pim + strideY, SOUTH ); }
+            if( *pim & mi ) { b.STR( pim + strideY, SOUTH ); }
          }
          for( dip::sint ii = 2; ii < sizey - 2; ii++ ) {
             pim = pimb + ii * strideY + 2 * strideX;
             if( *pim & mi ) {
-               STR( *b, pim - strideX, WEST );
+               b.STR( pim - strideX, WEST );
             }
             pim += ( sizex - 5 ) * strideX;
             if( *pim & mi ) {
-               STR( *b, pim + strideX, EAST );
+               b.STR( pim + strideX, EAST );
             }
          }
       }
    }
-   closewrite( *b, pnw );
+   b.closewrite();
 }
 
 // Give the outmost 2 pixels of the image value "edge" (0 or 1)
@@ -650,7 +654,7 @@ void Eusk2D(
    Bucket b( nbuckets, QUEUE_SIZE_2D );
 
    /* fill bucket 0 */
-   EuskFillBucketZero( &b, pimb1, mi, edge, sizex, sizey, 1, strideX, strideY, 0 );
+   EuskFillBucketZero( b, pimb1, mi, edge, sizex, sizey, 1, strideX, strideY, 0 );
 
    /* generate distances */
    for( dip::sint dist = d4; !b.Empty() && ( dist <= distmax || distmax == 0 ); dist++ ) {
@@ -658,177 +662,169 @@ void Eusk2D(
          bucket "dist". Remove mask mp immediately to prevent double storage. */
 
       /* register shuffle */
-      dip::sint tdist = dist;
       uint8 m2 = mp;
 
-      Node* pnw;          /* where to write in bucket */
-      Node* pnwe;         /* where to end writing */
-      startwrite( b, tdist );
-
-      Node* pnr;          /* where to read in bucket */
-      Node* pnre;         /* where to end reading */
-      bool go;            /* TRUE if still nodes to be read */
-      startread( b, tdist - d4 );
-
+      b.startwrite( dist );
+      b.startread( dist - d4 );
       uint8* pim;         /* image pointer */
       uint8 dirc;         /* direction of central pixel */
-      if( tdist == d4 ) {
-         while( go ) {
-            RCLP( b, pim );
+      if( dist == d4 ) {
+         while( b.go ) {
+            b.RCLP( pim );
             pim += strideX;
             if( *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 10 );
+               b.STR( pim, 10 );
             }
             pim -= strideX2;
             if( *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 2 );
+               b.STR( pim, 2 );
             }
             pim += strideX + strideY;
             if( *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 14 );
+               b.STR( pim, 14 );
             }
             pim -= strideY2;
             if( *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 6 );
+               b.STR( pim, 6 );
             }
          }
-      } else if( tdist > d4 ) {
-         while( go ) {
-            RCL( b, pim, dirc );
+      } else if( dist > d4 ) {
+         while( b.go ) {
+            b.RCL( pim, dirc );
             if( neig4[ dirc ] ) {
                pim += neig4[ dirc ];
                if( *pim & m2 ) {
                   *pim &= ~m2;
-                  STR( b, pim, dirc );
+                  b.STR( pim, dirc );
                }
             }
          }
       }
 
-      startread( b, tdist - d8 );
-      if( tdist == d8 ) {
-         while( go ) {
-            RCLP( b, pim );
+      b.startread( dist - d8 );
+      if( dist == d8 ) {
+         while( b.go ) {
+            b.RCLP( pim );
             pim += strideX - strideY;
             if( *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 8 );
+               b.STR( pim, 8 );
             }
             pim -= strideX2;
             if( *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 4 );
+               b.STR( pim, 4 );
             }
             pim += strideY2;
             if( *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 0 );
+               b.STR( pim, 0 );
             }
             pim += strideX2;
             if( *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 12 );
+               b.STR( pim, 12 );
             }
          }
-      } else if( tdist > d8 ) {
-         while( go ) {
-            RCL( b, pim, dirc );
+      } else if( dist > d8 ) {
+         while( b.go ) {
+            b.RCL( pim, dirc );
             if( neig8[ dirc ] ) {
                pim += neig8[ dirc ];
                if( *pim & m2 ) {
                   *pim &= ~m2;
-                  STR( b, pim, dirc );
+                  b.STR( pim, dirc );
                }
             }
          }
       }
 
-      startread( b, tdist - dk );
-      if( tdist == dk ) {
-         while( go ) {
-            RCL( b, pim, dirc );
+      b.startread( dist - dk );
+      if( dist == dk ) {
+         while( b.go ) {
+            b.RCL( pim, dirc );
             pim -= strideX + strideY2;
             if( dirc != NORTH && *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 5 );
+               b.STR( pim, 5 );
             }
             pim += strideX2;
             if( dirc != NORTH && *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 7 );
+               b.STR( pim, 7 );
             }
             pim += strideX + strideY;
             if( dirc != EAST && *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 9 );
+               b.STR( pim, 9 );
             }
             pim -= ( strideX2 );
             if( dirc != WEST && *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 3 );
+               b.STR( pim, 3 );
             }
             pim += strideY2;
             if( dirc != WEST && *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 1 );
+               b.STR( pim, 1 );
             }
             pim += ( strideX2 );
             if( dirc != EAST && *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 11 );
+               b.STR( pim, 11 );
             }
             pim += strideY - strideX;
             if( dirc != SOUTH && *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 13 );
+               b.STR( pim, 13 );
             }
             pim -= strideX2;
             if( dirc != SOUTH && *pim & m2 ) {
                *pim &= ~m2;
-               STR( b, pim, 15 );
+               b.STR( pim, 15 );
             }
          }
-      } else if( tdist > dk ) {
-         while( go ) {
-            RCL( b, pim, dirc );
+      } else if( dist > dk ) {
+         while( b.go ) {
+            b.RCL( pim, dirc );
             if( dirc & 1 ) {
                pim += neigk[ dirc ][ 0 ];
                if( *pim & m2 ) {
                   *pim &= ~m2;
-                  STR( b, pim, dirc );
+                  b.STR( pim, dirc );
                }
             } else {
                uint8* ptemp = pim;
                pim += neigk[ dirc ][ 0 ];
                if( *pim & m2 ) {
                   *pim &= ~m2;
-                  STR( b, pim, ( dirc - 1 ) & 15 );
+                  b.STR( pim, ( dirc - 1 ) & 15 );
                }
                pim = ptemp + neigk[ dirc ][ 1 ];
                if( *pim & m2 ) {
                   *pim &= ~m2;
-                  STR( b, pim, dirc + 1 );
+                  b.STR( pim, dirc + 1 );
                }
             }
          }
       }
 
       /* all pixels with distance 'dist' are now found */
-      closewrite( b, pnw );
-      b.Free( tdist - dk );
+      b.closewrite();
+      b.Free( dist - dk );
 
       /* reshuffle register use */
       uint8 m1 = mi | mo;
       m2 = mo;
 
       /* topology testing: table lookup contains Hilditch conditions */
-      startread( b, dist );
-      while( go ) {
-         RCL( b, pim, dirc );
+      b.startread( dist );
+      while( b.go ) {
+         b.RCL( pim, dirc );
 
          /* backtracking, see figure 6, paper */
          if(( dirc == 2 || dirc == 6 || dirc == 10 || dirc == 14 ) &&
@@ -898,17 +894,13 @@ void Eusk2D(
          *( pim - strideY - strideX ) &= ~mi;
       }
 
-      /* register shuffle */
-      m1 = mi;
-      m2 = mo;
-
       /* update image, if pixel may be removed: remove mo, restore mi */
-      startread( b, dist );
-      while( go ) {
-         RCLP( b, pim );
-         if( !( *pim & m1 )) {
-            *pim |= m1;
-            *pim &= ~m2;
+      b.startread( dist );
+      while( b.go ) {
+         b.RCLP( pim );
+         if( !( *pim & mi )) {
+            *pim |= mi;
+            *pim &= ~mo;
          }
       }
 
@@ -3980,7 +3972,7 @@ void Eusk3D(
 
    /* preliminaries: edge treatment and bitplane copies */
    EuskFixEdge( pimb1, mi, edge, sizex, sizey, sizez, strideX, strideY, strideZ );
-   EuskPlaneCopy( pimb1, mi, ( uint8 )( mo | mp ), sizex, sizey, sizez, strideX, strideY, strideZ );
+   EuskPlaneCopy( pimb1, mi, uint8( mo | mp ), sizex, sizey, sizez, strideX, strideY, strideZ );
    EuskFixEdge( pimb1, mp, false, sizex, sizey, sizez, strideX, strideY, strideZ );
 
    /* fill the tables */
@@ -3999,7 +3991,7 @@ void Eusk3D(
    Bucket b( nbuckets, QUEUE_SIZE_3D );
 
    /* fill bucket 0 */
-   EuskFillBucketZero( &b, pimb1, mi, edge, sizex, sizey, sizez, strideX, strideY, strideZ );
+   EuskFillBucketZero( b, pimb1, mi, edge, sizex, sizey, sizez, strideX, strideY, strideZ );
 
    /* generate distances */
    for( dip::sint dist = d1; !b.Empty() && ( dist <= distmax || distmax == 0 ); dist++ ) {
@@ -4007,666 +3999,658 @@ void Eusk3D(
          bucket "dist". Remove mask mp immediatly to prevent double storage. */
 
       /*  shuffle */
-      dip::sint md = dist;
       uint8 m2 = mp;
 
-      Node* pnw;     /* where to write in bucket */
-      Node* pnwe;    /* where to end writing */
-      startwrite( b, md );
-
-      Node* pnr;     /* where to read in bucket */
-      Node* pnre;    /* where to end reading */
-      bool go;       /* TRUE if still nodes to be read */
-      startread( b, md - d1 );
-
+      b.startwrite( dist );
+      b.startread( dist - d1 );
       uint8* pim;    /* image pointer */
       uint8* pn;     /* image pointer */
       uint8 dirc;    /* direction of central pixel */
-      if( md == d1 ) {
-         while( go ) {
-            RCLP( b, pim );
+      if( dist == d1 ) {
+         while( b.go ) {
+            b.RCLP( pim );
             pn = pim + strideX;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 69 );
+               b.STR( pn, 69 );
             }
             pn = pim + strideY;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 52 );
+               b.STR( pn, 52 );
             }
             pn = pim + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 49 );
+               b.STR( pn, 49 );
             }
             pn = pim - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 48 );
+               b.STR( pn, 48 );
             }
             pn = pim - strideY;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 45 );
+               b.STR( pn, 45 );
             }
             pn = pim - strideX;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 28 );
+               b.STR( pn, 28 );
             }
          }
-      } else if( md > d1 ) {
-         while( go ) {
-            RCL( b, pim, dirc );
+      } else if( dist > d1 ) {
+         while( b.go ) {
+            b.RCL( pim, dirc );
             dip::sint index = a1[ dirc ][ 0 ];
             if( index ) {
                pn = pim + index;
                if( *pn & m2 ) {
                   *pn &= ~m2;
-                  STR( b, pn, n1[ dirc ][ 0 ] );
+                  b.STR( pn, n1[ dirc ][ 0 ] );
                }
                index = a1[ dirc ][ 1 ];
                if( index ) {
                   pn = pim + index;
                   if( *pn & m2 ) {
                      *pn &= ~m2;
-                     STR( b, pn, n1[ dirc ][ 1 ] );
+                     b.STR( pn, n1[ dirc ][ 1 ] );
                   }
                }
             }
          }
       }
 
-      startread( b, md - d2 );
-      if( md == d2 ) {
-         while( go ) {
-            RCLP( b, pim );
+      b.startread( dist - d2 );
+      if( dist == d2 ) {
+         while( b.go ) {
+            b.RCLP( pim );
             pn = pim + strideX + strideY;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 74 );
+               b.STR( pn, 74 );
             }
             pn = pim + strideX + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 70 );
+               b.STR( pn, 70 );
             }
             pn = pim + strideX - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 68 );
+               b.STR( pn, 68 );
             }
             pn = pim + strideX - strideY;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 64 );
+               b.STR( pn, 64 );
             }
             pn = pim + strideY + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 53 );
+               b.STR( pn, 53 );
             }
             pn = pim + strideY - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 51 );
+               b.STR( pn, 51 );
             }
             pn = pim - strideY + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 46 );
+               b.STR( pn, 46 );
             }
             pn = pim - strideY - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 44 );
+               b.STR( pn, 44 );
             }
             pn = pim - strideX + strideY;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 33 );
+               b.STR( pn, 33 );
             }
             pn = pim - strideX + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 29 );
+               b.STR( pn, 29 );
             }
             pn = pim - strideX - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 27 );
+               b.STR( pn, 27 );
             }
             pn = pim - strideX - strideY;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 23 );
+               b.STR( pn, 23 );
             }
          }
-      } else if( md > d2 ) {
-         while( go ) {
-            RCL( b, pim, dirc );
+      } else if( dist > d2 ) {
+         while( b.go ) {
+            b.RCL( pim, dirc );
             dip::sint index = a2[ dirc ][ 0 ];
             if( index ) {
                pn = pim + index;
                if( *pn & m2 ) {
                   *pn &= ~m2;
-                  STR( b, pn, n2[ dirc ][ 0 ] );
+                  b.STR( pn, n2[ dirc ][ 0 ] );
                }
                index = a2[ dirc ][ 1 ];
                if( index ) {
                   pn = pim + index;
                   if( *pn & m2 ) {
                      *pn &= ~m2;
-                     STR( b, pn, n2[ dirc ][ 1 ] );
+                     b.STR( pn, n2[ dirc ][ 1 ] );
                   }
                }
             }
          }
       }
 
-      startread( b, md - d3 );
-      if( md == d3 ) {
-         while( go ) {
-            RCLP( b, pim );
+      b.startread( dist - d3 );
+      if( dist == d3 ) {
+         while( b.go ) {
+            b.RCLP( pim );
             pn = pim + strideX + strideY + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 75 );
+               b.STR( pn, 75 );
             }
             pn = pim + strideX + strideY - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 73 );
+               b.STR( pn, 73 );
             }
             pn = pim + strideX - strideY + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 65 );
+               b.STR( pn, 65 );
             }
             pn = pim + strideX - strideY - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 63 );
+               b.STR( pn, 63 );
             }
             pn = pim - strideX + strideY + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 34 );
+               b.STR( pn, 34 );
             }
             pn = pim - strideX + strideY - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 32 );
+               b.STR( pn, 32 );
             }
             pn = pim - strideX - strideY + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 24 );
+               b.STR( pn, 24 );
             }
             pn = pim - strideX - strideY - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 22 );
+               b.STR( pn, 22 );
             }
          }
-      } else if( md > d3 ) {
-         while( go ) {
-            RCL( b, pim, dirc );
+      } else if( dist > d3 ) {
+         while( b.go ) {
+            b.RCL( pim, dirc );
             dip::sint index = a3[ dirc ][ 0 ];
             if( index ) {
                pn = pim + index;
                if( *pn & m2 ) {
                   *pn &= ~m2;
-                  STR( b, pn, n3[ dirc ][ 0 ] );
+                  b.STR( pn, n3[ dirc ][ 0 ] );
                }
                index = a3[ dirc ][ 1 ];
                if( index ) {
                   pn = pim + index;
                   if( *pn & m2 ) {
                      *pn &= ~m2;
-                     STR( b, pn, n3[ dirc ][ 1 ] );
+                     b.STR( pn, n3[ dirc ][ 1 ] );
                   }
                }
             }
          }
       }
 
-      startread( b, md - d5 );
-      if( md == d5 ) {
-         while( go ) {
-            RCLP( b, pim );
+      b.startread( dist - d5 );
+      if( dist == d5 ) {
+         while( b.go ) {
+            b.RCLP( pim );
             pn = pim + sX2 + strideY;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 93 );
+               b.STR( pn, 93 );
             }
             pn = pim + sX2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 90 );
+               b.STR( pn, 90 );
             }
             pn = pim + sX2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 89 );
+               b.STR( pn, 89 );
             }
             pn = pim + sX2 - strideY;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 86 );
+               b.STR( pn, 86 );
             }
             pn = pim + strideX + sY2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 79 );
+               b.STR( pn, 79 );
             }
             pn = pim + strideX + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 71 );
+               b.STR( pn, 71 );
             }
             pn = pim + strideX - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 67 );
+               b.STR( pn, 67 );
             }
             pn = pim + strideX - sY2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 59 );
+               b.STR( pn, 59 );
             }
             pn = pim + sY2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 56 );
+               b.STR( pn, 56 );
             }
             pn = pim + sY2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 55 );
+               b.STR( pn, 55 );
             }
             pn = pim + strideY + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 54 );
+               b.STR( pn, 54 );
             }
             pn = pim + strideY - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 50 );
+               b.STR( pn, 50 );
             }
             pn = pim - strideY + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 47 );
+               b.STR( pn, 47 );
             }
             pn = pim - strideY - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 43 );
+               b.STR( pn, 43 );
             }
             pn = pim - sY2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 42 );
+               b.STR( pn, 42 );
             }
             pn = pim - sY2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 41 );
+               b.STR( pn, 41 );
             }
             pn = pim - strideX + sY2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 38 );
+               b.STR( pn, 38 );
             }
             pn = pim - strideX + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 30 );
+               b.STR( pn, 30 );
             }
             pn = pim - strideX - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 26 );
+               b.STR( pn, 26 );
             }
             pn = pim - strideX - sY2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 18 );
+               b.STR( pn, 18 );
             }
             pn = pim - sX2 + strideY;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 11 );
+               b.STR( pn, 11 );
             }
             pn = pim - sX2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 8 );
+               b.STR( pn, 8 );
             }
             pn = pim - sX2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 7 );
+               b.STR( pn, 7 );
             }
             pn = pim - sX2 - strideY;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 4 );
+               b.STR( pn, 4 );
             }
          }
-      } else if( md > d5 ) {
-         while( go ) {
-            RCL( b, pim, dirc );
+      } else if( dist > d5 ) {
+         while( b.go ) {
+            b.RCL( pim, dirc );
             dip::sint index = a5[ dirc ][ 0 ];
             if( index ) {
                pn = pim + index;
                if( *pn & m2 ) {
                   *pn &= ~m2;
-                  STR( b, pn, n5[ dirc ][ 0 ] );
+                  b.STR( pn, n5[ dirc ][ 0 ] );
                }
                index = a5[ dirc ][ 1 ];
                if( index ) {
                   pn = pim + index;
                   if( *pn & m2 ) {
                      *pn &= ~m2;
-                     STR( b, pn, n5[ dirc ][ 1 ] );
+                     b.STR( pn, n5[ dirc ][ 1 ] );
                   }
                }
             }
          }
       }
 
-      startread( b, md - d6 );
-      if( md == d6 ) {
-         while( go ) {
-            RCLP( b, pim );
+      b.startread( dist - d6 );
+      if( dist == d6 ) {
+         while( b.go ) {
+            b.RCLP( pim );
             pn = pim + sX2 + strideY + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 94 );
+               b.STR( pn, 94 );
             }
             pn = pim + sX2 + strideY - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 92 );
+               b.STR( pn, 92 );
             }
             pn = pim + sX2 - strideY + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 87 );
+               b.STR( pn, 87 );
             }
             pn = pim + sX2 - strideY - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 85 );
+               b.STR( pn, 85 );
             }
             pn = pim + strideX + sY2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 80 );
+               b.STR( pn, 80 );
             }
             pn = pim + strideX + sY2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 78 );
+               b.STR( pn, 78 );
             }
             pn = pim + strideX + strideY + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 76 );
+               b.STR( pn, 76 );
             }
             pn = pim + strideX + strideY - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 72 );
+               b.STR( pn, 72 );
             }
             pn = pim + strideX - strideY + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 66 );
+               b.STR( pn, 66 );
             }
             pn = pim + strideX - strideY - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 62 );
+               b.STR( pn, 62 );
             }
             pn = pim + strideX - sY2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 60 );
+               b.STR( pn, 60 );
             }
             pn = pim + strideX - sY2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 58 );
+               b.STR( pn, 58 );
             }
             pn = pim - strideX + sY2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 39 );
+               b.STR( pn, 39 );
             }
             pn = pim - strideX + sY2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 37 );
+               b.STR( pn, 37 );
             }
             pn = pim - strideX + strideY + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 35 );
+               b.STR( pn, 35 );
             }
             pn = pim - strideX + strideY - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 31 );
+               b.STR( pn, 31 );
             }
             pn = pim - strideX - strideY + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 25 );
+               b.STR( pn, 25 );
             }
             pn = pim - strideX - strideY - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 21 );
+               b.STR( pn, 21 );
             }
             pn = pim - strideX - sY2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 19 );
+               b.STR( pn, 19 );
             }
             pn = pim - strideX - sY2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 17 );
+               b.STR( pn, 17 );
             }
             pn = pim - sX2 + strideY + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 12 );
+               b.STR( pn, 12 );
             }
             pn = pim - sX2 + strideY - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 10 );
+               b.STR( pn, 10 );
             }
             pn = pim - sX2 - strideY + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 5 );
+               b.STR( pn, 5 );
             }
             pn = pim - sX2 - strideY - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 3 );
+               b.STR( pn, 3 );
             }
          }
-      } else if( md > d6 ) {
-         while( go ) {
-            RCL( b, pim, dirc );
+      } else if( dist > d6 ) {
+         while( b.go ) {
+            b.RCL( pim, dirc );
             dip::sint index = a6[ dirc ][ 0 ];
             if( index ) {
                pn = pim + index;
                if( *pn & m2 ) {
                   *pn &= ~m2;
-                  STR( b, pn, n6[ dirc ][ 0 ] );
+                  b.STR( pn, n6[ dirc ][ 0 ] );
                }
                index = a6[ dirc ][ 1 ];
                if( index ) {
                   pn = pim + index;
                   if( *pn & m2 ) {
                      *pn &= ~m2;
-                     STR( b, pn, n6[ dirc ][ 1 ] );
+                     b.STR( pn, n6[ dirc ][ 1 ] );
                   }
                }
             }
          }
       }
 
-      startread( b, md - d9 );
-      if( md == d9 ) {
-         while( go ) {
-            RCLP( b, pim );
+      b.startread( dist - d9 );
+      if( dist == d9 ) {
+         while( b.go ) {
+            b.RCLP( pim );
             pn = pim + sX2 + sY2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 97 );
+               b.STR( pn, 97 );
             }
             pn = pim + sX2 + sY2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 96 );
+               b.STR( pn, 96 );
             }
             pn = pim + sX2 + strideY + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 95 );
+               b.STR( pn, 95 );
             }
             pn = pim + sX2 + strideY - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 91 );
+               b.STR( pn, 91 );
             }
             pn = pim + sX2 - strideY + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 88 );
+               b.STR( pn, 88 );
             }
             pn = pim + sX2 - strideY - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 84 );
+               b.STR( pn, 84 );
             }
             pn = pim + sX2 - sY2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 83 );
+               b.STR( pn, 83 );
             }
             pn = pim + sX2 - sY2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 82 );
+               b.STR( pn, 82 );
             }
             pn = pim + strideX + sY2 + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 81 );
+               b.STR( pn, 81 );
             }
             pn = pim + strideX + sY2 - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 77 );
+               b.STR( pn, 77 );
             }
             pn = pim + strideX - sY2 + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 61 );
+               b.STR( pn, 61 );
             }
             pn = pim + strideX - sY2 - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 57 );
+               b.STR( pn, 57 );
             }
             pn = pim - strideX + sY2 + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 40 );
+               b.STR( pn, 40 );
             }
             pn = pim - strideX + sY2 - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 36 );
+               b.STR( pn, 36 );
             }
             pn = pim - strideX - sY2 + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 20 );
+               b.STR( pn, 20 );
             }
             pn = pim - strideX - sY2 - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 16 );
+               b.STR( pn, 16 );
             }
             pn = pim - sX2 + sY2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 15 );
+               b.STR( pn, 15 );
             }
             pn = pim - sX2 + sY2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 14 );
+               b.STR( pn, 14 );
             }
             pn = pim - sX2 + strideY + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 13 );
+               b.STR( pn, 13 );
             }
             pn = pim - sX2 + strideY - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 9 );
+               b.STR( pn, 9 );
             }
             pn = pim - sX2 - strideY + sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 6 );
+               b.STR( pn, 6 );
             }
             pn = pim - sX2 - strideY - sZ2;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 2 );
+               b.STR( pn, 2 );
             }
             pn = pim - sX2 - sY2 + strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 1 );
+               b.STR( pn, 1 );
             }
             pn = pim - sX2 - sY2 - strideZ;
             if( *pn & m2 ) {
                *pn &= ~m2;
-               STR( b, pn, 0 );
+               b.STR( pn, 0 );
             }
          }
-      } else if( md > d9 ) {
-         while( go ) {
-            RCL( b, pim, dirc );
+      } else if( dist > d9 ) {
+         while( b.go ) {
+            b.RCL( pim, dirc );
             dip::sint index = a9[ dirc ][ 0 ];
             if( index ) {
                pn = pim + index;
                if( *pn & m2 ) {
                   *pn &= ~m2;
-                  STR( b, pn, n9[ dirc ][ 0 ] );
+                  b.STR( pn, n9[ dirc ][ 0 ] );
                }
                index = a9[ dirc ][ 1 ];
                if( index ) {
                   pn = pim + index;
                   if( *pn & m2 ) {
                      *pn &= ~m2;
-                     STR( b, pn, n9[ dirc ][ 1 ] );
+                     b.STR( pn, n9[ dirc ][ 1 ] );
                   }
                }
             }
@@ -4674,27 +4658,23 @@ void Eusk3D(
       }
 
       /* all pixels with distance 'dist' are now found */
-      closewrite( b, pnw );
-      b.Free( md - d9 );
+      b.closewrite();
+      b.Free( dist - d9 );
 
       for( dip::uint ii = 0; ii < 3; ii++ ) {
-         /* reshuffle  use */
-         uint8 m1 = mi | mo;
-         m2 = mo;
-
-         startread( b, dist );
-         while( go ) {
-            RCL( b, pim, dirc );
+         b.startread( dist );
+         while( b.go ) {
+            b.RCL( pim, dirc );
 
             /* can be obtained from direction as well? */
-            if(( *( pim + bvcontour[ ii ][ 0 ] ) & m2 ) &&
-               ( *( pim + bvcontour[ ii ][ 1 ] ) & m2 ) &&
-               ( *( pim + bvcontour[ ii ][ 2 ] ) & m2 )) {
+            if(( *( pim + bvcontour[ ii ][ 0 ] ) & mo ) &&
+               ( *( pim + bvcontour[ ii ][ 1 ] ) & mo ) &&
+               ( *( pim + bvcontour[ ii ][ 2 ] ) & mo )) {
                   continue;
             }
 
             /* put neighbourhood in local tables */
-            PutInLocal( pim, strideX, strideY, strideZ, m2, m1, oldlocal, newlocal );
+            PutInLocal( pim, strideX, strideY, strideZ, mo, uint8( mi | mo ), oldlocal, newlocal );
 
             /* test in the old image on edge and end voxels */
             if( end && EndOk( oldlocal, end, endpixel )) { continue; }
@@ -4715,17 +4695,13 @@ void Eusk3D(
             *pim &= ~mi;
          }
 
-         /*  reshuffle */
-         m1 = mi;
-         m2 = mo;
-
          /* update image, if pixel may be removed: remove mo, restore mi */
-         startread( b, dist );
-         while( go ) {
-            RCLP( b, pim );
-            if( !( *pim & m1 )) {
-               *pim |= m1;
-               *pim &= ~m2;
+         b.startread( dist );
+         while( b.go ) {
+            b.RCLP( pim );
+            if( !( *pim & mi )) {
+               *pim |= mi;
+               *pim &= ~mo;
             }
          }
       }
