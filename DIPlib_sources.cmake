@@ -104,6 +104,7 @@ src/math/bitwise.cpp
 src/math/comparison.cpp
 src/math/dyadic_operators.cpp
 src/math/error.cpp
+src/math/mapping.cpp
 src/math/monadic_operators.cpp
 src/math/pixel.cpp
 src/math/projection.cpp

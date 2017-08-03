@@ -244,9 +244,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_LaplaceMinDgg (dip_derivatives.h)
 
 - diplib/math.h
-    - dip_Clip (dip_point.h)
-    - dip_ErfClip (dip_point.h)
-    - dip_ContrastStretch (dip_point.h)
     - dip_RemapOrientation (dip_point.h)
     - dip_AmplitudeModulation (dip_math.h)
     - dip_CosinAmplitudeModulation (dip_math.h)
