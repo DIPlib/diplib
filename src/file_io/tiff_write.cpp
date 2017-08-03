@@ -188,7 +188,7 @@ void FillBufferMultiChannelN(
       for( dip::uint jj = 0; jj < width; ++jj ) {
          uint8 const* src_sample = src_pixel;
          for( dip::uint kk = 0; kk < tensorElements; ++kk ) {
-            memcpy( dest, src_pixel, sizeOf );
+            memcpy( dest, src_sample, sizeOf );
             dest += sizeOf;
             src_sample += stride_sample;
          }

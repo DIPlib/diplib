@@ -1,0 +1,15 @@
+	
+ics_version	1.0
+filename	trui
+layout	parameters	3
+layout	order	bits	x	y
+layout	sizes	8	256	256
+layout	coordinates	video
+layout	significant_bits	8
+representation	format	integer
+representation	sign	unsigned
+representation	compression	uncompressed
+representation	byte_order	1
+parameter	origin	0.000000	0.000000	0.000000
+parameter	labels	intensity	x-position	y-position
+history	software	DIPlib with dipIO

@@ -75,4 +75,5 @@ dipimage/varif.cpp
 dipimage/waterseed.cpp
 dipimage/watershed.cpp
 dipimage/writeics.cpp
+dipimage/writetiff.cpp
 )
