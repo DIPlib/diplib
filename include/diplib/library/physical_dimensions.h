@@ -623,12 +623,17 @@ class DIP_NO_EXPORT PixelSize {
       /// Create a pixel size based on an array of physical quantities.
       PixelSize( PhysicalQuantityArray const& m ) {
          Set( m );
+         for( auto& s : size_ ) {
+            if( !s.IsPhysical() ) {
+               s = PhysicalQuantity::Pixel();
+            }
+         }
       };
 
       /// Returns the pixel size for the given dimension.
       PhysicalQuantity Get( dip::uint d ) const {
          if( size_.empty() ) {
-            return PhysicalQuantity( 1 );
+            return PhysicalQuantity::Pixel();
          } else if( d >= size_.size() ) {
             return size_.back();
          } else {
@@ -646,7 +651,7 @@ class DIP_NO_EXPORT PixelSize {
       /// size.
       void Set( dip::uint d, PhysicalQuantity m ) {
          if( !m.IsPhysical() ) {
-            m = 1;
+            m = PhysicalQuantity::Pixel();
          }
          if( Get( d ) != m ) {
             EnsureDimensionality( d + 1 );
@@ -712,14 +717,14 @@ class DIP_NO_EXPORT PixelSize {
             if( m[ ii ].IsPhysical() ) {
                size_[ ii ] = m[ ii ];
             } else {
-               size_[ ii ] = 1;
+               size_[ ii ] = PhysicalQuantity::Pixel();
             }
          }
       }
 
       /// Scales the pixel size in the given dimension, if it is defined.
       void Scale( dip::uint d, double s ) {
-         if( ( !size_.empty() ) && !Get( d ).IsDimensionless() ) {
+         if( ( !size_.empty() ) && Get( d ).IsPhysical() ) {
             // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
             EnsureDimensionality( d + 2 );
             size_[ d ] *= s;
@@ -729,7 +734,7 @@ class DIP_NO_EXPORT PixelSize {
       /// Scales the pixel size isotropically.
       void Scale( double s ) {
          for( dip::uint ii = 0; ii < size_.size(); ++ii ) {
-            if( !size_[ ii ].IsDimensionless() ) {
+            if( size_[ ii ].IsPhysical() ) {
                size_[ ii ] *= s;
             }
          }
@@ -741,7 +746,7 @@ class DIP_NO_EXPORT PixelSize {
             // we do not add a dimension past `d` here, assuming that the caller is modifying all useful dimensions.
             EnsureDimensionality( s.size() );
             for( dip::uint ii = 1; ii < s.size(); ++ii ) {
-               if( !size_[ ii ].IsDimensionless() ) {
+               if( size_[ ii ].IsPhysical() ) {
                   size_[ ii ] *= s[ ii ];
                }
             }
@@ -779,9 +784,9 @@ class DIP_NO_EXPORT PixelSize {
       /// Inserts a dimension, undefined by default.
       void InsertDimension( dip::uint d, PhysicalQuantity m = 1 ) {
          if( !m.IsPhysical() ) {
-            m = 1;
+            m = PhysicalQuantity::Pixel();
          }
-         if( !m.IsDimensionless() || IsDefined() ) {
+         if( IsDefined() ) {
             // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
             EnsureDimensionality( d + 1 );
             size_.insert( d, m );
@@ -826,7 +831,7 @@ class DIP_NO_EXPORT PixelSize {
       /// Tests to see if the pixel size is defined.
       bool IsDefined() const {
          for( dip::uint ii = 0; ii < size_.size(); ++ii ) {
-            if( !size_[ ii ].IsDimensionless() ) {
+            if( size_[ ii ].IsPhysical() ) {
                return true;
             }
          }

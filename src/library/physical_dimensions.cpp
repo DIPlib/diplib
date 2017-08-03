@@ -129,7 +129,7 @@ bool ParsePower( dip::String const& string, dip::uint& ii, int& power ) {
    return true;
 }
 
-// Parses a part of a string respresentation of units.
+// Parses a part of a string representation of units.
 bool ParseComponent( dip::String const& string, dip::uint& ii, Units::BaseUnits& bu, int& power ) {
    // <component> = <units>[ { ^<N> | <n> } ]
    // <units> = {m|g|s|A|K|cd|rad|px}
@@ -183,6 +183,9 @@ bool ExpectCDot( dip::String const& string, dip::uint& ii ) {
 // Constructs a new Units using a string representation of those units.
 Units::Units( dip::String const& string ) {
    power_.fill( 0 );
+   if( string.empty() ) {
+      return;
+   }
    // Parse the string.
    // Format: [ '10' { '^' <3N> | <3n> } <cdot> ][ <prefix> ] <component> [ { <cdot> | '/' } <component> ]
    // <component> = <units>[^<N>]
@@ -197,6 +200,8 @@ Units::Units( dip::String const& string ) {
    // TODO: accept more general strings, to let users type something? e.g. allow prefixes on any component?
    // TODO: allow alternative units? e.g. inches, Hz, ...
    constexpr char const* errorMessage = "Ill-formed Units string";
+   // Note that testing for string[ii] always works, as it's a null-terminated string, so we can always
+   // test the next character.
    dip::uint ii = 0;
    if(( string[ ii ] == '1' ) && ( string[ ii + 1 ] == '0' )) {
       // Starts with 10^{<N>|<n>}.

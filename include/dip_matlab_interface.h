@@ -1063,7 +1063,13 @@ inline dip::Image GetImage( mxArray const* mx ) {
          mxArray* magnitude = mxGetField( pxsz, ii, pxsizeStructFields[ 0 ] );
          mxArray* units = mxGetField( pxsz, ii, pxsizeStructFields[ 1 ] );
          if( magnitude && units ) {
-            pq[ ii ] = { GetFloat( magnitude ), dip::Units( GetStringUnicode( units )) };
+            dip::Units u;
+            try {
+               u = dip::Units( GetStringUnicode( units ));
+            } catch( dip::Error const& ) {
+               u = dip::Units::Pixel();
+            }
+            pq[ ii ] = { GetFloat( magnitude ), u };
          }
       }
       pixelSize.Set( pq );

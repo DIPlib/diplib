@@ -922,7 +922,7 @@ classdef dip_image
                   pxsz(end+1:length(v)) = pxsz(end); % replicate the last element across all dimensions
                   sz = [num2str(pxsz(1).magnitude),' ',pxsz(1).units];
                   for jj=2:length(pxsz)
-                     sz = [sz,' x ',num2str(pxsz(2).magnitude),' ',pxsz(2).units];
+                     sz = [sz,' x ',num2str(pxsz(jj).magnitude),' ',pxsz(jj).units];
                   end
                   disp(['    pixel size ',sz]);
                end
@@ -1308,6 +1308,7 @@ classdef dip_image
          end
          in.TensorShapeInternal = 'column vector';
          in.TensorSizeInternal = [1,1];
+         in.ColorSpace = '';
       end
 
       function in = spatialtotensor(in,dim)
@@ -1349,6 +1350,7 @@ classdef dip_image
          end
          in.TensorShapeInternal = 'column vector';
          in.TensorSizeInternal = [size(in.Data,2),1];
+         in.ColorSpace = '';
       end
 
       function in = expanddim(in,dims)
