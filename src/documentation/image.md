@@ -697,8 +697,8 @@ the image from being assigned into. For example:
 ```
 
 The main purpose of the protect flag is to provide a simple means of specifying
-the data type for the output image of a filter. Most filters and operations in
-DIPlib choose a specific data type for their output based on the input data
+the data type for the output image or a filter. Most filters and operations in
+*DIPlib* choose a specific data type for their output based on the input data
 type, and in such a way that little precision is lost. For example, the Gaussian
 filter will produce a single-precision floating point output image by default
 when the input image is an 8-bit unsigned integer. Under the assumption that
@@ -783,7 +783,7 @@ because the -5 is first cast to unsigned, becoming 0. Also, adding 200 and 200 i
 unsigned integer format will yield 255, there is no dropping of the higher-order
 bit as in standard C++ arithmetic.
 
-As is true for most image processing functions in DIPlib (see \ref design_function_signatures),
+As is true for most image processing functions in *DIPlib* (see \ref design_function_signatures),
 the statement above is identical to
 
 ```cpp

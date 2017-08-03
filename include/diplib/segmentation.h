@@ -42,7 +42,7 @@ namespace dip {
 ///
 /// `in` is a scalar, real-valued image. `nClusters` cluster centers are found, centered on regions
 /// of high intensity. `out` is a labeled image with `nClusters` regions tiling the image. Each
-/// region is identified by a different label. Boundaries between regions are the Voronoi tesselation
+/// region is identified by a different label. Boundaries between regions are the Voronoi tessellation
 /// given the identified cluster centers.
 DIP_EXPORT void KMeansClustering( // TODO: return the cluster centers?
       Image const& in,

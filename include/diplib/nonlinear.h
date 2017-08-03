@@ -160,7 +160,7 @@ DIP_EXPORT void SelectionFilter(
       dfloat threshold = 0.0,
       String const& mode = "minimum",
       StringArray const& boundaryCondition = {}
-); // TODO: implement SelectionFilter
+);
 inline Image SelectionFilter(
       Image const& in,
       Image const& control,
@@ -212,7 +212,7 @@ DIP_EXPORT void Kuwahara(
       Kernel kernel = {},
       dfloat threshold = 0.0,
       StringArray const& boundaryCondition = {}
-); // TODO: implement Kuwahara
+);
 inline Image Kuwahara(
       Image const& in,
       Kernel const& kernel = {},
