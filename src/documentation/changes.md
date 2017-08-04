@@ -327,5 +327,13 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - `resample` and `shift` shift the image in the opposite direction from what it did in the old
   *DIPimage*, where the shift was unintuitive.
 
+- `readim` and `writeim` work differently now, in part because *DIPlib* natively only supports
+  two file types now. The `file_info` struct output for `readim` has changed somewhat. The last
+  two input parameters to the old `writeim` are no longer supported (`compression` and `physDim`):
+  to change the compression method, call `writeics` or `writetiff` directly; the pixel size is
+  always given by the image, use `dip_image/pixelsize` to set it.
+
 - Many functions have been added to match new functionality in *DIPlib*, as well as previous
-  functionality that was not accessible from MATLAB.
+  functionality that was not accessible from MATLAB. Some old functions have gained additional
+  parameters to expose more functionality; we tried to do so without breaking backwards
+  compatability.

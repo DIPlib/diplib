@@ -28,12 +28,14 @@ dipimage/@dip_image/svd.cpp
 dipimage/@dip_image/trace.cpp
 dipimage/@dip_image/var.cpp
 dipimage/areaopening.cpp
+dipimage/clip.cpp
 dipimage/closing.cpp
 dipimage/convolve.cpp
 dipimage/coordinates.cpp
 dipimage/derivative.cpp
 dipimage/dilation.cpp
 dipimage/entropy.cpp
+dipimage/erfclip.cpp
 dipimage/erosion.cpp
 dipimage/errormeasure.cpp
 dipimage/extendimage.cpp
@@ -68,6 +70,7 @@ dipimage/selectionf.cpp
 dipimage/setborder.cpp
 dipimage/skew.cpp
 dipimage/smallobjectsremove.cpp
+dipimage/stretch.cpp
 dipimage/threshold.cpp
 dipimage/tophat.cpp
 dipimage/unif.cpp

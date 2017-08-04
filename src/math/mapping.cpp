@@ -100,7 +100,7 @@ void Clip(
       }
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
-      DIP_OVL_NEW_FLOAT( scanLineFilter, ClipLineFilter, ( low, high ), dtype );
+      DIP_OVL_NEW_REAL( scanLineFilter, ClipLineFilter, ( low, high ), dtype );
       Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
    DIP_END_STACK_TRACE
 }
@@ -149,13 +149,13 @@ void ErfClip(
    DIP_START_STACK_TRACE
       ClipOptions options = ParseClipOptions( mode );
       dfloat threshold, range;
-      if( low > high ) {
-         std::swap( low, high );
-      }
       if( options.range ) {
          threshold = low;
          range = high;
       } else {
+         if( low > high ) {
+            std::swap( low, high );
+         }
          threshold = ( low + high ) / 2.0;
          range = high - low;
       }
@@ -253,24 +253,22 @@ class ContrastStretchLineFilter_Erf : public Framework::ScanLineFilter {
          auto inStride = params.inBuffer[ 0 ].stride;
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          auto outStride = params.outBuffer[ 0 ].stride;
-         constexpr dfloat sqrtPi = std::sqrt( pi );
          for( dip::uint ii = 0; ii < params.bufferLength; ++ii ) {
-            dfloat value = std::erf( sqrtPi * ( *in - threshold_ ) / range_ ); // Note that erf() replaces clamp().
-            *out = offset_ + scale_ * ( value + 1.0 );
+            dfloat value = *in - threshold_;
+            *out = offset_ + ( outScale_  * std::erf( value * inScale_ )); // Note that erf() replaces clamp().
             in += inStride;
             out += outStride;
          }
       }
       ContrastStretchLineFilter_Erf( dfloat inMin, dfloat inMax, dfloat outMin, dfloat outMax ):
-            inMin_( inMin ), inMax_( inMax ), offset_( outMin ), scale_(( outMax - outMin ) / ( inMax - inMin ) / 2.0),
-            threshold_(( inMax + inMin ) / 2.0 ), range_( inMax - inMin ) {}
+            outScale_(( outMax - outMin ) / 2.0 ), offset_( outScale_ + outMin ),
+            inScale_( std::sqrt( pi ) / ( inMax - inMin )), threshold_(( inMax + inMin ) / 2.0 ) {}
+
    private:
-      dfloat inMin_;
-      dfloat inMax_;
+      dfloat outScale_;
       dfloat offset_;
-      dfloat scale_;
+      dfloat inScale_;
       dfloat threshold_;
-      dfloat range_;
 };
 
 class ContrastStretchLineFilter_Decade : public Framework::ScanLineFilter {
@@ -346,8 +344,8 @@ void ContrastStretch(
       Image& out,
       dfloat lowerBound,
       dfloat upperBound,
-      dfloat outMax,
       dfloat outMin,
+      dfloat outMax,
       String const& method,
       dfloat parameter1,
       dfloat parameter2

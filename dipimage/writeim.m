@@ -46,7 +46,7 @@
 function out = writeim(image,filename,format)
 
 if nargin < 3
-   format = ''
+   format = '';
 end
 if nargin < 2
    error('The first two input arguments are required')

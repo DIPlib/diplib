@@ -57,7 +57,7 @@
 function [image,file_info] = readim(filename,format)
 
 if nargin < 2
-   format = ''
+   format = '';
 end
 if nargin < 1
    error('A file name is required')
