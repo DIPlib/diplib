@@ -40,8 +40,8 @@ if N == 1
       end
       out = colorspace(out,col);
    else
-      if islogical(in)
-         in = dip_image(in,'uint8');
+      if islogical(out)
+         out = dip_image(out,'uint8');
       end
       out = spatialtotensor(out,ndims(out));
       out = colorspace(out,col);

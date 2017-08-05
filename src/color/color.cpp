@@ -218,16 +218,14 @@ void ColorSpaceManager::Convert(
 ) const {
    // Make sure the input color space is consistent
    String const& startColorSpace = in.ColorSpace();
+   dip::uint endIndex = Index( endColorSpace.empty() ? "grey" : endColorSpace );
    if( startColorSpace.empty() && in.TensorElements() > 1 ) {
-      dip::uint endIndex = Index( endColorSpace.empty() ? "grey" : endColorSpace );
       DIP_THROW_IF( colorSpaces_[ endIndex].nChannels != in.TensorElements(), E::INCONSISTENT_COLORSPACE );
       out = in;
-      out.SetColorSpace( colorSpaces_[ endIndex ].name );
    } else {
       dip::uint startIndex = Index( startColorSpace.empty() ? "grey" : startColorSpace );
       DIP_THROW_IF( in.TensorElements() != colorSpaces_[ startIndex ].nChannels, E::INCONSISTENT_COLORSPACE );
       // Get the output color space
-      dip::uint endIndex = Index( endColorSpace.empty() ? "grey" : endColorSpace );
       if( startIndex == endIndex ) {
          // Nothing to do
          out = in;
@@ -265,6 +263,11 @@ void ColorSpaceManager::Convert(
          );
       DIP_END_STACK_TRACE
       out.ReshapeTensorAsVector();
+   }
+   String const& newColorSpace = colorSpaces_[ endIndex ].name;
+   if( newColorSpace == "grey" ) {
+      out.ResetColorSpace();
+   } else {
       out.SetColorSpace( colorSpaces_[ endIndex ].name );
    }
 }

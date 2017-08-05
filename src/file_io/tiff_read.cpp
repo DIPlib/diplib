@@ -763,6 +763,10 @@ void ImageReadTIFFSeries(
 
    // Write the first image into the output
    it->Copy( tmp );
+   // Make sure we copy over the color space information also
+   if( tmp.IsColor() ) {
+      out.SetColorSpace( tmp.ColorSpace() );
+   }
 
    // Read in the rest of the images, and write them into the output
    while( ++ii, ++it ) {
