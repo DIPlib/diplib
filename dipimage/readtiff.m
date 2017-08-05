@@ -23,7 +23,7 @@
 %  and data type. They will be catenated along the 3rd dimension.
 %
 % SEE ALSO:
-%  writetiff, readim, writeim
+%  writetiff, readim, writeim, readtimeseries
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::ImageReadTIFF.

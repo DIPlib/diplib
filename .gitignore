@@ -1,3 +1,4 @@
 target/
 .idea/
 *.geany
+dipimage/private/*.jar

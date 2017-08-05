@@ -60,6 +60,7 @@ dipimage/opening.cpp
 dipimage/pathopening.cpp
 dipimage/percf.cpp
 dipimage/private/imagedisplay.cpp
+dipimage/private/readtiffseries.cpp
 dipimage/readics.cpp
 dipimage/readtiff.cpp
 dipimage/reconstruction.cpp

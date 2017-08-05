@@ -53,7 +53,6 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-
 function [image,file_info] = readim(filename,format)
 
 if nargin < 2
@@ -88,7 +87,26 @@ if isempty(ext)
    end
 end
 
-% Read
+try
+   [image,file_info] = readim_core(filename,format);
+   return
+end
+if isempty(fileparts(filename)) % The file name has no path.
+   p = convertpath(dipgetpref('imagefilepath'));
+   for ii=1:length(p)
+      try
+         [image,file_info] = readim_core(fullfile(p{ii},filename),format);
+         return
+      end
+   end
+end
+error('Could not open the file for reading')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Core: read the given file
+
+function [image,file_info] = readim_core(filename,format)
+
 switch upper(format)
   case 'ICS'
      [image,file_info] = readics(filename);
@@ -167,7 +185,7 @@ end
 file_info.name = filename;
 file_info.fileType = '';
 file_info.dataType = datatype(image);
-switch file_info.datatype
+switch file_info.dataType
    case {'uint8','sint8'}
       file_info.significantBits = 8;
    case {'uint16','sint16'}
