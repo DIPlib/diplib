@@ -157,14 +157,13 @@ classdef dip_image
          %
          %   IMAGE is a matrix representing an image. Its
          %   class must be numeric or logical. It can be complex, but data
-         %   will be copied in that case. If TENSOR_SHAPE is given, and
-         %   different from 1, the first dimension is taken to be the tensor
-         %   dimension. Matrices with only one column or one row are converted
-         %   to a 1D image. Matrices with one value are converted to 0D images.
-         %   Otherwise, the dimensionality is not affected, and singleton
-         %   dimensions are kept. If IMAGE is an object of class dip_image,
-         %   it is kept as is, with possibly a different tensor shape and/or
-         %   data type.
+         %   will be copied in that case. If TENSOR_SHAPE is given, the first
+         %   dimension is taken to be the tensor dimension. Matrices with only
+         %   one column or one row are converted to a 1D image. Matrices with
+         %   one value are converted to 0D images. Otherwise, the dimensionality
+         %   is not affected, and singleton dimensions are kept. If IMAGE is an
+         %   object of class dip_image, it is kept as is, with possibly a
+         %   different tensor shape and/or data type.
          %
          %   IMAGE can also be a cell array containing the tensor
          %   components of the image. Each element in the cell array must

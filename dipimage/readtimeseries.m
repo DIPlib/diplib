@@ -33,6 +33,10 @@
 %  name or the extension cannot. The wildcard can be anywhere in the
 %  name of the file.
 %
+%  If the file as given is not found, and no path was specified, then the
+%  directories listed in the 'ImageFilePath' property (see DIPSETPREF) are
+%  searched for the file.
+%
 % DIPlib:
 %  This function calls the DIPlib function dip::ImageReadTIFFSeries.
 

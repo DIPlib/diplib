@@ -20,19 +20,41 @@
 %  If FORMAT is '', then the format will be guessed from the file name extension
 %  or the file contents. If READICS and READTIFF cannot read the file, this
 %  function attempts to read it using Bio-Formats. If that also fails, IMREAD
-%  is tried. The FILE_INFO output structure is empty if the file was read through
-%  IMREAD.
+%  is tried.
 %
 %  If FORMAT is specified, then either READICS, READTIFF or IMREAD are called.
 %  See IMREAD for a list of formats it recognizes.
 %  If FORMAT is 'bioformats', then only the Bio-Formats reader is used.
 %
+%  If the file name as given is not found (note that READICS and READTIFF will
+%  also look for the file with an extension appended if not given), and no path
+%  was specified, then process above is repeated after prepending each of the
+%  directories listed in the 'ImageFilePath' property (see DIPSETPREF) to the
+%  file name. That is, if no directory is specified, first the current directory
+%  and then the default image directories are searched for the file.
+%
 %  Format 'TIF' is an alias for 'TIFF'. Likewise, 'ICS' is an alias for 'ICSv2'.
 %
-%  To read multi-page TIFF files use READTIFF. See also READTIMESERIES.
+%  To read multi-page TIFF files use READTIFF, or specify the 'bioformats'
+%  option. See also READTIMESERIES.
 %
 %  The functions READICS, READTIFF and IMREAD offer more options, consider
 %  calling them directly.
+%
+% INSTALLING BIO-FORMATS:
+%  The complete Bio-Formats is a large binary, and so we do not usually include
+%  it in the DIPimage distribution. If you want to use this functionality,
+%  please download it separately.
+%
+%  You will find the latest version here:
+%     http://www.openmicroscopy.org/bio-formats/downloads/
+%  Select to download the "Bio-Formats Package", which will copy a Java JAR file
+%  to your computer. Copy or move this file to the 'private' directory under the
+%  DIPimage directory (the directory that contains this file). The following
+%  MATLAB command gives you the directory where the JAR file should reside:
+%     fileparts(which('bfGetReader','in','readim'))
+%
+%  Note that Bio-Formats is licensed under GLP-2.0
 %
 % SEE ALSO:
 %  writeim, readics, readtiff, imread, readtimeseries
@@ -198,7 +220,7 @@ end
 file_info.sizes = imsize(image);
 file_info.tensorElements = prod(tensorsize(image));
 file_info.colorSpace = colorspace(image);
-file_info.pixelSize = image.PixelSize;
+file_info.pixelSize = [];
 file_info.numberOfImages = 1;
 file_info.history = {};
 
@@ -207,5 +229,66 @@ file_info.history = {};
 
 function [image,file_info] = bfread(filename)
 
-% TODO!
-error('Not yet implemented')
+% Print a warning if Bio-Formats is not installed
+persistent haveBioFormats;
+if isempty(haveBioFormats)
+   haveBioFormats = bfCheckJavaPath();
+   if ~haveBioFormats
+      warning('Bio-Formats is not installed')
+      disp('Bio-Formats is not installed. See HELP READIM for instructions on how to install it.')
+      disp(['The JAR file should be installed here: ',fileparts(which('bfGetReader','in','readim'))])
+   end
+end
+% Quick exit if we don't have Bio-Formats
+if ~haveBioFormats
+   error('Bio-Formats is not installed')
+end
+
+% Read image data
+reader = bfGetReader(filename);
+sz = [reader.getSizeC(),reader.getSizeY(),reader.getSizeX(),reader.getSizeZ(),reader.getSizeT()];
+image = zeros(sz);
+for t=1:sz(5)
+   for c=1:sz(1)
+      for z=1:sz(4)
+         index = reader.getIndex(z-1,c-1,t-1)+1;
+         tmp = bfGetPlane(reader,index);
+         image(c,:,:,z,t) = tmp;
+      end
+   end
+end
+newsz = sz(2:5);
+newsz(newsz==1) = [];
+image = reshape(image,[sz(1),newsz]);
+image = dip_image(image,sz(1));
+
+% Read image metadata
+omeMeta = reader.getMetadataStore();
+pixelSize = struct('magnitude',{1,1,1,1},'units','px');
+v = omeMeta.getPixelsPhysicalSizeX(0);
+if ~isempty(v)
+   pixelSize(1).magnitude = v.value(ome.units.UNITS.METER).doubleValue();
+   pixelSize(1).units = 'm';
+end
+v = omeMeta.getPixelsPhysicalSizeY(0);
+if ~isempty(v)
+   pixelSize(2).magnitude = v.value(ome.units.UNITS.METER).doubleValue();
+   pixelSize(2).units = 'm';
+end
+v = omeMeta.getPixelsPhysicalSizeZ(0);
+if ~isempty(v)
+   pixelSize(3).magnitude = v.value(ome.units.UNITS.METER).doubleValue();
+   pixelSize(3).units = 'm';
+end
+pixelSize(sz(2:5)==1) = [];
+image.PixelSize = pixelSize;
+file_info.name = filename;
+file_info.fileType = '';
+file_info.dataType = datatype(image);
+file_info.significantBits = omeMeta.getPixelsSignificantBits(0).getValue();
+file_info.sizes = imsize(image);
+file_info.tensorElements = prod(tensorsize(image));
+file_info.colorSpace = colorspace(image);
+file_info.pixelSize = pixelSize;
+file_info.numberOfImages = 1;
+file_info.history = {}; % TODO: read this from the metadata somehow?

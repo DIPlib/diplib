@@ -124,8 +124,14 @@ DIPlib includes the following libraries / external code:
   3-Clause BSD License  
   see dependencies/pybind11/LICENSE
 
+- A few MATLAB scripts from OME Bio-Formats  
+  Copyright 2012-2017 Open Microscopy Environment  
+  GNU General Public License, Version 2  
+  see dipimage/private/bf*.m  
+  (the full Bio-Formats library needs to be installed for these to be useful)
+
 Note that all of these have permissive open-source licenses similar in spirit
-to the Apache License.
+to the Apache License, except for OME Bio-Formats.
 
 DIPlib also optionally links against:
 
