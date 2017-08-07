@@ -242,7 +242,7 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff ) {
 // Color Map
 //
 
-void ExpandColourMap4(
+inline void ExpandColourMap4(
       uint16* dest,
       uint8 const* src,
       dip::uint width,
@@ -280,7 +280,7 @@ void ExpandColourMap4(
    }
 }
 
-void ExpandColourMap8(
+inline void ExpandColourMap8(
       uint16* dest,
       uint8 const* src,
       dip::uint width,
@@ -356,7 +356,7 @@ void ReadTIFFColorMap(
 // Binary
 //
 
-void CopyBuffer1(
+inline void CopyBuffer1(
       uint8* dest,
       uint8 const* src,
       dip::uint width,
@@ -383,7 +383,7 @@ void CopyBuffer1(
    }
 }
 
-void CopyBufferInv1(
+inline void CopyBufferInv1(
       uint8* dest,
       uint8 const* src,
       dip::uint width,
@@ -444,7 +444,7 @@ void ReadTIFFBinary(
 // Grey-value (including multi-channel, color, etc)
 //
 
-void CopyBuffer8(
+inline void CopyBuffer8(
       uint8* dest,
       uint8 const* src,
       dip::uint width,
@@ -462,7 +462,7 @@ void CopyBuffer8(
    }
 }
 
-void CopyBufferN(
+inline void CopyBufferN(
       uint8* dest,
       uint8 const* src,
       dip::uint width,
@@ -483,7 +483,7 @@ void CopyBufferN(
    }
 }
 
-void CopyBufferMultiChannel8(
+inline void CopyBufferMultiChannel8(
       uint8* dest,
       uint8 const* src,
       dip::uint tensorElements,
@@ -507,7 +507,7 @@ void CopyBufferMultiChannel8(
    }
 }
 
-void CopyBufferMultiChannelN(
+inline void CopyBufferMultiChannelN(
       uint8* dest,
       uint8 const* src,
       dip::uint tensorElements,
@@ -535,6 +535,25 @@ void CopyBufferMultiChannelN(
    }
 }
 
+inline bool StridesAreNormal(
+      dip::uint tensorElements,
+      dip::sint tensorStride,
+      UnsignedArray const& sizes,
+      IntegerArray const& strides
+) {
+   if( tensorStride != 1 ) {
+      return false;
+   }
+   dip::sint total = static_cast< dip::sint >( tensorElements );
+   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+      if( strides[ ii ] != total ) {
+         return false;
+      }
+      total *= static_cast< dip::sint >( sizes[ ii ] );
+   }
+   return true;
+}
+
 void ReadTIFFData(
       uint8* imagedata,
       UnsignedArray const& sizes,
@@ -558,42 +577,65 @@ void ReadTIFFData(
    TIFFGetFieldDefaulted( tiff, TIFFTAG_ROWSPERSTRIP, &rowsPerStrip );
    dip::uint scanline = static_cast< dip::uint >( TIFFScanlineSize( tiff ));
    tsize_t stripsize = TIFFStripSize( tiff );
-   std::vector< uint8 > buf( static_cast< dip::uint >( stripsize ));
    if( planarConfiguration == PLANARCONFIG_CONTIG ) {
       // 1234123412341234....
       // We know that tensorElements > 1, otherwise we force to PLANARCONFIG_SEPARATE
-      // TODO: if strides are normal, we don't need the buffer and the expensive copying using strides
       DIP_THROW_IF(( scanline != sizes[ 0 ] * tensorElements * sizeOf ), "Wrong scanline size" );
-      for( uint32 row = 0; row < sizes[ 1 ]; row += rowsPerStrip ) {
-         dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
-         uint32 strip = TIFFComputeStrip( tiff, row, 0 );
-         DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, buf.data(), stripsize ) < 0, "Error reading data (planar config cont)" );
-         if( sizeOf == 1 ) {
-            CopyBufferMultiChannel8( imagedata, buf.data(), tensorElements, sizes[ 0 ], nrow, tensorStride, strides );
-            imagedata += static_cast< dip::sint >( nrow ) * strides[ 1 ];
-         } else {
-            CopyBufferMultiChannelN( imagedata, buf.data(), tensorElements, sizes[ 0 ], nrow, tensorStride, strides, sizeOf );
+      if( StridesAreNormal( tensorElements, tensorStride, sizes, strides )) {
+         for( uint32 row = 0; row < sizes[ 1 ]; row += rowsPerStrip ) {
+            dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
+            uint32 strip = TIFFComputeStrip( tiff, row, 0 );
+            DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, imagedata, stripsize ) < 0,
+                          "Error reading data (planar config cont)" );
             imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
+         }
+      } else {
+         std::vector< uint8 > buf( static_cast< dip::uint >( stripsize ));
+         for( uint32 row = 0; row < sizes[ 1 ]; row += rowsPerStrip ) {
+            dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
+            uint32 strip = TIFFComputeStrip( tiff, row, 0 );
+            DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, buf.data(), stripsize ) < 0,
+                          "Error reading data (planar config cont)" );
+            if( sizeOf == 1 ) {
+               CopyBufferMultiChannel8( imagedata, buf.data(), tensorElements, sizes[ 0 ], nrow, tensorStride, strides );
+               imagedata += static_cast< dip::sint >( nrow ) * strides[ 1 ];
+            } else {
+               CopyBufferMultiChannelN( imagedata, buf.data(), tensorElements, sizes[ 0 ], nrow, tensorStride, strides, sizeOf );
+               imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
+            }
          }
       }
    } else if( planarConfiguration == PLANARCONFIG_SEPARATE ) {
       // 1111...2222...3333...4444...
-      // TODO: if strides match data in file, we don't need the buffer and the expensive copying using strides
       DIP_THROW_IF(( scanline != sizes[ 0 ] * sizeOf ), "Wrong scanline size" );
       uint8* imagebase = imagedata;
-      for( uint16 s = 0; s < tensorElements; ++s ) {
-         imagedata = imagebase + static_cast< dip::sint >( s * sizeOf ) * tensorStride;
-         for( uint32 row = 0; row < sizes[ 1 ]; row += rowsPerStrip ) {
-            dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
-            uint32 strip = TIFFComputeStrip( tiff, row, s );
-            DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, buf.data(), stripsize ) < 0,
-                          "Error reading data (planar config separate)" );
-            if( sizeOf == 1 ) {
-               CopyBuffer8( imagedata, buf.data(), sizes[ 0 ], nrow, strides );
-               imagedata += static_cast< dip::sint >( nrow ) * strides[ 1 ];
-            } else {
-               CopyBufferN( imagedata, buf.data(), sizes[ 0 ], nrow, strides, sizeOf );
+      if( StridesAreNormal( 1, 1, sizes, strides )) {
+         for( uint16 s = 0; s < tensorElements; ++s ) {
+            imagedata = imagebase + static_cast< dip::sint >( s * sizeOf ) * tensorStride;
+            for( uint32 row = 0; row < sizes[ 1 ]; row += rowsPerStrip ) {
+               dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
+               uint32 strip = TIFFComputeStrip( tiff, row, s );
+               DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, imagedata, stripsize ) < 0,
+                             "Error reading data (planar config separate)" );
                imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
+            }
+         }
+      } else {
+         std::vector< uint8 > buf( static_cast< dip::uint >( stripsize ));
+         for( uint16 s = 0; s < tensorElements; ++s ) {
+            imagedata = imagebase + static_cast< dip::sint >( s * sizeOf ) * tensorStride;
+            for( uint32 row = 0; row < sizes[ 1 ]; row += rowsPerStrip ) {
+               dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
+               uint32 strip = TIFFComputeStrip( tiff, row, s );
+               DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, buf.data(), stripsize ) < 0,
+                             "Error reading data (planar config separate)" );
+               if( sizeOf == 1 ) {
+                  CopyBuffer8( imagedata, buf.data(), sizes[ 0 ], nrow, strides );
+                  imagedata += static_cast< dip::sint >( nrow ) * strides[ 1 ];
+               } else {
+                  CopyBufferN( imagedata, buf.data(), sizes[ 0 ], nrow, strides, sizeOf );
+                  imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
+               }
             }
          }
       }
