@@ -18,24 +18,6 @@
 
 #include "pydip.h"
 #include "diplib/math.h"
-#include "diplib/statistics.h"
 
 void init_math( py::module& m ) {
-   m.def( "MaximumAndMinimum", []( dip::Image const& in, dip::Image const& mask ) {
-                dip::MinMaxAccumulator acc = dip::MaximumAndMinimum( in, mask );
-                return py::make_tuple( acc.Minimum(), acc.Maximum() );
-          },
-          "in"_a,
-          "mask"_a = dip::Image{} );
-   m.def( "SampleStatistics", []( dip::Image const& in, dip::Image const& mask ) {
-                dip::StatisticsAccumulator acc = dip::SampleStatistics( in, mask );
-                return py::make_tuple( acc.Mean(), acc.Variance(), acc.Skewness(), acc.ExcessKurtosis() );
-          },
-          "in"_a,
-          "mask"_a = dip::Image{} );
-   m.def( "Percentile", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::BooleanArray >( &dip::Percentile ),
-          "in"_a,
-          "mask"_a = dip::Image{},
-          "percentile"_a = 50.0,
-          "process"_a = dip::BooleanArray{} );
 }

@@ -24,22 +24,22 @@ static_assert( sizeof( bool ) == sizeof( dip::bin ), "bool is not one byte, how 
 PYBIND11_PLUGIN( PyDIP_bin ) {
    py::module m( "PyDIP_bin", "DIPlib bindings" );
 
-   py::class_< dip::DataType >( m, "DataType" )
-         .def( py::init<>() )
-         .def( py::self == py::self )
-         .def( "SizeOf", &dip::DataType::SizeOf )
-         .def( "IsBinary", &dip::DataType::IsBinary )
-         .def( "IsUInt", &dip::DataType::IsUInt )
-         .def( "IsSInt", &dip::DataType::IsSInt )
-         .def( "IsInteger", &dip::DataType::IsInteger )
-         .def( "IsFloat", &dip::DataType::IsFloat )
-         .def( "IsReal", &dip::DataType::IsReal )
-         .def( "IsComplex", &dip::DataType::IsComplex )
-         .def( "IsUnsigned", &dip::DataType::IsUnsigned )
-         .def( "IsSigned", &dip::DataType::IsSigned )
-         .def( "Real", &dip::DataType::Real )
-         .def( "__repr__", []( dip::DataType const& a ) { return std::string( "PyDIP.DT_" ) + a.Name(); } )
-         ;
+   auto dtype = py::class_< dip::DataType >( m, "DataType" );
+   dtype.def( py::init<>() );
+   dtype.def( py::self == py::self );
+   dtype.def( "SizeOf", &dip::DataType::SizeOf );
+   dtype.def( "IsBinary", &dip::DataType::IsBinary );
+   dtype.def( "IsUInt", &dip::DataType::IsUInt );
+   dtype.def( "IsSInt", &dip::DataType::IsSInt );
+   dtype.def( "IsInteger", &dip::DataType::IsInteger );
+   dtype.def( "IsFloat", &dip::DataType::IsFloat );
+   dtype.def( "IsReal", &dip::DataType::IsReal );
+   dtype.def( "IsComplex", &dip::DataType::IsComplex );
+   dtype.def( "IsUnsigned", &dip::DataType::IsUnsigned );
+   dtype.def( "IsSigned", &dip::DataType::IsSigned );
+   dtype.def( "Real", &dip::DataType::Real );
+   dtype.def( "__repr__", []( dip::DataType const& a ) { return std::string( "PyDIP.DT_" ) + a.Name(); } );
+
    m.attr( "DT_BIN" ) = dip::DT_BIN;
    m.attr( "DT_UINT8" ) = dip::DT_UINT8;
    m.attr( "DT_SINT8" ) = dip::DT_SINT8;
@@ -53,7 +53,9 @@ PYBIND11_PLUGIN( PyDIP_bin ) {
    m.attr( "DT_DCOMPLEX" ) = dip::DT_DCOMPLEX;
 
    init_image( m );
+   init_display( m );
    init_math( m );
+   init_statistics( m );
    init_linear( m );
    init_morphology( m );
 

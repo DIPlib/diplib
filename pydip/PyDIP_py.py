@@ -15,30 +15,108 @@
 # limitations under the License.
 
 import PyDIP.PyDIP_bin as dip
-
+import numpy as np
+import matplotlib
 import matplotlib.pyplot as pp
 
-def Show(img, mode=None):
-   kwargs = {'coordinates': [0, 0],   # currently only defined for 2D images...
-             'dimensions': [0, 1],
-             'mode': 'lin',           # 'lin', 'log', 'based'
-             'complex': 'abs',        # 'abs', 'phase', 'real', 'imag'
-             'projection': 'slice',   # 'slice', 'max', 'mean'
-             'bounds': [0,255]
-   }
-   if mode=='lin':
-      kwargs['bounds'] = dip.GetMaximumAndMinimum(img)
-   if mode=='percentile':
-      kwargs['bounds'] = (dip.Percentile(img,[],5), dip.Percentile(img,[],95))
-      print(kwargs['bounds'])
-   elif mode=='based':
-      kwargs['bounds'] = dip.GetMaximumAndMinimum(img)
-      kwargs['mode'] = 'based'
-   elif mode=='log':
-      kwargs['bounds'] = dip.GetMaximumAndMinimum(img)
-      kwargs['mode'] = 'log'
-   #pp.imshow(dip.Display(img, **kwargs))
-   #pp.show(block=False)
-   # TODO: Fix dip.Display
+
+# Label color map from the function of the same name in DIPimage:
+def _label_colormap():
+   cm = np.array( [
+      [ 1.0000, 0.0000, 0.0000 ],
+      [ 0.0000, 1.0000, 0.0000 ],
+      [ 0.0000, 0.0000, 1.0000 ],
+      [ 1.0000, 1.0000, 0.0000 ],
+      [ 0.0000, 1.0000, 1.0000 ],
+      [ 1.0000, 0.0000, 1.0000 ],
+      [ 1.0000, 0.3333, 0.0000 ],
+      [ 0.6667, 1.0000, 0.0000 ],
+      [ 0.0000, 0.6667, 1.0000 ],
+      [ 0.3333, 0.0000, 1.0000 ],
+      [ 1.0000, 0.0000, 0.6667 ],
+      [ 1.0000, 0.6667, 0.0000 ],
+      [ 0.0000, 1.0000, 0.5000 ],
+      [ 0.0000, 0.3333, 1.0000 ],
+      [ 0.6667, 0.0000, 1.0000 ],
+      [ 1.0000, 0.0000, 0.3333 ],
+   ] )
+   n = len( cm )
+   index = list( i % n for i in range( 0, 255 ) )
+   cm = np.concatenate( (np.array( [ [ 0, 0, 0 ] ] ), cm[ index ]) )
+   return matplotlib.colors.ListedColormap( cm )
+
+def Show(img, range = (), complexMode = 'abs', projectionMode = 'mean', coordinates = (), dim1 = 0, dim2 = 1, colormap = ''):
+   """Show an image in the current pyplot window
+
+   Keyword arguments:
+   range -- a 2-tuple indicating the range of input values to map to the output range,
+            or a string indicating how to compute the range and how to map. Valid
+            strings are:
+            - `'unit'`: use the `(0,1)` range.
+            - `'8bit'` or `'normal'`: use the `(0,255)` range.
+            - `'12bit'`: use the `(0,2**12)` range.
+            - `'16bit'`: use the `(0,2**16)` range.
+            - `'s8bit'`: use the `(-128,127)` range.
+            - `'s12bit'`: use the `(-2**11,12**11-1)` range.
+            - `'s16bit'`: use the `(-2**15,12**15-1)` range.
+            - `'angle'`: use the `(pi,2*pi)` range, with folding of out-of-range values
+                by modulo operation.
+            - `'orientation'`: use the `(0,pi)` range, with folding of out-of-range values
+                by modulo operation.
+            - `'lin'` or `'all'`: use the range from lowest to highest value in `img`. This
+                is the default.
+            - `'percentile'`: use the range from 5th to 95th percentile value in `img`.
+            - `'base'` or `'based'`: like 'lin', but setting the value of 0 to the middle
+                of the output range. Additionally, it sets the color map to `'coolwarm'`,
+                such that negative and positive values have blue and red colors,
+                respectively, and 0 is a neutral gray.
+            - `'log'`: use a logarithmic mapping.
+            - `'modulo'` or `'labels'`: use the `(0,255)` range, with folding of out-of-
+                range values by modulo operation. Additionally, it sets the color map such
+                that nearby values get very different colors. This mode is suitable for
+                labeled images.
+   complexMode -- a string indicating how to convert complex values to real values for
+            display. One of `'abs'` or `'magnitude'`, `'phase'`, `'real'`, `'imag'`. The
+            default is `'abs'`.
+   projectionMode -- a string indicating how to extract a 2D slice from a multi-dimensional
+            image for display. One of `'slice'`, `'max'`, `'mean'`. The default is `'mean'`.
+   coordinates -- Coordinates of a pixel to be shown, as a tuple with as many elements as
+            image dimensions. Determines which slice is shown out of a multi-dimensional
+            image.
+   dim1 -- Image dimension to be shown along x-axis of display.
+   dim2 -- Image dimension to be shown along y-axis of display.
+   colormap -- Name of a color map to use for display.
+
+   For images with more than 2 dimensions, a slice is extracted for display. The direction
+   of the slice is determined using the `dim1` and `dim2` parameters, and the location using
+   the `coordinates` parameter. If `projectionMode` is `'slice'`, then the single slice is
+   shown. If `projectionMode` is `'max'` or `'mean'`, then a projection is computed across
+   the full image volume along the non-displayed dimensions.
+
+   For 1D images, or if `dim1==dim2`, a line is plotted. In this case, the `colormap` is
+   ignored. Note that, if `dim1==dim2`, a 2D image is also projected as described above for
+   higher-dimensional images.
+   """
+   out = dip.ImageDisplay( img, range, complexMode, projectionMode, coordinates, dim1, dim2 )
+   if out.Dimensionality() == 1:
+      axes = pp.gca()
+      axes.plot( out )
+      axes.set_ylim((0,255))
+      axes.set_xlim((0,out.Size(0)-1))
+   else:
+      if colormap == '':
+         if range == 'base' or range == 'based':
+            colormap = 'coolwarm'
+         elif range == 'modulo' or range == 'labels':
+            colormap = 'labels'
+         else:
+            colormap = 'gray'
+      if colormap == 'labels':
+         cmap = _label_colormap()
+      else:
+         cmap = pp.get_cmap( colormap )
+      pp.imshow( out, cmap=cmap, norm=matplotlib.colors.NoNorm(), interpolation=None )
+   pp.show( block=False )
+
 
 dip.Image.Show = Show

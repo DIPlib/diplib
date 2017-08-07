@@ -20,14 +20,13 @@
 #include "diplib/morphology.h"
 
 void init_morphology( py::module& m ) {
-   py::class_< dip::StructuringElement >( m, "StructuringElement" )
-         // Constructors
-         .def( py::init<>() )
-         .def( py::init< dip::String const& >(), "shape"_a )
-         .def( py::init< dip::dfloat, dip::String const& >(), "param"_a, "shape"_a = "elliptic" )
-         .def( py::init< dip::FloatArray, dip::String const& >(), "param"_a, "shape"_a = "elliptic" )
-         .def( "Mirror", &dip::StructuringElement::Mirror )
-         ;
+   auto se = py::class_< dip::StructuringElement >( m, "StructuringElement" );
+   // Constructors
+   se.def( py::init<>() );
+   se.def( py::init< dip::String const& >(), "shape"_a );
+   se.def( py::init< dip::dfloat, dip::String const& >(), "param"_a, "shape"_a = "elliptic" );
+   se.def( py::init< dip::FloatArray, dip::String const& >(), "param"_a, "shape"_a = "elliptic" );
+   se.def( "Mirror", &dip::StructuringElement::Mirror );
 
    m.def( "Dilation", py::overload_cast<
                 dip::Image const&,

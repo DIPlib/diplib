@@ -25,6 +25,7 @@ b.Show()
 ###
 
 import PyDIP as dip
+import numpy as np
 from scipy import misc
 img = dip.Image(misc.face()[:,:,0])
 grad = dip.GradientMagnitude(img,5)
@@ -32,5 +33,5 @@ grad.Show()
 a = dip.Watershed(grad)
 a.Show()
 seeds = dip.Image(np.random.random(img.Sizes()))>0.99
-b = dip.SeededWatershed(b,seeds)
+b = dip.SeededWatershed(grad,seeds)
 b.Show()
