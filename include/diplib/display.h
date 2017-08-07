@@ -50,7 +50,7 @@ namespace dip {
 /// to RGB, and RGB output image is produced. For other tensor images, an RGB image is also produced, the user
 /// can select which tensor element is shown in each of the three color channels.
 ///
-/// See the `dipimage/imagedisplay.cpp` file implementing the MATLAB interface to this class, and the
+/// See the `dipimage/private/imagedisplay.cpp` file implementing the MATLAB interface to this class, and the
 /// `dipimage/dipshow.m` function, for an example of how this can be used.
 class DIP_NO_EXPORT ImageDisplay{
    public:
@@ -132,12 +132,12 @@ class DIP_NO_EXPORT ImageDisplay{
          }
       }
 
-      /// \brief Retrives a reference to the input image.
+      /// \brief Retrieves a reference to the input image.
       Image const& Input() const {
          return image_;
       }
 
-      /// \brief Retrives a reference to the raw slice image.
+      /// \brief Retrieves a reference to the raw slice image.
       ///
       /// This function also causes an update of the slice if the projection changed. The raw slice image contains
       /// the input data for the what is shown in `Output`.
@@ -146,7 +146,7 @@ class DIP_NO_EXPORT ImageDisplay{
          return slice_;
       }
 
-      /// \brief Retrives a reference to the output image.
+      /// \brief Retrieves a reference to the output image.
       ///
       /// This function also causes an update of the output if any of the modes changed.
       ///
@@ -193,23 +193,10 @@ class DIP_NO_EXPORT ImageDisplay{
       void SetDirection( dip::uint dim1, dip::uint dim2 ) {
          dip::uint nDim = image_.Dimensionality();
          DIP_THROW_IF(( dim1 >= nDim ) || ( dim2 >= nDim ), E::ILLEGAL_DIMENSION );
-         bool update = false;
-         if( dim1 == dim2 ) {
-            if( twoDimOut_ || ( dim1_ != dim1 )) {
-               twoDimOut_ = false;
-               dim1_ = dim1;
-               dim2_ = dim1; // set same as dim1_ so SetCoordinates() is easier.
-               update = true;
-            }
-         } else {
-            if( !twoDimOut_ || ( dim1_ != dim1 ) || ( dim2_ != dim2 )) {
-               twoDimOut_ = true;
-               dim1_ = dim1;
-               dim2_ = dim2;
-               update = true;
-            }
-         }
-         if( update ) {
+         if(( dim1_ != dim1 ) || ( dim2_ != dim2 )) {
+            twoDimOut_ = dim1 != dim2;
+            dim1_ = dim1;
+            dim2_ = dim2;
             sliceIsDirty_ = true;
             if( twoDimOut_ && nDim == 2 ) { // Make sure projection mode is always "slice" if ndims(img)==ndims(out)
                projectionMode_ = ProjectionMode::SLICE;
@@ -243,6 +230,7 @@ class DIP_NO_EXPORT ImageDisplay{
             red_ = red < N ? red : -1;
             green_ = green < N ? green : -1;
             blue_ = blue < N ? blue : -1;
+            rgbSliceIsDirty_ = true;
          }
       }
 

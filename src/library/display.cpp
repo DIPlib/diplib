@@ -130,7 +130,8 @@ ImageDisplay::Limits ImageDisplay::GetLimits( bool compute ) {
 void ImageDisplay::UpdateSlice() {
    if( sliceIsDirty_ ) {
       dip::uint nDims = image_.Dimensionality();
-      if( nDims > 2 ) {
+      dip::uint outDims = twoDimOut_ ? 2 : 1;
+      if( nDims > outDims ) {
          switch( projectionMode_ ) {
             //case ProjectionMode::SLICE:
             default: {
