@@ -1174,7 +1174,7 @@ DIP_EXPORT void DirectedPathOpening(
 inline Image DirectedPathOpening(
       Image const& in,
       Image const& mask,
-      IntegerArray filterParam,
+      IntegerArray const& filterParam,
       String const& polarity = "opening", // vs "closing"
       String const& mode = "normal"  // vs "constrained"
 ) {

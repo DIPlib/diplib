@@ -250,7 +250,7 @@ inline Image Hypot( Image const& a, Image const& b ) {
 /// \{
 
 /// \brief Transposes the tensor image, the data is not copied.
-inline Image Transpose( Image in ) {
+inline Image Transpose( Image const& in ) {
    Image out = in;
    out.Transpose();
    return out;
@@ -584,7 +584,7 @@ DIP_EXPORT void Clip(
       dfloat high = 255.0,
       String const& mode = "both"
 );
-inline Image  Clip(
+inline Image Clip(
       Image const& in,
       dfloat low = 0.0,
       dfloat high = 255.0,

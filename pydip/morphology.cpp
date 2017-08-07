@@ -141,4 +141,125 @@ void init_morphology( py::module& m ) {
           "mask"_a = dip::Image{},
           "connectivity"_a = 1,
           "output"_a = "binary" );
+
+   m.def( "WatershedMinima", py::overload_cast<
+                dip::Image const&,
+                dip::Image const&,
+                dip::uint,
+                dip::dfloat,
+                dip::uint,
+                dip::String const& >( &dip::WatershedMinima ),
+          "in"_a,
+          "mask"_a = dip::Image{},
+          "connectivity"_a = 1,
+          "maxDepth"_a = 1,
+          "maxSize"_a = 0,
+          "output"_a = "binary" );
+
+   m.def( "WatershedMaxima", py::overload_cast<
+                dip::Image const&,
+                dip::Image const&,
+                dip::uint,
+                dip::dfloat,
+                dip::uint,
+                dip::String const& >( &dip::WatershedMaxima ),
+          "in"_a,
+          "mask"_a = dip::Image{},
+          "connectivity"_a = 1,
+          "maxDepth"_a = 1,
+          "maxSize"_a = 0,
+          "output"_a = "binary" );
+
+   m.def( "MorphologicalReconstruction", py::overload_cast<
+                dip::Image const&,
+                dip::Image const&,
+                dip::uint,
+                dip::String const& >( &dip::MorphologicalReconstruction ),
+          "marker"_a,
+          "in"_a,
+          "connectivity"_a = 1,
+          "direction"_a = "dilation" );
+
+   m.def( "HMinima", py::overload_cast<
+                dip::Image const&,
+                dip::dfloat,
+                dip::uint >( &dip::HMinima ),
+          "in"_a,
+          "h"_a,
+          "connectivity"_a = 1 );
+
+   m.def( "HMaxima", py::overload_cast<
+                dip::Image const&,
+                dip::dfloat,
+                dip::uint >( &dip::HMaxima ),
+          "in"_a,
+          "h"_a,
+          "connectivity"_a = 1 );
+
+   m.def( "AreaOpening", py::overload_cast<
+                dip::Image const&,
+                dip::Image const&,
+                dip::uint,
+                dip::uint,
+                dip::String const& >( &dip::AreaOpening ),
+          "in"_a,
+          "mask"_a,
+          "filterSize"_a,
+          "connectivity"_a = 1,
+          "polarity"_a = "opening" );
+
+   m.def( "AreaClosing", py::overload_cast<
+                dip::Image const&,
+                dip::Image const&,
+                dip::uint,
+                dip::uint >( &dip::AreaClosing ),
+          "in"_a,
+          "mask"_a,
+          "filterSize"_a,
+          "connectivity"_a = 1 );
+
+   m.def( "PathOpening", py::overload_cast<
+                dip::Image const&,
+                dip::Image const&,
+                dip::uint,
+                dip::String const&,
+                dip::String const& >( &dip::PathOpening ),
+          "in"_a,
+          "mask"_a,
+          "length"_a = 7,
+          "polarity"_a = "opening",
+          "mode"_a = "normal" );
+
+   m.def( "DirectedPathOpening", py::overload_cast<
+                dip::Image const&,
+                dip::Image const&,
+                dip::IntegerArray const&,
+                dip::String const&,
+                dip::String const& >( &dip::DirectedPathOpening ),
+          "in"_a,
+          "mask"_a,
+          "filterParam"_a = dip::IntegerArray{},
+          "polarity"_a = "opening",
+          "mode"_a = "normal" );
+
+   m.def( "OpeningByReconstruction", py::overload_cast<
+                dip::Image const&,
+                dip::StructuringElement const&,
+                dip::uint,
+                dip::StringArray const& >( &dip::OpeningByReconstruction ),
+          "in"_a,
+          "se"_a = dip::StructuringElement{},
+          "connectivity"_a = 1,
+          "boundaryCondition"_a = dip::StringArray{} );
+
+   m.def( "ClosingByReconstruction", py::overload_cast<
+                dip::Image const&,
+                dip::StructuringElement const&,
+                dip::uint,
+                dip::StringArray const& >( &dip::ClosingByReconstruction ),
+          "in"_a,
+          "se"_a = dip::StructuringElement{},
+          "connectivity"_a = 1,
+          "boundaryCondition"_a = dip::StringArray{} );
+
 }

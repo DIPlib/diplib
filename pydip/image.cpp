@@ -23,8 +23,12 @@ void init_image( py::module& m ) {
    // Constructor
    img.def( py::init< dip::UnsignedArray const&, dip::uint, dip::DataType >(),
          "sizes"_a, "tensorElems"_a = 1, "dt"_a = dip::DT_SFLOAT );
+   // Constructor for raw (unforged) image, to be used e.g. when no mask input arguement is needed
+   img.def( "__init__", []( dip::Image& self ) {
+      new( &self ) dip::Image();
+   } );
    // Constructor that takes a Python raw buffer
-   img.def( "__init__", []( dip::Image& img, py::buffer& buf ) {
+   img.def( "__init__", []( dip::Image& self, py::buffer& buf ) {
       py::buffer_info info = buf.request();
       /*
       std::cout << "--Constructing dip::Image from Python buffer.\n";
@@ -99,12 +103,12 @@ void init_image( py::module& m ) {
       dip::DataSegment dataSegment{ pyObject, []( void* obj ){ Py_XDECREF( static_cast< PyObject* >( obj )); } };
       // Create an image with all of this.
       // Create an image with all of this.
-      new( &img ) dip::Image( dataSegment, info.ptr, datatype, sizes, strides, {}, 1 );
+      new( &self ) dip::Image( dataSegment, info.ptr, datatype, sizes, strides, {}, 1 );
    } );
    // Export a Python raw buffer
-   img.def_buffer( []( dip::Image& img ) -> py::buffer_info {
+   img.def_buffer( []( dip::Image& self ) -> py::buffer_info {
       dip::String format;
-      switch( img.DataType()) {
+      switch( self.DataType()) {
          case dip::DT_BIN:
             format = py::format_descriptor< bool >::format();
             break;
@@ -141,17 +145,17 @@ void init_image( py::module& m ) {
          default:
             DIP_THROW( "Image of unknown type" ); // should never happen
       }
-      dip::sint itemsize = static_cast< dip::sint >( img.DataType().SizeOf() );
-      dip::IntegerArray strides = img.Strides();
+      dip::sint itemsize = static_cast< dip::sint >( self.DataType().SizeOf() );
+      dip::IntegerArray strides = self.Strides();
       for( dip::sint& s : strides ) {
          s *= itemsize;
       }
-      dip::UnsignedArray sizes = img.Sizes();
-      if( !img.IsScalar() ) {
-         sizes.push_back( img.TensorElements() );
-         strides.push_back( img.TensorStride() );
+      dip::UnsignedArray sizes = self.Sizes();
+      if( !self.IsScalar() ) {
+         sizes.push_back( self.TensorElements() );
+         strides.push_back( self.TensorStride() );
       }
-      py::buffer_info info{ img.Origin(), itemsize, format, static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
+      py::buffer_info info{ self.Origin(), itemsize, format, static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
       /*
       std::cout << "--Constructed Python buffer for dip::Image object.\n";
       std::cout << "   info.ptr = " << info.ptr << std::endl;
