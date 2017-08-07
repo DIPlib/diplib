@@ -26,6 +26,7 @@
 #include <iomanip>
 
 #include "diplib.h"
+#include "diplib/statistics.h"
 #include "diplib/iterators.h"
 
 
@@ -34,6 +35,14 @@
 
 
 namespace dip {
+
+namespace Option {
+/// \brief How to compare images in `dip::testing::CompareImages`.
+enum class DIP_NO_EXPORT CompareImagesMode {
+      DATA_ONLY,  ///< Compare only the sample values (and image sizes)
+      FULL        ///< Compare sample values as well as tensor shape, color space, and pixel size
+};
+}
 
 /// \brief Tools for testing and debugging.
 namespace testing {
@@ -93,9 +102,9 @@ std::complex< T > Round( std::complex< T > v, int digits ) {
 /// An optional second template parameter determines the precision for displaying floating-point values.
 template< typename TPI, int DIGITS = 4 >
 void PrintPixelValues(
-      dip::Image img
+      Image img
 ) {
-   DIP_THROW_IF( img.DataType() != dip::DataType( TPI()), "Wrong template parameter to PrintPixelValues() used" );
+   DIP_THROW_IF( img.DataType() != DataType( TPI()), "Wrong template parameter to PrintPixelValues() used" );
    dip::uint lineLength = img.Size( 0 );
    std::cout << "Image of size " << lineLength << " x " << img.Sizes().product() / lineLength << ":\n";
    dip::ImageIterator< TPI > it( img, 0 );
@@ -114,6 +123,27 @@ void PrintPixelValues(
    } while( ++it );
 }
 
+
+/// \brief Compare two images, return true only if they have the same sizes, number of tensor elements, and
+/// sample values. Optionally also compares non-data properties. Does not compare strides.
+inline bool CompareImages( Image const& img1, Image const& img2, Option::CompareImagesMode mode = Option::CompareImagesMode::DATA_ONLY ) {
+   if( &img1 == &img2 ) { return true; }
+   if( img1.TensorElements() != img2.TensorElements() ) { return false; }
+   if( img1.Sizes() != img2.Sizes() ) { return false; }
+   if( img1.TensorElements() > 1 ) {
+      Image tmp1 = img1.QuickCopy(); tmp1.TensorToSpatial();
+      Image tmp2 = img2.QuickCopy(); tmp2.TensorToSpatial();
+      if( !All( tmp1 == tmp2 ).As< bool >() ) { return false; }
+   } else {
+      if( !All( img1 == img2 ).As< bool >() ) { return false; }
+   }
+   if( mode == Option::CompareImagesMode::FULL ) {
+      if( img1.TensorShape() != img2.TensorShape() ) { return false; }
+      if( img1.ColorSpace() != img2.ColorSpace() ) { return false; }
+      if( img1.PixelSize() != img2.PixelSize() ) { return false; }
+   }
+   return true;
+}
 
 /// \brief A timer object to help time algorithm execution.
 ///
