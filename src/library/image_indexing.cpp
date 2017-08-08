@@ -42,6 +42,16 @@ Image Image::operator[]( dip::uint index ) const {
    return out;
 }
 
+Image Image::operator[]( Range range ) const {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_STACK_TRACE_THIS( range.Fix( tensor_.Elements() ));
+   Image out = *this;
+   out.tensor_.SetVector( range.Size() );
+   out.origin_ = Pointer( range.start * tensorStride_ );
+   out.ResetColorSpace();
+   return out;
+}
+
 Image Image::Diagonal() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    Image out = *this;
@@ -79,7 +89,7 @@ Image Image::TensorColumn( dip::uint index ) const {
 Image Image::At( Range x_range ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( sizes_.size() != 1, E::ILLEGAL_DIMENSIONALITY );
-   x_range.Fix( sizes_[ 0 ] );
+   DIP_STACK_TRACE_THIS( x_range.Fix( sizes_[ 0 ] ));
    Image out = *this;
    out.sizes_[ 0 ] = x_range.Size();
    out.strides_[ 0 ] *= x_range.Step();
@@ -91,8 +101,8 @@ Image Image::At( Range x_range ) const {
 Image Image::At( Range x_range, Range y_range ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( sizes_.size() != 2, E::ILLEGAL_DIMENSIONALITY );
-   x_range.Fix( sizes_[ 0 ] );
-   y_range.Fix( sizes_[ 1 ] );
+   DIP_STACK_TRACE_THIS( x_range.Fix( sizes_[ 0 ] ));
+   DIP_STACK_TRACE_THIS( y_range.Fix( sizes_[ 1 ] ));
    Image out = *this;
    out.sizes_[ 0 ] = x_range.Size();
    out.sizes_[ 1 ] = y_range.Size();
@@ -109,9 +119,9 @@ Image Image::At( Range x_range, Range y_range ) const {
 Image Image::At( Range x_range, Range y_range, Range z_range ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( sizes_.size() != 3, E::ILLEGAL_DIMENSIONALITY );
-   x_range.Fix( sizes_[ 0 ] );
-   y_range.Fix( sizes_[ 1 ] );
-   z_range.Fix( sizes_[ 2 ] );
+   DIP_STACK_TRACE_THIS( x_range.Fix( sizes_[ 0 ] ));
+   DIP_STACK_TRACE_THIS( y_range.Fix( sizes_[ 1 ] ));
+   DIP_STACK_TRACE_THIS( z_range.Fix( sizes_[ 2 ] ));
    Image out = *this;
    out.sizes_[ 0 ] = x_range.Size();
    out.sizes_[ 1 ] = y_range.Size();
@@ -133,7 +143,7 @@ Image Image::At( RangeArray ranges ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( sizes_.size() != ranges.size(), E::ARRAY_ILLEGAL_SIZE );
    for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
-      ranges[ ii ].Fix( sizes_[ ii ] );
+      DIP_STACK_TRACE_THIS( ranges[ ii ].Fix( sizes_[ ii ] ));
    }
    Image out = *this;
    dip::sint offset = 0;

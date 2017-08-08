@@ -425,7 +425,7 @@ SubpixelLocationResult SubpixelLocation(
    DIP_THROW_IF( position.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       // We can't determine sub-pixel locations if the maximum pixel is on the image border either!
-      DIP_THROW_IF( ( position[ ii ] < 1 ) || ( position[ ii ] >= in.Size( ii ) - 1 ),
+      DIP_THROW_IF(( position[ ii ] < 1 ) || ( position[ ii ] >= in.Size( ii ) - 1 ),
                     "Initial coordinates out of image bounds (or on image edge)" );
    }
    bool invert;

@@ -512,6 +512,7 @@ void Dispatch(
          Lanczos< TPI, 8 >( input, output, outSize, zoom, shift );
          break;
       //case Method::FT:
+         //TODO: Implement FT interpolation method
       default:
          DIP_THROW( E::NOT_IMPLEMENTED );
    }

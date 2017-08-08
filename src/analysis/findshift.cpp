@@ -260,6 +260,13 @@ FloatArray FindShift_CC(
    }
    UnsignedArray maxPixel;
    DIP_STACK_TRACE_THIS( maxPixel = MaximumPixel( cross, {} ));
+   // We can't determine sub-pixel location if the maximum pixel is on the image border
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      if(( maxPixel[ ii ] < 1 ) || ( maxPixel[ ii ] >= cross.Size( ii ) - 1 )) {
+         subpixelPrecision = false;
+         break;
+      }
+   }
    FloatArray shift;
    if( subpixelPrecision ) {
       DIP_START_STACK_TRACE

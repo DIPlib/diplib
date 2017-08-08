@@ -2225,6 +2225,9 @@ class DIP_NO_EXPORT Image {
       /// \brief Extract a tensor element using linear indexing. The image must be forged.
       DIP_EXPORT Image operator[]( dip::uint index ) const;
 
+      /// \brief Extract tensor elements using linear indexing. The image must be forged.
+      DIP_EXPORT Image operator[]( Range range ) const;
+
       /// \brief Extracts the tensor elements along the diagonal. The image must be forged.
       DIP_EXPORT Image Diagonal() const;
 
