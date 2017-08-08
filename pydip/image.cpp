@@ -18,15 +18,32 @@
 
 #include "pydip.h"
 
+namespace {
+
+inline dip::RangeArray RangeArrayFromTupleOfSlices( dip::Image const& image, py::tuple const& tuple_of_slice ) {
+   dip::uint nDims = tuple_of_slice.size();
+   DIP_THROW_IF( nDims != image.Dimensionality(), dip::E::ARRAY_ILLEGAL_SIZE );
+   dip::RangeArray rangeArray( nDims );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      py::slice slice = static_cast< py::object >( tuple_of_slice[ ii ] );
+      size_t start, stop, step, slicelength;
+      if( !slice.compute( image.Size( ii ), &start, &stop, &step, &slicelength )) {
+         throw py::error_already_set();
+      }
+      rangeArray[ ii ] = dip::Range( dip::sint( start ), dip::sint( stop ), step );
+   }
+   return rangeArray;
+}
+
+} // namespace
+
 void init_image( py::module& m ) {
    auto img = py::class_< dip::Image >( m, "Image", py::buffer_protocol() );
    // Constructor
    img.def( py::init< dip::UnsignedArray const&, dip::uint, dip::DataType >(),
          "sizes"_a, "tensorElems"_a = 1, "dt"_a = dip::DT_SFLOAT );
-   // Constructor for raw (unforged) image, to be used e.g. when no mask input arguement is needed
-   img.def( "__init__", []( dip::Image& self ) {
-      new( &self ) dip::Image();
-   } );
+   // Constructor for raw (unforged) image, to be used e.g. when no mask input argument is needed
+   img.def( "__init__", []( dip::Image& self ) { new( &self ) dip::Image(); } );
    // Constructor that takes a Python raw buffer
    img.def( "__init__", []( dip::Image& self, py::buffer& buf ) {
       py::buffer_info info = buf.request();
@@ -172,6 +189,7 @@ void init_image( py::module& m ) {
    } );
    // Basic properties
    img.def( "__repr__", []( dip::Image const& a ) { std::ostringstream os; os << a; return os.str(); } );
+   img.def( "__len__", []( dip::Image const& a ) { return a.NumberOfPixels(); } );
    img.def( "IsEmpty", []( dip::Image const& a ) { return !a.IsForged(); } );
    img.def( "Dimensionality", &dip::Image::Dimensionality );
    img.def( "Sizes", &dip::Image::Sizes );
@@ -219,43 +237,56 @@ void init_image( py::module& m ) {
    img.def( "Protect", &dip::Image::Protect, "set"_a = true );
    img.def( "IsProtected", &dip::Image::IsProtected );
    // Modify image without copying pixel data
-   img.def( "PermuteDimensions", &dip::Image::PermuteDimensions, "order"_a );
-   img.def( "SwapDimensions", &dip::Image::SwapDimensions, "dim1"_a, "dim2"_a );
-   img.def( "Flatten", &dip::Image::Flatten );
-   img.def( "Squeeze", py::overload_cast<>( &dip::Image::Squeeze ));
-   img.def( "AddSingleton", &dip::Image::AddSingleton, "dim"_a );
-   img.def( "ExpandDimensionality", &dip::Image::ExpandDimensionality, "dim"_a );
-   img.def( "ExpandSingletonDimension", &dip::Image::ExpandSingletonDimension, "dim"_a, "newSize"_a );
-   img.def( "ExpandSingletonDimensions", &dip::Image::ExpandSingletonDimensions, "newSizes"_a );
-   img.def( "UnexpandSingletonDimensions", &dip::Image::UnexpandSingletonDimensions);
+   img.def( "PermuteDimensions", &dip::Image::PermuteDimensions, "order"_a, py::return_value_policy::reference_internal );
+   img.def( "SwapDimensions", &dip::Image::SwapDimensions, "dim1"_a, "dim2"_a, py::return_value_policy::reference_internal );
+   img.def( "Flatten", &dip::Image::Flatten, py::return_value_policy::reference_internal );
+   img.def( "Squeeze", py::overload_cast<>( &dip::Image::Squeeze ), py::return_value_policy::reference_internal );
+   img.def( "AddSingleton", &dip::Image::AddSingleton, "dim"_a, py::return_value_policy::reference_internal );
+   img.def( "ExpandDimensionality", &dip::Image::ExpandDimensionality, "dim"_a, py::return_value_policy::reference_internal );
+   img.def( "ExpandSingletonDimension", &dip::Image::ExpandSingletonDimension, "dim"_a, "newSize"_a, py::return_value_policy::reference_internal );
+   img.def( "ExpandSingletonDimensions", &dip::Image::ExpandSingletonDimensions, "newSizes"_a, py::return_value_policy::reference_internal );
+   img.def( "UnexpandSingletonDimensions", &dip::Image::UnexpandSingletonDimensions, py::return_value_policy::reference_internal );
    img.def( "IsSingletonExpansionPossible", &dip::Image::IsSingletonExpansionPossible, "newSizes"_a );
-   img.def( "ExpandSingletonTensor", &dip::Image::ExpandSingletonTensor, "size"_a );
-   img.def( "Mirror", &dip::Image::Mirror, "process"_a );
-   img.def( "ReshapeTensor", py::overload_cast< dip::uint, dip::uint >( &dip::Image::ReshapeTensor ), "rows"_a, "cols"_a );
-   img.def( "ReshapeTensorAsVector", &dip::Image::ReshapeTensorAsVector );
-   img.def( "ReshapeTensorAsDiagonal", &dip::Image::ReshapeTensorAsDiagonal );
-   img.def( "Transpose", &dip::Image::Transpose );
-   img.def( "TensorToSpatial", py::overload_cast<>( &dip::Image::TensorToSpatial ));
-   img.def( "TensorToSpatial", py::overload_cast< dip::uint >( &dip::Image::TensorToSpatial ), "dim"_a );
-   img.def( "SpatialToTensor", py::overload_cast<>( &dip::Image::SpatialToTensor ));
-   img.def( "SpatialToTensor", py::overload_cast< dip::uint >( &dip::Image::SpatialToTensor ), "dim"_a );
-   img.def( "SpatialToTensor", py::overload_cast< dip::uint, dip::uint >( &dip::Image::SpatialToTensor ), "rows"_a, "cols"_a );
-   img.def( "SpatialToTensor", py::overload_cast< dip::uint, dip::uint, dip::uint >( &dip::Image::SpatialToTensor ), "dim"_a, "rows"_a, "cols"_a );
-   img.def( "SplitComplex", py::overload_cast<>( &dip::Image::SplitComplex ));
-   img.def( "SplitComplex", py::overload_cast< dip::uint >( &dip::Image::SplitComplex ), "dim"_a );
-   img.def( "MergeComplex", py::overload_cast<>( &dip::Image::MergeComplex ));
-   img.def( "MergeComplex", py::overload_cast< dip::uint >( &dip::Image::MergeComplex ), "dim"_a );
-   img.def( "SplitComplexToTensor", &dip::Image::SplitComplexToTensor );
-   img.def( "MergeTensorToComplex", &dip::Image::MergeTensorToComplex );
+   img.def( "ExpandSingletonTensor", &dip::Image::ExpandSingletonTensor, "size"_a, py::return_value_policy::reference_internal );
+   img.def( "Mirror", &dip::Image::Mirror, "process"_a, py::return_value_policy::reference_internal );
+   img.def( "Rotation90", py::overload_cast< dip::sint, dip::uint, dip::uint >( &dip::Image::Rotation90 ), "n"_a, "dimension1"_a, "dimension2"_a, py::return_value_policy::reference_internal );
+   img.def( "Rotation90", py::overload_cast< dip::sint, dip::uint >( &dip::Image::Rotation90 ), "n"_a, "axis"_a, py::return_value_policy::reference_internal );
+   img.def( "Rotation90", py::overload_cast< dip::sint >( &dip::Image::Rotation90 ), "n"_a, py::return_value_policy::reference_internal );
+   img.def( "StandardizeStrides", &dip::Image::StandardizeStrides, py::return_value_policy::reference_internal );
+   img.def( "ReshapeTensor", py::overload_cast< dip::uint, dip::uint >( &dip::Image::ReshapeTensor ), "rows"_a, "cols"_a, py::return_value_policy::reference_internal );
+   img.def( "ReshapeTensorAsVector", &dip::Image::ReshapeTensorAsVector, py::return_value_policy::reference_internal );
+   img.def( "ReshapeTensorAsDiagonal", &dip::Image::ReshapeTensorAsDiagonal, py::return_value_policy::reference_internal );
+   img.def( "Transpose", &dip::Image::Transpose, py::return_value_policy::reference_internal );
+   img.def( "TensorToSpatial", py::overload_cast<>( &dip::Image::TensorToSpatial ), py::return_value_policy::reference_internal );
+   img.def( "TensorToSpatial", py::overload_cast< dip::uint >( &dip::Image::TensorToSpatial ), "dim"_a, py::return_value_policy::reference_internal  );
+   img.def( "SpatialToTensor", py::overload_cast<>( &dip::Image::SpatialToTensor ), py::return_value_policy::reference_internal );
+   img.def( "SpatialToTensor", py::overload_cast< dip::uint >( &dip::Image::SpatialToTensor ), "dim"_a, py::return_value_policy::reference_internal );
+   img.def( "SpatialToTensor", py::overload_cast< dip::uint, dip::uint >( &dip::Image::SpatialToTensor ), "rows"_a, "cols"_a, py::return_value_policy::reference_internal );
+   img.def( "SpatialToTensor", py::overload_cast< dip::uint, dip::uint, dip::uint >( &dip::Image::SpatialToTensor ), "dim"_a, "rows"_a, "cols"_a, py::return_value_policy::reference_internal );
+   img.def( "SplitComplex", py::overload_cast<>( &dip::Image::SplitComplex ), py::return_value_policy::reference_internal );
+   img.def( "SplitComplex", py::overload_cast< dip::uint >( &dip::Image::SplitComplex ), "dim"_a, py::return_value_policy::reference_internal );
+   img.def( "MergeComplex", py::overload_cast<>( &dip::Image::MergeComplex ), py::return_value_policy::reference_internal );
+   img.def( "MergeComplex", py::overload_cast< dip::uint >( &dip::Image::MergeComplex ), "dim"_a, py::return_value_policy::reference_internal );
+   img.def( "SplitComplexToTensor", &dip::Image::SplitComplexToTensor, py::return_value_policy::reference_internal );
+   img.def( "MergeTensorToComplex", &dip::Image::MergeTensorToComplex, py::return_value_policy::reference_internal );
    // Create a new image with a view of another image
    img.def( "Diagonal", &dip::Image::Diagonal );
    img.def( "TensorRow", &dip::Image::TensorRow, "index"_a );
    img.def( "TensorColumn", &dip::Image::TensorColumn, "index"_a );
+   // TODO: The following functions should make make a Python object of the right type
+   img.def( "At", []( dip::Image const& image, dip::UnsignedArray const& coords ) { return image.At< dip::dfloat >( coords ); },
+            "coords"_a );
+   img.def( "At", []( dip::Image const& image, dip::uint index ) { return image.At< dip::dfloat >( index ); }, "index"_a );
+   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index ) { return image.At< dip::dfloat >( x_index, y_index ); }, "x_index"_a, "y_index"_a );
+   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index, dip::uint z_index ) { return image.At< dip::dfloat >( x_index, y_index, z_index ); }, "x_index"_a, "y_index"_a, "z_index"_a );
+   img.def( "At", []( dip::Image const& image, dip::Range x_range ) { return image.At( x_range ); }, "x_range"_a );
+   img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range ) { return image.At( x_range, y_range ); }, "x_range"_a, "y_range"_a );
+   img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range, dip::Range z_range ) { return image.At( x_range, y_range, z_range ); }, "x_range"_a, "y_range"_a, "z_range"_a );
+   img.def( "At", []( dip::Image const& image, dip::RangeArray ranges ) { return image.At( ranges ); }, "ranges"_a );
    img.def( "Crop", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Crop, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Real", &dip::Image::Real );
    img.def( "Imaginary", &dip::Image::Imaginary );
    img.def( "QuickCopy", &dip::Image::QuickCopy );
-   // TODO: indexing: [], At(), etc.
    // Copy or write data
    img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Copy", &dip::Image::Copy, "src"_a );
@@ -265,8 +296,25 @@ void init_image( py::module& m ) {
    img.def( "Fill", []( dip::Image& a, dip::dfloat v ) { a.Fill( dip::Image::Sample{ v } ); } );
    img.def( "Fill", []( dip::Image& a, dip::sint v ) { a.Fill( dip::Image::Sample{ v } ); } );
    img.def( "Fill", []( dip::Image& a, dip::uint v ) { a.Fill( dip::Image::Sample{ v } ); } );
-   // TODO: CopyAt()
+   img.def( "CopyAt", py::overload_cast< dip::Image const& >( &dip::Image::CopyAt, py::const_ ), "mask"_a );
+   img.def( "CopyAt", py::overload_cast< dip::UnsignedArray const& >( &dip::Image::CopyAt, py::const_ ), "indices"_a );
+   img.def( "CopyAt", py::overload_cast< dip::CoordinateArray const& >( &dip::Image::CopyAt, py::const_ ), "_acoordinates"_a );
+   img.def( "CopyAt", []( dip::Image& self, dip::Image const& source, dip::Image const& mask ) { self.CopyAt( source, mask, dip::Option::ThrowException::DONT_THROW ); }, "source"_a, "mask"_a );
+   img.def( "CopyAt", py::overload_cast< dip::Image const&, dip::UnsignedArray const& >( &dip::Image::CopyAt ), "source"_a, "indices"_a );
+   img.def( "CopyAt", py::overload_cast< dip::Image const&, dip::CoordinateArray const& >( &dip::Image::CopyAt ), "source"_a, "coordinates"_a );
    // Operators
+   img.def( "__getitem__", []( dip::Image const& image, dip::uint index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( index )); } );  // TODO: make a Python object of the right type
+   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::dfloat v ) { image.At<>( index ) = v; } );
+   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::dcomplex v ) { image.At<>( index ) = v; } );
+   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::sint v ) { image.At<>( index ) = v; } );
+   img.def( "__getitem__", []( dip::Image const& image, py::tuple const& tuple_of_slice ) -> dip::Image {
+      dip::RangeArray rangeArray = RangeArrayFromTupleOfSlices( image, tuple_of_slice );
+      return image.At( rangeArray );
+   } );
+   img.def( "__setitem__", []( dip::Image& image, py::tuple tuple_of_slice, dip::Image const& value ) {
+      dip::RangeArray rangeArray = RangeArrayFromTupleOfSlices( image, tuple_of_slice );
+      image.At( rangeArray ).Copy( value );
+   } );
    img.def( py::self += py::self );
    img.def( py::self += float() );
    img.def( py::self + py::self );
@@ -312,4 +360,5 @@ void init_image( py::module& m ) {
    img.def( !py::self );
    img.def( -py::self );
    img.def( ~py::self );
+   // TODO: __iter__(self)
 }

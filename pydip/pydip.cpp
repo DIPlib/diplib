@@ -52,6 +52,14 @@ PYBIND11_PLUGIN( PyDIP_bin ) {
    m.attr( "DT_SCOMPLEX" ) = dip::DT_SCOMPLEX;
    m.attr( "DT_DCOMPLEX" ) = dip::DT_DCOMPLEX;
 
+   auto range = py::class_< dip::Range >( m, "Range" );
+   range.def( py::init< dip::sint, dip::sint, dip::uint >(), "start"_a, "stop"_a, "step"_a = 1 );
+   range.def( "__init__", []( dip::Range& self ) { new( &self ) dip::Range(); } );
+   range.def( "__init__", []( dip::Range& self, dip::sint i ) { new( &self ) dip::Range( i ); }, "index"_a );
+   range.def( "__repr__", []( dip::Range const& a ) {
+      return std::string( "Range(" ) + std::to_string( a.start ) + "," + std::to_string( a.stop ) + "," + std::to_string( a.step ) + ")";
+   } );
+
    init_image( m );
    init_display( m );
    init_math( m );

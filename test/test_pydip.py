@@ -1,4 +1,14 @@
 import PyDIP as dip
+
+a=dip.Image((10,20),1)
+a.Fill(3)
+b=a[0:4,4:-1]
+b.Fill(100)
+a.Show('normal')
+
+###
+
+import PyDIP as dip
 from scipy import misc
 
 f = misc.face()
@@ -25,6 +35,7 @@ b = dip.SeededWatershed(grad,seeds)
 b.Show()
 
 ###
+
 import PyDIP as dip
 from scipy import misc
 img = dip.Image(misc.face())

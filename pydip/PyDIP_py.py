@@ -15,9 +15,21 @@
 # limitations under the License.
 
 import PyDIP.PyDIP_bin as dip
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as pp
+
+import importlib.util
+if importlib.util.find_spec('matplotlib') is None:
+   print("""
+PyDIP requires matplotlib for its display functionality. Matplotlib was not found
+on your system. Image display (PyDIP.Show and PyDIP.Image.Show) will not do anything.
+You can install matplotlib by typing on your Linux/MacOS command prompt:
+    pip3 install matplotlib
+or under Windows:
+    python3 -m pip install matplotlib
+   """)
+else:
+   import matplotlib
+   import matplotlib.pyplot as pp
+   import numpy as np
 
 
 # Label color map from the function of the same name in DIPimage:
