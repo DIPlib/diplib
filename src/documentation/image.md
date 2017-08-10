@@ -410,7 +410,8 @@ of scope, `img2` will still point at a valid data segment, which will not
 be freed until `img2` goes out of scope (or is stripped). This is useful
 behavior, but can cause unexpected results at times. See \ref aliasing
 for how to write image filters that are robust against images with shared
-data.
+data. However, if the image assigned into has an external interface set, a
+data copy might be triggered, see \ref external_interface.
 
 The copy constructor does the same thing. The following three statements
 all invoke the copy constructor:
@@ -521,10 +522,14 @@ that it is possible to write to a channel in this way:
     dip::Gauss( colorIm[ 2 ], colorIm[ 2 ], { 4 } );
 ```
 
-The function `dip::Image::Diagonal` extracts the tensor elements along the diagonal
-of the tensor, yielding a vector image.
+Note that the single-index version of the tensor indexing uses linear indexing into
+the tensor element list: if the tensor is, for example, a 2x2 symmetric matrix, only
+three elements are actually stored, with indices 0 and 1 representing the two diagonal
+elements, and index 2 representing the two identical off-diagonal elements.
 
-// TODO: we need to document the image reshaping functions also!
+To extract multiple tensor elements one can use a `dip::Range` to index. Other useful
+methods here are `dip::Image::Diagonal`, `dip::Image::TensorRow` and
+`dip::Image::TensorColumn`, which all yield a vector image.
 
 
 \subsection pixel_indexing Single-pixel indexing
@@ -678,6 +683,166 @@ can extract them first, then write them back after modification:
     result += 1;                               // modify them
     image.CopyAt( result, mask );              // write them back into the image
 ```
+
+
+[//]: # (--------------------------------------------------------------)
+
+\section alternative_indexing An alternative to indexing
+
+What follows is not actually implemented, it's just some ideas that I wanted
+to write down. We might re-write some of the indexing mechanics!
+
+All spatial indexing yields a `dip::Image::View` object:
+```cpp
+    dip::Image::View view = image.At( mask );
+```
+
+There would be no `CopyAt` methods, they're all called `At`. There would be
+three types of views: (1) from regular indexing, (2) from mask indexing, and
+(3) from coordinate or linear indices indexing. The view object, in all cases,
+would keep a copy of the image (shared data of course). In case (1) this copy
+would already have modified strides, sizes and origin. In case (2), the view
+object would keep a copy of the mask image. In case (3) it would keep a list
+of offsets to pixels. Both mask image and offsets would already be vetted
+(that is, it is the indexing operator `At` that throws if the indexing operation
+is not valid).
+
+There are two things you can do with the `View` object: (a) assign to it, and
+(b) it implicitly casts to a `dip::Image`.
+
+(b) makes it so that the indexing works as it does now: you can do
+```cpp
+    dip::Image result = image.At( mask );
+    dip::Gauss( image.At( ... ));
+```
+and so on. In the case (1), the result shares data with the original image,
+in cases (2) and (3) the sample values are copied.
+
+(a) allows to modify the original image:
+```cpp
+    image.At( mask ) = 5;
+    image.At( mask ) = -image.At( mask );
+```
+
+I presume that it will be necessary to overload compound assignment operators
+as well, but other operators are not necessary as the object will implicitly
+cast to a `dip::Image`.
+
+The benefit here is a simplification of the indexing, with more consistency
+between single-pixel indexing and indexing that yields an image.
+Currently we do:
+```cpp
+    image.Fill( 0 );
+    image = 0;
+    image.Copy( otherImage );
+    image.At( 0 ) = 0;
+    image.At( Range{...} ) = 0;
+    image.At( Range{...} ) = otherImage; // BAD! does not modify `image`
+    image.At( Range{...} ).Copy( otherImage );
+    image.CopyAt( mask ).Copy( otherImage ); // BAD! does not modify `image`
+    image.CopyAt( otherImage, mask );
+    image.FillAt( 0, mask );
+```
+
+With the changes it will be:
+```cpp
+    image.Fill( 0 );
+    image = 0;
+    image.Copy( otherImage );
+    image.At( Range{} ) = otherImage; // Same as .Copy(), but not as efficient
+    image.At( 0 ) = 0;
+    image.At( Range{...} ) = 0;
+    image.At( Range{...} ) = otherImage;
+    image.At( mask ) = 0;
+    image.At( mask ) = otherImage;
+```
+
+The `dip::Image::Fill` method becomes less interesting, we could rely on the assignment
+operator exclusively. The `dip::Image::Copy` method stays relevant, as assignment of an
+image to another image creates a copy with shared data, it does not modify the image.
+This inconsistency is actually consistent with assignment in most scripting languages
+(see e.g. Python and MATLAB), where `A=B` makes `A` a copy of `B`, but `A(0)=B` copies
+`B` into some part of `A`.
+
+This is what the `dip::Image::View` class would look like:
+
+```cpp
+class Image {
+   ...
+
+   class View {
+         fiend class Image;
+      public:
+
+         // Public constructors, you can only make a new one by copy:
+         View() = delete;                          // No default constructor
+         View( View const& ) = default;            // Default copy constructor is OK
+         View( View&& ) = default;                 // Default move constructor is OK
+
+         // Assignment into `dip::Image::View`:
+         View& operator=( View&& ) = delete;       // No move assignment
+         View& operator=( View const& image );     // Invokes Copy() or CopyAt(image,...)
+         View& operator=( Image const& image );    // Invokes Copy() or CopyAt(image,...)
+         View& operator=( Pixel const& pixel );    // Invokes Fill() or FillAt()
+         View& operator=( Sample const& sample );  // Invokes Fill() or FillAt()
+         // Also do compound assignments
+
+      private:
+         Image reference_;
+         Image mask_;
+         IntegerArray offsets_;
+
+         // Private constructors, only `dip::Image` can construct one of these:
+         View( Image const& reference, RangeArray const& ranges );
+         View( Image const& reference, Image const& mask );
+         View( Image const& reference, UnsignedArray const& indices );
+         View( Image const& reference, CoordinateArray const& coordinates );
+         // These constructors will contain the meat of the current At() and CopyAt()
+         // methods.
+   };
+
+   // Constructing an Image from a View:
+   Image( View&& view ) {
+      if( view.mask_.IsForged() ) {
+         ... (invokes CopyAt())
+      } else if( !view.offsets_.empty() ) {
+         ... (invokes CopyAt())
+      } else {
+         swap( *this, view.reference_ );
+      }
+   }
+   Image( View const& view ) {
+      ... (idem as above, but with copy instead of move of reference_)
+   }
+
+   ...
+
+   View At( RangeArray const& ranges )           { return View( *this, ranges ); }
+   View At( Image const& mask )                  { return View( *this, mask ); }
+   View At( UnsignedArray const& indices )       { return View( *this, indices ); }
+   View At( CoordinateArray const& coordinates ) { return View( *this, coordinates ); }
+};
+```
+
+So the current 1-argument `dip::Image::CopyAt` methods, as well as all `dip::Image::At`
+methods, will become constructors for the `dip::Image::View` class. The 2-argument
+methods `dip::Image::CopyAt` and `dip::Image::FillAt` could become private functions
+for use only in `dip::Image::View::operator=`.
+
+TODO: chaining of `At()` calls: `dip::Image::View::At()` would be needed here, and
+complicates things a little bit, but should be solvable. Indexing into a `View` of type
+(2) or (3) must be using linear indices (since they represent a 1D image), and could
+simply modify the mask image or the offset array. Indexing there using a mask image
+could be simplified by converting it into an array of linear indices. If the view
+being indexed is of type (1), we simply add a mask or offset array. Casting back to
+a `dip::Image` wouldn't be affected.
+
+
+[//]: # (--------------------------------------------------------------)
+
+\section reshaping Reshaping
+
+// TODO: we need to document the image reshaping functions!
 
 
 [//]: # (--------------------------------------------------------------)

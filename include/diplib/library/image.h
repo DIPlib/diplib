@@ -1453,7 +1453,7 @@ class DIP_NO_EXPORT Image {
       /// the data segment, but not to access the pixel data stored in
       /// it. Use `dip::Image::Origin` instead. The image must be forged.
       ///
-      /// The pointer returned could be unrelated to the data segment, if
+      /// The pointer returned could be tangentially related to the data segment, if
       /// `dip::Image::IsExternalData` is true.
       ///
       /// \see Origin, IsShared, ShareCount, SharesData, IsExternalData.

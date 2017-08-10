@@ -784,6 +784,90 @@ inline mxArray* GetArray( dip::FileInformation const& fileInformation ) {
 // The ExternalInterface for MATLAB: Converting dip::Image to mxArray (sort of)
 //
 
+/* How this works:
+ *
+ * A `dip::Image` object has this class set as its external interface. When the image is forged, the
+ * `AllocateData` member function is called to allocate the data segment for the image. This function then
+ * creates an `mxArray` of the right sizes and type, and returns its data pointer as the `origin` pointer.
+ * The pointer to the `mxArray` is stored in the image's `DataSegment` shared pointer. When the image is
+ * stripped, this `DataSegment` is reset or replaced. Because it's a shared pointer, when the last copy
+ * is reset or replaced, the deleter function associated to it is called. This is where the complexity
+ * comes in. We need to be able to "rescue" the `mxArray` from being deleted, so we can return it to
+ * MATLAB when the MEX-file terminates. So making this deleter function simply call `mxDestroyArray` is
+ * not sufficient. Instead, we provide an instance of the `StripHandler` class as the deleter function.
+ * Its `operator()` looks up the `mxArray` pointer in the `mla` "database", and only calls `mxDestroyArray`
+ * if it can find the pointer. Thus, if we want to "rescue" the `mxArray`, all we need to do is remove
+ * its pointer from `mla`.
+ *
+ * Alternative (NOTE that the description below is not actually implemented!)
+ *
+ * There are other ways in which we could have accomplished the same thing. This alternative is maybe a
+ * little simpler:
+ *  - The `DataSegment` pointer points to an object that holds a pointer to the mxArray.
+ *  - The object's destructor calls `mxDestroyArray` on this pointer if the pointer is not `nullptr`.
+ *  - We can call a function that sets this pointer to `nullptr` (or simply allow directy access to the pointer).
+ *  - When we want to "rescue" the `mxArray`, we set its pointer to `nullptr`, the `DataSegment` can then be
+ *    deleted without us loosing our `mxArray`.
+ * Advantages:
+ *  - No `mla` in the external interface. No status at all outside of the `dip::Image` object.
+ *  - No special deleter functor in the shared object. The shared object just manages a normal object created
+ *    with `new`.
+ *  - The `GetArray` function does not need to be a method of the external interface. This makes it easier to
+ *    use, as any DIPlib type can be converted to a MATLAB type using the same `dml::GetArray` interface.
+ * Disadvantages:
+ *  - The object needs to be allocated on the heap. With `std::make_shared` this allocation is combined with
+ *    that for the shared pointer's control structure, but we then need to `std::static_pointer_cast` to a
+ *    void shared pointer, which (maybe?) requires one more allocation?
+ *  - The external interface needs to continue existing for as long as the `dip::Image` that references it
+ *    might be forged or reforged, even though there is no need to access it directly otherwise (i.e. it is
+ *    not clear from the calling code that the external interface needs to continue existing).
+ * Example use would be:
+ * ```cpp
+ *     dml::MatlabInterface mi;
+ *     dip::Image img_out0 = mi.NewImage();
+ *     ...
+ *     plhs[ 0 ] = dml::GetArray( img_out0 );
+ * ```
+ * The class would look like this:
+ * ```cpp
+ *     class MatlabInterface : public dip::ExternalInterface {
+ *        public:
+ *           struct mxContainer {
+ *              mxArray* array = nullptr;
+ *              ~mxContainer() { if( array ) { mxDestroyArray( array ); } }
+ *           };
+ *           virtual dip::DataSegment AllocateData( ... ) override {
+ *              ...
+ *              auto tmp = std::make_shared< mxContainer >();
+ *              tmp->array = mxCreateNumericArray( ... );
+ *              origin = mxGetData( tmp->array );
+ *              return std::static_pointer_cast< void >( tmp );
+ *           }
+ *           dip::Image NewImage() {
+ *              dip::Image out;
+ *              out.SetExternalInterface( this );
+ *              return out;
+ *           }
+ *     };
+ *     mxArray* GetArray( dip::Image const& img ) {
+ *        DIP_THROW_IF( !img.IsForged(), dip::E::IMAGE_NOT_FORGED );
+ *        auto tmp = static_cast< MatlabInterface::mxContainer* >( img.Data()->get() );
+ *        mxArray* out = nullptr;
+ *        if( tmp && tmp->array ) {
+ *           out = tmp->array;
+ *           tmp->array = nullptr;
+ *        }
+ *        if( out ) {
+ *           ... // test, set `out = nullptr` if we need a fresh copy
+ *        }
+ *        if( out ) {
+ *           ... // create a fresh copy of `img`
+ *        }
+ *        ... // create dip_image object holding the mxArray
+ *        return out;
+ *     }
+ * ```
+ */
 
 /// \brief This class is the dip::ExternalInterface for the *MATLAB* interface.
 ///
