@@ -18,25 +18,6 @@
 
 #include "pydip.h"
 
-namespace {
-
-inline dip::RangeArray RangeArrayFromTupleOfSlices( dip::Image const& image, py::tuple const& tuple_of_slice ) {
-   dip::uint nDims = tuple_of_slice.size();
-   DIP_THROW_IF( nDims != image.Dimensionality(), dip::E::ARRAY_ILLEGAL_SIZE );
-   dip::RangeArray rangeArray( nDims );
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      py::slice slice = static_cast< py::object >( tuple_of_slice[ ii ] );
-      size_t start, stop, step, slicelength;
-      if( !slice.compute( image.Size( ii ), &start, &stop, &step, &slicelength )) {
-         throw py::error_already_set();
-      }
-      rangeArray[ ii ] = dip::Range( dip::sint( start ), dip::sint( stop ), step );
-   }
-   return rangeArray;
-}
-
-} // namespace
-
 void init_image( py::module& m ) {
    auto img = py::class_< dip::Image >( m, "Image", py::buffer_protocol() );
    // Constructor
@@ -269,25 +250,15 @@ void init_image( py::module& m ) {
    img.def( "MergeComplex", py::overload_cast< dip::uint >( &dip::Image::MergeComplex ), "dim"_a, py::return_value_policy::reference_internal );
    img.def( "SplitComplexToTensor", &dip::Image::SplitComplexToTensor, py::return_value_policy::reference_internal );
    img.def( "MergeTensorToComplex", &dip::Image::MergeTensorToComplex, py::return_value_policy::reference_internal );
-   // Create a new image with a view of another image
+   // Create a new image with a view of another image (the At() method is below, under indexing)
    img.def( "Diagonal", &dip::Image::Diagonal );
    img.def( "TensorRow", &dip::Image::TensorRow, "index"_a );
    img.def( "TensorColumn", &dip::Image::TensorColumn, "index"_a );
-   // TODO: The following functions should make make a Python object of the right type
-   img.def( "At", []( dip::Image const& image, dip::UnsignedArray const& coords ) { return image.At< dip::dfloat >( coords ); },
-            "coords"_a );
-   img.def( "At", []( dip::Image const& image, dip::uint index ) { return image.At< dip::dfloat >( index ); }, "index"_a );
-   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index ) { return image.At< dip::dfloat >( x_index, y_index ); }, "x_index"_a, "y_index"_a );
-   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index, dip::uint z_index ) { return image.At< dip::dfloat >( x_index, y_index, z_index ); }, "x_index"_a, "y_index"_a, "z_index"_a );
-   img.def( "At", []( dip::Image const& image, dip::Range x_range ) { return image.At( x_range ); }, "x_range"_a );
-   img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range ) { return image.At( x_range, y_range ); }, "x_range"_a, "y_range"_a );
-   img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range, dip::Range z_range ) { return image.At( x_range, y_range, z_range ); }, "x_range"_a, "y_range"_a, "z_range"_a );
-   img.def( "At", []( dip::Image const& image, dip::RangeArray ranges ) { return image.At( ranges ); }, "ranges"_a );
    img.def( "Crop", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Crop, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Real", &dip::Image::Real );
    img.def( "Imaginary", &dip::Image::Imaginary );
    img.def( "QuickCopy", &dip::Image::QuickCopy );
-   // Copy or write data
+   // Copy or write data (the CopyAt() method is below, under indexing)
    img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Copy", &dip::Image::Copy, "src"_a );
    img.def( "Convert", &dip::Image::Convert, "dataType"_a );
@@ -295,26 +266,66 @@ void init_image( py::module& m ) {
    img.def( "Fill", []( dip::Image& a, dip::dcomplex v ) { a.Fill( dip::Image::Sample{ v } ); } );
    img.def( "Fill", []( dip::Image& a, dip::dfloat v ) { a.Fill( dip::Image::Sample{ v } ); } );
    img.def( "Fill", []( dip::Image& a, dip::sint v ) { a.Fill( dip::Image::Sample{ v } ); } );
-   img.def( "Fill", []( dip::Image& a, dip::uint v ) { a.Fill( dip::Image::Sample{ v } ); } );
+   // Indexing into single pixel using coordinates
+   // TODO: The following functions should make make a Python object of the right type
+   img.def( "At", []( dip::Image const& image, dip::uint index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( index )); }, "index"_a );
+   img.def( "__getitem__", []( dip::Image const& image, dip::uint index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( index )); } );
+   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( x_index, y_index )); }, "x_index"_a, "y_index"_a );
+   img.def( "__getitem__", []( dip::Image const& image, dip::uint x_index, dip::uint y_index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( x_index, y_index )); } );
+   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index, dip::uint z_index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( x_index, y_index, z_index )); }, "x_index"_a, "y_index"_a, "z_index"_a );
+   img.def( "__getitem__", []( dip::Image const& image, dip::uint x_index, dip::uint y_index, dip::uint z_index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( x_index, y_index, z_index )); } );
+   img.def( "At", []( dip::Image const& image, dip::UnsignedArray const& coords ) { return image.At< dip::dfloat >( coords ); }, "coords"_a );
+   // Indexing into slice for 1D image
+   img.def( "At", []( dip::Image const& image, dip::Range x_range ) { return image.At( x_range ); }, "x_range"_a );
+   img.def( "__getitem__", []( dip::Image const& image, dip::Range const& range ) -> dip::Image { return image.At( range ); } );
+   // Indexing into slice for 2D image
+   img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range ) { return image.At( x_range, y_range ); }, "x_range"_a, "y_range"_a );
+   // Indexing into slice for 3D image
+   img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range, dip::Range z_range ) { return image.At( x_range, y_range, z_range ); }, "x_range"_a, "y_range"_a, "z_range"_a );
+   // Indexing into slice for nD image
+   img.def( "At", []( dip::Image const& image, dip::RangeArray ranges ) { return image.At( ranges ); }, "ranges"_a );
+   img.def( "__getitem__", []( dip::Image const& image, dip::RangeArray const& rangeArray ) -> dip::Image { return image.At( rangeArray ); } );
+   // Indexing using a mask image
    img.def( "CopyAt", py::overload_cast< dip::Image const& >( &dip::Image::CopyAt, py::const_ ), "mask"_a );
+   img.def( "__getitem__", []( dip::Image const& image, dip::Image const& mask ) -> dip::Image { return image.CopyAt( mask ); } );
+   // Indexing using linear indices
    img.def( "CopyAt", py::overload_cast< dip::UnsignedArray const& >( &dip::Image::CopyAt, py::const_ ), "indices"_a );
-   img.def( "CopyAt", py::overload_cast< dip::CoordinateArray const& >( &dip::Image::CopyAt, py::const_ ), "_acoordinates"_a );
-   img.def( "CopyAt", []( dip::Image& self, dip::Image const& source, dip::Image const& mask ) { self.CopyAt( source, mask, dip::Option::ThrowException::DONT_THROW ); }, "source"_a, "mask"_a );
-   img.def( "CopyAt", py::overload_cast< dip::Image const&, dip::UnsignedArray const& >( &dip::Image::CopyAt ), "source"_a, "indices"_a );
-   img.def( "CopyAt", py::overload_cast< dip::Image const&, dip::CoordinateArray const& >( &dip::Image::CopyAt ), "source"_a, "coordinates"_a );
-   // Operators
-   img.def( "__getitem__", []( dip::Image const& image, dip::uint index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( index )); } );  // TODO: make a Python object of the right type
-   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::dfloat v ) { image.At<>( index ) = v; } );
+   // Indexing using a coordinate array
+   img.def( "CopyAt", py::overload_cast< dip::CoordinateArray const& >( &dip::Image::CopyAt, py::const_ ), "coordinates"_a );
+   // Assignment into single pixel using linear index
    img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::dcomplex v ) { image.At<>( index ) = v; } );
+   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::dfloat v ) { image.At<>( index ) = v; } );
    img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::sint v ) { image.At<>( index ) = v; } );
-   img.def( "__getitem__", []( dip::Image const& image, py::tuple const& tuple_of_slice ) -> dip::Image {
-      dip::RangeArray rangeArray = RangeArrayFromTupleOfSlices( image, tuple_of_slice );
-      return image.At( rangeArray );
-   } );
-   img.def( "__setitem__", []( dip::Image& image, py::tuple tuple_of_slice, dip::Image const& value ) {
-      dip::RangeArray rangeArray = RangeArrayFromTupleOfSlices( image, tuple_of_slice );
-      image.At( rangeArray ).Copy( value );
-   } );
+   // Assignment into slice for 1D image
+   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::dcomplex value ) { image.At( range ).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::dfloat value ) { image.At( range ).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::sint value ) { image.At( range ).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::Image const& value ) { image.At( range ).Copy( value ); } );
+   // Assignment into slice for nD image
+   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray const& rangeArray, dip::dcomplex value ) { image.At( rangeArray ).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray const& rangeArray, dip::dfloat value ) { image.At( rangeArray ).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray const& rangeArray, dip::sint value ) { image.At( rangeArray ).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray const& rangeArray, dip::Image const& value ) { image.At( rangeArray ).Copy( value ); } );
+   // Assignment using a mask image
+   img.def( "CopyAt", []( dip::Image& image, dip::Image const& source, dip::Image const& mask ) { image.CopyAt( source, mask, dip::Option::ThrowException::DO_THROW ); }, "source"_a, "mask"_a );
+   img.def( "__setitem__", []( dip::Image& image, dip::Image const& mask, dip::Image const& value ) { image.CopyAt( value, mask, dip::Option::ThrowException::DO_THROW ); } );
+   img.def( "FillAt", []( dip::Image& image, dip::dcomplex value, dip::Image const& mask ) { image.FillAt( value, mask ); }, "value"_a, "mask"_a );
+   img.def( "__setitem__", []( dip::Image& image, dip::Image const& mask, dip::dcomplex value ) { image.FillAt( value, mask ); } );
+   img.def( "FillAt", []( dip::Image& image, dip::dfloat value, dip::Image const& mask ) { image.FillAt( value, mask ); }, "value"_a, "mask"_a );
+   img.def( "__setitem__", []( dip::Image& image, dip::Image const& mask, dip::dfloat value ) { image.FillAt( value, mask ); } );
+   img.def( "FillAt", []( dip::Image& image, dip::sint value, dip::Image const& mask ) { image.FillAt( value, mask ); }, "value"_a, "mask"_a );
+   img.def( "__setitem__", []( dip::Image& image, dip::Image const& mask, dip::sint value ) { image.FillAt( value, mask ); } );
+   // Assignment using linear indices
+   img.def( "CopyAt", py::overload_cast< dip::Image const&, dip::UnsignedArray const& >( &dip::Image::CopyAt ), "source"_a, "indices"_a );
+   img.def( "FillAt", []( dip::Image& image, dip::dcomplex value, dip::UnsignedArray const& indices ) { image.FillAt( value, indices ); }, "value"_a, "indices"_a );
+   img.def( "FillAt", []( dip::Image& image, dip::dfloat value, dip::UnsignedArray const& indices ) { image.FillAt( value, indices ); }, "value"_a, "indices"_a );
+   img.def( "FillAt", []( dip::Image& image, dip::sint value, dip::UnsignedArray const& indices ) { image.FillAt( value, indices ); }, "value"_a, "indices"_a );
+   // Assignment using a coordinate array
+   img.def( "CopyAt", py::overload_cast< dip::Image const&, dip::CoordinateArray const& >( &dip::Image::CopyAt ), "source"_a, "coordinates"_a );
+   img.def( "FillAt", []( dip::Image& image, dip::dcomplex value, dip::CoordinateArray const& coordinates ) { image.FillAt( value, coordinates ); }, "value"_a, "coordinates"_a );
+   img.def( "FillAt", []( dip::Image& image, dip::dfloat value, dip::CoordinateArray const& coordinates ) { image.FillAt( value, coordinates ); }, "value"_a, "coordinates"_a );
+   img.def( "FillAt", []( dip::Image& image, dip::sint value, dip::CoordinateArray const& coordinates ) { image.FillAt( value, coordinates ); }, "value"_a, "coordinates"_a );
+   // Operators
    img.def( py::self += py::self );
    img.def( py::self += float() );
    img.def( py::self + py::self );

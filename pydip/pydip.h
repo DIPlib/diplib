@@ -35,6 +35,74 @@ namespace detail {
 template< typename Type >
 struct type_caster< dip::DimensionArray< Type >>: list_caster< dip::DimensionArray< Type >, Type > {};
 
+// Cast Python slice to dip::Range
+template<>
+class type_caster< dip::Range > {
+   public:
+      using type=dip::Range;
+      bool load( handle src, bool ) {
+         std::cout << "Executing py::type_caster<dip::Range>\n";
+         if( !src || !PySlice_Check( src.ptr())) {
+            //std::cout << "   Input is not a slice\n";
+            return false;
+         }
+         auto ptr = reinterpret_cast< PySliceObject* >( src.ptr() );
+         dip::sint start, stop, step;
+         if( PyNone_Check( ptr->step )) {
+            //std::cout << "   slice.step == None\n";
+            step = 1;
+         } else {
+            //PyLong_Check()
+            step = reinterpret_borrow< object >( ptr->step ).cast< dip::sint >();
+            //std::cout << "   slice.step == " << step << std::endl;
+         }
+         // Start with positive step: None -> 0, otherwise -> start
+         // Start with negative step: None -> -1, otherwise -> start
+         if( PyNone_Check( ptr->start )) {
+            //std::cout << "   slice.start == None\n";
+            start = step < 0 ? -1 : 0;
+         } else {
+            //PyLong_Check()
+            start = reinterpret_borrow< object >( ptr->start ).cast< dip::sint >();
+            //std::cout << "   slice.start == " << start << std::endl;
+         }
+         // Stop with positive step: None -> -1, <0 -> stop-1, >0 -> stop-1, ==0 -> error
+         // Stop with negative step: None -> -1, otherwise -> stop+1
+         if( PyNone_Check( ptr->stop )) {
+            //std::cout << "   slice.stop == None\n";
+            stop = -1;
+         } else {
+            //PyLong_Check()
+            stop = reinterpret_borrow< object >( ptr->stop ).cast< dip::sint >();
+            //std::cout << "   slice.stop == " << stop << std::endl;
+            stop += step < 0 ? 1 : -1;
+         }
+         if( step < 0 ) {
+            std::swap( start, stop );
+            step = -step;
+         }
+         //std::cout << "   value == " << start << ":" << stop << ":" << step << std::endl;
+         value = dip::Range( start, stop, static_cast< dip::uint >( step ));
+         // NOTE: For an originally empty range, this leads to two pixels selected, but this is
+         // difficult to test for here without knowing the size of the image being indexed. The empty
+         // range is not legal (or possible) in DIPlib.
+         // TODO: Should we fudge with Python's definitions for slicing, and have them work like DIPlib's?
+         // - If we do, we'll get complaints from people not understanding the indexing.
+         // - If we don't, it'll be more difficult to translate code from Python to C++.
+         return true;
+      }
+      static handle cast(
+            const type& src,
+            return_value_policy /* policy */,
+            handle /* parent */
+      ) {
+         // TODO: This is not correct, but we don't really use it (yet).
+         return slice( src.start, src.stop, static_cast< dip::sint >( src.step ));
+      }
+   PYBIND11_TYPE_CASTER( type, _( "slice" ));
+};
+
+
 /*
 // Cast any Python type that exposes a raw buffer to a dip::Image
 template<>
