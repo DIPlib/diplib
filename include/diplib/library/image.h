@@ -201,6 +201,12 @@ class DIP_NO_EXPORT Image {
             // dip::GenericJointImageIterator.
             constexpr Sample( void* data, dip::DataType dataType ) : origin_( data ), dataType_( dataType ) {}
 
+            /// Construct a new `%Sample` by giving the data type. Initialized to 0.
+            explicit Sample( dip::DataType dataType ) : dataType_( dataType ) {
+               buffer_ = { 0.0, 0.0 };
+               // The buffer filled with zeros yields a zero value no matter as what data type we interpret it.
+            }
+
             /// A numeric value implicitly converts to a `%Sample`.
             template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
             constexpr Sample( T value ) {
@@ -2405,7 +2411,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Copies the pixel values from `source` into `this`, to the pixels selected by `mask`.
       ///
-      /// `source` must have the same number of tensor elements as `this`. The pixel values will be
+      /// `source` must have the same number of tensor elements as `this`. The sample values will be
       /// cast to match the data type of `this`, where values are clipped to the target range and/or
       /// truncated, as applicable. Complex values are converted to non-complex values by taking the
       /// absolute value.
@@ -2423,7 +2429,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Copies the pixel values from `source` into `this`, to the pixels selected by `indices`.
       ///
-      /// `source` must have the same number of tensor elements as `this`. The pixel values will be
+      /// `source` must have the same number of tensor elements as `this`. The sample values will be
       /// cast to match the data type of `this`, where values are clipped to the target range and/or
       /// truncated, as applicable. Complex values are converted to non-complex values by taking the
       /// absolute value.
@@ -2437,7 +2443,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Copies the pixel values from `source` into `this`, to the pixels selected by `coordinates`.
       ///
-      /// `source` must have the same number of tensor elements as `this`. The pixel values will be
+      /// `source` must have the same number of tensor elements as `this`. The sample values will be
       /// cast to match the data type of `this`, where values are clipped to the target range and/or
       /// truncated, as applicable. Complex values are converted to non-complex values by taking the
       /// absolute value.
@@ -2572,6 +2578,71 @@ class DIP_NO_EXPORT Image {
       ///
       /// The image must be forged.
       DIP_EXPORT void Fill( Sample const& sample );
+
+      /// \brief Fills the pixels selected by `mask` with the values of `pixel`.
+      ///
+      /// `pixel` must have the same number of tensor elements as `this`. The sample values will be
+      /// cast to match the data type of `this`, where values are clipped to the target range and/or
+      /// truncated, as applicable. Complex values are converted to non-complex values by taking the
+      /// absolute value.
+      ///
+      /// `this` must be forged and be of equal size as `mask`. `mask` is a scalar binary image.
+      DIP_EXPORT void FillAt( Pixel const& pixel, Image const& mask );
+
+      /// \brief Fills the pixels selected by `mask` with the value of `sample`.
+      ///
+      /// The sample value will be cast to match the data type of `this`, and will be clipped to the
+      /// target range and/or truncated, as applicable. A complex value is converted to non-complex
+      /// values by taking the absolute value.
+      ///
+      /// `this` must be forged and be of equal size as `mask`. `mask` is a scalar binary image.
+      DIP_EXPORT void FillAt( Sample const& sample, Image const& mask );
+
+      /// \brief Fills the pixels selected by `indices` with the values of `pixel`.
+      ///
+      /// `pixel` must have the same number of tensor elements as `this`. The sample values will be
+      /// cast to match the data type of `this`, where values are clipped to the target range and/or
+      /// truncated, as applicable. Complex values are converted to non-complex values by taking the
+      /// absolute value.
+      ///
+      /// `indices` contains linear indices into the image. Note that converting indices into offsets
+      /// is not a trivial operation; prefer to use the version of this function that uses coordinates.
+      ///
+      /// `this` must be forged.
+      DIP_EXPORT void FillAt( Pixel const& pixel, UnsignedArray const& indices );
+
+      /// \brief Fills the pixels selected by `indices` with the value of `sample`.
+      ///
+      /// The sample value will be cast to match the data type of `this`, and will be clipped to the
+      /// target range and/or truncated, as applicable. A complex value is converted to non-complex
+      /// values by taking the absolute value.
+      ///
+      /// `indices` contains linear indices into the image. Note that converting indices into offsets
+      /// is not a trivial operation; prefer to use the version of this function that uses coordinates.
+      ///
+      /// `this` must be forged.
+      DIP_EXPORT void FillAt( Sample const& sample, UnsignedArray const& indices );
+
+      /// \brief Fills the pixels selected by `coordinates` with the values of `pixel`.
+      ///
+      /// `pixel` must have the same number of tensor elements as `this`. The sample values will be
+      /// cast to match the data type of `this`, where values are clipped to the target range and/or
+      /// truncated, as applicable. Complex values are converted to non-complex values by taking the
+      /// absolute value.
+      ///
+      /// Each of the coordinates must have the same number of dimensions as `this`.
+      /// `this` must be forged.
+      DIP_EXPORT void FillAt( Pixel const& pixel, CoordinateArray const& coordinates );
+
+      /// \brief Fills the pixels selected by `coordinates` with the value of `sample`.
+      ///
+      /// The sample value will be cast to match the data type of `this`, and will be clipped to the
+      /// target range and/or truncated, as applicable. A complex value is converted to non-complex
+      /// values by taking the absolute value.
+      ///
+      /// Each of the coordinates must have the same number of dimensions as `this`.
+      /// `this` must be forged.
+      DIP_EXPORT void FillAt( Sample const& sample, CoordinateArray const& coordinates );
 
       /// \brief Sets all pixels in the image to the value `pixel`.
       ///

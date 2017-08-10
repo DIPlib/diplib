@@ -36,9 +36,7 @@ Image Image::CopyAt( Image const& mask ) const {
    // Check input
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !mask.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_START_STACK_TRACE
-      mask.CheckIsMask( Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( mask.CheckIsMask( Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
    // Create output
    dip::uint N = Count( mask );
    Image destination;
@@ -111,7 +109,8 @@ Image Image::CopyAt( UnsignedArray const& indices ) const {
       do {
          dip::sint offset = Offset( coordinates( static_cast< dip::sint >( *indIt )));
          for( dip::uint ii = 0; ii < telems; ++ii ) {
-            std::memcpy( destIt.Pointer( ii ), Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), bytes );
+            std::memcpy( destIt.Pointer( ii ), Pointer( offset ), bytes );
+            offset += TensorStride();
          }
       } while( ++indIt, ++destIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
    }
@@ -153,7 +152,8 @@ Image Image::CopyAt( CoordinateArray const& coordinates ) const {
       do {
          dip::sint offset = Offset( *corIt );
          for( dip::uint ii = 0; ii < telems; ++ii ) {
-            std::memcpy( destIt.Pointer( ii ), Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), bytes );
+            std::memcpy( destIt.Pointer( ii ), Pointer( offset ), bytes );
+            offset += TensorStride();
          }
       } while( ++corIt, ++destIt ); // these two must end at the same time, we test the image iterator, as corIt should be compared with the end iterator.
    }
@@ -168,9 +168,7 @@ void Image::CopyAt( Image const& source, Image const& mask, Option::ThrowExcepti
    DIP_THROW_IF( !source.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !mask.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( TensorElements() != source.TensorElements(), E::NTENSORELEM_DONT_MATCH );
-   DIP_START_STACK_TRACE
-      mask.CheckIsMask( Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( mask.CheckIsMask( Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
    if( throws == Option::ThrowException::DO_THROW ) {
       // Test the size of data
       dip::uint N = Count( mask );
@@ -261,7 +259,8 @@ void Image::CopyAt( Image const& source, UnsignedArray const& indices ) {
          do {
             dip::sint offset = Offset( coordinates( static_cast< dip::sint >( *indIt )));
             for( dip::uint ii = 0; ii < telems; ++ii ) {
-               std::memcpy( Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), srcIt.Pointer( ii ), bytes );
+               std::memcpy( Pointer( offset ), srcIt.Pointer( ii ), bytes );
+               offset += TensorStride();
             }
          } while( ++indIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
       }
@@ -319,7 +318,8 @@ void Image::CopyAt( Image const& source, CoordinateArray const& coordinates ) {
          do {
             dip::sint offset = Offset( *corIt );
             for( dip::uint ii = 0; ii < telems; ++ii ) {
-               std::memcpy( Pointer( offset + static_cast< dip::sint >( ii ) * TensorStride() ), srcIt.Pointer( ii ), bytes );
+               std::memcpy( Pointer( offset ), srcIt.Pointer( ii ), bytes );
+               offset += TensorStride();
             }
          } while( ++corIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as corIt should be compared with the end iterator.
       }
@@ -610,7 +610,7 @@ void Image::Fill( Image::Pixel const& pixel ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint N = tensor_.Elements();
    if( pixel.TensorElements() == 1 ) {
-      Fill( pixel[ 0 ] );
+      DIP_STACK_TRACE_THIS( Fill( pixel[ 0 ] ));
    } else {
       DIP_THROW_IF( pixel.TensorElements() != N, E::NTENSORELEM_DONT_MATCH );
       Image tmp = QuickCopy();
@@ -619,7 +619,7 @@ void Image::Fill( Image::Pixel const& pixel ) {
          // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
          // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
          // were a pointer to the correct data type.
-         tmp.Fill( pixel[ ii ] );
+         DIP_STACK_TRACE_THIS( tmp.Fill( pixel[ ii ] ));
       }
    }
 }
@@ -639,6 +639,149 @@ void Image::Fill( Image::Sample const& sample ) {
       case DT_DCOMPLEX: InternFill( *this, sample.As< dcomplex >() ); break;
       default:
          DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
+   }
+}
+
+void Image::FillAt( Image::Pixel const& pixel, Image const& mask ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint N = tensor_.Elements();
+   if( pixel.TensorElements() == 1 ) {
+      DIP_STACK_TRACE_THIS( FillAt( pixel[ 0 ], mask ));
+   } else {
+      DIP_THROW_IF( pixel.TensorElements() != N, E::NTENSORELEM_DONT_MATCH );
+      Image tmp = QuickCopy();
+      tmp.tensor_.SetScalar();
+      for( dip::uint ii = 0; ii < N; ++ii, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
+         // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
+         // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
+         // were a pointer to the correct data type.
+         DIP_STACK_TRACE_THIS( tmp.FillAt( pixel[ ii ], mask ));
+      }
+   }
+}
+
+void Image::FillAt( Image::Sample const& sample, Image const& mask ) {
+   // Check input
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !mask.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_STACK_TRACE_THIS( mask.CheckIsMask( Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
+   Image::Sample source( DataType() );
+   source = sample; // cast the value to the same type as that of *this.
+   dip::uint telems = TensorElements();
+   dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
+   // Iterate over *this and mask
+   GenericJointImageIterator< 2 > it( { *this, mask } );
+   void* src = source.Origin();
+   if( telems == 1 ) {
+      do {
+         if( *( static_cast< bin* >( it.Pointer< 1 >() ))) {
+            std::memcpy( it.Pointer< 0 >(), src, bytes );
+         }
+      } while( ++it );
+   } else {
+      do {
+         if( *( static_cast< bin* >( it.Pointer< 1 >() ))) {
+            for( dip::uint ii = 0; ii < telems; ++ii ) {
+               std::memcpy( it.Pointer< 0 >( ii ), src, bytes );
+            }
+         }
+      } while( ++it );
+   }
+}
+
+void Image::FillAt( Image::Pixel const& pixel, UnsignedArray const& indices ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint N = tensor_.Elements();
+   if( pixel.TensorElements() == 1 ) {
+      DIP_STACK_TRACE_THIS( FillAt( pixel[ 0 ], indices ));
+   } else {
+      DIP_THROW_IF( pixel.TensorElements() != N, E::NTENSORELEM_DONT_MATCH );
+      Image tmp = QuickCopy();
+      tmp.tensor_.SetScalar();
+      for( dip::uint ii = 0; ii < N; ++ii, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
+         // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
+         // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
+         // were a pointer to the correct data type.
+         DIP_STACK_TRACE_THIS( tmp.FillAt( pixel[ ii ], indices ));
+      }
+   }
+}
+
+void Image::FillAt( Image::Sample const& sample, UnsignedArray const& indices ) {
+   // Check input
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( indices.size() == 0, E::ARRAY_ILLEGAL_SIZE );
+   dip::uint maxIndex = NumberOfPixels();
+   for( auto const& ii : indices ) {
+      DIP_THROW_IF( ii >= maxIndex, E::INDEX_OUT_OF_RANGE );
+   }
+   CoordinatesComputer coordinates = IndexToCoordinatesComputer();
+   Image::Sample source( DataType() );
+   source = sample; // cast the value to the same type as that of *this.
+   dip::uint telems = TensorElements();
+   dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
+   // Iterate over indices
+   void* src = source.Origin();
+   if( telems == 1 ) {
+      for( auto& index : indices ) {
+         std::memcpy( Pointer( coordinates( static_cast< dip::sint >( index ))), src, bytes );
+      }
+   } else {
+      for( auto& index : indices ) {
+         dip::sint offset = Offset( coordinates( static_cast< dip::sint >( index )));
+         for( dip::uint ii = 0; ii < telems; ++ii ) {
+            std::memcpy( Pointer( offset ), src, bytes );
+            offset += TensorStride();
+         }
+      }
+   }
+}
+
+void Image::FillAt( Image::Pixel const& pixel, CoordinateArray const& coordinates ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint N = tensor_.Elements();
+   if( pixel.TensorElements() == 1 ) {
+      DIP_STACK_TRACE_THIS( FillAt( pixel[ 0 ], coordinates ));
+   } else {
+      DIP_THROW_IF( pixel.TensorElements() != N, E::NTENSORELEM_DONT_MATCH );
+      Image tmp = QuickCopy();
+      tmp.tensor_.SetScalar();
+      for( dip::uint ii = 0; ii < N; ++ii, tmp.origin_ = tmp.Pointer( tmp.tensorStride_ )) {
+         // NOTE: tmp.Pointer( tmp.tensorStride_ ) takes the current tmp.origin_ and adds the tensor stride to it.
+         // Thus, assigning this into tmp.origin_ is equivalent to tmp.origin += tmp_tensorStride_ if tmp.origin_
+         // were a pointer to the correct data type.
+         DIP_STACK_TRACE_THIS( tmp.FillAt( pixel[ ii ], coordinates ));
+      }
+   }
+}
+
+void Image::FillAt( Image::Sample const& sample, CoordinateArray const& coordinates ) {
+   // Check input
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( coordinates.size() == 0, E::ARRAY_ILLEGAL_SIZE );
+   dip::uint nDims = Dimensionality();
+   for( UnsignedArray const& pp : coordinates ) {
+      DIP_THROW_IF( pp.size() != nDims, E::COORDINATES_OUT_OF_RANGE );
+      DIP_THROW_IF( !( pp < Sizes() ), E::COORDINATES_OUT_OF_RANGE );
+   }
+   Image::Sample source( DataType() );
+   source = sample; // cast the value to the same type as that of *this.
+   dip::uint telems = TensorElements();
+   dip::uint bytes = DataType().SizeOf(); // both source and destination have the same types
+   // Iterate over coordinates
+   void* src = source.Origin();
+   if( telems == 1 ) {
+      for( auto& coords : coordinates ) {
+         std::memcpy( Pointer( coords ), src, bytes );
+      }
+   } else {
+      for( auto& coords : coordinates ) {
+         dip::sint offset = Offset( coords );
+         for( dip::uint ii = 0; ii < telems; ++ii ) {
+            std::memcpy( Pointer( offset ), src, bytes );
+            offset += TensorStride();
+         }
+      }
    }
 }
 
