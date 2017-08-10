@@ -43,8 +43,9 @@ namespace dip {
 /// This iterator works similarly to `dip::ImageIterator`. The `Pointer` method returns a `void` pointer to
 /// the first sample in the pixel. This is the more efficient way of using the iterator.
 ///
-/// Dereferencing the iterator returns a `dip::Image::Pixel` object, and the `[]` operator return a
-/// `dip::Image::Sample` object. These objects reference the pixel or sample, assigning to them changes the
+/// Dereferencing the iterator returns a `dip::Image::Pixel` object (actually a `dip::Image::CastPixel`),
+/// and the `[]` operator return a `dip::Image::Sample` object (actually a `dip::Image::CastSample`).
+/// These objects reference the pixel or sample, assigning to them changes the
 /// pixel's values in the image. They are convenient in use, but not very efficient. The optional template
 /// argument to `%GenericImageIterator` sets the template argument to the `dip::Image::CastPixel` object
 /// that is actually returned by dereferencing the iterator. Choose a type in which you wish to work, but

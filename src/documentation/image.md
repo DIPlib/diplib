@@ -556,14 +556,19 @@ values in the image:
     image.At( 0, 10 ) += 1;
 ```
 
-The single-pixel forms of `dip::Image::At` take an optional template argument, which
-defaults to `dip::dfloat`.
-The `dip::Image::Pixel` object returned is actually a `dip::Image::CastPixel` object,
-which behaves identically to a `dip::Image::Pixel` but aditionally has an implicit
-cast to one numeric type. The template argument to `dip::Image::At` determines this type.
+The single-pixel forms of `dip::Image::At` have an alternative, templated form. In that
+form, they return a `dip::Image::CastPixel< T >` instead, which is identical to a
+`dip::Image::Pixel`, but implicitly casts to type `T`. Thus:
+
+```cpp
+    int v1 = image.At( 0, 10 );           // Does not compile, no implicit conversion to `int`.
+    int v2 = image.At< int >( 0, 10 );    // OK
+    int v3 = image.At( 0, 10 ).As< int >; // Same as `v2`.
+```
+
 This implicit cast makes its use a little simpler in a setting combined with numbers
 of that type. However, the object itself is not tied to the type, and it is still possible
-to access (read or write) the pixel as other types. For exmaple, this code will print
+to access (read or write) the pixel as other types. For example, this code will print
 "( 1.0, -3.0 )" to the standard output, the template argument to `%At` has no influence
 on the results:
 
@@ -586,8 +591,8 @@ a `dip::Image::Sample`. Again, this is a reference to the sample in the image, a
 be written to to change the image. The second line first uses `[]` to create a scalar
 image, and then extracts a pixel from it. The result is a `dip::Image::Pixel` object,
 not a `dip::Image::Sample`, though the pixel object references a single sample in the
-input image. In practice, these are equally useful, though the second form is less
-efficient because an intermediate image is generated.
+input image. In practice, these are equally useful, though the first form is slightly
+more efficient because the intermediate object generated has less overhead.
 
 See the documentation to `dip::Image::Sample` and `dip::Image::Pixel` for more information
 on how these objects can be used. Note however, that this is not an efficient way of

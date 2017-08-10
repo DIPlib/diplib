@@ -202,7 +202,7 @@ class DIP_NO_EXPORT Image {
             constexpr Sample( void* data, dip::DataType dataType ) : origin_( data ), dataType_( dataType ) {}
 
             /// Construct a new `%Sample` by giving the data type. Initialized to 0.
-            explicit Sample( dip::DataType dataType ) : dataType_( dataType ) {
+            explicit Sample( dip::DataType dataType = DT_SFLOAT ) : dataType_( dataType ) {
                buffer_ = { 0.0, 0.0 };
                // The buffer filled with zeros yields a zero value no matter as what data type we interpret it.
             }
@@ -234,10 +234,29 @@ class DIP_NO_EXPORT Image {
             /// Swaps `*this` and `other`.
             void swap( Sample& other ) {
                using std::swap;
-               swap( buffer_, other.buffer_ );
-               swap( origin_, other.origin_ );
+               bool thisInternal = origin_ == &buffer_;
+               bool otherInternal = other.origin_ == &other.buffer_;
+               if( thisInternal ) {
+                  if( otherInternal ) {
+                     swap( buffer_, other.buffer_ );
+                  } else {
+                     origin_ = other.origin_;
+                     other.buffer_ = buffer_;
+                     other.origin_ = &other.buffer_;
+                  }
+               } else {
+                  if( otherInternal ) {
+                     other.origin_ = origin_;
+                     buffer_ = other.buffer_;
+                     origin_ = &buffer_;
+                  } else {
+                     swap( origin_, other.origin_ );
+                  }
+               }
                swap( dataType_, other.dataType_ );
             }
+
+            void swap( Sample&& other ) { swap( other ); };
 
             /// Returns the value of the sample as the given numeric type, similar to using `static_cast`.
             template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
@@ -366,7 +385,7 @@ class DIP_NO_EXPORT Image {
                   origin_( data ), dataType_( dataType ), tensor_( tensor ), tensorStride_( tensorStride ) {}
 
             /// Construct a new `%Pixel` by giving data type and number of tensor elements. Initialized to 0.
-            explicit Pixel( dip::DataType dataType, dip::uint tensorElements = 1 ) :
+            explicit Pixel( dip::DataType dataType = DT_SFLOAT, dip::uint tensorElements = 1 ) :
                   dataType_( dataType ), tensor_( tensorElements ) {
                buffer_.resize( dataType_.SizeOf() * tensor_.Elements() );
                std::fill( buffer_.begin(), buffer_.end(), 0 );
@@ -408,12 +427,33 @@ class DIP_NO_EXPORT Image {
             /// Swaps `*this` and `other`.
             void swap( Pixel& other ) {
                using std::swap;
-               swap( buffer_, other.buffer_ );
-               swap( origin_, other.origin_ );
+               bool thisInternal = origin_ == buffer_.data();
+               bool otherInternal = other.origin_ == other.buffer_.data();
+               if( thisInternal ) {
+                  if( otherInternal ) {
+                     swap( buffer_, other.buffer_ );
+                     origin_ = buffer_.data();
+                     other.origin_ = other.buffer_.data();
+                  } else {
+                     origin_ = other.origin_;
+                     other.buffer_ = std::move( buffer_ );
+                     other.origin_ = other.buffer_.data();
+                  }
+               } else {
+                  if( otherInternal ) {
+                     other.origin_ = origin_;
+                     buffer_ = std::move( other.buffer_ );
+                     origin_ = buffer_.data();
+                  } else {
+                     swap( origin_, other.origin_ );
+                  }
+               }
                swap( dataType_, other.dataType_ );
                swap( tensor_, other.tensor_ );
                swap( tensorStride_, other.tensorStride_ );
             }
+
+            void swap( Pixel&& other ) { swap( other ); }
 
             /// Returns the value of the first sample in the pixel as the given numeric type, similar to using `static_cast`.
             template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
@@ -694,7 +734,7 @@ class DIP_NO_EXPORT Image {
             Pixel& operator^=( T const& rhs );
 
          protected:
-            std::vector< uint8 > buffer_; // alignment???
+            std::vector< uint8 > buffer_;
             void* origin_;
             dip::DataType dataType_;
             dip::Tensor tensor_;
@@ -706,15 +746,8 @@ class DIP_NO_EXPORT Image {
       class CastSample : public Sample {
          public:
             using Sample::Sample;
-            // Default copy and move constructors, otherwise they're implicitly deleted by assignment operators deleted below.
-            //CastSample( CastSample const& ) = default;
-            //CastSample( CastSample&& ) = default;
             CastSample( Sample&& sample ) : Sample( std::move( sample )) {}
-
-            //CastSample& operator=( CastSample const& ) = delete;
-            //CastSample& operator=( CastSample&& ) = delete;
             using Sample::operator=;
-
             operator T() const { return As< T >(); }
       };
 
@@ -726,17 +759,9 @@ class DIP_NO_EXPORT Image {
             template< dip::uint N, typename S > friend class dip::GenericJointImageIterator;
          public:
             using Pixel::Pixel;
-            // Default copy and move constructors, otherwise they're implicitly deleted by assignment operators deleted below.
-            //CastPixel( CastPixel const& ) = default;
-            //CastPixel( CastPixel&& ) = default;
             CastPixel( Pixel&& pixel ) : Pixel( std::move( pixel )) {}
-
-            //CastPixel& operator=( CastPixel const& ) = delete;
-            //CastPixel& operator=( CastPixel&& ) = delete;
             using Pixel::operator=;
-
             operator T() const { return As< T >(); }
-
             CastSample< T > operator[]( dip::uint index ) const { return Pixel::operator[]( index ); }
             CastSample< T > operator[]( UnsignedArray const& indices ) const { return Pixel::operator[]( indices ); }
       };
@@ -750,7 +775,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief The default-initialized image is 0D (an empty sizes array), one tensor element, dip::DT_SFLOAT,
       /// and raw (it has no data segment).
-      Image() {}
+      Image() = default;
 
       // Copy constructor, move constructor and destructor are all default.
       Image( Image const& ) = default;
@@ -927,7 +952,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// See \ref use_external_data for more information on how to use this function.
       Image(
-            DataSegment data,
+            DataSegment const& data,
             void* origin,
             dip::DataType dataType,
             UnsignedArray const& sizes,
@@ -2248,49 +2273,63 @@ class DIP_NO_EXPORT Image {
       DIP_EXPORT Image TensorColumn( dip::uint index ) const;
 
       /// \brief Extracts the pixel at the given coordinates. The image must be forged.
-      template< typename T = dfloat >
-      CastPixel< T > At( UnsignedArray const& coords ) const {
+      Pixel At( UnsignedArray const& coords ) const {
          DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-         return CastPixel< T >( Pointer( coords ), dataType_, tensor_, tensorStride_ );
+         return Pixel( Pointer( coords ), dataType_, tensor_, tensorStride_ );
       }
 
+      /// \brief Same as above, but returns a type that implicitly casts to `T`.
+      template< typename T >
+      CastPixel< T > At( UnsignedArray const& coords ) const { return CastPixel< T >( At( coords )); }
+
       /// \brief Extracts the pixel at the given linear index (inefficient if image is not 1D!). The image must be forged.
-      template< typename T = dfloat >
-      CastPixel< T > At( dip::uint index ) const {
+      Pixel At( dip::uint index ) const {
          if( index == 0 ) { // shortcut to the first pixel
-            return CastPixel< T >( Origin(), dataType_, tensor_, tensorStride_ );
+            return Pixel( Origin(), dataType_, tensor_, tensorStride_ );
          } else if( sizes_.size() < 2 ) {
             dip::uint n = sizes_.size() == 0 ? 1 : sizes_[ 0 ];
             DIP_THROW_IF( index >= n, E::INDEX_OUT_OF_RANGE );
-            return CastPixel< T >( Pointer( static_cast< dip::sint >( index ) * strides_[ 0 ] ),
+            return Pixel( Pointer( static_cast< dip::sint >( index ) * strides_[ 0 ] ),
                           dataType_, tensor_, tensorStride_ );
          } else {
-            return At< T >( IndexToCoordinates( index ) );
+            return At( IndexToCoordinates( index ));
          }
       }
 
+      /// \brief Same as above, but returns a type that implicitly casts to `T`.
+      template< typename T >
+      CastPixel< T > At( dip::uint index ) const { return CastPixel< T >( At( index )); }
+
       /// \brief Extracts the pixel at the given coordinates from a 2D image. The image must be forged.
-      template< typename T = dfloat >
-      CastPixel< T > At( dip::uint x_index, dip::uint y_index ) const {
+      Pixel At( dip::uint x_index, dip::uint y_index ) const {
          DIP_THROW_IF( sizes_.size() != 2, E::ILLEGAL_DIMENSIONALITY );
          DIP_THROW_IF( x_index >= sizes_[ 0 ], E::INDEX_OUT_OF_RANGE );
          DIP_THROW_IF( y_index >= sizes_[ 1 ], E::INDEX_OUT_OF_RANGE );
-         return CastPixel< T >( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
+         return Pixel( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
                                 static_cast< dip::sint >( y_index ) * strides_[ 1 ] ),
                        dataType_, tensor_, tensorStride_ );
       }
 
+      /// \brief Same as above, but returns a type that implicitly casts to `T`.
+      template< typename T >
+      CastPixel< T > At( dip::uint x_index, dip::uint y_index ) const { return CastPixel< T >( At( x_index, y_index )); }
+
       /// \brief Extracts the pixel at the given coordinates from a 3D image. The image must be forged.
-      template< typename T = dfloat >
-      CastPixel< T > At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const {
+      Pixel At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const {
          DIP_THROW_IF( sizes_.size() != 3, E::ILLEGAL_DIMENSIONALITY );
          DIP_THROW_IF( x_index >= sizes_[ 0 ], E::INDEX_OUT_OF_RANGE );
          DIP_THROW_IF( y_index >= sizes_[ 1 ], E::INDEX_OUT_OF_RANGE );
          DIP_THROW_IF( z_index >= sizes_[ 2 ], E::INDEX_OUT_OF_RANGE );
-         return CastPixel< T >( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
+         return Pixel( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
                                 static_cast< dip::sint >( y_index ) * strides_[ 1 ] +
                                 static_cast< dip::sint >( z_index ) * strides_[ 2 ] ),
                        dataType_, tensor_, tensorStride_ );
+      }
+
+      /// \brief Same as above, but returns a type that implicitly casts to `T`.
+      template< typename T >
+      CastPixel< T > At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const {
+         return CastPixel< T >( At( x_index, y_index, z_index ));
       }
 
       /// \brief Extracts a subset of pixels from a 1D image. The image must be forged.

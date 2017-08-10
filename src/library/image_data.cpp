@@ -615,8 +615,9 @@ void Image::Forge() {
          void* p = std::malloc( size * sz );
          DIP_THROW_IF( !p, "Failed to allocate memory" );
          dataBlock_ = DataSegment{ p, std::free };
+         //[]( void* ptr ) { std::cout << "   Successfully freed image with DataSegment " << ptr << std::endl; std::free( ptr ); }
          origin_ = static_cast< uint8* >( p ) + start * static_cast< dip::sint >( sz );
-         //std::cout << "   Successfully forged image\n";
+         //std::cout << "   Successfully forged image with DataSegment " << p << std::endl;
       }
    }
 }

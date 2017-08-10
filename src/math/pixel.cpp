@@ -433,7 +433,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Pixel and related classes" ) {
    DOCTEST_CHECK( image.At( 0 ) == 3 );      // fist pixel
    DOCTEST_CHECK( image.At( 2, 3 )[ 2 ] == 3 ); // last sample
    image.At( 0 ) = 4;
-   dip::Image::Pixel expect1{ 4, 4, 4 };
+   dip::Image::Pixel expect1{ dip::uint8( 4 ), dip::uint8( 4 ), dip::uint8( 4 ) };
    DOCTEST_CHECK( image.At( 0 ) == 4 );
    DOCTEST_CHECK( image.At( 0 ) == expect1 );
    DOCTEST_CHECK_FALSE( image.At( 0 ) == 0 );
@@ -464,9 +464,11 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Pixel and related classes" ) {
    DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
 
    // Reading out
+   dip::uint8 v0 = image.At< dip::uint8 >( 2, 0 );
    dip::uint8 v1 = image.At< dip::uint8 >( 2, 0 )[ 0 ];
    dip::sint16 v2 = image.At< dip::sint16 >( 2, 0 )[ 0 ];
    dip::scomplex v3 = image.At< dip::scomplex >( 2, 0 )[ 0 ];
+   DOCTEST_CHECK( v0 == 8 );
    DOCTEST_CHECK( v1 == 8 );
    DOCTEST_CHECK( v2 == 8 );
    DOCTEST_CHECK( v3 == 8.0f );
@@ -510,6 +512,23 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Pixel and related classes" ) {
    DOCTEST_CHECK( *it1 == *it2 );
    ++it1; ++it2;
    DOCTEST_CHECK( it2 == expect3.end() );
+
+   // Swapping
+   s.swap( c );
+   DOCTEST_CHECK( p[ 0 ] == s );
+   DOCTEST_CHECK( p[ 1 ] == c );
+
+   expect1.swap( p );
+   DOCTEST_CHECK( expect1.DataType() == dip::DT_DCOMPLEX );
+   DOCTEST_CHECK( expect1.TensorElements() == 2 );
+   DOCTEST_CHECK( expect1[ 0 ] == s );
+   DOCTEST_CHECK( expect1[ 1 ] == c );
+
+   DOCTEST_CHECK( p.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( p.TensorElements() == 3 );
+   DOCTEST_CHECK( p[ 0 ] == 4 );
+   DOCTEST_CHECK( p[ 1 ] == 4 );
+   DOCTEST_CHECK( p[ 2 ] == 4 );
 }
 
 #endif // DIP__ENABLE_DOCTEST

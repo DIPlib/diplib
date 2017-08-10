@@ -170,21 +170,20 @@ class DIP_NO_EXPORT ImageDisplay{
 
       /// \brief Gets input image intensities at a given 2D point (automatically finds corresponding nD location).
       /// In case of a 1D `Output`, `y` is ignored.
-      template< typename T = dfloat >
-      DIP_EXPORT Image::CastPixel< T > Pixel( dip::uint x, dip::uint y = 0 ) {
+      DIP_EXPORT Image::Pixel Pixel( dip::uint x, dip::uint y = 0 ) {
          UpdateSlice();
          if( x >= slice_.Size( 0 )) {
             x = slice_.Size( 0 ) - 1;
          }
          if( slice_.Dimensionality() == 1 ) {
             // 1D slice
-            return slice_.At< T >( x );
+            return slice_.At( x );
          } else {
             // 2D slice
             if( y >= slice_.Size( 1 )) {
                y = slice_.Size( 1 ) - 1;
             }
-            return slice_.At< T >( x, y );
+            return slice_.At( x, y );
          }
       }
 

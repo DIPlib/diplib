@@ -23,6 +23,8 @@
 
 namespace dip {
 
+// TODO: Why do these functions return a `CastPixel` and not a `FloatArray`?
+
 Image::CastPixel< dfloat > Mean( Histogram const& in ) {
    dip::uint nDims = in.Dimensionality();
    Image::CastPixel< dfloat > mean( DT_DFLOAT, nDims );
