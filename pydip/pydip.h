@@ -28,6 +28,14 @@
 using namespace pybind11::literals;
 namespace py = pybind11;
 
+// Declaration of functions in other files in the interface
+void init_image( py::module& m );
+void init_display( py::module& m );
+void init_math( py::module& m );
+void init_statistics( py::module& m );
+void init_linear( py::module& m );
+void init_morphology( py::module& m );
+
 namespace pybind11 {
 namespace detail {
 
@@ -39,158 +47,174 @@ struct type_caster< dip::DimensionArray< Type >>: list_caster< dip::DimensionArr
 template<>
 class type_caster< dip::Range > {
    public:
-      using type=dip::Range;
+      using type = dip::Range;
       bool load( handle src, bool ) {
-         std::cout << "Executing py::type_caster<dip::Range>\n";
-         if( !src || !PySlice_Check( src.ptr())) {
-            //std::cout << "   Input is not a slice\n";
+         //std::cout << "Executing py::type_caster<dip::Range>::load\n";
+         if( !src ) {
+            //std::cout << "   Input is not\n";
             return false;
          }
-         auto ptr = reinterpret_cast< PySliceObject* >( src.ptr() );
-         dip::sint start, stop, step;
-         if( PyNone_Check( ptr->step )) {
-            //std::cout << "   slice.step == None\n";
-            step = 1;
-         } else {
-            //PyLong_Check()
-            step = reinterpret_borrow< object >( ptr->step ).cast< dip::sint >();
-            //std::cout << "   slice.step == " << step << std::endl;
+         if( PySlice_Check( src.ptr() )) {
+            auto ptr = reinterpret_cast< PySliceObject* >( src.ptr());
+            dip::sint start, stop, step;
+            if( PyNone_Check( ptr->step )) {
+               //std::cout << "   slice.step == None\n";
+               step = 1;
+            } else {
+               //PyLong_Check()
+               step = reinterpret_borrow< object >( ptr->step ).cast< dip::sint >();
+               //std::cout << "   slice.step == " << step << std::endl;
+            }
+            // Start with positive step: None -> 0, otherwise -> start
+            // Start with negative step: None -> -1, otherwise -> start
+            if( PyNone_Check( ptr->start )) {
+               //std::cout << "   slice.start == None\n";
+               start = step < 0 ? -1 : 0;
+            } else {
+               //PyLong_Check()
+               start = reinterpret_borrow< object >( ptr->start ).cast< dip::sint >();
+               //std::cout << "   slice.start == " << start << std::endl;
+            }
+            // Stop with positive step: None -> -1, <0 -> stop-1, >0 -> stop-1, ==0 -> error
+            // Stop with negative step: None -> -1, otherwise -> stop+1
+            if( PyNone_Check( ptr->stop )) {
+               //std::cout << "   slice.stop == None\n";
+               stop = -1;
+            } else {
+               //PyLong_Check()
+               stop = reinterpret_borrow< object >( ptr->stop ).cast< dip::sint >();
+               //std::cout << "   slice.stop == " << stop << std::endl;
+               stop += step < 0 ? 1 : -1;
+            }
+            if( step < 0 ) {
+               std::swap( start, stop );
+               step = -step;
+            }
+            //std::cout << "   value == " << start << ":" << stop << ":" << step << std::endl;
+            value = dip::Range( start, stop, static_cast< dip::uint >( step ));
+            // NOTE: For an originally empty range, this leads to two pixels selected, but this is
+            // difficult to test for here without knowing the size of the image being indexed. The empty
+            // range is not legal (or possible) in DIPlib.
+            // TODO: Should we fudge with Python's definitions for slicing, and have them work like DIPlib's?
+            // - If we do, we'll get complaints from people not understanding the indexing.
+            // - If we don't, it'll be more difficult to translate code from Python to C++.
+            return true;
          }
-         // Start with positive step: None -> 0, otherwise -> start
-         // Start with negative step: None -> -1, otherwise -> start
-         if( PyNone_Check( ptr->start )) {
-            //std::cout << "   slice.start == None\n";
-            start = step < 0 ? -1 : 0;
-         } else {
-            //PyLong_Check()
-            start = reinterpret_borrow< object >( ptr->start ).cast< dip::sint >();
-            //std::cout << "   slice.start == " << start << std::endl;
+         if( PyLong_CheckExact( src.ptr() )) {
+            value = dip::Range( src.cast< dip::sint >() );
+            return true;
          }
-         // Stop with positive step: None -> -1, <0 -> stop-1, >0 -> stop-1, ==0 -> error
-         // Stop with negative step: None -> -1, otherwise -> stop+1
-         if( PyNone_Check( ptr->stop )) {
-            //std::cout << "   slice.stop == None\n";
-            stop = -1;
-         } else {
-            //PyLong_Check()
-            stop = reinterpret_borrow< object >( ptr->stop ).cast< dip::sint >();
-            //std::cout << "   slice.stop == " << stop << std::endl;
-            stop += step < 0 ? 1 : -1;
-         }
-         if( step < 0 ) {
-            std::swap( start, stop );
-            step = -step;
-         }
-         //std::cout << "   value == " << start << ":" << stop << ":" << step << std::endl;
-         value = dip::Range( start, stop, static_cast< dip::uint >( step ));
-         // NOTE: For an originally empty range, this leads to two pixels selected, but this is
-         // difficult to test for here without knowing the size of the image being indexed. The empty
-         // range is not legal (or possible) in DIPlib.
-         // TODO: Should we fudge with Python's definitions for slicing, and have them work like DIPlib's?
-         // - If we do, we'll get complaints from people not understanding the indexing.
-         // - If we don't, it'll be more difficult to translate code from Python to C++.
-         return true;
+         return false;
       }
-      static handle cast(
-            const type& src,
-            return_value_policy /* policy */,
-            handle /* parent */
-      ) {
+      static handle cast( dip::Range const& src, return_value_policy, handle ) {
          // TODO: This is not correct, but we don't really use it (yet).
-         return slice( src.start, src.stop, static_cast< dip::sint >( src.step ));
+         return slice( src.start, src.stop, static_cast< dip::sint >( src.step )).release();
       }
    PYBIND11_TYPE_CASTER( type, _( "slice" ));
 };
 
-
-/*
-// Cast any Python type that exposes a raw buffer to a dip::Image
+// Cast Python scalar value to dip::Image::Sample
 template<>
-struct type_caster< dip::Image > {
-   private:
-      dip::Image value;
+class type_caster< dip::Image::Sample > {
    public:
-      static PYBIND11_DESCR name() { return type_descr(_("dip.Image")); }
-      operator dip::Image*() { return &value; }
-      operator dip::Image&() { return value; }
-      bool load( handle src, bool convert ) {
-         // Coerce into an array, but don't do type conversion yet; the copy below handles it.
-         auto buf = py::array::ensure( src );
-         if( !buf ) {
+      using type = dip::Image::Sample;
+      bool load( handle src, bool ) {
+         //std::cout << "Executing py::type_caster<dip::Sample>::load" << std::endl;
+         if( !src ) {
+            //std::cout << "   Input is not" << std::endl;
             return false;
          }
-         // Allocate the new type, then build a numpy reference into it
-         dip::DataType datatype;
-         switch( buf.dtype().kind()) {
-            case py::format_descriptor< bool >::c:
-               datatype = dip::DT_BIN;
-               break;
-            case py::format_descriptor< dip::uint8 >::c:
-               datatype = dip::DT_UINT8;
-               break;
-            case py::format_descriptor< dip::uint16 >::c:
-               datatype = dip::DT_UINT16;
-               break;
-            case py::format_descriptor< dip::uint32 >::c:
-               datatype = dip::DT_UINT32;
-               break;
-            case py::format_descriptor< dip::sint8 >::c:
-               datatype = dip::DT_SINT8;
-               break;
-            case py::format_descriptor< dip::sint16 >::c:
-               datatype = dip::DT_SINT16;
-               break;
-            case py::format_descriptor< dip::sint32 >::c:
-               datatype = dip::DT_SINT32;
-               break;
-            case py::format_descriptor< dip::sfloat >::c:
-               datatype = dip::DT_SFLOAT;
-               break;
-            case py::format_descriptor< dip::dfloat >::c:
-               datatype = dip::DT_DFLOAT;
-               break;
-            case py::format_descriptor< dip::scomplex >::c:
-               datatype = dip::DT_SCOMPLEX;
-               break;
-            case py::format_descriptor< dip::dcomplex >::c:
-               datatype = dip::DT_DCOMPLEX;
-               break;
-            default:
-               return false;
+         if( PyBool_Check( src.ptr() )) {
+            //std::cout << "   Input is bool" << std::endl;
+            value.swap( dip::Image::Sample( src.cast< bool >() ));
+         } else if( PyLong_Check( src.ptr() )) {
+            //std::cout << "   Input is int" << std::endl;
+            value.swap( dip::Image::Sample( src.cast< dip::sint >() ));
+         } else if( PyFloat_Check( src.ptr() )) {
+            //std::cout << "   Input is float" << std::endl;
+            value.swap( dip::Image::Sample( src.cast< dip::dfloat >() ));
+         } else if( PyComplex_Check( src.ptr() )) {
+            //std::cout << "   Input is complex" << std::endl;
+            value.swap( dip::Image::Sample( src.cast< dip::dcomplex >() ));
+         } else {
+            //std::cout << "   Input is not a scalar type" << std::endl;
+            return false;
          }
-         // Sizes
-         auto nDims = buf.ndim();
-         dip::UnsignedArray sizes( nDims, 1 );
-         for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            sizes[ ii ] = buf.shape()[ ii ];
-         }
-         // Strides
-         dip::IntegerArray strides( nDims, 1 );
-         for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            dip::sint sb = buf.strides()[ ii ];
-            dip::sint is = static_cast< dip::sint >( buf.itemsize());
-            dip::sint s = sb / is;
-            if( s * is != sb ) {
-               return false;
-            }
-            strides[ ii ] = s;
-         }
-         // Create image
-         value = dip::Image( nullptr, buf.ptr(), datatype, sizes, strides );
-
-         // TODO: Copy? Or how do we mark the source as dependency?
-
+         //std::cout << "   Result: " << value << std::endl;
          return true;
       }
+      static handle cast( dip::Image::Sample const& src, return_value_policy, handle ) {
+         //std::cout << "Executing py::type_caster<dip::Sample>::cast" << std::endl;
+         py::object out;
+         if( src.DataType().IsBinary() ) {
+            //std::cout << "   Casting to bool" << std::endl;
+            out = py::cast( static_cast< bool >( src ));
+         } else if( src.DataType().IsComplex() ) {
+            //std::cout << "   Casting to complex" << std::endl;
+            out = py::cast( static_cast< dip::dcomplex >( src ));
+         } else if( src.DataType().IsFloat() ) {
+            //std::cout << "   Casting to float" << std::endl;
+            out = py::cast( static_cast< dip::dfloat >( src ));
+         } else { // IsInteger()
+            //std::cout << "   Casting to int" << std::endl;
+            out = py::cast( static_cast< dip::sint >( src ));
+         }
+         return out.release();
+      }
+   PYBIND11_TYPE_CASTER( type, _( "Sample" ));
 };
-*/
 
-}
-}
+// Cast Python scalar value to dip::Image::Pixel
+// TODO: cast to a list with all tensor elements, not just the first one
+template<>
+class type_caster< dip::Image::Pixel > {
+   public:
+      using type = dip::Image::Pixel;
+      bool load( handle src, bool ) {
+         //std::cout << "Executing py::type_caster<dip::Pixel>::load" << std::endl;
+         if( !src ) {
+            //std::cout << "   Input is not" << std::endl;
+            return false;
+         }
+         if( PyBool_Check( src.ptr() )) {
+            //std::cout << "   Input is bool" << std::endl;
+            value.swap( dip::Image::Pixel( src.cast< bool >() ));
+         } else if( PyLong_Check( src.ptr() )) {
+            //std::cout << "   Input is int" << std::endl;
+            value.swap( dip::Image::Pixel( src.cast< dip::sint >() ));
+         } else if( PyFloat_Check( src.ptr() )) {
+            //std::cout << "   Input is float" << std::endl;
+            value.swap( dip::Image::Pixel( src.cast< dip::dfloat >() ));
+         } else if( PyComplex_Check( src.ptr() )) {
+            //std::cout << "   Input is complex" << std::endl;
+            value.swap( dip::Image::Pixel( src.cast< dip::dcomplex >() ));
+         } else {
+            //std::cout << "   Input is not a scalar type" << std::endl;
+            return false;
+         }
+         //std::cout << "   Result: " << value << std::endl;
+         return true;
+      }
+      static handle cast( dip::Image::Pixel const& src, return_value_policy, handle ) {
+         //std::cout << "Executing py::type_caster<dip::Pixel>::cast" << std::endl;
+         py::object out;
+         if( src.DataType().IsBinary() ) {
+            //std::cout << "   Casting to bool" << std::endl;
+            out = py::cast( static_cast< bool >( src ));
+         } else if( src.DataType().IsComplex() ) {
+            //std::cout << "   Casting to complex" << std::endl;
+            out = py::cast( static_cast< dip::dcomplex >( src ));
+         } else if( src.DataType().IsFloat() ) {
+            //std::cout << "   Casting to float" << std::endl;
+            out = py::cast( static_cast< dip::dfloat >( src ));
+         } else { // IsInteger()
+            //std::cout << "   Casting to int" << std::endl;
+            out = py::cast( static_cast< dip::sint >( src ));
+         }
+         return out.release();
+      }
+   PYBIND11_TYPE_CASTER( type, _( "Pixel" ));
+};
 
-void init_image( py::module& m );
-void init_display( py::module& m );
-void init_math( py::module& m );
-void init_statistics( py::module& m );
-void init_linear( py::module& m );
-void init_morphology( py::module& m );
+} // nanmespace detail
+} // namespace pybind11

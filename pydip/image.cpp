@@ -17,6 +17,158 @@
  */
 
 #include "pydip.h"
+#include "diplib/generic_iterators.h"
+
+namespace {
+
+dip::Image BufferToImage( py::buffer& buf ) {
+   py::buffer_info info = buf.request();
+   //std::cout << "--Constructing dip::Image from Python buffer.\n";
+   //std::cout << "   info.ptr = " << info.ptr << std::endl;
+   //std::cout << "   info.format = " << info.format << std::endl;
+   //std::cout << "   info.ndims = " << info.shape.size() << std::endl;
+   //std::cout << "   info.size = " << info.size << std::endl;
+   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
+   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
+   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
+   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
+   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   // Data type
+   dip::DataType datatype;
+   switch( info.format[ 0 ] ) {
+      case py::format_descriptor< bool >::c:
+         datatype = dip::DT_BIN;
+         break;
+      case py::format_descriptor< dip::uint8 >::c:
+         datatype = dip::DT_UINT8;
+         break;
+      case py::format_descriptor< dip::uint16 >::c:
+         datatype = dip::DT_UINT16;
+         break;
+      case py::format_descriptor< dip::uint32 >::c:
+         datatype = dip::DT_UINT32;
+         break;
+      case py::format_descriptor< dip::sint8 >::c:
+         datatype = dip::DT_SINT8;
+         break;
+      case py::format_descriptor< dip::sint16 >::c:
+         datatype = dip::DT_SINT16;
+         break;
+      case py::format_descriptor< dip::sint32 >::c:
+         datatype = dip::DT_SINT32;
+         break;
+      case py::format_descriptor< dip::sfloat >::c:
+         datatype = dip::DT_SFLOAT;
+         break;
+      case py::format_descriptor< dip::dfloat >::c:
+         datatype = dip::DT_DFLOAT;
+         break;
+      case py::format_descriptor< dip::scomplex >::c:
+         datatype = dip::DT_SCOMPLEX;
+         break;
+      case py::format_descriptor< dip::dcomplex >::c:
+         datatype = dip::DT_DCOMPLEX;
+         break;
+      default:
+         DIP_THROW( "Image data is not numeric" );
+   }
+   // Sizes
+   dip::uint ndim = static_cast< dip::uint >( info.ndim );
+   DIP_ASSERT( ndim == info.shape.size());
+   dip::UnsignedArray sizes( ndim, 1 );
+   for( dip::uint ii = 0; ii < ndim; ++ii ) {
+      sizes[ ii ] = static_cast< dip::uint >( info.shape[ ii ] );
+   }
+   // Strides
+   dip::IntegerArray strides( ndim, 1 );
+   for( dip::uint ii = 0; ii < ndim; ++ii ) {
+      dip::sint s = info.strides[ ii ] / static_cast< dip::sint >( info.itemsize );
+      DIP_THROW_IF( s * static_cast< dip::sint >( info.itemsize ) != info.strides[ ii ],
+                    "Cannot create image out of an array where strides are not in whole pixels" );
+      strides[ ii ] = s;
+   }
+   // The containing Python object. We increase its reference count, and create a unique_ptr that decreases
+   // its reference count again.
+   PyObject* pyObject = buf.ptr();
+   //std::cout << "   *** Incrementing ref count for pyObject " << pyObject << std::endl;
+   Py_XINCREF( pyObject );
+   dip::DataSegment dataSegment{ pyObject, []( void* obj ) {
+      //std::cout << "   *** Decrementing ref count for pyObject " << obj << std::endl;
+      Py_XDECREF( static_cast< PyObject* >( obj ));
+   }};
+   // Create an image with all of this.
+   dip::Image out( dataSegment, info.ptr, datatype, sizes, strides, {}, 1 );
+   // If the last dimension has <10 pixels, let's assume it's a tensor dimension:
+   if( sizes.back() < 10 ) {
+      out.SpatialToTensor();
+   }
+   return out;
+}
+
+py::buffer_info ImageToBuffer( dip::Image const& image ) {
+   dip::String format;
+   switch( image.DataType()) {
+      case dip::DT_BIN:
+         format = py::format_descriptor< bool >::format();
+         break;
+      case dip::DT_UINT8:
+         format = py::format_descriptor< dip::uint8 >::format();
+         break;
+      case dip::DT_UINT16:
+         format = py::format_descriptor< dip::uint16 >::format();
+         break;
+      case dip::DT_UINT32:
+         format = py::format_descriptor< dip::uint32 >::format();
+         break;
+      case dip::DT_SINT8:
+         format = py::format_descriptor< dip::sint8 >::format();
+         break;
+      case dip::DT_SINT16:
+         format = py::format_descriptor< dip::sint16 >::format();
+         break;
+      case dip::DT_SINT32:
+         format = py::format_descriptor< dip::sint32 >::format();
+         break;
+      case dip::DT_SFLOAT:
+         format = py::format_descriptor< dip::sfloat >::format();
+         break;
+      case dip::DT_DFLOAT:
+         format = py::format_descriptor< dip::dfloat >::format();
+         break;
+      case dip::DT_SCOMPLEX:
+         format = py::format_descriptor< dip::scomplex >::format();
+         break;
+      case dip::DT_DCOMPLEX:
+         format = py::format_descriptor< dip::dcomplex >::format();
+         break;
+      default:
+         DIP_THROW( "Image of unknown type" ); // should never happen
+   }
+   dip::sint itemsize = static_cast< dip::sint >( image.DataType().SizeOf() );
+   dip::IntegerArray strides = image.Strides();
+   for( dip::sint& s : strides ) {
+      s *= itemsize;
+   }
+   dip::UnsignedArray sizes = image.Sizes();
+   if( !image.IsScalar() ) {
+      sizes.push_back( image.TensorElements() );
+      strides.push_back( image.TensorStride() );
+   }
+   py::buffer_info info{ image.Origin(), itemsize, format, static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
+   //std::cout << "--Constructed Python buffer for dip::Image object.\n";
+   //std::cout << "   info.ptr = " << info.ptr << std::endl;
+   //std::cout << "   info.format = " << info.format << std::endl;
+   //std::cout << "   info.ndims = " << info.ndims << std::endl;
+   //std::cout << "   info.size = " << info.size << std::endl;
+   //std::cout << "   info.itemsize = " << info.itemsize << std::endl;
+   //std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
+   //std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
+   //std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
+   //std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
+   return info;
+}
+
+} // namespace
 
 void init_image( py::module& m ) {
    auto img = py::class_< dip::Image >( m, "Image", py::buffer_protocol() );
@@ -26,148 +178,10 @@ void init_image( py::module& m ) {
    // Constructor for raw (unforged) image, to be used e.g. when no mask input argument is needed
    img.def( "__init__", []( dip::Image& self ) { new( &self ) dip::Image(); } );
    // Constructor that takes a Python raw buffer
-   img.def( "__init__", []( dip::Image& self, py::buffer& buf ) {
-      py::buffer_info info = buf.request();
-      /*
-      std::cout << "--Constructing dip::Image from Python buffer.\n";
-      std::cout << "   info.ptr = " << info.ptr << std::endl;
-      std::cout << "   info.format = " << info.format << std::endl;
-      std::cout << "   info.ndims = " << info.shape.size() << std::endl;
-      std::cout << "   info.size = " << info.size << std::endl;
-      std::cout << "   info.itemsize = " << info.itemsize << std::endl;
-      std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
-      std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
-      std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
-      std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
-      */
-      // Data type
-      dip::DataType datatype;
-      switch( info.format[ 0 ] ) {
-         case py::format_descriptor< bool >::c:
-            datatype = dip::DT_BIN;
-            break;
-         case py::format_descriptor< dip::uint8 >::c:
-            datatype = dip::DT_UINT8;
-            break;
-         case py::format_descriptor< dip::uint16 >::c:
-            datatype = dip::DT_UINT16;
-            break;
-         case py::format_descriptor< dip::uint32 >::c:
-            datatype = dip::DT_UINT32;
-            break;
-         case py::format_descriptor< dip::sint8 >::c:
-            datatype = dip::DT_SINT8;
-            break;
-         case py::format_descriptor< dip::sint16 >::c:
-            datatype = dip::DT_SINT16;
-            break;
-         case py::format_descriptor< dip::sint32 >::c:
-            datatype = dip::DT_SINT32;
-            break;
-         case py::format_descriptor< dip::sfloat >::c:
-            datatype = dip::DT_SFLOAT;
-            break;
-         case py::format_descriptor< dip::dfloat >::c:
-            datatype = dip::DT_DFLOAT;
-            break;
-         case py::format_descriptor< dip::scomplex >::c:
-            datatype = dip::DT_SCOMPLEX;
-            break;
-         case py::format_descriptor< dip::dcomplex >::c:
-            datatype = dip::DT_DCOMPLEX;
-            break;
-         default:
-            DIP_THROW( "Image data is not numeric" );
-      }
-      // Sizes
-      dip::uint ndim = static_cast< dip::uint >( info.ndim );
-      DIP_ASSERT( ndim == info.shape.size() );
-      dip::UnsignedArray sizes( ndim, 1 );
-      for( dip::uint ii = 0; ii < ndim; ++ii ) {
-         sizes[ ii ] = static_cast< dip::uint >( info.shape[ ii ] );
-      }
-      // Strides
-      dip::IntegerArray strides( ndim, 1 );
-      for( dip::uint ii = 0; ii < ndim; ++ii ) {
-         dip::sint s = info.strides[ ii ] / static_cast< dip::sint >( info.itemsize );
-         DIP_THROW_IF( s * static_cast< dip::sint >( info.itemsize ) != info.strides[ ii ],
-                       "Cannot create image out of an array where strides are not in whole pixels" );
-         strides[ ii ] = s;
-      }
-      // The containing Python object. We increase its reference count, and create a unique_ptr that decreases
-      // its reference count again.
-      PyObject* pyObject = buf.ptr();
-      Py_XINCREF( pyObject );
-      dip::DataSegment dataSegment{ pyObject, []( void* obj ){ Py_XDECREF( static_cast< PyObject* >( obj )); } };
-      // Create an image with all of this.
-      // Create an image with all of this.
-      new( &self ) dip::Image( dataSegment, info.ptr, datatype, sizes, strides, {}, 1 );
-   } );
+   img.def( "__init__", []( dip::Image& self, py::buffer& buf ) { new( &self ) dip::Image(); self = BufferToImage( buf ); } );
+   py::implicitly_convertible< py::buffer, dip::Image >();
    // Export a Python raw buffer
-   img.def_buffer( []( dip::Image& self ) -> py::buffer_info {
-      dip::String format;
-      switch( self.DataType()) {
-         case dip::DT_BIN:
-            format = py::format_descriptor< bool >::format();
-            break;
-         case dip::DT_UINT8:
-            format = py::format_descriptor< dip::uint8 >::format();
-            break;
-         case dip::DT_UINT16:
-            format = py::format_descriptor< dip::uint16 >::format();
-            break;
-         case dip::DT_UINT32:
-            format = py::format_descriptor< dip::uint32 >::format();
-            break;
-         case dip::DT_SINT8:
-            format = py::format_descriptor< dip::sint8 >::format();
-            break;
-         case dip::DT_SINT16:
-            format = py::format_descriptor< dip::sint16 >::format();
-            break;
-         case dip::DT_SINT32:
-            format = py::format_descriptor< dip::sint32 >::format();
-            break;
-         case dip::DT_SFLOAT:
-            format = py::format_descriptor< dip::sfloat >::format();
-            break;
-         case dip::DT_DFLOAT:
-            format = py::format_descriptor< dip::dfloat >::format();
-            break;
-         case dip::DT_SCOMPLEX:
-            format = py::format_descriptor< dip::scomplex >::format();
-            break;
-         case dip::DT_DCOMPLEX:
-            format = py::format_descriptor< dip::dcomplex >::format();
-            break;
-         default:
-            DIP_THROW( "Image of unknown type" ); // should never happen
-      }
-      dip::sint itemsize = static_cast< dip::sint >( self.DataType().SizeOf() );
-      dip::IntegerArray strides = self.Strides();
-      for( dip::sint& s : strides ) {
-         s *= itemsize;
-      }
-      dip::UnsignedArray sizes = self.Sizes();
-      if( !self.IsScalar() ) {
-         sizes.push_back( self.TensorElements() );
-         strides.push_back( self.TensorStride() );
-      }
-      py::buffer_info info{ self.Origin(), itemsize, format, static_cast< py::ssize_t >( sizes.size() ), sizes, strides };
-      /*
-      std::cout << "--Constructed Python buffer for dip::Image object.\n";
-      std::cout << "   info.ptr = " << info.ptr << std::endl;
-      std::cout << "   info.format = " << info.format << std::endl;
-      std::cout << "   info.ndims = " << info.ndims << std::endl;
-      std::cout << "   info.size = " << info.size << std::endl;
-      std::cout << "   info.itemsize = " << info.itemsize << std::endl;
-      std::cout << "   info.shape[0] = " << info.shape[0] << std::endl;
-      std::cout << "   info.shape[1] = " << info.shape[1] << std::endl;
-      std::cout << "   info.strides[0] = " << info.strides[0] << std::endl;
-      std::cout << "   info.strides[1] = " << info.strides[1] << std::endl;
-      */
-      return info;
-   } );
+   img.def_buffer( []( dip::Image& self ) -> py::buffer_info { return ImageToBuffer( self ); } );
    // Basic properties
    img.def( "__repr__", []( dip::Image const& a ) { std::ostringstream os; os << a; return os.str(); } );
    img.def( "__len__", []( dip::Image const& a ) { return a.NumberOfPixels(); } );
@@ -263,68 +277,65 @@ void init_image( py::module& m ) {
    img.def( "Copy", &dip::Image::Copy, "src"_a );
    img.def( "Convert", &dip::Image::Convert, "dataType"_a );
    img.def( "ExpandTensor", &dip::Image::ExpandTensor );
-   img.def( "Fill", []( dip::Image& a, dip::dcomplex v ) { a.Fill( dip::Image::Sample{ v } ); } );
-   img.def( "Fill", []( dip::Image& a, dip::dfloat v ) { a.Fill( dip::Image::Sample{ v } ); } );
-   img.def( "Fill", []( dip::Image& a, dip::sint v ) { a.Fill( dip::Image::Sample{ v } ); } );
+   img.def( "Fill", py::overload_cast< dip::Image::Sample const& >( &dip::Image::Fill ), "sample"_a );
+   img.def( "Fill", py::overload_cast< dip::Image::Pixel const& >( &dip::Image::Fill ), "pixel"_a );
+   // TODO: Indexing does not match that in C++, and we don't have tensor indexing here at all!
    // Indexing into single pixel using coordinates
    // TODO: The following functions should make make a Python object of the right type
-   img.def( "At", []( dip::Image const& image, dip::uint index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( index )); }, "index"_a );
-   img.def( "__getitem__", []( dip::Image const& image, dip::uint index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( index )); } );
-   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( x_index, y_index )); }, "x_index"_a, "y_index"_a );
-   img.def( "__getitem__", []( dip::Image const& image, dip::uint x_index, dip::uint y_index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( x_index, y_index )); } );
-   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index, dip::uint z_index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( x_index, y_index, z_index )); }, "x_index"_a, "y_index"_a, "z_index"_a );
-   img.def( "__getitem__", []( dip::Image const& image, dip::uint x_index, dip::uint y_index, dip::uint z_index ) { return static_cast< dip::dfloat >( image.At< dip::dfloat >( x_index, y_index, z_index )); } );
-   img.def( "At", []( dip::Image const& image, dip::UnsignedArray const& coords ) { return image.At< dip::dfloat >( coords ); }, "coords"_a );
+   img.def( "At", []( dip::Image const& image, dip::uint index ) { return image.At( index ); }, "index"_a );
+   img.def( "__getitem__", []( dip::Image const& image, dip::uint index ) { return image.At( index ); } );
+   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index ) { return image.At( x_index, y_index ); }, "x_index"_a, "y_index"_a );
+   // (The function cannot be called?)
+   //img.def( "__getitem__", []( dip::Image const& image, dip::uint x_index, dip::uint y_index ) { return image.At( x_index, y_index ); } );
+   img.def( "At", []( dip::Image const& image, dip::uint x_index, dip::uint y_index, dip::uint z_index ) { return image.At( x_index, y_index, z_index ); }, "x_index"_a, "y_index"_a, "z_index"_a );
+   // (The function cannot be called?)
+   //img.def( "__getitem__", []( dip::Image const& image, dip::uint x_index, dip::uint y_index, dip::uint z_index ) { return image.At( x_index, y_index, z_index ); } );
+   img.def( "At", []( dip::Image const& image, dip::UnsignedArray const& coords ) { return image.At( coords ); }, "coords"_a );
+   // (The function below gets called instead of the mask version)
+   //img.def( "__getitem__", []( dip::Image const& image, dip::UnsignedArray const& coords ) { return image.At( coords ); } );
    // Indexing into slice for 1D image
    img.def( "At", []( dip::Image const& image, dip::Range x_range ) { return image.At( x_range ); }, "x_range"_a );
-   img.def( "__getitem__", []( dip::Image const& image, dip::Range const& range ) -> dip::Image { return image.At( range ); } );
+   img.def( "__getitem__", []( dip::Image const& image, dip::Range const& range ) { return image.At( range ); } );
    // Indexing into slice for 2D image
    img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range ) { return image.At( x_range, y_range ); }, "x_range"_a, "y_range"_a );
    // Indexing into slice for 3D image
    img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range, dip::Range z_range ) { return image.At( x_range, y_range, z_range ); }, "x_range"_a, "y_range"_a, "z_range"_a );
    // Indexing into slice for nD image
    img.def( "At", []( dip::Image const& image, dip::RangeArray ranges ) { return image.At( ranges ); }, "ranges"_a );
-   img.def( "__getitem__", []( dip::Image const& image, dip::RangeArray const& rangeArray ) -> dip::Image { return image.At( rangeArray ); } );
+   img.def( "__getitem__", []( dip::Image const& image, dip::RangeArray const& rangeArray ) { return image.At( rangeArray ); } );
    // Indexing using a mask image
    img.def( "CopyAt", py::overload_cast< dip::Image const& >( &dip::Image::CopyAt, py::const_ ), "mask"_a );
-   img.def( "__getitem__", []( dip::Image const& image, dip::Image const& mask ) -> dip::Image { return image.CopyAt( mask ); } );
-   // Indexing using linear indices
+   img.def( "__getitem__", []( dip::Image const& image, dip::Image const& mask ) { return image.CopyAt( mask ); } );
+   // Indexing using linear indices (can probably not be called because of implicit cast to dip::Image)
    img.def( "CopyAt", py::overload_cast< dip::UnsignedArray const& >( &dip::Image::CopyAt, py::const_ ), "indices"_a );
-   // Indexing using a coordinate array
+   // Indexing using a coordinate array (can probably not be called because of implicit cast to dip::Image)
    img.def( "CopyAt", py::overload_cast< dip::CoordinateArray const& >( &dip::Image::CopyAt, py::const_ ), "coordinates"_a );
    // Assignment into single pixel using linear index
-   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::dcomplex v ) { image.At<>( index ) = v; } );
-   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::dfloat v ) { image.At<>( index ) = v; } );
-   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::sint v ) { image.At<>( index ) = v; } );
+   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::Image::Sample const& v ) { image.At( index ) = v; } );
+   img.def( "__setitem__", []( dip::Image& image, dip::uint index, dip::Image::Pixel const& v ) { image.At( index ) = v; } );
    // Assignment into slice for 1D image
-   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::dcomplex value ) { image.At( range ).Fill( value ); } );
-   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::dfloat value ) { image.At( range ).Fill( value ); } );
-   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::sint value ) { image.At( range ).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::Image::Sample const& value ) { image.At( range ).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::Image::Pixel const& value ) { image.At( range ).Fill( value ); } );
    img.def( "__setitem__", []( dip::Image& image, dip::Range const& range, dip::Image const& value ) { image.At( range ).Copy( value ); } );
    // Assignment into slice for nD image
-   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray const& rangeArray, dip::dcomplex value ) { image.At( rangeArray ).Fill( value ); } );
-   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray const& rangeArray, dip::dfloat value ) { image.At( rangeArray ).Fill( value ); } );
-   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray const& rangeArray, dip::sint value ) { image.At( rangeArray ).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray const& rangeArray, dip::Image::Sample const& value ) { image.At( rangeArray ).Fill( value ); } );
+   img.def( "__setitem__", []( dip::Image& image, dip::RangeArray const& rangeArray, dip::Image::Pixel const& value ) { image.At( rangeArray ).Fill( value ); } );
    img.def( "__setitem__", []( dip::Image& image, dip::RangeArray const& rangeArray, dip::Image const& value ) { image.At( rangeArray ).Copy( value ); } );
    // Assignment using a mask image
    img.def( "CopyAt", []( dip::Image& image, dip::Image const& source, dip::Image const& mask ) { image.CopyAt( source, mask, dip::Option::ThrowException::DO_THROW ); }, "source"_a, "mask"_a );
    img.def( "__setitem__", []( dip::Image& image, dip::Image const& mask, dip::Image const& value ) { image.CopyAt( value, mask, dip::Option::ThrowException::DO_THROW ); } );
-   img.def( "FillAt", []( dip::Image& image, dip::dcomplex value, dip::Image const& mask ) { image.FillAt( value, mask ); }, "value"_a, "mask"_a );
-   img.def( "__setitem__", []( dip::Image& image, dip::Image const& mask, dip::dcomplex value ) { image.FillAt( value, mask ); } );
-   img.def( "FillAt", []( dip::Image& image, dip::dfloat value, dip::Image const& mask ) { image.FillAt( value, mask ); }, "value"_a, "mask"_a );
-   img.def( "__setitem__", []( dip::Image& image, dip::Image const& mask, dip::dfloat value ) { image.FillAt( value, mask ); } );
-   img.def( "FillAt", []( dip::Image& image, dip::sint value, dip::Image const& mask ) { image.FillAt( value, mask ); }, "value"_a, "mask"_a );
-   img.def( "__setitem__", []( dip::Image& image, dip::Image const& mask, dip::sint value ) { image.FillAt( value, mask ); } );
-   // Assignment using linear indices
+   img.def( "FillAt", py::overload_cast< dip::Image::Sample const&, dip::Image const& >( &dip::Image::FillAt ), "sample"_a, "mask"_a );
+   img.def( "__setitem__", []( dip::Image& image, dip::Image const& mask, dip::Image::Sample const& value ) { image.FillAt( value, mask ); } );
+   img.def( "FillAt", py::overload_cast< dip::Image::Pixel const&, dip::Image const& >( &dip::Image::FillAt ), "pixel"_a, "mask"_a );
+   img.def( "__setitem__", []( dip::Image& image, dip::Image const& mask, dip::Image::Pixel const& value ) { image.FillAt( value, mask ); } );
+   // Assignment using linear indices (can probably not be called because of implicit cast to dip::Image)
    img.def( "CopyAt", py::overload_cast< dip::Image const&, dip::UnsignedArray const& >( &dip::Image::CopyAt ), "source"_a, "indices"_a );
-   img.def( "FillAt", []( dip::Image& image, dip::dcomplex value, dip::UnsignedArray const& indices ) { image.FillAt( value, indices ); }, "value"_a, "indices"_a );
-   img.def( "FillAt", []( dip::Image& image, dip::dfloat value, dip::UnsignedArray const& indices ) { image.FillAt( value, indices ); }, "value"_a, "indices"_a );
-   img.def( "FillAt", []( dip::Image& image, dip::sint value, dip::UnsignedArray const& indices ) { image.FillAt( value, indices ); }, "value"_a, "indices"_a );
-   // Assignment using a coordinate array
+   img.def( "FillAt", py::overload_cast< dip::Image::Sample const&, dip::UnsignedArray const& >( &dip::Image::FillAt ), "sample"_a, "indices"_a );
+   img.def( "FillAt", py::overload_cast< dip::Image::Pixel const&, dip::UnsignedArray const& >( &dip::Image::FillAt ), "pixel"_a, "indices"_a );
+   // Assignment using a coordinate array (can probably not be called because of implicit cast to dip::Image)
    img.def( "CopyAt", py::overload_cast< dip::Image const&, dip::CoordinateArray const& >( &dip::Image::CopyAt ), "source"_a, "coordinates"_a );
-   img.def( "FillAt", []( dip::Image& image, dip::dcomplex value, dip::CoordinateArray const& coordinates ) { image.FillAt( value, coordinates ); }, "value"_a, "coordinates"_a );
-   img.def( "FillAt", []( dip::Image& image, dip::dfloat value, dip::CoordinateArray const& coordinates ) { image.FillAt( value, coordinates ); }, "value"_a, "coordinates"_a );
-   img.def( "FillAt", []( dip::Image& image, dip::sint value, dip::CoordinateArray const& coordinates ) { image.FillAt( value, coordinates ); }, "value"_a, "coordinates"_a );
+   img.def( "FillAt", py::overload_cast< dip::Image::Sample const&, dip::CoordinateArray const& >( &dip::Image::FillAt ), "sample"_a, "coordinates"_a );
+   img.def( "FillAt", py::overload_cast< dip::Image::Pixel const&, dip::CoordinateArray const& >( &dip::Image::FillAt ), "pixel"_a, "coordinates"_a );
    // Operators
    img.def( py::self += py::self );
    img.def( py::self += float() );
@@ -371,5 +382,13 @@ void init_image( py::module& m ) {
    img.def( !py::self );
    img.def( -py::self );
    img.def( ~py::self );
-   // TODO: __iter__(self)
+   // Iterators
+   // TODO: This does not work!
+   //img.def( "__iter__", []( dip::Image const& image ) {
+   //         return py::make_iterator< py::return_value_policy::reference_internal,
+   //                                   dip::GenericImageIterator<>,
+   //                                   dip::GenericImageIterator<>,
+   //                                   dip::Image::Pixel >( dip::GenericImageIterator<>( image ),
+   //                                                        dip::GenericImageIterator<>() );
+   //}, py::keep_alive< 0, 1 >() ); // Essential: keep object alive while iterator exists
 }
