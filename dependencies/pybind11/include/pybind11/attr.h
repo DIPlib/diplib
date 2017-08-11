@@ -1,5 +1,5 @@
 /*
-    pybind11/pybind11.h: Infrastructure for processing custom
+    pybind11/attr.h: Infrastructure for processing custom
     type and function attributes
 
     Copyright (c) 2016 Wenzel Jakob <wenzel.jakob@epfl.ch>
@@ -58,11 +58,14 @@ struct metaclass {
     handle value;
 
     PYBIND11_DEPRECATED("py::metaclass() is no longer required. It's turned on by default now.")
-    metaclass() = default;
+    metaclass() {}
 
     /// Override pybind11's default metaclass
     explicit metaclass(handle value) : value(value) { }
 };
+
+/// Annotation that marks a class as local to the module:
+struct module_local { const bool value; constexpr module_local(bool v = true) : value(v) { } };
 
 /// Annotation to mark enums as an arithmetic type
 struct arithmetic { };
@@ -123,9 +126,10 @@ struct argument_record {
     const char *descr; ///< Human-readable version of the argument value
     handle value;      ///< Associated Python object
     bool convert : 1;  ///< True if the argument is allowed to convert when loading
+    bool none : 1;     ///< True if None is allowed when loading
 
-    argument_record(const char *name, const char *descr, handle value, bool convert)
-        : name(name), descr(descr), value(value), convert(convert) { }
+    argument_record(const char *name, const char *descr, handle value, bool convert, bool none)
+        : name(name), descr(descr), value(value), convert(convert), none(none) { }
 };
 
 /// Internal data structure which holds metadata about a bound function (signature, overloads, etc.)
@@ -195,7 +199,7 @@ struct function_record {
 /// Special data structure which (temporarily) holds metadata about a bound class
 struct type_record {
     PYBIND11_NOINLINE type_record()
-        : multiple_inheritance(false), dynamic_attr(false), buffer_protocol(false) { }
+        : multiple_inheritance(false), dynamic_attr(false), buffer_protocol(false), module_local(false) { }
 
     /// Handle to the parent scope
     handle scope;
@@ -209,17 +213,17 @@ struct type_record {
     /// How large is the underlying C++ type?
     size_t type_size = 0;
 
-    /// How large is pybind11::instance<type>?
-    size_t instance_size = 0;
+    /// How large is the type's holder?
+    size_t holder_size = 0;
 
     /// The global operator new can be overridden with a class-specific variant
     void *(*operator_new)(size_t) = ::operator new;
 
-    /// Function pointer to class_<..>::init_holder
-    void (*init_holder)(PyObject *, const void *) = nullptr;
+    /// Function pointer to class_<..>::init_instance
+    void (*init_instance)(instance *, const void *) = nullptr;
 
     /// Function pointer to class_<..>::dealloc
-    void (*dealloc)(PyObject *) = nullptr;
+    void (*dealloc)(const detail::value_and_holder &) = nullptr;
 
     /// List of base classes of the newly created type
     list bases;
@@ -242,17 +246,20 @@ struct type_record {
     /// Is the default (unique_ptr) holder type used?
     bool default_holder : 1;
 
-    PYBIND11_NOINLINE void add_base(const std::type_info *base, void *(*caster)(void *)) {
-        auto base_info = detail::get_type_info(*base, false);
+    /// Is the class definition local to the module shared object?
+    bool module_local : 1;
+
+    PYBIND11_NOINLINE void add_base(const std::type_info &base, void *(*caster)(void *)) {
+        auto base_info = detail::get_type_info(base, false);
         if (!base_info) {
-            std::string tname(base->name());
+            std::string tname(base.name());
             detail::clean_type_id(tname);
             pybind11_fail("generic_type: type \"" + std::string(name) +
                           "\" referenced unknown base type \"" + tname + "\"");
         }
 
         if (default_holder != base_info->default_holder) {
-            std::string tname(base->name());
+            std::string tname(base.name());
             detail::clean_type_id(tname);
             pybind11_fail("generic_type: type \"" + std::string(name) + "\" " +
                     (default_holder ? "does not have" : "has") +
@@ -266,7 +273,7 @@ struct type_record {
             dynamic_attr = true;
 
         if (caster)
-            base_info->implicit_casts.push_back(std::make_pair(type, caster));
+            base_info->implicit_casts.emplace_back(type, caster);
     }
 };
 
@@ -338,8 +345,8 @@ template <> struct process_attribute<is_operator> : process_attribute_default<is
 template <> struct process_attribute<arg> : process_attribute_default<arg> {
     static void init(const arg &a, function_record *r) {
         if (r->is_method && r->args.empty())
-            r->args.emplace_back("self", nullptr, handle(), true /*convert*/);
-        r->args.emplace_back(a.name, nullptr, handle(), !a.flag_noconvert);
+            r->args.emplace_back("self", nullptr, handle(), true /*convert*/, false /*none not allowed*/);
+        r->args.emplace_back(a.name, nullptr, handle(), !a.flag_noconvert, a.flag_none);
     }
 };
 
@@ -347,7 +354,7 @@ template <> struct process_attribute<arg> : process_attribute_default<arg> {
 template <> struct process_attribute<arg_v> : process_attribute_default<arg_v> {
     static void init(const arg_v &a, function_record *r) {
         if (r->is_method && r->args.empty())
-            r->args.emplace_back("self", nullptr /*descr*/, handle() /*parent*/, true /*convert*/);
+            r->args.emplace_back("self", nullptr /*descr*/, handle() /*parent*/, true /*convert*/, false /*none not allowed*/);
 
         if (!a.value) {
 #if !defined(NDEBUG)
@@ -370,7 +377,7 @@ template <> struct process_attribute<arg_v> : process_attribute_default<arg_v> {
                           "Compile in debug mode for more information.");
 #endif
         }
-        r->args.emplace_back(a.name, a.descr, a.value.inc_ref(), !a.flag_noconvert);
+        r->args.emplace_back(a.name, a.descr, a.value.inc_ref(), !a.flag_noconvert, a.flag_none);
     }
 };
 
@@ -383,7 +390,7 @@ struct process_attribute<T, enable_if_t<is_pyobject<T>::value>> : process_attrib
 /// Process a parent class attribute (deprecated, does not support multiple inheritance)
 template <typename T>
 struct process_attribute<base<T>> : process_attribute_default<base<T>> {
-    static void init(const base<T> &, type_record *r) { r->add_base(&typeid(T), nullptr); }
+    static void init(const base<T> &, type_record *r) { r->add_base(typeid(T), nullptr); }
 };
 
 /// Process a multiple inheritance attribute
@@ -407,6 +414,10 @@ struct process_attribute<metaclass> : process_attribute_default<metaclass> {
     static void init(const metaclass &m, type_record *r) { r->metaclass = m.value; }
 };
 
+template <>
+struct process_attribute<module_local> : process_attribute_default<module_local> {
+    static void init(const module_local &l, type_record *r) { r->module_local = l.value; }
+};
 
 /// Process an 'arithmetic' attribute for enums (does nothing here)
 template <>
@@ -415,7 +426,7 @@ struct process_attribute<arithmetic> : process_attribute_default<arithmetic> {};
 template <typename... Ts>
 struct process_attribute<call_guard<Ts...>> : process_attribute_default<call_guard<Ts...>> { };
 
-/***
+/**
  * Process a keep_alive call policy -- invokes keep_alive_impl during the
  * pre-call handler if both Nurse, Patient != 0 and use the post-call handler
  * otherwise

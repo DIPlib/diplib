@@ -13,6 +13,7 @@ if os.environ.get('PYBIND11_USE_CMAKE'):
 else:
     headers = [
         'include/pybind11/attr.h',
+        'include/pybind11/buffer_info.h',
         'include/pybind11/cast.h',
         'include/pybind11/chrono.h',
         'include/pybind11/class_support.h',
@@ -20,6 +21,7 @@ else:
         'include/pybind11/complex.h',
         'include/pybind11/descr.h',
         'include/pybind11/eigen.h',
+        'include/pybind11/embed.h',
         'include/pybind11/eval.h',
         'include/pybind11/functional.h',
         'include/pybind11/numpy.h',

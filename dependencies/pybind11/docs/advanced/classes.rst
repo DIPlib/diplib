@@ -45,9 +45,7 @@ Normally, the binding code for these classes would look as follows:
 
 .. code-block:: cpp
 
-    PYBIND11_PLUGIN(example) {
-        py::module m("example", "pybind11 example plugin");
-
+    PYBIND11_MODULE(example, m) {
         py::class_<Animal> animal(m, "Animal");
         animal
             .def("go", &Animal::go);
@@ -56,8 +54,6 @@ Normally, the binding code for these classes would look as follows:
             .def(py::init<>());
 
         m.def("call_go", &call_go);
-
-        return m.ptr();
     }
 
 However, these bindings are impossible to extend: ``Animal`` is not
@@ -97,11 +93,9 @@ function have different names, e.g.  ``operator()`` vs ``__call__``.
 The binding code also needs a few minor adaptations (highlighted):
 
 .. code-block:: cpp
-    :emphasize-lines: 4,6,7
+    :emphasize-lines: 2,4,5
 
-    PYBIND11_PLUGIN(example) {
-        py::module m("example", "pybind11 example plugin");
-
+    PYBIND11_MODULE(example, m) {
         py::class_<Animal, PyAnimal /* <--- trampoline*/> animal(m, "Animal");
         animal
             .def(py::init<>())
@@ -111,8 +105,6 @@ The binding code also needs a few minor adaptations (highlighted):
             .def(py::init<>());
 
         m.def("call_go", &call_go);
-
-        return m.ptr();
     }
 
 Importantly, pybind11 is made aware of the trampoline helper class by
@@ -131,7 +123,7 @@ Bindings should be made against the actual class, not the trampoline helper clas
             .def("go", &PyAnimal::go); /* <--- THIS IS WRONG, use &Animal::go */
 
 Note, however, that the above is sufficient for allowing python classes to
-extend ``Animal``, but not ``Dog``: see ref:`virtual_and_inheritance` for the
+extend ``Animal``, but not ``Dog``: see :ref:`virtual_and_inheritance` for the
 necessary steps required to providing proper overload support for inherited
 classes.
 
@@ -151,6 +143,30 @@ a virtual method call.
     >>> c = Cat()
     >>> call_go(c)
     u'meow! meow! meow! '
+
+If you are defining a custom constructor in a derived Python class, you *must*
+ensure that you explicitly call the bound C++ constructor using ``__init__``,
+*regardless* of whether it is a default constructor or not. Otherwise, the
+memory for the C++ portion of the instance will be left uninitialized, which
+will generally leave the C++ instance in an invalid state and cause undefined
+behavior if the C++ instance is subsequently used.
+
+Here is an example:
+
+.. code-block:: python
+
+    class Dachschund(Dog):
+        def __init__(self, name):
+            Dog.__init__(self) # Without this, undefind behavior may occur if the C++ portions are referenced.
+            self.name = name
+        def bark(self):
+            return "yap!"
+
+Note that a direct ``__init__`` constructor *should be called*, and ``super()``
+should not be used. For simple cases of linear inheritance, ``super()``
+may work, but once you begin mixing Python and C++ multiple inheritance,
+things will fall apart due to differences between Python's MRO and C++'s
+mechanisms.
 
 Please take a look at the :ref:`macro_notes` before using this feature.
 
@@ -333,7 +349,7 @@ ensuring member initialization and (eventual) destruction.
 
 .. seealso::
 
-    See the file :file:`tests/test_alias_initialization.cpp` for complete examples
+    See the file :file:`tests/test_virtual_functions.cpp` for complete examples
     showing both normal and forced trampoline instantiation.
 
 .. _custom_constructors:
@@ -491,9 +507,7 @@ to Python.
 
     #include <pybind11/operators.h>
 
-    PYBIND11_PLUGIN(example) {
-        py::module m("example", "pybind11 example plugin");
-
+    PYBIND11_MODULE(example, m) {
         py::class_<Vector2>(m, "Vector2")
             .def(py::init<float, float>())
             .def(py::self + py::self)
@@ -502,8 +516,6 @@ to Python.
             .def(float() * py::self)
             .def(py::self * float())
             .def("__repr__", &Vector2::toString);
-
-        return m.ptr();
     }
 
 Note that a line like
@@ -631,27 +643,160 @@ interspersed with alias types and holder types (discussed earlier in this
 document)---pybind11 will automatically find out which is which. The only
 requirement is that the first template argument is the type to be declared.
 
-There are two caveats regarding the implementation of this feature:
+It is also permitted to inherit multiply from exported C++ classes in Python,
+as well as inheriting from multiple Python and/or pybind-exported classes.
 
-1. When only one base type is specified for a C++ type that actually has
-   multiple bases, pybind11 will assume that it does not participate in
-   multiple inheritance, which can lead to undefined behavior. In such cases,
-   add the tag ``multiple_inheritance``:
+There is one caveat regarding the implementation of this feature:
 
-    .. code-block:: cpp
+When only one base type is specified for a C++ type that actually has multiple
+bases, pybind11 will assume that it does not participate in multiple
+inheritance, which can lead to undefined behavior. In such cases, add the tag
+``multiple_inheritance`` to the class constructor:
 
-        py::class_<MyType, BaseType2>(m, "MyType", py::multiple_inheritance());
+.. code-block:: cpp
 
-   The tag is redundant and does not need to be specified when multiple base
-   types are listed.
+    py::class_<MyType, BaseType2>(m, "MyType", py::multiple_inheritance());
 
-2. As was previously discussed in the section on :ref:`overriding_virtuals`, it
-   is easy to create Python types that derive from C++ classes. It is even
-   possible to make use of multiple inheritance to declare a Python class which
-   has e.g. a C++ and a Python class as bases. However, any attempt to create a
-   type that has *two or more* C++ classes in its hierarchy of base types will
-   fail with a fatal error message: ``TypeError: multiple bases have instance
-   lay-out conflict``. Core Python types that are implemented in C (e.g.
-   ``dict``, ``list``, ``Exception``, etc.) also fall under this combination
-   and cannot be combined with C++ types bound using pybind11 via multiple
-   inheritance.
+The tag is redundant and does not need to be specified when multiple base types
+are listed.
+
+.. _module_local:
+
+Module-local class bindings
+===========================
+
+When creating a binding for a class, pybind by default makes that binding
+"global" across modules.  What this means is that a type defined in one module
+can be passed to functions of other modules that expect the same C++ type.  For
+example, this allows the following:
+
+.. code-block:: cpp
+
+    // In the module1.cpp binding code for module1:
+    py::class_<Pet>(m, "Pet")
+        .def(py::init<std::string>());
+
+.. code-block:: cpp
+
+    // In the module2.cpp binding code for module2:
+    m.def("pet_name", [](Pet &p) { return p.name(); });
+
+.. code-block:: pycon
+
+    >>> from module1 import Pet
+    >>> from module2 import pet_name
+    >>> mypet = Pet("Kitty")
+    >>> pet_name(mypet)
+    'Kitty'
+
+When writing binding code for a library, this is usually desirable: this
+allows, for example, splitting up a complex library into multiple Python
+modules.
+
+In some cases, however, this can cause conflicts.  For example, suppose two
+unrelated modules make use of an external C++ library and each provide custom
+bindings for one of that library's classes.  This will result in an error when
+a Python program attempts to import both modules (directly or indirectly)
+because of conflicting definitions on the external type:
+
+.. code-block:: cpp
+
+    // dogs.cpp
+
+    // Binding for external library class:
+    py::class<pets::Pet>(m, "Pet")
+        .def("name", &pets::Pet::name);
+
+    // Binding for local extension class:
+    py::class<Dog, pets::Pet>(m, "Dog")
+        .def(py::init<std::string>());
+
+.. code-block:: cpp
+
+    // cats.cpp, in a completely separate project from the above dogs.cpp.
+
+    // Binding for external library class:
+    py::class<pets::Pet>(m, "Pet")
+        .def("get_name", &pets::Pet::name);
+
+    // Binding for local extending class:
+    py::class<Cat, pets::Pet>(m, "Cat")
+        .def(py::init<std::string>());
+
+.. code-block:: pycon
+
+    >>> import cats
+    >>> import dogs
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    ImportError: generic_type: type "Pet" is already registered!
+
+To get around this, you can tell pybind11 to keep the external class binding
+localized to the module by passing the ``py::module_local()`` attribute into
+the ``py::class_`` constructor:
+
+.. code-block:: cpp
+
+    // Pet binding in dogs.cpp:
+    py::class<pets::Pet>(m, "Pet", py::module_local())
+        .def("name", &pets::Pet::name);
+
+.. code-block:: cpp
+
+    // Pet binding in cats.cpp:
+    py::class<pets::Pet>(m, "Pet", py::module_local())
+        .def("get_name", &pets::Pet::name);
+
+This makes the Python-side ``dogs.Pet`` and ``cats.Pet`` into distinct classes
+that can only be accepted as ``Pet`` arguments within those classes.  This
+avoids the conflict and allows both modules to be loaded.
+
+One limitation of this approach is that because ``py::module_local`` types are
+distinct on the Python side, it is not possible to pass such a module-local
+type as a C++ ``Pet``-taking function outside that module.  For example, if the
+above ``cats`` and ``dogs`` module are each extended with a function:
+
+.. code-block:: cpp
+
+    m.def("petname", [](pets::Pet &p) { return p.name(); });
+
+you will only be able to call the function with the local module's class:
+
+.. code-block:: pycon
+
+    >>> import cats, dogs  # No error because of the added py::module_local()
+    >>> mycat, mydog = cats.Cat("Fluffy"), dogs.Dog("Rover")
+    >>> (cats.petname(mycat), dogs.petname(mydog))
+    ('Fluffy', 'Rover')
+    >>> cats.petname(mydog)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: petname(): incompatible function arguments. The following argument types are supported:
+        1. (arg0: cats.Pet) -> str
+
+    Invoked with: <dogs.Dog object at 0x123>
+
+It is possible to use ``py::module_local()`` registrations in one module even if another module
+registers the same type globally: within the module with the module-local definition, all C++
+instances will be cast to the associated bound Python type.  Outside the module, any such values
+are converted to the global Python type created elsewhere.
+
+.. note::
+
+    STL bindings (as provided via the optional :file:`pybind11/stl_bind.h`
+    header) apply ``py::module_local`` by default when the bound type might
+    conflict with other modules; see :ref:`stl_bind` for details.
+
+.. note::
+
+    The localization of the bound types is actually tied to the shared object
+    or binary generated by the compiler/linker.  For typical modules created
+    with ``PYBIND11_MODULE()``, this distinction is not significant.  It is
+    possible, however, when :ref:`embedding` to embed multiple modules in the
+    same binary (see :ref:`embedding_modules`).  In such a case, the
+    localization will apply across all embedded modules within the same binary.
+
+.. seealso::
+
+    The file :file:`tests/test_local_bindings.cpp` contains additional examples
+    that demonstrate how ``py::module_local()`` works.

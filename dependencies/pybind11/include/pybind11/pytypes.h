@@ -44,7 +44,7 @@ using tuple_accessor = accessor<accessor_policies::tuple_item>;
 
 /// Tag and check to identify a class which implements the Python object API
 class pyobject_tag { };
-template <typename T> using is_pyobject = std::is_base_of<pyobject_tag, typename std::remove_reference<T>::type>;
+template <typename T> using is_pyobject = std::is_base_of<pyobject_tag, remove_reference_t<T>>;
 
 /** \rst
     A mixin class which adds common functions to `handle`, `object` and various accessors.
@@ -110,10 +110,15 @@ public:
     PYBIND11_DEPRECATED("call(...) was deprecated in favor of operator()(...)")
         object call(Args&&... args) const;
 
+    /// Equivalent to ``obj is other`` in Python.
+    bool is(object_api const& other) const { return derived().ptr() == other.derived().ptr(); }
     /// Equivalent to ``obj is None`` in Python.
     bool is_none() const { return derived().ptr() == Py_None; }
     PYBIND11_DEPRECATED("Use py::str(obj) instead")
     pybind11::str str() const;
+
+    /// Get or set the object's docstring, i.e. ``obj.__doc__``.
+    str_attr_accessor doc() const;
 
     /// Return the object's current reference count
     int ref_count() const { return static_cast<int>(Py_REFCNT(derived().ptr())); }
@@ -167,10 +172,12 @@ public:
     /// Return ``true`` when the `handle` wraps a valid Python object
     explicit operator bool() const { return m_ptr != nullptr; }
     /** \rst
-        Check that the underlying pointers are the same.
+        Deprecated: Check that the underlying pointers are the same.
         Equivalent to ``obj1 is obj2`` in Python.
     \endrst */
+    PYBIND11_DEPRECATED("Use obj1.is(obj2) instead")
     bool operator==(const handle &h) const { return m_ptr == h.m_ptr; }
+    PYBIND11_DEPRECATED("Use !obj1.is(obj2) instead")
     bool operator!=(const handle &h) const { return m_ptr != h.m_ptr; }
     PYBIND11_DEPRECATED("Use handle::operator bool() instead")
     bool check() const { return m_ptr != nullptr; }
@@ -272,6 +279,42 @@ template <typename T> T reinterpret_borrow(handle h) { return {h, object::borrow
 \endrst */
 template <typename T> T reinterpret_steal(handle h) { return {h, object::stolen_t{}}; }
 
+NAMESPACE_BEGIN(detail)
+inline std::string error_string();
+NAMESPACE_END(detail)
+
+/// Fetch and hold an error which was already set in Python.  An instance of this is typically
+/// thrown to propagate python-side errors back through C++ which can either be caught manually or
+/// else falls back to the function dispatcher (which then raises the captured error back to
+/// python).
+class error_already_set : public std::runtime_error {
+public:
+    /// Constructs a new exception from the current Python error indicator, if any.  The current
+    /// Python error indicator will be cleared.
+    error_already_set() : std::runtime_error(detail::error_string()) {
+        PyErr_Fetch(&type.ptr(), &value.ptr(), &trace.ptr());
+    }
+
+    inline ~error_already_set();
+
+    /// Give the currently-held error back to Python, if any.  If there is currently a Python error
+    /// already set it is cleared first.  After this call, the current object no longer stores the
+    /// error variables (but the `.what()` string is still available).
+    void restore() { PyErr_Restore(type.release().ptr(), value.release().ptr(), trace.release().ptr()); }
+
+    // Does nothing; provided for backwards compatibility.
+    PYBIND11_DEPRECATED("Use of error_already_set.clear() is deprecated")
+    void clear() {}
+
+    /// Check if the currently trapped error type matches the given Python exception class (or a
+    /// subclass thereof).  May also be passed a tuple to search for any exception class matches in
+    /// the given tuple.
+    bool matches(handle ex) const { return PyErr_GivenExceptionMatches(ex.ptr(), type.ptr()); }
+
+private:
+    object type, value, trace;
+};
+
 /** \defgroup python_builtins _
     Unless stated otherwise, the following C++ functions behave the same
     as their Python counterparts.
@@ -355,6 +398,7 @@ inline handle get_function(handle value) {
 #if PY_MAJOR_VERSION >= 3
         if (PyInstanceMethod_Check(value.ptr()))
             value = PyInstanceMethod_GET_FUNCTION(value.ptr());
+        else
 #endif
         if (PyMethod_Check(value.ptr()))
             value = PyMethod_GET_FUNCTION(value.ptr());
@@ -380,6 +424,8 @@ class accessor : public object_api<accessor<Policy>> {
 
 public:
     accessor(handle obj, key_type key) : obj(obj), key(std::move(key)) { }
+    accessor(const accessor &a) = default;
+    accessor(accessor &&a) = default;
 
     // accessor overload required to override default assignment operator (templates are not allowed
     // to replace default compiler-generated assignments).
@@ -685,7 +731,12 @@ NAMESPACE_END(detail)
 #define PYBIND11_OBJECT_CVT(Name, Parent, CheckFun, ConvertFun) \
     PYBIND11_OBJECT_COMMON(Name, Parent, CheckFun) \
     /* This is deliberately not 'explicit' to allow implicit conversion from object: */ \
-    Name(const object &o) : Parent(ConvertFun(o.ptr()), stolen_t{}) { if (!m_ptr) throw error_already_set(); }
+    Name(const object &o) \
+    : Parent(check_(o) ? o.inc_ref().ptr() : ConvertFun(o.ptr()), stolen_t{}) \
+    { if (!m_ptr) throw error_already_set(); } \
+    Name(object &&o) \
+    : Parent(check_(o) ? o.release().ptr() : ConvertFun(o.ptr()), stolen_t{}) \
+    { if (!m_ptr) throw error_already_set(); }
 
 #define PYBIND11_OBJECT(Name, Parent, CheckFun) \
     PYBIND11_OBJECT_COMMON(Name, Parent, CheckFun) \
@@ -921,6 +972,28 @@ private:
     }
 };
 
+NAMESPACE_BEGIN(detail)
+// Converts a value to the given unsigned type.  If an error occurs, you get back (Unsigned) -1;
+// otherwise you get back the unsigned long or unsigned long long value cast to (Unsigned).
+// (The distinction is critically important when casting a returned -1 error value to some other
+// unsigned type: (A)-1 != (B)-1 when A and B are unsigned types of different sizes).
+template <typename Unsigned>
+Unsigned as_unsigned(PyObject *o) {
+    if (sizeof(Unsigned) <= sizeof(unsigned long)
+#if PY_VERSION_HEX < 0x03000000
+            || PyInt_Check(o)
+#endif
+    ) {
+        unsigned long v = PyLong_AsUnsignedLong(o);
+        return v == (unsigned long) -1 && PyErr_Occurred() ? (Unsigned) -1 : (Unsigned) v;
+    }
+    else {
+        unsigned long long v = PyLong_AsUnsignedLongLong(o);
+        return v == (unsigned long long) -1 && PyErr_Occurred() ? (Unsigned) -1 : (Unsigned) v;
+    }
+}
+NAMESPACE_END(detail)
+
 class int_ : public object {
 public:
     PYBIND11_OBJECT_CVT(int_, object, PYBIND11_LONG_CHECK, PyNumber_Long)
@@ -946,17 +1019,11 @@ public:
     template <typename T,
               detail::enable_if_t<std::is_integral<T>::value, int> = 0>
     operator T() const {
-        if (sizeof(T) <= sizeof(long)) {
-            if (std::is_signed<T>::value)
-                return (T) PyLong_AsLong(m_ptr);
-            else
-                return (T) PyLong_AsUnsignedLong(m_ptr);
-        } else {
-            if (std::is_signed<T>::value)
-                return (T) PYBIND11_LONG_AS_LONGLONG(m_ptr);
-            else
-                return (T) PYBIND11_LONG_AS_UNSIGNED_LONGLONG(m_ptr);
-        }
+        return std::is_unsigned<T>::value
+            ? detail::as_unsigned<T>(m_ptr)
+            : sizeof(T) <= sizeof(long)
+              ? (T) PyLong_AsLong(m_ptr)
+              : (T) PYBIND11_LONG_AS_LONGLONG(m_ptr);
     }
 };
 
@@ -1006,8 +1073,8 @@ public:
     PYBIND11_DEPRECATED("Use reinterpret_borrow<capsule>() or reinterpret_steal<capsule>()")
     capsule(PyObject *ptr, bool is_borrowed) : object(is_borrowed ? object(ptr, borrowed_t{}) : object(ptr, stolen_t{})) { }
 
-    explicit capsule(const void *value)
-        : object(PyCapsule_New(const_cast<void *>(value), nullptr, nullptr), stolen_t{}) {
+    explicit capsule(const void *value, const char *name = nullptr, void (*destructor)(PyObject *) = nullptr)
+        : object(PyCapsule_New(const_cast<void *>(value), name, destructor), stolen_t{}) {
         if (!m_ptr)
             pybind11_fail("Could not allocate capsule object!");
     }
@@ -1044,10 +1111,13 @@ public:
     }
 
     template <typename T> operator T *() const {
-        T * result = static_cast<T *>(PyCapsule_GetPointer(m_ptr, nullptr));
+        auto name = this->name();
+        T * result = static_cast<T *>(PyCapsule_GetPointer(m_ptr, name));
         if (!result) pybind11_fail("Unable to extract capsule contents!");
         return result;
     }
+
+    const char *name() const { return PyCapsule_GetName(m_ptr); }
 };
 
 class tuple : public object {
@@ -1133,10 +1203,13 @@ public:
 class function : public object {
 public:
     PYBIND11_OBJECT_DEFAULT(function, object, PyCallable_Check)
-    bool is_cpp_function() const {
+    handle cpp_function() const {
         handle fun = detail::get_function(m_ptr);
-        return fun && PyCFunction_Check(fun.ptr());
+        if (fun && PyCFunction_Check(fun.ptr()))
+            return fun;
+        return handle();
     }
+    bool is_cpp_function() const { return (bool) cpp_function(); }
 };
 
 class buffer : public object {
@@ -1147,8 +1220,10 @@ public:
         int flags = PyBUF_STRIDES | PyBUF_FORMAT;
         if (writable) flags |= PyBUF_WRITABLE;
         Py_buffer *view = new Py_buffer();
-        if (PyObject_GetBuffer(m_ptr, view, flags) != 0)
+        if (PyObject_GetBuffer(m_ptr, view, flags) != 0) {
+            delete view;
             throw error_already_set();
+        }
         return buffer_info(view);
     }
 };
@@ -1237,6 +1312,9 @@ template <typename D> template <typename T> bool object_api<D>::contains(T &&ite
 
 template <typename D>
 pybind11::str object_api<D>::str() const { return pybind11::str(derived()); }
+
+template <typename D>
+str_attr_accessor object_api<D>::doc() const { return attr("__doc__"); }
 
 template <typename D>
 handle object_api<D>::get_type() const { return (PyObject *) Py_TYPE(derived().ptr()); }

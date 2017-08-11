@@ -18,23 +18,27 @@ find_package(PythonLibsNew ${PYBIND11_PYTHON_VERSION} REQUIRED)
 include(CheckCXXCompilerFlag)
 include(CMakeParseArguments)
 
-function(select_cxx_standard)
-  if(NOT MSVC AND NOT PYBIND11_CPP_STANDARD)
+if(NOT PYBIND11_CPP_STANDARD)
+  if(NOT MSVC)
     check_cxx_compiler_flag("-std=c++14" HAS_CPP14_FLAG)
-    check_cxx_compiler_flag("-std=c++11" HAS_CPP11_FLAG)
 
     if (HAS_CPP14_FLAG)
       set(PYBIND11_CPP_STANDARD -std=c++14)
-    elseif (HAS_CPP11_FLAG)
-      set(PYBIND11_CPP_STANDARD -std=c++11)
     else()
-      message(FATAL_ERROR "Unsupported compiler -- pybind11 requires C++11 support!")
+      check_cxx_compiler_flag("-std=c++11" HAS_CPP11_FLAG)
+      if (HAS_CPP11_FLAG)
+        set(PYBIND11_CPP_STANDARD -std=c++11)
+      else()
+        message(FATAL_ERROR "Unsupported compiler -- pybind11 requires C++11 support!")
+      endif()
     endif()
-
-    set(PYBIND11_CPP_STANDARD ${PYBIND11_CPP_STANDARD} CACHE STRING
-        "C++ standard flag, e.g. -std=c++11 or -std=c++14. Defaults to latest available." FORCE)
+  elseif(MSVC)
+    set(PYBIND11_CPP_STANDARD /std:c++14)
   endif()
-endfunction()
+
+  set(PYBIND11_CPP_STANDARD ${PYBIND11_CPP_STANDARD} CACHE STRING
+      "C++ standard flag, e.g. -std=c++11, -std=c++14, /std:c++14.  Defaults to C++14 mode." FORCE)
+endif()
 
 # Checks whether the given CXX/linker flags can compile and link a cxx file.  cxxflags and
 # linkerflags are lists of flags to use.  The result variable is a unique variable name for each set
@@ -161,11 +165,8 @@ function(pybind11_add_module target_name)
     endif()
   endif()
 
-  select_cxx_standard()
-  if(NOT MSVC)
-    # Make sure C++11/14 are enabled
-    target_compile_options(${target_name} PUBLIC ${PYBIND11_CPP_STANDARD})
-  endif()
+  # Make sure C++11/14 are enabled
+  target_compile_options(${target_name} PUBLIC ${PYBIND11_CPP_STANDARD})
 
   if(ARG_NO_EXTRAS)
     return()
