@@ -236,7 +236,9 @@ void FillColoredNoise( Image& out, Random& random, dfloat variance, dfloat color
    modulation *= w;
    // Modulate and inverse transform
    fd *= modulation;
+   bool prot = out.Protect();
    FourierTransform( fd, out, { "inverse", "real" } ); // We set "real" so only the real component is written to `out`.
+   out.Protect( prot );
 }
 
 } // namespace dip
