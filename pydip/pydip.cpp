@@ -21,10 +21,10 @@
 
 static_assert( sizeof( bool ) == sizeof( dip::bin ), "bool is not one byte, how can I work with logical Python buffers?" );
 
-PYBIND11_PLUGIN( PyDIP_bin ) {
-   py::module m( "PyDIP_bin", "DIPlib bindings" );
+PYBIND11_MODULE( PyDIP_bin, m) {
+   m.doc() = "The portion of the PyDIP module that contains the C++ DIPlib bindings.";
 
-   auto dtype = py::class_< dip::DataType >( m, "DataType" );
+   auto dtype = py::class_< dip::DataType >( m, "DataType", "Represents the possible data types for samples in an Image object." );
    dtype.def( py::init<>() );
    dtype.def( py::self == py::self );
    dtype.def( "SizeOf", &dip::DataType::SizeOf );
@@ -53,7 +53,6 @@ PYBIND11_PLUGIN( PyDIP_bin ) {
    m.attr( "DT_DCOMPLEX" ) = dip::DT_DCOMPLEX;
 
    init_image( m );
-   init_display( m );
    init_math( m );
    init_statistics( m );
    init_filtering( m );
@@ -61,6 +60,4 @@ PYBIND11_PLUGIN( PyDIP_bin ) {
    init_analysis( m );
    init_measurement( m );
    init_assorted( m );
-
-   return m.ptr();
 }

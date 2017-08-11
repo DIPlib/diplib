@@ -46,7 +46,6 @@ namespace py = pybind11;
 
 // Declaration of functions in other files in the interface
 void init_image( py::module& m );
-void init_display( py::module& m );
 void init_math( py::module& m );
 void init_statistics( py::module& m );
 void init_filtering( py::module& m );
@@ -84,8 +83,6 @@ class type_caster< dip::Range > {
                step = reinterpret_borrow< object >( ptr->step ).cast< dip::sint >();
                //std::cout << "   slice.step == " << step << std::endl;
             }
-            // Start with positive step: None -> 0, otherwise -> start
-            // Start with negative step: None -> -1, otherwise -> start
             if( PyNone_Check( ptr->start )) {
                //std::cout << "   slice.start == None\n";
                start = step < 0 ? -1 : 0;
@@ -94,8 +91,6 @@ class type_caster< dip::Range > {
                start = reinterpret_borrow< object >( ptr->start ).cast< dip::sint >();
                //std::cout << "   slice.start == " << start << std::endl;
             }
-            // Stop with positive step: None -> -1, <0 -> stop-1, >0 -> stop-1, ==0 -> error
-            // Stop with negative step: None -> -1, otherwise -> stop+1
             if( PyNone_Check( ptr->stop )) {
                //std::cout << "   slice.stop == None\n";
                stop = -1;
@@ -103,7 +98,6 @@ class type_caster< dip::Range > {
                //PyLong_Check()
                stop = reinterpret_borrow< object >( ptr->stop ).cast< dip::sint >();
                //std::cout << "   slice.stop == " << stop << std::endl;
-               stop += step < 0 ? 1 : -1;
             }
             if( step < 0 ) {
                std::swap( start, stop );
@@ -111,12 +105,6 @@ class type_caster< dip::Range > {
             }
             //std::cout << "   value == " << start << ":" << stop << ":" << step << std::endl;
             value = dip::Range( start, stop, static_cast< dip::uint >( step ));
-            // NOTE: For an originally empty range, this leads to two pixels selected, but this is
-            // difficult to test for here without knowing the size of the image being indexed. The empty
-            // range is not legal (or possible) in DIPlib.
-            // TODO: Should we fudge with Python's definitions for slicing, and have them work like DIPlib's?
-            // - If we do, we'll get complaints from people not understanding the indexing.
-            // - If we don't, it'll be more difficult to translate code from Python to C++.
             return true;
          }
          if( PyLong_CheckExact( src.ptr() )) {
@@ -126,8 +114,7 @@ class type_caster< dip::Range > {
          return false;
       }
       static handle cast( dip::Range const& src, return_value_policy, handle ) {
-         // TODO: This is not correct, but it's good enough to get the default dip::Range{} through unscathed.
-         return slice( src.start, src.stop + 1, static_cast< dip::sint >( src.step )).release();
+         return slice( src.start, src.stop, static_cast< dip::sint >( src.step )).release();
       }
    PYBIND11_TYPE_CASTER( type, _( "slice" ));
 };
@@ -195,40 +182,76 @@ class type_caster< dip::Image::Pixel > {
             //std::cout << "   Input is not" << std::endl;
             return false;
          }
-         if( PyBool_Check( src.ptr() )) {
-            //std::cout << "   Input is bool" << std::endl;
-            value.swap( dip::Image::Pixel( src.cast< bool >() ));
-         } else if( PyLong_Check( src.ptr() )) {
-            //std::cout << "   Input is int" << std::endl;
-            value.swap( dip::Image::Pixel( src.cast< dip::sint >() ));
-         } else if( PyFloat_Check( src.ptr() )) {
-            //std::cout << "   Input is float" << std::endl;
-            value.swap( dip::Image::Pixel( src.cast< dip::dfloat >() ));
-         } else if( PyComplex_Check( src.ptr() )) {
-            //std::cout << "   Input is complex" << std::endl;
-            value.swap( dip::Image::Pixel( src.cast< dip::dcomplex >() ));
-         } else {
-            //std::cout << "   Input is not a scalar type" << std::endl;
-            return false;
+         if( PyList_Check( src.ptr() )) {
+            py::list list = reinterpret_borrow< py::list >( src );
+            dip::uint n = list.size();
+            if( n == 0 ) {
+               return false;
+            }
+            if( PyBool_Check( list[ 0 ].ptr() )) {
+               //std::cout << "   Input is bool" << std::endl;
+               value.swap( dip::Image::Pixel( dip::DT_BIN, n ));
+               auto it = value.begin();
+               for( auto& in : src ) {
+                  *it = in.cast< bool >();
+                  ++it;
+               }
+            } else if( PyLong_Check( list[ 0 ].ptr() )) {
+               //std::cout << "   Input is int" << std::endl;
+               value.swap( dip::Image::Pixel( dip::DT_SINT32, n ));
+               auto it = value.begin();
+               for( auto& in : src ) {
+                  *it = in.cast< dip::sint32 >();
+                  ++it;
+               }
+            } else if( PyFloat_Check( list[ 0 ].ptr() )) {
+               //std::cout << "   Input is float" << std::endl;
+               value.swap( dip::Image::Pixel( dip::DT_DFLOAT, n ));
+               auto it = value.begin();
+               for( auto& in : src ) {
+                  *it = in.cast< dip::dfloat >();
+                  ++it;
+               }
+            } else if( PyComplex_Check( list[ 0 ].ptr() )) {
+               //std::cout << "   Input is complex" << std::endl;
+               value.swap( dip::Image::Pixel( dip::DT_DCOMPLEX, n ));
+               auto it = value.begin();
+               for( auto& in : src ) {
+                  *it = in.cast< dip::dcomplex >();
+                  ++it;
+               }
+            } else {
+               //std::cout << "   Input is not a scalar type" << std::endl;
+               return false;
+            }
+            //std::cout << "   Result: " << value << std::endl;
+            return true;
          }
-         //std::cout << "   Result: " << value << std::endl;
-         return true;
+         return false;
       }
       static handle cast( dip::Image::Pixel const& src, return_value_policy, handle ) {
          //std::cout << "Executing py::type_caster<dip::Pixel>::cast" << std::endl;
-         py::object out;
+         py::list out;
          if( src.DataType().IsBinary() ) {
             //std::cout << "   Casting to bool" << std::endl;
-            out = py::cast( static_cast< bool >( src ));
+            for( auto& in : src ) {
+               out.append( py::cast( static_cast< bool >( in )));
+            }
          } else if( src.DataType().IsComplex() ) {
             //std::cout << "   Casting to complex" << std::endl;
-            out = py::cast( static_cast< dip::dcomplex >( src ));
+            for( auto& in : src ) {
+               out.append( py::cast( static_cast< dip::dcomplex >( in )));
+            }
          } else if( src.DataType().IsFloat() ) {
             //std::cout << "   Casting to float" << std::endl;
-            out = py::cast( static_cast< dip::dfloat >( src ));
+            for( auto& in : src ) {
+               out.append( py::cast( static_cast< dip::dfloat >( in )));
+            }
          } else { // IsInteger()
             //std::cout << "   Casting to int" << std::endl;
-            out = py::cast( static_cast< dip::sint >( src ));
+            for( auto& in : src ) {
+               out.append( py::cast( static_cast< dip::sint >( in )));
+            }
          }
          return out.release();
       }

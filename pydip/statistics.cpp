@@ -27,16 +27,16 @@ void init_statistics( py::module& m ) {
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
    m.def( "MaximumAndMinimum", []( dip::Image const& in, dip::Image const& mask ) {
                 dip::MinMaxAccumulator acc = dip::MaximumAndMinimum( in, mask );
-                return py::make_tuple( acc.Minimum(), acc.Maximum() );
+                return py::make_tuple( acc.Minimum(), acc.Maximum() ).release();
           }, "in"_a, "mask"_a = dip::Image{} );
    m.def( "SampleStatistics", []( dip::Image const& in, dip::Image const& mask ) {
                 dip::StatisticsAccumulator acc = dip::SampleStatistics( in, mask );
-                return py::make_tuple( acc.Mean(), acc.Variance(), acc.Skewness(), acc.ExcessKurtosis() );
+                return py::make_tuple( acc.Mean(), acc.Variance(), acc.Skewness(), acc.ExcessKurtosis() ).release();
           }, "in"_a, "mask"_a = dip::Image{} );
    m.def( "CenterOfMass", &dip::CenterOfMass, "in"_a, "mask"_a = dip::Image{} );
    m.def( "Moments", []( dip::Image const& in, dip::Image const& mask ) {
              dip::MomentAccumulator acc = dip::Moments( in, mask );
-             return py::make_tuple( acc.Sum(), acc.FirstOrder(), acc.SecondOrder() );
+             return py::make_tuple( acc.Sum(), acc.FirstOrder(), acc.SecondOrder() ).release();
           }, "in"_a, "mask"_a = dip::Image{} );
    m.def( "Mean", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::BooleanArray const& >( &dip::Mean ),
           "in"_a, "mask"_a = dip::Image{}, "mode"_a = "", "process"_a = dip::BooleanArray{} );

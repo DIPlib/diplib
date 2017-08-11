@@ -20,8 +20,7 @@
 #include "diplib/linear.h"
 #include "diplib/nonlinear.h" // TODO: include functions from diplib/nonlinear.h
 
-// TODO: Define a `type_caster` for `dip::Kernel`
-// TODO: How do we get `dip::FloatArray` to accept a scalar value?
+// TODO: Expose `dip::Kernel` to Python like we expose `dip::StructuringElement`. It'll reduce duplication below and make stuff more user-friendly
 
 void init_filtering( py::module& m ) {
    m.def( "Uniform", [](

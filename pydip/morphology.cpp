@@ -20,8 +20,67 @@
 #include "diplib/morphology.h"
 #include "diplib/binary.h"       // TODO: include functions from diplib/binary.h
 
+namespace {
+
+dip::String StructuringElementRepr( dip::StructuringElement const& s ) {
+   std::ostringstream os;
+   os << "<";
+   if( s.IsCustom() ) {
+      os << "Custom StructuringElement";
+      if( s.IsFlat() ) {
+         os << ", flat";
+      } else {
+         os << ", grey-valued";
+      }
+   } else {
+      switch( s.Shape() ) {
+         case dip::StructuringElement::ShapeCode::RECTANGULAR:
+            os << "Rectangular";
+            break;
+         case dip::StructuringElement::ShapeCode::ELLIPTIC:
+            os << "Elliptic";
+            break;
+         case dip::StructuringElement::ShapeCode::DIAMOND:
+            os << "Diamond";
+            break;
+         case dip::StructuringElement::ShapeCode::OCTAGONAL:
+            os << "Octagonal";
+            break;
+         case dip::StructuringElement::ShapeCode::LINE:
+            os << "Line";
+            break;
+         case dip::StructuringElement::ShapeCode::FAST_LINE:
+            os << "Fast line";
+            break;
+         case dip::StructuringElement::ShapeCode::PERIODIC_LINE:
+            os << "Periodic line";
+            break;
+         case dip::StructuringElement::ShapeCode::DISCRETE_LINE:
+            os << "Discrete line";
+            break;
+         case dip::StructuringElement::ShapeCode::INTERPOLATED_LINE:
+            os << "Interpolated line";
+            break;
+         case dip::StructuringElement::ShapeCode::PARABOLIC:
+            os << "Parabolic";
+            break;
+         default:
+            os << "Unknown";
+            break;
+      }
+      os << " StructuringElement with parameters " << s.Params();
+   }
+   if( s.IsMirrored() ) {
+      os << ", mirrored";
+   }
+   os << ">";
+   return os.str();
+}
+
+} // namespace
+
 void init_morphology( py::module& m ) {
-   auto se = py::class_< dip::StructuringElement >( m, "StructuringElement" );
+   auto se = py::class_< dip::StructuringElement >( m, "SE", "Represents the structuring element to use in morphological operations\n(dip::StructuringElement in DIPlib)." );
    // Constructors
    se.def( py::init<>() );
    se.def( py::init< dip::Image const& >(), "image"_a );
@@ -29,58 +88,12 @@ void init_morphology( py::module& m ) {
    se.def( py::init< dip::dfloat, dip::String const& >(), "param"_a, "shape"_a = "elliptic" );
    se.def( py::init< dip::FloatArray, dip::String const& >(), "param"_a, "shape"_a = "elliptic" );
    se.def( "Mirror", &dip::StructuringElement::Mirror );
-   se.def( "__repr__", []( dip::StructuringElement const& s ) {
-      std::ostringstream os;
-      if( s.IsCustom() ) {
-         os << "Custom <StructuringElement>";
-         if( s.IsFlat() ) {
-            os << ", flat";
-         } else {
-            os << ", grey-valued";
-         }
-      } else {
-         switch( s.Shape() ) {
-            case dip::StructuringElement::ShapeCode::RECTANGULAR:
-               os << "Rectangular";
-               break;
-            case dip::StructuringElement::ShapeCode::ELLIPTIC:
-               os << "Elliptic";
-               break;
-            case dip::StructuringElement::ShapeCode::DIAMOND:
-               os << "Diamond";
-               break;
-            case dip::StructuringElement::ShapeCode::OCTAGONAL:
-               os << "Octagonal";
-               break;
-            case dip::StructuringElement::ShapeCode::LINE:
-               os << "Line";
-               break;
-            case dip::StructuringElement::ShapeCode::FAST_LINE:
-               os << "Fast line";
-               break;
-            case dip::StructuringElement::ShapeCode::PERIODIC_LINE:
-               os << "Periodic line";
-               break;
-            case dip::StructuringElement::ShapeCode::DISCRETE_LINE:
-               os << "Discrete line";
-               break;
-            case dip::StructuringElement::ShapeCode::INTERPOLATED_LINE:
-               os << "Interpolated line";
-               break;
-            case dip::StructuringElement::ShapeCode::PARABOLIC:
-               os << "Parabolic";
-               break;
-            default:
-               os << "Unknown";
-               break;
-         }
-         os << " <StructuringElement> with parameters " << s.Params();
-      }
-      if( s.IsMirrored() ) {
-         os << ", mirrored";
-      }
-      return os.str();
-   } );
+   se.def( "__repr__", &StructuringElementRepr );
+   py::implicitly_convertible< py::buffer, dip::StructuringElement >();
+   py::implicitly_convertible< py::str, dip::StructuringElement >();
+   py::implicitly_convertible< py::float_, dip::StructuringElement >();
+   py::implicitly_convertible< py::int_, dip::StructuringElement >();
+   py::implicitly_convertible< py::list, dip::StructuringElement >();
 
    m.def( "Dilation", py::overload_cast<
                 dip::Image const&,

@@ -14,6 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+The portion of the PyDIP module that contains Python code.
+"""
+
 import PyDIP.PyDIP_bin as dip
 
 hasMatPlotLib = True
@@ -122,6 +126,7 @@ def Show(img, range = (), complexMode = 'abs', projectionMode = 'mean', coordina
       out = dip.ImageDisplay(img, range, complexMode, projectionMode, coordinates, dim1, dim2)
       if out.Dimensionality() == 1:
          axes = pp.gca()
+         axes.clear()
          axes.plot( out )
          axes.set_ylim((0,255))
          axes.set_xlim((0,out.Size(0)-1))

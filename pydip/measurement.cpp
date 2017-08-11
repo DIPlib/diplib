@@ -19,5 +19,5 @@
 #include "pydip.h"
 #include "diplib/measurement.h"  // TODO: include functions from diplib/measurement.h
 
-void init_measurement( py::module& m ) {
+void init_measurement( py::module& /*m*/ ) {
 }

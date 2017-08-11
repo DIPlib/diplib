@@ -23,5 +23,5 @@
 #include "diplib/regions.h"      // TODO: include functions from diplib/regions.h
 #include "diplib/segmentation.h" // TODO: include functions from diplib/segmentation.h
 
-void init_analysis( py::module& m ) {
+void init_analysis( py::module& /*m*/ ) {
 }
