@@ -18,15 +18,69 @@
 
 #include "pydip.h"
 #include "diplib/morphology.h"
+#include "diplib/binary.h"       // TODO: include functions from diplib/binary.h
 
 void init_morphology( py::module& m ) {
    auto se = py::class_< dip::StructuringElement >( m, "StructuringElement" );
    // Constructors
    se.def( py::init<>() );
+   se.def( py::init< dip::Image const& >(), "image"_a );
    se.def( py::init< dip::String const& >(), "shape"_a );
    se.def( py::init< dip::dfloat, dip::String const& >(), "param"_a, "shape"_a = "elliptic" );
    se.def( py::init< dip::FloatArray, dip::String const& >(), "param"_a, "shape"_a = "elliptic" );
    se.def( "Mirror", &dip::StructuringElement::Mirror );
+   se.def( "__repr__", []( dip::StructuringElement const& s ) {
+      std::ostringstream os;
+      if( s.IsCustom() ) {
+         os << "Custom <StructuringElement>";
+         if( s.IsFlat() ) {
+            os << ", flat";
+         } else {
+            os << ", grey-valued";
+         }
+      } else {
+         switch( s.Shape() ) {
+            case dip::StructuringElement::ShapeCode::RECTANGULAR:
+               os << "Rectangular";
+               break;
+            case dip::StructuringElement::ShapeCode::ELLIPTIC:
+               os << "Elliptic";
+               break;
+            case dip::StructuringElement::ShapeCode::DIAMOND:
+               os << "Diamond";
+               break;
+            case dip::StructuringElement::ShapeCode::OCTAGONAL:
+               os << "Octagonal";
+               break;
+            case dip::StructuringElement::ShapeCode::LINE:
+               os << "Line";
+               break;
+            case dip::StructuringElement::ShapeCode::FAST_LINE:
+               os << "Fast line";
+               break;
+            case dip::StructuringElement::ShapeCode::PERIODIC_LINE:
+               os << "Periodic line";
+               break;
+            case dip::StructuringElement::ShapeCode::DISCRETE_LINE:
+               os << "Discrete line";
+               break;
+            case dip::StructuringElement::ShapeCode::INTERPOLATED_LINE:
+               os << "Interpolated line";
+               break;
+            case dip::StructuringElement::ShapeCode::PARABOLIC:
+               os << "Parabolic";
+               break;
+            default:
+               os << "Unknown";
+               break;
+         }
+         os << " <StructuringElement> with parameters " << s.Params();
+      }
+      if( s.IsMirrored() ) {
+         os << ", mirrored";
+      }
+      return os.str();
+   } );
 
    m.def( "Dilation", py::overload_cast<
                 dip::Image const&,
@@ -203,7 +257,7 @@ void init_morphology( py::module& m ) {
                 dip::uint,
                 dip::String const& >( &dip::AreaOpening ),
           "in"_a,
-          "mask"_a,
+          "mask"_a = dip::Image{},
           "filterSize"_a,
           "connectivity"_a = 1,
           "polarity"_a = "opening" );
@@ -214,7 +268,7 @@ void init_morphology( py::module& m ) {
                 dip::uint,
                 dip::uint >( &dip::AreaClosing ),
           "in"_a,
-          "mask"_a,
+          "mask"_a = dip::Image{},
           "filterSize"_a,
           "connectivity"_a = 1 );
 
@@ -225,7 +279,7 @@ void init_morphology( py::module& m ) {
                 dip::String const&,
                 dip::String const& >( &dip::PathOpening ),
           "in"_a,
-          "mask"_a,
+          "mask"_a = dip::Image{},
           "length"_a = 7,
           "polarity"_a = "opening",
           "mode"_a = "normal" );
@@ -237,7 +291,7 @@ void init_morphology( py::module& m ) {
                 dip::String const&,
                 dip::String const& >( &dip::DirectedPathOpening ),
           "in"_a,
-          "mask"_a,
+          "mask"_a = dip::Image{},
           "filterParam"_a = dip::IntegerArray{},
           "polarity"_a = "opening",
           "mode"_a = "normal" );

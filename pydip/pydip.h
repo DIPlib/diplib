@@ -28,13 +28,32 @@
 using namespace pybind11::literals;
 namespace py = pybind11;
 
+/* THINGS I'VE LEARNED SO FAR ABOUT PYBIND11:
+ *
+ * - Default parameter values seem to be converted to Python types, and then translated back to C++ when needed.
+ *   This means that both the `load` and `cast` members of `type_caster` are very important, even if data goes
+ *   only into the function.
+ *
+ * - `handle` references a python object without ownership, `object` references and increases the ref counter.
+ *   Note when you are using which! `object::release` is your friend!
+ *
+ * - `py::implicitly_convertible< py::buffer, dip::Image >()` makes it so that a custom type constructor gets
+ *   called to try to match up input parameter types. You cannot define a `type_caster` for a type that you
+ *   have exposed to Python.
+ *
+ */
+
+
 // Declaration of functions in other files in the interface
 void init_image( py::module& m );
 void init_display( py::module& m );
 void init_math( py::module& m );
 void init_statistics( py::module& m );
-void init_linear( py::module& m );
+void init_filtering( py::module& m );
 void init_morphology( py::module& m );
+void init_analysis( py::module& m );
+void init_measurement( py::module& m );
+void init_assorted( py::module& m );
 
 namespace pybind11 {
 namespace detail {
@@ -107,8 +126,8 @@ class type_caster< dip::Range > {
          return false;
       }
       static handle cast( dip::Range const& src, return_value_policy, handle ) {
-         // TODO: This is not correct, but we don't really use it (yet).
-         return slice( src.start, src.stop, static_cast< dip::sint >( src.step )).release();
+         // TODO: This is not correct, but it's good enough to get the default dip::Range{} through unscathed.
+         return slice( src.start, src.stop + 1, static_cast< dip::sint >( src.step )).release();
       }
    PYBIND11_TYPE_CASTER( type, _( "slice" ));
 };

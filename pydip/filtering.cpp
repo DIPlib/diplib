@@ -18,8 +18,12 @@
 
 #include "pydip.h"
 #include "diplib/linear.h"
+#include "diplib/nonlinear.h" // TODO: include functions from diplib/nonlinear.h
 
-void init_linear( py::module& m ) {
+// TODO: Define a `type_caster` for `dip::Kernel`
+// TODO: How do we get `dip::FloatArray` to accept a scalar value?
+
+void init_filtering( py::module& m ) {
    m.def( "Uniform", [](
                 dip::Image const& in,
                 dip::dfloat const& size,
@@ -41,7 +45,7 @@ void init_linear( py::module& m ) {
              return dip::Uniform( in, { sizes, shape }, boundaryCondition );
           },
           "in"_a,
-          "sizes"_a,
+          "sizes"_a = dip::FloatArray{ 7.0 },
           "shape"_a = "elliptic",
           "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Uniform", [](
@@ -82,7 +86,7 @@ void init_linear( py::module& m ) {
              return dip::Gauss( in, sigmas, derivativeOrder, method, boundaryCondition, truncation );
           },
           "in"_a,
-          "sigmas"_a,
+          "sigmas"_a = dip::FloatArray{ 1.0 },
           "derivativeOrder"_a = dip::UnsignedArray{ 0 },
           "method"_a = "best",
           "boundaryCondition"_a = dip::StringArray{},
@@ -116,7 +120,7 @@ void init_linear( py::module& m ) {
           },
           "in"_a,
           "derivativeOrder"_a = dip::UnsignedArray{ 0 },
-          "sigmas"_a,
+          "sigmas"_a = dip::FloatArray{ 1.0 },
           "method"_a = "best",
           "boundaryCondition"_a = dip::StringArray{},
           "truncation"_a = 3.0 );
@@ -157,7 +161,7 @@ void init_linear( py::module& m ) {
              return dip::Gradient( in, sigmas, method, boundaryCondition, process, truncation );
           },
           "in"_a,
-          "sigmas"_a,
+          "sigmas"_a = dip::FloatArray{ 1.0 },
           "method"_a = "best",
           "boundaryCondition"_a = dip::StringArray{},
           "process"_a = dip::BooleanArray{},
@@ -190,7 +194,7 @@ void init_linear( py::module& m ) {
              return dip::GradientMagnitude( in, sigmas, method, boundaryCondition, process, truncation );
           },
           "in"_a,
-          "sigmas"_a,
+          "sigmas"_a = dip::FloatArray{ 1.0 },
           "method"_a = "best",
           "boundaryCondition"_a = dip::StringArray{},
           "process"_a = dip::BooleanArray{},
@@ -223,7 +227,7 @@ void init_linear( py::module& m ) {
              return dip::GradientDirection( in, sigmas, method, boundaryCondition, process, truncation );
           },
           "in"_a,
-          "sigmas"_a,
+          "sigmas"_a = dip::FloatArray{ 1.0 },
           "method"_a = "best",
           "boundaryCondition"_a = dip::StringArray{},
           "process"_a = dip::BooleanArray{},
@@ -256,7 +260,7 @@ void init_linear( py::module& m ) {
              return dip::Curl( in, sigmas, method, boundaryCondition, process, truncation );
           },
           "in"_a,
-          "sigmas"_a,
+          "sigmas"_a = dip::FloatArray{ 1.0 },
           "method"_a = "best",
           "boundaryCondition"_a = dip::StringArray{},
           "process"_a = dip::BooleanArray{},
@@ -289,7 +293,7 @@ void init_linear( py::module& m ) {
              return dip::Divergence( in, sigmas, method, boundaryCondition, process, truncation );
           },
           "in"_a,
-          "sigmas"_a,
+          "sigmas"_a = dip::FloatArray{ 1.0 },
           "method"_a = "best",
           "boundaryCondition"_a = dip::StringArray{},
           "process"_a = dip::BooleanArray{},
@@ -322,7 +326,7 @@ void init_linear( py::module& m ) {
              return dip::Hessian( in, sigmas, method, boundaryCondition, process, truncation );
           },
           "in"_a,
-          "sigmas"_a,
+          "sigmas"_a = dip::FloatArray{ 1.0 },
           "method"_a = "best",
           "boundaryCondition"_a = dip::StringArray{},
           "process"_a = dip::BooleanArray{},
@@ -355,7 +359,7 @@ void init_linear( py::module& m ) {
              return dip::Laplace( in, sigmas, method, boundaryCondition, process, truncation );
           },
           "in"_a,
-          "sigmas"_a,
+          "sigmas"_a = dip::FloatArray{ 1.0 },
           "method"_a = "best",
           "boundaryCondition"_a = dip::StringArray{},
           "process"_a = dip::BooleanArray{},

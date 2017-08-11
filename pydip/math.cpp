@@ -72,9 +72,9 @@ void init_math( py::module& m ) {
    m.def( "Infimum", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Infimum ), "in1"_a, "in2"_a );
    m.def( "SignedInfimum", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::SignedInfimum ), "in1"_a, "in2"_a );
    m.def( "LinearCombination", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::dfloat >( &dip::LinearCombination ),
-         "a"_a, "b"_a, "aWeight"_a = 0.5, "bWeight"_a = 0.5 );
+          "a"_a, "b"_a, "aWeight"_a = 0.5, "bWeight"_a = 0.5 );
    m.def( "LinearCombination", py::overload_cast< dip::Image const&, dip::Image const&, dip::dcomplex, dip::dcomplex >( &dip::LinearCombination ),
-         "a"_a, "b"_a, "aWeight"_a, "bWeight"_a );
+          "a"_a, "b"_a, "aWeight"_a, "bWeight"_a );
 
    m.def( "Atan2", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Atan2 ), "y"_a, "x"_a );
    m.def( "Hypot", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Hypot ), "a"_a, "b"_a );
@@ -83,7 +83,7 @@ void init_math( py::module& m ) {
    m.def( "DotProduct", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::DotProduct ), "lhs"_a, "rhs"_a );
    m.def( "CrossProduct", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::CrossProduct ), "lhs"_a, "rhs"_a );
    m.def( "Norm", //py::overload_cast< dip::Image const& >( &dip::Norm ), // Fails to resolve!
-                  static_cast< dip::Image ( * )( dip::Image const& ) >( &dip::Norm ), "in"_a );
+          static_cast< dip::Image ( * )( dip::Image const& ) >( &dip::Norm ), "in"_a );
    m.def( "Angle", py::overload_cast< dip::Image const& >( &dip::Angle ), "in"_a );
    m.def( "CartesianToPolar", py::overload_cast< dip::Image const& >( &dip::CartesianToPolar ), "in"_a );
    m.def( "PolarToCartesian", py::overload_cast< dip::Image const& >( &dip::PolarToCartesian ), "in"_a );
@@ -100,15 +100,14 @@ void init_math( py::module& m ) {
    m.def( "Identity", py::overload_cast< dip::Image const& >( &dip::Identity ), "in"_a );
 
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image const&, dip::String const& >( &dip::Select ),
-         "in1"_a , "in2"_a , "in3"_a, "in4"_a, "selector"_a );
+          "in1"_a , "in2"_a , "in3"_a, "in4"_a, "selector"_a );
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::Select ),
-         "in1"_a , "in2"_a , "mask"_a );
+          "in1"_a , "in2"_a , "mask"_a );
 
    m.def( "Clip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Clip ),
-         "in"_a, "low"_a = 0.0, "high"_a = 255.0, "mode"_a = "both" );
+          "in"_a, "low"_a = 0.0, "high"_a = 255.0, "mode"_a = "both" );
    m.def( "ErfClip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::ErfClip ),
-         "in"_a, "low"_a = 128.0, "high"_a = 64.0, "mode"_a = "range" );
+          "in"_a, "low"_a = 128.0, "high"_a = 64.0, "mode"_a = "range" );
    m.def( "ContrastStretch", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::dfloat, dip::dfloat >( &dip::ContrastStretch ),
-         "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 100.0, "outMin"_a = 0.0, "outMax"_a = 255.0, "method"_a = "linear", "parameter1"_a = 1.0, "parameter2"_a = 0.0 );
-
+          "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 100.0, "outMin"_a = 0.0, "outMax"_a = 255.0, "method"_a = "linear", "parameter1"_a = 1.0, "parameter2"_a = 0.0 );
 }

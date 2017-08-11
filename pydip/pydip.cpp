@@ -38,7 +38,7 @@ PYBIND11_PLUGIN( PyDIP_bin ) {
    dtype.def( "IsUnsigned", &dip::DataType::IsUnsigned );
    dtype.def( "IsSigned", &dip::DataType::IsSigned );
    dtype.def( "Real", &dip::DataType::Real );
-   dtype.def( "__repr__", []( dip::DataType const& a ) { return std::string( "PyDIP.DT_" ) + a.Name(); } );
+   dtype.def( "__repr__", []( dip::DataType const& a ) { return std::string( "DT_" ) + a.Name(); } );
 
    m.attr( "DT_BIN" ) = dip::DT_BIN;
    m.attr( "DT_UINT8" ) = dip::DT_UINT8;
@@ -52,20 +52,15 @@ PYBIND11_PLUGIN( PyDIP_bin ) {
    m.attr( "DT_SCOMPLEX" ) = dip::DT_SCOMPLEX;
    m.attr( "DT_DCOMPLEX" ) = dip::DT_DCOMPLEX;
 
-   //auto range = py::class_< dip::Range >( m, "Range" );
-   //range.def( py::init< dip::sint, dip::sint, dip::uint >(), "start"_a, "stop"_a, "step"_a = 1 );
-   //range.def( "__init__", []( dip::Range& self ) { new( &self ) dip::Range(); } );
-   //range.def( "__init__", []( dip::Range& self, dip::sint i ) { new( &self ) dip::Range( i ); }, "index"_a );
-   //range.def( "__repr__", []( dip::Range const& a ) {
-   //   return std::string( "Range(" ) + std::to_string( a.start ) + "," + std::to_string( a.stop ) + "," + std::to_string( a.step ) + ")";
-   //} );
-
    init_image( m );
    init_display( m );
    init_math( m );
    init_statistics( m );
-   init_linear( m );
+   init_filtering( m );
    init_morphology( m );
+   init_analysis( m );
+   init_measurement( m );
+   init_assorted( m );
 
    return m.ptr();
 }
