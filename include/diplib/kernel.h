@@ -143,6 +143,9 @@ class DIP_NO_EXPORT Kernel {
          mirror_ = !mirror_;
       }
 
+      /// \brief True if kernel is mirrored
+      bool IsMirrored() const { return mirror_; }
+
       /// \brief Creates a `dip::PixelTable` structure representing the shape of the kernel
       dip::PixelTable PixelTable( UnsignedArray const& imsz, dip::uint procDim ) const;
 
