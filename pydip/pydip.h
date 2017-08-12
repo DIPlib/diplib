@@ -16,6 +16,9 @@
  * limitations under the License.
  */
 
+#ifndef DIP_PYDIP_H
+#define DIP_PYDIP_H
+
 #undef DIP__ENABLE_DOCTEST
 #include "diplib.h"
 
@@ -61,6 +64,28 @@ namespace detail {
 template< typename Type >
 struct type_caster< dip::DimensionArray< Type >>: list_caster< dip::DimensionArray< Type >, Type > {};
 
+// Cast Python string to dip::DataType
+template<>
+class type_caster< dip::DataType > {
+   public:
+      using type = dip::DataType;
+      bool load( handle src, bool ) {
+         if( !src ) {
+            return false;
+         }
+         if( PYBIND11_BYTES_CHECK( src.ptr() ) || PyUnicode_Check( src.ptr() )) {
+            value = dip::DataType( src.cast< dip::String >() );
+            std::cout << "   Result: " << value.Name() << std::endl;
+            return true;
+         }
+         return false;
+      }
+      static handle cast( dip::DataType const& src, return_value_policy, handle ) {
+         return py::cast( src.Name() ).release();
+      }
+   PYBIND11_TYPE_CASTER( type, _( "DataType" ));
+};
+
 // Cast Python slice to dip::Range
 template<>
 class type_caster< dip::Range > {
@@ -73,41 +98,39 @@ class type_caster< dip::Range > {
             return false;
          }
          if( PySlice_Check( src.ptr() )) {
-            auto ptr = reinterpret_cast< PySliceObject* >( src.ptr());
+            auto ptr = reinterpret_cast< PySliceObject* >( src.ptr() );
             dip::sint start, stop, step;
+            // Alternative: PySlice_Unpack( src.ptr(), &start, &stop, &step );
+            // Do we need to use PYBIND11_LONG_CHECK() here?
             if( PyNone_Check( ptr->step )) {
-               //std::cout << "   slice.step == None\n";
                step = 1;
+            } else if( PYBIND11_LONG_CHECK( ptr->step )) {
+               step = PyLong_AsSsize_t( ptr->step );
             } else {
-               //PyLong_Check()
-               step = reinterpret_borrow< object >( ptr->step ).cast< dip::sint >();
-               //std::cout << "   slice.step == " << step << std::endl;
+               return false;
             }
             if( PyNone_Check( ptr->start )) {
-               //std::cout << "   slice.start == None\n";
                start = step < 0 ? -1 : 0;
+            } else if( PYBIND11_LONG_CHECK( ptr->start )) {
+               start = PyLong_AsSsize_t( ptr->start );
             } else {
-               //PyLong_Check()
-               start = reinterpret_borrow< object >( ptr->start ).cast< dip::sint >();
-               //std::cout << "   slice.start == " << start << std::endl;
+               return false;
             }
             if( PyNone_Check( ptr->stop )) {
-               //std::cout << "   slice.stop == None\n";
-               stop = -1;
+               stop = step < 0 ? 0 : -1;
+            } else if( PYBIND11_LONG_CHECK( ptr->stop )) {
+               stop = PyLong_AsSsize_t( ptr->stop );
             } else {
-               //PyLong_Check()
-               stop = reinterpret_borrow< object >( ptr->stop ).cast< dip::sint >();
-               //std::cout << "   slice.stop == " << stop << std::endl;
+               return false;
             }
             if( step < 0 ) {
-               std::swap( start, stop );
                step = -step;
             }
             //std::cout << "   value == " << start << ":" << stop << ":" << step << std::endl;
             value = dip::Range( start, stop, static_cast< dip::uint >( step ));
             return true;
          }
-         if( PyLong_CheckExact( src.ptr() )) {
+         if( PYBIND11_LONG_CHECK( src.ptr() )) {
             value = dip::Range( src.cast< dip::sint >() );
             return true;
          }
@@ -133,7 +156,7 @@ class type_caster< dip::Image::Sample > {
          if( PyBool_Check( src.ptr() )) {
             //std::cout << "   Input is bool" << std::endl;
             value.swap( dip::Image::Sample( src.cast< bool >() ));
-         } else if( PyLong_Check( src.ptr() )) {
+         } else if( PYBIND11_LONG_CHECK( src.ptr() )) {
             //std::cout << "   Input is int" << std::endl;
             value.swap( dip::Image::Sample( src.cast< dip::sint >() ));
          } else if( PyFloat_Check( src.ptr() )) {
@@ -196,7 +219,7 @@ class type_caster< dip::Image::Pixel > {
                   *it = in.cast< bool >();
                   ++it;
                }
-            } else if( PyLong_Check( list[ 0 ].ptr() )) {
+            } else if( PYBIND11_LONG_CHECK( list[ 0 ].ptr() )) {
                //std::cout << "   Input is int" << std::endl;
                value.swap( dip::Image::Pixel( dip::DT_SINT32, n ));
                auto it = value.begin();
@@ -260,3 +283,5 @@ class type_caster< dip::Image::Pixel > {
 
 } // nanmespace detail
 } // namespace pybind11
+
+#endif // DIP_PYDIP_H

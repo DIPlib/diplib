@@ -20,109 +20,45 @@
 #include "diplib/linear.h"
 #include "diplib/nonlinear.h" // TODO: include functions from diplib/nonlinear.h
 
-// TODO: Expose `dip::Kernel` to Python like we expose `dip::StructuringElement`. It'll reduce duplication below and make stuff more user-friendly
+namespace {
+
+dip::String KernelRepr( dip::Kernel const& s ) {
+   std::ostringstream os;
+   os << "<" << s.ShapeString() << " Kernel with parameters " << s.Params();
+   if( s.HasWeights() ) {
+      os << ", with weights";
+   }
+   if( s.IsMirrored() ) {
+      os << ", mirrored";
+   }
+   os << ">";
+   return os.str();
+}
+
+} // namespace
 
 void init_filtering( py::module& m ) {
-   m.def( "Uniform", [](
-                dip::Image const& in,
-                dip::dfloat const& size,
-                dip::String const& shape,
-                dip::StringArray const& boundaryCondition
-          ) {
-             return dip::Uniform( in, { size, shape }, boundaryCondition );
-          },
-          "in"_a,
-          "sizes"_a = 7.0,
-          "shape"_a = "elliptic",
-          "boundaryCondition"_a = dip::StringArray{} );
-   m.def( "Uniform", [](
-                dip::Image const& in,
-                dip::FloatArray const& sizes,
-                dip::String const& shape,
-                dip::StringArray const& boundaryCondition
-          ) {
-             return dip::Uniform( in, { sizes, shape }, boundaryCondition );
-          },
-          "in"_a,
-          "sizes"_a = dip::FloatArray{ 7.0 },
-          "shape"_a = "elliptic",
-          "boundaryCondition"_a = dip::StringArray{} );
-   m.def( "Uniform", [](
-                dip::Image const& in,
-                dip::Image const& kernel,
-                dip::StringArray const& boundaryCondition
-          ) {
-             return dip::Uniform( in, kernel, boundaryCondition );
-          },
-          "in"_a,
-          "kernel"_a,
-          "boundaryCondition"_a = dip::StringArray{} );
+   auto kernel = py::class_< dip::Kernel >( m, "Kernel", "Represents the kernel to use in filtering operations." );
+   kernel.def( py::init<>() );
+   kernel.def( py::init< dip::Image const& >(), "image"_a );
+   kernel.def( py::init< dip::String const& >(), "shape"_a );
+   kernel.def( py::init< dip::dfloat, dip::String const& >(), "param"_a, "shape"_a = "elliptic" );
+   kernel.def( py::init< dip::FloatArray, dip::String const& >(), "param"_a, "shape"_a = "elliptic" );
+   kernel.def( "Mirror", &dip::Kernel::Mirror );
+   kernel.def( "__repr__", &KernelRepr );
+   py::implicitly_convertible< py::buffer, dip::Kernel >();
+   py::implicitly_convertible< py::str, dip::Kernel >();
+   py::implicitly_convertible< py::float_, dip::Kernel >();
+   py::implicitly_convertible< py::int_, dip::Kernel >();
+   py::implicitly_convertible< py::list, dip::Kernel >();
 
-   m.def( "Gauss", [](
-                dip::Image const& in,
-                dip::dfloat sigma,
-                dip::UnsignedArray const& derivativeOrder,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::dfloat truncation
-          ) {
-             return dip::Gauss( in, { sigma }, derivativeOrder, method, boundaryCondition, truncation );
-          },
-          "in"_a,
-          "sigma"_a = 1.0,
-          "derivativeOrder"_a = dip::UnsignedArray{ 0 },
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "truncation"_a = 3.0 );
-   m.def( "Gauss", [](
-                dip::Image const& in,
-                dip::FloatArray const& sigmas,
-                dip::UnsignedArray const& derivativeOrder,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::dfloat truncation
-          ) {
-             return dip::Gauss( in, sigmas, derivativeOrder, method, boundaryCondition, truncation );
-          },
-          "in"_a,
-          "sigmas"_a = dip::FloatArray{ 1.0 },
-          "derivativeOrder"_a = dip::UnsignedArray{ 0 },
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "truncation"_a = 3.0 );
-
-   m.def( "Derivative", [](
-                dip::Image const& in,
-                dip::UnsignedArray const& derivativeOrder,
-                dip::dfloat sigma,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::dfloat truncation
-          ) {
-             return dip::Derivative( in, derivativeOrder, { sigma }, method, boundaryCondition, truncation );
-          },
-          "in"_a,
-          "derivativeOrder"_a = dip::UnsignedArray{ 0 },
-          "sigma"_a = 1.0,
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "truncation"_a = 3.0 );
-   m.def( "Derivative", [](
-                dip::Image const& in,
-                dip::UnsignedArray const& derivativeOrder,
-                dip::FloatArray const& sigmas,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::dfloat truncation
-          ) {
-             return dip::Derivative( in, derivativeOrder, sigmas, method, boundaryCondition, truncation );
-          },
-          "in"_a,
-          "derivativeOrder"_a = dip::UnsignedArray{ 0 },
-          "sigmas"_a = dip::FloatArray{ 1.0 },
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "truncation"_a = 3.0 );
+   // diplib/linear.h
+   m.def( "Uniform", py::overload_cast< dip::Image const&, dip::Kernel const&, dip::StringArray const& >( &dip::Uniform ),
+          "in"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "Gauss", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::UnsignedArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::Gauss ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "method"_a = "best", "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
+   m.def( "Derivative", py::overload_cast< dip::Image const&, dip::UnsignedArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::Derivative ),
+          "in"_a, "derivativeOrder"_a = dip::UnsignedArray{ 0 }, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = "best", "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
    m.def( "Dx", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dx( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
    m.def( "Dy", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dy( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
    m.def( "Dz", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dz( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
@@ -132,235 +68,30 @@ void init_filtering( py::module& m ) {
    m.def( "Dxy", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dxy( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
    m.def( "Dxz", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dxz( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
    m.def( "Dyz", []( dip::Image const& in, dip::dfloat sigma ) { return dip::Dyz( in, { sigma } ); }, "in"_a, "sigma"_a = 1.0 );
+   m.def( "Gradient", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::Gradient ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = "best", "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
+   m.def( "GradientMagnitude", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::GradientMagnitude ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = "best", "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
+   m.def( "GradientDirection", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::GradientDirection ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = "best", "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
+   m.def( "Curl", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::Curl ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = "best", "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
+   m.def( "Divergence", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::Divergence ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = "best", "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
+   m.def( "Hessian", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::Hessian ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = "best", "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
+   m.def( "Laplace", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::BooleanArray const&, dip::dfloat >( &dip::Laplace ),
+          "in"_a, "sigmas"_a = dip::FloatArray{ 1.0 }, "method"_a = "best", "boundaryCondition"_a = dip::StringArray{}, "process"_a = dip::BooleanArray{}, "truncation"_a = 3.0 );
 
-   m.def( "Gradient", [](
-                dip::Image const& in,
-                dip::dfloat sigma,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::Gradient( in, { sigma }, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigma"_a = 1.0,
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-   m.def( "Gradient", [](
-                dip::Image const& in,
-                dip::FloatArray const& sigmas,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::Gradient( in, sigmas, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigmas"_a = dip::FloatArray{ 1.0 },
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-
-   m.def( "GradientMagnitude", [](
-                dip::Image const& in,
-                dip::dfloat sigma,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::GradientMagnitude( in, { sigma }, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigma"_a = 1.0,
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-   m.def( "GradientMagnitude", [](
-                dip::Image const& in,
-                dip::FloatArray const& sigmas,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::GradientMagnitude( in, sigmas, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigmas"_a = dip::FloatArray{ 1.0 },
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-
-   m.def( "GradientDirection", [](
-                dip::Image const& in,
-                dip::dfloat sigma,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::GradientDirection( in, { sigma }, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigma"_a = 1.0,
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-   m.def( "GradientDirection", [](
-                dip::Image const& in,
-                dip::FloatArray const& sigmas,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::GradientDirection( in, sigmas, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigmas"_a = dip::FloatArray{ 1.0 },
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-
-   m.def( "Curl", [](
-                dip::Image const& in,
-                dip::dfloat sigma,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::Curl( in, { sigma }, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigma"_a = 1.0,
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-   m.def( "Curl", [](
-                dip::Image const& in,
-                dip::FloatArray const& sigmas,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::Curl( in, sigmas, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigmas"_a = dip::FloatArray{ 1.0 },
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-
-   m.def( "Divergence", [](
-                dip::Image const& in,
-                dip::dfloat sigma,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::Divergence( in, { sigma }, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigma"_a = 1.0,
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-   m.def( "Divergence", [](
-                dip::Image const& in,
-                dip::FloatArray const& sigmas,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::Divergence( in, sigmas, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigmas"_a = dip::FloatArray{ 1.0 },
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-
-   m.def( "Hessian", [](
-                dip::Image const& in,
-                dip::dfloat sigma,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::Hessian( in, { sigma }, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigma"_a = 1.0,
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-   m.def( "Hessian", [](
-                dip::Image const& in,
-                dip::FloatArray const& sigmas,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::Hessian( in, sigmas, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigmas"_a = dip::FloatArray{ 1.0 },
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-
-   m.def( "Laplace", [](
-                dip::Image const& in,
-                dip::dfloat sigma,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::Laplace( in, { sigma }, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigma"_a = 1.0,
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
-   m.def( "Laplace", [](
-                dip::Image const& in,
-                dip::FloatArray const& sigmas,
-                dip::String const& method,
-                dip::StringArray const& boundaryCondition,
-                dip::BooleanArray const& process,
-                dip::dfloat truncation
-          ) {
-             return dip::Laplace( in, sigmas, method, boundaryCondition, process, truncation );
-          },
-          "in"_a,
-          "sigmas"_a = dip::FloatArray{ 1.0 },
-          "method"_a = "best",
-          "boundaryCondition"_a = dip::StringArray{},
-          "process"_a = dip::BooleanArray{},
-          "truncation"_a = 3.0 );
+   // diplib/nonlinear.h
+   m.def( "Kuwahara", py::overload_cast< dip::Image const&, dip::Kernel const&, dip::dfloat, dip::StringArray const& >( &dip::Kuwahara ),
+          "in"_a, "kernel"_a = dip::Kernel{}, "threshold"_a = 0.0, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "SelectionFilter", py::overload_cast< dip::Image const&, dip::Image const&, dip::Kernel const&, dip::dfloat, dip::String const&, dip::StringArray const& >( &dip::SelectionFilter ),
+          "in"_a, "control"_a, "kernel"_a = dip::Kernel{}, "threshold"_a = 0.0, "mode"_a = "minimum", "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "VarianceFilter", py::overload_cast< dip::Image const&, dip::Kernel const&, dip::StringArray const& >( &dip::VarianceFilter ),
+          "in"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "MedianFilter", py::overload_cast< dip::Image const&, dip::Kernel const&, dip::StringArray const& >( &dip::MedianFilter ),
+          "in"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "PercentileFilter", py::overload_cast< dip::Image const&, dip::dfloat, dip::Kernel const&, dip::StringArray const& >( &dip::PercentileFilter ),
+          "in"_a, "percentile"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
 }
