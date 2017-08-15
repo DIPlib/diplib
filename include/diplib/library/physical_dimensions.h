@@ -328,7 +328,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
    PhysicalQuantity() {};
 
    /// Create an arbitrary physical quantity.
-   PhysicalQuantity( double m, Units const& u = {} ) : magnitude( m ), units( u ) {};
+   PhysicalQuantity( dip::dfloat m, Units const& u = {} ) : magnitude( m ), units( u ) {};
 
    /// Create a unit-valued physical quantity.
    PhysicalQuantity( Units const& u ) : magnitude( 1 ), units( u ) {};
@@ -375,7 +375,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       return *this;
    }
    /// Scaling of a physical quantity.
-   PhysicalQuantity& operator*=( double other ) {
+   PhysicalQuantity& operator*=( dip::dfloat other ) {
       magnitude *= other;
       return *this;
    }
@@ -387,7 +387,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       return *this;
    }
    /// Scaling of a physical quantity.
-   PhysicalQuantity& operator/=( double other ) {
+   PhysicalQuantity& operator/=( dip::dfloat other ) {
       magnitude /= other;
       return *this;
    }
@@ -420,7 +420,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       dip::sint other1000 = other.units.Thousands();
       if( this1000 > other1000 ) {
          // bring magnitude of other in sync with this
-         double otherMag = other.magnitude * pow10( 3 * ( other1000 - this1000 ));
+         dip::dfloat otherMag = other.magnitude * pow10( 3 * ( other1000 - this1000 ));
          magnitude += otherMag;
       } else if( this1000 < other1000 ) {
          // bring magnitude of this in sync with other
@@ -445,8 +445,8 @@ struct DIP_NO_EXPORT PhysicalQuantity {
    bool operator==( PhysicalQuantity const& rhs ) const {
       if( units.Thousands() != rhs.units.Thousands() ) {
          if( units.HasSameDimensions( rhs.units )) {
-            double lhsmag =     magnitude * pow10( 3 *     units.Thousands() );
-            double rhsmag = rhs.magnitude * pow10( 3 * rhs.units.Thousands() );
+            dip::dfloat lhsmag =     magnitude * pow10( 3 *     units.Thousands() );
+            dip::dfloat rhsmag = rhs.magnitude * pow10( 3 * rhs.units.Thousands() );
             return lhsmag == rhsmag;
          } else {
             return false;
@@ -492,7 +492,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
    }
 
    /// Retrieve the magnitude, discarding units.
-   explicit operator double() const { return magnitude; };
+   explicit operator dip::dfloat() const { return magnitude; };
 
    /// A physical quantity tests true if it is different from 0.
    explicit operator bool() const { return magnitude != 0; };
@@ -504,8 +504,8 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       swap( units, other.units );
    }
 
-   double magnitude = 0;   ///< The magnitude
-   Units units;            ///< The units
+   dip::dfloat magnitude = 0; ///< The magnitude
+   Units units;               ///< The units
 };
 
 /// Multiplies two physical quantities.
@@ -514,12 +514,12 @@ inline PhysicalQuantity operator*( PhysicalQuantity lhs, PhysicalQuantity const&
    return lhs;
 }
 /// Scaling of a physical quantity.
-inline PhysicalQuantity operator*( PhysicalQuantity lhs, double rhs ) {
+inline PhysicalQuantity operator*( PhysicalQuantity lhs, dip::dfloat rhs ) {
    lhs *= rhs;
    return lhs;
 }
 /// Scaling of a physical quantity.
-inline PhysicalQuantity operator*( double lhs, PhysicalQuantity rhs ) {
+inline PhysicalQuantity operator*( dip::dfloat lhs, PhysicalQuantity rhs ) {
    rhs *= lhs;
    return rhs;
 }
@@ -530,12 +530,12 @@ inline PhysicalQuantity operator/( PhysicalQuantity lhs, PhysicalQuantity const&
    return lhs;
 }
 /// Scaling of a physical quantity.
-inline PhysicalQuantity operator/( PhysicalQuantity lhs, double rhs ) {
+inline PhysicalQuantity operator/( PhysicalQuantity lhs, dip::dfloat rhs ) {
    lhs /= rhs;
    return lhs;
 }
 /// Scaling of a physical quantity.
-inline PhysicalQuantity operator/( double lhs, PhysicalQuantity rhs ) {
+inline PhysicalQuantity operator/( dip::dfloat lhs, PhysicalQuantity rhs ) {
    rhs = rhs.Invert();
    rhs *= lhs;
    return rhs;
@@ -566,7 +566,7 @@ inline void swap( PhysicalQuantity& v1, PhysicalQuantity& v2 ) {
 using PhysicalQuantityArray = DimensionArray< PhysicalQuantity >;
 
 /// Create an arbitrary physical quantity by multiplying a magnitude with units.
-inline PhysicalQuantity operator*( double lhs, Units const& rhs ) {
+inline PhysicalQuantity operator*( dip::dfloat lhs, Units const& rhs ) {
    return PhysicalQuantity( lhs, rhs );
 }
 
@@ -670,43 +670,43 @@ class DIP_NO_EXPORT PixelSize {
       }
 
       /// Sets the pixel size in the given dimension, in nanometers.
-      void SetNanometers( dip::uint d, double m ) {
+      void SetNanometers( dip::uint d, dip::dfloat m ) {
          Set( d, m * PhysicalQuantity::Nanometer() );
       }
       /// Sets the isotropic pixel size, in nanometers.
-      void SetNanometers( double m ) {
+      void SetNanometers( dip::dfloat m ) {
          Set( m * PhysicalQuantity::Nanometer() );
       }
       /// Sets the pixel size in the given dimension, in micrometers.
-      void SetMicrometers( dip::uint d, double m ) {
+      void SetMicrometers( dip::uint d, dip::dfloat m ) {
          Set( d, m * PhysicalQuantity::Micrometer() );
       }
       /// Sets the isotropic pixel size, in micrometers.
-      void SetMicrometers( double m ) {
+      void SetMicrometers( dip::dfloat m ) {
          Set( m * PhysicalQuantity::Micrometer() );
       }
       /// Sets the pixel size in the given dimension, in millimeters.
-      void SetMillimeters( dip::uint d, double m ) {
+      void SetMillimeters( dip::uint d, dip::dfloat m ) {
          Set( d, m * PhysicalQuantity::Millimeter() );
       }
       /// Sets the isotropic pixel size, in millimeters.
-      void SetMillimeters( double m ) {
+      void SetMillimeters( dip::dfloat m ) {
          Set( m * PhysicalQuantity::Millimeter() );
       }
       /// Sets the pixel size in the given dimension, in meters.
-      void SetMeters( dip::uint d, double m ) {
+      void SetMeters( dip::uint d, dip::dfloat m ) {
          Set( d, m * PhysicalQuantity::Meter() );
       }
       /// Sets the isotropic pixel size, in meters.
-      void SetMeters( double m ) {
+      void SetMeters( dip::dfloat m ) {
          Set( m * PhysicalQuantity::Meter() );
       }
       /// Sets the pixel size in the given dimension, in kilometers.
-      void SetKilometers( dip::uint d, double m ) {
+      void SetKilometers( dip::uint d, dip::dfloat m ) {
          Set( d, m * PhysicalQuantity::Kilometer() );
       }
       /// Sets the isotropic pixel size, in kilometers.
-      void SetKilometers( double m ) {
+      void SetKilometers( dip::dfloat m ) {
          Set( m * PhysicalQuantity::Kilometer() );
       }
 
@@ -723,7 +723,7 @@ class DIP_NO_EXPORT PixelSize {
       }
 
       /// Scales the pixel size in the given dimension, if it is defined.
-      void Scale( dip::uint d, double s ) {
+      void Scale( dip::uint d, dip::dfloat s ) {
          if( ( !size_.empty() ) && Get( d ).IsPhysical() ) {
             // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
             EnsureDimensionality( d + 2 );
@@ -732,7 +732,7 @@ class DIP_NO_EXPORT PixelSize {
       }
 
       /// Scales the pixel size isotropically.
-      void Scale( double s ) {
+      void Scale( dip::dfloat s ) {
          for( dip::uint ii = 0; ii < size_.size(); ++ii ) {
             if( size_[ ii ].IsPhysical() ) {
                size_[ ii ] *= s;
@@ -917,6 +917,19 @@ class DIP_NO_EXPORT PixelSize {
       }
 
 };
+
+/// \brief Writes the pixel sizes array to a stream
+inline std::ostream& operator<<( std::ostream& os, PixelSize const& ps ) {
+   os << "{";
+   if( ps.IsDefined() ) {
+      os << ps[ 0 ];
+      for( dip::uint ii = 1; ii < ps.Size(); ++ii ) {
+         os << " x " << ps[ ii ];
+      }
+   }
+   os << "}";
+   return os;
+}
 
 inline void swap( PixelSize& v1, PixelSize& v2 ) {
    v1.swap( v2 );
