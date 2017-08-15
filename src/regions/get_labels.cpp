@@ -72,7 +72,7 @@ class dip__GetLabels : public Framework::ScanLineFilter {
 UnsignedArray GetObjectLabels(
       Image const& label,
       Image const& mask,
-      bool nullIsObject
+      String const& background
 ) {
    // Check input
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -84,6 +84,7 @@ UnsignedArray GetObjectLabels(
          mask.CompareProperties( label, Option::CmpProps_Sizes );
       DIP_END_STACK_TRACE
    }
+   bool nullIsObject = BooleanFromString( background, "include", "exclude" );
 
    // Create arrays for Scan framework
    ImageConstRefArray inar{ label };
@@ -106,7 +107,7 @@ UnsignedArray GetObjectLabels(
    // Count the number of unique labels
    dip::uint count = 0;
    for( auto id : objectIDs ) {
-      if(( id != 0 ) || nullIsObject ) {
+      if( nullIsObject || ( id != 0 )) {
          ++count;
       }
    }
@@ -115,7 +116,7 @@ UnsignedArray GetObjectLabels(
    UnsignedArray out( count );
    count = 0;
    for( auto id : objectIDs ) {
-      if(( id != 0 ) || nullIsObject ) {
+      if( nullIsObject || ( id != 0 )) {
          out[ count ] = id;
          ++count;
       }

@@ -152,11 +152,9 @@ void MorphologicalReconstruction (
    dip::uint nDims = inSizes.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( inSizes != c_marker.Sizes(), E::SIZES_DONT_MATCH );
-   DIP_THROW_IF(( connectivity < 1 ) || ( connectivity > nDims ), E::ILLEGAL_CONNECTIVITY );
+   DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
    bool dilation;
-   DIP_START_STACK_TRACE
-      dilation = BooleanFromString( direction, "dilation", "erosion" );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( dilation = BooleanFromString( direction, "dilation", "erosion" ));
 
    // Make simplified copy of input image header so we can modify it at will.
    // This also effectively separates input and output images. They still point

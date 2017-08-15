@@ -61,15 +61,14 @@ namespace dip {
 DIP_EXPORT dip::uint Label(
       Image const& binary,
       Image& out,
-      dip::uint connectivity,
+      dip::uint connectivity = 0,
       dip::uint minSize = 0,
       dip::uint maxSize = 0,
       StringArray const& boundaryCondition = {}
 );
-
 inline Image Label(
       Image const& binary,
-      dip::uint connectivity,
+      dip::uint connectivity = 0,
       dip::uint minSize = 0,
       dip::uint maxSize = 0,
       StringArray const& boundaryCondition = {}
@@ -80,10 +79,13 @@ inline Image Label(
 }
 
 /// \brief Gets a list of object labels in the labeled image. A labeled image must be of an unsigned type.
+///
+/// If `background` is `"include"`, the label ID 0 will be included in the result if present in the image.
+/// Otherwise, `background` is `"exclude"`, and the label ID 0 will be ignored.
 DIP_EXPORT UnsignedArray GetObjectLabels(
       Image const& label,
       Image const& mask,
-      bool nullIsObject
+      String const& background = "exclude"
 );
 
 /// \brief Removes small objects from a labeled or binary image.
@@ -102,12 +104,12 @@ DIP_EXPORT void SmallObjectsRemove(
       Image const& in,
       Image& out,
       dip::uint threshold,
-      dip::uint connectivity = 1
+      dip::uint connectivity = 0
 );
 inline Image SmallObjectsRemove(
       Image const& in,
       dip::uint threshold,
-      dip::uint connectivity = 1
+      dip::uint connectivity = 0
 ) {
    Image out;
    SmallObjectsRemove( in, out, threshold, connectivity );

@@ -190,7 +190,7 @@ void AreaOpening(
    DIP_THROW_IF( !c_in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nDims = c_in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF(( connectivity < 1 ) || ( connectivity > nDims ), E::ILLEGAL_CONNECTIVITY );
+   DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
    bool lowFirst;
    DIP_START_STACK_TRACE
       lowFirst = BooleanFromString( polarity, "closing", "opening" );

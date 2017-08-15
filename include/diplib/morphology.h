@@ -893,13 +893,13 @@ DIP_EXPORT void Minima(
       Image const& in,
       Image const& mask,
       Image& out,
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       String const& output = "binary"
 );
 inline Image Minima(
       Image const& in,
       Image const& mask = {},
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       String const& output = "binary"
 ) {
    Image out;
@@ -926,13 +926,13 @@ DIP_EXPORT void Maxima(
       Image const& in,
       Image const& mask,
       Image& out,
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       String const& output = "binary"
 );
 inline Image Maxima(
       Image const& in,
       Image const& mask = {},
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       String const& output = "binary"
 ) {
    Image out;
@@ -969,13 +969,13 @@ DIP_EXPORT void MorphologicalReconstruction(
       Image const& marker,
       Image const& in, // grey-value mask
       Image& out,
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       String const& direction = "dilation" // alt: "erosion"
 );
 inline Image MorphologicalReconstruction(
       Image const& marker,
       Image const& in,
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       String const& direction = "dilation"
 ) {
    Image out;
@@ -996,7 +996,7 @@ inline void HMinima(
       Image const& in,
       Image& out,
       dfloat h,
-      dip::uint connectivity = 1
+      dip::uint connectivity = 0
 ) {
    Image tmp = Add( in, h, in.DataType() );
    MorphologicalReconstruction( tmp, in, out, connectivity, "erosion" );
@@ -1004,7 +1004,7 @@ inline void HMinima(
 inline Image HMinima(
       Image const& in,
       dfloat h,
-      dip::uint connectivity = 1
+      dip::uint connectivity = 0
 ) {
    Image out;
    HMinima( in, out, h, connectivity );
@@ -1024,7 +1024,7 @@ inline void HMaxima(
       Image const& in,
       Image& out,
       dfloat h,
-      dip::uint connectivity = 1
+      dip::uint connectivity = 0
 ) {
    Image tmp = Subtract( in, h, in.DataType() );
    MorphologicalReconstruction( tmp, in, out, connectivity, "dilation" );
@@ -1032,7 +1032,7 @@ inline void HMaxima(
 inline Image HMaxima(
       Image const& in,
       dfloat h,
-      dip::uint connectivity = 1
+      dip::uint connectivity = 0
 ) {
    Image out;
    HMaxima( in, out, h, connectivity );
@@ -1067,14 +1067,14 @@ DIP_EXPORT void AreaOpening(
       Image const& mask,
       Image& out,
       dip::uint filterSize,
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       String const& polarity = "opening" // vs "closing"
 );
 inline Image AreaOpening(
       Image const& in,
       Image const& mask,
       dip::uint filterSize,
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       String const& polarity = "opening" // vs "closing"
 ) {
    Image out;
@@ -1088,7 +1088,7 @@ inline void AreaClosing(
       Image const& mask,
       Image& out,
       dip::uint filterSize,
-      dip::uint connectivity = 1
+      dip::uint connectivity = 0
 ) {
    AreaOpening( in, mask, out, filterSize, connectivity, "closing" );
 }
@@ -1096,7 +1096,7 @@ inline Image AreaClosing(
       Image const& in,
       Image const& mask,
       dip::uint filterSize,
-      dip::uint connectivity = 1
+      dip::uint connectivity = 0
 ) {
    Image out;
    AreaClosing( in, mask, out, filterSize, connectivity );
@@ -1192,7 +1192,7 @@ inline void OpeningByReconstruction(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       StringArray const& boundaryCondition = {}
 ) {
    DIP_START_STACK_TRACE
@@ -1204,7 +1204,7 @@ inline void OpeningByReconstruction(
 inline Image OpeningByReconstruction(
       Image const& in,
       StructuringElement const& se = {},
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
@@ -1221,7 +1221,7 @@ inline void ClosingByReconstruction(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       StringArray const& boundaryCondition = {}
 ) {
    DIP_START_STACK_TRACE
@@ -1232,7 +1232,7 @@ inline void ClosingByReconstruction(
 inline Image ClosingByReconstruction(
       Image const& in,
       StructuringElement const& se = {},
-      dip::uint connectivity = 1,
+      dip::uint connectivity = 0,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;

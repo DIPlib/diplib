@@ -53,7 +53,7 @@ static ChainCode dip__OneChainCode(
    ChainCode out;
    out.start = coord;
    out.objectID = label;
-   out.is8connected = connectivity == 2;
+   out.is8connected = connectivity != 1; // 0 means 8-connected also
    // Follow contour always as left as possible (i.e. ii = ii+2)
    dip::sint offset = 0;
    unsigned dir = 0; // start direction given by how we determine the start position!
@@ -148,7 +148,7 @@ ChainCodeArray GetImageChainCodes(
    DIP_START_STACK_TRACE
       labels.CheckProperties( 2, 1, DataType::Class_UInt );
    DIP_END_STACK_TRACE
-   DIP_THROW_IF( !( connectivity == 1 || connectivity == 2 ), E::CONNECTIVITY_NOT_SUPPORTED );
+   DIP_THROW_IF( connectivity > 2, E::CONNECTIVITY_NOT_SUPPORTED );
 
    // Initialize freeman codes
    ChainCode::CodeTable codeTable = ChainCode::PrepareCodeTable( connectivity, labels.Strides() );
@@ -157,7 +157,7 @@ ChainCodeArray GetImageChainCodes(
    ObjectIdList objectIdList;
    dip::uint nObjects;
    if (objectIDs.empty()) {
-      UnsignedArray allObjectIDs = GetObjectLabels( labels, Image(), false );
+      UnsignedArray allObjectIDs = GetObjectLabels( labels, Image(), "exclude" );
       for( dip::uint ii = 0; ii < allObjectIDs.size(); ++ii ) {
          objectIdList.emplace( allObjectIDs[ ii ], ObjectData{ ii, false } );
       }
@@ -187,7 +187,7 @@ ChainCode GetSingleChainCode(
    DIP_START_STACK_TRACE
       labels.CheckProperties( 2, 1, DataType::Class_Unsigned );
    DIP_END_STACK_TRACE
-   DIP_THROW_IF( !( connectivity == 1 || connectivity == 2 ), E::CONNECTIVITY_NOT_SUPPORTED );
+   DIP_THROW_IF( connectivity > 2, E::CONNECTIVITY_NOT_SUPPORTED );
 
    // Initialize freeman codes
    ChainCode::CodeTable codeTable = ChainCode::PrepareCodeTable( connectivity, labels.Strides() );

@@ -269,6 +269,10 @@ dip::uint Label(
    out.StandardizeStrides(); // Reorder dimensions so the looping is more efficient.
 
    LabelRegionList regions{ std::plus< dip::uint >{} };
+
+   if( connectivity == 0 ) {
+      connectivity = nDims;
+   }
    NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
 
    // First scan

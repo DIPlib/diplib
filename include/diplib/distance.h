@@ -156,13 +156,13 @@ DIP_EXPORT void GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& in,
       Image&  out,
-      Metric const& metric,
+      Metric const& metric = { "chamfer", 2 },
       String const& outputMode = "GDT" // or: "Euclidean" or "both"
 );
 inline Image GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& in,
-      Metric const& metric,
+      Metric const& metric = { "chamfer", 2 },
       String const& outputMode = "GDT" // or: "Euclidean" or "both"
 ) {
    Image out;

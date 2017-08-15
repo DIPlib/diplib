@@ -21,6 +21,7 @@ This page describes assorted concepts used in *DIPlib* 3.0.
 
 \tableofcontents
 
+
 [//]: # (--------------------------------------------------------------)
 
 \section connectivity Connectivity
@@ -36,7 +37,8 @@ of 2 leads to 8 nearest neighbors (the edge and vertex neighbors).
 
 We use negative values for connectivity in some algorithms. These indicate alternating
 connectivities, which leads to more isotropic shapes, in e.g. the binary dilation, than
-using the same connectivity for all iterations.
+using the same connectivity for all iterations. These alternating connectivities are
+available only if the function takes a `dip::sint` as connectivity parameter.
 
 In terms of the classical connectivity denominations we have, in 2D:
 
@@ -56,6 +58,10 @@ Connectivity | Classical denominations | Structuring element shape
 3            | 26 connectivity         | cube
 -1           | 6-26 connectivity       | small rhombicuboctahedron
 -3           | 26-6 connectivity       | small rhombicuboctahedron
+
+Some functions will interpret a connectivity of 0 to mean the maximum connectivity
+(i.e. equal to the image dimensionality). This is an easy way to define a default
+value that changes depending on the image dimensionality.
 
 
 [//]: # (--------------------------------------------------------------)

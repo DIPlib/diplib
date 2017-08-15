@@ -163,7 +163,7 @@ void Extrema(
    UnsignedArray inSizes = c_in.Sizes();
    dip::uint nDims = inSizes.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF(( connectivity < 1 ) || ( connectivity > nDims ), E::ILLEGAL_CONNECTIVITY );
+   DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
    bool binaryOutput;
    DIP_START_STACK_TRACE
       binaryOutput = BooleanFromString( output, "binary", "labels" );

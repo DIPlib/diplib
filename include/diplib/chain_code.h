@@ -661,8 +661,8 @@ struct DIP_NO_EXPORT ChainCode {
    /// \brief Returns a table that is useful when processing the chain code
    static CodeTable PrepareCodeTable( dip::uint connectivity, IntegerArray const& strides ) {
       DIP_THROW_IF( strides.size() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-      DIP_THROW_IF(( connectivity < 1 ) || ( connectivity > 2 ), E::CONNECTIVITY_NOT_SUPPORTED );
-      return CodeTable( connectivity == 2, strides );
+      DIP_THROW_IF( connectivity > 2, E::CONNECTIVITY_NOT_SUPPORTED );
+      return CodeTable( connectivity != 1, strides ); // 0 means 8-connected also
    }
 
    /// \brief Returns the length of the chain code using the method by Vossepoel and Smeulders.

@@ -260,7 +260,7 @@ void FastWatershed(
    for( auto sz : inSizes ) {
       DIP_THROW_IF( sz < 3, "Input image is too small" );
    }
-   DIP_THROW_IF(( connectivity < 1 ) || ( connectivity > nDims ), E::ILLEGAL_CONNECTIVITY );
+   DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
    if( maxDepth < 0 ) {
       maxDepth = 0;
    }
@@ -550,7 +550,7 @@ void SeededWatershed(
    dip::uint nDims = inSizes.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( inSizes != c_seeds.Sizes(), E::SIZES_DONT_MATCH );
-   DIP_THROW_IF(( connectivity < 1 ) || ( connectivity > nDims ), E::ILLEGAL_CONNECTIVITY );
+   DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
    if( maxDepth < 0 ) {
       maxDepth = 0;
    }
