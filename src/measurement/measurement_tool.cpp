@@ -352,9 +352,7 @@ std::ostream& operator<<(
    auto const& values = msr.Values();
    std::vector< int > valueWidths( values.size(), 0 );
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-      std::stringstream ss;
-      ss << values[ ii ].units;
-      std::string units = ss.str();
+      std::string units = values[ ii ].units.String();
       valueWidths[ ii ] = std::max( int( values[ ii ].name.size() ), int( units.size() ) + 2 ); // + 2 for the brackets we'll add later
       valueWidths[ ii ] = std::max( valueWidths[ ii ], minimumColumnWidth );
    }
@@ -388,10 +386,8 @@ std::ostream& operator<<(
    // Write out the header: value units
    std::cout << std::setw( firstColumnWidth ) << " " << " | ";
    for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-      std::stringstream ss;
-      ss << values[ ii ].units;
-      std::string units = '(' + ss.str() + ')';
-      std::cout << std::setw( valueWidths[ ii ] ) << units << " | ";
+      std::string units = '(' + values[ ii ].units.String() + ')';
+      std::cout << std::setw( valueWidths[ ii ] ) << units << " | "; // TODO: this does not work with UTF-8 strings, not enough characters are output.
    }
    std::cout << std::endl;
    // Write out the header: horizontal line

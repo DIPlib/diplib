@@ -42,7 +42,7 @@ class FeatureConvexArea : public ConvexHullBased {
       }
 
       virtual void Measure( ConvexHull const& convexHull, Measurement::ValueIterator output ) override {
-         output[ 0 ] = convexHull.Area() * scale_;
+         output[ 0 ] = ( convexHull.Area() + 0.5 ) * scale_;
       }
 
    private:
