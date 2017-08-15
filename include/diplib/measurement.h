@@ -147,11 +147,11 @@ class DIP_NO_EXPORT Measurement {
       using ValueIterator = ValueType*;   ///< A pointer to measurement data, which we can treat as an iterator
 
       /// \brief Structure containing information about the features stored in a `dip::Measurement` object
-      struct DIP_NO_EXPORT FeatureInfo {
+      struct DIP_NO_EXPORT FeatureInformation {
          String name;            ///< Name of the feature
          dip::uint startColumn;  ///< Column for first value of feature
          dip::uint numberValues; ///< Number of vales in feature
-         FeatureInfo( String const& name, dip::uint startColumn, dip::uint numberValues )
+         FeatureInformation( String const& name, dip::uint startColumn, dip::uint numberValues )
                : name( name ), startColumn( startColumn ), numberValues( numberValues ) {}
       };
 
@@ -261,7 +261,7 @@ class DIP_NO_EXPORT Measurement {
                   measurement_( measurement ), index_( 0 ),
                   startColumn_( startColumn ), numberValues_( numberValues ) {}
             dip::uint NumberOfFeatures() const { return measurement_.NumberOfFeatures(); }
-            FeatureInfo const& Feature() const { return measurement_.features_[ index_ ]; }
+            FeatureInformation const& Feature() const { return measurement_.features_[ index_ ]; }
             Measurement const& measurement_;
             dip::uint index_;
             dip::uint startColumn_;  // A local copy of measurement_.features_[ index_ ].startColumn, so that it can be tweaked.
@@ -315,7 +315,7 @@ class DIP_NO_EXPORT Measurement {
                   dip::uint ObjectIndex() const { return object_.ObjectIndex(); }
                private:
                   Iterator( IteratorObject const& object, dip::uint index ) : object_( object ), index_( index ) {}
-                  FeatureInfo const& Feature() const { return object_.measurement_.features_[ index_ ]; }
+                  FeatureInformation const& Feature() const { return object_.measurement_.features_[ index_ ]; }
                   IteratorObject const& object_;
                   dip::uint index_;
             };
@@ -338,7 +338,7 @@ class DIP_NO_EXPORT Measurement {
             /// \brief Number of features
             dip::uint NumberOfFeatures() const { return measurement_.NumberOfFeatures(); }
             /// \brief Returns an array of feature names
-            std::vector< FeatureInfo > const& Features() const { return measurement_.Features(); }
+            std::vector< FeatureInformation > const& Features() const { return measurement_.Features(); }
             /// \brief Returns the index to the first columns for the feature
             dip::uint ValueIndex( String const& name ) const { return measurement_.ValueIndex( name ); }
          private:
@@ -441,7 +441,7 @@ class DIP_NO_EXPORT Measurement {
       }
 
       /// \brief Returns an array of feature names
-      std::vector< FeatureInfo > const& Features() const {
+      std::vector< FeatureInformation > const& Features() const {
          return features_;
       }
 
@@ -525,7 +525,7 @@ class DIP_NO_EXPORT Measurement {
       }
       UnsignedArray objects_;                         // the rows of the table (maps row indices to objectIDs)
       ObjectIdToIndexMap objectIndices_;              // maps object IDs to row indices
-      std::vector< FeatureInfo > features_;           // the column groups of the table (maps column group indices to feature names and contains other info also)
+      std::vector< FeatureInformation > features_;           // the column groups of the table (maps column group indices to feature names and contains other info also)
       Feature::ValueInformationArray values_;         // the columns of the table
       std::map< String, dip::uint > featureIndices_;  // maps feature names to column group indices
       std::vector< ValueType > mutable data_;         // this is mutable so that a const object doesn't have const data -- the only reason for this is to avoid making const versions of the iterators, which seems pointless
@@ -538,8 +538,8 @@ class DIP_NO_EXPORT Measurement {
 // Overloaded operators
 //
 
-/// \brief You can output a `dip::Image` to `std::cout` or any other stream. Some
-/// information about the image is printed.
+/// \brief You can output a `dip::Measurement` to `std::cout` or any other stream to produce a human-readable
+/// representation of the tabular data in it.
 DIP_EXPORT std::ostream& operator<<( std::ostream& os, Measurement const& msr );
 
 
