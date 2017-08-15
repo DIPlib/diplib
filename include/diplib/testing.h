@@ -39,8 +39,9 @@ namespace dip {
 namespace Option {
 /// \brief How to compare images in `dip::testing::CompareImages`.
 enum class DIP_NO_EXPORT CompareImagesMode {
-      DATA_ONLY,  ///< Compare only the sample values (and image sizes)
-      FULL        ///< Compare sample values as well as tensor shape, color space, and pixel size
+      APPROX,  ///< Compare the sample values (and image sizes), to match within
+      EXACT,   ///< Compare only the sample values (and image sizes)
+      FULL     ///< Compare for identical sample values as well as tensor shape, color space, and pixel size
 };
 }
 
@@ -49,23 +50,13 @@ namespace testing {
 
 namespace detail {
 
+// For integral types (uint, sint, bin) -- dip::sint can hold the value of any integer-valued pixel.
 template< typename T, typename std::enable_if< std::is_integral< T >::value, int >::type = 0 >
-T Round( T v, int /*digits*/) {
+dip::sint Round( T v, int /*digits*/) {
    return v;
 }
 
-dip::uint32 Round( dip::uint8 v, int /*digits*/) { // prevent outputting char
-   return v;
-}
-
-dip::sint32 Round( dip::sint8 v, int /*digits*/) { // prevent outputting char
-   return v;
-}
-
-dip::sint32 Round( dip::bin v, int /*digits*/) { // dip::bin is not integral...
-   return v;
-}
-
+// For floating-point types
 template< typename T, typename std::enable_if< !std::is_integral< T >::value, int >::type = 0 >
 T Round( T v, int digits ) {
    int intDigits = std::abs( v ) < 10.0 ? 1 : static_cast< int >( std::floor( std::log10( std::abs( v ))));
@@ -81,6 +72,7 @@ T Round( T v, int digits ) {
    }
 }
 
+// For complex types
 template< typename T >
 std::complex< T > Round( std::complex< T > v, int digits ) {
    return { Round( v.real(), digits ), Round( v.imag(), digits ) };
@@ -101,10 +93,8 @@ std::complex< T > Round( std::complex< T > v, int digits ) {
 ///
 /// An optional second template parameter determines the precision for displaying floating-point values.
 template< typename TPI, int DIGITS = 4 >
-void PrintPixelValues(
-      Image img
-) {
-   DIP_THROW_IF( img.DataType() != DataType( TPI()), "Wrong template parameter to PrintPixelValues() used" );
+void PrintPixelValues( Image img ) {
+   DIP_THROW_IF( img.DataType() != DataType( TPI() ), "Wrong template parameter to PrintPixelValues() used" );
    dip::uint lineLength = img.Size( 0 );
    std::cout << "Image of size " << lineLength << " x " << img.Sizes().product() / lineLength << ":\n";
    dip::ImageIterator< TPI > it( img, 0 );
@@ -124,25 +114,82 @@ void PrintPixelValues(
 }
 
 
-/// \brief Compare two images, return true only if they have the same sizes, number of tensor elements, and
-/// sample values. Optionally also compares non-data properties. Does not compare strides.
-inline bool CompareImages( Image const& img1, Image const& img2, Option::CompareImagesMode mode = Option::CompareImagesMode::DATA_ONLY ) {
+/// \brief Compares two images. Returns test result and prints to `stdout` the reason of failure
+/// if the test fails.
+///
+/// Returns `true` only if they have the same sizes, number of tensor elements, and sample values.
+/// If the result is `false`, it prints a message to `stdout` that starts with
+/// `[dip::testing::CompareImages]` and gives the reason that the test failed.
+///
+/// If `mode` is `dip::Option::CompareImagesMode::APPROX`, the sample values must all be within
+/// `epsilon`, which defaults to 1e-6. For this mode of operation there is an overloaded function
+/// that takes `epsilon` as the 3rd argument (i.e. you can skip the `mode` parameter):
+/// ```cpp
+///     dip::CompareImages( img1, img2 );       // samples must be identical
+///     dip::CompareImages( img1, img2, 1e-3 ); // samples must be within 1e-3 of each other
+/// ```
+///
+/// If `mode` is `dip::Option::CompareImagesMode::FULL`, the sample values must match exactly, and
+/// non-data properties (tensor shape, color space and pixel size) must also match exactly.
+///
+/// This function does not compare strides.
+inline bool CompareImages(
+      Image const& img1,
+      Image const& img2,
+      Option::CompareImagesMode mode = Option::CompareImagesMode::EXACT,
+      dfloat epsilon = 1e-6
+) {
    if( &img1 == &img2 ) { return true; }
-   if( img1.TensorElements() != img2.TensorElements() ) { return false; }
-   if( img1.Sizes() != img2.Sizes() ) { return false; }
+   if( img1.TensorElements() != img2.TensorElements() ) {
+      std::cout << "[dip::testing::CompareImages] Number of tensor elements doesn't match\n";
+      return false;
+   }
+   if( img1.Sizes() != img2.Sizes() ) {
+      std::cout << "[dip::testing::CompareImages] Image sizes don't match\n";
+      return false;
+   }
+   if( mode == Option::CompareImagesMode::APPROX ) {
+      dfloat mae = MaximumAbsoluteError( img1, img2 );
+      if( mae > epsilon ) {
+         std::cout << "[dip::testing::CompareImages] Maximum absolute error = " << mae << " > " << epsilon << std::endl;
+      }
+      return mae <= epsilon;
+   }
    if( img1.TensorElements() > 1 ) {
       Image tmp1 = img1.QuickCopy(); tmp1.TensorToSpatial();
       Image tmp2 = img2.QuickCopy(); tmp2.TensorToSpatial();
-      if( !All( tmp1 == tmp2 ).As< bool >() ) { return false; }
+      if( !All( tmp1 == tmp2 ).As< bool >()) {
+         std::cout << "[dip::testing::CompareImages] At least one sample value differs\n";
+         return false;
+      }
    } else {
-      if( !All( img1 == img2 ).As< bool >() ) { return false; }
+      if( !All( img1 == img2 ).As< bool >()) {
+         std::cout << "[dip::testing::CompareImages] At least one sample value differs\n";
+         return false;
+      }
    }
    if( mode == Option::CompareImagesMode::FULL ) {
-      if( img1.TensorShape() != img2.TensorShape() ) { return false; }
-      if( img1.ColorSpace() != img2.ColorSpace() ) { return false; }
-      if( img1.PixelSize() != img2.PixelSize() ) { return false; }
+      if( img1.TensorShape() != img2.TensorShape() ) {
+         std::cout << "[dip::testing::CompareImages] Tensor shape doesn't match\n";
+         return false;
+      }
+      if( img1.ColorSpace() != img2.ColorSpace() ) {
+         std::cout << "[dip::testing::CompareImages] Color space doesn't match\n";
+         return false;
+      }
+      if( img1.PixelSize() != img2.PixelSize() ) {
+         std::cout << "[dip::testing::CompareImages] Pixel size doesn't match\n";
+         return false;
+      }
    }
    return true;
+}
+inline bool CompareImages(
+      Image const& img1,
+      Image const& img2,
+      dfloat epsilon
+) {
+   return CompareImages( img1, img2, Option::CompareImagesMode::APPROX, epsilon );
 }
 
 /// \brief A timer object to help time algorithm execution.

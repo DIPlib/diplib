@@ -529,6 +529,14 @@ inline dfloat RootMeanSquareError( Image const& in1, Image const& in2, Image con
 /// Singleton expansion is applied if the image sizes don't match.
 DIP_EXPORT dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image const& mask = {} );
 
+/// \brief Calculates the maximum absolute error difference between corresponding sample values of `in1` and `in2`.
+///
+/// Optionally the `mask` image can be used to exclude pixels from the calculation by setting the value of
+/// these pixels in `mask` to zero.
+///
+/// Singleton expansion is applied if the image sizes don't match.
+DIP_EXPORT dfloat MaximumAbsoluteError( Image const& in1, Image const& in2, Image const& mask = {} );
+
 /// \brief Calculates the I-divergence between corresponding sample values of `in1` and `in2`.
 ///
 /// The I-Divergence is defined as \f$I(x,y) = x \ln(x/y) - (x - y)\f$ and is divided by the number of pixels.

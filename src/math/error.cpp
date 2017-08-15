@@ -72,6 +72,18 @@ dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image const& mask 
    return error.As< dfloat >();
 }
 
+dfloat MaximumAbsoluteError( Image const& in1, Image const& in2, Image const& mask ) {
+   Image error;
+   DIP_START_STACK_TRACE
+      error = MaximumAbs( in1 - in2, mask );
+   DIP_END_STACK_TRACE
+   if( !error.IsScalar() ) {
+      error.TensorToSpatial( 0 );
+      error = Maximum( error ); // max across tensor elements also
+   }
+   return error.As< dfloat >();
+}
+
 namespace {
 
 class IDivergenceLineFilter : public Framework::ScanLineFilter {

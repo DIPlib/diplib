@@ -800,6 +800,7 @@ void GaussIIR(
 #include "doctest.h"
 #include "diplib/statistics.h"
 #include "diplib/iterators.h"
+#include "diplib/testing.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the IIR Gaussian filter") {
 
@@ -814,17 +815,17 @@ DOCTEST_TEST_CASE("[DIPlib] testing the IIR Gaussian filter") {
    DOCTEST_CHECK( std::abs( r1.At( 128 ).As< dip::dfloat >() - amplitude ) < 0.00015 );
    DOCTEST_CHECK( dip::Sum( r1 ).As< dip::dfloat >() == doctest::Approx( 1.0 ));
    dip::Image r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 4 }, "discrete time fit"  );
-   DOCTEST_CHECK( std::abs( dip::Maximum( r1 - r2 ).As< dip::dfloat >() ) < 0.0002 );
+   DOCTEST_CHECK( dip::testing::CompareImages( r1, r2, 0.0003 ));
    r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 3 }, "discrete time fit"  );
-   DOCTEST_CHECK( std::abs( dip::Maximum( r1 - r2 ).As< dip::dfloat >() ) < 0.001 );
+   DOCTEST_CHECK( dip::testing::CompareImages( r1, r2, 0.002 ));
    r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 2 }, "discrete time fit"  );
-   DOCTEST_CHECK( std::abs( dip::Maximum( r1 - r2 ).As< dip::dfloat >() ) < 0.004 );
+   DOCTEST_CHECK( dip::testing::CompareImages( r1, r2, 0.004 ));
    r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 5 }, "forward backward"  );
-   DOCTEST_CHECK( std::abs( dip::Maximum( r1 - r2 ).As< dip::dfloat >() ) < 0.002 );
+   DOCTEST_CHECK( dip::testing::CompareImages( r1, r2, 0.003 ));
    r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 4 }, "forward backward"  );
-   DOCTEST_CHECK( std::abs( dip::Maximum( r1 - r2 ).As< dip::dfloat >() ) < 0.002 );
+   DOCTEST_CHECK( dip::testing::CompareImages( r1, r2, 0.002 ));
    r2 = dip::GaussIIR( img, { sigma }, { 0 }, {}, { 3 }, "forward backward"  );
-   DOCTEST_CHECK( std::abs( dip::Maximum( r1 - r2 ).As< dip::dfloat >() ) < 0.004 );
+   DOCTEST_CHECK( dip::testing::CompareImages( r1, r2, 0.009 ));
 
    // Test first order derivative
    dip::ImageIterator< dip::dfloat > it( img );

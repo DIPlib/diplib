@@ -323,6 +323,7 @@ void GaussFT(
 #include "doctest.h"
 #include "diplib/statistics.h"
 #include "diplib/iterators.h"
+#include "diplib/testing.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
 
@@ -336,9 +337,9 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
    DOCTEST_CHECK( std::abs( ft.At( 128 ).As< dip::dfloat >() - amplitude ) < 0.00015 );
    DOCTEST_CHECK( dip::Sum( ft ).As< dip::dfloat >() == doctest::Approx( 1.0 ));
    dip::Image fir = dip::GaussFIR( img, { sigma }, { 0 } );
-   DOCTEST_CHECK( std::abs( dip::Maximum( fir - ft ).As< dip::dfloat >() ) < 0.0003 );
+   DOCTEST_CHECK( dip::testing::CompareImages( fir, ft, 0.0006 ));
    dip::Image iir = dip::GaussIIR( img, { sigma }, { 0 } );
-   DOCTEST_CHECK( std::abs( dip::Maximum( iir - ft ).As< dip::dfloat >() ) < 0.0015 );
+   DOCTEST_CHECK( dip::testing::CompareImages( iir, ft, 0.0015 ));
 
    // Test first derivative for the 3 filters
    dip::ImageIterator< dip::dfloat > it( img );
@@ -346,11 +347,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Gaussian filters") {
       *it = x;
    }
    ft = dip::GaussFT( img, { sigma }, { 1 } );
-   DOCTEST_CHECK( std::abs( ft.At( 128 )[ 0 ].As< dip::dfloat >() - 1.0 ) < 0.0015 ); // Affected by edge effects?
+   DOCTEST_CHECK( std::abs( ft.At( 128 ).As< dip::dfloat >() - 1.0 ) < 0.0015 ); // Affected by edge effects?
    fir = dip::GaussFIR( img, { sigma }, { 1 } );
-   DOCTEST_CHECK( fir.At( 128 )[ 0 ].As< dip::dfloat >() == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( fir.At( 128 ).As< dip::dfloat >() == doctest::Approx( 1.0 ));
    iir = dip::GaussIIR( img, { sigma }, { 1 } );
-   DOCTEST_CHECK( iir.At( 128 )[ 0 ].As< dip::dfloat >() == doctest::Approx( 1.0 ));
+   DOCTEST_CHECK( iir.At( 128 ).As< dip::dfloat >() == doctest::Approx( 1.0 ));
 
    // Test second derivative for the 3 filters
    img = img * img;
