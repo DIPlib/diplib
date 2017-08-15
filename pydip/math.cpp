@@ -66,9 +66,7 @@ void init_math( py::module& m ) {
    m.def( "Conjugate", py::overload_cast< dip::Image const& >( &dip::Conjugate ), "in"_a );
    m.def( "Sign", py::overload_cast< dip::Image const& >( &dip::Sign ), "in"_a );
    m.def( "NearestInt", py::overload_cast< dip::Image const& >( &dip::NearestInt ), "in"_a );
-   //m.def( "Supremum", py::overload_cast< dip::ImageConstRefArray const& >( &dip::Supremum ), "in"_a );
    m.def( "Supremum", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Supremum ), "in1"_a, "in2"_a );
-   //m.def( "Infimum", py::overload_cast< dip::ImageConstRefArray const& >( &dip::Infimum ), "in"_a );
    m.def( "Infimum", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Infimum ), "in1"_a, "in2"_a );
    m.def( "SignedInfimum", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::SignedInfimum ), "in1"_a, "in2"_a );
    m.def( "LinearCombination", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::dfloat >( &dip::LinearCombination ),
@@ -92,11 +90,19 @@ void init_math( py::module& m ) {
           static_cast< dip::Image ( * )( dip::Image const& ) >( &dip::Trace ), "in"_a );
    m.def( "Rank", py::overload_cast< dip::Image const& >( &dip::Rank ), "in"_a );
    m.def( "Eigenvalues", py::overload_cast< dip::Image const& >( &dip::Eigenvalues ), "in"_a );
-   //m.def( "EigenDecomposition", py::overload_cast< dip::Image const&, dip::Image&, dip::Image& >( &dip::EigenDecomposition ), "in"_a, "out"_a, "eigenvectors"_a );
+   m.def( "EigenDecomposition", []( dip::Image const& in ){
+             dip::Image out, eigenvectors;
+             dip::EigenDecomposition( in, out, eigenvectors );
+             py::make_tuple( out, eigenvectors ).release();
+          }, "in"_a );
    m.def( "Inverse", py::overload_cast< dip::Image const& >( &dip::Inverse ), "in"_a );
    m.def( "PseudoInverse", py::overload_cast< dip::Image const& >( &dip::PseudoInverse ), "in"_a );
    m.def( "SingularValues", py::overload_cast< dip::Image const& >( &dip::SingularValues ), "in"_a );
-   //m.def( "SingularValueDecomposition", py::overload_cast< dip::Image const&, dip::Image&, dip::Image&, dip::Image& >( &dip::SingularValueDecomposition ), "A"_a, "U"_a, "S"_a, "V"_a );
+   m.def( "SingularValueDecomposition", []( dip::Image const& in ){
+             dip::Image U, S, V;
+             dip::SingularValueDecomposition( in, U, S, V );
+             py::make_tuple( U, S, V ).release();
+          }, "in"_a );
    m.def( "Identity", py::overload_cast< dip::Image const& >( &dip::Identity ), "in"_a );
 
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::Image const&, dip::String const& >( &dip::Select ),

@@ -24,7 +24,6 @@
 #include "diplib/geometry.h"
 #include "diplib/histogram.h"
 #include "diplib/lookup_table.h"
-#include "diplib/transform.h"
 
 namespace {
 
@@ -94,7 +93,7 @@ dip::Image DisplayMode(
 
 void init_assorted( py::module& m ) {
    // diplib/color.h
-   auto mcol = m.def_submodule("ColorSpaceManager");
+   auto mcol = m.def_submodule("ColorSpaceManager", "A Tool to convert images from one color space to another.");
    mcol.def( "Convert", []( dip::Image const& in, dip::String const& colorSpaceName ){ return colorSpaceManager.Convert( in, colorSpaceName ); }, "in"_a, "colorSpaceName"_a = "RGB" );
    mcol.def( "IsDefined", []( dip::String const& colorSpaceName ){ return colorSpaceManager.IsDefined( colorSpaceName ); }, "colorSpaceName"_a = "RGB" );
    mcol.def( "NumberOfChannels", []( dip::String const& colorSpaceName ){ return colorSpaceManager.NumberOfChannels( colorSpaceName ); }, "colorSpaceName"_a = "RGB" );
@@ -211,9 +210,4 @@ void init_assorted( py::module& m ) {
       return lookupTable.Apply( in, interpolation );
    }, "in"_a, "lut"_a, "index"_a = dip::FloatArray{}, "interpolation"_a = "linear", "mode"_a = "clamp", "lowerValue"_a = 0.0, "upperValue"_a = 0.0
    );
-
-   // diplib/transform.h
-   m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::BooleanArray const& >( &dip::FourierTransform ),
-          "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
-   m.def( "OptimalFourierTransformSize", &dip::OptimalFourierTransformSize, "size"_a );
 }

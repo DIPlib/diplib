@@ -17,11 +17,88 @@
  */
 
 #include "pydip.h"
-#include "diplib/analysis.h"     // TODO: include functions from diplib/analysis.h
-#include "diplib/distance.h"     // TODO: include functions from diplib/distance.h
-#include "diplib/microscopy.h"   // TODO: include functions from diplib/microscopy.h
-#include "diplib/regions.h"      // TODO: include functions from diplib/regions.h
-#include "diplib/segmentation.h" // TODO: include functions from diplib/segmentation.h
+#include "diplib/analysis.h"
+#include "diplib/distance.h"
+#include "diplib/microscopy.h"
+#include "diplib/regions.h"
+#include "diplib/segmentation.h"
 
-void init_analysis( py::module& /*m*/ ) {
+/*
+struct SubpixelLocationResult {
+   FloatArray coordinates;
+   dfloat value;
+};
+*/
+
+void init_analysis( py::module& m ) {
+
+   // diplib/analysis.h
+
+   auto loc = py::class_< dip::SubpixelLocationResult >( m, "SubpixelLocationResult", "The result of a call to PyDIP.SubpixelLocation." );
+   loc.def_readonly( "coordinates", &dip::SubpixelLocationResult::coordinates );
+   loc.def_readonly( "value", &dip::SubpixelLocationResult::value );
+   loc.def( "__repr__", []( dip::SubpixelLocationResult const& self ) {
+               std::ostringstream os;
+               os << "<SubpixelLocationResult at " << self.coordinates << " with value " << self.value << ">";
+               return os.str();
+            } );
+
+   m.def( "SubpixelLocation", &dip::SubpixelLocation,
+          "in"_a, "position"_a, "polarity"_a = "maximum", "method"_a = "parabolic separable" );
+   m.def( "SubpixelMaxima", &dip::SubpixelMaxima,
+          "in"_a, "mask"_a = dip::Image{}, "method"_a = "parabolic separable" );
+   m.def( "SubpixelMinima", &dip::SubpixelMinima,
+          "in"_a, "mask"_a = dip::Image{}, "method"_a = "parabolic separable" );
+   m.def( "CrossCorrelationFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const&, dip::String const&, dip::String const& >( &dip::CrossCorrelationFT ),
+         "in1"_a, "in2"_a, "in1Representation"_a = "spatial", "in2Representation"_a = "spatial", "outRepresentation"_a = "spatial", "normalize"_a = "normalize" );
+   m.def( "FindShift", &dip::FindShift,
+          "in1"_a, "in2"_a, "method"_a = "MTS", "parameter"_a = 0, "maxShift"_a = std::numeric_limits< dip::uint >::max() );
+
+   // diplib/distance.h
+
+   m.def( "EuclideanDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanDistanceTransform ),
+          "in"_a, "border"_a = "background", "method"_a = "fast" );
+   m.def( "VectorDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::VectorDistanceTransform ),
+          "in"_a, "border"_a = "background", "method"_a = "fast" );
+   m.def( "GreyWeightedDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const&, dip::Metric const&, dip::String const& >( &dip::GreyWeightedDistanceTransform ),
+          "grey"_a, "in"_a, "metric"_a, "outputMode"_a = "GDT" );
+
+   // diplib/microscopy.h
+
+   // diplib/regions.h
+
+   m.def( "Label", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringArray const& >( &dip::Label ),
+          "binary"_a, "connectivity"_a = 0, "minSize"_a = 0, "maxSize"_a = 0, "boundaryCondition"_a = dip::StringArray{} );
+   m.def( "GetObjectLabels", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const& >( &dip::GetObjectLabels ),
+          "in"_a, "mask"_a = dip::Image{}, "background"_a = "exclude" );
+   m.def( "SmallObjectsRemove", py::overload_cast< dip::Image const&, dip::uint, dip::uint >( &dip::SmallObjectsRemove ),
+          "binary"_a, "threshold"_a, "connectivity"_a = 0 );
+
+   // diplib/segmentation.h
+
+   m.def( "IsodataThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint >( &dip::IsodataThreshold ),
+          "in"_a, "mask"_a = dip::Image{}, "nThresholds"_a = 1 );
+   m.def( "OtsuThreshold", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::OtsuThreshold ),
+          "in"_a, "mask"_a = dip::Image{} );
+   m.def( "MinimumErrorThreshold", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::MinimumErrorThreshold ),
+          "in"_a, "mask"_a = dip::Image{} );
+   m.def( "TriangleThreshold", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::TriangleThreshold ),
+          "in"_a, "mask"_a = dip::Image{} );
+   m.def( "BackgroundThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat >( &dip::BackgroundThreshold ),
+          "in"_a, "mask"_a = dip::Image{}, "distance"_a = 2.0 );
+   m.def( "VolumeThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat >( &dip::VolumeThreshold ),
+          "in"_a, "mask"_a = dip::Image{}, "volumeFraction"_a = 0.5 );
+   m.def( "FixedThreshold", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::FixedThreshold ),
+          "in"_a, "threshold"_a, "foreground"_a = 1.0, "background"_a = 0.0, "output"_a = "binary" );
+   m.def( "RangeThreshold", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::RangeThreshold ),
+          "in"_a, "lowerBound"_a, "upperBound"_a, "foreground"_a = 1.0, "background"_a = 0.0, "output"_a = "binary" );
+   m.def( "HysteresisThreshold", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat >( &dip::HysteresisThreshold ),
+          "in"_a, "lowThreshold"_a, "highThreshold"_a );
+   m.def( "MultipleThresholds", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::MultipleThresholds ),
+          "in"_a, "thresholds"_a );
+   m.def( "Threshold", []( dip::Image const& in, dip::String const& method, dip::dfloat parameter ) {
+             dip::Image out;
+             dip::dfloat threshold = Threshold( in, out, method, parameter );
+             return py::make_tuple( out, threshold ).release();
+          }, "in"_a, "method"_a = "otsu", "parameter"_a = dip::infinity );
 }

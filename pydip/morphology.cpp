@@ -18,7 +18,7 @@
 
 #include "pydip.h"
 #include "diplib/morphology.h"
-#include "diplib/binary.h"       // TODO: include functions from diplib/binary.h
+#include "diplib/binary.h"
 
 namespace {
 
@@ -140,4 +140,7 @@ void init_morphology( py::module& m ) {
    m.def( "ClosingByReconstruction", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::uint, dip::StringArray const& >( &dip::ClosingByReconstruction ),
           "in"_a, "se"_a = dip::StructuringElement{}, "connectivity"_a = 1, "boundaryCondition"_a = dip::StringArray{} );
 
+   // diplib/binary.h
+   m.def( "EuclideanSkeleton", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanSkeleton ),
+          "in"_a, "endPixelCondition"_a = "natural", "edgeCondition"_a = "background" );
 }

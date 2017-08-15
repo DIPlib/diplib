@@ -81,3 +81,13 @@ b[1].Show()
 b,c = dip.Histogram(a)
 len(c)
 b.Dimensionality() == len(c)
+
+###
+
+import PyDIP as dip
+a = dip.ImageReadICS('../../../test/cermet')
+b = dip.Label(a < 120)
+dip.MeasurementTool.Features()
+m = dip.MeasurementTool.Measure(b,a,['Size','Feret','Convexity','Statistics'])
+print(m)
+m['Feret'][50][2]

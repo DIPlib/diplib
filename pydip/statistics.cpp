@@ -81,6 +81,8 @@ void init_statistics( py::module& m ) {
           "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
    m.def( "MeanAbsoluteError", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::MeanAbsoluteError ),
           "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
+   m.def( "MaximumAbsoluteError", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::MaximumAbsoluteError ),
+          "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
    m.def( "IDivergence", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::IDivergence ),
           "in1"_a, "in2"_a, "mask"_a = dip::Image{} );
    m.def( "InProduct", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::InProduct ),

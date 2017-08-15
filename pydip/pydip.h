@@ -194,7 +194,6 @@ class type_caster< dip::Image::Sample > {
 };
 
 // Cast Python scalar value to dip::Image::Pixel
-// TODO: cast to a list with all tensor elements, not just the first one
 template<>
 class type_caster< dip::Image::Pixel > {
    public:

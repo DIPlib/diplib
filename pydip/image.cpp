@@ -206,10 +206,10 @@ dip::String ImageRepr( dip::Image const& image ) {
 
 void init_image( py::module& m ) {
    auto img = py::class_< dip::Image >( m, "Image", py::buffer_protocol(), "The class that encapsulates DIPlib images of all types." );
-   // Constructor
-   img.def( py::init< dip::UnsignedArray const&, dip::uint, dip::DataType >(), "sizes"_a, "tensorElems"_a = 1, "dt"_a = dip::DT_SFLOAT );
    // Constructor for raw (unforged) image, to be used e.g. when no mask input argument is needed
-   img.def( "__init__", []( dip::Image& self ) { new( &self ) dip::Image(); } );
+   img.def( py::init<>() );
+   // Constructor, generic
+   img.def( py::init< dip::UnsignedArray const&, dip::uint, dip::DataType >(), "sizes"_a, "tensorElems"_a = 1, "dt"_a = dip::DT_SFLOAT );
    // Constructor that takes a Python raw buffer
    img.def( "__init__", []( dip::Image& self, py::buffer& buf ) { new( &self ) dip::Image(); self = BufferToImage( buf ); } );
    py::implicitly_convertible< py::buffer, dip::Image >();
@@ -403,47 +403,47 @@ void init_image( py::module& m ) {
 
    // Operators
    img.def( py::self += py::self );
-   img.def( py::self += float() );
+   img.def( py::self += dip::dfloat() );
    img.def( py::self + py::self );
-   img.def( py::self + float() );
+   img.def( py::self + dip::dfloat() );
    img.def( py::self -= py::self );
-   img.def( py::self -= float() );
+   img.def( py::self -= dip::dfloat() );
    img.def( py::self - py::self );
-   img.def( py::self - float() );
+   img.def( py::self - dip::dfloat() );
    img.def( py::self *= py::self );
-   img.def( py::self *= float() );
+   img.def( py::self *= dip::dfloat() );
    img.def( py::self * py::self );
-   img.def( py::self * float() );
+   img.def( py::self * dip::dfloat() );
    img.def( py::self /= py::self );
-   img.def( py::self /= float() );
+   img.def( py::self /= dip::dfloat() );
    img.def( py::self / py::self );
-   img.def( py::self / float() );
+   img.def( py::self / dip::dfloat() );
    img.def( py::self %= py::self );
-   img.def( py::self %= float() );
+   img.def( py::self %= dip::dfloat() );
    img.def( py::self % py::self );
-   img.def( py::self % float() );
+   img.def( py::self % dip::dfloat() );
    img.def( "__pow__", []( dip::Image const& a, dip::Image const& b ) { return dip::Power( a, b ); }, py::is_operator() );
-   img.def( "__pow__", []( dip::Image const& a, float b ) { return dip::Power( a, b ); }, py::is_operator() );
+   img.def( "__pow__", []( dip::Image const& a, dip::dfloat b ) { return dip::Power( a, b ); }, py::is_operator() );
    img.def( "__ipow__", []( dip::Image& a, dip::Image const& b ) { dip::Power( a, b, a ); return a; }, py::is_operator() );
-   img.def( "__ipow__", []( dip::Image& a, float b ) { dip::Power( a, b, a ); return a; }, py::is_operator() );
+   img.def( "__ipow__", []( dip::Image& a, dip::dfloat b ) { dip::Power( a, b, a ); return a; }, py::is_operator() );
    img.def( py::self == py::self );
-   img.def( py::self == float() );
+   img.def( py::self == dip::dfloat() );
    img.def( py::self != py::self );
-   img.def( py::self != float() );
+   img.def( py::self != dip::dfloat() );
    img.def( py::self > py::self );
-   img.def( py::self > float() );
+   img.def( py::self > dip::dfloat() );
    img.def( py::self >= py::self );
-   img.def( py::self >= float() );
+   img.def( py::self >= dip::dfloat() );
    img.def( py::self < py::self );
-   img.def( py::self < float() );
+   img.def( py::self < dip::dfloat() );
    img.def( py::self <= py::self );
-   img.def( py::self <= float() );
+   img.def( py::self <= dip::dfloat() );
    img.def( py::self & py::self );
-   img.def( py::self & int() );
+   img.def( py::self & dip::sint() );
    img.def( py::self | py::self );
-   img.def( py::self | int() );
+   img.def( py::self | dip::sint() );
    img.def( py::self ^ py::self );
-   img.def( py::self ^ int() );
+   img.def( py::self ^ dip::sint() );
    img.def( !py::self );
    img.def( -py::self );
    img.def( ~py::self );

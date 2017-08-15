@@ -18,7 +18,8 @@
 
 #include "pydip.h"
 #include "diplib/linear.h"
-#include "diplib/nonlinear.h" // TODO: include functions from diplib/nonlinear.h
+#include "diplib/nonlinear.h"
+#include "diplib/transform.h"
 
 namespace {
 
@@ -94,4 +95,9 @@ void init_filtering( py::module& m ) {
           "in"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "PercentileFilter", py::overload_cast< dip::Image const&, dip::dfloat, dip::Kernel const&, dip::StringArray const& >( &dip::PercentileFilter ),
           "in"_a, "percentile"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
+
+   // diplib/transform.h
+   m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::BooleanArray const& >( &dip::FourierTransform ),
+         "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );
+   m.def( "OptimalFourierTransformSize", &dip::OptimalFourierTransformSize, "size"_a );
 }
