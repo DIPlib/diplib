@@ -237,9 +237,9 @@ class DIP_NO_EXPORT DimensionArray {
       T const& front() const { return * data_; }
 
       /// Accesses the last element of the array
-      T& back() { return * ( data_ + size_ - 1 ); }
+      T& back() { return *( data_ + size_ - 1 ); }
       /// Accesses the last element of the array
-      T const& back() const { return * ( data_ + size_ - 1 ); }
+      T const& back() const { return *( data_ + size_ - 1 ); }
 
       /// Returns a pointer to the underlying data
       T* data() { return data_; };
@@ -276,7 +276,7 @@ class DIP_NO_EXPORT DimensionArray {
       /// Adds a value to the back.
       void push_back( T const& value ) {
          resize( size_ + 1 );
-         *( data_ + size_ - 1 ) = value;
+         back() = value;
       }
       /// Adds all values in source array to the back.
       void push_back( DimensionArray const& values ) {
@@ -372,6 +372,19 @@ class DIP_NO_EXPORT DimensionArray {
                --jj;
             }
             out[ jj ] = elem;
+         }
+         return out;
+      }
+      /// Sorts the elements in the array according to the `order` array, such as returned by `sortedIndices`.
+      ///
+      /// Postcondition:
+      /// ```cpp
+      ///     out[ ii ] = (*this)[ order[ ii ] ];
+      /// ```
+      DimensionArray permute( DimensionArray< size_type > const& order ) const {
+         DimensionArray out( order.size() );
+         for( size_type ii = 0; ii < order.size(); ++ii ) {
+            out[ ii ] = data_[ order[ ii ]];
          }
          return out;
       }

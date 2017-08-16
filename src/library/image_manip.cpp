@@ -39,17 +39,13 @@ Image& Image::PermuteDimensions( UnsignedArray const& order ) {
    for( dip::uint ii = 0; ii < newnd; ++ii ) {
       DIP_THROW_IF( !keep[ ii ] && sizes_[ ii ] > 1, "Cannot discard non-singleton dimension" );
    }
-   UnsignedArray newsizes( newnd, 0 );
-   IntegerArray newstrides( newnd, 0 );
-   dip::PixelSize newpixelsz;
-   for( dip::uint ii = 0; ii < newnd; ++ii ) {
-      newsizes[ ii ] = sizes_[ order[ ii ] ];
-      newstrides[ ii ] = strides_[ order[ ii ] ];
-      newpixelsz.Set( ii, pixelSize_[ order[ ii ] ] );
-   }
-   sizes_ = newsizes;
-   strides_ = newstrides;
+   sizes_ = sizes_.permute( order );
+   strides_ = strides_.permute( order );
    if( pixelSize_.IsDefined()) {
+      dip::PixelSize newpixelsz;
+      for( dip::uint ii = 0; ii < newnd; ++ii ) {
+         newpixelsz.Set( ii, pixelSize_[ order[ ii ] ] );
+      }
       pixelSize_ = newpixelsz;
    }
    return *this;
