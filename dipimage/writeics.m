@@ -13,11 +13,13 @@
 %  options: a string or a cell array of strings containing:
 %        - 'v1' or 'v2': the ICS version ('v2' is default)
 %        - 'gzip' or 'uncompressed': compression method ('gzip' is default)
+%        - 'fast': write samples in same order they are in memory, yielding a
+%          file with dimensions ordered as "y,x,z,...".
 %
 % DEFAULTS:
 %  history = {}
 %  significant_bits = 0
-%  options = {}
+%  options = {'fast'}
 %
 % NOTE:
 %  ICS is a file format that can store any image representable in DIPimage

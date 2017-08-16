@@ -47,6 +47,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          spacing = dml::GetUnsignedArray( prhs[ 3 ] );
       }
       dip::FileInformation fileInformation = dip::ImageReadICS( out, filename, origin, sizes, spacing );
+      // NOTE: "fast" option is useless here, as we cannot change the strides of out.
 
       plhs[ 0 ] = mi.GetArray( out );
       if( nlhs > 1 ) {

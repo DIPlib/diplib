@@ -6,7 +6,6 @@
 
 #include <diplib/viewer/glut.h>
 #include <diplib/viewer/glfw.h>
-
 #include <diplib/viewer/image.h>
 #include <diplib/viewer/slice.h>
 

@@ -62,21 +62,28 @@ struct FileInformation {
 /// the array should have as many elements as dimensions are represented in the file. Tensor dimensions
 /// are not included in the `roi` parameter.
 ///
+/// If `mode` is `"fast"`, it will attempt to forge `out` with strides matching those in the file, so
+/// that reading is much faster. When reading an ROI this is not possible. When `out` has an external
+/// interface set it might also be impossible to dictate what the stides will look like. In these cases,
+/// the flag is ignored.
+///
 /// Information about the file and all metadata is returned in the `FileInformation` output argument.
 // TODO: read sensor information also into the history strings
 DIP_EXPORT FileInformation ImageReadICS(
       Image& out,
       String const& filename,
       RangeArray roi = {},
-      Range channels = {}
+      Range channels = {},
+      String const& mode = ""
 );
 inline Image ImageReadICS(
       String const& filename,
       RangeArray const& roi = {},
-      Range channels = {}
+      Range const& channels = {},
+      String const& mode = ""
 ) {
    Image out;
-   ImageReadICS( out, filename, roi, channels );
+   ImageReadICS( out, filename, roi, channels, mode );
    return out;
 }
 
@@ -98,16 +105,20 @@ DIP_EXPORT FileInformation ImageReadICS(
       String const& filename,
       UnsignedArray const& origin,
       UnsignedArray const& sizes = {},
-      UnsignedArray const& spacing = {}
+      UnsignedArray const& spacing = {},
+      Range const& channels = {},
+      String const& mode = ""
 );
 inline Image ImageReadICS(
       String const& filename,
       UnsignedArray const& origin,
       UnsignedArray const& sizes = {},
-      UnsignedArray const& spacing = {}
+      UnsignedArray const& spacing = {},
+      Range const& channels = {},
+      String const& mode = ""
 ) {
    Image out;
-   ImageReadICS( out, filename, origin, sizes, spacing );
+   ImageReadICS( out, filename, origin, sizes, spacing, channels, mode );
    return out;
 }
 
@@ -138,7 +149,12 @@ DIP_EXPORT bool ImageIsICS( String const& filename );
 ///  - `"v1"` or `"v2"`: ICS v1 writes two files: one with extension '.ics', and one with extension '.ids'.
 ///    The ICS file contains only the header, the IDS file contains only the pixel data. ICS v2 combines
 ///    these two pieces into a single '.ics' file. `"v2"` is the default.
-///  = '"uncompressed"` or '"gzip"`: Determine whether to compress the pixel data or not. `"gzip"` is the default.
+///  - '"uncompressed"` or '"gzip"`: Determine whether to compress the pixel data or not. `"gzip"` is the default.
+///  - `"fast"`: Writes data in the order in which it is in memory, which is faster.
+///
+/// Note that the `"fast"` option yields a file with permuted dimensions. The software reading the file must be
+/// aware of the possibility of permuted dimensions, and check the "order" tag in the file. If the image has
+/// non-contiguous data, then the `"fast"` option is ignored, the image is always saved in the "normal" dimension order
 DIP_EXPORT void ImageWriteICS(
       Image const& image,
       String const& filename,

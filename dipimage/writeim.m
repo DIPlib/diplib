@@ -84,7 +84,7 @@ end
 % Write
 switch upper(format)
   case 'ICSV1'
-      writeics(image,filename,{},0,'v1');
+      writeics(image,filename,{},0,{'v1','fast'});
   case 'ICSV2'
       writeics(image,filename);
   case 'TIFF'

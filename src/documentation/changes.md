@@ -259,6 +259,12 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - `dip::FindShift` now returns the shift with inverse sign compared to before, to match the reversal
   in `dip::Shift`.
 
+- `dip::ImageWriteICS` now has a `"fast"` option that causes dimensions to be written to file in
+  the order in which they are stored in memory, rather than in standard increasing order. This
+  makes writing a lot faster if strides are non-standard. `dip::ImageReadICS` has a similar option
+  that re-orders strides for the output image to match those of the file, again potentially decreasing
+  reading times significantly.
+
 ## Changes from DIPimage 2.x (the old DIPimage)
 
 - The `dip_image` object has changed completely internally. Pixel data is stored differently:

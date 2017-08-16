@@ -88,8 +88,8 @@ void init_measurement( py::module& m ) {
                 return os.str();
              } );
    meas.def( "__str__", []( dip::Measurement const& self ) { std::ostringstream os; os << self; return os.str(); } );
-   meas.def( "__getitem__", py::overload_cast< dip::uint >( &dip::Measurement::operator[], py::const_ ), "objectID"_a );
-   meas.def( "__getitem__", py::overload_cast< dip::String const& >( &dip::Measurement::operator[], py::const_ ), "name"_a );
+   meas.def( "__getitem__", py::overload_cast< dip::uint >( &dip::Measurement::operator[], py::const_ ), "objectID"_a, py::return_value_policy::reference_internal );
+   meas.def( "__getitem__", py::overload_cast< dip::String const& >( &dip::Measurement::operator[], py::const_ ), "name"_a, py::return_value_policy::reference_internal );
    meas.def( "FeatureExists", &dip::Measurement::FeatureExists );
    meas.def( "Features", &dip::Measurement::Features );
    meas.def( "NumberOfFeatures", &dip::Measurement::NumberOfFeatures );
