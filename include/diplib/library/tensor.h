@@ -364,9 +364,9 @@ class DIP_NO_EXPORT Tensor {
             dip::uint n = Columns();
             SetVector( std::min( m, n ) );
             if( shape_ == Tensor::Shape::COL_MAJOR_MATRIX ) {
-               stride = static_cast< dip::sint >( m + 1 ) * stride;
+               stride *= static_cast< dip::sint >( m + 1 );
             } else { // row-major matrix
-               stride = static_cast< dip::sint >( n + 1 ) * stride;
+               stride *= static_cast< dip::sint >( n + 1 );
             }
          }
       }

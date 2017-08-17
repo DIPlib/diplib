@@ -58,11 +58,11 @@ inline Image Abs( Image const& in ) {
 inline void Modulus( Image const& in, Image& out ) { Abs( in, out ); }
 inline Image Modulus( Image const& in ) { return Abs( in ); }
 
-inline Image Real( Image const& in ) { return in.DataType().IsComplex() ? in.Real() : in; }
+inline Image Real( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Real() ) : in; }
 /// \brief Returns the real component of a complex image. Returns `dip::Image::Real` if the input is complex.
 inline void Real( Image const& in, Image& out ) { out = Real( in ); }
 
-inline Image Imaginary( Image const& in ) { return in.DataType().IsComplex() ? in.Imaginary() : in; }
+inline Image Imaginary( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Imaginary() ) : in; }
 /// \brief Returns the imaginary component of a complex image. Returns `dip::Image::Imaginary` if the input is complex
 inline void Imaginary( Image const& in, Image& out ) { out = Imaginary( in ); }
 

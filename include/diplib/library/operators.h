@@ -396,6 +396,68 @@ inline Image& operator^=( Image& lhs, T const& rhs ) {
 }
 
 
+/// \brief Compound assignment operator.
+template< typename T >
+inline Image::View& operator+=( Image::View& lhs, T const& rhs ) {
+   Image tmp = lhs;
+   lhs.Copy( Add( tmp, rhs, tmp.DataType() ));
+   return lhs;
+}
+
+/// \brief Compound assignment operator.
+template< typename T >
+inline Image::View& operator-=( Image::View& lhs, T const& rhs ) {
+   Image tmp = lhs;
+   lhs.Copy( Subtract( tmp, rhs, tmp.DataType() ));
+   return lhs;
+}
+
+/// \brief Compound assignment operator.
+template< typename T >
+inline Image::View& operator*=( Image::View& lhs, T const& rhs ) {
+   Image tmp = lhs;
+   lhs.Copy( Multiply( tmp, rhs, tmp.DataType() ));
+   return lhs;
+}
+
+/// \brief Compound assignment operator.
+template< typename T >
+inline Image::View& operator/=( Image::View& lhs, T const& rhs ) {
+   Image tmp = lhs;
+   lhs.Copy( Divide( tmp, rhs, tmp.DataType() ));
+   return lhs;
+}
+
+/// \brief Compound assignment operator.
+template< typename T >
+inline Image::View& operator%=( Image::View& lhs, T const& rhs ) {
+   Image tmp = lhs;
+   lhs.Copy( Modulo( tmp, rhs, tmp.DataType() ));
+   return lhs;
+}
+
+/// \brief Bit-wise compound assignment operator.
+template< typename T >
+inline Image::View& operator&=( Image::View& lhs, T const& rhs ) {
+   lhs.Copy( And( lhs, rhs ));
+   return lhs;
+}
+
+/// \brief Bit-wise compound assignment operator.
+template< typename T >
+inline Image::View& operator|=( Image::View& lhs, T const& rhs ) {
+   lhs.Copy( Or( lhs, rhs ));
+   return lhs;
+}
+
+/// \brief Bit-wise compound assignment operator.
+template< typename T >
+inline Image::View& operator^=( Image::View& lhs, T const& rhs ) {
+   lhs.Copy( Xor( lhs, rhs ));
+   return lhs;
+}
+
+
 /// \}
 
 

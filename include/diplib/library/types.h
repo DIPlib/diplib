@@ -418,10 +418,13 @@ inline bool StringCompareCaseInsensitive( String const& string1, String const& s
 ///     // now r.stop == 50 - 6
 /// ```
 ///
-/// If `stop` comes before `start`, then the range generates pixel indicates in
+/// If `stop` comes before `start`, then the range generates pixel indices in
 /// the reverse order. That is, negative steps are taken to go from `start` to `stop`.
 /// `step` is always a positive integer, the direction of the steps is given
 /// solely by the ordering of `start` and `stop`.
+///
+/// The `begin` and `end` methods yield an iterator that dereferences to the indices
+/// defined by the range.
 struct DIP_NO_EXPORT Range {
    dip::sint start;    ///< First index included in range
    dip::sint stop;     ///< Last index included in range
@@ -476,6 +479,57 @@ struct DIP_NO_EXPORT Range {
       }
    }
 
+   /// An iterator for the range
+   class Iterator {
+      public:
+         using iterator_category = std::forward_iterator_tag;
+         using value_type = dip::uint;
+         using difference_type = dip::sint;
+         using reference = dip::sint const&;
+         using pointer = dip::sint const*;
+
+         /// Default constructor
+         Iterator() = default;
+         /// Constructor
+         Iterator( dip::uint index, dip::sint step ) : index_( static_cast< dip::sint >( index )), step_( step ) {}
+         Iterator( dip::sint index, dip::sint step ) : index_( index ), step_( step ) {}
+
+         /// Dereference
+         value_type operator*() const { return static_cast< value_type >( index_ ); }
+         /// Dereference
+         pointer operator->() const { return &index_; }
+
+         /// Increment
+         Iterator& operator++() {
+            index_ += step_;
+            return *this;
+         }
+         /// Increment
+         Iterator operator++( int ) {
+            Iterator tmp( *this );
+            index_ += step_;
+            return tmp;
+         }
+
+         /// Equality comparison
+         bool operator==( Iterator const& other ) const { return index_ == other.index_; }
+         /// Inequality comparison
+         bool operator!=( Iterator const& other ) const { return index_ != other.index_; }
+
+      private:
+         dip::sint index_ = 0; // We use signed one here in case step_<0, we need the one-past-the-end to be sensical
+         dip::sint step_ = 1;  //    (sure, we could rely on defined unsigned integer overflow, but why?)
+   };
+
+   /// Get an iterator to the beginning of the range (must be fixed first!).
+   Iterator begin() {
+      return Iterator( start, Step() );
+   }
+
+   /// Get an iterator to the end of the range (must be fixed first!).
+   Iterator end() {
+      return Iterator( start + static_cast< dip::sint >( Size() ) * Step(), Step() );
+   }
 };
 
 using RangeArray = DimensionArray< Range >;  ///< An array of ranges

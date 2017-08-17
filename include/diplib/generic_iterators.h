@@ -106,9 +106,13 @@ class DIP_NO_EXPORT GenericImageIterator {
       }
 
       /// Dereference
-      Image::CastPixel< T > operator*() const { return Image::CastPixel< T >( image_->Pointer( offset_ ), image_->DataType(), image_->Tensor(), image_->TensorStride() ); }
+      Image::CastPixel< T > operator*() const {
+         return Image::CastPixel< T >( image_->Pointer( offset_ ), image_->DataType(), image_->Tensor(), image_->TensorStride() );
+      }
       /// Dereference
-      Image::CastPixel< T > operator->() const { return Image::CastPixel< T >( image_->Pointer( offset_ ), image_->DataType(), image_->Tensor(), image_->TensorStride() ); }
+      Image::CastPixel< T > operator->() const {
+         return Image::CastPixel< T >( image_->Pointer( offset_ ), image_->DataType(), image_->Tensor(), image_->TensorStride() );
+      }
       /// Index into tensor, `it[index]` is equal to `(*it)[index]`.
       Image::CastSample< T > operator[]( dip::uint index ) const {
          DIP_ASSERT( image_ );
@@ -336,10 +340,15 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       Image::CastSample< T > Sample() const {
          return Image::CastSample< T >( Pointer< I >(), images_[ I ]->DataType() );
       }
-      /// Get first tensor element for image 0.
-      Image::CastSample< T > In() const { return Sample< 0 >(); }
-      /// Get first tensor element for image 1.
-      Image::CastSample< T > Out() const { return Sample< 1 >(); }
+      /// Get pixel for image 0.
+      Image::CastPixel< T > In() const { return Pixel< 0 >(); }
+      /// Get pixel for image 1.
+      Image::CastPixel< T > Out() const { return Pixel< 1 >(); }
+      /// Get pixel for image `I`.
+      template< dip::uint I >
+      Image::CastPixel< T > Pixel() const {
+         return Image::CastPixel< T >( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->Tensor(), images_[ I ]->TensorStride() );
+      }
 
       /// Increment
       GenericJointImageIterator& operator++() {

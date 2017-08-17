@@ -298,7 +298,8 @@ void init_image( py::module& m ) {
    img.def( "MergeComplex", py::overload_cast< dip::uint >( &dip::Image::MergeComplex ), "dim"_a, py::return_value_policy::reference_internal );
    img.def( "SplitComplexToTensor", &dip::Image::SplitComplexToTensor, py::return_value_policy::reference_internal );
    img.def( "MergeTensorToComplex", &dip::Image::MergeTensorToComplex, py::return_value_policy::reference_internal );
-   // Create a new image with a view of another image
+   // Create a view of another image. TODO: expose dip::Image::View to Python.
+   // Does Python do `foo.At(bar)=bla` correctly if `foo.At(bar)` returns a dip::Image::View?
    img.def( "Diagonal", &dip::Image::Diagonal );
    img.def( "TensorRow", &dip::Image::TensorRow, "index"_a );
    img.def( "TensorColumn", &dip::Image::TensorColumn, "index"_a );
@@ -310,6 +311,8 @@ void init_image( py::module& m ) {
    img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range ) { return image.At( x_range, y_range ); }, "x_range"_a, "y_range"_a );
    img.def( "At", []( dip::Image const& image, dip::Range x_range, dip::Range y_range, dip::Range z_range ) { return image.At( x_range, y_range, z_range ); }, "x_range"_a, "y_range"_a, "z_range"_a );
    img.def( "At", []( dip::Image const& image, dip::RangeArray ranges ) { return image.At( ranges ); }, "ranges"_a );
+   img.def( "At", []( dip::Image const& image, dip::Image const& mask ) { return image.At( mask ); }, "mask"_a );
+   img.def( "At", []( dip::Image const& image, dip::CoordinateArray const& coordinates ) { return image.At( coordinates ); }, "coordinates"_a );
    img.def( "Crop", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Crop, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Real", &dip::Image::Real );
    img.def( "Imaginary", &dip::Image::Imaginary );
@@ -319,39 +322,12 @@ void init_image( py::module& m ) {
    img.def( "TensorElement", []( dip::Image const& image, dip::uint i, dip::uint j ) { return image[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
    img.def( "TensorElement", []( dip::Image const& image, dip::Range const& range ) { return image[ range ]; }, "range"_a );
    // Copy or write data
-   img.def( "CopyAt", py::overload_cast< dip::Image const& >( &dip::Image::CopyAt, py::const_ ), "mask"_a );
-   img.def( "CopyAt", py::overload_cast< dip::UnsignedArray const& >( &dip::Image::CopyAt, py::const_ ), "indices"_a );
-   img.def( "CopyAt", py::overload_cast< dip::CoordinateArray const& >( &dip::Image::CopyAt, py::const_ ), "coordinates"_a );
-   img.def( "CopyAt", []( dip::Image& image, dip::Image const& source, dip::Image const& mask ) { image.CopyAt( source, mask, dip::Option::ThrowException::DO_THROW ); }, "source"_a, "mask"_a );
-   img.def( "CopyAt", py::overload_cast< dip::Image const&, dip::UnsignedArray const& >( &dip::Image::CopyAt ), "source"_a, "indices"_a );
-   img.def( "CopyAt", py::overload_cast< dip::Image const&, dip::CoordinateArray const& >( &dip::Image::CopyAt ), "source"_a, "coordinates"_a );
    img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Copy", &dip::Image::Copy, "src"_a );
    img.def( "Convert", &dip::Image::Convert, "dataType"_a );
    img.def( "ExpandTensor", &dip::Image::ExpandTensor );
    img.def( "Fill", py::overload_cast< dip::Image::Sample const& >( &dip::Image::Fill ), "sample"_a );
    img.def( "Fill", py::overload_cast< dip::Image::Pixel const& >( &dip::Image::Fill ), "pixel"_a );
-   img.def( "FillAt", []( dip::Image const& image, dip::Image::Sample const& sample, dip::uint index ) { image.At( index ) = sample; }, "sample"_a, "index"_a );
-   img.def( "FillAt", []( dip::Image const& image, dip::Image::Pixel const& pixel, dip::uint index ) { image.At( index ) = pixel; }, "pixel"_a, "index"_a );
-   img.def( "FillAt", []( dip::Image const& image, dip::Image::Sample const& sample, dip::uint x_index, dip::uint y_index ) { image.At( x_index, y_index ) = sample; }, "sample"_a, "x_index"_a, "y_index"_a );
-   img.def( "FillAt", []( dip::Image const& image, dip::Image::Pixel const& pixel, dip::uint x_index, dip::uint y_index ) { image.At( x_index, y_index ) = pixel; }, "pixel"_a, "x_index"_a, "y_index"_a );
-   img.def( "FillAt", []( dip::Image const& image, dip::Image::Sample const& sample, dip::uint x_index, dip::uint y_index, dip::uint z_index ) { image.At( x_index, y_index, z_index ) = sample; }, "sample"_a, "x_index"_a, "y_index"_a, "z_index"_a );
-   img.def( "FillAt", []( dip::Image const& image, dip::Image::Pixel const& pixel, dip::uint x_index, dip::uint y_index, dip::uint z_index ) { image.At( x_index, y_index, z_index ) = pixel; }, "pixel"_a, "x_index"_a, "y_index"_a, "z_index"_a );
-   img.def( "FillAt", py::overload_cast< dip::Image::Sample const&, dip::Image const& >( &dip::Image::FillAt ), "sample"_a, "mask"_a );
-   img.def( "FillAt", py::overload_cast< dip::Image::Pixel const&, dip::Image const& >( &dip::Image::FillAt ), "pixel"_a, "mask"_a );
-   img.def( "FillAt", py::overload_cast< dip::Image::Sample const&, dip::UnsignedArray const& >( &dip::Image::FillAt ), "sample"_a, "indices"_a );
-   img.def( "FillAt", py::overload_cast< dip::Image::Pixel const&, dip::UnsignedArray const& >( &dip::Image::FillAt ), "pixel"_a, "indices"_a );
-   img.def( "FillAt", py::overload_cast< dip::Image::Sample const&, dip::CoordinateArray const& >( &dip::Image::FillAt ), "sample"_a, "coordinates"_a );
-   img.def( "FillAt", py::overload_cast< dip::Image::Pixel const&, dip::CoordinateArray const& >( &dip::Image::FillAt ), "pixel"_a, "coordinates"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::Image const& source, dip::uint index ) { image[ index ].Copy( source ); }, "source"_a, "index"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::Image::Sample const& sample, dip::uint index ) { image[ index ].Fill( sample ); }, "sample"_a, "index"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::Image::Pixel const& pixel, dip::uint index ) { image[ index ].Fill( pixel ); }, "pixel"_a, "index"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::Image const& source, dip::uint i, dip::uint j ) { image[ dip::UnsignedArray{ i, j } ].Copy( source ); }, "source"_a, "i"_a, "j"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::Image::Sample const& sample, dip::uint i, dip::uint j ) { image[ dip::UnsignedArray{ i, j } ].Fill( sample ); }, "sample"_a, "i"_a, "j"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::Image::Pixel const& pixel, dip::uint i, dip::uint j ) { image[ dip::UnsignedArray{ i, j } ].Fill( pixel ); }, "pixel"_a, "i"_a, "j"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::Image const& source, dip::Range const& range ) { image[ range ].Copy( source ); }, "source"_a, "range"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::Image::Sample const& sample, dip::Range const& range ) { image[ range ].Fill( sample ); }, "sample"_a, "range"_a );
-   img.def( "TensorElement", []( dip::Image const& image, dip::Image::Pixel const& pixel, dip::Range const& range ) { image[ range ].Fill( pixel ); }, "pixel"_a, "range"_a );
 
 #if 0
    // This version of indexing is nice, but doesn't match what we have in C++

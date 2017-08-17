@@ -24,145 +24,71 @@
 namespace dip {
 
 
-Image Image::operator[]( UnsignedArray const& indices ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_START_STACK_TRACE
-      dip::uint index = tensor_.Index( indices );
-      return operator[]( index );
-   DIP_END_STACK_TRACE
+Image::View Image::Diagonal() const {
+   dip::Tensor tensor = tensor_;
+   dip::sint step = 1;
+   tensor.ExtractDiagonal( step );
+   Range out{ 0, static_cast< dip::sint >( tensor.Elements() - 1 ) * step, static_cast< dip::uint >( step ) };
+   DIP_STACK_TRACE_THIS( return Image::View( *this, out ));
 }
 
-Image Image::operator[]( dip::uint index ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( index >= tensor_.Elements(), E::INDEX_OUT_OF_RANGE );
-   Image out = *this;
-   out.tensor_.SetScalar();
-   out.origin_ = Pointer( static_cast< dip::sint >( index ) * tensorStride_ );
-   out.ResetColorSpace();
-   return out;
+Image::View Image::TensorRow( dip::uint index ) const {
+   dip::Tensor tensor = tensor_;
+   dip::sint step = 1;
+   dip::sint offset;
+   DIP_STACK_TRACE_THIS( offset = tensor.ExtractRow( index, step ));
+   Range out{ offset, offset + static_cast< dip::sint >( tensor.Elements() - 1 ) * step, static_cast< dip::uint >( step ) };
+   DIP_STACK_TRACE_THIS( return Image::View( *this, out ));
 }
 
-Image Image::operator[]( Range range ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_STACK_TRACE_THIS( range.Fix( tensor_.Elements() ));
-   Image out = *this;
-   out.tensor_.SetVector( range.Size() );
-   out.origin_ = Pointer( range.start * tensorStride_ );
-   out.ResetColorSpace();
-   return out;
+Image::View Image::TensorColumn( dip::uint index ) const {
+   dip::Tensor tensor = tensor_;
+   dip::sint step = 1;
+   dip::sint offset;
+   DIP_STACK_TRACE_THIS( offset = tensor.ExtractColumn( index, step ));
+   Range out{ offset, offset + static_cast< dip::sint >( tensor.Elements() - 1 ) * step, static_cast< dip::uint >( step ) };
+   DIP_STACK_TRACE_THIS( return Image::View( *this, out ));
 }
 
-Image Image::Diagonal() const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   Image out = *this;
-   out.tensor_.ExtractDiagonal( out.tensorStride_ );
-   if( out.tensor_.Elements() != tensor_.Elements() ) {
-      out.ResetColorSpace();
+Image::Pixel Image::At( dip::uint index ) const {
+   if( index == 0 ) { // shortcut to the first pixel
+      return Pixel( Origin(), dataType_, tensor_, tensorStride_ );
+   } else if( sizes_.size() < 2 ) {
+      dip::uint n = sizes_.size() == 0 ? 1 : sizes_[ 0 ];
+      DIP_THROW_IF( index >= n, E::INDEX_OUT_OF_RANGE );
+      return Pixel( Pointer( static_cast< dip::sint >( index ) * strides_[ 0 ] ),
+                    dataType_, tensor_, tensorStride_ );
+   } else {
+      return At( IndexToCoordinates( index ));
    }
-   return out;
 }
 
-Image Image::TensorRow( dip::uint index ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( index >= tensor_.Rows(), E::INDEX_OUT_OF_RANGE );
-   Image out = *this;
-   dip::sint offset = out.tensor_.ExtractRow( index, out.tensorStride_ );
-   out.origin_ = Pointer( offset );
-   if( out.tensor_.Elements() != tensor_.Elements() ) {
-      out.ResetColorSpace();
-   }
-   return out;
-}
-
-Image Image::TensorColumn( dip::uint index ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( index >= tensor_.Columns(), E::INDEX_OUT_OF_RANGE );
-   Image out = *this;
-   dip::sint offset = out.tensor_.ExtractColumn( index, out.tensorStride_ );
-   out.origin_ = Pointer( offset );
-   if( out.tensor_.Elements() != tensor_.Elements() ) {
-      out.ResetColorSpace();
-   }
-   return out;
-}
-
-Image Image::At( Range x_range ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( sizes_.size() != 1, E::ILLEGAL_DIMENSIONALITY );
-   DIP_STACK_TRACE_THIS( x_range.Fix( sizes_[ 0 ] ));
-   Image out = *this;
-   out.sizes_[ 0 ] = x_range.Size();
-   out.strides_[ 0 ] *= x_range.Step();
-   out.pixelSize_.Scale( 0, static_cast< dfloat >( x_range.Step() ));
-   out.origin_ = Pointer( static_cast< dip::sint >( x_range.Offset() ) * strides_[ 0 ] );
-   return out;
-}
-
-Image Image::At( Range x_range, Range y_range ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+Image::Pixel Image::At( dip::uint x_index, dip::uint y_index ) const {
    DIP_THROW_IF( sizes_.size() != 2, E::ILLEGAL_DIMENSIONALITY );
-   DIP_STACK_TRACE_THIS( x_range.Fix( sizes_[ 0 ] ));
-   DIP_STACK_TRACE_THIS( y_range.Fix( sizes_[ 1 ] ));
-   Image out = *this;
-   out.sizes_[ 0 ] = x_range.Size();
-   out.sizes_[ 1 ] = y_range.Size();
-   out.strides_[ 0 ] *= x_range.Step();
-   out.strides_[ 1 ] *= y_range.Step();
-   out.pixelSize_.Scale( 0, static_cast< dfloat >( x_range.Step() ));
-   out.pixelSize_.Scale( 1, static_cast< dfloat >( y_range.Step() ));
-   out.origin_ = Pointer(
-         static_cast< dip::sint >( x_range.Offset() ) * strides_[ 0 ] +
-         static_cast< dip::sint >( y_range.Offset() ) * strides_[ 1 ] );
-   return out;
+   DIP_THROW_IF( x_index >= sizes_[ 0 ], E::INDEX_OUT_OF_RANGE );
+   DIP_THROW_IF( y_index >= sizes_[ 1 ], E::INDEX_OUT_OF_RANGE );
+   return Pixel( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
+                          static_cast< dip::sint >( y_index ) * strides_[ 1 ] ),
+                 dataType_, tensor_, tensorStride_ );
 }
 
-Image Image::At( Range x_range, Range y_range, Range z_range ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+Image::Pixel Image::At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const {
    DIP_THROW_IF( sizes_.size() != 3, E::ILLEGAL_DIMENSIONALITY );
-   DIP_STACK_TRACE_THIS( x_range.Fix( sizes_[ 0 ] ));
-   DIP_STACK_TRACE_THIS( y_range.Fix( sizes_[ 1 ] ));
-   DIP_STACK_TRACE_THIS( z_range.Fix( sizes_[ 2 ] ));
-   Image out = *this;
-   out.sizes_[ 0 ] = x_range.Size();
-   out.sizes_[ 1 ] = y_range.Size();
-   out.sizes_[ 2 ] = z_range.Size();
-   out.strides_[ 0 ] *= x_range.Step();
-   out.strides_[ 1 ] *= y_range.Step();
-   out.strides_[ 2 ] *= z_range.Step();
-   out.pixelSize_.Scale( 0, static_cast< dfloat >( x_range.Step() ));
-   out.pixelSize_.Scale( 1, static_cast< dfloat >( y_range.Step() ));
-   out.pixelSize_.Scale( 2, static_cast< dfloat >( z_range.Step() ));
-   out.origin_ = Pointer(
-         static_cast< dip::sint >( x_range.Offset() ) * strides_[ 0 ] +
-         static_cast< dip::sint >( y_range.Offset() ) * strides_[ 1 ] +
-         static_cast< dip::sint >( z_range.Offset() ) * strides_[ 2 ] );
-   return out;
+   DIP_THROW_IF( x_index >= sizes_[ 0 ], E::INDEX_OUT_OF_RANGE );
+   DIP_THROW_IF( y_index >= sizes_[ 1 ], E::INDEX_OUT_OF_RANGE );
+   DIP_THROW_IF( z_index >= sizes_[ 2 ], E::INDEX_OUT_OF_RANGE );
+   return Pixel( Pointer( static_cast< dip::sint >( x_index ) * strides_[ 0 ] +
+                          static_cast< dip::sint >( y_index ) * strides_[ 1 ] +
+                          static_cast< dip::sint >( z_index ) * strides_[ 2 ] ),
+                 dataType_, tensor_, tensorStride_ );
 }
 
-Image Image::At( RangeArray ranges ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( sizes_.size() != ranges.size(), E::ARRAY_ILLEGAL_SIZE );
-   for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
-      DIP_STACK_TRACE_THIS( ranges[ ii ].Fix( sizes_[ ii ] ));
-   }
-   Image out = *this;
-   dip::sint offset = 0;
-   for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
-      out.sizes_[ ii ] = ranges[ ii ].Size();
-      out.strides_[ ii ] *= ranges[ ii ].Step();
-      out.pixelSize_.Scale( ii, static_cast< dfloat >( ranges[ ii ].Step() ));
-      offset += static_cast< dip::sint >( ranges[ ii ].Offset() ) * strides_[ ii ];
-   }
-   out.origin_ = Pointer( offset );
-   return out;
-}
-
-Image Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
+Image::View Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = sizes_.size();
    DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
    DIP_THROW_IF( sizes > sizes_, E::INDEX_OUT_OF_RANGE );
-   Image out = *this;
+   Image::View out( *this );
    UnsignedArray origin( nDims, 0 );
    switch( cropLocation ) {
       case Option::CropLocation::CENTER:
@@ -183,38 +109,52 @@ Image Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation
          origin -= sizes;
          break;
    }
-   out.origin_ = out.Pointer( origin );
-   out.sizes_ = sizes;
+   out.reference_.origin_ = out.reference_.Pointer( origin );
+   out.reference_.sizes_ = sizes;
    return out;
 }
 
-Image Image::Real() const {
+Image::View Image::Crop( UnsignedArray const& sizes, String const& cropLocation ) const {
+   if( cropLocation == "center" ) {
+      return Crop( sizes, Option::CropLocation::CENTER );
+   } else if( cropLocation == "mirror center" ) {
+      return Crop( sizes, Option::CropLocation::MIRROR_CENTER );
+   } else if( cropLocation == "top left" ) {
+      return Crop( sizes, Option::CropLocation::TOP_LEFT );
+   } else if( cropLocation == "bottom right" ) {
+      return Crop( sizes, Option::CropLocation::BOTTOM_RIGHT );
+   } else {
+      DIP_THROW( "Unknown crop location flag" );
+   }
+}
+
+Image::View Image::Real() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
-   Image out = *this;
+   Image::View out( *this );
    // Change data type
-   out.dataType_ = dataType_ == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
+   out.reference_.dataType_ = dataType_ == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
    // Sample size is halved, meaning all strides must be doubled
    for( dip::uint ii = 0; ii < strides_.size(); ++ii ) {
-      out.strides_[ ii ] *= 2;
+      out.reference_.strides_[ ii ] *= 2;
    }
-   out.tensorStride_ *= 2;
+   out.reference_.tensorStride_ *= 2;
    return out;
 }
 
-Image Image::Imaginary() const {
+Image::View Image::Imaginary() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !dataType_.IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
-   Image out = *this;
+   Image::View out( *this );
    // Change data type
-   out.dataType_ = dataType_ == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
+   out.reference_.dataType_ = dataType_ == DT_SCOMPLEX ? DT_SFLOAT : DT_DFLOAT;
    // Sample size is halved, meaning all strides must be doubled
    for( dip::uint ii = 0; ii < strides_.size(); ++ii ) {
-      out.strides_[ ii ] *= 2;
+      out.reference_.strides_[ ii ] *= 2;
    }
-   out.tensorStride_ *= 2;
+   out.reference_.tensorStride_ *= 2;
    // Change the offset
-   out.origin_ = out.Pointer( 1 );
+   out.reference_.origin_ = out.reference_.Pointer( 1 );
    return out;
 }
 
