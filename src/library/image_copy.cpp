@@ -36,7 +36,7 @@ void CopyFrom( Image const& src, Image& dest, Image const& mask ) {
    DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !mask.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_STACK_TRACE_THIS( mask.CheckIsMask( src.Sizes(), Option::AllowSingletonExpansion::DONT_ALLOW, Option::ThrowException::DO_THROW ));
-   // Create output
+   // Create output TODO: reforge?
    dip::uint N = Count( mask );
    dest.CopyProperties( src );
    dest.SetSizes( UnsignedArray( { N } ));
@@ -75,7 +75,7 @@ void CopyFrom( Image const& src, Image& dest, IntegerArray const& offsets ) {
    // Check input
    DIP_THROW_IF( !src.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( offsets.size() == 0, E::ARRAY_ILLEGAL_SIZE );
-   // Create output
+   // Create output TODO: reforge?
    dest.CopyProperties( src );
    dest.SetSizes( UnsignedArray( { offsets.size() } ));
    dest.Forge();

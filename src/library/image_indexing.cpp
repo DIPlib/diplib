@@ -194,6 +194,9 @@ void DefineROI(
 #include "doctest.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
+   // Note that this also tests parts of dip::Image::View and dip::Image::Pixel functionality, which is
+   // tested more thoroughly in image_views.cpp
+
    dip::Image img{ dip::UnsignedArray{ 15, 20, 10 }, 3 };
    DOCTEST_REQUIRE( img.IsForged() );
    DOCTEST_REQUIRE( img.Size( 0 ) == 15 );
@@ -229,6 +232,12 @@ DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
    img.At( 15/2, 20/2, 10/2 ) = 1;
    dip::Image cropped = img.Crop( { 10, 10, 9 } );
    DOCTEST_CHECK( cropped.At( 10/2, 10/2, 9/2 ) == 1 );
+   // Tests Real/Imaginary
+   img = dip::Image{ dip::UnsignedArray{ 15, 20, 10 }, 3, dip::DT_SCOMPLEX };
+   img.Real().Fill( 45.2 );
+   img.Imaginary().Fill( 24.5 );
+   DOCTEST_CHECK( img.At( 0 )[ 0 ] == dip::scomplex{ 45.2f, 24.5f } );
+   DOCTEST_CHECK( img.At( 10, 15, 2 )[ 0 ] == dip::scomplex{ 45.2f, 24.5f } );
 }
 
 #endif // DIP__ENABLE_DOCTEST

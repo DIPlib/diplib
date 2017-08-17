@@ -161,11 +161,11 @@ void Image::View::Fill( Sample const& sample ) {
       // Iterate over offsets
       void* src = source.Origin();
       if( telems == 1 ) {
-         for( auto& offset : offsets_ ) {
+         for( auto offset : offsets_ ) {
             std::memcpy( reference_.Pointer( offset ), src, bytes );
          }
       } else {
-         for( auto& offset : offsets_ ) {
+         for( auto offset : offsets_ ) {
             for( dip::uint ii = 0; ii < telems; ++ii ) {
                std::memcpy( reference_.Pointer( offset ), src, bytes );
                offset += reference_.TensorStride();
@@ -225,7 +225,7 @@ Image::View Image::View::At( Range x_range ) const {
          }
          ++it;
       }
-      for( auto o : out.offsets_ ) {
+      for( auto& o : out.offsets_ ) {
          o = it.Offset< 0 >();
          for( ii = 0; ii < x_range.step; ++ii ) {
             ++it;
@@ -261,3 +261,172 @@ Image::View Image::View::At( RangeArray const& ranges ) const {
 
 
 } // namespace dip
+
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Pixel and related classes" ) {
+
+   // Constructing, indexing, comparing
+   dip::Image::Sample s{ 4.6 };
+   DOCTEST_CHECK( s.DataType() == dip::DT_DFLOAT );
+   dip::Image::Sample c{ dip::dcomplex{ 4.1, 2.1 }};
+   dip::Image::Pixel p{ dip::dcomplex{ 4.1, 2.1 }, dip::dcomplex{ 4.6 } };
+   DOCTEST_CHECK( p.DataType() == dip::DT_DCOMPLEX );
+   DOCTEST_CHECK( p.TensorElements() == 2 );
+   DOCTEST_CHECK( p[ 0 ] == c );
+   DOCTEST_CHECK( p[ 1 ] == s );
+
+   // Assigning into
+   dip::Image image( { 3, 4 }, 3, dip::DT_UINT16 );
+   image = 3;
+   DOCTEST_CHECK( image.At( 0 )[ 0 ] == 3 ); // fist sample
+   DOCTEST_CHECK( image.At( 0 ) == 3 );      // fist pixel
+   DOCTEST_CHECK( image.At( 2, 3 )[ 2 ] == 3 ); // last sample
+   image.At( 0 ) = 4;
+   dip::Image::Pixel expect1{ dip::uint8( 4 ), dip::uint8( 4 ), dip::uint8( 4 ) };
+   DOCTEST_CHECK( image.At( 0 ) == 4 );
+   DOCTEST_CHECK( image.At( 0 ) == expect1 );
+   DOCTEST_CHECK_FALSE( image.At( 0 ) == 0 );
+   DOCTEST_CHECK_FALSE( image.At( 1 ) == expect1 );
+   DOCTEST_CHECK_FALSE( image.At( 1 )[ 1 ] == 4 );
+   DOCTEST_CHECK( image.At( 0 )[ 1 ] == 4 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+   image.At( 0 )[ 2 ] = 5;
+   dip::Image::Pixel expect2 = expect1;
+   expect2[ 2 ] = 5;
+   DOCTEST_CHECK( image.At( 0 ) == expect2 );
+   DOCTEST_CHECK( image.At( 0 )[ 1 ] == 4 );
+   DOCTEST_CHECK( image.At( 0 )[ 2 ] == 5 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+   image.At( 0 ) = { 8, 9, 0 };
+   dip::Image::Pixel expect3{ 8, 9, 0 };
+   DOCTEST_CHECK( image.At( 0 ) == expect3 );
+   DOCTEST_CHECK( image.At( 0 )[ 1 ] == 9 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+   image.At( 1 ) = expect3;
+   DOCTEST_CHECK( image.At( 1 ) == expect3 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+   image.At( 2, 0 ) = image.At( 0 );
+   DOCTEST_CHECK( image.At( 2, 0 ) == expect3 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+   image.At( 2, 0 ) = image.At( 0 )[ 0 ];
+   DOCTEST_CHECK( image.At( 2, 0 ) == 8 );
+   DOCTEST_CHECK( image.At( 2, 3 )[ 0 ] == 3 );
+
+   // Reading out
+   dip::uint8 v0 = image.At< dip::uint8 >( 2, 0 );
+   dip::uint8 v1 = image.At< dip::uint8 >( 2, 0 )[ 0 ];
+   dip::sint16 v2 = image.At< dip::sint16 >( 2, 0 )[ 0 ];
+   dip::scomplex v3 = image.At< dip::scomplex >( 2, 0 )[ 0 ];
+   DOCTEST_CHECK( v0 == 8 );
+   DOCTEST_CHECK( v1 == 8 );
+   DOCTEST_CHECK( v2 == 8 );
+   DOCTEST_CHECK( v3 == 8.0f );
+
+   // Arithmetic
+   expect3 = expect3 * 2;
+   DOCTEST_CHECK( expect3[ 0 ] == 16 );
+   DOCTEST_CHECK( expect3[ 1 ] == 18 );
+   DOCTEST_CHECK( expect3[ 2 ] == 0 );
+   DOCTEST_CHECK( image.At< dip::uint8 >( 1 ) * 2 == expect3 );
+   DOCTEST_CHECK( image.At< dip::sint16 >( 1 ) * 2 == expect3 );
+   DOCTEST_CHECK( image.At< dip::scomplex >( 1 ) * 2 == expect3 );
+   DOCTEST_CHECK( image.At< dip::uint8 >( 1 )[ 0 ] * 2 == 16 );
+   DOCTEST_CHECK( image.At< dip::sint16 >( 1 )[ 0 ] * 2 == 16 );
+   DOCTEST_CHECK( image.At< dip::scomplex >( 1 )[ 0 ] * 2 == 16 );
+
+   // Compound assignment
+   expect3 += 5;
+   DOCTEST_CHECK( expect3[ 0 ] == 21 );
+   DOCTEST_CHECK( expect3[ 1 ] == 23 );
+   DOCTEST_CHECK( expect3[ 2 ] == 5 );
+   expect3 += expect2;
+   DOCTEST_CHECK( expect3[ 0 ] == 25 );
+   DOCTEST_CHECK( expect3[ 1 ] == 27 );
+   DOCTEST_CHECK( expect3[ 2 ] == 10 );
+   image.At( 2, 0 ) -= 4;
+   DOCTEST_CHECK( image.At( 2, 0 ) == expect1 );
+   image.At( 2, 0 )[ 2 ] += 1;
+   DOCTEST_CHECK( image.At( 2, 0 ) == expect2 );
+   image.At( 2, 0 )[ 2 ] &= 4;
+   DOCTEST_CHECK( image.At( 2, 0 ) == expect1 );
+
+   // Iterator
+   image.At( 0 ) = expect3;
+   auto it1 = image.At( 0 ).begin();
+   auto it2 = expect3.begin();
+   DOCTEST_CHECK( *it1 == *it2 );
+   ++it1; ++it2;
+   DOCTEST_CHECK( *it1 == *it2 );
+   ++it1; ++it2;
+   DOCTEST_CHECK( *it1 == *it2 );
+   ++it1; ++it2;
+   DOCTEST_CHECK( it2 == expect3.end() );
+
+   // Swapping
+   s.swap( c );
+   DOCTEST_CHECK( p[ 0 ] == s );
+   DOCTEST_CHECK( p[ 1 ] == c );
+
+   expect1.swap( p );
+   DOCTEST_CHECK( expect1.DataType() == dip::DT_DCOMPLEX );
+   DOCTEST_CHECK( expect1.TensorElements() == 2 );
+   DOCTEST_CHECK( expect1[ 0 ] == s );
+   DOCTEST_CHECK( expect1[ 1 ] == c );
+
+   DOCTEST_CHECK( p.DataType() == dip::DT_UINT8 );
+   DOCTEST_CHECK( p.TensorElements() == 3 );
+   DOCTEST_CHECK( p[ 0 ] == 4 );
+   DOCTEST_CHECK( p[ 1 ] == 4 );
+   DOCTEST_CHECK( p[ 2 ] == 4 );
+}
+
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
+
+   // -- Indexing into image (3 types of indexing)
+
+   dip::Image img{ dip::UnsignedArray{ 15, 20, 10 }, 3 };
+   img.Fill( 0 );
+   // Regular indexing
+   auto viewR = img.At( dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 } ); // 3x3x3 output
+   dip::Image ref = viewR;
+   DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 3, 3, 3 } );
+   DOCTEST_CHECK( ref.TensorElements() == 3 );
+   viewR.Fill( 1 );
+   DOCTEST_CHECK( dip::Count( ref[ 0 ] ) == 3*3*3 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 ); // we didn't write into pixels not in the view
+   DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+   // Indexing using mask image
+   dip::Image mask = img[ 0 ] > 0;
+   auto viewM = img.At( mask );
+   ref = viewM;
+   DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 3 * 3 * 3 } );
+   DOCTEST_CHECK( ref.TensorElements() == 3 );
+   DOCTEST_CHECK( dip::Count( ref[ 0 ] ) == 3*3*3 );
+   // Indexing using coordinate arrays
+   dip::CoordinateArray coords;
+   coords.push_back( dip::UnsignedArray{ 0, 0, 0 } );
+   coords.push_back( dip::UnsignedArray{ 1, 1, 1 } );
+   coords.push_back( dip::UnsignedArray{ 0, 1, 1 } );
+   coords.push_back( dip::UnsignedArray{ 1, 1, 0 } );
+   auto viewC = img.At( coords );
+   viewC = 2;
+   ref = viewC;
+   DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 4 } );
+   DOCTEST_CHECK( ref.TensorElements() == 3 );
+   DOCTEST_CHECK( dip::Count( ref[ 0 ] == 2 ) == 4 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] == 2 ) == 4 );
+
+   // -- Indexing into views (3x3 types of indexing!)
+
+   // TODO: Regular indexing
+
+   // TODO: Indexing using mask image
+
+   // TODO: Indexing using coordinate arrays
+
+}
+
+#endif // DIP__ENABLE_DOCTEST
