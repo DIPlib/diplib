@@ -106,12 +106,12 @@ class DIP_NO_EXPORT GenericImageIterator {
       }
 
       /// Dereference
-      Image::CastPixel< T > operator*() const {
-         return Image::CastPixel< T >( image_->Pointer( offset_ ), image_->DataType(), image_->Tensor(), image_->TensorStride() );
+      value_type operator*() const {
+         return value_type( image_->Pointer( offset_ ), image_->DataType(), image_->Tensor(), image_->TensorStride() );
       }
       /// Dereference
-      Image::CastPixel< T > operator->() const {
-         return Image::CastPixel< T >( image_->Pointer( offset_ ), image_->DataType(), image_->Tensor(), image_->TensorStride() );
+      value_type operator->() const {
+         return operator*();
       }
       /// Index into tensor, `it[index]` is equal to `(*it)[index]`.
       Image::CastSample< T > operator[]( dip::uint index ) const {
@@ -151,12 +151,12 @@ class DIP_NO_EXPORT GenericImageIterator {
       }
 
       /// Get an iterator over the tensor for the current pixel, `it.begin()` is equal to `(*it).begin()`.
-      typename Image::CastPixel< T >::Iterator begin() const {
-         return typename Image::CastPixel< T >::Iterator( Pointer(), image_->DataType(), image_->TensorStride() );
+      typename value_type::Iterator begin() const {
+         return typename value_type::Iterator( Pointer(), image_->DataType(), image_->TensorStride() );
       }
       /// Get an end iterator over the tensor for the current pixel
-      typename Image::CastPixel< T >::Iterator end() const {
-         return typename Image::CastPixel< T >::Iterator( Pointer(), image_->DataType(), image_->TensorStride(), image_->TensorElements() );
+      typename value_type::Iterator end() const {
+         return typename value_type::Iterator( Pointer(), image_->DataType(), image_->TensorStride(), image_->TensorElements() );
       }
       /// Get an iterator over the current line
       template< typename S = T >
@@ -347,13 +347,13 @@ class DIP_NO_EXPORT GenericJointImageIterator {
          return Image::CastSample< T >( Pointer< I >(), images_[ I ]->DataType() );
       }
       /// Get pixel for image 0.
-      Image::CastPixel< T > In() const { return Pixel< 0 >(); }
+      value_type In() const { return Pixel< 0 >(); }
       /// Get pixel for image 1.
-      Image::CastPixel< T > Out() const { return Pixel< 1 >(); }
+      value_type Out() const { return Pixel< 1 >(); }
       /// Get pixel for image `I`.
       template< dip::uint I >
-      Image::CastPixel< T > Pixel() const {
-         return Image::CastPixel< T >( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->Tensor(), images_[ I ]->TensorStride() );
+      value_type Pixel() const {
+         return value_type( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->Tensor(), images_[ I ]->TensorStride() );
       }
 
       /// Increment
@@ -393,15 +393,15 @@ class DIP_NO_EXPORT GenericJointImageIterator {
 
       /// Get an iterator over the tensor for the current pixel of image `I`
       template< dip::uint I >
-      typename Image::CastPixel< T >::Iterator begin() const {
+      typename value_type::Iterator begin() const {
          DIP_ASSERT( images_[ I ] );
-         return typename Image::CastPixel< T >::Iterator( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->TensorStride() );
+         return typename value_type::Iterator( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->TensorStride() );
       }
       /// Get an end iterator over the tensor for the current pixel of image `I`
       template< dip::uint I >
-      typename Image::CastPixel< T >::Iterator end() const {
+      typename value_type::Iterator end() const {
          DIP_ASSERT( images_[ I ] );
-         return typename Image::CastPixel< T >::Iterator( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->TensorStride(), images_[ I ]->TensorElements() );
+         return typename value_type::Iterator( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->TensorStride(), images_[ I ]->TensorElements() );
       }
       /// Get an iterator over the current line of image `I`
       template< dip::uint I, typename S = T >

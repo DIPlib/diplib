@@ -275,6 +275,98 @@ Image::View Image::View::At( RangeArray const& ranges ) const {
 }
 
 
+Image::View::Iterator::Iterator() : view_( Image{ 0 } ), atEnd_( true ) {}
+Image::View::Iterator::Iterator( View const& view ) : view_( view ) { Initialize(); }
+Image::View::Iterator::Iterator( View&& view ) : view_( std::move( view )) { Initialize(); }
+
+void Image::View::Iterator::Initialize() {
+   if( view_.mask_.IsForged() ) {
+      // Iterate over the set pixels in the mask
+      maskIt_ = std::make_unique< GenericJointImageIterator< 2, dip::dfloat >>( ImageConstRefArray{ view_.reference_, view_.mask_ } );
+      // test to see if we're pointing at a set pixel, if not, call operator++.
+      if( !*( static_cast< bin* >( maskIt_->Pointer< 1 >() ))) {
+         operator++();
+      }
+   } else if( !view_.offsets_.empty() ) {
+      // Iterate over the offset array
+      // nothing to do here
+   } else {
+      // Iterate over the image
+      refIt_ = std::make_unique< GenericImageIterator< dip::dfloat >>( view_.reference_ );
+   }
+}
+
+Image::View::Iterator& Image::View::Iterator::operator++() {
+   if( !atEnd_ ) {
+      ++position_;
+      if( maskIt_ ) {
+         ++*maskIt_;
+         do {
+            if( *( static_cast< bin* >( maskIt_->Pointer< 1 >()))) {
+               break;
+            }
+         } while( ++*maskIt_ );
+         atEnd_ = maskIt_->IsAtEnd();
+      } else if( refIt_ ) {
+         ++*refIt_;
+         atEnd_ = refIt_->IsAtEnd();
+      } else {
+         atEnd_ = position_ >= view_.offsets_.size();
+      }
+   }
+   return *this;
+}
+
+void* Image::View::Iterator::Pointer() const {
+   DIP_THROW_IF( atEnd_, "Iterator at end cannot be dereferenced" );
+   if( maskIt_ ) {
+      return maskIt_->Pointer< 0 >();
+   }
+   if( refIt_ ) {
+      return refIt_->Pointer();
+   }
+   return view_.reference_.Pointer( view_.offsets_[ position_ ] );
+}
+
+void* Image::View::Iterator::Pointer( dip::uint index ) const {
+   DIP_THROW_IF( atEnd_, "Iterator at end cannot be dereferenced" );
+   if( maskIt_ ) {
+      return maskIt_->Pointer< 0 >( index );
+   }
+   if( refIt_ ) {
+      return refIt_->Pointer( index );
+   }
+   return view_.reference_.Pointer( view_.offsets_[ position_ ] + static_cast< dip::sint >( index ) * view_.reference_.TensorStride() );
+}
+
+dip::sint Image::View::Iterator::Offset() const {
+   DIP_THROW_IF( atEnd_, "Iterator at end cannot be dereferenced" );
+   if( maskIt_ ) {
+      return maskIt_->Offset< 0 >();
+   }
+   if( refIt_ ) {
+      return refIt_->Offset();
+   }
+   return view_.offsets_[ position_ ];
+}
+
+void Image::View::Iterator::Reset() {
+   if( maskIt_ ) {
+      maskIt_->Reset();
+   } else if( refIt_ ) {
+      refIt_->Reset();
+   }
+   position_ = 0;
+}
+
+Image::View::Iterator Image::View::begin() const {
+   return Image::View::Iterator( *this );
+}
+
+Image::View::Iterator Image::View::end() const {
+   return {};
+}
+
 } // namespace dip
 
 

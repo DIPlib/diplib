@@ -606,8 +606,9 @@ class Image::Pixel {
             value_type value_;
             dip::sint tensorStride_;
 
-            // `dip::Image::Pixel` needs to use the private constructor, as do the generic image iterators.
+            // These classes need to use the private constructors:
             friend class Pixel;
+            friend class View;
             template< typename T > friend class dip::GenericImageIterator;
             template< dip::uint N, typename T > friend class dip::GenericJointImageIterator;
 
@@ -999,6 +1000,8 @@ class Image::View {
       /// \brief Extracts a subset of pixels from an image.
       DIP_EXPORT View At( RangeArray const& ranges ) const;
 
+      /// \brief Returns the dimensionality of the view. Non-regular views (created by indexing using a mask image
+      /// or a coordinate array) are always 1D.
       dip::uint Dimensionality() const {
          if( mask_.IsForged() || !offsets_.empty() ) {
             return 1;
@@ -1006,9 +1009,19 @@ class Image::View {
          return reference_.Dimensionality();
       }
 
+      /// \brief Returns the number of tensor elements of the view.
       dip::uint TensorElements() const {
          return reference_.TensorElements();
       }
+
+      /// \brief View iterator, similar in functionality to `dip::GenericImageIterator`.
+      class Iterator;
+
+      /// \brief Returns an iterator to the first pixel in the view.
+      Iterator begin() const;
+
+      /// \brief Returns an iterator to the last pixel in the view.
+      Iterator end() const;
 
    private:
       Image reference_;       // The image being indexed.
@@ -1033,7 +1046,7 @@ class Image::View {
       //    appear together in the sample list.
 
       // Private constructors, only `dip::Image` can construct one of these:
-      View( Image const& reference ) : reference_( reference ) {                    // a view over the full image
+      View( Image reference ) : reference_( std::move( reference )) {               // a view over the full image
          DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
       }
       DIP_EXPORT View( Image const& reference, Range range );                       // index tensor elements using range
@@ -1041,6 +1054,89 @@ class Image::View {
       DIP_EXPORT View( Image const& reference, Image const& mask );                 // index pixels or samples using mask
       DIP_EXPORT View( Image const& reference, UnsignedArray const& indices );      // index pixels using linear indices
       DIP_EXPORT View( Image const& reference, CoordinateArray const& coordinates );// index pixels using coordinates
+};
+
+
+class Image::View::Iterator {
+   public:
+      using iterator_category = std::forward_iterator_tag;
+      using value_type = Image::Pixel;
+      using difference_type = dip::sint;
+      using reference = value_type;
+      using pointer = value_type*;
+
+      /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
+      Iterator();
+      /// To construct a useful iterator, provide a view
+      explicit Iterator( View const& view );
+      /// To construct a useful iterator, provide a view
+      explicit Iterator( View&& view );
+
+      /// Dereference
+      value_type operator*() const {
+         return value_type( Pointer(), view_.reference_.DataType(), view_.reference_.Tensor(), view_.reference_.TensorStride() );
+      }
+      /// Dereference
+      value_type operator->() const {
+         return operator*();
+      }
+      /// Index into tensor, `it[index]` is equal to `(*it)[index]`.
+      Image::Sample operator[]( dip::uint index ) const {
+         return operator*()[ index ];
+      }
+
+      /// Increment
+      Iterator& operator++();
+
+      /// Get an iterator over the tensor for the current pixel, `it.begin()` is equal to `(*it).begin()`.
+      value_type::Iterator begin() const {
+         return value_type::Iterator( Pointer(), view_.reference_.DataType(), view_.reference_.TensorStride() );
+      }
+      /// Get an end iterator over the tensor for the current pixel
+      value_type::Iterator end() const {
+         return value_type::Iterator( Pointer(), view_.reference_.DataType(), view_.reference_.TensorStride(), view_.reference_.TensorElements() );
+      }
+
+      /// Equality comparison, is equal if the two iterators have the same position.
+      bool operator==( Iterator const& other ) const {
+         return ( atEnd_ == other.atEnd_ ) && ( position_ == other.position_ );
+      }
+      /// Inequality comparison
+      bool operator!=( Iterator const& other ) const {
+         return !operator==( other );
+      }
+
+      /// Test to see if the iterator reached past the last pixel
+      bool IsAtEnd() const { return atEnd_; }
+      /// Test to see if the iterator is still pointing at a pixel
+      explicit operator bool() const { return !atEnd_; }
+
+      /// Return the current pointer
+      void* Pointer() const;
+      /// Return a pointer to the tensor element `index`
+      void* Pointer( dip::uint index ) const;
+      /// Return the current offset
+      dip::sint Offset() const;
+
+      /// Return the current position within the view (i.e. how many times we've advanced the iterator)
+      dip::uint Position() const { return position_; }
+
+      /// Reset the iterator to the first pixel in the image (as it was when first created)
+      void Reset();
+
+   private:
+      View view_;                // A copy of the view object that we're iterating over.
+      dip::uint position_ = 0;   // Counts how many elements we've advanced past.
+      bool atEnd_ = false;       // true when we're done iterating
+      std::unique_ptr< GenericImageIterator< dip::dfloat >> refIt_;           // Using pointers to incomplete type here
+      std::unique_ptr< GenericJointImageIterator< 2, dip::dfloat >> maskIt_;  // Using pointers to incomplete type here
+
+      void Initialize();
+
+      // NOTE that we take a copy of the dip::Image::View object because we want to support syntax like:
+      //    auto it = img.At( smth ).begin()
+      //    do{ ... } while( ++it );
+      // TODO: maybe we can have a different version of the iterator that takes a reference (or pointer).
 };
 
 
