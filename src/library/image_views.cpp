@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for the Image class and related functions.
+ * This file contains definitions for support classes for the Image class.
  *
  * (c)2014-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -211,7 +211,7 @@ Image::View Image::View::At( Range x_range ) const {
       dip::uint N = Count( mask_ );
       DIP_STACK_TRACE_THIS( x_range.Fix( N ));
       View out( reference_ );
-      out.offsets_.resize( x_range.Size() );
+      out.offsets_.resize( x_range.Size(), 0 );
       dip::uint start = x_range.Offset();
       if( x_range.start > x_range.stop ) {
          start -= ( x_range.Size() - 1 ) * x_range.step;
@@ -219,15 +219,30 @@ Image::View Image::View::At( Range x_range ) const {
       GenericJointImageIterator< 2 > it( { reference_, mask_ } );
       // Note that we've counted the number of set pixels in mask_, so the looping below never sees it going bad.
       dip::uint ii = 0;
-      while( ii < start ) {
+      while( true ) {
          if( *( static_cast< bin* >( it.Pointer< 1 >() ))) {
+            if( ii == start ) {
+               break;
+            }
             ++ii;
          }
          ++it;
       }
       for( auto& o : out.offsets_ ) {
+         DIP_ASSERT( it );
          o = it.Offset< 0 >();
-         for( ii = 0; ii < x_range.step; ++ii ) {
+         ii = 0;
+         while( true ) {
+            if( !it ) {
+               break; // this happens when we just added the offset for the last on pixel in the mask, we shouldn't try to find a next on pixel after that!
+               // TODO: we could probably write this loop better so that we don't look for the next on pixel after then last one was found.
+            }
+            if( *( static_cast< bin* >( it.Pointer< 1 >() ))) {
+               if( ii == x_range.step ) {
+                  break;
+               }
+               ++ii;
+            }
             ++it;
          }
       }
@@ -389,6 +404,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
 
    dip::Image img{ dip::UnsignedArray{ 15, 20, 10 }, 3 };
    img.Fill( 0 );
+
    // Regular indexing
    auto viewR = img.At( dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 }, dip::Range{ 3, 9, 3 } ); // 3x3x3 output
    dip::Image ref = viewR;
@@ -398,6 +414,7 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( dip::Count( ref[ 0 ] ) == 3*3*3 );
    DOCTEST_CHECK( dip::Count( img[ 0 ] ) == 3*3*3 ); // we didn't write into pixels not in the view
    DOCTEST_CHECK( dip::Count( img[ 2 ] ) == 3*3*3 );
+
    // Indexing using mask image
    dip::Image mask = img[ 0 ] > 0;
    auto viewM = img.At( mask );
@@ -405,7 +422,8 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 3 * 3 * 3 } );
    DOCTEST_CHECK( ref.TensorElements() == 3 );
    DOCTEST_CHECK( dip::Count( ref[ 0 ] ) == 3*3*3 );
-   // Indexing using coordinate arrays
+
+   // Indexing using coordinate array
    dip::CoordinateArray coords;
    coords.push_back( dip::UnsignedArray{ 0, 0, 0 } );
    coords.push_back( dip::UnsignedArray{ 1, 1, 1 } );
@@ -418,14 +436,58 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
    DOCTEST_CHECK( ref.TensorElements() == 3 );
    DOCTEST_CHECK( dip::Count( ref[ 0 ] == 2 ) == 4 );
    DOCTEST_CHECK( dip::Count( img[ 0 ] == 2 ) == 4 );
+   DOCTEST_CHECK( img.At( 0, 0, 0 )[ 0 ] == 2 );
+   DOCTEST_CHECK( img.At( 1, 1, 1 )[ 0 ] == 2 );
+   DOCTEST_CHECK( img.At( 0, 1, 1 )[ 0 ] == 2 );
+   DOCTEST_CHECK( img.At( 1, 1, 0 )[ 0 ] == 2 );
 
-   // -- Indexing into views (3x3 types of indexing!)
+   // -- Indexing into view
+
+   // Regular view
+   viewR.At( 1, 1, 0 ) = 3;
+   DOCTEST_CHECK( img.At( 6, 6, 3 ) == 3 );
+   auto viewRR = viewR.At( dip::Range{ 0, -1 }, dip::Range{ 0, 1 }, dip::Range{ 0 } );
+   ref = viewRR;
+   DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 3, 2, 1 } );
+   DOCTEST_CHECK( ref.TensorElements() == 3 );
+   viewRR = 4;
+   DOCTEST_CHECK( dip::Count( img[ 0 ] == 4 ) == 3*2*1 );
+   DOCTEST_CHECK( dip::Count( img[ 2 ] == 4 ) == 3*2*1 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] == 1 ) == 3*3*3 - 3*2*1 ); // we didn't write into pixels not in the view
+   DOCTEST_CHECK( dip::Count( img[ 0 ] == 3 ) == 0 );
+
+   // Mask view
+   DOCTEST_CHECK( viewM.At( 3 + 1 ) == 4 ); // indexed by viewRR
+   DOCTEST_CHECK( viewM.At( 2 * 3 ) == 1 ); // not indexed by viewRR
+   auto viewMR = viewM.At( dip::Range{ 1, 12, 2 } );
+   viewMR = 5;
+   ref = viewMR;
+   DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 6 } );
+   DOCTEST_CHECK( ref.TensorElements() == 3 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] == 5 ) == 6 );
+   DOCTEST_CHECK( dip::Count( img[ 1 ] == 5 ) == 6 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] == 4 ) == 3 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] == 1 ) == 3*3*3 - 6 - 3 ); // we didn't write into pixels not in the view
+
+   // Coordinate array view
+   auto viewCR = viewC.At( dip::Range{ 2, 2 } );
+   viewCR = 6;
+   DOCTEST_CHECK( dip::Count( viewC[ 0 ] == 2 ) == 3 );
+   DOCTEST_CHECK( dip::Count( viewC[ 0 ] == 6 ) == 1 );
+   DOCTEST_CHECK( viewC.At( 2 ) == 6 );
+   DOCTEST_CHECK( viewC.At( 1 ) == 2 );
+   DOCTEST_CHECK( dip::Count( img[ 0 ] == 6 ) == 1 );
+   DOCTEST_CHECK( img.At( dip::UnsignedArray{ 0, 1, 1 } ) == 6 );
+   ref = viewCR;
+   DOCTEST_CHECK( ref.Sizes() == dip::UnsignedArray{ 1 } );
+
+   // -- Writing an image into a view
 
    // TODO: Regular indexing
 
    // TODO: Indexing using mask image
 
-   // TODO: Indexing using coordinate arrays
+   // TODO: Indexing using coordinate array
 
 }
 
