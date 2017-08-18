@@ -231,6 +231,12 @@ class DIP_NO_EXPORT GenericImageIterator {
          return HasProcessingDimension() ? static_cast< dip::sint >( procDim_ ) : -1;
       }
 
+      /// Reset the iterator to the first pixel in the image (as it was when first created)
+      void Reset() {
+         offset_ = 0;
+         coords_.fill( 0 );
+      }
+
    private:
       Image const* image_ = nullptr;
       dip::sint offset_ = 0;
@@ -484,6 +490,12 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// Return the processing dimension, the direction of the lines over which the iterator iterates
       dip::sint ProcessingDimension() const { return HasProcessingDimension() ? static_cast< dip::sint >( procDim_ ) : -1; }
 
+      /// Reset the iterator to the first pixel in the image (as it was when first created)
+      void Reset() {
+         offsets_.fill( 0 );
+         coords_.fill( 0 );
+      }
+
    private:
       static_assert( N > 1, "GenericJointImageIterator needs at least one type template argument" );
       std::array< Image const*, N > images_;
@@ -522,7 +534,7 @@ inline void swap( GenericJointImageIterator< N, T >& v1, GenericJointImageIterat
 /// The iterator can be moved to any arbitrary slice with a non-negative index (so you cannot decrement
 /// it below 0, the first slice; if you try nothing will happen), even slices past the last one.
 /// If the iterator points at a slice that does not exist, the iterator will test false, but it will
-/// still be a valid iterator that can be manipulated.
+/// still be a valid iterator that can be manipulated. Do not dereference such an iterator!
 ///
 /// ```cpp
 ///     dip::ImageSliceIterator it( img, 2 );
@@ -696,10 +708,21 @@ class DIP_NO_EXPORT ImageSliceIterator {
       /// Return the processing dimension, the direction over which the iterator iterates
       dip::uint ProcessingDimension() const { return procDim_; }
 
+      /// Reset the iterator to the first image plane (as it was when the iterator first was created)
+      void Reset() {
+         coord_ = 0;
+      }
+
+      /// Set the iterator to index `plane`. If `plane` is outside the image domain, the iterator is still valid,
+      /// but should not be dereferenced.
+      void Set( dip::uint plane ) {
+         coord_ = plane;
+      }
+
    private:
       Image image_;           // the image whose reference we return when dereferencing
       dip::uint size_ = 0;    // will always be > 0 when not default-constructed
-      dip::sint stride_ = 0;  // will always be > 0 when not default-constructed
+      dip::sint stride_ = 0;
       dip::uint coord_ = 0;   // the plane currently pointing to
       dip::uint procDim_ = 0; // the dimension along which we iterate, the image contains all other dimensions
 };

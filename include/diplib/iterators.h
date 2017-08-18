@@ -497,6 +497,12 @@ class DIP_NO_EXPORT ImageIterator {
       /// Return the processing dimension, the direction of the lines over which the iterator iterates
       dip::sint ProcessingDimension() const { return HasProcessingDimension() ? static_cast< dip::sint >( procDim_ ) : -1; }
 
+      /// Reset the iterator to the first pixel in the image (as it was when first created)
+      void Reset() {
+         ptr_ = static_cast< pointer >( image_->Origin() );
+         coords_.fill( 0 );
+      }
+
    private:
       Image const* image_ = nullptr;
       pointer ptr_ = nullptr;
@@ -754,7 +760,7 @@ class DIP_NO_EXPORT JointImageIterator {
       template< dip::uint I >
       dip::sint Offset() const { return offsets_[ I ]; }
       /// Index into image tensor for image 0.
-      dip::sint InOffset() const { return offsets_[ 0]; }
+      dip::sint InOffset() const { return offsets_[ 0 ]; }
       /// Index into image tensor for image 1.
       dip::sint OutOffset() const { return offsets_[ 1 ]; }
       /// Return the current index, which is computed: this function is not trivial
@@ -774,6 +780,12 @@ class DIP_NO_EXPORT JointImageIterator {
       /// Return the processing dimension, the direction of the lines over which the iterator iterates
       dip::sint ProcessingDimension() const {
          return HasProcessingDimension() ? static_cast< dip::sint >( procDim_ ) : -1;
+      }
+
+      /// Reset the iterator to the first pixel in the image (as it was when first created)
+      void Reset() {
+         offsets_.fill( 0 );
+         coords_.fill( 0 );
       }
 
    private:
