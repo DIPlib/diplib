@@ -904,7 +904,7 @@ class Image::View {
          return *this;
       }
 
-      // TODO: compound assignments
+      // TODO: It would be nice to be able to iterate over a view!
 
       /// \brief Copy the pixels from `src` to the view.
       ///

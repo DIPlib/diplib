@@ -395,6 +395,7 @@ inline Image& operator^=( Image& lhs, T const& rhs ) {
    return lhs;
 }
 
+// Idem for views
 
 /// \brief Compound assignment operator.
 template< typename T >

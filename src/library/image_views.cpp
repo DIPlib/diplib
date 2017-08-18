@@ -280,6 +280,7 @@ Image::View Image::View::At( RangeArray const& ranges ) const {
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
+#include "diplib/testing.h"
 
 DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Pixel and related classes" ) {
 
@@ -483,12 +484,50 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::View" ) {
 
    // -- Writing an image into a view
 
-   // TODO: Regular indexing
+   // Regular indexing
+   img.Fill( 0 );
+   ref = viewR;
+   dip::Image src = ref.Similar();
+   dip::ImageIterator< dip::sfloat > it( src );
+   for( dip::uint ii = 1; it; ++ii, ++it ) {
+      it[ 0 ] = static_cast< dip::sfloat >( ii );
+      it[ 1 ] = static_cast< dip::sfloat >( ii + 1000 );
+      it[ 2 ] = static_cast< dip::sfloat >( ii + 2000 );
+   }
+   viewR = src; // copy samples from src to view in img, now ref should match src
+   DOCTEST_CHECK( dip::testing::CompareImages( ref, src ));
 
-   // TODO: Indexing using mask image
+   // Indexing using mask image
+   it.Reset();
+   do {
+      it[ 0 ] += 500.0f;
+      it[ 1 ] += 500.0f;
+      it[ 2 ] += 500.0f;
+   } while( ++it );
+   viewM = src; // copy samples from src to view in img, now ref should match src
+   DOCTEST_CHECK( dip::testing::CompareImages( ref, src ));
 
-   // TODO: Indexing using coordinate array
-
+   // Indexing using coordinate array
+   src.ReForge( dip::UnsignedArray{ 4 }, 3 );
+   it = dip::ImageIterator< dip::sfloat >( src );
+   for( dip::uint ii = 1; it; ++ii, ++it ) {
+      it[ 0 ] = static_cast< dip::sfloat >( ii );
+      it[ 1 ] = static_cast< dip::sfloat >( ii + 1000 );
+      it[ 2 ] = static_cast< dip::sfloat >( ii + 2000 );
+   }
+   viewC = src;
+   DOCTEST_CHECK( img.At( 0, 0, 0 )[ 0 ] == 1 );
+   DOCTEST_CHECK( img.At( 1, 1, 1 )[ 0 ] == 2 );
+   DOCTEST_CHECK( img.At( 0, 1, 1 )[ 0 ] == 3 );
+   DOCTEST_CHECK( img.At( 1, 1, 0 )[ 0 ] == 4 );
+   DOCTEST_CHECK( img.At( 0, 0, 0 )[ 1 ] == 1 + 1000 );
+   DOCTEST_CHECK( img.At( 1, 1, 1 )[ 1 ] == 2 + 1000 );
+   DOCTEST_CHECK( img.At( 0, 1, 1 )[ 1 ] == 3 + 1000 );
+   DOCTEST_CHECK( img.At( 1, 1, 0 )[ 1 ] == 4 + 1000 );
+   DOCTEST_CHECK( img.At( 0, 0, 0 )[ 2 ] == 1 + 2000 );
+   DOCTEST_CHECK( img.At( 1, 1, 1 )[ 2 ] == 2 + 2000 );
+   DOCTEST_CHECK( img.At( 0, 1, 1 )[ 2 ] == 3 + 2000 );
+   DOCTEST_CHECK( img.At( 1, 1, 0 )[ 2 ] == 4 + 2000 );
 }
 
 #endif // DIP__ENABLE_DOCTEST
