@@ -23,7 +23,7 @@
 
 \brief Represents an image with all associated information.
 
-An `%Image` object is the core of the *DIPlib* library, as all functionality
+A `%dip::Image` object is the core of the *DIPlib* library, as all functionality
 revolves around images. Some image manipulation is provided as class
 methods, but most image processing and analysis functionality is provided
 in functions defined in the `#dip` namespace.
@@ -34,12 +34,11 @@ in functions defined in the `#dip` namespace.
 
 \section image_representation Image representation
 
-An `%Image` object can have any number of dimensions (limited by the integer
-representation used), though 0D, 2D and 3D are the most often used dimensionalities.
+An `%dip::Image` object can have any number of dimensions (limited by the integer
+representation used), though 2D and 3D are the most often used dimensionalities.
 Most functions in the library accept images with any number of
 dimensions, for the functions that are limited in this respect there is
-a note in the documentation. In the following, we refer to a dimension
-with size 1 (a single pixel) as a singleton dimension.
+a note in the documentation. A 0D image is an image with a single pixel.
 
 We use the term **pixel** to refer to the collection of samples taken at the
 same spatial location, irrespective of the number of dimensions that the
@@ -55,16 +54,15 @@ element is synonymous with sample, and we use the one or the other term
 in the documentation and code depending on context. We say that an image
 with 1 million pixels and 3 samples per pixel has a total of 3 million samples.
 
-If the tensor is 0D (a single sample), the image is a standard
-gray-value image. A 1D tensor (a vector) can be used to represent color
-images (e.g. an RGB image has three samples per pixel), but also for example
-the image gradient (see `dip::Gradient`). With
-a 2D tensor (a matrix) it is possible to represent concepts such as the
-Hessian and the structure tensor (see \ref why_tensors). For example, the Hessian of a 3D image
-has 9 samples per pixel. For more details on how tensor elements are stored,
-see the section on \ref tensors.
+If the tensor is 0D (a single sample), the image is a standard gray-value image
+(which we refer to as scalar image). A 1D tensor (a vector) can be used to represent
+color images (e.g. an RGB image has three samples per pixel), but also for example
+the image gradient (see `dip::Gradient`). With a 2D tensor (a matrix) it is possible
+to represent concepts such as the Hessian and the structure tensor (see \ref why_tensors).
+For example, the Hessian of a 3D image has 9 samples per pixel. For more details
+on how tensor elements are stored, see the section on \ref tensors.
 
-An `%Image` object can contain samples of a wide variety of numeric types,
+A `%dip::Image` object can contain samples of a wide variety of numeric types,
 including binary, unsigned and signed integers, floating point, and
 complex. For a complete list see the description of the `dip::DataType` class.
 All the image's samples must have the same type.
@@ -92,7 +90,7 @@ the data types of images.
 \section strides Strides
 
 For maximum flexibility in the relationship between image coordinates
-and how the samples are stored in memory, an `%Image` object specifies a
+and how the samples are stored in memory, a `%dip::Image` object specifies a
 **stride** array (`dip::Image::Strides`). This array indicates, for each
 dimension, how many samples to skip to get to the neighboring pixel in the
 given dimension.
@@ -108,8 +106,8 @@ reached by (assuming `dip::DT_UINT8` data type):
 ```
 
 This concept naturally scales with image dimensionality. Strides can be
-negative, and need not be ordered in any particular way. This allows an
-`%Image` object to contain a regular subset of the pixels of another
+negative, and need not be ordered in any particular way. This allows a
+`%dip::Image` object to contain a regular subset of the pixels of another
 image, but still point to the same physical memory block. Here are some
 examples:
 
@@ -413,7 +411,20 @@ for how to write image filters that are robust against images with shared
 data. However, if the image assigned into has an external interface set, a
 data copy might be triggered, see \ref external_interface.
 
-The copy constructor does the same thing. The following three statements
+`dip::Image::QuickCopy` can be used here if the image copy does need any of
+the image metadata (color space and pixel size). The overhead of copying
+the metadata information is small, but we often use this function
+internally when the input image to a function needs to be reshaped for
+processing, but we do not want to modify the input image itself:
+
+```cpp
+    dip::Image tmp = img1.QuickCopy();
+    tmp.Squeeze();
+    ...
+```
+
+The copy constructor behaves the same way as the assignment operator, making
+the new image share data with the input image. The following three statements
 all invoke the copy constructor:
 
 ```cpp
@@ -487,21 +498,32 @@ be set to the tensor values in the initializer list:
 
 \section indexing Indexing
 
-There are different modes of indexing pixels in an `%Image` object. They can be
-split into two main categories: those that produce a view of the image, and those
-that copy the samples. A view is an `%Image` that shares the data segment with
-the original image, and gives access to a regular subset of the pixels. You can
-think here of a specific tensor component, a window, subsampling, etc. These
-views can be created by manipulating the origin pointer, the strides, and the
-sizes (see /ref strides). Indexing an irregular subset of pixels cannot be done
-with this mechanism, and therefore sample values are copied.
+There are three main modes of indexing pixels in a `%dip::Image` object: single
+pixel indexing, regular grid indexing, and irregular pixel indexing. All three
+modes have similar, consistent syntax, but differ by the return type and properties.
+Additionally, one can index into the tensor dimension. The next four sub-sections
+describe these different indexing modes.
+
+All indexing modes share in common that the returned object can be assigned to,
+modifying the original image. When indexing a single pixel, the return type is
+a `dip::Image::Pixel`, which references a single pixel in the original image.
+When indexing multiple pixels (either by indexing the tensor dimension or by
+regular or irregular indexing), the return type is a `dip::Image::View`, which
+references multiple pixels in the original image. Both these objects have
+some overloaded methods and can be iterated over. Additionally, the `dip::Image::View`
+object implicitly casts back to a `%dip::Image`, so it can be used as arguments
+to functions that take an `%Image`. Here is where the difference between regular
+and irregular indexing comes into play: the `%Image` that results from regular
+indexing (and from tensor indexing) shares the data with the orignal image, whereas
+when the indexing was irregular, the data needs to be copied to create a new image
+with only those pixels.
 
 
 \subsection tensor_indexing Tensor dimensions
 
 To address one channel in a color image is a rather common operation, and therefore
 we have delegated the C++ indexing operator (`[]`) to the task of extracting a
-tensor component from an image (remember that a channel is a tensor component).
+tensor component from an image (remember that a color channel is a tensor component).
 For example:
 
 ```cpp
@@ -514,22 +536,33 @@ For a two-dimensional matrix it is possible to index using two values in an arra
     dip::Image out = tensorIm[ dip::UnsignedArray{ i, j } ];
 ```
 
-In both cases, the image created shares the pixels with the original image, meaning
-that it is possible to write to a channel in this way:
+The indexing operation, as explained above, returns a `dip::Image::View` object,
+which can be assigned to to modify the referenced pixels:
 
 ```cpp
-    colorIm[ 0 ].Copy( colorIm[ 1 ] );
+    colorIm[ 0 ] = colorIm[ 1 ];
+```
+
+When cast tack to an image, the image created shares the pixels with the original image,
+meaning that it is possible to write to a channel in this way:
+
+```cpp
     dip::Gauss( colorIm[ 2 ], colorIm[ 2 ], { 4 } );
 ```
 
 Note that the single-index version of the tensor indexing uses linear indexing into
 the tensor element list: if the tensor is, for example, a 2x2 symmetric matrix, only
 three elements are actually stored, with indices 0 and 1 representing the two diagonal
-elements, and index 2 representing the two identical off-diagonal elements.
+elements, and index 2 representing the two identical off-diagonal elements. See
+`dip::Tensor` for information on how the tensor is stored.
 
 To extract multiple tensor elements one can use a `dip::Range` to index. Other useful
 methods here are `dip::Image::Diagonal`, `dip::Image::TensorRow` and
 `dip::Image::TensorColumn`, which all yield a vector image.
+
+The methods `dip::Image::Real` and `dip::Image::Imaginary` are somewhat related to these
+last three methods in that they return a view over a subset of the data, except that
+they reference only the real or imaginary component of the complex sample values.
 
 
 \subsection pixel_indexing Single-pixel indexing
@@ -561,9 +594,9 @@ form, they return a `dip::Image::CastPixel< T >` instead, which is identical to 
 `dip::Image::Pixel`, but implicitly casts to type `T`. Thus:
 
 ```cpp
-    int v1 = image.At( 0, 10 );           // Does not compile, no implicit conversion to `int`.
-    int v2 = image.At< int >( 0, 10 );    // OK
-    int v3 = image.At( 0, 10 ).As< int >; // Same as `v2`.
+    int v1 = image.At( 0, 10 );             // Does not compile, no implicit conversion to `int`.
+    int v2 = image.At< int >( 0, 10 );      // OK
+    int v3 = image.At( 0, 10 ).As< int >(); // Same as `v2`.
 ```
 
 This implicit cast makes its use a little simpler in a setting combined with numbers
@@ -578,7 +611,7 @@ on the results:
     std::cout << image.At< dip::sint32 >( 85, 43 );
 ```
 
-Combining tensor and spatial indexing can be done in either order, but the results are
+Tensor and spatial indexing can be combined in either order, but the results are
 not identical:
 
 ```cpp
@@ -589,7 +622,7 @@ not identical:
 The first line above uses `[]` to index into the `dip::Image::Pixel` object, yielding
 a `dip::Image::Sample`. Again, this is a reference to the sample in the image, and can
 be written to to change the image. The second line first uses `[]` to create a scalar
-image, and then extracts a pixel from it. The result is a `dip::Image::Pixel` object,
+image view, and then extracts a pixel from it. The result is a `dip::Image::Pixel` object,
 not a `dip::Image::Sample`, though the pixel object references a single sample in the
 input image. In practice, these are equally useful, though the first form is slightly
 more efficient because the intermediate object generated has less overhead.
@@ -623,15 +656,15 @@ size of the image.
 For indexing into multidimensional images, simply provide one range per dimension.
 For more than 3 dimensions, provide a `dip::RangeArray`.
 
-As is the case with the `[]` indexing, these operations yield an image that
-shares data with the original image, and therefore can be used to write to the
-selected subset of pixels:
+As is the case with the `[]` indexing, these operations yield a `dip::Image::View` that
+can be assigned to to change the referenced pixels; and when cast back to a `dip::Image`,
+yields an image that shares data with the original image. For example:
 
 ```cpp
     image.At( dip::Range{ 0, 10 }, dip::Range{ 20, 30 } ) += 1;
 ```
 
-Combining tensor and spatial indexing can be done in either order, with identical
+Tensor and spatial indexing can be combined in either order, with identical
 results:
 
 ```cpp
@@ -639,215 +672,119 @@ results:
     image[ 1 ].At( { 0, 10 }, { 20, 30 } );
 ```
 
-
-\subsection other_views Other ways of creating a view of an image
-
-There are a few other possible views of an image that one can create.
-
-`dip::Image::QuickCopy` creates a view over all pixels, but the output
-image does not contain "non-essential" information such as color space and
-pixel size. This is useful where the const input image to a function must be
-reshaped.
-
-`dip::Image::Real` and `dip::Image::Imaginary` create views over images with
-a complex data type. The resulting view has a corresponding floating-point
-data type, mapping only one of the components of the complex samples.
+The method `dip::Image::Crop` is a convenience function to extract a view to a
+rectangular widow of a given size and with a given anchor (image center or corner).
+The `dip::Image::Pad` method does the opposite operation, but creates a new image and
+copies the data over.
 
 
 \subsection irregular_indexing Irregular indexing
 
-Indexing an arbitrary subset of pixels can be accomplished in three ways, using
-one of:
+An arbitrary subset of pixels can be indexed in three ways, using one of:
  * a mask image
- * a list of linear indices into the image
  * a list of pixel coordinates
+ * a list of linear indices into the image
 
-These three forms can all be accommodated using the `dip::Image::CopyAt`
-functions, which create a new image and copy pixel data over, resulting
-in a 1D image:
-
-```cpp
-    dip::Image out = image.CopyAt( mask );
-```
-
-These functions are called `CopyAt` rather than simply `At` to reinforce that
-sample values are copied into the new image. Therefore, when writing into
-these images, the original image is not affected. To write data into selected
-pixels, use the version of this function that takes two arguments:
+The first two forms are again available through the `dip::Image::At` method, the
+third one through the `dip::Image::AtIndices` method (since the input argument would
+not be distinguiseable from indexing a single pixel through its coordinates). As with
+regular indexing, the returned object is a `dip::Image::View`, which can be assigned
+to to change the referenced pixels. But as opposed to regular indexing, when cast
+back to a `%dip::Image`, the operation results in a 1D image with a copy of the sample
+values. Thus, once cast back to an `%Image`, pixels are no longer shared and can
+be modified without affecting the original image. This is by necessity, as the `%Image`
+object cannot reference samples that are not stored in memory on a regular grid.
 
 ```cpp
-    image.CopyAt( data, mask );
+    image.At( mask ) += 1;
+    dip::Image out = image.At( mask );
+    out.Fill( 0 );                       // does not affect `image`.
 ```
 
-Here, `data` is an image with as many pixels as are selected by `mask` (or
-the indices or coordinates array). So, to modify a subset of pixels, one
-can extract them first, then write them back after modification:
+Another typical example:
 
 ```cpp
-    dip::Image result = image.CopyAt( mask );  // get the pixels
-    result += 1;                               // modify them
-    image.CopyAt( result, mask );              // write them back into the image
+    image.At( mask ) = otherImage.At( mask );
 ```
-
-
-[//]: # (--------------------------------------------------------------)
-
-\section alternative_indexing An alternative to indexing
-
-What follows is not actually implemented, it's just some ideas that I wanted
-to write down. We might re-write some of the indexing mechanics!
-
-All spatial indexing yields a `dip::Image::View` object:
-```cpp
-    dip::Image::View view = image.At( mask );
-```
-
-There would be no `CopyAt` methods, they're all called `At`. There would be
-three types of views: (1) from regular indexing, (2) from mask indexing, and
-(3) from coordinate or linear indices indexing. The view object, in all cases,
-would keep a copy of the image (shared data of course). In case (1) this copy
-would already have modified strides, sizes and origin. In case (2), the view
-object would keep a copy of the mask image. In case (3) it would keep a list
-of offsets to pixels. Both mask image and offsets would already be vetted
-(that is, it is the indexing operator `At` that throws if the indexing operation
-is not valid).
-
-There are two things you can do with the `View` object: (a) assign to it, and
-(b) it implicitly casts to a `dip::Image`.
-
-(b) makes it so that the indexing works as it does now: you can do
-```cpp
-    dip::Image result = image.At( mask );
-    dip::Gauss( image.At( ... ));
-```
-and so on. In the case (1), the result shares data with the original image,
-in cases (2) and (3) the sample values are copied.
-
-(a) allows to modify the original image:
-```cpp
-    image.At( mask ) = 5;
-    image.At( mask ) = -image.At( mask );
-```
-
-I presume that it will be necessary to overload compound assignment operators
-as well, but other operators are not necessary as the object will implicitly
-cast to a `dip::Image`.
-
-The benefit here is a simplification of the indexing, with more consistency
-between single-pixel indexing and indexing that yields an image.
-Currently we do:
-```cpp
-    image.Fill( 0 );
-    image = 0;
-    image.Copy( otherImage );
-    image.At( 0 ) = 0;
-    image.At( Range{...} ) = 0;
-    image.At( Range{...} ) = otherImage; // BAD! does not modify `image`
-    image.At( Range{...} ).Copy( otherImage );
-    image.CopyAt( mask ).Copy( otherImage ); // BAD! does not modify `image`
-    image.CopyAt( otherImage, mask );
-    image.FillAt( 0, mask );
-```
-
-With the changes it will be:
-```cpp
-    image.Fill( 0 );
-    image = 0;
-    image.Copy( otherImage );
-    image.At( Range{} ) = otherImage; // Same as .Copy(), but not as efficient
-    image.At( 0 ) = 0;
-    image.At( Range{...} ) = 0;
-    image.At( Range{...} ) = otherImage;
-    image.At( mask ) = 0;
-    image.At( mask ) = otherImage;
-```
-
-The `dip::Image::Fill` method becomes less interesting, we could rely on the assignment
-operator exclusively. The `dip::Image::Copy` method stays relevant, as assignment of an
-image to another image creates a copy with shared data, it does not modify the image.
-This inconsistency is actually consistent with assignment in most scripting languages
-(see e.g. Python and MATLAB), where `A=B` makes `A` a copy of `B`, but `A(0)=B` copies
-`B` into some part of `A`.
-
-This is what the `dip::Image::View` class would look like:
-
-```cpp
-class Image {
-   ...
-
-   class View {
-         fiend class Image;
-      public:
-
-         // Public constructors, you can only make a new one by copy:
-         View() = delete;                          // No default constructor
-         View( View const& ) = default;            // Default copy constructor is OK
-         View( View&& ) = default;                 // Default move constructor is OK
-
-         // Assignment into `dip::Image::View`:
-         View& operator=( View&& ) = delete;       // No move assignment
-         View& operator=( View const& image );     // Invokes Copy() or CopyAt(image,...)
-         View& operator=( Image const& image );    // Invokes Copy() or CopyAt(image,...)
-         View& operator=( Pixel const& pixel );    // Invokes Fill() or FillAt()
-         View& operator=( Sample const& sample );  // Invokes Fill() or FillAt()
-         // Also do compound assignments
-
-      private:
-         Image reference_;
-         Image mask_;
-         IntegerArray offsets_;
-
-         // Private constructors, only `dip::Image` can construct one of these:
-         View( Image const& reference, RangeArray const& ranges );
-         View( Image const& reference, Image const& mask );
-         View( Image const& reference, UnsignedArray const& indices );
-         View( Image const& reference, CoordinateArray const& coordinates );
-         // These constructors will contain the meat of the current At() and CopyAt()
-         // methods.
-   };
-
-   // Constructing an Image from a View:
-   Image( View&& view ) {
-      if( view.mask_.IsForged() ) {
-         ... (invokes CopyAt())
-      } else if( !view.offsets_.empty() ) {
-         ... (invokes CopyAt())
-      } else {
-         swap( *this, view.reference_ );
-      }
-   }
-   Image( View const& view ) {
-      ... (idem as above, but with copy instead of move of reference_)
-   }
-
-   ...
-
-   View At( RangeArray const& ranges )           { return View( *this, ranges ); }
-   View At( Image const& mask )                  { return View( *this, mask ); }
-   View At( UnsignedArray const& indices )       { return View( *this, indices ); }
-   View At( CoordinateArray const& coordinates ) { return View( *this, coordinates ); }
-};
-```
-
-So the current 1-argument `dip::Image::CopyAt` methods, as well as all `dip::Image::At`
-methods, will become constructors for the `dip::Image::View` class. The 2-argument
-methods `dip::Image::CopyAt` and `dip::Image::FillAt` could become private functions
-for use only in `dip::Image::View::operator=`.
-
-TODO: chaining of `At()` calls: `dip::Image::View::At()` would be needed here, and
-complicates things a little bit, but should be solvable. Indexing into a `View` of type
-(2) or (3) must be using linear indices (since they represent a 1D image), and could
-simply modify the mask image or the offset array. Indexing there using a mask image
-could be simplified by converting it into an array of linear indices. If the view
-being indexed is of type (1), we simply add a mask or offset array. Casting back to
-a `dip::Image` wouldn't be affected.
 
 
 [//]: # (--------------------------------------------------------------)
 
 \section reshaping Reshaping
 
-// TODO: we need to document the image reshaping functions!
+There is a large collection of methods to reshape the image without physically
+moving samples around in memory. These functions accomplish their goal simply
+by modifying the sizes and strides arrays, and the tensor representation
+values. All of these functions modify the object directly, and return a reference
+so that they can be chained.
+
+For example, `dip::Image::Rotation90` rotates the image in 90 degree increments
+by mirroring and swapping dimensions. More generic methods are `dip::Image::Mirror`,
+and `dip::Image::SwapDimensions`. `dip::Image::PermuteDimensions` reorders the
+image's dimensions, an optionally adds or removes singleton dimensions. Singleton
+dimensions are dimensions with a size of 1, and can be added or removed without
+affecting the data layout in memory.
+
+Several of these methods are meant to manipulate singleton dimensions.
+`dip::Image::AddSingleton` and `dip::Image::Squeeze` add and remove singleton
+dimensions. `dip::Image::ExpandDimensionality` adds singleton dimensions at the
+end to increase the number of image dimensions. It is also possible to expand
+singleton dimensions so they no longer are singleton, by replicating the data
+along that dimensions, again without physically replicating or modifying the
+data in memory. See \ref singleton_expansion. The methods
+`dip::Image::ExpandSingletonDimension`, `dip::Image::ExpandSingletonDimensions`
+and `dip::Image::ExpandSingletonTensor` are used for this.
+`dip::Image::UnexpandSingletonDimensions` does the oposite operation.
+
+The method `dip::Image::StandardizeStrides` undoes all rotation, mirroring,
+dimension reordering, and singleton expansion, by making all strides positive
+and sorting them from smallest to largest.
+The `dip::Image::Flatten` method converts the image to 1D (though if the image
+does not have contiguous data, it will have to be copied to form a 1D image).
+
+A group of methods manipulate the image's tensor shape:
+`dip::Image::ReshapeTensor` requires the target tensor shape to have as many
+tensor elements as the image already has. For example, a 3-vector image can be
+converted into a 2x2 symmetric tensor image. `dip::Image::ReshapeTensorAsVector` and
+`dip::Image::ReshapeTensorAsDiagonal` turn the image into the given tensor shapes.
+The `dip::Image::Transpose` method belongs in this set, though it has a mathematical
+meaning. `%Transpose` changes the row-major matrix into a column-major matrix and
+vice-versa, thereby transposing the tensor.
+
+It is also possible to turn the tensor dimension into a spatial dimension and
+back, using `dip::Image::TensorToSpatial` and `dip::Image::SpatialToTensor`.
+Turning the tensor dimension into a spatial dimension can be useful for example
+to compute the maximum tensor element per pixel. The complex method is:
+
+```cpp
+    out = dip::Supremum( { image[ 0 ], image[ 1 ], image[ 2 ] } );
+```
+
+Though short to type, it is a complex method if the number of tensor elements is
+not known at compile time. In this case, a loop needs to create the
+`dip::ImageConstRefArray` that is the input to `dip::Supremum`.
+The easier alternative is:
+
+```cpp
+    dip::Image tmp = image.QuickCopy().TensorToSpatial( 0 );
+    dip::BooleanArray process( tmp.Dimensionality(), false );
+    process[ 0 ] = true;
+    out = dip::Maximum( tmp, {}, process ).Squeeze( 0 );
+```
+
+The first line creates a temporary copy of the input image, which is modified
+such that the tensor elements are along the first spatial dimension. The next
+two lines create a *process* array, which specifies that only the first
+dimension should be processed. Next, the maximum projection along the first
+dimension is computed, and the resulting singleton dimension is removed. The
+result is then a scalar image of the same sizes as `image`.
+
+Similar in purpose and function to `dip::Image::TensorToSpatial` are functions
+that split the complex-valued samples into two floating-point--valued samples,
+and present these as either a new spatial dimension, or the tensor dimension:
+`dip::Image::SplitComplex`, and `dip::Image::SplitComplexToTensor`. The inverse
+operation is accomplished with `dip::Image::MergeComplex` and
+`dip::Image::MergeTensorToComplex`.
 
 
 [//]: # (--------------------------------------------------------------)
@@ -1203,14 +1140,15 @@ function runs, it does nothing.
 \section singleton_expansion Singleton expansion
 
 When two images need to be of the same size, a process we refer to as
-singleton expansion is performed. First, singleton dimensions are added
-to the image with the fewer dimensions. Next, all singleton dimensions
+singleton expansion is performed. First, singleton dimensions (dimensions
+with a size of 1) are added to the image with the fewer dimensions. This
+process does not require a data copy. Next, all singleton dimensions
 are expanded to match the size of the corresponding dimension in the other
 image. This expansion simply repeats the value all along that dimension,
 and is accomplished by setting the image's size in that dimension to
-the expected value, and the corresponding stride to 0. This will cause
-an algorithm to read the same value, no matter how many steps it takes
-along this dimension. For example:
+the expected value, and the corresponding stride to 0 (again, no data is
+physically copied). This will cause an algorithm to read the same value,
+no matter how many steps it takes along this dimension. For example:
 
 ```cpp
     dip::Image img1( UnsignedArray{ 50, 1, 60 } );

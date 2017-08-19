@@ -250,6 +250,15 @@ inline void swap( GenericImageIterator< T >& v1, GenericImageIterator< S >& v2 )
    v1.swap( v2 );
 }
 
+inline GenericImageIterator< dip::dfloat > Image::begin() {
+   return GenericImageIterator< dip::dfloat >( *this );
+}
+
+inline GenericImageIterator< dip::dfloat > Image::end() {
+   return GenericImageIterator< dip::dfloat >();
+}
+
+
 
 /// \brief A data-type--agnostic version of `dip::JointImageIterator`. Use this iterator only to write code that
 /// does not know at compile-time what the data type of the image is.

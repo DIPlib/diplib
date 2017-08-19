@@ -93,7 +93,7 @@ std::complex< T > Round( std::complex< T > v, int digits ) {
 ///
 /// An optional second template parameter determines the precision for displaying floating-point values.
 template< typename TPI, int DIGITS = 4 >
-void PrintPixelValues( Image img ) {
+void PrintPixelValues( Image const& img ) {
    DIP_THROW_IF( img.DataType() != DataType( TPI() ), "Wrong template parameter to PrintPixelValues() used" );
    dip::uint lineLength = img.Size( 0 );
    std::cout << "Image of size " << lineLength << " x " << img.Sizes().product() / lineLength << ":\n";

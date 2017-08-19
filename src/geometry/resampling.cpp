@@ -273,7 +273,7 @@ void Skew(
    DIP_START_STACK_TRACE
       BoundaryArrayUseParameter( boundaryCondition, nDims );
    DIP_END_STACK_TRACE
-   DIP_THROW_IF( method == interpolation::Method::FT, E::NOT_IMPLEMENTED );
+   DIP_THROW_IF( method == interpolation::Method::FT, E::NOT_IMPLEMENTED ); // TODO: implement FT interpolation
 
    // Calculate new output sizes and other processing parameters
    UnsignedArray outSizes = c_in.Sizes();

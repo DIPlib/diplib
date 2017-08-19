@@ -1614,9 +1614,8 @@ class DIP_NO_EXPORT Image {
       //
 
       /// \name Indexing without data copy
-      /// These functions create a different view of the data contained in the object. The output
-      /// is a new `%Image` object. No data is copied, and the output typically contains a subset
-      /// of the samples from the input.
+      /// These functions create a different view of the data contained in the image. The output
+      /// is ususally a `dip::Image::View` or `dip::Image::Pixel` object. No data is copied.
       /// \{
 
       /// \brief Extract a tensor element, `indices` must have one or two elements. The image must be forged.
@@ -1668,6 +1667,14 @@ class DIP_NO_EXPORT Image {
       /// \brief Same as above, but returns a type that implicitly casts to `T`.
       template< typename T >
       CastPixel< T > At( dip::uint x_index, dip::uint y_index, dip::uint z_index ) const;
+
+      /// \brief Returns an iterator to the first pixel in the image. Include `<diplib/generic_iterators.h>`
+      /// to use this.
+      GenericImageIterator< dip::dfloat > begin();
+
+      /// \brief Returns an iterator to the end of the iterator range. It cannot be dereferenced or manipulated,
+      /// and is meant solely as an end-of-iteration marker.
+      GenericImageIterator< dip::dfloat > end();
 
       /// \brief Extracts a subset of pixels from a 1D image. The image must be forged.
       View At( Range x_range ) const;

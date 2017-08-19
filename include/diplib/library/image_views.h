@@ -1020,7 +1020,7 @@ class Image::View {
       /// \brief Returns an iterator to the first pixel in the view.
       Iterator begin() const;
 
-      /// \brief Returns an iterator to the last pixel in the view.
+      /// \brief Returns an iterator to one past the last pixel in the view.
       Iterator end() const;
 
    private:
