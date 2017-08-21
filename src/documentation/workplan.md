@@ -17,17 +17,9 @@
 [//]: # (See the License for the specific language governing permissions and)
 [//]: # (limitations under the License.)
 
-This is a list of tasks that need to be done, in order of dependencies.
-This list includes dependencies and an estimate of how much design work needs
-to be done before that component can be implemented.
+This is a list of tasks that need to be done, no longer in any particular order.
 
 Header files mentioned are from *DIPlib* 2.x ("the old *DIPlib*").
-
-Priority for these items to be discussed. Framework and other infrastructure
-elements have highest priority, because other things depend on them. Some filters
-and algorithms are much more important than others.
-
-The **DEP** markers indicate points that depend on functionality not yet implemented.
 
 **NOTE:** The online documentation is not updated continuously, please see
 <a href="https://github.com/DIPlib/diplib/blob/master/src/documentation/workplan.md">this
@@ -73,13 +65,16 @@ document's source</a> for the most up-to-date version.
 
 -   An increasing number of filters and operators.
 
--   Interactive image display, as a separate module DIPviewer.
+-   Interactive image display, as a separate module *DIPviewer*.
 
 -   *MATLAB* interface.
 
--   *DIPimage* toolbox: The `dip_image` object is defined and has most methods defined.
+-   *DIPimage* toolbox: The `dip_image` object is defined and has all methods defined.
     The `dipshow` function works. Functions are being added as functionality is ported
     to the new library.
+
+-   *PyDIP* Python module: Currently just a thin wrapper around the *DIPlib*, with classes
+    and functions behaving in the same way they do in C++. Written using *Pybind11*.
 
 
 ## What still needs to be done:
@@ -118,8 +113,8 @@ document's source</a> for the most up-to-date version.
     The `dip_measurement` class needs to be rewritten. The `dipimage` GUI needs to
     be ported, with function input parameter definitions to be provided by `dipmenus`.
 
--   Python interface. Using Pybind11. We already have a start for this. Write interactive
-    image display and GUI as exists in *MATLAB*.
+-   *PyDIP* Python module: Write interactive image display and GUI as exists in *MATLAB*.
+    Make the module more "Pythonic"?
 
 -   Other interfaces. Header files that define
     functions to create a `dip::Image` object around image data from other libraries,

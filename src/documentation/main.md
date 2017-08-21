@@ -67,7 +67,7 @@ explore the documentation to learn more about it. A good place to start
 are the following documentation pages:
 
 - The `dip::Image` class, everything else revolves around it.
-- All image analysis functions are defined in the `#dip` \ref dip "namespace".
+- All image analysis functions are categorized into <a href="modules.html">modules</a>.
 - \ref using_iterators, in case existing algorithms are not sufficient.
 - \ref design, might help understand the library architecture.
 
