@@ -130,7 +130,7 @@ constexpr dip::uint QUEUE_SIZE_3D = 1024;  // fewer nodes in each bucket (initia
  * the edges is necessary.
  */
 
-/* Magic numbers (for 2D) */
+// Magic numbers (for 2D)
 constexpr int EAST = 2;
 constexpr int SOUTH = 6;
 constexpr int WEST = 10;
@@ -154,10 +154,10 @@ void EuskPlaneCopy(
       dip::sint strideY,
       dip::sint strideZ
 ) {
-   for( dip::sint kk = 0; kk < sizez; kk++ ) {
-      for( dip::sint jj = 0; jj < sizey; jj++ ) {
+   for( dip::sint kk = 0; kk < sizez; ++kk ) {
+      for( dip::sint jj = 0; jj < sizey; ++jj ) {
          uint8* pim = pimb + jj * strideY + kk * strideZ;
-         for( dip::sint ii = 0; ii < sizex; ii++ ) {
+         for( dip::sint ii = 0; ii < sizex; ++ii ) {
             if( *pim & mi ) {
                *pim |= mo;
             } else {
@@ -180,10 +180,10 @@ void EuskSetFromPlane(
       dip::sint strideY,
       dip::sint strideZ
 ) {
-   for( dip::sint kk = 0; kk < sizez; kk++ ) {
-      for( dip::sint jj = 0; jj < sizey; jj++ ) {
+   for( dip::sint kk = 0; kk < sizez; ++kk ) {
+      for( dip::sint jj = 0; jj < sizey; ++jj ) {
          uint8* pim = pimb + jj * strideY + kk * strideZ;
-         for( dip::sint ii = 0; ii < sizex; ii++ ) {
+         for( dip::sint ii = 0; ii < sizex; ++ii ) {
             *pim = *pim & mi;
             pim += strideX;
          }
@@ -205,12 +205,12 @@ void EuskFillBucketZero(
       dip::sint strideZ
 ) {
    b.startwrite( 0 );
-   /* all background pixels 4-c to object in bucket 0 */
+   // all background pixels 4-c to object in bucket 0
    if( strideZ != 0 ) {
-      for( dip::sint kk = 2; kk < ( sizez - 2 ); kk++ ) {
-         for( dip::sint jj = 2; jj < ( sizey - 2 ); jj++ ) {
+      for( dip::sint kk = 2; kk < ( sizez - 2 ); ++kk ) {
+         for( dip::sint jj = 2; jj < ( sizey - 2 ); ++jj ) {
             uint8* pim = pimb + 2 * strideX + jj * strideY + kk * strideZ;
-            for( dip::sint ii = 2; ii < ( sizex - 2 ); ii++ ) {
+            for( dip::sint ii = 2; ii < ( sizex - 2 ); ++ii ) {
                if(( *pim & mi ) == 0 ) {
                   if(( *( pim + strideX ) & mi ) || ( *( pim - strideX ) & mi ) ||
                      ( *( pim + strideY ) & mi ) || ( *( pim - strideY ) & mi ) ||
@@ -222,10 +222,10 @@ void EuskFillBucketZero(
             }
          }
       }
-   } else { /* 2D */
-      for( dip::sint jj = 2; jj < ( sizey - 2 ); jj++ ) {
+   } else { // 2D
+      for( dip::sint jj = 2; jj < ( sizey - 2 ); ++jj ) {
          uint8* pim = pimb + 2 * strideX + jj * strideY;
-         for( dip::sint ii = 2; ii < ( sizex - 2 ); ii++ ) {
+         for( dip::sint ii = 2; ii < ( sizex - 2 ); ++ii ) {
             if(( *pim & mi ) == 0 ) {
                if(( *( pim + strideX ) & mi ) || ( *( pim - strideX ) & mi ) ||
                   ( *( pim + strideY ) & mi ) || ( *( pim - strideY ) & mi )) {
@@ -235,7 +235,7 @@ void EuskFillBucketZero(
             pim += strideX;
          }
       }
-      /* if applicable, idem for edge pixels */
+      // if applicable, idem for edge pixels
       if( !edge ) {
          uint8* pim = pimb + 2 * strideY + 2 * strideX;
          for( dip::sint ii = sizex - 4; --ii >= 0; pim += strideX ) {
@@ -245,7 +245,7 @@ void EuskFillBucketZero(
          for( dip::sint ii = sizex - 4; --ii >= 0; pim += strideX ) {
             if( *pim & mi ) { b.STR( pim + strideY, SOUTH ); }
          }
-         for( dip::sint ii = 2; ii < sizey - 2; ii++ ) {
+         for( dip::sint ii = 2; ii < sizey - 2; ++ii ) {
             pim = pimb + ii * strideY + 2 * strideX;
             if( *pim & mi ) {
                b.STR( pim - strideX, WEST );
@@ -276,9 +276,9 @@ void EuskFixEdge(
    dip::sint sizeY2 = sizeY - 2;
    dip::sint sizeZ2 = sizeZ - 2;
    if( sizeZ > 0 ) {
-      for( dip::sint kk = 0; kk < sizeZ; kk++ ) {
-         for( dip::sint jj = 0; jj < sizeY; jj++ ) {
-            for( dip::sint ii = 0; ii < sizeX; ii++ ) {
+      for( dip::sint kk = 0; kk < sizeZ; ++kk ) {
+         for( dip::sint jj = 0; jj < sizeY; ++jj ) {
+            for( dip::sint ii = 0; ii < sizeX; ++ii ) {
                if(( ii < 2 ) || ( ii >= sizeX2 ) ||
                   ( jj < 2 ) || ( jj >= sizeY2 ) ||
                   ( kk < 2 ) || ( kk >= sizeZ2 )) {
@@ -295,8 +295,8 @@ void EuskFixEdge(
          }
       }
    } else {
-      for( dip::sint jj = 0; jj < sizeY; jj++ ) {
-         for( dip::sint ii = 0; ii < sizeX; ii++ ) {
+      for( dip::sint jj = 0; jj < sizeY; ++jj ) {
+         for( dip::sint ii = 0; ii < sizeX; ++ii ) {
             if(( ii < 2 ) || ( ii >= sizeX2 ) ||
                ( jj < 2 ) || ( jj >= sizeY2 )) {
                uint8* pim = pimb + ii * strideX + jj * strideY;
@@ -319,7 +319,7 @@ void EuskFixEdge(
 //
 
 
-/* Globals */
+// Globals
 constexpr uint8 luthil[ 4 ][ 256 ] = {
       {
             1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
@@ -371,13 +371,13 @@ void Eusk2DRemoveInnerEdge(
    uint8* pim;
    dip::sint ii;
 
-   for( pim = pimb + 3 * strideX + strideY, ii = sizex - 6; --ii >= 0; pim += strideX ) {
+   for( pim = pimb + 3 * strideX + strideY, ii = sizex - 6; ii >= 0; --ii, pim += strideX ) {
       if( !( *( pim + strideY ) & mo )) { *pim &= ~mo; }
    }
-   for( pim = pimb + 3 * strideX + ( sizey - 2 ) * strideY, ii = sizex - 6; --ii >= 0; pim += strideX ) {
+   for( pim = pimb + 3 * strideX + ( sizey - 2 ) * strideY, ii = sizex - 6; ii >= 0; --ii, pim += strideX ) {
       if( !( *( pim - strideY ) & mo )) { *pim &= ~mo; }
    }
-   for( ii = 3; ii < ( sizey - 3 ); ii++ ) {
+   for( ii = 3; ii < ( sizey - 3 ); ++ii ) {
       pim = pimb + ii * strideY + strideX;
       if( !( *( pim + strideX ) & mo )) { *pim &= ~mo; }
       pim += ( sizex - 3 ) * strideX;
@@ -419,53 +419,41 @@ void Eusk2DRemoveEndPixels(
       uint8 const* lut,
       dip::uint queuesize
 ) {
-   uint8** ppw, ** ppr, ** ppe, * pim;
-   uint8 mop = mo | mp;
-   dip::sint x, y;
-   uint8 entry;
-   dip::uint qsizeac;
-
-   /* allocate little queue to remove branches */
-   std::vector< uint8* >ppq( queuesize );
-   ppw = ppq.data();
-   ppe = ppq.data() + queuesize;
-   qsizeac = queuesize;
-
-   /* find all non-breakpixels */
-   for( y = 2; y < sizey - 2; y++ ) {
-      pim = pimb + y * strideY + 2 * strideX;
-      for( x = sizex - 4; --x >= 0; pim += strideX )
+   // allocate little queue to remove branches
+   std::vector< uint8* > ppq;
+   ppq.reserve( queuesize );
+   // find all non-breaking pixels
+   for( dip::sint y = 2; y < sizey - 2; ++y ) {
+      uint8* pim = pimb + y * strideY + 2 * strideX;
+      for( dip::sint x = sizex - 4; x >= 0; --x, pim += strideX ) {
          if( *pim & mo ) {
-            entry = 0;
-            if( *( pim+strideX         ) & mo ) entry |= 1;
-            if( *( pim+strideX-strideY ) & mo ) entry |= 2;
-            if( *( pim        -strideY ) & mo ) entry |= 4;
-            if( *( pim-strideX-strideY ) & mo ) entry |= 8;
-            if( *( pim-strideX         ) & mo ) entry |= 16;
-            if( *( pim-strideX+strideY ) & mo ) entry |= 32;
-            if( *( pim        +strideY ) & mo ) entry |= 64;
-            if( *( pim+strideX+strideY ) & mo ) entry |= 128;
+            uint8 entry = 0;
+            if( *( pim + strideX           ) & mo ) { entry |= 1; }
+            if( *( pim + strideX - strideY ) & mo ) { entry |= 2; }
+            if( *( pim           - strideY ) & mo ) { entry |= 4; }
+            if( *( pim - strideX - strideY ) & mo ) { entry |= 8; }
+            if( *( pim - strideX           ) & mo ) { entry |= 16; }
+            if( *( pim - strideX + strideY ) & mo ) { entry |= 32; }
+            if( *( pim           + strideY ) & mo ) { entry |= 64; }
+            if( *( pim + strideX + strideY ) & mo ) { entry |= 128; }
             if( !lut[ entry ] ) {
-               *ppw++ = pim;
-               if( ppw == ppe ) {
-                  /* queue too small, increase size */
-                  DIP_THROW_IF( qsizeac + queuesize < qsizeac, "queuesize too large" );
-                  qsizeac += queuesize;
-                  ppq.resize( qsizeac );
-                  ppw = ppq.data() + qsizeac - queuesize;
-                  ppe = ppq.data() + qsizeac;
-               }
+               ppq.push_back( pim );
             }
          }
+      }
    }
-
-   /* eat off loose ends */
-   ppr = ppq.data();
+   ppq.push_back( nullptr ); // we add another entry to the queue, where we can write in the code below.
+   auto ppw = ppq.end() - 1;
+   // eat off loose ends
+   uint8 mop = mo | mp;
+   auto ppr = ppq.begin();
    while( ppw != ppr ) {
-      pim = *ppr++;
-      if( ppr == ppe ) { ppr = ppq.data(); }
-
-      /* test coordinates */
+      uint8* pim = *( ppr++ );
+      if( ppr == ppq.end() ) {
+         ppr = ppq.begin();
+      }
+      // test coordinates
+      dip::sint x, y;
       if( strideY > strideX ) {
          x = ( pim - pimb ) % strideY;
          y = ( pim - pimb ) / strideY;
@@ -473,35 +461,33 @@ void Eusk2DRemoveEndPixels(
          x = ( pim - pimb ) / strideX;
          y = ( pim - pimb ) % strideX;
       }
-      if( x > 1 && x < sizex - 2 && y > 1 && y < sizey - 2 ) {
-         /* test connectivity */
-         entry=0;
-         if( *( pim+strideX         ) & mo ) entry |= 1;
-         if( *( pim+strideX-strideY ) & mo ) entry |= 2;
-         if( *( pim        -strideY ) & mo ) entry |= 4;
-         if( *( pim-strideX-strideY ) & mo ) entry |= 8;
-         if( *( pim-strideX         ) & mo ) entry |= 16;
-         if( *( pim-strideX+strideY ) & mo ) entry |= 32;
-         if( *( pim        +strideY ) & mo ) entry |= 64;
-         if( *( pim+strideX+strideY ) & mo ) entry |= 128;
+      if(( x > 1 ) && ( x < sizex - 2 ) && ( y > 1 ) && ( y < sizey - 2 )) {
+         // test connectivity
+         uint8 entry = 0;
+         if( *( pim + strideX           ) & mo ) { entry |= 1; }
+         if( *( pim + strideX - strideY ) & mo ) { entry |= 2; }
+         if( *( pim           - strideY ) & mo ) { entry |= 4; }
+         if( *( pim - strideX - strideY ) & mo ) { entry |= 8; }
+         if( *( pim - strideX           ) & mo ) { entry |= 16; }
+         if( *( pim - strideX + strideY ) & mo ) { entry |= 32; }
+         if( *( pim           + strideY ) & mo ) { entry |= 64; }
+         if( *( pim + strideX + strideY ) & mo ) { entry |= 128; }
          if( !lut[ entry ] ) {
-            /* remove pixel */
+            // remove pixel
             *pim &= ~mo;
-
-            /* next please */
-            if(     ( *( pim+strideX         )&mop ) == mo ) pim +=  strideX;
-            else if(( *( pim+strideX+strideY )&mop ) == mo ) pim +=  strideX+strideY;
-            else if(( *( pim+strideY         )&mop ) == mo ) pim +=  strideY;
-            else if(( *( pim-strideX+strideY )&mop ) == mo ) pim += -strideX+strideY;
-            else if(( *( pim-strideX         )&mop ) == mo ) pim += -strideX;
-            else if(( *( pim-strideX-strideY )&mop ) == mo ) pim += -strideX-strideY;
-            else if(( *( pim-strideY         )&mop ) == mo ) pim += -strideY;
-            else if(( *( pim+strideX-strideY )&mop ) == mo ) pim +=  strideX-strideY;
+            // next please
+            if(     ( *( pim + strideX           ) & mop ) == mo ) { pim +=  strideX; }
+            else if(( *( pim + strideX + strideY ) & mop ) == mo ) { pim +=  strideX+strideY; }
+            else if(( *( pim + strideY           ) & mop ) == mo ) { pim +=  strideY; }
+            else if(( *( pim - strideX + strideY ) & mop ) == mo ) { pim += -strideX+strideY; }
+            else if(( *( pim - strideX           ) & mop ) == mo ) { pim += -strideX; }
+            else if(( *( pim - strideX - strideY ) & mop ) == mo ) { pim += -strideX-strideY; }
+            else if(( *( pim - strideY           ) & mop ) == mo ) { pim += -strideY; }
+            else if(( *( pim + strideX - strideY ) & mop ) == mo ) { pim +=  strideX-strideY; }
             else { continue; }
-
-            *ppw++ = pim;
-            if( ppw == ppe ) {
-               ppw = ppq.data();
+            *( ppw++ ) = pim;
+            if( ppw == ppq.end() ) {
+               ppw = ppq.begin();
             }
          }
       }
@@ -532,7 +518,7 @@ void Eusk2DNeighborhood(
    /* 12 */      *neig4++ = 0;
    /* 13 */      *neig4++ = 0;
    /* 14 */      *neig4++ = strideY;
-   /* 15 */      *neig4 = 0;
+   /* 15 */      *neig4   = 0;
 
    /*  0 */      *neig8++ = -strideX+strideY;
    /*  1 */      *neig8++ = 0;
@@ -549,7 +535,7 @@ void Eusk2DNeighborhood(
    /* 12 */      *neig8++ = strideX+strideY;
    /* 13 */      *neig8++ = 0;
    /* 14 */      *neig8++ = 0;
-   /* 15 */      *neig8++ = 0;
+   /* 15 */      *neig8   = 0;
 
    /*  0 */      neigk[ 0 ][ 0 ]  = -strideX+2*strideY;
    /*  0 */      neigk[ 0 ][ 1 ]  = -2*strideX+strideY;
@@ -614,60 +600,60 @@ void Eusk2D(
       dip::sint strideX,
       dip::sint strideY
 ) {
-   /* intialize */
+   // intialize
    dip::sint strideX2 = strideX * 2;
    dip::sint strideY2 = strideY * 2;
 
-   /* endpixel condition */
-   uint8 const* luthile; /* pointer to endpixel table */
+   // endpixel condition
+   uint8 const* luthile; // pointer to end pixel table
    switch( end ) {
       case 1:
-         luthile = &luthil[ 1 ][ 0 ];
+         luthile = luthil[ 1 ];
          break;
       case 2:
-         luthile = &luthil[ 2 ][ 0 ];
+         luthile = luthil[ 2 ];
          break;
       case 3:
-         luthile = &luthil[ 3 ][ 0 ];
+         luthile = luthil[ 3 ];
          break;
-      default: /* 0, -1 */
-         luthile = &luthil[ 0 ][ 0 ];
+      default: // 0, -1
+         luthile = luthil[ 0 ];
    }
 
-   /* preliminaries: edge treatment and bitplane copies */
+   // preliminaries: edge treatment and bitplane copies
    EuskFixEdge( pimb1, mi, edge, sizex, sizey, 0, strideX, strideY, 0 );
-   EuskPlaneCopy( pimb1, mi, ( uint8 )( mo | mp ), sizex, sizey, 1, strideX, strideY, 0 );
+   EuskPlaneCopy( pimb1, mi, static_cast< uint8 >( mo | mp ), sizex, sizey, 1, strideX, strideY, 0 );
    EuskFixEdge( pimb1, mp, false, sizex, sizey, 0, strideX, strideY, 0 );
 
-   /* fill tables neig4[], neig8[], neigk[] */
-   dip::sint neig4[ 16 ];      /* successors 4-connected neighbours */
-   dip::sint neig8[ 16 ];      /* successors 8-connected neighbours */
-   dip::sint neigk[ 16 ][ 2 ]; /* successors knight's move neighbours */
-   dip::sint neigb[ 16 ];      /* predecessors */
+   // fill tables neig4[], neig8[], neigk[], neigb[]
+   dip::sint neig4[ 16 ];      // successors 4-connected neighbours
+   dip::sint neig8[ 16 ];      // successors 8-connected neighbours
+   dip::sint neigk[ 16 ][ 2 ]; // successors knight's move neighbours
+   dip::sint neigb[ 16 ];      // predecessors
    Eusk2DNeighborhood( strideX, strideY, neig4, neig8, neigk, neigb );
 
-   /* calculate required number of buckets */
+   // calculate required number of buckets
    dip::uint nbuckets;
    for( nbuckets = 2; nbuckets <= static_cast< dip::uint >( dk ); nbuckets *= 2 ) {}
 
-   /* create bucket structure buckets (-1 means not enough memory) */
+   // create bucket structure buckets (-1 means not enough memory)
    Bucket b( nbuckets, QUEUE_SIZE_2D );
 
-   /* fill bucket 0 */
+   // fill bucket 0
    EuskFillBucketZero( b, pimb1, mi, edge, sizex, sizey, 1, strideX, strideY, 0 );
 
-   /* generate distances */
-   for( dip::sint dist = d4; !b.Empty() && ( dist <= distmax || distmax == 0 ); dist++ ) {
-      /* Store pixels which are subject to removal this iteration in
-         bucket "dist". Remove mask mp immediately to prevent double storage. */
+   // generate distances
+   for( dip::sint dist = d4; !b.Empty() && ( dist <= distmax || distmax == 0 ); ++dist ) {
+      // Store pixels which are subject to removal this iteration in
+      // bucket "dist". Remove mask mp immediately to prevent double storage.
 
-      /* register shuffle */
+      // register shuffle
       uint8 m2 = mp;
 
       b.startwrite( dist );
       b.startread( dist - d4 );
-      uint8* pim;         /* image pointer */
-      uint8 dirc;         /* direction of central pixel */
+      uint8* pim;         // image pointer
+      uint8 dirc;         // direction of central pixel
       if( dist == d4 ) {
          while( b.go ) {
             b.RCLP( pim );
@@ -762,7 +748,7 @@ void Eusk2D(
                *pim &= ~m2;
                b.STR( pim, 9 );
             }
-            pim -= ( strideX2 );
+            pim -= 2 * strideX2;
             if( dirc != WEST && *pim & m2 ) {
                *pim &= ~m2;
                b.STR( pim, 3 );
@@ -772,7 +758,7 @@ void Eusk2D(
                *pim &= ~m2;
                b.STR( pim, 1 );
             }
-            pim += ( strideX2 );
+            pim += 2 * strideX2;
             if( dirc != EAST && *pim & m2 ) {
                *pim &= ~m2;
                b.STR( pim, 11 );
@@ -813,26 +799,26 @@ void Eusk2D(
          }
       }
 
-      /* all pixels with distance 'dist' are now found */
+      // all pixels with distance 'dist' are now found
       b.closewrite();
       b.Free( dist - dk );
 
-      /* reshuffle register use */
+      // reshuffle register use
       uint8 m1 = mi | mo;
       m2 = mo;
 
-      /* topology testing: table lookup contains Hilditch conditions */
+      // topology testing: table lookup contains Hilditch conditions
       b.startread( dist );
       while( b.go ) {
          b.RCL( pim, dirc );
 
-         /* backtracking, see figure 6, paper */
+         // backtracking, see figure 6, paper
          if(( dirc == 2 || dirc == 6 || dirc == 10 || dirc == 14 ) &&
             ( *( pim + neigb[ dirc ] ) & m2 )) {
                continue;
          }
 
-         /* test neighbourhood in old image, use dirc to store table entry */
+         // test neighbourhood in old image, use dirc to store table entry
          dirc = 0;
          pim += strideX;
          if( *pim & m2 ) { dirc |= 1; }
@@ -852,12 +838,11 @@ void Eusk2D(
          if( *pim & m2 ) { dirc |= 32; }
          if( luthile[ dirc ] ) { continue; }
 
-         /* totally recursive neighbourhood will be build in register byte */
+         // totally recursive neighbourhood will be build in register byte
          uint8 breg = dirc;
 
-         /* test partially recursive neighbourhoods: changed pixels
-            are distinguised by mo == 1 and mi == 0, a situation
-            which does not occur normally */
+         // test partially recursive neighbourhoods: changed pixels are distinguished by mo == 1
+         // and mi == 0, a situation which does not occur normally
          pim += strideX;
          if(( *pim & m1 ) == m2 ) {
             if( luthil[ 0 ][ dirc & ~64 ] ) { continue; }
@@ -879,7 +864,7 @@ void Eusk2D(
             breg &= ~4;
          }
 
-         /* test totally recursive neighbourhood */
+         // test totally recursive neighbourhood
          pim += strideX;
          if(( *pim & m1 ) == m2 ) { breg &= ~2; }
          pim -= strideX2;
@@ -890,11 +875,11 @@ void Eusk2D(
          if(( *pim & m1 ) == m2 ) { breg &= ~128; }
          if( luthil[ 0 ][ breg ] ) { continue; }
 
-         /* change pixel, by temporarily removing input mask */
+         // change pixel, by temporarily removing input mask
          *( pim - strideY - strideX ) &= ~mi;
       }
 
-      /* update image, if pixel may be removed: remove mo, restore mi */
+      // update image, if pixel may be removed: remove mo, restore mi
       b.startread( dist );
       while( b.go ) {
          b.RCLP( pim );
@@ -904,14 +889,14 @@ void Eusk2D(
          }
       }
 
-   } /* end of dist++ loop */
+   } // end of dist loop
 
-   /* if applicable endpixel condition, remove branches */
+   // if applicable end pixel condition, remove branches
    if( end == -1 ) {
       Eusk2DRemoveEndPixels( pimb1, mo, mp, sizex, sizey, strideX, strideY, luthile, QUEUE_SIZE_2D );
    }
 
-   /* remove inner edge, preserve connectivity between outer edge and image */
+   // remove inner edge, preserve connectivity between outer edge and image
    Eusk2DRemoveInnerEdge( pimb1, mo, sizex, sizey, strideX, strideY );
 
    // Fix image
@@ -938,9 +923,9 @@ void PutInLocal(
       dip::sint oldlocal[ 27 ],
       dip::sint newlocal[ 27 ]
 ) {
-   uint8 l;                  /* value of neighbouring pixel */
-   dip::sint* loco = &oldlocal[ 0 ]; /* old neighbourhood */
-   dip::sint* locn = &newlocal[ 0 ]; /* new = recursive neighbourhood */
+   uint8 l;                  // value of neighbouring pixel
+   dip::sint* loco = &oldlocal[ 0 ]; // old neighbourhood
+   dip::sint* locn = &newlocal[ 0 ]; // new = recursive neighbourhood
 
    l = *( pim+sX+sY+sZ ); *loco++ = l & m2; *locn++ = (( l & m1 ) == m1 );
    l = *( pim+sX+sZ );    *loco++ = l & m2; *locn++ = (( l & m1 ) == m1 );
@@ -973,7 +958,7 @@ void PutInLocal(
 
 // FILL THE TABLES, Ben Verwer March 1985 and August 1988
 void Eusk3DFillTables(
-      dip::sint sX, /* strides */
+      dip::sint sX, // strides
       dip::sint sY,
       dip::sint sZ,
       dip::sint bvcontour[ 3 ][ 3 ],
@@ -995,7 +980,7 @@ void Eusk3DFillTables(
    dip::sint* a;
    dip::sint* n;
 
-   /* DIST1 = 1000 */
+   // DIST1 = 1000
    a = &a1[ 0 ][ 0 ];
    n = &n1[ 0 ][ 0 ];
 
@@ -1098,7 +1083,7 @@ void Eusk3DFillTables(
    /* 96  2 -2  1 */   *a++ = 0; *n++ = 99; *a++ = 0; *n++ = 99;
    /* 97  2 -2 -1 */   *a++ = 0; *n++ = 99; *a++ = 0; *n++ = 99;
 
-   /* DIST2 = 1414 */
+   // DIST2 = 1414
    a = &a2[ 0 ][ 0 ];
    n = &n2[ 0 ][ 0 ];
 
@@ -1201,7 +1186,7 @@ void Eusk3DFillTables(
    /* 96 -2 -2  1 */   *a++ = sX+sY; *n++ = 74; *a++ = 0; *n++ = 99;
    /* 97 -2 -2 -1 */   *a++ = sX+sY; *n++ = 74; *a++ = 0; *n++ = 99;
 
-   /* DIST3 = 1732 */
+   // DIST3 = 1732
    a = &a3[ 0 ][ 0 ];
    n = &n3[ 0 ][ 0 ];
 
@@ -1304,7 +1289,7 @@ void Eusk3DFillTables(
    /* 96 -2 -2  1 */   *a++ = sX+sY-sZ; *n++ = 73; *a++ = 0; *n++ = 99;
    /* 97 -2 -2 -1 */   *a++ = sX+sY+sZ; *n++ = 75; *a++ = 0; *n++ = 99;
 
-   /* DIST5 = 2236 */
+   // DIST5 = 2236
    a = &a5[ 0 ][ 0 ];
    n = &n5[ 0 ][ 0 ];
 
@@ -1407,7 +1392,7 @@ void Eusk3DFillTables(
    /* 96 -2 -2  1 */   *a++ = 2*sX+sY; *n++ = 93; *a++ = sX+2*sY; *n++ = 79;
    /* 97 -2 -2 -1 */   *a++ = 2*sX+sY; *n++ = 93; *a++ = sX+2*sY; *n++ = 79;
 
-   /* DIST6 = 2449 */
+   // DIST6 = 2449
    a = &a6[ 0 ][ 0 ];
    n = &n6[ 0 ][ 0 ];
 
@@ -1510,7 +1495,7 @@ void Eusk3DFillTables(
    /* 96 -2 -2  1 */ *a++ = 2*sX+sY-sZ; *n++ = 92; *a++ = sX+2*sY-sZ; *n++ = 78;
    /* 97 -2 -2 -1 */ *a++ = 2*sX+sY+sZ; *n++ = 94; *a++ = sX+2*sY+sZ; *n++ = 80;
 
-   /* DIST9 = 3000 */
+   // DIST9 = 3000
    a = &a9[ 0 ][ 0 ];
    n = &n9[ 0 ][ 0 ];
 
@@ -1613,8 +1598,7 @@ void Eusk3DFillTables(
    /* 96 -2 -2  1 */   *a++ = 2*sX+2*sY-sZ; *n++ = 96; *a++ = 0; *n++ = 99;
    /* 97 -2 -2 -1 */   *a++ = 2*sX+2*sY+sZ; *n++ = 97; *a++ = 0; *n++ = 99;
 
-   /* Skeleton goes in 3 scans per iterations, each scan a different contour */
-
+   // Skeleton goes in 3 scans per iterations, each scan a different contour
    bvcontour[ 0 ][ 0 ] = sX;
    bvcontour[ 0 ][ 1 ] = sX - sY;
    bvcontour[ 0 ][ 2 ] = -sY;
@@ -1625,11 +1609,7 @@ void Eusk3DFillTables(
    bvcontour[ 2 ][ 1 ] = -sX + sZ;
    bvcontour[ 2 ][ 2 ] = -sX;
 
-   /*
- 	* Fast endpixel treatment, 0 means no-endpixel, 1 means endpixel, 2 means
- 	* additional neighbours have to be checked
- 	*/
-
+   // Fast endpixel treatment, 0 means no-endpixel, 1 means endpixel, 2 means additional neighbours have to be checked
    *e++ = ENDPIXEL; *e++ = NOENTRY; *e++ = NOENTRY; *e++ = NOENTRY;
    *e++ = 19; *e++ = 21; *e++ = 23; *e++ = 25;
    *e++ = 1; *e++ = 3; *e++ = 5; *e++ = 7;
@@ -3784,7 +3764,7 @@ bool EndOk(
       if( *local++ ) { index++; }
       if( *local++ ) { index++; }
       if( *local++ ) { index++; }
-      local++; /* central pixel */
+      local++; // central pixel
       if( *local++ ) { index++; }
       if( *local++ ) { index++; }
       if( *local++ ) { index++; }
@@ -3859,7 +3839,7 @@ bool EulerOk( dip::sint* local ) {
    if( local[ 12 ] ) { index |= 4; }
    if( local[ 10 ] ) { index |= 2; }
    int newnumb = euler[ index ];
-   index++;
+   ++index;
    int oldnumb = euler[ index ];
 
    index = 0;
@@ -3871,7 +3851,7 @@ bool EulerOk( dip::sint* local ) {
    if( local[ 12 ] ) { index |= 4; }
    if( local[ 16 ] ) { index |= 2; }
    newnumb += euler[ index ];
-   index++;
+   ++index;
    oldnumb += euler[ index ];
 
    index = 0;
@@ -3883,7 +3863,7 @@ bool EulerOk( dip::sint* local ) {
    if( local[ 14 ] ) { index |= 4; }
    if( local[ 10 ] ) { index |= 2; }
    newnumb += euler[ index ];
-   index++;
+   ++index;
    oldnumb += euler[ index ];
 
    index = 0;
@@ -3895,7 +3875,7 @@ bool EulerOk( dip::sint* local ) {
    if( local[ 14 ] ) { index |= 4; }
    if( local[ 16 ] ) { index |= 2; }
    newnumb += euler[ index ];
-   index++;
+   ++index;
    oldnumb += euler[ index ];
 
    index = 0;
@@ -3907,7 +3887,7 @@ bool EulerOk( dip::sint* local ) {
    if( local[ 12 ] ) { index |= 4; }
    if( local[ 10 ] ) { index |= 2; }
    newnumb += euler[ index ];
-   index++;
+   ++index;
    oldnumb += euler[ index ];
 
    index = 0;
@@ -3919,7 +3899,7 @@ bool EulerOk( dip::sint* local ) {
    if( local[ 12 ] ) { index |= 4; }
    if( local[ 16 ] ) { index |= 2; }
    newnumb += euler[ index ];
-   index++;
+   ++index;
    oldnumb += euler[ index ];
 
    index = 0;
@@ -3931,7 +3911,7 @@ bool EulerOk( dip::sint* local ) {
    if( local[ 14 ] ) { index |= 4; }
    if( local[ 10 ] ) { index |= 2; }
    newnumb += euler[ index ];
-   index++;
+   ++index;
    oldnumb += euler[ index ];
 
    index = 0;
@@ -3943,7 +3923,7 @@ bool EulerOk( dip::sint* local ) {
    if( local[ 14 ] ) { index |= 4; }
    if( local[ 16 ] ) { index |= 2; }
    newnumb += euler[ index ];
-   index++;
+   ++index;
    oldnumb += euler[ index ];
 
    return oldnumb == newnumb;
@@ -3963,19 +3943,19 @@ void Eusk3D(
       dip::sint strideY,
       dip::sint strideZ
 ) {
-   dip::sint oldlocal[ 27 ]; /* old local neighbourhood */
-   dip::sint newlocal[ 27 ]; /* new local neighbourhood */
+   dip::sint oldlocal[ 27 ]; // old local neighbourhood
+   dip::sint newlocal[ 27 ]; // new local neighbourhood
 
    dip::sint sX2 = 2 * strideX;
    dip::sint sY2 = 2 * strideY;
    dip::sint sZ2 = 2 * strideZ;
 
-   /* preliminaries: edge treatment and bitplane copies */
+   // preliminaries: edge treatment and bit plane copies
    EuskFixEdge( pimb1, mi, edge, sizex, sizey, sizez, strideX, strideY, strideZ );
    EuskPlaneCopy( pimb1, mi, uint8( mo | mp ), sizex, sizey, sizez, strideX, strideY, strideZ );
    EuskFixEdge( pimb1, mp, false, sizex, sizey, sizez, strideX, strideY, strideZ );
 
-   /* fill the tables */
+   // fill the tables
    dip::sint bvcontour[ 3 ][ 3 ], endpixel[ 64 ][ 4 ];
    dip::sint a1[ 98 ][ 2 ], a2[ 98 ][ 2 ], a3[ 98 ][ 2 ], a5[ 98 ][ 2 ], a6[ 98 ][ 2 ], a9[ 98 ][ 2 ];
    dip::sint n1[ 98 ][ 2 ], n2[ 98 ][ 2 ], n3[ 98 ][ 2 ], n5[ 98 ][ 2 ], n6[ 98 ][ 2 ], n9[ 98 ][ 2 ];
@@ -3983,29 +3963,29 @@ void Eusk3D(
          strideX, strideY, strideZ, bvcontour, endpixel,
          a1, a2, a3, a5, a6, a9, n1, n2, n3, n5, n6, n9 );
 
-   /* calculate required number of buckets */
-   dip::uint nbuckets;  /* number of buckets */
-   for( nbuckets = 2; nbuckets <= static_cast< dip::uint >( d9 ); nbuckets *= 2 ) {}
+   // calculate required number of buckets
+   dip::uint nbuckets = 2;  // number of buckets
+   for( ; nbuckets <= static_cast< dip::uint >( d9 ); nbuckets *= 2 ) {}
 
-   /* create bucket structure buckets */
+   // create bucket structure buckets
    Bucket b( nbuckets, QUEUE_SIZE_3D );
 
-   /* fill bucket 0 */
+   // fill bucket 0
    EuskFillBucketZero( b, pimb1, mi, edge, sizex, sizey, sizez, strideX, strideY, strideZ );
 
-   /* generate distances */
-   for( dip::sint dist = d1; !b.Empty() && ( dist <= distmax || distmax == 0 ); dist++ ) {
-      /* Store pixels which are subject to removal this iteration in
-         bucket "dist". Remove mask mp immediatly to prevent double storage. */
+   // generate distances
+   for( dip::sint dist = d1; !b.Empty() && ( dist <= distmax || distmax == 0 ); ++dist ) {
+      // Store pixels which are subject to removal this iteration in bucket "dist".
+      // Remove mask mp immediately to prevent double storage.
 
-      /*  shuffle */
+      //  shuffle
       uint8 m2 = mp;
 
       b.startwrite( dist );
       b.startread( dist - d1 );
-      uint8* pim;    /* image pointer */
-      uint8* pn;     /* image pointer */
-      uint8 dirc;    /* direction of central pixel */
+      uint8* pim;    // image pointer
+      uint8* pn;     // image pointer
+      uint8 dirc;    // direction of central pixel
       if( dist == d1 ) {
          while( b.go ) {
             b.RCLP( pim );
@@ -4657,45 +4637,45 @@ void Eusk3D(
          }
       }
 
-      /* all pixels with distance 'dist' are now found */
+      // all pixels with distance 'dist' are now found
       b.closewrite();
       b.Free( dist - d9 );
 
-      for( dip::uint ii = 0; ii < 3; ii++ ) {
+      for( dip::uint ii = 0; ii < 3; ++ii ) {
          b.startread( dist );
          while( b.go ) {
             b.RCL( pim, dirc );
 
-            /* can be obtained from direction as well? */
+            // can be obtained from direction as well?
             if(( *( pim + bvcontour[ ii ][ 0 ] ) & mo ) &&
                ( *( pim + bvcontour[ ii ][ 1 ] ) & mo ) &&
                ( *( pim + bvcontour[ ii ][ 2 ] ) & mo )) {
                   continue;
             }
 
-            /* put neighbourhood in local tables */
+            // put neighbourhood in local tables
             PutInLocal( pim, strideX, strideY, strideZ, mo, uint8( mi | mo ), oldlocal, newlocal );
 
-            /* test in the old image on edge and end voxels */
+            // test in the old image on edge and end voxels
             if( end && EndOk( oldlocal, end, endpixel )) { continue; }
 
-            /* euler number must not change upon removal of central pixel */
+            // euler number must not change upon removal of central pixel
             if( !EulerOk( oldlocal )) { continue; }
 
-            /* number of objects must not change upon removal of pixel */
+            // number of objects must not change upon removal of pixel
             if( !ToriwakiOk( oldlocal )) { continue; }
 
-            /* now the same in recursive image, first euler */
+            // now the same in recursive image, first euler
             if( !EulerOk( newlocal )) { continue; }
 
-            /* and toriwaki */
+            // and toriwaki
             if( !ToriwakiOk( newlocal )) { continue; }
 
-            /* REMOVE */
+            // REMOVE
             *pim &= ~mi;
          }
 
-         /* update image, if pixel may be removed: remove mo, restore mi */
+         // update image, if pixel may be removed: remove mo, restore mi
          b.startread( dist );
          while( b.go ) {
             b.RCLP( pim );
@@ -4705,7 +4685,7 @@ void Eusk3D(
             }
          }
       }
-   } /* end of dist++ loop */
+   } // end of dist loop
 
    // Fix image
    EuskSetFromPlane( pimb1, mo, sizex, sizey, sizez, strideX, strideY, strideZ );
