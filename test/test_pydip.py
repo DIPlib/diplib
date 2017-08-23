@@ -91,3 +91,8 @@ dip.MeasurementTool.Features()
 m = dip.MeasurementTool.Measure(b,a,['Size','Feret','Convexity','Statistics'])
 print(m)
 m['Feret'][50][2]
+
+b = dip.EuclideanSkeleton(a > 120)
+dip.GetEndPixels(b).Show()
+dip.GetLinkPixels(b).Show()
+dip.GetBranchPixels(b).Show()

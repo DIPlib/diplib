@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains the declaration for dip::NeighborList.
+ * This file contains the declaration for dip::Metric and dip::NeighborList.
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

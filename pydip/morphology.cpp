@@ -143,4 +143,14 @@ void init_morphology( py::module& m ) {
    // diplib/binary.h
    m.def( "EuclideanSkeleton", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanSkeleton ),
           "in"_a, "endPixelCondition"_a = "natural", "edgeCondition"_a = "background" );
+   m.def( "CountNeighbors", py::overload_cast< dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::CountNeighbors ),
+         "in"_a, "connectivity"_a = 0, "mode"_a = "foreground", "edgeCondition"_a = "background" );
+   m.def( "GetSinglePixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetSinglePixels ),
+         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = "background" );
+   m.def( "GetEndPixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetEndPixels ),
+         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = "background" );
+   m.def( "GetLinkPixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetLinkPixels ),
+         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = "background" );
+   m.def( "GetBranchPixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetBranchPixels ),
+         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = "background" );
 }

@@ -23,13 +23,6 @@
 #include "diplib/regions.h"
 #include "diplib/segmentation.h"
 
-/*
-struct SubpixelLocationResult {
-   FloatArray coordinates;
-   dfloat value;
-};
-*/
-
 void init_analysis( py::module& m ) {
 
    // diplib/analysis.h

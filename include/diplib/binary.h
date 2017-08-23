@@ -94,6 +94,116 @@ inline Image EuclideanSkeleton(
    return out;
 }
 
+/// \brief Counts the number of set neighbors for each pixel in the binary image `in`.
+///
+/// Out will contain, for each set pixel, 1 + the number of neighbors that are also set. The neighborhood is
+/// given by `connectivity`, see \ref connectivity for more information. If `mode` is set to `"all"`, the
+/// count is computed for all pixels, not only the foreground ones. In this case, for the non-set pixels the
+/// count is not increased by 1, and therefore yields simply the count of set pixels in the full neighborhood.
+///
+/// `edgeCondition` determines the value of pixels outside the image domain.
+///
+/// This function is typically used on the output of `dip::EuclideanSkeleton` to distinguish different types
+/// of pixels. See also `dip::GetSinglePixels`, `dip::GetEndPixels`, `dip::GetLinkPixels`, and `dip::GetBranchPixels`.
+DIP_EXPORT void CountNeighbors(
+      Image const& in,
+      Image& out,
+      dip::uint connectivity = 0,
+      dip::String const& mode = "foreground",
+      dip::String const& edgeCondition = "background"
+);
+inline Image CountNeighbors(
+      Image const& in,
+      dip::uint connectivity = 0,
+      dip::String const& mode = "foreground",
+      dip::String const& edgeCondition = "background"
+) {
+   Image out;
+   CountNeighbors( in, out, connectivity, mode, edgeCondition );
+   return out;
+}
+
+/// \brief Returns the isolated pixels in the binary image `in`. That is, the set pixels with zero neighbors. See `dip::CountNeighbors`.
+inline void GetSinglePixels(
+      Image const& in,
+      Image& out,
+      dip::uint connectivity = 0,
+      dip::String const& edgeCondition = "background"
+) {
+   Image nn = CountNeighbors( in, connectivity, "foreground", edgeCondition );
+   Equal( nn, 1, out );
+}
+inline Image GetSinglePixels(
+      Image const& in,
+      dip::uint connectivity = 0,
+      dip::String const& edgeCondition = "background"
+) {
+   Image out;
+   GetSinglePixels( in, out, connectivity, edgeCondition );
+   return out;
+}
+
+/// \brief Returns the end pixels in the skeleton image `in`. That is, the set pixels with one neighbors. See `dip::CountNeighbors`.
+inline void GetEndPixels(
+      Image const& in,
+      Image& out,
+      dip::uint connectivity = 0,
+      dip::String const& edgeCondition = "background"
+) {
+   Image nn = CountNeighbors( in, connectivity, "foreground", edgeCondition );
+   Equal( nn, 2, out );
+}
+inline Image GetEndPixels(
+      Image const& in,
+      dip::uint connectivity = 0,
+      dip::String const& edgeCondition = "background"
+) {
+   Image out;
+   GetEndPixels( in, out, connectivity, edgeCondition );
+   return out;
+}
+
+/// \brief Returns the link pixels in the skeleton image `in`. That is, the set pixels with two neighbors. See `dip::CountNeighbors`.
+inline void GetLinkPixels(
+      Image const& in,
+      Image& out,
+      dip::uint connectivity = 0,
+      dip::String const& edgeCondition = "background"
+) {
+   Image nn = CountNeighbors( in, connectivity, "foreground", edgeCondition );
+   Equal( nn, 3, out );
+}
+inline Image GetLinkPixels(
+      Image const& in,
+      dip::uint connectivity = 0,
+      dip::String const& edgeCondition = "background"
+) {
+   Image out;
+   GetLinkPixels( in, out, connectivity, edgeCondition );
+   return out;
+}
+
+/// \brief Returns the branch pixels in the skeleton image `in`. That is, the set pixels with more than two neighbors. See `dip::CountNeighbors`.
+inline void GetBranchPixels(
+      Image const& in,
+      Image& out,
+      dip::uint connectivity = 0,
+      dip::String const& edgeCondition = "background"
+) {
+   Image nn = CountNeighbors( in, connectivity, "foreground", edgeCondition );
+   Greater( nn, 3, out );
+}
+inline Image GetBranchPixels(
+      Image const& in,
+      dip::uint connectivity = 0,
+      dip::String const& edgeCondition = "background"
+) {
+   Image out;
+   GetBranchPixels( in, out, connectivity, edgeCondition );
+   return out;
+}
+
+
 // TODO: functions to port:
 /*
    dip_BinaryDilation (dip_binary.h)
