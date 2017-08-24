@@ -123,10 +123,10 @@ on where it occurs
   dimension(s). If slice projection is used, this will also affect the
   slices that are being visualized in the other projections.
 
-  Right-dragging gives some limited control over the relative sizes of the
+  Middle-dragging gives some limited control over the relative sizes of the
   three projections.
 
-  Middle-dragging moves the slice, which is convenient when zooming in.
+  Right-dragging moves the slice, which is convenient when zooming in.
 
   Scroll wheel zooms in and out, centering in the current cursor position.
   Zooming in on the ancillary windows (nominal XZ and YZ) only zooms the Z

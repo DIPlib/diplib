@@ -73,7 +73,13 @@ struct DIP_EXPORT ViewingOptions
   ViewingOptions(const dip::Image &image)
   {
     // Projection
-    dims_ = {0, 1, 2, 2}; // {0, 1, 2, 2}
+    if (image.Dimensionality() == 1)
+      dims_ = {0, -1, -1, -1};
+    else if (image.Dimensionality() == 2)
+      dims_ = {0,  1, -1, -1};
+    else
+      dims_ = {0,  1,  2,  2};
+    
     operating_point_ = dip::UnsignedArray(image.Dimensionality(), 0);
     complex_ = ComplexToReal::Real;
     projection_ = Projection::Max;

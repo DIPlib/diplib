@@ -446,22 +446,7 @@ void SliceViewPort::motion(int button, int x, int y)
 
   if (button == 1)
   {
-    // Middle mouse button: drag
-    double dix, diy;
-    screenToView(drag_x_, drag_y_, &dix, &diy);
-    
-    if (dx != -1) viewer()->options().origin_[(dip::uint)dx] += (dix-ix);
-    if (dy != -1) viewer()->options().origin_[(dip::uint)dy] += (diy-iy);
-
-    drag_x_ = x;
-    drag_y_ = y;
-
-    viewer()->refresh();
-  }
-
-  if (button == 2)
-  {
-    // Right mouse button: change split
+    // Middle mouse button: change split
     int dx = x-drag_x_, dy = y-drag_y_;
     
     double splitx = viewer()->options().split_[0] + (double)dx/(double)(viewer()->width()-100);
@@ -475,6 +460,21 @@ void SliceViewPort::motion(int button, int x, int y)
     
     drag_x_ = x;
     drag_y_ = y;
+  }
+  
+  if (button == 2)
+  {
+    // Right mouse button: drag
+    double dix, diy;
+    screenToView(drag_x_, drag_y_, &dix, &diy);
+    
+    if (dx != -1) viewer()->options().origin_[(dip::uint)dx] += (dix-ix);
+    if (dy != -1) viewer()->options().origin_[(dip::uint)dy] += (diy-iy);
+
+    drag_x_ = x;
+    drag_y_ = y;
+
+    viewer()->refresh();
   }
 }
 
