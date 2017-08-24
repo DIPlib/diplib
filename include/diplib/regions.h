@@ -43,6 +43,8 @@ namespace dip {
    dip_GrowRegionsWeighted (dip_regions.h)
 */
 
+// TODO: implement a relabel function.
+
 /// \brief Labels the connected components in a binary image
 ///
 /// The output is an unsigned integer image. Each object (respecting the connectivity,

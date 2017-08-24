@@ -36,12 +36,14 @@ dipimage/coordinates.cpp
 dipimage/countneighbors.cpp
 dipimage/derivative.cpp
 dipimage/dilation.cpp
+dipimage/dt.cpp
 dipimage/entropy.cpp
 dipimage/erfclip.cpp
 dipimage/erosion.cpp
 dipimage/errormeasure.cpp
 dipimage/extendimage.cpp
 dipimage/ft.cpp
+dipimage/gdt.cpp
 dipimage/getmaximumandminimum.cpp
 dipimage/getsamplestatistics.cpp
 dipimage/hessian.cpp
@@ -78,6 +80,7 @@ dipimage/threshold.cpp
 dipimage/tophat.cpp
 dipimage/unif.cpp
 dipimage/varif.cpp
+dipimage/vdt.cpp
 dipimage/waterseed.cpp
 dipimage/watershed.cpp
 dipimage/writeics.cpp
