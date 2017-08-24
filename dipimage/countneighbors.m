@@ -15,13 +15,16 @@
 %     * 1 indicates 4-connected neighbors in 2D or 6-connected in 3D.
 %     * 2 indicates 8-connected neighbors in 2D
 %     * 3 indicates 28-connected neighbors in 3D
-%  edgeCondition: defines the value of the pixels outside the image. It can
-%     be 0/'background' or 1/'foreground'.
+%  edgeCondition: the value of pixels outside the image bounds,
+%      can be 'background' or 'object', or equivalently 0 or 1.
 %
 % DEFAULTS:
 %  mode = "foreground"
 %  connectivity = 0 (equal to ndims(image_in))
 %  edgeCondition = "background"
+%
+% DIPlib:
+%  This function calls the DIPlib function dip::CountNeighbors
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

@@ -101,7 +101,7 @@ inline Image EuclideanSkeleton(
 /// count is computed for all pixels, not only the foreground ones. In this case, for the non-set pixels the
 /// count is not increased by 1, and therefore yields simply the count of set pixels in the full neighborhood.
 ///
-/// `edgeCondition` determines the value of pixels outside the image domain.
+/// `edgeCondition` determines the value of pixels outside the image domain, and can be `"object"` or `"background"`.
 ///
 /// This function is typically used on the output of `dip::EuclideanSkeleton` to distinguish different types
 /// of pixels. See also `dip::GetSinglePixels`, `dip::GetEndPixels`, `dip::GetLinkPixels`, and `dip::GetBranchPixels`.
@@ -109,13 +109,13 @@ DIP_EXPORT void CountNeighbors(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& mode = "foreground",
+      dip::String const& mode = "object",
       dip::String const& edgeCondition = "background"
 );
 inline Image CountNeighbors(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& mode = "foreground",
+      dip::String const& mode = "object",
       dip::String const& edgeCondition = "background"
 ) {
    Image out;

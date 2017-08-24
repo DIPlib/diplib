@@ -169,7 +169,7 @@ void CountNeighbors(
    NeighborList neighbors( Metric( Metric::TypeCode::CONNECTED, connectivity ), in.Dimensionality() );
    IntegerArray offsets = neighbors.ComputeOffsets( in.Strides() );
    bool all = BooleanFromString( s_mode, "all", "foreground" );
-   bool edgeCondition = BooleanFromString( s_edgeCondition, "foreground", "background" );
+   bool edgeCondition = BooleanFromString( s_edgeCondition, "object", "background" );
    dip__CountNeighbors scanLineFilter( neighbors, offsets, all, edgeCondition, in.Sizes() );
    // We're guaranteed here that the framework will not use a temporary input buffer, because:
    //  - The input image is DT_BIN, and we request a DT_BIN buffer, and

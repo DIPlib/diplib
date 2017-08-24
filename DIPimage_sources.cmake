@@ -28,10 +28,12 @@ dipimage/@dip_image/svd.cpp
 dipimage/@dip_image/trace.cpp
 dipimage/@dip_image/var.cpp
 dipimage/areaopening.cpp
+dipimage/bskeleton.cpp
 dipimage/clip.cpp
 dipimage/closing.cpp
 dipimage/convolve.cpp
 dipimage/coordinates.cpp
+dipimage/countneighbors.cpp
 dipimage/derivative.cpp
 dipimage/dilation.cpp
 dipimage/entropy.cpp
