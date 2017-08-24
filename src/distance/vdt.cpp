@@ -462,7 +462,9 @@ void VDTFast3D(
          *dcl-- = bp;
 
          for( xx = 0, px = py + pz + nx1sx; xx < nx; xx++, dcl--, dbl--, px -= sx ) {
-            if( ox[ px ] != nx || oy[ px ] != ny || oz[ px ] != nz ) {
+            if( ox[ px ] != static_cast< dfloat >( nx ) ||
+                oy[ px ] != static_cast< dfloat >( ny ) ||
+                oz[ px ] != static_cast< dfloat >( nz )) {
                if( dbl->x == zero.x && dbl->y == zero.y && dbl->z == zero.z ) {
                   dcl->x = nx;
                   dcl->y = ny;
@@ -840,7 +842,8 @@ void VDTTies2D(
 
       *dcl-- = bp;
       for( xx = 0, px = py + nx1sx; xx < nx; xx++, dcl--, dbl--, px -= sx ) {
-         if( ox[ px ] != nx && oy[ px ] != ny ) {
+         if( ox[ px ] != static_cast< dfloat >( nx ) &&
+             oy[ px ] != static_cast< dfloat >( ny )) {
             *dcl = nbp;
             kk = 0;
             pnbp = pnb;
@@ -1307,7 +1310,9 @@ void VDTTies3D(
       for( yy = 0, py = ny1sy; yy < ny; yy++, dcp -= 2 + nx, dbp -= 2, py -= sy ) {
          *dcp-- = bp;
          for( xx = 0, px = pz + py + nx1sx; xx < nx; xx++, dcp--, dbp--, px -= sx ) {
-            if( ox[ px ] != nx && oy[ px ] != ny && oz[ px ] != nz ) {
+            if( ox[ px ] != static_cast< dfloat >( nx ) &&
+                oy[ px ] != static_cast< dfloat >( ny ) &&
+                oz[ px ] != static_cast< dfloat >( nz )) {
                *dcp = nbp;
                kk = 0;
                pnbp = pnb;
