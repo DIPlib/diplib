@@ -26,14 +26,13 @@
 
 namespace dip {
 
-dip::PixelTable Kernel::PixelTable( UnsignedArray const& imsz, dip::uint procDim ) const {
-   dip::uint nDim = imsz.size();
-   DIP_THROW_IF( nDim < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+dip::PixelTable Kernel::PixelTable( dip::uint nDims, dip::uint procDim ) const {
+   DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    dip::PixelTable pixelTable;
    if( IsCustom() ) {
-      DIP_THROW_IF( image_.Dimensionality() > nDim, E::DIMENSIONALITIES_DONT_MATCH );
+      DIP_THROW_IF( image_.Dimensionality() > nDims, E::DIMENSIONALITIES_DONT_MATCH );
       Image kernel = image_.QuickCopy();
-      kernel.ExpandDimensionality( nDim );
+      kernel.ExpandDimensionality( nDims );
       if( kernel.DataType().IsBinary()) {
          DIP_START_STACK_TRACE
             pixelTable = { kernel, {}, procDim };
@@ -47,14 +46,14 @@ dip::PixelTable Kernel::PixelTable( UnsignedArray const& imsz, dip::uint procDim
    } else {
       FloatArray sz = params_;
       DIP_START_STACK_TRACE
-         ArrayUseParameter( sz, nDim, 1.0 );
+         ArrayUseParameter( sz, nDims, 1.0 );
          pixelTable = { ShapeString(), sz, procDim };
       DIP_END_STACK_TRACE
    }
    if( !shift_.empty() ) {
       IntegerArray shift = shift_;
       DIP_START_STACK_TRACE
-         ArrayUseParameter( shift, nDim, dip::sint( 0 ));
+         ArrayUseParameter( shift, nDims, dip::sint( 0 ));
          pixelTable.ShiftOrigin( shift_ );
       DIP_END_STACK_TRACE
    }
@@ -62,6 +61,10 @@ dip::PixelTable Kernel::PixelTable( UnsignedArray const& imsz, dip::uint procDim
       pixelTable.Mirror();
    }
    return pixelTable;
+}
+
+dip::uint Kernel::NumberOfPixels( dip::uint nDims ) const {
+   return PixelTable( nDims, 0 ).NumberOfPixels();
 }
 
 namespace {

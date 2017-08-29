@@ -33,37 +33,17 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      dip::Kernel kernel;
-      dip::uint N = 1;
-      if( nrhs > N ) {
-         if( mxIsNumeric( prhs[ N ] ) && ( mxGetNumberOfElements( prhs[ N ] ) <= in.Dimensionality() )) {
-            // This looks like a sizes vector
-            auto filterParam = dml::GetFloatArray( prhs[ N ] );
-            ++N;
-            if( nrhs > N ) {
-               auto filterShape = dml::GetString( prhs[ N ] );
-               kernel = { filterParam, filterShape };
-               ++N;
-            } else {
-               kernel = { filterParam };
-            }
-         } else {
-            // Assume it's an image?
-            DML_MAX_ARGS( 3 );
-            kernel = { dml::GetImage( prhs[ N ] ) };
-            ++N;
-         }
-      }
+      int index = 1;
+      auto kernel = dml::GetKernel< dip::Kernel >( nrhs, prhs, index, in.Dimensionality() );
 
       dip::dfloat threshold = 0.0;
-      if( nrhs > N ) {
-         threshold = dml::GetFloat( prhs[ N ] );
-         ++N;
+      if( nrhs > index ) {
+         threshold = dml::GetFloat( prhs[ index ] );
+         ++index;
       }
-
       dip::StringArray bc;
-      if( nrhs > N ) {
-         bc = dml::GetStringArray( prhs[ N ] );
+      if( nrhs > index ) {
+         bc = dml::GetStringArray( prhs[ index ] );
       }
 
       dip::Kuwahara( in, out, kernel, threshold, bc );

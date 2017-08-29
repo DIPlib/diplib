@@ -33,33 +33,15 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      if( nrhs > 1 ) {
-         if( mxIsNumeric( prhs[ 1 ] ) && ( mxGetNumberOfElements( prhs[ 1 ] ) <= in.Dimensionality() )) {
-            // This looks like a sizes vector
-            auto filterParam = dml::GetFloatArray( prhs[ 1 ] );
-            if( nrhs > 2 ) {
-               auto filterShape = dml::GetString( prhs[ 2 ] );
-               dip::StringArray bc;
-               if( nrhs > 3 ) {
-                  bc = dml::GetStringArray( prhs[ 3 ] );
-               }
-               dip::Erosion( in, out, { filterParam, filterShape }, bc );
-            } else {
-               dip::Erosion( in, out, filterParam );
-            }
-         } else {
-            // Assume it's an image?
-            DML_MAX_ARGS( 3 );
-            dip::Image const se = dml::GetImage( prhs[ 1 ] );
-            dip::StringArray bc;
-            if( nrhs > 2 ) {
-               bc = dml::GetStringArray( prhs[ 2 ] );
-            }
-            dip::Erosion( in, out, se, bc );
-         }
-      } else {
-         dip::Erosion( in, out );
+      int index = 1;
+      auto se = dml::GetKernel< dip::StructuringElement >( nrhs, prhs, index, in.Dimensionality() );
+
+      dip::StringArray bc;
+      if( nrhs > index ) {
+         bc = dml::GetStringArray( prhs[ index ] );
       }
+
+      dip::Erosion( in, out, se, bc );
 
       plhs[ 0 ] = mi.GetArray( out );
 

@@ -170,7 +170,7 @@ void SelectionFilter(
    dip::uint processingDim = Framework::OptimalProcessingDim( in, kernelSizes );
    PixelTable pixelTable;
    DIP_START_STACK_TRACE
-      pixelTable = kernel.PixelTable( in.Sizes(), processingDim );
+      pixelTable = kernel.PixelTable( in.Dimensionality(), processingDim );
    DIP_END_STACK_TRACE
    pixelTable.AddDistanceToOriginAsWeights();
    PixelTableOffsets pixelTableOffsets = pixelTable.Prepare( control ); // offsets are for the `control` image, multiply by `in.TensorElements()` to get offsets into `in`.

@@ -19,10 +19,8 @@
  */
 
 #include "diplib.h"
-#include "diplib/pixel_table.h"
-#include "diplib/framework.h"
-#include "diplib/math.h"
 #include "diplib/morphology.h"
+#include "diplib/math.h"
 
 namespace dip {
 
@@ -338,6 +336,34 @@ void MorphologicalLaplace(
    out += tmp;
    out /= 2;
    out -= c_in;
+}
+
+void RankMinClosing(
+      Image const& in,
+      Image& out,
+      StructuringElement se,
+      dip::uint rank,
+      StringArray const& boundaryCondition
+) {
+   Image c_in = in;
+   RankFilter( c_in, out, se, rank + 1, "decreasing", boundaryCondition );
+   se.Mirror();
+   Erosion( out, out, se, boundaryCondition );
+   Supremum( c_in, out, out );
+}
+
+void RankMaxOpening(
+      Image const& in,
+      Image& out,
+      StructuringElement se,
+      dip::uint rank,
+      StringArray const& boundaryCondition
+) {
+   Image c_in = in;
+   RankFilter( c_in, out, se, rank + 1, "increasing", boundaryCondition );
+   se.Mirror();
+   Dilation( out, out, se, boundaryCondition );
+   Infimum( c_in, out, out );
 }
 
 } // namespace dip

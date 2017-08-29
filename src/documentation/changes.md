@@ -320,26 +320,35 @@ code that used *DIPlib* or *DIPimage* to the new version.
   touched the global parameter, nothing should change for you. If you did change this global
   parameter in a program, you now need to pass the value to the relevant functions instead.
 
-- `dilation_se`, `erosion_se`, etc. are now folded into `dilation`, `erosion`, etc. For
-  functions with an `_se` appended to the name, remove the `_se`. Alternatively, the `alias`
-  sub-directory contains these names and forwards the calls to the correct functions.
-
-- `smooth` is no longer relevant, moved to the `alias` directory. `derivative` has the 2<sup>nd</sup>
-  and 3<sup>rd</sup> arguments switched, it makes more sense having the order first.
-
-- `mdhistogram` has fewer options, but should still be able to produce the same results as
-  previously.
-
-- `resample` and `shift` shift the image in the opposite direction from what it did in the old
-  *DIPimage*, where the shift was unintuitive.
-
-- `readim` and `writeim` work differently now, in part because *DIPlib* natively only supports
-  two file types now. The `file_info` struct output for `readim` has changed somewhat. The last
-  two input parameters to the old `writeim` are no longer supported (`compression` and `physDim`):
-  to change the compression method, call `writeics` or `writetiff` directly; the pixel size is
-  always given by the image, use `dip_image/pixelsize` to set it.
-
 - Many functions have been added to match new functionality in *DIPlib*, as well as previous
   functionality that was not accessible from MATLAB. Some old functions have gained additional
   parameters to expose more functionality; we tried to do so without breaking backwards
-  compatability.
+  compatibility.
+
+- Some functions have changed in a way that is not backwards compatible, either by having a
+  different interface or different behavior:
+
+  - `dilation_se`, `erosion_se`, etc. are now folded into `dilation`, `erosion`, etc. For
+    functions with an `_se` appended to the name, remove the `_se`. Alternatively, the `alias`
+    sub-directory contains these names and forwards the calls to the correct functions.
+
+  - `rankmax_opening` and `rankmin_closing` now have `rank` as the second parameter, instead
+    of `percentile`. This should make them match the literature better, and make them more
+    usable.
+
+  - `smooth` is no longer relevant, moved to the `alias` directory.
+
+  - `derivative` has the 2<sup>nd</sup> and 3<sup>rd</sup> arguments switched, it makes more
+    sense having the order first.
+
+  - `mdhistogram` has fewer options, but should still be able to produce the same results as
+    previously.
+
+  - `resample` and `shift` shift the image in the opposite direction from what it did in the old
+    *DIPimage*, where the shift was unintuitive.
+
+  - `readim` and `writeim` work differently now, in part because *DIPlib* natively only supports
+    two file types now. The `file_info` struct output for `readim` has changed somewhat. The last
+    two input parameters to the old `writeim` are no longer supported (`compression` and `physDim`):
+    to change the compression method, call `writeics` or `writetiff` directly; the pixel size is
+    always given by the image, use `dip_image/pixelsize` to set it.

@@ -238,7 +238,7 @@ class DIP_NO_EXPORT StructuringElement {
       /// \brief Returns the structuring element shape
       ShapeCode Shape() const { return shape_; }
 
-      /// \brief Tests to see if the kernel is a custom shape
+      /// \brief Tests to see if the structuring element is a custom shape
       bool IsCustom() const { return shape_ == ShapeCode::CUSTOM; }
 
       /// \brief Tests to see if the structuring element is flat or grey-valued
@@ -314,7 +314,7 @@ DIP_EXPORT void BasicMorphology(
 /// `boundary` determines the boundary conditions. See `dip::BoundaryCondition`.
 /// The default value, and most meaningful one, is `"add min"`, but any value can be used.
 ///
-/// \see dip::Erosion, dip::Opening, dip::Closing
+/// \see dip::Erosion, dip::Opening, dip::Closing, dip::RankFilter
 inline void Dilation(
       Image const& in,
       Image& out,
@@ -340,7 +340,7 @@ inline Image Dilation(
 /// `boundaryCondition` determines the boundary conditions. See `dip::BoundaryCondition`.
 /// The default value, and most meaningful one, is `"add max"`, but any value can be used.
 ///
-/// \see dip::Dilation, dip::Opening, dip::Closing
+/// \see dip::Dilation, dip::Opening, dip::Closing, dip::RankFilter
 inline void Erosion(
       Image const& in,
       Image& out,
@@ -368,7 +368,7 @@ inline Image Erosion(
 /// be used. The default empty array causes the function to use `"add min"` with the dilation
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
 ///
-/// \see dip::Dilation, dip::Erosion, dip::Opening
+/// \see dip::Dilation, dip::Erosion, dip::Opening, dip::RankMinClosing
 inline void Closing(
       Image const& in,
       Image& out,
@@ -396,7 +396,7 @@ inline Image Closing(
 /// be used. The default empty array causes the function to use `"add min"` with the dilation
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
 ///
-/// \see dip::Dilation, dip::Erosion, dip::Closing
+/// \see dip::Dilation, dip::Erosion, dip::Closing, dip::RankMaxOpening
 inline void Opening(
       Image const& in,
       Image& out,
@@ -688,6 +688,131 @@ inline Image MorphologicalLaplace(
 ) {
    Image out;
    MorphologicalLaplace( in, out, se, boundaryCondition );
+   return out;
+}
+
+
+//
+// Rank-order--based filters
+//
+
+
+/// \brief Applies the rank-order filter.
+///
+/// `se` defines the structuring element. `rank` determines which of the sorted values within
+/// the SE should be written to the output. A rank of 1 leads to an erosion, and a rank equal
+/// to the number of pixels within the SE leads to a dilation. If `order` is `"decreasing"` (instead
+/// of the default `"increasing"`), then `rank` is interpreted in the opposite direction, it
+/// counts elements starting at the largest value. In this case, a rank of 1 is equal to a dilation.
+///
+/// Thus, a small non-zero rank with increasing order leads to an approximation to the dilation
+/// that is less sensitive to noise, and a small non-zero rank with decreasing order leads to an
+/// approximation of the erosion.
+///
+/// See also `dip::PercentileFilter`, which does the same thing but uses a percentile instead of
+/// a rank as input argument.
+///
+/// `boundary` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// The default value is the most meaningful one, but any value can be used. By default it is
+/// `"add max"` if `rank` is lower than half of the pixels in the SE, or `"add min"` otherwise.
+///
+/// \see dip::Erosion, dip::Dilation, dip::RankMinClosing, dip::RankMaxOpening, dip::PercentileFilter
+// Note that this function is defined in src/nonlinear/percentile.cpp
+DIP_EXPORT void RankFilter(
+      Image const& in,
+      Image& out,
+      StructuringElement const& se = {},
+      dip::uint rank = 2,
+      String const& order = "increasing",
+      StringArray const& boundaryCondition = {}
+);
+inline Image RankFilter(
+      Image const& in,
+      StructuringElement const& se = {},
+      dip::uint rank = 2,
+      String const& order = "increasing",
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   RankFilter( in, out, se, rank, order, boundaryCondition );
+   return out;
+}
+
+/// \brief Applies the rank-min closing, a closing that is somewhat robust to noise.
+///
+/// `se` defines the structuring element. `rank` determines how many pixels in the SE
+/// are ignored. That is, if the SE has `n` pixels, then a rank filter with rank equal
+/// to `n - rank` is applied instead of a dilation.
+///
+/// This function uses the definition of Soille:
+/// \f[
+///    \phi_{B,\text{rank}} = \bigwedge_i \{ \phi_{B_i} | B_i \subseteq B, \text{card}(B_i) = n-\text{rank} \},
+/// \f]
+/// which is identical to
+/// \f[
+///    \phi_{B,\text{rank}} = I \vee \epsilon_{\check{B}} \xi_{B,n-\text{rank}}
+/// \f]
+///
+/// `boundary` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// The default empty array causes the function to use `"add min"` with the rank filter,
+/// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
+///
+/// **Literature**
+///  - P. Soille, "Morphological Image Analysis", 2nd Edition, section 4.4.3. Springer, 2002.
+DIP_EXPORT void RankMinClosing(
+      Image const& in,
+      Image& out,
+      StructuringElement se = {},
+      dip::uint rank = 2,
+      StringArray const& boundaryCondition = {}
+);
+inline Image RankMinClosing(
+      Image const& in,
+      StructuringElement const& se = {},
+      dip::uint rank = 2,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   RankMinClosing( in, out, se, rank, boundaryCondition );
+   return out;
+}
+
+/// \brief Applies the rank-max opening, an opening that is somewhat robust to noise.
+///
+/// `se` defines the structuring element. `rank` determines how many pixels in the SE
+/// are ignored. That is, a rank filter with rank equal `rank + 1` is applied instead of an
+/// erosion.
+///
+/// This function uses the definition of Soille (ref!):
+/// \f[
+///    \gamma_{B,\text{rank}} = \bigvee_i \{ \gamma_{B_i} | B_i \subseteq B, \text{card}(B_i) = n-\text{rank} \},
+/// \f]
+/// which is identical to
+/// \f[
+///    \gamma_{B,\text{rank}} = I \wedge \delta_{\check{B}} \xi_{B,\text{rank}+1}
+/// \f]
+///
+/// `boundary` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// The default empty array causes the function to use `"add min"` with the dilation,
+/// and `"add max"` with the rank filter, equivalent to ignoring what's outside the image.
+///
+/// **Literature**
+///  - P. Soille, "Morphological Image Analysis", 2nd Edition, section 4.4.3. Springer, 2002.
+DIP_EXPORT void RankMaxOpening(
+      Image const& in,
+      Image& out,
+      StructuringElement se = {},
+      dip::uint rank = 2,
+      StringArray const& boundaryCondition = {}
+);
+inline Image RankMaxOpening(
+      Image const& in,
+      StructuringElement const& se = {},
+      dip::uint rank = 2,
+      StringArray const& boundaryCondition = {}
+) {
+   Image out;
+   RankMaxOpening( in, out, se, rank, boundaryCondition );
    return out;
 }
 
@@ -1253,8 +1378,6 @@ dip_UpperSkeleton2D (dip_binary.h)
 // TODO: thinning & thickening, to be implemented as iterated hit'n'miss.
 // TODO: levelling
 // TODO: granulometries (isotropic and path opening)
-
-// TODO: link documentation to dip::PercentileFilter (when written) as a rank filter, and implement rank-min and rank-max operators
 
 /// \}
 

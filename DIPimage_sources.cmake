@@ -65,6 +65,8 @@ dipimage/pathopening.cpp
 dipimage/percf.cpp
 dipimage/private/imagedisplay.cpp
 dipimage/private/readtiffseries.cpp
+dipimage/rankmax_opening.cpp
+dipimage/rankmin_closing.cpp
 dipimage/readics.cpp
 dipimage/readtiff.cpp
 dipimage/reconstruction.cpp

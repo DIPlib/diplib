@@ -121,7 +121,7 @@ void Full(
    dip::uint processingDim = OptimalProcessingDim( input, kernelSizes );
    PixelTable pixelTable;
    DIP_START_STACK_TRACE
-      pixelTable = kernel.PixelTable( sizes, processingDim );
+      pixelTable = kernel.PixelTable( sizes.size(), processingDim );
    DIP_END_STACK_TRACE
    PixelTableOffsets pixelTableOffsets = pixelTable.Prepare( input );
 

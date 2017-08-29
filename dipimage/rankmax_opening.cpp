@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `varif` function
+ * This MEX-file implements the `rankmax_opening` function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -21,27 +21,33 @@
 
 #undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
-#include "diplib/nonlinear.h"
+#include "diplib/morphology.h"
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
       DML_MIN_ARGS( 1 );
-      DML_MAX_ARGS( 4 );
+      DML_MAX_ARGS( 5 );
 
       dml::MatlabInterface mi;
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
       int index = 1;
-      auto kernel = dml::GetKernel< dip::Kernel >( nrhs, prhs, index, in.Dimensionality() );
+      dip::uint rank = 2;
+      if( nrhs > index ) {
+         rank = dml::GetUnsigned( prhs[ index ] );
+         ++index;
+      }
+
+      auto se = dml::GetKernel< dip::StructuringElement >( nrhs, prhs, index, in.Dimensionality() );
 
       dip::StringArray bc;
       if( nrhs > index ) {
          bc = dml::GetStringArray( prhs[ index ] );
       }
 
-      dip::VarianceFilter( in, out, kernel, bc );
+      dip::RankMaxOpening( in, out, se, rank, bc );
 
       plhs[ 0 ] = mi.GetArray( out );
 

@@ -33,37 +33,18 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
+      int index = 1;
       dip::dfloat percentile = 50;
-      dip::uint N = 1;
-      if( nrhs > N ) {
-         percentile = dml::GetFloat( prhs[ N ] );
-         ++N;
+      if( nrhs > index ) {
+         percentile = dml::GetFloat( prhs[ index ] );
+         ++index;
       }
 
-      dip::Kernel kernel;
-      if( nrhs > N ) {
-         if( mxIsNumeric( prhs[ N ] ) && ( mxGetNumberOfElements( prhs[ N ] ) <= in.Dimensionality() )) {
-            // This looks like a sizes vector
-            auto filterParam = dml::GetFloatArray( prhs[ N ] );
-            ++N;
-            if( nrhs > N ) {
-               auto filterShape = dml::GetString( prhs[ N ] );
-               kernel = { filterParam, filterShape };
-               ++N;
-            } else {
-               kernel = { filterParam };
-            }
-         } else {
-            // Assume it's an image?
-            DML_MAX_ARGS( 4 );
-            kernel = { dml::GetImage( prhs[ N ] ) };
-            ++N;
-         }
-      }
+      auto kernel = dml::GetKernel< dip::Kernel >( nrhs, prhs, index, in.Dimensionality() );
 
       dip::StringArray bc;
-      if( nrhs > N ) {
-         bc = dml::GetStringArray( prhs[ N ] );
+      if( nrhs > index ) {
+         bc = dml::GetStringArray( prhs[ index ] );
       }
 
       dip::PercentileFilter( in, out, percentile, kernel, bc );

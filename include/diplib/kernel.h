@@ -146,8 +146,9 @@ class DIP_NO_EXPORT Kernel {
       /// \brief True if kernel is mirrored
       bool IsMirrored() const { return mirror_; }
 
-      /// \brief Creates a `dip::PixelTable` structure representing the shape of the kernel
-      dip::PixelTable PixelTable( UnsignedArray const& imsz, dip::uint procDim ) const;
+      /// \brief Creates a `dip::PixelTable` structure representing the shape of the kernel, given the dimensionality
+      /// `nDim`. Pixel table runs will be along dimension `procDim`.
+      dip::PixelTable PixelTable( dip::uint nDims, dip::uint procDim ) const;
 
       /// \brief Retrieves the size of the kernel, adjusted to an image of size `imsz`. When computing required
       /// boundary extension, remember to take `Shift` into account.
@@ -218,6 +219,10 @@ class DIP_NO_EXPORT Kernel {
       bool HasWeights() const {
          return ( shape_ == ShapeCode::CUSTOM ) && !image_.DataType().IsBinary();
       }
+
+      /// \brief Returns the number of pixels in the kernel, given the image dimensionality `nDims`.
+      /// This requires the creation of a `dip::PixelTable` for the kernel, so is not a trivial function.
+      DIP_EXPORT dip::uint NumberOfPixels( dip::uint nDims ) const;
 
    private:
       ShapeCode shape_;

@@ -1282,6 +1282,38 @@ inline dip::Image GetImage( mxArray const* mx ) {
 
 
 //
+// Some other common code for many functions
+//
+
+
+/// \brief Gets a structuring element or kernel from the input argument(s) at `index`, and `index+1`. `index` is
+/// updated to point to the next unused input argument.
+template< typename K >
+inline K GetKernel( int nrhs, const mxArray* prhs[], int& index, dip::uint nDims ) {
+   K k;
+   if( nrhs > index ) {
+      if( mxIsNumeric( prhs[ index ] ) && ( mxGetNumberOfElements( prhs[ index ] ) <= nDims )) {
+         // This looks like a sizes vector
+         auto filterParam = GetFloatArray( prhs[ index ] );
+         ++index;
+         if( nrhs > index ) {
+            auto filterShape = GetString( prhs[ index ] );
+            ++index;
+            k = K( filterParam, filterShape );
+         } else {
+            k = K( filterParam );
+         }
+      } else {
+         // Assume it's an image?
+         k = K( GetImage( prhs[ index ] ) );
+         ++index;
+      }
+   }
+   return k;
+}
+
+
+//
 // Utility
 //
 

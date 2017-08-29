@@ -33,49 +33,25 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      if( nrhs > 1 ) {
-         if( mxIsNumeric( prhs[ 1 ] ) && ( mxGetNumberOfElements( prhs[ 1 ] ) <= in.Dimensionality() )) {
-            // This looks like a sizes vector
-            auto filterParam = dml::GetFloatArray( prhs[ 1 ] );
-            if( nrhs > 2 ) {
-               auto filterShape = dml::GetString( prhs[ 2 ] );
-               dip::String edgeType = "texture";
-               dip::String sign = "unsigned";
-               dip::StringArray bc;
-               if( nrhs > 3 ) {
-                  edgeType = dml::GetString( prhs[ 3 ] );
-                  if( nrhs > 4 ) {
-                     sign = dml::GetString( prhs[ 4 ] );
-                     if( nrhs > 5 ) {
-                        bc = dml::GetStringArray( prhs[ 5 ] );
-                     }
-                  }
-               }
-               dip::Lee( in, out, { filterParam, filterShape }, edgeType, sign, bc );
-            } else {
-               dip::Lee( in, out, filterParam );
-            }
-         } else {
-            // Assume it's an image?
-            DML_MAX_ARGS( 5 );
-            dip::Image const se = dml::GetImage( prhs[ 1 ] );
-            dip::String edgeType = "texture";
-            dip::String sign = "unsigned";
-            dip::StringArray bc;
-            if( nrhs > 2 ) {
-               edgeType = dml::GetString( prhs[ 2 ] );
-               if( nrhs > 3 ) {
-                  sign = dml::GetString( prhs[ 3 ] );
-                  if( nrhs > 4 ) {
-                     bc = dml::GetStringArray( prhs[ 4 ] );
-                  }
-               }
-            }
-            dip::Lee( in, out, se, edgeType, sign, bc );
-         }
-      } else {
-         dip::Lee( in, out );
+      int index = 1;
+      auto se = dml::GetKernel< dip::StructuringElement >( nrhs, prhs, index, in.Dimensionality() );
+
+      dip::String edgeType = "texture";
+      if( nrhs > index ) {
+         edgeType = dml::GetString( prhs[ index ] );
+         ++index;
       }
+      dip::String sign = "unsigned";
+      if( nrhs > index ) {
+         sign = dml::GetString( prhs[ index ] );
+         ++index;
+      }
+      dip::StringArray bc;
+      if( nrhs > index ) {
+         bc = dml::GetStringArray( prhs[ index ] );
+      }
+
+      dip::Lee( in, out, se, edgeType, sign, bc );
 
       plhs[ 0 ] = mi.GetArray( out );
 

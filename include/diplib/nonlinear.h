@@ -38,11 +38,10 @@ namespace dip {
 /// \{
 
 
-/// \brief Applies a percentile filter (A.K.A. rank filter) to `in`.
+/// \brief Applies a percentile filter to `in`.
 ///
 /// Determines the `percentile` percentile within the filter window, and assigns that value to the output pixel.
-/// To find out what percentile corresponds to a specific rank, it is necessary to know the number of pixels within
-/// the neighborhood. (TODO: add such a function to `dip::Kernel`.)
+/// See also `dip::RankFilter`, which does the same thing but uses a rank instead of a percentile as input argument.
 ///
 /// The size and shape of the filter window is given by `kernel`, which you can define through a default
 /// shape with corresponding sizes, or through a binary image. See `dip::Kernel`.

@@ -33,49 +33,25 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      if( nrhs > 1 ) {
-         if( mxIsNumeric( prhs[ 1 ] ) && ( mxGetNumberOfElements( prhs[ 1 ] ) <= in.Dimensionality() )) {
-            // This looks like a sizes vector
-            auto filterParam = dml::GetFloatArray( prhs[ 1 ] );
-            if( nrhs > 2 ) {
-               auto filterShape = dml::GetString( prhs[ 2 ] );
-               dip::String edgeType = "texture";
-               dip::String polarity = "white";
-               dip::StringArray bc;
-               if( nrhs > 3 ) {
-                  edgeType = dml::GetString( prhs[ 3 ] );
-                  if( nrhs > 4 ) {
-                     polarity = dml::GetString( prhs[ 4 ] );
-                     if( nrhs > 5 ) {
-                        bc = dml::GetStringArray( prhs[ 5 ] );
-                     }
-                  }
-               }
-               dip::Tophat( in, out, { filterParam, filterShape }, edgeType, polarity, bc );
-            } else {
-               dip::Tophat( in, out, filterParam );
-            }
-         } else {
-            // Assume it's an image?
-            DML_MAX_ARGS( 5 );
-            dip::Image const se = dml::GetImage( prhs[ 1 ] );
-            dip::String edgeType = "texture";
-            dip::String polarity = "white";
-            dip::StringArray bc;
-            if( nrhs > 2 ) {
-               edgeType = dml::GetString( prhs[ 2 ] );
-               if( nrhs > 3 ) {
-                  polarity = dml::GetString( prhs[ 3 ] );
-                  if( nrhs > 4 ) {
-                     bc = dml::GetStringArray( prhs[ 4 ] );
-                  }
-               }
-            }
-            dip::Tophat( in, out, se, edgeType, polarity, bc );
-         }
-      } else {
-         dip::Tophat( in, out );
+      int index = 1;
+      auto se = dml::GetKernel< dip::StructuringElement >( nrhs, prhs, index, in.Dimensionality() );
+
+      dip::String edgeType = "texture";
+      if( nrhs > index ) {
+         edgeType = dml::GetString( prhs[ index ] );
+         ++index;
       }
+      dip::String polarity = "white";
+      if( nrhs > index ) {
+         polarity = dml::GetString( prhs[ index ] );
+         ++index;
+      }
+      dip::StringArray bc;
+      if( nrhs > index ) {
+         bc = dml::GetStringArray( prhs[ index ] );
+      }
+
+      dip::Tophat( in, out, se, edgeType, polarity, bc );
 
       plhs[ 0 ] = mi.GetArray( out );
 
