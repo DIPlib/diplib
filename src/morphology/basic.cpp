@@ -49,6 +49,7 @@ dip::Kernel StructuringElement::Kernel() const {
       case ShapeCode::CUSTOM:
          out = { image_ };
          break;
+      // TODO: ShapeCode::OCTAGONAL and ShapeCode::PERIODIC_LINE could be converted to ShapeCode::CUSTOM, but only if the image dimensionality is known.
       default:
          DIP_THROW( "Cannot create kernel for this structuring element shape" );
    }
@@ -75,6 +76,13 @@ inline Mirror GetMirrorParam( bool mirror ) {
 }
 inline Mirror InvertMirrorParam( Mirror mirror ) {
    return mirror == Mirror::YES ? Mirror::NO : Mirror::YES;
+}
+
+inline BoundaryConditionArray BoundaryConditionForDilation( BoundaryConditionArray const& bc ) {
+   return bc.empty() ? BoundaryConditionArray{ BoundaryCondition::ADD_MIN_VALUE } : bc;
+}
+inline BoundaryConditionArray BoundaryConditionForErosion( BoundaryConditionArray const& bc ) {
+   return bc.empty() ? BoundaryConditionArray{ BoundaryCondition::ADD_MAX_VALUE } : bc;
 }
 
 // --- Rectangular morphology ---
@@ -199,23 +207,23 @@ void RectangularMorphology(
          switch( operation ) {
             case BasicMorphologyOperation::DILATION:
                DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), dtype );
-               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+               Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
                break;
             case BasicMorphologyOperation::EROSION:
                DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), dtype );
-               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+               Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
                break;
             case BasicMorphologyOperation::CLOSING:
                DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), dtype );
-               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+               Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
                DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, InvertMirrorParam( mirror )), dtype );
-               Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
+               Framework::Separable( out, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
                break;
             case BasicMorphologyOperation::OPENING:
                DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), dtype );
-               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+               Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
                DIP_OVL_NEW_NONCOMPLEX( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, InvertMirrorParam( mirror )), dtype );
-               Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
+               Framework::Separable( out, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
                break;
          }
       DIP_END_STACK_TRACE
@@ -292,25 +300,25 @@ void FlatSEMorphology(
       switch( operation ) {
          case BasicMorphologyOperation::DILATION:
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
-            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, BoundaryConditionForDilation( bc ), kernel, *lineFilter );
             break;
          case BasicMorphologyOperation::EROSION:
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
-            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, BoundaryConditionForErosion( bc ), kernel, *lineFilter );
             break;
          case BasicMorphologyOperation::CLOSING:
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
-            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, BoundaryConditionForDilation( bc ), kernel, *lineFilter );
             kernel.Mirror();
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
-            Framework::Full( out, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, BoundaryConditionForErosion( bc ), kernel, *lineFilter );
             break;
          case BasicMorphologyOperation::OPENING:
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
-            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, BoundaryConditionForErosion( bc ), kernel, *lineFilter );
             kernel.Mirror();
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, FlatSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
-            Framework::Full( out, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, BoundaryConditionForDilation( bc ), kernel, *lineFilter );
             break;
       }
    DIP_END_STACK_TRACE
@@ -379,25 +387,25 @@ void GreyValueSEMorphology(
       switch( operation ) {
          case BasicMorphologyOperation::DILATION:
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
-            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, BoundaryConditionForDilation( bc ), kernel, *lineFilter );
             break;
          case BasicMorphologyOperation::EROSION:
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
-            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, BoundaryConditionForErosion( bc ), kernel, *lineFilter );
             break;
          case BasicMorphologyOperation::CLOSING:
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
-            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, BoundaryConditionForDilation( bc ), kernel, *lineFilter );
             kernel.Mirror();
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
-            Framework::Full( out, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, BoundaryConditionForErosion( bc ), kernel, *lineFilter );
             break;
          case BasicMorphologyOperation::OPENING:
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::EROSION ), dtype );
-            Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( in, out, dtype, dtype, dtype, 1, BoundaryConditionForErosion( bc ), kernel, *lineFilter );
             kernel.Mirror();
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::DILATION ), dtype );
-            Framework::Full( out, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter );
+            Framework::Full( out, out, dtype, dtype, dtype, 1, BoundaryConditionForDilation( bc ), kernel, *lineFilter );
             break;
       }
    DIP_END_STACK_TRACE
@@ -681,25 +689,25 @@ void PeriodicLineMorphology(
       switch( operation ) {
          case BasicMorphologyOperation::DILATION:
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::DILATION, mirror ), dtype );
-            Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+            Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
             break;
          case BasicMorphologyOperation::EROSION:
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::EROSION, mirror ), dtype );
-            Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+            Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
             break;
          case BasicMorphologyOperation::CLOSING:
             // TODO: Apply 1D closing
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::DILATION, mirror ), dtype );
-            Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+            Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::EROSION, InvertMirrorParam( mirror )), dtype );
-            Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
+            Framework::Separable( out, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
             break;
          case BasicMorphologyOperation::OPENING:
             // TODO: Apply 1D opening
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::EROSION, mirror ), dtype );
-            Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+            Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
             DIP_OVL_NEW_NONCOMPLEX( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::DILATION, InvertMirrorParam( mirror )), dtype );
-            Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
+            Framework::Separable( out, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
             break;
       }
    DIP_END_STACK_TRACE
@@ -777,7 +785,7 @@ void SkewLineMorphology(
          }
       }
       Image tmp;
-      Skew( in, tmp, shearArray, axis, 0, method, bc );
+      Skew( in, tmp, shearArray, axis, 0, method, bc ); // TODO: how to fill in default boundary condition here?
       // 2- Call RectangularMorphology or PeriodicLineMorphology
       if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
          PeriodicLineMorphology( tmp, tmp, periodicStepSize, static_cast< dip::uint >( length ), axis, mirror, bc, operation );

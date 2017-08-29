@@ -905,8 +905,6 @@ class Image::View {
          return *this;
       }
 
-      // TODO: It would be nice to be able to iterate over a view!
-
       /// \brief Copy the pixels from `src` to the view.
       ///
       /// `src` must have the same number of tensor elements as the image, and be forged.

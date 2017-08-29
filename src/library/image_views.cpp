@@ -235,7 +235,7 @@ Image::View Image::View::At( Range x_range ) const {
          while( true ) {
             if( !it ) {
                break; // this happens when we just added the offset for the last on pixel in the mask, we shouldn't try to find a next on pixel after that!
-               // TODO: we could probably write this loop better so that we don't look for the next on pixel after then last one was found.
+               // TODO: we could probably write this loop better so that we don't look for the next set pixel after the last one was found.
             }
             if( *( static_cast< bin* >( it.Pointer< 1 >() ))) {
                if( ii == x_range.step ) {

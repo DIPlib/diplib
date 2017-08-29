@@ -62,7 +62,7 @@ void init_measurement( py::module& m ) {
                 os << "<MeasurementFeature for feature " << self.FeatureName() << " and " << self.NumberOfObjects() << " objects>";
                 return os.str();
              } );
-   feat.def( "__getitem__", []( dip::Measurement::IteratorFeature const& self, dip::uint objectID ) { return MeasurementValuesToList( self[ objectID ] ); }, "objectID"_a ); // TODO: return a tuple or list
+   feat.def( "__getitem__", []( dip::Measurement::IteratorFeature const& self, dip::uint objectID ) { return MeasurementValuesToList( self[ objectID ] ); }, "objectID"_a );
    feat.def( "FeatureName", &dip::Measurement::IteratorFeature::FeatureName );
    feat.def( "NumberOfValues", &dip::Measurement::IteratorFeature::NumberOfValues );
    feat.def( "NumberOfObjects", &dip::Measurement::IteratorFeature::NumberOfObjects );

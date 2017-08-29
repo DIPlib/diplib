@@ -29,10 +29,6 @@
 
 #include "libics.h"
 
-// TODO: Reorder dimensions when reading, to match standard x,y,z,t order.
-// TODO: When reading, check to see if image's strides match those in the file.
-// TODO: Option "fast" to reorder dimensions when reading, to read without strides.
-
 namespace dip {
 
 namespace {
