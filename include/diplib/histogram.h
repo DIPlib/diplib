@@ -417,16 +417,18 @@ class DIP_NO_EXPORT Histogram {
 ///
 /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
 /// computing the statistic on data rounded to the bin centers.
-DIP_EXPORT Image::CastPixel< dfloat > Mean( Histogram const& in );
+DIP_EXPORT FloatArray Mean( Histogram const& in );
 
 /// \brief Computes the covariance matrix of the data represented by the histogram.
 ///
 /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
 /// computing the statistic on data rounded to the bin centers.
 ///
-/// The returned pixel is a symmetric tensor, containing n*(n+1)/2 tensor elements (with n the
-/// histogram dimensionality).
-DIP_EXPORT Image::CastPixel< dfloat > Covariance( Histogram const& in );
+/// The returned array contains the elements of the symmetric covariance matrix in the same order as tensor
+/// elements are stored in a symmetric tensor image (see `dip::Tensor::Shape`). That is, there are `n`*(`n`+1)/2
+/// elements (with `n` the histogram dimensionality), with the diagonal matrix elements stored first, and the
+/// off-diagonal elements after. For a 2D histogram, the three elements are *xx*, *yy*, and *xy*.
+DIP_EXPORT FloatArray Covariance( Histogram const& in );
 
 /// \brief Computes the marginal median value of the data represented by the histogram. The marginal median
 /// is a median computed independently on each pixel, and thus is not one of the input values.
@@ -438,13 +440,13 @@ DIP_EXPORT Image::CastPixel< dfloat > Covariance( Histogram const& in );
 ///
 /// Computing statistics through the histogram is efficient, but yields an approximation equivalent to
 /// computing the statistic on data rounded to the bin centers.
-DIP_EXPORT Image::CastPixel< dfloat > MarginalMedian( Histogram const& in );
+DIP_EXPORT FloatArray MarginalMedian( Histogram const& in );
 
 /// \brief Returns the mode, the bin with the largest count. The return value is the
 ///
 /// When multiple bins have the same, largest count, the first bin encountered is returned. This is the bin
 /// with the lowest linear index, and is closest to the origin.
-DIP_EXPORT Image::CastPixel< dfloat > Mode( Histogram const& in );
+DIP_EXPORT FloatArray Mode( Histogram const& in );
 
 /// \brief Calculates the mutual information, in bits, between two images from their joint histogram `in`.
 ///

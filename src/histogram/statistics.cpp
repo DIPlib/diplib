@@ -23,13 +23,9 @@
 
 namespace dip {
 
-// TODO: Why do these functions return a `CastPixel` and not a `FloatArray`?
-
-Image::CastPixel< dfloat > Mean( Histogram const& in ) {
+FloatArray Mean( Histogram const& in ) {
    dip::uint nDims = in.Dimensionality();
-   Image::CastPixel< dfloat > mean( DT_DFLOAT, nDims );
-   mean = 0;
-   dfloat* pmean = static_cast< dfloat* >( mean.Origin() );
+   FloatArray mean( nDims, 0 );
    dfloat weight = 0;
    std::vector< FloatArray > binCenters( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
@@ -41,27 +37,21 @@ Image::CastPixel< dfloat > Mean( Histogram const& in ) {
       dfloat v = static_cast< dfloat >( *it );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          dfloat bin = binCenters[ ii ][ coord[ ii ] ];
-         pmean[ ii ] += bin * v;
+         mean[ ii ] += bin * v;
       }
       weight += v;
    } while( ++it );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      pmean[ ii ] /= weight;
+      mean[ ii ] /= weight;
    }
    return mean;
 }
 
-Image::CastPixel< dfloat > Covariance( Histogram const& in ) {
+FloatArray Covariance( Histogram const& in ) {
    dip::uint nDims = in.Dimensionality();
-   Tensor tensor( Tensor::Shape::SYMMETRIC_MATRIX, nDims, nDims );
-   Image::CastPixel< dfloat > mean = Mean( in );
-   dfloat* pmean = static_cast< dfloat* >( mean.Origin() );
+   FloatArray mean = Mean( in );
    dfloat weight = 0;
-   Image::CastPixel< dfloat > cov( DT_DFLOAT, tensor.Elements() );
-   cov.ReshapeTensor( tensor );
-   std::vector< dip::sint > lut = tensor.LookUpTable();
-   cov = 0;
-   dfloat* pcov = static_cast< dfloat* >( cov.Origin() );
+   FloatArray cov( nDims * ( nDims + 1 ) / 2, 0 );
    std::vector< FloatArray > binCenters( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       binCenters[ ii ] = in.BinCenters( ii );
@@ -72,26 +62,31 @@ Image::CastPixel< dfloat > Covariance( Histogram const& in ) {
       UnsignedArray const& coord = it.Coordinates();
       dfloat w = static_cast< dfloat >( *it );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         diff[ ii ] = binCenters[ ii ][ coord[ ii ] ] - pmean[ ii ];
+         diff[ ii ] = binCenters[ ii ][ coord[ ii ] ] - mean[ ii ];
       }
+
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         for( dip::uint jj = 0; jj <= ii; ++jj ) {
-            pcov[ static_cast< dip::uint >( lut[ ii * nDims + jj ] ) ] += diff[ ii ] * diff[ jj ] * w;
+         cov[ ii ] += diff[ ii ] * diff[ ii ] * w;
+      }
+      dip::uint index = nDims;
+      for( dip::uint ii = 1; ii < nDims; ++ii ) {
+         for( dip::uint jj = 0; jj < ii; ++jj ) {
+            cov[ index ] += diff[ ii ] * diff[ jj ] * w;
+            ++index;
          }
       }
       weight += w;
    } while( ++it );
    dfloat norm = 1.0 / ( weight - 1 );
-   for( dip::uint ii = 0; ii < cov.TensorElements(); ++ii ) {
-      pcov[ ii ] *= norm;
+   for( auto& c : cov ) {
+      c *= norm;
    }
    return cov;
 }
 
-Image::CastPixel< dfloat > MarginalMedian( Histogram const& in ) {
+FloatArray MarginalMedian( Histogram const& in ) {
    dip::uint nDims = in.Dimensionality();
-   Image::CastPixel< dfloat > median( DT_DFLOAT, nDims );
-   dfloat* pmedian = static_cast< dfloat* >( median.Origin() );
+   FloatArray median( nDims );
    Histogram cum = in.Cumulative(); // we look along the last line in each direction
    Image const& cumImg = cum.GetImage();
    Histogram::CountType* pcum = static_cast< Histogram::CountType* >( cumImg.Origin() );
@@ -109,12 +104,12 @@ Image::CastPixel< dfloat > MarginalMedian( Histogram const& in ) {
          ++jj;
          pcum += stride;
       }
-      pmedian[ ii ] = in.BinCenter( static_cast< dip::uint >( jj ), ii );
+      median[ ii ] = in.BinCenter( static_cast< dip::uint >( jj ), ii );
    }
    return median;
 }
 
-Image::CastPixel< dfloat > Mode( Histogram const& in ) {
+FloatArray Mode( Histogram const& in ) {
    dip::uint nDims = in.Dimensionality();
    UnsignedArray coord( nDims, 0 );
    Histogram::CountType maxVal = 0;
@@ -125,10 +120,9 @@ Image::CastPixel< dfloat > Mode( Histogram const& in ) {
          coord = it.Coordinates();
       }
    } while( ++it );
-   Image::CastPixel< dfloat > mode( DT_DFLOAT, nDims );
-   dfloat* pmode = static_cast< dfloat* >( mode.Origin() );
+   FloatArray mode( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      pmode[ ii ] = in.BinCenter( coord[ ii ], ii );
+      mode[ ii ] = in.BinCenter( coord[ ii ], ii );
    }
    return mode;
 }
