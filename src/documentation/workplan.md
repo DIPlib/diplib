@@ -180,8 +180,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_Canny (dip_detection.h) (or in diplib/segmentation.h?)
     - dip_OrientationSpace (dip_structure.h)
     - dip_ExtendedOrientationSpace (dip_structure.h)
-    - dip_StructureTensor2D (dip_structure.h) (trivial using existing functionality, generalize to nD)
-    - dip_StructureTensor3D (dip_structure.h) (see dip_StructureTensor2D)
     - dip_CurvatureFromTilt (dip_structure.h)
     - dip_OSEmphasizeLinearStructures (dip_structure.h)
     - dip_DanielsonLineDetector (dip_structure.h)

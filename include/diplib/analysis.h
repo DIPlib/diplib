@@ -105,6 +105,7 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
       String const& method = "parabolic separable"
 );
 
+
 /// \brief Calculates the cross-correlation between two images of equal size.
 ///
 /// The returned image is the cross-correlation normalized in such a way that only
@@ -214,6 +215,190 @@ DIP_EXPORT FloatArray FindShift(
       dip::uint maxShift = std::numeric_limits< dip::uint >::max()
 );
 
+
+/// \brief Computes the structure tensor.
+///
+/// The structure tensor is a tensor image that contains, at each pixel, information about the local image structure.
+/// The eigenvalues of the structure tensor are larger when there are stronger gradients locally. That is, if all
+/// eigenvalues are small, the image is locally uniform. If one one eigenvalue is large, then there is a unique line
+/// or edge orienatation (in 2D), or a plane-like edge or structure (in 3D). In 3D, if two eigenvalues are large
+/// then there is a line-like structure. The associated eigenvalues indicate the orientation of this structure.
+/// See the literature references below for more information.
+///
+/// `in` must be a scalar, real-valued image. `out` will be a symmetric NxN tensor image, where N is the number
+/// of dimensions in `in`. Out is computed by:
+/// ```cpp
+///     dip::Image g = dip::Gradient( in, gradientSigmas );
+///     dip::Image out = dip::Gauss( g * dip::Transpose( g ), tensorSigmas );
+/// ```
+///
+/// If `mask` is given (not a raw image), then it is interpreted as confidence weights for the input pixels. It
+/// should have values between 0 and 1 (or be binary). Normalized convolution is used to compute the derivatives and
+/// local averaging, and thereby fill in the missing values of the input image.
+///
+/// See `dip::Gauss` for the meaning of the parameters `method`, `boundaryCondition` and `truncation`.
+///
+/// The functions `dip::StructureTensorAnalysis2D` and `dip::StructureTensorAnalysis3D` can be used with the output
+/// of this function to obtain useful image parameters.
+///
+/// **Literature**
+///  - B. Jahne, "Practical Handbook on Image Processing for Scientific Applications", chapter 13, CRC Press, 1997.
+///  - L.J. van Vliet and P.W. Verbeek, "Estimators for Orientation and Anisotropy in Digitized Images",
+///     in: J. van Katwijk, J.J. Gerbrands, M.R. van Steen, J.F.M. Tonino (eds.), Proc. First Annual Conference of the
+///     Advanced School for Computing and Imaging, pp. 442-450, ASCI, Delft, 1995.
+///  - C.F. Westin, "A Tensor Framework for Multidimensional Signal Processing", PhD thesis, Linkoping University, Sweden, 1994.
+DIP_EXPORT void StructureTensor(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      FloatArray const& gradientSigmas = { 1.0 },
+      FloatArray const& tensorSigmas = { 5.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      dfloat truncation = 3
+);
+inline Image StructureTensor(
+      Image const& in,
+      Image const& mask = {},
+      FloatArray const& gradientSigmas = { 1.0 },
+      FloatArray const& tensorSigmas = { 5.0 },
+      String const& method = "best",
+      StringArray const& boundaryCondition = {},
+      dfloat truncation = 3
+) {
+   Image out;
+   StructureTensor( in, mask, out, gradientSigmas, tensorSigmas, method, boundaryCondition, truncation );
+   return out;
+}
+
+/// \brief Computes useful image parameters from the 2D structure tensor.
+///
+/// `in` must be a 2D, symmetric 2x2 tensor image obtained from `dip::StructureTensor`. This function takes a pointer
+/// to output images, instead of taking them by reference. Set pointers to `nullptr` if you do not want the given
+/// output computed. Use this function as follows:
+/// ```cpp
+///     dip::Image st = dip::StructureTensor( img );
+///     dip::Image energy, orientation;
+///     dip::StructureTensorAnalysis2D( st, nullptr, nullptr, orientation, energy );
+/// ```
+/// (note how the last two parameters were not given, they default to `nullptr`). The code above computes both the
+/// orientation and energy values of the structure tensor.
+///
+/// The output images will be reallocated to be the same size as the input image. They will be scalar and of a
+/// floating-point type.
+///
+/// The output images are defined as follows:
+///
+/// %Image        | Description
+/// --------------|-------------------
+/// `l1`          | The largest eigenvalue.
+/// `l2`          | The smallest eigenvalue.
+/// `orientation` | Orientation. Lies in the interval (-pi/2, pi/2).
+/// `energy`      | Sum of the two eigenvalues `l1` and `l2`.
+/// `anisotropy1` | Measure for local anisotropy: `( l1 - l2 ) / ( l1 + l2 )`.
+/// `anisotropy2` | Measure for local anisotropy: `1 - l2 / l1`.
+///
+/// Note that `l1` and `l2` will both reference data within the same data segment, and therefore will likely not
+/// have normal strides.
+///
+/// For a 3D structure tensor analysis, see the function `dip::StructureTensorAnalysis3D`. Note that eigenvalues
+/// and eigenvectors can also be computed using `dip::Eigenvalues` and `dip::EigenDecomposition`.
+DIP_EXPORT void StructureTensorAnalysis2D(
+      Image const& in,
+      Image* l1 = nullptr,
+      Image* l2 = nullptr,
+      Image* orientation = nullptr,
+      Image* energy = nullptr,
+      Image* anisotropy1 = nullptr,
+      Image* anisotropy2 = nullptr
+);
+
+/// \brief Computes useful image parameters from the 3D structure tensor.
+///
+/// `in` must be a 3D, symmetric 3x3 tensor image obtained from `dip::StructureTensor`. This function takes a pointer
+/// to output images, instead of taking them by reference. Set pointers to `nullptr` if you do not want the given
+/// output computed. Use this function as follows:
+/// ```cpp
+///     dip::Image st = dip::StructureTensor( img );
+///     dip::Image energy;
+///     dip::StructureTensorAnalysis3D( st, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, energy );
+/// ```
+/// (note how the last two parameters were not given, they default to `nullptr`). The code above computes the
+/// energy value of the structure tensor.
+///
+/// The output images will be reallocated to be the same size as the input image. They will be scalar and of a
+/// floating-point type.
+///
+/// The output images are defined as follows:
+///
+/// %Image        | Description
+/// --------------|-------------------
+/// `l1`          | The largest eigenvalue.
+/// `phi1`        | First component of the orientation of the eigenvector for `l1`.
+/// `theta1`      | Second component of the orientation of the eigenvector for `l1`.
+/// `l2`          | The middle eigenvalue.
+/// `phi2`        | First component of the orientation of the eigenvector for `l2`.
+/// `theta2`      | Second component of the orientation of the eigenvector for `l2`.
+/// `l3`          | The smallest eigenvalue.
+/// `phi3`        | First component of the orientation of the eigenvector for `l3`.
+/// `theta3`      | Second component of the orientation of the eigenvector for `l3`.
+/// `energy`      | Sum of the three eigenvalues `l1`, `l2` and `l3`.
+/// `cylindrical` | Measure for local anisotropy: `( l2 - l3 ) / ( l2 + l3 )`.
+/// `planar`      | Measure for local anisotropy: `( l1 - l2 ) / ( l1 + l2 )`.
+///
+/// For a 2D structure tensor analysis, see the function `dip::StructureTensorAnalysis2D`. Note that eigenvalues
+/// and eigenvectors can also be computed using `dip::Eigenvalues` and `dip::EigenDecomposition`.
+DIP_EXPORT void StructureTensorAnalysis3D(
+      Image const& in,
+      Image* l1 = nullptr,
+      Image* phi1 = nullptr,
+      Image* theta1 = nullptr,
+      Image* l2 = nullptr,
+      Image* phi2 = nullptr,
+      Image* theta2 = nullptr,
+      Image* l3 = nullptr,
+      Image* phi3 = nullptr,
+      Image* theta3 = nullptr,
+      Image* energy = nullptr,
+      Image* cylindrical = nullptr,
+      Image* planar = nullptr
+);
+
+/// \brief Interface to `dip::StructureTensorAnalysis2D` and `dip::StructureTensorAnalysis3D`.
+///
+/// `in` is as in `dip::StructureTensorAnalysis2D` or `dip::StructureTensorAnalysis3D`. That is, either a 2D
+/// symmetric 2x2 tensor image or a 3D symmetric 3x3 tensor image, real-valued, as obtained from `dip::StructureTensor`.
+/// `out` is an array with references to output images. It should have exactly as many elements as `outputs`.
+///
+/// `outputs` is an array with one or more of the following strings, indicating which outputs are needed:
+///  - For 2D inputs: `"l1"`, `"l2"`, `"orientation"`, `"energy"`, `"anisotropy1"`, `"anisotropy2"`.
+///  - For 3D inputs: `"l1"`, `"phi1"`, `"theta1"`, `"l2"`, `"phi2"`, `"theta2"`, `"l3"`, `"phi3"`, `"theta3"`,
+///    `"energy"`, `"cylindrical"`, `"planar"`.
+///
+/// The order of the strings in in `outputs` indicates the order they will be written to the `out` array.
+///
+/// See the functions `dip::StructureTensorAnalysis2D` and `dip::StructureTensorAnalysis3D` for more information
+/// on these outputs.
+DIP_EXPORT void StructureTensorAnalysis(
+      Image const& in,
+      ImageRefArray& out,
+      StringArray const& outputs
+);
+inline ImageArray StructureTensorAnalysis(
+      Image const& in,
+      StringArray const& outputs
+) {
+   dip::uint nOut = outputs.size();
+   ImageArray out( nOut );
+   ImageRefArray refOut;
+   for( auto& o : out ) {
+      refOut.emplace_back( o );
+   }
+   DIP_STACK_TRACE_THIS( StructureTensorAnalysis( in, refOut, outputs ));
+   return out;
+}
+
+
 // TODO: functions to port:
 /*
    dip_PairCorrelation (dip_analysis.h)
@@ -226,8 +411,6 @@ DIP_EXPORT FloatArray FindShift(
    dip_OrientationSpace (dip_structure.h)
    dip_ExtendedOrientationSpace (dip_structure.h)
 
-   dip_StructureTensor2D (dip_structure.h) (trivial using existing functionality, generalize to nD)
-   dip_StructureTensor3D (dip_structure.h) (see dip_StructureTensor2D)
    dip_CurvatureFromTilt (dip_structure.h)
 
    dip_OSEmphasizeLinearStructures (dip_structure.h)

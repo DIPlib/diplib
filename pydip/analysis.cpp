@@ -43,9 +43,13 @@ void init_analysis( py::module& m ) {
    m.def( "SubpixelMinima", &dip::SubpixelMinima,
           "in"_a, "mask"_a = dip::Image{}, "method"_a = "parabolic separable" );
    m.def( "CrossCorrelationFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const&, dip::String const&, dip::String const& >( &dip::CrossCorrelationFT ),
-         "in1"_a, "in2"_a, "in1Representation"_a = "spatial", "in2Representation"_a = "spatial", "outRepresentation"_a = "spatial", "normalize"_a = "normalize" );
+          "in1"_a, "in2"_a, "in1Representation"_a = "spatial", "in2Representation"_a = "spatial", "outRepresentation"_a = "spatial", "normalize"_a = "normalize" );
    m.def( "FindShift", &dip::FindShift,
           "in1"_a, "in2"_a, "method"_a = "MTS", "parameter"_a = 0, "maxShift"_a = std::numeric_limits< dip::uint >::max() );
+   m.def( "StructureTensor", py::overload_cast< dip::Image const&, dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::StructureTensor ),
+          "in"_a, "mask"_a = dip::Image{}, "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "tensorSigmas"_a = dip::FloatArray{ 5.0 }, "method"_a = "best", "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
+   m.def( "StructureTensorAnalysis", py::overload_cast< dip::Image const&, dip::StringArray const& >( &dip::StructureTensorAnalysis ),
+          "in"_a, "outputs"_a );
 
    // diplib/distance.h
 

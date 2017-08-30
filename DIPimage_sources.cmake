@@ -78,6 +78,7 @@ dipimage/setborder.cpp
 dipimage/skew.cpp
 dipimage/smallobjectsremove.cpp
 dipimage/stretch.cpp
+dipimage/structuretensor.cpp
 dipimage/threshold.cpp
 dipimage/tophat.cpp
 dipimage/unif.cpp

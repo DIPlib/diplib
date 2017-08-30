@@ -522,4 +522,4 @@ SubpixelLocationArray SubpixelMinima(
    return SubpixelExtrema( in, mask, method, true );
 }
 
-} // namespace
+} // namespace dip

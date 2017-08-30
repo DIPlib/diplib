@@ -513,6 +513,8 @@ void Dispatch(
          break;
       //case Method::FT:
          //TODO: Implement FT interpolation method
+         // Note that this will require us to cache the DFT data structures, we don't want to compute them anew
+         // for each image line. We currently do not have the infrastructure in place to do so.
       default:
          DIP_THROW( E::NOT_IMPLEMENTED );
    }

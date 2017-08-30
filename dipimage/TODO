@@ -156,10 +156,6 @@ radialmin.m
 radialsum.m
 radoncircle.m
 ramp1.m
-rankmax_opening.m
-rankmax_opening_se.m
-rankmin_closing.m
-rankmin_closing_se.m
 readavi.m
 readrawim.m
 readroiim.m
@@ -177,8 +173,6 @@ snakeminimize.m
 split.m
 splitandmerge.m
 structf.m
-structuretensor.m
-structuretensor3d.m
 testobject.m
 tframehessian.m
 tikhonovmiller.m

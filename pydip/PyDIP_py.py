@@ -80,10 +80,12 @@ def Show(img, range = (), complexMode = 'abs', projectionMode = 'mean', coordina
        - `'s8bit'`: use the `(-128,127)` range.
        - `'s12bit'`: use the `(-2**11,12**11-1)` range.
        - `'s16bit'`: use the `(-2**15,12**15-1)` range.
-       - `'angle'`: use the `(pi,2*pi)` range, with folding of out-of-
-           range values by modulo operation.
+       - `'angle'`: use the `(0,2*pi)` range, with folding of out-of-
+           range values by modulo operation. Additionally, it sets the
+           color map such that 0 and 2*pi are shown in the same color.
        - `'orientation'`: use the `(0,pi)` range, with folding of out-of-
-           range values by modulo operation.
+           range values by modulo operation. Additionally, it sets the
+           color map such that 0 and pi are shown in the same color.
        - `'lin'` or `'all'`: use the range from lowest to highest value in
            `img`. This is the default.
        - `'percentile'`: use the range from 5th to 95th percentile value
@@ -136,6 +138,8 @@ def Show(img, range = (), complexMode = 'abs', projectionMode = 'mean', coordina
                colormap = 'coolwarm'
             elif range == 'modulo' or range == 'labels':
                colormap = 'labels'
+            elif range == 'angle' or range == 'orientation':
+               colormap = 'hsv'
             else:
                colormap = 'gray'
          if colormap == 'labels':

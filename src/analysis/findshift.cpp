@@ -365,7 +365,7 @@ FloatArray FindShift(
    return shift;
 }
 
-}
+} // namespace dip
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
