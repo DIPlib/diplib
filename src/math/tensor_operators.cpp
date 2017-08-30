@@ -288,6 +288,34 @@ void Angle( Image const& in, Image& out ) {
    Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { outTensorElem }, *scanLineFilter );
 }
 
+void Orientation( Image const& in, Image& out ) {
+   dip::uint n = in.TensorElements();
+   DIP_THROW_IF( !in.IsVector() || ( n < 2 ) || ( n > 3 ), E::TENSOR_NOT_2_OR_3 );
+   DIP_THROW_IF( in.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED );
+   DataType outtype = DataType::SuggestFloat( in.DataType() );
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   dip::uint outTensorElem;
+   if( n == 2 ) {
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+            [ n ]( auto const& pin, auto const& pout ) {
+               *pout = pin[ 0 ] == 0 ? 0 : std::atan( pin[ 1 ] / pin[ 0 ] );
+            }
+      );
+      outTensorElem = 1;
+   } else { // n == 3
+      scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
+            [ n ]( auto const& pin, auto const& pout ) {
+               dfloat norm = Norm( 3, pin );
+               pout[ 0 ] = pin[ 0 ] == 0 ? 0 : std::atan( pin[ 1 ] / pin[ 0 ] );
+               pout[ 1 ] = norm == 0.0 ? pi / 2.0 : std::acos( pin[ 2 ] / norm );
+            }
+      );
+      outTensorElem = 2;
+   }
+   ImageRefArray outar{ out };
+   Framework::Scan( { in }, outar, { DT_DFLOAT }, { DT_DFLOAT }, { outtype }, { outTensorElem }, *scanLineFilter );
+}
+
 void CartesianToPolar( Image const& in, Image& out ) {
    dip::uint n = in.TensorElements();
    DIP_THROW_IF( !in.IsVector() || ( n < 2 ) || ( n > 3 ), E::TENSOR_NOT_2_OR_3 );

@@ -83,6 +83,7 @@ void init_math( py::module& m ) {
    m.def( "Norm", //py::overload_cast< dip::Image const& >( &dip::Norm ), // Fails to resolve!
           static_cast< dip::Image ( * )( dip::Image const& ) >( &dip::Norm ), "in"_a );
    m.def( "Angle", py::overload_cast< dip::Image const& >( &dip::Angle ), "in"_a );
+   m.def( "Orientation", py::overload_cast< dip::Image const& >( &dip::Orientation ), "in"_a );
    m.def( "CartesianToPolar", py::overload_cast< dip::Image const& >( &dip::CartesianToPolar ), "in"_a );
    m.def( "PolarToCartesian", py::overload_cast< dip::Image const& >( &dip::PolarToCartesian ), "in"_a );
    m.def( "Determinant", py::overload_cast< dip::Image const& >( &dip::Determinant ), "in"_a );

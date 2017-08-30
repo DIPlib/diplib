@@ -303,11 +303,25 @@ inline Image Norm( Image const& in ) {
 /// more details. This function yields the same output as `dip::CartesianToPolar`, but without
 /// the first tensor component.
 ///
-/// \see dip::Norm, dip::PolarToCartesian, dip::CartesianToPolar
+/// \see dip::Norm, dip::Orientation, dip::PolarToCartesian, dip::CartesianToPolar
 DIP_EXPORT void Angle( Image const& in, Image& out );
 inline Image Angle( Image const& in ) {
    Image out;
    Angle( in, out );
+   return out;
+}
+
+/// \brief Computes the orientation of the vector at each pixel in image `in`.
+///
+/// Orientation is defined as the angle mapped to the half-circle or half-sphere with positive x-coordinate.
+/// That is, in 2D it is an angle in the range (-pi/2, pi/2), and in 3D the *phi* component is mapped to
+/// that same range. See `dip::Angle` for more information.
+///
+/// \see dip::Norm, dip::Angle
+DIP_EXPORT void Orientation( Image const& in, Image& out );
+inline Image Orientation( Image const& in ) {
+   Image out;
+   Orientation( in, out );
    return out;
 }
 
