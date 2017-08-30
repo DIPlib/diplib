@@ -818,7 +818,7 @@ struct DIP_NO_EXPORT FullLineFilterParameters {
    FullBuffer& outBuffer;                 ///< Output buffer (1D)
    dip::uint bufferLength;                ///< Number of pixels in each buffer
    dip::uint dimension;                   ///< Dimension along which the line filter is applied
-   UnsignedArray const& position;         ///< Coordinates of first pixel in line
+   UnsignedArray position;                ///< Coordinates of first pixel in line
    PixelTableOffsets const& pixelTable;   ///< The pixel table object describing the neighborhood
    dip::uint thread;                      ///< Thread number
 };
