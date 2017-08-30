@@ -28,6 +28,8 @@ namespace dip {
 
 namespace {
 
+// TODO: eliminate false sharing throughout this file, and also error.cpp, variancefilter.cpp, and maybe noise.cpp? How about Histogram?
+
 class dip__Count : public Framework::ScanLineFilter {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {

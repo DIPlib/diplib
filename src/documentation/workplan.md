@@ -167,10 +167,6 @@ it should not be ported (or already is ported).
 
 Some of the following functions already have their prototype written in the new library.
 
-- diplib.h (or in diplib/framework.h?)
-    - dip_GlobalNumberOfThreadsGet (dip_globals.h) (we don't do globals in DIPlib 3.0, but this could be an exception)
-    - dip_GlobalNumberOfThreadsSet (dip_globals.h)
-
 - diplib/analysis.h
     - dip_PairCorrelation (dip_analysis.h)
     - dip_ProbabilisticPairCorrelation (dip_analysis.h)

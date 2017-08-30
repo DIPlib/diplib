@@ -25,6 +25,7 @@ include/diplib/library/dimension_array.h
 include/diplib/library/error.h
 include/diplib/library/image.h
 include/diplib/library/image_views.h
+include/diplib/library/multithreading.h
 include/diplib/library/numeric.h
 include/diplib/library/operators.h
 include/diplib/library/physical_dimensions.h
@@ -92,6 +93,7 @@ src/library/image_data.cpp
 src/library/image_indexing.cpp
 src/library/image_manip.cpp
 src/library/image_views.cpp
+src/library/multithreading.cpp
 src/library/neighborhood.cpp
 src/library/physical_dimensions.cpp
 src/library/pixel_table.cpp

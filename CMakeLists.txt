@@ -63,6 +63,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR 1)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH 1) # Prevent relinking when installing
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH 1)
 
+# OpenMP
+find_package(OpenMP)
+if (OpenMP_CXX_FOUND)
+   set(DIP_ENABLE_MULTITHREADING ON CACHE BOOL "Enable multithreading support")
+endif()
+
 # Do we have __PRETTY_FUNCTION__ ?
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles("int main() { char const* name = __PRETTY_FUNCTION__; return 0; }" HAS_PRETTY_FUNCTION)
@@ -136,6 +142,10 @@ target_include_directories(DIP PUBLIC include)
 include(GenerateExportHeader)
 generate_export_header(DIP BASE_NAME dip)
 # configuration
+if(DIP_ENABLE_MULTITHREADING)
+   target_compile_options(DIP PRIVATE ${OpenMP_CXX_FLAGS})
+   target_link_libraries(DIP ${OpenMP_CXX_LIB_NAMES}) # OpenMP_CXX_LIBRARIES is empty?!
+endif()
 if(HAS_PRETTY_FUNCTION)
    target_compile_definitions(DIP PUBLIC DIP__HAS_PRETTY_FUNCTION)
 endif()
@@ -404,11 +414,10 @@ if (DOXYGEN_FOUND)
    add_custom_target(
          apidoc
          COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
-         COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+         COMMAND Doxygen::doxygen Doxyfile
          COMMAND ${CMAKE_COMMAND} -E echo "Fixing header names and other things..."
          COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/fix_doc_includes.sh ${DOCUMENTATION_OUTPUT}/html
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-         DEPENDS ${DOXYGEN_INPUT}
    )
 endif (DOXYGEN_FOUND)
 
@@ -448,6 +457,12 @@ else()
 endif()
 message(" * Library installed to: ${CMAKE_INSTALL_PREFIX}/lib")
 message(" * Header files installed to: ${CMAKE_INSTALL_PREFIX}/include")
+
+if(DIP_ENABLE_MULTITHREADING)
+   message(" * Using OpenMP for multithreading")
+else()
+   message(" * Multithreading disabled")
+endif()
 
 if(DIP_EXCEPTIONS_RECORD_STACK_TRACE)
    message(" * Stack trace recording enabled")
@@ -504,7 +519,7 @@ if(DIP_BUILD_DIPIMAGE)
    message(" * DIPimage toolbox added to 'all' target")
    message(" * DIPimage toolbox installed to: ${DIPIMAGE_INSTALL_PATH}")
 else()
-   message(" * DIPimage toolbox cannot be compiled")
+   message(" * DIPimage toolbox not configured")
 endif()
 
 if (DOXYGEN_FOUND)
