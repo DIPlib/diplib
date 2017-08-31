@@ -98,6 +98,9 @@ class DIP_NO_EXPORT Kernel {
       Kernel( String const& shape ) : params_( { 7 } ) {
          SetShape( shape );
       }
+      Kernel( char const* shape ) : params_( { 7 } ) {
+         SetShape( shape );
+      }
 
       /// \brief A `dip::FloatArray` implicitly converts to a kernel, it is interpreted as the
       /// parameter for each dimension. A second argument specifies the shape.

@@ -180,6 +180,9 @@ class DIP_NO_EXPORT StructuringElement {
       StructuringElement( String const& shape ) : params_( { 7 } ) {
          SetShape( shape );
       }
+      StructuringElement( char const* shape ) : params_( { 7 } ) {
+         SetShape( shape );
+      }
 
       /// \brief A `dip::FloatArray` implicitly converts to a structuring element, it is interpreted as the
       /// parameter of the SE for all dimensions. A second argument specifies the shape.
