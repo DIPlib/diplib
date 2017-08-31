@@ -276,7 +276,7 @@ class dip__Radius : public Framework::ScanLineFilter {
             out += stride;
          }
       }
-      dip__Radius( TransformationArray transformation ) : transformation_( transformation ) {}
+      dip__Radius( TransformationArray const& transformation ) : transformation_( transformation ) {}
    private:
       TransformationArray transformation_;
 };
@@ -322,7 +322,7 @@ class dip__RadiusSquare : public Framework::ScanLineFilter {
             out += stride;
          }
       }
-      dip__RadiusSquare( TransformationArray transformation ) : transformation_( transformation ) {}
+      dip__RadiusSquare( TransformationArray const& transformation ) : transformation_( transformation ) {}
    private:
       TransformationArray transformation_;
 };
@@ -376,7 +376,7 @@ class dip__Phi : public Framework::ScanLineFilter {
             }
          }
       }
-      dip__Phi( TransformationArray transformation ) : transformation_( transformation ) {}
+      dip__Phi( TransformationArray const& transformation ) : transformation_( transformation ) {}
    private:
       TransformationArray transformation_;
 };
@@ -439,7 +439,7 @@ class dip__Theta : public Framework::ScanLineFilter {
             }
          }
       }
-      dip__Theta( TransformationArray transformation ) : transformation_( transformation ) {}
+      dip__Theta( TransformationArray const& transformation ) : transformation_( transformation ) {}
    private:
       TransformationArray transformation_;
 };
@@ -552,7 +552,7 @@ class dip__Coordinates : public Framework::ScanLineFilter {
             }
          }
       }
-      dip__Coordinates( bool spherical, TransformationArray transformation ) : transformation_( transformation ), spherical_( spherical ) {}
+      dip__Coordinates( bool spherical, TransformationArray const& transformation ) : transformation_( transformation ), spherical_( spherical ) {}
    private:
       TransformationArray transformation_;
       bool spherical_; // true for polar/spherical coordinates, false for cartesian coordinates
