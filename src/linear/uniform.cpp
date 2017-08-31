@@ -34,6 +34,9 @@ class RectangularUniformLineFilter : public Framework::SeparableLineFilter {
    public:
       RectangularUniformLineFilter( UnsignedArray const& sizes ) :
             sizes_( sizes ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
+         return sizes_[ procDim ] + lineLength * 4;
+      }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;

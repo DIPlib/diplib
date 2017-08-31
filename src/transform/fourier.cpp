@@ -56,6 +56,9 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+         return 10 * lineLength * static_cast< dip::uint >( std::round( std::log( lineLength )));
+      }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          DFTOptions< FloatType< TPI >> const& opts = options_[ params.dimension ];
          if( buffers_[ params.thread ].size() != static_cast< dip::uint >( opts.bufferSize() )) {

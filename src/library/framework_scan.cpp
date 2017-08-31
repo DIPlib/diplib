@@ -18,12 +18,10 @@
  * limitations under the License.
  */
 
-#include <new>
-#include <iostream>
-
 #include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/library/copy_buffer.h"
+#include "diplib/multithreading.h"
 
 namespace dip {
 namespace Framework {

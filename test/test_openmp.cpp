@@ -1,9 +1,14 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <iostream>
 #include "diplib.h"
+#include "diplib/multithreading.h"
 #include "diplib/generation.h"
 //#include "diplib/linear.h"
-#include "diplib/nonlinear.h"
+//#include "diplib/nonlinear.h"
+//#include "diplib/morphology.h"
+//#include "diplib/transform.h"
+//#include "diplib/statistics.h"
+//#include "diplib/geometry.h"
 #include "diplib/testing.h"
 
 int main() {
@@ -13,8 +18,10 @@ int main() {
    filter.Fill( 50 );
    dip::GaussianNoise( filter, filter, random, 20.0 * 20.0 );
 
-   //dip::UnsignedArray sizes = { 20, 30, 35, 40, 45, 50, 55, 60, 65, 70 };
-   dip::UnsignedArray sizes = { 5, 7, 10, 13, 15, 20, 25 };
+   dip::UnsignedArray sizes =
+         { 20, 30, 35, 40, 45, 50, 55, 60, 65, 70 };
+         //{ 5, 7, 10, 13, 15, 20, 25 };
+         //{ 25, 50, 75, 100, 125, 150, 200, 300, 400 };
 
    //dip::SetNumberOfThreads( 1 ); // execute with `OMP_NUM_THREADS=1 ./test_openmp`
 
@@ -35,7 +42,14 @@ int main() {
             out.Strip();
             //dip::GeneralConvolution( img, filter, out );
             //dip::Uniform( img, out );
-            dip::MedianFilter( img, out );
+            //dip::MedianFilter( img, out );
+            //dip::Gauss( img, out, { 1.0, 0.0 } );
+            //dip::Gauss( img, out, { 5.0 }, { 0 }, "IIR" );
+            //dip::Uniform( img, out, "rectangular" );
+            //dip::Dilation( img, out, "parabolic" );
+            //dip::FourierTransform( img, out );
+            //dip::CumulativeSum( img, out );
+            dip::Resampling( img, out, { 1.1 }, { 0.3 }, "3-cubic" );
          }
          timer.Stop();
          time = std::min( time, timer.GetWall());

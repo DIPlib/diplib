@@ -95,6 +95,9 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+         return lineLength * 6; // 3 comparisons, 3 iterations
+      }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
@@ -433,6 +436,10 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+         // Actual cost depends on data!
+         return lineLength * 12;
+      }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
@@ -600,6 +607,9 @@ class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
             stepSize_( stepSize ), frameLength_( length ), dilation_( polarity == Polarity::DILATION ), mirror_( mirror == Mirror::YES ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
+      }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+         return lineLength * 6; // 3 comparisons, 3 iterations
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once

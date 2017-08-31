@@ -644,6 +644,11 @@ class DIP_EXPORT SeparableLineFilter {
       virtual void Filter( SeparableLineFilterParameters const& params ) = 0;
       /// \brief The derived class can define this function for setting up the processing.
       virtual void SetNumberOfThreads( dip::uint /*threads*/ ) {}
+      /// \brief The derived class can define this function for helping to determine whether to work multithreaded or not.
+      /// The default is valid for a convolution-like operation.
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint nTensorElements, dip::uint border, dip::uint /*procDim*/ ) {
+         return lineLength * nTensorElements * 4 * border; // 2*border is filter size, double that for the number of multiply-adds.
+      }
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~SeparableLineFilter() {}
 };

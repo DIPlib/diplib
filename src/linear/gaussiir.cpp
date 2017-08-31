@@ -450,6 +450,11 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint /*procDim*/ ) override {
+         // TODO: figure out how filter parameters affect amount of computation
+         //dip__GaussIIRParams const& fParams = filterParams_[ procDim ];
+         return lineLength * 40;
+      }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          dfloat* in = static_cast< dfloat* >( params.inBuffer.buffer );
          dfloat* out = static_cast< dfloat* >( params.outBuffer.buffer );

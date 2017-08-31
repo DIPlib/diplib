@@ -283,6 +283,9 @@ namespace {
 template< typename TPI >
 class CumSumFilter : public Framework::SeparableLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+         return lineLength;
+      }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;

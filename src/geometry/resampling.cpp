@@ -36,6 +36,9 @@ template< typename TPI >
 class WrapLineFilter : public Framework::SeparableLineFilter {
    public:
       WrapLineFilter( UnsignedArray const& wrap ) : wrap_( wrap ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+         return lineLength;
+      }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          SampleIterator< TPI > in{ static_cast< TPI* >( params.inBuffer.buffer ), params.inBuffer.stride };
          SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
@@ -92,6 +95,9 @@ class ResamplingLineFilter : public Framework::SeparableLineFilter {
             method_( method ), zoom_( zoom ), shift_( shift ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
+      }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
+         return interpolation::GetNumberOfOperations( method_, lineLength, zoom_[ procDim ] );
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
@@ -194,6 +200,9 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
             method_( method ), tanShear_( tanShear ), offset_( offset ), axis_( axis ), boundaryCondition_( boundaryCondition ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
+      }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+         return interpolation::GetNumberOfOperations( method_, lineLength, 1.0 );
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );

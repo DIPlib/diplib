@@ -37,7 +37,7 @@ class RankLineFilter : public Framework::FullLineFilter {
       void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) {
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
          return lineLength * (
                nKernelPixels // copying
                + 3 * nKernelPixels * static_cast< dip::uint >( std::round( std::log( nKernelPixels )))  // sorting

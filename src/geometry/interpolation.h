@@ -466,6 +466,65 @@ dip::uint GetBorderSize( Method method ) {
    return border;
 }
 
+dip::uint GetNumberOfOperations( Method method, dip::uint lineLength, dfloat zoom ) {
+   dip::uint outLength = static_cast< dip::uint >( std::ceil( static_cast< dfloat >( lineLength ) * zoom ));
+   switch( method ) {
+      case Method::BSPLINE:
+         return ( lineLength + 10 ) * 40 + outLength * 12;
+      case Method::CUBIC_ORDER_4:
+         if( zoom == 1.0 ) {
+            return 22 + 6 * lineLength;
+         } else {
+            return ( 22 + 6 ) * outLength;
+         }
+      case Method::CUBIC_ORDER_3:
+         if( zoom == 1.0 ) {
+            return 16 + 4 * lineLength;
+         } else {
+            return ( 16 + 4 ) * outLength;
+         }
+      case Method::LINEAR:
+         return 3 * outLength;
+      case Method::NEAREST_NEIGHBOR:
+      case Method::INVERSE_NEAREST_NEIGHBOR:
+         return outLength;
+      case Method::LANCZOS8:
+         if( zoom == 1.0 ) {
+            return 16 * 50 + 17 * lineLength; // assuming sin = 20 cycles
+         } else {
+            return 17 * 50 * outLength;
+         }
+      case Method::LANCZOS6:
+         if( zoom == 1.0 ) {
+            return 12 * 50 + 13 * lineLength; // assuming sin = 20 cycles
+         } else {
+            return 13 * 50 * outLength;
+         }
+      case Method::LANCZOS4:
+         if( zoom == 1.0 ) {
+            return 8 * 50 + 9 * lineLength; // assuming sin = 20 cycles
+         } else {
+            return 9 * 50 * outLength;
+         }
+      case Method::LANCZOS3:
+         if( zoom == 1.0 ) {
+            return 6 * 50 + 7 * lineLength; // assuming sin = 20 cycles
+         } else {
+            return 7 * 50 * outLength;
+         }
+      case Method::LANCZOS2:
+         if( zoom == 1.0 ) {
+            return 4 * 50 + 5 * lineLength; // assuming sin = 20 cycles
+         } else {
+            return 5 * 50 * outLength;
+         }
+      //case Method::FT:
+         //TODO: Implement FT interpolation method
+      default:
+         DIP_THROW( E::NOT_IMPLEMENTED );
+   }
+}
+
 template< typename TPI >
 void Dispatch(
       Method method,

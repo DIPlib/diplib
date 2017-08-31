@@ -156,8 +156,10 @@ void DotProduct( Image const& lhs, Image const& rhs, Image& out ) {
    DIP_THROW_IF( !lhs.IsVector() || !rhs.IsVector(), E::IMAGE_NOT_VECTOR );
    DIP_THROW_IF( lhs.TensorElements() != rhs.TensorElements(), E::NTENSORELEM_DONT_MATCH );
    Image a = lhs.QuickCopy();
+   a.SetPixelSize( lhs.PixelSize() ); // Copy pixel size so `Multiply` below can properly set the output pixel size.
    a.ReshapeTensor( 1, a.TensorElements() );
    Image b = rhs.QuickCopy();
+   b.SetPixelSize( rhs.PixelSize() ); // Copy pixel size so `Multiply` below can properly set the output pixel size.
    b.ReshapeTensor( b.TensorElements(), 1 );
    // TODO: should use MultiplyConjugate, except that one does sample-wise multiplication at the moment
    if( b.DataType().IsComplex() ) {
