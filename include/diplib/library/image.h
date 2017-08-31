@@ -1756,6 +1756,7 @@ class DIP_NO_EXPORT Image {
       /// and has mostly the same properties.
       ///
       /// The color space and pixel size information are not copied, and the protect flag is reset.
+      /// The external interface is not taken over either.
       /// This function is mostly meant for use in functions that need to modify some properties of
       /// the input images, without actually modifying the input images.
       Image QuickCopy() const {
@@ -1768,7 +1769,6 @@ class DIP_NO_EXPORT Image {
          out.dataBlock_ = dataBlock_;
          out.origin_ = origin_;
          out.externalData_ = externalData_;
-         out.externalInterface_ = externalInterface_;
          return out;
       }
 
