@@ -140,19 +140,21 @@ void Separable(
    //
    // Step 1: create a list of dimension numbers that we'll process.
    UnsignedArray order( nDims );
-   dip::uint jj = 0;
-   for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      if( process[ ii ] ) {
-         order[ jj ] = ii;
-         ++jj;
+   { // braces around this code to limit the lifetime of `jj`
+      dip::uint jj = 0;
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         if( process[ ii ] ) {
+            order[ jj ] = ii;
+            ++jj;
+         }
       }
+      if( jj == 0 ) {
+         // No dimensions to process.
+         output.Copy( input ); // This should always work, as dimensions where the sizes don't match will be processed.
+         return;
+      }
+      order.resize( jj );
    }
-   if( jj == 0 ) {
-      // No dimensions to process.
-      output.Copy( input ); // This should always work, as dimensions where the sizes don't match will be processed.
-      return;
-   }
-   order.resize( jj );
    // Step 2: sort the list of dimensions so that the smallest stride comes first
    sortIndices( order, input.Strides() );
    // Step 3: sort the list of dimensions again, so that the dimension that reduces the size of the image
@@ -183,16 +185,16 @@ void Separable(
 
    // The intermediate image, if needed, stored here
    Image intermediate;
+   bool useIntermediate = output.DataType() != bufferType;
    UnsignedArray intermSizes = outSizes;
    for( dip::uint ii = 1; ii < order.size(); ++ii ) { // not using the 1st dimension to be processed
       dip::uint kk = order[ ii ];
       if( inSizes[ kk ] > outSizes[ kk ] ) {
          intermSizes[ kk ] = inSizes[ kk ];
+         useIntermediate = true;
       }
    }
-   bool useIntermediate = false;
-   if( output.DataType() != bufferType ) {
-      useIntermediate = true;
+   if( useIntermediate ) {
       intermediate.CopyProperties( output );
       intermediate.SetDataType( bufferType );
       intermediate.SetSizes( intermSizes );
