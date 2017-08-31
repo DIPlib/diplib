@@ -66,8 +66,11 @@ DIP_EXPORT void SetNumberOfThreads( dip::uint nThreads );
 DIP_EXPORT dip::uint GetNumberOfThreads();
 
 
-// Undocumented constant: how many clock cycles a thread must use to make it worth while to create it.
-constexpr dip::uint nClockCyclesPerThread = 10000;
+// Undocumented constant: how many operations (clock cycles) it takes to make it worth going into multiple threads.
+// (experimentally determined on Cris' computer, might be different elsewhere).
+// I also noticed that going to 2 threads or 4 threads does not make a huge difference in overhead, so this is a
+// threshold for single vs multithreaded computation, not a threshold per thread created.
+constexpr dip::uint threadingThreshold = 70000;
 
 /// \}
 

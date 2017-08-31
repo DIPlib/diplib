@@ -37,6 +37,12 @@ class RankLineFilter : public Framework::FullLineFilter {
       void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) {
+         return lineLength * (
+               nKernelPixels // copying
+               + 3 * nKernelPixels * static_cast< dip::uint >( std::round( std::log( nKernelPixels )))  // sorting
+               + 2 * nKernelPixels + nRuns );   // iterating over pixel table
+      }
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;

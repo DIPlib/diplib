@@ -818,7 +818,7 @@ struct DIP_NO_EXPORT FullLineFilterParameters {
    FullBuffer& outBuffer;                 ///< Output buffer (1D)
    dip::uint bufferLength;                ///< Number of pixels in each buffer
    dip::uint dimension;                   ///< Dimension along which the line filter is applied
-   UnsignedArray position;                ///< Coordinates of first pixel in line
+   UnsignedArray const& position;         ///< Coordinates of first pixel in line
    PixelTableOffsets const& pixelTable;   ///< The pixel table object describing the neighborhood
    dip::uint thread;                      ///< Thread number
 };
@@ -839,6 +839,13 @@ class DIP_EXPORT FullLineFilter {
       virtual void Filter( FullLineFilterParameters const& params ) = 0;
       /// \brief The derived class can define this function for setting up the processing.
       virtual void SetNumberOfThreads( dip::uint /*threads*/ ) {}
+      /// \brief The derived class can define this function for helping to determine whether to work multithreaded or not.
+      /// The default is valid for a convolution-like operation.
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint nTensorElements, dip::uint nKernelPixels, dip::uint nRuns ) {
+         return lineLength * nTensorElements * nKernelPixels   // number of multiply-adds
+              + lineLength * ( 2 * nKernelPixels + nRuns )     // iterating over pixel table
+              + lineLength * nKernelPixels;                    // iterating over pixel table weights
+      }
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~FullLineFilter() {}
 };

@@ -39,7 +39,7 @@ namespace Framework {
 
 void Full(
       Image const& c_in,
-      Image& output,
+      Image& c_out,
       DataType inBufferType,
       DataType outBufferType,
       DataType outImageType,
@@ -56,7 +56,7 @@ void Full(
    UnsignedArray kernelSizes;
    DIP_STACK_TRACE_THIS( kernelSizes = kernel.Sizes( sizes ));
 
-   // Store these because they can get lost when ReForging `output` (it could be the same image as `c_in`)
+   // Store these because they can get lost when ReForging `c_out` (it could be the same image as `c_in`)
    PixelSize pixelSize = c_in.PixelSize();
    String colorSpace = c_in.ColorSpace();
 
@@ -106,19 +106,20 @@ void Full(
       input = c_in.QuickCopy();
    }
 
-   // Adjust output if necessary (and possible)
+   // Adjust c_out if necessary (and possible)
    // NOTE: Don't use c_in any more from here on. It has possibly been reforged!
    DIP_START_STACK_TRACE
-      if( output.IsOverlappingView( input ) ) {
-         output.Strip();
+      if( c_out.IsOverlappingView( input ) ) {
+         c_out.Strip();
       }
-      output.ReForge( sizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
-      output.ReshapeTensor( outTensor );
-      output.SetPixelSize( pixelSize );
+      c_out.ReForge( sizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
+      c_out.ReshapeTensor( outTensor );
+      c_out.SetPixelSize( pixelSize );
       if( !colorSpace.empty() ) {
-         output.SetColorSpace( colorSpace );
+         c_out.SetColorSpace( colorSpace );
       }
    DIP_END_STACK_TRACE
+   Image output = c_out.QuickCopy();
 
    // Create a pixel table suitable to be applied to `input`
    dip::uint processingDim = OptimalProcessingDim( input, kernelSizes );
@@ -126,36 +127,70 @@ void Full(
    DIP_STACK_TRACE_THIS( pixelTable = kernel.PixelTable( sizes.size(), processingDim ));
    PixelTableOffsets pixelTableOffsets = pixelTable.Prepare( input );
 
-   // Determine how many tensor elements to loop over: If the lineFilter wants to get the whole
-   // tensor, we loop over only one tensor element. Otherwise we loop over each of the input
-   // tensor elements (which will be the same number as output tensor elements).
-   dip::uint nTElems = !asScalarImage ? 1 : input.TensorElements();
+   // Convert input and output to scalar images if needed -- add tensor dimension at end so `processingDim` is not affected.
+   if( asScalarImage ) {
+      input.TensorToSpatial();
+      output.TensorToSpatial();
+   }
 
    // Do we need an output buffer?
    bool useOutBuffer = output.DataType() != outBufferType;
 
-   // How many pixels in a line?
+   // How many pixels in a line? How many lines?
    dip::uint lineLength = input.Size( processingDim );
+   dip::uint nLines = input.NumberOfPixels() / lineLength; // this must be a round division
 
    // Determine the number of threads we'll be using
    dip::uint nThreads = 1;
    if( opts != Full_NoMultiThreading ) {
       // This is an estimate for the number of clock cycles we'll use
-      // TODO: Query `lineFilter` for how much work it'll do
-      dip::uint operations = input.NumberOfSamples() * pixelTable.NumberOfPixels();
-      // Starting a new thread is only worth while if it'll use 10,000 clock cycles
-      nThreads = clamp( operations / nClockCyclesPerThread, dip::uint( 1 ), GetNumberOfThreads() );
+      dip::uint operations;
+      DIP_STACK_TRACE_THIS( operations = nLines *
+            lineFilter.GetNumberOfOperations( lineLength, input.TensorElements(), pixelTable.NumberOfPixels(), pixelTable.Runs().size() ));
+      // Starting threads is only worth while if we'll do at least `threadingThreshold` operations
+      if( operations > threadingThreshold ) {
+         // We can't do more threads than the max, and we can't do more threads than lines we have to process
+         nThreads = std::min( nLines, GetNumberOfThreads() );
+      }
    }
-   std::cout << "Starting " << nThreads << " threads\n";
+   //std::cout << "Starting " << nThreads << " threads\n";
 
    DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads ));
+
+   // Divide the image domain into nThreads chunks for split processing. The last chunk will have same or fewer
+   // image lines to process.
+   dip::uint nLinesPerThread = div_ceil( nLines, nThreads );
+   std::vector< UnsignedArray > startCoords( nThreads );
+   dip::uint nDims = input.Dimensionality();
+   startCoords[ 0 ] = UnsignedArray( nDims, 0 );
+   for( dip::uint ii = 1; ii < nThreads; ++ii ) {
+      startCoords[ ii ] = startCoords[ ii - 1 ];
+      // TODO: this can be more efficient, but it's nice and easy this way.
+      // We simply increment the coordinates nLinesPerThread times, that leads to the next start coordinates.
+      for( dip::uint jj = 0; jj < nLinesPerThread; ++jj ) {
+         for( dip::uint  dd = 0; dd < nDims; ++dd ) {
+            if( dd != processingDim ) {
+               // Increment coordinate and adjust pointer
+               ++startCoords[ ii ][ dd ];
+               // Check whether we reached the last pixel of the line
+               if( startCoords[ ii ][ dd ] < input.Size( dd )) {
+                  break;
+               }
+               // Rewind, the next loop iteration will increment the next coordinate
+               startCoords[ ii ][ dd ] = 0;
+            }
+         }
+      }
+   }
 
    // Start threads, each thread makes its own buffers
    #pragma omp parallel num_threads( nThreads )
    {
+      dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
+
       // Create input buffer data struct
       FullBuffer inBuffer;
-      inBuffer.tensorLength = asScalarImage ? 1 : input.TensorElements();
+      inBuffer.tensorLength = input.TensorElements();
       inBuffer.tensorStride = input.TensorStride();
       inBuffer.stride = input.Stride( processingDim );
       inBuffer.buffer = nullptr;
@@ -163,7 +198,7 @@ void Full(
       // Create output buffer data struct and allocate buffer if necessary
       std::vector< uint8 > outputBuffer;
       FullBuffer outBuffer;
-      outBuffer.tensorLength = asScalarImage ? 1 : output.TensorElements();
+      outBuffer.tensorLength = output.TensorElements();
       if( useOutBuffer ) {
          outBuffer.tensorStride = 1;
          outBuffer.stride = static_cast< dip::sint >( outBuffer.tensorLength );
@@ -175,76 +210,35 @@ void Full(
          outBuffer.buffer = nullptr;
       }
 
-      // Create data structure that works as input argument to the lineFilter
+      // Loop over nLinesPerThread image lines
+      GenericJointImageIterator< 2 > it( { input, output }, processingDim );
+      it.SetCoordinates( startCoords[ thread ] );
       FullLineFilterParameters fullLineFilterParameters{
-            inBuffer, outBuffer, lineLength, processingDim, {}, pixelTableOffsets, static_cast< dip::uint >( omp_get_thread_num() )
-      }; // Takes inBuffer, outBuffer, and pixelTableOffsets as references
-
-      #pragma omp critical
-      {
-         std::cout << "Initiation, thread # " << fullLineFilterParameters.thread << std::endl;
-         std::cout << "   bufferLength = " << fullLineFilterParameters.bufferLength << std::endl;
-         std::cout << "   dimension = " << fullLineFilterParameters.dimension << std::endl;
-         std::cout << "   inBuffer.buffer = " << fullLineFilterParameters.inBuffer.buffer << std::endl;
-         std::cout << "   outBuffer.buffer = " << fullLineFilterParameters.outBuffer.buffer << std::endl;
-         std::cout << "   &inBuffer = " << &(inBuffer) << std::endl;
-         std::cout << "   &params.inBuffer = " << &(fullLineFilterParameters.inBuffer) << std::endl;
-         std::cout << "   &outBuffer = " << &(outBuffer) << std::endl;
-         std::cout << "   &params.outBuffer = " << &(fullLineFilterParameters.outBuffer) << std::endl;
+            inBuffer, outBuffer, lineLength, processingDim, it.Coordinates(), pixelTableOffsets, thread
+      }; // Takes inBuffer, outBuffer, it.Coordinates(), pixelTableOffsets as references
+      for( dip::uint jj = 0; ( jj < nLinesPerThread ) && it; ++jj, ++it ) {
+         inBuffer.buffer = it.InPointer();
+         if( !useOutBuffer ) {
+            // Point output buffer to right line in output image
+            outBuffer.buffer = it.OutPointer();
+         }
+         // Filter the line
+         DIP_STACK_TRACE_THIS( lineFilter.Filter( fullLineFilterParameters ));
+         if( useOutBuffer ) {
+            // Copy output buffer to output image
+            detail::CopyBuffer(
+                  outBuffer.buffer,
+                  outBufferType,
+                  outBuffer.stride,
+                  outBuffer.tensorStride,
+                  it.OutPointer(),
+                  output.DataType(),
+                  output.Stride( processingDim ),
+                  output.TensorStride(),
+                  lineLength,
+                  outBuffer.tensorLength );
+         }
       }
-
-      // Loop over all image lines
-      #pragma omp master
-      {
-         GenericJointImageIterator< 2 > it( { input, output }, processingDim );
-         do {
-            // Loop over all tensor components
-            for( dip::uint ii = 0; ii < nTElems; ++ii ) {
-               dip::sint inOffset = it.InOffset();
-               dip::sint outOffset = it.OutOffset();
-               UnsignedArray coords = it.Coordinates();
-               #pragma omp task firstprivate( inOffset, outOffset, coords )
-               {
-                  fullLineFilterParameters.position = coords; // the coordinate array is copied twice, but this is better than copying the whole `it` object.
-                  inBuffer.buffer = input.Pointer( inOffset + static_cast< dip::sint >( ii ) * inBuffer.tensorStride );
-                  if( !useOutBuffer ) {
-                     // Point output buffer to right line in output image
-                     outBuffer.buffer = output.Pointer( outOffset + static_cast< dip::sint >( ii ) * outBuffer.tensorStride );
-                  }
-                  #pragma omp critical
-                  {
-                     std::cout << "Processing line, thread # " << fullLineFilterParameters.thread << std::endl;
-                     std::cout << "   bufferLength = " << fullLineFilterParameters.bufferLength << std::endl;
-                     std::cout << "   dimension = " << fullLineFilterParameters.dimension << std::endl;
-                     std::cout << "   position = " << fullLineFilterParameters.position << std::endl;
-                     std::cout << "   inBuffer.buffer = " << fullLineFilterParameters.inBuffer.buffer << std::endl;
-                     std::cout << "   outBuffer.buffer = " << fullLineFilterParameters.outBuffer.buffer << std::endl;
-                     std::cout << "   &inBuffer = " << &(inBuffer) << std::endl;
-                     std::cout << "   &params.inBuffer = " << &(fullLineFilterParameters.inBuffer) << std::endl;
-                     std::cout << "   &outBuffer = " << &(outBuffer) << std::endl;
-                     std::cout << "   &params.outBuffer = " << &(fullLineFilterParameters.outBuffer) << std::endl;
-                  }
-                  // Filter the line
-                  DIP_STACK_TRACE_THIS( lineFilter.Filter( fullLineFilterParameters ));
-                  if( useOutBuffer ) {
-                     // Copy output buffer to output image
-                     detail::CopyBuffer(
-                           outBuffer.buffer,
-                           outBufferType,
-                           outBuffer.stride,
-                           outBuffer.tensorStride,
-                           output.Pointer( outOffset + static_cast< dip::sint >( ii ) * output.TensorStride()),
-                           output.DataType(),
-                           output.Stride( processingDim ),
-                           output.TensorStride(),
-                           lineLength,
-                           outBuffer.tensorLength );
-                  }
-               }
-            }
-         } while( ++it );
-      }
-      #pragma omp taskwait
    }
 }
 

@@ -116,6 +116,10 @@ class PixelTableUniformLineFilter : public Framework::FullLineFilter {
             *out = sum * norm;
          }
       }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint nRuns ) override {
+         return lineLength * nRuns * 4    // number of adds
+                + lineLength * nRuns;     // iterating over pixel table runs
+      }
 };
 
 void PixelTableUniform(

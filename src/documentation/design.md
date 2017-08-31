@@ -162,7 +162,7 @@ work on complex values?). Instead, we simply convert the input array to a
 function itself takes care of everything.
 
 *DIPlib* does expose a few templated functions to the user. However, these
-templates typicaly abstract the type of a constant (see, for example, the
+templates typically abstract the type of a constant (see, for example, the
 function `dip::Add` with a templated `rhs` argument), and never that of an image.
 Such a template is always a trivial function that simplifies the library user's
 code.
@@ -292,3 +292,40 @@ function, and would have allowed to write simple line functions inline, using a
 lambda. However, the syntax using a derived class with a virtual function is somewhat
 simpler and more straight-forward, and thus more accessible. This was the main reason
 for us to choose the approach we chose.
+
+
+[//]: # (--------------------------------------------------------------)
+
+\section design_multithreading Multithreading
+
+We use *OpenMP* for multithreading, mostly because it seems (to me) easier to use
+than Intel's *Threading Building Blocks* (*TBB*). *TBB* does not require special
+compiler support, but all modern compilers support *OpenMP* (except for MacOS
+XCode CLang, even though it's possible to get a version of CLang that does). The
+GNU Compiler Collection has very good support for *OpenMP*, and is available on
+all platforms. *TBB* probably also plays better with C++ code than *OpenMP*, which
+does not allow exceptions to be thrown across parallel construct boundaries. But
+we're dealing only (so far) with trivially parallelizable code, so this is not
+a major issue.
+
+The framework functions determine, based on the number of operations to perform,
+whether it is worthwhile to create threads for a particular computation. To do so,
+they call a `GetNumberOfOperations` method of the line filter object. Each filter
+thus needs to have such a method that determines how much work it will be to process
+one image line. If the number of operations (clock cycles) is larger than a threshold,
+multiple threads are started to process the image. I noticed that there is not a large
+difference in overhead between starting one additional thread or starting three, so
+it was not worth while to fine-tune the number of threads based on the number of
+operations to perform.
+
+The threshold was determined empirically on one single computer, and the way that
+the number of operations per line is computed is also a little empirical.
+It is more than likely that the threshold will not be optimal on a different machine.
+Furthermore, for some filters it is not possible to determine the number of operations
+because it depends on the data (e.g. see the pixel table morphology line filter).
+
+Thus, the point at which multiple threads are launched is imprecise at best.
+However, what matters here is that, for very small images, we do not start threads
+and double or worse the time spent on the filtering. The old *DIPlib* did not have
+any such logic, always started threads within the frameworks, and consequently
+behaved poorly with very small images.

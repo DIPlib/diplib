@@ -92,7 +92,8 @@ document's source</a> for the most up-to-date version.
 
 -   Measurement I/O. Write as CSV is the most important feature here.
 
--   Parallelization of frameworks. Decision: *OpenMP* or *Intel TBB*?
+-   Parallelization of frameworks. Using *OpenMP*, `dip::Framework::Full` is parallelized.
+    The other two frameworks, the projection function, and `dip::SelectionFilter` still to do.
 
 -   Porting filters, analysis routines, etc. See the list at the bottom of this page.
 

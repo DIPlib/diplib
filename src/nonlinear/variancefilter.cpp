@@ -34,6 +34,11 @@ class VarianceLineFilter : public Framework::FullLineFilter {
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          accumulators_.resize( threads );
       }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) {
+         return 5 * nKernelPixels + lineLength * (
+               nRuns * 10     // number of multiply-adds
+               + nRuns );     // iterating over pixel table runs
+      }
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;

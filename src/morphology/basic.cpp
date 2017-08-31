@@ -236,6 +236,18 @@ template< typename TPI >
 class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
    public:
       FlatSEMorphologyLineFilter( Polarity polarity ) : dilation_( polarity == Polarity::DILATION ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
+         // Number of operations depends on data, so we cannot guess as to how many we'll do. On average:
+         dip::uint averageRunLength = nKernelPixels / nRuns;
+         dip::uint timesNoMaxInFilter = lineLength / averageRunLength;
+         dip::uint timesMaxInFilter = lineLength - timesNoMaxInFilter;
+         return timesMaxInFilter * (
+                     nRuns * 4                        // number of multiply-adds and comparisons
+                     + nRuns )                        // iterating over pixel table runs
+                + timesNoMaxInFilter * (
+                     nKernelPixels * 2                // number of comparisons
+                     + 2 * nKernelPixels + nRuns );   // iterating over pixel table
+      }
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
