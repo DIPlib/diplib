@@ -331,6 +331,7 @@ static Ics_Error IcsReorderIds(char   *buf,
     for (i = 0; i < bytes; i++){
         different |= (srcByteOrder[i] != dstByteOrder[i]);
         empty |= !(srcByteOrder[i]);
+        imel[i] = 0; /* Initialize imel array to avoid GCC "may be used uninitialized" warning */
     }
     if (!different || empty) return IcsErr_Ok;
 
