@@ -101,7 +101,7 @@ class ResamplingLineFilter : public Framework::SeparableLineFilter {
          TPI* spline1 = nullptr;
          TPI* spline2 = nullptr;
          if( method_ == interpolation::Method::BSPLINE ) {
-            dip::uint size = params.inBuffer.length + params.inBuffer.border;
+            dip::uint size = params.inBuffer.length + 2 * params.inBuffer.border;
             std::vector< TPI >& buffer = buffer_[ params.thread ];
             buffer.resize( 2 * size ); // NOP if already that size
             spline1 = buffer.data();
