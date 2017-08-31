@@ -25,7 +25,6 @@ include/diplib/library/dimension_array.h
 include/diplib/library/error.h
 include/diplib/library/image.h
 include/diplib/library/image_views.h
-include/diplib/library/multithreading.h
 include/diplib/library/numeric.h
 include/diplib/library/operators.h
 include/diplib/library/physical_dimensions.h
@@ -39,6 +38,7 @@ include/diplib/math.h
 include/diplib/measurement.h
 include/diplib/microscopy.h
 include/diplib/morphology.h
+include/diplib/multithreading.h
 include/diplib/neighborlist.h
 include/diplib/nonlinear.h
 include/diplib/overload.h

@@ -30,9 +30,16 @@
 
 #include "diplib/library/types.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#else
+// We don't have OpenMP, this OpenMP function stub prevents conditional compilation within the `Full` function.
+inline int omp_get_thread_num() { return 0; }
+#endif
+
 
 /// \file
-/// \brief Declares functions to control multithreading within DIPlib. This file is always included through `diplib.h`.
+/// \brief Declares functions to control multithreading within DIPlib, and imports the OpenMP header.
 /// \see infrastructure
 
 

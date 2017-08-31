@@ -35,7 +35,6 @@
 #include "diplib/library/image.h"
 #include "diplib/library/image_views.h"
 #include "diplib/library/operators.h"
-#include "diplib/library/multithreading.h"
 
 
 /// \file

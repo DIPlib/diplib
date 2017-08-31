@@ -65,7 +65,7 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH 1) # Prevent relinking when installing
 
 # OpenMP
 find_package(OpenMP)
-if (OpenMP_CXX_FOUND)
+if (OpenMP_CXX_FOUND OR OPENMP_FOUND) # OPENMP_FOUND for CMake <= 3.8
    set(DIP_ENABLE_MULTITHREADING ON CACHE BOOL "Enable multithreading support")
 endif()
 
@@ -144,7 +144,11 @@ generate_export_header(DIP BASE_NAME dip)
 # configuration
 if(DIP_ENABLE_MULTITHREADING)
    target_compile_options(DIP PRIVATE ${OpenMP_CXX_FLAGS})
-   target_link_libraries(DIP ${OpenMP_CXX_LIB_NAMES}) # OpenMP_CXX_LIBRARIES is empty?!
+   if(OpenMP_CXX_LIB_NAMES)
+      target_link_libraries(DIP ${OpenMP_CXX_LIB_NAMES}) # OpenMP_CXX_LIBRARIES is empty?!
+   else()
+      target_link_libraries(DIP ${OpenMP_CXX_FLAGS}) # This is the case for CMake <= 3.8
+   endif()
 endif()
 if(HAS_PRETTY_FUNCTION)
    target_compile_definitions(DIP PUBLIC DIP__HAS_PRETTY_FUNCTION)

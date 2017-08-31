@@ -18,11 +18,9 @@
  * limitations under the License.
  */
 
-#include "diplib/library/multithreading.h"
+#include "diplib/multithreading.h"
 
 #ifdef _OPENMP
-
-#include <omp.h>
 
 namespace dip {
 

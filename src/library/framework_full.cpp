@@ -18,21 +18,12 @@
  * limitations under the License.
  */
 
-#include <new>
-#include <iostream>
-
 #include "diplib.h"
 #include "diplib/framework.h"
 #include "diplib/pixel_table.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/library/copy_buffer.h"
-
-#ifdef _OPENMP
-#include <omp.h>
-#else
-// We don't have OpenMP, this OpenMP function stub prevents conditional compilation within the `Full` function.
-inline int omp_get_thread_num() { return 0; }
-#endif
+#include "diplib/multithreading.h"
 
 namespace dip {
 namespace Framework {
@@ -150,7 +141,7 @@ void Full(
       // Starting threads is only worth while if we'll do at least `threadingThreshold` operations
       if( operations > threadingThreshold ) {
          // We can't do more threads than the max, and we can't do more threads than lines we have to process
-         nThreads = std::min( nLines, GetNumberOfThreads() );
+         nThreads = std::min( GetNumberOfThreads(), nLines );
       }
    }
    //std::cout << "Starting " << nThreads << " threads\n";
@@ -216,7 +207,7 @@ void Full(
       FullLineFilterParameters fullLineFilterParameters{
             inBuffer, outBuffer, lineLength, processingDim, it.Coordinates(), pixelTableOffsets, thread
       }; // Takes inBuffer, outBuffer, it.Coordinates(), pixelTableOffsets as references
-      for( dip::uint jj = 0; ( jj < nLinesPerThread ) && it; ++jj, ++it ) {
+      for( dip::uint ii = 0; ( ii < nLinesPerThread ) && it; ++ii, ++it ) {
          inBuffer.buffer = it.InPointer();
          if( !useOutBuffer ) {
             // Point output buffer to right line in output image
