@@ -466,7 +466,8 @@ class DIP_NO_EXPORT ImageIterator {
       /// Set the iterator to point at a different location in the image
       void SetCoordinates( UnsignedArray coords ) {
          DIP_ASSERT( image_ );
-         if( HasProcessingDimension() && ( coords.size() > procDim_ )) {
+         DIP_ASSERT( coords.size() == image_->Dimensionality() );
+         if( HasProcessingDimension() ) {
             coords[ procDim_ ] = 0;
          }
          ptr_ = image_->Pointer( coords ); // tests for coords to be correct
@@ -737,7 +738,8 @@ class DIP_NO_EXPORT JointImageIterator {
       /// Set the iterator to point at a different location in the image
       void SetCoordinates( UnsignedArray coords ) {
          DIP_ASSERT( images_[ 0 ] );
-         if( HasProcessingDimension() && ( coords.size() > procDim_ )) {
+         DIP_ASSERT( coords.size() == images_[ 0 ]->Dimensionality() );
+         if( HasProcessingDimension() ) {
             coords[ procDim_ ] = 0;
          }
          for( dip::uint ii = 0; ii < N; ++ii ) {
