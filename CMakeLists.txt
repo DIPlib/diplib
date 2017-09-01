@@ -412,13 +412,14 @@ add_custom_target(tests DEPENDS ${TESTS_TARGETS})
 
 ### DIPlib documentation
 
+set(DOXYGEN_SKIP_DOT On)
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
    configure_file(src/documentation/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
    add_custom_target(
          apidoc
          COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
-         COMMAND Doxygen::doxygen Doxyfile
+         COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
          COMMAND ${CMAKE_COMMAND} -E echo "Fixing header names and other things..."
          COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/fix_doc_includes.sh ${DOCUMENTATION_OUTPUT}/html
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
