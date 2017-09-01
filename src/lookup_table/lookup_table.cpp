@@ -59,6 +59,7 @@ template< typename TPI >
 class dip__DirectLUT_Integer : public Framework::ScanLineFilter {
       // Applies the LUT with data type TPI, and no index, to an input image of type uint32.
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          uint32 const* in = static_cast< uint32 const* >( params.inBuffer[ 0 ].buffer );
          auto bufferLength = params.bufferLength;
@@ -109,6 +110,9 @@ template< typename TPI >
 class dip__DirectLUT_Float : public Framework::ScanLineFilter {
       // Applies the LUT with data type TPI, and no index, to an input image of type dfloat.
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+         return interpolation_ == LookupTable::InterpolationMode::LINEAR ? 9 : 3;
+      }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          auto bufferLength = params.bufferLength;
@@ -188,6 +192,9 @@ template< typename TPI >
 class dip__IndexedLUT_Float : public Framework::ScanLineFilter {
       // Applies the LUT with data type TPI, and an index, to an input image of type dfloat.
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+         return interpolation_ == LookupTable::InterpolationMode::LINEAR ? 9 : 3;
+      }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          auto bufferLength = params.bufferLength;

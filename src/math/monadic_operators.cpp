@@ -83,32 +83,32 @@ inline std::unique_ptr< Framework::ScanLineFilter > NewBinScanLineFilter( F cons
 
 } // namespace dip
 
-#define DIP__MONADIC_OPERATOR_FLEX( functionName_, functionLambda_, inputDomain_ ) \
+#define DIP__MONADIC_OPERATOR_FLEX( functionName_, functionLambda_, inputDomain_, cost_ ) \
    void functionName_( Image const& in, Image& out ) { \
       DIP_THROW_IF( inputDomain_ != in.DataType(), E::DATA_TYPE_NOT_SUPPORTED ); \
       DataType dtype = DataType::SuggestFlex( in.DataType() ); \
       std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
-      DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_ ), dtype ); \
+      DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
       Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, \
                               Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
    }
 
-#define DIP__MONADIC_OPERATOR_FLOAT( functionName_, functionLambda_, inputDomain_ ) \
+#define DIP__MONADIC_OPERATOR_FLOAT( functionName_, functionLambda_, inputDomain_, cost_ ) \
    void functionName_( Image const& in, Image& out ) { \
       DIP_THROW_IF( inputDomain_ != in.DataType(), E::DATA_TYPE_NOT_SUPPORTED ); \
       DataType dtype = DataType::SuggestFloat( in.DataType() ); \
       std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
-      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_ ), dtype ); \
+      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
       Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, \
                               Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
    }
 
-#define DIP__MONADIC_OPERATOR_FLOAT_WITH_PARAM( functionName_, paramType_, paramName_, functionLambda_, inputDomain_ ) \
+#define DIP__MONADIC_OPERATOR_FLOAT_WITH_PARAM( functionName_, paramType_, paramName_, functionLambda_, inputDomain_, cost_ ) \
    void functionName_( Image const& in, Image& out, paramType_ paramName_ ) { \
       DIP_THROW_IF( inputDomain_ != in.DataType(), E::DATA_TYPE_NOT_SUPPORTED ); \
       DataType dtype = DataType::SuggestFloat( in.DataType() ); \
       std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
-      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_ ), dtype ); \
+      DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
       Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, \
                               Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
    }
@@ -195,6 +195,7 @@ namespace {
 template< typename TPI >
 class SignLineFilter : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;;
@@ -227,6 +228,7 @@ namespace {
 template< typename TPI >
 class NearestIntLineFilter : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 3; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;;

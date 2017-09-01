@@ -196,11 +196,11 @@ void Scan(
             }
          }
       }
-   }
-   if( scan1D && ( nIn > 0 ) && ( nOut > 0 )) {
-      // Input all have the same order, and output all are the same order. But are these the same?
-      if( !in[ 0 ].HasSameDimensionOrder( out[ 0 ] )) {
-         scan1D = false;
+      if( scan1D && ( nIn > 0 ) && ( nOut > 0 )) {
+         // Input all have the same order, and output all are the same order. But are these the same?
+         if( !in[ 0 ].HasSameDimensionOrder( out[ 0 ] )) {
+            scan1D = false;
+         }
       }
    }
 
@@ -260,123 +260,223 @@ void Scan(
       }
    }
 
-   // Determine the best processing dimension.
-   dip::uint processingDim = OptimalProcessingDim( nIn > 0 ? in[ 0 ] : out[ 0 ] );
+   dip::uint processingDim = 0;
+   dip::uint nLines = 1;
+   dip::uint lineLength = 0;
+   dip::uint bufferSize = 0;
+   dip::uint nThreads = 1;
+   if( scan1D ) {
 
-   // Determine the ideal buffer size
-   dip::uint bufferSize = sizes[ processingDim ];
-   if( needBuffers ) {
-      // Maybe the buffer size should be smaller
-      if( bufferSize > MAX_BUFFER_SIZE ) {
-         dip::uint n = div_ceil( bufferSize, MAX_BUFFER_SIZE );
-         bufferSize = div_ceil( bufferSize, n );
+      // One image line --- Iterate over sections of the image if we need large buffers or we want to use parallelism ---
+
+      // Note that this case likely comes from an image that was flattened to 1D for processing. If so, it
+      // potentially is much larger than you'd expect for an image line. If copying image lines to a buffer
+      // for processing, we could incur a large cost for such a large image line. So we divide the line up
+      // into chunks that are easier to copy into a buffer. Also, if we want to do parallel processing, we
+      // must divide the line up into a chunk for each thread.
+
+      lineLength = bufferSize = sizes[ processingDim ];
+
+      // Determine the number of threads we'll be using
+      if( opts != Scan_NoMultiThreading ) {
+         nThreads = GetNumberOfThreads();
+         if( nThreads > 1 ) {
+            dip::uint operations;
+            DIP_STACK_TRACE_THIS( operations = lineLength * lineFilter.GetNumberOfOperations( nIn, nOut, ( nIn > 0 ? in[ 0 ] : out[ 0 ] ).TensorElements() ));
+            // Starting threads is only worth while if we'll do at least `threadingThreshold` operations
+            if( operations < threadingThreshold ) {
+               nThreads = 1;
+            }
+         }
+      }
+
+      // Chunk size if we use threads
+      if( nThreads > 1 ) {
+         lineLength = bufferSize = div_ceil( lineLength, nThreads );
+      }
+      // Chunk size if we'll be copying data to buffers
+      if( needBuffers ) {
+         if( bufferSize > MAX_BUFFER_SIZE ) {
+            // Divide each thread's work into equal chunks, smaller than MAX_BUFFER_SIZE
+            nLines = div_ceil( bufferSize, MAX_BUFFER_SIZE );
+            bufferSize = div_ceil( bufferSize, nLines );
+         }
+      }
+      nLines *= nThreads;
+
+      // Many of these variables have a slightly different (but equivalent) meaning if `scan1D`
+      // For example: `nLines` is the total number of chunks to process.
+      // `lineLength` is the number of pixels that each thread will process.
+
+   } else {
+
+      // Multiple image lines --- Iterate over image lines ---
+
+      // Determine the best processing dimension.
+      processingDim = OptimalProcessingDim( nIn > 0 ? in[ 0 ] : out[ 0 ] );
+      lineLength = bufferSize = sizes[ processingDim ];
+      nLines = sizes.product() / bufferSize;
+
+      // Determine the number of threads we'll be using
+      if( opts != Scan_NoMultiThreading ) {
+         nThreads = std::min( GetNumberOfThreads(), nLines );
+         if( nThreads > 1 ) {
+            dip::uint operations;
+            DIP_STACK_TRACE_THIS( operations = nLines * lineLength * lineFilter.GetNumberOfOperations( nIn, nOut, ( nIn > 0 ? in[ 0 ] : out[ 0 ] ).TensorElements()));
+            // Starting threads is only worth while if we'll do at least `threadingThreshold` operations
+            if( operations < threadingThreshold ) {
+               nThreads = 1;
+            }
+         }
+      }
+
+   }
+
+   // Divide the image domain into nThreads chunks for split processing. The last chunk will have same or fewer
+   // image lines to process.
+   dip::uint nLinesPerThread = div_ceil( nLines, nThreads );
+   std::vector< UnsignedArray > startCoords( nThreads );
+   if( scan1D ) {
+      startCoords[ 0 ] = UnsignedArray( 1, 0 );
+      for( dip::uint ii = 1; ii < nThreads; ++ii ) {
+         startCoords[ ii ] = startCoords[ ii - 1 ];
+         startCoords[ ii ][ 0 ] += lineLength;        // `lineLength` in this case is the number of pixels per thread
+      }
+   } else {
+      dip::uint nDims = sizes.size();
+      startCoords[ 0 ] = UnsignedArray( nDims, 0 );
+      for( dip::uint ii = 1; ii < nThreads; ++ii ) {
+         startCoords[ ii ] = startCoords[ ii - 1 ];
+         // TODO: this can be more efficient, but it's nice and easy this way.
+         // We simply increment the coordinates nLinesPerThread times, that leads to the next start coordinates.
+         for( dip::uint jj = 0; jj < nLinesPerThread; ++jj ) {
+            for( dip::uint  dd = 0; dd < nDims; ++dd ) {
+               if( dd != processingDim ) {
+                  // Increment coordinate and adjust pointer
+                  ++startCoords[ ii ][ dd ];
+                  // Check whether we reached the last pixel of the line
+                  if( startCoords[ ii ][ dd ] < sizes[ dd ] ) {
+                     break;
+                  }
+                  // Rewind, the next loop iteration will increment the next coordinate
+                  startCoords[ ii ][ dd ] = 0;
+               }
+            }
+         }
       }
    }
 
-   // TODO: Determine the number of threads we'll be using.
-   //       The size of the data has an influence. We can cut an image line in parts if necessary.
-   //       I guess it would be useful to get an idea of the amount of work that
-   //       the lineFilter does per pixel. If the caller can provide that estimate,
-   //       we'd be able to use that to determine the threading schedule.
-   //       Don't forget to check for opts==Scan_NoMultiThreading!
+   //std::cout << "Starting " << nThreads << " threads\n";
+   DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads ));
 
-   DIP_START_STACK_TRACE
-      lineFilter.SetNumberOfThreads( 1 );
-   DIP_END_STACK_TRACE
+   // Start threads, each thread makes its own buffers
+   #pragma omp parallel num_threads( nThreads )
+   {
+      dip::uint thread = static_cast< dip::uint >( omp_get_thread_num());
+      std::vector< std::vector< uint8 >> buffers; // The outer one here is not a DimensionArray, because it won't delete() its contents
 
-   // TODO: Start threads, each thread makes its own buffers.
-   dip::uint thread = 0;
-
-   // Create buffer data structs and allocate buffers
-   std::vector< std::vector< uint8 > > buffers; // The outer one here is not a DimensionArray, because it won't delete() its contents
-   std::vector< ScanBuffer > inBuffers( nIn );   // We don't use DimensionArray here either, but we could
-   for( dip::uint ii = 0; ii < nIn; ++ii ) {
-      if( inUseBuffer[ ii ] ) {
-         if( lookUpTables[ ii ].empty() ) {
+      // Create input buffer data structs and allocate buffers
+      std::vector< ScanBuffer > inBuffers( nIn );  // We don't use DimensionArray here either, but we could
+      for( dip::uint ii = 0; ii < nIn; ++ii ) {
+         if( inUseBuffer[ ii ] ) {
+            if( lookUpTables[ ii ].empty()) {
+               inBuffers[ ii ].tensorLength = in[ ii ].TensorElements();
+            } else {
+               inBuffers[ ii ].tensorLength = lookUpTables[ ii ].size();
+            }
+            inBuffers[ ii ].tensorStride = 1;
+            if( in[ ii ].Stride( processingDim ) == 0 ) {
+               // A stride of 0 means all pixels are the same, allocate space for a single pixel
+               inBuffers[ ii ].stride = 0;
+               buffers.emplace_back( inBufferTypes[ ii ].SizeOf() * inBuffers[ ii ].tensorLength );
+            } else {
+               inBuffers[ ii ].stride = static_cast< dip::sint >( inBuffers[ ii ].tensorLength );
+               buffers.emplace_back( bufferSize * inBufferTypes[ ii ].SizeOf() * inBuffers[ ii ].tensorLength );
+            }
+            inBuffers[ ii ].buffer = buffers.back().data();
+         } else {
             inBuffers[ ii ].tensorLength = in[ ii ].TensorElements();
-         } else {
-            inBuffers[ ii ].tensorLength = lookUpTables[ ii ].size();
+            inBuffers[ ii ].tensorStride = in[ ii ].TensorStride();
+            inBuffers[ ii ].stride = in[ ii ].Stride( processingDim );
+            inBuffers[ ii ].buffer = nullptr;
          }
-         inBuffers[ ii ].tensorStride = 1;
-         if( in[ ii ].Stride( processingDim ) == 0 ) {
-            // A stride of 0 means all pixels are the same, allocate space for a single pixel
-            inBuffers[ ii ].stride = 0;
-            buffers.emplace_back( inBufferTypes[ ii ].SizeOf() * inBuffers[ ii ].tensorLength );
+      }
+
+      // Create output buffer data structs and allocate buffers
+      std::vector< ScanBuffer > outBuffers( nOut );
+      for( dip::uint ii = 0; ii < nOut; ++ii ) {
+         if( outUseBuffer[ ii ] ) {
+            outBuffers[ ii ].tensorLength = out[ ii ].TensorElements();
+            outBuffers[ ii ].tensorStride = 1;
+            outBuffers[ ii ].stride = static_cast< dip::sint >( outBuffers[ ii ].tensorLength );
+            buffers.emplace_back( bufferSize * outBufferTypes[ ii ].SizeOf() * outBuffers[ ii ].tensorLength );
+            outBuffers[ ii ].buffer = buffers.back().data();
          } else {
-            inBuffers[ ii ].stride = static_cast< dip::sint >( inBuffers[ ii ].tensorLength );
-            buffers.emplace_back( bufferSize * inBufferTypes[ ii ].SizeOf() * inBuffers[ ii ].tensorLength );
+            outBuffers[ ii ].tensorLength = out[ ii ].TensorElements();
+            outBuffers[ ii ].tensorStride = out[ ii ].TensorStride();
+            outBuffers[ ii ].stride = out[ ii ].Stride( processingDim );
+            outBuffers[ ii ].buffer = nullptr;
          }
-         inBuffers[ ii ].buffer = buffers.back().data();
-      } else {
-         inBuffers[ ii ].tensorLength = in[ ii ].TensorElements();
-         inBuffers[ ii ].tensorStride = in[ ii ].TensorStride();
-         inBuffers[ ii ].stride = in[ ii ].Stride( processingDim );
-         inBuffers[ ii ].buffer = nullptr;
       }
-   }
-   std::vector< ScanBuffer > outBuffers( nOut );
-   for( dip::uint ii = 0; ii < nOut; ++ii ) {
-      if( outUseBuffer[ ii ] ) {
-         outBuffers[ ii ].tensorLength = out[ ii ].TensorElements();
-         outBuffers[ ii ].tensorStride = 1;
-         outBuffers[ ii ].stride = static_cast< dip::sint >( outBuffers[ ii ].tensorLength );
-         buffers.emplace_back( bufferSize * outBufferTypes[ ii ].SizeOf() * outBuffers[ ii ].tensorLength );
-         outBuffers[ ii ].buffer = buffers.back().data();
-      } else {
-         outBuffers[ ii ].tensorLength = out[ ii ].TensorElements();
-         outBuffers[ ii ].tensorStride = out[ ii ].TensorStride();
-         outBuffers[ ii ].stride = out[ ii ].Stride( processingDim );
-         outBuffers[ ii ].buffer = nullptr;
+
+      /*
+      std::cout << "dip::Framework::Scan -- buffers\n";
+      std::cout << "   sizes = " << sizes << std::endl;
+      std::cout << "   processing dimension = " << processingDim << std::endl;
+      std::cout << "   buffer size = " << bufferSize << std::endl;
+      for( dip::uint ii = 0; ii < nIn; ++ii ) {
+         std::cout << "   in[" << ii << "]: use buffer: " << ( inUseBuffer[ii] ? "yes" : "no" ) << std::endl;
+         std::cout << "      buffer stride: " << inBuffers[ii].stride << std::endl;
+         std::cout << "      buffer tensorStride: " << inBuffers[ii].tensorStride << std::endl;
+         std::cout << "      buffer tensorLength: " << inBuffers[ii].tensorLength << std::endl;
+         std::cout << "      buffer type: " << inBufferTypes[ii].Name() << std::endl;
       }
-   }
+      for( dip::uint ii = 0; ii < nOut; ++ii ) {
+         std::cout << "   out[" << ii << "]: use buffer: " << ( outUseBuffer[ii] ? "yes" : "no" ) << std::endl;
+         std::cout << "      buffer stride: " << outBuffers[ii].stride << std::endl;
+         std::cout << "      buffer tensorStride: " << outBuffers[ii].tensorStride << std::endl;
+         std::cout << "      buffer tensorLength: " << outBuffers[ii].tensorLength << std::endl;
+         std::cout << "      buffer type: " << outBufferTypes[ii].Name() << std::endl;
+      }
+      */
 
-   /*
-   std::cout << "dip::Framework::Scan -- buffers\n";
-   std::cout << "   sizes = " << sizes << std::endl;
-   std::cout << "   processing dimension = " << processingDim << std::endl;
-   std::cout << "   buffer size = " << bufferSize << std::endl;
-   for( dip::uint ii = 0; ii < nIn; ++ii ) {
-      std::cout << "   in[" << ii << "]: use buffer: " << ( inUseBuffer[ii] ? "yes" : "no" ) << std::endl;
-      std::cout << "      buffer stride: " << inBuffers[ii].stride << std::endl;
-      std::cout << "      buffer tensorStride: " << inBuffers[ii].tensorStride << std::endl;
-      std::cout << "      buffer tensorLength: " << inBuffers[ii].tensorLength << std::endl;
-      std::cout << "      buffer type: " << inBufferTypes[ii].Name() << std::endl;
-   }
-   for( dip::uint ii = 0; ii < nOut; ++ii ) {
-      std::cout << "   out[" << ii << "]: use buffer: " << ( outUseBuffer[ii] ? "yes" : "no" ) << std::endl;
-      std::cout << "      buffer stride: " << outBuffers[ii].stride << std::endl;
-      std::cout << "      buffer tensorStride: " << outBuffers[ii].tensorStride << std::endl;
-      std::cout << "      buffer tensorLength: " << outBuffers[ii].tensorLength << std::endl;
-      std::cout << "      buffer type: " << outBufferTypes[ii].Name() << std::endl;
-   }
-   */
+      UnsignedArray position = startCoords[ thread ];
+      ScanLineFilterParameters scanLineFilterParams{
+            inBuffers, outBuffers, bufferSize, processingDim, position, tensorToSpatial, thread
+      }; // Takes inBuffers, outBuffers, position as references
+      IntegerArray inOffsets( nIn );
+      for( dip::uint ii = 0; ii < nIn; ++ii ) {
+         inOffsets[ ii ] = in[ ii ].Offset( position );
+      }
+      IntegerArray outOffsets( nOut );
+      for( dip::uint ii = 0; ii < nOut; ++ii ) {
+         outOffsets[ ii ] = out[ ii ].Offset( position );
+      }
+      dip::uint lastCoord = 0;
+      if( scan1D ) {
+         lastCoord = position[ 0 ] + lineLength;
+         lastCoord = std::min( lastCoord, sizes[ 0 ] );
+      }
 
-   // Iterate over lines in the image
-   //std::cout << "dip::Framework::Scan -- running\n";
-   UnsignedArray position( sizes.size(), 0 );
-   IntegerArray inIndices( nIn, 0 );
-   IntegerArray outIndices( nOut, 0 );
-   ScanLineFilterParameters scanLineFilterParams{
-         inBuffers, outBuffers, 0, processingDim, position, tensorToSpatial, thread
-   }; // Takes inBuffers, outBuffers, position as references
-   for( ;; ) {
+      // Loop over nLinesPerThread image lines
+      for( dip::uint jj = 0; jj < nLinesPerThread ; ++jj ) {
 
-      // Iterate over line sections, if bufferSize < sizes[processingDim]
-      for( dip::uint sectionStart = 0; sectionStart < sizes[ processingDim ]; sectionStart += bufferSize ) {
-         position[ processingDim ] = sectionStart;
-         dip::uint nPixels = std::min( bufferSize, sizes[ processingDim ] - sectionStart );
-         scanLineFilterParams.bufferLength = nPixels;
+         // Make `bufferSize` smaller if it's the last chunk in a 1D image
+         if( scan1D ) {
+            if( position[ 0 ] >= lastCoord ) { // This *should* not happen...
+               break;
+            }
+            scanLineFilterParams.bufferLength = std::min( bufferSize, lastCoord - position[ 0 ] );
+         }
 
-         // Get pointers to input and ouput lines
-         //std::cout << "      sectionStart = " << sectionStart << std::endl;
+         // Get pointers to input and output lines
          for( dip::uint ii = 0; ii < nIn; ++ii ) {
-            //std::cout << "      inIndices[" << ii << "] = " << inIndices[ii] << std::endl;
             if( inUseBuffer[ ii ] ) {
-               // If inIndices[ii] and sectionStart are the same as in the previous iteration, we don't need
+               // If inOffsets[ii] and is the same as in the previous iteration, we don't need
                // to copy the buffer over again. This happens with singleton-expanded input images.
                // But it's easier to copy, and also safer as the lineFilter function could be bad and write in its input!
                detail::CopyBuffer(
-                     in[ ii ].Pointer( inIndices[ ii ] + static_cast< dip::sint >( sectionStart ) * in[ ii ].Stride( processingDim )),
+                     in[ ii ].Pointer( inOffsets[ ii ] ),
                      in[ ii ].DataType(),
                      in[ ii ].Stride( processingDim ),
                      in[ ii ].TensorStride(),
@@ -384,24 +484,21 @@ void Scan(
                      inBufferTypes[ ii ],
                      inBuffers[ ii ].stride,
                      inBuffers[ ii ].tensorStride,
-                     nPixels, // if stride == 0, only a single pixel will be copied, because they're all the same
+                     scanLineFilterParams.bufferLength, // if stride == 0, only a single pixel will be copied, because they're all the same
                      inBuffers[ ii ].tensorLength,
                      lookUpTables[ ii ] );
             } else {
-               inBuffers[ ii ].buffer = in[ ii ].Pointer( inIndices[ ii ] + static_cast< dip::sint >( sectionStart ) * in[ ii ].Stride( processingDim ));
+               inBuffers[ ii ].buffer = in[ ii ].Pointer( inOffsets[ ii ] );
             }
          }
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
-            //std::cout << "      outIndices[" << ii << "] = " << outIndices[ii] << std::endl;
             if( !outUseBuffer[ ii ] ) {
-               outBuffers[ ii ].buffer = out[ ii ].Pointer( outIndices[ ii ] + static_cast< dip::sint >( sectionStart ) * out[ ii ].Stride( processingDim ));
+               outBuffers[ ii ].buffer = out[ ii ].Pointer( outOffsets[ ii ] );
             }
          }
 
          // Filter the line
-         DIP_START_STACK_TRACE
-            lineFilter.Filter( scanLineFilterParams );
-         DIP_END_STACK_TRACE
+         DIP_STACK_TRACE_THIS( lineFilter.Filter( scanLineFilterParams ));
 
          // Copy back the line from output buffer to the image
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
@@ -411,49 +508,56 @@ void Scan(
                      outBufferTypes[ ii ],
                      outBuffers[ ii ].stride,
                      outBuffers[ ii ].tensorStride,
-                     out[ ii ].Pointer( outIndices[ ii ] + static_cast< dip::sint >( sectionStart ) * out[ ii ].Stride( processingDim )),
+                     out[ ii ].Pointer( outOffsets[ ii ] ),
                      out[ ii ].DataType(),
                      out[ ii ].Stride( processingDim ),
                      out[ ii ].TensorStride(),
-                     nPixels,
+                     scanLineFilterParams.bufferLength,
                      outBuffers[ ii ].tensorLength );
             }
          }
-      }
 
-      // Determine which line to process next until we're done
-      position[ processingDim ] = 0; // reset this index
-      dip::uint dd;
-      for( dd = 0; dd < sizes.size(); dd++ ) {
-         if( dd != processingDim ) {
-            ++position[ dd ];
+         // Determine which line to process next until we're done
+         if( scan1D ) {
+            position[ 0 ] += bufferSize;
             for( dip::uint ii = 0; ii < nIn; ++ii ) {
-               inIndices[ ii ] += in[ ii ].Stride( dd );
+               inOffsets[ ii ] += static_cast< dip::sint >( bufferSize ) * in[ ii ].Stride( 0 );
             }
             for( dip::uint ii = 0; ii < nOut; ++ii ) {
-               outIndices[ ii ] += out[ ii ].Stride( dd );
+               outOffsets[ ii ] += static_cast< dip::sint >( bufferSize ) * out[ ii ].Stride( 0 );
             }
-            // Check whether we reached the last pixel of the line
-            if( position[ dd ] != sizes[ dd ] ) {
-               break;
+         } else {
+            dip::uint dd;
+            for( dd = 0; dd < sizes.size(); dd++ ) {
+               if( dd != processingDim ) {
+                  ++position[ dd ];
+                  for( dip::uint ii = 0; ii < nIn; ++ii ) {
+                     inOffsets[ ii ] += in[ ii ].Stride( dd );
+                  }
+                  for( dip::uint ii = 0; ii < nOut; ++ii ) {
+                     outOffsets[ ii ] += out[ ii ].Stride( dd );
+                  }
+                  // Check whether we reached the last pixel of the line
+                  if( position[ dd ] != sizes[ dd ] ) {
+                     break;
+                  }
+                  // Rewind along this dimension
+                  for( dip::uint ii = 0; ii < nIn; ++ii ) {
+                     inOffsets[ ii ] -= static_cast< dip::sint >( position[ dd ] ) * in[ ii ].Stride( dd );
+                  }
+                  for( dip::uint ii = 0; ii < nOut; ++ii ) {
+                     outOffsets[ ii ] -= static_cast< dip::sint >( position[ dd ] ) * out[ ii ].Stride( dd );
+                  }
+                  position[ dd ] = 0;
+                  // Continue loop to increment along next dimension
+               }
             }
-            // Rewind along this dimension
-            for( dip::uint ii = 0; ii < nIn; ++ii ) {
-               inIndices[ ii ] -= static_cast< dip::sint >( position[ dd ] ) * in[ ii ].Stride( dd );
+            if( dd == sizes.size()) {
+               break;            // We're done!
             }
-            for( dip::uint ii = 0; ii < nOut; ++ii ) {
-               outIndices[ ii ] -= static_cast< dip::sint >( position[ dd ] ) * out[ ii ].Stride( dd );
-            }
-            position[ dd ] = 0;
-            // Continue loop to increment along next dimension
          }
       }
-      if( dd == sizes.size() ) {
-         break;            // We're done!
-      }
    }
-
-   // TODO: End threads.
 }
 
 } // namespace Framework

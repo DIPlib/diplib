@@ -257,6 +257,7 @@ namespace {
 
 class dip__Radius : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 20; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
@@ -303,6 +304,7 @@ namespace {
 
 class dip__RadiusSquare : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 4; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
@@ -349,6 +351,7 @@ namespace {
 
 class dip__Phi : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 50; } // worst case (dim != 2)
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;
@@ -404,6 +407,7 @@ namespace {
 
 class dip__Theta : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 50; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( transformation_.size() == 3 );
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
@@ -467,6 +471,9 @@ namespace {
 
 class dip__Coordinates : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorLength ) override {
+         return spherical_ ? ( tensorLength == 2 ? 50 : 70 ) : ( 2 + tensorLength );
+      }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat* out = static_cast< dfloat* >( params.outBuffer[ 0 ].buffer );
          dip::sint stride = params.outBuffer[ 0 ].stride;

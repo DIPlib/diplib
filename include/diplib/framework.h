@@ -40,14 +40,6 @@ class DIP_NO_EXPORT PixelTableOffsets;
 
 
 /// \brief Frameworks are the basis of most pixel-based processing in *DIPlib*.
-///
-/// The various frameworks implement iterating over image pixels, giving
-/// access to a single pixel, a whole image line, or a pixel's neighborhood.
-/// The programmer needs to define a function that loops over one dimension.
-/// The framework will call this function repeatedly to process all the image's
-/// lines, thereby freeing the programmer from implementing loops over multiple
-/// dimensions. This process allows most of *DIPlib*'s filters to be dimensionality
-/// independent, with little effort from the programmer.
 namespace Framework {
 
 
@@ -55,6 +47,19 @@ namespace Framework {
 /// \ingroup infrastructure
 /// \brief Functions that form the basis of most pixel-based processing in *DIPlib*.
 ///
+/// The various frameworks implement iterating over image pixels, giving
+/// access to a single pixel, a whole image line, or a pixel's neighborhood.
+/// The programmer needs to define a function that loops over one dimension.
+/// The framework will call this function repeatedly to process all the image's
+/// lines, thereby freeing the programmer from implementing loops over multiple
+/// dimensions. This process allows most of *DIPlib*'s filters to be dimensionality
+/// independent, with little effort from the programmer. See \ref design_frameworks.
+///
+/// There are three frameworks that represent three different types of image processing
+/// functions:
+///  - The Scan framework, to process individual pixels across multiple input and output images: `dip::Framework::Scan`.
+///  - The Separable framework, to apply separable filters: `dip::Framework::Separable`.
+///  - The Full framework, to apply non-separable filters: `dip::Framework::Full`.
 /// \{
 
 
@@ -174,7 +179,7 @@ struct DIP_NO_EXPORT ScanBuffer {
 /// Note that `dimension` and `position` are within the images that have had their tensor dimension
 /// converted to spatial dimension, if `dip::Framework::Scan_TensorAsSpatialDim` was given and at least
 /// one input or output image is not scalar. In this case, `tensorToSpatial` is `true`, and the last dimension
-/// correspons to the tensor dimension. `dimension` will never be equal to the last dimension in this case.
+/// corresponds to the tensor dimension. `dimension` will never be equal to the last dimension in this case.
 /// That is, `position` will have one more element than the original image(s) we're iterating over, but
 /// `position[ dimension ]` will always correspond to a position in the original image(s).
 struct DIP_NO_EXPORT ScanLineFilterParameters {
@@ -193,21 +198,32 @@ struct DIP_NO_EXPORT ScanLineFilterParameters {
 /// class can be a template class, such that the line filter is overloaded for each possible pixel data type.
 ///
 /// A derived class can have data members that hold parameters to the line filter, that hold output values,
-/// or that hold intermediate buffers. The `dip::Framework::ScanLineFilter::SetNumberOfThreads` method is
+/// or that hold intermediate buffers. The `SetNumberOfThreads` method is
 /// called once before any processing starts. This is a good place to allocate space for output values, such
 /// that each threads has its own output variables that the calling function can later combine (reduce). Note
-/// that this function is called even if `dip::Framework::Scan_NoMultiThreading` is given.
+/// that this function is called even if `dip::Framework::Scan_NoMultiThreading` is given, or if the library
+/// is compiled without multi-threading.
+///
+/// The `GetNumberOfOperations` method is called to determine if it is worthwhile to start worker threads and
+/// perform the computation in parallel. This function should not perform any other tasks, as it is not
+/// guaranteed to be called. It is not important that the function be very precise, see \ref design_multithreading.
 class DIP_EXPORT ScanLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( ScanLineFilterParameters const& params ) = 0;
       /// \brief The derived class can define this function for setting up the processing.
-      virtual void SetNumberOfThreads( dip::uint /*threads*/ ) {}
+      virtual void SetNumberOfThreads( dip::uint  threads ) { ( void )threads; }
+      /// \brief The derived class can define this function for helping to determine whether whether to compute
+      /// in parallel or not. It must return the number of clock cycles per input pixel. The default is valid for
+      /// an arithmetic-like operation.
+      virtual dip::uint GetNumberOfOperations( dip::uint nInput, dip::uint nOutput, dip::uint nTensorElements ) {
+         return std::max( nInput, nOutput ) * nTensorElements;
+      }
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~ScanLineFilter() {}
 };
 
-/// \brief Framework for pixel-based processing of images.
+/// \brief %Framework for pixel-based processing of images.
 ///
 /// The function object `lineFilter` is called for each image line, with input and
 /// output buffers either pointing directly to the input and output images,
@@ -475,13 +491,19 @@ inline void ScanDyadic(
 /// For values of `N` from 1 to 4 there are pre-defined functions just like the `%NewFilter` function above:
 /// `dip::Framework::NewMonadicScanLineFilter`, `dip::Framework::NewDyadicScanLineFilter`,
 /// `dip::Framework::NewTriadicScanLineFilter`, `dip::Framework::NewTetradicScanLineFilter`.
+/// These functions take an optional second input argument `cost`, which specifies the cost in cycles to execute
+/// a single call of `func`. This cost is used to determine if it's worthwhile to parallelize the operation, see
+/// \ref design_multithreading.
 template< dip::uint N, typename TPI, typename F >
 class DIP_EXPORT VariadicScanLineFilter : public ScanLineFilter {
    // Note that N is a compile-time constant, and consequently the compiler should be able to optimize all the loops
    // over N.
    public:
       static_assert( N > 0, "VariadicScanLineFilter does not work without input images" );
-      VariadicScanLineFilter( F const& func ) : func_( func ) {}
+      VariadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) {
+         return cost_ * nTensorElements;
+      }
       virtual void Filter( ScanLineFilterParameters const& params ) override {
          DIP_ASSERT( params.inBuffer.size() == N );
          DIP_ASSERT( params.outBuffer.size() == 1 );
@@ -529,35 +551,37 @@ class DIP_EXPORT VariadicScanLineFilter : public ScanLineFilter {
       }
    private:
       F func_; // save a copy of the lambda, in case we want to use it with a temporary-constructed lambda that captures a variable.
+      dip::uint cost_ = 1;
 };
 
 /// \brief Support for quickly defining monadic operators (1 input image, 1 output image).
 /// See `dip::Framework::VariadicScanLineFilter`.
 template< typename TPI, typename F >
-inline std::unique_ptr< ScanLineFilter > NewMonadicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 1, TPI, F >( func ));
+inline std::unique_ptr< ScanLineFilter > NewMonadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 1, TPI, F >( func, cost ));
 }
 
 /// \brief Support for quickly defining dyadic operators (2 input images, 1 output image).
 /// See `dip::Framework::VariadicScanLineFilter`.
 template< typename TPI, typename F >
-inline std::unique_ptr< ScanLineFilter > NewDyadicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 2, TPI, F >( func ));
+inline std::unique_ptr< ScanLineFilter > NewDyadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 2, TPI, F >( func, cost ));
 }
 
 /// \brief Support for quickly defining triadic operators (3 input images, 1 output image).
 /// See `dip::Framework::VariadicScanLineFilter`.
 template< typename TPI, typename F >
-inline std::unique_ptr< ScanLineFilter > NewTriadicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 3, TPI, F >( func ));
+inline std::unique_ptr< ScanLineFilter > NewTriadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 3, TPI, F >( func, cost ));
 }
 
 /// \brief Support for quickly defining tetradic operators (4 input images, 1 output image).
 /// See `dip::Framework::VariadicScanLineFilter`.
 template< typename TPI, typename F >
-inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 4, TPI, F >( func ));
+inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F const& func, dip::uint cost = 1 ) {
+   return static_cast< std::unique_ptr< ScanLineFilter >>( new VariadicScanLineFilter< 4, TPI, F >( func, cost ));
 }
+
 
 //
 // Separable Framework:
@@ -614,7 +638,7 @@ struct DIP_NO_EXPORT SeparableBuffer {
 /// Note that `dimension` and `position` are within the images that have had their tensor dimension
 /// converted to spatial dimension, if `dip::Framework::Separable_AsScalarImage` was given and the
 /// input is not scalar. In this case, `tensorToSpatial` is `true`, and the last dimension
-/// correspons to the tensor dimension. `dimension` will never be equal to the last dimension in this case.
+/// corresponds to the tensor dimension. `dimension` will never be equal to the last dimension in this case.
 /// That is, `position` will have one more element than the original image(s) we're iterating over, but
 /// `position[ dimension ]` will always correspond to a position in the original image(s).
 struct DIP_NO_EXPORT SeparableLineFilterParameters {
@@ -634,26 +658,32 @@ struct DIP_NO_EXPORT SeparableLineFilterParameters {
 /// class can be a template class, such that the line filter is overloaded for each possible pixel data type.
 ///
 /// A derived class can have data members that hold parameters to the line filter, that hold output values,
-/// or that hold intermediate buffers. The `dip::Framework::SeparableLineFilter::SetNumberOfThreads` method is
+/// or that hold intermediate buffers. The `SetNumberOfThreads` method is
 /// called once before any processing starts. This is a good place to allocate space for temporary buffers, such
 /// that each threads has its own buffers to write in. Note that this function is called even if
-/// `dip::Framework::Separable_NoMultiThreading` is given.
+/// `dip::Framework::Separable_NoMultiThreading` is given, or if the library is compiled without multi-threading.
+///
+/// The `GetNumberOfOperations` method is called to determine if it is worthwhile to start worker threads and
+/// perform the computation in parallel. This function should not perform any other tasks, as it is not
+/// guaranteed to be called. It is not important that the function be very precise, see \ref design_multithreading.
 class DIP_EXPORT SeparableLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( SeparableLineFilterParameters const& params ) = 0;
       /// \brief The derived class can define this function for setting up the processing.
-      virtual void SetNumberOfThreads( dip::uint /*threads*/ ) {}
-      /// \brief The derived class can define this function for helping to determine whether to work multithreaded or not.
-      /// The default is valid for a convolution-like operation.
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint nTensorElements, dip::uint border, dip::uint /*procDim*/ ) {
+      virtual void SetNumberOfThreads( dip::uint threads ) { ( void )threads; }
+      /// \brief The derived class can define this function for helping to determine whether to whether to compute
+      /// in parallel or not. It must return the number of clock cycles per image line. The default is valid for
+      /// a convolution-like operation.
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint nTensorElements, dip::uint border, dip::uint procDim ) {
+         ( void )procDim; // not used in this function, but useful for some line filters.
          return lineLength * nTensorElements * 4 * border; // 2*border is filter size, double that for the number of multiply-adds.
       }
       /// \brief A virtual destructor guarantees that we can destroy a derived class by a pointer to base
       virtual ~SeparableLineFilter() {}
 };
 
-/// \brief Framework for separable filtering of images.
+/// \brief %Framework for separable filtering of images.
 ///
 /// The function object `lineFilter` is called for each image line, and along each
 /// dimension, with input and output buffers either pointing directly to the
@@ -834,18 +864,23 @@ struct DIP_NO_EXPORT FullLineFilterParameters {
 /// class can be a template class, such that the line filter is overloaded for each possible pixel data type.
 ///
 /// A derived class can have data members that hold parameters to the line filter, that hold output values,
-/// or that hold intermediate buffers. The `dip::Framework::FullLineFilter::SetNumberOfThreads` method is
+/// or that hold intermediate buffers. The `SetNumberOfThreads` method is
 /// called once before any processing starts. This is a good place to allocate space for temporary buffers,
 /// such that each threads has its own buffers to write in. Note that this function is called even if
-/// `dip::Framework::Full_NoMultiThreading` is given.
+/// `dip::Framework::Full_NoMultiThreading` is given, or if the library is compiled without multi-threading.
+///
+/// The `GetNumberOfOperations` method is called to determine if it is worthwhile to start worker threads and
+/// perform the computation in parallel. This function should not perform any other tasks, as it is not
+/// guaranteed to be called. It is not important that the function be very precise, see \ref design_multithreading.
 class DIP_EXPORT FullLineFilter {
    public:
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( FullLineFilterParameters const& params ) = 0;
       /// \brief The derived class can define this function for setting up the processing.
-      virtual void SetNumberOfThreads( dip::uint /*threads*/ ) {}
-      /// \brief The derived class can define this function for helping to determine whether to work multithreaded or not.
-      /// The default is valid for a convolution-like operation.
+      virtual void SetNumberOfThreads( dip::uint  threads ) { ( void )threads; }
+      /// \brief The derived class can define this function for helping to determine whether to compute
+      /// in parallel or not. It must return the number of clock cycles per image line. The default is valid for
+      /// a convolution-like operation.
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint nTensorElements, dip::uint nKernelPixels, dip::uint nRuns ) {
          return lineLength * nTensorElements * nKernelPixels   // number of multiply-adds
               + lineLength * ( 2 * nKernelPixels + nRuns )     // iterating over pixel table
@@ -855,7 +890,7 @@ class DIP_EXPORT FullLineFilter {
       virtual ~FullLineFilter() {}
 };
 
-/// \brief Framework for filtering of images with an arbitrary shape neighborhood.
+/// \brief %Framework for filtering of images with an arbitrary shape neighborhood.
 ///
 /// The function object `lineFilter` is called for each image line,
 /// with input and output buffers either pointing directly to the

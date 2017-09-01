@@ -135,6 +135,7 @@ class dip__HistogramBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class dip__ScalarImageHistogram : public dip__HistogramBase {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 6; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          auto bufferLength = params.bufferLength;
@@ -193,6 +194,9 @@ class dip__ScalarImageHistogram : public dip__HistogramBase {
 template< typename TPI >
 class dip__JointImageHistogram : public dip__HistogramBase {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
+         return ( tensorInput_ ? tensorElements : 2 ) * 6;
+      }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          std::vector< TPI const* >in;
          std::vector< dip::sint >stride;

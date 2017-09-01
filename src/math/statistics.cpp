@@ -32,6 +32,7 @@ namespace {
 
 class dip__Count : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          bin const* in = static_cast< bin const* >( params.inBuffer[ 0 ].buffer );
          dip::uint& count = counts_[ params.thread ];
@@ -95,6 +96,7 @@ class dip__MaxMinPixel : public Framework::ScanLineFilter {
 template< typename TPI >
 class dip__MaxPixel : public dip__MaxMinPixel {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          UnsignedArray& coord = coord_[ params.thread ];
@@ -176,6 +178,7 @@ class dip__MaxPixel : public dip__MaxMinPixel {
 template< typename TPI >
 class dip__MinPixel : public dip__MaxMinPixel {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          UnsignedArray& coord = coord_[ params.thread ];
@@ -336,6 +339,7 @@ class dip__MaximumAndMinimumBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class dip__MaximumAndMinimum : public dip__MaximumAndMinimumBase {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 3; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          MinMaxAccumulator& vars = accArray_[ params.thread ];
@@ -409,6 +413,7 @@ class dip__SampleStatisticsBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class dip__SampleStatistics : public dip__SampleStatisticsBase {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 23; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          StatisticsAccumulator& vars = accArray_[ params.thread ];
@@ -470,6 +475,7 @@ class dip__CenterOfMassBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class dip__CenterOfMass : public dip__CenterOfMassBase {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return nD_ + 1; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          FloatArray& vars = accArray_[ params.thread ];
@@ -557,6 +563,9 @@ class dip__MomentsBase : public Framework::ScanLineFilter {
 template< typename TPI >
 class dip__Moments : public dip__MomentsBase {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) {
+         return nD_ * ( nD_ + 1 ) / 2 * 3 + nD_ + 2;
+      }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          MomentAccumulator& vars = accArray_[ params.thread ];

@@ -88,6 +88,7 @@ namespace {
 
 class IDivergenceLineFilter : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 23; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in1 = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dfloat const* in2 = static_cast< dfloat const* >( params.inBuffer[ 1 ].buffer );

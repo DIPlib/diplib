@@ -59,6 +59,9 @@ namespace {
 template< typename TPI >
 class MultiplyLineFilter : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+         return nRows_ * nColumns_ * nInner_;
+      }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          // This function is only called for two non-scalar images.
          DIP_ASSERT( params.inBuffer.size() == 2 );
@@ -72,29 +75,29 @@ class MultiplyLineFilter : public Framework::ScanLineFilter {
          dip::sint const lhsTensorStride = params.inBuffer[ 0 ].tensorStride;
          dip::sint const rhsTensorStride = params.inBuffer[ 1 ].tensorStride;
          dip::sint const outTensorStride = params.outBuffer[ 0 ].tensorStride;
-         DIP_ASSERT( params.inBuffer[ 0 ].tensorLength == nRows * nInner );
-         DIP_ASSERT( params.inBuffer[ 1 ].tensorLength == nInner * nColumns );
-         DIP_ASSERT( params.outBuffer[ 0 ].tensorLength == nRows * nColumns );
+         DIP_ASSERT( params.inBuffer[ 0 ].tensorLength == nRows_ * nInner_ );
+         DIP_ASSERT( params.inBuffer[ 1 ].tensorLength == nInner_ * nColumns_ );
+         DIP_ASSERT( params.outBuffer[ 0 ].tensorLength == nRows_ * nColumns_ );
          dip::uint const bufferLength = params.bufferLength;
          for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
             TPI const* rhsT = rhs;
             TPI* outT = out;
-            for( dip::uint col = 0; col < nColumns; ++col ) {
+            for( dip::uint col = 0; col < nColumns_; ++col ) {
                TPI const* lhsT = lhs;
-               for( dip::uint row = 0; row < nRows; ++row ) {
+               for( dip::uint row = 0; row < nRows_; ++row ) {
                   TPI const* lhsTT = lhsT;
                   TPI const* rhsTT = rhsT;
                   FlexType< TPI > v = 0;
-                  for( dip::uint jj = 0; jj < nInner; ++jj ) {
+                  for( dip::uint jj = 0; jj < nInner_; ++jj ) {
                      v += static_cast< FlexType< TPI >>( *lhsTT ) * static_cast< FlexType< TPI >>( *rhsTT );
-                     lhsTT += static_cast< dip::sint >( nRows ) * lhsTensorStride;
+                     lhsTT += static_cast< dip::sint >( nRows_ ) * lhsTensorStride;
                      rhsTT += rhsTensorStride;
                   }
                   *outT = clamp_cast< TPI >( v );
                   lhsT += lhsTensorStride;
                   outT += outTensorStride;
                }
-               rhsT += static_cast< dip::sint >( nInner ) * rhsTensorStride;
+               rhsT += static_cast< dip::sint >( nInner_ ) * rhsTensorStride;
             }
             lhs += lhsStride;
             rhs += rhsStride;
@@ -102,16 +105,19 @@ class MultiplyLineFilter : public Framework::ScanLineFilter {
          }
       }
       MultiplyLineFilter( dip::uint nRows, dip::uint nColumns, dip::uint nInner )
-            : nRows( nRows ), nColumns( nColumns ), nInner( nInner ) {}
+            : nRows_( nRows ), nColumns_( nColumns ), nInner_( nInner ) {}
    private:
-      dip::uint nRows;     // == lhs.TensorRows
-      dip::uint nColumns;  // == rhs.TensorColumns
-      dip::uint nInner;    // == lhs.TensorColumns == rhs.TensorRows
+      dip::uint nRows_;     // == lhs.TensorRows
+      dip::uint nColumns_;  // == rhs.TensorColumns
+      dip::uint nInner_;    // == lhs.TensorColumns == rhs.TensorRows
 };
 
 template< typename TPI >
 class MultiplySymmetricLineFilter : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+         return nOuter_ * ( nOuter_ + 1 ) * nInner_ / 2;
+      }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          // This function is only called for one non-scalar image.
          DIP_ASSERT( params.inBuffer.size() == 1 ); // RHS matrix, meaning the inner dimension is the columns
@@ -122,16 +128,16 @@ class MultiplySymmetricLineFilter : public Framework::ScanLineFilter {
          dip::sint const outStride = params.outBuffer[ 0 ].stride;
          dip::sint const inTensorStride = params.inBuffer[ 0 ].tensorStride;
          dip::sint const outTensorStride = params.outBuffer[ 0 ].tensorStride;
-         DIP_ASSERT( params.inBuffer[ 0 ].tensorLength == nOuter * nInner );
-         DIP_ASSERT( params.outBuffer[ 0 ].tensorLength == ( nOuter * ( nOuter + 1 )) / 2 );
+         DIP_ASSERT( params.inBuffer[ 0 ].tensorLength == nOuter_ * nInner_ );
+         DIP_ASSERT( params.outBuffer[ 0 ].tensorLength == ( nOuter_ * ( nOuter_ + 1 )) / 2 );
          dip::uint const bufferLength = params.bufferLength;
          for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
             TPI const* inT = in;
             TPI* outT = out;
             // Compute diagonal elements first
-            for( dip::uint col = 0; col < nOuter; ++col ) {
+            for( dip::uint col = 0; col < nOuter_; ++col ) {
                FlexType< TPI > v = 0;
-               for( dip::uint jj = 0; jj < nInner; ++jj ) {
+               for( dip::uint jj = 0; jj < nInner_; ++jj ) {
                   v += static_cast< FlexType< TPI >>( *inT ) * static_cast< FlexType< TPI >>( *inT );
                   inT += inTensorStride;
                }
@@ -139,15 +145,15 @@ class MultiplySymmetricLineFilter : public Framework::ScanLineFilter {
                outT += outTensorStride;
             }
             // Elements above diagonal are stored column-wise
-            dip::sint colSkip = static_cast< dip::sint >( nInner ) * inTensorStride;
+            dip::sint colSkip = static_cast< dip::sint >( nInner_ ) * inTensorStride;
             TPI const* rhsT = in + colSkip;
-            for( dip::uint col = 1; col < nOuter; ++col ) { // Elements above diagonal stored column-wise
+            for( dip::uint col = 1; col < nOuter_; ++col ) { // Elements above diagonal stored column-wise
                TPI const* lhsT = in;
                for( dip::uint row = 0; row < col; ++row ) {
                   TPI const* lhsTT = lhsT;
                   TPI const* rhsTT = rhsT;
                   FlexType< TPI > v = 0;
-                  for( dip::uint jj = 0; jj < nInner; ++jj ) {
+                  for( dip::uint jj = 0; jj < nInner_; ++jj ) {
                      v += static_cast< FlexType< TPI >>( *lhsTT ) * static_cast< FlexType< TPI >>( *rhsTT );
                      lhsTT += inTensorStride;
                      rhsTT += inTensorStride;
@@ -163,10 +169,10 @@ class MultiplySymmetricLineFilter : public Framework::ScanLineFilter {
          }
       }
       MultiplySymmetricLineFilter( dip::uint nOuter, dip::uint nInner )
-            : nOuter( nOuter ), nInner( nInner ) {}
+            : nOuter_( nOuter ), nInner_( nInner ) {}
    private:
-      dip::uint nOuter;    // == lhs.TensorRows == rhs.TensorColumns
-      dip::uint nInner;    // == lhs.TensorColumns == rhs.TensorRows
+      dip::uint nOuter_;    // == lhs.TensorRows == rhs.TensorColumns
+      dip::uint nInner_;    // == lhs.TensorColumns == rhs.TensorRows
 };
 
 } // namespace
@@ -195,7 +201,7 @@ void Multiply(
       DIP_OVL_NEW_ALL( scanLineFilter, MultiplySymmetricLineFilter,
                        ( nOuter, nInner ), dt );
       ImageRefArray outar{ out };
-      Framework::Scan( { rhs }, outar, { dt }, { dt }, { dt }, { outTensor.Elements() }, * scanLineFilter,
+      Framework::Scan( { rhs }, outar, { dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
                        Framework::Scan_ExpandTensorInBuffer );
       out.ReshapeTensor( outTensor );
    } else {
@@ -205,7 +211,7 @@ void Multiply(
       DIP_OVL_NEW_ALL( scanLineFilter, MultiplyLineFilter,
                        ( lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() ), dt );
       ImageRefArray outar{ out };
-      Framework::Scan( { lhs, rhs }, outar, { dt, dt }, { dt }, { dt }, { outTensor.Elements() }, * scanLineFilter,
+      Framework::Scan( { lhs, rhs }, outar, { dt, dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
                        Framework::Scan_ExpandTensorInBuffer );
       out.ReshapeTensor( outTensor );
    }
@@ -233,7 +239,7 @@ void MultiplyConjugate(
    if( rhs.DataType().IsComplex() && dt.IsComplex() ) {
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       DIP_OVL_CALL_ASSIGN_COMPLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
-            []( auto its ) { return dip::saturated_mul( *its[ 0 ], std::conj( *its[ 1 ] )); }
+            []( auto its ) { return dip::saturated_mul( *its[ 0 ], std::conj( *its[ 1 ] )); }, 4
       ), dt );
       Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
    } else {
@@ -285,7 +291,7 @@ void Power(
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    dt = DataType::SuggestFlex( dt );
    DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewDyadicScanLineFilter, (
-         []( auto its ) { return std::pow( *its[ 0 ], *its[ 1 ] ); }
+         []( auto its ) { return std::pow( *its[ 0 ], *its[ 1 ] ); }, 20 // Rough guess at the cost
    ), dt );
    Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
 }

@@ -33,6 +33,7 @@ using LabelSet = std::set< dip::uint >;
 template< typename TPI >
 class dip__GetLabels : public Framework::ScanLineFilter {
    public:
+      // not defining GetNumberOfOperations(), always called in a single thread
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI* data = static_cast< TPI* >( params.inBuffer[ 0 ].buffer );
          dip::sint stride = params.inBuffer[ 0 ].stride;
@@ -47,7 +48,7 @@ class dip__GetLabels : public Framework::ScanLineFilter {
                   if( !setPrevID || ( *data != prevID ) ) {
                      prevID = * data;
                      setPrevID = true;
-                     objectIDs.insert( prevID );
+                     objectIDs_.insert( prevID );
                   }
                }
                data += stride;
@@ -58,15 +59,15 @@ class dip__GetLabels : public Framework::ScanLineFilter {
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                if( *data != prevID ) {
                   prevID = *data;
-                  objectIDs.insert( prevID );
+                  objectIDs_.insert( prevID );
                }
                data += stride;
             }
          }
       }
-      dip__GetLabels( LabelSet& objectIDs ) : objectIDs( objectIDs ) {}
+      dip__GetLabels( LabelSet& objectIDs ) : objectIDs_( objectIDs ) {}
    private:
-      LabelSet& objectIDs;
+      LabelSet& objectIDs_;
 };
 
 UnsignedArray GetObjectLabels(

@@ -402,7 +402,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FindShift fuction") {
    // Method: "NCC"
    result = FindShift( in1, in2, "NCC" );
    DOCTEST_REQUIRE( result.size() == 2 );
-   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.15 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.1501 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.15 );
 
    // Method: "CPF"

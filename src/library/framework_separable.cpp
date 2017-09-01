@@ -200,14 +200,13 @@ void Separable(
 
    // Determine the number of threads we'll be using
    dip::uint nThreads = 1;
-   if( opts != Separable_NoMultiThreading ) {
-      // This is an estimate for the number of clock cycles we'll use
-      dip::uint nPixels = input.NumberOfPixels(); // TODO: This is not correct, the image size can change from one procDim to the next.
+   if(( opts != Separable_NoMultiThreading ) && ( GetNumberOfThreads() > 1 )) {
       dip::uint operations = 0;
       dip::uint maxNLines = 0;
+      UnsignedArray sizes = input.Sizes();
       for( dip::uint processingDim : order ) {
-         dip::uint lineLength = input.Size( processingDim );
-         dip::uint nLines = nPixels / lineLength;
+         dip::uint lineLength = sizes[ processingDim ] = outSizes[ processingDim ];
+         dip::uint nLines = sizes.product() / lineLength;
          maxNLines = std::max( maxNLines, nLines );
          if( nLines > 1 ) {
             DIP_STACK_TRACE_THIS( operations += nLines *
@@ -217,7 +216,7 @@ void Separable(
       }
       // Starting threads is only worth while if we'll do at least `threadingThreshold` operations
       //std::cout << "GetNumberOfThreads() = " << GetNumberOfThreads() << ", maxNLines = " << maxNLines << ", operations = " << operations << std::endl;
-      if( operations > threadingThreshold ) {
+      if( operations >= threadingThreshold ) {
          // We can't do more threads than the max, and we can't do more threads than lines we have to process
          nThreads = std::min( GetNumberOfThreads(), maxNLines );
       }
@@ -225,8 +224,8 @@ void Separable(
       // It is possible that one dimension has fewer image lines than threads we're starting. We need to deal
       // with this below.
    }
-   //std::cout << "Starting " << nThreads << " threads\n";
 
+   //std::cout << "Starting " << nThreads << " threads\n";
    DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads ));
 
    // Some variables that need to be shared among threads

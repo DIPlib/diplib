@@ -326,7 +326,7 @@ inline Image CreateThetaCoordinate( Image const& in, StringSet const& mode = {} 
 ///    not make sense.
 ///    In combination with `"frequency"`, yields the same result as in combination with `"right"`.
 /// The string `"radfreq"` is equivalent to both `"frequency"` and `"radial"`.
-DIP_EXPORT void FillCoordinates( Image& out, StringSet const& mode = {}, String const& system = "" );
+DIP_EXPORT void FillCoordinates( Image& out, StringSet const& mode = {}, String const& system = "cartesian" );
 
 /// \brief Creates an image of the same size as `in`, filled with the coordinates of each pixel.
 ///
@@ -335,12 +335,12 @@ DIP_EXPORT void FillCoordinates( Image& out, StringSet const& mode = {}, String 
 /// The pixel size of `in` will be copied over.
 ///
 /// See `dip::FillCoordinates` for the meaning of `mode` and `system`.
-inline void CreateCoordinates( Image const& in, Image& out, StringSet const& mode = {}, String const& system = "" ) {
+inline void CreateCoordinates( Image const& in, Image& out, StringSet const& mode = {}, String const& system = "cartesian" ) {
    out.ReForge( in.Sizes(), in.Dimensionality(), DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
    out.SetPixelSize( in.PixelSize() );
    FillCoordinates( out, mode, system );
 }
-inline Image CreateCoordinates( Image const& in, StringSet const& mode = {}, String const& system = "" ) {
+inline Image CreateCoordinates( Image const& in, StringSet const& mode = {}, String const& system = "cartesian" ) {
    Image out;
    CreateCoordinates( in, out, mode, system );
    return out;

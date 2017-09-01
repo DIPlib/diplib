@@ -127,6 +127,7 @@ namespace {
 // that we call here are not overloaded.
 class MeasureLineFilter : public Framework::ScanLineFilter {
    public:
+      // not defining GetNumberOfOperations(), always called in a single thread
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          LineIterator< uint32 > label(
                static_cast< uint32* >( params.inBuffer[ 0 ].buffer ),

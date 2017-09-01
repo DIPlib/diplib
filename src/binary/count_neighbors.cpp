@@ -29,6 +29,9 @@ namespace {
 
 class dip__CountNeighbors : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+         return 2 * neighbors_.Size(); // number of neighbors we test. We don't count the cost of testing for image boundaries.
+      }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          auto bufferLength = params.bufferLength;
          bin const* in = static_cast< bin const* >( params.inBuffer[ 0 ].buffer );

@@ -300,8 +300,8 @@ for us to choose the approach we chose.
 
 We use *OpenMP* for multithreading, mostly because it seems (to me) easier to use
 than Intel's *Threading Building Blocks* (*TBB*). *TBB* does not require special
-compiler support, but all modern compilers support *OpenMP* (except for MacOS
-XCode CLang, even though it's possible to get a version of CLang that does). The
+compiler support, but all modern compilers support *OpenMP* (except for XCode's CLang
+on MacOS, even though it's possible to get a version of CLang that does). The
 GNU Compiler Collection has very good support for *OpenMP*, and is available on
 all platforms. *TBB* probably also plays better with C++ code than *OpenMP*, which
 does not allow exceptions to be thrown across parallel construct boundaries. But
@@ -319,13 +319,15 @@ it was not worth while to fine-tune the number of threads based on the number of
 operations to perform.
 
 The threshold was determined empirically on one single computer, and the way that
-the number of operations per line is computed is also a little empirical.
+the number of operations per line is computed is imprecise and in some cases empirical.
 It is more than likely that the threshold will not be optimal on a different machine.
-Furthermore, for some filters it is not possible to determine the number of operations
+Furthermore, for some filters it is not even possible to determine ahead of time the
+number of operations
 because it depends on the data (e.g. see the pixel table morphology line filter).
 
 Thus, the point at which multiple threads are launched is imprecise at best.
 However, what matters here is that, for very small images, we do not start threads
 and double or worse the time spent on the filtering. The old *DIPlib* did not have
 any such logic, always started threads within the frameworks, and consequently
-behaved poorly with very small images.
+behaved poorly with very small images. This system is intended to overcome that
+problem.

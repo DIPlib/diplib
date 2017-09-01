@@ -193,19 +193,19 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
       using TPIf = FloatType< TPI >;
       GaussFTLineFilter( UnsignedArray const& sizes, FloatArray const& sigmas, UnsignedArray const& order, dfloat truncation ) {
          dip::uint nDims = sizes.size();
-         gaussLUTs.resize( nDims );
+         gaussLUTs_.resize( nDims );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             bool found = false;
             for( dip::uint jj = 0; jj < ii; ++jj ) {
                if(( sizes[ jj ] == sizes[ ii ] ) && ( sigmas[ jj ] == sigmas[ ii ] ) && ( order[ jj ] == order[ ii ] )) {
-                  gaussLUTs[ ii ] = gaussLUTs[ jj ];
+                  gaussLUTs_[ ii ] = gaussLUTs_[ jj ];
                   found = true;
                   break;
                }
             }
             if( !found ) {
-               gaussLUTs[ ii ].resize( sizes[ ii ], TPI( 0 ));
-               TPI* lut = gaussLUTs[ ii ].data();
+               gaussLUTs_[ ii ].resize( sizes[ ii ], TPI( 0 ));
+               TPI* lut = gaussLUTs_[ ii ].data();
                // ( (i*2*pi) * x / size )^o * exp( -0.5 * ( ( 2*pi * sigma ) * x / size )^2 ) == a * x^o * exp( b * x^2 )
                dip::sint origin = static_cast< dip::sint >( sizes[ ii ] ) / 2;
                TPIf b = static_cast< TPIf >( 2.0 * pi * sigmas[ ii ] ) / static_cast< TPIf >( sizes[ ii ] );
@@ -247,6 +247,7 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
             }
          }
       }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; } // not counting initialization
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          auto bufferLength = params.bufferLength;
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
@@ -255,12 +256,12 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
          auto outStride = params.outBuffer[ 0 ].stride;
          TPI weight = 1;
          dip::uint procDim = params.dimension;
-         for( dip::uint ii = 0; ii < gaussLUTs.size(); ++ii ) {
+         for( dip::uint ii = 0; ii < gaussLUTs_.size(); ++ii ) {
             if( ii != procDim ) {
-               weight *= gaussLUTs[ ii ][ params.position[ ii ] ];
+               weight *= gaussLUTs_[ ii ][ params.position[ ii ] ];
             }
          }
-         TPI const* lut = gaussLUTs[ procDim ].data();
+         TPI const* lut = gaussLUTs_[ procDim ].data();
          lut += params.position[ procDim ];
          for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
             *out = *in * weight * *lut;
@@ -270,7 +271,7 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
          }
       }
    private:
-      std::vector< std::vector< TPI >> gaussLUTs;
+      std::vector< std::vector< TPI >> gaussLUTs_;
 };
 
 } // namespace

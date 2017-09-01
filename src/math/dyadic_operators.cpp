@@ -30,7 +30,7 @@ void Atan2( Image const& y, Image const& x, Image& out ) {
    DataType dt = DataType::SuggestArithmetic( y.DataType(), x.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewDyadicScanLineFilter, (
-         []( auto its ) { return std::atan2( *its[ 0 ], *its[ 1 ] ); }
+         []( auto its ) { return std::atan2( *its[ 0 ], *its[ 1 ] ); }, 20 // rough guess at the cost
    ), dt );
    ImageRefArray outar{ out };
    Framework::Scan( { y, x }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
@@ -41,7 +41,7 @@ void Hypot( Image const& a, Image const& b, Image& out ) {
    DataType dt = DataType::SuggestArithmetic( a.DataType(), b.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewDyadicScanLineFilter, (
-         []( auto its ) { return std::hypot( *its[ 0 ], *its[ 1 ] ); }
+         []( auto its ) { return std::hypot( *its[ 0 ], *its[ 1 ] ); }, 20 // rough guess at the cost
    ), dt );
    ImageRefArray outar{ out };
    Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
@@ -53,6 +53,7 @@ template< typename TPI, typename F >
 class DIP_EXPORT MultiScanLineFilter : public Framework::ScanLineFilter {
    public:
       MultiScanLineFilter( F const& func ) : func_( func ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint nInput, dip::uint, dip::uint ) override { return nInput; } // assuming this is only used for Supremum and Infimum!
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint N = params.inBuffer.size();
          dip::uint const bufferLength = params.bufferLength;
@@ -130,6 +131,7 @@ namespace {
 template< typename TPI >
 class DIP_EXPORT LinearCombinationScanLineFilter: public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          TPI const* a = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );

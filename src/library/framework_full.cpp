@@ -134,18 +134,19 @@ void Full(
    // Determine the number of threads we'll be using
    dip::uint nThreads = 1;
    if( opts != Full_NoMultiThreading ) {
-      // This is an estimate for the number of clock cycles we'll use
-      dip::uint operations;
-      DIP_STACK_TRACE_THIS( operations = nLines *
-            lineFilter.GetNumberOfOperations( lineLength, input.TensorElements(), pixelTable.NumberOfPixels(), pixelTable.Runs().size() ));
-      // Starting threads is only worth while if we'll do at least `threadingThreshold` operations
-      if( operations > threadingThreshold ) {
-         // We can't do more threads than the max, and we can't do more threads than lines we have to process
-         nThreads = std::min( GetNumberOfThreads(), nLines );
+      nThreads = std::min( GetNumberOfThreads(), nLines );
+      if( nThreads > 1 ) {
+         dip::uint operations;
+         DIP_STACK_TRACE_THIS( operations = nLines *
+               lineFilter.GetNumberOfOperations( lineLength, input.TensorElements(), pixelTable.NumberOfPixels(), pixelTable.Runs().size() ));
+         // Starting threads is only worth while if we'll do at least `threadingThreshold` operations
+         if( operations < threadingThreshold ) {
+            nThreads = 1;
+         }
       }
    }
-   //std::cout << "Starting " << nThreads << " threads\n";
 
+   //std::cout << "Starting " << nThreads << " threads\n";
    DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads ));
 
    // Divide the image domain into nThreads chunks for split processing. The last chunk will have same or fewer

@@ -3,12 +3,6 @@
 #include "diplib.h"
 #include "diplib/multithreading.h"
 #include "diplib/generation.h"
-//#include "diplib/linear.h"
-//#include "diplib/nonlinear.h"
-//#include "diplib/morphology.h"
-//#include "diplib/transform.h"
-//#include "diplib/statistics.h"
-//#include "diplib/geometry.h"
 #include "diplib/testing.h"
 
 #include "diplib/histogram.h"
@@ -49,7 +43,7 @@ dip::dfloat TimeIt( dip::Image const& img, dip::Image& out ) {
          //dip::CreateRadiusCoordinate( img, out );
          //dip::CreatePhiCoordinate( img, out );
          //dip::CreateCoordinates( img, out, {}, "cartesian" );
-         auto h = dip::Histogram( img ); // TODO: Rewrite how parallelism is done? This does not work!
+         auto h = dip::Histogram( img );
       }
       timer.Stop();
       time = std::min( time, timer.GetWall());
@@ -58,18 +52,14 @@ dip::dfloat TimeIt( dip::Image const& img, dip::Image& out ) {
 }
 
 int main() {
-   dip::Random random( 0 );
-
    dip::Image filter( { 7, 7 }, 1, dip::DT_SFLOAT );
    filter.Fill( 50 );
-   dip::GaussianNoise( filter, filter, random, 20.0 * 20.0 );
+   dip::GaussianNoise( filter, filter, rndGen, 400.0 );
 
    dip::UnsignedArray sizes =
          //{ 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70 };
          //{ 5, 7, 10, 13, 15, 20, 25 };
          { 10, 15, 25, 50, 75, 100, 125, 150, 200, 300, 400 };
-
-   std::cout << dip::GetNumberOfThreads() << std::endl;
 
    dip::uint maxThreads = dip::GetNumberOfThreads();
 
@@ -81,7 +71,7 @@ int main() {
       //img.ReshapeTensor( dip::Tensor{ "symmetric matrix", 2, 2 } );
       //img.ReshapeTensor( 2, 2 );
       img.Fill( 50 );
-      dip::GaussianNoise( img, img, random, 20.0 * 20.0 );
+      dip::GaussianNoise( img, img, rndGen, 400.0 );
 
       dip::SetNumberOfThreads( 1 );
       dip::dfloat time1 = TimeIt( img, out );

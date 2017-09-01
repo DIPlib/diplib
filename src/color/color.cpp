@@ -149,24 +149,35 @@ using ConversionStepArray = std::vector< ConversionStep >;
 class ConverterLineFilter : public Framework::ScanLineFilter {
    public:
       ConverterLineFilter( ConversionStepArray const& steps ) : steps_( steps ) {
-         maxIntermediateChannels = steps[ 0 ].nOutputChannels;
+         maxIntermediateChannels_ = steps[ 0 ].nOutputChannels;
          for( dip::uint ii = 1; ii < steps.size() - 1; ++ii ) {
-            maxIntermediateChannels = std::max( maxIntermediateChannels, steps[ 1 ].nOutputChannels );
+            maxIntermediateChannels_ = std::max( maxIntermediateChannels_, steps[ 1 ].nOutputChannels );
          }
-         nBuffers = std::min< dip::uint >( 2, steps.size() - 1 );
+         nBuffers_ = std::min< dip::uint >( 2, steps.size() - 1 );
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffer1_.resize( threads );
          buffer2_.resize( threads );
       }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+         dip::uint cost = 0;
+         for( auto const& step : steps_ ) {
+            dip::uint c = step.converterFunction->Cost();
+            if( c >= 100 ) {
+               c -= 99; // This is usually the case for conversion to gray, to indicate data loss
+            }
+            cost += 50 * c; // This is very rough, most methods indicate a cost of 1 through 3, which we map here to 50-150.
+         }
+         return cost;
+      }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint thread = params.thread;
          dip::uint nPixels = params.bufferLength;
-         if( nBuffers > 0 ) {
-            if( buffer1_[ thread ].size() != nPixels * maxIntermediateChannels ) {
-               buffer1_[ thread ].resize( nPixels * maxIntermediateChannels );
-               if( nBuffers > 1 ) {
-                  buffer2_[ thread ].resize( nPixels * maxIntermediateChannels );
+         if( nBuffers_ > 0 ) {
+            if( buffer1_[ thread ].size() != nPixels * maxIntermediateChannels_ ) {
+               buffer1_[ thread ].resize( nPixels * maxIntermediateChannels_ );
+               if( nBuffers_ > 1 ) {
+                  buffer2_[ thread ].resize( nPixels * maxIntermediateChannels_ );
                }
             }
          }
@@ -197,8 +208,8 @@ class ConverterLineFilter : public Framework::ScanLineFilter {
       }
    private:
       ConversionStepArray const& steps_;
-      dip::uint maxIntermediateChannels;
-      dip::uint nBuffers;
+      dip::uint maxIntermediateChannels_;
+      dip::uint nBuffers_;
       std::vector< std::vector< dfloat >> buffer1_; // one for each thread
       std::vector< std::vector< dfloat >> buffer2_; // one for each thread
       // We use up to 2 buffers. If there's 1 step, we don't need a buffer, we can read from in and write to out.

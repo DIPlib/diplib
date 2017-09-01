@@ -31,7 +31,8 @@ namespace {
 template< typename TPI, typename TPO, typename F >
 class TensorMonadicScanLineFilter : public Framework::ScanLineFilter {
    public:
-      TensorMonadicScanLineFilter( F const& func ) : func_( func ) {}
+      TensorMonadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return cost_; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -54,17 +55,19 @@ class TensorMonadicScanLineFilter : public Framework::ScanLineFilter {
       }
    private:
       F func_;
+      dip::uint cost_;
 };
 
 template< typename TPI, typename TPO = TPI, typename F >
-std::unique_ptr< Framework::ScanLineFilter > NewTensorMonadicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorMonadicScanLineFilter< TPI, TPO, F >( func ));
+std::unique_ptr< Framework::ScanLineFilter > NewTensorMonadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorMonadicScanLineFilter< TPI, TPO, F >( func, cost ));
 }
 
 template< typename TPI, typename TPO, typename F >
 class TensorDyadicScanLineFilter : public Framework::ScanLineFilter {
    public:
-      TensorDyadicScanLineFilter( F const& func ) : func_( func ) {}
+      TensorDyadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return cost_; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -94,17 +97,19 @@ class TensorDyadicScanLineFilter : public Framework::ScanLineFilter {
       }
    private:
       F func_;
+      dip::uint cost_;
 };
 
 template< typename TPI, typename TPO = TPI, typename F >
-std::unique_ptr< Framework::ScanLineFilter > NewTensorDyadicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorDyadicScanLineFilter< TPI, TPO, F >( func ));
+std::unique_ptr< Framework::ScanLineFilter > NewTensorDyadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorDyadicScanLineFilter< TPI, TPO, F >( func, cost ));
 }
 
 template< typename TPI, typename TPO, typename F >
 class TensorTriadicScanLineFilter : public Framework::ScanLineFilter {
    public:
-      TensorTriadicScanLineFilter( F const& func ) : func_( func ) {}
+      TensorTriadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return cost_; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -141,11 +146,12 @@ class TensorTriadicScanLineFilter : public Framework::ScanLineFilter {
       }
    private:
       F func_;
+      dip::uint cost_;
 };
 
 template< typename TPI, typename TPO = TPI, typename F >
-std::unique_ptr< Framework::ScanLineFilter > NewTensorTriadicScanLineFilter( F const& func ) {
-   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorTriadicScanLineFilter< TPI, TPO, F >( func ));
+std::unique_ptr< Framework::ScanLineFilter > NewTensorTriadicScanLineFilter( F const& func, dip::uint cost = 1 ) {
+   return static_cast< std::unique_ptr< Framework::ScanLineFilter >>( new TensorTriadicScanLineFilter< TPI, TPO, F >( func, cost ));
 }
 
 
@@ -173,6 +179,9 @@ namespace {
 template< typename TPI >
 class CrossProductLineFilter : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) {
+         return tensorElements == 2 ? 2 : 6;
+      }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > lhs(
@@ -250,12 +259,12 @@ void Norm( Image const& in, Image& out ) {
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       if( in.DataType().IsComplex() ) {
          scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dfloat >(
-               [ n ]( auto const& pin, auto const& pout ) { *pout = Norm( n, pin ); }
+               [ n ]( auto const& pin, auto const& pout ) { *pout = Norm( n, pin ); }, 20 + 2 * n
          );
          intype = DT_DCOMPLEX;
       } else {
          scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-               [ n ]( auto const& pin, auto const& pout ) { *pout = Norm( n, pin ); }
+               [ n ]( auto const& pin, auto const& pout ) { *pout = Norm( n, pin ); }, 20 + 2 * n
          );
          intype = DT_DFLOAT;
       }
@@ -273,7 +282,7 @@ void Angle( Image const& in, Image& out ) {
    dip::uint outTensorElem;
    if( n == 2 ) {
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-            [ n ]( auto const& pin, auto const& pout ) { *pout = std::atan2( pin[ 1 ], pin[ 0 ] ); }
+            [ n ]( auto const& pin, auto const& pout ) { *pout = std::atan2( pin[ 1 ], pin[ 0 ] ); }, 50
       );
       outTensorElem = 1;
    } else { // n == 3
@@ -282,7 +291,7 @@ void Angle( Image const& in, Image& out ) {
                dfloat norm = Norm( 3, pin );
                pout[ 0 ] = std::atan2( pin[ 1 ], pin[ 0 ] );
                pout[ 1 ] = norm == 0.0 ? pi / 2.0 : std::acos( pin[ 2 ] / norm );
-            }
+            }, 26 + 50 + 21
       );
       outTensorElem = 2;
    }
@@ -301,7 +310,7 @@ void Orientation( Image const& in, Image& out ) {
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
             [ n ]( auto const& pin, auto const& pout ) {
                *pout = pin[ 0 ] == 0 ? 0 : std::atan( pin[ 1 ] / pin[ 0 ] );
-            }
+            }, 21
       );
       outTensorElem = 1;
    } else { // n == 3
@@ -310,7 +319,7 @@ void Orientation( Image const& in, Image& out ) {
                dfloat norm = Norm( 3, pin );
                pout[ 0 ] = pin[ 0 ] == 0 ? 0 : std::atan( pin[ 1 ] / pin[ 0 ] );
                pout[ 1 ] = norm == 0.0 ? pi / 2.0 : std::acos( pin[ 2 ] / norm );
-            }
+            }, 26 + 21 + 21
       );
       outTensorElem = 2;
    }
@@ -329,7 +338,7 @@ void CartesianToPolar( Image const& in, Image& out ) {
             [ n ]( auto const& pin, auto const& pout ) {
                pout[ 0 ] = Norm( 2, pin );
                pout[ 1 ] = std::atan2( pin[ 1 ], pin[ 0 ] );
-            }
+            }, 24 + 50
       );
    } else { // n == 3
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
@@ -338,7 +347,7 @@ void CartesianToPolar( Image const& in, Image& out ) {
                pout[ 0 ] = norm;
                pout[ 1 ] = std::atan2( pin[ 1 ], pin[ 0 ] );
                pout[ 2 ] = norm == 0.0 ? pi / 2.0 : std::acos( pin[ 2 ] / norm );
-            }
+            }, 26 + 50 + 21
       );
    }
    ImageRefArray outar{ out };
@@ -356,7 +365,7 @@ void PolarToCartesian( Image const& in, Image& out ) {
             [ n ]( auto const& pin, auto const& pout ) {
                pout[ 0 ] = pin[ 0 ] * std::cos( pin[ 1 ] );
                pout[ 1 ] = pin[ 0 ] * std::sin( pin[ 1 ] );
-            }
+            }, 42
       );
    } else { // n == 3
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
@@ -365,7 +374,7 @@ void PolarToCartesian( Image const& in, Image& out ) {
                pout[ 0 ] = pin[ 0 ] * std::cos( pin[ 1 ] ) * sintheta;
                pout[ 1 ] = pin[ 0 ] * std::sin( pin[ 1 ] ) * sintheta;
                pout[ 2 ] = pin[ 0 ] * std::cos( pin[ 2 ] );
-            }
+            }, 65
       );
    }
    ImageRefArray outar{ out };
@@ -384,12 +393,12 @@ void Determinant( Image const& in, Image& out ) {
       if( in.TensorShape() == Tensor::Shape::DIAGONAL_MATRIX ) {
          if( outtype.IsComplex() ) {
             scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
-                  [ n ]( auto const& pin, auto const& pout ) { *pout = DeterminantDiagonal( n, pin ); }
+                  [ n ]( auto const& pin, auto const& pout ) { *pout = DeterminantDiagonal( n, pin ); }, n
             );
             buffertype = DT_DCOMPLEX;
          } else {
             scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-                  [ n ]( auto const& pin, auto const& pout ) { *pout = DeterminantDiagonal( n, pin ); }
+                  [ n ]( auto const& pin, auto const& pout ) { *pout = DeterminantDiagonal( n, pin ); }, n
             );
             buffertype = DT_DFLOAT;
          }
@@ -397,12 +406,12 @@ void Determinant( Image const& in, Image& out ) {
       } else {
          if( outtype.IsComplex() ) {
             scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
-                  [ n ]( auto const& pin, auto const& pout ) { *pout = Determinant( n, pin ); }
+                  [ n ]( auto const& pin, auto const& pout ) { *pout = Determinant( n, pin ); }, n
             );
             buffertype = DT_DCOMPLEX;
          } else {
             scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-                  [ n ]( auto const& pin, auto const& pout ) { *pout = Determinant( n, pin ); }
+                  [ n ]( auto const& pin, auto const& pout ) { *pout = Determinant( n, pin ); }, n
             );
             buffertype = DT_DFLOAT;
          }
@@ -425,13 +434,13 @@ void Trace( Image const& in, Image& out ) {
          case Tensor::Shape::UPPTRIANG_MATRIX:
          case Tensor::Shape::LOWTRIANG_MATRIX: {
             DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
-                  [ n ]( auto const& pin, auto const& pout ) { *pout = TraceDiagonal( n, pin ); }
+                  [ n ]( auto const& pin, auto const& pout ) { *pout = TraceDiagonal( n, pin ); }, n
             ), dtype );
             break;
          }
          default: {
             DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewTensorMonadicScanLineFilter, (
-                  [ n ]( auto const& pin, auto const& pout ) { *pout = Trace( n, pin ); }
+                  [ n ]( auto const& pin, auto const& pout ) { *pout = Trace( n, pin ); }, n
             ), dtype );
             break;
          }
@@ -449,12 +458,12 @@ void Rank( Image const& in, Image& out ) {
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    if( in.DataType().IsComplex() ) {
       scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, uint8 >(
-            [ m, n ]( auto const& pin, auto const& pout ) { *pout = clamp_cast< uint8 >( Rank( m, n, pin )); }
+            [ m, n ]( auto const& pin, auto const& pout ) { *pout = clamp_cast< uint8 >( Rank( m, n, pin )); }, 200 * n
       );
       intype = DT_DCOMPLEX;
    } else {
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, uint8 >(
-            [ m, n ]( auto const& pin, auto const& pout ) { *pout = clamp_cast< uint8 >( Rank( m, n, pin )); }
+            [ m, n ]( auto const& pin, auto const& pout ) { *pout = clamp_cast< uint8 >( Rank( m, n, pin )); }, 100 * n
       );
       intype = DT_DFLOAT;
    }
@@ -479,19 +488,19 @@ void Eigenvalues( Image const& in, Image& out ) {
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       if(( in.TensorShape() == Tensor::Shape::SYMMETRIC_MATRIX ) && ( !intype.IsComplex() )) {
          scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-               [ n ]( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition( n, pin, pout ); }
+               [ n ]( auto const& pin, auto const& pout ) { SymmetricEigenDecomposition( n, pin, pout ); }, 400 * n // strange: it's much faster than EigenDecomposition, but parallelism is beneficial at same point.
          );
          inbuffertype = outbuffertype = DT_DFLOAT;
          outtype = intype;
       } else {
          if( intype.IsComplex() ) {
             scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
-                  [ n ]( auto const& pin, auto const& pout ) { EigenDecomposition( n, pin, pout ); }
+                  [ n ]( auto const& pin, auto const& pout ) { EigenDecomposition( n, pin, pout ); }, 800 * n
             );
             inbuffertype = outbuffertype = DT_DCOMPLEX;
          } else {
             scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dcomplex >(
-                  [ n ]( auto const& pin, auto const& pout ) { EigenDecomposition( n, pin, pout ); }
+                  [ n ]( auto const& pin, auto const& pout ) { EigenDecomposition( n, pin, pout ); }, 400 * n
             );
             inbuffertype = DT_DFLOAT;
             outbuffertype = DT_DCOMPLEX;
@@ -523,19 +532,19 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       if(( in.TensorShape() == Tensor::Shape::SYMMETRIC_MATRIX ) && ( !intype.IsComplex() )) {
          scanLineFilter = NewTensorDyadicScanLineFilter< dfloat, dfloat >(
-               [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { SymmetricEigenDecomposition( n, pin, pout1, pout2 ); }
+               [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { SymmetricEigenDecomposition( n, pin, pout1, pout2 ); }, 600 * n // cost of decomposition???
          );
          inbuffertype = outbuffertype = DT_DFLOAT;
          outtype = intype;
       } else {
          if( intype.IsComplex() ) {
             scanLineFilter = NewTensorDyadicScanLineFilter< dcomplex, dcomplex >(
-                  [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { EigenDecomposition( n, pin, pout1, pout2 ); }
+                  [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { EigenDecomposition( n, pin, pout1, pout2 ); }, 1200 * n // cost of decomposition???
             );
             inbuffertype = outbuffertype = DT_DCOMPLEX;
          } else {
             scanLineFilter = NewTensorDyadicScanLineFilter< dfloat, dcomplex >(
-                  [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { EigenDecomposition( n, pin, pout1, pout2 ); }
+                  [ n ]( auto const& pin, auto const& pout1, auto const& pout2 ) { EigenDecomposition( n, pin, pout1, pout2 ); }, 600 * n // cost of decomposition ???
             );
             inbuffertype = DT_DFLOAT;
             outbuffertype = DT_DCOMPLEX;
@@ -558,12 +567,12 @@ void Inverse( Image const& in, Image& out ) {
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    if( outtype.IsComplex() ) {
       scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
-            [ n ]( auto const& pin, auto const& pout ) { Inverse( n, pin, pout ); }
+            [ n ]( auto const& pin, auto const& pout ) { Inverse( n, pin, pout ); }, 800 * n
       );
       buffertype = DT_DCOMPLEX;
    } else {
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-            [ n ]( auto const& pin, auto const& pout ) { Inverse( n, pin, pout ); }
+            [ n ]( auto const& pin, auto const& pout ) { Inverse( n, pin, pout ); }, 400 * n
       );
       buffertype = DT_DFLOAT;
    }
@@ -581,12 +590,12 @@ void PseudoInverse( Image const& in, Image& out, dfloat tolerance ) {
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    if( outtype.IsComplex() ) {
       scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
-            [ m, n ]( auto const& pin, auto const& pout ) { PseudoInverse( m, n, pin, pout ); }
+            [ m, n ]( auto const& pin, auto const& pout ) { PseudoInverse( m, n, pin, pout ); }, 800 * n
       );
       buffertype = DT_DCOMPLEX;
    } else {
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-            [ m, n, tolerance ]( auto const& pin, auto const& pout ) { PseudoInverse( m, n, pin, pout, tolerance ); }
+            [ m, n, tolerance ]( auto const& pin, auto const& pout ) { PseudoInverse( m, n, pin, pout, tolerance ); }, 400 * n
       );
       buffertype = DT_DFLOAT;
    }
@@ -605,12 +614,12 @@ void SingularValues( Image const& in, Image& out ) {
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    if( outtype.IsComplex() ) {
       scanLineFilter = NewTensorMonadicScanLineFilter< dcomplex, dcomplex >(
-            [ m, n ]( auto const& pin, auto const& pout ) { SingularValueDecomposition( m, n, pin, pout ); }
+            [ m, n ]( auto const& pin, auto const& pout ) { SingularValueDecomposition( m, n, pin, pout ); }, 800 * n
       );
       buffertype = DT_DCOMPLEX;
    } else {
       scanLineFilter = NewTensorMonadicScanLineFilter< dfloat, dfloat >(
-            [ m, n ]( auto const& pin, auto const& pout ) { SingularValueDecomposition( m, n, pin, pout ); }
+            [ m, n ]( auto const& pin, auto const& pout ) { SingularValueDecomposition( m, n, pin, pout ); }, 400 * n
       );
       buffertype = DT_DFLOAT;
    }
@@ -628,12 +637,12 @@ void SingularValueDecomposition( Image const& in, Image& U, Image& out, Image& V
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    if( outtype.IsComplex() ) {
       scanLineFilter = NewTensorTriadicScanLineFilter< dcomplex, dcomplex >(
-            [ m, n ]( auto const& pin, auto const& pout1, auto const& pout2, auto const& pout3 ) { SingularValueDecomposition( m, n, pin, pout1, pout2, pout3 ); }
+            [ m, n ]( auto const& pin, auto const& pout1, auto const& pout2, auto const& pout3 ) { SingularValueDecomposition( m, n, pin, pout1, pout2, pout3 ); }, 1000 * n // cost of decomposition???
       );
       buffertype = DT_DCOMPLEX;
    } else {
       scanLineFilter = NewTensorTriadicScanLineFilter< dfloat, dfloat >(
-            [ m, n ]( auto const& pin, auto const& pout1, auto const& pout2, auto const& pout3 ) { SingularValueDecomposition( m, n, pin, pout1, pout2, pout3 ); }
+            [ m, n ]( auto const& pin, auto const& pout1, auto const& pout2, auto const& pout3 ) { SingularValueDecomposition( m, n, pin, pout1, pout2, pout3 ); }, 500 * n // cost of decomposition???
       );
       buffertype = DT_DFLOAT;
    }
