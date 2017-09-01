@@ -112,14 +112,39 @@ inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::
    return static_cast< dip::sint >( clamp( std::floor(( value - lowerBound ) / binSize ), 0.0, static_cast< dfloat >( nBins - 1 )));
 }
 
+class dip__HistogramBase : public Framework::ScanLineFilter {
+   public:
+      dip__HistogramBase( Image& image ) : image_( image ) {}
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
+         for( dip::uint ii = 1; ii < threads; ++ii ) {
+            imageArray_.emplace_back( image_ );       // makes a copy; image_ is not yet forged, so data is not shared.
+         }
+         // We don't forge the images here, the Filter() function should do that so each thread allocates its own
+         // data segment. This ensures there's no false sharing.
+      }
+      void Reduce() {
+         for( auto& img : imageArray_ ) {
+            image_ += img;
+         }
+      }
+   protected:
+      Image& image_;
+      ImageArray imageArray_;
+};
+
 template< typename TPI >
-class dip__ScalarImageHistogram : public Framework::ScanLineFilter {
+class dip__ScalarImageHistogram : public dip__HistogramBase {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
-         CountType* data = static_cast< CountType* >( image_.Origin() ) + image_.Stride( 1 ) * static_cast< dip::sint >( params.thread );
+         Image& image = params.thread == 0 ? image_ : imageArray_[ params.thread - 1 ];
+         if( !image.IsForged() ) {
+            image.Forge();
+            image.Fill( 0 );
+         }
+         CountType* data = static_cast< CountType* >( image.Origin() );
          // Note: `image_` strides are always normal.
          if( params.inBuffer.size() > 1 ) {
             // If there's two input buffers, we have a mask image.
@@ -159,24 +184,14 @@ class dip__ScalarImageHistogram : public Framework::ScanLineFilter {
             }
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
-         if( threads > 1 ) {
-            UnsignedArray sizes = image_.Sizes();
-            sizes.back() = threads;
-            image_.SetSizes( sizes );
-         }
-         image_.Forge();
-         image_.Fill( 0 );
-      }
       dip__ScalarImageHistogram( Image& image, Histogram::Configuration const& configuration ) :
-            image_( image ), configuration_( configuration ) {}
+            dip__HistogramBase( image ), configuration_( configuration ) {}
    private:
-      Image& image_;
       Histogram::Configuration const& configuration_;
 };
 
 template< typename TPI >
-class dip__JointImageHistogram : public Framework::ScanLineFilter {
+class dip__JointImageHistogram : public dip__HistogramBase {
    public:
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          std::vector< TPI const* >in;
@@ -202,7 +217,12 @@ class dip__JointImageHistogram : public Framework::ScanLineFilter {
             maskBuffer = 2;
          }
          auto bufferLength = params.bufferLength;
-         CountType* data = static_cast< CountType* >( image_.Origin() ) + image_.Strides().back() * static_cast< dip::sint >( params.thread );
+         Image& image = params.thread == 0 ? image_ : imageArray_[ params.thread - 1 ];
+         if( !image.IsForged() ) {
+            image.Forge();
+            image.Fill( 0 );
+         }
+         CountType* data = static_cast< CountType* >( image.Origin() );
          if( params.inBuffer.size() > maskBuffer ) {
             // We have a mask image.
             bin const* mask = static_cast< bin const* >( params.inBuffer[ maskBuffer ].buffer );
@@ -258,19 +278,9 @@ class dip__JointImageHistogram : public Framework::ScanLineFilter {
             }
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
-         if( threads > 1 ) {
-            UnsignedArray sizes = image_.Sizes();
-            sizes.back() = threads;
-            image_.SetSizes( sizes );
-         }
-         image_.Forge();
-         image_.Fill( 0 );
-      }
       dip__JointImageHistogram( Image& image, Histogram::ConfigurationArray const& configuration, bool tensorInput ) :
-            image_( image ), configuration_( configuration ), tensorInput_( tensorInput ) {}
+            dip__HistogramBase( image ), configuration_( configuration ), tensorInput_( tensorInput ) {}
    private:
-      Image& image_;
       Histogram::ConfigurationArray const& configuration_;
       bool tensorInput_;
 };
@@ -278,50 +288,34 @@ class dip__JointImageHistogram : public Framework::ScanLineFilter {
 } // namespace
 
 void Histogram::ScalarImageHistogram( Image const& input, Image const& mask, Histogram::Configuration& configuration ) {
-   DIP_START_STACK_TRACE
-      CompleteConfiguration( input, mask, configuration );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( CompleteConfiguration( input, mask, configuration ));
    lowerBounds_ = { configuration.lowerBound };
    binSizes_ = { configuration.binSize };
-   data_.SetSizes( { configuration.nBins, 1 } );
+   data_.SetSizes( { configuration.nBins } );
    data_.SetDataType( DT_COUNT );
-   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   std::unique_ptr< dip__HistogramBase >scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__ScalarImageHistogram, ( data_, configuration ), input.DataType() );
-   DIP_START_STACK_TRACE
-      Framework::ScanSingleInput( input, mask, input.DataType(), *scanLineFilter );
-   DIP_END_STACK_TRACE
-   if( data_.Size( 1 ) > 1 ) {
-      data_ = Sum( data_, {}, { false, true } );
-   }
-   data_.Squeeze( 1 );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( input, mask, input.DataType(), *scanLineFilter ));
+   scanLineFilter->Reduce();
 }
 
 void Histogram::TensorImageHistogram( Image const& input, Image const& mask, Histogram::ConfigurationArray& configuration ) {
    dip::uint ndims = input.TensorElements();
    lowerBounds_.resize( ndims );
    binSizes_.resize( ndims );
-   UnsignedArray sizes( ndims+1, 1 );
+   UnsignedArray sizes( ndims, 1 );
    for( dip::uint ii = 0; ii < ndims; ++ii ) {
-      DIP_START_STACK_TRACE
-         CompleteConfiguration( input[ ii ], mask, configuration[ ii ] );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( CompleteConfiguration( input[ ii ], mask, configuration[ ii ] ));
       lowerBounds_[ ii ] = configuration[ ii ].lowerBound;
       binSizes_[ ii ] = configuration[ ii ].binSize;
       sizes[ ii ] = configuration[ ii ].nBins;
    }
    data_.SetSizes( sizes );
    data_.SetDataType( DT_COUNT );
-   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   std::unique_ptr< dip__HistogramBase >scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__JointImageHistogram, ( data_, configuration, true ), input.DataType() );
-   DIP_START_STACK_TRACE
-      Framework::ScanSingleInput( input, mask, input.DataType(), *scanLineFilter );
-   DIP_END_STACK_TRACE
-   if( data_.Size( ndims ) > 1 ) {
-      BooleanArray process( ndims + 1, false );
-      process[ ndims ] = true;
-      data_ = Sum( data_, {}, process );
-   }
-   data_.Squeeze( ndims );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( input, mask, input.DataType(), *scanLineFilter ));
+   scanLineFilter->Reduce();
 }
 
 void Histogram::JointImageHistogram( Image const& input1, Image const& input2, Image const& c_mask, Histogram::ConfigurationArray& configuration ) {
@@ -331,11 +325,11 @@ void Histogram::JointImageHistogram( Image const& input1, Image const& input2, I
    DIP_END_STACK_TRACE
    lowerBounds_ = { configuration[ 0 ].lowerBound, configuration[ 1 ].lowerBound };
    binSizes_ = { configuration[ 0 ].binSize, configuration[ 1 ].binSize };
-   UnsignedArray sizes{ configuration[ 0 ].nBins, configuration[ 1 ].nBins, 1 };
+   UnsignedArray sizes{ configuration[ 0 ].nBins, configuration[ 1 ].nBins };
    data_.SetSizes( sizes );
    data_.SetDataType( DT_COUNT );
    DataType dtype = DataType::SuggestDyadicOperation( input1.DataType(), input2.DataType() );
-   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   std::unique_ptr< dip__HistogramBase >scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__JointImageHistogram, ( data_, configuration, false ), dtype );
    ImageConstRefArray inar{ input1, input2 };
    DataTypeArray inBufT{ dtype, dtype };
@@ -351,15 +345,8 @@ void Histogram::JointImageHistogram( Image const& input1, Image const& input2, I
       inBufT.push_back( mask.DataType() );
    }
    ImageRefArray outar{};
-   DIP_START_STACK_TRACE
-      Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter );
-   DIP_END_STACK_TRACE
-   if( data_.Size( 2 ) > 1 ) {
-      BooleanArray process( 3, false );
-      process[ 2 ] = true;
-      data_ = Sum( data_, {}, process );
-   }
-   data_.Squeeze( 2 );
+   DIP_STACK_TRACE_THIS( Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter ));
+   scanLineFilter->Reduce();
 }
 
 void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const& featureValues, Histogram::ConfigurationArray& configuration ) {
@@ -435,9 +422,7 @@ Histogram Histogram::Smooth( FloatArray sigma ) const {
    Histogram out = *this;
    UnsignedArray sizes = out.data_.Sizes();
    dip::uint nDims = sizes.size();
-   DIP_START_STACK_TRACE
-      ArrayUseParameter( sigma, nDims, 1.0 );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( sigma, nDims, 1.0 ));
    dfloat truncation = 3.0;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       dfloat extension = std::ceil( sigma[ ii ] * truncation );
@@ -493,10 +478,10 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( gaussH.LowerBound() == 0.0 );
    DOCTEST_CHECK( gaussH.UpperBound() == upperBound );
    DOCTEST_CHECK( gaussH.Count() == img.NumberOfPixels() );
-   DOCTEST_CHECK( std::abs( Mean( gaussH )[ 0 ] - meanval ) < 1.0 ); // less than 0.05% error.
-   DOCTEST_CHECK( std::abs( MarginalMedian( gaussH )[ 0 ] - meanval ) <= binSize );
-   DOCTEST_CHECK( std::abs( Mode( gaussH )[ 0 ] - meanval ) <= 3.0 * binSize );
-   DOCTEST_CHECK( std::abs( Covariance( gaussH )[ 0 ] - sigma * sigma ) < 500.0 ); // less than 0.2% error.
+   DOCTEST_CHECK( std::abs( dip::Mean( gaussH )[ 0 ] - meanval ) < 1.0 ); // less than 0.05% error.
+   DOCTEST_CHECK( std::abs( dip::MarginalMedian( gaussH )[ 0 ] - meanval ) <= binSize );
+   DOCTEST_CHECK( std::abs( dip::Mode( gaussH )[ 0 ] - meanval ) <= 3.0 * binSize );
+   DOCTEST_CHECK( std::abs( dip::Covariance( gaussH )[ 0 ] - sigma * sigma ) < 500.0 ); // less than 0.2% error.
 
    dip::Image mask = img > meanval;
    dip::Histogram halfGaussH( img, mask, settings );
@@ -556,19 +541,19 @@ DOCTEST_TEST_CASE( "[DIPlib] testing dip::Histogram" ) {
    DOCTEST_CHECK( bounds[ 2 ] == binSize * 2.0 );
    DOCTEST_CHECK( bounds.back() == upperBound );
    DOCTEST_CHECK( tensorM.At( bin1000 ) == tensorIm.NumberOfPixels());
-   auto tensorMean = Mean( tensorH );
+   auto tensorMean = dip::Mean( tensorH );
    DOCTEST_CHECK( std::abs( tensorMean[ 0 ] - meanval ) < 5.0 );
    DOCTEST_CHECK( std::abs( tensorMean[ 1 ] - meanval ) < 5.0 );
    DOCTEST_CHECK( tensorMean[ 2 ] == 1000.0 + 0.5 * binSize );
-   auto tensorMed = MarginalMedian( tensorH );
+   auto tensorMed = dip::MarginalMedian( tensorH );
    DOCTEST_CHECK( std::abs( tensorMed[ 0 ] - meanval ) <= binSize );
    DOCTEST_CHECK( std::abs( tensorMed[ 1 ] - meanval ) <= binSize );
    DOCTEST_CHECK( tensorMed[ 2 ] == 1000.0 + 0.5 * binSize );
-   auto tensorMode = Mode( tensorH );
+   auto tensorMode = dip::Mode( tensorH );
    DOCTEST_CHECK( std::abs( tensorMode[ 0 ] - meanval ) <= 15.0 * binSize ); // We've got few pixels, so this is imprecise
    DOCTEST_CHECK( std::abs( tensorMode[ 1 ] - meanval ) <= 15.0 * binSize );
    DOCTEST_CHECK( tensorMode[ 2 ] == 1000.0 + 0.5 * binSize );
-   auto tensorCov = Covariance( tensorH );
+   auto tensorCov = dip::Covariance( tensorH );
    DOCTEST_CHECK( std::abs( tensorCov[ 0 ] - sigma * sigma ) < 5000.0 ); // variance 1st element
    DOCTEST_CHECK( std::abs( tensorCov[ 1 ] - sigma * sigma ) < 5000.0 ); // variance 2nd element
    DOCTEST_CHECK( std::abs( tensorCov[ 3 ] ) < 5000.0 ); // covariance elements 1st & 2nd
