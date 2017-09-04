@@ -53,7 +53,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
    # TODO: compiler flags for Intel compiler
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
    # using Visual Studio C++
-   # TODO: compiler flags for MSVC compiler
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
 endif()
 set(CMAKE_INCLUDE_CURRENT_DIR 1)
 
