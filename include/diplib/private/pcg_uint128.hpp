@@ -69,8 +69,22 @@
           || __m68k__ || __mc68000__
         #define PCG_LITTLE_ENDIAN 0
     #else
-        #error Unable to determine target endianness
+        // Unable to determine target endianness through defines; try alternative method as last resort
+        // NOTE: Only determines endianness of the compiling platform, not of the target platform
+        #define COMPILER_PLATFORM_IS_LITTLE_ENDIAN (*(unsigned short *)"\0\x2" == 0x200)
+        #ifdef COMPILER_PLATFORM_IS_LITTLE_ENDIAN
+            #define PCG_LITTLE_ENDIAN 1
+        #else
+            #define PCG_LITTLE_ENDIAN 0
+        #endif
     #endif
+/*
+    #if PCG_LITTLE_ENDIAN
+        #pragma message( "Note: compiling PCG for little endian platform" )
+    #else
+        #pragma message( "Note: compiling PCG for big endian platform" )
+    #endif
+*/
 #endif
 
 namespace pcg_extras {
