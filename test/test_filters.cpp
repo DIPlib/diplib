@@ -57,7 +57,7 @@ int main( void ) {
    while( manager.activeWindows()) {
       // Only necessary for GLFW
       manager.processEvents();
-      usleep( 10 );
+      std::this_thread::sleep_for( std::chrono::microseconds( 10 ) );
    }
 
    return 0;
