@@ -868,11 +868,11 @@ void ImageReadTIFFSeries( Image&, StringArray const& ) {
    DIP_THROW( E::NOT_IMPLEMENTED );
 }
 
-DIP_EXPORT FileInformation ImageReadTIFFInfo( String const&, dip::uint ) {
+FileInformation ImageReadTIFFInfo( String const&, dip::uint ) {
    DIP_THROW( E::NOT_IMPLEMENTED );
 }
 
-DIP_EXPORT bool ImageIsTIFF( String const& ) {
+bool ImageIsTIFF( String const& ) {
    DIP_THROW( E::NOT_IMPLEMENTED );
 }
 

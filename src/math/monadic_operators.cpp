@@ -49,7 +49,7 @@ template< typename T >
 bool dipm__IsFinite( T v ) { return !dipm__IsNaN( v ) && !dipm__IsInf( v ); }
 
 template< typename TPI, typename F >
-class DIP_EXPORT BinScanLineFilter : public Framework::ScanLineFilter {
+class BinScanLineFilter : public Framework::ScanLineFilter {
    public:
       BinScanLineFilter( F const& func ) : func_( func ) {}
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {

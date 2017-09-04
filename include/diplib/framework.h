@@ -495,7 +495,7 @@ inline void ScanDyadic(
 /// a single call of `func`. This cost is used to determine if it's worthwhile to parallelize the operation, see
 /// \ref design_multithreading.
 template< dip::uint N, typename TPI, typename F >
-class DIP_EXPORT VariadicScanLineFilter : public ScanLineFilter {
+class DIP_NO_EXPORT VariadicScanLineFilter : public ScanLineFilter {
    // Note that N is a compile-time constant, and consequently the compiler should be able to optimize all the loops
    // over N.
    public:

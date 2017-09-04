@@ -50,7 +50,7 @@ void Hypot( Image const& a, Image const& b, Image& out ) {
 namespace {
 
 template< typename TPI, typename F >
-class DIP_EXPORT MultiScanLineFilter : public Framework::ScanLineFilter {
+class MultiScanLineFilter : public Framework::ScanLineFilter {
    public:
       MultiScanLineFilter( F const& func ) : func_( func ) {}
       virtual dip::uint GetNumberOfOperations( dip::uint nInput, dip::uint, dip::uint ) override { return nInput; } // assuming this is only used for Supremum and Infimum!
@@ -129,7 +129,7 @@ void SignedInfimum( Image const& a, Image const& b, Image& out ) {
 namespace {
 
 template< typename TPI >
-class DIP_EXPORT LinearCombinationScanLineFilter: public Framework::ScanLineFilter {
+class LinearCombinationScanLineFilter: public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {

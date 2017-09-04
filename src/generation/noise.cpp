@@ -30,7 +30,7 @@ namespace dip {
 // TODO: Is there false sharing in these line filters?
 
 namespace {
-class DIP_EXPORT UniformScanLineFilter : public Framework::ScanLineFilter {
+class UniformScanLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -77,7 +77,7 @@ void UniformNoise( Image const& in, Image& out, Random& random, dfloat lowerBoun
 }
 
 namespace {
-class DIP_EXPORT GaussianScanLineFilter : public Framework::ScanLineFilter {
+class GaussianScanLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 150; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -93,7 +93,7 @@ class DIP_EXPORT GaussianScanLineFilter : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override  {
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
          generatorArray_.resize( threads );
          generatorArray_[ 0 ] = std::unique_ptr< GaussianRandomGenerator >( new GaussianRandomGenerator( random_ ));
          if( threads > 1 ) {
@@ -112,7 +112,7 @@ class DIP_EXPORT GaussianScanLineFilter : public Framework::ScanLineFilter {
       std::vector< std::unique_ptr< GaussianRandomGenerator >> generatorArray_;
       dfloat std_;
 };
-} // namespace
+}
 
 void GaussianNoise( Image const& in, Image& out, Random& random, dfloat variance ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -123,7 +123,7 @@ void GaussianNoise( Image const& in, Image& out, Random& random, dfloat variance
 }
 
 namespace {
-class DIP_EXPORT PoissonScanLineFilter : public Framework::ScanLineFilter {
+class PoissonScanLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 800; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -139,7 +139,7 @@ class DIP_EXPORT PoissonScanLineFilter : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override  {
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
          generatorArray_.resize( threads );
          generatorArray_[ 0 ] = std::make_unique< PoissonRandomGenerator >( random_ );
          if( threads > 1 ) {
@@ -158,7 +158,7 @@ class DIP_EXPORT PoissonScanLineFilter : public Framework::ScanLineFilter {
       std::vector< std::unique_ptr< PoissonRandomGenerator >> generatorArray_;
       dfloat conversion_;
 };
-} // namespace
+}
 
 void PoissonNoise( Image const& in, Image& out, Random& random, dfloat conversion ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -169,7 +169,7 @@ void PoissonNoise( Image const& in, Image& out, Random& random, dfloat conversio
 }
 
 namespace {
-class DIP_EXPORT BinaryScanLineFilter : public Framework::ScanLineFilter {
+class BinaryScanLineFilter : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
@@ -185,7 +185,7 @@ class DIP_EXPORT BinaryScanLineFilter : public Framework::ScanLineFilter {
             out += outStride;
          }
       }
-      virtual void SetNumberOfThreads( dip::uint threads ) override  {
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
          generatorArray_.resize( threads );
          generatorArray_[ 0 ] = std::make_unique< BinaryRandomGenerator >( random_ );
          if( threads > 1 ) {
@@ -205,7 +205,7 @@ class DIP_EXPORT BinaryScanLineFilter : public Framework::ScanLineFilter {
       dfloat pForeground;
       dfloat pBackground;
 };
-} // namespace
+}
 
 void BinaryNoise( Image const& in, Image& out, Random& random, dfloat p10, dfloat p01 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );

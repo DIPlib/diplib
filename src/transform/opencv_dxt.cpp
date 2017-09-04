@@ -637,15 +637,15 @@ void DFT< T >::Apply(
 }
 
 // Explicit instantiations:
-template DIP_EXPORT void DFT< float >::Initialize( int nfft, bool inverse );
-template DIP_EXPORT void DFT< double >::Initialize( int nfft, bool inverse );
-template DIP_EXPORT void DFT< float >::Apply(
+template void DFT< float >::Initialize( int nfft, bool inverse );
+template void DFT< double >::Initialize( int nfft, bool inverse );
+template void DFT< float >::Apply(
       const std::complex< float >* src,
       std::complex< float >* dst,
       std::complex< float >* buf,
       float scale
 ) const;
-template DIP_EXPORT void DFT< double >::Apply(
+template void DFT< double >::Apply(
       const std::complex< double >* src,
       std::complex< double >* dst,
       std::complex< double >* buf,
