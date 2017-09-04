@@ -59,6 +59,9 @@ class UniformScanLineFilter : public Framework::ScanLineFilter {
       }
       UniformScanLineFilter( Random& random, dfloat lowerBound, dfloat upperBound ) :
             random_( random ), lowerBound_( lowerBound ), upperBound_( upperBound ) {}
+      // Make the class non copyable (generatorArray_ cannot be copied)
+      UniformScanLineFilter(const UniformScanLineFilter&) = delete;
+      UniformScanLineFilter& operator =(const UniformScanLineFilter&) = delete;
    private:
       Random& random_;
       std::vector< Random > randomArray_;
@@ -95,7 +98,7 @@ class GaussianScanLineFilter : public Framework::ScanLineFilter {
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          generatorArray_.resize( threads );
-         generatorArray_[ 0 ] = std::unique_ptr< GaussianRandomGenerator >( new GaussianRandomGenerator( random_ ));
+         generatorArray_[ 0 ] = std::make_unique< GaussianRandomGenerator >( random_ );
          if( threads > 1 ) {
             randomArray_.resize( threads - 1, Random( 0 ));
             for( dip::uint ii = 1; ii < threads; ++ii ) {
@@ -104,8 +107,10 @@ class GaussianScanLineFilter : public Framework::ScanLineFilter {
             }
          }
       }
-      GaussianScanLineFilter( Random& random, dfloat std ) :
-            random_( random ), std_( std ) {}
+      GaussianScanLineFilter( Random& random, dfloat std ) : random_( random ), std_( std ) {}
+      // Make the class non copyable (generatorArray_ cannot be copied)
+      GaussianScanLineFilter(const GaussianScanLineFilter&) = delete;
+      GaussianScanLineFilter& operator =(const GaussianScanLineFilter&) = delete;
    private:
       Random& random_;
       std::vector< Random > randomArray_;
@@ -150,8 +155,10 @@ class PoissonScanLineFilter : public Framework::ScanLineFilter {
             }
          }
       }
-      PoissonScanLineFilter( Random& random, dfloat conversion ) :
-            random_( random ), conversion_( conversion ) {}
+      PoissonScanLineFilter( Random& random, dfloat conversion ) : random_( random ), conversion_( conversion ) {}
+      // Make the class non copyable (generatorArray_ cannot be copied)
+      PoissonScanLineFilter(const PoissonScanLineFilter&) = delete;
+      PoissonScanLineFilter& operator =(const PoissonScanLineFilter&) = delete;
    private:
       Random& random_;
       std::vector< Random > randomArray_;
@@ -198,6 +205,9 @@ class BinaryScanLineFilter : public Framework::ScanLineFilter {
       }
       BinaryScanLineFilter( Random& random, dfloat p10, dfloat p01 ) :
             random_( random ), pForeground( 1.0 - p10 ), pBackground( p01 ) {}
+      // Make the class non copyable (generatorArray_ cannot be copied)
+      BinaryScanLineFilter(const BinaryScanLineFilter&) = delete;
+      BinaryScanLineFilter& operator =(const BinaryScanLineFilter&) = delete;
    private:
       Random& random_;
       std::vector< Random > randomArray_;

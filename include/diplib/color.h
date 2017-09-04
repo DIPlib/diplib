@@ -68,7 +68,7 @@ class DIP_EXPORT ColorSpaceConverter {
 };
 
 /// \brief A pointer to a color space conversion object
-using ColorSpaceConverterPointer = std::unique_ptr< ColorSpaceConverter >;
+using ColorSpaceConverterPointer = std::shared_ptr< ColorSpaceConverter >;
 
 
 /// \brief An object of this class is used to convert images between color spaces.
@@ -268,6 +268,10 @@ class DIP_NO_EXPORT ColorSpaceManager {
          std::map< dip::uint, ColorSpaceConverterPointer > edges;  // The key is the target color space index
          ColorSpace( String const& name, dip::uint chans ) :
                name( name ), nChannels( chans ) {}
+
+         // Make the struct non copyable (edges cannot be copied)
+         //ColorSpace(ColorSpace const&) = delete;   // TODO: function is still called inside emplace_back() in Define() ... why?
+         ColorSpace& operator =(ColorSpace const&) = delete;
       };
 
       std::map< String, dip::uint > names_;
