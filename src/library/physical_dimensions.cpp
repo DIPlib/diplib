@@ -329,7 +329,7 @@ dip::String Units::String() const {
    // The prefix
    if( power_[ 0 ] != 0 ) {
       dip::sint p = FirstPower();
-      dip::sint n = div_floor( power_[ 0 ], p );
+      dip::sint n = div_floor< dip::sint >( power_[ 0 ], p );
       if(( n < -5 ) || ( n > 6 )) {
          // We cannot print an SI prefix, just print a 10^n instead.
          n = 0;

@@ -332,7 +332,7 @@ void ReadTIFFColorMap(
    uint32 imageLength = static_cast< uint32 >( image.Size( 1 ));
    dip::uint scanline = static_cast< dip::uint >( TIFFScanlineSize( tiff ));
    if( bitsPerSample == 4 ) {
-      DIP_THROW_IF(( scanline != div_ceil( image.Size( 0 ), 2u )), "Wrong scanline size" );
+      DIP_THROW_IF(( scanline != div_ceil< dip::uint >( image.Size( 0 ), 2 )), "Wrong scanline size" );
    } else {
       DIP_THROW_IF(( scanline != image.Size( 0 )), "Wrong scanline size" );
    }
@@ -423,7 +423,7 @@ void ReadTIFFBinary(
    uint32 imageWidth = static_cast< uint32 >( image.Size( 0 ));
    uint32 imageLength = static_cast< uint32 >( image.Size( 1 ));
    dip::uint scanline = static_cast< dip::uint >( TIFFScanlineSize( tiff ));
-   DIP_THROW_IF(( scanline != div_ceil( image.Size( 0 ), 8u )), "Wrong scanline size" );
+   DIP_THROW_IF(( scanline != div_ceil< dip::uint >( image.Size( 0 ), 8 )), "Wrong scanline size" );
    std::vector< uint8 > buf( static_cast< dip::uint >( TIFFStripSize( tiff )));
    uint32 rowsPerStrip;
    TIFFGetFieldDefaulted( tiff, TIFFTAG_ROWSPERSTRIP, &rowsPerStrip );

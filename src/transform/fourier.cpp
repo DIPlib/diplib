@@ -173,7 +173,7 @@ void FourierTransform(
             dip::uint sz;
             sz = GetOptimalDFTSize( outSize[ ii ] ); // Awkward: OpenCV uses int a lot. We cannot handle image sizes larger than can fit in an int (2^31-1 on most platforms)
             DIP_THROW_IF( sz < 1u, "Cannot pad image dimension to a larger \"fast\" size." );
-            border[ ii ] = div_ceil( sz - outSize[ ii ], 2 );
+            border[ ii ] = div_ceil< dip::uint >( sz - outSize[ ii ], 2 );
             outSize[ ii ] = sz;
          }
       }

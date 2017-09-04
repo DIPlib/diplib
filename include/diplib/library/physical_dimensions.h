@@ -246,7 +246,7 @@ class DIP_NO_EXPORT Units {
          } else {
             dip::sint fp = FirstPower();
             dip::sint newpower = div_floor( thousands, fp ) * fp;
-            newpower = clamp( newpower, -5l, 6l ); // these are the SI prefixes that dip::Units knows.
+            newpower = clamp< dip::sint >( newpower, -5l, 6l ); // these are the SI prefixes that dip::Units knows.
             power_[ 0 ] = static_cast< dip::sint8 >( newpower );
             thousands -= newpower;
             return thousands;
@@ -477,7 +477,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       dip::sint oldthousands = units.Thousands();
       dip::sint zeros = static_cast< dip::sint >( std::floor( std::log10( magnitude ))) + 1; // the +1 gives a nicer range of magnitudes
       // dip::sint newthousands = dip::sint( std::round(( zeros + 3 * oldthousands ) / 3 - 0.1 )); // this gives values [0.1,100) for ^1 and [0.01,10000) for ^2.
-      dip::sint newthousands = div_floor(( zeros + 3 * oldthousands ), 3 ) - oldthousands;
+      dip::sint newthousands = div_floor< dip::sint >(( zeros + 3 * oldthousands ), 3 ) - oldthousands;
       dip::sint excessthousands = units.AdjustThousands( newthousands );
       magnitude *= std::pow( 10.0, 3 * ( excessthousands - newthousands ));
       return *this;

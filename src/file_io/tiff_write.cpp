@@ -218,7 +218,7 @@ void WriteTIFFStrips(
    // Write it to the file
    tmsize_t scanline = TIFFScanlineSize( tiff );
    if( binary ) {
-      DIP_THROW_IF(( static_cast< dip::uint >( scanline ) != div_ceil( image.Size( 0 ), 8 )), "Wrong scanline size" );
+      DIP_THROW_IF(( static_cast< dip::uint >( scanline ) != div_ceil< dip::uint >( image.Size( 0 ), 8 )), "Wrong scanline size" );
       DIP_ASSERT( tensorElements == 1 );
    } else {
       DIP_THROW_IF(( static_cast< dip::uint >( scanline ) != image.Size( 0 ) * tensorElements * sizeOf ), "Wrong scanline size" );

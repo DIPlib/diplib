@@ -68,17 +68,20 @@ inline dip::uint gcd( dip::uint a, dip::uint b ) {
    return b == 0 ? a : gcd( b, a % b );
 }
 
-
-/// \brief Integer division, return ceil.
-inline dip::uint div_ceil( dip::uint lhs, dip::uint rhs ) {
+/// \brief Integer division, unsigned, return ceil.
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value && !std::is_signed<T>::value, T>::type
+div_ceil( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
    return ( lhs - 1 ) / rhs + 1;
 }
 
-/// \brief Integer division, return ceil.
-inline dip::sint div_ceil( dip::sint lhs, dip::sint rhs ) {
+/// \brief Integer division, signed, return ceil.
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value, T>::type
+div_ceil( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
@@ -93,16 +96,20 @@ inline dip::sint div_ceil( dip::sint lhs, dip::sint rhs ) {
    }
 }
 
-/// \brief Integer division, return floor.
-inline dip::uint div_floor( dip::uint lhs, dip::uint rhs ) {
+/// \brief Integer division, unsigned, return floor.
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value && !std::is_signed<T>::value, T>::type
+div_floor( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
    return lhs / rhs;
 }
 
-/// \brief Integer division, return floor.
-inline dip::sint div_floor( dip::sint lhs, dip::sint rhs ) {
+/// \brief Integer division, signed, return floor.
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value, T>::type
+div_floor( T lhs, T rhs ) {
    if( lhs * rhs == 0 ) {
       return 0;
    }
@@ -118,12 +125,9 @@ inline dip::sint div_floor( dip::sint lhs, dip::sint rhs ) {
 }
 
 /// \brief Integer division, return rounded.
-inline dip::uint div_round( dip::uint lhs, dip::uint rhs ) {
-   return div_floor( lhs + rhs / 2, rhs );
-}
-
-/// \brief Integer division, return rounded.
-inline dip::sint div_round( dip::sint lhs, dip::sint rhs ) {
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value, T>::type
+div_round( T lhs, T rhs ) {
    return div_floor( lhs + rhs / 2, rhs );
 }
 
