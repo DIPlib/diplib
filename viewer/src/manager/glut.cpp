@@ -65,7 +65,7 @@ void GLUTManager::createWindow(WindowPtr window)
   while (new_window_)
   {
     mutex_.unlock();
-    usleep(0);
+    std::this_thread::sleep_for(std::chrono::microseconds(0));
     mutex_.lock();
   }
   
@@ -135,7 +135,7 @@ void GLUTManager::run()
     idle();
     
     mutex_.unlock();
-    usleep(1000);
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
   
   windows_.clear();
@@ -162,7 +162,7 @@ void GLUTManager::destroyWindow(WindowPtr window, bool glutDestroy)
     destroyed_window_ = window;
     mutex_.unlock();
     while (destroyed_window_)
-      usleep(0);
+      std::this_thread::sleep_for(std::chrono::microseconds(0));
     mutex_.lock();
   }
 }

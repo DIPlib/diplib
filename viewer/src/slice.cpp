@@ -17,11 +17,7 @@
  * limitations under the License.
  */
 
-#ifdef __APPLE__
-  #include <OpenGL/gl.h>
-#else
-  #include <GL/gl.h>
-#endif
+#include "diplib/viewer/include_gl.h"
 
 #undef DIP__ENABLE_DOCTEST
 #include "diplib/statistics.h"
@@ -524,7 +520,8 @@ void SliceViewer::create()
   thread_ = std::thread(&SliceViewer::calculateTextures, this);
   
   // Wait for first projection
-  while (!updated_) usleep(1000);
+  while (!updated_)
+     std::this_thread::sleep_for(std::chrono::microseconds(1000));
 }
 
 void SliceViewer::place()
@@ -605,7 +602,8 @@ void SliceViewer::calculateTextures()
   while (continue_)
   {
     // Make sure we don't lose updates
-    while (updated_) usleep(1000);
+    while (updated_)
+       std::this_thread::sleep_for(std::chrono::microseconds(1000));
   
     mutex_.lock();
     ViewingOptions::Diff diff = options.diff(options_);
@@ -684,6 +682,6 @@ void SliceViewer::calculateTextures()
       refresh();
     }
 
-    usleep(1000);
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
 }

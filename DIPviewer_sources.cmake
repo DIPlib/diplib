@@ -5,6 +5,7 @@ viewer/include/diplib/viewer/glfw.h
 viewer/include/diplib/viewer/glut.h
 viewer/include/diplib/viewer/histogram.h
 viewer/include/diplib/viewer/image.h
+viewer/include/diplib/viewer/include_gl.h
 viewer/include/diplib/viewer/manager.h
 viewer/include/diplib/viewer/slice.h
 viewer/include/diplib/viewer/tensor.h

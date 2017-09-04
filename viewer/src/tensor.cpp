@@ -17,12 +17,7 @@
  * limitations under the License.
  */
 
-#ifdef __APPLE__
-  #include <OpenGL/gl.h>
-#else
-  #include <GL/gl.h>
-#endif
-
+#include "diplib/viewer/include_gl.h"
 #include "diplib/viewer/tensor.h"
 
 using namespace dip;

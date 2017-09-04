@@ -17,11 +17,7 @@
  * limitations under the License.
  */
 
-#ifdef __APPLE__
-  #include <OpenGL/gl.h>
-#else
-  #include <GL/gl.h>
-#endif
+#include "diplib/viewer/include_gl.h"
 
 #undef DIP__ENABLE_DOCTEST
 #include "diplib/statistics.h"
@@ -116,8 +112,8 @@ void HistogramViewPort::render()
       
         // Current value
         glBegin(GL_LINES);
-          glVertex2f(0., (GLfloat)((p[(dip::uint)o.color_elements_[ii]]-o.range_.first)/(o.range_.second-o.range_.first)));
-          glVertex2f(1., (GLfloat)((p[(dip::uint)o.color_elements_[ii]]-o.range_.first)/(o.range_.second-o.range_.first)));
+          glVertex2f(0., (GLfloat)(((dip::dfloat)p[(dip::uint)o.color_elements_[ii]]-o.range_.first)/(o.range_.second-o.range_.first)));
+          glVertex2f(1., (GLfloat)(((dip::dfloat)p[(dip::uint)o.color_elements_[ii]]-o.range_.first)/(o.range_.second-o.range_.first)));
         glEnd();
       }
     glDisable(GL_BLEND);
@@ -138,8 +134,8 @@ void HistogramViewPort::render()
     
     // Current value
     glBegin(GL_LINES);
-      glVertex2f(0., (GLfloat)((p[o.element_]-o.range_.first)/(o.range_.second-o.range_.first)));
-      glVertex2f(1., (GLfloat)((p[o.element_]-o.range_.first)/(o.range_.second-o.range_.first)));
+      glVertex2f(0., (GLfloat)(((dip::dfloat)p[o.element_]-o.range_.first)/(o.range_.second-o.range_.first)));
+      glVertex2f(1., (GLfloat)(((dip::dfloat)p[o.element_]-o.range_.first)/(o.range_.second-o.range_.first)));
     glEnd();
   }
   
