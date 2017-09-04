@@ -60,9 +60,10 @@
 #include <string.h>
 #include "libics_intern.h"
 
-
-#include "zlib.h"
-
+// Include zlib.h only when available
+#ifdef ICS_ZLIB
+    #include "zlib.h"
+#endif
 
 #define DEF_MEM_LEVEL 8 /* Default value defined in zutil.h */
 
