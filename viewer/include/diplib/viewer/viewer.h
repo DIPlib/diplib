@@ -34,7 +34,7 @@
 typedef std::pair<dip::dfloat, dip::dfloat> FloatRange;
 typedef dip::DimensionArray<FloatRange > FloatRangeArray;
 
-struct DIP_EXPORT ViewingOptions
+struct DIPVIEWER_EXPORT ViewingOptions
 {
   enum class ComplexToReal { Real, Imaginary, Magnitude, Phase };
   enum class Mapping { ZeroOne, Normal, Linear, Symmetric, Logarithmic };
@@ -173,7 +173,7 @@ struct DIP_EXPORT ViewingOptions
   }  
 };
 
-class DIP_EXPORT View
+class DIPVIEWER_EXPORT View
 {
   protected:
     class ViewPort *viewport_;
@@ -194,7 +194,7 @@ class DIP_EXPORT View
     class ViewPort *viewport() { return viewport_; }
 };
 
-class DIP_EXPORT ViewPort
+class DIPVIEWER_EXPORT ViewPort
 {
   protected:
     class Viewer *viewer_;
@@ -229,7 +229,7 @@ class DIP_EXPORT ViewPort
     int height() { return height_; }
 };
 
-class DIP_EXPORT Viewer : public Window
+class DIPVIEWER_EXPORT Viewer : public Window
 {
   protected:
     std::string name_;

@@ -22,7 +22,7 @@
 
 #include "diplib/viewer/viewer.h"
 
-class DIP_EXPORT TensorViewPort : public ViewPort
+class DIPVIEWER_EXPORT TensorViewPort : public ViewPort
 {
   public:
     TensorViewPort(Viewer *viewer) : ViewPort(viewer) { }

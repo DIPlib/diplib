@@ -30,7 +30,7 @@
 #include "diplib/viewer/histogram.h"
 #include "diplib/viewer/control.h"
 
-class DIP_EXPORT SliceView : public View
+class DIPVIEWER_EXPORT SliceView : public View
 {
   protected:
     dip::Image projected_, ///< Projected (2D) image.
@@ -55,7 +55,7 @@ class DIP_EXPORT SliceView : public View
     dip::uint dimy() { return dimy_; }
 };
 
-class DIP_EXPORT SliceViewPort : public ViewPort
+class DIPVIEWER_EXPORT SliceViewPort : public ViewPort
 {
   protected:
     SliceView *view_;
@@ -77,7 +77,7 @@ class DIP_EXPORT SliceViewPort : public ViewPort
     void screenToView(int x, int y, double *ix, double *iy);
 };
 
-class DIP_EXPORT SliceViewer : public Viewer
+class DIPVIEWER_EXPORT SliceViewer : public Viewer
 {
   protected:
     ViewingOptions options_;

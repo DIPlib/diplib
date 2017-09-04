@@ -23,7 +23,7 @@
 #include "diplib/viewer/manager.h"
 #include "diplib/viewer/viewer.h"
 
-class DIP_EXPORT ImageView : public View
+class DIPVIEWER_EXPORT ImageView : public View
 {
   protected:
     class ViewPort *viewport_;
@@ -43,7 +43,7 @@ class DIP_EXPORT ImageView : public View
     dip::Image &image() { return image_; }
 };
 
-class DIP_EXPORT ImageViewPort : public ViewPort
+class DIPVIEWER_EXPORT ImageViewPort : public ViewPort
 {
   protected:
     ImageView *view_;
@@ -62,7 +62,7 @@ class DIP_EXPORT ImageViewPort : public ViewPort
     ImageView *view() { return view_; }
 };
 
-class DIP_EXPORT ImageViewer : public Viewer
+class DIPVIEWER_EXPORT ImageViewer : public Viewer
 {
   protected:
     ViewingOptions options_;

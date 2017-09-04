@@ -22,7 +22,7 @@
 
 #include "diplib/viewer/viewer.h"
 
-class DIP_EXPORT ControlViewPort : public ViewPort
+class DIPVIEWER_EXPORT ControlViewPort : public ViewPort
 {
   protected:
     std::vector<std::vector<dip::String> > lists_;

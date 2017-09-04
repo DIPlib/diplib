@@ -27,7 +27,7 @@
 #include "manager.h"
 
 /// Simple GLFW window manager
-class DIP_EXPORT GLFWManager : public Manager
+class DIPVIEWER_EXPORT GLFWManager : public Manager
 {
   protected:
     bool refresh_;

@@ -26,7 +26,7 @@
 #include "diplib/viewer/viewer.h"
 #include "diplib/viewer/image.h"
 
-class DIP_EXPORT HistogramViewPort : public ViewPort
+class DIPVIEWER_EXPORT HistogramViewPort : public ViewPort
 {
   protected:
     ImageView colorbar_;

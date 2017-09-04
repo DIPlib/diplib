@@ -22,10 +22,10 @@
 
 #include <memory>
 
-#include "dip_export.h"
+#include "dipviewer_export.h"
 
 /// Simple GL window
-class DIP_EXPORT Window
+class DIPVIEWER_EXPORT Window
 {
   friend class GLUTManager;
   friend class GLFWManager;
@@ -82,7 +82,7 @@ class DIP_EXPORT Window
 typedef std::shared_ptr<Window> WindowPtr;
 
 /// Simple window manager
-class DIP_EXPORT Manager
+class DIPVIEWER_EXPORT Manager
 {
   friend class Window;
 

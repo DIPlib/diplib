@@ -27,7 +27,7 @@
 #include "manager.h"
 
 /// Simple GLUT window manager
-class DIP_EXPORT GLUTManager : public Manager
+class DIPVIEWER_EXPORT GLUTManager : public Manager
 {
   protected:
     std::thread thread_;
