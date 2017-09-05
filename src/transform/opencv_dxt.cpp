@@ -3,10 +3,11 @@
 //    - Using the C++ Standard Library for std::complex, std::vector, std::swap, etc.
 //    - Simplified expressions that do complex arithmetic (because we're using std::complex).
 //    - Removed all unnecessary functions and functionality, leaving only DFT() and support.
-//    - Moved everything into an anonymous namespace.
-//    - Added a class DFTOptions to call and hold results of DFTFactorize() and DFTInit().
-//    - Passing std::vectors instead of naked pointers into DFT.
+//    - Encapsulated all functionality in a class DFT.
+//    - Added anonymous namespaces.
+//    - Using std::vector for buffers.
 // NOTE!
+//    If you are wondering why some complex multiplications are written out:
 //    The multiplication for two std::complex values is 3-8 times slower than the equivalent
 //    hand-written code. I presume this is because of the tests for NaN that the Std Lib must
 //    do because of the definition of complex infinity. With GCC-5 and particular optimization
@@ -60,6 +61,7 @@
 #include <cstring>
 
 #include "diplib/library/error.h"
+#include "diplib/dft.h"
 
 
 #if defined(__GNUG__) || defined(__clang__)
@@ -68,6 +70,8 @@
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
+
+namespace dip {
 
 namespace {
 
@@ -132,221 +136,185 @@ constexpr static const std::complex< double > DFTTab[] = {
       { 1.00000000000000000,  -0.00000000292583616 }
 };
 
-// DFTOptions opts( size, inverse ); // creates the object with all the data ready to start running DFTs.
-// std::vector< std::complex< T >> buf( opts.bufferSize() ); // creates a buffer
-// DFT( in, out, buf.data(), opts ); // runs a DFT. Repeat as necessary.
-// opts.DFTInit( size2, inverse ); // changes the options for the new size / direction.
-// buf.resize( opts.bufferSize() ); // resizes the buffer
-// DFT( in, out, buf.data(), opts ); // runs a different DFT. Repeat as necessary.
+std::vector< int > DFTFactorize( int n ) {
+   std::vector< int > factors;
+   factors.reserve( 34 ); // seems to be the max number of factors we'll ever get (given 31-bit limit?)
+
+   if( n <= 5 ) {
+      factors.push_back( n );
+      return factors;
+   }
+
+   int f = ((( n - 1 ) ^ n ) + 1 ) >> 1;
+   if( f > 1 ) {
+      factors.push_back( f );
+      n = f == n ? 1 : n / f;
+   }
+   for( f = 3; n > 1; ) {
+      int d = n / f;
+      if( d * f == n ) {
+         factors.push_back( f );
+         n = d;
+      } else {
+         f += 2;
+         if( f * f > n ) {
+            break;
+         }
+      }
+   }
+   if( n > 1 ) {
+      factors.push_back( n );
+   }
+
+   f = ( factors[ 0 ] & 1 ) == 0;
+   for( int i = f; i < ( int( factors.size()) + f ) / 2; i++ ) {
+      std::swap( factors[ i ], factors[ factors.size() - i - 1 + f ] );
+   }
+
+   return factors;
+}
+
+} // namespace
+
 template< typename T >
-class DFTOptions {
+void DFT< T >::Initialize( int nfft, bool inverse ) {
+   DIP_ASSERT( nfft > 0 );
+   nfft_ = nfft;
+   inverse_ = inverse;
+   factors_ = DFTFactorize( nfft_ );
+   sz_ = 0;
+   {
+      int ii = factors_.size() > 1 && ( factors_[ 0 ] & 1 ) == 0;
+      if(( factors_[ ii ] & 1 ) != 0 && factors_[ ii ] > 5 ) {
+         sz_ += ( factors_[ ii ] + 1 );
+      }
+   }
+   itab_.resize( nfft_ );
+   wave_.resize( nfft_ );
 
-   public:
+   int n = factors_[ 0 ];
+   int m = 0;
+   if( nfft_ <= 5 ) {
+      itab_[ 0 ] = 0;
+      itab_[ nfft_ - 1 ] = nfft_ - 1;
 
-      DFTOptions() {} // Default-initialized options has nfft==0 and sz==0
-
-      DFTOptions( int nfft_, bool inverse_ ) {
-         DFTInit( nfft_, inverse_ );
+      if( nfft_ != 4 ) {
+         for( int i = 1; i < nfft_ - 1; i++ ) {
+            itab_[ i ] = i;
+         }
+      } else {
+         itab_[ 1 ] = 2;
+         itab_[ 2 ] = 1;
+      }
+      if( nfft_ == 5 ) {
+         wave_[ 0 ] = { 1., 0. };
+      }
+      if( nfft_ != 4 ) {
+         return;
+      }
+      m = 2;
+   } else {
+      // radix[] is initialized from index 'nf' down to zero
+      DIP_ASSERT ( factors_.size() < 34 );
+      int digits[34];
+      int radix[34];
+      radix[ factors_.size() ] = 1;
+      digits[ factors_.size() ] = 0;
+      for( size_t i = 0; i < factors_.size(); i++ ) {
+         digits[ i ] = 0;
+         radix[ factors_.size() - i - 1 ] = radix[ factors_.size() - i ] * factors_[ factors_.size() - i - 1 ];
       }
 
-      void DFTInit( int nfft_, bool inverse_ ) {
-         DIP_ASSERT( nfft_ > 0 );
-         nfft = nfft_;
-         inverse = inverse_;
-         factors = DFTFactorize( nfft );
-         sz = 0;
-         {
-            int ii = factors.size() > 1 && ( factors[ 0 ] & 1 ) == 0;
-            if(( factors[ ii ] & 1 ) != 0 && factors[ ii ] > 5 ) {
-               sz += ( factors[ ii ] + 1 );
+      if(( n & 1 ) == 0 ) {
+         int a = radix[ 1 ];
+         int na2 = n * a >> 1;
+         int na4 = na2 >> 1;
+         for( m = 0; ( unsigned )( 1 << m ) < ( unsigned )n; m++ ) {}
+         if( n <= 2 ) {
+            itab_[ 0 ] = 0;
+            itab_[ 1 ] = na2;
+         } else if( n <= 256 ) {
+            int shift = 10 - m;
+            for( int i = 0; i <= n - 4; i += 4 ) {
+               int j = ( bitrevTab[ i >> 2 ] >> shift ) * a;
+               itab_[ i ] = j;
+               itab_[ i + 1 ] = j + na2;
+               itab_[ i + 2 ] = j + na4;
+               itab_[ i + 3 ] = j + na2 + na4;
             }
-         }
-         itab.resize( nfft );
-         wave.resize( nfft );
-
-         int n = factors[ 0 ];
-         int m = 0;
-         if( nfft <= 5 ) {
-            itab[ 0 ] = 0;
-            itab[ nfft - 1 ] = nfft - 1;
-
-            if( nfft != 4 ) {
-               for( int i = 1; i < nfft - 1; i++ ) {
-                  itab[ i ] = i;
-               }
-            } else {
-               itab[ 1 ] = 2;
-               itab[ 2 ] = 1;
-            }
-            if( nfft == 5 ) {
-               wave[ 0 ] = { 1., 0. };
-            }
-            if( nfft != 4 ) {
-               return;
-            }
-            m = 2;
          } else {
-            // radix[] is initialized from index 'nf' down to zero
-            DIP_ASSERT ( factors.size() < 34 );
-            int digits[34];
-            int radix[34];
-            radix[ factors.size() ] = 1;
-            digits[ factors.size() ] = 0;
-            for( size_t i = 0; i < factors.size(); i++ ) {
-               digits[ i ] = 0;
-               radix[ factors.size() - i - 1 ] = radix[ factors.size() - i ] * factors[ factors.size() - i - 1 ];
-            }
-
-            if(( n & 1 ) == 0 ) {
-               int a = radix[ 1 ];
-               int na2 = n * a >> 1;
-               int na4 = na2 >> 1;
-               for( m = 0; ( unsigned )( 1 << m ) < ( unsigned )n; m++ ) {}
-               if( n <= 2 ) {
-                  itab[ 0 ] = 0;
-                  itab[ 1 ] = na2;
-               } else if( n <= 256 ) {
-                  int shift = 10 - m;
-                  for( int i = 0; i <= n - 4; i += 4 ) {
-                     int j = ( bitrevTab[ i >> 2 ] >> shift ) * a;
-                     itab[ i ] = j;
-                     itab[ i + 1 ] = j + na2;
-                     itab[ i + 2 ] = j + na4;
-                     itab[ i + 3 ] = j + na2 + na4;
-                  }
-               } else {
-                  int shift = 34 - m;
-                  for( int i = 0; i < n; i += 4 ) {
-                     int i4 = i >> 2;
-                     int j = BitRev( i4, shift ) * a;
-                     itab[ i ] = j;
-                     itab[ i + 1 ] = j + na2;
-                     itab[ i + 2 ] = j + na4;
-                     itab[ i + 3 ] = j + na2 + na4;
-                  }
-               }
-
-               digits[ 1 ]++;
-
-               if( factors.size() >= 2 ) {
-                  for( int i = n, j = radix[ 2 ]; i < nfft; ) {
-                     for( int k = 0; k < n; k++ ) {
-                        itab[ i + k ] = itab[ k ] + j;
-                     }
-                     if(( i += n ) >= nfft ) {
-                        break;
-                     }
-                     j += radix[ 2 ];
-                     for( int k = 1; ++digits[ k ] >= factors[ k ]; k++ ) {
-                        digits[ k ] = 0;
-                        j += radix[ k + 2 ] - radix[ k ];
-                     }
-                  }
-               }
-            } else {
-               for( int i = 0, j = 0;; ) {
-                  itab[ i ] = j;
-                  if( ++i >= nfft ) {
-                     break;
-                  }
-                  j += radix[ 1 ];
-                  for( int k = 0; ++digits[ k ] >= factors[ k ]; k++ ) {
-                     digits[ k ] = 0;
-                     j += radix[ k + 2 ] - radix[ k ];
-                  }
-               }
+            int shift = 34 - m;
+            for( int i = 0; i < n; i += 4 ) {
+               int i4 = i >> 2;
+               int j = BitRev( i4, shift ) * a;
+               itab_[ i ] = j;
+               itab_[ i + 1 ] = j + na2;
+               itab_[ i + 2 ] = j + na4;
+               itab_[ i + 3 ] = j + na2 + na4;
             }
          }
 
-         std::complex< double > w, w1;
-         if(( nfft & ( nfft - 1 )) == 0 ) {
-            w = w1 = DFTTab[ m ];
-         } else {
-            double t = sin( -M_PI * 2 / nfft );
-            w = w1 = { std::sqrt( 1. - t * t ), t };
-         }
-         n = ( nfft + 1 ) / 2;
-         wave[ 0 ] = { 1., 0. };
-         if(( nfft & 1 ) == 0 ) {
-            wave[ n ] = { -1., 0. };
-         }
-         for( int i = 1; i < n; i++ ) {
-            wave[ i ] = w;
-            wave[ nfft - i ] = std::conj( w );
-            w = { w.real() * w1.real() - w.imag() * w1.imag(), w.real() * w1.imag() + w.imag() * w1.real() };
-         }
-      }
+         digits[ 1 ]++;
 
-      bool isInverse() const { return inverse; }
-      int transformSize() const { return nfft; }
-      std::vector< int > const& getFactors() const { return factors; }
-      std::vector< int > const& getITab() const { return itab; }
-      std::vector< std::complex< T >> const& getWave() const { return wave; }
-      int bufferSize() const { return sz; }
-
-   private:
-
-      int nfft = 0;
-      bool inverse;
-      std::vector< int > factors;
-      std::vector< int > itab;
-      std::vector< std::complex< T >> wave;
-      int sz = 0; // Size of the buffer to be passed to DFT.
-
-      static std::vector< int > DFTFactorize( int n ) {
-         std::vector< int > factors;
-         factors.reserve( 34 ); // seems to be the max number of factors we'll ever get (given 31-bit limit?)
-
-         if( n <= 5 ) {
-            factors.push_back( n );
-            return factors;
-         }
-
-         int f = ((( n - 1 ) ^ n ) + 1 ) >> 1;
-         if( f > 1 ) {
-            factors.push_back( f );
-            n = f == n ? 1 : n / f;
-         }
-         for( f = 3; n > 1; ) {
-            int d = n / f;
-            if( d * f == n ) {
-               factors.push_back( f );
-               n = d;
-            } else {
-               f += 2;
-               if( f * f > n ) {
+         if( factors_.size() >= 2 ) {
+            for( int i = n, j = radix[ 2 ]; i < nfft_; ) {
+               for( int k = 0; k < n; k++ ) {
+                  itab_[ i + k ] = itab_[ k ] + j;
+               }
+               if(( i += n ) >= nfft_ ) {
                   break;
                }
+               j += radix[ 2 ];
+               for( int k = 1; ++digits[ k ] >= factors_[ k ]; k++ ) {
+                  digits[ k ] = 0;
+                  j += radix[ k + 2 ] - radix[ k ];
+               }
             }
          }
-         if( n > 1 ) {
-            factors.push_back( n );
+      } else {
+         for( int i = 0, j = 0;; ) {
+            itab_[ i ] = j;
+            if( ++i >= nfft_ ) {
+               break;
+            }
+            j += radix[ 1 ];
+            for( int k = 0; ++digits[ k ] >= factors_[ k ]; k++ ) {
+               digits[ k ] = 0;
+               j += radix[ k + 2 ] - radix[ k ];
+            }
          }
-
-         f = ( factors[ 0 ] & 1 ) == 0;
-         for( int i = f; i < ( int( factors.size() ) + f ) / 2; i++ ) {
-            std::swap( factors[ i ], factors[ factors.size() - i - 1 + f ] );
-         }
-
-         return factors;
       }
-};
+   }
 
+   std::complex< double > w, w1;
+   if(( nfft_ & ( nfft_ - 1 )) == 0 ) {
+      w = w1 = DFTTab[ m ];
+   } else {
+      double t = sin( -M_PI * 2 / nfft_ );
+      w = w1 = { std::sqrt( 1. - t * t ), t };
+   }
+   n = ( nfft_ + 1 ) / 2;
+   wave_[ 0 ] = { 1., 0. };
+   if(( nfft_ & 1 ) == 0 ) {
+      wave_[ n ] = { -1., 0. };
+   }
+   for( int i = 1; i < n; i++ ) {
+      wave_[ i ] = w;
+      wave_[ nfft_ - i ] = std::conj( w );
+      w = { w.real() * w1.real() - w.imag() * w1.imag(), w.real() * w1.imag() + w.imag() * w1.real() };
+   }
+}
 
 template< typename T >
-void DFT(
-      const std::complex< T >* src,
-      std::complex< T >* dst,
-      std::complex< T >* buf,
-      DFTOptions< T > const& options,
+void DFT< T >::Apply(
+      const std::complex< T >* source,
+      std::complex< T >* destination,
+      std::complex< T >* buffer,
       T scale
-) {
-   int n = options.transformSize();
-   bool inv = options.isInverse();
-   std::vector< int > const& factors = options.getFactors();
-   int const* itab = options.getITab().data();
-   std::vector< std::complex< T >> const& wave = options.getWave();
-   int nf = int(factors.size());
+) const {
+   int n = nfft_;
+   int const* itab = itab_.data();
+   int nf = int( factors_.size());
    int tab_size = n;
    int n0 = n;
    int dw0 = tab_size;
@@ -354,43 +322,43 @@ void DFT(
    int tab_step = 1;
 
    // 0. shuffle data
-   if( dst != src ) {
-      if( !inv ) {
+   if( destination != source ) {
+      if( !inverse_ ) {
          int i;
          for( i = 0; i <= n - 2; i += 2, itab += 2 * tab_step ) {
             int k0 = itab[ 0 ], k1 = itab[ tab_step ];
             DIP_ASSERT(( unsigned )k0 < ( unsigned )n && ( unsigned )k1 < ( unsigned )n );
-            dst[ i ] = src[ k0 ];
-            dst[ i + 1 ] = src[ k1 ];
+            destination[ i ] = source[ k0 ];
+            destination[ i + 1 ] = source[ k1 ];
          }
          if( i < n ) {
-            dst[ n - 1 ] = src[ n - 1 ];
+            destination[ n - 1 ] = source[ n - 1 ];
          }
       } else {
          int i;
          for( i = 0; i <= n - 2; i += 2, itab += 2 * tab_step ) {
             int k0 = itab[ 0 ], k1 = itab[ tab_step ];
             DIP_ASSERT(( unsigned )k0 < ( unsigned )n && ( unsigned )k1 < ( unsigned )n );
-            dst[ i ] = std::conj( src[ k0 ] );
-            dst[ i + 1 ] = std::conj( src[ k1 ] );
+            destination[ i ] = std::conj( source[ k0 ] );
+            destination[ i + 1 ] = std::conj( source[ k1 ] );
          }
          if( i < n ) {
-            dst[ i ] = std::conj( src[ n - 1 ] );
+            destination[ i ] = std::conj( source[ n - 1 ] );
          }
       }
    } else {
-      DIP_ASSERT( factors[ 0 ] == factors[ nf - 1 ] );
+      DIP_ASSERT( factors_[ 0 ] == factors_[ nf - 1 ] );
       if( nf == 1 ) {
          if(( n & 3 ) == 0 ) {
             int n2 = n / 2;
-            std::complex< T >* dsth = dst + n2;
+            std::complex< T >* dsth = destination + n2;
             for( int i = 0; i < n2; i += 2, itab += tab_step * 2 ) {
                int j = itab[ 0 ];
                DIP_ASSERT(( unsigned )j < ( unsigned )n2 );
 
-               std::swap( dst[ i + 1 ], dsth[ j ] );
+               std::swap( destination[ i + 1 ], dsth[ j ] );
                if( j > i ) {
-                  std::swap( dst[ i ], dst[ j ] );
+                  std::swap( destination[ i ], destination[ j ] );
                   std::swap( dsth[ i + 1 ], dsth[ j + 1 ] );
                }
             }
@@ -401,35 +369,35 @@ void DFT(
             int j = itab[ 0 ];
             DIP_ASSERT(( unsigned )j < ( unsigned )n );
             if( j > i ) {
-               std::swap( dst[ i ], dst[ j ] );
+               std::swap( destination[ i ], destination[ j ] );
             }
          }
       }
-      if( inv ) {
+      if( inverse_ ) {
          int i;
          for( i = 0; i <= n - 2; i += 2 ) {
-            T t0 = -dst[ i ].imag();
-            T t1 = -dst[ i + 1 ].imag();
-            dst[ i ].imag( t0 );
-            dst[ i + 1 ].imag( t1 );
+            T t0 = -destination[ i ].imag();
+            T t1 = -destination[ i + 1 ].imag();
+            destination[ i ].imag( t0 );
+            destination[ i + 1 ].imag( t1 );
          }
 
          if( i < n ) {
-            dst[ n - 1 ].imag( -dst[ n - 1 ].imag() );
+            destination[ n - 1 ].imag( -destination[ n - 1 ].imag());
          }
       }
    }
 
    n = 1;
    // 1. power-2 transforms
-   if(( factors[ 0 ] & 1 ) == 0 ) {
+   if(( factors_[ 0 ] & 1 ) == 0 ) {
       // radix-4 transform
-      for( ; n * 4 <= factors[ 0 ]; ) {
+      for( ; n * 4 <= factors_[ 0 ]; ) {
          int nx = n;
          n *= 4;
          dw0 /= 4;
          for( int i = 0; i < n0; i += n ) {
-            std::complex< T >* v0 = dst + i;
+            std::complex< T >* v0 = destination + i;
             std::complex< T >* v1 = v0 + nx * 2;
             std::complex< T > t0 = v1[ 0 ];
             std::complex< T > t4 = v1[ nx ];
@@ -444,14 +412,20 @@ void DFT(
             v0[ nx ] = t2 + t3;
             v1[ nx ] = t2 - t3;
             for( int j = 1, dw = dw0; j < nx; j++, dw += dw0 ) {
-               v0 = dst + i + j;
+               v0 = destination + i + j;
                v1 = v0 + nx * 2;
-               t2 = { v0[ nx ].real() * wave[ dw * 2 ].real() - v0[ nx ].imag() * wave[ dw * 2 ].imag(),
-                      v0[ nx ].real() * wave[ dw * 2 ].imag() + v0[ nx ].imag() * wave[ dw * 2 ].real() };
-               t0 = { v1[ 0 ].real() * wave[ dw ].imag() + v1[ 0 ].imag() * wave[ dw ].real(),
-                      v1[ 0 ].real() * wave[ dw ].real() - v1[ 0 ].imag() * wave[ dw ].imag() };
-               t3 = { v1[ nx ].real() * wave[ dw * 3 ].imag() + v1[ nx ].imag() * wave[ dw * 3 ].real(),
-                      v1[ nx ].real() * wave[ dw * 3 ].real() - v1[ nx ].imag() * wave[ dw * 3 ].imag() };
+               t2 = {
+                     v0[ nx ].real() * wave_[ dw * 2 ].real() - v0[ nx ].imag() * wave_[ dw * 2 ].imag(),
+                     v0[ nx ].real() * wave_[ dw * 2 ].imag() + v0[ nx ].imag() * wave_[ dw * 2 ].real()
+               };
+               t0 = {
+                     v1[ 0 ].real() * wave_[ dw ].imag() + v1[ 0 ].imag() * wave_[ dw ].real(),
+                     v1[ 0 ].real() * wave_[ dw ].real() - v1[ 0 ].imag() * wave_[ dw ].imag()
+               };
+               t3 = {
+                     v1[ nx ].real() * wave_[ dw * 3 ].imag() + v1[ nx ].imag() * wave_[ dw * 3 ].real(),
+                     v1[ nx ].real() * wave_[ dw * 3 ].real() - v1[ nx ].imag() * wave_[ dw * 3 ].imag()
+               };
                t1 = { t0.imag() + t3.imag(), t0.real() + t3.real() };
                t3 = std::conj( t0 - t3 );
                t4 = v0[ 0 ];
@@ -465,21 +439,23 @@ void DFT(
          }
       }
 
-      for( ; n < factors[ 0 ]; ) {
+      for( ; n < factors_[ 0 ]; ) {
          // do the remaining radix-2 transform
          int nx = n;
          n *= 2;
          dw0 /= 2;
          for( int i = 0; i < n0; i += n ) {
-            std::complex< T >* v = dst + i;
+            std::complex< T >* v = destination + i;
             std::complex< T > t0 = v[ 0 ];
             std::complex< T > t1 = v[ nx ];
             v[ 0 ] = t0 + t1;
             v[ nx ] = t0 - t1;
             for( int j = 1, dw = dw0; j < nx; j++, dw += dw0 ) {
-               v = dst + i + j;
-               t1 = { v[ nx ].real() * wave[ dw ].real() - v[ nx ].imag() * wave[ dw ].imag(),
-                      v[ nx ].imag() * wave[ dw ].real() + v[ nx ].real() * wave[ dw ].imag() };
+               v = destination + i + j;
+               t1 = {
+                     v[ nx ].real() * wave_[ dw ].real() - v[ nx ].imag() * wave_[ dw ].imag(),
+                     v[ nx ].imag() * wave_[ dw ].real() + v[ nx ].real() * wave_[ dw ].imag()
+               };
                t0 = v[ 0 ];
                v[ 0 ] = t0 + t1;
                v[ nx ] = t0 - t1;
@@ -489,8 +465,8 @@ void DFT(
    }
 
    // 2. all the other transforms
-   for( int f_idx = ( factors[ 0 ] & 1 ) ? 0 : 1; f_idx < nf; f_idx++ ) {
-      int factor = factors[ f_idx ];
+   for( int f_idx = ( factors_[ 0 ] & 1 ) ? 0 : 1; f_idx < nf; f_idx++ ) {
+      int factor = factors_[ f_idx ];
       int nx = n;
       n *= factor;
       dw0 /= factor;
@@ -498,21 +474,27 @@ void DFT(
          // radix-3
          static const T sin_120 = T( 0.86602540378443864676372317075294 );
          for( int i = 0; i < n0; i += n ) {
-            std::complex< T >* v = dst + i;
+            std::complex< T >* v = destination + i;
             std::complex< T > t1 = v[ nx ] + v[ nx * 2 ];
             std::complex< T > t0 = v[ 0 ];
-            std::complex< T > t2 = { sin_120 * ( v[ nx ].imag() - v[ nx * 2 ].imag() ),
-                                     sin_120 * ( v[ nx * 2 ].real() - v[ nx ].real() ) };
+            std::complex< T > t2 = {
+                  sin_120 * ( v[ nx ].imag() - v[ nx * 2 ].imag()),
+                  sin_120 * ( v[ nx * 2 ].real() - v[ nx ].real())
+            };
             v[ 0 ] = t0 + t1;
             t0 -= T( 0.5 ) * t1;
             v[ nx ] = t0 + t2;
             v[ nx * 2 ] = t0 - t2;
             for( int j = 1, dw = dw0; j < nx; j++, dw += dw0 ) {
-               v = dst + i + j;
-               t0 = { v[ nx ].real() * wave[ dw ].real() - v[ nx ].imag() * wave[ dw ].imag(),
-                      v[ nx ].real() * wave[ dw ].imag() + v[ nx ].imag() * wave[ dw ].real() };
-               t2 = { v[ nx * 2 ].real() * wave[ dw * 2 ].imag() + v[ nx * 2 ].imag() * wave[ dw * 2 ].real(),
-                      v[ nx * 2 ].real() * wave[ dw * 2 ].real() - v[ nx * 2 ].imag() * wave[ dw * 2 ].imag() };
+               v = destination + i + j;
+               t0 = {
+                     v[ nx ].real() * wave_[ dw ].real() - v[ nx ].imag() * wave_[ dw ].imag(),
+                     v[ nx ].real() * wave_[ dw ].imag() + v[ nx ].imag() * wave_[ dw ].real()
+               };
+               t2 = {
+                     v[ nx * 2 ].real() * wave_[ dw * 2 ].imag() + v[ nx * 2 ].imag() * wave_[ dw * 2 ].real(),
+                     v[ nx * 2 ].real() * wave_[ dw * 2 ].real() - v[ nx * 2 ].imag() * wave_[ dw * 2 ].imag()
+               };
                t1 = { t0.real() + t2.imag(), t0.imag() + t2.real() };
                t2 = { t0.imag() - t2.real(), t2.imag() - t0.real() };
                t2 *= sin_120;
@@ -531,19 +513,27 @@ void DFT(
          static const T fft5_5 = T( 0.363271264002680442947733378740309 );
          for( int i = 0; i < n0; i += n ) {
             for( int j = 0, dw = 0; j < nx; j++, dw += dw0 ) {
-               std::complex< T >* v0 = dst + i + j;
+               std::complex< T >* v0 = destination + i + j;
                std::complex< T >* v1 = v0 + nx * 2;
                std::complex< T >* v2 = v1 + nx * 2;
-               std::complex< T > t3 = { v0[ nx ].real() * wave[ dw ].real() - v0[ nx ].imag() * wave[ dw ].imag(),
-                                        v0[ nx ].real() * wave[ dw ].imag() + v0[ nx ].imag() * wave[ dw ].real() };
-               std::complex< T > t2 = { v2[ 0 ].real() * wave[ dw * 4 ].real() - v2[ 0 ].imag() * wave[ dw * 4 ].imag(),
-                                        v2[ 0 ].real() * wave[ dw * 4 ].imag() + v2[ 0 ].imag() * wave[ dw * 4 ].real() };
+               std::complex< T > t3 = {
+                     v0[ nx ].real() * wave_[ dw ].real() - v0[ nx ].imag() * wave_[ dw ].imag(),
+                     v0[ nx ].real() * wave_[ dw ].imag() + v0[ nx ].imag() * wave_[ dw ].real()
+               };
+               std::complex< T > t2 = {
+                     v2[ 0 ].real() * wave_[ dw * 4 ].real() - v2[ 0 ].imag() * wave_[ dw * 4 ].imag(),
+                     v2[ 0 ].real() * wave_[ dw * 4 ].imag() + v2[ 0 ].imag() * wave_[ dw * 4 ].real()
+               };
                std::complex< T > t1 = t3 + t2;
                t3 -= t2;
-               std::complex< T > t4 = { v1[ nx ].real() * wave[ dw * 3 ].real() - v1[ nx ].imag() * wave[ dw * 3 ].imag(),
-                                        v1[ nx ].real() * wave[ dw * 3 ].imag() + v1[ nx ].imag() * wave[ dw * 3 ].real() };
-               std::complex< T > t0 = { v1[ 0 ].real() * wave[ dw * 2 ].real() - v1[ 0 ].imag() * wave[ dw * 2 ].imag(),
-                                        v1[ 0 ].real() * wave[ dw * 2 ].imag() + v1[ 0 ].imag() * wave[ dw * 2 ].real() };
+               std::complex< T > t4 = {
+                     v1[ nx ].real() * wave_[ dw * 3 ].real() - v1[ nx ].imag() * wave_[ dw * 3 ].imag(),
+                     v1[ nx ].real() * wave_[ dw * 3 ].imag() + v1[ nx ].imag() * wave_[ dw * 3 ].real()
+               };
+               std::complex< T > t0 = {
+                     v1[ 0 ].real() * wave_[ dw * 2 ].real() - v1[ 0 ].imag() * wave_[ dw * 2 ].imag(),
+                     v1[ 0 ].real() * wave_[ dw * 2 ].imag() + v1[ 0 ].imag() * wave_[ dw * 2 ].real()
+               };
                t2 = t4 + t0;
                t4 -= t0;
                t0 = v0[ 0 ];
@@ -551,7 +541,7 @@ void DFT(
                v0[ 0 ] = t0 + t5;
                t0 -= T( 0.25 ) * t5;
                t1 = fft5_2 * ( t1 - t2 );
-               t2 = { -fft5_3 * ( t3.imag() + t4.imag() ), fft5_3 * ( t3.real() + t4.real() ) };
+               t2 = { -fft5_3 * ( t3.imag() + t4.imag()), fft5_3 * ( t3.real() + t4.real()) };
                t3 = { fft5_5 * t3.real(), -fft5_5 * t3.imag() };
                t4 = { fft5_4 * t4.real(), -fft5_4 * t4.imag() };
                t5 = { t2.real() + t3.imag(), t2.imag() + t3.real() };
@@ -568,11 +558,11 @@ void DFT(
          // radix-"factor" - an odd number
          int factor2 = ( factor - 1 ) / 2;
          int dw_f = tab_size / factor;
-         std::complex< T >* a = buf;
-         std::complex< T >* b = buf + factor2;
+         std::complex< T >* a = buffer;
+         std::complex< T >* b = buffer + factor2;
          for( int i = 0; i < n0; i += n ) {
             for( int j = 0, dw = 0; j < nx; j++, dw += dw0 ) {
-               std::complex< T >* v = dst + i + j;
+               std::complex< T >* v = destination + i + j;
                std::complex< T > v_0 = v[ 0 ];
                std::complex< T > vn_0 = v_0;
                if( j == 0 ) {
@@ -584,12 +574,16 @@ void DFT(
                      b[ p - 1 ] = t1;
                   }
                } else {
-                  const std::complex< T >* wave_ = wave.data() + dw * factor;
+                  const std::complex< T >* wave = wave_.data() + dw * factor;
                   for( int p = 1, k = nx, d = dw; p <= factor2; p++, k += nx, d += dw ) {
-                     std::complex< T > t2 = { v[ k ].real() * wave[ d ].real() - v[ k ].imag() * wave[ d ].imag(),
-                                              v[ k ].real() * wave[ d ].imag() + v[ k ].imag() * wave[ d ].real() };
-                     std::complex< T > t1 = { v[ n - k ].real() * wave_[ -d ].real() - v[ n - k ].imag() * wave_[ -d ].imag(),
-                                              v[ n - k ].real() * wave_[ -d ].imag() + v[ n - k ].imag() * wave_[ -d ].real() };
+                     std::complex< T > t2 = {
+                           v[ k ].real() * wave_[ d ].real() - v[ k ].imag() * wave_[ d ].imag(),
+                           v[ k ].real() * wave_[ d ].imag() + v[ k ].imag() * wave_[ d ].real()
+                     };
+                     std::complex< T > t1 = {
+                           v[ n - k ].real() * wave[ -d ].real() - v[ n - k ].imag() * wave[ -d ].imag(),
+                           v[ n - k ].real() * wave[ -d ].imag() + v[ n - k ].imag() * wave[ -d ].real()
+                     };
                      std::complex< T > t0 = t2 + std::conj( t1 );
                      t1 = t2 - std::conj( t1 );
                      vn_0 += std::complex< T >{ t0.real(), t1.imag() };
@@ -604,8 +598,8 @@ void DFT(
                   int d = dw_f * p;
                   int dd = d;
                   for( int q = 0; q < factor2; q++ ) {
-                     std::complex< T > t0 = { wave[ d ].real() * a[ q ].real(), wave[ d ].imag() * a[ q ].imag() };
-                     std::complex< T > t1 = { wave[ d ].real() * b[ q ].imag(), wave[ d ].imag() * b[ q ].real() };
+                     std::complex< T > t0 = { wave_[ d ].real() * a[ q ].real(), wave_[ d ].imag() * a[ q ].imag() };
+                     std::complex< T > t1 = { wave_[ d ].real() * b[ q ].imag(), wave_[ d ].imag() * b[ q ].real() };
                      s1 += std::complex< T >{ t0.real() + t0.imag(), t1.real() - t1.imag() };
                      s0 += std::complex< T >{ t0.real() - t0.imag(), t1.real() + t1.imag() };
                      d += dd;
@@ -622,25 +616,43 @@ void DFT(
    if( scale != 1 ) {
       T re_scale = scale;
       T im_scale = scale;
-      if( inv ) {
+      if( inverse_ ) {
          im_scale = -im_scale;
       }
       for( int i = 0; i < n0; i++ ) {
-         dst[ i ] = { dst[ i ].real() * re_scale, dst[ i ].imag() * im_scale };
+         destination[ i ] = { destination[ i ].real() * re_scale, destination[ i ].imag() * im_scale };
       }
-   } else if( inv ) {
+   } else if( inverse_ ) {
       int i;
       for( i = 0; i <= n0 - 2; i += 2 ) {
-         T t0 = -dst[ i ].imag();
-         T t1 = -dst[ i + 1 ].imag();
-         dst[ i ].imag( t0 );
-         dst[ i + 1 ].imag( t1 );
+         T t0 = -destination[ i ].imag();
+         T t1 = -destination[ i + 1 ].imag();
+         destination[ i ].imag( t0 );
+         destination[ i + 1 ].imag( t1 );
       }
       if( i < n0 ) {
-         dst[ n0 - 1 ].imag( -dst[ n0 - 1 ].imag() );
+         destination[ n0 - 1 ].imag( -destination[ n0 - 1 ].imag());
       }
    }
 }
+
+// Explicit instantiations:
+template DIP_EXPORT void DFT< float >::Initialize( int nfft, bool inverse );
+template DIP_EXPORT void DFT< double >::Initialize( int nfft, bool inverse );
+template DIP_EXPORT void DFT< float >::Apply(
+      const std::complex< float >* src,
+      std::complex< float >* dst,
+      std::complex< float >* buf,
+      float scale
+) const;
+template DIP_EXPORT void DFT< double >::Apply(
+      const std::complex< double >* src,
+      std::complex< double >* dst,
+      std::complex< double >* buf,
+      double scale
+) const;
+
+namespace {
 
 constexpr static unsigned int optimalDFTSizeTab[] = {
       1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 16, 18, 20, 24, 25, 27, 30, 32, 36, 40, 45, 48,
@@ -823,7 +835,9 @@ constexpr static unsigned int optimalDFTSizeTab[] = {
       2097152000, 2099520000, 2109375000, 2123366400, 2125764000
 };
 
-size_t getOptimalDFTSize( size_t size0 ) {
+} // namespace
+
+size_t GetOptimalDFTSize( size_t size0 ) {
    size_t a = 0;
    size_t b = sizeof( optimalDFTSizeTab ) / sizeof( optimalDFTSizeTab[ 0 ] ) - 1;
    if( size0 > optimalDFTSizeTab[ b ] ) {
@@ -840,7 +854,7 @@ size_t getOptimalDFTSize( size_t size0 ) {
    return optimalDFTSizeTab[ b ];
 }
 
-} // namespace
+} // namespace dip
 
 
 #if defined(__GNUG__) || defined(__clang__)

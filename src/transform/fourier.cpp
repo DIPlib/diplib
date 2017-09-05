@@ -20,13 +20,11 @@
 
 #include "diplib.h"
 #include "diplib/transform.h"
+#include "diplib/dft.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 
-#include "opencv_dxt.h"
-
 namespace dip {
-
 
 namespace {
 
@@ -38,12 +36,12 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
             UnsignedArray const& outSize,
             BooleanArray const& process,
             bool inverse, bool corner, bool symmetric
-      ) : inverse_( inverse ), shift_( !corner ) {
-         options_.resize( outSize.size() );
+      ) : shift_( !corner ) {
+         dft_.resize( outSize.size() );
          scale_ = 1.0;
          for( dip::uint ii = 0; ii < outSize.size(); ++ii ) {
             if( process[ ii ] ) {
-               options_[ ii ].DFTInit( static_cast< int >( outSize[ ii ] ), inverse );
+               dft_[ ii ].Initialize( static_cast< int >( outSize[ ii ] ), inverse );
                if( inverse || symmetric ) {
                   scale_ /= static_cast< FloatType< TPI >>( outSize[ ii ] );
                }
@@ -60,11 +58,11 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log( lineLength )));
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-         DFTOptions< FloatType< TPI >> const& opts = options_[ params.dimension ];
-         if( buffers_[ params.thread ].size() != static_cast< dip::uint >( opts.bufferSize() )) {
-            buffers_[ params.thread ].resize( static_cast< dip::uint >( opts.bufferSize() ));
+         DFT< FloatType< TPI >> const& dft = dft_[ params.dimension ];
+         if( buffers_[ params.thread ].size() != static_cast< dip::uint >( dft.BufferSize() )) {
+            buffers_[ params.thread ].resize( static_cast< dip::uint >( dft.BufferSize() ));
          }
-         dip::uint length = static_cast< dip::uint >( opts.transformSize() );
+         dip::uint length = static_cast< dip::uint >( dft.TransformSize() );
          dip::uint border = params.inBuffer.border;
          DIP_ASSERT( params.inBuffer.length + 2 * border >= length );
          DIP_ASSERT( params.outBuffer.length >= length );
@@ -77,7 +75,7 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
          if( shift_ ) {
             ShiftCenterToCorner( in, length );
          }
-         DFT( in, out, buffers_[ params.thread ].data(), opts, scale );
+         dft.Apply( in, out, buffers_[ params.thread ].data(), scale );
          if( shift_ ) {
             ShiftCornerToCenter( out, length );
          }
@@ -116,10 +114,9 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
       }
 
    private:
-      std::vector< DFTOptions< FloatType< TPI >>> options_; // one for each dimension
+      std::vector< DFT< FloatType< TPI >>> dft_; // one for each dimension
       std::vector< std::vector< TPI >> buffers_; // one for each thread
       FloatType< TPI > scale_;
-      bool inverse_;
       bool shift_;
 };
 
@@ -173,7 +170,7 @@ void FourierTransform(
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( process[ ii ] ) {
             dip::uint sz;
-            sz = getOptimalDFTSize( outSize[ ii ] ); // Awkward: OpenCV uses int a lot. We cannot handle image sizes larger than can fit in an int (2^31-1 on most platforms)
+            sz = GetOptimalDFTSize( outSize[ ii ] ); // Awkward: OpenCV uses int a lot. We cannot handle image sizes larger than can fit in an int (2^31-1 on most platforms)
             DIP_THROW_IF( sz < 1u, "Cannot pad image dimension to a larger \"fast\" size." );
             border[ ii ] = div_ceil( sz - outSize[ ii ], 2 );
             outSize[ ii ] = sz;
@@ -241,7 +238,7 @@ void FourierTransform(
 
 
 dip::uint OptimalFourierTransformSize( dip::uint size ) {
-   size = getOptimalDFTSize( size );
+   size = GetOptimalDFTSize( size );
    DIP_THROW_IF( size == 0, E::SIZE_EXCEEDS_LIMIT );
    return size;
 }
@@ -262,8 +259,8 @@ template< typename T >
 T dotest( size_t nfft, bool inverse = false ) {
    // Initialize
    DIP_ASSERT( nfft <= std::numeric_limits< int >::max() );
-   DFTOptions< T > opts( static_cast< int >( nfft ), inverse );
-   std::vector< std::complex< T >> buf( static_cast< size_t >( opts.bufferSize() ));
+   dip::DFT< T > opts( static_cast< int >( nfft ), inverse );
+   std::vector< std::complex< T >> buf( static_cast< size_t >( opts.BufferSize() ));
    // Create test data
    std::vector< std::complex< T >> inbuf( nfft );
    std::vector< std::complex< T >> outbuf( nfft );
@@ -272,7 +269,7 @@ T dotest( size_t nfft, bool inverse = false ) {
       inbuf[ k ] = std::complex< T >( static_cast< T >( random() ), static_cast< T >( random() ) ) / static_cast< T >( random.max() ) - T( 0.5 );
    }
    // Do the thing
-   DFT( inbuf.data(), outbuf.data(), buf.data(), opts, T( 1 ) );
+   opts.Apply( inbuf.data(), outbuf.data(), buf.data(), T( 1 ) );
    // Check
    long double totalpower = 0;
    long double difpower = 0;

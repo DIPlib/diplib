@@ -8,6 +8,7 @@ include/diplib/binary.h
 include/diplib/boundary.h
 include/diplib/chain_code.h
 include/diplib/color.h
+include/diplib/dft.h
 include/diplib/display.h
 include/diplib/distance.h
 include/diplib/file_io.h
@@ -181,5 +182,5 @@ src/segmentation/threshold.cpp
 src/support/math_functions.cpp
 src/support/matrix.cpp
 src/transform/fourier.cpp
-src/transform/opencv_dxt.h
+src/transform/opencv_dxt.cpp
 )
