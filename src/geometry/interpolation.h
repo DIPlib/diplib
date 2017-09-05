@@ -64,10 +64,11 @@ namespace interpolation {
 template< typename TPI >
 void SplineDerivative(
       TPI* input,
-      TPI* spline1, // buffer will be filled with the estimated second derivative
-      TPI* spline2, // buffer used for temporary storage
-      dip::uint n   // length of input and buffers
+      TPI* buffer,  // buffer will be filled with the estimated second derivative, second half of buffer for temp data
+      dip::uint n   // length of input, buffer has 2n elements
 ) {
+   TPI* spline1 = buffer;
+   TPI* spline2 = buffer + n;
    using TPF = FloatType< TPI >;
    spline1[ 0 ] = -0.5;
    ++spline1;
@@ -99,8 +100,7 @@ void BSpline(
       dip::uint outSize,
       dfloat zoom,
       dfloat shift,
-      TPI* spline1, // temporary buffer 1, size = size of input + border
-      TPI* spline2  // temporary buffer 2, size = size of input + border
+      TPI* buffer    // temporary buffer, size = 2 * ( size of input + border )
 ) {
    constexpr dip::uint boundary = 5;
    using TPF = FloatType< TPI >;
@@ -108,34 +108,33 @@ void BSpline(
    input += offset;
    SplineDerivative(
          input - boundary,
-         spline1,
-         spline2,
+         buffer,
          static_cast< dip::uint >( std::floor( static_cast< dfloat >( outSize ) / zoom )) + 2 * boundary + 1 );
-   spline1 += boundary;
+   buffer += boundary;
    TPF pos = static_cast< TPF >( shift ) - static_cast< TPF >( offset );
    if( zoom == 1.0 ) {
       TPF a = 1 - pos;
       TPF as = ( a * a * a - a ) / 6;
       TPF bs = ( pos * pos * pos - pos ) / 6;
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
-         *output = a * input[ 0 ] + pos * input[ 1 ] + as * spline1[ 0 ] + bs * spline1[ 1 ];
+         *output = a * input[ 0 ] + pos * input[ 1 ] + as * buffer[ 0 ] + bs * buffer[ 1 ];
          ++output;
          ++input;
-         ++spline1;
+         ++buffer;
       }
    } else {
       TPF step = static_cast< TPF >( 1.0 / zoom );
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
          TPF a = 1 - pos;
          *output = a * input[ 0 ] + pos * input[ 1 ] +
-                   (( a * a * a - a ) * spline1[ 0 ] + ( pos * pos * pos - pos ) * spline1[ 1 ] ) / static_cast< TPF >( 6 );
+                   (( a * a * a - a ) * buffer[ 0 ] + ( pos * pos * pos - pos ) * buffer[ 1 ] ) / static_cast< TPF >( 6 );
          ++output;
          pos += step;
          if( pos >= 1.0 ) {
             offset = static_cast< dip::sint >( std::floor( pos ));
             pos -= static_cast< TPF >( offset );
             input += offset;
-            spline1 += offset;
+            buffer += offset;
          }
       }
    }
@@ -533,12 +532,11 @@ void Dispatch(
       dip::uint outSize,
       dfloat zoom,
       dfloat shift,
-      TPI* spline1, // for BSpline only
-      TPI* spline2  // for BSpline only
+      TPI* buffer // for BSpline only
 ) {
    switch( method ) {
       case Method::BSPLINE:
-         BSpline< TPI >( input, output, outSize, zoom, shift, spline1, spline2 );
+         BSpline< TPI >( input, output, outSize, zoom, shift, buffer );
          break;
       case Method::CUBIC_ORDER_4:
          FourthOrderCubicSpline< TPI >( input, output, outSize, zoom, shift );
@@ -600,15 +598,14 @@ DOCTEST_TEST_CASE("[DIPlib] testing the interpolation functions") {
    // 1- Test all methods using sfloat, and unit zoom
 
    std::vector< dip::sfloat > buffer( 100 );
-   std::vector< dip::sfloat > spline1( 100 );
-   std::vector< dip::sfloat > spline2( 100 );
+   std::vector< dip::sfloat > tmpSpline( 200 );
    std::iota( buffer.begin(), buffer.end(), 0 );
    dip::sfloat* input = buffer.data() + 20; // we use the elements 20-80, and presume 20 elements as boundary on either side
 
    dip::sfloat shift = 4.3f;
    dip::uint N = 60;
    std::vector< dip::sfloat > output( N, -1e6f );
-   dip::interpolation::BSpline< dip::sfloat >( input, output.data(), N, 1.0, shift, spline1.data(), spline2.data() );
+   dip::interpolation::BSpline< dip::sfloat >( input, output.data(), N, 1.0, shift, tmpSpline.data() );
    bool error = false;
    dip::sfloat offset = 20.0f + shift;
    for( dip::uint ii = 0; ii < N; ++ii ) {
@@ -678,7 +675,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the interpolation functions") {
    N = 200;
    output.resize( N );
    std::fill( output.begin(), output.end(), -1e6f );
-   dip::interpolation::BSpline< dip::sfloat >( input, output.data(), N, scale, shift, spline1.data(), spline2.data() );
+   dip::interpolation::BSpline< dip::sfloat >( input, output.data(), N, scale, shift, tmpSpline.data() );
    offset = 20.0f + shift;
    dip::sfloat step = 1.0f / scale;
    error = false;
@@ -748,7 +745,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the interpolation functions") {
    N = 20;
    output.resize( N );
    std::fill( output.begin(), output.end(), -1e6f );
-   dip::interpolation::BSpline< dip::sfloat >( input, output.data(), N, scale, shift, spline1.data(), spline2.data() );
+   dip::interpolation::BSpline< dip::sfloat >( input, output.data(), N, scale, shift, tmpSpline.data() );
    offset = 20.0f + shift;
    step = 1.0f / scale;
    error = false;
@@ -814,8 +811,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the interpolation functions") {
    // 4- Test all methods using dcomplex
 
    std::vector< dip::dcomplex > d_buffer( 100 );
-   std::vector< dip::dcomplex > d_spline1( 100 );
-   std::vector< dip::dcomplex > d_spline2( 100 );
+   std::vector< dip::dcomplex > d_tmpSpline( 200 );
    for( dip::uint ii = 0; ii < d_buffer.size(); ++ii ) {
       d_buffer[ ii ] = dip::dcomplex{ dip::dfloat( ii ), 200.0 - dip::dfloat( ii ) };
    }
@@ -825,7 +821,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the interpolation functions") {
    dip::dfloat d_scale = 5.23;
    N = 20;
    std::vector< dip::dcomplex > d_output( N, -1e6 );
-   dip::interpolation::BSpline< dip::dcomplex >( d_input, d_output.data(), N, d_scale, d_shift, d_spline1.data(), d_spline2.data() );
+   dip::interpolation::BSpline< dip::dcomplex >( d_input, d_output.data(), N, d_scale, d_shift, d_tmpSpline.data() );
    dip::dcomplex d_offset{ 20.0 + d_shift, 200.0 - 20.0 - d_shift };
    dip::dfloat d_step = 1.0 / d_scale;
    error = false;

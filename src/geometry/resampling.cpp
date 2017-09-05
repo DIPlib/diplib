@@ -104,16 +104,13 @@ class ResamplingLineFilter : public Framework::SeparableLineFilter {
          DIP_ASSERT( params.inBuffer.stride == 1 );
          SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
          dip::uint procDim = params.dimension;
-         TPI* spline1 = nullptr;
-         TPI* spline2 = nullptr;
+         TPI* buffer = nullptr;
          if( method_ == interpolation::Method::BSPLINE ) {
             dip::uint size = params.inBuffer.length + 2 * params.inBuffer.border;
-            std::vector< TPI >& buffer = buffer_[ params.thread ];
-            buffer.resize( 2 * size ); // NOP if already that size
-            spline1 = buffer.data();
-            spline2 = spline1 + size;
+            buffer_[ params.thread ].resize( 2 * size ); // NOP if already that size
+            buffer = buffer_[ params.thread ].data();
          }
-         interpolation::Dispatch( method_, in, out, params.outBuffer.length, zoom_[ procDim ], -shift_[ procDim ], spline1, spline2 );
+         interpolation::Dispatch( method_, in, out, params.outBuffer.length, zoom_[ procDim ], -shift_[ procDim ], buffer );
       }
    private:
       interpolation::Method method_;
@@ -212,14 +209,11 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
          dip::uint procDim = params.dimension;
          DIP_ASSERT( procDim != axis_ );
          DIP_ASSERT( tanShear_[ procDim ] != 0.0 );
-         TPI* spline1 = nullptr;
-         TPI* spline2 = nullptr;
+         TPI* buffer = nullptr;
          if( method_ == interpolation::Method::BSPLINE ) {
-            dip::uint size = length + params.inBuffer.border;
-            std::vector< TPI >& buffer = buffer_[ params.thread ];
-            buffer.resize( 2 * size ); // NOP if already that size
-            spline1 = buffer.data();
-            spline2 = spline1 + size;
+            dip::uint size = length + 2 * params.inBuffer.border;
+            buffer_[ params.thread ].resize( 2 * size ); // NOP if already that size
+            buffer = buffer_[ params.thread ].data();
          }
          dfloat fullShift = tanShear_[ procDim ] * static_cast< dfloat >( params.position[ axis_ ] ) + offset_[ procDim ];
          dip::sint offset = static_cast< dip::sint >( std::floor( fullShift ));
@@ -231,18 +225,18 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
             }
             dip::uint len = length - static_cast< dip::uint >( offset );
             auto outPtr = out + offset;
-            interpolation::Dispatch( method_, in, outPtr, len, 1.0, shift, spline1, spline2 );
+            interpolation::Dispatch( method_, in, outPtr, len, 1.0, shift, buffer );
             outPtr = out;
             in += len;
             len = static_cast< dip::uint >( offset );
-            interpolation::Dispatch( method_, in, outPtr, len, 1.0, shift, spline1, spline2 );
+            interpolation::Dispatch( method_, in, outPtr, len, 1.0, shift, buffer );
          } else {
             DIP_ASSERT( offset >= 0 );
             out += offset;
             if( shift < 0.0 ) {
                ++length; // Fill in one sample more than we have in the input, so we interpolate properly.
             }
-            interpolation::Dispatch( method_, in, out, length, 1.0, shift, spline1, spline2 );
+            interpolation::Dispatch( method_, in, out, length, 1.0, shift, buffer );
             detail::ExpandBuffer( out.Pointer(), DataType( TPI( 0 )), out.Stride(), 1, length, 1, static_cast< dip::uint >( offset ),
                                   params.outBuffer.length - length - static_cast< dip::uint >( offset ), boundaryCondition_[ procDim ] );
          }
