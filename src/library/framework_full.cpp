@@ -176,8 +176,12 @@ void Full(
    }
 
    // Start threads, each thread makes its own buffers
+   AssertionError assertionError;
+   ParameterError parameterError;
+   RunTimeError runTimeError;
+   Error error;
    #pragma omp parallel num_threads( nThreads )
-   {
+   try {
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num() );
 
       // Create input buffer data struct
@@ -215,7 +219,7 @@ void Full(
             outBuffer.buffer = it.OutPointer();
          }
          // Filter the line
-         DIP_STACK_TRACE_THIS( lineFilter.Filter( fullLineFilterParameters ));
+         lineFilter.Filter( fullLineFilterParameters );
          if( useOutBuffer ) {
             // Copy output buffer to output image
             detail::CopyBuffer(
@@ -231,6 +235,43 @@ void Full(
                   outBuffer.tensorLength );
          }
       }
+   } catch( dip::AssertionError const& e ) {
+      if( !assertionError.IsSet() ) {
+         assertionError = e;
+         DIP_ADD_STACK_TRACE( assertionError );
+      }
+   } catch( dip::ParameterError const& e ) {
+      if( !parameterError.IsSet() ) {
+         parameterError = e;
+         DIP_ADD_STACK_TRACE( parameterError );
+      }
+   } catch( dip::RunTimeError const& e ) {
+      if( !runTimeError.IsSet() ) {
+         runTimeError = e;
+         DIP_ADD_STACK_TRACE( runTimeError );
+      }
+   } catch( dip::Error const& e ) {
+      if( !error.IsSet() ) {
+         error = e;
+         DIP_ADD_STACK_TRACE( error );
+      }
+   } catch( std::exception const& stde ) {
+      if( !runTimeError.IsSet() ) {
+         runTimeError = dip::RunTimeError( stde.what() );
+         DIP_ADD_STACK_TRACE( runTimeError );
+      }
+   }
+   if( assertionError.IsSet() ) {
+      throw assertionError;
+   }
+   if( parameterError.IsSet() ) {
+      throw parameterError;
+   }
+   if( runTimeError.IsSet() ) {
+      throw runTimeError;
+   }
+   if( error.IsSet() ) {
+      throw error;
    }
 }
 

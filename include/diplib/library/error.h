@@ -84,6 +84,11 @@ class DIP_EXPORT Error : public std::exception {
          return *this;
       }
 
+      /// \brief Returns true if an error message is set. Use this to distinguish from a default-constructed error.
+      bool IsSet() const {
+         return !message_.empty();
+      }
+
    private:
 
       std::string message_;

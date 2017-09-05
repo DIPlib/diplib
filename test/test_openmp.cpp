@@ -73,12 +73,15 @@ int main() {
       img.Fill( 50 );
       dip::GaussianNoise( img, img, rndGen, 400.0 );
 
-      dip::SetNumberOfThreads( 1 );
-      dip::dfloat time1 = TimeIt( img, out );
-      dip::SetNumberOfThreads( maxThreads );
-      dip::dfloat timeN = TimeIt( img, out );
-      std::cout << "size = " << sz << ", time1 = " << time1 * 1e3 << " ms, timeN = " << timeN * 1e3 << " ms\n";
-
+      try {
+         dip::SetNumberOfThreads( 1 );
+         dip::dfloat time1 = TimeIt( img, out );
+         dip::SetNumberOfThreads( maxThreads );
+         dip::dfloat timeN = TimeIt( img, out );
+         std::cout << "size = " << sz << ", time1 = " << time1 * 1e3 << " ms, timeN = " << timeN * 1e3 << " ms\n";
+      } catch ( dip::Error& e ) {
+         std::cout << e.what() << std::endl;
+      }
    }
 
    return 0;

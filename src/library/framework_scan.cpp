@@ -370,8 +370,12 @@ void Scan(
    DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads ));
 
    // Start threads, each thread makes its own buffers
+   AssertionError assertionError;
+   ParameterError parameterError;
+   RunTimeError runTimeError;
+   Error error;
    #pragma omp parallel num_threads( nThreads )
-   {
+   try {
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num());
       std::vector< std::vector< uint8 >> buffers; // The outer one here is not a DimensionArray, because it won't delete() its contents
 
@@ -498,7 +502,7 @@ void Scan(
          }
 
          // Filter the line
-         DIP_STACK_TRACE_THIS( lineFilter.Filter( scanLineFilterParams ));
+         lineFilter.Filter( scanLineFilterParams );
 
          // Copy back the line from output buffer to the image
          for( dip::uint ii = 0; ii < nOut; ++ii ) {
@@ -557,6 +561,43 @@ void Scan(
             }
          }
       }
+   } catch( dip::AssertionError const& e ) {
+      if( !assertionError.IsSet() ) {
+         assertionError = e;
+         DIP_ADD_STACK_TRACE( assertionError );
+      }
+   } catch( dip::ParameterError const& e ) {
+      if( !parameterError.IsSet() ) {
+         parameterError = e;
+         DIP_ADD_STACK_TRACE( parameterError );
+      }
+   } catch( dip::RunTimeError const& e ) {
+      if( !runTimeError.IsSet() ) {
+         runTimeError = e;
+         DIP_ADD_STACK_TRACE( runTimeError );
+      }
+   } catch( dip::Error const& e ) {
+      if( !error.IsSet() ) {
+         error = e;
+         DIP_ADD_STACK_TRACE( error );
+      }
+   } catch( std::exception const& stde ) {
+      if( !runTimeError.IsSet() ) {
+         runTimeError = dip::RunTimeError( stde.what() );
+         DIP_ADD_STACK_TRACE( runTimeError );
+      }
+   }
+   if( assertionError.IsSet() ) {
+      throw assertionError;
+   }
+   if( parameterError.IsSet() ) {
+      throw parameterError;
+   }
+   if( runTimeError.IsSet() ) {
+      throw runTimeError;
+   }
+   if( error.IsSet() ) {
+      throw error;
    }
 }
 

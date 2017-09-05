@@ -45,7 +45,7 @@ dip::uint GetNumberOfThreads() {
 
 namespace dip {
 
-void SetNumberOfThreads( dip::uint nThreads ) {}
+void SetNumberOfThreads( dip::uint ) {}
 
 dip::uint GetNumberOfThreads() {
    return 1;
