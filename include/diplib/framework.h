@@ -500,7 +500,7 @@ class DIP_EXPORT VariadicScanLineFilter : public ScanLineFilter {
    // over N.
    public:
       static_assert( N > 0, "VariadicScanLineFilter does not work without input images" );
-      VariadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
+      VariadicScanLineFilter( F const& func, dip::uint cost = 1 ) : func_( func ), cost_( cost ) {}
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) {
          return cost_ * nTensorElements;
       }

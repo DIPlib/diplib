@@ -90,7 +90,7 @@ int main() {
 
    dip::dfloat f1 = static_cast< double >( image.At( 0 ) + 2 );
    dip::dfloat f2 = image.At( 0 ).As< double >() + f1;
-   dip::dfloat f3 = image.At( 0 )[ 0 ] + f2;
+   dip::dfloat f3 = image.At< double >( 0 )[ 0 ] + f2;
    dip::dfloat f4 = image.At( 0 )[ 0 ].As< double >() + f3;
 
    dip::sfloat f5 = static_cast< float >( image.At< float >( 0 ) + f4 );

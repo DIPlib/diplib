@@ -50,9 +50,14 @@ namespace testing {
 
 namespace detail {
 
-// For integral types (uint, sint, bin) -- dip::sint can hold the value of any integer-valued pixel.
+// For integral types (uint, sint) -- dip::sint can hold the value of any integer-valued pixel.
 template< typename T, typename std::enable_if< std::is_integral< T >::value, int >::type = 0 >
 dip::sint Round( T v, int /*digits*/) {
+   return v;
+}
+
+// For type `bin`
+inline dip::sint Round( bin v, int /*digits*/) {
    return v;
 }
 
