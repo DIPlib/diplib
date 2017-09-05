@@ -8,7 +8,7 @@
 %  percentile:   parameter for the filter, 50 leads to a median filter
 %  filterSize:   sizes of the filter along each image dimension
 %  filterShape:  'rectangular', 'elliptic', 'diamond'
-%  neighborhood: binary or grey-value image with the shape for the structuring element
+%  neighborhood: binary image with the shape for the filtering kernel
 %  boundary_condition: Defines how the boundary of the image is handled.
 %                      See HELP BOUNDARY_CONDITION
 %

@@ -42,10 +42,14 @@ dipimage/erfclip.cpp
 dipimage/erosion.cpp
 dipimage/errormeasure.cpp
 dipimage/extendimage.cpp
+dipimage/findmaxima.cpp
+dipimage/findminima.cpp
+dipimage/findshift.cpp
 dipimage/ft.cpp
 dipimage/gdt.cpp
 dipimage/getmaximumandminimum.cpp
 dipimage/getsamplestatistics.cpp
+dipimage/gradmag.cpp
 dipimage/hessian.cpp
 dipimage/hmaxima.cpp
 dipimage/hminima.cpp
@@ -79,6 +83,7 @@ dipimage/skew.cpp
 dipimage/smallobjectsremove.cpp
 dipimage/stretch.cpp
 dipimage/structuretensor.cpp
+dipimage/subpixlocation.cpp
 dipimage/threshold.cpp
 dipimage/tophat.cpp
 dipimage/unif.cpp

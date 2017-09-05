@@ -9,7 +9,7 @@
 %  control:      image in which the local minimum/maximum is found
 %  filterSize:   sizes of the filter along each image dimension
 %  filterShape:  'rectangular', 'elliptic', 'diamond'
-%  neighborhood: binary or grey-value image with the shape for the structuring element
+%  neighborhood: binary image with the shape for the filtering kernel
 %  threshold:    minimum difference in 'selection' to shift kernel
 %  mode:         'minimum' or 'maximum'
 %  boundary_condition: Defines how the boundary of the image is handled.

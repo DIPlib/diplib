@@ -23,27 +23,16 @@ thetatheta.m
 writeics.m
 writetiff.m
 
-
+------------------------------------------------------
 
 Functions in the old DIPimage that are not yet ported:
 
 (already implemented in DIPlib, interface missing):
-autocorrelation.m
 correctshift.m
-crosscorrelation.m
-deltaim.m
 findlocmax.m
-findmaxima.m
-findminima.m
-findshift.m
 get_subpixel.m
-gradmag.m
-maxf.m
-minf.m
-mirror.m
 msr2obj.m       (we'll be able to implement when dip_measurement object is implemented)
 rotation3d.m
-subpixlocation.m
 subsample.m
 
 (other):
@@ -220,3 +209,9 @@ printer_icc.m
 scanner_icc.m
 read_icc_profile.m
 write_icc_profile.m
+
+(dip_image methods):
+imarfun.m
+iterate.m (These two need to be re-thought. We might want to keep them for backwards-compatability, but
+           they don't make much sense since we don't have image arrays any more)
+convhull.m

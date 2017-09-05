@@ -7,9 +7,9 @@
 %  type: string, one of:
 %     'isodata':    Thresholding using the Isodata algorithm
 %                   by Ridler and Calvard (1978).
-%     'otsu'        Thresholding using maximal inter-class variance method
+%     'otsu':       Thresholding using maximal inter-class variance method
 %                   by Otsu (1979).
-%     'minerror'    Thresholding using minimal error method
+%     'minerror':   Thresholding using minimal error method
 %                   by Kittler and Illingworth (1986).
 %     'triangle':   Thresholding using chord method
 %                   (a.k.a. skewed bi-modality, maximum distance to triangle)

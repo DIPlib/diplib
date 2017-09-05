@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `gdt` function
+ * This MEX-file implements the `gradmag` function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -21,50 +21,43 @@
 
 #undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
-#include "diplib/distance.h"
+#include "diplib/linear.h"
 
-void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
+void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
-      DML_MIN_ARGS( 2 );
-      DML_MAX_ARGS( 3 );
+      DML_MIN_ARGS( 1 );
+      DML_MAX_ARGS( 6 );
 
       dml::MatlabInterface mi;
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
-      dip::Image const grey = dml::GetImage( prhs[ 1 ] );
       dip::Image out = mi.NewImage();
 
-      dip::Metric metric( "chamfer", 1 );
+      dip::FloatArray sigmas = { 1 };
+      dip::String method = "best";
+      dip::StringArray bc = {};
+      dip::BooleanArray process = {};
+      dip::dfloat truncation = 3;
+
+      if( nrhs > 1 ) {
+         sigmas = dml::GetFloatArray( prhs[ 1 ] );
+      }
       if( nrhs > 2 ) {
-         dip::uint chamfer = dml::GetUnsigned( prhs[ 2 ] );
-         switch( chamfer ) {
-            case 1:
-               metric = dip::Metric( "connected", 1 );
-               break;
-            case 3:
-               break;
-            case 5:
-               metric = dip::Metric( "chamfer", 2 );
-            default:
-               DIP_THROW( dip::E::INVALID_PARAMETER );
-         }
+         method = dml::GetString( prhs[ 2 ] );
+      }
+      if( nrhs > 3 ) {
+         bc = dml::GetStringArray( prhs[ 3 ] );
+      }
+      if( nrhs > 4 ) {
+         process = dml::GetProcessArray( prhs[ 4 ], in.Dimensionality() );
+      }
+      if( nrhs > 5 ) {
+         truncation = dml::GetFloat( prhs[ 5 ] );
       }
 
-      dip::String outputMode;
-      if( nlhs > 1 ) {
-         outputMode = "both";
-      } else {
-         outputMode = "GDT";
-      }
+      dip::GradientMagnitude( in, out, sigmas, method, bc, process, truncation );
 
-      dip::GreyWeightedDistanceTransform( grey, in, out, metric, outputMode );
-
-      if( nlhs > 1 ) {
-         plhs[ 0 ] = mi.GetArray( out[ 0 ] );
-         plhs[ 1 ] = mi.GetArray( out[ 1 ] );
-      } else {
-         plhs[ 0 ] = mi.GetArray( out );
-      }
+      plhs[ 0 ] = mi.GetArray( out );
 
    } catch( const dip::Error& e ) {
       mexErrMsgTxt( e.what() );

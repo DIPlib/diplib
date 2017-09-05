@@ -1,8 +1,8 @@
-%UNIF   Uniform filter, mean filter, convolution with uniform weights
+%MAXF   Maximum filter
 %
 % SYNOPSIS:
-%  image_out = unif(image_in,filterSize,filterShape,boundary_condition)
-%  image_out = unif(image_in,neighborhood,boundary_condition)
+%  image_out = maxf(image_in,filterSize,filterShape,boundary_condition)
+%  image_out = maxf(image_in,neighborhood,boundary_condition)
 %
 % PARAMETERS:
 %  filterSize:   sizes of the filter along each image dimension
@@ -15,16 +15,13 @@
 %  and FILTERSHAPE, specifying one of the default shapes, or through NEIGHBORHOOD,
 %  providing a custom binary shape.
 %
-%  The NEIGHBORHOOD is applied as-is as a neighborhood, without mirroring. To compute
-%  a convolution, mirror NEIGHBORHOOD first.
-%
 % DEFAULTS:
 %  filterSize = 7
 %  filterShape = 'elliptic'
-%  boundary_condition = 'mirror'
+%  boundary_condition = {} (equivalent to 'add max')
 %
-% DIPlib:
-%  This function calls the DIPlib function dip::Uniform.
+% NOTE:
+%  This is an alias for DILATION.
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -41,3 +38,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+function image_out = maxf(varargin)
+image_out = dilation(varargin{:});
