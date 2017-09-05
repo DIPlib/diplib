@@ -186,6 +186,8 @@ void Extrema(
       DIP_END_STACK_TRACE
    }
 
+   // TODO: If there's no mask, find the minimum/maximum value in the image, and ignore pixels with that value.
+
    // Prepare label image
    out.ReForge( in, DT_LABEL );
    out.Fill( 0 );

@@ -36,7 +36,7 @@ document's source</a> for the most up-to-date version.
 -   Class `dip::Image`, including tensor representations taken from *DIPimage* and improved.
 
 -   `dip::Framework::Scan`, `dip::Framework::Separable` and `dip::Framework::Full`.
-    These frameworks are the core of most algorithms. Not yet parallelized.
+    These frameworks are the core of most algorithms. Parallelized using *OpenMP*.
 
 -   Arithmetic, bitwise and comparison operators.
 
@@ -92,8 +92,8 @@ document's source</a> for the most up-to-date version.
 
 -   Measurement I/O. Write as CSV is the most important feature here.
 
--   Parallelization of frameworks. Using *OpenMP*, `dip::Framework::Full` is parallelized.
-    The other two frameworks, the projection function, and `dip::SelectionFilter` still to do.
+-   Parallelization of some non-framework functions using *OpenMP*. For example, the core of the
+    projection functions, and `dip::SelectionFilter` can be easily parallelized.
 
 -   Porting filters, analysis routines, etc. See the list at the bottom of this page.
 

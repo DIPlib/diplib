@@ -1137,6 +1137,8 @@ class Image::View::Iterator {
       // TODO: maybe we can have a different version of the iterator that takes a reference (or pointer).
 };
 
+/// \}
+
 
 //
 // dip::Image methods that depend on the definition of the classes in this file
@@ -1272,8 +1274,6 @@ inline Image::View Image::AtIndices( UnsignedArray const& indices ) const {
    DIP_STACK_TRACE_THIS( return Image::View( *this, indices ));
 }
 
-
-/// \}
 
 } // namespace dip
 
