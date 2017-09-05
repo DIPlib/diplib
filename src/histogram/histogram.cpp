@@ -24,6 +24,7 @@
 #include "diplib/linear.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
+#include "diplib/multithreading.h"
 
 namespace dip {
 
@@ -123,7 +124,7 @@ class dip__HistogramBase : public Framework::ScanLineFilter {
          // data segment. This ensures there's no false sharing.
       }
       void Reduce() {
-         for( auto& img : imageArray_ ) {
+         for( auto const& img : imageArray_ ) {
             image_ += img;
          }
       }
@@ -299,7 +300,15 @@ void Histogram::ScalarImageHistogram( Image const& input, Image const& mask, His
    data_.SetDataType( DT_COUNT );
    std::unique_ptr< dip__HistogramBase >scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__ScalarImageHistogram, ( data_, configuration ), input.DataType() );
-   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( input, mask, input.DataType(), *scanLineFilter ));
+   Framework::ScanOptions opts;
+   if( GetNumberOfThreads() > 1 ) {
+      dip::uint parallelOperations = input.NumberOfPixels() * 6;
+      dip::uint sequentialOperations = ( GetNumberOfThreads() - 1 ) * ( data_.NumberOfPixels() * 2 + 10000 );
+      if( parallelOperations / GetNumberOfThreads() + sequentialOperations + threadingThreshold > parallelOperations ) {
+         opts = Framework::Scan_NoMultiThreading; // Turn off multithreading if we'll do a lot of work to reduce.
+      }
+   }
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( input, mask, input.DataType(), *scanLineFilter, opts ));
    scanLineFilter->Reduce();
 }
 
@@ -318,7 +327,15 @@ void Histogram::TensorImageHistogram( Image const& input, Image const& mask, His
    data_.SetDataType( DT_COUNT );
    std::unique_ptr< dip__HistogramBase >scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__JointImageHistogram, ( data_, configuration, true ), input.DataType() );
-   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( input, mask, input.DataType(), *scanLineFilter ));
+   Framework::ScanOptions opts;
+   if( GetNumberOfThreads() > 1 ) {
+      dip::uint parallelOperations = input.NumberOfPixels() * ndims * 6;
+      dip::uint sequentialOperations = ( GetNumberOfThreads() - 1 ) * ( data_.NumberOfPixels() * 2 + 10000 );
+      if( parallelOperations / GetNumberOfThreads() + sequentialOperations + threadingThreshold > parallelOperations ) {
+         opts = Framework::Scan_NoMultiThreading; // Turn off multithreading if we'll do a lot of work to reduce.
+      }
+   }
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( input, mask, input.DataType(), *scanLineFilter, opts ));
    scanLineFilter->Reduce();
 }
 
@@ -349,7 +366,15 @@ void Histogram::JointImageHistogram( Image const& input1, Image const& input2, I
       inBufT.push_back( mask.DataType() );
    }
    ImageRefArray outar{};
-   DIP_STACK_TRACE_THIS( Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter ));
+   Framework::ScanOptions opts;
+   if( GetNumberOfThreads() > 1 ) {
+      dip::uint parallelOperations = input1.NumberOfPixels() * 2 * 6;
+      dip::uint sequentialOperations = ( GetNumberOfThreads() - 1 ) * ( data_.NumberOfPixels() * 2 + 10000 );
+      if( parallelOperations / GetNumberOfThreads() + sequentialOperations + threadingThreshold > parallelOperations ) {
+         opts = Framework::Scan_NoMultiThreading; // Turn off multithreading if we'll do a lot of work to reduce.
+      }
+   }
+   DIP_STACK_TRACE_THIS( Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter, opts ));
    scanLineFilter->Reduce();
 }
 
