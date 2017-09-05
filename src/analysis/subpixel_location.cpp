@@ -460,9 +460,9 @@ SubpixelLocationArray SubpixelExtrema(
    // Find local extrema
    Image localExtrema;
    if( invert ) {
-      Minima( in, mask, localExtrema, nDims, "labels" );
+      DIP_STACK_TRACE_THIS( Minima( in, mask, localExtrema, nDims, "labels" ));
    } else {
-      Maxima( in, mask, localExtrema, nDims, "labels" );
+      DIP_STACK_TRACE_THIS( Maxima( in, mask, localExtrema, nDims, "labels" ));
    }
 
    // Remove local extrema on the edge of the image
@@ -471,7 +471,8 @@ SubpixelLocationArray SubpixelExtrema(
    // Get CoG of local extrema
    MeasurementTool msrTool;
    localExtrema.ResetPixelSize(); // Make sure the measurement tool uses pixels, not physical units.
-   Measurement measurement = msrTool.Measure( localExtrema, {}, { "Center", "Size", "Mean" } );
+   Measurement measurement;
+   DIP_STACK_TRACE_THIS( measurement = msrTool.Measure( localExtrema, in, { "Center", "Size", "Mean" } ));
 
    // Allocate output
    dip::uint nExtrema = measurement.NumberOfObjects();
@@ -498,6 +499,7 @@ SubpixelLocationArray SubpixelExtrema(
          }
          out[ ii ] = SubpixelLocationFunction( in, position, method, invert );
       }
+      ++objIterator;
    }
 
    // Done!

@@ -110,7 +110,7 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
 ///
 /// The returned image is the cross-correlation normalized in such a way that only
 /// the phase information is of importance. The computation performed is
-/// `out = (%dip::Conjugate(in1)*in2)/%dip::SquareModulus(in1)` in the Fourier Domain.
+/// `out = (dip::Conjugate(in1)*in2)/dip::SquareModulus(in1)` in the Fourier Domain.
 /// This results as a very sharp peak in the spatial domain. If `normalize` is set
 /// to `"don't normalize"`, the regular cross-correlation (not normalized by the square
 /// modulus) is returned.
@@ -122,8 +122,10 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
 /// to `"frequency"`. Similarly, if `outRepresentation` is `"frequency"`, the output will not be
 /// inverse-transformed, so will be in the frequency domain.
 ///
-/// `in1` and `in2` must be scalar images with the same dimensionality and sizes. `out` will be real-valued
-/// if `outRepresentation` is `"spatial"`.
+/// `in1` and `in2` must be scalar images with the same dimensionality and sizes.
+///
+/// `out` will be real-valued if `outRepresentation` is `"spatial"`, under the assumption that
+/// `in1` and `in2` are similar except for a shift.
 DIP_EXPORT void CrossCorrelationFT(
       Image const& in1,
       Image const& in2,
@@ -158,7 +160,7 @@ inline Image CrossCorrelationFT(
 /// found. This is useful, for example, when the images contain a repeating pattern. Noise in the images can
 /// cause a shift of several pattern periods to be "optimal" (e.g. the cross-correlation yields a larger value),
 /// even if a much smaller shift would also explain the differences. In this case, set `maxShift` to be slightly
-/// smaller than the pattern period.
+/// smaller than the pattern period along each dimension.
 ///
 /// Valid strings for `method` are:
 ///
@@ -212,7 +214,7 @@ DIP_EXPORT FloatArray FindShift(
       Image const& in2,
       String const& method = "MTS",
       dfloat parameter = 0,
-      dip::uint maxShift = std::numeric_limits< dip::uint >::max()
+      UnsignedArray maxShift = {}
 );
 
 

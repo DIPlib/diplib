@@ -239,7 +239,7 @@ FloatArray FindShift_PROJ( Image const& in1, Image const& in2, dip::uint iterati
 FloatArray FindShift_CC(
       Image const& in1,
       Image const& in2,
-      dip::uint maxShift,
+      UnsignedArray const& maxShift,
       String const& normalize = "don't normalize",
       bool subpixelPrecision = false
 ) {
@@ -250,8 +250,8 @@ FloatArray FindShift_CC(
    UnsignedArray sizes = cross.Sizes();
    bool crop = false;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      if( sizes[ ii ] > maxShift ) {
-         sizes[ ii ] = 2 * maxShift + 1;
+      if( sizes[ ii ] > maxShift[ ii ] ) {
+         sizes[ ii ] = 2 * maxShift[ ii ] + 1;
          crop = true;
       }
    }
@@ -286,7 +286,7 @@ FloatArray FindShift_CC(
 FloatArray CorrectIntegerShift(
       Image& in1,
       Image& in2,
-      dip::uint maxShift
+      UnsignedArray const& maxShift
 ) {
    dip::uint nDims = in1.Dimensionality();
    FloatArray shift;
@@ -311,20 +311,21 @@ FloatArray CorrectIntegerShift(
    return shift;
 }
 
-}
+} // namespace
 
 FloatArray FindShift(
       Image const& c_in1,
       Image const& c_in2,
       String const& method,
       dfloat parameter,
-      dip::uint maxShift
+      UnsignedArray maxShift
 ) {
    DIP_THROW_IF( !c_in1.IsForged() || !c_in2.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in1.IsScalar() || !c_in2.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !c_in1.DataType().IsReal() || !c_in2.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( c_in1.Sizes() != c_in2.Sizes(), E::SIZES_DONT_MATCH );
    dip::uint nDims = c_in1.Dimensionality();
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( maxShift, nDims, std::numeric_limits< dip::uint >::max() ));
    FloatArray shift( nDims, 0.0 );
    if( method == "integer only" ) {
       DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, "don't normalize", false ));
@@ -430,7 +431,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FindShift fuction") {
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.004 );
 
    // Method: "CC", with max shift
-   result = FindShift( in1, in2, "CC", 0, 11 );
+   result = FindShift( in1, in2, "CC", 0, { 11 } );
    DOCTEST_REQUIRE( result.size() == 2 );
    DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.05 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.05 );
