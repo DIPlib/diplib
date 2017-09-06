@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <complex>
+#include <limits>
 #include "dip_export.h"
 
 /// \file
@@ -45,6 +46,11 @@ namespace dip {
 ///     buf.resize( opts.BufferSize() );                          // resizes the buffer
 ///     dft.Apply( in, out, buf.data() );                         // runs a different DFT, repeat as necessary
 /// ```
+///
+/// Note that this code uses `int` for sizes, rather than `dip::uint`. `maximumDFTSize` is the largest length
+/// of the transform.
+///
+/// The template can be instantiated for `T = float` or `T = double`. Linker errors will result for other types.
 template< typename T >
 class DFT {
    public:
@@ -103,6 +109,8 @@ class DFT {
 /// the transform size is too large.
 DIP_EXPORT size_t GetOptimalDFTSize( size_t size0 );
 
+/// \brief The largest size supported by the DFT.
+constexpr size_t maximumDFTSize = static_cast< size_t >( std::numeric_limits< int >::max() );
 
 } // namespace dip
 

@@ -102,8 +102,8 @@ class ResamplingLineFilter : public Framework::SeparableLineFilter {
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          DIP_ASSERT( params.inBuffer.stride == 1 );
-         SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
          dip::uint procDim = params.dimension;
+         SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
          TPI* buffer = nullptr;
          if( method_ == interpolation::Method::BSPLINE ) {
             dip::uint size = params.inBuffer.length + 2 * params.inBuffer.border;
@@ -114,9 +114,108 @@ class ResamplingLineFilter : public Framework::SeparableLineFilter {
       }
    private:
       interpolation::Method method_;
-      FloatArray const& zoom_;
-      FloatArray const& shift_;
+      FloatArray const& zoom_;                  // One per dimension
+      FloatArray const& shift_;                 // One per dimension
       std::vector< std::vector< TPI >> buffer_; // One per thread
+};
+
+template< typename TPI >
+TPI CastToOutType( std::complex< TPI > in ) {
+   return std::real( in );
+}
+template< typename TPI >
+TPI CastToOutType( TPI in ) {
+   return in;
+}
+
+template< typename TPI >
+class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
+      using TPF = FloatType< TPI >;
+      using TPC = ComplexType< TPI >;
+   public:
+      FourierResamplingLineFilter( FloatArray const& zoom, FloatArray const& shift, UnsignedArray const& sizes ) {
+         dip::uint nDims = sizes.size();
+         ft_.resize( nDims );
+         ift_.resize( nDims );
+         weights_.resize( nDims );
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            DIP_THROW_IF( sizes[ ii ] > maximumDFTSize, "Input size is too large for FT method" );
+            ft_[ ii ].Initialize( static_cast< int >( sizes[ ii ] ), false );
+            dip::uint outSize = interpolation::ComputeOutputSize( sizes[ ii ], zoom[ ii ] );
+            DIP_THROW_IF( outSize > maximumDFTSize, "Output size is too large for FT method" );
+            ift_[ ii ].Initialize( static_cast< int >( outSize ), true );
+            weights_[ ii ].resize( sizes[ ii ] );
+            interpolation::FourierShiftWeights( weights_[ ii ], shift[ ii ] );
+            // TODO: re-use these if same size as a different dimension (square images!) See GaussFTLineFilter in src/linear/gauss.cpp
+         }
+      }
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
+         buffer_.resize( threads );
+      }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
+         dip::uint outLength = static_cast< dip::uint >( ift_[ procDim ].TransformSize() );
+         return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )))
+              + 10 * outLength  * static_cast< dip::uint >( std::round( std::log2( outLength  )));
+      }
+      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+         constexpr bool complexInput = std::is_same< TPI, TPC >::value;
+         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         dip::uint procDim = params.dimension;
+         dip::uint bufferSize = interpolation::FourierBufferSize( ft_[ procDim ], ift_[ procDim ] );
+         dip::uint inOutSize = 0;
+         bool useOutBuffer = true;
+         if( complexInput ) {
+            useOutBuffer = params.outBuffer.stride != 1;
+            if( useOutBuffer ) {
+               bufferSize += params.outBuffer.length;
+            }
+         } else {
+            inOutSize = std::max( params.inBuffer.length, params.outBuffer.length );
+            bufferSize += inOutSize;
+         }
+         buffer_[ params.thread ].resize( bufferSize ); // NOP if already that size
+         TPC* buffer = buffer_[ params.thread ].data();
+         // Copy input to `data`
+         TPC* tmpIn;
+         TPC* tmpOut;
+         if( complexInput ) {
+            tmpIn = reinterpret_cast< TPC* >( in ); // Cast does nothing if `complexInput`, this is here so we can compile.
+            if( useOutBuffer ) {
+               tmpOut = buffer;
+               buffer += params.outBuffer.length;
+            } else {
+               tmpOut = static_cast< TPC* >( params.outBuffer.buffer );
+            }
+         } else {
+            tmpIn = buffer;
+            for( dip::uint ii = 0; ii < params.inBuffer.length; ++ii ) {
+               *tmpIn = *in;
+               ++tmpIn;
+               ++in;
+            }
+            tmpOut = tmpIn = buffer;
+            buffer += inOutSize;
+         }
+         // Interpolate
+         interpolation::Fourier< TPF >( tmpIn, tmpOut, 0.0, ft_[ procDim ], ift_[ procDim ], weights_[ procDim ].data(), buffer );
+         // Copy `data` to output
+         if( useOutBuffer ) {
+            SampleIterator< TPI > out{ static_cast< TPI* >( params.outBuffer.buffer ), params.outBuffer.stride };
+            for( dip::uint ii = 0; ii < params.outBuffer.length; ++ii ) {
+               *out = CastToOutType< TPI >( *tmpIn );
+               ++out;
+               ++tmpIn;
+            }
+         }
+         // TODO: For FOURIER method, add a border to: improve results, use boundary condition, use an optimal transform size.
+         //       BUT: It's not trivial because the inverse transform has a zoomed border.
+      }
+
+   private:
+      std::vector< DFT< TPF >> ft_;                // One per dimension
+      std::vector< DFT< TPF >> ift_;               // One per dimension
+      std::vector< std::vector< TPC >> weights_;   // One per dimension
+      std::vector< std::vector< TPC >> buffer_;    // One per thread
 };
 
 } // namespace
@@ -162,8 +261,7 @@ void Resampling(
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( zoom[ ii ] != 1.0 ) {
          process[ ii ] = true;
-         outSizes[ ii ] = static_cast< dip::uint >( std::floor( static_cast< dfloat >( outSizes[ ii ] ) * zoom[ ii ] + 1e-6 ));
-         // The 1e-6 is to avoid floating-point inaccuracies, ex: floor(49*(64/49))!=64
+         outSizes[ ii ] = interpolation::ComputeOutputSize( outSizes[ ii ], zoom[ ii ] );
       } else if( shift[ ii ] != 0.0 ) {
          process[ ii ] = true;
       }
@@ -181,7 +279,11 @@ void Resampling(
 
    // Find line filter
    std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-   DIP_OVL_NEW_FLEX( lineFilter, ResamplingLineFilter, ( method, zoom, shift ), bufferType );
+   if( method == interpolation::Method::FOURIER ) {
+      DIP_OVL_NEW_FLEX( lineFilter, FourierResamplingLineFilter, ( zoom, shift, in.Sizes() ), bufferType );
+   } else {
+      DIP_OVL_NEW_FLEX( lineFilter, ResamplingLineFilter, ( method, zoom, shift ), bufferType );
+   }
 
    // Call line filter through framework
    Framework::Separable( in, out, bufferType, out.DataType(), process, borders, bc, *lineFilter,
@@ -276,7 +378,7 @@ void Skew(
    DIP_START_STACK_TRACE
       BoundaryArrayUseParameter( boundaryCondition, nDims );
    DIP_END_STACK_TRACE
-   DIP_THROW_IF( method == interpolation::Method::FT, E::NOT_IMPLEMENTED ); // TODO: implement FT interpolation
+   DIP_THROW_IF( method == interpolation::Method::FOURIER, E::NOT_IMPLEMENTED ); // TODO: implement Fourier interpolation
 
    // Calculate new output sizes and other processing parameters
    UnsignedArray outSizes = c_in.Sizes();

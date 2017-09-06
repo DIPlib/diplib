@@ -42,6 +42,7 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
          for( dip::uint ii = 0; ii < outSize.size(); ++ii ) {
             if( process[ ii ] ) {
                dft_[ ii ].Initialize( static_cast< int >( outSize[ ii ] ), inverse );
+               // TODO: re-use these if same size as a different dimension (square images!) See GaussFTLineFilter in src/linear/gauss.cpp
                if( inverse || symmetric ) {
                   scale_ /= static_cast< FloatType< TPI >>( outSize[ ii ] );
                }
@@ -55,7 +56,7 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
          buffers_.resize( threads );
       }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
-         return 10 * lineLength * static_cast< dip::uint >( std::round( std::log( lineLength )));
+         return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )));
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          DFT< FloatType< TPI >> const& dft = dft_[ params.dimension ];
@@ -178,7 +179,7 @@ void FourierTransform(
       }
    } else {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         DIP_THROW_IF( outSize[ ii ] > static_cast< dip::uint >( std::numeric_limits< int >::max() ), "Image size too large for DFT algorithm." );
+         DIP_THROW_IF( outSize[ ii ] > maximumDFTSize, "Image size too large for DFT algorithm." );
       }
    }
    //std::cout << "outSize = " << outSize << std::endl;
@@ -258,7 +259,7 @@ dip::uint OptimalFourierTransformSize( dip::uint size ) {
 template< typename T >
 T dotest( size_t nfft, bool inverse = false ) {
    // Initialize
-   DIP_ASSERT( nfft <= std::numeric_limits< int >::max() );
+   DIP_ASSERT( nfft <= dip::maximumDFTSize );
    dip::DFT< T > opts( static_cast< int >( nfft ), inverse );
    std::vector< std::complex< T >> buf( static_cast< size_t >( opts.BufferSize() ));
    // Create test data
