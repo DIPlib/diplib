@@ -327,6 +327,7 @@ void Separable(
             // Determine if we need to make a temporary buffer for this dimension
             bool inUseBuffer = ( inImage.DataType() != bufferType ) || !lookUpTable.empty() || ( inBorder > 0 ) || ( opts == Separable_UseInputBuffer );
             bool outUseBuffer = ( outImage.DataType() != bufferType ) || ( outBorder > 0 ) || ( opts == Separable_UseOutputBuffer );
+            // TODO: We can cheat a little here if UseOutputBuffer is given: if the samples are contiguous, there's no need to actually use the buffer.
             if( !inUseBuffer && !outUseBuffer && ( inImage.Origin() == outImage.Origin())) {
                // If input and output images are the same, we need to use at least one buffer!
                inUseBuffer = true;

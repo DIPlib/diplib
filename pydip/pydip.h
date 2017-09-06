@@ -75,7 +75,7 @@ class type_caster< dip::DataType > {
          }
          if( PYBIND11_BYTES_CHECK( src.ptr() ) || PyUnicode_Check( src.ptr() )) {
             value = dip::DataType( src.cast< dip::String >() );
-            std::cout << "   Result: " << value.Name() << std::endl;
+            //std::cout << "   Result: " << value.Name() << std::endl;
             return true;
          }
          return false;

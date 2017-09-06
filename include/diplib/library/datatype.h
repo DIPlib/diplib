@@ -254,54 +254,54 @@ struct DIP_NO_EXPORT DataType {
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_All, Class_Binary + Class_Real + Class_Complex ); // == Class_Unsigned + Class_Signed
 
    /// \brief Implicit conversion to `dip::DataType::Classes` options class.
-   operator Classes() const { return { static_cast< dip::uint >( dt ) }; }
+   constexpr operator Classes() const { return { static_cast< dip::uint >( dt ) }; }
 
    //
    // Functions to query the data type class
    //
 
    /// \brief Returns `true` if the data type is binary.
-   bool IsBinary() const {
+   constexpr bool IsBinary() const {
       return dt == DT::BIN;
    }
 
    /// \brief Returns `true` if the data type is an unsigned integer type.
-   bool IsUInt() const {
+   constexpr bool IsUInt() const {
       return Class_UInt == *this;
    }
 
    /// \brief Returns `true` if the data type is a signed integer type.
-   bool IsSInt() const {
+   constexpr bool IsSInt() const {
       return Class_SInt == *this;
    }
 
    /// \brief Returns `true` if the data type is an integer type.
-   bool IsInteger() const {
+   constexpr bool IsInteger() const {
       return Class_Integer == *this;
    }
 
    /// \brief Returns `true` if the data type is a floating point type.
-   bool IsFloat() const {
+   constexpr bool IsFloat() const {
       return Class_Float == *this;
    }
 
    /// \brief Returns `true` if the data type is real (floating point or integer).
-   bool IsReal() const {
+   constexpr bool IsReal() const {
       return Class_Real == *this;
    }
 
    /// \brief Returns `true` if the data type is complex.
-   bool IsComplex() const {
+   constexpr bool IsComplex() const {
       return Class_Complex == *this;
    }
 
    /// \brief Returns `true` if the data type is an unsigned type (binary or unsigned integer).
-   bool IsUnsigned() const {
+   constexpr bool IsUnsigned() const {
       return Class_Unsigned == *this;
    }
 
    /// \brief Returns `true` if the data type is a signed type (signed integer, floating point or complex)
-   bool IsSigned() const {
+   constexpr bool IsSigned() const {
       return Class_Signed == *this;
    }
 
