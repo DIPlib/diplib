@@ -251,12 +251,14 @@ class DIP_NO_EXPORT Timer {
          endWall_ = std::chrono::steady_clock::now();
       }
 
-      /// \brief Returns the CPI time elapsed in between the creation of the timer (or the last call to `Reset`) and the last call to `Stop`.
+      /// \brief Returns the CPU time in seconds elapsed in between the creation of the timer (or the last call
+      /// to `Reset`) and the last call to `Stop`.
       dfloat GetCpu() const {
          return static_cast< dfloat >( endCpu_ - startCpu_ ) / static_cast< dfloat >( CLOCKS_PER_SEC );
       }
 
-      /// \brief Returns the wall time elapsed in between the creation of the timer (or the last call to `Reset`) and the last call to `Stop`.
+      /// \brief Returns the wall time in seconds elapsed in between the creation of the timer (or the last call
+      /// to `Reset`) and the last call to `Stop`.
       dfloat GetWall() const {
          std::chrono::duration< dfloat > time = endWall_ - startWall_;
          return time.count();
@@ -269,7 +271,8 @@ class DIP_NO_EXPORT Timer {
 
       /// \brief Returns the number of clock ticks per second for the wall clock.
       dfloat WallResolution() const {
-         return static_cast< dfloat >( std::chrono::steady_clock::period::num ) / static_cast< dfloat >( std::chrono::steady_clock::period::den );
+         return static_cast< dfloat >( std::chrono::steady_clock::period::num ) /
+                static_cast< dfloat >( std::chrono::steady_clock::period::den );
       }
 
    private:
