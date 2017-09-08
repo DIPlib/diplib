@@ -30,7 +30,7 @@ namespace dip {
 namespace {
 class DIP_EXPORT UniformScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 40; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
@@ -77,7 +77,7 @@ void UniformNoise( Image const& in, Image& out, Random& random, dfloat lowerBoun
 namespace {
 class DIP_EXPORT GaussianScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 150; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 150; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
@@ -123,7 +123,7 @@ void GaussianNoise( Image const& in, Image& out, Random& random, dfloat variance
 namespace {
 class DIP_EXPORT PoissonScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 800; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 800; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;
@@ -169,7 +169,7 @@ void PoissonNoise( Image const& in, Image& out, Random& random, dfloat conversio
 namespace {
 class DIP_EXPORT BinaryScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 40; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 40; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          bin const* in = static_cast< bin const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;

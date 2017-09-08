@@ -157,7 +157,7 @@ namespace {
 template< typename TPI >
 class RangeThresholdScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 3; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );

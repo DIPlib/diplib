@@ -32,7 +32,7 @@ template< typename TPI, typename F >
 class Select1ScanLineFilter : public Framework::ScanLineFilter {
    public:
       Select1ScanLineFilter( F func ) : func_( func ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 4; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 4; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in1 = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dfloat const* in2 = static_cast< dfloat const* >( params.inBuffer[ 1 ].buffer );
@@ -103,7 +103,7 @@ namespace {
 template< typename TPI >
 class Select2ScanLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 2; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in1 = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          TPI const* in2 = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );

@@ -32,7 +32,7 @@ template< typename TPI, typename TPO, typename F >
 class TensorMonadicScanLineFilter : public Framework::ScanLineFilter {
    public:
       TensorMonadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return cost_; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -67,7 +67,7 @@ template< typename TPI, typename TPO, typename F >
 class TensorDyadicScanLineFilter : public Framework::ScanLineFilter {
    public:
       TensorDyadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return cost_; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -109,7 +109,7 @@ template< typename TPI, typename TPO, typename F >
 class TensorTriadicScanLineFilter : public Framework::ScanLineFilter {
    public:
       TensorTriadicScanLineFilter( F const& func, dip::uint cost ) : func_( func ), cost_( cost ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return cost_; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return cost_; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dip::uint const bufferLength = params.bufferLength;
          ConstLineIterator< TPI > in(
@@ -179,7 +179,7 @@ namespace {
 template< typename TPI >
 class CrossProductLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) {
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint tensorElements ) override {
          return tensorElements == 2 ? 2 : 6;
       }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {

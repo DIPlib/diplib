@@ -195,7 +195,7 @@ namespace {
 template< typename TPI >
 class SignLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 2; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;;
@@ -228,7 +228,7 @@ namespace {
 template< typename TPI >
 class NearestIntLineFilter : public Framework::ScanLineFilter {
    public:
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) { return 3; }
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;;

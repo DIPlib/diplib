@@ -501,7 +501,7 @@ class DIP_EXPORT VariadicScanLineFilter : public ScanLineFilter {
    public:
       static_assert( N > 0, "VariadicScanLineFilter does not work without input images" );
       VariadicScanLineFilter( F const& func, dip::uint cost = 1 ) : func_( func ), cost_( cost ) {}
-      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) {
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint nTensorElements ) override {
          return cost_ * nTensorElements;
       }
       virtual void Filter( ScanLineFilterParameters const& params ) override {
