@@ -169,7 +169,7 @@ class DIP_NO_EXPORT PixelTable {
       struct DIP_NO_EXPORT PixelRun {
          IntegerArray coordinates;  ///< The coordinates of the first pixel in a run, w.r.t. the origin.
          dip::uint length;          ///< The length of the run, expected to always be larger than 0.
-         PixelRun( IntegerArray const& coordinates, dip::uint length ) : coordinates( coordinates ), length( length ) {}
+         PixelRun( IntegerArray coordinates, dip::uint length ) : coordinates( std::move( coordinates )), length( length ) {}
       };
 
       class DIP_NO_EXPORT iterator;
@@ -215,7 +215,7 @@ class DIP_NO_EXPORT PixelTable {
       /// exact middle.
       ///
       /// `procDim` indicates the processing dimension.
-      DIP_EXPORT PixelTable( Image const& mask, IntegerArray const& origin = {}, dip::uint procDim = 0 );
+      DIP_EXPORT explicit PixelTable( Image const& mask, IntegerArray const& origin = {}, dip::uint procDim = 0 );
 
       /// Returns the vector of runs
       std::vector< PixelRun > const& Runs() const { return runs_; }

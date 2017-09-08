@@ -35,11 +35,11 @@ dip::PixelTable Kernel::PixelTable( dip::uint nDims, dip::uint procDim ) const {
       kernel.ExpandDimensionality( nDims );
       if( kernel.DataType().IsBinary()) {
          DIP_START_STACK_TRACE
-            pixelTable = { kernel, {}, procDim };
+            pixelTable = dip::PixelTable{ kernel, {}, procDim };
          DIP_END_STACK_TRACE
       } else {
          DIP_START_STACK_TRACE
-            pixelTable = { IsFinite( kernel ), {}, procDim };
+            pixelTable = dip::PixelTable{ IsFinite( kernel ), {}, procDim };
             pixelTable.AddWeights( kernel );
          DIP_END_STACK_TRACE
       }
@@ -47,7 +47,7 @@ dip::PixelTable Kernel::PixelTable( dip::uint nDims, dip::uint procDim ) const {
       FloatArray sz = params_;
       DIP_START_STACK_TRACE
          ArrayUseParameter( sz, nDims, 1.0 );
-         pixelTable = { ShapeString(), sz, procDim };
+         pixelTable = dip::PixelTable{ ShapeString(), sz, procDim };
       DIP_END_STACK_TRACE
    }
    if( !shift_.empty() ) {
