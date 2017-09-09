@@ -43,10 +43,10 @@ class FeatureRadius : public PolygonBased {
             out[ 2 ].units = Units::Pixel();
             out[ 3 ].units = Units::Pixel();
          }
-         out[ 0 ].name = "RadiusMax";
-         out[ 1 ].name = "RadiusMean";
-         out[ 2 ].name = "RadiusMin";
-         out[ 3 ].name = "RadiusStD";
+         out[ 0 ].name = "Max";
+         out[ 1 ].name = "Mean";
+         out[ 2 ].name = "Min";
+         out[ 3 ].name = "StdDev";
          return out;
       }
 

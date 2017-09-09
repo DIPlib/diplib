@@ -28,7 +28,7 @@ class FeatureEllipseVariance : public PolygonBased {
 
       virtual ValueInformationArray Initialize( Image const&, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
-         out[ 0 ].name = "EllipseVariance";
+         out[ 0 ].name = "";
          return out;
       }
 

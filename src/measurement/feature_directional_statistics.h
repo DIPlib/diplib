@@ -34,8 +34,8 @@ class FeatureDirectionalStatistics : public LineBased {
          data_.clear();
          data_.resize( nObjects );
          ValueInformationArray out( 2 );
-         out[ 0 ].name = String( "DirectionalMean" );
-         out[ 1 ].name = String( "DirectionalStandardDeviation" );
+         out[ 0 ].name = String( "Mean" );
+         out[ 1 ].name = String( "StdDev" );
          return out;
       }
 

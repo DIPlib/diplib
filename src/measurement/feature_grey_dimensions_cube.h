@@ -63,6 +63,7 @@ class FeatureGreyDimensionsCube : public Composite {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             inertiaIndex_ = dependencies.ValueIndex( "GreyInertia" );
+            hasIndex_ = true;
          }
          dfloat const* data = &it[ inertiaIndex_ ];
          if( nD_ == 2 ) {

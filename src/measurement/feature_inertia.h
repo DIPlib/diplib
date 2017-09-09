@@ -62,6 +62,7 @@ class FeatureInertia : public Composite {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             muIndex_ = dependencies.ValueIndex( "Mu" );
+            hasIndex_ = true;
          }
          dfloat const* data = &it[ muIndex_ ];
          SymmetricEigenDecompositionPacked( nD_, data, output );

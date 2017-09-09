@@ -30,7 +30,7 @@ class FeatureAspectRatioFeret : public Composite {
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
-         out[ 0 ].name = "AspectRatioFeret";
+         out[ 0 ].name = "";
          hasIndex_ = false;
          return out;
       }
@@ -45,6 +45,7 @@ class FeatureAspectRatioFeret : public Composite {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             feretIndex_ = dependencies.ValueIndex( "Feret" );
+            hasIndex_ = true;
          }
          dfloat minDiameter = it[ feretIndex_ + 1 ];
          *output = minDiameter == 0 ? nan : it[ feretIndex_ + 2 ] / minDiameter;

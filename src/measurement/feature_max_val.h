@@ -33,7 +33,7 @@ class FeatureMaxVal : public LineBased {
          data_.clear();
          data_.resize( nObjects, std::numeric_limits< dfloat >::lowest() );
          ValueInformationArray out( 1 );
-         out[ 0 ].name = String( "MaxVal" );
+         out[ 0 ].name = String( "" );
          return out;
       }
 

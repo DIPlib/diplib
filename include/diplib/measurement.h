@@ -525,7 +525,7 @@ class DIP_NO_EXPORT Measurement {
       }
       UnsignedArray objects_;                         // the rows of the table (maps row indices to objectIDs)
       ObjectIdToIndexMap objectIndices_;              // maps object IDs to row indices
-      std::vector< FeatureInformation > features_;           // the column groups of the table (maps column group indices to feature names and contains other info also)
+      std::vector< FeatureInformation > features_;    // the column groups of the table (maps column group indices to feature names and contains other info also)
       Feature::ValueInformationArray values_;         // the columns of the table
       std::map< String, dip::uint > featureIndices_;  // maps feature names to column group indices
       std::vector< ValueType > mutable data_;         // this is mutable so that a const object doesn't have const data -- the only reason for this is to avoid making const versions of the iterators, which seems pointless

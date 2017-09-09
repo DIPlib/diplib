@@ -49,6 +49,7 @@ class FeatureMajorAxes : public Composite {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             muIndex_ = dependencies.ValueIndex( "Mu" );
+            hasIndex_ = true;
          }
          dfloat const* data = &it[ muIndex_ ];
          FloatArray tmp( nD_ );

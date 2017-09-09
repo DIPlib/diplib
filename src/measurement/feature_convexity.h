@@ -30,7 +30,7 @@ class FeatureConvexity : public Composite {
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
-         out[ 0 ].name = "Convexity";
+         out[ 0 ].name = "";
          hasIndex_ = false;
          return out;
       }
@@ -47,6 +47,7 @@ class FeatureConvexity : public Composite {
          if( !hasIndex_ ) {
             sizeIndex_ = dependencies.ValueIndex( "Size" );
             convexIndex_ = dependencies.ValueIndex( "ConvexArea" );
+            hasIndex_ = true;
          }
          dfloat convArea = it[ convexIndex_ ];
          *output = convArea == 0 ? nan : it[ sizeIndex_ ] / convArea;

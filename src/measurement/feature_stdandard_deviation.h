@@ -33,7 +33,7 @@ class FeatureStandardDeviation : public LineBased {
          data_.clear();
          data_.resize( nObjects );
          ValueInformationArray out( 1 );
-         out[ 0 ].name = String( "StandardDeviation" );
+         out[ 0 ].name = String( "" );
          return out;
       }
 

@@ -35,7 +35,7 @@ class FeatureStatistics : public LineBased {
          data_.resize( nObjects );
          ValueInformationArray out( 4 );
          out[ 0 ].name = String( "Mean" );
-         out[ 1 ].name = String( "StandardDeviation" );
+         out[ 1 ].name = String( "StdDev" );
          out[ 2 ].name = String( "Skewness" );
          out[ 3 ].name = String( "ExcessKurtosis" );
          return out;

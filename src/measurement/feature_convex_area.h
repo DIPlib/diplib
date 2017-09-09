@@ -29,7 +29,7 @@ class FeatureConvexArea : public ConvexHullBased {
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint ) override {
          ValueInformationArray out( 1 );
-         out[ 0 ].name = "Area";
+         out[ 0 ].name = "";
          PhysicalQuantity pq = label.PixelSize( 0 );
          if( label.IsIsotropic() && pq.IsPhysical() ) {
             scale_ = pq.magnitude * pq.magnitude;

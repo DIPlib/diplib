@@ -37,7 +37,7 @@ class FeaturePerimeter : public ChainCodeBased {
             scale_ = 1;
             out[ 0 ].units = Units::Pixel();
          }
-         out[ 0 ].name = "Perimeter";
+         out[ 0 ].name = "";
          return out;
       }
 

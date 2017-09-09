@@ -43,11 +43,11 @@ class FeatureFeret : public ConvexHullBased {
          }
          out[ 3 ].units = Units::Radian();
          out[ 4 ].units = Units::Radian();
-         out[ 0 ].name = "FeretMax";
-         out[ 1 ].name = "FeretMin";
-         out[ 2 ].name = "FeretPerpMin";
-         out[ 3 ].name = "FeretMaxAng";
-         out[ 4 ].name = "FeretMinAng";
+         out[ 0 ].name = "Max";
+         out[ 1 ].name = "Min";
+         out[ 2 ].name = "PerpMin";
+         out[ 3 ].name = "MaxAng";
+         out[ 4 ].name = "MinAng";
          return out;
       }
 

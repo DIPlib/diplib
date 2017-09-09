@@ -31,10 +31,10 @@ class FeaturePodczeckShapes : public Composite {
          DIP_THROW_IF( label.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 5 );
          out[ 0 ].name = "Square";
-         out[ 0 ].name = "Circle";
-         out[ 0 ].name = "Triangle";
-         out[ 0 ].name = "Ellipse";
-         out[ 0 ].name = "Elongation";
+         out[ 1 ].name = "Circle";
+         out[ 2 ].name = "Triangle";
+         out[ 3 ].name = "Ellipse";
+         out[ 4 ].name = "Elongation";
          hasIndex_ = false;
          return out;
       }
@@ -49,10 +49,11 @@ class FeaturePodczeckShapes : public Composite {
 
       virtual void Compose( Measurement::IteratorObject& dependencies, Measurement::ValueIterator output ) override {
          auto it = dependencies.FirstFeature();
-         if( hasIndex_ ) {
+         if( !hasIndex_ ) {
             sizeIndex_ = dependencies.ValueIndex( "Size" );
             feretIndex_ = dependencies.ValueIndex( "Feret" );
             perimeterIndex_ = dependencies.ValueIndex( "Perimeter" );
+            hasIndex_ = true;
          }
          dfloat area = it[ sizeIndex_ ];
          if( area == 0 ) {

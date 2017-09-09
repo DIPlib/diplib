@@ -31,7 +31,7 @@ class FeatureP2A : public Composite {
          nD_ = label.Dimensionality();
          DIP_THROW_IF(( nD_ < 2 ) || ( nD_ > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
          ValueInformationArray out( 1 );
-         out[ 0 ].name = "P2A";
+         out[ 0 ].name = "";
          hasIndex_ = false;
          return out;
       }
@@ -52,6 +52,7 @@ class FeatureP2A : public Composite {
             } else  {
                perimIndex_ = dependencies.ValueIndex( "SurfaceArea" );
             }
+            hasIndex_ = true;
          }
          dfloat area = it[ sizeIndex_ ];
          if( area == 0 ) {

@@ -50,6 +50,7 @@ class FeatureGreyMajorAxes : public Composite {
          auto it = dependencies.FirstFeature();
          if( !hasIndex_ ) {
             muIndex_ = dependencies.ValueIndex( "GreyMu" );
+            hasIndex_ = true;
          }
          dfloat const* data = &it[ muIndex_ ];
          FloatArray tmp( nD_ );

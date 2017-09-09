@@ -31,7 +31,7 @@ class FeatureSize : public LineBased {
          data_.clear();
          data_.resize( nObjects, 0 );
          ValueInformationArray out( 1 );
-         switch( label.Dimensionality() ) {
+         /*switch( label.Dimensionality() ) {
             case 1:
                out[ 0 ].name = "Length";
                break;
@@ -43,7 +43,8 @@ class FeatureSize : public LineBased {
                break;
             default:
                out[ 0 ].name = "Size";
-         }
+         }*/
+         out[ 0 ].name = "";
          PhysicalQuantity unitArea = 1;
          for( dip::uint ii = 0; ii < label.Dimensionality(); ++ii ) {
             PhysicalQuantity pq = label.PixelSize( ii );

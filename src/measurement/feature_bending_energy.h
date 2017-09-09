@@ -37,7 +37,7 @@ class FeatureBendingEnergy : public ChainCodeBased {
             scale_ = 1;
             out[ 0 ].units = Units::SquarePixel();
          }
-         out[ 0 ].name = "BendingEnergy";
+         out[ 0 ].name = "";
          return out;
       }
 

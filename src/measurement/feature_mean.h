@@ -33,7 +33,7 @@ class FeatureMean : public LineBased {
          data_.clear();
          data_.resize( nObjects );
          ValueInformationArray out( 1 );
-         out[ 0 ].name = String( "Mean" );
+         out[ 0 ].name = String( "" );
          return out;
       }
 

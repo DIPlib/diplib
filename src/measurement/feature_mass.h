@@ -33,7 +33,7 @@ class FeatureMass : public LineBased {
          data_.clear();
          data_.resize( nObjects, 0 );
          ValueInformationArray out( 1 );
-         out[ 0 ].name = String( "Mass" );
+         out[ 0 ].name = String( "" );
          return out;
       }
 
