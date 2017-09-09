@@ -54,9 +54,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          dip::String str = dml::GetString( prhs[ 0 ]);
          if( str == "help" ) {
             DML_MAX_ARGS( 1 );
-            std::cout << "\nAvailable measurement features:\n";
             auto features = measurementTool->Features();
-            std::cout << features.size() << " features." << std::endl;
+            std::cout << features.size() << " measurement features available:" << std::endl;
             for( auto const& feature : features ) {
                std::cout << " - '" << feature.name << "': " << feature.description;
                if( feature.needsGreyValue ) {
@@ -79,6 +78,22 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          dip::StringArray features;
          if( nrhs > 2 ) {
             features = dml::GetStringArray( prhs[ 2 ] );
+            // Find known feature names
+            auto infoArray = measurementTool->Features();
+            // Put lower-case version of names in a map
+            std::map< dip::String, dip::uint > knownFeatures;
+            for( dip::uint ii = 0; ii < infoArray.size(); ++ii ) {
+               dip::String name = infoArray[ ii ].name;
+               dml::ToLower( name );
+               knownFeatures.emplace( name, ii );
+            }
+            // Find requested features in map, using case-insensitive search, and copy name with correct case
+            for( auto& f : features ) {
+               dml::ToLower( f );
+               auto it = knownFeatures.find( f );
+               DIP_THROW_IF( it == knownFeatures.end(), "Feature name not recognized" );
+               f = infoArray[ it->second ].name;
+            }
          } else {
             features = { "Size" };
          }
@@ -98,20 +113,49 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
          dip::Measurement msr = measurementTool->Measure( label, grey, features, objectIDs, connectivity );
 
-         plhs[ 0 ] = mxCreateDoubleMatrix( msr.NumberOfValues(), msr.NumberOfObjects(), mxREAL );
-         double* data = mxGetPr( plhs[ 0 ] );
+         // Convert `msr` to a `dip_measurement` object
+
+         // Step 1: create {mxObjects, mxFeatures, mxValues}, the input arguments to the constructor
+         mxArray* mxInputArgs[ 3 ];
+         // - Objects
+         mxInputArgs[ 0 ] = dml::GetArray( msr.Objects() );
+         // - Features
+         const char* featuresFieldNames[ 3 ] = { "Name", "StartColumn", "NumberValues" };
+         mxInputArgs[ 1 ] = mxCreateStructMatrix( 1, msr.NumberOfFeatures(), 3, featuresFieldNames );
+         auto dipFeatures = msr.Features();
+         for( dip::uint ii = 0; ii < dipFeatures.size(); ++ii ) {
+            mxSetFieldByNumber( mxInputArgs[ 1 ], ii, 0, dml::GetArray( dipFeatures[ ii ].name ));
+            mxSetFieldByNumber( mxInputArgs[ 1 ], ii, 1, dml::GetArray( dipFeatures[ ii ].startColumn + 1 ));
+            mxSetFieldByNumber( mxInputArgs[ 1 ], ii, 2, dml::GetArray( dipFeatures[ ii ].numberValues ));
+         }
+         // - Values
+         const char* valuesFieldNames[ 2 ] = { "Name", "Units" };
+         mxInputArgs[ 2 ] = mxCreateStructMatrix( 1,  msr.NumberOfValues(), 2, valuesFieldNames );
+         auto dipValues = msr.Values();
+         for( dip::uint ii = 0; ii <  msr.NumberOfValues(); ++ii ) {
+            mxSetFieldByNumber( mxInputArgs[ 2 ], ii, 0, dml::GetArray( dipValues[ ii ].name ));
+            mxSetFieldByNumber( mxInputArgs[ 2 ], ii, 1, dml::GetArrayUnicode( dipValues[ ii ].units.String() ));
+         }
+
+         // Step 2: create the object
+         mexCallMATLAB( 1, plhs, 3, mxInputArgs, "dip_measurement" );
+
+         // Step 3: get a pointer to the data block, and copy the data over
+         mxArray* dataArray = mxGetPropertyShared( plhs[ 0 ], 0, "Data" );
+         double* data = mxGetPr( dataArray );
+         dip::uint step = msr.NumberOfObjects();
          auto objIt = msr.FirstObject();
          do {
+            double* d = data;
             auto ftrIt = objIt.FirstFeature();
             do {
                for( auto& value : ftrIt ) {
-                  * data = value;
-                  ++data;
+                  *d = value;
+                  d += step;
                }
             } while( ++ftrIt );
+            ++data;
          } while( ++objIt );
-         // TODO: convert to dip_measurement object.
-         // TODO: create a dip_measurement object to convert to.
       }
 
    } catch( const dip::Error& e ) {

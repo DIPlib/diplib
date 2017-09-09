@@ -511,6 +511,8 @@ class DIP_NO_EXPORT Measurement {
 
       // TODO: port dipio_MeasurementWriteCSV as a method to dip::Measurement
 
+      // TODO: operator+() concatenates two measurement objects, either vertically or horizontally depending on what is repeated
+
    private:
 
       void AddFeature_( String const& name, Feature::ValueInformationArray const& values ) {
