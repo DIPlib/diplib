@@ -586,6 +586,10 @@ inline Image ApplyColorMap(
    return out;
 }
 
+// TODO: Implement an overlay function, to overlay a binary image on a grey-value or RGB image, with a given RGB value.
+//       This should be fairly trivial, we can do image(mask)={r,g,b};
+//       If the image to overlay is uint, consider it a labelled image, and do: image(mask>0)=ApplyColorMap(mask(mask>0),"label")
+
 // \}
 
 } // namespace dip

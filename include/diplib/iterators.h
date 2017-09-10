@@ -254,6 +254,12 @@ template< typename T >
 using ConstLineIterator = LineIterator< T const >;
 
 
+// TODO: BresenhamLineIterator: iterates along a straight line between two pixels given by coordinates.
+//       Both pixels will be visited before the iterator finishes. That is, the end pixel is not a one-past-the-end
+//       kind of iterator marker. Useful for a function that draws lines, but also for the new work towards line
+//       morphology, and would simplify code in PixelTable(...,"line").
+
+
 // TODO: Image iterators could have 4 modes of operation:
 //  1- Fast: the image is flattened as much as possible, to minimize the loop cost. Pixels are accessed in storage
 //     order. No Coordinates(), no Index(), no processing dimension, no GetLineIterator().
@@ -287,6 +293,12 @@ using ConstLineIterator = LineIterator< T const >;
 // If they happen to have the same stride order, we're all set. If not, is there a way to pick an order that will
 // be optimal in general? Iterate first over a dimension with small strides everywhere? Or one that has the most
 // unit strides?
+
+
+// TODO: Rewrite iterators so that they don't have a pointer to the image.
+// We take a pointer to the image so we can use its Pointer(coords) method, but this is a fairly trivial method
+// to duplicate. If instead we keep a local copy of the sizes and strides arrays, the above will be much simpler,
+// as we can modify them at will to squeeze, flatten, or reorder elements.
 
 
 //

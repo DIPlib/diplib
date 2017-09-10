@@ -307,6 +307,18 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - Related to the previous point, `squeeze` now might reorder dimensions. But it's cheaper
     this way!
 
+- The `dip_measurement` object has changed completely internally. The interface is identical
+  except:
+
+  - It is not (yet?) possible to add a feature.
+
+  - It is no longer possible to convert to/from a `struct`.
+
+  - Fixed a bug: `msr.featureID` now returns an array that is transposed w.r.t. previous versions.
+    This was a bug that we never fixed because of backwards compatability, we took this
+    opportunity to fix it. Now we have total consistency: no matter how the measurement data is
+    extracted or converted, objects are always rows, and features are always columns.
+
 - `dipsetpref` and `dipgetpref` have fewer settings than in the old *DIPimage*. Some settings
   were linked to *DIPlib* global variables, none of which exist any more, and some others
   are simply no longer relevant.

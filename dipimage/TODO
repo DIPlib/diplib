@@ -27,15 +27,6 @@ writetiff.m
 
 Functions in the old DIPimage that are not yet ported:
 
-(already implemented in DIPlib, interface missing):
-correctshift.m
-findlocmax.m
-get_subpixel.m
-msr2obj.m       (we'll be able to implement when dip_measurement object is implemented)
-rotation3d.m
-subsample.m
-
-(other):
 acquireim.m
 affine_trans.m
 afm_flatten.m
@@ -57,6 +48,7 @@ canny.m
 ced.m
 chordlength.m
 coord2image.m
+correctshift.m
 countingframe.m
 cpf.m
 curvature.m
@@ -91,6 +83,7 @@ fillholes.m
 find_affine_trans.m
 find_lambda.m
 findlocalshift.m
+findlocmax.m
 findospeaks.m
 fmmatch.m
 frc.m
@@ -101,6 +94,7 @@ gaussf_adap_banana.m
 gaussianblob.m
 gaussianedgeclip.m
 gaussianlineclip.m
+get_subpixel.m
 granulometry.m
 gvf.m
 hist2image.m
@@ -121,6 +115,7 @@ mappg.m
 mcd.m
 morphscales.m
 mre.m
+msr2obj.m
 msr_remap.m
 nconv.m
 nufft_type1.m
@@ -150,6 +145,7 @@ readrawim.m
 readroiim.m
 rebin.m
 relabel.m
+rotation3d.m
 scale2rgb.m
 scalespace.m
 setlabels.m

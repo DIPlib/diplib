@@ -40,3 +40,6 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
+
+% TODO: lut(image_in,table,indices) adds indices to the table.
+% TODO: lut(...,interpolation_mode,out_of_bounds): interpolation_mode is string, out_of_bounds is string or scalar or [scalar,scalar]

@@ -106,13 +106,16 @@ document's source</a> for the most up-to-date version.
 -   Stuff that is in *DIPimage*:
     - 2D snakes
     - general 2D affine transformation, 3D rotation (is already C code)
+    - anisotropic diffusion and the like
+    - overlay binary or labelled image on grey-value or color image
+    - tiling, concatenating, etc. of images
 
 -   Other stuff that's not in the old *DIPlib* (see below).
 
 -   *DIPimage* toolbox: MEX-files for *DIPlib* functions to be added as these functions
     are written.
-    The `dip_measurement` class needs to be rewritten. The `dipimage` GUI needs to
-    be ported, with function input parameter definitions to be provided by `dipmenus`.
+    The `dipimage` GUI needs to be ported, with function input parameter definitions to be
+    provided by `dipmenus` instead of each toolbox function through the 'DIP_GetParamList` trick.
 
 -   *PyDIP* Python module: Write interactive image display and GUI as exists in *MATLAB*.
     Make the module more "Pythonic"?
@@ -126,9 +129,6 @@ document's source</a> for the most up-to-date version.
 -   Style sheets for the documentation.
 
 ## Functionality currently not in *DIPlib* that would be important to include
-
-- An overlay function that adds a binary or labelled image on top of a grey-value or
-  color image.
 
 - Stain unmixing for bright-field microscopy.
 

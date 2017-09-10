@@ -256,6 +256,7 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
                      + 2 * nKernelPixels + nRuns );   // iterating over pixel table
       }
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
+         // TODO: if all (or most?) runs are very short, compute dilation brute-force. The book-keeping here is not efficient in this case.
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );

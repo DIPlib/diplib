@@ -1372,6 +1372,10 @@ class DIP_NO_EXPORT Image {
       /// \see PermuteDimensions, ExpandDimensionality.
       DIP_EXPORT Image& Flatten();
 
+      // TODO: FlattenAsMuchAsPossible: flattens but never copies.
+      //       Output image might have fewer dimensions than the input, but not necessarily, and not necessarily only
+      //       one dimension. The goal is to make iterating over pixels cheaper. How do we do this across multiple images?
+
       /// \brief Remove singleton dimensions (dimensions with size==1).
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
