@@ -28,23 +28,57 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    try {
 
       DML_MIN_ARGS( 2 );
-      DML_MAX_ARGS( 2 );
+      DML_MAX_ARGS( 5 );
 
       dml::MatlabInterface mi;
       dip::Image out = mi.NewImage();
 
       dip::Image in = dml::GetImage( prhs[ 0 ] );
       dip::Image lut = dml::GetImage( prhs[ 1 ] );
-
       if( lut.Dimensionality() == 2 ) {
          DIP_THROW_IF( !lut.IsScalar(), dip::E::DIMENSIONALITY_NOT_SUPPORTED );
          lut.SpatialToTensor( 0 );
       } else if( lut.Dimensionality() != 1 ) {
          DIP_THROW( dip::E::DIMENSIONALITY_NOT_SUPPORTED );
       }
+      int index = 2;
 
-      dip::LookupTable thing( lut );
-      thing.Apply( in, out );
+      dip::FloatArray indices;
+      if(( nrhs > index ) && ( mxIsNumeric( prhs[ index ] ))) {
+         indices = dml::GetFloatArray( prhs[ index ] );
+         ++index;
+      }
+
+      dip::LookupTable thing( lut, indices );
+
+      dip::String method = "linear";
+      if( nrhs > index ) {
+         method = dml::GetString( prhs[ index ] );
+         ++index;
+      }
+      if( nrhs > index ) {
+         if( mxIsNumeric( prhs[ index ] )) {
+            dip::FloatArray bounds = dml::GetFloatArray( prhs[ index ] );
+            if( bounds.size() == 1 ) {
+               thing.SetOutOfBoundsValue( bounds[ 0 ] );
+            } else if( bounds.size() == 2 ) {
+               thing.SetOutOfBoundsValue( bounds[ 0 ], bounds[ 1 ] );
+            } else {
+               DIP_THROW( dip::E::INVALID_FLAG );
+            }
+         } else {
+            dip::String bounds = dml::GetString( prhs[ index ] );
+            if( bounds == "clamp" ) {
+               thing.ClampOutOfBoundsValues();
+            } else if( bounds == "keep" ) {
+               thing.KeepInputValueOnOutOfBounds();
+            } else {
+               DIP_THROW( dip::E::INVALID_FLAG );
+            }
+         }
+      }
+
+      thing.Apply( in, out, method );
 
       if( lut.IsColor() ) {
          out.SetColorSpace( lut.ColorSpace() );

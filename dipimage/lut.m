@@ -1,29 +1,45 @@
 %LUT   Look-up Table (with interpolation)
 %
 % SYNOPSIS:
-%  image_out = lut(image_in,table)
+%  image_out = lut(image_in,table,indices,method,bounds)
+%  image_out = lut(image_in,table,method,bounds)
 %
 % PARAMETERS:
 %  table: an array with 1 or 3 columns (respectively produce a grey-value
-%         image and an RGB image). MATLAB has many commands to create
-%         colormaps (see 'help graph3d'). These should be used in this
-%         way: lut(image,jet(256)*255)
+%        image and an RGB image). MATLAB has many commands to create
+%        colormaps (see 'help graph3d'). These should be used in this
+%        way: lut(image,jet(256)*255)
+%  indices: an array with as many elements as there are rows in TABLE,
+%        representing the input value that gets mapped to each row.
+%  method: the interpolation method:
+%        - 'linear': the default, uses linear interpolation.
+%        - 'nearest': rounds the input value to the nearest index.
+%        - 'zero order': maps the value to the nearest lower index.
+%  bounds: how out-of-bounds input values are handled:
+%        - 'clamp': clamp input values to the valid range.
+%        - 'keep': keep input values that are out of range.
+%        - V: use the value V for each pixel that is out of range.
+%        - [L,U]: use the value L for pixels under the range, and U for
+%          pixels over the range.
+%
+% DEFAULTS:
+%  indices: 0:LENGTH(TABLE)-1
+%  method: 'linear'
+%  bounds: 'clamp'
 %
 % NOTES:
-%  Indexing into the table starts at zero: pixel values should be
-%  between 0 and LENGTH(TABLE)-1.
-%
-%  For integer images, the pixel values are table indices. For floating-
-%  point images, the table-lookup is done with interpolation.
+%  If no INDICES are given and IMAGE_IN is an integer image, no interpolation
+%  will be applied, since each pixel exactly matches an index.
 %
 %  The output image has the same data type as TABLE.
 %
-%  TABLE can also be a 1D tensor image, where the output image will have the
-%  same number of tensor elements, or a 2D scalar image of the same sizes
-%  as that of the TABLE array input described above.
+%  TABLE can also be a 1D color image, where the output image will have the
+%  same color space, or a tensor image. If it is a 2D array or 2D scalar image,
+%  then the output will have one tensor element per column.
 %
 % DIPlib:
-%  This function calls the DIPlib function dip::LookupTable::Apply.
+%  This function calls the DIPlib function dip::LookupTable::Apply and several
+%  other methods of the dip::LookupTable class.
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -40,6 +56,3 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
-
-% TODO: lut(image_in,table,indices) adds indices to the table.
-% TODO: lut(...,interpolation_mode,out_of_bounds): interpolation_mode is string, out_of_bounds is string or scalar or [scalar,scalar]
