@@ -2064,6 +2064,20 @@ classdef dip_image
       end
 
    end
+
+   % ------- STATIC METHODS -------
+
+   methods(Static)
+
+      function n = numberchannels(col)
+         %NUMBERCHANNELS   Number of channels for a color space
+         %   N = DIP_IMAGE.NUMBERCHANNELS(COL) returns the number of channels
+         %   expected for color space COL.
+         n = colorspacemanager(col);
+      end
+
+   end
+
 end
 
 % ------- PRIVATE FUNCTIONS -------

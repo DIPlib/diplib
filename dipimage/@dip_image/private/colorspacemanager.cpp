@@ -22,12 +22,13 @@
  * Interface:
  *
  * out = colorspacemanager(in,col)
+ *    in = input image
+ *    col = color space name
  *
- * in = input image
- * col = color space name
+ * num = colorspacemanager(col)
+ *    col = color space name
+ *    num = number of channels for color space
  */
-
-// TODO: Add ability to query color space (e.g. get number of required tensor elements)
 
 #undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
@@ -47,9 +48,6 @@ static void AtExit(void) {
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
 
-      DML_MIN_ARGS( 2 );
-      DML_MAX_ARGS( 2 );
-
       // Create CSM object
       if( !csm ) {
          //mexPrintf( "Creating CSM.\n" );
@@ -57,20 +55,33 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
          mexAtExit( AtExit );
       }
 
-      dip::Image in = dml::GetImage( prhs[ 0 ] );
-      dip::String col = dml::GetString( prhs[ 1 ] );
+      DML_MIN_ARGS( 1 );
+      DML_MAX_ARGS( 2 );
 
-      if( !in.IsColor() && in.TensorElements() > 1 ) {
-         // Set the color space, if correct number of tensor elements
-         DIP_THROW_IF( csm->NumberOfChannels( col ) != in.TensorElements(), dip::E::INCONSISTENT_COLORSPACE );
-         plhs[ 0 ] = mxCreateSharedDataCopy( prhs[ 0 ] ); // TODO: This is broken, we're changing the input also!
-         mxSetPropertyShared( plhs[ 0 ], 0, dml::colspPropertyName, dml::GetArray( csm->CanonicalName( col )));
+      if( nrhs == 1 ) {
+
+         dip::String col = dml::GetString( prhs[ 0 ] );
+         dip::uint n = csm->NumberOfChannels( col );
+         plhs[ 0 ] = dml::GetArray( n );
+
       } else {
-         // Convert the color space
-         dml::MatlabInterface mi;
-         dip::Image out = mi.NewImage();
-         csm->Convert( in, out, col );
-         plhs[ 0 ] = mi.GetArray( out );
+
+         dip::Image in = dml::GetImage( prhs[ 0 ] );
+         dip::String col = dml::GetString( prhs[ 1 ] );
+
+         if( !in.IsColor() && in.TensorElements() > 1 ) {
+            // Set the color space, if correct number of tensor elements
+            DIP_THROW_IF( csm->NumberOfChannels( col ) != in.TensorElements(), dip::E::INCONSISTENT_COLORSPACE );
+            plhs[ 0 ] = mxDuplicateArray( prhs[ 0 ] );
+            mxSetPropertyShared( plhs[ 0 ], 0, dml::colspPropertyName, dml::GetArray( csm->CanonicalName( col )));
+         } else {
+            // Convert the color space
+            dml::MatlabInterface mi;
+            dip::Image out = mi.NewImage();
+            csm->Convert( in, out, col );
+            plhs[ 0 ] = mi.GetArray( out );
+         }
+
       }
 
    } catch( const dip::Error& e ) {

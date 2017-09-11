@@ -39,7 +39,7 @@
 // `mxSetProperty` do. For large images, making a useless copy is too expensive.
 extern mxArray* mxGetPropertyShared( mxArray const* pa, mwIndex index, char const* propname );
 extern void mxSetPropertyShared( mxArray* pa, mwIndex index, char const* propname, mxArray const* value );
-// This is an function that makes a shallow copy of an array (i.e. a new array header pointing at the same data).
+// This is a function that makes a shallow copy of an array (i.e. a new array header pointing at the same data).
 extern "C" {
    extern mxArray* mxCreateSharedDataCopy( const mxArray* pr );
 }

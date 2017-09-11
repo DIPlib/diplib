@@ -10,7 +10,7 @@
 %   NEWCOLORIM(B) creates an image with zeros with the same properties as B. If B
 %   is a grey-scale image, the result is an RGB image.
 %
-%   NEWCOLORIM(B, COL) creates an empty image with the colorspace COL.
+%   NEWCOLORIM(B,COL) creates an empty image with the colorspace COL.
 %
 %   NEWCOLORIM([N,M,..],COL,TYPE) sets the data type of the new image to TYPE.
 %   TYPE can be any of the type parameters allowed by DIP_IMAGE. The
