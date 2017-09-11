@@ -28,14 +28,12 @@ namespace dip {
 
 namespace {
 
-// TODO: eliminate false sharing throughout this file, and also error.cpp, variancefilter.cpp, and maybe noise.cpp? How about Histogram?
-
 class dip__Count : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          bin const* in = static_cast< bin const* >( params.inBuffer[ 0 ].buffer );
-         dip::uint& count = counts_[ params.thread ];
+         dip::uint count = 0;
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          if( params.inBuffer.size() > 1 ) {
@@ -58,6 +56,7 @@ class dip__Count : public Framework::ScanLineFilter {
                in += inStride;
             }
          }
+         counts_[ params.thread ] += count;
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          counts_.resize( threads );
@@ -99,12 +98,8 @@ class dip__MaxPixel : public dip__MaxMinPixel {
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         UnsignedArray& coord = coord_[ params.thread ];
-         TPI& value = value_[ params.thread ];
-         if( coord.empty()) {
-            coord.resize( params.position.size());
-            value = std::numeric_limits< TPI >::lowest();
-         }
+         UnsignedArray coord( params.position.size());
+         TPI value = std::numeric_limits< TPI >::lowest();
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          if( params.inBuffer.size() > 1 ) {
@@ -154,10 +149,21 @@ class dip__MaxPixel : public dip__MaxMinPixel {
                }
             }
          }
+         if( first_ ) {
+            if( value > value_[ params.thread ] ) {
+               value_[ params.thread ] = value;
+               coord_[ params.thread ] = coord;
+            }
+         } else {
+            if( value >= value_[ params.thread ] ) {
+               value_[ params.thread ] = value;
+               coord_[ params.thread ] = coord;
+            }
+         }
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          coord_.resize( threads );
-         value_.resize( threads, TPI( 0 ));
+         value_.resize( threads, std::numeric_limits< TPI >::lowest() );
       }
       dip__MaxPixel( bool first ) : first_( first ) {}
       virtual UnsignedArray GetResult() override {
@@ -181,12 +187,8 @@ class dip__MinPixel : public dip__MaxMinPixel {
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         UnsignedArray& coord = coord_[ params.thread ];
-         TPI& value = value_[ params.thread ];
-         if( coord.empty()) {
-            coord.resize( params.position.size());
-            value = std::numeric_limits< TPI >::max();
-         }
+         UnsignedArray coord( params.position.size());
+         TPI value = std::numeric_limits< TPI >::max();
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          if( params.inBuffer.size() > 1 ) {
@@ -236,10 +238,21 @@ class dip__MinPixel : public dip__MaxMinPixel {
                }
             }
          }
+         if( first_ ) {
+            if( value < value_[ params.thread ] ) {
+               value_[ params.thread ] = value;
+               coord_[ params.thread ] = coord;
+            }
+         } else {
+            if( value <= value_[ params.thread ] ) {
+               value_[ params.thread ] = value;
+               coord_[ params.thread ] = coord;
+            }
+         }
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          coord_.resize( threads );
-         value_.resize( threads, TPI( 0 ));
+         value_.resize( threads, std::numeric_limits< TPI >::max() );
       }
       dip__MinPixel( bool first ) : first_( first ) {}
       virtual UnsignedArray GetResult() override {
@@ -342,7 +355,7 @@ class dip__MaximumAndMinimum : public dip__MaximumAndMinimumBase {
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 3; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         MinMaxAccumulator& vars = accArray_[ params.thread ];
+         MinMaxAccumulator vars;
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          if( params.inBuffer.size() > 1 ) {
@@ -369,6 +382,7 @@ class dip__MaximumAndMinimum : public dip__MaximumAndMinimumBase {
                vars.Push( *in );
             }
          }
+         accArray_[ params.thread ] += vars;
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads );
@@ -416,7 +430,7 @@ class dip__SampleStatistics : public dip__SampleStatisticsBase {
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 23; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         StatisticsAccumulator& vars = accArray_[ params.thread ];
+         StatisticsAccumulator vars;
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          if( params.inBuffer.size() > 1 ) {
@@ -437,6 +451,7 @@ class dip__SampleStatistics : public dip__SampleStatisticsBase {
                in += inStride;
             }
          }
+         accArray_[ params.thread ] += vars;
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          accArray_.resize( threads );
@@ -478,7 +493,7 @@ class dip__CenterOfMass : public dip__CenterOfMassBase {
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return nD_ + 1; }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         FloatArray& vars = accArray_[ params.thread ];
+         FloatArray vars;
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          UnsignedArray pos = params.position;
@@ -509,6 +524,7 @@ class dip__CenterOfMass : public dip__CenterOfMassBase {
                ++( pos[ procDim ] );
             }
          }
+         accArray_[ params.thread ] += vars;
       }
       dip__CenterOfMass( dip::uint nD ) : nD_( nD ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
@@ -568,7 +584,7 @@ class dip__Moments : public dip__MomentsBase {
       }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
-         MomentAccumulator& vars = accArray_[ params.thread ];
+         MomentAccumulator vars( nD_ );
          auto bufferLength = params.bufferLength;
          auto inStride = params.inBuffer[ 0 ].stride;
          FloatArray pos{ params.position };
@@ -593,6 +609,7 @@ class dip__Moments : public dip__MomentsBase {
                ++( pos[ procDim ] );
             }
          }
+         accArray_[ params.thread ] += vars;
       }
       dip__Moments( dip::uint nD ) : nD_( nD ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {

@@ -27,6 +27,8 @@
 
 namespace dip {
 
+// TODO: Is there false sharing in these line filters?
+
 namespace {
 class DIP_EXPORT UniformScanLineFilter : public Framework::ScanLineFilter {
    public:

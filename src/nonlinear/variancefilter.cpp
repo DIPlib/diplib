@@ -31,9 +31,6 @@ namespace {
 template< typename TPI >
 class VarianceLineFilter : public Framework::FullLineFilter {
    public:
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
-         accumulators_.resize( threads );
-      }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
          return 5 * nKernelPixels + lineLength * (
                nRuns * 10     // number of multiply-adds
@@ -46,8 +43,7 @@ class VarianceLineFilter : public Framework::FullLineFilter {
          dip::sint outStride = params.outBuffer.stride;
          dip::uint length = params.bufferLength;
          PixelTableOffsets const& pixelTable = params.pixelTable;
-         VarianceAccumulator& acc = accumulators_[ params.thread ];
-         acc.Reset();
+         VarianceAccumulator acc;
          for( auto offset : pixelTable ) {
             acc.Push( in[ offset ] );
          }
@@ -64,8 +60,6 @@ class VarianceLineFilter : public Framework::FullLineFilter {
             *out = static_cast< TPI >( acc.Variance() );
          }
       }
-   private:
-      std::vector< VarianceAccumulator > accumulators_;
 };
 
 } // namespace

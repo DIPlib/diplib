@@ -92,8 +92,8 @@ class IDivergenceLineFilter : public Framework::ScanLineFilter {
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          dfloat const* in1 = static_cast< dfloat const* >( params.inBuffer[ 0 ].buffer );
          dfloat const* in2 = static_cast< dfloat const* >( params.inBuffer[ 1 ].buffer );
-         dfloat& value = value_[ params.thread ];
-         dip::uint& count = count_[ params.thread ];
+         dfloat value = 0;
+         dip::uint count = 0;
          auto bufferLength = params.bufferLength;
          auto in1Stride = params.inBuffer[ 0 ].stride;
          auto in2Stride = params.inBuffer[ 1 ].stride;
@@ -127,6 +127,9 @@ class IDivergenceLineFilter : public Framework::ScanLineFilter {
             }
             count += bufferLength;
          }
+         value_[ params.thread ] += value;
+         count_[ params.thread ] += count;
+
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          value_.resize( threads, 0.0 );
