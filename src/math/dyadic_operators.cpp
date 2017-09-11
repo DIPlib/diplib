@@ -30,7 +30,7 @@ void Atan2( Image const& y, Image const& x, Image& out ) {
    DataType dt = DataType::SuggestArithmetic( y.DataType(), x.DataType() );
    std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
    DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewDyadicScanLineFilter, (
-         []( auto its ) { return std::atan2( *its[ 0 ], *its[ 1 ] ); }, 20 // rough guess at the cost
+         []( auto its ) { return std::atan2( *its[ 0 ], *its[ 1 ] ); }, 20
    ), dt );
    ImageRefArray outar{ out };
    Framework::Scan( { y, x }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );

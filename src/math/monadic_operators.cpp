@@ -30,11 +30,6 @@ namespace dip {
 namespace {
 
 template< typename T >
-T dipm__SquareModulus( T v ) { return v * v; }
-template< typename T >
-T dipm__SquareModulus( std::complex< T > v ) { return v.real() * v.real() + v.imag() * v.imag(); }
-
-template< typename T >
 T dipm__Fraction( T v ) { return v - std::trunc( v ); }
 
 template< typename T >
@@ -139,9 +134,17 @@ namespace dip {
 
 namespace {
 
+template< typename T >
+dip::uint AbsCost() { return 1; }
+template<>
+dip::uint AbsCost< scomplex >() { return 20; }
+template<>
+dip::uint AbsCost< dcomplex >() { return 20; }
+
 template< typename TPI >
 class AbsLineFilter : public Framework::ScanLineFilter {
    public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return AbsCost< TPI >(); }
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
          TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint inStride = params.inBuffer[ 0 ].stride;;
@@ -149,7 +152,43 @@ class AbsLineFilter : public Framework::ScanLineFilter {
          AbsType< TPI >* out = static_cast< AbsType< TPI >* >( params.outBuffer[ 0 ].buffer );
          dip::sint const outStride = params.outBuffer[ 0 ].stride;
          for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
-            *out = abs( *in );
+            *out = std::abs( *in );
+            in += inStride;
+            out += outStride;
+         }
+      }
+};
+
+template< typename TPI >
+class SquareModulusLineFilter : public Framework::ScanLineFilter {
+   public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 2; }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         dip::sint inStride = params.inBuffer[ 0 ].stride;;
+         dip::uint const bufferLength = params.bufferLength;
+         FloatType< TPI >* out = static_cast< FloatType< TPI >* >( params.outBuffer[ 0 ].buffer );
+         dip::sint const outStride = params.outBuffer[ 0 ].stride;
+         for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+            *out = in->real() * in->real() + in->imag() * in->imag();
+            in += inStride;
+            out += outStride;
+         }
+      }
+};
+
+template< typename TPI >
+class PhaseLineFilter : public Framework::ScanLineFilter {
+   public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 20; }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         dip::sint inStride = params.inBuffer[ 0 ].stride;;
+         dip::uint const bufferLength = params.bufferLength;
+         FloatType< TPI >* out = static_cast< FloatType< TPI >* >( params.outBuffer[ 0 ].buffer );
+         dip::sint const outStride = params.outBuffer[ 0 ].stride;
+         for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
+            *out = std::arg( *in );
             in += inStride;
             out += outStride;
          }
@@ -171,6 +210,28 @@ void Abs( Image const& in, Image& out ) {
    } else {
       out = in;
    }
+}
+
+void SquareModulus( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DataType dtype = in.DataType();
+   DataType otype = DataType::SuggestFloat( dtype );
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   DIP_OVL_NEW_COMPLEX( scanLineFilter, SquareModulusLineFilter, (), dtype );
+   ImageRefArray outar{ out };
+   Framework::Scan( { in }, outar, { dtype }, { otype }, { otype }, { 1 }, *scanLineFilter,
+                    Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
+}
+
+void Phase( Image const& in, Image& out ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DataType dtype = in.DataType();
+   DataType otype = DataType::SuggestFloat( dtype );
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   DIP_OVL_NEW_COMPLEX( scanLineFilter, PhaseLineFilter, (), dtype );
+   ImageRefArray outar{ out };
+   Framework::Scan( { in }, outar, { dtype }, { otype }, { otype }, { 1 }, *scanLineFilter,
+                    Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
 }
 
 

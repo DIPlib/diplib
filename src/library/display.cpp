@@ -227,20 +227,6 @@ dfloat convert( std::complex< T > v, bool usePhase ) {
    }
 }
 
-template< typename T >
-T ToReal( T v, bool /*usePhase*/ ) {
-   return v;
-}
-
-template< typename T >
-T ToReal( std::complex< T > v, bool usePhase ) {
-   if( usePhase ) {
-      return std::arg( v );
-   } else {
-      return std::abs( v );
-   }
-}
-
 template< typename TPI >
 void CastToUint8(
       Image const& slice,
@@ -393,7 +379,7 @@ void MapPixelValues(
    // Input and output both always have 3 tensor elements
    for( dip::uint ii = 0; ii < 3; ++ii ) {
       double value = usePhase
-                     ? std::arg( input[ ii ].As< dcomplex >())
+                     ? std::arg( input[ ii ].As< dcomplex >() )
                      : input[ ii ].As< dfloat >();
       value += offset;
       if( logarithmic ) {

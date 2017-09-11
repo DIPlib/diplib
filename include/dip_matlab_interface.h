@@ -777,8 +777,6 @@ inline mxArray* GetArray( dip::FileInformation const& fileInformation ) {
    return out;
 }
 
-// TODO: GetArray( dip::Distribution const& in) (when we define it)
-
 
 //
 // The ExternalInterface for MATLAB: Converting dip::Image to mxArray (sort of)

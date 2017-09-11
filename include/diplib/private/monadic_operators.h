@@ -56,16 +56,6 @@ namespace dip {
 /// \addtogroup math_arithmetic
 /// \{
 
-// TODO: SquareModulus and Phase for complex inputs only.
-
-/// \brief Computes the square of the modulus of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( SquareModulus,
-                             []( auto its ) { return dipm__SquareModulus( *its[ 0 ] ); },
-                             DataType::Class_NonBinary, 3 )
-
-/// \brief Computes the phase (angle on complex plane, through `std::arg`) of each sample.
-DIP__MONADIC_OPERATOR_FLOAT( Phase, []( auto its ) { return std::arg( *its[ 0 ] ); }, DataType::Class_NonBinary, 20 )
-
 /// \brief Computes the nearest integer to each sample (rounds).
 /// Only defined for floating-point types, the output is the same type.
 DIP__MONADIC_OPERATOR_FLOAT( Round, []( auto its ) { return std::round( *its[ 0 ] ); }, DataType::Class_Float, 1 )

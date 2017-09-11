@@ -58,6 +58,22 @@ inline Image Abs( Image const& in ) {
 inline void Modulus( Image const& in, Image& out ) { Abs( in, out ); }
 inline Image Modulus( Image const& in ) { return Abs( in ); }
 
+/// \brief Computes the square of the modulus of each sample.
+DIP_EXPORT void SquareModulus( Image const& in, Image& out );
+inline Image SquareModulus( Image const& in ) {
+   Image out;
+   SquareModulus( in, out );
+   return out;
+}
+
+/// \brief Computes the phase (angle on complex plane, through `std::arg`) of each sample.
+DIP_EXPORT void Phase( Image const& in, Image& out );
+inline Image Phase( Image const& in ) {
+   Image out;
+   Phase( in, out );
+   return out;
+}
+
 inline Image Real( Image const& in ) { return in.DataType().IsComplex() ? Image( in.Real() ) : in; }
 /// \brief Returns the real component of a complex image. Returns `dip::Image::Real` if the input is complex.
 inline void Real( Image const& in, Image& out ) { out = Real( in ); }
