@@ -60,13 +60,13 @@ class DFT {
 
       /// \brief Construct a `%DFT` object by specifying the size and direction of the transform.
       /// Note that this is not a trivial operation.
-      DFT( int size, bool inverse ) {
+      DFT( size_t size, bool inverse ) {
          Initialize( size, inverse );
       }
 
       /// \brief Re-configure a `%DFT` object to the given transform size and direction.
       /// Note that this is not a trivial operation.
-      DIP_EXPORT void Initialize( int size, bool inverse );
+      DIP_EXPORT void Initialize( size_t size, bool inverse );
 
       /// \brief Apply the transform that the `%DFT` object is configured for.
       ///
@@ -87,10 +87,10 @@ class DFT {
       bool IsInverse() const { return inverse_; }
 
       /// \brief Returns the size that the transform is configured for.
-      int TransformSize() const { return nfft_; }
+      size_t TransformSize() const { return static_cast< size_t >( nfft_ ); }
 
       /// \brief Returns the size of the buffer expected by `Apply`.
-      int BufferSize() const { return sz_; }
+      size_t BufferSize() const { return static_cast< size_t >( sz_ ); }
 
    private:
       int nfft_ = 0;

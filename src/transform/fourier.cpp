@@ -41,8 +41,17 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
          scale_ = 1.0;
          for( dip::uint ii = 0; ii < outSize.size(); ++ii ) {
             if( process[ ii ] ) {
-               dft_[ ii ].Initialize( static_cast< int >( outSize[ ii ] ), inverse );
-               // TODO: re-use these if same size as a different dimension (square images!) See GaussFTLineFilter in src/linear/gauss.cpp
+               bool found = false;
+               for( dip::uint jj = 0; jj < ii; ++jj ) {
+                  if( process[ jj ] && ( outSize[ jj ] == outSize[ ii ] )) {
+                     dft_[ ii ] = dft_[ jj ];
+                     found = true;
+                     break;
+                  }
+               }
+               if( !found ) {
+                  dft_[ ii ].Initialize( outSize[ ii ], inverse );
+               }
                if( inverse || symmetric ) {
                   scale_ /= static_cast< FloatType< TPI >>( outSize[ ii ] );
                }
@@ -60,10 +69,10 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          DFT< FloatType< TPI >> const& dft = dft_[ params.dimension ];
-         if( buffers_[ params.thread ].size() != static_cast< dip::uint >( dft.BufferSize() )) {
-            buffers_[ params.thread ].resize( static_cast< dip::uint >( dft.BufferSize() ));
+         if( buffers_[ params.thread ].size() != dft.BufferSize() ) {
+            buffers_[ params.thread ].resize( dft.BufferSize() );
          }
-         dip::uint length = static_cast< dip::uint >( dft.TransformSize() );
+         dip::uint length = dft.TransformSize();
          dip::uint border = params.inBuffer.border;
          DIP_ASSERT( params.inBuffer.length + 2 * border >= length );
          DIP_ASSERT( params.outBuffer.length >= length );
@@ -200,15 +209,7 @@ void FourierTransform(
       // Get callback function
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_COMPLEX( lineFilter, DFTLineFilter, ( outSize, process, inverse, corner, symmetric ), dtype );
-      Framework::Separable(
-            in_copy,
-            tmp,
-            dtype,
-            dtype,
-            process,
-            border,
-            bc,
-            *lineFilter,
+      Framework::Separable( in_copy, tmp, dtype, dtype, process, border, bc, *lineFilter,
             Framework::Separable_UseInputBuffer +   // input stride is always 1
             Framework::Separable_UseOutputBuffer +  // output stride is always 1
             Framework::Separable_DontResizeOutput + // output is potentially larger than input, if padding with zeros
@@ -259,9 +260,8 @@ dip::uint OptimalFourierTransformSize( dip::uint size ) {
 template< typename T >
 T dotest( size_t nfft, bool inverse = false ) {
    // Initialize
-   DIP_ASSERT( nfft <= dip::maximumDFTSize );
-   dip::DFT< T > opts( static_cast< int >( nfft ), inverse );
-   std::vector< std::complex< T >> buf( static_cast< size_t >( opts.BufferSize() ));
+   dip::DFT< T > opts( nfft, inverse );
+   std::vector< std::complex< T >> buf( opts.BufferSize() );
    // Create test data
    std::vector< std::complex< T >> inbuf( nfft );
    std::vector< std::complex< T >> outbuf( nfft );

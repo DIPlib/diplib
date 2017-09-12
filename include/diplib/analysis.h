@@ -237,7 +237,7 @@ DIP_EXPORT FloatArray FindShift(
 ///
 /// If `mask` is given (not a raw image), then it is interpreted as confidence weights for the input pixels. It
 /// should have values between 0 and 1 (or be binary). Normalized convolution is used to compute the derivatives and
-/// local averaging, and thereby fill in the missing values of the input image.
+/// local averaging, and thereby fill in the missing values of the input image. [This is not yet implemented.]
 ///
 /// See `dip::Gauss` for the meaning of the parameters `method`, `boundaryCondition` and `truncation`.
 ///

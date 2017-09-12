@@ -177,9 +177,9 @@ std::vector< int > DFTFactorize( int n ) {
 } // namespace
 
 template< typename T >
-void DFT< T >::Initialize( int nfft, bool inverse ) {
-   DIP_ASSERT( nfft > 0 );
-   nfft_ = nfft;
+void DFT< T >::Initialize( size_t nfft, bool inverse ) {
+   DIP_ASSERT( nfft <= maximumDFTSize );
+   nfft_ = static_cast< int >( nfft );
    inverse_ = inverse;
    factors_ = DFTFactorize( nfft_ );
    sz_ = 0;
@@ -637,8 +637,8 @@ void DFT< T >::Apply(
 }
 
 // Explicit instantiations:
-template void DFT< float >::Initialize( int nfft, bool inverse );
-template void DFT< double >::Initialize( int nfft, bool inverse );
+template void DFT< float >::Initialize( size_t nfft, bool inverse );
+template void DFT< double >::Initialize( size_t nfft, bool inverse );
 template void DFT< float >::Apply(
       const std::complex< float >* src,
       std::complex< float >* dst,
@@ -654,7 +654,7 @@ template void DFT< double >::Apply(
 
 namespace {
 
-constexpr static unsigned int optimalDFTSizeTab[] = {
+constexpr unsigned int optimalDFTSizeTab[] = {
       1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 16, 18, 20, 24, 25, 27, 30, 32, 36, 40, 45, 48,
       50, 54, 60, 64, 72, 75, 80, 81, 90, 96, 100, 108, 120, 125, 128, 135, 144, 150, 160,
       162, 180, 192, 200, 216, 225, 240, 243, 250, 256, 270, 288, 300, 320, 324, 360, 375,

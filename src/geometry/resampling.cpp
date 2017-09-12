@@ -139,21 +139,46 @@ class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
          ift_.resize( nDims );
          weights_.resize( nDims );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            DIP_THROW_IF( sizes[ ii ] > maximumDFTSize, "Input size is too large for FT method" );
-            ft_[ ii ].Initialize( static_cast< int >( sizes[ ii ] ), false );
+            bool foundInSize = false;
+            bool foundOutSize = false;
+            bool foundShift = false;
             dip::uint outSize = interpolation::ComputeOutputSize( sizes[ ii ], zoom[ ii ] );
-            DIP_THROW_IF( outSize > maximumDFTSize, "Output size is too large for FT method" );
-            ift_[ ii ].Initialize( static_cast< int >( outSize ), true );
-            weights_[ ii ].resize( sizes[ ii ] );
-            interpolation::FourierShiftWeights( weights_[ ii ], shift[ ii ] );
-            // TODO: re-use these if same size as a different dimension (square images!) See GaussFTLineFilter in src/linear/gauss.cpp
+            for( dip::uint jj = 0; jj < ii; ++jj ) {
+               if( sizes[ jj ] == sizes[ ii ] ) {
+                  if( !foundInSize ) {
+                     ft_[ ii ] = ft_[ jj ];
+                     foundInSize = true;
+                  }
+                  if( !foundShift && ( shift[ jj ] == shift[ ii ] )) {
+                     weights_[ ii ] = weights_[ jj ];
+                     foundShift = true; // note that foundShift implies foundInSize.
+                  }
+               }
+               if( !foundOutSize && ( ift_[ jj ].TransformSize() == outSize )) {
+                  ift_[ ii ] = ift_[ jj ];
+                  foundOutSize = true;
+               }
+               if( foundOutSize && foundShift ) {
+                  break;
+               }
+            }
+            if( !foundInSize ) {
+               ft_[ ii ].Initialize( sizes[ ii ], false );
+            }
+            if( !foundOutSize ) {
+               ift_[ ii ].Initialize( outSize, true );
+            }
+            if( !foundShift ) {
+               weights_[ ii ].resize( sizes[ ii ] );
+               interpolation::FourierShiftWeights( weights_[ ii ], shift[ ii ] );
+            }
          }
       }
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffer_.resize( threads );
       }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint procDim ) override {
-         dip::uint outLength = static_cast< dip::uint >( ift_[ procDim ].TransformSize() );
+         dip::uint outLength = ift_[ procDim ].TransformSize();
          return 10 * lineLength * static_cast< dip::uint >( std::round( std::log2( lineLength )))
               + 10 * outLength  * static_cast< dip::uint >( std::round( std::log2( outLength  )));
       }
@@ -208,7 +233,7 @@ class FourierResamplingLineFilter : public Framework::SeparableLineFilter {
             }
          }
          // TODO: For FOURIER method, add a border to: improve results, use boundary condition, use an optimal transform size.
-         //       BUT: It's not trivial because the inverse transform has a zoomed border.
+         //       This will be easy only for the zoom==1.0 case, for other cases, you cannot pick one of the two FT sizes.
       }
 
    private:

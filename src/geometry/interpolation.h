@@ -401,8 +401,8 @@ void Fourier(
       std::complex< TPI >* buffer         // temporary buffer, size = FourierBufferSize()
 ) {
    std::complex< TPI >* intermediate = buffer;
-   dip::uint inSize = static_cast< dip::uint >( ft.TransformSize() );
-   dip::uint outSize = static_cast< dip::uint >( ift.TransformSize() );
+   dip::uint inSize = ft.TransformSize();
+   dip::uint outSize = ift.TransformSize();
    buffer += std::max( inSize, outSize );
    TPI invScale = static_cast< TPI >( 1.0 / static_cast< dip::dfloat >( inSize ));
    // FT of input
@@ -467,7 +467,7 @@ inline dip::uint FourierBufferSize(
       DFT< TPI > const& ft,         // DFT object configured for a transform of <size of input>
       DFT< TPI > const& ift         // DFT object configured for an inverse transform of <size of output>
 ) {
-   return dip::uint( std::max( ft.TransformSize(), ift.TransformSize() ) + std::max( ft.BufferSize(), ift.BufferSize() ));
+   return std::max( ft.TransformSize(), ift.TransformSize() ) + std::max( ft.BufferSize(), ift.BufferSize() );
 }
 
 
@@ -991,8 +991,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Fourier interpolation function") {
    dip::uint outSize = inSize;
    std::vector< dip::scomplex > output( outSize, -1e6f );
 
-   dip::DFT< dip::sfloat > ft( (int)inSize, false );
-   dip::DFT< dip::sfloat > ift( (int)outSize, true );
+   dip::DFT< dip::sfloat > ft( inSize, false );
+   dip::DFT< dip::sfloat > ift( outSize, true );
    std::vector< dip::scomplex > buffer( dip::interpolation::FourierBufferSize( ft, ift ));
    dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
 
@@ -1013,8 +1013,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Fourier interpolation function") {
    scale = static_cast< dip::dfloat >( outSize ) / static_cast< dip::dfloat >( inSize );
    output.resize( outSize );
    std::fill( output.begin(), output.end(), -1e6f );
-   ft.Initialize( (int)inSize, false );
-   ift.Initialize( (int)outSize, true );
+   ft.Initialize( inSize, false );
+   ift.Initialize( outSize, true );
    buffer.resize( dip::interpolation::FourierBufferSize( ft, ift ));
    dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
 
@@ -1036,8 +1036,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Fourier interpolation function") {
    output.resize( outSize );
    std::fill( output.begin(), output.end(), -1e6f );
 
-   ft.Initialize( (int)inSize, false );
-   ift.Initialize( (int)outSize, true );
+   ft.Initialize( inSize, false );
+   ift.Initialize( outSize, true );
    buffer.resize( dip::interpolation::FourierBufferSize( ft, ift ));
    dip::interpolation::Fourier< dip::sfloat >( input.data(), output.data(), shift, ft, ift, nullptr, buffer.data() );
 
