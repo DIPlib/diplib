@@ -218,7 +218,8 @@ enum class SubpixelExtremumMethod {
       PARABOLIC_SEPARABLE,
       GAUSSIAN_SEPARABLE,
       PARABOLIC,
-      GAUSSIAN
+      GAUSSIAN,
+      INTEGER
 };
 
 SubpixelExtremumMethod ParseMethod( String const& s_method, dip::uint nDims ) {
@@ -233,6 +234,8 @@ SubpixelExtremumMethod ParseMethod( String const& s_method, dip::uint nDims ) {
       method = SubpixelExtremumMethod::GAUSSIAN;
    } else if( s_method == "gaussian separable" ) {
       method = SubpixelExtremumMethod::GAUSSIAN_SEPARABLE;
+   } else if( s_method == "integer" ) {
+      method = SubpixelExtremumMethod::INTEGER;
    } else {
       DIP_THROW( E::INVALID_FLAG );
    }
@@ -403,6 +406,14 @@ SubpixelLocationResult dip__SubpixelLocation(
          }
          break;
       }
+
+      // Integer: don't do anything
+      case SubpixelExtremumMethod::INTEGER:
+         for( dip::uint ii = 0; ii < nd; ++ii ) {
+            out.coordinates[ ii ] = static_cast< dfloat >( position[ ii ] );
+         }
+         // Max value is already given.
+         break;
    }
 
    return out;
@@ -488,8 +499,8 @@ SubpixelLocationArray SubpixelExtrema(
    for( dip::uint ii = 0; ii < nExtrema; ++ii ) {
       auto it = objIterator[ "Center" ];
       std::copy( it.begin(), it.end(), coords.begin() );
-      if( *objIterator[ "Size" ] > 1 ) {
-         // The local extremum is a plateau
+      if(( method == SubpixelExtremumMethod::INTEGER ) || ( *objIterator[ "Size" ] > 1 )) {
+         // The local extremum is a plateau (or we're not interested in sub-pixel locations)
          out[ ii ].coordinates = coords;
          out[ ii ].value = *objIterator[ "Mean" ];
       } else {

@@ -64,6 +64,7 @@ using SubpixelLocationArray = std::vector< SubpixelLocationResult >;
 ///  - `"gaussian separable"`: Fits a Gaussian in each dimension independently. The value at the extremum
 ///    is the maximum/minimum of the values obtained in each of the 1D processes, and thus not equivalent
 ///    to the grey value obtained by true interpolation.
+///  - `"integer"`: Doesn't look for sub-pixel locations, returning the integer coordinates of the extremum.
 ///
 /// The image `in` must be scalar and real-valued.
 DIP_EXPORT SubpixelLocationResult SubpixelLocation(
