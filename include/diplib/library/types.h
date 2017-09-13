@@ -34,6 +34,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <cctype>
 
 #include "diplib/library/dimension_array.h"
 

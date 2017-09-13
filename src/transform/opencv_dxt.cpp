@@ -60,7 +60,7 @@
 #include <vector>
 #include <cstring>
 
-#include "diplib/library/error.h"
+#include "diplib/library/numeric.h"
 #include "diplib/dft.h"
 
 
@@ -290,7 +290,7 @@ void DFT< T >::Initialize( int nfft, bool inverse ) {
    if(( nfft_ & ( nfft_ - 1 )) == 0 ) {
       w = w1 = DFTTab[ m ];
    } else {
-      double t = sin( -M_PI * 2 / nfft_ );
+      double t = sin( -dip::pi * 2 / nfft_ );
       w = w1 = { std::sqrt( 1. - t * t ), t };
    }
    n = ( nfft_ + 1 ) / 2;

@@ -297,10 +297,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
    dip::SymmetricEigenDecompositionPacked( 2, matrix2, lambdas, vectors );
    DOCTEST_CHECK( lambdas[ 0 ] == 4 );
    DOCTEST_CHECK( lambdas[ 1 ] == 2 );
-   DOCTEST_CHECK( vectors[ 0 ] == doctest::Approx(  std::cos( M_PI/4 ))); // signs might be different here...
-   DOCTEST_CHECK( vectors[ 1 ] == doctest::Approx( -std::sin( M_PI/4 )));
-   DOCTEST_CHECK( vectors[ 2 ] == doctest::Approx(  std::sin( M_PI/4 )));
-   DOCTEST_CHECK( vectors[ 3 ] == doctest::Approx(  std::cos( M_PI/4 )));
+   DOCTEST_CHECK( vectors[ 0 ] == doctest::Approx(  std::cos( dip::pi/4 ))); // signs might be different here...
+   DOCTEST_CHECK( vectors[ 1 ] == doctest::Approx( -std::sin( dip::pi/4 )));
+   DOCTEST_CHECK( vectors[ 2 ] == doctest::Approx(  std::sin( dip::pi/4 )));
+   DOCTEST_CHECK( vectors[ 3 ] == doctest::Approx(  std::cos( dip::pi/4 )));
 
    dip::dfloat matrix3[] = { 3, 1.5, 1.5, 0.0, 0.0, -0.5 };
    dip::SymmetricEigenDecompositionPacked( 3, matrix3, lambdas );
@@ -327,10 +327,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing the EigenDecomposition functions") {
    dip::EigenDecomposition( 2, matrix22, c_lambdas, c_vectors );
    DOCTEST_CHECK( c_lambdas[ 0 ].real() == doctest::Approx( 4.0 ));
    DOCTEST_CHECK( c_lambdas[ 1 ].real() == doctest::Approx( 2.0 ));
-   DOCTEST_CHECK( c_vectors[ 0 ].real() == doctest::Approx(  cos( M_PI/4 ))); // signs might be different here...
-   DOCTEST_CHECK( c_vectors[ 1 ].real() == doctest::Approx( -sin( M_PI/4 )));
-   DOCTEST_CHECK( c_vectors[ 2 ].real() == doctest::Approx(  sin( M_PI/4 )));
-   DOCTEST_CHECK( c_vectors[ 3 ].real() == doctest::Approx(  cos( M_PI/4 )));
+   DOCTEST_CHECK( c_vectors[ 0 ].real() == doctest::Approx(  cos( dip::pi/4 ))); // signs might be different here...
+   DOCTEST_CHECK( c_vectors[ 1 ].real() == doctest::Approx( -sin( dip::pi/4 )));
+   DOCTEST_CHECK( c_vectors[ 2 ].real() == doctest::Approx(  sin( dip::pi/4 )));
+   DOCTEST_CHECK( c_vectors[ 3 ].real() == doctest::Approx(  cos( dip::pi/4 )));
    DOCTEST_CHECK( c_lambdas[ 0 ].imag() == 0 );
    DOCTEST_CHECK( c_lambdas[ 1 ].imag() == 0 );
    DOCTEST_CHECK( c_vectors[ 0 ].imag() == 0 );

@@ -19,7 +19,6 @@
 
 #ifdef DIP__HAS_GLFW
 
-#include <unistd.h>
 #include <string.h>
 
 #include <exception>

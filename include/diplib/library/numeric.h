@@ -30,6 +30,7 @@
 
 #include <cmath>
 #include <numeric>
+#include <limits>
 
 #include "diplib/library/sample_iterator.h"
 

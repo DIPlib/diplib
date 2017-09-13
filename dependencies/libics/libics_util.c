@@ -57,6 +57,7 @@
 #include "libics_intern.h"
 
 #ifdef _WIN32
+#define NOMINMAX // windows.h must not define min() and max(), which are conflicting with std::min() and std::max()
 #include <windows.h>
 #define strcasecmp _stricmp
 #else

@@ -19,7 +19,6 @@
 
 #ifdef DIP__HAS_FREEGLUT
 
-#include <unistd.h>
 #include <string.h>
 
 #include <cstdint>
