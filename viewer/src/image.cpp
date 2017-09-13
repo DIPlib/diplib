@@ -76,5 +76,5 @@ void ImageViewPort::render()
 
 void ImageViewer::create()
 {
-  title("ImageViewer");
+  setWindowTitle("");
 }

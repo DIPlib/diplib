@@ -95,7 +95,7 @@ class DIP_EXPORT SliceViewer : public Viewer
     int drag_button_, width_, height_;
   
   public:
-    SliceViewer(const dip::Image &image);
+    SliceViewer(const dip::Image &image, std::string name="SliceViewer");
     
     ~SliceViewer()
     {

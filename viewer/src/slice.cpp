@@ -404,7 +404,7 @@ void SliceViewPort::click(int button, int state, int x, int y)
       auto te = viewer()->image().TensorElements();
       
       std::ostringstream oss;
-      oss << "SliceViewer (";
+      oss << " (";
       for (dip::uint ii=0; ii < op.size(); ++ii)
       {
         oss << op[ii];
@@ -492,7 +492,7 @@ void SliceViewPort::screenToView(int x, int y, double *ix, double *iy)
     *iy = (y-y_)/viewer()->options().zoom_[(dip::uint)dy]*(double)view()->size(1)/(double)height_ + viewer()->options().origin_[(dip::uint)dy];
 }
 
-SliceViewer::SliceViewer(const dip::Image &image) : options_(image), continue_(false), updated_(false), original_(image), image_(image), drag_viewport_(NULL), width_(512), height_(512)
+SliceViewer::SliceViewer(const dip::Image &image, std::string name) : Viewer(name), options_(image), continue_(false), updated_(false), original_(image), image_(image), drag_viewport_(NULL), width_(512), height_(512)
 {
   main_ = new SliceViewPort(this);
   main_->setView(new SliceView(main_, 0, 1));
@@ -518,7 +518,7 @@ SliceViewer::SliceViewer(const dip::Image &image) : options_(image), continue_(f
 
 void SliceViewer::create()
 {
-  title("SliceViewer");
+  setWindowTitle("");
   
   continue_ = true;
   thread_ = std::thread(&SliceViewer::calculateTextures, this);

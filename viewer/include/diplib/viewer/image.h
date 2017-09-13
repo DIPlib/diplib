@@ -68,9 +68,11 @@ class DIP_EXPORT ImageViewer : public Viewer
     ViewingOptions options_;
     ImageViewPort *viewport_;
     int width_, height_;
+    
+    std::string name_;
   
   public:
-    ImageViewer(const dip::Image &image) : options_(image)
+    ImageViewer(const dip::Image &image, std::string name="ImageViewer") : Viewer(name), options_(image)
     {
       viewport_ = new ImageViewPort(this);
       ImageView *view = new ImageView(viewport_);

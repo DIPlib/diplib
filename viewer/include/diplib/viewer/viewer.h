@@ -231,14 +231,19 @@ class DIP_EXPORT ViewPort
 
 class DIP_EXPORT Viewer : public Window
 {
+  protected:
+    std::string name_;
+
   public:
+    Viewer(std::string name="Viewer") : name_(name) { }
+  
     virtual ViewingOptions &options() = 0;
     virtual dip::Image &image() = 0;
 
     virtual int width() = 0;
     virtual int height() = 0;
     
-    virtual void setWindowTitle(const char *name) { title(name); }
+    virtual void setWindowTitle(const char *name) { title((name_ + name).c_str()); }
 };
 
 inline void jet(dip::sfloat v, dip::uint8 *out)

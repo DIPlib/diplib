@@ -31,6 +31,8 @@ class DIP_EXPORT HistogramViewPort : public ViewPort
   protected:
     ImageView colorbar_;
     dip::Image histogram_;
+    
+    int drag_limit_, drag_x_, drag_y_;
 
   public:
     HistogramViewPort(Viewer *viewer) : ViewPort(viewer), colorbar_(this)
@@ -42,6 +44,9 @@ class DIP_EXPORT HistogramViewPort : public ViewPort
     void render();
     void click(int button, int state, int x, int y);
     void motion(int button, int x, int y);
+    
+  protected:
+    void screenToView(int x, int y, double *ix, double *iy);
 };
 
 template<class T>

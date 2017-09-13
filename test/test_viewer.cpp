@@ -17,7 +17,7 @@ int main() {
 #endif
 
    dip::Image image3 = dip::ImageReadICS( "../test/chromo3d.ics" );
-   manager.createWindow( WindowPtr( new SliceViewer( image3 )));
+   manager.createWindow( WindowPtr( new SliceViewer( image3, "chromo3d" )));
 
    dip::Image image2{ dip::UnsignedArray{ 50, 40 }, 3, dip::DT_UINT8 };
    dip::Image tmp = image2[ 0 ];

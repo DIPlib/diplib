@@ -143,7 +143,16 @@ void HistogramViewPort::render()
     glEnd();
   }
   
-  // Display range
+  // Display mapping range
+  glColor3f(.5, .5, .5);
+  glBegin(GL_LINES);
+    glVertex2f(0., (GLfloat)((o.mapping_range_.first-o.range_.first)/(o.range_.second-o.range_.first)));
+    glVertex2f(1., (GLfloat)((o.mapping_range_.first-o.range_.first)/(o.range_.second-o.range_.first)));
+    glVertex2f(0., (GLfloat)((o.mapping_range_.second-o.range_.first)/(o.range_.second-o.range_.first)));
+    glVertex2f(1., (GLfloat)((o.mapping_range_.second-o.range_.first)/(o.range_.second-o.range_.first)));
+  glEnd();
+  
+  // Display range text
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_+24, viewer()->height()-y_-height, width-24, height);
@@ -162,19 +171,56 @@ void HistogramViewPort::render()
 
 void HistogramViewPort::click(int button, int state, int x, int y)
 {
-  // TODO
-  (void)button;
-  (void)state;
-  (void)x;
-  (void)y;
+  auto &o = viewer()->options();
+
+  if (state == 0 && button == 0)
+  {
+    // Left mouse button: drag mapping limits 
+    double ix, iy;
+  
+    screenToView(x, y, &ix, &iy);
+    double dlower = iy - (o.mapping_range_.first-o.range_.first)/(o.range_.second-o.range_.first),
+           dupper = iy - (o.mapping_range_.second-o.range_.first)/(o.range_.second-o.range_.first);
+           
+    if (std::abs(dlower) < std::abs(dupper))
+      drag_limit_ = 0;
+    else
+      drag_limit_ = 1;
+      
+    drag_x_ = x;
+    drag_y_ = y;
+  }
 }
 
 void HistogramViewPort::motion(int button, int x, int y)
 {
-  // TODO
-  (void)button;
-  (void)x;
-  (void)y;
+  auto &o = viewer()->options();
+  
+  if (button == 0)
+  {
+    // Left mouse button: drag mapping limits 
+    double ix, iy, dix, diy;
+    screenToView(x, y, &ix, &iy);
+    screenToView(drag_x_, drag_y_, &dix, &diy);
+    
+    double dy = (iy-diy)*(o.range_.second-o.range_.first);
+    
+    if (drag_limit_ == 0)
+      o.mapping_range_.first += dy;
+    else
+      o.mapping_range_.second += dy;
+    
+    drag_x_ = y;
+    drag_y_ = y;
+
+    viewer()->refresh();
+  }
+}
+
+void HistogramViewPort::screenToView(int x, int y, double *ix, double *iy)
+{
+  *ix = (x-(x_+24))/(double)(width_-24);
+  *iy = 1-(y-y_)/(double)height_; // Lowest value at bottom
 }
 
 void HistogramViewPort::calculate()
