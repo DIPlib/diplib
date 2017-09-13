@@ -349,7 +349,7 @@ class DIP_NO_EXPORT PixelTable::iterator {
       iterator() {}
 
       /// Constructs an iterator to the first pixel in the neighborhood
-      iterator( PixelTable const& pt ) {
+      explicit iterator( PixelTable const& pt ) {
          DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
          pixelTable_ = &pt;
          coordinates_ = pt.runs_[ 0 ].coordinates;
@@ -450,7 +450,7 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
       iterator() {}
 
       /// Constructs an iterator to the first pixel in the neighborhood
-      iterator( PixelTableOffsets const& pt ) {
+      explicit iterator( PixelTableOffsets const& pt ) {
          DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
          pixelTable_ = &pt;
          offset_ = pt.runs_[ 0 ].offset;

@@ -51,7 +51,7 @@ int main( void ) {
 
    timer.Reset();
    auto sampleOperator = [ = ]( std::array< dip::sfloat const*, 2 > its ) {
-      return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset );
+      return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + decltype( *its[ 0 ] )( offset ));
    };
    dip::Framework::VariadicScanLineFilter< 2, dip::sfloat, decltype( sampleOperator ) > scanLineFilter( sampleOperator );
    dip::Framework::ScanDyadic( in1, in2, out, dip::DT_SFLOAT, dip::DT_SFLOAT, scanLineFilter );
@@ -63,7 +63,7 @@ int main( void ) {
    timer.Reset();
    std::unique_ptr< dip::Framework::ScanLineFilter > scanLineFilter2;
    DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter2, dip::Framework::NewDyadicScanLineFilter, (
-         [ = ]( auto its ) { return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + offset ); }
+         [ = ]( auto its ) { return ( decltype( *its[ 0 ] ))(( *its[ 0 ] * 100 ) / ( *its[ 1 ] * 10 ) + decltype( *its[ 0 ] )( offset )); }
    ), dt );
    dip::Framework::ScanDyadic( in1, in2, out, dt, dt, *scanLineFilter2 );
    timer.Stop();
