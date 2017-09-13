@@ -347,12 +347,25 @@ void Scan(
       startCoords[ 0 ] = UnsignedArray( nDims, 0 );
       for( dip::uint ii = 1; ii < nThreads; ++ii ) {
          startCoords[ ii ] = startCoords[ ii - 1 ];
-         // TODO: this can be more efficient, but it's nice and easy this way.
-         // We simply increment the coordinates nLinesPerThread times, that leads to the next start coordinates.
-         for( dip::uint jj = 0; jj < nLinesPerThread; ++jj ) {
-            for( dip::uint  dd = 0; dd < nDims; ++dd ) {
-               if( dd != processingDim ) {
-                  // Increment coordinate and adjust pointer
+         // To advance the iterator nLinesPerThread times, we increment it in whole-line steps.
+         dip::uint firstDim = processingDim == 0 ? 1 : 0;
+         dip::uint remaining = nLinesPerThread;
+         do {
+            for( dip::uint dd = 0; dd < nDims; ++dd ) {
+               if( dd == firstDim ) {
+                  dip::uint n = sizes[ dd ] - startCoords[ ii ][ dd ];
+                  if (remaining >= n) {
+                     // Rewinding, next loop iteration will increment the next coordinate
+                     remaining -= n;
+                     startCoords[ ii ][ dd ] = 0;
+                  } else {
+                     // Forward by `remaining`, then we're done.
+                     startCoords[ ii ][ dd ] += remaining;
+                     remaining = 0;
+                     break;
+                  }
+               } else if( dd != processingDim ) {
+                  // Increment coordinate
                   ++startCoords[ ii ][ dd ];
                   // Check whether we reached the last pixel of the line
                   if( startCoords[ ii ][ dd ] < sizes[ dd ] ) {
@@ -362,7 +375,7 @@ void Scan(
                   startCoords[ ii ][ dd ] = 0;
                }
             }
-         }
+         } while( remaining > 0 );
       }
    }
 
