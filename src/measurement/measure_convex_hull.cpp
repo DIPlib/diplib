@@ -18,8 +18,6 @@
  * limitations under the License.
  */
 
-#include <limits>
-
 #include "diplib.h"
 #include "diplib/chain_code.h"
 

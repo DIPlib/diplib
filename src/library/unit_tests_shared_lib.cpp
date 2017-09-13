@@ -22,7 +22,7 @@
 
 namespace dip {
 
-DIP_EXPORT int run_unit_tests( int argc, const char* const* argv ) {
+int run_unit_tests( int argc, const char* const* argv ) {
    doctest::Context context(argc, argv);
    return context.run();
 }

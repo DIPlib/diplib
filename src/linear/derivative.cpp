@@ -20,8 +20,8 @@
 
 #include "diplib.h"
 #include "diplib/linear.h"
-#include <diplib/math.h>
-#include <diplib/generic_iterators.h>
+#include "diplib/math.h"
+#include "diplib/generic_iterators.h"
 
 namespace dip {
 

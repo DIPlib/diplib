@@ -17,12 +17,10 @@
  * limitations under the License.
  */
 
-#include <array>
-#include <diplib/iterators.h>
-
 #include "diplib/math.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
+#include "diplib/iterators.h"
 
 namespace dip {
 

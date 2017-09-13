@@ -20,8 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/linear.h"
-#include <diplib/framework.h>
-#include <diplib/overload.h>
+#include "diplib/framework.h"
 
 namespace dip {
 

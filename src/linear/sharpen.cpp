@@ -20,7 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/linear.h"
-#include <diplib/math.h>
+#include "diplib/math.h"
 
 namespace dip {
 
