@@ -61,9 +61,7 @@ void Wrap(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims == 0, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_START_STACK_TRACE
-      ArrayUseParameter( wrap, nDims, dip::sint( 0 ));
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( wrap, nDims, dip::sint( 0 )));
 
    // Determine processing parameters
    BooleanArray process( nDims, false );
@@ -267,14 +265,10 @@ void Resampling(
    if( c_in.DataType().IsBinary() ) {
       method = interpolation::Method::NEAREST_NEIGHBOR;
    } else {
-      DIP_START_STACK_TRACE
-         method = interpolation::ParseMethod( interpolationMethod );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( method = interpolation::ParseMethod( interpolationMethod ));
    }
    BoundaryConditionArray bc;
-   DIP_START_STACK_TRACE
-      bc = StringArrayToBoundaryConditionArray( boundaryCondition );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( bc = StringArrayToBoundaryConditionArray( boundaryCondition ));
 
    // Preserve input
    Image in = c_in.QuickCopy();
@@ -396,13 +390,9 @@ void Skew(
    if( c_in.DataType().IsBinary() ) {
       method = interpolation::Method::NEAREST_NEIGHBOR;
    } else {
-      DIP_START_STACK_TRACE
-         method = interpolation::ParseMethod( interpolationMethod );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( method = interpolation::ParseMethod( interpolationMethod ));
    }
-   DIP_START_STACK_TRACE
-      BoundaryArrayUseParameter( boundaryCondition, nDims );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( BoundaryArrayUseParameter( boundaryCondition, nDims ));
    DIP_THROW_IF( method == interpolation::Method::FOURIER, E::NOT_IMPLEMENTED ); // TODO: implement Fourier interpolation
 
    // Calculate new output sizes and other processing parameters
@@ -461,9 +451,7 @@ void Rotation(
 ) {
    // Parse boundaryCondition
    BoundaryConditionArray bc;
-   DIP_START_STACK_TRACE
-      bc = BoundaryConditionArray( c_in.Dimensionality(), StringToBoundaryCondition( boundaryCondition ));
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( bc = BoundaryConditionArray( c_in.Dimensionality(), StringToBoundaryCondition( boundaryCondition )));
    // Preserve input
    Image in = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();
@@ -475,10 +463,8 @@ void Rotation(
    // Take care of multiples of 90 degrees
    dfloat n = std::round( 2.0 * angle / pi );
    angle -= n * pi / 2.0;
-   DIP_START_STACK_TRACE
-      // This tests for in being forged, and dim1 and dim2 being valid
-      in.Rotation90( static_cast< dip::sint >( n ), dimension1, dimension2 );
-   DIP_END_STACK_TRACE
+   // This tests for in being forged, and dim1 and dim2 being valid
+   DIP_STACK_TRACE_THIS( in.Rotation90( static_cast< dip::sint >( n ), dimension1, dimension2 ));
    // Do the last rotation, in the range [-45,45], with three skews
    FloatArray skewArray1( in.Dimensionality(), 0.0 );
    skewArray1[ dimension1 ] = std::tan( angle / 2.0 );

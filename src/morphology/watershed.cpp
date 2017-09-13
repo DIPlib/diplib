@@ -658,9 +658,7 @@ void WatershedMinima(
       dip::uint maxSize,
       String const& output
 ) {
-   DIP_START_STACK_TRACE
-      FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "low first" }, FastWatershedOperation::EXTREMA );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "low first" }, FastWatershedOperation::EXTREMA ));
 }
 
 void WatershedMaxima(
@@ -672,9 +670,7 @@ void WatershedMaxima(
       dip::uint maxSize,
       String const& output
 ) {
-   DIP_START_STACK_TRACE
-      FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "high first" }, FastWatershedOperation::EXTREMA );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "high first" }, FastWatershedOperation::EXTREMA ));
 }
 
 } // namespace dip

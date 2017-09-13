@@ -1697,9 +1697,7 @@ void VectorDistanceTransform(
    UnsignedArray sizes = in.Sizes();
 
    bool objectBorder;
-   DIP_START_STACK_TRACE
-      objectBorder = BooleanFromString( border, "object", "background" );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( objectBorder = BooleanFromString( border, "object", "background" ));
 
    // Distances to neighboring pixels
    FloatArray dist( dim, 1 );

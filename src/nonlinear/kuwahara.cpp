@@ -121,9 +121,7 @@ void SelectionFilter(
 
    // Determine boundary sizes
    UnsignedArray kernelSizes;
-   DIP_START_STACK_TRACE
-      kernelSizes = kernel.Sizes( c_in.Sizes() );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( kernelSizes = kernel.Sizes( c_in.Sizes() ));
    UnsignedArray boundary = kernelSizes;
    for( dip::uint& b : boundary ) {
       b /= 2;
@@ -169,9 +167,7 @@ void SelectionFilter(
    // Create a pixel table suitable to be applied to `input`
    dip::uint processingDim = Framework::OptimalProcessingDim( in, kernelSizes );
    PixelTable pixelTable;
-   DIP_START_STACK_TRACE
-      pixelTable = kernel.PixelTable( in.Dimensionality(), processingDim );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( pixelTable = kernel.PixelTable( in.Dimensionality(), processingDim ));
    pixelTable.AddDistanceToOriginAsWeights();
    PixelTableOffsets pixelTableOffsets = pixelTable.Prepare( control ); // offsets are for the `control` image, multiply by `in.TensorElements()` to get offsets into `in`.
 
@@ -200,9 +196,7 @@ void SelectionFilter(
       params.inBuffer = in.Pointer( it.Offset< 0 >() );
       params.controlBuffer = static_cast< dfloat* >( control.Pointer( it.Offset< 1 >() ));
       params.outBuffer = out.Pointer( it.Offset< 2 >() );
-      DIP_START_STACK_TRACE
-         lineFilter->Filter( params );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( lineFilter->Filter( params ));
    } while( ++it );
 }
 

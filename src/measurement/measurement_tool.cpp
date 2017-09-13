@@ -171,9 +171,7 @@ Measurement MeasurementTool::Measure(
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
    if( grey.IsForged() ) {
       DIP_THROW_IF( !grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-      DIP_START_STACK_TRACE
-         grey.CompareProperties( label, Option::CmpProps_Sizes );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( grey.CompareProperties( label, Option::CmpProps_Sizes ));
    }
 
    Measurement measurement;

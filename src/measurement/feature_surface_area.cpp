@@ -181,9 +181,7 @@ std::vector< dfloat > SurfaceArea(
    }
 
    // Check image properties
-   DIP_START_STACK_TRACE
-      label.CheckProperties( 3, 1, dip::DataType::Class_UInt, Option::ThrowException::DO_THROW );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( label.CheckProperties( 3, 1, dip::DataType::Class_UInt, Option::ThrowException::DO_THROW ));
 
    // Intialise the surface area results array
    std::vector< dfloat > surfaceArea( objectIDs.size() );

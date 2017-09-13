@@ -573,9 +573,7 @@ void FillCoordinates( Image& out, StringSet const& mode, String const& system ) 
    dip::uint nDims = out.Dimensionality();
    DIP_THROW_IF( out.TensorElements() != nDims, E::NTENSORELEM_DONT_MATCH );
    bool spherical;
-   DIP_START_STACK_TRACE
-      spherical = BooleanFromString( system, "spherical", "cartesian" );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( spherical = BooleanFromString( system, "spherical", "cartesian" ));
    DIP_THROW_IF( spherical && (( nDims < 2 ) || ( nDims > 3 )), E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_START_STACK_TRACE
       CoordinateMode coordinateMode = ParseMode( mode );

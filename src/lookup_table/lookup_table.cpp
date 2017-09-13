@@ -290,9 +290,7 @@ void LookupTable::Apply( Image const& in, Image& out, InterpolationMode interpol
          inBufType = DT_DFLOAT;
       }
    }
-   DIP_START_STACK_TRACE
-      Scan( { in }, outar, { inBufType }, { values_.DataType() }, { values_.DataType() }, { values_.TensorElements() }, *scanLineFilter );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( Scan( { in }, outar, { inBufType }, { values_.DataType() }, { values_.DataType() }, { values_.TensorElements() }, *scanLineFilter ));
    out.ReshapeTensor( values_.Tensor() );
    out.SetColorSpace( values_.ColorSpace() );
 }

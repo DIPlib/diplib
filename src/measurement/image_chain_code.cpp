@@ -145,9 +145,7 @@ ChainCodeArray GetImageChainCodes(
 ) {
    // Check input image
    DIP_THROW_IF( !labels.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_START_STACK_TRACE
-      labels.CheckProperties( 2, 1, DataType::Class_UInt );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( labels.CheckProperties( 2, 1, DataType::Class_UInt ));
    DIP_THROW_IF( connectivity > 2, E::CONNECTIVITY_NOT_SUPPORTED );
 
    // Initialize freeman codes
@@ -184,9 +182,7 @@ ChainCode GetSingleChainCode(
 ) {
    // Check input image
    DIP_THROW_IF( !labels.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_START_STACK_TRACE
-      labels.CheckProperties( 2, 1, DataType::Class_Unsigned );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( labels.CheckProperties( 2, 1, DataType::Class_Unsigned ));
    DIP_THROW_IF( connectivity > 2, E::CONNECTIVITY_NOT_SUPPORTED );
 
    // Initialize freeman codes

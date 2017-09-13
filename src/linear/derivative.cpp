@@ -71,21 +71,13 @@ void Gauss(
       dfloat truncation
 ) {
    if( method == "best" ) {
-      DIP_START_STACK_TRACE
-         GaussDispatch( in, out, sigmas, derivativeOrder, boundaryCondition, truncation );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( GaussDispatch( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
    } else if( ( method == "FIR" ) || ( method == "fir" ) ) {
-      DIP_START_STACK_TRACE
-         GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
    } else if( ( method == "FT" ) || ( method == "ft" ) ) {
-      DIP_START_STACK_TRACE
-         GaussFT( in, out, sigmas, derivativeOrder, truncation ); // ignores boundaryCondition
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( GaussFT( in, out, sigmas, derivativeOrder, truncation )); // ignores boundaryCondition
    } else if( ( method == "IIR" ) || ( method == "iir" ) ) {
-      DIP_START_STACK_TRACE
-         GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, "", truncation );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, "", truncation ));
    } else {
       DIP_THROW( "Unknown Gauss filter method" );
    }
@@ -104,34 +96,22 @@ void Derivative(
       dip::uint nDims = in.Dimensionality();
       BooleanArray process( nDims, true );
       FloatArray ss = sigmas;
-      DIP_START_STACK_TRACE
-         ArrayUseParameter( ss, nDims, 1.0 );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( ArrayUseParameter( ss, nDims, 1.0 ));
       // Set process to false where sigma <= 0
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if(( ss[ ii ] <= 0.0 ) || ( in.Size( ii ) == 1 )) {
             process[ ii ] = 0;
          }
       }
-      DIP_START_STACK_TRACE
-         FiniteDifference( in, out, derivativeOrder, "smooth", boundaryCondition, process );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( FiniteDifference( in, out, derivativeOrder, "smooth", boundaryCondition, process ));
    } else if( ( method == "best" ) || ( method == "gauss" ) ) {
-      DIP_START_STACK_TRACE
-         GaussDispatch( in, out, sigmas, derivativeOrder, boundaryCondition, truncation );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( GaussDispatch( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
    } else if( ( method == "gaussFIR" ) || ( method == "gaussfir" ) ) {
-      DIP_START_STACK_TRACE
-         GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
    } else if( ( method == "gaussFT" ) || ( method == "gaussft" ) ) {
-      DIP_START_STACK_TRACE
-         GaussFT( in, out, sigmas, derivativeOrder, truncation ); // ignores boundaryCondition
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( GaussFT( in, out, sigmas, derivativeOrder, truncation )); // ignores boundaryCondition
    } else if( ( method == "gaussIIR" ) || ( method == "gaussiir" ) ) {
-      DIP_START_STACK_TRACE
-         GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, "", truncation );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, "", truncation ));
    } else {
       DIP_THROW( "Unknown derivative method" );
    }
@@ -172,9 +152,7 @@ void Gradient(
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    UnsignedArray dims;
-   DIP_START_STACK_TRACE
-      dims = FindGradientDimensions( c_in.Sizes(), sigmas, process );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in.QuickCopy();
@@ -187,9 +165,7 @@ void Gradient(
    auto it = ImageTensorIterator( out );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       order[ dims[ ii ]] = 1;
-      DIP_START_STACK_TRACE
-         Derivative( in, *it, order, sigmas, method, boundaryCondition, truncation );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( Derivative( in, *it, order, sigmas, method, boundaryCondition, truncation ));
       order[ dims[ ii ]] = 0;
       ++it;
    }
@@ -207,9 +183,7 @@ void GradientMagnitude(
 ) {
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    UnsignedArray dims;
-   DIP_START_STACK_TRACE
-      dims = FindGradientDimensions( c_in.Sizes(), sigmas, process );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in.QuickCopy();
@@ -226,9 +200,7 @@ void GradientMagnitude(
       for( dip::uint ii = 1; ii < nDims; ++ii ) {
          order[ dims[ ii - 1 ]] = 0;
          order[ dims[ ii ]] = 1;
-         DIP_START_STACK_TRACE
-            Derivative( in, tmp, order, sigmas, method, boundaryCondition, truncation );
-         DIP_END_STACK_TRACE
+         DIP_STACK_TRACE_THIS( Derivative( in, tmp, order, sigmas, method, boundaryCondition, truncation ));
          MultiplySampleWise( tmp, tmp, tmp, tmp.DataType() );
          Add( out, tmp, out, out.DataType() );
       }
@@ -267,9 +239,7 @@ void Curl(
    dip::uint nDims = c_in.TensorElements();
    DIP_THROW_IF( !c_in.IsVector() || ( nDims < 2 ) || ( nDims > 3 ), E::TENSOR_NOT_2_OR_3 );
    UnsignedArray dims;
-   DIP_START_STACK_TRACE
-      dims = FindGradientDimensions( c_in.Sizes(), sigmas, process );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
    DIP_THROW_IF( dims.size() != nDims, E::NTENSORELEM_DONT_MATCH );
    if( nDims == 2 ) {
       DIP_START_STACK_TRACE
@@ -336,9 +306,7 @@ void Divergence(
    dip::uint nDims = c_in.TensorElements();
    DIP_THROW_IF( !c_in.IsVector(), E::IMAGE_NOT_VECTOR );
    UnsignedArray dims;
-   DIP_START_STACK_TRACE
-      dims = FindGradientDimensions( c_in.Sizes(), sigmas, process );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
    DIP_THROW_IF( dims.size() != nDims, E::NTENSORELEM_DONT_MATCH );
    Image in = c_in.QuickCopy();
    PixelSize pxsz = c_in.PixelSize();
@@ -348,17 +316,13 @@ void Divergence(
    UnsignedArray order( in.Dimensionality(), 0 );
    order[ dims[ 0 ]] = 1;
    auto it = ImageTensorIterator( in );
-   DIP_START_STACK_TRACE
-      Derivative( *it, out, order, sigmas, method, boundaryCondition, truncation );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( Derivative( *it, out, order, sigmas, method, boundaryCondition, truncation ));
    if( nDims > 1 ) {
       Image tmp;
       for( dip::uint ii = 1; ii < nDims; ++ii ) {
          order[ dims[ ii - 1 ]] = 0;
          order[ dims[ ii ]] = 1;
-         DIP_START_STACK_TRACE
-            Derivative( *it, tmp, order, sigmas, method, boundaryCondition, truncation );
-         DIP_END_STACK_TRACE
+         DIP_STACK_TRACE_THIS( Derivative( *it, tmp, order, sigmas, method, boundaryCondition, truncation ));
          Add( out, tmp, out, out.DataType() );
          ++it;
       }
@@ -378,9 +342,7 @@ void Hessian (
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    UnsignedArray dims;
-   DIP_START_STACK_TRACE
-      dims = FindGradientDimensions( c_in.Sizes(), sigmas, process );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    Image in = c_in.QuickCopy();
@@ -395,9 +357,7 @@ void Hessian (
    auto it = ImageTensorIterator( out );
    for( dip::uint ii = 0; ii < nDims; ++ii ) { // Symmetric matrix stores diagonal elements first
       order[ dims[ ii ]] = 2;
-      DIP_START_STACK_TRACE
-         Derivative( in, *it, order, sigmas, method, boundaryCondition, truncation );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( Derivative( in, *it, order, sigmas, method, boundaryCondition, truncation ));
       order[ dims[ ii ]] = 0;
       ++it;
    }
@@ -405,9 +365,7 @@ void Hessian (
       for( dip::uint ii = 0; ii < jj; ++ii ) {
          order[ dims[ ii ]] = 1;
          order[ dims[ jj ]] = 1;
-         DIP_START_STACK_TRACE
-            Derivative( in, *it, order, sigmas, method, boundaryCondition, truncation );
-         DIP_END_STACK_TRACE
+         DIP_STACK_TRACE_THIS( Derivative( in, *it, order, sigmas, method, boundaryCondition, truncation ));
          order[ dims[ ii ]] = 0;
          order[ dims[ jj ]] = 0;
          ++it;
@@ -428,9 +386,7 @@ void Laplace (
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    UnsignedArray dims;
-   DIP_START_STACK_TRACE
-      dims = FindGradientDimensions( c_in.Sizes(), sigmas, process );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    if( method == "finitediff" ) {
@@ -445,9 +401,7 @@ void Laplace (
          ksz[ ii ] /= 2; // 1/2==0, 3/2==1
       }
       kernel.At( ksz ) = static_cast< dfloat >( kernel.NumberOfPixels() ) - 1.0;
-      DIP_START_STACK_TRACE
-         GeneralConvolution( c_in, kernel, out, boundaryCondition );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( GeneralConvolution( c_in, kernel, out, boundaryCondition ));
    } else {
       Image in = c_in.QuickCopy();
       PixelSize pxsz = c_in.PixelSize();
@@ -456,16 +410,12 @@ void Laplace (
       }
       UnsignedArray order( in.Dimensionality(), 0 );
       order[ dims[ 0 ]] = 2;
-      DIP_START_STACK_TRACE
-         Derivative( in, out, order, sigmas, method, boundaryCondition, truncation );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( Derivative( in, out, order, sigmas, method, boundaryCondition, truncation ));
       Image tmp;
       for( dip::uint ii = 1; ii < nDims; ++ii ) {
          order[ dims[ ii - 1 ]] = 0;
          order[ dims[ ii ]] = 2;
-         DIP_START_STACK_TRACE
-            Derivative( in, tmp, order, sigmas, method, boundaryCondition, truncation );
-         DIP_END_STACK_TRACE
+         DIP_STACK_TRACE_THIS( Derivative( in, tmp, order, sigmas, method, boundaryCondition, truncation ));
          out += tmp;
       }
       out.SetPixelSize( pxsz );

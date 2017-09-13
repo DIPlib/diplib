@@ -746,9 +746,7 @@ void GaussIIR(
          filterOrder[ ii ] = ( order[ ii ] > 2 ) ? 5 : order[ ii ] + 3;
       }
    } else {
-      DIP_START_STACK_TRACE
-         ArrayUseParameter< dip::uint >( filterOrder, nDims, 3 );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( ArrayUseParameter< dip::uint >( filterOrder, nDims, 3 ));
    }
    DesignMethod method = DesignMethod::DISCRETE_TIME_FIT;
    if( designMethod == "forward backward") {

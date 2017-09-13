@@ -81,9 +81,7 @@ UnsignedArray GetObjectLabels(
    if( mask.IsForged() ) {
       DIP_THROW_IF( mask.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
       DIP_THROW_IF( !mask.DataType().IsBinary(), E::MASK_NOT_BINARY );
-      DIP_START_STACK_TRACE
-         mask.CompareProperties( label, Option::CmpProps_Sizes );
-      DIP_END_STACK_TRACE
+      DIP_STACK_TRACE_THIS( mask.CompareProperties( label, Option::CmpProps_Sizes ));
    }
    bool nullIsObject = BooleanFromString( background, "include", "exclude" );
 

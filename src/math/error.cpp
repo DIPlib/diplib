@@ -31,9 +31,7 @@ namespace dip {
 
 dfloat MeanError( Image const& in1, Image const& in2, Image const& mask ) {
    Image error;
-   DIP_START_STACK_TRACE
-      error = Mean( in1 - in2, mask );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( error = Mean( in1 - in2, mask ));
    DIP_THROW_IF( error.DataType().IsComplex(), E::DATA_TYPE_NOT_SUPPORTED ); // means one of the inputs was complex
    if( !error.IsScalar() ) {
       error.TensorToSpatial( 0 );
@@ -44,15 +42,11 @@ dfloat MeanError( Image const& in1, Image const& in2, Image const& mask ) {
 
 dfloat MeanSquareError( Image const& in1, Image const& in2, Image const& mask ) {
    Image error;
-   DIP_START_STACK_TRACE
-      error = in1 - in2;
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( error = in1 - in2 );
    if( error.DataType().IsComplex() ) {
       error = Modulus( error );
    }
-   DIP_START_STACK_TRACE
-      error = MeanSquare( error, mask );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( error = MeanSquare( error, mask ));
    if( !error.IsScalar() ) {
       error.TensorToSpatial( 0 );
       error = Mean( error ); // average across tensor elements also
@@ -62,9 +56,7 @@ dfloat MeanSquareError( Image const& in1, Image const& in2, Image const& mask ) 
 
 dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image const& mask ) {
    Image error;
-   DIP_START_STACK_TRACE
-      error = MeanAbs( in1 - in2, mask );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( error = MeanAbs( in1 - in2, mask ));
    if( !error.IsScalar() ) {
       error.TensorToSpatial( 0 );
       error = Mean( error ); // average across tensor elements also
@@ -74,9 +66,7 @@ dfloat MeanAbsoluteError( Image const& in1, Image const& in2, Image const& mask 
 
 dfloat MaximumAbsoluteError( Image const& in1, Image const& in2, Image const& mask ) {
    Image error;
-   DIP_START_STACK_TRACE
-      error = MaximumAbs( in1 - in2, mask );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( error = MaximumAbs( in1 - in2, mask ));
    if( !error.IsScalar() ) {
       error.TensorToSpatial( 0 );
       error = Maximum( error ); // max across tensor elements also
@@ -168,9 +158,7 @@ dfloat IDivergence( Image const& in1, Image const& in2, Image const& c_mask ) {
    }
    ImageRefArray outar{};
    IDivergenceLineFilter lineFilter;
-   DIP_START_STACK_TRACE
-      Scan( inar, outar, inBufT, {}, {}, {}, lineFilter, Framework::Scan_TensorAsSpatialDim );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( Scan( inar, outar, inBufT, {}, {}, {}, lineFilter, Framework::Scan_TensorAsSpatialDim ));
    return lineFilter.GetResult();
 }
 
@@ -186,9 +174,7 @@ dfloat InProduct( Image const& in1, Image const& in2, Image const& mask ) {
 
 dfloat LnNormError( Image const& in1, Image const& in2, Image const& mask, dfloat order ) {
    Image error;
-   DIP_START_STACK_TRACE
-      error = in1 - in2;
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( error = in1 - in2 );
    if( error.DataType().IsComplex() ) {
       error = SquareModulus( error );
       error = Power( error, order / 2.0 );
@@ -196,9 +182,7 @@ dfloat LnNormError( Image const& in1, Image const& in2, Image const& mask, dfloa
       error = Power( error, order );
    }
    dip::uint N = mask.IsForged() ? Count( mask ) : error.NumberOfPixels();
-   DIP_START_STACK_TRACE
-      error = Sum( error, mask );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( error = Sum( error, mask ));
    if( !error.IsScalar() ) {
       N *= error.TensorElements();
       error.TensorToSpatial( 0 );
@@ -264,9 +248,7 @@ dfloat SSIM( Image const& in, Image const& reference, Image const& mask, dfloat 
    meanProduct /= inMean;
    inMean.Strip();
    Image error;
-   DIP_START_STACK_TRACE
-      error = Mean( meanProduct, mask );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( error = Mean( meanProduct, mask ));
    if( !error.IsScalar() ) {
       error.TensorToSpatial( 0 );
       error = Mean( error ); // average across tensor elements also

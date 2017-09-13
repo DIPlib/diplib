@@ -217,9 +217,7 @@ Image& Image::ExpandSingletonTensor( dip::uint sz ) {
 Image& Image::Mirror( BooleanArray process ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = sizes_.size();
-   DIP_START_STACK_TRACE
-      ArrayUseParameter( process, nd, true );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( process, nd, true ));
    for( dip::uint ii = 0; ii < nd; ++ii ) {
       if( process[ ii ] ) {
          origin_ = Pointer( static_cast< dip::sint >( sizes_[ ii ] - 1 ) * strides_[ ii ] );

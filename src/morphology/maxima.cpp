@@ -165,9 +165,7 @@ void Extrema(
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
    bool binaryOutput;
-   DIP_START_STACK_TRACE
-      binaryOutput = BooleanFromString( output, "binary", "labels" );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( binaryOutput = BooleanFromString( output, "binary", "labels" ));
 
    // Make simplified copy of input image header so we can modify it at will.
    // This also effectively separates input and output images. They still point
