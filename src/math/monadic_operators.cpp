@@ -152,7 +152,7 @@ class AbsLineFilter : public Framework::ScanLineFilter {
          AbsType< TPI >* out = static_cast< AbsType< TPI >* >( params.outBuffer[ 0 ].buffer );
          dip::sint const outStride = params.outBuffer[ 0 ].stride;
          for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
-            *out = std::abs( *in );
+            *out = static_cast< AbsType< TPI >>( std::abs( *in ));
             in += inStride;
             out += outStride;
          }
