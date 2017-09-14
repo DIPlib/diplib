@@ -147,7 +147,7 @@ void Full(
    }
 
    //std::cout << "Starting " << nThreads << " threads\n";
-   DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads ));
+   DIP_STACK_TRACE_THIS( lineFilter.SetNumberOfThreads( nThreads, pixelTableOffsets ));
 
    // Divide the image domain into nThreads chunks for split processing. The last chunk will have same or fewer
    // image lines to process.

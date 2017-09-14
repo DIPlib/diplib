@@ -866,7 +866,10 @@ struct DIP_NO_EXPORT FullLineFilterParameters {
 /// A derived class can have data members that hold parameters to the line filter, that hold output values,
 /// or that hold intermediate buffers. The `SetNumberOfThreads` method is
 /// called once before any processing starts. This is a good place to allocate space for temporary buffers,
-/// such that each threads has its own buffers to write in. Note that this function is called even if
+/// such that each threads has its own buffers to write in. It is also the first place where the line filter
+/// can see what the pixel table looks like (as it depends on the processing dimension determined by the
+/// framework), and so it's a good place to determine some processing options.
+/// Note that this function is called even if
 /// `dip::Framework::Full_NoMultiThreading` is given, or if the library is compiled without multi-threading.
 ///
 /// The `GetNumberOfOperations` method is called to determine if it is worthwhile to start worker threads and
@@ -877,7 +880,9 @@ class DIP_EXPORT FullLineFilter {
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( FullLineFilterParameters const& params ) = 0;
       /// \brief The derived class can define this function for setting up the processing.
-      virtual void SetNumberOfThreads( dip::uint  threads ) { ( void )threads; }
+      virtual void SetNumberOfThreads( dip::uint  threads, PixelTableOffsets const& pixelTable ) {
+         ( void )threads; ( void )pixelTable;
+      }
       /// \brief The derived class can define this function for helping to determine whether to compute
       /// in parallel or not. It must return the number of clock cycles per image line. The default is valid for
       /// a convolution-like operation.

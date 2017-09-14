@@ -34,7 +34,7 @@ template< typename TPI >
 class RankLineFilter : public Framework::FullLineFilter {
    public:
       RankLineFilter( dip::uint rank ) : rank_( static_cast< dip::sint >( rank )) {}
-      void SetNumberOfThreads( dip::uint threads ) override {
+      void SetNumberOfThreads( dip::uint threads, PixelTableOffsets const& ) override {
          buffers_.resize( threads );
       }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {

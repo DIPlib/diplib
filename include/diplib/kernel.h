@@ -153,7 +153,7 @@ class DIP_NO_EXPORT Kernel {
       /// `nDim`. Pixel table runs will be along dimension `procDim`.
       dip::PixelTable PixelTable( dip::uint nDims, dip::uint procDim ) const;
 
-      /// \brief Retrieves the size of the kernel, adjusted to an image of size `imsz`. When computing required
+      /// \brief Retrieves the size of the kernel, adjusted to an image of size `imsz`. When computing requires
       /// boundary extension, remember to take `Shift` into account.
       UnsignedArray Sizes( UnsignedArray const& imsz ) const {
          dip::uint nDim = imsz.size();
