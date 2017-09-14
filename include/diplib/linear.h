@@ -359,7 +359,7 @@ DIP_EXPORT void Gauss(
       Image& out,
       FloatArray const& sigmas = { 1.0 },
       UnsignedArray const& derivativeOrder = { 0 },
-      String method = "best",
+      String const& method = "best",
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 );

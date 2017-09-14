@@ -66,7 +66,7 @@ void Gauss(
       Image& out,
       FloatArray const& sigmas,
       UnsignedArray const& derivativeOrder,
-      String method,
+      String const& method,
       StringArray const& boundaryCondition,
       dfloat truncation
 ) {
