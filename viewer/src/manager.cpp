@@ -36,5 +36,16 @@ void Window::drawString(const char *string)
 
 void Window::refresh()
 {
-  manager()->refreshWindow(WindowPtr(WindowPtr{}, this));
+  manager()->refreshWindow(this);
+}
+
+void Window::key(unsigned char k, int /*x*/, int /*y*/, int mods)
+{
+  if (k == 'W')
+  {
+    if (mods == KEY_MOD_CONTROL)
+      destroy();
+    else if (mods == (KEY_MOD_CONTROL | KEY_MOD_SHIFT))
+      manager()->destroyWindows();
+  }
 }

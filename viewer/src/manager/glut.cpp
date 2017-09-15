@@ -70,19 +70,13 @@ void GLUTManager::createWindow(WindowPtr window)
   
   mutex_.unlock();
 }
+
+void GLUTManager::destroyWindows()
+{
+  for (auto it = windows_.begin(); it != windows_.end(); ++it)
+    it->second->destroy();
+}
     
-void GLUTManager::destroyWindow(WindowPtr window)
-{
-  mutex_.lock();
-  destroyWindow(window, true);
-  mutex_.unlock();
-}
-
-void GLUTManager::refreshWindow(WindowPtr window)
-{
-  glutPostWindowRedisplay((int)(intptr_t)window->id());
-}
-
 void GLUTManager::run()
 {
   int argc = 1;
@@ -124,11 +118,17 @@ void GLUTManager::run()
 
       new_window_ = NULL;
     }
-    
-    if (destroyed_window_)
+
+    for (auto it = windows_.begin(); it != windows_.end();)
     {
-      glutDestroyWindow((int)(intptr_t)destroyed_window_->id());
-      destroyed_window_ = NULL;
+      if (it->second->shouldClose())
+      {
+        glutDestroyWindow((int)(intptr_t)it->first);
+        it = windows_.erase(it);
+        break;
+      }
+      else
+        ++it;
     }
     
     idle();
@@ -151,21 +151,6 @@ WindowPtr GLUTManager::getCurrentWindow()
     return NULL;
 }
 
-// Must be called under lock
-void GLUTManager::destroyWindow(WindowPtr window, bool glutDestroy)
-{
-  windows_.erase(window->id());
-  
-  if (glutDestroy)
-  {
-    destroyed_window_ = window;
-    mutex_.unlock();
-    while (destroyed_window_)
-      std::this_thread::sleep_for(std::chrono::microseconds(0));
-    mutex_.lock();
-  }
-}
-
 void GLUTManager::drawString(Window* /*window*/, const char *string)
 {
   for (; *string; ++string)
@@ -180,6 +165,29 @@ void GLUTManager::swapBuffers(Window* /*window*/)
 void GLUTManager::setWindowTitle(Window* /*window*/, const char *name)
 {
   glutSetWindowTitle(name);
+}
+
+void GLUTManager::refreshWindow(Window *window)
+{
+  glutPostWindowRedisplay((int)(intptr_t)window->id());
+}
+
+void GLUTManager::key(unsigned char k, int x, int y)
+{
+  WindowPtr window = instance_->getCurrentWindow();
+  if (window)
+  {
+    if (k > 0 && k < 27)
+    {
+      k = (unsigned char)(k + 'A' - 1);
+    }
+    else if (k >= 'a' && k <= 'z')
+    {
+      k = (unsigned char)(k - 'a' + 'A');
+    }
+  
+    window->key(k, x, y, glutGetModifiers());
+  }
 }
 
 #endif // DIP__HAS_FREEGLUT

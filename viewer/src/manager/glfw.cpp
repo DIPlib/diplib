@@ -93,7 +93,7 @@ void GLFWManager::createWindow(WindowPtr window)
   glfwSetFramebufferSizeCallback(wdw, reshape);
   glfwSetWindowIconifyCallback(wdw, iconify);
   glfwSetWindowCloseCallback(wdw, close);
-  glfwSetCharCallback(wdw, key);
+  glfwSetKeyCallback(wdw, key);
   glfwSetMouseButtonCallback(wdw, click);
   glfwSetScrollCallback(wdw, scroll);
   glfwSetCursorPosCallback(wdw, motion);
@@ -110,14 +110,10 @@ void GLFWManager::createWindow(WindowPtr window)
   refresh_ = true;
 }
     
-void GLFWManager::destroyWindow(WindowPtr window)
+void GLFWManager::destroyWindows()
 {
-  glfwSetWindowShouldClose((GLFWwindow*)window->id(), 1);
-}
-
-void GLFWManager::refreshWindow(WindowPtr /*window*/)
-{
-  refresh_ = true;
+  for (auto it = windows_.begin(); it != windows_.end(); ++it)
+    it->second->destroy();
 }
 
 void GLFWManager::processEvents()
@@ -137,7 +133,7 @@ void GLFWManager::processEvents()
       
   for (auto it = windows_.begin(); it != windows_.end();)
   {
-    if (glfwWindowShouldClose((GLFWwindow*)it->first))
+    if (it->second->shouldClose() || glfwWindowShouldClose((GLFWwindow*)it->first))
     {
       glfwDestroyWindow((GLFWwindow*)it->first);
       it = windows_.erase(it);
@@ -171,6 +167,11 @@ void GLFWManager::swapBuffers(Window* window)
 void GLFWManager::setWindowTitle(Window* window, const char *name)
 {
   glfwSetWindowTitle((GLFWwindow*)window->id(), name);
+}
+
+void GLFWManager::refreshWindow(Window* /*window*/)
+{
+  refresh_ = true;
 }
 
 void GLFWManager::makeCurrent(Window *window)

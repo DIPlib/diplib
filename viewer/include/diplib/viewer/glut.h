@@ -46,19 +46,18 @@ class DIPVIEWER_EXPORT GLUTManager : public Manager
     ~GLUTManager();
   
     void createWindow(WindowPtr window);
-    void destroyWindow(WindowPtr window);
-    void refreshWindow(WindowPtr window);
     size_t activeWindows() { return windows_.size(); }
+    void destroyWindows();
     void processEvents() { }
-    
+
   protected:    
     void drawString(Window* window, const char *string);
     void swapBuffers(Window* window);
     void setWindowTitle(Window* window, const char *name);
+    void refreshWindow(Window* window);
 
     void run();
     WindowPtr getCurrentWindow();
-    void destroyWindow(WindowPtr window, bool glutDestroy);
     
     // Delegates
     static void idle()
@@ -94,16 +93,11 @@ class DIPVIEWER_EXPORT GLUTManager : public Manager
       if (window)
       {
         window->close();
-        instance_->destroyWindow(window, false);
+        instance_->windows_.erase(window->id());
       }
     }
 
-    static void key(unsigned char k, int x, int y)
-    {
-      WindowPtr window = instance_->getCurrentWindow();
-      if (window)
-        window->key(k, x, y);
-    }
+    static void key(unsigned char k, int x, int y);
     
     static void click(int button, int state, int x, int y)
     {

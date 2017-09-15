@@ -24,6 +24,10 @@
 
 #include "dipviewer_export.h"
 
+#define KEY_MOD_SHIFT   0x01
+#define KEY_MOD_CONTROL 0x02
+#define KEY_MOD_ALT     0x04
+
 /// Simple GL window
 class DIPVIEWER_EXPORT Window
 {
@@ -33,9 +37,10 @@ class DIPVIEWER_EXPORT Window
   private:
     void *id_;
     class Manager *manager_;
+    bool should_close_;
     
   public:
-    Window() : id_(NULL), manager_(NULL) { }
+    Window() : id_(NULL), manager_(NULL), should_close_(false) { }
     virtual ~Window() { }
 
     void refresh();
@@ -43,9 +48,11 @@ class DIPVIEWER_EXPORT Window
   protected:
     Manager *manager() { return manager_; }
     void *id() { return id_; }  
+    bool shouldClose() { return should_close_; }
     
     void title(const char *name);
     void swap();
+    void destroy() { should_close_ = true; }
     
     /// Callback that draws the visualization.
     virtual void draw() { }
@@ -66,7 +73,7 @@ class DIPVIEWER_EXPORT Window
     virtual void close() { }
 
     /// Callback that is called when a key is pressed.
-    virtual void key(unsigned char /*k*/, int /*x*/, int /*y*/) { }
+    virtual void key(unsigned char k, int x, int y, int mods);
     
     /// Callback that is called when a mouse button is clicked.
     virtual void click(int /*button*/, int /*state*/, int /*x*/, int /*y*/) { }
@@ -90,14 +97,15 @@ class DIPVIEWER_EXPORT Manager
     virtual ~Manager() { }
   
     virtual void createWindow(WindowPtr window) = 0;
-    virtual void destroyWindow(WindowPtr window) = 0;
-    virtual void refreshWindow(WindowPtr window) = 0;
+    
     virtual size_t activeWindows() = 0;
+    virtual void destroyWindows() = 0;
     
   protected:
     virtual void drawString(Window* window, const char *string) = 0;
     virtual void swapBuffers(Window* window) = 0;
     virtual void setWindowTitle(Window* window, const char *name) = 0;
+    virtual void refreshWindow(Window *window) = 0;
 };
 
 #endif /* DIP_VIEWER_MANAGER_H_ */

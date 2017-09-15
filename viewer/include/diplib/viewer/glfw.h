@@ -42,15 +42,15 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
     ~GLFWManager();
   
     void createWindow(WindowPtr window);
-    void destroyWindow(WindowPtr window);
-    void refreshWindow(WindowPtr window);
     size_t activeWindows() { return windows_.size(); }
+    void destroyWindows();
     void processEvents();
     
   protected:    
     void drawString(Window* window, const char *string);
     void swapBuffers(Window* window);
     void setWindowTitle(Window* window, const char *name);
+    void refreshWindow(Window* window);
 
     void run();
     WindowPtr getWindow(struct GLFWwindow *window);
@@ -93,15 +93,15 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
       }
     }
 
-    static void key(struct GLFWwindow *window, unsigned int k)
+    static void key(struct GLFWwindow *window, int key, int /*scancode*/, int action, int mods)
     {
       WindowPtr wdw = instance_->getWindow(window);
-      if (wdw)
+      if (wdw && action == 1)
       {
         int x, y;
         instance_->makeCurrent(wdw.get());
         instance_->getCursorPos(wdw.get(), &x, &y);
-        wdw->key((unsigned char)k, x, y);
+        wdw->key((unsigned char)key, x, y, mods);
       }
     }
     
