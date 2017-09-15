@@ -62,29 +62,30 @@ PixelTable::PixelTable(
       // Ideally runs go along the longest dimension of the line.
       // Worst case is when they go along the shortest, then all runs have length 1.
 
-      // Initialize sizes and origin, modify `size` to be the total step to take from start to end of line.
+      // Initialize sizes and origin, modify `size` to be the total step to take from start to one past end of line
       sizes_.resize( nDims, 0 );
       origin_.resize( nDims, 0 );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( size[ ii ] < 0 ) {
-            size[ ii ] = -std::max( std::round( -size[ ii ] ) - 1.0, 0.0 );
-            sizes_[ ii ] = static_cast< dip::uint >( -size[ ii ] ) + 1;
-            origin_[ ii ] = static_cast< dip::sint >( size[ ii ] );
+            size[ ii ] = -std::max( std::round( -size[ ii ] ), 1.0 );
+            sizes_[ ii ] = static_cast< dip::uint >( -size[ ii ] );
+            origin_[ ii ] = static_cast< dip::sint >( size[ ii ] ) + 1;
          } else {
-            size[ ii ] = std::max( std::round( size[ ii ] ) - 1.0, 0.0 );
-            sizes_[ ii ] = static_cast< dip::uint >( size[ ii ] ) + 1;
+            size[ ii ] = std::max( std::round( size[ ii ] ), 1.0 );
+            sizes_[ ii ] = static_cast< dip::uint >( size[ ii ] );
             origin_[ ii ] = 0;
          }
       }
+      //std::cout << "[PixelTable] size = " << size << "sizes_ = " << sizes_ << ", origin_ = " << origin_ << std::endl;
 
       // Find the number of steps from start to end of line
       dip::uint length = *std::max_element( sizes_.begin(), sizes_.end() );
-      dip::uint maxSize = length - 1;
-      if( maxSize >= 1 ) {
+      //std::cout << "[PixelTable] length = " << length << std::endl;
+      if( length >= 2 ) {
          // Compute step size along each dimension, and find the start point
          FloatArray stepSize( nDims );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            stepSize[ ii ] = size[ ii ] / static_cast< dfloat >( maxSize );
+            stepSize[ ii ] = size[ ii ] / static_cast< dfloat >( length );
          }
          // We need the line to go through the origin, which can be done by setting `origin_` properly,
          // but predicting what it needs to be is a little complex, depending on even/odd lengths in combinations
@@ -93,37 +94,54 @@ PixelTable::PixelTable(
          IntegerArray shift;
          // Walk the line, extract runs
          FloatArray pos( nDims, 0.0 );
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            // Here, we presume that we won't chain more than 100,000 pixels in a row...
+            if( stepSize[ ii ] < 0 ) {
+               pos[ ii ] += 0.99999; // start at the opposite edge of the pixel, such that `floor` still gives 0.
+            } else {
+               pos[ ii ] += 0.00001; // add a small value to prevent rounding errors.
+            }
+         }
          IntegerArray coords( nDims, 0 );
          dip::uint runLength = 1;
-         for( dip::uint step = 0; step < maxSize; ++step ) {
-            pos += stepSize;
+         //std::cout << "[PixelTable] pos = " << pos << ", coords = " << coords << std::endl;
+         for( dip::uint step = 1; step < length; ++step ) {
             // Are all integer coordinates the same except for the one along procDim_?
             bool same = true;
             for( dip::uint ii = 0; ii < nDims; ++ii ) {
-               if(( ii != procDim_ ) && ( static_cast< dip::sint >( consistent_round( pos[ ii ] )) != coords[ ii ] )) {
-                  same = false;
-                  break;
+               pos[ ii ] += stepSize[ ii ];
+            }
+            for( dip::uint ii = 0; ii < nDims; ++ii ) {
+               if( ii != procDim_ ) {
+                  dfloat intPos = std::floor( pos[ ii ] );
+                  if( static_cast< dip::sint >( intPos ) != coords[ ii ] ) {
+                     same = false;
+                     break;
+                  }
                }
             }
             if( !same ) {
                // Save run
                runs_.emplace_back( coords, runLength );
+               //std::cout << "[PixelTable] added run: " << coords << ", runLength = " << runLength << std::endl;
                nPixels_ += runLength;
                // Start new run
                for( dip::uint ii = 0; ii < nDims; ++ii ) {
-                  coords[ ii ] = static_cast< dip::sint >( consistent_round( pos[ ii ] ));
+                  coords[ ii ] = static_cast< dip::sint >( std::floor( pos[ ii ] ));
                }
                runLength = 1;
             } else {
                ++runLength;
             }
+            //std::cout << "[PixelTable] pos = " << pos << ", coords = " << coords << std::endl;
             // Are we at the origin?
             // Note: If length/2==0, this will never test true. But in that case, we don't need to shift.
-            if( step + 1 == length / 2 ) {
+            if( step == length / 2 ) {
                shift.resize( nDims );
                for( dip::uint ii = 0; ii < nDims; ++ii ) {
-                  shift[ ii ] = coords[ ii ];
+                  shift[ ii ] = static_cast< dip::sint >( std::floor( pos[ ii ] ));
                }
+               //std::cout << "[PixelTable] shift = " << shift << std::endl;
             }
          }
          runs_.emplace_back( coords, runLength );
@@ -373,7 +391,7 @@ void PixelTable::AsImage( Image& out ) const {
       for( auto& run : runs_ ) {
          IntegerArray position = run.coordinates;
          position -= origin_;
-         dfloat* data = static_cast< dfloat* >( out.Pointer( position ));
+         dfloat* data = static_cast< dfloat* >( out.Pointer( out.Offset( position )));
          for( dip::uint ii = 0; ii < run.length; ++ii ) {
             *data = *wIt;
             ++wIt;
@@ -387,7 +405,7 @@ void PixelTable::AsImage( Image& out ) const {
       for( auto& run : runs_ ) {
          IntegerArray position = run.coordinates;
          position -= origin_;
-         dip::bin* data = static_cast< dip::bin* >( out.Pointer( position ));
+         dip::bin* data = static_cast< dip::bin* >( out.Pointer( out.Offset( position )));
          for( dip::uint ii = 0; ii < run.length; ++ii ) {
             *data = true;
             data += stride;
