@@ -111,7 +111,8 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
 ///
 /// The returned image is the cross-correlation normalized in such a way that only
 /// the phase information is of importance. The computation performed is
-/// `out = (dip::Conjugate(in1)*in2)/dip::SquareModulus(in1)` in the Fourier Domain.
+/// `out = (%Conjugate(in1)*in2)/%SquareModulus(in1)` in the Fourier Domain
+/// (see `dip::Conjugate`, `dip::SquareModulus`).
 /// This results as a very sharp peak in the spatial domain. If `normalize` is set
 /// to `"don't normalize"`, the regular cross-correlation (not normalized by the square
 /// modulus) is returned.

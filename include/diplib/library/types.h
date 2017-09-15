@@ -200,18 +200,23 @@ class DIP_NO_EXPORT bin {
       template< typename T, typename std::enable_if< IsNumericType< T >::value, int >::type = 0 >
       constexpr explicit bin( T v ) : v_( static_cast< uint8 >( v != 0 )) {};
 
-      /// A complex value converts to bin by comparing the absolute value to zero
-      //template< typename T >
-      //constexpr explicit bin( std::complex< T > v ) : v_( !!std::abs( v ) ) {};
-
       /// A bin implicitly converts to bool
       constexpr operator bool() const { return v_; }
 
-      /// Negation operators
+      /// Negation operator
       constexpr bin operator!() const { return v_ == 0; }
 
       /// Bit-wise negation is the same as regular negation
       constexpr bin operator~() const { return v_ == 0; }
+
+      /// And operator, prefer to use this over `std::min`.
+      constexpr bin operator&( bin other ) const { return { v_ && other.v_ }; } // Why && and not & ? I don't know...
+
+      /// Or operator, prefer to use this over `std::max`.
+      constexpr bin operator|( bin other ) const { return { v_ || other.v_ }; } // Why || and not | ? I don't know...
+
+      /// Exclusive-or operator
+      constexpr bin operator^( bin other ) const { return bin( v_ ^ other.v_ ); }
 
    private:
       uint8 v_;
@@ -694,6 +699,24 @@ static DIP_DEFINE_OPTION( CmpProps, CmpProps_All,
 /// \}
 
 } // namespace dip
+
+
+namespace std {
+
+// Overloaded version of `std::max` for `dip::bin` types
+// Note that we cannot do `return a | b;` because std::max needs to return a reference.
+template<>
+inline dip::bin const& max( dip::bin const& a, dip::bin const& b ) {
+   return a ? a : b;
+};
+
+// Overloaded version of `std::min` for `dip::bin` types
+template<>
+inline dip::bin const& min( dip::bin const& a, dip::bin const& b ) {
+   return a ? b : a;
+};
+
+} // namespace std
 
 
 #ifdef DIP__ENABLE_DOCTEST

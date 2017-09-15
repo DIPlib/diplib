@@ -41,6 +41,24 @@ namespace dip {
 
 /// \defgroup types Pixel data types
 /// \brief Types used for image samples (pixels), and related support functionality
+///
+/// The following table lists all supported sample data types, together with `dip::DataType` constants and type
+/// groups (see `dip::DataType::Classes`) that they belong to.
+///
+/// C++ type        | Constant                 | Type groups
+/// --------------- | ------------------------ | -------------------------------------------------
+/// `dip::bin`      | `dip::DT_BIN`            | `Binary`, `IntOrBin`, `FlexBin`, `Unsigned`
+/// `dip::uint8`    | `dip::DT_UINT8`          | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned`
+/// `dip::uint16`   | `dip::DT_UINT16`         | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned`
+/// `dip::uint32`   | `dip::DT_UINT32`         | `UInt`, `Integer`, `IntOrBin`, `Real`, `Unsigned`
+/// `dip::sint8`    | `dip::DT_SINT8`          | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`
+/// `dip::sint16`   | `dip::DT_SINT16`         | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`
+/// `dip::sint32`   | `dip::DT_SINT32`         | `SInt`, `Integer`, `IntOrBin`, `Real`, `Signed`
+/// `dip::sfloat`   | `dip::DT_SFLOAT`         | `Float`, `Real`, `Flex`, `FlexBin`, `Signed`
+/// `dip::dfloat`   | `dip::DT_DFLOAT`         | `Float`, `Real`, `Flex`, `FlexBin`, `Signed`
+/// `dip::scomplex` | `dip::DT_SCOMPLEX`       | `Complex`, `Flex`, `FlexBin`, `Signed`
+/// `dip::dcomplex` | `dip::DT_DCOMPLEX`       | `Complex`, `Flex`, `FlexBin`, `Signed`
+///
 /// \ingroup infrastructure
 /// \{
 
@@ -200,22 +218,32 @@ struct DIP_NO_EXPORT DataType {
    /// Class_SComplex   | DT_SCOMPLEX
    /// Class_DComplex   | DT_DCOMPLEX
    /// Class_Binary     | Class_Bin;
-   /// Class_UInt       | Class_UInt8 + Class_UInt16 + Class_UInt32;
-   /// Class_SInt       | Class_SInt8 + Class_SInt16 + Class_SInt32;
-   /// Class_Integer    | Class_UInt + Class_SInt;
-   /// Class_Float      | Class_SFloat + Class_DFloat;
-   /// Class_Complex    | Class_SComplex + Class_DComplex;
+   /// Class_UInt       | Class_UInt8 + Class_UInt16 + Class_UInt32
+   /// Class_SInt       | Class_SInt8 + Class_SInt16 + Class_SInt32
+   /// Class_Integer    | Class_UInt + Class_SInt
+   /// Class_Float      | Class_SFloat + Class_DFloat
+   /// Class_Complex    | Class_SComplex + Class_DComplex
    /// Class_IntOrBin   | Class_Integer + Class_Binary
-   /// Class_Real       | Class_Integer + Class_Float;
-   /// Class_Flex       | Class_Float + Class_Complex;
-   /// Class_FlexBin    | Class_Flex + Class_Binary;
-   /// Class_Unsigned   | Class_Binary + Class_UInt;
-   /// Class_Signed     | Class_SInt + Class_Float + Class_Complex;
+   /// Class_Real       | Class_Integer + Class_Float
+   /// Class_Flex       | Class_Float + Class_Complex
+   /// Class_FlexBin    | Class_Flex + Class_Binary
+   /// Class_Unsigned   | Class_Binary + Class_UInt
+   /// Class_Signed     | Class_SInt + Class_Float + Class_Complex
    /// Class_NonBinary  | Class_Real + Class_Complex
    /// Class_NonComplex | Class_Binary + Class_Real
-   /// Class_All        | Class_Binary + Class_Real + Class_Complex;
+   /// Class_All        | Class_Binary + Class_Real + Class_Complex
    ///
    /// Note that you can add these constants together, for example `dip::DataType::Class_UInt8 + dip::DataType::Class_UInt16`.
+   ///
+   /// It is possible to see if an image is of a type within a collection using the equality operator between a
+   /// `%dip::DataType::Classes` on the left hand side and a `dip::DataType` on the right hand side:
+   /// ```cpp
+   ///     if( dip::DataType::Class_Flex == image.DataType() ) { ... }
+   /// ```
+   /// This is equivalent to using one of the test functions, if defined for the specific group:
+   /// ```cpp
+   ///     if( image.DataType().IsFlex() ) { ... }
+   /// ```
    ///
    /// The following combination of classes cover all data types, and are non-intersecting:
    /// - `Class_Unsigned` and `Class_Signed`
@@ -288,6 +316,16 @@ struct DIP_NO_EXPORT DataType {
    /// \brief Returns `true` if the data type is real (floating point or integer).
    constexpr bool IsReal() const {
       return Class_Real == *this;
+   }
+
+   /// \brief Returns `true` if the data type is one of the "flex" types (floating point or complex).
+   constexpr bool IsFlex() const {
+      return Class_Flex == *this;
+   }
+
+   /// \brief Returns `true` if the data type is floating point, complex or binary.
+   constexpr bool IsFlexBin() const {
+      return Class_FlexBin == *this;
    }
 
    /// \brief Returns `true` if the data type is complex.
