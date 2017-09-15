@@ -20,8 +20,7 @@
 #ifndef DIP_VIEWER_HISTOGRAM_H
 #define DIP_VIEWER_HISTOGRAM_H
 
-#undef DIP__ENABLE_DOCTEST
-#include <diplib/framework.h>
+#include "diplib/framework.h"
 
 #include "diplib/viewer/viewer.h"
 #include "diplib/viewer/image.h"

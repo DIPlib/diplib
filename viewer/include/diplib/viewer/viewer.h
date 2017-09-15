@@ -22,11 +22,10 @@
 
 #include <stdint.h>
 #include <unistd.h>
-
 #include <vector>
 
-#undef DIP__ENABLE_DOCTEST
 #include "diplib.h"
+
 #include "diplib/viewer/manager.h"
 
 //#define GL_SAFE_CALL(x) DIP_THROW_IF((x) != 0, dip::String(#x))

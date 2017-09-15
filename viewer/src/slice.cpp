@@ -17,12 +17,11 @@
  * limitations under the License.
  */
 
-#include "diplib/viewer/include_gl.h"
-
 #undef DIP__ENABLE_DOCTEST
 #include "diplib/statistics.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/overload.h"
+#include "diplib/viewer/include_gl.h"
 #include "diplib/viewer/slice.h"
 
 using namespace dip;

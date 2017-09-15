@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#undef DIP__ENABLE_DOCTEST
 #include "diplib/viewer/include_gl.h"
 #include "diplib/viewer/image.h"
 

@@ -24,7 +24,7 @@
 #include <mutex>
 #include <map>
 
-#include "manager.h"
+#include "diplib/viewer/manager.h"
 
 /// Simple GLUT window manager
 class DIPVIEWER_EXPORT GLUTManager : public Manager
