@@ -27,6 +27,7 @@
 #include "diplib/framework.h"
 #include "diplib/pixel_table.h"
 #include "diplib/overload.h"
+#include "diplib/library/copy_buffer.h"
 
 namespace dip {
 
@@ -105,8 +106,6 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
          dip::uint filterSize = sizes_[ params.dimension ];
-         // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once
-         dip::uint margin = filterSize / 2;
          if( filterSize == 2 ) {
             // Brute-force computation
             if( mirror_ ) {
@@ -183,6 +182,8 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
             }
          } else {
             // Van Herke algorithm
+            dip::uint margin = params.inBuffer.border; // TODO: this function must be changed so that margin != filterSize/2
+            // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once
             dip::uint bufferSize = length + 2 * margin;
             std::vector< TPI >& buffer = buffers_[ params.thread ];
             buffer.resize( 2 * bufferSize ); // does nothing if already correct size
@@ -321,7 +322,10 @@ void RectangularMorphology(
          sizes[ ii ] = static_cast< dip::uint >( std::round( filterParam[ ii ] ));
          process[ ii ] = true;
          ++nProcess;
-         border[ ii ] = sizes[ ii ] / 2;
+         //if( !bc.empty() ) {
+            // If the boundary condition is default, we don't need a boundary extension at all.
+            border[ ii ] = sizes[ ii ] / 2;
+         //}
       }
    }
    DataType dtype = in.DataType();
@@ -339,22 +343,28 @@ void RectangularMorphology(
          switch( operation ) {
             case BasicMorphologyOperation::DILATION:
                DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), ovltype );
+               //Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
                Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
                break;
             case BasicMorphologyOperation::EROSION:
                DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), ovltype );
+               //Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
                Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
                break;
             case BasicMorphologyOperation::CLOSING:
                DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), ovltype );
+               //Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
                Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
                DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, InvertMirrorParam( mirror )), ovltype );
+               //Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
                Framework::Separable( out, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
                break;
             case BasicMorphologyOperation::OPENING:
                DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), ovltype );
+               //Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
                Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
                DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, InvertMirrorParam( mirror )), ovltype );
+               //Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
                Framework::Separable( out, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
                break;
          }
@@ -802,6 +812,7 @@ void ParabolicMorphology(
 template< typename TPI >
 class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
       // This is an identical copy of RectangularMorphologyLineFilter (van Herke part only), but we fill the buffers using the step size.
+      // TODO: Can we merge these two linefilters into the same code path?
    public:
       PeriodicLineMorphologyLineFilter( dip::uint stepSize, dip::uint length, Polarity polarity, Mirror mirror ) :
             stepSize_( stepSize ), frameLength_( length ), dilation_( polarity == Polarity::DILATION ), mirror_( mirror == Mirror::YES ) {}
@@ -812,9 +823,11 @@ class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
          return lineLength * 6; // 3 comparisons, 3 iterations
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-         // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once
+         // TODO: Add special case for 2 and 3 pixels, surely those are the most common ones.
+         // Van Herke algorithm
          dip::uint length = params.inBuffer.length;
-         dip::uint margin = params.inBuffer.border;
+         dip::uint margin = params.inBuffer.border; // TODO: this function must be changed so that margin != filterSize/2
+         // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once
          dip::uint bufferSize = length + 2 * margin;
          std::vector< TPI >& buffer = buffers_[ params.thread ];
          buffer.resize( 2 * bufferSize ); // does nothing if already correct size
@@ -932,61 +945,11 @@ class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
       bool mirror_;
 };
 
-void PeriodicLineMorphology(
-      Image const& in,
-      Image& out,
-      dip::uint stepSize,
-      dip::uint length,
-      dip::uint axis,
-      Mirror mirror, // this changes where the origin is placed in the even-sized line
-      BoundaryConditionArray const& bc,
-      BasicMorphologyOperation operation
-) {
-   dip::uint nDims = in.Dimensionality();
-   BooleanArray process( nDims, false );
-   process[ axis ] = true; // No need to test if axis is valid
-   dip::uint nSteps = length / stepSize; // should always be an even division
-   UnsignedArray border( nDims, 0 );
-   border[ axis ] = ( nSteps / 2 ) * stepSize;
-   DataType dtype = in.DataType();
-   DataType ovltype = dtype;
-   if( ovltype.IsBinary() ) {
-      ovltype = DT_UINT8; // Dirty trick: process a binary image with the same filter as a UINT8 image, but don't convert the type -- for some reason this is faster!
-   }
-   std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-   DIP_START_STACK_TRACE
-      switch( operation ) {
-         case BasicMorphologyOperation::DILATION:
-            DIP_OVL_NEW_REAL( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::DILATION, mirror ), ovltype );
-            Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
-            break;
-         case BasicMorphologyOperation::EROSION:
-            DIP_OVL_NEW_REAL( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::EROSION, mirror ), ovltype );
-            Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
-            break;
-         case BasicMorphologyOperation::CLOSING:
-            // TODO: Apply 1D closing
-            DIP_OVL_NEW_REAL( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::DILATION, mirror ), ovltype );
-            Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
-            DIP_OVL_NEW_REAL( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::EROSION, InvertMirrorParam( mirror )), ovltype );
-            Framework::Separable( out, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
-            break;
-         case BasicMorphologyOperation::OPENING:
-            // TODO: Apply 1D opening
-            DIP_OVL_NEW_REAL( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::EROSION, mirror ), ovltype );
-            Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
-            DIP_OVL_NEW_REAL( lineFilter, PeriodicLineMorphologyLineFilter, ( stepSize, length, Polarity::DILATION, InvertMirrorParam( mirror )), ovltype );
-            Framework::Separable( out, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
-            break;
-      }
-   DIP_END_STACK_TRACE
-}
-
 std::pair< dip::uint, dip::uint > PeriodicLineParameters( FloatArray const& filterParam ) {
    dip::uint maxSize = 0;
    dip::uint steps = 0;
    for( dip::uint ii = 0; ii < filterParam.size(); ++ii ) {
-      dip::uint length = static_cast< dip::uint >( std::abs( std::round( filterParam[ ii ] )));
+      dip::uint length = static_cast< dip::uint >( std::round( std::abs( filterParam[ ii ] )));
       maxSize = std::max( maxSize, length );
       if( length > 1 ) {
          if( steps > 0 ) {
@@ -1009,7 +972,6 @@ void SkewLineMorphology(
       Image const& in,
       Image& out,
       FloatArray const& filterParam,
-      StructuringElement::ShapeCode mode,
       Mirror mirror,
       BoundaryConditionArray const& bc,
       BasicMorphologyOperation operation
@@ -1026,50 +988,26 @@ void SkewLineMorphology(
       }
       nLarger1 += param > 1.0 ? 1 : 0;
    }
-   dip::uint periodicStepSize = 1;
-   if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
-      dip::uint maxSize = 0;
-      dip::uint steps = 0;
-      std::tie( maxSize, steps ) = PeriodicLineParameters( filterParam );
-      if( steps == 1 ) {
-         // The periodic line has just one point, make it so that we just copy the input below.
-         nLarger1 = 1;
-         length = 1.0;
-      } else {
-         periodicStepSize = maxSize / steps;
-         if( periodicStepSize == 1 ) {
-            // The periodic line is continuous.
-            mode = StructuringElement::ShapeCode::FAST_LINE;
-         }
-      }
-   }
    if( nLarger1 > 1 ) {
       // 1- Skew in all dimensions perpendicular to `axis`
-      String method = mode == StructuringElement::ShapeCode::INTERPOLATED_LINE ? "linear" : "nn";
-      // TODO: Can we use a better interpolation method (i.e. the default "") if we stick to "zero order" boundary condition?
       FloatArray shearArray( nDims, 0.0 );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( ii != axis ) {
-            shearArray[ ii ] = -std::round( filterParam[ ii ] ) / length;
+            shearArray[ ii ] = std::copysign( std::round( std::abs( filterParam[ ii ] )) / length, filterParam[ ii ] );
          }
       }
       Image tmp;
-      Skew( in, tmp, shearArray, axis, 0, method, bc ); // TODO: how to fill in default boundary condition here?
-      // 2- Call RectangularMorphology or PeriodicLineMorphology
-      if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
-         PeriodicLineMorphology( tmp, tmp, periodicStepSize, static_cast< dip::uint >( length ), axis, mirror, bc, operation );
-      } else {
-         FloatArray rectSize( nDims, 1.0 );
-         rectSize[ axis ] = length;
-         RectangularMorphology( tmp, tmp, rectSize, mirror, bc, operation );
-      }
+      Skew( in, tmp, shearArray, axis, 0, "linear", bc ); // TODO: how to fill in default boundary condition here?
+      // 2- Call RectangularMorphology
+      FloatArray rectSize( nDims, 1.0 );
+      rectSize[ axis ] = length;
+      RectangularMorphology( tmp, tmp, rectSize, mirror, bc, operation );
       // 3- Skew back and crop to original size
-      method = mode == StructuringElement::ShapeCode::INTERPOLATED_LINE ? "linear" : "nn2";
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          shearArray[ ii ] = -shearArray[ ii ];
       }
-      Skew( tmp, tmp, shearArray, axis, 0, method, bc );
-      //Skew( tmp, tmp, shearArray, axis, 0, method, { BoundaryCondition::PERIODIC } ); // Using periodic boundary condition so it can be done in-place.
+      Skew( tmp, tmp, shearArray, axis, 0, "linear", bc );
+      //Skew( tmp, tmp, shearArray, axis, 0, "linear", { BoundaryCondition::PERIODIC } ); // Using periodic boundary condition so it can be done in-place.
       // TODO: when using periodic skew to go back to original geometry, the origin needs to be computed. Image::Crop can't help us.
       tmp = tmp.Crop( in.Sizes() );
       out.Copy( tmp );
@@ -1080,6 +1018,410 @@ void SkewLineMorphology(
       RectangularMorphology( in, out, rectSize, mirror, bc, operation );
    } else {
       out.Copy( in );
+   }
+}
+
+void FastLineMorphology(
+      Image const& c_in,
+      Image& c_out,
+      FloatArray const& filterParam,
+      StructuringElement::ShapeCode mode, // PERIODIC_LINE, FAST_LINE
+      Mirror mirror,
+      BoundaryConditionArray const& bc,
+      BasicMorphologyOperation operation
+) {
+   /* This is the general idea for this algorithm:
+    *  - We find the (image-wide) Bresenham line that has the angle given by filterParam.
+    *  - We make sure that this line has unit steps along the x-axis, and negative steps along all other axes.
+    *    (This can be accomplished by swapping and mirroring dimensions.)
+    *  - To tessellate the image with this line, we need to always start it at x=0.
+    *  - We iterate over all coordinates that have x=0 (i.e. we iterate over all image lines), but including
+    *    coordinates outside of the image domain, such that part of the line still touches the image domain.
+    *  - At each of these positions, we can copy the input pixels into a buffer, and copy the output pixels back.
+    *  - If the angle is such that steps in all dimensions are either 0 or 1, we can define a stride to reach each
+    *    pixel along the line, and don't need to use the buffers.
+    *  - When walking along a line that starts outside the image domain, we can compute at which x-position the
+    *    rounded coordinates will fall within the image domain.
+    *  - Likewise, we can compute at which x-poxision the rounded coordinates will exit the image domain.
+    */
+
+   BoundaryCondition boundaryCondition1 = BoundaryCondition::DEFAULT;
+   BoundaryCondition boundaryCondition2 = BoundaryCondition::DEFAULT;
+   if( !bc.empty() ) {
+      if( bc.size() > 1 ) {
+         // TODO: Make sure they're all the same?
+      }
+      boundaryCondition1 = bc[ 0 ];
+      boundaryCondition2 = bc[ 0 ];
+   }
+
+   // Determine SE parameters
+   dip::uint nDims = c_in.Dimensionality();
+   dfloat length = std::round( std::abs( filterParam[ 0 ] ));
+   dip::uint axis = 0;
+   dip::uint nLarger1 = length > 1.0 ? 1 : 0;
+   for( dip::uint ii = 1; ii < nDims; ++ii ) {
+      dfloat param = std::round( std::abs( filterParam[ ii ] ));
+      if( param > length ) {
+         length = param;
+         axis = ii;
+      }
+      nLarger1 += param > 1.0 ? 1 : 0;
+   }
+
+   // Determine periodic line SE parameters
+   dip::uint periodicStepSize = 1;
+   if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
+      dip::uint maxSize = 0;
+      dip::uint nSteps = 0;
+      std::tie( maxSize, nSteps ) = PeriodicLineParameters( filterParam );
+      if( nSteps == 1 ) {
+         // The periodic line has just one point, make it so that we just copy the input below.
+         nLarger1 = 1;
+         length = 1.0;
+      } else {
+         periodicStepSize = maxSize / nSteps;
+         if( periodicStepSize == 1 ) {
+            // The periodic line is continuous, use the more efficient code path.
+            mode = StructuringElement::ShapeCode::FAST_LINE;
+         }
+      }
+   }
+
+   //std::cout << "[FastLineMorphology] nDims = " << nDims << ", filterParam = " << filterParam << ", mode = "
+   //          << ( mode == StructuringElement::ShapeCode::FAST_LINE ? "FAST_LINE" : "PERIODIC_LINE" ) << std::endl;
+   //std::cout << "[FastLineMorphology] length = " << length << ", axis = " << axis << ", nLarger1 = " << nLarger1
+   //          << ", periodicStepSize = " << periodicStepSize << std::endl;
+
+   // Do easy cases first
+   if( length <= 1.0 ) {
+      c_out.Copy( c_in );
+      return;
+   }
+   if( nLarger1 == 1 ) {
+      // This is the case where the line is along an image axis, there's no angled lines involved
+      // If periodic, the step size will be 1
+      FloatArray rectSize( nDims, 1.0 );
+      rectSize[ axis ] = length;
+      DIP_STACK_TRACE_THIS( RectangularMorphology( c_in, c_out, rectSize, mirror, bc, operation ));
+      return;
+   }
+
+   // Determine step sizes along each dimension
+   FloatArray stepSize( nDims, 0 );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      stepSize[ ii ] = std::copysign( std::round( std::abs( filterParam[ ii ] )), filterParam[ ii ] ) / ( length );
+   }
+   if( stepSize[ axis ] < 0.0 ) {
+      // We can flip all dimensions and get the same line
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         stepSize[ ii ] = -stepSize[ ii ];
+      }
+   }
+
+   // Create output
+   Image in = c_in.QuickCopy();
+   c_out.ReForge( in );            // Create an image identical to `in`. It's OK if it happened to point at data from `in`, we can work in-place
+   Image out = c_out.QuickCopy();
+   // Reorder image dimensions so that the first dimension is axis.
+   if( axis != 0 ) {
+      in.SwapDimensions( axis, 0 );
+      out.SwapDimensions( axis, 0 );
+      std::swap( stepSize[ axis ], stepSize[ 0 ] );
+   }
+   DIP_ASSERT( stepSize[ 0 ] == 1.0 );
+
+   //std::cout << "[FastLineMorphology] (1) stepSize = " << stepSize
+   //          << ", in.Sizes = " << in.Sizes() << ", in.Strides = " << in.Strides() << std::endl;
+
+   // Make all other dimensions have negative step sizes
+   BooleanArray ps( nDims, false );
+   bool processDiagonally = true; // This is a special case: we can define a stride to walk along the line.
+   for( dip::uint ii = 1; ii < nDims; ++ii ) {
+      if( stepSize[ ii ] > 0.0 ) {
+         ps[ ii ] = true;
+         stepSize[ ii ] = -stepSize[ ii ];
+      }
+      if(( stepSize[ ii ] != 0.0 ) && ( stepSize[ ii ] != -1.0 )) {
+         processDiagonally = false;
+      }
+   }
+   in.Mirror( ps );
+   out.Mirror( ps );
+
+   //std::cout << "[FastLineMorphology] (2) stepSize = " << stepSize
+   //          << ", in.Sizes = " << in.Sizes() << ", in.Strides = " << in.Strides() << std::endl;
+   //std::cout << "[FastLineMorphology] processDiagonally = " << processDiagonally << std::endl;
+
+   // Find the line filter to use
+   dip::uint filterLength = static_cast< dip::uint >( length );
+   DataType dtype = in.DataType();
+   DataType ovltype = dtype;
+   if( ovltype.IsBinary() ) {
+      ovltype = DT_UINT8; // Dirty trick: process a binary image with the same filter as a UINT8 image, but don't convert the type -- for some reason this is faster!
+   }
+   std::unique_ptr< Framework::SeparableLineFilter > lineFilter1;
+   std::unique_ptr< Framework::SeparableLineFilter > lineFilter2;
+   UnsignedArray sizes( 1, filterLength ); // This needs to be kept alive, RectangularMorphologyLineFilter holds a reference to it
+   if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
+      DIP_START_STACK_TRACE
+         switch( operation ) {
+            case BasicMorphologyOperation::DILATION:
+               DIP_OVL_NEW_REAL( lineFilter1, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::DILATION, mirror ), ovltype );
+               if( bc.empty() ) {
+                  boundaryCondition1 = BoundaryCondition::ADD_MIN_VALUE;
+               }
+               break;
+            case BasicMorphologyOperation::EROSION:
+               DIP_OVL_NEW_REAL( lineFilter1, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::EROSION, mirror ), ovltype );
+               if( bc.empty() ) {
+                  boundaryCondition1 = BoundaryCondition::ADD_MAX_VALUE;
+               }
+               break;
+            case BasicMorphologyOperation::CLOSING:
+               DIP_OVL_NEW_REAL( lineFilter1, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::DILATION, mirror ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter2, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::EROSION, InvertMirrorParam( mirror )), ovltype );
+               if( bc.empty() ) {
+                  boundaryCondition1 = BoundaryCondition::ADD_MIN_VALUE;
+                  boundaryCondition2 = BoundaryCondition::ADD_MAX_VALUE;
+               }
+               break;
+            case BasicMorphologyOperation::OPENING:
+               DIP_OVL_NEW_REAL( lineFilter1, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::EROSION, mirror ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter2, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::DILATION, InvertMirrorParam( mirror )), ovltype );
+               if( bc.empty() ) {
+                  boundaryCondition1 = BoundaryCondition::ADD_MAX_VALUE;
+                  boundaryCondition2 = BoundaryCondition::ADD_MIN_VALUE;
+               }
+               break;
+         }
+      DIP_END_STACK_TRACE
+   } else { // mode == StructuringElement::ShapeCode::FAST_LINE
+      DIP_START_STACK_TRACE
+         switch( operation ) {
+            case BasicMorphologyOperation::DILATION:
+               DIP_OVL_NEW_REAL( lineFilter1, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), ovltype );
+               if( bc.empty() ) {
+                  boundaryCondition1 = BoundaryCondition::ADD_MIN_VALUE;
+               }
+               break;
+            case BasicMorphologyOperation::EROSION:
+               DIP_OVL_NEW_REAL( lineFilter1, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), ovltype );
+               if( bc.empty() ) {
+                  boundaryCondition1 = BoundaryCondition::ADD_MAX_VALUE;
+               }
+               break;
+            case BasicMorphologyOperation::CLOSING:
+               DIP_OVL_NEW_REAL( lineFilter1, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter2, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, InvertMirrorParam( mirror )), ovltype );
+               if( bc.empty() ) {
+                  boundaryCondition1 = BoundaryCondition::ADD_MIN_VALUE;
+                  boundaryCondition2 = BoundaryCondition::ADD_MAX_VALUE;
+               }
+               break;
+            case BasicMorphologyOperation::OPENING:
+               DIP_OVL_NEW_REAL( lineFilter1, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter2, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, InvertMirrorParam( mirror )), ovltype );
+               if( bc.empty() ) {
+                  boundaryCondition1 = BoundaryCondition::ADD_MAX_VALUE;
+                  boundaryCondition2 = BoundaryCondition::ADD_MIN_VALUE;
+               }
+               break;
+         }
+      DIP_END_STACK_TRACE
+   }
+
+   // Initialize the line filters (we don't do multithreading here)
+   lineFilter1->SetNumberOfThreads( 1 );
+   if( lineFilter2 ) {
+      lineFilter2->SetNumberOfThreads( 1 );
+   }
+
+   // Determine parameters for buffers
+   dip::uint border = 0;
+   //if( !bc.empty() ) {
+      // If the boundary condition is default, we don't need a boundary extension at all.
+      border = filterLength / 2;
+   //}
+   dip::uint maxLineLength = in.Size( 0 );
+   dip::uint sizeOf = dtype.SizeOf();
+
+   // Create input buffer data struct and allocate buffer
+   dip::uint inBufferSize = ( maxLineLength + 2 * border ) * sizeOf;
+   std::vector< uint8 > inBuffer;
+   Framework::SeparableBuffer inBufferStruct;
+   inBufferStruct.tensorLength = 1;
+   inBufferStruct.tensorStride = 1;
+   inBufferStruct.border = border;
+   bool useInBuffer = !processDiagonally || ( border > 0 ) || lineFilter2;
+   if( useInBuffer ) {
+      inBuffer.resize( inBufferSize );
+      inBufferStruct.stride = 1;
+      inBufferStruct.buffer = inBuffer.data() + border * sizeOf;
+   } else {
+      // processDiagonally == true
+      inBufferStruct.stride = in.Stride( 0 );
+      for( dip::uint ii = 1; ii < nDims; ++ii ) {
+         if( stepSize[ ii ] != 0.0 ) { // meaning it's -1.0
+            inBufferStruct.stride -= in.Stride( ii );
+         }
+      }
+      inBufferStruct.buffer = nullptr;
+   }
+
+   // Create output buffer data struct and allocate buffer
+   dip::uint outBufferSize = maxLineLength * sizeOf;
+   std::vector< uint8 > outBuffer;
+   Framework::SeparableBuffer outBufferStruct;
+   outBufferStruct.tensorLength = 1;
+   outBufferStruct.tensorStride = 1;
+   outBufferStruct.border = 0;
+   bool useOutBuffer = !processDiagonally;
+   if( useOutBuffer ) {
+      outBuffer.resize( outBufferSize );
+      outBufferStruct.stride = 1;
+      outBufferStruct.buffer = outBuffer.data();
+   } else {
+      // processDiagonally == true
+      outBufferStruct.stride = out.Stride( 0 );
+      for( dip::uint ii = 1; ii < nDims; ++ii ) {
+         if( stepSize[ ii ] != 0.0 ) { // meaning it's -1.0
+            outBufferStruct.stride -= out.Stride( ii );
+         }
+      }
+      outBufferStruct.buffer = nullptr;
+   }
+
+   Framework::SeparableLineFilterParameters params1{ inBufferStruct, lineFilter2 ? inBufferStruct : outBufferStruct, 0, 0, 1, {}, false, 0 };
+   Framework::SeparableLineFilterParameters params2{ inBufferStruct, outBufferStruct, 0, 0, 1, {}, false, 0 };
+   // if( lineFilter2 ): We apply a 2 filters in sequence, the first one uses the input buffer also for output
+
+   // Compute how far out we need to go along dimensions 1..nDims-1 so that our tessellated lines cover the whole image
+   UnsignedArray itSizes( nDims, 0 );
+   for( dip::uint ii = 1; ii < nDims; ++ii ) {
+      itSizes[ ii ] = in.Size( ii ) - 1 + static_cast< dip::uint >( -std::floor( static_cast< dfloat >( in.Size( 0 )) * stepSize[ ii ] ));
+   }
+   //std::cout << "[FastLineMorphology] itSizes = " << itSizes << std::endl;
+
+   // Iterate over itSizes
+   dip::sint inOffset = 0;
+   dip::sint outOffset = 0;
+   dip::sint ssizeOf = static_cast< dip::sint >( sizeOf );
+   UnsignedArray coords( nDims, 0 );      // These are the start coordinates for the Bresenham line
+   FloatArray bresenhamCoords( nDims );   // These are the coordinates to round to get the Bresenham line
+   FloatArray bresenhamCoords2( nDims );   // These are the coordinates to round to get the Bresenham line
+   while( true ) {
+
+      // Determine the start and end x-coordinate for this line
+      dip::uint start = 0;
+      dip::uint end = in.Size( 0 ) - 1;
+      for( dip::uint ii = 1; ii < nDims; ++ii ) {
+         dfloat x;
+         if( coords[ ii ] >= in.Size( ii )) {
+            x = -static_cast< dfloat >( coords[ ii ] + 1 - in.Size( ii )) / stepSize[ ii ];
+            start = std::max( start, static_cast< dip::uint >( std::ceil( x )));
+         } // otherwise the line starts within the image domain
+         x = -static_cast< dfloat >( coords[ ii ] + 1 ) / stepSize[ ii ];
+         end = std::min( end, static_cast< dip::uint >( std::ceil( x )) - 1 );
+      }
+      DIP_ASSERT( start <= end );
+
+      // Find offsets for the start coordinates
+      bresenhamCoords[ 0 ] = static_cast< dfloat >( start );
+      dip::sint inOffsetStart = inOffset + static_cast< dip::sint >( start ) * in.Stride( 0 );
+      dip::sint outOffsetStart = outOffset + static_cast< dip::sint >( start ) * out.Stride( 0 );
+      for( dip::uint ii = 1; ii < nDims; ++ii ) {
+         bresenhamCoords[ ii ] = 0.99999 + bresenhamCoords[ 0 ] * stepSize[ ii ];
+         inOffsetStart += static_cast< dip::sint >( std::floor( bresenhamCoords[ ii ] )) * in.Stride( ii );
+         outOffsetStart += static_cast< dip::sint >( std::floor( bresenhamCoords[ ii ] )) * out.Stride( ii );
+         bresenhamCoords[ ii ] += static_cast< dfloat >( coords[ ii ] );
+         DIP_ASSERT( std::floor( bresenhamCoords[ ii ] ) < in.Size( ii ));
+      }
+
+      //std::cout << "[FastLineMorphology] coords = " << coords << ", start = " << start << ", end = " << end
+      //          << ", bresenhamCoords = " << bresenhamCoords
+      //          << ", inOffsetStart = " << inOffsetStart << ", outOffsetStart = " << outOffsetStart << std::endl;
+
+      // Prepare line filter parameters
+      dip::uint lineLength = end - start + 1;
+      inBufferStruct.length = lineLength;
+      outBufferStruct.length = lineLength;
+      if( useOutBuffer ) {
+         bresenhamCoords2 = bresenhamCoords; // copy before we modify it
+      } else {
+         outBufferStruct.buffer = out.Pointer( outOffsetStart );
+      }
+
+      // Copy from input image to input buffer
+      if( useInBuffer ) {
+         uint8* src = static_cast< uint8* >( in.Pointer( inOffsetStart ));
+         uint8* dest = static_cast< uint8* >( inBufferStruct.buffer );
+         for( dip::uint ss = 0; ss < lineLength; ++ss ) {
+            std::memcpy( dest, src, sizeOf );
+            dest += sizeOf;
+            src += in.Stride( 0 ) * ssizeOf;
+            for( dip::uint ii = 1; ii < nDims; ++ii ) {
+               dfloat old = std::floor( bresenhamCoords[ ii ] );
+               bresenhamCoords[ ii ] += stepSize[ ii ];
+               if( std::floor( bresenhamCoords[ ii ] ) != old ) {
+                  src -= in.Stride( ii ) * ssizeOf; // we're always moving towards smaller coordinates
+               }
+            }
+         }
+         if( border > 0 ) {
+            ExpandBuffer( inBufferStruct.buffer, ovltype, 1, 1, lineLength, 1, border, border, boundaryCondition1 );
+         }
+      } else {
+         inBufferStruct.buffer = in.Pointer( inOffsetStart );
+      }
+
+      // Execute the line filter(s)
+      DIP_STACK_TRACE_THIS( lineFilter1->Filter( params1 ));
+      if( lineFilter2 ) {
+         if( border > 0 ) {
+            ExpandBuffer( inBufferStruct.buffer, ovltype, 1, 1, lineLength, 1, border, border, boundaryCondition2 );
+         }
+         DIP_STACK_TRACE_THIS( lineFilter2->Filter( params2 ));
+      }
+
+      // Copy output buffer to output image
+      if( useOutBuffer ) {
+         uint8* src = static_cast< uint8* >( outBufferStruct.buffer );
+         uint8* dest = static_cast< uint8* >( out.Pointer( outOffsetStart ));
+         for( dip::uint ss = 0; ss < lineLength; ++ss ) {
+            std::memcpy( dest, src, sizeOf );
+            src += sizeOf;
+            dest += out.Stride( 0 ) * ssizeOf;
+            for( dip::uint ii = 1; ii < nDims; ++ii ) {
+               dfloat old = std::floor( bresenhamCoords2[ ii ] );
+               bresenhamCoords2[ ii ] += stepSize[ ii ];
+               if( std::floor( bresenhamCoords2[ ii ] ) != old ) {
+                  dest -= out.Stride( ii ) * ssizeOf; // we're always moving towards smaller coordinates
+               }
+            }
+         }
+      }
+
+      // Find next start point
+      dip::uint dd;
+      for( dd = 1; dd < nDims; ++dd ) { // Loop over all dimensions except the first one
+         // Increment coordinate and adjust pointer
+         ++coords[ dd ];
+         inOffset += in.Stride( dd );
+         outOffset += out.Stride( dd );
+         // Check whether we reached the last pixel of the line
+         if( coords[ dd ] < itSizes[ dd ] ) {
+            break;
+         }
+         // Rewind, the next loop iteration will increment the next coordinate
+         inOffset -= static_cast< dip::sint >( coords[ dd ] ) * in.Stride( dd );
+         outOffset -= static_cast< dip::sint >( coords[ dd ] ) * out.Stride( dd );
+         coords[ dd ] = 0;
+      }
+      if( dd == nDims ) {
+         // We're done!
+         break;
+      }
    }
 }
 
@@ -1096,7 +1438,8 @@ void LineMorphology(
    std::tie( maxSize, steps ) = PeriodicLineParameters( filterParam );
    if( steps == maxSize ) {
       // This means that all filterParam are the same (or 1)
-      SkewLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::FAST_LINE, GetMirrorParam( se.IsMirrored() ), bc, operation );
+      FastLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::FAST_LINE,
+                          GetMirrorParam( se.IsMirrored()), bc, operation );
    } else {
       if(( steps > 1 ) && ( maxSize > 5 )) { // TODO: a correct threshold here is impossible to determine. It depends on the processing dimension and the angle of the line.
          dip::uint nDims = in.Dimensionality();
@@ -1110,7 +1453,7 @@ void LineMorphology(
             // Discrete line has origin at left side, to correct for origin displacement of periodic line
             IntegerArray shift( nDims, 0 );
             for( dip::uint ii = 0; ii < nDims; ++ii ) {
-               shift[ ii ] = - static_cast< dip::sint >( discreteLineParam[ ii ] ) / 2;
+               shift[ ii ] = - static_cast< dip::sint >( discreteLineParam[ ii ] - 1 ) / 2;
             }
             discreteLineKernel.Shift( shift );
          }
@@ -1123,23 +1466,20 @@ void LineMorphology(
             //case BasicMorphologyOperation::DILATION:
             //case BasicMorphologyOperation::EROSION:
                FlatSEMorphology( in, out, discreteLineKernel, bc, operation );
-               SkewLineMorphology( out, out, filterParam,
-                                   StructuringElement::ShapeCode::PERIODIC_LINE, GetMirrorParam( mirror ),
-                                   bc, operation );
+               FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE,
+                                   GetMirrorParam( mirror ), bc, operation );
                break;
-            case BasicMorphologyOperation::CLOSING:
+            case BasicMorphologyOperation::CLOSING: // TODO: switch the order of the two types of operation?
                FlatSEMorphology( in, out, discreteLineKernel, bc, BasicMorphologyOperation::DILATION );
-               SkewLineMorphology( out, out, filterParam,
-                                   StructuringElement::ShapeCode::PERIODIC_LINE, GetMirrorParam( mirror ),
-                                   bc, BasicMorphologyOperation::CLOSING );
+               FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE,
+                                   GetMirrorParam( mirror ), bc, BasicMorphologyOperation::CLOSING );
                discreteLineKernel.Mirror();
                FlatSEMorphology( out, out, discreteLineKernel, bc, BasicMorphologyOperation::EROSION );
                break;
-            case BasicMorphologyOperation::OPENING:
+            case BasicMorphologyOperation::OPENING: // TODO: switch the order of the two types of operation?
                FlatSEMorphology( in, out, discreteLineKernel, bc, BasicMorphologyOperation::EROSION );
-               SkewLineMorphology( out, out, filterParam,
-                                   StructuringElement::ShapeCode::PERIODIC_LINE, GetMirrorParam( mirror ),
-                                   bc, BasicMorphologyOperation::OPENING );
+               FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE,
+                                   GetMirrorParam( mirror ), bc, BasicMorphologyOperation::OPENING );
                discreteLineKernel.Mirror();
                FlatSEMorphology( out, out, discreteLineKernel, bc, BasicMorphologyOperation::DILATION );
                break;
@@ -1167,8 +1507,8 @@ void TwoStepDiamondMorphology(
    // `size` array must start off with all positive elements.
    dip::uint nDims = size.size();
    while( true ) {
-      // This can be the fast skew line morphology, since lines are always at 0 or 45 degrees.
-      SkewLineMorphology( out, out, size, StructuringElement::ShapeCode::FAST_LINE, Mirror::NO, bc, operation );
+      // This can be the fast line morphology, since lines are always at 0 or 45 degrees.
+      FastLineMorphology( out, out, size, StructuringElement::ShapeCode::FAST_LINE, Mirror::NO, bc, operation );
       dip::uint dd;
       for( dd = 0; dd < nDims; ++dd ) {
          if(( dd != procDim ) && ( std::abs( size[ dd ] ) > 1.0 )) {
@@ -1357,6 +1697,7 @@ void BasicMorphology(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( in.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_START_STACK_TRACE
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       Mirror mirror = GetMirrorParam( se.IsMirrored() );
@@ -1375,8 +1716,10 @@ void BasicMorphology(
             break;
          case StructuringElement::ShapeCode::FAST_LINE:
          case StructuringElement::ShapeCode::PERIODIC_LINE:
+            FastLineMorphology( in, out, se.Params( in.Sizes()), se.Shape(), mirror, bc, operation );
+            break;
          case StructuringElement::ShapeCode::INTERPOLATED_LINE:
-            SkewLineMorphology( in, out, se.Params( in.Sizes() ), se.Shape(), mirror, bc, operation );
+            SkewLineMorphology( in, out, se.Params( in.Sizes()), mirror, bc, operation );
             break;
          case StructuringElement::ShapeCode::PARABOLIC:
             ParabolicMorphology( in, out, se.Params( in.Sizes() ), bc, operation );
