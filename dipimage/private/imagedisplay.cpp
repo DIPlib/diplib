@@ -71,7 +71,6 @@
 
 #undef DIP__ENABLE_DOCTEST
 
-#include <include/diplib/library/error.h>
 #include "dip_matlab_interface.h"
 #include "diplib/display.h"
 

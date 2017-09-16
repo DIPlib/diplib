@@ -68,6 +68,7 @@ dipimage/opening.cpp
 dipimage/pathopening.cpp
 dipimage/percf.cpp
 dipimage/private/imagedisplay.cpp
+dipimage/private/numberofthreads.cpp
 dipimage/private/readtiffseries.cpp
 dipimage/rankmax_opening.cpp
 dipimage/rankmin_closing.cpp

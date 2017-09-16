@@ -35,7 +35,7 @@ function dipsetpref(varargin)
 
 if nargin==1 && ischar(varargin{1}) && strcmpi(varargin{1},'-unload')
    dippreferences('unload');
-   clear private/dippreferences
+   clear dippreferences
 return
 end
 if nargin<2 || mod(nargin,2)

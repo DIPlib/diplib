@@ -34,26 +34,11 @@
 #include "dip_matlab_interface.h"
 #include "diplib/color.h"
 
-dip::ColorSpaceManager* csm = nullptr;
-
-// Destroy CSM object when MEX-file is removed from memory
-static void AtExit(void) {
-   if( csm ) {
-      //mexPrintf( "Deleting CSM.\n" );
-      delete csm;
-      csm = nullptr;
-   }
-}
-
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
-   try {
 
-      // Create CSM object
-      if( !csm ) {
-         //mexPrintf( "Creating CSM.\n" );
-         csm = new dip::ColorSpaceManager;
-         mexAtExit( AtExit );
-      }
+   static dip::ColorSpaceManager csm;
+
+   try {
 
       DML_MIN_ARGS( 1 );
       DML_MAX_ARGS( 2 );
@@ -61,7 +46,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       if( nrhs == 1 ) {
 
          dip::String col = dml::GetString( prhs[ 0 ] );
-         dip::uint n = csm->NumberOfChannels( col );
+         dip::uint n = csm.NumberOfChannels( col );
          plhs[ 0 ] = dml::GetArray( n );
 
       } else {
@@ -71,14 +56,14 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
 
          if( !in.IsColor() && in.TensorElements() > 1 ) {
             // Set the color space, if correct number of tensor elements
-            DIP_THROW_IF( csm->NumberOfChannels( col ) != in.TensorElements(), dip::E::INCONSISTENT_COLORSPACE );
+            DIP_THROW_IF( csm.NumberOfChannels( col ) != in.TensorElements(), dip::E::INCONSISTENT_COLORSPACE );
             plhs[ 0 ] = mxDuplicateArray( prhs[ 0 ] );
-            mxSetPropertyShared( plhs[ 0 ], 0, dml::colspPropertyName, dml::GetArray( csm->CanonicalName( col )));
+            mxSetPropertyShared( plhs[ 0 ], 0, dml::colspPropertyName, dml::GetArray( csm.CanonicalName( col )));
          } else {
             // Convert the color space
             dml::MatlabInterface mi;
             dip::Image out = mi.NewImage();
-            csm->Convert( in, out, col );
+            csm.Convert( in, out, col );
             plhs[ 0 ] = mi.GetArray( out );
          }
 

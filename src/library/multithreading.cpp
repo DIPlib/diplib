@@ -32,7 +32,7 @@ dip::uint maxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads() )
 
 void SetNumberOfThreads( dip::uint nThreads ) {
    DIP_THROW_IF( nThreads < 1, E::INVALID_PARAMETER );
-   maxNumberOfThreads = nThreads;
+   maxNumberOfThreads = std::min( nThreads, static_cast< dip::uint >( omp_get_max_threads() ));
 }
 
 dip::uint GetNumberOfThreads() {

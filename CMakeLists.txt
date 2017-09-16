@@ -459,8 +459,10 @@ endif (DOXYGEN_FOUND)
 
 message("")
 message("--------------------------------------")
-message("   CONFIGURATION REPORT")
+message("   DIPlib CONFIGURATION REPORT")
 message("")
+
+message(" * C++ compiler: ${CMAKE_CXX_COMPILER_ID}")
 
 if(CMAKE_BUILD_TYPE MATCHES "^Release$")
    message(" * Configured for release")

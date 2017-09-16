@@ -24,37 +24,21 @@
 #include "diplib/measurement.h"
 #include "diplib/regions.h"
 
-dip::MeasurementTool* measurementTool = nullptr;
-
-// Destroy MeasurementTool object when MEX-file is removed from memory
-static void AtExit(void) {
-   if( measurementTool ) {
-      //mexPrintf( "Deleting MeasurementTool.\n" );
-      delete measurementTool;
-      measurementTool = nullptr;
-   }
-}
-
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    dml::streambuf streambuf;
+
+   static dip::MeasurementTool measurementTool;
 
    try {
 
       DML_MIN_ARGS( 1 );
-
-      // Create MeasurementTool object
-      if( !measurementTool ) {
-         //mexPrintf( "Creating MeasurementTool.\n" );
-         measurementTool = new dip::MeasurementTool;
-         mexAtExit( AtExit );
-      }
 
       if( mxIsChar( prhs[ 0 ] )) {
 
          dip::String str = dml::GetString( prhs[ 0 ]);
          if( str == "help" ) {
             DML_MAX_ARGS( 1 );
-            auto features = measurementTool->Features();
+            auto features = measurementTool.Features();
             std::cout << features.size() << " measurement features available:" << std::endl;
             for( auto const& feature : features ) {
                std::cout << " - '" << feature.name << "': " << feature.description;
@@ -79,7 +63,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          if( nrhs > 2 ) {
             features = dml::GetStringArray( prhs[ 2 ] );
             // Find known feature names
-            auto infoArray = measurementTool->Features();
+            auto infoArray = measurementTool.Features();
             // Put lower-case version of names in a map
             std::map< dip::String, dip::uint > knownFeatures;
             for( dip::uint ii = 0; ii < infoArray.size(); ++ii ) {
@@ -111,7 +95,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             label = tmp;
          }
 
-         dip::Measurement msr = measurementTool->Measure( label, grey, features, objectIDs, connectivity );
+         dip::Measurement msr = measurementTool.Measure( label, grey, features, objectIDs, connectivity );
 
          // Convert `msr` to a `dip_measurement` object
 

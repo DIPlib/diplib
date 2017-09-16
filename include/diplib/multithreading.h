@@ -55,10 +55,10 @@ namespace dip {
 /// number of CPU cores otherwise.
 ///
 /// Note that parallelized algorithms only spawn multiple threads for the computation if the amount of work
-/// to be done is large enough to compensate for the overhead of spawning threads. Usually it is more beneficial
-/// to manage multithreading at a higher level, for example by processing multiple images at the same time.
+/// to be done is large enough to compensate for the overhead of spawning threads.
 ///
-/// If `nThreads` is 1, disables multithreading within DIPlib.
+/// If `nThreads` is 1, disables multithreading within DIPlib. Usually it is more beneficial to manage multithreading
+/// at a higher level, for example by processing multiple images at the same time. If yo do so, set `nThreads` to 1.
 ///
 /// If DIPlib was compiled without OpenMP support, this function does nothing.
 DIP_EXPORT void SetNumberOfThreads( dip::uint nThreads );
