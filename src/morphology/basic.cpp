@@ -393,7 +393,8 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
       virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
          // Let's determine how to process the neighborhood
          dip::uint averageRunLength = div_ceil( pixelTable.NumberOfPixels(), pixelTable.Runs().size() );
-         bruteForce_ = averageRunLength < 6; // Experimentally determined
+         bruteForce_ = averageRunLength < 4; // Experimentally determined
+         //std::cout << ( bruteForce_ ? "   Using brute force method\n" : "   Using run length method\n" );
       }
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
@@ -811,8 +812,8 @@ void ParabolicMorphology(
 
 template< typename TPI >
 class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
-      // This is an identical copy of RectangularMorphologyLineFilter (van Herke part only), but we fill the buffers using the step size.
-      // TODO: Can we merge these two linefilters into the same code path?
+      // This is an identical copy of RectangularMorphologyLineFilter, but we fill the buffers using the step size.
+      // TODO: Can we merge these two line filters into the same code path?
    public:
       PeriodicLineMorphologyLineFilter( dip::uint stepSize, dip::uint length, Polarity polarity, Mirror mirror ) :
             stepSize_( stepSize ), frameLength_( length ), dilation_( polarity == Polarity::DILATION ), mirror_( mirror == Mirror::YES ) {}
@@ -823,117 +824,198 @@ class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
          return lineLength * 6; // 3 comparisons, 3 iterations
       }
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-         // TODO: Add special case for 2 and 3 pixels, surely those are the most common ones.
-         // Van Herke algorithm
+         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         dip::sint inStride = params.inBuffer.stride;
+         TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
+         dip::sint outStride = params.outBuffer.stride;
          dip::uint length = params.inBuffer.length;
          dip::uint margin = params.inBuffer.border; // TODO: this function must be changed so that margin != filterSize/2
-         // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once
-         dip::uint bufferSize = length + 2 * margin;
-         std::vector< TPI >& buffer = buffers_[ params.thread ];
-         buffer.resize( 2 * bufferSize ); // does nothing if already correct size
-         TPI* forwardBuffer = buffer.data() + margin;
-         TPI* backwardBuffer = forwardBuffer + bufferSize;
-         // Copy input data over to buffers, will simplify filling them later
-         dip::sint inStride = params.inBuffer.stride;
-         TPI* in = static_cast< TPI* >( params.inBuffer.buffer ) - inStride * static_cast< dip::sint >( margin );
-         TPI* buf = forwardBuffer - margin;
-         TPI* buf2 = backwardBuffer - margin;
-         while( buf < forwardBuffer + length + margin ) {
-            *buf2 = *buf = *in;
-            in += inStride;
-            ++buf;
-            ++buf2;
-         }
-         // Fill forward buffer
-         buf = forwardBuffer - margin;
-         if( dilation_ ) {
-            while( buf < forwardBuffer + length + margin - frameLength_ ) {
-               buf += stepSize_;
-               for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
-                  *buf = std::max( *buf, *( buf - stepSize_ ));
-                  ++buf;
+         dip::uint steps = frameLength_ / stepSize_;
+         if( steps == 2 ) {
+            // Brute-force computation
+            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
+            if( mirror_ ) {
+               in += stride;
+            }
+            if( dilation_ ) {
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  *out = std::max( in[ -stride ], in[ 0 ] );
+                  in += inStride;
+                  out += outStride;
+               }
+            } else {
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  *out = std::min( in[ -stride ], in[ 0 ] );
+                  in += inStride;
+                  out += outStride;
+               }
+            }
+         } else if( steps == 3 ) {
+            // Brute-force computation
+            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
+            if( dilation_ ) {
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  *out = std::max( std::max( in[ -stride ], in[ 0 ] ), in[ stride ] );
+                  in += inStride;
+                  out += outStride;
+               }
+            } else {
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  *out = std::min( std::min( in[ -stride ], in[ 0 ] ), in[ stride ] );
+                  in += inStride;
+                  out += outStride;
+               }
+            }
+         } else if( steps == 4 ) {
+            // Brute-force computation
+            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
+            if( mirror_ ) {
+               in += stride;
+            }
+            dip::sint stride2 = 2 * stride;
+            if( dilation_ ) {
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  *out = std::max( std::max( in[ -stride2 ], in[ -stride ] ),
+                                   std::max( in[ 0 ], in[ stride ] ));
+                  in += inStride;
+                  out += outStride;
+               }
+            } else {
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  *out = std::min( std::min( in[ -stride2 ], in[ -stride ] ),
+                                   std::min( in[ 0 ], in[ stride ] ));
+                  in += inStride;
+                  out += outStride;
+               }
+            }
+         } else if( steps == 5 ) {
+            // Brute-force computation
+            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
+            dip::sint stride2 = 2 * stride;
+            if( dilation_ ) {
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  *out = std::max( in[ 0 ], std::max(
+                        std::max( in[ -stride2 ], in[ -stride ] ),
+                        std::max( in[ stride ], in[ stride2 ] )));
+                  in += inStride;
+                  out += outStride;
+               }
+            } else {
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  *out = std::min( in[ 0 ], std::min(
+                        std::min( in[ -stride2 ], in[ -stride ] ),
+                        std::min( in[ stride ], in[ stride2 ] )));
+                  in += inStride;
+                  out += outStride;
                }
             }
          } else {
-            while( buf < forwardBuffer + length + margin - frameLength_ ) {
-               buf += stepSize_;
-               for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
+            // Van Herke algorithm
+            // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once
+            dip::uint bufferSize = length + 2 * margin;
+            std::vector< TPI >& buffer = buffers_[ params.thread ];
+            buffer.resize( 2 * bufferSize ); // does nothing if already correct size
+            TPI* forwardBuffer = buffer.data() + margin;
+            TPI* backwardBuffer = forwardBuffer + bufferSize;
+            // Copy input data over to buffers, will simplify filling them later
+            in -= inStride * static_cast< dip::sint >( margin );
+            TPI* buf = forwardBuffer - margin;
+            TPI* buf2 = backwardBuffer - margin;
+            while( buf < forwardBuffer + length + margin ) {
+               *buf2 = *buf = *in;
+               in += inStride;
+               ++buf;
+               ++buf2;
+            }
+            // Fill forward buffer
+            buf = forwardBuffer - margin;
+            if( dilation_ ) {
+               while( buf < forwardBuffer + length + margin - frameLength_ ) {
+                  buf += stepSize_;
+                  for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
+                     *buf = std::max( *buf, *( buf - stepSize_ ));
+                     ++buf;
+                  }
+               }
+            } else {
+               while( buf < forwardBuffer + length + margin - frameLength_ ) {
+                  buf += stepSize_;
+                  for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
+                     *buf = std::min( *buf, *( buf - stepSize_ ));
+                     ++buf;
+                  }
+               }
+            }
+            dip::sint syncpos = buf - forwardBuffer; // this is needed to align the two buffers
+            buf += stepSize_;
+            if( dilation_ ) {
+               while( buf < forwardBuffer + length + margin ) {
+                  *buf = std::max( *buf, *( buf - stepSize_ ));
+                  ++buf;
+               }
+            } else {
+               while( buf < forwardBuffer + length + margin ) {
                   *buf = std::min( *buf, *( buf - stepSize_ ));
                   ++buf;
                }
             }
-         }
-         dip::sint syncpos = buf - forwardBuffer; // this is needed to align the two buffers
-         buf += stepSize_;
-         if( dilation_ ) {
-            while( buf < forwardBuffer + length + margin ) {
-               *buf = std::max( *buf, *( buf - stepSize_ ));
-               ++buf;
-            }
-         } else {
-            while( buf < forwardBuffer + length + margin ) {
-               *buf = std::min( *buf, *( buf - stepSize_ ));
-               ++buf;
-            }
-         }
-         // Fill backward buffer
-         buf = backwardBuffer + length + margin - 1;
-         buf -= stepSize_;
-         if( dilation_ ) {
-            while( buf >= backwardBuffer + syncpos ) {
-               *buf = std::max( *buf, *( buf + stepSize_ ));
-               --buf;
-            }
-         } else {
-            while( buf >= backwardBuffer + syncpos ) {
-               *buf = std::min( *buf, *( buf + stepSize_ ));
-               --buf;
-            }
-         }
-         buf = backwardBuffer + syncpos - 1; // in case `buf -= stepSize_` passed its mark, and the `while` loop didn't run at all.
-         if( dilation_ ) {
-            while( buf > backwardBuffer - margin ) {
-               buf -= stepSize_;
-               for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
+            // Fill backward buffer
+            buf = backwardBuffer + length + margin - 1;
+            buf -= stepSize_;
+            if( dilation_ ) {
+               while( buf >= backwardBuffer + syncpos ) {
                   *buf = std::max( *buf, *( buf + stepSize_ ));
                   --buf;
                }
-            }
-         } else {
-            while( buf > backwardBuffer - margin ) {
-               buf -= stepSize_;
-               for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
+            } else {
+               while( buf >= backwardBuffer + syncpos ) {
                   *buf = std::min( *buf, *( buf + stepSize_ ));
                   --buf;
                }
             }
-         }
-         // Fill output
-         dip::uint nSteps = frameLength_ / stepSize_;
-         dip::uint filterLength = ( nSteps - 1 ) * stepSize_ + 1;
-         margin = ( nSteps / 2 ) * stepSize_;
-         if( mirror_ ) {
-            forwardBuffer += margin;
-            backwardBuffer -= filterLength - 1 - margin;
-         } else {
-            forwardBuffer += filterLength - 1 - margin;
-            backwardBuffer -= margin;
-         }
-         TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
-         dip::sint outStride = params.outBuffer.stride;
-         if( dilation_ ) {
-            for( dip::uint ii = 0; ii < length; ++ii ) {
-               *out = std::max( *forwardBuffer, *backwardBuffer );
-               out += outStride;
-               ++forwardBuffer;
-               ++backwardBuffer;
+            buf = backwardBuffer + syncpos - 1; // in case `buf -= stepSize_` passed its mark, and the `while` loop didn't run at all.
+            if( dilation_ ) {
+               while( buf > backwardBuffer - margin ) {
+                  buf -= stepSize_;
+                  for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
+                     *buf = std::max( *buf, *( buf + stepSize_ ));
+                     --buf;
+                  }
+               }
+            } else {
+               while( buf > backwardBuffer - margin ) {
+                  buf -= stepSize_;
+                  for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
+                     *buf = std::min( *buf, *( buf + stepSize_ ));
+                     --buf;
+                  }
+               }
             }
-         } else {
-            for( dip::uint ii = 0; ii < length; ++ii ) {
-               *out = std::min( *forwardBuffer, *backwardBuffer );
-               out += outStride;
-               ++forwardBuffer;
-               ++backwardBuffer;
+            // Fill output
+            dip::uint nSteps = frameLength_ / stepSize_;
+            dip::uint filterLength = ( nSteps - 1 ) * stepSize_ + 1;
+            margin = ( nSteps / 2 ) * stepSize_;
+            if( mirror_ ) {
+               forwardBuffer += margin;
+               backwardBuffer -= filterLength - 1 - margin;
+            } else {
+               forwardBuffer += filterLength - 1 - margin;
+               backwardBuffer -= margin;
+            }
+            if( dilation_ ) {
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  *out = std::max( *forwardBuffer, *backwardBuffer );
+                  out += outStride;
+                  ++forwardBuffer;
+                  ++backwardBuffer;
+               }
+            } else {
+               for( dip::uint ii = 0; ii < length; ++ii ) {
+                  *out = std::min( *forwardBuffer, *backwardBuffer );
+                  out += outStride;
+                  ++forwardBuffer;
+                  ++backwardBuffer;
+               }
             }
          }
       }
@@ -1335,7 +1417,7 @@ void FastLineMorphology(
          inOffsetStart += static_cast< dip::sint >( std::floor( bresenhamCoords[ ii ] )) * in.Stride( ii );
          outOffsetStart += static_cast< dip::sint >( std::floor( bresenhamCoords[ ii ] )) * out.Stride( ii );
          bresenhamCoords[ ii ] += static_cast< dfloat >( coords[ ii ] );
-         DIP_ASSERT( std::floor( bresenhamCoords[ ii ] ) < in.Size( ii ));
+         DIP_ASSERT( static_cast< dip::uint >( std::floor( bresenhamCoords[ ii ] )) < in.Size( ii ));
       }
 
       //std::cout << "[FastLineMorphology] coords = " << coords << ", start = " << start << ", end = " << end
@@ -1469,14 +1551,14 @@ void LineMorphology(
                FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE,
                                    GetMirrorParam( mirror ), bc, operation );
                break;
-            case BasicMorphologyOperation::CLOSING: // TODO: switch the order of the two types of operation?
+            case BasicMorphologyOperation::CLOSING:
                FlatSEMorphology( in, out, discreteLineKernel, bc, BasicMorphologyOperation::DILATION );
                FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE,
                                    GetMirrorParam( mirror ), bc, BasicMorphologyOperation::CLOSING );
                discreteLineKernel.Mirror();
                FlatSEMorphology( out, out, discreteLineKernel, bc, BasicMorphologyOperation::EROSION );
                break;
-            case BasicMorphologyOperation::OPENING: // TODO: switch the order of the two types of operation?
+            case BasicMorphologyOperation::OPENING:
                FlatSEMorphology( in, out, discreteLineKernel, bc, BasicMorphologyOperation::EROSION );
                FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE,
                                    GetMirrorParam( mirror ), bc, BasicMorphologyOperation::OPENING );
@@ -1549,7 +1631,9 @@ void DiamondMorphology(
          ++nProcDims;
       }
    }
-   if( !isotropic || ( param < 15.0 ) || ( nProcDims == 1 )) { // Threshold of 13 determined empirically for an image of size 1000x800, surely it's different for other image sizes and dimensionalities
+   if( !isotropic || ( param < 26.0 ) || ( nProcDims == 1 )) {
+      // Threshold of 26 determined empirically for an image of size 2000x1900, and without multithreading.
+      // Surely it's different for other image sizes, dimensionalities, and contents.
       DIP_START_STACK_TRACE
          Kernel kernel{ Kernel::ShapeCode::DIAMOND, size };
          FlatSEMorphology( in, out, kernel, bc, operation );
