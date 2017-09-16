@@ -92,10 +92,10 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     dip::Image original_, image_;
     
     ViewPort *drag_viewport_;
-    int drag_button_, width_, height_;
+    int drag_button_;
   
   public:
-    SliceViewer(const dip::Image &image, std::string name="SliceViewer");
+    SliceViewer(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0);
     
     ~SliceViewer()
     {
@@ -112,8 +112,6 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     ViewingOptions &options() { return options_; }
     dip::Image &image() { return image_; }
     
-    int width() { return width_; }
-    int height() { return height_; }
     void place();
   
   protected:

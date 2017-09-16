@@ -77,7 +77,10 @@ class DIPVIEWER_EXPORT GLUTManager : public Manager
     {
       WindowPtr window = instance_->getCurrentWindow();
       if (window)
+      {
+        window->resize(width, height);
         window->reshape(width, height);
+      }
     }
     
     static void visible(int vis)

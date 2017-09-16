@@ -99,8 +99,13 @@ void GLUTManager::run()
     
     if (new_window_)
     {
+      int width=new_window_->width(), height=new_window_->height();
+
+      if (width  <= 0) width  = 512;
+      if (height <= 0) height = width;
+    
       glutCreateWindow("");
-      glutReshapeWindow(512, 512);
+      glutReshapeWindow(width, height);
       glutPositionWindow(((glutGetWindow()-1)%2)*512, (((int)(glutGetWindow()-1))/2)*512);
      
       glutDisplayFunc(draw);

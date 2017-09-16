@@ -240,9 +240,6 @@ class DIPVIEWER_EXPORT Viewer : public Window
     virtual ViewingOptions &options() = 0;
     virtual dip::Image &image() = 0;
 
-    virtual int width() = 0;
-    virtual int height() = 0;
-    
     virtual void setWindowTitle(const char *name) { title((name_ + name).c_str()); }
 };
 

@@ -17,7 +17,7 @@ int main() {
 #endif
 
    dip::Image image3 = dip::ImageReadICS( "../test/chromo3d.ics" );
-   manager.createWindow( WindowPtr( new SliceViewer( image3, "chromo3d" )));
+   manager.createWindow( WindowPtr( new SliceViewer( image3, "chromo3d", 500, 400 )));
 
    dip::Image image2{ dip::UnsignedArray{ 50, 40 }, 3, dip::DT_UINT8 };
    dip::Image tmp = image2[ 0 ];
@@ -32,7 +32,7 @@ int main() {
    while (manager.activeWindows()) {
       // Only necessary for GLFW
       manager.processEvents();
-      std::this_thread::sleep_for( std::chrono::microseconds( 10 ) );
+      std::this_thread::sleep_for( std::chrono::microseconds( 1000 ) );
    }
 
    return 0;

@@ -140,7 +140,14 @@ void SliceView::map()
 {
   auto &o = viewport()->viewer()->options();
   
-  if (projected_.Dimensionality() == 1)
+  if (projected_.Dimensionality() == 0)
+  {
+    // Point data
+    colored_ = Image(dip::UnsignedArray{ 1, 1 }, 3, DT_UINT8);
+    
+    DIP_OVL_CALL_NONCOMPLEX( viewer__ColorMap, ( projected_, colored_, o ), projected_.DataType() );
+  }
+  else if (projected_.Dimensionality() == 1)
   {
     // Line data
     Image line;
@@ -331,12 +338,10 @@ void SliceViewPort::click(int button, int state, int x, int y)
         {
           // Change vertical dimension
           dy++;
-          if (view()->dimx() == 2)      // left
-            while (dy == d[0] || dy == d[2]) dy++;
-          else if (view()->dimy() == 3) // top
-            while (dy == d[0]) dy++;
-          else                          // main
-            while (dy == d[0] || dy == d[2]) dy++;
+          if (view()->dimy() == 1)
+            while (dy == d[0] || dy == d[2] || dy == d[3]) dy++;
+          else
+            while (dy == d[0] || dy == d[1] || dy == d[3]) dy++;
         
           if (dy >= (int)viewer()->options().operating_point_.size())
             dy = -1;
@@ -350,12 +355,10 @@ void SliceViewPort::click(int button, int state, int x, int y)
         {
           // Change horizontal dimension
           dx++;
-          if (view()->dimx() == 2)      // left
-            while (dx == d[1]) dx++;
-          else if (view()->dimy() == 3) // top
-            while (dx == d[1] || dx == d[3]) dx++;
-          else                          // main
-            while (dx == d[1] || dx == d[3]) dx++;
+          if (view()->dimx() == 0)
+            while (dx == d[1] || dx == d[2] || dx == d[3]) dx++;
+          else
+            while (dx == d[0] || dx == d[1] || dx == d[2]) dx++;
         
           if (dx >= (int)viewer()->options().operating_point_.size())
             dx = -1;
@@ -488,8 +491,11 @@ void SliceViewPort::screenToView(int x, int y, double *ix, double *iy)
     *iy = (y-y_)/viewer()->options().zoom_[(dip::uint)dy]*(double)view()->size(1)/(double)height_ + viewer()->options().origin_[(dip::uint)dy];
 }
 
-SliceViewer::SliceViewer(const dip::Image &image, std::string name) : Viewer(name), options_(image), continue_(false), updated_(false), original_(image), image_(image), drag_viewport_(NULL), width_(512), height_(512)
+SliceViewer::SliceViewer(const dip::Image &image, std::string name, size_t width, size_t height) : Viewer(name), options_(image), continue_(false), updated_(false), original_(image), image_(image), drag_viewport_(NULL)
 {
+  if (width && height)
+    requestSize(width, height);
+
   main_ = new SliceViewPort(this);
   main_->setView(new SliceView(main_, 0, 1));
   viewports_.push_back(main_);
@@ -526,22 +532,19 @@ void SliceViewer::create()
 
 void SliceViewer::place()
 {
-  int splitx = std::max((int) (options_.split_[0]*(double)(width_-100)), 100);
-  int splity = std::max((int) (options_.split_[1]*(double)height_), 100);
+  int splitx = std::max((int) (options_.split_[0]*(double)(width()-100)), 100);
+  int splity = std::max((int) (options_.split_[1]*(double)height()), 100);
   
-  main_->place     (splitx    , splity, width_-100-splitx, height_-splity);
-  left_->place     (0         , splity, splitx           , height_-splity);
-  top_->place      (splitx    , 0     , width_-100-splitx, splity);
-  tensor_->place   (0         , 0     , splitx           , splity);
-  control_->place  (width_-100, 0     , 100              , splity);
-  histogram_->place(width_-100, splity, 100              , height_-splity);
+  main_->place     (splitx     , splity, width()-100-splitx, height()-splity);
+  left_->place     (0          , splity, splitx            , height()-splity);
+  top_->place      (splitx     , 0     , width()-100-splitx, splity);
+  tensor_->place   (0          , 0     , splitx            , splity);
+  control_->place  (width()-100, 0     , 100               , splity);
+  histogram_->place(width()-100, splity, 100               , height()-splity);
 }
 
-void SliceViewer::reshape(int width, int height)
+void SliceViewer::reshape(int /*width*/, int /*height*/)
 {
-  width_ = width;
-  height_ = height;
-  
   place();
 }
 

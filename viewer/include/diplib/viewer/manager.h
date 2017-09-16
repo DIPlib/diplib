@@ -38,13 +38,16 @@ class DIPVIEWER_EXPORT Window
     void *id_;
     class Manager *manager_;
     bool should_close_;
+    int width_, height_;
     
   public:
-    Window() : id_(NULL), manager_(NULL), should_close_(false) { }
+    Window() : id_(NULL), manager_(NULL), should_close_(false), width_(512), height_(512) { }
     virtual ~Window() { }
 
     void refresh();
     void drawString(const char *string);
+    int width() { return width_; }
+    int height() { return height_; }
   protected:
     Manager *manager() { return manager_; }
     void *id() { return id_; }  
@@ -53,6 +56,14 @@ class DIPVIEWER_EXPORT Window
     void title(const char *name);
     void swap();
     void destroy() { should_close_ = true; }
+    void requestSize(size_t width, size_t height)
+    {
+      if (!manager_)
+      {
+        width_ = (int)width;
+        height_ = (int)height;
+      }
+    }
     
     /// Callback that draws the visualization.
     virtual void draw() { }
@@ -84,6 +95,7 @@ class DIPVIEWER_EXPORT Window
   private:
     void manager(Manager *_manager) { manager_ = _manager; }
     void id(void *_id) { id_ = _id; }
+    void resize(int width, int height) { width_ = width; height_ = height; }
 };
 
 typedef std::shared_ptr<Window> WindowPtr;

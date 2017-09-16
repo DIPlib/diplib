@@ -67,13 +67,28 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
   protected:
     ViewingOptions options_;
     ImageViewPort *viewport_;
-    int width_, height_;
     
     std::string name_;
   
   public:
-    ImageViewer(const dip::Image &image, std::string name="ImageViewer") : Viewer(name), options_(image)
+    ImageViewer(const dip::Image &image, std::string name="ImageViewer", size_t width=0, size_t height=0) : Viewer(name), options_(image)
     {
+      if (!width || !height)
+      {
+        if (image.Size(0) > image.Size(1))
+        {
+          width = std::max(512UL, image.Size(0));
+          height = (size_t)((double)width * (double)image.Size(1)/(double)image.Size(0));
+        }
+        else
+        {
+          height = std::max(512UL, image.Size(1));
+          width = (size_t)((double)height * (double)image.Size(0)/(double)image.Size(1));
+        }
+      }
+
+      requestSize(width, height);
+
       viewport_ = new ImageViewPort(this);
       ImageView *view = new ImageView(viewport_);
       view->set(image);
@@ -89,16 +104,11 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
     ViewingOptions &options() { return options_; }
     dip::Image &image() { return viewport_->view()->image(); }
 
-    int width() { return width_; }
-    int height() { return height_; }
-  
   protected:
     void create();
-    void reshape(int width, int height)
+    void reshape(int /*width*/, int /*height*/)
     {
-      width_ = width;
-      height_ = height;
-      viewport_->place(0, 0, width_, height_);
+      viewport_->place(0, 0, width(), height());
       refresh();
     }
     

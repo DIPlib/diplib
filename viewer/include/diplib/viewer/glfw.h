@@ -69,6 +69,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
       if (wdw)
       {
         instance_->makeCurrent(wdw.get());
+        wdw->resize(width, height);
         wdw->reshape(width, height);
       }
     }

@@ -87,7 +87,12 @@ GLFWManager::~GLFWManager()
 
 void GLFWManager::createWindow(WindowPtr window)
 {
-  GLFWwindow *wdw = glfwCreateWindow(512, 512, "", NULL, NULL);
+  int width=window->width(), height=window->height();
+
+  if (width  <= 0) width  = 512;
+  if (height <= 0) height = width;
+
+  GLFWwindow *wdw = glfwCreateWindow(width, height, "", NULL, NULL);
   
   glfwSetWindowRefreshCallback(wdw, refresh);
   glfwSetFramebufferSizeCallback(wdw, reshape);
@@ -103,8 +108,8 @@ void GLFWManager::createWindow(WindowPtr window)
   windows_[window->id()] = window;
   window->create();
   
-  int width, height;
   glfwGetFramebufferSize(wdw, &width, &height);
+  window->resize(width, height);
   window->reshape(width, height);
   
   refresh_ = true;
