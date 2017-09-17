@@ -59,7 +59,7 @@ struct DIPVIEWER_EXPORT ViewingOptions
   dip::IntegerArray color_elements_;   ///< Which tensor element is R, G, and B.
 
   // Placement  
-  dip::FloatArray split_;              ///< Split point between projections.
+  dip::IntegerArray split_;            ///< Split point between projections (pixels).
 
   // Display
   dip::FloatArray zoom_;               ///< Zoom factor per dimension (from physical dimensions + user).
@@ -100,16 +100,12 @@ struct DIPVIEWER_EXPORT ViewingOptions
       lut_ = LookupTable::Grey;
     
     // Display
-    dip::uint maxsz = 0;
-    for (size_t ii=0; ii < image.Dimensionality(); ++ii)
-      maxsz = std::max(maxsz, image.Size(ii));
-      
     zoom_.resize(image.Dimensionality());
     for (size_t ii=0; ii < image.Dimensionality(); ++ii)
-      zoom_[ii] = (dip::sfloat)image.Size(ii)/(dip::sfloat)maxsz;
+      zoom_[ii] = 1;
     
     origin_ = dip::FloatArray(image.Dimensionality(), 0.);
-    split_ = {0.25, 0.25};
+    split_ = {100, 100};
   }
   
   Diff diff(const ViewingOptions &options) const
@@ -255,7 +251,7 @@ template<typename T>
 inline dip::sfloat rangeMap(T val, double offset, double scale, ViewingOptions::Mapping mapping)
 {
   if( mapping == ViewingOptions::Mapping::Logarithmic )
-    return (dip::sfloat)(std::log((double)val - offset) * scale);
+    return (dip::sfloat)(std::min(std::log(std::max((double)val - offset, 1.)) * scale, 1.));
   else
     return (dip::sfloat)(std::min(std::max(((double)val - offset) * scale, 0.), 1.));
 }
@@ -264,9 +260,9 @@ template<typename T>
 inline dip::sfloat rangeMap(T val, const ViewingOptions &options)
 {
   if( options.mapping_ == ViewingOptions::Mapping::Logarithmic )
-    return (dip::sfloat)(std::log((double)val-options.mapping_range_.first+1.)/std::log(options.mapping_range_.second-options.mapping_range_.first+1.));
+    return rangeMap(val, options.mapping_range_.first-1., 1./std::log(options.mapping_range_.second-options.mapping_range_.first+1.), options.mapping_);
   else
-    return (dip::sfloat)(std::min(std::max(((double)val-options.mapping_range_.first)/(options.mapping_range_.second-options.mapping_range_.first), 0.), 1.));
+    return rangeMap(val, options.mapping_range_.first, 1./(options.mapping_range_.second-options.mapping_range_.first), options.mapping_);
 }
 
 inline void colorMap(const dip::Image::Pixel &in, dip::uint8 *out, const ViewingOptions &options)

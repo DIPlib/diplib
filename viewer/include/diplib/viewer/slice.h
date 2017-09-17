@@ -118,6 +118,7 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     void create();
     void reshape(int width, int height);
     void draw();
+    void key(unsigned char k, int x, int y, int mods);
     void click(int button, int state, int x, int y);
     void motion(int x, int y);
 

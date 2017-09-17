@@ -24,25 +24,22 @@ using namespace dip;
 
 void ImageView::rebuild()
 {
-  if (!texture_)
-  {
-    glGenTextures(1, &texture_);
-    
-    // Set texture
-    glBindTexture( GL_TEXTURE_2D, texture_ );
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+  glGenTextures(1, &texture_);
   
-    DIP_THROW_IF( !image_.HasContiguousData(), E::NO_NORMAL_STRIDE );
-    DIP_THROW_IF( image_.DataType() != DT_UINT8, E::WRONG_DATA_TYPE );
-    DIP_THROW_IF( image_.TensorElements() != 3, E::NTENSORELEM_DONT_MATCH );
+  // Set texture
+  glBindTexture( GL_TEXTURE_2D, texture_ );
+  glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+  glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, (GLsizei)image_.Size(0), (GLsizei)image_.Size(1), 0, GL_RGB, GL_UNSIGNED_BYTE, image_.Origin());
-  }
+  DIP_THROW_IF( !image_.HasContiguousData(), E::NO_NORMAL_STRIDE );
+  DIP_THROW_IF( image_.DataType() != DT_UINT8, E::WRONG_DATA_TYPE );
+  DIP_THROW_IF( image_.TensorElements() != 3, E::NTENSORELEM_DONT_MATCH );
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, (GLsizei)image_.Size(0), (GLsizei)image_.Size(1), 0, GL_RGB, GL_UNSIGNED_BYTE, image_.Origin());
 }
 
 void ImageView::render()

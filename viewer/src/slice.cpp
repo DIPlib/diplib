@@ -296,8 +296,8 @@ void SliceViewPort::render()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_, viewer()->height()-y_-height, width, height);
-  glOrtho(odx, odx + (dip::dfloat)view()->size(0)/zdx,
-             ody + (dip::dfloat)view()->size(1)/zdy, ody, -1, 1);
+  glOrtho(odx, odx + (dip::dfloat)width/zdx,
+          ody + (dip::dfloat)height/zdy, ody, -1, 1);
              
   glMatrixMode(GL_MODELVIEW);
   
@@ -332,9 +332,9 @@ void SliceViewPort::click(int button, int state, int x, int y)
       // Right mouse button: change visualized dimension
       auto &d = viewer()->options().dims_;
       
-      if (view()->dimx() == 0 && x > x_+width_-10)
+      if (view()->dimx() == 0 && x > x_+width_-2*10)
       {
-        if (std::abs(y-y_-height_/2+13) < 7)
+        if (std::abs(y-y_-height_/2+13) < 2*7)
         {
           // Change vertical dimension
           dy++;
@@ -349,9 +349,9 @@ void SliceViewPort::click(int button, int state, int x, int y)
           d[view()->dimy()] = dy;
         }
       }
-      else if (view()->dimy() == 1 && y > y_+height_-14)
+      else if (view()->dimy() == 1 && y > y_+height_-2*14)
       {
-        if (std::abs(x-x_-width_/2) < 5)
+        if (std::abs(x-x_-width_/2) < 2*5)
         {
           // Change horizontal dimension
           dx++;
@@ -380,10 +380,19 @@ void SliceViewPort::click(int button, int state, int x, int y)
       if (view()->dimy() == 1 && dx != -1) viewer()->options().zoom_[(dip::uint)dx] *= factor;
       if (view()->dimx() == 0 && dy != -1) viewer()->options().zoom_[(dip::uint)dy] *= factor;
 
-      // Zoom around current position
-      screenToView(x, y, &nix, &niy);
-      if (dx != -1) viewer()->options().origin_[(dip::uint)dx] += ix - nix;
-      if (dy != -1) viewer()->options().origin_[(dip::uint)dy] += iy - niy;
+      if (view()->dimx() == 0 && view()->dimy() == 1)
+      {
+        // In main window, zoom around current position
+        screenToView(x, y, &nix, &niy);
+        if (dx != -1) viewer()->options().origin_[(dip::uint)dx] += ix - nix;
+        if (dy != -1) viewer()->options().origin_[(dip::uint)dy] += iy - niy;
+      }
+      else
+      {
+        // In side projections, keep origin at original place.
+        if (view()->dimy() == 1 && dx != -1) viewer()->options().origin_[(dip::uint)dx] /= factor;
+        if (view()->dimx() == 0 && dy != -1) viewer()->options().origin_[(dip::uint)dy] /= factor;
+      }
 
       viewer()->refresh();
     }
@@ -448,14 +457,8 @@ void SliceViewPort::motion(int button, int x, int y)
     // Middle mouse button: change split
     int dx = x-drag_x_, dy = y-drag_y_;
     
-    double splitx = viewer()->options().split_[0] + (double)dx/(double)(viewer()->width()-100);
-    double splity = viewer()->options().split_[1] + (double)dy/(double)(viewer()->height());
-    
-    splitx = std::min(std::max(splitx, 100./(double)(viewer()->width()-100)), 0.5);
-    splity = std::min(std::max(splity, 100./(double)(viewer()->height())), 0.5);
-    
-    viewer()->options().split_[0] = splitx;
-    viewer()->options().split_[1] = splity;
+    viewer()->options().split_[0] = std::min(std::max((int)viewer()->options().split_[0] + dx, 100), viewer()->width()-200);
+    viewer()->options().split_[1] = std::min(std::max((int)viewer()->options().split_[1] + dy, 100), viewer()->height()-100);
     
     drag_x_ = x;
     drag_y_ = y;
@@ -485,17 +488,16 @@ void SliceViewPort::screenToView(int x, int y, double *ix, double *iy)
   *ix = *iy = 0;
   
   if (dx != -1)
-    *ix = (x-x_)/viewer()->options().zoom_[(dip::uint)dx]*(double)view()->size(0)/(double)width_ + viewer()->options().origin_[(dip::uint)dx];
-
+    *ix = (x-x_)/viewer()->options().zoom_[(dip::uint)dx] + viewer()->options().origin_[(dip::uint)dx];
   if (dy != -1)
-    *iy = (y-y_)/viewer()->options().zoom_[(dip::uint)dy]*(double)view()->size(1)/(double)height_ + viewer()->options().origin_[(dip::uint)dy];
+    *iy = (y-y_)/viewer()->options().zoom_[(dip::uint)dy] + viewer()->options().origin_[(dip::uint)dy];
 }
 
 SliceViewer::SliceViewer(const dip::Image &image, std::string name, size_t width, size_t height) : Viewer(name), options_(image), continue_(false), updated_(false), original_(image), image_(image), drag_viewport_(NULL)
 {
   if (width && height)
     requestSize(width, height);
-
+  
   main_ = new SliceViewPort(this);
   main_->setView(new SliceView(main_, 0, 1));
   viewports_.push_back(main_);
@@ -532,9 +534,12 @@ void SliceViewer::create()
 
 void SliceViewer::place()
 {
-  int splitx = std::max((int) (options_.split_[0]*(double)(width()-100)), 100);
-  int splity = std::max((int) (options_.split_[1]*(double)height()), 100);
-  
+  options_.split_[0] = std::min(std::max((int)options_.split_[0], 100), width()-200);
+  options_.split_[1] = std::min(std::max((int)options_.split_[1], 100), height()-100);
+
+  int splitx = (int)options_.split_[0];
+  int splity = (int)options_.split_[1];
+
   main_->place     (splitx     , splity, width()-100-splitx, height()-splity);
   left_->place     (0          , splity, splitx            , height()-splity);
   top_->place      (splitx     , 0     , width()-100-splitx, splity);
@@ -563,6 +568,35 @@ void SliceViewer::draw()
   for (size_t ii=0; ii < viewports_.size(); ++ii)
     viewports_[ii]->render();
   swap();
+}
+
+void SliceViewer::key(unsigned char k, int x, int y, int mods)
+{
+  Viewer::key(k, x, y, mods);
+
+  if (!mods)
+  {
+    if (k == 'N' && image_.Dimensionality() > 2 && options_.operating_point_[2] < image_.Size(2)-1)
+      options_.operating_point_[2]++;
+    if (k == 'P' && image_.Dimensionality() > 2 && options_.operating_point_[2] > 0)
+      options_.operating_point_[2]--;
+    if (k == 'F' && image_.Dimensionality() > 3 && options_.operating_point_[3] < image_.Size(3)-1)
+      options_.operating_point_[3]++;
+    if (k == 'B' && image_.Dimensionality() > 3 && options_.operating_point_[3] > 0)
+      options_.operating_point_[3]--;
+      
+    refresh();
+  }
+
+  if (k == '1' && mods == KEY_MOD_CONTROL)
+  {
+    // ^1: 1:1 zoom
+    for (size_t ii=0; ii < image_.Dimensionality(); ++ii)
+    {
+      options_.origin_[ii] = 0;
+      options_.zoom_[ii] = 1;
+    }
+  }
 }
 
 void SliceViewer::click(int button, int state, int x, int y)
