@@ -44,7 +44,7 @@ namespace dip {
 /// Most functions will take a string instead of a `dip::BoundaryCondition` constant.
 /// The following table links boundary condition constants and their string representations.
 ///
-/// BoundaryCondition constant | BoundaryCondition string | Definition
+/// `BoundaryCondition` constant | String                 | Definition
 /// -------------------------- | ------------------------ | ----------
 /// `SYMMETRIC_MIRROR`         | "mirror"                 | The data is mirrored, with the value at -1 equal to the value at 0, at -2 equal to at 1, etc.
 /// `ASYMMETRIC_MIRROR`        | "asym mirror"            | The data is mirrored and inverted.
@@ -137,22 +137,31 @@ namespace Option {
 ///
 /// Valid values are:
 ///
-/// %ExtendImage constant    | Definition
-/// ------------------------ | ----------
-/// ExtendImage_Masked       | The output image is a window on the boundary-extended image of the same size as the input
-/// ExtendImage_ExpandTensor | The output image has normal tensor storage
+/// `%ExtendImage` constant        | Definition
+/// ------------------------------ | ----------
+/// `ExtendImage_Masked`           | The output image is a window on the boundary-extended image of the same size as the input.
+/// `ExtendImage_ExpandTensor`     | The output image has normal tensor storage.
+/// `ExtendImage_FillBoundaryOnly` | Data will not be copied, only the boundary extension will be filled.
 ///
 /// Note that you can add these constants together: `dip::Option::ExtendImage_Masked + dip::Option::ExtendImage_ExpandTensor`.
+///
+/// `ExtendImage_FillBoundaryOnly` ignores the input image `in`. In this case, if `ExtendImage_Masked` is also given,
+/// `out` must be a view of a larger data segment, such as the one that would be produced by this function if
+/// `ExtendImage_FillBoundaryOnly` were not given. Otherwise, a boundary of size `borderSizes` is filled using data
+/// from further inside the image. If the image is smaller than twice the border size, an exception is thrown.
+/// `ExtendImage_ExpandTensor` is also ignored.
 DIP_DECLARE_OPTIONS( ExtendImage );
 static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_Masked, 0 );
 static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_ExpandTensor, 1 );
+static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_FillBoundaryOnly, 2 );
 
 } // namespace Option
 
 /// \brief Extends the image `in` by `boundary` along each dimension.
 ///
-/// Is identical to `dip::ExtendImage`, except it uses boundary condition constants instead of strings, and
-/// option constants instead of strings. This version is meant to be used by low-level library functions.
+/// This function is identical to `dip::ExtendImage`, except it uses boundary condition constants andoption constants
+/// instead of strings, and it gives access to the `dip::Option::ExtendImage_FillBoundaryOnly` option, which is not
+/// available in the high-level interface. This version is meant to be used by low-level library functions.
 DIP_EXPORT void ExtendImageLowLevel(
       Image const& in,
       Image& out,
@@ -167,11 +176,11 @@ DIP_EXPORT void ExtendImageLowLevel(
 /// boundary condition is used along all dimensions. If `boundaryCondition` has a single element, it is used for all
 /// dimensions. Similarly, if `borderSizes` has a single element, it is used for all dimensions.
 ///
-/// If `options` contains "masked", the output image is a window on the boundary-extended image, of the
+/// If `options` contains `"masked"`, the output image is a window on the boundary-extended image, of the
 /// same size as `in`. That is, `out` will be identical to `in` except that it is possible
 /// to access pixels outside of its domain.
 ///
-/// If `options` contains "expand tensor", the output image will have normal tensor storage
+/// If `options` contains `"expand tensor"`, the output image will have normal tensor storage
 /// (`dip::Tensor::HasNormalOrder` is true). This affects only those input images that have a transposed, symmetric
 /// or triangular matrix as tensor shape.
 inline void ExtendImage(
@@ -194,7 +203,6 @@ inline void ExtendImage(
    }
    ExtendImageLowLevel( in, out, borderSizes, bc, opts );
 }
-
 inline Image ExtendImage(
       Image const& in,
       UnsignedArray const& borderSizes,
