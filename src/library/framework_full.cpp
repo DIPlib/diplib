@@ -45,7 +45,7 @@ void Full(
 
    // Check inputs
    UnsignedArray kernelSizes;
-   DIP_STACK_TRACE_THIS( kernelSizes = kernel.Sizes( sizes ));
+   DIP_STACK_TRACE_THIS( kernelSizes = kernel.Sizes( sizes.size() ));
 
    // Store these because they can get lost when ReForging `c_out` (it could be the same image as `c_in`)
    PixelSize pixelSize = c_in.PixelSize();
@@ -59,25 +59,11 @@ void Full(
       outTensor = c_in.Tensor();
       asScalarImage = true;
    } else {
-      if(( opts == Full_ExpandTensorInBuffer ) && !c_in.Tensor().HasNormalOrder() ) {
-         expandTensor = true;
-         outTensor.SetMatrix( c_in.Tensor().Rows(), c_in.Tensor().Columns() );
-         colorSpace.clear(); // the output tensor shape is different from the input's, the color space presumably doesn't match
-      }
+      expandTensor = ( opts == Full_ExpandTensorInBuffer ) && !c_in.Tensor().HasNormalOrder();
    }
 
    // Determine boundary sizes
-   UnsignedArray boundary = kernelSizes;
-   for( dip::uint& b : boundary ) {
-      b /= 2;
-   }
-   IntegerArray shift = kernel.Shift();
-   if( !shift.empty() ) {
-      dip::uint n = std::min( shift.size(), boundary.size() );
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         boundary[ ii ] += static_cast< dip::uint >( std::abs( shift[ ii ] ));
-      }
-   }
+   UnsignedArray boundary = kernel.Boundary( c_in.Dimensionality() );
 
    // Copy input if necessary (this is the input buffer!)
    Image input;
@@ -87,7 +73,8 @@ void Full(
       input.SetDataType( inBufferType );
       input.Protect();
    }
-   if( dataTypeChange || expandTensor || boundary.any() ) {
+   bool expandBoundary = boundary.any() && ( opts != Full_BorderAlreadyExpanded );
+   if( dataTypeChange || expandTensor || expandBoundary ) {
       Option::ExtendImage options = Option::ExtendImage_Masked;
       if( expandTensor ) {
          options += Option::ExtendImage_ExpandTensor;

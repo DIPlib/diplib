@@ -121,18 +121,8 @@ void SelectionFilter(
 
    // Determine boundary sizes
    UnsignedArray kernelSizes;
-   DIP_STACK_TRACE_THIS( kernelSizes = kernel.Sizes( c_in.Sizes() ));
-   UnsignedArray boundary = kernelSizes;
-   for( dip::uint& b : boundary ) {
-      b /= 2;
-   }
-   IntegerArray shift = kernel.Shift();
-   if( !shift.empty() ) {
-      dip::uint n = std::min( shift.size(), boundary.size() );
-      for( dip::uint ii = 0; ii < n; ++ii ) {
-         boundary[ ii ] += static_cast< dip::uint >( std::abs( shift[ ii ] ));
-      }
-   }
+   DIP_STACK_TRACE_THIS( kernelSizes = kernel.Sizes( c_in.Dimensionality() ));
+   UnsignedArray boundary = kernel.Boundary( c_in.Dimensionality() );
 
    // Copy input images with boundary extension
    Image in;

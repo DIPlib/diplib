@@ -153,37 +153,52 @@ class DIP_NO_EXPORT Kernel {
       /// `nDim`. Pixel table runs will be along dimension `procDim`.
       dip::PixelTable PixelTable( dip::uint nDims, dip::uint procDim ) const;
 
-      /// \brief Retrieves the size of the kernel, adjusted to an image of size `imsz`. When computing requires
-      /// boundary extension, remember to take `Shift` into account.
-      UnsignedArray Sizes( UnsignedArray const& imsz ) const {
-         dip::uint nDim = imsz.size();
-         DIP_THROW_IF( nDim < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
+      /// \brief Retrieves the size of the kernel, adjusted to an image of size `imsz`. When computing required
+      /// boundary extension, use `Boundary` instead.
+      UnsignedArray Sizes( dip::uint nDims ) const {
+         DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
          UnsignedArray out;
          if( IsCustom() ) {
-            DIP_THROW_IF( image_.Dimensionality() > nDim, E::DIMENSIONALITIES_DONT_MATCH );
+            DIP_THROW_IF( image_.Dimensionality() > nDims, E::DIMENSIONALITIES_DONT_MATCH );
             out = image_.Sizes();
-            out.resize( nDim, 1 ); // expand dimensionality by adding singletons
+            out.resize( nDims, 1 ); // expand dimensionality by adding singletons
          } else {
             FloatArray sz = params_;
             DIP_START_STACK_TRACE
-               ArrayUseParameter( sz, nDim, 1.0 );
+               ArrayUseParameter( sz, nDims, 1.0 );
             DIP_END_STACK_TRACE
-            out.resize( nDim );
+            out.resize( nDims );
             if( IsLine() ) {
-               for( dip::uint ii = 0; ii < nDim; ++ii ) {
+               for( dip::uint ii = 0; ii < nDims; ++ii ) {
                   out[ ii ] = std::max( static_cast< dip::uint >( std::round( std::abs( sz[ ii ] ))), dip::uint( 1 ));
                }
             } else if( IsRectangular() ) {
-               for( dip::uint ii = 0; ii < nDim; ++ii ) {
+               for( dip::uint ii = 0; ii < nDims; ++ii ) {
                   out[ ii ] = sz[ ii ] > 1.0 ? static_cast< dip::uint >( sz[ ii ] ) : 1;
                }
             } else {
-               for( dip::uint ii = 0; ii < nDim; ++ii ) {
+               for( dip::uint ii = 0; ii < nDims; ++ii ) {
                   out[ ii ] = sz[ ii ] > 1.0 ? ( static_cast< dip::uint >( sz[ ii ] ) / 2 ) * 2 + 1 : 1;
                }
             }
          }
          return out;
+      }
+
+      /// \brief Returns the size of the boundary extension along each dimension that is necessary to accommodate the
+      /// kernel on the edge pixels of the image, given an image of size `imsz`.
+      UnsignedArray Boundary( dip::uint nDims ) const {
+         UnsignedArray boundary = Sizes( nDims );
+         for( dip::uint& b : boundary ) {
+            b /= 2;
+         }
+         if( !shift_.empty() ) {
+            dip::uint n = std::min( shift_.size(), boundary.size() );
+            for( dip::uint ii = 0; ii < n; ++ii ) {
+               boundary[ ii ] += static_cast< dip::uint >( std::abs( shift_[ ii ] ));
+            }
+         }
+         return boundary;
       }
 
       /// \brief Returns the kernel parameters, not adjusted to image dimensionality.

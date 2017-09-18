@@ -153,7 +153,7 @@ void Uniform(
    DIP_START_STACK_TRACE
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       if( kernel.IsRectangular() ) {
-         RectangularUniform(in, out, kernel.Sizes( in.Sizes() ), bc );
+         RectangularUniform(in, out, kernel.Sizes( in.Dimensionality() ), bc );
       } else {
          PixelTableUniform( in, out, kernel, bc );
       }

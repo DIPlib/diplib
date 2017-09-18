@@ -740,10 +740,15 @@ class DIP_EXPORT SeparableLineFilter {
 /// elements, and computed as if `filter` were called 3 times:
 /// `filter(in[0],out[0])`, `filter(in[1],out[1])`, and `filter(in[2],out[2])`.
 ///
-/// The framework function sets the output pixel size to that of the input
+/// The framework function sets the output tensor size to that of the input
 /// image, and it sets the color space to that of the
-/// input image if the two images have matching number of tensor elements.
+/// input image if the two images have matching number of tensor elements (these
+/// can differ if `dip::FrameWork::Separable_ExpandTensorInBuffer` is given).
 /// The calling function is expected to "correct" these values if necessary.
+/// Note the difference here with the `Scan` and `Full` frameworks: it is not
+/// possible to apply a separate filter to a tensor image and obtain an output
+/// with a different tensor representation (because the question arises: in which
+/// image pass does this change occur?).
 ///
 /// The buffers are not guaranteed to be contiguous, please use the `stride`
 /// and `tensorStride` values to access samples. The
@@ -820,17 +825,19 @@ DIP_EXPORT void Separable(
 ///
 /// Valid values are:
 ///
-/// `FullOptions` constant      | Meaning
-/// --------------------------- | ----------
-/// `Full_NoMultiThreading`     | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
-/// `Full_AsScalarImage`        | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
-/// `Full_ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
+/// `FullOptions` constant       | Meaning
+/// ---------------------------- | ----------
+/// `Full_NoMultiThreading`      | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
+/// `Full_AsScalarImage`         | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
+/// `Full_ExpandTensorInBuffer`  | The line filter always gets input tensor elements as a standard, column-major matrix.
+/// `Full_BorderAlreadyExpanded` | The input image already has expanded boundaries (see `dip::ExtendImage`, use `"masked"` option).
 ///
 /// Combine options by adding constants together.
 DIP_DECLARE_OPTIONS( FullOptions );
 DIP_DEFINE_OPTION( FullOptions, Full_NoMultiThreading, 0 );
 DIP_DEFINE_OPTION( FullOptions, Full_AsScalarImage, 1 );
 DIP_DEFINE_OPTION( FullOptions, Full_ExpandTensorInBuffer, 2 );
+DIP_DEFINE_OPTION( FullOptions, Full_BorderAlreadyExpanded, 3 );
 
 /// \brief Structure that holds information about input or output pixel buffers
 /// for the `dip::Framework::Full` callback function object.
@@ -959,12 +966,22 @@ class DIP_EXPORT FullLineFilter {
 /// all the pixels on the line. These pixels are filled by the framework using
 /// the `boundaryCondition` values. The `boundaryCondition` vector can be empty,
 /// in which case the default boundary condition value is used.
+///
+/// If the option `dip::Framework::Full_BorderAlreadyExpanded` is given, then the
+/// input image is presumed to have been expanded using the function `dip::ExtendImage`
+/// (specify the option `"masked"`). That is, it is possible to read outside the image
+/// bounds within an area given by the size of `kernel`. If the tensor doesn't need
+/// to be expanded, and the image data type matches the buffer data type, then the input
+/// image will not be copied. In this case, a new data segment will always be allocated
+/// for the output image. That is, the operation cannot be performed in place. Also,
+/// `boundaryConditions` are ignored.
+///
 /// `position` gives the coordinates for the first pixel in the buffers,
 /// subsequent pixels occur along dimension `dimension`. `position[dimension]`
 /// is always zero.
 ///
 /// The input and output buffers will never share memory. That is, the line
-/// filter can freely write in the output buffer without invalidating input
+/// filter can freely write in the output buffer without invalidating the input
 /// buffer, even when the filter is being applied in-place.
 ///
 /// `%dip::Framework::Full` will process the image using multiple threads, so
