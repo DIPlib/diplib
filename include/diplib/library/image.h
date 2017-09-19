@@ -708,6 +708,12 @@ class DIP_NO_EXPORT Image {
          return pixelSize_.IsIsotropic();
       }
 
+      /// \brief Returns an array with aspect ratios: [1, y/x, z/x, ...]. If dimensions don't match, returns
+      /// 0 for that dimension.
+      FloatArray AspectRatio() const {
+         return pixelSize_.AspectRatio( sizes_.size() );
+      }
+
       /// \brief Converts a size in pixels to a size in physical units.
       PhysicalQuantityArray PixelsToPhysical( FloatArray const& in ) const {
          return pixelSize_.ToPhysical( in );

@@ -31,6 +31,7 @@ void PrintPixelSize( dip::PixelSize ps ) {
    if( ps.IsIsotropic() ) {
       std::cout << " (isotropic)";
    }
+   std::cout << ". Aspect ratio = " << ps.AspectRatio( ps.Size() );
    std::cout << std::endl;
 }
 

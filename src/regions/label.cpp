@@ -262,7 +262,7 @@ dip::uint Label(
    DIP_THROW_IF( connectivity > nDims, E::PARAMETER_OUT_OF_RANGE );
 
    Image in = c_in.QuickCopy();
-   auto pixelSize = in.PixelSize();
+   auto pixelSize = c_in.PixelSize();
    c_out.ReForge( in, DT_LABEL );
    c_out.SetPixelSize( pixelSize );
    Image out = c_out.QuickCopy();

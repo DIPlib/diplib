@@ -17,6 +17,7 @@ int main() {
 #endif
 
    dip::Image image3 = dip::ImageReadICS( "../test/chromo3d.ics" );
+   image3.PixelSize().Set( 2, 5 );
    manager.createWindow( WindowPtr( new SliceViewer( image3, "chromo3d", 500, 400 )));
 
    dip::Image image2{ dip::UnsignedArray{ 50, 40 }, 3, dip::DT_UINT8 };

@@ -68,8 +68,9 @@ namespace dip {
 /// returning a magnitude that can be handled elsewhere (the `dip::PhysicalQuantity`
 /// class uses this feature).
 ///
-/// The `BaseUnits::PIXEL` value is not to be associated with a pixel size in
-/// an image. `dip::MeasurementTool` uses it when an image has no pixel size.
+/// The `BaseUnits::PIXEL` value is for non-physical quantities, which typically
+/// represent a magnitude with unknown or arbitrary units. For example,
+/// `dip::MeasurementTool` uses it when an image has no pixel size.
 /// `IsPhysical` tests whether there are pixel units present or not.
 class DIP_NO_EXPORT Units {
       // Note: this class encapsulates units defined at run time, not at
@@ -104,7 +105,7 @@ class DIP_NO_EXPORT Units {
       }
 
       /// Construct a `%Units` for a specific unit.
-      Units( BaseUnits bu, dip::sint8 power = 1 ) {
+      explicit Units( BaseUnits bu, dip::sint8 power = 1 ) {
          power_.fill( 0 );
          power_[ static_cast< dip::uint >( bu ) ] = power;
       }
@@ -219,7 +220,7 @@ class DIP_NO_EXPORT Units {
          return true;
       }
 
-      /// Test to see if the units are dimensionless.
+      /// Test to see if the units are dimensionless (has no units).
       bool IsDimensionless() const {
          for( dip::uint ii = 1; ii < ndims_; ++ii ) { // Not testing the first element
             if( power_[ ii ] != 0 ) {
@@ -461,7 +462,7 @@ struct DIP_NO_EXPORT PhysicalQuantity {
       return !( *this == rhs );
    }
 
-   /// Test to see if the physical quantity is dimensionless.
+   /// Test to see if the physical quantity is dimensionless (has no units).
    bool IsDimensionless() const {
       return units.IsDimensionless();
    }
@@ -597,11 +598,13 @@ inline PhysicalQuantity operator*( dip::dfloat lhs, Units const& rhs ) {
 /// explicitly defined, whereas before it was implicitly defined).
 ///
 /// The pixel size always needs a unit. Any dimensionless quantity is interpreted
-/// as 1, and considered as an "undefined" size. Angles, measured in radian, are
-/// not considered dimensionless, though they actually are (see `dip::Units`). Pixels,
-/// though not actually dimensionless, are considered so and treated as an "undefined"
-/// size. Thus, any physical quantity represented in an object of this class must be
-/// `dip::PhysicalQuantity::IsPhysical`.
+/// as a quantity in pixels (px). Pixels are not considered physical units, and are consistently
+/// used to represent relative pixel sizes (i.e. sizes in unknown or arbitrary units).
+/// Thus, a pixel size of 1 px x 2 px indicates a specific aspect ratio, but does not
+/// represent an actual physical size. Use `dip::PhysicalQuantity::IsPhysical` to test
+/// for the pixel size being a physical quantity.
+/// Angles, measured in radian, are not considered dimensionless here (though radian actually
+/// are dimensionless units, see `dip::Units`).
 class DIP_NO_EXPORT PixelSize {
 
    public:
@@ -611,23 +614,13 @@ class DIP_NO_EXPORT PixelSize {
       PixelSize() {};
 
       /// Create an isotropic pixel size based on a physical quantity.
-      PixelSize( PhysicalQuantity const& m ) {
-         if( m.IsPhysical() ) {
-            size_.resize( 1 );
-            size_[ 0 ] = m;
-         } else {
-            size_.clear();
-         }
+      explicit PixelSize( PhysicalQuantity const& m ) {
+         Set( m );
       };
 
       /// Create a pixel size based on an array of physical quantities.
-      PixelSize( PhysicalQuantityArray const& m ) {
+      explicit PixelSize( PhysicalQuantityArray const& m ) {
          Set( m );
-         for( auto& s : size_ ) {
-            if( !s.IsPhysical() ) {
-               s = PhysicalQuantity::Pixel();
-            }
-         }
       };
 
       /// Returns the pixel size for the given dimension.
@@ -650,8 +643,8 @@ class DIP_NO_EXPORT PixelSize {
       /// any subsequent dimension, if not explicitly set, will have the same
       /// size.
       void Set( dip::uint d, PhysicalQuantity m ) {
-         if( !m.IsPhysical() ) {
-            m = PhysicalQuantity::Pixel();
+         if( m.IsDimensionless() ) {
+            m.units = Units::Pixel();
          }
          if( Get( d ) != m ) {
             EnsureDimensionality( d + 1 );
@@ -661,11 +654,21 @@ class DIP_NO_EXPORT PixelSize {
 
       /// Sets the isotropic pixel size in all dimensions.
       void Set( PhysicalQuantity const& m ) {
-         if( m.IsPhysical() ) {
-            size_.resize( 1 );
-            size_[ 0 ] = m;
-         } else {
-            size_.clear();
+         size_.resize( 1 );
+         size_[ 0 ] = m;
+         if( m.IsDimensionless() ) {
+            size_[ 0 ].units = Units::Pixel();
+         }
+      }
+
+      /// Sets a non-isotropic pixel size.
+      void Set( PhysicalQuantityArray const& m ) {
+         size_.resize( m.size() );
+         for( dip::uint ii = 0; ii < m.size(); ++ii ) {
+            size_[ ii ] = m[ ii ];
+            if( m[ ii ].IsDimensionless() ) {
+               size_[ ii ].units = Units::Pixel();
+            }
          }
       }
 
@@ -710,21 +713,9 @@ class DIP_NO_EXPORT PixelSize {
          Set( m * PhysicalQuantity::Kilometer() );
       }
 
-      /// Sets a non-isotropic pixel size.
-      void Set( PhysicalQuantityArray const& m ) {
-         size_.resize( m.size() );
-         for( dip::uint ii = 0; ii < m.size(); ++ii ) {
-            if( m[ ii ].IsPhysical() ) {
-               size_[ ii ] = m[ ii ];
-            } else {
-               size_[ ii ] = PhysicalQuantity::Pixel();
-            }
-         }
-      }
-
       /// Scales the pixel size in the given dimension, if it is defined.
       void Scale( dip::uint d, dip::dfloat s ) {
-         if( ( !size_.empty() ) && Get( d ).IsPhysical() ) {
+         if( !size_.empty() ) {
             // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
             EnsureDimensionality( d + 2 );
             size_[ d ] *= s;
@@ -733,10 +724,8 @@ class DIP_NO_EXPORT PixelSize {
 
       /// Scales the pixel size isotropically.
       void Scale( dip::dfloat s ) {
-         for( dip::uint ii = 0; ii < size_.size(); ++ii ) {
-            if( size_[ ii ].IsPhysical() ) {
-               size_[ ii ] *= s;
-            }
+         for( auto& sz : size_ ) {
+            sz *= s;
          }
       }
 
@@ -746,16 +735,14 @@ class DIP_NO_EXPORT PixelSize {
             // we do not add a dimension past `d` here, assuming that the caller is modifying all useful dimensions.
             EnsureDimensionality( s.size() );
             for( dip::uint ii = 1; ii < s.size(); ++ii ) {
-               if( size_[ ii ].IsPhysical() ) {
-                  size_[ ii ] *= s[ ii ];
-               }
+               size_[ ii ] *= s[ ii ];
             }
          }
       }
 
       /// Inverts the pixel size in the given dimension, if it is defined.
       void Invert( dip::uint d ) {
-         if( ( !size_.empty() ) && !Get( d ).IsDimensionless() ) {
+         if( !size_.empty() ) {
             // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
             EnsureDimensionality( d + 2 );
             size_[ d ] = size_[ d ].Invert();
@@ -764,10 +751,8 @@ class DIP_NO_EXPORT PixelSize {
 
       /// Inverts the pixel size in all dimensions, where defined.
       void Invert() {
-         for( dip::uint ii = 0; ii < size_.size(); ++ii ) {
-            if( !size_[ ii ].IsDimensionless() ) {
-               size_[ ii ] = size_[ ii ].Invert();
-            }
+         for( auto& sz : size_ ) {
+            sz = sz.Invert();
          }
       }
 
@@ -783,8 +768,8 @@ class DIP_NO_EXPORT PixelSize {
 
       /// Inserts a dimension, undefined by default.
       void InsertDimension( dip::uint d, PhysicalQuantity m = 1 ) {
-         if( !m.IsPhysical() ) {
-            m = PhysicalQuantity::Pixel();
+         if( m.IsDimensionless() ) {
+            m.units = Units::Pixel();
          }
          if( IsDefined() ) {
             // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
@@ -828,30 +813,47 @@ class DIP_NO_EXPORT PixelSize {
          return true;
       }
 
-      /// Tests to see if the pixel size is defined.
-      bool IsDefined() const {
-         for( dip::uint ii = 0; ii < size_.size(); ++ii ) {
-            if( size_[ ii ].IsPhysical() ) {
-               return true;
+      /// \brief Returns the aspect ratio of the first `d` dimensions, with respect to the first dimenion. That
+      /// is, the output array has `d` elements, where the first one is 1.0. If units differ, the aspect ratio
+      /// is 0 for that dimension.
+      FloatArray AspectRatio( dip::uint d ) const {
+         FloatArray ar( d, 0.0 );
+         if( d > 0 ) {
+            ar[ 0 ] = 1.0;
+            auto m0 = Get( 0 );
+            for( dip::uint ii = 1; ii < size_.size(); ++ii ) {
+               auto m1 = Get( ii ) / m0;
+               if( m1.IsDimensionless() ) {
+                  ar[ ii ] = m1.magnitude;
+               }
             }
          }
-         return false;
+         return ar;
+      }
+
+      /// Tests to see if the pixel size is defined.
+      bool IsDefined() const {
+         return !size_.empty();
+      }
+
+      /// Tests to see if the pixel size is physical (i.e. has known physical units).
+      bool IsPhysical() const {
+         for( auto& sz : size_ ) {
+            if( !sz.IsPhysical() ) {
+               return false;
+            }
+         }
+         return true;
       }
 
       /// Multiplies together the sizes for the first `d` dimensions.
       PhysicalQuantity Product( dip::uint d ) const {
          if( d == 0 ) {
-            return PhysicalQuantity( 1 );
+            return 1.0;
          }
          PhysicalQuantity out = Get( 0 );
-         if( out.IsDimensionless() ) {
-            out = 1;
-         }
          for( dip::uint ii = 1; ii < d; ++ii ) {
-            PhysicalQuantity v = Get( ii );
-            if( !v.IsDimensionless() ) {
-               out = out * Get( ii );
-            }
+            out = out * Get( ii );
          }
          return out;
       }
@@ -887,7 +889,7 @@ class DIP_NO_EXPORT PixelSize {
       PhysicalQuantityArray ToPhysical( FloatArray const& in ) const {
          PhysicalQuantityArray out( in.size() );
          for( dip::uint ii = 0; ii < in.size(); ++ii ) {
-            out[ ii ] = PhysicalQuantity( in[ ii ] ) * Get( ii );
+            out[ ii ] = in[ ii ] * Get( ii );
          }
          return out;
       }
@@ -910,7 +912,7 @@ class DIP_NO_EXPORT PixelSize {
       // extended.
       void EnsureDimensionality( dip::uint d ) {
          if( size_.empty() ) {
-            size_.resize( d, 1 );
+            size_.resize( d, PhysicalQuantity::Pixel() );
          } else if( size_.size() < d ) {
             size_.resize( d, size_.back() );
          }
