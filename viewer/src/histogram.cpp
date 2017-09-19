@@ -24,7 +24,7 @@
 #include "diplib/viewer/include_gl.h"
 #include "diplib/viewer/histogram.h"
 
-using namespace dip;
+namespace dip { namespace viewer {
 
 void HistogramViewPort::render()
 {
@@ -229,3 +229,5 @@ void HistogramViewPort::calculate()
   DIP_OVL_NEW_REAL( scanLineFilter, viewer__Histogram, ( histogram_, viewer()->options().range_ ), in.DataType() );
   dip::Framework::ScanSingleInput(in, {}, in.DataType(), *scanLineFilter);
 }
+
+}} // namespace dip::viewer

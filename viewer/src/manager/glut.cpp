@@ -30,6 +30,8 @@
 
 #define EPS 0.001
 
+namespace dip { namespace viewer {
+
 GLUTManager *GLUTManager::instance_ = NULL;
 
 GLUTManager::GLUTManager()
@@ -194,5 +196,7 @@ void GLUTManager::key(unsigned char k, int x, int y)
     window->key(k, x, y, glutGetModifiers());
   }
 }
+
+}} // namespace dip::viewer
 
 #endif // DIP__HAS_FREEGLUT

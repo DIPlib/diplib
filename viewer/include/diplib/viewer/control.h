@@ -22,6 +22,8 @@
 
 #include "diplib/viewer/viewer.h"
 
+namespace dip { namespace viewer {
+
 class DIPVIEWER_EXPORT ControlViewPort : public ViewPort
 {
   protected:
@@ -40,5 +42,7 @@ class DIPVIEWER_EXPORT ControlViewPort : public ViewPort
     void render();
     void click(int button, int state, int x, int y);
 };
+
+}} // namespace dip::viewer
 
 #endif // DIP_VIEWER_H

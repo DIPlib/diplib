@@ -20,6 +20,8 @@
 #undef DIP__ENABLE_DOCTEST
 #include "diplib/viewer/manager.h"
 
+namespace dip { namespace viewer {
+
 void Window::title(const char *name)
 {
   manager()->setWindowTitle(this, name);
@@ -50,3 +52,5 @@ void Window::key(unsigned char k, int /*x*/, int /*y*/, int mods)
       manager()->destroyWindows();
   }
 }
+
+}} // namespace dip::viewer

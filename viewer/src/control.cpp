@@ -21,7 +21,7 @@
 #include "diplib/viewer/include_gl.h"
 #include "diplib/viewer/control.h"
 
-using namespace dip;
+namespace dip { namespace viewer {
 
 void ControlViewPort::render()
 {
@@ -123,3 +123,4 @@ void ControlViewPort::click(int button, int state, int x, int y)
   viewer()->refresh();
 }
 
+}} // namespace dip::viewer

@@ -30,6 +30,8 @@
 
 #define EPS 0.001
 
+namespace dip { namespace viewer {
+
 /*
  * This function is 
  * Copyright (c) 1999-2000 Pawel W. Olszta. All Rights Reserved.
@@ -198,5 +200,7 @@ void GLFWManager::getCursorPos(Window *window, int *x, int *y)
   *x = (int)(wdw_x * (double)fb_width/(double)wdw_width);
   *y = (int)(wdw_y * (double)fb_height/(double)wdw_height);
 }
+
+}} // namespace dip::viewer
 
 #endif // DIP__HAS_GLFW

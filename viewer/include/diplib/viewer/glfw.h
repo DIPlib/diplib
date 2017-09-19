@@ -26,6 +26,8 @@
 
 #include "diplib/viewer/manager.h"
 
+namespace dip { namespace viewer {
+
 /// Simple GLFW window manager
 class DIPVIEWER_EXPORT GLFWManager : public Manager
 {
@@ -148,5 +150,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
       }
     }
 };
+
+}} // namespace dip::viewer
 
 #endif /* DIP_VIEWER_GLFW_H_ */

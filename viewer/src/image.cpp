@@ -21,7 +21,7 @@
 #include "diplib/viewer/include_gl.h"
 #include "diplib/viewer/image.h"
 
-using namespace dip;
+namespace dip { namespace viewer {
 
 void ImageView::rebuild()
 {
@@ -80,3 +80,5 @@ void ImageViewer::create()
 {
   setWindowTitle("");
 }
+
+}} // namespace dip::viewer

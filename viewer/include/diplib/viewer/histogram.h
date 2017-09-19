@@ -25,6 +25,8 @@
 #include "diplib/viewer/viewer.h"
 #include "diplib/viewer/image.h"
 
+namespace dip { namespace viewer {
+
 class DIPVIEWER_EXPORT HistogramViewPort : public ViewPort
 {
   protected:
@@ -80,5 +82,7 @@ class viewer__Histogram : public dip::Framework::ScanLineFilter
       }
     }
 };
+
+}} // namespace dip::viewer
 
 #endif // DIP_VIEWER_HISTOGRAM_H

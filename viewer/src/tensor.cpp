@@ -21,7 +21,7 @@
 #include "diplib/viewer/include_gl.h"
 #include "diplib/viewer/tensor.h"
 
-using namespace dip;
+namespace dip { namespace viewer {
 
 void TensorViewPort::render()
 {
@@ -124,3 +124,5 @@ void TensorViewPort::click(int button, int state, int x, int y)
     }
   }
 }
+
+}} // namespace dip::viewer

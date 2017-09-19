@@ -21,10 +21,10 @@
 
 #ifdef DIP__HAS_GLFW
 #include "diplib/viewer/glfw.h"
-using ViewerManager = GLFWManager;
+using ViewerManager = dip::viewer::GLFWManager;
 #else
 #include "diplib/viewer/glut.h"
-using ViewerManager = GLUTManager;
+using ViewerManager = dip::viewer::GLUTManager;
 #endif
 
 ViewerManager *manager__ = NULL;
@@ -79,4 +79,4 @@ void SpinOnce( )
    manager__->processEvents();
 }
 
-}}
+}} // namespace dip::viewer

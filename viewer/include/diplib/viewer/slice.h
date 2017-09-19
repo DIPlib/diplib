@@ -30,6 +30,8 @@
 #include "diplib/viewer/histogram.h"
 #include "diplib/viewer/control.h"
 
+namespace dip { namespace viewer {
+
 class DIPVIEWER_EXPORT SliceView : public View
 {
   protected:
@@ -125,5 +127,7 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     ViewPort *viewport(int x, int y);
     void calculateTextures();
 };
+
+}} // namespace dip::viewer
 
 #endif // DIP_VIEWER_SLICE_H

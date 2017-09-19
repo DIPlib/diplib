@@ -23,6 +23,8 @@
 #include "diplib/viewer/manager.h"
 #include "diplib/viewer/viewer.h"
 
+namespace dip { namespace viewer {
+
 class DIPVIEWER_EXPORT ImageView : public View
 {
   protected:
@@ -119,5 +121,7 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
       swap();
     }
 };
+
+}} // namespace dip::viewer
 
 #endif // DIP_VIEWER_IMAGE_H

@@ -250,7 +250,7 @@ if(WIN32 AND DIP_BUILD_DIPVIEWER)
 endif()
 
 if(DIP_BUILD_DIPVIEWER)
-   file(GLOB DIP_VIEWER_SRC viewer/src/*.cpp viewer/src/manager/* viewer/include/*.h viewer/include/diplib/viewer/*.h)
+   file(GLOB DIP_VIEWER_SRC viewer/src/*.cpp viewer/src/manager/*.cpp viewer/src/manager/*.h viewer/include/*.h viewer/include/diplib/viewer/*.h)
    update_deps_file("DIPviewer_sources" "${DIP_VIEWER_SRC}")
    add_library(DIPviewer ${DIP_VIEWER_SRC})
    target_include_directories(DIPviewer PUBLIC viewer/include)

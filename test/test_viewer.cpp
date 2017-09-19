@@ -11,14 +11,14 @@
 
 int main() {
 #ifdef DIP__HAS_GLFW
-   GLFWManager manager;
+   dip::viewer::GLFWManager manager;
 #else
-   GLUTManager manager;
+   dip::viewer::GLUTManager manager;
 #endif
 
    dip::Image image3 = dip::ImageReadICS( "../test/chromo3d.ics" );
    image3.PixelSize().Set( 2, 5 );
-   manager.createWindow( WindowPtr( new SliceViewer( image3, "chromo3d", 500, 400 )));
+   manager.createWindow( dip::viewer::WindowPtr( new dip::viewer::SliceViewer( image3, "chromo3d", 500, 400 )));
 
    dip::Image image2{ dip::UnsignedArray{ 50, 40 }, 3, dip::DT_UINT8 };
    dip::Image tmp = image2[ 0 ];
@@ -28,7 +28,7 @@ int main() {
    tmp = image2[ 2 ];
    dip::FillRadiusCoordinate( tmp );
    image2 *= 5;
-   manager.createWindow( WindowPtr( new ImageViewer( image2 )));
+   manager.createWindow( dip::viewer::WindowPtr( new dip::viewer::ImageViewer( image2 )));
 
    while (manager.activeWindows()) {
       // Only necessary for GLFW

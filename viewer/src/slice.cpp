@@ -24,7 +24,7 @@
 #include "diplib/viewer/include_gl.h"
 #include "diplib/viewer/slice.h"
 
-using namespace dip;
+namespace dip { namespace viewer {
 
 template< typename TPI >
 void viewer__ColorMap(Image const& slice, Image& out, ViewingOptions &options)
@@ -721,3 +721,5 @@ void SliceViewer::calculateTextures()
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
 }
+
+}} // namespace dip::viewer

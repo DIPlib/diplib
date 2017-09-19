@@ -53,6 +53,6 @@ DIPVIEWER_EXPORT void Spin( );
 /// NOTE: Spin( ) must still be called before exiting.
 DIPVIEWER_EXPORT void SpinOnce( );
 
-}}
+}} // namespace dip::viewer
 
 #endif // DIPVIEWER_H

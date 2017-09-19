@@ -50,6 +50,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace dip { namespace viewer {
+
 typedef struct tagSFG_Font SFG_Font;
 struct tagSFG_Font
 {
@@ -342,3 +344,5 @@ static const GLubyte* Fixed8x13_Character_Map[] = {Fixed8x13_Character_000,Fixed
 
 /* The font structure: */
 const SFG_Font fgFontFixed8x13 = { 256, 14, Fixed8x13_Character_Map, 0, 3 };
+
+}} // namespace dip::viewer

@@ -26,6 +26,8 @@
 
 #include "diplib/viewer/manager.h"
 
+namespace dip { namespace viewer {
+
 /// Simple GLUT window manager
 class DIPVIEWER_EXPORT GLUTManager : public Manager
 {
@@ -116,5 +118,7 @@ class DIPVIEWER_EXPORT GLUTManager : public Manager
         window->motion(x, y);
     }
 };
+
+}} // namespace dip::viewer
 
 #endif /* DIP_VIEWER_GLUT_H_ */

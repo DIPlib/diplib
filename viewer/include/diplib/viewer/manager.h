@@ -28,6 +28,8 @@
 #define KEY_MOD_CONTROL 0x02
 #define KEY_MOD_ALT     0x04
 
+namespace dip { namespace viewer {
+
 /// Simple GL window
 class DIPVIEWER_EXPORT Window
 {
@@ -119,5 +121,7 @@ class DIPVIEWER_EXPORT Manager
     virtual void setWindowTitle(Window* window, const char *name) = 0;
     virtual void refreshWindow(Window *window) = 0;
 };
+
+}} // namespace dip::viewer
 
 #endif /* DIP_VIEWER_MANAGER_H_ */

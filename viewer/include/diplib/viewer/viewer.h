@@ -30,6 +30,8 @@
 
 //#define GL_SAFE_CALL(x) DIP_THROW_IF((x) != 0, dip::String(#x))
 
+namespace dip { namespace viewer {
+
 typedef std::pair<dip::dfloat, dip::dfloat> FloatRange;
 typedef dip::DimensionArray<FloatRange > FloatRangeArray;
 
@@ -292,5 +294,7 @@ inline void colorMap(const dip::Image::Pixel &in, dip::uint8 *out, const Viewing
       break;
   }
 }
+
+}} // namespace dip::viewer
 
 #endif // DIP_VIEWER_H
