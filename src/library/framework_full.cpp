@@ -87,7 +87,8 @@ void Full(
    // Adjust c_out if necessary (and possible)
    // NOTE: Don't use c_in any more from here on. It has possibly been reforged!
    DIP_START_STACK_TRACE
-      if( c_out.IsOverlappingView( input ) ) {
+      if( c_out.Aliases( input )) {
+         // We cannot work in-place! Note this only happens if we didn't call `ExtendImageLowLevel` earlier.
          c_out.Strip();
       }
       c_out.ReForge( sizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
