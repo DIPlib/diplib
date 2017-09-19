@@ -656,21 +656,21 @@ enum class DIP_NO_EXPORT CropLocation {
 ///
 /// Valid values are:
 ///
-/// %CmpProps constant      | Definition
-/// ----------------------- | ----------
-/// CmpProps_DataType       | Compares data type
-/// CmpProps_Dimensionality | Compares number of dimensions
-/// CmpProps_Sizes          | Compares image size
-/// CmpProps_Strides        | Compares image strides
-/// CmpProps_TensorShape    | Compares tensor size and shape
-/// CmpProps_TensorElements | Compares number of tensor elements
-/// CmpProps_TensorStride   | Compares tensor stride
-/// CmpProps_ColorSpace     | Compares color space
-/// CmpProps_PixelSize      | Compares pixel size
-/// CmpProps_Samples        | CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorElements
-/// CmpProps_Shape          | CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorShape
-/// CmpProps_Full           | CmpProps_Shape + CmpProps_Strides + CmpProps_TensorStride
-/// CmpProps_All            | CmpProps_Shape + CmpProps_ColorSpace + CmpProps_PixelSize
+/// `%CmpProps` constant      | Definition
+/// ------------------------- | ----------
+/// `CmpProps_DataType`       | Compares data type
+/// `CmpProps_Dimensionality` | Compares number of dimensions
+/// `CmpProps_Sizes`          | Compares image size
+/// `CmpProps_Strides`        | Compares image strides
+/// `CmpProps_TensorShape`    | Compares tensor size and shape
+/// `CmpProps_TensorElements` | Compares number of tensor elements
+/// `CmpProps_TensorStride`   | Compares tensor stride
+/// `CmpProps_ColorSpace`     | Compares color space
+/// `CmpProps_PixelSize`      | Compares pixel size
+/// `CmpProps_Samples`        | `CmpProps_DataType` + `CmpProps_Sizes` + `CmpProps_TensorElements`
+/// `CmpProps_Shape`          | `CmpProps_DataType` + `CmpProps_Sizes` + `CmpProps_TensorShape`
+/// `CmpProps_Full`           | `CmpProps_Shape` + `CmpProps_Strides` + `CmpProps_TensorStride`
+/// `CmpProps_All`            | `CmpProps_Shape` + `CmpProps_ColorSpace` + `CmpProps_PixelSize`
 ///
 /// Note that you can add these constants together, for example `dip::Option::CmpProps_Sizes + dip::Option::CmpProps_Strides`.
 DIP_DECLARE_OPTIONS( CmpProps );

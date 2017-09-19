@@ -142,6 +142,9 @@ document's source</a> for the most up-to-date version.
     - thinning & thickening, to be implemented as iterated hit'n'miss.
     - levelling
 
+- The monogenic signal, including derived quantities, using a similar interface to that used
+  for the structure tensor.
+
 - Radon transform for lines and circles, Hough transform for lines.
 
 - Level-set segmentation, graph-cut segmentation.

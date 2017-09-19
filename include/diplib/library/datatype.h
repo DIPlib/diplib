@@ -221,14 +221,15 @@ struct DIP_NO_EXPORT DataType {
    /// Class_UInt       | Class_UInt8 + Class_UInt16 + Class_UInt32
    /// Class_SInt       | Class_SInt8 + Class_SInt16 + Class_SInt32
    /// Class_Integer    | Class_UInt + Class_SInt
+   /// Class_IntOrBin   | Class_Integer + Class_Binary
    /// Class_Float      | Class_SFloat + Class_DFloat
    /// Class_Complex    | Class_SComplex + Class_DComplex
-   /// Class_IntOrBin   | Class_Integer + Class_Binary
-   /// Class_Real       | Class_Integer + Class_Float
    /// Class_Flex       | Class_Float + Class_Complex
    /// Class_FlexBin    | Class_Flex + Class_Binary
    /// Class_Unsigned   | Class_Binary + Class_UInt
    /// Class_Signed     | Class_SInt + Class_Float + Class_Complex
+   /// Class_Real       | Class_Integer + Class_Float
+   /// Class_SignedReal | Class_SInt + Class_Float
    /// Class_NonBinary  | Class_Real + Class_Complex
    /// Class_NonComplex | Class_Binary + Class_Real
    /// Class_All        | Class_Binary + Class_Real + Class_Complex
@@ -271,12 +272,13 @@ struct DIP_NO_EXPORT DataType {
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Integer, Class_UInt + Class_SInt );
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_IntOrBin, Class_Integer + Class_Binary );
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Float, Class_SFloat + Class_DFloat );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Real, Class_Integer + Class_Float );
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Complex, Class_SComplex + Class_DComplex );
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Flex, Class_Float + Class_Complex );
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_FlexBin, Class_Flex + Class_Binary );
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Unsigned, Class_Binary + Class_UInt );
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Real, Class_Integer + Class_Float );
+   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SignedReal, Class_SInt + Class_Float );
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_NonBinary, Class_Real + Class_Complex );
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_NonComplex, Class_Binary + Class_Real );
    DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_All, Class_Binary + Class_Real + Class_Complex ); // == Class_Unsigned + Class_Signed

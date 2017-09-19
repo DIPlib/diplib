@@ -75,20 +75,21 @@
 ///
 /// Each of the four groups of macros exist in the following flavors:
 ///
-/// Macro name `xxx` | Corresponding `dip::DataType::Classes` value
-/// ---------------- | ----------
+/// Macro name `xxx` | Corresponding `%dip::DataType::Classes` value
+/// ---------------- | ---------------------------------------------
 /// `BIN`            | `dip::DataType::Class_Binary`
 /// `UINT`           | `dip::DataType::Class_UInt`
 /// `SINT`           | `dip::DataType::Class_SInt`
 /// `INTEGER`        | `dip::DataType::Class_Integer`
 /// `INT_OR_BIN`     | `dip::DataType::Class_IntOrBin`
 /// `FLOAT`          | `dip::DataType::Class_Float`
-/// `REAL`           | `dip::DataType::Class_Real`
 /// `COMPLEX`        | `dip::DataType::Class_Complex`
 /// `FLEX`           | `dip::DataType::Class_Flex`
 /// `FLEXBIN`        | `dip::DataType::Class_FlexBin`
 /// `UNSIGNED`       | `dip::DataType::Class_Unsigned`
 /// `SIGNED`         | `dip::DataType::Class_Signed`
+/// `REAL`           | `dip::DataType::Class_Real`
+/// `SIGNEDREAL      | `dip::DataType::Class_SignedReal`
 /// `NONBINARY`      | `dip::DataType::Class_NonBinary`
 /// `NONCOMPLEX`     | `dip::DataType::Class_NonComplex`
 /// `ALL`            | `dip::DataType::Class_All`

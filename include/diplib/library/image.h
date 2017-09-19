@@ -1742,12 +1742,12 @@ class DIP_NO_EXPORT Image {
       /// This is an overloaded version of the function above, meant for use from bindings in other languages. The
       /// string `cropLocation` is translated to one of the `dip::Option::CropLocation` values as follows:
       ///
-      /// %CropLocation constant  | String
-      /// ----------------------- | ----------
-      /// CENTER                  | "center"
-      /// MIRROR_CENTER           | "mirror center"
-      /// TOP_LEFT                | "top left"
-      /// BOTTOM_RIGHT            | "bottom right"
+      /// `%CropLocation` constant | String
+      /// ------------------------ | ----------
+      /// `CENTER`                 | "center"
+      /// `MIRROR_CENTER`          | "mirror center"
+      /// `TOP_LEFT`               | "top left"
+      /// `BOTTOM_RIGHT`           | "bottom right"
       DIP_EXPORT View Crop( UnsignedArray const& sizes, String const& cropLocation ) const;
 
       /// \brief Extracts the real component of a complex-typed image. The image must be forged.
@@ -1806,12 +1806,12 @@ class DIP_NO_EXPORT Image {
       /// This is an overloaded version of the function above, meant for use from bindings in other languages. The
       /// string `cropLocation` is translated to one of the `dip::Option::CropLocation` values as follows:
       ///
-      /// %CropLocation constant  | String
-      /// ----------------------- | ----------
-      /// CENTER                  | "center"
-      /// MIRROR_CENTER           | "mirror center"
-      /// TOP_LEFT                | "top left"
-      /// BOTTOM_RIGHT            | "bottom right"
+      /// `%CropLocation` constant | String
+      /// ------------------------ | ----------
+      /// `CENTER`                 | "center"
+      /// `MIRROR_CENTER`          | "mirror center"
+      /// `TOP_LEFT`               | "top left"
+      /// `BOTTOM_RIGHT`           | "bottom right"
       inline Image Pad( UnsignedArray const& sizes, String const& cropLocation ) const {
          if( cropLocation == "center" ) {
             return Pad( sizes, Option::CropLocation::CENTER );
