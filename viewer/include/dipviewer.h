@@ -20,8 +20,8 @@
 #ifndef DIPVIEWER_H
 #define DIPVIEWER_H
 
-
-// TODO: All of this needs to be in a `dip::viewer::` a `dipviewer::` namespace.
+#include "diplib.h"
+#include "dipviewer_export.h"
 
 // TODO: Document usage:
 // ```cpp
@@ -31,43 +31,28 @@
 //        dip::Image grey( { 300, 200 }, 1, dip::DT_UINT16 );
 //        dip::FillRadiusCoordinate( grey );
 //        dip::Image result = dip::Dilation( grey );
-//        ViewerManager manager;
-//        ShowImage( manager, grey );
-//        ShowImage( manager, result );
-//        WaitForWindows( manager );
+//        dip::viewer::Show( grey );
+//        dip::viewer::Show( result );
+//        dip::Viewer::Spin( );
 //        return 0;
 //     }
 // ```
 
+namespace dip { namespace viewer {
 
-#ifdef DIP__HAS_GLFW
-#include "diplib/viewer/glfw.h"
-   using ViewerManager = GLFWManager;
-#else
-#include "diplib/viewer/glut.h"
-using ViewerManager = GLUTManager;
-#endif
+/// Show an image in the slice viewer.
+DIPVIEWER_EXPORT void Show( dip::Image const& image );
 
-#include "diplib/viewer/slice.h"
+/// Show a 2D RGB image.
+DIPVIEWER_EXPORT void ShowSimple( dip::Image const& image );
 
+/// Wait until all windows are closed.
+DIPVIEWER_EXPORT void Spin( );
 
-void ShowImage( ViewerManager& manager, dip::Image const& image ) {
-   dip::Image imgCopy = image;
-   if( imgCopy.DataType().IsBinary() ) {
-      // Convert binary to uint8 for display (SliceViewer doesn't support binary images because of the histogram).
-      // This happens in-place, because the input and output sample sizes are identical.
-      // However, it will touch each of the samples in `image`, without changing any values.
-      imgCopy.Convert( dip::DT_UINT8 );
-   }
-   manager.createWindow( WindowPtr( new SliceViewer( imgCopy )));
-}
+/// Process user event queue.
+/// NOTE: Spin( ) must still be called before exiting.
+DIPVIEWER_EXPORT void SpinOnce( );
 
-void WaitForWindows( ViewerManager& manager ) {
-   while( manager.activeWindows()) {
-      manager.processEvents(); // Only necessary for GLFW
-      std::this_thread::sleep_for( std::chrono::microseconds( 100 ));
-   }
-}
-
+}}
 
 #endif // DIPVIEWER_H

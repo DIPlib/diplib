@@ -142,4 +142,29 @@ on where it occurs
 
 ## Usage example
 
-See test_viewer.cpp in the test/ subdirectory for a usage example.
+The viewer is most easily used through the dip::viewer namespace. Simply
+call
+
+```cpp
+    dip::viewer::Show( image );
+```
+
+after including `dipviewer.h` to show an image in the slice viewer. After
+all images have been shown this way, you can call
+
+```cpp
+    dip::viewer::Spin( );
+```
+
+to enable mouse interaction. If you wish to continue your program, you must
+call 
+
+```cpp
+    dip::viewer::SpinOnce( );
+```
+
+periodically. Make sure to call `dip::viewer::Spin( )` when you're done to
+ensure a clean exit.
+
+See test_viewer.cpp in the test/ subdirectory for a usage example of the
+full interface.
