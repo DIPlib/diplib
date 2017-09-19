@@ -403,4 +403,50 @@ Image& Image::MergeTensorToComplex() {
    return *this;
 }
 
+Image& Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation ) {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::uint nDims = sizes_.size();
+   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
+   DIP_THROW_IF( sizes > sizes_, E::INDEX_OUT_OF_RANGE );
+   UnsignedArray origin( nDims, 0 );
+   switch( cropLocation ) {
+      case Option::CropLocation::CENTER:
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            origin[ ii ] = ( sizes_[ ii ] - sizes[ ii ] + ( sizes[ ii ] & 1 )) / 2; // add one if output is odd in size
+         }
+         break;
+      case Option::CropLocation::MIRROR_CENTER:
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            origin[ ii ] = ( sizes_[ ii ] - sizes[ ii ] + ( sizes_[ ii ] & 1 )) / 2; // add one if input is odd in size
+         }
+         break;
+      case Option::CropLocation::TOP_LEFT:
+         // Origin stays at 0
+         break;
+      case Option::CropLocation::BOTTOM_RIGHT:
+         origin = sizes_;
+         origin -= sizes;
+         break;
+   }
+   origin_ = Pointer( origin );
+   sizes_ = sizes;
+   return *this;
+}
+
+Image& Image::Crop( UnsignedArray const& sizes, String const& cropLocation ) {
+   Option::CropLocation flag;
+   if( cropLocation == "center" ) {
+      flag = Option::CropLocation::CENTER;
+   } else if( cropLocation == "mirror center" ) {
+      flag = Option::CropLocation::MIRROR_CENTER;
+   } else if( cropLocation == "top left" ) {
+      flag = Option::CropLocation::TOP_LEFT;
+   } else if( cropLocation == "bottom right" ) {
+      flag = Option::CropLocation::BOTTOM_RIGHT;
+   } else {
+      DIP_THROW( "Unknown crop location flag" );
+   }
+   return Crop( sizes, flag );
+}
+
 } // namespace dip

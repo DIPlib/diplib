@@ -83,49 +83,16 @@ Image::Pixel Image::At( dip::uint x_index, dip::uint y_index, dip::uint z_index 
                  dataType_, tensor_, tensorStride_ );
 }
 
-Image::View Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
-   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::uint nDims = sizes_.size();
-   DIP_THROW_IF( sizes.size() != nDims, E::ARRAY_ILLEGAL_SIZE );
-   DIP_THROW_IF( sizes > sizes_, E::INDEX_OUT_OF_RANGE );
-   Image::View out( *this );
-   UnsignedArray origin( nDims, 0 );
-   switch( cropLocation ) {
-      case Option::CropLocation::CENTER:
-         for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            origin[ ii ] = ( sizes_[ ii ] - sizes[ ii ] + ( sizes[ ii ] & 1 ) ) / 2; // add one if output is odd in size
-         }
-         break;
-      case Option::CropLocation::MIRROR_CENTER:
-         for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            origin[ ii ] = ( sizes_[ ii ] - sizes[ ii ] + ( sizes_[ ii ] & 1 ) ) / 2; // add one if input is odd in size
-         }
-         break;
-      case Option::CropLocation::TOP_LEFT:
-         // Origin stays at 0
-         break;
-      case Option::CropLocation::BOTTOM_RIGHT:
-         origin = sizes_;
-         origin -= sizes;
-         break;
-   }
-   out.reference_.origin_ = out.reference_.Pointer( origin );
-   out.reference_.sizes_ = sizes;
-   return out;
+Image::View Image::Cropped( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
+   Image tmp = *this;
+   tmp.Crop( sizes, cropLocation );
+   return View( tmp );
 }
 
-Image::View Image::Crop( UnsignedArray const& sizes, String const& cropLocation ) const {
-   if( cropLocation == "center" ) {
-      return Crop( sizes, Option::CropLocation::CENTER );
-   } else if( cropLocation == "mirror center" ) {
-      return Crop( sizes, Option::CropLocation::MIRROR_CENTER );
-   } else if( cropLocation == "top left" ) {
-      return Crop( sizes, Option::CropLocation::TOP_LEFT );
-   } else if( cropLocation == "bottom right" ) {
-      return Crop( sizes, Option::CropLocation::BOTTOM_RIGHT );
-   } else {
-      DIP_THROW( "Unknown crop location flag" );
-   }
+Image::View Image::Cropped( UnsignedArray const& sizes, String const& cropLocation ) const {
+   Image tmp = *this;
+   tmp.Crop( sizes, cropLocation );
+   return View( tmp );
 }
 
 Image::View Image::Real() const {
@@ -227,10 +194,10 @@ DOCTEST_TEST_CASE("[DIPlib] testing image indexing") {
    // Tests that the window shares data, and that indexing with coordinates works
    DOCTEST_CHECK( img.At( 6, 2, 6 ) == 20 );
    DOCTEST_CHECK( img.At( 6, 1, 6 ) == 0 );
-   // Tests Crop
+   // Tests Cropped
    img.Fill( 0 );
    img.At( 15/2, 20/2, 10/2 ) = 1;
-   dip::Image cropped = img.Crop( { 10, 10, 9 } );
+   dip::Image cropped = img.Cropped( { 10, 10, 9 } );
    DOCTEST_CHECK( cropped.At( 10/2, 10/2, 9/2 ) == 1 );
    // Tests Real/Imaginary
    img = dip::Image{ dip::UnsignedArray{ 15, 20, 10 }, 3, dip::DT_SCOMPLEX };

@@ -487,7 +487,7 @@ void Rotation(
    newSize[ dimension2 ] = std::min(
          out.Size( dimension2 ),
          2 * static_cast< dip::uint >( std::ceil(( size1 * sin_angle + size2 * cos_angle ) / 2.0 )) + ( in.Size( dimension2 ) & 1 ));
-   out = out.Crop( newSize );
+   out.Crop( newSize );
    // Fix pixel sizes
    if( pixelSize.IsDefined() ) {
       if( pixelSize[ dimension1 ] != pixelSize[ dimension2 ] ) {

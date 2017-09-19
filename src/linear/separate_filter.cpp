@@ -141,7 +141,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the filter separation") {
    dip::Image gaussRes = dip::GaussFIR( delta3D, { 3, 2, 3 }, { 1, 0, 2 } );
    //timer.Stop();
    //std::cout << "Compute Gaussian: " << timer << std::endl;
-   dip::Image gauss = gaussRes.Crop( { 3*6+1, 2*6+1, 3*6+1 } );
+   dip::Image gauss = gaussRes.Cropped( { 3 * 6 + 1, 2 * 6 + 1, 3 * 6 + 1 } );
    //timer.Reset();
    dip::OneDimensionalFilterArray gauss1 = dip::SeparateFilter( gauss );
    //timer.Stop();

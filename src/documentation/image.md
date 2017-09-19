@@ -672,7 +672,7 @@ results:
     image[ 1 ].At( { 0, 10 }, { 20, 30 } );
 ```
 
-The method `dip::Image::Crop` is a convenience function to extract a view to a
+The method `dip::Image::Cropped` is a convenience function to extract a view to a
 rectangular widow of a given size and with a given anchor (image center or corner).
 The `dip::Image::Pad` method does the opposite operation, but creates a new image and
 copies the data over.

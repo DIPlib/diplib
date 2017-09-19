@@ -1616,6 +1616,35 @@ class DIP_NO_EXPORT Image {
       /// The image must have two tensor elements, a tensor stride of 1, and be forged.
       DIP_EXPORT Image& MergeTensorToComplex();
 
+      /// \brief Reduces the size of the image by cropping off the borders.
+      ///
+      /// Crops the image to the given size. Which pixels are selected is controlled by the
+      /// `cropLocation` parameter. The default is `dip::Option::CropLocation::CENTER`, which
+      /// maintains the origin pixel (as defined in `dip::FourierTransform` and other other places)
+      /// at the origin of the output image.
+      ///
+      /// `dip::Image::Pad` does the inverse operation. `dip::Image::Cropped` does the same
+      /// thing, but without modifying `this`, and returning a `dip::Image::View`.
+      ///
+      /// The image must be forged.
+      DIP_EXPORT Image& Crop(
+            UnsignedArray const& sizes,
+            Option::CropLocation cropLocation = Option::CropLocation::CENTER
+      );
+
+      /// \brief Reduces the size of the image by cropping off the borders.
+      ///
+      /// This is an overloaded version of the function above, meant for use from bindings in other languages. The
+      /// string `cropLocation` is translated to one of the `dip::Option::CropLocation` values as follows:
+      ///
+      /// `%CropLocation` constant | String
+      /// ------------------------ | ----------
+      /// `CENTER`                 | "center"
+      /// `MIRROR_CENTER`          | "mirror center"
+      /// `TOP_LEFT`               | "top left"
+      /// `BOTTOM_RIGHT`           | "bottom right"
+      DIP_EXPORT Image& Crop( UnsignedArray const& sizes, String const& cropLocation );
+
       /// \}
 
       //
@@ -1733,7 +1762,7 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Extracts a subset of pixels from an image.
       ///
-      /// Crops the image to the given size. Which pixels are selected is controlled by the
+      /// Returns a view to a smaller area within the image. Which pixels are selected is controlled by the
       /// `cropLocation` parameter. The default is `dip::Option::CropLocation::CENTER`, which
       /// maintains the origin pixel (as defined in `dip::FourierTransform` and other other places)
       /// at the origin of the output image.
@@ -1741,7 +1770,10 @@ class DIP_NO_EXPORT Image {
       /// `dip::Image::Pad` does the inverse operation.
       ///
       /// The image must be forged.
-      DIP_EXPORT View Crop( UnsignedArray const& sizes, Option::CropLocation cropLocation = Option::CropLocation::CENTER ) const;
+      DIP_EXPORT View Cropped(
+            UnsignedArray const& sizes,
+            Option::CropLocation cropLocation = Option::CropLocation::CENTER
+      ) const;
 
       /// \brief Extracts a subset of pixels from an image.
       ///
@@ -1754,7 +1786,7 @@ class DIP_NO_EXPORT Image {
       /// `MIRROR_CENTER`          | "mirror center"
       /// `TOP_LEFT`               | "top left"
       /// `BOTTOM_RIGHT`           | "bottom right"
-      DIP_EXPORT View Crop( UnsignedArray const& sizes, String const& cropLocation ) const;
+      DIP_EXPORT View Cropped( UnsignedArray const& sizes, String const& cropLocation ) const;
 
       /// \brief Extracts the real component of a complex-typed image. The image must be forged.
       DIP_EXPORT View Real() const;

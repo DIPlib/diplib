@@ -204,7 +204,7 @@ Image Image::Pad( UnsignedArray const& sizes, Option::CropLocation cropLocation 
    out.sizes_ = sizes;
    out.Forge();
    out.Fill( 0 );
-   Image tmp = out.Crop( sizes_, cropLocation ); // this is a view into the new image that corresponds to *this
+   auto tmp = out.Cropped( sizes_, cropLocation ); // this is a view into the new image that corresponds to *this
    tmp.Copy( *this ); // copy the data over, we're done!
    return out;
 }

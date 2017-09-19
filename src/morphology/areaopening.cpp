@@ -243,7 +243,7 @@ void AreaOpening(
    DIP_OVL_CALL_REAL( dip__AreaOpening, ( grey, labels, offsets, neighborOffsets, filterSize, lowFirst ), grey.DataType() );
 
    // Copy result to output
-   grey = grey.Crop( c_in.Sizes() );
+   grey.Crop( c_in.Sizes());
    PixelSize pixelSize = c_in.PixelSize();
    out.Copy( grey );
    out.SetPixelSize( pixelSize );

@@ -1091,7 +1091,7 @@ void SkewLineMorphology(
       Skew( tmp, tmp, shearArray, axis, 0, "linear", bc );
       //Skew( tmp, tmp, shearArray, axis, 0, "linear", { BoundaryCondition::PERIODIC } ); // Using periodic boundary condition so it can be done in-place.
       // TODO: when using periodic skew to go back to original geometry, the origin needs to be computed. Image::Crop can't help us.
-      tmp = tmp.Crop( in.Sizes() );
+      tmp.Crop( in.Sizes());
       out.Copy( tmp );
       out.SetPixelSize( in.PixelSize() );
    } else if( std::round( length ) > 1 ) {

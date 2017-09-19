@@ -256,7 +256,7 @@ FloatArray FindShift_CC(
       }
    }
    if( crop ) {
-      DIP_STACK_TRACE_THIS( cross = cross.Crop( sizes ));
+      DIP_STACK_TRACE_THIS( cross.Crop( sizes ));
    }
    UnsignedArray maxPixel;
    DIP_STACK_TRACE_THIS( maxPixel = MaximumPixel( cross, {} ));

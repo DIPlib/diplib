@@ -313,7 +313,7 @@ void init_image( py::module& m ) {
    img.def( "At", []( dip::Image const& image, dip::RangeArray ranges ) { return image.At( ranges ); }, "ranges"_a );
    img.def( "At", []( dip::Image const& image, dip::Image const& mask ) { return image.At( mask ); }, "mask"_a );
    img.def( "At", []( dip::Image const& image, dip::CoordinateArray const& coordinates ) { return image.At( coordinates ); }, "coordinates"_a );
-   img.def( "Crop", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Crop, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
+   img.def( "Cropped", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Cropped, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Real", &dip::Image::Real );
    img.def( "Imaginary", &dip::Image::Imaginary );
    img.def( "QuickCopy", &dip::Image::QuickCopy );
