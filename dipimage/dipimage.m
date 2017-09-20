@@ -1,7 +1,7 @@
 %DIPIMAGE   The DIPimage GUI (not yet implemented)
 %
 %   For now, all this function does is DIPIMAGE('clear'), which clears from memory
-%   some MEX-files that lock themselves in memory to preserve information.
+%   some M-files and MEX-files that lock themselves in memory to preserve information.
 
 % (c)2017, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
@@ -22,12 +22,11 @@ function dipimage(varargin)
 if nargin==1
    if strcmp(varargin{1},'clear')
       close all
-      imagedisplay('unlock')
-      clear imagedisplay
-      numberofthreads('unlock')
-      clear numberofthreads
-      dippreferences('unload');
-      clear dippreferences
+      dipfig -unlink
+      imagedisplay unlock
+      dippreferences unload
+      numberofthreads unlock
+      clear functions
    else
       error('Invalid flag, for now only ''dipimage clear'' is supported')
    end
