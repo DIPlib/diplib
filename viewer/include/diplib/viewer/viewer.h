@@ -101,9 +101,10 @@ struct DIPVIEWER_EXPORT ViewingOptions
       lut_ = LookupTable::Grey;
     
     // Display
-    zoom_.resize(image.Dimensionality());
+    zoom_ = image.AspectRatio();
     for (size_t ii=0; ii < image.Dimensionality(); ++ii)
-      zoom_[ii] = 1;
+      if (zoom_[ii] == 0)
+        zoom_[ii] = 1;
     
     origin_ = dip::FloatArray(image.Dimensionality(), 0.);
     split_ = {100, 100};

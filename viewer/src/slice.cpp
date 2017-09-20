@@ -307,9 +307,11 @@ void SliceViewPort::click(int button, int state, int x, int y)
 {
   dip::sint dx = viewer()->options().dims_[view()->dimx()],
             dy = viewer()->options().dims_[view()->dimy()];
-
+            
   if (state == 0)
   {
+    bool nearXAxis = view()->dimy() == 1 && y > y_+height_-2*14;
+    bool nearYAxis = view()->dimx() == 0 && x > x_+width_-2*10;
     double ix, iy, nix, niy;
   
     screenToView(x, y, &ix, &iy);
@@ -331,39 +333,33 @@ void SliceViewPort::click(int button, int state, int x, int y)
       // Right mouse button: change visualized dimension
       auto &d = viewer()->options().dims_;
       
-      if (view()->dimx() == 0 && x > x_+width_-2*10)
+      if (nearYAxis)
       {
-        if (std::abs(y-y_-height_/2+13) < 2*7)
-        {
-          // Change vertical dimension
-          dy++;
-          if (view()->dimy() == 1)
-            while (dy == d[0] || dy == d[2] || dy == d[3]) dy++;
-          else
-            while (dy == d[0] || dy == d[1] || dy == d[3]) dy++;
-        
-          if (dy >= (int)viewer()->options().operating_point_.size())
-            dy = -1;
-            
-          d[view()->dimy()] = dy;
-        }
+        // Change vertical dimension
+        dy++;
+        if (view()->dimy() == 1)
+          while (dy == d[0] || dy == d[2] || dy == d[3]) dy++;
+        else
+          while (dy == d[0] || dy == d[1] || dy == d[3]) dy++;
+      
+        if (dy >= (int)viewer()->options().operating_point_.size())
+          dy = -1;
+          
+        d[view()->dimy()] = dy;
       }
-      else if (view()->dimy() == 1 && y > y_+height_-2*14)
+      else if (nearXAxis)
       {
-        if (std::abs(x-x_-width_/2) < 2*5)
-        {
-          // Change horizontal dimension
-          dx++;
-          if (view()->dimx() == 0)
-            while (dx == d[1] || dx == d[2] || dx == d[3]) dx++;
-          else
-            while (dx == d[0] || dx == d[1] || dx == d[2]) dx++;
-        
-          if (dx >= (int)viewer()->options().operating_point_.size())
-            dx = -1;
-            
-          d[view()->dimx()] = dx;
-        }
+        // Change horizontal dimension
+        dx++;
+        if (view()->dimx() == 0)
+          while (dx == d[1] || dx == d[2] || dx == d[3]) dx++;
+        else
+          while (dx == d[0] || dx == d[1] || dx == d[2]) dx++;
+      
+        if (dx >= (int)viewer()->options().operating_point_.size())
+          dx = -1;
+          
+        d[view()->dimx()] = dx;
       }
 
       viewer()->refresh();
@@ -376,8 +372,8 @@ void SliceViewPort::click(int button, int state, int x, int y)
       if (button == 4)
         factor = 1./factor;
         
-      if (view()->dimy() == 1 && dx != -1) viewer()->options().zoom_[(dip::uint)dx] *= factor;
-      if (view()->dimx() == 0 && dy != -1) viewer()->options().zoom_[(dip::uint)dy] *= factor;
+      if (view()->dimy() == 1 && dx != -1 && !nearYAxis) viewer()->options().zoom_[(dip::uint)dx] *= factor;
+      if (view()->dimx() == 0 && dy != -1 && !nearXAxis) viewer()->options().zoom_[(dip::uint)dy] *= factor;
 
       if (view()->dimx() == 0 && view()->dimy() == 1)
       {
@@ -590,10 +586,13 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
   if (k == '1' && mods == KEY_MOD_CONTROL)
   {
     // ^1: 1:1 zoom
+    options_.zoom_ = image_.AspectRatio();
+    
     for (size_t ii=0; ii < image_.Dimensionality(); ++ii)
     {
       options_.origin_[ii] = 0;
-      options_.zoom_[ii] = 1;
+      if (options_.zoom_[ii] == 0)
+        options_.zoom_[ii] = 1;
     }
   }
 }

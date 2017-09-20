@@ -419,6 +419,7 @@ foreach(file ${DIP_TESTS})
 endforeach()
 target_link_libraries(test_viewer DIPviewer)
 target_link_libraries(test_dipviewer DIPviewer)
+target_link_libraries(test_fileviewer DIPviewer)
 target_link_libraries(test_filters DIPviewer)
 
 add_custom_target(tests DEPENDS ${TESTS_TARGETS})
