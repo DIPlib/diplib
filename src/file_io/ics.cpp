@@ -33,7 +33,8 @@ namespace dip {
 
 namespace {
 
-#define CALL_ICS( function_call, message ) do { Ics_Error error_ = function_call; if( error_ != IcsErr_Ok ) { DIP_THROW( String( message ": " ) + IcsGetErrorText( error_ )); }} while(false)
+#define CALL_ICS( function_call, message ) do { Ics_Error error_ = function_call; if( error_ != IcsErr_Ok ) \
+{ DIP_THROW_RUNTIME( String( message ": " ) + IcsGetErrorText( error_ )); }} while(false)
 
 dip::uint FindTensorDimension(
       ICS* ics,
@@ -260,7 +261,7 @@ class IcsFile {
             Ics_Error error = IcsClose( ics_ );
             ics_ = nullptr;
             if( error != IcsErr_Ok ) {
-               DIP_THROW( String( "Couldn't close ICS file: " ) + IcsGetErrorText( error ) );
+               DIP_THROW_RUNTIME( String( "Couldn't close ICS file: " ) + IcsGetErrorText( error ) );
             }
          }
       }
@@ -326,7 +327,7 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
          data.fileInformation.dataType = DT_DCOMPLEX;
          break;
       default:
-         DIP_THROW( "Unknown ICS data type" );
+         DIP_THROW_RUNTIME( "Unknown ICS data type" );
    }
    data.fileSizes.resize( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {

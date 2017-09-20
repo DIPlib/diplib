@@ -31,6 +31,8 @@ namespace {
 
 static const char* TIFF_WRITE_TAG = "Error writing tag to TIFF file";
 
+#define WRITE_TIFF_TAG( tiff, tag, value ) do { if( !TIFFSetField( tiff, tag, value )) { DIP_THROW_RUNTIME( TIFF_WRITE_TAG ); }} while(false)
+
 class TiffFile {
    public:
       explicit TiffFile( String const& filename ) {
@@ -43,7 +45,9 @@ class TiffFile {
          } else {
             tiff_ = TIFFOpen( FileAddExtension( filename, "tif" ).c_str(), "w" );
          }
-         DIP_THROW_IF( tiff_ == nullptr, "Could not open the specified file" );
+         if( tiff_ == nullptr ) {
+            DIP_THROW_RUNTIME( "Could not open the specified file" );
+         }
       }
       TiffFile( TiffFile const& ) = delete;
       TiffFile( TiffFile&& ) = delete;
@@ -213,15 +217,15 @@ void WriteTIFFStrips(
    bool binary = image.DataType().IsBinary();
 
    uint32 rowsPerStrip = TIFFDefaultStripSize( tiff, 0 );
-   DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_ROWSPERSTRIP, rowsPerStrip ), TIFF_WRITE_TAG );
+   WRITE_TIFF_TAG( tiff, TIFFTAG_ROWSPERSTRIP, rowsPerStrip );
 
    // Write it to the file
    tmsize_t scanline = TIFFScanlineSize( tiff );
    if( binary ) {
-      DIP_THROW_IF(( static_cast< dip::uint >( scanline ) != div_ceil< dip::uint >( image.Size( 0 ), 8 )), "Wrong scanline size" );
+      DIP_ASSERT( static_cast< dip::uint >( scanline ) == div_ceil< dip::uint >( image.Size( 0 ), 8 ));
       DIP_ASSERT( tensorElements == 1 );
    } else {
-      DIP_THROW_IF(( static_cast< dip::uint >( scanline ) != image.Size( 0 ) * tensorElements * sizeOf ), "Wrong scanline size" );
+      DIP_ASSERT( static_cast< dip::uint >( scanline ) == image.Size( 0 ) * tensorElements * sizeOf );
    }
    if( image.HasNormalStrides() ) {
       // Simple writing
@@ -229,7 +233,9 @@ void WriteTIFFStrips(
       uint8* data = static_cast< uint8* >( image.Origin() );
       for( uint32 row = 0; row < imageLength; row += rowsPerStrip ) {
          uint32 nrow = row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip;
-         DIP_THROW_IF( TIFFWriteEncodedStrip( tiff, strip, data, nrow * scanline ) < 0, "Error writing data" );
+         if( TIFFWriteEncodedStrip( tiff, strip, data, nrow * scanline ) < 0 ) {
+            DIP_THROW_RUNTIME( "Error writing data" );
+         }
          data += static_cast< dip::sint >( nrow * sizeOf ) * image.Stride( 1 );
          ++strip;
       }
@@ -255,7 +261,9 @@ void WriteTIFFStrips(
                FillBufferMultiChannelN( buf.data(), data, tensorElements, imageWidth, nrow, tensorStride, strides, sizeOf );
             }
          }
-         DIP_THROW_IF( TIFFWriteEncodedStrip( tiff, strip, buf.data(), nrow * scanline ) < 0, "Error writing data" );
+         if( TIFFWriteEncodedStrip( tiff, strip, buf.data(), nrow * scanline ) < 0 ) {
+            DIP_THROW_RUNTIME( "Error writing data" );
+         }
          data += static_cast< dip::sint >( nrow * sizeOf ) * image.Stride( 1 );
          ++strip;
       }
@@ -312,36 +320,36 @@ void ImageWriteTIFF(
    TiffFile tiff( filename );
 
    if( image.DataType().IsBinary() ) {
-      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_MINISBLACK )), TIFF_WRITE_TAG );
+      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_MINISBLACK ));
    } else if( image.ColorSpace() == "RGB" ) {
-      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_RGB )), TIFF_WRITE_TAG );
+      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_RGB ));
    } else if( image.ColorSpace() == "Lab" ) {
-      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_CIELAB )), TIFF_WRITE_TAG );
+      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_CIELAB ));
    } else if(( image.ColorSpace() == "CMY" ) || ( image.ColorSpace() == "CMYK" )) {
-      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_SEPARATED )), TIFF_WRITE_TAG );
+      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_SEPARATED ));
    } else {
-      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_MINISBLACK )), TIFF_WRITE_TAG );
+      WRITE_TIFF_TAG( tiff, TIFFTAG_PHOTOMETRIC, uint16( PHOTOMETRIC_MINISBLACK ));
    }
 
-   DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_IMAGEWIDTH, imageWidth ), TIFF_WRITE_TAG );
-   DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_IMAGELENGTH, imageLength ), TIFF_WRITE_TAG );
+   WRITE_TIFF_TAG( tiff, TIFFTAG_IMAGEWIDTH, imageWidth );
+   WRITE_TIFF_TAG( tiff, TIFFTAG_IMAGELENGTH, imageLength );
 
    if( !image.DataType().IsBinary() ) {
-      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_BITSPERSAMPLE, bitsPerSample ), TIFF_WRITE_TAG );
-      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_SAMPLEFORMAT, sampleFormat ), TIFF_WRITE_TAG );
-      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_SAMPLESPERPIXEL, static_cast< uint16 >( image.TensorElements())), TIFF_WRITE_TAG );
+      WRITE_TIFF_TAG( tiff, TIFFTAG_BITSPERSAMPLE, bitsPerSample );
+      WRITE_TIFF_TAG( tiff, TIFFTAG_SAMPLEFORMAT, sampleFormat );
+      WRITE_TIFF_TAG( tiff, TIFFTAG_SAMPLESPERPIXEL, static_cast< uint16 >( image.TensorElements()));
       if( image.TensorElements() > 1 ) {
-         DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_PLANARCONFIG, uint16( PLANARCONFIG_CONTIG )), TIFF_WRITE_TAG );
+         WRITE_TIFF_TAG( tiff, TIFFTAG_PLANARCONFIG, uint16( PLANARCONFIG_CONTIG ));
          // This is the standard way of writing channels (planes), PLANARCONFIG_SEPARATE is not required to be
          // supported by all readers.
       }
    }
 
-   DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_COMPRESSION, compmode ), TIFF_WRITE_TAG );
+   WRITE_TIFF_TAG( tiff, TIFFTAG_COMPRESSION, compmode );
    if( compmode == COMPRESSION_JPEG ) {
       jpegLevel = clamp< dip::uint >( jpegLevel, 1, 100 );
-      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_JPEGQUALITY, static_cast< int >( jpegLevel )), TIFF_WRITE_TAG );
-      DIP_THROW_IF( !TIFFSetField( tiff, TIFFTAG_JPEGCOLORMODE, int( JPEGCOLORMODE_RGB )), TIFF_WRITE_TAG );
+      WRITE_TIFF_TAG( tiff, TIFFTAG_JPEGQUALITY, static_cast< int >( jpegLevel ));
+      WRITE_TIFF_TAG( tiff, TIFFTAG_JPEGCOLORMODE, int( JPEGCOLORMODE_RGB ));
    }
 
    DIP_STACK_TRACE_THIS( WriteTIFFStrips( image, tiff ));

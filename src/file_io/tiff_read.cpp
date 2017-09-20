@@ -34,6 +34,8 @@ constexpr char const* TIFF_NO_TAG = "Invalid TIFF: Required tag not found";
 constexpr char const* TIFF_TILES_NOT_SUPPORTED = "Tiled TIFF format not yet supported";
 constexpr char const* TIFF_DIRECTORY_NOT_FOUND = "Could not find the requested image in the file";
 
+#define READ_REQUIRED_TIFF_TAG( tiff, tag, ... ) do { if( !TIFFGetField( tiff, tag, __VA_ARGS__ )) { DIP_THROW_RUNTIME( TIFF_NO_TAG ); }} while(false)
+
 class TiffFile {
    public:
       explicit TiffFile( String filename ) : filename_( std::move( filename )) {
@@ -52,7 +54,9 @@ class TiffFile {
                }
             }
          }
-         DIP_THROW_IF( tiff_ == nullptr, "Could not open the specified TIFF file" );
+         if( tiff_ == nullptr ) {
+            DIP_THROW_RUNTIME( "Could not open the specified TIFF file" );
+         }
       }
       TiffFile( TiffFile const& ) = delete;
       TiffFile( TiffFile&& ) = delete;
@@ -94,7 +98,7 @@ DataType FindTIFFDataType( TiffFile& tiff ) {
             case 32:
                return DT_UINT32;
             default:
-               DIP_THROW( "Unsupported TIFF: Unknown bit depth" );
+               DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
                break;
          }
       case SAMPLEFORMAT_INT:
@@ -106,7 +110,7 @@ DataType FindTIFFDataType( TiffFile& tiff ) {
             case 32:
                return DT_SINT32;
             default:
-               DIP_THROW( "Unsupported TIFF: Unknown bit depth" );
+               DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
          }
       case SAMPLEFORMAT_IEEEFP:
          switch( bitsPerSample ) {
@@ -117,10 +121,10 @@ DataType FindTIFFDataType( TiffFile& tiff ) {
             case 64:
                return DT_DFLOAT;
             default:
-               DIP_THROW( "Unsupported TIFF: Unknown bit depth" );
+               DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
          }
       default:
-         DIP_THROW( "Unsupported TIFF: Unknown pixel format" );
+         DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown pixel format" );
    }
 }
 
@@ -137,8 +141,8 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff ) {
 
    // Image sizes
    uint32 imageWidth, imageLength;
-   DIP_THROW_IF( !TIFFGetField( tiff, TIFFTAG_IMAGEWIDTH, &imageWidth ), TIFF_NO_TAG );
-   DIP_THROW_IF( !TIFFGetField( tiff, TIFFTAG_IMAGELENGTH, &imageLength ), TIFF_NO_TAG );
+   READ_REQUIRED_TIFF_TAG( tiff, TIFFTAG_IMAGEWIDTH, &imageWidth );
+   READ_REQUIRED_TIFF_TAG( tiff, TIFFTAG_IMAGELENGTH, &imageLength );
    data.fileInformation.sizes = { imageWidth, imageLength };
    uint16 samplesPerPixel;
    if( !TIFFGetField( tiff, TIFFTAG_SAMPLESPERPIXEL, &samplesPerPixel )) {
@@ -152,10 +156,10 @@ GetTIFFInfoData GetTIFFInfo( TiffFile& tiff ) {
    }
    switch( data.photometricInterpretation ) {
       case PHOTOMETRIC_YCBCR:
-         DIP_THROW( "Unsupported TIFF: Class Y image (YCbCr)" );
+         DIP_THROW_RUNTIME( "Unsupported TIFF: Class Y image (YCbCr)" );
       case PHOTOMETRIC_LOGLUV:
       case PHOTOMETRIC_LOGL:
-         DIP_THROW( "Unsupported TIFF: Log-compressed image (LogLuv or LogL)" );
+         DIP_THROW_RUNTIME( "Unsupported TIFF: Log-compressed image (LogLuv or LogL)" );
       case PHOTOMETRIC_PALETTE:
          data.fileInformation.colorSpace = "RGB";
          data.fileInformation.tensorElements = 3;
@@ -311,17 +315,25 @@ void ReadTIFFColorMap(
       TiffFile& tiff,
       GetTIFFInfoData& data
 ) {
+   // Test for tiled TIFF files. These we can't handle (yet).
+   uint32 tileWidth;
+   if( TIFFGetField( tiff, TIFFTAG_TILEWIDTH, &tileWidth )) {
+      DIP_THROW_RUNTIME( TIFF_TILES_NOT_SUPPORTED );
+   }
+
    // Read the tags
    uint16 bitsPerSample;
-   DIP_THROW_IF( !TIFFGetField( tiff, TIFFTAG_BITSPERSAMPLE, &bitsPerSample ), TIFF_NO_TAG );
-   DIP_THROW_IF(( bitsPerSample != 4 ) && ( bitsPerSample != 8 ), "Unsupported TIFF: Unknown bit depth" );
+   READ_REQUIRED_TIFF_TAG( tiff, TIFFTAG_BITSPERSAMPLE, &bitsPerSample );
+   if(( bitsPerSample != 4 ) && ( bitsPerSample != 8 )) {
+      DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
+   }
    //std::vector< uint16 > CMRed( 1u << bitsPerSample );
    //std::vector< uint16 > CMGreen( 1u << bitsPerSample );
    //std::vector< uint16 > CMBlue( 1u << bitsPerSample );
    uint16* CMRed;
    uint16* CMGreen;
    uint16* CMBlue;
-   DIP_THROW_IF( !TIFFGetField( tiff, TIFFTAG_COLORMAP, &CMRed, &CMGreen, &CMBlue ), TIFF_NO_TAG );
+   READ_REQUIRED_TIFF_TAG( tiff, TIFFTAG_COLORMAP, &CMRed, &CMGreen, &CMBlue );
 
    // Forge the image
    image.ReForge( data.fileInformation.sizes, 3, DT_UINT16 );
@@ -332,23 +344,27 @@ void ReadTIFFColorMap(
    uint32 imageLength = static_cast< uint32 >( image.Size( 1 ));
    dip::uint scanline = static_cast< dip::uint >( TIFFScanlineSize( tiff ));
    if( bitsPerSample == 4 ) {
-      DIP_THROW_IF(( scanline != div_ceil< dip::uint >( image.Size( 0 ), 2 )), "Wrong scanline size" );
+      DIP_ASSERT( scanline == div_ceil< dip::uint >( image.Size( 0 ), 2 ));
    } else {
-      DIP_THROW_IF(( scanline != image.Size( 0 )), "Wrong scanline size" );
+      DIP_ASSERT( scanline == image.Size( 0 ));
    }
    std::vector< uint8 > buf( static_cast< dip::uint >( TIFFStripSize( tiff )));
    uint32 rowsPerStrip;
    TIFFGetFieldDefaulted( tiff, TIFFTAG_ROWSPERSTRIP, &rowsPerStrip );
-   for( uint32 row = 0; row < imageLength; row += rowsPerStrip ) {
+   uint32 nStrips = TIFFNumberOfStrips( tiff );
+   uint32 row = 0;
+   for( uint32 strip = 0; strip < nStrips; ++strip ) {
       dip::uint nrow = row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip;
-      uint32 strip = TIFFComputeStrip( tiff, row, 0 );
-      DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, buf.data(), static_cast< tmsize_t >( nrow * scanline )) < 0, "Error reading data" );
+      if( TIFFReadEncodedStrip( tiff, strip, buf.data(), static_cast< tmsize_t >( nrow * scanline )) < 0 ) {
+         DIP_THROW_RUNTIME( "Error reading data" );
+      }
       if( bitsPerSample == 4 ) {
          ExpandColourMap4( imagedata, buf.data(), imageWidth, nrow, image.TensorStride(), image.Strides(), CMRed, CMGreen, CMBlue );
       } else {
          ExpandColourMap8( imagedata, buf.data(), imageWidth, nrow, image.TensorStride(), image.Strides(), CMRed, CMGreen, CMBlue );
       }
       imagedata += static_cast< dip::sint >( nrow ) * image.Stride( 1 );
+      row += rowsPerStrip;
    }
 }
 
@@ -415,6 +431,12 @@ void ReadTIFFBinary(
       TiffFile& tiff,
       GetTIFFInfoData& data
 ) {
+   // Test for tiled TIFF files. These we can't handle (yet).
+   uint32 tileWidth;
+   if( TIFFGetField( tiff, TIFFTAG_TILEWIDTH, &tileWidth )) {
+      DIP_THROW_RUNTIME( TIFF_TILES_NOT_SUPPORTED );
+   }
+
    // Forge the image
    image.ReForge( data.fileInformation.sizes, data.fileInformation.tensorElements, DT_BIN );
    uint8* imagedata = static_cast< uint8* >( image.Origin() );
@@ -423,20 +445,24 @@ void ReadTIFFBinary(
    uint32 imageWidth = static_cast< uint32 >( image.Size( 0 ));
    uint32 imageLength = static_cast< uint32 >( image.Size( 1 ));
    dip::uint scanline = static_cast< dip::uint >( TIFFScanlineSize( tiff ));
-   DIP_THROW_IF(( scanline != div_ceil< dip::uint >( image.Size( 0 ), 8 )), "Wrong scanline size" );
+   DIP_ASSERT( scanline == div_ceil< dip::uint >( image.Size( 0 ), 8 ));
    std::vector< uint8 > buf( static_cast< dip::uint >( TIFFStripSize( tiff )));
    uint32 rowsPerStrip;
    TIFFGetFieldDefaulted( tiff, TIFFTAG_ROWSPERSTRIP, &rowsPerStrip );
-   for( uint32 row = 0; row < imageLength; row += rowsPerStrip ) {
+   uint32 nStrips = TIFFNumberOfStrips( tiff );
+   uint32 row = 0;
+   for( uint32 strip = 0; strip < nStrips; ++strip ) {
       uint32 nrow = ( row + rowsPerStrip > imageLength ? imageLength - row : rowsPerStrip );
-      uint32 strip = TIFFComputeStrip( tiff, row, 0 );
-      DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, buf.data(), static_cast< tmsize_t >( nrow * scanline )) < 0, "Error reading data" );
+      if( TIFFReadEncodedStrip( tiff, strip, buf.data(), static_cast< tmsize_t >( nrow * scanline )) < 0 ) {
+         DIP_THROW_RUNTIME( "Error reading data" );
+      }
       if( data.photometricInterpretation == PHOTOMETRIC_MINISWHITE ) {
          CopyBufferInv1( imagedata, buf.data(), imageWidth, nrow, image.Strides() );
       } else {
          CopyBuffer1( imagedata, buf.data(), imageWidth, nrow, image.Strides() );
       }
       imagedata += static_cast< dip::sint >( nrow ) * image.Stride( 1 );
+      row += rowsPerStrip;
    }
 }
 
@@ -563,6 +589,8 @@ void ReadTIFFData(
       DataType dataType,
       TiffFile& tiff
 ) {
+   dip::uint sizeOf = dataType.SizeOf();
+
    // Planar configuration?
    uint16 planarConfiguration = PLANARCONFIG_SEPARATE;
    if( tensorElements > 1 ) {
@@ -571,76 +599,96 @@ void ReadTIFFData(
       }
    }
 
-   // Read the image data stripwise
-   dip::uint sizeOf = dataType.SizeOf();
-   uint32 rowsPerStrip;
-   TIFFGetFieldDefaulted( tiff, TIFFTAG_ROWSPERSTRIP, &rowsPerStrip );
-   dip::uint scanline = static_cast< dip::uint >( TIFFScanlineSize( tiff ));
-   tsize_t stripsize = TIFFStripSize( tiff );
-   if( planarConfiguration == PLANARCONFIG_CONTIG ) {
-      // 1234123412341234....
-      // We know that tensorElements > 1, otherwise we force to PLANARCONFIG_SEPARATE
-      DIP_THROW_IF(( scanline != sizes[ 0 ] * tensorElements * sizeOf ), "Wrong scanline size" );
-      if( StridesAreNormal( tensorElements, tensorStride, sizes, strides )) {
-         for( uint32 row = 0; row < sizes[ 1 ]; row += rowsPerStrip ) {
-            dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
-            uint32 strip = TIFFComputeStrip( tiff, row, 0 );
-            DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, imagedata, stripsize ) < 0,
-                          "Error reading data (planar config cont)" );
-            imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
-         }
-      } else {
-         std::vector< uint8 > buf( static_cast< dip::uint >( stripsize ));
-         for( uint32 row = 0; row < sizes[ 1 ]; row += rowsPerStrip ) {
-            dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
-            uint32 strip = TIFFComputeStrip( tiff, row, 0 );
-            DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, buf.data(), stripsize ) < 0,
-                          "Error reading data (planar config cont)" );
-            if( sizeOf == 1 ) {
-               CopyBufferMultiChannel8( imagedata, buf.data(), tensorElements, sizes[ 0 ], nrow, tensorStride, strides );
-               imagedata += static_cast< dip::sint >( nrow ) * strides[ 1 ];
-            } else {
-               CopyBufferMultiChannelN( imagedata, buf.data(), tensorElements, sizes[ 0 ], nrow, tensorStride, strides, sizeOf );
-               imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
-            }
-         }
-      }
-   } else if( planarConfiguration == PLANARCONFIG_SEPARATE ) {
-      // 1111...2222...3333...4444...
-      DIP_THROW_IF(( scanline != sizes[ 0 ] * sizeOf ), "Wrong scanline size" );
-      uint8* imagebase = imagedata;
-      if( StridesAreNormal( 1, 1, sizes, strides )) {
-         for( uint16 s = 0; s < tensorElements; ++s ) {
-            imagedata = imagebase + static_cast< dip::sint >( s * sizeOf ) * tensorStride;
-            for( uint32 row = 0; row < sizes[ 1 ]; row += rowsPerStrip ) {
+   // Strips or tiles?
+   uint32 tileWidth;
+   if( TIFFGetField( tiff, TIFFTAG_TILEWIDTH, &tileWidth )) {
+      // --- Tiled TIFF file ---
+      DIP_THROW_RUNTIME( TIFF_TILES_NOT_SUPPORTED );
+   } else {
+      // --- Striped TIFF file ---
+      uint32 rowsPerStrip;
+      TIFFGetFieldDefaulted( tiff, TIFFTAG_ROWSPERSTRIP, &rowsPerStrip );
+      dip::uint scanline = static_cast< dip::uint >( TIFFScanlineSize( tiff ));
+      tsize_t stripSize = TIFFStripSize( tiff );
+      uint32 nStrips = TIFFNumberOfStrips( tiff );
+      if( planarConfiguration == PLANARCONFIG_CONTIG ) {
+         // 1234123412341234....
+         // We know that tensorElements > 1, otherwise we force to PLANARCONFIG_SEPARATE
+         DIP_ASSERT( scanline == sizes[ 0 ] * tensorElements * sizeOf );
+         if( StridesAreNormal( tensorElements, tensorStride, sizes, strides )) {
+            uint32 row = 0;
+            for( uint32 strip = 0; strip < nStrips; ++strip ) {
                dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
-               uint32 strip = TIFFComputeStrip( tiff, row, s );
-               DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, imagedata, stripsize ) < 0,
-                             "Error reading data (planar config separate)" );
+               if( TIFFReadEncodedStrip( tiff, strip, imagedata, stripSize ) < 0 ) {
+                  DIP_THROW_RUNTIME( "Error reading data (planar config cont)" );
+               }
                imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
+               row += rowsPerStrip;
             }
-         }
-      } else {
-         std::vector< uint8 > buf( static_cast< dip::uint >( stripsize ));
-         for( uint16 s = 0; s < tensorElements; ++s ) {
-            imagedata = imagebase + static_cast< dip::sint >( s * sizeOf ) * tensorStride;
-            for( uint32 row = 0; row < sizes[ 1 ]; row += rowsPerStrip ) {
+         } else {
+            std::vector< uint8 > buf( static_cast< dip::uint >( stripSize ));
+            uint32 row = 0;
+            for( uint32 strip = 0; strip < nStrips; ++strip ) {
                dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
-               uint32 strip = TIFFComputeStrip( tiff, row, s );
-               DIP_THROW_IF( TIFFReadEncodedStrip( tiff, strip, buf.data(), stripsize ) < 0,
-                             "Error reading data (planar config separate)" );
+               if( TIFFReadEncodedStrip( tiff, strip, buf.data(), stripSize ) < 0 ) {
+                  DIP_THROW_RUNTIME( "Error reading data (planar config cont)" );
+               }
                if( sizeOf == 1 ) {
-                  CopyBuffer8( imagedata, buf.data(), sizes[ 0 ], nrow, strides );
+                  CopyBufferMultiChannel8( imagedata, buf.data(), tensorElements, sizes[ 0 ], nrow, tensorStride, strides );
                   imagedata += static_cast< dip::sint >( nrow ) * strides[ 1 ];
                } else {
-                  CopyBufferN( imagedata, buf.data(), sizes[ 0 ], nrow, strides, sizeOf );
+                  CopyBufferMultiChannelN( imagedata, buf.data(), tensorElements, sizes[ 0 ], nrow, tensorStride, strides, sizeOf );
                   imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
                }
+               row += rowsPerStrip;
             }
          }
+      } else if( planarConfiguration == PLANARCONFIG_SEPARATE ) {
+         // 1111...2222...3333...4444...
+         DIP_ASSERT( scanline == sizes[ 0 ] * sizeOf );
+         DIP_ASSERT( nStrips % tensorElements == 0 );
+         nStrips /= static_cast< uint32 >( tensorElements );
+         uint8* imagebase = imagedata;
+         uint32 stripOffset = 0;
+         if( StridesAreNormal( 1, 1, sizes, strides )) {
+            for( uint16 plane = 0; plane < tensorElements; ++plane ) {
+               imagedata = imagebase + static_cast< dip::sint >( plane * sizeOf ) * tensorStride;
+               uint32 row = 0;
+               for( uint32 strip = 0; strip < nStrips; ++strip ) {
+                  dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
+                  if( TIFFReadEncodedStrip( tiff, stripOffset + strip, imagedata, stripSize ) < 0 ) {
+                     DIP_THROW_RUNTIME( "Error reading data (planar config separate)" );
+                  }
+                  imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
+                  row += rowsPerStrip;
+               }
+               stripOffset += nStrips;
+            }
+         } else {
+            std::vector< uint8 > buf( static_cast< dip::uint >( stripSize ));
+            for( uint16 plane = 0; plane < tensorElements; ++plane ) {
+               imagedata = imagebase + static_cast< dip::sint >( plane * sizeOf ) * tensorStride;
+               uint32 row = 0;
+               for( uint32 strip = 0; strip < nStrips; ++strip ) {
+                  dip::uint nrow = ( row + rowsPerStrip > sizes[ 1 ] ? sizes[ 1 ] - row : rowsPerStrip );
+                  if( TIFFReadEncodedStrip( tiff, stripOffset + strip, buf.data(), stripSize ) < 0 ) {
+                     DIP_THROW_RUNTIME( "Error reading data (planar config separate)" );
+                  }
+                  if( sizeOf == 1 ) {
+                     CopyBuffer8( imagedata, buf.data(), sizes[ 0 ], nrow, strides );
+                     imagedata += static_cast< dip::sint >( nrow ) * strides[ 1 ];
+                  } else {
+                     CopyBufferN( imagedata, buf.data(), sizes[ 0 ], nrow, strides, sizeOf );
+                     imagedata += static_cast< dip::sint >( nrow * sizeOf ) * strides[ 1 ];
+                  }
+                  row += rowsPerStrip;
+               }
+               stripOffset += nStrips;
+            }
+         }
+      } else {
+         DIP_THROW_RUNTIME( "Unsupported TIFF: unknown PlanarConfiguration value" );
       }
-   } else {
-      DIP_THROW( "Unsupported TIFF: unknown PlanarConfiguration value" );
    }
 }
 
@@ -689,18 +737,20 @@ void ImageReadTIFFStack(
       } else {
          directory += imageNumbers.step;
       }
-      DIP_THROW_IF( TIFFSetDirectory( tiff, static_cast< uint16 >( directory )) == 0, TIFF_DIRECTORY_NOT_FOUND );
-
-      // Test for tiled TIFF files. These we can't handle
-      uint32 tileWidth;
-      DIP_THROW_IF( TIFFGetField( tiff, TIFFTAG_TILEWIDTH, &tileWidth ), TIFF_TILES_NOT_SUPPORTED );
+      if( TIFFSetDirectory( tiff, static_cast< uint16 >( directory )) == 0 ) {
+         DIP_THROW_RUNTIME( TIFF_DIRECTORY_NOT_FOUND );
+      }
 
       // Test image plane to make sure it matches expectations
       uint32 temp32;
-      DIP_THROW_IF( !TIFFGetField( tiff, TIFFTAG_IMAGEWIDTH, &temp32 ), TIFF_NO_TAG );
-      DIP_THROW_IF( temp32 != image.Size( 0 ), "Reading multi-slice TIFF: width of images not consistent" );
-      DIP_THROW_IF( !TIFFGetField( tiff, TIFFTAG_IMAGELENGTH, &temp32 ), TIFF_NO_TAG );
-      DIP_THROW_IF( temp32 != image.Size( 1 ), "Reading multi-slice TIFF: length of images not consistent" );
+      READ_REQUIRED_TIFF_TAG( tiff, TIFFTAG_IMAGEWIDTH, &temp32 );
+      if( temp32 != image.Size( 0 )) {
+         DIP_THROW_RUNTIME( "Reading multi-slice TIFF: width of images not consistent" );
+      }
+      READ_REQUIRED_TIFF_TAG( tiff, TIFFTAG_IMAGELENGTH, &temp32 );
+      if( temp32 != image.Size( 1 )) {
+         DIP_THROW_RUNTIME( "Reading multi-slice TIFF: length of images not consistent" );
+      }
       uint16 photometricInterpretation;
       if( !TIFFGetField( tiff, TIFFTAG_PHOTOMETRIC, &photometricInterpretation )) {
          photometricInterpretation = PHOTOMETRIC_MINISBLACK;
@@ -716,8 +766,12 @@ void ImageReadTIFFStack(
             samplesPerPixel = 1;
          }
       }
-      DIP_THROW_IF( dataType != image.DataType(), "Reading multi-slice TIFF: data type not consistent" );
-      DIP_THROW_IF( samplesPerPixel != image.TensorElements(), "Reading multi-slice TIFF: samples per pixel not consistent" );
+      if( dataType != image.DataType() ) {
+         DIP_THROW_RUNTIME( "Reading multi-slice TIFF: data type not consistent" );
+      }
+      if( samplesPerPixel != image.TensorElements() ) {
+         DIP_THROW_RUNTIME( "Reading multi-slice TIFF: samples per pixel not consistent" );
+      }
 
       // Read the image data for this plane
       DIP_STACK_TRACE_THIS( ReadTIFFData(
@@ -740,15 +794,13 @@ FileInformation ImageReadTIFF(
    dip::uint numberOfImages = TIFFNumberOfDirectories( tiff );
    DIP_STACK_TRACE_THIS( imageNumbers.Fix( numberOfImages ));
    uint16 imageNumber = static_cast< uint16 >( imageNumbers.Offset() );
-   DIP_THROW_IF( TIFFSetDirectory( tiff, imageNumber ) == 0, TIFF_DIRECTORY_NOT_FOUND );
+   if( TIFFSetDirectory( tiff, imageNumber ) == 0 ) {
+      DIP_THROW_RUNTIME( TIFF_DIRECTORY_NOT_FOUND );
+   }
 
    // Get info
    GetTIFFInfoData data;
    DIP_STACK_TRACE_THIS( data = GetTIFFInfo( tiff ));
-
-   // Test for tiled TIFF files. These we can't handle yet. TODO: implement reading tiled TIFF files.
-   uint32 tileWidth;
-   DIP_THROW_IF( TIFFGetField( tiff, TIFFTAG_TILEWIDTH, &tileWidth ), TIFF_TILES_NOT_SUPPORTED );
 
    if( imageNumbers.start != imageNumbers.stop ) {
       // Read in multiple pages as a 3D image
@@ -816,7 +868,7 @@ void ImageReadTIFFSeries(
       try {
          it->Copy( tmp );
       } catch( Error const& ) {
-         DIP_THROW( "Images in series do not have consistent sizes" );
+         DIP_THROW_RUNTIME( "Images in series do not have consistent sizes" );
       }
    }
 }
@@ -830,7 +882,9 @@ FileInformation ImageReadTIFFInfo(
 
    // Go to the right directory
    if( imageNumber > 0 ) {
-      DIP_THROW_IF( TIFFSetDirectory( tiff, static_cast< uint16 >( imageNumber )) == 0, TIFF_DIRECTORY_NOT_FOUND );
+      if( TIFFSetDirectory( tiff, static_cast< uint16 >( imageNumber )) == 0 ) {
+         DIP_THROW_RUNTIME( TIFF_DIRECTORY_NOT_FOUND );
+      }
    }
 
    // Get info
