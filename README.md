@@ -13,9 +13,12 @@ porting algorithms over. It's a slow process, but
 
 See the [documentation](https://diplib.github.io/diplib-docs/) for more information.
 
+
 ## Building the library
 
-To build the library under Unix or MacOS, you will need a C++14 compliant compiler and CMake.
+### Linux, MacOS, Cygwin and other Unix-like systems
+
+To build the library you will need a C++14 compliant compiler and CMake.
 Use the following commands to build:
 
     mkdir target
@@ -23,17 +26,12 @@ Use the following commands to build:
     cmake /path/to/dip/root/directory
     make -j install
 
-To change which compilers CMake uses (delete any `CMakeCache.txt` file in your build directory first):
-
-    CC=gcc-5 CXX=g++-5 cmake /path/to/dip/root/directory
-
 Available `make` targets:
 
     <default>    # builds all targets
-    DIP          # builds the DIPlib library only
-    DIPviewer    # builds the DIPviewer module only (plus the DIPlib library)
-    PyDIP        # builds the PyDIP Python module only (plus the DIPlib library)
-    DIPimage     # builds the DIPimage MATLAB toolbox only (plus the DIPlib library)
+    DIP          # builds the DIPlib library
+    DIPviewer    # builds the DIPviewer module (plus the DIPlib library)
+    PyDIP        # builds the PyDIP Python module (plus the DIPlib library)
     check        # builds the unit_tests program and runs it
     check_memory # ...and runs it under valgrind
     apidoc       # Doxygen HTML documentation for the library API
@@ -44,29 +42,65 @@ Important `cmake` command-line arguments:
 
     -DCMAKE_INSTALL_PREFIX=$HOME/dip        # choose an instal location
     -DCMAKE_BUILD_TYPE=Debug                # by default it is release
-    -DDIP_SHARED_LIBRARY=Off                # to build a static library
-    -DDIP_EXCEPTIONS_RECORD_STACK_TRACE=Off # to disable stack trace generation on exception
-    -DDIP_ENABLE_ASSERT=Off                 # to disable asserts
-    -DDIP_ENABLE_DOCTEST=Off                # to disable doctest within DIPlib
-    -DDIP_ENABLE_ICS=Off                    # to disable ICS file format support
-    -DDIP_ENABLE_TIFF=Off                   # to disable TIFF file format support
-    -DDIP_ENABLE_UNICODE=Off                # to disable UFT-8 strings within DIPlib
-    -DDIP_ALWAYS_128_PRNG=On                # to use the 128-bit PRNG code where 128-bit
+    -DDIP_SHARED_LIBRARY=Off                # build a static DIPlib library
+    -DCMAKE_C_COMPILER=gcc-6                # specify a C compiler (for libics)
+    -DCMAKE_CXX_COMPILER=g++-6              # specify a C++ compiler (for everything else)
+    -DCMAKE_CXX_FLAGS=-march=native         # specify additional C++ compiler flags
+
+    -DDIP_EXCEPTIONS_RECORD_STACK_TRACE=Off # disable stack trace generation on exception
+    -DDIP_ENABLE_ASSERT=Off                 # disable asserts
+    -DDIP_ENABLE_DOCTEST=Off                # disable doctest within DIPlib
+    -DDIP_ENABLE_ICS=Off                    # disable ICS file format support
+    -DDIP_ENABLE_TIFF=Off                   # disable TIFF file format support
+    -DDIP_ENABLE_UNICODE=Off                # disable UFT-8 strings within DIPlib
+    -DDIP_ALWAYS_128_PRNG=On                # use the 128-bit PRNG code where 128-bit
                                             #    integers are not natively supported
-    -DDIP_BUILD_DIPVIEWER=Off               # to not build/install the DIPviewer module
-    -DDIP_BUILD_PYDIP=Off                   # to not build/install the PyDIP Python module
-    -DDIP_BUILD_DIPIMAGE=Off                # to not build/install the DIPimage MATLAB toolbox
-    -DPYBIND11_PYTHON_VERSION=3             # to compile PyDIP agains Python 3
+
+    -DDIP_BUILD_DIPVIEWER=Off               # not build/install the DIPviewer module
+    -DDIP_BUILD_PYDIP=Off                   # not build/install the PyDIP Python module
+    -DDIP_BUILD_DIPIMAGE=Off                # not build/install the DIPimage MATLAB toolbox
+    -DPYBIND11_PYTHON_VERSION=3             # compile PyDIP agains Python 3
 
 Some of these options might not be available on your system. For example, if you don't have
-MATLAB installed, the `DIP_BUILD_DIPIMAGE` option will not be defined. Setting it to `Off` will
-yield a warning message when running CMake.
+MATLAB installed, the `DIP_BUILD_DIPIMAGE` option will not be defined. In this case, setting
+it to `Off` will yield a warning message when running CMake.
 
-Note that on some platforms, the Python module requires the *DIPlib* library to build as a dynamic
-load library (`-DDIP_SHARED_LIBRARY=On`, which is the default).
+Note that on some platforms, the Python module requires the *DIPlib* library to build as
+a dynamic load library (`-DDIP_SHARED_LIBRARY=On`, which is the default).
 
 Under Windows you can follow a similar process, but I have never used CMake under
 Windows, so I'll let someone else write this bit.
+
+### Windows
+
+Unless you want to use Cygwin or MinGW (see above), we recommend Microsoft Visual Sudio 2017
+(version 15). You'll also need CMake.
+
+Using CMake-gui, choose where the source directory is and where to build the binaries. Then
+press "Configure" and select Visual Studio. Finally, press "Generate". You should now have
+a Visual Studio solution file that you can open in Visual Studio and build as usual.
+
+### Dependencies
+
+*DIPlib* supports two image file formats: ICS and TIFF. ICS support is built-in, it is
+recommended that you have [*ZLib*](http://www.zlib.net) installed for this. For TIFF support,
+you will need to have [*LibTIFF*](http://www.simplesystems.org/libtiff/) installed.
+
+*DIPimage* requires that [*MATLAB*](https://www.mathworks.com/products/matlab.html) be installed
+for compilation and execution (of course).
+Optionally, you can install [*OME Bio-Formats*](https://www.openmicroscopy.org/bio-formats/) to
+enable *DIPimage* to read many microscopy image file formats (type `help readim` in *MATLAB*,
+after installing *DIPimage*, to learn more).
+
+*PyDIP* requires that [*Python*](https://www.python.org) (preferably *Python3*) be installed.
+
+*DIPviewer* requires that *OpenGL* be available on your system (should come with the OS),
+as well as one of [*FreeGLUT*](http://freeglut.sourceforge.net) or [*GLFW*](http://www.glfw.org).
+On Windows, [*GLEW*](http://glew.sourceforge.net) is also required.
+
+To build the documentation, [*Doxygen*](http://www.doxygen.org) is needed.
+There is a chance it will only work on Unix-like systems (not yet tested in Windows).
+
 
 ## License
 
@@ -143,3 +177,24 @@ to the Apache License, except for *OME Bio-Formats*.
 - *ZLib* (as installed on your system)  
   Copyright 1995-2017 Jean-loup Gailly and Mark Adler  
   MIT-style license
+
+*DIPviewer* links agains the following libraries:
+
+- *FreeGLUT* (as installed on your system, alternative to *GLFW*)  
+  Copyright 1999-2000 Pawel W. Olszta  
+  X-Consortium license
+
+- *GLFW* (as installed on your system, alternative to *FreeGLUT*)  
+  Copyright 2002-2006 Marcus Geelnard  
+  Copyright 2006-2011 Camilla Berglund  
+  BSD-like license
+
+- *OpenGL* (as installed on your system)  
+  (free from licensing requirements)
+
+- *GLEW* (as installed on your system, for Windows only)  
+  Copyright 2008-2016, Nigel Stewart  
+  Copyright 2002-2008, Milan Ikits  
+  Copyright 2002-2008, Marcelo E. Magallon  
+  Copyright 2002, Lev Povalahev  
+  Modified BSD License
