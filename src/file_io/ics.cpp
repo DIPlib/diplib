@@ -96,8 +96,9 @@ dip::uint FindTensorDimension(
       }
    }
    // If the loop above doesn't break, colorDim == nDims, and colorSpace == "".
+   /* This is confusing, let's no do this.
    if( tensorDim == nDims ) {
-      // no color or tensor dimension recognizable from the names, but maybe there's a dimension with few samples?
+      // No color or tensor dimension recognizable from the names, but maybe there's a dimension with few samples?
       dip::uint tensorSize = 100; // initialize to something > 10
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if(( sizes[ ii ] <= 10 ) && ( sizes[ ii ] < tensorSize )) {
@@ -106,6 +107,7 @@ dip::uint FindTensorDimension(
          }
       }
    }
+   */
    return tensorDim;
 }
 
@@ -123,9 +125,9 @@ dip::uint FindTensorDimension(
 // - dim_0 == x, dim_1 == y, dim_2 == z
 UnsignedArray FindDimensionOrder( ICS* ics, dip::uint nDims, dip::uint tensorDim ) {
    struct FileDims {
-      dip::uint order;  // where to put the dimension
-      bool known;       // set if name was recognized
-      bool priority;    // set if it's one of x, y, z
+      dip::uint order = 0;      // where to put the dimension, use only if `known` is true
+      bool known = false;       // set if name was recognized
+      bool priority = false;    // set if it's one of x, y, z
    };
    // Find recognized labels
    DimensionArray< FileDims > file( nDims ); // This array contains the destination location for each of the input (file) dimensions
@@ -152,12 +154,14 @@ UnsignedArray FindDimensionOrder( ICS* ics, dip::uint nDims, dip::uint tensorDim
          file[ ii ].priority = true;
       } else if(( std::tolower( order[ 0 ] ) == 'd' ) &&
                 ( std::tolower( order[ 1 ] ) == 'i' ) &&
-                ( std::tolower( order[ 2 ] ) == 'm' ) &&
-                ( order[ 3 ] == '_' )) { // "dim_%d"
-         // TODO: accept also "dimN", "DIM_N", "N", etc.? How many combinations? Anything with a number in it?
+                ( std::tolower( order[ 2 ] ) == 'm' )) {   // "dim_%d", "dim%d"
+         order += 3;
+         if( *order == '_' ) {
+            ++order;
+         }
          char* end = nullptr;
-         dip::uint dim = std::strtoul( order + 4, &end, 10 ); // Note that std::strtoul() sets `end` removing the `const` qualifier!
-         if( end > order + 4 ) { // The test on `end` checks to see if std::strtoul() converted some characters.
+         dip::uint dim = std::strtoul( order, &end, 10 ); // Note that std::strtoul() sets `end` removing the `const` qualifier!
+         if( end > order ) { // The test on `end` checks to see if std::strtoul() converted some characters.
             file[ ii ].order = dim;
             file[ ii ].known = true;
             file[ ii ].priority = false;
@@ -167,7 +171,7 @@ UnsignedArray FindDimensionOrder( ICS* ics, dip::uint nDims, dip::uint tensorDim
    }
    // Move tensor dimension to the end
    if( tensorDim < nDims ) {
-      ++maxDim;
+      maxDim = std::max( maxDim + 1, nDims - 1 );
       file[ tensorDim ].order = maxDim;
       file[ tensorDim ].known = true;
       file[ tensorDim ].priority = false;
@@ -198,7 +202,7 @@ UnsignedArray FindDimensionOrder( ICS* ics, dip::uint nDims, dip::uint tensorDim
    auto unknownIt = unknown.begin();
    for( auto& list : inv ) {
       for( auto ii : list ) {
-         if( !file[ ii ].priority ) {
+         if( !file[ ii ].priority ) { // `file[ii].known` is `true`, otherwise it wouldn't be in the `inv` list.
             dip::uint kk = file[ ii ].order;
             while(( jj < kk ) && ( unknownIt != unknown.end() )) {
                // Put in unknown ones here so that 'dim_6' actually ends up at index 6:
@@ -213,7 +217,6 @@ UnsignedArray FindDimensionOrder( ICS* ics, dip::uint nDims, dip::uint tensorDim
    }
    // Finally take the rest of the unknown ones
    while( unknownIt != unknown.end() ) {
-      // Put in unused ones here so that 'dim_6' actually ends up at index 6:
       order[ jj ] = *unknownIt;
       ++unknownIt;
       ++jj;
@@ -352,7 +355,7 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
 
    // is there a color/tensor dimension?
    dip::uint tensorDim = FindTensorDimension( icsFile, data.fileSizes, data.fileInformation.colorSpace );
-   data.fileInformation.tensorElements = ( tensorDim == nDims ) ? 1 : data.fileSizes[ tensorDim ];
+   data.fileInformation.tensorElements = ( tensorDim < nDims ) ? data.fileSizes[ tensorDim ] : 1;
 
    // re-order dimensions
    data.order = FindDimensionOrder( icsFile, nDims, tensorDim );

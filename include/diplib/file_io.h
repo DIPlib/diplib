@@ -186,7 +186,7 @@ DIP_EXPORT void ImageWriteICS(
 ///    floating point.
 ///  - Only 4 and 8 bits per pixel colormapped images are read.
 ///  - Class Y images (YCbCr) and Log-compressed images (LogLuv or LogL) are not supported.
-// TODO: Support tiled images, and reading ROIs from them.
+// TODO: Support reading ROIs (especially from tiled images)
 // TODO: Option to read an indexed image without applying the color map, and reading in the color map separately.
 DIP_EXPORT FileInformation ImageReadTIFF(
       Image& out,
