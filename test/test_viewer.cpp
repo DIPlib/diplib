@@ -3,6 +3,7 @@
 #include <diplib.h>
 #include <diplib/file_io.h>
 #include <diplib/generation.h>
+#include <diplib/analysis.h>
 
 #include <diplib/viewer/glut.h>
 #include <diplib/viewer/glfw.h>
@@ -16,9 +17,12 @@ int main() {
    dip::viewer::GLUTManager manager;
 #endif
 
-   dip::Image image3 = dip::ImageReadICS( "../test/chromo3d.ics" );
+   dip::Image image3 = dip::ImageReadICS( "../test/chromo3d.ics" ), st;
    image3.PixelSize().Set( 2, 5 );
+   dip::StructureTensor(image3, {}, st);
+   
    manager.createWindow( dip::viewer::WindowPtr( new dip::viewer::SliceViewer( image3, "chromo3d", 500, 400 )));
+   manager.createWindow( dip::viewer::WindowPtr( new dip::viewer::SliceViewer( st, "chromo3d structure tensor", 500, 400 )));
 
    dip::Image image2{ dip::UnsignedArray{ 50, 40 }, 3, dip::DT_UINT8 };
    dip::Image tmp = image2[ 0 ];

@@ -41,7 +41,7 @@ void TensorViewPort::render()
   for (size_t jj=0; jj < t.Rows(); ++jj)
     for (size_t ii=0; ii < t.Columns(); ++ii)
     {
-      dip::sint idx = lut[ii*t.Rows()+jj];
+      dip::sint idx = lut[jj*t.Columns()+ii];
       if (idx != -1)
       {
         dip::sfloat val = p[(dip::uint)idx];
