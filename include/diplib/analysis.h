@@ -283,7 +283,7 @@ inline Image StructureTensor(
 /// ```cpp
 ///     dip::Image st = dip::StructureTensor( img );
 ///     dip::Image energy, orientation;
-///     dip::StructureTensorAnalysis2D( st, nullptr, nullptr, orientation, energy );
+///     dip::StructureTensorAnalysis2D( st, nullptr, nullptr, &orientation, &energy );
 /// ```
 /// (note how the last two parameters were not given, they default to `nullptr`). The code above computes both the
 /// orientation and energy values of the structure tensor.
@@ -305,8 +305,9 @@ inline Image StructureTensor(
 /// Note that `l1` and `l2` will both reference data within the same data segment, and therefore will likely not
 /// have normal strides.
 ///
-/// For a 3D structure tensor analysis, see the function `dip::StructureTensorAnalysis3D`. Note that eigenvalues
-/// and eigenvectors can also be computed using `dip::Eigenvalues` and `dip::EigenDecomposition`.
+/// For a 3D structure tensor analysis, see the function `dip::StructureTensorAnalysis3D`.
+/// A different interface to this function is available in `dip::StructureTensorAnalysis`.
+/// Note that eigenvalues and eigenvectors can also be computed using `dip::Eigenvalues` and `dip::EigenDecomposition`.
 DIP_EXPORT void StructureTensorAnalysis2D(
       Image const& in,
       Image* l1 = nullptr,
@@ -325,7 +326,7 @@ DIP_EXPORT void StructureTensorAnalysis2D(
 /// ```cpp
 ///     dip::Image st = dip::StructureTensor( img );
 ///     dip::Image energy;
-///     dip::StructureTensorAnalysis3D( st, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, energy );
+///     dip::StructureTensorAnalysis3D( st, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &energy );
 /// ```
 /// (note how the last two parameters were not given, they default to `nullptr`). The code above computes the
 /// energy value of the structure tensor.
@@ -350,8 +351,9 @@ DIP_EXPORT void StructureTensorAnalysis2D(
 /// `cylindrical` | Measure for local anisotropy: `( l2 - l3 ) / ( l2 + l3 )`.
 /// `planar`      | Measure for local anisotropy: `( l1 - l2 ) / ( l1 + l2 )`.
 ///
-/// For a 2D structure tensor analysis, see the function `dip::StructureTensorAnalysis2D`. Note that eigenvalues
-/// and eigenvectors can also be computed using `dip::Eigenvalues` and `dip::EigenDecomposition`.
+/// For a 2D structure tensor analysis, see the function `dip::StructureTensorAnalysis2D`.
+/// A different interface to this function is available in `dip::StructureTensorAnalysis`.
+/// Note that eigenvalues and eigenvectors can also be computed using `dip::Eigenvalues` and `dip::EigenDecomposition`.
 DIP_EXPORT void StructureTensorAnalysis3D(
       Image const& in,
       Image* l1 = nullptr,
@@ -379,7 +381,7 @@ DIP_EXPORT void StructureTensorAnalysis3D(
 ///  - For 3D inputs: `"l1"`, `"phi1"`, `"theta1"`, `"l2"`, `"phi2"`, `"theta2"`, `"l3"`, `"phi3"`, `"theta3"`,
 ///    `"energy"`, `"cylindrical"`, `"planar"`.
 ///
-/// The order of the strings in in `outputs` indicates the order they will be written to the `out` array.
+/// The order of the strings in `outputs` indicates the order they will be written to the `out` array.
 ///
 /// See the functions `dip::StructureTensorAnalysis2D` and `dip::StructureTensorAnalysis3D` for more information
 /// on these outputs.
