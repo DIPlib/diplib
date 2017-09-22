@@ -86,6 +86,28 @@ class type_caster< dip::DataType > {
    PYBIND11_TYPE_CASTER( type, _( "DataType" ));
 };
 
+// Cast Python string to dip::Tensor::Shape
+template<>
+class type_caster< dip::Tensor::Shape > {
+   public:
+      using type = dip::Tensor::Shape;
+      bool load( handle src, bool ) {
+         if( !src ) {
+            return false;
+         }
+         if( PYBIND11_BYTES_CHECK( src.ptr() ) || PyUnicode_Check( src.ptr() )) {
+            value = dip::Tensor::ShapeFromString( src.cast< dip::String >() );
+            //std::cout << "   Result: " << value.Name() << std::endl;
+            return true;
+         }
+         return false;
+      }
+      static handle cast( dip::Tensor::Shape const& src, return_value_policy, handle ) {
+         return py::cast( dip::Tensor::ShapeToString( src )).release();
+      }
+   PYBIND11_TYPE_CASTER( type, _( "TensorShape" ));
+};
+
 // Cast Python slice to dip::Range
 template<>
 class type_caster< dip::Range > {

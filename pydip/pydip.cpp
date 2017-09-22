@@ -23,6 +23,12 @@ static_assert( sizeof( bool ) == sizeof( dip::bin ), "bool is not one byte, how 
 
 namespace {
 
+dip::String TensorRepr( dip::Tensor const& tensor ) {
+   std::ostringstream os;
+   os << "<Tensor (" << tensor << ")>";
+   return os.str();
+}
+
 dip::String MetricRepr( dip::Metric const& s ) {
    std::ostringstream os;
    os << "<";
@@ -49,6 +55,43 @@ dip::String MetricRepr( dip::Metric const& s ) {
 
 PYBIND11_MODULE( PyDIP_bin, m ) {
    m.doc() = "The portion of the PyDIP module that contains the C++ DIPlib bindings.";
+
+   // diplib/library/tensor.h
+
+   auto tensor = py::class_< dip::Tensor >( m, "Tensor", "Represents the tensor size and shape." );
+   tensor.def( py::init<>() );
+   tensor.def( py::init< dip::uint >(), "n"_a );
+   tensor.def( py::init< dip::uint, dip::uint >(), "rows"_a, "cols"_a );
+   tensor.def( py::init< dip::Tensor::Shape, dip::uint, dip::uint >(), "shape"_a, "rows"_a, "cols"_a );
+   tensor.def( "__repr__", &TensorRepr );
+   tensor.def( "IsScalar", &dip::Tensor::IsScalar );
+   tensor.def( "IsVector", &dip::Tensor::IsVector );
+   tensor.def( "IsDiagonal", &dip::Tensor::IsDiagonal );
+   tensor.def( "IsSymmetric", &dip::Tensor::IsSymmetric );
+   tensor.def( "IsTriangular", &dip::Tensor::IsTriangular );
+   tensor.def( "IsSquare", &dip::Tensor::IsSquare );
+   tensor.def( "TensorShape", &dip::Tensor::TensorShape );
+   tensor.def( "Elements", &dip::Tensor::Elements );
+   tensor.def( "Rows", &dip::Tensor::Rows );
+   tensor.def( "Columns", &dip::Tensor::Columns );
+   tensor.def( "Sizes", &dip::Tensor::Sizes );
+   tensor.def( "SetShape", &dip::Tensor::SetShape, "shape"_a, "rows"_a, "cols"_a  );
+   tensor.def( "SetScalar", &dip::Tensor::SetScalar );
+   tensor.def( "SetVector", &dip::Tensor::SetVector, "n"_a );
+   tensor.def( "SetMatrix", &dip::Tensor::SetMatrix, "rows"_a, "cols"_a );
+   tensor.def( "SetSizes", &dip::Tensor::SetSizes, "sizes"_a );
+   tensor.def( "ChangeShape", py::overload_cast<>( &dip::Tensor::ChangeShape ) );
+   tensor.def( "ChangeShape", py::overload_cast< dip::uint >( &dip::Tensor::ChangeShape ), "rows"_a );
+   tensor.def( "ChangeShape", py::overload_cast< dip::Tensor const& >( &dip::Tensor::ChangeShape ), "example"_a );
+   tensor.def( "Transpose", &dip::Tensor::Transpose );
+   tensor.def( "ExtractDiagonal", &dip::Tensor::ExtractDiagonal, "stride"_a );
+   tensor.def( "ExtractRow", &dip::Tensor::ExtractRow, "index"_a, "stride"_a );
+   tensor.def( "ExtractColumn", &dip::Tensor::ExtractColumn, "index"_a, "stride"_a );
+   tensor.def( "HasNormalOrder", &dip::Tensor::HasNormalOrder );
+   tensor.def( "Index", &dip::Tensor::Index, "indices"_a );
+   tensor.def( "LookUpTable", &dip::Tensor::LookUpTable );
+   tensor.def( py::self == py::self );
+   tensor.def( py::self != py::self );
 
    // diplib/library/physical_dimensions.h
 
