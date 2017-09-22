@@ -90,7 +90,7 @@ UnsignedArray GetObjectLabels(
    DataTypeArray inBufT{ label.DataType() }; // All but guarantees that data won't be copied.
    if( mask.IsForged() ) {
       inar.emplace_back( mask );
-      inBufT.emplace_back( mask.DataType() ); // All but guarantees that data won't be copied.
+      inBufT.push_back( mask.DataType() ); // All but guarantees that data won't be copied.
    }
    ImageRefArray outar{};
 

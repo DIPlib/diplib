@@ -399,7 +399,7 @@ template<> constexpr DataType::DataType( scomplex ) : dt( DT::SCOMPLEX ) {}
 template<> constexpr DataType::DataType( dcomplex ) : dt( DT::DCOMPLEX ) {}
 
 /// \brief An array to hold data types
-using DataTypeArray = std::vector< DataType >;
+using DataTypeArray = DimensionArray< DataType >;
 
 //
 // Constants that people will use where a DataType is needed

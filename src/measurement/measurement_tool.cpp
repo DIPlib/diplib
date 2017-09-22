@@ -258,7 +258,7 @@ Measurement MeasurementTool::Measure(
       DataTypeArray inBufT{ DT_UINT32 };
       if( grey.IsForged() ) {
          inar.emplace_back( grey );
-         inBufT.emplace_back( DT_DFLOAT );
+         inBufT.push_back( DT_DFLOAT );
       }
       ImageRefArray outar{};
 

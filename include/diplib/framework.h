@@ -344,9 +344,7 @@ inline void ScanSingleInput(
    ImageConstRefArray inar;
    inar.reserve( 2 );
    inar.push_back( in );
-   DataTypeArray inBufT;
-   inBufT.reserve( 2 );
-   inBufT.push_back( bufferType );
+   DataTypeArray inBufT{ bufferType };
    Image mask;
    if( c_mask.IsForged() ) {
       // If we have a mask, add it to the input array.
@@ -359,9 +357,7 @@ inline void ScanSingleInput(
       inBufT.push_back( mask.DataType() );
    }
    ImageRefArray outar{};
-   DIP_START_STACK_TRACE
-      Scan( inar, outar, inBufT, {}, {}, {}, lineFilter, opts );
-   DIP_END_STACK_TRACE
+   DIP_STACK_TRACE_THIS( Scan( inar, outar, inBufT, {}, {}, {}, lineFilter, opts ));
 }
 
 /// \brief Calls `dip::Framework::Scan` with one input image and one output image.
