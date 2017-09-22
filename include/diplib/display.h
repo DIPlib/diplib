@@ -586,9 +586,31 @@ inline Image ApplyColorMap(
    return out;
 }
 
-// TODO: Implement an overlay function, to overlay a binary image on a grey-value or RGB image, with a given RGB value.
-//       This should be fairly trivial, we can do image(mask)={r,g,b};
-//       If the image to overlay is uint, consider it a labelled image, and do: image(mask>0)=ApplyColorMap(mask(mask>0),"label")
+/// \brief Adds a colored overlay to the image `in`, yielding an RGB image.
+///
+/// `in` must be either scalar (grey-value image) or RGB. `overlay` can be binary or integer.
+///
+/// In the case of a binary overlay image, the pixels selected by it will be assigned the value `color`,
+/// which defaults to red. If `color` is a scalar value, it will be interpreted as an intensity value, producing
+/// a grey overlay. In this latter case, if `in` was a scalar image, then the output will be scalar as well.
+///
+/// In the case of an integer overlay image, `dip::ApplyColorMap` with the `"label"` option will be used to
+/// create a label image overlay. `color` will be ignored.
+DIP_EXPORT void Overlay(
+      Image const& in,
+      Image const& overlay,
+      Image& out,
+      Image::Pixel const& color = { 255, 0, 0 }
+);
+inline Image Overlay(
+      Image const& in,
+      Image const& overlay,
+      Image::Pixel const& color = { 255, 0, 0 }
+) {
+   Image out;
+   Overlay( in, overlay, out, color );
+   return out;
+}
 
 // \}
 

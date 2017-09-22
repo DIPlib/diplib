@@ -424,6 +424,7 @@ target_link_libraries(test_viewer DIPviewer)
 target_link_libraries(test_dipviewer DIPviewer)
 target_link_libraries(test_fileviewer DIPviewer)
 target_link_libraries(test_filters DIPviewer)
+target_link_libraries(test_display DIPviewer)
 
 add_custom_target(tests DEPENDS ${TESTS_TARGETS})
 

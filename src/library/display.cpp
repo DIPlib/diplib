@@ -1257,10 +1257,11 @@ static constexpr std::array< uint8, 256 * 3 > divergentColorMap =
              230, 230, 0
        }};
 
-// 16 repetitions of the 16 first entries.
+// Black + 16 repetitions of 16 unique colors.
 // Greens are closer together perceptually, so we reduce the number of green entries in this map.
 static constexpr std::array< uint8, 256 * 3 > labelColorMap =
       {{
+             0,   0,   0,
              255, 0,   0,
              0,   255, 0,
              0,   0,   255,
@@ -1516,7 +1517,6 @@ static constexpr std::array< uint8, 256 * 3 > labelColorMap =
              0,   255, 128,
              0,   85,  255,
              170, 0,   255,
-             255, 0,   85,
        }};
 
 }
@@ -1542,6 +1542,53 @@ void ApplyColorMap(
    Image im( NonOwnedRefToDataSegment( data ), data, DT_UINT8, { 256 }, { 3 }, Tensor( 3 ), 1 );
    LookupTable lut( im );
    lut.Apply( in, out );
+}
+
+void Overlay(
+      Image const& c_in,
+      Image const& overlay,
+      Image& out,
+      Image::Pixel const& color
+) {
+   DIP_THROW_IF( !c_in.IsForged() || !overlay.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( overlay.Sizes() != c_in.Sizes(), E::SIZES_DONT_MATCH );
+   DIP_THROW_IF( !overlay.IsScalar(), E::MASK_NOT_SCALAR );
+   Image in = c_in;
+   if( in.DataType().IsBinary() ) {
+      in.Convert( DT_UINT8 ); // This changes the data type without copy.
+   }
+   if( overlay.DataType().IsUInt() || !in.IsScalar() || !color.IsScalar() ) {
+      // This code is not run in the case that `overlay` is binary, and `in` and `color` are scalar. In this case,
+      //    we create a grey-value output.
+      if( in.IsScalar()  ) {
+         in.ExpandSingletonTensor( 3 );
+         in.SetColorSpace( "RGB" );
+      } else {
+         DIP_THROW_IF( in.TensorElements() != 3, "Input image must have 1 or 3 tensor elements" );
+         DIP_THROW_IF( in.IsColor() && ( in.ColorSpace() != "RGB" ), "Convert input image to RGB color space first" );
+         in.SetColorSpace( "RGB" );
+      }
+   }
+   if( out.IsForged() && out.IsSingletonExpanded() ) {
+      // This could happen if &out == &c_in.
+      out.Strip();
+   }
+   out.Copy( in );
+   if( overlay.DataType().IsBinary() ) {
+      // A binary overlay
+      DIP_THROW_IF( !color.IsScalar() && ( color.TensorElements() != 3 ), "Color must have 1 or 3 tensor elements" );
+      out.At( overlay ) = color;
+      // out.At( overlay ).Fill( color );
+   } else if( overlay.DataType().IsUnsigned() ) {
+      // A labeled overlay
+      Image mask = overlay > 0;
+      Image labels = overlay.At( mask );
+      ApplyColorMap( labels, labels, "label" );
+      out.At( mask ) = labels;
+      // out.At( mask ).Copy( labels );
+   } else {
+      DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
+   }
 }
 
 } // namespace dip
