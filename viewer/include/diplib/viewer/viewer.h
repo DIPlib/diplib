@@ -273,10 +273,6 @@ inline void colorMap(const dip::Image::Pixel &in, dip::uint8 *out, const Viewing
 
   switch (options.lut_)
   {
-    case ViewingOptions::LookupTable::ColorSpace:
-      // TODO: Need to know color space. Is there even a per-pixel version in diplib?
-      out[0] = out[1] = out[2] = 0;
-      break;
     case ViewingOptions::LookupTable::RGB:
       for (size_t kk=0; kk < 3; ++kk)
       {
@@ -287,6 +283,7 @@ inline void colorMap(const dip::Image::Pixel &in, dip::uint8 *out, const Viewing
           out[kk] = 0;
       }
       break;
+    case ViewingOptions::LookupTable::ColorSpace:
     case ViewingOptions::LookupTable::Grey:
       out[0] = out[1] = out[2] = (dip::uint8)(rangeMap((double)in[options.element_*hasElements], options)*255);
       break;

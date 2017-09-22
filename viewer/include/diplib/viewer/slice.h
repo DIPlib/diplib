@@ -23,6 +23,7 @@
 #include <thread>
 #include <mutex>
 
+#include "diplib/color.h"
 #include "diplib/viewer/manager.h"
 #include "diplib/viewer/viewer.h"
 #include "diplib/viewer/image.h"
@@ -35,8 +36,9 @@ namespace dip { namespace viewer {
 class DIPVIEWER_EXPORT SliceView : public View
 {
   protected:
-    dip::Image projected_, ///< Projected (2D) image.
-               colored_;   ///< Colored (RGB) image.
+    dip::Image projected_,       ///< Projected (2D) image.
+               colored_;         ///< Colored (RGB) image.
+    dip::ColorSpaceManager csm_; ///< For LookupTable::ColorSpace
 
     dip::uint dimx_, dimy_;      ///< Indices in options.dims_.             
     unsigned int texture_;       ///< OpenGL texture identifier.

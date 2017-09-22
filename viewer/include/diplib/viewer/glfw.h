@@ -23,6 +23,7 @@
 #include <thread>
 #include <mutex>
 #include <map>
+#include <set>
 
 #include "diplib/viewer/manager.h"
 
@@ -32,10 +33,10 @@ namespace dip { namespace viewer {
 class DIPVIEWER_EXPORT GLFWManager : public Manager
 {
   protected:
-    bool refresh_;
-  
     typedef std::map<void *, WindowPtr> WindowMap;
     WindowMap windows_;
+    std::set<Window*> refresh_;
+    std::mutex refresh_lock_;
     
     static GLFWManager *instance_;
     
@@ -60,9 +61,14 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
     void makeCurrent(Window *window);
 
     // Delegates
-    static void refresh(struct GLFWwindow */*window*/)
+    static void refresh(struct GLFWwindow *window)
     {
-      instance_->refresh_ = true;
+      WindowPtr wdw = instance_->getWindow(window);
+      if (wdw)
+      {
+        instance_->makeCurrent(wdw.get());
+        wdw->draw();
+      }
     }
     
     static void reshape(struct GLFWwindow *window, int width, int height)

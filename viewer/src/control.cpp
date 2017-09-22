@@ -30,7 +30,7 @@ void ControlViewPort::render()
   glViewport(x_, viewer()->height()-y_-height_, width_, height_);
   glOrtho(0, width(), height(), 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
-
+  
   glColor3f(1., 1., 1.);
   for (size_t ii=0; ii < lists_.size(); ++ii)
   {
@@ -50,14 +50,19 @@ void ControlViewPort::render()
         selected = (int)viewer()->options().projection_;
         break;
     }
-  
+    
     auto list = lists_[ii];
     for (size_t jj=0; jj < list.size(); ++jj)
     {
+      // Don't allow selecting colorspace lut when image is not in color
+      GLfloat intensity = 1.0;
+      if (!viewer()->image().IsColor() && ii == 0 && jj == 0)
+        intensity = 0.5;
+    
       if ((int)jj == selected)
-        glColor3f(1., 1., 0.);
+        glColor3f(intensity, intensity, 0.);
       else
-        glColor3f(1., 1., 1.);
+        glColor3f(intensity, intensity, intensity);
       
       glRasterPos2i((GLint)ii*width()/(GLint)lists_.size(), (GLint)(jj+1)*13);
       viewer()->drawString(list[jj].c_str());
@@ -84,7 +89,9 @@ void ControlViewPort::click(int button, int state, int x, int y)
     switch (list)
     {
       case 0:
-        o.lut_ = (ViewingOptions::LookupTable) opt;
+        // Don't allow selecting colorspace lut when image is not in color
+        if (opt > 0 || viewer()->image().IsColor())
+          o.lut_ = (ViewingOptions::LookupTable) opt;
         break;
       case 1:
         o.mapping_ = (ViewingOptions::Mapping) opt;
@@ -118,9 +125,10 @@ void ControlViewPort::click(int button, int state, int x, int y)
         o.projection_ = (ViewingOptions::Projection) opt;
         break;
     }
+
+    viewer()->refresh();
   }
   
-  viewer()->refresh();
 }
 
 }} // namespace dip::viewer

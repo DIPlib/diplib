@@ -74,7 +74,6 @@ GLFWManager::GLFWManager()
     throw std::bad_alloc();
 
   instance_ = this;
-  refresh_ = true;
 
   glfwInit();
 }
@@ -113,8 +112,7 @@ void GLFWManager::createWindow(WindowPtr window)
   glfwGetFramebufferSize(wdw, &width, &height);
   window->resize(width, height);
   window->reshape(width, height);
-  
-  refresh_ = true;
+  window->refresh();
 }
     
 void GLFWManager::destroyWindows()
@@ -127,19 +125,19 @@ void GLFWManager::processEvents()
 {
   glfwPollEvents();
   
-  if (refresh_)
-  {
-    refresh_ = false;
-    
-    for (auto e: windows_)
-    {
-      makeCurrent(e.second.get());
-      e.second->draw();
-    }
-  }
-      
+  refresh_lock_.lock();
+  std::set<Window*> redraw = refresh_;
+  refresh_.clear();
+  refresh_lock_.unlock();
+  
   for (auto it = windows_.begin(); it != windows_.end();)
   {
+    if (redraw.count(it->second.get()))
+    {
+      makeCurrent(it->second.get());
+      it->second.get()->draw();
+    }
+  
     if (it->second->shouldClose() || glfwWindowShouldClose((GLFWwindow*)it->first))
     {
       glfwDestroyWindow((GLFWwindow*)it->first);
@@ -176,9 +174,11 @@ void GLFWManager::setWindowTitle(Window* window, const char *name)
   glfwSetWindowTitle((GLFWwindow*)window->id(), name);
 }
 
-void GLFWManager::refreshWindow(Window* /*window*/)
+void GLFWManager::refreshWindow(Window* window)
 {
-  refresh_ = true;
+  refresh_lock_.lock();
+  refresh_.insert(window);
+  refresh_lock_.unlock();
 }
 
 void GLFWManager::makeCurrent(Window *window)

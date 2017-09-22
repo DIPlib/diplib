@@ -65,7 +65,6 @@ void viewer__ColorMap(Image const& slice, Image& out, ViewingOptions &options)
     switch (lut)
     {
       case ViewingOptions::LookupTable::ColorSpace:
-        // TODO: Need to know color space. Is there even a per-pixel version in diplib?
         for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
           oPtr[0] = oPtr[1] = oPtr[2] = 0;
         break;
@@ -176,22 +175,29 @@ void SliceView::map()
       }
     }
     
+    colored_ = line;
+    
     // For left view, show vertically.
     if (o.dims_[dimx_] == -1)
     {
-      line.PermuteDimensions({1, 0});
-      colored_ = Image({100, projected_.Size(0)}, 3, DT_UINT8);
-      colored_.Copy(line);
+      colored_.PermuteDimensions({1, 0});
+      colored_.ForceNormalStrides();
     }
-    else
-      colored_ = line;
   }
   else
   {
     // Image data
-    colored_ = Image(projected_.Sizes(), 3, DT_UINT8);
-    
-    DIP_OVL_CALL_NONCOMPLEX( viewer__ColorMap, ( projected_, colored_, o ), projected_.DataType() );
+    if (o.lut_ == ViewingOptions::LookupTable::ColorSpace)
+    {
+      csm_.Convert(projected_, colored_, "RGB");
+      colored_.Convert(dip::DT_UINT8);
+      colored_.ForceNormalStrides();
+    } 
+    else
+    {
+      colored_ = Image(projected_.Sizes(), 3, DT_UINT8);
+      DIP_OVL_CALL_NONCOMPLEX( viewer__ColorMap, ( projected_, colored_, o ), projected_.DataType() );
+    }
   }
 }
 
@@ -645,7 +651,7 @@ void SliceViewer::calculateTextures()
     old_options = options;
     options = options_;
     mutex_.unlock();
-  
+    
     // Calculate textures
     if (diff >= ViewingOptions::Diff::Complex)
     {
@@ -714,8 +720,10 @@ void SliceViewer::calculateTextures()
     {
       // Just redraw
       updated_ = true;
-      refresh();
     }
+    
+    if (diff != ViewingOptions::Diff::None)
+      refresh();
 
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
