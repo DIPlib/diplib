@@ -18,6 +18,7 @@
  */
 
 #undef DIP__ENABLE_DOCTEST
+#include "diplib/math.h"
 #include "diplib/statistics.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/overload.h"
@@ -658,7 +659,7 @@ void SliceViewer::calculateTextures()
       // Deal with complex numbers
       if (original_.DataType().IsComplex())
       {
-        switch (options_.complex_)
+        switch (options.complex_)
         {
           case ViewingOptions::ComplexToReal::Real:
             image_ = original_.Real();
@@ -667,12 +668,10 @@ void SliceViewer::calculateTextures()
             image_ = original_.Imaginary();
             break;
           case ViewingOptions::ComplexToReal::Magnitude:
-            // TODO
-            image_ = original_.Real();
+            image_ = Abs(original_);
             break;
           case ViewingOptions::ComplexToReal::Phase:
-            // TODO
-            image_ = original_.Real();
+            image_ = Phase(original_);
             break;
         }      
       }
@@ -684,8 +683,21 @@ void SliceViewer::calculateTextures()
       copy.TensorToSpatial();
       dip::MinMaxAccumulator acc = MaximumAndMinimum( copy );
       options_.range_ = {acc.Minimum(), acc.Maximum()};
-      if (options_.mapping_ == ViewingOptions::Mapping::Logarithmic)
-        options_.mapping_range_ = options.range_;
+      if (options.mapping_ == ViewingOptions::Mapping::Linear ||
+          options.mapping_ == ViewingOptions::Mapping::Symmetric || 
+          options.mapping_ == ViewingOptions::Mapping::Logarithmic)
+      {
+        // If we're on some automatic mapping more, adjust it.
+        options_.mapping_range_ = options_.range_;
+        
+        if (options.mapping_ == ViewingOptions::Mapping::Symmetric)
+        {
+          if (std::abs(options.mapping_range_.first) > std::abs(options.mapping_range_.second))
+            options_.mapping_range_.second = -options.mapping_range_.first;
+          else
+            options_.mapping_range_.first = -options.mapping_range_.second;
+        }
+      }
         
       // Recalculate histogram
       histogram_->calculate();
