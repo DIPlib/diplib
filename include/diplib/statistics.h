@@ -88,7 +88,17 @@ DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Image const& in, Image const& ma
 /// image, returns the statistics over all sample values. The image must be real-valued.
 DIP_EXPORT StatisticsAccumulator SampleStatistics( Image const& in, Image const& mask = {} );
 
-// TODO: Covariance, Correlation (apply to tensor images, yield a matrix out with covariance or correlation between the channels).
+/// \brief Computes the covariance and correlation between the two images, within an optional mask.
+///
+/// If `mask` is not forged, all input pixels are considered. In case of tensor
+/// images, returns the covariance over all sample values. The images must be real-valued and
+/// have the same number of tensor elements.
+///
+/// To compute the covariance or correlation between two channels in a multi-channel image (a tensor image):
+/// ```cpp
+///     Covariance( in[ 0 ], in[ 1 ], mask );
+/// ```
+DIP_EXPORT CovarianceAccumulator Covariance( Image const& in1, Image const& in2, Image const& mask = {} );
 
 /// \brief Computes the center of mass (first order moments) of the image `in`, optionally using only
 /// those pixels selected by `mask`.

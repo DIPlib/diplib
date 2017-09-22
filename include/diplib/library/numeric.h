@@ -494,23 +494,17 @@ DIP_EXPORT void Solve(
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see VarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
+/// \see VarianceAccumulator, CovarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
-/// **Source**
-///
-/// Code modified from <a href="http://www.johndcook.com/blog/skewness_kurtosis/">John D. Cook</a>,
-/// but the same code appears on <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance">Wikipedia</a>.
-/// Method for 3rd and 4th order moments was first published by:
-///    <a href="http://people.xiph.org/~tterribe/notes/homs.html">T. B. Terriberry,
-///    "Computing higher-order moments online", 2008</a>.
-/// For more information:
-///    <a href="http://infoserve.sandia.gov/sand_doc/2008/086212.pdf">Philippe P. Pébay, "Formulas for Robust,
-///    One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments",
-///    Technical Report SAND2008-6212, Sandia National Laboratories, September 2008</a>.
-///
-/// Computation of statistics from moments according to Wikipedia:
-///    <a href="https://en.wikipedia.org/wiki/Skewness#Sample_skewness">Skewness</a> and
-///    <a href="https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis">Kurtosis</a>.
+/// **Literature**
+/// - Code modified from <a href="http://www.johndcook.com/blog/skewness_kurtosis/">John D. Cook</a>
+/// - <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance">Wikipedia</a> has the same code.
+/// - <a href="http://people.xiph.org/~tterribe/notes/homs.html">T. B. Terriberry, "Computing higher-order moments online", 2008</a>.
+/// - <a href="http://infoserve.sandia.gov/sand_doc/2008/086212.pdf">Philippe P. Pébay, "Formulas for Robust,
+///   One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments",
+///   Technical Report SAND2008-6212, Sandia National Laboratories, September 2008</a>.
+/// - <a href="https://en.wikipedia.org/wiki/Skewness#Sample_skewness">Wikipedia on Skewness</a>.
+/// - <a href="https://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis">Wikipedia on Kurtosis</a>.
 class DIP_NO_EXPORT StatisticsAccumulator {
    public:
       /// Reset the accumulator, leaving it as if newly allocated.
@@ -624,7 +618,7 @@ inline StatisticsAccumulator operator+( StatisticsAccumulator lhs, StatisticsAcc
 /// particular value passed to this method had been added previously to the accumulator. If this is not the case,
 /// resulting means and variances are no longer correct.
 ///
-/// \see StatisticsAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
+/// \see StatisticsAccumulator, CovarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
 ///
 /// **Literature**
 /// - Donald E. Knuth, "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", 3rd Ed., 1998.
@@ -698,6 +692,121 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
 }
 
 
+/// \brief `%CovarianceAccumulator` computes covariance and correlation of pairs of samples by accumulating the
+/// first two central moments and cross-moments.
+///
+/// Samples are added one pair at the time, using the `Push` method. Other members are used to retrieve the results.
+///
+/// The covariance matrix is formed by
+/// ```
+///    | cov.VarianceX()   cov.Covariance() |
+///    | cov.Covariance()  cov.VarianceY()  |
+/// ```
+///
+/// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
+/// and add the accumulators together using the `+` operator.
+///
+/// \see StatisticsAccumulator, VarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator, MomentAccumulator
+///
+/// **Literature**
+/// - <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance">Wikipedia</a>.
+class DIP_NO_EXPORT CovarianceAccumulator {
+      // TODO: rewrite this for arbitrary number of variables
+   public:
+      /// Reset the accumulator, leaving it as if newly allocated.
+      void Reset() {
+         n_ = 0;
+         meanx_ = 0;
+         m2x_ = 0;
+         meany_ = 0;
+         m2y_ = 0;
+         C_ = 0;
+      }
+
+      /// Add a pair of samples to the accumulator
+      void Push( double x, double y ) {
+         ++n_;
+         double dx = x - meanx_;
+         meanx_ += dx / static_cast< dfloat >( n_ );
+         m2x_ += dx * ( x - meanx_ );
+         double dy = y - meany_;
+         meany_ += dy / static_cast< dfloat >( n_ );
+         double dy_new = y - meany_;
+         m2y_ += dy * dy_new;
+         C_ += dx * dy_new;
+      }
+
+      /// Combine two accumulators
+      CovarianceAccumulator& operator+=( const CovarianceAccumulator& other ) {
+         if( n_ == 0 ) {
+            *this = other; // copy over the data
+         } else if( other.n_ > 0 ) {
+            size_t intN = n_ + other.n_;
+            double N = static_cast< dfloat >( intN );
+            double dx = other.meanx_ - meanx_;
+            double dy = other.meany_ - meany_;
+            meanx_ = ( static_cast< dfloat >( n_ ) * meanx_ + static_cast< dfloat >( other.n_ ) * other.meanx_ ) / N;
+            meany_ = ( static_cast< dfloat >( n_ ) * meany_ + static_cast< dfloat >( other.n_ ) * other.meany_ ) / N;
+            double fN = static_cast< dfloat >( n_ * other.n_ ) / N;
+            m2x_ += other.m2x_ + dx * dx * fN;
+            m2y_ += other.m2y_ + dy * dy * fN;
+            C_ += other.C_ + dx * dy * fN;
+            n_ = intN;
+         }
+         return *this;
+      }
+
+      /// Number of samples
+      size_t Number() const {
+         return n_;
+      }
+      /// Unbiased estimator of population mean for first variable
+      double MeanX() const {
+         return meanx_;
+      }
+      /// Unbiased estimator of population mean for second variable
+      double MeanY() const {
+         return meany_;
+      }
+      /// Unbiased estimator of population variance for first variable
+      double VarianceX() const {
+         dfloat n = static_cast< dfloat >( n_ );
+         return ( n_ > 1 ) ? ( m2x_ / ( n - 1 )) : ( 0.0 );
+      }
+      /// Unbiased estimator of population variance for second variable
+      double VarianceY() const {
+         dfloat n = static_cast< dfloat >( n_ );
+         return ( n_ > 1 ) ? ( m2y_ / ( n - 1 )) : ( 0.0 );
+      }
+      /// Estimator of population standard deviation for first variable (it is not possible to derive an unbiased estimator)
+      double StandardDeviationX() const {
+         return std::sqrt( VarianceX() );
+      }
+      /// Estimator of population standard deviation for second variable (it is not possible to derive an unbiased estimator)
+      double StandardDeviationY() const {
+         return std::sqrt( VarianceY() );
+      }
+      /// Unbiased estimator of population covariance
+      double Covariance() const {
+         dfloat n = static_cast< dfloat >( n_ );
+         return ( n_ > 1 ) ? ( C_ / ( n - 1.0 )) : ( 0.0 );
+      }
+      /// Estimator of correlation between the two variables
+      double Correlation() const {
+         double S = std::sqrt( m2x_ * m2y_ );
+         return (( n_ > 1 ) && ( S != 0.0 )) ? ( C_ / S ) : ( 0.0 );
+      }
+
+   private:
+      dip::uint n_ = 0;
+      double meanx_ = 0;
+      double m2x_ = 0;
+      double meany_ = 0;
+      double m2y_ = 0;
+      double C_ = 0;
+};
+
+
 /// \brief `%DirectionalStatisticsAccumulator` computes directional mean and standard deviation by accumulating
 /// a unit vector with the input value as angle.
 ///
@@ -707,7 +816,7 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see StatisticsAccumulator, VarianceAccumulator, MinMaxAccumulator, MomentAccumulator
+/// \see StatisticsAccumulator, VarianceAccumulator, CovarianceAccumulator, MinMaxAccumulator, MomentAccumulator
 class DIP_NO_EXPORT DirectionalStatisticsAccumulator {
    public:
       /// Reset the accumulator, leaving it as if newly allocated.
@@ -767,7 +876,7 @@ inline DirectionalStatisticsAccumulator operator+( DirectionalStatisticsAccumula
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see StatisticsAccumulator, VarianceAccumulator, DirectionalStatisticsAccumulator, MomentAccumulator
+/// \see StatisticsAccumulator, VarianceAccumulator, CovarianceAccumulator, DirectionalStatisticsAccumulator, MomentAccumulator
 class DIP_NO_EXPORT MinMaxAccumulator {
    public:
       /// Reset the accumulator, leaving it as if newly allocated.
@@ -830,7 +939,7 @@ inline MinMaxAccumulator operator+( MinMaxAccumulator lhs, MinMaxAccumulator con
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
-/// \see StatisticsAccumulator, VarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator
+/// \see StatisticsAccumulator, VarianceAccumulator, CovarianceAccumulator, DirectionalStatisticsAccumulator, MinMaxAccumulator
 class DIP_NO_EXPORT MomentAccumulator {
    public:
       /// The constructor determines the dimensionality for the object.
@@ -1109,6 +1218,35 @@ DOCTEST_TEST_CASE("[DIPlib] testing the statictical accumulators") {
       acc1.Pop( 3.0 );
       DOCTEST_CHECK( acc1.Mean() == doctest::Approx( 1.5 ));
       DOCTEST_CHECK( acc1.Variance() == doctest::Approx( 0.5 * 0.5 * 6.0 / 5.0 ));
+   }
+   {
+      dip::CovarianceAccumulator acc1;
+      acc1.Push( 1.0, 1.0 );
+      acc1.Push( 1.0, 1.0 );
+      acc1.Push( 1.0, 1.0 );
+      DOCTEST_CHECK( acc1.MeanX() == doctest::Approx( 1.0 ));
+      DOCTEST_CHECK( acc1.VarianceX() == doctest::Approx( 0.0 ));
+      DOCTEST_CHECK( acc1.MeanY() == doctest::Approx( 1.0 ));
+      DOCTEST_CHECK( acc1.VarianceY() == doctest::Approx( 0.0 ));
+      DOCTEST_CHECK( acc1.Covariance() == doctest::Approx( 0.0 ));
+      acc1.Push( 2.0, 1.0 );
+      acc1.Push( 2.0, 1.0 );
+      acc1.Push( 2.0, 1.0 );
+      DOCTEST_CHECK( acc1.MeanX() == doctest::Approx( 1.5 ));
+      DOCTEST_CHECK( acc1.VarianceX() == doctest::Approx( 0.5 * 0.5 * 6.0 / 5.0 ));
+      DOCTEST_CHECK( acc1.MeanY() == doctest::Approx( 1.0 ));
+      DOCTEST_CHECK( acc1.VarianceY() == doctest::Approx( 0.0 ));
+      DOCTEST_CHECK( acc1.Covariance() == doctest::Approx( 0.0 ));
+      dip::CovarianceAccumulator acc2;
+      acc2.Push( 3.0, 2.0 );
+      acc2.Push( 3.0, 2.0 );
+      acc2.Push( 3.0, 2.0 );
+      acc1 += acc2;
+      DOCTEST_CHECK( acc1.MeanX() == doctest::Approx( 2.0 ));
+      DOCTEST_CHECK( acc1.VarianceX() == doctest::Approx( 1.0 * 6.0 / 8.0 ));
+      DOCTEST_CHECK( acc1.MeanY() == doctest::Approx( 12.0 / 9.0 ));
+      DOCTEST_CHECK( acc1.VarianceY() == doctest::Approx(( 6.0 / 9.0 + 4.0 / 3.0 ) / 8.0 ));
+      DOCTEST_CHECK( acc1.Covariance() == doctest::Approx( 3.0 / 8.0 ));
    }
    {
       dip::DirectionalStatisticsAccumulator acc1;

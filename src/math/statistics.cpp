@@ -81,7 +81,7 @@ dip::uint Count(
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    dip__Count scanLineFilter;
-   Framework::ScanSingleInput( in, mask, DT_BIN, scanLineFilter );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, DT_BIN, scanLineFilter ));
    return scanLineFilter.GetResult();
 }
 
@@ -277,9 +277,10 @@ UnsignedArray MaximumPixel( Image const& in, Image const& mask, String const& po
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    bool first = positionFlag == "first";
    DataType dataType = DataType::SuggestReal( in.DataType() );
-   std::unique_ptr< dip__MaxMinPixel >scanLineFilter;
+   std::unique_ptr< dip__MaxMinPixel > scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__MaxPixel, ( first ), dataType );
-   Framework::ScanSingleInput( in, mask, dataType, *scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, dataType, *scanLineFilter,
+                                                     Framework::Scan_NeedCoordinates ));
    return scanLineFilter->GetResult();
 }
 
@@ -288,9 +289,10 @@ UnsignedArray MinimumPixel( Image const& in, Image const& mask, String const& po
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    bool first = positionFlag == "first";
    DataType dataType = DataType::SuggestReal( in.DataType() );
-   std::unique_ptr< dip__MaxMinPixel >scanLineFilter;
+   std::unique_ptr< dip__MaxMinPixel > scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__MinPixel, ( first ), dataType );
-   Framework::ScanSingleInput( in, mask, dataType, *scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, dataType, *scanLineFilter,
+                                                     Framework::Scan_NeedCoordinates ));
    return scanLineFilter->GetResult();
 }
 
@@ -333,13 +335,12 @@ void CumulativeSum(
    DIP_OVL_NEW_FLEX( lineFilter, CumSumFilter, (), dataType );
    if( mask.IsForged() ) {
       Select( in, Image( 0, dataType ), mask, out );
-      Framework::Separable( out, out, dataType, dataType,
-                            process, { 0 }, {}, *lineFilter,
-                            Framework::Separable_AsScalarImage );
+      DIP_STACK_TRACE_THIS( Framework::Separable( out, out, dataType, dataType, process, { 0 }, {}, *lineFilter,
+                                                  Framework::Separable_AsScalarImage ));
+   } else {
+      DIP_STACK_TRACE_THIS( Framework::Separable( in, out, dataType, dataType, process, { 0 }, {}, *lineFilter,
+                                                  Framework::Separable_AsScalarImage ));
    }
-   Framework::Separable( in, out, dataType, dataType,
-                         process, { 0 }, {}, *lineFilter,
-                         Framework::Separable_AsScalarImage );
 }
 
 namespace {
@@ -364,7 +365,7 @@ class dip__MaximumAndMinimum : public dip__MaximumAndMinimumBase {
             bin const* mask = static_cast< bin const* >( params.inBuffer[ 1 ].buffer );
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                if( *mask ) {
-                  vars.Push( *in );
+                  vars.Push( static_cast< dfloat >( *in ));
                }
                in += inStride;
                mask += maskStride;
@@ -375,11 +376,11 @@ class dip__MaximumAndMinimum : public dip__MaximumAndMinimumBase {
             for( ; ii < bufferLength - 1; ii += 2 ) {
                TPI v = *in;
                in += inStride;
-               vars.Push( v, *in );
+               vars.Push( static_cast< dfloat >( v ), static_cast< dfloat >( *in ));
                in += inStride;
             }
             if( ii < bufferLength ) {
-               vars.Push( *in );
+               vars.Push( static_cast< dfloat >( *in ));
             }
          }
          accArray_[ params.thread ] += vars;
@@ -411,9 +412,10 @@ MinMaxAccumulator MaximumAndMinimum(
       c_in.SplitComplex();
       // Note that mask will be singleton-expanded, which allows adding dimensions at the end.
    }
-   std::unique_ptr< dip__MaximumAndMinimumBase >scanLineFilter;
+   std::unique_ptr< dip__MaximumAndMinimumBase > scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__MaximumAndMinimum, (), c_in.DataType() );
-   Framework::ScanSingleInput( c_in, mask, c_in.DataType(), *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( c_in, mask, c_in.DataType(), *scanLineFilter,
+                                                     Framework::Scan_TensorAsSpatialDim ));
    return scanLineFilter->GetResult();
 }
 
@@ -439,7 +441,7 @@ class dip__SampleStatistics : public dip__SampleStatisticsBase {
             bin const* mask = static_cast< bin const* >( params.inBuffer[ 1 ].buffer );
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                if( *mask ) {
-                  vars.Push( *in );
+                  vars.Push( static_cast< dfloat >( *in ));
                }
                in += inStride;
                mask += maskStride;
@@ -447,7 +449,7 @@ class dip__SampleStatistics : public dip__SampleStatisticsBase {
          } else {
             // Otherwise we don't.
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-               vars.Push( *in );
+               vars.Push( static_cast< dfloat >( *in ));
                in += inStride;
             }
          }
@@ -474,9 +476,97 @@ StatisticsAccumulator SampleStatistics(
       Image const& mask
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
-   std::unique_ptr< dip__SampleStatisticsBase >scanLineFilter;
-   DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__SampleStatistics, (), in.DataType() );
-   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   std::unique_ptr< dip__SampleStatisticsBase > scanLineFilter;
+   DIP_OVL_NEW_REAL( scanLineFilter, dip__SampleStatistics, (), in.DataType() );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter,
+                                                     Framework::Scan_TensorAsSpatialDim ));
+   return scanLineFilter->GetResult();
+}
+
+namespace {
+
+class dip__CovarianceBase : public Framework::ScanLineFilter {
+   public:
+      virtual CovarianceAccumulator GetResult() = 0;
+};
+
+template< typename TPI >
+class dip__Covariance : public dip__CovarianceBase {
+   public:
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override { return 10; }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* in1 = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         TPI const* in2 = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
+         CovarianceAccumulator vars;
+         auto bufferLength = params.bufferLength;
+         auto in1Stride = params.inBuffer[ 0 ].stride;
+         auto in2Stride = params.inBuffer[ 1 ].stride;
+         if( params.inBuffer.size() > 2 ) {
+            // If there's three input buffers, we have a mask image.
+            auto maskStride = params.inBuffer[ 2 ].stride;
+            bin const* mask = static_cast< bin const* >( params.inBuffer[ 2 ].buffer );
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               if( *mask ) {
+                  vars.Push( static_cast< dfloat >( *in1 ), static_cast< dfloat >( *in2 ));
+               }
+               in1 += in1Stride;
+               in2 += in2Stride;
+               mask += maskStride;
+            }
+         } else {
+            // Otherwise we don't.
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               vars.Push( static_cast< dfloat >( *in1 ), static_cast< dfloat >( *in2 ));
+               in1 += in1Stride;
+               in2 += in2Stride;
+            }
+         }
+         accArray_[ params.thread ] += vars;
+      }
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
+         accArray_.resize( threads );
+      }
+      virtual CovarianceAccumulator GetResult() override {
+         CovarianceAccumulator out = accArray_[ 0 ];
+         for( dip::uint ii = 1; ii < accArray_.size(); ++ii ) {
+            out += accArray_[ ii ];
+         }
+         return out;
+      }
+   private:
+      std::vector< CovarianceAccumulator > accArray_;
+};
+
+} // namespace
+
+CovarianceAccumulator Covariance(
+      Image const& in1,
+      Image const& in2,
+      Image const& c_mask ) {
+   DIP_THROW_IF( !in1.IsForged() || !in2.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_STACK_TRACE_THIS( in1.CompareProperties( in2, Option::CmpProps_Sizes + Option::CmpProps_TensorElements ));
+   DataType ovlDataType = DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
+   ImageConstRefArray inar;
+   inar.reserve( 3 );
+   inar.push_back( in1 );
+   inar.push_back( in2 );
+   DataTypeArray inBufT{ ovlDataType, ovlDataType };
+   Image mask;
+   if( c_mask.IsForged() ) {
+      // If we have a mask, add it to the input array.
+      mask = c_mask.QuickCopy();
+      DIP_START_STACK_TRACE
+         mask.CheckIsMask( in1.Sizes(), Option::AllowSingletonExpansion::DO_ALLOW, Option::ThrowException::DO_THROW );
+         mask.ExpandSingletonDimensions( in1.Sizes() );
+      DIP_END_STACK_TRACE
+      inar.push_back( mask );
+      inBufT.push_back( mask.DataType() );
+   }
+   ImageRefArray outar{};
+   std::unique_ptr< dip__CovarianceBase > scanLineFilter;
+   DIP_OVL_NEW_REAL( scanLineFilter, dip__Covariance, (), ovlDataType );
+   DIP_STACK_TRACE_THIS( Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter,
+                                          Framework::Scan_TensorAsSpatialDim ));
    return scanLineFilter->GetResult();
 }
 
@@ -563,9 +653,10 @@ FloatArray CenterOfMass(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   std::unique_ptr< dip__CenterOfMassBase >scanLineFilter;
+   std::unique_ptr< dip__CenterOfMassBase > scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__CenterOfMass, ( in.Dimensionality() ), in.DataType() );
-   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter,
+                                                     Framework::Scan_NeedCoordinates ));
    return scanLineFilter->GetResult();
 }
 
@@ -595,7 +686,7 @@ class dip__Moments : public dip__MomentsBase {
             bin const* mask = static_cast< bin const* >( params.inBuffer[ 1 ].buffer );
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                if( *mask ) {
-                  vars.Push( pos, *in );
+                  vars.Push( pos, static_cast< dfloat >( *in ));
                }
                in += inStride;
                mask += maskStride;
@@ -604,7 +695,7 @@ class dip__Moments : public dip__MomentsBase {
          } else {
             // Otherwise we don't.
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-               vars.Push( pos, *in );
+               vars.Push( pos, static_cast< dfloat >( *in ));
                in += inStride;
                ++( pos[ procDim ] );
             }
@@ -635,9 +726,10 @@ MomentAccumulator Moments(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   std::unique_ptr< dip__MomentsBase >scanLineFilter;
+   std::unique_ptr< dip__MomentsBase > scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__Moments, ( in.Dimensionality() ), in.DataType() );
-   Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter, Framework::Scan_NeedCoordinates );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter,
+                                                     Framework::Scan_NeedCoordinates ));
    return scanLineFilter->GetResult();
 }
 
