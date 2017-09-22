@@ -1888,6 +1888,8 @@ class DIP_NO_EXPORT Image {
       /// The data segment is replaced by a new one, unless the old and new data
       /// types have the same size and it is not shared with other images.
       /// If the data segment is replaced, strides are set to normal.
+      ///
+      /// A binary image can be converted to an 8-bit integer type without copying or touching the data.
       DIP_EXPORT void Convert( dip::DataType dt );
 
       /// \brief Expands the image's tensor, such that the tensor representation is a column-major matrix.
@@ -2086,16 +2088,16 @@ inline Image Copy( Image const& src ) {
    return dest;
 }
 
-/// \brief Copies pixels selected by `mask` over from `src` to `dest`. `dest` will be a 1D image.
+/// \brief Copies the pixels selected by `mask` in `src` over to `dest`. `dest` will be a 1D image.
 DIP_EXPORT void CopyFrom( Image const& src, Image& dest, Image const& mask );
 
-/// \brief Copies pixels selected by `offsets` over from `src` to `dest`. `dest` will be a 1D image.
+/// \brief Copies the pixels selected by `offsets` over from `src` to `dest`. `dest` will be a 1D image.
 DIP_EXPORT void CopyFrom( Image const& src, Image& dest, IntegerArray const& offsets );
 
-/// \brief Copies pixels from `src` over to the pixels selected by `mask` in `dest`. `dest` must be forged.
+/// \brief Copies all pixels from `src` over to the pixels selected by `mask` in `dest`. `dest` must be forged.
 DIP_EXPORT void CopyTo( Image const& src, Image& dest, Image const& mask );
 
-/// \brief Copies pixels from `src` over to the pixels selected by `offsets` in `dest`. `dest` must be forged.
+/// \brief Copies all pixels from `src` over to the pixels selected by `offsets` in `dest`. `dest` must be forged.
 DIP_EXPORT void CopyTo( Image const& src, Image& dest, IntegerArray const& offsets );
 
 /// \brief Copies samples over from `src` to `dest`, expanding the tensor so it's a standard, column-major matrix.

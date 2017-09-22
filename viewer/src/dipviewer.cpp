@@ -43,7 +43,6 @@ void Show( dip::Image const& image )
    if( imgCopy.DataType().IsBinary() ) {
       // Convert binary to uint8 for display (SliceViewer doesn't support binary images because of the histogram).
       // This happens in-place, because the input and output sample sizes are identical.
-      // However, it will touch each of the samples in `image`, without changing any values.
       imgCopy.Convert( dip::DT_UINT8 );
    }
    manager__->createWindow( WindowPtr( new SliceViewer( imgCopy )));

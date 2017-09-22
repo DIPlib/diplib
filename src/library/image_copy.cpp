@@ -374,6 +374,12 @@ void Image::ExpandTensor() {
 void Image::Convert( dip::DataType dt ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    if( dt != dataType_ ) {
+      if(( dataType_ == DT_BIN ) && (( dt == DT_UINT8 ) || ( dt == DT_SINT8 ))) {
+         // bin->uint8 or bin->sint8
+         // These can happen without touching the data, it's OK even if the data is shared. Just change the flag.
+         dataType_ = dt;
+         return;
+      }
       if( !IsShared() && ( dt.SizeOf() == dataType_.SizeOf() )) {
          // The operation can happen in place.
          // Loop over all pixels, casting with clamp each of the values; finally set the data type field.
