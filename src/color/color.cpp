@@ -55,53 +55,53 @@ ColorSpaceManager::ColorSpaceManager() {
    // RGB
    Define( "RGB", 3 );
    DefineAlias( "rgb", "RGB" );
-   Register( ColorSpaceConverterPointer( new grey2rgb ));
-   Register( ColorSpaceConverterPointer( new rgb2grey ));
+   Register( new grey2rgb );
+   Register( new rgb2grey );
    // nlRGB (or R'G'B')
    Define( "sRGB", 3 );
    DefineAlias( "srgb", "sRGB" );
-   Register( ColorSpaceConverterPointer( new rgb2srgb ));
-   Register( ColorSpaceConverterPointer( new srgb2rgb ));
+   Register( new rgb2srgb );
+   Register( new srgb2rgb );
    // CMY
    Define( "CMY", 3 );
    DefineAlias( "cmy", "CMY" );
-   Register( ColorSpaceConverterPointer( new rgb2cmy ));
-   Register( ColorSpaceConverterPointer( new cmy2rgb ));
+   Register( new rgb2cmy );
+   Register( new cmy2rgb );
    // CMYK
    Define( "CMYK", 4 );
    DefineAlias( "cmyk", "CMYK" );
-   Register( ColorSpaceConverterPointer( new cmy2cmyk ));
-   Register( ColorSpaceConverterPointer( new cmyk2cmy ));
+   Register( new cmy2cmyk );
+   Register( new cmyk2cmy );
    // HSI
    Define( "HSI", 3 );
    DefineAlias( "hsi", "HSI" );
-   Register( ColorSpaceConverterPointer( new grey2hsi ));
-   Register( ColorSpaceConverterPointer( new hsi2grey ));
-   Register( ColorSpaceConverterPointer( new rgb2hsi ));
-   Register( ColorSpaceConverterPointer( new hsi2rgb ));
+   Register( new grey2hsi );
+   Register( new hsi2grey );
+   Register( new rgb2hsi );
+   Register( new hsi2rgb );
    // HCV
    Define( "HCV", 3 );
    DefineAlias( "hcv", "HCV" );
-   Register( ColorSpaceConverterPointer( new rgb2hcv ));
-   Register( ColorSpaceConverterPointer( new hcv2rgb ));
+   Register( new rgb2hcv );
+   Register( new hcv2rgb );
    // HSV
    Define( "HSV", 3 );
    DefineAlias( "hsv", "HSV" );
-   Register( ColorSpaceConverterPointer( new hcv2hsv ));
-   Register( ColorSpaceConverterPointer( new hsv2hcv ));
+   Register( new hcv2hsv );
+   Register( new hsv2hcv );
    // XYZ
    Define( "XYZ", 3 );
    DefineAlias( "xyz", "XYZ" );
-   Register( ColorSpaceConverterPointer( new grey2xyz ));
-   Register( ColorSpaceConverterPointer( new rgb2xyz ));
-   Register( ColorSpaceConverterPointer( new xyz2grey ));
-   Register( ColorSpaceConverterPointer( new xyz2rgb ));
+   Register( new grey2xyz );
+   Register( new rgb2xyz );
+   Register( new xyz2grey );
+   Register( new xyz2rgb );
    // Yxy
    Define( "Yxy", 3 );
    DefineAlias( "yxy", "Yxy" );
-   Register( ColorSpaceConverterPointer( new xyz2yxy ));
-   Register( ColorSpaceConverterPointer( new yxy2grey ));
-   Register( ColorSpaceConverterPointer( new yxy2xyz ));
+   Register( new xyz2yxy );
+   Register( new yxy2grey );
+   Register( new yxy2xyz );
    // Lab (or L*a*b*, CIELAB)
    Define( "Lab", 3 );
    DefineAlias( "lab", "Lab" );
@@ -109,10 +109,10 @@ ColorSpaceManager::ColorSpaceManager() {
    DefineAlias( "l*a*b*", "Lab" );
    DefineAlias( "CIELAB", "Lab" );
    DefineAlias( "cielab", "Lab" );
-   Register( ColorSpaceConverterPointer( new grey2lab ));
-   Register( ColorSpaceConverterPointer( new xyz2lab ));
-   Register( ColorSpaceConverterPointer( new lab2grey ));
-   Register( ColorSpaceConverterPointer( new lab2xyz ));
+   Register( new grey2lab );
+   Register( new xyz2lab );
+   Register( new lab2grey );
+   Register( new lab2xyz );
    // Luv (or L*u*v*, CIELUV)
    Define( "Luv", 3 );
    DefineAlias( "luv", "Luv" );
@@ -120,19 +120,19 @@ ColorSpaceManager::ColorSpaceManager() {
    DefineAlias( "l*u*v*", "Luv" );
    DefineAlias( "CIELUV", "Luv" );
    DefineAlias( "cieluv", "Luv" );
-   Register( ColorSpaceConverterPointer( new grey2luv ));
-   Register( ColorSpaceConverterPointer( new xyz2luv ));
-   Register( ColorSpaceConverterPointer( new luv2xyz ));
-   Register( ColorSpaceConverterPointer( new luv2grey ));
+   Register( new grey2luv );
+   Register( new xyz2luv );
+   Register( new luv2xyz );
+   Register( new luv2grey );
    // LCH
    Define( "LCH", 3 );
    DefineAlias( "lch", "LCH" );
    DefineAlias( "L*C*H*", "LCH" );
    DefineAlias( "l*c*h*", "LCH" );
-   Register( ColorSpaceConverterPointer( new grey2lch ));
-   Register( ColorSpaceConverterPointer( new lab2lch ));
-   Register( ColorSpaceConverterPointer( new lch2lab ));
-   Register( ColorSpaceConverterPointer( new lch2grey ));
+   Register( new grey2lch );
+   Register( new lab2lch );
+   Register( new lch2lab );
+   Register( new lch2grey );
 }
 
 

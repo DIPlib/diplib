@@ -67,9 +67,6 @@ class DIP_EXPORT ColorSpaceConverter {
       virtual ~ColorSpaceConverter() {}
 };
 
-/// \brief A pointer to a color space conversion object
-using ColorSpaceConverterPointer = std::shared_ptr< ColorSpaceConverter >;
-
 
 /// \brief An object of this class is used to convert images between color spaces.
 ///
@@ -88,8 +85,8 @@ using ColorSpaceConverterPointer = std::shared_ptr< ColorSpaceConverter >;
 ///
 ///     csm.Define( "Frank", 4 );                   // A new color space with 4 channels
 ///     csm.DefineAlias( "f", "Frank" );            // "f" is an alias for "Frank"
-///     csm.Register( frank2xyz );                  // an object that converts from Frank to XYZ
-///     csm.Register( yxy2frank );                  // an object that converts from Yxy to Frank
+///     csm.Register( new frank2xyz );              // an object that converts from Frank to XYZ
+///     csm.Register( new yxy2frank );              // an object that converts from Yxy to Frank
 ///     img = csm.Convert( img, "f" );              // img will be converted from Lab to Frank
 /// ```
 /// In the code snippet above, `frank2xyz` and `yxy2frank` are objects derived from `dip::ColorSpaceConverter`.
@@ -117,6 +114,7 @@ using ColorSpaceConverterPointer = std::shared_ptr< ColorSpaceConverter >;
 //
 // TODO: Also known: Piet's color space: art. What to do with this? Is it even published?
 class DIP_NO_EXPORT ColorSpaceManager {
+      using ColorSpaceConverterPointer = std::shared_ptr< ColorSpaceConverter >; // TODO: MSVC does not like us using a unique_ptr here, which is really what we want to do.
 
    public:
 
@@ -136,18 +134,20 @@ class DIP_NO_EXPORT ColorSpaceManager {
          names_[ alias ] = Index( colorSpaceName );
       }
 
-      /// \brief Registers a function object to translate from one color space to another.
-      void Register( ColorSpaceConverterPointer converter ) {
+      /// \brief Registers a function object to translate from one color space to another. The
+      /// `%dip::ColorSpaceManager` object takes ownership of the converter.
+      void Register( ColorSpaceConverter* converter ) {
+         auto smartpointer = ColorSpaceConverterPointer( converter );
          dip::uint source = Index( converter->InputColorSpace() );
          dip::uint destination = Index( converter->OutputColorSpace() );
          auto& edges = colorSpaces_[ source ].edges;
          auto it = edges.find( destination );
          if( it == edges.end() ) {
             // emplace
-            edges.emplace( destination, std::move( converter ));
+            edges.emplace( destination, std::move( smartpointer ));
          } else {
             // replace
-            it->second = std::move( converter );
+            it->second = std::move( smartpointer );
          }
       }
 
@@ -268,10 +268,6 @@ class DIP_NO_EXPORT ColorSpaceManager {
          std::map< dip::uint, ColorSpaceConverterPointer > edges;  // The key is the target color space index
          ColorSpace( String const& name, dip::uint chans ) :
                name( name ), nChannels( chans ) {}
-
-         // Make the struct non copyable (edges cannot be copied)
-         //ColorSpace(ColorSpace const&) = delete;   // TODO: function is still called inside emplace_back() in Define() ... why?
-         ColorSpace& operator =(ColorSpace const&) = delete;
       };
 
       std::map< String, dip::uint > names_;
