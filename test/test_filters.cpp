@@ -42,10 +42,9 @@ int main() {
 
    dip::Image result = dip::Dilation( binary, dip::StructuringElement( { 10, 4 }, "line" ));
 
-   //ViewerManager manager;
-   //ShowImage( manager, grey );
-   //ShowImage( manager, result );
-   //WaitForWindows( manager );
+   //dip::viewer::Show( grey );
+   //dip::viewer::Show( result );
+   //dip::viewer::Spin( );
 
    dip::testing::PrintPixelValues<dip::bin,1>( binary );
    dip::testing::PrintPixelValues<dip::bin,1>( result );

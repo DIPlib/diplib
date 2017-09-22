@@ -27,41 +27,59 @@ using ViewerManager = dip::viewer::GLFWManager;
 using ViewerManager = dip::viewer::GLUTManager;
 #endif
 
-ViewerManager *manager__ = NULL;
-
 #include "diplib/viewer/slice.h"
 #include "diplib/viewer/image.h"
 
 namespace dip { namespace viewer {
 
-void Show( dip::Image const& image )
-{
-   if (!manager__)
-     manager__ = new ViewerManager();
+namespace {
 
-   dip::Image imgCopy = image;
+ViewerManager *manager__ = NULL;
+size_t count__ = 0;
+
+String getWindowTitle( String const& title ) {
+   if( !title.empty() ) {
+      return title;
+   }
+   return String("Window ") + std::to_string( count__ );
+}
+
+} // namespace
+
+void Show( Image const& image, String const& title )
+{
+   if (!manager__) {
+      manager__ = new ViewerManager();
+      count__ = 1;
+   }
+
+   Image imgCopy = image;
    if( imgCopy.DataType().IsBinary() ) {
       // Convert binary to uint8 for display (SliceViewer doesn't support binary images because of the histogram).
       // This happens in-place, because the input and output sample sizes are identical.
-      imgCopy.Convert( dip::DT_UINT8 );
+      imgCopy.Convert( DT_UINT8 );
    }
-   manager__->createWindow( WindowPtr( new SliceViewer( imgCopy )));
+   manager__->createWindow( WindowPtr( new SliceViewer( imgCopy, getWindowTitle( title ))));
+   ++count__;
 }
 
-void ShowSimple( dip::Image const& image )
+void ShowSimple( Image const& image, String const& title )
 {
-   if (!manager__)
-     manager__ = new ViewerManager();
+   if (!manager__) {
+      manager__ = new ViewerManager();
+      count__ = 1;
+   }
 
-   manager__->createWindow( WindowPtr( new ImageViewer( image )));
+   manager__->createWindow( WindowPtr( new ImageViewer( image, getWindowTitle( title ))));
+   ++count__;
 }
 
 void Spin( )
 {
    if (!manager__)
-     return;
+      return;
 
-   while( manager__->activeWindows()) {
+   while( manager__->activeWindows() ) {
       SpinOnce( );
       std::this_thread::sleep_for( std::chrono::microseconds( 100 ));
    }

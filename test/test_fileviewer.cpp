@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 
    dip::Image image = dip::ImageReadICS( argv[1] );
    
-   dip::viewer::Show( image );
+   dip::viewer::Show( image, argv[1] );
    dip::viewer::Spin( );
 
    return 0;

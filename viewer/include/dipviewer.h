@@ -41,17 +41,17 @@
 namespace dip { namespace viewer {
 
 /// Show an image in the slice viewer.
-DIPVIEWER_EXPORT void Show( dip::Image const& image );
+DIPVIEWER_EXPORT void Show( Image const& image, String const& title = "" );
 
 /// Show a 2D RGB image.
-DIPVIEWER_EXPORT void ShowSimple( dip::Image const& image );
+DIPVIEWER_EXPORT void ShowSimple( Image const& image, String const& title = "" );
 
 /// Wait until all windows are closed.
-DIPVIEWER_EXPORT void Spin( );
+DIPVIEWER_EXPORT void Spin();
 
 /// Process user event queue.
 /// NOTE: Spin( ) must still be called before exiting.
-DIPVIEWER_EXPORT void SpinOnce( );
+DIPVIEWER_EXPORT void SpinOnce();
 
 }} // namespace dip::viewer
 

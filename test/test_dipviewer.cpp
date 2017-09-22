@@ -10,7 +10,7 @@ int main() {
    dip::Image image3 = dip::ImageReadICS( "../test/chromo3d.ics" );
    image3.PixelSize().Set( 2, 5 );
    
-   dip::viewer::Show( image3 );
+   dip::viewer::Show( image3, "chromo3d" );
    dip::viewer::Spin( );
 
    return 0;
