@@ -178,6 +178,10 @@ class DIP_NO_EXPORT Tensor {
       Shape TensorShape() const {
          return shape_;
       }
+      /// Return a string representation of the tensor shape.
+      String TensorShapeAsString() const {
+         return ShapeToString( shape_ );
+      }
       /// Gets number of tensor elements.
       dip::uint Elements() const {
          return elements_;
@@ -312,13 +316,13 @@ class DIP_NO_EXPORT Tensor {
       /// Changes the tensor shape without changing the number of elements, results in a `Shape::COL_VECTOR`.
       void ChangeShape() {
          shape_ = Shape::COL_VECTOR;
-         elements_ = rows_;
+         rows_ = elements_;
       }
-      /// Changes the tensor shape without changing the number of elements, resulting in the shape described by `other`.
-      void ChangeShape( Tensor const& other ) {
-         DIP_THROW_IF( elements_ != other.elements_, "Cannot reshape tensor to requested form" );
-         shape_ = other.shape_;
-         rows_ = other.rows_;
+      /// Changes the tensor shape without changing the number of elements, resulting in the shape described by `example`.
+      void ChangeShape( Tensor const& example ) {
+         DIP_THROW_IF( elements_ != example.elements_, "Cannot reshape tensor to requested form" );
+         shape_ = example.shape_;
+         rows_ = example.rows_;
       }
       /// Transposes the tensor, causing a change of shape without a change of number of elements.
       void Transpose() {
@@ -588,9 +592,9 @@ class DIP_NO_EXPORT Tensor {
          swap( rows_, other.rows_ );
       }
 
-      /// Return a string representation of the tensor shape
-      String TensorShapeAsString() const {
-         switch( shape_ ) {
+      /// Return a string representation of a tensor shape
+      static String ShapeToString( Shape shape ) {
+         switch( shape ) {
             default:
                //case Shape::COL_VECTOR:
                return "column vector";

@@ -1532,8 +1532,8 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Change the tensor shape, without changing the number of tensor elements.
-      Image& ReshapeTensor( dip::Tensor const& other ) {
-         tensor_.ChangeShape( other );
+      Image& ReshapeTensor( dip::Tensor const& example ) {
+         tensor_.ChangeShape( example );
          return *this;
       }
 
