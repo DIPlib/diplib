@@ -33,6 +33,10 @@ void init_statistics( py::module& m ) {
                 dip::StatisticsAccumulator acc = dip::SampleStatistics( in, mask );
                 return py::make_tuple( acc.Mean(), acc.Variance(), acc.Skewness(), acc.ExcessKurtosis() ).release();
           }, "in"_a, "mask"_a = dip::Image{} );
+   m.def( "Covariance", []( dip::Image const& in, dip::Image const& mask ) {
+                dip::CovarianceAccumulator acc = dip::Covariance( in, mask );
+                return py::make_tuple( acc.Covariance(), acc.Correlation() ).release();
+          }, "in"_a, "mask"_a = dip::Image{} );
    m.def( "CenterOfMass", &dip::CenterOfMass, "in"_a, "mask"_a = dip::Image{} );
    m.def( "Moments", []( dip::Image const& in, dip::Image const& mask ) {
              dip::MomentAccumulator acc = dip::Moments( in, mask );

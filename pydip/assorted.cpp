@@ -103,6 +103,8 @@ void init_assorted( py::module& m ) {
    // diplib/display.h
    m.def( "ImageDisplay", &DisplayRange, "in"_a, "range"_a, "complexMode"_a = "abs", "projectionMode"_a = "mean", "coordinates"_a = dip::UnsignedArray{}, "dim1"_a = 0, "dim2"_a = 1 );
    m.def( "ImageDisplay", &DisplayMode, "in"_a, "mappingMode"_a = "", "complexMode"_a = "abs", "projectionMode"_a = "mean", "coordinates"_a = dip::UnsignedArray{}, "dim1"_a = 0, "dim2"_a = 1 );
+   m.def( "ApplyColorMap", py::overload_cast< dip::Image const&, dip::String const& >( &dip::ApplyColorMap ), "in"_a, "colorMap"_a = "grey" );
+   m.def( "Overlay", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image::Pixel const& >( &dip::Overlay ), "in"_a, "overlay"_a, "color"_a = dip::Image::Pixel{ 255, 0, 0 } );
 
    // diplib/file_io.h
    m.def( "ImageReadICS", py::overload_cast< dip::String const&, dip::RangeArray const&, dip::Range const&, dip::String const& >( &dip::ImageReadICS ),
