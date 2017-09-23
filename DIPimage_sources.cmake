@@ -65,6 +65,7 @@ dipimage/minima.cpp
 dipimage/noise.cpp
 dipimage/noisestd.cpp
 dipimage/opening.cpp
+dipimage/overlay.cpp
 dipimage/pathopening.cpp
 dipimage/percf.cpp
 dipimage/private/imagedisplay.cpp

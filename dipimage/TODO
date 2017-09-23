@@ -124,7 +124,6 @@ opticflow.m
 orientation4d.m
 orientationplot.m
 orientationspace.m
-overlay.m
 overlay_confidence.m
 overlay_vector.m
 paircorrelation.m
