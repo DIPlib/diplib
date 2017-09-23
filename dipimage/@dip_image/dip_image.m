@@ -21,6 +21,13 @@
 %   only allowed for spatial indices (i.e. within the '()' indexing), not
 %   for tensor indexing.
 %
+%   The assignment
+%      A(0,0) = [255,0,0]
+%   assigns the three values into the three components of the tensor image
+%   A. This type of assignment is triggered if A is a tensor image and one
+%   of the dimensions of the assigned matrix matches the number of tensor
+%   elements in A.
+%
 %   To create an image, you can call the constructor DIP_IMAGE/DIP_IMAGE,
 %   or you can use the functions NEWIM, NEWTENSORIM or NEWCOLORIM.
 %
@@ -1190,8 +1197,43 @@ classdef dip_image
             end
             a.Data = subsasgn_dip(a.Data,s,b);
          else
-            if nd == 1
-               b = reshape(b,[],1);
+            reshaped = false;
+            if length(s.subs{2}) > 1
+               I = find(size(b) == length(s.subs{2}));
+               if ~isempty(I)
+                  I = I(1);
+                  if I ~= 1
+                     order = 1:ndims(b);
+                     order(I) = [];
+                     order = [I,order];
+                     b = permute(b,order);
+                  end
+                  if nd == 1
+                     b = reshape(b,1,size(b,1),[]);
+                  else
+                     b = reshape(b,[1,size(b)]);
+                  end
+                  if ndims(b)==2 && length(s.subs)>2
+                     % It's become a 0D tensor image: we'll need to replicate it to allow
+                     % assignment of 0D image to multiple locations in 'a'
+                     sz = cellfun('length',s.subs);
+                     for ii=3:length(sz)
+                        if isequal(s.subs{ii},':')
+                           sz(ii) = size(a,ii);
+                        end
+                     end
+                     sz(1:2) = 1;
+                     b = repmat(b,sz);
+                  end
+                  reshaped = true;
+               end
+            end
+            if ~reshaped
+               if nd == 1
+                  b = reshape(b,1,1,[]);
+               else
+                  b = reshape(b,[1,1,size(b)]);
+               end
             end
             a.Data = subsasgn_mat(a.Data,s,b);
          end
@@ -2459,7 +2501,6 @@ end
 
 % Assigns b into dip_iamge data segment a. b is a standard matlab matrix
 function a = subsasgn_mat(a,s,b)
-   b = reshape(b,[1,1,size(b)]);
    %fprintf('subsasgn_mat: size(b,1) = %d, size(a,1) = %d\n', size(b,1), size(a,1))
    if isreal(b) % Assigning real values into a
       % Assign b into real part of a
