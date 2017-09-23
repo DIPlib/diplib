@@ -1541,7 +1541,8 @@ void ApplyColorMap(
    void* data = const_cast< void* >( static_cast< void const* >( values ));
    Image im( NonOwnedRefToDataSegment( data ), data, DT_UINT8, { 256 }, { 3 }, Tensor( 3 ), 1 );
    LookupTable lut( im );
-   lut.Apply( in, out );
+   DIP_STACK_TRACE_THIS( lut.Apply( in, out ));
+   out.SetColorSpace( "RGB" );
 }
 
 void Overlay(
@@ -1577,14 +1578,14 @@ void Overlay(
    if( overlay.DataType().IsBinary() ) {
       // A binary overlay
       DIP_THROW_IF( !color.IsScalar() && ( color.TensorElements() != 3 ), "Color must have 1 or 3 tensor elements" );
-      out.At( overlay ) = color;
+      DIP_STACK_TRACE_THIS( out.At( overlay ) = color );
       // out.At( overlay ).Fill( color );
    } else if( overlay.DataType().IsUnsigned() ) {
       // A labeled overlay
       Image mask = overlay > 0;
       Image labels = overlay.At( mask );
-      ApplyColorMap( labels, labels, "label" );
-      out.At( mask ) = labels;
+      DIP_STACK_TRACE_THIS( ApplyColorMap( labels, labels, "label" ));
+      DIP_STACK_TRACE_THIS( out.At( mask ) = labels );
       // out.At( mask ).Copy( labels );
    } else {
       DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
