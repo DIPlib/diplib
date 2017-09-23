@@ -80,7 +80,7 @@ void Spin( )
       return;
 
    while( manager__->activeWindows() ) {
-      SpinOnce( );
+      Draw( );
       std::this_thread::sleep_for( std::chrono::microseconds( 100 ));
    }
    
@@ -88,7 +88,7 @@ void Spin( )
    manager__ = NULL;
 }
 
-void SpinOnce( )
+void Draw( )
 {
    if (!manager__)
       return;

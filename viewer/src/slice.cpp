@@ -25,6 +25,12 @@
 #include "diplib/viewer/include_gl.h"
 #include "diplib/viewer/slice.h"
 
+#define CHAR_WIDTH   8
+#define CHAR_HEIGHT 13
+
+#define DIM_WIDTH   (CHAR_WIDTH+2)
+#define DIM_HEIGHT  (CHAR_HEIGHT+2)
+
 namespace dip { namespace viewer {
 
 template< typename TPI >
@@ -286,17 +292,17 @@ void SliceViewPort::render()
   {
     char buf[] = {dy==-1?'-':dimchars[dy], 0};
 
-    glRasterPos2i((GLint)width_-9, (GLint)height_/2-7);
+    glRasterPos2i((GLint)width_-(CHAR_WIDTH+1), (GLint)height_/2-(CHAR_HEIGHT/2));
     viewer()->drawString(buf);
-    width -= 10;
+    width -= DIM_WIDTH;
   }
   if (view()->dimy() == 1)
   {
     char buf[] = {dx==-1?'-':dimchars[dx], 0};
     
-    glRasterPos2i((GLint)width_/2-4, (GLint)height_-4);
+    glRasterPos2i((GLint)width_/2-(CHAR_WIDTH/2), (GLint)height_-(CHAR_HEIGHT/2));
     viewer()->drawString(buf);
-    height -= 12;
+    height -= DIM_HEIGHT;
   }
   
   glMatrixMode(GL_PROJECTION);
@@ -317,8 +323,8 @@ void SliceViewPort::click(int button, int state, int x, int y)
             
   if (state == 0)
   {
-    bool nearXAxis = view()->dimy() == 1 && y > y_+height_-2*14;
-    bool nearYAxis = view()->dimx() == 0 && x > x_+width_-2*10;
+    bool nearXAxis = view()->dimy() == 1 && y > y_+height_-2*DIM_HEIGHT;
+    bool nearYAxis = view()->dimx() == 0 && x > x_+width_-2*DIM_WIDTH;
     double ix, iy, nix, niy;
   
     screenToView(x, y, &ix, &iy);
@@ -575,6 +581,9 @@ void SliceViewer::draw()
 void SliceViewer::key(unsigned char k, int x, int y, int mods)
 {
   Viewer::key(k, x, y, mods);
+  
+  auto &dims = options_.dims_;
+  auto &zoom = options_.zoom_;
 
   if (!mods)
   {
@@ -589,17 +598,73 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
       
     refresh();
   }
-
-  if (k == '1' && mods == KEY_MOD_CONTROL)
+  
+  if (mods == KEY_MOD_CONTROL)
   {
-    // ^1: 1:1 zoom
-    options_.zoom_ = image_.AspectRatio();
-    
-    for (size_t ii=0; ii < image_.Dimensionality(); ++ii)
+    if (k == '1')
     {
-      options_.origin_[ii] = 0;
-      if (options_.zoom_[ii] == 0)
-        options_.zoom_[ii] = 1;
+      // ^1: 1:1 zoom
+      zoom = image_.AspectRatio();
+      
+      for (size_t ii=0; ii < image_.Dimensionality(); ++ii)
+      {
+        options_.origin_[ii] = 0;
+        if (zoom[ii] == 0)
+          zoom[ii] = 1;
+      }
+      
+      refresh();
+    }
+    
+    if (k == 'F')
+    {
+      // ^F: fit window
+      for (size_t ii=0; ii < image_.Dimensionality(); ++ii)
+      {
+        options_.origin_[ii] = 0;
+        zoom[ii] = std::numeric_limits<dip::dfloat>::max();
+      }
+      
+      for (size_t ii=0; ii < 4; ++ii)
+      {
+        int sz;
+        switch (ii)
+        {
+          case 0: sz = main_->width()-DIM_WIDTH; break;
+          case 1: sz = main_->height()-DIM_HEIGHT; break;
+          case 2: sz = left_->width(); break;
+          case 3: sz = top_->height(); break;
+        }
+        
+        if (dims[ii] != -1)
+          zoom[(dip::uint)dims[ii]] = std::min(zoom[(dip::uint)dims[ii]], (dip::dfloat)sz/(dip::dfloat)image_.Size((dip::uint)dims[ii]));
+      }
+      
+      for (size_t ii=0; ii < image_.Dimensionality(); ++ii)
+        if (zoom[ii] == std::numeric_limits<dip::dfloat>::max())
+          zoom[ii] = 1.;
+          
+      // Keep XY aspect ratio
+      dip::sint dx = dims[0], dy = dims[1];
+      if (dx != -1 && dy != -1)
+      {
+        dip::dfloat aspect_image = (dip::dfloat)image_.Size((dip::uint)dx)/(dip::dfloat)image_.Size((dip::uint)dy),
+                    aspect_viewport = (dip::dfloat)(main_->width()-DIM_WIDTH)/(dip::dfloat)(main_->height()-DIM_HEIGHT);
+        
+        if (aspect_image > aspect_viewport)
+          zoom[1] = zoom[0];
+        else
+          zoom[0] = zoom[1];
+      }
+      
+      refresh();
+    }
+    
+    if (k == 'L')
+    {
+      // ^L: linear stretch
+      options_.mapping_range_ = options_.range_;
+      refresh();
     }
   }
 }
@@ -692,10 +757,10 @@ void SliceViewer::calculateTextures()
         
         if (options.mapping_ == ViewingOptions::Mapping::Symmetric)
         {
-          if (std::abs(options.mapping_range_.first) > std::abs(options.mapping_range_.second))
-            options_.mapping_range_.second = -options.mapping_range_.first;
+          if (std::abs(options_.mapping_range_.first) > std::abs(options_.mapping_range_.second))
+            options_.mapping_range_.second = -options_.mapping_range_.first;
           else
-            options_.mapping_range_.first = -options.mapping_range_.second;
+            options_.mapping_range_.first = -options_.mapping_range_.second;
         }
       }
         

@@ -70,6 +70,7 @@ are the following documentation pages:
 - All image analysis functions are categorized into <a href="modules.html">modules</a>.
 - \ref using_iterators, in case existing algorithms are not sufficient.
 - \ref design, might help understand the library architecture.
+- \ref viewer gives a short introduction to the included image viewer.
 
 ## A short history
 

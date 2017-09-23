@@ -68,7 +68,7 @@ main parts
 
   1. *Colorspace*, being
   
-     - *SPA*: image colorspace, not yet implemented
+     - *SPA*: image colorspace; this disregards the mapping.
      - *RGB*: RGB colorspace, from any 3 tensor elements
      - *GRY*: Single grey value
      - *JET*: Single value mapped to the Jet (blue-red) colormap
@@ -85,8 +85,8 @@ main parts
 
      - *REA*: Real part
      - *IMG*: Imaginary part
-     - *MAG*: Magnitude, not yet implemented
-     - *PHA*: Phase, not yet implemented
+     - *MAG*: Magnitude
+     - *PHA*: Phase
 
   4. *Projection*, being
 
@@ -104,7 +104,8 @@ main parts
   in the control panel does not change the histogram extents, but does
   change the colorbar.
 
-  The histogram also indicates the value of the operating point.
+  The histogram also indicates the value of the operating point and the
+  current mapping range.
 
 Interaction occurs mainly within the main visualization window, and depends
 on where it occurs
@@ -140,6 +141,37 @@ on where it occurs
   necessarily the same, as are the vertical dimensions of the nominal XY and
   YZ slices.
 
+- *Histogram*
+
+  Left-dragging in the histogram changes the mapping range limits.
+
+There are also a few keyboard shortcuts:
+
+- *N* and *P*
+
+  Step through the second image dimension.
+
+- *F* and *B*
+
+  Step through the third image dimension.
+
+- *Control-1*
+
+  Sets a 1:1 image pixel to screen pixel zoom for all dimensions.
+
+- *Control-F*
+
+  Sets the image to fill the screen area, but maintaining the XY aspect
+  ratio. The zoom of nonvisualized dimensions is reset to 1.
+
+- *Control-L*
+
+  Sets linear mapping between global minimum and maximum values.
+
+- *Control-W* and *Control-Shift-W*
+
+  Closes the current window or all windows.
+
 ## Usage example
 
 The viewer is most easily used through the dip::viewer namespace. Simply
@@ -160,7 +192,7 @@ to enable mouse interaction. If you wish to continue your program, you must
 call 
 
 ```cpp
-    dip::viewer::SpinOnce( );
+    dip::viewer::Draw( );
 ```
 
 periodically. Make sure to call `dip::viewer::Spin( )` when you're done to

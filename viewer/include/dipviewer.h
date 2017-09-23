@@ -51,7 +51,7 @@ DIPVIEWER_EXPORT void Spin();
 
 /// Process user event queue.
 /// NOTE: Spin( ) must still be called before exiting.
-DIPVIEWER_EXPORT void SpinOnce();
+DIPVIEWER_EXPORT void Draw();
 
 }} // namespace dip::viewer
 
