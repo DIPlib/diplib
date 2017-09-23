@@ -51,7 +51,9 @@ void Separable(
    }
    DIP_START_STACK_TRACE
       ArrayUseParameter( border, nDims, dip::uint( 0 ));
-      BoundaryArrayUseParameter( boundaryConditions, nDims );
+      if( border.any() ) {
+         BoundaryArrayUseParameter( boundaryConditions, nDims );
+      }
    DIP_END_STACK_TRACE
 
    // Make simplified copy of input image header so we can modify it at will.
