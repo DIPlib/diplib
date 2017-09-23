@@ -633,6 +633,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
           case 0: sz = main_->width()-DIM_WIDTH; break;
           case 1: sz = main_->height()-DIM_HEIGHT; break;
           case 2: sz = left_->width(); break;
+          default: // avoid compiler warning
           case 3: sz = top_->height(); break;
         }
         

@@ -25,7 +25,13 @@
 #include "dipviewer_export.h"
 
 #define KEY_MOD_SHIFT   0x01
+#if defined(__APPLE__) && defined(DIP__HAS_GLFW)
+// We want to use the command key on MacOS computers, not control. But this code only works for GLFW.
+// GLUT is not supported on MacOS anyway.
+#define KEY_MOD_CONTROL 0x08
+#else
 #define KEY_MOD_CONTROL 0x02
+#endif
 #define KEY_MOD_ALT     0x04
 
 namespace dip { namespace viewer {

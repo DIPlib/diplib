@@ -105,7 +105,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
     static void key(struct GLFWwindow *window, int key, int /*scancode*/, int action, int mods)
     {
       WindowPtr wdw = instance_->getWindow(window);
-      if (wdw && action > 0)
+      if (wdw && action > 0 && key < 128)
       {
         int x, y;
         instance_->makeCurrent(wdw.get());

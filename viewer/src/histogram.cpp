@@ -41,7 +41,7 @@ void HistogramViewPort::render()
   cb = 0;
   
   ImageIterator<dip::uint8> it(cb);
-  for (size_t ii=0; ii < (dip::uint)height; ++ii)
+  for (size_t ii=0; ii < size_t(height); ++ii)
   {
     dip::Image::Pixel val((o.range_.first + (double)ii*(o.range_.second-o.range_.first)/(double)height));
     dip::uint8 out[3] = {0, 0, 0};
