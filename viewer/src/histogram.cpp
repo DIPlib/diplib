@@ -226,7 +226,7 @@ void HistogramViewPort::calculate()
   histogram_ = 0;
 
   std::unique_ptr< dip::Framework::ScanLineFilter > scanLineFilter;
-  DIP_OVL_NEW_REAL( scanLineFilter, viewer__Histogram, ( histogram_, viewer()->options().range_ ), in.DataType() );
+  DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, viewer__Histogram, ( histogram_, viewer()->options().range_ ), in.DataType() );
   dip::Framework::ScanSingleInput(in, {}, in.DataType(), *scanLineFilter);
 }
 

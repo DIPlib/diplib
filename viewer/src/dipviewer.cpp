@@ -53,13 +53,7 @@ void Show( Image const& image, String const& title )
       count__ = 1;
    }
 
-   Image imgCopy = image;
-   if( imgCopy.DataType().IsBinary() ) {
-      // Convert binary to uint8 for display (SliceViewer doesn't support binary images because of the histogram).
-      // This happens in-place, because the input and output sample sizes are identical.
-      imgCopy.Convert( DT_UINT8 );
-   }
-   manager__->createWindow( WindowPtr( new SliceViewer( imgCopy, getWindowTitle( title ))));
+   manager__->createWindow( WindowPtr( new SliceViewer( image, getWindowTitle( title ))));
    ++count__;
 }
 

@@ -664,6 +664,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
     if (k == 'L')
     {
       // ^L: linear stretch
+      options_.mapping_ = ViewingOptions::Mapping::Linear;
       options_.mapping_range_ = options_.range_;
       refresh();
     }

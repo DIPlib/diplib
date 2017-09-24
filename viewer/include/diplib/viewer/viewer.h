@@ -86,8 +86,16 @@ struct DIPVIEWER_EXPORT ViewingOptions
     projection_ = Projection::Max;
       
     // Mapping
-    mapping_ = Mapping::Normal;
-    mapping_range_ = {0, 255};
+    if (image.DataType().IsBinary())
+    {
+      mapping_ = Mapping::ZeroOne;
+      mapping_range_ = {0, 1};
+    }
+    else
+    {
+      mapping_ = Mapping::Normal;
+      mapping_range_ = {0, 255};
+    }
     
     // Color
     element_ = 0;
