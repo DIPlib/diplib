@@ -48,5 +48,8 @@
 function out = xx(sz,varargin)
 if nargin<1
    sz = [256,256];
+elseif ischar(sz)
+   varargin = [{sz},varargin];
+   sz = [256,256];
 end
 out = coordinates(sz,1,varargin{:});
