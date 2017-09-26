@@ -160,7 +160,7 @@ src/measurement/feature_surface_area.h
 src/measurement/image_chain_code.cpp
 src/measurement/measure_chain_code.cpp
 src/measurement/measure_convex_hull.cpp
-src/measurement/measurement_statistics.cpp
+src/measurement/measurement.cpp
 src/measurement/measurement_tool.cpp
 src/measurement/object_to_measurement.cpp
 src/morphology/areaopening.cpp

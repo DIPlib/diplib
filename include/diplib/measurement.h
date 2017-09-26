@@ -84,6 +84,11 @@ using ValueInformationArray = std::vector< ValueInformation >;
 } // namespace Feature
 
 
+//
+// Measurement class
+//
+
+
 /// \brief Maps object IDs to object indices
 using ObjectIdToIndexMap = std::map< dip::uint, dip::uint >;
 
@@ -176,47 +181,51 @@ class DIP_NO_EXPORT Measurement {
       class DIP_NO_EXPORT IteratorFeature {
          public:
             friend class Measurement;
+
             /// \brief An iterator to visit all objects (rows) within a feature (column group) of the `dip::Measurement` table.
             ///
             /// An object of this class can be treated (in only the most basic ways) as a `std::array` or `std::vector`.
             class Iterator {
                public:
                   friend class IteratorFeature;
+
                   /// \brief Index to access a specific value
                   ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
                   /// \brief Dereference to access the first value
                   ValueType& operator*() const { return *begin(); }
                   /// \brief Iterator to the first value
                   ValueIterator begin() const {
-                     return feature_.measurement_.Data() +
-                            static_cast< dip::sint >( index_ ) * feature_.measurement_.Stride() +
-                            static_cast< dip::sint >( feature_.startColumn_ );
+                     return feature_->measurement_->Data() +
+                            static_cast< dip::sint >( index_ ) * feature_->measurement_->Stride() +
+                            static_cast< dip::sint >( feature_->startColumn_ );
                   }
                   /// \brief Iterator one past the last value
                   ValueIterator end() const { return begin() + size(); }
                   /// \brief A pointer to the first value
                   ValueType* data() const { return begin(); }
                   /// \brief Number of values
-                  dip::uint size() const { return feature_.numberValues_; }
+                  dip::uint size() const { return feature_->numberValues_; }
                   /// \brief Increment, to access the next object
                   Iterator& operator++() { ++index_; return *this; }
                   /// \brief Increment, to access the next object
                   Iterator operator++( int ) { Iterator tmp( *this ); operator++(); return tmp; }
                   /// \brief True if done iterating (do not call other methods if this is true!)
-                  bool IsAtEnd() const { return index_ >= feature_.NumberOfObjects(); }
+                  bool IsAtEnd() const { return index_ >= feature_->NumberOfObjects(); }
                   /// \brief True if the iterator is valid and can be used
                   explicit operator bool() const { return !IsAtEnd(); }
                   /// \brief Name of the feature
-                  String const& FeatureName() const { return feature_.FeatureName(); }
+                  String const& FeatureName() const { return feature_->FeatureName(); }
                   /// \brief ID of the object
-                  dip::uint ObjectID() const { return feature_.measurement_.objects_[ index_ ]; }
+                  dip::uint ObjectID() const { return feature_->measurement_->objects_[ index_ ]; }
                   /// \brief Index of the object (row number)
                   dip::uint ObjectIndex() const { return index_; }
+
                private:
-                  Iterator( IteratorFeature const& feature, dip::uint index ) : feature_( feature ), index_( index ) {}
-                  IteratorFeature const& feature_;
+                  Iterator( IteratorFeature const& feature, dip::uint index ) : feature_( &feature ), index_( index ) {}
+                  IteratorFeature const* feature_;
                   dip::uint index_;
             };
+
             /// \brief Iterator to the first object for this feature
             Iterator FirstObject() const { return Iterator( *this, 0 ); }
             /// \brief Iterator to the given object for this feature
@@ -224,8 +233,13 @@ class DIP_NO_EXPORT Measurement {
             /// \brief Increment, to access the next feature
             IteratorFeature& operator++() {
                ++index_;
-               startColumn_ = measurement_.features_[ index_ ].startColumn;
-               numberValues_ = measurement_.features_[ index_ ].numberValues;
+               if( IsAtEnd() ) {
+                  startColumn_ += numberValues_;
+                  numberValues_ = 0;
+               } else {
+                  startColumn_ = measurement_->features_[ index_ ].startColumn;
+                  numberValues_ = measurement_->features_[ index_ ].numberValues;
+               }
                return *this;
             }
             /// \brief Increment, to access the next feature
@@ -247,22 +261,23 @@ class DIP_NO_EXPORT Measurement {
             /// \brief Number of values
             dip::uint NumberOfValues() const { return numberValues_; }
             /// \brief Number of objects
-            dip::uint NumberOfObjects() const { return measurement_.NumberOfObjects(); }
+            dip::uint NumberOfObjects() const { return measurement_->NumberOfObjects(); }
             /// \brief Returns a list of object IDs
-            UnsignedArray const& Objects() const { return measurement_.Objects(); }
+            UnsignedArray const& Objects() const { return measurement_->Objects(); }
             /// \brief Finds the index for the given object ID
-            dip::uint ObjectIndex( dip::uint objectID ) const { return measurement_.ObjectIndex( objectID ); }
+            dip::uint ObjectIndex( dip::uint objectID ) const { return measurement_->ObjectIndex( objectID ); }
+
          private:
-            IteratorFeature( Measurement const& measurement, dip::uint index ) : measurement_( measurement ), index_( index ) {
+            IteratorFeature( Measurement const& measurement, dip::uint index ) : measurement_( &measurement ), index_( index ) {
                startColumn_ = Feature().startColumn;
                numberValues_ = Feature().numberValues;
             }
             IteratorFeature( Measurement const& measurement, dip::uint startColumn, dip::uint numberValues ) :
-                  measurement_( measurement ), index_( 0 ),
+                  measurement_( &measurement ), index_( 0 ),
                   startColumn_( startColumn ), numberValues_( numberValues ) {}
-            dip::uint NumberOfFeatures() const { return measurement_.NumberOfFeatures(); }
-            FeatureInformation const& Feature() const { return measurement_.features_[ index_ ]; }
-            Measurement const& measurement_;
+            dip::uint NumberOfFeatures() const { return measurement_->NumberOfFeatures(); }
+            FeatureInformation const& Feature() const { return measurement_->features_[ index_ ]; }
+            Measurement const* measurement_;
             dip::uint index_;
             dip::uint startColumn_;  // A local copy of measurement_.features_[ index_ ].startColumn, so that it can be tweaked.
             dip::uint numberValues_; // A local copy of measurement_.features_[ index_ ].numberValues, so that it can be tweaked.
@@ -277,20 +292,22 @@ class DIP_NO_EXPORT Measurement {
       class DIP_NO_EXPORT IteratorObject {
          public:
             friend class Measurement;
+
             /// \brief An iterator to visit all features (columns) within an object (row) of the `dip::Measurement` table.
             ///
             /// An object of this class can be treated (in only the most basic ways) as a `std::array` or `std::vector`.
             class Iterator {
                public:
                   friend class IteratorObject;
+
                   /// \brief Index to access a specific value
                   ValueType& operator[]( dip::uint index ) const { return *( begin() + index ); }
                   /// \brief Dereference to access the first value
                   ValueType& operator*() const { return *begin(); }
                   /// \brief Iterator to the first value
                   ValueIterator begin() const {
-                     return object_.measurement_.Data() +
-                            static_cast< dip::sint >( object_.index_ ) * object_.measurement_.Stride() +
+                     return object_->measurement_->Data() +
+                            static_cast< dip::sint >( object_->index_ ) * object_->measurement_->Stride() +
                             static_cast< dip::sint >( Feature().startColumn );
                   }
                   /// \brief Iterator one past the last value
@@ -304,21 +321,23 @@ class DIP_NO_EXPORT Measurement {
                   /// \brief Increment, to access the next feature
                   Iterator operator++( int ) { Iterator tmp( *this ); operator++(); return tmp; }
                   /// \brief True if done iterating (do not call other methods if this is true!)
-                  bool IsAtEnd() const { return index_ >= object_.NumberOfFeatures(); }
+                  bool IsAtEnd() const { return index_ >= object_->NumberOfFeatures(); }
                   /// \brief True if the iterator is valid and can be used
                   explicit operator bool() const { return !IsAtEnd(); }
                   /// \brief Name of the feature
                   String const& FeatureName() const { return Feature().name; }
                   /// \brief ID of the object
-                  dip::uint ObjectID() const { return object_.ObjectID(); }
+                  dip::uint ObjectID() const { return object_->ObjectID(); }
                   /// \brief Index of the object (row number)
-                  dip::uint ObjectIndex() const { return object_.ObjectIndex(); }
+                  dip::uint ObjectIndex() const { return object_->ObjectIndex(); }
+
                private:
-                  Iterator( IteratorObject const& object, dip::uint index ) : object_( object ), index_( index ) {}
-                  FeatureInformation const& Feature() const { return object_.measurement_.features_[ index_ ]; }
-                  IteratorObject const& object_;
+                  Iterator( IteratorObject const& object, dip::uint index ) : object_( &object ), index_( index ) {}
+                  FeatureInformation const& Feature() const { return object_->measurement_->features_[ index_ ]; }
+                  IteratorObject const* object_;
                   dip::uint index_;
             };
+
             /// \brief Iterator to the first feature for this object
             Iterator FirstFeature() const { return Iterator( *this, 0 ); }
             /// \brief Iterator to the given feature for this object
@@ -332,51 +351,56 @@ class DIP_NO_EXPORT Measurement {
             /// \brief True if the iterator is valid and can be used
             explicit operator bool() const { return !IsAtEnd(); }
             /// \brief ID of the object
-            dip::uint ObjectID() const { return measurement_.objects_[ index_ ]; }
+            dip::uint ObjectID() const { return measurement_->objects_[ index_ ]; }
             /// \brief Index of the object (row number)
             dip::uint ObjectIndex() const { return index_; }
             /// \brief Number of features
-            dip::uint NumberOfFeatures() const { return measurement_.NumberOfFeatures(); }
+            dip::uint NumberOfFeatures() const { return measurement_->NumberOfFeatures(); }
             /// \brief Returns an array of feature names
-            std::vector< FeatureInformation > const& Features() const { return measurement_.Features(); }
+            std::vector< FeatureInformation > const& Features() const { return measurement_->Features(); }
             /// \brief Returns the index to the first columns for the feature
-            dip::uint ValueIndex( String const& name ) const { return measurement_.ValueIndex( name ); }
+            dip::uint ValueIndex( String const& name ) const { return measurement_->ValueIndex( name ); }
+
          private:
-            IteratorObject( Measurement const& measurement, dip::uint index ) : measurement_( measurement ), index_( index ) {}
-            dip::uint NumberOfObjects() const { return measurement_.NumberOfObjects(); }
-            dip::uint FeatureIndex( String const& name ) const { return measurement_.FeatureIndex( name ); }
-            Measurement const& measurement_;
+            IteratorObject( Measurement const& measurement, dip::uint index ) : measurement_( &measurement ), index_( index ) {}
+            dip::uint NumberOfObjects() const { return measurement_->NumberOfObjects(); }
+            dip::uint FeatureIndex( String const& name ) const { return measurement_->FeatureIndex( name ); }
+            Measurement const* measurement_;
             dip::uint index_;
       };
 
       /// \brief Adds a feature to a non-forged `Measurement` object.
       void AddFeature( String const& name, Feature::ValueInformationArray const& values ) {
-         DIP_THROW_IF( IsForged(), "Measurement object is forged" );
+         DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
          DIP_THROW_IF( name.empty(), "No feature name given" );
-         DIP_THROW_IF( FeatureExists( name ), String( "Feature already present: " ) + name );
+         DIP_THROW_IF( FeatureExists( name ), "Feature already present: " + name );
          DIP_THROW_IF( values.empty(), "A feature needs at least one value" );
-         AddFeature_( name, values );
+         AddFeature_( name, values.cbegin(), values.cend() );
       }
 
       /// \brief Adds a feature to a non-forged `Measurement` object if it is not already there.
       void EnsureFeature( String const& name, Feature::ValueInformationArray const& values ) {
-         DIP_THROW_IF( IsForged(), "Measurement object is forged" );
+         DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
          DIP_THROW_IF( name.empty(), "No feature name given" );
-         if( FeatureExists( name )) {
-            return;
+         if( !FeatureExists( name )) {
+            DIP_THROW_IF( values.empty(), "A feature needs at least one value" );
+            AddFeature_( name, values.cbegin(), values.cend());
          }
-         DIP_THROW_IF( values.empty(), "A feature needs at least one value" );
-         AddFeature_( name, values );
+      }
+
+      /// \brief Adds object IDs to a non-forged `Measurement` object.
+      void AddObjectID( dip::uint objectID ) {
+         DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
+         DIP_THROW_IF( ObjectExists( objectID ), "Object already present: " + std::to_string( objectID ));
+         AddObjectID_( objectID );
       }
 
       /// \brief Adds object IDs to a non-forged `Measurement` object.
       void AddObjectIDs( UnsignedArray const& objectIDs ) {
-         DIP_THROW_IF( IsForged(), "Measurement object is forged" );
+         DIP_THROW_IF( IsForged(), E::MEASUREMENT_NOT_RAW );
          for( auto const& objectID : objectIDs ) {
-            DIP_THROW_IF( ObjectExists( objectID ), String( "Object already present: " ) + std::to_string( objectID ));
-            dip::uint index = objects_.size();
-            objects_.push_back( objectID );
-            objectIndices_.emplace( objectID, index );
+            DIP_THROW_IF( ObjectExists( objectID ), "Object already present: " + std::to_string( objectID ));
+            AddObjectID_( objectID );
          }
       }
 
@@ -419,7 +443,7 @@ class DIP_NO_EXPORT Measurement {
 
       /// \brief A raw pointer to the data of the table. All values for one object are contiguous.
       ValueType* Data() const {
-         DIP_THROW_IF( !IsForged(), "Measurement object not forged" );
+         DIP_THROW_IF( !IsForged(), E::MEASUREMENT_NOT_FORGED );
          return data_.data();
       }
 
@@ -433,10 +457,10 @@ class DIP_NO_EXPORT Measurement {
          return featureIndices_.count( name ) != 0;
       }
 
-      /// \brief Finds the column index for the first value of the given feature.
+      /// \brief Finds the index into the `dip::Measurement::Feature` array for the given feature.
       dip::uint FeatureIndex( String const& name ) const {
          auto it = featureIndices_.find( name );
-         DIP_THROW_IF( it == featureIndices_.end(), String( "Feature not present: " ) + name );
+         DIP_THROW_IF( it == featureIndices_.end(), "Feature not present: " + name );
          return it->second;
       }
 
@@ -450,7 +474,7 @@ class DIP_NO_EXPORT Measurement {
          return features_.size();
       }
 
-      /// \brief Finds the index into the `dip::Measurement::Values()` array for the first value of the given feature.
+      /// \brief Finds the index into the `dip::Measurement::Values` array for the first value of the given feature.
       dip::uint ValueIndex( String const& name ) const {
          return features_[ FeatureIndex( name ) ].startColumn;
       }
@@ -490,7 +514,7 @@ class DIP_NO_EXPORT Measurement {
       /// \brief Finds the row index for the given object ID.
       dip::uint ObjectIndex( dip::uint objectID ) const {
          auto it = objectIndices_.find( objectID );
-         DIP_THROW_IF( it == objectIndices_.end(), String( "Object not present: " ) + std::to_string( objectID ));
+         DIP_THROW_IF( it == objectIndices_.end(), "Object not present: " + std::to_string( objectID ));
          return it->second;
       }
 
@@ -509,21 +533,54 @@ class DIP_NO_EXPORT Measurement {
          return objects_.size();
       }
 
-      // TODO: port dipio_MeasurementWriteCSV as a method to dip::Measurement
-
-      // TODO: operator+() concatenates two measurement objects, either vertically or horizontally depending on what is repeated
+      /// \brief The `+` operator merges two `dip::Measurement` objects.
+      ///
+      /// The resulting object has, as feature set, the union of the two input feature sets, and as object IDs,
+      /// the union of the two object ID lists. That is, the output might have more columns or more rows
+      /// (i.e. more objects) than the two input objects, depending on the overlaps between the two. If both
+      /// features and cells differ between the two, then cells with unknown data are filled with NaN. If both
+      /// objects contain the same feature for the same measurement, and the value is NaN for one, the other value
+      /// is picked. If both have a non-NaN value, the one of the `lhs` argument is picked (values are never
+      /// actually added together!). This process insures that it is possible to add multiple sets of measurements
+      /// (across different objects and different features) together, without worrying about the order that
+      /// they are added together:
+      /// ```cpp
+      ///     dip::Image label1 = ... // one image with objects 1-10
+      ///     dip::Image label2 = ... // one image with objects 11-20
+      ///     auto set1 = measurementTool.Measure( label1, {}, {'Size','Center'} );
+      ///     auto set2 = measurementTool.Measure( label2, {}, {'Size','Center'} );
+      ///     auto set3 = measurementTool.Measure( label1, {}, {'Feret','Radius'} );
+      ///     auto set4 = measurementTool.Measure( label2, {}, {'Feret','Radius'} );
+      ///     auto sum1 = set1 + set2; // Size and Center features for objects 1-20
+      ///     auto sum2 = set1 + set3; // Size, Center, Feret and Radius features for objects 1-10
+      ///     auto sumA = (set1 + set2) + (set3 + set4); // All features for all objects
+      ///     auto sumB = (set1 + set3) + (set2 + set4); // Idem
+      ///     auto sumC = set1 + set2 + set3 + set4;     // Idem
+      ///     auto sumD = set1 + set4 + set3 + set2;     // Idem
+      /// ```
+      DIP_EXPORT friend Measurement operator+( Measurement const& lhs, Measurement const& rhs );
 
    private:
 
-      void AddFeature_( String const& name, Feature::ValueInformationArray const& values ) {
+      void AddFeature_(
+            String const& name,
+            Feature::ValueInformationArray::const_iterator valuesBegin,
+            Feature::ValueInformationArray::const_iterator valuesEnd
+      ) {
          dip::uint startIndex = values_.size();
-         values_.resize( startIndex + values.size() );
-         for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-            values_[ startIndex + ii ] = values[ ii ];
+         dip::uint n = static_cast< dip::uint >( std::distance( valuesBegin, valuesEnd ));
+         values_.resize( startIndex + n );
+         for( auto out = &values_[ startIndex ]; valuesBegin != valuesEnd; ++valuesBegin, ++out ) {
+            *out = *valuesBegin;
          }
          dip::uint index = features_.size();
-         features_.emplace_back( name, startIndex, values.size() );
+         features_.emplace_back( name, startIndex, n );
          featureIndices_.emplace( name, index );
+      }
+      void AddObjectID_( dip::uint objectID ) {
+         dip::uint index = objects_.size();
+         objects_.push_back( objectID );
+         objectIndices_.emplace( objectID, index );
       }
       UnsignedArray objects_;                         // the rows of the table (maps row indices to objectIDs)
       ObjectIdToIndexMap objectIndices_;              // maps object IDs to row indices
@@ -536,13 +593,20 @@ class DIP_NO_EXPORT Measurement {
       // index `jj`. `jj = objectIndices_[ id ]`. `ii = features_[ featureIndices_[ name ]].startColumn`.
 };
 
+
 //
 // Overloaded operators
 //
 
+
 /// \brief You can output a `dip::Measurement` to `std::cout` or any other stream to produce a human-readable
 /// representation of the tabular data in it.
-DIP_EXPORT std::ostream& operator<<( std::ostream& os, Measurement const& msr );
+DIP_EXPORT std::ostream& operator<<( std::ostream& os, Measurement const& measurement );
+
+
+//
+// Measurement feature framework
+//
 
 
 namespace Feature {
@@ -590,9 +654,6 @@ class DIP_EXPORT Base {
 
       virtual ~Base() {};
 };
-
-/// \brief A pointer to a measurement feature of any type
-using Pointer = std::unique_ptr< Base >;
 
 /// \brief The pure virtual base class for all line-based measurement features.
 class DIP_EXPORT LineBased : public Base {
@@ -676,6 +737,11 @@ class DIP_EXPORT Composite : public Base {
 } // namespace Feature
 
 
+//
+// MeasurementTool class
+//
+
+
 /// \brief Performs measurements on images.
 ///
 /// \ingroup measurement
@@ -753,37 +819,40 @@ class DIP_EXPORT Composite : public Base {
 /// `dip::MeasurementTool::Register` method. The new feature then becomes available in the `dip::MeasurementTool::Measure`
 /// method just like any of the default features.
 class DIP_NO_EXPORT MeasurementTool {
+      using FeatureBasePointer = std::unique_ptr< Feature::Base >;  // A pointer to a measurement feature of any type
+
    public:
 
       /// \brief Constructor.
       DIP_EXPORT MeasurementTool();
 
-      /// \brief Registers a feature with this `%MeasurementTool`. The feature object becomes property of the tool.
+      /// \brief Registers a feature with this `%MeasurementTool`.
       ///
       /// Create an instance of the feature class on the heap using `new`. The feature class must be
       /// derived from one of the five classes derived from `dip::Feature::Base` (thus not directly from `Base`).
-      /// Note that the pointer returned by `new` must be explicitly converted to a `dip::Feature::Pointer`:
+      /// The `%dip::MeasurementTool` object takes ownership of the feature object:
       ///
       /// ```cpp
       ///     class MyFeature : public dip::Feature::ChainCodeBased {
       ///        // define constructor and override virtual functions
       ///     }
       ///     MeasurementTool measurementTool;
-      ///     measurementTool.Register( dip::Feature::Pointer( new MyFeature ));
+      ///     measurementTool.Register( new MyFeature );
       /// ```
       ///
-      /// See the source files for exsiting features for examples (and a starting point) on how to write your
+      /// See the source files for existing features for examples (and a starting point) on how to write your
       /// own feature.
       void Register(
-            Feature::Pointer feature
+            Feature::Base* feature
       ) {
+         auto smartpointer = FeatureBasePointer( feature );
          String const& name = feature->information.name;
          if( !Exists( name )) {
             dip::uint index = features_.size();
-            features_.emplace_back( std::move( feature ));
+            features_.emplace_back( std::move( smartpointer ));
             featureIndices_.emplace( name, index );
          } else {
-            feature = nullptr; // deallocates the feature we received, we don't need it, we already have one with that name
+            smartpointer = nullptr; // deallocates the feature we received, we don't need it, we already have one with that name
          }
       }
 
@@ -837,7 +906,7 @@ class DIP_NO_EXPORT MeasurementTool {
 
    private:
 
-      std::vector< Feature::Pointer > features_;
+      std::vector< FeatureBasePointer > features_;
       std::map< String, dip::uint > featureIndices_;
 
       bool Exists( String const& name ) const {
@@ -846,10 +915,15 @@ class DIP_NO_EXPORT MeasurementTool {
 
       dip::uint Index( String const& name ) const {
          auto it = featureIndices_.find( name );
-         DIP_THROW_IF( it == featureIndices_.end(), String( "Feature name not known: " ) + name );
+         DIP_THROW_IF( it == featureIndices_.end(), "Feature name not known: " + name );
          return it->second;
       }
 };
+
+
+//
+// Support functions
+//
 
 
 /// \brief Paints each object with the selected measurement feature values.
@@ -887,13 +961,46 @@ inline Image ObjectToMeasurement(
 }
 
 
+/// \brief Writes a `dip::Measurement` structure to a CSV file.
+///
+/// The CSV (comma separated values) file is a generic container for tabular data, and can be
+/// read in just about any graphing and statistics software package.
+///
+/// The file written contains three header rows, followed by one row per object. The three
+/// header rows contain the feature names, the value names, and the value units. The feature
+/// names, of which there typically are fewer than columns, are interspersed with empty cells
+/// to line them up with the first column for the feature. For example:
+/// ```
+///    ObjectID, Size,  Center, ,      Feret, ,      ,        ,
+///    ,         ,      dim0,   dim1,  Max,   Min,   PerpMin, MaxAng, MinAng
+///    ,         um^2,  um,     um,    um,    um,    um,      rad,    rad
+///    1,        397.0, 20.06,  12.98, 34.99, 16.43, 34.83,   2.111,  3.588
+///    2,        171.0, 63.13,  4.123, 20.22, 11.00, 20.00,   2.993,  4.712
+///    3,        628.0, 108.4,  12.47, 32.20, 26.00, 28.00,   2.202,  0.000
+///    4,        412.0, 154.5,  9.561, 26.40, 22.00, 23.00,   2.222,  4.712
+/// ```
+/// **Note** that the file will not have columns aligned with spaces as shown here, each
+/// comma is always followed by a single space.
+///
+/// `options` is one or more of the following values:
+///  - `"unicode"`: The units will be written using unicode strings. By default, only ASCII
+///    characters are used.
+///  - `"simple"`: There will only be a single header line, combining the three strings as
+///    follows: "Feature value (units)". For example: "Size (um^2)", "Feret Max (um)", etc.
+DIP_EXPORT void WriteCSV(
+      Measurement const& measurement,
+      String const& filename,
+      StringSet const& options = {}
+);
+
+
 /// \brief Returns the smallest feature value in the first column of `featureValues`.
 ///
 /// The input `featureValues` is a view over a specific feature in a `dip::Measurement` object. Only the
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
 /// directly using `dip::Measurement::FeatureValuesView`.
-DIP_EXPORT dfloat Minimum( Measurement::IteratorFeature const& featureValues );
+DIP_EXPORT Measurement::ValueType Minimum( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the largest feature value in the first column of `featureValues`.
 ///
@@ -901,7 +1008,7 @@ DIP_EXPORT dfloat Minimum( Measurement::IteratorFeature const& featureValues );
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
 /// directly using `dip::Measurement::FeatureValuesView`.
-DIP_EXPORT dfloat Maximum( Measurement::IteratorFeature const& featureValues );
+DIP_EXPORT Measurement::ValueType Maximum( Measurement::IteratorFeature const& featureValues );
 
 /// \brief Returns the `percentile` feature value in the first column of `featureValues`.
 ///
@@ -909,7 +1016,7 @@ DIP_EXPORT dfloat Maximum( Measurement::IteratorFeature const& featureValues );
 /// first value of the feature is used. For features with multiple values, select a value using the
 /// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
 /// directly using `dip::Measurement::FeatureValuesView`.
-DIP_EXPORT dfloat Percentile( Measurement::IteratorFeature const& featureValues, dfloat percentile );
+DIP_EXPORT Measurement::ValueType Percentile( Measurement::IteratorFeature const& featureValues, dfloat percentile );
 
 /// \brief Returns the median feature value in the first column of `featureValues`.
 ///
@@ -944,6 +1051,7 @@ DIP_EXPORT MinMaxAccumulator MaximumAndMinimum( Measurement::IteratorFeature con
 /// `dip::Measurement::IteratorFeature::Subset` method, or pick a column in the `dip::Measurement` object
 /// directly using `dip::Measurement::FeatureValuesView`.
 DIP_EXPORT StatisticsAccumulator SampleStatistics( Measurement::IteratorFeature const& featureValues );
+
 
 /// \}
 

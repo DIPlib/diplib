@@ -86,11 +86,14 @@ b.Dimensionality() == len(c)
 
 import PyDIP as dip
 a = dip.ImageReadICS('../../../test/cermet')
+a.SetPixelSize(dip.PixelSize(dip.PhysicalQuantity(1,"um")))
 b = dip.Label(a < 120)
 dip.MeasurementTool.Features()
 m = dip.MeasurementTool.Measure(b,a,['Size','Feret','Convexity','Statistics'])
 print(m)
 m['Feret'][50][2]
+dip.WriteCSV(m,'test.csv')
+dip.WriteCSV(m,'test2.csv',{'unicode','simple'})
 
 b = dip.EuclideanSkeleton(a > 120)
 dip.GetEndPixels(b).Show()

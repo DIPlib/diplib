@@ -18,10 +18,6 @@
  * limitations under the License.
  */
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-
 #include "diplib.h"
 #include "diplib/measurement.h"
 #include "diplib/iterators.h"
@@ -76,45 +72,45 @@ namespace dip {
 
 MeasurementTool::MeasurementTool() {
    // Size
-   Register( Feature::Pointer( new Feature::FeatureSize ));
-   Register( Feature::Pointer( new Feature::FeatureMinimum ));
-   Register( Feature::Pointer( new Feature::FeatureMaximum ));
-   Register( Feature::Pointer( new Feature::FeatureCartesianBox ));
-   Register( Feature::Pointer( new Feature::FeaturePerimeter ));
-   Register( Feature::Pointer( new Feature::FeatureSurfaceArea ));
-   Register( Feature::Pointer( new Feature::FeatureFeret ));
-   Register( Feature::Pointer( new Feature::FeatureConvexArea ));
-   Register( Feature::Pointer( new Feature::FeatureConvexPerimeter ));
+   Register( new Feature::FeatureSize );
+   Register( new Feature::FeatureMinimum );
+   Register( new Feature::FeatureMaximum );
+   Register( new Feature::FeatureCartesianBox );
+   Register( new Feature::FeaturePerimeter );
+   Register( new Feature::FeatureSurfaceArea );
+   Register( new Feature::FeatureFeret );
+   Register( new Feature::FeatureConvexArea );
+   Register( new Feature::FeatureConvexPerimeter );
    // Shape
-   Register( Feature::Pointer( new Feature::FeatureAspectRatioFeret ));
-   Register( Feature::Pointer( new Feature::FeatureRadius ));
-   Register( Feature::Pointer( new Feature::FeatureEllipseVariance ));
-   Register( Feature::Pointer( new Feature::FeatureP2A ));
-   Register( Feature::Pointer( new Feature::FeaturePodczeckShapes ));
-   Register( Feature::Pointer( new Feature::FeatureConvexity ));
-   Register( Feature::Pointer( new Feature::FeatureBendingEnergy ));
+   Register( new Feature::FeatureAspectRatioFeret );
+   Register( new Feature::FeatureRadius );
+   Register( new Feature::FeatureEllipseVariance );
+   Register( new Feature::FeatureP2A );
+   Register( new Feature::FeaturePodczeckShapes );
+   Register( new Feature::FeatureConvexity );
+   Register( new Feature::FeatureBendingEnergy );
    // Intensity
-   Register( Feature::Pointer( new Feature::FeatureMass ));
-   Register( Feature::Pointer( new Feature::FeatureMean ));
-   Register( Feature::Pointer( new Feature::FeatureStandardDeviation ));
-   Register( Feature::Pointer( new Feature::FeatureStatistics ));
-   Register( Feature::Pointer( new Feature::FeatureDirectionalStatistics ));
-   Register( Feature::Pointer( new Feature::FeatureMaxVal ));
-   Register( Feature::Pointer( new Feature::FeatureMinVal ));
+   Register( new Feature::FeatureMass );
+   Register( new Feature::FeatureMean );
+   Register( new Feature::FeatureStandardDeviation );
+   Register( new Feature::FeatureStatistics );
+   Register( new Feature::FeatureDirectionalStatistics );
+   Register( new Feature::FeatureMaxVal );
+   Register( new Feature::FeatureMinVal );
    // Binary moments
-   Register( Feature::Pointer( new Feature::FeatureCenter ));
-   Register( Feature::Pointer( new Feature::FeatureMu ));
-   Register( Feature::Pointer( new Feature::FeatureInertia ));
-   Register( Feature::Pointer( new Feature::FeatureMajorAxes ));
-   Register( Feature::Pointer( new Feature::FeatureDimensionsCube ));
-   Register( Feature::Pointer( new Feature::FeatureDimensionsEllipsoid ));
+   Register( new Feature::FeatureCenter );
+   Register( new Feature::FeatureMu );
+   Register( new Feature::FeatureInertia );
+   Register( new Feature::FeatureMajorAxes );
+   Register( new Feature::FeatureDimensionsCube );
+   Register( new Feature::FeatureDimensionsEllipsoid );
    // Grey-value moments
-   Register( Feature::Pointer( new Feature::FeatureGravity ));
-   Register( Feature::Pointer( new Feature::FeatureGreyMu ));
-   Register( Feature::Pointer( new Feature::FeatureGreyInertia ));
-   Register( Feature::Pointer( new Feature::FeatureGreyMajorAxes ));
-   Register( Feature::Pointer( new Feature::FeatureGreyDimensionsCube ));
-   Register( Feature::Pointer( new Feature::FeatureGreyDimensionsEllipsoid ));
+   Register( new Feature::FeatureGravity );
+   Register( new Feature::FeatureGreyMu );
+   Register( new Feature::FeatureGreyInertia );
+   Register( new Feature::FeatureGreyMajorAxes );
+   Register( new Feature::FeatureGreyDimensionsCube );
+   Register( new Feature::FeatureGreyDimensionsEllipsoid );
 }
 
 using LineBasedFeatureArray = std::vector< Feature::LineBased* >;
@@ -336,78 +332,5 @@ Measurement MeasurementTool::Measure(
 
    return measurement;
 }
-
-
-std::ostream& operator<<(
-      std::ostream& os,
-      Measurement const& msr
-) {
-   // Figure out column widths
-   const std::string sep{ " | " };
-   constexpr int separatorWidth = 3;
-   constexpr int minimumColumnWidth = 10; // we format numbers with at least this many spaces: '-' + 4 digits of precision + '.' + 'e+NN'
-   dip::uint maxID = *std::max_element( msr.Objects().begin(), msr.Objects().end() );
-   const int firstColumnWidth = int( std::ceil( std::log10( maxID ) ) );
-   auto const& values = msr.Values();
-   std::vector< int > valueWidths( values.size(), 0 );
-   for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-      std::string units = values[ ii ].units.String();
-      valueWidths[ ii ] = std::max( int( values[ ii ].name.size() ), int( units.size() ) + 2 ); // + 2 for the brackets we'll add later
-      valueWidths[ ii ] = std::max( valueWidths[ ii ], minimumColumnWidth );
-   }
-   auto const& features = msr.Features();
-   std::vector< int > featureWidths( values.size(), 0 );
-   for( dip::uint ii = 0; ii < features.size(); ++ii ) {
-      featureWidths[ ii ] = valueWidths[ features[ ii ].startColumn ];
-      for( dip::uint jj = 1; jj < features[ ii ].numberValues; ++jj ) {
-         featureWidths[ ii ] += valueWidths[ features[ ii ].startColumn + jj ] + separatorWidth;
-      }
-      featureWidths[ ii ] = std::max( featureWidths[ ii ], int( features[ ii ].name.size() ));
-   }
-   // Write out the header: feature names
-   std::cout << std::setw( firstColumnWidth ) << " " << " | ";
-   for( dip::uint ii = 0; ii < features.size(); ++ii ) {
-      std::cout << std::setw( featureWidths[ ii ] ) << features[ ii ].name << " | ";
-   }
-   std::cout << std::endl;
-   // Write out the header: horizontal line
-   std::cout << std::setfill( '-' ) << std::setw( firstColumnWidth ) << "-" << " | ";
-   for( dip::uint ii = 0; ii < features.size(); ++ii ) {
-      std::cout << std::setw( featureWidths[ ii ] ) << "-" << " | ";
-   }
-   std::cout << std::setfill( ' ' ) << std::endl;
-   // Write out the header: value names
-   std::cout << std::setw( firstColumnWidth ) << " " << " | ";
-   for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-      std::cout << std::setw( valueWidths[ ii ] ) << values[ ii ].name << " | ";
-   }
-   std::cout << std::endl;
-   // Write out the header: value units
-   std::cout << std::setw( firstColumnWidth ) << " " << " | ";
-   for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-      std::string units = '(' + values[ ii ].units.String() + ')';
-      std::cout << std::setw( valueWidths[ ii ] ) << units << " | "; // TODO: this does not work with UTF-8 strings, not enough characters are output.
-   }
-   std::cout << std::endl;
-   // Write out the header: horizontal line
-   std::cout << std::setfill( '-' ) << std::setw( firstColumnWidth ) << "-" << " | ";
-   for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-      std::cout << std::setw( valueWidths[ ii ] ) << "-" << " | ";
-   }
-   std::cout << std::setfill( ' ' ) << std::endl;
-   // Write out the object IDs and associated values
-   auto const& objects = msr.Objects();
-   Measurement::ValueIterator data = msr.Data();
-   for( dip::uint jj = 0; jj < objects.size(); ++jj ) {
-      std::cout << std::setw( firstColumnWidth ) << objects[ jj ] << " | ";
-      for( dip::uint ii = 0; ii < values.size(); ++ii ) {
-         std::cout << std::setw( valueWidths[ ii ] ) << std::setprecision( 4 ) << std::showpoint << *data << " | ";
-         ++data;
-      }
-      std::cout << std::endl;
-   }
-   return os;
-}
-
 
 } // namespace dip
