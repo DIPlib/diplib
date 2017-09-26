@@ -33,72 +33,6 @@
 
 namespace dip { namespace viewer {
 
-template< typename TPI >
-void viewer__ColorMap(Image const& slice, Image& out, ViewingOptions &options)
-{
-  auto mapping = options.mapping_;   
-  auto lut = options.lut_;
-  auto element = options.element_;
-  auto color_elements = options.color_elements_;
-
-  dip::uint width = slice.Size( 0 );
-  dip::uint height = slice.Size( 1 );
-  dip::sint sliceStride0 = slice.Stride( 0 );
-  dip::sint sliceStride1 = slice.Stride( 1 );
-  dip::sint outStride0 = out.Stride( 0 );
-  dip::sint outStride1 = out.Stride( 1 );
-  dip::sint sliceStrideT = slice.TensorStride();
-   
-  double offset, scale;
-  if( mapping == ViewingOptions::Mapping::Logarithmic )
-  {
-    offset = options.mapping_range_.first-1.;
-    scale = 1./std::log(options.mapping_range_.second-offset);
-  }
-  else
-  {
-    offset = options.mapping_range_.first;
-    scale = 1./(options.mapping_range_.second-options.mapping_range_.first);
-  }
-
-  TPI* slicePtr = static_cast< TPI* >( slice.Origin() );
-  uint8* outPtr = static_cast< uint8* >( out.Origin() );
-  for( dip::uint jj = 0; jj < height; ++jj, slicePtr += sliceStride1, outPtr += outStride1 )
-  {
-    TPI* iPtr = slicePtr;
-    uint8* oPtr = outPtr;
-    dip::uint ii;
-     
-    switch (lut)
-    {
-      case ViewingOptions::LookupTable::ColorSpace:
-        for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
-          oPtr[0] = oPtr[1] = oPtr[2] = 0;
-        break;
-      case ViewingOptions::LookupTable::RGB:
-        for (dip::uint kk=0; kk < 3; ++kk)
-        {
-          dip::sint elem = color_elements[kk];
-          if (elem >= 0)
-            for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
-              oPtr[kk] = (dip::uint8)(rangeMap((dip::sfloat)iPtr[elem*sliceStrideT], offset, scale, mapping)*255);
-          else
-            for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
-              oPtr[kk] = 0;
-        }
-        break;
-      case ViewingOptions::LookupTable::Grey:
-        for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
-          oPtr[0] = oPtr[1] = oPtr[2] = (dip::uint8)(rangeMap((dip::sfloat)iPtr[(dip::sint)element*sliceStrideT], offset, scale, mapping)*255);
-        break;
-      case ViewingOptions::LookupTable::Jet:
-        for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
-          jet(rangeMap((dip::sfloat)iPtr[(dip::sint)element*sliceStrideT], offset, scale, mapping), oPtr);
-        break;
-    }
-  }
-}
-
 void SliceView::project()
 {
   auto &o = viewport()->viewer()->options();
@@ -148,9 +82,7 @@ void SliceView::map()
   if (projected_.Dimensionality() == 0)
   {
     // Point data
-    colored_ = Image(dip::UnsignedArray{ 1, 1 }, 3, DT_UINT8);
-    
-    DIP_OVL_CALL_NONCOMPLEX( viewer__ColorMap, ( projected_, colored_, o ), projected_.DataType() );
+    ApplyViewerColorMap(projected_, colored_, o);
   }
   else if (projected_.Dimensionality() == 1)
   {
@@ -166,11 +98,12 @@ void SliceView::map()
     {
       if (o.lut_ == ViewingOptions::LookupTable::RGB)
       {
-        dip::uint8 color[3];
-        colorMap(*it, color, o);
-        
         for (size_t kk=0; kk < 3; ++kk)
-          line.At<dip::uint8>({ii, 99-color[kk]*100U/256})[kk] = 255;
+          if (o.color_elements_[kk] != -1)
+          {
+            dip::uint8 color = rangeMap(it[(dip::uint)o.color_elements_[kk]], o);
+            line.At<dip::uint8>({ii, 99-color*100U/256})[kk] = 255;
+          }
       }
       else
       {
@@ -201,10 +134,7 @@ void SliceView::map()
       colored_.ForceNormalStrides();
     } 
     else
-    {
-      colored_ = Image(projected_.Sizes(), 3, DT_UINT8);
-      DIP_OVL_CALL_NONCOMPLEX( viewer__ColorMap, ( projected_, colored_, o ), projected_.DataType() );
-    }
+      ApplyViewerColorMap(projected_, colored_, o);
   }
 }
 
@@ -653,9 +583,9 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
                     aspect_viewport = (dip::dfloat)(main_->width()-DIM_WIDTH)/(dip::dfloat)(main_->height()-DIM_HEIGHT);
         
         if (aspect_image > aspect_viewport)
-          zoom[1] = zoom[0];
+          zoom[(dip::uint)dy] = zoom[(dip::uint)dx];
         else
-          zoom[0] = zoom[1];
+          zoom[(dip::uint)dx] = zoom[(dip::uint)dy];
       }
       
       refresh();

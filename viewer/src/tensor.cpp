@@ -45,12 +45,12 @@ void TensorViewPort::render()
       if (idx != -1)
       {
         dip::sfloat val = p[(dip::uint)idx];
-        dip::sfloat rv = rangeMap(val, o);
+        dip::uint8 rv = rangeMap(val, o);
         GLfloat cwidth = (GLfloat)width()/(GLfloat)t.Columns(),
                 cheight = (GLfloat)height()/(GLfloat)t.Rows();
         
         // Tensor element value
-        glColor3f(rv, rv, rv);
+        glColor3ub(rv, rv, rv);
         glBegin(GL_QUADS);
           glVertex2f((GLfloat)ii*cwidth+1.f,     (GLfloat)jj*cheight);
           glVertex2f((GLfloat)(ii+1)*cwidth-1.f, (GLfloat)jj*cheight);

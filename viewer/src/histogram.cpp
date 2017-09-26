@@ -36,38 +36,39 @@ void HistogramViewPort::render()
     return;
   
   // Colorbar
-  // TODO: only do this when lut changed  
-  dip::Image cb { dip::UnsignedArray{ 24, (dip::uint)height }, 3, dip::DT_UINT8 };
-  cb = 0;
-  
-  ImageIterator<dip::uint8> it(cb);
+  dip::Image values { dip::UnsignedArray{ 3, (dip::uint)height }, viewer()->image().TensorElements(), dip::DT_DFLOAT };
+  values = 0.;
+  ImageIterator<dip::dfloat> it(values);
   for (size_t ii=0; ii < size_t(height); ++ii)
   {
-    dip::Image::Pixel val((o.range_.first + (double)ii*(o.range_.second-o.range_.first)/(double)height));
-    dip::uint8 out[3] = {0, 0, 0};
-    colorMap(val, out, o);
+    double val = o.range_.first + (double)ii*(o.range_.second-o.range_.first)/(double)height;
     
-    if (o.lut_ == ViewingOptions::LookupTable::RGB)
-    {
-      for (dip::uint kk=0; kk < 3; ++kk)
-        for (size_t jj=0; jj < 8; ++jj, ++it)
-          it[kk] = out[kk];
-    }
-    else
-    {
-      for (size_t jj=0; jj < 24; ++jj, ++it)
-        for (dip::uint kk=0; kk < 3; ++kk)
-          it[kk] = out[kk];
-    }
-  }    
+    for (size_t jj=0; jj < 3; ++jj, ++it)
+      for (size_t kk=0; kk < viewer()->image().TensorElements(); ++kk)
+        it[kk] = val;
+  }
   
+  dip::Image cb { dip::UnsignedArray{ 3, (dip::uint)height }, 3, dip::DT_UINT8 };
+  ApplyViewerColorMap(values, cb, o);
+
+  // Single out RGB channels.  There has got to be a better way...
+  if (o.lut_ == ViewingOptions::LookupTable::RGB) {
+    ImageIterator<dip::uint8> it(cb);
+    for (size_t ii=0; ii < size_t(height); ++ii)
+    {
+      it[1] = 0; it[2] = 0; it++;
+      it[0] = 0; it[2] = 0; it++;
+      it[0] = 0; it[1] = 0; it++;
+    }
+  }
+
   colorbar_.set(cb);
   colorbar_.rebuild();
   
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glViewport(x_, viewer()->height()-y_-height, 24, height);
-  glOrtho(0, 24, 0, height, -1, 1);
+  glOrtho(0, 3, 0, height, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   colorbar_.render();
   
@@ -201,12 +202,35 @@ void HistogramViewPort::motion(int button, int x, int y)
     double dy = (iy-diy)*(o.range_.second-o.range_.first);
     
     if (drag_limit_ == 0)
+    {
       o.mapping_range_.first += dy;
+      if (o.mapping_ == ViewingOptions::Mapping::Symmetric)
+        o.mapping_range_.second = -o.mapping_range_.first;
+    }
     else
+    {
       o.mapping_range_.second += dy;
+      if (o.mapping_ == ViewingOptions::Mapping::Symmetric)
+        o.mapping_range_.first = -o.mapping_range_.second;
+    }
     
     drag_x_ = y;
     drag_y_ = y;
+    
+    // Show we're not in a fixed mapping anymore
+    switch (o.mapping_)
+    {
+      case ViewingOptions::Mapping::ZeroOne:
+      case ViewingOptions::Mapping::Angle:
+      case ViewingOptions::Mapping::Normal:
+        o.mapping_ = ViewingOptions::Mapping::Linear;
+        break;
+      case ViewingOptions::Mapping::Linear:
+      case ViewingOptions::Mapping::Symmetric:
+      case ViewingOptions::Mapping::Logarithmic:
+        // Nothing to do
+        break;
+    }
 
     viewer()->refresh();
   }

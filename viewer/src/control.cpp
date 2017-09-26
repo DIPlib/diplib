@@ -100,6 +100,9 @@ void ControlViewPort::click(int button, int state, int x, int y)
           case ViewingOptions::Mapping::ZeroOne:
             o.mapping_range_ = {0, 1};
             break;
+          case ViewingOptions::Mapping::Angle:
+            o.mapping_range_ = {-dip::pi, dip::pi};
+            break;
           case ViewingOptions::Mapping::Normal:
             o.mapping_range_ = {0, 255};
             break;

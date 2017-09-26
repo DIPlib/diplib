@@ -32,8 +32,8 @@ class DIPVIEWER_EXPORT ControlViewPort : public ViewPort
   public:
     ControlViewPort(Viewer *viewer) : ViewPort(viewer)
     {
-      lists_.push_back({"SPA", "RGB", "GRY", "JET"});
-      lists_.push_back({"0-1", "255", "LIN", "SYM", "LOG"});
+      lists_.push_back({"SPA", "RGB", "GRY", "SEQ", "DIV", "CYC", "LBL"});
+      lists_.push_back({"0-1", "ANG", "255", "LIN", "SYM", "LOG"});
       lists_.push_back({"REA", "IMG", "MAG", "PHA"});
       lists_.push_back({"SLC", "MIN", "MEA", "MAX"});
     }

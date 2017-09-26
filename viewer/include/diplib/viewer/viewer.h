@@ -25,6 +25,8 @@
 #include <vector>
 
 #include "diplib.h"
+#include "diplib/overload.h"
+#include "diplib/display.h"
 
 #include "diplib/viewer/manager.h"
 
@@ -38,9 +40,9 @@ typedef dip::DimensionArray<FloatRange > FloatRangeArray;
 struct DIPVIEWER_EXPORT ViewingOptions
 {
   enum class ComplexToReal { Real, Imaginary, Magnitude, Phase };
-  enum class Mapping { ZeroOne, Normal, Linear, Symmetric, Logarithmic };
+  enum class Mapping { ZeroOne, Angle, Normal, Linear, Symmetric, Logarithmic };
   enum class Projection { None, Min, Mean, Max };
-  enum class LookupTable { ColorSpace, RGB, Grey, Jet };
+  enum class LookupTable { ColorSpace, RGB, Grey, Sequential, Divergent, Cyclic, Label };
   enum class Diff { None, Draw, Place, Mapping, Projection, Complex };
 
   // Projection
@@ -258,16 +260,16 @@ inline void jet(dip::sfloat v, dip::uint8 *out)
 }
 
 template<typename T>
-inline dip::sfloat rangeMap(T val, double offset, double scale, ViewingOptions::Mapping mapping)
+inline dip::uint8 rangeMap(T val, double offset, double scale, ViewingOptions::Mapping mapping)
 {
   if( mapping == ViewingOptions::Mapping::Logarithmic )
-    return (dip::sfloat)(std::min(std::log(std::max((double)val - offset, 1.)) * scale, 1.));
+    return (dip::uint8)(255.*std::min(std::log(std::max((double)val - offset, 1.)) * scale, 1.));
   else
-    return (dip::sfloat)(std::min(std::max(((double)val - offset) * scale, 0.), 1.));
+    return (dip::uint8)(255.*std::min(std::max(((double)val - offset) * scale, 0.), 1.));
 }
 
 template<typename T>
-inline dip::sfloat rangeMap(T val, const ViewingOptions &options)
+inline dip::uint8 rangeMap(T val, const ViewingOptions &options)
 {
   if( options.mapping_ == ViewingOptions::Mapping::Logarithmic )
     return rangeMap(val, options.mapping_range_.first-1., 1./std::log(options.mapping_range_.second-options.mapping_range_.first+1.), options.mapping_);
@@ -275,28 +277,89 @@ inline dip::sfloat rangeMap(T val, const ViewingOptions &options)
     return rangeMap(val, options.mapping_range_.first, 1./(options.mapping_range_.second-options.mapping_range_.first), options.mapping_);
 }
 
-inline void colorMap(const dip::Image::Pixel &in, dip::uint8 *out, const ViewingOptions &options)
+template< typename TPI >
+void viewer__ColorMap(Image const& slice, Image& out, ViewingOptions &options)
 {
-  dip::uint hasElements = (in.TensorElements() > 1);
+  auto mapping = options.mapping_;   
+  auto lut = options.lut_;
+  auto element = options.element_;
+  auto color_elements = options.color_elements_;
 
-  switch (options.lut_)
+  dip::uint width = slice.Size( 0 );
+  dip::uint height = slice.Size( 1 );
+  dip::sint sliceStride0 = slice.Stride( 0 );
+  dip::sint sliceStride1 = slice.Stride( 1 );
+  dip::sint outStride0 = out.Stride( 0 );
+  dip::sint outStride1 = out.Stride( 1 );
+  dip::sint sliceStrideT = slice.TensorStride();
+  
+  double offset, scale;
+  if( mapping == ViewingOptions::Mapping::Logarithmic )
   {
-    case ViewingOptions::LookupTable::RGB:
-      for (size_t kk=0; kk < 3; ++kk)
-      {
-        dip::sint elem = options.color_elements_[kk];
-        if (elem >= 0)
-          out[kk] = (dip::uint8)(rangeMap((double)in[(dip::uint)elem*hasElements], options)*255);
-        else
-          out[kk] = 0;
-      }
+    offset = options.mapping_range_.first-1.;
+    scale = 1./std::log(options.mapping_range_.second-offset);
+  }
+  else
+  {
+    offset = options.mapping_range_.first;
+    scale = 1./(options.mapping_range_.second-options.mapping_range_.first);
+  }
+
+  TPI* slicePtr = static_cast< TPI* >( slice.Origin() );
+  uint8* outPtr = static_cast< uint8* >( out.Origin() );
+  for( dip::uint jj = 0; jj < height; ++jj, slicePtr += sliceStride1, outPtr += outStride1 )
+  {
+    TPI* iPtr = slicePtr;
+    uint8* oPtr = outPtr;
+    dip::uint ii;
+     
+    switch (lut)
+    {
+      case ViewingOptions::LookupTable::RGB:
+        for (dip::uint kk=0; kk < 3; ++kk)
+        {
+          dip::sint elem = color_elements[kk];
+          if (elem >= 0)
+            for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
+              oPtr[kk] = rangeMap((dip::sfloat)iPtr[elem*sliceStrideT], offset, scale, mapping);
+          else
+            for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
+              oPtr[kk] = 0;
+        }
+        break;
+      default:
+        for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
+          oPtr[0] = oPtr[1] = oPtr[2] = rangeMap((dip::sfloat)iPtr[(dip::sint)element*sliceStrideT], offset, scale, mapping);
+        break;
+    }
+  }
+}
+
+inline void ApplyViewerColorMap(dip::Image &in, dip::Image &out, ViewingOptions &options)
+{
+  if (in.Dimensionality() == 0)
+    out = dip::Image(dip::UnsignedArray {1, 1}, 3, DT_UINT8);
+  else
+    out = dip::Image(in.Sizes(), 3, DT_UINT8);
+    
+  DIP_OVL_CALL_NONCOMPLEX( viewer__ColorMap, ( in, out, options ), in.DataType() );  
+  
+  switch(options.lut_)
+  {
+    case ViewingOptions::LookupTable::Sequential:
+      ApplyColorMap(out[0], out, "linear");
       break;
-    case ViewingOptions::LookupTable::ColorSpace:
-    case ViewingOptions::LookupTable::Grey:
-      out[0] = out[1] = out[2] = (dip::uint8)(rangeMap((double)in[options.element_*hasElements], options)*255);
+    case ViewingOptions::LookupTable::Divergent:
+      ApplyColorMap(out[0], out, "diverging_linear");
       break;
-    case ViewingOptions::LookupTable::Jet:
-      jet(rangeMap((double)in[options.element_*hasElements], options), out);
+    case ViewingOptions::LookupTable::Cyclic:
+      ApplyColorMap(out[0], out, "cyclic");
+      break;
+    case ViewingOptions::LookupTable::Label:
+      ApplyColorMap(out[0], out, "label");
+      break;
+    default:
+      // Nothing to do
       break;
   }
 }
