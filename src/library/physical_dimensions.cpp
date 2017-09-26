@@ -55,10 +55,6 @@ static_assert( sizeof( super8 ) == 3+1, "UTF-8 encoded symbol is of different si
 constexpr char const super9[] = u8"\u2079";
 static_assert( sizeof( super9 ) == 3+1, "UTF-8 encoded symbol is of different size than expected." );
 
-#else
-
-constexpr char const cdot[] = ".";
-
 #endif
 
 } // namespace
@@ -263,7 +259,23 @@ Units::Units( dip::String const& string ) {
 
 namespace {
 
+constexpr char const* CDot() {
+   return ".";
+}
+
+constexpr char const* CDotUnicode() {
+#ifdef DIP__ENABLE_UNICODE
+   return cdot;
+#else
+   return CDot();
+#endif
+}
+
 std::string PowerAsString( dip::sint p ) {
+   return "^" + std::to_string( p );
+}
+
+std::string PowerAsStringUnicode( dip::sint p ) {
 #ifdef DIP__ENABLE_UNICODE
    std::string str = std::to_string( p );
    std::string out;
@@ -285,19 +297,47 @@ std::string PowerAsString( dip::sint p ) {
    }
    return out;
 #else
-   return "^" + std::to_string( p );
+   return PowerAsString( p );
+#endif
+}
+
+// Appends an SI prefix to the string `out`.
+void WritePrefix( dip::String& out, dip::sint n ) {
+   constexpr char const* prefixes = "fpnum kMGTPE";
+   out += prefixes[ n + 5 ];
+}
+
+void WritePrefixUnicode( dip::String& out, dip::sint n ) {
+#ifdef DIP__ENABLE_UNICODE
+   switch( n ) {
+      case -5: out += "f"; break;
+      case -4: out += "p"; break;
+      case -3: out += "n"; break;
+      case -2: out += micron; break; // This is two bytes, so we can't do the trick we do when plain ASCII is enabled.
+      case -1: out += "m"; break;
+      default: // Should not happen!
+      case 0: break;
+      case 1: out += "k"; break;
+      case 2: out += "M"; break;
+      case 3: out += "G"; break;
+      case 4: out += "T"; break;
+      case 5: out += "P"; break;
+      case 6: out += "E"; break;
+   }
+#else
+   WritePrefix( out, n );
 #endif
 }
 
 // Appends a unit with a positive power to the string `out`.
-bool WritePositivePower( dip::String& out, const char* s, dip::sint p, bool prefix ) {
+bool WritePositivePower( dip::String& out, const char* s, dip::sint p, bool prefix, bool unicode ) {
    if( p > 0 ) {
       if( prefix ) {
-         out += cdot;
+         out += unicode ? CDotUnicode() : CDot();
       }
       out += s;
       if( p != 1 ) {
-         out += PowerAsString( p );
+         out += unicode ? PowerAsStringUnicode( p ) : PowerAsString( p );
       }
       prefix = true;
    }
@@ -305,7 +345,7 @@ bool WritePositivePower( dip::String& out, const char* s, dip::sint p, bool pref
 }
 
 // Appends a unit with a negative power to the string `out`.
-bool WriteNegativePower( dip::String& out, const char* s, dip::sint p, bool prefix ) {
+bool WriteNegativePower( dip::String& out, const char* s, dip::sint p, bool prefix, bool unicode ) {
    if( p < 0 ) {
       if( prefix ) {
          out += '/';
@@ -313,7 +353,7 @@ bool WriteNegativePower( dip::String& out, const char* s, dip::sint p, bool pref
       }
       out += s;
       if( p != 1 ) {
-         out += PowerAsString( p );
+         out += unicode ? PowerAsStringUnicode( p ) : PowerAsString( p );
       }
       prefix = true;
    }
@@ -323,7 +363,7 @@ bool WriteNegativePower( dip::String& out, const char* s, dip::sint p, bool pref
 } // namespace
 
 // Creates a string representation of the units.
-dip::String Units::String() const {
+dip::String Units::StringRepresentation( bool unicode ) const {
    dip::String out;
    bool prefix = false;
    // The prefix
@@ -338,60 +378,40 @@ dip::String Units::String() const {
          p = ( power_[ 0 ] - n * p ) * 3;     // dip::PhysicalQuantity should make sure that p is 0 here, using AdjustThousands()
       }
       if( p != 0 ) {
-         out += "10" + PowerAsString( p );
+         out += "10" + ( unicode ? PowerAsStringUnicode( p ) : PowerAsString( p ));
          prefix = true;
       }
       if( n != 0 ) {
          if( prefix ) {
-            out += cdot;
+            out += unicode ? CDotUnicode() : CDot();
          }
-#ifdef DIP__ENABLE_UNICODE
-         switch( n ) {
-            case -5: out += "f"; break;
-            case -4: out += "p"; break;
-            case -3: out += "n"; break;
-            case -2: out += micron; break; // This is two bytes, so we can't do the trick we do when plain ASCII is enabled.
-            case -1: out += "m"; break;
-            default: // Should not happen!
-            case 0: break;
-            case 1: out += "k"; break;
-            case 2: out += "M"; break;
-            case 3: out += "G"; break;
-            case 4: out += "T"; break;
-            case 5: out += "P"; break;
-            case 6: out += "E"; break;
-         }
-#else
-         constexpr char const* prefixes = "fpnum kMGTPE";
-         out += prefixes[ n + 5 ];
-#endif
+         unicode ? WritePrefixUnicode( out, n ) : WritePrefix( out, n );
          prefix = false; // next thing should not output a cdot first.
       }
    }
    // We write out positive powers first
-   prefix = WritePositivePower( out, "m",   power_[ unsigned( BaseUnits::LENGTH            ) ], prefix );
-   prefix = WritePositivePower( out, "g",   power_[ unsigned( BaseUnits::MASS              ) ], prefix );
-   prefix = WritePositivePower( out, "s",   power_[ unsigned( BaseUnits::TIME              ) ], prefix );
-   prefix = WritePositivePower( out, "A",   power_[ unsigned( BaseUnits::CURRENT           ) ], prefix );
-   prefix = WritePositivePower( out, "K",   power_[ unsigned( BaseUnits::TEMPERATURE       ) ], prefix );
-   prefix = WritePositivePower( out, "cd",  power_[ unsigned( BaseUnits::LUMINOUSINTENSITY ) ], prefix );
-   prefix = WritePositivePower( out, "rad", power_[ unsigned( BaseUnits::ANGLE             ) ], prefix );
-   prefix = WritePositivePower( out, "px",  power_[ unsigned( BaseUnits::PIXEL             ) ], prefix );
+   prefix = WritePositivePower( out, "m",   power_[ unsigned( BaseUnits::LENGTH            ) ], prefix, unicode );
+   prefix = WritePositivePower( out, "g",   power_[ unsigned( BaseUnits::MASS              ) ], prefix, unicode );
+   prefix = WritePositivePower( out, "s",   power_[ unsigned( BaseUnits::TIME              ) ], prefix, unicode );
+   prefix = WritePositivePower( out, "A",   power_[ unsigned( BaseUnits::CURRENT           ) ], prefix, unicode );
+   prefix = WritePositivePower( out, "K",   power_[ unsigned( BaseUnits::TEMPERATURE       ) ], prefix, unicode );
+   prefix = WritePositivePower( out, "cd",  power_[ unsigned( BaseUnits::LUMINOUSINTENSITY ) ], prefix, unicode );
+   prefix = WritePositivePower( out, "rad", power_[ unsigned( BaseUnits::ANGLE             ) ], prefix, unicode );
+   prefix = WritePositivePower( out, "px",  power_[ unsigned( BaseUnits::PIXEL             ) ], prefix, unicode );
    // and negative powers at the end
-   prefix = WriteNegativePower( out, "m",   power_[ unsigned( BaseUnits::LENGTH            ) ], prefix );
-   prefix = WriteNegativePower( out, "g",   power_[ unsigned( BaseUnits::MASS              ) ], prefix );
-   prefix = WriteNegativePower( out, "s",   power_[ unsigned( BaseUnits::TIME              ) ], prefix );
-   prefix = WriteNegativePower( out, "A",   power_[ unsigned( BaseUnits::CURRENT           ) ], prefix );
-   prefix = WriteNegativePower( out, "K",   power_[ unsigned( BaseUnits::TEMPERATURE       ) ], prefix );
-   prefix = WriteNegativePower( out, "cd",  power_[ unsigned( BaseUnits::LUMINOUSINTENSITY ) ], prefix );
-   prefix = WriteNegativePower( out, "rad", power_[ unsigned( BaseUnits::ANGLE             ) ], prefix );
-   prefix = WriteNegativePower( out, "px",  power_[ unsigned( BaseUnits::PIXEL             ) ], prefix );
+   prefix = WriteNegativePower( out, "m",   power_[ unsigned( BaseUnits::LENGTH            ) ], prefix, unicode );
+   prefix = WriteNegativePower( out, "g",   power_[ unsigned( BaseUnits::MASS              ) ], prefix, unicode );
+   prefix = WriteNegativePower( out, "s",   power_[ unsigned( BaseUnits::TIME              ) ], prefix, unicode );
+   prefix = WriteNegativePower( out, "A",   power_[ unsigned( BaseUnits::CURRENT           ) ], prefix, unicode );
+   prefix = WriteNegativePower( out, "K",   power_[ unsigned( BaseUnits::TEMPERATURE       ) ], prefix, unicode );
+   prefix = WriteNegativePower( out, "cd",  power_[ unsigned( BaseUnits::LUMINOUSINTENSITY ) ], prefix, unicode );
+   prefix = WriteNegativePower( out, "rad", power_[ unsigned( BaseUnits::ANGLE             ) ], prefix, unicode );
+   prefix = WriteNegativePower( out, "px",  power_[ unsigned( BaseUnits::PIXEL             ) ], prefix, unicode );
    return out;
 }
 
 
 } // namespace dip
-
 
 
 #ifdef DIP__ENABLE_DOCTEST
@@ -404,72 +424,120 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
 #ifdef DIP__ENABLE_UNICODE
 
    dip::Units f = dip::Units::Meter();
-   DOCTEST_CHECK( ( f ).String() == "m" );
-   DOCTEST_CHECK( ( f * f ).String() == u8"m\u00B2" );
-   DOCTEST_CHECK( ( f * f * f ).String() == u8"m\u00B3" );
-   DOCTEST_CHECK( ( f * f * f * f ).String() == u8"m\u2074" );
-   DOCTEST_CHECK( ( dip::Units() / f ).String() == u8"m\u207B\u00B9" );
-   DOCTEST_CHECK( ( dip::Units() / f / f ).String() == u8"m\u207B\u00B2" );
-   DOCTEST_CHECK( ( dip::Units() / f / f / f ).String() == u8"m\u207B\u00B3" );
-   DOCTEST_CHECK( ( dip::Units() / f / f / f / f ).String() == u8"m\u207B\u2074" );
+   DOCTEST_CHECK(( f ).String() == "m" );
+   DOCTEST_CHECK(( f ).StringUnicode() == "m" );
+   DOCTEST_CHECK(( f * f ).String() == "m^2" );
+   DOCTEST_CHECK(( f * f ).StringUnicode() == u8"m\u00B2" );
+   DOCTEST_CHECK(( f * f * f ).String() == "m^3" );
+   DOCTEST_CHECK(( f * f * f ).StringUnicode() == u8"m\u00B3" );
+   DOCTEST_CHECK(( f * f * f * f ).String() == "m^4" );
+   DOCTEST_CHECK(( f * f * f * f ).StringUnicode() == u8"m\u2074" );
+   DOCTEST_CHECK(( dip::Units() / f ).String() == "m^-1" );
+   DOCTEST_CHECK(( dip::Units() / f ).StringUnicode() == u8"m\u207B\u00B9" );
+   DOCTEST_CHECK(( dip::Units() / f / f ).String() == "m^-2" );
+   DOCTEST_CHECK(( dip::Units() / f / f ).StringUnicode() == u8"m\u207B\u00B2" );
+   DOCTEST_CHECK(( dip::Units() / f / f / f ).String() == "m^-3" );
+   DOCTEST_CHECK(( dip::Units() / f / f / f ).StringUnicode() == u8"m\u207B\u00B3" );
+   DOCTEST_CHECK(( dip::Units() / f / f / f / f ).String() == "m^-4" );
+   DOCTEST_CHECK(( dip::Units() / f / f / f / f ).StringUnicode() == u8"m\u207B\u2074" );
    DOCTEST_CHECK( f == dip::Units( "m" ));
+   DOCTEST_CHECK( f * f == dip::Units( "m^2" ));
    DOCTEST_CHECK( f * f == dip::Units( u8"m\u00B2" ));
+   DOCTEST_CHECK( f * f * f == dip::Units( "m^3" ));
    DOCTEST_CHECK( f * f * f == dip::Units( u8"m\u00B3" ));
+   DOCTEST_CHECK( f * f * f * f == dip::Units( "m^4" ));
    DOCTEST_CHECK( f * f * f * f == dip::Units( u8"m\u2074" ));
+   DOCTEST_CHECK( dip::Units() / f == dip::Units( "m^-1" ));
    DOCTEST_CHECK( dip::Units() / f == dip::Units( u8"m\u207B\u00B9" ));
+   DOCTEST_CHECK( dip::Units() / f / f == dip::Units( "m^-2" ));
    DOCTEST_CHECK( dip::Units() / f / f == dip::Units( u8"m\u207B\u00B2" ));
+   DOCTEST_CHECK( dip::Units() / f / f / f == dip::Units( "m^-3" ));
    DOCTEST_CHECK( dip::Units() / f / f / f == dip::Units( u8"m\u207B\u00B3" ));
+   DOCTEST_CHECK( dip::Units() / f / f / f / f == dip::Units( "m^-4" ));
    DOCTEST_CHECK( dip::Units() / f / f / f / f == dip::Units( u8"m\u207B\u2074" ));
 
    dip::Units g = dip::Units::Second();
-   DOCTEST_CHECK( ( f / g ).String() == "m/s" );
-   DOCTEST_CHECK( ( f / g / g ).String() == u8"m/s\u00B2" );
-   DOCTEST_CHECK( ( f / g / g / g ).String() == u8"m/s\u00B3" );
-   DOCTEST_CHECK( ( f / g / g / g / g ).String() == u8"m/s\u2074" );
-   DOCTEST_CHECK( ( g / f ).String() == "s/m" );
-   DOCTEST_CHECK( ( g / f / f ).String() == u8"s/m\u00B2" );
-   DOCTEST_CHECK( ( g * g / f ).String() == u8"s\u00B2/m" );
-   DOCTEST_CHECK( ( g * f ).String() == u8"m\u00B7s" );
+   DOCTEST_CHECK(( f / g ).String() == "m/s" );
+   DOCTEST_CHECK(( f / g ).StringUnicode() == "m/s" );
+   DOCTEST_CHECK(( f / g / g ).String() == "m/s^2" );
+   DOCTEST_CHECK(( f / g / g ).StringUnicode() == u8"m/s\u00B2" );
+   DOCTEST_CHECK(( f / g / g / g ).String() == "m/s^3" );
+   DOCTEST_CHECK(( f / g / g / g ).StringUnicode() == u8"m/s\u00B3" );
+   DOCTEST_CHECK(( f / g / g / g / g ).String() == "m/s^4" );
+   DOCTEST_CHECK(( f / g / g / g / g ).StringUnicode() == u8"m/s\u2074" );
+   DOCTEST_CHECK(( g / f ).String() == "s/m" );
+   DOCTEST_CHECK(( g / f ).StringUnicode() == "s/m" );
+   DOCTEST_CHECK(( g / f / f ).String() == "s/m^2" );
+   DOCTEST_CHECK(( g / f / f ).StringUnicode() == u8"s/m\u00B2" );
+   DOCTEST_CHECK(( g * g / f ).String() == "s^2/m" );
+   DOCTEST_CHECK(( g * g / f ).StringUnicode() == u8"s\u00B2/m" );
+   DOCTEST_CHECK(( g * f ).String() == "m.s" );
+   DOCTEST_CHECK(( g * f ).StringUnicode() == u8"m\u00B7s" );
    DOCTEST_CHECK( f / g == dip::Units( "m/s" ));
+   DOCTEST_CHECK( f / g / g == dip::Units( "m/s^2" ));
    DOCTEST_CHECK( f / g / g == dip::Units( u8"m/s\u00B2" ));
+   DOCTEST_CHECK( f / g / g / g == dip::Units( "m/s^3" ));
    DOCTEST_CHECK( f / g / g / g == dip::Units( u8"m/s\u00B3" ));
+   DOCTEST_CHECK( f / g / g / g / g == dip::Units( "m/s^4" ));
    DOCTEST_CHECK( f / g / g / g / g == dip::Units( u8"m/s\u2074" ));
    DOCTEST_CHECK( g / f == dip::Units( "s/m" ));
+   DOCTEST_CHECK( g / f / f == dip::Units( "s/m^2" ));
    DOCTEST_CHECK( g / f / f == dip::Units( u8"s/m\u00B2" ));
+   DOCTEST_CHECK( g * g / f == dip::Units( "s^2/m" ));
    DOCTEST_CHECK( g * g / f == dip::Units( u8"s\u00B2/m" ));
+   DOCTEST_CHECK( g * f == dip::Units( "m.s" ));
    DOCTEST_CHECK( g * f == dip::Units( u8"m\u00B7s" ));
 
-   DOCTEST_CHECK( ( dip::Units::Millimeter() ).String() == "mm" );
-   DOCTEST_CHECK( ( dip::Units::Millimeter() * dip::Units::Millimeter() ).String() == u8"mm\u00B2" );
-   DOCTEST_CHECK( ( dip::Units::Millimeter() * dip::Units::Meter() ).String() == u8"10\u00B3\u00B7mm\u00B2" );
-   DOCTEST_CHECK( ( dip::Units::Kilometer() * dip::Units::Meter() ).String() == u8"10\u00B3\u00B7m\u00B2" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() ).String() == "mm" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() ).StringUnicode() == "mm" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() * dip::Units::Millimeter() ).String() == "mm^2" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() * dip::Units::Millimeter() ).StringUnicode() == u8"mm\u00B2" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() * dip::Units::Meter() ).String() == "10^3.mm^2" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() * dip::Units::Meter() ).StringUnicode() == u8"10\u00B3\u00B7mm\u00B2" );
+   DOCTEST_CHECK(( dip::Units::Kilometer() * dip::Units::Meter() ).String() == "10^3.m^2" );
+   DOCTEST_CHECK(( dip::Units::Kilometer() * dip::Units::Meter() ).StringUnicode() == u8"10\u00B3\u00B7m\u00B2" );
    DOCTEST_CHECK( dip::Units::Millimeter() == dip::Units( "mm" ));
+   DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Millimeter() == dip::Units( "mm^2" ));
    DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Millimeter() == dip::Units( u8"mm\u00B2" ));
+   DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Meter() == dip::Units( "10^3.mm^2" ));
    DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Meter() == dip::Units( u8"10\u00B3\u00B7mm\u00B2" ));
+   DOCTEST_CHECK( dip::Units::Kilometer() * dip::Units::Meter() == dip::Units( "10^3.m^2" ));
    DOCTEST_CHECK( dip::Units::Kilometer() * dip::Units::Meter() == dip::Units( u8"10\u00B3\u00B7m\u00B2" ));
 
-   DOCTEST_CHECK( ( dip::Units( u8"10\u2076\u00B7mm\u00B2" )).String() == u8"m\u00B2" );
-   DOCTEST_CHECK( ( dip::Units( "km/s" )).String() == "km/s" );
-   DOCTEST_CHECK( ( dip::Units( u8"km\u00B7cd\u00B7rad\u00B7px" )).String() == u8"km\u00B7cd\u00B7rad\u00B7px" );
-   DOCTEST_CHECK( ( dip::Units( u8"km\u00B7cd/rad\u00B7px" )).String() == u8"km\u00B7cd\u00B7px/rad" );
-   DOCTEST_CHECK( ( dip::Units( u8"10\u00B3\u00B7km\u207B\u00B9\u00B7cd\u207B\u00B2/K" )).String() == u8"m\u207B\u00B9/K/cd\u00B2" );
-
-   DOCTEST_CHECK( ( dip::Units( "10^6.mm^2" )).String() == u8"m\u00B2" );
-   DOCTEST_CHECK( ( dip::Units( "km.cd.rad.px" )).String() == u8"km\u00B7cd\u00B7rad\u00B7px" );
-   DOCTEST_CHECK( ( dip::Units( "km.cd/rad.px" )).String() == u8"km\u00B7cd\u00B7px/rad" );
-   DOCTEST_CHECK( ( dip::Units( "10^3.km^-1.cd^-2/K" )).String() == u8"m\u207B\u00B9/K/cd\u00B2" );
+   DOCTEST_CHECK(( dip::Units( "10^6.mm^2" )).String() == "m^2" );
+   DOCTEST_CHECK(( dip::Units( "10^6.mm^2" )).StringUnicode() == u8"m\u00B2" );
+   DOCTEST_CHECK(( dip::Units( u8"10\u2076\u00B7mm\u00B2" )).StringUnicode() == u8"m\u00B2" );
+   DOCTEST_CHECK(( dip::Units( "km/s" )).String() == "km/s" );
+   DOCTEST_CHECK(( dip::Units( "km/s" )).StringUnicode() == "km/s" );
+   DOCTEST_CHECK(( dip::Units( "km.cd.rad.px" )).String() == "km.cd.rad.px" );
+   DOCTEST_CHECK(( dip::Units( "km.cd.rad.px" )).StringUnicode() == u8"km\u00B7cd\u00B7rad\u00B7px" );
+   DOCTEST_CHECK(( dip::Units( u8"km\u00B7cd\u00B7rad\u00B7px" )).StringUnicode() == u8"km\u00B7cd\u00B7rad\u00B7px" );
+   DOCTEST_CHECK(( dip::Units( "km.cd/rad.px" )).String() == "km.cd.px/rad" );
+   DOCTEST_CHECK(( dip::Units( "km.cd/rad.px" )).StringUnicode() == u8"km\u00B7cd\u00B7px/rad" );
+   DOCTEST_CHECK(( dip::Units( u8"km\u00B7cd/rad\u00B7px" )).StringUnicode() == u8"km\u00B7cd\u00B7px/rad" );
+   DOCTEST_CHECK(( dip::Units( "10^3.km^-1.cd^-2/K" )).String() == "m^-1/K/cd^2" );
+   DOCTEST_CHECK(( dip::Units( "10^3.km^-1.cd^-2/K" )).StringUnicode() == u8"m\u207B\u00B9/K/cd\u00B2" );
+   DOCTEST_CHECK(( dip::Units( u8"10\u00B3\u00B7km\u207B\u00B9\u00B7cd\u207B\u00B2/K" )).StringUnicode() == u8"m\u207B\u00B9/K/cd\u00B2" );
 
 #else
 
    dip::Units f = dip::Units::Meter();
-   DOCTEST_CHECK( ( f ).String() == "m" );
-   DOCTEST_CHECK( ( f * f ).String() == "m^2" );
-   DOCTEST_CHECK( ( f * f * f ).String() == "m^3" );
-   DOCTEST_CHECK( ( f * f * f * f ).String() == "m^4" );
-   DOCTEST_CHECK( ( dip::Units() / f ).String() == "m^-1" );
-   DOCTEST_CHECK( ( dip::Units() / f / f ).String() == "m^-2" );
-   DOCTEST_CHECK( ( dip::Units() / f / f / f ).String() == "m^-3" );
-   DOCTEST_CHECK( ( dip::Units() / f / f / f / f ).String() == "m^-4" );
+   DOCTEST_CHECK(( f ).String() == "m" );
+   DOCTEST_CHECK(( f ).StringUnicode() == "m" );
+   DOCTEST_CHECK(( f * f ).String() == "m^2" );
+   DOCTEST_CHECK(( f * f ).StringUnicode() == "m^2" );
+   DOCTEST_CHECK(( f * f * f ).String() == "m^3" );
+   DOCTEST_CHECK(( f * f * f ).StringUnicode() == "m^3" );
+   DOCTEST_CHECK(( f * f * f * f ).String() == "m^4" );
+   DOCTEST_CHECK(( f * f * f * f ).StringUnicode() == "m^4" );
+   DOCTEST_CHECK(( dip::Units() / f ).String() == "m^-1" );
+   DOCTEST_CHECK(( dip::Units() / f ).StringUnicode() == "m^-1" );
+   DOCTEST_CHECK(( dip::Units() / f / f ).String() == "m^-2" );
+   DOCTEST_CHECK(( dip::Units() / f / f ).StringUnicode() == "m^-2" );
+   DOCTEST_CHECK(( dip::Units() / f / f / f ).String() == "m^-3" );
+   DOCTEST_CHECK(( dip::Units() / f / f / f ).StringUnicode() == "m^-3" );
+   DOCTEST_CHECK(( dip::Units() / f / f / f / f ).String() == "m^-4" );
+   DOCTEST_CHECK(( dip::Units() / f / f / f / f ).StringUnicode() == "m^-4" );
    DOCTEST_CHECK( f == dip::Units( "m" ));
    DOCTEST_CHECK( f * f == dip::Units( "m^2" ));
    DOCTEST_CHECK( f * f * f == dip::Units( "m^3" ));
@@ -480,14 +548,22 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
    DOCTEST_CHECK( dip::Units() / f / f / f / f == dip::Units( "m^-4" ));
 
    dip::Units g = dip::Units::Second();
-   DOCTEST_CHECK( ( f / g ).String() == "m/s" );
-   DOCTEST_CHECK( ( f / g / g ).String() == "m/s^2" );
-   DOCTEST_CHECK( ( f / g / g / g ).String() == "m/s^3" );
-   DOCTEST_CHECK( ( f / g / g / g / g ).String() == "m/s^4" );
-   DOCTEST_CHECK( ( g / f ).String() == "s/m" );
-   DOCTEST_CHECK( ( g / f / f ).String() == "s/m^2" );
-   DOCTEST_CHECK( ( g * g / f ).String() == "s^2/m" );
-   DOCTEST_CHECK( ( g * f ).String() == "m.s" );
+   DOCTEST_CHECK(( f / g ).String() == "m/s" );
+   DOCTEST_CHECK(( f / g ).StringUnicode() == "m/s" );
+   DOCTEST_CHECK(( f / g / g ).String() == "m/s^2" );
+   DOCTEST_CHECK(( f / g / g ).StringUnicode() == "m/s^2" );
+   DOCTEST_CHECK(( f / g / g / g ).String() == "m/s^3" );
+   DOCTEST_CHECK(( f / g / g / g ).StringUnicode() == "m/s^3" );
+   DOCTEST_CHECK(( f / g / g / g / g ).String() == "m/s^4" );
+   DOCTEST_CHECK(( f / g / g / g / g ).StringUnicode() == "m/s^4" );
+   DOCTEST_CHECK(( g / f ).String() == "s/m" );
+   DOCTEST_CHECK(( g / f ).StringUnicode() == "s/m" );
+   DOCTEST_CHECK(( g / f / f ).String() == "s/m^2" );
+   DOCTEST_CHECK(( g / f / f ).StringUnicode() == "s/m^2" );
+   DOCTEST_CHECK(( g * g / f ).String() == "s^2/m" );
+   DOCTEST_CHECK(( g * g / f ).StringUnicode() == "s^2/m" );
+   DOCTEST_CHECK(( g * f ).String() == "m.s" );
+   DOCTEST_CHECK(( g * f ).StringUnicode() == "m.s" );
    DOCTEST_CHECK( f / g == dip::Units( "m/s" ));
    DOCTEST_CHECK( f / g / g == dip::Units( "m/s^2" ));
    DOCTEST_CHECK( f / g / g / g == dip::Units( "m/s^3" ));
@@ -497,20 +573,29 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::Units class") {
    DOCTEST_CHECK( g * g / f == dip::Units( "s^2/m" ));
    DOCTEST_CHECK( g * f == dip::Units( "m.s" ));
 
-   DOCTEST_CHECK( ( dip::Units::Millimeter() ).String() == "mm" );
-   DOCTEST_CHECK( ( dip::Units::Millimeter() * dip::Units::Millimeter() ).String() == "mm^2" );
-   DOCTEST_CHECK( ( dip::Units::Millimeter() * dip::Units::Meter() ).String() == "10^3.mm^2" );
-   DOCTEST_CHECK( ( dip::Units::Kilometer() * dip::Units::Meter() ).String() == "10^3.m^2" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() ).String() == "mm" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() ).StringUnicode() == "mm" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() * dip::Units::Millimeter() ).String() == "mm^2" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() * dip::Units::Millimeter() ).StringUnicode() == "mm^2" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() * dip::Units::Meter() ).String() == "10^3.mm^2" );
+   DOCTEST_CHECK(( dip::Units::Millimeter() * dip::Units::Meter() ).StringUnicode() == "10^3.mm^2" );
+   DOCTEST_CHECK(( dip::Units::Kilometer() * dip::Units::Meter() ).String() == "10^3.m^2" );
+   DOCTEST_CHECK(( dip::Units::Kilometer() * dip::Units::Meter() ).StringUnicode() == "10^3.m^2" );
    DOCTEST_CHECK( dip::Units::Millimeter() == dip::Units( "mm" ));
    DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Millimeter() == dip::Units( "mm^2" ));
    DOCTEST_CHECK( dip::Units::Millimeter() * dip::Units::Meter() == dip::Units( "10^3.mm^2" ));
    DOCTEST_CHECK( dip::Units::Kilometer() * dip::Units::Meter() == dip::Units( "10^3.m^2" ));
 
-   DOCTEST_CHECK( ( dip::Units( "10^6.mm^2" )).String() == "m^2" );
-   DOCTEST_CHECK( ( dip::Units( "km/s" )).String() == "km/s" );
-   DOCTEST_CHECK( ( dip::Units( "km.cd.rad.px" )).String() == "km.cd.rad.px" );
-   DOCTEST_CHECK( ( dip::Units( "km.cd/rad.px" )).String() == "km.cd.px/rad" );
-   DOCTEST_CHECK( ( dip::Units( "10^3.km^-1.cd^-2/K" )).String() == "m^-1/K/cd^2" );
+   DOCTEST_CHECK(( dip::Units( "10^6.mm^2" )).String() == "m^2" );
+   DOCTEST_CHECK(( dip::Units( "10^6.mm^2" )).StringUnicode() == "m^2" );
+   DOCTEST_CHECK(( dip::Units( "km/s" )).String() == "km/s" );
+   DOCTEST_CHECK(( dip::Units( "km/s" )).StringUnicode() == "km/s" );
+   DOCTEST_CHECK(( dip::Units( "km.cd.rad.px" )).String() == "km.cd.rad.px" );
+   DOCTEST_CHECK(( dip::Units( "km.cd.rad.px" )).StringUnicode() == "km.cd.rad.px" );
+   DOCTEST_CHECK(( dip::Units( "km.cd/rad.px" )).String() == "km.cd.px/rad" );
+   DOCTEST_CHECK(( dip::Units( "km.cd/rad.px" )).StringUnicode() == "km.cd.px/rad" );
+   DOCTEST_CHECK(( dip::Units( "10^3.km^-1.cd^-2/K" )).String() == "m^-1/K/cd^2" );
+   DOCTEST_CHECK(( dip::Units( "10^3.km^-1.cd^-2/K" )).StringUnicode() == "m^-1/K/cd^2" );
 
 #endif
 

@@ -259,9 +259,21 @@ class DIP_NO_EXPORT Units {
          return power_[ 0 ];
       }
 
-      /// \brief Cast physical units to a string representation.
+      /// \brief Cast physical units to a string representation, using only ASCII characters.
+      ///
       /// No attempt is (yet?) made to produce derived SI units or to translate to different units.
-      DIP_EXPORT dip::String String() const;
+      dip::String String() const {
+         return StringRepresentation( false );
+      }
+
+      /// \brief Cast physical units to a string representation, using Unicode characters (UTF-8 encoded).
+      ///
+      /// If Unicode support was disabled during compilation, this function does the same as `dip::Units::String`.
+      ///
+      /// No attempt is (yet?) made to produce derived SI units or to translate to different units.
+      dip::String StringUnicode() const {
+         return StringRepresentation( true );
+      }
 
       /// Swaps the values of `this` and `other`.
       void swap( Units& other ) {
@@ -288,6 +300,8 @@ class DIP_NO_EXPORT Units {
          }
          return 0;
       }
+
+      DIP_EXPORT dip::String StringRepresentation( bool unicode ) const;
 };
 
 /// \brief Multiplies two units objects.
@@ -304,7 +318,7 @@ inline Units operator/( Units lhs, Units const& rhs ) {
 
 /// \brief Insert physical quantity to an output stream as a string of base units. See `dip::Units::String`.
 inline std::ostream& operator<<( std::ostream& os, Units const& units ) {
-   os << units.String();
+   os << units.StringUnicode();
    return os;
 }
 

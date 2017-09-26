@@ -205,6 +205,19 @@ inline dfloat pow10( dip::sint power ) {
    }
 }
 
+/// \brief Counts the length of a (UTF-8 encoded) Unicode string.
+inline dip::uint LengthUnicode( String const& string ) {
+#ifdef DIP__ENABLE_UNICODE
+   dip::uint len = 0;
+   for( auto& s : string ) {
+      len += static_cast< dip::uint >(( s & 0xc0 ) != 0x80 );
+   }
+   return len;
+#else
+   return string.length();
+#endif
+}
+
 /// \brief Computes the Bessel function J of the order 0.
 DIP_EXPORT dfloat BesselJ0( dfloat x );
 
