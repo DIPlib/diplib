@@ -118,7 +118,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          auto dipValues = msr.Values();
          for( dip::uint ii = 0; ii <  msr.NumberOfValues(); ++ii ) {
             mxSetFieldByNumber( mxInputArgs[ 2 ], ii, 0, dml::GetArray( dipValues[ ii ].name ));
-            mxSetFieldByNumber( mxInputArgs[ 2 ], ii, 1, dml::GetArrayUnicode( dipValues[ ii ].units.String() ));
+            mxSetFieldByNumber( mxInputArgs[ 2 ], ii, 1, dml::GetArrayUnicode( dipValues[ ii ].units.StringUnicode() ));
          }
 
          // Step 2: create the object

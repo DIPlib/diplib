@@ -743,7 +743,7 @@ inline mxArray* GetArray( dip::PixelSize const& pixelSize ) {
    mxArray* pxsz = mxCreateStructMatrix( pixelSize.Size(), 1, nPxsizeStructFields, pxsizeStructFields );
    for( dip::uint ii = 0; ii < pixelSize.Size(); ++ii ) {
       mxSetField( pxsz, ii, pxsizeStructFields[ 0 ], dml::GetArray( pixelSize[ ii ].magnitude ));
-      mxSetField( pxsz, ii, pxsizeStructFields[ 1 ], dml::GetArrayUnicode( pixelSize[ ii ].units.String() ));
+      mxSetField( pxsz, ii, pxsizeStructFields[ 1 ], dml::GetArrayUnicode( pixelSize[ ii ].units.StringUnicode() ));
    }
    return pxsz;
 }

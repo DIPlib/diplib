@@ -53,12 +53,10 @@ namespace dip {
 /// and only if you want to prevent your program from exiting abnormally.
 /// This class is derived from `std::exception`, so you can choose to catch that instead.
 class DIP_EXPORT Error : public std::exception {
-
    public:
-
       Error() = default;
       explicit Error( char const* message ) : message_( message ) {}
-      explicit Error( const std::string& message ) : message_( message ) {};
+      explicit Error( std::string message ) : message_( std::move( message )) {};
 
       /// \brief Return a message indicating what caused the exception to be thrown, as well as the location
       /// where the error occurred.
@@ -69,7 +67,7 @@ class DIP_EXPORT Error : public std::exception {
       /// and re-throw the exception.
       ///
       /// \see DIP_ADD_STACK_TRACE, DIP_TRY, DIP_CATCH
-      virtual char const* what() const noexcept override {
+      char const* what() const noexcept override {
          return message_.c_str();
       }
 
@@ -90,7 +88,6 @@ class DIP_EXPORT Error : public std::exception {
       }
 
    private:
-
       std::string message_;
 };
 
@@ -231,7 +228,7 @@ constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 #define DIP_THROW( str ) do { auto e = dip::ParameterError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
 
 /// \brief Throw a `dip::ParameterError` that reads "Invalid flag: <flag>".
-#define DIP_THROW_INVALID_FLAG( flag ) DIP_THROW( "Invalid flag: " + String( flag ));
+#define DIP_THROW_INVALID_FLAG( flag ) DIP_THROW( "Invalid flag: " + std::string( flag ));
 
 /// \brief Test a condition, throw a `dip::ParameterError` if the condition is met.
 #define DIP_THROW_IF( test, str ) do { if( test ) DIP_THROW( str ); } while( false )
