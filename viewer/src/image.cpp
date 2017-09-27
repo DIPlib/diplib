@@ -36,10 +36,6 @@ void ImageView::rebuild()
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
   glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
 
-  DIP_THROW_IF( !image_.HasContiguousData(), E::NO_NORMAL_STRIDE );
-  DIP_THROW_IF( image_.DataType() != DT_UINT8, E::WRONG_DATA_TYPE );
-  DIP_THROW_IF( image_.TensorElements() != 3, E::NTENSORELEM_DONT_MATCH );
-
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, (GLsizei)image_.Size(0), (GLsizei)image_.Size(1), 0, GL_RGB, GL_UNSIGNED_BYTE, image_.Origin());
 }
 

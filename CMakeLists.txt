@@ -423,10 +423,22 @@ endif()
 
 file(GLOB DIP_TESTS test/test_*.cpp)
 set(TESTS_TARGETS "")
+set(TESTS_REQUIRE_VIEWER
+    test_viewer
+    test_dipviewer
+    test_fileviewer
+    test_filters
+    test_display
+)
 foreach(file ${DIP_TESTS})
    get_filename_component(target ${file} NAME_WE)
    add_executable(${target} EXCLUDE_FROM_ALL ${file})
-   target_link_libraries(${target} DIP)
+   list(FIND TESTS_REQUIRE_VIEWER ${target} RES)
+   if(${RES} EQUAL -1)
+      target_link_libraries(${target} DIP)
+   else()
+      target_link_libraries(${target} DIPviewer)
+   endif()
    if(DIP_SHARED_LIBRARY)
       if(APPLE)
          set_target_properties(${target} PROPERTIES INSTALL_RPATH "@loader_path")
@@ -436,11 +448,6 @@ foreach(file ${DIP_TESTS})
    endif()
    set(TESTS_TARGETS ${TESTS_TARGETS} ${target})
 endforeach()
-target_link_libraries(test_viewer DIPviewer)
-target_link_libraries(test_dipviewer DIPviewer)
-target_link_libraries(test_fileviewer DIPviewer)
-target_link_libraries(test_filters DIPviewer)
-target_link_libraries(test_display DIPviewer)
 
 add_custom_target(tests DEPENDS ${TESTS_TARGETS})
 

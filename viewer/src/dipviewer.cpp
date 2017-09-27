@@ -64,7 +64,7 @@ void ShowSimple( Image const& image, String const& title )
       count__ = 1;
    }
 
-   manager__->createWindow( WindowPtr( new ImageViewer( image, getWindowTitle( title ))));
+   DIP_STACK_TRACE_THIS( manager__->createWindow( WindowPtr( new ImageViewer( image, getWindowTitle( title )))));
    ++count__;
 }
 

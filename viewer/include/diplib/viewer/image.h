@@ -41,7 +41,12 @@ class DIPVIEWER_EXPORT ImageView : public View
     ImageView(ViewPort *viewport) : View(viewport), texture_(0) { }
     ~ImageView() { }
 
-    void set(const dip::Image &image) { image_ = image; }
+    void set(const dip::Image &image) {
+       DIP_ASSERT( image.HasNormalStrides() );
+       DIP_ASSERT( image.DataType() == DT_UINT8 );
+       DIP_ASSERT( image.TensorElements() == 3 );
+       image_ = image;
+    }
     void rebuild();
     void render();
     virtual dip::uint size(dip::uint ii) { return image_.Size(ii); }
@@ -81,6 +86,10 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
   public:
     ImageViewer(const dip::Image &image, std::string name="ImageViewer", size_t width=0, size_t height=0) : Viewer(name), options_(image)
     {
+      DIP_THROW_IF( !image.HasNormalStrides(), E::NO_NORMAL_STRIDE );
+      DIP_THROW_IF( image.DataType() != DT_UINT8, "ImageViewer requires an image of type DT_UINT8" );
+      DIP_THROW_IF( image.TensorElements() != 3, "ImageViewer requires an image with three tensor elements" );
+
       if (!width || !height)
       {
         if (image.Size(0) > image.Size(1))
