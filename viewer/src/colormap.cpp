@@ -99,7 +99,7 @@ void ApplyViewerColorMap(dip::Image &in, dip::Image &out, ViewingOptions &option
          ApplyColorMap(out[0], out, "linear");
          break;
       case ViewingOptions::LookupTable::Divergent:
-         ApplyColorMap(out[0], out, "diverging_linear");
+         ApplyColorMap(out[0], out, "diverging");
          break;
       case ViewingOptions::LookupTable::Cyclic:
          ApplyColorMap(out[0], out, "cyclic");
