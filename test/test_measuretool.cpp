@@ -40,7 +40,7 @@ int main() {
 
    auto f = measurementTool.Features();
 
-   measurementTool.Register( dip::Feature::Pointer( new FeatureTest ));
+   measurementTool.Register( new FeatureTest );
 
    dip::Image label( dip::UnsignedArray{ 10, 10 }, 1, dip::DT_UINT8 );
 
