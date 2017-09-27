@@ -304,6 +304,22 @@ if(DIP_BUILD_PYDIP)
    # Install .py files
    install(FILES ${DIP_PYTHON_PY} DESTINATION ${PYDIP_INSTALL_PATH})
    add_custom_target(PyDIP DEPENDS PyDIP_bin)
+
+   if(DIP_BUILD_DIPVIEWER)
+      file(GLOB DIP_PYTHON_VIEWER_SRC pydip/viewer/*.cpp pydip/viewer/*.h)
+      set(PyDIPviewerdeps "${DIP_PYTHON_VIEWER_SRC}")
+      update_deps_file("PyDIPviewer_sources" "${PyDIPviewerdeps}")
+      pybind11_add_module(viewer ${DIP_PYTHON_VIEWER_SRC})
+      #target_compile_options(viewer PRIVATE -Wno-deprecated-declarations)
+      target_link_libraries(viewer PUBLIC DIP DIPviewer)
+      if(APPLE)
+         set_target_properties(viewer PROPERTIES INSTALL_RPATH "@loader_path/..")
+      else()
+         set_target_properties(viewer PROPERTIES INSTALL_RPATH "$ORIGIN/..")
+      endif()
+      install(TARGETS viewer DESTINATION ${PYDIP_INSTALL_PATH})
+      add_dependencies(PyDIP viewer)
+   endif()
 endif()
 
 ### DIPimage toolbox for MATLAB
