@@ -29,13 +29,14 @@ Use the following commands to build:
 Available `make` targets:
 
     <default>    # builds all targets
+    install      # builds and installs all targets
     DIP          # builds the DIPlib library
     DIPviewer    # builds the DIPviewer module (plus the DIPlib library)
     PyDIP        # builds the PyDIP Python module (plus the DIPlib library)
     check        # builds the unit_tests program and runs it
     check_memory # ...and runs it under valgrind
-    apidoc       # Doxygen HTML documentation for the library API
-    install      # builds and installs all targets
+    apidoc       # builds the HTML documentation for the library API
+    dum          # builds the DIPimage User Manual PDF 
     tests        # deprecated -- old test functions
 
 Important `cmake` command-line arguments:
@@ -68,8 +69,10 @@ it to `Off` will yield a warning message when running CMake.
 Note that on some platforms, the Python module requires the *DIPlib* library to build as
 a dynamic load library (`-DDIP_SHARED_LIBRARY=On`, which is the default).
 
-Under Windows you can follow a similar process, but I have never used CMake under
-Windows, so I'll let someone else write this bit.
+The `apidoc` targer requires that Doxygen is installed, the target will not be available
+if it is not. The `dum` target requires that Pandoc and some LaTeX distribution be installed;
+the CMake file does not test for these, the target is always available but will fail if
+your system cannot run the required commands. 
 
 ### Windows
 

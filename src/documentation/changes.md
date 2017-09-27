@@ -299,6 +299,14 @@ code that used *DIPlib* or *DIPimage* to the new version.
     always operate only along spatial dimensions. To sum over the tensor dimension, convert
     it to a spatial dimension using `tensortospatial`.
 
+  - Likewise, methods such as `cat` used to concatenate images in an `dip_image_array`, and
+    consequently concatenated the various tensor elements as separate images. These functions
+    now all work along spatial dimensions only, leaving the tensor dimension unaffected.
+
+  - `imarfun` and `iterate` no longer exist. There should be no need for them as all functions
+    recognize tensor images. `slice_op` can replace `iterate` if needed (TODO: `slice_op` is not
+    yet implemented).
+
   - The `reshape` method now takes pixels column-wise instead of row-wise from the input. This
     is the natural way of doing it, as it doesn't require data copy. I don't remember why it
     was row-wise in the old *DIPimage*, and I presume there are few (if any) programs that
@@ -307,12 +315,15 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - Related to the previous point, `squeeze` now might reorder dimensions. But it's cheaper
     this way!
 
+  - The `inner` and `outer` methods no longer exist, use `cross` and `dot`.
+
 - The `dip_measurement` object has changed completely internally. The interface is identical
   except:
 
   - It is not (yet?) possible to add a feature.
 
-  - It is no longer possible to convert to/from a `struct`.
+  - It is no longer possible to convert to/from a `struct`. However, it is possible to convert
+    to a `table`.
 
   - Fixed a bug: `msr.featureID` now returns an array that is transposed w.r.t. previous versions.
     This was a bug that we never fixed because of backwards compatability, we took this
@@ -323,7 +334,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
   were linked to *DIPlib* global variables, none of which exist any more, and some others
   are simply no longer relevant.
 
-- `newimar` is now in the `alias` subdirectory, and identical to `newtensorim`.
+- `newimar` is now in the `alias` subdirectory, and identical to the new function `newtensorim`.
   Other functions that used to be in the `alias` directory are no longer. We recommend that
   you correct affected code, but if you want, you can always create those aliases again.
 
@@ -364,3 +375,12 @@ code that used *DIPlib* or *DIPimage* to the new version.
     two input parameters to the old `writeim` are no longer supported (`compression` and `physDim`):
     to change the compression method, call `writeics` or `writetiff` directly; the pixel size is
     always given by the image, use `dip_image/pixelsize` to set it.
+
+  - `countneighbours` has been renamed to `countneighbors` for consistency in spelling.
+
+  - `mse`, `mae` and several similar functions have been collected in a new function `errormeasure`.
+    The old functions are still available in the `alias` sub-directory.
+
+- New functions not mentioned above: `areaopening`, `coordinates`, `extendimage`, `getmaximumandminimum`,
+  `getsamplestatistics`, `lee`, `pathopening`, `select`, `setborder`, `skew`, `smallobjectsremove`,
+  `thetatheta`.

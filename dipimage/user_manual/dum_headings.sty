@@ -1,0 +1,53 @@
+\newcommand{\clearemptydoublepage}{\newpage{\thispagestyle{plain}\cleardoublepage}}
+\newcommand{\clearemptypage}{\newpage{\thispagestyle{plain}\clearpage}}
+
+\renewcommand{\chapter}{\secdef\mychapter\mychapterstar}
+\newcommand{\mychapter}[2][?]{%
+  \clearemptydoublepage\vspace*{24pt}%
+  \suppressfloats[t]%
+  \refstepcounter{chapter}%
+  \addcontentsline{toc}{chapter}{#1}%
+  \markboth{#2}{}%
+  {\raggedright\sffamily\mdseries\upshape\Huge #2\\}%
+  \vspace{24pt}  }
+\newcommand{\mychapterstar}[1]{%
+  \clearemptydoublepage\vspace*{24pt}%
+  \suppressfloats[t]%
+  \markboth{#1}{}%
+  {\raggedright\sffamily\mdseries\upshape\Huge #1\\}%
+  \vspace{24pt} }
+
+\renewcommand{\section}{\@startsection%
+  {section}%
+  {1}%
+  {0mm}%
+  {12pt}%
+  {6pt}%
+  {\raggedright\sffamily\mdseries\upshape\Large}}
+
+\renewcommand{\subsection}{\@startsection%
+  {subsection}%
+  {2}%
+  {0mm}%
+  {6pt}%
+  {3pt}%
+  {\raggedright\sffamily\mdseries\upshape\large}}
+
+\newcommand{\matlabhead}[1]{\vspace{6pt}\hspace*{-2em}{\raggedright\ttfamily\large{#1}}\vspace{3pt}}
+
+% matlab code:
+\@ifundefined{verbatim@processline}{\RequirePackage{verbatim}}{}
+\def\code{%
+  \def\verbatim@processline{%
+    {\setbox0=\hbox{\the\verbatim@line}%
+    \hsize=\wd0 \the\verbatim@line\par}}%
+  \@minipagetrue%%%DPC%%%
+  \@tempswatrue%%%DPC%%%
+  \setbox0=\vbox\bgroup \verbatim
+}
+\def\endcode{%
+  \endverbatim
+  \unskip\setbox0=\lastbox %%%DPC%%%
+  \egroup
+  \par\vspace*{1ex} \box0 %\par
+}

@@ -473,7 +473,7 @@ endif (DOXYGEN_FOUND)
 #      COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
 #      COMMAND pandoc -s DIPthoughts.md -o ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
 #      --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
-#      --toc --listings -H pandoc/listings_setup.tex --number-sections
+#      --toc --listings -H pandoc/listings_setup.tex --number-sections --smart
 #      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 #      DEPENDS DIPthoughts.md
 #)
@@ -482,6 +482,25 @@ endif (DOXYGEN_FOUND)
 #      docs DEPENDS
 #      ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
 #)
+
+
+### DIPimage documentation
+
+add_custom_command(
+      OUTPUT ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
+      COMMAND pandoc -s *.md -o ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
+                     --template=template.tex --number-sections --smart
+                     --toc --toc-depth=2
+                     --filter=pandoc-crossref
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dipimage/user_manual
+      DEPENDS dipimage/user_manual/*.md dipimage/user_manual/template.tex
+)
+# Code hightlight styles to try: pygments tango espresso zenburn kate monochrome breezedark haddock
+add_custom_target(
+      dum DEPENDS
+      ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
+)
 
 
 ### Status report
