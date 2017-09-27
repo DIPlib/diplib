@@ -20,9 +20,13 @@
 #ifndef DIP_VIEWER_MANAGER_H_
 #define DIP_VIEWER_MANAGER_H_
 
+#include "diplib.h"
+#include "dipviewer_export.h"
+
 #include <memory>
 
-#include "dipviewer_export.h"
+/// \file
+/// \brief Declares `dip::viewer::Manager`.
 
 #define KEY_MOD_SHIFT   0x01
 #if defined(__APPLE__) && defined(DIP__HAS_GLFW)
@@ -35,6 +39,9 @@
 #define KEY_MOD_ALT     0x04
 
 namespace dip { namespace viewer {
+
+/// \addtogroup viewer
+/// \{
 
 /// Simple GL window
 class DIPVIEWER_EXPORT Window
@@ -127,6 +134,8 @@ class DIPVIEWER_EXPORT Manager
     virtual void setWindowTitle(Window* window, const char *name) = 0;
     virtual void refreshWindow(Window *window) = 0;
 };
+
+/// \}
 
 }} // namespace dip::viewer
 

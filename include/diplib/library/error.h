@@ -69,7 +69,7 @@ class DIP_EXPORT Error : public std::exception {
       /// and re-throw the exception.
       ///
       /// \see DIP_ADD_STACK_TRACE, DIP_TRY, DIP_CATCH
-      virtual char const* what() const noexcept override { // std::exception::what() is declared noexcept, but this one is not.
+      virtual char const* what() const noexcept override {
          return message_.c_str();
       }
 

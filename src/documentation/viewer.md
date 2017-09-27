@@ -1,9 +1,11 @@
-# DIPviewer {#viewer}
+\ingroup infrastructure
 
-[//]: # (DIPlib 3.0)
+\defgroup viewer DIPviewer
+\brief Interactive image display.
 
-[//]: # ([c]2016-2017, Cris Luengo.)
-[//]: # (Based on original DIPlib code: [c]1995-2014, Delft University of Technology.)
+[//]: # (DIPlib 3.0 viewer)
+
+[//]: # ([c]2017, Wouter Caarls.)
 
 [//]: # (Licensed under the Apache License, Version 2.0 [the "License"];)
 [//]: # (you may not use this file except in compliance with the License.)
@@ -20,7 +22,8 @@
 ## Introduction
 
 *DIPlib* includes an OpenGL-based image viewer to help in the visualization
-of intermediate results. Its main purpose is as a debugging tool. The
+of intermediate results. Its main purpose is as a debugging tool. It existis
+in its own library, which must be linked separately if used. The
 viewer contains two main classes
 
 1. ImageViewer, to visualize 2d 8-bit RGB images
@@ -32,7 +35,7 @@ supported for window management:
 
 1. **GLUT** (GLUTManager):
 
-   The venerable OpenGL Utility Toolkit, in the form of freeglut3.
+   The venerable OpenGL Utility Toolkit, in the form of freeglut3.  
    http://www.apache.org/licenses/LICENSE-2.0
 
 2. **GLFW** (GLFWManager):
@@ -40,8 +43,7 @@ supported for window management:
    GLFW is more modern than GLUT, and better supported by MacOS. Its
    disadvantage is that it requires the user to poll an event handler from
    the main thread of the program, something that is baked into the MacOS
-   Cocoa framework.
-   
+   Cocoa framework.  
    http://www.glfw.org/
 
 To use the ImageViewer, the image must first be converted to 8-bit RGB,
@@ -67,12 +69,12 @@ main parts
   the image. It consists of four lists of options
 
   1. *Colorspace*, being
-  
+
      - *SPA*: image colorspace; this disregards the mapping.
      - *RGB*: RGB colorspace, from any 3 tensor elements
      - *GRY*: Single grey value
      - *JET*: Single value mapped to the Jet (blue-red) colormap
-  
+
   2. *Mapping*, being
 
      - *0-1*: Unit values
@@ -185,18 +187,17 @@ after including `dipviewer.h` to show an image in the slice viewer. After
 all images have been shown this way, you can call
 
 ```cpp
-    dip::viewer::Spin( );
+    dip::viewer::Spin();
 ```
 
 to enable mouse interaction. If you wish to continue your program, you must
-call 
+call
 
 ```cpp
-    dip::viewer::Draw( );
+    dip::viewer::Draw();
 ```
 
 periodically. Make sure to call `dip::viewer::Spin( )` when you're done to
 ensure a clean exit.
 
-See test_viewer.cpp in the test/ subdirectory for a usage example of the
-full interface.
+See `test/test_viewer.cpp` for a usage example of the full interface.

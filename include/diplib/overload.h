@@ -31,7 +31,7 @@
 ///
 /// These preprocessor macros insert a block of code that
 /// calls or retrieves a function pointer to the right instance of a
-/// template, according to a DataType argument (or create an object of
+/// template, according to a `dip::DataType` argument (or create an object of
 /// a template class). For example, the code
 ///
 /// ```cpp
@@ -89,7 +89,7 @@
 /// `UNSIGNED`       | `dip::DataType::Class_Unsigned`
 /// `SIGNED`         | `dip::DataType::Class_Signed`
 /// `REAL`           | `dip::DataType::Class_Real`
-/// `SIGNEDREAL      | `dip::DataType::Class_SignedReal`
+/// `SIGNEDREAL`     | `dip::DataType::Class_SignedReal`
 /// `NONBINARY`      | `dip::DataType::Class_NonBinary`
 /// `NONCOMPLEX`     | `dip::DataType::Class_NonComplex`
 /// `ALL`            | `dip::DataType::Class_All`

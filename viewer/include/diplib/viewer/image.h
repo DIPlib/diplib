@@ -20,10 +20,15 @@
 #ifndef DIP_VIEWER_IMAGE_H
 #define DIP_VIEWER_IMAGE_H
 
-#include "diplib/viewer/manager.h"
 #include "diplib/viewer/viewer.h"
 
+/// \file
+/// \brief Declares `dip::viewer::ImageViewer`.
+
 namespace dip { namespace viewer {
+
+/// \addtogroup viewer
+/// \{
 
 class DIPVIEWER_EXPORT ImageView : public View
 {
@@ -64,6 +69,7 @@ class DIPVIEWER_EXPORT ImageViewPort : public ViewPort
     ImageView *view() { return view_; }
 };
 
+/// Non-interactive 2D image viewer
 class DIPVIEWER_EXPORT ImageViewer : public Viewer
 {
   protected:
@@ -121,6 +127,8 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
       swap();
     }
 };
+
+/// \}
 
 }} // namespace dip::viewer
 

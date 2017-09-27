@@ -20,14 +20,20 @@
 #ifndef DIP_VIEWER_GLFW_H_
 #define DIP_VIEWER_GLFW_H_
 
+#include "diplib/viewer/manager.h"
+
 #include <thread>
 #include <mutex>
 #include <map>
 #include <set>
 
-#include "diplib/viewer/manager.h"
+/// \file
+/// \brief Declares the GLFW interface of \ref viewer.
 
 namespace dip { namespace viewer {
+
+/// \addtogroup viewer
+/// \{
 
 /// Simple GLFW window manager
 class DIPVIEWER_EXPORT GLFWManager : public Manager
@@ -156,6 +162,8 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
       }
     }
 };
+
+/// \}
 
 }} // namespace dip::viewer
 

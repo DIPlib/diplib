@@ -20,13 +20,19 @@
 #ifndef DIP_VIEWER_GLUT_H_
 #define DIP_VIEWER_GLUT_H_
 
+#include "diplib/viewer/manager.h"
+
 #include <thread>
 #include <mutex>
 #include <map>
 
-#include "diplib/viewer/manager.h"
+/// \file
+/// \brief Declares the GLUT interface of \ref viewer.
 
 namespace dip { namespace viewer {
+
+/// \addtogroup viewer
+/// \{
 
 /// Simple GLUT window manager
 class DIPVIEWER_EXPORT GLUTManager : public Manager
@@ -118,6 +124,8 @@ class DIPVIEWER_EXPORT GLUTManager : public Manager
         window->motion(x, y);
     }
 };
+
+/// \}
 
 }} // namespace dip::viewer
 

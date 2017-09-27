@@ -23,35 +23,42 @@
 #include "diplib.h"
 #include "dipviewer_export.h"
 
-// TODO: Document usage:
-// ```cpp
-//     #include "diplib.h"
-//     #include "dipviewer.h"
-//     int main() {
-//        dip::Image grey( { 300, 200 }, 1, dip::DT_UINT16 );
-//        dip::FillRadiusCoordinate( grey );
-//        dip::Image result = dip::Dilation( grey );
-//        dip::viewer::Show( grey );
-//        dip::viewer::Show( result );
-//        dip::Viewer::Spin( );
-//        return 0;
-//     }
-// ```
+/// \file
+/// \brief Declares the high-level interface to \ref viewer.
 
-namespace dip { namespace viewer {
+namespace dip {
 
-/// Show an image in the slice viewer.
+/// \brief Contains all functionality for \ref viewer.
+namespace viewer {
+
+/// \addtogroup viewer
+/// \{
+
+/// \brief Show an image in the slice viewer.
+///
+/// A new interactive `dip::viewer::SliceViewer` window is created for the image. `title` sets the window title.
+/// Call `dip::viewer::Draw` or `dip::Viewer::Spin` to enable user interaction.
 DIPVIEWER_EXPORT void Show( Image const& image, String const& title = "" );
 
-/// Show a 2D RGB image.
+/// \brief Show a 2D RGB image.
+///
+/// A new non-interactive `dip::viewer::ImageViewer` window is created for the image. `title` sets the window title.
 DIPVIEWER_EXPORT void ShowSimple( Image const& image, String const& title = "" );
 
-/// Wait until all windows are closed.
+/// \brief Wait until all windows are closed.
+///
+/// This function allows user interaction in all slice viewer windows created. Returns when all windows are closed.
 DIPVIEWER_EXPORT void Spin();
 
-/// Process user event queue.
-/// NOTE: Spin( ) must still be called before exiting.
+/// \brief Process user event queue.
+///
+/// This function allows user interaction in all slice viewer windows created. Returns immediately, and needs to be
+/// called repeatedly for continuous interaction.
+///
+/// **Note** that `dip::viewer::Spin` must still be called before exiting, to prevent memory leaks.
 DIPVIEWER_EXPORT void Draw();
+
+/// \}
 
 }} // namespace dip::viewer
 

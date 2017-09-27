@@ -31,7 +31,13 @@
 #include "diplib/viewer/histogram.h"
 #include "diplib/viewer/control.h"
 
+/// \file
+/// \brief Declares `dip::viewer::SliceViewer`.
+
 namespace dip { namespace viewer {
+
+/// \addtogroup viewer
+/// \{
 
 class DIPVIEWER_EXPORT SliceView : public View
 {
@@ -81,6 +87,7 @@ class DIPVIEWER_EXPORT SliceViewPort : public ViewPort
     void screenToView(int x, int y, double *ix, double *iy);
 };
 
+/// Interactive nD tensor image viewer
 class DIPVIEWER_EXPORT SliceViewer : public Viewer
 {
   protected:
@@ -129,6 +136,8 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     ViewPort *viewport(int x, int y);
     void calculateTextures();
 };
+
+/// \}
 
 }} // namespace dip::viewer
 
