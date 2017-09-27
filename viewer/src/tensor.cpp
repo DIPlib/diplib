@@ -32,7 +32,7 @@ void TensorViewPort::render()
   glMatrixMode(GL_MODELVIEW);
 
   auto &o = viewer()->options();
-  Image &image = viewer()->image();
+  const Image &image = viewer()->image();
   
   Tensor t = image.Tensor();
   auto p = image.At<dip::sfloat>(o.operating_point_);

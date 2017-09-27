@@ -48,18 +48,18 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
     
   public:
     GLFWManager();
-    ~GLFWManager();
+    ~GLFWManager() override;
   
-    void createWindow(WindowPtr window);
-    size_t activeWindows() { return windows_.size(); }
-    void destroyWindows();
+    void createWindow(WindowPtr window) override;
+    size_t activeWindows() override { return windows_.size(); }
+    void destroyWindows() override;
     void processEvents();
     
   protected:    
-    void drawString(Window* window, const char *string);
-    void swapBuffers(Window* window);
-    void setWindowTitle(Window* window, const char *name);
-    void refreshWindow(Window* window);
+    void drawString(Window* window, const char *string) override;
+    void swapBuffers(Window* window) override;
+    void setWindowTitle(Window* window, const char *name) override;
+    void refreshWindow(Window* window) override;
 
     void run();
     WindowPtr getWindow(struct GLFWwindow *window);

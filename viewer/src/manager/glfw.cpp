@@ -19,7 +19,7 @@
 
 #ifdef DIP__HAS_GLFW
 
-#include <string.h>
+#include <cstring>
 #include <exception>
 
 #include <GLFW/glfw3.h>

@@ -11,6 +11,7 @@ viewer/include/diplib/viewer/slice.h
 viewer/include/diplib/viewer/tensor.h
 viewer/include/diplib/viewer/viewer.h
 viewer/include/dipviewer.h
+viewer/src/colormap.cpp
 viewer/src/control.cpp
 viewer/src/dipviewer.cpp
 viewer/src/histogram.cpp

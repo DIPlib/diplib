@@ -39,7 +39,7 @@ class DIPVIEWER_EXPORT ImageView : public View
 
   public:
     ImageView(ViewPort *viewport) : View(viewport), texture_(0) { }
-    ~ImageView() { }
+    ~ImageView() override { }
 
     void set(const dip::Image &image) {
        DIP_ASSERT( image.HasNormalStrides() );
@@ -47,12 +47,12 @@ class DIPVIEWER_EXPORT ImageView : public View
        DIP_ASSERT( image.TensorElements() == 3 );
        image_ = image;
     }
-    void rebuild();
-    void render();
-    virtual dip::uint size(dip::uint ii) { return image_.Size(ii); }
+    void rebuild() override;
+    void render() override;
+    virtual dip::uint size(dip::uint ii) override { return image_.Size(ii); }
     
     class ViewPort *viewport() { return viewport_; }
-    dip::Image &image() { return image_; }
+    const dip::Image &image() { return image_; }
 };
 
 class DIPVIEWER_EXPORT ImageViewPort : public ViewPort
@@ -61,15 +61,15 @@ class DIPVIEWER_EXPORT ImageViewPort : public ViewPort
     ImageView *view_;
     
   public:
-    ImageViewPort(Viewer *viewer) : ViewPort(viewer), view_(NULL) { }
-    ~ImageViewPort()
+    explicit ImageViewPort(Viewer *viewer) : ViewPort(viewer), view_(NULL) { }
+    ~ImageViewPort() override
     {
       if (view_)
         delete view_;
     }
     
-    void rebuild() { view_->rebuild(); }
-    void render();
+    void rebuild() override { view_->rebuild(); }
+    void render() override;
     void setView(ImageView *view) { view_ = view; }
     ImageView *view() { return view_; }
 };
@@ -84,7 +84,7 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
     std::string name_;
   
   public:
-    ImageViewer(const dip::Image &image, std::string name="ImageViewer", size_t width=0, size_t height=0) : Viewer(name), options_(image)
+    explicit ImageViewer(const dip::Image &image, std::string name="ImageViewer", size_t width=0, size_t height=0) : Viewer(name), options_(image)
     {
       DIP_THROW_IF( !image.HasNormalStrides(), E::NO_NORMAL_STRIDE );
       DIP_THROW_IF( image.DataType() != DT_UINT8, "ImageViewer requires an image of type DT_UINT8" );
@@ -112,24 +112,24 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
       viewport_->setView(view);
     }
     
-    ~ImageViewer()
+    ~ImageViewer() override
     {
       if (viewport_)
         delete viewport_; 
     }
 
-    ViewingOptions &options() { return options_; }
-    dip::Image &image() { return viewport_->view()->image(); }
+    ViewingOptions &options() override { return options_; }
+    const dip::Image &image() override { return viewport_->view()->image(); }
 
   protected:
-    void create();
-    void reshape(int /*width*/, int /*height*/)
+    void create() override;
+    void reshape(int /*width*/, int /*height*/) override
     {
       viewport_->place(0, 0, width(), height());
       refresh();
     }
     
-    void draw()
+    void draw() override
     {
       viewport_->rebuild();
       viewport_->render();

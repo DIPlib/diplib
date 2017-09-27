@@ -30,17 +30,17 @@ class DIPVIEWER_EXPORT ControlViewPort : public ViewPort
     std::vector<std::vector<dip::String> > lists_;
 
   public:
-    ControlViewPort(Viewer *viewer) : ViewPort(viewer)
+    explicit ControlViewPort(Viewer *viewer) : ViewPort(viewer)
     {
       lists_.push_back({"SPA", "RGB", "GRY", "SEQ", "DIV", "CYC", "LBL"});
       lists_.push_back({"0-1", "ANG", "255", "LIN", "SYM", "LOG"});
       lists_.push_back({"REA", "IMG", "MAG", "PHA"});
       lists_.push_back({"SLC", "MIN", "MEA", "MAX"});
     }
-    ~ControlViewPort() { }
+    ~ControlViewPort() override { }
     
-    void render();
-    void click(int button, int state, int x, int y);
+    void render() override;
+    void click(int button, int state, int x, int y) override;
 };
 
 }} // namespace dip::viewer

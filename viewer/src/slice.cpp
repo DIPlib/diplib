@@ -22,6 +22,7 @@
 #include "diplib/statistics.h"
 #include "diplib/generic_iterators.h"
 #include "diplib/overload.h"
+
 #include "diplib/viewer/include_gl.h"
 #include "diplib/viewer/slice.h"
 
@@ -36,7 +37,7 @@ namespace dip { namespace viewer {
 void SliceView::project()
 {
   auto &o = viewport()->viewer()->options();
-  Image &image = viewport()->viewer()->image();
+  const Image &image = viewport()->viewer()->image();
   
   dip::sint dx = o.dims_[dimx_], dy = o.dims_[dimy_];
   

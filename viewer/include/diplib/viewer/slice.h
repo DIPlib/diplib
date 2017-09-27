@@ -24,6 +24,7 @@
 #include <mutex>
 
 #include "diplib/color.h"
+
 #include "diplib/viewer/manager.h"
 #include "diplib/viewer/viewer.h"
 #include "diplib/viewer/image.h"
@@ -72,19 +73,19 @@ class DIPVIEWER_EXPORT SliceViewPort : public ViewPort
     int drag_x_, drag_y_;
     
   public:
-    SliceViewPort(Viewer *viewer) : ViewPort(viewer), view_(NULL) { }
-    ~SliceViewPort() { if (view_) delete view_; }
+    explicit SliceViewPort(Viewer *viewer) : ViewPort(viewer), view_(NULL) { }
+    ~SliceViewPort() override { if (view_) delete view_; }
     
-    void rebuild() { view()->rebuild(); }
-    void render();
-    void click(int button, int state, int x, int y);
-    void motion(int button, int x, int y);
+    void rebuild() override { view()->rebuild(); }
+    void render() override;
+    void click(int button, int state, int x, int y) override;
+    void motion(int button, int x, int y) override;
 
     void setView(SliceView *view) { view_ = view; }
     SliceView *view() { return view_; }
 
   protected:    
-    void screenToView(int x, int y, double *ix, double *iy);
+    void screenToView(int x, int y, double *ix, double *iy) override;
 };
 
 /// Interactive nD tensor image viewer
@@ -106,9 +107,9 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     int drag_button_;
   
   public:
-    SliceViewer(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0);
+    explicit SliceViewer(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0);
     
-    ~SliceViewer()
+    ~SliceViewer() override
     {
       if (continue_)
       {
@@ -120,18 +121,18 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
         delete viewports_[ii];
     }
     
-    ViewingOptions &options() { return options_; }
-    dip::Image &image() { return image_; }
+    ViewingOptions &options() override { return options_; }
+    const dip::Image &image() override { return image_; }
     
     void place();
   
   protected:
-    void create();
-    void reshape(int width, int height);
-    void draw();
-    void key(unsigned char k, int x, int y, int mods);
-    void click(int button, int state, int x, int y);
-    void motion(int x, int y);
+    void create() override;
+    void reshape(int width, int height) override;
+    void draw() override;
+    void key(unsigned char k, int x, int y, int mods) override;
+    void click(int button, int state, int x, int y) override;
+    void motion(int x, int y) override;
 
     ViewPort *viewport(int x, int y);
     void calculateTextures();

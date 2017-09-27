@@ -19,7 +19,7 @@
 
 #ifdef DIP__HAS_FREEGLUT
 
-#include <string.h>
+#include <cstring>
 #include <cstdint>
 #include <exception>
 
@@ -84,7 +84,7 @@ void GLUTManager::run()
   int argc = 1;
   char argv1[256], *argv[]={argv1};
       
-  strncpy(argv1, "GLUTManager", 256);
+  std::strncpy(argv1, "GLUTManager", 256);
   
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
