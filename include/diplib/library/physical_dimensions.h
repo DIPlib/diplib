@@ -628,12 +628,12 @@ class DIP_NO_EXPORT PixelSize {
       PixelSize() {};
 
       /// Create an isotropic pixel size based on a physical quantity.
-      explicit PixelSize( PhysicalQuantity const& m ) {
+      PixelSize( PhysicalQuantity const& m ) {
          Set( m );
       };
 
       /// Create a pixel size based on an array of physical quantities.
-      explicit PixelSize( PhysicalQuantityArray const& m ) {
+      PixelSize( PhysicalQuantityArray const& m ) {
          Set( m );
       };
 
