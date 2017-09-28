@@ -25,14 +25,15 @@
 
 
 /// \file
-/// \brief Declares image processing functions that work with labeled images.
+/// \brief Functions to label connected components and process labeled images.
+/// \see regions
 
 
 namespace dip {
 
 
-/// \defgroup regions Connected component analysis
-/// \brief Label connected component and process labeled images.
+/// \defgroup regions Labeled regions
+/// \brief Label connected components and process labeled images.
 ///
 /// Labeled images are of any unsigned integer type.
 /// \{

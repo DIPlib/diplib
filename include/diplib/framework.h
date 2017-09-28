@@ -29,7 +29,7 @@
 
 
 /// \file
-/// \brief Declares the `dip::Framework` namespace.
+/// \brief Frameworks are the basis of most pixel-based processing in *DIPlib*.
 /// \see frameworks, infrastructure
 
 

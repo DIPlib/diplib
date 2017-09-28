@@ -25,7 +25,8 @@
 
 
 /// \file
-/// \brief Declares functions that implement mathematical morphology.
+/// \brief Mathematical morphology operators and filters.
+/// \see morphology
 
 
 namespace dip {
@@ -314,8 +315,10 @@ DIP_EXPORT void BasicMorphology(
 ///
 /// `se` defines the structuring element.
 ///
-/// `boundary` determines the boundary conditions. See `dip::BoundaryCondition`.
+/// `boundaryCondition` determines the boundary conditions. See `dip::BoundaryCondition`.
 /// The default value, and most meaningful one, is `"add min"`, but any value can be used.
+/// For the rectangular, fast line and periodic line structuring elements, no boundary condition
+/// causes the filter to not read outside the image bounds. This is equivalent to `"add min"`.
 ///
 /// \see dip::Erosion, dip::Opening, dip::Closing, dip::RankFilter
 inline void Dilation(
@@ -342,6 +345,8 @@ inline Image Dilation(
 ///
 /// `boundaryCondition` determines the boundary conditions. See `dip::BoundaryCondition`.
 /// The default value, and most meaningful one, is `"add max"`, but any value can be used.
+/// For the rectangular, fast line and periodic line structuring elements, no boundary condition
+/// causes the filter to not read outside the image bounds. This is equivalent to `"add max"`.
 ///
 /// \see dip::Dilation, dip::Opening, dip::Closing, dip::RankFilter
 inline void Erosion(
@@ -370,6 +375,8 @@ inline Image Erosion(
 /// Meaningful values for the closing are `"add max"` and `"add min"`, but any value can
 /// be used. The default empty array causes the function to use `"add min"` with the dilation
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
+/// For the rectangular, fast line and periodic line structuring elements, no boundary condition
+/// causes the filter to not read outside the image bounds.
 ///
 /// \see dip::Dilation, dip::Erosion, dip::Opening, dip::RankMinClosing
 inline void Closing(
@@ -398,6 +405,8 @@ inline Image Closing(
 /// Meaningful values for the opening are `"add max"` and `"add min"`, but any value can
 /// be used. The default empty array causes the function to use `"add min"` with the dilation
 /// and `"add max"` with the erosion, equivalent to ignoring what's outside the image.
+/// For the rectangular, fast line and periodic line structuring elements, no boundary condition
+/// causes the filter to not read outside the image bounds.
 ///
 /// \see dip::Dilation, dip::Erosion, dip::Closing, dip::RankMaxOpening
 inline void Opening(

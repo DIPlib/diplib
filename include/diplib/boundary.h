@@ -25,9 +25,9 @@
 
 
 /// \file
-/// \brief Defines `dip::BoundaryCondition` and related types, and the functions that
-/// implement the logic behind the boundary conditions.  This file is always included through `diplib.h`.
+/// \brief Functionality implementing boundary conditions.
 /// \see infrastructure
+
 
 namespace dip {
 

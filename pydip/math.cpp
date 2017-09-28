@@ -110,11 +110,4 @@ void init_math( py::module& m ) {
           "in1"_a , "in2"_a , "in3"_a, "in4"_a, "selector"_a );
    m.def( "Select", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::Select ),
           "in1"_a , "in2"_a , "mask"_a );
-
-   m.def( "Clip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Clip ),
-          "in"_a, "low"_a = 0.0, "high"_a = 255.0, "mode"_a = "both" );
-   m.def( "ErfClip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::ErfClip ),
-          "in"_a, "low"_a = 128.0, "high"_a = 64.0, "mode"_a = "range" );
-   m.def( "ContrastStretch", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::dfloat, dip::dfloat >( &dip::ContrastStretch ),
-          "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 100.0, "outMin"_a = 0.0, "outMax"_a = 255.0, "method"_a = "linear", "parameter1"_a = 1.0, "parameter2"_a = 0.0 );
 }

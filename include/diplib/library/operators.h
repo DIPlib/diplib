@@ -32,10 +32,9 @@
 
 
 /// \file
-/// \brief Declares the overloaded arithmetic, logical and comparison operators for `dip::Image`,
-/// as well as functions implementing their functionality.
+/// \brief Declares the overloaded arithmetic, logical and comparison operators for `dip::Image`.
 /// This file is always included through `diplib.h`.
-
+/// \see math_arithmetic, math_comparison
 
 namespace dip {
 

@@ -25,9 +25,8 @@
 
 
 /// \file
-/// \brief A pixel table is a convenient way to simplify neighborhoods of arbitrary
-/// dimensionality. Such a neighborhood represents the support of a filter of
-/// arbitrary shape and number of dimensions.
+/// \brief A pixel table represents the support of a filter of arbitrary shape and number of dimensions.
+/// \see infrastructure
 
 
 namespace dip {

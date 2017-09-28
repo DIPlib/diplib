@@ -25,14 +25,14 @@
 
 
 /// \file
-/// \brief Declares the `dip::LookupTable` class, and related functionality.
+/// \brief Lookup tables and related functionality.
+/// \see mapping
 
 
 namespace dip {
 
 
-/// \defgroup lookuptable Look-up tables
-/// \brief Look-up tables and related functionality.
+/// \addtogroup mapping
 /// \{
 
 

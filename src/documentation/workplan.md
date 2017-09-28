@@ -107,8 +107,9 @@ document's source</a> for the most up-to-date version.
     - 2D snakes
     - general 2D affine transformation, 3D rotation (is already C code)
     - anisotropic diffusion and the like
-    - overlay binary or labelled image on grey-value or color image
     - tiling, concatenating, etc. of images
+    - histogram equalization
+    - ...and many more, see the old toolbox M-files for inspiration.
 
 -   Other stuff that's not in the old *DIPlib* (see below).
 
@@ -242,9 +243,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_SimpleGaussFitImage (dip_numerical.h)
     - dip_EmFitGaussians (dip_numerical.h)
     - dip_EmGaussTest (dip_numerical.h)
-
-- diplib/measurement.h
-    - dipio_MeasurementWriteCSV (dipio_msrcsv.h)
 
 - diplib/microscopy.h
     - dip_IncoherentPSF (dip_microscopy.h)

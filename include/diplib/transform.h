@@ -25,7 +25,8 @@
 
 
 /// \file
-/// \brief Declares functions that implement the Fourier and other transforms.
+/// \brief The Fourier and other transforms.
+/// \see transform
 
 
 namespace dip {

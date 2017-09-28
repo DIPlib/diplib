@@ -25,7 +25,8 @@
 
 
 /// \file
-/// \brief Declares functions for reading and writing images from/to files.
+/// \brief Functions for reading and writing images from/to files.
+/// \see file_io
 
 
 namespace dip {

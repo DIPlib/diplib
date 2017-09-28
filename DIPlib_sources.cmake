@@ -35,6 +35,7 @@ include/diplib/library/types.h
 include/diplib/library/unit_tests_shared_lib.h
 include/diplib/linear.h
 include/diplib/lookup_table.h
+include/diplib/mapping.h
 include/diplib/math.h
 include/diplib/measurement.h
 include/diplib/microscopy.h
@@ -67,6 +68,8 @@ src/color/ish.h
 src/color/lab.h
 src/color/rgb.h
 src/color/xyz.h
+src/display/colormap.cpp
+src/display/image_display.cpp
 src/distance/edt.cpp
 src/distance/gdt.cpp
 src/distance/vdt.cpp
@@ -83,7 +86,6 @@ src/histogram/threshold_algorithms.cpp
 src/library/boundary.cpp
 src/library/copy_buffer.cpp
 src/library/datatype.cpp
-src/library/display.cpp
 src/library/framework.cpp
 src/library/framework_full.cpp
 src/library/framework_scan.cpp
@@ -107,13 +109,13 @@ src/linear/gaussiir.cpp
 src/linear/separate_filter.cpp
 src/linear/sharpen.cpp
 src/linear/uniform.cpp
-src/lookup_table/lookup_table.cpp
+src/mapping/lookup_table.cpp
+src/mapping/mapping.cpp
 src/math/arithmetic.cpp
 src/math/bitwise.cpp
 src/math/comparison.cpp
 src/math/dyadic_operators.cpp
 src/math/error.cpp
-src/math/mapping.cpp
 src/math/monadic_operators.cpp
 src/math/pixel.cpp
 src/math/projection.cpp

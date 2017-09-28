@@ -32,8 +32,8 @@
 
 
 /// \file
-/// \brief Defines the `dip::SampleIterator` class, which loops over a set of samples with a single stride.
-/// This file is always included through `diplib.h`.
+/// \brief The `dip::SampleIterator` class. This file is always included through `diplib.h`.
+/// \see iterators
 
 
 namespace dip {

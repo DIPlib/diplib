@@ -25,7 +25,8 @@
 
 
 /// \file
-/// \brief Declares the `dip::UnionFind` templated class.
+/// \brief A data structure for the union-find algorithm.
+/// \see infrastructure
 
 
 namespace dip {

@@ -19,12 +19,6 @@
  */
 
 
-//
-// NOTE!
-// This file is included through diplib.h -- no need to include directly
-//
-
-
 #ifndef DIP_MULTITHREADING_H
 #define DIP_MULTITHREADING_H
 

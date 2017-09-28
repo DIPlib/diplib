@@ -24,6 +24,7 @@
 #include "diplib/geometry.h"
 #include "diplib/histogram.h"
 #include "diplib/lookup_table.h"
+#include "diplib/mapping.h"
 
 namespace {
 
@@ -212,4 +213,12 @@ void init_assorted( py::module& m ) {
       return lookupTable.Apply( in, interpolation );
    }, "in"_a, "lut"_a, "index"_a = dip::FloatArray{}, "interpolation"_a = "linear", "mode"_a = "clamp", "lowerValue"_a = 0.0, "upperValue"_a = 0.0
    );
+
+   // diplib/mapping.h
+   m.def( "Clip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::Clip ),
+         "in"_a, "low"_a = 0.0, "high"_a = 255.0, "mode"_a = "both" );
+   m.def( "ErfClip", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::String const& >( &dip::ErfClip ),
+         "in"_a, "low"_a = 128.0, "high"_a = 64.0, "mode"_a = "range" );
+   m.def( "ContrastStretch", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const&, dip::dfloat, dip::dfloat >( &dip::ContrastStretch ),
+         "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 100.0, "outMin"_a = 0.0, "outMax"_a = 255.0, "method"_a = "linear", "parameter1"_a = 1.0, "parameter2"_a = 0.0 );
 }

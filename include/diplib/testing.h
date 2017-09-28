@@ -31,7 +31,8 @@
 
 
 /// \file
-/// \brief Declares functions to help test your code.
+/// \brief Functions to help test and debug your code.
+/// \see testing
 
 
 namespace dip {

@@ -34,8 +34,7 @@
 
 
 /// \file
-/// \brief Defines `dip::clamp_cast`, an operator that returns the input value cast to a different
-/// type, clamped to the range of values representable by that output type. This file is always included through `diplib.h`.
+/// \brief Defines `dip::clamp_cast`. This file is always included through `diplib.h`.
 /// \see sample_operators
 
 

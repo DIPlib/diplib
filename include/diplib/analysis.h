@@ -25,7 +25,8 @@
 
 
 /// \file
-/// \brief Declares functions for assorted analysis functions.
+/// \brief Functions for assorted analysis functions.
+/// \see analysis
 
 
 namespace dip {

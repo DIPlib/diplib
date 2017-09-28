@@ -32,7 +32,8 @@
 
 
 /// \file
-/// \brief Defines the dip::Tensor class. This file is always included through `diplib.h`.
+/// \brief The dip::Tensor class. This file is always included through `diplib.h`.
+/// \see infrastructure
 
 
 namespace dip {

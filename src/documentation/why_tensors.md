@@ -131,6 +131,8 @@ Note that it is possible to compute the `anisotropy` image more efficiently
 (running through the image `e` once instead of three times, and avoiding
 the storage of two intermediate images). See \ref iterators.
 
+The above is implemented in the functions `dip::StructureTensor` and
+`dip::StructureTensorAnalysis`.
 
 [//]: # (--------------------------------------------------------------)
 

@@ -27,7 +27,11 @@ changes in the *DIPlib* library, as well as changes to the *DIPimage* toolbox. I
 that some changes were not listed here, but hopefully this list will help in porting your old
 code that used *DIPlib* or *DIPimage* to the new version.
 
-## Core/infrastructure changes
+\tableofcontents
+
+[//]: # (--------------------------------------------------------------)
+
+\section changes_core Core/infrastructure changes
 
 - Functions and types used to start with `dip_`, now they are in the `dip::` namespace.
 
@@ -99,11 +103,13 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - The *dipIO* library no longer exists. Some `dipio_Xxx` functions are now defined in the
   `diplib/file_io.h` header file (reading and writing ICS and TIFF files).
-  `dipio_MeasurementWriteCSV` is now a method to `dip::Measurement` (TODO!).
+  `dipio_MeasurementWriteCSV` is is `diplib/measurement.h`.
   `dipio_Colour2Gray` functionality is replaced by `dip::ColorSpaceManager`.
   Other functionality no longer exists.
 
-## Changes in algorithm interface
+[//]: # (--------------------------------------------------------------)
+
+\section changes_interface Changes in algorithm interface
 
 - Function parameters expressing options are now represented by strings rather than
   \c \#define or `enum` constants (except for low-level library functionality).
@@ -189,7 +195,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - `dip_GeneralisedKuwaharaImproved` is now called `dip::SelectionFilter`, and
   `dip_GeneralisedKuwahara` is no longer (C++ default values make it redundant).
 
-## Changes in functionality
+[//]: # (--------------------------------------------------------------)
+
+\section changes_functionality Changes in functionality
 
 - Second order extrapolation boundary extension didn't do as advertised in the old *DIPlib*.
   Also the first order extrapolation couldn't have worked correctly with unsigned integers.
@@ -265,7 +273,11 @@ code that used *DIPlib* or *DIPimage* to the new version.
   that re-orders strides for the output image to match those of the file, again potentially decreasing
   reading times significantly.
 
-## Changes from DIPimage 2.x (the old DIPimage)
+- Lots of new algorithms, some previously only available in *DIPimage*.
+
+[//]: # (--------------------------------------------------------------)
+
+\section changes_dipimage Changes from DIPimage 2.x (the old DIPimage)
 
 - The `dip_image` object has changed completely internally. Pixel data is stored differently:
   tensor images have all samples in the same *MATLAB* array. Complex images are stored as a

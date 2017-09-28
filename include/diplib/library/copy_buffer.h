@@ -32,12 +32,6 @@
 #include "diplib/library/datatype.h"
 
 
-/// \file
-/// \brief Defines internal functions to copy samples to or from a buffer with
-/// type cast, and to expand the buffer with a boundary condition.
-/// None of the functions in this file are publicly documented.
-
-
 namespace dip {
 
 enum class DIP_NO_EXPORT BoundaryCondition; // forward declaration, defined in diplib/boundary.h

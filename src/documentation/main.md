@@ -45,7 +45,7 @@ following three principles:
    Furthermore, developing an image analysis program involves a lot of trial-and-error,
    rapid prototyping approaches are applicable: the edit-compile-run loop
    should be quick. We aim for short compile times with pre-compiled algorithms
-   and few templates.
+   and few public templates.
 
 3. **Efficiency**
 
@@ -67,10 +67,9 @@ explore the documentation to learn more about it. A good place to start
 are the following documentation pages:
 
 - The `dip::Image` class, everything else revolves around it.
-- All image analysis functions are categorized into <a href="modules.html">modules</a>.
+- All functionality is categorized into <a href="modules.html">modules</a>.
 - \ref using_iterators, in case existing algorithms are not sufficient.
 - \ref design, might help understand the library architecture.
-- \ref viewer gives a short introduction to the included image viewer.
 
 ## A short history
 
@@ -82,7 +81,7 @@ developed there were included in the library, together with a large
 collection of standard algorithms. Due to the lack of a C++ standard at the
 time, they developed the library in C, recreating much of the C++
 functionality (templates, function overloading, exceptions, data
-hiding, automatic destructor call at the end of a function's scope)
+hiding, memory management)
 using preprocessor macros and other tricks. *DIPlib* was originally used
 on HPUX, Solaris and IRIX, and later on Windows, Linux, Mac OS 9 and
 Mac OS X.
@@ -101,17 +100,17 @@ We have rewritten the infrastructure in C++14, using all of the original
 ideas and concepts, but adding tensor images, color support, and other
 ideas we had developed within the *DIPimage* toolbox. C++14 allows the
 user to write code that is almost as simple as the equivalent *MATLAB*
-code, making it simpler to use the library even for rapid prototyping.
+code, making it simple to use the library even for rapid prototyping.
 Hopefully, the new infrastructure is much easier to read, maintain, and
-contribute to. All of the image analysis routines will be ( have been)
-ported to use the new infrastructure. See \ref workplan for progress and
+contribute to. We are in the process of porting all of the image analysis
+routines to use the new infrastructure. See \ref workplan for progress and
 a detailed list of what still needs to be done.
 
 The *DIPimage* toolbox is being updated to optimally use *DIPlib* 3.0. This means
 that some of the *MATLAB* code is being replaced with calls to *DIPlib*, and
-the low-level interface (dip_* functions) disappears. The internal
+the low-level interface (`dip_*` functions) disappears. The internal
 representation of images has also changed. However, we strive
-to keep the high-level toolbox functions identical.
+to keep backwards-compatibility in the high-level toolbox functions.
 
 Main contributors to the original *DIPlib* project were:
 * Geert van Kempen

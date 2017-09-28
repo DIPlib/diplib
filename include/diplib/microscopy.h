@@ -25,7 +25,8 @@
 
 
 /// \file
-/// \brief Declares functions for microscopy-related functionality.
+/// \brief Microscopy-related functionality.
+/// \see microscopy
 
 
 namespace dip {

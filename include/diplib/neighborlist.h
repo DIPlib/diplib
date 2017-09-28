@@ -25,7 +25,8 @@
 
 
 /// \file
-/// \brief Defines a dimensionality-independent way of iterating over neighbor pixels
+/// \brief A dimensionality-independent way of iterating over neighbor pixels
+/// \see infrastructure
 
 
 namespace dip {

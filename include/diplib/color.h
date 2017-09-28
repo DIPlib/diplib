@@ -29,7 +29,7 @@
 
 
 /// \file
-/// \brief Defines `dip::ColorSpaceManager`, providing support for color images.
+/// \brief Color space conversions
 /// \see infrastructure
 
 

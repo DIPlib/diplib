@@ -27,7 +27,7 @@
 
 
 /// \file
-/// \brief Declares the `dip::Measurement` and `dip::MeasurementTool` classes, and the `dip::Feature` namespace.
+/// \brief Functionality for quantification of objects.
 /// \see measurement
 
 

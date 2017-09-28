@@ -25,7 +25,8 @@
 
 
 /// \file
-/// \brief Declares functions for segmentation and binarization.
+/// \brief Functions for segmentation and binarization.
+/// \see segmentation
 
 
 namespace dip {

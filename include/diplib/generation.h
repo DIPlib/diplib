@@ -26,7 +26,8 @@
 
 
 /// \file
-/// \brief Declares functions for generating image data.
+/// \brief Functions for generating image data.
+/// \see generation
 
 
 namespace dip {

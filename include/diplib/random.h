@@ -30,6 +30,7 @@
 
 /// \file
 /// \brief Random number generators
+/// \see random
 
 
 namespace dip {

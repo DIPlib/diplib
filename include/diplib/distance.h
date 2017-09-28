@@ -26,7 +26,8 @@
 
 
 /// \file
-/// \brief Declares functions that compute distance transforms.
+/// \brief Functions that compute distance transforms.
+/// \see distance
 
 
 namespace dip {

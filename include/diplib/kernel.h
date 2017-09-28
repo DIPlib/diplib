@@ -25,7 +25,8 @@
 
 
 /// \file
-/// \brief Defines a class that describes a filtering kernel
+/// \brief A class that describes a filtering kernel
+/// \see infrastructure
 
 
 namespace dip {

@@ -41,6 +41,7 @@
 
 /// \file
 /// \brief Defines the basic types used throughout the library. This file is always included through `diplib.h`.
+/// \see infrastructure
 
 
 namespace dip {

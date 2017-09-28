@@ -25,7 +25,7 @@
 
 
 /// \file
-/// \brief Declares `dip::ChainCode`, `dip::Polygon`, `dip::ConvexHull`, and related functions.
+/// \brief Support for chain-code and polygon object representation and quantification.
 /// \see measurement
 
 

@@ -32,7 +32,7 @@
 
 
 /// \file
-/// \brief Declares the dip::DataType class and support functions. This file is always included through `diplib.h`.
+/// \brief The `dip::DataType` class and support functions. This file is always included through `diplib.h`.
 /// \see infrastructure
 
 

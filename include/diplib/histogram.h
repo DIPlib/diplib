@@ -27,7 +27,8 @@
 
 
 /// \file
-/// \brief Declares the `dip::Histogram` class, and related functionality.
+/// \brief Histograms and related functionality.
+/// \see histograms
 
 
 namespace dip {

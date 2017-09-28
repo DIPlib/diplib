@@ -34,8 +34,9 @@
 
 
 /// \file
-/// \brief Defines support for units, physical quantities and pixel sizes.
+/// \brief Support for units, physical quantities and pixel sizes.
 /// This file is always included through `diplib.h`.
+/// \see infrastructure
 
 
 namespace dip {

@@ -26,7 +26,8 @@
 
 
 /// \file
-/// \brief Declares functions for geometric transformations
+/// \brief Functions for geometric image transformations
+/// \see geometry
 
 
 namespace dip {

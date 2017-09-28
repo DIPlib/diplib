@@ -26,6 +26,7 @@
 
 /// \file
 /// \brief Defines templated functions for saturated arithmetic.
+/// \see sample_operators
 
 
 // NOTE: A different strategy is described in http://locklessinc.com/articles/sat_arithmetic/

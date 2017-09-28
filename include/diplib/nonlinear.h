@@ -26,7 +26,8 @@
 
 
 /// \file
-/// \brief Declares functions that implement non-linear filters.
+/// \brief Non-linear filters.
+/// \see nonlinear
 
 
 namespace dip {

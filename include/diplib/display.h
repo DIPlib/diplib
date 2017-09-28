@@ -26,14 +26,15 @@
 
 
 /// \file
-/// \brief Declares the `dip::ImageDisplay` class.
-/// \see infrastructure
+/// \brief Tools to prepare images for display.
+/// \see display
 
 
 namespace dip {
 
 
-/// \addtogroup infrastructure
+/// \defgroup display Display
+/// \brief Tools to prepare images for display
 /// \{
 
 

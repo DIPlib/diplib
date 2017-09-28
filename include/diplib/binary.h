@@ -25,7 +25,8 @@
 
 
 /// \file
-/// \brief Declares functions for binary image processing.
+/// \brief Functions for binary image processing.
+/// \see binary
 
 
 namespace dip {

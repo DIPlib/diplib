@@ -28,3 +28,4 @@ The following people have contributed to the *DIPlib* 3.0 project:
 * Cris Luengo
 * Ronald Ligteringen
 * Wouter Caarls
+* Erik Schuitema

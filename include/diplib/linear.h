@@ -26,7 +26,8 @@
 
 
 /// \file
-/// \brief Declares functions that implement linear filters.
+/// \brief Functions that implement linear filters.
+/// \see linear
 
 
 namespace dip {
