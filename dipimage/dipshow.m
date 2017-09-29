@@ -827,7 +827,7 @@ if nD>=3
    udata = [];
 elseif nD==0
    nD = 2; % Default figure: nice menus and stuff.
-   in.expanddim(2);
+   in = expanddim(in,2);
 end
 % Set up figure window.
 clearnreset(fig);
