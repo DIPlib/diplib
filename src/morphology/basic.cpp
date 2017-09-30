@@ -773,8 +773,11 @@ class ParabolicMorphologyLineFilter : public Framework::SeparableLineFilter {
                ++buf;
             }
             // Now process the line from right to left
-            out += static_cast< dip::sint >( length - 2 ) * outStride;
-            buf -= 2;
+            out += static_cast< dip::sint >( length - 1 ) * outStride;
+            --buf;
+            *out = *buf;
+            out -= outStride;
+            --buf;
             index = 0;
             for( dip::uint ii = 1; ii < length; ++ii ) {
                ++index;
