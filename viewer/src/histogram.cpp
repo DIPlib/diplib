@@ -50,18 +50,25 @@ void HistogramViewPort::render()
   }
   
   dip::Image cb { dip::UnsignedArray{ 3, (dip::uint)height }, 3, dip::DT_UINT8 };
-  ApplyViewerColorMap(values, cb, o);
-
-  // Single out RGB channels.  There has got to be a better way...
-  if (o.lut_ == ViewingOptions::LookupTable::RGB) {
-    ImageIterator<dip::uint8> it(cb);
-    for (size_t ii=0; ii < size_t(height); ++ii)
+  if (o.lut_ == ViewingOptions::LookupTable::RGB)
+  {
+    // Make sure channels do not bleed into eachother
+    dip::Image cbsingle = cb;
+    cb = 0;
+    for (size_t jj=0; jj < 3; ++jj)
     {
-      it[1] = 0; it[2] = 0; it++;
-      it[0] = 0; it[2] = 0; it++;
-      it[0] = 0; it[1] = 0; it++;
+      auto osingle = o;
+      osingle.color_elements_[(jj+1)%3] = -1;
+      osingle.color_elements_[(jj+2)%3] = -1;
+      ApplyViewerColorMap(values, cbsingle, osingle);
+      cbsingle.At({(jj+1)%3,(jj+1)%3},{}) = 0;
+      cbsingle.At({(jj+2)%3,(jj+2)%3},{}) = 0;
+      cb = cb + cbsingle;
     }
+    cb.Convert(dip::DT_UINT8);
   }
+  else
+    ApplyViewerColorMap(values, cb, o);
 
   colorbar_.set(cb);
   colorbar_.rebuild();

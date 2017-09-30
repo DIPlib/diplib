@@ -260,16 +260,16 @@ inline void jet(dip::sfloat v, dip::uint8 *out)
 }
 
 template<typename T>
-inline dip::uint8 rangeMap(T val, double offset, double scale, ViewingOptions::Mapping mapping)
+inline dip::dfloat rangeMap(T val, double offset, double scale, ViewingOptions::Mapping mapping)
 {
   if( mapping == ViewingOptions::Mapping::Logarithmic )
-    return (dip::uint8)(255.*std::min(std::log(std::max((double)val - offset, 1.)) * scale, 1.));
+    return 255.*std::min(std::log(std::max((double)val - offset, 1.)) * scale, 1.);
   else
-    return (dip::uint8)(255.*std::min(std::max(((double)val - offset) * scale, 0.), 1.));
+    return 255.*std::min(std::max(((double)val - offset) * scale, 0.), 1.);
 }
 
 template<typename T>
-inline dip::uint8 rangeMap(T val, const ViewingOptions &options)
+inline dip::dfloat rangeMap(T val, const ViewingOptions &options)
 {
   if( options.mapping_ == ViewingOptions::Mapping::Logarithmic )
     return rangeMap(val, options.mapping_range_.first-1., 1./std::log(options.mapping_range_.second-options.mapping_range_.first+1.), options.mapping_);

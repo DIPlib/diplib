@@ -31,7 +31,7 @@ void viewer__ColorMap(Image const& slice, Image& out, ViewingOptions &options)
    auto lut = options.lut_;
    auto element = options.element_;
    auto color_elements = options.color_elements_;
-
+   
    dip::uint width = slice.Size( 0 );
    dip::uint height = slice.Size( 1 );
    dip::sint sliceStride0 = slice.Stride( 0 );
@@ -39,6 +39,10 @@ void viewer__ColorMap(Image const& slice, Image& out, ViewingOptions &options)
    dip::sint outStride0 = out.Stride( 0 );
    dip::sint outStride1 = out.Stride( 1 );
    dip::sint sliceStrideT = slice.TensorStride();
+   
+   // These values are from
+   // Peter Kovesi, "Good Colour Maps: How to Design Them", arXiv:1509.03700 [cs.GR], 2015
+   dip::dfloat RGB[] = {0.9, 0.17, 0., 0.0, 0.50, 0., 0.1, 0.33, 1.};
 
    double offset, scale;
    if( mapping == ViewingOptions::Mapping::Logarithmic )
@@ -63,20 +67,28 @@ void viewer__ColorMap(Image const& slice, Image& out, ViewingOptions &options)
       switch (lut)
       {
          case ViewingOptions::LookupTable::RGB:
-            for (dip::uint kk=0; kk < 3; ++kk)
+            for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
             {
-               dip::sint elem = color_elements[kk];
-               if (elem >= 0)
-                  for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
-                     oPtr[kk] = rangeMap((dip::sfloat)iPtr[elem*sliceStrideT], offset, scale, mapping);
-               else
-                  for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
-                     oPtr[kk] = 0;
+               double r=0, g=0, b=0;
+               for (dip::uint kk=0; kk < 3; ++kk)
+               {
+                  dip::sint elem = color_elements[kk];
+                  if (elem >= 0)
+                  {
+                     dip::dfloat val = rangeMap((dip::sfloat)iPtr[elem*sliceStrideT], offset, scale, mapping);
+                     r += val * RGB[kk*3+0];
+                     g += val * RGB[kk*3+1];
+                     b += val * RGB[kk*3+2];
+                  }
+               }
+               oPtr[0] = (dip::uint8) r;
+               oPtr[1] = (dip::uint8) g;
+               oPtr[2] = (dip::uint8) b;
             }
             break;
          default:
             for( iPtr = slicePtr, oPtr = outPtr, ii = 0; ii < width; ++ii, iPtr += sliceStride0, oPtr += outStride0)
-               oPtr[0] = oPtr[1] = oPtr[2] = rangeMap((dip::sfloat)iPtr[(dip::sint)element*sliceStrideT], offset, scale, mapping);
+               oPtr[0] = oPtr[1] = oPtr[2] = (dip::uint8)rangeMap((dip::sfloat)iPtr[(dip::sint)element*sliceStrideT], offset, scale, mapping);
             break;
       }
    }
@@ -86,29 +98,31 @@ void viewer__ColorMap(Image const& slice, Image& out, ViewingOptions &options)
 
 void ApplyViewerColorMap(dip::Image &in, dip::Image &out, ViewingOptions &options)
 {
-   if (in.Dimensionality() == 0)
-      out = dip::Image(dip::UnsignedArray {1, 1}, 3, DT_UINT8);
-   else
-      out = dip::Image(in.Sizes(), 3, DT_UINT8);
+   dip::Image mapped;
 
-   DIP_OVL_CALL_NONCOMPLEX( viewer__ColorMap, ( in, out, options ), in.DataType() );
+   if (in.Dimensionality() == 0)
+      mapped = dip::Image(dip::UnsignedArray {1, 1}, 3, DT_UINT8);
+   else
+      mapped = dip::Image(in.Sizes(), 3, DT_UINT8);
+      
+   DIP_OVL_CALL_NONCOMPLEX( viewer__ColorMap, ( in, mapped, options ), in.DataType() );
 
    switch(options.lut_)
    {
       case ViewingOptions::LookupTable::Sequential:
-         ApplyColorMap(out[0], out, "linear");
+         ApplyColorMap(mapped[0], out, "linear");
          break;
       case ViewingOptions::LookupTable::Divergent:
-         ApplyColorMap(out[0], out, "diverging");
+         ApplyColorMap(mapped[0], out, "diverging");
          break;
       case ViewingOptions::LookupTable::Cyclic:
-         ApplyColorMap(out[0], out, "cyclic");
+         ApplyColorMap(mapped[0], out, "cyclic");
          break;
       case ViewingOptions::LookupTable::Label:
-         ApplyColorMap(out[0], out, "label");
+         ApplyColorMap(mapped[0], out, "label");
          break;
       default:
-         // Nothing to do
+         out = mapped;
          break;
    }
 }

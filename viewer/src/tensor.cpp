@@ -45,7 +45,7 @@ void TensorViewPort::render()
       if (idx != -1)
       {
         dip::sfloat val = p[(dip::uint)idx];
-        dip::uint8 rv = rangeMap(val, o);
+        dip::uint8 rv = (dip::uint8)rangeMap(val, o);
         GLfloat cwidth = (GLfloat)width()/(GLfloat)t.Columns(),
                 cheight = (GLfloat)height()/(GLfloat)t.Rows();
         

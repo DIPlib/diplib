@@ -102,13 +102,13 @@ void SliceView::map()
         for (size_t kk=0; kk < 3; ++kk)
           if (o.color_elements_[kk] != -1)
           {
-            dip::uint8 color = rangeMap(it[(dip::uint)o.color_elements_[kk]], o);
+            dip::uint8 color = (dip::uint8)rangeMap(it[(dip::uint)o.color_elements_[kk]], o);
             line.At<dip::uint8>({ii, 99-color*100U/256})[kk] = 255;
           }
       }
       else
       {
-        dip::uint8 color = (dip::uint8)(rangeMap(it[o.element_], o)*255);
+        dip::uint8 color = (dip::uint8)rangeMap(it[o.element_], o);
       
         auto p = line.At<dip::uint8>({ii, 99-color*100U/256});
         for (size_t kk=0; kk < 3; ++kk)
@@ -696,7 +696,7 @@ void SliceViewer::calculateTextures()
             options_.mapping_range_.first = -options_.mapping_range_.second;
         }
       }
-        
+      
       // Recalculate histogram
       histogram_->calculate();
     }
