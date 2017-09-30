@@ -158,10 +158,14 @@ WindowPtr GLFWManager::getWindow(GLFWwindow *window)
     return NULL;
 }
 
-void GLFWManager::drawString(Window* /*window*/, const char *string)
+size_t GLFWManager::drawString(Window* /*window*/, const char *string)
 {
-  for (; *string; ++string)
+  size_t movex = 0;
+
+  for (; *string; ++string, movex += 8)
     bitmapCharacter(*string);
+    
+  return movex;
 }
 
 void GLFWManager::swapBuffers(Window* window)

@@ -8,6 +8,7 @@ viewer/include/diplib/viewer/image.h
 viewer/include/diplib/viewer/include_gl.h
 viewer/include/diplib/viewer/manager.h
 viewer/include/diplib/viewer/slice.h
+viewer/include/diplib/viewer/status.h
 viewer/include/diplib/viewer/tensor.h
 viewer/include/diplib/viewer/viewer.h
 viewer/include/dipviewer.h
@@ -21,5 +22,6 @@ viewer/src/manager/fg_font_data.h
 viewer/src/manager/glfw.cpp
 viewer/src/manager/glut.cpp
 viewer/src/slice.cpp
+viewer/src/status.cpp
 viewer/src/tensor.cpp
 )

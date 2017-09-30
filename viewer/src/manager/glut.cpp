@@ -158,10 +158,14 @@ WindowPtr GLUTManager::getCurrentWindow()
     return NULL;
 }
 
-void GLUTManager::drawString(Window* /*window*/, const char *string)
+size_t GLUTManager::drawString(Window* /*window*/, const char *string)
 {
-  for (; *string; ++string)
+  size_t movex = 0;
+
+  for (; *string; ++string, movex += 8)
     glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *string);
+    
+  return movex;
 }
 
 void GLUTManager::swapBuffers(Window* /*window*/)

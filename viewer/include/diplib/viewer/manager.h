@@ -60,7 +60,7 @@ class DIPVIEWER_EXPORT Window
     virtual ~Window() { }
 
     void refresh();
-    void drawString(const char *string);
+    size_t drawString(const char *string);
     int width() { return width_; }
     int height() { return height_; }
   protected:
@@ -129,7 +129,7 @@ class DIPVIEWER_EXPORT Manager
     virtual void destroyWindows() = 0;
     
   protected:
-    virtual void drawString(Window* window, const char *string) = 0;
+    virtual size_t drawString(Window* window, const char *string) = 0;
     virtual void swapBuffers(Window* window) = 0;
     virtual void setWindowTitle(Window* window, const char *name) = 0;
     virtual void refreshWindow(Window *window) = 0;

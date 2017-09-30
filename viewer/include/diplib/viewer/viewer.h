@@ -69,6 +69,9 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
                                        ///< Also determines relative viewport sizes.
   dip::FloatArray origin_;             ///< Display origin for moving the image around.
   
+  // Status
+  dip::String status_;                 ///< Status bar text.
+  
   ViewingOptions() : complex_(ComplexToReal::Imaginary) // To force update
   {
   }
@@ -140,6 +143,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     if (zoom_ != options.zoom_) return Diff::Draw;
     if (origin_ != options.origin_) return Diff::Draw;
     if (split_ != options.split_) return Diff::Draw;
+    if (status_ != options.status_) return Diff::Draw;
     
     return Diff::None;
   }
@@ -164,6 +168,30 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     }
     
     return false;
+  }
+
+  dip::String getComplexDescription()
+  {
+    dip::String names[] = {"real part", "imaginary part", "magnitude (abs)", "phase"};
+    return names[(dip::uint)complex_];
+  }
+  
+  dip::String getMappingDescription()
+  {
+    dip::String names[] = {"unit", "angle", "normal", "linear", "symmetric around 0", "logaritmic"};
+    return names[(dip::uint)mapping_];
+  }
+  
+  dip::String getProjectionDescription()
+  {
+    dip::String names[] = {"none (slice)", "minimum", "mean", "maximum"};
+    return names[(dip::uint)projection_];
+  }
+
+  dip::String getLookupTableDescription()
+  {
+    dip::String names[] = {"image colorspace (mapping inactive)", "ternary (RGB)", "gray-value", "perceptually linear", "divergent blue-red", "cyclic", "labels"};
+    return names[(dip::uint)lut_];
   }
 
   friend std::ostream & operator<<(std::ostream &os, const ViewingOptions& opt)
@@ -275,6 +303,21 @@ inline dip::dfloat rangeMap(T val, const ViewingOptions &options)
     return rangeMap(val, options.mapping_range_.first-1., 1./std::log(options.mapping_range_.second-options.mapping_range_.first+1.), options.mapping_);
   else
     return rangeMap(val, options.mapping_range_.first, 1./(options.mapping_range_.second-options.mapping_range_.first), options.mapping_);
+}
+
+template<typename T>
+std::string to_string(dip::DimensionArray<T> array)
+{
+  std::ostringstream oss;
+  oss << "[";
+  for (size_t ii=0; ii < array.size(); ++ii)
+  {
+    oss << array[ii];
+    if (ii < array.size()-1)
+      oss << ", ";
+  }
+  oss << "]";
+  return oss.str();
 }
 
 void DIPVIEWER_NO_EXPORT ApplyViewerColorMap(dip::Image &in, dip::Image &out, ViewingOptions &options);

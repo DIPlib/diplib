@@ -31,6 +31,7 @@
 #include "diplib/viewer/tensor.h"
 #include "diplib/viewer/histogram.h"
 #include "diplib/viewer/control.h"
+#include "diplib/viewer/status.h"
 
 /// \file
 /// \brief Declares `dip::viewer::SliceViewer`.
@@ -101,6 +102,7 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     TensorViewPort *tensor_;
     HistogramViewPort *histogram_;
     ControlViewPort *control_;
+    StatusViewPort *status_;
     dip::Image original_, image_;
     
     ViewPort *drag_viewport_;

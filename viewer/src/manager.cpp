@@ -32,9 +32,9 @@ void Window::swap()
   manager()->swapBuffers(this);
 }
 
-void Window::drawString(const char *string)
+size_t Window::drawString(const char *string)
 {
-  manager()->drawString(this, string);
+  return manager()->drawString(this, string);
 }
 
 void Window::refresh()

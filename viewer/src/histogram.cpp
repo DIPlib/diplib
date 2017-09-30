@@ -61,8 +61,8 @@ void HistogramViewPort::render()
       osingle.color_elements_[(jj+1)%3] = -1;
       osingle.color_elements_[(jj+2)%3] = -1;
       ApplyViewerColorMap(values, cbsingle, osingle);
-      cbsingle.At({(jj+1)%3,(jj+1)%3},{}) = 0;
-      cbsingle.At({(jj+2)%3,(jj+2)%3},{}) = 0;
+      cbsingle.At({((dip::sint)jj+1)%3,((dip::sint)jj+1)%3},{}) = 0;
+      cbsingle.At({((dip::sint)jj+2)%3,((dip::sint)jj+2)%3},{}) = 0;
       cb = cb + cbsingle;
     }
     cb.Convert(dip::DT_UINT8);
@@ -107,7 +107,13 @@ void HistogramViewPort::render()
       if (o.color_elements_[ii] != -1)
       {
         // Histogram
-        glColor3f(ii==0, ii==1, ii==2);
+        if (ii == 0)
+          glColor3d(0.9, 0.17, 0.);
+        else if (ii == 1)
+          glColor3d(0.0, 0.50, 0.);
+        else if (ii == 2)
+          glColor3d(0.1, 0.33, 1.);
+        
         glBegin(GL_TRIANGLE_STRIP);
         
         ImageIterator<dip::uint32> it(histogram_[(dip::uint)o.color_elements_[ii]]);
@@ -239,6 +245,8 @@ void HistogramViewPort::motion(int button, int x, int y)
         // Nothing to do
         break;
     }
+    
+    o.status_ = "Mapping range set to [" + std::to_string(o.mapping_range_.first) + ", " + std::to_string(o.mapping_range_.second) + "]";
 
     viewer()->refresh();
   }

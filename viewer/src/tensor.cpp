@@ -62,11 +62,11 @@ void TensorViewPort::render()
         if (o.lut_ == ViewingOptions::LookupTable::RGB)
         {
           if (idx == o.color_elements_[0])
-            glColor3f(1., 0., 0.);
+            glColor3d(0.9, 0.17, 0.);
           else if (idx == o.color_elements_[1])
-            glColor3f(0., 1., 0.);
+            glColor3d(0.0, 0.50, 0.);
           else if (idx == o.color_elements_[2])
-            glColor3f(0., 0., 1.);
+            glColor3d(0.1, 0.33, 1.);
           else
             glColor3f(0., 0., 0.);
         }

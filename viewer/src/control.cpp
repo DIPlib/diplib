@@ -91,7 +91,10 @@ void ControlViewPort::click(int button, int state, int x, int y)
       case 0:
         // Don't allow selecting colorspace lut when image is not in color
         if (opt > 0 || viewer()->image().IsColor())
+        {
           o.lut_ = (ViewingOptions::LookupTable) opt;
+          o.status_ = "Lookup table set to " + o.getLookupTableDescription();
+        }
         break;
       case 1:
         o.mapping_ = (ViewingOptions::Mapping) opt;
@@ -120,12 +123,15 @@ void ControlViewPort::click(int button, int state, int x, int y)
             o.mapping_range_ = o.range_;
             break;
         }
+        o.status_ = "Mapping set to " + o.getMappingDescription() + ": [" + std::to_string(o.mapping_range_.first) + ", " + std::to_string(o.mapping_range_.second) + "]";
         break;
       case 2:
         o.complex_ = (ViewingOptions::ComplexToReal) opt;
+        o.status_ = "Complex to real mapping set to " + o.getComplexDescription();
         break;
       case 3:
         o.projection_ = (ViewingOptions::Projection) opt;
+        o.status_ = "Projection set to " + o.getProjectionDescription();
         break;
     }
 

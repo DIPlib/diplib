@@ -268,7 +268,8 @@ void SliceViewPort::click(int button, int state, int x, int y)
 
       if (dy != -1)
         viewer()->options().operating_point_[(dip::uint)dy] = (dip::uint)std::min(std::max(iy-0.0, 0.), (double)view()->size(1)-1.);
-
+        
+      viewer()->options().status_ = "";
       viewer()->refresh();
     }
     
@@ -333,43 +334,12 @@ void SliceViewPort::click(int button, int state, int x, int y)
         if (view()->dimx() == 0 && dy != -1) viewer()->options().origin_[(dip::uint)dy] /= factor;
       }
 
+      viewer()->options().status_ = "Zoom set to " + to_string(viewer()->options().zoom_);
       viewer()->refresh();
     }
     
     drag_x_ = x;
     drag_y_ = y;
-  }
-  
-  if (state == 1)
-  {
-    if (button == 0)
-    {
-      // Set title to current position and value. We do it here because
-      // somehow calling glutSetWindowTitle is very slow and we can't do
-      // it every draw.
-      auto op = viewer()->options().operating_point_;
-      auto te = viewer()->image().TensorElements();
-      
-      std::ostringstream oss;
-      oss << " (";
-      for (dip::uint ii=0; ii < op.size(); ++ii)
-      {
-        oss << op[ii];
-        if (ii < op.size()-1)
-          oss << ", ";
-      }
-      oss << "): ";
-      if (te > 1) oss << "[";
-      for (dip::uint ii=0; ii < te; ++ii)
-      {
-        oss << (dip::dfloat) viewer()->image().At(op)[ii];
-        if (ii < te-1)
-          oss << ", ";
-      }
-      if (te > 1) oss << "]";
-
-      viewer()->setWindowTitle(oss.str().c_str());
-    }
   }
 }
 
@@ -388,6 +358,7 @@ void SliceViewPort::motion(int button, int x, int y)
     if (dy != -1)
       viewer()->options().operating_point_[(dip::uint)dy] = (dip::uint)std::min(std::max(iy-0.0, 0.), (double)view()->size(1)-1.);
 
+    viewer()->options().status_ = "";
     viewer()->refresh();
   }
 
@@ -457,6 +428,9 @@ SliceViewer::SliceViewer(const dip::Image &image, std::string name, size_t width
 
   histogram_ = new HistogramViewPort(this);
   viewports_.push_back(histogram_);
+  
+  status_ = new StatusViewPort(this);
+  viewports_.push_back(status_);
 }
 
 void SliceViewer::create()
@@ -479,12 +453,13 @@ void SliceViewer::place()
   int splitx = (int)options_.split_[0];
   int splity = (int)options_.split_[1];
 
-  main_->place     (splitx     , splity, width()-100-splitx, height()-splity);
-  left_->place     (0          , splity, splitx            , height()-splity);
-  top_->place      (splitx     , 0     , width()-100-splitx, splity);
-  tensor_->place   (0          , 0     , splitx            , splity);
-  control_->place  (width()-100, 0     , 100               , splity);
-  histogram_->place(width()-100, splity, 100               , height()-splity);
+  main_->place     (splitx     , splity             , width()-100-splitx, height()-splity-DIM_HEIGHT);
+  left_->place     (0          , splity             , splitx            , height()-splity-DIM_HEIGHT);
+  top_->place      (splitx     , 0                  , width()-100-splitx, splity);
+  tensor_->place   (0          , 0                  , splitx            , splity);
+  control_->place  (width()-100, 0                  , 100               , splity);
+  histogram_->place(width()-100, splity             , 100               , height()-splity-DIM_HEIGHT);
+  status_->place   (0          , height()-DIM_HEIGHT, width()           , DIM_HEIGHT);
 }
 
 void SliceViewer::reshape(int /*width*/, int /*height*/)
@@ -526,7 +501,8 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
       options_.operating_point_[3]++;
     if (k == 'B' && image_.Dimensionality() > 3 && options_.operating_point_[3] > 0)
       options_.operating_point_[3]--;
-      
+
+    options_.status_ = "";
     refresh();
   }
   
@@ -544,6 +520,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
           zoom[ii] = 1;
       }
       
+      options_.status_ = "Zoom reset to 1:1";
       refresh();
     }
     
@@ -589,6 +566,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
           zoom[(dip::uint)dx] = zoom[(dip::uint)dy];
       }
       
+      options_.status_ = "Zoom set to fit window: " + to_string(options_.zoom_);
       refresh();
     }
     
@@ -597,6 +575,8 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
       // ^L: linear stretch
       options_.mapping_ = ViewingOptions::Mapping::Linear;
       options_.mapping_range_ = options_.range_;
+      
+      options_.status_ = "Mapping set to " + options_.getMappingDescription() + ": range [" + std::to_string(options_.mapping_range_.first) + ", " + std::to_string(options_.mapping_range_.second) + "]";
       refresh();
     }
   }

@@ -59,7 +59,7 @@ class DIPVIEWER_EXPORT GLUTManager : public Manager
     void processEvents() { }
 
   protected:    
-    void drawString(Window* window, const char *string) override;
+    size_t drawString(Window* window, const char *string) override;
     void swapBuffers(Window* window) override;
     void setWindowTitle(Window* window, const char *name) override;
     void refreshWindow(Window* window) override;
