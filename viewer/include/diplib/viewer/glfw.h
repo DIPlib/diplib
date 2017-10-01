@@ -39,11 +39,22 @@ namespace dip { namespace viewer {
 class DIPVIEWER_EXPORT GLFWManager : public Manager
 {
   protected:
-    typedef std::map<void *, WindowPtr> WindowMap;
-    WindowMap windows_;
-    std::set<Window*> refresh_;
-    std::mutex refresh_lock_;
+    struct WindowInfo
+    {
+      WindowPtr wdw;
+      bool refresh;
+      
+      WindowInfo(WindowPtr _wdw=WindowPtr(), bool _refresh=false) : wdw(_wdw), refresh(_refresh) { }
+    };
+  
+    typedef std::map<void *, WindowInfo> WindowMap;
+    typedef std::lock_guard<std::recursive_mutex> Guard;
     
+  protected:
+    std::recursive_mutex mutex_;
+
+    WindowMap windows_;
+
     static GLFWManager *instance_;
     
   public:
@@ -51,7 +62,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
     ~GLFWManager() override;
   
     void createWindow(WindowPtr window) override;
-    size_t activeWindows() override { return windows_.size(); }
+    size_t activeWindows() override { Guard guard(mutex_); return windows_.size(); }
     void destroyWindows() override;
     void processEvents();
     

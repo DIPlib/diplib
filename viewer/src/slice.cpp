@@ -162,12 +162,23 @@ void SliceView::render()
   // Image
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, texture_);
+    
+  // Get width and height from texture, to avoid race condition on colored_
+  int width=0, height=0;
+  glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+  glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+  
+  if (!width || !height)
+  {
+    std::cerr << "Cannot draw" <<std::endl;
+    return;
+  }
   
   glBegin(GL_QUADS);
     glTexCoord2d(0.0,0.0); glVertex2i(0, 0);
-    glTexCoord2d(1.0,0.0); glVertex2i((GLint)colored_.Size(0), 0);
-    glTexCoord2d(1.0,1.0); glVertex2i((GLint)colored_.Size(0), (GLint)colored_.Size(1));
-    glTexCoord2d(0.0,1.0); glVertex2i(0, (GLint)colored_.Size(1));
+    glTexCoord2d(1.0,0.0); glVertex2i(width, 0);
+    glTexCoord2d(1.0,1.0); glVertex2i(width, height);
+    glTexCoord2d(0.0,1.0); glVertex2i(0, height);
   glEnd();
   
   glDisable(GL_TEXTURE_2D);
@@ -182,12 +193,12 @@ void SliceView::render()
     if (dx != -1)
     {
       glVertex2f((GLfloat)o[(dip::uint)dx]+0.5f, 0.);
-      glVertex2f((GLfloat)o[(dip::uint)dx]+0.5f, (GLfloat)colored_.Size(1));
+      glVertex2f((GLfloat)o[(dip::uint)dx]+0.5f, (GLfloat)height);
     }
     if (dy != -1)
     {
       glVertex2f(0., (GLfloat)o[(dip::uint)dy]+0.5f);
-      glVertex2f((GLfloat)colored_.Size(0), (GLfloat)o[(dip::uint)dy]+0.5f);
+      glVertex2f((GLfloat)width, (GLfloat)o[(dip::uint)dy]+0.5f);
     }
   glEnd();
 }
@@ -633,8 +644,11 @@ void SliceViewer::calculateTextures()
   while (continue_)
   {
     // Make sure we don't lose updates
-    while (updated_)
+    while (updated_ && continue_)
        std::this_thread::sleep_for(std::chrono::microseconds(1000));
+       
+    if (!continue_)
+      break;
   
     mutex_.lock();
     ViewingOptions::Diff diff = options.diff(options_);

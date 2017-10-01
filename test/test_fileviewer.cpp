@@ -9,15 +9,18 @@
 #include <dipviewer.h>
 
 int main(int argc, char **argv) {
-   if (argc != 2)
+   if (argc == 1)
    {
-     std::cout << "Missing filename" << std::endl;
-     return 1;
+      dip::viewer::Show( dip::ImageReadICS( "../test/chromo3d.ics" ), "../test/chromo3d.ics" );
+   }
+   else
+   {
+      for (size_t ii=2; ii < argc; ++ii)
+      {
+         dip::viewer::Show( dip::ImageReadICS( argv[ii] ), argv[ii] );
+      }
    }
 
-   dip::Image image = dip::ImageReadICS( argv[1] );
-   
-   dip::viewer::Show( image, argv[1] );
    dip::viewer::Spin( );
 
    return 0;

@@ -70,6 +70,8 @@ GLFWManager *GLFWManager::instance_ = NULL;
 
 GLFWManager::GLFWManager()
 {
+  Guard guard(mutex_);
+
   if (instance_)
     throw std::bad_alloc();
 
@@ -80,6 +82,8 @@ GLFWManager::GLFWManager()
 
 GLFWManager::~GLFWManager()
 {
+  Guard guard(mutex_);
+
   windows_.clear();
   glfwTerminate();
 
@@ -88,6 +92,8 @@ GLFWManager::~GLFWManager()
 
 void GLFWManager::createWindow(WindowPtr window)
 {
+  Guard guard(mutex_);
+
   int width=window->width(), height=window->height();
 
   if (width  <= 0) width  = 512;
@@ -117,32 +123,31 @@ void GLFWManager::createWindow(WindowPtr window)
     
 void GLFWManager::destroyWindows()
 {
+  Guard guard(mutex_);
+
   for (auto it = windows_.begin(); it != windows_.end(); ++it)
-    it->second->destroy();
+    it->second.wdw->destroy();
 }
 
 void GLFWManager::processEvents()
 {
+  Guard guard(mutex_);
+
   glfwPollEvents();
-  
-  refresh_lock_.lock();
-  std::set<Window*> redraw = refresh_;
-  refresh_.clear();
-  refresh_lock_.unlock();
   
   for (auto it = windows_.begin(); it != windows_.end();)
   {
-    if (redraw.count(it->second.get()))
+    if (it->second.refresh)
     {
-      makeCurrent(it->second.get());
-      it->second.get()->draw();
+      it->second.refresh = false;
+      makeCurrent(it->second.wdw.get());
+      it->second.wdw->draw();
     }
   
-    if (it->second->shouldClose() || glfwWindowShouldClose((GLFWwindow*)it->first))
+    if (it->second.wdw->shouldClose() || glfwWindowShouldClose((GLFWwindow*)it->first))
     {
       glfwDestroyWindow((GLFWwindow*)it->first);
       it = windows_.erase(it);
-      break;
     }
     else
       ++it;
@@ -153,7 +158,7 @@ WindowPtr GLFWManager::getWindow(GLFWwindow *window)
 {
   WindowMap::iterator it = windows_.find((void*)window);
   if (it != windows_.end())
-    return it->second;
+    return it->second.wdw;
   else
     return NULL;
 }
@@ -181,9 +186,9 @@ void GLFWManager::setWindowTitle(Window* window, const char *name)
 
 void GLFWManager::refreshWindow(Window* window)
 {
-  refresh_lock_.lock();
-  refresh_.insert(window);
-  refresh_lock_.unlock();
+  for (auto it = windows_.begin(); it != windows_.end();++it)
+    if (it->second.wdw.get() == window)
+      it->second.refresh = true;
 }
 
 void GLFWManager::makeCurrent(Window *window)

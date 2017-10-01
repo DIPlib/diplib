@@ -36,13 +36,14 @@ GLUTManager *GLUTManager::instance_ = NULL;
 
 GLUTManager::GLUTManager()
 {
+  Guard guard(mutex_);
+
   if (instance_)
     throw std::bad_alloc();
 
   instance_ = this;
   continue_ = true;
   
-  mutex_.lock();
   thread_ = std::thread(&GLUTManager::run, this);
 }
 
@@ -59,22 +60,27 @@ GLUTManager::~GLUTManager()
 
 void GLUTManager::createWindow(WindowPtr window)
 {
-  mutex_.lock();
+  while (1)
+  {
+    mutex_.lock();
+    if (!new_window_)
+      break;
+    mutex_.unlock();
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
+  }
   
   new_window_ = window;
   
-  while (new_window_)
-  {
-    mutex_.unlock();
-    std::this_thread::sleep_for(std::chrono::microseconds(0));
-    mutex_.lock();
-  }
-  
   mutex_.unlock();
+  
+  while (new_window_)
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
 }
 
 void GLUTManager::destroyWindows()
 {
+  Guard guard(mutex_);
+
   for (auto it = windows_.begin(); it != windows_.end(); ++it)
     it->second->destroy();
 }
@@ -91,8 +97,6 @@ void GLUTManager::run()
   glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
   glutIdleFunc(idle);
   
-  mutex_.unlock();
-      
   while (continue_)
   {
     mutex_.lock();
@@ -143,6 +147,8 @@ void GLUTManager::run()
     mutex_.unlock();
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
+  
+  Guard guard(mutex_);
   
   windows_.clear();
   

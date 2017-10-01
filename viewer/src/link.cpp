@@ -142,6 +142,7 @@ void LinkViewPort::update(const ViewingOptions &options)
   {
     viewer()->options().status_ = "";
     viewer()->refresh();
+    update();
   }
 }
 

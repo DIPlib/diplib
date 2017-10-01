@@ -38,11 +38,14 @@ namespace dip { namespace viewer {
 class DIPVIEWER_EXPORT GLUTManager : public Manager
 {
   protected:
+    typedef std::map<void*, WindowPtr> WindowMap;
+    typedef std::lock_guard<std::recursive_mutex> Guard;
+
+  protected:
     std::thread thread_;
-    std::mutex mutex_;
+    std::recursive_mutex mutex_;
     bool continue_;
   
-    typedef std::map<void*, WindowPtr> WindowMap;
     WindowMap windows_;
     
     WindowPtr new_window_, destroyed_window_;
@@ -54,7 +57,7 @@ class DIPVIEWER_EXPORT GLUTManager : public Manager
     ~GLUTManager() override;
   
     void createWindow(WindowPtr window) override;
-    size_t activeWindows() override { return windows_.size(); }
+    size_t activeWindows() override { Guard guard(mutex_); return windows_.size(); }
     void destroyWindows() override;
     void processEvents() { }
 
