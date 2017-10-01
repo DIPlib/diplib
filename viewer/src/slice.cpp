@@ -271,6 +271,7 @@ void SliceViewPort::click(int button, int state, int x, int y)
         
       viewer()->options().status_ = "";
       viewer()->refresh();
+      viewer_->updateLinkedViewers();
     }
     
     if (button == 2)
@@ -336,6 +337,7 @@ void SliceViewPort::click(int button, int state, int x, int y)
 
       viewer()->options().status_ = "Zoom set to " + to_string(viewer()->options().zoom_);
       viewer()->refresh();
+      viewer_->updateLinkedViewers();
     }
     
     drag_x_ = x;
@@ -360,6 +362,7 @@ void SliceViewPort::motion(int button, int x, int y)
 
     viewer()->options().status_ = "";
     viewer()->refresh();
+    viewer_->updateLinkedViewers();
   }
 
   if (button == 1)
@@ -387,6 +390,7 @@ void SliceViewPort::motion(int button, int x, int y)
     drag_y_ = y;
 
     viewer()->refresh();
+    viewer_->updateLinkedViewers();
   }
 }
 
@@ -431,6 +435,9 @@ SliceViewer::SliceViewer(const dip::Image &image, std::string name, size_t width
   
   status_ = new StatusViewPort(this);
   viewports_.push_back(status_);
+
+  link_ = new LinkViewPort(this);
+  viewports_.push_back(link_);
 }
 
 void SliceViewer::create()
@@ -459,7 +466,8 @@ void SliceViewer::place()
   tensor_->place   (0          , 0                  , splitx            , splity);
   control_->place  (width()-100, 0                  , 100               , splity);
   histogram_->place(width()-100, splity             , 100               , height()-splity-DIM_HEIGHT);
-  status_->place   (0          , height()-DIM_HEIGHT, width()           , DIM_HEIGHT);
+  status_->place   (0          , height()-DIM_HEIGHT, width()-100       , DIM_HEIGHT);
+  link_->place     (width()-100, height()-DIM_HEIGHT, 100               , DIM_HEIGHT);
 }
 
 void SliceViewer::reshape(int /*width*/, int /*height*/)
@@ -504,6 +512,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
 
     options_.status_ = "";
     refresh();
+    updateLinkedViewers();
   }
   
   if (mods == KEY_MOD_CONTROL)
@@ -522,6 +531,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
       
       options_.status_ = "Zoom reset to 1:1";
       refresh();
+      updateLinkedViewers();
     }
     
     if (k == 'F')
@@ -568,6 +578,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
       
       options_.status_ = "Zoom set to fit window: " + to_string(options_.zoom_);
       refresh();
+      updateLinkedViewers();
     }
     
     if (k == 'L')
@@ -717,6 +728,11 @@ void SliceViewer::calculateTextures()
 
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
+}
+
+void SliceViewer::updateLinkedViewers()
+{
+  link_->update();
 }
 
 }} // namespace dip::viewer

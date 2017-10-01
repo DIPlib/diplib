@@ -143,6 +143,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     if (zoom_ != options.zoom_) return Diff::Draw;
     if (origin_ != options.origin_) return Diff::Draw;
     if (split_ != options.split_) return Diff::Draw;
+    if (operating_point_ != options.operating_point_) return Diff::Draw;
     if (status_ != options.status_) return Diff::Draw;
     
     return Diff::None;
@@ -275,6 +276,7 @@ class DIPVIEWER_EXPORT Viewer : public Window
   
     virtual ViewingOptions &options() = 0;
     virtual const dip::Image &image() = 0;
+    virtual const std::string &name() { return name_; }
 
     virtual void setWindowTitle(const char *name) { title((name_ + name).c_str()); }
 };

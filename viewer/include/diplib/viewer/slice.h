@@ -32,6 +32,7 @@
 #include "diplib/viewer/histogram.h"
 #include "diplib/viewer/control.h"
 #include "diplib/viewer/status.h"
+#include "diplib/viewer/link.h"
 
 /// \file
 /// \brief Declares `dip::viewer::SliceViewer`.
@@ -70,11 +71,12 @@ class DIPVIEWER_EXPORT SliceView : public View
 class DIPVIEWER_EXPORT SliceViewPort : public ViewPort
 {
   protected:
+    class SliceViewer *viewer_;
     SliceView *view_;
     int drag_x_, drag_y_;
     
   public:
-    explicit SliceViewPort(Viewer *viewer) : ViewPort(viewer), view_(NULL) { }
+    explicit SliceViewPort(class SliceViewer *viewer) : ViewPort((Viewer*)viewer), viewer_(viewer), view_(NULL) { }
     ~SliceViewPort() override { if (view_) delete view_; }
     
     void rebuild() override { view()->rebuild(); }
@@ -103,6 +105,7 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     HistogramViewPort *histogram_;
     ControlViewPort *control_;
     StatusViewPort *status_;
+    LinkViewPort *link_;
     dip::Image original_, image_;
     
     ViewPort *drag_viewport_;
@@ -127,6 +130,7 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     const dip::Image &image() override { return image_; }
     
     void place();
+    void updateLinkedViewers();
   
   protected:
     void create() override;

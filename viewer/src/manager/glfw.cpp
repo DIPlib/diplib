@@ -170,6 +170,7 @@ size_t GLFWManager::drawString(Window* /*window*/, const char *string)
 
 void GLFWManager::swapBuffers(Window* window)
 {
+  glfwSwapInterval(0);
   glfwSwapBuffers((GLFWwindow*)window->id());
 }
 
