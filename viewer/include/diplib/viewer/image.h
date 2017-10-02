@@ -27,9 +27,6 @@
 
 namespace dip { namespace viewer {
 
-/// \addtogroup viewer
-/// \{
-
 class DIPVIEWER_EXPORT ImageView : public View
 {
   protected:
@@ -74,7 +71,10 @@ class DIPVIEWER_EXPORT ImageViewPort : public ViewPort
     ImageView *view() { return view_; }
 };
 
-/// Non-interactive 2D image viewer
+/// \addtogroup viewer
+/// \{
+
+/// Non-interactive 2D RGB image viewer.
 class DIPVIEWER_EXPORT ImageViewer : public Viewer
 {
   protected:
@@ -84,6 +84,7 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
     std::string name_;
   
   public:
+    /// \brief Construct a new ImageViewer.
     explicit ImageViewer(const dip::Image &image, std::string name="ImageViewer", size_t width=0, size_t height=0) : Viewer(name), options_(image)
     {
       DIP_THROW_IF( !image.HasNormalStrides(), E::NO_NORMAL_STRIDE );

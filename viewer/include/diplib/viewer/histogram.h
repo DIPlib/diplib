@@ -27,6 +27,7 @@
 
 namespace dip { namespace viewer {
 
+/// \brief Controls grey-value mapping range and shows color mapping.
 class DIPVIEWER_EXPORT HistogramViewPort : public ViewPort
 {
   protected:

@@ -30,6 +30,9 @@
 
 #define EPS 0.001
 
+/// \file
+/// \brief Defines the GLFW interface of \ref viewer.
+
 namespace dip { namespace viewer {
 
 /*

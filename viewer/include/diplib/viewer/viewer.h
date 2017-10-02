@@ -30,19 +30,27 @@
 
 #include "diplib/viewer/manager.h"
 
-//#define GL_SAFE_CALL(x) DIP_THROW_IF((x) != 0, dip::String(#x))
-
 namespace dip { namespace viewer {
 
+/// \brief Specifies a range of values between a lower and upper limit
 typedef std::pair<dip::dfloat, dip::dfloat> FloatRange;
-typedef dip::DimensionArray<FloatRange > FloatRangeArray;
 
+/// \brief Model that determines the SliceViewer's behavior
 struct DIPVIEWER_NO_EXPORT ViewingOptions
 {
+  /// \brief Complex-to-real mapping options
   enum class ComplexToReal { Real, Imaginary, Magnitude, Phase };
+  
+  /// \brief Grey-value mapping options
   enum class Mapping { ZeroOne, Angle, Normal, Linear, Symmetric, Logarithmic };
+  
+  /// \brief Slice projection options
   enum class Projection { None, Min, Mean, Max };
+  
+  /// \brief Grey-value to color mapping optios
   enum class LookupTable { ColorSpace, RGB, Grey, Sequential, Divergent, Cyclic, Label };
+  
+  /// \brief Defines which view (parts) need to be recalculated
   enum class Diff { None, Draw, Place, Mapping, Projection, Complex };
 
   // Projection
@@ -76,6 +84,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   {
   }
   
+  /// \brief Calculate default options from an image
   explicit ViewingOptions(const dip::Image &image)
   {
     // Projection
@@ -123,6 +132,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     split_ = {100, 100};
   }
   
+  /// \brief Calculates which view (parts) need to be recalculated
   Diff diff(const ViewingOptions &options) const
   {
     if (complex_ != options.complex_) return Diff::Complex;
@@ -149,6 +159,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     return Diff::None;
   }
   
+  /// \brief Calculates whether a particular slice projection needs to be recalculated
   bool needsReproject(const ViewingOptions &options, dip::uint dimx, dip::uint dimy) const
   {
     // Global stuff
@@ -171,24 +182,28 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
     return false;
   }
 
+  /// \brief Returns a textual description of the current complex-to-real mapping
   dip::String getComplexDescription()
   {
     dip::String names[] = {"real part", "imaginary part", "magnitude (abs)", "phase"};
     return names[(dip::uint)complex_];
   }
   
+  /// \brief Returns a textual description of the current grey-value mapping
   dip::String getMappingDescription()
   {
     dip::String names[] = {"unit", "angle", "normal", "linear", "symmetric around 0", "logaritmic"};
     return names[(dip::uint)mapping_];
   }
   
+  /// \brief Returns a textual description of the current slice projection
   dip::String getProjectionDescription()
   {
     dip::String names[] = {"none (slice)", "minimum", "mean", "maximum"};
     return names[(dip::uint)projection_];
   }
 
+  /// \brief Returns a textual description of the current grey-value to color mapping
   dip::String getLookupTableDescription()
   {
     dip::String names[] = {"image colorspace (mapping inactive)", "ternary (RGB)", "gray-value", "perceptually linear", "divergent blue-red", "cyclic", "labels"};
@@ -210,6 +225,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
   }  
 };
 
+/// \brief Displays a view of the ViewingOptions model
 class DIPVIEWER_EXPORT View
 {
   protected:
@@ -219,18 +235,20 @@ class DIPVIEWER_EXPORT View
     explicit View(ViewPort *viewport) : viewport_(viewport) { }
     virtual ~View() { }
 
-    // Set up rendering. May take a while.
+    /// \brief Set up rendering. May take a while.
     virtual void rebuild() { };
     
-    // Render to screen.
+    /// \brief Render to screen.
     virtual void render() { };
     
-    // Size in internal coordinates.
+    /// \brief Size in internal coordinates.
     virtual dip::uint size(dip::uint /*ii*/) { return 0; }
     
+    /// \brief Parent viewport
     class ViewPort *viewport() { return viewport_; }
 };
 
+/// \brief Handles interaction in a certain display area to control the ViewingOptions model
 class DIPVIEWER_EXPORT ViewPort
 {
   protected:
@@ -241,6 +259,7 @@ class DIPVIEWER_EXPORT ViewPort
     explicit ViewPort(Viewer *viewer) : viewer_(viewer), x_(0), y_(0), width_(0), height_(0) { }
     virtual ~ViewPort() { }
 
+    /// \brief Places the viewport
     virtual void place(int x, int y, int width, int height)
     {
       x_ = x;
@@ -249,23 +268,42 @@ class DIPVIEWER_EXPORT ViewPort
       height_ = height;
     }
     
+    /// \brief Prepares the associated view for rendering
     virtual void rebuild() { }
+
+    /// \brief Renders the associated view
     virtual void render() { } 
+    
+    /// \brief Handles mouse clicking interaction
     virtual void click(int /*button*/, int /*state*/, int /*x*/, int /*y*/) { }
+    
+    /// \brief Handles mouse dragging interaction
     virtual void motion(int /*button*/, int /*x*/, int /*y*/) { }
+    
+    /// \brief Converts screen coordinates into local view coordinates
     virtual void screenToView(int x, int y, double *ix, double *iy)
     {
       *ix = x-x_;
       *iy = y-y_;
     }
     
+    /// \brief Parent viewer
     class Viewer *viewer() { return viewer_; }
+    
+    /// \brief Screen coordinate of left edge
     int x() { return x_; }
+
+    /// \brief Screen coordinate of bottom edge
     int y() { return y_; }
+
+    /// \brief Viewport width
     int width() { return width_; }
+
+    /// \brief Viewport height
     int height() { return height_; }
 };
 
+/// \brief A Window for viewing a dip::Image
 class DIPVIEWER_EXPORT Viewer : public Window
 {
   protected:
@@ -274,21 +312,20 @@ class DIPVIEWER_EXPORT Viewer : public Window
   public:
     explicit Viewer(std::string name="Viewer") : name_(name) { }
   
+    /// \brief Returns the Viewer's model
     virtual ViewingOptions &options() = 0;
+    
+    /// \brief Returns the dip::Image being visualized
     virtual const dip::Image &image() = 0;
+    
+    /// \brief Returns the Viewer's name
     virtual const std::string &name() { return name_; }
 
+    /// \brief Set window title, in addition to the Viewer's name
     virtual void setWindowTitle(const char *name) { title((name_ + name).c_str()); }
 };
 
-inline void jet(dip::sfloat v, dip::uint8 *out)
-{
-  v = 4*v;
-  out[0] = dip::clamp_cast<dip::uint8>(255*std::min(v - 1.5, -v + 4.5));
-  out[1] = dip::clamp_cast<dip::uint8>(255*std::min(v - 0.5, -v + 3.5));
-  out[2] = dip::clamp_cast<dip::uint8>(255*std::min(v + 0.5, -v + 2.5));
-}
-
+/// \brief Maps an image grey-value onto [0,255]
 template<typename T>
 inline dip::dfloat rangeMap(T val, double offset, double scale, ViewingOptions::Mapping mapping)
 {
@@ -298,6 +335,7 @@ inline dip::dfloat rangeMap(T val, double offset, double scale, ViewingOptions::
     return 255.*std::min(std::max(((double)val - offset) * scale, 0.), 1.);
 }
 
+/// \brief Maps an image grey-value onto [0,255]
 template<typename T>
 inline dip::dfloat rangeMap(T val, const ViewingOptions &options)
 {
@@ -307,6 +345,7 @@ inline dip::dfloat rangeMap(T val, const ViewingOptions &options)
     return rangeMap(val, options.mapping_range_.first, 1./(options.mapping_range_.second-options.mapping_range_.first), options.mapping_);
 }
 
+/// \brief String conversion for dip::DimensionArray
 template<typename T>
 std::string to_string(dip::DimensionArray<T> array)
 {
@@ -322,6 +361,7 @@ std::string to_string(dip::DimensionArray<T> array)
   return oss.str();
 }
 
+/// \brief Applies the colormap defined by the ViewingOptions
 void DIPVIEWER_NO_EXPORT ApplyViewerColorMap(dip::Image &in, dip::Image &out, ViewingOptions &options);
 
 }} // namespace dip::viewer

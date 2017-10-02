@@ -26,7 +26,7 @@
 
 namespace dip { namespace viewer {
 
-/// \brief Handles viewer linking
+/// \brief Handles viewer linking.
 class DIPVIEWER_EXPORT LinkViewPort : public ViewPort
 {
   protected:

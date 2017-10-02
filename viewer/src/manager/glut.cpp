@@ -30,6 +30,9 @@
 
 #define EPS 0.001
 
+/// \file
+/// \brief Defines the GLUT interface of \ref viewer.
+
 namespace dip { namespace viewer {
 
 GLUTManager *GLUTManager::instance_ = NULL;

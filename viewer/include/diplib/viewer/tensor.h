@@ -24,6 +24,7 @@
 
 namespace dip { namespace viewer {
 
+/// \brief Allows the user to control which tensor elements are visualized.
 class DIPVIEWER_EXPORT TensorViewPort : public ViewPort
 {
   public:

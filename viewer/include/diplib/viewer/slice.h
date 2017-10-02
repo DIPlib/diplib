@@ -39,9 +39,6 @@
 
 namespace dip { namespace viewer {
 
-/// \addtogroup viewer
-/// \{
-
 class DIPVIEWER_EXPORT SliceView : public View
 {
   protected:
@@ -91,7 +88,10 @@ class DIPVIEWER_EXPORT SliceViewPort : public ViewPort
     void screenToView(int x, int y, double *ix, double *iy) override;
 };
 
-/// Interactive nD tensor image viewer
+/// \addtogroup viewer
+/// \{
+
+/// \brief Interactive nD tensor image viewer.
 class DIPVIEWER_EXPORT SliceViewer : public Viewer
 {
   protected:
@@ -112,6 +112,7 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     int drag_button_;
   
   public:
+    /// \brief Construct a new SliceViewer.
     explicit SliceViewer(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0);
     
     ~SliceViewer() override

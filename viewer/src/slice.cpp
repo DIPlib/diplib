@@ -32,6 +32,9 @@
 #define DIM_WIDTH   (CHAR_WIDTH+2)
 #define DIM_HEIGHT  (CHAR_HEIGHT+2)
 
+/// \file
+/// \brief Defines `dip::viewer::SliceViewer`.
+
 namespace dip { namespace viewer {
 
 void SliceView::project()

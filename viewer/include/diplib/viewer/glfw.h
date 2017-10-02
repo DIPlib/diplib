@@ -35,7 +35,7 @@ namespace dip { namespace viewer {
 /// \addtogroup viewer
 /// \{
 
-/// Simple GLFW window manager
+/// Simple GLFW window manager.
 class DIPVIEWER_EXPORT GLFWManager : public Manager
 {
   protected:
@@ -64,7 +64,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
     void createWindow(WindowPtr window) override;
     size_t activeWindows() override { Guard guard(mutex_); return windows_.size(); }
     void destroyWindows() override;
-    void processEvents();
+    void processEvents() override;
     
   protected:    
     size_t drawString(Window* window, const char *string) override;

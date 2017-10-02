@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
    }
    else
    {
-      for (size_t ii=2; ii < argc; ++ii)
+      for (size_t ii=2; (int)ii < argc; ++ii)
       {
          dip::viewer::Show( dip::ImageReadICS( argv[ii] ), argv[ii] );
       }

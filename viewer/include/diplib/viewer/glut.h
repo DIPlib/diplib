@@ -34,7 +34,7 @@ namespace dip { namespace viewer {
 /// \addtogroup viewer
 /// \{
 
-/// Simple GLUT window manager
+/// Simple GLUT window manager.
 class DIPVIEWER_EXPORT GLUTManager : public Manager
 {
   protected:
@@ -59,7 +59,7 @@ class DIPVIEWER_EXPORT GLUTManager : public Manager
     void createWindow(WindowPtr window) override;
     size_t activeWindows() override { Guard guard(mutex_); return windows_.size(); }
     void destroyWindows() override;
-    void processEvents() { }
+    void processEvents() override { }
 
   protected:    
     size_t drawString(Window* window, const char *string) override;

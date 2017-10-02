@@ -21,6 +21,9 @@
 #include "diplib/viewer/include_gl.h"
 #include "diplib/viewer/image.h"
 
+/// \file
+/// \brief Defines `dip::viewer::ImageViewer`.
+
 namespace dip { namespace viewer {
 
 void ImageView::rebuild()

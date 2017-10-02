@@ -24,6 +24,7 @@
 
 namespace dip { namespace viewer {
 
+/// \brief Displays the Viewer's status.
 class DIPVIEWER_EXPORT StatusViewPort : public ViewPort
 {
   protected:

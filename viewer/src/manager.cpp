@@ -20,6 +20,9 @@
 #undef DIP__ENABLE_DOCTEST
 #include "diplib/viewer/manager.h"
 
+/// \file
+/// \brief Defines `dip::viewer::Manager`.
+
 namespace dip { namespace viewer {
 
 void Window::title(const char *name)

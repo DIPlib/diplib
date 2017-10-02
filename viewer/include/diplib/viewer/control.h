@@ -24,6 +24,7 @@
 
 namespace dip { namespace viewer {
 
+/// \brief Allows the user to control how the image is displayed.
 class DIPVIEWER_EXPORT ControlViewPort : public ViewPort
 {
   protected:
