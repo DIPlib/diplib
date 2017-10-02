@@ -203,7 +203,6 @@ inline bool CompareImages(
 /// The methods `GetCpu` and `GetWall` return the CPU and wall time, respectively, in seconds that passed in
 /// between object creation and the last call to `Stop`. `Stop` does not actually stop the timer, it just
 /// records the time it was last called. `Reset` resets the timer, as if it had just been created.
-///
 /// ```cpp
 ///     dip::Timer timer;
 ///     // do some computation
@@ -216,13 +215,15 @@ inline bool CompareImages(
 /// ```
 ///
 /// Note that it is also possible to directly put the timer object to the output stream:
-///
 /// ```cpp
 ///     dip::Timer timer;
 ///     // do some computation
 ///     timer.Stop();
 ///     std::cout << "Computation 1: " << timer << std::endl;
 /// ```
+/// The stream output reports both the wall time and the CPU time, and uses meaningful units (minutes, seconds,
+/// millisecons or microseconds).
+///
 ///
 /// Wall time is the real-world time that elapsed. CPU time is the time that the CPU spent working for the current
 /// program. These differ in two ways: CPU time might pass slower if the program has to share resources with other
@@ -231,7 +232,7 @@ inline bool CompareImages(
 /// threads.
 ///
 /// Wall time is obtained through `std::chrono::steady_clock`, and CPU time through `std::clock`. This object does
-/// not do anything special with these standar library routines, except for providing a simpler interface.
+/// not do anything special with these standard library routines, except for providing a simpler interface.
 class DIP_NO_EXPORT Timer {
    public:
 
@@ -288,7 +289,27 @@ inline std::ostream& operator<<(
       std::ostream& os,
       Timer const& timer
 ) {
-   os << "elapsed time = " << timer.GetWall() << " s (wall), " << timer.GetCpu() << " s (CPU)";
+   dfloat wall = timer.GetWall();
+   dfloat cpu = timer.GetCpu();
+   if( wall >= 360.0 ) {
+      os << "elapsed time = " << wall / 60.0 << " min (wall), " << cpu / 60.0 << " min (CPU)";
+   } else {
+      dip::sint magnitude = static_cast< dip::sint >( std::round( std::log10( wall ) / 3 ));
+      switch( magnitude ) {
+         default:
+            os << "elapsed time = " << wall << " s (wall), " << cpu << " s (CPU)";
+            break;
+         case -1:
+            os << "elapsed time = " << wall * 1e3 << " ms (wall), " << cpu * 1e3 << " ms (CPU)";
+            break;
+         case -2:
+            os << "elapsed time = " << wall * 1e6 << " us (wall), " << cpu * 1e6 << " us (CPU)";
+            break;
+         case -3:
+            os << "elapsed time = " << wall * 1e9 << " ns (wall), " << cpu * 1e9 << " ns (CPU)"; // unlikely...
+            break;
+      }
+   }
    return os;
 }
 
