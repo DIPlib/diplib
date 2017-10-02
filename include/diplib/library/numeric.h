@@ -716,6 +716,13 @@ inline VarianceAccumulator operator+( VarianceAccumulator lhs, VarianceAccumulat
 ///    | cov.Covariance()  cov.VarianceY()  |
 /// ```
 ///
+/// The `Regression` method returns the parameters to the least squares fit of the equation:
+/// ```
+///    `y = intercept + slope * x`
+/// ```
+/// where `x` is the first sample in each pair, and y is the second (this is linear regression). The `Slope` method
+/// computes only the slope component.
+///
 /// It is possible to accumulate samples in different objects (e.g. when processing with multiple threads),
 /// and add the accumulators together using the `+` operator.
 ///
@@ -737,14 +744,14 @@ class DIP_NO_EXPORT CovarianceAccumulator {
       }
 
       /// Add a pair of samples to the accumulator
-      void Push( double x, double y ) {
+      void Push( dfloat x, dfloat y ) {
          ++n_;
-         double dx = x - meanx_;
+         dfloat dx = x - meanx_;
          meanx_ += dx / static_cast< dfloat >( n_ );
          m2x_ += dx * ( x - meanx_ );
-         double dy = y - meany_;
+         dfloat dy = y - meany_;
          meany_ += dy / static_cast< dfloat >( n_ );
-         double dy_new = y - meany_;
+         dfloat dy_new = y - meany_;
          m2y_ += dy * dy_new;
          C_ += dx * dy_new;
       }
@@ -755,12 +762,12 @@ class DIP_NO_EXPORT CovarianceAccumulator {
             *this = other; // copy over the data
          } else if( other.n_ > 0 ) {
             size_t intN = n_ + other.n_;
-            double N = static_cast< dfloat >( intN );
-            double dx = other.meanx_ - meanx_;
-            double dy = other.meany_ - meany_;
+            dfloat N = static_cast< dfloat >( intN );
+            dfloat dx = other.meanx_ - meanx_;
+            dfloat dy = other.meany_ - meany_;
             meanx_ = ( static_cast< dfloat >( n_ ) * meanx_ + static_cast< dfloat >( other.n_ ) * other.meanx_ ) / N;
             meany_ = ( static_cast< dfloat >( n_ ) * meany_ + static_cast< dfloat >( other.n_ ) * other.meany_ ) / N;
-            double fN = static_cast< dfloat >( n_ * other.n_ ) / N;
+            dfloat fN = static_cast< dfloat >( n_ * other.n_ ) / N;
             m2x_ += other.m2x_ + dx * dx * fN;
             m2y_ += other.m2y_ + dy * dy * fN;
             C_ += other.C_ + dx * dy * fN;
@@ -774,49 +781,67 @@ class DIP_NO_EXPORT CovarianceAccumulator {
          return n_;
       }
       /// Unbiased estimator of population mean for first variable
-      double MeanX() const {
+      dfloat MeanX() const {
          return meanx_;
       }
       /// Unbiased estimator of population mean for second variable
-      double MeanY() const {
+      dfloat MeanY() const {
          return meany_;
       }
       /// Unbiased estimator of population variance for first variable
-      double VarianceX() const {
+      dfloat VarianceX() const {
          dfloat n = static_cast< dfloat >( n_ );
          return ( n_ > 1 ) ? ( m2x_ / ( n - 1 )) : ( 0.0 );
       }
       /// Unbiased estimator of population variance for second variable
-      double VarianceY() const {
+      dfloat VarianceY() const {
          dfloat n = static_cast< dfloat >( n_ );
          return ( n_ > 1 ) ? ( m2y_ / ( n - 1 )) : ( 0.0 );
       }
       /// Estimator of population standard deviation for first variable (it is not possible to derive an unbiased estimator)
-      double StandardDeviationX() const {
+      dfloat StandardDeviationX() const {
          return std::sqrt( VarianceX() );
       }
       /// Estimator of population standard deviation for second variable (it is not possible to derive an unbiased estimator)
-      double StandardDeviationY() const {
+      dfloat StandardDeviationY() const {
          return std::sqrt( VarianceY() );
       }
       /// Unbiased estimator of population covariance
-      double Covariance() const {
+      dfloat Covariance() const {
          dfloat n = static_cast< dfloat >( n_ );
          return ( n_ > 1 ) ? ( C_ / ( n - 1.0 )) : ( 0.0 );
       }
       /// Estimator of correlation between the two variables
-      double Correlation() const {
-         double S = std::sqrt( m2x_ * m2y_ );
+      dfloat Correlation() const {
+         dfloat S = std::sqrt( m2x_ * m2y_ );
          return (( n_ > 1 ) && ( S != 0.0 )) ? ( C_ / S ) : ( 0.0 );
       }
+      /// Computes the slope of the regression line
+      dfloat Slope() const {
+         //dfloat stdX = StandardDeviationX();
+         //return ( stdX != 0.0 ) ? ( Correlation() * StandardDeviationY() / stdX ) : ( 0.0 );
+         return ( m2x_ != 0.0 ) ? ( C_ / m2x_ ) : ( 0.0 );
+      }
+      /// Contains the output of the `Regression` method.
+      struct RegressionResult {
+         dfloat intercept = 0.0;
+         dfloat slope = 0.0;
+      };
+      /// Computes the slope and intercept of the regression line
+      RegressionResult Regression() const {
+         RegressionResult out;
+         out.slope = Slope();
+         out.intercept = meany_ - out.slope * meanx_;
+         return out;
+      };
 
    private:
       dip::uint n_ = 0;
-      double meanx_ = 0;
-      double m2x_ = 0;
-      double meany_ = 0;
-      double m2y_ = 0;
-      double C_ = 0;
+      dfloat meanx_ = 0;
+      dfloat m2x_ = 0;
+      dfloat meany_ = 0;
+      dfloat m2y_ = 0;
+      dfloat C_ = 0;
 };
 
 
@@ -1260,6 +1285,24 @@ DOCTEST_TEST_CASE("[DIPlib] testing the statictical accumulators") {
       DOCTEST_CHECK( acc1.MeanY() == doctest::Approx( 12.0 / 9.0 ));
       DOCTEST_CHECK( acc1.VarianceY() == doctest::Approx(( 6.0 / 9.0 + 4.0 / 3.0 ) / 8.0 ));
       DOCTEST_CHECK( acc1.Covariance() == doctest::Approx( 3.0 / 8.0 ));
+   }
+   {
+      dip::CovarianceAccumulator acc;
+      acc.Push( 1.0, 3.2 * 1.0 + 5.5 );
+      acc.Push( 2.0, 3.2 * 2.0 + 5.5 );
+      acc.Push( 3.0, 3.2 * 3.0 + 5.5 );
+      acc.Push( 4.0, 3.2 * 4.0 + 5.5 );
+      acc.Push( 5.0, 3.2 * 5.0 + 5.5 );
+      acc.Push( 6.0, 3.2 * 6.0 + 5.5 );
+      DOCTEST_CHECK( acc.MeanX() == doctest::Approx( 3.5 ));
+      DOCTEST_CHECK( acc.VarianceX() == doctest::Approx( 3.5 ));
+      DOCTEST_CHECK( acc.MeanY() == doctest::Approx( 3.5 * 3.2 + 5.5 ));
+      DOCTEST_CHECK( acc.VarianceY() == doctest::Approx( 3.5 * 3.2 * 3.2 ));
+      DOCTEST_CHECK( acc.Covariance() == doctest::Approx( 3.5 * 3.2 ));
+      DOCTEST_CHECK( acc.Slope() == doctest::Approx( 3.2 ));
+      auto res = acc.Regression();
+      DOCTEST_CHECK( res.slope == doctest::Approx( 3.2 ));
+      DOCTEST_CHECK( res.intercept == doctest::Approx( 5.5 ));
    }
    {
       dip::DirectionalStatisticsAccumulator acc1;
