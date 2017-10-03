@@ -222,6 +222,9 @@ class DIP_NO_EXPORT Image {
       }
 
       /// \brief Forged image of given sizes and data type. The data is left uninitialized.
+      ///
+      /// Note that to call this constructor with a single parameter, you need to explicitly type the parameter,
+      /// an initializer list by itself will be considered a a pixel, see the constructor below.
       explicit Image( UnsignedArray const& sizes, dip::uint tensorElems = 1, dip::DataType dt = DT_SFLOAT ) :
             dataType_( dt ),
             sizes_( sizes ),
