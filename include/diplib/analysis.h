@@ -405,6 +405,24 @@ inline ImageArray StructureTensorAnalysis(
    return out;
 }
 
+/// \brief Estimates the fractal dimension of the binary image `in` the sliding box method.
+///
+/// The sliding box method is an enhancement of the classical box counting method that counts many more boxes
+/// at each scale, and therefore is more precise. By sliding the box one pixel at a time, it is also not affected
+/// by partial boxes (i.e. the boxes at the right and bottom edge of the image that do not fit within the image
+/// domain). The counts are computed in an efficient manner, which makes it similar in complexity to counting
+/// only the set of tessellating boxes.
+///
+/// The smallest scale used is a box size of 1, and the largest scale is at most half the smallest image size (i.e.
+/// `min(width,height)/2`. In between, scales grow exponentially with a factor `1+eta`. Thus, if `eta` is 1,
+/// then each scale uses boxes double the size of the previous scale, and if `eta` is smaller then the steps are
+/// smaller and more scales are generated.
+///
+/// The image `in` must be scalar and binary, and typically is applied to an edge map of objects.
+DIP_EXPORT dfloat FractalDimension(
+      Image const& in,
+      dfloat eta = 0.5
+);
 
 // TODO: functions to port:
 /*

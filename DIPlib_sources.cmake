@@ -55,6 +55,7 @@ include/diplib/testing.h
 include/diplib/transform.h
 include/diplib/union_find.h
 src/analysis/findshift.cpp
+src/analysis/fractal_dimension.cpp
 src/analysis/structure_tensor.cpp
 src/analysis/subpixel_location.cpp
 src/binary/bucket.h
