@@ -513,8 +513,10 @@ message("")
 message(" * C++ compiler: ${CMAKE_CXX_COMPILER_ID}")
 
 if(CMAKE_BUILD_TYPE MATCHES "^Release$")
+   message(" * C++ compiler flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
    message(" * Configured for release")
 elseif(CMAKE_BUILD_TYPE MATCHES "^Debug$")
+   message(" * C++ compiler flags: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
    message(" * Configured for debugging")
 endif()
 
