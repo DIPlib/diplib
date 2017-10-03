@@ -1,5 +1,7 @@
 /*
  * DIPlib 3.0
+ * This file defines a function that will be part of the DIPlib shared library,
+ * and provides a hook to run all unit tests defined inside the library.
  *
  * (c)2017, Cris Luengo.
  *
@@ -18,11 +20,14 @@
 
 #ifdef DIP__DOCTEST_IN_SHARED_LIB
 
-#include "diplib/library/unit_tests_shared_lib.h"
+#include "diplib.h"
+
+#define DOCTEST_CONFIG_IMPLEMENT
+#include "doctest.h"
 
 namespace dip {
 
-int run_unit_tests( int argc, const char* const* argv ) {
+DIP_EXPORT int run_unit_tests( int argc, const char* const* argv ) {
    doctest::Context context(argc, argv);
    return context.run();
 }

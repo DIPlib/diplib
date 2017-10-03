@@ -11,7 +11,7 @@
 int main(int argc, char **argv) {
    if (argc == 1)
    {
-      dip::viewer::Show( dip::ImageReadICS( "../test/chromo3d.ics" ), "../test/chromo3d.ics" );
+      dip::viewer::Show( dip::ImageReadICS( DIP__EXAMPLES_DIR "/chromo3d.ics" ), "chromo3d" );
    }
    else
    {

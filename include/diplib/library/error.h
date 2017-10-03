@@ -71,6 +71,11 @@ class DIP_EXPORT Error : public std::exception {
          return message_.c_str();
       }
 
+      /// \brief Return a message indicating what caused the exception to be thrown, without location information.
+      char const* Message() const {
+         return message_.substr( 0, message_.find_first_of( '\n' )).c_str();
+      }
+
       /// \brief Add an entry to the stack trace. Typically called through the `#DIP_ADD_STACK_TRACE` macro.
       Error& AddStackTrace(
             std::string const& functionName,

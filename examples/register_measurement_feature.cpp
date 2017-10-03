@@ -3,8 +3,6 @@
 
 #include "diplib/measurement.h"
 
-// Testing dip::MeasurementTool
-
 class FeatureTest : public dip::Feature::ImageBased {
    public:
       FeatureTest() : ImageBased( { "Test", "Test feature", false } ) {};
@@ -37,9 +35,6 @@ class FeatureTest : public dip::Feature::ImageBased {
 int main() {
 
    dip::MeasurementTool measurementTool;
-
-   auto f = measurementTool.Features();
-
    measurementTool.Register( new FeatureTest );
 
    dip::Image label( dip::UnsignedArray{ 10, 10 }, 1, dip::DT_UINT8 );
@@ -47,7 +42,7 @@ int main() {
    dip::Measurement msr = measurementTool.Measure( label, dip::Image{}, { "Test" }, { 1, 2, 10, 12 } );
    std::cout << msr;
 
-   measurementTool.Configure( "Test", "bla", 0 );
+   measurementTool.Configure( "Test", "bla", 0 ); // Writes "Unknown parameter!" to stdout.
    measurementTool.Configure( "Test", "Value", 10 );
 
    msr = measurementTool.Measure( label, dip::Image{}, { "Test" }, { 1, 2, 100, 18, 4 } );

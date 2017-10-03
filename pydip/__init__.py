@@ -30,6 +30,8 @@ current matplotlib window, if matplotlib is installed:
    img = dip.ImageReadTIFF('cameraman')
    img.Show()
 
+**What is written below is out-of-date** (TODO: update!)
+
 Note that even indexing is as it is in C++, and quite different from
 what you'd expect if you are a NumPy user. The [] indexing accesses
 the various tensor elements in the image (e.g. color channels). For
@@ -66,3 +68,4 @@ dimension is horizontal, or x).
 # the same namespace.
 from PyDIP.PyDIP_bin import *
 from PyDIP.PyDIP_py import *
+import PyDIP.PyDIPviewer as viewer

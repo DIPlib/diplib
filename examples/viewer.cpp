@@ -5,21 +5,21 @@
 #include <diplib/generation.h>
 #include <diplib/analysis.h>
 
-#include <diplib/viewer/glut.h>
+#ifdef DIP__HAS_GLFW
 #include <diplib/viewer/glfw.h>
+dip::viewer::GLFWManager manager;
+#else
+#include <diplib/viewer/glut.h>
+dip::viewer::GLUTManager manager;
+#endif
 #include <diplib/viewer/image.h>
 #include <diplib/viewer/slice.h>
 
 int main() {
-#ifdef DIP__HAS_GLFW
-   dip::viewer::GLFWManager manager;
-#else
-   dip::viewer::GLUTManager manager;
-#endif
 
-   dip::Image image3 = dip::ImageReadICS( "../test/chromo3d.ics" ), st;
+   dip::Image image3 = dip::ImageReadICS( DIP__EXAMPLES_DIR "/chromo3d.ics" );
    image3.PixelSize().Set( 2, 5 );
-   dip::StructureTensor(image3, {}, st);
+   dip::Image st = dip::StructureTensor( image3 );
    
    manager.createWindow( dip::viewer::WindowPtr( new dip::viewer::SliceViewer( image3, "chromo3d", 500, 400 )));
    manager.createWindow( dip::viewer::WindowPtr( new dip::viewer::SliceViewer( st, "chromo3d structure tensor", 500, 400 )));
@@ -34,10 +34,10 @@ int main() {
    image2 *= 5;
    manager.createWindow( dip::viewer::WindowPtr( new dip::viewer::ImageViewer( image2 )));
 
-   while (manager.activeWindows()) {
+   while( manager.activeWindows() ) {
       // Only necessary for GLFW
       manager.processEvents();
-      std::this_thread::sleep_for( std::chrono::microseconds( 1000 ) );
+      std::this_thread::sleep_for( std::chrono::microseconds( 1000 ));
    }
 
    return 0;

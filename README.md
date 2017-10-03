@@ -37,7 +37,7 @@ Available `make` targets:
     check_memory # ...and runs it under valgrind
     apidoc       # builds the HTML documentation for the library API
     dum          # builds the DIPimage User Manual PDF 
-    tests        # deprecated -- old test functions
+    examples     # builds the examples
 
 Important `cmake` command-line arguments:
 

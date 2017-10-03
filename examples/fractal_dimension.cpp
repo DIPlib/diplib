@@ -58,8 +58,7 @@ int main( int argc, char *argv[] ) {
       try {
          binary = dip::ImageReadTIFF( argv[ 1 ] );
       } catch( dip::RunTimeError const& e ) {
-         dip::String const& s = e.what();
-         std::cout << s.substr(0, s.find('\n')) << std::endl;
+         std::cout << e.Message() << std::endl;
          return -1;
       }
 

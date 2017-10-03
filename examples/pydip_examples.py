@@ -1,21 +1,20 @@
 import PyDIP as dip
 
-# These work with the "alternate" (Python-style) indexing
-# a = dip.Image((10,20),1)
-# a.Fill(3)
-# b = a[0:4,4:-1]
-# b.Fill(55)
-# a[:3,:10] = 100
-# a[5:7,10:15] = 200
-# a.Show('normal')
-#
-# m = a>=100
-# m.Show()
-#
-# a[m].Show('normal')
-#
-# a[m] = 176
-# a.Show('normal')
+a = dip.Image((10,20),1)
+a.Fill(3)
+b = a[0:4,4:-1]
+b.Fill(55)
+a[:3,:10] = 100
+a[5:7,10:15] = 200
+a.Show('normal')
+
+m = a>=100
+m.Show()
+
+a[m].Show('normal')
+
+a[m] = 176
+a.Show('normal')
 
 ###
 

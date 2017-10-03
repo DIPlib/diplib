@@ -200,4 +200,4 @@ call
 periodically. Make sure to call `dip::viewer::Spin( )` when you're done to
 ensure a clean exit.
 
-See `test/test_viewer.cpp` for a usage example of the full interface.
+See `examples/viewer.cpp` for a usage example of the full interface.

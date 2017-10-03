@@ -1,5 +1,5 @@
 # CMakeLists file for DIPlib 3
-cmake_minimum_required (VERSION 3.5) # It might work with older versions, but this is the version I'm testing with.
+cmake_minimum_required (VERSION 3.5)
 if(POLICY CMP0068)
    cmake_policy(SET CMP0068 NEW)
 endif()
@@ -168,7 +168,8 @@ if(DIP_ENABLE_ASSERT)
 endif()
 if(DIP_ENABLE_DOCTEST)
    target_include_directories(DIP PRIVATE dependencies/doctest)
-   target_compile_definitions(DIP PRIVATE DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
+   target_compile_definitions(DIP PRIVATE DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
+                                          DIP__EXAMPLES_DIR="${PROJECT_SOURCE_DIR}/examples")
    if(DIP_SHARED_LIBRARY)
       target_compile_definitions(DIP PRIVATE DIP__DOCTEST_IN_SHARED_LIB)
    endif()
@@ -208,10 +209,10 @@ install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
 ### DIPlib unit tests
 
 if(DIP_ENABLE_DOCTEST)
-   add_executable (unit_tests EXCLUDE_FROM_ALL test/unit_tests.cpp)
+   add_executable (unit_tests EXCLUDE_FROM_ALL src/library/unit_tests.cpp)
    target_include_directories(unit_tests PRIVATE dependencies/doctest)
    target_link_libraries(unit_tests DIP)
-   target_compile_definitions(unit_tests PRIVATE DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
+   target_compile_definitions(unit_tests PRIVATE DIP__IMPLEMENT_UNIT_TESTS DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
    if(DIP_SHARED_LIBRARY)
       target_compile_definitions(unit_tests PRIVATE DIP__DOCTEST_IN_SHARED_LIB)
       if(APPLE)
@@ -309,16 +310,16 @@ if(DIP_BUILD_PYDIP)
       file(GLOB DIP_PYTHON_VIEWER_SRC pydip/viewer/*.cpp pydip/viewer/*.h)
       set(PyDIPviewerdeps "${DIP_PYTHON_VIEWER_SRC}")
       update_deps_file("PyDIPviewer_sources" "${PyDIPviewerdeps}")
-      pybind11_add_module(viewer ${DIP_PYTHON_VIEWER_SRC})
-      #target_compile_options(viewer PRIVATE -Wno-deprecated-declarations)
-      target_link_libraries(viewer PUBLIC DIP DIPviewer)
+      pybind11_add_module(PyDIPviewer ${DIP_PYTHON_VIEWER_SRC})
+      #target_compile_options(PyDIPviewer PRIVATE -Wno-deprecated-declarations)
+      target_link_libraries(PyDIPviewer PUBLIC DIP DIPviewer)
       if(APPLE)
-         set_target_properties(viewer PROPERTIES INSTALL_RPATH "@loader_path/..")
+         set_target_properties(PyDIPviewer PROPERTIES INSTALL_RPATH "@loader_path/..")
       else()
-         set_target_properties(viewer PROPERTIES INSTALL_RPATH "$ORIGIN/..")
+         set_target_properties(PyDIPviewer PROPERTIES INSTALL_RPATH "$ORIGIN/..")
       endif()
-      install(TARGETS viewer DESTINATION ${PYDIP_INSTALL_PATH})
-      add_dependencies(PyDIP viewer)
+      install(TARGETS PyDIPviewer DESTINATION ${PYDIP_INSTALL_PATH})
+      add_dependencies(PyDIP PyDIPviewer)
    endif()
 endif()
 
@@ -419,21 +420,20 @@ if(DIP_BUILD_DIPIMAGE)
 endif()
 
 
-### DIPlib tests ### TEMPORARY! -- This should become an 'examples' directory
+### Examples
 
-file(GLOB DIP_TESTS test/test_*.cpp)
-set(TESTS_TARGETS "")
-set(TESTS_REQUIRE_VIEWER
-    test_viewer
-    test_dipviewer
-    test_fileviewer
-    test_filters
-    test_display
+file(GLOB DIP_EXAMPLES examples/*.cpp)
+set(EXAMPLES_TARGETS "")
+set(EXAMPLES_REQUIRE_VIEWER
+    display
+    fileviewer
+    viewer
 )
-foreach(file ${DIP_TESTS})
+foreach(file ${DIP_EXAMPLES})
    get_filename_component(target ${file} NAME_WE)
    add_executable(${target} EXCLUDE_FROM_ALL ${file})
-   list(FIND TESTS_REQUIRE_VIEWER ${target} RES)
+   target_compile_definitions(${target} PRIVATE DIP__EXAMPLES_DIR="${PROJECT_SOURCE_DIR}/examples")
+   list(FIND EXAMPLES_REQUIRE_VIEWER ${target} RES)
    if(${RES} EQUAL -1)
       target_link_libraries(${target} DIP)
    else()
@@ -446,10 +446,10 @@ foreach(file ${DIP_TESTS})
          set_target_properties(${target} PROPERTIES INSTALL_RPATH "$ORIGIN")
       endif()
    endif()
-   set(TESTS_TARGETS ${TESTS_TARGETS} ${target})
+   set(EXAMPLES_TARGETS ${EXAMPLES_TARGETS} ${target})
 endforeach()
 
-add_custom_target(tests DEPENDS ${TESTS_TARGETS})
+add_custom_target(examples DEPENDS ${EXAMPLES_TARGETS})
 
 
 ### DIPlib documentation

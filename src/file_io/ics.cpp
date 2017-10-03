@@ -830,6 +830,48 @@ void ImageWriteICS(
 
 } // namespace dip
 
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include "diplib/testing.h"
+
+DOCTEST_TEST_CASE( "[DIPlib] testing ICS file reading and writing" ) {
+   dip::Image image = dip::ImageReadICS( DIP__EXAMPLES_DIR "/chromo3d.ics" );
+   image.SetPixelSize( dip::PhysicalQuantityArray{ 6 * dip::Units::Micrometer(), 300 * dip::Units::Nanometer() } );
+
+   dip::ImageWriteICS( image, "test1.ics", { "line1", "line2 is good" }, 7, { "v1", "gzip" } );
+   dip::Image result = dip::ImageReadICS( "test1", dip::RangeArray{}, {} );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+
+   dip::ImageWriteICS( image, "test1f.ics", { "line1", "line2 is good" }, 7, { "v1", "gzip", "fast" } );
+   result = dip::ImageReadICS( "test1f", dip::RangeArray{}, {}, "fast" );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+
+   result = dip::ImageReadICS( "test1f", dip::RangeArray{}, {} );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+
+   result = dip::ImageReadICS( "test1", dip::RangeArray{}, {}, "fast" );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+
+   // Turn it on its side so the image to write has non-standard strides
+   image.SwapDimensions( 0, 2 );
+
+   dip::ImageWriteICS( image, "test2.ics", { "key\tvalue" }, 7, { "v1", "gzip" } );
+   result = dip::ImageReadICS( "test2", dip::RangeArray{}, {} );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+
+   dip::ImageWriteICS( image, "test2f.ics", { "key\tvalue" }, 7, { "v1", "gzip", "fast" } );
+   result = dip::ImageReadICS( "test2f", dip::RangeArray{}, {}, "fast" );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+
+   result = dip::ImageReadICS( "test2f", dip::RangeArray{}, {} );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+
+   result = dip::ImageReadICS( "test2", dip::RangeArray{}, {}, "fast" );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+}
+
+#endif // DIP__ENABLE_DOCTEST
+
 #else // DIP__HAS_ICS
 
 #include "diplib.h"

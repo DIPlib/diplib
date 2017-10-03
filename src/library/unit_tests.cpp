@@ -1,5 +1,7 @@
 /*
  * DIPlib 3.0
+ * This file is not part of the DIPlib library, it is the main() for the
+ * unit tests program.
  *
  * (c)2017, Cris Luengo.
  *
@@ -16,9 +18,19 @@
  * limitations under the License.
  */
 
+// Define this value when compiling the unit_tests program
+#ifdef DIP__IMPLEMENT_UNIT_TESTS
+
 #ifdef DIP__DOCTEST_IN_SHARED_LIB
 
-#include "diplib/library/unit_tests_shared_lib.h"
+#include "diplib.h"
+#define DOCTEST_CONFIG_IMPLEMENT
+#include "doctest.h"
+
+namespace dip {
+// Declaration for function in `src/library/unit_tests_shared_lib.cpp`
+DIP_EXPORT int run_unit_tests( int argc, const char* const* argv );
+}
 
 int main( int argc, const char* const* argv ) {
    doctest::Context context( argc, argv );
@@ -36,3 +48,5 @@ int main( int argc, const char* const* argv ) {
 #include "doctest.h"
 
 #endif // DIP__DOCTEST_IN_SHARED_LIB
+
+#endif // DIP__IMPLEMENT_UNIT_TESTS

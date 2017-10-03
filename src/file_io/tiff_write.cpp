@@ -371,6 +371,37 @@ void ImageWriteTIFF(
 
 } // namespace dip
 
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include "diplib/testing.h"
+
+DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
+   dip::Image image = dip::ImageReadTIFF( DIP__EXAMPLES_DIR "/fractal1.tiff" );
+   image.SetPixelSize( dip::PhysicalQuantityArray{ 6 * dip::Units::Micrometer(), 300 * dip::Units::Nanometer() } );
+
+   dip::ImageWriteTIFF( image, "test1.tif" );
+   dip::Image result = dip::ImageReadTIFF( "test1" );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+
+   // Try reading it into an image with non-standard strides
+   result.Strip();
+   auto strides = result.Strides();
+   strides[ 0 ] = static_cast< dip::sint >( result.Size( 1 ));
+   strides[ 1 ] = 1;
+   result.SetStrides( strides );
+   result.Forge();
+   dip::ImageReadTIFF( result, "test1" );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+
+   // Turn it on its side so the image to write has non-standard strides
+   image.SwapDimensions( 0, 1 );
+   dip::ImageWriteTIFF( image, "test2.tif" );
+   result = dip::ImageReadTIFF( "test2" );
+   DOCTEST_CHECK( dip::testing::CompareImages( image, result ));
+}
+
+#endif // DIP__ENABLE_DOCTEST
+
 #else // DIP__HAS_TIFF
 
 #include "diplib.h"

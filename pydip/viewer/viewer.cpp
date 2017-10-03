@@ -23,7 +23,7 @@
 
 using namespace pybind11::literals;
 
-PYBIND11_MODULE( viewer, m ) {
+PYBIND11_MODULE( PyDIPviewer, m ) {
    m.def( "Show", &dip::viewer::Show, "in"_a, "title"_a = "");
    m.def( "Draw", &dip::viewer::Draw );
    m.def( "Spin", &dip::viewer::Spin );

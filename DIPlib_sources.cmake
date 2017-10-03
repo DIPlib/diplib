@@ -32,7 +32,6 @@ include/diplib/library/physical_dimensions.h
 include/diplib/library/sample_iterator.h
 include/diplib/library/tensor.h
 include/diplib/library/types.h
-include/diplib/library/unit_tests_shared_lib.h
 include/diplib/linear.h
 include/diplib/lookup_table.h
 include/diplib/mapping.h
@@ -101,6 +100,7 @@ src/library/multithreading.cpp
 src/library/neighborhood.cpp
 src/library/physical_dimensions.cpp
 src/library/pixel_table.cpp
+src/library/unit_tests.cpp
 src/library/unit_tests_shared_lib.cpp
 src/linear/convolution.cpp
 src/linear/derivative.cpp
