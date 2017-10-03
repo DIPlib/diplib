@@ -124,27 +124,27 @@ void init_assorted( py::module& m ) {
 
    // diplib/generation.h
    m.def( "FillDelta", &dip::FillDelta, "out"_a, "origin"_a = "" );
-   m.def( "CreateDelta", py::overload_cast< dip::Image const&, dip::String const& >( &dip::CreateDelta ), "in"_a, "origin"_a = "" );
+   m.def( "CreateDelta", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::CreateDelta ), "sizes"_a, "origin"_a = "" );
    m.def( "SetBorder", &dip::SetBorder, "out"_a, "value"_a = dip::Image::Pixel{ 0 }, "size"_a = 1 );
    m.def( "FillRamp", &dip::FillRamp, "out"_a, "dimension"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateRamp", py::overload_cast< dip::Image const&, dip::uint, dip::StringSet const& >( &dip::CreateRamp ), "in"_a, "dimension"_a, "mode"_a = dip::StringSet{} );
+   m.def( "CreateRamp", py::overload_cast< dip::UnsignedArray const&, dip::uint, dip::StringSet const& >( &dip::CreateRamp ), "sizes"_a, "dimension"_a, "mode"_a = dip::StringSet{} );
    m.def( "FillXCoordinate", &dip::FillXCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateXCoordinate", py::overload_cast< dip::Image const&, dip::StringSet const& >( &dip::CreateXCoordinate ), "in"_a, "mode"_a = dip::StringSet{} );
+   m.def( "CreateXCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateXCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
    m.def( "FillYCoordinate", &dip::FillYCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateYCoordinate", py::overload_cast< dip::Image const&, dip::StringSet const& >( &dip::CreateYCoordinate ), "in"_a, "mode"_a = dip::StringSet{} );
+   m.def( "CreateYCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateYCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
    m.def( "FillZCoordinate", &dip::FillZCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateZCoordinate", py::overload_cast< dip::Image const&, dip::StringSet const& >( &dip::CreateZCoordinate ), "in"_a, "mode"_a = dip::StringSet{} );
+   m.def( "CreateZCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateZCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
    m.def( "FillRadiusCoordinate", &dip::FillRadiusCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateRadiusCoordinate", py::overload_cast< dip::Image const&, dip::StringSet const& >( &dip::CreateRadiusCoordinate ), "in"_a, "mode"_a = dip::StringSet{} );
+   m.def( "CreateRadiusCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateRadiusCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
    m.def( "FillRadiusSquareCoordinate", &dip::FillRadiusSquareCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateRadiusSquareCoordinate", py::overload_cast< dip::Image const&, dip::StringSet const& >( &dip::CreateRadiusSquareCoordinate ), "in"_a, "mode"_a = dip::StringSet{} );
+   m.def( "CreateRadiusSquareCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateRadiusSquareCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
    m.def( "FillPhiCoordinate", &dip::FillPhiCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreatePhiCoordinate", py::overload_cast< dip::Image const&, dip::StringSet const& >( &dip::CreatePhiCoordinate ), "in"_a, "mode"_a = dip::StringSet{} );
+   m.def( "CreatePhiCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreatePhiCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
    m.def( "FillThetaCoordinate", &dip::FillThetaCoordinate, "out"_a, "mode"_a = dip::StringSet{} );
-   m.def( "CreateThetaCoordinate", py::overload_cast< dip::Image const&, dip::StringSet const& >( &dip::CreateThetaCoordinate ), "in"_a, "mode"_a = dip::StringSet{} );
+   m.def( "CreateThetaCoordinate", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const& >( &dip::CreateThetaCoordinate ), "sizes"_a, "mode"_a = dip::StringSet{} );
    m.def( "FillCoordinates", &dip::FillCoordinates, "out"_a, "mode"_a = dip::StringSet{}, "system"_a = "" );
-   m.def( "CreateCoordinates", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::String const& >( &dip::CreateCoordinates ),
-          "in"_a, "mode"_a = dip::StringSet{}, "system"_a = "" );
+   m.def( "CreateCoordinates", py::overload_cast< dip::UnsignedArray const&, dip::StringSet const&, dip::String const& >( &dip::CreateCoordinates ),
+          "sizes"_a, "mode"_a = dip::StringSet{}, "system"_a = "" );
    m.def( "UniformNoise", []( dip::Image const& in, dip::dfloat lowerBound, dip::dfloat upperBound ){ return dip::UniformNoise( in, randomNumberGenerator, lowerBound, upperBound ); },
           "in"_a, "lowerBound"_a = 0.0, "upperBound"_a = 1.0 );
    m.def( "GaussianNoise", []( dip::Image const& in, dip::dfloat variance ){ return dip::GaussianNoise( in, randomNumberGenerator, variance ); },

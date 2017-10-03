@@ -40,8 +40,8 @@ namespace dip {
 
 /// \brief Fills an image with a delta function.
 ///
-/// `out` must be forged, and scalar.
 /// All pixels will be zero except at the origin, where it will be 1.
+/// `out` must be forged, and scalar.
 ///
 /// `origin` specifies where the origin lies:
 ///  - `"right"`: The origin is on the pixel right of the center (at integer division result of
@@ -51,21 +51,18 @@ namespace dip {
 ///  - `"corner"`: The origin is on the first pixel. This is the default if no other option is given.
 DIP_EXPORT void FillDelta( Image& out, String const& origin = "" );
 
-/// \brief Creates a delta function image of the same size as `in`.
-///
-/// `out` will have the same sizes as `in`, scalar, and of type `dip::DT_SFLOAT`.
-/// The pixel size of `in` will be copied over.
+/// \brief Creates a delta function image of the given sizes.
 ///
 /// All pixels will be zero except at the origin, where it will be 1.
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillDelta` for the meaning of `origin`.
-inline void CreateDelta( Image const& in, Image& out, String const& origin = "" ) {
-   out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   out.SetPixelSize( in.PixelSize() );
+inline void CreateDelta( Image& out, UnsignedArray const& sizes, String const& origin = "" ) {
+   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
    FillDelta( out, origin );
 }
-inline Image CreateDelta( Image const& in, String const& origin = "" ) {
+inline Image CreateDelta( UnsignedArray const& sizes, String const& origin = "" ) {
    Image out;
-   CreateDelta( in, out, origin );
+   CreateDelta( out, sizes, origin );
    return out;
 }
 
@@ -85,20 +82,17 @@ DIP_EXPORT void FillRamp( Image& out, dip::uint dimension, StringSet const& mode
 
 /// \brief Creates a ramp function image of the same size as `in`.
 ///
-/// `out` will have the same sizes as `in`, scalar, and of type `dip::DT_SFLOAT`.
-/// The pixel size of `in` will be copied over.
-///
 /// The ramp function increases along dimension `dimension`, and is equivalent to the cartesian
-/// coordinate for dimension `dimension`. `dimension` must be one of the dimensions of `out`.
+/// coordinate for dimension `dimension`. `dimension` must be smaller than `sizes.size()`.
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
-inline void CreateRamp( Image const& in, Image& out, dip::uint dimension, StringSet const& mode = {} ) {
-   out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   out.SetPixelSize( in.PixelSize() );
+inline void CreateRamp( Image& out, UnsignedArray const& sizes, dip::uint dimension, StringSet const& mode = {} ) {
+   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
    FillRamp( out, dimension, mode );
 }
-inline Image CreateRamp( Image const& in, dip::uint dimension, StringSet const& mode = {} ) {
+inline Image CreateRamp( UnsignedArray const& sizes, dip::uint dimension, StringSet const& mode = {} ) {
    Image out;
-   CreateRamp( in, out, dimension, mode );
+   CreateRamp( out, sizes, dimension, mode );
    return out;
 }
 
@@ -113,18 +107,16 @@ inline void FillXCoordinate( Image& out, StringSet const& mode = {} ) {
 
 /// \brief Creates a ramp function image of the same size as `in`.
 ///
-/// `out` will have the same sizes as `in`, scalar, and of type `dip::DT_SFLOAT`.
-/// The pixel size of `in` will be copied over.
-///
 /// The ramp function increases along the x-axis, and is equivalent to the cartesian coordinate
 /// for the x-axis.
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
-inline void CreateXCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
-   CreateRamp( in, out, 0, mode );
+inline void CreateXCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
+   CreateRamp( out, sizes, 0, mode );
 }
-inline Image CreateXCoordinate( Image const& in, StringSet const& mode = {} ) {
+inline Image CreateXCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
-   CreateXCoordinate( in, out, mode );
+   CreateXCoordinate( out, sizes, mode );
    return out;
 }
 
@@ -139,18 +131,16 @@ inline void FillYCoordinate( Image& out, StringSet const& mode = {} ) {
 
 /// \brief Creates a ramp function image of the same size as `in`.
 ///
-/// `out` will have the same sizes as `in`, scalar, and of type `dip::DT_SFLOAT`.
-/// The pixel size of `in` will be copied over.
-///
 /// The ramp function increases along the y-axis, and is equivalent to the cartesian coordinate
-/// for the y-axis. `in` must have at least two dimensions.
+/// for the y-axis. `size` must have at least two elements.
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
-inline void CreateYCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
-   CreateRamp( in, out, 1, mode );
+inline void CreateYCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
+   CreateRamp( out, sizes, 1, mode );
 }
-inline Image CreateYCoordinate( Image const& in, StringSet const& mode = {} ) {
+inline Image CreateYCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
-   CreateYCoordinate( in, out, mode );
+   CreateYCoordinate( out, sizes, mode );
    return out;
 }
 
@@ -165,18 +155,16 @@ inline void FillZCoordinate( Image& out, StringSet const& mode = {} ) {
 
 /// \brief Creates a ramp function image of the same size as `in`.
 ///
-/// `out` will have the same sizes as `in`, scalar, and of type `dip::DT_SFLOAT`.
-/// The pixel size of `in` will be copied over.
-///
 /// The ramp function increases along the z-axis, and is equivalent to the cartesian coordinate
-/// for the z-axis. `in` must have at least three dimensions.
+/// for the z-axis. `sizes` must have at least three elements.
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
-inline void CreateZCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
-   CreateRamp( in, out, 2, mode );
+inline void CreateZCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
+   CreateRamp( out, sizes, 2, mode );
 }
-inline Image CreateZCoordinate( Image const& in, StringSet const& mode = {} ) {
+inline Image CreateZCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
-   CreateZCoordinate( in, out, mode );
+   CreateZCoordinate( out, sizes, mode );
    return out;
 }
 
@@ -191,20 +179,17 @@ DIP_EXPORT void FillRadiusCoordinate( Image& out, StringSet const& mode = {} );
 
 /// \brief Creates an image of the same size as `in`, filled with the distance to the origin.
 ///
-/// `out` will have the same sizes as `in`, scalar, and of type `dip::DT_SFLOAT`.
-/// The pixel size of `in` will be copied over.
-///
 /// The distance function is equivalent to the radius component of the polar or spherical
 /// coordinate system.
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
-inline void CreateRadiusCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
-   out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   out.SetPixelSize( in.PixelSize() );
+inline void CreateRadiusCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
+   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
    FillRadiusCoordinate( out, mode );
 }
-inline Image CreateRadiusCoordinate( Image const& in, StringSet const& mode = {} ) {
+inline Image CreateRadiusCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
-   CreateRadiusCoordinate( in, out, mode );
+   CreateRadiusCoordinate( out, sizes, mode );
    return out;
 }
 
@@ -219,20 +204,17 @@ DIP_EXPORT void FillRadiusSquareCoordinate( Image& out, StringSet const& mode = 
 
 /// \brief Creates an image of the same size as `in`, filled with the square distance to the origin.
 ///
-/// `out` will have the same sizes as `in`, scalar, and of type `dip::DT_SFLOAT`.
-/// The pixel size of `in` will be copied over.
-///
 /// The distance function is equivalent to the radius component of the polar or spherical
 /// coordinate system.
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
-inline void CreateRadiusSquareCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
-   out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   out.SetPixelSize( in.PixelSize() );
+inline void CreateRadiusSquareCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
+   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
    FillRadiusSquareCoordinate( out, mode );
 }
-inline Image CreateRadiusSquareCoordinate( Image const& in, StringSet const& mode = {} ) {
+inline Image CreateRadiusSquareCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
-   CreateRadiusSquareCoordinate( in, out, mode );
+   CreateRadiusSquareCoordinate( out, sizes, mode );
    return out;
 }
 
@@ -248,20 +230,17 @@ DIP_EXPORT void FillPhiCoordinate( Image& out, StringSet const& mode = {} );
 /// \brief Creates an image of the same size as `in`, filled with the angle to the x-axis
 /// within the x-y plane.
 ///
-/// `out` will have the same sizes as `in`, scalar, and of type `dip::DT_SFLOAT`.
-/// The pixel size of `in` will be copied over.
-///
 /// The angle function is equivalent to the phi component of the polar or spherical
-/// coordinate system. `in` must have two or three dimensions.
+/// coordinate system. `size` must have two or three elements.
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
-inline void CreatePhiCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
-   out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   out.SetPixelSize( in.PixelSize() );
+inline void CreatePhiCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
+   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
    FillPhiCoordinate( out, mode );
 }
-inline Image CreatePhiCoordinate( Image const& in, StringSet const& mode = {} ) {
+inline Image CreatePhiCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
-   CreatePhiCoordinate( in, out, mode );
+   CreatePhiCoordinate( out, sizes, mode );
    return out;
 }
 
@@ -275,20 +254,17 @@ DIP_EXPORT void FillThetaCoordinate( Image& out, StringSet const& mode = {} );
 
 /// \brief Creates an image of the same size as `in`, filled with the angle to the z-axis.
 ///
-/// `out` will have the same sizes as `in`, scalar, and of type `dip::DT_SFLOAT`.
-/// The pixel size of `in` will be copied over.
-///
 /// The angle function is equivalent to the theta component of the spherical coordinate
-/// system. `in` must have three dimensions.
+/// system. `size` must have three elements.
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
 /// See `dip::FillCoordinates` for the meaning of `mode`.
-inline void CreateThetaCoordinate( Image const& in, Image& out, StringSet const& mode = {} ) {
-   out.ReForge( in.Sizes(), 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   out.SetPixelSize( in.PixelSize() );
+inline void CreateThetaCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
+   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
    FillThetaCoordinate( out, mode );
 }
-inline Image CreateThetaCoordinate( Image const& in, StringSet const& mode = {} ) {
+inline Image CreateThetaCoordinate( UnsignedArray const& sizes, StringSet const& mode = {} ) {
    Image out;
-   CreateThetaCoordinate( in, out, mode );
+   CreateThetaCoordinate( out, sizes, mode );
    return out;
 }
 
@@ -331,19 +307,16 @@ DIP_EXPORT void FillCoordinates( Image& out, StringSet const& mode = {}, String 
 
 /// \brief Creates an image of the same size as `in`, filled with the coordinates of each pixel.
 ///
-/// `out` will have the same sizes as `in`, will be a vector image with as many vector elements as
-/// spatial dimensions, and will be of type `dip::DT_SFLOAT`.
-/// The pixel size of `in` will be copied over.
+/// `out` will be of size `sizes`, with `sizes.size()` vector elements, and of type `dip::DT_SFLOAT`.
 ///
 /// See `dip::FillCoordinates` for the meaning of `mode` and `system`.
-inline void CreateCoordinates( Image const& in, Image& out, StringSet const& mode = {}, String const& system = "cartesian" ) {
-   out.ReForge( in.Sizes(), in.Dimensionality(), DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
-   out.SetPixelSize( in.PixelSize() );
+inline void CreateCoordinates( Image& out, UnsignedArray const& sizes, StringSet const& mode = {}, String const& system = "cartesian" ) {
+   out.ReForge( sizes, sizes.size(), DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
    FillCoordinates( out, mode, system );
 }
-inline Image CreateCoordinates( Image const& in, StringSet const& mode = {}, String const& system = "cartesian" ) {
+inline Image CreateCoordinates( UnsignedArray const& sizes, StringSet const& mode = {}, String const& system = "cartesian" ) {
    Image out;
-   CreateCoordinates( in, out, mode, system );
+   CreateCoordinates( out, sizes, mode, system );
    return out;
 }
 

@@ -236,7 +236,7 @@ void FillColoredNoise( Image& out, Random& random, dfloat variance, dfloat color
    GaussianNoise( fd, fd, random, 1.0 );
    fd.MergeComplex();
    // Frequency spectrum modulation function
-   Image modulation = CreateRadiusSquareCoordinate( out, { "radfreq" } );
+   Image modulation = CreateRadiusSquareCoordinate( out.Sizes(), { "radfreq" } );
    dfloat power = color / 2.0; // divide by 2.0 because we haven't done the square root in the "radfreq" image yet.
    // TODO: According to wikipedia, pink noise in 2D is 1/f^2, not 1/f as it is in 1D. This doesn't look right to me...
    Power( modulation, power, modulation );

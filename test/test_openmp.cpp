@@ -40,9 +40,9 @@ dip::dfloat TimeIt( dip::Image const& img, dip::Image& out ) {
          //dip::BesselYN( img, out, 8 ); // 200
          //dip::Erf( img, out ); // 60
          //dip::Sinc( img, out ); // 65
-         //dip::CreateRadiusCoordinate( img, out );
-         //dip::CreatePhiCoordinate( img, out );
-         //dip::CreateCoordinates( img, out, {}, "cartesian" );
+         //dip::CreateRadiusCoordinate( img.Sizes(), out );
+         //dip::CreatePhiCoordinate( img.Sizes(), out );
+         //dip::CreateCoordinates( img.Sizes(), out, {}, "cartesian" );
          auto h = dip::Histogram( img );
       }
       timer.Stop();
