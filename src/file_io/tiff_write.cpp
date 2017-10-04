@@ -91,12 +91,6 @@ void FillBuffer1(
    dip::sint kk = 7;
    uint8 byte = 0;
    for( dip::uint ii = 0; ii < height; ++ii ) {
-      if( kk != 7 ) {
-         kk = 7;
-         *dest = byte;
-         ++dest;
-         byte = 0;
-      }
       uint8 const* src_pixel = src;
       for( dip::uint jj = 0; jj < width; ++jj ) {
          if( kk < 0 ) {
@@ -110,6 +104,12 @@ void FillBuffer1(
          }
          src_pixel += strides[ 0 ];
          --kk;
+      }
+      if( kk != 7 ) {
+         kk = 7;
+         *dest = byte;
+         ++dest;
+         byte = 0;
       }
       src += strides[ 1 ];
    }
@@ -227,7 +227,7 @@ void WriteTIFFStrips(
    } else {
       DIP_ASSERT( static_cast< dip::uint >( scanline ) == image.Size( 0 ) * tensorElements * sizeOf );
    }
-   if( image.HasNormalStrides() ) {
+   if( image.HasNormalStrides() && !binary ) {
       // Simple writing
       tstrip_t strip = 0;
       uint8* data = static_cast< uint8* >( image.Origin() );
