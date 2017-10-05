@@ -502,24 +502,27 @@ class DIP_NO_EXPORT Image {
       /// \see GetSimpleStrideAndOrigin, HasContiguousData, HasNormalStrides, Strides, TensorStride.
       bool HasSimpleStride() const {
          void* p;
-         dip::sint s;
-         GetSimpleStrideAndOrigin( s, p );
+         std::tie( std::ignore, p ) = GetSimpleStrideAndOrigin();
          return p != nullptr;
       }
 
-      /// \brief Return a pointer to the start of the data and a single stride to
-      /// walk through all pixels.
+      /// \brief Return a single stride to walk through all pixels and pointer to the start of the data.
       ///
-      /// If this is not possible, the function
-      /// sets `porigin==nullptr`. Note that this only tests spatial dimensions,
-      /// the tensor dimension must still be accessed separately.
+      /// If this is not possible, the function returns `nullptr` for the pointer.
+      /// Note that this only tests spatial dimensions, the tensor dimension must still be accessed separately.
+      ///
+      /// ```cpp
+      ///     dip::sint stride;
+      ///     void* origin;
+      ///     std::tie( stride, origin ) = img.GetSimpleStrideAndOrigin();
+      /// ```
       ///
       /// The `stride` returned is always positive.
       ///
       /// The image must be forged.
       ///
       /// \see HasSimpleStride, HasContiguousData, HasNormalStrides, Strides, TensorStride, Data.
-      DIP_EXPORT void GetSimpleStrideAndOrigin( dip::sint& stride, void*& origin ) const;
+      DIP_EXPORT std::pair< dip::sint, void* > GetSimpleStrideAndOrigin() const;
 
       /// \brief Checks to see if `other` and `this` have their dimensions ordered in
       /// the same way.

@@ -69,7 +69,7 @@ Image& Image::Flatten() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::sint stride;
    void* p;
-   GetSimpleStrideAndOrigin( stride, p );
+   std::tie( stride, p ) = GetSimpleStrideAndOrigin();
    if( !p ) {
       // The image has no simple stride -- copy the samples over to a new data segment
       Image newimg;
@@ -77,7 +77,7 @@ Image& Image::Flatten() {
       newimg.strides_.clear(); // reset strides so Forge() fills out normal strides
       newimg.Forge();
       newimg.Copy( *this ); // TODO: why not directly forge a 1D image?
-      newimg.GetSimpleStrideAndOrigin( stride, p );
+      std::tie( stride, p ) = newimg.GetSimpleStrideAndOrigin();
       DIP_THROW_IF( !p, "Copying over the image data didn't yield simple strides" );
       swap( newimg );
    }

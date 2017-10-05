@@ -276,15 +276,16 @@ bool Image::IsSingletonExpanded() const {
 
 // Return a pointer to the start of the data and a single stride to
 // walk through all pixels. If this is not possible, porigin==nullptr.
-void Image::GetSimpleStrideAndOrigin( dip::sint& sstride, void*& porigin ) const {
+std::pair< dip::sint, void* > Image::GetSimpleStrideAndOrigin() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-   dip::sint start;
+   dip::sint sstride;
    dip::uint size;
+   dip::sint start;
+   void* origin = nullptr;
    if( FindSimpleStrideSizeAndStart( strides_, sizes_, sstride, size, start ) ) {
-      porigin = Pointer( start );
-   } else {
-      porigin = nullptr;
+      origin = Pointer( start );
    }
+   return std::make_pair( sstride, origin );
 }
 
 

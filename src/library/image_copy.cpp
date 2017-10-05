@@ -237,24 +237,24 @@ void Image::Copy( Image const& src ) {
    }
    // A single CopyBuffer call if both images have simple strides and same dimension order
    dip::sint sstride_d;
-   void* porigin_d;
-   GetSimpleStrideAndOrigin( sstride_d, porigin_d );
-   if( porigin_d ) {
+   void* origin_d;
+   std::tie( sstride_d, origin_d ) = GetSimpleStrideAndOrigin();
+   if( origin_d ) {
       //std::cout << "dip::Image::Copy: destination has simple strides\n";
       dip::sint sstride_s;
-      void* porigin_s;
-      src.GetSimpleStrideAndOrigin( sstride_s, porigin_s );
-      if( porigin_s ) {
+      void* origin_s;
+      std::tie( sstride_s, origin_s ) = src.GetSimpleStrideAndOrigin();
+      if( origin_s ) {
          //std::cout << "dip::Image::Copy: source has simple strides\n";
          if( HasSameDimensionOrder( src )) {
             // No need to loop
             //std::cout << "dip::Image::Copy: no need to loop\n";
             detail::CopyBuffer(
-                  porigin_s,
+                  origin_s,
                   src.dataType_,
                   sstride_s,
                   src.tensorStride_,
-                  porigin_d,
+                  origin_d,
                   dataType_,
                   sstride_d,
                   tensorStride_,
@@ -310,24 +310,24 @@ void Image::ExpandTensor() {
       pixelSize_ = pixelSize;
       // A single CopyBuffer call if both images have simple strides and same dimension order
       dip::sint sstride_d;
-      void* porigin_d;
-      GetSimpleStrideAndOrigin( sstride_d, porigin_d );
-      if( porigin_d ) {
+      void* origin_d;
+      std::tie( sstride_d, origin_d ) = GetSimpleStrideAndOrigin();
+      if( origin_d ) {
          //std::cout << "dip::ExpandTensor: destination has simple strides\n";
          dip::sint sstride_s;
-         void* porigin_s;
-         source.GetSimpleStrideAndOrigin( sstride_s, porigin_s );
-         if( porigin_s ) {
+         void* origin_s;
+         std::tie( sstride_s, origin_s ) = source.GetSimpleStrideAndOrigin();
+         if( origin_s ) {
             //std::cout << "dip::ExpandTensor: source has simple strides\n";
             if( HasSameDimensionOrder( source )) {
                // No need to loop
                //std::cout << "dip::ExpandTensor: no need to loop\n";
                detail::CopyBuffer(
-                     porigin_s,
+                     origin_s,
                      source.DataType(),
                      sstride_s,
                      source.TensorStride(),
-                     porigin_d,
+                     origin_d,
                      DataType(),
                      sstride_d,
                      TensorStride(),
@@ -384,17 +384,17 @@ void Image::Convert( dip::DataType dt ) {
          // The operation can happen in place.
          // Loop over all pixels, casting with clamp each of the values; finally set the data type field.
          dip::sint sstride;
-         void* porigin;
-         GetSimpleStrideAndOrigin( sstride, porigin );
-         if( porigin ) {
+         void* origin;
+         std::tie( sstride, origin ) = GetSimpleStrideAndOrigin();
+         if( origin ) {
             // No need to loop
             //std::cout << "dip::Image::Convert: in-place, no need to loop\n";
             detail::CopyBuffer(
-                  porigin,
+                  origin,
                   dataType_,
                   sstride,
                   tensorStride_,
-                  porigin,
+                  origin,
                   dt,
                   sstride,
                   tensorStride_,
@@ -442,12 +442,12 @@ namespace {
 template< typename TPI >
 static inline void InternFill( Image& dest, TPI value ) {
    DIP_THROW_IF( !dest.IsForged(), E::IMAGE_NOT_FORGED );
-   dip::sint sstride_d;
-   void* porigin_d;
-   dest.GetSimpleStrideAndOrigin( sstride_d, porigin_d );
-   if( porigin_d ) {
+   dip::sint sstride;
+   void* origin;
+   std::tie( sstride, origin ) = dest.GetSimpleStrideAndOrigin();
+   if( origin ) {
       // No need to loop
-      detail::FillBufferFromTo( static_cast< TPI* >( porigin_d ), sstride_d, dest.TensorStride(), dest.NumberOfPixels(), dest.TensorElements(), value );
+      detail::FillBufferFromTo( static_cast< TPI* >( origin ), sstride, dest.TensorStride(), dest.NumberOfPixels(), dest.TensorElements(), value );
    } else {
       // Make nD loop
       dip::uint processingDim = Framework::OptimalProcessingDim( dest );

@@ -232,7 +232,7 @@ void init_image( py::module& m ) {
    img.def( "HasNormalStrides", &dip::Image::HasNormalStrides );
    img.def( "IsSingletonExpanded", &dip::Image::IsSingletonExpanded );
    img.def( "HasSimpleStride", &dip::Image::HasSimpleStride );
-   //.def( "GetSimpleStrideAndOrigin", &dip::Image::GetSimpleStrideAndOrigin, "stride"_a, "origin"_a ) // both output parameters...
+   //img.def( "GetSimpleStrideAndOrigin", &dip::Image::GetSimpleStrideAndOrigin); // It's not very useful to have a pointer in Python...
    img.def( "HasSameDimensionOrder", &dip::Image::HasSameDimensionOrder, "other"_a );
    img.def( "TensorSizes", &dip::Image::TensorSizes );
    img.def( "TensorElements", &dip::Image::TensorElements );
