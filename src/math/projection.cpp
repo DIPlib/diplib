@@ -162,7 +162,7 @@ void ProjectionScan(
    tempIn.SetSizes( procSizes );
    tempIn.dip__SetOrigin( input.Origin() );
    tempIn.Squeeze(); // we want to make sure that function.Project() won't be looping over singleton dimensions
-   // TODO: instead of Squeeze, do a "flatten as much as possible" function. But Mask must be flattened in the same way.
+   // TODO: instead of Squeeze, do a FlattenAsMuchAsPossible. But Mask must be flattened in the same way.
    // Create view over mask image, identically to input
    Image tempMask;
    if( hasMask ) {

@@ -92,6 +92,40 @@ Image& Image::Flatten() {
    return *this;
 }
 
+Image& Image::FlattenAsMuchAsPossible() {
+   DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   dip::sint stride;
+   void* p;
+   std::tie( stride, p ) = GetSimpleStrideAndOrigin();
+   if( p ) {
+      strides_ = { stride };
+      sizes_ = { NumberOfPixels() };
+      origin_ = p;
+   } else {
+      StandardizeStrides(); // Re-order strides
+      UnsignedArray sizes{ sizes_[ 0 ] };
+      IntegerArray strides{ strides_[ 0 ] };
+      dip::uint jj = 0;
+      for( dip::uint ii = 1; ii < sizes_.size(); ++ii ) {
+         if( static_cast< dip::sint >( sizes[ jj ] ) * strides[ jj ] == strides_[ ii ] ) {
+            sizes[ jj ] *= sizes_[ ii ];
+         } else {
+            ++jj;
+            sizes.push_back( sizes_[ ii ] );
+            strides.push_back( strides_[ ii ] );
+         }
+      }
+      sizes_ = std::move( sizes );
+      strides_ = std::move( strides );
+   }
+   if( pixelSize_.IsIsotropic()) {
+      pixelSize_.Resize( 1 );  // if all sizes are identical, keep first one only
+   } else {
+      pixelSize_.Clear();      // else set the pixel size to 'undefined'
+   }
+   return *this;
+}
+
 
 Image& Image::Squeeze() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
@@ -283,10 +317,10 @@ Image& Image::StandardizeStrides() {
          newstrides[ ii ] = strides_[ order[ ii ]];
          newpixelsz.Set( ii, pixelSize_[ order[ ii ]] );
       }
-      sizes_ = newsizes;
-      strides_ = newstrides;
+      sizes_ = std::move( newsizes );
+      strides_ = std::move( newstrides );
       if( pixelSize_.IsDefined()) {
-         pixelSize_ = newpixelsz;
+         pixelSize_ = std::move( newpixelsz );
       }
    }
    return *this;

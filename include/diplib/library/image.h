@@ -1381,8 +1381,27 @@ class DIP_NO_EXPORT Image {
       /// resulting image depend on the strides, and do not necessarily
       /// follow the same order as linear indices.
       ///
-      /// \see PermuteDimensions, ExpandDimensionality.
+      /// \see FlattenAsMuchAsPossible, Squeeze.
       DIP_EXPORT Image& Flatten();
+
+      /// \brief Make image have as few dimensions as possible.
+      ///
+      /// If the image has contiguous storage (or non-contiguous storage with a simple stride), then
+      /// `dip::Image::Flatten` will convert it into a 1D image without copy. This method performs a similar
+      /// function, but only merges the dimensions that are possible to merge without data copy. In the
+      /// cases where `dip::Image::Flatten` doesn't copy data, this method will yield the same result. In
+      /// other cases, the output of this method will yield an image with more than one dimension, sometimes
+      /// as many as the input image. Dimensions can be reordered and reversed.
+      ///
+      /// The goal with reducing dimensions is to make it simpler to iterate through the image. Iterators
+      /// will be more efficient on a flattened image.
+      ///
+      /// The image must be forged. This is always a quick and cheap operation.
+      /// Note that the order of the pixels in the resulting image depend on the strides, and do not necessarily
+      /// follow the same order as linear indices.
+      ///
+      /// \see Flatten, Squeeze
+      DIP_EXPORT Image& FlattenAsMuchAsPossible();
 
       // TODO: FlattenAsMuchAsPossible: flattens but never copies.
       //       Output image might have fewer dimensions than the input, but not necessarily, and not necessarily only
