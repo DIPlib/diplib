@@ -397,26 +397,26 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FindShift fuction") {
    // Method: "CC"
    result = FindShift( in1, in2, "CC" );
    DOCTEST_REQUIRE( result.size() == 2 );
-   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.05 );
-   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.05 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.03 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.03 );
 
    // Method: "NCC"
    result = FindShift( in1, in2, "NCC" );
    DOCTEST_REQUIRE( result.size() == 2 );
-   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.1501 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.15 );
    DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.15 );
 
    // Method: "CPF"
    result = FindShift( in1, in2, "CPF" );
    DOCTEST_REQUIRE( result.size() == 2 );
-   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.02 );
-   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.02 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.05 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.05 );
 
    // Method: "MTS"
    result = FindShift( in1, in2, "MTS" );
    DOCTEST_REQUIRE( result.size() == 2 );
-   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.006 );
-   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.006 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.007 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.007 );
 
    // Method: "ITER"
    result = FindShift( in1, in2, "ITER" );
@@ -433,8 +433,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the FindShift fuction") {
    // Method: "CC", with max shift
    result = FindShift( in1, in2, "CC", 0, { 11 } );
    DOCTEST_REQUIRE( result.size() == 2 );
-   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.05 );
-   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.05 );
+   DOCTEST_CHECK( std::abs( result[ 0 ] - shift[ 0 ] ) < 0.03 );
+   DOCTEST_CHECK( std::abs( result[ 1 ] - shift[ 1 ] ) < 0.03 );
 }
 
 #endif // DIP__ENABLE_DOCTEST

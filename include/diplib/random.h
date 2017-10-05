@@ -120,7 +120,7 @@ class DIP_NO_EXPORT Random {
       /// parallel algorithms to provide a different random generator to each thread.
       Random Split() {
          Random out( *this );
-         out.SetStream();
+         out.SetStream( engine_() );
          return out;
       }
 
