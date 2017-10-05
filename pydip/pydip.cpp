@@ -18,6 +18,7 @@
 
 #include "pydip.h"
 #include "diplib/neighborlist.h"
+#include "diplib/multithreading.h"
 
 static_assert( sizeof( bool ) == sizeof( dip::bin ), "bool is not one byte, how can I work with logical Python buffers?" );
 
@@ -166,6 +167,11 @@ PYBIND11_MODULE( PyDIP_bin, m ) {
    metric.def( "__repr__", &MetricRepr );
    py::implicitly_convertible< py::buffer, dip::Metric >();
    py::implicitly_convertible< py::str, dip::Metric >();
+
+   // diplib/multitheading.h
+
+   m.def( "SetNumberOfThreads", &dip::SetNumberOfThreads, "nThreads"_a );
+   m.def( "GetNumberOfThreads", &dip::GetNumberOfThreads );
 
    // Include definitions from all other source files
 
