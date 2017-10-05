@@ -110,6 +110,7 @@ void Full(
    if( asScalarImage ) {
       input.TensorToSpatial();
       output.TensorToSpatial();
+      sizes = input.Sizes();
    }
 
    // Do we need an output buffer?
@@ -141,7 +142,7 @@ void Full(
    // image lines to process.
    dip::uint nLinesPerThread = div_ceil( nLines, nThreads );
    std::vector< UnsignedArray > startCoords( nThreads );
-   dip::uint nDims = input.Dimensionality();
+   dip::uint nDims = sizes.size();
    startCoords[ 0 ] = UnsignedArray( nDims, 0 );
    for( dip::uint ii = 1; ii < nThreads; ++ii ) {
       startCoords[ ii ] = startCoords[ ii - 1 ];
@@ -152,7 +153,7 @@ void Full(
          for( dip::uint dd = 0; dd < nDims; ++dd ) {
             if( dd == firstDim ) {
                dip::uint n = sizes[ dd ] - startCoords[ ii ][ dd ];
-               if (remaining >= n) {
+               if( remaining >= n ) {
                   // Rewinding, next loop iteration will increment the next coordinate
                   remaining -= n;
                   startCoords[ ii ][ dd ] = 0;
