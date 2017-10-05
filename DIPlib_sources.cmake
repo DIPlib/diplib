@@ -178,8 +178,8 @@ src/morphology/watershed_support.h
 src/nonlinear/kuwahara.cpp
 src/nonlinear/percentile.cpp
 src/nonlinear/variancefilter.cpp
-src/regions/get_labels.cpp
 src/regions/label.cpp
+src/regions/label_manipulation.cpp
 src/regions/labelingGrana2016.h
 src/segmentation/threshold.cpp
 src/support/math_functions.cpp

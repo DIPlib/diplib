@@ -25,8 +25,8 @@ f = misc.face()
 a = dip.Image(f)
 a.Show()
 
-b = dip.Uniform(a,15)
-b.Convert(dip.DT_UINT8)
+b = dip.Uniform(a,15) # TODO: Uniform not working correctly???
+b.Convert("UINT8")
 b.Show()
 
 ###
@@ -36,7 +36,7 @@ import numpy as np
 from scipy import misc
 import matplotlib.pyplot as pp
 img = dip.Image(misc.face()[:,:,0])
-grad = dip.GradientMagnitude(img,5)
+grad = dip.GradientMagnitude(img,[5]) # TODO: fix syntax: allow scalar as sigma
 grad.Show()
 
 a = dip.Watershed(grad)
@@ -66,16 +66,16 @@ y.Show()
 
 import PyDIP as dip
 a = dip.Image((20,10),3)
-dip.FillXCoordinate(a[0])
-dip.FillYCoordinate(a[1])
-dip.FillColoredNoise(a[2])
+dip.FillXCoordinate(a.TensorElement(0))
+dip.FillYCoordinate(a.TensorElement(1))
+dip.FillColoredNoise(a.TensorElement(2))
 a.Show()
 
 a.SetColorSpace('rgb')
 b = dip.ColorSpaceManager.Convert(a,'Lab')
 b.Show()
 
-b[1].Show()
+b.TensorElement(1).Show()
 
 b,c = dip.Histogram(a)
 len(c)
@@ -84,7 +84,7 @@ b.Dimensionality() == len(c)
 ###
 
 import PyDIP as dip
-a = dip.ImageReadICS('../../../test/cermet')
+a = dip.ImageReadICS('../../../examples/cermet')
 a.SetPixelSize(dip.PixelSize(dip.PhysicalQuantity(1,"um")))
 b = dip.Label(a < 120)
 dip.MeasurementTool.Features()
@@ -98,3 +98,17 @@ b = dip.EuclideanSkeleton(a > 120)
 dip.GetEndPixels(b).Show()
 dip.GetLinkPixels(b).Show()
 dip.GetBranchPixels(b).Show()
+
+###
+
+import PyDIP as dip
+a=dip.ImageReadICS('../../../examples/cermet')
+b=dip.Label(a < 120)
+b.Show('labels')
+dip.GetObjectLabels(b)
+c=dip.SmallObjectsRemove(b, 150)
+c.Show('labels')
+dip.GetObjectLabels(c)
+d=dip.Relabel(c)
+d.Show('labels')
+dip.GetObjectLabels(d)

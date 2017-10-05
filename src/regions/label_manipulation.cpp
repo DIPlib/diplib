@@ -19,6 +19,7 @@
  */
 
 #include <set>
+#include <map>
 
 #include "diplib.h"
 #include "diplib/regions.h"
@@ -30,12 +31,14 @@ namespace dip {
 
 using LabelSet = std::set< dip::uint >;
 
+namespace {
+
 template< typename TPI >
-class dip__GetLabels : public Framework::ScanLineFilter {
+class dip__GetLabels: public Framework::ScanLineFilter {
    public:
       // not defining GetNumberOfOperations(), always called in a single thread
       virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
-         TPI* data = static_cast< TPI* >( params.inBuffer[ 0 ].buffer );
+         TPI const* data = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
          dip::sint stride = params.inBuffer[ 0 ].stride;
          dip::uint bufferLength = params.bufferLength;
          if( params.inBuffer.size() > 1 ) {
@@ -46,7 +49,7 @@ class dip__GetLabels : public Framework::ScanLineFilter {
             for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                if( *mask ) {
                   if( !setPrevID || ( *data != prevID ) ) {
-                     prevID = * data;
+                     prevID = *data;
                      setPrevID = true;
                      objectIDs_.insert( prevID );
                   }
@@ -65,10 +68,12 @@ class dip__GetLabels : public Framework::ScanLineFilter {
             }
          }
       }
-      dip__GetLabels( LabelSet& objectIDs ) : objectIDs_( objectIDs ) {}
+      dip__GetLabels( LabelSet& objectIDs ): objectIDs_( objectIDs ) {}
    private:
       LabelSet& objectIDs_;
 };
+
+} // namespace
 
 UnsignedArray GetObjectLabels(
       Image const& label,
@@ -76,6 +81,7 @@ UnsignedArray GetObjectLabels(
       String const& background
 ) {
    // Check input
+   DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
    if( mask.IsForged() ) {
@@ -85,15 +91,6 @@ UnsignedArray GetObjectLabels(
    }
    bool nullIsObject = BooleanFromString( background, "include", "exclude" );
 
-   // Create arrays for Scan framework
-   ImageConstRefArray inar{ label };
-   DataTypeArray inBufT{ label.DataType() }; // All but guarantees that data won't be copied.
-   if( mask.IsForged() ) {
-      inar.emplace_back( mask );
-      inBufT.push_back( mask.DataType() ); // All but guarantees that data won't be copied.
-   }
-   ImageRefArray outar{};
-
    LabelSet objectIDs; // output
 
    // Get pointer to overloaded scan function
@@ -101,7 +98,7 @@ UnsignedArray GetObjectLabels(
    DIP_OVL_NEW_UINT( scanLineFilter, dip__GetLabels, ( objectIDs ), label.DataType() );
 
    // Do the scan
-   Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter, Framework::Scan_NoMultiThreading );
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( label, mask, label.DataType(), *scanLineFilter, Framework::Scan_NoMultiThreading ));
 
    // Count the number of unique labels
    dip::uint count = 0;
@@ -123,12 +120,70 @@ UnsignedArray GetObjectLabels(
    return out;
 }
 
+namespace {
+
+template< typename TPI >
+class dip__Relabel: public Framework::ScanLineFilter {
+   public:
+      // not defining GetNumberOfOperations(), always called in a single thread
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* in = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         TPI* out = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint inStride = params.inBuffer[ 0 ].stride;
+         dip::sint outStride = params.outBuffer[ 0 ].stride;
+         dip::uint bufferLength = params.bufferLength;
+         TPI inLabel = 0;       // last label seen, initialize to background label
+         TPI outLabel = 0;      // new label assigned to prevID
+         for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+            if( *in == 0 ) {
+               // The background label is processed differently
+               *out = 0;
+            } else if( *in == inLabel ) {
+               *out = outLabel;
+            } else {
+               inLabel = *in;
+               auto it = objectIDs_.find( inLabel );
+               if( it == objectIDs_.end() ) {
+                  // It's a new label
+                  outLabel = ++lastLabel_;
+                  objectIDs_.emplace( inLabel, outLabel );
+               } else {
+                  outLabel = it->second;
+               }
+               *out = outLabel;
+            }
+            in += inStride;
+            out += outStride;
+         }
+      }
+   private:
+      std::map< TPI, TPI > objectIDs_;
+      TPI lastLabel_ = 0;
+};
+
+} // namespace
+
+void Relabel( Image const& label, Image& out ) {
+   DIP_THROW_IF( !label.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !label.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
+
+   // Get pointer to overloaded scan function
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_NEW_UINT( scanLineFilter, dip__Relabel, (), label.DataType() );
+
+   // Do the scan
+   DIP_STACK_TRACE_THIS( Framework::ScanMonadic( label, out, label.DataType(), label.DataType(), 1, *scanLineFilter, Framework::Scan_NoMultiThreading ));
+}
+
 void SmallObjectsRemove(
       Image const& in,
       Image& out,
       dip::uint threshold,
       dip::uint connectivity
 ) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    if( in.DataType().IsBinary() ) {
       Image tmp = Label( in, connectivity, threshold, 0 );
       NotEqual( tmp, Image( 0, tmp.DataType() ), out );

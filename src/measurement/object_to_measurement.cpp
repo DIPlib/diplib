@@ -26,7 +26,6 @@
 
 namespace dip {
 
-
 void ObjectToMeasurement(
       Image const& label,
       Image& out,
@@ -50,7 +49,7 @@ void ObjectToMeasurement(
    dip::sint stride = lutIm.Stride( 0 );
    auto it = featureValues.FirstObject();
    while( it ) {
-      dfloat* dest = data + static_cast<dip::sint>( it.ObjectID() ) * stride;
+      dfloat* dest = data + static_cast< dip::sint >( it.ObjectID() ) * stride;
       std::copy( it.begin(), it.end(), dest );
       ++it;
    }
@@ -58,6 +57,5 @@ void ObjectToMeasurement(
    lut.Apply( label, out );
    out.Protect( protect );
 }
-
 
 } // namespace dip

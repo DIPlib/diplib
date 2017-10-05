@@ -44,8 +44,6 @@ namespace dip {
    dip_GrowRegionsWeighted (dip_regions.h)
 */
 
-// TODO: implement a relabel function.
-
 /// \brief Labels the connected components in a binary image
 ///
 /// The output is an unsigned integer image. Each object (respecting the connectivity,
@@ -90,6 +88,14 @@ DIP_EXPORT UnsignedArray GetObjectLabels(
       Image const& mask,
       String const& background = "exclude"
 );
+
+/// \brief Re-assigns labels to objects in a labeled image, such that all labels are consecutive.
+DIP_EXPORT void Relabel( Image const& label, Image& out );
+inline Image Relabel( Image const& label ) {
+   Image out;
+   Relabel( label, out );
+   return out;
+}
 
 /// \brief Removes small objects from a labeled or binary image.
 ///

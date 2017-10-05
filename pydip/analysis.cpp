@@ -67,9 +67,10 @@ void init_analysis( py::module& m ) {
    m.def( "Label", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringArray const& >( &dip::Label ),
           "binary"_a, "connectivity"_a = 0, "minSize"_a = 0, "maxSize"_a = 0, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "GetObjectLabels", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const& >( &dip::GetObjectLabels ),
-          "in"_a, "mask"_a = dip::Image{}, "background"_a = "exclude" );
+          "label"_a, "mask"_a = dip::Image{}, "background"_a = "exclude" );
+   m.def( "Relabel", py::overload_cast< dip::Image const& >( &dip::Relabel ), "label"_a );
    m.def( "SmallObjectsRemove", py::overload_cast< dip::Image const&, dip::uint, dip::uint >( &dip::SmallObjectsRemove ),
-          "binary"_a, "threshold"_a, "connectivity"_a = 0 );
+          "in"_a, "threshold"_a, "connectivity"_a = 0 );
 
    // diplib/segmentation.h
 
