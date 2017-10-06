@@ -90,8 +90,6 @@ document's source</a> for the most up-to-date version.
     interfacing to *Bio-Formats*, which uses [SCIFIO](https://github.com/scifio/scifio).
     This should be an optional module, as *Bio-Formats* is GPL.
 
--   Measurement I/O. Write as CSV is the most important feature here.
-
 -   Parallelization of some non-framework functions using *OpenMP*. For example, the core of the
     projection functions, and `dip::SelectionFilter` can be easily parallelized.
 

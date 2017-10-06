@@ -73,6 +73,7 @@ void Full(
       input.SetDataType( inBufferType );
       input.Protect();
    }
+   // TODO: match stride ordering of `out`!
    bool expandBoundary = boundary.any() && ( opts != Full_BorderAlreadyExpanded );
    if( dataTypeChange || expandTensor || expandBoundary ) {
       Option::ExtendImage options = Option::ExtendImage_Masked;
