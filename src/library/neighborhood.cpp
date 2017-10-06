@@ -48,6 +48,10 @@ dip::PixelTable Kernel::PixelTable( dip::uint nDims, dip::uint procDim ) const {
       DIP_START_STACK_TRACE
          ArrayUseParameter( sz, nDims, 1.0 );
          pixelTable = dip::PixelTable{ ShapeString(), sz, procDim };
+         if( shape_ == ShapeCode::LEFT_LINE ) {
+            IntegerArray shift = pixelTable.Runs()[ 0 ].coordinates; // need to make a copy, since ShiftOrigin modifies it, causing only the first run to be shifted.
+            pixelTable.ShiftOrigin( shift );
+         }
       DIP_END_STACK_TRACE
    }
    if( !shift_.empty() ) {

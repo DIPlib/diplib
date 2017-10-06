@@ -88,6 +88,7 @@ class DIP_NO_EXPORT Kernel {
             ELLIPTIC,
             DIAMOND,
             LINE,
+            LEFT_LINE, // This one is the same as LINE, but the origin is placed at the leftmost end of the line
             CUSTOM
       };
 
@@ -189,13 +190,16 @@ class DIP_NO_EXPORT Kernel {
       /// kernel on the edge pixels of the image, given an image of size `imsz`.
       UnsignedArray Boundary( dip::uint nDims ) const {
          UnsignedArray boundary = Sizes( nDims );
-         for( dip::uint& b : boundary ) {
-            b /= 2;
+         if( shape_ != ShapeCode::LEFT_LINE ) {
+            for( dip::uint& b : boundary ) {
+               b /= 2;
+            }
          }
          if( !shift_.empty() ) {
             dip::uint n = std::min( shift_.size(), boundary.size() );
             for( dip::uint ii = 0; ii < n; ++ii ) {
                boundary[ ii ] += static_cast< dip::uint >( std::abs( shift_[ ii ] ));
+               // TODO: shift could be subtracted if shape_ == ShapeCode::LEFT_LINE.
             }
          }
          return boundary;
@@ -217,6 +221,7 @@ class DIP_NO_EXPORT Kernel {
             case ShapeCode::DIAMOND:
                return "diamond";
             case ShapeCode::LINE:
+            case ShapeCode::LEFT_LINE:
                return "line";
             //case ShapeCode::CUSTOM:
             default:
@@ -228,7 +233,7 @@ class DIP_NO_EXPORT Kernel {
       bool IsRectangular() const { return shape_ == ShapeCode::RECTANGULAR; }
 
       /// \brief Tests to see if the kernel is a line
-      bool IsLine() const { return shape_ == ShapeCode::LINE; }
+      bool IsLine() const { return ( shape_ == ShapeCode::LINE ) || ( shape_ == ShapeCode::LEFT_LINE ); }
 
       /// \brief Tests to see if the kernel is a custom shape
       bool IsCustom() const { return shape_ == ShapeCode::CUSTOM; }
