@@ -101,6 +101,9 @@ class DIP_NO_EXPORT PixelTableOffsets {
       /// Returns a const reference to the weights array.
       std::vector< dfloat > const& Weights() const { return weights_; }
 
+      /// Returns an array with the offsets.
+      std::vector< dip::sint > Offsets() const;
+
    private:
       std::vector< PixelRun > runs_;
       std::vector< dfloat > weights_;
@@ -540,6 +543,15 @@ inline PixelTableOffsets::iterator PixelTableOffsets::begin() const {
 
 inline PixelTableOffsets::iterator PixelTableOffsets::end() const {
    return iterator::end( *this );
+}
+
+inline std::vector< dip::sint > PixelTableOffsets::Offsets() const {
+   std::vector< dip::sint > out( nPixels_ );
+   auto dit = out.begin();
+   for( auto iit = begin(); !iit.IsAtEnd(); ++iit, ++dit ) {
+      *dit = *iit;
+   }
+   return out;
 }
 
 /// \}
