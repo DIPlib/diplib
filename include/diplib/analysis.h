@@ -118,6 +118,14 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
 /// to `"don't normalize"`, the regular cross-correlation (not normalized by the square
 /// modulus) is returned.
 ///
+/// Note that this normalization is not related to what is commonly referred to as
+/// "normalized cross-correlation", where the input images are whitened before the
+/// cross-correlations is computed. The method is instead related to the "phase correlation"
+/// as proposed by Kuglin and Hines (1975), except that they divide by the modulus of each
+/// of the images in the Fourier Domain, instead of the square modulus of the first image
+/// as we do here. The difference is not important if the two images are obtained under
+/// identical circumstances.
+///
 /// As elsewhere, the origin is in the middle of the image, on the pixel to the right of
 /// the center in case of an even-sized image. Thus, for `in1==in2`, only this pixel will be set.
 ///
@@ -129,6 +137,10 @@ DIP_EXPORT SubpixelLocationArray SubpixelMinima(
 ///
 /// `out` will be real-valued if `outRepresentation` is `"spatial"`, under the assumption that
 /// `in1` and `in2` are similar except for a shift.
+///
+/// **Literature**:
+///  - C.D. Kuglin and D.C. Hines, "The phase correlation image alignment method", International
+///    Conference on Cybernetics and Society (IEEE), pp 163-165, 1975.
 DIP_EXPORT void CrossCorrelationFT(
       Image const& in1,
       Image const& in2,
@@ -177,6 +189,8 @@ inline Image CrossCorrelationFT(
 ///
 ///  - `"NCC"`: As `"CC"`, but using the normalized cross-correlation, which makes the peak much sharper
 ///    (Luengo Hendriks, 1998). This method works for any number of dimensions. `parameter` is ignored.
+///    See the notes in `dip::CrossCorrelationFT` regarding the normalization of the cross-correlation, which
+///    is not as what is commonly referred to as NCC.
 ///
 ///  - `"CPF"`: The CPF method (see Luengo Hendriks (1998), where it is called FFTS) uses the phase of the
 ///    cross-correlation (as calculated by `dip::CrossCorrelationFT`) to estimate the shift. `parameter` sets

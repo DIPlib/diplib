@@ -128,7 +128,8 @@ FloatArray FindShift_CPF( Image const& in1, Image const& in2, dfloat maxFrequenc
          ( sumAv * sumuv - sumAu * sumvv ) / value,
          ( sumAu * sumuv - sumAv * sumuu ) / value
    };
-   // TODO: Add removal of outliers as an option to this function.
+   // TODO: Add removal of outliers as an option to CPF.
+   // TODO: CPF can probably be computed independently for each dimension by averaging fits along each line.
 }
 
 FloatArray FindShift_MTS( Image const& in1, Image const& in2, dip::uint iterations, dfloat accuracy, dfloat sigma ) {
