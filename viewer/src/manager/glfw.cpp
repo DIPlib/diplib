@@ -147,8 +147,9 @@ void GLFWManager::processEvents()
       it->second.wdw->draw();
     }
   
-    if (it->second.wdw->shouldClose() || glfwWindowShouldClose((GLFWwindow*)it->first))
+    if (it->second.wdw->destroyed() || glfwWindowShouldClose((GLFWwindow*)it->first))
     {
+      it->second.wdw->destroy();
       glfwDestroyWindow((GLFWwindow*)it->first);
       it = windows_.erase(it);
     }

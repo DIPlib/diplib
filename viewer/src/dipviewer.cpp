@@ -53,7 +53,7 @@ void Show( Image const& image, String const& title )
       count__ = 1;
    }
 
-   manager__->createWindow( WindowPtr( new SliceViewer( image, getWindowTitle( title ))));
+   DIP_STACK_TRACE_THIS( manager__->createWindow( SliceViewer::Create( image, getWindowTitle( title ))));
    ++count__;
 }
 
@@ -64,7 +64,7 @@ void ShowSimple( Image const& image, String const& title )
       count__ = 1;
    }
 
-   DIP_STACK_TRACE_THIS( manager__->createWindow( WindowPtr( new ImageViewer( image, getWindowTitle( title )))));
+   DIP_STACK_TRACE_THIS( manager__->createWindow( ImageViewer::Create( image, getWindowTitle( title ))));
    ++count__;
 }
 

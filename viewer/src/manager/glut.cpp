@@ -135,7 +135,7 @@ void GLUTManager::run()
 
     for (auto it = windows_.begin(); it != windows_.end();)
     {
-      if (it->second->shouldClose())
+      if (it->second->destroyed())
       {
         glutDestroyWindow((int)(intptr_t)it->first);
         it = windows_.erase(it);

@@ -421,7 +421,7 @@ void SliceViewPort::screenToView(int x, int y, double *ix, double *iy)
     *iy = (y-y_)/viewer()->options().zoom_[(dip::uint)dy] + viewer()->options().origin_[(dip::uint)dy];
 }
 
-SliceViewer::SliceViewer(const dip::Image &image, std::string name, size_t width, size_t height) : Viewer(name), options_(image), continue_(false), updated_(false), original_(image), image_(image), drag_viewport_(NULL)
+SliceViewer::SliceViewer(const dip::Image &image, std::string name, size_t width, size_t height) : Viewer(name), options_(image), continue_(false), updated_(false), original_(image), drag_viewport_(NULL), refresh_seq_(0)
 {
   if (width && height)
     requestSize(width, height);
@@ -486,11 +486,13 @@ void SliceViewer::place()
 
 void SliceViewer::reshape(int /*width*/, int /*height*/)
 {
+  Guard guard(*this);
   place();
 }
 
 void SliceViewer::draw()
 {
+  Guard guard(*this);
   // Actual drawing
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
@@ -508,6 +510,7 @@ void SliceViewer::draw()
 
 void SliceViewer::key(unsigned char k, int x, int y, int mods)
 {
+  Guard guard(*this);
   Viewer::key(k, x, y, mods);
   
   auto &dims = options_.dims_;
@@ -609,6 +612,7 @@ void SliceViewer::key(unsigned char k, int x, int y, int mods)
 
 void SliceViewer::click(int button, int state, int x, int y)
 {
+  Guard guard(*this);
   drag_viewport_ = viewport(x, y);
   
   if (state == 0)
@@ -622,6 +626,7 @@ void SliceViewer::click(int button, int state, int x, int y)
 
 void SliceViewer::motion(int x, int y)
 {
+  Guard guard(*this);
   if (drag_viewport_)
     drag_viewport_->motion(drag_button_, x, y);
 }
@@ -643,6 +648,7 @@ ViewPort *SliceViewer::viewport(int x, int y)
 void SliceViewer::calculateTextures()
 {
   ViewingOptions options, old_options;
+  int seq = -1;
 
   while (continue_)
   {
@@ -653,41 +659,52 @@ void SliceViewer::calculateTextures()
     if (!continue_)
       break;
   
-    mutex_.lock();
-    ViewingOptions::Diff diff = options.diff(options_);
     old_options = options;
+    lock();
+    ViewingOptions::Diff diff = options.diff(options_);
+    if (seq != refresh_seq_)
+      diff = ViewingOptions::Diff::Complex;
     options = options_;
-    mutex_.unlock();
+    seq = refresh_seq_;
+    unlock();
     
     // Calculate textures
     if (diff >= ViewingOptions::Diff::Complex)
     {
+      lock();
+      dip::Image original = original_, image;
+      unlock();
+    
       // Deal with complex numbers
-      if (original_.DataType().IsComplex())
+      if (original.DataType().IsComplex())
       {
         switch (options.complex_)
         {
           case ViewingOptions::ComplexToReal::Real:
-            image_ = original_.Real();
+            image = original.Real();
             break;
           case ViewingOptions::ComplexToReal::Imaginary:
-            image_ = original_.Imaginary();
+            image = original.Imaginary();
             break;
           case ViewingOptions::ComplexToReal::Magnitude:
-            image_ = Abs(original_);
+            image = Abs(original);
             break;
           case ViewingOptions::ComplexToReal::Phase:
-            image_ = Phase(original_);
+            image = Phase(original);
             break;
         }      
       }
       else
-        image_ = original_;
+        image = original;
         
       // Get range
-      dip::Image copy = image_;
+      dip::Image copy = image;
       copy.TensorToSpatial();
-      dip::MinMaxAccumulator acc = MaximumAndMinimum( copy );
+      dip::MinMaxAccumulator acc = MaximumAndMinimum( image );
+      
+      lock();
+      image_ = image;
+      original_ = original;
       options_.range_ = {acc.Minimum(), acc.Maximum()};
       if (options.mapping_ == ViewingOptions::Mapping::Linear ||
           options.mapping_ == ViewingOptions::Mapping::Symmetric || 
@@ -704,6 +721,7 @@ void SliceViewer::calculateTextures()
             options_.mapping_range_.first = -options_.mapping_range_.second;
         }
       }
+      unlock();
       
       // Recalculate histogram
       histogram_->calculate();
@@ -712,11 +730,11 @@ void SliceViewer::calculateTextures()
     if (diff >= ViewingOptions::Diff::Projection)
     {
       // Need to reproject
-      if (old_options.needsReproject(options, main_->view()->dimx(), main_->view()->dimy()))
+      if (old_options.needsReproject(options, main_->view()->dimx(), main_->view()->dimy()) || diff >= ViewingOptions::Diff::Complex)
         main_->view()->project();
-      if (old_options.needsReproject(options, left_->view()->dimx(), left_->view()->dimy()))
+      if (old_options.needsReproject(options, left_->view()->dimx(), left_->view()->dimy()) || diff >= ViewingOptions::Diff::Complex)
         left_->view()->project();
-      if (old_options.needsReproject(options, top_->view()->dimx(), top_->view()->dimy()))
+      if (old_options.needsReproject(options, top_->view()->dimx(), top_->view()->dimy()) || diff >= ViewingOptions::Diff::Complex)
         top_->view()->project();
     }
     
@@ -749,6 +767,7 @@ void SliceViewer::calculateTextures()
 
 void SliceViewer::updateLinkedViewers()
 {
+  Guard guard(*this);
   link_->update();
 }
 

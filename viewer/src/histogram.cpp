@@ -92,6 +92,7 @@ void HistogramViewPort::render()
   glMatrixMode(GL_MODELVIEW);
 
   // Calculate maximum value
+  mutex_.lock();
   dip::Image copy = histogram_;
   copy.TensorToSpatial();
   dip::MinMaxAccumulator acc = MaximumAndMinimum( copy );
@@ -152,6 +153,7 @@ void HistogramViewPort::render()
       glVertex2f(1., (GLfloat)(((dip::dfloat)p[o.element_]-o.range_.first)/(o.range_.second-o.range_.first)));
     glEnd();
   }
+  mutex_.unlock();
   
   // Display mapping range
   glColor3f(.5, .5, .5);
@@ -297,14 +299,20 @@ class viewer__Histogram : public dip::Framework::ScanLineFilter
 
 void HistogramViewPort::calculate()
 {
-  auto &in = viewer()->image();
-  
-  histogram_ = dip::Image { dip::UnsignedArray{ 100 }, in.TensorElements(), dip::DT_UINT32 };  
-  histogram_ = 0;
+  viewer()->lock();
+  dip::Image in = viewer()->image();
+  viewer()->unlock();
+
+  dip::Image histogram = dip::Image { dip::UnsignedArray{ 100 }, in.TensorElements(), dip::DT_UINT32 };  
+  histogram = 0;
 
   std::unique_ptr< dip::Framework::ScanLineFilter > scanLineFilter;
-  DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, viewer__Histogram, ( histogram_, viewer()->options().range_ ), in.DataType() );
+  DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, viewer__Histogram, ( histogram, viewer()->options().range_ ), in.DataType() );
   dip::Framework::ScanSingleInput(in, {}, in.DataType(), *scanLineFilter);
+  
+  mutex_.lock();
+  histogram_ = histogram;
+  mutex_.unlock();
 }
 
 }} // namespace dip::viewer

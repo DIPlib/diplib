@@ -77,6 +77,9 @@ class DIPVIEWER_EXPORT ImageViewPort : public ViewPort
 /// Non-interactive 2D RGB image viewer.
 class DIPVIEWER_EXPORT ImageViewer : public Viewer
 {
+  public:
+    typedef std::shared_ptr<ImageViewer> Ptr;
+    
   protected:
     ViewingOptions options_;
     ImageViewPort *viewport_;
@@ -85,6 +88,31 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
   
   public:
     /// \brief Construct a new ImageViewer.
+    ///
+    /// As the constructor is protected, this is the only way to create an ImageViewer.
+    /// Note that the ImageViewer only supports 8-bit 2D RGB images.
+    ///
+    /// Example usage:
+    ///
+    /// ```cpp
+    ///     manager.createWindow( dip::viewer::ImageViewer::Create( image ));
+    /// ```
+    static Ptr Create(const dip::Image &image, std::string name="ImageViewer", size_t width=0, size_t height=0)
+    {
+      return Ptr(new ImageViewer(image, name, width, height));
+    }
+    
+    ~ImageViewer() override
+    {
+      if (viewport_)
+        delete viewport_; 
+    }
+
+    ViewingOptions &options() override { return options_; }
+    const dip::Image &image() override { return viewport_->view()->image(); }
+    void setImage(const dip::Image &image) override { viewport_->view()->set(image); refresh(); }
+
+  protected:
     explicit ImageViewer(const dip::Image &image, std::string name="ImageViewer", size_t width=0, size_t height=0) : Viewer(name), options_(image)
     {
       DIP_THROW_IF( !image.HasNormalStrides(), E::NO_NORMAL_STRIDE );
@@ -113,25 +141,17 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
       viewport_->setView(view);
     }
     
-    ~ImageViewer() override
-    {
-      if (viewport_)
-        delete viewport_; 
-    }
-
-    ViewingOptions &options() override { return options_; }
-    const dip::Image &image() override { return viewport_->view()->image(); }
-
-  protected:
     void create() override;
     void reshape(int /*width*/, int /*height*/) override
     {
+      Guard guard(*this);
       viewport_->place(0, 0, width(), height());
       refresh();
     }
     
     void draw() override
     {
+      Guard guard(*this);
       viewport_->rebuild();
       viewport_->render();
       swap();

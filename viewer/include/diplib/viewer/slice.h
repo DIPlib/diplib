@@ -21,7 +21,6 @@
 #define DIP_VIEWER_SLICE_H
 
 #include <thread>
-#include <mutex>
 
 #include "diplib/color.h"
 
@@ -94,9 +93,11 @@ class DIPVIEWER_EXPORT SliceViewPort : public ViewPort
 /// \brief Interactive nD tensor image viewer.
 class DIPVIEWER_EXPORT SliceViewer : public Viewer
 {
+  public:
+    typedef std::shared_ptr<SliceViewer> Ptr;
+    
   protected:
     ViewingOptions options_;
-    std::mutex mutex_;  
     std::thread thread_;
     bool continue_, updated_;
     std::vector<ViewPort*> viewports_;
@@ -110,11 +111,23 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     
     ViewPort *drag_viewport_;
     int drag_button_;
+    int refresh_seq_;
   
   public:
     /// \brief Construct a new SliceViewer.
-    explicit SliceViewer(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0);
-    
+    ///
+    /// As the constructor is protected, this is the only way to create a SliceViewer.
+    ///
+    /// Example usage:
+    ///
+    /// ```cpp
+    ///     manager.createWindow( dip::viewer::SliceViewer::Create( image ));
+    /// ```
+    static Ptr Create(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0)
+    {
+      return Ptr(new SliceViewer(image, name, width, height));
+    }
+  
     ~SliceViewer() override
     {
       if (continue_)
@@ -129,11 +142,15 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     
     ViewingOptions &options() override { return options_; }
     const dip::Image &image() override { return image_; }
+    void setImage(const dip::Image &image) override { original_ = image; refresh_seq_++; }
     
-    void place();
+    /// \brief Update linked viewers.
+    ///
+    /// Only call this under lock.
     void updateLinkedViewers();
-  
   protected:
+    explicit SliceViewer(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0);
+
     void create() override;
     void reshape(int width, int height) override;
     void draw() override;
@@ -141,6 +158,7 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     void click(int button, int state, int x, int y) override;
     void motion(int x, int y) override;
 
+    void place();
     ViewPort *viewport(int x, int y);
     void calculateTextures();
 };

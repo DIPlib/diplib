@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <unistd.h>
 #include <vector>
+#include <mutex>
 
 #include "diplib.h"
 #include "diplib/overload.h"
@@ -306,23 +307,69 @@ class DIPVIEWER_EXPORT ViewPort
 /// \brief A Window for viewing a dip::Image
 class DIPVIEWER_EXPORT Viewer : public Window
 {
+  public:
+    typedef std::lock_guard<Viewer> Guard;
+    
   protected:
     std::string name_;
+    std::recursive_mutex mutex_;
 
   public:
     explicit Viewer(std::string name="Viewer") : name_(name) { }
   
     /// \brief Returns the Viewer's model
+    ///
+    /// Only call or change this under lock.
+    ///
+    /// Example usage:
+    ///
+    /// ```cpp
+    ///     {
+    ///        dip::viewer::Viewer::Guard(*viewer);
+    ///        viewer->options().mapping_range_.first = 0;
+    ///     }
+    /// ```
     virtual ViewingOptions &options() = 0;
     
-    /// \brief Returns the dip::Image being visualized
+    /// \brief Returns the dip::Image being visualized.
+    ///
+    /// Only call this under lock.
+    ///
+    /// Example usage:
+    ///
+    /// ```cpp
+    ///     {
+    ///        dip::viewer::Viewer::Guard(*viewer);
+    ///        dip::Image image = viewer->image();
+    ///     }
+    /// ```
     virtual const dip::Image &image() = 0;
+    
+    /// \brief Sets the image to be visualized.
+    ///
+    /// Only call this under lock.
+    ///
+    /// Example usage:
+    ///
+    /// ```cpp
+    ///     {
+    ///        dip::viewer::Viewer::Guard(*viewer);
+    ///        viewer->setImage(image);
+    ///     }
+    /// ```
+    virtual void setImage(const dip::Image &image) = 0;
     
     /// \brief Returns the Viewer's name
     virtual const std::string &name() { return name_; }
 
     /// \brief Set window title, in addition to the Viewer's name
     virtual void setWindowTitle(const char *name) { title((name_ + name).c_str()); }
+    
+    /// \brief Lock the viewer. Necessary before making programmatic changes.
+    void lock() { mutex_.lock(); }
+    
+    /// \brief Unlock the viewer.
+    void unlock() { mutex_.unlock(); }
 };
 
 /// \brief Maps an image grey-value onto [0,255]

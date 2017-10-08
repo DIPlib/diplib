@@ -49,18 +49,23 @@ class DIPVIEWER_EXPORT Window
   private:
     void *id_;
     class Manager *manager_;
-    bool should_close_;
+    bool destroyed_;
     int width_, height_;
     
   public:
-    Window() : id_(NULL), manager_(NULL), should_close_(false), width_(512), height_(512) { }
+    Window() : id_(NULL), manager_(NULL), destroyed_(false), width_(512), height_(512) { }
     virtual ~Window() { }
 
     /// \brief Refresh window contents.
     void refresh();
     
     /// \brief Marks the window for destruction.
-    void destroy() { should_close_ = true; }
+    void destroy() { destroyed_ = true; }
+    
+    /// \brief Returns whether the window is marked for destruction.
+    ///
+    /// This is set either from a callback, or by calling destroy().
+    bool destroyed() { return destroyed_; }
     
     /// \brief Draw a string onto the window.
     ///
@@ -78,11 +83,6 @@ class DIPVIEWER_EXPORT Window
     
     /// \brief Returns the window's identity.
     void *id() { return id_; }
-    
-    /// \brief Returns whether the window is marked for destruction.
-    ///
-    /// This is set either from a callback, or by calling destroy().
-    bool shouldClose() { return should_close_; }
     
     /// \brief Sets the window's title.
     ///
@@ -168,7 +168,7 @@ class DIPVIEWER_EXPORT Manager
     /// Example usage:
     ///
     /// ```cpp
-    ///     manager.createWindow( dip::viewer::WindowPtr( new dip::viewer::SliceViewer( image )));
+    ///     manager.createWindow( dip::viewer::SliceViewer::Create( image ));
     /// ```
     virtual void createWindow(WindowPtr window) = 0;
     

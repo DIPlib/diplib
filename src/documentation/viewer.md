@@ -109,6 +109,11 @@ main parts
   The histogram also indicates the value of the operating point and the
   current mapping range.
 
+4. **Status bar**
+
+  The status bar gives the current pixel value, and shows option values
+  after you change them.
+
 Interaction occurs mainly within the main visualization window, and depends
 on where it occurs
 
@@ -143,9 +148,18 @@ on where it occurs
   necessarily the same, as are the vertical dimensions of the nominal XY and
   YZ slices.
 
+  Zooming near the slice labels only zooms that dimension.
+
 - *Histogram*
 
   Left-dragging in the histogram changes the mapping range limits.
+
+- *Status bar*
+
+  To the right of the status bar is the Link indicator, which can be used to link
+  to other windows. Simply click the indicator in the source window, and
+  then in the destination window. Operating point, zoom and offset will then be
+  shared between the windows. Right-click to unlink.
 
 There are also a few keyboard shortcuts:
 

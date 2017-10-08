@@ -28,7 +28,8 @@ namespace dip { namespace viewer {
 
 void ImageView::rebuild()
 {
-  glGenTextures(1, &texture_);
+  if (!texture_)
+    glGenTextures(1, &texture_);
   
   // Set texture
   glBindTexture( GL_TEXTURE_2D, texture_ );
