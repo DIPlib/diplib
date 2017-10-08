@@ -5,19 +5,15 @@ import threading, code, time
 import PyDIP as dip
 import PyDIP.viewer as dipview
 
-done = False
-
 def replThread():
-    global done
     code.interact(local={'dip':dip,'Show':dipview.Show})
-    done = True
     
 thread = threading.Thread(target=replThread)
 thread.start()
 
-while not done:
+while thread.is_alive():
     dipview.Draw()
-    time.sleep(0.001)
+    time.sleep(0.01)
 
 thread.join()
 
