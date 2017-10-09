@@ -116,10 +116,27 @@ void ExtendImageDoubleBoundary(
 // --- Rectangular morphology ---
 
 template< typename TPI >
+class Max {
+   public:
+      static TPI max( TPI a, TPI b ) {
+         return a > b ? a : b;
+      }
+      static constexpr TPI init = std::numeric_limits< TPI >::lowest();
+};
+template< typename TPI >
+class Min {
+   public:
+      static TPI max( TPI a, TPI b ) {
+         return a < b ? a : b;
+      }
+      static constexpr TPI init = std::numeric_limits< TPI >::max();
+};
+
+template< typename TPI, typename MAX >
 class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
    public:
-      RectangularMorphologyLineFilter( UnsignedArray const& sizes, Polarity polarity, Mirror mirror ) :
-            sizes_( sizes ), dilation_( polarity == Polarity::DILATION ), mirror_( mirror == Mirror::YES ) {}
+      RectangularMorphologyLineFilter( UnsignedArray const& sizes, Mirror mirror, dip::uint maxSize ) :
+            sizes_( sizes ), mirror_( mirror == Mirror::YES ), maxSize_( maxSize ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          buffers_.resize( threads );
       }
@@ -133,203 +150,489 @@ class RectangularMorphologyLineFilter : public Framework::SeparableLineFilter {
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
          dip::uint filterSize = sizes_[ params.dimension ];
+         dip::uint margin = params.inBuffer.border; // margin == filterSize/2 || margin == 0
+         bool hasMargin = margin == filterSize / 2;
          if( filterSize == 2 ) {
             // Brute-force computation
+            if( !hasMargin ) {
+               --length;
+            }
             if( mirror_ ) {
                in += inStride;
+            } else if( !hasMargin ) {
+               *out = in[ 0 ];
+               in += inStride;
+               out += outStride;
             }
-            if( dilation_ ) {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::max( in[ -inStride ], in[ 0 ] );
-                  in += inStride;
-                  out += outStride;
-               }
-            } else {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::min( in[ -inStride ], in[ 0 ] );
-                  in += inStride;
-                  out += outStride;
-               }
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               *out = MAX::max( in[ -inStride ], in[ 0 ] );
+               in += inStride;
+               out += outStride;
+            }
+            if( !hasMargin && mirror_ ) {
+               *out = in[ -inStride ];
             }
          } else if( filterSize == 3 ) {
             // Brute-force computation
-            if( dilation_ ) {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::max( std::max( in[ -inStride ], in[ 0 ] ), in[ inStride ] );
-                  in += inStride;
-                  out += outStride;
-               }
-            } else {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::min( std::min( in[ -inStride ], in[ 0 ] ), in[ inStride ] );
-                  in += inStride;
-                  out += outStride;
-               }
+            if( !hasMargin ) {
+               length -= 2;
+               *out = MAX::max( in[ 0 ], in[ inStride ] );
+               in += inStride;
+               out += outStride;
+            }
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               *out = MAX::max( MAX::max( in[ -inStride ], in[ 0 ] ), in[ inStride ] );
+               in += inStride;
+               out += outStride;
+            }
+            if( !hasMargin ) {
+               *out = MAX::max( in[ -inStride ], in[ 0 ] );
             }
          } else if( filterSize == 4 ) {
             // Brute-force computation
-            if( mirror_ ) {
+            dip::sint inStride2 = 2 * inStride;
+            if( hasMargin && mirror_ ) {
                in += inStride;
             }
-            dip::sint inStride2 = 2 * inStride;
-            if( dilation_ ) {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::max( std::max( in[ -inStride2 ], in[ -inStride ] ),
-                                   std::max( in[ 0 ], in[ inStride ] ));
+            if( !hasMargin ) {
+               length -= 3;
+               if( mirror_ ) {
+                  in += inStride;
+               } else {
+                  *out = MAX::max( in[ 0 ], in[ inStride ] );
                   in += inStride;
                   out += outStride;
                }
-            } else {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::min( std::min( in[ -inStride2 ], in[ -inStride ] ),
-                                   std::min( in[ 0 ], in[ inStride ] ));
-                  in += inStride;
+               *out = MAX::max( in[ -inStride ], MAX::max( in[ 0 ], in[ inStride ] ));
+               in += inStride;
+               out += outStride;
+            }
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               *out = MAX::max( MAX::max( in[ -inStride2 ], in[ -inStride ] ),
+                                MAX::max( in[ 0 ], in[ inStride ] ));
+               in += inStride;
+               out += outStride;
+            }
+            if( !hasMargin ) {
+               *out = MAX::max( in[ 0 ], MAX::max( in[ -inStride ], in[ -inStride2 ] ));
+               if( mirror_ ) {
                   out += outStride;
+                  *out = MAX::max( in[ 0 ], in[ -inStride ] );
                }
             }
          } else if( filterSize == 5 ) {
             // Brute-force computation
             dip::sint inStride2 = 2 * inStride;
-            if( dilation_ ) {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::max( in[ 0 ], std::max(
-                                   std::max( in[ -inStride2 ], in[ -inStride ] ),
-                                   std::max( in[ inStride ], in[ inStride2 ] )));
-                  in += inStride;
-                  out += outStride;
-               }
-            } else {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::min( in[ 0 ], std::min(
-                                   std::min( in[ -inStride2 ], in[ -inStride ] ),
-                                   std::min( in[ inStride ], in[ inStride2 ] )));
-                  in += inStride;
-                  out += outStride;
-               }
+            if( !hasMargin ) {
+               length -= 4;
+               *out = MAX::max( in[ 0 ], MAX::max( in[ inStride ], in[ inStride2 ] ));
+               in += inStride;
+               out += outStride;
+               *out = MAX::max( MAX::max( in[ 0 ], in[ -inStride ] ),
+                                MAX::max( in[ inStride ], in[ inStride2 ] ));
+               in += inStride;
+               out += outStride;
+            }
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               *out = MAX::max( in[ 0 ],
+                                MAX::max( MAX::max( in[ -inStride2 ], in[ -inStride ] ),
+                                          MAX::max( in[ inStride ], in[ inStride2 ] )));
+               in += inStride;
+               out += outStride;
+            }
+            if( !hasMargin ) {
+               *out = MAX::max( MAX::max( in[ 0 ], in[ inStride ] ),
+                                MAX::max( in[ -inStride ], in[ -inStride2 ] ));
+               in += inStride;
+               out += outStride;
+               *out = MAX::max( in[ 0 ], MAX::max( in[ -inStride ], in[ -inStride2 ] ));
             }
          } else {
-            // Van Herke algorithm
-            dip::uint margin = params.inBuffer.border; // TODO: this function must be changed so that margin != filterSize/2
-            // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once
-            dip::uint bufferSize = length + 2 * margin;
+            // Van Herk algorithm
+            // Three steps:
+            //  1- Fill the forward buffer with the cumulative max over blocks of size filterSize, starting at the
+            //     left edge of the image, and past the right edge by filterSize/2.
+            //  2- Fill the backward buffer with the cumulative max over blocks of size filterSize, starting at the
+            //     right edge of the image, and past the left edge by filterSize/2.
+            //     Note that the blocks in the forward and backward buffer must be aligned.
+            //  3- Take the max between a value in the forward buffer at pos + right, and a value in
+            //     the backward buffer at pos - left. We do this by shifting the two buffers: forward buffer left by
+            //     filterSize/2, and backward buffer right by filterSize/2.
+            // We could put one of the two buffers in the output array, but, we do not do this for simplicity of the
+            // code (note that in and out can be the same, and input and output must be read using strides).
+            // How values past the right edge in the forward buffer, and values past the left edge in the
+            // backward buffer are filled in depends on the boundary condition. If we don't have a margin (i.e.
+            // default boundary condition), we simply extend using the edge pixel. This assures that the max (or min)
+            // value selected is always one of the values within the filer.
+            // TODO: Gil and Kimmel suggest a way of computing these three steps that further reduces the number of comparisons.
+            dip::uint left = filterSize / 2; // The number of pixels on the left side of the filter
+            dip::uint right = filterSize - 1 - left; // The number of pixels on the right side
+            if( mirror_ ) {
+               std::swap( left, right );
+            }
+            // Allocate buffer if it's not yet there.
             std::vector< TPI >& buffer = buffers_[ params.thread ];
-            buffer.resize( 2 * bufferSize ); // does nothing if already correct size
-            TPI* forwardBuffer = buffer.data() + margin;
-            TPI* backwardBuffer = forwardBuffer + bufferSize;
-            // Fill forward buffer
-            in -= inStride * static_cast< dip::sint >( margin );
-            TPI* buf = forwardBuffer - margin;
+            buffer.resize( std::max( maxSize_, length ) * 2 + filterSize ); // does nothing if already correct size
+            TPI* forwardBuffer = buffer.data();    // size = length + right
+            TPI* backwardBuffer = forwardBuffer + length + right; // size = length + left
+            // Copy input to forward and backward buffers, adding a margin on one side of each buffer
+            TPI* tmp;
+            TPI* buf;
             TPI prev;
-            if( dilation_ ) {
-               while( buf < forwardBuffer + length + margin - filterSize ) {
-                  prev = *buf = *in;
+            if( hasMargin ) {
+               tmp = in - inStride;
+               buf = backwardBuffer + left - 1;
+               prev = *buf = *tmp;
+               --buf;
+               tmp -= inStride;
+               for( dip::uint ii = 1; ii < left; ++ii ) {
+                  prev = *buf = MAX::max( *tmp, prev );
+                  --buf;
+                  tmp -= inStride;
+               }
+               backwardBuffer += left;
+            } else { // copy edge value out into margin
+               for( dip::uint ii = 0; ii < left; ++ii ) {
+                  *backwardBuffer = *in;
+                  ++backwardBuffer;
+               }
+            }
+            dip::uint nBlocks = length / filterSize;
+            dip::uint lastBlockSize = length % filterSize;
+            for( dip::uint jj = 0; jj < nBlocks; ++jj ) {
+               prev = *forwardBuffer = *in;
+               ++forwardBuffer;
+               in += inStride;
+               for( dip::uint ii = 1; ii < filterSize; ++ii ) {
+                  prev = *forwardBuffer = MAX::max( *in, prev );
+                  ++forwardBuffer;
                   in += inStride;
-                  ++buf;
-                  for( dip::uint ii = 1; ii < filterSize; ++ii ) {
-                     prev = *buf = std::max( *in, prev );
-                     in += inStride;
-                     ++buf;
+               }
+               tmp = in - inStride;
+               backwardBuffer += filterSize;
+               buf = backwardBuffer - 1;
+               prev = *buf = *tmp;
+               --buf;
+               tmp -= inStride;
+               for( dip::uint ii = 1; ii < filterSize; ++ii ) {
+                  prev = *buf = MAX::max( *tmp, prev );
+                  --buf;
+                  tmp -= inStride;
+               }
+            }
+            if( hasMargin ) {
+               tmp = in;
+               prev = *forwardBuffer = *tmp;
+               ++forwardBuffer;
+               tmp += inStride;
+               for( dip::uint ii = 1; ii < std::min( lastBlockSize + right, filterSize ); ++ii ) {
+                  prev = *forwardBuffer = MAX::max( *tmp, prev );
+                  ++forwardBuffer;
+                  tmp += inStride;
+               }
+               if( lastBlockSize + right > filterSize ) {
+                  prev = *forwardBuffer = *tmp;
+                  ++forwardBuffer;
+                  tmp += inStride;
+                  for( dip::uint ii = 1; ii < lastBlockSize + right - filterSize; ++ii ) {
+                     prev = *forwardBuffer = MAX::max( *tmp, prev );
+                     ++forwardBuffer;
+                     tmp += inStride;
                   }
                }
             } else {
-               while( buf < forwardBuffer + length + margin - filterSize ) {
-                  prev = *buf = *in;
-                  in += inStride;
-                  ++buf;
-                  for( dip::uint ii = 1; ii < filterSize; ++ii ) {
-                     prev = *buf = std::min( *in, prev );
-                     in += inStride;
-                     ++buf;
+               if( lastBlockSize > 0 ) {
+                  tmp = in;
+                  prev = *forwardBuffer = *tmp;
+                  ++forwardBuffer;
+                  tmp += inStride;
+                  for( dip::uint ii = 1; ii < lastBlockSize; ++ii ) {
+                     prev = *forwardBuffer = MAX::max( *tmp, prev );
+                     ++forwardBuffer;
+                     tmp += inStride;
+                  }
+                  for( dip::uint ii = lastBlockSize; ii < std::min( lastBlockSize + right, filterSize ); ++ii ) {
+                     *forwardBuffer = prev;
+                     ++forwardBuffer;
+                  }
+                  if( lastBlockSize + right > filterSize ) {
+                     prev = *( tmp - inStride ); // copy edge value out into margin
+                     for( dip::uint ii = 0; ii < lastBlockSize + right - filterSize; ++ii ) {
+                        *forwardBuffer = prev;
+                        ++forwardBuffer;
+                     }
+                  }
+               } else {
+                  prev = *( in - inStride );
+                  for( dip::uint ii = 0; ii < right; ++ii ) {
+                     *forwardBuffer = prev;
+                     ++forwardBuffer;
                   }
                }
             }
-            dip::sint syncpos = buf - forwardBuffer; // this is needed to align the two buffers
-            prev = *buf = *in;
-            in += inStride;
-            ++buf;
-            if( dilation_ ) {
-               while( buf < forwardBuffer + length + margin ) {
-                  prev = *buf = std::max( *in, prev );
-                  in += inStride;
-                  ++buf;
-               }
-            } else {
-               while( buf < forwardBuffer + length + margin ) {
-                  prev = *buf = std::min( *in, prev );
-                  in += inStride;
-                  ++buf;
-               }
-            }
-            // Fill backward buffer
-            in -= inStride; // undo last increment
-            buf = backwardBuffer + length + margin - 1;
-            prev = *buf = *in;
-            in -= inStride;
-            --buf;
-            if( dilation_ ) {
-               while( buf >= backwardBuffer + syncpos ) {
-                  prev = *buf = std::max( *in, prev );
-                  in -= inStride;
+            if( lastBlockSize > 0 ) {
+               tmp = in + static_cast< dip::sint >( lastBlockSize - 1 ) * inStride;
+               buf = backwardBuffer + ( lastBlockSize - 1 );
+               prev = *buf = *tmp;
+               --buf;
+               tmp -= inStride;
+               for( dip::uint ii = 1; ii < lastBlockSize; ++ii ) {
+                  prev = *buf = MAX::max( *tmp, prev );
                   --buf;
-               }
-               while( buf > backwardBuffer - margin ) {
-                  prev = *buf = *in;
-                  in -= inStride;
-                  --buf;
-                  for( dip::uint ii = 1; ii < filterSize; ++ii ) {
-                     prev = *buf = std::max( *in, prev );
-                     in -= inStride;
-                     --buf;
-                  }
-               }
-            } else {
-               while( buf >= backwardBuffer + syncpos ) {
-                  prev = *buf = std::min( *in, prev );
-                  in -= inStride;
-                  --buf;
-               }
-               while( buf > backwardBuffer - margin ) {
-                  prev = *buf = *in;
-                  in -= inStride;
-                  --buf;
-                  for( dip::uint ii = 1; ii < filterSize; ++ii ) {
-                     prev = *buf = std::min( *in, prev );
-                     in -= inStride;
-                     --buf;
-                  }
+                  tmp -= inStride;
                }
             }
             // Fill output
-            if( mirror_ ) {
-               forwardBuffer += margin;
-               backwardBuffer -= filterSize - 1 - margin;
-            } else {
-               forwardBuffer += filterSize - 1 - margin;
-               backwardBuffer -= margin;
-            }
-            if( dilation_ ) {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::max( *forwardBuffer, *backwardBuffer );
-                  out += outStride;
-                  ++forwardBuffer;
-                  ++backwardBuffer;
-               }
-            } else {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::min( *forwardBuffer, *backwardBuffer );
-                  out += outStride;
-                  ++forwardBuffer;
-                  ++backwardBuffer;
-               }
+            forwardBuffer = buffer.data() + right; // shift this buffer left by `right`.
+            backwardBuffer = forwardBuffer + length; // this is shifted right by `left`.
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               *out = MAX::max( *forwardBuffer, *backwardBuffer );
+               out += outStride;
+               ++forwardBuffer;
+               ++backwardBuffer;
             }
          }
       }
    private:
       UnsignedArray const& sizes_;
-      std::vector< std::vector< TPI >> buffers_; // one for each thread
-      bool dilation_;
       bool mirror_;
+      dip::uint maxSize_;
+      std::vector< std::vector< TPI >> buffers_; // one for each thread
 };
+
+template< typename TPI >
+inline std::unique_ptr< Framework::SeparableLineFilter > NewDilationRectangularMorphologyLineFilter( UnsignedArray const& sizes, Mirror mirror, dip::uint maxSize ) {
+   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>( new RectangularMorphologyLineFilter< TPI, Max< TPI >>( sizes, mirror, maxSize ));
+}
+
+template< typename TPI >
+inline std::unique_ptr< Framework::SeparableLineFilter > NewErosionRectangularMorphologyLineFilter( UnsignedArray const& sizes, Mirror mirror, dip::uint maxSize ) {
+   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>( new RectangularMorphologyLineFilter< TPI, Min< TPI >>( sizes, mirror, maxSize ));
+}
+
+template< typename TPI, typename MAX >
+class PeriodicMorphologyLineFilter : public Framework::SeparableLineFilter {
+   public:
+      PeriodicMorphologyLineFilter( dip::uint stepSize, dip::uint filterSize, Mirror mirror, dip::uint maxSize ) :
+            stepSize_( stepSize ), filterSize_( filterSize ), mirror_( mirror == Mirror::YES ), maxSize_( maxSize ) {}
+      virtual void SetNumberOfThreads( dip::uint threads ) override {
+         buffers_.resize( threads );
+      }
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
+         return lineLength * 6; // 3 comparisons, 3 iterations
+      }
+      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
+         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
+         dip::uint length = params.inBuffer.length;
+         dip::sint inStride = params.inBuffer.stride;
+         TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
+         dip::sint outStride = params.outBuffer.stride;
+         dip::uint steps = filterSize_ / stepSize_; // stepSize_ > 1, steps > 1
+         dip::uint margin = params.inBuffer.border; // margin == filterSize_/2 || margin == 0
+         bool hasMargin = margin == filterSize_ / 2;
+         // TODO: brute-force computation if !hasMargin
+         if( hasMargin && ( steps == 2 )) {
+            // Brute-force computation
+            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
+            if( mirror_ ) {
+               in += stride;
+            }
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               *out = MAX::max( in[ -stride ], in[ 0 ] );
+               in += inStride;
+               out += outStride;
+            }
+         } else if( hasMargin && ( steps == 3 )) {
+            // Brute-force computation
+            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               *out = MAX::max( MAX::max( in[ -stride ], in[ 0 ] ), in[ stride ] );
+               in += inStride;
+               out += outStride;
+            }
+         } else if( hasMargin && ( steps == 4 )) {
+            // Brute-force computation
+            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
+            if( mirror_ ) {
+               in += stride;
+            }
+            dip::sint stride2 = 2 * stride;
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               *out = MAX::max( MAX::max( in[ -stride2 ], in[ -stride ] ),
+                                MAX::max( in[ 0 ], in[ stride ] ));
+               in += inStride;
+               out += outStride;
+            }
+         } else if( hasMargin && ( steps == 5 )) {
+            // Brute-force computation
+            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
+            dip::sint stride2 = 2 * stride;
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               *out = MAX::max( in[ 0 ], std::max(
+                     MAX::max( in[ -stride2 ], in[ -stride ] ),
+                     MAX::max( in[ stride ], in[ stride2 ] )));
+               in += inStride;
+               out += outStride;
+            }
+         } else {
+            // Van Herk algorithm, modified from RectangularMorphologyLineFilter
+            //dip::uint actualFilterSize = ( steps - 1 ) * stepSize_ + 1;
+            dip::uint left = ( steps / 2 ) * stepSize_; // The number of pixels on the left side of the filter
+            dip::uint right = (( steps - 1 ) / 2 ) * stepSize_; // The number of pixels on the right side
+            if( mirror_ ) {
+               std::swap( left, right );
+            }
+            // Allocate buffer if it's not yet there.
+            std::vector< TPI >& buffer = buffers_[ params.thread ];
+            buffer.resize( std::max( maxSize_, length ) * 2 + filterSize_ ); // does nothing if already correct size
+            TPI* forwardBuffer = buffer.data();    // size = length + right
+            TPI* backwardBuffer = forwardBuffer + length + right; // size = length + left
+            // Copy input to forward and backward buffers, adding a margin on one side of each buffer
+            TPI* tmp;
+            TPI* buf;
+            if( hasMargin ) {
+               tmp = in - inStride;
+               buf = backwardBuffer + left - 1;
+               for( dip::uint ii = 0; ii < std::min( stepSize_, left ); ++ii ) {
+                  *buf = *tmp;
+                  --buf;
+                  tmp -= inStride;
+               }
+               for( dip::uint ii = stepSize_; ii < left; ++ii ) {
+                  *buf = MAX::max( *tmp, *( buf + stepSize_ ));
+                  --buf;
+                  tmp -= inStride;
+               }
+               backwardBuffer += left;
+            } else { // copy edge value out into margin
+               for( dip::uint ii = 0; ii < left; ++ii ) {
+                  *backwardBuffer = *in;
+                  ++backwardBuffer;
+               }
+            }
+            dip::uint nBlocks = length / filterSize_;
+            dip::uint lastBlockSize = length % filterSize_;
+            for( dip::uint jj = 0; jj < nBlocks; ++jj ) {
+               for( dip::uint ii = 0; ii < stepSize_; ++ii ) {
+                  *forwardBuffer = *in;
+                  ++forwardBuffer;
+                  in += inStride;
+               }
+               for( dip::uint ii = stepSize_; ii < filterSize_; ++ii ) {
+                  *forwardBuffer = MAX::max( *in, *( forwardBuffer - stepSize_ ));
+                  ++forwardBuffer;
+                  in += inStride;
+               }
+               tmp = in - inStride;
+               backwardBuffer += filterSize_;
+               buf = backwardBuffer - 1;
+               for( dip::uint ii = 0; ii < stepSize_; ++ii ) {
+                  *buf = *tmp;
+                  --buf;
+                  tmp -= inStride;
+               }
+               for( dip::uint ii = stepSize_; ii < filterSize_; ++ii ) {
+                  *buf = MAX::max( *tmp, *( buf + stepSize_ ));
+                  --buf;
+                  tmp -= inStride;
+               }
+            }
+            if( hasMargin ) {
+               tmp = in;
+               for( dip::uint ii = 0; ii < std::min( stepSize_, lastBlockSize + right ); ++ii ) {
+                  *forwardBuffer = *tmp;
+                  ++forwardBuffer;
+                  tmp += inStride;
+               }
+               for( dip::uint ii = stepSize_; ii < std::min( lastBlockSize + right, filterSize_ ); ++ii ) {
+                  *forwardBuffer = MAX::max( *tmp, *( forwardBuffer - stepSize_ ));
+                  ++forwardBuffer;
+                  tmp += inStride;
+               }
+               if( lastBlockSize + right > filterSize_ ) {
+                  for( dip::uint ii = 0; ii < std::min( stepSize_, lastBlockSize + right - filterSize_ ); ++ii ) {
+                     *forwardBuffer = *tmp;
+                     ++forwardBuffer;
+                     tmp += inStride;
+                  }
+                  for( dip::uint ii = stepSize_; ii < lastBlockSize + right - filterSize_; ++ii ) {
+                     *forwardBuffer = MAX::max( *tmp, *( forwardBuffer - stepSize_ ));
+                     ++forwardBuffer;
+                     tmp += inStride;
+                  }
+               }
+            } else {
+               tmp = in;
+               for( dip::uint ii = 0; ii < std::min( stepSize_, lastBlockSize ); ++ii ) {
+                  *forwardBuffer = *tmp;
+                  ++forwardBuffer;
+                  tmp += inStride;
+               }
+               for( dip::uint ii = stepSize_; ii < lastBlockSize; ++ii ) {
+                  *forwardBuffer = MAX::max( *tmp, *( forwardBuffer - stepSize_ ));
+                  ++forwardBuffer;
+                  tmp += inStride;
+               }
+               tmp -= inStride;
+               if( lastBlockSize < stepSize_ ) {
+                  dip::uint n = std::min( stepSize_ - lastBlockSize, right );
+                  for( dip::uint ii = 0; ii < n; ++ii ) {
+                     *forwardBuffer = *tmp;
+                     ++forwardBuffer;
+                  }
+                  for( dip::uint ii = n; ii < right; ++ii ) {
+                     *forwardBuffer = *( forwardBuffer - stepSize_ );
+                     ++forwardBuffer;
+                  }
+               } else {
+                  for( dip::uint ii = 0; ii < right; ++ii ) {
+                     *forwardBuffer = *( forwardBuffer - stepSize_ );
+                     ++forwardBuffer;
+                  }
+               }
+            }
+            if( lastBlockSize > 0 ) {
+               tmp = in + static_cast< dip::sint >( lastBlockSize - 1 ) * inStride;
+               buf = backwardBuffer + ( lastBlockSize - 1 );
+               for( dip::uint ii = 0; ii < std::min( stepSize_, lastBlockSize ); ++ii ) {
+                  *buf = *tmp;
+                  --buf;
+                  tmp -= inStride;
+               }
+               for( dip::uint ii = stepSize_; ii < std::min( lastBlockSize, filterSize_ ); ++ii ) {
+                  *buf = MAX::max( *tmp, *( buf + stepSize_ ));
+                  --buf;
+                  tmp -= inStride;
+               }
+            }
+            // Fill output
+            forwardBuffer = buffer.data() + right; // shift this buffer left by `right`.
+            backwardBuffer = forwardBuffer + length; // this is shifted right by `left`.
+            for( dip::uint ii = 0; ii < length; ++ii ) {
+               *out = MAX::max( *forwardBuffer, *backwardBuffer );
+               out += outStride;
+               ++forwardBuffer;
+               ++backwardBuffer;
+            }
+         }
+      }
+   private:
+      dip::uint stepSize_;
+      dip::uint filterSize_;
+      bool mirror_;
+      dip::uint maxSize_;
+      std::vector< std::vector< TPI >> buffers_; // one for each thread
+};
+
+template< typename TPI >
+inline std::unique_ptr< Framework::SeparableLineFilter > NewDilationPeriodicMorphologyLineFilter( dip::uint stepSize, dip::uint filterLength, Mirror mirror, dip::uint maxSize ) {
+   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>( new PeriodicMorphologyLineFilter< TPI, Max< TPI >>( stepSize, filterLength, mirror, maxSize ));
+}
+
+template< typename TPI >
+inline std::unique_ptr< Framework::SeparableLineFilter > NewErosionPeriodicMorphologyLineFilter( dip::uint stepSize, dip::uint filterLength, Mirror mirror, dip::uint maxSize ) {
+   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>( new PeriodicMorphologyLineFilter< TPI, Min< TPI >>( stepSize, filterLength, mirror, maxSize ));
+}
 
 void RectangularMorphology(
       Image const& in,
@@ -349,10 +652,10 @@ void RectangularMorphology(
          sizes[ ii ] = static_cast< dip::uint >( std::round( filterParam[ ii ] ));
          process[ ii ] = true;
          ++nProcess;
-         //if( !bc.empty() ) {
+         if( !bc.empty() ) {
             // If the boundary condition is default, we don't need a boundary extension at all.
             border[ ii ] = sizes[ ii ] / 2;
-         //}
+         }
       }
    }
    DataType dtype = in.DataType();
@@ -369,30 +672,24 @@ void RectangularMorphology(
       DIP_START_STACK_TRACE
          switch( operation ) {
             case BasicMorphologyOperation::DILATION:
-               DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), ovltype );
-               //Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
-               Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewDilationRectangularMorphologyLineFilter, ( sizes, mirror, 0 ), ovltype );
+               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
                break;
             case BasicMorphologyOperation::EROSION:
-               DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), ovltype );
-               //Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
-               Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewErosionRectangularMorphologyLineFilter, ( sizes, mirror, 0 ), ovltype );
+               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
                break;
             case BasicMorphologyOperation::CLOSING:
-               DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), ovltype );
-               //Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
-               Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
-               DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, InvertMirrorParam( mirror )), ovltype );
-               //Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
-               Framework::Separable( out, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewDilationRectangularMorphologyLineFilter, ( sizes, mirror, 0 ), ovltype );
+               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewErosionRectangularMorphologyLineFilter, ( sizes, InvertMirrorParam( mirror ), 0 ), ovltype );
+               Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
                break;
             case BasicMorphologyOperation::OPENING:
-               DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), ovltype );
-               //Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
-               Framework::Separable( in, out, dtype, dtype, process, border, BoundaryConditionForErosion( bc ), *lineFilter );
-               DIP_OVL_NEW_REAL( lineFilter, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, InvertMirrorParam( mirror )), ovltype );
-               //Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
-               Framework::Separable( out, out, dtype, dtype, process, border, BoundaryConditionForDilation( bc ), *lineFilter );
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewErosionRectangularMorphologyLineFilter, ( sizes, mirror, 0 ), ovltype );
+               Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewDilationRectangularMorphologyLineFilter, ( sizes, InvertMirrorParam( mirror ), 0 ), ovltype );
+               Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
                break;
          }
       DIP_END_STACK_TRACE
@@ -422,6 +719,9 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
          dip::uint averageRunLength = div_ceil( pixelTable.NumberOfPixels(), pixelTable.Runs().size() );
          bruteForce_ = averageRunLength < 4; // Experimentally determined
          //std::cout << ( bruteForce_ ? "   Using brute force method\n" : "   Using run length method\n" );
+         if( bruteForce_ ) {
+            offsets_ = pixelTable.Offsets();
+         }
       }
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
@@ -429,12 +729,11 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
          dip::uint length = params.bufferLength;
-         PixelTableOffsets const& pixelTable = params.pixelTable;
          if( bruteForce_ ) {
             if( dilation_ ) {
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI max = std::numeric_limits< TPI >::lowest();
-                  for( PixelTableOffsets::iterator it = pixelTable.begin(); !it.IsAtEnd(); ++it ) {
+                  for( auto it = offsets_.begin(); it != offsets_.end(); ++it ) {
                      max = std::max( max, in[ *it ] );
                   }
                   *out = max;
@@ -444,7 +743,7 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
             } else {
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI min = std::numeric_limits< TPI >::max();
-                  for( PixelTableOffsets::iterator it = pixelTable.begin(); !it.IsAtEnd(); ++it ) {
+                  for( auto it = offsets_.begin(); it != offsets_.end(); ++it ) {
                      min = std::min( min, in[ *it ] );
                   }
                   *out = min;
@@ -453,6 +752,7 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
                }
             }
          } else {
+            PixelTableOffsets const& pixelTable = params.pixelTable;
             if( dilation_ ) {
                TPI max = 0; // The maximum value within the filter
                dip::sint index = -1; // Location of the maximum value w.r.t. the left edge
@@ -475,7 +775,7 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
                      // Maximum is no longer in the filter. Find maximum by looping over all pixels in the table.
                      index = 0;
                      max = std::numeric_limits< TPI >::lowest();
-                     for( PixelTableOffsets::iterator it = pixelTable.begin(); !it.IsAtEnd(); ++it ) {
+                     for( auto it = pixelTable.begin(); !it.IsAtEnd(); ++it ) {
                         TPI val = in[ *it ];
                         if( max == val ) {
                            index = std::max( index, static_cast< dip::sint >( it.Index() ));
@@ -512,7 +812,7 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
                      // Minimum is no longer in the filter. Find minimum by looping over all pixels in the table.
                      index = 0;
                      min = std::numeric_limits< TPI >::max();
-                     for( PixelTableOffsets::iterator it = pixelTable.begin(); !it.IsAtEnd(); ++it ) {
+                     for( auto it = pixelTable.begin(); !it.IsAtEnd(); ++it ) {
                         TPI val = in[ *it ];
                         if( min == val ) {
                            index = std::max( index, static_cast< dip::sint >( it.Index() ));
@@ -533,26 +833,33 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
    private:
       bool dilation_;
       bool bruteForce_ = false;
+      std::vector< dip::sint > offsets_; // used when bruteForce_
+
 };
 
 template< typename TPI >
 class GreyValueSEMorphologyLineFilter : public Framework::FullLineFilter {
    public:
       GreyValueSEMorphologyLineFilter( Polarity polarity ) : dilation_( polarity == Polarity::DILATION ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint ) override {
+         return lineLength * nKernelPixels * 3;
+      }
+      virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+         offsets_ = pixelTable.Offsets();
+      }
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
          dip::uint length = params.bufferLength;
-         PixelTableOffsets const& pixelTable = params.pixelTable;
-         std::vector< dfloat > const& weights = pixelTable.Weights();
+         std::vector< dfloat > const& weights =  params.pixelTable.Weights();
          if( dilation_ ) {
             for( dip::uint ii = 0; ii < length; ++ii ) {
                TPI max = std::numeric_limits< TPI >::lowest();
-               auto ito = pixelTable.begin();
+               auto ito = offsets_.begin();
                auto itw = weights.begin();
-               while( !ito.IsAtEnd() ) {
+               while( ito != offsets_.end() ) {
                   max = std::max( max, clamp_cast< TPI >( static_cast< dfloat >( in[ *ito ] ) + *itw ));
                   ++ito;
                   ++itw;
@@ -564,9 +871,9 @@ class GreyValueSEMorphologyLineFilter : public Framework::FullLineFilter {
          } else {
             for( dip::uint ii = 0; ii < length; ++ii ) {
                TPI min = std::numeric_limits< TPI >::max();
-               auto ito = pixelTable.begin();
+               auto ito = offsets_.begin();
                auto itw = weights.begin();
-               while( !ito.IsAtEnd() ) {
+               while( ito != offsets_.end() ) {
                   min = std::min( min, clamp_cast< TPI >( static_cast< dfloat >( in[ *ito ] ) - *itw ));
                   ++ito;
                   ++itw;
@@ -579,6 +886,7 @@ class GreyValueSEMorphologyLineFilter : public Framework::FullLineFilter {
       }
    private:
       bool dilation_;
+      std::vector< dip::sint > offsets_;
 };
 
 void GeneralSEMorphology(
@@ -620,9 +928,6 @@ void GeneralSEMorphology(
             if( !bc.empty() ) {
                UnsignedArray boundary = kernel.Boundary( in.Dimensionality() );
                ExtendImageDoubleBoundary( in, out, boundary, bc );
-               std::cout << in;
-               std::cout << "[GeneralSEMorphology] calling ExtendImageDoubleBoundary()\n";
-               std::cout << out;
                opts += Framework::Full_BorderAlreadyExpanded;
             }
             if( hasWeights ) {
@@ -633,10 +938,7 @@ void GeneralSEMorphology(
             Framework::Full( bc.empty() ? in : out, out, dtype, dtype, dtype, 1, BoundaryConditionForDilation( bc ), kernel, *lineFilter, opts );
             // Note that the output image has a newly-allocated data segment, we've lost the boundary extension we had.
             if( !bc.empty() ) {
-               std::cout << out;
                out.Crop( originalImageSize );
-               std::cout << out;
-               std::cout << "[GeneralSEMorphology] calling Image::Crop()\n";
             }
             kernel.Mirror();
             if( hasWeights ) {
@@ -850,223 +1152,6 @@ void ParabolicMorphology(
 
 // --- Line morphology ---
 
-template< typename TPI >
-class PeriodicLineMorphologyLineFilter : public Framework::SeparableLineFilter {
-      // This is an identical copy of RectangularMorphologyLineFilter, but we fill the buffers using the step size.
-      // TODO: Can we merge these two line filters into the same code path?
-   public:
-      PeriodicLineMorphologyLineFilter( dip::uint stepSize, dip::uint length, Polarity polarity, Mirror mirror ) :
-            stepSize_( stepSize ), frameLength_( length ), dilation_( polarity == Polarity::DILATION ), mirror_( mirror == Mirror::YES ) {}
-      virtual void SetNumberOfThreads( dip::uint threads ) override {
-         buffers_.resize( threads );
-      }
-      virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint, dip::uint ) override {
-         return lineLength * 6; // 3 comparisons, 3 iterations
-      }
-      virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
-         TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
-         dip::sint inStride = params.inBuffer.stride;
-         TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
-         dip::sint outStride = params.outBuffer.stride;
-         dip::uint length = params.inBuffer.length;
-         dip::uint margin = params.inBuffer.border; // TODO: this function must be changed so that margin != filterSize/2
-         dip::uint steps = frameLength_ / stepSize_;
-         if( steps == 2 ) {
-            // Brute-force computation
-            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
-            if( mirror_ ) {
-               in += stride;
-            }
-            if( dilation_ ) {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::max( in[ -stride ], in[ 0 ] );
-                  in += inStride;
-                  out += outStride;
-               }
-            } else {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::min( in[ -stride ], in[ 0 ] );
-                  in += inStride;
-                  out += outStride;
-               }
-            }
-         } else if( steps == 3 ) {
-            // Brute-force computation
-            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
-            if( dilation_ ) {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::max( std::max( in[ -stride ], in[ 0 ] ), in[ stride ] );
-                  in += inStride;
-                  out += outStride;
-               }
-            } else {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::min( std::min( in[ -stride ], in[ 0 ] ), in[ stride ] );
-                  in += inStride;
-                  out += outStride;
-               }
-            }
-         } else if( steps == 4 ) {
-            // Brute-force computation
-            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
-            if( mirror_ ) {
-               in += stride;
-            }
-            dip::sint stride2 = 2 * stride;
-            if( dilation_ ) {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::max( std::max( in[ -stride2 ], in[ -stride ] ),
-                                   std::max( in[ 0 ], in[ stride ] ));
-                  in += inStride;
-                  out += outStride;
-               }
-            } else {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::min( std::min( in[ -stride2 ], in[ -stride ] ),
-                                   std::min( in[ 0 ], in[ stride ] ));
-                  in += inStride;
-                  out += outStride;
-               }
-            }
-         } else if( steps == 5 ) {
-            // Brute-force computation
-            dip::sint stride = inStride * static_cast< dip::sint >( stepSize_ );
-            dip::sint stride2 = 2 * stride;
-            if( dilation_ ) {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::max( in[ 0 ], std::max(
-                        std::max( in[ -stride2 ], in[ -stride ] ),
-                        std::max( in[ stride ], in[ stride2 ] )));
-                  in += inStride;
-                  out += outStride;
-               }
-            } else {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::min( in[ 0 ], std::min(
-                        std::min( in[ -stride2 ], in[ -stride ] ),
-                        std::min( in[ stride ], in[ stride2 ] )));
-                  in += inStride;
-                  out += outStride;
-               }
-            }
-         } else {
-            // Van Herke algorithm
-            // Allocate buffer if it's not yet there. It's two buffers, but we allocate only once
-            dip::uint bufferSize = length + 2 * margin;
-            std::vector< TPI >& buffer = buffers_[ params.thread ];
-            buffer.resize( 2 * bufferSize ); // does nothing if already correct size
-            TPI* forwardBuffer = buffer.data() + margin;
-            TPI* backwardBuffer = forwardBuffer + bufferSize;
-            // Copy input data over to buffers, will simplify filling them later
-            in -= inStride * static_cast< dip::sint >( margin );
-            TPI* buf = forwardBuffer - margin;
-            TPI* buf2 = backwardBuffer - margin;
-            while( buf < forwardBuffer + length + margin ) {
-               *buf2 = *buf = *in;
-               in += inStride;
-               ++buf;
-               ++buf2;
-            }
-            // Fill forward buffer
-            buf = forwardBuffer - margin;
-            if( dilation_ ) {
-               while( buf < forwardBuffer + length + margin - frameLength_ ) {
-                  buf += stepSize_;
-                  for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
-                     *buf = std::max( *buf, *( buf - stepSize_ ));
-                     ++buf;
-                  }
-               }
-            } else {
-               while( buf < forwardBuffer + length + margin - frameLength_ ) {
-                  buf += stepSize_;
-                  for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
-                     *buf = std::min( *buf, *( buf - stepSize_ ));
-                     ++buf;
-                  }
-               }
-            }
-            dip::sint syncpos = buf - forwardBuffer; // this is needed to align the two buffers
-            buf += stepSize_;
-            if( dilation_ ) {
-               while( buf < forwardBuffer + length + margin ) {
-                  *buf = std::max( *buf, *( buf - stepSize_ ));
-                  ++buf;
-               }
-            } else {
-               while( buf < forwardBuffer + length + margin ) {
-                  *buf = std::min( *buf, *( buf - stepSize_ ));
-                  ++buf;
-               }
-            }
-            // Fill backward buffer
-            buf = backwardBuffer + length + margin - 1;
-            buf -= stepSize_;
-            if( dilation_ ) {
-               while( buf >= backwardBuffer + syncpos ) {
-                  *buf = std::max( *buf, *( buf + stepSize_ ));
-                  --buf;
-               }
-            } else {
-               while( buf >= backwardBuffer + syncpos ) {
-                  *buf = std::min( *buf, *( buf + stepSize_ ));
-                  --buf;
-               }
-            }
-            buf = backwardBuffer + syncpos - 1; // in case `buf -= stepSize_` passed its mark, and the `while` loop didn't run at all.
-            if( dilation_ ) {
-               while( buf > backwardBuffer - margin ) {
-                  buf -= stepSize_;
-                  for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
-                     *buf = std::max( *buf, *( buf + stepSize_ ));
-                     --buf;
-                  }
-               }
-            } else {
-               while( buf > backwardBuffer - margin ) {
-                  buf -= stepSize_;
-                  for( dip::uint ii = stepSize_; ii < frameLength_; ++ii ) {
-                     *buf = std::min( *buf, *( buf + stepSize_ ));
-                     --buf;
-                  }
-               }
-            }
-            // Fill output
-            dip::uint nSteps = frameLength_ / stepSize_;
-            dip::uint filterLength = ( nSteps - 1 ) * stepSize_ + 1;
-            margin = ( nSteps / 2 ) * stepSize_;
-            if( mirror_ ) {
-               forwardBuffer += margin;
-               backwardBuffer -= filterLength - 1 - margin;
-            } else {
-               forwardBuffer += filterLength - 1 - margin;
-               backwardBuffer -= margin;
-            }
-            if( dilation_ ) {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::max( *forwardBuffer, *backwardBuffer );
-                  out += outStride;
-                  ++forwardBuffer;
-                  ++backwardBuffer;
-               }
-            } else {
-               for( dip::uint ii = 0; ii < length; ++ii ) {
-                  *out = std::min( *forwardBuffer, *backwardBuffer );
-                  out += outStride;
-                  ++forwardBuffer;
-                  ++backwardBuffer;
-               }
-            }
-         }
-      }
-   private:
-      dip::uint stepSize_;
-      dip::uint frameLength_;
-      std::vector< std::vector< TPI >> buffers_; // one for each thread
-      bool dilation_;
-      bool mirror_;
-};
-
 std::pair< dip::uint, dip::uint > PeriodicLineParameters( FloatArray const& filterParam ) {
    dip::uint maxSize = 0;
    dip::uint steps = 0;
@@ -1164,17 +1249,11 @@ void FastLineMorphology(
     *    pixel along the line, and don't need to use the buffers.
     *  - When walking along a line that starts outside the image domain, we can compute at which x-position the
     *    rounded coordinates will fall within the image domain.
-    *  - Likewise, we can compute at which x-poxision the rounded coordinates will exit the image domain.
+    *  - Likewise, we can compute at which x-position the rounded coordinates will exit the image domain.
     */
 
-   BoundaryCondition boundaryCondition1 = BoundaryCondition::DEFAULT;
-   BoundaryCondition boundaryCondition2 = BoundaryCondition::DEFAULT;
-   if( !bc.empty() ) {
-      if( bc.size() > 1 ) {
-         // TODO: Make sure they're all the same?
-      }
-      boundaryCondition1 = bc[ 0 ];
-      boundaryCondition2 = bc[ 0 ];
+   if( bc.size() > 1 ) {
+      // TODO: Make sure they're all the same?
    }
 
    // Determine SE parameters
@@ -1209,11 +1288,6 @@ void FastLineMorphology(
          }
       }
    }
-
-   //std::cout << "[FastLineMorphology] nDims = " << nDims << ", filterParam = " << filterParam << ", mode = "
-   //          << ( mode == StructuringElement::ShapeCode::FAST_LINE ? "FAST_LINE" : "PERIODIC_LINE" ) << std::endl;
-   //std::cout << "[FastLineMorphology] length = " << length << ", axis = " << axis << ", nLarger1 = " << nLarger1
-   //          << ", periodicStepSize = " << periodicStepSize << std::endl;
 
    // Do easy cases first
    if( length <= 1.0 ) {
@@ -1253,9 +1327,6 @@ void FastLineMorphology(
    }
    DIP_ASSERT( stepSize[ 0 ] == 1.0 );
 
-   //std::cout << "[FastLineMorphology] (1) stepSize = " << stepSize
-   //          << ", in.Sizes = " << in.Sizes() << ", in.Strides = " << in.Strides() << std::endl;
-
    // Make all other dimensions have negative step sizes
    BooleanArray ps( nDims, false );
    bool processDiagonally = true; // This is a special case: we can define a stride to walk along the line.
@@ -1271,11 +1342,8 @@ void FastLineMorphology(
    in.Mirror( ps );
    out.Mirror( ps );
 
-   //std::cout << "[FastLineMorphology] (2) stepSize = " << stepSize
-   //          << ", in.Sizes = " << in.Sizes() << ", in.Strides = " << in.Strides() << std::endl;
-   //std::cout << "[FastLineMorphology] processDiagonally = " << processDiagonally << std::endl;
-
    // Find the line filter to use
+   dip::uint maxLineLength = in.Size( 0 );
    dip::uint filterLength = static_cast< dip::uint >( length );
    DataType dtype = in.DataType();
    DataType ovltype = dtype;
@@ -1285,36 +1353,23 @@ void FastLineMorphology(
    std::unique_ptr< Framework::SeparableLineFilter > lineFilter1;
    std::unique_ptr< Framework::SeparableLineFilter > lineFilter2;
    UnsignedArray sizes( 1, filterLength ); // This needs to be kept alive, RectangularMorphologyLineFilter holds a reference to it
+   // TODO: 1D openings and closings
    if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
       DIP_START_STACK_TRACE
          switch( operation ) {
             case BasicMorphologyOperation::DILATION:
-               DIP_OVL_NEW_REAL( lineFilter1, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::DILATION, mirror ), ovltype );
-               if( bc.empty() ) {
-                  boundaryCondition1 = BoundaryCondition::ADD_MIN_VALUE;
-               }
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter1, NewDilationPeriodicMorphologyLineFilter, ( periodicStepSize, filterLength, mirror, maxLineLength ), ovltype );
                break;
             case BasicMorphologyOperation::EROSION:
-               DIP_OVL_NEW_REAL( lineFilter1, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::EROSION, mirror ), ovltype );
-               if( bc.empty() ) {
-                  boundaryCondition1 = BoundaryCondition::ADD_MAX_VALUE;
-               }
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter1, NewErosionPeriodicMorphologyLineFilter, ( periodicStepSize, filterLength, mirror, maxLineLength ), ovltype );
                break;
             case BasicMorphologyOperation::CLOSING:
-               DIP_OVL_NEW_REAL( lineFilter1, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::DILATION, mirror ), ovltype );
-               DIP_OVL_NEW_REAL( lineFilter2, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::EROSION, InvertMirrorParam( mirror )), ovltype );
-               if( bc.empty() ) {
-                  boundaryCondition1 = BoundaryCondition::ADD_MIN_VALUE;
-                  boundaryCondition2 = BoundaryCondition::ADD_MAX_VALUE;
-               }
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter1, NewDilationPeriodicMorphologyLineFilter, ( periodicStepSize, filterLength, mirror, maxLineLength ), ovltype );
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter2, NewErosionPeriodicMorphologyLineFilter, ( periodicStepSize, filterLength, InvertMirrorParam( mirror ), maxLineLength), ovltype );
                break;
             case BasicMorphologyOperation::OPENING:
-               DIP_OVL_NEW_REAL( lineFilter1, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::EROSION, mirror ), ovltype );
-               DIP_OVL_NEW_REAL( lineFilter2, PeriodicLineMorphologyLineFilter, ( periodicStepSize, filterLength, Polarity::DILATION, InvertMirrorParam( mirror )), ovltype );
-               if( bc.empty() ) {
-                  boundaryCondition1 = BoundaryCondition::ADD_MAX_VALUE;
-                  boundaryCondition2 = BoundaryCondition::ADD_MIN_VALUE;
-               }
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter1, NewErosionPeriodicMorphologyLineFilter, ( periodicStepSize, filterLength, mirror, maxLineLength ), ovltype );
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter2, NewDilationPeriodicMorphologyLineFilter, ( periodicStepSize, filterLength, InvertMirrorParam( mirror ), maxLineLength), ovltype );
                break;
          }
       DIP_END_STACK_TRACE
@@ -1322,32 +1377,18 @@ void FastLineMorphology(
       DIP_START_STACK_TRACE
          switch( operation ) {
             case BasicMorphologyOperation::DILATION:
-               DIP_OVL_NEW_REAL( lineFilter1, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), ovltype );
-               if( bc.empty() ) {
-                  boundaryCondition1 = BoundaryCondition::ADD_MIN_VALUE;
-               }
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter1, NewDilationRectangularMorphologyLineFilter, ( sizes, mirror, maxLineLength ), ovltype );
                break;
             case BasicMorphologyOperation::EROSION:
-               DIP_OVL_NEW_REAL( lineFilter1, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), ovltype );
-               if( bc.empty() ) {
-                  boundaryCondition1 = BoundaryCondition::ADD_MAX_VALUE;
-               }
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter1, NewErosionRectangularMorphologyLineFilter, ( sizes, mirror, maxLineLength ), ovltype );
                break;
             case BasicMorphologyOperation::CLOSING:
-               DIP_OVL_NEW_REAL( lineFilter1, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, mirror ), ovltype );
-               DIP_OVL_NEW_REAL( lineFilter2, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, InvertMirrorParam( mirror )), ovltype );
-               if( bc.empty() ) {
-                  boundaryCondition1 = BoundaryCondition::ADD_MIN_VALUE;
-                  boundaryCondition2 = BoundaryCondition::ADD_MAX_VALUE;
-               }
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter1, NewDilationRectangularMorphologyLineFilter, ( sizes, mirror, maxLineLength ), ovltype );
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter2, NewErosionRectangularMorphologyLineFilter, ( sizes, InvertMirrorParam( mirror ), maxLineLength ), ovltype );
                break;
             case BasicMorphologyOperation::OPENING:
-               DIP_OVL_NEW_REAL( lineFilter1, RectangularMorphologyLineFilter, ( sizes, Polarity::EROSION, mirror ), ovltype );
-               DIP_OVL_NEW_REAL( lineFilter2, RectangularMorphologyLineFilter, ( sizes, Polarity::DILATION, InvertMirrorParam( mirror )), ovltype );
-               if( bc.empty() ) {
-                  boundaryCondition1 = BoundaryCondition::ADD_MAX_VALUE;
-                  boundaryCondition2 = BoundaryCondition::ADD_MIN_VALUE;
-               }
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter1, NewErosionRectangularMorphologyLineFilter, ( sizes, mirror, maxLineLength ), ovltype );
+               DIP_OVL_CALL_ASSIGN_REAL( lineFilter2, NewDilationRectangularMorphologyLineFilter, ( sizes, InvertMirrorParam( mirror ), maxLineLength ), ovltype );
                break;
          }
       DIP_END_STACK_TRACE
@@ -1361,11 +1402,10 @@ void FastLineMorphology(
 
    // Determine parameters for buffers
    dip::uint border = 0;
-   //if( !bc.empty() ) {
+   if( !bc.empty() ) {
       // If the boundary condition is default, we don't need a boundary extension at all.
       border = filterLength / 2;
-   //}
-   dip::uint maxLineLength = in.Size( 0 );
+   }
    dip::uint sizeOf = dtype.SizeOf();
 
    // Create input buffer data struct and allocate buffer
@@ -1418,12 +1458,14 @@ void FastLineMorphology(
    Framework::SeparableLineFilterParameters params2{ inBufferStruct, outBufferStruct, 0, 0, 1, {}, false, 0 };
    // if( lineFilter2 ): We apply 2 filters in sequence, the first one uses the input buffer also for output
 
+   constexpr dfloat epsilon = 1e-5;
+   constexpr dfloat delta = 1.0 - epsilon;
+
    // Compute how far out we need to go along dimensions 1..nDims-1 so that our tessellated lines cover the whole image
    UnsignedArray itSizes( nDims, 0 );
    for( dip::uint ii = 1; ii < nDims; ++ii ) {
-      itSizes[ ii ] = in.Size( ii ) - 1 + static_cast< dip::uint >( -std::floor( static_cast< dfloat >( in.Size( 0 )) * stepSize[ ii ] ));
+      itSizes[ ii ] =  in.Size( ii ) - static_cast< dip::uint >( std::floor( delta + static_cast< dfloat >( in.Size( 0 ) - 1 ) * stepSize[ ii ] ));
    }
-   //std::cout << "[FastLineMorphology] itSizes = " << itSizes << std::endl;
 
    // Iterate over itSizes
    dip::sint inOffset = 0;
@@ -1432,6 +1474,22 @@ void FastLineMorphology(
    UnsignedArray coords( nDims, 0 );      // These are the start coordinates for the Bresenham line
    FloatArray bresenhamCoords( nDims );   // These are the coordinates to round to get the Bresenham line
    FloatArray bresenhamCoords2( nDims );   // These are the coordinates to round to get the Bresenham line
+   IntegerArray inStridesBytes;
+   if( useInBuffer ) {
+      inStridesBytes = in.Strides();
+      for( auto& s: inStridesBytes ) {
+         s *= ssizeOf;
+      }
+   }
+   IntegerArray outStridesBytes;
+   if( useOutBuffer ) {
+      outStridesBytes = out.Strides();
+      for( auto& s: outStridesBytes ) {
+         s *= ssizeOf;
+      }
+   }
+   uint8* inOrigin = static_cast< uint8* >( in.Origin() );
+   uint8* outOrigin = static_cast< uint8* >( out.Origin() );
    while( true ) {
 
       // Determine the start and end x-coordinate for this line
@@ -1440,10 +1498,10 @@ void FastLineMorphology(
       for( dip::uint ii = 1; ii < nDims; ++ii ) {
          dfloat x;
          if( coords[ ii ] >= in.Size( ii )) {
-            x = -static_cast< dfloat >( coords[ ii ] + 1 - in.Size( ii )) / stepSize[ ii ];
+            x = ( static_cast< dfloat >( coords[ ii ] - in.Size( ii )) + delta ) / -stepSize[ ii ];
             start = std::max( start, static_cast< dip::uint >( std::ceil( x )));
          } // otherwise the line starts within the image domain
-         x = -static_cast< dfloat >( coords[ ii ] + 1 ) / stepSize[ ii ];
+         x = ( static_cast< dfloat >( coords[ ii ] ) + delta ) / -stepSize[ ii ];
          end = std::min( end, static_cast< dip::uint >( std::ceil( x )) - 1 );
       }
       DIP_ASSERT( start <= end );
@@ -1453,75 +1511,82 @@ void FastLineMorphology(
       dip::sint inOffsetStart = inOffset + static_cast< dip::sint >( start ) * in.Stride( 0 );
       dip::sint outOffsetStart = outOffset + static_cast< dip::sint >( start ) * out.Stride( 0 );
       for( dip::uint ii = 1; ii < nDims; ++ii ) {
-         bresenhamCoords[ ii ] = 0.99999 + bresenhamCoords[ 0 ] * stepSize[ ii ];
+         bresenhamCoords[ ii ] = delta + bresenhamCoords[ 0 ] * stepSize[ ii ];
          inOffsetStart += static_cast< dip::sint >( std::floor( bresenhamCoords[ ii ] )) * in.Stride( ii );
          outOffsetStart += static_cast< dip::sint >( std::floor( bresenhamCoords[ ii ] )) * out.Stride( ii );
          bresenhamCoords[ ii ] += static_cast< dfloat >( coords[ ii ] );
-         DIP_ASSERT( static_cast< dip::uint >( std::floor( bresenhamCoords[ ii ] )) < in.Size( ii ));
+         //DIP_ASSERT( static_cast< dip::uint >( std::floor( bresenhamCoords[ ii ] )) < in.Size( ii ));
       }
 
-      //std::cout << "[FastLineMorphology] coords = " << coords << ", start = " << start << ", end = " << end
-      //          << ", bresenhamCoords = " << bresenhamCoords
-      //          << ", inOffsetStart = " << inOffsetStart << ", outOffsetStart = " << outOffsetStart << std::endl;
-
-      // Prepare line filter parameters
-      dip::uint lineLength = end - start + 1;
-      inBufferStruct.length = lineLength;
-      outBufferStruct.length = lineLength;
-      if( useOutBuffer ) {
-         bresenhamCoords2 = bresenhamCoords; // copy before we modify it
-      } else {
-         outBufferStruct.buffer = out.Pointer( outOffsetStart );
-      }
-
-      // Copy from input image to input buffer
-      if( useInBuffer ) {
-         uint8* src = static_cast< uint8* >( in.Pointer( inOffsetStart ));
-         uint8* dest = static_cast< uint8* >( inBufferStruct.buffer );
-         for( dip::uint ss = 0; ss < lineLength; ++ss ) {
+      if( start == end ) {
+         // Short-cut: the line has a single pixel, let's just copy the pixel from input to output
+         if( inOrigin != outOrigin ) {
+            uint8* src = inOrigin + inOffsetStart * ssizeOf;
+            uint8* dest = outOrigin + outOffsetStart * ssizeOf;
             std::memcpy( dest, src, sizeOf );
-            dest += sizeOf;
-            src += in.Stride( 0 ) * ssizeOf;
-            for( dip::uint ii = 1; ii < nDims; ++ii ) {
-               dfloat old = std::floor( bresenhamCoords[ ii ] );
-               bresenhamCoords[ ii ] += stepSize[ ii ];
-               if( std::floor( bresenhamCoords[ ii ] ) != old ) {
-                  src -= in.Stride( ii ) * ssizeOf; // we're always moving towards smaller coordinates
+         }
+      } else {
+
+         // Prepare line filter parameters
+         dip::uint lineLength = end - start + 1;
+         inBufferStruct.length = lineLength;
+         outBufferStruct.length = lineLength;
+         if( useOutBuffer ) {
+            bresenhamCoords2 = bresenhamCoords; // copy before we modify it
+         } else {
+            outBufferStruct.buffer = outOrigin + outOffsetStart * ssizeOf;
+         }
+
+         // Copy from input image to input buffer
+         if( useInBuffer ) {
+            uint8* src = inOrigin + inOffsetStart * ssizeOf;
+            uint8* dest = static_cast< uint8* >( inBufferStruct.buffer );
+            for( dip::uint ss = 0; ss < lineLength; ++ss ) {
+               std::memcpy( dest, src, sizeOf );
+               dest += sizeOf;
+               src += inStridesBytes[ 0 ];
+               for( dip::uint ii = 1; ii < nDims; ++ii ) {
+                  dfloat old = std::floor( bresenhamCoords[ ii ] );
+                  bresenhamCoords[ ii ] += stepSize[ ii ];
+                  if( std::floor( bresenhamCoords[ ii ] ) != old ) {
+                     src -= inStridesBytes[ ii ]; // we're always moving towards smaller coordinates
+                  }
+               }
+            }
+            if( border > 0 ) {
+               ExpandBuffer( inBufferStruct.buffer, ovltype, 1, 1, lineLength, 1, border, border, bc[ 0 ] );
+            }
+         } else {
+            inBufferStruct.buffer = inOrigin + inOffsetStart * ssizeOf;
+         }
+
+         // Execute the line filter(s)
+         DIP_STACK_TRACE_THIS( lineFilter1->Filter( params1 ));
+         if( lineFilter2 ) {
+            if( border > 0 ) {
+               ExpandBuffer( inBufferStruct.buffer, ovltype, 1, 1, lineLength, 1, border, border, bc[ 0 ] );
+            }
+            DIP_STACK_TRACE_THIS( lineFilter2->Filter( params2 ));
+         }
+
+         // Copy output buffer to output image
+         if( useOutBuffer ) {
+            uint8* src = static_cast< uint8* >( outBufferStruct.buffer );
+            uint8* dest = outOrigin + outOffsetStart * ssizeOf;
+            for( dip::uint ss = 0; ss < lineLength; ++ss ) {
+               std::memcpy( dest, src, sizeOf );
+               src += sizeOf;
+               dest += outStridesBytes[ 0 ];
+               for( dip::uint ii = 1; ii < nDims; ++ii ) {
+                  dfloat old = std::floor( bresenhamCoords2[ ii ] );
+                  bresenhamCoords2[ ii ] += stepSize[ ii ];
+                  if( std::floor( bresenhamCoords2[ ii ] ) != old ) {
+                     dest -= outStridesBytes[ ii ]; // we're always moving towards smaller coordinates
+                  }
                }
             }
          }
-         if( border > 0 ) {
-            ExpandBuffer( inBufferStruct.buffer, ovltype, 1, 1, lineLength, 1, border, border, boundaryCondition1 );
-         }
-      } else {
-         inBufferStruct.buffer = in.Pointer( inOffsetStart );
-      }
 
-      // Execute the line filter(s)
-      DIP_STACK_TRACE_THIS( lineFilter1->Filter( params1 ));
-      if( lineFilter2 ) {
-         if( border > 0 ) {
-            ExpandBuffer( inBufferStruct.buffer, ovltype, 1, 1, lineLength, 1, border, border, boundaryCondition2 );
-         }
-         DIP_STACK_TRACE_THIS( lineFilter2->Filter( params2 ));
-      }
-
-      // Copy output buffer to output image
-      if( useOutBuffer ) {
-         uint8* src = static_cast< uint8* >( outBufferStruct.buffer );
-         uint8* dest = static_cast< uint8* >( out.Pointer( outOffsetStart ));
-         for( dip::uint ss = 0; ss < lineLength; ++ss ) {
-            std::memcpy( dest, src, sizeOf );
-            src += sizeOf;
-            dest += out.Stride( 0 ) * ssizeOf;
-            for( dip::uint ii = 1; ii < nDims; ++ii ) {
-               dfloat old = std::floor( bresenhamCoords2[ ii ] );
-               bresenhamCoords2[ ii ] += stepSize[ ii ];
-               if( std::floor( bresenhamCoords2[ ii ] ) != old ) {
-                  dest -= out.Stride( ii ) * ssizeOf; // we're always moving towards smaller coordinates
-               }
-            }
-         }
       }
 
       // Find next start point
@@ -1550,37 +1615,34 @@ void FastLineMorphology(
 void LineMorphology(
       Image const& in,
       Image& out,
-      StructuringElement const& se,
+      FloatArray filterParam, // by copy
+      Mirror mirror,
       BoundaryConditionArray const& bc,
       BasicMorphologyOperation operation
 ) {
-   FloatArray filterParam = se.Params( in.Sizes() );
+   // Normalize direction so that, for even-sized lines, the origin is in a consistent place.
+   if( filterParam[ 0 ] < 0 ) {
+      for( auto& l: filterParam ) {
+         l = -l;
+      }
+   }
    dip::uint maxSize;
    dip::uint steps;
    std::tie( maxSize, steps ) = PeriodicLineParameters( filterParam );
    if( steps == maxSize ) {
       // This means that all filterParam are the same (or 1)
-      FastLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::FAST_LINE,
-                          GetMirrorParam( se.IsMirrored()), bc, operation );
+      FastLineMorphology( in, out, filterParam, StructuringElement::ShapeCode::FAST_LINE, mirror, bc, operation );
    } else {
       if(( steps > 1 ) && ( maxSize > 5 )) { // TODO: an optimal threshold here is impossible to determine. It depends on the processing dimension and the angle of the line.
          dip::uint nDims = in.Dimensionality();
          FloatArray discreteLineParam( nDims, 0.0 );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            discreteLineParam[ ii ] = std::round( filterParam[ ii ] ) / static_cast< dfloat >( steps );
+            discreteLineParam[ ii ] = std::copysign( std::round( std::abs( filterParam[ ii ] )), filterParam[ ii ] ) / static_cast< dfloat >( steps );
          }
-         Kernel discreteLineKernel( Kernel::ShapeCode::LINE, discreteLineParam );
-         if( !( steps & 1 )) {
-            // Periodic line with even number of points
-            // Discrete line has origin at left side, to correct for origin displacement of periodic line
-            IntegerArray shift( nDims, 0 );
-            for( dip::uint ii = 0; ii < nDims; ++ii ) {
-               shift[ ii ] = - static_cast< dip::sint >( discreteLineParam[ ii ] - 1 ) / 2;
-            }
-            discreteLineKernel.Shift( shift );
-         }
-         bool mirror = se.IsMirrored();
-         if( mirror ) {
+         // If the periodic line with even number of points, then the discrete line has origin at left side, to
+         // correct for origin displacement of periodic line
+         Kernel discreteLineKernel( ( steps & 1 ) ? Kernel::ShapeCode::LINE : Kernel::ShapeCode::LEFT_LINE, discreteLineParam );
+         if( mirror == Mirror::YES ) {
             discreteLineKernel.Mirror();
          }
          switch( operation ) {
@@ -1588,20 +1650,17 @@ void LineMorphology(
             //case BasicMorphologyOperation::DILATION:
             //case BasicMorphologyOperation::EROSION:
                GeneralSEMorphology( in, out, discreteLineKernel, bc, operation );
-               FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE,
-                                   GetMirrorParam( mirror ), bc, operation );
+               FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE, mirror, bc, operation );
                break;
             case BasicMorphologyOperation::CLOSING:
                GeneralSEMorphology( in, out, discreteLineKernel, bc, BasicMorphologyOperation::DILATION );
-               FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE,
-                                   GetMirrorParam( mirror ), bc, BasicMorphologyOperation::CLOSING );
+               FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE, mirror, bc, BasicMorphologyOperation::CLOSING );
                discreteLineKernel.Mirror();
                GeneralSEMorphology( out, out, discreteLineKernel, bc, BasicMorphologyOperation::EROSION );
                break;
             case BasicMorphologyOperation::OPENING:
                GeneralSEMorphology( in, out, discreteLineKernel, bc, BasicMorphologyOperation::EROSION );
-               FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE,
-                                   GetMirrorParam( mirror ), bc, BasicMorphologyOperation::OPENING );
+               FastLineMorphology( out, out, filterParam, StructuringElement::ShapeCode::PERIODIC_LINE, mirror, bc, BasicMorphologyOperation::OPENING );
                discreteLineKernel.Mirror();
                GeneralSEMorphology( out, out, discreteLineKernel, bc, BasicMorphologyOperation::DILATION );
                break;
@@ -1609,7 +1668,7 @@ void LineMorphology(
       } else {
          // One step, no need to do a periodic line with a single point
          Kernel kernel( Kernel::ShapeCode::LINE, filterParam );
-         if( se.IsMirrored() ) {
+         if( mirror == Mirror::YES ) {
             kernel.Mirror();
          }
          GeneralSEMorphology( in, out, kernel, bc, operation );
@@ -1837,14 +1896,14 @@ void BasicMorphology(
             OctagonalMorphology( in, out, se.Params( in.Sizes() ), bc, operation );
             break;
          case StructuringElement::ShapeCode::LINE:
-            LineMorphology( in, out, se, bc, operation );
+            LineMorphology( in, out, se.Params( in.Sizes() ), mirror, bc, operation );
             break;
          case StructuringElement::ShapeCode::FAST_LINE:
          case StructuringElement::ShapeCode::PERIODIC_LINE:
-            FastLineMorphology( in, out, se.Params( in.Sizes()), se.Shape(), mirror, bc, operation );
+            FastLineMorphology( in, out, se.Params( in.Sizes() ), se.Shape(), mirror, bc, operation );
             break;
          case StructuringElement::ShapeCode::INTERPOLATED_LINE:
-            SkewLineMorphology( in, out, se.Params( in.Sizes()), mirror, bc, operation );
+            SkewLineMorphology( in, out, se.Params( in.Sizes() ), mirror, bc, operation );
             break;
          case StructuringElement::ShapeCode::PARABOLIC:
             ParabolicMorphology( in, out, se.Params( in.Sizes() ), bc, operation );

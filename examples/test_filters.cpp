@@ -20,7 +20,9 @@ int main() {
    //dip::Random random;
    //dip::BinaryNoise( binary, binary, random, 1.0, 0.99 ); // High-density random binary image.
 
-   //dip::Image grey( binary.Sizes(), 1, dip::DT_SFLOAT );
+   //dip::Image grey( { 1600, 2201 }, 1, dip::DT_UINT16 );
+   //dip::Random random;
+   //dip::UniformNoise( grey, grey, random, 0, 10000 );
    //dip::FillRadiusCoordinate( grey );
 
    //dip::Image gt = dip::EuclideanDistanceTransform( binary, "background", "brute force" );
@@ -33,7 +35,7 @@ int main() {
 
    //dip::Image result = dip::EuclideanSkeleton( binary );
 
-   dip::Image result = dip::Dilation( binary, dip::StructuringElement( { 10, 4 }, "line" ));
+   dip::Image result = dip::Dilation( binary, dip::StructuringElement( { 9, 3 }, "line" ));
 
    dip::testing::PrintPixelValues<dip::bin,1>( binary );
    dip::testing::PrintPixelValues<dip::bin,1>( result );

@@ -76,9 +76,9 @@ class DIP_NO_EXPORT Kernel;
 /// -  `"line"`, `"fast line"`, `"periodic line"`, `"discrete line"`, `"interpolated line"`:
 ///    these are straight lines, using different implementations.
 ///    The size array corresponds to the size of the bounding box of the line, with signs indicating
-///    the direction. Thus, if the size array is `[2,2]`, the line goes right and down two pixels,
+///    the direction. Thus, if the size array is `{2,2}`, the line goes right and down two pixels,
 ///    meaning that the line is formed by two pixels at an angle of 45 degrees down. If the size array
-///    is `[-2,2]`, then the line is again two pixels, but at an angle of 125 degrees. (Note that
+///    is `{-2,2}`, then the line is again two pixels, but at an angle of 125 degrees. (Note that
 ///    in images, angles increase clockwise from the x-axis, as the y-axis is inverted). For a description
 ///    of the meaning of these various line implementations, see \ref line_morphology.
 ///
@@ -123,30 +123,39 @@ class DIP_NO_EXPORT Kernel;
 ///   `"discrete line"`.
 ///
 /// - `"fast line"`: This is a faster algorithm that applies a 1D operation along Bresenham lines, yielding
-///   a non-translation-invariant result. It is implemented by skewing the image, applying the operation
-///   along one of the image axes using the `"rectangular"` structuring element, and skewing the result back.
-///   Thus, the cost of this operation is always independent of the length of the line.
+///   a non-translation-invariant result. The cost of this operation is always independent of the length of the line.
 ///
 /// - `"periodic line"`: This is a line formed of only a subset of the pixels along the Bresenham line,
 ///   such that it can be computed as a 1D operation along Bresenham lines, but still yields a
 ///   translation-invariant result (Soille, 1996). It might not be very useful on its own, but when combined
 ///   with the `"discrete line"`, it provides a more efficient implementation of the traditional line structuring
-///   element.
+///   element (see `"line"` above).
 ///
 /// - `"discrete line"`: This is the traditional line structuring element, drawn using the Bresenham algorithm
 ///   and applied brute-force.
 ///
-/// - `"interpolated line"`: This is the same algorithm as `"fast line"`, but the skew operation uses interpolation.
+/// - `"interpolated line"`: This operation skews the image, using interpolation, such that the line operation
+///   can be applied along an image axis; the result of the operation is then skewed back. The result is an
+///   operation with a line that uses interpolation to read image intensities in between pixels.
 ///   This greatly improves the results in e.g. a granulometry when the input image is band limited
 ///   (Luengo Hendriks, 2005). However, the result of morphological operations is not band limited, and so the
 ///   second, reverse skew operation will lose some precision. Note that the result of morphological operations
 ///   with this SE do not strictly satisfy the corresponding properties (only by approximation) because of the
-///   interpolated values.
+///   interpolated values. Setting the boundary condition to `"periodic"` allows the operation to occur completely
+///   in place; other boundary conditions lead to a larger intermediate image, and thus will always require
+///   additional, temporary storage.
 ///
-/// For `"fast line"`, `"periodic line"` and `"interpolated line"`, which are computed by skewing the input
-/// image, setting the boundary condition to `"periodic"` or `"asym periodic"` allows the operation to occur
-/// completely in place; other boundary conditions lead to a larger intermediate image, and thus will always
-/// require additional, temporary storage.
+/// For all these lines, if they are an even number of pixels in length, then the origin is placed at the result
+/// of the integer division `length/2`. That is, on the pixel that comes just after the true middle of the line.
+/// This means that the line `{8,3}` will have the origin on pixel number 4 (when starting counting at 0), as will
+/// the line `{-8,-3}`. The difference between these two is that the latter starts on the bottom right and goes
+/// left and up, whereas the former starts on the top left and goes right and down. Note that the drawn Bresenham
+/// line might have a slightly different configuration also.
+///
+/// The SE `"line"` is different from the others in that these two lines will be normalized to the exact same line:
+/// If the first size component is negative, all size components will be negated, turning `{-8,-3}` into `{8,3}`.
+/// This makes it easier to decompose the SE into the two components. Do note that, because of this normalization,
+/// there could be a 1 pixel shift for even-sized lines as compared to `"discrete line"` or `"fast line"`.
 ///
 /// In general, a few quick experiments have shown that, depending on the angle and the direction of the line w.r.t.
 /// the image storage order, `"discrete line"` can be much faster than `"line"` (or `"fast line"`) for shorter

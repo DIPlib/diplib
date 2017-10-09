@@ -78,6 +78,9 @@ PixelTable::PixelTable(
       }
       //std::cout << "[PixelTable] size = " << size << "sizes_ = " << sizes_ << ", origin_ = " << origin_ << std::endl;
 
+      constexpr dfloat epsilon = 1e-5;
+      constexpr dfloat delta = 1.0 - epsilon;
+
       // Find the number of steps from start to end of line
       dip::uint length = *std::max_element( sizes_.begin(), sizes_.end() );
       //std::cout << "[PixelTable] length = " << length << std::endl;
@@ -97,9 +100,9 @@ PixelTable::PixelTable(
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             // Here, we presume that we won't chain more than 100,000 pixels in a row...
             if( stepSize[ ii ] < 0 ) {
-               pos[ ii ] += 0.99999; // start at the opposite edge of the pixel, such that `floor` still gives 0.
+               pos[ ii ] += delta; // start at the opposite edge of the pixel, such that `floor` still gives 0.
             } else {
-               pos[ ii ] += 0.00001; // add a small value to prevent rounding errors.
+               pos[ ii ] += epsilon; // add a small value to prevent rounding errors.
             }
          }
          IntegerArray coords( nDims, 0 );
