@@ -38,11 +38,6 @@ namespace dip {
 /// Labeled images are of any unsigned integer type.
 /// \{
 
-// TODO: functions to port:
-/*
-   dip_GrowRegions (dip_regions.h)
-   dip_GrowRegionsWeighted (dip_regions.h)
-*/
 
 /// \brief Labels the connected components in a binary image
 ///
@@ -124,6 +119,20 @@ inline Image SmallObjectsRemove(
    SmallObjectsRemove( in, out, threshold, connectivity );
    return out;
 }
+
+
+// TODO: functions to port:
+/*
+   dip_GrowRegions (dip_regions.h)
+     Has two modes, and really should have two separate interfaces (there's hardly any common code):
+      - With grey-value image: does what dip::SeededWatershed does, mostly. We need a few additions to that function
+        to make it completely match: an option to not leave watershed pixels, and an option to never merge.
+      - Without grey-value image: does what dip::BinaryPropagation does, but on a uint image, propagating labels.
+        Look also at dip::BinaryPropagation implementation.
+   dip_GrowRegionsWeighted (dip_regions.h)
+     Has strong similarities to dip::GreyWeightedDistanceTransform. Merge? Re-use?
+*/
+
 
 /// \}
 

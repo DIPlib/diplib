@@ -448,7 +448,7 @@ void dip__SeededWatershed(
       neighborLabels.Reset();
       auto lit = neighborList.begin();
       for( dip::uint jj = 0; jj < nNeigh; ++jj, ++lit ) {
-         useNeighbor[ jj ] = lit.IsInImage( coords, imsz );
+         useNeighbor[ jj ] = lit.IsInImage( coords, imsz ); // TODO: label edge pixels (use upper bit?) such that we only do this test on edge pixels.
          if( useNeighbor[ jj ] ) {
             if( !mask || mask[ offsetMask + neighborOffsetsMask[ jj ]] ) {
                LabelType lab = labels[ offsetLabels + neighborOffsetsLabels[ jj ]];
@@ -552,10 +552,12 @@ void SeededWatershed(
    DIP_THROW_IF( inSizes != c_seeds.Sizes(), E::SIZES_DONT_MATCH );
    DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
    if( maxDepth < 0 ) {
+      // TODO: Negative maxDepth inhibits all merging
       maxDepth = 0;
    }
    bool binaryOutput = true;
    bool lowFirst = true;
+   // TODO: Add a flag to not leave watershed lines
    for( auto& flag : flags ) {
       if( flag == "labels" ) {
          binaryOutput = false;
