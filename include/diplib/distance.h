@@ -127,7 +127,10 @@ inline Image VectorDistanceTransform(
 /// are found the routine will throw an exception.
 ///
 /// The chamfer metric is defined by the parameter `metric`. Any metric can be given, but a 3x3 or 5x5 chamfer metric
-/// is recommended for unbiased distances. See `dip::Metric` for more information.
+/// is recommended for unbiased distances. See `dip::Metric` for more information. If the `metric` doesn't have a
+/// pixel size set, but either `grey` or `in` have a pixel size defined, then that pixel size will be added to the
+/// metric (the pixel size in `grey` will have precedence over the one in `in` if they both have one defined). To
+/// avoid the use of any pixel size, define `metric` with a pixel size of 1.
 ///
 /// If `outputMode` is `"GDT"` (the default), then `out` will contain the grey-weighted distance transform. If it is
 /// `"Euclidean"`, in will output the Euclidean (geometric) length of the optimal path instead. If it is `"both"`,
@@ -157,7 +160,7 @@ DIP_EXPORT void GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& in,
       Image&  out,
-      Metric const& metric = { "chamfer", 2 },
+      Metric metric = { "chamfer", 2 },
       String const& outputMode = "GDT" // or: "Euclidean" or "both"
 );
 inline Image GreyWeightedDistanceTransform(

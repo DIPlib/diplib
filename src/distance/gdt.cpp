@@ -27,29 +27,27 @@ namespace dip {
 
 namespace {
 
+constexpr dip::sint QSORT_MAGIC_SIZE = 10;
+constexpr dip::uint SMALL_STACK_SIZE = 32;
+
 struct GDTNode {
    dip::sint offset;
    sfloat value;
 };
 
-#define DIP_GDT_SORT3_VALUE(n1,n2,n3,tmp) \
-   if ((n1.value) > (n2.value)) { (tmp) = (n2); (n2) = (n1); (n1) = (tmp); } \
-   if ((n2.value) > (n3.value)) { (tmp) = (n3); (n3) = (n2); (n2) = (tmp); } \
-   if ((n1.value) > (n2.value)) { (tmp) = (n2); (n2) = (n1); (n1) = (tmp); }
-#define DIP_GDT_SORT3_OFFSET(n1,n2,n3,tmp) \
-   if ((n1.offset) > (n2.offset)) { (tmp) = (n2); (n2) = (n1); (n1) = (tmp); } \
-   if ((n2.offset) > (n3.offset)) { (tmp) = (n3); (n3) = (n2); (n2) = (tmp); } \
-   if ((n1.offset) > (n2.offset)) { (tmp) = (n2); (n2) = (n1); (n1) = (tmp); }
+enum class SortType { VALUE, OFFSET };
+inline void Sort3ByValue( GDTNode& n1, GDTNode& n2, GDTNode& n3 ) {
+   if(( n1.value ) > ( n2.value )) { std::swap( n1, n2 ); }
+   if(( n2.value ) > ( n3.value )) { std::swap( n2, n3 ); }
+   if(( n1.value ) > ( n2.value )) { std::swap( n1, n2 ); }
+}
+inline void Sort3ByOffset( GDTNode& n1, GDTNode& n2, GDTNode& n3 ) {
+   if(( n1.offset ) > ( n2.offset )) { std::swap( n1, n2 ); }
+   if(( n2.offset ) > ( n3.offset )) { std::swap( n2, n3 ); }
+   if(( n1.offset ) > ( n2.offset )) { std::swap( n1, n2 ); }
+}
 
-#define DIP_SORT_QSORT_MAGIC_SIZE 10
-#define DIP_GDT_SORT_VALUE 0
-#define DIP_GDT_SORT_OFFSET 1
-
-#define DIP_GDT_SMALL_STACK_SIZE 32
-
-inline dip::uint GetCeilingLog2(
-      dip::uint number
-) {
+inline dip::uint GetCeilingLog2( dip::uint number ) {
    dip::uint ii, jj, ln2 = number;
    for( jj = 0, ii = number; ii > 0; ii >>= 1, jj++ ) {
       if( ii & 1 ) {
@@ -65,7 +63,7 @@ inline dip::uint GetCeilingLog2(
 void GDTQuickSort(
       GDTNode* out,
       dip::uint size,
-      dip::sint sortType
+      SortType sortType
 ) {
    if( size <= 1 ) {
       return;
@@ -73,9 +71,9 @@ void GDTQuickSort(
 
    dip::uint maxSp = GetCeilingLog2( size ) << 1;
    dip::sint* stack;
-   dip::sint smallStack[ DIP_GDT_SMALL_STACK_SIZE ];
+   dip::sint smallStack[ SMALL_STACK_SIZE ];
    std::vector< dip::sint > memStack;
-   if( maxSp <= DIP_GDT_SMALL_STACK_SIZE ) {
+   if( maxSp <= SMALL_STACK_SIZE ) {
       stack = smallStack;
    } else {
       memStack.resize( maxSp );
@@ -83,15 +81,15 @@ void GDTQuickSort(
    }
 
    GDTNode* data = out;
-   GDTNode key, tmp;
+   GDTNode key;
    dip::sint ii, jj, mi;
    dip::sint li = 0;
    dip::sint ri = static_cast< dip::sint >( size - 1 );
    dip::uint sp = 0;
 
-   if( sortType == DIP_GDT_SORT_VALUE ) {
+   if( sortType == SortType::VALUE ) {
       for( ;; ) {
-         if(( ri - li ) < DIP_SORT_QSORT_MAGIC_SIZE ) {
+         if(( ri - li ) < QSORT_MAGIC_SIZE ) {
             for( ii = li + 1; ii <= ri; ii++ ) {
                key = data[ ii ];
                jj = ii - 1;
@@ -113,7 +111,7 @@ void GDTQuickSort(
 
             mi = ( li + ri ) >> 1;
 
-            DIP_GDT_SORT3_VALUE( data[ li ], data[ mi ], data[ ri ], tmp );
+            Sort3ByValue( data[ li ], data[ mi ], data[ ri ] );
             key = data[ mi ];
             data[ mi ] = data[ li ];
             data[ li ] = key;
@@ -133,9 +131,7 @@ void GDTQuickSort(
                   data[ jj ] = key;
                   break;
                }
-               tmp = data[ jj ];
-               data[ jj ] = data[ ii ];
-               data[ ii ] = tmp;
+               std::swap( data[ ii ], data[ jj ] );
                ii++;
                jj--;
             }
@@ -155,7 +151,7 @@ void GDTQuickSort(
       }
    } else {
       for( ;; ) {
-         if(( ri - li ) < DIP_SORT_QSORT_MAGIC_SIZE ) {
+         if(( ri - li ) < QSORT_MAGIC_SIZE ) {
             for( ii = li + 1; ii <= ri; ii++ ) {
                key = data[ ii ];
                jj = ii - 1;
@@ -177,7 +173,7 @@ void GDTQuickSort(
 
             mi = ( li + ri ) >> 1;
 
-            DIP_GDT_SORT3_OFFSET( data[ li ], data[ mi ], data[ ri ], tmp );
+            Sort3ByOffset( data[ li ], data[ mi ], data[ ri ] );
             key = data[ mi ];
             data[ mi ] = data[ li ];
             data[ li ] = key;
@@ -197,9 +193,7 @@ void GDTQuickSort(
                   data[ jj ] = key;
                   break;
                }
-               tmp = data[ jj ];
-               data[ jj ] = data[ ii ];
-               data[ ii ] = tmp;
+               std::swap( data[ ii ], data[ jj ] );
                ii++;
                jj--;
             }
@@ -406,7 +400,7 @@ void GDTProcessHeap(
             // if heap is getting full, clean up ...
             if( bottom == heapsize ) {
                // to speed up things, we first sort the heap by offset
-               GDTQuickSort( &heap[ 1 ], bottom - 1, DIP_GDT_SORT_OFFSET );
+               GDTQuickSort( &heap[ 1 ], bottom - 1, SortType::OFFSET );
 
                // initialise clean-up
                GDTNode* oldHeap = heap.data();
@@ -433,7 +427,7 @@ void GDTProcessHeap(
                }
 
                // restore things again, by sorting cleaned-up heap by value
-               GDTQuickSort( &heap[ 1 ], newBottom - 1, DIP_GDT_SORT_VALUE );
+               GDTQuickSort( &heap[ 1 ], newBottom - 1, SortType::VALUE );
                bottom = newBottom;
             }
 
@@ -467,7 +461,7 @@ void GreyWeightedDistanceTransform(
       Image const& c_grey,
       Image const& in,
       Image& out,
-      Metric const& metric,
+      Metric metric,
       String const& outputMode
 ) {
    // check whether the grey and in images are OK
@@ -500,6 +494,9 @@ void GreyWeightedDistanceTransform(
    PixelSize pixelSize = c_grey.PixelSize();
    if( !pixelSize.IsDefined() ) {
       pixelSize = in.PixelSize(); // Let's try this one instead...
+   }
+   if( !metric.HasPixelSize() ) {
+      metric.SetPixelSize( pixelSize );
    }
 
    // we must have contiguous data if we want to create another image with the same strides as `grey`
