@@ -242,14 +242,8 @@ constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 #define DIP_THROW_RUNTIME( str ) do { auto e = dip::RunTimeError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
 
 
-/// \def DIP_THROW_ASSERTION(str)
 /// \brief Throw a `dip::AssertionError`.
-///
-/// If `ENABLE_ASSERT` is set to `OFF` during compilation, this macro is does nothing:
-///
-/// ```
-///     cmake -DENABLE_ASSERT=OFF ...
-/// ```
+#define DIP_THROW_ASSERTION( str ) do { auto e = dip::AssertionError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
 
 /// \def DIP_ASSERT(test)
 /// \brief Test a condition, throw a `dip::AssertionError` if the condition is not met.
@@ -265,13 +259,9 @@ constexpr char const* ILLEGAL_CONNECTIVITY = "Illegal connectivity value";
 
 #ifdef DIP__ENABLE_ASSERT
 
-#define DIP_THROW_ASSERTION( str ) do { auto e = dip::AssertionError( str ); DIP_ADD_STACK_TRACE( e ); throw e; } while( false )
-
 #define DIP_ASSERT( test ) do { if( !( test ) ) DIP_THROW_ASSERTION( "Failed assertion: " #test ); } while( false )
 
 #else
-
-#define DIP_THROW_ASSERTION( str )
 
 #define DIP_ASSERT( test )
 

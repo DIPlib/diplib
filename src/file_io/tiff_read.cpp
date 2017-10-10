@@ -687,13 +687,12 @@ void ReadTIFFData(
       // --- Striped TIFF file ---
       uint32 rowsPerStrip;
       TIFFGetFieldDefaulted( tiff, TIFFTAG_ROWSPERSTRIP, &rowsPerStrip );
-      dip::uint scanline = static_cast< dip::uint >( TIFFScanlineSize( tiff ));
       tsize_t stripSize = TIFFStripSize( tiff );
       uint32 nStrips = TIFFNumberOfStrips( tiff );
       if( planarConfiguration == PLANARCONFIG_CONTIG ) {
          // 1234123412341234....
          // We know that tensorElements > 1, otherwise we force to PLANARCONFIG_SEPARATE
-         DIP_ASSERT( scanline == sizes[ 0 ] * tensorElements * sizeOf );
+         DIP_ASSERT( static_cast< dip::uint >( TIFFScanlineSize( tiff )) == sizes[ 0 ] * tensorElements * sizeOf );
          if( StridesAreNormal( tensorElements, tensorStride, sizes, strides )) {
             uint32 row = 0;
             for( uint32 strip = 0; strip < nStrips; ++strip ) {
@@ -727,7 +726,7 @@ void ReadTIFFData(
          }
       } else if( planarConfiguration == PLANARCONFIG_SEPARATE ) {
          // 1111...2222...3333...4444...
-         DIP_ASSERT( scanline == sizes[ 0 ] * sizeOf );
+         DIP_ASSERT( static_cast< dip::uint >( TIFFScanlineSize( tiff )) == sizes[ 0 ] * sizeOf );
          DIP_ASSERT( nStrips % tensorElements == 0 );
          nStrips /= static_cast< uint32 >( tensorElements );
          uint8* imagebase = imagedata;

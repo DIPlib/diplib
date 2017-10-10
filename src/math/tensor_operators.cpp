@@ -206,7 +206,7 @@ class CrossProductLineFilter : public Framework::ScanLineFilter {
          DIP_ASSERT( params.inBuffer[ 0 ].tensorLength == params.inBuffer[ 1 ].tensorLength );
          switch( params.inBuffer[ 0 ].tensorLength ) {
             case 2:
-            DIP_ASSERT( params.outBuffer[ 0 ].tensorLength == 1 );
+               DIP_ASSERT( params.outBuffer[ 0 ].tensorLength == 1 );
                do {
                   out[ 0 ] = lhs[ 0 ] * rhs[ 1 ] - lhs[ 1 ] * rhs[ 0 ];
                } while( ++lhs, ++rhs, ++out );
