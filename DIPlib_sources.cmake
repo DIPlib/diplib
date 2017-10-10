@@ -170,6 +170,8 @@ src/morphology/areaopening.cpp
 src/morphology/basic.cpp
 src/morphology/filters.cpp
 src/morphology/maxima.cpp
+src/morphology/one_dimensional.cpp
+src/morphology/one_dimensional.h
 src/morphology/pathopening.cpp
 src/morphology/reconstruction.cpp
 src/morphology/watershed.cpp

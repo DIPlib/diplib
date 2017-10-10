@@ -25,7 +25,7 @@ f = misc.face()
 a = dip.Image(f)
 a.Show()
 
-b = dip.Uniform(a,15) # TODO: Uniform not working correctly???
+b = dip.Uniform(a,15)
 b.Convert("UINT8")
 b.Show()
 

@@ -278,9 +278,9 @@ PixelTable::PixelTable(
          sizes_.resize( nDims, 0 );
          origin_.resize( nDims, 0 );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            sizes_[ ii ] = ( static_cast< dip::uint >( size[ ii ] ) / 2 ) * 2 + 1;
-            origin_[ ii ] = -static_cast< dip::sint >( sizes_[ ii ] ) / 2;
             size[ ii ] /= 2;
+            sizes_[ ii ] = static_cast< dip::uint >( size[ ii ] ) * 2 + 1;
+            origin_[ ii ] = -static_cast< dip::sint >( sizes_[ ii ] ) / 2;
          }
 
          // Fill the pixel table runs
