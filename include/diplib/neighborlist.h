@@ -121,20 +121,32 @@ class DIP_NO_EXPORT Metric {
                DIP_THROW_INVALID_FLAG( type );
             }
          }
-         if( pixelSize.IsDefined() ) {
-            pixelSize_.resize( pixelSize.Size() );
-            auto pxsz = pixelSize[ 0 ];
-            Units units = pxsz.units;
-            pixelSize_[ 0 ] = pxsz.magnitude;
-            for( dip::uint ii = 1; ii < pixelSize.Size(); ++ii ) {
-               pxsz = pixelSize[ ii ];
-               DIP_THROW_IF( pxsz.units != units, "The pixel size has different units along different dimensions" );
-               pixelSize_[ ii ] = pxsz.magnitude;
-            }
-         }
+         SetPixelSize( pixelSize );
       }
 
       /// \brief An image implicitly converts to a metric.
+      ///
+      /// The image's grey values are the metric distances. The image must have an odd size along each dimension,
+      /// and be scalar and real-valued. The pixel in the middle of the image is the origin, and must have a
+      /// value of 0.
+      ///
+      /// For example, this 3 by 3 image:
+      /// ```
+      ///    +---+---+---+
+      ///    | 0 | 2 | 0 |
+      ///    +---+---+---+
+      ///    | 1 | 0 | 1 |
+      ///    +---+---+---+
+      ///    | 0 | 2 | 0 |
+      ///    +---+---+---+
+      /// ```
+      /// is equivalent to
+      /// ```cpp
+      ///     dip::Metric( "city", 0, dip::PixelSize{ 1, 2 } )
+      /// ```
+      ///
+      /// If the image has a pixel size set, it is ignored. The `SetPixelSize` method has no effect on a `%Metric`
+      /// defined in this way.
       Metric( dip::Image const& image ) : type_( TypeCode::IMAGE ), image_( image.QuickCopy() ) {
          DIP_THROW_IF( !image_.IsForged(), E::IMAGE_NOT_FORGED );
          DIP_THROW_IF( !image_.IsScalar(), E::IMAGE_NOT_SCALAR );
@@ -152,6 +164,25 @@ class DIP_NO_EXPORT Metric {
 
       /// \brief Retrieve the pixel size array. Note that this could be an empty array, or have any number of elements.
       FloatArray const& PixelSize() const { return pixelSize_; }
+
+      /// \brief Returns true if the pixel size array is set (a non-empty array).
+      bool HasPixelSize() const { return !pixelSize_.empty(); }
+
+      /// \brief Sets the pixel size associated to the `%Metric`. Will overwrite an earlier defined pixel size.
+      /// Note that when the `%Metric` is defined by an image, the pixel size is ignored.
+      void SetPixelSize( dip::PixelSize const& pixelSize ) {
+         if( pixelSize.IsDefined() ) {
+            pixelSize_.resize( pixelSize.Size() );
+            auto pxsz = pixelSize[ 0 ];
+            Units units = pxsz.units;
+            pixelSize_[ 0 ] = pxsz.magnitude;
+            for( dip::uint ii = 1; ii < pixelSize.Size(); ++ii ) {
+               pxsz = pixelSize[ ii ];
+               DIP_THROW_IF( pxsz.units != units, "The pixel size has different units along different dimensions" );
+               pixelSize_[ ii ] = pxsz.magnitude;
+            }
+         }
+      }
 
    private:
       TypeCode type_;

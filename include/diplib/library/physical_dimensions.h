@@ -828,7 +828,7 @@ class DIP_NO_EXPORT PixelSize {
          return true;
       }
 
-      /// \brief Returns the aspect ratio of the first `d` dimensions, with respect to the first dimenion. That
+      /// \brief Returns the aspect ratio of the first `d` dimensions, with respect to the first dimension. That
       /// is, the output array has `d` elements, where the first one is 1.0. If units differ, the aspect ratio
       /// is 0 for that dimension.
       FloatArray AspectRatio( dip::uint d ) const {

@@ -396,7 +396,7 @@ void NeighborList::ConstructImage( dip::uint dimensionality, Image const& c_metr
    if( metric.DataType() != DT_DFLOAT ) {
       metric.Convert( DT_DFLOAT );
    }
-   ImageIterator <dfloat> it( metric );
+   ImageIterator< dfloat > it( metric );
    do {
       if( *it > 0 ) {
          IntegerArray coords{ it.Coordinates() };
