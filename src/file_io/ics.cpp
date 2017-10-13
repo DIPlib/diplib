@@ -552,7 +552,7 @@ FileInformation ImageReadICS(
       nDims = outRef.Dimensionality();
 
       // re-order dimensions according to strides, so that we only go forward in the file
-      auto sort = strides.sortedIndices();
+      auto sort = strides.sorted_indices();
       outRef.PermuteDimensions( sort );
       sizes = sizes.permute( sort );
       roi = roi.permute( sort );
@@ -792,7 +792,7 @@ void ImageWriteICS(
 
    // set the image data
    if( fast ) {
-      UnsignedArray order = image.Strides().sortedIndices();
+      UnsignedArray order = image.Strides().sorted_indices();
       image.PermuteDimensions( order ); // This is the same as `image.StandardizeStrides()`, but with a lot of redundant checking
       DIP_ASSERT( image.HasNormalStrides() ); // Otherwise things go bad...
       ICS* ics = icsFile;

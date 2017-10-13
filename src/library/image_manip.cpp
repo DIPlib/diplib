@@ -308,7 +308,7 @@ Image& Image::StandardizeStrides() {
    }
    // Sort strides
    if( !std::is_sorted( strides_.begin(), strides_.end() )) {
-      UnsignedArray order = strides_.sortedIndices();
+      UnsignedArray order = strides_.sorted_indices();
       UnsignedArray newsizes( nd, 0 );
       IntegerArray newstrides( nd, 0 );
       dip::PixelSize newpixelsz;

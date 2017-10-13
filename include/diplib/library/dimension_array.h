@@ -358,7 +358,7 @@ class DIP_NO_EXPORT DimensionArray {
          }
       }
       /// Returns an array with indices into the array, sorted from smallest value to largest.
-      DimensionArray< size_type > sortedIndices() const {
+      DimensionArray< size_type > sorted_indices() const {
          DimensionArray< size_type > out( size_ );
          for( size_type ii = 0; ii < size_; ++ii ) {
             out[ ii ] = ii;
@@ -375,7 +375,7 @@ class DIP_NO_EXPORT DimensionArray {
          }
          return out;
       }
-      /// Sorts the elements in the array according to the `order` array, such as returned by `sortedIndices`.
+      /// Order the elements in the array according to the `order` array, such as returned by `sorted_indices`.
       ///
       /// Postcondition:
       /// ```cpp
@@ -385,6 +385,24 @@ class DIP_NO_EXPORT DimensionArray {
          DimensionArray out( order.size() );
          for( size_type ii = 0; ii < order.size(); ++ii ) {
             out[ ii ] = data_[ order[ ii ]];
+         }
+         return out;
+      }
+      /// Inverse orders the elements in the array according to the `order` array, such as returned by `sorted_indices`.
+      ///
+      /// Postcondition:
+      /// ```cpp
+      ///     out[ order[ ii ]] = (*this)[ ii ];
+      /// ```
+      /// Elements not indexed by `order` will be default-initialized.
+      DimensionArray inverse_permute( DimensionArray< size_type > const& order ) const {
+         size_type n = 0;
+         for( auto o : order ) {
+            n = std::max( n, o + 1 );
+         }
+         DimensionArray out( n );
+         for( size_type ii = 0; ii < order.size(); ++ii ) {
+            out[ order[ ii ]] = data_[ ii ];
          }
          return out;
       }
@@ -807,7 +825,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
 
    DOCTEST_SUBCASE("sorting II") {
       dip::DimensionArray< int > b{ 0, 2, 4, 1, 3, 5 };
-      dip::DimensionArray< size_t > i = b.sortedIndices();
+      dip::DimensionArray< size_t > i = b.sorted_indices();
       DOCTEST_CHECK( b.size() == i.size() );
       DOCTEST_CHECK( i[ 0 ] == 0 );
       DOCTEST_CHECK( i[ 1 ] == 3 );
