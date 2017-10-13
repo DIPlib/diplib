@@ -241,6 +241,22 @@ UnsignedArray CoordinatesComputer::operator()( dip::sint offset ) const {
 }
 
 
+void Image::MatchStrideOrder( Image const& src ) {
+   DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
+   DIP_THROW_IF( sizes_.size() != src.strides_.size(), E::DIMENSIONALITIES_DONT_MATCH );
+   IntegerArray srcStrides = src.strides_;
+   srcStrides.push_back( src.tensorStride_ );
+   auto order = srcStrides.sorted_indices();
+   sizes_.push_back( tensor_.Elements() );
+   auto sortedSizes = sizes_.permute( order );
+   ComputeStrides( sortedSizes, 1, strides_ );
+   strides_ = strides_.inverse_permute( order );
+   tensor_.SetVector( sizes_.back() );
+   tensorStride_ = strides_.back();
+   sizes_.pop_back();
+   strides_.pop_back();
+}
+
 // Normal strides are the default ones:
 // increasing in value, and with contiguous data.
 bool Image::HasNormalStrides() const {
@@ -758,6 +774,23 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
       }
    }
    DOCTEST_CHECK_FALSE( error );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::Image::MatchStrideOrder") {
+   dip::Image img, src;
+   src.SetStrides( { 100, 1, 10 } );
+   src.SetTensorStride( 2 );
+   // src order is: y, tensor, z, x
+   img.SetSizes( { 5, 6, 7 } );
+   img.SetTensorSizes( 4 );
+   img.MatchStrideOrder( src );
+   // img order is supposed to be: y, tensor, z, x
+   // strides are: { 6*4*7, 1, 6*4 }, 6
+   DOCTEST_REQUIRE( img.Strides().size() == 3 );
+   DOCTEST_CHECK( img.Stride( 0 ) == 6*4*7 );
+   DOCTEST_CHECK( img.Stride( 1 ) == 1 );
+   DOCTEST_CHECK( img.Stride( 2 ) == 6*4 );
+   DOCTEST_CHECK( img.TensorStride() == 6 );
 }
 
 #endif // DIP__ENABLE_DOCTEST

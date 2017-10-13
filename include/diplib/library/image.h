@@ -452,6 +452,9 @@ class DIP_NO_EXPORT Image {
          tensorStride_ = ts;
       }
 
+      /// \brief Set the strides array and tensor stride to match the dimension order of `src`. The image must be raw.
+      DIP_EXPORT void MatchStrideOrder( Image const& src );
+
       /// \brief Test if all the pixels are contiguous.
       ///
       /// If all pixels are contiguous, you can traverse the whole image,
