@@ -65,30 +65,16 @@ void Full(
    // Determine boundary sizes
    UnsignedArray boundary = kernel.Boundary( c_in.Dimensionality() );
 
-   // Copy input if necessary (this is the input buffer!)
-   Image input;
-   bool dataTypeChange = false;
-   if( c_in.DataType() != inBufferType ) {
-      dataTypeChange = true;
-      input.SetDataType( inBufferType );
-      input.Protect();
-   }
-   // TODO: match stride ordering of `out`!
+   // Do we need to adjust the input image?
+   bool dataTypeChange = c_in.DataType() != inBufferType;
    bool expandBoundary = boundary.any() && ( opts != Full_BorderAlreadyExpanded );
-   if( dataTypeChange || expandTensor || expandBoundary ) {
-      Option::ExtendImage options = Option::ExtendImage_Masked;
-      if( expandTensor ) {
-         options += Option::ExtendImage_ExpandTensor;
-      }
-      DIP_STACK_TRACE_THIS( ExtendImageLowLevel( c_in, input, boundary, boundaryConditions, options ));
-   } else {
-      input = c_in.QuickCopy();
-   }
+   bool adjustInput = dataTypeChange || expandTensor || expandBoundary;
 
    // Adjust c_out if necessary (and possible)
    // NOTE: Don't use c_in any more from here on. It has possibly been reforged!
+   Image cc_in = c_in.QuickCopy(); // Preserve for later
    DIP_START_STACK_TRACE
-      if( c_out.Aliases( input )) {
+      if( c_out.Aliases( c_in )) {
          // We cannot work in-place! Note this only happens if we didn't call `ExtendImageLowLevel` earlier.
          c_out.Strip();
       }
@@ -100,6 +86,40 @@ void Full(
       }
    DIP_END_STACK_TRACE
    Image output = c_out.QuickCopy();
+
+   // Copy input if necessary (this is the input buffer!)
+   // If we do copy the input, we'll adjust its strides to match those of output.
+   Image input;
+   if( adjustInput ) {
+      input.SetDataType( inBufferType );
+      if( expandTensor ) {
+         input.SetTensorSizes( cc_in.TensorColumns() * cc_in.TensorRows() );
+      } else {
+         input.SetTensorSizes( cc_in.TensorElements() );
+      }
+      UnsignedArray bufferSizes = cc_in.Sizes();
+      if( expandBoundary ) {
+         for( dip::uint ii = 0; ii < bufferSizes.size(); ++ii ) {
+            bufferSizes[ ii ] += 2 * boundary[ ii ];
+         }
+      }
+      input.SetSizes( bufferSizes );
+      input.MatchStrideOrder( output );
+      input.Forge(); // This forge will honor the strides we've set, the image does not have an external interface.
+      input.Protect(); // make sure it's not reforged by `ExtendImage` or `Copy`.
+      if( expandTensor || expandBoundary ) {
+         Option::ExtendImage options = Option::ExtendImage_Masked;
+         if( expandTensor ) {
+            options += Option::ExtendImage_ExpandTensor;
+         }
+         DIP_STACK_TRACE_THIS( ExtendImageLowLevel( cc_in, input, boundary, boundaryConditions, options ));
+      } else { // if( dataTypeChange )
+         input.Copy( cc_in );
+      }
+      input.Protect( false );
+   } else {
+      input = cc_in.QuickCopy();
+   }
 
    // Create a pixel table suitable to be applied to `input`
    dip::uint processingDim = OptimalProcessingDim( input, kernelSizes );
