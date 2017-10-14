@@ -52,6 +52,27 @@ class DIP_NO_EXPORT PixelTable; // forward declaration, it's defined a little lo
 /// `dip::ExtendImage`, or where the pixels being processed are away from the image edges.
 ///
 /// Its iterator dereferences to an offset rather than coordinates.
+/// But note that the iterator is not as efficient as a manual double-loop over runs and
+/// pixels within each run. Even more efficient is to first extract an array with offsets
+/// using the `Offsets` method. The difference between these methods is only relevant
+/// when iterating over the pixel table for each pixel in an image, as the small difference
+/// accumulates.
+///
+/// ```cpp
+///     PixelTableOffsets pt = ...;
+///
+///     for( auto offset: pt ) { ... }          // easiest, least efficient
+///
+///     for( auto const& run : pt.Runs() ) {
+///        dip::sint offset = run.offset;
+///        for( dip::uint ii = 0; ii < run.length; ++ii, offset += pt.Stride() ) {
+///           ...
+///        }
+///     }                                       // more efficient
+///
+///     auto offsets = pt.Offsets();
+///     for( auto offset: offsets ) { ... }     // most efficient (when iterating many times)
+/// ```
 ///
 /// \see dip::PixelTable, dip::Framework::Full, dip::ImageIterator
 class DIP_NO_EXPORT PixelTableOffsets {
@@ -88,6 +109,9 @@ class DIP_NO_EXPORT PixelTableOffsets {
 
       /// Returns the processing dimension, the dimension along which pixel runs are laid out
       dip::uint ProcessingDimension() const { return procDim_; }
+
+      /// Returns the stride along the processing dimension used by the iterator
+      dip::sint Stride() const { return stride_; }
 
       /// A const iterator to the first pixel in the neighborhood
       iterator begin() const;
@@ -353,25 +377,28 @@ class DIP_NO_EXPORT PixelTable::iterator {
       /// Constructs an iterator to the first pixel in the neighborhood
       explicit iterator( PixelTable const& pt ) {
          DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
-         pixelTable_ = &pt;
-         coordinates_ = pt.runs_[ 0 ].coordinates;
-         // run_ and index_ are set properly by default
+         run_ = pt.runs_.begin();
+         end_ = pt.runs_.end();
+         procDim_ = pt.procDim_;
+         coordinates_ = run_->coordinates;
+         // index_ set properly by default
       }
 
       /// Constructs an end iterator
       static iterator end( PixelTable const& pt ) {
          iterator out;
-         out.pixelTable_ = &pt;
-         out.run_ = pt.runs_.size();
+         out.end_ = out.run_ = pt.runs_.end();
+         // index_ set properly by default, procDim_ and coordinates_ we don't care about
          return out;
       }
 
       /// Swap
       void swap( iterator& other ) {
          using std::swap;
-         swap( pixelTable_, other.pixelTable_ );
          swap( run_, other.run_ );
+         swap( end_, other.end_ );
          swap( index_, other.index_ );
+         swap( procDim_, other.procDim_ );
          swap( coordinates_, other.coordinates_ );
       }
 
@@ -380,19 +407,17 @@ class DIP_NO_EXPORT PixelTable::iterator {
 
       /// Increment
       iterator& operator++() {
-         if( pixelTable_ && ( run_ < pixelTable_->runs_.size() ) ) {
-            ++index_;
-            if( index_ < pixelTable_->runs_[ run_ ].length ) {
-               ++coordinates_[ pixelTable_->procDim_ ];
-            } else {
-               index_ = 0;
-               ++run_;
-               if( run_ < pixelTable_->runs_.size() ) {
-                  coordinates_ = pixelTable_->runs_[ run_ ].coordinates;
-               }
+         ++index_;
+         if( index_ < run_->length ) {
+            ++coordinates_[ procDim_ ];
+         } else {
+            index_ = 0;
+            ++run_;
+            if( run_ != end_ ) {
+               coordinates_ = run_->coordinates;
             }
          }
-         return * this;
+         return *this;
       }
 
       /// Increment
@@ -404,7 +429,7 @@ class DIP_NO_EXPORT PixelTable::iterator {
 
       /// \brief Equality comparison, is true if the two iterators reference the same pixel in the same pixel table.
       bool operator==( iterator const& other ) const {
-         return ( pixelTable_ == other.pixelTable_ ) && ( run_ == other.run_ ) && ( index_ == other.index_ );
+         return ( run_ == other.run_ ) && ( index_ == other.index_ );
       }
 
       /// Inequality comparison
@@ -413,15 +438,16 @@ class DIP_NO_EXPORT PixelTable::iterator {
       }
 
       /// Test to see if the iterator reached past the last pixel
-      bool IsAtEnd() const { return run_ == pixelTable_->runs_.size(); }
+      bool IsAtEnd() const { return run_ == end_; }
 
       /// Test to see if the iterator is still pointing at a pixel
       explicit operator bool() const { return !IsAtEnd(); }
 
    private:
-      PixelTable const* pixelTable_ = nullptr;
-      dip::uint run_ = 0;        // which run we're currently point at
+      std::vector< PixelTable::PixelRun >::const_iterator run_;
+      std::vector< PixelTable::PixelRun >::const_iterator end_;
       dip::uint index_ = 0;      // which pixel on the run we're currently pointing at
+      dip::uint procDim_ = 0;    // the direction of the runs
       value_type coordinates_;   // the coordinates of the pixel
 };
 
@@ -454,52 +480,46 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
       /// Constructs an iterator to the first pixel in the neighborhood
       explicit iterator( PixelTableOffsets const& pt ) {
          DIP_THROW_IF( pt.nPixels_ == 0, "Pixel Table is empty" );
-         pixelTable_ = &pt;
-         offset_ = pt.runs_[ 0 ].offset;
-         // run_ and index_ are set properly by default
+         run_ = pt.runs_.begin();
+         end_ = pt.runs_.end();
+         stride_ = pt.stride_;
+         // index_ set properly by default
       }
 
       /// Constructs an end iterator
       static iterator end( PixelTableOffsets const& pt ) {
          iterator out;
-         out.pixelTable_ = &pt;
-         out.run_ = pt.runs_.size();
+         out.end_ = out.run_ = pt.runs_.end();
+         // index_ set properly by default, stride_ we don't care about
          return out;
       }
 
       /// Swap
       void swap( iterator& other ) {
          using std::swap;
-         swap( pixelTable_, other.pixelTable_ );
          swap( run_, other.run_ );
+         swap( end_, other.end_ );
          swap( index_, other.index_ );
-         swap( offset_, other.offset_ );
+         swap( stride_, other.stride_ );
       }
 
       /// Dereference
-      reference operator*() const { return offset_; }
+      reference operator*() const { return Offset(); }
 
       /// Get offset, identical to dereferencing
-      reference Offset() const { return offset_; }
+      reference Offset() const { return run_->offset + static_cast< dip::sint >( index_ ) * stride_; }
 
       /// Get index within run
       dip::uint Index() const { return index_; }
 
       /// Increment
       iterator& operator++() {
-         if( pixelTable_ && ( run_ < pixelTable_->runs_.size() ) ) {
-            ++index_;
-            if( index_ < pixelTable_->runs_[ run_ ].length ) {
-               offset_ += pixelTable_->stride_;
-            } else {
-               index_ = 0;
-               ++run_;
-               if( run_ < pixelTable_->runs_.size() ) {
-                  offset_ = pixelTable_->runs_[ run_ ].offset;
-               }
-            }
+         ++index_;
+         if( index_ == run_->length ) {
+            index_ = 0;
+            ++run_;
          }
-         return * this;
+         return *this;
       }
 
       /// Increment
@@ -512,7 +532,7 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
       /// \brief Equality comparison, is true if the two iterators reference the same pixel in the same pixel table,
       /// even if they use the strides of different images.
       bool operator==( iterator const& other ) const {
-         return ( pixelTable_ == other.pixelTable_ ) && ( run_ == other.run_ ) && ( index_ == other.index_ );
+         return ( run_ == other.run_ ) && ( index_ == other.index_ );
       }
 
       /// Inequality comparison
@@ -521,16 +541,16 @@ class DIP_NO_EXPORT PixelTableOffsets::iterator {
       }
 
       /// Test to see if the iterator reached past the last pixel
-      bool IsAtEnd() const { return run_ == pixelTable_->runs_.size(); }
+      bool IsAtEnd() const { return run_ == end_; }
 
       /// Test to see if the iterator is still pointing at a pixel
       explicit operator bool() const { return !IsAtEnd(); }
 
    private:
-      PixelTableOffsets const* pixelTable_ = nullptr;
-      dip::uint run_ = 0;        // which run we're currently point at
+      std::vector< PixelTableOffsets::PixelRun >::const_iterator run_;
+      std::vector< PixelTableOffsets::PixelRun >::const_iterator end_;
       dip::uint index_ = 0;      // which pixel on the run we're currently pointing at
-      value_type offset_;        // the offset of the pixel
+      dip::sint stride_ = 1;     // image stride along the run direction
 };
 
 inline void swap( PixelTableOffsets::iterator& v1, PixelTableOffsets::iterator& v2 ) {

@@ -171,13 +171,18 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
                      // Maximum is no longer in the filter. Find maximum by looping over all pixels in the table.
                      index = 0;
                      max = std::numeric_limits< TPI >::lowest();
-                     for( auto it = pixelTable.begin(); !it.IsAtEnd(); ++it ) {
-                        TPI val = in[ *it ];
-                        if( max == val ) {
-                           index = std::max( index, static_cast< dip::sint >( it.Index() ));
-                        } else if( val > max ) {
-                           max = val;
-                           index = static_cast< dip::sint >( it.Index() );
+                     //for( auto it = pixelTable.begin(); !it.IsAtEnd(); ++it ) {
+                     for( auto const& run : pixelTable.Runs() ) {
+                        dip::sint offset = run.offset;
+                        for( dip::uint jj = 0; jj < run.length; ++jj ) {
+                           TPI val = in[ offset ];
+                           if( max == val ) {
+                              index = std::max( index, static_cast< dip::sint >( jj ));
+                           } else if( val > max ) {
+                              max = val;
+                              index = static_cast< dip::sint >( jj );
+                           }
+                           offset += pixelTable.Stride();
                         }
                      }
                   }
@@ -208,13 +213,18 @@ class FlatSEMorphologyLineFilter : public Framework::FullLineFilter {
                      // Minimum is no longer in the filter. Find minimum by looping over all pixels in the table.
                      index = 0;
                      min = std::numeric_limits< TPI >::max();
-                     for( auto it = pixelTable.begin(); !it.IsAtEnd(); ++it ) {
-                        TPI val = in[ *it ];
-                        if( min == val ) {
-                           index = std::max( index, static_cast< dip::sint >( it.Index() ));
-                        } else if( val < min ) {
-                           min = val;
-                           index = static_cast< dip::sint >( it.Index() );
+                     //for( auto it = pixelTable.begin(); !it.IsAtEnd(); ++it ) {
+                     for( auto const& run : pixelTable.Runs() ) {
+                        dip::sint offset = run.offset;
+                        for( dip::uint jj = 0; jj < run.length; ++jj ) {
+                           TPI val = in[ offset ];
+                           if( min == val ) {
+                              index = std::max( index, static_cast< dip::sint >( jj ));
+                           } else if( val < min ) {
+                              min = val;
+                              index = static_cast< dip::sint >( jj );
+                           }
+                           offset += pixelTable.Stride();
                         }
                      }
                   }

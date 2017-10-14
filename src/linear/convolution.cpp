@@ -316,6 +316,9 @@ namespace {
 template< typename TPI >
 class GeneralConvolutionLineFilter : public Framework::FullLineFilter {
    public:
+      virtual void SetNumberOfThreads( dip::uint, PixelTableOffsets const& pixelTable ) override {
+         offsets_ = pixelTable.Offsets();
+      }
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::sint inStride = params.inBuffer.stride;
@@ -326,9 +329,9 @@ class GeneralConvolutionLineFilter : public Framework::FullLineFilter {
          std::vector< dfloat > const& weights = pixelTable.Weights();
          for( dip::uint ii = 0; ii < length; ++ii ) {
             TPI sum = 0;
-            auto ito = pixelTable.begin();
+            auto ito = offsets_.begin();
             auto itw = weights.begin();
-            while( !ito.IsAtEnd() ) {
+            while( ito != offsets_.end() ) {
                sum += in[ *ito ] * static_cast< FloatType< TPI >>( *itw );
                ++ito;
                ++itw;
@@ -338,6 +341,8 @@ class GeneralConvolutionLineFilter : public Framework::FullLineFilter {
             out += outStride;
          }
       }
+   private:
+      std::vector< dip::sint > offsets_;
 };
 
 } // namespace

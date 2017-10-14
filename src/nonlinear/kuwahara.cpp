@@ -41,7 +41,8 @@ struct SelectionLineFilterParameters {
    dip::sint outTensorStride;
    dip::uint tensorLength;
    dip::uint bufferLength;
-   PixelTableOffsets const& pixelTable;
+   std::vector< dip::sint > const& pixelTableOffsets;
+   std::vector< dfloat > const& pixelTableWeights;
    dfloat threshold;
    bool minimum;
 };
@@ -58,12 +59,11 @@ class SelectionLineFilter : public SelectionLineFilterBase {
          TPI const* in = static_cast< TPI const* >( params.inBuffer );
          dfloat const* control = params.controlBuffer;
          TPI* out = static_cast< TPI* >( params.outBuffer );
-         auto const& distance = params.pixelTable.Weights();
          // For each pixel on the line:
          for( dip::uint ii = 0; ii < params.bufferLength; ++ii ) {
             // Iterate over the pixel table and find optimal offset
-            auto it = params.pixelTable.begin();
-            auto d = distance.begin();
+            auto it = params.pixelTableOffsets.begin();
+            auto d = params.pixelTableWeights.begin();
             dfloat centerValue = *control;
             dfloat bestValue = params.minimum ? std::numeric_limits< dfloat >::max() : std::numeric_limits< dfloat >::lowest();
             dfloat bestDistance = std::numeric_limits< dfloat >::max();
@@ -76,7 +76,9 @@ class SelectionLineFilter : public SelectionLineFilterBase {
                   bestDistance = *d;
                   bestOffset = *it;
                }
-            } while( ++d, ++it );
+               ++it;
+               ++d;
+            } while( it != params.pixelTableOffsets.end() );
             if( params.minimum ? bestValue + params.threshold < centerValue
                                : bestValue - params.threshold > centerValue ) {
                bestOffset *= static_cast< dip::sint >( params.tensorLength );
@@ -177,7 +179,8 @@ void SelectionFilter(
          out.TensorStride(),
          in.TensorElements(),
          in.Size( processingDim ),
-         pixelTableOffsets,
+         pixelTableOffsets.Offsets(),
+         pixelTableOffsets.Weights(),
          threshold,
          minimum
    };

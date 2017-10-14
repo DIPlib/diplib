@@ -34,8 +34,9 @@ template< typename TPI >
 class RankLineFilter : public Framework::FullLineFilter {
    public:
       RankLineFilter( dip::uint rank ) : rank_( static_cast< dip::sint >( rank )) {}
-      void SetNumberOfThreads( dip::uint threads, PixelTableOffsets const& ) override {
+      void SetNumberOfThreads( dip::uint threads, PixelTableOffsets const& pixelTable ) override {
          buffers_.resize( threads );
+         offsets_ = pixelTable.Offsets();
       }
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
          return lineLength * (
@@ -49,12 +50,11 @@ class RankLineFilter : public Framework::FullLineFilter {
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
          dip::uint length = params.bufferLength;
-         PixelTableOffsets const& pixelTable = params.pixelTable;
-         dip::uint N = pixelTable.NumberOfPixels();
+         dip::uint N = offsets_.size();
          buffers_[ params.thread ].resize( N );
          for( dip::uint ii = 0; ii < length; ++ii ) {
             TPI* buffer = buffers_[ params.thread ].data();
-            for( auto offset : pixelTable ) {
+            for( auto offset : offsets_ ) {
                *buffer = in[ offset ];
                ++buffer;
             }
@@ -68,6 +68,7 @@ class RankLineFilter : public Framework::FullLineFilter {
    private:
       dip::sint rank_;
       std::vector< std::vector< TPI >> buffers_;
+      std::vector< dip::sint > offsets_;
 };
 
 void ComputeRankFilter(
