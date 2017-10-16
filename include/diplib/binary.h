@@ -37,6 +37,209 @@ namespace dip {
 /// \brief Processing binary images, including binary mathematical morphology.
 /// \{
 
+
+/// \brief Binary morphological dilation operation.
+///
+/// The \p connectivity parameter defines the metric, that is, the shape of
+/// the structuring element. 1 indicates city - block metric, or a diamond - shaped
+/// structuring element. 2 indicates chessboard metric, or a square structuring
+/// element. - 1 and -2 indicate alternating connectivity and produce an octagonal
+/// structuring element. Alternating connectivity is only implemented for 2D and 3D images.
+///
+/// The \p edgeCondition parameter specifies whether pixels past the border of the image should be
+/// treated as object (by passing `"object"`) or as background (by passing `"background"`).
+/// 
+/// \see { BinaryErosion, BinaryClosing, BinaryOpening, BinaryPropagation }
+/// 
+DIP_EXPORT void BinaryDilation(
+   Image const& in,
+   Image& out,
+   dip::sint connectivity,
+   dip::uint iterations,
+   String const& edgeCondition
+);
+
+inline Image BinaryDilation(
+   Image const& in,
+   dip::sint connectivity,
+   dip::uint iterations,
+   String const& edgeCondition
+) {
+   Image out;
+   BinaryDilation( in, out, connectivity, iterations, edgeCondition );
+   return out;
+}
+
+/// \brief Binary morphological erosion operation.
+///
+/// The \p connectivity parameter defines the metric, that is, the shape of
+/// the structuring element. 1 indicates city - block metric, or a diamond - shaped
+/// structuring element. 2 indicates chessboard metric, or a square structuring
+/// element. - 1 and -2 indicate alternating connectivity and produce an octagonal
+/// structuring element. Alternating connectivity is only implemented for 2D and 3D images.
+///
+/// The \p edgeCondition parameter specifies whether pixels past the border of the image should be
+/// treated as object (by passing `"object"`) or as background (by passing `"background"`).
+/// 
+/// \see { BinaryDilation, BinaryClosing, BinaryOpening, BinaryPropagation }
+DIP_EXPORT void BinaryErosion(
+   Image const& in,
+   Image& out,
+   dip::sint connectivity,
+   dip::uint iterations,
+   String const& edgeCondition
+);
+
+inline Image BinaryErosion(
+   Image const& in,
+   dip::sint connectivity,
+   dip::uint iterations,
+   String const& edgeCondition
+) {
+   Image out;
+   BinaryErosion( in, out, connectivity, iterations, edgeCondition );
+   return out;
+}
+
+/// \brief Binary morphological closing operation.
+///
+/// The \p connectivity parameter defines the metric, that is, the shape of
+/// the structuring element. 1 indicates city - block metric, or a diamond - shaped
+/// structuring element. 2 indicates chessboard metric, or a square structuring
+/// element. - 1 and -2 indicate alternating connectivity and produce an octagonal
+/// structuring element. Alternating connectivity is only implemented for 2D and 3D images.
+///
+/// The \p edgeCondition parameter specifies whether pixels past the border of the image should be
+/// treated as object (by passing `"object"`) or as background (by passing `"background"`).
+/// Additionally, you can set it to `"special"` for special handling:
+/// `"background"` for the dilation, `"object"` for the erosion; this avoids the border
+/// effect you can get in the corners of the image in some cases.
+///
+/// \see { BinaryDilation, BinaryErosion, BinaryOpening, BinaryPropagation }
+DIP_EXPORT void BinaryClosing
+(
+   Image const& in,
+   Image& out,
+   dip::sint connectivity,
+   dip::uint iterations,
+   String const& edgeCondition
+);
+
+inline Image BinaryClosing(
+   Image const& in,
+   dip::sint connectivity,
+   dip::uint iterations,
+   String const& edgeCondition
+) {
+   Image out;
+   BinaryClosing( in, out, connectivity, iterations, edgeCondition );
+   return out;
+}
+
+/// \brief Binary morphological opening operation.
+///
+/// The \p connectivity parameter defines the metric, that is, the shape of
+/// the structuring element. 1 indicates city - block metric, or a diamond - shaped
+/// structuring element. 2 indicates chessboard metric, or a square structuring
+/// element. - 1 and -2 indicate alternating connectivity and produce an octagonal
+/// structuring element. Alternating connectivity is only implemented for 2D and 3D images.
+///
+/// The \p edgeCondition parameter specifies whether pixels past the border of the image should be
+/// treated as object (by passing `"object"`) or as background (by passing `"background"`).
+/// Additionally, you can set it to `"special"` for special handling:
+/// `"object"` for the erosion, `"background"` for the dilation; this avoids the border
+/// effect you can get in the corners of the image in some cases.
+///
+/// \see { BinaryDilation, BinaryErosion, BinaryClosing, BinaryPropagation }
+DIP_EXPORT void BinaryOpening
+(
+   Image const& in,
+   Image& out,
+   dip::sint connectivity,
+   dip::uint iterations,
+   String const& edgeCondition
+);
+
+inline Image BinaryOpening(
+   Image const& in,
+   dip::sint connectivity,
+   dip::uint iterations,
+   String const& edgeCondition
+) {
+   Image out;
+   BinaryOpening( in, out, connectivity, iterations, edgeCondition );
+   return out;
+}
+
+/// \brief Morphological propagation of binary objects.
+///
+/// \p inSeed contains the seeds to propagate. To use no seeds,
+/// simply pass an 'empty' image with dimensionality zero, e.g., \p dip::Image().
+/// \p inMask contains the mask in which propagation is allowed
+/// 
+/// The \p connectivity parameter defines the metric, that is, the shape of
+/// the structuring element. 1 indicates city - block metric, or a diamond - shaped
+/// structuring element. 2 indicates chessboard metric, or a square structuring
+/// element. - 1 and -2 indicate alternating connectivity and produce an octagonal
+/// structuring element. Alternating connectivity is only implemented for 2D and 3D images.
+///
+/// The \p edgeCondition parameter specifies whether pixels past the border of the image should be
+/// treated as object (by passing `"object"`) or as background (by passing `"background"`).
+///
+/// The algorithm is repeated \p iterations times. Pass 0 to continue until propagation is completed.
+
+/// \see { BinaryDilation, BinaryErosion, BinaryClosing, BinaryOpening }
+DIP_EXPORT void BinaryPropagation(
+   Image const& inSeed,
+   Image const& inMask,
+   Image& out,
+   dip::sint connectivity,
+   dip::uint iterations,
+   String const& edgeCondition
+);
+
+inline Image BinaryPropagation(
+   Image const& inSeed,
+   Image const& inMask,
+   dip::sint connectivity,
+   dip::uint iterations,
+   String const& edgeCondition
+) {
+   Image out;
+   BinaryPropagation( inSeed, inMask, out, connectivity, iterations, edgeCondition );
+   return out;
+}
+
+/// \brief Remove binary edge objects.
+///
+/// Removes those binary objects from \p in
+/// which are connected to the edges of the image. The connectivity of the
+/// objects is determined by \p connectivity. This function is a front - end to
+/// \p BinaryPropagation. It calls \p BinaryPropagation with no seed image and
+/// the pixels past the border as `"object"`. The result of the propagation is
+/// xor-ed with the input image.
+///
+/// The \p connectivity parameter defines the metric, that is, the shape of
+/// the structuring element. 1 indicates city - block metric, or a diamond - shaped
+/// structuring element. 2 indicates chessboard metric, or a square structuring
+/// element. - 1 and -2 indicate alternating connectivity and produce an octagonal
+/// structuring element. Alternating connectivity is only implemented for 2D and 3D images.
+DIP_EXPORT void BinaryEdgeObjectsRemove(
+   Image const& in,
+   Image& out,
+   dip::sint connectivity
+);
+
+inline Image BinaryEdgeObjectsRemove(
+   Image const& in,
+   dip::sint connectivity
+) {
+   Image out;
+   BinaryEdgeObjectsRemove( in, out, connectivity );
+   return out;
+}
+
+
 /// \brief Accurate binary skeleton (2D and 3D only).
 ///
 /// This algorithm computes quasi-Euclidean distances and tests Hilditch conditions to preserve topology. In 2D,
@@ -85,6 +288,7 @@ DIP_EXPORT void EuclideanSkeleton(
       String const& endPixelCondition = "natural",
       String const& edgeCondition = "background"
 );
+
 inline Image EuclideanSkeleton(
       Image const& in,
       String const& endPixelCondition = "natural",
@@ -207,11 +411,6 @@ inline Image GetBranchPixels(
 
 // TODO: functions to port:
 /*
-   dip_BinaryDilation (dip_binary.h)
-   dip_BinaryErosion (dip_binary.h)
-   dip_BinaryClosing (dip_binary.h)
-   dip_BinaryOpening (dip_binary.h)
-   dip_BinaryPropagation (dip_binary.h)
    dip_EdgeObjectsRemove (dip_binary.h)
 */
 

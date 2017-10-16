@@ -18,8 +18,8 @@
  * limitations under the License.
  */
 
-#include <cmath>
 #include "diplib/library/numeric.h"
+#include <cmath>
 
 namespace dip {
 

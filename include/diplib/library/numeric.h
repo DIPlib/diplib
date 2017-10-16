@@ -28,6 +28,10 @@
 #ifndef DIP_NUMERIC_H
 #define DIP_NUMERIC_H
 
+#ifdef _WIN32
+   #define _USE_MATH_DEFINES // Needed to define M_PI in <cmath>
+#endif
+
 #include <cmath>
 #include <numeric>
 #include <limits>

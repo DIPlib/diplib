@@ -27,6 +27,10 @@
 #ifndef DIP_DIMENSIONARRAY_H
 #define DIP_DIMENSIONARRAY_H
 
+#ifdef _WIN32
+   #define _USE_MATH_DEFINES // Needed to define M_PI in <cstdlib>/<math.h>
+#endif
+
 #include <cstdlib>   // std::malloc, std::realloc, std::free, std::size_t
 #include <initializer_list>
 #include <iterator>

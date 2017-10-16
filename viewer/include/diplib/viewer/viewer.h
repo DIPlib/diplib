@@ -21,7 +21,7 @@
 #define DIP_VIEWER_H
 
 #include <cstdint>
-#include <unistd.h>
+//#include <unistd.h>
 #include <vector>
 #include <mutex>
 

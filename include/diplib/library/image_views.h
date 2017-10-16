@@ -820,6 +820,9 @@ class Image::CastSample : public Image::Sample {
       CastSample( Sample&& sample ) : Sample( std::move( sample )) {}
       using Sample::operator=;
       operator T() const { return As< T >(); }
+
+      /// For some reason, MSVC needs this for disambiguation; the cast operator is not enough
+      bool operator==( T value ) const { return As< T >() == value; }
 };
 
 /// \brief Derived from `dip::Image::Pixel`, works identically except it implicitly converts to type `T`.

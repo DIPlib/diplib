@@ -5,6 +5,7 @@ include/dip_mmorph_interface.h
 include/diplib.h
 include/diplib/analysis.h
 include/diplib/binary.h
+include/diplib/border.h
 include/diplib/boundary.h
 include/diplib/chain_code.h
 include/diplib/color.h
@@ -30,6 +31,7 @@ include/diplib/library/numeric.h
 include/diplib/library/operators.h
 include/diplib/library/physical_dimensions.h
 include/diplib/library/sample_iterator.h
+include/diplib/library/stringparams.h
 include/diplib/library/tensor.h
 include/diplib/library/types.h
 include/diplib/linear.h
@@ -57,6 +59,10 @@ src/analysis/findshift.cpp
 src/analysis/fractal_dimension.cpp
 src/analysis/structure_tensor.cpp
 src/analysis/subpixel_location.cpp
+src/binary/binary_basic.cpp
+src/binary/binary_propagation.cpp
+src/binary/binary_support.cpp
+src/binary/binary_support.h
 src/binary/bucket.h
 src/binary/count_neighbors.cpp
 src/binary/skeleton.cpp

@@ -4,3 +4,4 @@ target/
 dipimage/private/*.jar
 *~
 build/
+*.orig

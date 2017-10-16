@@ -117,7 +117,6 @@ class DIP_NO_EXPORT ColorSpaceManager {
       using ColorSpaceConverterPointer = std::shared_ptr< ColorSpaceConverter >; // TODO: MSVC does not like us using a unique_ptr here, which is really what we want to do.
 
    public:
-
       /// \brief Constructor, registers the default color spaces.
       DIP_EXPORT ColorSpaceManager();
 
