@@ -10,8 +10,4 @@
     #include <gl/glew.h>  // Needed for OpenGL extensions
   #endif
   #include <GL/gl.h>
-<<<<<<< HEAD
 #endif
-=======
-#endif
->>>>>>> Fixed OpenGL compilation on Windows

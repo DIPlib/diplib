@@ -21,12 +21,9 @@
 #ifndef BINARY_SUPPORT_H_INCLUDED
 #define BINARY_SUPPORT_H_INCLUDED
 
-#include "diplib/border.h"
-#include "diplib/framework.h"
-#include "diplib/iterators.h"
-#include "diplib/library/types.h"
+#include <deque>
+#include "diplib.h"
 #include "diplib/neighborlist.h"
-#include <queue>
 
 namespace dip
 {

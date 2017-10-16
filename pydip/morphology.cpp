@@ -162,6 +162,18 @@ void init_morphology( py::module& m ) {
           "in"_a, "se"_a = dip::StructuringElement{}, "connectivity"_a = 1, "boundaryCondition"_a = dip::StringArray{} );
 
    // diplib/binary.h
+   m.def( "BinaryDilation", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryDilation ),
+         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = "background" );
+   m.def( "BinaryErosion", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryErosion ),
+         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = "object" );
+   m.def( "BinaryClosing", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryClosing ),
+         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = "special" );
+   m.def( "BinaryOpening", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryOpening ),
+         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = "special" );
+   m.def( "BinaryPropagation", py::overload_cast< dip::Image const&, dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryPropagation ),
+         "inSeed"_a, "inMask"_a, "connectivity"_a = 1, "iterations"_a = 0, "edgeCondition"_a = "background" );
+   m.def( "EdgeObjectsRemove", py::overload_cast< dip::Image const&, dip::uint >( &dip::EdgeObjectsRemove ),
+         "in"_a, "connectivity"_a = 1 );
    m.def( "EuclideanSkeleton", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanSkeleton ),
           "in"_a, "endPixelCondition"_a = "natural", "edgeCondition"_a = "background" );
    m.def( "CountNeighbors", py::overload_cast< dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::CountNeighbors ),

@@ -20,8 +20,10 @@
 #ifndef DIP_VIEWER_H
 #define DIP_VIEWER_H
 
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
 #include <cstdint>
-//#include <unistd.h>
 #include <vector>
 #include <mutex>
 

@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains definitions for the basic data types.
+ * This file contains definitions for string constants.
  *
  * (c)2014-2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -31,8 +31,10 @@ namespace dip {
 
 namespace S {
 
-static dip::String::value_type const* BACKGROUND = "background";
-static dip::String::value_type const* OBJECT = "object";
+constexpr char const* BACKGROUND = "background";
+constexpr char const* OBJECT = "object";
+constexpr char const* SPECIAL = "special";
 
 } // namespace S
+
 } // namespace dip

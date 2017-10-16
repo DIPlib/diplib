@@ -18,9 +18,10 @@
  * limitations under the License.
  */
 
+#include "diplib.h"
 #include "diplib/binary.h"
-#include "diplib/library/stringparams.h"
 #include "diplib/neighborlist.h"
+#include "diplib/iterators.h"
 #include "binary_support.h"
 
 namespace dip {
@@ -104,7 +105,7 @@ void BinaryPropagation(
    JointImageIterator< dip::bin, dip::bin > itInMaskOut( { inMask, out } );
    do {
       if ( itInMaskOut.In() )
-         static_cast< uint8& >(itInMaskOut.Out()) |= maskBitmask;
+         static_cast< uint8& >( itInMaskOut.Out() ) |= maskBitmask;
    } while( ++itInMaskOut );
 
    // The edge pixel queue
@@ -119,11 +120,11 @@ void BinaryPropagation(
    // First iteration: process all elements in the queue a first time
    if( iterations > 0 ) {
       // Process all elements currently in the queue
-      dip::sint count = edgePixels.size();
+      dip::sint count = static_cast< dip::sint >( edgePixels.size() );
 
       while( --count >= 0 ) {
          dip::bin* pPixel = edgePixels.front();
-         uint8& pixelByte = static_cast<uint8&>(*pPixel);
+         uint8& pixelByte = static_cast< uint8& >( *pPixel );
          if( (pixelByte & maskOrSeedBitmask) == maskBitmask ) {
             pixelByte |= seedBitmask;
             edgePixels.push_back( pPixel );
@@ -143,21 +144,21 @@ void BinaryPropagation(
       IntegerArray const& neighborOffsetsOut = iDilIter & 1 ? neighborOffsetsOut1 : neighborOffsetsOut0;
 
       // Process all elements currently in the queue
-      dip::sint count = edgePixels.size();
+      dip::sint count = static_cast< dip::sint >( edgePixels.size() );
 
       while( --count >= 0 ) {
          // Get front pixel from the queue
          dip::bin* pPixel = edgePixels.front();
-         uint8& pixelByte = static_cast<uint8&>(*pPixel);
+         uint8& pixelByte = static_cast< uint8& >( *pPixel );
          bool isBorderPixel = pixelByte & borderBitmask;
 
          // Propagate to all neighbours which are not yet processed
          dip::IntegerArray::const_iterator itNeighborOffset = neighborOffsetsOut.begin();
          for( NeighborList::Iterator itNeighbor = neighborList.begin(); itNeighbor != neighborList.end(); ++itNeighbor, ++itNeighborOffset ) {
-            if( !isBorderPixel || itNeighbor.IsInImage( coordsComputer( pPixel - static_cast<dip::bin*>(out.Origin()) ), out.Sizes() ) ) { // IsInImage() is not evaluated for non-border pixels
+            if( !isBorderPixel || itNeighbor.IsInImage( coordsComputer( pPixel - static_cast< dip::bin* >( out.Origin() )), out.Sizes() ) ) { // IsInImage() is not evaluated for non-border pixels
                dip::bin* pNeighbor = pPixel + *itNeighborOffset;
-               uint8& neighborByte = static_cast<uint8&>(*pNeighbor);
-               bool neighborIsObject = neighborByte & dataBitmask;
+               uint8& neighborByte = static_cast< uint8& >( *pNeighbor );
+               //bool neighborIsObject = neighborByte & dataBitmask;
                // If the neighbor has the mask-bit (means: propagation allowed)
                // but not the seed-bit (means: not yet processed),
                // process this neighbor.
@@ -184,28 +185,22 @@ void BinaryPropagation(
    // This means that the border mask is also removed
    ImageIterator< dip::bin > itOut( out );
    do {
-      uint8& pixelByte = static_cast<uint8&>(*itOut);
-      pixelByte = (uint8)(bool)( (pixelByte & maskOrSeedBitmask) == maskOrSeedBitmask); // Condition is first convered to bool (true/false) and then to uint8 (1/0)
+      uint8& pixelByte = static_cast< uint8& >( *itOut );
+      pixelByte = static_cast< uint8 >(( pixelByte & maskOrSeedBitmask ) == maskOrSeedBitmask ); // Condition is first convered to bool (true/false) and then to uint8 (1/0)
    } while( ++itOut );
 }
 
-void BinaryEdgeObjectsRemove(
-   Image const& in,
-   Image& out,
-   dip::sint connectivity
+void EdgeObjectsRemove(
+      Image const& in,
+      Image& out,
+      dip::uint connectivity
 ) {
    // Propagate with empty seed mask, iteration until done and treating outside the image as object
-   BinaryPropagation( Image() , in, out, connectivity, 0, S::OBJECT);
+   BinaryPropagation( Image(), in, out, static_cast< dip::sint >( connectivity ), 0, S::OBJECT );
 
    // The out-image now contains the edge objects
    // Remove them by toggling these bits in the in-image and writing the result in out
-   JointImageIterator< dip::bin, dip::bin > itInOut( { in, out } );
-   do {
-      uint8 const& inPixelByte = static_cast<uint8 const&>(itInOut.In());
-      uint8& outPixelByte = static_cast<uint8&>(itInOut.Out());
-      outPixelByte = inPixelByte ^ outPixelByte;
-   } while( ++itInOut );
+   out ^= in;
 }
-
 
 } // namespace dip

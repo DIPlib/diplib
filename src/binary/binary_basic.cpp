@@ -18,13 +18,15 @@
  * limitations under the License.
  */
 
+#include "diplib.h"
 #include "diplib/binary.h"
-#include "diplib/library/stringparams.h"
 #include "diplib/neighborlist.h"
+#include "diplib/iterators.h"
 #include "binary_support.h"
 
-namespace dip
-{
+namespace dip {
+
+namespace {
 
 /// The BinaryPropagationFunc type is used to define what to do with pixels added
 /// to the processing queue during dilation and erosion.
@@ -32,20 +34,20 @@ using BinaryPropagationFunc = std::function< void( uint8& pixel, uint8 dataMask 
 
 /// Worker function for both dilation and erosion, since they are very alike
 void BinaryDilationErosion(
-   Image const& in,
-   Image& out,
-   dip::sint connectivity,
-   dip::uint iterations,
-   String const& s_edgeCondition,
-   bool findObjectPixels,
-   BinaryPropagationFunc const& propagationOperation
+      Image const& in,
+      Image& out,
+      dip::sint connectivity,
+      dip::uint iterations,
+      String const& s_edgeCondition,
+      bool findObjectPixels,
+      BinaryPropagationFunc const& propagationOperation
 ) {
    // Verify that the image is forged, scalar and binary
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    dip::uint nDims = in.Dimensionality();
-   DIP_THROW_IF( connectivity > (dip::sint)nDims, E::PARAMETER_OUT_OF_RANGE );
+   DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::PARAMETER_OUT_OF_RANGE );
 
    // Edge condition: true means object, false means background
    bool outsideImageIsObject = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
@@ -81,9 +83,9 @@ void BinaryDilationErosion(
    FindBinaryEdgePixels( out, findObjectPixels, neighborList0, neighborOffsetsOut0, dataMask, borderMask, outsideImageIsObject, &edgePixels );
 
    // First iteration: simply process the queue
-   if (iterations > 0) {
-      for (dip::queue< dip::bin* >::const_iterator itEP = edgePixels.begin(); itEP != edgePixels.end(); ++itEP) {
-         propagationOperation( static_cast<uint8&>(**itEP), dataMask );
+   if( iterations > 0 ) {
+      for( dip::queue< dip::bin* >::const_iterator itEP = edgePixels.begin(); itEP != edgePixels.end(); ++itEP ) {
+         propagationOperation( static_cast< uint8& >( **itEP ), dataMask );
       }
    }
 
@@ -91,26 +93,26 @@ void BinaryDilationErosion(
    const CoordinatesComputer coordsComputer = out.OffsetToCoordinatesComputer();
 
    // Second and further iterations
-   for (dip::uint iDilIter = 1; iDilIter < iterations; ++iDilIter) {
+   for( dip::uint iDilIter = 1; iDilIter < iterations; ++iDilIter ) {
       // Obtain neighbor list and offsets for this iteration
       NeighborList const& neighborList = iDilIter & 1 ? neighborList1 : neighborList0;
       IntegerArray const& neighborOffsetsOut = iDilIter & 1 ? neighborOffsetsOut1 : neighborOffsetsOut0;
 
       // Process all elements currently in the queue
-      dip::sint count = edgePixels.size();
+      dip::sint count = static_cast< dip::sint >( edgePixels.size() );
 
       while( --count >= 0 ) {
          // Get front pixel from the queue
          dip::bin* pPixel = edgePixels.front();
-         uint8& pixelByte = static_cast<uint8&>(*pPixel);
+         uint8& pixelByte = static_cast< uint8& >( *pPixel );
          bool isBorderPixel = pixelByte & borderMask;
 
          // Propagate to all neighbours which are not yet processed
          dip::IntegerArray::const_iterator itNeighborOffset = neighborOffsetsOut.begin();
          for( NeighborList::Iterator itNeighbor = neighborList.begin(); itNeighbor != neighborList.end(); ++itNeighbor, ++itNeighborOffset ) {
-            if( !isBorderPixel || itNeighbor.IsInImage( coordsComputer( pPixel - static_cast<dip::bin*>(out.Origin()) ), out.Sizes() ) ) { // IsInImage() is not evaluated for non-border pixels
+            if( !isBorderPixel || itNeighbor.IsInImage( coordsComputer( pPixel - static_cast< dip::bin* >( out.Origin() )), out.Sizes() )) { // IsInImage() is not evaluated for non-border pixels
                dip::bin* pNeighbor = pPixel + *itNeighborOffset;
-               uint8& neighborByte = static_cast<uint8&>(*pNeighbor);
+               uint8& neighborByte = static_cast< uint8& >( *pNeighbor );
                bool neighborIsObject = neighborByte & dataMask;
                if( neighborIsObject == findObjectPixels ) {
                   // Propagate to the neighbor pixel
@@ -130,12 +132,14 @@ void BinaryDilationErosion(
    ClearBinaryBorderMask( out, borderMask );
 }
 
+} // namespace
+
 void BinaryDilation(
-   Image const& in,
-   Image& out,
-   dip::sint connectivity,
-   dip::uint iterations,
-   String const& s_edgeCondition
+      Image const& in,
+      Image& out,
+      dip::sint connectivity,
+      dip::uint iterations,
+      String const& s_edgeCondition
 ) {
    bool findObjectPixels = false; // Dilation propagates to background pixels
    auto propagationFunc = []( uint8& pixel, uint8 dataMask ) { pixel |= dataMask; };   // Propagate by adding the data mask
@@ -143,55 +147,93 @@ void BinaryDilation(
 }
 
 void BinaryErosion(
-   Image const& in,
-   Image& out,
-   dip::sint connectivity,
-   dip::uint iterations,
-   String const& s_edgeCondition
+      Image const& in,
+      Image& out,
+      dip::sint connectivity,
+      dip::uint iterations,
+      String const& s_edgeCondition
 ) {
    bool findObjectPixels = true; // Erosion propagates to object pixels
-   auto propagationFunc = []( uint8& pixel, uint8 dataMask ) { pixel &= ~dataMask; };  // Propagate by removing the data mask
+   auto propagationFunc = []( uint8& pixel, uint8 dataMask ) { pixel &= static_cast< uint8 >( ~dataMask ); };  // Propagate by removing the data mask
    BinaryDilationErosion( in, out, connectivity, iterations, s_edgeCondition, findObjectPixels, propagationFunc );
 }
 
-void BinaryOpening
-(
-   Image const& in,
-   Image& out,
-   dip::sint connectivity,
-   dip::uint iterations,
-   String const& edgeCondition
+void BinaryOpening(
+      Image const& in,
+      Image& out,
+      dip::sint connectivity,
+      dip::uint iterations,
+      String const& edgeCondition
 ) {
-   if (edgeCondition == S::BACKGROUND || edgeCondition == S::OBJECT) {
+   if( edgeCondition == S::BACKGROUND || edgeCondition == S::OBJECT ) {
       BinaryErosion( in, out, connectivity, iterations, edgeCondition );
       BinaryDilation( out, out, connectivity, iterations, edgeCondition );
-   }
-   else {
+   } else {
       // "Special handling"
-      DIP_THROW_IF( edgeCondition != "special", E::INVALID_PARAMETER );
+      DIP_THROW_IF( edgeCondition != S::SPECIAL, E::INVALID_FLAG );
       BinaryErosion( in, out, connectivity, iterations, S::OBJECT );
       BinaryDilation( out, out, connectivity, iterations, S::BACKGROUND );
    }
 }
 
-void BinaryClosing
-(
-   Image const& in,
-   Image& out,
-   dip::sint connectivity,
-   dip::uint iterations,
-   String const& edgeCondition
+void BinaryClosing(
+      Image const& in,
+      Image& out,
+      dip::sint connectivity,
+      dip::uint iterations,
+      String const& edgeCondition
 ) {
-   if (edgeCondition == S::BACKGROUND || edgeCondition == S::OBJECT) {
+   if( edgeCondition == S::BACKGROUND || edgeCondition == S::OBJECT ) {
       BinaryDilation( in, out, connectivity, iterations, edgeCondition );
       BinaryErosion( out, out, connectivity, iterations, edgeCondition );
-   }
-   else {
+   } else {
       // "Special handling"
-      DIP_THROW_IF( edgeCondition != "special", E::INVALID_PARAMETER );
+      DIP_THROW_IF( edgeCondition != S::SPECIAL, E::INVALID_FLAG );
       BinaryDilation( in, out, connectivity, iterations, S::BACKGROUND );
       BinaryErosion( out, out, connectivity, iterations, S::OBJECT );
    }
 }
 
 } // namespace dip
+
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+#include "diplib/statistics.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing the binary morphological filters") {
+   dip::Image in( { 64, 41 }, 1, dip::DT_BIN );
+   in = 0;
+   in.At( 32, 20 ) = 1;
+   dip::Image out;
+
+   // connectivity = 2
+   dip::BinaryDilation( in, out, 2, 7 );
+   DOCTEST_CHECK( dip::Count( out ) == 15 * 15 );
+   dip::BinaryErosion( out, out, 2, 7 );
+   DOCTEST_CHECK( dip::Count( out ) == 1 );
+   DOCTEST_CHECK( out.At( 32, 20 ) == 1 );
+
+   // connectivity = 1
+   dip::BinaryDilation( in, out, 1, 7 );
+   DOCTEST_CHECK( dip::Count( out ) == 7*8*2 + 1 );
+   dip::BinaryErosion( out, out, 1, 7 );
+   DOCTEST_CHECK( dip::Count( out ) == 1 );
+   DOCTEST_CHECK( out.At( 32, 20 ) == 1 );
+
+   // connectivity = -1
+   dip::BinaryDilation( in, out, -1, 7 );
+   DOCTEST_CHECK( dip::Count( out ) == 185 );
+   dip::BinaryErosion( out, out, -1, 7 );
+   DOCTEST_CHECK( dip::Count( out ) == 1 );
+   DOCTEST_CHECK( out.At( 32, 20 ) == 1 );
+
+   // connectivity = -2
+   dip::BinaryDilation( in, out, -2, 7 );
+   DOCTEST_CHECK( dip::Count( out ) == 201 );
+   dip::BinaryErosion( out, out, -2, 7 );
+   DOCTEST_CHECK( dip::Count( out ) == 1 );
+   DOCTEST_CHECK( out.At( 32, 20 ) == 1 );
+}
+
+#endif // DIP__ENABLE_DOCTEST

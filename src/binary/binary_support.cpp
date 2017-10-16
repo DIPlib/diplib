@@ -19,47 +19,49 @@
  */
 
 #include "binary_support.h"
-#include "diplib/library/error.h"
+#include "diplib/framework.h"
+#include "diplib/iterators.h"
+#include "diplib/border.h"
 
 namespace dip {
 
 namespace {
-/// Masks the first sample of each border pixel with the given mask
-/// and resets the mask for each (first sample of each) non-border pixel.
-class BinaryBorderMasker : public BorderProcessor< dip::bin >
-{
-public:
-   BinaryBorderMasker( Image& out, uint8 borderMask, dip::uint borderWidth = 1 ) : BorderProcessor< dip::bin >( out, borderWidth ), borderMask_( borderMask ), invBorderMask_( ~borderMask ) {}
 
-protected:
-   uint8 borderMask_;
-   uint8 invBorderMask_;
+class BinaryBorderMasker: public BorderProcessor< bin, true > {
+   public:
+      BinaryBorderMasker( Image& out, uint8 borderMask, dip::uint borderWidth = 1 ):
+            BorderProcessor< bin, true >( out, borderWidth ), borderMask_( borderMask ),
+            invBorderMask_( static_cast< uint8 >( ~borderMask )) {} // *grumble*, GCC complains here!?
 
-   // Bitwise-OR the border mask onto the first sample of the pixel
-   virtual void ProcessBorderPixel( dip::bin* pPixel ) {
-      static_cast<uint8&>(*pPixel) |= borderMask_;
-   }
+   protected:
+      uint8 borderMask_;
+      uint8 invBorderMask_;
 
-   // Bitwise-AND the inverted border mask onto the first sample of the pixel
-   virtual void ProcessNonBorderPixel( dip::bin* pPixel ) {
-      static_cast<uint8&>(*pPixel) &= invBorderMask_;
-   }
+      // Bitwise-OR the border mask onto the first sample of the pixel
+      virtual void ProcessBorderPixel( SampleIterator< bin > sit ) {
+         static_cast< uint8& >( *sit ) |= borderMask_;
+      }
+
+      // Bitwise-AND the inverted border mask onto the first sample of the pixel
+      virtual void ProcessNonBorderPixel( SampleIterator< bin > sit ) {
+         static_cast< uint8& >( *sit ) &= invBorderMask_;
+      }
 
 };
 
-class BinaryBorderMaskClearer : public BinaryBorderMasker
-{
-public:
-   BinaryBorderMaskClearer( Image& out, uint8 borderMask, dip::uint borderWidth = 1 ) : BinaryBorderMasker( out, borderMask, borderWidth ) {}
-protected:
-   /// Bitwise-AND the inverted border mask onto the first sample of the pixel to clear the border mask
-   virtual void ProcessBorderPixel( dip::bin* pPixel ) {
-      static_cast<uint8&>(*pPixel) &= invBorderMask_;
-   }
+class BinaryBorderMaskClearer: public BorderProcessor< bin, false > {
+   public:
+      BinaryBorderMaskClearer( Image& out, uint8 borderMask, dip::uint borderWidth = 1 ):
+            BorderProcessor< bin, false >( out, borderWidth ), invBorderMask_( static_cast< uint8 >( ~borderMask )) {}
+   protected:
+      uint8 invBorderMask_;
 
-   /// No operation on non-border pixels
-   virtual void ProcessNonBorderPixel( dip::bin* pPixel ) {}
+      // Reset the mask pixels within the border
+      virtual void ProcessBorderPixel( SampleIterator< bin > sit ) {
+         static_cast< uint8& >( *sit ) &= invBorderMask_;
+      }
 };
+
 }
 
 void ApplyBinaryBorderMask( Image& out, uint8 borderMask ) {
@@ -87,13 +89,13 @@ bool IsBinaryEdgePixel( Image const& in, dip::sint pixelOffset, NeighborList con
    }
 
    bool isEdgePixel = false;  // Not an edge pixel until proven otherwise
-   dip::bin* pPixel = static_cast<dip::bin*>(in.Pointer( pixelOffset ));
+   bin* pPixel = static_cast< bin* >( in.Pointer( pixelOffset ));
    // Check for all valid neighbors if any of them has a differing value. If so, break and return true.
    dip::IntegerArray::const_iterator itNeighborOffset = neighborOffsets.begin();
    for( NeighborList::Iterator itNeighbor = neighborList.begin(); itNeighbor != neighborList.end(); ++itNeighbor, ++itNeighborOffset ) {
-      if( !checkBounds || itNeighbor.IsInImage( pixelCoords, in.Sizes() ) ) {
-         const uint8 pixelByte = static_cast<uint8>(*pPixel);
-         const uint8 neighborByte = static_cast<uint8>(*(pPixel + *itNeighborOffset));   // Add the neighborOffset to the address (ptr) of pixel, and dereference to get its value
+      if( !checkBounds || itNeighbor.IsInImage( pixelCoords, in.Sizes() )) {
+         const uint8 pixelByte = static_cast< uint8 >( *pPixel );
+         const uint8 neighborByte = static_cast< uint8 >( *( pPixel + *itNeighborOffset ));   // Add the neighborOffset to the address (ptr) of pixel, and dereference to get its value
          bool pixelIsObject = pixelByte & dataMask;
          bool neighborIsObject = neighborByte & dataMask;
          // If the pixel value is different from the neighbor value, it is an edge pixel
@@ -107,14 +109,14 @@ bool IsBinaryEdgePixel( Image const& in, dip::sint pixelOffset, NeighborList con
    return isEdgePixel;
 }
 
-void FindBinaryEdgePixels( const Image& in, bool findObjectPixels, NeighborList const& neighborList, IntegerArray const& neighborOffsets, uint8 dataMask, uint8 borderMask, bool treatOutsideImageAsObject, queue< dip::bin* >* edgePixels ) {
+void FindBinaryEdgePixels( const Image& in, bool findObjectPixels, NeighborList const& neighborList, IntegerArray const& neighborOffsets, uint8 dataMask, uint8 borderMask, bool treatOutsideImageAsObject, queue< bin* >* edgePixels ) {
    // Create a coordinates computer for bounds checking of border pixels
    const CoordinatesComputer coordsComputer = in.OffsetToCoordinatesComputer();
 
    // Iterate over all pixels: detect edge pixels and add them to the queue
-   ImageIterator< dip::bin > itImage( in );
+   ImageIterator< bin > itImage( in );
    do {
-      uint8& pixelByte = static_cast<uint8&>(*itImage);
+      uint8& pixelByte = static_cast< uint8& >( *itImage );
       bool isBorderPixel = pixelByte & borderMask; // Is pixel part of the image border?
       bool isObjectPixel = pixelByte & dataMask;   // Does pixel have non-zero data value, i.e., is it part of the object and not the background?
       // Check if the pixel is of the correct type: object or background
@@ -168,7 +170,7 @@ dip::uint GetAbsBinaryConnectivity( dip::uint dimensionality, dip::sint connecti
    // All other dimensions and cases: just return connectivity,
    // but throw for negative connectivities since alternation is not supported.
    DIP_THROW_IF( connectivity < 0, "Connectivity can only be negative for dimensionality 2 and 3" );
-   return static_cast<dip::uint>(connectivity);
+   return static_cast< dip::uint >( connectivity );
 }
 
 }  // namespace dip

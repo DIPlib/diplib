@@ -52,7 +52,7 @@ int main( int argc, char** argv ) {
 
    // Set default input and output paths.
    // Can be overridden by commandline arguments.
-   std::string inputPath = "../diplib/test/";
+   std::string inputPath = DIP__EXAMPLES_DIR;
    std::string outputPath = "";
 
    // Arguments:
@@ -67,7 +67,8 @@ int main( int argc, char** argv ) {
 
    // ==================== 2D ==================== //
    dip::Image org2d; // 2D original image
-   dip::ImageReadTIFF( org2d, inputPath + "erika" );
+   std::cout << "Reading " << ( inputPath + "/erika" ) << std::endl;
+   dip::ImageReadTIFF( org2d, inputPath + "/erika" );
    dip::Image org2dBin = org2d > 100;
    dip::Image ramp2d = dip::CreateRamp( dip::UnsignedArray{ 256, 256 }, 0 );
    dip::Image ramp2dBin = ramp2d > 100;
@@ -109,12 +110,13 @@ int main( int argc, char** argv ) {
    propSeed = 0;  // Clear seed image; only use outside-as-object
    propagations2d.push_back( dip::BinaryPropagation( propSeed, org2dBin, -1, 100, "object" ) );
    propagations2d.push_back( dip::BinaryPropagation( propSeed, org2dBin, -1, 0, "object" ) );   // Unlimited iterations / until propagation done
-   dip::Image noEdgeObjects = dip::BinaryEdgeObjectsRemove( org2dBin, 2 );
+   dip::Image noEdgeObjects = dip::EdgeObjectsRemove( org2dBin, 2 );
 
 
    // ==================== 3D ==================== //
    dip::Image org3d; // 3D original image
-   dip::ImageReadICS( org3d, inputPath + "chromo3d" );
+   std::cout << "Reading " << ( inputPath + "/chromo3d" ) << std::endl;
+   dip::ImageReadICS( org3d, inputPath + "/chromo3d" );
 
    dip::Image org3dBin = org3d > 100;
    std::vector< dip::Image > dilations3d;
