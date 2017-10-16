@@ -55,7 +55,7 @@ if nargin < 1
 elseif nargin < 2
    image_out = derivative(image_in);
 elseif nargin < 3
-   image_out = derivative(image_in,[0],sigma);
+   image_out = derivative(image_in,0,sigma);
 else
    if ~ischar(method) && ~isvector(method)
       error('METHOD argument must be a string');
@@ -64,10 +64,10 @@ else
       method = ['gauss',method];
    end
    if nargin < 4
-      image_out = derivative(image_in,[0],sigma,method);
+      image_out = derivative(image_in,0,sigma,method);
    elseif nargin < 5
-      image_out = derivative(image_in,[0],sigma,method,boundary_condition);
+      image_out = derivative(image_in,0,sigma,method,boundary_condition);
    else
-      image_out = derivative(image_in,[0],sigma,method,boundary_condition,truncation);
+      image_out = derivative(image_in,0,sigma,method,boundary_condition,truncation);
    end
 end

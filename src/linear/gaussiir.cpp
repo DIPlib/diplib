@@ -575,7 +575,7 @@ class GaussIIRLineFilter : public Framework::SeparableLineFilter {
                break;
          }
 
-         // Compute the first order1 values for arbitrary coeffitients a & b
+         // Compute the first order1 values for arbitrary coefficients a & b
          dfloat val = 0.0;
          for( dip::uint jj = orderMA[ 1 ]; jj <= orderMA[ 2 ]; ++jj ) {
             val += ( a1[ jj ] * p0[ orderMA[ 2 ] - jj ] );

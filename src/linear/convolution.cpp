@@ -18,6 +18,8 @@
  * limitations under the License.
  */
 
+#include <cstdlib>   // std::malloc, std::free
+
 #include "diplib.h"
 #include "diplib/linear.h"
 #include "diplib/transform.h"
@@ -38,14 +40,17 @@ enum class FilterSymmetry {
 };
 
 struct InternOneDimensionalFilter {
-   FloatArray const& filter;
+   void* filter = nullptr; // Now that the filter is a void*, can we extend this to complex-valued filters?
    dip::uint size = 0;
+   dip::uint dataSize = 0;
    dip::uint origin = 0;
+   bool isDouble = true; // If this is false, filter is sfloat*, it it is true, filter is dfloat*.
    FilterSymmetry symmetry = FilterSymmetry::GENERAL;
-   InternOneDimensionalFilter( OneDimensionalFilter const& in ) : filter( in.filter ) {
-      size = filter.size();
+
+   InternOneDimensionalFilter( OneDimensionalFilter const& in, bool useDouble = true ) : isDouble( useDouble ) {
+      dataSize = size = in.filter.size();
       if( size != 0 ) {
-         if( in.symmetry.empty() || ( in.symmetry == "general" ) ) {
+         if( in.symmetry.empty() || ( in.symmetry == "general" )) {
             symmetry = FilterSymmetry::GENERAL;
          } else if( in.symmetry == "even" ) {
             symmetry = FilterSymmetry::EVEN;
@@ -68,7 +73,58 @@ struct InternOneDimensionalFilter {
             origin = static_cast< dip::uint >( in.origin );
             DIP_THROW_IF( origin >= size, "Origin outside of filter" );
          }
+         // Copy filter and reverse it
+         if( isDouble ) {
+            filter = std::malloc( dataSize * sizeof( dfloat ));
+            DIP_THROW_IF( !filter, "Failed to allocate memory" );
+            dfloat* ptr = static_cast< dfloat* >( filter );
+            //std::cout << "Allocated dfloat buffer" << std::endl;
+            for( dip::uint ii = dataSize; ii > 0; ) {
+               --ii;
+               *ptr = in.filter[ ii ];
+               ++ptr;
+            }
+         } else {
+            filter = std::malloc( dataSize * sizeof( sfloat ));
+            DIP_THROW_IF( !filter, "Failed to allocate memory" );
+            sfloat* ptr = static_cast< sfloat* >( filter );
+            //std::cout << "Allocated sfloat buffer" << std::endl;
+            for( dip::uint ii = dataSize; ii > 0; ) {
+               --ii;
+               *ptr = static_cast< sfloat >( in.filter[ ii ] );
+               ++ptr;
+            }
+         }
+         // Reverse origin also
+         origin = size - origin - 1;
       }
+   }
+   ~InternOneDimensionalFilter() {
+      if( filter ) {
+         //std::cout << "Freed buffer" << std::endl;
+         std::free( filter );
+      }
+   }
+   InternOneDimensionalFilter( const InternOneDimensionalFilter& ) = delete;
+   InternOneDimensionalFilter& operator=( const InternOneDimensionalFilter& ) = delete;
+   InternOneDimensionalFilter( InternOneDimensionalFilter&& other ) noexcept {
+      filter = other.filter;
+      isDouble = other.isDouble;
+      size = other.size;
+      dataSize = other.dataSize;
+      origin = other.origin;
+      symmetry = other.symmetry;
+      other.filter = nullptr;
+   }
+   InternOneDimensionalFilter& operator=( InternOneDimensionalFilter&& other ) noexcept {
+      filter = other.filter;
+      isDouble = other.isDouble;
+      size = other.size;
+      dataSize = other.dataSize;
+      origin = other.origin;
+      symmetry = other.symmetry;
+      other.filter = nullptr;
+      return *this;
    }
 };
 
@@ -81,105 +137,84 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
       virtual void Filter( Framework::SeparableLineFilterParameters const& params ) override {
          TPI* in = static_cast< TPI* >( params.inBuffer.buffer );
          dip::uint length = params.inBuffer.length;
-         dip::sint inStride = params.inBuffer.stride;
+         DIP_ASSERT( params.inBuffer.stride == 1 );
          TPI* out = static_cast< TPI* >( params.outBuffer.buffer );
          dip::sint outStride = params.outBuffer.stride;
          dip::uint procDim = 0;
          if( filter_.size() > 1 ) {
             procDim = params.dimension;
          }
-         FloatArray const& filter = filter_[ procDim ].filter;
+         auto filter = static_cast< FloatType< TPI > const* >( filter_[ procDim ].filter );
+         dip::uint dataSize = filter_[ procDim ].dataSize;
+         auto filterEnd = filter + dataSize;
          dip::uint origin = filter_[ procDim ].origin;
-         dip::uint filterSize = filter_[ procDim ].size;
-         dip::uint fsh = filter.size() - 1;
+         in -= origin;
          switch( filter_[ procDim ].symmetry ) {
             case FilterSymmetry::GENERAL:
-               in += static_cast< dip::sint >( origin ) * inStride;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI sum = 0;
                   TPI* in_t = in;
-                  for( dip::uint jj = 0; jj < filterSize; ++jj ) {
-                     sum += static_cast< FloatType< TPI >>( filter[ jj ] ) * *in_t;
-                     in_t -= inStride;
+                  for( auto f = filter; f != filterEnd; ++f, ++in_t ) {
+                     sum += *f * *in_t;
                   }
                   *out = sum;
-                  in += inStride;
+                  ++in;
                   out += outStride;
                }
                break;
             case FilterSymmetry::EVEN: // Always an odd-sized filter
-               in += static_cast< dip::sint >( origin - fsh ) * inStride;
+               in += dataSize - 1;
                for( dip::uint ii = 0; ii < length; ++ii ) {
-                  TPI* in_r = in;
-                  TPI sum = static_cast< FloatType< TPI >>( filter[ fsh ] ) * *in_r;
-                  TPI* in_l = in_r - inStride;
-                  in_r += inStride;
-                  dip::uint jj = fsh;
-                  while( jj > 0 ) {
-                     --jj;
-                     sum += static_cast< FloatType< TPI >>( filter[ jj ] ) * ( *in_r + *in_l );
-                     in_l -= inStride;
-                     in_r += inStride;
+                  TPI sum = *filter * *in;
+                  TPI* in_r = in + 1;
+                  TPI* in_l = in - 1;
+                  for( auto f = filter + 1; f != filterEnd; ++f, --in_l, ++in_r ) {
+                     sum += *f * ( *in_r + *in_l );
                   }
                   *out = sum;
-                  in += inStride;
+                  ++in;
                   out += outStride;
                }
                break;
             case FilterSymmetry::ODD: // Always an odd-sized filter
-               in += static_cast< dip::sint >( origin - fsh ) * inStride;
+               in += dataSize - 1;
                for( dip::uint ii = 0; ii < length; ++ii ) {
-                  TPI* in_r = in;
-                  TPI sum = static_cast< FloatType< TPI >>( filter[ fsh ] ) * *in_r;
-                  TPI* in_l = in_r - inStride;
-                  in_r += inStride;
-                  dip::uint jj = fsh;
-                  while( jj > 0 ) {
-                     --jj;
-                     sum += static_cast< FloatType< TPI >>( filter[ jj ] ) * ( *in_r - *in_l );
-                     in_l -= inStride;
-                     in_r += inStride;
+                  TPI sum = *filter * *in;
+                  TPI* in_r = in + 1;
+                  TPI* in_l = in - 1;
+                  for( auto f = filter + 1; f != filterEnd; ++f, --in_l, ++in_r ) {
+                     sum += *f * ( *in_r - *in_l );
                   }
                   *out = sum;
-                  in += inStride;
+                  ++in;
                   out += outStride;
                }
                break;
             case FilterSymmetry::D_EVEN: // Always an even-sized filter
-               in += static_cast< dip::sint >( origin - fsh ) * inStride;
-               ++fsh;
+               in += dataSize - 1;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI* in_r = in;
                   TPI sum = 0;
-                  TPI* in_l = in_r - inStride;
-                  dip::uint jj = fsh;
-                  while( jj > 0 ) {
-                     --jj;
-                     sum += static_cast< FloatType< TPI >>( filter[ jj ] ) * ( *in_r + *in_l );
-                     in_l -= inStride;
-                     in_r += inStride;
+                  TPI* in_l = in_r - 1;
+                  for( auto f = filter; f != filterEnd; ++f, --in_l, ++in_r ) {
+                     sum += *f * ( *in_r + *in_l );
                   }
                   *out = sum;
-                  in += inStride;
+                  ++in;
                   out += outStride;
                }
                break;
             case FilterSymmetry::D_ODD: // Always an even-sized filter
-               in += static_cast< dip::sint >( origin - fsh ) * inStride;
-               ++fsh;
+               in += dataSize - 1;
                for( dip::uint ii = 0; ii < length; ++ii ) {
                   TPI* in_r = in;
                   TPI sum = 0;
-                  TPI* in_l = in_r - inStride;
-                  dip::uint jj = fsh;
-                  while( jj > 0 ) {
-                     --jj;
-                     sum += static_cast< FloatType< TPI >>( filter[ jj ] ) * ( *in_r - *in_l );
-                     in_l -= inStride;
-                     in_r += inStride;
+                  TPI* in_l = in_r - 1;
+                  for( auto f = filter; f != filterEnd; ++f, --in_l, ++in_r ) {
+                     sum += *f * ( *in_r - *in_l );
                   }
                   *out = sum;
-                  in += inStride;
+                  ++in;
                   out += outStride;
                }
                break;
@@ -190,7 +225,11 @@ class SeparableConvolutionLineFilter : public Framework::SeparableLineFilter {
 };
 
 inline bool IsMeaninglessFilter( InternOneDimensionalFilter const& filter ) {
-   return ( filter.size == 0 ) || (( filter.size == 1 ) && ( filter.filter[ 0 ] == 1.0 ));
+   return ( filter.size == 0 ) || (( filter.size == 1 ) && (
+         filter.isDouble
+         ? ( *static_cast< dfloat* >( filter.filter ) == 1.0 )
+         : ( *static_cast< sfloat* >( filter.filter ) == 1.0 )
+   ));
 }
 
 } // namespace
@@ -207,10 +246,12 @@ void SeparableConvolution(
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF(( filterArray.size() != 1 ) && ( filterArray.size() != nDims ), E::ARRAY_ILLEGAL_SIZE );
+   bool useDouble = ( DataType::Class_DComplex + DataType::Class_DFloat ) == in.DataType();
+   //std::cout << "useDouble = " << useDouble << std::endl;
    InternOneDimensionalFilterArray filterData;
    DIP_START_STACK_TRACE
       for( auto const& f : filterArray ) {
-         filterData.emplace_back( f );
+         filterData.emplace_back( f, useDouble );
       }
    DIP_END_STACK_TRACE
    // Handle `filterArray` and create `border` array
@@ -241,7 +282,7 @@ void SeparableConvolution(
       }
    } else {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         if( IsMeaninglessFilter( filterData[ ii ] ) || ( in.Size( ii ) <= 1 )) {
+         if(( in.Size( ii ) <= 1 ) || IsMeaninglessFilter( filterData[ ii ] )) {
             process[ ii ] = false;
          }
       }
@@ -251,19 +292,10 @@ void SeparableConvolution(
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       // Get callback function
       DataType dtype = DataType::SuggestFlex( in.DataType() );
+      //std::cout << "dtype = " << dtype.Name() << std::endl;
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_FLEX( lineFilter, SeparableConvolutionLineFilter, ( filterData ), dtype );
-      Framework::Separable(
-            in,
-            out,
-            dtype,
-            dtype,
-            process,
-            border,
-            bc,
-            *lineFilter,
-            Framework::Separable_AsScalarImage
-      );
+      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter, Framework::Separable_AsScalarImage );
    DIP_END_STACK_TRACE
 }
 
@@ -367,18 +399,7 @@ void GeneralConvolution(
       DataType dtype = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
       DIP_OVL_NEW_FLEX( lineFilter, GeneralConvolutionLineFilter, (), dtype );
-      Framework::Full(
-            in,
-            out,
-            dtype,
-            dtype,
-            dtype,
-            1,
-            bc,
-            filter,
-            *lineFilter,
-            Framework::Full_AsScalarImage
-      );
+      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, filter, *lineFilter, Framework::Full_AsScalarImage );
    DIP_END_STACK_TRACE
 }
 

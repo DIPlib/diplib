@@ -390,7 +390,7 @@ class dip__Theta : public Framework::ScanLineFilter {
          dip::uint bufferLength = params.bufferLength;
          dip::uint dim = params.dimension;
          dfloat d2 = 0;
-         dfloat z;
+         dfloat z = 0; // initialize to prevent compiler warning, value not used.
          for( dip::uint ii = 0; ii < 3; ++ii ) {
             if( ii != dim ) {
                z = ( static_cast< dfloat >( params.position[ ii ] ) - transformation_[ ii ].offset ) * transformation_[ ii ].scale;
