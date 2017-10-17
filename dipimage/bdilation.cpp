@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `countneighbors` function
+ * This MEX-file implements the `bdilation` function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -26,27 +26,21 @@
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
-      DML_MIN_ARGS( 1 );
+      DML_MIN_ARGS( 2 );
       DML_MAX_ARGS( 4 );
 
       dml::MatlabInterface mi;
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      dip::uint connectivity = 0;
-      if( nrhs > 2 ) {
-         connectivity = dml::GetUnsigned( prhs[ 2 ] );
+      dip::sint connectivity = -1;
+      if( nrhs > 1 ) {
+         connectivity = dml::GetInteger( prhs[ 1 ] );
       }
 
-      dip::String mode = "foreground";
-      if( nrhs > 1 ) { // Note order difference between MATLAB and C++
-         if( mxIsChar( prhs[ 1 ] )) {
-            mode = dml::GetString( prhs[ 1 ] );
-         } else {
-            if( !dml::GetBoolean( prhs[ 1 ] )) {
-               mode = "all";
-            }
-         }
+      dip::uint iterations = 1;
+      if( nrhs > 2 ) {
+         iterations = dml::GetUnsigned( prhs[ 2 ] );
       }
 
       dip::String edgeCondition = "background";
@@ -60,7 +54,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          }
       }
 
-      dip::CountNeighbors( in, out, connectivity, mode, edgeCondition );
+      dip::BinaryDilation( in, out, connectivity, iterations, edgeCondition );
 
       plhs[ 0 ] = mi.GetArray( out );
 

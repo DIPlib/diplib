@@ -10,8 +10,8 @@
 %  MASK is a binary image, where MASK is set, the condition is true.
 %
 %  SELECTOR is a comparison operator that defines the condition: IMGA <SELECTOR> IMGB.
-%  These are the strings available: "==", "!=", ">", "<", ">=", "<=". "~=" is a
-%  MATLAB-specific alias for "!=".
+%  These are the strings available: '==', '!=', '>', '<', '>=', '<='. '~=' is a
+%  MATLAB-specific alias for '!='.
 %
 %  All images are singleton-expanded to a common size.
 %

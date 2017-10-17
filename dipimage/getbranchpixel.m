@@ -9,11 +9,11 @@
 %     * 2 indicates 8-connected neighbors in 2D
 %     * 3 indicates 28-connected neighbors in 3D
 %  edgeCondition: defines the value of the pixels outside the image. It can
-%     be 0/"background" or 1/"foreground".
+%     be 0/'background' or 1/'foreground'.
 %
 % DEFAULTS:
 %  connectivity = 0 (equal to ndims(image_in))
-%  edgeCondition = "background"
+%  edgeCondition = 'background'
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -33,9 +33,9 @@
 
 function image_out = getbranchpixel(image_in, connectivity, edgeCondition)
 if nargin < 3
-   edgeCondition = "background";
+   edgeCondition = 'background';
    if nargin < 2
       connectivity = 0;
    end
 end
-image_out = countneighbors(image_in,"foreground",connectivity,edgeCondition) > 3;
+image_out = countneighbors(image_in,'foreground',connectivity,edgeCondition) > 3;

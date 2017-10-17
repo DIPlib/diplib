@@ -19,9 +19,9 @@
 %      can be 'background' or 'object', or equivalently 0 or 1.
 %
 % DEFAULTS:
-%  mode = "foreground"
+%  mode = 'foreground'
 %  connectivity = 0 (equal to ndims(image_in))
-%  edgeCondition = "background"
+%  edgeCondition = 'background'
 %
 % DIPlib:
 %  This function calls the DIPlib function dip::CountNeighbors

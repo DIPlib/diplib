@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `countneighbors` function
+ * This MEX-file implements the `bpropagation` function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -26,41 +26,36 @@
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
-      DML_MIN_ARGS( 1 );
-      DML_MAX_ARGS( 4 );
+      DML_MIN_ARGS( 2 );
+      DML_MAX_ARGS( 5 );
 
       dml::MatlabInterface mi;
-      dip::Image const in = dml::GetImage( prhs[ 0 ] );
+      dip::Image const inSeed = dml::GetImage( prhs[ 0 ] );
+      dip::Image const inMask = dml::GetImage( prhs[ 1 ] );
       dip::Image out = mi.NewImage();
 
-      dip::uint connectivity = 0;
+      dip::sint connectivity = -1;
       if( nrhs > 2 ) {
-         connectivity = dml::GetUnsigned( prhs[ 2 ] );
+         connectivity = dml::GetInteger( prhs[ 2 ] );
       }
 
-      dip::String mode = "foreground";
-      if( nrhs > 1 ) { // Note order difference between MATLAB and C++
-         if( mxIsChar( prhs[ 1 ] )) {
-            mode = dml::GetString( prhs[ 1 ] );
-         } else {
-            if( !dml::GetBoolean( prhs[ 1 ] )) {
-               mode = "all";
-            }
-         }
-      }
-
-      dip::String edgeCondition = "background";
+      dip::uint iterations = 0;
       if( nrhs > 3 ) {
-         if( mxIsChar( prhs[ 3 ] )) {
-            edgeCondition = dml::GetString( prhs[ 3 ] );
+         iterations = dml::GetUnsigned( prhs[ 3 ] );
+      }
+
+      dip::String edgeCondition = "object";
+      if( nrhs > 4 ) {
+         if( mxIsChar( prhs[ 4 ] )) {
+            edgeCondition = dml::GetString( prhs[ 4 ] );
          } else {
-            if( dml::GetBoolean( prhs[ 3 ] )) {
-               edgeCondition = "object";
+            if( !dml::GetBoolean( prhs[ 4 ] )) {
+               edgeCondition = "background";
             }
          }
       }
 
-      dip::CountNeighbors( in, out, connectivity, mode, edgeCondition );
+      dip::BinaryPropagation( inSeed, inMask, out, connectivity, iterations, edgeCondition );
 
       plhs[ 0 ] = mi.GetArray( out );
 

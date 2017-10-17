@@ -28,6 +28,11 @@ dipimage/@dip_image/svd.cpp
 dipimage/@dip_image/trace.cpp
 dipimage/@dip_image/var.cpp
 dipimage/areaopening.cpp
+dipimage/bclosing.cpp
+dipimage/bdilation.cpp
+dipimage/berosion.cpp
+dipimage/bopening.cpp
+dipimage/bpropagation.cpp
 dipimage/bskeleton.cpp
 dipimage/clip.cpp
 dipimage/closing.cpp

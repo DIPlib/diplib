@@ -299,13 +299,13 @@ DIP_EXPORT void CountNeighbors(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& mode = "object",
+      dip::String const& mode = "foreground",
       dip::String const& edgeCondition = "background"
 );
 inline Image CountNeighbors(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& mode = "object",
+      dip::String const& mode = "foreground",
       dip::String const& edgeCondition = "background"
 ) {
    Image out;

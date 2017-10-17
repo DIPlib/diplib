@@ -1,19 +1,27 @@
-%GETENDPIXEL   Get end-pixels from skeleton
+%BDILATION   Binary dilation
 %
 % SYNOPSIS:
-%  image_out = getendpixel(image_in, connectivity, edgeCondition)
+%  image_out = bdilation(image_in,iterations,connectivity,edgeCondition)
 %
 % PARAMETERS:
+%  iterations: the number of steps taken, defines the size of the
+%     structuring element.
 %  connectivity: defines the neighborhood:
 %     * 1 indicates 4-connected neighbors in 2D or 6-connected in 3D.
 %     * 2 indicates 8-connected neighbors in 2D
 %     * 3 indicates 28-connected neighbors in 3D
-%  edgeCondition: defines the value of the pixels outside the image. It can
-%     be 0/'background' or 1/'foreground'.
+%     * -1 and -2 indicate alternating values leading to a more isotropic
+%       operation
+%  edgeCondition: the value of pixels outside the image bounds,
+%      can be 'background' or 'object', or equivalently 0 or 1.
 %
 % DEFAULTS:
-%  connectivity = 0 (equal to ndims(image_in))
+%  iterations = 1
+%  connectivity = -1
 %  edgeCondition = 'background'
+%
+% DIPlib:
+%  This function calls the DIPlib function dip::BinaryDilation
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -30,12 +38,3 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
-
-function image_out = getendpixel(image_in, connectivity, edgeCondition)
-if nargin < 3
-   edgeCondition = 'background';
-   if nargin < 2
-      connectivity = 0;
-   end
-end
-image_out = countneighbors(image_in,'foreground',connectivity,edgeCondition) == 2;
