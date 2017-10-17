@@ -28,11 +28,9 @@ namespace dip {
 
 namespace {
 
-/// The BinaryPropagationFunc type is used to define what to do with pixels added
-/// to the processing queue during dilation and erosion.
-using BinaryPropagationFunc = std::function< void( uint8& pixel, uint8 dataMask ) >;
 
-/// Worker function for both dilation and erosion, since they are very alike
+// Worker function for both dilation and erosion, since they are very alike
+template< typename F >
 void BinaryDilationErosion(
       Image const& in,
       Image& out,
@@ -40,7 +38,7 @@ void BinaryDilationErosion(
       dip::uint iterations,
       String const& s_edgeCondition,
       bool findObjectPixels,
-      BinaryPropagationFunc const& propagationOperation
+      F const& propagationOperation
 ) {
    // Verify that the image is forged, scalar and binary
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
