@@ -99,7 +99,9 @@ class DIP_NO_EXPORT DimensionArray {
       /// The default-initialized array has zero size.
       DimensionArray() {}
       /// Like `std::vector`, you can initialize with a size and a default value.
-      explicit DimensionArray( size_type sz, T newval = T() ) { resize( sz, newval ); }
+      explicit DimensionArray( size_type sz, T newval = T() ) {
+         resize( sz, newval );
+      }
       /// Like `std::vector`, you can initialize with a set of values in braces.
       DimensionArray( std::initializer_list< T > const init ) {
          resize( init.size() );
@@ -123,7 +125,9 @@ class DIP_NO_EXPORT DimensionArray {
       }
 
       // Destructor, no need for documentation
-      ~DimensionArray() { free_array(); } // no need to keep status consistent...
+      ~DimensionArray() {
+         free_array(); // no need to keep status consistent...
+      }
 
       /// Copy assignment, copies over data from `other`.
       DimensionArray& operator=( DimensionArray const& other ) {
@@ -152,14 +156,14 @@ class DIP_NO_EXPORT DimensionArray {
                // *this has dynamic memory, other doesn't
                other.data_ = data_;
                data_ = stat_;
-               std::copy( other.stat_, other.stat_ + other.size_, stat_ );
+               std::move( other.stat_, other.stat_ + other.size_, stat_ );
             }
          } else {
             if( other.is_dynamic() ) {
                // other has dynamic memory, *this doesn't
                data_ = other.data_;
                other.data_ = other.stat_;
-               std::copy( stat_, stat_ + size_, other.stat_ );
+               std::move( stat_, stat_ + size_, other.stat_ );
             } else {
                // both have static memory
                std::swap_ranges( stat_, stat_ + std::max( size_, other.size_ ), other.stat_ );
@@ -175,34 +179,34 @@ class DIP_NO_EXPORT DimensionArray {
          if( newsz > static_size_ ) {
             if( is_dynamic() ) {
                // expand or contract heap data
-               T* tmp = static_cast< T* >( std::realloc( data_, newsz * sizeof( T ) ) );
+               T* tmp = static_cast< T* >( std::realloc( data_, newsz * sizeof( T )));
+               //std::cout << "   DimensionArray realloc\n";
                if( tmp == nullptr ) {
                   throw std::bad_alloc();
                }
-               //std::cout << "   DimensionArray realloc\n";
+               data_ = tmp;
                if( newsz > size_ ) {
-                  std::fill( tmp + size_, tmp + newsz, newval );
+                  std::fill( data_ + size_, data_ + newsz, newval );
                }
                size_ = newsz;
-               data_ = tmp;
             } else {
                // move from static to heap data
                // We use malloc because we want to be able to use realloc; new cannot do this.
-               T* tmp = static_cast<T*>( std::malloc( newsz * sizeof( T ) ) );
+               T* tmp = static_cast< T* >( std::malloc( newsz * sizeof( T )));
                //std::cout << "   DimensionArray malloc\n";
                if( tmp == nullptr ) {
                   throw std::bad_alloc();
                }
-               std::copy( stat_, stat_ + size_, tmp );
-               std::fill( tmp + size_, tmp + newsz, newval );
-               size_ = newsz;
+               std::move( stat_, stat_ + size_, tmp );
                data_ = tmp;
+               std::fill( data_ + size_, data_ + newsz, newval );
+               size_ = newsz;
             }
          } else {
             if( is_dynamic() ) {
                // move from heap to static data
                if( newsz > 0 ) {
-                  std::copy( data_, data_ + newsz, stat_ );
+                  std::move( data_, data_ + newsz, stat_ );
                }
                free_array();
                size_ = newsz;
@@ -232,9 +236,9 @@ class DIP_NO_EXPORT DimensionArray {
       T const& operator[]( size_type index ) const { return *( data_ + index ); }
 
       /// Accesses the first element of the array
-      T& front() { return * data_; }
+      T& front() { return *data_; }
       /// Accesses the first element of the array
-      T const& front() const { return * data_; }
+      T const& front() const { return *data_; }
 
       /// Accesses the last element of the array
       T& back() { return *( data_ + size_ - 1 ); }
@@ -269,7 +273,7 @@ class DIP_NO_EXPORT DimensionArray {
          DIP_ASSERT( index <= size_ );
          resize( size_ + 1 );
          if( index < size_ - 1 ) {
-            std::copy_backward( data_ + index, data_ + size_ - 1, data_ + size_ );
+            std::move_backward( data_ + index, data_ + size_ - 1, data_ + size_ );
          }
          *( data_ + index ) = value;
       }
@@ -291,7 +295,7 @@ class DIP_NO_EXPORT DimensionArray {
       void erase( size_type index ) {
          DIP_ASSERT( index < size_ );
          if( index < size_ - 1 ) {
-            std::copy( data_ + index + 1, data_ + size_, data_ + index );
+            std::move( data_ + index + 1, data_ + size_, data_ + index );
          }
          resize( size_ - 1 );
       }
@@ -477,14 +481,14 @@ class DIP_NO_EXPORT DimensionArray {
       constexpr static size_type static_size_ = 4;
       size_type size_ = 0;
       T* data_ = stat_;
-      T stat_[static_size_];
+      T stat_[ static_size_ ];
       // The alternate implementation, where data_ and stat_ are in a union
       // to reduce the amount of memory used, requires a test for every data
       // access. Data access is most frequent, it's worth using a little bit
       // more memory to avoid that test.
 
       bool is_dynamic() noexcept {
-         return size_ > static_size_;
+         return data_ != stat_;
       }
 
       void free_array() noexcept {
@@ -495,17 +499,17 @@ class DIP_NO_EXPORT DimensionArray {
       }
 
       void steal_data_from( DimensionArray& other ) noexcept {
-         size_ = other.size_;
-         other.size_ = 0; // so if we steal the pointer, other won't deallocate the memory space
-         if( is_dynamic() ) {
-            data_ = other.data_; // move pointer
-            other.data_ = other.stat_; // make sure other is still correct
+         if( other.is_dynamic() ) {
+            size_ = other.size_;
+            data_ = other.data_;       // move pointer
+            other.size_ = 0;           // so other won't deallocate the memory space
+            other.data_ = other.stat_; // make sure other is consistent
          } else {
+            size_ = other.size_;
             data_ = stat_;
             std::move( other.data_, other.data_ + size_, data_ );
          }
       }
-
 };
 
 // The general case: cast rhs to type of lhs
@@ -752,7 +756,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::DimensionArray class") {
    }
 
    DOCTEST_SUBCASE("move constructor") {
-      dip::DimensionArray< int > b( std::move( a ) );
+      dip::DimensionArray< int > b( std::move( a ));
       DOCTEST_CHECK( a.size() == 0 );
       DOCTEST_CHECK( b.size() == 6 );
       DOCTEST_CHECK( b.sum() == 63 );
