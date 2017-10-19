@@ -27,49 +27,54 @@
 namespace dip {
 
 void BinaryPropagation(
-   Image const& inSeed,
-   Image const& inMask,
+   Image const& c_inSeed,
+   Image const& c_inMask,
    Image& out,
    dip::sint connectivity,
    dip::uint iterations,
    String const& s_edgeCondition
 ) {
    // Verify that the mask image is forged, scalar and binary
-   DIP_THROW_IF( !inMask.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !inMask.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
-   DIP_THROW_IF( !inMask.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !c_inMask.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !c_inMask.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
+   DIP_THROW_IF( !c_inMask.IsScalar(), E::IMAGE_NOT_SCALAR );
 
-   bool seedImageEmpty = inSeed.Dimensionality() == 0;
-
-   // If the seed image is not empty, check that it is forged,
-   // scalar and binary and of the same size as inMask
-   if( !seedImageEmpty ) {
-      DIP_THROW_IF( !inSeed.IsForged(), E::IMAGE_NOT_FORGED );
-      DIP_THROW_IF( !inSeed.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
-      DIP_THROW_IF( !inSeed.IsScalar(), E::IMAGE_NOT_SCALAR );
-      DIP_THROW_IF( inMask.Sizes() != inSeed.Sizes(), E::SIZES_DONT_MATCH );
+   // If the seed image is not raw, check that it is scalar and binary and of the same size as inMask
+   if( c_inSeed.IsForged() ) {
+      DIP_THROW_IF( !c_inSeed.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
+      DIP_THROW_IF( !c_inSeed.IsScalar(), E::IMAGE_NOT_SCALAR );
+      DIP_THROW_IF( c_inMask.Sizes() != c_inSeed.Sizes(), E::SIZES_DONT_MATCH );
    }
 
    // Check connectivity validity
-   dip::uint nDims = inMask.Dimensionality();
-   DIP_THROW_IF( connectivity > (dip::sint)nDims, E::PARAMETER_OUT_OF_RANGE );
+   dip::uint nDims = c_inMask.Dimensionality();
+   DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::PARAMETER_OUT_OF_RANGE );
 
    // Edge condition: true means object, false means background
    bool outsideImageIsObject = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
 
    // Make out equal to inMask
-   Image c_in = inMask; // temporary copy of image header, so we can strip out
-   out.ReForge( inMask.Sizes(), 1, DT_BIN ); // reforging first in case `out` is the right size but a different data type
+   Image inMask = c_inMask; // temporary copy of input image headers, so we can strip/reforge out
+   Image inSeed = c_inSeed;
+   if( out.Aliases( inMask )) { // make sure we don't overwrite the mask image
+      std::cout << "stripping out\n";
+      out.Strip();
+   }
+   out.ReForge( inMask.Sizes(), 1, DT_BIN );
    // Copy inSeed plane to output plane if it is non-empty, otherwise clear it
    // Operation takes place directly in the output plane.
-   if( !seedImageEmpty ) {
-      out.Copy( inSeed );
-   }
-   else {
+   if( inSeed.IsForged() ) {
+      out.Copy( inSeed );     // if &c_inSeed == &out, we get here too. Copy won't do anything.
+   } else {
       out = 0; // No seed data means: initialize all samples with false
    }
+   if( inSeed.HasPixelSize() ) {
+      out.SetPixelSize( inSeed.PixelSize() );
+   } else {
+      out.SetPixelSize( inMask.PixelSize() );
+   }
 
-   // Zero iterations means: continue until propagation done
+   // Zero iterations means: continue until propagation is done
    if( iterations == 0 )
       iterations = std::numeric_limits< dip::uint >::max();
 
@@ -125,7 +130,7 @@ void BinaryPropagation(
       while( --count >= 0 ) {
          dip::bin* pPixel = edgePixels.front();
          uint8& pixelByte = static_cast< uint8& >( *pPixel );
-         if( (pixelByte & maskOrSeedBitmask) == maskBitmask ) {
+         if(( pixelByte & maskOrSeedBitmask ) == maskBitmask ) {
             pixelByte |= seedBitmask;
             edgePixels.push_back( pPixel );
          }
@@ -162,7 +167,7 @@ void BinaryPropagation(
                // If the neighbor has the mask-bit (means: propagation allowed)
                // but not the seed-bit (means: not yet processed),
                // process this neighbor.
-               if( (neighborByte & maskOrSeedBitmask) == maskBitmask ) {
+               if(( neighborByte & maskOrSeedBitmask ) == maskBitmask ) {
                   // Propagate to the neighbor pixel
                   neighborByte |= seedBitmask;
                   // Add neighbor to the queue
@@ -186,7 +191,7 @@ void BinaryPropagation(
    ImageIterator< dip::bin > itOut( out );
    do {
       uint8& pixelByte = static_cast< uint8& >( *itOut );
-      pixelByte = static_cast< uint8 >(( pixelByte & maskOrSeedBitmask ) == maskOrSeedBitmask ); // Condition is first convered to bool (true/false) and then to uint8 (1/0)
+      pixelByte = static_cast< uint8 >(( pixelByte & maskOrSeedBitmask ) == maskOrSeedBitmask );
    } while( ++itOut );
 }
 

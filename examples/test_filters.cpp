@@ -4,8 +4,8 @@
 #include "diplib/generation.h"
 #include "diplib/math.h"
 //#include "diplib/distance.h"
-//#include "diplib/binary.h"
-#include "diplib/morphology.h"
+#include "diplib/binary.h"
+//#include "diplib/morphology.h"
 
 #include "diplib/testing.h"
 
@@ -35,10 +35,11 @@ int main() {
 
    //dip::Image result = dip::EuclideanSkeleton( binary );
 
-   dip::Image result = dip::Dilation( binary, dip::StructuringElement( { 9, 3 }, "line" ));
-
-   dip::testing::PrintPixelValues<dip::bin,1>( binary );
-   dip::testing::PrintPixelValues<dip::bin,1>( result );
+   dip::testing::PrintPixelValues< dip::bin, 1 >( binary );
+   dip::Image mask = dip::BinaryDilation( binary, -1, 7 );
+   dip::testing::PrintPixelValues< dip::bin, 1 >( mask );
+   dip::BinaryPropagation( mask, mask, mask, -1, 3 );
+   dip::testing::PrintPixelValues< dip::bin, 1 >( mask );
 
    return 0;
 }
