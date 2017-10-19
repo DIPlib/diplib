@@ -1,6 +1,6 @@
 /*
  * DIPlib 3.0
- * This file contains binary support functions.
+ * This file contains infrastructure for changing pixels at the image border.
  *
  * (c)2017, Erik Schuitema, Cris Luengo
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -27,108 +27,105 @@
 
 namespace dip {
 
+namespace detail {
+
 /// \brief Generic template to process the border/edges of an image.
 ///
-/// Derived classes must override ProcessBorderPixel() to modify border pixels
-/// and ProcessNonBorderPixel() for non-border pixels.
-/// TODO: replace 'template< typename TPI > void dip__SetBorder( Image& out, Image::Pixel& c_value, dip::uint size )' with the functionality below (see generation/coordinates.cpp)
-template< typename TPI, bool processInner >
-class DIP_EXPORT BorderProcessor {
-   public:
+/// All pixels within `borderWidth` of the image edge are processed through custom functions. These custom
+/// functions can read and write from the input pixel.
+///
+/// `borderPixelFunction` and `nonBorderPixelFunction` are two functions with the following signature:
+/// ```cpp
+///     void Function( TPI* ptr, dip::sint tensorStride );
+/// ```
+/// The first one is applied to border pixels (if `ProcessBorder` is true), and the second one to non-border
+/// pixels (if `ProcessNonBorder` is true). If either of the boolean template parameters is false, the corresponding
+/// function is not called, and thus can be an empty function (for example the lambda `[](auto*,dip::sint){}`).
+/// It is recommended that the called functions are lambdas, to allow stronger optimizations.
+template< typename TPI, bool ProcessBorder, bool ProcessNonBorder, typename BorderFunc, typename InnerFunc >
+void ProcessBorders(
+      Image& out,
+      BorderFunc borderPixelFunction,
+      InnerFunc nonBorderPixelFunction,
+      dip::uint borderWidth
+) {
+   static_assert( ProcessBorder || ProcessNonBorder, "At least one of the two boolean template parameters must be set" );
 
-      explicit BorderProcessor( Image& out, dip::uint borderWidth = 1 ): out_( out ), borderWidth_( borderWidth ) {}
+   dip::uint nDim = out.Dimensionality();
+   UnsignedArray const& sizes = out.Sizes();
 
-      // Process the border
-      void operator()() {
-         Process();
-      }
+   // Iterate over all image lines, in the optimal processing dimension
+   dip::uint procDim = Framework::OptimalProcessingDim( out );
+   dip::uint lineLength = sizes[ procDim ];
+   dip::sint stride = out.Stride( procDim );
+   dip::sint tensorStride = out.TensorStride();
 
-      /// Process the border
-      void Process() {
-         dip::uint nDim = out_.Dimensionality();
-         UnsignedArray const& sizes = out_.Sizes();
-
-         // Iterate over all image lines, in the optimal processing dimension
-         dip::uint procDim = Framework::OptimalProcessingDim( out_ );
-         dip::sint stride = out_.Stride( procDim );
-         dip::sint lastOffset = borderWidth_ > out_.Size( procDim )
-                                ? 0
-                                : static_cast< dip::sint >( out_.Size( procDim ) - borderWidth_ ) * stride;
-         dip::uint innerLength = 2 * borderWidth_ > out_.Size( procDim ) ? 0 : out_.Size( procDim ) - 2 * borderWidth_;
-         dip::sint tensorStride = out_.TensorStride();
-         ImageIterator< TPI > it( out_, procDim );
+   if( 2 * borderWidth >= lineLength ) {
+      // Everything is a border
+      if( ProcessBorder ) {
+         ImageIterator< TPI > it( out, procDim );
          do {
-            // Is this image line along the image border?
-            bool all = false;
-            UnsignedArray const& coord = it.Coordinates();
-            for( dip::uint ii = 0; ii < nDim; ++ii ) {
-               if(( ii != procDim ) &&
-                  (( coord[ ii ] < borderWidth_ ) || ( coord[ ii ] >= sizes[ ii ] - borderWidth_ ))) {
-                  all = true;
-                  break;
-               }
-            }
-            if( all ) {
-               // Yes, it is: fill all pixels on the line
-               LineIterator< TPI > lit = it.GetLineIterator();
-               do {
-                  ProcessBorderPixel( &*lit );
-               } while( ++lit );
-            } else {
-               // No, it isn't: fill only the first `borderWidth_` and last `borderWidth_` pixels
-               TPI* ptr = it.Pointer();
-               for( dip::uint ii = 0; ii < borderWidth_; ++ii, ptr += stride ) {
-                  ProcessBorderPixel( { ptr, tensorStride } );
-               }
-               // Process non-border pixels
-               if( processInner ) {
-                  for( dip::uint ii = 0; ii < innerLength; ++ii, ptr += stride ) {
-                     ProcessNonBorderPixel( { ptr, tensorStride } );
-                  }
-               }
-               ptr = it.Pointer() + lastOffset; // We reset the pointer here in case !processInner, and in case borderWidth_ is larger than the image size.
-               for( dip::uint ii = 0; ii < borderWidth_; ++ii, ptr += stride ) {
-                  ProcessBorderPixel( { ptr, tensorStride } );
-               }
+            TPI* ptr = it.Pointer();
+            for( dip::uint ii = 0; ii < lineLength; ++ii, ptr += stride ) {
+               borderPixelFunction( ptr, tensorStride );
             }
          } while( ++it );
       }
+      return;
+   }
 
-   protected:
-      Image& out_;
-      dip::uint borderWidth_;
-
-      /// Set the border pixel
-      virtual void ProcessBorderPixel( SampleIterator< TPI > sit ) = 0; // Make this a pure virtual base class
-      /// Set the non-border pixel
-      virtual void ProcessNonBorderPixel( SampleIterator< TPI > sit ) { (void)sit; };
-};
-
-/// \brief Template to set border pixels to a given value.
-template< typename TPI >
-class DIP_EXPORT BorderSetter: public BorderProcessor< TPI, false > {
-   public:
-      explicit BorderSetter( Image& out, Image::Pixel const& borderPixel, dip::uint borderWidth = 1 ):
-            BorderProcessor< TPI, false >( out, borderWidth ) {
-         dip::uint nTensor = out.TensorElements();
-         DIP_THROW_IF( !borderPixel.IsScalar() && borderPixel.TensorElements() != nTensor, E::NTENSORELEM_DONT_MATCH );
-         // Copy c_value into an array with the right number of elements, and of the right data type
-         borderValues_.resize( nTensor, borderPixel[ 0 ].As< TPI >() );
-         if( !borderPixel.IsScalar() ) {
-            for( dip::uint ii = 1; ii < nTensor; ++ii ) {
-               borderValues_[ ii ] = borderPixel[ ii ].As< TPI >();
+   dip::uint innerLength = lineLength - 2 * borderWidth;
+   dip::sint innerOffset = static_cast< dip::sint >( borderWidth ) * stride;
+   dip::sint lastOffset = static_cast< dip::sint >( innerLength ) * stride;
+   ImageIterator< TPI > it( out, procDim );
+   do {
+      // Is this image line along the image border?
+      bool all = false;
+      UnsignedArray const& coord = it.Coordinates();
+      for( dip::uint ii = 0; ii < nDim; ++ii ) {
+         if(( ii != procDim ) &&
+            (( coord[ ii ] < borderWidth ) || ( coord[ ii ] >= sizes[ ii ] - borderWidth ))) {
+            all = true;
+            break;
+         }
+      }
+      TPI* ptr = it.Pointer();
+      if( all ) {
+         // Yes, it is: process all pixels on the line
+         if( ProcessBorder ) {
+            for( dip::uint ii = 0; ii < lineLength; ++ii, ptr += stride ) {
+               borderPixelFunction( ptr, tensorStride );
+            }
+         }
+      } else {
+         // No, it isn't: process only the first `borderWidth` and last `borderWidth` pixels
+         if( ProcessBorder ) {
+            for( dip::uint ii = 0; ii < borderWidth; ++ii, ptr += stride ) {
+               borderPixelFunction( ptr, tensorStride );
+            }
+         } else {
+            ptr += innerOffset;
+         }
+         // Optionally process non-border pixels
+         if( ProcessNonBorder ) {
+            for( dip::uint ii = 0; ii < innerLength; ++ii, ptr += stride ) {
+               nonBorderPixelFunction( ptr, tensorStride );
+            }
+         } else {
+            ptr += lastOffset;
+         }
+         // Process last `borderWidth` pixels
+         if( ProcessBorder ) {
+            for( dip::uint ii = 0; ii < borderWidth; ++ii, ptr += stride ) {
+               borderPixelFunction( ptr, tensorStride );
             }
          }
       }
+   } while( ++it );
+}
 
-   protected:
-      std::vector< TPI > borderValues_;
+} // namespace detail
 
-      virtual void ProcessBorderPixel( SampleIterator< TPI > sit ) override {
-         std::copy( borderValues_.begin(), borderValues_.end(), sit );
-      }
-};
-
-}; // namespace dip
+} // namespace dip
 
 #endif

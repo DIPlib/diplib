@@ -25,59 +25,34 @@
 
 namespace dip {
 
-namespace {
-
-class BinaryBorderMasker: public BorderProcessor< bin, true > {
-   public:
-      BinaryBorderMasker( Image& out, uint8 borderMask, dip::uint borderWidth = 1 ):
-            BorderProcessor< bin, true >( out, borderWidth ), borderMask_( borderMask ),
-            invBorderMask_( static_cast< uint8 >( ~borderMask )) {} // *grumble*, GCC complains here!?
-
-   protected:
-      uint8 borderMask_;
-      uint8 invBorderMask_;
-
-      // Bitwise-OR the border mask onto the first sample of the pixel
-      virtual void ProcessBorderPixel( SampleIterator< bin > sit ) {
-         static_cast< uint8& >( *sit ) |= borderMask_;
-      }
-
-      // Bitwise-AND the inverted border mask onto the first sample of the pixel
-      virtual void ProcessNonBorderPixel( SampleIterator< bin > sit ) {
-         static_cast< uint8& >( *sit ) &= invBorderMask_;
-      }
-
-};
-
-class BinaryBorderMaskClearer: public BorderProcessor< bin, false > {
-   public:
-      BinaryBorderMaskClearer( Image& out, uint8 borderMask, dip::uint borderWidth = 1 ):
-            BorderProcessor< bin, false >( out, borderWidth ), invBorderMask_( static_cast< uint8 >( ~borderMask )) {}
-   protected:
-      uint8 invBorderMask_;
-
-      // Reset the mask pixels within the border
-      virtual void ProcessBorderPixel( SampleIterator< bin > sit ) {
-         static_cast< uint8& >( *sit ) &= invBorderMask_;
-      }
-};
-
-}
-
 void ApplyBinaryBorderMask( Image& out, uint8 borderMask ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !out.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
-
-   BinaryBorderMasker( out, borderMask, 1 ).Process();
+   uint8 invBorderMask = static_cast< uint8 >( ~borderMask );
+   detail::ProcessBorders< bin, true, true >(
+         out,
+         [ borderMask ]( auto* ptr, dip::sint ) { // Set border mask bits within the border
+            static_cast< uint8& >( *ptr ) |= borderMask;
+         },
+         [ invBorderMask ]( auto* ptr, dip::sint ) { // Reset border mask bits elsewhere
+            static_cast< uint8& >( *ptr ) &= invBorderMask;
+         },
+         1 );
 }
 
 void ClearBinaryBorderMask( Image& out, uint8 borderMask ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !out.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
-
-   BinaryBorderMaskClearer( out, borderMask, 1 ).Process();
+   uint8 invBorderMask = static_cast< uint8 >( ~borderMask );
+   detail::ProcessBorders< bin, true, true >(
+         out,
+         [ invBorderMask ]( auto* ptr, dip::sint ) { // Reset border mask bits within the border
+            static_cast< uint8& >( *ptr ) &= invBorderMask;
+         },
+         []( auto*, dip::sint ) {},
+         1 );
 }
 
 bool IsBinaryEdgePixel( Image const& in, dip::sint pixelOffset, NeighborList const& neighborList, IntegerArray const& neighborOffsets, uint8 dataMask, bool checkBounds, CoordinatesComputer const* coordsComputer ) {

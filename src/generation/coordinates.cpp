@@ -23,6 +23,7 @@
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/iterators.h"
+#include "diplib/border.h"
 
 namespace dip {
 
@@ -151,60 +152,34 @@ void FillDelta( Image& out, String const& origin ) {
 namespace {
 
 template< typename TPI >
-void dip__SetBorder( Image& out, Image::Pixel& c_value, dip::uint size ) {
-   dip::uint nDim = out.Dimensionality();
-   UnsignedArray const& sizes = out.Sizes();
+void dip__SetBorder( Image& out, Image::Pixel const& value, dip::uint size ) {
    dip::uint nTensor = out.TensorElements();
-   // Copy c_value into an array with the right number of elements, and of the right data type
-   std::vector< TPI > values( nTensor, c_value[ 0 ].As< TPI >() );
-   if( !c_value.IsScalar() ) {
+   // Copy `value` into an array with the right number of elements, and of the right data type
+   std::vector< TPI > borderValues( nTensor, value[ 0 ].As< TPI >() );
+   if( !value.IsScalar()) {
       for( dip::uint ii = 1; ii < nTensor; ++ii ) {
-         values[ ii ] = c_value[ ii ].As< TPI >();
+         borderValues[ ii ] = value[ ii ].As< TPI >();
       }
    }
-   // Iterate over all image lines
-   dip::uint procDim = Framework::OptimalProcessingDim( out );
-   dip::sint stride = out.Stride( procDim );
-   dip::sint lastOffset = ( static_cast< dip::sint >( out.Size( procDim )) - 1 ) * stride;
-   dip::sint tensorStride = out.TensorStride();
-   ImageIterator< TPI > it( out, procDim );
-   do {
-      // Is this image line along the image border?
-      bool all = false;
-      UnsignedArray const& coord = it.Coordinates();
-      for( dip::uint ii = 0; ii < nDim; ++ii ) {
-         if(( ii != procDim ) && (( coord[ ii ] < size ) || ( coord[ ii ] >= sizes[ ii ] - size ))) {
-            all = true;
-            break;
-         }
-      }
-      if( all ) {
-         // Yes, it is: fill all pixels on the line
-         LineIterator< TPI > lit = it.GetLineIterator();
-         do {
-            std::copy( values.begin(), values.end(), lit.begin() );
-         } while( ++lit );
-      } else {
-         // No, it isn't: fill only the first `size` and last `size` pixels
-         TPI* firstPtr = it.Pointer();
-         TPI* lastPtr = firstPtr + lastOffset;
-         for( dip::uint ii = 0; ii < size; ++ii ) {
-            std::copy( values.begin(), values.end(), SampleIterator< TPI >( firstPtr, tensorStride ));
-            std::copy( values.begin(), values.end(), SampleIterator< TPI >( lastPtr, tensorStride ));
-            firstPtr += stride;
-            lastPtr -= stride;
-         }
-      }
-   } while( ++it );
+   // Process the border
+   detail::ProcessBorders< TPI, true, false >(
+         out,
+         [ &borderValues ]( auto* ptr, dip::sint tStride ) {
+            for( auto v : borderValues ) {
+               *ptr = v;
+               ptr += tStride;
+            }
+         },
+         []( auto, dip::sint ) {}, size );
 }
 
 } // namespace
 
-void SetBorder( Image& out, Image::Pixel value, dip::uint size ) {
+void SetBorder( Image& out, Image::Pixel const& value, dip::uint size ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( out.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( !value.IsScalar() && ( out.IsScalar() || ( out.TensorElements() != value.TensorElements() )), E::NTENSORELEM_DONT_MATCH );
-   DIP_OVL_CALL_ALL( dip__SetBorder, ( out, value, size ), out.DataType());
+   DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
+   DIP_OVL_CALL_ALL( dip__SetBorder, ( out, value, size ), out.DataType() );
 }
 
 namespace {
