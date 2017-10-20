@@ -738,9 +738,13 @@ and `dip::Image::ExpandSingletonTensor` are used for this.
 
 The method `dip::Image::StandardizeStrides` undoes all rotation, mirroring,
 dimension reordering, and singleton expansion, by making all strides positive
-and sorting them from smallest to largest.
+and sorting them from smallest to largest. It also removes singleton dimensions
+(as `dip::Image::Squeeze`).
 The `dip::Image::Flatten` method converts the image to 1D (though if the image
 does not have contiguous data, it will have to be copied to form a 1D image).
+`dip::Image::FlattenAsMuchAsPossible` does the same thing, but never copies.
+If there data is not contiguous, the image will not be 1D, though it will likely
+have fewer dimensions than before the method call.
 
 A group of methods manipulate the image's tensor shape:
 `dip::Image::ReshapeTensor` requires the target tensor shape to have as many

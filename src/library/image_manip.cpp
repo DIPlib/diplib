@@ -79,7 +79,7 @@ Image& Image::Flatten() {
       newimg.Copy( *this ); // TODO: why not directly forge a 1D image?
       std::tie( stride, p ) = newimg.GetSimpleStrideAndOrigin();
       DIP_THROW_IF( !p, "Copying over the image data didn't yield simple strides" );
-      swap( newimg );
+      this->move( std::move( newimg ));
    }
    strides_ = { stride };
    sizes_ = { NumberOfPixels() };
@@ -112,7 +112,7 @@ Image& Image::FlattenAsMuchAsPossible() {
          } else {
             ++jj;
             sizes.push_back( sizes_[ ii ] );
-            strides.push_back( strides_[ ii ] );
+            strides.push_back( strides_[ ii ] ); // Using push_back in the hopes that there are no more than 4 output dimensions, this will be slow otherwise
          }
       }
       sizes_ = std::move( sizes );
@@ -216,9 +216,12 @@ Image& Image::ExpandSingletonDimensions( UnsignedArray const& newSizes ) {
 
 Image& Image::UnexpandSingletonDimensions() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+   if( tensorStride_ == 0 ) {
+      tensor_.SetScalar();
+   }
    dip::uint ndims = sizes_.size();
    for( dip::uint ii = 0; ii < ndims; ++ii ) {
-      if(( sizes_[ ii ] > 1 ) && ( strides_[ ii ] == 0 )) {
+      if( strides_[ ii ] == 0 ) {
          sizes_[ ii ] = 1; // we leave the stride at 0, it's irrelevant.
       }
    }
@@ -299,30 +302,33 @@ Image& Image::Rotation90( dip::sint n, dip::uint dimension1, dip::uint dimension
 Image& Image::StandardizeStrides() {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint nd = sizes_.size();
-   // Un-mirror
+   // Un-mirror and un-expand
+   if( tensorStride_ == 0 ) {
+      tensor_.SetScalar();
+   }
    for( dip::uint ii = 0; ii < nd; ++ii ) {
       if( strides_[ ii ] < 0 ) {
          origin_ = Pointer( static_cast< dip::sint >( sizes_[ ii ] - 1 ) * strides_[ ii ] );
          strides_[ ii ] = -strides_[ ii ];
+      } else if( strides_[ ii ] == 0 ) {
+         sizes_[ ii ] = 1;
       }
    }
    // Sort strides
-   if( !std::is_sorted( strides_.begin(), strides_.end() )) {
-      UnsignedArray order = strides_.sorted_indices();
-      UnsignedArray newsizes( nd, 0 );
-      IntegerArray newstrides( nd, 0 );
-      dip::PixelSize newpixelsz;
-      for( dip::uint ii = 0; ii < nd; ++ii ) {
-         newsizes[ ii ] = sizes_[ order[ ii ]];
-         newstrides[ ii ] = strides_[ order[ ii ]];
-         newpixelsz.Set( ii, pixelSize_[ order[ ii ]] );
-      }
-      sizes_ = std::move( newsizes );
-      strides_ = std::move( newstrides );
-      if( pixelSize_.IsDefined()) {
-         pixelSize_ = std::move( newpixelsz );
+   UnsignedArray order = strides_.sorted_indices();
+   // Remove singleton dimensions
+   dip::uint jj = 0;
+   for( dip::uint ii = 0; ii < order.size(); ++ii ) {
+      if( sizes_[ order[ ii ]] > 1 ) {
+         order[ jj ] = order[ ii ];
+         ++jj;
       }
    }
+   order.resize( jj );
+   // Permute all relevant arrays
+   sizes_ = sizes_.permute( order );
+   strides_ = strides_.permute( order );
+   pixelSize_.Permute( order );
    return *this;
 }
 
@@ -484,3 +490,128 @@ Image& Image::Crop( UnsignedArray const& sizes, String const& cropLocation ) {
 }
 
 } // namespace dip
+
+
+#ifdef DIP__ENABLE_DOCTEST
+#include "doctest.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::Image dimension manipulation functions") {
+   dip::Image src( { 5, 10, 15, }, 3 );
+   dip::Image img = src;
+   DOCTEST_REQUIRE( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
+   DOCTEST_REQUIRE( img.Strides() == dip::IntegerArray{ 3, 15, 150 } );
+   img.SwapDimensions( 1, 2 );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 15, 10 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 150, 15 } );
+   img.PermuteDimensions( { 2, 1, 0 } );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 10, 15, 5 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 15, 150, 3 } );
+   img.StandardizeStrides();
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 15, 150 } );
+   img.Flatten();
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5 * 10 * 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3 } );
+   img = src;
+   img.Mirror( { true, false, false } );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ -3, 15, 150 } );
+   img.Rotation90( 1, 0, 2 );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 15, 10, 5 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ -150, 15, -3 } );
+   img.StandardizeStrides();
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 15, 150 } );
+   img.FlattenAsMuchAsPossible();
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5 * 10 * 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3 } );
+   img = src.At( dip::RangeArray{ {}, { 5, 9 }, { 7, 11 } } );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 5, 5 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 15, 150 } );
+   img.FlattenAsMuchAsPossible();
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5 * 5, 5 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 150 } );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::Image dimension manipulation functions") {
+   dip::Image src( { 5, 10, 15, }, 3, dip::DT_SCOMPLEX );
+   dip::Image img = src;
+   DOCTEST_REQUIRE( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
+   DOCTEST_REQUIRE( img.Strides() == dip::IntegerArray{ 3, 15, 150 } );
+   DOCTEST_REQUIRE( img.TensorElements() == 3 );
+   DOCTEST_REQUIRE( img.TensorStride() == 1 );
+   DOCTEST_REQUIRE( img.DataType() == dip::DT_SCOMPLEX );
+   img.TensorToSpatial( 1 );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 3, 10, 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 1, 15, 150 } );
+   DOCTEST_CHECK( img.TensorElements() == 1 );
+   img.SpatialToTensor( 0 );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 3, 10, 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 15, 150 } );
+   DOCTEST_CHECK( img.TensorElements() == 5 );
+   DOCTEST_CHECK( img.TensorStride() == 3 );
+   img.SplitComplex();
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 3, 10, 15, 2 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1*2, 15*2, 150*2, 1 } );
+   DOCTEST_CHECK( img.TensorElements() == 5 );
+   DOCTEST_CHECK( img.TensorStride() == 3*2 );
+   img.MergeComplex();
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 3, 10, 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 15, 150 } );
+   DOCTEST_CHECK( img.TensorElements() == 5 );
+   DOCTEST_CHECK( img.TensorStride() == 3 );
+   img.TensorToSpatial();
+   img.SplitComplexToTensor();
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 3, 10, 15, 5 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1*2, 15*2, 150*2, 3*2 } );
+   DOCTEST_CHECK( img.TensorElements() == 2 );
+   DOCTEST_CHECK( img.TensorStride() == 1 );
+   img.MergeTensorToComplex();
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 3, 10, 15, 5 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 15, 150, 3 } );
+   DOCTEST_CHECK( img.TensorElements() == 1 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::Image singleton dimensions") {
+   dip::Image src( { 5, 10, 15, }, 1 );
+   dip::Image img = src;                                                      // Point 0
+   DOCTEST_REQUIRE( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
+   DOCTEST_REQUIRE( img.Strides() == dip::IntegerArray{ 1, 5, 50 } );
+   DOCTEST_REQUIRE( img.TensorElements() == 1 );
+   img.AddSingleton( 1 );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 1, 10, 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 0, 5, 50 } );
+   img.ExpandDimensionality( 5 );                                             // Point A
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 1, 10, 15, 1 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 0, 5, 50, 0 } );
+   img.ExpandSingletonDimension( 1, 20 );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 20, 10, 15, 1 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 0, 5, 50, 0 } );
+   img.ExpandSingletonDimension( 4, 25 );
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 20, 10, 15, 25 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 0, 5, 50, 0 } );
+   img.ExpandSingletonTensor( 3 );                                            // Point B
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 20, 10, 15, 25 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 0, 5, 50, 0 } );
+   DOCTEST_CHECK( img.TensorElements() == 3 );
+   DOCTEST_CHECK( img.TensorStride() == 0 );
+   img.UnexpandSingletonDimensions();                                         // Point A
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 1, 10, 15, 1 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 0, 5, 50, 0 } );
+   DOCTEST_CHECK( img.TensorElements() == 1 );
+   img.Squeeze();                                                             // Point 0
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 5, 50 } );
+   DOCTEST_CHECK( img.TensorElements() == 1 );
+   img.AddSingleton( 1 );
+   img.ExpandDimensionality( 5 );
+   img.ExpandSingletonDimension( 1, 20 );
+   img.ExpandSingletonDimension( 4, 25 );
+   img.ExpandSingletonTensor( 3 );                                            // Point B
+   img.StandardizeStrides();                                                  // Point 0
+   DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 5, 50 } );
+   DOCTEST_CHECK( img.TensorElements() == 1 );
+}
+
+#endif // DIP__ENABLE_DOCTEST

@@ -1206,7 +1206,7 @@ inline Image::Image( Image::View&& view ) {
    } else if( !view.offsets_.empty() ) {
       dip::CopyFrom( view.reference_, *this, view.offsets_ );
    } else {
-      this->swap( view.reference_ ); // Same as in move assignment, but *this does not have an external interface set
+      this->move( std::move( view.reference_ ));
    }
 }
 

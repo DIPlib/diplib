@@ -216,7 +216,7 @@ class DIP_NO_EXPORT Image {
             this->Copy( rhs );
          } else {
             // Do what the default move assignment would do
-            this->swap( rhs );
+            this->move( std::move( rhs ));
          }
          return *this;
       }
@@ -286,14 +286,14 @@ class DIP_NO_EXPORT Image {
       template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
       explicit Image( std::initializer_list< T > values ) {
          Image tmp{ Pixel( values ) };
-         swap( tmp ); // a way of calling a different constructor.
+         this->move( std::move( tmp )); // a way of calling a different constructor.
       }
 
       // This one is to disambiguate calling with a single initializer list. We don't mean UnsignedArray, we mean Pixel.
       template< typename T, typename std::enable_if< IsSampleType< T >::value, int >::type = 0 >
       explicit Image( std::initializer_list< T > values, dip::DataType dt ) {
          Image tmp{ Pixel( values ), dt };
-         swap( tmp ); // a way of calling a different constructor.
+         this->move( std::move( tmp )); // a way of calling a different constructor.
       }
 
       /// \brief A `dip::Image::View` implicitly converts to an `%Image`.
@@ -1406,10 +1406,6 @@ class DIP_NO_EXPORT Image {
       /// \see Flatten, Squeeze
       DIP_EXPORT Image& FlattenAsMuchAsPossible();
 
-      // TODO: FlattenAsMuchAsPossible: flattens but never copies.
-      //       Output image might have fewer dimensions than the input, but not necessarily, and not necessarily only
-      //       one dimension. The goal is to make iterating over pixels cheaper. How do we do this across multiple images?
-
       /// \brief Remove singleton dimensions (dimensions with size==1).
       ///
       /// The image must be forged. The data will never be copied (i.e. this is a quick and cheap operation).
@@ -1468,8 +1464,8 @@ class DIP_NO_EXPORT Image {
 
       /// \brief Unexpands singleton-expanded dimensions.
       ///
-      /// The image is modified so that each singleton-expanded dimension has a size of 1.
-      /// That is, the resulting image will no longer be `dip::Image::IsSingletonExpanded`.
+      /// The image is modified so that each singleton-expanded dimension has a size of 1, including the tensor
+      /// dimension. That is, the resulting image will no longer be `dip::Image::IsSingletonExpanded`.
       ///
       /// \see ExpandSingletonDimension, ExpandSingletonTensor, IsSingletonExpanded, Squeeze.
       DIP_EXPORT Image& UnexpandSingletonDimensions();
@@ -1541,7 +1537,8 @@ class DIP_NO_EXPORT Image {
          return Rotation90( n, 0, 1 );
       }
 
-      /// \brief Undo the effects of `Mirror`, `Rotation90` and `PermuteDimensions`.
+      /// \brief Undo the effects of `Mirror`, `Rotation90`, `PermuteDimensions`, and singleton expansion.
+      /// Also removes singleton dimensions.
       ///
       /// Modifies the image such that all strides are positive and sorted smaller to larger. The first
       /// dimension will have the smallest stride. Visiting pixels in linear indexing order (as is done
@@ -1944,7 +1941,7 @@ class DIP_NO_EXPORT Image {
             tmp.ReForge( *this ); // This way we don't copy the strides. out.Copy( *this ) would do so if out is not yet forged!
             DIP_THROW_IF( !tmp.HasNormalStrides(), "Cannot force strides to normal" );
             tmp.Copy( *this );
-            swap( tmp );
+            this->move( std::move( tmp ));
          }
       }
 
@@ -1960,7 +1957,7 @@ class DIP_NO_EXPORT Image {
             tmp.ReForge( *this ); // This way we don't copy the strides. out.Copy( *this ) would do so if out is not yet forged!
             DIP_ASSERT( tmp.HasContiguousData() );
             tmp.Copy( *this );
-            swap( tmp );
+            this->move( std::move( tmp ));
          }
       }
 
@@ -2053,6 +2050,26 @@ class DIP_NO_EXPORT Image {
          for( auto s : sizes ) {
             DIP_THROW_IF(( s == 0 ) || ( s > maxint ), "Sizes must be non-zero and no larger than " + std::to_string( maxint ));
          }
+      }
+
+      /// \brief moves data from `other` to this.
+      void move( Image&& other ) {
+         using std::swap;
+         dataType_ = other.dataType_;
+         sizes_ = other.sizes_;
+         strides_ = other.strides_;
+         tensor_ = other.tensor_;
+         tensorStride_ = other.tensorStride_;
+         protect_ = other.protect_;
+         colorSpace_ = other.colorSpace_;
+         pixelSize_ = other.pixelSize_;
+         swap( dataBlock_, other.dataBlock_ );  // prevent incrementing and decrementing counters
+         other.dataBlock_ = nullptr;            // free previous data block, if any
+         origin_ = other.origin_;
+         other.origin_ = nullptr;               // keep `other` consistent
+         externalData_ = other.externalData_;
+         other.externalData_ = false;
+         externalInterface_ = other.externalInterface_;
       }
 
 }; // class Image

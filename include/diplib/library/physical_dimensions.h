@@ -237,6 +237,7 @@ class DIP_NO_EXPORT Units {
       }
 
       /// \brief Adjusts the power of the thousands, so that we can use an SI prefix with the first unit to be written out.
+      ///
       /// The return value is a number of thousands, which are taken out of the units and should be handled by the caller.
       /// The input `power` is the number of thousands that the caller would like to include into the units.
       dip::sint AdjustThousands( dip::sint power = 0 ) {
@@ -778,6 +779,20 @@ class DIP_NO_EXPORT PixelSize {
             // we add a dimension past `d` here so that, if they were meaningful, dimensions d+1 and further don't change value.
             EnsureDimensionality( std::max( d1, d2 ) + 2 );
             swap( size_[ d1 ], size_[ d2 ] );
+         }
+      }
+
+      /// \brief Permutes dimensions according to `order`, such that, after the call, `Get(ii)` returns the value
+      /// that `Get(order[ii])` returned before the call.
+      ///
+      /// The values for any dimension not indexed by `order` will be lost.
+      void Permute( UnsignedArray const& order ) {
+         if( IsDefined() ) {
+            PhysicalQuantityArray newsize( order.size() );
+            for( dip::uint ii = 0; ii < order.size(); ++ii ) {
+               newsize[ ii ] = Get( order[ ii ] );
+            }
+            size_ = std::move( newsize );
          }
       }
 

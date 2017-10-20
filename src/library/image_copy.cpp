@@ -430,7 +430,7 @@ void Image::Convert( dip::DataType dt ) {
          Image newimg;
          newimg.ReForge( *this, dt );
          newimg.Copy( *this );
-         swap( newimg );
+         this->move( std::move( newimg ));
       }
    }
 }
