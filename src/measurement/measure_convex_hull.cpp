@@ -20,6 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/chain_code.h"
+#include "diplib/accumulators.h"
 
 namespace dip {
 

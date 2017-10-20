@@ -35,20 +35,30 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       dip::Image mask;
       dip::Image out = mi.NewImage();
 
+      dip::String mode = "fast";
+
       // Get images
       in = dml::GetImage( prhs[ 0 ] );
       if( nrhs > 1 ) {
-         mask = dml::GetImage( prhs[ 1 ] );
+         if(( nrhs == 2 ) && mxIsChar( prhs[ 1 ] )) {
+            mode = dml::GetString( prhs[ 1 ] );
+         } else {
+            mask = dml::GetImage( prhs[ 1 ] );
+         }
       }
 
       // Get optional process array
       dip::BooleanArray process;
       if( nrhs > 2 ) {
-         process = dml::GetProcessArray( prhs[ 2 ], in.Dimensionality() );
+         if(( nrhs == 3 ) && mxIsChar( prhs[ 2 ] )) {
+            mode = dml::GetString( prhs[ 2 ] );
+         } else {
+            process = dml::GetProcessArray( prhs[ 2 ], in.Dimensionality());
+         }
       }
 
       // Do the thing
-      dip::StandardDeviation( in, mask, out, "", process );
+      dip::StandardDeviation( in, mask, out, mode, process );
 
       // Done
       if(( nrhs > 2 ) || !out.IsScalar() ) {

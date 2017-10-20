@@ -23,6 +23,7 @@
 #define DIP_STATISTICS_H
 
 #include "diplib.h"
+#include "diplib/accumulators.h"
 
 
 /// \file
@@ -68,7 +69,7 @@ DIP_EXPORT UnsignedArray MinimumPixel( Image const& in, Image const& mask = {}, 
 /// For tensor images, the output has the same tensor size and shape as the input.
 ///
 /// If `mask` is forged, those pixels not selected by the mask are presumed to be 0.
-DIP_EXPORT void CumulativeSum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void CumulativeSum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image CumulativeSum( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    CumulativeSum( in, mask, out, process );
@@ -138,7 +139,7 @@ DIP_EXPORT MomentAccumulator Moments( Image const& in, Image const& mask = {} );
 /// For directional statistics, the input must be floating point.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void Mean( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray process = {} );
+DIP_EXPORT void Mean( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray const& process = {} );
 inline Image Mean( Image const& in, Image const& mask = {}, String const& mode = "", BooleanArray const& process = {} ) {
    Image out;
    Mean( in, mask, out, mode, process );
@@ -156,7 +157,7 @@ inline Image Mean( Image const& in, Image const& mask = {}, String const& mode =
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void Sum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void Sum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image Sum( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    Sum( in, mask, out, process );
@@ -176,7 +177,7 @@ inline Image Sum( Image const& in, Image const& mask = {}, BooleanArray const& p
 /// For tensor images, the product is computed for each element independently.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void Product( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void Product( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image Product( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    Product( in, mask, out, process );
@@ -194,7 +195,7 @@ inline Image Product( Image const& in, Image const& mask = {}, BooleanArray cons
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void MeanAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void MeanAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image MeanAbs( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    MeanAbs( in, mask, out, process );
@@ -212,7 +213,7 @@ inline Image MeanAbs( Image const& in, Image const& mask = {}, BooleanArray cons
 /// ```
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void SumAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void SumAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image SumAbs( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    SumAbs( in, mask, out, process );
@@ -232,7 +233,7 @@ inline Image SumAbs( Image const& in, Image const& mask = {}, BooleanArray const
 /// For tensor images, the result is computed for each element independently.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void MeanSquare( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void MeanSquare( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image MeanSquare( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    MeanSquare( in, mask, out, process );
@@ -252,7 +253,7 @@ inline Image MeanSquare( Image const& in, Image const& mask = {}, BooleanArray c
 /// For tensor images, the result is computed for each element independently.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void SumSquare( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void SumSquare( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image SumSquare( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    SumSquare( in, mask, out, process );
@@ -269,6 +270,11 @@ inline Image SumSquare( Image const& in, Image const& mask = {}, BooleanArray co
 ///     dip::Variance( img ).As< double >();
 /// ```
 ///
+/// If `mode` is `"fast"`, a simplistic method to compute variance is used; this method can result in catastrophic
+/// cancellation if the variance is very small with respect to the mean. If `mode` is `"stable"`, a stable algorithm
+/// is used that avoids catastrophic cancellation, but is slower (see `dip::VarianceAccumulator` and
+/// `dip::FastVarianceAccumulator`). For 8 and 16-bit integer images, the fast algorithm is always used.
+///
 /// If `mode` is `"directional"`, the data in `in` is assumed to be angles, and directional statistics are used.
 /// If `in` contains orientations, multiply it by 2 before applying this function, and divide the result by 2.
 /// For directional statistics, the input must be real (integer or floating point).
@@ -277,8 +283,8 @@ inline Image SumSquare( Image const& in, Image const& mask = {}, BooleanArray co
 /// directional statistics it must be floating point.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void Variance( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray process = {} );
-inline Image Variance( Image const& in, Image const& mask = {}, String const& mode = "", BooleanArray const& process = {} ) {
+DIP_EXPORT void Variance( Image const& in, Image const& mask, Image& out, String mode = "fast", BooleanArray const& process = {} );
+inline Image Variance( Image const& in, Image const& mask = {}, String const& mode = "fast", BooleanArray const& process = {} ) {
    Image out;
    Variance( in, mask, out, mode, process );
    return out;
@@ -294,6 +300,11 @@ inline Image Variance( Image const& in, Image const& mask = {}, String const& mo
 ///     dip::StandardDeviation( img ).As< double >();
 /// ```
 ///
+/// If `mode` is `"fast"`, a simplistic method to compute standard deviation is used; this method can result in
+/// catastrophic cancellation if the variance is very small with respect to the mean. If `mode` is `"stable"`, a
+/// stable algorithm is used that avoids catastrophic cancellation, but is slower (see `dip::VarianceAccumulator`
+/// and `dip::FastVarianceAccumulator`). For 8 and 16-bit integer images, the fast algorithm is always used.
+///
 /// If `mode` is `"directional"`, the data in `in` is assumed to be angles, and directional statistics are used.
 /// If `in` contains orientations, multiply it by 2 before applying this function, and divide the result by 2.
 /// For directional statistics, the input must be real (integer or floating point).
@@ -302,8 +313,8 @@ inline Image Variance( Image const& in, Image const& mask = {}, String const& mo
 /// directional statistics it must be floating point.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void StandardDeviation( Image const& in, Image const& mask, Image& out, String const& mode = "", BooleanArray process = {} );
-inline Image StandardDeviation( Image const& in, Image const& mask = {}, String const& mode = "", BooleanArray const& process = {} ) {
+DIP_EXPORT void StandardDeviation( Image const& in, Image const& mask, Image& out, String mode = "fast", BooleanArray const& process = {} );
+inline Image StandardDeviation( Image const& in, Image const& mask = {}, String const& mode = "fast", BooleanArray const& process = {} ) {
    Image out;
    StandardDeviation( in, mask, out, mode, process );
    return out;
@@ -324,7 +335,7 @@ inline Image StandardDeviation( Image const& in, Image const& mask = {}, String 
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
 /// \see dip::MaximumAndMinimum
-DIP_EXPORT void Maximum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void Maximum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image Maximum( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    Maximum( in, mask, out, process );
@@ -346,7 +357,7 @@ inline Image Maximum( Image const& in, Image const& mask = {}, BooleanArray cons
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
 /// \see dip::MaximumAndMinimum
-DIP_EXPORT void Minimum( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void Minimum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image Minimum( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    Minimum( in, mask, out, process );
@@ -368,7 +379,7 @@ inline Image Minimum( Image const& in, Image const& mask = {}, BooleanArray cons
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
 /// \see dip::MaximumAndMinimum
-DIP_EXPORT void MaximumAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void MaximumAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image MaximumAbs( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    MaximumAbs( in, mask, out, process );
@@ -390,7 +401,7 @@ inline Image MaximumAbs( Image const& in, Image const& mask = {}, BooleanArray c
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
 /// \see dip::MaximumAndMinimum
-DIP_EXPORT void MinimumAbs( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void MinimumAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image MinimumAbs( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    MinimumAbs( in, mask, out, process );
@@ -410,7 +421,7 @@ inline Image MinimumAbs( Image const& in, Image const& mask = {}, BooleanArray c
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void Percentile( Image const& in, Image const& mask, Image& out, dfloat percentile, BooleanArray process = {} );
+DIP_EXPORT void Percentile( Image const& in, Image const& mask, Image& out, dfloat percentile, BooleanArray const& process = {} );
 inline Image Percentile( Image const& in, Image const& mask, dfloat percentile, BooleanArray const& process = {} ) {
    Image out;
    Percentile( in, mask, out, percentile, process );
@@ -452,7 +463,7 @@ inline Image Median( Image const& in, Image const& mask = {}, BooleanArray const
 /// For tensor images, the result is computed for each element independently.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void All( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void All( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image All( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    All( in, mask, out, process );
@@ -472,7 +483,7 @@ inline Image All( Image const& in, Image const& mask = {}, BooleanArray const& p
 /// For tensor images, the result is computed for each element independently.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void Any( Image const& in, Image const& mask, Image& out, BooleanArray process = {} );
+DIP_EXPORT void Any( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image Any( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
    All( in, mask, out, process );

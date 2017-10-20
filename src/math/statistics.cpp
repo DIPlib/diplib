@@ -326,7 +326,7 @@ void CumulativeSum(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( in.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );

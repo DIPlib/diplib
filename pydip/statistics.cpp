@@ -58,9 +58,9 @@ void init_statistics( py::module& m ) {
    m.def( "SumSquare", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::SumSquare ),
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
    m.def( "Variance", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::BooleanArray const& >( &dip::Variance ),
-          "in"_a, "mask"_a = dip::Image{}, "mode"_a = "", "process"_a = dip::BooleanArray{} );
+          "in"_a, "mask"_a = dip::Image{}, "mode"_a = "fast", "process"_a = dip::BooleanArray{} );
    m.def( "StandardDeviation", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::BooleanArray const& >( &dip::StandardDeviation ),
-          "in"_a, "mask"_a = dip::Image{}, "mode"_a = "", "process"_a = dip::BooleanArray{} );
+          "in"_a, "mask"_a = dip::Image{}, "mode"_a = "fast", "process"_a = dip::BooleanArray{} );
    m.def( "Maximum", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::Maximum ),
           "in"_a, "mask"_a = dip::Image{}, "process"_a = dip::BooleanArray{} );
    m.def( "Minimum", py::overload_cast< dip::Image const&, dip::Image const&, dip::BooleanArray const& >( &dip::Minimum ),

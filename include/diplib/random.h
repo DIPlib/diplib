@@ -231,6 +231,7 @@ class DIP_NO_EXPORT BinaryRandomGenerator {
 
 #include "diplib/transform.h"
 #include "diplib/math.h"
+#include "diplib/accumulators.h"
 
 DOCTEST_TEST_CASE("[DIPlib] testing the PRNG") {
    dip::Random rng( 0 );

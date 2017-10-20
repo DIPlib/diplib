@@ -23,6 +23,7 @@
 #include "diplib/framework.h"
 #include "diplib/pixel_table.h"
 #include "diplib/overload.h"
+#include "diplib/accumulators.h"
 
 namespace dip {
 
@@ -33,7 +34,7 @@ class VarianceLineFilter : public Framework::FullLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint lineLength, dip::uint, dip::uint nKernelPixels, dip::uint nRuns ) override {
          return 5 * nKernelPixels + lineLength * (
-               nRuns * 10     // number of multiply-adds
+               nRuns * 2      // number of multiply-adds
                + nRuns );     // iterating over pixel table runs
       }
       virtual void Filter( Framework::FullLineFilterParameters const& params ) override {
@@ -43,7 +44,7 @@ class VarianceLineFilter : public Framework::FullLineFilter {
          dip::sint outStride = params.outBuffer.stride;
          dip::uint length = params.bufferLength;
          PixelTableOffsets const& pixelTable = params.pixelTable;
-         VarianceAccumulator acc;
+         FastVarianceAccumulator acc;
          for( auto offset : pixelTable ) {
             acc.Push( in[ offset ] );
          }

@@ -8,6 +8,8 @@
 %   specified in DIM. DIM can be an array with any number of dimensions.
 %   M can be [].
 %
+%   VALUE = MEAN(...,'directional') uses directional statistics.
+%
 %   COMPATIBILITY NOTE:
 %   In DIPimage 2.x, MEAN(B), with B a tensor image, would work over all tensor
 %   components, yielding a scalar image of the same size as B. To obtain

@@ -100,7 +100,7 @@ inline Image MedianFilter(
 ///
 /// `boundaryCondition` indicates how the boundary should be expanded in each dimension. See `dip::BoundaryCondition`.
 ///
-/// Uses `dip::VarianceAccumulator` for the computation.
+/// Uses `dip::FastVarianceAccumulator` for the computation.
 DIP_EXPORT void VarianceFilter(
       Image const& in,
       Image& out,

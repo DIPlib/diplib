@@ -7,6 +7,10 @@
 %   VALUE = STD(B,M,DIM) performs the computation over the dimensions
 %   specified in DIM. DIM can be an array with any number of
 %   dimensions. M can be [].
+%
+%   VALUE = STD(...,'stable') uses a stable algorithm that prevents
+%   catastrophic cancellation.
+%   VALUE = STD(...,'directional') uses directional statistics.
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

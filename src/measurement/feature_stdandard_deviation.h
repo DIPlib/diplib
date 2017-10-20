@@ -46,7 +46,7 @@ class FeatureStandardDeviation : public LineBased {
       ) override {
          // If new objectID is equal to previous one, we don't to fetch the data pointer again
          uint32 objectID = 0;
-         VarianceAccumulator* data = nullptr;
+         FastVarianceAccumulator* data = nullptr;
          do {
             if( *label > 0 ) {
                if( *label != objectID ) {
@@ -67,7 +67,7 @@ class FeatureStandardDeviation : public LineBased {
       }
 
       virtual void Finish( dip::uint objectIndex, Measurement::ValueIterator output ) override {
-         VarianceAccumulator data = data_[ objectIndex ];
+         FastVarianceAccumulator data = data_[ objectIndex ];
          *output = data.StandardDeviation();
       }
 
@@ -78,7 +78,7 @@ class FeatureStandardDeviation : public LineBased {
 
    private:
       dip::uint nD_;
-      std::vector< VarianceAccumulator > data_;
+      std::vector< FastVarianceAccumulator > data_;
 };
 
 

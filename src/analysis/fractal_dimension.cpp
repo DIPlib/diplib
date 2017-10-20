@@ -19,6 +19,7 @@
  */
 
 #include "diplib.h"
+#include "diplib/accumulators.h"
 #include "diplib/analysis.h"
 #include "diplib/statistics.h"
 #include "diplib/morphology.h"

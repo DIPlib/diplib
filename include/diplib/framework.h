@@ -883,7 +883,7 @@ class DIP_EXPORT FullLineFilter {
       /// \brief The derived class must must define this method, this is the actual line filter.
       virtual void Filter( FullLineFilterParameters const& params ) = 0;
       /// \brief The derived class can define this function for setting up the processing.
-      virtual void SetNumberOfThreads( dip::uint  threads, PixelTableOffsets const& pixelTable ) {
+      virtual void SetNumberOfThreads( dip::uint threads, PixelTableOffsets const& pixelTable ) {
          ( void )threads; ( void )pixelTable;
       }
       /// \brief The derived class can define this function for helping to determine whether to compute

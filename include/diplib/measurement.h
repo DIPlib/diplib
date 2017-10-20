@@ -24,6 +24,7 @@
 #include <map>
 
 #include "diplib.h"
+#include "diplib/accumulators.h"
 
 
 /// \file

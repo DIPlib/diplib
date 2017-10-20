@@ -169,10 +169,15 @@ The mean of the grey-value image intensities across the object.
 
 \subsection intensity_features_StandardDeviation StandardDeviation
 The standard deviation of the grey-value image intensities across the object.
+A fast algorithm is used that could result in catastrophic cancellation if
+the mean is much larger than the variance, see `dip::FastVarianceAccumulator`.
+If there is a potential for this to happen, choose the `"Statistics"` feature
+instead.
 
 \subsection intensity_features_Statistics Statistics
 The mean, standard deviation, skewness and excess kurtosis of the grey-value image intensities
-across the object. This feature has 4 values.
+across the object. This feature has 4 values. A stable algorithm is used that prevents
+catastrophic cancellation, see `dip::StatisticsAccumulator`.
 
 \subsection intensity_features_MaxVal MaxVal
 The maximum grey-value image intensity within the object.

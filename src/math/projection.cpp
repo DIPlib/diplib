@@ -25,6 +25,7 @@
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/iterators.h"
+#include "diplib/accumulators.h"
 #include "diplib/library/copy_buffer.h"
 
 
@@ -287,28 +288,25 @@ class ProjectionMean : public ProjectionScanFunction {
       bool computeMean_ = true;
 };
 
-dcomplex AngleToVector( dfloat v ) { return { std::cos( v ), std::sin( v ) }; }
-
-
 template< typename TPI >
 class ProjectionMeanDirectional : public ProjectionScanFunction {
    public:
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
-         dcomplex sum = { 0, 0 };
+         DirectionalStatisticsAccumulator acc;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             do {
                if( it.template Sample< 1 >() ) {
-                  sum += AngleToVector( it.template Sample< 0 >() );
+                  acc.Push( static_cast< dfloat >( it.template Sample< 0 >() ));
                }
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
             do {
-               sum += AngleToVector( *it );
+               acc.Push( static_cast< dfloat >( *it ));
             } while( ++it );
          }
-         *static_cast< FloatType< TPI >* >( out ) = static_cast< FloatType< TPI >>( std::arg( sum )); // Is the same as FlexType< TPI > because TPI is not complex here.
+         *static_cast< FloatType< TPI >* >( out ) = static_cast< FloatType< TPI >>( acc.Mean() ); // Is the same as FlexType< TPI > because TPI is not complex here.
       }
 };
 
@@ -319,7 +317,7 @@ void Mean(
       Image const& mask,
       Image& out,
       String const& mode,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    if( mode == "directional" ) {
@@ -334,7 +332,7 @@ void Sum(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    DIP_OVL_NEW_ALL( lineFilter, ProjectionMean, ( false ), in.DataType() );
@@ -371,7 +369,7 @@ void Product(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    DIP_OVL_NEW_ALL( lineFilter, ProjectionProduct, (), in.DataType() );
@@ -416,7 +414,7 @@ void MeanAbs(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    if( in.DataType().IsUnsigned() ) {
@@ -431,7 +429,7 @@ void SumAbs(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    if( in.DataType().IsUnsigned() ) {
@@ -482,7 +480,7 @@ void MeanSquare(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    if( in.DataType().IsBinary() ) {
@@ -497,7 +495,7 @@ void SumSquare(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    if( in.DataType().IsBinary() ) {
@@ -510,63 +508,44 @@ void SumSquare(
 
 namespace {
 
-template< typename TPI >
+template< typename TPI, typename ACC >
 class ProjectionVariance : public ProjectionScanFunction {
    public:
       ProjectionVariance( bool computeStD ) : computeStD_( computeStD ) {}
       virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
-         VarianceAccumulator acc;
+         ACC acc;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
             do {
                if( it.template Sample< 1 >() ) {
-                  acc.Push( it.template Sample< 0 >() );
+                  acc.Push( static_cast< dfloat >( it.template Sample< 0 >() ));
                }
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
             do {
-               acc.Push( *it );
+               acc.Push( static_cast< dfloat >( *it ));
             } while( ++it );
          }
-         *static_cast< FloatType< TPI >* >( out ) = clamp_cast< FloatType< TPI >>( computeStD_
-                                                                                   ? acc.StandardDeviation()
-                                                                                   : acc.Variance() );
+         *static_cast< FloatType< TPI >* >( out ) = clamp_cast< FloatType< TPI >>(
+               computeStD_ ? acc.StandardDeviation() : acc.Variance() );
       }
    private:
       bool computeStD_ = true;
 };
 
 template< typename TPI >
-class ProjectionVarianceDirectional : public ProjectionScanFunction {
-   public:
-      ProjectionVarianceDirectional( bool computeStD ) : computeStD_( computeStD ) {}
-      virtual void Project( Image const& in, Image const& mask, void* out, dip::uint ) override {
-         dip::uint n = 0;
-         dcomplex sum = { 0, 0 };
-         if( mask.IsForged() ) {
-            JointImageIterator< TPI, bin > it( { in, mask } );
-            do {
-               if( it.template Sample< 1 >() ) {
-                  sum += AngleToVector( it.template Sample< 0 >() );
-                  ++n;
-               }
-            } while( ++it );
-         } else {
-            ImageIterator< TPI > it( in );
-            do {
-               sum += AngleToVector( *it );
-            } while( ++it );
-            n = in.NumberOfPixels();
-         }
-         dfloat R =  std::abs( sum );
-         *static_cast< FloatType< TPI >* >( out ) = static_cast< FloatType< TPI >>(
-               computeStD_ ? std::sqrt( -2.0 * std::log( R )) : 1.0 - R
-         );
-      }
-   private:
-      bool computeStD_ = true;
-};
+inline std::unique_ptr< ProjectionScanFunction > NewProjectionVarianceStable( bool computeStD ) {
+   return static_cast< std::unique_ptr< ProjectionScanFunction >>( new ProjectionVariance< TPI, VarianceAccumulator >( computeStD ));
+}
+template< typename TPI >
+inline std::unique_ptr< ProjectionScanFunction > NewProjectionVarianceFast( bool computeStD ) {
+   return static_cast< std::unique_ptr< ProjectionScanFunction >>( new ProjectionVariance< TPI, FastVarianceAccumulator >( computeStD ));
+}
+template< typename TPI >
+inline std::unique_ptr< ProjectionScanFunction > NewProjectionVarianceDirectional( bool computeStD ) {
+   return static_cast< std::unique_ptr< ProjectionScanFunction >>( new ProjectionVariance< TPI, DirectionalStatisticsAccumulator >( computeStD ));
+}
 
 }
 
@@ -574,32 +553,46 @@ void Variance(
       Image const& in,
       Image const& mask,
       Image& out,
-      String const& mode,
-      BooleanArray process
+      String mode,
+      BooleanArray const& process
 ) {
    // TODO: This exists also for complex numbers, yielding a real value
    std::unique_ptr< ProjectionScanFunction > lineFilter;
-   if( mode == "directional" ) {
-      DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceDirectional, ( false ), in.DataType() );
-   } else {
-      DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionVariance, ( false ), in.DataType() );
+   if(( in.DataType().SizeOf() <= 2 ) && ( mode == "stable" )) {
+      mode = "fast";
    }
-   ProjectionScan( in, mask, out, DataType::SuggestFloat( in.DataType() ), process, *lineFilter );
+   if( mode == "stable" ) {
+      DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewProjectionVarianceStable, ( false ), in.DataType());
+   } else if( mode == "fast" ) {
+      DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewProjectionVarianceFast, ( false ), in.DataType());
+   } else if( mode == "directional" ) {
+      DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceDirectional, ( false ), in.DataType());
+   } else {
+      DIP_THROW( E::INVALID_FLAG );
+   }
+   ProjectionScan( in, mask, out, DataType::SuggestFloat( in.DataType()), process, *lineFilter );
 }
 
 void StandardDeviation(
       Image const& in,
       Image const& mask,
       Image& out,
-      String const& mode,
-      BooleanArray process
+      String mode,
+      BooleanArray const& process
 ) {
    // TODO: This exists also for complex numbers, yielding a real value
    std::unique_ptr< ProjectionScanFunction > lineFilter;
-   if( mode == "directional" ) {
-      DIP_OVL_NEW_FLOAT( lineFilter, ProjectionVarianceDirectional, ( true ), in.DataType() );
+   if(( in.DataType().SizeOf() <= 2 ) && ( mode == "stable" )) {
+      mode = "fast";
+   }
+   if( mode == "stable" ) {
+      DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceStable, ( true ), in.DataType());
+   } else if( mode == "fast" ) {
+      DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceFast, ( true ), in.DataType());
+   } else if( mode == "directional" ) {
+      DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceDirectional, ( true ), in.DataType());
    } else {
-      DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionVariance, ( true ), in.DataType() );
+      DIP_THROW( E::INVALID_FLAG );
    }
    ProjectionScan( in, mask, out, DataType::SuggestFloat( in.DataType() ), process, *lineFilter );
 }
@@ -634,7 +627,7 @@ void Maximum(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionMaximum, (), in.DataType() );
@@ -671,7 +664,7 @@ void Minimum(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    DIP_OVL_NEW_NONCOMPLEX( lineFilter, ProjectionMinimum, (), in.DataType() );
@@ -708,7 +701,7 @@ void MaximumAbs(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    DataType dt = in.DataType();
@@ -752,7 +745,7 @@ void MinimumAbs(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    DataType dt = in.DataType();
@@ -864,7 +857,7 @@ void Percentile(
       Image const& mask,
       Image& out,
       dfloat percentile,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    DIP_THROW_IF(( percentile < 0.0 ) || ( percentile > 100.0 ), E::PARAMETER_OUT_OF_RANGE );
    if( percentile == 0.0 ) {
@@ -912,7 +905,7 @@ void All(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    DIP_OVL_NEW_ALL( lineFilter, ProjectionAll, (), in.DataType() );
@@ -953,7 +946,7 @@ void Any(
       Image const& in,
       Image const& mask,
       Image& out,
-      BooleanArray process
+      BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
    DIP_OVL_NEW_ALL( lineFilter, ProjectionAny, (), in.DataType() );
