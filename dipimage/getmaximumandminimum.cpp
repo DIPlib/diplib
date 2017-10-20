@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-#undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
 #include "diplib/statistics.h"
 

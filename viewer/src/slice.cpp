@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-#undef DIP__ENABLE_DOCTEST
 #include "diplib/math.h"
 #include "diplib/statistics.h"
 #include "diplib/generic_iterators.h"

@@ -24,7 +24,6 @@
 
 #include <GLFW/glfw3.h>
 
-#undef DIP__ENABLE_DOCTEST
 #include "diplib/viewer/glfw.h"
 #include "fg_font_data.h"
 

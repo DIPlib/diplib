@@ -1,5 +1,3 @@
-#undef DIP__ENABLE_DOCTEST
-
 #include "diplib.h"
 #include "diplib/analysis.h"
 #include "diplib/generation.h"

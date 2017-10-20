@@ -1,5 +1,3 @@
-#undef DIP__ENABLE_DOCTEST
-
 // An example of catastrophic cancellation in dip::FastVarianceAccumulator
 // The timing measurements are not precise, accumulating 1M values is really fast either way.
 // Nonetheless, the large speed difference between the two accumulators is clear.

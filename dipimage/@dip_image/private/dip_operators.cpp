@@ -28,7 +28,6 @@
  * rhs = second operand (some operators use only one operand)
  */
 
-#undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
 #include "diplib/math.h"
 

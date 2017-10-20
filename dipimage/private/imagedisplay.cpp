@@ -69,8 +69,6 @@
  *
  */
 
-#undef DIP__ENABLE_DOCTEST
-
 #include "dip_matlab_interface.h"
 #include "diplib/display.h"
 

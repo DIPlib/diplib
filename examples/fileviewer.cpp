@@ -1,5 +1,3 @@
-#undef DIP__ENABLE_DOCTEST
-
 #include <iostream>
 
 #include <diplib.h>

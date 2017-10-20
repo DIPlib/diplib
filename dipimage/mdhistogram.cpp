@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `convolve` function
+ * This MEX-file implements the `mdhistogram` function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPimage code: (c)2001, Michael van Ginkel.
@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-#undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
 #include "diplib/histogram.h"
 

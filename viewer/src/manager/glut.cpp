@@ -25,7 +25,6 @@
 
 #include <GL/freeglut.h>
 
-#undef DIP__ENABLE_DOCTEST
 #include "diplib/viewer/glut.h"
 
 #define EPS 0.001

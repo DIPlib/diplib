@@ -5,8 +5,6 @@
  * It also shows some simple image manipulations: thresholding, labelling, and indexing using a mask image.
  */
 
-#undef DIP__ENABLE_DOCTEST
-
 #include "diplib.h"
 #include "diplib/file_io.h"
 #include "diplib/regions.h"

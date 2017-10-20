@@ -1,5 +1,3 @@
-#undef DIP__ENABLE_DOCTEST
-
 #include "diplib.h"
 #include "diplib/binary.h"
 #include "diplib/file_io.h"

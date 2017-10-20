@@ -1,6 +1,4 @@
-#define DOCTEST_CONFIG_IMPLEMENT
 #include <iostream>
-
 #include "diplib/measurement.h"
 
 class FeatureTest : public dip::Feature::ImageBased {

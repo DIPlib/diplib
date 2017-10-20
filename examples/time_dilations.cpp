@@ -1,4 +1,3 @@
-#define DOCTEST_CONFIG_IMPLEMENT
 #include <iostream>
 #include "diplib.h"
 #include "diplib/multithreading.h"

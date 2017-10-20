@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `derivative` function
+ * This MEX-file implements the `hessian` function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -19,7 +19,6 @@
  * limitations under the License.
  */
 
-#undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
 #include "diplib/linear.h"
 

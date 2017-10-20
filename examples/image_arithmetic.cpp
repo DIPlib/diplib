@@ -9,10 +9,8 @@
  * your specific application.
  *
  * NOTE! As a timing test, remember to compile with
- *     cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCTEST=OFF ..
+ *     cmake -DCMAKE_BUILD_TYPE=Release -DDIP_ENABLE_ASSERT=Off ..
  */
-
-#define DOCTEST_CONFIG_IMPLEMENT
 
 #include "diplib.h"
 #include "diplib/framework.h"

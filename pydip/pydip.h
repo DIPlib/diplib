@@ -19,7 +19,6 @@
 #ifndef DIP_PYDIP_H
 #define DIP_PYDIP_H
 
-#undef DIP__ENABLE_DOCTEST
 #include "diplib.h"
 
 #include <pybind11/pybind11.h>

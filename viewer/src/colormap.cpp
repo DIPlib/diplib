@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-#undef DIP__ENABLE_DOCTEST
 #include "diplib/viewer/viewer.h"
 
 namespace dip { namespace viewer {

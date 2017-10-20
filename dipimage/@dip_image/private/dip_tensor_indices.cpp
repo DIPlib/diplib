@@ -31,7 +31,6 @@
  * Note that all indices here start with 0, whereas in MATLAB they'd start with 1. Adjust as necessary!
  */
 
-#undef DIP__ENABLE_DOCTEST
 #include "dip_matlab_interface.h"
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {

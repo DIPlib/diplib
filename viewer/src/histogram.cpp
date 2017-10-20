@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-#undef DIP__ENABLE_DOCTEST
 #include "diplib/statistics.h"
 #include "diplib/iterators.h"
 #include "diplib/overload.h"
