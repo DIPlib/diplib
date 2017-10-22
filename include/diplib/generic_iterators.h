@@ -51,14 +51,15 @@ namespace dip {
 ///
 /// \see LineIterator, SampleIterator
 class DIP_NO_EXPORT BresenhamLineIterator {
-      constexpr static dfloat epsilon = 1e-5;
-      constexpr static dfloat delta = 1.0 - epsilon;
    public:
       using iterator_category = std::forward_iterator_tag;
       using value_type = dip::sint;       ///< The type of an offset
       using difference_type = dip::sint;  ///< The type of distances between iterators
       using reference = value_type const&;///< The type of a reference to an offset
       using pointer = value_type const*;  ///< The type of a pointer an offset
+
+      constexpr static dfloat epsilon = 1e-5;
+      constexpr static dfloat delta = 1.0 - epsilon;
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       BresenhamLineIterator() {}

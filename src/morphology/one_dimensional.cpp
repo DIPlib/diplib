@@ -19,6 +19,7 @@
  */
 
 #include <utility>
+#include <include/diplib/generic_iterators.h>
 
 #include "one_dimensional.h"
 #include "diplib/geometry.h"
@@ -1302,11 +1303,58 @@ void FastLineMorphology(
    in.Mirror( ps );
    out.Mirror( ps );
 
-   // Find the line filter to use
+   // Determine strides in bytes (vs samples)
+   dip::uint sizeOf = in.DataType().SizeOf();
+   dip::sint ssizeOf = static_cast< dip::sint >( sizeOf );
+   IntegerArray inStridesBytes;
+   inStridesBytes = in.Strides();
+   for( auto& s: inStridesBytes ) {
+      s *= ssizeOf;
+   }
+   IntegerArray outStridesBytes;
+   outStridesBytes = out.Strides();
+   for( auto& s: outStridesBytes ) {
+      s *= ssizeOf;
+   }
+
+   // Compute offsets for line across image
    dip::uint maxLineLength = in.Size( 0 );
+   std::vector< dip::sint > offsetsIn;
+   std::vector< dip::sint > offsetsOut_buffer;
+   dip::sint* offsetsOut; // point at offsets for output image
+   UnsignedArray startPos( nDims, 0 );
+   dip::sint offset = 0;
+   for( dip::uint ii = 1; ii < nDims; ++ii ) {
+      // The step sizes are all negative, so we set startPos to be large enough that we don't get negative coordinates in the iterator
+      startPos[ ii ] = static_cast< dip::uint >( -std::floor( BresenhamLineIterator::delta + static_cast< dfloat >( maxLineLength - 1 ) * stepSize[ ii ] ));
+      // This is the offset for the start position, to be subtracted from the iterator's offset
+      offset += static_cast< dip::sint >( startPos[ ii ] ) * inStridesBytes[ ii ];
+   }
+   offsetsIn.reserve( maxLineLength );
+   BresenhamLineIterator it( inStridesBytes, stepSize, startPos, maxLineLength );
+   do {
+      offsetsIn.push_back( *it - offset );
+   } while( ++it );
+   if( inStridesBytes == outStridesBytes ) {
+      // Use offsetsIn also for output image
+      offsetsOut = offsetsIn.data();
+   } else {
+      // We need different offsets for the output image. Repeat.
+      offset = 0;
+      for( dip::uint ii = 1; ii < nDims; ++ii ) {
+         offset += static_cast< dip::sint >( startPos[ ii ] ) * outStridesBytes[ ii ];
+      }
+      offsetsOut_buffer.reserve( maxLineLength );
+      it = BresenhamLineIterator( outStridesBytes, stepSize, startPos, maxLineLength );
+      do {
+         offsetsOut_buffer.push_back( *it - offset );
+      } while( ++it );
+      offsetsOut = offsetsOut_buffer.data();
+   }
+
+   // Find the line filter to use
    dip::uint filterLength = static_cast< dip::uint >( length );
-   DataType dtype = in.DataType();
-   DataType ovltype = dtype;
+   DataType ovltype = in.DataType();
    if( ovltype.IsBinary() ) {
       ovltype = DT_UINT8; // Dirty trick: process a binary image with the same filter as a UINT8 image, but don't convert the type -- for some reason this is faster!
    }
@@ -1361,7 +1409,6 @@ void FastLineMorphology(
       // If the boundary condition is default, we don't need a boundary extension at all.
       border = filterLength / 2;
    }
-   dip::uint sizeOf = dtype.SizeOf();
 
    // Create input buffer data struct and allocate buffer
    dip::uint inBufferSize = ( maxLineLength + 2 * border ) * sizeOf;
@@ -1411,9 +1458,6 @@ void FastLineMorphology(
 
    Framework::SeparableLineFilterParameters params1{ inBufferStruct, outBufferStruct, 0, 0, 1, {}, false, 0 };
 
-   constexpr dfloat epsilon = 1e-5;
-   constexpr dfloat delta = 1.0 - epsilon;
-
    // Compute how far out we need to go along dimensions 1..nDims-1 so that our tessellated lines cover the whole image
    //
    // The equation for the coordinates `(x,y)` is:
@@ -1425,30 +1469,12 @@ void FastLineMorphology(
    // last `n` to use. `itSizes` is the number of start positions, much like image size, and is given by `n+1`.
    UnsignedArray itSizes( nDims, 0 );
    for( dip::uint ii = 1; ii < nDims; ++ii ) {
-      itSizes[ ii ] =  in.Size( ii ) - static_cast< dip::uint >( std::floor( delta + static_cast< dfloat >( in.Size( 0 ) - 1 ) * stepSize[ ii ] ));
+      itSizes[ ii ] = in.Size( ii ) + static_cast< dip::uint >(
+            -std::floor( BresenhamLineIterator::delta + static_cast< dfloat >( in.Size( 0 ) - 1 ) * stepSize[ ii ] ));
    }
 
    // Iterate over itSizes
-   dip::sint inOffset = 0;
-   dip::sint outOffset = 0;
-   dip::sint ssizeOf = static_cast< dip::sint >( sizeOf );
    UnsignedArray coords( nDims, 0 );      // These are the start coordinates for the Bresenham line
-   FloatArray bresenhamCoords( nDims );   // These are the coordinates to round to get the Bresenham line
-   FloatArray bresenhamCoords2( nDims );  // These are the coordinates to round to get the Bresenham line
-   IntegerArray inStridesBytes;
-   if( useInBuffer ) {
-      inStridesBytes = in.Strides();
-      for( auto& s: inStridesBytes ) {
-         s *= ssizeOf;
-      }
-   }
-   IntegerArray outStridesBytes;
-   if( useOutBuffer ) {
-      outStridesBytes = out.Strides();
-      for( auto& s: outStridesBytes ) {
-         s *= ssizeOf;
-      }
-   }
    uint8* inOrigin = static_cast< uint8* >( in.Origin() );
    uint8* outOrigin = static_cast< uint8* >( out.Origin() );
    while( true ) {
@@ -1469,31 +1495,19 @@ void FastLineMorphology(
          // NOTE: stepSize(ii) <= 0 for any ii>0.
          dfloat x;
          if( coords[ ii ] >= in.Size( ii )) {
-            x = ( static_cast< dfloat >( coords[ ii ] - in.Size( ii )) + delta ) / -stepSize[ ii ];
+            x = ( static_cast< dfloat >( coords[ ii ] - in.Size( ii )) + BresenhamLineIterator::delta ) / -stepSize[ ii ];
             start = std::max( start, static_cast< dip::uint >( std::ceil( x )));
          } // otherwise the line starts within the image domain
-         x = ( static_cast< dfloat >( coords[ ii ] ) + delta ) / -stepSize[ ii ];
+         x = ( static_cast< dfloat >( coords[ ii ] ) + BresenhamLineIterator::delta ) / -stepSize[ ii ];
          end = std::min( end, static_cast< dip::uint >( std::ceil( x )) - 1 );
       }
       DIP_ASSERT( start <= end );
 
-      // Find offsets for the start coordinates
-      bresenhamCoords[ 0 ] = static_cast< dfloat >( start );
-      dip::sint inOffsetStart = inOffset + static_cast< dip::sint >( start ) * in.Stride( 0 );
-      dip::sint outOffsetStart = outOffset + static_cast< dip::sint >( start ) * out.Stride( 0 );
-      for( dip::uint ii = 1; ii < nDims; ++ii ) {
-         bresenhamCoords[ ii ] = delta + bresenhamCoords[ 0 ] * stepSize[ ii ];
-         inOffsetStart += static_cast< dip::sint >( std::floor( bresenhamCoords[ ii ] )) * in.Stride( ii );
-         outOffsetStart += static_cast< dip::sint >( std::floor( bresenhamCoords[ ii ] )) * out.Stride( ii );
-         bresenhamCoords[ ii ] += static_cast< dfloat >( coords[ ii ] );
-         //DIP_ASSERT( static_cast< dip::uint >( std::floor( bresenhamCoords[ ii ] )) < in.Size( ii ));
-      }
-
       if( start == end ) {
          // Short-cut: the line has a single pixel, let's just copy the pixel from input to output
          if( inOrigin != outOrigin ) {
-            uint8* src = inOrigin + inOffsetStart * ssizeOf;
-            uint8* dest = outOrigin + outOffsetStart * ssizeOf;
+            uint8* src = inOrigin + offsetsIn[ start ];
+            uint8* dest = outOrigin + offsetsOut[ start ];
             std::memcpy( dest, src, sizeOf );
          }
       } else {
@@ -1502,33 +1516,22 @@ void FastLineMorphology(
          dip::uint lineLength = end - start + 1;
          inBufferStruct.length = lineLength;
          outBufferStruct.length = lineLength;
-         if( useOutBuffer ) {
-            bresenhamCoords2 = bresenhamCoords; // copy before we modify it
-         } else {
-            outBufferStruct.buffer = outOrigin + outOffsetStart * ssizeOf;
+         if( !useOutBuffer ) {
+            outBufferStruct.buffer = outOrigin + offsetsOut[ start ];
          }
 
          // Copy from input image to input buffer
          if( useInBuffer ) {
-            uint8* src = inOrigin + inOffsetStart * ssizeOf;
             uint8* dest = static_cast< uint8* >( inBufferStruct.buffer );
-            for( dip::uint ss = 0; ss < lineLength; ++ss ) {
-               std::memcpy( dest, src, sizeOf );
+            for( dip::uint ss = start; ss <= end; ++ss ) {
+               std::memcpy( dest, inOrigin + offsetsIn[ ss ], sizeOf );
                dest += sizeOf;
-               src += inStridesBytes[ 0 ];
-               for( dip::uint ii = 1; ii < nDims; ++ii ) {
-                  dfloat old = std::floor( bresenhamCoords[ ii ] );
-                  bresenhamCoords[ ii ] += stepSize[ ii ];
-                  if( std::floor( bresenhamCoords[ ii ] ) != old ) {
-                     src -= inStridesBytes[ ii ]; // we're always moving towards smaller coordinates
-                  }
-               }
             }
             if( border > 0 ) {
                ExpandBuffer( inBufferStruct.buffer, ovltype, 1, 1, lineLength, 1, border, border, bc[ 0 ] );
             }
          } else {
-            inBufferStruct.buffer = inOrigin + inOffsetStart * ssizeOf;
+            inBufferStruct.buffer = inOrigin + offsetsIn[ start ];
          }
 
          // Execute the line filter
@@ -1537,18 +1540,9 @@ void FastLineMorphology(
          // Copy output buffer to output image
          if( useOutBuffer ) {
             uint8* src = static_cast< uint8* >( outBufferStruct.buffer );
-            uint8* dest = outOrigin + outOffsetStart * ssizeOf;
-            for( dip::uint ss = 0; ss < lineLength; ++ss ) {
-               std::memcpy( dest, src, sizeOf );
+            for( dip::uint ss = start; ss <= end; ++ss ) {
+               std::memcpy( outOrigin + offsetsOut[ ss ], src, sizeOf );
                src += sizeOf;
-               dest += outStridesBytes[ 0 ];
-               for( dip::uint ii = 1; ii < nDims; ++ii ) {
-                  dfloat old = std::floor( bresenhamCoords2[ ii ] );
-                  bresenhamCoords2[ ii ] += stepSize[ ii ];
-                  if( std::floor( bresenhamCoords2[ ii ] ) != old ) {
-                     dest -= outStridesBytes[ ii ]; // we're always moving towards smaller coordinates
-                  }
-               }
             }
          }
 
@@ -1559,15 +1553,15 @@ void FastLineMorphology(
       for( dd = 1; dd < nDims; ++dd ) { // Loop over all dimensions except the first one
          // Increment coordinate and adjust pointer
          ++coords[ dd ];
-         inOffset += in.Stride( dd );
-         outOffset += out.Stride( dd );
+         inOrigin += inStridesBytes[ dd ];
+         outOrigin += outStridesBytes[ dd ];
          // Check whether we reached the last pixel of the line
          if( coords[ dd ] < itSizes[ dd ] ) {
             break;
          }
          // Rewind, the next loop iteration will increment the next coordinate
-         inOffset -= static_cast< dip::sint >( coords[ dd ] ) * in.Stride( dd );
-         outOffset -= static_cast< dip::sint >( coords[ dd ] ) * out.Stride( dd );
+         inOrigin -= static_cast< dip::sint >( coords[ dd ] ) * inStridesBytes[ dd ];
+         outOrigin -= static_cast< dip::sint >( coords[ dd ] ) * outStridesBytes[ dd ];
          coords[ dd ] = 0;
       }
       if( dd == nDims ) {

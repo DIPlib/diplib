@@ -20,6 +20,7 @@
 
 #include "diplib/pixel_table.h"
 #include "diplib/iterators.h"
+#include "diplib/generic_iterators.h"
 #include "diplib/overload.h"
 
 namespace dip {
@@ -62,62 +63,53 @@ PixelTable::PixelTable(
       // Ideally runs go along the longest dimension of the line.
       // Worst case is when they go along the shortest, then all runs have length 1.
 
-      // Initialize sizes and origin, modify `size` to be the total step to take from start to one past end of line
+      // Initialize sizes and origin, and find the start and end position
       sizes_.resize( nDims, 0 );
       origin_.resize( nDims, 0 );
+      UnsignedArray startPos( nDims, 0 );
+      UnsignedArray endPos( nDims, 0 );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          if( size[ ii ] < 0 ) {
             size[ ii ] = -std::max( std::round( -size[ ii ] ), 1.0 );
             sizes_[ ii ] = static_cast< dip::uint >( -size[ ii ] );
-            origin_[ ii ] = static_cast< dip::sint >( size[ ii ] ) + 1;
+            startPos[ ii ] = sizes_[ ii ] - 1;
          } else {
             size[ ii ] = std::max( std::round( size[ ii ] ), 1.0 );
             sizes_[ ii ] = static_cast< dip::uint >( size[ ii ] );
-            origin_[ ii ] = 0;
+            endPos[ ii ] = sizes_[ ii ] - 1;
          }
       }
-      //std::cout << "[PixelTable] size = " << size << "sizes_ = " << sizes_ << ", origin_ = " << origin_ << std::endl;
 
-      constexpr dfloat epsilon = 1e-5;
-      constexpr dfloat delta = 1.0 - epsilon;
+      //std::cout << "\n[PixelTable] size = " << size << ", sizes_ = " << sizes_ << ", origin_ = " << origin_ << std::endl;
+      //std::cout << "[PixelTable] startPos = " << startPos << ", endPos = " << endPos << std::endl;
 
-      // Find the number of steps from start to end of line
-      dip::uint length = *std::max_element( sizes_.begin(), sizes_.end() );
+      // Create some false strides for the iterator. ProcDim gets stride==0, others get stride==1.
+      IntegerArray falseStrides( nDims, 1 );
+      falseStrides[ procDim ] = 0;
+      // Create iterator to walk from startPos to endPos
+      BresenhamLineIterator iterator( falseStrides, startPos, endPos );
+      dip::uint length = iterator.Length() + 1;
       //std::cout << "[PixelTable] length = " << length << std::endl;
+
       if( length >= 2 ) {
-         // Compute step size along each dimension, and find the start point
-         FloatArray stepSize( nDims );
-         for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            stepSize[ ii ] = size[ ii ] / static_cast< dfloat >( length );
-         }
          // We need the line to go through the origin, which can be done by setting `origin_` properly,
          // but predicting what it needs to be is a little complex, depending on even/odd lengths in combinations
          // of dimensions. For now we just record the coordinates when we reach the origin along the processing
          // dimension, and shift the origin later on.
          IntegerArray shift;
          // Walk the line, extract runs
-         FloatArray pos( nDims, 0.0 );
-         for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            // Here, we presume that we won't chain more than 100,000 pixels in a row...
-            if( stepSize[ ii ] < 0 ) {
-               pos[ ii ] += delta; // start at the opposite edge of the pixel, such that `floor` still gives 0.
-            } else {
-               pos[ ii ] += epsilon; // add a small value to prevent rounding errors.
-            }
-         }
-         IntegerArray coords( nDims, 0 );
+         IntegerArray coords{ iterator.Coordinates() }; // cast dip::uint to dip::sint.
          dip::uint runLength = 1;
          //std::cout << "[PixelTable] pos = " << pos << ", coords = " << coords << std::endl;
          for( dip::uint step = 1; step < length; ++step ) {
+            ++iterator; // we increment at the start of the loop: the first pixel is already "processed" before the loop starts.
             // Are all integer coordinates the same except for the one along procDim_?
             bool same = true;
-            for( dip::uint ii = 0; ii < nDims; ++ii ) {
-               pos[ ii ] += stepSize[ ii ];
-            }
+            IntegerArray newcoords{ iterator.Coordinates() };
+            //std::cout << "[PixelTable] newcoords = " << newcoords << ", coords = " << coords << std::endl;
             for( dip::uint ii = 0; ii < nDims; ++ii ) {
                if( ii != procDim_ ) {
-                  dfloat intPos = std::floor( pos[ ii ] );
-                  if( static_cast< dip::sint >( intPos ) != coords[ ii ] ) {
+                  if( newcoords[ ii ] != coords[ ii ] ) {
                      same = false;
                      break;
                   }
@@ -129,21 +121,15 @@ PixelTable::PixelTable(
                //std::cout << "[PixelTable] added run: " << coords << ", runLength = " << runLength << std::endl;
                nPixels_ += runLength;
                // Start new run
-               for( dip::uint ii = 0; ii < nDims; ++ii ) {
-                  coords[ ii ] = static_cast< dip::sint >( std::floor( pos[ ii ] ));
-               }
+               coords = std::move( newcoords );
                runLength = 1;
             } else {
                ++runLength;
             }
-            //std::cout << "[PixelTable] pos = " << pos << ", coords = " << coords << std::endl;
             // Are we at the origin?
             // Note: If length/2==0, this will never test true. But in that case, we don't need to shift.
             if( step == length / 2 ) {
-               shift.resize( nDims );
-               for( dip::uint ii = 0; ii < nDims; ++ii ) {
-                  shift[ ii ] = static_cast< dip::sint >( std::floor( pos[ ii ] ));
-               }
+               shift = IntegerArray( iterator.Coordinates() ); // cannot use newcoords because we might have moved from it.
                //std::cout << "[PixelTable] shift = " << shift << std::endl;
             }
          }
@@ -531,6 +517,8 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
    DOCTEST_CHECK_FALSE( pt4.HasWeights() );
 
    dip::PixelTable pt5( "line", dip::FloatArray{ 14.1, -4.2, 7.9 }, 0 );
+   DOCTEST_CHECK( pt5.NumberOfPixels() == 14 );
+   DOCTEST_CHECK( pt5.ProcessingDimension() == 0 );
    DOCTEST_REQUIRE( pt5.Sizes().size() == 3 );
    DOCTEST_CHECK( pt5.Sizes()[ 0 ] == 14 );
    DOCTEST_CHECK( pt5.Sizes()[ 1 ] == 4 );
@@ -539,9 +527,11 @@ DOCTEST_TEST_CASE("[DIPlib] testing the PixelTable class") {
    DOCTEST_CHECK( pt5.Origin()[ 0 ] == -7 );
    DOCTEST_CHECK( pt5.Origin()[ 1 ] == -1 );
    DOCTEST_CHECK( pt5.Origin()[ 2 ] == -4 );
-   DOCTEST_CHECK( pt5.Runs().size() == 8 );
-   DOCTEST_CHECK( pt5.NumberOfPixels() == 14 );
-   DOCTEST_CHECK( pt5.ProcessingDimension() == 0 );
+   DOCTEST_REQUIRE( pt5.Runs().size() == 8 );
+   DOCTEST_CHECK( pt5.Runs()[ 0 ].length == pt5.Runs()[ 4 ].length ); // the line has two identical halves
+   DOCTEST_CHECK( pt5.Runs()[ 1 ].length == pt5.Runs()[ 5 ].length ); // the line has two identical halves
+   DOCTEST_CHECK( pt5.Runs()[ 2 ].length == pt5.Runs()[ 6 ].length ); // the line has two identical halves
+   DOCTEST_CHECK( pt5.Runs()[ 3 ].length == pt5.Runs()[ 7 ].length ); // the line has two identical halves
    DOCTEST_CHECK_FALSE( pt5.HasWeights() );
 }
 
