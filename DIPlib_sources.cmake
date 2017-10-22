@@ -84,6 +84,7 @@ src/file_io/ics.cpp
 src/file_io/tiff_read.cpp
 src/file_io/tiff_write.cpp
 src/generation/coordinates.cpp
+src/generation/draw.cpp
 src/generation/noise.cpp
 src/geometry/interpolation.h
 src/geometry/resampling.cpp

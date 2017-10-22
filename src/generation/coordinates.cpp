@@ -23,7 +23,6 @@
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/iterators.h"
-#include "diplib/border.h"
 
 namespace dip {
 
@@ -147,39 +146,6 @@ void FillDelta( Image& out, String const& origin ) {
       }
       out.At( pos ) = 1;
    DIP_END_STACK_TRACE
-}
-
-namespace {
-
-template< typename TPI >
-void dip__SetBorder( Image& out, Image::Pixel const& value, dip::uint size ) {
-   dip::uint nTensor = out.TensorElements();
-   // Copy `value` into an array with the right number of elements, and of the right data type
-   std::vector< TPI > borderValues( nTensor, value[ 0 ].As< TPI >() );
-   if( !value.IsScalar()) {
-      for( dip::uint ii = 1; ii < nTensor; ++ii ) {
-         borderValues[ ii ] = value[ ii ].As< TPI >();
-      }
-   }
-   // Process the border
-   detail::ProcessBorders< TPI, true, false >(
-         out,
-         [ &borderValues ]( auto* ptr, dip::sint tStride ) {
-            for( auto v : borderValues ) {
-               *ptr = v;
-               ptr += tStride;
-            }
-         },
-         []( auto, dip::sint ) {}, size );
-}
-
-} // namespace
-
-void SetBorder( Image& out, Image::Pixel const& value, dip::uint size ) {
-   DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( out.Dimensionality() < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
-   DIP_OVL_CALL_ALL( dip__SetBorder, ( out, value, size ), out.DataType() );
 }
 
 namespace {

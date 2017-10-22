@@ -70,7 +70,7 @@ namespace dip {
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see ImageIterator, JointImageIterator, SampleIterator
+/// \see ImageIterator, JointImageIterator, BresenhamLineIterator, SampleIterator
 template< typename T >
 class DIP_NO_EXPORT LineIterator {
    public:
@@ -166,12 +166,12 @@ class DIP_NO_EXPORT LineIterator {
       /// Convert from non-const iterator to const iterator
       operator LineIterator< value_type const >() const {
          LineIterator< value_type const > out;
-         out.ptr_ = ptr_ ;
-         out.coord_ = coord_ ;
-         out.size_ = size_ ;
-         out.stride_ = stride_ ;
-         out.nTensorElements_ = nTensorElements_ ;
-         out.tensorStride_ = tensorStride_ ;
+         out.ptr_ = ptr_;
+         out.coord_ = coord_;
+         out.size_ = size_;
+         out.stride_ = stride_;
+         out.nTensorElements_ = nTensorElements_;
+         out.tensorStride_ = tensorStride_;
          return out;
       }
 
@@ -252,12 +252,6 @@ inline void swap( LineIterator< T >& v1, LineIterator< T >& v2 ) {
 /// Satisfies all the requirements for a non-mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
 template< typename T >
 using ConstLineIterator = LineIterator< T const >;
-
-
-// TODO: BresenhamLineIterator: iterates along a straight line between two pixels given by coordinates.
-//       Both pixels will be visited before the iterator finishes. That is, the end pixel is not a one-past-the-end
-//       kind of iterator marker. Useful for a function that draws lines, but also for the new work towards line
-//       morphology, and would simplify code in PixelTable(...,"line").
 
 
 // TODO: Image iterators could have 4 modes of operation:

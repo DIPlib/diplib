@@ -59,7 +59,7 @@ namespace dip {
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see ImageIterator, JointImageIterator, LineIterator
+/// \see ImageIterator, JointImageIterator, LineIterator, BresenhamLineIterator
 template< typename T >
 class DIP_NO_EXPORT SampleIterator {
    public:

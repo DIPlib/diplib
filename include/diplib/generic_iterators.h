@@ -37,6 +37,170 @@ namespace dip {
 /// \{
 
 
+/// \brief An iterator to iterate over pixels along a straight line.
+///
+/// The iterator is created giving two points: a start and and end point.
+/// The iterator can be incremented until it reaches past the end point. When it does, the
+/// iterator will become invalid. An invalid iterator will test false. The `IsAtEnd` method
+/// can be used instead to test for this condition. It is also possible to compare two iterators
+/// for equality (i.e. to compare against an end iterator).
+///
+/// Dereferencing the iterator yields the offset to the current pixel.
+///
+/// Satisfies all the requirements for a mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
+///
+/// \see LineIterator, SampleIterator
+class DIP_NO_EXPORT BresenhamLineIterator {
+      constexpr static dfloat epsilon = 1e-5;
+      constexpr static dfloat delta = 1.0 - epsilon;
+   public:
+      using iterator_category = std::forward_iterator_tag;
+      using value_type = dip::sint;       ///< The type of an offset
+      using difference_type = dip::sint;  ///< The type of distances between iterators
+      using reference = value_type const&;///< The type of a reference to an offset
+      using pointer = value_type const*;  ///< The type of a pointer an offset
+
+      /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
+      BresenhamLineIterator() {}
+      /// To construct a useful iterator, provide image strides, and coordinates of the start and end pixels
+      BresenhamLineIterator( IntegerArray const& strides, UnsignedArray const& start, UnsignedArray const& end ) :
+            coord_( start ), strides_( strides ) {
+         dip::uint nDims = strides_.size();
+         DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+         DIP_THROW_IF( start.size() != nDims, E::ARRAY_SIZES_DONT_MATCH );
+         DIP_THROW_IF( end.size() != nDims, E::ARRAY_SIZES_DONT_MATCH );
+         stepSize_.resize( nDims, 1.0 );
+         length_ = 1; // to prevent dividing by 0 later on.
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            dip::uint size;
+            if( start[ ii ] < end[ ii ] ) {
+               size = end[ ii ] - start[ ii ] + 1;
+               stepSize_[ ii ] = static_cast< dfloat >( size );
+            } else {
+               size = start[ ii ] - end[ ii ] + 1;
+               stepSize_[ ii ] = -static_cast< dfloat >( size );
+            }
+            length_ = std::max( length_, size );
+            if( size == 1 ) {
+               stepSize_[ ii ] = 0.0; // don't step anywhere in this direction
+            }
+         }
+         pos_ = FloatArray( start );
+         offset_ = 0;
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            stepSize_[ ii ] /= static_cast< dfloat >( length_ );
+            // Here, we presume that we won't chain more than 100,000 pixels in a row...
+            if( stepSize_[ ii ] < 0 ) {
+               pos_[ ii ] += delta; // start at the opposite edge of the pixel, such that `floor` still gives 0.
+            } else {
+               pos_[ ii ] += epsilon; // add a small value to prevent rounding errors.
+            }
+            offset_ += static_cast< dip::sint >( coord_[ ii ] ) * strides_[ ii ];
+         }
+         --length_; // we've got one fewer pixels after the current one
+      }
+      /// To construct a useful iterator, provide image strides, a step size, a start position, and a length
+      BresenhamLineIterator( IntegerArray const& strides, FloatArray const& stepSize, UnsignedArray const& start, dip::uint length ) :
+            coord_( start ), stepSize_( stepSize ), length_( length - 1 ), strides_( strides ) {
+         dip::uint nDims = strides_.size();
+         DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
+         DIP_THROW_IF( stepSize_.size() != nDims, E::ARRAY_SIZES_DONT_MATCH );
+         DIP_THROW_IF( coord_.size() != nDims, E::ARRAY_SIZES_DONT_MATCH );
+         dfloat maxStepSize = 0;
+         for( auto l: stepSize_ ) {
+            maxStepSize = std::max( maxStepSize, std::abs( l ));
+         }
+         DIP_THROW_IF( maxStepSize == 0.0, "Step size is 0" );
+         pos_ = FloatArray( coord_ );
+         offset_ = 0;
+         for( dip::uint ii = 0; ii < nDims; ++ii ) {
+            stepSize_[ ii ] /= static_cast< dfloat >( maxStepSize );
+            // Here, we presume that we won't chain more than 100,000 pixels in a row...
+            if( stepSize_[ ii ] < 0 ) {
+               pos_[ ii ] += delta; // start at the opposite edge of the pixel, such that `floor` still gives 0.
+            } else {
+               pos_[ ii ] += epsilon; // add a small value to prevent rounding errors.
+            }
+            offset_ += static_cast< dip::sint >( coord_[ ii ] ) * strides_[ ii ];
+         }
+      }
+
+      /// Swap
+      void swap( BresenhamLineIterator& other ) {
+         using std::swap;
+         swap( offset_, other.offset_ );
+         swap( coord_, other.coord_ );
+         swap( pos_, other.pos_ );
+         swap( stepSize_, other.stepSize_ );
+         swap( length_, other.length_ );
+         swap( strides_, other.strides_ );
+      }
+
+      /// Dereference
+      dip::sint operator*() const { return offset_; }
+      // Dereference (makes no sense)
+      //pointer operator->() const { return &offset_; }
+
+      /// Increment
+      BresenhamLineIterator& operator++() {
+         if( length_ == 0 ) {
+            coord_.clear(); // mark we're done
+            return *this;
+         }
+         pos_ += stepSize_;
+         for( dip::uint ii = 0; ii < pos_.size(); ++ii ) {
+            dip::uint newcoord = static_cast< dip::uint >( std::floor( pos_[ ii ] ));
+            dip::sint diff = static_cast< dip::sint >( newcoord ) - static_cast< dip::sint >( coord_[ ii ] );
+            if( diff != 0 ) {
+               offset_ += diff * strides_[ ii ];
+               coord_[ ii ] = newcoord;
+            }
+         }
+         --length_;
+         return *this;
+      }
+      /// Increment
+      BresenhamLineIterator operator++( int ) {
+         BresenhamLineIterator tmp( *this );
+         operator++();
+         return tmp;
+      }
+
+      /// Equality comparison (is equal if coordinates are identical)
+      bool operator==( BresenhamLineIterator const& other ) const {
+         return coord_ == other.coord_;
+      }
+      /// Inequality comparison (is unequal if coordinates are not identical)
+      bool operator!=( BresenhamLineIterator const& other ) const {
+         return coord_ != other.coord_;
+      }
+
+      /// Test to see if the iterator reached past the last pixel
+      bool IsAtEnd() const { return coord_.empty(); }
+      /// Test to see if the iterator is still pointing at a pixel
+      explicit operator bool() const { return !coord_.empty(); }
+
+      /// Return the current coordinates in the image
+      UnsignedArray const& Coordinates() const { return coord_; }
+      /// Return the current offset
+      dip::sint Offset() const { return offset_; }
+      /// Return the number of pixels left on the line after the current one
+      dip::uint Length() const { return length_; }
+
+   private:
+      dip::sint offset_ = 0;  // keeps the offset to the current coordinates
+      UnsignedArray coord_;   // keeps the current integer coordinates
+      FloatArray pos_;        // keeps the current sub-pixel position (floor(pos_) == coord_)
+      FloatArray stepSize_;   // sub-pixel increment along each dimension
+      dip::uint length_ = 0;  // counts down to 0.
+      IntegerArray strides_;  // image strides, to compute offset.
+};
+
+inline void swap( BresenhamLineIterator& v1, BresenhamLineIterator& v2 ) {
+   v1.swap( v2 );
+}
+
+
 /// \brief A data-type--agnostic version of `dip::ImageIterator`. Use this iterator only to write code that
 /// does not know at compile-time what the data type of the image is.
 ///

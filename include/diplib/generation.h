@@ -72,6 +72,18 @@ inline Image CreateDelta( UnsignedArray const& sizes, String const& origin = "" 
 DIP_EXPORT void SetBorder( Image& out, Image::Pixel const& value = { 0 }, dip::uint size = 1 );
 
 
+/// \brief Draws a Bresenham line in an image.
+///
+/// The line goes from `start` to `end`, both points included. These points must be within the image.
+/// Pixels in `out` on the line are set to `value`, other pixels are not touched.
+DIP_EXPORT void DrawLine(
+      Image& out,
+      UnsignedArray const& start,
+      UnsignedArray const& end,
+      Image::Pixel const& value = { 1 }
+);
+
+
 /// \brief Fills an image with a ramp function.
 ///
 /// The ramp function increases along dimension `dimension`, and is
@@ -504,8 +516,6 @@ inline Image ColoredNoise( Image const& in, Random& random, dfloat variance = 1.
    dip_ObjectEdge (dip_generation.h)
    dip_ObjectPlane (dip_generation.h)
    dip_ObjectEllipsoid (dip_generation.h)
-   dip_DrawLineFloat (dip_paint.h) (merge into a single dip::DrawLine)
-   dip_DrawLineComplex (dip_paint.h) (merge into a single dip::DrawLine)
    dip_DrawLinesFloat (dip_paint.h) (merge into a single dip::DrawLine)
    dip_DrawLinesComplex (dip_paint.h) (merge into a single dip::DrawLine)
    dip_PaintEllipsoid (dip_paint.h)
