@@ -350,13 +350,17 @@ GetICSInfoData GetICSInfo( IcsFile& icsFile ) {
       double scale;
       char const* units;
       CALL_ICS( IcsGetPositionF( icsFile, static_cast< int >( ii ), nullptr, &scale, &units ), "Couldn't read ICS file" );
-      try {
-         PhysicalQuantity ps{ scale, Units{ units }};
-         ps.Normalize();
-         pixelSize.Set( ii, ps );
-      } catch( Error const& ) {
-         // `Units` failed to parse the string
-         pixelSize.Set( ii, scale );
+      if( strcasecmp( units, "undefined" ) == 0 ) {
+         pixelSize.Set( ii, PhysicalQuantity::Pixel() );
+      } else {
+         try {
+            PhysicalQuantity ps{ scale, Units{ units }};
+            ps.Normalize();
+            pixelSize.Set( ii, ps );
+         } catch( Error const& ) {
+            // `Units` failed to parse the string
+            pixelSize.Set( ii, scale );
+         }
       }
    }
 
