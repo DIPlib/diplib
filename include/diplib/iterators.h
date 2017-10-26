@@ -482,7 +482,7 @@ class DIP_NO_EXPORT ImageIterator {
          if( HasProcessingDimension() ) {
             coords[ procDim_ ] = 0;
          }
-         ptr_ = image_->Pointer( coords ); // tests for coords to be correct
+         ptr_ = static_cast< pointer >( image_->Pointer( coords )); // tests for coords to be correct
          coords_ = coords;
       }
 
