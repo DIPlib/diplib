@@ -428,6 +428,7 @@ void Image::Convert( dip::DataType dt ) {
          // the data, then swap the two images.
          //std::cout << "dip::Image::Convert: using Copy\n";
          Image newimg;
+         newimg.externalInterface_ = externalInterface_;
          newimg.ReForge( *this, dt );
          newimg.Copy( *this );
          this->move( std::move( newimg ));
