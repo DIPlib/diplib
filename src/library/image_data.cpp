@@ -319,6 +319,13 @@ bool Image::HasSameDimensionOrder( Image const& other ) const {
    if( s1.size() != s2.size() ) {
       return false;
    }
+   // Check that the strides have the same sign (meaning that the dimensions run in the same direction)
+   // If one is zero, the other must be too.
+   for( dip::uint ii = 1; ii < s2.size(); ++ii ) {
+      if((( s1[ ii ] != 0 ) || ( s2[ ii ] != 0 )) && ( s1[ ii ] * s2[ ii ] <= 0 )) {
+         return false;
+      }
+   }
    // We sort s1, keeping s2 in sync. s2 must be sorted also.
    s1.sort( s2 );
    for( dip::uint ii = 1; ii < s2.size(); ++ii ) {
@@ -774,6 +781,27 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
       }
    }
    DOCTEST_CHECK_FALSE( error );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::Image::HasSameDimensionOrder") {
+   dip::Image imgA( { 5, 6, 1, 4 }, 1 );
+   dip::Image imgB( { 5, 6, 1, 4 }, 3 ); // tensor means stride for dimension 0 is 3, not 1 as for imgA.
+   DOCTEST_CHECK( imgA.Stride( 0 ) == 1 );
+   DOCTEST_CHECK( imgB.Stride( 0 ) == 3 );
+   DOCTEST_CHECK( imgA.HasSameDimensionOrder( imgB ));
+   DOCTEST_CHECK( imgB.HasSameDimensionOrder( imgA ));
+   imgB.SwapDimensions( 0, 1 );
+   DOCTEST_CHECK_FALSE( imgA.HasSameDimensionOrder( imgB ));
+   imgA.SwapDimensions( 0, 1 );
+   DOCTEST_CHECK( imgA.HasSameDimensionOrder( imgB ));
+   imgB.Mirror( { false, true, false, false } ); // mirroring dimension with lowest stride, so the mirror doesn't affect stride sorting
+   DOCTEST_CHECK_FALSE( imgA.HasSameDimensionOrder( imgB ));
+   imgA.Mirror( { false, true, false, false } );
+   DOCTEST_CHECK( imgA.HasSameDimensionOrder( imgB ));
+   imgB.ExpandSingletonDimension( 2, 10 );
+   DOCTEST_CHECK_FALSE( imgA.HasSameDimensionOrder( imgB ));
+   imgA.ExpandSingletonDimension( 2, 10 );
+   DOCTEST_CHECK( imgA.HasSameDimensionOrder( imgB ));
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing dip::Image::MatchStrideOrder") {

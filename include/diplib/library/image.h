@@ -2176,11 +2176,7 @@ inline Image ExpandTensor( Image const& src ) {
 ///
 /// The data type conversion clips values to the target range and/or truncates them, as applicable.
 /// Complex values are converted to non-complex values by taking the absolute value.
-inline void Convert(
-      Image const& src,
-      Image& dest,
-      dip::DataType dt
-) {
+inline void Convert( Image const& src, Image& dest, dip::DataType dt ) {
    if( &src == &dest ) {
       dest.Convert( dt );
    } else {
