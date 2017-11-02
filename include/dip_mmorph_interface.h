@@ -48,7 +48,8 @@ namespace dip_mmorph {
 /// \brief Creates a *DIPlib* image around an *MMorph* image, without taking ownership of the data.
 ///
 /// This function "converts" an `::%Image` object to a `dip::Image` object.
-/// The `dip::Image` object will point to the data in the `::%Image`.
+/// The `dip::Image` object will point to the data in the `::%Image`, which must continue existing until the
+/// `dip::Image` is deleted or `Strip`ped.
 ///
 /// An empty `::%Image` produces a non-forged `dip::Image`.
 ///
@@ -109,6 +110,56 @@ inline dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
    // Create Image object
    dip::Image out( dip::NonOwnedRefToDataSegment( &mm ), mm.raster(), dt, sizes, strides, tensor, tstride );
    return out;
+}
+
+
+inline std::pair< dip::UnsignedArray, char const* > GetMMImageProperties(
+        dip::DataType datatype,
+        dip::UnsignedArray const& sizes,
+        dip::uint tensorElements
+) {
+    dip::UnsignedArray mmSizes = sizes;
+    mmSizes.resize( 3 );
+    dip::uint ndims = sizes.size();
+   if( ndims == 3 ) {
+      DIP_THROW_IF( tensorElements != 1, dip::E::DIMENSIONALITY_NOT_SUPPORTED );
+      //mmSizes[ 2 ] = sizes[ 2 ];
+   } else if( ndims == 2 ) {
+      mmSizes[ 2 ] = tensorElements;
+   } else {
+      DIP_THROW( dip::E::DIMENSIONALITY_NOT_SUPPORTED );
+   }
+   char const* typestr;
+   switch( datatype ) {
+      case dip::DT_BIN:
+         typestr = "binary";
+           break;
+      case dip::DT_UINT8:
+         typestr = "uint8";
+           break;
+      case dip::DT_UINT16:
+         typestr = "uint16";
+           break;
+      case dip::DT_SINT32:
+         typestr = "int32";
+           break;
+      default:
+         DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+   }
+   return std::make_pair( mmSizes, typestr );
+}
+
+
+/// \brief Copies a *DIPlib* image to an *MMorph* image.
+inline Image DipToMm( dip::Image const& img ) {
+   dip::UnsignedArray mmSizes;
+   char const* typestr;
+   DIP_STACK_TRACE_THIS( std::tie( mmSizes, typestr ) = GetMMImageProperties( img.DataType(), img.Sizes(), img.TensorElements() ));
+   ::Image mmImg( static_cast< int >( mmSizes[ 0 ] ), static_cast< int >( mmSizes[ 1 ] ),
+                  static_cast< int >( mmSizes[ 2 ] ), typestr, 0.0 );
+   dip::Image ref = MmToDip( mmImg );
+   ref.Copy( img );
+   return mmImg;
 }
 
 
@@ -191,42 +242,22 @@ class ExternalInterface : public dip::ExternalInterface {
             dip::Tensor const& tensor,
             dip::sint& tstride
       ) override {
+         dip::UnsignedArray mmSizes;
+         char const* typestr;
+         DIP_STACK_TRACE_THIS( std::tie( mmSizes, typestr ) = GetMMImageProperties( datatype, sizes, tensor.Elements() ));
          dip::uint ndims = sizes.size();
          strides.resize( ndims );
          strides[ 0 ] = 1;
          strides[ 1 ] = sizes[ 0 ];
-         dip::uint depth = 1;
          if( ndims == 3 ) {
-            DIP_THROW_IF( !tensor.IsScalar(), dip::E::DIMENSIONALITY_NOT_SUPPORTED );
             strides[ 2 ] = sizes[ 0 ] * sizes[ 1 ];
             tstride = 1;
-            depth = sizes[ 2 ];
-         } else if( ndims == 2 ) {
-            tstride = sizes[ 0 ] * sizes[ 1 ]; // tensor dimension is last ('depth')
-            depth = tensor.Elements();
          } else {
-            DIP_THROW( dip::E::DIMENSIONALITY_NOT_SUPPORTED );
-         }
-         char const* typestr;
-         switch( datatype ) {
-            case dip::DT_BIN:
-               typestr = "binary";
-               break;
-            case dip::DT_UINT8:
-               typestr = "uint8";
-               break;
-            case dip::DT_UINT16:
-               typestr = "uint16";
-               break;
-            case dip::DT_SINT32:
-               typestr = "int32";
-               break;
-            default:
-               DIP_THROW( dip::E::DATA_TYPE_NOT_SUPPORTED );
+            tstride = sizes[ 0 ] * sizes[ 1 ]; // tensor dimension is last ('depth')
          }
          // Create ::Image
-         ImagePtr mm = ( ImagePtr )new ::Image( static_cast< int >( sizes[ 0 ] ), static_cast< int >( sizes[ 1 ] ),
-                                                static_cast< int >( depth ), typestr, 0.0 );
+         ImagePtr mm = std::make_unique< Image >( static_cast< int >( mmSizes[ 0 ] ), static_cast< int >( mmSizes[ 1 ] ),
+                                                  static_cast< int >( mmSizes[ 2 ] ), typestr, 0.0 );
          origin = mm->raster();
          images_.emplace( origin, std::move( mm ));
          return dip::DataSegment{ origin, StripHandler( *this ) };
