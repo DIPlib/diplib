@@ -5,6 +5,7 @@ boundary_condition.m
 coordinates.m
 countneighbors.m    (changed name from countneighbours)
 dip_imagedisplay.m
+drawshape.m
 eig_largest.m       (moved from @dip_image directory)
 errormeasure.m      (collects a bunch of old functions into one)
 extendimage.m
@@ -35,14 +36,8 @@ arcf.m
 arrangeslices.m
 backgroundoffset.m
 bbox.m
-bclosing.m
-bdilation.m
-berosion.m
 bilateralf.m
 bmajority.m
-bopening.m
-bpropagation.m
-brmedgeobjs.m
 cal_readnoise.m
 canny.m
 ced.m
@@ -74,8 +69,6 @@ dipstackinspect.m
 displaylabelnumbers.m
 distancebetweenpointsets.m
 dpr.m
-drawline.m
-drawpolygon.m
 edir.m
 extend.m
 fast_str2double.m
@@ -91,9 +84,6 @@ gabor.m
 gabor_click.m
 gaussf_adap.m
 gaussf_adap_banana.m
-gaussianblob.m
-gaussianedgeclip.m
-gaussianlineclip.m
 get_subpixel.m
 granulometry.m
 gvf.m

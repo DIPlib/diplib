@@ -41,6 +41,9 @@ dipimage/coordinates.cpp
 dipimage/countneighbors.cpp
 dipimage/derivative.cpp
 dipimage/dilation.cpp
+dipimage/drawline.cpp
+dipimage/drawpolygon.cpp
+dipimage/drawshape.cpp
 dipimage/dt.cpp
 dipimage/entropy.cpp
 dipimage/erfclip.cpp
@@ -51,6 +54,9 @@ dipimage/findmaxima.cpp
 dipimage/findminima.cpp
 dipimage/findshift.cpp
 dipimage/ft.cpp
+dipimage/gaussianblob.cpp
+dipimage/gaussianedgeclip.cpp
+dipimage/gaussianlineclip.cpp
 dipimage/gdt.cpp
 dipimage/getmaximumandminimum.cpp
 dipimage/getsamplestatistics.cpp
