@@ -33,7 +33,7 @@ inline dip::uint HalfGaussianSize(
       dip::uint order,
       dfloat truncation
 ) {
-   return clamp_cast< dip::uint >( std::ceil( ( truncation + 0.5 * static_cast< dfloat >( order )) * sigma ));
+   return clamp_cast< dip::uint >( std::ceil(( truncation + 0.5 * static_cast< dfloat >( order )) * sigma ));
 }
 
 // Creates a half Gaussian kernel, with the x=0 at the right end (last element) of the output array.
@@ -47,12 +47,12 @@ FloatArray MakeHalfGaussian(
    switch( order ) {
       case 0: {
          dfloat factor = -1.0 / ( 2.0 * sigma * sigma );
-         //dfloat norm = 1.0 / ( sqrt( 2.0 * pi ) * sigma ); // There's no point in computing this if we normalize later!
+         //dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma ); // There's no point in computing this if we normalize later!
          dfloat normalization = 0;
          filter[ r0 ] = 1.0;
          for( dip::uint rr = 1; rr < length; rr++ ) {
             dfloat rad = static_cast< dfloat >( rr );
-            dfloat g = exp( factor * ( rad * rad ) );
+            dfloat g = std::exp( factor * ( rad * rad ));
             filter[ r0 - rr ] = g;
             normalization += g;
          }
@@ -68,7 +68,7 @@ FloatArray MakeHalfGaussian(
          filter[ r0 ] = 0.0;
          for( dip::uint rr = 1; rr < length; rr++ ) {
             dfloat rad = static_cast< dfloat >( rr );
-            dfloat g = rad * exp( factor * ( rad * rad ) );
+            dfloat g = rad * std::exp( factor * ( rad * rad ));
             filter[ r0 - rr ] = g;
             moment += rad * g;
          }
@@ -81,13 +81,13 @@ FloatArray MakeHalfGaussian(
       case 2: {
          dfloat sigma2 = sigma * sigma;
          dfloat sigma4 = sigma2 * sigma2;
-         dfloat norm = 1.0 / ( sqrt( 2.0 * pi ) * sigma );
+         dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma );
          dfloat mean = 0.0;
          filter[ r0 ] = ( -1.0 / sigma2 ) * norm;
          for( dip::uint rr = 1; rr < length; rr++ ) {
             dfloat rad = static_cast< dfloat >( rr );
             dfloat rr2 = rad * rad;
-            dfloat g = ( ( -1.0 / sigma2 ) + ( rr2 ) / sigma4 ) * norm * exp( -( rr2 ) / ( 2.0 * sigma2 ) );
+            dfloat g = (( -1.0 / sigma2 ) + ( rr2 ) / sigma4 ) * norm * std::exp( -( rr2 ) / ( 2.0 * sigma2 ));
             filter[ r0 - rr ] = g;
             mean += g;
          }
@@ -109,13 +109,13 @@ FloatArray MakeHalfGaussian(
          dfloat sigma2 = sigma * sigma;
          dfloat sigma4 = sigma2 * sigma2;
          dfloat sigma6 = sigma4 * sigma2;
-         dfloat norm = 1.0 / ( sqrt( 2.0 * pi ) * sigma );
+         dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigma );
          filter[ r0 ] = 0.0;
          dfloat moment = 0.0;
          for( dip::uint rr = 1; rr < length; rr++ ) {
             dfloat rad = static_cast< dfloat >( rr );
             dfloat r2 = rad * rad;
-            dfloat g = norm * exp( -r2 / ( 2.0 * sigma2 ) ) * ( rad * ( 3.0 * sigma2 - r2 ) / sigma6 );
+            dfloat g = norm * std::exp( -r2 / ( 2.0 * sigma2 )) * ( rad * ( 3.0 * sigma2 - r2 ) / sigma6 );
             filter[ r0 - rr ] = g;
             moment += g * r2 * rad;
          }
@@ -206,7 +206,7 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
             if( !found ) {
                gaussLUTs_[ ii ].resize( sizes[ ii ], TPI( 0 ));
                TPI* lut = gaussLUTs_[ ii ].data();
-               // ( (i*2*pi) * x / size )^o * exp( -0.5 * ( ( 2*pi * sigma ) * x / size )^2 ) == a * x^o * exp( b * x^2 )
+               // (( i*2*pi ) * x / size )^o * exp( -0.5 * (( 2*pi * sigma ) * x / size )^2 ) == a * x^o * exp( b * x^2 )
                dip::sint origin = static_cast< dip::sint >( sizes[ ii ] ) / 2;
                TPIf b = static_cast< TPIf >( 2.0 * pi * sigmas[ ii ] ) / static_cast< TPIf >( sizes[ ii ] );
                b = -TPIf( 0.5 ) * b * b;
@@ -241,7 +241,7 @@ class GaussFTLineFilter : public Framework::ScanLineFilter {
                         ++lut;
                      }
                   } else {
-                     std::fill( lut, lut + sizes[ ii ], TPI( 1 ) );
+                     std::fill( lut, lut + sizes[ ii ], TPI( 1 ));
                   }
                }
             }

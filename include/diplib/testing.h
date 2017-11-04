@@ -51,14 +51,14 @@ namespace testing {
 
 namespace detail {
 
-// For integral types (uint, sint) -- dip::sint can hold the value of any integer-valued pixel.
+// For integral types -- dip::sint can hold the value of any integer-valued pixel.
 template< typename T, typename std::enable_if< std::is_integral< T >::value, int >::type = 0 >
-dip::sint Round( T v, int /*digits*/) {
+dip::sint Round( T v, int /*digits*/ ) {
    return v;
 }
 
 // For type `bin`
-inline dip::sint Round( bin v, int /*digits*/) {
+inline dip::sint Round( bin v, int /*digits*/ ) {
    return v;
 }
 
@@ -111,9 +111,9 @@ void PrintPixelValues( Image const& img ) {
          std::cout << "," << std::setw( 2 ) << it.Coordinates()[ ii ];
       }
       std::cout << "] : ";
-      std::cout << std::setw( DIGITS + 1 ) << detail::Round( *lit, DIGITS );
+      std::cout << std::setw( DIGITS ) << detail::Round( *lit, DIGITS );
       while( ++lit ) {
-         std::cout << ", " << std::setw( DIGITS + 1 ) << detail::Round( *lit, DIGITS );
+         std::cout << ", " << std::setw( DIGITS ) << detail::Round( *lit, DIGITS );
       }
       std::cout << std::endl;
    } while( ++it );

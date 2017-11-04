@@ -74,6 +74,9 @@ struct DIP_NO_EXPORT Vertex {
    constexpr Vertex() : x( T( 0 )), y( T( 0 )) {}
    /// Constructor
    constexpr Vertex( T x, T y ) : x( x ), y( y ) {}
+   /// Constructor
+   template< typename V >
+   explicit Vertex( Vertex< V > v ) : x( static_cast< T >( v.x )), y( static_cast< T >( v.y )) {}
 
    /// Add a vertex
    template< typename V >
@@ -112,6 +115,10 @@ struct DIP_NO_EXPORT Vertex {
       x = T( dfloat( x ) / n );
       y = T( dfloat( y ) / n );
       return *this;
+   }
+   /// Round coordinates to nearest integer
+   Vertex Round() const {
+      return{ std::round( x ), std::round( y ) };
    }
 };
 
@@ -247,11 +254,11 @@ inline Vertex< T > operator/( Vertex< T > v, dfloat n ) {
 struct DIP_NO_EXPORT BoundingBox {
    VertexInteger topLeft;
    VertexInteger bottomRight;
-   /// Default constructor
+   /// Default constructor, yields a bounding box of a single pixel at `{0,0}`
    constexpr BoundingBox() {}
-   /// Constructor, yields a bounding box of a single pixel
+   /// Constructor, yields a bounding box of a single pixel at `pt`
    constexpr BoundingBox( VertexInteger pt ) : topLeft( pt ), bottomRight( pt ) {}
-   /// Constructor
+   /// Constructor, yields a bounding box with the two points as two of its vertices
    BoundingBox( VertexInteger a, VertexInteger b ) {
          if( a.x < b.x ) {
             topLeft.x = a.x;
@@ -280,6 +287,14 @@ struct DIP_NO_EXPORT BoundingBox {
       } else if( pt.y > bottomRight.y ) {
          bottomRight.y = pt.y;
       }
+   }
+   bool Contains( VertexInteger pt ) {
+      return !(( pt.x < topLeft.x ) || ( pt.x > bottomRight.x ) ||
+               ( pt.y < topLeft.y ) || ( pt.y > bottomRight.y ));
+   }
+   bool Contains( VertexFloat pt ) {
+      return !(( pt.x < static_cast< dfloat >( topLeft.x )) || ( pt.x > static_cast< dfloat >( bottomRight.x )) ||
+               ( pt.y < static_cast< dfloat >( topLeft.y )) || ( pt.y > static_cast< dfloat >( bottomRight.y )));
    }
    /// Returns the size of the bounding box.
    UnsignedArray Size() const {
@@ -410,6 +425,18 @@ struct DIP_NO_EXPORT Polygon {
 
    std::vector< VertexFloat > vertices;  ///< The vertices
 
+   /// \brief Returns the bounding box of a polygon
+   dip::BoundingBox BoundingBox() const {
+      if( vertices.size() < 1 ) {
+         return {}; // Should we generate an error instead?
+      }
+      dip::BoundingBox bb( VertexInteger( vertices[ 0 ].Round() ));
+      for( dip::uint ii = 1; ii < vertices.size(); ++ii ) {
+         bb.Expand( VertexInteger( vertices[ ii ].Round() ));
+      }
+      return bb;
+   }
+
    /// \brief Computes the area of a polygon
    dfloat Area() const {
       if( vertices.size() < 3 ) {
@@ -507,6 +534,10 @@ class DIP_NO_EXPORT ConvexHull {
       /// Retrieve the vertices that represent the convex hull
       std::vector< VertexFloat > const& Vertices() const {
          return vertices_.vertices;
+      }
+
+      dip::BoundingBox BoundingBox() const {
+         return vertices_.BoundingBox();
       }
 
       /// Returns the area of the convex hull

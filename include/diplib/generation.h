@@ -32,6 +32,8 @@
 
 namespace dip {
 
+// Forward declaration, defined in chain_code.h
+struct DIP_NO_EXPORT Polygon;
 
 /// \defgroup generation Image generation
 /// \brief Filling images with generated data, and creating test images.
@@ -67,8 +69,11 @@ inline Image CreateDelta( UnsignedArray const& sizes, String const& origin = "" 
 }
 
 
-/// \brief Sets the pixels at the border of `out` to `value`. `size` indicates how many pixels in from the
-/// border are set.
+/// \brief Sets the pixels at the border of `out` to `value`.
+///
+/// `size` indicates how many pixels in from the border are set.
+///
+/// `out` must not be 0D.
 DIP_EXPORT void SetBorder( Image& out, Image::Pixel const& value = { 0 }, dip::uint size = 1 );
 
 
@@ -82,6 +87,232 @@ DIP_EXPORT void DrawLine(
       UnsignedArray const& end,
       Image::Pixel const& value = { 1 }
 );
+
+/// \brief Draws a series of Bresenham lines in an image.
+///
+/// Lines go from `points[0]` to `points[1]`, then to `points[2]`, etc, forming a continuous line composed of
+/// straight (Bresenham) line segments that hits each of the points in sequence. To create a closed line, repeat
+/// the first point at the end.
+///
+/// `points` must have at least two points, and all points must be within the image.
+/// Pixels in `out` on the lines are set to `value`, other pixels are not touched.
+///
+/// `out` must have at least two dimensions.
+DIP_EXPORT void DrawLines(
+      Image& out,
+      CoordinateArray const& points,
+      Image::Pixel const& value = { 1 }
+);
+
+/// \brief Draws a polygon in a 2D image.
+///
+/// Draws a polygon going through each of the points in `polygon`. `mode` can be one of the following strings:
+///  - `"open"`: the start and end points are not connected.
+///  - `"closed"`: the start and end points are connected.
+///  - `"filled"`: the polygon is filled, that is, all pixels within the polygon are painted (default).
+/// For a filled polygon, the vertices do not need to be within the image, but for non-filled polygons they
+/// must all be within the image.
+///
+/// Pixels in `out` on the polygon (and within the polygon for filled polygons) are set to `value`, other pixels
+/// are not touched.
+///
+/// The `dip::Polygon` struct is defined in `diplib/chain_code.h`, which you'll need to include to use this function.
+///
+/// `out` must have two dimensions.
+DIP_EXPORT void DrawPolygon2D(
+      Image& out,
+      Polygon const& polygon,
+      Image::Pixel const& value = { 1 },
+      String const& mode = "filled"
+);
+
+/// \brief Draws a solid ellipsoid in an image.
+///
+/// The ellipsoid is centered around the coordinates given by `origin`, and has a diameter `sizes[ii]` along
+/// dimension `ii`. That is, the ellipsoid is composed of all pixels within a Euclidean distance of `sizes/2`
+/// from the `origin`.
+///
+/// The origin does not need to be within the image.
+/// Pixels in `out` within the ellipsoid are set to `value`, other pixels are not touched.
+///
+/// `out` must have at least two dimensions.
+DIP_EXPORT void DrawEllipsoid(
+      Image& out,
+      FloatArray const& sizes,
+      FloatArray const& origin,
+      Image::Pixel const& value = { 1 }
+);
+
+/// \brief Draws a solid diamond in an image.
+///
+/// The diamond is centered around the coordinates given by `origin`, and has a width `sizes[ii]` along
+/// dimension `ii`. That is, the diamond is composed of all pixels within a L-1 distance of `sizes/2`
+/// from the `origin`.
+///
+/// The origin does not need to be within the image.
+/// Pixels in `out` within the diamond are set to `value`, other pixels are not touched.
+///
+/// `out` must have at least two dimensions.
+DIP_EXPORT void DrawDiamond(
+      Image& out,
+      FloatArray const& sizes,
+      FloatArray const& origin,
+      Image::Pixel const& value = { 1 }
+);
+
+/// \brief Draws a solid box (rectangle) in an image.
+///
+/// The box is centered around the coordinates given by `origin`, and has a width `sizes[ii]` along
+/// dimension `ii`. That is, the box is composed of all pixels within a L-infinity distance of `sizes/2`
+/// from the `origin`.
+///
+/// The origin does not need to be within the image.
+/// Pixels in `out` within the box are set to `value`, other pixels are not touched.
+///
+/// `out` must have at least two dimensions.
+DIP_EXPORT void DrawBox(
+      Image& out,
+      FloatArray const& sizes,
+      FloatArray const& origin,
+      Image::Pixel const& value = { 1 }
+);
+
+
+/// \brief Draws an approximately bandlimited point in the image, in the form of a Gaussian blob.
+///
+/// The blob is centered around the coordinates given by `origin`, and `sigmas[ii]` is the parameter for the
+/// Gaussian along dimension `ii`. The Gaussian is scaled such that its integral is `value`. The integral might
+/// be off if `sigmas` contains a small value.
+///
+/// The origin does not need to be within the image. `sigmas * truncation` is the size of the box around `origin`
+/// that is affected by the blob. Pixels in `out` within that box have the values of the Gaussian added to them,
+/// other pixels are not touched.
+///
+/// `out` must not be binary, and have at least one dimension.
+DIP_EXPORT void DrawBandlimitedPoint(
+      Image& out,
+      FloatArray origin,
+      Image::Pixel const& value = { 1 },
+      FloatArray sigmas = { 1.0 },
+      dfloat truncation = 3.0
+);
+
+/// \brief Draws an approximately bandlimited line between two points in the image, using Gaussian profiles.
+///
+/// The two points do not need to be within the image domain.
+///
+/// `sigma` determines the smoothness of the line. Values are calculated up to a distance of `sigma * truncation`
+/// from the line, further away values are rounded to 0. `value` is the linear integral perpendicular to the line.
+/// That is, it is the weight of the Gaussian used to draw the line. The values are added to existing values in
+/// the image `out`.
+///
+/// `out` must not be binary and have at least two dimensions.
+///
+/// If `start` and `end` are identical, calls `dip::DrawBandlimitedPoint`.
+DIP_EXPORT void DrawBandlimitedLine(
+      Image& out,
+      FloatArray start,
+      FloatArray end,
+      Image::Pixel const& value = { 1 },
+      dfloat sigma = 1.0,
+      dfloat truncation = 3.0
+);
+
+/// \brief Draws an approximately bandlimited ball (disk) or an n-sphere (circle) in an image, using Gaussian profiles.
+///
+/// The ball is centered around the coordinates given by `origin`, and has a diameter `diameter` along
+/// all dimensions. The origin does not need to be within the image.
+///
+/// If `mode` is `"empty"`, a circle/sphere/n-sphere is drawn as a thin shell with a Gaussian profile.
+/// If `mode` is `"filled"`, a disk/ball/hyperball is drawn as a solid shape with an error function transition
+/// to background values. The former is the gradient magnitude of the latter.
+///
+/// In both cases, `sigma` determines the smoothness of the shape, and `truncation`
+/// determines how far out from the edge the smooth values are computed: at a distance of `sigma * truncation`
+/// the values are rounded to 1 or 0. `value` indicates the weight of the ball: it is the value of the
+/// solid shape, and the value of the integral perpendicular to the edge for the empty shape.
+///
+/// The ball is added to the image `out`. Pixels within `sigma * truncation` of the ball's edge have
+/// their value increased, other pixels are not touched.
+///
+/// `out` must not be binary, and have at least one dimension.
+///
+/// Note: `diameter` is a scalar, unlike for similar functions, because a bandlimited ellipsoid would be very
+/// expensive (and complicated) to compute in the spatial domain.
+DIP_EXPORT void DrawBandlimitedBall(
+      Image& out,
+      dfloat diameter,
+      FloatArray origin,
+      Image::Pixel const& value = { 1 },
+      String const& mode = "filled", // or "empty"
+      dfloat sigma = 1.0,
+      dfloat truncation = 3.0
+);
+
+/// \brief Draws an approximately bandlimited box (rectagle) in an image, using Gaussian profiles.
+///
+/// The box is centered around the coordinates given by `origin`, and has a width of `sizes[ii]` along
+/// dimension `ii`. The origin does not need to be within the image.
+///
+/// If `mode` is `"empty"`, the edge of the rectangle or the surface of the box is drawn as a thin shell
+/// with a Gaussian profile. If `mode` is `"filled"`, the rectangle/box is drawn as a solid shape with an
+/// error function transition to background values. The former is the gradient magnitude of the latter.
+///
+/// In both cases, `sigma` determines the smoothness of the shape, and `truncation`
+/// determines how far out from the edge the smooth values are computed: at a distance of `sigma * truncation`
+/// the values are rounded to 1 or 0. `value` indicates the weight of the ball: it is the value of the
+/// solid shape, and the value of the integral perpendicular to the edge for the empty shape.
+///
+/// The box is added to the image `out`. Pixels within `sigma * truncation` of the box's edge have
+/// their value increased, other pixels are not touched.
+///
+/// `out` must not be binary, and have at least one dimension.
+DIP_EXPORT void DrawBandlimitedBox(
+      Image& out,
+      FloatArray sizes,
+      FloatArray origin,
+      Image::Pixel const& value = { 1 },
+      String const& mode = "filled", // or "empty"
+      dfloat sigma = 1.0,
+      dfloat truncation = 3.0
+);
+
+
+DIP_EXPORT void GaussianEdgeClip(
+      Image const& in,
+      Image& out,
+      Image::Pixel const& value = { 1 },
+      dfloat sigma = 1.0,
+      dfloat truncation = 3.0
+);
+inline Image GaussianEdgeClip(
+      Image const& in,
+      Image::Pixel const& value = { 1 },
+      dfloat sigma = 1.0,
+      dfloat truncation = 3.0
+) {
+   Image out;
+   GaussianEdgeClip( in, out, value, sigma, truncation );
+   return out;
+}
+
+DIP_EXPORT void GaussianLineClip(
+      Image const& in,
+      Image& out,
+      Image::Pixel const& value = { 1 },
+      dfloat sigma = 1.0,
+      dfloat truncation = 3.0
+);
+inline Image GaussianLineClip(
+      Image const& in,
+      Image::Pixel const& value = { 1 },
+      dfloat sigma = 1.0,
+      dfloat truncation = 3.0
+) {
+   Image out;
+   GaussianLineClip( in, out, value, sigma, truncation );
+   return out;
+}
 
 
 /// \brief Fills an image with a ramp function.
@@ -309,7 +540,7 @@ inline Image CreateThetaCoordinate( UnsignedArray const& sizes, StringSet const&
 ///  - `"math"`: The y axis is inverted, such that it increases upwards.
 ///  - `"radial"`: In combination with "frequency", changes the range to [-pi,pi), as with radial
 ///    frequencies.
-///  - `"physical"`: The coordinate system is in phyisical units rather than providing indices.
+///  - `"physical"`: The coordinate system is in physical units rather than providing indices.
 ///    That is, instead of unit increments between pixels, the pixel size magnitudes are used to
 ///    scale distances. Units are ignored, so if they differ, polar/spherical coordinates might
 ///    not make sense.
@@ -496,32 +727,6 @@ inline Image ColoredNoise( Image const& in, Random& random, dfloat variance = 1.
    return out;
 }
 
-
-// TODO: functions to port:
-/*
-   dip_FTSphere (dip_generation.h)
-   dip_FTBox (dip_generation.h)
-   dip_FTCube (dip_generation.h)
-   dip_FTGaussian (dip_generation.h)
-   dip_FTEllipsoid (dip_generation.h)
-   dip_FTCross (dip_generation.h)
-   dip_EuclideanDistanceToPoint (dip_generation.h) (related to dip::FillRadiusCoordinate)
-   dip_EllipticDistanceToPoint (dip_generation.h) (related to dip::FillRadiusCoordinate)
-   dip_CityBlockDistanceToPoint (dip_generation.h) (related to dip::FillRadiusCoordinate)
-   dip_TestObjectCreate (dip_generation.h)
-   dip_TestObjectModulate (dip_generation.h)
-   dip_TestObjectBlur (dip_generation.h)
-   dip_TestObjectAddNoise (dip_generation.h)
-   dip_ObjectCylinder (dip_generation.h)
-   dip_ObjectEdge (dip_generation.h)
-   dip_ObjectPlane (dip_generation.h)
-   dip_ObjectEllipsoid (dip_generation.h)
-   dip_DrawLinesFloat (dip_paint.h) (merge into a single dip::DrawLine)
-   dip_DrawLinesComplex (dip_paint.h) (merge into a single dip::DrawLine)
-   dip_PaintEllipsoid (dip_paint.h)
-   dip_PaintDiamond (dip_paint.h)
-   dip_PaintBox (dip_paint.h)
-*/
 
 /// \}
 

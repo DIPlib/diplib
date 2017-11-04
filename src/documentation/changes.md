@@ -195,6 +195,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - `dip_GeneralisedKuwaharaImproved` is now called `dip::SelectionFilter`, and
   `dip_GeneralisedKuwahara` is no longer (C++ default values make it redundant).
 
+- `dip_PaintBox`, `dip_PaintDiamond` and `dip_PaintEllipsoid` are now called `dip::DrawBox`,
+  `dip::DrawDiamond` and `dip::DrawEllipsoid`, respectively (for consistency).
+
 [//]: # (--------------------------------------------------------------)
 
 \section changes_functionality Changes in functionality
@@ -274,6 +277,7 @@ code that used *DIPlib* or *DIPimage* to the new version.
   reading times significantly.
 
 - Lots of new algorithms, some previously only available in *DIPimage*.
+  TODO: try to list these.
 
 [//]: # (--------------------------------------------------------------)
 

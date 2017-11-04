@@ -81,6 +81,15 @@ b,c = dip.Histogram(a)
 len(c)
 b.Dimensionality() == len(c)
 
+a = dip.Image((250,260),3)
+a.Fill(0)
+import random
+color = list([1.0,1.5,0.5])
+for ii in range(0,1000):
+   random.shuffle(color)
+   dip.DrawGaussianBlob(a,[random.uniform(1,3),random.uniform(1,3)],[random.uniform(-2,252),random.uniform(-2,262)],color)
+a.Show()
+
 ###
 
 import PyDIP as dip
