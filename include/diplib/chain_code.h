@@ -529,7 +529,7 @@ class DIP_NO_EXPORT ConvexHull {
       ConvexHull() {};
 
       /// Constructs a convex hull of a polygon
-      DIP_EXPORT ConvexHull( dip::Polygon const&& polygon );
+      DIP_EXPORT ConvexHull( dip::Polygon&& polygon );
 
       /// Retrieve the vertices that represent the convex hull
       std::vector< VertexFloat > const& Vertices() const {
