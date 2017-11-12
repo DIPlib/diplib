@@ -54,9 +54,23 @@ FloatArray IsodataThreshold(
    DIP_ASSERT( hist.Stride( 0 ) == 1 );
    dip::uint nBins = hist.Size( 0 );
    FloatArray thresholds( nThresholds );
+   // Initialize thresholds such that each interval has approximately same number of pixels
+   Histogram cumh = in.Cumulative();
+   Image const& cum = cumh.GetImage();
+   DIP_ASSERT( cum.IsForged() );
+   DIP_ASSERT( cum.DataType() == DT_UINT32 );
+   DIP_ASSERT( cum.Stride( 0 ) == 1 );
+   DIP_ASSERT( cum.Size( 0 ) == nDims );
+   uint32* ptr = static_cast< uint32* >( cum.Origin() );
+   dip::uint N = ptr[ nBins - 1 ] / ( nThresholds + 1 );
+   dip::uint index = 1;
    for( dip::uint ii = 0; ii < nThresholds; ++ii ) {
-      thresholds[ ii ] = static_cast< dfloat >(( ii + 1 ) * nBins ) / static_cast< dfloat >( nThresholds + 1 );
+      while( ptr[ index ] < N * ( ii + 1 )) {
+         ++index;
+      }
+      thresholds[ ii ] = static_cast< dfloat >( index );
    }
+   // Apply the iterative process
    FloatArray old;
    uint32 const* data = static_cast< uint32 const* >( hist.Origin() );
    do {
@@ -72,7 +86,11 @@ FloatArray IsodataThreshold(
             moment += static_cast< dfloat >( jj ) * data[ jj ];
             sum += data[ jj ];
          }
-         centers[ ii ] = moment / sum;
+         if( sum > 0 ) {
+            centers[ ii ] = moment / sum;
+         } else {
+            centers[ ii ] = static_cast< dfloat >( origin1 + origin2 ) / 2.0;
+         }
          origin1 = origin2;
       }
       dfloat moment = 0;
@@ -81,7 +99,11 @@ FloatArray IsodataThreshold(
          moment += static_cast< dfloat >( jj ) * data[ jj ];
          sum += data[ jj ];
       }
-      centers.back() = moment / sum;
+      if( sum > 0 ) {
+         centers.back() = moment / sum;
+      } else {
+         centers.back() = static_cast< dfloat >( origin1 + nBins ) / 2.0;
+      }
       for( dip::uint ii = 0; ii < nThresholds; ++ii ) {
          thresholds[ ii ] = ( centers[ ii + 1 ] + centers[ ii ] ) / 2.0;
       }

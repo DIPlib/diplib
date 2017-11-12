@@ -239,7 +239,7 @@ void MultipleThresholds(
       dataType = DT_UINT16;
    }
    Image values( { nLabels }, 1, dataType );
-   FillRamp( values, 0 );
+   FillXCoordinate( values, { "corner" } );
    values = values.At( Range{ 1, -1 } ); // remove first label, use the out-of-bounds value for this label
    LookupTable lut( values, thresholds );
    lut.SetOutOfBoundsValue( 0, static_cast< dfloat >( nLabels - 1 ));
