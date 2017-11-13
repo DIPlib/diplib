@@ -25,42 +25,44 @@
 
 namespace dip {
 
-void ApplyBinaryBorderMask( Image& out, uint8 borderMask ) {
+void ApplyBinaryBorderMask( Image& out, uint8 const borderMask ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !out.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
-   uint8 invBorderMask = static_cast< uint8 >( ~borderMask );
    detail::ProcessBorders< bin, true, true >(
          out,
-         [ borderMask ]( auto* ptr, dip::sint ) { // Set border mask bits within the border
-            static_cast< uint8& >( *ptr ) |= borderMask;
+         [ borderMask ]( bin* ptr, dip::sint ) { // Set border mask bits within the border
+            SetBits( static_cast< uint8& >( *ptr ), borderMask );
          },
-         [ invBorderMask ]( auto* ptr, dip::sint ) { // Reset border mask bits elsewhere
-            static_cast< uint8& >( *ptr ) &= invBorderMask;
-         },
-         1 );
+         [ borderMask ]( bin* ptr, dip::sint ) { // Reset border mask bits elsewhere
+            ResetBits( static_cast< uint8& >( *ptr ), borderMask );
+         } );
 }
 
-void ClearBinaryBorderMask( Image& out, uint8 borderMask ) {
+void ClearBinaryBorderMask( Image& out, uint8 const borderMask ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !out.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_SCALAR );
-   uint8 invBorderMask = static_cast< uint8 >( ~borderMask );
-   detail::ProcessBorders< bin, true, true >(
+   detail::ProcessBorders< bin >(
          out,
-         [ invBorderMask ]( auto* ptr, dip::sint ) { // Reset border mask bits within the border
-            static_cast< uint8& >( *ptr ) &= invBorderMask;
-         },
-         []( auto*, dip::sint ) {},
-         1 );
+         [ borderMask ]( auto* ptr, dip::sint ) { // Reset border mask bits within the border
+            ResetBits( static_cast< uint8& >( *ptr ), borderMask );
+         } );
 }
 
-bool IsBinaryEdgePixel( Image const& in, dip::sint pixelOffset, NeighborList const& neighborList, IntegerArray const& neighborOffsets, uint8 dataMask, bool checkBounds, CoordinatesComputer const* coordsComputer ) {
+bool IsBinaryEdgePixel(
+      Image const& in,
+      dip::sint pixelOffset,
+      NeighborList const& neighborList,
+      IntegerArray const& neighborOffsets,
+      uint8 dataMask,
+      bool checkBounds,
+      CoordinatesComputer const& coordsComputer
+) {
    // Do bounds checking if requested
    dip::UnsignedArray pixelCoords;
    if( checkBounds ) {
-      DIP_ASSERT( coordsComputer != NULL );   // We need a valid CoordinatesComputer for bounds checking
-      pixelCoords = (*coordsComputer)(pixelOffset);
+      pixelCoords = coordsComputer(pixelOffset);
    }
 
    bool isEdgePixel = false;  // Not an edge pixel until proven otherwise
@@ -71,8 +73,8 @@ bool IsBinaryEdgePixel( Image const& in, dip::sint pixelOffset, NeighborList con
       if( !checkBounds || itNeighbor.IsInImage( pixelCoords, in.Sizes() )) {
          const uint8 pixelByte = static_cast< uint8 >( *pPixel );
          const uint8 neighborByte = static_cast< uint8 >( *( pPixel + *itNeighborOffset ));   // Add the neighborOffset to the address (ptr) of pixel, and dereference to get its value
-         bool pixelIsObject = pixelByte & dataMask;
-         bool neighborIsObject = neighborByte & dataMask;
+         bool pixelIsObject = TestAnyBit( pixelByte, dataMask );
+         bool neighborIsObject = TestAnyBit( neighborByte, dataMask );
          // If the pixel value is different from the neighbor value, it is an edge pixel
          if( pixelIsObject != neighborIsObject ) {
             isEdgePixel = true;
@@ -84,7 +86,16 @@ bool IsBinaryEdgePixel( Image const& in, dip::sint pixelOffset, NeighborList con
    return isEdgePixel;
 }
 
-void FindBinaryEdgePixels( const Image& in, bool findObjectPixels, NeighborList const& neighborList, IntegerArray const& neighborOffsets, uint8 dataMask, uint8 borderMask, bool treatOutsideImageAsObject, queue< bin* >* edgePixels ) {
+void FindBinaryEdgePixels(
+      const Image& in,
+      bool findObjectPixels,
+      NeighborList const& neighborList,
+      IntegerArray const& neighborOffsets,
+      uint8 dataMask,
+      uint8 borderMask,
+      bool treatOutsideImageAsObject,
+      BinaryFifoQueue& edgePixels
+) {
    // Create a coordinates computer for bounds checking of border pixels
    const CoordinatesComputer coordsComputer = in.OffsetToCoordinatesComputer();
 
@@ -92,16 +103,17 @@ void FindBinaryEdgePixels( const Image& in, bool findObjectPixels, NeighborList 
    ImageIterator< bin > itImage( in );
    do {
       uint8& pixelByte = static_cast< uint8& >( *itImage );
-      bool isBorderPixel = pixelByte & borderMask; // Is pixel part of the image border?
-      bool isObjectPixel = pixelByte & dataMask;   // Does pixel have non-zero data value, i.e., is it part of the object and not the background?
+      bool isObjectPixel = TestAnyBit( pixelByte, dataMask );   // Does pixel have non-zero data value, i.e., is it part of the object and not the background?
       // Check if the pixel is of the correct type: object or background
-      if( (findObjectPixels && isObjectPixel) || (!findObjectPixels && !isObjectPixel) ) {
+      if( bool( isObjectPixel ) == findObjectPixels ) {
          // Check if the pixel is a border edge pixel due to the edge condition (done outside IsBinaryEdgePixel() to avoid overhead)
-         bool isBorderEdgePixelForEdgeCondition = isBorderPixel && (isObjectPixel != treatOutsideImageAsObject);
+         bool isBorderPixel = TestAnyBit( pixelByte, borderMask ); // Is pixel part of the image border?
+         bool isBorderEdgePixelForEdgeCondition = isBorderPixel && ( isObjectPixel != treatOutsideImageAsObject );
          // Check if the pixel is an edge pixel due to its neighbors
-         if( isBorderEdgePixelForEdgeCondition || IsBinaryEdgePixel( in, itImage.Offset(), neighborList, neighborOffsets, dataMask, isBorderPixel, &coordsComputer ) ) {
+         if( isBorderEdgePixelForEdgeCondition ||
+             IsBinaryEdgePixel( in, itImage.Offset(), neighborList, neighborOffsets, dataMask, isBorderPixel, coordsComputer )) {
             // Add the edge pixel to the queue
-            edgePixels->push_back( &*itImage );
+            edgePixels.push_back( itImage.Pointer() );
          }
       }
    } while( ++itImage );
@@ -111,34 +123,17 @@ dip::uint GetAbsBinaryConnectivity( dip::uint dimensionality, dip::sint connecti
    // No check if connectivity <= dimensionality.
    // It is done automatically when creating a NeighborList.
 
-   // Alternation for dim 2
    if( dimensionality == 2 ) {
       if( connectivity == -1 ) {
-         if( iteration % 2 == 0 )
-            return 1;
-         else
-            return 2;
+         return ( iteration % 2 == 0 ) ? 1 : 2;
+      } else if( connectivity == -2 ) {
+         return ( iteration % 2 == 0 ) ? 2 : 1;
       }
-      else if( connectivity == -2 ) {
-         if( iteration % 2 == 0 )
-            return 2;
-         else
-            return 1;
-      }
-   }
-   // Alternation for dim 3
-   else if( dimensionality == 3 ) {
+   } else if( dimensionality == 3 ) {
       if( connectivity == -1 ) {
-         if( iteration % 2 == 0 )
-            return 1;
-         else
-            return 3;
-      }
-      else if( connectivity == -2 || connectivity == -3 ) {
-         if( iteration % 2 == 0 )
-            return 3;
-         else
-            return 1;
+         return ( iteration % 2 == 0 ) ? 1 : 3;
+      } else if( connectivity == -2 || connectivity == -3 ) {
+         return ( iteration % 2 == 0 ) ? 3 : 1;
       }
    }
 

@@ -60,7 +60,7 @@ FloatArray IsodataThreshold(
    DIP_ASSERT( cum.IsForged() );
    DIP_ASSERT( cum.DataType() == DT_UINT32 );
    DIP_ASSERT( cum.Stride( 0 ) == 1 );
-   DIP_ASSERT( cum.Size( 0 ) == nDims );
+   DIP_ASSERT( cum.Size( 0 ) == nBins );
    uint32* ptr = static_cast< uint32* >( cum.Origin() );
    dip::uint N = ptr[ nBins - 1 ] / ( nThresholds + 1 );
    dip::uint index = 1;

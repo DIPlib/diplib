@@ -30,10 +30,25 @@
 namespace dip {
 
 namespace S {
+// These are some of the string input arguments. Defining them as a constant
+// prevents typos in the library code. A library user does not need to use these
+// constants, but of course can do so if she wants.
+// TODO: Go through the whole library and fish out all the string constants everywhere.
 
+// Binary processing: background/object; special; all/foreground
 constexpr char const* BACKGROUND = "background";
 constexpr char const* OBJECT = "object";
 constexpr char const* SPECIAL = "special";
+constexpr char const* ALL = "all";
+constexpr char const* FOREGROUND = "foreground";
+// Skeleton end pixel conditions
+constexpr char const* LOOSEENDSAWAY = "loose ends away";
+constexpr char const* NATURAL = "natural";
+constexpr char const* ONENEIGHBOR = "one neighbor";
+constexpr char const* TWONEIGHBORS = "two neighbors";
+constexpr char const* THREENEIGHBORS = "three neighbors";
+constexpr char const* KEEP = "keep";
+constexpr char const* LOSE = "lose";
 
 } // namespace S
 

@@ -1108,6 +1108,11 @@ DIP_EXPORT void UpperEnvelope(
 ///
 /// See \ref connectivity for information on the connectivity parameter.
 ///
+/// For binary images, `dip::BinaryPropagation` also defines the reconstruction by dilation, and allows limiting
+/// the number of reconstruction steps, and supports alternating connectivity, which yields a more isotropic result
+/// (note that alternating connectivity does not yield any advantages when reconstructing until idempotence, as this
+/// function does).
+///
 /// **Literature**
 ///  - K. Robinson and P.F. Whelan: Efficient morphological reconstruction: a downhill filter, Pattern Recognition
 ///    Letters 25:1759-1767, 2004.

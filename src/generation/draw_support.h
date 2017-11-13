@@ -42,7 +42,7 @@ void CopyPixelToVector( Image::Pixel const& in, std::vector <TPI>& out, dip::uin
 // be called (potentially a small subset of them!). Here we adjust `out` to be the bounding box for these image
 // lines. `origin` is adjusted to match.
 // Returns false if there are no pixels to process
-bool NarrowImageView(
+inline bool NarrowImageView(
       Image& out,          // adjusted
       FloatArray const& sizes,
       FloatArray& origin   // adjusted

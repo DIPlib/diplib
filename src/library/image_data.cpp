@@ -210,7 +210,7 @@ CoordinatesComputer::CoordinatesComputer( UnsignedArray const& sizes, IntegerArr
       if( ( sizes_[ ii ] == 1 ) || ( strides_[ ii ] == 0 ) ) {
          index_[ nelem ] = ii;
          ++nelem;
-         // By the time we use these elements, the resudue should be 0, so it
+         // By the time we use these elements, the residue should be 0, so it
          // doesn't matter what the stride values are. As long as they are not 0!
          strides_[ ii ] = 1;
       }

@@ -40,28 +40,27 @@ namespace dip {
 
 /// \brief Binary morphological dilation operation.
 ///
-/// The \p connectivity parameter defines the metric, that is, the shape of
+/// The `connectivity` parameter defines the metric, that is, the shape of
 /// the structuring element (see \ref connectivity). Alternating connectivity
 /// is only implemented for 2D and 3D images.
 ///
-/// The \p edgeCondition parameter specifies whether pixels past the border of the image should be
+/// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 /// 
 /// \see { BinaryErosion, BinaryClosing, BinaryOpening, BinaryPropagation }
-/// 
 DIP_EXPORT void BinaryDilation(
       Image const& in,
       Image& out,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
-      String const& edgeCondition = "background"
+      String const& edgeCondition = S::BACKGROUND
 );
 
 inline Image BinaryDilation(
       Image const& in,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
-      String const& edgeCondition = "background"
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    BinaryDilation( in, out, connectivity, iterations, edgeCondition );
@@ -70,27 +69,27 @@ inline Image BinaryDilation(
 
 /// \brief Binary morphological erosion operation.
 ///
-/// The \p connectivity parameter defines the metric, that is, the shape of
+/// The `connectivity` parameter defines the metric, that is, the shape of
 /// the structuring element (see \ref connectivity). Alternating connectivity
 /// is only implemented for 2D and 3D images.
 ///
-/// The \p edgeCondition parameter specifies whether pixels past the border of the image should be
+/// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 /// 
-/// \see { BinaryDilation, BinaryClosing, BinaryOpening, BinaryPropagation }
+/// \see { BinaryDilation, BinaryClosing, BinaryOpening }
 DIP_EXPORT void BinaryErosion(
       Image const& in,
       Image& out,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
-      String const& edgeCondition = "object"
+      String const& edgeCondition = S::OBJECT
 );
 
 inline Image BinaryErosion(
       Image const& in,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
-      String const& edgeCondition = "object"
+      String const& edgeCondition = S::OBJECT
 ) {
    Image out;
    BinaryErosion( in, out, connectivity, iterations, edgeCondition );
@@ -99,30 +98,30 @@ inline Image BinaryErosion(
 
 /// \brief Binary morphological closing operation.
 ///
-/// The \p connectivity parameter defines the metric, that is, the shape of
+/// The `connectivity` parameter defines the metric, that is, the shape of
 /// the structuring element (see \ref connectivity). Alternating connectivity
 /// is only implemented for 2D and 3D images.
 ///
-/// The \p edgeCondition parameter specifies whether pixels past the border of the image should be
+/// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 /// Additionally, you can set it to `"special"` for special handling:
 /// `"background"` for the dilation, `"object"` for the erosion; this avoids the border
 /// effect you can get in the corners of the image in some cases.
 ///
-/// \see { BinaryDilation, BinaryErosion, BinaryOpening, BinaryPropagation }
+/// \see { BinaryDilation, BinaryErosion, BinaryOpening }
 DIP_EXPORT void BinaryClosing(
       Image const& in,
       Image& out,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
-      String const& edgeCondition = "special"
+      String const& edgeCondition = S::SPECIAL
 );
 
 inline Image BinaryClosing(
       Image const& in,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
-      String const& edgeCondition = "special"
+      String const& edgeCondition = S::SPECIAL
 ) {
    Image out;
    BinaryClosing( in, out, connectivity, iterations, edgeCondition );
@@ -131,30 +130,30 @@ inline Image BinaryClosing(
 
 /// \brief Binary morphological opening operation.
 ///
-/// The \p connectivity parameter defines the metric, that is, the shape of
+/// The `connectivity` parameter defines the metric, that is, the shape of
 /// the structuring element (see \ref connectivity). Alternating connectivity
 /// is only implemented for 2D and 3D images.
 ///
-/// The \p edgeCondition parameter specifies whether pixels past the border of the image should be
+/// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 /// Additionally, you can set it to `"special"` for special handling:
 /// `"object"` for the erosion, `"background"` for the dilation; this avoids the border
 /// effect you can get in the corners of the image in some cases.
 ///
-/// \see { BinaryDilation, BinaryErosion, BinaryClosing, BinaryPropagation }
+/// \see { BinaryDilation, BinaryErosion, BinaryClosing }
 DIP_EXPORT void BinaryOpening(
       Image const& in,
       Image& out,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
-      String const& edgeCondition = "special"
+      String const& edgeCondition = S::SPECIAL
 );
 
 inline Image BinaryOpening(
       Image const& in,
       dip::sint connectivity = -1,
       dip::uint iterations = 3,
-      String const& edgeCondition = "special"
+      String const& edgeCondition = S::SPECIAL
 ) {
    Image out;
    BinaryOpening( in, out, connectivity, iterations, edgeCondition );
@@ -163,27 +162,28 @@ inline Image BinaryOpening(
 
 /// \brief Morphological propagation of binary objects.
 ///
-/// \p inSeed contains the seeds to propagate. To use no seeds,
-/// simply pass a raw image, i.e. `dip::Image()`.
-/// \p inMask contains the mask in which propagation is allowed
+/// `inSeed` contains the seeds to propagate. To use no seeds, simply pass a raw image, i.e. `dip::Image()`.
+/// `inMask` contains the mask in which propagation is allowed.
 /// 
-/// The \p connectivity parameter defines the metric, that is, the shape of
+/// The `connectivity` parameter defines the metric, that is, the shape of
 /// the structuring element (see \ref connectivity). Alternating connectivity
 /// is only implemented for 2D and 3D images.
 ///
-/// The \p edgeCondition parameter specifies whether pixels past the border of the image should be
+/// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
 /// treated as object (by passing `"object"`) or as background (by passing `"background"`).
 ///
-/// The algorithm is repeated \p iterations times. Pass 0 to continue until propagation is completed.
+/// The algorithm is repeated `iterations` times. Pass 0 to continue until propagation is completed.
 ///
-/// \see { BinaryDilation, BinaryErosion, BinaryClosing, BinaryOpening }
+/// The function `dip::MorphologicalReconstruction` provides similar functionality also for other data types.
+///
+/// \see { dip::MorphologicalReconstruction, dip::BinaryDilation, dip::BinaryErosion }
 DIP_EXPORT void BinaryPropagation(
       Image const& inSeed,
       Image const& inMask,
       Image& out,
       dip::sint connectivity = 1,
       dip::uint iterations = 0,
-      String const& edgeCondition = "background"
+      String const& edgeCondition = S::BACKGROUND
 );
 
 inline Image BinaryPropagation(
@@ -191,7 +191,7 @@ inline Image BinaryPropagation(
       Image const& inMask,
       dip::sint connectivity = 1,
       dip::uint iterations = 0,
-      String const& edgeCondition = "background"
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    BinaryPropagation( inSeed, inMask, out, connectivity, iterations, edgeCondition );
@@ -200,14 +200,12 @@ inline Image BinaryPropagation(
 
 /// \brief Remove binary edge objects.
 ///
-/// Removes those binary objects from \p in
-/// which are connected to the edges of the image. The connectivity of the
-/// objects is determined by \p connectivity. This function is a front - end to
-/// \p BinaryPropagation. It calls \p dip::BinaryPropagation with no seed image and
-/// the pixels past the border as `"object"`. The result of the propagation is
-/// xor-ed with the input image.
+/// Removes those binary objects from `in` that are connected to the edges of the image.
+/// The connectivity of the objects is determined by `connectivity`. This function
+/// calls `dip::BinaryPropagation` with no seed image and `edgeCondition` set to `"object"`.
+/// The result of the propagation is xor-ed with the input image.
 ///
-/// The \p connectivity parameter defines the metric, that is, the shape of
+/// The `connectivity` parameter defines the metric, that is, the shape of
 /// the structuring element (see \ref connectivity).
 DIP_EXPORT void EdgeObjectsRemove(
       Image const& in,
@@ -270,14 +268,14 @@ inline Image EdgeObjectsRemove(
 DIP_EXPORT void EuclideanSkeleton(
       Image const& in,
       Image& out,
-      String const& endPixelCondition = "natural",
-      String const& edgeCondition = "background"
+      String const& endPixelCondition = S::NATURAL,
+      String const& edgeCondition = S::BACKGROUND
 );
 
 inline Image EuclideanSkeleton(
       Image const& in,
-      String const& endPixelCondition = "natural",
-      String const& edgeCondition = "background"
+      String const& endPixelCondition = S::NATURAL,
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    EuclideanSkeleton( in, out, endPixelCondition, edgeCondition );
@@ -299,14 +297,14 @@ DIP_EXPORT void CountNeighbors(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& mode = "foreground",
-      dip::String const& edgeCondition = "background"
+      dip::String const& mode = S::FOREGROUND,
+      dip::String const& edgeCondition = S::BACKGROUND
 );
 inline Image CountNeighbors(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& mode = "foreground",
-      dip::String const& edgeCondition = "background"
+      dip::String const& mode = S::FOREGROUND,
+      dip::String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    CountNeighbors( in, out, connectivity, mode, edgeCondition );
@@ -318,15 +316,15 @@ inline void GetSinglePixels(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = "background"
+      dip::String const& edgeCondition = S::BACKGROUND
 ) {
-   Image nn = CountNeighbors( in, connectivity, "foreground", edgeCondition );
+   Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Equal( nn, 1, out );
 }
 inline Image GetSinglePixels(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = "background"
+      dip::String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    GetSinglePixels( in, out, connectivity, edgeCondition );
@@ -338,15 +336,15 @@ inline void GetEndPixels(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = "background"
+      dip::String const& edgeCondition = S::BACKGROUND
 ) {
-   Image nn = CountNeighbors( in, connectivity, "foreground", edgeCondition );
+   Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Equal( nn, 2, out );
 }
 inline Image GetEndPixels(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = "background"
+      dip::String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    GetEndPixels( in, out, connectivity, edgeCondition );
@@ -358,15 +356,15 @@ inline void GetLinkPixels(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = "background"
+      dip::String const& edgeCondition = S::BACKGROUND
 ) {
-   Image nn = CountNeighbors( in, connectivity, "foreground", edgeCondition );
+   Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Equal( nn, 3, out );
 }
 inline Image GetLinkPixels(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = "background"
+      dip::String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    GetLinkPixels( in, out, connectivity, edgeCondition );
@@ -378,15 +376,15 @@ inline void GetBranchPixels(
       Image const& in,
       Image& out,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = "background"
+      dip::String const& edgeCondition = S::BACKGROUND
 ) {
-   Image nn = CountNeighbors( in, connectivity, "foreground", edgeCondition );
+   Image nn = CountNeighbors( in, connectivity, S::FOREGROUND, edgeCondition );
    Greater( nn, 3, out );
 }
 inline Image GetBranchPixels(
       Image const& in,
       dip::uint connectivity = 0,
-      dip::String const& edgeCondition = "background"
+      dip::String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
    GetBranchPixels( in, out, connectivity, edgeCondition );

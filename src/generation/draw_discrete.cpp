@@ -34,15 +34,14 @@ template< typename TPI >
 void dip__SetBorder( Image& out, Image::Pixel const& value, dip::uint size ) {
    std::vector< TPI > value_;
    CopyPixelToVector( value, value_, out.TensorElements() );
-   detail::ProcessBorders< TPI, true, false >(
+   detail::ProcessBorders< TPI >(
          out,
          [ &value_ ]( auto* ptr, dip::sint tStride ) {
             for( auto v : value_ ) {
                *ptr = v;
                ptr += tStride;
             }
-         },
-         []( auto, dip::sint ) {}, size );
+         }, size );
 }
 
 } // namespace

@@ -48,7 +48,8 @@ void BinaryDilationErosion(
    DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::PARAMETER_OUT_OF_RANGE );
 
    // Edge condition: true means object, false means background
-   bool outsideImageIsObject = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
+   bool outsideImageIsObject;
+   DIP_STACK_TRACE_THIS( outsideImageIsObject = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND ));
 
    // Copy input plane to output plane. Operation takes place directly in the output plane.
    Image c_in = in; // temporary copy of image header, so we can strip out
@@ -75,14 +76,14 @@ void BinaryDilationErosion(
    ApplyBinaryBorderMask( out, borderMask );
 
    // The edge pixel queue
-   dip::queue< dip::bin* > edgePixels;
+   BinaryFifoQueue edgePixels;
 
    // Initialize the queue by finding all edge pixels of the type according to findObjectPixels
-   FindBinaryEdgePixels( out, findObjectPixels, neighborList0, neighborOffsetsOut0, dataMask, borderMask, outsideImageIsObject, &edgePixels );
+   FindBinaryEdgePixels( out, findObjectPixels, neighborList0, neighborOffsetsOut0, dataMask, borderMask, outsideImageIsObject, edgePixels );
 
    // First iteration: simply process the queue
    if( iterations > 0 ) {
-      for( dip::queue< dip::bin* >::const_iterator itEP = edgePixels.begin(); itEP != edgePixels.end(); ++itEP ) {
+      for( BinaryFifoQueue::const_iterator itEP = edgePixels.begin(); itEP != edgePixels.end(); ++itEP ) {
          propagationOperation( static_cast< uint8& >( **itEP ), dataMask );
       }
    }
@@ -103,7 +104,7 @@ void BinaryDilationErosion(
          // Get front pixel from the queue
          dip::bin* pPixel = edgePixels.front();
          uint8& pixelByte = static_cast< uint8& >( *pPixel );
-         bool isBorderPixel = pixelByte & borderMask;
+         bool isBorderPixel = TestAnyBit( pixelByte, borderMask );
 
          // Propagate to all neighbours which are not yet processed
          dip::IntegerArray::const_iterator itNeighborOffset = neighborOffsetsOut.begin();
@@ -111,7 +112,7 @@ void BinaryDilationErosion(
             if( !isBorderPixel || itNeighbor.IsInImage( coordsComputer( pPixel - static_cast< dip::bin* >( out.Origin() )), out.Sizes() )) { // IsInImage() is not evaluated for non-border pixels
                dip::bin* pNeighbor = pPixel + *itNeighborOffset;
                uint8& neighborByte = static_cast< uint8& >( *pNeighbor );
-               bool neighborIsObject = neighborByte & dataMask;
+               bool neighborIsObject = TestAnyBit( neighborByte, dataMask );
                if( neighborIsObject == findObjectPixels ) {
                   // Propagate to the neighbor pixel
                   propagationOperation( neighborByte, dataMask );
@@ -137,11 +138,11 @@ void BinaryDilation(
       Image& out,
       dip::sint connectivity,
       dip::uint iterations,
-      String const& s_edgeCondition
+      String const& edgeCondition
 ) {
    bool findObjectPixels = false; // Dilation propagates to background pixels
-   auto propagationFunc = []( uint8& pixel, uint8 dataMask ) { pixel |= dataMask; };   // Propagate by adding the data mask
-   BinaryDilationErosion( in, out, connectivity, iterations, s_edgeCondition, findObjectPixels, propagationFunc );
+   auto propagationFunc = []( uint8& pixel, uint8 dataMask ) { SetBits( pixel, dataMask ); };   // Propagate by adding the data mask
+   BinaryDilationErosion( in, out, connectivity, iterations, edgeCondition, findObjectPixels, propagationFunc );
 }
 
 void BinaryErosion(
@@ -149,11 +150,11 @@ void BinaryErosion(
       Image& out,
       dip::sint connectivity,
       dip::uint iterations,
-      String const& s_edgeCondition
+      String const& edgeCondition
 ) {
    bool findObjectPixels = true; // Erosion propagates to object pixels
-   auto propagationFunc = []( uint8& pixel, uint8 dataMask ) { pixel &= static_cast< uint8 >( ~dataMask ); };  // Propagate by removing the data mask
-   BinaryDilationErosion( in, out, connectivity, iterations, s_edgeCondition, findObjectPixels, propagationFunc );
+   auto propagationFunc = []( uint8& pixel, uint8 dataMask ) { ResetBits( pixel, dataMask ); };  // Propagate by removing the data mask
+   BinaryDilationErosion( in, out, connectivity, iterations, edgeCondition, findObjectPixels, propagationFunc );
 }
 
 void BinaryOpening(

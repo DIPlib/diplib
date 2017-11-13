@@ -4707,22 +4707,22 @@ void EuclideanSkeleton(
 
    // End pixel condition
    int endPixelCondition;
-   if( s_endPixelCondition == "loose ends away" ) {
+   if( s_endPixelCondition == S::LOOSEENDSAWAY ) {
       endPixelCondition = -1;
-   } else if( s_endPixelCondition == "natural" ) {
+   } else if( s_endPixelCondition == S::NATURAL ) {
       endPixelCondition = 0;
-   } else if( s_endPixelCondition == "one neighbor" ) {
+   } else if( s_endPixelCondition == S::ONENEIGHBOR ) {
       endPixelCondition = 1;
-   } else if( s_endPixelCondition == "two neighbors" ) {
+   } else if( s_endPixelCondition == S::TWONEIGHBORS ) {
       endPixelCondition = 2;
-   } else if( s_endPixelCondition == "three neighbors" ) {
+   } else if( s_endPixelCondition == S::THREENEIGHBORS ) {
       endPixelCondition = 3;
    } else {
       DIP_THROW( E::INVALID_FLAG );
    }
 
    // Edge condition
-   bool edgeCondition = BooleanFromString( s_edgeCondition, "object", "background" );
+   bool edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
 
    // Copy input plane to output plane. Operation takes place directly in the output plane.
    Image c_in = in; // temporary copy of image header, so we can strip out

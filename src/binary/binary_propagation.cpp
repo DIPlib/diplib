@@ -51,13 +51,13 @@ void BinaryPropagation(
    DIP_THROW_IF( connectivity > static_cast< dip::sint >( nDims ), E::PARAMETER_OUT_OF_RANGE );
 
    // Edge condition: true means object, false means background
-   bool outsideImageIsObject = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
+   bool outsideImageIsObject;
+   DIP_STACK_TRACE_THIS( outsideImageIsObject = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND ));
 
    // Make out equal to inMask
    Image inMask = c_inMask; // temporary copy of input image headers, so we can strip/reforge out
    Image inSeed = c_inSeed;
    if( out.Aliases( inMask )) { // make sure we don't overwrite the mask image
-      std::cout << "stripping out\n";
       out.Strip();
    }
    out.ReForge( inMask.Sizes(), 1, DT_BIN );
@@ -75,10 +75,31 @@ void BinaryPropagation(
    }
 
    // Zero iterations means: continue until propagation is done
-   if( iterations == 0 )
+   if( iterations == 0 ) {
       iterations = std::numeric_limits< dip::uint >::max();
+   }
 
-   // Negative connectivity means: alternate between two different connectivities
+   // Bit planes
+   constexpr uint8 dataBitmask = 1; // Data mask: the pixel data is in the first 'plane'
+   constexpr uint8 maskBitmask = uint8( 1 << 3 );
+   constexpr uint8 borderBitmask = uint8( 1 << 2 );
+   constexpr uint8 seedBitmask = uint8( 1 << 0 ); // seed bitmask equals data bitmask
+   constexpr uint8 maskOrSeedBitmask = seedBitmask | maskBitmask;
+
+   // Use border mask to mark pixels of the image border
+   ApplyBinaryBorderMask( out, borderBitmask );
+
+   // Add mask plane to out image
+   JointImageIterator< dip::bin, dip::bin > itInMaskOut( { inMask, out } );
+   do {
+      if ( itInMaskOut.In() )
+         SetBits( static_cast< uint8& >( itInMaskOut.Out() ), maskBitmask );
+   } while( ++itInMaskOut );
+
+   // The edge pixel queue
+   BinaryFifoQueue edgePixels;
+
+   DIP_START_STACK_TRACE
 
    // Create arrays with offsets to neighbours for even iterations
    dip::uint iterConnectivity0 = GetAbsBinaryConnectivity( nDims, connectivity, 0 );
@@ -86,76 +107,44 @@ void BinaryPropagation(
    IntegerArray neighborOffsetsOut0 = neighborList0.ComputeOffsets( out.Strides() );
 
    // Create arrays with offsets to neighbours for odd iterations
-   dip::uint iterConnectivity1 = GetAbsBinaryConnectivity( nDims, connectivity, 1 );
+   dip::uint iterConnectivity1 = GetAbsBinaryConnectivity( nDims, connectivity, 1 ); // won't throw
    NeighborList neighborList1( { Metric::TypeCode::CONNECTED, iterConnectivity1 }, nDims );
    IntegerArray neighborOffsetsOut1 = neighborList1.ComputeOffsets( out.Strides() );
 
-   // Data mask: the pixel data is in the first 'plane'
-   uint8 dataBitmask = 1;
-
-   // Define the mask bitmask
-   const int maskPlane = 3;
-   uint8 maskBitmask = uint8( 1 << maskPlane );
-
-   // Use border mask to mark pixels of the image border
-   const int borderPlane = 2;
-   uint8 borderBitmask = uint8( 1 << borderPlane );
-   ApplyBinaryBorderMask( out, borderBitmask );
-
-   // Define the seed bitmask (equals data bitmask)
-   const int seedPlane = 0;
-   uint8 seedBitmask = uint8( 1 << seedPlane );
-
-   // Add mask plane to out image
-   JointImageIterator< dip::bin, dip::bin > itInMaskOut( { inMask, out } );
-   do {
-      if ( itInMaskOut.In() )
-         static_cast< uint8& >( itInMaskOut.Out() ) |= maskBitmask;
-   } while( ++itInMaskOut );
-
-   // The edge pixel queue
-   dip::queue< dip::bin* > edgePixels;
-
    // Initialize the queue by finding all edge pixels of type 'background'
    bool findObjectPixels = false;
-   FindBinaryEdgePixels( out, findObjectPixels, neighborList0, neighborOffsetsOut0, dataBitmask, borderBitmask, outsideImageIsObject, &edgePixels );
-
-   const uint8 maskOrSeedBitmask = seedBitmask | maskBitmask;
+   FindBinaryEdgePixels( out, findObjectPixels, neighborList0, neighborOffsetsOut0, dataBitmask, borderBitmask, outsideImageIsObject, edgePixels );
 
    // First iteration: process all elements in the queue a first time
-   if( iterations > 0 ) {
-      // Process all elements currently in the queue
-      dip::sint count = static_cast< dip::sint >( edgePixels.size() );
-
-      while( --count >= 0 ) {
-         dip::bin* pPixel = edgePixels.front();
-         uint8& pixelByte = static_cast< uint8& >( *pPixel );
-         if(( pixelByte & maskOrSeedBitmask ) == maskBitmask ) {
-            pixelByte |= seedBitmask;
-            edgePixels.push_back( pPixel );
-         }
-         // Remove the front pixel from the queue
-         edgePixels.pop_front();
+   dip::uint count = edgePixels.size();
+   for( dip::uint jj = 0; jj < count; ++jj ) {
+      dip::bin* pPixel = edgePixels.front();
+      uint8& pixelByte = static_cast< uint8& >( *pPixel );
+      if(( pixelByte & maskOrSeedBitmask ) == maskBitmask ) {
+         SetBits( pixelByte, seedBitmask );
+         edgePixels.push_back( pPixel );
       }
+      // Remove the front pixel from the queue
+      edgePixels.pop_front();
    }
 
    // Create a coordinates computer for bounds checking of border pixels
    const CoordinatesComputer coordsComputer = out.OffsetToCoordinatesComputer();
 
-   // Second and further iterations. Loop also stops if the queue is empty
-   for( dip::uint iDilIter = 1; iDilIter < iterations; ++iDilIter ) {
+   // Second and further iterations. Loop stops if the queue is empty
+   for( dip::uint ii = 1; ( ii < iterations ) && !edgePixels.empty(); ++ii ) {
       // Obtain neighbor list and offsets for this iteration
-      NeighborList const& neighborList = iDilIter & 1 ? neighborList1 : neighborList0;
-      IntegerArray const& neighborOffsetsOut = iDilIter & 1 ? neighborOffsetsOut1 : neighborOffsetsOut0;
+      NeighborList const& neighborList = ii & 1 ? neighborList1 : neighborList0;
+      IntegerArray const& neighborOffsetsOut = ii & 1 ? neighborOffsetsOut1 : neighborOffsetsOut0;
 
       // Process all elements currently in the queue
-      dip::sint count = static_cast< dip::sint >( edgePixels.size() );
-
-      while( --count >= 0 ) {
+      count = edgePixels.size();
+      for( dip::uint jj = 0; jj < count; ++jj ) {
          // Get front pixel from the queue
          dip::bin* pPixel = edgePixels.front();
+         edgePixels.pop_front();
          uint8& pixelByte = static_cast< uint8& >( *pPixel );
-         bool isBorderPixel = pixelByte & borderBitmask;
+         bool isBorderPixel = TestAnyBit( pixelByte, borderBitmask );
 
          // Propagate to all neighbours which are not yet processed
          dip::IntegerArray::const_iterator itNeighborOffset = neighborOffsetsOut.begin();
@@ -169,29 +158,23 @@ void BinaryPropagation(
                // process this neighbor.
                if(( neighborByte & maskOrSeedBitmask ) == maskBitmask ) {
                   // Propagate to the neighbor pixel
-                  neighborByte |= seedBitmask;
+                  SetBits( neighborByte, seedBitmask );
                   // Add neighbor to the queue
                   edgePixels.push_back( pNeighbor );
                }
             }
          }
-
-         // Remove the front pixel from the queue
-         edgePixels.pop_front();
       }
-
-      // Iteration is done if the queue is empty
-      if( edgePixels.empty() )
-         break;
    }
+
+   DIP_END_STACK_TRACE
 
    // Final step: pixels have their data bit set iff they have both seed-bit and mask-bit
    // The result is stored in a way that resets all bits except bit 0
    // This means that the border mask is also removed
    ImageIterator< dip::bin > itOut( out );
    do {
-      uint8& pixelByte = static_cast< uint8& >( *itOut );
-      pixelByte = static_cast< uint8 >(( pixelByte & maskOrSeedBitmask ) == maskOrSeedBitmask );
+      *itOut = TestBits( static_cast< uint8 >( *itOut ), maskOrSeedBitmask );
    } while( ++itOut );
 }
 

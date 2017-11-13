@@ -47,7 +47,7 @@ void ProcessBorders(
       Image& out,
       BorderFunc borderPixelFunction,
       InnerFunc nonBorderPixelFunction,
-      dip::uint borderWidth
+      dip::uint borderWidth = 1
 ) {
    static_assert( ProcessBorder || ProcessNonBorder, "At least one of the two boolean template parameters must be set" );
 
@@ -122,6 +122,16 @@ void ProcessBorders(
          }
       }
    } while( ++it );
+}
+
+/// \brief Convenience interface to `dip::ProcessBorders` when only border pixels must be processed.
+template< typename TPI, typename BorderFunc >
+void ProcessBorders(
+      Image& out,
+      BorderFunc borderPixelFunction,
+      dip::uint borderWidth = 1
+) {
+   ProcessBorders< TPI, true, false >( out, borderPixelFunction, []( TPI*, dip::sint ){}, borderWidth );
 }
 
 } // namespace detail

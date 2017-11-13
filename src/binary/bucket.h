@@ -26,19 +26,19 @@
 namespace dip {
 
 /* Typedefs */
-struct Node {
+struct DIP_NO_EXPORT Node {
    uint8* pim;
    uint8 dirc;
 };
 
-struct Chunk {
+struct DIP_NO_EXPORT Chunk {
    bool used;                       /* true if chunk currently used */
    struct Chunk* bnext;             /* pointer to next chunk of current bucket */
    struct Chunk* lnext;             /* pointer to next allocated chunk */
    std::vector< Node > nodes;       /* contains Bucket.chunksize elements */
 };
 
-struct Bucket {
+struct DIP_NO_EXPORT Bucket {
    dip::uint nbuckets;              /* Number of buckets */
    dip::uint chunksize;             /* Size of chunk (#nodes) */
    //int sizeofchunk;               /* Size of chunk (in bytes, total structure) */
