@@ -174,8 +174,15 @@ void init_morphology( py::module& m ) {
          "inSeed"_a, "inMask"_a, "connectivity"_a = 1, "iterations"_a = 0, "edgeCondition"_a = "background" );
    m.def( "EdgeObjectsRemove", py::overload_cast< dip::Image const&, dip::uint >( &dip::EdgeObjectsRemove ),
          "in"_a, "connectivity"_a = 1 );
+
+   m.def( "ConditionalThickening2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::ConditionalThickening2D ),
+         "in"_a, "mask"_a, "iterations"_a = 0, "endPixelCondition"_a = "keep", "edgeCondition"_a = "background" );
+   m.def( "ConditionalThinning2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::ConditionalThinning2D ),
+         "in"_a, "mask"_a, "iterations"_a = 0, "endPixelCondition"_a = "keep", "edgeCondition"_a = "background" );
+
    m.def( "EuclideanSkeleton", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanSkeleton ),
           "in"_a, "endPixelCondition"_a = "natural", "edgeCondition"_a = "background" );
+
    m.def( "CountNeighbors", py::overload_cast< dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::CountNeighbors ),
          "in"_a, "connectivity"_a = 0, "mode"_a = "foreground", "edgeCondition"_a = "background" );
    m.def( "GetSinglePixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetSinglePixels ),

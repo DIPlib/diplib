@@ -121,3 +121,29 @@ dip.GetObjectLabels(c)
 d=dip.Relabel(c)
 d.Show('labels')
 dip.GetObjectLabels(d)
+
+###
+
+import PyDIP as dip
+
+mask=dip.Image([70,70],1,'BIN')
+mask.Fill(0)
+dip.DrawEllipsoid(mask,[40,50],[30,40])
+dip.DrawEllipsoid(mask,[4,5],[40,40],[0])
+
+seed=dip.Image([70,70],1,'BIN')
+seed.Fill(0)
+dip.DrawBox(seed,[5,70],[20,35])
+dip.DrawLine(seed,[14,28],[35,28])
+dip.DrawLine(seed,[14,30],[35,30])
+dip.DrawLine(seed,[14,40],[35,40])
+
+dip.BinaryPropagation(seed,mask,1,24).Show()
+dip.ConditionalThickening2D(seed,mask,24).Show()
+
+import timeit
+a = dip.BinaryPropagation(seed,mask,1,0)
+b = dip.MorphologicalReconstruction(seed,mask,1)
+print(dip.All(a==b)[0][0])
+timeit.timeit("dip.BinaryPropagation(seed,mask,1,0)", number=1000, globals=globals())
+timeit.timeit("dip.MorphologicalReconstruction(seed,mask,1)", number=1000, globals=globals())

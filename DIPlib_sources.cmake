@@ -67,6 +67,7 @@ src/binary/binary_support.h
 src/binary/bucket.h
 src/binary/count_neighbors.cpp
 src/binary/skeleton.cpp
+src/binary/thick_thin_2D.cpp
 src/color/cmyk.h
 src/color/color.cpp
 src/color/hcv.h

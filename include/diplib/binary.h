@@ -222,6 +222,79 @@ inline Image EdgeObjectsRemove(
    return out;
 }
 
+/// \brief Thickens the image `in` conditioned on the mask (2D only).
+///
+/// A thickening is a dilation that preserves topology. If no `mask` is given (i.e. the image is raw),
+/// it will produce an inverse skeleton of the background (given sufficient iterations).
+/// If a `mask` is given, the dilation will not propagate outside of the set pixels in `mask`.
+///
+/// The dilation always uses the unit 4-connected neighborhood. That is, it iteratively propagates using
+/// a connectivity of 1. The topology preserved is that of the 8-connected background. `iterations` iterations
+/// are applied. If `iterations` is 0, the algorithm iterates until idempotency.
+///
+/// `endPixelCondition` determines if background branches are kept. The string `"keep"` is equivalent to the
+/// `"natural"` end pixel condition in `dip::EuclideanSkeleton`, and `"lose"` causes branches to not be kept
+/// (meaning that only single background pixels and loops in background are kept).
+///
+/// The `edgeCondition` parameter specifies whether the border of the image should be treated as object (`"object"`)
+/// or as background (`"background"`). Note that the algorithm doesn't propagate into the pixels around the edge
+/// of the image. The `edgeCondition` is used to modify the input image before the iterative process starts.
+DIP_EXPORT void ConditionalThickening2D(
+      Image const& c_in,
+      Image const& c_mask,
+      Image& out,
+      dip::uint iterations = 0,
+      String const& endPixelCondition = S::LOSE,
+      String const& edgeCondition = S::BACKGROUND
+);
+inline Image ConditionalThickening2D(
+      Image const& in,
+      Image const& mask,
+      dip::uint iterations = 0,
+      String const& endPixelCondition = S::LOSE,
+      String const& edgeCondition = S::BACKGROUND
+) {
+   Image out;
+   ConditionalThickening2D( in, mask, out, iterations, endPixelCondition, edgeCondition );
+   return out;
+}
+
+/// \brief Thins the image `in` conditioned on the mask (2D only).
+///
+/// A thinning is an erosion that preserves topology. If no `mask` is given (i.e. the image is raw),
+/// it will produce a skeleton of the object (given sufficient iterations).
+/// If a `mask` is given, the erosion will not propagate outside of the set pixels in `mask`.
+/// Note that `dip::EuclideanSkeleton` produces a better skeleton.
+///
+/// The erosion always uses the unit 4-connected neighborhood. That is, it iteratively propagates using
+/// a connectivity of 1. The topology preserved is that of the 8-connected foreground. `iterations` iterations
+/// are applied. If `iterations` is 0, the algorithm iterates until idempotency.
+///
+/// `endPixelCondition` determines if branches are kept, and how many are generated. See `dip::EuclideanSkeleton`
+/// for a list of possible values.
+///
+/// The `edgeCondition` parameter specifies whether the border of the image should be treated as object (`"object"`)
+/// or as background (`"background"`). Note that the algorithm doesn't propagate into the pixels around the edge
+/// of the image. The `edgeCondition` is used to modify the input image before the iterative process starts.
+DIP_EXPORT void ConditionalThinning2D(
+      Image const& in,
+      Image const& mask,
+      Image& out,
+      dip::uint iterations = 0,
+      String const& endPixelCondition = S::LOSE,
+      String const& edgeCondition = S::BACKGROUND
+);
+inline Image ConditionalThinning2D(
+      Image const& in,
+      Image const& mask,
+      dip::uint iterations = 0,
+      String const& endPixelCondition = S::LOSE,
+      String const& edgeCondition = S::BACKGROUND
+) {
+   Image out;
+   ConditionalThinning2D( in, mask, out, iterations, endPixelCondition, edgeCondition );
+   return out;
+}
 
 /// \brief Accurate binary skeleton (2D and 3D only).
 ///
