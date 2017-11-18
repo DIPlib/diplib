@@ -230,6 +230,7 @@ if(DIP_ENABLE_DOCTEST)
    add_dependencies(check_memory unit_tests)
 endif()
 
+
 ### DIPviewer
 
 # OpenGL, FreeGLUT, GLFW
@@ -283,6 +284,7 @@ if(DIP_BUILD_DIPVIEWER)
    install(DIRECTORY viewer/include/ DESTINATION include)
 endif()
 
+
 ### PyDIP module for Python
 
 set(DIP_BUILD_PYDIP ON CACHE BOOL "Build the PyDIP Python module")
@@ -322,6 +324,7 @@ if(DIP_BUILD_PYDIP)
       add_dependencies(PyDIP PyDIPviewer)
    endif()
 endif()
+
 
 ### DIPimage toolbox for MATLAB
 
@@ -417,6 +420,9 @@ if(DIP_BUILD_DIPIMAGE)
 
    # Keep a file with all dependencies
    update_deps_file("DIPimage_sources" "${DIPIMAGE_DEPS}")
+
+   # Tell DIPlib library code that it might link against MATLAB (needed to fix a bug with MATLAB integration)
+   target_compile_definitions(DIP PRIVATE DIP__DUILDING_DIPIMAGE)
 endif()
 
 

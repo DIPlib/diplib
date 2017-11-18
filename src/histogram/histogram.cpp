@@ -18,6 +18,8 @@
  * limitations under the License.
  */
 
+#include <chrono> // std::chrono_literals::
+#include <thread> // std::this_thread::
 #include "diplib.h"
 #include "diplib/histogram.h"
 #include "diplib/statistics.h"
@@ -57,7 +59,7 @@ void CompleteConfiguration( Histogram::Configuration& configuration, bool isInte
    }
    switch( configuration.mode ) {
       default:
-         //case Histogram::Configuration::Mode::COMPUTE_BINSIZE:
+      //case Histogram::Configuration::Mode::COMPUTE_BINSIZE:
          configuration.binSize = ( configuration.upperBound - configuration.lowerBound ) / static_cast< dfloat >( configuration.nBins );
          break;
       case Histogram::Configuration::Mode::COMPUTE_BINS:
@@ -226,6 +228,15 @@ class dip__JointImageHistogram : public dip__HistogramBase {
          if( !image.IsForged() ) {
             image.Forge();
             image.Fill( 0 );
+#if defined(_OPENMP) && defined(DIP__DUILDING_DIPIMAGE)
+            // For some reason, MATLAB crashes the second time that `mdhistogram` is called
+            // (only when using multi-threading). This tiny sleep prevents the crash. Don't ask.
+            // Note: A `std::cout <<` call also prevented the crash. Is it about the timing or
+            // about calling a library function? Some people say that these crashes are an issue
+            // of compatibility between OpenMP libraries (MATLAB links against Intel's they say).
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(10ns);
+#endif
          }
          CountType* data = static_cast< CountType* >( image.Origin() );
          if( params.inBuffer.size() > maskBuffer ) {
