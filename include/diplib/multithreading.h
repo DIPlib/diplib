@@ -27,8 +27,9 @@
 #ifdef _OPENMP
 #include <omp.h>
 #else
-// We don't have OpenMP, this OpenMP function stub prevents conditional compilation within the `Full` function.
+// We don't have OpenMP, these are OpenMP function stubs to avoid conditional compilation elsewhere.
 inline int omp_get_thread_num() { return 0; }
+inline int omp_get_max_threads() { return 1; }
 #endif
 
 
@@ -53,6 +54,8 @@ namespace dip {
 ///
 /// If `nThreads` is 1, disables multithreading within DIPlib. Usually it is more beneficial to manage multithreading
 /// at a higher level, for example by processing multiple images at the same time. If yo do so, set `nThreads` to 1.
+///
+/// If `nThreads` is 0, resets the maximum number of threads to the default value.
 ///
 /// If DIPlib was compiled without OpenMP support, this function does nothing.
 DIP_EXPORT void SetNumberOfThreads( dip::uint nThreads );

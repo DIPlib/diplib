@@ -20,8 +20,6 @@
 
 #include "diplib/multithreading.h"
 
-#ifdef _OPENMP
-
 namespace dip {
 
 namespace {
@@ -31,8 +29,11 @@ dip::uint maxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads() )
 }
 
 void SetNumberOfThreads( dip::uint nThreads ) {
-   DIP_THROW_IF( nThreads < 1, E::INVALID_PARAMETER );
-   maxNumberOfThreads = std::min( nThreads, static_cast< dip::uint >( omp_get_max_threads() ));
+   if( nThreads == 0 ) {
+      maxNumberOfThreads = static_cast< dip::uint >( omp_get_max_threads());
+   } else {
+      maxNumberOfThreads = std::min( nThreads, static_cast< dip::uint >( omp_get_max_threads()));
+   }
 }
 
 dip::uint GetNumberOfThreads() {
@@ -40,17 +41,3 @@ dip::uint GetNumberOfThreads() {
 }
 
 } // namespace dip
-
-#else // not OpenMP
-
-namespace dip {
-
-void SetNumberOfThreads( dip::uint ) {}
-
-dip::uint GetNumberOfThreads() {
-   return 1;
-}
-
-} // namespace dip
-
-#endif
