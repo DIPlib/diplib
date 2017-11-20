@@ -70,6 +70,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR 1)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH 1) # Prevent relinking when installing
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH 1)
 
+# Extend CMake module path
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 # OpenMP
 find_package(OpenMP)
 if (OpenMP_CXX_FOUND OR OPENMP_FOUND) # OPENMP_FOUND for CMake <= 3.8
@@ -109,6 +112,12 @@ endif()
 find_package(TIFF)
 if (TIFF_FOUND)
    set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
+endif()
+
+# Switch to link against the FFTW library for Fourier transforms
+set(DIP_ENABLE_FFTW OFF CACHE BOOL "Enable linking against the FFTW library (GPL license) for Fourier transforms")
+if(DIP_ENABLE_FFTW)
+   find_package(FFTW3 REQUIRED)
 endif()
 
 # Utility for automatically updating targets when a file is added to the source directories
@@ -195,6 +204,12 @@ if(DIP_ENABLE_TIFF)
    target_include_directories(DIP PRIVATE ${TIFF_INCLUDE_DIR})
    target_link_libraries(DIP ${TIFF_LIBRARIES})
    target_compile_definitions(DIP PRIVATE DIP__HAS_TIFF)
+endif()
+# fftw
+if(DIP_ENABLE_FFTW)
+   target_include_directories(DIP PRIVATE ${FFTW3_INCLUDE_DIRS})
+   target_link_libraries(DIP ${FFTW3_LIBRARIES})
+   target_compile_definitions(DIP PRIVATE DIP__HAS_FFTW)
 endif()
 #install
 install(TARGETS DIP DESTINATION lib)
