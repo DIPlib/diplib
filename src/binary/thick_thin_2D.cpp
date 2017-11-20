@@ -28,23 +28,35 @@
 namespace dip {
 
 namespace {
-// Copied from skeleton.cpp (luthil[0]):
-constexpr uint8 luthil[256] = {
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
-      0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
-      0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-      0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-      0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-      0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
-      0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1
-};
+
+// Copied from skeleton.cpp:
+constexpr uint8 luthil[ 2 ][ 256 ] = {
+      { // luthil[0] is the LUT for Hilditch conditions with "natural" and "loose ends away" end pixel conditions (natural requires additional tests)
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
+            0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
+            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
+            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
+            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
+            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
+            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1
+      }, { // luthil[1] is the LUT for Hilditch conditions with "one neighbor" end pixel condition -- we don't use the 2 or 3 neighbor one here
+            1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
+            1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
+            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
+            1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
+            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1,
+            0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1
+      }};
 
 bool CanReset(
       uint8 const* pixel,
       dip::sint strideX,
       dip::sint strideY,
-      uint8 bitplane
+      uint8 bitplane,
+      uint8 const luthil[ 256 ]
 ) {
    dip::uint dirc = 0;
    pixel += strideX;
@@ -69,7 +81,8 @@ bool CanSet(
       uint8 const* pixel,
       dip::sint strideX,
       dip::sint strideY,
-      uint8 bitplane
+      uint8 bitplane,
+      uint8 const luthil[ 256 ]
 ) {
    dip::uint dirc = 0;
    pixel += strideX;
@@ -109,6 +122,10 @@ void ResetBorders( Image& out, uint8 const bitmask ) {
 
 using Uint8FifoQueue = std::deque< uint8* >;
 
+constexpr uint8 dataBitmask = 1;
+constexpr uint8 maskBitmask = 2;
+constexpr uint8 enqueuedBitmask = 4;
+
 Uint8FifoQueue EnqueueEdges2D(
       const Image& in,
       bool findObjectPixels,
@@ -134,6 +151,7 @@ Uint8FifoQueue EnqueueEdges2D(
          // Add the edge pixel to the queue
          yes:
          edgePixels.push_back( ptr );
+         SetBits( *ptr, enqueuedBitmask );
       }
    } while( ++itImage );
    return edgePixels;
@@ -148,11 +166,15 @@ void ConditionalThickeningThinning2D(
    String const& s_edgeCondition,
    bool thicken                     // false for thinning
 ) {
-   DIP_THROW_IF( !c_in.IsForged() || !c_mask.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( !c_in.DataType().IsBinary() || !c_mask.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
-   DIP_THROW_IF( !c_in.IsScalar() || !c_mask.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !c_in.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
+   DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( c_in.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-   DIP_THROW_IF( c_mask.Sizes() != c_in.Sizes(), E::SIZES_DONT_MATCH );
+   if( c_mask.IsForged() ) {
+      DIP_THROW_IF( !c_mask.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
+      DIP_THROW_IF( !c_mask.IsScalar(), E::IMAGE_NOT_SCALAR );
+      DIP_THROW_IF( c_mask.Sizes() != c_in.Sizes(), E::SIZES_DONT_MATCH );
+   }
 
    if( iterations == 0 ) {
       iterations = std::numeric_limits< dip::uint >::max();
@@ -166,18 +188,30 @@ void ConditionalThickeningThinning2D(
    if( out.Aliases( mask )) { // make sure we don't overwrite the mask image
       out.Strip();
    }
-   out.ReForge( mask.Sizes(), 1, DT_BIN );
+   out.ReForge( in.Sizes(), 1, DT_BIN );
    out.Copy( in );     // if &c_in == &out, we get here too. Copy won't do anything.
    if( in.HasPixelSize() ) {
       out.SetPixelSize( in.PixelSize() );
-   } else {
+   } else if( mask.IsForged() && mask.HasPixelSize() ) {
       out.SetPixelSize( mask.PixelSize() );
    }
 
-   // Bit planes we'll use
-   constexpr uint8 dataBitmask = 1;
-   constexpr uint8 maskBitmask = 2;
-   constexpr uint8 testedBitmask = 4; // used to mark pixels that cannot be deleted
+   // Add mask plane to out image
+   if( mask.IsForged() ) {
+      JointImageIterator< bin, bin > it( { mask, out } );
+      do {
+         if( it.Sample< 0 >()) {
+            SetBits( static_cast< uint8& >( it.Sample< 1 >()), maskBitmask );
+         }
+      } while( ++it );
+   } else {
+      ImageIterator< bin > it( out );
+      do {
+         SetBits( static_cast< uint8& >( *it ), maskBitmask );
+      } while( ++it );
+   }
+
+   // Mark borders so we don't process them -- prevents testing for image boundaries
    if( edgeCondition ) {
       SetBorders( out, dataBitmask ); // If boundary condition is true, set image border to true
    } else {
@@ -185,21 +219,17 @@ void ConditionalThickeningThinning2D(
    }
    ResetBorders( out, maskBitmask ); // set mask border to false so we don't propagate into it
 
+   // This is the value of a pixel that can be added to the queue
    uint8 expectedValue = maskBitmask;
    if( !thicken ) {
       SetBits( expectedValue, dataBitmask );
    }
 
-   // Add mask plane to out image
-   JointImageIterator< bin, bin > it( { mask, out } );
-   do {
-      if ( it.Sample< 0 >() ) {
-         SetBits( static_cast< uint8& >( it.Sample< 1 >()), maskBitmask );
-      }
-   } while( ++it );
-
    // Initialize the queue by finding all edge pixels of type 'background'
    Uint8FifoQueue edgePixels = EnqueueEdges2D( out, !thicken, dataBitmask, maskBitmask );
+
+   // End pixel condition (luthil[1] is the one-neighbor condition, luthil[0] removes all endpoints).
+   uint8 const* luthile = endPixelCondition ? luthil[ 1 ] : luthil[ 0 ];
 
    // Iterate. Loop also stops if the queue is empty.
    dip::sint strideX = out.Stride( 0 );
@@ -210,36 +240,63 @@ void ConditionalThickeningThinning2D(
          // Get front pixel from the queue
          uint8* ptr = edgePixels.front();
          edgePixels.pop_front();
-         if( thicken ? CanSet( ptr, strideX, strideY, dataBitmask )
-                     : CanReset( ptr, strideX, strideY, dataBitmask )) {
+         ResetBits( *ptr, enqueuedBitmask );
+         if( thicken ? CanSet( ptr, strideX, strideY, dataBitmask, luthile )
+                     : CanReset( ptr, strideX, strideY, dataBitmask, luthile )) {
             thicken ? SetBits( *ptr, dataBitmask )
                     : ResetBits( *ptr, dataBitmask );
             // Enqueue neighbors that have mask bit set, and other bits not set
+            bool none = true;
             uint8* neighbor = ptr - strideY;
             if( *neighbor == expectedValue ) {
                edgePixels.push_back( neighbor );
+               SetBits( *neighbor, enqueuedBitmask );
+               none = false;
             }
             neighbor = ptr - strideX;
             if( *neighbor == expectedValue ) {
                edgePixels.push_back( neighbor );
+               SetBits( *neighbor, enqueuedBitmask );
+               none = false;
             }
             neighbor = ptr + strideX;
             if( *neighbor == expectedValue ) {
                edgePixels.push_back( neighbor );
+               SetBits( *neighbor, enqueuedBitmask );
+               none = false;
             }
             neighbor = ptr + strideY;
             if( *neighbor == expectedValue ) {
                edgePixels.push_back( neighbor );
+               SetBits( *neighbor, enqueuedBitmask );
+               none = false;
             }
-         } else {
-            SetBits( *ptr, testedBitmask ); // don't test this one again
+            if( none ) {
+               // Look at the vertex-connected neighbors only if no edge-connected neighbors were added to the queue
+               neighbor = ptr - strideY - strideX;
+               if( *neighbor == expectedValue ) {
+                  edgePixels.push_back( neighbor );
+                  SetBits( *neighbor, enqueuedBitmask );
+               }
+               neighbor = ptr - strideY + strideX;
+               if( *neighbor == expectedValue ) {
+                  edgePixels.push_back( neighbor );
+                  SetBits( *neighbor, enqueuedBitmask );
+               }
+               neighbor = ptr + strideY - strideX;
+               if( *neighbor == expectedValue ) {
+                  edgePixels.push_back( neighbor );
+                  SetBits( *neighbor, enqueuedBitmask );
+               }
+               neighbor = ptr + strideY + strideX;
+               if( *neighbor == expectedValue ) {
+                  edgePixels.push_back( neighbor );
+                  SetBits( *neighbor, enqueuedBitmask );
+               }
+            }
          }
+         // else: This point will be tested again if one of its neighbors is removed later. That's necessary.
       }
-   }
-
-   // Delete end pixels
-   if( !endPixelCondition ) {
-      // TODO
    }
 
    // Keep only the data bit
