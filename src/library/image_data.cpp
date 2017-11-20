@@ -162,6 +162,52 @@ void RemoveSingletonsFromStrideArray( UnsignedArray const& sizes, IntegerArray s
 // --- Library functions ---
 //
 
+void AlignedAllocInterface::Deleter::operator()(
+   void* //pAligned
+) {
+   // Delete unaligned pointer
+   std::free( pUnaligned_ );
+   pUnaligned_ = nullptr;
+   //std::cout << "   Successfully freed image with aligned DataSegment " << pAligned << std::endl;
+}
+
+// TODO: reused from Image class.. can we share this functionality?
+// TODO: can we create better strides for FFTW?
+void AlignedAllocInterface::SetStrides( UnsignedArray const& sizes, dip::Tensor const& tensor, IntegerArray& strides, dip::sint& tensorStride ) {
+   tensorStride = 1; // We set tensor strides to 1 by default.
+   ComputeStrides( sizes, tensor.Elements(), strides );
+}
+
+DataSegment AlignedAllocInterface::AllocateData(
+   void*& origin,
+   dip::DataType dataType,
+   UnsignedArray const& sizes,
+   IntegerArray& strides,
+   dip::Tensor const& tensor,
+   dip::sint& tensorStride
+) {
+   // Determine image size
+   dip::uint numSamples = FindNumberOfPixels( sizes );
+   numSamples *= tensor.Elements();
+   dip::uint sampleSize = dataType.SizeOf();
+   // Allocate enough memory to store the data with an offset necessary for the requested alignment
+   size_t netSize = numSamples*sampleSize;
+   size_t unalignedSize = netSize + alignment_;
+   // Allocate unaligned memory
+   void* pUnaligned = std::malloc( unalignedSize );
+   DIP_THROW_IF( !pUnaligned, "Failed to allocate memory" );
+   // Create pointer to the aligned block within the unaligned block
+   void* pAlignedFromUnaligned( pUnaligned ); // Pass this one to std::align() because it is modified by std::align(). We need the original pUnaligned pointer for the Deleter.
+   size_t alignedSize( unalignedSize ); // Altered by std::align(); always greater than size.
+   void* pAligned = std::align( alignment_, netSize, pAlignedFromUnaligned, alignedSize );
+   DIP_THROW_IF( !pAligned, "Failed to align memory" );
+   // Set strides and tensorStride
+   SetStrides( sizes, tensor, strides, tensorStride );
+   size_t start = 0; // TODO: is this always true due to SetStrides()?
+   origin = static_cast< uint8* >(pAligned) + start * static_cast< dip::sint >(sampleSize);
+   return DataSegment{ pAligned, Deleter( pUnaligned ) };  // Pass deleter that deletes the pointer to the block allocated by malloc()
+}
+
 
 // Constructor.
 CoordinatesComputer::CoordinatesComputer( UnsignedArray const& sizes, IntegerArray const& strides ) {
