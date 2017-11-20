@@ -226,25 +226,25 @@ public:
       , complexType_( DataType::SuggestComplex( floatType_ ) )
       , in_( in )
       , out_( out )
-      , sizeDims_( )
-      , repeatDims_( )
-      , largestProcessedDim_(0)
-      , transformScale_(1.0)
+      , largestProcessedDim_( 0 )
+      , inputTensorStride_( 0 )
+      , transformScale_( 1.0 )
    {}
 
    /// Prepare input/output dimension descriptors
    /// Requires calling HandleProcessingDims() and ForgeOutput() first.
-   /// Input strides are taken from `inputStrides_`, output strides are taken from `out_`.
+   /// Input strides are taken from `inputStrides_` and `inputTensorStride_`, output strides are taken from `out_`.
    /// Sizes are taken from `out_`.
    virtual void PrepareIODims() {
       DIP_THROW_IF( inputStrides_.empty(), "FFTWHelper did not set inputStrides_" );
+      DIP_THROW_IF( inputTensorStride_ == 0, "FFTWHelper did not set inputTensorStride_" );
 
       // Prepare iodim structs for in-place operation
       sizeDims_.resize( out_.Dimensionality() );
       for( int iSizeDim = 0; iSizeDim < sizeDims_.size(); ++iSizeDim ) {
-         sizeDims_[iSizeDim].n = static_cast<int>(out_.Size( iSizeDim ));    // Number of elements
-         sizeDims_[iSizeDim].is = inputStrides_[iSizeDim];  // Input stride
-         sizeDims_[iSizeDim].os = static_cast<int>(out_.Stride( iSizeDim ));  // Output stride
+         sizeDims_[ iSizeDim ].n = static_cast<int>(out_.Size( iSizeDim ));    // Number of elements
+         sizeDims_[ iSizeDim ].is = inputStrides_[ iSizeDim ];  // Input stride
+         sizeDims_[ iSizeDim ].os = static_cast<int>(out_.Stride( iSizeDim ));  // Output stride
       }
 
       // Repeat along the tensor dimension
@@ -253,9 +253,9 @@ public:
       if( dimsNotProcessed_.empty() || in_.TensorElements() > 1 ) {
          repeatDims_.resize( 1 );
          for( int iTensorEl = 0; iTensorEl < repeatDims_.size(); ++iTensorEl ) {
-            repeatDims_[iTensorEl].n = static_cast<int>(out_.TensorElements());
-            repeatDims_[iTensorEl].is = static_cast<int>(out_.TensorStride());
-            repeatDims_[iTensorEl].os = repeatDims_[iTensorEl].is;
+            repeatDims_[ iTensorEl ].n = static_cast<int>(out_.TensorElements());   // Number of tensor elements
+            repeatDims_[ iTensorEl ].is = inputTensorStride_;  // Input tensor stride
+            repeatDims_[ iTensorEl ].os = static_cast<int>(out_.TensorStride()); // Output tensor stride
          }
       }
       else {
@@ -331,6 +331,7 @@ protected:
    int largestProcessedDim_;
 
    IntegerArray inputStrides_;   // Strides of the in-place input (note: data is located in out_, due to in-place processing)
+   dip::sint inputTensorStride_;
 
    typename fftwapi::real transformScale_;   // Scale caused by the transform
 
@@ -352,10 +353,21 @@ protected:
       for( int iDim = 0; iDim < wrapShifts.size(); ++iDim ) {
          wrapShifts[iDim] = -static_cast<dip::sint>(img.Size( iDim )) / 2;   // Note the minus sign
       }
+      // Set fixed dim shift to zero
       if( fixedDim != -1 ) {
          wrapShifts[fixedDim] = 0;
       }
-      Wrap( img, img, wrapShifts );
+
+      if( img.TensorElements() == 1 ) {
+         // Do in-place Wrap
+         Wrap( img, img, wrapShifts );
+      } else {
+         // TODO: avoid intermediate image! Unfortunately, Wrap does a Reforge due to `Framework::Separable_AsScalarImage`
+         Image tmp;
+         tmp.SetExternalInterface( img.ExternalInterface() );
+         Wrap( img, tmp, wrapShifts );
+         img.Copy( tmp );
+      }
    }
 
    /// Shift corner to center. Done after the transform. Also see Matlab's fftshift().
@@ -365,7 +377,17 @@ protected:
       for( int iDim = 0; iDim < wrapShifts.size(); ++iDim ) {
          wrapShifts[iDim] = static_cast<dip::sint>(img.Size( iDim )) / 2;
       }
-      Wrap( img, img, wrapShifts );
+
+      if( img.TensorElements() == 1 ) {
+         // Do in-place Wrap
+         Wrap( img, img, wrapShifts );
+      } else {
+         // TODO: avoid intermediate image! Unfortunately, Wrap does a Reforge due to `Framework::Separable_AsScalarImage`
+         Image tmp;
+         tmp.SetExternalInterface( img.ExternalInterface() );
+         Wrap( img, tmp, wrapShifts );
+         img.Copy( tmp );
+      }
    }
 };
 
@@ -419,6 +441,7 @@ public:
       for( int iDim = 0; iDim < inputStrides_.size(); ++iDim ) {
          inputStrides_[iDim] *= 2;
       }
+      inputTensorStride_ = 2 * out_.TensorStride();
    }
 
    virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
@@ -500,12 +523,11 @@ public:
       // Create real-typed image around pre-allocated data, which is large enough to contain (a little over half of) the complex input image
       void* origin;
       Tensor outTensor( in_.Tensor() );
-      dip::sint tensorStride; // filled by AllocateData()
       // Prepare outSize with the special treatment of the last processed dimension
       complexOutSize_ = in_.Sizes();
       complexOutSize_[largestProcessedDim_] = outSize[largestProcessedDim_] / 2 + 1;
       // Allocate data (also fills inputStrides_)
-      dataLargeEnoughForComplex_ = GetOutputExternalInterface()->AllocateData( origin, complexType_, complexOutSize_, inputStrides_, outTensor, tensorStride );
+      dataLargeEnoughForComplex_ = GetOutputExternalInterface()->AllocateData( origin, complexType_, complexOutSize_, inputStrides_, outTensor, inputTensorStride_ );
 
       IntegerArray floatOutStrides = inputStrides_;
       // Correct the stride of the N/2+1 padded ("peculiar") dimension in the float output image 
@@ -513,7 +535,7 @@ public:
       if( largestProcessedDim_ < in_.Dimensionality() - 1 ) {
          floatOutStrides[largestProcessedDim_ + 1] *= 2;
       }
-      out_ = Image( dataLargeEnoughForComplex_, origin, floatType_, floatOutSize_, floatOutStrides, outTensor, tensorStride, GetOutputExternalInterface() );
+      out_ = Image( dataLargeEnoughForComplex_, origin, floatType_, floatOutSize_, floatOutStrides, outTensor, inputTensorStride_, GetOutputExternalInterface() );
    }
 
    virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
@@ -527,7 +549,7 @@ public:
       }
 
       // Define a wrapper around the out_ image with size N/2+1 and complex type
-      Image complexOut( NonOwnedRefToDataSegment( out_.Data() ), out_.Origin(), in_.DataType(), complexOutSize_, inputStrides_, in_.Tensor(), in_.TensorStride() );
+      Image complexOut( NonOwnedRefToDataSegment( out_.Data() ), out_.Origin(), in_.DataType(), complexOutSize_, inputStrides_, in_.Tensor(), inputTensorStride_ );
 
       // Copy one half of the complex input to the output
       if( shiftOriginToCenter ) {
@@ -548,7 +570,7 @@ public:
          // Copy N/2 (or N/2+1) sub-images
          void* shiftedInOrigin = in_.Pointer( shiftedInCoords );
          Image halfIn( NonOwnedRefToDataSegment( in_.Data() ), shiftedInOrigin, in_.DataType(), inSize, in_.Strides(), in_.Tensor(), in_.TensorStride() );
-         Image partialComplexOut( NonOwnedRefToDataSegment( out_.Data() ), out_.Origin(), in_.DataType(), outSize, inputStrides_, in_.Tensor(), in_.TensorStride() );
+         Image partialComplexOut( NonOwnedRefToDataSegment( out_.Data() ), out_.Origin(), in_.DataType(), outSize, inputStrides_, in_.Tensor(), inputTensorStride_ );
          // Multiply() performs the copy and the scaling in one operation
          Multiply( halfIn, normalizationScale, partialComplexOut, partialComplexOut.DataType() );
 
@@ -561,7 +583,7 @@ public:
             shiftedOutCoords[largestProcessedDim_] = in_.Size( largestProcessedDim_ ) / 2;
             void* shiftedOutOrigin = complexOut.Pointer( shiftedOutCoords );
             Image subImgIn( NonOwnedRefToDataSegment( in_.Data() ), shiftedInOrigin, in_.DataType(), inSize, in_.Strides(), in_.Tensor(), in_.TensorStride() );
-            Image subImgComplexOut( NonOwnedRefToDataSegment( out_.Data() ), shiftedOutOrigin, in_.DataType(), outSize, inputStrides_, in_.Tensor(), in_.TensorStride() );
+            Image subImgComplexOut( NonOwnedRefToDataSegment( out_.Data() ), shiftedOutOrigin, in_.DataType(), outSize, inputStrides_, in_.Tensor(), inputTensorStride_ );
             // Multiply() performs the copy and the scaling in one operation
             Multiply( subImgIn, normalizationScale, subImgComplexOut, subImgComplexOut.DataType() );
          }
@@ -611,6 +633,7 @@ public:
       // Fill inputStrides_: equal to out_'s strides
       // Manual says: "for in-place transforms the input/output strides should be the same."
       inputStrides_ = out_.Strides();
+      inputTensorStride_ = out_.TensorStride();
    }
 
    virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
