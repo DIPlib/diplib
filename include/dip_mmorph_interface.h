@@ -25,6 +25,7 @@
 #include <utility>
 
 #include "diplib.h"
+#include "diplib/iterators.h"
 
 #include <morph4cpp.h>
 
@@ -112,6 +113,25 @@ inline dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
    return out;
 }
 
+/// \brief Fixes the binary image `img` to match expectations of *DIPlib* (i.e. only the bottom bit is used).
+inline void FixBinaryImageForDIP( dip::Image& img ) {
+   dip::ImageIterator< dip::bin >it( img ); // throws if input image is not binary, or not forged.
+   do {
+      if( *it ) {
+         *it = true; // Note that `*it = *it` does not do this. `*it = !!*it` might work.
+      }
+   } while( ++it );
+}
+
+/// \brief Fixes the binary image `img` to match expectations of *MMorph* (i.e. all bits have the same value).
+inline void FixBinaryImageForMM( dip::Image& img ) {
+   dip::ImageIterator< dip::bin >it( img ); // throws if input image is not binary, or not forged.
+   do {
+      if( *it ) {
+         static_cast< dip::uint8& >( *it ) = 255;
+      }
+   } while( ++it );
+}
 
 inline std::pair< dip::UnsignedArray, char const* > GetMMImageProperties(
         dip::DataType datatype,
