@@ -43,6 +43,13 @@
 ///
 /// We define a class `dip_mmorph::ExternalInterface` so that output images from *DIPlib* can yield an *MMorph* image,
 /// and we define a function `dip_mmorph::MmToDip` that encapsulates an *MMorph* image in a *DIPlib* image.
+/// `dip_mmorph::DipToMm` copies a *DIPlib* image into a new *MMorph* image.
+///
+/// **Note** the difference between how *DIPlib* and *MMorph* represent binary images. For *DIPlib*, any non-zero
+/// value is foreground, but foreground is always stored as a 1; some functions in `diplib/binary.h` will expect
+/// other bits to be 0, as they use those bit planes for intermediate data. For *MMorph*, foreground is always
+/// stored as 255, and some of its functions will expect foreground to be 255. `dip_mmorph::FixBinaryImageForDIP`
+/// and `dip_mmorph::FixBinaryImageForMM` fix up binary images for processing in either library.
 namespace dip_mmorph {
 
 
@@ -56,7 +63,7 @@ namespace dip_mmorph {
 ///
 /// The optional second input argument serves to force an `MM_INT` image to be `DT_UINT32`. The pixel values
 /// are simply re-interpreted as unsigned integer. This is useful for the output of `mmLabel`, which is either
-/// `MM_USHORT` or `MM_INT`, but always contains only non-negative integers, considering that *DIPlib* expects
+/// `MM_USHORT` or `MM_INT` and always contains only non-negative integers, given that *DIPlib* expects
 /// labeled images to be unsigned.
 inline dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
    // Find image properties
@@ -179,6 +186,9 @@ inline Image DipToMm( dip::Image const& img ) {
                   static_cast< int >( mmSizes[ 2 ] ), typestr, 0.0 );
    dip::Image ref = MmToDip( mmImg );
    ref.Copy( img );
+   if( mmImg.isbinary() ) {
+      FixBinaryImageForMM( ref );
+   }
    return mmImg;
 }
 
