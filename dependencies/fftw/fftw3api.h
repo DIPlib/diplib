@@ -62,7 +62,7 @@ struct fftwapidef<T> \
    FFTW_TEMPLATED_API_FUNC( MANGLE, malloc ); \
    FFTW_TEMPLATED_API_FUNC( MANGLE, free ); \
 }; // end fftwapidef<>
-// Excluded, because free() results in runtime error in debug mode: static std::string plan_to_string( plan p ) { char* pStr = MANGLE( sprint_plan )(p); std::string result( pStr ); ::free( pStr ); return result; }; \
+// Excluded, because free() results in runtime error in debug mode: static std::string plan_to_string( plan p ) { char* pStr = MANGLE( sprint_plan )(p); std::string result( pStr ); ::free( pStr ); return result; };
 
 
 /// fftwapidef struct for float

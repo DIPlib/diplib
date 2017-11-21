@@ -222,7 +222,7 @@ class FFTWHelper
 {
 public:
    FFTWHelper( Image const& in, Image& out )
-      : floatType_( static_cast< fftwapi::real >(0) )
+      : floatType_( static_cast< typename fftwapi::real >(0) )
       , complexType_( DataType::SuggestComplex( floatType_ ) )
       , in_( in )
       , out_( out )
@@ -290,7 +290,7 @@ public:
          if( process[iDim] ) {
             dimsProcessed_.push_back( iDim );   // Keep track of processed dims
             largestProcessedDim_ = iDim;  // Keep track of largest processed dim
-            transformScale_ *= static_cast< fftwapi::real >(in_.Size(iDim)); // TODO: change this to outSize when supporting padding
+            transformScale_ *= static_cast< typename fftwapi::real >(in_.Size(iDim)); // TODO: change this to outSize when supporting padding
          }
          else {
             dimsNotProcessed_.push_back( iDim ); // Keep track of dims not processed
@@ -328,7 +328,7 @@ protected:
    UnsignedArray dimsNotProcessed_; // Indices of dimension not processed
    UnsignedArray dimsProcessed_; // Indices of processed dimensions
 
-   int largestProcessedDim_;
+   dip::uint largestProcessedDim_;
 
    IntegerArray inputStrides_;   // Strides of the in-place input (note: data is located in out_, due to in-place processing)
    dip::sint inputTensorStride_;
@@ -396,6 +396,9 @@ protected:
 template< class fftwapi >
 class FFTWHelperR2R : public FFTWHelper< fftwapi >
 {
+      using FFTWHelper< fftwapi >::sizeDims_;
+      using FFTWHelper< fftwapi >::repeatDims_;
+      using FFTWHelper< fftwapi >::out_;
 public:
    FFTWHelperR2R( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {
       DIP_THROW( "FFTW R2R not yet supported" );
@@ -410,9 +413,9 @@ public:
    }
 
    virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
-      std::vector< fftwapi::r2r_kind > r2rKinds( sizeDims_.size(), FFTW_REDFT10 );  // TODO: what kind of R2R transform is requested?
+      std::vector< typename fftwapi::r2r_kind > r2rKinds( sizeDims_.size(), FFTW_REDFT10 );  // TODO: what kind of R2R transform is requested?
       return fftwapi::plan_guru_r2r( static_cast<int>( sizeDims_.size() ), &sizeDims_[0], static_cast<int>( repeatDims_.size() ), &repeatDims_[0],
-         (fftwapi::real*)out_.Origin(), (fftwapi::real*)out_.Origin(), &r2rKinds[0], FFTW_MEASURE );
+         (typename fftwapi::real*)out_.Origin(), (typename fftwapi::real*)out_.Origin(), &r2rKinds[0], FFTW_MEASURE );
    }
 };
 
@@ -423,6 +426,19 @@ public:
 template< class fftwapi >
 class FFTWHelperR2C : public FFTWHelper< fftwapi >
 {
+      using FFTWHelper< fftwapi >::sizeDims_;
+      using FFTWHelper< fftwapi >::repeatDims_;
+      using FFTWHelper< fftwapi >::in_;
+      using FFTWHelper< fftwapi >::out_;
+      using FFTWHelper< fftwapi >::complexType_;
+      using FFTWHelper< fftwapi >::inputStrides_;
+      using FFTWHelper< fftwapi >::inputTensorStride_;
+      using FFTWHelper< fftwapi >::largestProcessedDim_;
+      using FFTWHelper< fftwapi >::dimsProcessed_;
+      using FFTWHelper< fftwapi >::transformScale_;
+      using FFTWHelper< fftwapi >::GetOutputExternalInterface;
+      using FFTWHelper< fftwapi >::ShiftCenterToCorner;
+      using FFTWHelper< fftwapi >::ShiftCornerToCenter;
 public:
    FFTWHelperR2C( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {}
 
@@ -451,7 +467,7 @@ public:
       Image tmp = out_;
       if( symmetricNormalization ) {
          // Use the Multiply operation to scale and copy the input to the output buffer
-         fftwapi::real normalizationScale = std::sqrt( static_cast<fftwapi::real>(1.0) / transformScale_ );
+         typename fftwapi::real normalizationScale = std::sqrt( static_cast<typename fftwapi::real>(1.0) / transformScale_ );
          Multiply( in_, normalizationScale, tmp, tmp.DataType() );
       }
       else {
@@ -472,7 +488,7 @@ public:
       // Y [k_0, k_1, ..., k_(d-1)] = Y [n_0-k_0, n_1-k_1, ..., n_(d-1)-k_(d-1)]*
       // Note that 0 maps to 0.
       const int completionDim = largestProcessedDim_;  // This must be the dimension *represented* by the last element of fftwSizeDims
-      typedef ComplexType< fftwapi::real > dip_complex;
+      typedef ComplexType< typename fftwapi::real > dip_complex;
       dip::ImageIterator< dip_complex > itOut( out_ );
       dip::uint completionDimIndex = 0;
       do {
@@ -506,7 +522,7 @@ public:
    /// Create r2c plan
    virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
       return fftwapi::plan_guru_dft_r2c( static_cast<int>( sizeDims_.size() ), &sizeDims_[0], static_cast<int>( repeatDims_.size() ), &repeatDims_[0],
-         (fftwapi::real*)out_.Origin(), (fftwapi::complex*)out_.Origin(), FFTW_MEASURE );
+         (typename fftwapi::real*)out_.Origin(), (typename fftwapi::complex*)out_.Origin(), FFTW_MEASURE );
    }
 };
 
@@ -514,6 +530,20 @@ public:
 template< class fftwapi >
 class FFTWHelperC2R : public FFTWHelper< fftwapi >
 {
+      using FFTWHelper< fftwapi >::sizeDims_;
+      using FFTWHelper< fftwapi >::repeatDims_;
+      using FFTWHelper< fftwapi >::in_;
+      using FFTWHelper< fftwapi >::out_;
+      using FFTWHelper< fftwapi >::complexType_;
+      using FFTWHelper< fftwapi >::floatType_;
+      using FFTWHelper< fftwapi >::inputStrides_;
+      using FFTWHelper< fftwapi >::inputTensorStride_;
+      using FFTWHelper< fftwapi >::largestProcessedDim_;
+      using FFTWHelper< fftwapi >::dimsProcessed_;
+      using FFTWHelper< fftwapi >::transformScale_;
+      using FFTWHelper< fftwapi >::GetOutputExternalInterface;
+      using FFTWHelper< fftwapi >::ShiftCenterToCorner;
+      using FFTWHelper< fftwapi >::ShiftCornerToCenter;
 public:
    FFTWHelperC2R( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {}
 
@@ -543,7 +573,7 @@ public:
       DIP_THROW_IF( !inverse, "FFTW complex-to-real must be an inverse transform" );
 
       // Determine scale
-      fftwapi::real normalizationScale = static_cast<fftwapi::real>(1.0) / transformScale_;
+      typename fftwapi::real normalizationScale = static_cast<typename fftwapi::real>(1.0) / transformScale_;
       if( symmetricNormalization ) {
          normalizationScale = std::sqrt( normalizationScale );
       }
@@ -609,7 +639,7 @@ public:
    /// Create c2r plan
    virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
       return fftwapi::plan_guru_dft_c2r( static_cast<int>( sizeDims_.size() ), &sizeDims_[0], static_cast<int>( repeatDims_.size() ), &repeatDims_[0],
-         (fftwapi::complex*)out_.Origin(), (fftwapi::real*)out_.Origin(), FFTW_MEASURE );
+         (typename fftwapi::complex*)out_.Origin(), (typename fftwapi::real*)out_.Origin(), FFTW_MEASURE );
    }
 
 protected:
@@ -622,6 +652,20 @@ protected:
 template< class fftwapi >
 class FFTWHelperC2C : public FFTWHelper< fftwapi >
 {
+      using FFTWHelper< fftwapi >::sizeDims_;
+      using FFTWHelper< fftwapi >::repeatDims_;
+      using FFTWHelper< fftwapi >::in_;
+      using FFTWHelper< fftwapi >::out_;
+      using FFTWHelper< fftwapi >::complexType_;
+      using FFTWHelper< fftwapi >::floatType_;
+      using FFTWHelper< fftwapi >::inputStrides_;
+      using FFTWHelper< fftwapi >::inputTensorStride_;
+      using FFTWHelper< fftwapi >::largestProcessedDim_;
+      using FFTWHelper< fftwapi >::dimsProcessed_;
+      using FFTWHelper< fftwapi >::transformScale_;
+      using FFTWHelper< fftwapi >::GetOutputExternalInterface;
+      using FFTWHelper< fftwapi >::ShiftCenterToCorner;
+      using FFTWHelper< fftwapi >::ShiftCornerToCenter;
 public:
    FFTWHelperC2C( Image const& in, Image& out ) : FFTWHelper< fftwapi >( in, out ) {}
 
@@ -639,7 +683,7 @@ public:
    virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) override {
       if( inverse || symmetricNormalization ) {
          // Use the Multiply operation to scale and copy the input to the output buffer
-         fftwapi::real normalizationScale = static_cast<fftwapi::real>( 1.0 ) / transformScale_;
+         typename fftwapi::real normalizationScale = static_cast<typename fftwapi::real>( 1.0 ) / transformScale_;
          if( symmetricNormalization ) {
             normalizationScale = std::sqrt( normalizationScale );
          }
@@ -665,7 +709,7 @@ public:
    virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
       int sign = inverse ? FFTW_BACKWARD : FFTW_FORWARD;
       return fftwapi::plan_guru_dft( static_cast<int>( sizeDims_.size() ), &sizeDims_[0], static_cast<int>( repeatDims_.size() ), &repeatDims_[0],
-         (fftwapi::complex*)out_.Origin(), (fftwapi::complex*)out_.Origin(), sign, FFTW_MEASURE );
+         (typename fftwapi::complex*)out_.Origin(), (typename fftwapi::complex*)out_.Origin(), sign, FFTW_MEASURE );
    }
 };
 
@@ -707,7 +751,7 @@ void PerformFFTW( Image const& in, Image& out, UnsignedArray const& outSize, Boo
 
    // Create FFTW plan
    fftwapi::plan_with_nthreads( FFTWThreading< FloatType >::GetInstance()->GetOptimalNumThreads( outSize ) );
-   fftwapi::plan plan = helper->CreatePlan( inverse );
+   typename fftwapi::plan plan = helper->CreatePlan( inverse );
    DIP_THROW_IF( plan == NULL, "FFTW planner failed, requested data formats/strides not supported" );
 
    // Fill output for in-place operation
@@ -842,7 +886,7 @@ void FourierTransform(
       out.Copy( tmp );
    }
 
-#endif DIP__HAS_FFTW
+#endif // DIP__HAS_FFTW
 
    // Set output pixel sizes
    PixelSize pixelSize = in_copy.PixelSize();
