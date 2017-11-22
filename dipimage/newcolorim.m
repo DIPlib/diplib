@@ -42,18 +42,18 @@ dt = 'single';
 psize = [];
 if nargin >= 1
    sz = varargin{1};
-   if isa(n,'dip_image')
-      psize = n.PixelSize;
-      if iscolor(n)
-         col = colorspace(n);
+   if isa(sz,'dip_image')
+      psize = sz.PixelSize;
+      if iscolor(sz)
+         col = colorspace(sz);
       end
-      n = imsize(n);
-   elseif ~isnumeric(n)
+      sz = imsize(sz);
+   elseif ~isnumeric(sz)
       error('Size vector must be a row vector with integer elements')
-   elseif ~isvector(n)
+   elseif ~isvector(sz)
       % Treat n as an image
-      n = imsize(dip_image(n));
-   elseif ~isempty(n) && any(n)==0
+      sz = imsize(dip_image(sz));
+   elseif ~isempty(sz) && any(sz)==0
       error('One of the dimensions is zero');
    end
    if nargin >= 2
@@ -66,9 +66,9 @@ if nargin >= 1
       end
    end
 end
-out = dip_image(0,dt);
+n = dip_image.numberchannels(col);
+out = newtensorim(n,sz,dt); % TODO: newtensorim should accept same 1st input argument as this function.
 out = colorspace(out,col);
-out = repmat(out,sz);
 if ~isempty(psize)
    out.PixelSize = psize;
 end

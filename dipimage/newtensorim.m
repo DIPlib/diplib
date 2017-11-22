@@ -53,7 +53,7 @@ if imgs
       out = varargin{1};
       out(:) = 0;
    else
-      out = dip_image(varargin);
+      out = dip_image(varargin');
    end
    return;
 end

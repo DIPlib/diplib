@@ -537,7 +537,7 @@ classdef dip_image
                      varargout{1} = 1;
                   end
                else
-                  if length(sz) == 0
+                  if isempty(sz)
                      varargout{1} = [1,1];
                   elseif length(sz) == 1
                      varargout{1} = [sz,1];
@@ -651,7 +651,7 @@ classdef dip_image
       function varargout = imarsize(obj)
          %IMARSIZE   Alias of TENSORSIZE for backwards compatibility.
          varargout = cell(1,nargout);
-         [varargout{:}] = tensorsize(varargin);
+         [varargout{:}] = tensorsize(obj);
       end
 
       function n = numel(obj)
@@ -1085,7 +1085,7 @@ classdef dip_image
                ndims = a.NDims;
                a = [a.PixelSize.magnitude];
                if isempty(a)
-                  a = repmat(1,1,ndims);
+                  a = ones(1,ndims);
                elseif length(a) < ndims
                   a = [a,repmat(a(end),1,ndims-length(a))];
                end
@@ -1264,9 +1264,9 @@ classdef dip_image
                N = sz(1);
                s = substruct('()',repmat({':'},1,ndims(a.Data)));
                if a.TensorShapeInternal == 'column-major matrix' || a.TensorShapeInternal == 'row-major matrix'
-                  s.subs{2} = [1:N+1:N*N];
+                  s.subs{2} = 1:N+1:N*N;
                else % diagonal, symmetric and triangular matrices store diagonal elements first
-                  s.subs{2} = [1:N];
+                  s.subs{2} = 1:N;
                end
                if numtensorel(a) ~= N
                   a.ColorSpace = '';
@@ -1427,7 +1427,7 @@ classdef dip_image
          %   See also dip_image.shiftdims, dip_image.reshape
          if ~isint(k)
             error('ORDER must be an integer vector')
-         elseif any(k<0) | any(k>in.NDims)
+         elseif any(k<0) || any(k>in.NDims)
             error('ORDER contains an index out of range')
          end
          k = k(:)'; % Make sure K is a 1xN vector.
@@ -1459,7 +1459,7 @@ classdef dip_image
          pxsz = in.PixelSize;
          if ~isempty(pxsz)
             pxsz = ensurePixelSizeDimensionality(pxsz,nd);
-            in.PixelSize = pxsz(k);
+            in.PixelSize = pxsz(k_orig);
          end
       end
 
@@ -1502,7 +1502,7 @@ classdef dip_image
          if nargin==1
             % Remove leading singleton dimensions
             sz = imsize(in);
-            n = min(find(sz>1));                  % First non-singleton dimension.
+            n = min(find(sz>1,'first')); % First non-singleton dimension.
             if isempty(n)
                n = length(sz);
             end
@@ -1760,16 +1760,28 @@ classdef dip_image
                error('Size vector must be a vector with positive integer elements')
             end
          end
-         switch length(n)
-            case 0
-               n = [1,1];
-            case 1
-               n = [n,1];
-            otherwise
-               n = n([2,1,3:end]);
+         if isempty(n)
+            error('Size argument is an empty array')
          end
-         n = [1,1,n];
-         in.Data = repmat(in.Data,n);
+         nd = max(numel(n),ndims(in));
+         if numel(n)==1
+            n = [1,n];
+         else
+            n = n([2,1,3:end]);
+         end
+         if ndims(in)==1
+            % Special case for a 1D image: it's stored along the Y-axis,
+            % the code below won't work correctly
+            sz = size(in.Data);
+            in.Data = reshape(in.Data,[sz(1:2),1,sz(3)]);
+            in.Data = repmat(in.Data,[1,1,n]);
+            if nd==1
+               in.Data = reshape(in.Data,[sz(1:2),n(2)*sz(3)]);
+            end
+         else
+            in.Data = repmat(in.Data,[1,1,n]);
+         end
+         in.NDims = nd;
       end
 
       % ------- OPERATORS -------

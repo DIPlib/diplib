@@ -51,7 +51,7 @@ if ~isa(in,'dip_image')
 end
 di = ndims(in);
 if ischar(mir)
-   mir_para = repmat(0,1,di);
+   mir_para = zeros(1,di);
    switch mir
    case 'x-axis'
       if di>=1
@@ -86,9 +86,9 @@ if any(mir_para<1) || any(mir_para>di)
 end
 mir_para = unique(mir_para);
 mir_para = mir_para(:)';
-s = substruct('()',cell(di,1));
+s = substruct('()',cell(1,di));
 s(1).subs(:) = {':'};
 for p = mir_para
-   s(1).subs{p} = [imsize(in,p)-1:-1:0];
+   s(1).subs{p} = imsize(in,p)-1:-1:0;
 end
 out = subsref(in,s);
