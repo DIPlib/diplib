@@ -14,7 +14,6 @@
 %
 % DEFAULTS:
 %  rank = 2
-%  percentile = 90
 %  filterSize = 7
 %  filterShape = 'elliptic'
 %  boundary_condition = {} (equivalent to 'add min' in the dilation and 'add max' in

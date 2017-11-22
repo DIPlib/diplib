@@ -10,7 +10,7 @@
 %  subsample_factor = 2
 %
 % SEE ALSO:
-%  RESAMPLE
+%  RESAMPLE, REBIN
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

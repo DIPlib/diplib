@@ -1,7 +1,7 @@
 %ERRORMEASURE   Compares two images
 %
 % SYNOPSIS:
-%  image_out = errormeasure(image_in,image_reference,mask,method)
+%  error = errormeasure(image_in,image_reference,mask,method)
 %
 % PARAMETERS:
 %  image_reference: Noiseless image to compare against

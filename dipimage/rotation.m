@@ -34,7 +34,7 @@
 % The image is rotated around its center, using three skews.
 %
 % NOTES:
-%  Sign of the 2D rotation: implementation in the mathmetical sense, but
+%  Sign of the 2D rotation: implementation in the mathemetical sense, but
 %  note the y-axis is positive downwards! Thus: left turning has negative
 %  sign, and right positive.
 %

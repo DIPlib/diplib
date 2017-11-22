@@ -1,7 +1,7 @@
-%RECONSTRUCTION   Morphological reconstruction by dilation
+%RECONSTRUCTION   Morphological reconstruction by dilation or erosion
 %
 % SYNOPSIS:
-%  out = reconstruction(marker,mask,connectivity,flag)
+%  out = reconstruction(marker,mask,connectivity,polarity)
 %
 % PARAMETERS:
 %  marker:       seed image for reconstruction
@@ -11,11 +11,11 @@
 %     * 1 indicates city-block metric, or a diamond-shaped S.E in 2D.
 %     * 2 indicates chessboard metric, or a square structuring element in 2D.
 %     For 3D images use 1, 2 or 3.
-%  flag:         a string, either 'dilation' or 'erosion'.
+%  polarity:     a string, either 'dilation' or 'erosion'.
 %
 % DEFAULTS:
 %  connectivity = 1
-%  flag = 'dilation'
+%  polarity = 'dilation'
 %
 % NOTE:
 %  See the user guide for the definition of connectivity in DIPimage.

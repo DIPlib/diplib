@@ -18,7 +18,7 @@
 %     the same label.
 %
 % DEFAULTS:
-%  connectivity = ndims(image_in)
+%  connectivity = 0 (equivalent to ndims(image_in))
 %  minSize = 0
 %  maxSize = 0
 %  boundary_condition = {}
