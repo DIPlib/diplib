@@ -8,7 +8,7 @@
 %   [roi, v] = diproi(interpolation)
 %
 % PARAMETERS:
-%   figure_handle: 
+%   figure_handle:
 %   interpolation: 'polygon','spline'
 %
 % RETURNS
@@ -56,44 +56,35 @@
 % limitations under the License.
 
 function [varargout] = diproi(fig,intertype)
-
+if nargin < 2
+   intertype = 'polygon';
+end
 if nargin == 1 && ischar(fig)
-    intertype = fig;
-    fig = [];
+   intertype = fig;
+   fig = gcf;
+elseif nargin < 1
+   fig = gcf;
 end
 
 coords = dipdrawpolygon(fig);
-
 if size(coords,1)<3
    error('You need to select at least three vertices.')
 end
 
+if strcmp(intertype, 'spline')
+   coords(end+1,:)=coords(1,:); % TODO: splines need periodic boundary conditions to look good
+   n=length(coords);
+   xs = spline(1:n,coords(:,1),1:.2:n);
+   ys = spline(1:n,coords(:,2),1:.2:n);
+   coords = [xs' ys'];
+   coords(end,:) = [];
+   coords = floor(coords);
+elseif ~strcmp(intertype, 'polygon')
+   error('Unkown interpolation type.');
+end
 udata = get(fig,'userdata');
-mask = newim(udata.imsize,'uint8');
-switch intertype
-   case 'polygon'
-      mask = drawpolygon(mask,coords,1,'closed');
-      mask = dip_image(mask,'bin');
-      mask = ~bpropagation(mask&0,~mask,0,1,1);
-      varargout{1} = mask;
-      if nargout==2
-        varargout{2} = coords; 
-      end
-   case 'spline'
-      coords(end+1,:)=coords(1,:);
-      n=length(coords);
-      xs = spline(1:n,coords(:,1),1:.2:n);
-      ys = spline(1:n,coords(:,2),1:.2:n);
-      co = [xs' ys'];
-      co(end,:) = [];
-      co = floor(co);
-      m2 = drawpolygon(mask,co,1,'closed');
-      m2 = dip_image(m2,'bin');
-      m2 = ~bpropagation(m2&0,~m2,0,1,1);
-      varargout{1} = m2;
-      if nargout==2
-        varargout{2} = co; 
-      end
-   otherwise
-      error('Unkown interpolation type.');
+mask = newim(udata.imsize,'bin');
+varargout{1} = drawpolygon(mask,coords,1,'filled');
+if nargout==2
+   varargout{2} = coords;
 end

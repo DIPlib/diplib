@@ -48,29 +48,11 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function coords = dipdrawpolygon(varargin)
+function coords = dipdrawpolygon(fig)
 
 if nargin == 1
-   s = varargin{1};
-   if ischar(s)
-      switch s
-      case 'dip_dp_MotionFcn'
-         dip_dp_MotionFcn
-         return
-      case 'dip_dp_MovePoint_ButtonDown'
-         dip_dp_MovePoint_ButtonDown
-         return
-      case 'dip_dp_MovePoint_ButtonMotion'
-         dip_dp_MovePoint_ButtonMotion
-         return
-      case 'dip_dp_MovePoint_ButtonUp'
-         dip_dp_MovePoint_ButtonUp
-         return
-      end
-   elseif ishandle(s)
-      fig = s;
-   else
-      error('Illegal input');
+   if ~ishandle(fig)
+      error('Expected figure handle as input');
    end
 else
    fig = get(0,'CurrentFigure');
@@ -81,11 +63,11 @@ end
 
 tag = get(fig,'Tag');
 if ~strncmp(tag,'DIP_Image',9)
-   error('DIPGETCOORDS only works on images displayed using DIPSHOW.')
+   error('DIPDRAWPOLYGON only works on images displayed using DIPSHOW.')
 end
 ax = findobj(fig,'Type','axes');
 if length(ax)~=1
-   error('DIPGETCOORDS only works on images displayed using DIPSHOW.')
+   error('DIPDRAWPOLYGON only works on images displayed using DIPSHOW.')
 end
 
 % Store old settings
@@ -140,7 +122,7 @@ while ~done
             if isfield(udata,'lineh')
                set(udata.lineh,'XData',[coords(:,1);pt(1)],'YData',[coords(:,2);pt(2)]);
             else
-               if ~isnumeric(fig)
+               if useshg2
                   udata.lineh = line([coords(:,1);pt(1)],[coords(:,2);pt(2)],...
                                      'Color',[0,0,0.8]);
                else
@@ -163,7 +145,7 @@ while ~done
             if isfield(udata,'lineh')
                set(udata.lineh,'XData',[coords(:,1);pt(1)],'YData',[coords(:,2);pt(2)]);
             else
-               if ~isnumeric(fig)
+               if useshg2
                   udata.lineh = line([coords(:,1);pt(1)],[coords(:,2);pt(2)],...
                                      'Color',[0,0,0.8]);
                else
@@ -219,7 +201,7 @@ while ~done
                              'WindowButtonUpFcn','',...
                              'WindowButtonMotionFcn','');
                      delete(udata.lineh);
-                     if ~isnumeric(fig)
+                     if useshg2
                         udata.lineh = line(coords(:,1),coords(:,2),...
                                            'linestyle',':','marker','o',...
                                            'Color',[0,0,0.8]);
@@ -243,7 +225,7 @@ while ~done
                      coords = [xd(:),yd(:)]; % get the new coords from the line
                      delete(udata.lineh);
                      pt = dipfig_getcurpos(ax);
-                     if ~isnumeric(fig)
+                     if useshg2
                         udata.lineh = line([coords(:,1);pt(1)],[coords(:,2);pt(2)],...
                                            'Color',[0,0,0.8]);
                      else
@@ -344,8 +326,8 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
       yd = get(udata.lineh,'YData');
       [dist,ii] = min((xd-pt(1)).^2+(yd-pt(2)).^2);
       if dist<5
-         set(fig,'WindowButtonUpFcn','dipdrawpolygon(''dip_dp_MovePoint_ButtonUp'')',...
-                 'WindowButtonMotionFcn','dipdrawpolygon(''dip_dp_MovePoint_ButtonMotion'')');
+         set(fig,'WindowButtonUpFcn',@dip_dp_MovePoint_ButtonUp,...
+                 'WindowButtonMotionFcn',@dip_dp_MovePoint_ButtonMotion);
          udata.selectedptindex = ii;
          set(fig,'Name',['(',num2str(xd(ii)),',',num2str(yd(ii)),')']);
          set(fig,'UserData',[]);
