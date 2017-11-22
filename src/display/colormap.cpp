@@ -1657,9 +1657,14 @@ void Overlay(
    DIP_THROW_IF( !c_in.IsForged() || !overlay.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( overlay.Sizes() != c_in.Sizes(), E::SIZES_DONT_MATCH );
    DIP_THROW_IF( !overlay.IsScalar(), E::MASK_NOT_SCALAR );
+   if( out.IsForged() && out.IsSingletonExpanded() ) {
+       // This could happen if &out == &c_in.
+       out.Strip();
+   }
    Image in = c_in;
    if( in.DataType().IsBinary() ) {
-      in.Convert( DT_UINT8 ); // This changes the data type without copy.
+      Convert( in, out, DT_UINT8 );
+      in *= 255;
    }
    if( overlay.DataType().IsUInt() || !in.IsScalar() || !color.IsScalar() ) {
       // This code is not run in the case that `overlay` is binary, and `in` and `color` are scalar. In this case,
@@ -1672,10 +1677,6 @@ void Overlay(
          DIP_THROW_IF( in.IsColor() && ( in.ColorSpace() != "RGB" ), "Convert input image to RGB color space first" );
          in.SetColorSpace( "RGB" );
       }
-   }
-   if( out.IsForged() && out.IsSingletonExpanded() ) {
-      // This could happen if &out == &c_in.
-      out.Strip();
    }
    out.Copy( in );
    if( overlay.DataType().IsBinary() ) {
