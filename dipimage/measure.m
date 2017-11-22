@@ -18,7 +18,7 @@
 %  gray_in = [];
 %  featureIDs = 'size'
 %  objectIDs = []
-%  connectivity = ndims(object_in)
+%  connectivity = 0 (equivalent to NDIMS(OBJECT_IN))
 %
 % RETURNS:
 %  msr: a dip_measurement object containing the results.
@@ -30,6 +30,9 @@
 % NOTE:
 %  MEASURE HELP prints a list of all measurement features available in this
 %  function.
+%
+%  F = MEASURE('features') returns a struct array with feature names and
+%  descriptions, this is used by the DIPimage GUI.
 %
 % NOTE:
 %  Several measures use the boundary chain code (i.e. 'Feret', 'Perimeter',

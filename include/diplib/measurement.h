@@ -892,7 +892,7 @@ class DIP_NO_EXPORT MeasurementTool {
             Image const& grey,
             StringArray features, // we take a copy of this array
             UnsignedArray const& objectIDs = {},
-            dip::uint connectivity = 2
+            dip::uint connectivity = 0
       ) const;
 
       /// \brief Returns a table with known feature names and descriptions, which can directly be shown to the user.
