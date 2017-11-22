@@ -63,6 +63,14 @@ void Separable(
    Image input = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();
    String colorSpace = c_in.ColorSpace();
+   DIP_START_STACK_TRACE
+      if( c_out.IsOverlappingView( c_in )) {
+         // We can work in-place, but not if the input and output don't match exactly.
+         // Stripping c_out makes sure we allocate a new data segment for it.
+         c_out.Strip();
+      }
+   DIP_END_STACK_TRACE
+   // NOTE: Don't use c_in any more from here on. It has possibly been stripped!
 
    // Determine output sizes
    UnsignedArray outSizes;
@@ -108,23 +116,15 @@ void Separable(
       }
    }
 
-   //std::cout << "Input image: " << c_in << std::endl;
-
    // Adjust output if necessary (and possible)
    DIP_START_STACK_TRACE
-      if( c_out.IsOverlappingView( input ) ) {
-         c_out.Strip();
-      }
       c_out.ReForge( outSizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
-      // NOTE: Don't use c_in any more from here on. It has possibly been reforged!
       c_out.ReshapeTensor( outTensor );
       c_out.SetPixelSize( pixelSize );
       if( !colorSpace.empty() ) {
          c_out.SetColorSpace( colorSpace );
       }
    DIP_END_STACK_TRACE
-
-   //std::cout << "Output image: " << c_out << std::endl;
 
    // Make simplified copies of output image headers so we can modify them at will
    Image output = c_out.QuickCopy();
