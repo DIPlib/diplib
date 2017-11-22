@@ -1,7 +1,7 @@
-%BRMEDGEOBJS   Remove edge objects from binary image
+%FILLHOLES   Fill holes in a binary image
 %
 % SYNOPSIS:
-%  image_out = brmedgeobjs(image_in,connectivity)
+%  out = fillholes(image,connectivity)
 %
 % PARAMETERS:
 %  connectivity: defines the neighborhood:
@@ -28,8 +28,8 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = brmedgeobjs(in,connectivity)
+function out = fillholes(in,connectivity)
 if nargin<2
    connectivity = 1;
 end
-out = xor(in,bpropagation(newim(in,'bin'),in,0,connectivity,'object'));
+out = ~bpropagation(newim(in,'bin'),~in,0,connectivity,'object');

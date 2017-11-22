@@ -87,6 +87,7 @@ dipimage/rankmin_closing.cpp
 dipimage/readics.cpp
 dipimage/readtiff.cpp
 dipimage/reconstruction.cpp
+dipimage/relabel.cpp
 dipimage/resample.cpp
 dipimage/rotation.cpp
 dipimage/select.cpp

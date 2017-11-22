@@ -26,9 +26,9 @@ writetiff.m
 
 ------------------------------------------------------
 
-Functions in the old DIPimage that are not yet ported:
+Functions in the old DIPimage that are not yet ported (functions
+not listed here will not be ported):
 
-acquireim.m
 affine_trans.m
 afm_flatten.m
 aniso.m
@@ -37,12 +37,10 @@ arrangeslices.m
 backgroundoffset.m
 bbox.m
 bilateralf.m
-bmajority.m
 cal_readnoise.m
 canny.m
 ced.m
 chordlength.m
-coord2image.m
 correctshift.m
 countingframe.m
 cpf.m
@@ -54,25 +52,11 @@ deblock.m
 dethessian.m
 detile.m
 dgg.m
-dipaddpath.m
-dipcrop.m
-dipgetimage.m
-dipimage.m
-dipinit.m
-dipmaxaspect.m
-dipmenus.m
-dipmex.m
-diporien.m
-dipprofile.m
-dipprojection.m
-dipstackinspect.m
 displaylabelnumbers.m
 distancebetweenpointsets.m
 dpr.m
 edir.m
 extend.m
-fast_str2double.m
-fillholes.m
 find_affine_trans.m
 find_lambda.m
 findlocalshift.m
@@ -91,7 +75,6 @@ hist2image.m
 hist_equalize.m
 hitmiss.m
 ht.m
-hull.m
 hybridf.m
 im2snake.m
 isophote_curvature.m
@@ -104,7 +87,6 @@ localshift.m
 mappg.m
 mcd.m
 morphscales.m
-mre.m
 msr2obj.m
 msr_remap.m
 nconv.m
@@ -132,15 +114,12 @@ ramp1.m
 readavi.m
 readrawim.m
 readroiim.m
-rebin.m
-relabel.m
 rotation3d.m
 scale2rgb.m
 scalespace.m
 setlabels.m
 slice_ex.m
 slice_in.m
-slice_op.m
 snake2im.m
 snakedraw.m
 snakeminimize.m
@@ -162,6 +141,16 @@ writedisplayavi.m
 xx1.m
 yy1.m
 zz1.m
+
+(GUI and/or DIPSHOW related stuff):
+dipcrop.m *
+dipgetimage.m *
+dipmex.m
+diporien.m -- was funny, not really useful
+dipprofile.m *
+dipprojection.m *
+dipstackinspect.m *
+* -> These cannot be implemented unless we modify `dip::ImageDisplay` and `private/imagedisplay`
 
 (color stuff, which needs lots of love):
 change_chroma.m
@@ -199,4 +188,3 @@ write_icc_profile.m
 imarfun.m
 iterate.m (These two need to be re-thought. We might want to keep them for backwards-compatability, but
            they don't make much sense since we don't have image arrays any more)
-convhull.m

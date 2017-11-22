@@ -1,16 +1,12 @@
-%BRMEDGEOBJS   Remove edge objects from binary image
+%HULL  Generates convex hull of a 2D or 3D binary image
 %
 % SYNOPSIS:
-%  image_out = brmedgeobjs(image_in,connectivity)
-%
-% PARAMETERS:
-%  connectivity: defines the neighborhood:
-%     * 1 indicates 4-connected neighbors in 2D or 6-connected in 3D.
-%     * 2 indicates 8-connected neighbors in 2D
-%     * 3 indicates 28-connected neighbors in 3D
+%  image_out = hull(image_in, fill)
 %
 % DEFAULTS:
-%  connectivity = 1
+%  fill = yes
+%
+% This function calls dip_image/convhull
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -28,8 +24,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = brmedgeobjs(in,connectivity)
-if nargin<2
-   connectivity = 1;
-end
-out = xor(in,bpropagation(newim(in,'bin'),in,0,connectivity,'object'));
+function out = hull(in,fill)
+out = convhull(in,fill);

@@ -384,6 +384,8 @@ inline Image CountNeighbors(
    return out;
 }
 
+// TODO: MajorityVote( in, out, connectivity, edgeCondition );
+
 /// \brief Returns the isolated pixels in the binary image `in`. That is, the set pixels with zero neighbors. See `dip::CountNeighbors`.
 inline void GetSinglePixels(
       Image const& in,

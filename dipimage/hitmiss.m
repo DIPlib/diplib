@@ -1,19 +1,14 @@
-%BRMEDGEOBJS   Remove edge objects from binary image
+%HITMISS   Hit-miss operator -- morphological template matching
 %
 % SYNOPSIS:
-%  image_out = brmedgeobjs(image_in,connectivity)
+%  image_out = hitmiss(image_in,se)
 %
 % PARAMETERS:
-%  connectivity: defines the neighborhood:
-%     * 1 indicates 4-connected neighbors in 2D or 6-connected in 3D.
-%     * 2 indicates 8-connected neighbors in 2D
-%     * 3 indicates 28-connected neighbors in 3D
-%
-% DEFAULTS:
-%  connectivity = 1
+%  se: image with the mask. It must only contain 0, 1 and NaN values.
+%      NaN represents the 'don't care', 0 is background, 1 is foreground.
+%      Any other value is converted to NaN.
 
 % (c)2017, Cris Luengo.
-% Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,8 +23,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = brmedgeobjs(in,connectivity)
-if nargin<2
-   connectivity = 1;
-end
-out = xor(in,bpropagation(newim(in,'bin'),in,0,connectivity,'object'));
+function out = hitmiss(in,se)
+tmp1 = ~dilation(in,se==0);
+tmp2 = erosion(in,se==1);
+out = tmp1 & tmp2;

@@ -1,16 +1,13 @@
-%BRMEDGEOBJS   Remove edge objects from binary image
+%RELABEL   Renumber labels in a labeled image
 %
 % SYNOPSIS:
-%  image_out = brmedgeobjs(image_in,connectivity)
+%  image_out = relabel(image_in)
 %
-% PARAMETERS:
-%  connectivity: defines the neighborhood:
-%     * 1 indicates 4-connected neighbors in 2D or 6-connected in 3D.
-%     * 2 indicates 8-connected neighbors in 2D
-%     * 3 indicates 28-connected neighbors in 3D
+%  image_out will be like image_in, but all label IDs will be
+%  consecutive.
 %
-% DEFAULTS:
-%  connectivity = 1
+% DIPlib:
+%  This function calls the DIPlib function dip::Relabel.
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -27,9 +24,3 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 % See the License for the specific language governing permissions and
 % limitations under the License.
-
-function out = brmedgeobjs(in,connectivity)
-if nargin<2
-   connectivity = 1;
-end
-out = xor(in,bpropagation(newim(in,'bin'),in,0,connectivity,'object'));
