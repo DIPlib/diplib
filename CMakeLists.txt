@@ -492,21 +492,53 @@ endif (DOXYGEN_FOUND)
 
 ### DIPimage documentation
 
-add_custom_command(
-      OUTPUT ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
-      COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
-      COMMAND pandoc -s *.md -o ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
-                     --template=template.tex --number-sections --smart
-                     --toc --toc-depth=2
-                     --filter=pandoc-crossref
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dipimage/user_manual
-      DEPENDS dipimage/user_manual/*.md dipimage/user_manual/template.tex
-)
-# Code hightlight styles to try: pygments tango espresso zenburn kate monochrome breezedark haddock
-add_custom_target(
-      dum DEPENDS
-      ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
-)
+find_program(PANDOC_EXECUTABLE pandoc)
+if(PANDOC_EXECUTABLE)
+   execute_process(
+         COMMAND ${PANDOC_EXECUTABLE} --version
+         OUTPUT_VARIABLE pandoc_version
+         ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+   if(pandoc_version MATCHES "^pandoc ([0-9]*)\\.([0-9]*)")
+      set(PANDOC_MAJOR "${CMAKE_MATCH_1}")
+      set(PANDOC_MINOR "${CMAKE_MATCH_2}")
+      message("Found pandoc version ${PANDOC_MAJOR}.${PANDOC_MINOR}")
+   else()
+      message("Found pandoc but could not determine version")
+   endif()
+   unset(pandoc_version)
+
+   if("${PANDOC_MAJOR}" LESS "2")
+      # pandoc 1 has a --smart option, which was removed in pandoc 2.
+      add_custom_command(
+            OUTPUT ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
+            COMMAND ${PANDOC_EXECUTABLE} *.md --output=${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
+                                         --template=template.tex --smart
+                                         --number-sections --toc --toc-depth=2
+                                         --filter=pandoc-crossref
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dipimage/user_manual
+            DEPENDS dipimage/user_manual/*.md dipimage/user_manual/template.tex
+      )
+   else()
+      # pandoc 2 defines +smart extension to markdown instead of --smart.
+      add_custom_command(
+            OUTPUT ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
+            COMMAND ${PANDOC_EXECUTABLE} *.md --output=${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
+                                         --template=template.tex -from=markdown+smart
+                                         --number-sections --toc --toc-depth=2
+                                         --filter=pandoc-crossref
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dipimage/user_manual
+            DEPENDS dipimage/user_manual/*.md dipimage/user_manual/template.tex
+      )
+   endif()
+   # Code hightlight styles to try: pygments tango espresso zenburn kate monochrome breezedark haddock
+   add_custom_target(
+         dum DEPENDS
+         ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
+   )
+
+endif()
 
 
 ### Status report
