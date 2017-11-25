@@ -81,7 +81,7 @@ include(CheckCXXSourceCompiles)
 check_cxx_source_compiles("int main() { char const* name = __PRETTY_FUNCTION__; return 0; }" HAS_PRETTY_FUNCTION)
 
 # Control exceptions
-set(DIP_EXCEPTIONS_RECORD_STACK_TRACE ON CACHE BOOL "Stack trace information is added to exceptions (see the documentation for DIP_CATCH)")
+set(DIP_ENABLE_STACK_TRACE ON CACHE BOOL "Stack trace information is added to exceptions (see the documentation for DIP_CATCH)")
 set(DIP_ENABLE_ASSERT ON CACHE BOOL "Enable assertions (see the documentation for DIP_ASSERT)")
 
 # Enable testing
@@ -160,7 +160,7 @@ endif()
 if(HAS_PRETTY_FUNCTION)
    target_compile_definitions(DIP PUBLIC DIP__HAS_PRETTY_FUNCTION)
 endif()
-if(DIP_EXCEPTIONS_RECORD_STACK_TRACE)
+if(DIP_ENABLE_STACK_TRACE)
    target_compile_definitions(DIP PUBLIC DIP__EXCEPTIONS_RECORD_STACK_TRACE)
 endif()
 if(DIP_ENABLE_ASSERT)
@@ -423,6 +423,44 @@ if(DIP_BUILD_DIPIMAGE)
 
    # Tell DIPlib library code that it might link against MATLAB (needed to fix a bug with MATLAB integration)
    target_compile_definitions(DIP PRIVATE DIP__DUILDING_DIPIMAGE)
+
+   # DIPimage user manual
+   find_program(PANDOC_EXECUTABLE pandoc)
+   if(PANDOC_EXECUTABLE)
+      execute_process(
+            COMMAND ${PANDOC_EXECUTABLE} --version
+            OUTPUT_VARIABLE pandoc_version
+            ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+      if(pandoc_version MATCHES "^pandoc ([0-9]*)\\.([0-9]*)")
+         set(PANDOC_MAJOR "${CMAKE_MATCH_1}")
+         set(PANDOC_MINOR "${CMAKE_MATCH_2}")
+         message(STATUS "Found pandoc version ${PANDOC_MAJOR}.${PANDOC_MINOR}")
+      else()
+         message(STATUS "Found pandoc but could not determine version")
+      endif()
+      unset(pandoc_version)
+
+      if("${PANDOC_MAJOR}" LESS "2")
+         # pandoc 1 has a --smart option, which was removed in pandoc 2.
+         set(PANDOC_SMART_OPTION "--smart")
+      else()
+         # pandoc 2 defines +smart extension to markdown instead of --smart.
+         set(PANDOC_SMART_OPTION "--from=markdown+smart")
+      endif()
+      set(DUM_PDF_NAME "${CMAKE_CURRENT_BINARY_DIR}/DIPimageUserManual.pdf")
+      add_custom_command(
+            OUTPUT ${DUM_PDF_NAME}
+            COMMAND ${PANDOC_EXECUTABLE} *.md --output=${DUM_PDF_NAME}
+            --template=template.tex ${PANDOC_SMART_OPTION}
+            --number-sections --toc --toc-depth=2
+            --filter=pandoc-crossref
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dipimage/user_manual
+            DEPENDS dipimage/user_manual/*.md dipimage/user_manual/template.tex
+      )
+      # Code hightlight styles to try: pygments tango espresso zenburn kate monochrome breezedark haddock
+      add_custom_target(dum ALL DEPENDS ${DUM_PDF_NAME})
+      install(FILES ${DUM_PDF_NAME} DESTINATION ${DOCUMENTATION_OUTPUT})
+   endif()
 endif()
 
 
@@ -462,7 +500,7 @@ add_custom_target(examples DEPENDS ${EXAMPLES_TARGETS})
 
 set(DOXYGEN_SKIP_DOT On)
 find_package(Doxygen)
-if (DOXYGEN_FOUND)
+if(DOXYGEN_FOUND)
    configure_file(src/documentation/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
    add_custom_target(
          apidoc
@@ -472,73 +510,7 @@ if (DOXYGEN_FOUND)
          COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/fix_doc_includes.sh ${DOCUMENTATION_OUTPUT}/html
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
    )
-endif (DOXYGEN_FOUND)
-
-#add_custom_command(
-#      OUTPUT ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
-#      COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
-#      COMMAND pandoc -s DIPthoughts.md -o ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
-#      --variable colorlinks=true --variable mainfont="Palatino" --latex-engine=xelatex
-#      --toc --listings -H pandoc/listings_setup.tex --number-sections --smart
-#      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#      DEPENDS DIPthoughts.md
-#)
-#
-#add_custom_target(
-#      docs DEPENDS
-#      ${DOCUMENTATION_OUTPUT}/DIPthoughts.pdf
-#)
-
-
-### DIPimage documentation
-
-find_program(PANDOC_EXECUTABLE pandoc)
-if(PANDOC_EXECUTABLE)
-   execute_process(
-         COMMAND ${PANDOC_EXECUTABLE} --version
-         OUTPUT_VARIABLE pandoc_version
-         ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-   if(pandoc_version MATCHES "^pandoc ([0-9]*)\\.([0-9]*)")
-      set(PANDOC_MAJOR "${CMAKE_MATCH_1}")
-      set(PANDOC_MINOR "${CMAKE_MATCH_2}")
-      message("Found pandoc version ${PANDOC_MAJOR}.${PANDOC_MINOR}")
-   else()
-      message("Found pandoc but could not determine version")
-   endif()
-   unset(pandoc_version)
-
-   if("${PANDOC_MAJOR}" LESS "2")
-      # pandoc 1 has a --smart option, which was removed in pandoc 2.
-      add_custom_command(
-            OUTPUT ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
-            COMMAND ${PANDOC_EXECUTABLE} *.md --output=${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
-                                         --template=template.tex --smart
-                                         --number-sections --toc --toc-depth=2
-                                         --filter=pandoc-crossref
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dipimage/user_manual
-            DEPENDS dipimage/user_manual/*.md dipimage/user_manual/template.tex
-      )
-   else()
-      # pandoc 2 defines +smart extension to markdown instead of --smart.
-      add_custom_command(
-            OUTPUT ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
-            COMMAND ${PANDOC_EXECUTABLE} *.md --output=${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
-                                         --template=template.tex -from=markdown+smart
-                                         --number-sections --toc --toc-depth=2
-                                         --filter=pandoc-crossref
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dipimage/user_manual
-            DEPENDS dipimage/user_manual/*.md dipimage/user_manual/template.tex
-      )
-   endif()
-   # Code hightlight styles to try: pygments tango espresso zenburn kate monochrome breezedark haddock
-   add_custom_target(
-         dum DEPENDS
-         ${DOCUMENTATION_OUTPUT}/DIPimageUserManual.pdf
-   )
-
-endif()
+endif(DOXYGEN_FOUND)
 
 
 ### Status report
@@ -566,13 +538,18 @@ endif()
 message(" * Library installed to: ${CMAKE_INSTALL_PREFIX}/lib")
 message(" * Header files installed to: ${CMAKE_INSTALL_PREFIX}/include")
 
+if(DOXYGEN_FOUND)
+   message(" * Documentation installed to: ${DOCUMENTATION_OUTPUT}")
+   message("   => use the 'apidoc' target")
+endif()
+
 if(DIP_ENABLE_MULTITHREADING)
    message(" * Using OpenMP for multithreading")
 else()
    message(" * Multithreading disabled")
 endif()
 
-if(DIP_EXCEPTIONS_RECORD_STACK_TRACE)
+if(DIP_ENABLE_STACK_TRACE)
    message(" * Stack trace recording enabled")
 else()
    message(" * Stack trace recording disabled")
@@ -606,6 +583,7 @@ endif()
 
 if(DIP_ENABLE_DOCTEST)
    message(" * Unit test code included")
+   message("   => use the 'check' target")
 else()
    message(" * Unit test code excluded")
 endif()
@@ -626,15 +604,25 @@ endif()
 if(DIP_BUILD_DIPIMAGE)
    message(" * DIPimage toolbox added to 'all' target")
    message(" * DIPimage toolbox installed to: ${DIPIMAGE_INSTALL_PATH}")
+   if(DUM_PDF_NAME)
+      message(" * DIPimage User Manual installed to: ${DOCUMENTATION_OUTPUT}")
+   else()
+      message(" * DIPimage User Manual cannot be created")
+   endif()
 else()
    message(" * DIPimage toolbox not configured")
 endif()
 
-if (DOXYGEN_FOUND)
+if(DOXYGEN_FOUND)
    message(" * Doxygen found, 'apidoc' target available")
    message(" * Documentation installed to: ${DOCUMENTATION_OUTPUT}")
 else()
    message(" * Doxygen not found, 'apidoc' target not available")
+endif()
+
+if(CMAKE_GENERATOR MATCHES "Unix Makefiles")
+   message("")
+   message("Next, type 'make; make check; make install'")
 endif()
 
 message("")
