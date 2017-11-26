@@ -4,8 +4,13 @@ if(POLICY CMP0068)
    cmake_policy(SET CMP0068 NEW)
 endif()
 
-project (DIPlib VERSION 3.0)
-add_definitions(-DDIP_VERSION_STRING="${DIPlib_VERSION}")
+project (DIPlib)
+set(PROJECT_VERSION_MAJOR "3")
+set(PROJECT_VERSION_MINOR "0")
+set(PROJECT_VERSION_PATCH "alpha")
+set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+message(STATUS "PROJECT_VERSION = ${PROJECT_VERSION}")
+add_definitions(-DDIP_VERSION_STRING="${PROJECT_VERSION}")
 
 # Debug or Release?
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -28,9 +33,9 @@ endif()
 
 # Installation path
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BUILD_TYPE}" CACHE PATH "Installation directory")
-set(DOCUMENTATION_OUTPUT ${CMAKE_INSTALL_PREFIX}/share/doc/DIPlib)
-set(DIPIMAGE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/share/dipimage)
-set(PYDIP_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/lib/PyDIP)
+set(DOCUMENTATION_OUTPUT share/doc/DIPlib)
+set(DIPIMAGE_INSTALL_PATH share/dipimage)
+set(PYDIP_INSTALL_PATH lib/PyDIP)
 
 # Compiler flags
 set(CMAKE_CXX_STANDARD 14)
@@ -159,9 +164,9 @@ generate_export_header(DIP BASE_NAME dip)
 if(DIP_ENABLE_MULTITHREADING)
    target_compile_options(DIP PRIVATE ${OpenMP_CXX_FLAGS})
    if(OpenMP_CXX_LIB_NAMES)
-      target_link_libraries(DIP ${OpenMP_CXX_LIB_NAMES}) # OpenMP_CXX_LIBRARIES is empty?!
+      target_link_libraries(DIP PRIVATE ${OpenMP_CXX_LIB_NAMES}) # OpenMP_CXX_LIBRARIES is empty?!
    else()
-      target_link_libraries(DIP ${OpenMP_CXX_FLAGS}) # This is the case for CMake <= 3.8
+      target_link_libraries(DIP PRIVATE ${OpenMP_CXX_FLAGS}) # This is the case for CMake <= 3.8
    endif()
 endif()
 if(HAS_PRETTY_FUNCTION)
@@ -193,15 +198,15 @@ target_compile_definitions(DIP PRIVATE EIGEN_MPL2_ONLY # This makes sure we only
                                        EIGEN_DONT_PARALLELIZE) # This to prevent Eigen algorithms trying to run in parallel -- we parallelize at a larger scale.
 # libics
 if(DIP_ENABLE_ICS)
-   target_include_directories(DIP PRIVATE dependencies/libics)
-   target_link_libraries(DIP libics_static)
+   target_link_libraries(DIP PRIVATE libics_static)
    target_compile_definitions(DIP PRIVATE DIP__HAS_ICS)
 endif()
 # libtiff
 if(DIP_ENABLE_TIFF)
-   target_include_directories(DIP PRIVATE ${TIFF_INCLUDE_DIR})
-   target_link_libraries(DIP ${TIFF_LIBRARIES})
+   target_link_libraries(DIP PRIVATE TIFF::TIFF)
    target_compile_definitions(DIP PRIVATE DIP__HAS_TIFF)
+   #get_filename_component(TIFF_LIBS_TRUE ${TIFF_LIBRARIES} REALPATH)
+   #install(PROGRAMS ${TIFF_LIBS_TRUE} DESTINATION lib)
 endif()
 # fftw
 if(DIP_ENABLE_FFTW)
@@ -224,7 +229,7 @@ install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
 if(DIP_ENABLE_DOCTEST)
    add_executable (unit_tests EXCLUDE_FROM_ALL src/library/unit_tests.cpp)
    target_include_directories(unit_tests PRIVATE dependencies/doctest)
-   target_link_libraries(unit_tests DIP)
+   target_link_libraries(unit_tests PRIVATE DIP)
    target_compile_definitions(unit_tests PRIVATE DIP__IMPLEMENT_UNIT_TESTS DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
    if(DIP_SHARED_LIBRARY)
       target_compile_definitions(unit_tests PRIVATE DIP__DOCTEST_IN_SHARED_LIB)
@@ -275,19 +280,16 @@ if(DIP_BUILD_DIPVIEWER)
    generate_export_header(DIPviewer BASE_NAME dipviewer)
    if (FREEGLUT_FOUND)
       target_compile_definitions(DIPviewer PUBLIC DIP__HAS_FREEGLUT)
-      target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR})
-      target_link_libraries(DIPviewer ${FREEGLUT_LIBRARIES})
+      target_link_libraries(DIPviewer PRIVATE FREEGLUT::FREEGLUT)
    endif()
    if (GLFW_FOUND)
       target_compile_definitions(DIPviewer PUBLIC DIP__HAS_GLFW)
-      target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIRS})
-      target_link_libraries(DIPviewer ${GLFW_LIBRARIES})
+      target_link_libraries(DIPviewer PRIVATE GLFW::GLFW)
    endif()
    if (WIN32)
-      target_include_directories(DIPviewer PRIVATE ${GLEW_INCLUDE_DIRS})
-      target_link_libraries(DIPviewer ${GLEW_LIBRARIES})
+      target_link_libraries(DIPviewer PRIVATE GLEW::GLEW)
    endif()
-   target_link_libraries(DIPviewer DIP ${OPENGL_LIBRARIES} -lpthread)
+   target_link_libraries(DIPviewer PRIVATE DIP OpenGL::GL pthread)
    if(APPLE)
       set_target_properties(DIPviewer PROPERTIES INSTALL_RPATH "@loader_path")
    else()
@@ -310,7 +312,7 @@ if(DIP_BUILD_PYDIP)
    update_deps_file("PyDIP_sources" "${PyDIPdeps}")
    pybind11_add_module(PyDIP_bin ${DIP_PYTHON_SRC})
    #target_compile_options(PyDIP_bin PRIVATE -Wno-deprecated-declarations)
-   target_link_libraries(PyDIP_bin PUBLIC DIP)
+   target_link_libraries(PyDIP_bin PRIVATE DIP)
    if(APPLE)
       set_target_properties(PyDIP_bin PROPERTIES INSTALL_RPATH "@loader_path/..")
    else()
@@ -327,7 +329,7 @@ if(DIP_BUILD_PYDIP)
       update_deps_file("PyDIPviewer_sources" "${PyDIPviewerdeps}")
       pybind11_add_module(PyDIPviewer ${DIP_PYTHON_VIEWER_SRC})
       #target_compile_options(PyDIPviewer PRIVATE -Wno-deprecated-declarations)
-      target_link_libraries(PyDIPviewer PUBLIC DIP DIPviewer)
+      target_link_libraries(PyDIPviewer PRIVATE DIP DIPviewer)
       if(APPLE)
          set_target_properties(PyDIPviewer PROPERTIES INSTALL_RPATH "@loader_path/..")
       else()
@@ -492,9 +494,9 @@ foreach(file ${DIP_EXAMPLES})
    target_compile_definitions(${target} PRIVATE DIP__EXAMPLES_DIR="${PROJECT_SOURCE_DIR}/examples")
    list(FIND EXAMPLES_REQUIRE_VIEWER ${target} RES)
    if(${RES} EQUAL -1)
-      target_link_libraries(${target} DIP)
+      target_link_libraries(${target} PRIVATE DIP)
    else()
-      target_link_libraries(${target} DIPviewer)
+      target_link_libraries(${target} PRIVATE DIPviewer DIP)
    endif()
    if(DIP_SHARED_LIBRARY)
       if(APPLE)
@@ -517,13 +519,54 @@ if(DOXYGEN_FOUND)
    configure_file(src/documentation/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
    add_custom_target(
          apidoc
-         COMMAND ${CMAKE_COMMAND} -E make_directory ${DOCUMENTATION_OUTPUT}
+         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}
          COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
          COMMAND ${CMAKE_COMMAND} -E echo "Fixing header names and other things..."
-         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/fix_doc_includes.sh ${DOCUMENTATION_OUTPUT}/html
+         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/fix_doc_includes.sh ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}/html
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
    )
 endif(DOXYGEN_FOUND)
+
+
+### Packaging
+
+if(CMAKE_HOST_WIN32)
+   # On Windows we use the NSIS generator
+   # TODO: This must be tested and cofigured properly
+   set(CPACK_GENERATOR "NSIS")
+#elseif(CMAKE_HOST_APPLE)
+   # On MacOS we use the Bundle generator
+   #set(CPACK_GENERATOR "Bundle")
+   #CPACK_BUNDLE_NAME
+   #CPACK_BUNDLE_ICON
+   #CPACK_BUNDLE_PLIST
+   #CPACK_BUNDLE_STARTUP_COMMAND # What would the startup command be???
+else()
+   # On Linux (or any other platform) we use a tar file
+   set(CPACK_GENERATOR "TBZ2")
+endif()
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set(CPACK_PACKAGE_VENDOR "The DIPlib Project")
+set(CPACK_PACKAGE_CONTACT "https://github.com/DIPlib/DIPlib")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
+string(TIMESTAMP TODAYS_DATE "%Y%m%d" UTC)
+set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}-${TODAYS_DATE}")
+#CPACK_PACKAGE_ICON
+include(CPack)
+# TODO: The package doesn't contain any of the dependencies: libtiff, libz, OpenMP, C++ stdlib, etc.
+#       Including these is highly dependent on the configuration of the system used for compiling.
+#       Posible solutions:
+#        - `install(PROGRAMS ${TIFF_LIBRARIES} DESTINATION lib)`
+#          We'd then need to modify the library names and the search locations using `install_name_tool`,
+#          see http://doc.qt.io/qt-4.8/deployment-mac.html#linking-the-application-to-qt-as-frameworks
+#        - `set(CMAKE_FIND_LIBRARY_SUFFIXES .a .lib ${CMAKE_FIND_LIBRARY_SUFFIXES})`
+#          to link against static libraries where possible, but this requires we also link against
+#          libjpeg libz, and who knows what else. And it doesn't fix the problems with OpenMP, stdlib, etc.
+#        - Include libtiff, libjpeg and libz in the repository, just like libics.
+#          (And if we include libjpeg any way, we might as well port the JPEG reader over from the old dipIO.)
+#        See also: https://cmake.org/cmake/help/v3.5/manual/cmake-packages.7.html#creating-relocatable-packages
 
 
 ### Status report
@@ -552,7 +595,7 @@ message(" * Library installed to: ${CMAKE_INSTALL_PREFIX}/lib")
 message(" * Header files installed to: ${CMAKE_INSTALL_PREFIX}/include")
 
 if(DOXYGEN_FOUND)
-   message(" * Documentation installed to: ${DOCUMENTATION_OUTPUT}")
+   message(" * Documentation installed to: ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}")
    message("   => use the 'apidoc' target")
 endif()
 
@@ -609,16 +652,16 @@ endif()
 
 if(DIP_BUILD_PYDIP)
    message(" * PyDIP module added to 'all' target")
-   message(" * PyDIP installed to: ${PYDIP_INSTALL_PATH}")
+   message(" * PyDIP installed to: ${CMAKE_INSTALL_PREFIX}/${PYDIP_INSTALL_PATH}")
 else()
    message(" * PyDIP module not configured")
 endif()
 
 if(DIP_BUILD_DIPIMAGE)
    message(" * DIPimage toolbox added to 'all' target")
-   message(" * DIPimage toolbox installed to: ${DIPIMAGE_INSTALL_PATH}")
+   message(" * DIPimage toolbox installed to: ${CMAKE_INSTALL_PREFIX}/${DIPIMAGE_INSTALL_PATH}")
    if(DUM_PDF_NAME)
-      message(" * DIPimage User Manual installed to: ${DOCUMENTATION_OUTPUT}")
+      message(" * DIPimage User Manual installed to: ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}")
    else()
       message(" * DIPimage User Manual cannot be created")
    endif()
@@ -628,7 +671,7 @@ endif()
 
 if(DOXYGEN_FOUND)
    message(" * Doxygen found, 'apidoc' target available")
-   message(" * Documentation installed to: ${DOCUMENTATION_OUTPUT}")
+   message(" * Documentation installed to: ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}")
 else()
    message(" * Doxygen not found, 'apidoc' target not available")
 endif()

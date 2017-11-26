@@ -34,6 +34,7 @@ Available `make` targets:
     check_memory  # ...and runs it under valgrind
     apidoc        # builds the HTML documentation for the library API
     examples      # builds the examples
+    package       # creates a distributable package
 
 The following `make` targets are part of the `all` target:
 
