@@ -40,7 +40,7 @@ Image::Pixel ReadPixelWithBoundaryCondition(
          switch( bc[ ii ] ) {
             case BoundaryCondition::ASYMMETRIC_MIRROR:
                invert = true;
-               // fall-through on purpose!
+               // Intentionally falls through
             case BoundaryCondition::SYMMETRIC_MIRROR:
                coords[ ii ] = modulo( coords[ ii ], sz * 2 );
                if( coords[ ii ] >= sz ) {
@@ -49,7 +49,7 @@ Image::Pixel ReadPixelWithBoundaryCondition(
                break;
             case BoundaryCondition::ASYMMETRIC_PERIODIC:
                invert = true;
-               // fall-through on purpose!
+               // Intentionally falls through
             case BoundaryCondition::PERIODIC:
                coords[ ii ] = modulo( coords[ ii ], sz );
                break;

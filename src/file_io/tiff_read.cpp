@@ -99,7 +99,6 @@ DataType FindTIFFDataType( TiffFile& tiff ) {
                return DT_UINT32;
             default:
                DIP_THROW_RUNTIME( "Unsupported TIFF: Unknown bit depth" );
-               break;
          }
       case SAMPLEFORMAT_INT:
          switch( bitsPerSample ) {

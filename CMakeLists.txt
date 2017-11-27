@@ -46,11 +46,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    # using GNU C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wno-unknown-pragmas")
    # -Wno-unknown-pragmas: "#pragma omp" causes a warning if OpenMP is not enabled.
-   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "7.0")
-      # "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
-      # "DIP_EXPORT" in forward class declaration sometimes causes a warning in GCC 6.0 (fixed in 7.0?).
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
-   endif()
+   # "enum class DIP_EXPORT" causes a warning in GCC 5.4, fixed in 6.0.
+   # "DIP_EXPORT" in forward class declaration sometimes causes a warning in GCC 6.0 and 7.0.
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage; to see which flags are enabled: gcc -march=native -Q --help=target
    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og") # Does some optimization that doesn't impact debugging.
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")

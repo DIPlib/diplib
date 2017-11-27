@@ -452,7 +452,7 @@ class DIP_NO_EXPORT Tensor {
          switch( indices.size() ) {
             case 2:
                j = indices[ 1 ];
-               // no break!
+               // fallthrough
             case 1:
                i = indices[ 0 ];
                break;
@@ -470,7 +470,7 @@ class DIP_NO_EXPORT Tensor {
                break;
             case Tensor::Shape::ROW_MAJOR_MATRIX:
                std::swap( i, j );
-               // no break!
+               // fallthrough
             case Tensor::Shape::COL_MAJOR_MATRIX:
                i += j * m;
                break;
@@ -479,10 +479,10 @@ class DIP_NO_EXPORT Tensor {
                break;
             case Tensor::Shape::LOWTRIANG_MATRIX:
                std::swap( i, j );
-               // no break!
+               // fallthrough
             case Tensor::Shape::UPPTRIANG_MATRIX:
                DIP_THROW_IF( i > j, E::INDEX_OUT_OF_RANGE );
-               // no break!
+               // fallthrough
             case Tensor::Shape::SYMMETRIC_MATRIX:
                if( i != j ) {
                   // |0 4 5 6|     |0 1 2|

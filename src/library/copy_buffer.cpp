@@ -632,7 +632,8 @@ static inline void ExpandBufferFromTo(
             }
             break;
          }
-         // Else: fall-through to do second order extrapolation
+         // Else: falls through to do second order extrapolation
+         // fallthrough
 
       case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE:
          if( pixels > 1 ) {
@@ -641,7 +642,8 @@ static inline void ExpandBufferFromTo(
             }
             break;
          }
-         // Else: fall-through (twice) to do zero order extrapolation
+         // Else: falls through (twice) to do zero order extrapolation
+         // fallthrough
 
       case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:
          if( pixels > 1 ) {
@@ -650,7 +652,8 @@ static inline void ExpandBufferFromTo(
             }
             break;
          }
-         // Else: fall-through to do zero order extrapolation
+         // Else: falls through to do zero order extrapolation
+         // fallthrough
 
       case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {

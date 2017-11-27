@@ -230,13 +230,15 @@ ChainCode ChainCode::Offset() const {
          n = code - prev;
       }
       if( code.IsEven() ) {
-         switch( n ) { // Note we fall through on purpose here
+         switch( n ) {
             case 4: // -4
             case 5: // -3
                out.Push( { code + 3, code.IsBorder() } );
+               // fallthrough
             case 6: // -2
             case 7: // -1
                out.Push( { code + 1, code.IsBorder() } );
+               // fallthrough
             case 0:
             case 1:
                out.Push( code );
@@ -245,15 +247,18 @@ ChainCode ChainCode::Offset() const {
                DIP_THROW_ASSERTION( "Not reachable" );
          }
       } else {
-         switch( n ) { // Note we fall through on purpose here
+         switch( n ) {
             case 4: // -4
                out.Push( { code + 4, code.IsBorder() } );
+               // fallthrough
             case 5: // -3
             case 6: // -2
                out.Push( { code + 2, code.IsBorder() } );
+               // fallthrough
             case 7: // -1
             case 0:
                out.Push( code );
+               // fallthrough
             case 1:
             case 2:
                // no points to add
