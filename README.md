@@ -26,6 +26,8 @@ Use the following commands to build:
     cmake /path/to/dip/root/directory
     make -j install
 
+(The `-j` option to `make` enables a multi-threaded build. Limit the number of
+concurrent jobs to, for example, 4 with `-j4`.)
 Available `make` targets:
 
     all (default) # builds DIPlib, DIPimage and PyDIP, if configured
@@ -100,7 +102,10 @@ enable *DIPimage* to read many microscopy image file formats (type `help readim`
 after installing *DIPimage*, to learn more).
 
 The *DIPimage* User Manual requires [*Pandoc*](https://pandoc.org),
-[*pandoc-crossref*](https://hackage.haskell.org/package/pandoc-crossref), and *LaTeX*.
+[*pandoc-crossref*](https://hackage.haskell.org/package/pandoc-crossref), and
+[*LaTeX*](http://www.tug.org/texlive/). Note that you'll need certain *LaTeX* packages,
+such as `upquote`, that are not in the most basic set of packages. You can install these
+through the *TeX Live* package manager.
 
 *PyDIP* requires that [*Python*](https://www.python.org) (preferably *Python3*) be installed.
 

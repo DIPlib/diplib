@@ -26,7 +26,7 @@ command
     run('C:\Program Files\dip\dipstart.m')
 ```
 where `C:\Program Files\dip\` is the directory to which you installed
-*DIPimage*. The script `dipstart.m`, executed this way, contains three
+*DIPimage*. The script `dipstart.m`, executed this way, contains two
 commands needed to initialise the toolbox (two if you didn't install the
 images). These must be executed every time you start *MATLAB*. You can
 modify (or create) a file `startup.m` in the directory to which *MATLAB*
@@ -101,19 +101,9 @@ MacOS X Installation
 
 ### Installation from binary distribution
 
-If you already have a version of *DIPimage* installed, rename the
-directory it is in, so that you will still have the old version if the
-installation of the new version fails. Extract the distribution file. It
-will create a directory `dip/` with a number of subdirectories. We
-suggest you place this directory in `/Applications/`, so that you now
-have a directory `/Applications/dip/`[^21].
+*This might be a bundle, or a drag-drop disk image*.
 
-Next, start *MATLAB* and type:
-```
-    addpath('/Applications/dip/share/dipimage')
-```
-
-You can add this line to your `startup.m` file (preferably in `$HOME/matlab/`).
+*A different option could be a Homebrew formula*.
 
 ### Installation from source
 
