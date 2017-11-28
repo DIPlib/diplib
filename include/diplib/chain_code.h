@@ -402,8 +402,8 @@ class DIP_NO_EXPORT CovarianceMatrix {
          // Eigenvector calculation according to e.g. http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
          Eigenvalues lambda = Eig();
          EllipseParameters out;
-         out.majorAxis = 4.0 * std::sqrt( lambda.largest );
-         out.minorAxis = 4.0 * std::sqrt( lambda.smallest );
+         out.majorAxis = std::sqrt( 8.0 * lambda.largest );
+         out.minorAxis = std::sqrt( 8.0 * lambda.smallest );
          out.orientation = std::atan2( lambda.largest - xx_, xy_ ); // eigenvector is {xy, lambda.largest - xx}
          return out;
       }
