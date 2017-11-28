@@ -8,14 +8,15 @@
 %  out = rebin(in, binning)
 %
 % PARAMETERS:
-%  in:  input image
-%  binning: integer numbers (array) that divides the image without remainder
+%  in:      input image
+%  binning: integer numbers (array) that divides the image without
+%           remainder
 %
 % DEFAULTS:
 %  binning = 2
 %
 % SEE ALSO:
-%  resample, subsample
+%  resample, subsample, split
 
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
@@ -36,38 +37,5 @@ function out = rebin(in,binning)
 if nargin<2
    binning = 2;
 end
-if ~isa(in,'dip_image')
-   in = dip_image(in);
-end
-szI = imsize(in);
-N = numel(szI);
-if numel(binning)==N
-   binning = reshape(binning,1,N);
-elseif numel(binning)==1
-   binning = repmat(binning,1,N);
-else
-   error('BINNING must be a scalar or have one element per image dimension');
-end
-if any(rem(binning,1))
-   error('BINNING must be integer');
-end
-if any(rem(szI,binning))
-   error('Binning must be divider of all image dimensions.');
-end
-if N>1
-   % X and Y dims are swapped in memory
-   szI = szI([2,1,3:end]);
-   binning = binning([2,1,3:end]);
-end
-szO = szI./binning;
-szX = [binning;szO];
-szX = szX(:)';
-szX = szX([2,1,3:end]); % swap X and Y
-out = reshape(in,szX);
-dims = 1:2:2*N;
-dims(1) = 2;
-out = sum(out,[],dims);
-if N>1
-   szO = szO([2,1,3:end]); % swap X and Y
-end
-out = reshape(out,szO);
+out = split(in,binning);
+out = sum(out,[],ndims(out));

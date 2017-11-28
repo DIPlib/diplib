@@ -1,14 +1,20 @@
-%RAMP   Creates an image with one cartesian coordinate
-%   RAMP(SIZE,DIM) returns an image of size SIZE with the value of the
+%RAMP1   Creates a 1D image with one cartesian coordinate
+%   RAMP1(SIZE,DIM) returns an image of size SIZE(DIM) along dimension
+%   DIM, and size 1 along other dimensions, with the value of the
 %   DIM dimension's coordinate as the pixel values.
 %
-%   RAMP(IMG,DIM) is the same as RAMP(SIZE(IMG),DIM).
+%   Singleton expansion of RAMP1(SIZE,DIM) to SIZE yields the same
+%   result as RAMP(SIZE,DIM). Because of implicit singleton expansion
+%   in arithmetic, it is often faster and more memory-efficient to
+%   use RAMP1 over RAMP.
 %
-%   RAMP(...,ORIGIN,OPTIONS) allows specifying the origin and additional
+%   RAMP1(IMG,DIM) is the same as RAMP1(SIZE(IMG),DIM).
+%
+%   RAMP1(...,ORIGIN,OPTIONS) allows specifying the origin and additional
 %   options, see COORDINATES for details.
 %
 % SEE ALSO:
-%  coordinates, ramp1, xx, yy, zz, rr, phiphi, thetatheta
+%  coordinates, ramp, xx1, yy1, zz1, rr, phiphi, thetatheta
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -26,13 +32,22 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = ramp(sz,dim,varargin)
+function out = ramp1(sz,dim,varargin)
 if nargin<1
    sz = [256,256];
 end
 if nargin<2
    dim = 1;
 end
+if isa(sz,'dip_image')
+   sz = imsize(sz);
+elseif ~isvector(sz)
+   error('First input argument expected to be a dip_image or a size array')
+end
+nd = length(sz);
+I = true(1,nd);
+if nd >= dim
+    I(dim) = false;
+end
+sz(I) = 1;
 out = coordinates(sz,dim,varargin{:});
-% We pass the arguments directly too COORDINATES. This means that you can set
-% DIM to be a string, but let's not tell people they can do that. :)

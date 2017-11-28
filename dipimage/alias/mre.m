@@ -1,5 +1,5 @@
-%PSNR   Peak Signal-to-Noise Ratio (in dB)
-%  Alias of ERRORMEASURE(...'PSNR'), for backwards compatability.
+%MSE   Mean relative error
+%  Alias of ERRORMEASURE(...'MRE'), for backwards compatability.
 %  SEE ALSO: ERRORMEASURE
 
 % (c)2017, Cris Luengo.
@@ -17,8 +17,8 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = psnr(in,reference,mask)
+function out = mre(in,reference,mask)
 if(nargin < 3)
    mask = [];
 end
-out = errormeasure(in,reference,mask,'PSNR');
+out = errormeasure(in,reference,mask,'MRE');

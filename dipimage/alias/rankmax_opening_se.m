@@ -17,5 +17,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = rankmin_opening_se(varargin)
+function out = rankmax_opening_se(varargin)
 out = rankmin_opening(varargin{:});

@@ -17,5 +17,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = ssim(in,reference,nbins)
+function out = mutualinformation(in,reference,nbins)
 out = errormeasure(in,reference,[],'MutualInformation');

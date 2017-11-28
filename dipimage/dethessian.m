@@ -1,6 +1,12 @@
-%PSNR   Peak Signal-to-Noise Ratio (in dB)
-%  Alias of ERRORMEASURE(...'PSNR'), for backwards compatability.
-%  SEE ALSO: ERRORMEASURE
+%DETHESSIAN   Det(Hessian) operator
+%
+% SYNOPSIS:
+%  image_out = dethessian(image_in,sigma,method,boundary_condition,process,truncation)
+%
+%  IMAGE_IN is a scalar image with N dimensions.
+%  IMAGE_OUT is a scalar image, computed by DET(HESSIAN(IMAGE_IN,...).
+%
+%  See HESSIAN for a description of the parameters
 
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
@@ -17,8 +23,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = psnr(in,reference,mask)
-if(nargin < 3)
-   mask = [];
-end
-out = errormeasure(in,reference,mask,'PSNR');
+function image_out = dethessian(image_in,varargin)
+image_out = det(hessian(image_in,varargin{:}));

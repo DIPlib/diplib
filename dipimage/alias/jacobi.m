@@ -1,6 +1,16 @@
-%PSNR   Peak Signal-to-Noise Ratio (in dB)
-%  Alias of ERRORMEASURE(...'PSNR'), for backwards compatability.
-%  SEE ALSO: ERRORMEASURE
+%JACOBI   Eigenvalues and vectors of a tensor image
+%  This function calls DIP_IMAGE/EIG, and re-orders the output arguments.
+%  It exists only for backwards-compatibility.
+%
+% SYNOPSIS:
+%  [lambda, ev] = jacobi(in)
+%
+%  in:     a 2D tensor image, where the elements may be images of any
+%          dimension
+%  lambda: the sorted eigenvalues in a vector image, out{1} the largest,
+%          out{n} the smallest
+%  ev:     matrix image containing the eigenvectors, ev{:,1} is the first
+%          eigenvector
 
 % (c)2017, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
@@ -17,8 +27,10 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = psnr(in,reference,mask)
-if(nargin < 3)
-   mask = [];
+function [lambda,ev] = jacobi(in)
+if nargout==2
+   [ev,lambda] = eig(in);
+   lambda = diag(lambda);
+else
+   lambda = eig(in);
 end
-out = errormeasure(in,reference,mask,'PSNR');

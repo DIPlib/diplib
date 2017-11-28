@@ -1,14 +1,20 @@
-%ZZ   Creates an image with the z-axis cartesian coordinate
-%   ZZ(SIZE) returns an image of size SIZE with the value of the z-axis
-%   coordinate as the pixel values.
+%YY1   Creates an image with the y-axis cartesian coordinate
+%   YY1(SIZE) returns an image of size SIZE(1) along the x-axis,
+%   and size 1 along other dimensions, with the x-coordinate of each
+%   pixel as the pixel values.
 %
-%   ZZ(IMG) is the same as ZZ(SIZE(IMG)).
+%   Singleton expansion of YY1(SIZE,DIM) to SIZE yields the same
+%   result as YY(SIZE,DIM). Because of implicit singleton expansion
+%   in arithmetic, it is often faster and more memory-efficient to
+%   use YY1 over YY.
 %
-%   ZZ(...,ORIGIN,OPTIONS) allows specifying the origin and additional
+%   YY1(IMG) is the same as YY1(SIZE(IMG)).
+%
+%   YY1(...,ORIGIN,OPTIONS) allows specifying the origin and additional
 %   options, see COORDINATES for details.
 %
 % SEE ALSO:
-%  coordinates, ramp, xx, yy, zz1, rr, phiphi, thetatheta
+%  coordinates, ramp1, xx1, yy, zz1, rr, phiphi, thetatheta
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -26,11 +32,11 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = zz(sz,varargin)
+function out = yy1(sz,varargin)
 if nargin<1
    sz = [256,256];
 elseif ischar(sz)
    varargin = [{sz},varargin];
    sz = [256,256];
 end
-out = coordinates(sz,3,varargin{:});
+out = ramp1(sz,2,varargin{:});
