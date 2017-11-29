@@ -1,4 +1,4 @@
-%NEWTENSORIM   Creates a tensor dip_image
+%NEWTENSORIM   Creates a tensor dip_image initialized to zero
 %   NEWTENSORIM(N) is a 0D vector image with N elements.
 %
 %   NEWTENSORIM([N,M]) is a 0D image with a N-by-M tensor.
@@ -10,14 +10,15 @@
 %   TYPE can be any of the type parameters allowed by DIP_IMAGE. The
 %   default data type is 'single'.
 %
-%   NEWTENSORIM(A) is an image identical to the tensor image A, set to 0.
+%   NEWTENSORIM(A) is an image with same sizes and tensor shape as tensor
+%   image A.
 %
 %   NEWTENSORIM(A,B,C) is a vector image where the tensor components are
 %   the scalar images A, B and C. This mode is used whenever there is
 %   more than one input parameter, and any one of them is not a scalar
 %   or vector array. You can also use DIP_IMAGE({A,B,C}).
 %
-%  SEE ALSO: newim, newcolorim, dip_image
+%  SEE ALSO: newim, newcolorim, dip_image, dip_image.clone
 
 % (c)2017, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
@@ -35,7 +36,6 @@
 % limitations under the License.
 
 function out = newtensorim(varargin)
-tsize = [];
 imsize = [];
 dtype = 'sfloat';
 if nargin == 0

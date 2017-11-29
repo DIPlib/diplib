@@ -1,5 +1,6 @@
-%NEWCOLORIM   Creates a dip_image color image of the specified size and colorspace
-%   NEWCOLORIM, by itself, creates an image of 256 by 256 pixels of colorspace RGB.
+%NEWCOLORIM   Creates a color image initialized to zero
+%   NEWCOLORIM, by itself, creates an image of 256 by 256 pixels of
+%   colorspace RGB.
 %
 %   NEWCOLORIM(N) is an 1D RGB image with N pixels.
 %
@@ -7,18 +8,19 @@
 %
 %   NEWCOLORIM([N,M,P,...]) is an N-by-M-by-P-by-... RGB image.
 %
-%   NEWCOLORIM(B) creates an image with zeros with the same properties as B. If B
-%   is a grey-scale image, the result is an RGB image.
+%   NEWCOLORIM(B) creates an image with zeros with the same sizes and color
+%   space as B. If B is a grey-scale image, the result is an RGB image.
 %
 %   NEWCOLORIM(B,COL) creates an empty image with the colorspace COL.
 %
-%   NEWCOLORIM([N,M,..],COL,TYPE) sets the data type of the new image to TYPE.
-%   TYPE can be any of the type parameters allowed by DIP_IMAGE. The
+%   NEWCOLORIM([N,M,..],COL,TYPE) sets the data type of the new image to
+%   TYPE. TYPE can be any of the type parameters allowed by DIP_IMAGE. The
 %   default data type is 'single'.
 %
 %   See DIP_IMAGE/COLORSPACE for known color spaces
 %
 %  SEE ALSO: newim, newtensorim, dip_image, dip_image.colorspace
+%   dip_image.clone
 
 % (c)2017, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
@@ -67,7 +69,7 @@ if nargin >= 1
    end
 end
 n = dip_image.numberchannels(col);
-out = newtensorim(n,sz,dt); % TODO: newtensorim should accept same 1st input argument as this function.
+out = newtensorim(n,sz,dt);
 out = colorspace(out,col);
 if ~isempty(psize)
    out.PixelSize = psize;
