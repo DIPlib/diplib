@@ -328,7 +328,7 @@ using CoordinateArray = std::vector< UnsignedArray >; ///< An array of pixel coo
 /// array of that length, or an array with a single value, which will be used for all dimensions, or an empty array,
 /// in which case the default value `defaultValue` will be used for all dimensions.
 template< typename T >
-inline void ArrayUseParameter( DimensionArray< T >& array, dip::uint nDims, T defaultValue = 0 ) {
+inline void ArrayUseParameter( DimensionArray< T >& array, dip::uint nDims, T defaultValue = {} ) {
    if( array.empty() ) {
       array.resize( nDims, defaultValue );
    } else if( array.size() == 1 ) {
