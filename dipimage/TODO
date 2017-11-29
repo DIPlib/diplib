@@ -29,7 +29,6 @@ writetiff.m
 Functions in the old DIPimage that are not yet ported (functions
 not listed here will not be ported):
 
-cut.m, extend.m
 tile.m, detile.m, arrangeslices.m
 bbox.m
 slice_ex.m
