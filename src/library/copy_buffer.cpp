@@ -495,7 +495,7 @@ static inline void ExpandBufferThirdOrder(
    }
 }
 
-template< typename DataType, bool invert >
+template< typename DataType, bool asymmetric >
 static inline void ExpandBufferMirror(
       DataType* buffer,
       dip::sint stride,
@@ -505,24 +505,26 @@ static inline void ExpandBufferMirror(
 ) {
    dip::uint steps = pixels - 1;
    // Left side
-   DataType* in = buffer;
+   DataType* in = buffer + stride;
    DataType* out = buffer - stride;
-   for( dip::uint ii = 0; ii < left; ii++ ) {
-      *out = invert ? saturated_inv( *in ) : *in;
-      in -= (( ii / steps ) & 1 ) ? stride : -stride;
+   for( dip::uint ii = 1; ii < left + 1; ii++ ) {
+      bool dir = (( ii / steps ) & 1 ) == 1;
+      *out = asymmetric ? ( dir ? *in : saturated_inv( *in )) : *in;
+      in -= dir ? stride : -stride;
       out -= stride;
    }
    // Right side
-   in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+   in = buffer + ( static_cast< dip::sint >( pixels ) - 2 ) * stride;
    out = buffer + static_cast< dip::sint >( pixels ) * stride;
-   for( dip::uint ii = 0; ii < right; ii++ ) {
-      *out = invert ? saturated_inv( *in ) : *in;
-      in += (( ii / steps ) & 1 ) ? stride : -stride;
+   for( dip::uint ii = 1; ii < right + 1; ii++ ) {
+      bool dir = (( ii / steps ) & 1 ) == 1;
+      *out = asymmetric ? ( dir ? *in : saturated_inv( *in )) : *in;
+      in += dir ? stride : -stride;
       out += stride;
    }
 }
 
-template< typename DataType, bool invert >
+template< typename DataType, bool asymmetric >
 static inline void ExpandBufferPeriodic(
       DataType* buffer,
       dip::sint stride,
@@ -530,25 +532,29 @@ static inline void ExpandBufferPeriodic(
       dip::uint left,
       dip::uint right
 ) {
-// Left side
-   DataType* in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+   // Left side
+   DataType* in = buffer; // value not used, set during first iteration of loop
    DataType* out = buffer - stride;
+   bool invert = false;   // value modified during first loop iteration (and hopefully optimized out if `!asymmetric`)
    for( dip::uint ii = 0; ii < left; ii++ ) {
-      *out = invert ? saturated_inv( *in ) : *in;
-      if( !( ii % pixels ) ) {
+      if( !( ii % pixels )) {
          in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+         invert = !invert;
       }
+      *out = asymmetric ? ( invert ? saturated_inv( *in ) : *in ) : *in;
       in -= stride;
       out -= stride;
    }
    // Right side
    in = buffer;
    out = buffer + static_cast< dip::sint >( pixels ) * stride;
+   invert = false;
    for( dip::uint ii = 0; ii < right; ii++ ) {
-      *out = invert ? saturated_inv( *in ) : *in;
-      if( !( ii % pixels ) ) {
+      if( !( ii % pixels )) {
          in = buffer;
+         invert = !invert;
       }
+      *out = asymmetric ? ( invert ? saturated_inv( *in ) : *in ) : *in;
       in += stride;
       out += stride;
    }
