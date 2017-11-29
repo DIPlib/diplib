@@ -142,36 +142,29 @@ namespace Option {
 /// ------------------------------ | ----------
 /// `ExtendImage_Masked`           | The output image is a window on the boundary-extended image of the same size as the input.
 /// `ExtendImage_ExpandTensor`     | The output image has normal tensor storage.
-/// `ExtendImage_FillBoundaryOnly` | Data will not be copied, only the boundary extension will be filled.
 ///
 /// Note that you can add these constants together: `dip::Option::ExtendImage_Masked + dip::Option::ExtendImage_ExpandTensor`.
-///
-/// `ExtendImage_FillBoundaryOnly` ignores the input image `in`. In this case, if `ExtendImage_Masked` is also given,
-/// `out` must be a view of a larger data segment, such as the one that would be produced by this function if
-/// `ExtendImage_FillBoundaryOnly` were not given. Otherwise, a boundary of size `borderSizes` is filled using data
-/// from further inside the image. If the image is smaller than twice the border size, an exception is thrown.
-/// `ExtendImage_ExpandTensor` is also ignored.
 DIP_DECLARE_OPTIONS( ExtendImage );
 static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_Masked, 0 );
 static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_ExpandTensor, 1 );
-static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_FillBoundaryOnly, 2 );
 
 } // namespace Option
 
-/// \brief Extends the image `in` by `boundary` along each dimension.
+/// \brief Extends the image `in` by `borderSizes` along each dimension.
 ///
-/// This function is identical to `dip::ExtendImage`, except it uses boundary condition constants andoption constants
-/// instead of strings, and it gives access to the `dip::Option::ExtendImage_FillBoundaryOnly` option, which is not
-/// available in the high-level interface. This version is meant to be used by low-level library functions.
-DIP_EXPORT void ExtendImageLowLevel(
+/// This function is identical to the `%dip::ExtendImage` below, except it uses boundary condition constants and option
+/// constants instead of strings. This version is meant to be used by low-level library functions.
+DIP_EXPORT void ExtendImage(
       Image const& in,
       Image& out,
       UnsignedArray borderSizes,
-      BoundaryConditionArray boundaryCondition,
-      Option::ExtendImage options
+      BoundaryConditionArray const& boundaryCondition = {},
+      Option::ExtendImage options = {}
 );
 
-/// \brief Extends the image `in` by `boundary` along each dimension.
+/// \brief Extends the image `in` by `borderSizes` along each dimension.
+///
+/// The output image has size `in.Size( ii ) + 2 * boderSizes[ ii ]` along dimension `ii`.
 ///
 /// The new regions are filled using the boundary condition `bc`. If `boundaryCondition` is an empty array, the default
 /// boundary condition is used along all dimensions. If `boundaryCondition` has a single element, it is used for all
@@ -202,17 +195,78 @@ inline void ExtendImage(
    if( options.count( "expand tensor" ) > 0 ) {
       opts += Option::ExtendImage_ExpandTensor;
    }
-   ExtendImageLowLevel( in, out, borderSizes, bc, opts );
+   ExtendImage( in, out, borderSizes, bc, opts );
 }
 inline Image ExtendImage(
       Image const& in,
       UnsignedArray const& borderSizes,
-      StringArray const& boundaryCondition,
+      StringArray const& boundaryCondition = {},
       StringSet const& options = {} ) {
    Image out;
    ExtendImage( in, out, borderSizes, boundaryCondition, options );
    return out;
 }
+
+/// \brief Fills the pixels outside a region in the image using a boundary condition.
+///
+/// This function is identical to the `%dip::ExtendRegion` below, except it uses boundary condition constants
+/// instead of strings. This version is meant to be used by low-level library functions.
+DIP_EXPORT void ExtendRegion(
+      Image& image,
+      RangeArray ranges,
+      BoundaryConditionArray boundaryCondition = {}
+);
+
+/// \brief Fills the pixels outside a region in the image using a boundary condition.
+///
+/// The region that is preserved is specified through `ranges`. The step sizes are ignored, only the `start` and `stop`
+/// values of `ranges` are used.
+///
+/// The pixels outside of the region are filled using the boundary condition `boundaryCondition`, using only those
+/// values inside the region. If `boundaryCondition` is an empty array, the default boundary condition is used along
+/// all dimensions. If `boundaryCondition` has a single element, it is used for all dimensions. `ranges` is
+/// similarly expanded if it has a single element.
+inline void ExtendRegion(
+      Image& image,
+      RangeArray const& ranges,
+      StringArray const& boundaryCondition
+) {
+   BoundaryConditionArray bc;
+   DIP_START_STACK_TRACE
+      bc = StringArrayToBoundaryConditionArray( boundaryCondition );
+   DIP_END_STACK_TRACE
+   ExtendRegion( image, ranges, bc );
+}
+
+/// \brief Fills the pixels outside a region in the image using a boundary condition.
+///
+/// The region that is preserved is specified through `origin` and `sizes`.
+///
+/// The pixels outside of the region are filled using the boundary condition `boundaryCondition`, using only those
+/// values inside the region. If `boundaryCondition` is an empty array, the default boundary condition is used along
+/// all dimensions. If `boundaryCondition` has a single element, it is used for all dimensions. `origin` and `sizes`
+/// are similarly expanded if they have a single element.
+inline void ExtendRegion(
+      Image& image,
+      UnsignedArray origin,
+      UnsignedArray sizes,
+      StringArray const& boundaryCondition
+) {
+   DIP_THROW_IF( origin.empty() || sizes.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   dip::uint nDims = image.Dimensionality();
+   DIP_START_STACK_TRACE
+      ArrayUseParameter( origin, nDims );
+      ArrayUseParameter( sizes, nDims );
+   DIP_END_STACK_TRACE
+   RangeArray ranges( nDims );
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      DIP_THROW_IF( sizes[ ii ] < 1, E::PARAMETER_OUT_OF_RANGE );
+      ranges[ ii ] = { static_cast< dip::sint >( origin[ ii ] ),
+                       static_cast< dip::sint >( origin[ ii ] + sizes[ ii ] - 1 ) };
+   }
+   ExtendRegion( image, ranges, boundaryCondition );
+}
+
 
 /// \}
 

@@ -77,26 +77,20 @@ Image::Pixel ReadPixelWithBoundaryCondition(
    return out;
 }
 
-void ExtendImageLowLevel(
+void ExtendImage(
       Image const& c_in,
       Image& out,
       UnsignedArray borderSizes, // by copy so we can modify it
-      BoundaryConditionArray boundaryConditions, // by copy so we can modify it
+      BoundaryConditionArray const& boundaryConditions,
       Option::ExtendImage options
 ) {
    // Test input arguments
    dip::uint nDims;
-   if( options == Option::ExtendImage_FillBoundaryOnly ) {
-      DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
-      nDims = out.Dimensionality();
-   } else {
-      DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
-      nDims = c_in.Dimensionality();
-   }
+   DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
+   nDims = c_in.Dimensionality();
    DIP_THROW_IF( borderSizes.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
    DIP_START_STACK_TRACE
       ArrayUseParameter( borderSizes, nDims );
-      BoundaryArrayUseParameter( boundaryConditions, nDims );
    DIP_END_STACK_TRACE
 
    // The image we'll fill later
@@ -109,59 +103,71 @@ void ExtendImageLowLevel(
       ranges[ ii ] = Range{ b, -b-1 };
    }
 
-   if( options == Option::ExtendImage_FillBoundaryOnly ) {
+   // Save input data
+   Image in = c_in; // Not quick copy, so we keep the color space info and pixel size info for later
 
-      if( options == Option::ExtendImage_Masked ) {
-         // The output image is already masked, we expand it to its full size here, then will crop it again later.
-         UnsignedArray fullSizes = out.Sizes();
-         dip::sint sizeOf = static_cast< dip::sint >( out.DataType().SizeOf() );
-         uint8* ptr = static_cast< uint8* >( out.Origin() );
-         for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            fullSizes[ ii ] += 2 * borderSizes[ ii ];
-            ptr -= static_cast< dip::sint >( borderSizes[ ii ] ) * out.Stride( ii ) * sizeOf;
-         }
-         out.dip__SetOrigin( ptr );
-         out.dip__SetSizes( fullSizes );
-      }
+   // Prepare output image
+   UnsignedArray sizes = in.Sizes();
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      sizes[ ii ] += 2 * borderSizes[ ii ];
+   }
+   Tensor tensor = in.Tensor();
+   bool expandTensor = false;
+   if( !tensor.HasNormalOrder() && ( options == Option::ExtendImage_ExpandTensor )) {
+      expandTensor = true;
+      tensor = { tensor.Rows(), tensor.Columns() };
+   }
+   // Note that this can potentially affect `c_in` also, use only `in` from here on.
+   DIP_STACK_TRACE_THIS( out.ReForge( sizes, tensor.Elements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW ));
+   out.ReshapeTensor( tensor );
+   out.SetPixelSize( in.PixelSize() );
+   if( !expandTensor ) {
+      out.SetColorSpace( in.ColorSpace() );
+   }
 
+   // Copy input data to output
+   tmp = out.At( ranges );
+   if( expandTensor ) {
+      ExpandTensor( in, tmp );
    } else {
-
-      // Save input data
-      Image in = c_in; // Not quick copy, so we keep the color space info and pixel size info for later
-
-      // Prepare output image
-      UnsignedArray sizes = in.Sizes();
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         sizes[ ii ] += 2 * borderSizes[ ii ];
-      }
-      Tensor tensor = in.Tensor();
-      bool expandTensor = false;
-      if( !tensor.HasNormalOrder() && ( options == Option::ExtendImage_ExpandTensor )) {
-         expandTensor = true;
-         tensor = { tensor.Rows(), tensor.Columns() };
-      }
-      // Note that this can potentially affect `c_in` also, use only `in` from here on.
-      DIP_STACK_TRACE_THIS( out.ReForge( sizes, tensor.Elements(), in.DataType(), Option::AcceptDataTypeChange::DO_ALLOW ));
-      out.ReshapeTensor( tensor );
-      out.SetPixelSize( in.PixelSize() );
-      if( !expandTensor ) {
-         out.SetColorSpace( in.ColorSpace() );
-      }
-
-      // Copy input data to output
-      tmp = out.At( ranges );
-      if( expandTensor ) {
-         ExpandTensor( in, tmp );
-      } else {
-         Copy( in, tmp );
-      }
-
+      Copy( in, tmp );
    }
 
    // Extend the boundaries, one dimension at a time
+   DIP_STACK_TRACE_THIS( ExtendRegion( out, ranges, boundaryConditions ));
+
+   // Produce output by either using `out` directly or making a window of the original size over it.
+   if( options == Option::ExtendImage_Masked ) {
+      for( dip::uint ii = 0; ii < nDims; ++ii ) {
+         dip::sint b = static_cast< dip::sint >( borderSizes[ ii ] );
+         ranges[ ii ] = Range{ b, -b-1 };
+      }
+      out = out.At( ranges );
+   }
+}
+
+void ExtendRegion(
+      Image& image,
+      RangeArray ranges,
+      BoundaryConditionArray boundaryConditions
+) {
+   // Test input arguments
+   dip::uint nDims = image.Dimensionality();
+   DIP_THROW_IF( ranges.empty(), E::ARRAY_PARAMETER_WRONG_LENGTH );
+   DIP_START_STACK_TRACE
+      ArrayUseParameter( ranges, nDims );
+      for( dip::uint dim = 0; dim < nDims; ++dim ) {
+         ranges[ dim ].step = 1;
+         ranges[ dim ].Fix( image.Size( dim )); // could throw
+      }
+      BoundaryArrayUseParameter( boundaryConditions, nDims );
+   DIP_END_STACK_TRACE
+   // Extend the boundaries, one dimension at a time
    for( dip::uint dim = 0; dim < nDims; ++dim ) {
-      if( borderSizes[ dim ] > 0 ) {
-         tmp = out.At( ranges );
+      dip::uint left = ranges[ dim ].Offset();
+      dip::uint right = image.Size( dim ) - 1 - static_cast< dip::uint >( ranges[ dim ].stop );
+      if(( left > 0 ) || ( right > 0 )) {
+         Image tmp = image.At( ranges );
          // Iterate over all image lines along this dimension
          // The iterator iterates over the lines with data only
          GenericImageIterator<> it( tmp, dim );
@@ -174,22 +180,13 @@ void ExtendImageLowLevel(
                   tmp.TensorStride(),
                   tmp.Size( dim ),
                   tmp.TensorElements(),
-                  borderSizes[ dim ],
-                  borderSizes[ dim ],
+                  left,
+                  right,
                   boundaryConditions[ dim ]
             );
          } while( ++it );
          ranges[ dim ] = Range{}; // expand the tmp image to cover the newly written data
       }
-   }
-
-   // Produce output by either using out directly or making a window of the original size over it.
-   if( options == Option::ExtendImage_Masked ) {
-      for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         dip::sint b = static_cast< dip::sint >( borderSizes[ ii ] );
-         ranges[ ii ] = Range{ b, -b-1 };
-      }
-      out = out.At( ranges );
    }
 }
 

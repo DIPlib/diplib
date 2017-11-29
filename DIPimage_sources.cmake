@@ -49,7 +49,7 @@ dipimage/entropy.cpp
 dipimage/erfclip.cpp
 dipimage/erosion.cpp
 dipimage/errormeasure.cpp
-dipimage/extendimage.cpp
+dipimage/extendregion.cpp
 dipimage/findmaxima.cpp
 dipimage/findminima.cpp
 dipimage/findshift.cpp

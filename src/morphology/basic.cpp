@@ -79,7 +79,7 @@ void ExtendImageDoubleBoundary(
    for( auto& b : doubleBoundary ) {
       b *= 2;
    }
-   ExtendImageLowLevel( in, out, doubleBoundary, bc, {} );
+   ExtendImage( in, out, doubleBoundary, bc );
    // Crop the image by 1*boundary, leaving it larger than `in` by 1*boundary.
    UnsignedArray outSizes = out.Sizes();
    dip::sint offset = 0;

@@ -1,6 +1,6 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `extendimage` function
+ * This MEX-file implements the `extendregion` function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
@@ -22,25 +22,45 @@
 #include "diplib/boundary.h"
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
-   //dml::streambuf streambuf;
-
    try {
 
       DML_MIN_ARGS( 2 );
-      DML_MAX_ARGS( 3 );
 
       dml::MatlabInterface mi;
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
+      out.Copy( in );
 
-      dip::UnsignedArray border = dml::GetUnsignedArray( prhs[ 1 ] );
+      dip::RangeArray ranges;
+      dip::UnsignedArray origin;
+      dip::UnsignedArray sizes;
+      bool useRanges = true;
 
-      dip::StringArray bc;
-      if( nrhs > 2 ) {
-         bc = dml::GetStringArray( prhs[ 2 ]);
+      int index = 1;
+      if( mxIsCell( prhs[ index ] )) {
+         ranges = dml::GetRangeArray( prhs[ index ] );
+         ++index;
+      } else {
+         DML_MIN_ARGS( 3 );
+         useRanges = false;
+         origin = dml::GetUnsignedArray( prhs[ index ] );
+         ++index;
+         sizes = dml::GetUnsignedArray( prhs[ index ] );
+         ++index;
       }
 
-      dip::ExtendImage( in, out, border, bc );
+      dip::StringArray bc;
+      if( nrhs > index ) {
+         bc = dml::GetStringArray( prhs[ index ]);
+         ++index;
+      }
+      DML_MAX_ARGS( index );
+
+      if( useRanges ) {
+         dip::ExtendRegion( out, ranges, bc );
+      } else {
+         dip::ExtendRegion( out, origin, sizes, bc );
+      }
 
       plhs[ 0 ] = mi.GetArray( out );
 
