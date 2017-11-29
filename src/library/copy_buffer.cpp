@@ -363,8 +363,10 @@ static inline void ExpandBufferConstant(
    }
 }
 
-// First order extrapolation: we construct a 1st order polynomial based on the 2 samples at the edge of the
-// image line. This polynomial is used to fill out the expanded border.
+// First order extrapolation: instead of constructing a 1st order polynomial based on the 2 samples at the edge of
+// the image, which is not very useful, we construct a 1st order polynomial that connects to the image edge
+// (i.e. function value matches the sample at the edge of the image line), and reaches 0 at the end of the expanded
+// boundary. This imposes a sort of windowing around the image.
 template< typename DataType >
 static inline void ExpandBufferFirstOrder(
       DataType* buffer,
@@ -378,9 +380,9 @@ static inline void ExpandBufferFirstOrder(
       DataType* in = buffer;
       DataType* out = buffer - stride;
       dfloat d0 = *in;
-      dfloat d1 = dfloat( *in ) - dfloat( *( in + stride ));
+      dfloat d1 = d0 / static_cast< dfloat >( left + 1 );
       for( dip::uint ii = 0; ii < left; ii++ ) {
-         d0 += d1;
+         d0 -= d1;
          *out = clamp_cast< DataType >( d0 );
          out -= stride;
       }
@@ -390,9 +392,9 @@ static inline void ExpandBufferFirstOrder(
       DataType* in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
       DataType* out = buffer + static_cast< dip::sint >( pixels ) * stride;
       dfloat d0 = *in;
-      dfloat d1 = dfloat( *in ) - dfloat( *( in - stride ));
+      dfloat d1 = d0 / static_cast< dfloat >( right + 1 );
       for( dip::uint ii = 0; ii < right; ii++ ) {
-         d0 += d1;
+         d0 -= d1;
          *out = clamp_cast< DataType >( d0 );
          out += stride;
       }
@@ -648,16 +650,14 @@ static inline void ExpandBufferFromTo(
             }
             break;
          }
-         // Else: falls through (twice) to do zero order extrapolation
+         // Else: falls through to do first order extrapolation
          // fallthrough
 
       case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:
-         if( pixels > 1 ) {
-            for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
-               ExpandBufferFirstOrder( buffer, stride, pixels, left, right );
-            }
-            break;
+         for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
+            ExpandBufferFirstOrder( buffer, stride, pixels, left, right );
          }
+         break;
          // Else: falls through to do zero order extrapolation
          // fallthrough
 
@@ -686,6 +686,7 @@ void ExpandBuffer(
       // We've got nothing to do
       return;
    }
+   DIP_ASSERT( pixels > 0 );
    switch( type ) {
       case dip::DT_BIN:
          ExpandBufferFromTo( static_cast< bin* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );

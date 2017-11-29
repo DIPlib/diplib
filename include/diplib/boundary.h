@@ -54,7 +54,7 @@ namespace dip {
 /// `ADD_MAX_VALUE`            | "add max"                | The boundary is filled with the max value for the data type.
 /// `ADD_MIN_VALUE`            | "add min"                | The boundary is filled with the min value for the data type.
 /// `ZERO_ORDER_EXTRAPOLATE`   | "zero order"             | The value at the border is repeated indefinitely.
-/// `FIRST_ORDER_EXTRAPOLATE`  | "first order"            | A linear function is defined based on the two values closest to the border.
+/// `FIRST_ORDER_EXTRAPOLATE`  | "first order"            | A linear function is defined based on the value closest to the border, the function reaches zero at the end of the extended boundary.
 /// `SECOND_ORDER_EXTRAPOLATE` | "second order"           | A quadratic function is defined based on the two values closest to the border, the function reaches zero at the end of the extended boundary.
 /// `THIRD_ORDER_EXTRAPOLATE`  | "third order"            | A cubic function is defined based on the two values closest to the border, the function reaches zero with a zero derivative at the end of the extended boundary.
 /// `DEFAULT`                  | "default" or ""          | The default value, currently equal to `SYMMETRIC_MIRROR`.
@@ -132,6 +132,7 @@ DIP_EXPORT Image::Pixel ReadPixelWithBoundaryCondition(
 
 
 namespace Option {
+
 /// \class dip::Option::ExtendImage
 /// \brief Determines which properties to compare.
 ///
