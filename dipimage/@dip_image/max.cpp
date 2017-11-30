@@ -53,10 +53,10 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       if( !in2.IsForged() || in2.DataType().IsBinary()) {
          // Maximum pixel projection
          dip::Maximum( in1, in2, out, process );
-         if(( hasProcess ) || !out.IsScalar() ) {
+         if( hasProcess ) {
             plhs[ 0 ] = mi.GetArray( out );
          } else {
-            plhs[ 0 ] = dml::GetArray( out.As< dip::dfloat >() );
+            plhs[ 0 ] = dml::GetArray( out.At( 0 ));
          }
          if( nlhs > 1 ) {
             // Compute position also
