@@ -25,7 +25,9 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #pragma GCC diagnostic ignored "-Wconversion"
+#if __GNUC__ >= 7
 #pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#endif
 #endif
 
 #include <Eigen/Dense>
