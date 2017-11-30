@@ -1,20 +1,5 @@
-%ARRAY2IM   Convert a tensor image to an image stack
-%
-% SYNOPSIS:
-%  out = array2im(in)
-%
-%  The tensor dimension of IN is converted to a new spatial
-%  dimension, which will be last. That is, OUT will have one
-%  more dimension than IN, and be scalar.
-%
-% EXAMPLE:
-%  a = readim
-%  g = gradient(a)
-%  b = array2im(g)
-%  h = im2array(b) % h is identical to g
-%
-% SEE ALSO:
-%  im2array, dip_image.tensortospatial, dip_image.spatialtotensor
+%IMARFUN   Alias of TENSORFUN, for backwards compatability
+%  SEE ALSO: tensorfun
 
 % (c)2017, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
@@ -31,8 +16,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function in = array2im(in)
-if ~isa(in,'dip_image')
-   error('Input is not a tensor image');
-end
-in = tensortospatial(in,ndims(in)+1);
+function out = imarfun(varargin)
+out = tensorfun(varargin{:});

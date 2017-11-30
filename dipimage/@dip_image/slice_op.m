@@ -12,10 +12,9 @@
 %  image_out = slice_op(function,image_in,par1,par2,...)
 %
 % PARAMETERS:
-%   function: a function handle or function name to execute. The
-%      function has as signature:
-%                       function(image_in,par1,par2,...)
-%   image_in: the input image, with more than one dimension.
+%  function: a function handle or function name to execute. The
+%     function has as signature: function(image_in,par1,par2,...)
+%  image_in: the input image, with more than one dimension.
 %
 % EXAMPLE:
 %  a = threshold(readim('chromo3d'));
@@ -26,14 +25,9 @@
 %  other arguments are images, they are not sliced, but passed directly to
 %  the function.
 %
-% NOTE:
-%  When using the MATLAB Compiler, make sure to add a %#function
-%  pragma to register the function being called by SLICE_OP:
-%     %#function bdilation
-%     b = slice_op('bdilation',a,5,-1,0);
-%
 % SEE ALSO:
-%  iterate, imarfun, slice_ex, slice_in, im2array, array2im.
+%  dip_image/iterate, dip_image/tensorfun, dip_image/slice_ex,
+%  dip_image/slice_in, im2array, array2im.
 
 % (c)2017, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.
@@ -50,21 +44,32 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = slice_op(oper,in,varargin)
+function out = slice_op(fun,in,varargin)
+
+if ~any(strcmp(class(fun),{'char','function_handle'}))
+   error('First parameter should be a string or function handle')
+end
 if ~isa(in,'dip_image')
    in = dip_image(in);
 end
+
 sz = imsize(in);
 di = numel(sz);
 N = sz(di);
+if N==1
+   out = feval(fun,in,varargin{:});
+   return;
+   % We're now guaranteed that in.TrailingSingletons==0
+end
 isz = sz(1:di-1);
 sz(1:di-1) = 1;
-indx = repmat({':'},1,di-1);
+indx = repmat({':'},1,di+1);
 
 % Compute first slice and create output
-tmp = reshape(in(indx{:},0),isz);
-out = feval(oper,tmp,varargin{:});
-if  ~isa(out,'dip_image')
+tmp = in;
+tmp.Data = tmp.Data(indx{:},1); % Dimensionality is adjusted automatically, since we don't have trailing singletons.
+out = feval(fun,tmp,varargin{:});
+if ~isa(out,'dip_image')
    out = dip_image(out);
 end
 if ndims(out)>di-1
@@ -73,7 +78,12 @@ end
 out = repmat(out,sz);
 
 % Compute other slices
-for ii = 1:N-1
-   tmp = reshape(in(indx{:},ii),isz);
-   out(indx{:},ii) = feval(oper,tmp,varargin{:});
+for ii = 2:N
+   tmp = in;
+   tmp.Data = tmp.Data(indx{:},ii);
+   tmp = feval(fun,tmp,varargin{:});
+   if ~isa(tmp,'dip_image')
+      tmp = dip_image(tmp);
+   end
+   out.Data(indx{:},ii) = tmp.Data;
 end

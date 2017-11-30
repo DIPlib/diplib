@@ -3,16 +3,16 @@ Functions in the new DIPimage that didn't exist in the old one:
 areaopening.m
 boundary_condition.m
 coordinates.m
-countneighbors.m    (changed name from countneighbours)
+countneighbors.m    (renamed from countneighbours.m)
 dip_imagedisplay.m
 drawshape.m
 eig_largest.m       (moved from @dip_image directory)
 errormeasure.m      (collects a bunch of old functions into one)
-extendimage.m
+extendregion.m
 getmaximumandminimum.m
 getsamplestatistics.m
 lee.m
-newtensorim.m
+newtensorim.m       (adapted from newimar.m)
 pathopening.m
 readics.m
 readtiff.m
@@ -24,6 +24,30 @@ thetatheta.m
 writeics.m
 writetiff.m
 
+@dip_image/clone.m
+@dip_image/cosh.m
+@dip_image/cumsum.m
+@dip_image/erfc.m
+@dip_image/flip.m
+@dip_image/gammaln.m
+@dip_image/iscomplex.m
+@dip_image/issigned.m
+@dip_image/isunsigned.m
+@dip_image/numArgumentsFromSubscript.m
+@dip_image/numberchannels.m
+@dip_image/numpixels.m
+@dip_image/numtensorel.m
+@dip_image/sinh.m
+@dip_image/slice_ex.m       (moved from toolbox directory)
+@dip_image/slice_in.m       (moved from toolbox directory)
+@dip_image/slice_op.m       (moved from toolbox directory)
+@dip_image/spatialtotensor.m
+@dip_image/swapdim.m
+@dip_image/tanh.m
+@dip_image/tensorfun.m      (renamed from imarfun.m)
+@dip_image/tensorsize.m
+@dip_image/tensortospatial.m
+
 ------------------------------------------------------
 
 Functions in the old DIPimage that are not yet ported (functions
@@ -31,8 +55,6 @@ not listed here will not be ported):
 
 tile.m, detile.m, arrangeslices.m
 bbox.m
-slice_ex.m
-slice_in.m
 
 displaylabelnumbers.m
 overlay_confidence.m
@@ -130,6 +152,10 @@ write_add.m
 writeavi.m
 writedisplayavi.m
 
+@dip_image/besselj.m
+@dip_image/length.m (meaning?)
+@dip_image/unique.m
+
 (GUI and/or DIPSHOW related stuff):
 dipcrop.m *
 dipgetimage.m *
@@ -171,8 +197,3 @@ printer_icc.m
 scanner_icc.m
 read_icc_profile.m
 write_icc_profile.m
-
-(dip_image methods):
-imarfun.m
-iterate.m (These two need to be re-thought. We might want to keep them for backwards-compatability, but
-           they don't make much sense since we don't have image arrays any more)

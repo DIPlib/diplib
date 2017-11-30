@@ -14,7 +14,7 @@
 %   In DIPimage 2.x, SUM(B), with B a tensor image, would work over all tensor
 %   components, yielding a scalar image of the same size as B. To obtain
 %   the old behavior:
-%      reshape(sum(tensortospatial(B),[],2),imsize(B));
+%      tensorfun('imsum',B);
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

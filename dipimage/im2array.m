@@ -3,6 +3,10 @@
 % SYNOPSIS:
 %  out = im2array(in)
 %
+%  The last spatial dimension of IN is converted to the tensor
+%  dimension. IN must be a scalar image. OUT will have one
+%  fewer dimensions than IN.
+%
 % EXAMPLE:
 %  a = readim
 %  g = gradient(a)

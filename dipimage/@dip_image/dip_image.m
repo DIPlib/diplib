@@ -898,18 +898,18 @@ classdef dip_image
 
       function disp(obj)
          % DISP   Display information on the DIP_IMAGE object.
-         if ~isscalar(obj)
+         if isscalar(obj)
+            disp('Scalar image:');
+         else
             sz = obj.TensorSizeInternal;
             shape = obj.TensorShapeInternal;
             tensor = [num2str(sz(1)),'x',num2str(sz(2)),' ',shape,', ',...
                       num2str(numtensorel(obj)),' elements'];
-         end
-         if iscolor(obj)
-            disp(['Color image (',tensor,', ',obj.ColorSpace,'):']);
-         elseif ~isscalar(obj)
-            disp(['Tensor image (',tensor,'):']);
-         else
-            disp('Scalar image:');
+            if iscolor(obj)
+               disp(['Color image (',tensor,', ',obj.ColorSpace,'):']);
+            else
+               disp(['Tensor image (',tensor,'):']);
+            end
          end
          disp(['    data type ',datatypestring(obj)]);
          if isempty(obj)
@@ -1424,7 +1424,7 @@ classdef dip_image
          %
          %   PERMUTE always copies the pixel data.
          %
-         %   See also dip_image.shiftdims, dip_image.reshape
+         %   See also dip_image.shiftdim, dip_image.reshape
          if ~isint(k)
             error('ORDER must be an integer vector')
          elseif any(k<0) || any(k>in.NDims)
