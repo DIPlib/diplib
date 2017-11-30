@@ -149,43 +149,6 @@ FeretValues ConvexHull::Feret() const {
 }
 
 
-RadiusValues Polygon::RadiusStatistics() const {
-   RadiusValues radius;
-   if( vertices.size() < 3 ) {
-      return radius; // CLion thinks this is not initialized, but it is.
-   }
-   VertexFloat centroid = Centroid();
-   VarianceAccumulator vacc;
-   MinMaxAccumulator macc;
-   for( auto const& v : vertices ) {
-      dfloat r = Distance( centroid, v );
-      vacc.Push( r );
-      macc.Push( r );
-   }
-   radius.mean = vacc.Mean();
-   radius.var = vacc.Variance();
-   radius.max = macc.Maximum();
-   radius.min = macc.Minimum();
-   return radius;
-}
-
-
-dfloat Polygon::EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const {
-   // Inverse of covariance matrix
-   dip::CovarianceMatrix U = C.Inv();
-   // Distance of vertex to ellipse is given by sqrt( v' * U * v ), with v' the transpose of v
-   VarianceAccumulator acc;
-   for( auto v : vertices ) {
-      v -= g;
-      dfloat d = std::sqrt( U.Project( v ));
-      acc.Push( d );
-   }
-   dfloat m = acc.Mean();
-   // Ellipse variance = coefficient of variation of radius
-   return m == 0.0 ? 0.0 : acc.StandardDeviation() / m;
-}
-
-
 } // namespace dip
 
 
