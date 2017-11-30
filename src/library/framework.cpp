@@ -130,28 +130,5 @@ dip::uint OptimalProcessingDim(
    return OptimalProcessingDim_internal( sizes, in.Strides() );
 }
 
-// Find color space names to attach to output images.
-StringArray OutputColorSpaces(
-      ImageConstRefArray const& c_in,
-      UnsignedArray const& nTensorElements
-) {
-   dip::uint nOut = nTensorElements.size();
-   StringArray colspaces( nOut );
-   for( dip::uint ii = 0; ii < nOut; ++ii ) {
-      for( dip::uint jj = 0; jj < c_in.size(); ++jj ) {
-         // We do a double loop here, because we expect there to be few input and output images.
-         // Other options would be to create a lookup table ndims -> colspace by looping over
-         // the input images once, then loop over the output images once. The difference between
-         // O(n*m) and O(n+m) is not significant for small n and m.
-         Image const& tmp = c_in[ jj ].get();
-         if( tmp.IsColor() && ( tmp.TensorElements() == nTensorElements[ ii ] ) ) {
-            colspaces[ ii ] = tmp.ColorSpace();
-            break;
-         }
-      }
-   }
-   return colspaces;
-}
-
 } // namespace Framework
 } // namespace dip

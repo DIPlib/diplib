@@ -121,14 +121,6 @@ DIP_EXPORT dip::uint OptimalProcessingDim( Image const& in );
 /// to a dimension where `kernelSizes` is large also.
 DIP_EXPORT dip::uint OptimalProcessingDim( Image const& in, UnsignedArray const& kernelSizes );
 
-/// \brief Determines which color space names to assign to each output image, by finding
-/// the first input image with the same number of tensor elements as each output
-/// image.
-DIP_EXPORT StringArray OutputColorSpaces(
-      ImageConstRefArray const& c_in,
-      UnsignedArray const& nTensorElements
-);
-
 
 //
 // Scan Framework:
