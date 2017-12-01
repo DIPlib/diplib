@@ -173,13 +173,25 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    DOCTEST_CHECK( p.vertices.size() == 8 );
    DOCTEST_CHECK( p.Area() == doctest::Approx( 4 - 0.5 ));
    DOCTEST_CHECK( p.Length() == doctest::Approx( 4 + 2 * std::sqrt( 2 )));
+   DOCTEST_CHECK( p.IsClockWise() );
    h = p.ConvexHull();
    DOCTEST_CHECK( h.Vertices().size() == 8 );
    DOCTEST_CHECK( h.Area() == doctest::Approx( 4 - 0.5 ));
    DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 4 + 2 * std::sqrt( 2 )));
+   DOCTEST_CHECK( h.IsClockWise() );
    f = h.Feret();
    DOCTEST_CHECK( f.maxDiameter == doctest::Approx( std::sqrt( 5 )));
    DOCTEST_CHECK( f.minDiameter == doctest::Approx( 2 ));
+
+   p.vertices = {{ 0, 0 }, { 0, 1 }, { 1, 1 }, { 1, 0 }, { 0.5, 0.5 }};
+   DOCTEST_CHECK( p.Area() == doctest::Approx( -0.75 ));
+   DOCTEST_CHECK( p.Length() == doctest::Approx( 3 + std::sqrt( 2 )));
+   DOCTEST_CHECK( !p.IsClockWise() );
+   h = p.ConvexHull();
+   DOCTEST_CHECK( h.Polygon().vertices.size() == 4 );
+   DOCTEST_CHECK( h.Area() == doctest::Approx( 1 ));
+   DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 4 ));
+   DOCTEST_CHECK( h.IsClockWise() );
 }
 
 #endif // DIP__ENABLE_DOCTEST

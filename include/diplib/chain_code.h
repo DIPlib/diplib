@@ -450,7 +450,7 @@ struct DIP_NO_EXPORT Polygon {
 
    std::vector< VertexFloat > vertices;  ///< The vertices
 
-   /// \brief Returns the bounding box of a polygon
+   /// \brief Returns the bounding box of the polygon
    dip::BoundingBox BoundingBox() const {
       if( vertices.size() < 1 ) {
          return {}; // Should we generate an error instead?
@@ -462,7 +462,27 @@ struct DIP_NO_EXPORT Polygon {
       return bb;
    }
 
-   /// \brief Computes the area of a polygon
+   /// \brief Determine the orientation of the polygon (if constructed from a chain code, should return true)
+   bool IsClockWise() const {
+      if( vertices.size() < 3 ) {
+         return true;
+      }
+      // Find the topmost point (lowest y value) of the polygon, then compute the
+      // cross product of the two incident edges. This avoids computing the signed
+      // area of the full polygon.
+      size_t minIndex = 0;
+      for( size_t ii = 1; ii < vertices.size(); ++ii ) {
+         if(( vertices[ ii ].y < vertices[ minIndex ].y ) ||
+            (( vertices[ ii ].y == vertices[ minIndex ].y ) && ( vertices[ ii ].x > vertices[ minIndex ].x ))) {
+            minIndex = ii;
+         }
+      }
+      size_t prev = ( minIndex + vertices.size() - 1 ) % vertices.size();
+      size_t next = ( minIndex + 1 ) % vertices.size();
+      return ParallelogramSignedArea( vertices[ minIndex ], vertices[ next ], vertices[ prev ] ) >= 0; // shouldn't be == 0
+   }
+
+   /// \brief Computes the area of the polygon
    dfloat Area() const {
       if( vertices.size() < 3 ) {
          return 0; // Should we generate an error instead?
@@ -508,7 +528,7 @@ struct DIP_NO_EXPORT Polygon {
       return this->CovarianceMatrix( Centroid() );
    }
 
-   /// \brief Computes the length of a polygon (i.e. perimeter). If the polygon represents a pixelated object,
+   /// \brief Computes the length of the polygon (i.e. perimeter). If the polygon represents a pixelated object,
    /// this function will overestimate the object's perimeter. Use `dip::ChainCode::Length` instead.
    dfloat Length() const {
       if( vertices.size() < 2 ) {
@@ -591,8 +611,14 @@ class DIP_NO_EXPORT ConvexHull {
          return vertices_.vertices;
       }
 
+      /// Compute the bounding box of the convex hull
       dip::BoundingBox BoundingBox() const {
          return vertices_.BoundingBox();
+      }
+
+      /// Determine the orientation of the convex hull (should always be true).
+      bool IsClockWise() const {
+         return vertices_.IsClockWise();
       }
 
       /// Returns the area of the convex hull
