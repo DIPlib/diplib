@@ -482,7 +482,7 @@ struct DIP_NO_EXPORT Polygon {
       return ParallelogramSignedArea( vertices[ minIndex ], vertices[ next ], vertices[ prev ] ) >= 0; // shouldn't be == 0
    }
 
-   /// \brief Computes the area of the polygon
+   /// \brief Computes the (signed) area of the polygon. Default, clockwise polygons have a positive area.
    dfloat Area() const {
       if( vertices.size() < 3 ) {
          return 0; // Should we generate an error instead?

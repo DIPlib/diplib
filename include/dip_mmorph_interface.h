@@ -57,7 +57,8 @@ namespace dip_mmorph {
 ///
 /// This function "converts" an `::%Image` object to a `dip::Image` object.
 /// The `dip::Image` object will point to the data in the `::%Image`, which must continue existing until the
-/// `dip::Image` is deleted or `Strip`ped.
+/// `dip::Image` is deleted or `Strip`ped. The output `dip::Image` is protected to prevent accidental reforging,
+/// unprotect it using `dip::Image::Protect`.
 ///
 /// An empty `::%Image` produces a non-forged `dip::Image`.
 ///
@@ -117,6 +118,7 @@ inline dip::Image MmToDip( ::Image const& mm, bool forceUnsigned = false ) {
    }
    // Create Image object
    dip::Image out( dip::NonOwnedRefToDataSegment( &mm ), mm.raster(), dt, sizes, strides, tensor, tstride );
+   out.Protect();
    return out;
 }
 
