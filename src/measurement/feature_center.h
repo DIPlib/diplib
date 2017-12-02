@@ -25,7 +25,7 @@ namespace Feature {
 
 class FeatureCenter : public LineBased {
    public:
-      FeatureCenter() : LineBased( { "Center", "Coordinates of the geometric mean of the object", true } ) {};
+      FeatureCenter() : LineBased( { "Center", "Coordinates of the geometric mean of the object", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
          nD_ = label.Dimensionality();

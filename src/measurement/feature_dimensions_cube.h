@@ -25,7 +25,7 @@ namespace Feature {
 
 class FeatureDimensionsCube : public Composite {
    public:
-      FeatureDimensionsCube() : Composite( { "DimensionsCube", "Extent along the principal axes of a cube", true } ) {};
+      FeatureDimensionsCube() : Composite( { "DimensionsCube", "Extent along the principal axes of a cube", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
          nD_ = label.Dimensionality();
