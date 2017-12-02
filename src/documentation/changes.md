@@ -342,6 +342,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
     opportunity to fix it. Now we have total consistency: no matter how the measurement data is
     extracted or converted, objects are always rows, and features are always columns.
 
+  - For consistency, `msr.ID` now returns object IDs as a column vector (objects are rows).
+
 - `dipsetpref` and `dipgetpref` have fewer settings than in the old *DIPimage*:
    - `'BoundaryCondition'`, `'Truncation'`, and `'DerivativeFlavour'` have been removed, relevant
      functions optionally take these parameters as input arguments.

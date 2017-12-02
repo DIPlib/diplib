@@ -156,7 +156,7 @@ classdef dip_measurement
                error('VALUES.Units must be a string');
             end
          end
-         msr.Objects = objects(:)';
+         msr.Objects = objects(:);
          msr.Features = features;
          msr.Values = values;
          msr.Data = zeros(length(objects),cols);
@@ -307,7 +307,7 @@ classdef dip_measurement
          %   Value headers and units are lost.
          variableNames = {'ID',obj.Features.Name};
          data = cell(1,1+numel(obj.Features));
-         data{1} = obj.Objects(:);
+         data{1} = obj.Objects;
          for ii = 1:numel(obj.Features)
             J = obj.Features(ii).StartColumn+(0:obj.Features(ii).NumberValues-1);
             data{ii+1} = obj.Data(:,J);
@@ -316,7 +316,7 @@ classdef dip_measurement
       end
       
       function [m,id] = min(obj,name)
-         %MIN   Finds the maximum value for each measurement.
+         %MIN   Finds the minimum value for each measurement.
          %   MIN(M) returns a row vector with the minimum value for each
          %   measurement, and is equivalent to MIN(DOUBLE(M)).
          %
@@ -335,7 +335,7 @@ classdef dip_measurement
          end
          if nargout>1
             [m,I] = min(values);
-            id = obj.Objects(I);
+            id = obj.Objects(I)';
          else
             m = min(values);
          end
@@ -361,7 +361,7 @@ classdef dip_measurement
          end
          if nargout>1
             [m,I] = max(values);
-            id = obj.Objects(I);
+            id = obj.Objects(I)';
          else
             m = max(values);
          end
@@ -494,7 +494,7 @@ classdef dip_measurement
                if ~isnumeric(b) || numel(b)~=length(a.Objects) || any(mod(b,1)) || any(b<1)
                   error('Invalid object ID array')
                end
-               a.Objects = b(:)';
+               a.Objects = b(:);
                return
             elseif strcmpi(name,'prefix')
                % Prefix names with b.
@@ -582,7 +582,7 @@ classdef dip_measurement
             end
             % Join
             out.Data = [out.Data;varargin{ii}.Data(:,J)];
-            out.Objects = [out.Objects,varargin{ii}.Objects];
+            out.Objects = [out.Objects;varargin{ii}.Objects];
          end
       end
 
