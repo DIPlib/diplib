@@ -53,10 +53,6 @@ writetiff.m
 Functions in the old DIPimage that are not yet ported (functions
 not listed here will not be ported):
 
-tile.m, detile.m, arrangeslices.m
-bbox.m
-
-displaylabelnumbers.m
 overlay_confidence.m
 overlay_vector.m
 

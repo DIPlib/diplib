@@ -17,7 +17,7 @@
 %  array2im, dip_image.spatialtotensor, dip_image.tensortospatial
 
 % (c)2017, Cris Luengo.
-% (c)1999-2014, Delft University of Technology.
+% Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.

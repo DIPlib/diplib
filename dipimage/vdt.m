@@ -21,16 +21,6 @@
 % DIPlib:
 %  This function calls the DIPlib function dip::VectorDistanceTransform
 
-% (C) Copyright 1999-2000               Pattern Recognition Group
-%     All rights reserved               Faculty of Applied Physics
-%                                       Delft University of Technology
-%                                       Lorentzweg 1
-%                                       2628 CJ Delft
-%                                       The Netherlands
-%
-% Lucas van Vliet, May 2000.
-% Sep 2004, extended help (BR)
-
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
