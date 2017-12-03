@@ -93,7 +93,7 @@ left = 10;                % guesstimate - will correct for later
 bottom = ss(4)-height-60; % guesstimate - will correct for later
 set(fig,'Position',[left,bottom,width,height]);
 % Put some data in the window to initialise it
-do_about(fig)
+do_about(fig,'DIPimage')
 % Now correct window position to make it fit snuggly agains the top left corner of the screen
 border = dipfig_getbordersize(fig);
 fp = get(fig,'Position');
@@ -159,13 +159,35 @@ end
 %
 % Handle the ABOUT command
 %
-function do_about(cbo,~)
-% TODO: read version information (and date) from somewhere.
-strings = {'DIPimage, a MATLAB toolbox for quantitative image analysis'
-           'Version 3.0'
-           '(c)2016-2017, Cris Luengo and contributors.'
-           '(c)1999-2014, Delft University of Technology.'
-           'http://www.diplib.org/'};
+function do_about(cbo,component)
+if strcmp(component,'DIPimage')
+   % TODO: read version information (and date) from somewhere.
+   strings = {'DIPimage, a MATLAB toolbox for quantitative image analysis'
+              'Version 3.0'
+              '(c)2016-2017, Cris Luengo and contributors'
+              '(c)1999-2014, Delft University of Technology'
+              'http://www.diplib.org'};
+else
+   info = libraryinformation;
+   if strncmp(info.type,'Debug',5)
+      type = 'Debug';
+   else
+      type = 'Release';
+   end
+   if ~isempty(strfind(info.type,'OpenMP'))
+      type = [type ', with OpenMP'];
+   end
+   copyright = {};
+   tmp = info.copyright;
+   while true
+      [s,tmp] = strtok(tmp,char(10));
+      if isempty(s), break, end
+      copyright{end+1} = s;
+   end
+   strings = {[info.name ', ' info.description],...
+              ['Version ' info.version ' (' info.date ', ' type ')'],...
+              copyright{:}, info.URL};
+end
 fig = ancestor(cbo,'figure');
 create_dialog(fig,'about','About DIPimage',strings)
 end
@@ -179,17 +201,16 @@ helpwin(getappdata(fig,'command'))
 end
 
 %
-% Handle the USER MANUAL command
+% Open a web site (handles the USER MANUAL command and more)
 %
-function do_usermanual(~,~)
-helpfile = dipgetpref('UserManualLocation');
+function do_website(url)
 try
-   web(helpfile,'-browser');
+   web(url,'-browser');
 catch
    try
-      web(helpfile);
+      web(url);
    catch
-      error(['Could not open the online help file. You can find it here:',10,helpfile]);
+      error(['Could not open the online help file. You can find it here:',10,url]);
    end
 end
 end
@@ -326,9 +347,10 @@ for ii=1:size(menulist,1)
 end
 % add the help menu at the end
 h = uimenu(fig,'Label','Help','Separator','on','Tag','mainmenu');
-uimenu(h,'Label','DIPimage User Manual','Callback',@do_usermanual);
+uimenu(h,'Label','DIPimage User Manual','Callback',@(~,~)do_website(dipgetpref('UserManualLocation')));
 uimenu(h,'Label','DIPimage Reference','Callback',@(~,~)helpwin('dipimage'),'tag','reference');
-uimenu(h,'Label','About DIPimage','Callback',@do_about,'Separator','on');
+uimenu(h,'Label','About DIPimage','Callback',@(cbo,~)do_about(cbo,'DIPimage'),'Separator','on');
+uimenu(h,'Label','About DIPlib','Callback',@(cbo,~)do_about(cbo,'DIPlib'),'Separator','on');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -552,6 +574,11 @@ switch style
                        'Tag',['label',num2str(index)],...
                        'HorizontalAlignment','left');
       position_text_control(labh,pos,sizes,index)
+      if strncmp(data,'http://',7)
+         set(labh,'Enable','Inactive',...
+                  'ButtonDownFcn',@(~,~)do_website(data),...
+                  'ForegroundColor',[0,0,0.8]);
+      end
    case 'output' % Create a variable name entering control for output variables
       labh = uicontrol(fig,...
                        'Style','text',...

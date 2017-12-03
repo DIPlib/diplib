@@ -107,6 +107,7 @@ src/library/image_data.cpp
 src/library/image_indexing.cpp
 src/library/image_manip.cpp
 src/library/image_views.cpp
+src/library/information.cpp
 src/library/multithreading.cpp
 src/library/neighborhood.cpp
 src/library/physical_dimensions.cpp

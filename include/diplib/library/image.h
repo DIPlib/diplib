@@ -43,7 +43,6 @@
 /// \see infrastructure
 
 
-/// \brief The `dip` namespace contains all the library functionality.
 namespace dip {
 
 

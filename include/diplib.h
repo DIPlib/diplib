@@ -37,6 +37,43 @@
 #include "diplib/library/operators.h"
 #include "diplib/library/stringparams.h"
 
+/// \brief The `dip` namespace contains all the library functionality.
+namespace dip {
+
+/// \brief Holds information about the *DIPlib* binary.
+///
+/// Information in this structure can be used to display library information
+/// to the user (e.g. in a splash screen). It also contains information that
+/// can be used to determine at run time the properties of the DIPlib library
+/// that the application links to. Refer to `dip::libraryInformation`.
+///
+/// The string `type` starts either with "Release" or "Debug", indicating
+/// the whether the library was compiled with optimizations enabled and no
+/// debug information (release) or without optimizations and with debug
+/// information (debug). Next it lists a series of compile-time options,
+/// separated by comma. The options are:
+///  - "with OpenMP": indicates multithreading is built in.
+///  - "recording stack traces": indicates that exceptions report a stack trace,
+///    rather than only show the function that threw it.
+///  - "asserts enabled": indicates additional run-time tests for consistency
+///    are executed.
+///  - "Unicode support": indicates e.g. units are output using Unicode.
+///  - "ICS support": indicates ICS file reading and writing is available.
+///  - "TIFF support": indicates TIFF file reading and writing is available.
+struct DIP_NO_EXPORT LibraryInformation {
+   String name;         ///< The library name
+   String description;  ///< A short description string
+   String copyright;    ///< Copyright string for the library
+   String URL;          ///< Library website, with contact information etc.
+   String version;      ///< The library version number
+   String date;         ///< Compilation date
+   String type;         ///< Describes options enabled during compilation
+};
+
+/// \brief Constant that holds information about the *DIPlib* binary.
+DIP_EXPORT extern const LibraryInformation libraryInformation;
+
+} // namespace dip
 
 /// \file
 /// \brief This is the main include file for the *DIPlib* library.
