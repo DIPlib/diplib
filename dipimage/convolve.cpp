@@ -49,7 +49,6 @@ dip::OneDimensionalFilter GetFilter(
 } // namespace
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
-   //dml::streambuf streambuf;
 
    char const* wrongFilter = "Wrong filter definition";
 
@@ -62,22 +61,29 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
+      dip::StringArray bc;
+      if( nrhs > 2 ) {
+         bc = dml::GetStringArray( prhs[ 2 ] );
+      }
+
+      dip::OneDimensionalFilterArray filterArray;
       mxArray const* mxFilter = prhs[ 1 ];
       if( mxIsNumeric( mxFilter ) || mxIsClass( mxFilter, "dip_image" )) {
 
          dip::Image const filter = dml::GetImage( mxFilter );
-         // TODO: Try to separate `filter` into 1D filters. If successful call dip::SeparableConvolution()
-
-         if( filter.NumberOfPixels() > 7*7 ) {
-            dip::ConvolveFT( in, filter, out );
-         } else {
-            dip::GeneralConvolution( in, filter, out );
+         filterArray = dip::SeparateFilter( filter );
+         if( filterArray.empty() ) {
+            if( filter.NumberOfPixels() > 7 * 7 ) {
+               dip::ConvolveFT( in, filter, out );
+            } else {
+               dip::GeneralConvolution( in, filter, out, bc );
+            }
+            goto fin;
          }
 
       } else {
 
-         dip::OneDimensionalFilterArray filterArray;
-         if( mxIsCell( mxFilter ) ) {
+         if( mxIsCell( mxFilter )) {
             DIP_THROW_IF( !dml::IsVector( mxFilter ), wrongFilter );
             dip::uint n = mxGetNumberOfElements( mxFilter );
             filterArray.resize( n );
@@ -89,7 +95,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
                   DIP_THROW( wrongFilter );
                }
             }
-         } else if( mxIsStruct( mxFilter ) ) {
+         } else if( mxIsStruct( mxFilter )) {
             dip::uint n = mxGetNumberOfElements( mxFilter );
             filterArray.resize( n );
             for( dip::uint ii = 0; ii < n; ++ii ) {
@@ -101,15 +107,11 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             }
          }
 
-         dip::StringArray bc;
-         if( nrhs > 2 ) {
-            bc = dml::GetStringArray( prhs[ 2 ] );
-         }
-
-         dip::SeparableConvolution( in, out, filterArray, bc );
-
       }
 
+      dip::SeparableConvolution( in, out, filterArray, bc );
+
+      fin:
       plhs[ 0 ] = mi.GetArray( out );
 
    } catch( const dip::Error& e ) {
