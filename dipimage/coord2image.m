@@ -1,4 +1,4 @@
-%COORD2IMAGE   Generate binary image with ones at coordinates.
+%COORD2IMAGE   Generate binary image with ones at coordinates
 %
 % SYNOPSIS:
 %  image_out = coord2image(coordinates,sz)

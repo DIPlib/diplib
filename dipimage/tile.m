@@ -1,4 +1,4 @@
-%TILE   Displays a 2D tensor image in one 2D image.
+%TILE   Displays a 2D tensor image in one 2D image
 %  Tiles tensor component images along the first two image dimensions.
 %
 % SYNOPSIS:

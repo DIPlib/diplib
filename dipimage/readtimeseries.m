@@ -1,4 +1,4 @@
-%READTIMESERIES   Reads a series/stack of TIFF images as a 3D image.
+%READTIMESERIES   Reads a series/stack of TIFF images as a 3D image
 %
 % SYNOPSIS
 %  out = readtimeseries(basefilename,extension,range,color,verbose)

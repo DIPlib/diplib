@@ -1,4 +1,4 @@
-%IM2MAT   Converts a dip_image to a matlab array.
+%IM2MAT   Converts a dip_image to a matlab array
 %
 % SYNOPSIS:
 %  A = IM2MAT(B,DATATYPE)

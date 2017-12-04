@@ -1,4 +1,4 @@
-%FINDMINIMA   Find local minima, with sub-pixel precision.
+%FINDMINIMA   Find local minima, with sub-pixel precision
 %
 % FINDMINIMA returns a list of coordinates of local minima in the input
 % image, with sub-pixel precision.

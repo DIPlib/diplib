@@ -1,4 +1,4 @@
-%DIPSHOW   Shows a dip_image object as an image
+%DIPSHOW   Shows an image in an interactive display window
 %   DIPSHOW(B) displays the image in B. To which figure window and in what
 %   mode depends on the current default settings, which can be specified
 %   through DIPSETPREF and DIPFIG. DIPSHOW works for 1, 2, 3 and 4 dimensional

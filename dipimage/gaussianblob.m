@@ -1,4 +1,4 @@
-%GAUSSIANBLOB  Adds Gauss shaped spots to an  image
+%GAUSSIANBLOB  Adds Gauss shaped spots to an image
 %
 % SYNOPSIS:
 %  image_out = gaussianblob(image_in,coordinates,sigma,strength,domain,truncation)

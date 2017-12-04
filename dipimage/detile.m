@@ -1,4 +1,4 @@
-%DETILE   Splits an image in subimages.
+%DETILE   Splits an image in subimages
 %  Revertes the function TILE.
 %
 % SYNOPSIS:

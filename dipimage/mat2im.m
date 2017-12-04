@@ -1,4 +1,4 @@
-%MAT2IM   Converts a matlab array to a dip_image.
+%MAT2IM   Converts a matlab array to a dip_image
 %
 % SYNOPSIS:
 %  A = MAT2IM(B,DIM)

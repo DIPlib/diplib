@@ -1,4 +1,4 @@
-%DIPMENUS   Describes the menu system to DIPIMAGE.
+%DIPMENUS   Describes the menu system to DIPIMAGE
 %   DIPMENUS is used by DIPIMAGE to determine the location of the toolbox
 %   functions in the menu system, as well as the input parameters to each
 %   of those functions.
@@ -123,6 +123,13 @@ menulist = {...
       'radialsum','radialmean','radialmin','radialmax','-',...
       'errormeasure','noisestd','entropy','-','cal_readnoise'}...
 };
+
+% For the benefit of our MAKECONTENTS tool, we don't execute the stuff
+% below if there is only one output argument. This also prevents
+% LOCALDIPMENUS to be called, which could change MENULIST.
+if nargout < 2
+   return
+end
 
 %
 % Describing all of the functions in the toolbox... hold on!

@@ -36,7 +36,7 @@ endif()
 # Installation path
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BUILD_TYPE}" CACHE PATH "Installation directory")
 set(DOCUMENTATION_OUTPUT share/doc/DIPlib)
-set(DIPIMAGE_INSTALL_PATH share/dipimage)
+set(DIPIMAGE_INSTALL_PATH share/DIPimage)
 set(PYDIP_INSTALL_PATH lib/PyDIP)
 
 # Compiler flags
@@ -349,6 +349,8 @@ find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)
 if(Matlab_FOUND)
    set(DIP_BUILD_DIPIMAGE ON CACHE BOOL "Build the DIPimage toolbox")
 endif()
+
+# Use MAIN_PROGRAM argument to find_package(Matlab), then ${Matlab_MAIN_PROGRAM} can execute tools/makecontents.m
 
 if(DIP_BUILD_DIPIMAGE)
    # Install M-files

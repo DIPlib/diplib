@@ -1,4 +1,4 @@
-%DIPIMAGE   Starts the interactive user interface DIPimage.
+%DIPIMAGE   Starts the interactive user interface DIPimage
 %   DIPIMAGE, on its own, starts DIPimage, an graphical user interface
 %   that gives easy access to the basic functionality of the DIPimage
 %   toolbox.
@@ -177,19 +177,13 @@ else
    if ~isempty(strfind(info.type,'OpenMP'))
       type = [type ', with OpenMP'];
    end
-   copyright = {};
-   tmp = info.copyright;
-   while true
-      [s,tmp] = strtok(tmp,char(10));
-      if isempty(s), break, end
-      copyright{end+1} = s;
-   end
+   copyright = textscan(info.copyright,'%s','delimiter',char(10));
    strings = {[info.name ', ' info.description],...
               ['Version ' info.version ' (' info.date ', ' type ')'],...
-              copyright{:}, info.URL};
+              copyright{1}{:}, info.URL};
 end
 fig = ancestor(cbo,'figure');
-create_dialog(fig,'about','About DIPimage',strings)
+create_dialog(fig,'about',['About ',component],strings)
 end
 
 %
@@ -348,7 +342,7 @@ end
 % add the help menu at the end
 h = uimenu(fig,'Label','Help','Separator','on','Tag','mainmenu');
 uimenu(h,'Label','DIPimage User Manual','Callback',@(~,~)do_website(dipgetpref('UserManualLocation')));
-uimenu(h,'Label','DIPimage Reference','Callback',@(~,~)helpwin('dipimage'),'tag','reference');
+uimenu(h,'Label','DIPimage Reference','Callback',@(~,~)helpwin('DIPimage'),'tag','reference');
 uimenu(h,'Label','About DIPimage','Callback',@(cbo,~)do_about(cbo,'DIPimage'),'Separator','on');
 uimenu(h,'Label','About DIPlib','Callback',@(cbo,~)do_about(cbo,'DIPlib'),'Separator','on');
 end

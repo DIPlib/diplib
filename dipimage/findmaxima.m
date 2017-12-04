@@ -1,4 +1,4 @@
-%FINDMAXIMA   Find local maxima, with sub-pixel precision.
+%FINDMAXIMA   Find local maxima, with sub-pixel precision
 %
 % SYNOPSIS:
 %  [coords,vals] = findmaxima(image_in,mask,method)
