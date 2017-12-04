@@ -537,7 +537,7 @@ classdef dip_image
                      varargout{1} = 1;
                   end
                else
-                  if length(sz) == 0
+                  if isempty(sz)
                      varargout{1} = [1,1];
                   elseif length(sz) == 1
                      varargout{1} = [sz,1];
@@ -651,7 +651,7 @@ classdef dip_image
       function varargout = imarsize(obj)
          %IMARSIZE   Alias of TENSORSIZE for backwards compatibility.
          varargout = cell(1,nargout);
-         [varargout{:}] = tensorsize(varargin);
+         [varargout{:}] = tensorsize(obj);
       end
 
       function n = numel(obj)
@@ -898,18 +898,18 @@ classdef dip_image
 
       function disp(obj)
          % DISP   Display information on the DIP_IMAGE object.
-         if ~isscalar(obj)
+         if isscalar(obj)
+            disp('Scalar image:');
+         else
             sz = obj.TensorSizeInternal;
             shape = obj.TensorShapeInternal;
             tensor = [num2str(sz(1)),'x',num2str(sz(2)),' ',shape,', ',...
                       num2str(numtensorel(obj)),' elements'];
-         end
-         if iscolor(obj)
-            disp(['Color image (',tensor,', ',obj.ColorSpace,'):']);
-         elseif ~isscalar(obj)
-            disp(['Tensor image (',tensor,'):']);
-         else
-            disp('Scalar image:');
+            if iscolor(obj)
+               disp(['Color image (',tensor,', ',obj.ColorSpace,'):']);
+            else
+               disp(['Tensor image (',tensor,'):']);
+            end
          end
          disp(['    data type ',datatypestring(obj)]);
          if isempty(obj)
@@ -1085,7 +1085,7 @@ classdef dip_image
                ndims = a.NDims;
                a = [a.PixelSize.magnitude];
                if isempty(a)
-                  a = repmat(1,1,ndims);
+                  a = ones(1,ndims);
                elseif length(a) < ndims
                   a = [a,repmat(a(end),1,ndims-length(a))];
                end
@@ -1264,9 +1264,9 @@ classdef dip_image
                N = sz(1);
                s = substruct('()',repmat({':'},1,ndims(a.Data)));
                if a.TensorShapeInternal == 'column-major matrix' || a.TensorShapeInternal == 'row-major matrix'
-                  s.subs{2} = [1:N+1:N*N];
+                  s.subs{2} = 1:N+1:N*N;
                else % diagonal, symmetric and triangular matrices store diagonal elements first
-                  s.subs{2} = [1:N];
+                  s.subs{2} = 1:N;
                end
                if numtensorel(a) ~= N
                   a.ColorSpace = '';
@@ -1424,10 +1424,10 @@ classdef dip_image
          %
          %   PERMUTE always copies the pixel data.
          %
-         %   See also dip_image.shiftdims, dip_image.reshape
+         %   See also dip_image.shiftdim, dip_image.reshape
          if ~isint(k)
             error('ORDER must be an integer vector')
-         elseif any(k<0) | any(k>in.NDims)
+         elseif any(k<0) || any(k>in.NDims)
             error('ORDER contains an index out of range')
          end
          k = k(:)'; % Make sure K is a 1xN vector.
@@ -1459,7 +1459,7 @@ classdef dip_image
          pxsz = in.PixelSize;
          if ~isempty(pxsz)
             pxsz = ensurePixelSizeDimensionality(pxsz,nd);
-            in.PixelSize = pxsz(k);
+            in.PixelSize = pxsz(k_orig);
          end
       end
 
@@ -1502,7 +1502,7 @@ classdef dip_image
          if nargin==1
             % Remove leading singleton dimensions
             sz = imsize(in);
-            n = min(find(sz>1));                  % First non-singleton dimension.
+            n = min(find(sz>1,'first')); % First non-singleton dimension.
             if isempty(n)
                n = length(sz);
             end
@@ -1760,16 +1760,149 @@ classdef dip_image
                error('Size vector must be a vector with positive integer elements')
             end
          end
-         switch length(n)
-            case 0
-               n = [1,1];
-            case 1
-               n = [n,1];
-            otherwise
-               n = n([2,1,3:end]);
+         if isempty(n)
+            error('Size argument is an empty array')
          end
-         n = [1,1,n];
-         in.Data = repmat(in.Data,n);
+         nd = max(numel(n),ndims(in));
+         if numel(n)==1
+            n = [1,n];
+         else
+            n = n([2,1,3:end]);
+         end
+         sz = size(in.Data);
+         if ndims(in)==1
+            % Special case for a 1D image: it's stored along the Y-axis,
+            % the code below won't work correctly
+            k = sz(3);
+            in.Data = reshape(in.Data,[sz(1:2),1,k]);
+            in.Data = repmat(in.Data,[1,1,n]);
+         else
+            in.Data = repmat(in.Data,[1,1,n]);
+            k = 1;
+         end
+         if nd==1
+            in.Data = reshape(in.Data,[sz(1:2),n(2)*k]);
+         end
+         in.NDims = nd;
+      end
+
+      function out = clone(in,varargin)
+         %CLONE   Creates a new image, identical to in
+         %   Conceptually OUT = CLONE(IN) is the same as OUT = IN; OUT(:) = 0;
+         %   That is, it creates a new image, initialzed to zero, with all the same
+         %   properties as IN.
+         %
+         %   Additional key/value pairs can be used to change specific properties:
+         %    - 'imsize': changes the sizes of the image
+         %    - 'tensorsize': changes the sizes of the tensor
+         %    - 'tensorshape': changes how the dip_image.TensorShape property
+         %    - 'colorspace': changes the color space
+         %    - 'datatype': changes the data type, see DIP_IMAGE/DIP_IMAGE for valid
+         %      DATATYPE strings.
+         %
+         %   If 'tensorsize' or 'tensorshape' are given, any previous color space
+         %   settings will be ignored, including that in IN. Likewise, if
+         %   'colorspace' is given, any previous tensor size or shape settings
+         %   will be ignored
+         %
+         %   SEE ALSO: newim, newtensorim, newcolorim, dip_image
+         if mod(length(varargin),2) ~= 0
+            error('All keys must have a value');
+         end
+         kk = 1;
+         imsz = imsize(in);
+         telem = numtensorel(in);
+         tsz = [];
+         tsh = 'column vector';
+         colsp = in.ColorSpace;
+         if isempty(colsp)
+            tsz = in.TensorSizeInternal;
+            tsh = in.TensorShapeInternal;
+         end
+         dtype = datatype(in);
+         while kk < length(varargin)
+            key = varargin{kk};
+            value = varargin{kk+1};
+            kk = kk+2;
+            if ~ischar(key)
+               error('Keys must be strings')
+            end
+            switch key
+               case 'imsize'
+                  imsz = value;
+                  if ~isnumeric(imsz) || ~isvector(imsz)
+                     error('IMSIZE value must be a numeric vector')
+                  end
+               case 'tensorsize'
+                  tsz = value;
+                  if ~isnumeric(tsz) || numel(tsz)<1 || numel(tsz)>2
+                     error('TENSORSIZE value must be numeric and have 1 or 2 elements')
+                  end
+                  colsp = '';
+                  telem = 0;
+               case 'tensorshape'
+                  tsh = value;
+                  if ~ischar(tsh)
+                     error('TENSORSHAPE value must be a string')
+                  end
+                  colsp = '';
+                  telem = 0;
+               case 'colorspace'
+                  colsp = value;
+                  if ~ischar(colsp)
+                     error('COLORSPACE value must be a string')
+                  end
+                  telem = colorspacemanager(colsp);
+                  tsz = telem;
+                  tsh = 'column vector';
+               case 'datatype'
+                  dtype = value;
+                  if ~ischar(dtype)
+                     error('DATATYPE value must be a string')
+                  end
+            end
+         end
+         update_tsh = '';
+         if telem == 0
+            % Compute telem
+            switch tsh
+               case {'column vector','row vector'}
+                  telem = prod(tsz);
+               case {'column-major matrix','row-major matrix'}
+                  telem = prod(tsz);
+                  update_tsh = tsh;
+                  tsh = tsz;
+               case 'diagonal matrix'
+                  if numel(tsz)==1
+                     tsz = [tsz,tsz];
+                  else
+                     if tsz(1)~=tsz(2)
+                        error('A diagonal matrix must be square')
+                     end
+                  end
+                  telem = tsz(1);
+               case {'symmetric matrix','upper triangular matrix','lower triangular matrix'}
+                  if numel(tsz)==1
+                     tsz = [tsz,tsz];
+                  else
+                     if tsz(1)~=tsz(2)
+                        error('A diagonal matrix must be square')
+                     end
+                  end
+                  telem = tsz(1) * (tsz(1)+1) / 2;
+               otherwise
+                  error('Bad value for TENSORSHAPE')
+            end
+         end
+         out = dip_image(zeros(telem,1),tsh,dtype);
+         if ~isempty(update_tsh)
+            out.TensorShape = update_tsh;
+         end
+         if ~isempty(imsz)
+            out = repmat(out,imsz);
+         end
+         out.ColorSpace = colsp;
+         out.PixelSize = in.PixelSize;
       end
 
       % ------- OPERATORS -------
@@ -2499,7 +2632,7 @@ function a = subsasgn_dip(a,s,b)
    end
 end
 
-% Assigns b into dip_iamge data segment a. b is a standard matlab matrix
+% Assigns b into dip_image data segment a. b is a standard matlab matrix
 function a = subsasgn_mat(a,s,b)
    %fprintf('subsasgn_mat: size(b,1) = %d, size(a,1) = %d\n', size(b,1), size(a,1))
    if isreal(b) % Assigning real values into a
@@ -2522,24 +2655,36 @@ function a = subsasgn_mat(a,s,b)
    end
 end
 
-% Assigns b into dip_iamge data segment a. b is a standard matlab matrix
+% Assigns b into dip_image data segment a. b is a standard matlab matrix
 function a = subsasgn_core(a,s,b)
    %fprintf('subsasgn_core: size(b,2) = %d, size(a,2) = %d\n', size(b,2), size(a,2))
-   telems = s.subs{2};
-   if length(telems) > 1 && size(b,2) == 1
+   % Here we assign matrix B into matrix A using S.
+   % SUBSASGN doesn't do singleton expansion, we want to do that, at least
+   % in the case of assigning a 0D tensor image to multiple pixels of A.
+   % so we call SUBSASGN on each of the tensor elements of B.
+   telemsA = s.subs{2};
+   ntelemsB = size(b,2);
+   if ntelemsB == 1
       % Insert b into each tensor element
-      for ii = telems
+      for ii = telemsA
          s.subs{2} = ii;
          %fprintf('Assigning array %s into array %s using:\n', mat2str(size(b)), mat2str(size(a)))
          %disp(s)
          a = subsasgn(a,s,b);
       end
-   elseif length(telems) == size(b,2)
-      % Simple
-      %fprintf('Assigning array %s into array %s using:\n', mat2str(size(b)), mat2str(size(a)))
-      %disp(s)
-      a = subsasgn(a,s,b);
    else
-      error('Subscripted assignment tensor sizes mismatch')
+      % Insert b(:,ii,:,:,:,...) into tensor element ii
+      if ntelemsB ~= length(telemsA)
+         error('Subscripted assignment tensor sizes mismatch')
+      end
+      sb = substruct('()',repmat({':'},1,ndims(b)));
+      for ii = telemsA
+         s.subs{2} = ii;
+         sb.subs{2} = ii;
+         b2 = subsref(b,sb);
+         %fprintf('Assigning array %s into array %s using:\n', mat2str(size(b2)), mat2str(size(a)))
+         %disp(s)
+         a = subsasgn(a,s,b2);
+      end
    end
 end

@@ -16,28 +16,28 @@
 %      'angle'
 %      'orientation'
 %
-%   The strings in the first column change the grey-value mapping. See
-%   the help for DIPSHOW for more information on these. The strings in
-%   the second column change the colormap. Incidentally, 'labels'
-%   implies 'normal'. The strings in the third column set the complex
-%   to real mapping. The ones in the third comumn select the orientation
-%   of the slices in a 3D display, and the ones in the fourth column set
-%   global stretching on or off in 3D displays. You can combine one
-%   string from each of these four columns in a single command, the
+%   There are five groups of strings here. The strings in the first column
+%   change the grey-value mapping. See the help for DIPSHOW for more
+%   information on these. The strings in the second column (top) change the
+%   colormap. Of these, 'labels' also implies 'normal'. The bottom group in
+%   the second column set the complex to real mapping. The two groups in
+%   the third comumn select the orientation of the slices in a 3D display,
+%   and control the global stretching in 3D displays. You can combine one
+%   string from each of these five groups in a single command, the
 %   order is irrelevant.
 %
 %   Additionally, DIPMAPPING(...,'SLICE',N) sets a 3D display to slice
 %   number N. These two values must be consecutive, but they can be
 %   mixed in with the other strings in any order.
 %   DIPMAPPING(...,'COLORMAP',CM) sets the colormap to CM. These two
-%   values must be consecutive, but they can be mixed in with the other
-%   strings in any order.
+%   values must be consecutive, and replace one of the colormap selection
+%   options.
 %
-%   You can also use a two-value vector that sets the range, as in
-%   DIPSHOW: DIPMAPPING(H,[LOW,HIGH]).
+%   You can also use a two-value vector to set the range, as in DIPSHOW:
+%   DIPMAPPING(H,[LOW,HIGH]).
 %
-%   H, the figure window handle, can be left out. It will default to
-%   the current figure.
+%   H, the figure window handle, can be left out. It will default to the
+%   current figure.
 %
 %   See also DIPSHOW.
 
@@ -312,6 +312,8 @@ if manual
       set(computebutton,'position',buttonpos);
    end
    set(h,'Visible','on')
+   drawnow;
+   uicontrol(editlow);
    % Run
    waitfor(h,'UserData')
    if ishandle(h)
@@ -347,7 +349,7 @@ elseif custom
    cancelbutton = uicontrol(h,'Style','pushbutton','String','Cancel',...
                         'Callback',@(~,~)set(gcbf,'UserData','cancel'),'units','pixels');
    textbox      =  uicontrol(h,'Style','text','units','pixels','HorizontalAlignment','left',...
-                        'String','Command to generate colormap (ex: hot, copper, winter, etc.)');
+                        'String','Command to generate colormap (ex: parula, hot, etc.)');
    editbox      =  uicontrol(h,'Style','edit','units','pixels','HorizontalAlignment','left',...
                         'BackgroundColor',[1,1,1],'String','');
    udata = [];
@@ -386,6 +388,8 @@ elseif custom
    textpos(1:2) = [sizes.leftmargin,editpos(2)+editpos(4)+sizes.vspacing];
    set(textbox,'position',textpos);
    set(h,'Visible','on')
+   drawnow;
+   uicontrol(editbox);
    % Run
    waitfor(h,'UserData')
    if ishandle(h)

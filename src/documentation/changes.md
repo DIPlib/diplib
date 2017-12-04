@@ -319,10 +319,6 @@ code that used *DIPlib* or *DIPimage* to the new version.
     consequently concatenated the various tensor elements as separate images. These functions
     now all work along spatial dimensions only, leaving the tensor dimension unaffected.
 
-  - `imarfun` and `iterate` no longer exist. There should be no need for them as all functions
-    recognize tensor images. `slice_op` can replace `iterate` if needed (TODO: `slice_op` is not
-    yet implemented).
-
   - The `reshape` method now takes pixels column-wise instead of row-wise from the input. This
     is the natural way of doing it, as it doesn't require data copy. I don't remember why it
     was row-wise in the old *DIPimage*, and I presume there are few (if any) programs that
@@ -346,13 +342,26 @@ code that used *DIPlib* or *DIPimage* to the new version.
     opportunity to fix it. Now we have total consistency: no matter how the measurement data is
     extracted or converted, objects are always rows, and features are always columns.
 
-- `dipsetpref` and `dipgetpref` have fewer settings than in the old *DIPimage*. Some settings
-  were linked to *DIPlib* global variables, none of which exist any more, and some others
-  are simply no longer relevant.
+  - For consistency, `msr.ID` now returns object IDs as a column vector (objects are rows).
 
-- `newimar` is now in the `alias` subdirectory, and identical to the new function `newtensorim`.
-  Other functions that used to be in the `alias` directory are no longer. We recommend that
-  you correct affected code, but if you want, you can always create those aliases again.
+- `dipsetpref` and `dipgetpref` have fewer settings than in the old *DIPimage*:
+   - `'BoundaryCondition'`, `'Truncation'`, and `'DerivativeFlavour'` have been removed, relevant
+     functions optionally take these parameters as input arguments.
+   - `'MorphologicalFlavour'` (and the associated function `dip_morph_flavour`) has been removed
+     as it didn't seem useful.
+   - `'ComputationLimit'` is no longer relevant because of changes in how image arithmetic is
+     performed.
+   - `'ConflictingPixelSize'` and `'InconsistentPixelSize'` are no longer relevant, the *DIPlib*
+     library keeps track of pixel sizes and handles these situations in a fixed manner.
+   - `'CommandFilePath'` is no longer relevant, the *DIPimage* GUI no longer probes functions
+     to put them in the menus.
+   - `'DebugMode'` has been removed, *DIPlib* stack traces are shown or not depending on a
+     compile-time flag.
+   - `'FFTtype'` has been removed, *DIPlib* can optionally be compiled to use *FFTW* for the FFT.
+   - `'KeepDataType'` has been removed. TODO: should be reinstate it?
+
+- `newimar` and `imarfun` are now in the `alias` subdirectory, and are identical to the new
+  functions `newtensorim` and `tensorfun`.
 
 - Many filters now have a boundary condition parameter. In the old *DIPimage* one would change
   the boundary condition through a global parameter, which no longer exists. If you never
@@ -397,6 +406,20 @@ code that used *DIPlib* or *DIPimage* to the new version.
   - `mse`, `mae` and several similar functions have been collected in a new function `errormeasure`.
     The old functions are still available in the `alias` sub-directory.
 
+  - `slice_in` and `slice_ex` specify dimensions starting at 1 (not at 0 as previously). This
+    change is for consistency with the rest of the toolbox. These functions now reorder dimensions
+    in a way consistent with `dip_image/squeeze` (removing dimension 1 causes dimension 3 to become
+    dimension 1). `slice_in`, `slice_ex` and `slice_op` have been made into `dip_image` methods,
+    for efficiency.
+
 - New functions not mentioned above: `areaopening`, `coordinates`, `extendimage`, `getmaximumandminimum`,
   `getsamplestatistics`, `lee`, `pathopening`, `select`, `setborder`, `skew`, `smallobjectsremove`,
   `thetatheta`.
+
+- Old functions that used to be in the `alias` directory are no longer. We recommend that
+  you correct affected code, but if you want, you can always create those aliases again.
+
+- If you customized the menus in the DIPimage GUI, you will have to update your `localdipmenus.m`
+  file. If you wrote your own functions that integrated in the GUI, you'll have to do so through
+  your `localdipmenus.m` now. Preference setting `'CommandFilePath'` no longer exists,
+  `getprarams` no longer exists, and functions are no longer probed with `'DIP_GetParamList'`.

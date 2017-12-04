@@ -22,7 +22,7 @@
 #define DIP_CHAIN_CODE_H
 
 #include "diplib.h"
-
+#include "accumulators.h"
 
 /// \file
 /// \brief Support for chain-code and polygon object representation and quantification.
@@ -46,16 +46,39 @@ struct DIP_NO_EXPORT FeretValues {
 };
 
 /// \brief Holds the various output values of the `dip::RadiusStatistics` and `dip::ConvexHull::RadiusStatistics` function.
-struct DIP_NO_EXPORT RadiusValues {
-   dfloat mean = 0.0;   ///< Mean radius
-   dfloat var = 0.0;    ///< Radius variance
-   dfloat max = 0.0;    ///< Maximum radius
-   dfloat min = 0.0;    ///< Minimum radius
+class DIP_NO_EXPORT RadiusValues {
+   public:
+      /// Returns the mean radius
+      dfloat Mean() const { return vacc.Mean(); }
+      /// Returns the standard deviation of radii
+      dfloat StandardDeviation() const { return vacc.StandardDeviation(); }
+      /// Returns the variance of radii
+      dfloat Variance() const { return vacc.Variance(); }
+      /// Returns the maximum radius
+      dfloat Maximum() const { return macc.Maximum(); }
+      /// Returns the minimum radius
+      dfloat Minimum() const { return macc.Minimum(); }
 
-   /// Computes a circularity measure given by the coefficient of variation of the radii of the object.
-   dfloat Circularity() {
-      return mean == 0.0 ? 0.0 : std::sqrt( var ) / mean;
-   }
+      /// Computes a circularity measure given by the coefficient of variation of the radii of the object.
+      dfloat Circularity() const {
+         return vacc.Mean() == 0.0 ? 0.0 : vacc.StandardDeviation() / vacc.Mean();
+      }
+
+      /// Multiple `%RadiusValues` objects can be added together.
+      RadiusValues& operator+=( RadiusValues const& other ) {
+         vacc += other.vacc;
+         macc += other.macc;
+         return *this;
+      }
+
+      void Push( dfloat x ) {
+         vacc.Push( x );
+         macc.Push( x );
+      }
+
+   private:
+      VarianceAccumulator vacc;
+      MinMaxAccumulator macc;
 };
 
 
@@ -396,15 +419,17 @@ class DIP_NO_EXPORT CovarianceMatrix {
          dfloat majorAxis;    ///< Major axis length
          dfloat minorAxis;    ///< Minor axis length
          dfloat orientation;  ///< Orientation of major axis
+         double eccentricity; ///< Ellipse eccentricity
       };
       /// \brief Compute parameters of ellipse with same covariance matrix.
       EllipseParameters Ellipse() const {
          // Eigenvector calculation according to e.g. http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
          Eigenvalues lambda = Eig();
          EllipseParameters out;
-         out.majorAxis = 4.0 * std::sqrt( lambda.largest );
-         out.minorAxis = 4.0 * std::sqrt( lambda.smallest );
+         out.majorAxis = std::sqrt( 8.0 * lambda.largest );
+         out.minorAxis = std::sqrt( 8.0 * lambda.smallest );
          out.orientation = std::atan2( lambda.largest - xx_, xy_ ); // eigenvector is {xy, lambda.largest - xx}
+         out.eccentricity = lambda.Eccentricity();
          return out;
       }
 
@@ -425,7 +450,7 @@ struct DIP_NO_EXPORT Polygon {
 
    std::vector< VertexFloat > vertices;  ///< The vertices
 
-   /// \brief Returns the bounding box of a polygon
+   /// \brief Returns the bounding box of the polygon
    dip::BoundingBox BoundingBox() const {
       if( vertices.size() < 1 ) {
          return {}; // Should we generate an error instead?
@@ -437,7 +462,27 @@ struct DIP_NO_EXPORT Polygon {
       return bb;
    }
 
-   /// \brief Computes the area of a polygon
+   /// \brief Determine the orientation of the polygon (if constructed from a chain code, should return true)
+   bool IsClockWise() const {
+      if( vertices.size() < 3 ) {
+         return true;
+      }
+      // Find the topmost point (lowest y value) of the polygon, then compute the
+      // cross product of the two incident edges. This avoids computing the signed
+      // area of the full polygon.
+      size_t minIndex = 0;
+      for( size_t ii = 1; ii < vertices.size(); ++ii ) {
+         if(( vertices[ ii ].y < vertices[ minIndex ].y ) ||
+            (( vertices[ ii ].y == vertices[ minIndex ].y ) && ( vertices[ ii ].x > vertices[ minIndex ].x ))) {
+            minIndex = ii;
+         }
+      }
+      size_t prev = ( minIndex + vertices.size() - 1 ) % vertices.size();
+      size_t next = ( minIndex + 1 ) % vertices.size();
+      return ParallelogramSignedArea( vertices[ minIndex ], vertices[ next ], vertices[ prev ] ) >= 0; // shouldn't be == 0
+   }
+
+   /// \brief Computes the (signed) area of the polygon. Default, clockwise polygons have a positive area.
    dfloat Area() const {
       if( vertices.size() < 3 ) {
          return 0; // Should we generate an error instead?
@@ -483,7 +528,7 @@ struct DIP_NO_EXPORT Polygon {
       return this->CovarianceMatrix( Centroid() );
    }
 
-   /// \brief Computes the length of a polygon (i.e. perimeter). If the polygon represents a pixelated object,
+   /// \brief Computes the length of the polygon (i.e. perimeter). If the polygon represents a pixelated object,
    /// this function will overestimate the object's perimeter. Use `dip::ChainCode::Length` instead.
    dfloat Length() const {
       if( vertices.size() < 2 ) {
@@ -498,7 +543,24 @@ struct DIP_NO_EXPORT Polygon {
 
    /// \brief Returns statistics on the radii of the polygon. The radii are the distances between the centroid
    /// and each of the vertices.
-   DIP_EXPORT RadiusValues RadiusStatistics() const;
+   DIP_EXPORT RadiusValues RadiusStatistics() const {
+      VertexFloat g = Centroid();
+      return RadiusStatistics( g );
+   }
+
+   /// \brief Returns statistics on the radii of the polygon. The radii are the distances between the given centroid
+   /// and each of the vertices.
+   DIP_EXPORT RadiusValues RadiusStatistics( VertexFloat const& g ) const {
+      RadiusValues radius;
+      if( vertices.size() < 3 ) {
+         return radius;
+      }
+      for( auto const& v : vertices ) {
+         dfloat r = Distance( g, v );
+         radius.Push( r );
+      }
+      return radius;
+   }
 
    /// \brief Compares a polygon to the ellipse with the same covariance matrix, returning the coefficient of
    /// variation of the distance of vertices to the ellipse.
@@ -515,7 +577,20 @@ struct DIP_NO_EXPORT Polygon {
 
    /// \brief Compares a polygon to the ellipse described by the given centroid and covariance matrix, returning
    /// the coefficient of variation of the distance of vertices to the ellipse.
-   DIP_EXPORT dfloat EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const;
+   DIP_EXPORT dfloat EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const {
+      // Inverse of covariance matrix
+      dip::CovarianceMatrix U = C.Inv();
+      // Distance of vertex to ellipse is given by sqrt( v' * U * v ), with v' the transpose of v
+      VarianceAccumulator acc;
+      for( auto v : vertices ) {
+         v -= g;
+         dfloat d = std::sqrt( U.Project( v ));
+         acc.Push( d );
+      }
+      dfloat m = acc.Mean();
+      // Ellipse variance = coefficient of variation of radius
+      return m == 0.0 ? 0.0 : acc.StandardDeviation() / m;
+   }
 
    /// \brief Returns the convex hull of the polygon.
    DIP_EXPORT dip::ConvexHull ConvexHull() const;
@@ -536,8 +611,14 @@ class DIP_NO_EXPORT ConvexHull {
          return vertices_.vertices;
       }
 
+      /// Compute the bounding box of the convex hull
       dip::BoundingBox BoundingBox() const {
          return vertices_.BoundingBox();
+      }
+
+      /// Determine the orientation of the convex hull (should always be true).
+      bool IsClockWise() const {
+         return vertices_.IsClockWise();
       }
 
       /// Returns the area of the convex hull
@@ -558,7 +639,7 @@ class DIP_NO_EXPORT ConvexHull {
          return vertices_.Centroid();
       }
 
-      /// Returns statistics on the radii of the polygon, see `dip::Polygon::RadiusStatistics`.
+      /// Returns statistics on the radii of the convex hull, see `dip::Polygon::RadiusStatistics`.
       RadiusValues RadiusStatistics() const {
          return vertices_.RadiusStatistics();
       }

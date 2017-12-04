@@ -25,7 +25,7 @@ namespace Feature {
 
 class FeatureInertia : public Composite {
    public:
-      FeatureInertia() : Composite( { "Inertia", "Moments of inertia of the binary object", true } ) {};
+      FeatureInertia() : Composite( { "Inertia", "Moments of inertia of the binary object", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint /*nObjects*/ ) override {
          nD_ = label.Dimensionality();

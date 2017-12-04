@@ -17,5 +17,5 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = erosion_sevarargin)
+function out = erosion_se(varargin)
 out = erosion(varargin{:});

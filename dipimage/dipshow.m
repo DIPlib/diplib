@@ -998,6 +998,7 @@ for ii=1:length(hlist)
          set(hlist(ii),'UserData',udata);
       end
       % Change the axis and zoom also for 2D data
+      % TODO: This does not work when images have different sizes! Zoom in target window is fudged up.
       ax = findobj(hlist(ii),'Type','axes');
       if udata.zoom ~= curzoom
          au = get(ax,'Units');
@@ -1772,7 +1773,7 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                set(fig,'UserData',[]);    % Solve MATLAB bug!
                set(fig,'UserData',udata);
             end
-         case {'p','P','n','N'} % Previous/next slice
+         case {'p','P','n','N'} % Previous/next slice (3rd dim)
             if nD>=3
                handle = udata.handle;
                dim3 = imagedisplay(handle,'orthogonal');
@@ -1797,14 +1798,14 @@ if strncmp(get(fig,'Tag'),'DIP_Image',9)
                set(fig,'UserData',[]);    % Solve MATLAB bug!
                set(fig,'UserData',udata);
             end
-         case {'f','b','F','B'}
+         case {'b','B','f','F'} % Back/forward slide (4th dim)
             if nD>=4
                handle = udata.handle;
                dim4 = imagedisplay(handle,'orthogonal');
                dim4 = dim4(2);
                newslice = imagedisplay(handle,'coordinates');
                newslice = newslice(dim4);
-               if upper(ch)=='P'
+               if upper(ch)=='B'
                   newslice = newslice-1;
                else
                   newslice = newslice+1;

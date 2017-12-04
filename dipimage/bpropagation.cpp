@@ -33,14 +33,14 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const inMask = dml::GetImage( prhs[ 1 ] );
       dip::Image out = mi.NewImage();
 
-      dip::sint connectivity = -1;
+      dip::uint iterations = 0;
       if( nrhs > 2 ) {
-         connectivity = dml::GetInteger( prhs[ 2 ] );
+         iterations = dml::GetUnsigned( prhs[ 2 ] );
       }
 
-      dip::uint iterations = 0;
+      dip::sint connectivity = -1;
       if( nrhs > 3 ) {
-         iterations = dml::GetUnsigned( prhs[ 3 ] );
+         connectivity = dml::GetInteger( prhs[ 3 ] );
       }
 
       dip::String edgeCondition = "object";

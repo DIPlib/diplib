@@ -23,13 +23,14 @@
 %          pixels over the range.
 %
 % DEFAULTS:
-%  indices: 0:LENGTH(TABLE)-1
+%  indices: [] (equivalent to 0:LENGTH(TABLE)-1)
 %  method: 'linear'
 %  bounds: 'clamp'
 %
 % NOTES:
-%  If no INDICES are given and IMAGE_IN is an integer image, no interpolation
-%  will be applied, since each pixel exactly matches an index.
+%  If no INDICES are given (or if it's an empty array) and IMAGE_IN is an
+%  integer image, no interpolation will be applied, since each pixel exactly
+%  matches an index.
 %
 %  The output image has the same data type as TABLE.
 %

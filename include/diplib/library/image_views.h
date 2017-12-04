@@ -1242,26 +1242,26 @@ inline Image::View Image::operator[]( dip::uint index ) const {
    return operator[]( Range( static_cast< dip::sint >( index )));
 }
 
-inline Image::View Image::operator[]( Range range ) const {
+inline Image::View Image::operator[]( Range const& range ) const {
    DIP_STACK_TRACE_THIS( return Image::View( *this, range ));
 }
 
-inline Image::View Image::At( Range x_range ) const {
+inline Image::View Image::At( Range const& x_range ) const {
    DIP_THROW_IF( sizes_.size() != 1, E::ILLEGAL_DIMENSIONALITY );
    return At( RangeArray{ x_range } );
 }
 
-inline Image::View Image::At( Range x_range, Range y_range ) const {
+inline Image::View Image::At( Range const& x_range, Range const& y_range ) const {
    DIP_THROW_IF( sizes_.size() != 2, E::ILLEGAL_DIMENSIONALITY );
    return At( RangeArray{ x_range, y_range } );
 }
 
-inline Image::View Image::At( Range x_range, Range y_range, Range z_range ) const {
+inline Image::View Image::At( Range const& x_range, Range const& y_range, Range const& z_range ) const {
    DIP_THROW_IF( sizes_.size() != 3, E::ILLEGAL_DIMENSIONALITY );
    return At( RangeArray{ x_range, y_range, z_range } );
 }
 
-inline Image::View Image::At( RangeArray ranges ) const {
+inline Image::View Image::At( RangeArray const& ranges ) const {
    DIP_STACK_TRACE_THIS( return Image::View( *this, ranges ));
 }
 

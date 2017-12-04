@@ -25,21 +25,21 @@
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
    try {
 
-      DML_MIN_ARGS( 2 );
+      DML_MIN_ARGS( 1 );
       DML_MAX_ARGS( 4 );
 
       dml::MatlabInterface mi;
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      dip::sint connectivity = -1;
+      dip::uint iterations = 1;
       if( nrhs > 1 ) {
-         connectivity = dml::GetInteger( prhs[ 1 ] );
+         iterations = dml::GetUnsigned( prhs[ 1 ] );
       }
 
-      dip::uint iterations = 1;
+      dip::sint connectivity = -1;
       if( nrhs > 2 ) {
-         iterations = dml::GetUnsigned( prhs[ 2 ] );
+         connectivity = dml::GetInteger( prhs[ 2 ] );
       }
 
       dip::String edgeCondition = "special";

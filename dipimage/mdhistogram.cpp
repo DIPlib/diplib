@@ -137,9 +137,6 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          strides[ ii ] = static_cast< dip::sint >( s );
          s *= bins.Size( ii );
       }
-      if( nDims > 1 ) {
-         std::swap( strides[ 0 ], strides[ 1 ] );
-      }
       dip::Image mlArray(
             dip::NonOwnedRefToDataSegment( plhs[ 0 ] ),
             mxGetData( plhs[ 0 ] ),

@@ -25,7 +25,7 @@
 %  im2mat, dip_image, dip_image.dip_array
 
 % (c)2017, Cris Luengo.
-% (c)1999-2014, Delft University of Technology.
+% Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -40,32 +40,29 @@
 % limitations under the License.
 
 function in = mat2im(in,dim)
-switch nargin
-   case 0
-      error('Input array expected');
-   case 1
-      in = dip_image(in);
-   case 2
-      if ~isnumeric(in) && ~islogical(in)
-         error('Input must be numeric or logical');
+if nargin<2
+   in = dip_image(in);
+else
+   if ~isnumeric(in) && ~islogical(in)
+      error('Input must be numeric or logical');
+   end
+   sz = size(in);
+   if isnumeric(dim) && isscalar(dim)
+      if dim > ndims(in) || dim < 1
+         error('Given array dimension do not match matrix dimesions');
       end
-      sz = size(in);
-      if isnumeric(dim) && isscalar(dim)
-         if dim > ndims(in) || dim < 1
-            error('Given array dimension do not match matrix dimesions');
-         end
-         if dim==1
-            in = dip_image(in,size(in,1));
-         else
-            if dim==2
-               dim=1;
-            end
-            in = dip_image(in);
-            in = spatialtotensor(in,dim);
-         end
-      elseif ischar(dim)
-         in = joinchannels(dim,in);
+      if dim==1
+         in = dip_image(in,size(in,1));
       else
-         error('Wrong input');
+         if dim==2
+            dim=1;
+         end
+         in = dip_image(in);
+         in = spatialtotensor(in,dim);
       end
+   elseif ischar(dim)
+      in = joinchannels(dim,in);
+   else
+      error('Wrong input');
+   end
 end

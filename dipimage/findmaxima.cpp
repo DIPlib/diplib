@@ -32,7 +32,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
       dip::Image mask;
       int index = 1;
-      if(( nrhs > index ) && ( ~mxIsChar( prhs[ index ] ))) {
+      if(( nrhs > index ) && ( !mxIsChar( prhs[ index ] ))) {
          mask = dml::GetImage( prhs[ index ] );
          ++index;
       }

@@ -4,9 +4,10 @@
 %  image_out = countneighbors(image_in, mode, connectivity, edgeCondition)
 %
 %  IMAGE_OUT will contain the number of set neighbors + 1 for each set pixel,
-%  and 0 for each non-set pixel. If MODE is 'all', it will perform the same
-%  operation for all pixels. In this case, no output pixels will have a value
-%  of 0.
+%  and 0 for each non-set pixel. If MODE is 'all', the output will contain
+%  the number of set neighbors for each non-set pixel. That is, for each
+%  pixel it returns the count of set pixels in the neighborhood including
+%  the origin.
 %
 % PARAMETERS:
 %  mode: perform the count for only foreground pixels ('foreground' or 1)

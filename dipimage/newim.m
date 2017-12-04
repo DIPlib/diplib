@@ -1,4 +1,4 @@
-%NEWIM   Creates a scalar dip_image of the specified size
+%NEWIM   Creates a scalar image initialized to zero
 %   NEWIM, by itself, creates an image of 256 by 256 pixels.
 %
 %   NEWIM(N) is an 1D image with N pixels all set to zero.
@@ -22,7 +22,7 @@
 %   NEWIM(B,DATATYPE(B)) creates an empty image with the same size
 %   and data type as B.
 %
-%  SEE ALSO: newtensorim, newcolorim, dip_image
+%  SEE ALSO: newtensorim, newcolorim, dip_image, dip_image.clone
 
 % (c)2017, Cris Luengo.
 % (c)1999-2014, Delft University of Technology.

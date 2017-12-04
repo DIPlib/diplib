@@ -26,6 +26,35 @@
 namespace dip {
 namespace Framework {
 
+namespace {
+
+String OutputColorSpace(
+      ImageConstRefArray const& c_in,
+      dip::uint nTensorElements
+) {
+   for( dip::uint jj = 0; jj < c_in.size(); ++jj ) {
+      Image const& tmp = c_in[ jj ].get();
+      if( tmp.IsColor() && ( tmp.TensorElements() == nTensorElements )) {
+         return tmp.ColorSpace();
+      }
+   }
+   return "";
+}
+
+StringArray OutputColorSpaces(
+      ImageConstRefArray const& c_in,
+      UnsignedArray const& nTensorElements
+) {
+   dip::uint nOut = nTensorElements.size();
+   StringArray colspaces( nOut );
+   for( dip::uint ii = 0; ii < nOut; ++ii ) {
+      colspaces[ ii ] = OutputColorSpace( c_in, nTensorElements[ ii ] );
+   }
+   return colspaces;
+}
+
+} // namespace
+
 void Scan(
       ImageConstRefArray const& c_in,
       ImageRefArray& c_out,
@@ -66,7 +95,6 @@ void Scan(
          pixelSize = tmp.PixelSize();
       }
    }
-   StringArray colspaces = OutputColorSpaces( c_in, nTensorElements );
 
    // Will we convert tensor to spatial dimension?
    bool tensorToSpatial = false;
@@ -128,6 +156,17 @@ void Scan(
       tsize = c_out[ 0 ].get().TensorElements();
    }
 
+   // Figure out color spaces for the output images
+   StringArray colspaces;
+   if( nIn > 0 ) {
+      if( opts == Scan_TensorAsSpatialDim ) {
+         colspaces.resize( 1 );
+         colspaces[ 0 ] = OutputColorSpace( c_in, tsize );
+      } else {
+         colspaces = OutputColorSpaces( c_in, nTensorElements );
+      }
+   }
+
    // Adjust output if necessary (and possible)
    DIP_START_STACK_TRACE
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
@@ -147,7 +186,9 @@ void Scan(
          tmp.ReshapeTensor( outTensor );
       }
       tmp.SetPixelSize( pixelSize );
-      tmp.SetColorSpace( colspaces[ ii ] );
+      if( !colspaces.empty() ) {
+         tmp.SetColorSpace( colspaces[ colspaces.size() == 1 ? 0 : ii ] );
+      }
    }
    DIP_END_STACK_TRACE
 

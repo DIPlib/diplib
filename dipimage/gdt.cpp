@@ -44,6 +44,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
                break;
             case 5:
                metric = dip::Metric( "chamfer", 2 );
+               break;
             default:
                DIP_THROW( dip::E::INVALID_PARAMETER );
          }

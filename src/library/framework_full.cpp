@@ -75,7 +75,7 @@ void Full(
    Image cc_in = c_in.QuickCopy(); // Preserve for later
    DIP_START_STACK_TRACE
       if( c_out.Aliases( c_in )) {
-         // We cannot work in-place! Note this only happens if we didn't call `ExtendImageLowLevel` earlier.
+         // We cannot work in-place! Note this only happens if we didn't call `ExtendImage` earlier.
          c_out.Strip();
       }
       c_out.ReForge( sizes, outTensor.Elements(), outImageType, Option::AcceptDataTypeChange::DO_ALLOW );
@@ -112,7 +112,8 @@ void Full(
          if( expandTensor ) {
             options += Option::ExtendImage_ExpandTensor;
          }
-         DIP_STACK_TRACE_THIS( ExtendImageLowLevel( cc_in, input, boundary, boundaryConditions, options ));
+         // TODO: Now that we've got `ExtendRegion`, we could expand boundaries unevenly, e.g. for shifted kernels.
+         DIP_STACK_TRACE_THIS( ExtendImage( cc_in, input, boundary, boundaryConditions, options ));
       } else { // if( dataTypeChange )
          input.Copy( cc_in );
       }

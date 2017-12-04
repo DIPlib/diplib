@@ -17,7 +17,7 @@
 %   In DIPimage 2.x, MEDIAN(B), with B a tensor image, would work over all
 %   tensor components, yielding a scalar image of the same size as B. To obtain
 %   the old behavior:
-%      reshape(median(tensortospatial(B),[],2),imsize(B));
+%      tensorfun('immedian',B);
 
 % (c)2017, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.

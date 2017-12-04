@@ -60,10 +60,10 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       dip::StandardDeviation( in, mask, out, mode, process );
 
       // Done
-      if(( nrhs > 2 ) || !out.IsScalar() ) {
+      if( nrhs > 2 ) {
          plhs[ 0 ] = mi.GetArray( out );
       } else {
-         plhs[ 0 ] = dml::GetArray( out.As< dip::dfloat >() );
+         plhs[ 0 ] = dml::GetArray( out.At( 0 ));
       }
 
    } catch( const dip::Error& e ) {

@@ -117,6 +117,7 @@ end
 [out,bins] = mdhistogram(newtensorim(ch1,ch2),mask,...
       {{'lower',range1(1),'upper',range1(2),'bins',bins1,'lower_abs','upper_abs'},...
        {'lower',range2(1),'upper',range2(2),'bins',bins2,'lower_abs','upper_abs'}});
+out = dip_image(out);
 
 hf = [];
 

@@ -244,24 +244,12 @@ inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
 // Get input arguments: convert mxArray to various dip:: types
 //
 
-#define DML_MIN_ARGS( n ) DIP_THROW_IF( nrhs < n, "Too few input arguments" )
-#define DML_MAX_ARGS( n ) DIP_THROW_IF( nrhs > n, "Too many input arguments" )
+#define DML_MIN_ARGS( n ) DIP_THROW_IF( nrhs < ( n ), "Too few input arguments" )
+#define DML_MAX_ARGS( n ) DIP_THROW_IF( nrhs > ( n ), "Too many input arguments" )
 
 /// \brief True if empty or a one-dimensional array
 inline bool IsVector( mxArray const* mx ) {
    return ( mxGetNumberOfDimensions( mx ) == 2 ) && (( mxGetM( mx ) <= 1 ) || ( mxGetN( mx ) <= 1 ));
-}
-
-/// \brief Convert a boolean (logical) from `mxArray` to `bool` by copy.
-inline bool GetBoolean( mxArray const* mx ) {
-   if( mxIsScalar( mx )) {
-      if( mxIsLogical( mx )) {
-         return *mxGetLogicals( mx );
-      } else if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
-         return *mxGetPr( mx ) != 0;
-      }
-   }
-   DIP_THROW( "Boolean value expected" );
 }
 
 /// \brief Convert an unsigned integer from `mxArray` to `dip::uint` by copy.
@@ -508,6 +496,28 @@ inline dip::StringSet GetStringSet( mxArray const* mx ) {
    } catch( dip::Error& ) {
       DIP_THROW( "String set expected" );
    }
+}
+
+/// \brief Convert a boolean (logical) from `mxArray` to `bool` by copy. Accepts `"yes"` and `"no"` as well.
+inline bool GetBoolean( mxArray const* mx ) {
+   if( mxIsChar( mx )) {
+      dip::String str = GetString( mx );
+      if(( str == "yes" ) || ( str == "y" )) {
+         return true;
+      }
+      if(( str == "no" ) || ( str == "n" )) {
+         return false;
+      }
+   }
+   if( mxIsScalar( mx )) {
+      if( mxIsLogical( mx )) {
+         return *mxGetLogicals( mx );
+      }
+      if( mxIsDouble( mx ) && !mxIsComplex( mx )) {
+         return *mxGetPr( mx ) != 0;
+      }
+   }
+   DIP_THROW( "Boolean value expected" );
 }
 
 /// \brief Convert an integer array from `mxArray` to `dip::Range` by copy.

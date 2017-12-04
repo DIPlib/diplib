@@ -1,4 +1,4 @@
-%AREAOPENING   Area opening and closing
+%AREAOPENING   Area opening or closing
 %
 % SYNOPSIS:
 %  image_out = areaopening(image_in,filterSize,connectivity,polarity)

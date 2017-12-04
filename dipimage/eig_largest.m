@@ -18,7 +18,6 @@
 %  Power Method: G.H. Golub, C.F. van Loan in Matrix Computations p.406
 
 % (c)2017, Cris Luengo.
-% Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,8 +50,7 @@ tmp = newim(imsize(A));
 tmp.data(:) = 1;
 q(:) = tmp;
 
-wa = warning;
-warning('off');
+wa = warning('off');
 
 % 7 iterations should be sufficient
 for k=1:7

@@ -17,7 +17,7 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
-function out = ssim(in,reference,mask)
+function out = mse(in,reference,mask)
 if(nargin < 3)
    mask = [];
 end

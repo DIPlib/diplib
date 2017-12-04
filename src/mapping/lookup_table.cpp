@@ -245,7 +245,7 @@ class dip__IndexedLUT_Float : public Framework::ScanLineFilter {
                         // (the `!=` test above is to avoid out-of-bounds indexing with `index+1`)
                         ++index;
                      }
-                     // fall through on purpose!
+                     // fallthrough
                   case LookupTable::InterpolationMode::ZERO_ORDER_HOLD:
                      CopyPixel( values + static_cast< dip::sint >( index ) * valuesStride, out, tensorLength,
                                 valuesTensorStride, outTensorStride );

@@ -196,7 +196,7 @@ void AreaOpening(
 
    // Add a 1-pixel boundary around the input image
    Image grey;
-   ExtendImageLowLevel( c_in, grey, { 1 }, { lowFirst ? BoundaryCondition::ADD_MAX_VALUE : BoundaryCondition::ADD_MIN_VALUE }, {} );
+   ExtendImage( c_in, grey, { 1 }, { lowFirst ? BoundaryCondition::ADD_MAX_VALUE : BoundaryCondition::ADD_MIN_VALUE } );
 
    // Prepare labels image
    Image labels;

@@ -3,16 +3,16 @@ Functions in the new DIPimage that didn't exist in the old one:
 areaopening.m
 boundary_condition.m
 coordinates.m
-countneighbors.m    (changed name from countneighbours)
+countneighbors.m    (renamed from countneighbours.m)
 dip_imagedisplay.m
 drawshape.m
 eig_largest.m       (moved from @dip_image directory)
 errormeasure.m      (collects a bunch of old functions into one)
-extendimage.m
+extendregion.m
 getmaximumandminimum.m
 getsamplestatistics.m
 lee.m
-newtensorim.m
+newtensorim.m       (adapted from newimar.m)
 pathopening.m
 readics.m
 readtiff.m
@@ -24,55 +24,58 @@ thetatheta.m
 writeics.m
 writetiff.m
 
+@dip_image/clone.m
+@dip_image/cosh.m
+@dip_image/cumsum.m
+@dip_image/erfc.m
+@dip_image/flip.m
+@dip_image/gammaln.m
+@dip_image/iscomplex.m
+@dip_image/issigned.m
+@dip_image/isunsigned.m
+@dip_image/numArgumentsFromSubscript.m
+@dip_image/numberchannels.m
+@dip_image/numpixels.m
+@dip_image/numtensorel.m
+@dip_image/sinh.m
+@dip_image/slice_ex.m       (moved from toolbox directory)
+@dip_image/slice_in.m       (moved from toolbox directory)
+@dip_image/slice_op.m       (moved from toolbox directory)
+@dip_image/spatialtotensor.m
+@dip_image/swapdim.m
+@dip_image/tanh.m
+@dip_image/tensorfun.m      (renamed from imarfun.m)
+@dip_image/tensorsize.m
+@dip_image/tensortospatial.m
+
 ------------------------------------------------------
 
-Functions in the old DIPimage that are not yet ported:
+Functions in the old DIPimage that are not yet ported (functions
+not listed here will not be ported):
 
-acquireim.m
+overlay_confidence.m
+overlay_vector.m
+
 affine_trans.m
 afm_flatten.m
 aniso.m
 arcf.m
-arrangeslices.m
 backgroundoffset.m
-bbox.m
 bilateralf.m
-bmajority.m
 cal_readnoise.m
 canny.m
 ced.m
 chordlength.m
-coord2image.m
 correctshift.m
 countingframe.m
 cpf.m
 curvature.m
 curvature_thirion.m
-cut.m
 dcc.m
 deblock.m
-dethessian.m
-detile.m
 dgg.m
-dipaddpath.m
-dipcrop.m
-dipgetimage.m
-dipimage.m
-dipinit.m
-dipmaxaspect.m
-dipmenus.m
-dipmex.m
-diporien.m
-dipprofile.m
-dipprojection.m
-dipstackinspect.m
-displaylabelnumbers.m
 distancebetweenpointsets.m
 dpr.m
-edir.m
-extend.m
-fast_str2double.m
-fillholes.m
 find_affine_trans.m
 find_lambda.m
 findlocalshift.m
@@ -89,13 +92,10 @@ granulometry.m
 gvf.m
 hist2image.m
 hist_equalize.m
-hitmiss.m
 ht.m
-hull.m
 hybridf.m
 im2snake.m
 isophote_curvature.m
-jacobi.m
 jpeg_quality_score.m
 laplace_min_dgg.m
 laplace_plus_dgg.m
@@ -104,8 +104,6 @@ localshift.m
 mappg.m
 mcd.m
 morphscales.m
-mre.m
-msr2obj.m
 msr_remap.m
 nconv.m
 nufft_type1.m
@@ -114,8 +112,6 @@ opticflow.m
 orientation4d.m
 orientationplot.m
 orientationspace.m
-overlay_confidence.m
-overlay_vector.m
 paircorrelation.m
 percf_adap.m
 percf_adap_banana.m
@@ -128,29 +124,21 @@ radialmean.m
 radialmin.m
 radialsum.m
 radoncircle.m
-ramp1.m
 readavi.m
 readrawim.m
 readroiim.m
-rebin.m
-relabel.m
 rotation3d.m
 scale2rgb.m
 scalespace.m
 setlabels.m
-slice_ex.m
-slice_in.m
-slice_op.m
 snake2im.m
 snakedraw.m
 snakeminimize.m
-split.m
 splitandmerge.m
 structf.m
 testobject.m
 tframehessian.m
 tikhonovmiller.m
-tile.m
 transform.m
 umbra.m
 vfc.m
@@ -159,9 +147,20 @@ wiener.m
 write_add.m
 writeavi.m
 writedisplayavi.m
-xx1.m
-yy1.m
-zz1.m
+
+@dip_image/besselj.m
+@dip_image/length.m (meaning?)
+@dip_image/unique.m
+
+(GUI and/or DIPSHOW related stuff):
+dipcrop.m *
+dipgetimage.m *
+dipmex.m
+diporien.m -- was funny, not really useful
+dipprofile.m *
+dipprojection.m *
+dipstackinspect.m *
+* -> These cannot be implemented unless we modify `dip::ImageDisplay` and `private/imagedisplay`
 
 (color stuff, which needs lots of love):
 change_chroma.m
@@ -194,9 +193,3 @@ printer_icc.m
 scanner_icc.m
 read_icc_profile.m
 write_icc_profile.m
-
-(dip_image methods):
-imarfun.m
-iterate.m (These two need to be re-thought. We might want to keep them for backwards-compatability, but
-           they don't make much sense since we don't have image arrays any more)
-convhull.m

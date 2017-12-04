@@ -1,9 +1,10 @@
 /*
  * DIPimage 3.0
- * This MEX-file implements the `extendimage` function
+ * This MEX-file implements the `relabel` function
  *
  * (c)2017, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
+ * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,28 +20,19 @@
  */
 
 #include "dip_matlab_interface.h"
-#include "diplib/boundary.h"
+#include "diplib/regions.h"
 
 void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
-   //dml::streambuf streambuf;
-
    try {
 
-      DML_MIN_ARGS( 2 );
-      DML_MAX_ARGS( 3 );
+      DML_MIN_ARGS( 1 );
+      DML_MAX_ARGS( 1 );
 
       dml::MatlabInterface mi;
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      dip::UnsignedArray border = dml::GetUnsignedArray( prhs[ 1 ] );
-
-      dip::StringArray bc;
-      if( nrhs > 2 ) {
-         bc = dml::GetStringArray( prhs[ 2 ]);
-      }
-
-      dip::ExtendImage( in, out, border, bc );
+      dip::Relabel( in, out );
 
       plhs[ 0 ] = mi.GetArray( out );
 

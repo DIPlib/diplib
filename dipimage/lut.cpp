@@ -32,11 +32,11 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image out = mi.NewImage();
 
       dip::Image in = dml::GetImage( prhs[ 0 ] );
-      dip::Image lut = dml::GetImage( prhs[ 1 ] );
-      if( lut.Dimensionality() == 2 ) {
-         DIP_THROW_IF( !lut.IsScalar(), dip::E::DIMENSIONALITY_NOT_SUPPORTED );
-         lut.SpatialToTensor( 0 );
-      } else if( lut.Dimensionality() != 1 ) {
+      dip::Image table = dml::GetImage( prhs[ 1 ] );
+      if( table.Dimensionality() == 2 ) {
+         DIP_THROW_IF( !table.IsScalar(), dip::E::DIMENSIONALITY_NOT_SUPPORTED );
+         table.SpatialToTensor( 0 );
+      } else if( table.Dimensionality() != 1 ) {
          DIP_THROW( dip::E::DIMENSIONALITY_NOT_SUPPORTED );
       }
       int index = 2;
@@ -47,7 +47,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          ++index;
       }
 
-      dip::LookupTable thing( lut, indices );
+      dip::LookupTable lut( table, indices );
 
       dip::String method = "linear";
       if( nrhs > index ) {
@@ -58,29 +58,29 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          if( mxIsNumeric( prhs[ index ] )) {
             dip::FloatArray bounds = dml::GetFloatArray( prhs[ index ] );
             if( bounds.size() == 1 ) {
-               thing.SetOutOfBoundsValue( bounds[ 0 ] );
+               lut.SetOutOfBoundsValue( bounds[ 0 ] );
             } else if( bounds.size() == 2 ) {
-               thing.SetOutOfBoundsValue( bounds[ 0 ], bounds[ 1 ] );
+               lut.SetOutOfBoundsValue( bounds[ 0 ], bounds[ 1 ] );
             } else {
                DIP_THROW( dip::E::INVALID_FLAG );
             }
          } else {
             dip::String bounds = dml::GetString( prhs[ index ] );
             if( bounds == "clamp" ) {
-               thing.ClampOutOfBoundsValues();
+               lut.ClampOutOfBoundsValues();
             } else if( bounds == "keep" ) {
-               thing.KeepInputValueOnOutOfBounds();
+               lut.KeepInputValueOnOutOfBounds();
             } else {
                DIP_THROW( dip::E::INVALID_FLAG );
             }
          }
       }
 
-      thing.Apply( in, out, method );
+      lut.Apply( in, out, method );
 
-      if( lut.IsColor() ) {
-         out.SetColorSpace( lut.ColorSpace() );
-      } else if( lut.TensorElements() == 3 ) {
+      if( table.IsColor() ) {
+         out.SetColorSpace( table.ColorSpace() );
+      } else if( table.TensorElements() == 3 ) {
          out.SetColorSpace( "RGB" );
       }
 

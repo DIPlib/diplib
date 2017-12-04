@@ -209,7 +209,7 @@ delta = pt - udata.coords;
 coords = mat2str(delta);
 len = sqrt(sum(delta.^2));
 handle = udata.handle;
-value = imagedisplay(handle,pt);
+value = mat2str(imagedisplay(handle,pt));
 str = [coords,' ',num2str(len),' : ',value];
 set(fig,'Name',str);
 

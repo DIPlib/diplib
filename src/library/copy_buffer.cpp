@@ -363,8 +363,10 @@ static inline void ExpandBufferConstant(
    }
 }
 
-// First order extrapolation: we construct a 1st order polynomial based on the 2 samples at the edge of the
-// image line. This polynomial is used to fill out the expanded border.
+// First order extrapolation: instead of constructing a 1st order polynomial based on the 2 samples at the edge of
+// the image, which is not very useful, we construct a 1st order polynomial that connects to the image edge
+// (i.e. function value matches the sample at the edge of the image line), and reaches 0 at the end of the expanded
+// boundary. This imposes a sort of windowing around the image.
 template< typename DataType >
 static inline void ExpandBufferFirstOrder(
       DataType* buffer,
@@ -378,9 +380,9 @@ static inline void ExpandBufferFirstOrder(
       DataType* in = buffer;
       DataType* out = buffer - stride;
       dfloat d0 = *in;
-      dfloat d1 = dfloat( *in ) - dfloat( *( in + stride ));
+      dfloat d1 = d0 / static_cast< dfloat >( left + 1 );
       for( dip::uint ii = 0; ii < left; ii++ ) {
-         d0 += d1;
+         d0 -= d1;
          *out = clamp_cast< DataType >( d0 );
          out -= stride;
       }
@@ -390,9 +392,9 @@ static inline void ExpandBufferFirstOrder(
       DataType* in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
       DataType* out = buffer + static_cast< dip::sint >( pixels ) * stride;
       dfloat d0 = *in;
-      dfloat d1 = dfloat( *in ) - dfloat( *( in - stride ));
+      dfloat d1 = d0 / static_cast< dfloat >( right + 1 );
       for( dip::uint ii = 0; ii < right; ii++ ) {
-         d0 += d1;
+         d0 -= d1;
          *out = clamp_cast< DataType >( d0 );
          out += stride;
       }
@@ -495,7 +497,7 @@ static inline void ExpandBufferThirdOrder(
    }
 }
 
-template< typename DataType, bool invert >
+template< typename DataType, bool asymmetric >
 static inline void ExpandBufferMirror(
       DataType* buffer,
       dip::sint stride,
@@ -505,24 +507,26 @@ static inline void ExpandBufferMirror(
 ) {
    dip::uint steps = pixels - 1;
    // Left side
-   DataType* in = buffer;
+   DataType* in = buffer + stride;
    DataType* out = buffer - stride;
-   for( dip::uint ii = 0; ii < left; ii++ ) {
-      *out = invert ? saturated_inv( *in ) : *in;
-      in -= (( ii / steps ) & 1 ) ? stride : -stride;
+   for( dip::uint ii = 1; ii < left + 1; ii++ ) {
+      bool dir = (( ii / steps ) & 1 ) == 1;
+      *out = asymmetric ? ( dir ? *in : saturated_inv( *in )) : *in;
+      in -= dir ? stride : -stride;
       out -= stride;
    }
    // Right side
-   in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+   in = buffer + ( static_cast< dip::sint >( pixels ) - 2 ) * stride;
    out = buffer + static_cast< dip::sint >( pixels ) * stride;
-   for( dip::uint ii = 0; ii < right; ii++ ) {
-      *out = invert ? saturated_inv( *in ) : *in;
-      in += (( ii / steps ) & 1 ) ? stride : -stride;
+   for( dip::uint ii = 1; ii < right + 1; ii++ ) {
+      bool dir = (( ii / steps ) & 1 ) == 1;
+      *out = asymmetric ? ( dir ? *in : saturated_inv( *in )) : *in;
+      in += dir ? stride : -stride;
       out += stride;
    }
 }
 
-template< typename DataType, bool invert >
+template< typename DataType, bool asymmetric >
 static inline void ExpandBufferPeriodic(
       DataType* buffer,
       dip::sint stride,
@@ -530,25 +534,29 @@ static inline void ExpandBufferPeriodic(
       dip::uint left,
       dip::uint right
 ) {
-// Left side
-   DataType* in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+   // Left side
+   DataType* in = buffer; // value not used, set during first iteration of loop
    DataType* out = buffer - stride;
+   bool invert = false;   // value modified during first loop iteration (and hopefully optimized out if `!asymmetric`)
    for( dip::uint ii = 0; ii < left; ii++ ) {
-      *out = invert ? saturated_inv( *in ) : *in;
-      if( !( ii % pixels ) ) {
+      if( !( ii % pixels )) {
          in = buffer + ( static_cast< dip::sint >( pixels ) - 1 ) * stride;
+         invert = !invert;
       }
+      *out = asymmetric ? ( invert ? saturated_inv( *in ) : *in ) : *in;
       in -= stride;
       out -= stride;
    }
    // Right side
    in = buffer;
    out = buffer + static_cast< dip::sint >( pixels ) * stride;
+   invert = false;
    for( dip::uint ii = 0; ii < right; ii++ ) {
-      *out = invert ? saturated_inv( *in ) : *in;
-      if( !( ii % pixels ) ) {
+      if( !( ii % pixels )) {
          in = buffer;
+         invert = !invert;
       }
+      *out = asymmetric ? ( invert ? saturated_inv( *in ) : *in ) : *in;
       in += stride;
       out += stride;
    }
@@ -632,7 +640,8 @@ static inline void ExpandBufferFromTo(
             }
             break;
          }
-         // Else: fall-through to do second order extrapolation
+         // Else: falls through to do second order extrapolation
+         // fallthrough
 
       case BoundaryCondition::SECOND_ORDER_EXTRAPOLATE:
          if( pixels > 1 ) {
@@ -641,16 +650,16 @@ static inline void ExpandBufferFromTo(
             }
             break;
          }
-         // Else: fall-through (twice) to do zero order extrapolation
+         // Else: falls through to do first order extrapolation
+         // fallthrough
 
       case BoundaryCondition::FIRST_ORDER_EXTRAPOLATE:
-         if( pixels > 1 ) {
-            for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
-               ExpandBufferFirstOrder( buffer, stride, pixels, left, right );
-            }
-            break;
+         for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
+            ExpandBufferFirstOrder( buffer, stride, pixels, left, right );
          }
-         // Else: fall-through to do zero order extrapolation
+         break;
+         // Else: falls through to do zero order extrapolation
+         // fallthrough
 
       case BoundaryCondition::ZERO_ORDER_EXTRAPOLATE:
          for( dip::uint jj = 0; jj < tensorElements; ++jj, buffer += tensorStride ) {
@@ -677,6 +686,7 @@ void ExpandBuffer(
       // We've got nothing to do
       return;
    }
+   DIP_ASSERT( pixels > 0 );
    switch( type ) {
       case dip::DT_BIN:
          ExpandBufferFromTo( static_cast< bin* >( buffer ), stride, tensorStride, pixels, tensorElements, left, right, bc );

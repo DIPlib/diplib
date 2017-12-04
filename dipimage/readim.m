@@ -14,6 +14,7 @@
 %            IMREAD, or 'bioformats'.
 %
 % DEFAULTS:
+%  filename = 'erika.ics'
 %  format = ''
 %
 % NOTES:
@@ -81,7 +82,7 @@ if nargin < 2
    format = '';
 end
 if nargin < 1
-   error('A file name is required')
+   filename = 'erika.ics';
 end
 
 % If we don't have a format, look for the file name extension

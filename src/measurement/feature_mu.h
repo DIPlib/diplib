@@ -25,7 +25,7 @@ namespace Feature {
 
 class FeatureMu : public LineBased {
    public:
-      FeatureMu() : LineBased( { "Mu", "Elements of the inertia tensor", true } ) {};
+      FeatureMu() : LineBased( { "Mu", "Elements of the inertia tensor", false } ) {};
 
       virtual ValueInformationArray Initialize( Image const& label, Image const&, dip::uint nObjects ) override {
          nD_ = label.Dimensionality();

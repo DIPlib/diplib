@@ -138,8 +138,8 @@ dip.DrawLine(seed,[14,28],[35,28])
 dip.DrawLine(seed,[14,30],[35,30])
 dip.DrawLine(seed,[14,40],[35,40])
 
-dip.BinaryPropagation(seed,mask,1,24).Show()
-dip.ConditionalThickening2D(seed,mask,24).Show()
+dip.BinaryPropagation(seed,mask,1,25).Show()
+dip.ConditionalThickening2D(seed,mask,25).Show()
 
 import timeit
 a = dip.BinaryPropagation(seed,mask,1,0)

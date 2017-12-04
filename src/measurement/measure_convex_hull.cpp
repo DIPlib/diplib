@@ -149,43 +149,6 @@ FeretValues ConvexHull::Feret() const {
 }
 
 
-RadiusValues Polygon::RadiusStatistics() const {
-   RadiusValues radius;
-   if( vertices.size() < 3 ) {
-      return radius; // CLion thinks this is not initialized, but it is.
-   }
-   VertexFloat centroid = Centroid();
-   VarianceAccumulator vacc;
-   MinMaxAccumulator macc;
-   for( auto const& v : vertices ) {
-      dfloat r = Distance( centroid, v );
-      vacc.Push( r );
-      macc.Push( r );
-   }
-   radius.mean = vacc.Mean();
-   radius.var = vacc.Variance();
-   radius.max = macc.Maximum();
-   radius.min = macc.Minimum();
-   return radius;
-}
-
-
-dfloat Polygon::EllipseVariance( VertexFloat const& g, dip::CovarianceMatrix const& C ) const {
-   // Inverse of covariance matrix
-   dip::CovarianceMatrix U = C.Inv();
-   // Distance of vertex to ellipse is given by sqrt( v' * U * v ), with v' the transpose of v
-   VarianceAccumulator acc;
-   for( auto v : vertices ) {
-      v -= g;
-      dfloat d = std::sqrt( U.Project( v ));
-      acc.Push( d );
-   }
-   dfloat m = acc.Mean();
-   // Ellipse variance = coefficient of variation of radius
-   return m == 0.0 ? 0.0 : acc.StandardDeviation() / m;
-}
-
-
 } // namespace dip
 
 
@@ -210,13 +173,25 @@ DOCTEST_TEST_CASE("[DIPlib] testing chain code polygons") {
    DOCTEST_CHECK( p.vertices.size() == 8 );
    DOCTEST_CHECK( p.Area() == doctest::Approx( 4 - 0.5 ));
    DOCTEST_CHECK( p.Length() == doctest::Approx( 4 + 2 * std::sqrt( 2 )));
+   DOCTEST_CHECK( p.IsClockWise() );
    h = p.ConvexHull();
    DOCTEST_CHECK( h.Vertices().size() == 8 );
    DOCTEST_CHECK( h.Area() == doctest::Approx( 4 - 0.5 ));
    DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 4 + 2 * std::sqrt( 2 )));
+   DOCTEST_CHECK( h.IsClockWise() );
    f = h.Feret();
    DOCTEST_CHECK( f.maxDiameter == doctest::Approx( std::sqrt( 5 )));
    DOCTEST_CHECK( f.minDiameter == doctest::Approx( 2 ));
+
+   p.vertices = {{ 0, 0 }, { 0, 1 }, { 1, 1 }, { 1, 0 }, { 0.5, 0.5 }};
+   DOCTEST_CHECK( p.Area() == doctest::Approx( -0.75 ));
+   DOCTEST_CHECK( p.Length() == doctest::Approx( 3 + std::sqrt( 2 )));
+   DOCTEST_CHECK( !p.IsClockWise() );
+   h = p.ConvexHull();
+   DOCTEST_CHECK( h.Polygon().vertices.size() == 4 );
+   DOCTEST_CHECK( h.Area() == doctest::Approx( 1 ));
+   DOCTEST_CHECK( h.Perimeter() == doctest::Approx( 4 ));
+   DOCTEST_CHECK( h.IsClockWise() );
 }
 
 #endif // DIP__ENABLE_DOCTEST

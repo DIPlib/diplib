@@ -17,49 +17,11 @@ command `dipfig` is used to create these links (see
 Graphical user Interface {#sec:customizing_gui}
 ------------------------
 
-**NOTE: The GUI is not yet ported, but will work quite differently than described here**
-
 The *DIPimage* toolbox contains a GUI with a menu system for easy calling
 of toolbox functions. It is not necessary to use this GUI, but it is the
 easy way of finding the functions defined in the toolbox (see
-[@sec:function_dipimage]).
-
-All functions that appear on the menus are in the toolbox directory or
-on the *DIPimage* path. If you want to add any functions to this menu
-system, read [@sec:function_adding]. If you want your function to
-appear in a specific place in the menu system, you will have to create a
-function called `localdipmenus`. It gives you the opportunity to edit
-the cell array `menulist` created by `dipmenus`, which specifies in
-which menu each function should be placed. It also allows you to provide
-a list of functions not to be put on the menus at all.
-
-The cell array `menulist` has two columns. The left column gives the
-names of the menus, the right column contains cell arrays with the
-function names and menu names that are to be put under each menu. Any
-function not mentioned in this array will be put at the bottom of the
-menu specified by the function itself, in alphabetical order. See the
-code for `dipmenus` to see how it is defined.
-
-The list of functions to be excluded overrides the `menulist`. Any
-function in this list will not be queried when generating the menu
-system.
-
-This is an example for a `localdipmenus` function.
-It adds a menu to the `menulist`, and puts all AVI-related functions on
-the `exclude` list. Note the string `'-'` that inserts a separator in
-the menu.
-
-```
-    function [menulist,excludelist] = localdipmenus(menulist)
-        I = size(menulist,1)+1;
-        menulist{I,1} = 'My Functions';
-        menulist{I,2} = {'gaussf','unif','kuwahara','-','closing','opening'};
-        excludelist = {'readavi','writeavi','writedisplayavi'};
-```
-
-An alternative is to edit the `dipmenus` function. We do not recommend
-this because you will be required to make the same changes each time you
-install a new version of *DIPimage*.
+[@sec:function_dipimage]). The menu structure can be modified at will,
+see [@sec:function_adding] for instructions.
 
 The *DIPimage* GUI will call the `dipinit` command when starting. It
 initializes the working environment. See
@@ -72,6 +34,256 @@ function. It is on by default, and can be switched off by typing
 ```
     dipsetpref('PutInCommandWindow','off')
 ```
+
+Adding Functions to the GUI {#sec:function_adding}
+---------------------------
+
+To add a function to the GUI, it must be on the MATLAB path, and you must
+make information about it available to the GUI.
+The second requirement is accomplished by writing a function `localdipmenus`.
+The function should be defined by iteself in a file called `localdipmenus.m` and
+be somewhere on the MATLAB path. See `help addpath` to learn about the MATLAB
+path. `localdipmenus` is defined as follows:
+
+```
+    function [menulist,functionlist] = localdipmenus(menulist)
+
+    menulist = [menulist;{'My Menu',{'myfunction'}}];
+    I = strcmp('Restoration',menulist(:,1));
+    menulist(I,:) = []; % remove the 'Restoration' menu
+    I = strcmp('readtimeseries',menulist{1,2});
+    menulist{1,2}(I) = []; % remove the 'readtimeseries' function from the first menu
+
+    functionlist = containers.Map('KeyType','char','ValueType','any');
+    functionlist('myfunction') = struct(...
+       'display','My Function',...
+       'inparams',struct('description',{'Parameter 1','Parameter 2'},...
+                         'type',       {'image',      'array'},...
+                         'constraint', {{'real'},     []},...
+                         'default',    {'a',          3.7}),...
+       'outparams',{{'Output image'}});
+```
+
+There are two things happening in this function:
+
+1- The variable `menulist` is being edited. It defines what the menu structure
+   in the GUI looks like. You can add menus, add items to menus, as well as
+   remove items and menus. You can even ignore the input `menulist` and
+   create one from scratch. See the function `dipmenus` for the definition of
+   the default `menulist` structure. In the code above, we added a menu
+   called `'My Menu'`, which contains a single command, `myfunction`. `myfunction`
+   must be a function on the MATLAB path.
+
+2- A map object is created that contains a single entry for `myfunction`. This
+   map will be added to the default map defined in `dipmenus`, which provides
+   information about all the DIPimage functions in the GUI menu. The structure
+   assigned to the `myfunction` entry in the map is rather complex. We describe
+   it in detail below.
+
+The cell array `menulist` has two columns. The left column gives the names of
+the menus, the right column contains cell arrays with the function names and menu
+names that are to be put under each menu. Names in the right column that start
+with `#` are menu names, and put the corresponding menu as a sub-menu at that
+point. A string `'-'` inserts a menu separator at that point.
+See the code for `dipmenus` to see how it is defined.
+
+The structure that describes the input and output parameters of a function
+contains three values:
+
+  ------------- -----------------------------------------------------
+  `display`     Name for the function in the menu (string).
+  `inparams`    Structure array with input parameters.
+  `outparams`   Structure array with output parameters.
+  ------------- -----------------------------------------------------
+
+Both `inparams` and `outparams` are optional, if not provided the function does
+not accept input or output parameters.
+
+`paramlist.outparams` is a cell array with strings that describe the output
+parameters
+
+`paramlist.inparams` is a struct array that defines the input parameters,
+and contains the following fields for each parameter:
+
+  --------------- ---------------------------------------------------------
+  `description`   Description to show the user (string).
+  `type`          Expected data type (string).
+  `constraint`    Meaning depends on the parameter type.
+  `default`       Default value to use if the parameter is not given.
+  --------------- ---------------------------------------------------------
+
+Each parameter type produces different controls in the GUI. Recognized
+types are listed below. Please examine the `dipmenus` function to learn
+more about this structure.
+
+### 'image'
+
+An object of type `dip_image`. The GUI presents an edit box where you can
+type any expression. Furthermore, a right-click in this edit box brings
+up a list with variables of class `dip_image` defined in the base
+workspace.
+
+`constraint` is used to specify the type of image
+expected. It determine which images are shown in the right-click
+menu for the control. It is a cell array containing the following optional
+components:
+ - A two-element vector `[m,n]` defining the allowed image dimensionalities.
+   `m` is the lowest dimensionality and `n` is the highest dimensionality
+   allowed. The expressions `0` and `[]` map to `[0,Inf]`, meaning any
+   dimensionality is OK. Any scalar `m` maps to `[m,m]`, meaning only images
+   with `m` dimensions are allowed. If not given, `[0,Inf]` is presumed.
+   For example, to limit your function to 2D and 3D images, use `[2,3]`.
+ - A set of strings defining the allowed image types:
+   `'scalar'` (requires `isscalar` to be `true`), `'vector'` (`isvector` is
+   `true`), `'color'` (`iscolor` is `true`), or `'tensor'` or `'array'`
+   (any `dip_image` object is OK). `'tensor'` is the default.
+ - A set of strings defining the allowed data types.
+   Allowed are any combination of `dip_image` data types (see
+   [@tbl:datatypes]) as well as the data type aliases defined in
+   [@tbl:datatypealias]. `'all'` is the default.
+
+Note that the numeric vector defining the dimensionality must come first
+if present. The other elements are all strings, and can be presented in
+any order.
+
+`default` is a string to be evaluated in the base workspace (therefore,
+you can use any expression with names of variables in the base
+workspace). The toolbox typically uses letters such as `'a'` or `'b'` as
+a default value for an image, under the assumption that these letters
+are used to store images. But it is also possible to specify something like
+`'[1,1,1;1,1,1;1,1,1]'` as a default image (as does the function `convolve`).
+
+  Name                       maps to
+  -------------------------- ---------------------------------
+  `'any'`                    `'complex'` + `bin`
+  `'complex'`                `'real'` + `scomplex, dcomplex`
+  `'noncomplex'`             `'real'` + `bin`
+  `'real'`                   `'float'` + `'integer'`
+  `'int'` or `'integer'`     `'signed'` + `'unsigned'`
+  `'float'`                  `sfloat`, `dfloat`
+  `'sint'` or `'signed'`     `sint8`, `sint16`, `sint32`
+  `'uint'` or `'unsigned'`   `uint8`, `uint16`, `uint32`
+
+  : Data type aliases used in the `constraint` parameter for
+  images. {#tbl:datatypealias}
+
+### 'measurement'
+
+An object of type `dip_measurement`. This input is treated the same as
+one of type `'image'`, except that `constraint` is not
+used; set it to `[]` to avoid problems if this value becomes
+significant in the future.
+
+### 'dataset'
+
+An object of type `dataset` (from PRTOOLS). This input is treated the
+same as one of type `'image'`, except that `constraint` is not
+used; set it to `[]` to avoid problems if this value becomes
+significant in the future.
+
+### 'array'
+
+An array of doubles. `constraint` is not used; set it to `[]` to avoid
+problems if this value becomes significant in the future.
+
+The type `anytypearray` is identical, but does not convert numeric data
+to doubles, allowing numeric arrays of other types (integer, float, etc).
+
+### 'measureid'
+
+A measurement ID in a `dip_measurement` object.
+
+`constraint` is a positive integer that points to a parameter of type
+`'measurement'` (note that counting starts at 1). The GUI shows, in a
+drop-down list, all measurement IDs present in the referenced object.
+
+`default` is ignored. The default is always the first
+measurement in the `dip_measurement` object.
+
+### 'option'
+
+A value (numerical or string) selected from a list. The GUI presents a
+drop-down list with options to choose from.
+
+`constraint` is a `cell` array with possible options, for example:
+
+-   `{1,2,3,4}`
+
+-   `{'rectangular','elliptic','parabolic'}`
+
+`default` is any one value from the list.
+
+### 'optionarray'
+
+A `cell` array (with numbers or strings) selected from a list. The GUI
+presents an edit box with a button. Pressing the button brings up a
+dialog box that allows selecting one or more items from a list.
+
+`constraint` is as in `'option'`. `default` is a `cell` array with values
+from the list, or a single value.
+
+### 'cellarray'
+
+A `cell` array (with arbitrary cell content). `constraint` is
+ignored. `default` must be a cellarray.
+
+### 'infile'
+
+The name of an existing file (for input). The GUI presents an edit box
+and a button that, when pressed, presents an "Open..." dialog box.
+
+`constraint` is a string containing the mask for the file name,
+and `default` is a string with the default file name.
+
+### 'outfile'
+
+The name of a file (for output). The GUI presents an edit box and a
+button that, when pressed, presents an "Save as..." dialog box. See the
+comments for `'infile'`.
+
+### 'indir'
+
+The GUI presents an edit box and a button that, when pressed, presents
+an "Select a directory ..." dialog box. `constraint` is ignored,
+`default` gives the default directory.
+
+### 'handle'
+
+The handle of a figure window created by `dipshow`. The GUI shows a
+drop-down list with the titles of all figure windows that fit the
+description. Right-clicking the control shows a context menu with the
+option to reload the control, which can be used when new windows were
+created after the dialog box was displayed.
+
+`constraint` is a `cell` array with strings that specify the type of
+figure window required. All figure windows that satisfy any of the
+strings are valid. Examples are:
+
+-   `{'1D','2D','3D'}` : either one-, two- or three-dimensional displays.
+
+-   `{'Color','Grey','Binary'}` : either color, grey-value or binary
+    displays.
+
+-   `{'1D_Color','2D_Grey'}` : either 1D color or 2D grey-value
+    displays.
+
+An empty array means that any window created by `dipshow` is acceptable.
+Note that these strings are not case-sensitive. It is, however,
+important that the order shown here is maintained. No window will
+satisfy the string `'Binary_2D'`, for example, but `'2D_Binary'` is
+valid.
+
+`default` is ignored. The default value is always `gcf` (the current figure).
+
+### 'string'
+
+Any string. `constraint` is ignored. `default` must be a string.
+
+### 'boolean'
+
+The value `true` or `false`. The GUI presents a drop-down box with the words
+"yes" and "no". `constraint` is ignored. `default` should
+be a scalar value (`true`, `false`, `0` or `1`), or `yes` or `no`.
 
 Initialization File {#sec:customizing_dipinit}
 -------------------
@@ -132,20 +344,16 @@ and phase components(`'r/phi'`).
 
 ### CurrentImageFileDir
 
-**NOTE: This setting is not yet used**
-
 *Value*: string
 
 *Default*: `"`
 
 This setting stores the directory last visited by the file selection
-dialog boxes of `readim`, `readcolorim`, `readroiim` and `writeim`. It
+dialog boxes of `readim`, `readtimeseries` and `writeim`. It
 is used by these functions to open the file selection dialog box in the
 directory you last used.
 
 ### CurrentImageSaveDir
-
-**NOTE: This setting is not yet used**
 
 *Value*: string
 
@@ -310,7 +518,7 @@ displaying any image.
 *Default*: `"`
 
 This setting stores the path used to find image files. The functions
-`readim`, `readcolorim` and `readroiim` look for a file first in the
+`readim`, `readtiff`, `readics` and `readtimeseries` look for a file first in the
 current directory, and then in each of the directories given by this
 option, unless the filename already contains a path. On UNIX and Linux
 systems, directories are separated by a colon (`:`), on Windows systems
@@ -343,8 +551,6 @@ affect the computations performed by *MATLAB* itself.
 
 ### PutInCommandWindow
 
-**NOTE: This setting is not yet used**
-
 *Value*: `'on'` or `'off'`
 
 *Default*: `'on'`
@@ -376,14 +582,11 @@ displayed to a figure window (see [@sec:function_diptruesize]).
 
 ### UserManualLocation
 
-**NOTE: This setting is not yet used**
-
 *Value*: string
 
-*Default*: The URL needed to fetch the user manual online.
+*Default*: The location where this manual is installed.
 
 This setting stores the location of the *DIPimage* User Manual (a PDF
-file). By default it points to an address online, but you can change it
-to point to a local copy of the PDF file. A link on the Help menu of the
-*DIPimage* GUI and on the *MATLAB* Start Button are affected by this
+file). You can change it to point to wherever you keep a local copy of the
+PDF file. A link on the Help menu of the *DIPimage* GUI is affected by this
 setting.
