@@ -33,6 +33,18 @@
 
 #include <mex.h>
 
+ // Define mxIsScalar replacement if not available (Matlab versions < R2015a)
+#ifndef mxIsScalar
+inline bool mxIsScalar( mxArray const* mx ) {
+   return mxGetNumberOfDimensions( mx ) == size_t( 1 );
+}
+#endif
+
+// Define mxArrayToUTF8String replacement if not available
+#ifndef mxArrayToUTF8String
+#define mxArrayToUTF8String mxArrayToString
+#endif
+
 // Undocumented functions in libmx
 // See: http://www.advanpix.com/2013/07/19/undocumented-mex-api/
 // These functions allow us to get and set object properties without making deep copies, as `mxGetProperty` and
