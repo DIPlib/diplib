@@ -794,6 +794,7 @@ class DIP_NO_EXPORT JointImageIterator {
       void Reset() {
          offsets_.fill( 0 );
          coords_.fill( 0 );
+         atEnd_ = false;
       }
 
    private:
