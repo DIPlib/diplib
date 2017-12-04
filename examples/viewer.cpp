@@ -40,7 +40,7 @@ void run(dip::viewer::ImageViewer::Ptr viewer)
       viewer->setImage(image);
     }
     
-    usleep(10000);
+    std::this_thread::sleep_for( std::chrono::microseconds( 10000 ) );
   }
 }
 
