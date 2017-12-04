@@ -717,8 +717,16 @@ inline mxArray* GetArray( dip::StringArray const& in ) {
 /// \brief Convert a UTF-8 encoded string from `dip::String` to `mxArray` by copy.
 inline mxArray* GetArrayUnicode( dip::String const& in ) {
 #ifdef DIP__ENABLE_UNICODE
-   static_assert( sizeof( char16_t ) == sizeof( mxChar ), "MATLAB's mxChar is not 16 bits." );
-   std::u16string u16str = std::wstring_convert< std::codecvt_utf8_utf16< char16_t >, char16_t >{}.from_bytes( in );
+
+   // MSVC 2015-2017 has a problem linking std::codecvt_utf8_utf16< char16_t >. Here's a workaround.
+#ifdef _WIN32
+   using char16_type = int16_t;  // u16str is of type basic_string<int16_t, char_traits<int16_t>, allocator<int16_t>>;
+#else
+   using char16_type = char16_t; // u16str is of type std::u16string
+#endif
+
+   static_assert( sizeof( char16_type ) == sizeof( mxChar ), "MATLAB's mxChar is not 16 bits." );
+   auto u16str = std::wstring_convert< std::codecvt_utf8_utf16< char16_type >, char16_type >{}.from_bytes( in );
    dip::uint sz[ 2 ] = { 1, u16str.size() };
    mxArray* out = mxCreateCharArray( 2, sz );
    std::copy( u16str.begin(), u16str.end(), mxGetChars( out ) );
