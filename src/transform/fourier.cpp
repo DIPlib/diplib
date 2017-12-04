@@ -358,16 +358,8 @@ protected:
          wrapShifts[fixedDim] = 0;
       }
 
-      if( img.TensorElements() == 1 ) {
-         // Do in-place Wrap
-         Wrap( img, img, wrapShifts );
-      } else {
-         // TODO: avoid intermediate image! Unfortunately, Wrap does a Reforge due to `Framework::Separable_AsScalarImage`
-         Image tmp;
-         tmp.SetExternalInterface( img.ExternalInterface() );
-         Wrap( img, tmp, wrapShifts );
-         img.Copy( tmp );
-      }
+      // Do in-place Wrap
+      Wrap( img, img, wrapShifts );
    }
 
    /// Shift corner to center. Done after the transform. Also see Matlab's fftshift().
@@ -378,16 +370,8 @@ protected:
          wrapShifts[iDim] = static_cast<dip::sint>(img.Size( iDim )) / 2;
       }
 
-      if( img.TensorElements() == 1 ) {
-         // Do in-place Wrap
-         Wrap( img, img, wrapShifts );
-      } else {
-         // TODO: avoid intermediate image! Unfortunately, Wrap does a Reforge due to `Framework::Separable_AsScalarImage`
-         Image tmp;
-         tmp.SetExternalInterface( img.ExternalInterface() );
-         Wrap( img, tmp, wrapShifts );
-         img.Copy( tmp );
-      }
+      // Do in-place Wrap
+      Wrap( img, img, wrapShifts );
    }
 };
 
