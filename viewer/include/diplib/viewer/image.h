@@ -123,12 +123,12 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
       {
         if (image.Size(0) > image.Size(1))
         {
-          width = std::max(512UL, image.Size(0));
+          width = std::max<dip::uint>(512UL, image.Size(0));
           height = (size_t)((double)width * (double)image.Size(1)/(double)image.Size(0));
         }
         else
         {
-          height = std::max(512UL, image.Size(1));
+          height = std::max<dip::uint>(512UL, image.Size(1));
           width = (size_t)((double)height * (double)image.Size(0)/(double)image.Size(1));
         }
       }
