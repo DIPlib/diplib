@@ -33,18 +33,6 @@
 
 #include <mex.h>
 
- // Define mxIsScalar replacement if not available (Matlab versions < R2015a)
-#ifndef mxIsScalar
-inline bool mxIsScalar( mxArray const* mx ) {
-   return mxGetNumberOfDimensions( mx ) == size_t( 1 );
-}
-#endif
-
-// Define mxArrayToUTF8String replacement if not available
-#ifndef mxArrayToUTF8String
-#define mxArrayToUTF8String mxArrayToString
-#endif
-
 // Undocumented functions in libmx
 // See: http://www.advanpix.com/2013/07/19/undocumented-mex-api/
 // These functions allow us to get and set object properties without making deep copies, as `mxGetProperty` and
@@ -259,6 +247,12 @@ inline enum dip::Tensor::Shape GetTensorShape( mxArray* mx ) {
 #define DML_MIN_ARGS( n ) DIP_THROW_IF( nrhs < ( n ), "Too few input arguments" )
 #define DML_MAX_ARGS( n ) DIP_THROW_IF( nrhs > ( n ), "Too many input arguments" )
 
+/// \brief True if array is scalar (has single value)
+// We define this function because mxIsScalar is too new.
+inline bool IsScalar( mxArray const* mx ) {
+   return mxGetNumberOfElements( mx ) == 1;
+}
+
 /// \brief True if empty or a one-dimensional array
 inline bool IsVector( mxArray const* mx ) {
    return ( mxGetNumberOfDimensions( mx ) == 2 ) && (( mxGetM( mx ) <= 1 ) || ( mxGetN( mx ) <= 1 ));
@@ -266,7 +260,7 @@ inline bool IsVector( mxArray const* mx ) {
 
 /// \brief Convert an unsigned integer from `mxArray` to `dip::uint` by copy.
 inline dip::uint GetUnsigned( mxArray const* mx ) {
-   if( mxIsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
+   if( IsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
       double v = *mxGetPr( mx );
       dip::uint out = static_cast< dip::uint >( v );
       if( static_cast< double >( out ) == v ) {
@@ -278,7 +272,7 @@ inline dip::uint GetUnsigned( mxArray const* mx ) {
 
 /// \brief Convert a signed integer from `mxArray` to `dip::sint` by copy.
 inline dip::sint GetInteger( mxArray const* mx ) {
-   if( mxIsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
+   if( IsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
       double v = *mxGetPr( mx );
       dip::sint out = static_cast< dip::sint >( v );
       if( static_cast< double >( out ) == v ) {
@@ -290,7 +284,7 @@ inline dip::sint GetInteger( mxArray const* mx ) {
 
 /// \brief Convert a floating-point number from `mxArray` to `dip::dfloat` by copy.
 inline dip::dfloat GetFloat( mxArray const* mx ) {
-   if( mxIsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
+   if( IsScalar( mx ) && mxIsDouble( mx ) && !mxIsComplex( mx )) {
       return *mxGetPr( mx );
    }
    DIP_THROW( "Real floating-point value expected" );
@@ -298,7 +292,7 @@ inline dip::dfloat GetFloat( mxArray const* mx ) {
 
 /// \brief Convert a complex floating-point number from `mxArray` to `dip::dcomplex` by copy.
 inline dip::dcomplex GetComplex( mxArray const* mx ) {
-   if( mxIsScalar( mx ) && mxIsDouble( mx )) {
+   if( IsScalar( mx ) && mxIsDouble( mx )) {
       double* pr = mxGetPr( mx );
       double* pi = mxGetPi( mx );
       dip::dcomplex out{ 0, 0 };
@@ -457,12 +451,13 @@ inline dip::String GetString( mxArray const* mx ) {
 inline dip::String GetStringUnicode( mxArray const* mx ) {
 #ifdef DIP__ENABLE_UNICODE
    if( mxIsChar( mx ) && IsVector( mx )) {
-      char* str = mxArrayToUTF8String( mx );
-      if( str ) {
-         dip::String out( str );
-         mxFree( str );
-         return out;
-      }
+      // We need to copy the UTF16 string in the mxArray because it is not null-terminated, as wstring_convert expects.
+      mxChar const* data = mxGetChars( mx );
+      dip::uint len = mxGetNumberOfElements( mx );
+      std::basic_string< mxChar > u16str( len + 1, '\0' ); // one more char for the null terminator.
+      std::copy( data, data + len, u16str.begin() ); // here we don't overwrite the last null.
+      dip::String out = std::wstring_convert< std::codecvt_utf8_utf16< mxChar >, mxChar >{}.to_bytes( u16str );
+      return out;
    }
    DIP_THROW( "String expected" );
 #else
@@ -521,7 +516,7 @@ inline bool GetBoolean( mxArray const* mx ) {
          return false;
       }
    }
-   if( mxIsScalar( mx )) {
+   if( IsScalar( mx )) {
       if( mxIsLogical( mx )) {
          return *mxGetLogicals( mx );
       }
@@ -717,16 +712,7 @@ inline mxArray* GetArray( dip::StringArray const& in ) {
 /// \brief Convert a UTF-8 encoded string from `dip::String` to `mxArray` by copy.
 inline mxArray* GetArrayUnicode( dip::String const& in ) {
 #ifdef DIP__ENABLE_UNICODE
-
-   // MSVC 2015-2017 has a problem linking std::codecvt_utf8_utf16< char16_t >. Here's a workaround.
-#ifdef _WIN32
-   using char16_type = int16_t;  // u16str is of type basic_string<int16_t, char_traits<int16_t>, allocator<int16_t>>;
-#else
-   using char16_type = char16_t; // u16str is of type std::u16string
-#endif
-
-   static_assert( sizeof( char16_type ) == sizeof( mxChar ), "MATLAB's mxChar is not 16 bits." );
-   auto u16str = std::wstring_convert< std::codecvt_utf8_utf16< char16_type >, char16_type >{}.from_bytes( in );
+   auto u16str = std::wstring_convert< std::codecvt_utf8_utf16< mxChar >, mxChar >{}.from_bytes( in );
    dip::uint sz[ 2 ] = { 1, u16str.size() };
    mxArray* out = mxCreateCharArray( 2, sz );
    std::copy( u16str.begin(), u16str.end(), mxGetChars( out ) );
@@ -1178,7 +1164,8 @@ inline dip::Image GetImage( mxArray const* mx ) {
             dip::Units u;
             try {
                u = dip::Units( GetStringUnicode( units ));
-            } catch( dip::Error const& ) {
+            } catch( dip::Error const& /*e*/ ) {
+               //std::cout << "Error converting units: " << e.what() << std::endl;
                u = dip::Units::Pixel();
             }
             pq[ ii ] = { GetFloat( magnitude ), u };
