@@ -205,7 +205,7 @@ if(DIP_ENABLE_TIFF)
 endif()
 # fftw
 if(DIP_ENABLE_FFTW)
-   target_include_directories(DIP PRIVATE ${FFTW3_INCLUDE_DIRS})
+   target_include_directories(DIP PRIVATE ${FFTW3_INCLUDE_DIRS} dependencies/fftw)
    target_link_libraries(DIP ${FFTW3_LIBRARIES})
    target_compile_definitions(DIP PRIVATE DIP__HAS_FFTW)
 endif()

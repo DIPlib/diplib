@@ -31,7 +31,7 @@
    #ifdef _WIN32
       #define NOMINMAX // windows.h must not define min() and max(), which are conflicting with std::min() and std::max()
    #endif
-   #include "dependencies/fftw/fftw3api.h"
+   #include "fftw3api.h"
 #endif
 
 namespace dip {
@@ -144,17 +144,16 @@ class DFTLineFilter : public Framework::SeparableLineFilter {
 
 #ifdef DIP__HAS_FFTW
 
-namespace
-{
+namespace {
 
 #define FFTW_MAX_ALIGN_REQUIRED 64  // TODO: how to determine this number?
 
-/// Singleton class that performs FFTW threading initialization and cleanup just once.
-/// Before calling *any* FFTW function, initialize in a similar way to:
-/// ```cpp
-///     int fftwThreadingInitResult = FFTWThreading< FloatType >::GetInstance()->GetInitResult();
-///     // verify that fftwThreadingInitResult != 0
-/// ```
+// Singleton class that performs FFTW threading initialization and cleanup just once.
+// Before calling *any* FFTW function, initialize in a similar way to:
+// ```cpp
+//     int fftwThreadingInitResult = FFTWThreading< FloatType >::GetInstance()->GetInitResult();
+//     // verify that fftwThreadingInitResult != 0
+// ```
 template< typename FloatType >
 class FFTWThreading
 {
@@ -173,13 +172,13 @@ public:
       //fftwapidef< FloatType >::cleanup_threads();
    }
 
-   /// Singleton interface
+   // Singleton interface
    static FFTWThreading* GetInstance() {
       static FFTWThreading singleton;
       return &singleton;
    }
 
-   /// Returns a non-zero value upon successful init and zero if there was some error
+   // Returns a non-zero value upon successful init and zero if there was some error
    int GetInitResult() const {
       return initResult_;
    }
@@ -187,9 +186,9 @@ public:
    int GetOptimalNumThreads( UnsignedArray const& outSize ) const {
       // TODO: find heuristic. The FFTW 3 manual says:
       // "You will have to experiment with your system to see what level of parallelization is best
-      // for your problem size.Typically, the problem will have to involve at least a few thousand
-      // data points before threads become beneficial.If you plan with FFTW_PATIENT, it will
-      // automatically disable threads for sizes that don’t benefit from parallelization."
+      // for your problem size. Typically, the problem will have to involve at least a few thousand
+      // data points before threads become beneficial. If you plan with FFTW_PATIENT, it will
+      // automatically disable threads for sizes that don't benefit from parallelization."
       if( outSize.product() < 2000 )
          return 1;
       else
@@ -201,22 +200,22 @@ public:
 //static FFTWThreading<float>* p1 = FFTWThreading<float>::GetInstance();
 //static FFTWThreading<double>* p2 = FFTWThreading<double>::GetInstance();
 
-/// FFTW helper class.
-/// See derived types for different transform types for more details.
-///
-/// All transform variants (R2R, R2C, C2C, C2R) operate in-place, i.e.,
-/// the input data is overwritten by the transformed data.
-/// There are two reasons:
-/// 1) Planning with FFTW_MEASURE destroys the input/output data while planning (so does C2R while transforming)
-/// 2) The input is often modified before doing the transform
-/// Operations that require input processing are:
-/// - Integral to float conversion
-/// - Shifting the origin
-/// - Normalization (done while copying the input in order to save a post processing step)
-///
-/// First, the output is forged. Next, FFTW plans with the FFTW_MEASURE flag on uninitialized data in the
-/// output image. Finally, the output image is filled with the (processed) input data and the
-/// transform is done in-place. This eliminates all needs for an intermediate image.
+// FFTW helper class.
+// See derived types for different transform types for more details.
+//
+// All transform variants (R2R, R2C, C2C, C2R) operate in-place, i.e.,
+// the input data is overwritten by the transformed data.
+// There are two reasons:
+// 1) Planning with FFTW_MEASURE destroys the input/output data while planning (so does C2R while transforming)
+// 2) The input is often modified before doing the transform
+// Operations that require input processing are:
+// - Integral to float conversion
+// - Shifting the origin
+// - Normalization (done while copying the input in order to save a post processing step)
+//
+// First, the output is forged. Next, FFTW plans with the FFTW_MEASURE flag on uninitialized data in the
+// output image. Finally, the output image is filled with the (processed) input data and the
+// transform is done in-place. This eliminates all needs for an intermediate image.
 template< class fftwapi >
 class FFTWHelper
 {
@@ -231,10 +230,10 @@ public:
       , transformScale_( 1.0 )
    {}
 
-   /// Prepare input/output dimension descriptors
-   /// Requires calling HandleProcessingDims() and ForgeOutput() first.
-   /// Input strides are taken from `inputStrides_` and `inputTensorStride_`, output strides are taken from `out_`.
-   /// Sizes are taken from `out_`.
+   // Prepare input/output dimension descriptors
+   // Requires calling HandleProcessingDims() and ForgeOutput() first.
+   // Input strides are taken from `inputStrides_` and `inputTensorStride_`, output strides are taken from `out_`.
+   // Sizes are taken from `out_`.
    virtual void PrepareIODims() {
       DIP_THROW_IF( inputStrides_.empty(), "FFTWHelper did not set inputStrides_" );
       DIP_THROW_IF( inputTensorStride_ == 0, "FFTWHelper did not set inputTensorStride_" );
@@ -272,7 +271,7 @@ public:
       }
    }
 
-   /// Do the handling related to the selection of dimensions that are processed
+   // Do the handling related to the selection of dimensions that are processed
    virtual void HandleProcessingDims( BooleanArray const& process ) {
       // Handle processing dims.
       // If a dimension is excluded from the transform,
@@ -298,21 +297,21 @@ public:
       }
    }
 
-   /// Forge the output image
+   // Forge the output image
    virtual void ForgeOutput( UnsignedArray const& outSize ) = 0;
 
-   /// Prepare the input data.
-   /// This involves copying, scaling and shifting into the output buffer for in-place transformation.
-   /// Note that this must be done after creating an FFTW plan, because planning can destroy the input/output buffer.
+   // Prepare the input data.
+   // This involves copying, scaling and shifting into the output buffer for in-place transformation.
+   // Note that this must be done after creating an FFTW plan, because planning can destroy the input/output buffer.
    virtual void PrepareInput( bool inverse, bool symmetricNormalization, bool shiftOriginToCenter ) = 0;
 
-   /// Finalize the output, e.g., complete the R2C output image with only N/2+1 sub-images
-   /// Scaling is done while preparing the input, so before the transform
+   // Finalize the output, e.g., complete the R2C output image with only N/2+1 sub-images
+   // Scaling is done while preparing the input, so before the transform
    virtual void FinalizeOutput( bool shiftOriginToCenter ) {} // Not always necessary
 
-   /// Create the FFTW plan
-   /// The FFTW_MEASURE flag is advised. Initialization takes longer, but is done only once by FFTW.
-   /// No re-measuring is done for subsequent calls with the same sizes.
+   // Create the FFTW plan
+   // The FFTW_MEASURE flag is advised. Initialization takes longer, but is done only once by FFTW.
+   // No re-measuring is done for subsequent calls with the same sizes.
    virtual typename fftwapi::plan CreatePlan( bool inverse ) = 0;
 
 protected:
@@ -344,9 +343,9 @@ protected:
          return AlignedAllocInterface::GetInstance<FFTW_MAX_ALIGN_REQUIRED>();
    }
 
-   /// Shift center to corner. Done before the transform. Also see Matlab's ifftshift().
-   /// One dimension, `fixedDim`, can be left untouched while shifting.
-   /// All dimensions are shifted by default or by passing -1.
+   // Shift center to corner. Done before the transform. Also see Matlab's ifftshift().
+   // One dimension, `fixedDim`, can be left untouched while shifting.
+   // All dimensions are shifted by default or by passing -1.
    void ShiftCenterToCorner( Image& img, dip::uint fixedDim = -1 ) {
       // Wrap 'backward'
       IntegerArray wrapShifts( img.Dimensionality() );
@@ -362,7 +361,7 @@ protected:
       Wrap( img, img, wrapShifts );
    }
 
-   /// Shift corner to center. Done after the transform. Also see Matlab's fftshift().
+   // Shift corner to center. Done after the transform. Also see Matlab's fftshift().
    static void ShiftCornerToCenter( Image& img ) {
       // Wrap 'forward'
       IntegerArray wrapShifts( img.Dimensionality() );
@@ -375,8 +374,8 @@ protected:
    }
 };
 
-/// FFTW helper class for real to real transforms.
-/// Not yet implemented.
+// FFTW helper class for real to real transforms.
+// Not yet implemented.
 template< class fftwapi >
 class FFTWHelperR2R : public FFTWHelper< fftwapi >
 {
@@ -403,10 +402,10 @@ public:
    }
 };
 
-/// FFTW helper class for real to complex transforms
-///
-/// On interpreting FFTW real-to-complex results:
-/// http://www.fftw.org/fftw3_doc/Multi_002dDimensional-DFTs-of-Real-Data.html
+// FFTW helper class for real to complex transforms
+//
+// On interpreting FFTW real-to-complex results:
+// http://www.fftw.org/fftw3_doc/Multi_002dDimensional-DFTs-of-Real-Data.html
 template< class fftwapi >
 class FFTWHelperR2C : public FFTWHelper< fftwapi >
 {
@@ -503,14 +502,14 @@ public:
       }
    }
 
-   /// Create r2c plan
+   // Create r2c plan
    virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
       return fftwapi::plan_guru_dft_r2c( static_cast<int>( sizeDims_.size() ), &sizeDims_[0], static_cast<int>( repeatDims_.size() ), &repeatDims_[0],
          (typename fftwapi::real*)out_.Origin(), (typename fftwapi::complex*)out_.Origin(), FFTW_MEASURE );
    }
 };
 
-/// FFTW helper class for complex to real transforms
+// FFTW helper class for complex to real transforms
 template< class fftwapi >
 class FFTWHelperC2R : public FFTWHelper< fftwapi >
 {
@@ -620,7 +619,7 @@ public:
       }
    }
 
-   /// Create c2r plan
+   // Create c2r plan
    virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
       return fftwapi::plan_guru_dft_c2r( static_cast<int>( sizeDims_.size() ), &sizeDims_[0], static_cast<int>( repeatDims_.size() ), &repeatDims_[0],
          (typename fftwapi::complex*)out_.Origin(), (typename fftwapi::real*)out_.Origin(), FFTW_MEASURE );
@@ -632,7 +631,7 @@ protected:
    DataSegment dataLargeEnoughForComplex_;
 };
 
-/// FFTW helper class for complex to complex transforms
+// FFTW helper class for complex to complex transforms
 template< class fftwapi >
 class FFTWHelperC2C : public FFTWHelper< fftwapi >
 {
@@ -689,7 +688,7 @@ public:
       }
    }
 
-   /// Create regular dft (c2c) plan
+   // Create regular dft (c2c) plan
    virtual typename fftwapi::plan CreatePlan( bool inverse ) override {
       int sign = inverse ? FFTW_BACKWARD : FFTW_FORWARD;
       return fftwapi::plan_guru_dft( static_cast<int>( sizeDims_.size() ), &sizeDims_[0], static_cast<int>( repeatDims_.size() ), &repeatDims_[0],
@@ -697,10 +696,10 @@ public:
    }
 };
 
-/// \brief Function that performs the FFTW transform, templated in the floating point type
-///
-/// The actual work is delegated to a helper class, depending on the transform type. See `FFTWHelper`.
-/// `outSize` can be the result of padding for optimal DFT sizes, but is not yet supported. It must be the same as in's size.
+// \brief Function that performs the FFTW transform, templated in the floating point type
+//
+// The actual work is delegated to a helper class, depending on the transform type. See `FFTWHelper`.
+// `outSize` can be the result of padding for optimal DFT sizes, but is not yet supported. It must be the same as in's size.
 template< typename FloatType >
 void PerformFFTW( Image const& in, Image& out, UnsignedArray const& outSize, BooleanArray const& process, bool inverse, bool realOutput, bool shiftOriginToCenter, bool symmetric ) {
    // Use the correct FFTW API depending on the floating point type
@@ -828,10 +827,10 @@ void FourierTransform(
    DataType floatOutType = DataType::SuggestFloat( in.DataType() );
    switch( floatOutType ) {
    case DT_SFLOAT:
-      PerformFFTW<float>( in, out, in.Sizes(), process, inverse, real, !corner, symmetric );
+      PerformFFTW< float >( in, out, in.Sizes(), process, inverse, real, !corner, symmetric );
       break;
    case DT_DFLOAT:
-      PerformFFTW<double>( in, out, in.Sizes(), process, inverse, real, !corner, symmetric );
+      PerformFFTW< double >( in, out, in.Sizes(), process, inverse, real, !corner, symmetric );
       break;
    default:
       DIP_THROW( "Unknown float type for FFTW" );

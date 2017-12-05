@@ -54,10 +54,10 @@ static dip::uint FindNumberOfPixels(
       UnsignedArray const& sizes
 ) {
    dip::uint n = 1;
-   for( dip::uint ii = 0; ii < sizes.size(); ++ii ) {
+   for( auto sz : sizes ) {
       // Note that total size cannot exceed maximum value of `dip::sint` (not `dip::uint`)!
-      DIP_THROW_IF(( sizes[ ii ] != 0 ) && ( n > maxint / sizes[ ii ] ), E::SIZE_EXCEEDS_LIMIT );
-      n *= sizes[ ii ];
+      DIP_THROW_IF(( sz != 0 ) && ( n > maxint / sz ), E::SIZE_EXCEEDS_LIMIT );
+      n *= sz;
    }
    return n;
 }
@@ -98,7 +98,7 @@ static bool FindSimpleStrideSizeAndStart(
       dip::uint& size,
       dip::sint& start
 ) {
-   if( strides.size() == 0 ) {
+   if( strides.empty() ) {
       // Special case
       sstride = 1;
       size = 1;
@@ -163,7 +163,7 @@ void RemoveSingletonsFromStrideArray( UnsignedArray const& sizes, IntegerArray s
 //
 
 void AlignedAllocInterface::Deleter::operator()(
-   void* //pAligned
+      void* //pAligned
 ) {
    // Delete unaligned pointer
    std::free( pUnaligned_ );
@@ -171,27 +171,20 @@ void AlignedAllocInterface::Deleter::operator()(
    //std::cout << "   Successfully freed image with aligned DataSegment " << pAligned << std::endl;
 }
 
-// TODO: reused from Image class.. can we share this functionality?
-// TODO: can we create better strides for FFTW?
-void AlignedAllocInterface::SetStrides( UnsignedArray const& sizes, dip::Tensor const& tensor, IntegerArray& strides, dip::sint& tensorStride ) {
-   tensorStride = 1; // We set tensor strides to 1 by default.
-   ComputeStrides( sizes, tensor.Elements(), strides );
-}
-
 DataSegment AlignedAllocInterface::AllocateData(
-   void*& origin,
-   dip::DataType dataType,
-   UnsignedArray const& sizes,
-   IntegerArray& strides,
-   dip::Tensor const& tensor,
-   dip::sint& tensorStride
+      void*& origin,
+      dip::DataType dataType,
+      UnsignedArray const& sizes,
+      IntegerArray& strides,
+      dip::Tensor const& tensor,
+      dip::sint& tensorStride
 ) {
    // Determine image size
    dip::uint numSamples = FindNumberOfPixels( sizes );
    numSamples *= tensor.Elements();
    dip::uint sampleSize = dataType.SizeOf();
    // Allocate enough memory to store the data with an offset necessary for the requested alignment
-   size_t netSize = numSamples*sampleSize;
+   size_t netSize = numSamples * sampleSize;
    size_t unalignedSize = netSize + alignment_;
    // Allocate unaligned memory
    void* pUnaligned = std::malloc( unalignedSize );
@@ -202,9 +195,11 @@ DataSegment AlignedAllocInterface::AllocateData(
    void* pAligned = std::align( alignment_, netSize, pAlignedFromUnaligned, alignedSize );
    DIP_THROW_IF( !pAligned, "Failed to align memory" );
    // Set strides and tensorStride
-   SetStrides( sizes, tensor, strides, tensorStride );
-   size_t start = 0; // TODO: is this always true due to SetStrides()?
-   origin = static_cast< uint8* >(pAligned) + start * static_cast< dip::sint >(sampleSize);
+   tensorStride = 1; // We set tensor strides to 1 by default.
+   // TODO: can we create better strides for FFTW?
+   ComputeStrides( sizes, tensor.Elements(), strides );
+   // Set origin and create shared pointer.
+   origin = static_cast< uint8* >( pAligned );
    return DataSegment{ pAligned, Deleter( pUnaligned ) };  // Pass deleter that deletes the pointer to the block allocated by malloc()
 }
 

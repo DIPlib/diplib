@@ -105,7 +105,7 @@ class DIP_EXPORT ExternalInterface {
 ///
 /// The class is designed as a singleton: `dip::AlignedAllocInterface::GetInstance()`
 /// returns a pointer to a unique instance.
-/// The alignment, in bytes, is passed to `dip::AlignedAllocInterface::GetInstance()` 
+/// The alignment, in bytes, is passed to `dip::AlignedAllocInterface::GetInstance()`
 /// as a template parameter.
 /// For example:
 /// ```cpp
@@ -116,55 +116,50 @@ class DIP_EXPORT ExternalInterface {
 /// Note: this interface is only suitable for allocating blocks of memory that are (much)
 /// larger than the alignment size. Internally, the class allocates an oversized memory block
 /// padded with `alignment`, and returns an aligned pointer within that oversized block.
-class DIP_EXPORT AlignedAllocInterface : public ExternalInterface
-{
-private:
-   /// Private constructor to enforce the singleton interface
-   AlignedAllocInterface( size_t alignment ) : alignment_( alignment ) {}
+class DIP_EXPORT AlignedAllocInterface : public ExternalInterface {
+   private:
+      // Private constructor to enforce the singleton interface
+      explicit AlignedAllocInterface( size_t alignment ) : alignment_( alignment ) {}
 
-protected:
-   class Deleter
-   {
    protected:
-      /// The pointer to the unaligned data must be freed, not the aligned pointer -> store it
-      void* pUnaligned_;
+      class Deleter {
+         protected:
+            /// The pointer to the unaligned data must be freed, not the aligned pointer -> store it
+            void* pUnaligned_;
+
+         public:
+            /// Construct Deleter with pointer to unaligned memory
+            Deleter( void* pUnaligned ) : pUnaligned_( pUnaligned ) {}
+            /// Deletes the memory of a DataSegment allocated by AlignedAllocInterface::AllocateData()
+            void operator()( void* pAligned );
+      };
+
+      /// Alignment in bytes
+      size_t alignment_;
 
    public:
-      /// Construct Deleter with pointer to unaligned memory
-      Deleter( void* pUnaligned ) : pUnaligned_( pUnaligned ) {}
-      /// Deletes the memory of a DataSegment allocated by AlignedAllocInterface::AllocateData()
-      void operator()( void* pAligned );
-   };
+      /// Allocates the data for an image. The function is required to set `strides`,
+      /// `tensorStride` and `origin`, and return a `dip::DataSegment` that owns the
+      /// allocated data segment. Note that `strides` and `tensorStride` might have
+      /// been set by the user before calling `dip::Image::Forge`, and should be honored
+      /// if possible.
+      virtual DataSegment AllocateData(
+            void*& origin,
+            dip::DataType dataType,
+            UnsignedArray const& sizes,
+            IntegerArray& strides,
+            dip::Tensor const& tensor,
+            dip::sint& tensorStride
+      ) override;
 
-   // Compute strides
-   void SetStrides( UnsignedArray const& sizes, dip::Tensor const& tensor, IntegerArray& strides, dip::sint& tensorStride );
-
-   /// Alignment in bytes
-   size_t alignment_;
-
-public:
-   /// Allocates the data for an image. The function is required to set `strides`,
-   /// `tensorStride` and `origin`, and return a `dip::DataSegment` that owns the
-   /// allocated data segment. Note that `strides` and `tensorStride` might have
-   /// been set by the user before calling `dip::Image::Forge`, and should be honored
-   /// if possible.
-   virtual DataSegment AllocateData(
-      void*& origin,
-      dip::DataType dataType,
-      UnsignedArray const& sizes,
-      IntegerArray& strides,
-      dip::Tensor const& tensor,
-      dip::sint& tensorStride
-   ) override;
-
-   /// Singleton interface, templated in the alignment parameter.
-   /// Only one instance is needed for each distinct alignment.
-   /// `alignment` is in bytes.
-   template<size_t alignment>
-   static AlignedAllocInterface* GetInstance() {
-      static AlignedAllocInterface ei( alignment );
-      return &ei;
-   }
+      /// Singleton interface, templated in the alignment parameter.
+      /// Only one instance is needed for each distinct alignment.
+      /// `alignment` is in bytes.
+      template< size_t alignment >
+      static AlignedAllocInterface* GetInstance() {
+         static AlignedAllocInterface ei( alignment );
+         return &ei;
+      }
 };
 
 
