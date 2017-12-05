@@ -401,6 +401,7 @@ class DIP_NO_EXPORT GenericImageIterator {
       void Reset() {
          offset_ = 0;
          coords_.fill( 0 );
+         atEnd_ = false;
       }
 
    private:
@@ -670,6 +671,7 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       void Reset() {
          offsets_.fill( 0 );
          coords_.fill( 0 );
+         atEnd_ = false;
       }
 
    private:
