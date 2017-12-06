@@ -33,6 +33,15 @@
 
 #include <mex.h>
 
+// MSVC 2015-2017 has a problem linking std::codecvt_utf8_utf16< char16_t >. Here's a workaround.
+// MSVC version numbers from https://sourceforge.net/p/predef/wiki/Compilers/#microsoft-visual-c
+#if( _MSC_VER == 1900 ) || ( _MSC_VER == 1910 )
+using char16_type = int16_t;
+#else
+using char16_type = char16_t;
+#endif
+static_assert( sizeof( char16_type ) == sizeof( mxChar ), "MATLAB's mxChar is not 16 bits." );
+
 // Undocumented functions in libmx
 // See: http://www.advanpix.com/2013/07/19/undocumented-mex-api/
 // These functions allow us to get and set object properties without making deep copies, as `mxGetProperty` and
@@ -452,11 +461,11 @@ inline dip::String GetStringUnicode( mxArray const* mx ) {
 #ifdef DIP__ENABLE_UNICODE
    if( mxIsChar( mx ) && IsVector( mx )) {
       // We need to copy the UTF16 string in the mxArray because it is not null-terminated, as wstring_convert expects.
-      mxChar const* data = mxGetChars( mx );
+      char16_type const* data = reinterpret_cast< char16_type* >( mxGetChars( mx ));
       dip::uint len = mxGetNumberOfElements( mx );
-      std::basic_string< mxChar > u16str( len + 1, '\0' ); // one more char for the null terminator.
+      std::basic_string< char16_type > u16str( len + 1, '\0' ); // one more char for the null terminator.
       std::copy( data, data + len, u16str.begin() ); // here we don't overwrite the last null.
-      dip::String out = std::wstring_convert< std::codecvt_utf8_utf16< mxChar >, mxChar >{}.to_bytes( u16str );
+      dip::String out = std::wstring_convert< std::codecvt_utf8_utf16< char16_type >, char16_type >{}.to_bytes( u16str );
       return out;
    }
    DIP_THROW( "String expected" );
@@ -712,10 +721,10 @@ inline mxArray* GetArray( dip::StringArray const& in ) {
 /// \brief Convert a UTF-8 encoded string from `dip::String` to `mxArray` by copy.
 inline mxArray* GetArrayUnicode( dip::String const& in ) {
 #ifdef DIP__ENABLE_UNICODE
-   auto u16str = std::wstring_convert< std::codecvt_utf8_utf16< mxChar >, mxChar >{}.from_bytes( in );
+   auto u16str = std::wstring_convert< std::codecvt_utf8_utf16< char16_type >, char16_type >{}.from_bytes( in );
    dip::uint sz[ 2 ] = { 1, u16str.size() };
    mxArray* out = mxCreateCharArray( 2, sz );
-   std::copy( u16str.begin(), u16str.end(), mxGetChars( out ) );
+   std::copy( u16str.begin(), u16str.end(), reinterpret_cast< char16_type* >( mxGetChars( out )));
    return out;
 #else
    return GetArray( in );
