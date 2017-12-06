@@ -193,6 +193,11 @@ to the Apache License, except for *OME Bio-Formats*.
   Copyright 1995-2017 Jean-loup Gailly and Mark Adler  
   MIT-style license
 
+- *FFTW3* (as installed on your system, not used by default)  
+  Copyright (c) 2003, 2007-14 Matteo Frigo  
+  Copyright (c) 2003, 2007-14 Massachusetts Institute of Technology  
+  GNU General Public License, Version 2 (not compatible with the Apache License)
+
 *DIPviewer* links agains the following libraries:
 
 - *FreeGLUT* (as installed on your system, alternative to *GLFW*)  
