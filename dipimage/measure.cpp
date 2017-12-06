@@ -79,10 +79,24 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             dml::ToLower( name );
             knownFeatures.emplace( name, ii );
          }
+         // Put in aliases for backwards compatibility
+         auto it = knownFeatures.find( "standarddeviation" );
+         if( it != knownFeatures.end() ) {
+            knownFeatures.emplace( "stddev", it->second );
+         }
+         it = knownFeatures.find( "statistics" );
+         if( it != knownFeatures.end() ) {
+            knownFeatures.emplace( "skewness", it->second );
+            knownFeatures.emplace( "excesskurtosis", it->second );
+         }
+         it = knownFeatures.find( "mass" );
+         if( it != knownFeatures.end() ) {
+            knownFeatures.emplace( "sum", it->second );
+         }
          // Find requested features in map, using case-insensitive search, and copy name with correct case
          for( auto& f : features ) {
             dml::ToLower( f );
-            auto it = knownFeatures.find( f );
+            it = knownFeatures.find( f );
             DIP_THROW_IF( it == knownFeatures.end(), "Feature name not recognized" );
             f = infoArray[ it->second ].name;
          }
