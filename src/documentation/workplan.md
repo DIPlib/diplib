@@ -49,8 +49,9 @@ document's source</a> for the most up-to-date version.
 
 -   Color support. More color spaces could be added in time.
 
--   The Fourier transform (based on the code out of OpenCV, much faster than the code in
-    the old *DIPlib*).
+-   The Fourier transform: built-in code is based on the code out of OpenCV, much faster than
+    the version in the old *DIPlib*; optionally uses [*FFTW*](http://www.fftw.org) instead
+    (which is GPL).
 
 -   Histograms, including multi-dimensional histograms constructed from tensor images.
 
@@ -69,8 +70,9 @@ document's source</a> for the most up-to-date version.
 
 -   *MATLAB* interface.
 
--   *DIPimage* toolbox: The `dip_image` object is defined and has all methods defined.
-    The `dipshow` function works. Functions are being added as functionality is ported
+-   *DIPimage* toolbox: The infrastructure is complete (the `dip_image` and `dip_measurement`
+    objects are defined and all methods ported; most `dipshow` functionality is ported; the
+    GUI is ported and partially rewritten). Functions are being added as functionality is ported
     to the new library.
 
 -   *PyDIP* Python module: Currently just a thin wrapper around the *DIPlib*, with classes
@@ -95,11 +97,9 @@ document's source</a> for the most up-to-date version.
 
 -   Porting filters, analysis routines, etc. See the list at the bottom of this page.
 
--   The Fourier transform: Use [*FFTW*](http://www.fftw.org) when a compile switch is set.
-    We must be able to disable *FFTW* because it's GPL, and we want to allow people to use
-    *DIPlib* in non-GPL environments.
-    Further improvements could be making specific paths for real input or output (could mean
-    a small increase in performance).
+-   The Fourier transform: Further improvements could be making specific paths for real input or
+    output, which could mean a small increase in performance. When compiled with *FFTW*, such
+    paths already exist.
 
 -   Stuff that is in *DIPimage*:
     - 2D snakes
@@ -113,8 +113,6 @@ document's source</a> for the most up-to-date version.
 
 -   *DIPimage* toolbox: MEX-files for *DIPlib* functions to be added as these functions
     are written.
-    The `dipimage` GUI needs to be ported, with function input parameter definitions to be
-    provided by `dipmenus` instead of each toolbox function through the 'DIP_GetParamList` trick.
 
 -   *PyDIP* Python module: Write interactive image display and GUI as exists in *MATLAB*.
     Make the module more "Pythonic"?
@@ -138,7 +136,6 @@ document's source</a> for the most up-to-date version.
 
 - We're also lacking some other morphological filters:
     - hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees.
-    - thinning & thickening, to be implemented as iterated hit'n'miss.
     - levelling
 
 - The monogenic signal, including derived quantities, using a similar interface to that used
@@ -183,14 +180,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_OSEmphasizeLinearStructures (dip_structure.h)
     - dip_DanielsonLineDetector (dip_structure.h)
 
-- diplib/binary.h
-    - dip_BinaryDilation (dip_binary.h)
-    - dip_BinaryErosion (dip_binary.h)
-    - dip_BinaryClosing (dip_binary.h)
-    - dip_BinaryOpening (dip_binary.h)
-    - dip_BinaryPropagation (dip_binary.h)
-    - dip_EdgeObjectsRemove (dip_binary.h)
-
 - diplib/distance.h
     - dip_FastMarching_PlaneWave (dip_distance.h) (this function needs some input image checking!)
     - dip_FastMarching_SphericalWave (dip_distance.h) (this function needs some input image checking!)
@@ -213,13 +202,6 @@ Some of the following functions already have their prototype written in the new 
     - dip_ObjectEdge (dip_generation.h)
     - dip_ObjectPlane (dip_generation.h)
     - dip_ObjectEllipsoid (dip_generation.h)
-    - dip_DrawLineFloat (dip_paint.h) (merge into a single dip::DrawLine)
-    - dip_DrawLineComplex (dip_paint.h) (merge into a single dip::DrawLine)
-    - dip_DrawLinesFloat (dip_paint.h) (merge into a single dip::DrawLine)
-    - dip_DrawLinesComplex (dip_paint.h) (merge into a single dip::DrawLine)
-    - dip_PaintEllipsoid (dip_paint.h)
-    - dip_PaintDiamond (dip_paint.h)
-    - dip_PaintBox (dip_paint.h)
 
 - diplib/geometry.h
     - dip_ResampleAt (dip_interpolation.h)

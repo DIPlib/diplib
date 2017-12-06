@@ -203,12 +203,14 @@ code that used *DIPlib* or *DIPimage* to the new version.
 \section changes_functionality Changes in functionality
 
 - Second order extrapolation boundary extension didn't do as advertised in the old *DIPlib*.
-  Also the first order extrapolation couldn't have worked correctly with unsigned integers.
-  The new implementation fits a 2<sup>nd</sup> order polynomial that reaches 0 at the end of the extended
-  boundary, yielding a continuous first derivative at the boundary. A third order extrapolation
-  has been added, which works similarly but yields a continuous second derivative at the boundary.
-  These functions are quite noise sensitive, however, and I expect they might produce high
-  frequencies along the edge.
+  Also the first order extrapolation didn't work correctly with unsigned integers.
+  The new implementation fits a 1<sup>st</sup> or 2<sup>nd</sup> order polynomial that reaches
+  0 at the end of the extended boundary, with the 2<sup>nd</sup> order polynomial matching
+  two samples at the image edge and therefore connects smoothly.
+  A 3<sup>rd</sup> order extrapolation has been added, which works similarly to the
+  2<sup>nd</sup> order extrapolation but reaches 0 smoothly at the end of the boundary.
+  These functions are quite noise sensitive, however, and produce high frequencies along
+  the edge.
 
 - Fixed little bug in the "Perimeter" measurement feature, which didn't check the corner count
   for the transition from the last to the first chain code, yielding a perimeter that was often
@@ -259,9 +261,6 @@ code that used *DIPlib* or *DIPimage* to the new version.
   more efficient. The "diamond" SE is now implemented using line SEs, and we have added an
   "octagonal" SE that is computed as a combination of a diamond SE and a rectangular SE.
 
-- New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
-  and `dip::ClosingByReconstruction`.
-
 - `dip::Resampling` (and by extension `dip::Shift`) shifts the image in the opposite direction
   from what it did in the old *DIPlib*, where the shift was unintuitive. `dip::Skew` can now skew
   in multiple dimensions at the same time. `dip::Rotation` now works for any number of dimensions,
@@ -277,7 +276,9 @@ code that used *DIPlib* or *DIPimage* to the new version.
   reading times significantly.
 
 - Lots of new algorithms, some previously only available in *DIPimage*.
-  TODO: try to list these.
+  - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
+    and `dip::ClosingByReconstruction`, `dip::ConditionalThickening2D`, `dip::ConditionalThinning2D`.
+  - TODO: try to list them all!
 
 [//]: # (--------------------------------------------------------------)
 

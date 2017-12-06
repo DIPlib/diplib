@@ -54,6 +54,8 @@ DIP_EXPORT dip::uint Count( Image const& in, Image const& mask = {} );
 /// The image must be scalar. If `in` is complex, the modulus of its values are used.
 /// If `positionFlag` is `"first"`, the first maximum is found, in linear index order.
 /// If it is `"last"`, the last one is found.
+///
+/// \see dip::Maximum
 DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = "first" );
 
 /// \brief Returns the coordinates of the minimum pixel in the image.
@@ -61,6 +63,8 @@ DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask = {}, 
 /// The image must be scalar. If `in` is complex, the modulus of its values are used.
 /// If `positionFlag` is `"first"`, the first minimuim is found, in linear index order.
 /// If it is `"last"`, the last one is found.
+///
+/// \see dip::Minimum
 DIP_EXPORT UnsignedArray MinimumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = "first" );
 
 /// \brief Calculates the cumulative sum of the pixel values over all those dimensions which are specified by `process`.
@@ -334,7 +338,9 @@ inline Image StandardDeviation( Image const& in, Image const& mask = {}, String 
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
-/// \see dip::MaximumAndMinimum
+/// To compute the sample-wise maximum over two or more images, use `dip::Supremum`.
+///
+/// \see dip::MaximumAndMinimum, dip::MaximumPixel, dip::Supremum
 DIP_EXPORT void Maximum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image Maximum( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
@@ -356,7 +362,9 @@ inline Image Maximum( Image const& in, Image const& mask = {}, BooleanArray cons
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
 ///
-/// \see dip::MaximumAndMinimum
+/// To compute the sample-wise minimum over two or more images, use `dip::Infimum`.
+///
+/// \see dip::MaximumAndMinimum, dip::MinimumPixel, dip::Infimum
 DIP_EXPORT void Minimum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image Minimum( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
@@ -377,8 +385,6 @@ inline Image Minimum( Image const& in, Image const& mask = {}, BooleanArray cons
 /// For tensor images, the result is computed for each element independently.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-///
-/// \see dip::MaximumAndMinimum
 DIP_EXPORT void MaximumAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image MaximumAbs( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
@@ -399,8 +405,6 @@ inline Image MaximumAbs( Image const& in, Image const& mask = {}, BooleanArray c
 /// For tensor images, the result is computed for each element independently.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-///
-/// \see dip::MaximumAndMinimum
 DIP_EXPORT void MinimumAbs( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image MinimumAbs( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
