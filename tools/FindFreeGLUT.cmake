@@ -7,7 +7,7 @@
 #     Searching headers and libraries is very simple and is NOT as powerful as scripts
 #     distributed with CMake, because LuaDist defines directories to search for.
 #     Everyone is encouraged to contact the author with improvements. Maybe this file
-#     becomes part of CMake distribution sometimes.
+#     becomes part of CMake distribution sometime.
 
 # - Find FreeGLUT
 # Find the native FreeGLUT headers and libraries.
@@ -15,6 +15,7 @@
 #  FREEGLUT_INCLUDE_DIRS - where to find freeglut.h, etc.
 #  FREEGLUT_LIBRARIES    - List of libraries when using FreeGLUT.
 #  FREEGLUT_FOUND        - True if FreeGLUT found.
+#  FREEGLUT::FREEGLUT    - Target to link to (automatically sets include directories and linked libraries)
 
 # Look for the header file.
 find_path(FREEGLUT_INCLUDE_DIR NAMES GL/freeglut.h)

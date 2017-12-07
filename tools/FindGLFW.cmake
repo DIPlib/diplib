@@ -7,7 +7,7 @@
 #     Searching headers and libraries is very simple and is NOT as powerful as scripts
 #     distributed with CMake, because LuaDist defines directories to search for.
 #     Everyone is encouraged to contact the author with improvements. Maybe this file
-#     becomes part of CMake distribution sometimes.
+#     becomes part of CMake distribution sometime.
 
 # - Find GLFW
 # Find the native GLFW headers and libraries.
@@ -15,6 +15,7 @@
 #  GLFW_INCLUDE_DIRS - where to find glfw3.h
 #  GLFW_LIBRARIES    - List of libraries when using GLFW.
 #  GLFW_FOUND        - True if GLFW found.
+#  GLFW::GLFW        - Target to link to (automatically sets include directories and linked libraries)
 
 # Look for the header file.
 find_path(GLFW_INCLUDE_DIR NAMES GLFW/glfw3.h)
@@ -33,7 +34,7 @@ if(GLFW_FOUND)
    if (NOT TARGET GLFW::GLFW)
       add_library(GLFW::GLFW UNKNOWN IMPORTED)
       set_target_properties(GLFW::GLFW PROPERTIES
-                   INTERFACE_INCLUDE_DIRECTORIES "${GLFW_INCLUDE_DIRS}"
+                            INTERFACE_INCLUDE_DIRECTORIES "${GLFW_INCLUDE_DIRS}"
                             IMPORTED_LOCATION "${GLFW_LIBRARY}")
    endif()
    message(STATUS "GLFW found: ${GLFW_LIBRARY} -- ${GLFW_INCLUDE_DIR}")

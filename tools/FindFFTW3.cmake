@@ -16,8 +16,8 @@
 set(ALL_LIBS)
 
 # Determine FFTW3 root
-if(NOT FFTW3_ROOT_DIR AND ENV{FFTW3_ROOT_DIR} )
-  set( FFTW3_ROOT_DIR $ENV{FFTW3_ROOT_DIR} )
+if(NOT FFTW3_ROOT_DIR AND ENV{FFTW3_ROOT_DIR})
+  set(FFTW3_ROOT_DIR $ENV{FFTW3_ROOT_DIR})
 endif()
 #message("FFTW3_ROOT_DIR = ${FFTW3_ROOT_DIR}")
 
@@ -71,7 +71,6 @@ find_path(FFTW3_INCLUDE_DIR fftw3.h HINTS ${FFTW3_ROOT_DIR} PATH_SUFFIXES includ
 set(FFTW3_INCLUDE_DIRS ${FFTW3_INCLUDE_DIR})
 mark_as_advanced(FFTW3_INCLUDE_DIR FFTW3_INCLUDE_DIRS)
 
-
 # Handles the REQUIRED, QUIET and version-related arguments to find_package()
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(FFTW3 DEFAULT_MSG FFTW3_INCLUDE_DIR ${ALL_LIBS} )
+find_package_handle_standard_args(FFTW3 DEFAULT_MSG FFTW3_INCLUDE_DIR ${ALL_LIBS})

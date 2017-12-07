@@ -1,10 +1,10 @@
 # CMakeLists file for DIPlib 3
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required(VERSION 3.5)
 if(POLICY CMP0068)
    cmake_policy(SET CMP0068 NEW)
 endif()
 
-project (DIPlib)
+project(DIPlib)
 set(PROJECT_VERSION_MAJOR "3")
 set(PROJECT_VERSION_MINOR "0")
 set(PROJECT_VERSION_PATCH "alpha")
@@ -43,11 +43,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid settings mismatch with the MEX files
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
    # using Clang C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage.
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    # using GNU C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wno-unknown-pragmas")
    # -Wno-unknown-pragmas: "#pragma omp" causes a warning if OpenMP is not enabled.
@@ -56,10 +56,10 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage; to see which flags are enabled: gcc -march=native -Q --help=target
    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og") # Does some optimization that doesn't impact debugging.
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
    # using Intel C++
    # TODO: compiler flags for Intel compiler
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
    # using Visual Studio C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # Disable unchecked iterator warnings and unsafe (string manipulation) function warnings
@@ -74,11 +74,11 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH 1) # Prevent relinking when installing
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH 1)
 
 # Extend CMake module path
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 
 # OpenMP
 find_package(OpenMP)
-if (OpenMP_CXX_FOUND OR OPENMP_FOUND) # OPENMP_FOUND for CMake <= 3.8
+if(OpenMP_CXX_FOUND OR OPENMP_FOUND) # OPENMP_FOUND for CMake <= 3.8
    set(DIP_ENABLE_MULTITHREADING ON CACHE BOOL "Enable multithreading support")
 endif()
 
@@ -113,7 +113,7 @@ if(DIP_ENABLE_ICS)
    add_subdirectory(dependencies/libics EXCLUDE_FROM_ALL)
 endif()
 find_package(TIFF)
-if (TIFF_FOUND)
+if(TIFF_FOUND)
    set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
 endif()
 
@@ -211,7 +211,7 @@ endif()
 # fftw
 if(DIP_ENABLE_FFTW)
    target_include_directories(DIP PRIVATE ${FFTW3_INCLUDE_DIRS} dependencies/fftw)
-   target_link_libraries(DIP ${FFTW3_LIBRARIES})
+   target_link_libraries(DIP PRIVATE ${FFTW3_LIBRARIES})
    target_compile_definitions(DIP PRIVATE DIP__HAS_FFTW)
 endif()
 #install
@@ -227,7 +227,7 @@ install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
 ### DIPlib unit tests
 
 if(DIP_ENABLE_DOCTEST)
-   add_executable (unit_tests EXCLUDE_FROM_ALL src/library/unit_tests.cpp)
+   add_executable(unit_tests EXCLUDE_FROM_ALL src/library/unit_tests.cpp)
    target_include_directories(unit_tests PRIVATE dependencies/doctest)
    target_link_libraries(unit_tests PRIVATE DIP)
    target_compile_definitions(unit_tests PRIVATE DIP__IMPLEMENT_UNIT_TESTS DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES)
@@ -252,19 +252,18 @@ endif()
 ### DIPviewer
 
 # OpenGL, FreeGLUT, GLFW
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/viewer/cmake)
 find_package(OpenGL)
 if(NOT APPLE)
    find_package(FreeGLUT)
 endif()
-if (FREEGLUT_FOUND)
+if(FREEGLUT_FOUND)
    list(APPEND DIP_VIEWER_MANAGERS "FreeGLUT")
 endif()
 find_package(GLFW)
-if (GLFW_FOUND)
+if(GLFW_FOUND)
    list(APPEND DIP_VIEWER_MANAGERS "GLFW")
 endif()
-if (OPENGL_FOUND AND (FREEGLUT_FOUND OR GLFW_FOUND))
+if(OPENGL_FOUND AND (FREEGLUT_FOUND OR GLFW_FOUND))
    set(DIP_BUILD_DIPVIEWER ON CACHE BOOL "Build the viewer module")
 endif()
 if(WIN32 AND DIP_BUILD_DIPVIEWER)
@@ -278,15 +277,15 @@ if(DIP_BUILD_DIPVIEWER)
    add_library(DIPviewer ${DIP_VIEWER_SRC})
    target_include_directories(DIPviewer PUBLIC viewer/include)
    generate_export_header(DIPviewer BASE_NAME dipviewer)
-   if (FREEGLUT_FOUND)
+   if(FREEGLUT_FOUND)
       target_compile_definitions(DIPviewer PUBLIC DIP__HAS_FREEGLUT)
       target_link_libraries(DIPviewer PRIVATE FREEGLUT::FREEGLUT)
    endif()
-   if (GLFW_FOUND)
+   if(GLFW_FOUND)
       target_compile_definitions(DIPviewer PUBLIC DIP__HAS_GLFW)
       target_link_libraries(DIPviewer PRIVATE GLFW::GLFW)
    endif()
-   if (WIN32)
+   if(WIN32)
       target_link_libraries(DIPviewer PRIVATE GLEW::GLEW)
    endif()
    target_link_libraries(DIPviewer PRIVATE DIP OpenGL::GL pthread)
@@ -345,7 +344,7 @@ endif()
 
 set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # This is necessary because my version of MATLAB is very recent and my version of CMake is not. Ajust as necessary.
 find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)
-if (Matlab_FOUND)
+if(Matlab_FOUND)
    set(DIP_BUILD_DIPIMAGE ON CACHE BOOL "Build the DIPimage toolbox")
 endif()
 
@@ -469,10 +468,11 @@ if(DIP_BUILD_DIPIMAGE)
             --template=template.tex ${PANDOC_SMART_OPTION}
             --number-sections --toc --toc-depth=2
             --filter=pandoc-crossref
+            --highlight-style=kate
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dipimage/user_manual
             DEPENDS dipimage/user_manual/*.md dipimage/user_manual/template.tex
       )
-      # Code hightlight styles to try: pygments tango espresso zenburn kate monochrome breezedark haddock
+      # Code hightlight style alternative: tango -- light background color, but colors are poorly chosen
       add_custom_target(dum ALL DEPENDS ${DUM_PDF_NAME})
       install(FILES ${DUM_PDF_NAME} DESTINATION ${DOCUMENTATION_OUTPUT})
    endif()
@@ -635,6 +635,12 @@ if(DIP_ENABLE_TIFF)
    message(" * TIFF file IO enabled")
 else()
    message(" * TIFF file IO disabled")
+endif()
+
+if(DIP_ENABLE_FFTW)
+   message(" * Using FFT from FFTW3 library (GPL)")
+else()
+   message(" * Using built-in FFT")
 endif()
 
 if(DIP_ENABLE_DOCTEST)
