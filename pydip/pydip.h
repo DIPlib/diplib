@@ -74,7 +74,7 @@ class type_caster< dip::DataType > {
          }
          if( PYBIND11_BYTES_CHECK( src.ptr() ) || PyUnicode_Check( src.ptr() )) {
             value = dip::DataType( src.cast< dip::String >() );
-            //std::cout << "   Result: " << value.Name() << std::endl;
+            //std::cout << "   Result: " << value << std::endl;
             return true;
          }
          return false;
@@ -96,7 +96,7 @@ class type_caster< dip::Tensor::Shape > {
          }
          if( PYBIND11_BYTES_CHECK( src.ptr() ) || PyUnicode_Check( src.ptr() )) {
             value = dip::Tensor::ShapeFromString( src.cast< dip::String >() );
-            //std::cout << "   Result: " << value.Name() << std::endl;
+            //std::cout << "   Result: " << value << std::endl;
             return true;
          }
          return false;

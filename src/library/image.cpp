@@ -208,7 +208,7 @@ std::ostream& operator<<(
    }
    os << std::endl;
    // Image size and pixel size
-   os << "    data type " << img.DataType().Name() << std::endl;
+   os << "    data type " << img.DataType() << std::endl;
    if( img.Dimensionality() == 0 ) {
       os << "    sizes {} (0D)" << std::endl;
    } else {

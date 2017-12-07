@@ -487,14 +487,14 @@ void Scan(
          std::cout << "      buffer stride: " << inBuffers[ii].stride << std::endl;
          std::cout << "      buffer tensorStride: " << inBuffers[ii].tensorStride << std::endl;
          std::cout << "      buffer tensorLength: " << inBuffers[ii].tensorLength << std::endl;
-         std::cout << "      buffer type: " << inBufferTypes[ii].Name() << std::endl;
+         std::cout << "      buffer type: " << inBufferTypes[ii] << std::endl;
       }
       for( dip::uint ii = 0; ii < nOut; ++ii ) {
          std::cout << "   out[" << ii << "]: use buffer: " << ( outUseBuffer[ii] ? "yes" : "no" ) << std::endl;
          std::cout << "      buffer stride: " << outBuffers[ii].stride << std::endl;
          std::cout << "      buffer tensorStride: " << outBuffers[ii].tensorStride << std::endl;
          std::cout << "      buffer tensorLength: " << outBuffers[ii].tensorLength << std::endl;
-         std::cout << "      buffer type: " << outBufferTypes[ii].Name() << std::endl;
+         std::cout << "      buffer type: " << outBufferTypes[ii] << std::endl;
       }
       */
 

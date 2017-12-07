@@ -381,6 +381,13 @@ struct DIP_NO_EXPORT DataType {
 
 };
 
+/// \brief You can output a `dip::Image` to `std::cout` or any other stream. Some
+/// information about the image is printed.
+inline std::ostream& operator<<( std::ostream& os, DataType type ) {
+   os << type.Name();
+   return os;
+}
+
 inline void swap( DataType& v1, DataType& v2 ) {
    v1.swap( v2 );
 }

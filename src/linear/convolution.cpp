@@ -292,7 +292,7 @@ void SeparableConvolution(
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
       // Get callback function
       DataType dtype = DataType::SuggestFlex( in.DataType() );
-      //std::cout << "dtype = " << dtype.Name() << std::endl;
+      //std::cout << "dtype = " << dtype << std::endl;
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_FLEX( lineFilter, SeparableConvolutionLineFilter, ( filterData ), dtype );
       Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter, Framework::Separable_AsScalarImage );

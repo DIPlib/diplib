@@ -192,7 +192,7 @@ dip::String ImageRepr( dip::Image const& image ) {
    } else {
       os << "<Scalar image";
    }
-   os << ", " << image.DataType().Name();
+   os << ", " << image.DataType();
    if( image.Dimensionality() == 0 ) {
       os << ", 0D" << std::endl;
    } else {
