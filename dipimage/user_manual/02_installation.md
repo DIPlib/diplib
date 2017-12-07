@@ -22,7 +22,7 @@ Windows Installation
 To install *DIPimage*, simply run the installation program and follow the
 directions in it. The tool will tell you to start *MATLAB* and type the
 command
-```
+```matlab
     run('C:\Program Files\dip\dipstart.m')
 ```
 where `C:\Program Files\dip\` is the directory to which you installed
@@ -47,7 +47,7 @@ open in Visual Studio and build as usual. Note that you need to have *MATLAB*
 installed on the build machine to build *DIPimage*.
 
 Once all the binaries are compiled, start *MATLAB* and type:
-```
+```matlab
     addpath('C:\dip\share\dipimage')
     setenv('PATH',['C:\dip\lib',';',getenv('PATH')]);
 ```
@@ -70,7 +70,7 @@ compiler (GCC and Clang are available on all platforms), and CMake.
 The root directory of the git repository has a
 [README.md](https://github.com/DIPlib/diplib/blob/master/README.md) file
 that gives some directions on compiling. In principle this should suffice:
-```
+```bash
     mkdir target
     cd target
     cmake /path/to/git/repository/root
@@ -79,18 +79,18 @@ that gives some directions on compiling. In principle this should suffice:
 
 If you wish to install *DIPimage* in your home directory instead of `/usr`,
 the CMake command could be:
-```
+```bash
     cmake /path/to/git/repository/root -DCMAKE_INSTALL_PREFIX=/home/uname
 ```
 
 Note that you need to have *MATLAB* installed on the build machine to build *DIPimage*.
 
 Once all the binaries are compiled, start *MATLAB* and type:
-```
+```matlab
     addpath('/usr/share/dipimage')
 ```
 or:
-```
+```matlab
     addpath('/home/uname/share/dipimage')
 ```
 

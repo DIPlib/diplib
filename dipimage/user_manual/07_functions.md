@@ -28,7 +28,7 @@ will be written to this file, in the same manner as that they are echoed
 to the command line. When finished, select the same menu item again (its
 text will have changed to "Stop recording macro"). Typing the macro name
 on the command line:
-```
+```matlab
     macro
 ```
 will execute all recorded commands again. It is possible to append
@@ -46,7 +46,7 @@ statement that returns a `dip_image` object (see [@sec:dip_image_display]).
 An optional second argument indicates the
 display range required, and allows more flexibility than the options in
 the "Display" menu. The general form for `dipshow` is:
-```
+```matlab
     dipshow(a,range,colmap)
 ```
 where `range` is either a grey-value range that should be displayed, or
@@ -75,7 +75,7 @@ The string `'log'` causes the image to be stretched logarithmically.
 `'base'` is a linear stretch that fixes the value 0 to a 50% grey value.
 
 Examples:
-```
+```matlab
     dipshow(a,'lin',summer(256))
     dipshow(a,[0,180],'periodic')
 ```
@@ -88,7 +88,7 @@ function (see [@sec:function_dipfig]). If the variable name is not
 registered, a new figure window is opened for the image. To overrule
 this behavior, it is possible to specify a figure handle in the
 parameter list of `dipshow`:
-```
+```matlab
     dipshow(handle,image,'lin')
 ```
 
@@ -109,7 +109,7 @@ mapping. All menu items under the "Mappings" menu are equivalent to a
 call to `dipmapping`. In a single command, you can combine one setting
 for each of the four categories: range, colormap, complex-to-real
 mapping, the slicing direction and the global stretching for 3D images.
-```
+```matlab
     dipmapping(h,range,colmap,torealstr,slicingstr,globalstr)
 ```
 changes the mapping settings for the image in the figure window with
@@ -118,7 +118,7 @@ order is irrelevant. `range` can be any value as described for `dipshow`
 in [@sec:function_dipshow]: a two-value numeric array or a string.
 `colmap` can contain any of the strings described for `dipshow`, but not
 a colormap. To specify a custom colormap, use
-```
+```matlab
     dipmapping(h,'colormap',summer(256))
 ```
 
@@ -145,7 +145,7 @@ displayed with an aspect ratio of 1:1, each pixel occupying one screen
 pixel. An argument gives the zoom factor. For example, `200` would make
 the image twice as large on the screen, but with the 1-to-1 aspect
 ratio:
-```
+```matlab
     diptruesize(200)
 ```
 
@@ -173,7 +173,7 @@ is possible to link a variable name with a figure handle, such that that
 variable is always displayed in that same window. If a variable is not
 linked to any window, a new one will be opened to display it. The
 command
-```
+```matlab
     dipfig a
 ```
 opens a new figure window and links it to the variable named `a`.
@@ -182,7 +182,7 @@ be send to that window. If the window is closed, it will be opened again
 to display the variable. It is possible to link more than one variable
 to the same window, like in the next example (which uses the functional
 form):
-```
+```matlab
     h = dipfig('a')
     dipfig(h,'b')
 ```
@@ -194,7 +194,7 @@ alternately. Creating a window for `'other'` avoids the opening of new
 windows for ‘unregistered' variables.
 
 To remove the links, type
-```
+```matlab
     dipfig -unlink
 ```
 Unlinking only a specific variable is not implemented.
@@ -212,21 +212,21 @@ Toolbox Preferences: `dipsetpref` and `dipgetpref` {#sec:function_dippref}
 All toolbox preferences are stored in memory, and are only accessible
 through the `dipsetpref` and `dipgetpref` functions. They are listed in
 [@sec:customizing_dippref].
-```
+```matlab
     v = dipgetpref('name');
 ```
 retrieves the value of the named preference. Two special forms print all
 current preferences and all factory settings to the command window:
-```
+```matlab
     dipgetpref
     dipgetpref factory
 ```
 Setting a preference is similar:
-```
+```matlab
     dipsetpref('name',value)
 ```
 Furthermore, it is possible to set many preferences at once:
-```
+```matlab
     dipsetpref('name1',value1,'name2',value2,'name3',value3,...)
 ```
 
@@ -259,7 +259,7 @@ Image Processing Functions
 The largest part of the toolbox is made out of the image processing
 functions. Most of them are listed in the menu system of the GUI, and
 all are listed by typing
-```
+```matlab
     help dipimage
 ```
 The usage of each function can be retrieved through the `help` command

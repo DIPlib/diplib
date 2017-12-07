@@ -31,7 +31,7 @@ Another thing that can be customized in the GUI is whether the command
 it executes should be printed to *MATLAB*'s command window. This is useful
 for copying and pasting the command being executed to some script or
 function. It is on by default, and can be switched off by typing
-```
+```matlab
     dipsetpref('PutInCommandWindow','off')
 ```
 
@@ -45,7 +45,7 @@ The function should be defined by iteself in a file called `localdipmenus.m` and
 be somewhere on the MATLAB path. See `help addpath` to learn about the MATLAB
 path. `localdipmenus` is defined as follows:
 
-```
+```matlab
     function [menulist,functionlist] = localdipmenus(menulist)
 
     menulist = [menulist;{'My Menu',{'myfunction'}}];
@@ -299,7 +299,7 @@ the original one; this is recommended in multi-user systems). Since it
 is a script, not a function, it can initialize some variables if you
 like. It can also be used to position the *DIPimage* GUI to the place of
 your liking:
-```
+```matlab
     set(0,'ShowHiddenHandles','on')
     h = findobj('tag','DIPimage_Main_Window');
     set(h,'Position',[500,600,500,100])

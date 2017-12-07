@@ -69,18 +69,18 @@ make and empty `startup.m` file to avoid your default one to be used.
 To find out which directories you need to add to the Compiler search
 path, type `path` on the *MATLAB* command line. It should return a long
 list of directories, three of which look like this:
-```
+```bash
     /something/dip/common/mlv7_4/diplib
-    /something/dip/common/mlv7_4/dipimage\_mex
+    /something/dip/common/mlv7_4/dipimage_mex
     /something/dip/common/dipimage
 ```
 These three paths can be added the the `mcc` command line using the
 ‘`-I`' argument:
-```
+```bash
     mcc -m myapplication.m ...
         -I /something/dip/common/dipimage ...
-        -I /something/dip/common/mlv7\_4/dipimage\_mex ...
-        -I /something/dip/common/mlv7\_4/diplib
+        -I /something/dip/common/mlv7_4/dipimage_mex ...
+        -I /something/dip/common/mlv7_4/diplib
 ```
 
 Under some circumstances, `mcc` might give a warning telling you that
@@ -113,14 +113,14 @@ environment variable prior to starting the executable.
 
 There is a very simple way of including the *DIPlib* libraries in the CTF
 file:
-```
+```bash
     mcc -m myapplication.m ...
         -I /something/dip/common/dipimage ...
-        -I /something/dip/common/mlv7\_4/dipimage\_mex ...
-        -I /something/dip/common/mlv7\_4/diplib ...
+        -I /something/dip/common/mlv7_4/dipimage_mex ...
+        -I /something/dip/common/mlv7_4/diplib ...
         -a /something/dip/Linux/libdip.so ...
         -a /something/dip/Linux/libdipio.so ...
-        -a /something/dip/Linux/libdml\_mlv7\_4.so
+        -a /something/dip/Linux/libdml_mlv7_4.so
 ```
 
 The CTF archive will be called `myapplication.ctf`, and, once extracted,
@@ -131,7 +131,7 @@ Thus, assuming your user puts the files `myapplication.ctf` and
 `myapplication` into the directory `/home/user/myapp/`, and installed
 the MCR into `/usr/local/mcr/v76/`, your user will have to do the
 following to start the application:
-```
+```bash
     MCRROOT=/usr/local/mcr/v76
     LD_LIBRARY_PATH=/home/user/myapp/myapplication_mcr/something/dip/Linux/
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRROOT}/runtime/glnx86

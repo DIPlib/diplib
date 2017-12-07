@@ -7,16 +7,25 @@
 \usepackage{upquote}
 
 \PassOptionsToPackage{hyphens}{url} % url is loaded by hyperref
-\usepackage[unicode=true]{hyperref}
 \PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
-\hypersetup{
-            pdftitle=DIPimage User Manual,
+\usepackage[unicode=true]{hyperref}
+\hypersetup{pdftitle=DIPimage User Manual,
             pdfauthor=Cris Luengo et al.,
             colorlinks=true,
             allcolors=MidnightBlue,
             anchorcolor=Red,
             breaklinks=true}
 \urlstyle{same}  % don't use monospace font for urls
+
+$if(listings)$
+\usepackage{listings}
+$endif$
+$if(lhs)$
+\lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}
+$endif$
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
 
 $if(tables)$
 \usepackage{longtable,booktabs}

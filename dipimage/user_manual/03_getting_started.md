@@ -16,7 +16,7 @@ Starting the GUI
 **NOTE: The GUI is not yet available in 3.0 (we still have work to do)**
 
 Type the following command at the *MATLAB* prompt:
-```
+```matlab
     dipimage
 ```
 This should start the *DIPimage* GUI. A new window appears to the top-left
@@ -44,7 +44,7 @@ then press the "Execute" button. Two things should happen:
 
 2.  The following lines (or something very similar) appear in the
     command window:
-    ```
+    ```matlab
         >> a = readim('c:\dip\share\images\rice.tif','')
         Displayed in figure 1
     ```
@@ -52,7 +52,7 @@ then press the "Execute" button. Two things should happen:
 This is to show you that the same would have happened if you would have
 typed that command directly yourself, without using the GUI. Try typing
 this command:
-```
+```matlab
     a = readim('rice')
 ```
 The same image should be loaded into the same variable, and again
@@ -66,7 +66,7 @@ current directory or in any of the directories specified by the
 
 To avoid having the image displayed in a window automatically, add a
 semicolon to the end of the command:
-```
+```matlab
     a = readim('rice');
 ```
 
@@ -85,7 +85,7 @@ Try different settings until you are satisfied with the result.
 
 Once we have the background image, we can subtract it from the original
 image. It is very easy to do arithmetic with images in *MATLAB*. Type
-```
+```matlab
     a = a - bg
 ```
 The new image should be displayed to a figure window, but it looks very
@@ -111,14 +111,14 @@ The next step is to segment the image. We need to find some threshold
 that distinguishes the grains of rice from the background. To find it,
 we can examine the histogram of the image. Choose "Histogram" on the
 "Statistics" menu, or type
-```
+```matlab
     diphist(a,[])
 ```
 The graph shows two peaks, one for the background, one for the objects.
 Find a value in between for the threshold. To do the segmentation,
 compare all pixel values with the threshold, which can be done in this
 way:
-```
+```matlab
     b = a > 20
 ```
 This results in a binary image (logical image, containing values of
@@ -135,7 +135,7 @@ the image. We can do this using a binary operation. Find and execute the
 same as the `bpropagation` function, with an empty image as a seed
 image, and the edge condition set to 1. To create an empty seed image
 use the `newim` function. Thus, these two commands are equivalent:
-```
+```matlab
     b = b - bpropagation(newim(b,'bin'),b,0,2,1)
     b = brmedgeobjs(b,2)
 ```
@@ -157,7 +157,7 @@ Now do the measuring. We will measure the object area in pixels
 (`'Size'`) and the Feret diameters (`'Feret'`), which are the largest
 and smallest diameters, and the diameter perpendicular to the smallest
 diameter.
-```
+```matlab
     data = measure(lab,[],{'Size','Feret'});
 ```
 
@@ -171,7 +171,7 @@ diameters for object number 1.
 
 To extract the measurements done on all objects and put them in an
 array, type
-```
+```matlab
     feret = data.Feret;
     sz = data.Size;
 ```
@@ -182,27 +182,27 @@ the mean grain area.
 We will use `scatter` to find some correlation between the diameters and
 the area of the grains. Let's start by plotting the length of the grains
 against their width:
-```
+```matlab
     figure;
     scatter(feret(1,:),feret(2,:))
 ```
 Apparently, they are mostly unrelated. Let's try a relation between the
 length and the surface area:
-```
+```matlab
     scatter(feret(1,:),sz)
 ```
 These appear to be more related, but, of course, the area also depends
 on the width of the grains. If we assume that the grains are elliptic,
 we know that the area is $\frac{1}{4}\pi d_1 d_2$. Let's plot the
 calculated area against the measured area:
-```
+```matlab
     calc = pi*feret(1,:).*feret(2,:)/4;
     scatter(sz,calc)
 ```
 Wow! That is a linear relation. We can add a line along the diagonal to
 see how much the ratio differs from 1 (the other commands are to make
 the figure look prettier):
-```
+```matlab
     hold on
     plot([180,360],[180,360],'k--')
     axis equal
@@ -213,7 +213,7 @@ the figure look prettier):
 ![image](figures/rice_graph.pdf){width=12cm}\ 
 
 The actual slope can be computed by:
-```
+```matlab
     f = sz'\calc'
 ```
 (this is the lest-squares solution to the linear equation

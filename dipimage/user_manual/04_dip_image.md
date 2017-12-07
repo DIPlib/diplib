@@ -25,7 +25,7 @@ that are mapped to the names on the left; these are just to make
 specifying the data type easier.[^41]
 
 For example,
-```
+```matlab
     a = dip_image(a,'sfloat');
 ```
 will convert the data in `a` to `single` (4-byte) floats before creating
@@ -40,14 +40,14 @@ convert the `dip_image` object to a *MATLAB* array of the specified class.
 
 There are also some commands to create an image from scratch. `newim` is
 equivalent to the `zeros` function, but returns a `dip_image` object.
-```
+```matlab
     a = newim(256,256);
 ```
 creates an image with 256x256 pixels set to zero. An additional
 parameter (as in [@tbl:datatypes]) can be used to specify the
 data type of the new image. The default is `'sfloat'`. If `b` is an
 object of type `dip_image`, then
-```
+```matlab
     a = newim(b);
 ```
 creates an image of the same size (this is the same as
@@ -55,7 +55,7 @@ creates an image of the same size (this is the same as
 create an image containing the coordinates of its pixels, and can be
 used in formulas that need them. For example, `rr([256,256])<64` creates a
 binary image with a disk of radius 64. The expression
-```
+```matlab
     a = (yy('corner'))*sin((xx('corner'))^2/300)
 ```
 generates a nice test pattern with increasing frequency along the
@@ -119,11 +119,11 @@ operations return binary images. Binary operations on non-binary images
 treat any non-zero value in those images as true and zero as false. For
 example, to do a threshold we do not need a special function, since we
 have the relational operators:
-```
+```matlab
     b = a > 100;
 ```
 A double threshold would be (note *MATLAB*'s operator precedence):
-```
+```matlab
     b = a > 50 & a < 200;
 ```
     
@@ -238,13 +238,13 @@ dimensions, whereas `squeeze(a(:,:,2))` is a 2D image.
 Any numeric type can be assigned into a `dip_image` object, without
 changing the image data type (that is, the element assigned into the
 image is converted to the image data type). For example,
-```
+```matlab
     b(:,0) = 0;
 ```
 sets the top row of the image in `b` to 0. Note that indexing
 expressions can become as complicated as you like. For example, to
 sub-sample the image by a factor 3, we could write
-```
+```matlab
     b = b(1:3:end,1:3:end);
 ```
 
@@ -257,12 +257,12 @@ objects ($i = y + x \cdot \textrm{height}$). The output is always a 1D image.
 Finally, it is also possible to index using a mask image. Any binary
 image (or logical array) can be used as mask, but it must be of the same
 size as the image into which is being indexed. For example,
-```
+```matlab
     a(m) = 0;
 ```
 sets all pixels in `a`, where `m` is one, to zero. A very common
 expression is of the form
-```
+```matlab
     a(a<0) = 0;
 ```
 (which sets all negative pixels to zero).
@@ -286,7 +286,7 @@ limit the tensor rank to 2, simply because we never came across a use
 for higher-rank tensor images.
 
 The function `newtensorim` creates a new tensor image filled with zeros:
-```
+```matlab
     A = newtensorim([2,2],[256,256])
 ```
 creates a 2-by-2 tensor image of 256 by 256 pixels.
@@ -303,7 +303,7 @@ identically to the `.*` operator for scalar images, actually applies
 a matrix multiplication between each corresponding pair of pixels. For
 example, the following code applies a matrix multiplication to the
 2-vector image `b`, yielding a 2-by-2 matrix image `c`:
-```
+```matlab
     a = readim('trui');
     b = gradient(a)      % yields a 2-vector
     c = b * b'           % yields a 2-by-2 matrix
@@ -370,7 +370,7 @@ are to be interpreted. A color image must have more than one channel, so
 the tensor image that represents it should have at least two components.
 Use the `colorspace` function (see [@sec:dip_image_functions]) to
 add this color space information to a tensor image:
-```
+```matlab
     C = colorspace(A,'RGB')
 ```
 
@@ -389,13 +389,13 @@ color-space-less tensor image, and then to the final color space.
 
 The function `joinchannels` combines two or more images into a color
 image using the specified color space:
-```
+```matlab
     C = joinchannels('RGB',a,b,c)
 ```
 
 The function `newcolorim` creates a new color image of the given
 color space, filled with zeros:
-```
+```matlab
     C = newcolorim([256,256],'RGB');
 ```
 
@@ -452,7 +452,7 @@ requested, or the last pixel of the image is requested). The solution we
 have adopted is to always assume round braces (`()`). Never use `end`
 within curly braces (`{}`). You can use `tensorsize` or `numtensorel`
 to compute indices from the end for tensor indexing:
-```
+```matlab
     a{end};             % doesn't work!
     a{numtensorel(a)};  % returns the last tensor component
 ```
@@ -515,7 +515,7 @@ Note there is a second argument to `max` that we didn't use above. The
 projection functions all take a mask image as an optional second argument.
 The projection is taken only over those pixels selected by the mask. For
 example,
-```
+```matlab
     mean(a,a>0,1)
 ```
 computes the mean projection along the first dimension (x axis), but only
