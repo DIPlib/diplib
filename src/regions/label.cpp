@@ -266,24 +266,33 @@ dip::uint Label(
    c_out.ReForge( in, DT_LABEL );
    c_out.SetPixelSize( pixelSize );
    Image out = c_out.QuickCopy();
-   out.StandardizeStrides(); // Reorder dimensions so the looping is more efficient.
+   out.StandardizeStrides(); // Reorder dimensions so the looping is more efficient. Also removes singleton dimensions!
 
    LabelRegionList regions{ std::plus< dip::uint >{} };
 
    if( connectivity == 0 ) {
       connectivity = nDims;
    }
-   NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
 
    // First scan
-   if(( nDims == 2 ) && ( connectivity == 2 )) {
+   dip::uint trueNDims = out.Dimensionality(); // If `c_in` had singleton dimensions, `out` will have fewer dimensions
+   dip::uint trueConnectivity = std::min( connectivity, trueNDims );
+   if(( trueNDims == 2 ) && ( trueConnectivity == 2 )) {
       out.Fill( 0 );
-      LabelFirstPass_Grana2016( in, c_out, regions ); // Note use of `c_out` here, not `out`, because dimensions must agree with `in`.
+      Image granaIn = in.QuickCopy();
+      Image granaOut = c_out.QuickCopy(); // Note use of `c_out` here, not `out`, because dimensions must agree with `in`.
+      if( nDims > 2 ) {
+         // This is the case where we had singleton dimensions
+         granaIn.Squeeze();
+         granaOut.Squeeze();
+      }
+      LabelFirstPass_Grana2016( granaIn, granaOut, regions );
       // This saves ~20% on an image 2k x 2k pixels: 0.0559 vs 0.0658s
       // (including MATLAB overhead, probably slightly larger relative difference without that overhead).
    } else {
       c_out.Copy( in ); // Copy `in` into `c_out`, not into `out`, which could be reshaped.
-      LabelFirstPass( out, regions, neighborList, connectivity );
+      NeighborList neighborList( { Metric::TypeCode::CONNECTED, trueConnectivity }, trueNDims );
+      DIP_STACK_TRACE_THIS( LabelFirstPass( out, regions, neighborList, trueConnectivity ));
       regions.Union( 0, 1 ); // This gets rid of label 1, which we used internally, but otherwise causes the first region to get label 2.
    }
 
@@ -295,12 +304,14 @@ dip::uint Label(
          ArrayUseParameter( bc, nDims, BoundaryCondition::ADD_ZEROS ); // any default that is not PERIODIC will do...
          //BoundaryArrayUseParameter( bc, nDims ); // We don't use this form because what if someone changes the default to be PERIODIC?
       DIP_END_STACK_TRACE
+      NeighborList neighborList( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
-         if( bc[ ii ] == BoundaryCondition::PERIODIC ) {
+         if(( bc[ ii ] == BoundaryCondition::PERIODIC ) && ( c_out.Size( ii ) > 2 )) { // >2 because there's no effect for fewer pixels.
             // Merge labels for objects touching opposite sides of image along this dimension
             // We use `c_out` here, not `out`, because we need to be sure of which dimension is being processed.
             // We also do a lot of out-of-bounds testing, which is relatively expensive. But this is a not-so-commonly
             // used feature, it's OK if it's not super-fast.
+            DIP_START_STACK_TRACE
             IntegerArray neighborOffsets = neighborList.ComputeOffsets( c_out.Strides() );
             IntegerArray otherSideOffsets;
             std::vector< IntegerArray > otherSideCoords;
@@ -319,7 +330,7 @@ dip::uint Label(
             auto it = ImageIterator< LabelType >( c_out, ii );
             do {
                for( dip::uint kk = 0; kk < otherSideOffsets.size(); ++kk ) {
-                  // I this neighbor in the image?
+                  // Is this neighbor in the image?
                   IntegerArray coords = otherSideCoords[ kk ];
                   coords += it.Coordinates();
                   bool use = true;
@@ -340,7 +351,7 @@ dip::uint Label(
                   }
                }
             } while( ++it );
-
+            DIP_END_STACK_TRACE
          }
       }
    }
