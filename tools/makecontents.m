@@ -3,8 +3,6 @@
 %      cd <root>/diplib/tools
 %      makecontents
 %   It will delete dipimage/Contents.m, and create a new one.
-%
-%   Make sure there is no function 'localdipmenus' defined.
 
 function makecontents
 
@@ -27,6 +25,7 @@ end
 t1 = [];
 t2 = [];
 t3 = [];
+cc = [];
 while true
    l = fgetl(f);
    if feof(f)
@@ -45,15 +44,16 @@ while true
       end
    elseif isempty(t3)
       t3 = regexp(l,'set\(PROJECT_VERSION_PATCH "(.+)"\)','tokens');
-      if ~isempty(t3)
+  else
+      cc = regexp(l,'add_definitions\(-DDIP_COPYRIGHT_YEAR="(.+)"\)','tokens');
+      if ~isempty(cc)
          break % This component is written last in the CMakeLists.txt file
       end
-   else
-      break % We've got all three components already (we won't reach this)
    end
 end
 fclose(f);
 vs = [t1{1}{1},'.',t2{1}{1},'.',t3{1}{1}];
+cc = cc{1}{1};
 
 % Load dipmenus
 menulist = dipmenus;
@@ -74,8 +74,10 @@ f = fopen('Contents.m','w');
 if f<0
    error('Error opening "dipimage/Contents.m"')
 end
-fprintf(f,'%% DIPimage Toolbox for Quantitative Image Analysis\n');
+fprintf(f,'%% DIPimage toolbox for quantitative image analysis\n');
 fprintf(f,'%% Version %s   %s\n',vs,ds);
+fprintf(f,'%% (c)2016-%s, Cris Luengo and contributors\n',cc);
+fprintf(f,'%% (c)1999-2014, Delft University of Technology\n');
 fprintf(f,'%%\n');
 
 % Formatting for function list

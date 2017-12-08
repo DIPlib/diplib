@@ -161,12 +161,8 @@ end
 %
 function do_about(cbo,component)
 if strcmp(component,'DIPimage')
-   % TODO: read version information (and date) from somewhere.
-   strings = {'DIPimage, a MATLAB toolbox for quantitative image analysis'
-              'Version 3.0'
-              '(c)2016-2017, Cris Luengo and contributors'
-              '(c)1999-2014, Delft University of Technology'
-              'http://www.diplib.org'};
+   info = toolboxinformation;
+   strings = {info.name,info.version,info.copyright{:},info.URL};
 else
    info = libraryinformation;
    if strncmp(info.type,'Debug',5)
@@ -184,6 +180,28 @@ else
 end
 fig = ancestor(cbo,'figure');
 create_dialog(fig,'about',['About ',component],strings)
+end
+
+%
+function info = toolboxinformation
+info.name = 'DIPimage Toolbox for Quantitative Image Analysis';
+info.version = 'Version unknown';
+info.copyright = {'(c)2016-, Cris Luengo and contributors','(c)1999-2014, Delft University of Technology'};
+info.URL = 'http://www.diplib.org';
+p = fileparts(mfilename('fullpath'));
+f = fopen(fullfile(p,'Contents.m'),'r');
+if f>0
+   % This file starts with a header that we simply copy over into lines of the info box.
+   ln = fgetl(f);
+   info.name = ln(3:end);
+   ln = fgetl(f);
+   info.version = ln(3:end);
+   ln = fgetl(f);
+   info.copyright{1} = ln(3:end);
+   ln = fgetl(f);
+   info.copyright{2} = ln(3:end);
+   fclose(f);
+end
 end
 
 %

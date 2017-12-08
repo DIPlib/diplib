@@ -1,5 +1,7 @@
-% DIPimage Toolbox for Quantitative Image Analysis
-% Version 3.0.alpha   03-Dec-2017
+% DIPimage toolbox for quantitative image analysis
+% Version 3.0.alpha   07-Dec-2017
+% (c)2016-2017, Cris Luengo and contributors
+% (c)1999-2014, Delft University of Technology
 %
 % GUI:
 %   dipimage               - Starts the interactive user interface DIPimage

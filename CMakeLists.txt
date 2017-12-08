@@ -5,12 +5,15 @@ if(POLICY CMP0068)
 endif()
 
 project(DIPlib)
+
+# The version number and latest copyright year. Update these values here, they're used all throughout the project.
 set(PROJECT_VERSION_MAJOR "3")
 set(PROJECT_VERSION_MINOR "0")
 set(PROJECT_VERSION_PATCH "alpha")
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 message(STATUS "PROJECT_VERSION = ${PROJECT_VERSION}")
 add_definitions(-DDIP_VERSION_STRING="${PROJECT_VERSION}")
+add_definitions(-DDIP_COPYRIGHT_YEAR="2017")
 
 # Debug or Release?
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
