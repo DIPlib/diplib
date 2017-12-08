@@ -279,7 +279,7 @@ void ImageWriteTIFF(
       dip::uint jpegLevel
 ) {
    DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_THROW_IF( image.Dimensionality() != 2, E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( image.Dimensionality() != 2, E::DIMENSIONALITY_NOT_SUPPORTED );
    // TODO: Implement writing of 3D images as a stack of 2D images
 
    // Get image info and quit if we can't write
