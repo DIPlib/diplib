@@ -318,14 +318,15 @@ void init_image( py::module& m ) {
             "sizes"_a, "cropLocation"_a = "center" );
    img.def( "Real", []( dip::Image const& image ) -> dip::Image { return image.Real(); } );
    img.def( "Imaginary", []( dip::Image const& image ) -> dip::Image { return image.Imaginary(); } );
-   img.def( "QuickCopy", []( dip::Image const& image ) -> dip::Image { return image.QuickCopy(); } );
+   img.def( "QuickCopy", &dip::Image::QuickCopy );
    // These don't exist, but we need to have a function for operation[] too
    img.def( "TensorElement", []( dip::Image const& image, dip::uint index ) -> dip::Image { return image[ index ]; }, "index"_a );
    img.def( "TensorElement", []( dip::Image const& image, dip::uint i, dip::uint j ) -> dip::Image { return image[ dip::UnsignedArray{ i, j } ]; }, "i"_a, "j"_a );
    img.def( "TensorElement", []( dip::Image const& image, dip::Range const& range ) -> dip::Image { return image[ range ]; }, "range"_a );
    // Copy or write data
    img.def( "Pad", py::overload_cast< dip::UnsignedArray const&, dip::String const& >( &dip::Image::Pad, py::const_ ), "sizes"_a, "cropLocation"_a = "center" );
-   img.def( "Copy", &dip::Image::Copy, "src"_a );
+   img.def( "Copy", py::overload_cast<>( &dip::Image::Copy, py::const_ ));
+   img.def( "Copy", py::overload_cast< dip::Image const& >( &dip::Image::Copy ), "src"_a );
    img.def( "Convert", &dip::Image::Convert, "dataType"_a );
    img.def( "ExpandTensor", &dip::Image::ExpandTensor );
    img.def( "Fill", py::overload_cast< dip::Image::Sample const& >( &dip::Image::Fill ), "sample"_a );

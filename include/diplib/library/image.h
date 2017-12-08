@@ -1740,7 +1740,7 @@ class DIP_NO_EXPORT Image {
 
       /// \name Indexing without data copy
       /// These functions create a different view of the data contained in the image. The output
-      /// is ususally a `dip::Image::View` or `dip::Image::Pixel` object. No data is copied.
+      /// is usually a `dip::Image::View` or `dip::Image::Pixel` object. No data is copied.
       /// \{
 
       /// \brief Extract a tensor element, `indices` must have one or two elements. The image must be forged.
@@ -1887,6 +1887,9 @@ class DIP_NO_EXPORT Image {
       /// The external interface is not taken over either.
       /// This function is mostly meant for use in functions that need to modify some properties of
       /// the input images, without actually modifying the input images.
+      ///
+      /// `dip::Image::Copy` is similar, but makes a deep copy of the image, such that the output image
+      /// has its own data segment.
       Image QuickCopy() const {
          Image out;
          out.dataType_ = dataType_;
@@ -1965,6 +1968,18 @@ class DIP_NO_EXPORT Image {
       ///
       /// `src` must be forged.
       DIP_EXPORT void Copy( Image const& src );
+
+      /// \brief Deep copy, returns a copy of `this` with its own data.
+      ///
+      /// `this` must be forged.
+      ///
+      /// `dip::Image::QuickCopy` does the same, but witout copying the data, its output image shares
+      /// the data segment with `this`.
+      Image Copy() const {
+         Image out;
+         out.Copy( *this );
+         return out;
+      }
 
       /// \brief Converts the image to another data type.
       ///
@@ -2189,9 +2204,7 @@ inline void Copy( Image const& src, Image& dest ) {
    dest.Copy( src );
 }
 inline Image Copy( Image const& src ) {
-   Image dest;
-   dest.Copy( src );
-   return dest;
+   return src.Copy();
 }
 
 /// \brief Copies the pixels selected by `mask` in `src` over to `dest`. `dest` will be a 1D image.
