@@ -380,8 +380,8 @@ void PathOpening(
 
    bool opening, constrained;
    DIP_START_STACK_TRACE
-      opening = BooleanFromString( polarity, "opening", "closing" );
-      constrained = BooleanFromString( mode, "constrained", "normal" );
+      opening = BooleanFromString( polarity, S::OPENING, S::CLOSING );
+      constrained = BooleanFromString( mode, S::CONSTRAINED, S::NORMAL );
    DIP_END_STACK_TRACE
 
    // Make simplified copy of input image header so we can modify it at will.
@@ -545,8 +545,8 @@ void DirectedPathOpening(
 
    bool opening, constrained;
    DIP_START_STACK_TRACE
-      opening = BooleanFromString( polarity, "opening", "closing" );
-      constrained = BooleanFromString( mode, "constrained", "normal" );
+      opening = BooleanFromString( polarity, S::OPENING, S::CLOSING );
+      constrained = BooleanFromString( mode, S::CONSTRAINED, S::NORMAL );
    DIP_END_STACK_TRACE
 
    // Make simplified copy of input image header so we can modify it at will.

@@ -1166,7 +1166,7 @@ void SkewLineMorphology(
          }
       }
       Image tmp;
-      Skew( in, tmp, shearArray, axis, 0, "linear", bc ); // TODO: how to fill in default boundary condition here?
+      Skew( in, tmp, shearArray, axis, 0, S::LINEAR, bc ); // TODO: how to fill in default boundary condition here?
       // 2- Call RectangularMorphology
       FloatArray rectSize( nDims, 1.0 );
       rectSize[ axis ] = length;
@@ -1175,8 +1175,8 @@ void SkewLineMorphology(
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          shearArray[ ii ] = -shearArray[ ii ];
       }
-      Skew( tmp, tmp, shearArray, axis, 0, "linear", bc );
-      //Skew( tmp, tmp, shearArray, axis, 0, "linear", { BoundaryCondition::PERIODIC } ); // Using periodic boundary condition so it can be done in-place.
+      Skew( tmp, tmp, shearArray, axis, 0, S::LINEAR, bc );
+      //Skew( tmp, tmp, shearArray, axis, 0, S::LINEAR, { BoundaryCondition::PERIODIC } ); // Using periodic boundary condition so it can be done in-place.
       // TODO: when using periodic skew to go back to original geometry, the origin needs to be computed. Image::Crop can't help us.
       tmp.Crop( in.Sizes());
       out.Copy( tmp );

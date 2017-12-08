@@ -664,7 +664,7 @@ void DiamondMorphology(
    dip::uint procDim = 0;
    dip::uint nProcDims = 0;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      size[ ii ] = std::floor( size[ ii ] / 2 ) * 2 + 1; // an odd size, same as in `dip::PixelTable::PixelTable("diamond")`
+      size[ ii ] = std::floor( size[ ii ] / 2 ) * 2 + 1; // an odd size, same as in `dip::PixelTable::PixelTable(S::DIAMOND)`
       if( size[ ii ] > 1.0 ) {
          ++nProcDims;
          if( param == 0.0 ) {

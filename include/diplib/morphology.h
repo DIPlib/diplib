@@ -22,6 +22,7 @@
 #define DIP_MORPHOLOGY_H
 
 #include "diplib.h"
+#include "diplib/binary.h"
 
 
 /// \file
@@ -196,13 +197,13 @@ class DIP_NO_EXPORT StructuringElement {
 
       /// \brief A `dip::FloatArray` implicitly converts to a structuring element, it is interpreted as the
       /// parameter of the SE for all dimensions. A second argument specifies the shape.
-      StructuringElement( FloatArray const& params, String const& shape = "elliptic" ) : params_( params ) {
+      StructuringElement( FloatArray const& params, String const& shape = S::ELLIPTIC ) : params_( params ) {
          SetShape( shape );
       }
 
       /// \brief A floating-point value implicitly converts to a structuring element, it is interpreted as the
       /// parameter of the SE along each dimension. A second argument specifies the shape.
-      StructuringElement( dfloat param, String const& shape = "elliptic" ) : params_( FloatArray{ param } ) {
+      StructuringElement( dfloat param, String const& shape = S::ELLIPTIC ) : params_( FloatArray{ param } ) {
          SetShape( shape );
       }
 
@@ -270,25 +271,25 @@ class DIP_NO_EXPORT StructuringElement {
       bool mirror_ = false;
 
       void SetShape( String const& shape ) {
-         if( shape == "elliptic" ) {
+         if( shape == S::ELLIPTIC ) {
             shape_ = ShapeCode::ELLIPTIC;
-         } else if( shape == "rectangular" ) {
+         } else if( shape == S::RECTANGULAR ) {
             shape_ = ShapeCode::RECTANGULAR;
-         } else if( shape == "diamond" ) {
+         } else if( shape == S::DIAMOND ) {
             shape_ = ShapeCode::DIAMOND;
-         } else if( shape == "octagonal" ) {
+         } else if( shape == S::OCTAGONAL ) {
             shape_ = ShapeCode::OCTAGONAL;
-         } else if( shape == "line" ) {
+         } else if( shape == S::LINE ) {
             shape_ = ShapeCode::LINE;
-         } else if( shape == "fast line" ) {
+         } else if( shape == S::FAST_LINE ) {
             shape_ = ShapeCode::FAST_LINE;
-         } else if( shape == "periodic line" ) {
+         } else if( shape == S::PERIODIC_LINE ) {
             shape_ = ShapeCode::PERIODIC_LINE;
-         } else if( shape == "discrete line" ) {
+         } else if( shape == S::DISCRETE_LINE ) {
             shape_ = ShapeCode::DISCRETE_LINE;
-         } else if( shape == "interpolated line" ) {
+         } else if( shape == S::INTERPOLATED_LINE ) {
             shape_ = ShapeCode::INTERPOLATED_LINE;
-         } else if( shape == "parabolic" ) {
+         } else if( shape == S::PARABOLIC ) {
             shape_ = ShapeCode::PARABOLIC;
          } else {
             DIP_THROW_INVALID_FLAG( shape );
@@ -466,15 +467,15 @@ DIP_EXPORT void Tophat(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
-      String const& edgeType = "texture", // "object", "both", "dynamic"=="both"
-      String const& polarity = "white", // "black"
+      String const& edgeType = S::TEXTURE,
+      String const& polarity = S::WHITE,
       StringArray const& boundaryCondition = {}
 );
 inline Image Tophat(
       Image const& in,
       StructuringElement const& se = {},
-      String const& edgeType = "texture",
-      String const& polarity = "white",
+      String const& edgeType = S::TEXTURE,
+      String const& polarity = S::WHITE,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
@@ -499,13 +500,13 @@ DIP_EXPORT void MorphologicalThreshold(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
-      String const& edgeType = "texture",
+      String const& edgeType = S::TEXTURE,
       StringArray const& boundaryCondition = {}
 );
 inline Image MorphologicalThreshold(
       Image const& in,
       StructuringElement const& se = {},
-      String const& edgeType = "texture",
+      String const& edgeType = S::TEXTURE,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
@@ -518,13 +519,13 @@ DIP_EXPORT void MorphologicalGist(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
-      String const& edgeType = "texture",
+      String const& edgeType = S::TEXTURE,
       StringArray const& boundaryCondition = {}
 );
 inline Image MorphologicalGist(
       Image const& in,
       StructuringElement const& se = {},
-      String const& edgeType = "texture",
+      String const& edgeType = S::TEXTURE,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
@@ -549,13 +550,13 @@ DIP_EXPORT void MorphologicalRange(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
-      String const& edgeType = "texture",
+      String const& edgeType = S::TEXTURE,
       StringArray const& boundaryCondition = {}
 );
 inline Image MorphologicalRange(
       Image const& in,
       StructuringElement const& se = {},
-      String const& edgeType = "texture",
+      String const& edgeType = S::TEXTURE,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
@@ -574,7 +575,7 @@ inline void MorphologicalGradientMagnitude(
       StructuringElement const& se = {},
       StringArray const& boundaryCondition = {}
 ) {
-   MorphologicalRange( in, out, se, "both", boundaryCondition );
+   MorphologicalRange( in, out, se, S::BOTH, boundaryCondition );
 }
 inline Image MorphologicalGradientMagnitude(
       Image const& in,
@@ -606,15 +607,15 @@ DIP_EXPORT void Lee(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
-      String const& edgeType = "texture",
-      String const& sign = "unsigned",
+      String const& edgeType = S::TEXTURE,
+      String const& sign = S::UNSIGNED,
       StringArray const& boundaryCondition = {}
 );
 inline Image Lee(
       Image const& in,
       StructuringElement const& se = {},
-      String const& edgeType = "texture",
-      String const& sign = "unsigned",
+      String const& edgeType = S::TEXTURE,
+      String const& sign = S::UNSIGNED,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
@@ -639,13 +640,13 @@ DIP_EXPORT void MorphologicalSmoothing(
       Image const& in,
       Image& out,
       StructuringElement const& se = {},
-      String const& mode = "average", // "open-close", "close-open"
+      String const& mode = S::AVERAGE,
       StringArray const& boundaryCondition = {}
 );
 inline Image MorphologicalSmoothing(
       Image const& in,
       StructuringElement const& se = {},
-      String const& mode = "average",
+      String const& mode = S::AVERAGE,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
@@ -671,14 +672,14 @@ DIP_EXPORT void MultiScaleMorphologicalGradient(
       Image& out,
       dip::uint upperSize = 9,
       dip::uint lowerSize = 3,
-      String const& filterShape = "elliptic",
+      String const& filterShape = S::ELLIPTIC,
       StringArray const& boundaryCondition = {}
 );
 inline Image MultiScaleMorphologicalGradient(
       Image const& in,
       dip::uint upperSize = 9,
       dip::uint lowerSize = 3,
-      String const& filterShape = "elliptic",
+      String const& filterShape = S::ELLIPTIC,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
@@ -744,14 +745,14 @@ DIP_EXPORT void RankFilter(
       Image& out,
       StructuringElement const& se = {},
       dip::uint rank = 2,
-      String const& order = "increasing",
+      String const& order = S::INCREASING,
       StringArray const& boundaryCondition = {}
 );
 inline Image RankFilter(
       Image const& in,
       StructuringElement const& se = {},
       dip::uint rank = 2,
-      String const& order = "increasing",
+      String const& order = S::INCREASING,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
@@ -891,9 +892,9 @@ DIP_EXPORT void Watershed(
       Image const& mask,
       Image& out,
       dip::uint connectivity = 1,
-      dfloat maxDepth = 0, // only merging within plateaus
+      dfloat maxDepth = 0,
       dip::uint maxSize = 0,
-      StringSet flags = {} // "labels" / "binary"(default), "low first"(default) / "high first", "fast"(default) / "correct"
+      StringSet flags = {}
 );
 inline Image Watershed(
       Image const& in,
@@ -970,7 +971,7 @@ DIP_EXPORT void WatershedMinima(
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 );
 inline Image WatershedMinima(
       Image const& in,
@@ -978,7 +979,7 @@ inline Image WatershedMinima(
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 ) {
    Image out;
    WatershedMinima( in, mask, out, connectivity, maxDepth, maxSize, output );
@@ -1005,7 +1006,7 @@ DIP_EXPORT void WatershedMaxima(
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 );
 inline Image WatershedMaxima(
       Image const& in,
@@ -1013,7 +1014,7 @@ inline Image WatershedMaxima(
       dip::uint connectivity = 1,
       dfloat maxDepth = 1,
       dip::uint maxSize = 0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 ) {
    Image out;
    WatershedMaxima( in, mask, out, connectivity, maxDepth, maxSize, output );
@@ -1040,13 +1041,13 @@ DIP_EXPORT void Minima(
       Image const& mask,
       Image& out,
       dip::uint connectivity = 0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 );
 inline Image Minima(
       Image const& in,
       Image const& mask = {},
       dip::uint connectivity = 0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 ) {
    Image out;
    Minima( in, mask, out, connectivity, output );
@@ -1073,13 +1074,13 @@ DIP_EXPORT void Maxima(
       Image const& mask,
       Image& out,
       dip::uint connectivity = 0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 );
 inline Image Maxima(
       Image const& in,
       Image const& mask = {},
       dip::uint connectivity = 0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 ) {
    Image out;
    Maxima( in, mask, out, connectivity, output );
@@ -1121,13 +1122,13 @@ DIP_EXPORT void MorphologicalReconstruction(
       Image const& in, // grey-value mask
       Image& out,
       dip::uint connectivity = 0,
-      String const& direction = "dilation" // alt: "erosion"
+      String const& direction = S::DILATION
 );
 inline Image MorphologicalReconstruction(
       Image const& marker,
       Image const& in,
       dip::uint connectivity = 0,
-      String const& direction = "dilation"
+      String const& direction = S::DILATION
 ) {
    Image out;
    MorphologicalReconstruction( marker, in, out, connectivity, direction );
@@ -1150,7 +1151,7 @@ inline void HMinima(
       dip::uint connectivity = 0
 ) {
    Image tmp = Add( in, h, in.DataType() );
-   MorphologicalReconstruction( tmp, in, out, connectivity, "erosion" );
+   MorphologicalReconstruction( tmp, in, out, connectivity, S::EROSION );
 }
 inline Image HMinima(
       Image const& in,
@@ -1178,7 +1179,7 @@ inline void HMaxima(
       dip::uint connectivity = 0
 ) {
    Image tmp = Subtract( in, h, in.DataType() );
-   MorphologicalReconstruction( tmp, in, out, connectivity, "dilation" );
+   MorphologicalReconstruction( tmp, in, out, connectivity, S::DILATION );
 }
 inline Image HMaxima(
       Image const& in,
@@ -1204,7 +1205,8 @@ inline Image HMaxima(
 /// When `polarity` is set to `"closing"`, the area closing is computed instead.
 ///
 /// We use a union-find implementation similar to that described my Meijster and Wilkinson (2002), and is based on
-/// the algorithm for our fast watershed (`"fast"` mode to `dip::Watershed`).
+/// the algorithm for our fast watershed (`"fast"` mode to `dip::Watershed`). For binary images, this function calls
+/// `dip::BinaryAreaOpening` or `dip::BinaryAreaClosing`.
 ///
 /// **Literature**
 ///  - L. Vincent, "Grayscale area openings and closings, their efficient implementation and applications",
@@ -1219,14 +1221,15 @@ DIP_EXPORT void AreaOpening(
       Image& out,
       dip::uint filterSize,
       dip::uint connectivity = 0,
-      String const& polarity = "opening" // vs "closing"
+      // TODO: we could use a boundary condition parameter here (keep or preserve smaller areas at the image edge)
+      String const& polarity = S::OPENING
 );
 inline Image AreaOpening(
       Image const& in,
       Image const& mask,
       dip::uint filterSize,
       dip::uint connectivity = 0,
-      String const& polarity = "opening" // vs "closing"
+      String const& polarity = S::OPENING
 ) {
    Image out;
    AreaOpening( in, mask, out, filterSize, connectivity, polarity );
@@ -1241,7 +1244,7 @@ inline void AreaClosing(
       dip::uint filterSize,
       dip::uint connectivity = 0
 ) {
-   AreaOpening( in, mask, out, filterSize, connectivity, "closing" );
+   AreaOpening( in, mask, out, filterSize, connectivity, S::CLOSING );
 }
 inline Image AreaClosing(
       Image const& in,
@@ -1265,15 +1268,15 @@ DIP_EXPORT void PathOpening(
       Image const& mask,
       Image& out,
       dip::uint length = 7,
-      String const& polarity = "opening",
-      String const& mode = "normal"
+      String const& polarity = S::OPENING,
+      String const& mode = S::NORMAL
 );
 inline Image PathOpening(
       Image const& in,
       Image const& mask,
       dip::uint length = 7,
-      String const& polarity = "opening",
-      String const& mode = "normal"
+      String const& polarity = S::OPENING,
+      String const& mode = S::NORMAL
 ) {
    Image out;
    PathOpening( in, mask, out, length, polarity, mode );
@@ -1319,15 +1322,15 @@ DIP_EXPORT void DirectedPathOpening(
       Image const& mask,
       Image& out,
       IntegerArray filterParam,
-      String const& polarity = "opening", // vs "closing"
-      String const& mode = "normal"  // vs "constrained"
+      String const& polarity = S::OPENING,
+      String const& mode = S::NORMAL
 );
 inline Image DirectedPathOpening(
       Image const& in,
       Image const& mask,
       IntegerArray const& filterParam,
-      String const& polarity = "opening", // vs "closing"
-      String const& mode = "normal"  // vs "constrained"
+      String const& polarity = S::OPENING,
+      String const& mode = S::NORMAL
 ) {
    Image out;
    DirectedPathOpening( in, mask, out, filterParam, polarity, mode );
@@ -1348,7 +1351,7 @@ inline void OpeningByReconstruction(
 ) {
    DIP_START_STACK_TRACE
       Erosion( in, out, se, boundaryCondition );
-      MorphologicalReconstruction( out, in, out, connectivity, "dilation" );
+      MorphologicalReconstruction( out, in, out, connectivity, S::DILATION );
    DIP_END_STACK_TRACE
 
 }
@@ -1377,7 +1380,7 @@ inline void ClosingByReconstruction(
 ) {
    DIP_START_STACK_TRACE
       Dilation( in, out, se, boundaryCondition );
-      MorphologicalReconstruction( out, in, out, connectivity, "erosion" );
+      MorphologicalReconstruction( out, in, out, connectivity, S::EROSION );
    DIP_END_STACK_TRACE
 }
 inline Image ClosingByReconstruction(
@@ -1401,7 +1404,6 @@ dip_UpperSkeleton2D (dip_binary.h)
 
 // TODO: alternating sequential open-close filter (3 versions: with structural opening, opening by reconstruction, and area opening)
 // TODO: hit'n'miss, where the interval is rotated over 180, 90 or 45 degrees (360 degrees means no rotations).
-// TODO: thinning & thickening, to be implemented as iterated hit'n'miss.
 // TODO: levelling
 // TODO: granulometries (isotropic and path opening)
 

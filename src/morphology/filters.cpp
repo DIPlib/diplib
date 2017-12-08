@@ -34,11 +34,11 @@ enum class EdgeType {
 };
 
 EdgeType GetEdgeType( String const& edgeType ) {
-   if( edgeType == "texture" ) {
+   if( edgeType == S::TEXTURE ) {
       return EdgeType::TEXTURE;
-   } else if( edgeType == "object" ) {
+   } else if( edgeType == S::OBJECT ) {
       return EdgeType::OBJECT;
-   } else if(( edgeType == "both" ) || ( edgeType == "dynamic" )) {
+   } else if(( edgeType == S::BOTH ) || ( edgeType == S::DYNAMIC )) {
       return EdgeType::BOTH;
    } else {
       DIP_THROW_INVALID_FLAG( edgeType );
@@ -57,7 +57,7 @@ void Tophat(
       StringArray const& boundaryCondition
 ) {
    DIP_START_STACK_TRACE
-      bool white = BooleanFromString( polarity, "white", "black" );
+      bool white = BooleanFromString( polarity, S::WHITE, S::BLACK );
       EdgeType decodedEdgeType = GetEdgeType( edgeType );
       switch( decodedEdgeType ) {
          default:
@@ -256,7 +256,7 @@ void Lee(
             break;
          }
       }
-      if( BooleanFromString( sign, "signed", "unsigned" )) {
+      if( BooleanFromString( sign, S::SIGNED, S::UNSIGNED )) {
          SignedInfimum( out, out2, out );
       } else {
          Infimum( out, out2, out );
@@ -271,13 +271,13 @@ void MorphologicalSmoothing(
       String const& mode,
       StringArray const& boundaryCondition
 ) {
-   if( mode == "open-close" ) {
+   if( mode == S::OPENCLOSE ) {
       Opening( in, out, se, boundaryCondition );
       Closing( out, out, se, boundaryCondition );
-   } else if( mode == "close-open" ) {
+   } else if( mode == S::CLOSEOPEN ) {
       Closing( in, out, se, boundaryCondition );
       Opening( out, out, se, boundaryCondition );
-   } else if( mode == "average" ) {
+   } else if( mode == S::AVERAGE ) {
       Image tmp;
       Opening( in, tmp, se, boundaryCondition );
       Closing( tmp, tmp, se, boundaryCondition );
@@ -346,7 +346,7 @@ void RankMinClosing(
       StringArray const& boundaryCondition
 ) {
    Image c_in = in;
-   RankFilter( c_in, out, se, rank + 1, "decreasing", boundaryCondition );
+   RankFilter( c_in, out, se, rank + 1, S::DECREASING, boundaryCondition );
    se.Mirror();
    Erosion( out, out, se, boundaryCondition );
    Supremum( c_in, out, out );
@@ -360,7 +360,7 @@ void RankMaxOpening(
       StringArray const& boundaryCondition
 ) {
    Image c_in = in;
-   RankFilter( c_in, out, se, rank + 1, "increasing", boundaryCondition );
+   RankFilter( c_in, out, se, rank + 1, S::INCREASING, boundaryCondition );
    se.Mirror();
    Dilation( out, out, se, boundaryCondition );
    Infimum( c_in, out, out );

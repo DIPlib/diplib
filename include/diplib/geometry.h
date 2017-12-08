@@ -188,7 +188,7 @@ inline void Shift(
       Image const& in,
       Image& out,
       FloatArray const& shift,
-      String const& interpolationMethod = "ft",
+      String const& interpolationMethod = S::FOURIER,
       StringArray const& boundaryCondition = {}
 ) {
    Resampling( in, out, { 1.0 }, shift, interpolationMethod, boundaryCondition );
@@ -196,7 +196,7 @@ inline void Shift(
 inline Image Shift(
       Image const& in,
       FloatArray const& shift,
-      String const& interpolationMethod = "ft",
+      String const& interpolationMethod = S::FOURIER,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;

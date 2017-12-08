@@ -107,7 +107,7 @@ void RankFilter(
    DIP_END_STACK_TRACE
    DIP_THROW_IF(( rank < 1 ) || ( rank > nPixels ), E::PARAMETER_OUT_OF_RANGE );
    DIP_START_STACK_TRACE
-      if( !BooleanFromString( order, "increasing", "decreasing" )) {
+      if( !BooleanFromString( order, S::INCREASING, S::DECREASING )) {
          rank = nPixels - rank + 1;
       }
    DIP_END_STACK_TRACE

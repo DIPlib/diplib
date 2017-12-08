@@ -143,7 +143,7 @@ void MorphologicalReconstruction (
       Image const& c_in, // grey-value mask
       Image& out,
       dip::uint connectivity,
-      String const& direction // "dilataion" / "erosion"
+      String const& direction
 ) {
    // Check input
    DIP_THROW_IF( !c_marker.IsForged() || !c_in.IsForged(), E::IMAGE_NOT_FORGED );
@@ -154,7 +154,7 @@ void MorphologicalReconstruction (
    DIP_THROW_IF( inSizes != c_marker.Sizes(), E::SIZES_DONT_MATCH );
    DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
    bool dilation;
-   DIP_STACK_TRACE_THIS( dilation = BooleanFromString( direction, "dilation", "erosion" ));
+   DIP_STACK_TRACE_THIS( dilation = BooleanFromString( direction, S::DILATION, S::EROSION ));
 
    // Make simplified copy of input image header so we can modify it at will.
    // This also effectively separates input and output images. They still point

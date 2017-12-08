@@ -267,13 +267,13 @@ void FastWatershed(
    bool binaryOutput = true;
    bool lowFirst = true;
    for( auto& flag : flags ) {
-      if( flag == "labels" ) {
+      if( flag == S::LABELS ) {
          binaryOutput = false;
-      } else if( flag == "binary" ) {
+      } else if( flag == S::BINARY ) {
          binaryOutput = true;
-      } else if( flag == "low first" ) {
+      } else if( flag == S::LOWFIRST ) {
          lowFirst = true;
-      } else if( flag == "high first" ) {
+      } else if( flag == S::HIGHFIRST ) {
          lowFirst = false;
       } else {
          DIP_THROW_INVALID_FLAG( flag );
@@ -559,13 +559,13 @@ void SeededWatershed(
    bool lowFirst = true;
    // TODO: Add a flag to not leave watershed lines
    for( auto& flag : flags ) {
-      if( flag == "labels" ) {
+      if( flag == S::LABELS ) {
          binaryOutput = false;
-      } else if( flag == "binary" ) {
+      } else if( flag == S::BINARY ) {
          binaryOutput = true;
-      } else if( flag == "low first" ) {
+      } else if( flag == S::LOWFIRST ) {
          lowFirst = true;
-      } else if( flag == "high first" ) {
+      } else if( flag == S::HIGHFIRST ) {
          lowFirst = false;
       } else {
          DIP_THROW_INVALID_FLAG( flag );
@@ -632,17 +632,17 @@ void Watershed(
       dip::uint maxSize,
       StringSet flags // by copy so we can modify it
 ) {
-   bool correct = flags.count( "correct" ) != 0;
+   bool correct = flags.count( S::CORRECT ) != 0;
    // we remove these two elements if there, so we don't throw an error later when we see them.
-   flags.erase( "correct" );
-   flags.erase( "fast" );
+   flags.erase( S::CORRECT );
+   flags.erase( S::FAST );
    DIP_START_STACK_TRACE
       if( correct ) {
          Image seeds;
-         if( flags.count( "high first" )) {
-            seeds = Maxima( in, mask, connectivity, "labels" );
+         if( flags.count( S::HIGHFIRST )) {
+            seeds = Maxima( in, mask, connectivity, S::LABELS );
          } else {
-            seeds = Minima( in, mask, connectivity, "labels" );
+            seeds = Minima( in, mask, connectivity, S::LABELS );
          }
          SeededWatershed( in, seeds, mask, out, connectivity, maxDepth, maxSize, flags );
       } else {
@@ -660,7 +660,7 @@ void WatershedMinima(
       dip::uint maxSize,
       String const& output
 ) {
-   DIP_STACK_TRACE_THIS( FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "low first" }, FastWatershedOperation::EXTREMA ));
+   DIP_STACK_TRACE_THIS( FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, S::LOWFIRST }, FastWatershedOperation::EXTREMA ));
 }
 
 void WatershedMaxima(
@@ -672,7 +672,7 @@ void WatershedMaxima(
       dip::uint maxSize,
       String const& output
 ) {
-   DIP_STACK_TRACE_THIS( FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, "high first" }, FastWatershedOperation::EXTREMA ));
+   DIP_STACK_TRACE_THIS( FastWatershed( in, mask, out, connectivity, maxDepth, maxSize, { output, S::HIGHFIRST }, FastWatershedOperation::EXTREMA ));
 }
 
 } // namespace dip

@@ -494,29 +494,29 @@ enum class Method {
 };
 
 Method ParseMethod( String const& method ) {
-   if( method.empty() || ( method == "3-cubic" )) {
+   if( method.empty() || ( method == S::CUBIC_ORDER_3 )) {
       return Method::CUBIC_ORDER_3;
-   } else if( method == "4-cubic" ) {
+   } else if( method == S::CUBIC_ORDER_4 ) {
       return Method::CUBIC_ORDER_4;
-   } else if( method == "linear" ) {
+   } else if( method == S::LINEAR ) {
       return Method::LINEAR;
-   } else if(( method == "nn" ) || ( method == "nearest" )) {
+   } else if(( method == "nn" ) || ( method == S::NEAREST )) {
       return Method::NEAREST_NEIGHBOR;
-   } else if(( method == "nn2" ) || ( method == "inverse nearest" )) {
+   } else if(( method == "nn2" ) || ( method == S::INVERSE_NEAREST )) {
       return Method::INVERSE_NEAREST_NEIGHBOR;
-   } else if( method == "bspline" ) {
+   } else if( method == S::BSPLINE ) {
       return Method::BSPLINE;
-   } else if( method == "lanczos8" ) {
+   } else if( method == S::LANCZOS8 ) {
       return Method::LANCZOS8;
-   } else if( method == "lanczos6" ) {
+   } else if( method == S::LANCZOS6 ) {
       return Method::LANCZOS6;
-   } else if( method == "lanczos4" ) {
+   } else if( method == S::LANCZOS4 ) {
       return Method::LANCZOS4;
-   } else if( method == "lanczos3" ) {
+   } else if( method == S::LANCZOS3 ) {
       return Method::LANCZOS3;
-   } else if( method == "lanczos2" ) {
+   } else if( method == S::LANCZOS2 ) {
       return Method::LANCZOS2;
-   } else if( method == "ft" ) {
+   } else if(( method == "ft" ) || ( method == S::FOURIER )) {
       return Method::FOURIER;
    } else {
       DIP_THROW( E::INVALID_FLAG );

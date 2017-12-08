@@ -188,7 +188,7 @@ void AreaOpening(
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
    bool lowFirst;
-   DIP_STACK_TRACE_THIS( lowFirst = BooleanFromString( polarity, "closing", "opening" ));
+   DIP_STACK_TRACE_THIS( lowFirst = BooleanFromString( polarity, S::CLOSING, S::OPENING ));
    if( c_in.DataType().IsBinary() ) {
       DIP_START_STACK_TRACE
          if( lowFirst ) {
