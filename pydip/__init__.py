@@ -68,4 +68,11 @@ dimension is horizontal, or x).
 # the same namespace.
 from PyDIP.PyDIP_bin import *
 from PyDIP.PyDIP_py import *
-import PyDIP.PyDIPviewer as viewer
+
+# Here we import PyDIPviewer if it exists
+hasDIPviewer = True
+import importlib.util
+if importlib.util.find_spec('PyDIP.PyDIPviewer') is None:
+    hasDIPviewer = False
+else:
+    import PyDIP.PyDIPviewer as viewer
