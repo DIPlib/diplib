@@ -207,11 +207,19 @@ inline Image BinaryPropagation(
 ///
 /// The `connectivity` parameter defines the metric, that is, the shape of
 /// the structuring element (see \ref connectivity).
-DIP_EXPORT void EdgeObjectsRemove(
+inline void EdgeObjectsRemove(
       Image const& in,
       Image& out,
       dip::uint connectivity = 1
-);
+){
+   DIP_START_STACK_TRACE
+      // Propagate with empty seed mask, iteration until done and treating outside the image as object
+      BinaryPropagation( Image(), in, out, static_cast< dip::sint >( connectivity ), 0, S::OBJECT );
+      // The out-image now contains the edge objects
+      // Remove them by toggling these bits in the in-image and writing the result in out
+      out ^= in;
+   DIP_END_STACK_TRACE
+}
 
 inline Image EdgeObjectsRemove(
       Image const& in,
@@ -293,6 +301,60 @@ inline Image ConditionalThinning2D(
 ) {
    Image out;
    ConditionalThinning2D( in, mask, out, iterations, endPixelCondition, edgeCondition );
+   return out;
+}
+
+/// \brief Computes the area opening of a binary image
+///
+/// The area opening removes all connected components that have an area smaller than the given parameter `filterSize`,
+/// and is equivalent to the supremum of openings with all possible connected structuring elements of that area.
+///
+/// `connectivity` determines what a connected component is. See \ref connectivity for information on the
+/// connectivity parameter.
+///
+/// The operation is implemented through `dip::Label`, and therefore there is no way to set the edge condition:
+/// connected component size is given by the pixels in the image domain, and connected components touching the
+/// image boundary are not treated differently. To preserve small connected components at the image edge, some
+/// binary arithmetic with `dip::EdgeObjectsRemove` would be in order.
+///
+/// \see dip::AreaOpening, dip::AreaClosing
+DIP_EXPORT void BinaryAreaOpening(
+      Image const& in,
+      Image& out,
+      dip::uint filterSize,
+      dip::uint connectivity = 0
+      // TODO: add `String const& edgeCondition` here, and implement the binary arithmetic hinted at in the doc above.
+);
+inline Image BinaryAreaOpening(
+      Image const& in,
+      dip::uint filterSize,
+      dip::uint connectivity = 0
+) {
+   Image out;
+   BinaryAreaOpening( in, out, filterSize, connectivity );
+   return out;
+}
+
+/// \brief Computes the area closing of a binary image, by calling `dip::BinaryAreaOpening`.
+inline void BinaryAreaClosing(
+      Image const& in,
+      Image& out,
+      dip::uint filterSize,
+      dip::uint connectivity = 0
+) {
+   DIP_START_STACK_TRACE
+      Not( in, out );
+      BinaryAreaOpening( out, out, filterSize, connectivity );
+      Not( out, out );
+   DIP_END_STACK_TRACE
+}
+inline Image BinaryAreaClosing(
+        Image const& in,
+        dip::uint filterSize,
+        dip::uint connectivity = 0
+) {
+   Image out;
+   BinaryAreaClosing( in, out, filterSize, connectivity );
    return out;
 }
 
@@ -384,7 +446,38 @@ inline Image CountNeighbors(
    return out;
 }
 
-// TODO: MajorityVote( in, out, connectivity, edgeCondition );
+/// \brief Filters the binary image by setting each pixel to the phase with more pixels in the neighborhood.
+///
+/// The majority vote filter is the binary equivalent to the median filter. If in the neighborhood of a pixel there
+/// are more foreground than background pixels, the pixel will be set to foreground. Otherwise it will be set to
+/// background. The pixel itself is part of the neighborhood, and therefore the neighborhood always has an odd number
+/// of pixels.
+///
+/// Note that this is equivalent to (but more efficient than):
+/// ```
+///     dip::uint neighborhoodSize = dip::NeighborList( { "connected", connectivity }, in.Dimensionality() ).Size();
+///     out = dip::CountNeighbors( in, connectivity, "all", edgeCondition ) > neighborhoodSize / 2;
+/// ```
+/// with `neighborhoodSize` the number of pixels in the neighborhood given by `connectivity`.
+///
+/// `edgeCondition` determines the value of pixels outside the image domain, and can be `"object"` or `"background"`.
+///
+/// \see dip::MedianFilter, dip::CountNeighbors
+DIP_EXPORT void MajorityVote(
+      Image const& in,
+      Image& out,
+      dip::uint connectivity = 0,
+      dip::String const& edgeCondition = S::BACKGROUND
+);
+inline Image MajorityVote(
+      Image const& in,
+      dip::uint connectivity = 0,
+      dip::String const& edgeCondition = S::BACKGROUND
+) {
+   Image out;
+   MajorityVote( in, out, connectivity, edgeCondition );
+   return out;
+}
 
 /// \brief Returns the isolated pixels in the binary image `in`. That is, the set pixels with zero neighbors. See `dip::CountNeighbors`.
 inline void GetSinglePixels(

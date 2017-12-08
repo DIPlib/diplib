@@ -20,6 +20,7 @@
 
 #include "diplib.h"
 #include "diplib/binary.h"
+#include "diplib/regions.h"
 #include "diplib/neighborlist.h"
 #include "diplib/iterators.h"
 #include "binary_support.h"
@@ -191,6 +192,19 @@ void BinaryClosing(
       BinaryDilation( in, out, connectivity, iterations, S::BACKGROUND );
       BinaryErosion( out, out, connectivity, iterations, S::OBJECT );
    }
+}
+
+void BinaryAreaOpening(
+        Image const& in,
+        Image& out,
+        dip::uint filterSize,
+        dip::uint connectivity
+) {
+   // This is a short function, but we don't define it in the header because we'd need to pull in `diplib/regions.h`.
+   DIP_START_STACK_TRACE
+      Image labels = Label( in, connectivity, filterSize, 0 );
+      Greater( labels, 0, out );
+   DIP_END_STACK_TRACE
 }
 
 } // namespace dip

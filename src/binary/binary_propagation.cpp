@@ -178,17 +178,4 @@ void BinaryPropagation(
    } while( ++itOut );
 }
 
-void EdgeObjectsRemove(
-      Image const& in,
-      Image& out,
-      dip::uint connectivity
-) {
-   // Propagate with empty seed mask, iteration until done and treating outside the image as object
-   BinaryPropagation( Image(), in, out, static_cast< dip::sint >( connectivity ), 0, S::OBJECT );
-
-   // The out-image now contains the edge objects
-   // Remove them by toggling these bits in the in-image and writing the result in out
-   out ^= in;
-}
-
 } // namespace dip

@@ -187,12 +187,22 @@ void AreaOpening(
    // Check input
    DIP_THROW_IF( !c_in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !c_in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   bool lowFirst;
+   DIP_STACK_TRACE_THIS( lowFirst = BooleanFromString( polarity, "closing", "opening" ));
+   if( c_in.DataType().IsBinary() ) {
+      DIP_START_STACK_TRACE
+         if( lowFirst ) {
+            BinaryAreaClosing( c_in, out, filterSize, connectivity );
+         } else {
+            BinaryAreaOpening( c_in, out, filterSize, connectivity );
+         }
+      DIP_END_STACK_TRACE
+      return;
+   }
    DIP_THROW_IF( !c_in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    dip::uint nDims = c_in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF( connectivity > nDims, E::ILLEGAL_CONNECTIVITY );
-   bool lowFirst;
-   DIP_STACK_TRACE_THIS( lowFirst = BooleanFromString( polarity, "closing", "opening" ));
 
    // Add a 1-pixel boundary around the input image
    Image grey;

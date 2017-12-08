@@ -27,6 +27,7 @@ namespace dip {
 
 namespace {
 
+template< bool MAJORITY = false >
 class dip__CountNeighbors : public Framework::ScanLineFilter {
    public:
       virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
@@ -36,8 +37,9 @@ class dip__CountNeighbors : public Framework::ScanLineFilter {
          auto bufferLength = params.bufferLength;
          bin const* in = static_cast< bin const* >( params.inBuffer[ 0 ].buffer );
          auto inStride = params.inBuffer[ 0 ].stride;
-         uint8* out = static_cast< uint8* >( params.outBuffer[ 0 ].buffer );
+         uint8* out = static_cast< uint8* >( params.outBuffer[ 0 ].buffer ); // We treat this as bin if MAJORITY==true
          auto outStride = params.outBuffer[ 0 ].stride;
+         dip::uint threshold = neighbors_.Size() / 2;
          // Determine if the processing line is on an edge of the image or not
          bool isOnEdge = false;
          for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
@@ -70,7 +72,11 @@ class dip__CountNeighbors : public Framework::ScanLineFilter {
                      ++it;
                      ++off;
                   }
-                  *out = count;
+                  if( MAJORITY ) {
+                     *out = count > threshold ? 1 : 0;
+                  } else {
+                     *out = count;
+                  }
                } else {
                   *out = 0;
                }
@@ -98,7 +104,11 @@ class dip__CountNeighbors : public Framework::ScanLineFilter {
                   ++it;
                   ++off;
                }
-               *out = count;
+               if( MAJORITY ) {
+                  *out = count > threshold ? 1 : 0;
+               } else {
+                  *out = count;
+               }
             } else {
                *out = 0;
             }
@@ -113,7 +123,11 @@ class dip__CountNeighbors : public Framework::ScanLineFilter {
                         ++count;
                      }
                   }
-                  *out = count;
+                  if( MAJORITY ) {
+                     *out = count > threshold ? 1 : 0;
+                  } else {
+                     *out = count;
+                  }
                } else {
                   *out = 0;
                }
@@ -140,7 +154,11 @@ class dip__CountNeighbors : public Framework::ScanLineFilter {
                   ++it;
                   ++off;
                }
-               *out = count;
+               if( MAJORITY ) {
+                  *out = count > threshold ? 1 : 0;
+               } else {
+                  *out = count;
+               }
             } else {
                *out = 0;
             }
@@ -173,13 +191,37 @@ void CountNeighbors(
    IntegerArray offsets = neighbors.ComputeOffsets( in.Strides() );
    bool all = BooleanFromString( s_mode, S::ALL, S::FOREGROUND );
    bool edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
-   dip__CountNeighbors scanLineFilter( neighbors, offsets, all, edgeCondition, in.Sizes() );
+   dip__CountNeighbors< false > scanLineFilter( neighbors, offsets, all, edgeCondition, in.Sizes() );
    // We're guaranteed here that the framework will not use a temporary input buffer, because:
    //  - The input image is DT_BIN, and we request a DT_BIN buffer, and
    //  - We did not give the Scan_ExpandTensorInBuffer option.
    // Thus we can access pixels outside of the scan line in our scanLineFilter. Be careful when doing this!
    ImageRefArray outar{ out };
    Framework::Scan( { in }, outar, { DT_BIN }, { DT_UINT8 }, { DT_UINT8 }, { 1 }, scanLineFilter, Framework::Scan_NeedCoordinates );
+}
+
+void MajorityVote(
+      Image const& in,
+      Image& out,
+      dip::uint connectivity,
+      dip::String const& s_edgeCondition
+) {
+   DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
+   DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
+   DIP_THROW_IF( !in.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
+   DIP_THROW_IF( connectivity > in.Dimensionality(), E::ILLEGAL_CONNECTIVITY );
+   NeighborList neighbors( Metric( Metric::TypeCode::CONNECTED, connectivity ), in.Dimensionality() );
+   IntegerArray offsets = neighbors.ComputeOffsets( in.Strides() );
+   bool edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
+   dip__CountNeighbors< true > scanLineFilter( neighbors, offsets, true, edgeCondition, in.Sizes() );
+   // We're guaranteed here that the framework will not use a temporary input buffer, because:
+   //  - The input image is DT_BIN, and we request a DT_BIN buffer, and
+   //  - We did not give the Scan_ExpandTensorInBuffer option.
+   // Thus we can access pixels outside of the scan line in our scanLineFilter. Be careful when doing this!
+   ImageRefArray outar{ out };
+   Framework::Scan( { in }, outar, { DT_BIN }, { DT_BIN }, { DT_BIN }, { 1 }, scanLineFilter, Framework::Scan_NeedCoordinates );
+   // Note that we're requesting a binary output image and binary output buffers. The scan line filter uses uint8
+   // buffers. These are the same size by definition, so this works fine.
 }
 
 } // namespace dip
