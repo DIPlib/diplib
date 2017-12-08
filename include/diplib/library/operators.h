@@ -142,8 +142,20 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( MultiplyConjugate )
 ///
 /// For binary types, saturated division is equivalent to the Boolean OR NOT operation.
 ///
-/// \see Add, Subtract, Multiply, MultiplySampleWise, Modulo, Power, operator/(Image const&, T const&)
+/// \see Add, Subtract, Multiply, MultiplySampleWise, SafeDivide, Modulo, Power, operator/(Image const&, T const&)
 DIP__DEFINE_ARITHMETIC_OVERLOADS( Divide )
+
+/// \brief Divides two images, sample-wise, with singleton expansion. Tests for division by zero, filling in 0 instead.
+///
+/// The image `out` will have the type `dt`, which defaults to
+/// `dip::DataType::SuggestArithmetic( lhs.DataType(), rhs.DataType() )` if left out.
+///
+/// `rhs` can be a scalar value of any of the supported pixel types.
+///
+/// For binary images, this function calls `dip::Divide`.
+///
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Modulo, Power, operator/(Image const&, T const&)
+DIP__DEFINE_ARITHMETIC_OVERLOADS( SafeDivide )
 
 /// \brief Computes the modulo of two images, sample-wise, with singleton expansion.
 ///
@@ -152,7 +164,7 @@ DIP__DEFINE_ARITHMETIC_OVERLOADS( Divide )
 ///
 /// `rhs` can be a scalar value of any of the supported pixel types.
 ///
-/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, Power, operator%(Image const&, T const&)
+/// \see Add, Subtract, Multiply, MultiplySampleWise, Divide, SafeDivide, Power, operator%(Image const&, T const&)
 DIP_EXPORT void Modulo( Image const& lhs, Image const& rhs, Image& out, DataType dt ); \
 inline void Modulo( Image const& lhs, Image const& rhs, Image& out ) { Modulo( lhs, rhs, out, lhs.DataType() ); } \
 template< typename T > inline void Modulo( Image const& lhs, T const& rhs, Image& out, DataType dt ) { Modulo( lhs, Image{ rhs }, out, dt ); } \

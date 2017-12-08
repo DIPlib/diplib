@@ -59,8 +59,7 @@ void CrossCorrelationFT(
          in2FT.Strip(); // make sure we don't write in any input data segments. Otherwise, we re-use the data segment.
       }
       SquareModulus( in1FT, in2FT );
-      out /= in2FT; // Normalize by the square modulus of in1.
-      // TODO: prevent division by 0, if that is even possible...
+      SafeDivide( out, in2FT, out, out.DataType() ); // Normalize by the square modulus of in1.
    }
    if( BooleanFromString( outRepresentation, "spatial", "frequency" )) {
       DIP_STACK_TRACE_THIS( FourierTransform( out, out, { "inverse", "real" } ));

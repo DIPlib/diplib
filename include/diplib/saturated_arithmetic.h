@@ -194,7 +194,6 @@ constexpr inline bin saturated_mul( bin const& lhs, bin const& rhs ) {
 //
 
 /// \brief Divides two values using saturated arithmetic (but the division never overflows anyway).
-// Division never overflows. We let the system handle division by 0.
 template< typename T >
 constexpr inline T saturated_div( T const& lhs, T const& rhs ) {
    return static_cast< T >( lhs / rhs ); // There's an implicit conversion to unsigned/int for smaller types
@@ -203,6 +202,18 @@ constexpr inline T saturated_div( T const& lhs, T const& rhs ) {
 template<>
 constexpr inline bin saturated_div( bin const& lhs, bin const& rhs ) {
    return lhs || !rhs;
+}
+
+/// \brief Divides two values using saturated arithmetic (but the division never overflows anyway). Tests for division
+/// by zero, return 0 rather than infinity or NaN (or an exception).
+template< typename T >
+constexpr inline T saturated_safediv( T const& lhs, T const& rhs ) {
+   return rhs == T( 0 ) ? T( 0 ) : static_cast< T >( lhs / rhs ); // There's an implicit conversion to unsigned/int for smaller types
+}
+// Binary division doesn't need the test, defer to saturated_div.
+template<>
+constexpr inline bin saturated_safediv( bin const& lhs, bin const& rhs ) {
+   return saturated_div( lhs, rhs );
 }
 
 

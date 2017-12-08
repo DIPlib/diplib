@@ -262,6 +262,24 @@ void Divide(
 }
 
 //
+void SafeDivide(
+      Image const& lhs,
+      Image const& rhs,
+      Image& out,
+      DataType dt
+) {
+   if( dt.IsBinary() ) {
+      Divide( lhs, rhs, out, dt );
+      return;
+   }
+   std::unique_ptr< Framework::ScanLineFilter >scanLineFilter;
+   DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewDyadicScanLineFilter, (
+         []( auto its ) { return dip::saturated_safediv( *its[ 0 ], *its[ 1 ] ); }
+   ), dt );
+   Framework::ScanDyadic( lhs, rhs, out, dt, dt, *scanLineFilter );
+}
+
+//
 void Modulo(
       Image const& lhs,
       Image const& rhs,

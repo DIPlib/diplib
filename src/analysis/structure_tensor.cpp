@@ -84,13 +84,13 @@ void StructureTensorAnalysis2D(
          tmpval = ll[ 0 ] + ll[ 1 ];
       }
       Subtract( ll[ 0 ], ll[ 1 ], *anisotropy1 );
-      *anisotropy1 /= tmpval;
-      // TODO: handle division by 0.
+      SafeDivide( *anisotropy1, tmpval, *anisotropy1 );
    }
    if( anisotropy2 ) {
       Divide( ll[ 1 ], ll[ 0 ], *anisotropy2 );
-      // TODO: handle division by 0.
-      Subtract( Image{ 1.0 }, *anisotropy2, *anisotropy2 );
+      Subtract( Image{ 1.0 }, *anisotropy2, *anisotropy2, anisotropy2->DataType() );
+      // *anisotropy2 = ( ll[0] == 0 ) ? 0 : *anisotropy2;
+      Select( ll[ 0 ], Image{ 0.0 }, Image( 0.0, anisotropy2->DataType() ), *anisotropy2, *anisotropy2, "==" );
    }
 }
 
@@ -159,8 +159,7 @@ void StructureTensorAnalysis3D(
          tmpval = ll[ 1 ] + ll[ 2 ];
       }
       Subtract( ll[ 1 ], ll[ 2 ], *cylindrical );
-      *cylindrical /= tmpval;
-      // TODO: handle division by 0.
+      SafeDivide( *cylindrical, tmpval, *cylindrical );
    }
    if( planar ) {
       Image tmpval;
@@ -170,8 +169,7 @@ void StructureTensorAnalysis3D(
          tmpval = ll[ 0 ] + ll[ 1 ];
       }
       Subtract( ll[ 0 ], ll[ 1 ], *planar );
-      *planar /= tmpval;
-      // TODO: handle division by 0.
+      SafeDivide( *planar, tmpval, *planar );
    }
 }
 
