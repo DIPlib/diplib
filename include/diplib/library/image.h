@@ -1853,7 +1853,8 @@ class DIP_NO_EXPORT Image {
       /// maintains the origin pixel (as defined in `dip::FourierTransform` and other other places)
       /// at the origin of the output image.
       ///
-      /// `dip::Image::Pad` does the inverse operation.
+      /// `dip::Image::Pad` does the inverse operation. `dip::Image::Crop` does the same thing, but modifies
+      /// the image directly instead of returning a view.
       ///
       /// The image must be forged.
       DIP_EXPORT View Cropped(

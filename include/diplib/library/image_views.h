@@ -1047,7 +1047,10 @@ class Image::View {
       //    appear together in the sample list.
 
       // Private constructors, only `dip::Image` can construct one of these:
-      View( Image reference ) : reference_( std::move( reference )) {               // a view over the full image
+      View( Image const& reference ) : reference_( reference ) {                    // a view over the full image
+         DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
+      }
+      View( Image&& reference ) : reference_( std::move( reference )) {             // a view over the full image
          DIP_THROW_IF( !reference_.IsForged(), E::IMAGE_NOT_FORGED );
       }
       DIP_EXPORT View( Image const& reference, Range range );                       // index tensor elements using range

@@ -275,7 +275,7 @@ Image::View Image::View::At( RangeArray const& ranges ) const {
 }
 
 
-Image::View::Iterator::Iterator() : view_( Image{ 0 } ), atEnd_( true ) {}
+Image::View::Iterator::Iterator() : view_( std::move( Image{} )), atEnd_( true ) {}
 Image::View::Iterator::Iterator( View const& view ) : view_( view ) { Initialize(); }
 Image::View::Iterator::Iterator( View&& view ) : view_( std::move( view )) { Initialize(); }
 

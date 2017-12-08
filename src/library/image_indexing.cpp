@@ -86,13 +86,13 @@ Image::Pixel Image::At( dip::uint x_index, dip::uint y_index, dip::uint z_index 
 Image::View Image::Cropped( UnsignedArray const& sizes, Option::CropLocation cropLocation ) const {
    Image tmp = *this;
    tmp.Crop( sizes, cropLocation );
-   return View( tmp );
+   return View( std::move( tmp ));
 }
 
 Image::View Image::Cropped( UnsignedArray const& sizes, String const& cropLocation ) const {
    Image tmp = *this;
    tmp.Crop( sizes, cropLocation );
-   return View( tmp );
+   return View( std::move( tmp ));
 }
 
 Image::View Image::Real() const {
