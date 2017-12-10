@@ -1,18 +1,12 @@
 %MAKECONTENTS   Generates the Contents file for DIPimage.
 %   Run this function from within the directory it is in:
 %      cd <root>/diplib/tools
-%      makecontents
-%   It will delete dipimage/Contents.m, and create a new one.
+%      makecontents <install_dir>/share/DIPimage
+%   It will delete any Contents.m file in <install_dir>/share/DIPimage,
+%   and create a new one based off of the H-1 lines in all M-files,
+%   using the groupings specified in DIPMENUS.
 
-function makecontents
-
-% Go to the right directory
-cd(fullfile('..','dipimage')) % this is the source directory for the toolbox
-
-% Test to make sure there is no 'localdipmenus'
-if exist('localdipmenus','file')
-   error('A function LOCALDIPMENUS is defined, cannot continue')
-end
+function makecontents(toolboxdir)
 
 % Get current date string
 ds = date;
@@ -54,6 +48,10 @@ end
 fclose(f);
 vs = [t1{1}{1},'.',t2{1}{1},'.',t3{1}{1}];
 cc = cc{1}{1};
+
+% Go to the right directory
+cd(toolboxdir)
+disp(['Creating Contents.m in ',toolboxdir])
 
 % Load dipmenus
 menulist = dipmenus;

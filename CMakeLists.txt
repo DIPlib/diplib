@@ -348,12 +348,10 @@ endif()
 ### DIPimage toolbox for MATLAB
 
 set(MATLAB_ADDITIONAL_VERSIONS "R2016a=9.0") # This is necessary because my version of MATLAB is very recent and my version of CMake is not. Ajust as necessary.
-find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY)
+find_package(Matlab OPTIONAL_COMPONENTS MX_LIBRARY MAIN_PROGRAM)
 if(Matlab_FOUND)
    set(DIP_BUILD_DIPIMAGE ON CACHE BOOL "Build the DIPimage toolbox")
 endif()
-
-# Use MAIN_PROGRAM argument to find_package(Matlab), then ${Matlab_MAIN_PROGRAM} can execute tools/makecontents.m
 
 if(DIP_BUILD_DIPIMAGE)
    # Install M-files
@@ -444,6 +442,9 @@ if(DIP_BUILD_DIPIMAGE)
 
    # Tell DIPlib library code that it might link against MATLAB (needed to fix a bug with MATLAB integration)
    target_compile_definitions(DIP PRIVATE DIP__DUILDING_DIPIMAGE)
+
+   # Create the Contents.m file
+   install(CODE "execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -nodisplay -r \"makecontents ${CMAKE_INSTALL_PREFIX}/${DIPIMAGE_INSTALL_PATH}; exit\" WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)")
 
    # DIPimage user manual
    find_program(PANDOC_EXECUTABLE pandoc)
