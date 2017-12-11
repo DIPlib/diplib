@@ -48,11 +48,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid settings mismatch with the MEX files
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") # also matchs "AppleClang"
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
    # using Clang C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wconversion -Wsign-conversion")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage.
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    # using GNU C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wno-unknown-pragmas")
    # -Wno-unknown-pragmas: "#pragma omp" causes a warning if OpenMP is not enabled.
@@ -61,10 +61,10 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native") # This is optimal for local usage; to see which flags are enabled: gcc -march=native -Q --help=target
    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og") # Does some optimization that doesn't impact debugging.
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
    # using Intel C++
    # TODO: compiler flags for Intel compiler
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
    # using Visual Studio C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # Disable unchecked iterator warnings and unsafe (string manipulation) function warnings
@@ -79,7 +79,7 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH 1) # Prevent relinking when installing
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH 1)
 
 # Extend CMake module path
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/tools")
 
 # OpenMP
 find_package(OpenMP)
@@ -137,7 +137,7 @@ function(update_deps_file name deps)
    # Normalize the list so it's the same on every machine
    list(REMOVE_DUPLICATES deps)
    foreach(dep IN LISTS deps)
-      file(RELATIVE_PATH rel_dep ${CMAKE_CURRENT_SOURCE_DIR} ${dep})
+      file(RELATIVE_PATH rel_dep "${CMAKE_CURRENT_SOURCE_DIR}" ${dep})
       list(APPEND rel_deps ${rel_dep})
    endforeach(dep)
    list(SORT rel_deps)
@@ -153,7 +153,7 @@ function(update_deps_file name deps)
       file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/${name}.cmake" "${new_deps}")
    endif()
    # Include the file so it's tracked as a generation dependency (we don't need the content).
-   include(${CMAKE_CURRENT_SOURCE_DIR}/${name}.cmake)
+   include("${CMAKE_CURRENT_SOURCE_DIR}/${name}.cmake")
 endfunction(update_deps_file)
 
 
@@ -293,7 +293,12 @@ if(DIP_BUILD_DIPVIEWER)
    if(WIN32)
       target_link_libraries(DIPviewer PRIVATE GLEW::GLEW)
    endif()
-   target_link_libraries(DIPviewer PRIVATE DIP OpenGL::GL pthread)
+   if(TARGET OpenGL::GL)
+      target_link_libraries(DIPviewer PRIVATE DIP OpenGL::GL pthread)
+   else() # For older CMakes:
+      target_link_libraries(DIPviewer PRIVATE DIP OPENGL_LIBRARIES pthread)
+      target_include_directories(DIPviewer PUBLIC OPENGL_INCLUDE_DIR)
+   endif()
    if(APPLE)
       set_target_properties(DIPviewer PROPERTIES INSTALL_RPATH "@loader_path")
    else()
@@ -444,7 +449,7 @@ if(DIP_BUILD_DIPIMAGE)
    target_compile_definitions(DIP PRIVATE DIP__DUILDING_DIPIMAGE)
 
    # Create the Contents.m file
-   install(CODE "execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -nodisplay -r \"makecontents ${CMAKE_INSTALL_PREFIX}/${DIPIMAGE_INSTALL_PATH}; exit\" WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)")
+   install(CODE "execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -nodisplay -r \"makecontents '${CMAKE_INSTALL_PREFIX}/${DIPIMAGE_INSTALL_PATH}'; exit\" WORKING_DIRECTORY \"${CMAKE_CURRENT_SOURCE_DIR}/tools\")")
 
    # DIPimage user manual
    find_program(PANDOC_EXECUTABLE pandoc)
@@ -462,7 +467,7 @@ if(DIP_BUILD_DIPIMAGE)
       endif()
       unset(pandoc_version)
 
-      if("${PANDOC_MAJOR}" LESS "2")
+      if(PANDOC_MAJOR LESS "2")
          # pandoc 1 has a --smart option, which was removed in pandoc 2.
          set(PANDOC_SMART_OPTION "--smart")
       else()
@@ -477,7 +482,7 @@ if(DIP_BUILD_DIPIMAGE)
             --number-sections --toc --toc-depth=2
             --filter=pandoc-crossref
             --highlight-style=kate
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dipimage/user_manual
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dipimage/user_manual"
             DEPENDS dipimage/user_manual/*.md dipimage/user_manual/template.tex
       )
       # Code hightlight style alternative: tango -- light background color, but colors are poorly chosen
@@ -527,11 +532,11 @@ if(DOXYGEN_FOUND)
    configure_file(src/documentation/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
    add_custom_target(
          apidoc
-         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}
-         COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}"
+         COMMAND "${DOXYGEN_EXECUTABLE}" Doxyfile
          COMMAND ${CMAKE_COMMAND} -E echo "Fixing header names and other things..."
-         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/fix_doc_includes.sh ${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}/html
-         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/tools/fix_doc_includes.sh" "${CMAKE_INSTALL_PREFIX}/${DOCUMENTATION_OUTPUT}/html"
+         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
    )
 endif(DOXYGEN_FOUND)
 
