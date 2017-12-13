@@ -20,16 +20,6 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES "^Release$")
-   message(STATUS "Configured for release")
-   add_definitions(-DDIP_DEBUG_VERSION=0)
-elseif(CMAKE_BUILD_TYPE MATCHES "^Debug$")
-   message(STATUS "Configured for debugging")
-   add_definitions(-DDIP_DEBUG_VERSION=1)
-else()
-   message(WARNING "Not configured for release or debugging!: ${CMAKE_BUILD_TYPE}")
-endif()
-
 # Static or dynamic?
 set(DIP_SHARED_LIBRARY ON CACHE BOOL "Build a shared library (off for static library)")
 if(DIP_SHARED_LIBRARY)
@@ -123,9 +113,9 @@ if(TIFF_FOUND)
 endif()
 
 # Switch to link against the FFTW library for Fourier transforms
-set(DIP_ENABLE_FFTW OFF CACHE BOOL "Enable linking against the FFTW library (GPL license) for Fourier transforms")
-if(DIP_ENABLE_FFTW)
-   find_package(FFTW3 REQUIRED)
+find_package(FFTW3)
+if(FFTW3_FOUND)
+   set(DIP_ENABLE_FFTW OFF CACHE BOOL "Enable linking against the FFTW library (GPL license) for Fourier transforms")
 endif()
 
 # Utility for automatically updating targets when a file is added to the source directories
@@ -166,6 +156,7 @@ target_include_directories(DIP PUBLIC include)
 include(GenerateExportHeader)
 generate_export_header(DIP BASE_NAME dip)
 # configuration
+target_compile_definitions(DIP PRIVATE DIP_DEBUG_VERSION=$<CONFIG:Debug>)
 if(DIP_ENABLE_MULTITHREADING)
    target_compile_options(DIP PRIVATE ${OpenMP_CXX_FLAGS})
    if(OpenMP_CXX_LIB_NAMES)

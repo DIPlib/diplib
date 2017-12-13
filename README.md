@@ -19,6 +19,8 @@ See the [documentation](https://diplib.github.io/diplib-docs/) for more informat
 ### Linux, MacOS, Cygwin and other Unix-like systems
 
 To build the library you will need a C++14 compliant compiler and *CMake*.
+See below under "Dependencies" for optional dependencies that you can install to
+improve your *DIPlib* experience.
 Use the following commands to build:
 
     mkdir target
@@ -59,6 +61,7 @@ Important `cmake` command-line arguments:
     -DDIP_ENABLE_DOCTEST=Off           # disable doctest within DIPlib
     -DDIP_ENABLE_ICS=Off               # disable ICS file format support
     -DDIP_ENABLE_TIFF=Off              # disable TIFF file format support
+    -DDIP_ENABLE_FFTW=On               # enable the use of FFTW3
     -DDIP_ENABLE_UNICODE=Off           # disable UFT-8 strings within DIPlib
     -DDIP_ALWAYS_128_PRNG=On           # use the 128-bit PRNG code where 128-bit
                                        #    integers are not natively supported
@@ -89,11 +92,18 @@ Using *CMake-gui*, choose where the source directory is and where to build the b
 press "Configure" and select *Visual Studio*. Finally, press "Generate". You should now have
 a *Visual Studio* solution file that you can open in *Visual Studio* and build as usual.
 
+See below for optional dependencies that you can install to improve your *DIPlib* experience.
+
 ### Dependencies
 
 *DIPlib* supports two image file formats: ICS and TIFF. ICS support is built-in, it is
 recommended that you have [*ZLib*](http://www.zlib.net) installed for this. For TIFF support,
 you will need to have [*LibTIFF*](http://www.simplesystems.org/libtiff/) installed.
+
+If you have [*FFTW3*](http://www.fftw.org) intalled, you can set the `DIP_ENABLE_FFTW`
+*CMake* variable to have *DIPlib* use *FFTW3* instead of the built-in FFT algorithm.
+*FFTW3* is more efficient, especially for image sizes that do not factor into small
+numbers, but it has a copyleft license.
 
 *DIPimage* requires that [*MATLAB*](https://www.mathworks.com/products/matlab.html) be installed
 for compilation and execution (of course).
