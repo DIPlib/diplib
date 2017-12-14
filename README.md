@@ -30,6 +30,9 @@ Use the following commands to build:
 
 (The `-j` option to `make` enables a multi-threaded build. Limit the number of
 concurrent jobs to, for example, 4 with `-j4`.)
+
+For step-by-step instructions for MacOS, see `README_MacOS.md`.
+
 Available `make` targets:
 
     all (default) # builds DIPlib, DIPimage and PyDIP, if configured
@@ -91,6 +94,8 @@ Unless you want to use *Cygwin* or *MinGW* (see above), we recommend *Microsoft 
 Using *CMake-gui*, choose where the source directory is and where to build the binaries. Then
 press "Configure" and select *Visual Studio*. Finally, press "Generate". You should now have
 a *Visual Studio* solution file that you can open in *Visual Studio* and build as usual.
+
+For step-by-step instructions, see `README_Windows.md`.
 
 See below for optional dependencies that you can install to improve your *DIPlib* experience.
 

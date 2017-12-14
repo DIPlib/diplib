@@ -375,7 +375,11 @@ if(DIP_BUILD_DIPIMAGE)
       endif()
       set(DIP_IMAGE_PRIVATE_TARGETS ${DIP_IMAGE_PRIVATE_TARGETS} MEX_${target})
    endforeach()
-   install(TARGETS ${DIP_IMAGE_PRIVATE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private)
+   install(TARGETS ${DIP_IMAGE_PRIVATE_TARGETS} LIBRARY DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private
+                                                RUNTIME DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image/private)
+                                                # By specifying LIBRARY and RUNTIME, but not ARCHIVE, we manage to install
+                                                # the .so/.dylib (LIBRARY) and the .dll (RUNTIME), but not the .lib (ARCHIVE)
+                                                # that comes with the .dll but we don't need.
 
    # Compile and install MEX-files in dipimage/@dip_image
    file(GLOB DIP_IMAGE dipimage/@dip_image/*.cpp)
@@ -395,7 +399,8 @@ if(DIP_BUILD_DIPIMAGE)
       endif()
       set(DIP_IMAGE_TARGETS ${DIP_IMAGE_TARGETS} MEX_${target})
    endforeach()
-   install(TARGETS ${DIP_IMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image)
+   install(TARGETS ${DIP_IMAGE_TARGETS} LIBRARY DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image
+                                        RUNTIME DESTINATION ${DIPIMAGE_INSTALL_PATH}/@dip_image)
 
    # Compile and install MEX-files in dipimage/private
    file(GLOB DIPIMAGE_PRIVATE dipimage/private/*.cpp)
@@ -415,7 +420,8 @@ if(DIP_BUILD_DIPIMAGE)
       endif()
       set(DIPIMAGE_PRIVATE_TARGETS ${DIPIMAGE_PRIVATE_TARGETS} MEX_${target})
    endforeach()
-   install(TARGETS ${DIPIMAGE_PRIVATE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH}/private)
+   install(TARGETS ${DIPIMAGE_PRIVATE_TARGETS} LIBRARY DESTINATION ${DIPIMAGE_INSTALL_PATH}/private
+                                               RUNTIME DESTINATION ${DIPIMAGE_INSTALL_PATH}/private)
 
    # Compile and install MEX-files in dipimage/
    file(GLOB DIPIMAGE dipimage/*.cpp)
@@ -435,7 +441,8 @@ if(DIP_BUILD_DIPIMAGE)
       endif()
       set(DIPIMAGE_TARGETS ${DIPIMAGE_TARGETS} MEX_${target})
    endforeach()
-   install(TARGETS ${DIPIMAGE_TARGETS} DESTINATION ${DIPIMAGE_INSTALL_PATH})
+   install(TARGETS ${DIPIMAGE_TARGETS} LIBRARY DESTINATION ${DIPIMAGE_INSTALL_PATH}
+                                       RUNTIME DESTINATION ${DIPIMAGE_INSTALL_PATH})
 
    # Keep a file with all dependencies
    update_deps_file("DIPimage_sources" "${DIPIMAGE_DEPS}")
