@@ -18,7 +18,7 @@ if(POLICY CMP0068)
    cmake_policy(SET CMP0068 NEW)
 endif()
 
-project(libics VERSION 1.6.1)
+project(libics VERSION 1.6.2)
 
 # Note: the version number above is not yet used anywhere.
 # TODO: rewrite the header file with this version number.
@@ -30,9 +30,9 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED on)
 
 if (CMAKE_C_COMPILER_ID MATCHES "Clang") # also matchs "AppleClang"
-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wall -Wconversion -Wsign-conversion")
 elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Wno-unused-parameter")
    # Allowing DIPlib to link against a static libics. Not necessary for Clang
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 elseif (CMAKE_C_COMPILER_ID STREQUAL "Intel")
@@ -142,7 +142,7 @@ add_custom_target(all_tests DEPENDS
       test_metadata
       test_history
       )
-add_test(ctest_build_test_code "${CMAKE_COMMAND}" --build ${CMAKE_BINARY_DIR} --target all_tests)
+add_test(ctest_build_test_code "${CMAKE_COMMAND}" --build "${PROJECT_BINARY_DIR}" --target all_tests)
 add_test(NAME test_ics1 COMMAND test_ics1 "${CMAKE_CURRENT_SOURCE_DIR}/test/testim.ics" result_v1.ics)
 set_tests_properties(test_ics1 PROPERTIES DEPENDS ctest_build_test_code)
 add_test(NAME test_ics2a COMMAND test_ics2a "${CMAKE_CURRENT_SOURCE_DIR}/test/testim.ics" result_v2a.ics)

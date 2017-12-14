@@ -87,12 +87,12 @@ Ics_Error IcsWritePlainWithStrides(const void      *src,
             data += (ptrdiff_t)curpos[i] * stride[i] * nBytes;
         }
         if (stride[0] == 1) {
-            if (fwrite(data, nBytes, dim[0], file) != dim[0]) {
+            if (fwrite(data, (size_t)nBytes, dim[0], file) != dim[0]) {
                 return IcsErr_FWriteIds;
             }
         } else {
             for (j = 0; j < dim[0]; j++) {
-                if (fwrite(data, nBytes, 1, file) != 1) {
+                if (fwrite(data, (size_t)nBytes, 1, file) != 1) {
                     return IcsErr_FWriteIds;
                 }
                 data += stride[0] * nBytes;
@@ -149,7 +149,7 @@ Ics_Error IcsWriteIds(const Ics_Header *icsStruct)
                 error = IcsWritePlainWithStrides(icsStruct->data, dim,
                                                  icsStruct->dataStrides,
                                                  icsStruct->dimensions,
-                                                 size, fp);
+                                                 (int)size, fp);
             } else {
                     /* We do the writing in blocks if the data is very large,
                        this avoids a bug in some c library implementations on
@@ -180,7 +180,7 @@ Ics_Error IcsWriteIds(const Ics_Header *icsStruct)
                 error = IcsWriteZipWithStrides(icsStruct->data, dim,
                                                icsStruct->dataStrides,
                                                icsStruct->dimensions,
-                                               size, fp, icsStruct->compLevel);
+                                               (int)size, fp, icsStruct->compLevel);
             } else {
                 error = IcsWriteZip(icsStruct->data, icsStruct->dataLength, fp,
                                     icsStruct->compLevel);
@@ -218,7 +218,7 @@ Ics_Error IcsCopyIds(const char *infilename,
         error = IcsErr_FCopyIds;
         goto exit;
     }
-    if (fseek(in, inoffset, SEEK_SET) != 0) {
+    if (fseek(in, (long)inoffset, SEEK_SET) != 0) {
         error = IcsErr_FCopyIds;
         goto exit;
     }
@@ -315,14 +315,15 @@ static Ics_Error IcsReorderIds(char   *buf,
                                int     bytes)
 {
     ICSINIT;
-    int  i, j, imels;
+    int  i;
+    size_t j, imels;
     int  dstByteOrder[ICS_MAX_IMEL_SIZE];
     char imel[ICS_MAX_IMEL_SIZE];
     int  different = 0, empty = 0;
 
 
-    imels = length / bytes;
-    if (length % bytes != 0) return IcsErr_BitsVsSizeConfl;
+    imels = length / (size_t)bytes;
+    if (length % (size_t)bytes != 0) return IcsErr_BitsVsSizeConfl;
 
         /* Create destination byte order: */
     IcsFillByteOrder(bytes, dstByteOrder);
@@ -331,7 +332,6 @@ static Ics_Error IcsReorderIds(char   *buf,
     for (i = 0; i < bytes; i++){
         different |= (srcByteOrder[i] != dstByteOrder[i]);
         empty |= !(srcByteOrder[i]);
-        imel[i] = 0; /* Initialize imel array to avoid GCC "may be used uninitialized" warning */
     }
     if (!different || empty) return IcsErr_Ok;
 
@@ -394,7 +394,7 @@ Ics_Error IcsOpenIds(Ics_Header *icsStruct)
 
     br->dataFilePtr = IcsFOpen(filename, "rb");
     if (br->dataFilePtr == NULL) return IcsErr_FOpenIds;
-    if (fseek(br->dataFilePtr, offset, SEEK_SET) != 0) {
+    if (fseek(br->dataFilePtr, (long)offset, SEEK_SET) != 0) {
         fclose(br->dataFilePtr);
         free(br);
         return IcsErr_FReadIds;
@@ -494,7 +494,7 @@ Ics_Error IcsReadIdsBlock(Ics_Header *icsStruct,
 Ics_Error IcsSkipIdsBlock(Ics_Header *icsStruct,
                           size_t      n)
 {
-    return IcsSetIdsBlock (icsStruct, n, SEEK_CUR);
+    return IcsSetIdsBlock (icsStruct, (long)n, SEEK_CUR);
 }
 
 

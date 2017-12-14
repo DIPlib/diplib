@@ -178,7 +178,7 @@ Ics_Error IcsReadCompress(Ics_Header *IcsStruct,
 
       resetbuf:
 
-        offset = posBits >> 3;
+        offset = (size_t)(posBits >> 3);
         inSize = offset <= inSize ? inSize - offset : 0;
         for (i = 0 ; i < inSize ; ++i) {
             inBuffer[i] = inBuffer[i + offset];
@@ -195,9 +195,9 @@ Ics_Error IcsReadCompress(Ics_Header *IcsStruct,
         }
 
         if (rSize > 0) {
-            inBits = (inSize - inSize%nBits) << 3;
+            inBits = (int)((inSize - inSize%(size_t)nBits) << 3);
         } else {
-            inBits = (inSize << 3) - (nBits - 1);
+            inBits = (int)((inSize << 3) - (size_t)(nBits - 1));
         }
 
         while (inBits > posBits) {
@@ -261,7 +261,7 @@ Ics_Error IcsReadCompress(Ics_Header *IcsStruct,
             *--stackPtr = (unsigned char)fInChar;
 
                 /* And put them out in forward order */
-            i = DE_STACK - stackPtr;
+            i = (size_t)(DE_STACK - stackPtr);
             if (outPos+i > len) {
                 i = len-outPos; /* do not write more in buffer than fits! */
             }

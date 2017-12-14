@@ -50,7 +50,7 @@ extern "C" {
 #endif
 
 /* Library versioning is in the form major, minor, patch: */
-#define ICSLIB_VERSION "1.6.1" /* also defined in CMakeLists.txt */
+#define ICSLIB_VERSION "1.6.2" /* also defined in configure.ac */
 
 #if defined(__WIN32__) && !defined(WIN32)
 #define WIN32
@@ -156,19 +156,32 @@ typedef struct {
 /* A list of sensor parameters that are also equiped with a state. */
 typedef enum {
     ICS_SENSOR_FIRST,
-    ICS_SENSOR_PINHOLE_RADIUS,
-    ICS_SENSOR_LAMBDA_EXCITATION,
-    ICS_SENSOR_LAMBDA_EMISSION,
-    ICS_SENSOR_PHOTON_COUNT,
-    ICS_SENSOR_MEDIUM_REFRACTIVE_INDEX,
+    ICS_SENSOR_IMAGING_DIRECTION,
     ICS_SENSOR_NUMERICAL_APERTURE,
+    ICS_SENSOR_OBJECTIVE_QUALITY,
+    ICS_SENSOR_MEDIUM_REFRACTIVE_INDEX,
     ICS_SENSOR_LENS_REFRACTIVE_INDEX,
+    ICS_SENSOR_PINHOLE_RADIUS,
+    ICS_SENSOR_ILL_PINHOLE_RADIUS,
     ICS_SENSOR_PINHOLE_SPACING,
+    ICS_SENSOR_EXCITATION_BEAM_FILL,
+    ICS_SENSOR_LAMBDA_EXCITATION,
+    ICS_SENSOR_LAMBDA_EMISSION,    
+    ICS_SENSOR_PHOTON_COUNT,
+    ICS_SENSOR_INTERFACE_PRIMARY,
+    ICS_SENSOR_INTERFACE_SECONDARY,
+    
+    ICS_SENSOR_DETECTOR_MAGN,
+    ICS_SENSOR_DETECTOR_PPU,
+    ICS_SENSOR_DETECTOR_BASELINE,
+    ICS_SENSOR_DETECTOR_LINE_AVG_COUNT,
+
     ICS_SENSOR_STED_DEPLETION_MODE,
     ICS_SENSOR_STED_LAMBDA,
     ICS_SENSOR_STED_SATURATION_FACTOR,
     ICS_SENSOR_STED_IMM_FRACTION,
     ICS_SENSOR_STED_VPPM,
+    
     ICS_SENSOR_SPIM_EXCITATION_TYPE,
     ICS_SENSOR_SPIM_FILL_FACTOR,
     ICS_SENSOR_SPIM_PLANE_NA,
@@ -176,13 +189,11 @@ typedef enum {
     ICS_SENSOR_SPIM_PLANE_PROP_DIR,
     ICS_SENSOR_SPIM_PLANE_CENTER_OFF,
     ICS_SENSOR_SPIM_PLANE_FOCUS_OFF,
+    
     ICS_SENSOR_SCATTER_MODEL,
     ICS_SENSOR_SCATTER_FREE_PATH,
     ICS_SENSOR_SCATTER_REL_CONTRIB,
-    ICS_SENSOR_SCATTER_BLURRING,
-    ICS_SENSOR_DETECTOR_PPU,
-    ICS_SENSOR_DETECTOR_BASELINE,
-    ICS_SENSOR_DETECTOR_LINE_AVG_COUNT,
+    ICS_SENSOR_SCATTER_BLURRING,    
     ICS_SENSOR_LAST
 } Ics_SensorParameter;
 
@@ -242,9 +253,33 @@ typedef struct _ICS {
     char                    model[ICS_STRLEN_OTHER];
         /* Number of channels: */
     int                     sensorChannels;
-        /* Backprojected microns: */
+        /* Imaging direction: */
+    char                    imagingDirection[ICS_MAX_LAMBDA][ICS_STRLEN_TOKEN];
+    Ics_SensorState         imagingDirectionState[ICS_MAX_LAMBDA];
+        /* Numerical Aperture: */
+    double                  numAperture;
+    Ics_SensorState         numApertureState;
+        /* Objective quality: */
+    int                     objectiveQuality[ICS_MAX_LAMBDA];
+    Ics_SensorState         objectiveQualityState[ICS_MAX_LAMBDA];
+        /* Refractive index of embedding medium: */
+    double                  refrInxMedium;
+    Ics_SensorState         refrInxMediumState;
+        /* Refractive index of design medium: */
+    double                  refrInxLensMedium;
+    Ics_SensorState         refrInxLensMediumState;
+        /* Detection pinhole in microns: */
     double                  pinholeRadius[ICS_MAX_LAMBDA];
     Ics_SensorState         pinholeRadiusState[ICS_MAX_LAMBDA];
+        /* Illumination pinhole in microns: */
+    double                  illPinholeRadius[ICS_MAX_LAMBDA];
+    Ics_SensorState         illPinholeRadiusState[ICS_MAX_LAMBDA];
+        /* Nipkow Disk pinhole spacing: */
+    double                  pinholeSpacing;
+    Ics_SensorState         pinholeSpacingState;
+        /* Excitation beam fill factor: */
+    double                  excitationBeamFill[ICS_MAX_LAMBDA];
+    Ics_SensorState         excitationBeamFillState[ICS_MAX_LAMBDA];
         /* Excitation wavelength in nanometers: */
     double                  lambdaEx[ICS_MAX_LAMBDA];
     Ics_SensorState         lambdaExState[ICS_MAX_LAMBDA];
@@ -254,18 +289,24 @@ typedef struct _ICS {
         /* Number of excitation photons: */
     int                     exPhotonCnt[ICS_MAX_LAMBDA];
     Ics_SensorState         exPhotonCntState[ICS_MAX_LAMBDA];
-        /* Refractive index of embedding medium: */
-    double                  refrInxMedium;
-    Ics_SensorState         refrInxMediumState;
-        /* Numerical Aperture: */
-    double                  numAperture;
-    Ics_SensorState         numApertureState;
-        /* Refractive index of design medium: */
-    double                  refrInxLensMedium;
-    Ics_SensorState         refrInxLensMediumState;
-        /* Nipkow Disk pinhole spacing: */
-    double                  pinholeSpacing;
-    Ics_SensorState         pinholeSpacingState;
+        /* Emission wavelength in nm: */
+    double                  interfacePrimary;
+    Ics_SensorState         interfacePrimaryState;
+        /* Emission wavelength in nm: */
+    double                  interfaceSecondary;
+    Ics_SensorState         interfaceSecondaryState;
+        /* Excitation beam fill factor: */
+    double                  detectorMagn[ICS_MAX_LAMBDA];
+    Ics_SensorState         detectorMagnState[ICS_MAX_LAMBDA];
+        /* Detector photons per unit: */
+    double                  detectorPPU[ICS_MAX_LAMBDA];
+    Ics_SensorState         detectorPPUState[ICS_MAX_LAMBDA];
+        /* Detector Baseline: */
+    double                  detectorBaseline[ICS_MAX_LAMBDA];
+    Ics_SensorState         detectorBaselineState[ICS_MAX_LAMBDA];
+        /* Averaging line count */
+    double                  detectorLineAvgCnt[ICS_MAX_LAMBDA];
+    Ics_SensorState         detectorLineAvgCntState[ICS_MAX_LAMBDA];
         /* STED depletion mode: */
     char                    stedDepletionMode[ICS_MAX_LAMBDA][ICS_STRLEN_TOKEN];
     Ics_SensorState         stedDepletionModeState[ICS_MAX_LAMBDA];
@@ -314,19 +355,11 @@ typedef struct _ICS {
         /* Scatter blurring: */
     double                  scatterBlurring[ICS_MAX_LAMBDA];
     Ics_SensorState         scatterBlurringState[ICS_MAX_LAMBDA];
-        /* Detector photons per unit: */
-    double                  detectorPPU[ICS_MAX_LAMBDA];
-    Ics_SensorState         detectorPPUState[ICS_MAX_LAMBDA];
-        /* Detector Baseline: */
-    double                  detectorBaseline[ICS_MAX_LAMBDA];
-    Ics_SensorState         detectorBaselineState[ICS_MAX_LAMBDA];
-        /* Averaging line count */
-    double                  detectorLineAvgCnt[ICS_MAX_LAMBDA];
-    Ics_SensorState         detectorLineAvgCntState[ICS_MAX_LAMBDA];
 
         /* SCIL_Image compatibility parameter: */
     char                    scilType[ICS_STRLEN_TOKEN];
 } ICS;
+
 
 /* The  error codes. */
 typedef enum {

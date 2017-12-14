@@ -82,14 +82,24 @@ Ics_Symbol G_SubCatSymbols[] =
 Ics_Symbol G_SubSubCatSymbols[] =
 {
     {"Channels",            ICSTOK_CHANS},
+    {"ImagingDirection",    ICSTOK_IMDIR},
+    {"NumAperture",         ICSTOK_NUMAPER},
+    {"ObjectiveQuality",    ICSTOK_OBJQ},
+    {"RefrInxMedium",       ICSTOK_REFRIME},
+    {"RefrInxLensMedium",   ICSTOK_REFRILM},
     {"PinholeRadius",       ICSTOK_PINHRAD},
+    {"IllPinholeRadius",    ICSTOK_ILLPINHRAD},
+    {"PinholeSpacing",      ICSTOK_PINHSPA},
+    {"ExcitationBeamFill",  ICSTOK_EXBFILL},
     {"LambdaEx",            ICSTOK_LAMBDEX},
     {"LambdaEm",            ICSTOK_LAMBDEM},
     {"ExPhotonCnt",         ICSTOK_PHOTCNT},
-    {"RefrInxMedium",       ICSTOK_REFRIME},
-    {"NumAperture",         ICSTOK_NUMAPER},
-    {"RefrInxLensMedium",   ICSTOK_REFRILM},
-    {"PinholeSpacing",      ICSTOK_PINHSPA},
+    {"InterFacePrimary",    ICSTOK_IFACE1},
+    {"InterFaceSecondary",  ICSTOK_IFACE2},
+    {"DetectorMagnif",      ICSTOK_DETMAG},
+    {"DetectorPPU",         ICSTOK_DETPPU},
+    {"DetectorBaseline",    ICSTOK_DETBASELINE},
+    {"DetectorLineAvgCnt",  ICSTOK_DETLNAVGCNT},
     {"STEDDeplMode",        ICSTOK_STEDDEPLMODE},
     {"STEDLambda",          ICSTOK_STEDLAMBDA},
     {"STEDSatFactor",       ICSTOK_STEDSATFACTOR},
@@ -105,10 +115,7 @@ Ics_Symbol G_SubSubCatSymbols[] =
     {"ScatterModel",        ICSTOK_SCATTERMODEL},
     {"ScatterFreePath",     ICSTOK_SCATTERFREEPATH},
     {"ScatterRelContrib",   ICSTOK_SCATTERRELCONTRIB},
-    {"ScatterBlurring",     ICSTOK_SCATTERBLURRING},
-    {"DetectorPPU",         ICSTOK_DETPPU},
-    {"DetectorBaseline",    ICSTOK_DETBASELINE},
-    {"DetectorLineAvgCnt",  ICSTOK_DETLNAVGCNT}
+    {"ScatterBlurring",     ICSTOK_SCATTERBLURRING}
 };
 
 

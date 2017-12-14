@@ -100,6 +100,7 @@ libics.dll.lib. To make a debug version add '/D DEBUG' to these
 commands. To disable zlib support, remove the definition of ZLIB_SUPPORT
 from the file Makefile.vc.
 
+
  - Compilation with CMake under UNIX / Linux / Mac OS X / Cygwin
 
 Run the following commands from outside the source directory
@@ -112,9 +113,17 @@ The library can be tested for problems using
 
 CMake can be used with the following options:
    cmake ... -DCMAKE_BUILD_TYPE=Debug
-   cmake ... -DUSE_ZLIB=Off
+   cmake ... -DLIBICS_USE_ZLIB=Off
 
- - Compilation with cmake on Windows
+CMake projects using libics as a subproject can do
+   add_subdirectory(<path/to/libics/sources>)
+   target_link_libraries(target PRIVATE libics)
+or
+   target_link_libraries(target PRIVATE libics_static)
+The include directory for libics will be automatically set, and the ZLib
+library will be linked if necessary.
+
+ - Compilation with cmake on Windows:
 
 Type on the command line
    cmake CMakeLists.txt

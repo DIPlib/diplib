@@ -1,7 +1,7 @@
 /*
  * libics: Image Cytometry Standard file reading and writing.
  *
- * Copyright (C) 2000-2013 Cris Luengo and others
+ * Copyright (C) 2000-2013, 2017 Cris Luengo and others
  * Copyright 2015, 2017:
  *   Scientific Volume Imaging Holding B.V.
  *   Laapersveld 63, 1213 VB Hilversum, The Netherlands
@@ -41,6 +41,20 @@
 #define LIBICS_CONF_H
 
 
+/* These are used internally when the precise length of a variable is needed.
+   We also use size_t and ptrdiff_t for a variables that are as wide as a
+   pointer (i.e. can hold the size of any data block). */
+#include <stdint.h>
+typedef uint8_t  ics_t_uint8;
+typedef int8_t   ics_t_sint8;
+typedef uint16_t ics_t_uint16;
+typedef int16_t  ics_t_sint16;
+typedef uint32_t ics_t_uint32;
+typedef int32_t  ics_t_sint32;
+typedef float    ics_t_real32;
+typedef double   ics_t_real64;
+
+
 /* Doubles larger than ICS_MAX_DOUBLE or smaller than ICS_MIN_DOUBLE are written
    in scientific notation. */
 #define ICS_MAX_DOUBLE 10000000
@@ -62,27 +76,13 @@
 #define ICS_BUF_SIZE 16384
 
 
-/* These are used internally when the precise length of a variable is needed.
-   We also use size_t for a variable that is as wide as a pointer
-   (i.e. can hold the size of any data block).
- */
-#include <stdint.h>
-typedef uint8_t  ics_t_uint8;
-typedef int8_t   ics_t_sint8;
-typedef uint16_t ics_t_uint16;
-typedef int16_t  ics_t_sint16;
-typedef uint32_t ics_t_uint32;
-typedef int32_t  ics_t_sint32;
-typedef float ics_t_real32;
-typedef double ics_t_real64;
-
-
 #undef ICS_USING_CONFIGURE
 #if !defined(ICS_USING_CONFIGURE)
 
-/*********************************************************************
- *** If we are not using the autoconf configure script:
- *********************************************************************/
+/*********************************************************************/
+/* If we are not using the configure script:                         */
+/*********************************************************************/
+
 
 /* If ICS_FORCE_C_LOCALE is set, the locale is set to "C" before each read or
    write operation. This ensures that the ICS header file is formatted
@@ -108,18 +108,22 @@ typedef double ics_t_real64;
 
 #else
 
-/*********************************************************************
- *** If we are using the autoconf configure script:
- *********************************************************************/
+/******************************************************************************/
+/*  If we are using the configure script:                                     */
+/******************************************************************************/
+
 
 /* If we should force the c locale. */
 #undef ICS_FORCE_C_LOCALE
 
+
 /* Whether to search for IDS files with .ids.gz or .ids.Z extension. */
 #undef ICS_DO_GZEXT
 
+
 /* Whether to use zlib compression. */
 #undef ICS_ZLIB
+
 
 #endif
 

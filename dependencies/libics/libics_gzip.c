@@ -164,7 +164,7 @@ Ics_Error IcsWriteZip(const void *inBuf,
     totalCount = 0;
     do {
         if (len - totalCount < ICS_BUF_SIZE) {
-            stream.avail_in = len - totalCount;
+            stream.avail_in = (uInt)(len - totalCount);
         } else {
             stream.avail_in = ICS_BUF_SIZE;
         }
@@ -236,7 +236,7 @@ Ics_Error IcsWriteZipWithStrides(const void      *src,
     if (outBuf == Z_NULL) return IcsErr_Alloc;
         /* Create an input buffer */
     if (!contiguousLine) {
-        inBuf = (Byte*)malloc(dim[0] * nBytes);
+        inBuf = (Byte*)malloc(dim[0] * (size_t)nBytes);
         if (inBuf == Z_NULL) {
             free(outBuf);
             return IcsErr_Alloc;
@@ -286,14 +286,14 @@ Ics_Error IcsWriteZipWithStrides(const void      *src,
         } else {
             inBuf_ptr = inBuf;
             for (j = 0; j < dim[0]; j++) {
-                memcpy(inBuf_ptr, data, nBytes);
+                memcpy(inBuf_ptr, data, (size_t)nBytes);
                 data += stride[0] * nBytes;
                 inBuf_ptr += nBytes;
             }
         }
             /* Write the compressed data */
         stream.next_in = (Bytef*)inBuf;
-        stream.avail_in = dim[0] * nBytes;
+        stream.avail_in = (uInt)(dim[0] * (size_t)nBytes);
         totalCount += stream.avail_in;
         while (stream.avail_in != 0) {
             if (stream.avail_out == 0) {
@@ -314,7 +314,7 @@ Ics_Error IcsWriteZipWithStrides(const void      *src,
             error = IcsErr_CompressionProblem;
             goto error_exit;
         }
-        crc = crc32(crc, (Bytef*)inBuf, dim[0] * nBytes);
+        crc = crc32(crc, (Bytef*)inBuf, (uInt)(dim[0] * (size_t)nBytes));
             /* This is part of the N-D loop */
         for (i = 1; i < nDims; i++) {
             curPos[i]++;
@@ -397,7 +397,7 @@ Ics_Error IcsOpenZip(Ics_Header *icsStruct)
         len  =  (uInt)getc(file);
         len += ((uInt)getc(file)) << 8;
         if (feof (file)) return IcsErr_CorruptedStream;
-        fseek(file, len, SEEK_CUR);
+        fseek(file, (long)len, SEEK_CUR);
     }
     if ((flags & ORIG_NAME) != 0) {   /* skip the original file name */
         int c;
@@ -498,7 +498,7 @@ Ics_Error IcsReadZipBlock(Ics_Header *icsStruct,
 
         /* Read the compressed data */
     do {
-        stream->avail_in = fread(inBuf, 1, ICS_BUF_SIZE, file);
+        stream->avail_in = (uInt)fread(inBuf, 1, ICS_BUF_SIZE, file);
         if (ferror(file)) {
             return IcsErr_FReadIds;
         }
@@ -512,7 +512,7 @@ Ics_Error IcsReadZipBlock(Ics_Header *icsStruct,
                 err = Z_OK;
                 break;
             }
-            bufsize = todo < ICS_BUF_SIZE ? todo : ICS_BUF_SIZE;
+            bufsize = (unsigned int)(todo < ICS_BUF_SIZE ? todo : ICS_BUF_SIZE);
             stream->avail_out = bufsize;
             prevbuf = stream->next_out = (Bytef*)outBuf + len - todo;;
             err = inflate(stream, Z_NO_FLUSH);
@@ -568,7 +568,7 @@ Ics_Error IcsSetZipBlock(Ics_Header *icsStruct,
     z_stream*      stream = (z_stream*)br->zlibStream;
 
     if ((whence == SEEK_CUR) && (offset<0)) {
-        offset += stream->total_out;
+        offset += (long)stream->total_out;
         whence = SEEK_SET;
     }
     if (whence == SEEK_SET) {
@@ -580,11 +580,11 @@ Ics_Error IcsSetZipBlock(Ics_Header *icsStruct,
         if (offset==0) return IcsErr_Ok;
     }
 
-    bufsize = offset < ICS_BUF_SIZE ? offset : ICS_BUF_SIZE;
+    bufsize = (unsigned int)(offset < ICS_BUF_SIZE ? offset : ICS_BUF_SIZE);
     buf = malloc(bufsize);
     if (buf == NULL) return IcsErr_Alloc;
 
-    n = offset;
+    n = (size_t)offset;
     while (n > 0) {
         if (n > bufsize) {
             error = IcsReadZipBlock(icsStruct, buf, bufsize);

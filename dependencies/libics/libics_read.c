@@ -146,8 +146,8 @@ static Ics_Error getIcsSeparators(FILE *fi,
             }
         }
     }
-    seps[0] = sep1;
-    seps[1] = sep2;
+    seps[0] = (char)sep1;
+    seps[1] = (char)sep2;
     seps[2] = '\0';
 
     return IcsErr_Ok;
@@ -296,6 +296,61 @@ static Ics_Error getIcsSensorState(char            *str,
 }
 
 
+#define ICS_SET_SENSOR_STRING(FIELD)            \
+do {                                            \
+    while (ptr != NULL && i < ICS_MAX_LAMBDA) { \
+        IcsStrCpy(icsStruct->FIELD[i++],        \
+                  ptr, ICS_STRLEN_TOKEN);       \
+        ptr = strtok(NULL, seps);               \
+    }                                           \
+} while (0)
+
+
+#define ICS_SET_SENSOR_DOUBLE_ONE(FIELD)        \
+do {                                            \
+    if (ptr != NULL) {                          \
+        icsStruct->FIELD = atof(ptr);           \
+    }                                           \
+} while (0)
+
+
+#define ICS_SET_SENSOR_INT(FIELD)               \
+do {                                            \
+    while (ptr != NULL && i < ICS_MAX_LAMBDA) { \
+        icsStruct->FIELD[i++] = atoi(ptr);      \
+        ptr = strtok(NULL, seps);               \
+    }                                           \
+} while (0)
+
+
+#define ICS_SET_SENSOR_DOUBLE(FIELD)            \
+do {                                            \
+    while (ptr != NULL && i < ICS_MAX_LAMBDA) { \
+        icsStruct->FIELD[i++] = atof(ptr);      \
+        ptr = strtok(NULL, seps);               \
+    }                                           \
+} while (0)
+
+
+#define ICS_SET_SENSOR_STATE(FIELD)             \
+do {                                            \
+    while (ptr != NULL && i < ICS_MAX_LAMBDA) { \
+        error = getIcsSensorState(ptr, &state); \
+        icsStruct->FIELD ## State[i++] = state; \
+        ptr = strtok(NULL, seps);               \
+    }                                           \
+} while(0)
+
+    
+#define ICS_SET_SENSOR_STATE_ONE(FIELD)         \
+do {                                            \
+    if (ptr != NULL) {                          \
+        error = getIcsSensorState(ptr, &state); \
+        icsStruct->FIELD ## State = state;      \
+    }                                           \
+} while(0)
+
+
 Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                      const char *filename,
                      int         forceName,
@@ -304,7 +359,8 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
     ICSINIT;
     ICS_INIT_LOCALE;
     FILE            *fp;
-    int              end        = 0, i, j, bits;
+    int              end        = 0, si, sj;
+    size_t           i, j;
     char             seps[3], *ptr, *data;
     char             line[ICS_LINE_LENGTH];
     Ics_Token        cat, subCat, subSubCat;
@@ -559,106 +615,86 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                                     }
                                 }
                                 break;
-                            case ICSTOK_PINHRAD:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->pinholeRadius[i++] = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_LAMBDEX:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->lambdaEx[i++] = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_LAMBDEM:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->lambdaEm[i++] = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_PHOTCNT:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->exPhotonCnt[i++] = atoi(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_REFRIME:
-                                if (ptr != NULL) {
-                                    icsStruct->refrInxMedium = atof(ptr);
-                                }
+                            case ICSTOK_IMDIR:
+                                ICS_SET_SENSOR_STRING(imagingDirection);
                                 break;
                             case ICSTOK_NUMAPER:
-                                if (ptr != NULL) {
-                                    icsStruct->numAperture = atof(ptr);
-                                }
+                                ICS_SET_SENSOR_DOUBLE_ONE(numAperture);
+                                break;
+                            case ICSTOK_OBJQ:
+                                ICS_SET_SENSOR_INT(objectiveQuality);
+                                break;
+                            case ICSTOK_REFRIME:
+                                ICS_SET_SENSOR_DOUBLE_ONE(refrInxMedium);
                                 break;
                             case ICSTOK_REFRILM:
-                                if (ptr != NULL) {
-                                    icsStruct->refrInxLensMedium = atof(ptr);
-                                }
+                                ICS_SET_SENSOR_DOUBLE_ONE(refrInxLensMedium);
+                                break;
+                            case ICSTOK_PINHRAD:
+                                ICS_SET_SENSOR_DOUBLE(pinholeRadius);
+                                break;
+                            case ICSTOK_ILLPINHRAD:
+                                ICS_SET_SENSOR_DOUBLE(illPinholeRadius);
                                 break;
                             case ICSTOK_PINHSPA:
-                                if (ptr != NULL) {
-                                    icsStruct->pinholeSpacing = atof(ptr);
-                                }
+                                ICS_SET_SENSOR_DOUBLE_ONE(pinholeSpacing);
+                                break;
+                            case ICSTOK_EXBFILL:
+                                ICS_SET_SENSOR_DOUBLE(excitationBeamFill);
+                                break;
+                            case ICSTOK_LAMBDEX:
+                                ICS_SET_SENSOR_DOUBLE(lambdaEx);
+                                break;
+                            case ICSTOK_LAMBDEM:
+                                ICS_SET_SENSOR_DOUBLE(lambdaEm);
+                                break;
+                            case ICSTOK_PHOTCNT:
+                                ICS_SET_SENSOR_INT(exPhotonCnt);
+                                break;
+                            case ICSTOK_IFACE1:
+                                ICS_SET_SENSOR_DOUBLE_ONE(interfacePrimary);
+                                break;
+                            case ICSTOK_IFACE2:
+                                ICS_SET_SENSOR_DOUBLE_ONE(interfaceSecondary);
+                                break;
+                            case ICSTOK_DETMAG:
+                                ICS_SET_SENSOR_DOUBLE(detectorMagn);
+                                break;
+                            case ICSTOK_DETPPU:
+                                ICS_SET_SENSOR_DOUBLE(detectorPPU);
+                                break;
+                            case ICSTOK_DETBASELINE:
+                                ICS_SET_SENSOR_DOUBLE(detectorBaseline);
+                                break;
+                            case ICSTOK_DETLNAVGCNT:
+                                ICS_SET_SENSOR_DOUBLE(detectorLineAvgCnt);
                                 break;
                             case ICSTOK_STEDDEPLMODE:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    IcsStrCpy(icsStruct->stedDepletionMode[i++],
-                                              ptr, ICS_STRLEN_TOKEN);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_STRING(stedDepletionMode);
                                 break;
                             case ICSTOK_STEDLAMBDA:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->stedLambda[i++] = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(stedLambda);
                                 break;
                             case ICSTOK_STEDSATFACTOR:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->stedSatFactor[i++] = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(stedSatFactor);
                                 break;
                             case ICSTOK_STEDIMMFRACTION:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->stedImmFraction[i++] = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(stedImmFraction);
                                 break;
                             case ICSTOK_STEDVPPM:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->stedVPPM[i++] = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(stedVPPM);
                                 break;
                             case ICSTOK_SPIMEXCTYPE:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    IcsStrCpy(icsStruct->spimExcType[i++],
-                                              ptr, ICS_STRLEN_TOKEN);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_STRING(spimExcType);
                                 break;
                             case ICSTOK_SPIMFILLFACTOR:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->spimFillFactor[i++] = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(spimFillFactor);
                                 break;
                             case ICSTOK_SPIMPLANENA:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->spimPlaneNA[i++] = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(spimPlaneNA);
                                 break;
                             case ICSTOK_SPIMPLANEGAUSSWIDTH:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->spimPlaneGaussWidth[i++] =
-                                        atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(spimPlaneGaussWidth);
                                 break;
                             case ICSTOK_SPIMPLANEPROPDIR:
                                 while (ptr != NULL && i < ICS_MAX_LAMBDA) {
@@ -682,65 +718,22 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                                 }
                                 break;
                             case ICSTOK_SPIMPLANECENTEROFF:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->spimPlaneCenterOff[i++] =
-                                        atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(spimPlaneCenterOff);
                                 break;
                             case ICSTOK_SPIMPLANEFOCUSOF:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->spimPlaneFocusOff[i++] =
-                                        atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(spimPlaneFocusOff);
                                 break;
                             case ICSTOK_SCATTERMODEL:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    IcsStrCpy(icsStruct->scatterModel[i++],
-                                              ptr, ICS_STRLEN_TOKEN);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_STRING(scatterModel);
                                 break;
                             case ICSTOK_SCATTERFREEPATH:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->scatterFreePath[i++] = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(scatterFreePath);
                                 break;
                             case ICSTOK_SCATTERRELCONTRIB:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->scatterRelContrib[i++]
-                                        = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(scatterRelContrib);
                                 break;
                             case ICSTOK_SCATTERBLURRING:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->scatterBlurring[i++] =
-                                        atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_DETPPU:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    icsStruct->detectorPPU[i++] = atof(ptr);
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_DETBASELINE:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    double v = atof(ptr);
-                                    icsStruct->detectorBaseline[i++] = v;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_DETLNAVGCNT:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    double v = atof(ptr);
-                                    icsStruct->detectorLineAvgCnt[i++] = v;
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_DOUBLE(scatterBlurring);
                                 break;
                             default:
                                 error = IcsErr_MissSensorSubSubCat;
@@ -748,199 +741,107 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
                         break;
                     case ICSTOK_SSTATES:
                         switch (subSubCat) {
-                            case ICSTOK_PINHRAD:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->pinholeRadiusState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_LAMBDEX:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->lambdaExState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_LAMBDEM:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->lambdaEmState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_PHOTCNT:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->exPhotonCntState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_REFRIME:
-                                if (ptr != NULL) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->refrInxMediumState = state;
-                                }
+                            case ICSTOK_IMDIR:
+                                ICS_SET_SENSOR_STATE(imagingDirection);
                                 break;
                             case ICSTOK_NUMAPER:
-                                if (ptr != NULL) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->numApertureState = state;
-                                }
+                                ICS_SET_SENSOR_STATE_ONE(numAperture);
+                                break;
+                            case ICSTOK_OBJQ:
+                                ICS_SET_SENSOR_STATE(objectiveQuality);
+                                break;
+                            case ICSTOK_REFRIME:
+                                ICS_SET_SENSOR_STATE_ONE(refrInxMedium);
                                 break;
                             case ICSTOK_REFRILM:
-                                if (ptr != NULL) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->refrInxLensMediumState = state;
-                                }
+                                ICS_SET_SENSOR_STATE_ONE(refrInxLensMedium);
+                                break;
+                            case ICSTOK_PINHRAD:
+                                ICS_SET_SENSOR_STATE(pinholeRadius);
+                                break;
+                            case ICSTOK_ILLPINHRAD:
+                                ICS_SET_SENSOR_STATE(illPinholeRadius);
                                 break;
                             case ICSTOK_PINHSPA:
-                                if (ptr != NULL) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->pinholeSpacingState = state;
-                                }
+                                ICS_SET_SENSOR_STATE_ONE(pinholeSpacing);
                                 break;
-                            case ICSTOK_STEDDEPLMODE:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->stedDepletionModeState[i++] =
-                                        state;
-                                    ptr = strtok(NULL, seps);
-                                }
+                            case ICSTOK_EXBFILL:
+                                ICS_SET_SENSOR_STATE(excitationBeamFill);
                                 break;
-                            case ICSTOK_STEDLAMBDA:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->stedLambdaState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
+                            case ICSTOK_LAMBDEX:
+                                ICS_SET_SENSOR_STATE(lambdaEx);
                                 break;
-                            case ICSTOK_STEDSATFACTOR:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->stedSatFactorState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
+                            case ICSTOK_LAMBDEM:
+                                ICS_SET_SENSOR_STATE(lambdaEm);
                                 break;
-                            case ICSTOK_STEDIMMFRACTION:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->stedImmFraction[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
+                            case ICSTOK_PHOTCNT:
+                                ICS_SET_SENSOR_STATE(exPhotonCnt);
                                 break;
-                            case ICSTOK_STEDVPPM:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->stedVPPMState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
+                            case ICSTOK_IFACE1:
+                                ICS_SET_SENSOR_STATE_ONE(interfacePrimary);
                                 break;
-                            case ICSTOK_SPIMEXCTYPE:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->spimExcTypeState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
+                            case ICSTOK_IFACE2:
+                                ICS_SET_SENSOR_STATE_ONE(interfaceSecondary);
                                 break;
-                            case ICSTOK_SPIMFILLFACTOR:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->spimFillFactorState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_SPIMPLANENA:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->spimPlaneNAState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_SPIMPLANEGAUSSWIDTH:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->spimPlaneGaussWidthState[i++] =
-                                        state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_SPIMPLANEPROPDIR:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->spimPlanePropDirState[i++] =
-                                        state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_SPIMPLANECENTEROFF:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->spimPlaneCenterOffState[i++] =
-                                        state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_SPIMPLANEFOCUSOF:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->spimPlaneFocusOffState[i++] =
-                                        state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_SCATTERMODEL:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->scatterModelState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_SCATTERFREEPATH:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->scatterFreePathState[i++]
-                                        = state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_SCATTERRELCONTRIB:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->scatterRelContribState[i++]
-                                        = state;
-                                    ptr = strtok(NULL, seps);
-                                }
-                                break;
-                            case ICSTOK_SCATTERBLURRING:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->scatterBlurringState[i++] =
-                                        state;
-                                    ptr = strtok(NULL, seps);
-                                }
+                            case ICSTOK_DETMAG:
+                                ICS_SET_SENSOR_STATE(detectorMagn);
                                 break;
                             case ICSTOK_DETPPU:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->detectorPPUState[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_STATE(detectorPPU);
                                 break;
                             case ICSTOK_DETBASELINE:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->detectorBaselineState[i++] =
-                                        state;
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_STATE(detectorBaseline);
                                 break;
                             case ICSTOK_DETLNAVGCNT:
-                                while (ptr != NULL && i < ICS_MAX_LAMBDA) {
-                                    error = getIcsSensorState(ptr, &state);
-                                    icsStruct->detectorLineAvgCnt[i++] = state;
-                                    ptr = strtok(NULL, seps);
-                                }
+                                ICS_SET_SENSOR_STATE(detectorLineAvgCnt);
+                                break;
+                            case ICSTOK_STEDDEPLMODE:
+                                ICS_SET_SENSOR_STATE(stedDepletionMode);
+                                break;
+                            case ICSTOK_STEDLAMBDA:
+                                ICS_SET_SENSOR_STATE(stedLambda);
+                                break;
+                            case ICSTOK_STEDSATFACTOR:
+                                ICS_SET_SENSOR_STATE(stedSatFactor);
+                                break;
+                            case ICSTOK_STEDIMMFRACTION:
+                                ICS_SET_SENSOR_STATE(stedImmFraction);
+                                break;
+                            case ICSTOK_STEDVPPM:
+                                ICS_SET_SENSOR_STATE(stedVPPM);
+                                break;
+                            case ICSTOK_SPIMEXCTYPE:
+                                ICS_SET_SENSOR_STATE(spimExcType);
+                                break;
+                            case ICSTOK_SPIMFILLFACTOR:
+                                ICS_SET_SENSOR_STATE(spimFillFactor);
+                                break;
+                            case ICSTOK_SPIMPLANENA:
+                                ICS_SET_SENSOR_STATE(spimPlaneNA);
+                                break;
+                            case ICSTOK_SPIMPLANEGAUSSWIDTH:
+                                ICS_SET_SENSOR_STATE(spimPlaneGaussWidth);
+                                break;
+                            case ICSTOK_SPIMPLANEPROPDIR:
+                                ICS_SET_SENSOR_STATE(spimPlanePropDir);
+                                break;
+                            case ICSTOK_SPIMPLANECENTEROFF:
+                                ICS_SET_SENSOR_STATE(spimPlaneCenterOff);
+                                break;
+                            case ICSTOK_SPIMPLANEFOCUSOF:
+                                ICS_SET_SENSOR_STATE(spimPlaneFocusOff);
+                                break;
+                            case ICSTOK_SCATTERMODEL:
+                                ICS_SET_SENSOR_STATE(scatterModel);
+                                break;
+                            case ICSTOK_SCATTERFREEPATH:
+                                ICS_SET_SENSOR_STATE(scatterFreePath);
+                                break;
+                            case ICSTOK_SCATTERRELCONTRIB:
+                                ICS_SET_SENSOR_STATE(scatterRelContrib);
+                                break;
+                            case ICSTOK_SCATTERBLURRING:
+                                ICS_SET_SENSOR_STATE(scatterBlurring);
                                 break;
                             default:
                                 error = IcsErr_MissSensorSubSubCat;
@@ -961,33 +862,33 @@ Ics_Error IcsReadIcs(Ics_Header *icsStruct,
            files in which a single microscope type is defined and multiple
            sensor channels, the microscope type will be duplicated to all sensor
            channels. */
-    for (j = 1; j < icsStruct->sensorChannels; j++) {
-        if (strlen(icsStruct->type[j]) == 0) {
-            IcsStrCpy(icsStruct->type[j], icsStruct->type[0],
+    for (sj = 1; sj < icsStruct->sensorChannels; sj++) {
+        if (strlen(icsStruct->type[sj]) == 0) {
+            IcsStrCpy(icsStruct->type[sj], icsStruct->type[0],
                        ICS_STRLEN_TOKEN);
         }
     }
 
     if (!error) {
-        bits = icsGetBitsParam(order, parameters);
+        int bits = icsGetBitsParam(order, parameters);
         if (bits < 0) {
             error = IcsErr_MissBits;
         } else {
             IcsGetDataTypeProps(&(icsStruct->imel.dataType), format, sign,
                                 sizes[bits]);
-            for (j = 0, i = 0; i < parameters; i++) {
-                if (i == bits) {
-                    icsStruct->imel.origin = origin[i];
+            for (sj = 0, si = 0; si < parameters; si++) {
+                if (si == bits) {
+                    icsStruct->imel.origin = origin[si];
                     icsStruct->imel.scale = scale[i];
-                    strcpy(icsStruct->imel.unit, unit[i]);
+                    strcpy(icsStruct->imel.unit, unit[si]);
                 } else {
-                    icsStruct->dim[j].size = sizes[i];
-                    icsStruct->dim[j].origin = origin[i];
-                    icsStruct->dim[j].scale = scale[i];
-                    strcpy(icsStruct->dim[j].order, order[i]);
-                    strcpy(icsStruct->dim[j].label, label[i]);
-                    strcpy(icsStruct->dim[j].unit, unit[i]);
-                    j++;
+                    icsStruct->dim[sj].size = sizes[si];
+                    icsStruct->dim[sj].origin = origin[si];
+                    icsStruct->dim[sj].scale = scale[si];
+                    strcpy(icsStruct->dim[sj].order, order[si]);
+                    strcpy(icsStruct->dim[sj].label, label[si]);
+                    strcpy(icsStruct->dim[sj].unit, unit[si]);
+                    sj++;
                 }
             }
             icsStruct->dimensions = parameters - 1;

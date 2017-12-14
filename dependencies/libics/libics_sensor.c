@@ -550,9 +550,33 @@ Ics_Error IcsGetSensorParameter(const ICS           *ics,
         return IcsErr_NotValidAction;
 
     switch (parameter) {
+        case ICS_SENSOR_NUMERICAL_APERTURE:
+            *value = ics->numAperture;
+            *state = ics->numApertureState;
+            break;
+        case ICS_SENSOR_MEDIUM_REFRACTIVE_INDEX:
+            *value = ics->refrInxMedium;
+            *state = ics->refrInxMediumState;
+            break;
+        case ICS_SENSOR_LENS_REFRACTIVE_INDEX:
+            *value = ics->refrInxLensMedium;
+            *state = ics->refrInxLensMediumState;
+            break;
         case ICS_SENSOR_PINHOLE_RADIUS:
             *value = ics->pinholeRadius[channel];
             *state = ics->pinholeRadiusState[channel];
+            break;
+        case ICS_SENSOR_ILL_PINHOLE_RADIUS:
+            *value = ics->illPinholeRadius[channel];
+            *state = ics->illPinholeRadiusState[channel];
+            break;
+        case ICS_SENSOR_PINHOLE_SPACING:
+            *value = ics->pinholeSpacing;
+            *state = ics->pinholeSpacingState;
+            break;
+        case ICS_SENSOR_EXCITATION_BEAM_FILL:
+            *value = ics->excitationBeamFill[channel];
+            *state = ics->excitationBeamFill[channel];
             break;
         case ICS_SENSOR_LAMBDA_EXCITATION:
             *value = ics->lambdaEx[channel];
@@ -566,21 +590,29 @@ Ics_Error IcsGetSensorParameter(const ICS           *ics,
             *value = ics->exPhotonCnt[channel];
             *state = ics->exPhotonCntState[channel];
             break;
-        case ICS_SENSOR_MEDIUM_REFRACTIVE_INDEX:
-            *value = ics->refrInxMedium;
-            *state = ics->refrInxMediumState;
+        case ICS_SENSOR_INTERFACE_PRIMARY:
+            *value = ics->interfacePrimary;
+            *state = ics->interfacePrimaryState;
             break;
-        case ICS_SENSOR_NUMERICAL_APERTURE:
-            *value = ics->numAperture;
-            *state = ics->numApertureState;
+        case ICS_SENSOR_INTERFACE_SECONDARY:
+            *value = ics->interfaceSecondary;
+            *state = ics->interfaceSecondaryState;
             break;
-        case ICS_SENSOR_LENS_REFRACTIVE_INDEX:
-            *value = ics->refrInxLensMedium;
-            *state = ics->refrInxLensMediumState;
+         case ICS_SENSOR_DETECTOR_MAGN:
+            *value = ics->detectorMagn[channel];
+            *state = ics->detectorMagnState[channel];
             break;
-        case ICS_SENSOR_PINHOLE_SPACING:
-            *value = ics->pinholeSpacing;
-            *state = ics->pinholeSpacingState;
+         case ICS_SENSOR_DETECTOR_PPU:
+            *value = ics->detectorPPU[channel];
+            *state = ics->detectorPPUState[channel];
+            break;
+        case ICS_SENSOR_DETECTOR_BASELINE:
+            *value = ics->detectorBaseline[channel];
+            *state = ics->detectorBaselineState[channel];
+            break;
+        case ICS_SENSOR_DETECTOR_LINE_AVG_COUNT:
+            *value = ics->detectorLineAvgCnt[channel];
+            *state = ics->detectorLineAvgCntState[channel];
             break;
         case ICS_SENSOR_STED_LAMBDA:
             *value = ics->stedLambda[channel];
@@ -629,18 +661,6 @@ Ics_Error IcsGetSensorParameter(const ICS           *ics,
         case ICS_SENSOR_SCATTER_BLURRING:
             *value = ics->scatterBlurring[channel];
             *state = ics->scatterBlurringState[channel];
-            break;
-        case ICS_SENSOR_DETECTOR_PPU:
-            *value = ics->detectorPPU[channel];
-            *state = ics->detectorPPUState[channel];
-            break;
-        case ICS_SENSOR_DETECTOR_BASELINE:
-            *value = ics->detectorBaseline[channel];
-            *state = ics->detectorBaselineState[channel];
-            break;
-        case ICS_SENSOR_DETECTOR_LINE_AVG_COUNT:
-            *value = ics->detectorLineAvgCnt[channel];
-            *state = ics->detectorLineAvgCntState[channel];
             break;
         default:
             *value = 0;
@@ -692,6 +712,10 @@ Ics_Error IcsGetSensorParameterInt(const ICS           *ics,
 
 
     switch (parameter) {
+        case ICS_SENSOR_OBJECTIVE_QUALITY:
+            *value = ics->objectiveQuality[channel];
+            *state = ics->objectiveQualityState[channel];
+            break;
         case ICS_SENSOR_PHOTON_COUNT:
             *value = ics->exPhotonCnt[channel];
             *state = ics->exPhotonCntState[channel];
@@ -718,6 +742,10 @@ Ics_Error IcsGetSensorParameterString(const ICS            *ics,
 
 
     switch (parameter) {
+        case ICS_SENSOR_IMAGING_DIRECTION:
+            *value = ics->imagingDirection[channel];
+            *state = ics->imagingDirectionState[channel];
+            break;
         case ICS_SENSOR_STED_DEPLETION_MODE:
             *value = ics->stedDepletionMode[channel];
             *state = ics->stedDepletionModeState[channel];
@@ -754,9 +782,33 @@ Ics_Error IcsSetSensorParameter(ICS                 *ics,
         return IcsErr_NotValidAction;
 
     switch (parameter) {
+        case ICS_SENSOR_NUMERICAL_APERTURE:
+            ics->numAperture = value;
+            ics->numApertureState = state;
+            break;
+        case ICS_SENSOR_MEDIUM_REFRACTIVE_INDEX:
+            ics->refrInxMedium = value;
+            ics->refrInxMediumState = state;
+            break;
+        case ICS_SENSOR_LENS_REFRACTIVE_INDEX:
+            ics->refrInxLensMedium = value;
+            ics->refrInxLensMediumState = state;
+            break;
         case ICS_SENSOR_PINHOLE_RADIUS:
             ics->pinholeRadius[channel] = value;
             ics->pinholeRadiusState[channel] = state;
+            break;
+        case ICS_SENSOR_ILL_PINHOLE_RADIUS:
+            ics->illPinholeRadius[channel] = value;
+            ics->illPinholeRadiusState[channel] = state;
+            break;
+        case ICS_SENSOR_PINHOLE_SPACING:
+            ics->pinholeSpacing = value;
+            ics->pinholeSpacingState = state;
+            break;
+        case ICS_SENSOR_EXCITATION_BEAM_FILL:
+            ics->excitationBeamFill[channel] = value;
+            ics->excitationBeamFillState[channel] = state;
             break;
         case ICS_SENSOR_LAMBDA_EXCITATION:
             ics->lambdaEx[channel] = value;
@@ -770,21 +822,29 @@ Ics_Error IcsSetSensorParameter(ICS                 *ics,
             ics->exPhotonCnt[channel] = (int)value;
             ics->exPhotonCntState[channel] = state;
             break;
-        case ICS_SENSOR_MEDIUM_REFRACTIVE_INDEX:
-            ics->refrInxMedium = value;
-            ics->refrInxMediumState = state;
+        case ICS_SENSOR_INTERFACE_PRIMARY:
+            ics->interfacePrimary = value;
+            ics->interfacePrimaryState = state;
             break;
-        case ICS_SENSOR_NUMERICAL_APERTURE:
-            ics->numAperture = value;
-            ics->numApertureState = state;
+        case ICS_SENSOR_INTERFACE_SECONDARY:
+            ics->interfaceSecondary = value;
+            ics->interfaceSecondaryState = state;
             break;
-        case ICS_SENSOR_LENS_REFRACTIVE_INDEX:
-            ics->refrInxLensMedium = value;
-            ics->refrInxLensMediumState = state;
+        case ICS_SENSOR_DETECTOR_MAGN:
+            ics->detectorMagn[channel] = value;
+            ics->detectorMagnState[channel] = state;
             break;
-        case ICS_SENSOR_PINHOLE_SPACING:
-            ics->pinholeSpacing = value;
-            ics->pinholeSpacingState = state;
+        case ICS_SENSOR_DETECTOR_PPU:
+            ics->detectorPPU[channel] = value;
+            ics->detectorPPUState[channel] = state;
+            break;
+        case ICS_SENSOR_DETECTOR_BASELINE:
+            ics->detectorBaseline[channel] = value;
+            ics->detectorBaselineState[channel] = state;
+            break;
+        case ICS_SENSOR_DETECTOR_LINE_AVG_COUNT:
+            ics->detectorLineAvgCnt[channel] = value;
+            ics->detectorLineAvgCntState[channel] = state;
             break;
         case ICS_SENSOR_STED_LAMBDA:
             ics->stedLambda[channel] = value;
@@ -833,18 +893,6 @@ Ics_Error IcsSetSensorParameter(ICS                 *ics,
         case ICS_SENSOR_SCATTER_BLURRING:
             ics->scatterBlurring[channel] = value;
             ics->scatterBlurringState[channel] = state;
-            break;
-        case ICS_SENSOR_DETECTOR_PPU:
-            ics->detectorPPU[channel] = value;
-            ics->detectorPPUState[channel] = state;
-            break;
-        case ICS_SENSOR_DETECTOR_BASELINE:
-            ics->detectorBaseline[channel] = value;
-            ics->detectorBaselineState[channel] = state;
-            break;
-        case ICS_SENSOR_DETECTOR_LINE_AVG_COUNT:
-            ics->detectorLineAvgCnt[channel] = value;
-            ics->detectorLineAvgCntState[channel] = state;
             break;
         default:
             return IcsErr_NotValidAction;
@@ -900,6 +948,10 @@ Ics_Error IcsSetSensorParameterInt(ICS                 *ics,
         return IcsErr_NotValidAction;
 
     switch (parameter) {
+        case ICS_SENSOR_OBJECTIVE_QUALITY:
+            ics->objectiveQuality[channel] = value;
+            ics->objectiveQualityState[channel] = state;
+            break;
         case ICS_SENSOR_PHOTON_COUNT:
             ics->exPhotonCnt[channel] = value;
             ics->exPhotonCntState[channel] = state;
@@ -926,6 +978,10 @@ Ics_Error IcsSetSensorParameterString(ICS                 *ics,
         return IcsErr_NotValidAction;
 
     switch (parameter) {
+        case ICS_SENSOR_IMAGING_DIRECTION:
+            IcsStrCpy(ics->imagingDirection[channel], value, ICS_STRLEN_TOKEN);
+            ics->imagingDirectionState[channel] = state;
+            break;
         case ICS_SENSOR_STED_DEPLETION_MODE:
             IcsStrCpy(ics->stedDepletionMode[channel], value, ICS_STRLEN_TOKEN);
             ics->stedDepletionModeState[channel] = state;

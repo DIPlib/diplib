@@ -205,7 +205,7 @@ Ics_Error IcsGetNumHistoryStrings(ICS *ics,
 static void IcsIteratorNext(Ics_History         *hist,
                             Ics_HistoryIterator *it)
 {
-    int nchar = strlen(it->key);
+    size_t nchar = strlen(it->key);
     it->previous = it->next;
     it->next++;
     if (nchar > 0) {
@@ -238,7 +238,7 @@ Ics_Error IcsNewHistoryIterator(ICS                 *ics,
     if ((key == NULL) ||(key[0] == '\0')) {
         it->key[0] = '\0';
     } else {
-        int n;
+        size_t n;
         IcsStrCpy(it->key, key, ICS_STRLEN_TOKEN);
             /* Append a \t, so that the search for the key finds whole words */
         n = strlen(it->key);
@@ -382,7 +382,7 @@ Ics_Error IcsGetHistoryKeyValueIF(ICS                 *ics,
     if (error) return error;
 
     ptr = strchr(buf, ICS_FIELD_SEP);
-    length = ptr-buf;
+    length = (size_t)(ptr-buf);
     if ((ptr != NULL) &&(length > 0) &&(length < ICS_STRLEN_TOKEN)) {
         if (key != NULL) {
             memcpy(key, buf, length);

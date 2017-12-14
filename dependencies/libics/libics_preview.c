@@ -118,7 +118,7 @@ Ics_Error IcsGetPreviewData(ICS    *ics,
         sizeConflict = 1;
         if (n < roiSize) return IcsErr_BufferTooSmall;
     }
-    bps = IcsGetBytesPerSample(ics);
+    bps = (size_t)IcsGetBytesPerSample(ics);
     if (bps > 1) {
         buf = malloc (roiSize * bps);
         if (buf == NULL) return IcsErr_Alloc;
@@ -228,7 +228,7 @@ Ics_Error IcsGetPreviewData(ICS    *ics,
         {
             ics_t_uint32 *in = buf;
             ics_t_uint8 *out = dest;
-            int offset; double gain;
+            ics_t_uint32 offset; double gain;
             ics_t_uint32 max = *in, min = *in;
             in++;
             for (i = 1; i < roiSize; i++, in++) {

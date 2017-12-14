@@ -280,7 +280,7 @@ size_t IcsGetDataSize(const ICS *ics)
 {
     if (ics == NULL) return 0;
     if (ics->dimensions == 0) return 0;
-    return IcsGetImageSize(ics) * IcsGetBytesPerSample(ics);
+    return IcsGetImageSize(ics) * (size_t)IcsGetBytesPerSample(ics);
 }
 
 
@@ -288,7 +288,7 @@ size_t IcsGetDataSize(const ICS *ics)
 size_t IcsGetImelSize(const ICS *ics)
 {
     if (ics != NULL) {
-        return IcsGetBytesPerSample(ics);
+        return (size_t)IcsGetBytesPerSample(ics);
     } else {
         return 0;
     }
@@ -429,7 +429,7 @@ Ics_Error IcsGetROIData(ICS          *ics,
         if (sampling[i] < 1 || offset[i] + size[i] > ics->dim[i].size)
             return IcsErr_IllegalROI;
     }
-    imelSize = IcsGetBytesPerSample(ics);
+    imelSize = (size_t)IcsGetBytesPerSample(ics);
     roiSize = imelSize;
     for (i = 0; i < p; i++) {
         roiSize *= (size[i] + sampling[i] - 1) / sampling[i];
@@ -472,7 +472,7 @@ Ics_Error IcsGetROIData(ICS          *ics,
             }
             curLoc += bufSize;
             for (j=0; j < size[0]; j += sampling[0]) {
-                memcpy(dest, buf + i * imelSize, imelSize);
+                memcpy(dest, buf + (unsigned)i * imelSize, imelSize);
                 dest += imelSize;
             }
             for (i = 1; i < p; i++) {
@@ -567,7 +567,7 @@ Ics_Error IcsGetDataWithStrides(ICS             *ics,
         }
         stride = b_stride;
     }
-    imelSize = IcsGetBytesPerSample(ics);
+    imelSize = (size_t)IcsGetBytesPerSample(ics);
 
     error = IcsOpenIds(ics);
     if (error) return error;

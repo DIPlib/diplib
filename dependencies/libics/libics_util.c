@@ -57,11 +57,10 @@
 #include "libics_intern.h"
 
 #ifdef _WIN32
-#define NOMINMAX // windows.h must not define min() and max(), which are conflicting with std::min() and std::max()
 #include <windows.h>
 #define strcasecmp _stricmp
 #else
-#include <strings.h>   /* For strcasecmp() */
+#include <strings.h>
 #endif
 
 const char ICSEXT[] = ".ics";
@@ -128,8 +127,8 @@ void IcsStrCpy(char       *dest,
                int         len)
 {
     if (dest != src) {
-        int nchar = strlen(src);
-        nchar =(nchar > len-1) ? len-1 : nchar;
+        size_t nchar = strlen(src);
+        nchar = (nchar > (size_t)len-1) ? (size_t)len-1 : nchar;
         memcpy(dest, src, nchar);
         dest[nchar] = 0;
     }
@@ -140,7 +139,7 @@ void IcsStrCpy(char       *dest,
 void IcsAppendChar(char *line,
                    char  ch)
 {
-    int len = strlen(line);
+    size_t len = strlen(line);
     line[len] = ch;
     line[len+1] = '\0';
 }
@@ -177,7 +176,7 @@ static char *IcsFileNameFind(const char *str)
  extension could be found. */
 char *IcsExtensionFind(const char *str)
 {
-    int         len;
+    size_t     len;
     const char *ext;
 
 
@@ -357,25 +356,45 @@ void IcsInit(Ics_Header *icsStruct)
     icsStruct->writeSensor = 0;
     icsStruct->writeSensorStates = 0;
     icsStruct->model[0]= '\0';
-    icsStruct->refrInxMedium = 0.0;
-    icsStruct->refrInxMediumState = IcsSensorState_default;
     icsStruct->numAperture = 0.0;
     icsStruct->numApertureState = IcsSensorState_default;
+    icsStruct->refrInxMedium = 0.0;
+    icsStruct->refrInxMediumState = IcsSensorState_default;
     icsStruct->refrInxLensMedium = 0.0;
     icsStruct->refrInxLensMediumState = IcsSensorState_default;
     icsStruct->pinholeSpacing = 0.0;
     icsStruct->pinholeSpacingState = IcsSensorState_default;
+    icsStruct->interfacePrimary = 0.0;
+    icsStruct->interfacePrimaryState = IcsSensorState_default;
+    icsStruct->interfaceSecondary = 0.0;
+    icsStruct->interfaceSecondaryState = IcsSensorState_default;
     icsStruct->sensorChannels = 0;
     for (i = 0; i < ICS_MAX_LAMBDA; i++) {
         icsStruct->type[i][0] = '\0';
+        icsStruct->imagingDirection[i][0] = '\0';
+        icsStruct->imagingDirectionState[i] = IcsSensorState_default;
+        icsStruct->objectiveQuality[i] = 0;
+        icsStruct->objectiveQualityState[i] = IcsSensorState_default;
         icsStruct->pinholeRadius[i] = 0.0;
         icsStruct->pinholeRadiusState[i] = IcsSensorState_default;
+        icsStruct->illPinholeRadius[i] = 0.0;
+        icsStruct->illPinholeRadiusState[i] = IcsSensorState_default;
+        icsStruct->excitationBeamFill[i] = 0.0;
+        icsStruct->excitationBeamFillState[i] = IcsSensorState_default;
         icsStruct->lambdaEx[i] = 0.0;
         icsStruct->lambdaExState[i] = IcsSensorState_default;
         icsStruct->lambdaEm[i] = 0.0;
         icsStruct->lambdaEmState[i] = IcsSensorState_default;
         icsStruct->exPhotonCnt[i] = 1;
         icsStruct->exPhotonCntState[i] = IcsSensorState_default;
+        icsStruct->detectorMagn[i] = 1.0;
+        icsStruct->detectorMagnState[i] = IcsSensorState_default;
+        icsStruct->detectorPPU[i] = 1.0;
+        icsStruct->detectorPPUState[i] = IcsSensorState_default;
+        icsStruct->detectorBaseline[i] = 0.0;
+        icsStruct->detectorBaselineState[i] = IcsSensorState_default;
+        icsStruct->detectorLineAvgCnt[i] = 1.0;
+        icsStruct->detectorLineAvgCntState[i] = IcsSensorState_default;
         icsStruct->stedDepletionMode[i][0] = '\0';
         icsStruct->stedDepletionModeState[i] = IcsSensorState_default;
         icsStruct->stedLambda[i] = 0.0;
@@ -410,12 +429,6 @@ void IcsInit(Ics_Header *icsStruct)
         icsStruct->scatterRelContribState[i] = IcsSensorState_default;
         icsStruct->scatterBlurring[i] = 0.0;
         icsStruct->scatterBlurringState[i] = IcsSensorState_default;
-        icsStruct->detectorPPU[i] = 1.0;
-        icsStruct->detectorPPUState[i] = IcsSensorState_default;
-        icsStruct->detectorBaseline[i] = 0.0;
-        icsStruct->detectorBaselineState[i] = IcsSensorState_default;
-        icsStruct->detectorLineAvgCnt[i] = 1.0;
-        icsStruct->detectorLineAvgCntState[i] = IcsSensorState_default;
     }
     icsStruct->scilType[0] = '\0';
 }
@@ -424,7 +437,7 @@ void IcsInit(Ics_Header *icsStruct)
 /* Find the number of bytes per sample. */
 int IcsGetBytesPerSample(const Ics_Header *icsStruct)
 {
-    return IcsGetDataTypeSize(icsStruct->imel.dataType);
+    return (int)IcsGetDataTypeSize(icsStruct->imel.dataType);
 }
 
 
@@ -476,6 +489,7 @@ void IcsGetPropsDataType(Ics_DataType  dataType,
         case Ics_uint16:
         case Ics_uint32:
             *sign = 0;
+            /* fallthrough */
         case Ics_sint8:
         case Ics_sint16:
         case Ics_sint32:
