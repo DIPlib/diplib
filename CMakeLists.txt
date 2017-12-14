@@ -499,7 +499,6 @@ set(EXAMPLES_REQUIRE_VIEWER
 foreach(file ${DIP_EXAMPLES})
    get_filename_component(target ${file} NAME_WE)
    list(FIND EXAMPLES_REQUIRE_VIEWER ${target} RES)
-   message("${target}: ${RES}")
    if((${RES} EQUAL -1) OR DIP_BUILD_DIPVIEWER) # Don't build the examples that need DIPviewer if we haven't built DIPviewer.
       add_executable(${target} EXCLUDE_FROM_ALL ${file})
       target_compile_definitions(${target} PRIVATE DIP__EXAMPLES_DIR="${PROJECT_SOURCE_DIR}/examples")
