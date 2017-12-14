@@ -586,7 +586,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::abs function") {
    DOCTEST_CHECK( dip::abs( dip::uint32( 25 )) == dip::uint32( 25 ) );
    DOCTEST_CHECK( dip::abs( dip::sint32( 25 )) == dip::uint32( 25 ) );
    DOCTEST_CHECK( dip::abs( dip::sint32( -25 )) == dip::uint32( 25 ) );
-   DOCTEST_CHECK( dip::abs( dip::sint32( -2147483648 )) == dip::uint32( 2147483648u ) );
+   DOCTEST_CHECK( dip::abs( dip::sint32( -2147483648ll )) == dip::uint32( 2147483648u ) );
    DOCTEST_CHECK( dip::abs( dip::sfloat( 25.6 )) == dip::sfloat( 25.6 ) );
    DOCTEST_CHECK( dip::abs( dip::sfloat( -25.6 )) == dip::sfloat( 25.6 ) );
    DOCTEST_CHECK( dip::abs( dip::scomplex{ 1.2f, 5.3f } ) == std::hypot( 1.2f, 5.3f ) );

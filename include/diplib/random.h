@@ -112,7 +112,7 @@ class DIP_NO_EXPORT Random {
       }
 
       /// Set the stream for the generator to `n`.
-      void SetStream( dip::uint n ) {
+      void SetStream( state_type n ) {
          engine_.set_stream( n );
       }
 

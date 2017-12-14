@@ -360,7 +360,7 @@ void DrawPolygon2D(
    } else {
       DIP_THROW_IF( mode != "closed", E::INVALID_FLAG );
    }
-   DIP_THROW_IF( polygon.vertices.size() < ( open ? 2 : 3 ), E::ARRAY_ILLEGAL_SIZE ); // need at least 2 points to draw an open polygon, otherwise 3 points
+   DIP_THROW_IF( polygon.vertices.size() < ( open ? 2u : 3u ), E::ARRAY_ILLEGAL_SIZE ); // need at least 2 points to draw an open polygon, otherwise 3 points
    if( filled ) {
       bool horizontalScanLines = Framework::OptimalProcessingDim( out ) == 0;
       std::vector< PolygonEdge > edges;

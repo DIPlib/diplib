@@ -767,7 +767,7 @@ Ics_Error IcsSetSensorParameter(ICS                 *ics,
             ics->lambdaEmState[channel] = state;
             break;
         case ICS_SENSOR_PHOTON_COUNT:
-            ics->exPhotonCnt[channel] = value;
+            ics->exPhotonCnt[channel] = (int)value;
             ics->exPhotonCntState[channel] = state;
             break;
         case ICS_SENSOR_MEDIUM_REFRACTIVE_INDEX:

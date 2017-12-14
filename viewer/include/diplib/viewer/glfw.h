@@ -22,6 +22,8 @@
 
 #include "diplib/viewer/manager.h"
 
+struct GLFWwindow;
+
 #include <thread>
 #include <mutex>
 #include <map>
@@ -73,12 +75,12 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
     void refreshWindow(Window* window) override;
 
     void run();
-    WindowPtr getWindow(struct GLFWwindow *window);
+    WindowPtr getWindow(GLFWwindow *window);
     void getCursorPos(Window *window, int *x, int *y);
     void makeCurrent(Window *window);
 
     // Delegates
-    static void refresh(struct GLFWwindow *window)
+    static void refresh(GLFWwindow *window)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -88,7 +90,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
       }
     }
     
-    static void reshape(struct GLFWwindow *window, int width, int height)
+    static void reshape(GLFWwindow *window, int width, int height)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -99,7 +101,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
       }
     }
     
-    static void iconify(struct GLFWwindow *window, int iconified)
+    static void iconify(GLFWwindow *window, int iconified)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -109,7 +111,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
       }
     }
     
-    static void close(struct GLFWwindow *window)
+    static void close(GLFWwindow *window)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -119,7 +121,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
       }
     }
 
-    static void key(struct GLFWwindow *window, int key, int /*scancode*/, int action, int mods)
+    static void key(GLFWwindow *window, int key, int /*scancode*/, int action, int mods)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw && action > 0 && key < 128)
@@ -131,7 +133,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
       }
     }
     
-    static void click(struct GLFWwindow *window, int button, int state, int /*mods*/)
+    static void click(GLFWwindow *window, int button, int state, int /*mods*/)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -143,7 +145,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
       }
     }
 
-    static void scroll(struct GLFWwindow *window, double /*xoffset*/, double yoffset)
+    static void scroll(GLFWwindow *window, double /*xoffset*/, double yoffset)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)
@@ -161,7 +163,7 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
       }
     }
 
-    static void motion(struct GLFWwindow *window, double /*x*/, double /*y*/)
+    static void motion(GLFWwindow *window, double /*x*/, double /*y*/)
     {
       WindowPtr wdw = instance_->getWindow(window);
       if (wdw)

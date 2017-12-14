@@ -46,6 +46,11 @@ namespace dip {
 /// \ingroup infrastructure
 /// \{
 
+#ifdef _MSC_VER
+// MSVC complains about "non dll-interface class 'std::exception' used as base for dll-interface class 'dip::Error'" TODO: Do not export these classes under Windows.
+#pragma warning( push )
+#pragma warning( disable : 4275)
+#endif
 
 /// \brief Base exception class. All exceptions thrown in *DIPlib* are derived of this class.
 ///
@@ -126,6 +131,9 @@ class DIP_EXPORT RunTimeError : public Error {
       using Error::Error;
 };
 
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 namespace E {
 // These are some of the standard what() strings thrown.

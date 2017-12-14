@@ -420,7 +420,7 @@ SrcIter uneven_copy_impl(
 
     while (dest_first != dest_last) {
         dest_t value(0UL);
-        size_t shift = 0; // Changed from unsigned in (Cris Luengo, 2017-06-02)
+        dest_t shift = 0; // Changed from unsigned int (Cris Luengo, 2017-06-02)
 
         for (size_t i = 0; i < SCALE; ++i) {
             value |= dest_t(*src_first++) << shift;

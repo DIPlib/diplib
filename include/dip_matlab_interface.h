@@ -35,7 +35,7 @@
 
 // MSVC 2015-2017 has a problem linking std::codecvt_utf8_utf16< char16_t >. Here's a workaround.
 // MSVC version numbers from https://sourceforge.net/p/predef/wiki/Compilers/#microsoft-visual-c
-#if( _MSC_VER == 1900 ) || ( _MSC_VER == 1910 )
+#if( _MSC_VER >= 1900 ) && ( _MSC_VER < 1920 )
 using char16_type = int16_t;
 #else
 using char16_type = char16_t;

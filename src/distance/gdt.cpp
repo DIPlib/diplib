@@ -54,7 +54,7 @@ inline dip::uint GetCeilingLog2( dip::uint number ) {
          ln2 = jj;
       }
    }
-   if( number != ( 1u << ( jj - 1 ))) {
+   if( number != ( dip::uint( 1 ) << ( jj - 1 ))) {
       ln2++;
    }
    return ln2;

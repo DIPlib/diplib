@@ -307,7 +307,7 @@ public:
 
     void set_stream(itype specific_seq)
     {
-         inc_ = (specific_seq << 1) | 1;
+         inc_ = (specific_seq << 1) | (itype)1;
     }
 
     static constexpr bool can_specify_stream = true;
@@ -380,7 +380,7 @@ public:
 
     static constexpr result_type max()
     {
-        return result_type(~result_type(0UL));
+        return result_type(~result_type(0));
     }
 
 protected:

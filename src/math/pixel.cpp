@@ -109,24 +109,6 @@ Image::Pixel MonadicOperator(
       in1Ptr += in1Sz;
       outPtr += outSz;
    }
-
-   if( outType == DT_DFLOAT ) {
-      for( dip::uint ii = 0; ii < N; ++ii ) {
-         dfloat res = function( detail::CastSample< dfloat >( in1.DataType(), in1Ptr ));
-         detail::CastSample( DT_DFLOAT, &res, outType, outPtr );
-         in1Ptr += in1Sz * in1.TensorStride();
-         outPtr += outSz;
-      }
-   } else if( outType == DT_DCOMPLEX ) {
-      for( dip::uint ii = 0; ii < N; ++ii ) {
-         dcomplex res = function( detail::CastSample< dcomplex >( in1.DataType(), in1Ptr ));
-         detail::CastSample( DT_DCOMPLEX, &res, outType, outPtr );
-         in1Ptr += in1Sz * in1.TensorStride();
-         outPtr += outSz;
-      }
-   } else {
-      DIP_THROW( E::DATA_TYPE_NOT_SUPPORTED );
-   }
    return out;
 }
 
@@ -327,7 +309,7 @@ Image::Pixel Not( Image::Pixel const& in ) {
    dip::DataType dt = in.DataType();
    return MonadicOperator< ComputationType::Class_IntOrBin >(
          in, dt, dt,
-         [ = ]( auto in1 ) { return -in1; }
+         [ = ]( auto in1 ) { return ~in1; }
    );
 }
 } // namespace

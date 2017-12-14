@@ -689,7 +689,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the interpolation functions (except Fourier)
 
    std::vector< dip::sfloat > buffer( 100 );
    std::vector< dip::sfloat > tmpSpline( 200 );
-   std::iota( buffer.begin(), buffer.end(), 0 );
+   std::iota( buffer.begin(), buffer.end(), 0.0f );
    dip::sfloat* input = buffer.data() + 20; // we use the elements 20-80, and presume 20 elements as boundary on either side
    dip::uint inSize = 60;
 

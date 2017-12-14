@@ -117,7 +117,7 @@ class DIP_NO_EXPORT DimensionArray {
       template< typename O >
       explicit DimensionArray( DimensionArray< O > const& other ) {
          resize( other.size() );
-         std::copy( other.data(), other.data() + size_, data_ );
+         std::transform( other.data(), other.data() + size_, data_, []( O const& v ) { return static_cast< value_type >( v ); } );
       }
       /// Move constructor, initializes by stealing the contents of `other`.
       DimensionArray( DimensionArray&& other ) noexcept {

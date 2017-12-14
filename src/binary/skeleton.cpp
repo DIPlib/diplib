@@ -969,16 +969,16 @@ void Eusk3DFillTables(
       dip::sint a5[ 98 ][ 2 ],
       dip::sint a6[ 98 ][ 2 ],
       dip::sint a9[ 98 ][ 2 ],
-      dip::sint n1[ 98 ][ 2 ],
-      dip::sint n2[ 98 ][ 2 ],
-      dip::sint n3[ 98 ][ 2 ],
-      dip::sint n5[ 98 ][ 2 ],
-      dip::sint n6[ 98 ][ 2 ],
-      dip::sint n9[ 98 ][ 2 ]
+      dip::uint8 n1[ 98 ][ 2 ],
+      dip::uint8 n2[ 98 ][ 2 ],
+      dip::uint8 n3[ 98 ][ 2 ],
+      dip::uint8 n5[ 98 ][ 2 ],
+      dip::uint8 n6[ 98 ][ 2 ],
+      dip::uint8 n9[ 98 ][ 2 ]
 ) {
    dip::sint* e = &endpix[ 0 ][ 0 ];
    dip::sint* a;
-   dip::sint* n;
+   dip::uint8* n;
 
    // DIST1 = 1000
    a = &a1[ 0 ][ 0 ];
@@ -3958,7 +3958,7 @@ void Eusk3D(
    // fill the tables
    dip::sint bvcontour[ 3 ][ 3 ], endpixel[ 64 ][ 4 ];
    dip::sint a1[ 98 ][ 2 ], a2[ 98 ][ 2 ], a3[ 98 ][ 2 ], a5[ 98 ][ 2 ], a6[ 98 ][ 2 ], a9[ 98 ][ 2 ];
-   dip::sint n1[ 98 ][ 2 ], n2[ 98 ][ 2 ], n3[ 98 ][ 2 ], n5[ 98 ][ 2 ], n6[ 98 ][ 2 ], n9[ 98 ][ 2 ];
+   dip::uint8 n1[ 98 ][ 2 ], n2[ 98 ][ 2 ], n3[ 98 ][ 2 ], n5[ 98 ][ 2 ], n6[ 98 ][ 2 ], n9[ 98 ][ 2 ];
    Eusk3DFillTables(
          strideX, strideY, strideZ, bvcontour, endpixel,
          a1, a2, a3, a5, a6, a9, n1, n2, n3, n5, n6, n9 );

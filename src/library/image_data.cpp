@@ -794,7 +794,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
       img.SetSizes( sz );
       try{
          img.Forge();
-      } catch (dip::Error &e) {
+      } catch( dip::Error const& ) {
          std::cout << "Couldn't forge an image of size " << sz << std::endl;
          continue;
       }

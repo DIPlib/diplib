@@ -50,7 +50,7 @@ void SymmetricEigenDecomposition(
       Eigen::MatrixXd eigenvectors = eigensolver.eigenvectors();
       std::vector< dip::uint > indices( n );
       std::iota( indices.begin(), indices.end(), 0 );
-      std::sort( indices.begin(), indices.end(), [ & ]( int a, int b ) { return eigenvalues[ b ] < eigenvalues[ a ]; } );
+      std::sort( indices.begin(), indices.end(), [ & ]( dip::uint a, dip::uint b ) { return eigenvalues[ b ] < eigenvalues[ a ]; } );
       for( dip::uint ii = 0; ii < n; ++ii ) {
          dip::uint kk = indices[ ii ];
          lambdas[ ii ] = eigenvalues[ kk ];

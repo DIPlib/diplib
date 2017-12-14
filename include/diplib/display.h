@@ -236,7 +236,7 @@ class DIP_NO_EXPORT ImageDisplay{
 
       /// \brief Sets the projection mode. Has no effect if image dimensionality is equal to projection dimensionality.
       void SetProjectionMode( ProjectionMode projectionMode ) {
-         if(( image_.Dimensionality() > ( twoDimOut_ ? 2 : 1 )) && ( projectionMode_ != projectionMode )) {
+         if(( image_.Dimensionality() > ( twoDimOut_ ? 2u : 1u )) && ( projectionMode_ != projectionMode )) {
             projectionMode_ = projectionMode;
             sliceIsDirty_ = true;
             if( projectionMode_ != ProjectionMode::SLICE ) {
