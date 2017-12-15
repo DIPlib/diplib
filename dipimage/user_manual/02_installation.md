@@ -26,7 +26,7 @@ command
     run('C:\Program Files\dip\dipstart.m')
 ```
 where `C:\Program Files\dip\` is the directory to which you installed
-*DIPimage*. The script `dipstart.m`, executed this way, contains two
+*DIPimage*. The script `dipstart.m`, executed this way, contains three
 commands needed to initialise the toolbox (two if you didn't install the
 images). These must be executed every time you start *MATLAB*. You can
 modify (or create) a file `startup.m` in the directory to which *MATLAB*
@@ -36,15 +36,11 @@ executed automatically every time *MATLAB* starts.
 ### Installation from source
 
 Clone the git repository (or download a ZIP file) from
-[GitHub](https://github.com/DIPlib/diplib). You will require a very
-recent version of Visual Studio (we used the 2017 Community edition, which
-is free), and CMake (also free).
-
-Using CMake-gui, choose where the source directory is and where to build the
-binaries. Then press "Configure" and select Visual Studio. Finally, press
-"Generate". You should now have a Visual Studio solution file that you can
-open in Visual Studio and build as usual. Note that you need to have *MATLAB*
-installed on the build machine to build *DIPimage*.
+[GitHub](https://github.com/DIPlib/diplib). The file `README_Windows.md`
+in the root of the repository contains step-by-step instructions to
+build *DIPimage*, including how to obtain the necessary tools and
+dependencies. You can also
+[read the instructions online](https://github.com/DIPlib/diplib/blob/master/README_Windows.md).
 
 Once all the binaries are compiled, start *MATLAB* and type:
 ```matlab
@@ -96,7 +92,7 @@ or:
 
 You can add this line to your `startup.m` file (preferably in `$HOME/matlab/`).
 
-MacOS X Installation
+MacOS Installation
 --------------------
 
 ### Installation from binary distribution
@@ -107,8 +103,8 @@ MacOS X Installation
 
 ### Installation from source
 
-See the directions in [@sec:unix_compile].
-
-
-[^21]: if you choose to install *DIPimage* in a different location change
-    this in the following instuctions accordingly
+Building from source under MacOS is identical to Linux, see the directions
+in [@sec:unix_compile]. The file `README_MacOS.md` in the root of the repository
+contains step-by-step instructions to build *DIPimage*, including how to obtain
+the necessary tools and dependencies. You can also
+[read the instructions online](https://github.com/DIPlib/diplib/blob/master/README_MacOS.md).

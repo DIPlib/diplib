@@ -1,10 +1,10 @@
-# Building the DIPlib project on Windows
+# Building the *DIPlib* project on Windows
 
 Compiling *DIPlib* requires a few programs that do not come preinstalled on Windows.
 We describe here how to obtain these programs, and how to use them to compile the
 *DIPlib* project.
 
-## MS Visual Studio
+## *Visual Studio*
 
 You can download the free MS Visual Studio Community Edition here:
 https://www.visualstudio.com/vs/community/.
@@ -18,7 +18,7 @@ Make sure you select the *Git* option as well. If you don't have *Git* installed
 and cannot install it through *Visual Studio*, download and install it from here:
 https://git-scm.com/downloads.
 
-## CMake
+## *CMake*
 
 You can obtain the latest *CMake* here: https://cmake.org/download/.
 
@@ -60,7 +60,7 @@ ZIP file and note the location.
 
 - TODO: *FFTW3*.
 
-## Creating Visual Studio project files
+## Creating *Visual Studio* project files
 
 Open the *CMake* program. Enter the name of the directory you cloned the repository
 in (in your example, `C:\Users\<name>\src\DIPlib`); you can browse to this directory.
@@ -90,7 +90,9 @@ Look for `GLFW_INCLUDE_DIR` and `GLFW_LIBRARY`. For both of these, click the "..
 at the right and navitage to where you extracted the *GLFW* ZIP file. Select the "include"
 directory for the first parameter, and "lib-vc2015\glfw3.lib" for the second. Next, do
 the same for `GLEW_INCLUDE_DIR` and `GLEW_LIBRARY_RELEASE`: select "include" for the
-first parameter and "lib\Release\x64\glew32.lib" for the second.
+first parameter and "lib\Release\x64\glew32.lib" for the second. If the `GLEW_` parameters
+are not on the list, click on "Configure" again after entering the *GLFW* library
+location. This should populate the *GLEW* parameters.
 
 - If you have *ZLib* compiled, look for `ZLIB_INCLUDE_DIR` and `ZLIB_LIBRARY_RELEASE`
 (again, select the "Advanced" check box to see these). Set the first to the directory
@@ -126,3 +128,43 @@ If everything works correctly, you will have:
 building your own C++ progrmas using *DIPlib*.
 
 - `C:\Users\<name>\DIPlib\share\DIPimage`: The *DIPimage* toolbox for MATLAB.
+
+## Using *DIPimage*
+
+Once the `INSTALL` target has finished building and installing the toolbox, start
+*MATLAB*. Type the following commands:
+```matlab
+    addpath('C:\Users\<name>\DIPlib\share\DIPimage')
+    setenv('PATH',['C:\Users\<name>\DIPlib\lib',';',getenv('PATH')]);
+```
+This will make the toolbox available (replace `C:\Users\<name>\DIPlib` with the
+actual path you installed to).
+
+To get started using *DIPimage*, look through the help, starting at
+```matlab
+    help DIPimage
+```
+Or start the GUI:
+```matlab
+    dipimage
+```
+
+## Using *PyDIP*
+
+Once the `INSTALL` taget has finished building and installing, start *Python*.
+Type the following commands:
+```python
+    import os
+    os.chdir(r'C:\Users\<name>\DIPlib\lib')
+    os.environ["PATH"] = os.environ["PATH"] + r'C:\Program Files\DIPlib\lib'
+    import PyDIP as dip
+    import PyDIP.PyDIPviewer as dv
+```
+(Replace `C:\Users\<name>\DIPlib` with the actual path you installed to.)
+The `os.chdir` command is necessary because we haven't installed *PyDIP* to a
+directory that *Python* knows about. This will be fixed at some point.
+
+To get started using *PyDIP*, look through the help, starting at
+```python
+    help(dip)
+```

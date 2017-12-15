@@ -1,4 +1,4 @@
-# Building the DIPlib project on MacOS
+# Building the *DIPlib* project on MacOS
 
 Compiling *DIPlib* requires a few programs that do not come preinstalled on the Mac.
 Here we offer a simple way to install these programs.
@@ -8,15 +8,15 @@ open a terminal window, press \<Command>-\<Space> to bring up the *Spotlight* se
 type `terminal`, and press \<Enter>. Alternatively, in *Finder*, go to the 'Applications'
 folder, find the 'Utilities' folder in it, and the 'Terminal' app inside it.
 
-## XCode
+## *XCode*
 
 Since you're interested in compiling from source, we presume that you already have
 *XCode* installed. If not, you can find it on the App Store. However, you will not
 need all of *XCode*, the command line tools are what we're after. You can install them
 by typing in a terminal window:
-
+```bash
     xcode-select --install
-
+```
 This will bring up a dialog box asking if you want to install the developer command
 line tools.
 
@@ -24,35 +24,38 @@ The developer command line tools include `git`, `make`, compilers (`clang`) and 
 
 However, `cmake` is not included in this package.
 
-## Homebrew
+## *Homebrew*
 
 To install *CMake*, we recommend you use *Homebrew*. If you don't have *Homebrew*
 installed yet, type the following in a terminal window (or rather, copy-paste it):
-
+```bash
     /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-
+```
 See [the *Homebrew* web site](https://brew.sh) for up-to-date instructions.
 
 Once *Homebrew* is installed, the following will install *CMake* (`cmake`):
-
+```bash
     brew install cmake
+```
 
 Since you're here, why not install some of the optional dependencies as well?
-
+```bash
     brew install libtiff glfw
-
+```
 `libtiff` is needed for DIPlib to be able to read and write TIFF files, and
 `glfw` is needed to compile *DIPviewer*. Note that ZLib is also a dependency,
 but it comes with MacOS.
 
 To compile the documentation yourself (not really necessary, you can read the
 documentation directly in the header files), you need *Doxygen*:
-
+```bash
     brew install doxygen
+```
 
 And to compile the DIPimage User Manual you'll need *Pandoc*:
-
+```bash
     brew install pandoc pandoc-crossref
+```
 
 This latter document also requires *LaTeX*, which ideally you should get through
 [*MacTeX*](http://www.tug.org/mactex/), but you can also choose to directly get the
@@ -60,13 +63,14 @@ This latter document also requires *LaTeX*, which ideally you should get through
 a few Mac-specific applications.
 
 Finally, MacOS comes with *Python 2*. We recommend *Python 3*:
-
+```bash
     brew install python3
+```
 
 Other useful tools available through *Homebrew* are *Valgrind*, *QCacheGrind*, and
 tools included in the `binutils` package.
 
-## OpenMP
+## *OpenMP*
 
 *Clang*, as provided with *XCode*, does not support *OpenMP*. If you want to enable
 parallel processing within *DIPlib*, you'll need a compiler that does. *Homebrew*
@@ -79,28 +83,29 @@ slightly faster code.
 ## Cloning the repository
 
 Next, get the source repository from *GitHub*:
-
+```bash
     mkdir ~/src
     cd ~/src
     git clone https://github.com/DIPlib/diplib.git
-
+```
 This creates a directory `src/diplib` in your home directory.
 
 ## Building
 
 As explained in the `README.md` file, type
-
+```bash
     mkdir ~/src/diplib/target
     cd ~/src/diplib/target
     cmake ..
     make -j check
     make -j install
+```
 
 This will install to `/usr/local`. This is also where *Homebrew* puts its stuff.
 If you prefer to install elsewhere, change the `cmake` line with the following:
-
+```bash
     cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/dip
-
+```
 This will install everything under the `dip` directory in your home directory.
 
 We recommend you additionally specify the `-DCMAKE_CXX_FLAGS="-march=native"`
@@ -114,7 +119,46 @@ line. By default, `cmake` will find the compiler that came with `XCode`. These
 two options specify that you want to use the *GCC* compilers instead.
 
 You can also do
-
+```bash
     make apidoc
+```
 
 if you want to compile the DIPlib documentation.
+
+## Using *DIPimage*
+
+Once the `install` target has finished building and installing the toolbox, start
+*MATLAB*. Type the following command:
+```matlab
+    addpath('/Users/<name>/dip/share/DIPimage')
+```
+This will make the toolbox available (replace `/Users/<name>/dip` with the
+actual path you installed to).
+
+To get started using *DIPimage*, look through the help, starting at
+```matlab
+    help DIPimage
+```
+Or start the GUI:
+```matlab
+    dipimage
+```
+
+## Using *PyDIP*
+
+Once the `install` taget has finished building and installing, start *Python*.
+Type the following commands:
+```python
+    import os
+    os.chdir(r'/Users/<name>/dip')
+    import PyDIP as dip
+    import PyDIP.PyDIPviewer as dv
+```
+(Replace `/Users/<name>/dip` with the actual path you installed to.)
+The `os.chdir` command is necessary because we haven't installed *PyDIP* to a
+directory that *Python* knows about. This will be fixed at some point.
+
+To get started using *PyDIP*, look through the help, starting at
+```python
+    help(dip)
+```
