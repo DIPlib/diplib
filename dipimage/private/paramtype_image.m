@@ -54,8 +54,8 @@ end
 function [dim,dt,at] = parse_constraint(range)
 alltypes = {'scalar','array','tensor','vector','color'};
 dim = []; % error state!
-dt = 'any'; % default
-at = 'tensor'; % default
+dt = {'any'}; % default
+at = {'tensor'}; % default
 if ~isempty(range) && ~iscell(range)
    range = {range};
 end
@@ -76,12 +76,8 @@ if ~isempty(range)
             I = [I,ii];
          end
       end
-      if length(I)>1
-         dim = []; % signals error!
-         return % signals error!
-      end
       if ~isempty(I)
-         at = range{I};
+         at = range(I);
          range(I) = [];
       end
       if isempty(range)
@@ -162,23 +158,28 @@ end
 % Check image type and dimensionality against constraints
 function res = check_image(name,dt,at,dim)
 %#function isscalar isvector iscolor datatype ndims
-res = true;
-switch at
-   case 'scalar'
-      if ~evalin('base',['isscalar(',name,')'])
-         res = false;
-         return
+if isempty(at)
+   res = true;
+else
+   res = false;
+   if any(strcmp(at,'scalar'))
+      if evalin('base',['isscalar(',name,')'])
+         res = true;
       end
-   case 'vector'
-      if ~evalin('base',['isvector(',name,')'])
-         res = false;
-         return
+   end
+   if any(strcmp(at,'vector'))
+      if evalin('base',['isvector(',name,')'])
+         res = true;
       end
-   case 'color'
-      if ~evalin('base',['iscolor(',name,')'])
-         res = false;
-         return
+   end
+   if any(strcmp(at,'color'))
+      if evalin('base',['iscolor(',name,')'])
+         res = true;
       end
+   end
+   if ~res
+      return
+   end
 end
 d = evalin('base',['datatype(',name,')']);
 if ~any(strcmp(dt,d))

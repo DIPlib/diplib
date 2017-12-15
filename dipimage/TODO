@@ -1,195 +1,192 @@
 Functions in the new DIPimage that didn't exist in the old one:
 
-areaopening.m
-boundary_condition.m
-coordinates.m
-countneighbors.m    (renamed from countneighbours.m)
-dip_imagedisplay.m
-drawshape.m
-eig_largest.m       (moved from @dip_image directory)
-errormeasure.m      (collects a bunch of old functions into one)
-extendregion.m
-getmaximumandminimum.m
-getsamplestatistics.m
-lee.m
-newtensorim.m       (adapted from newimar.m)
-pathopening.m
-readics.m
-readtiff.m
-select.m
-setborder.m
-skew.m
-smallobjectsremove.m
-thetatheta.m
-writeics.m
-writetiff.m
+areaopening
+boundary_condition
+coordinates
+countneighbors    (renamed from countneighbours)
+dip_imagedisplay
+drawshape
+eig_largest       (moved from @dip_image directory)
+errormeasure      (collects a bunch of old functions into one)
+extendregion
+getmaximumandminimum
+getsamplestatistics
+lee
+newtensorim       (adapted from newimar)
+pathopening
+readics
+readtiff
+select
+setborder
+skew
+smallobjectsremove
+thetatheta
+writeics
+writetiff
 
-@dip_image/clone.m
-@dip_image/cosh.m
-@dip_image/cumsum.m
-@dip_image/erfc.m
-@dip_image/flip.m
-@dip_image/gammaln.m
-@dip_image/iscomplex.m
-@dip_image/issigned.m
-@dip_image/isunsigned.m
-@dip_image/numArgumentsFromSubscript.m
-@dip_image/numberchannels.m
-@dip_image/numpixels.m
-@dip_image/numtensorel.m
-@dip_image/sinh.m
-@dip_image/slice_ex.m       (moved from toolbox directory)
-@dip_image/slice_in.m       (moved from toolbox directory)
-@dip_image/slice_op.m       (moved from toolbox directory)
-@dip_image/spatialtotensor.m
-@dip_image/swapdim.m
-@dip_image/tanh.m
-@dip_image/tensorfun.m      (renamed from imarfun.m)
-@dip_image/tensorsize.m
-@dip_image/tensortospatial.m
+@dip_image/clone
+@dip_image/cosh
+@dip_image/cumsum
+@dip_image/erfc
+@dip_image/flip
+@dip_image/gammaln
+@dip_image/iscomplex
+@dip_image/issigned
+@dip_image/isunsigned
+@dip_image/numArgumentsFromSubscript
+@dip_image/numberchannels
+@dip_image/numpixels
+@dip_image/numtensorel
+@dip_image/sinh
+@dip_image/slice_ex       (moved from toolbox directory)
+@dip_image/slice_in       (moved from toolbox directory)
+@dip_image/slice_op       (moved from toolbox directory)
+@dip_image/spatialtotensor
+@dip_image/swapdim
+@dip_image/tanh
+@dip_image/tensorfun      (renamed from imarfun)
+@dip_image/tensorsize
+@dip_image/tensortospatial
 
 ------------------------------------------------------
 
 Functions in the old DIPimage that are not yet ported (functions
 not listed here will not be ported):
 
-overlay_confidence.m
-overlay_vector.m
+affine_trans
+afm_flatten
+aniso
+arcf
+backgroundoffset
+bilateralf
+cal_readnoise
+canny
+ced
+chordlength
+correctshift
+countingframe
+cpf
+curvature
+curvature_thirion
+dcc
+deblock
+dgg
+distancebetweenpointsets
+dpr
+find_affine_trans
+find_lambda
+findlocalshift
+findlocmax
+findospeaks
+fmmatch
+frc
+gabor
+gabor_click
+gaussf_adap
+gaussf_adap_banana
+get_subpixel
+granulometry
+gvf
+hist2image
+hist_equalize
+ht
+hybridf
+im2snake
+isophote_curvature
+jpeg_quality_score
+laplace_min_dgg
+laplace_plus_dgg
+lfmse
+localshift
+mappg
+mcd
+morphscales
+msr_remap
+nconv
+nufft_type1
+nufft_type2
+opticflow
+orientation4d
+orientationplot
+orientationspace
+paircorrelation
+percf_adap
+percf_adap_banana
+pmd
+pmd_gaussian
+pst
+quadraturetensor
+radialmax
+radialmean
+radialmin
+radialsum
+radoncircle
+readavi
+readrawim
+readroiim
+rotation3d
+scale2rgb
+scalespace
+setlabels
+snake2im
+snakedraw
+snakeminimize
+splitandmerge
+structf
+testobject
+tframehessian
+tikhonovmiller
+transform
+umbra
+vfc
+view5d
+wiener
+write_add
+writeavi
+writedisplayavi
 
-affine_trans.m
-afm_flatten.m
-aniso.m
-arcf.m
-backgroundoffset.m
-bilateralf.m
-cal_readnoise.m
-canny.m
-ced.m
-chordlength.m
-correctshift.m
-countingframe.m
-cpf.m
-curvature.m
-curvature_thirion.m
-dcc.m
-deblock.m
-dgg.m
-distancebetweenpointsets.m
-dpr.m
-find_affine_trans.m
-find_lambda.m
-findlocalshift.m
-findlocmax.m
-findospeaks.m
-fmmatch.m
-frc.m
-gabor.m
-gabor_click.m
-gaussf_adap.m
-gaussf_adap_banana.m
-get_subpixel.m
-granulometry.m
-gvf.m
-hist2image.m
-hist_equalize.m
-ht.m
-hybridf.m
-im2snake.m
-isophote_curvature.m
-jpeg_quality_score.m
-laplace_min_dgg.m
-laplace_plus_dgg.m
-lfmse.m
-localshift.m
-mappg.m
-mcd.m
-morphscales.m
-msr_remap.m
-nconv.m
-nufft_type1.m
-nufft_type2.m
-opticflow.m
-orientation4d.m
-orientationplot.m
-orientationspace.m
-paircorrelation.m
-percf_adap.m
-percf_adap_banana.m
-pmd.m
-pmd_gaussian.m
-pst.m
-quadraturetensor.m
-radialmax.m
-radialmean.m
-radialmin.m
-radialsum.m
-radoncircle.m
-readavi.m
-readrawim.m
-readroiim.m
-rotation3d.m
-scale2rgb.m
-scalespace.m
-setlabels.m
-snake2im.m
-snakedraw.m
-snakeminimize.m
-splitandmerge.m
-structf.m
-testobject.m
-tframehessian.m
-tikhonovmiller.m
-transform.m
-umbra.m
-vfc.m
-view5d.m
-wiener.m
-write_add.m
-writeavi.m
-writedisplayavi.m
-
-@dip_image/besselj.m
-@dip_image/length.m (meaning?)
-@dip_image/unique.m
+@dip_image/besselj
+@dip_image/length (meaning?)
+@dip_image/unique
 
 (GUI and/or DIPSHOW related stuff):
-dipcrop.m *
-dipgetimage.m *
-dipmex.m
-diporien.m -- was funny, not really useful
-dipprofile.m *
-dipprojection.m *
-dipstackinspect.m *
+dipcrop *
+dipgetimage *
+dipmex
+diporien -- was funny, not really useful
+dipprofile *
+dipprojection *
+dipstackinspect *
 * -> These cannot be implemented unless we modify `dip::ImageDisplay` and `private/imagedisplay`
 
 (color stuff, which needs lots of love):
-change_chroma.m
-change_gamma.m
-change_xyz.m
-color_rotation.m
-gamut_destretch.m
-gamut_mapping.m
-gamut_stretch.m
-huecorr.m
-iso_luminance_lines.m
-luminance_steered_dilation.m
-luminance_steered_erosion.m
-make_gamut.m
-measure_gamma_monitor.m
-mon_rgb2xyz.m
-mon_xyz2rgb.m
-out_of_gamut.m
-plot_gamut.m
-print_cmy2xyz.m
-print_xyz2cmy.m
-rgb_to_border.m
-scan_rgb2xyz.m
-scan_xyz2rgb.m
-scanner_calibration.m
-spectra2xyz.m
+change_chroma
+change_gamma
+change_xyz
+color_rotation
+gamut_destretch
+gamut_mapping
+gamut_stretch
+huecorr
+iso_luminance_lines
+luminance_steered_dilation
+luminance_steered_erosion
+make_gamut
+measure_gamma_monitor
+mon_rgb2xyz
+mon_xyz2rgb
+out_of_gamut
+plot_gamut
+print_cmy2xyz
+print_xyz2cmy
+rgb_to_border
+scan_rgb2xyz
+scan_xyz2rgb
+scanner_calibration
+spectra2xyz
 (ICC profile stuff to be done through LittleCMS, no point in maintaining our own implementation):
-monitor_icc.m
-printer_icc.m
-scanner_icc.m
-read_icc_profile.m
-write_icc_profile.m
+monitor_icc
+printer_icc
+scanner_icc
+read_icc_profile
+write_icc_profile
