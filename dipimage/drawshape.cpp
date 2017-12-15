@@ -50,7 +50,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       ++index;
       dip::Image::Pixel color = { 255 };
       if( nrhs > index ) {
-         color = dml::GetPixel( prhs[ index ] );
+         color.swap( dml::GetPixel( prhs[ index ] )); // we cannot assign to a pixel!
       }
       ++index;
       dip::dfloat sigma = 0;

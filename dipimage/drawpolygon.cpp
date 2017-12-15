@@ -67,7 +67,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::Image::Pixel color = { 255 };
       if( nrhs > 2 ) {
-         color = dml::GetPixel( prhs[ 2 ] );
+         color.swap( dml::GetPixel( prhs[ 2 ] )); // we cannot assign to a pixel!
       }
 
       dip::String mode = "open";
