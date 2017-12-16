@@ -1017,7 +1017,6 @@ class MatlabInterface : public dip::ExternalInterface {
          if( it == mla.end() ) {
             mat = nullptr;
          }
-         if( !mat ) { mexPrintf( "   ...that image was not forged through the MATLAB interface\n" ); } // TODO: temporary warning, to be removed.
          void* mptr = mat ? ( img.DataType().IsBinary() ? mxGetLogicals( mat ) : mxGetData( mat ) ) : nullptr;
          // Does the image point to a modified view of the mxArray or to a non-MATLAB array?
          if( !mat || ( mptr != img.Origin() ) ||
@@ -1029,7 +1028,7 @@ class MatlabInterface : public dip::ExternalInterface {
              // TODO: added or removed singleton dimensions should not trigger a data copy, but a modification of the mxArray.
          ) {
             // Yes, it does. We need to make a copy of the image into a new MATLAB array.
-            mexPrintf( "   Copying data from dip::Image to mxArray\n" ); // TODO: temporary warning, to be removed.
+            //mexPrintf( "   Copying data from dip::Image to mxArray\n" );
             dip::Image tmp = NewImage();
             tmp.Copy( img );
             //std::cout << "   New image: " << tmp;
