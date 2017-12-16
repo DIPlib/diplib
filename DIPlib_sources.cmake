@@ -190,6 +190,7 @@ src/morphology/watershed.cpp
 src/morphology/watershed_support.cpp
 src/morphology/watershed_support.h
 src/nonlinear/kuwahara.cpp
+src/nonlinear/nonmaximumsuppression.cpp
 src/nonlinear/percentile.cpp
 src/nonlinear/variancefilter.cpp
 src/regions/label.cpp

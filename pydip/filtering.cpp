@@ -96,6 +96,9 @@ void init_filtering( py::module& m ) {
    m.def( "PercentileFilter", py::overload_cast< dip::Image const&, dip::dfloat, dip::Kernel const&, dip::StringArray const& >( &dip::PercentileFilter ),
           "in"_a, "percentile"_a, "kernel"_a = dip::Kernel{}, "boundaryCondition"_a = dip::StringArray{} );
 
+   m.def( "NonMaximumSuppression", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const& >( &dip::NonMaximumSuppression ),
+          "gradmag"_a, "gradient"_a, "mask"_a = dip::Image{} );
+
    // diplib/transform.h
    m.def( "FourierTransform", py::overload_cast< dip::Image const&, dip::StringSet const&, dip::BooleanArray const& >( &dip::FourierTransform ),
          "in"_a, "options"_a = dip::StringSet{}, "process"_a = dip::BooleanArray{} );

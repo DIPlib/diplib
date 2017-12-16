@@ -75,6 +75,7 @@ dipimage/measure.cpp
 dipimage/minima.cpp
 dipimage/noise.cpp
 dipimage/noisestd.cpp
+dipimage/nonmaximumsuppression.cpp
 dipimage/opening.cpp
 dipimage/overlay.cpp
 dipimage/pathopening.cpp

@@ -224,6 +224,38 @@ inline Image Kuwahara(
    return out;
 }
 
+/// \brief Non-maximum suppression, as used in the Canny edge detector.
+///
+/// `out` contains the value of `gradmag` where `gradmag` is a local maximum in the orientation
+/// specified by the vector image `gradient`. Note that `gradmag` does not need to be the magnitude
+/// of `gradient`, and that only the direction of the vectors (or orientation) is used.
+///
+/// `gradmag` and `gradient` must be of the same floating-point type (i.e. they are either
+/// `dip::DT_SFLOAT` or `dip::DT_DFLOAT`). `gradmag` must be scalar, and `gradient` must have as
+/// many tensor elements as spatial dimensions. This function is implemented only for 1D, 2D and 3D
+/// functions. In the 1D case, `gradient` is not used.
+///
+/// If `gradmag` is not forged, the magnitude (`dip::Norm`) of `gradient` is used instead.
+///
+/// `mask`, if forged, must be a binary scalar image. Only those pixels are evaluated that are set in `mask`.
+///
+/// All three input images (if forged) must have the same spatial dimensions.
+DIP_EXPORT void NonMaximumSuppression(
+      Image const& c_gradmag,
+      Image const& c_gradient,
+      Image const& mask,
+      Image& out
+);
+inline Image NonMaximumSuppression(
+      Image const& gradmag,
+      Image const& gradient,
+      Image const& mask
+) {
+   Image out;
+   NonMaximumSuppression( gradmag, gradient, mask, out );
+   return out;
+}
+
 
 // TODO: functions to port:
 /*
