@@ -1273,6 +1273,23 @@ class DIP_NO_EXPORT Image {
          return Pointer( Offset( coords ));
       }
 
+      /// \brief Return true if the coordinates are on the image edge.
+      ///
+      /// Coordinates on the image edge are such that at least one neighboring coordinates
+      /// (direct neighbor) is outside the image domain.
+      ///
+      /// The image must be forged.
+      bool IsOnEdge( UnsignedArray const& coords ) const {
+         DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
+         for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
+            if(( coords[ ii ] == 0 ) || ( coords[ ii ] == sizes_[ ii ] - 1 )) {
+               return true;
+            }
+         }
+         return false;
+      }
+
       /// \brief Compute offset given coordinates.
       ///
       /// The offset needs to be multiplied

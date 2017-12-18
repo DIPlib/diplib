@@ -480,6 +480,21 @@ class DIP_NO_EXPORT ImageIterator {
          coords_ = coords;
       }
 
+      /// \brief Return true if the iterator points at a pixel on the edge of the image. If there is a processing
+      /// dimension, then the iterator always points at an edge pixel; in this case only returns true if all pixels
+      /// on the line are edge pixels (i.e. the first and last pixel of the line are not counted).
+      bool IsOnEdge() const {
+         DIP_ASSERT( image_ );
+         for( dip::uint dd = 0; dd < coords_.size(); ++dd ) {
+            if( dd != procDim_ ) {
+               if(( coords_[ dd ] == 0 ) || ( coords_[ dd ] == image_->Size( dd ) - 1 )) {
+                  return true;
+               }
+            }
+         }
+         return false;
+      }
+
       /// Return the current pointer
       pointer Pointer() const { return ptr_; }
       /// Return the current offset
@@ -752,6 +767,21 @@ class DIP_NO_EXPORT JointImageIterator {
             offsets_[ ii ] = images_[ ii ]->Offset( coords );
          }
          coords_ = coords;
+      }
+
+      /// \brief Return true if the iterator points at a pixel on the edge of the image. If there is a processing
+      /// dimension, then the iterator always points at an edge pixel; in this case only returns true if all pixels
+      /// on the line are edge pixels (i.e. the first and last pixel of the line are not counted).
+      bool IsOnEdge() const {
+         DIP_ASSERT( images_[ 0 ] );
+         for( dip::uint dd = 0; dd < coords_.size(); ++dd ) {
+            if( dd != procDim_ ) {
+               if(( coords_[ dd ] == 0 ) || ( coords_[ dd ] == images_[ 0 ]->Size( dd ) - 1 )) {
+                  return true;
+               }
+            }
+         }
+         return false;
       }
 
       /// Return the current pointer for image `I`
