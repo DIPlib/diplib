@@ -409,8 +409,10 @@ DOCTEST_TEST_CASE( "[DIPlib] testing TIFF file reading and writing" ) {
 
 namespace dip {
 
+static const char* NOT_AVAILABLE = "DIPlib was compiled without TIFF support.";
+
 void ImageWriteTIFF( Image const&, String const&, String const&, dip::uint ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   DIP_THROW( NOT_AVAILABLE );
 }
 
 }

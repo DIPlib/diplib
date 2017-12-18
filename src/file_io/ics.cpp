@@ -890,24 +890,26 @@ DOCTEST_TEST_CASE( "[DIPlib] testing ICS file reading and writing" ) {
 
 namespace dip {
 
+static const char* NOT_AVAILABLE = "DIPlib was compiled without ICS support.";
+
 FileInformation ImageReadICS( Image&, String const&, RangeArray ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   DIP_THROW( NOT_AVAILABLE );
 }
 
 FileInformation ImageReadICS( Image&, String const&, UnsignedArray const&, UnsignedArray const&, UnsignedArray const& ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   DIP_THROW( NOT_AVAILABLE );
 }
 
 FileInformation ImageReadICSInfo( String const& ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   DIP_THROW( NOT_AVAILABLE );
 }
 
 bool ImageIsICS( String const& ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   DIP_THROW( NOT_AVAILABLE );
 }
 
 void ImageWriteICS( Image const&, String const&, StringArray const&, dip::uint, StringSet const& ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   DIP_THROW( NOT_AVAILABLE );
 }
 
 }

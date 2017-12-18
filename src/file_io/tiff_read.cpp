@@ -995,20 +995,22 @@ bool ImageIsTIFF(
 
 namespace dip {
 
+static const char* NOT_AVAILABLE = "DIPlib was compiled without TIFF support.";
+
 FileInformation ImageReadTIFF( Image&, String const&, Range ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   DIP_THROW( NOT_AVAILABLE );
 }
 
 void ImageReadTIFFSeries( Image&, StringArray const& ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   DIP_THROW( NOT_AVAILABLE );
 }
 
 FileInformation ImageReadTIFFInfo( String const&, dip::uint ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   DIP_THROW( NOT_AVAILABLE );
 }
 
 bool ImageIsTIFF( String const& ) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
+   DIP_THROW( NOT_AVAILABLE );
 }
 
 }
