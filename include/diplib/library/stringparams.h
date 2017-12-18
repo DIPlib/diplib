@@ -78,6 +78,8 @@ constexpr char const* HIGHFIRST = "high first";
 constexpr char const* LOWFIRST = "low first";
 constexpr char const* LABELS = "labels";
 constexpr char const* BINARY = "binary";
+constexpr char const* NOGAPS = "no gaps";
+constexpr char const* UPHILLONLY = "uphill only";
 
 // Filter shapes
 constexpr char const* ELLIPTIC = "elliptic";

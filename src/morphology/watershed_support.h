@@ -41,7 +41,7 @@ DIP_NO_EXPORT void SortOffsets( Image const& img, std::vector< dip::sint >& offs
 // by the dimensionality and the connectivity. However, typically there are
 // only one or two labels added. Therefore, no effort has been put into making
 // this class clever. We could keep a sorted list, but the sorting might costs
-// more effort than it would save in checking if a label is present (would it?)
+// more effort than it would save in checking if a label is present (TODO: would it?)
 class DIP_NO_EXPORT NeighborLabels{
    public:
       void Reset() { labels.clear(); }
