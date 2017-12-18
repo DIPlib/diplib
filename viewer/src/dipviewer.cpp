@@ -27,67 +27,73 @@ using ViewerManager = dip::viewer::GLFWManager;
 using ViewerManager = dip::viewer::GLUTManager;
 #endif
 
-#include "diplib/viewer/slice.h"
 #include "diplib/viewer/image.h"
+#include "diplib/viewer/slice.h"
 
 namespace dip { namespace viewer {
 
 namespace {
 
-ViewerManager *manager__ = NULL;
+ViewerManager* manager__ = nullptr;
 size_t count__ = 0;
 
 String getWindowTitle( String const& title ) {
-   if( !title.empty() ) {
+   if( !title.empty()) {
       return title;
    }
-   return String("Window ") + std::to_string( count__ );
+   return String( "Window " ) + std::to_string( count__ );
+}
+
+inline void Create() {
+   if( !manager__ ) {
+      manager__ = new ViewerManager();
+      count__ = 1;
+   }
+}
+
+inline void Delete() {
+   delete manager__;
+   manager__ = nullptr;
 }
 
 } // namespace
 
-void Show( Image const& image, String const& title )
-{
-   if (!manager__) {
-      manager__ = new ViewerManager();
-      count__ = 1;
-   }
-
+void Show( Image const& image, String const& title ) {
+   Create();
    DIP_STACK_TRACE_THIS( manager__->createWindow( SliceViewer::Create( image, getWindowTitle( title ))));
    ++count__;
 }
 
-void ShowSimple( Image const& image, String const& title )
-{
-   if (!manager__) {
-      manager__ = new ViewerManager();
-      count__ = 1;
-   }
-
+void ShowSimple( Image const& image, String const& title ) {
+   Create();
    DIP_STACK_TRACE_THIS( manager__->createWindow( ImageViewer::Create( image, getWindowTitle( title ))));
    ++count__;
 }
 
-void Spin( )
-{
-   if (!manager__)
+void Spin() {
+   if( !manager__ ) {
       return;
-
-   while( manager__->activeWindows() ) {
-      Draw( );
+   }
+   while( manager__->activeWindows()) {
+      Draw();
       std::this_thread::sleep_for( std::chrono::microseconds( 100 ));
    }
-   
-   delete manager__;
-   manager__ = NULL;
+   Delete();
 }
 
-void Draw( )
-{
-   if (!manager__)
+void Draw() {
+   if( !manager__ ) {
       return;
-   
+   }
    manager__->processEvents();
+}
+
+void CloseAll() {
+   if( !manager__ ) {
+      return;
+   }
+   manager__->destroyWindows();
+   Delete();
 }
 
 }} // namespace dip::viewer

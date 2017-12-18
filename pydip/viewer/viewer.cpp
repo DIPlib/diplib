@@ -27,4 +27,5 @@ PYBIND11_MODULE( PyDIPviewer, m ) {
    m.def( "Show", &dip::viewer::Show, "in"_a, "title"_a = "");
    m.def( "Draw", &dip::viewer::Draw );
    m.def( "Spin", &dip::viewer::Spin );
+   m.def( "CloseAll", &dip::viewer::CloseAll );
 }

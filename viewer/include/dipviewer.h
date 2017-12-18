@@ -37,17 +37,34 @@ namespace viewer {
 /// \brief Show an image in the slice viewer.
 ///
 /// A new interactive `dip::viewer::SliceViewer` window is created for the image. `title` sets the window title.
+///
 /// Call `dip::viewer::Draw` or `dip::Viewer::Spin` to enable user interaction.
+///
+/// Calling `%dip::viewer::Show` or `dip::viewer::ShowSimple` creates an internal `dip::viewer::Manager` object,
+/// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
+/// `dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
+/// at an appropriate time after calling `%dip::viewer::Show` or `dip::viewer::ShowSimple`.
 DIPVIEWER_EXPORT void Show( Image const& image, String const& title = "" );
 
 /// \brief Show a 2D RGB image.
 ///
 /// A new non-interactive `dip::viewer::ImageViewer` window is created for the image. `title` sets the window title.
+///
+/// Calling `dip::viewer::Show` or `%dip::viewer::ShowSimple` creates an internal `dip::viewer::Manager` object,
+/// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
+/// `dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
+/// at an appropriate time after calling `dip::viewer::Show` or `%dip::viewer::ShowSimple`.
 DIPVIEWER_EXPORT void ShowSimple( Image const& image, String const& title = "" );
 
 /// \brief Wait until all windows are closed.
 ///
 /// This function allows user interaction in all slice viewer windows created. Returns when all windows are closed.
+/// It also frees the internal window manager object.
+///
+/// Calling `dip::viewer::Show` or `dip::viewer::ShowSimple` creates an internal `dip::viewer::Manager` object,
+/// which needs to be freed before exiting the application to prevent memory leaks. `%dip::viewer::Spin` and
+/// `dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
+/// at an appropriate time after calling `dip::viewer::Show` or `dip::viewer::ShowSimple`.
 DIPVIEWER_EXPORT void Spin();
 
 /// \brief Process user event queue.
@@ -55,8 +72,19 @@ DIPVIEWER_EXPORT void Spin();
 /// This function allows user interaction in all slice viewer windows created. Returns immediately, and needs to be
 /// called repeatedly for continuous interaction.
 ///
-/// **Note** that `dip::viewer::Spin` must still be called before exiting, to prevent memory leaks.
+/// **Note** that `dip::viewer::Spin` or `dip::viewer::CloseAll` must still be called before exiting, to prevent
+/// memory leaks.
 DIPVIEWER_EXPORT void Draw();
+
+/// \brief Close all open windows.
+///
+/// Closes all open windows and frees the internal window manager object.
+///
+/// Calling `dip::viewer::Show` or `dip::viewer::ShowSimple` creates an internal `dip::viewer::Manager` object,
+/// which needs to be freed before exiting the application to prevent memory leaks. `dip::viewer::Spin` and
+/// `%dip::viewer::CloseAll` will free the internal manager object. You need to call one of these two functions
+/// at an appropriate time after calling `dip::viewer::Show` or `dip::viewer::ShowSimple`.
+DIPVIEWER_EXPORT void CloseAll();
 
 /// \}
 

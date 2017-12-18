@@ -18,7 +18,6 @@ a.Show('normal')
 
 ###
 
-import PyDIP as dip
 from scipy import misc
 
 f = misc.face()
@@ -31,7 +30,6 @@ b.Show()
 
 ###
 
-import PyDIP as dip
 import numpy as np
 from scipy import misc
 import matplotlib.pyplot as pp
@@ -53,7 +51,6 @@ pp.show(block=False)
 
 ###
 
-import PyDIP as dip
 from scipy import misc
 img = dip.Image(misc.face())
 x = dip.Gradient(dip.Norm(img))
@@ -64,7 +61,6 @@ y.Show()
 
 ###
 
-import PyDIP as dip
 a = dip.Image((20,10),3)
 dip.FillXCoordinate(a.TensorElement(0))
 dip.FillYCoordinate(a.TensorElement(1))
@@ -92,8 +88,7 @@ a.Show()
 
 ###
 
-import PyDIP as dip
-a = dip.ImageReadICS('../../../examples/cermet')
+a = dip.ImageReadICS('cermet')
 a.SetPixelSize(dip.PixelSize(dip.PhysicalQuantity(1,"um")))
 b = dip.Label(a < 120)
 dip.MeasurementTool.Features()
@@ -110,8 +105,7 @@ dip.GetBranchPixels(b).Show()
 
 ###
 
-import PyDIP as dip
-a=dip.ImageReadICS('../../../examples/cermet')
+a=dip.ImageReadICS('cermet')
 b=dip.Label(a < 120)
 b.Show('labels')
 dip.GetObjectLabels(b)
@@ -123,8 +117,6 @@ d.Show('labels')
 dip.GetObjectLabels(d)
 
 ###
-
-import PyDIP as dip
 
 mask=dip.Image([70,70],1,'BIN')
 mask.Fill(0)
