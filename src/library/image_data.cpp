@@ -813,7 +813,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
       for( dip::uint repeat2 = 0; repeat2 < 100; ++repeat2 ) {
          dip::UnsignedArray coords( ndims );
          for( dip::uint ii = 0; ii < ndims; ++ii ) {
-            coords[ ii ] = ( dip::uint )std::floor( randF( random ) * static_cast< double >( dims[ ii ] ));
+            coords[ ii ] = static_cast< dip::uint >( std::floor( randF( random ) * static_cast< double >( dims[ ii ] )));
          }
          dip::sint offset = img.Offset( coords );
          error |= o2c( offset ) != coords;

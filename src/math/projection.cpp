@@ -775,7 +775,7 @@ class ProjectionPercentile : public ProjectionScanFunction {
             *static_cast< TPI* >( out ) = TPI{};
             return;
          }
-         dip::sint rank = static_cast< dip::sint >( std::floor( static_cast< dfloat >( N ) * percentile_ / 100.0 )); // rank < N, because percentile_ < 100
+         dip::sint rank = floor_cast( static_cast< dfloat >( N ) * percentile_ / 100.0 ); // rank < N, because percentile_ < 100
          buffer_[ thread ].resize( N );
 #if 0 // Strategy 1: Copy data to buffer, and partition at the same time. The issue is finding a good pivot
          auto leftIt = buffer_[ thread ].begin();

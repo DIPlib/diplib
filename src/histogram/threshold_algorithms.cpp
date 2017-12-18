@@ -35,7 +35,7 @@ dfloat FindBin( FloatArray bins, dfloat threshold ) {
    } else if( threshold >= static_cast< dfloat >( bins.size() - 1 )) {
       return bins.back();
    } else {
-      dfloat frac = threshold - std::floor( threshold );
+      dfloat frac = threshold - static_cast< dfloat >( static_cast< dip::sint >( threshold )); // casting to round down
       return bins[ static_cast< dip::uint >( threshold ) ] * ( 1.0 - frac ) +
              bins[ static_cast< dip::uint >( threshold ) + 1 ] * frac;
    }

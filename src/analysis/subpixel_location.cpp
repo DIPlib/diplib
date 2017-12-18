@@ -506,7 +506,7 @@ SubpixelLocationArray SubpixelExtrema(
       } else {
          UnsignedArray position( nDims );
          for( dip::uint jj = 0; jj < nDims; ++jj ) {
-            position[ jj ] = static_cast< dip::uint >( std::round( coords[ jj ] ));
+            position[ jj ] = static_cast< dip::uint >( round_cast( coords[ jj ] ));
          }
          out[ ii ] = SubpixelLocationFunction( in, position, method, invert );
       }

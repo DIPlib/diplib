@@ -110,12 +110,12 @@ void BSpline(
 ) {
    constexpr dip::uint boundary = 5;
    using TPF = FloatType< TPI >;
-   dip::sint offset = static_cast< dip::sint >( std::floor( shift ));
+   dip::sint offset = floor_cast( shift );
    input += offset;
    SplineDerivative(
          input - boundary,
          buffer,
-         static_cast< dip::uint >( std::floor( static_cast< dfloat >( outSize ) / zoom )) + 2 * boundary + 1 );
+         static_cast< dip::uint >( static_cast< dfloat >( outSize ) / zoom ) + 2 * boundary + 1 );
    buffer += boundary;
    TPF pos = static_cast< TPF >( shift ) - static_cast< TPF >( offset );
    if( zoom == 1.0 ) {
@@ -137,7 +137,7 @@ void BSpline(
          ++output;
          pos += step;
          if( pos >= 1.0 ) {
-            offset = static_cast< dip::sint >( std::floor( pos ));
+            offset = floor_cast( pos );
             pos -= static_cast< TPF >( offset );
             input += offset;
             buffer += offset;
@@ -155,7 +155,7 @@ void FourthOrderCubicSpline(
       dfloat shift
 ) {
    using TPF = FloatType< TPI >;
-   dip::sint offset = static_cast< dip::sint >( std::floor( shift ));
+   dip::sint offset = floor_cast( shift );
    input += offset;
    TPF pos = static_cast< TPF >( shift ) - static_cast< TPF >( offset );
    if( zoom == 1.0 ) {
@@ -191,7 +191,7 @@ void FourthOrderCubicSpline(
          ++output;
          pos += step;
          if( pos >= 1.0 ) {
-            offset = static_cast< dip::sint >( std::floor( pos ));
+            offset = floor_cast( pos );
             pos -= static_cast< TPF >( offset );
             input += offset;
          }
@@ -208,7 +208,7 @@ void ThirdOrderCubicSpline(
       dfloat shift
 ) {
    using TPF = FloatType< TPI >;
-   dip::sint offset = static_cast< dip::sint >( std::floor( shift ));
+   dip::sint offset = floor_cast( shift );
    input += offset;
    TPF pos = static_cast< TPF >( shift ) - static_cast< TPF >( offset );
    if( zoom == 1.0 ) {
@@ -238,7 +238,7 @@ void ThirdOrderCubicSpline(
          ++output;
          pos += step;
          if( pos >= 1.0 ) {
-            offset = static_cast< dip::sint >( std::floor( pos ));
+            offset = floor_cast( pos );
             pos -= static_cast< TPF >( offset );
             input += offset;
          }
@@ -255,7 +255,7 @@ void Linear(
       dfloat shift
 ) {
    using TPF = FloatType< TPI >;
-   dip::sint offset = static_cast< dip::sint >( std::floor( shift ));
+   dip::sint offset = floor_cast( shift );
    input += offset;
    TPF pos = static_cast< TPF >( shift ) - static_cast< TPF >( offset );
    if( zoom == 1.0 ) {
@@ -271,7 +271,7 @@ void Linear(
          ++output;
          pos += step;
          if( pos >= 1.0 ) {
-            offset = static_cast< dip::sint >( std::floor( pos ));
+            offset = floor_cast( pos );
             pos -= static_cast< TPF >( offset );
             input += offset;
          }
@@ -287,7 +287,7 @@ void NearestNeighbor(
       dfloat zoom,
       dfloat shift
 ) {
-   dip::sint offset = static_cast< dip::sint >( consistent_round< dfloat, inverse >( shift ));
+   dip::sint offset = consistent_round< dfloat, inverse >( shift );
    input += offset;
    if( zoom == 1.0 ) {
       for( dip::uint ii = 0; ii < outSize; ii++ ) {
@@ -303,7 +303,7 @@ void NearestNeighbor(
          ++output;
          pos += step;
          if( pos >= 0.5 ) {
-            offset = static_cast< dip::sint >( consistent_round< dfloat, inverse >( pos ));
+            offset = consistent_round< dfloat, inverse >( pos );
             pos -= static_cast< dfloat >( offset );
             input += offset;
          }
@@ -322,7 +322,7 @@ void Lanczos(
    static_assert(( a > 0 ) && ( a < 20 ), "Parameter out of range." );
    constexpr dip::sint sa = static_cast< dip::sint >( a );
    using TPF = FloatType< TPI >;
-   dip::sint offset = static_cast< dip::sint >( std::floor( shift ));
+   dip::sint offset = floor_cast( shift );
    input += offset;
    TPF pos = static_cast< TPF >( shift ) - static_cast< TPF >( offset );
    if( zoom == 1.0 ) {
@@ -382,7 +382,7 @@ void Lanczos(
          ++output;
          pos += step;
          if( pos >= 1.0 ) {
-            offset = static_cast< dip::sint >( std::floor( pos ));
+            offset = floor_cast( pos );
             pos -= static_cast< TPF >( offset );
             input += offset;
          }

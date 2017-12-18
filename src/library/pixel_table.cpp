@@ -230,7 +230,7 @@ PixelTable::PixelTable(
             // If we're still within the radius, this line intersects the ellipsoid
             if( distance2 <= 1.0 ) {
                // Find the distance from the origin, along this line, that we can go and still stay within the ellipsoid
-               dip::sint length = static_cast< dip::sint >( std::floor( sz * std::sqrt( 1.0 - distance2 )));
+               dip::sint length = floor_cast( sz * std::sqrt( 1.0 - distance2 ));
                // Determine and fill the run for this line
                IntegerArray coordinate = cor;
                coordinate[ procDim ] = -length;
@@ -284,7 +284,7 @@ PixelTable::PixelTable(
             // If we're still within the radius, this line intersects the diamond-oid
             if( distance <= 1.0 ) {
                // Find the distance from the origin, along this line, that we can go and still stay within the ellipsoid
-               dip::sint length = static_cast< dip::sint >( std::floor( sz * ( 1.0 - distance )));
+               dip::sint length = floor_cast( sz * ( 1.0 - distance ));
                // Determine and fill the run for this line
                IntegerArray coordinate = cor;
                coordinate[ procDim ] = -length;

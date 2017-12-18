@@ -145,7 +145,7 @@ class dip__DirectLUT_Float : public Framework::ScanLineFilter {
             } else {
                switch( interpolation_ ) {
                   case LookupTable::InterpolationMode::LINEAR: {
-                     dip::uint index = clamp_cast< dip::uint >( *in );
+                     dip::uint index = static_cast< dip::uint >( *in );
                      dfloat fraction = *in - static_cast< dfloat >( index );
                      if( fraction == 0.0 ) {
                         // not just to avoid the extra computation, it especially avoids out-of-bounds indexing if in points at the last LUT element.
@@ -159,13 +159,13 @@ class dip__DirectLUT_Float : public Framework::ScanLineFilter {
                      break;
                   }
                   case LookupTable::InterpolationMode::NEAREST_NEIGHBOR: {
-                     dip::uint index = clamp_cast< dip::uint >( std::round( *in ));
+                     dip::uint index = static_cast< dip::uint >( *in + 0.5 );
                      CopyPixel( values + static_cast< dip::sint >( index ) * valuesStride, out, tensorLength,
                                 valuesTensorStride, outTensorStride );
                      break;
                   }
                   case LookupTable::InterpolationMode::ZERO_ORDER_HOLD: {
-                     dip::uint index = clamp_cast< dip::uint >( *in );
+                     dip::uint index = static_cast< dip::uint >( *in );
                      CopyPixel( values + static_cast< dip::sint >( index ) * valuesStride, out, tensorLength,
                                 valuesTensorStride, outTensorStride );
                      break;

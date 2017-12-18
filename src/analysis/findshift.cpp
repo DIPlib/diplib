@@ -348,7 +348,7 @@ FloatArray FindShift(
          dip::uint maxIter = 5;  // default number of iteration => accuracy ~ 1e-4
          dfloat accuracy = 0.0;  // signals early break if bias correction is possible
          if( parameter < 0.0 ) {
-            maxIter = std::max( dip::uint{ 1 }, static_cast< dip::uint >( std::round( -parameter )));
+            maxIter = std::max( dip::uint{ 1 }, static_cast< dip::uint >( round_cast( -parameter )));
             accuracy = 1e-10;    // so small that maxIter would play its role
          } else if(( parameter > 0.0 ) && ( parameter <= 0.1 )) {
             maxIter = 20;        // NOTE: more iteration solution may end up very far from truth

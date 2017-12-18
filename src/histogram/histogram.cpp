@@ -111,10 +111,6 @@ void CompleteConfiguration( Measurement::IteratorFeature const& featureValues, H
    CompleteConfiguration( configuration, false );
 }
 
-inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::uint nBins ) {
-   return static_cast< dip::sint >( clamp( std::floor(( value - lowerBound ) / binSize ), 0.0, static_cast< dfloat >( nBins - 1 )));
-}
-
 class dip__HistogramBase : public Framework::ScanLineFilter {
    public:
       dip__HistogramBase( Image& image ) : image_( image ) {}
@@ -157,7 +153,7 @@ class dip__ScalarImageHistogram : public dip__HistogramBase {
             if( configuration_.excludeOutOfBoundValues ) {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   if( *mask && ( *in >= configuration_.lowerBound ) && ( *in < configuration_.upperBound )) {
-                     ++data[ FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
+                     ++data[ detail::FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
                   }
                   in += inStride;
                   mask += maskStride;
@@ -165,7 +161,7 @@ class dip__ScalarImageHistogram : public dip__HistogramBase {
             } else {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   if( *mask ) {
-                     ++data[ FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
+                     ++data[ detail::FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
                   }
                   in += inStride;
                   mask += maskStride;
@@ -176,13 +172,13 @@ class dip__ScalarImageHistogram : public dip__HistogramBase {
             if( configuration_.excludeOutOfBoundValues ) {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
                   if(( *in >= configuration_.lowerBound ) && ( *in < configuration_.upperBound )) {
-                     ++data[ FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
+                     ++data[ detail::FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
                   }
                   in += inStride;
                }
             } else {
                for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-                  ++data[ FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
+                  ++data[ detail::FindBin( *in, configuration_.lowerBound, configuration_.binSize, configuration_.nBins ) ];
                   in += inStride;
                }
             }
@@ -258,7 +254,7 @@ class dip__JointImageHistogram : public dip__HistogramBase {
                      dip::sint offset = 0;
                      for( dip::uint jj = 0; jj < nDims; ++jj ) {
                         offset += image_.Stride( jj ) *
-                                  FindBin( *( in[ jj ] ), configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
+                                  detail::FindBin( *( in[ jj ] ), configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
                      }
                      ++data[ offset ];
                   }
@@ -284,7 +280,7 @@ class dip__JointImageHistogram : public dip__HistogramBase {
                   dip::sint offset = 0;
                   for( dip::uint jj = 0; jj < nDims; ++jj ) {
                      offset += image_.Stride( jj ) *
-                               FindBin( *( in[ jj ] ), configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
+                               detail::FindBin( *( in[ jj ] ), configuration_[ jj ].lowerBound, configuration_[ jj ].binSize, configuration_[ jj ].nBins );
                   }
                   ++data[ offset ];
                }
@@ -420,7 +416,7 @@ void Histogram::MeasurementFeatureHistogram( Measurement::IteratorFeature const&
             }
          }
          offset += data_.Stride( jj ) *
-                   dip::FindBin( *tin, configuration[ jj ].lowerBound, configuration[ jj ].binSize, configuration[ jj ].nBins );
+                   detail::FindBin( *tin, configuration[ jj ].lowerBound, configuration[ jj ].binSize, configuration[ jj ].nBins );
          ++tin;
       }
       if( include ) {

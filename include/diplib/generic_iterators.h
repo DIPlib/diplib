@@ -150,11 +150,11 @@ class DIP_NO_EXPORT BresenhamLineIterator {
          }
          pos_ += stepSize_;
          for( dip::uint ii = 0; ii < pos_.size(); ++ii ) {
-            dip::uint newcoord = static_cast< dip::uint >( std::floor( pos_[ ii ] ));
-            dip::sint diff = static_cast< dip::sint >( newcoord ) - static_cast< dip::sint >( coord_[ ii ] );
+            dip::sint newcoord = floor_cast( pos_[ ii ] );
+            dip::sint diff = newcoord - static_cast< dip::sint >( coord_[ ii ] );
             if( diff != 0 ) {
                offset_ += diff * strides_[ ii ];
-               coord_[ ii ] = newcoord;
+               coord_[ ii ] = static_cast< dip::uint >( newcoord );
             }
          }
          --length_;

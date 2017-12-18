@@ -38,7 +38,7 @@ std::vector< dip::uint > ComputeBoxSizes(
    eta += 1.0;
    dfloat size = eta * eta;
    while( size <= L ) {
-      dip::uint sz = static_cast< dip::uint >( std::round( size ));
+      dip::uint sz = static_cast< dip::uint >( round_cast( size ));
       if( sz > out.back() ) { // don't put two identical sizes on there
          out.push_back( sz );
       }

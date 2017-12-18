@@ -38,6 +38,13 @@ namespace dip {
 /// \brief Histograms and related functionality.
 /// \{
 
+namespace detail {
+inline dip::sint FindBin( dfloat value, dfloat lowerBound, dfloat binSize, dip::uint nBins ) {
+   return static_cast< dip::sint >( clamp(( value - lowerBound ) / binSize, 0.0, static_cast< dfloat >( nBins - 1 )));
+   // the cast does implicit floor because it's always positive
+}
+}
+
 /// \brief Computes and holds histograms.
 ///
 /// A histogram is computed by the constructor. There is no default-constructed `%Histogram`.
@@ -396,12 +403,8 @@ class DIP_NO_EXPORT Histogram {
       // data_.Dimensionality() == lowerBounds_.size() == binSizes_.size()
       // Lower and upper bounds are not bin centers!
 
-      dfloat FindBin( dfloat value, dip::uint dim ) const {
-         return std::floor(( value - lowerBounds_[ dim ] ) / binSizes_[ dim ] );
-      }
       dip::uint FindClampedBin( dfloat value, dip::uint dim ) const {
-         dfloat bin = clamp( FindBin( value, dim ), 0.0, static_cast< dfloat >( data_.Size( dim ) - 1 ));
-         return static_cast< dip::uint >( bin );
+         return static_cast< dip::uint >( detail::FindBin( value, lowerBounds_[ dim ], binSizes_[ dim ], data_.Size( dim )));
       }
 
       DIP_EXPORT void ScalarImageHistogram( Image const& input, Image const& mask, Configuration& configuration );

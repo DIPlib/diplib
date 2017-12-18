@@ -141,12 +141,37 @@ inline dip::sint modulo( dip::sint value, dip::sint period ) {
    return ( value < 0 ) ? ( period - ( -value % period )) : ( value % period );
 }
 
-/// \brief Consistent rounding, where half-way cases are rounded in the same direction for positive and negative
-/// values. `inverse` template parameter indicates the direction for these cases. By default, it matches
+/// \brief Fast floor operation, without checks, returning a `dip::sint`.
+// Adapted from: https://stackoverflow.com/a/30308919/7328782
+template< typename T, typename std::enable_if< std::is_floating_point< T >::value, int >::type = 0 >
+dip::sint floor_cast( T v ) {
+   auto w = static_cast< dip::sint >( v );
+   return w - ( v < static_cast< T >( w ));
+}
+
+/// \brief Fast ceil operation, without checks, returning a `dip::sint`.
+// Adapted from: https://stackoverflow.com/a/30308919/7328782
+template< typename T, typename std::enable_if< std::is_floating_point< T >::value, int >::type = 0 >
+dip::sint ceil_cast( T v ) {
+   auto w = static_cast< dip::sint >( v );
+   return w + ( v > static_cast< T >( w ));
+}
+
+/// \brief Fast round operation, without checks, returning a `dip::sint`.
+// Adapted from: https://stackoverflow.com/a/30308919/7328782
+template< typename T, typename std::enable_if< std::is_floating_point< T >::value, int >::type = 0 >
+dip::sint round_cast( T v ) {
+   return floor_cast( v + 0.5 );
+}
+
+/// \brief Consistent rounding, without checks, returning a `dip::sint`.
+///
+/// This rounding is consistent in that half-way cases are rounded in the same direction for positive and negative
+/// values. The `inverse` template parameter indicates the direction for these cases. By default, it matches
 /// `std::round` for positive values.
-template< typename T, bool inverse = false >
-inline T consistent_round( T v ) {
-   return inverse ? std::ceil( v - 0.5 ) : std::floor( v + 0.5 ); // conditional should be optimized out
+template< typename T, bool inverse = false, typename std::enable_if< std::is_floating_point< T >::value, int >::type = 0 >
+dip::sint consistent_round( T v ) {
+   return inverse ? ceil_cast( v - 0.5 ) : floor_cast( v + 0.5 ); // conditional should be optimized out
 };
 
 /// \brief Computes the absolute value in such a way that the result is always correct for pixel types.
@@ -513,7 +538,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::gcd function") {
    DOCTEST_CHECK( dip::gcd( 15, 10 ) == 5 );
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_XXX functions") {
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_{floor|ceil|round} functions") {
    DOCTEST_CHECK( dip::div_ceil( 11l, 11l ) == 1 );
    DOCTEST_CHECK( dip::div_ceil( 11l, 6l ) == 2 );
    DOCTEST_CHECK( dip::div_ceil( 11l, 5l ) == 3 );
@@ -567,6 +592,29 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::div_XXX functions") {
    DOCTEST_CHECK( dip::div_round( -11l, -5l ) == 2 );
    DOCTEST_CHECK( dip::div_round( -11l, -4l ) == 3 );
    DOCTEST_CHECK( dip::div_round( -11l, -3l ) == 4 );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing the dip::{floor|ceil|round}_cast functions") {
+   DOCTEST_CHECK( dip::floor_cast( 11.0 ) == 11 );
+   DOCTEST_CHECK( dip::floor_cast( 11.4 ) == 11 );
+   DOCTEST_CHECK( dip::floor_cast( 11.99 ) == 11 );
+   DOCTEST_CHECK( dip::floor_cast( -11.0 ) == -11 );
+   DOCTEST_CHECK( dip::floor_cast( -11.4 ) == -12 );
+   DOCTEST_CHECK( dip::floor_cast( -11.99 ) == -12 );
+
+   DOCTEST_CHECK( dip::ceil_cast( 11.0 ) == 11 );
+   DOCTEST_CHECK( dip::ceil_cast( 11.4 ) == 12 );
+   DOCTEST_CHECK( dip::ceil_cast( 11.99 ) == 12 );
+   DOCTEST_CHECK( dip::ceil_cast( -11.0 ) == -11 );
+   DOCTEST_CHECK( dip::ceil_cast( -11.4 ) == -11 );
+   DOCTEST_CHECK( dip::ceil_cast( -11.99 ) == -11 );
+
+   DOCTEST_CHECK( dip::round_cast( 11.0 ) == 11 );
+   DOCTEST_CHECK( dip::round_cast( 11.4 ) == 11 );
+   DOCTEST_CHECK( dip::round_cast( 11.99 ) == 12 );
+   DOCTEST_CHECK( dip::round_cast( -11.0 ) == -11 );
+   DOCTEST_CHECK( dip::round_cast( -11.4 ) == -11 );
+   DOCTEST_CHECK( dip::round_cast( -11.99 ) == -12 );
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::pow10 function") {

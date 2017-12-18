@@ -51,14 +51,14 @@ inline bool NarrowImageView(
    UnsignedArray outOffset( nDims );
    UnsignedArray outSizes( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
-      dfloat start = std::ceil( origin[ ii ] - sizes[ ii ] / 2.0 );
-      dfloat end = std::floor( origin[ ii ] + sizes[ ii ] / 2.0 );
-      start = std::max( start, 0.0 );
-      end = std::min( end, static_cast< dfloat >( out.Size( ii ) - 1 )); // dfloat should be able to hold all meaningful image sizes, but this could in principle be wrong.
+      dip::sint start = ceil_cast( origin[ ii ] - sizes[ ii ] / 2.0 );
+      dip::sint end = floor_cast( origin[ ii ] + sizes[ ii ] / 2.0 );
+      start = std::max( start, dip::sint( 0 ));
+      end = std::min( end, static_cast< dip::sint >( out.Size( ii ) - 1 ));
       if( start > end ) {
          return false;
       }
-      origin[ ii ] -= start;
+      origin[ ii ] -= static_cast< dfloat >( start );
       outOffset[ ii ] = static_cast< dip::uint >( start );
       outSizes[ ii ] = static_cast< dip::uint >( end - start + 1 );
    }

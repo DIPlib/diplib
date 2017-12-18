@@ -318,7 +318,7 @@ Measurement::ValueType Percentile( Measurement::IteratorFeature const& featureVa
    if( N == 0 ) {
       return 0.0;
    }
-   dip::sint rank = static_cast< dip::sint >( std::floor( static_cast< dfloat >( N ) * percentile / 100.0 )); // rank < N, because percentile_ < 100
+   dip::sint rank = floor_cast( static_cast< dfloat >( N ) * percentile / 100.0 ); // rank < N, because percentile_ < 100
    std::vector< Measurement::ValueType > buffer( N );
    auto begin = buffer.begin();
    auto leftIt = begin;

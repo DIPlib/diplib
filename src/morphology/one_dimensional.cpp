@@ -1326,7 +1326,7 @@ void FastLineMorphology(
    dip::sint offset = 0;
    for( dip::uint ii = 1; ii < nDims; ++ii ) {
       // The step sizes are all negative, so we set startPos to be large enough that we don't get negative coordinates in the iterator
-      startPos[ ii ] = static_cast< dip::uint >( -std::floor( BresenhamLineIterator::delta + static_cast< dfloat >( maxLineLength - 1 ) * stepSize[ ii ] ));
+      startPos[ ii ] = static_cast< dip::uint >( -floor_cast( BresenhamLineIterator::delta + static_cast< dfloat >( maxLineLength - 1 ) * stepSize[ ii ] ));
       // This is the offset for the start position, to be subtracted from the iterator's offset
       offset += static_cast< dip::sint >( startPos[ ii ] ) * inStridesBytes[ ii ];
    }
@@ -1470,7 +1470,7 @@ void FastLineMorphology(
    UnsignedArray itSizes( nDims, 0 );
    for( dip::uint ii = 1; ii < nDims; ++ii ) {
       itSizes[ ii ] = in.Size( ii ) + static_cast< dip::uint >(
-            -std::floor( BresenhamLineIterator::delta + static_cast< dfloat >( in.Size( 0 ) - 1 ) * stepSize[ ii ] ));
+            -floor_cast( BresenhamLineIterator::delta + static_cast< dfloat >( in.Size( 0 ) - 1 ) * stepSize[ ii ] ));
    }
 
    // Iterate over itSizes
@@ -1496,10 +1496,10 @@ void FastLineMorphology(
          dfloat x;
          if( coords[ ii ] >= in.Size( ii )) {
             x = ( static_cast< dfloat >( coords[ ii ] - in.Size( ii )) + BresenhamLineIterator::delta ) / -stepSize[ ii ];
-            start = std::max( start, static_cast< dip::uint >( std::ceil( x )));
+            start = std::max( start, static_cast< dip::uint >( ceil_cast( x )));
          } // otherwise the line starts within the image domain
          x = ( static_cast< dfloat >( coords[ ii ] ) + BresenhamLineIterator::delta ) / -stepSize[ ii ];
-         end = std::min( end, static_cast< dip::uint >( std::ceil( x )) - 1 );
+         end = std::min( end, static_cast< dip::uint >( ceil_cast( x )) - 1 );
       }
       DIP_ASSERT( start <= end );
 

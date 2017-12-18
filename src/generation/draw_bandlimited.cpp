@@ -39,11 +39,11 @@ class dip__DrawBandlimitedPointLineFilter : public Framework::ScanLineFilter {
          origin_.resize( nDims );
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             dfloat halfSize = truncation * sigmas[ ii ];
-            dfloat leftSide = std::ceil( origin[ ii ] - halfSize ); // first pixel in box
-            dfloat rightSide = std::floor( origin[ ii ] + halfSize ); // last pixel in box
-            dfloat offset = origin[ ii ] - leftSide; // offset of origin w.r.t. first pixel in box
-            origin_[ ii ] = static_cast< dip::sint >( leftSide );
-            dip::uint size = static_cast< dip::uint>( rightSide - leftSide + 1 );
+            dip::sint leftSide = ceil_cast( origin[ ii ] - halfSize ); // first pixel in box
+            dip::sint rightSide = floor_cast( origin[ ii ] + halfSize ); // last pixel in box
+            dfloat offset = origin[ ii ] - static_cast< dfloat >( leftSide ); // offset of origin w.r.t. first pixel in box
+            origin_[ ii ] = leftSide;
+            dip::uint size = static_cast< dip::uint >( rightSide - leftSide + 1 );
             blob1d_[ ii ].resize( size, 0 );
             dfloat factor = -1.0 / ( 2.0 * sigmas[ ii ] * sigmas[ ii ] );
             dfloat norm = 1.0 / ( std::sqrt( 2.0 * pi ) * sigmas[ ii ] );
@@ -399,21 +399,21 @@ class dip__DrawBandlimitedBallLineFilter : public Framework::ScanLineFilter {
             // We cut through the core of the circle
             innerWidth = std::sqrt( innerRadius * innerRadius - distance2 );
             if( filled_ ) {
-               dip::sint start = static_cast< dip::sint >( std::ceil( origin_[ dim ] - innerWidth ));
-               dip::sint end = static_cast< dip::sint >( std::floor( origin_[ dim ] + innerWidth ));
+               dip::sint start = ceil_cast( origin_[ dim ] - innerWidth );
+               dip::sint end = floor_cast( origin_[ dim ] + innerWidth );
                dip__AddLine( out, start, end, length, stride, value_, tensorStride );
             }
          }
          // Now draw the blurry edges of the circle
-         dip::sint start = static_cast< dip::sint >( std::ceil( origin_[ dim ] - outerWidth ));
-         dip::sint end = static_cast< dip::sint >( std::ceil( origin_[ dim ] - innerWidth )) - 1;
+         dip::sint start = ceil_cast( origin_[ dim ] - outerWidth );
+         dip::sint end = ceil_cast( origin_[ dim ] - innerWidth ) - 1;
          if( filled_ ) {
             dip__BallBlurredEdge( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
          } else {
             dip__BallBlurredLine( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
          }
-         start = static_cast< dip::sint >( std::floor( origin_[ dim ] + innerWidth )) + 1;
-         end = static_cast< dip::sint >( std::floor( origin_[ dim ] + outerWidth ));
+         start = floor_cast( origin_[ dim ] + innerWidth ) + 1;
+         end = floor_cast( origin_[ dim ] + outerWidth );
          if( filled_ ) {
             dip__BallBlurredEdge( out, start, end, length, stride, value_, tensorStride, distance2, origin_[ dim ], sigma_, radius_ );
          } else {
@@ -601,8 +601,8 @@ class dip__DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
          // Draw the core of the box
          if( width > margin_ ) {
             innerWidth = width - margin_;
-            dip::sint start = static_cast< dip::sint >( std::ceil( origin_[ dim ] - innerWidth ));
-            dip::sint end = static_cast< dip::sint >( std::floor( origin_[ dim ] + innerWidth ));
+            dip::sint start = ceil_cast( origin_[ dim ] - innerWidth );
+            dip::sint end = floor_cast( origin_[ dim ] + innerWidth );
             if( distance > -margin_ ) {
                // We go along an edge of the box
                dfloat weight = filled_
@@ -617,8 +617,8 @@ class dip__DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
             }
          }
          // Now draw the blurry edges of the circle
-         dip::sint start = static_cast< dip::sint >( std::ceil( origin_[ dim ] - outerWidth ));
-         dip::sint end = static_cast< dip::sint >( std::ceil( origin_[ dim ] - innerWidth )) - 1;
+         dip::sint start = ceil_cast( origin_[ dim ] - outerWidth );
+         dip::sint end = ceil_cast( origin_[ dim ] - innerWidth ) - 1;
          if( filled_ ) {
             dip__BoxBlurredEdge( out, start, end, length, stride, distance, value_, tensorStride, origin_[ dim ], sigma_, width );
          } else {
@@ -628,9 +628,9 @@ class dip__DrawBandlimitedBoxLineFilter : public Framework::ScanLineFilter {
             // we don't have a "core", start where we left off
             start = end + 1;
          } else {
-            start = static_cast< dip::sint >( std::floor( origin_[ dim ] + innerWidth )) + 1;
+            start = floor_cast( origin_[ dim ] + innerWidth ) + 1;
          }
-         end = static_cast< dip::sint >( std::floor( origin_[ dim ] + outerWidth ));
+         end = floor_cast( origin_[ dim ] + outerWidth );
          if( filled_ ) {
             dip__BoxBlurredEdge( out, start, end, length, stride, distance, value_, tensorStride, origin_[ dim ], sigma_, width );
          } else {

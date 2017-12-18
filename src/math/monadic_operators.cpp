@@ -297,7 +297,7 @@ class NearestIntLineFilter : public Framework::ScanLineFilter {
          sint32* out = static_cast< sint32* >( params.outBuffer[ 0 ].buffer );
          dip::sint const outStride = params.outBuffer[ 0 ].stride;
          for( dip::uint kk = 0; kk < bufferLength; ++kk ) {
-            *out = clamp_cast< sint32 >( std::round( *in ));
+            *out = clamp_cast< sint32 >( round_cast( *in ));
             in += inStride;
             out += outStride;
          }

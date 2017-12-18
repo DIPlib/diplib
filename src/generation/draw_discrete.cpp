@@ -224,16 +224,16 @@ struct PolygonEdge {
             std::swap( pt1, pt2 );
          }
          slope = ( pt1.x - pt2.x ) / ( pt1.y - pt2.y );
-         yMin = static_cast< dip::sint >( std::round( pt1.y ));
-         yMax = static_cast< dip::sint >( std::round( pt2.y ));
+         yMin = round_cast( pt1.y );
+         yMax = round_cast( pt2.y );
          x = pt1.x;
       } else {
          if( pt1.x > pt2.x ) {
             std::swap( pt1, pt2 );
          }
          slope = ( pt1.y - pt2.y ) / ( pt1.x - pt2.x );
-         yMin = static_cast< dip::sint >( std::round( pt1.x ));
-         yMax = static_cast< dip::sint >( std::round( pt2.x ));
+         yMin = round_cast( pt1.x );
+         yMax = round_cast( pt2.x );
          x = pt1.y;
       }
    }
@@ -306,8 +306,8 @@ void dip__DrawFilledPolygon(
          //DIP_ASSERT( !( active.size() & 1 )); // It's odd!? No matter, we ignore the last edge.
          for( dip::uint jj = 0; jj < active.size() - 1; jj += 2 ) {
             dip__FillLine( line.Pointer(),
-                           static_cast< dip::sint >( std::round( active[ jj ].x )),
-                           static_cast< dip::sint >( std::round( active[ jj + 1 ].x )),
+                           round_cast( active[ jj ].x ),
+                           round_cast( active[ jj + 1 ].x ),
                            static_cast< dip::sint >( length ), stride, value_, tensorStride );
          }
          // Next scan line, don't increment if y < 0!
@@ -459,8 +459,8 @@ class dip__DrawEllipsoidLineFilter : public Framework::ScanLineFilter {
                break;
             }
          }
-         dip::sint start = static_cast< dip::sint >( std::ceil( origin_[ dim ] - width ));
-         dip::sint end = static_cast< dip::sint >( std::floor( origin_[ dim ] + width ));
+         dip::sint start = ceil_cast( origin_[ dim ] - width );
+         dip::sint end = floor_cast( origin_[ dim ] + width );
          dip__FillLine( out, start, end, length, stride, value_, tensorStride );
       }
    private:

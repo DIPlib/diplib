@@ -337,7 +337,7 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
             buffer = buffer_[ params.thread ].data();
          }
          dfloat fullShift = tanShear_[ procDim ] * static_cast< dfloat >( params.position[ axis_ ] ) + offset_[ procDim ];
-         dip::sint offset = static_cast< dip::sint >( std::floor( fullShift ));
+         dip::sint offset = floor_cast( fullShift );
          dfloat shift = -( fullShift - static_cast< dfloat >( offset ));
          if( boundaryCondition_[ procDim ] == BoundaryCondition::PERIODIC ) {
             offset %= static_cast< dip::sint >( length );
@@ -405,7 +405,7 @@ void Skew(
          process[ ii ] = true;
          // On the line indicated by `origin` we want to do an integer shift. Adding `offset` makes the shift an integer value
          dfloat originShift = static_cast< dfloat >( origin ) * shearArray[ ii ];
-         offset[ ii ] = ( originShift > 0.0 ? std::ceil( originShift ) : std::floor( originShift )) - originShift;
+         offset[ ii ] = static_cast< dfloat >( originShift > 0.0 ? ceil_cast( originShift ) : floor_cast( originShift )) - originShift;
          if( boundaryCondition[ ii ] != BoundaryCondition::PERIODIC ) {
             // We need to increase the size of the output image to accommodate all the data
             dip::uint skewSize = static_cast< dip::uint >(
