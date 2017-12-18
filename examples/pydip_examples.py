@@ -19,7 +19,6 @@ a.Show('normal')
 ###
 
 from scipy import misc
-
 f = misc.face()
 a = dip.Image(f)
 a.Show()
@@ -30,29 +29,40 @@ b.Show()
 
 ###
 
-import numpy as np
-from scipy import misc
-import matplotlib.pyplot as pp
-img = dip.Image(misc.face()[:,:,0])
+img = dip.ImageReadICS('cermet')
 grad = dip.GradientMagnitude(img,[5]) # TODO: fix syntax: allow scalar as sigma
 grad.Show()
 
 a = dip.Watershed(grad)
 a.Show()
 
-seeds = dip.Image(np.random.random(list(reversed(img.Sizes()))))>0.99
-b = dip.SeededWatershed(grad,seeds)
+import numpy as np
+seeds = dip.Image(np.random.random(list(reversed(img.Sizes()))))>0.999
+b = dip.SeededWatershed(grad,seeds,flags={"labels"})
 b.Show()
 
+smooth = dip.Gauss(img,[5])
+seeds = dip.Minima(smooth)
+b = dip.SeededWatershed(grad,seeds,flags={"labels"})
+b.Show()
+
+mask = img < 120
+b = dip.SeededWatershed(smooth,seeds,mask,flags={"labels","uphill only"})
+b.Show()
+
+
+###
+
+img = dip.ImageReadICS('erika')
 h,b = dip.Histogram(img)
+import matplotlib.pyplot as pp
 pp.clf()
 pp.plot(b[0],h)
 pp.show(block=False)
 
 ###
 
-from scipy import misc
-img = dip.Image(misc.face())
+img = dip.ImageReadICS('erika')
 x = dip.Gradient(dip.Norm(img))
 x.Show()
 
