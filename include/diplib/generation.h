@@ -327,11 +327,20 @@ DIP_EXPORT void FillRamp( Image& out, dip::uint dimension, StringSet const& mode
 ///
 /// The ramp function increases along dimension `dimension`, and is equivalent to the cartesian
 /// coordinate for dimension `dimension`. `dimension` must be smaller than `sizes.size()`.
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
+///
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`. All dimensions except
+/// for `dimension` will be \ref singleton_expansion "expanded singleton dimensions". That is, the
+/// output image only stores `sizes[dimension]` pixels.
+///
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateRamp( Image& out, UnsignedArray const& sizes, dip::uint dimension, StringSet const& mode = {} ) {
-   out.ReForge( sizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
+   UnsignedArray trueSizes( sizes.size(), 1 );
+   if( dimension < sizes.size() ) {
+      trueSizes[ dimension ] = sizes[ dimension ];
+   }
+   out.ReForge( trueSizes, 1, DT_SFLOAT, Option::AcceptDataTypeChange::DO_ALLOW );
    FillRamp( out, dimension, mode );
+   out.ExpandSingletonDimensions( sizes );
 }
 inline Image CreateRamp( UnsignedArray const& sizes, dip::uint dimension, StringSet const& mode = {} ) {
    Image out;
@@ -352,7 +361,11 @@ inline void FillXCoordinate( Image& out, StringSet const& mode = {} ) {
 ///
 /// The ramp function increases along the x-axis, and is equivalent to the cartesian coordinate
 /// for the x-axis.
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
+///
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`. All dimensions except
+/// for `dimension` will be \ref singleton_expansion "expanded singleton dimensions". That is, the
+/// output image only stores `sizes[dimension]` pixels.
+///
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateXCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    CreateRamp( out, sizes, 0, mode );
@@ -376,7 +389,11 @@ inline void FillYCoordinate( Image& out, StringSet const& mode = {} ) {
 ///
 /// The ramp function increases along the y-axis, and is equivalent to the cartesian coordinate
 /// for the y-axis. `size` must have at least two elements.
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
+///
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`. All dimensions except
+/// for `dimension` will be \ref singleton_expansion "expanded singleton dimensions". That is, the
+/// output image only stores `sizes[dimension]` pixels.
+///
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateYCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    CreateRamp( out, sizes, 1, mode );
@@ -400,7 +417,11 @@ inline void FillZCoordinate( Image& out, StringSet const& mode = {} ) {
 ///
 /// The ramp function increases along the z-axis, and is equivalent to the cartesian coordinate
 /// for the z-axis. `sizes` must have at least three elements.
-/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`.
+///
+/// `out` will be of size `sizes`, scalar, and of type `dip::DT_SFLOAT`. All dimensions except
+/// for `dimension` will be \ref singleton_expansion "expanded singleton dimensions". That is, the
+/// output image only stores `sizes[dimension]` pixels.
+///
 /// See `dip::FillCoordinates` for the meaning of `mode`.
 inline void CreateZCoordinate( Image& out, UnsignedArray const& sizes, StringSet const& mode = {} ) {
    CreateRamp( out, sizes, 2, mode );

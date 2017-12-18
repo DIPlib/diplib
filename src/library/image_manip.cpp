@@ -202,10 +202,10 @@ Image& Image::ExpandSingletonDimensions( UnsignedArray const& newSizes ) {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    dip::uint ndims = newSizes.size();
    DIP_THROW_IF( sizes_.size() > ndims, E::DIMENSIONALITIES_DONT_MATCH );
+   DIP_THROW_IF( !IsSingletonExpansionPossible( newSizes ), E::SIZES_DONT_MATCH );
    if( sizes_.size() < ndims ) {
       ExpandDimensionality( ndims );
    }
-   DIP_THROW_IF( !IsSingletonExpansionPossible( newSizes ), E::SIZES_DONT_MATCH );
    for( dip::uint ii = 0; ii < ndims; ++ii ) {
       if( sizes_[ ii ] != newSizes[ ii ] ) {
          ExpandSingletonDimension( ii, newSizes[ ii ] );
