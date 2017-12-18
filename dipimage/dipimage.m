@@ -27,16 +27,20 @@ set(0,'ShowHiddenHandles','on');
 difig = findobj('Tag',figureWindowTag);  % the DIPIMAGE figure handle
 set(0,'ShowHiddenHandles',currsetting);
 
-if nargin==1 && isequal(arg,'clear')
-   % Clear everything DIPimage-related from memory, useful when developing
-   delete(difig)
-   close all
-   dipfig -unlink
-   imagedisplay unlock
-   dipsetpref -unload
-   numberofthreads unlock
-   clear functions
-   return
+if nargin==1
+   if isequal(arg,'clear')
+      % Clear everything DIPimage-related from memory, useful when developing
+      delete(difig)
+      close all
+      dipfig -unlink
+      imagedisplay unlock
+      dipsetpref -unload
+      numberofthreads unlock
+      clear functions
+      return
+   else
+      error('Unknown argument to DIPIMAGE')
+   end
 end
 
 % Do we already exist?
