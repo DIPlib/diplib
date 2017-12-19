@@ -18,10 +18,16 @@
 %     A region up to 'max_size' pixels and up to 'max_depth' grey-value
 %     difference will be merged. Set 'max_size' to 0 to not include size
 %     in the constraint. 'max_depth'-only merging is equivalent to applying
-%     the H-minima transform before the watershed.
+%     the H-minima transform before the watershed. A negative 'max_depth'
+%     disables all merging.
 %  flags: a cell array of strings, choose from:
 %     - 'high first': reverse the sorting order.
 %     - 'labels': output a labeled image rather than a binary image.
+%     - 'no gaps': reginos are grown until they tough each other, no watershed
+%       lines are kept. Makes most sense together with 'labels'.
+%     - 'uphill only': regions are grown only uphill (or downhill if 'high first'
+%       is also given), so that each seed only grows within its own catchment
+%       basin.
 %
 % DEFAULTS:
 %  connectivity = 1
@@ -30,14 +36,9 @@
 %  flags = {}
 %
 % NOTE:
-%  Two seeds will always be merged if there is no "grey-value barrier"
-%  between them. Simply adding a little bit of noise to the image will
-%  avoid merging of seeds.
-%
-% NOTE:
 %  Pixels in GREY_IMAGE with a value of +INF are not processed, and will be
 %  marked as watershed pixels. Use this to mask out parts of the image you
-%  don't need processed.
+%  don't need processed. (If 'high first' is given, use -INF instead).
 %
 % NOTE:
 %  See the user guide for the definition of connectivity in DIPimage.
