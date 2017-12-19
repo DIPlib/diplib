@@ -743,6 +743,23 @@ class DIP_NO_EXPORT Image {
       // dip::PixelSize everywhere in this file.
 
       /// \brief Get the pixels' size in physical units, by reference, allowing to modify it at will.
+      ///
+      /// There are other `%Image` methods that can be used to modify the pixel size, and might be
+      /// simpler. For example:
+      /// ```
+      ///     img.PixelSize() = ps;                   img.SetPixelSize(ps);
+      ///     img.PixelSize().Set(dim,sz);            img.SetPixelSize(dim,sz);
+      ///     img.PixelSize().Clear();                img.ResetPixelSize();
+      /// ```
+      ///
+      /// Also for querying the pixel size there are several `%Image` methods:
+      /// ```
+      ///     pq = img.PixelSize()[dim];              pq = img.PixelSize(dim);
+      ///     bd = img.PixelSize().IsDefined();       bd = img.HasPixelSize();
+      ///     bi = img.PixelSize().IsIsotropic();     bi = img.IsIsotropic();
+      ///     ar = img.PixelSize().AspectRatio(img.Dimensionality());
+      ///                                             ar = img.AspectRatio();
+      /// ```
       dip::PixelSize& PixelSize() {
          return pixelSize_;
       }
@@ -752,14 +769,21 @@ class DIP_NO_EXPORT Image {
          return pixelSize_;
       }
 
-      /// \brief Get the pixels' size in physical units along the given dimension.
-      PhysicalQuantity PixelSize( dip::uint dim ) const {
+      /// \brief Get the pixels' size along the given dimension in physical units.
+      PhysicalQuantity const PixelSize( dip::uint dim ) const {
+         // Returns a const to prevent errors like `img.PixelSize( 1 ) = 0`.
+         // Indexing into a `dip::PixelSize` cannot return a reference.
          return pixelSize_[ dim ];
       }
 
-      /// \brief Set the pixels' size.
+      /// \brief Set the pixels' size in physical units.
       void SetPixelSize( dip::PixelSize const& ps ) {
          pixelSize_ = ps;
+      }
+
+      /// \brief Set the pixels' size along the given dimension in physical units.
+      void SetPixelSize( dip::uint dim, PhysicalQuantity sz ) {
+         pixelSize_.Set( dim, sz );
       }
 
       /// \brief Reset the pixels' size, so that `HasPixelSize` returns false.

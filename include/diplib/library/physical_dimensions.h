@@ -640,9 +640,9 @@ class DIP_NO_EXPORT PixelSize {
       };
 
       /// Returns the pixel size for the given dimension.
-      PhysicalQuantity Get( dip::uint d ) const {
+      PhysicalQuantity const Get( dip::uint d ) const {
          if( size_.empty() ) {
-            return PhysicalQuantity::Pixel();
+            return PhysicalQuantity::Pixel(); // because this is a temporary, Get cannot return a reference.
          } else if( d >= size_.size() ) {
             return size_.back();
          } else {
@@ -651,7 +651,7 @@ class DIP_NO_EXPORT PixelSize {
       }
       /// \brief Returns the pixel size for the given dimension.
       /// Cannot be used to write to the array, see `Set`.
-      PhysicalQuantity operator[]( dip::uint d ) const {
+      PhysicalQuantity const operator[]( dip::uint d ) const {
          return Get( d );
       }
 

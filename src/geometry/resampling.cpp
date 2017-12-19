@@ -491,8 +491,8 @@ void Rotation(
    // Fix pixel sizes
    if( pixelSize.IsDefined() ) {
       if( pixelSize[ dimension1 ] != pixelSize[ dimension2 ] ) {
-         pixelSize[ dimension1 ] = {};
-         pixelSize[ dimension2 ] = {};
+         pixelSize.Set( dimension1, {} );
+         pixelSize.Set( dimension2, {} );
       }
       out.SetPixelSize( pixelSize );
    }
