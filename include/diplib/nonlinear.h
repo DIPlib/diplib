@@ -240,19 +240,26 @@ inline Image Kuwahara(
 /// `mask`, if forged, must be a binary scalar image. Only those pixels are evaluated that are set in `mask`.
 ///
 /// All three input images (if forged) must have the same spatial dimensions.
+///
+/// `mode` can be "interpolate" or "round". The interpolating mode is only valid in 2D; the gradient magnitude
+/// is interpolated to take into account all information present in the direction of the gradient. The rounding
+/// mode rounds the angles to point to the nearest neighbor.
+/// For higher-dimensional images, gradients are always rounded.
 DIP_EXPORT void NonMaximumSuppression(
       Image const& c_gradmag,
       Image const& c_gradient,
       Image const& mask,
-      Image& out
+      Image& out,
+      String const& mode = "interpolate"
 );
 inline Image NonMaximumSuppression(
       Image const& gradmag,
       Image const& gradient,
-      Image const& mask
+      Image const& mask,
+      String const& mode = "interpolate"
 ) {
    Image out;
-   NonMaximumSuppression( gradmag, gradient, mask, out );
+   NonMaximumSuppression( gradmag, gradient, mask, out, mode );
    return out;
 }
 

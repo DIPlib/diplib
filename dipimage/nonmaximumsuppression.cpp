@@ -26,7 +26,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
    try {
 
       DML_MIN_ARGS( 2 );
-      DML_MAX_ARGS( 3 );
+      DML_MAX_ARGS( 4 );
 
       dml::MatlabInterface mi;
       dip::Image const gradmag = dml::GetImage( prhs[ 0 ] );
@@ -34,7 +34,9 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const mask = nrhs > 2 ? dml::GetImage( prhs[ 2 ] ) : dip::Image{};
       dip::Image out = mi.NewImage();
 
-      dip::NonMaximumSuppression( gradmag, gradient, mask, out );
+      dip::String mode = nrhs > 3 ? dml::GetString( prhs[ 3 ] ) : dip::String{ "interpolate" };
+
+      dip::NonMaximumSuppression( gradmag, gradient, mask, out, mode );
 
       plhs[ 0 ] = mi.GetArray( out );
 

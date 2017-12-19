@@ -22,6 +22,7 @@
 #include "diplib/nonlinear.h"
 #include "diplib/math.h"
 #include "diplib/overload.h"
+#include "diplib/framework.h"
 
 namespace dip {
 
@@ -70,179 +71,272 @@ void NonMaximumSuppression1D(
    *pout = 0;
 }
 
-template< typename TPI >
-void NonMaximumSuppression2D(
-      Image const& gradmag,
-      Image const& gradient,
-      Image const& mask,
-      Image& out
-) {
-   dip::uint sizex = gradmag.Size( 0 );
-   dip::uint sizey = gradmag.Size( 1 );
-
-   dip::sint gmstridex = gradmag.Stride( 0 );
-   dip::sint gmstridey = gradmag.Stride( 1 );
-   TPI const* pgm = static_cast< TPI const* >( gradmag.Origin() );
-
-   dip::sint gvstridex = gradient.Stride( 0 );
-   dip::sint gvstridey = gradient.Stride( 1 );
-   dip::sint one = gradient.TensorStride();
-   TPI const* pgv = static_cast< TPI const* >( gradient.Origin() );
-
-   dip::sint outstridex = out.Stride( 0 );
-   dip::sint outstridey = out.Stride( 1 );
-   TPI* pout = static_cast< TPI* >( out.Origin() );
-
-   dip::sint maskstridex = 0;
-   dip::sint maskstridey = 0;
-   bin* pmask = nullptr;
-   if( mask.IsForged() ) {
-      maskstridex = mask.Stride( 0 );
-      maskstridey = mask.Stride( 1 );
-      pmask = static_cast< bin* >( mask.Origin() );
-   }
-
-   // First row of pixels
-   TPI* ppout = pout;
-   for( dip::uint xx = 0; xx < sizex; ++xx ) {
-      *ppout = 0;
-      ppout += outstridex;
-   }
-
-   // The bulk of the rows of pixels
-   for( dip::uint yy = 1; yy < sizey - 1; ++yy ) {
-
-      pgm += gmstridey;
-      pgv += gvstridey;
-      pout += outstridey;
-      pmask += maskstridey;
-
-      TPI const* ppgm = pgm;
-      TPI const* ppgv = pgv;
-      ppout = pout;
-      bin* ppmask = pmask;
-
-      // First pixel
-      *ppout = 0;
-      ppgm += gmstridex;
-      ppgv += gvstridex;
-      ppout += outstridex;
-      ppmask += maskstridex; // if !ppmask, adds zero to the nullptr.
-
-      // The bulk of the pixels
-      for( dip::uint xx = 1; xx < sizex - 1; ++xx ) {
-         if(( !ppmask || *ppmask ) && ( *ppgm > 0 )) {
-
-            // Get gradient values to interpolate between
-            TPI dx = ppgv[ 0 ];
-            TPI dy = ppgv[ one ];
-            TPI absdx = std::abs( dx );
-            TPI absdy = std::abs( dy );
-            TPI delta, mag1, mag2, mag3, mag4;
-            if( absdy > absdx ) {
-               delta = absdx / absdy;
-               // Get values above and below the current point
-               mag2 = *( ppgm - gmstridey );
-               mag4 = *( ppgm + gmstridey );
-               // Get values diagonally w.r.t. the current point
-               if( std::signbit( dx ) != std::signbit( dy )) {
-                  mag1 = *( ppgm - gmstridey + gmstridex );
-                  mag3 = *( ppgm + gmstridey - gmstridex );
-               } else {
-                  mag1 = *( ppgm - gmstridey - gmstridex );
-                  mag3 = *( ppgm + gmstridey + gmstridex );
-               }
-            } else {
-               delta = absdy / absdx;
-               // Get values left and right of the current point
-               mag2 = *( ppgm + gmstridex );
-               mag4 = *( ppgm - gmstridex );
-               // Get values diagonally w.r.t. the current point
-               if( std::signbit( dx ) != std::signbit( dy )) {
-                  mag1 = *( ppgm - gmstridey + gmstridex );
-                  mag3 = *( ppgm + gmstridey - gmstridex );
-               } else {
-                  mag1 = *( ppgm + gmstridey + gmstridex );
-                  mag3 = *( ppgm - gmstridey - gmstridex );
-               }
-            }
-
-            // Interpolate gradient magnitude values
-            TPI m1 = delta * mag1 + ( 1 - delta ) * mag2;
-            TPI m2 = delta * mag3 + ( 1 - delta ) * mag4;
-
-            // Determine if the current point is a maximum point
-            // Note that at most one side is allowed to be 'flat'
-            if((( *ppgm > m1 ) && ( *ppgm >= m2 )) || (( *ppgm >= m1 ) && ( *ppgm > m2 ))) {
-               *ppout = *ppgm;
-            } else {
-               *ppout = 0;
-            }
-         } else {
-            *ppout = 0;
+bool IsOnEdge( UnsignedArray const& coords, UnsignedArray const& sizes, dip::uint procDim ) {
+   for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
+      if( ii != procDim ) {
+         if(( coords[ ii ] == 0 ) || ( coords[ ii ] == sizes[ ii ] - 1 )) {
+            return true;
          }
-         ppgm += gmstridex;
-         ppgv += gvstridex;
-         ppout += outstridex;
-         ppmask += maskstridex;
       }
-
-      // Last pixel
-      *ppout = 0;
-      std::cout << "." << std::endl;
    }
-
-   // Last row of pixels
-   pout += outstridey;
-   ppout = pout;
-   for( dip::uint xx = 0; xx < sizex; ++xx ) {
-      *ppout = 0;
-      ppout += outstridex;
-   }
+   return false;
 }
 
 template< typename TPI >
-void NonMaximumSuppression3D(
-      Image const& gradmag,
-      Image const& gradient,
-      Image const& mask,
-      Image& out
-) {
-   DIP_THROW( E::NOT_IMPLEMENTED );
-}
+class NonMaximumSuppression2D : public Framework::ScanLineFilter {
+   public:
+      NonMaximumSuppression2D( UnsignedArray const& sizes, IntegerArray const& gradmagStrides, bool interpolate ) :
+            sizes_( sizes ), gradmagStrides_( gradmagStrides ), interpolate_( interpolate ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+         return interpolate_ ? 20 : 12;
+      }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         dip::sint gmstridex = gradmagStrides_[ 0 ];
+         dip::sint gmstridey = gradmagStrides_[ 1 ];
+         TPI const* pgm = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         dip::sint gmStride = params.inBuffer[ 0 ].stride;
+         TPI const* pgv = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
+         dip::sint gvStride = params.inBuffer[ 1 ].stride;
+         dip::sint tensorStride = params.inBuffer[ 1 ].tensorStride;
+         bin const* pmask = nullptr;
+         dip::sint maskStride = 0;
+         if( params.inBuffer.size() > 2 ) {
+            // If there are three input buffers, we have a mask image.
+            pmask = static_cast< bin const* >( params.inBuffer[ 2 ].buffer );
+            maskStride = params.inBuffer[ 2 ].stride;
+         }
+         TPI* pout = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint outStride = params.outBuffer[ 0 ].stride;
+         auto bufferLength = params.bufferLength;
+         auto prodDim = params.dimension;
+         auto const& coords = params.position;
+
+         // Are we on an edge?
+         bool onEdge = IsOnEdge( coords, sizes_, prodDim );
+         if( onEdge ) {
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               *pout = 0;
+               pout += outStride;
+            }
+            return;
+         }
+
+         // First pixel
+         *pout = 0;
+
+         // The bulk of the pixels
+         for( dip::uint ii = 2; ii < bufferLength; ++ii ) {
+            pgm += gmStride;
+            pgv += gvStride;
+            pout += outStride;
+            pmask += maskStride; // if !pmask, adds zero to the nullptr.
+
+            if(( !pmask || *pmask ) && ( *pgm > 0 )) {
+
+               // Gradient at current location
+               TPI dx = pgv[ 0 ];
+               TPI dy = pgv[ tensorStride ];
+               TPI absdx = std::abs( dx );
+               TPI absdy = std::abs( dy );
+
+               TPI m1, m2;
+               if( interpolate_ ) {
+
+                  // Get gradient magnitude values to interpolate between
+                  TPI delta, mag1, mag2, mag3, mag4;
+                  if( absdy > absdx ) {
+                     delta = absdx / absdy;
+                     // Get values above and below the current point
+                     mag2 = *( pgm - gmstridey );
+                     mag4 = *( pgm + gmstridey );
+                     // Get values diagonally w.r.t. the current point
+                     if( std::signbit( dx ) != std::signbit( dy )) {
+                        mag1 = *( pgm - gmstridey + gmstridex );
+                        mag3 = *( pgm + gmstridey - gmstridex );
+                     } else {
+                        mag1 = *( pgm - gmstridey - gmstridex );
+                        mag3 = *( pgm + gmstridey + gmstridex );
+                     }
+                  } else {
+                     delta = absdy / absdx;
+                     // Get values left and right of the current point
+                     mag2 = *( pgm + gmstridex );
+                     mag4 = *( pgm - gmstridex );
+                     // Get values diagonally w.r.t. the current point
+                     if( std::signbit( dx ) != std::signbit( dy )) {
+                        mag1 = *( pgm - gmstridey + gmstridex );
+                        mag3 = *( pgm + gmstridey - gmstridex );
+                     } else {
+                        mag1 = *( pgm + gmstridey + gmstridex );
+                        mag3 = *( pgm - gmstridey - gmstridex );
+                     }
+                  }
+
+                  // Interpolate gradient magnitude values
+                  m1 = delta * mag1 + ( 1 - delta ) * mag2;
+                  m2 = delta * mag3 + ( 1 - delta ) * mag4;
+
+               } else {
+
+                  // Get gradient magnitude values at nearest integer location
+                  dip::sint ss;
+                  if( absdx > absdy ) {
+                     ss = round_cast( dy / dx ); // dy rounded to -1, 0 or 1
+                     ss *= gmstridey;
+                     ss += gmstridex;            // dx is 1
+                  } else {
+                     ss = round_cast( dx / dy ); // dx rounded to -1, 0 or 1
+                     ss *= gmstridex;
+                     ss += gmstridey;            // dy is 1
+                  }
+                  m1 = *( pgm + ss );
+                  m2 = *( pgm - ss );
+
+               }
+
+               // Determine if the current point is a maximum point
+               // Note that at most one side is allowed to be 'flat'
+               if((( *pgm > m1 ) && ( *pgm >= m2 )) || (( *pgm >= m1 ) && ( *pgm > m2 ))) {
+                  *pout = *pgm;
+               } else {
+                  *pout = 0;
+               }
+            } else {
+               *pout = 0;
+            }
+         }
+
+         // Last pixel
+         pout += outStride;
+         *pout = 0;
+      }
+   private:
+      UnsignedArray const& sizes_;
+      IntegerArray const& gradmagStrides_;
+      bool interpolate_;
+};
+
+template< typename TPI >
+class NonMaximumSuppressionND : public Framework::ScanLineFilter {
+   public:
+      NonMaximumSuppressionND( UnsignedArray const& sizes, IntegerArray const& gradmagStrides ) :
+            sizes_( sizes ), gradmagStrides_( gradmagStrides ) {}
+      virtual dip::uint GetNumberOfOperations( dip::uint, dip::uint, dip::uint ) override {
+         return 6 * sizes_.size() + 2;
+      }
+      virtual void Filter( Framework::ScanLineFilterParameters const& params ) override {
+         TPI const* pgm = static_cast< TPI const* >( params.inBuffer[ 0 ].buffer );
+         dip::sint gmStride = params.inBuffer[ 0 ].stride;
+         TPI const* pgv = static_cast< TPI const* >( params.inBuffer[ 1 ].buffer );
+         dip::sint gvStride = params.inBuffer[ 1 ].stride;
+         dip::sint tensorStride = params.inBuffer[ 1 ].tensorStride;
+         bin const* pmask = nullptr;
+         dip::sint maskStride = 0;
+         if( params.inBuffer.size() > 2 ) {
+            // If there are three input buffers, we have a mask image.
+            pmask = static_cast< bin const* >( params.inBuffer[ 2 ].buffer );
+            maskStride = params.inBuffer[ 2 ].stride;
+         }
+         TPI* pout = static_cast< TPI* >( params.outBuffer[ 0 ].buffer );
+         dip::sint outStride = params.outBuffer[ 0 ].stride;
+         auto bufferLength = params.bufferLength;
+         auto prodDim = params.dimension;
+         auto const& coords = params.position;
+         auto nDims = params.inBuffer[ 1 ].tensorLength;
+         DIP_ASSERT( sizes_.size() == nDims );
+         DIP_ASSERT( coords.size() == nDims );
+
+         // Are we on an edge?
+         bool onEdge = IsOnEdge( coords, sizes_, prodDim );
+         if( onEdge ) {
+            for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
+               *pout = 0;
+               pout += outStride;
+            }
+            return;
+         }
+
+         // First pixel
+         *pout = 0;
+
+         // The bulk of the pixels
+         FloatArray g( nDims );
+         for( dip::uint ii = 2; ii < bufferLength; ++ii ) {
+            pgm += gmStride;
+            pgv += gvStride;
+            pout += outStride;
+            pmask += maskStride; // if !pmask, adds zero to the nullptr.
+
+            if(( !pmask || *pmask ) && ( *pgm > 0 )) {
+
+               // Max gradient value at current location
+               TPI max = std::abs( pgv[ 0 ] );
+               for( dip::uint dd = 1; dd < nDims; ++dd ) {
+                  max = std::max( max, std::abs( pgv[ static_cast< dip::sint >( dd ) * tensorStride ] ));
+               }
+
+               // Get gradient magnitude values at nearest integer location
+               dip::sint ss = round_cast( pgv[ 0 ] / max ) * gradmagStrides_[ 0 ];
+               for( dip::uint dd = 1; dd < nDims; ++dd ) {
+                  ss += round_cast( pgv[ static_cast< dip::sint >( dd ) * tensorStride ] / max ) * gradmagStrides_[ dd ];
+               }
+               TPI m1 = *( pgm + ss );
+               TPI m2 = *( pgm - ss );
+
+               // Determine if the current point is a maximum point
+               // Note that at most one side is allowed to be 'flat'
+               if((( *pgm > m1 ) && ( *pgm >= m2 )) || (( *pgm >= m1 ) && ( *pgm > m2 ))) {
+                  *pout = *pgm;
+               } else {
+                  *pout = 0;
+               }
+            } else {
+               *pout = 0;
+            }
+         }
+
+         // Last pixel
+         pout += outStride;
+         *pout = 0;
+      }
+   private:
+      UnsignedArray const& sizes_;
+      IntegerArray const& gradmagStrides_;
+};
 
 } // namespace
 
 void NonMaximumSuppression(
       Image const& c_gradmag,
-      Image const& c_gradient,
+      Image const& gradient,
       Image const& c_mask,
-      Image& out
+      Image& out,
+      String const& mode
 ) {
-   Image gradient;
    Image gradmag;
    dip::uint nDims;
+   DataType ovlType;
    if( c_gradmag.IsForged() && ( c_gradmag.Dimensionality() == 1 )) {
 
       // In this case we can ignore c_gradient
       gradmag = c_gradmag.QuickCopy();
+      ovlType = gradmag.DataType();
       nDims = 1;
 
    } else {
 
-      gradient = c_gradient.QuickCopy();
-
       DIP_THROW_IF( !gradient.IsForged(), E::IMAGE_NOT_FORGED );
+      ovlType = gradient.DataType();
       nDims = gradient.Dimensionality();
-      DIP_THROW_IF(( nDims < 1 ) || ( nDims > 3 ), E::DIMENSIONALITY_NOT_SUPPORTED );
+      DIP_THROW_IF(( nDims < 1 ), E::DIMENSIONALITY_NOT_SUPPORTED );
       DIP_THROW_IF( gradient.TensorElements() != nDims, E::NTENSORELEM_DONT_MATCH );
-      DIP_THROW_IF( !gradient.DataType().IsFloat(), E::DATA_TYPE_NOT_SUPPORTED );
+      DIP_THROW_IF( !ovlType.IsFloat(), E::DATA_TYPE_NOT_SUPPORTED );
 
       gradmag = c_gradmag.QuickCopy();
-      if( gradmag.IsForged()) {
+      if( gradmag.IsForged() ) {
          DIP_THROW_IF( !gradmag.IsScalar(), E::IMAGE_NOT_SCALAR );
          DIP_THROW_IF( gradmag.Sizes() != gradient.Sizes(), E::SIZES_DONT_MATCH );
-         DIP_THROW_IF( gradmag.DataType() != gradient.DataType(), E::DATA_TYPES_DONT_MATCH );
+         DIP_THROW_IF( gradmag.DataType() != ovlType, E::DATA_TYPES_DONT_MATCH );
       } else {
          DIP_STACK_TRACE_THIS( gradmag = Norm( gradient ));
       }
@@ -258,24 +352,35 @@ void NonMaximumSuppression(
       DIP_END_STACK_TRACE
    }
 
-   PixelSize ps = gradmag.HasPixelSize() ? gradmag.PixelSize() : gradient.PixelSize();
-   out.ReForge( gradmag );
-   out.SetPixelSize( ps );
+   bool interpolate = BooleanFromString( mode, "interpolate", "round" );
 
-   out.Fill( 45 );
-
-   switch( nDims ) {
-      case 1:
-         DIP_OVL_CALL_FLOAT( NonMaximumSuppression1D, ( gradmag, mask, out ), gradmag.DataType() );
-         break;
-      case 2:
-         DIP_OVL_CALL_FLOAT( NonMaximumSuppression2D, ( gradmag, gradient, mask, out ), gradmag.DataType() );
-         break;
-      case 3:
-      default: // we've already tested for 1 <= nDims <= 3
-         DIP_OVL_CALL_FLOAT( NonMaximumSuppression3D, ( gradmag, gradient, mask, out ), gradmag.DataType() );
-         break;
+   if( nDims == 1 ) {
+      PixelSize ps = gradmag.HasPixelSize() ? gradmag.PixelSize() : gradient.PixelSize();
+      out.ReForge( gradmag );
+      out.SetPixelSize( ps );
+      DIP_OVL_CALL_FLOAT( NonMaximumSuppression1D, ( gradmag, mask, out ), ovlType );
+      return;
    }
+
+   std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
+   // Note that because all input images are of the types specified, and we don't request any expansion,
+   // the line input buffers for the line filter will point directly to the images, we can access neighboring
+   // pixels. Be careful when doing things like this!
+   if( nDims == 2 ) {
+      // The 2D version does interpolation, and if !interpolate, it's ~15% faster than the generic nD version.
+      DIP_OVL_NEW_FLOAT( scanLineFilter, NonMaximumSuppression2D, ( gradmag.Sizes(), gradmag.Strides(), interpolate ), ovlType );
+   } else {
+      DIP_OVL_NEW_FLOAT( scanLineFilter, NonMaximumSuppressionND, ( gradmag.Sizes(), gradmag.Strides() ), ovlType );
+   }
+
+   ImageConstRefArray inar{ gradmag, gradient };
+   DataTypeArray indt{ ovlType, ovlType };
+   if( mask.IsForged() ) {
+      inar.emplace_back( mask );
+      indt.push_back( DT_BIN );
+   }
+   ImageRefArray outar{ out };
+   Framework::Scan( inar, outar, indt, { ovlType }, { ovlType }, { 1 }, *scanLineFilter, Framework::Scan_NeedCoordinates );
 }
 
 } // namespace dip
