@@ -55,11 +55,11 @@ class FeatureMaxVal : public LineBased {
                   if( it == objectIndices.end() ) {
                      data = nullptr;
                   } else {
-                     *data = std::max( *data, *grey );
+                     data = &( data_[ it->second ] );
                   }
                }
                if( data ) {
-                  *data += *grey;
+                  *data = std::max( *data, *grey );
                }
             }
             ++grey;

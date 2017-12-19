@@ -174,7 +174,7 @@ Measurement MeasurementTool::Measure(
 
    // Fill out the object IDs
    if( objectIDs.empty() ) {
-      measurement.AddObjectIDs( GetObjectLabels( label, Image(), "exclude" ));
+      measurement.AddObjectIDs( GetObjectLabels( label, Image{}, "exclude" ));
    } else {
       measurement.AddObjectIDs( objectIDs );
    }
