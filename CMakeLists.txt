@@ -288,8 +288,8 @@ if(DIP_BUILD_DIPVIEWER)
    if(TARGET OpenGL::GL)
       target_link_libraries(DIPviewer PRIVATE OpenGL::GL)
    else() # For older CMakes:
-      target_link_libraries(DIPviewer PRIVATE OPENGL_LIBRARIES)
-      target_include_directories(DIPviewer PUBLIC OPENGL_INCLUDE_DIR)
+      target_link_libraries(DIPviewer PRIVATE ${OPENGL_LIBRARIES})
+      target_include_directories(DIPviewer PUBLIC ${OPENGL_INCLUDE_DIR})
    endif()
    if(NOT WIN32)
       target_link_libraries(DIPviewer PRIVATE pthread)
@@ -455,7 +455,8 @@ if(DIP_BUILD_DIPIMAGE)
 
    # DIPimage user manual
    find_program(PANDOC_EXECUTABLE pandoc)
-   if(PANDOC_EXECUTABLE)
+   find_program(PANDOC_CROSSREF_EXECUTABLE pandoc-crossref)
+   if(PANDOC_EXECUTABLE AND PANDOC_CROSSREF_EXECUTABLE)
       execute_process(
             COMMAND ${PANDOC_EXECUTABLE} --version
             OUTPUT_VARIABLE pandoc_version
@@ -476,6 +477,7 @@ if(DIP_BUILD_DIPIMAGE)
          # pandoc 2 defines +smart extension to markdown instead of --smart.
          set(PANDOC_SMART_OPTION "--from=markdown+smart")
       endif()
+
       set(DUM_PDF_NAME "${CMAKE_CURRENT_BINARY_DIR}/DIPimageUserManual.pdf")
       add_custom_command(
             OUTPUT ${DUM_PDF_NAME}

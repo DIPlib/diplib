@@ -251,7 +251,8 @@ void init_image( py::module& m ) {
    img.def( "PixelSize", py::overload_cast<>( &dip::Image::PixelSize ));
    img.def( "PixelSize", py::overload_cast<>( &dip::Image::PixelSize, py::const_ ));
    img.def( "PixelSize", py::overload_cast< dip::uint >( &dip::Image::PixelSize, py::const_ ), "dim"_a );
-   img.def( "SetPixelSize", &dip::Image::SetPixelSize, "pixelSize"_a );
+   img.def( "SetPixelSize", py::overload_cast< dip::PixelSize const& >( &dip::Image::SetPixelSize ), "pixelSize"_a );
+   img.def( "SetPixelSize", py::overload_cast< dip::uint, dip::PhysicalQuantity >( &dip::Image::SetPixelSize ), "dim"_a, "sz"_a );
    img.def( "HasPixelSize", &dip::Image::HasPixelSize );
    img.def( "IsIsotropic", &dip::Image::IsIsotropic );
    img.def( "PixelsToPhysical", &dip::Image::PixelsToPhysical, "array"_a );

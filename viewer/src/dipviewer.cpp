@@ -93,7 +93,7 @@ void CloseAll() {
       return;
    }
    manager__->destroyWindows();
-   Delete();
+   Spin();
 }
 
 }} // namespace dip::viewer
