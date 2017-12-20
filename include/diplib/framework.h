@@ -133,21 +133,23 @@ DIP_EXPORT dip::uint OptimalProcessingDim( Image const& in, UnsignedArray const&
 ///
 /// Valid values are:
 ///
-/// `ScanOptions` constant      | Meaning
-/// --------------------------- | ----------
-/// `Scan_NoMultiThreading`     | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
-/// `Scan_NeedCoordinates`      | The line filter needs the coordinates to the first pixel in the buffer.
-/// `Scan_TensorAsSpatialDim`   | Tensor dimensions are treated as a spatial dimension for scanning, ensuring that the line scan filter always gets scalar pixels.
-/// `Scan_ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
-/// `Scan_NoSingletonExpansion` | Inhibits singleton expansion of input images.
+/// `ScanOptions` constant             | Meaning
+/// ---------------------------------- | ----------
+/// `ScanOption::NoMultiThreading`     | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
+/// `ScanOption::NeedCoordinates`      | The line filter needs the coordinates to the first pixel in the buffer.
+/// `ScanOption::TensorAsSpatialDim`   | Tensor dimensions are treated as a spatial dimension for scanning, ensuring that the line scan filter always gets scalar pixels.
+/// `ScanOption::ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
+/// `ScanOption::NoSingletonExpansion` | Inhibits singleton expansion of input images.
 ///
 /// Combine options by adding constants together.
-DIP_DECLARE_OPTIONS( ScanOptions );
-DIP_DEFINE_OPTION( ScanOptions, Scan_NoMultiThreading, 0 );
-DIP_DEFINE_OPTION( ScanOptions, Scan_NeedCoordinates, 1 );
-DIP_DEFINE_OPTION( ScanOptions, Scan_TensorAsSpatialDim, 2 );
-DIP_DEFINE_OPTION( ScanOptions, Scan_ExpandTensorInBuffer, 3 );
-DIP_DEFINE_OPTION( ScanOptions, Scan_NoSingletonExpansion, 4 );
+enum class ScanOption {
+      NoMultiThreading,
+      NeedCoordinates,
+      TensorAsSpatialDim,
+      ExpandTensorInBuffer,
+      NoSingletonExpansion
+};
+DIP_DECLARE_OPTIONS( ScanOption, ScanOptions );
 
 /// \brief Structure that holds information about input or output pixel buffers
 /// for the `dip::Framework::Scan` callback function object.
@@ -169,7 +171,7 @@ struct DIP_NO_EXPORT ScanBuffer {
 /// a single struct to simplify writing those functions.
 ///
 /// Note that `dimension` and `position` are within the images that have had their tensor dimension
-/// converted to spatial dimension, if `dip::Framework::Scan_TensorAsSpatialDim` was given and at least
+/// converted to spatial dimension, if `dip::Framework::ScanOption::TensorAsSpatialDim` was given and at least
 /// one input or output image is not scalar. In this case, `tensorToSpatial` is `true`, and the last dimension
 /// corresponds to the tensor dimension. `dimension` will never be equal to the last dimension in this case.
 /// That is, `position` will have one more element than the original image(s) we're iterating over, but
@@ -193,7 +195,7 @@ struct DIP_NO_EXPORT ScanLineFilterParameters {
 /// or that hold intermediate buffers. The `SetNumberOfThreads` method is
 /// called once before any processing starts. This is a good place to allocate space for output values, such
 /// that each threads has its own output variables that the calling function can later combine (reduce). Note
-/// that this function is called even if `dip::Framework::Scan_NoMultiThreading` is given, or if the library
+/// that this function is called even if `dip::Framework::ScanOption::NoMultiThreading` is given, or if the library
 /// is compiled without multi-threading.
 ///
 /// The `GetNumberOfOperations` method is called to determine if it is worthwhile to start worker threads and
@@ -246,23 +248,23 @@ class DIP_EXPORT ScanLineFilter {
 /// tensors for each image (both input and output) are the same, the calling
 /// function is to make sure the tensors satisfy whatever constraints.
 ///
-/// However, if the option `dip::FrameWork::Scan_TensorAsSpatialDim` is given,
+/// However, if the option `dip::FrameWork::ScanOption::TensorAsSpatialDim` is given,
 /// then the tensor is cast to a spatial dimension, and singleton expansion is
 /// applied. Thus, `lineFilter` does not need to check `inTensorLength` or
 /// `outTensorLength` (they will be 1), and the output tensor size is guaranteed
 /// to match the largest input tensor. `nTensorElements` is ignored. Even with
 /// a single input image, where no singleton expansion can happen, it is
-/// beneficial to use the `dip::FrameWork::Scan_TensorAsSpatialDim` option, as
+/// beneficial to use the `dip::FrameWork::ScanOption::TensorAsSpatialDim` option, as
 /// `lineFilter` can be simpler and faster. Additionally, the output tensor shape
 /// is identical to the input image's. In case of multiple inputs, the first input
 /// image that has as many tensor elements as the (singleton-expanded) output
 /// will model the output tensor shape.
 ///
-/// If the option `dip::FrameWork::Scan_ExpandTensorInBuffer` is given, then
+/// If the option `dip::FrameWork::ScanOption::ExpandTensorInBuffer` is given, then
 /// the input buffers passed to `lineFilter` will contain the tensor elements as a
 /// standard, column-major matrix. If the image has tensors stored differently,
 /// buffers will be used. This option is not used when
-/// `dip::FrameWork::Scan_TensorAsSpatialDim` is set, as that forces the tensor
+/// `dip::FrameWork::ScanOption::TensorAsSpatialDim` is set, as that forces the tensor
 /// to be a single sample. Use this option if you need to do computations with
 /// the tensors, but do not want to bother with all the different tensor shapes,
 /// which are meant only to save memory. Note, however, that this option does
@@ -279,7 +281,7 @@ class DIP_EXPORT ScanLineFilter {
 /// and `tensorStride` values to access samples. All buffers contain `bufferLength`
 /// pixels. `position` gives the coordinates for the first pixel in the buffers,
 /// subsequent pixels occur along dimension `dimension`. `position[dimension]`
-/// is not necessarily zero. However, when `dip::FrameWork::Scan_NeedCoordinates`
+/// is not necessarily zero. However, when `dip::FrameWork::ScanOption::NeedCoordinates`
 /// is not given, `dimension` and `position` are meaningless. The framework is
 /// allowed to treat all pixels in the image as a single image line in this case.
 ///
@@ -292,10 +294,10 @@ class DIP_EXPORT ScanLineFilter {
 ///
 /// `%dip::Framework::Scan` will process the image using multiple threads, so
 /// `lineFilter` will be called from multiple threads simultaneously. If it is not
-/// thread safe, specify `dip::FrameWork::Scan_NoMultiThreading` as an option.
+/// thread safe, specify `dip::FrameWork::ScanOption::NoMultiThreading` as an option.
 /// the `SetNumberOfThreads` method to `lineFilter` will be called once before
 /// the processing starts, when `%dip::Framework::Scan` has determined how many
-/// threads will be used in the scan, even if `dip::FrameWork::Scan_NoMultiThreading`
+/// threads will be used in the scan, even if `dip::FrameWork::ScanOption::NoMultiThreading`
 /// was specified.
 DIP_EXPORT void Scan(
       ImageConstRefArray const& in,             ///< Input images
@@ -377,11 +379,11 @@ inline void ScanMonadic(
 /// have matching tensor shapes. Otherwise the output tensor will be a column-major
 /// matrix (or vector or scalar, as appropriate).
 ///
-/// This function adds `dip::Framework::Scan_TensorAsSpatialDim` or
-/// `dip::Framework::Scan_ExpandTensorInBuffer` to `opts`, so don't set these
+/// This function adds `dip::Framework::ScanOption::TensorAsSpatialDim` or
+/// `dip::Framework::ScanOption::ExpandTensorInBuffer` to `opts`, so don't set these
 /// values. This means that the tensors passed to `lineFilter` is either all scalars
 /// (the tensor can be converted to a spatial dimension) or full, column-major
-/// tensors of equal size. Do not specify `dip::Framework::Scan_NoSingletonExpansion`
+/// tensors of equal size. Do not specify `dip::Framework::ScanOption::NoSingletonExpansion`
 /// in `opts`.
 inline void ScanDyadic(
       Image const& in1,                ///< Input image 1
@@ -395,16 +397,16 @@ inline void ScanDyadic(
    Tensor outTensor;
    if( in1.IsScalar() ) {
       outTensor = in2.Tensor();
-      opts += Scan_TensorAsSpatialDim;
+      opts += ScanOption::TensorAsSpatialDim;
    } else if( in2.IsScalar() ) {
       outTensor = in1.Tensor();
-      opts += Scan_TensorAsSpatialDim;
+      opts += ScanOption::TensorAsSpatialDim;
    } else if( in1.Tensor() == in2.Tensor() ) {
       outTensor = in1.Tensor();
-      opts += Scan_TensorAsSpatialDim;
+      opts += ScanOption::TensorAsSpatialDim;
    } else if( in1.TensorSizes() == in2.TensorSizes() ) {
       outTensor = Tensor( in1.TensorRows(), in1.TensorColumns() );
-      opts += Scan_ExpandTensorInBuffer;
+      opts += ScanOption::ExpandTensorInBuffer;
    } else {
       DIP_THROW( E::NTENSORELEM_DONT_MATCH );
    }
@@ -464,7 +466,7 @@ inline void ScanDyadic(
 ///     DIP_OVL_CALL_ASSIGN_REAL( scanLineFilter, NewFilter, (
 ///           [ = ]( auto its ) { return ( std::cos( *its[ 0 ] ) * 100 ) + offset; }
 ///     ), dt );
-///     dip::Framework::ScanMonadic( in, out, dt, dt, in.TensorElements(), *scanLineFilter, dip::Framework::Scan_TensorAsSpatialDim );
+///     dip::Framework::ScanMonadic( in, out, dt, dt, in.TensorElements(), *scanLineFilter, dip::Framework::ScanOption::TensorAsSpatialDim );
 /// ```
 ///
 /// Notice in this case we used a generic lambda, i.e. its input parameter has type `auto`. It will be compiled
@@ -582,25 +584,27 @@ inline std::unique_ptr< ScanLineFilter > NewTetradicScanLineFilter( F const& fun
 ///
 /// Valid values are:
 ///
-/// `SeparableOptions` constant      | Meaning
-/// -------------------------------- | ----------
-/// `Separable_NoMultiThreading`     | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
-/// `Separable_AsScalarImage`        | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
-/// `Separable_ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
-/// `Separable_UseOutputBorder`      | The output line buffer also has space allocated for a border.
-/// `Separable_DontResizeOutput`     | The output image has the right size; it can differ from the input size.
-/// `Separable_UseInputBuffer`       | The line filter can modify the input data without affecting the input image; samples are guaranteed to be contiguous.
-/// `Separable_UseOutputBuffer`      | The output buffer is guaranteed to have contiguous samples.
+/// `SeparableOptions` constant             | Meaning
+/// --------------------------------        | ----------
+/// `SeparableOption::NoMultiThreading`     | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
+/// `SeparableOption::AsScalarImage`        | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
+/// `SeparableOption::ExpandTensorInBuffer` | The line filter always gets input tensor elements as a standard, column-major matrix.
+/// `SeparableOption::UseOutputBorder`      | The output line buffer also has space allocated for a border.
+/// `SeparableOption::DontResizeOutput`     | The output image has the right size; it can differ from the input size.
+/// `SeparableOption::UseInputBuffer`       | The line filter can modify the input data without affecting the input image; samples are guaranteed to be contiguous.
+/// `SeparableOption::UseOutputBuffer`      | The output buffer is guaranteed to have contiguous samples.
 ///
 /// Combine options by adding constants together.
-DIP_DECLARE_OPTIONS( SeparableOptions );
-DIP_DEFINE_OPTION( SeparableOptions, Separable_NoMultiThreading, 0 );
-DIP_DEFINE_OPTION( SeparableOptions, Separable_AsScalarImage, 1 );
-DIP_DEFINE_OPTION( SeparableOptions, Separable_ExpandTensorInBuffer, 2 );
-DIP_DEFINE_OPTION( SeparableOptions, Separable_UseOutputBorder, 3 );
-DIP_DEFINE_OPTION( SeparableOptions, Separable_DontResizeOutput, 4 );
-DIP_DEFINE_OPTION( SeparableOptions, Separable_UseInputBuffer, 5 );
-DIP_DEFINE_OPTION( SeparableOptions, Separable_UseOutputBuffer, 6 );
+enum class SeparableOption {
+      NoMultiThreading,
+      AsScalarImage,
+      ExpandTensorInBuffer,
+      UseOutputBorder,
+      DontResizeOutput,
+      UseInputBuffer,
+      UseOutputBuffer
+};
+DIP_DECLARE_OPTIONS( SeparableOption, SeparableOptions );
 
 /// \brief Structure that holds information about input or output pixel buffers
 /// for the `dip::Framework::Separable` callback function object.
@@ -624,7 +628,7 @@ struct DIP_NO_EXPORT SeparableBuffer {
 /// a single struct to simplify writing those functions.
 ///
 /// Note that `dimension` and `position` are within the images that have had their tensor dimension
-/// converted to spatial dimension, if `dip::Framework::Separable_AsScalarImage` was given and the
+/// converted to spatial dimension, if `dip::Framework::SeparableOption::AsScalarImage` was given and the
 /// input is not scalar. In this case, `tensorToSpatial` is `true`, and the last dimension
 /// corresponds to the tensor dimension. `dimension` will never be equal to the last dimension in this case.
 /// That is, `position` will have one more element than the original image(s) we're iterating over, but
@@ -649,7 +653,7 @@ struct DIP_NO_EXPORT SeparableLineFilterParameters {
 /// or that hold intermediate buffers. The `SetNumberOfThreads` method is
 /// called once before any processing starts. This is a good place to allocate space for temporary buffers, such
 /// that each threads has its own buffers to write in. Note that this function is called even if
-/// `dip::Framework::Separable_NoMultiThreading` is given, or if the library is compiled without multi-threading.
+/// `dip::Framework::SeparableOption::NoMultiThreading` is given, or if the library is compiled without multi-threading.
 ///
 /// The `GetNumberOfOperations` method is called to determine if it is worthwhile to start worker threads and
 /// perform the computation in parallel. This function should not perform any other tasks, as it is not
@@ -692,7 +696,7 @@ class DIP_EXPORT SeparableLineFilter {
 /// otherwise an exception will be thrown.
 /// The separable filter always has one input and one output image.
 ///
-/// If the option `dip::FrameWork::Separable_DontResizeOutput` is given, then
+/// If the option `dip::FrameWork::SeparableOption::DontResizeOutput` is given, then
 /// the sizes of the output image will be kept (but it could still be reforged
 /// to change the data type). In this case, the length of the input and output
 /// buffers can differ, causing the intermediate result image to change size one
@@ -709,7 +713,7 @@ class DIP_EXPORT SeparableLineFilter {
 /// Tensors are passed to `lineFilter` as vectors, if the shape is
 /// important, store this information in `lineFilter`. The output image
 /// will have the same tensor shape as the input except if the option
-/// `dip::FrameWork::Separable_ExpandTensorInBuffer` is given. In this case,
+/// `dip::FrameWork::SeparableOption::ExpandTensorInBuffer` is given. In this case,
 /// the input buffers passed to `lineFilter` will contain the tensor elements as a
 /// standard, column-major matrix, and the output image will be a full matrix of
 /// that size. If the input image has tensors stored differently, buffers will be
@@ -718,7 +722,7 @@ class DIP_EXPORT SeparableLineFilter {
 /// you need to do computations with the tensors, but do not want to bother with
 /// all the different tensor shapes, which are meant only to save memory.
 ///
-/// However, if the option `dip::FrameWork::Separable_AsScalarImage` is given,
+/// However, if the option `dip::FrameWork::SeparableOption::AsScalarImage` is given,
 /// then the line filter is called for each tensor element, effectively causing
 /// the filter to process a sequence of scalar images, one for each tensor element.
 /// This is accomplished by converting the tensor into a spatial dimension for
@@ -731,7 +735,7 @@ class DIP_EXPORT SeparableLineFilter {
 /// The framework function sets the output tensor size to that of the input
 /// image, and it sets the color space to that of the
 /// input image if the two images have matching number of tensor elements (these
-/// can differ if `dip::FrameWork::Separable_ExpandTensorInBuffer` is given).
+/// can differ if `dip::FrameWork::SeparableOption::ExpandTensorInBuffer` is given).
 /// The calling function is expected to "correct" these values if necessary.
 /// Note the difference here with the `Scan` and `Full` frameworks: it is not
 /// possible to apply a separate filter to a tensor image and obtain an output
@@ -740,7 +744,7 @@ class DIP_EXPORT SeparableLineFilter {
 ///
 /// The buffers are not guaranteed to be contiguous, please use the `stride`
 /// and `tensorStride` values to access samples. The
-/// `dip::Framework::Separable_UseInputBorder` and `dip::Framework::Separable_UseOutputBorder`
+/// `dip::Framework::SeparableOption::UseInputBorder` and `dip::Framework::SeparableOption::UseOutputBorder`
 /// options force the use of temporary buffers to store each image line. These
 /// temporary buffers always have contiguous samples, with the tensor stride
 /// equal to 1 and the spatial stride equal to the number of tensor elements.
@@ -760,7 +764,7 @@ class DIP_EXPORT SeparableLineFilter {
 /// line. These pixels are filled by the framework using the `boundaryCondition`
 /// value for the given dimension. The `boundaryCondition` array can be empty, in which
 /// case the default boundary condition value is used. If the option
-/// `dip::FrameWork::Separable_UseOutputBorder` is given, then the output buffer also has `border`
+/// `dip::FrameWork::SeparableOption::UseOutputBorder` is given, then the output buffer also has `border`
 /// extra samples at each end. These extra samples are meant to help in the
 /// computation for some filters, and are not copied back to the output image.
 /// `position` gives the coordinates for the first pixel in the buffers,
@@ -772,7 +776,7 @@ class DIP_EXPORT SeparableLineFilter {
 /// will never share memory. That is, the line filter can freely write in the
 /// output buffer without invalidating the input buffer, even when the filter is
 /// being applied in-place.
-/// With the `dip::FrameWork::Separable_UseInputBuffer` option, the input buffer
+/// With the `dip::FrameWork::SeparableOption::UseInputBuffer` option, the input buffer
 /// never points to the input image, the input data is always copied to a temporary
 /// buffer. This allows the `lineFilter` to modify the input, which is useful for,
 /// for example, computing the median of the input data by sorting.
@@ -784,10 +788,10 @@ class DIP_EXPORT SeparableLineFilter {
 ///
 /// `%dip::Framework::Separable` will process the image using multiple threads, so
 /// `lineFilter` will be called from multiple threads simultaneously. If it is not
-/// thread safe, specify `dip::FrameWork::Separable_NoMultiThreading` as an option.
+/// thread safe, specify `dip::FrameWork::SeparableOption::NoMultiThreading` as an option.
 /// the `SetNumberOfThreads` method to `lineFilter` will be called once before
 /// the processing starts, when `%dip::Framework::Separable` has determined how many
-/// threads will be used in the processing, even if `dip::FrameWork::Separable_NoMultiThreading`
+/// threads will be used in the processing, even if `dip::FrameWork::SeparableOption::NoMultiThreading`
 /// was specified.
 DIP_EXPORT void Separable(
       Image const& in,                 ///< Input image
@@ -813,19 +817,21 @@ DIP_EXPORT void Separable(
 ///
 /// Valid values are:
 ///
-/// `FullOptions` constant       | Meaning
-/// ---------------------------- | ----------
-/// `Full_NoMultiThreading`      | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
-/// `Full_AsScalarImage`         | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
-/// `Full_ExpandTensorInBuffer`  | The line filter always gets input tensor elements as a standard, column-major matrix.
-/// `Full_BorderAlreadyExpanded` | The input image already has expanded boundaries (see `dip::ExtendImage`, use `"masked"` option).
+/// `FullOptions` constant              | Meaning
+/// ----------------------------------- | ----------
+/// `FullOption::NoMultiThreading`      | Do not call the line filter simultaneously from multiple threads (it is not thread safe).
+/// `FullOption::AsScalarImage`         | The line filter is called for each tensor element separately, and thus always sees pixels as scalar values.
+/// `FullOption::ExpandTensorInBuffer`  | The line filter always gets input tensor elements as a standard, column-major matrix.
+/// `FullOption::BorderAlreadyExpanded` | The input image already has expanded boundaries (see `dip::ExtendImage`, use `"masked"` option).
 ///
 /// Combine options by adding constants together.
-DIP_DECLARE_OPTIONS( FullOptions );
-DIP_DEFINE_OPTION( FullOptions, Full_NoMultiThreading, 0 );
-DIP_DEFINE_OPTION( FullOptions, Full_AsScalarImage, 1 );
-DIP_DEFINE_OPTION( FullOptions, Full_ExpandTensorInBuffer, 2 );
-DIP_DEFINE_OPTION( FullOptions, Full_BorderAlreadyExpanded, 3 );
+enum class FullOption {
+      NoMultiThreading,
+      AsScalarImage,
+      ExpandTensorInBuffer,
+      BorderAlreadyExpanded
+};
+DIP_DECLARE_OPTIONS( FullOption, FullOptions );
 
 /// \brief Structure that holds information about input or output pixel buffers
 /// for the `dip::Framework::Full` callback function object.
@@ -865,7 +871,7 @@ struct DIP_NO_EXPORT FullLineFilterParameters {
 /// can see what the pixel table looks like (as it depends on the processing dimension determined by the
 /// framework), and so it's a good place to determine some processing options.
 /// Note that this function is called even if
-/// `dip::Framework::Full_NoMultiThreading` is given, or if the library is compiled without multi-threading.
+/// `dip::Framework::FullOption::NoMultiThreading` is given, or if the library is compiled without multi-threading.
 ///
 /// The `GetNumberOfOperations` method is called to determine if it is worthwhile to start worker threads and
 /// perform the computation in parallel. This function should not perform any other tasks, as it is not
@@ -921,7 +927,7 @@ class DIP_EXPORT FullLineFilter {
 /// tensors for each image (both input and output) are the same, the calling
 /// function is to make sure the tensors satisfy whatever constraints.
 ///
-/// However, if the option `dip::FrameWork::Full_AsScalarImage` is given,
+/// However, if the option `dip::FrameWork::FullOption::AsScalarImage` is given,
 /// then the line filter is called for each tensor element, effectively causing
 /// the filter to process a sequence of scalar images, one for each tensor element.
 /// `nTensorElements` is ignored, and set to the number of tensor
@@ -930,11 +936,11 @@ class DIP_EXPORT FullLineFilter {
 /// elements, and computed as if `filter` were called 3 times:
 /// `filter(in[0],out[0])`, `filter(in[1],out[1])`, and `filter(in[2],out[2])`.
 ///
-/// If the option `dip::FrameWork::Full_ExpandTensorInBuffer` is given, then
+/// If the option `dip::FrameWork::FullOption::ExpandTensorInBuffer` is given, then
 /// the input buffer passed to `lineFilter` will contain the tensor elements as a
 /// standard, column-major matrix. If the image has tensors stored differently,
 /// buffers will be used. This option is not used when
-/// `dip::FrameWork::Full_AsScalarImage` is set, as that forces the tensor
+/// `dip::FrameWork::FullOption::AsScalarImage` is set, as that forces the tensor
 /// to be a single sample. Use this option if you need to do computations with
 /// the tensors, but do not want to bother with all the different tensor shapes,
 /// which are meant only to save memory. Note, however, that this option does
@@ -955,7 +961,7 @@ class DIP_EXPORT FullLineFilter {
 /// the `boundaryCondition` values. The `boundaryCondition` vector can be empty,
 /// in which case the default boundary condition value is used.
 ///
-/// If the option `dip::Framework::Full_BorderAlreadyExpanded` is given, then the
+/// If the option `dip::Framework::FullOption::BorderAlreadyExpanded` is given, then the
 /// input image is presumed to have been expanded using the function `dip::ExtendImage`
 /// (specify the option `"masked"`). That is, it is possible to read outside the image
 /// bounds within an area given by the size of `kernel`. If the tensor doesn't need
@@ -974,10 +980,10 @@ class DIP_EXPORT FullLineFilter {
 ///
 /// `%dip::Framework::Full` will process the image using multiple threads, so
 /// `lineFilter` will be called from multiple threads simultaneously. If it is not
-/// thread safe, specify `dip::FrameWork::Full_NoMultiThreading` as an option.
+/// thread safe, specify `dip::FrameWork::FullOption::NoMultiThreading` as an option.
 /// the `SetNumberOfThreads` method to `lineFilter` will be called once before
 /// the processing starts, when `%dip::Framework::Full` has determined how many
-/// threads will be used in the scan, even if `dip::FrameWork::Full_NoMultiThreading`
+/// threads will be used in the scan, even if `dip::FrameWork::FullOption::NoMultiThreading`
 /// was specified.
 DIP_EXPORT void Full(
       Image const& in,                 ///< Input image

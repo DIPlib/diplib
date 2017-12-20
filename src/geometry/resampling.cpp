@@ -81,7 +81,7 @@ void Wrap(
 
    // Call line filter through framework
    Framework::Separable( in, out, in.DataType(), in.DataType(), process, {}, {}, *lineFilter,
-                         Framework::Separable_AsScalarImage );
+                         Framework::SeparableOption::AsScalarImage );
 }
 
 namespace {
@@ -306,7 +306,7 @@ void Resampling(
 
    // Call line filter through framework
    Framework::Separable( in, out, bufferType, out.DataType(), process, borders, bc, *lineFilter,
-                         Framework::Separable_AsScalarImage + Framework::Separable_DontResizeOutput + Framework::Separable_UseInputBuffer );
+                         Framework::SeparableOption::AsScalarImage + Framework::SeparableOption::DontResizeOutput + Framework::SeparableOption::UseInputBuffer );
 }
 
 namespace {
@@ -437,7 +437,7 @@ void Skew(
 
    // Call line filter through framework
    Framework::Separable( in, out, bufferType, out.DataType(), process, { border }, boundaryCondition, *lineFilter,
-         Framework::Separable_AsScalarImage + Framework::Separable_DontResizeOutput + Framework::Separable_UseInputBuffer );
+         Framework::SeparableOption::AsScalarImage + Framework::SeparableOption::DontResizeOutput + Framework::SeparableOption::UseInputBuffer );
 }
 
 void Rotation(

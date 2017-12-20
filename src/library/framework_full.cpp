@@ -55,11 +55,11 @@ void Full(
    Tensor outTensor( nTensorElements );
    bool expandTensor = false;
    bool asScalarImage = false;
-   if( opts == Full_AsScalarImage ) {
+   if( opts.Contains( FullOption::AsScalarImage )) {
       outTensor = c_in.Tensor();
       asScalarImage = true;
    } else {
-      expandTensor = ( opts == Full_ExpandTensorInBuffer ) && !c_in.Tensor().HasNormalOrder();
+      expandTensor = opts.Contains( FullOption::ExpandTensorInBuffer ) && !c_in.Tensor().HasNormalOrder();
    }
 
    // Determine boundary sizes
@@ -67,7 +67,7 @@ void Full(
 
    // Do we need to adjust the input image?
    bool dataTypeChange = c_in.DataType() != inBufferType;
-   bool expandBoundary = boundary.any() && ( opts != Full_BorderAlreadyExpanded );
+   bool expandBoundary = boundary.any() && !opts.Contains( FullOption::BorderAlreadyExpanded );
    bool adjustInput = dataTypeChange || expandTensor || expandBoundary;
 
    // Adjust c_out if necessary (and possible)
@@ -108,9 +108,9 @@ void Full(
       input.Forge(); // This forge will honor the strides we've set, the image does not have an external interface.
       input.Protect(); // make sure it's not reforged by `ExtendImage` or `Copy`.
       if( expandTensor || expandBoundary ) {
-         Option::ExtendImage options = Option::ExtendImage_Masked;
+         Option::ExtendImageFlags options = Option::ExtendImage::Masked;
          if( expandTensor ) {
-            options += Option::ExtendImage_ExpandTensor;
+            options += Option::ExtendImage::ExpandTensor;
          }
          // TODO: Now that we've got `ExtendRegion`, we could expand boundaries unevenly, e.g. for shifted kernels.
          DIP_STACK_TRACE_THIS( ExtendImage( cc_in, input, boundary, boundaryConditions, options ));
@@ -144,7 +144,7 @@ void Full(
 
    // Determine the number of threads we'll be using
    dip::uint nThreads = 1;
-   if( opts != Full_NoMultiThreading ) {
+   if( !opts.Contains( FullOption::NoMultiThreading )) {
       nThreads = std::min( GetNumberOfThreads(), nLines );
       if( nThreads > 1 ) {
          dip::uint operations;

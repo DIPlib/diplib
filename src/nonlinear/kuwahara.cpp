@@ -133,8 +133,8 @@ void SelectionFilter(
    control.Protect();
    DIP_START_STACK_TRACE
       BoundaryConditionArray bc = StringArrayToBoundaryConditionArray( boundaryCondition );
-      ExtendImage( c_in, in, boundary, bc, Option::ExtendImage_Masked );
-      ExtendImage( c_control, control, boundary, bc, Option::ExtendImage_Masked );
+      ExtendImage( c_in, in, boundary, bc, Option::ExtendImage::Masked );
+      ExtendImage( c_control, control, boundary, bc, Option::ExtendImage::Masked );
    DIP_END_STACK_TRACE
 #ifdef DIP__ENABLE_ASSERT
    // We have created a new `in` and `control`, so we expect normal strides here. Let's make sure this is the case!

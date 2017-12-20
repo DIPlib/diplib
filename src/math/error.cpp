@@ -158,7 +158,7 @@ dfloat IDivergence( Image const& in1, Image const& in2, Image const& c_mask ) {
    }
    ImageRefArray outar{};
    IDivergenceLineFilter lineFilter;
-   DIP_STACK_TRACE_THIS( Scan( inar, outar, inBufT, {}, {}, {}, lineFilter, Framework::Scan_TensorAsSpatialDim ));
+   DIP_STACK_TRACE_THIS( Scan( inar, outar, inBufT, {}, {}, {}, lineFilter, Framework::ScanOption::TensorAsSpatialDim ));
    return lineFilter.GetResult();
 }
 

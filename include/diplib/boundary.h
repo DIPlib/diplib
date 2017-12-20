@@ -133,20 +133,19 @@ DIP_EXPORT Image::Pixel ReadPixelWithBoundaryCondition(
 
 namespace Option {
 
-/// \class dip::Option::ExtendImage
+/// \class dip::Option::ExtendImageFlags
 /// \brief Determines which properties to compare.
 ///
 /// Valid values are:
 ///
-/// `%ExtendImage` constant        | Definition
+/// `%ExtendImageFlags` constant   | Definition
 /// ------------------------------ | ----------
-/// `ExtendImage_Masked`           | The output image is a window on the boundary-extended image of the same size as the input.
-/// `ExtendImage_ExpandTensor`     | The output image has normal tensor storage.
+/// `ExtendImage::Masked`          | The output image is a window on the boundary-extended image of the same size as the input.
+/// `ExtendImage::ExpandTensor`    | The output image has normal tensor storage.
 ///
-/// Note that you can add these constants together: `dip::Option::ExtendImage_Masked + dip::Option::ExtendImage_ExpandTensor`.
-DIP_DECLARE_OPTIONS( ExtendImage );
-static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_Masked, 0 );
-static DIP_DEFINE_OPTION( ExtendImage, ExtendImage_ExpandTensor, 1 );
+/// Note that you can add these constants together: `dip::Option::ExtendImage::Masked + dip::Option::ExtendImage::ExpandTensor`.
+enum class DIP_NO_EXPORT ExtendImage { Masked, ExpandTensor };
+DIP_DECLARE_OPTIONS( ExtendImage, ExtendImageFlags );
 
 } // namespace Option
 
@@ -159,7 +158,7 @@ DIP_EXPORT void ExtendImage(
       Image& out,
       UnsignedArray borderSizes,
       BoundaryConditionArray const& boundaryCondition = {},
-      Option::ExtendImage options = {}
+      Option::ExtendImageFlags options = {}
 );
 
 /// \brief Extends the image `in` by `borderSizes` along each dimension.
@@ -188,12 +187,12 @@ inline void ExtendImage(
    DIP_START_STACK_TRACE
       bc = StringArrayToBoundaryConditionArray( boundaryCondition );
    DIP_END_STACK_TRACE
-   Option::ExtendImage opts;
+   Option::ExtendImageFlags opts;
    if( options.count( "masked" ) > 0 ) {
-      opts += Option::ExtendImage_Masked;
+      opts += Option::ExtendImage::Masked;
    }
    if( options.count( "expand tensor" ) > 0 ) {
-      opts += Option::ExtendImage_ExpandTensor;
+      opts += Option::ExtendImage::ExpandTensor;
    }
    ExtendImage( in, out, borderSizes, bc, opts );
 }

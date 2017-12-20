@@ -307,7 +307,7 @@ void GaussFT(
       DIP_OVL_NEW_COMPLEX( scanLineFilter, GaussFTLineFilter, ( in.Sizes(), sigmas, order, truncation ), dtype );
       Framework::ScanMonadic(
             ft, ft, dtype, dtype, 1, *scanLineFilter,
-            Framework::Scan_TensorAsSpatialDim + Framework::Scan_NeedCoordinates );
+            Framework::ScanOption::TensorAsSpatialDim + Framework::ScanOption::NeedCoordinates );
       StringSet opts = { "inverse" };
       if( isreal ) {
          opts.emplace( "real" );

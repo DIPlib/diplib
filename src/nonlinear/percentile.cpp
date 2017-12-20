@@ -82,7 +82,7 @@ void ComputeRankFilter(
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
       DIP_OVL_NEW_NONCOMPLEX( lineFilter, RankLineFilter, ( rank ), dtype );
-      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter, Framework::Full_AsScalarImage );
+      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter, Framework::FullOption::AsScalarImage );
    DIP_END_STACK_TRACE
 }
 

@@ -246,7 +246,7 @@ void SeparableConvolution(
    dip::uint nDims = in.Dimensionality();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_THROW_IF(( filterArray.size() != 1 ) && ( filterArray.size() != nDims ), E::ARRAY_ILLEGAL_SIZE );
-   bool useDouble = ( DataType::Class_DComplex + DataType::Class_DFloat ) == in.DataType();
+   bool useDouble = in.DataType().IsA( DataType::Class_DComplex + DataType::Class_DFloat );
    //std::cout << "useDouble = " << useDouble << std::endl;
    InternOneDimensionalFilterArray filterData;
    DIP_START_STACK_TRACE
@@ -295,7 +295,7 @@ void SeparableConvolution(
       //std::cout << "dtype = " << dtype << std::endl;
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_FLEX( lineFilter, SeparableConvolutionLineFilter, ( filterData ), dtype );
-      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter, Framework::Separable_AsScalarImage );
+      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter, Framework::SeparableOption::AsScalarImage );
    DIP_END_STACK_TRACE
 }
 
@@ -399,7 +399,7 @@ void GeneralConvolution(
       DataType dtype = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
       DIP_OVL_NEW_FLEX( lineFilter, GeneralConvolutionLineFilter, (), dtype );
-      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, filter, *lineFilter, Framework::Full_AsScalarImage );
+      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, filter, *lineFilter, Framework::FullOption::AsScalarImage );
    DIP_END_STACK_TRACE
 }
 

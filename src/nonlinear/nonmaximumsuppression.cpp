@@ -380,7 +380,7 @@ void NonMaximumSuppression(
       indt.push_back( DT_BIN );
    }
    ImageRefArray outar{ out };
-   Framework::Scan( inar, outar, indt, { ovlType }, { ovlType }, { 1 }, *scanLineFilter, Framework::Scan_NeedCoordinates );
+   Framework::Scan( inar, outar, indt, { ovlType }, { ovlType }, { 1 }, *scanLineFilter, Framework::ScanOption::NeedCoordinates );
 }
 
 } // namespace dip

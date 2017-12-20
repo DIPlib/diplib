@@ -94,7 +94,7 @@ void Select(
    ImageConstRefArray inar{ in1, in2, in3, in4 };
    ImageRefArray outar{ out };
    DataTypeArray inBufT{ DT_DFLOAT, DT_DFLOAT, dataType, dataType };
-   Framework::Scan( inar, outar, inBufT, { dataType }, { dataType }, { 0 }, *lineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::Scan( inar, outar, inBufT, { dataType }, { dataType }, { 0 }, *lineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 
@@ -143,7 +143,7 @@ void Select(
    ImageConstRefArray inar{ in1, in2, mask };
    ImageRefArray outar{ out };
    DataTypeArray inBufT{ dataType, dataType, DT_BIN };
-   Framework::Scan( inar, outar, inBufT, { dataType }, { dataType }, { 0 }, *lineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::Scan( inar, outar, inBufT, { dataType }, { dataType }, { 0 }, *lineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 

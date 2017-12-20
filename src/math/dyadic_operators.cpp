@@ -33,7 +33,7 @@ void Atan2( Image const& y, Image const& x, Image& out ) {
          []( auto its ) { return std::atan2( *its[ 0 ], *its[ 1 ] ); }, 20
    ), dt );
    ImageRefArray outar{ out };
-   Framework::Scan( { y, x }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::Scan( { y, x }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 void Hypot( Image const& a, Image const& b, Image& out ) {
@@ -44,7 +44,7 @@ void Hypot( Image const& a, Image const& b, Image& out ) {
          []( auto its ) { return std::hypot( *its[ 0 ], *its[ 1 ] ); }, 20 // rough guess at the cost
    ), dt );
    ImageRefArray outar{ out };
-   Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 namespace {
@@ -97,7 +97,7 @@ void Supremum( ImageConstRefArray const& in, Image& out ) {
    ), dt );
    ImageRefArray outar{ out };
    DataTypeArray buftypes( in.size(), dt );
-   Framework::Scan( in, outar, buftypes, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::Scan( in, outar, buftypes, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 void Infimum( ImageConstRefArray const& in, Image& out ) {
@@ -112,7 +112,7 @@ void Infimum( ImageConstRefArray const& in, Image& out ) {
    ), dt );
    ImageRefArray outar{ out };
    DataTypeArray buftypes( in.size(), dt );
-   Framework::Scan( in, outar, buftypes, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::Scan( in, outar, buftypes, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 void SignedInfimum( Image const& a, Image const& b, Image& out ) {
@@ -123,7 +123,7 @@ void SignedInfimum( Image const& a, Image const& b, Image& out ) {
          []( auto its ) { return *its[ 0 ] > *its[ 1 ] ? static_cast< decltype( *its[ 1 ] ) >( -( *its[ 1 ] )) : *its[ 0 ]; }
    ), dt );
    ImageRefArray outar{ out };
-   Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::Scan( { a, b }, outar, { dt, dt }, { dt }, { dt }, { 1 }, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 namespace {

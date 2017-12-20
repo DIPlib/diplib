@@ -78,7 +78,7 @@ void VarianceFilter(
       DataType dtype = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
       DIP_OVL_NEW_FLOAT( lineFilter, VarianceLineFilter, (), dtype );
-      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter, Framework::Full_AsScalarImage );
+      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter, Framework::FullOption::AsScalarImage );
    DIP_END_STACK_TRACE
 }
 

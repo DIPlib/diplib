@@ -312,7 +312,7 @@ void Histogram::ScalarImageHistogram( Image const& input, Image const& mask, His
       dip::uint parallelOperations = input.NumberOfPixels() * 6;
       dip::uint sequentialOperations = ( GetNumberOfThreads() - 1 ) * ( data_.NumberOfPixels() * 2 + 10000 );
       if( parallelOperations / GetNumberOfThreads() + sequentialOperations + threadingThreshold > parallelOperations ) {
-         opts = Framework::Scan_NoMultiThreading; // Turn off multithreading if we'll do a lot of work to reduce.
+         opts = Framework::ScanOption::NoMultiThreading; // Turn off multithreading if we'll do a lot of work to reduce.
       }
    }
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( input, mask, input.DataType(), *scanLineFilter, opts ));
@@ -339,7 +339,7 @@ void Histogram::TensorImageHistogram( Image const& input, Image const& mask, His
       dip::uint parallelOperations = input.NumberOfPixels() * ndims * 6;
       dip::uint sequentialOperations = ( GetNumberOfThreads() - 1 ) * ( data_.NumberOfPixels() * 2 + 10000 );
       if( parallelOperations / GetNumberOfThreads() + sequentialOperations + threadingThreshold > parallelOperations ) {
-         opts = Framework::Scan_NoMultiThreading; // Turn off multithreading if we'll do a lot of work to reduce.
+         opts = Framework::ScanOption::NoMultiThreading; // Turn off multithreading if we'll do a lot of work to reduce.
       }
    }
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( input, mask, input.DataType(), *scanLineFilter, opts ));
@@ -378,7 +378,7 @@ void Histogram::JointImageHistogram( Image const& input1, Image const& input2, I
       dip::uint parallelOperations = input1.NumberOfPixels() * 2 * 6;
       dip::uint sequentialOperations = ( GetNumberOfThreads() - 1 ) * ( data_.NumberOfPixels() * 2 + 10000 );
       if( parallelOperations / GetNumberOfThreads() + sequentialOperations + threadingThreshold > parallelOperations ) {
-         opts = Framework::Scan_NoMultiThreading; // Turn off multithreading if we'll do a lot of work to reduce.
+         opts = Framework::ScanOption::NoMultiThreading; // Turn off multithreading if we'll do a lot of work to reduce.
       }
    }
    DIP_STACK_TRACE_THIS( Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter, opts ));

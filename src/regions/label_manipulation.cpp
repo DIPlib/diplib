@@ -87,7 +87,7 @@ UnsignedArray GetObjectLabels(
    if( mask.IsForged() ) {
       DIP_THROW_IF( mask.TensorElements() != 1, E::IMAGE_NOT_SCALAR );
       DIP_THROW_IF( !mask.DataType().IsBinary(), E::MASK_NOT_BINARY );
-      DIP_STACK_TRACE_THIS( mask.CompareProperties( label, Option::CmpProps_Sizes ));
+      DIP_STACK_TRACE_THIS( mask.CompareProperties( label, Option::CmpProp::Sizes ));
    }
    bool nullIsObject = BooleanFromString( background, "include", "exclude" );
 
@@ -98,7 +98,7 @@ UnsignedArray GetObjectLabels(
    DIP_OVL_NEW_UINT( scanLineFilter, dip__GetLabels, ( objectIDs ), label.DataType() );
 
    // Do the scan
-   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( label, mask, label.DataType(), *scanLineFilter, Framework::Scan_NoMultiThreading ));
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( label, mask, label.DataType(), *scanLineFilter, Framework::ScanOption::NoMultiThreading ));
 
    // Count the number of unique labels
    dip::uint count = 0;
@@ -173,7 +173,7 @@ void Relabel( Image const& label, Image& out ) {
    DIP_OVL_NEW_UINT( scanLineFilter, dip__Relabel, (), label.DataType() );
 
    // Do the scan
-   DIP_STACK_TRACE_THIS( Framework::ScanMonadic( label, out, label.DataType(), label.DataType(), 1, *scanLineFilter, Framework::Scan_NoMultiThreading ));
+   DIP_STACK_TRACE_THIS( Framework::ScanMonadic( label, out, label.DataType(), label.DataType(), 1, *scanLineFilter, Framework::ScanOption::NoMultiThreading ));
 }
 
 void SmallObjectsRemove(

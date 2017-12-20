@@ -86,7 +86,7 @@ void RectangularUniform(
       DataType dtype = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_FLEX( lineFilter, RectangularUniformLineFilter, ( sizes ), dtype );
-      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter, Framework::Separable_AsScalarImage );
+      Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter, Framework::SeparableOption::AsScalarImage );
    DIP_END_STACK_TRACE
 }
 
@@ -135,7 +135,7 @@ void PixelTableUniform(
       DataType dtype = DataType::SuggestFlex( in.DataType() );
       std::unique_ptr< Framework::FullLineFilter > lineFilter;
       DIP_OVL_NEW_FLEX( lineFilter, PixelTableUniformLineFilter, (), dtype );
-      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter, Framework::Full_AsScalarImage );
+      Framework::Full( in, out, dtype, dtype, dtype, 1, bc, kernel, *lineFilter, Framework::FullOption::AsScalarImage );
    DIP_END_STACK_TRACE
 }
 

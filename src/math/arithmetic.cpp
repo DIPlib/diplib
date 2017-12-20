@@ -202,7 +202,7 @@ void Multiply(
                        ( nOuter, nInner ), dt );
       ImageRefArray outar{ out };
       Framework::Scan( { rhs }, outar, { dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
-                       Framework::Scan_ExpandTensorInBuffer );
+                       Framework::ScanOption::ExpandTensorInBuffer );
       out.ReshapeTensor( outTensor );
    } else {
       // General case
@@ -212,7 +212,7 @@ void Multiply(
                        ( lhs.TensorRows(), rhs.TensorColumns(), lhs.TensorColumns() ), dt );
       ImageRefArray outar{ out };
       Framework::Scan( { lhs, rhs }, outar, { dt, dt }, { dt }, { dt }, { outTensor.Elements() }, *scanLineFilter,
-                       Framework::Scan_ExpandTensorInBuffer );
+                       Framework::ScanOption::ExpandTensorInBuffer );
       out.ReshapeTensor( outTensor );
    }
 }
@@ -325,7 +325,7 @@ class dip__Invert : public Framework::ScanLineFilter {
          dip::sint const outStride = params.outBuffer[ 0 ].stride;
          dip::uint const bufferLength = params.bufferLength;
          for( dip::uint ii = 0; ii < bufferLength; ++ii ) {
-            // Tensor dimension is 1 because we request `Scan_TensorAsSpatialDim`
+            // Tensor dimension is 1 because we request `ScanOption::TensorAsSpatialDim`
             *out = saturated_inv( *in );
             in += inStride;
             out += outStride;
@@ -342,7 +342,7 @@ void Invert(
    DIP_OVL_CALL_ASSIGN_ALL( scanLineFilter, Framework::NewMonadicScanLineFilter, (
          []( auto its ) { return saturated_inv( *its[ 0 ] ); }
    ), dt );
-   Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 

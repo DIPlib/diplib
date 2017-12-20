@@ -334,7 +334,7 @@ void GeneralSEMorphology(
             if( !bc.empty() ) {
                UnsignedArray boundary = kernel.Boundary( in.Dimensionality() );
                ExtendImageDoubleBoundary( in, out, boundary, bc );
-               opts += Framework::Full_BorderAlreadyExpanded;
+               opts += Framework::FullOption::BorderAlreadyExpanded;
             }
             if( hasWeights ) {
                DIP_OVL_NEW_REAL( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::DILATION ), ovltype );
@@ -358,7 +358,7 @@ void GeneralSEMorphology(
             if( !bc.empty() ) {
                UnsignedArray boundary = kernel.Boundary( in.Dimensionality() );
                ExtendImageDoubleBoundary( in, out, boundary, bc );
-               opts += Framework::Full_BorderAlreadyExpanded;
+               opts += Framework::FullOption::BorderAlreadyExpanded;
             }
             if( hasWeights ) {
                DIP_OVL_NEW_REAL( lineFilter, GreyValueSEMorphologyLineFilter, ( Polarity::EROSION ), ovltype );

@@ -208,7 +208,7 @@ void RangeThreshold(
       DIP_OVL_NEW_REAL( lineFilter, RangeThresholdScanLineFilter, ( lowerBound, upperBound, foreground, background ), dataType );
       DIP_START_STACK_TRACE
          ImageRefArray outar{ out };
-         Framework::Scan( { in }, outar, { DT_DFLOAT }, { dataType }, { dataType }, { 0 }, *lineFilter, Framework::Scan_TensorAsSpatialDim );
+         Framework::Scan( { in }, outar, { DT_DFLOAT }, { dataType }, { dataType }, { 0 }, *lineFilter, Framework::ScanOption::TensorAsSpatialDim );
       DIP_END_STACK_TRACE
    }
 }

@@ -202,7 +202,7 @@ class DIP_NO_EXPORT bin {
       constexpr explicit bin( T v ) : v_( static_cast< uint8 >( v != 0 )) {};
 
       /// A bin implicitly converts to bool
-      constexpr operator bool() const { return v_; }
+      constexpr operator bool() const { return v_ != 0; }
 
       /// Negation operator
       constexpr bin operator!() const { return v_ == 0; }
@@ -211,10 +211,10 @@ class DIP_NO_EXPORT bin {
       constexpr bin operator~() const { return v_ == 0; }
 
       /// And operator, prefer to use this over `std::min`.
-      constexpr bin operator&( bin other ) const { return { v_ && other.v_ }; } // Why && and not & ? I don't know...
+      constexpr bin operator&( bin other ) const { return { ( v_ != 0 ) && ( other.v_ != 0 ) }; } // Why && and not & ? Short circuit.
 
       /// Or operator, prefer to use this over `std::max`.
-      constexpr bin operator|( bin other ) const { return { v_ || other.v_ }; } // Why || and not | ? I don't know...
+      constexpr bin operator|( bin other ) const { return { ( v_ != 0 ) || ( other.v_ != 0 ) }; } // Why || and not | ? Short circuit.
 
       /// Exclusive-or operator
       constexpr bin operator^( bin other ) const { return bin( v_ ^ other.v_ ); }
@@ -556,76 +556,97 @@ using RangeArray = DimensionArray< Range >;  ///< An array of ranges
 //
 // The following is support for defining an options type, where the user can
 // specify multiple options to pass on to a function or class. The class should
-// not be used directly, only through the macros defined below it.
+// not be used directly, only through the macro defined below it.
+//
+// With lots of help from Toby Speight: https://codereview.stackexchange.com/a/183260/151754
 //
 
 namespace detail {
 
-template< typename E >
+template< typename Enum, typename = typename std::enable_if< std::is_enum< Enum >::value >::type >
 class DIP_NO_EXPORT dip__Options {
       using value_type = unsigned long;
-      value_type values;
-      constexpr dip__Options( value_type v, int ) : values{ v } {} // used by operator+
+      using enum_u_type = typename std::underlying_type< Enum >::type;
+      value_type values = 0;
+
+   private:
+      // Private constructor used by `operator+` and `operator-`.
+      explicit constexpr dip__Options( value_type n ) noexcept : values{ n } {}
+
    public:
-      constexpr dip__Options() : values( 0 ) {}
-      constexpr dip__Options( dip::uint n ) : values{ 1UL << n } {}
-      constexpr bool operator==( dip__Options const other ) const {
-         return ( values & other.values ) == other.values;
+      constexpr dip__Options() noexcept = default;
+      constexpr dip__Options( Enum n ) noexcept : values{ value_type( 1u ) << static_cast< enum_u_type >( n ) } {}
+
+      // Testing
+      constexpr bool operator==( dip__Options const other ) const noexcept {
+         return values == other.values;
       }
-      constexpr bool operator!=( dip__Options const other ) const {
+      constexpr bool operator!=( dip__Options const other ) const noexcept {
          return !operator==( other );
       }
-      constexpr dip__Options operator+( dip__Options const other ) const {
-         return { values | other.values, 0 };
+      constexpr bool Contains( dip__Options const other ) const noexcept {
+         return ( values & other.values ) == other.values;
       }
-      dip__Options& operator+=( dip__Options const other ) {
+
+      // Combining
+      constexpr dip__Options operator+( dip__Options const other ) const noexcept {
+         return dip__Options{ values | other.values };
+      }
+      constexpr dip__Options operator-( dip__Options const other ) const noexcept {
+         return dip__Options{ values & ~other.values };
+      }
+      dip__Options& operator+=( dip__Options const other ) noexcept {
          values |= other.values;
          return *this;
       }
-      dip__Options& operator-=( dip__Options const other ) {
+      dip__Options& operator-=( dip__Options const other ) noexcept {
          values &= ~other.values;
          return *this;
       }
 };
 
-} // namespace detail
+// This operator enables `enum_value + options`, for symmetry with the operator defined
+// as a member of `dip__Options`.
+template< typename T >
+constexpr dip__Options< T > operator+( T a, dip__Options< T > b ) noexcept {
+   return b + a;
+}
 
-/// \brief Declare a type used to pass options to a function or class.
+/// \brief Declare a type used to pass enumerated options to a function or class.
 ///
 /// This macro is used as follows:
 ///
 /// ```cpp
-///     DIP_DECLARE_OPTIONS( MyOptions );
-///     DIP_DEFINE_OPTION( MyOptions, Option_clean, 0 );
-///     DIP_DEFINE_OPTION( MyOptions, Option_fresh, 1 );
-///     DIP_DEFINE_OPTION( MyOptions, Option_shine, 2 );
+///     enum class MyOption { clean, fresh, shine };
+///     DIP_DECLARE_OPTIONS( MyOption, MyOptions );
 /// ```
 ///
-/// `MyOptions` will be a type that has three non-exclusive flags. Each of the
-/// three DIP_DEFINE_OPTION commands defines a `constexpr` variable for the
-/// given flag. These values can be combined using the `+` operator.
-/// A variable of type `MyOptions` can be tested using the `==` and `!=`
-/// operators, which return a `bool`:
+/// `MyOptions` will be a type that combines one or more values from MyOption.
+/// These values can be combined using the `+` operator.
+/// A variable of type `MyOptions` can be tested using its `Contains` method
+/// which returns a `bool`:
 ///
 /// ```cpp
-///     MyOptions opts {};                      // No options are set
-///     opts = Option_fresh;                    // Set only one option
-///     opts = Option_clean + Option_shine;     // Set only these two options
-///     if( opts == Option_clean ) {...}        // Test to see if `Option_clean` is set
+///     MyOptions opts {};                            // No options are set
+///     opts = MyOption::fresh;                       // Set only one option
+///     opts = MyOption::clean + MyOption::shine;     // Set only these two options
+///     if( opts.Contains( MyOption::clean )) {...}   // Test to see if `MyOption::clean` is set
 /// ```
 ///
-/// It is possible to declare additional values as a combination of existing
-/// values:
+/// The `Contains` method returns true only of all flags specified in the input are set.
+/// The `==` operator returns true only if the two operands contain exactly the same
+/// set of flags.
 ///
-/// ```cpp
-///     DIP_DEFINE_OPTION( MyOptions, Option_freshNclean, Option_fresh + Option_clean );
-/// ```
+/// Note that there should be no more than 32 options within the enumerator.
 ///
-/// For class member values, add `static` in front of `DIP_DEFINE_OPTION`.
-#define DIP_DECLARE_OPTIONS( name ) class name##__Tag; using name = dip::detail::dip__Options< name##__Tag >
+/// This macro will not work within a class definition -- You will need to manually declare the type alias
+/// and define the operator outside of the class.
+#define DIP_DECLARE_OPTIONS( EnumType, OptionsType ) \
+   using OptionsType = dip::detail::dip__Options< EnumType >; \
+   constexpr OptionsType operator+( EnumType a, EnumType b ) noexcept { return OptionsType{ a } + b; }
+// The `operator+` allows the addition of two enumerator values to produce an options object.
 
-/// \brief Use in conjunction with `DIP_DECLARE_OPTIONS`. `index` should be no higher than 31.
-#define DIP_DEFINE_OPTION( name, option, index ) constexpr name option { index }
+} // namespace detail
 
 
 //
@@ -663,47 +684,55 @@ enum class DIP_NO_EXPORT CropLocation {
    BOTTOM_RIGHT,  ///< The corner of the image opposite that of `%TOP_LEFT` is kept in the corner.
 };
 
-/// \class dip::Option::CmpProps
+/// \class dip::Option::CmpPropFlags
 /// \brief Determines which properties to compare.
 ///
 /// Valid values are:
 ///
-/// `%CmpProps` constant      | Definition
-/// ------------------------- | ----------
-/// `CmpProps_DataType`       | Compares data type
-/// `CmpProps_Dimensionality` | Compares number of dimensions
-/// `CmpProps_Sizes`          | Compares image size
-/// `CmpProps_Strides`        | Compares image strides
-/// `CmpProps_TensorShape`    | Compares tensor size and shape
-/// `CmpProps_TensorElements` | Compares number of tensor elements
-/// `CmpProps_TensorStride`   | Compares tensor stride
-/// `CmpProps_ColorSpace`     | Compares color space
-/// `CmpProps_PixelSize`      | Compares pixel size
-/// `CmpProps_Samples`        | `CmpProps_DataType` + `CmpProps_Sizes` + `CmpProps_TensorElements`
-/// `CmpProps_Shape`          | `CmpProps_DataType` + `CmpProps_Sizes` + `CmpProps_TensorShape`
-/// `CmpProps_Full`           | `CmpProps_Shape` + `CmpProps_Strides` + `CmpProps_TensorStride`
-/// `CmpProps_All`            | `CmpProps_Shape` + `CmpProps_ColorSpace` + `CmpProps_PixelSize`
+/// `%CmpPropFlags` constant   | Definition
+/// -------------------------- | ----------
+/// `CmpProp::DataType`        | Compares data type
+/// `CmpProp::Dimensionality`  | Compares number of dimensions
+/// `CmpProp::Sizes`           | Compares image size
+/// `CmpProp::Strides`         | Compares image strides
+/// `CmpProp::TensorShape`     | Compares tensor size and shape
+/// `CmpProp::TensorElements`  | Compares number of tensor elements
+/// `CmpProp::TensorStride`    | Compares tensor stride
+/// `CmpProp::ColorSpace`      | Compares color space
+/// `CmpProp::PixelSize`       | Compares pixel size
+/// `CmpProp::Samples`         | `CmpProp::DataType` + `CmpProp::Sizes` + `CmpProp::TensorElements`
+/// `CmpProp::Shape`           | `CmpProp::DataType` + `CmpProp::Sizes` + `CmpProp::TensorShape`
+/// `CmpProp::Full`            | `CmpProp::Shape` + `CmpProp::Strides` + `CmpProp::TensorStride`
+/// `CmpProp::All`             | `CmpProp::Shape` + `CmpProp::ColorSpace` + `CmpProp::PixelSize`
 ///
-/// Note that you can add these constants together, for example `dip::Option::CmpProps_Sizes + dip::Option::CmpProps_Strides`.
-DIP_DECLARE_OPTIONS( CmpProps );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_DataType, 0 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_Dimensionality, 1 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_Sizes, 2 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_Strides, 3 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorShape, 4 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorElements, 5 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_TensorStride, 6 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_ColorSpace, 7 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_PixelSize, 8 );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_Samples,
-                          CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorElements );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_Shape,
-                          CmpProps_DataType + CmpProps_Sizes + CmpProps_TensorShape );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_Full,
-                          CmpProps_Shape + CmpProps_Strides + CmpProps_TensorStride );
-static DIP_DEFINE_OPTION( CmpProps, CmpProps_All,
-                          CmpProps_Shape + CmpProps_ColorSpace + CmpProps_PixelSize );
-
+/// Note that you can add these constants together, for example `dip::Option::CmpProp::Sizes + dip::Option::CmpProp::Strides`.
+enum class DIP_NO_EXPORT CmpPropEnumerator {
+      DataType,
+      Dimensionality,
+      Sizes,
+      Strides,
+      TensorShape,
+      TensorElements,
+      TensorStride,
+      ColorSpace,
+      PixelSize
+};
+DIP_DECLARE_OPTIONS( CmpPropEnumerator, CmpPropFlags );
+namespace CmpProp {
+constexpr CmpPropFlags DataType = CmpPropEnumerator::DataType;
+constexpr CmpPropFlags Dimensionality = CmpPropEnumerator::Dimensionality;
+constexpr CmpPropFlags Sizes = CmpPropEnumerator::Sizes;
+constexpr CmpPropFlags Strides = CmpPropEnumerator::Strides;
+constexpr CmpPropFlags TensorShape = CmpPropEnumerator::TensorShape;
+constexpr CmpPropFlags TensorElements = CmpPropEnumerator::TensorElements;
+constexpr CmpPropFlags TensorStride = CmpPropEnumerator::TensorStride;
+constexpr CmpPropFlags ColorSpace = CmpPropEnumerator::ColorSpace;
+constexpr CmpPropFlags PixelSize = CmpPropEnumerator::PixelSize;
+constexpr CmpPropFlags Samples = CmpPropEnumerator::DataType + CmpPropEnumerator::Sizes + CmpPropEnumerator::TensorElements;
+constexpr CmpPropFlags Shape = CmpPropEnumerator::DataType + CmpPropEnumerator::Sizes + CmpPropEnumerator::TensorShape;
+constexpr CmpPropFlags Full = Shape + CmpPropEnumerator::Strides + CmpPropEnumerator::TensorStride;
+constexpr CmpPropFlags All = Shape + CmpPropEnumerator::ColorSpace + CmpPropEnumerator::PixelSize;
+}
 
 } // namespace Option
 
@@ -715,21 +744,20 @@ static DIP_DEFINE_OPTION( CmpProps, CmpProps_All,
 
 namespace std {
 
-// Overloaded version of `std::max` for `dip::bin` types
+// Template specialization of `std::max` for `dip::bin` types
 // Note that we cannot do `return a | b;` because std::max needs to return a reference.
 template<>
 inline dip::bin const& max( dip::bin const& a, dip::bin const& b ) {
    return a ? a : b;
 };
 
-// Overloaded version of `std::min` for `dip::bin` types
+// Template specialization of `std::min` for `dip::bin` types
 template<>
 inline dip::bin const& min( dip::bin const& a, dip::bin const& b ) {
    return a ? b : a;
 };
 
 } // namespace std
-
 
 #ifdef DIP__ENABLE_DOCTEST
 #include "doctest.h"
@@ -750,48 +778,41 @@ DOCTEST_TEST_CASE("[DIPlib] testing the dip::bin class") {
 }
 
 DOCTEST_TEST_CASE("[DIPlib] testing the dip::dip__Options class") {
-   DIP_DECLARE_OPTIONS( MyOptions );
-   DIP_DEFINE_OPTION( MyOptions, Option_clean, 0 );
-   DIP_DEFINE_OPTION( MyOptions, Option_fresh, 1 );
-   DIP_DEFINE_OPTION( MyOptions, Option_shine, 2 );
-   DIP_DEFINE_OPTION( MyOptions, Option_flower, 3 );
-   DIP_DEFINE_OPTION( MyOptions, Option_burn, 4 );
-   DIP_DEFINE_OPTION( MyOptions, Option_freshNclean, Option_fresh + Option_clean );
+   enum class MyOption { clean, fresh, shine, flower, burn };
+   //DIP_DECLARE_OPTIONS( MyOption, MyOptions ); // This does not work within a function
+   using MyOptions = dip::detail::dip__Options< MyOption >;
+   constexpr MyOptions MyOption_freshNclean = MyOptions( MyOption::fresh ) + MyOption::clean; // because we haven't declared the operator, this is a little bit more verbose than it should be
    MyOptions opts {};
-   DOCTEST_CHECK( opts != Option_clean );
-   opts = Option_fresh;
-   DOCTEST_CHECK( opts != Option_clean );
-   DOCTEST_CHECK( opts == Option_fresh );
-   DOCTEST_CHECK( opts != Option_fresh + Option_burn );
-   opts = Option_clean + Option_burn;
-   DOCTEST_CHECK( opts == Option_clean );
-   DOCTEST_CHECK( opts == Option_burn );
-   DOCTEST_CHECK( opts == Option_burn + Option_clean );
-   DOCTEST_CHECK( opts != Option_shine );
-   DOCTEST_CHECK( opts != Option_fresh );
-   DOCTEST_CHECK( opts != Option_fresh + Option_burn );
-   opts += Option_shine;
-   DOCTEST_CHECK( opts == Option_clean );
-   DOCTEST_CHECK( opts == Option_burn );
-   DOCTEST_CHECK( opts == Option_shine );
-   DOCTEST_CHECK( opts != Option_fresh );
-   opts = Option_freshNclean;
-   DOCTEST_CHECK( opts == Option_clean );
-   DOCTEST_CHECK( opts == Option_fresh );
-   DOCTEST_CHECK( opts != Option_shine );
-   opts -= Option_clean ;
-   DOCTEST_CHECK( opts != Option_clean );
-   DOCTEST_CHECK( opts == Option_fresh );
-   DOCTEST_CHECK( opts != Option_shine );
+   DOCTEST_CHECK( !opts.Contains( MyOption::clean ));
+   opts = MyOption::fresh;
+   DOCTEST_CHECK( !opts.Contains( MyOption::clean ));
+   DOCTEST_CHECK( opts.Contains( MyOption::fresh ));
+   DOCTEST_CHECK( !opts.Contains( MyOptions( MyOption::fresh ) + MyOption::burn ));
+   opts = MyOptions( MyOption::clean ) + MyOption::burn;
+   DOCTEST_CHECK( opts.Contains( MyOption::clean ));
+   DOCTEST_CHECK( opts.Contains( MyOption::burn ));
+   DOCTEST_CHECK( opts.Contains( MyOptions( MyOption::burn ) + MyOption::clean ));
+   DOCTEST_CHECK( !opts.Contains( MyOption::shine ));
+   DOCTEST_CHECK( !opts.Contains( MyOption::fresh ));
+   DOCTEST_CHECK( !opts.Contains( MyOptions( MyOption::fresh ) + MyOption::burn ));
+   opts += MyOption::shine;
+   DOCTEST_CHECK( opts.Contains( MyOption::clean ));
+   DOCTEST_CHECK( opts.Contains( MyOption::burn ));
+   DOCTEST_CHECK( opts.Contains( MyOption::shine ));
+   DOCTEST_CHECK( !opts.Contains( MyOption::fresh ));
+   opts = MyOption_freshNclean;
+   DOCTEST_CHECK( opts.Contains( MyOption::clean ));
+   DOCTEST_CHECK( opts.Contains( MyOption::fresh ));
+   DOCTEST_CHECK( !opts.Contains( MyOption::shine ));
+   opts -= MyOption::clean ;
+   DOCTEST_CHECK( !opts.Contains( MyOption::clean ));
+   DOCTEST_CHECK( opts.Contains( MyOption::fresh ));
+   DOCTEST_CHECK( !opts.Contains( MyOption::shine ));
 
-   DIP_DECLARE_OPTIONS( HisOptions );
-   DIP_DEFINE_OPTION( HisOptions, Option_ugly, 0 );
-   DIP_DEFINE_OPTION( HisOptions, Option_cheap, 1 );
-   DIP_DEFINE_OPTION( HisOptions, Option_fast, 1 );  // repeated value
-   DOCTEST_CHECK( Option_cheap == Option_fast );
-
-   // DOCTEST_CHECK( Option_cheap == Option_shine ); // compiler error: assignment different types
-   // HisOptions b = Option_fast + Option_flower;    // compiler error: addition different types
+   //enum class HisOption { ugly, cheap, fast, };
+   //DIP_DECLARE_OPTIONS( HisOption, HisOptions );
+   //DOCTEST_CHECK( MyOptions( MyOption::clean ).Contains( HisOption::cheap )); // compiler error: comparison different types
+   //HisOptions b = HisOptions( HisOption::fast ) + MyOption::flower;    // compiler error: addition different types
 }
 
 #endif // DIP__ENABLE_DOCTEST

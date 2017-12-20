@@ -76,7 +76,7 @@ void Not(
    DIP_OVL_CALL_ASSIGN_INT_OR_BIN( scanLineFilter, Framework::NewMonadicScanLineFilter, (
          []( auto its ) { return static_cast< decltype( *its[ 0 ] ) >( ~*its[ 0 ] ); } // integer promotion causes compiler warnings
    ), dt );
-   Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, dt, dt, 1, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 

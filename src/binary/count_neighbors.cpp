@@ -194,10 +194,10 @@ void CountNeighbors(
    dip__CountNeighbors< false > scanLineFilter( neighbors, offsets, all, edgeCondition, in.Sizes() );
    // We're guaranteed here that the framework will not use a temporary input buffer, because:
    //  - The input image is DT_BIN, and we request a DT_BIN buffer, and
-   //  - We did not give the Scan_ExpandTensorInBuffer option.
+   //  - We did not give the ScanOption::ExpandTensorInBuffer option.
    // Thus we can access pixels outside of the scan line in our scanLineFilter. Be careful when doing this!
    ImageRefArray outar{ out };
-   Framework::Scan( { in }, outar, { DT_BIN }, { DT_UINT8 }, { DT_UINT8 }, { 1 }, scanLineFilter, Framework::Scan_NeedCoordinates );
+   Framework::Scan( { in }, outar, { DT_BIN }, { DT_UINT8 }, { DT_UINT8 }, { 1 }, scanLineFilter, Framework::ScanOption::NeedCoordinates );
 }
 
 void MajorityVote(
@@ -216,10 +216,10 @@ void MajorityVote(
    dip__CountNeighbors< true > scanLineFilter( neighbors, offsets, true, edgeCondition, in.Sizes() );
    // We're guaranteed here that the framework will not use a temporary input buffer, because:
    //  - The input image is DT_BIN, and we request a DT_BIN buffer, and
-   //  - We did not give the Scan_ExpandTensorInBuffer option.
+   //  - We did not give the ScanOption::ExpandTensorInBuffer option.
    // Thus we can access pixels outside of the scan line in our scanLineFilter. Be careful when doing this!
    ImageRefArray outar{ out };
-   Framework::Scan( { in }, outar, { DT_BIN }, { DT_BIN }, { DT_BIN }, { 1 }, scanLineFilter, Framework::Scan_NeedCoordinates );
+   Framework::Scan( { in }, outar, { DT_BIN }, { DT_BIN }, { DT_BIN }, { 1 }, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    // Note that we're requesting a binary output image and binary output buffers. The scan line filter uses uint8
    // buffers. These are the same size by definition, so this works fine.
 }

@@ -76,7 +76,7 @@ void UniformNoise( Image const& in, Image& out, Random& random, dfloat lowerBoun
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    UniformScanLineFilter filter( random, lowerBound, upperBound );
    DataType dt = in.DataType();
-   Framework::ScanMonadic( in, out, DT_DFLOAT, dt, 1, filter, Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, DT_DFLOAT, dt, 1, filter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 namespace {
@@ -124,7 +124,7 @@ void GaussianNoise( Image const& in, Image& out, Random& random, dfloat variance
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    GaussianScanLineFilter filter( random, std::sqrt( variance ));
    DataType dt = in.DataType();
-   Framework::ScanMonadic( in, out, DT_DFLOAT, dt, 1, filter, Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, DT_DFLOAT, dt, 1, filter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 namespace {
@@ -172,7 +172,7 @@ void PoissonNoise( Image const& in, Image& out, Random& random, dfloat conversio
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    PoissonScanLineFilter filter( random, conversion );
    DataType dt = in.DataType();
-   Framework::ScanMonadic( in, out, DT_DFLOAT, dt, 1, filter, Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, DT_DFLOAT, dt, 1, filter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 namespace {
@@ -221,7 +221,7 @@ void BinaryNoise( Image const& in, Image& out, Random& random, dfloat p10, dfloa
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.DataType().IsBinary(), E::IMAGE_NOT_BINARY );
    BinaryScanLineFilter filter( random, p10, p01 );
-   Framework::ScanMonadic( in, out, DT_BIN, DT_BIN, 1, filter, Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, DT_BIN, DT_BIN, 1, filter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 void FillColoredNoise( Image& out, Random& random, dfloat variance, dfloat color ) {

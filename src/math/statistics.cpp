@@ -280,7 +280,7 @@ UnsignedArray MaximumPixel( Image const& in, Image const& mask, String const& po
    std::unique_ptr< dip__MaxMinPixel > scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__MaxPixel, ( first ), dataType );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, dataType, *scanLineFilter,
-                                                     Framework::Scan_NeedCoordinates ));
+                                                     Framework::ScanOption::NeedCoordinates ));
    return scanLineFilter->GetResult();
 }
 
@@ -292,7 +292,7 @@ UnsignedArray MinimumPixel( Image const& in, Image const& mask, String const& po
    std::unique_ptr< dip__MaxMinPixel > scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__MinPixel, ( first ), dataType );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, dataType, *scanLineFilter,
-                                                     Framework::Scan_NeedCoordinates ));
+                                                     Framework::ScanOption::NeedCoordinates ));
    return scanLineFilter->GetResult();
 }
 
@@ -336,10 +336,10 @@ void CumulativeSum(
    if( mask.IsForged() ) {
       Select( in, Image( 0, dataType ), mask, out );
       DIP_STACK_TRACE_THIS( Framework::Separable( out, out, dataType, dataType, process, { 0 }, {}, *lineFilter,
-                                                  Framework::Separable_AsScalarImage ));
+                                                  Framework::SeparableOption::AsScalarImage ));
    } else {
       DIP_STACK_TRACE_THIS( Framework::Separable( in, out, dataType, dataType, process, { 0 }, {}, *lineFilter,
-                                                  Framework::Separable_AsScalarImage ));
+                                                  Framework::SeparableOption::AsScalarImage ));
    }
 }
 
@@ -415,7 +415,7 @@ MinMaxAccumulator MaximumAndMinimum(
    std::unique_ptr< dip__MaximumAndMinimumBase > scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__MaximumAndMinimum, (), c_in.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( c_in, mask, c_in.DataType(), *scanLineFilter,
-                                                     Framework::Scan_TensorAsSpatialDim ));
+                                                     Framework::ScanOption::TensorAsSpatialDim ));
    return scanLineFilter->GetResult();
 }
 
@@ -479,7 +479,7 @@ StatisticsAccumulator SampleStatistics(
    std::unique_ptr< dip__SampleStatisticsBase > scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__SampleStatistics, (), in.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter,
-                                                     Framework::Scan_TensorAsSpatialDim ));
+                                                     Framework::ScanOption::TensorAsSpatialDim ));
    return scanLineFilter->GetResult();
 }
 
@@ -544,7 +544,7 @@ CovarianceAccumulator Covariance(
       Image const& in2,
       Image const& c_mask ) {
    DIP_THROW_IF( !in1.IsForged() || !in2.IsForged(), E::IMAGE_NOT_FORGED );
-   DIP_STACK_TRACE_THIS( in1.CompareProperties( in2, Option::CmpProps_Sizes + Option::CmpProps_TensorElements ));
+   DIP_STACK_TRACE_THIS( in1.CompareProperties( in2, Option::CmpProp::Sizes + Option::CmpProp::TensorElements ));
    DataType ovlDataType = DataType::SuggestDyadicOperation( in1.DataType(), in2.DataType() );
    ImageConstRefArray inar;
    inar.reserve( 3 );
@@ -566,7 +566,7 @@ CovarianceAccumulator Covariance(
    std::unique_ptr< dip__CovarianceBase > scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__Covariance, (), ovlDataType );
    DIP_STACK_TRACE_THIS( Framework::Scan( inar, outar, inBufT, {}, {}, {}, *scanLineFilter,
-                                          Framework::Scan_TensorAsSpatialDim ));
+                                          Framework::ScanOption::TensorAsSpatialDim ));
    return scanLineFilter->GetResult();
 }
 
@@ -656,7 +656,7 @@ FloatArray CenterOfMass(
    std::unique_ptr< dip__CenterOfMassBase > scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__CenterOfMass, ( in.Dimensionality() ), in.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter,
-                                                     Framework::Scan_NeedCoordinates ));
+                                                     Framework::ScanOption::NeedCoordinates ));
    return scanLineFilter->GetResult();
 }
 
@@ -729,7 +729,7 @@ MomentAccumulator Moments(
    std::unique_ptr< dip__MomentsBase > scanLineFilter;
    DIP_OVL_NEW_NONCOMPLEX( scanLineFilter, dip__Moments, ( in.Dimensionality() ), in.DataType() );
    DIP_STACK_TRACE_THIS( Framework::ScanSingleInput( in, mask, in.DataType(), *scanLineFilter,
-                                                     Framework::Scan_NeedCoordinates ));
+                                                     Framework::ScanOption::NeedCoordinates ));
    return scanLineFilter->GetResult();
 }
 

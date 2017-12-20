@@ -413,7 +413,7 @@ void Determinant( Image const& in, Image& out ) {
             );
             buffertype = DT_DFLOAT;
          }
-         Framework::ScanMonadic( in, out, buffertype, outtype, 1, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
+         Framework::ScanMonadic( in, out, buffertype, outtype, 1, *scanLineFilter, Framework::ScanOption::ExpandTensorInBuffer );
       }
    }
 }
@@ -467,7 +467,7 @@ void Rank( Image const& in, Image& out ) {
    }
    ImageRefArray outar{ out };
    Framework::Scan( { in }, outar, { intype }, { DT_UINT8 }, { DT_UINT8 }, { 1 }, *scanLineFilter,
-                    Framework::Scan_ExpandTensorInBuffer );
+                    Framework::ScanOption::ExpandTensorInBuffer );
 }
 
 void Eigenvalues( Image const& in, Image& out ) {
@@ -507,7 +507,7 @@ void Eigenvalues( Image const& in, Image& out ) {
       }
       ImageRefArray outar{ out };
       Framework::Scan( { in }, outar, { inbuffertype }, { outbuffertype }, { outtype }, { n }, *scanLineFilter,
-                       Framework::Scan_ExpandTensorInBuffer );
+                       Framework::ScanOption::ExpandTensorInBuffer );
    }
 }
 
@@ -551,7 +551,7 @@ void EigenDecomposition( Image const& in, Image& out, Image& eigenvectors ) {
       }
       ImageRefArray outar{ out, eigenvectors };
       Framework::Scan( { in }, outar, { inbuffertype }, { outbuffertype, outbuffertype }, { outtype, outtype },
-                       { n, n * n }, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
+                       { n, n * n }, *scanLineFilter, Framework::ScanOption::ExpandTensorInBuffer );
       eigenvectors.ReshapeTensor( n, n );
       out.ReshapeTensorAsDiagonal();
    }
@@ -576,7 +576,7 @@ void Inverse( Image const& in, Image& out ) {
    }
    ImageRefArray outar{ out };
    Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { n * n }, *scanLineFilter,
-                    Framework::Scan_ExpandTensorInBuffer );
+                    Framework::ScanOption::ExpandTensorInBuffer );
    out.ReshapeTensor( n, n );
 }
 
@@ -599,7 +599,7 @@ void PseudoInverse( Image const& in, Image& out, dfloat tolerance ) {
    }
    ImageRefArray outar{ out };
    Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { n * m }, *scanLineFilter,
-                    Framework::Scan_ExpandTensorInBuffer );
+                    Framework::ScanOption::ExpandTensorInBuffer );
    out.ReshapeTensor( n, m );
 }
 
@@ -623,7 +623,7 @@ void SingularValues( Image const& in, Image& out ) {
    }
    ImageRefArray outar{ out };
    Framework::Scan( { in }, outar, { buffertype }, { buffertype }, { outtype }, { p }, *scanLineFilter,
-                    Framework::Scan_ExpandTensorInBuffer );
+                    Framework::ScanOption::ExpandTensorInBuffer );
 }
 
 void SingularValueDecomposition( Image const& in, Image& U, Image& out, Image& V ) {
@@ -646,7 +646,7 @@ void SingularValueDecomposition( Image const& in, Image& U, Image& out, Image& V
    }
    ImageRefArray outar{ out, U, V };
    Framework::Scan( { in }, outar, { buffertype }, { buffertype, buffertype, buffertype }, { outtype, outtype, outtype },
-                    { p, m * p, n * p }, *scanLineFilter, Framework::Scan_ExpandTensorInBuffer );
+                    { p, m * p, n * p }, *scanLineFilter, Framework::ScanOption::ExpandTensorInBuffer );
    U.ReshapeTensor( m, p );
    V.ReshapeTensor( n, p );
    out.ReshapeTensorAsDiagonal();

@@ -102,7 +102,7 @@ void Clip(
       DataType dtype = in.DataType();
       std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
       DIP_OVL_NEW_REAL( scanLineFilter, ClipLineFilter, ( low, high ), dtype );
-      Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+      Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
    DIP_END_STACK_TRACE
 }
 
@@ -165,7 +165,7 @@ void ErfClip(
       }
       ErfClipLineFilter scanLineFilter( threshold, range, options );
       DataType outType = DataType::SuggestFloat( in.DataType() );
-      Framework::ScanMonadic( in, out, DT_DFLOAT, outType, in.TensorElements(), scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+      Framework::ScanMonadic( in, out, DT_DFLOAT, outType, in.TensorElements(), scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
    DIP_END_STACK_TRACE
 }
 
@@ -402,7 +402,7 @@ void ContrastStretch(
    } else {
       DIP_THROW( E::INVALID_FLAG );
    }
-   Framework::ScanMonadic( in, out, DT_DFLOAT, outType, in.TensorElements(), *lineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::ScanMonadic( in, out, DT_DFLOAT, outType, in.TensorElements(), *lineFilter, Framework::ScanOption::TensorAsSpatialDim );
 }
 
 } // namespace dip

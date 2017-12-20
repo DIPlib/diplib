@@ -495,7 +495,7 @@ void dip__DrawEllipsoid(
    }
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
    DIP_OVL_NEW_ALL( lineFilter, dip__DrawEllipsoidLineFilter, ( sizes, origin, value, tmp.TensorElements(), norm ), tmp.DataType() );
-   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::Scan_NeedCoordinates ));
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::ScanOption::NeedCoordinates ));
    // NOTE: because of the way we call the Scan framework, we know for sure that it won't use a temporary buffer for
    // the output samples, and thus we get to write directly in the output. We can modify only select pixels in the
    // output image.

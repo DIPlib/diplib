@@ -852,10 +852,10 @@ void FourierTransform(
       std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
       DIP_OVL_NEW_COMPLEX( lineFilter, DFTLineFilter, ( outSize, process, inverse, corner, symmetric ), dtype );
       Framework::Separable( in_copy, tmp, dtype, dtype, process, border, bc, *lineFilter,
-            Framework::Separable_UseInputBuffer +   // input stride is always 1
-            Framework::Separable_UseOutputBuffer +  // output stride is always 1
-            Framework::Separable_DontResizeOutput + // output is potentially larger than input, if padding with zeros
-            Framework::Separable_AsScalarImage      // each tensor element processed separately
+            Framework::SeparableOption::UseInputBuffer +   // input stride is always 1
+            Framework::SeparableOption::UseOutputBuffer +  // output stride is always 1
+            Framework::SeparableOption::DontResizeOutput + // output is potentially larger than input, if padding with zeros
+            Framework::SeparableOption::AsScalarImage      // each tensor element processed separately
       );
    DIP_END_STACK_TRACE
    // Produce real-valued output

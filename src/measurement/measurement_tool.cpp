@@ -167,7 +167,7 @@ Measurement MeasurementTool::Measure(
    DIP_THROW_IF( !label.DataType().IsUInt(), E::DATA_TYPE_NOT_SUPPORTED );
    if( grey.IsForged() ) {
       DIP_THROW_IF( !grey.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
-      DIP_STACK_TRACE_THIS( grey.CompareProperties( label, Option::CmpProps_Sizes ));
+      DIP_STACK_TRACE_THIS( grey.CompareProperties( label, Option::CmpProp::Sizes ));
    }
 
    Measurement measurement;
@@ -261,7 +261,7 @@ Measurement MeasurementTool::Measure(
       // Do the scan, which calls dip::Feature::LineBased::ScanLine()
       MeasureLineFilter functor{ lineBasedFeatures, measurement.ObjectIndices() };
       Framework::Scan( inar, outar, inBufT, {}, {}, {}, functor,
-            Framework::Scan_NoMultiThreading + Framework::Scan_NeedCoordinates );
+            Framework::ScanOption::NoMultiThreading + Framework::ScanOption::NeedCoordinates );
 
       // Call dip::Feature::LineBased::Finish()
       for( auto const& feature : lineBasedFeatures ) {

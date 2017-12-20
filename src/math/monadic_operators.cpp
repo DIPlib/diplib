@@ -80,43 +80,43 @@ inline std::unique_ptr< Framework::ScanLineFilter > NewBinScanLineFilter( F cons
 
 #define DIP__MONADIC_OPERATOR_FLEX( functionName_, functionLambda_, inputDomain_, cost_ ) \
    void functionName_( Image const& in, Image& out ) { \
-      DIP_THROW_IF( inputDomain_ != in.DataType(), E::DATA_TYPE_NOT_SUPPORTED ); \
+      DIP_THROW_IF( !in.DataType().IsA( inputDomain_ ), E::DATA_TYPE_NOT_SUPPORTED ); \
       DataType dtype = DataType::SuggestFlex( in.DataType() ); \
       std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
       DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
       Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, \
-                              Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
+                              Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim ); \
    }
 
 #define DIP__MONADIC_OPERATOR_FLOAT( functionName_, functionLambda_, inputDomain_, cost_ ) \
    void functionName_( Image const& in, Image& out ) { \
-      DIP_THROW_IF( inputDomain_ != in.DataType(), E::DATA_TYPE_NOT_SUPPORTED ); \
+      DIP_THROW_IF( !in.DataType().IsA( inputDomain_ ), E::DATA_TYPE_NOT_SUPPORTED ); \
       DataType dtype = DataType::SuggestFloat( in.DataType() ); \
       std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
       DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
       Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, \
-                              Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
+                              Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim ); \
    }
 
 #define DIP__MONADIC_OPERATOR_FLOAT_WITH_PARAM( functionName_, paramType_, paramName_, functionLambda_, inputDomain_, cost_ ) \
    void functionName_( Image const& in, Image& out, paramType_ paramName_ ) { \
-      DIP_THROW_IF( inputDomain_ != in.DataType(), E::DATA_TYPE_NOT_SUPPORTED ); \
+      DIP_THROW_IF( !in.DataType().IsA( inputDomain_ ), E::DATA_TYPE_NOT_SUPPORTED ); \
       DataType dtype = DataType::SuggestFloat( in.DataType() ); \
       std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
       DIP_OVL_CALL_ASSIGN_FLOAT( scanLineFilter, Framework::NewMonadicScanLineFilter, ( functionLambda_, cost_ ), dtype ); \
       Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter, \
-                              Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
+                              Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim ); \
    }
 
 #define DIP__MONADIC_OPERATOR_BIN( functionName_, functionLambda_, inputDomain_, defaultValue_ ) \
    void functionName_( Image const& in, Image& out ) { \
       DataType dtype = in.DataType(); \
-      if( inputDomain_ == dtype ) { \
+      if( dtype.IsA( inputDomain_ )) { \
          std::unique_ptr <Framework::ScanLineFilter> scanLineFilter; \
          DIP_OVL_CALL_ASSIGN_FLEX( scanLineFilter, NewBinScanLineFilter, ( functionLambda_ ), dtype ); \
          ImageRefArray outar{ out }; \
          Framework::Scan( { in }, outar, { dtype }, { DT_BIN }, { DT_BIN }, { 1 }, *scanLineFilter, \
-                          Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim ); \
+                          Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim ); \
       } else { \
          out.ReForge( in, DT_BIN ); \
          out.SetPixelSize( in.PixelSize() ); \
@@ -206,7 +206,7 @@ void Abs( Image const& in, Image& out ) {
       DIP_OVL_NEW_SIGNED( scanLineFilter, AbsLineFilter, (), dtype );
       ImageRefArray outar{ out };
       Framework::Scan( { in }, outar, { dtype }, { otype }, { otype }, { 1 }, *scanLineFilter,
-                       Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
+                       Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim );
    } else {
       out = in;
    }
@@ -220,7 +220,7 @@ void SquareModulus( Image const& in, Image& out ) {
    DIP_OVL_NEW_COMPLEX( scanLineFilter, SquareModulusLineFilter, (), dtype );
    ImageRefArray outar{ out };
    Framework::Scan( { in }, outar, { dtype }, { otype }, { otype }, { 1 }, *scanLineFilter,
-                    Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
+                    Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim );
 }
 
 void Phase( Image const& in, Image& out ) {
@@ -231,7 +231,7 @@ void Phase( Image const& in, Image& out ) {
    DIP_OVL_NEW_COMPLEX( scanLineFilter, PhaseLineFilter, (), dtype );
    ImageRefArray outar{ out };
    Framework::Scan( { in }, outar, { dtype }, { otype }, { otype }, { 1 }, *scanLineFilter,
-                    Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
+                    Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim );
 }
 
 
@@ -244,7 +244,7 @@ void Conjugate( Image const& in, Image& out ) {
             []( auto its ) { return std::conj( *its[ 0 ] ); }
       ), dtype );
       Framework::ScanMonadic( in, out, dtype, dtype, in.TensorElements(), *scanLineFilter,
-                              Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
+                              Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim );
    } else {
       out = in;
    }
@@ -274,13 +274,13 @@ class SignLineFilter : public Framework::ScanLineFilter {
 } // namespace
 
 void Sign( Image const& in, Image& out ) {
-   DIP_THROW_IF(( DataType::Class_SInt + DataType::Class_Float ) != in.DataType(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( !in.DataType().IsA( DataType::Class_SInt + DataType::Class_Float ), E::DATA_TYPE_NOT_SUPPORTED );
    DataType dtype = in.DataType();
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, SignLineFilter, (), dtype );
    ImageRefArray outar{ out };
    Framework::Scan( { in }, outar, { dtype }, { DT_SINT8 }, { DT_SINT8 }, { 1 }, *scanLineFilter,
-                    Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
+                    Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim );
 }
 
 
@@ -307,13 +307,13 @@ class NearestIntLineFilter : public Framework::ScanLineFilter {
 } // namespace
 
 void NearestInt( Image const& in, Image& out ) {
-   DIP_THROW_IF( DataType::Class_Float != in.DataType(), E::DATA_TYPE_NOT_SUPPORTED );
+   DIP_THROW_IF( !in.DataType().IsFloat(), E::DATA_TYPE_NOT_SUPPORTED );
    DataType dtype = in.DataType();
    std::unique_ptr< Framework::ScanLineFilter > scanLineFilter;
    DIP_OVL_NEW_FLOAT( scanLineFilter, NearestIntLineFilter, (), dtype );
    ImageRefArray outar{ out };
    Framework::Scan( { in }, outar, { dtype }, { DT_SINT32 }, { DT_SINT32 }, { 1 }, *scanLineFilter,
-                    Framework::Scan_NoSingletonExpansion + Framework::Scan_TensorAsSpatialDim );
+                    Framework::ScanOption::NoSingletonExpansion + Framework::ScanOption::TensorAsSpatialDim );
 }
 
 

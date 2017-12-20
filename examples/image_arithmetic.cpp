@@ -110,7 +110,7 @@ int main( void ) {
    DIP_OVL_CALL_ASSIGN_REAL( monadicLineFilter, NewFilter, (
          [ = ]( auto its ) { return ( decltype( *its[ 0 ] ))(( std::cos( *its[ 0 ] ) * 100 ) + offset ); }
    ), dt );
-   dip::Framework::ScanMonadic( in1, out, dt, dt, in1.TensorElements(), *monadicLineFilter, dip::Framework::Scan_TensorAsSpatialDim );
+   dip::Framework::ScanMonadic( in1, out, dt, dt, in1.TensorElements(), *monadicLineFilter, dip::Framework::ScanOption::TensorAsSpatialDim );
    timer.Stop();
    std::cout << "monadicLineFilter: " << timer << std::endl;
 

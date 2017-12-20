@@ -82,7 +82,7 @@ void ExtendImage(
       Image& out,
       UnsignedArray borderSizes, // by copy so we can modify it
       BoundaryConditionArray const& boundaryConditions,
-      Option::ExtendImage options
+      Option::ExtendImageFlags options
 ) {
    // Test input arguments
    dip::uint nDims;
@@ -113,7 +113,7 @@ void ExtendImage(
    }
    Tensor tensor = in.Tensor();
    bool expandTensor = false;
-   if( !tensor.HasNormalOrder() && ( options == Option::ExtendImage_ExpandTensor )) {
+   if( !tensor.HasNormalOrder() && options.Contains( Option::ExtendImage::ExpandTensor )) {
       expandTensor = true;
       tensor = { tensor.Rows(), tensor.Columns() };
    }
@@ -137,7 +137,7 @@ void ExtendImage(
    DIP_STACK_TRACE_THIS( ExtendRegion( out, ranges, boundaryConditions ));
 
    // Produce output by either using `out` directly or making a window of the original size over it.
-   if( options == Option::ExtendImage_Masked ) {
+   if( options.Contains( Option::ExtendImage::Masked )) {
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          dip::sint b = static_cast< dip::sint >( borderSizes[ ii ] );
          ranges[ ii ] = Range{ b, -b-1 };

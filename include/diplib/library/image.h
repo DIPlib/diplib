@@ -830,7 +830,7 @@ class DIP_NO_EXPORT Image {
       /// returns true/false or throws an error.
       DIP_EXPORT bool CompareProperties(
             Image const& src,
-            Option::CmpProps cmpProps,
+            Option::CmpPropFlags cmpProps,
             Option::ThrowException throwException = Option::ThrowException::DO_THROW
       ) const;
 

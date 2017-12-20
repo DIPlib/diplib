@@ -126,7 +126,7 @@ void DrawBandlimitedPoint(
    }
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
    DIP_OVL_NEW_NONBINARY( lineFilter, dip__DrawBandlimitedPointLineFilter, ( sigmas, origin, value, tmp.TensorElements(), truncation ), tmp.DataType() );
-   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::Scan_NeedCoordinates ));
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::ScanOption::NeedCoordinates ));
    // NOTE: because of the way we call the Scan framework, we know for sure that it won't use a temporary buffer for
    // the output samples, and thus we get to write directly in the output. We can modify only select pixels in the
    // output image.
@@ -256,7 +256,7 @@ void DrawBandlimitedLine(
    end += origin;
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
    DIP_OVL_NEW_NONBINARY( lineFilter, dip__DrawBandlimitedLineLineFilter, ( start, end, value, tmp.TensorElements(), sigma, margin ), tmp.DataType() );
-   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::Scan_NeedCoordinates ));
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::ScanOption::NeedCoordinates ));
    // NOTE: because of the way we call the Scan framework, we know for sure that it won't use a temporary buffer for
    // the output samples, and thus we get to write directly in the output. We can modify only select pixels in the
    // output image.
@@ -458,7 +458,7 @@ void DrawBandlimitedBall(
    }
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
    DIP_OVL_NEW_NONBINARY( lineFilter, dip__DrawBandlimitedBallLineFilter, ( diameter, origin, value, tmp.TensorElements(), filled, sigma, margin ), tmp.DataType() );
-   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::Scan_NeedCoordinates ));
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::ScanOption::NeedCoordinates ));
    // NOTE: because of the way we call the Scan framework, we know for sure that it won't use a temporary buffer for
    // the output samples, and thus we get to write directly in the output. We can modify only select pixels in the
    // output image.
@@ -684,7 +684,7 @@ void DrawBandlimitedBox(
    }
    std::unique_ptr< Framework::ScanLineFilter > lineFilter;
    DIP_OVL_NEW_NONBINARY( lineFilter, dip__DrawBandlimitedBoxLineFilter, ( sizes, origin, value, tmp.TensorElements(), filled, sigma, margin ), tmp.DataType() );
-   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::Scan_NeedCoordinates ));
+   DIP_STACK_TRACE_THIS( Framework::ScanSingleOutput( tmp, tmp.DataType(), *lineFilter, Framework::ScanOption::NeedCoordinates ));
    // NOTE: because of the way we call the Scan framework, we know for sure that it won't use a temporary buffer for
    // the output samples, and thus we get to write directly in the output. We can modify only select pixels in the
    // output image.

@@ -789,10 +789,10 @@ void GaussIIR(
             border,
             bc,
             lineFilter,
-            Framework::Separable_AsScalarImage
-            + Framework::Separable_UseOutputBorder
-            + Framework::Separable_UseInputBuffer // ensures that there's no strides
-            + Framework::Separable_UseOutputBuffer // ensures that there's no strides
+            Framework::SeparableOption::AsScalarImage
+            + Framework::SeparableOption::UseOutputBorder
+            + Framework::SeparableOption::UseInputBuffer // ensures that there's no strides
+            + Framework::SeparableOption::UseOutputBuffer // ensures that there's no strides
       );
    DIP_END_STACK_TRACE
 }

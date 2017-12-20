@@ -190,7 +190,7 @@ void FillRamp( Image& out, dip::uint dimension, StringSet const& mode ) {
       CoordinateMode coordinateMode = ParseMode( mode );
       Transformation transformation = FindTransformation( out.Size( dimension ), dimension, coordinateMode, out.PixelSize( dimension ) );
       dip__Ramp scanLineFilter( dimension, transformation );
-      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }
 
@@ -237,7 +237,7 @@ void FillRadiusCoordinate( Image& out, StringSet const& mode ) {
          transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ) );
       }
       dip__Radius scanLineFilter( transformation );
-      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }
 
@@ -284,7 +284,7 @@ void FillRadiusSquareCoordinate( Image& out, StringSet const& mode ) {
          transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ) );
       }
       dip__RadiusSquare scanLineFilter( transformation );
-      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }
 
@@ -340,7 +340,7 @@ void FillPhiCoordinate( Image& out, StringSet const& mode ) {
          transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ) );
       }
       dip__Phi scanLineFilter( transformation );
-      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }
 
@@ -404,7 +404,7 @@ void FillThetaCoordinate( Image& out, StringSet const& mode ) {
          transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ) );
       }
       dip__Theta scanLineFilter( transformation );
-      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }
 
@@ -523,7 +523,7 @@ void FillCoordinates( Image& out, StringSet const& mode, String const& system ) 
          transformation[ ii ] = FindTransformation( out.Size( ii ), ii, coordinateMode, out.PixelSize( ii ) );
       }
       dip__Coordinates scanLineFilter( spherical, transformation );
-      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::Scan_NeedCoordinates );
+      Framework::ScanSingleOutput( out, DT_DFLOAT, scanLineFilter, Framework::ScanOption::NeedCoordinates );
    DIP_END_STACK_TRACE
 }
 

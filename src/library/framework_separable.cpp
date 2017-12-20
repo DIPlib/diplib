@@ -74,7 +74,7 @@ void Separable(
 
    // Determine output sizes
    UnsignedArray outSizes;
-   if( opts == Separable_DontResizeOutput ) {
+   if( opts.Contains( SeparableOption::DontResizeOutput )) {
       outSizes = c_out.Sizes();
       DIP_THROW_IF( outSizes.size() != nDims, E::DIMENSIONALITIES_DONT_MATCH );
       for( size_t ii = 0; ii < nDims; ++ii ) {
@@ -99,7 +99,7 @@ void Separable(
    // Determine number of tensor elements and do tensor to spatial dimension if necessary
    Tensor outTensor = input.Tensor();
    bool tensorToSpatial = false;
-   if( opts == Separable_AsScalarImage ) {
+   if( opts.Contains( SeparableOption::AsScalarImage )) {
       if( !input.IsScalar() ) {
          input.TensorToSpatial();
          process.push_back( false );
@@ -109,7 +109,7 @@ void Separable(
          inSizes = input.Sizes();
       }
    } else {
-      if(( opts == Separable_ExpandTensorInBuffer ) && !input.Tensor().HasNormalOrder() ) {
+      if( opts.Contains( SeparableOption::ExpandTensorInBuffer ) && !input.Tensor().HasNormalOrder() ) {
          lookUpTable = input.Tensor().LookUpTable();
          outTensor.SetMatrix( input.Tensor().Rows(), input.Tensor().Columns() );
          colorSpace.clear(); // the output tensor shape is different from the input's, the color space presumably doesn't match
@@ -158,7 +158,7 @@ void Separable(
    sortIndices( order, input.Strides() );
    // Step 3: sort the list of dimensions again, so that the dimension that reduces the size of the image
    // the most is processed first.
-   if ( opts == Separable_DontResizeOutput ) { // else: all `grow` is 1.
+   if ( opts.Contains( SeparableOption::DontResizeOutput )) { // else: all `grow` is 1.
       FloatArray grow( nDims );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
          grow[ ii ] = static_cast< dfloat >( outSizes[ ii ] ) / static_cast< dfloat >( inSizes[ ii ] );
@@ -202,7 +202,7 @@ void Separable(
 
    // Determine the number of threads we'll be using
    dip::uint nThreads = 1;
-   if(( opts != Separable_NoMultiThreading ) && ( GetNumberOfThreads() > 1 )) {
+   if( !opts.Contains( SeparableOption::NoMultiThreading ) && ( GetNumberOfThreads() > 1 )) {
       dip::uint operations = 0;
       dip::uint maxNLines = 0;
       UnsignedArray sizes = input.Sizes();
@@ -337,12 +337,12 @@ void Separable(
             DIP_ASSERT( inLength == inImage.Size( processingDim ));
             dip::uint inBorder = border[ processingDim ];
             dip::uint outLength = outSizes[ processingDim ];
-            dip::uint outBorder = opts == Separable_UseOutputBorder ? inBorder : 0;
+            dip::uint outBorder = opts.Contains( SeparableOption::UseOutputBorder ) ? inBorder : 0;
 
             // Determine if we need to make a temporary buffer for this dimension
-            bool inUseBuffer = ( inImage.DataType() != bufferType ) || !lookUpTable.empty() || ( inBorder > 0 ) || ( opts == Separable_UseInputBuffer );
+            bool inUseBuffer = ( inImage.DataType() != bufferType ) || !lookUpTable.empty() || ( inBorder > 0 ) || opts.Contains( SeparableOption::UseInputBuffer );
             bool outUseBuffer = ( outImage.DataType() != bufferType ) || ( outBorder > 0 );
-            if( !outUseBuffer && ( opts == Separable_UseOutputBuffer )) {
+            if( !outUseBuffer && opts.Contains( SeparableOption::UseOutputBuffer )) {
                // We can cheat a little here if UseOutputBuffer is given: if the samples are contiguous, there's no need to actually use the buffer.
                outUseBuffer = !((( outImage.TensorElements() == 1 ) || ( outImage.TensorStride() == 1 ))
                      && ( outImage.Stride( processingDim ) == static_cast< dip::sint >( outImage.TensorElements())));

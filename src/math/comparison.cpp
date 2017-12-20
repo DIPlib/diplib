@@ -204,7 +204,7 @@ void InRange(
    DataTypeArray outType{ DT_BIN };
    DataTypeArray outImT{ DT_BIN };
    UnsignedArray nElem{ outTensor.Elements() };
-   Framework::Scan( inar, outar, inTypes, outType, outType, nElem, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::Scan( inar, outar, inTypes, outType, outType, nElem, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
    out.ReshapeTensor( outTensor );
 }
 
@@ -228,7 +228,7 @@ void OutOfRange(
    DataTypeArray outType{ DT_BIN };
    DataTypeArray outImT{ DT_BIN };
    UnsignedArray nElem{ outTensor.Elements() };
-   Framework::Scan( inar, outar, inTypes, outType, outType, nElem, *scanLineFilter, Framework::Scan_TensorAsSpatialDim );
+   Framework::Scan( inar, outar, inTypes, outType, outType, nElem, *scanLineFilter, Framework::ScanOption::TensorAsSpatialDim );
    out.ReshapeTensor( outTensor );
 }
 

@@ -236,10 +236,14 @@ struct DIP_NO_EXPORT DataType {
    ///
    /// Note that you can add these constants together, for example `dip::DataType::Class_UInt8 + dip::DataType::Class_UInt16`.
    ///
-   /// It is possible to see if an image is of a type within a collection using the equality operator between a
-   /// `%dip::DataType::Classes` on the left hand side and a `dip::DataType` on the right hand side:
+   /// It is possible to see if an image is of a type within a collection using the `Contains` method of
+   /// `%dip::DataType::Classes` with a `dip::DataType` as argument:
    /// ```cpp
-   ///     if( dip::DataType::Class_Flex == image.DataType() ) { ... }
+   ///     if( dip::DataType::Class_Flex.Contains( image.DataType() )) { ... }
+   /// ```
+   /// But more convenient is to use the `dip::DataType.IsA` method:
+   /// ```cpp
+   ///     if( image.DataType().IsA( dip::DataType::Class_Flex )) { ... }
    /// ```
    /// This is equivalent to using one of the test functions, if defined for the specific group:
    /// ```cpp
@@ -254,95 +258,100 @@ struct DIP_NO_EXPORT DataType {
    /// - `Class_Flex` and `Class_IntOrBin`
    /// - `Class_Binary`, `Class_Real` and `Class_Complex`
    /// - `Class_Binary`, `Class_Integer`, `Class_Float` and `Class_Complex`
-   DIP_DECLARE_OPTIONS( Classes );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Bin, static_cast< dip::uint >( DT::BIN ) );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_UInt8, static_cast< dip::uint >( DT::UINT8 ) );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SInt8, static_cast< dip::uint >( DT::SINT8 ) );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_UInt16, static_cast< dip::uint >( DT::UINT16 ) );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SInt16, static_cast< dip::uint >( DT::SINT16 ) );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_UInt32, static_cast< dip::uint >( DT::UINT32 ) );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SInt32, static_cast< dip::uint >( DT::SINT32 ) );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SFloat, static_cast< dip::uint >( DT::SFLOAT ) );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_DFloat, static_cast< dip::uint >( DT::DFLOAT ) );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SComplex, static_cast< dip::uint >( DT::SCOMPLEX ) );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_DComplex, static_cast< dip::uint >( DT::DCOMPLEX ) );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Binary, Class_Bin );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_UInt, Class_UInt8 + Class_UInt16 + Class_UInt32 );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SInt, Class_SInt8 + Class_SInt16 + Class_SInt32 );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Integer, Class_UInt + Class_SInt );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_IntOrBin, Class_Integer + Class_Binary );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Float, Class_SFloat + Class_DFloat );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Complex, Class_SComplex + Class_DComplex );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Flex, Class_Float + Class_Complex );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_FlexBin, Class_Flex + Class_Binary );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Unsigned, Class_Binary + Class_UInt );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Signed, Class_SInt + Class_Float + Class_Complex );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_Real, Class_Integer + Class_Float );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_SignedReal, Class_SInt + Class_Float );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_NonBinary, Class_Real + Class_Complex );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_NonComplex, Class_Binary + Class_Real );
-   DIP_EXPORT static DIP_DEFINE_OPTION( Classes, Class_All, Class_Binary + Class_Real + Class_Complex ); // == Class_Unsigned + Class_Signed
+   using Classes = dip::detail::dip__Options< DT >;
+   DIP_EXPORT constexpr static Classes Class_Bin = DT::BIN;
+   DIP_EXPORT constexpr static Classes Class_UInt8 = DT::UINT8;
+   DIP_EXPORT constexpr static Classes Class_SInt8 = DT::SINT8;
+   DIP_EXPORT constexpr static Classes Class_UInt16 = DT::UINT16;
+   DIP_EXPORT constexpr static Classes Class_SInt16 = DT::SINT16;
+   DIP_EXPORT constexpr static Classes Class_UInt32 = DT::UINT32;
+   DIP_EXPORT constexpr static Classes Class_SInt32 = DT::SINT32;
+   DIP_EXPORT constexpr static Classes Class_SFloat = DT::SFLOAT;
+   DIP_EXPORT constexpr static Classes Class_DFloat = DT::DFLOAT;
+   DIP_EXPORT constexpr static Classes Class_SComplex = DT::SCOMPLEX;
+   DIP_EXPORT constexpr static Classes Class_DComplex = DT::DCOMPLEX;
+   DIP_EXPORT constexpr static Classes Class_Binary = Class_Bin;
+   DIP_EXPORT constexpr static Classes Class_UInt = Class_UInt8 + Class_UInt16 + Class_UInt32;
+   DIP_EXPORT constexpr static Classes Class_SInt = Class_SInt8 + Class_SInt16 + Class_SInt32;
+   DIP_EXPORT constexpr static Classes Class_Integer = Class_UInt + Class_SInt;
+   DIP_EXPORT constexpr static Classes Class_IntOrBin = Class_Integer + Class_Binary;
+   DIP_EXPORT constexpr static Classes Class_Float = Class_SFloat + Class_DFloat;
+   DIP_EXPORT constexpr static Classes Class_Complex = Class_SComplex + Class_DComplex;
+   DIP_EXPORT constexpr static Classes Class_Flex = Class_Float + Class_Complex;
+   DIP_EXPORT constexpr static Classes Class_FlexBin = Class_Flex + Class_Binary;
+   DIP_EXPORT constexpr static Classes Class_Unsigned = Class_Binary + Class_UInt;
+   DIP_EXPORT constexpr static Classes Class_Signed = Class_SInt + Class_Float + Class_Complex;
+   DIP_EXPORT constexpr static Classes Class_Real = Class_Integer + Class_Float;
+   DIP_EXPORT constexpr static Classes Class_SignedReal = Class_SInt + Class_Float;
+   DIP_EXPORT constexpr static Classes Class_NonBinary = Class_Real + Class_Complex;
+   DIP_EXPORT constexpr static Classes Class_NonComplex = Class_Binary + Class_Real;
+   DIP_EXPORT constexpr static Classes Class_All = Class_Binary + Class_Real + Class_Complex; // == Class_Unsigned + Class_Signed
 
    /// \brief Implicit conversion to `dip::DataType::Classes` options class.
-   constexpr operator Classes() const { return { static_cast< dip::uint >( dt ) }; }
+   constexpr operator Classes() const { return dt; }
 
    //
    // Functions to query the data type class
    //
 
+   /// \brief Returns `true` if the data type is of the given class.
+   constexpr bool IsA( Classes cls ) const {
+      return cls.Contains( dt );
+   }
+
    /// \brief Returns `true` if the data type is binary.
    constexpr bool IsBinary() const {
-      return dt == DT::BIN;
+      return IsA( DT::BIN );
    }
 
    /// \brief Returns `true` if the data type is an unsigned integer type.
    constexpr bool IsUInt() const {
-      return Class_UInt == *this;
+      return IsA( Class_UInt );
    }
 
    /// \brief Returns `true` if the data type is a signed integer type.
    constexpr bool IsSInt() const {
-      return Class_SInt == *this;
+      return IsA( Class_SInt );
    }
 
    /// \brief Returns `true` if the data type is an integer type.
    constexpr bool IsInteger() const {
-      return Class_Integer == *this;
+      return IsA( Class_Integer );
    }
 
    /// \brief Returns `true` if the data type is a floating point type.
    constexpr bool IsFloat() const {
-      return Class_Float == *this;
+      return IsA( Class_Float );
    }
 
    /// \brief Returns `true` if the data type is real (floating point or integer).
    constexpr bool IsReal() const {
-      return Class_Real == *this;
+      return IsA( Class_Real );
    }
 
    /// \brief Returns `true` if the data type is one of the "flex" types (floating point or complex).
    constexpr bool IsFlex() const {
-      return Class_Flex == *this;
+      return IsA( Class_Flex );
    }
 
    /// \brief Returns `true` if the data type is floating point, complex or binary.
    constexpr bool IsFlexBin() const {
-      return Class_FlexBin == *this;
+      return IsA( Class_FlexBin );
    }
 
    /// \brief Returns `true` if the data type is complex.
    constexpr bool IsComplex() const {
-      return Class_Complex == *this;
+      return IsA( Class_Complex );
    }
 
    /// \brief Returns `true` if the data type is an unsigned type (binary or unsigned integer).
    constexpr bool IsUnsigned() const {
-      return Class_Unsigned == *this;
+      return IsA( Class_Unsigned );
    }
 
    /// \brief Returns `true` if the data type is a signed type (signed integer, floating point or complex)
    constexpr bool IsSigned() const {
-      return Class_Signed == *this;
+      return IsA( Class_Signed );
    }
 
    //
@@ -391,6 +400,9 @@ inline std::ostream& operator<<( std::ostream& os, DataType type ) {
 inline void swap( DataType& v1, DataType& v2 ) {
    v1.swap( v2 );
 }
+
+// This must be declared outside of the `DataType` class. See the definition of the `DIP_DECLARE_OPTIONS` macro.
+constexpr DataType::Classes operator+( DataType::DT a, DataType::DT b ) { return DataType::Classes{ a } + b; }
 
 // Here are the specializations for the templated constructor
 template<> constexpr DataType::DataType( bin      ) : dt( DT::BIN      ) {}

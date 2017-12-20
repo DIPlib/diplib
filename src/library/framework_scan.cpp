@@ -98,7 +98,7 @@ void Scan(
 
    // Will we convert tensor to spatial dimension?
    bool tensorToSpatial = false;
-   if( opts == Scan_TensorAsSpatialDim ) {
+   if( opts.Contains( ScanOption::TensorAsSpatialDim )) {
       bool allscalar = true;
       // We either convert all images, or none (so that dimensions still match).
       for( dip::uint ii = 0; ii < nIn; ++ii ) {
@@ -121,7 +121,7 @@ void Scan(
       tsize = in[ 0 ].TensorElements();
       outTensor = in[ 0 ].Tensor();
    } else if( nIn > 1 ) {
-      if( opts != Scan_NoSingletonExpansion ) {
+      if( !opts.Contains( ScanOption::NoSingletonExpansion )) {
          DIP_START_STACK_TRACE
             sizes = SingletonExpandedSize( in );
             if( tensorToSpatial ) {
@@ -159,7 +159,7 @@ void Scan(
    // Figure out color spaces for the output images
    StringArray colspaces;
    if( nIn > 0 ) {
-      if( opts == Scan_TensorAsSpatialDim ) {
+      if( opts.Contains( ScanOption::TensorAsSpatialDim )) {
          colspaces.resize( 1 );
          colspaces[ 0 ] = OutputColorSpace( c_in, tsize );
       } else {
@@ -172,7 +172,7 @@ void Scan(
    for( dip::uint ii = 0; ii < nOut; ++ii ) {
       Image& tmp = c_out[ ii ].get();
       dip::uint nTensor;
-      if( opts == Scan_TensorAsSpatialDim ) {
+      if( opts.Contains( ScanOption::TensorAsSpatialDim )) {
          // Input parameter ignored, output matches singleton-expanded number of tensor elements.
          nTensor = tsize;
       } else {
@@ -212,7 +212,7 @@ void Scan(
    // Can we treat the images as if they were 1D?
    bool scan1D = sizes.size() <= 1;
    if( !scan1D ) {
-      scan1D = opts != Scan_NeedCoordinates;
+      scan1D = !opts.Contains( ScanOption::NeedCoordinates );
       if( scan1D ) {
          for( dip::uint ii = 0; ii < nIn; ++ii ) {
             if( !in[ ii ].HasSimpleStride() ) {
@@ -291,7 +291,7 @@ void Scan(
    // empty array, then the tensor needs to be expanded. If it is an empty
    // array, simply copy over the tensor elements the way they are.
    std::vector< std::vector< dip::sint >> lookUpTables( nIn );
-   if(( opts == Scan_ExpandTensorInBuffer ) && ( opts != Scan_TensorAsSpatialDim )) {
+   if( opts.Contains( ScanOption::ExpandTensorInBuffer ) && !opts.Contains( ScanOption::TensorAsSpatialDim )) {
       for( dip::uint ii = 0; ii < nIn; ++ii ) {
          if( !in[ ii ].Tensor().HasNormalOrder() ) {
             inUseBuffer[ ii ] = true;
@@ -319,7 +319,7 @@ void Scan(
       lineLength = bufferSize = sizes[ processingDim ];
 
       // Determine the number of threads we'll be using
-      if( opts != Scan_NoMultiThreading ) {
+      if( !opts.Contains( ScanOption::NoMultiThreading )) {
          nThreads = GetNumberOfThreads();
          if( nThreads > 1 ) {
             dip::uint operations;
@@ -359,7 +359,7 @@ void Scan(
       nLines = sizes.product() / bufferSize;
 
       // Determine the number of threads we'll be using
-      if( opts != Scan_NoMultiThreading ) {
+      if( !opts.Contains( ScanOption::NoMultiThreading )) {
          nThreads = std::min( GetNumberOfThreads(), nLines );
          if( nThreads > 1 ) {
             dip::uint operations;
