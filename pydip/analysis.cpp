@@ -99,4 +99,6 @@ void init_analysis( py::module& m ) {
              dip::dfloat threshold = Threshold( in, out, method, parameter );
              return py::make_tuple( out, threshold ).release();
           }, "in"_a, "method"_a = "otsu", "parameter"_a = dip::infinity );
+   m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat >( &dip::Canny ),
+          "in"_a, "sigmas"_a, "lower"_a, "upper"_a );
 }

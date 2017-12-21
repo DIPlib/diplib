@@ -34,6 +34,7 @@ dipimage/berosion.cpp
 dipimage/bopening.cpp
 dipimage/bpropagation.cpp
 dipimage/bskeleton.cpp
+dipimage/canny.cpp
 dipimage/clip.cpp
 dipimage/closing.cpp
 dipimage/convolve.cpp

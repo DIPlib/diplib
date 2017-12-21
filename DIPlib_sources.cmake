@@ -196,6 +196,7 @@ src/nonlinear/variancefilter.cpp
 src/regions/label.cpp
 src/regions/label_manipulation.cpp
 src/regions/labelingGrana2016.h
+src/segmentation/canny.cpp
 src/segmentation/threshold.cpp
 src/support/math_functions.cpp
 src/support/matrix.cpp

@@ -232,8 +232,7 @@ inline Image Kuwahara(
 ///
 /// `gradmag` and `gradient` must be of the same floating-point type (i.e. they are either
 /// `dip::DT_SFLOAT` or `dip::DT_DFLOAT`). `gradmag` must be scalar, and `gradient` must have as
-/// many tensor elements as spatial dimensions. This function is implemented only for 1D, 2D and 3D
-/// functions. In the 1D case, `gradient` is not used.
+/// many tensor elements as spatial dimensions. In the 1D case, `gradient` is not used.
 ///
 /// If `gradmag` is not forged, the magnitude (`dip::Norm`) of `gradient` is used instead.
 ///
