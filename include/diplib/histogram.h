@@ -351,7 +351,7 @@ class DIP_NO_EXPORT Histogram {
 
       /// \brief Returns an iterator to the first bin
       ConstImageIterator< CountType > begin() const {
-         return { data_ };
+         return ConstImageIterator< CountType >( data_ );
       }
 
       /// \brief Returns an end iterator

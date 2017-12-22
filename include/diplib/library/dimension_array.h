@@ -98,20 +98,24 @@ class DIP_NO_EXPORT DimensionArray {
 
       /// The default-initialized array has zero size.
       DimensionArray() {}
+
       /// Like `std::vector`, you can initialize with a size and a default value.
       explicit DimensionArray( size_type sz, T newval = T() ) {
          resize( sz, newval );
       }
+
       /// Like `std::vector`, you can initialize with a set of values in braces.
       DimensionArray( std::initializer_list< T > const init ) {
          resize( init.size() );
          std::copy( init.begin(), init.end(), data_ );
       }
+
       /// Copy constructor, initializes with a copy of `other`.
       DimensionArray( DimensionArray const& other ) {
          resize( other.size_ );
          std::copy( other.data_, other.data_ + size_, data_ );
       }
+
       /// \brief Cast constructor, initializes with a copy of `other`.
       /// Casting done as default in C++, not through `dip::clamp_cast`.
       template< typename O >
@@ -119,6 +123,7 @@ class DIP_NO_EXPORT DimensionArray {
          resize( other.size() );
          std::transform( other.data(), other.data() + size_, data_, []( O const& v ) { return static_cast< value_type >( v ); } );
       }
+
       /// Move constructor, initializes by stealing the contents of `other`.
       DimensionArray( DimensionArray&& other ) noexcept {
          steal_data_from( other );
@@ -137,6 +142,7 @@ class DIP_NO_EXPORT DimensionArray {
          }
          return *this;
       }
+
       /// Move assignment, steals the contents of `other`.
       DimensionArray& operator=( DimensionArray&& other ) noexcept {
          // Self-assignment is not valid for move assignment, not testing for it here.
@@ -277,11 +283,13 @@ class DIP_NO_EXPORT DimensionArray {
          }
          *( data_ + index ) = value;
       }
+
       /// Adds a value to the back.
       void push_back( T const& value ) {
          resize( size_ + 1 );
          back() = value;
       }
+
       /// Adds all values in source array to the back.
       void push_back( DimensionArray const& values ) {
          size_type index = size_;
@@ -299,6 +307,7 @@ class DIP_NO_EXPORT DimensionArray {
          }
          resize( size_ - 1 );
       }
+
       /// Removes the value at the back.
       void pop_back() {
          DIP_ASSERT( size_ > 0 );
@@ -342,6 +351,7 @@ class DIP_NO_EXPORT DimensionArray {
             data_[ jj ] = elem;
          }
       }
+
       /// Sort the contents of the array from smallest to largest, and keeping `other` in the same order.
       template< typename S >
       void sort( DimensionArray< S >& other ) {
@@ -361,6 +371,7 @@ class DIP_NO_EXPORT DimensionArray {
             other[ jj ] = otherelem;
          }
       }
+
       /// Returns an array with indices into the array, sorted from smallest value to largest.
       DimensionArray< size_type > sorted_indices() const {
          DimensionArray< size_type > out( size_ );
@@ -379,6 +390,7 @@ class DIP_NO_EXPORT DimensionArray {
          }
          return out;
       }
+
       /// Order the elements in the array according to the `order` array, such as returned by `sorted_indices`.
       ///
       /// Postcondition:
@@ -392,6 +404,7 @@ class DIP_NO_EXPORT DimensionArray {
          }
          return out;
       }
+
       /// Inverse orders the elements in the array according to the `order` array, such as returned by `sorted_indices`.
       ///
       /// Postcondition:
@@ -409,6 +422,18 @@ class DIP_NO_EXPORT DimensionArray {
             out[ order[ ii ]] = data_[ ii ];
          }
          return out;
+      }
+
+      /// Finds the first occurrence of `value` in the array, returns the index or `size()` if it is not present.
+      size_type find( T value ) {
+         // Like in `sort`, we expect the array to be small
+         size_type ii;
+         for( ii = 0; ii < size_; ++ii ) {
+            if( data_[ ii ] == value ) {
+               break;
+            }
+         }
+         return ii;
       }
 
       /// Compute the sum of the elements in the array.

@@ -452,9 +452,12 @@ static inline void InternFill( Image& dest, TPI value ) {
    } else {
       // Make nD loop
       dip::uint processingDim = Framework::OptimalProcessingDim( dest );
-      auto it = ImageIterator< TPI >( dest, processingDim );
+      ImageIterator< TPI > it( dest, processingDim );
+      it.Optimize();
+      dip::uint size = it.ProcessingDimensionSize();
+      dip::sint stride = it.ProcessingDimensionStride();
       do {
-         detail::FillBufferFromTo( it.Pointer(), dest.Stride( processingDim ), dest.TensorStride(), dest.Size( processingDim ), dest.TensorElements(), value );
+         detail::FillBufferFromTo( it.Pointer(), stride, dest.TensorStride(), size, dest.TensorElements(), value );
       } while( ++it );
    }
 }

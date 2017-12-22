@@ -32,6 +32,7 @@ FloatArray Mean( Histogram const& in ) {
       binCenters[ ii ] = in.BinCenters( ii );
    }
    ImageIterator< Histogram::CountType > it( in.GetImage() );
+   // Histogram always has notmal strides, it.Optimize() would not do anything here.
    do {
       UnsignedArray const& coord = it.Coordinates();
       dfloat v = static_cast< dfloat >( *it );
@@ -57,6 +58,7 @@ FloatArray Covariance( Histogram const& in ) {
       binCenters[ ii ] = in.BinCenters( ii );
    }
    ImageIterator< Histogram::CountType > it( in.GetImage() );
+   // Histogram always has notmal strides, it.Optimize() would not do anything here.
    FloatArray diff( nDims, 0 );
    do {
       UnsignedArray const& coord = it.Coordinates();
@@ -114,6 +116,7 @@ FloatArray Mode( Histogram const& in ) {
    UnsignedArray coord( nDims, 0 );
    Histogram::CountType maxVal = 0;
    ImageIterator< Histogram::CountType > it( in.GetImage() );
+   // Histogram always has notmal strides, it.Optimize() would not do anything here.
    do {
       if( *it > maxVal ) {
          maxVal = *it;

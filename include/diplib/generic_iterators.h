@@ -64,21 +64,21 @@ class DIP_NO_EXPORT BresenhamLineIterator {
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       BresenhamLineIterator() {}
       /// To construct a useful iterator, provide image strides, and coordinates of the start and end pixels
-      BresenhamLineIterator( IntegerArray const& strides, UnsignedArray const& start, UnsignedArray const& end ) :
-            coord_( start ), strides_( strides ) {
+      BresenhamLineIterator( IntegerArray strides, UnsignedArray start, UnsignedArray const& end ) :
+            coord_( std::move( start )), strides_( std::move( strides )) {
          dip::uint nDims = strides_.size();
          DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
-         DIP_THROW_IF( start.size() != nDims, E::ARRAY_SIZES_DONT_MATCH );
+         DIP_THROW_IF( coord_.size() != nDims, E::ARRAY_SIZES_DONT_MATCH );
          DIP_THROW_IF( end.size() != nDims, E::ARRAY_SIZES_DONT_MATCH );
          stepSize_.resize( nDims, 1.0 );
          length_ = 1; // to prevent dividing by 0 later on.
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             dip::uint size;
-            if( start[ ii ] < end[ ii ] ) {
-               size = end[ ii ] - start[ ii ] + 1;
+            if( coord_[ ii ] < end[ ii ] ) {
+               size = end[ ii ] - coord_[ ii ] + 1;
                stepSize_[ ii ] = static_cast< dfloat >( size );
             } else {
-               size = start[ ii ] - end[ ii ] + 1;
+               size = coord_[ ii ] - end[ ii ] + 1;
                stepSize_[ ii ] = -static_cast< dfloat >( size );
             }
             length_ = std::max( length_, size );
@@ -86,7 +86,7 @@ class DIP_NO_EXPORT BresenhamLineIterator {
                stepSize_[ ii ] = 0.0; // don't step anywhere in this direction
             }
          }
-         pos_ = FloatArray( start );
+         pos_ = FloatArray( coord_ );
          offset_ = 0;
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
             stepSize_[ ii ] /= static_cast< dfloat >( length_ );
@@ -101,8 +101,8 @@ class DIP_NO_EXPORT BresenhamLineIterator {
          --length_; // we've got one fewer pixels after the current one
       }
       /// To construct a useful iterator, provide image strides, a step size, a start position, and a length
-      BresenhamLineIterator( IntegerArray const& strides, FloatArray const& stepSize, UnsignedArray const& start, dip::uint length ) :
-            coord_( start ), stepSize_( stepSize ), length_( length - 1 ), strides_( strides ) {
+      BresenhamLineIterator( IntegerArray strides, FloatArray stepSize, UnsignedArray start, dip::uint length ) :
+            coord_( std::move( start )), stepSize_( std::move( stepSize )), length_( length - 1 ), strides_( std::move( strides )) {
          dip::uint nDims = strides_.size();
          DIP_THROW_IF( nDims < 2, E::DIMENSIONALITY_NOT_SUPPORTED );
          DIP_THROW_IF( stepSize_.size() != nDims, E::ARRAY_SIZES_DONT_MATCH );
@@ -248,9 +248,9 @@ class DIP_NO_EXPORT GenericImageIterator {
       using pointer = value_type*;        ///< The type of a pointer to a pixel
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
-      GenericImageIterator() : atEnd_( true ) {}
+      GenericImageIterator() : procDim_( std::numeric_limits< dip::uint >::max() ), atEnd_( true ) {}
       /// To construct a useful iterator, provide an image and optionally a processing dimension
-      GenericImageIterator( Image const& image, dip::uint procDim = std::numeric_limits< dip::uint >::max() ) :
+      explicit GenericImageIterator( Image const& image, dip::uint procDim = std::numeric_limits< dip::uint >::max() ) :
             image_( &image ),
             offset_( 0 ),
             coords_( image.Dimensionality(), 0 ),
@@ -420,6 +420,8 @@ class DIP_NO_EXPORT GenericImageIterator {
       }
 
    private:
+      // TODO: Rewrite so it keeps sizes and strides instead of an image pointer (see ImageIterator)
+      // TODO: Add Optimize() method
       Image const* image_ = nullptr;
       dip::sint offset_ = 0;
       UnsignedArray coords_;
@@ -490,12 +492,12 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       using pointer = value_type*;        ///< The type of a pointer to a pixel
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
-      GenericJointImageIterator() : atEnd_( true ) {
+      GenericJointImageIterator() : procDim_( std::numeric_limits< dip::uint >::max() ), atEnd_( true ) {
          images_.fill( nullptr );
          offsets_.fill( 0 );
       }
       /// To construct a useful iterator, provide two images, and optionally a processing dimension
-      GenericJointImageIterator( ImageConstRefArray const& images, dip::uint procDim = std::numeric_limits< dip::uint >::max() ):
+      explicit GenericJointImageIterator( ImageConstRefArray const& images, dip::uint procDim = std::numeric_limits< dip::uint >::max() ):
             procDim_( procDim ), atEnd_( false ) {
          DIP_THROW_IF( images.size() != N, E::ARRAY_ILLEGAL_SIZE );
          images_[ 0 ] = &( images[ 0 ].get() );
@@ -705,7 +707,9 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       }
 
    private:
-      static_assert( N > 1, "GenericJointImageIterator needs at least one type template argument" );
+      static_assert( N > 1, "GenericJointImageIterator needs at least two type template arguments" );
+      // TODO: Rewrite so it keeps sizes and strides instead of image pointers (see JointImageIterator)
+      // TODO: Add Optimize() method
       std::array< Image const*, N > images_;
       std::array< dip::sint, N > offsets_;
       Image dummy_;

@@ -62,28 +62,26 @@ bool IsBinaryEdgePixel(
    // Do bounds checking if requested
    dip::UnsignedArray pixelCoords;
    if( checkBounds ) {
-      pixelCoords = coordsComputer(pixelOffset);
+      pixelCoords = coordsComputer( pixelOffset );
    }
 
-   bool isEdgePixel = false;  // Not an edge pixel until proven otherwise
-   bin* pPixel = static_cast< bin* >( in.Pointer( pixelOffset ));
+   uint8* pPixel = static_cast< uint8* >( in.Origin() ) + pixelOffset; // It's a binary image, but we read pixels as uint8.
    // Check for all valid neighbors if any of them has a differing value. If so, break and return true.
    dip::IntegerArray::const_iterator itNeighborOffset = neighborOffsets.begin();
    for( NeighborList::Iterator itNeighbor = neighborList.begin(); itNeighbor != neighborList.end(); ++itNeighbor, ++itNeighborOffset ) {
       if( !checkBounds || itNeighbor.IsInImage( pixelCoords, in.Sizes() )) {
-         const uint8 pixelByte = static_cast< uint8 >( *pPixel );
-         const uint8 neighborByte = static_cast< uint8 >( *( pPixel + *itNeighborOffset ));   // Add the neighborOffset to the address (ptr) of pixel, and dereference to get its value
+         const uint8 pixelByte = *pPixel;
+         const uint8 neighborByte = *( pPixel + *itNeighborOffset ); // Add the neighborOffset to the address (ptr) of pixel, and dereference to get its value
          bool pixelIsObject = TestAnyBit( pixelByte, dataMask );
          bool neighborIsObject = TestAnyBit( neighborByte, dataMask );
          // If the pixel value is different from the neighbor value, it is an edge pixel
          if( pixelIsObject != neighborIsObject ) {
-            isEdgePixel = true;
-            break;   // Once true, don't check other neighbors
+            return true;
          }
       }
    }
 
-   return isEdgePixel;
+   return false;
 }
 
 void FindBinaryEdgePixels(
@@ -101,11 +99,12 @@ void FindBinaryEdgePixels(
 
    // Iterate over all pixels: detect edge pixels and add them to the queue
    ImageIterator< bin > itImage( in );
+   itImage.Optimize();
    do {
       uint8& pixelByte = static_cast< uint8& >( *itImage );
       bool isObjectPixel = TestAnyBit( pixelByte, dataMask );   // Does pixel have non-zero data value, i.e., is it part of the object and not the background?
       // Check if the pixel is of the correct type: object or background
-      if( bool( isObjectPixel ) == findObjectPixels ) {
+      if( isObjectPixel == findObjectPixels ) {
          // Check if the pixel is a border edge pixel due to the edge condition (done outside IsBinaryEdgePixel() to avoid overhead)
          bool isBorderPixel = TestAnyBit( pixelByte, borderMask ); // Is pixel part of the image border?
          bool isBorderEdgePixelForEdgeCondition = isBorderPixel && ( isObjectPixel != treatOutsideImageAsObject );

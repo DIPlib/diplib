@@ -38,20 +38,20 @@ void HistogramViewPort::render()
   // Colorbar
   dip::Image values { dip::UnsignedArray{ 3, (dip::uint)height }, viewer()->image().TensorElements(), dip::DT_DFLOAT };
   values = 0.;
-  ImageIterator<dip::dfloat> it(values);
+  dip::dfloat* it = static_cast< dip::dfloat* >( values.Origin() );
   for (size_t ii=0; ii < size_t(height); ++ii)
   {
     double val = o.range_.first + (double)ii*(o.range_.second-o.range_.first)/(double)height;
     
-    for (size_t jj=0; jj < 3; ++jj, ++it)
-      for (size_t kk=0; kk < viewer()->image().TensorElements(); ++kk)
-        it[kk] = val;
+    for (size_t jj=0; jj < 3; ++jj)
+      for (size_t kk=0; kk < viewer()->image().TensorElements(); ++kk, ++it)
+        *it = val;
   }
   
   dip::Image cb { dip::UnsignedArray{ 3, (dip::uint)height }, 3, dip::DT_UINT8 };
   if (o.lut_ == ViewingOptions::LookupTable::RGB)
   {
-    // Make sure channels do not bleed into eachother
+    // Make sure channels do not bleed into each other
     dip::Image cbsingle = cb;
     cb = 0;
     for (size_t jj=0; jj < 3; ++jj)

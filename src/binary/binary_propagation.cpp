@@ -91,6 +91,7 @@ void BinaryPropagation(
 
    // Add mask plane to out image
    JointImageIterator< dip::bin, dip::bin > itInMaskOut( { inMask, out } );
+   itInMaskOut.Optimize();
    do {
       if ( itInMaskOut.In() )
          SetBits( static_cast< uint8& >( itInMaskOut.Out() ), maskBitmask );
@@ -134,8 +135,8 @@ void BinaryPropagation(
    // Second and further iterations. Loop stops if the queue is empty
    for( dip::uint ii = 1; ( ii < iterations ) && !edgePixels.empty(); ++ii ) {
       // Obtain neighbor list and offsets for this iteration
-      NeighborList const& neighborList = ii & 1 ? neighborList1 : neighborList0;
-      IntegerArray const& neighborOffsetsOut = ii & 1 ? neighborOffsetsOut1 : neighborOffsetsOut0;
+      NeighborList const& neighborList = ( ii & 1 ) == 1 ? neighborList1 : neighborList0;
+      IntegerArray const& neighborOffsetsOut = ( ii & 1 ) == 1 ? neighborOffsetsOut1 : neighborOffsetsOut0;
 
       // Process all elements currently in the queue
       count = edgePixels.size();
@@ -173,6 +174,7 @@ void BinaryPropagation(
    // The result is stored in a way that resets all bits except bit 0
    // This means that the border mask is also removed
    ImageIterator< dip::bin > itOut( out );
+   itOut.Optimize();
    do {
       *itOut = TestBits( static_cast< uint8 >( *itOut ), maskOrSeedBitmask );
    } while( ++itOut );

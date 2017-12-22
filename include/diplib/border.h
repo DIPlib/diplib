@@ -51,12 +51,9 @@ void ProcessBorders(
 ) {
    static_assert( ProcessBorder || ProcessNonBorder, "At least one of the two boolean template parameters must be set" );
 
-   dip::uint nDim = out.Dimensionality();
-   UnsignedArray const& sizes = out.Sizes();
-
    // Iterate over all image lines, in the optimal processing dimension
    dip::uint procDim = Framework::OptimalProcessingDim( out );
-   dip::uint lineLength = sizes[ procDim ];
+   dip::uint lineLength = out.Size( procDim );
    dip::sint stride = out.Stride( procDim );
    dip::sint tensorStride = out.TensorStride();
 
@@ -64,6 +61,7 @@ void ProcessBorders(
       // Everything is a border
       if( ProcessBorder ) {
          ImageIterator< TPI > it( out, procDim );
+         it.Optimize();
          do {
             TPI* ptr = it.Pointer();
             for( dip::uint ii = 0; ii < lineLength; ++ii, ptr += stride ) {
@@ -78,19 +76,24 @@ void ProcessBorders(
    dip::sint innerOffset = static_cast< dip::sint >( borderWidth ) * stride;
    dip::sint lastOffset = static_cast< dip::sint >( innerLength ) * stride;
    ImageIterator< TPI > it( out, procDim );
+   it.Optimize();
+   UnsignedArray const& newSizes = it.Sizes();
+   procDim = it.ProcessingDimension();
+   dip::uint nDim = newSizes.size();
+   stride = it.ProcessingDimensionStride(); // could have flipped!
    do {
-      // Is this image line along the image border?
-      bool all = false;
+      // Is this image line inside the image border?
+      bool inBorder = false;
       UnsignedArray const& coord = it.Coordinates();
       for( dip::uint ii = 0; ii < nDim; ++ii ) {
          if(( ii != procDim ) &&
-            (( coord[ ii ] < borderWidth ) || ( coord[ ii ] >= sizes[ ii ] - borderWidth ))) {
-            all = true;
+            (( coord[ ii ] < borderWidth ) || ( coord[ ii ] >= newSizes[ ii ] - borderWidth ))) {
+            inBorder = true;
             break;
          }
       }
       TPI* ptr = it.Pointer();
-      if( all ) {
+      if( inBorder ) {
          // Yes, it is: process all pixels on the line
          if( ProcessBorder ) {
             for( dip::uint ii = 0; ii < lineLength; ++ii, ptr += stride ) {

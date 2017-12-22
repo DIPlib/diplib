@@ -251,6 +251,7 @@ void dip__FastWatershed(
       if( binaryOutput ) {
          // Process binary output image
          JointImageIterator< LabelType, bin > it( { c_labels, c_binary } );
+         it.Optimize();
          do {
             if( it.template Sample< 0 >() == 0 ) {
                it.template Sample< 1 >() = true;
@@ -260,6 +261,7 @@ void dip__FastWatershed(
          // Process labels output image
          regions.Relabel();
          ImageIterator< LabelType > it( c_labels );
+         it.Optimize();
          do {
             LabelType lab1 = *it;
             if( lab1 > 0 ) {
@@ -272,6 +274,7 @@ void dip__FastWatershed(
       if( binaryOutput ) {
          // Process binary output image
          JointImageIterator< LabelType, TPI, bin > it( { c_labels, c_in, c_binary } );
+         it.Optimize();
          do {
             LabelType lab = it.template Sample< 0 >();
             if( lab > 0 ) {
@@ -284,6 +287,7 @@ void dip__FastWatershed(
          // Process labels output image
          regions.Relabel();
          JointImageIterator< TPI, LabelType > it( { c_in, c_labels } );
+         it.Optimize();
          do {
             LabelType lab = it.Out();
             if( lab > 0 ) {
@@ -395,9 +399,9 @@ void FastWatershed(
    // We can use the offset array we computed above because pixels don't move around in memory, we just
    // change their coordinates.
    in.StandardizeStrides();
-   labels.StandardizeStrides();
+   labels.StandardizeStrides(); // TODO: not sure this is necessary any more
    if( binary.IsForged() ) {
-      binary.StandardizeStrides();
+      binary.StandardizeStrides(); // TODO: not sure this is necessary any more
    }
 
    // Create array with offsets to neighbors
@@ -624,9 +628,8 @@ void dip__SeededWatershed(
    if( !binaryOutput ) {
       // Process label image
       // if binaryOutput it doesn't matter - we're thresholding this label image anyways
-      Image labels = c_labels.QuickCopy();
-      labels.StandardizeStrides();
-      ImageIterator< LabelType > lit( labels );
+      ImageIterator< LabelType > lit( c_labels );
+      lit.Optimize();
       do {
          LabelType lab1 = *lit;
          if( lab1 == WATERSHED_LABEL ) {

@@ -327,7 +327,7 @@ dip::uint Label(
                   otherSideCoords.push_back( coords );
                }
             }
-            auto it = ImageIterator< LabelType >( c_out, ii );
+            ImageIterator< LabelType > it( c_out, ii );
             do {
                for( dip::uint kk = 0; kk < otherSideOffsets.size(); ++kk ) {
                   // Is this neighbor in the image?
@@ -375,7 +375,7 @@ dip::uint Label(
    }
 
    // Second scan
-   auto it = ImageIterator< LabelType >( out );
+   ImageIterator< LabelType > it( out );
    do {
       if( *it > 0 ) {
          *it = regions.Label( *it );

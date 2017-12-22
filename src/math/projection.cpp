@@ -267,6 +267,7 @@ class ProjectionMean : public ProjectionScanFunction {
          FlexType< TPI > sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() ) {
                   sum += static_cast< FlexType< TPI >>( it.template Sample< 0 >() );
@@ -275,6 +276,7 @@ class ProjectionMean : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                sum += static_cast< FlexType< TPI >>( *it );
             } while( ++it );
@@ -295,6 +297,7 @@ class ProjectionMeanDirectional : public ProjectionScanFunction {
          DirectionalStatisticsAccumulator acc;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() ) {
                   acc.Push( static_cast< dfloat >( it.template Sample< 0 >() ));
@@ -302,6 +305,7 @@ class ProjectionMeanDirectional : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                acc.Push( static_cast< dfloat >( *it ));
             } while( ++it );
@@ -348,6 +352,7 @@ class ProjectionProduct : public ProjectionScanFunction {
          FlexType< TPI > product = 1.0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() ) {
                   product *= static_cast< FlexType< TPI >>( it.template Sample< 0 >() );
@@ -355,6 +360,7 @@ class ProjectionProduct : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                product *= static_cast< FlexType< TPI >>( *it );
             } while( ++it );
@@ -387,6 +393,7 @@ class ProjectionMeanAbs : public ProjectionScanFunction {
          FloatType< TPI > sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() ) {
                   sum += std::abs( static_cast< FlexType< TPI >>( it.template Sample< 0 >() ));
@@ -395,6 +402,7 @@ class ProjectionMeanAbs : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                sum += std::abs( static_cast< FlexType< TPI >>( *it ));
             } while( ++it );
@@ -451,6 +459,7 @@ class ProjectionMeanSquare : public ProjectionScanFunction {
          FlexType< TPI > sum = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() ) {
                   FlexType< TPI > v = static_cast< FlexType< TPI >>( it.template Sample< 0 >() );
@@ -460,6 +469,7 @@ class ProjectionMeanSquare : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                FlexType< TPI > v = static_cast< FlexType< TPI >>( *it );
                sum += v * v;
@@ -516,6 +526,7 @@ class ProjectionVariance : public ProjectionScanFunction {
          ACC acc;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() ) {
                   acc.Push( static_cast< dfloat >( it.template Sample< 0 >() ));
@@ -523,6 +534,7 @@ class ProjectionVariance : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                acc.Push( static_cast< dfloat >( *it ));
             } while( ++it );
@@ -606,6 +618,7 @@ class ProjectionMaximum : public ProjectionScanFunction {
          TPI max = std::numeric_limits< TPI >::lowest();
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() ) {
                   max = std::max( max, it.template Sample< 0 >() );
@@ -613,6 +626,7 @@ class ProjectionMaximum : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                max = std::max( max, *it );
             } while( ++it );
@@ -643,6 +657,7 @@ class ProjectionMinimum : public ProjectionScanFunction {
          TPI min = std::numeric_limits< TPI >::max();
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() ) {
                   min = std::min( min, it.template Sample< 0 >() );
@@ -650,6 +665,7 @@ class ProjectionMinimum : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                min = std::min( min, *it );
             } while( ++it );
@@ -680,6 +696,7 @@ class ProjectionMaximumAbs : public ProjectionScanFunction {
          AbsType< TPI > max = 0;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() ) {
                   max = std::max( max, static_cast< AbsType< TPI >>( abs( it.template Sample< 0 >() )));
@@ -687,6 +704,7 @@ class ProjectionMaximumAbs : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                max = std::max( max, static_cast< AbsType< TPI >>( abs( *it )));
             } while( ++it );
@@ -724,6 +742,7 @@ class ProjectionMinimumAbs : public ProjectionScanFunction {
          AbsType< TPI > min = std::numeric_limits< AbsType< TPI >>::max();
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() ) {
                   min = std::min( min, static_cast< AbsType< TPI >>( abs( it.template Sample< 0 >() )));
@@ -731,6 +750,7 @@ class ProjectionMinimumAbs : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                min = std::min( min, static_cast< AbsType< TPI >>( abs( *it )));
             } while( ++it );
@@ -826,6 +846,7 @@ class ProjectionPercentile : public ProjectionScanFunction {
          auto outIt = buffer_[ thread ].begin();
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() ) {
                   *( outIt++ ) = it.template Sample< 0 >();
@@ -833,6 +854,7 @@ class ProjectionPercentile : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                *( outIt++ ) = *it;
             } while( ++it );
@@ -880,6 +902,7 @@ class ProjectionAll : public ProjectionScanFunction {
          bool all = true;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() && ( it.template Sample< 0 >() == TPI( 0 ))) {
                   all = false;
@@ -888,6 +911,7 @@ class ProjectionAll : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                if( *it == TPI( 0 )) {
                   all = false;
@@ -921,6 +945,7 @@ class ProjectionAny : public ProjectionScanFunction {
          bool any = false;
          if( mask.IsForged() ) {
             JointImageIterator< TPI, bin > it( { in, mask } );
+            it.Optimize();
             do {
                if( it.template Sample< 1 >() && ( it.template Sample< 0 >() != TPI( 0 ))) {
                   any = true;
@@ -929,6 +954,7 @@ class ProjectionAny : public ProjectionScanFunction {
             } while( ++it );
          } else {
             ImageIterator< TPI > it( in );
+            it.Optimize();
             do {
                if( *it != TPI( 0 )) {
                   any = true;

@@ -40,9 +40,9 @@ struct Qitem {
 
 template< typename TPI >
 void dip__Extrema(
-      Image const& c_in,
-      Image const& c_mask,
-      Image c_out,
+      Image const& in,
+      Image const& mask,
+      Image out,
       IntegerArray const& neighborOffsetsIn,
       IntegerArray const& neighborOffsetsMask,
       IntegerArray const& neighborOffsetsOut,
@@ -58,10 +58,10 @@ void dip__Extrema(
 
    // Loop over all image pixels
    dip::uint nNeigh = neighborOffsetsIn.size();
-   UnsignedArray const& imsz = c_in.Sizes();
+   UnsignedArray const& imsz = in.Sizes();
 
-   JointImageIterator< TPI, LabelType, bin > it( { c_in, c_out, c_mask } );
-   bool hasMask = c_mask.IsForged();
+   JointImageIterator< TPI, LabelType, bin > it( { in, out, mask } );
+   bool hasMask = mask.IsForged();
    do {
       if( !hasMask || it.template Sample< 2 >() ) {
          LabelType lab = it.Out();
@@ -95,8 +95,8 @@ void dip__Extrema(
                   UnsignedArray coordsi = Q.front().coords;
                   LabelType* optr = Q.front().pointer;
                   Q.pop();
-                  TPI* iptr = static_cast< TPI* >( c_in.Pointer( coordsi ));
-                  bin* mptr = hasMask ? static_cast< bin* >( c_mask.Pointer( coordsi )) : nullptr;
+                  TPI* iptr = static_cast< TPI* >( in.Pointer( coordsi ));
+                  bin* mptr = hasMask ? static_cast< bin* >( mask.Pointer( coordsi )) : nullptr;
                   // Visit each neighbour pixel, push equal-valued ones on the stack, mark the label
                   // as bad if one of the neighbours has a higher value
                   nit = neighborList.begin();
@@ -140,9 +140,8 @@ void dip__Extrema(
       }
    }
    // Loop over all image pixels again, apply `mapping`.
-   Image out = c_out.QuickCopy();
-   out.StandardizeStrides(); // This will make the loop below optimal
    ImageIterator< LabelType > oit( out );
+   oit.Optimize();
    do {
       LabelType lab = *oit;
       *oit = lab == PIXEL_NOT_EXTREMUM ? 0 : mapping[ lab ];

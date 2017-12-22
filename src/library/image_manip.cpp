@@ -559,7 +559,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image dimension manipulation functions"
    DOCTEST_CHECK( img.Origin() != origin );
 }
 
-DOCTEST_TEST_CASE("[DIPlib] testing dip::Image dimension manipulation functions") {
+DOCTEST_TEST_CASE("[DIPlib] testing dip::Image tensor dimension manipulation functions") {
    dip::Image src( { 5, 10, 15, }, 3, dip::DT_SCOMPLEX );
    dip::Image img = src;
    DOCTEST_REQUIRE( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
