@@ -27,14 +27,10 @@
 
 namespace dip {
 
-
-//
-// --- Internal functions, static ---
-//
-
+namespace { // Internal functions
 
 // Compute a normal stride array.
-static void ComputeStrides(
+void ComputeStrides(
       UnsignedArray const& sizes,
       dip::uint s,               // set to tensor.Elements()
       IntegerArray& strides
@@ -50,7 +46,7 @@ static void ComputeStrides(
 
 // Return the number of pixels defined by the sizes array.
 // Same as dip::Image::NumberOfPixels() but with check.
-static dip::uint FindNumberOfPixels(
+dip::uint FindNumberOfPixels(
       UnsignedArray const& sizes
 ) {
    dip::uint n = 1;
@@ -66,7 +62,7 @@ static dip::uint FindNumberOfPixels(
 // Return the size of the data block needed to store an image given by
 // strides and sizes, as well as the (negative) offset of the block if any
 // of the strides are negative.
-static void FindDataBlockSizeAndStart(
+void FindDataBlockSizeAndStart(
       IntegerArray const& strides,
       UnsignedArray const& sizes,
       dip::uint& size,
@@ -91,7 +87,7 @@ static void FindDataBlockSizeAndStart(
 // If there is no simple stride, sets sstride==0, and returns false.
 // Note that sstride==0 does not indicate an error condition, it is possible
 // that the image was singleton-expanded from a 0D image.
-static bool FindSimpleStrideSizeAndStart(
+bool FindSimpleStrideSizeAndStart(
       IntegerArray const& strides,
       UnsignedArray const& sizes,
       dip::sint& sstride,
@@ -128,7 +124,7 @@ static bool FindSimpleStrideSizeAndStart(
 
 // Compute coordinates of a pixel from an offset.
 // Strides array must be all positive, and sorted in increasing order.
-static UnsignedArray OffsetToCoordinates(
+UnsignedArray OffsetToCoordinates(
       dip::uint offset,
       IntegerArray const& strides
 ) {
@@ -158,9 +154,8 @@ void RemoveSingletonsFromStrideArray( UnsignedArray const& sizes, IntegerArray s
    strides.resize( jj );
 }
 
-//
-// --- Library functions ---
-//
+} // namespace
+
 
 void AlignedAllocInterface::Deleter::operator()(
       void* //pAligned
@@ -218,7 +213,7 @@ CoordinatesComputer::CoordinatesComputer( UnsignedArray const& sizes, IntegerArr
    dip::uint nelem = 0;
    for( dip::uint ii = 0; ii < N; ++ii ) {
       sizes_[ ii ] = static_cast< dip::sint >( sizes[ ii ] );
-      if( ( sizes_[ ii ] != 1 ) && ( strides_[ ii ] != 0 ) ) {
+      if(( sizes_[ ii ] != 1 ) && ( strides_[ ii ] != 0 )) {
          index_[ nelem ] = ii;
          ++nelem;
          if( strides_[ ii ] < 0 ) {
@@ -240,7 +235,7 @@ CoordinatesComputer::CoordinatesComputer( UnsignedArray const& sizes, IntegerArr
       dip::uint keepIndex = index_[ ii ];
       dip::sint key = strides_[ keepIndex ];
       dip::uint jj = ii;
-      while( ( jj > 0 ) && ( strides_[ index_[ jj - 1 ] ] < key ) ) {
+      while(( jj > 0 ) && ( strides_[ index_[ jj - 1 ]] < key )) {
          index_[ jj ] = index_[ jj - 1 ];
          --jj;
       }
@@ -248,7 +243,7 @@ CoordinatesComputer::CoordinatesComputer( UnsignedArray const& sizes, IntegerArr
    }
    // The indices for the singleton dimensions go at the end.
    for( dip::uint ii = 0; ii < N; ++ii ) {
-      if( ( sizes_[ ii ] == 1 ) || ( strides_[ ii ] == 0 ) ) {
+      if(( sizes_[ ii ] == 1 ) || ( strides_[ ii ] == 0 )) {
          index_[ nelem ] = ii;
          ++nelem;
          // By the time we use these elements, the residue should be 0, so it
@@ -282,6 +277,21 @@ UnsignedArray CoordinatesComputer::operator()( dip::sint offset ) const {
 }
 
 
+//
+IntegerArray Image::ComputeStrides( UnsignedArray const& sizes, dip::uint tensorElements ) {
+   IntegerArray strides;
+   dip::ComputeStrides( sizes, tensorElements, strides );
+   return strides;
+}
+
+//
+void Image::SetNormalStrides() {
+   DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
+   tensorStride_ = 1;
+   dip::ComputeStrides( sizes_, tensor_.Elements(), strides_ );
+}
+
+//
 void Image::MatchStrideOrder( Image const& src ) {
    DIP_THROW_IF( IsForged(), E::IMAGE_NOT_RAW );
    DIP_THROW_IF( sizes_.size() != src.strides_.size(), E::DIMENSIONALITIES_DONT_MATCH );
@@ -290,7 +300,7 @@ void Image::MatchStrideOrder( Image const& src ) {
    auto order = srcStrides.sorted_indices();
    sizes_.push_back( tensor_.Elements() );
    auto sortedSizes = sizes_.permute( order );
-   ComputeStrides( sortedSizes, 1, strides_ );
+   dip::ComputeStrides( sortedSizes, 1, strides_ );
    strides_ = strides_.inverse_permute( order );
    tensor_.SetVector( sizes_.back() );
    tensorStride_ = strides_.back();
@@ -339,7 +349,7 @@ std::pair< dip::sint, void* > Image::GetSimpleStrideAndOrigin() const {
    dip::uint size;
    dip::sint start;
    void* origin = nullptr;
-   if( FindSimpleStrideSizeAndStart( strides_, sizes_, sstride, size, start ) ) {
+   if( FindSimpleStrideSizeAndStart( strides_, sizes_, sstride, size, start )) {
       origin = Pointer( start );
    }
    return std::make_pair( sstride, origin );
@@ -409,13 +419,6 @@ bool Image::HasValidStrides() const {
    }
    // It's OK
    return true;
-}
-
-
-//
-void Image::SetNormalStrides() {
-   tensorStride_ = 1;                       // We set tensor strides to 1 by default.
-   ComputeStrides( sizes_, tensor_.Elements(), strides_ );
 }
 
 
@@ -520,8 +523,8 @@ bool Image::Aliases( Image const& other ) const {
    FindSimpleStrideSizeAndStart( strides2, sizes2, sstride2, size2, start2 );
    start1 += static_cast< dip::sint >( origin1 );
    start2 += static_cast< dip::sint >( origin2 );
-   if( ( sstride1 > 1 ) && ( sstride1 == sstride2 ) ) {
-      if( ( start1 - start2 ) % sstride1 != 0 ) {
+   if(( sstride1 > 1 ) && ( sstride1 == sstride2 )) {
+      if(( start1 - start2 ) % sstride1 != 0 ) {
          return false;
       }
    }
@@ -581,8 +584,8 @@ bool Image::Aliases( Image const& other ) const {
 
    dip::uint i1 = 0;
    dip::uint i2 = 0;
-   while( ( i1 < ndims1 ) && ( strides1[ i1 ] == 0 ) ) { ++i1; }
-   while( ( i2 < ndims2 ) && ( strides2[ i2 ] == 0 ) ) { ++i2; }
+   while(( i1 < ndims1 ) && ( strides1[ i1 ] == 0 )) { ++i1; }
+   while(( i2 < ndims2 ) && ( strides2[ i2 ] == 0 )) { ++i2; }
    while( i1 < ndims1 || i2 < ndims2 ) {
       dip::uint s1 = 0, s2 = 0, d1 = 1, d2 = 1;
       if( i1 < ndims1 ) {
@@ -637,9 +640,9 @@ bool Image::Aliases( Image const& other ) const {
       if( neworigin2[ ii ] + ( newsizes2[ ii ] - 1 ) * newstrides2[ ii ] < neworigin1[ ii ] ) {
          return false;
       }
-      if( ( newstrides1[ ii ] == newstrides2[ ii ] ) &&
-          ( newstrides1[ ii ] > 1 ) &&
-          (( static_cast< dip::sint >( neworigin1[ ii ] ) - static_cast< dip::sint >( neworigin2[ ii ] )) % static_cast< dip::sint >( newstrides1[ ii ] ) != 0 )) {
+      if(( newstrides1[ ii ] == newstrides2[ ii ] ) &&
+         ( newstrides1[ ii ] > 1 ) &&
+         (( static_cast< dip::sint >( neworigin1[ ii ] ) - static_cast< dip::sint >( neworigin2[ ii ] )) % static_cast< dip::sint >( newstrides1[ ii ] ) != 0 )) {
          return false;
       }
    }
@@ -714,7 +717,7 @@ void Image::ReForge(
          sizes_ = sizes;
          tensor_.SetVector( tensorElems );
          tensorStride_ = 1;                       // We set tensor strides to 1 by default.
-         ComputeStrides( sizes_, tensor_.Elements(), strides_ );
+         dip::ComputeStrides( sizes_, tensor_.Elements(), strides_ );
          origin_ = dataBlock_.get(); // This only works for data segments that we allocated within DIPlib, hence the `externalData_` test.
          return;
       }
@@ -732,7 +735,7 @@ void Image::ReForge(
 CoordinatesComputer Image::IndexToCoordinatesComputer() const {
    DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
    IntegerArray fake_strides;
-   ComputeStrides( sizes_, 1, fake_strides );
+   dip::ComputeStrides( sizes_, 1, fake_strides );
    return CoordinatesComputer( sizes_, fake_strides );
 }
 
@@ -753,24 +756,24 @@ DOCTEST_TEST_CASE("[DIPlib] testing the Alias function") {
    DOCTEST_REQUIRE( img1.TensorElements() == 3 );
 
    dip::Image img2 = img1[ 0 ];
-   DOCTEST_CHECK( Alias( img1, img2 ) );
+   DOCTEST_CHECK( Alias( img1, img2 ));
    dip::Image img3 = img1[ 1 ];
-   DOCTEST_CHECK( Alias( img1, img3 ) );
-   DOCTEST_CHECK_FALSE( Alias( img2, img3 ) );
+   DOCTEST_CHECK( Alias( img1, img3 ));
+   DOCTEST_CHECK_FALSE( Alias( img2, img3 ));
    dip::Image img4 = img1.At( dip::Range{}, dip::Range{}, dip::Range{ 10 } );
-   DOCTEST_CHECK( Alias( img1, img4 ) );
+   DOCTEST_CHECK( Alias( img1, img4 ));
    dip::Image img5 = img1.At( dip::Range{}, dip::Range{}, dip::Range{ 11 } );
-   DOCTEST_CHECK_FALSE( Alias( img4, img5 ) );
+   DOCTEST_CHECK_FALSE( Alias( img4, img5 ));
    dip::Image img6 = img1.At( dip::Range{ 0, -1, 2 }, dip::Range{}, dip::Range{} );
    dip::Image img7 = img1.At( dip::Range{ 1, -1, 2 }, dip::Range{}, dip::Range{} );
-   DOCTEST_CHECK( Alias( img1, img7 ) );
-   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
+   DOCTEST_CHECK( Alias( img1, img7 ));
+   DOCTEST_CHECK_FALSE( Alias( img6, img7 ));
    img7.Mirror( { true, false, false } );
-   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
+   DOCTEST_CHECK_FALSE( Alias( img6, img7 ));
    img7.SwapDimensions( 0, 1 );
-   DOCTEST_CHECK_FALSE( Alias( img6, img7 ) );
+   DOCTEST_CHECK_FALSE( Alias( img6, img7 ));
    dip::Image img8{ dip::UnsignedArray{ 50, 80, 30 }, 3 };
-   DOCTEST_CHECK_FALSE( Alias( img1, img8 ) );
+   DOCTEST_CHECK_FALSE( Alias( img1, img8 ));
    img1.Strip();
    img1.SetDataType( dip::DT_SCOMPLEX );
    img1.Forge();
@@ -800,7 +803,7 @@ DOCTEST_TEST_CASE("[DIPlib] testing the index and offset computations") {
       }
       std::uniform_int_distribution< dip::uint > uniform2( 0, ndims - 1 );
       for( dip::uint ii = 0; ii < uniform2( random ); ++ii ) {
-         img.SwapDimensions( uniform2( random ), uniform2( random ) );
+         img.SwapDimensions( uniform2( random ), uniform2( random ));
       }
       dip::BooleanArray mirror( ndims );
       for( dip::uint ii = 0; ii < ndims; ++ii ) {

@@ -123,25 +123,21 @@ class DIP_EXPORT AlignedAllocInterface : public ExternalInterface {
    protected:
       class Deleter {
          protected:
-            /// The pointer to the unaligned data must be freed, not the aligned pointer -> store it
+            // The pointer to the unaligned data must be freed, not the aligned pointer -> store it
             void* pUnaligned_;
 
          public:
-            /// Construct Deleter with pointer to unaligned memory
+            // Construct Deleter with pointer to unaligned memory
             Deleter( void* pUnaligned ) : pUnaligned_( pUnaligned ) {}
-            /// Deletes the memory of a DataSegment allocated by AlignedAllocInterface::AllocateData()
-            void operator()( void* pAligned );
+            // Deletes the memory of a DataSegment allocated by AlignedAllocInterface::AllocateData()
+            DIP_EXPORT void operator()( void* pAligned );
       };
 
-      /// Alignment in bytes
+      // Alignment in bytes
       size_t alignment_;
 
    public:
-      /// Allocates the data for an image. The function is required to set `strides`,
-      /// `tensorStride` and `origin`, and return a `dip::DataSegment` that owns the
-      /// allocated data segment. Note that `strides` and `tensorStride` might have
-      /// been set by the user before calling `dip::Image::Forge`, and should be honored
-      /// if possible.
+      /// Called by `dip::Image::Forge`.
       virtual DataSegment AllocateData(
             void*& origin,
             dip::DataType dataType,
@@ -512,7 +508,16 @@ class DIP_NO_EXPORT Image {
          tensorStride_ = ts;
       }
 
-      /// \brief Set the strides array and tensor stride to match the dimension order of `src`. The image must be raw.
+      /// \brief computes normal strides given the sizes array and the number of tensor elements. Note that the
+      /// tensor stride is presumed to be 1. If tensor dimension is to be sorted at the end, set `tensorElements` to 1.
+      DIP_EXPORT static IntegerArray ComputeStrides( UnsignedArray const& sizes, dip::uint tensorElements );
+
+      /// \brief Set the strides array and tensor stride so strides are normal. The image must be raw,
+      /// but its sizes should be set first.
+      DIP_EXPORT void SetNormalStrides();
+
+      /// \brief Set the strides array and tensor stride to match the dimension order of `src`. The image must be raw,
+      /// but its sizes should be set first.
       DIP_EXPORT void MatchStrideOrder( Image const& src );
 
       /// \brief Test if all the pixels are contiguous.
@@ -1314,11 +1319,44 @@ class DIP_NO_EXPORT Image {
          return false;
       }
 
+      /// \brief Compute offset given coordinates and strides.
+      ///
+      /// The offset needs to be multiplied by the number of bytes of each sample to become
+      /// a memory offset within the image.
+      ///
+      /// If `coords` is not within the domain given by `sizes`, an exception is thrown.
+      /// The size of `coords` is not verified.
+      static dip::sint Offset( UnsignedArray const& coords, IntegerArray const& strides, UnsignedArray const& sizes ) {
+         DIP_THROW_IF( coords.size() != strides.size(), E::ARRAY_ILLEGAL_SIZE );
+         DIP_ASSERT( coords.size() == sizes.size() );
+         dip::sint offset = 0;
+         for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
+            DIP_THROW_IF( coords[ ii ] >= sizes[ ii ], E::INDEX_OUT_OF_RANGE );
+            offset += static_cast< dip::sint >( coords[ ii ] ) * strides[ ii ];
+         }
+         return offset;
+      }
+
       /// \brief Compute offset given coordinates.
       ///
-      /// The offset needs to be multiplied
-      /// by the number of bytes of each sample to become a memory offset
-      /// within the image.
+      /// The offset needs to be multiplied by the number of bytes of each sample to become
+      /// a memory offset within the image.
+      ///
+      /// `coords` can have negative values, no domain asusmptions are made.
+      static dip::sint Offset( IntegerArray const& coords, IntegerArray const& strides ) {
+         DIP_THROW_IF( coords.size() != strides.size(), E::ARRAY_ILLEGAL_SIZE );
+         dip::sint offset = 0;
+         for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
+            offset += coords[ ii ] * strides[ ii ];
+         }
+         return offset;
+      }
+
+
+      /// \brief Compute offset given coordinates.
+      ///
+      /// The offset needs to be multiplied by the number of bytes of each sample to become
+      /// a memory offset within the image.
       ///
       /// If `coords` is not within the image domain, an exception is thrown.
       ///
@@ -1327,20 +1365,13 @@ class DIP_NO_EXPORT Image {
       /// \see Origin, Pointer, OffsetToCoordinates
       dip::sint Offset( UnsignedArray const& coords ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-         dip::sint offset = 0;
-         for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
-            DIP_THROW_IF( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
-            offset += static_cast< dip::sint >( coords[ ii ] ) * strides_[ ii ];
-         }
-         return offset;
+         return Offset( coords, strides_, sizes_ );
       }
 
       /// \brief Compute offset given coordinates.
       ///
-      /// The offset needs to be multiplied
-      /// by the number of bytes of each sample to become a memory offset
-      /// within the image.
+      /// The offset needs to be multiplied by the number of bytes of each sample to become
+      /// a memory offset within the image.
       ///
       /// `coords` can be outside the image domain.
       ///
@@ -1349,12 +1380,7 @@ class DIP_NO_EXPORT Image {
       /// \see Origin, Pointer, OffsetToCoordinates
       dip::sint Offset( IntegerArray const& coords ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-         dip::sint offset = 0;
-         for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
-            offset += coords[ ii ] * strides_[ ii ];
-         }
-         return offset;
+         return Offset( coords, strides_ );
       }
 
       /// \brief Compute coordinates given an offset.
@@ -1389,26 +1415,33 @@ class DIP_NO_EXPORT Image {
          return CoordinatesComputer( sizes_, strides_ );
       }
 
+      /// \brief Compute linear index (not offset) given coordinates and image sizes.
+      ///
+      /// This index is not related to the position of the pixel in memory, and should not be
+      /// used to index many pixels in sequence.
+      static dip::uint Index( UnsignedArray const& coords, UnsignedArray const& sizes ) {
+         DIP_THROW_IF( coords.size() != sizes.size(), E::ARRAY_ILLEGAL_SIZE );
+         dip::uint index = 0;
+         for( dip::uint ii = sizes.size(); ii > 0; ) {
+            --ii;
+            DIP_THROW_IF( coords[ ii ] >= sizes[ ii ], E::INDEX_OUT_OF_RANGE );
+            index *= sizes[ ii ];
+            index += coords[ ii ];
+         }
+         return index;
+      }
+
       /// \brief Compute linear index (not offset) given coordinates.
       ///
-      /// This index is not
-      /// related to the position of the pixel in memory, and should not be used
-      /// to index many pixels in sequence.
+      /// This index is not related to the position of the pixel in memory, and should not be
+      /// used to index many pixels in sequence.
       ///
       /// The image must be forged.
       ///
       /// \see IndexToCoordinates, Offset
       dip::uint Index( UnsignedArray const& coords ) const {
          DIP_THROW_IF( !IsForged(), E::IMAGE_NOT_FORGED );
-         DIP_THROW_IF( coords.size() != sizes_.size(), E::ARRAY_ILLEGAL_SIZE );
-         dip::uint index = 0;
-         for( dip::uint ii = sizes_.size(); ii > 0; ) {
-            --ii;
-            DIP_THROW_IF( coords[ ii ] >= sizes_[ ii ], E::INDEX_OUT_OF_RANGE );
-            index *= sizes_[ ii ];
-            index += coords[ ii ];
-         }
-         return index;
+         return Index( coords, sizes_ );
       }
 
       /// \brief Compute coordinates given a linear index.
@@ -1649,6 +1682,32 @@ class DIP_NO_EXPORT Image {
       /// larger image, if singleton dimensions were created or expanded, etc. Use `ForceNormalStrides`
       /// to ensure that strides are normal.
       DIP_EXPORT Image& StandardizeStrides();
+
+      /// \brief Transforms input arrays and outputs ordering required to standardize an image's strides.
+      ///
+      /// `strides` and `sizes` are modified such that any negative strides (mirrored image dimensions) become
+      /// positive, and expanded singleton dimensions become singletons again.
+      ///
+      /// The output array can be used to permute the `strides` and the `sizes` arrays to reorder image dimensions
+      /// such that linear indices match storage order.
+      ///
+      /// The output signed integer is the offset that needs to be applied to the origin to account for any
+      /// image dimensions that were reversed.
+      ///
+      /// The non-static `%Image` method with the same name uses this function to standardize the strides of
+      /// the image:
+      ///
+      /// ```cpp
+      ///     dip::UnsignedArray order;
+      ///     dip::sint offset;
+      ///     std::tie( order, offset ) = dip::Image::StandardizeStrides( strides, sizes );
+      ///     origin = origin + offset;
+      ///     sizes = sizes.permute( order );
+      ///     strides = strides.permute( order );
+      /// ```
+      ///
+      /// `sizes` and `strides` are assumed to be of the same length, this is not tested for.
+      DIP_EXPORT static std::pair< UnsignedArray, dip::sint > StandardizeStrides( IntegerArray& strides, UnsignedArray& sizes );
 
       /// \brief Change the tensor shape, without changing the number of tensor elements.
       Image& ReshapeTensor( dip::uint rows, dip::uint cols ) {
@@ -2152,9 +2211,6 @@ class DIP_NO_EXPORT Image {
 
       // Are the strides such that no two samples are in the same memory cell?
       DIP_EXPORT bool HasValidStrides() const;
-
-      // Fill in all strides.
-      DIP_EXPORT void SetNormalStrides();
 
       DIP_EXPORT void GetDataBlockSizeAndStart( dip::uint& size, dip::sint& start ) const;
 

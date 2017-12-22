@@ -302,7 +302,7 @@ Image::View::Iterator& Image::View::Iterator::operator++() {
       if( maskIt_ ) {
          ++*maskIt_;
          do {
-            if( *( static_cast< bin* >( maskIt_->Pointer< 1 >()))) {
+            if( *( static_cast< bin* >( maskIt_->Pointer< 1 >() ))) {
                break;
             }
          } while( ++*maskIt_ );

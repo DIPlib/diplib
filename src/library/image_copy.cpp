@@ -124,14 +124,14 @@ void CopyTo( Image const& src, Image& dest, Image const& mask ) {
       GenericImageIterator<> srcIt( src );
       if( telems == 1 ) { // most frequent case, really.
          do {
-            if( *( static_cast< bin* >( destIt.Pointer< 1 >()))) {
+            if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
                std::memcpy( destIt.Pointer< 0 >(), srcIt.Pointer(), bytes );
                ++srcIt;
             }
          } while( ++destIt );
       } else {
          do {
-            if( *( static_cast< bin* >( destIt.Pointer< 1 >()))) {
+            if( *( static_cast< bin* >( destIt.Pointer< 1 >() ))) {
                for( dip::uint ii = 0; ii < telems; ++ii ) {
                   std::memcpy( destIt.Pointer< 0 >( ii ), srcIt.Pointer( ii ), bytes );
                }
