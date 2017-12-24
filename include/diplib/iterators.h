@@ -70,7 +70,7 @@ namespace dip {
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see ImageIterator, JointImageIterator, BresenhamLineIterator, SampleIterator
+/// \see \ref using_iterators, ImageIterator, JointImageIterator, BresenhamLineIterator, SampleIterator
 template< typename T >
 class DIP_NO_EXPORT LineIterator {
    public:
@@ -319,18 +319,14 @@ using ConstLineIterator = LineIterator< T const >;
 /// By default, the iterator loops over pixels (or image lines) in linear index order. That is, coordinates
 /// change as: {0,0}, {1,0}, {2,0}, ... {0,1}, {1,1}, ... If the image does not have normal strides, this
 /// is not the most efficient way of looping over all pixels. The method `Optimize` changes the order in
-/// which pixels are accessed to be the order in which they are stored in memory. This also un-expands
-/// expanded singleton dimensions, meaning that each pixel is always accessed only once (in the case of
-/// singleton-expanded images, each pixel is re-used for all pixels along one or more dimensions). After
-/// calling `Optimize`, the output of `Coordinates` and `Index` no longer match the input image. Do not use
-/// this method if the order of accessing pixels is relevant, or if `Coordinates` are needed. Note that
-/// the processing dimension stride could change sign.
+/// which pixels are accessed to be the order in which they are stored in memory. After calling `Optimize`,
+/// the output of `Coordinates` and `Index` no longer match the input image.
 ///
 /// Satisfies all the requirements for a mutable [ForwardIterator](http://en.cppreference.com/w/cpp/iterator).
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see JointImageIterator, LineIterator, SampleIterator, GenericImageIterator
+/// \see \ref using_iterators, JointImageIterator, LineIterator, SampleIterator, GenericImageIterator
 template< typename T >
 class DIP_NO_EXPORT ImageIterator {
    public:
@@ -481,9 +477,11 @@ class DIP_NO_EXPORT ImageIterator {
          return strides_[ procDim_ ];
       }
 
-      /// \brief Return true if the iterator points at a pixel on the edge of the image. If there is a processing
-      /// dimension, then the iterator always points at an edge pixel; in this case only returns true if all pixels
-      /// on the line are edge pixels (i.e. the first and last pixel of the line are not counted).
+      /// \brief Return true if the iterator points at a pixel on the edge of the image.
+      ///
+      /// If there is a processing dimension, then the iterator always points at an edge pixel; in this case
+      /// only returns true if all pixels on the line are edge pixels (i.e. the first and last pixel of the
+      /// line are not counted).
       bool IsOnEdge() const {
          for( dip::uint dd = 0; dd < coords_.size(); ++dd ) {
             if( dd != procDim_ ) {
@@ -510,7 +508,8 @@ class DIP_NO_EXPORT ImageIterator {
       bool HasProcessingDimension() const {
          return origin_ ? ( procDim_ < sizes_.size() ) : false;
       }
-      /// Return the processing dimension, the direction of the lines over which the iterator iterates
+      /// \brief Return the processing dimension, the direction of the lines over which the iterator iterates.
+      ///
       /// If the return value is larger or equal to the dimensionality (i.e. not one of the image dimensions), then
       /// there is no processing dimension.
       dip::uint ProcessingDimension() const { return procDim_; }
@@ -522,10 +521,22 @@ class DIP_NO_EXPORT ImageIterator {
          return *this;
       }
 
-      /// \brief Optimizes the order in which the iterator visits the image pixels. If the image's strides were not normal,
-      /// this will significantly increase the speed of reading or writing to the image. Expanded singleton dimensions
-      /// are eliminated, meaning that each pixel is always only accessed once. The iterator is reset to the first pixel.
-      /// `Coordinates` and `Index` no longer match the input image.
+      /// \brief Optimizes the order in which the iterator visits the image pixels.
+      ///
+      /// The iterator internally reorders and flips image dimensions to change the linear index to match
+      /// the storage order (see `dip::Image::StandardizeStrides`).
+      /// If the image's strides were not normal, this will significantly increase the speed of reading or
+      /// writing to the image. Expanded singleton dimensions are eliminated, meaning that each pixel is
+      /// always only accessed once. Additionally, singleton dimensions are ignored.
+      ///
+      /// After calling this function, `Coordinates` and `Index` no longer match the input image. Do not
+      /// use this method if the order of accessing pixels is relevant, or if `Coordinates` are needed.
+      ///
+      /// Note that the processing dimension stride could change sign. Use `ProcessingDimensionStride`.
+      /// If the processing dimension was a singleton dimension, or singleton-expanded, the iterator will
+      /// no longer have a singleton dimension. In this case, `HasProcessingDimension` will return false.
+      ///
+      /// The iterator is reset to the first pixel.
       ImageIterator& Optimize() {
          UnsignedArray order;
          dip::sint offset;
@@ -533,7 +544,7 @@ class DIP_NO_EXPORT ImageIterator {
          origin_ = origin_ + offset;
          sizes_ = sizes_.permute( order );
          strides_ = strides_.permute( order );
-         procDim_ = order.find( procDim_ ); // TODO: fails if procDim_ was singleton or singeton-expanded
+         procDim_ = order.find( procDim_ );
          coords_.resize( sizes_.size() );
          // TODO: we could gain a little bit more by flattening the dimensions that are not `prodDim_`.
          return Reset();
@@ -595,6 +606,9 @@ inline void TestDataType<>( const ImageConstRefArray::const_pointer ) {} // End 
 /// - The `GetLineIterator`, `Pointer` and `Offset` methods are templated also, requiring a template parameter
 /// `N` as in `Offset<N>`.
 ///
+/// - The `Optimize` method sorts image dimensions to optimize looping over the first image. The iterator will
+///   be most efficient if all images share dimension ordering.
+///
 /// The first image in the set must be forged. Other images can be empty, but dereferencing them will lead to
 /// undefined behavior.
 ///
@@ -615,18 +629,9 @@ inline void TestDataType<>( const ImageConstRefArray::const_pointer ) {} // End 
 /// There exist aliases `InXxx` for `Xxx<0>`, and `OutXxx` for `Xxx<1>`, where `Xxx` is `Sample`, `Pointer` or `Offset`.
 /// `In()` is an alias for `Sample<0>()` and `Out()` is an alias for `Sample<1>()`.
 ///
-/// By default, the iterator loops over pixels (or image lines) in linear index order. That is, coordinates
-/// change as: {0,0}, {1,0}, {2,0}, ... {0,1}, {1,1}, ... If the images do not have normal strides, this
-/// is not the most efficient way of looping over all pixels. The method `Optimize` changes the order in
-/// which pixels are accessed to be the order in which they are stored in memory for the first image. This
-/// will make sure the iteration is as efficient as possible, especially if all images share storage order.
-/// After calling `Optimize`, the output of `Coordinates` and `Index` no longer match the input images. Do not use
-/// this method if the order of accessing pixels is relevant, or if `Coordinates` are needed. Note that
-/// the processing dimension stride could change sign.
-///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see ImageIterator, LineIterator, SampleIterator, GenericJointImageIterator
+/// \see \ref using_iterators, ImageIterator, LineIterator, SampleIterator, GenericJointImageIterator
 template< typename... Types >
 class DIP_NO_EXPORT JointImageIterator {
    public:
@@ -637,13 +642,13 @@ class DIP_NO_EXPORT JointImageIterator {
       template< dip::uint I > using reference = value_type< I >&; ///< The type of a reference to a sample
       template< dip::uint I > using pointer = value_type< I >*;   ///< The type of a pointer to a sample
 
-      /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an
+      /// \brief Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an
       /// end iterator.
       JointImageIterator() : procDim_( std::numeric_limits< dip::uint >::max() ), atEnd_( true ) {
          origins_.fill( nullptr );
          offsets_.fill( 0 );
       }
-      /// To construct a useful iterator, provide `N` images (`N` equal to the number of template parameters),
+      /// \brief To construct a useful iterator, provide `N` images (`N` equal to the number of template parameters),
       /// and optionally a processing dimension.
       explicit JointImageIterator( ImageConstRefArray const& images, dip::uint procDim = std::numeric_limits< dip::uint >::max() ):
             procDim_( procDim ), atEnd_( false ) {
@@ -779,8 +784,8 @@ class DIP_NO_EXPORT JointImageIterator {
                                                      tensorElementss_[ I ], tensorStrides_[ I ] );
       }
 
-      /// Equality comparison, is equal if the two iterators have the same coordinates. It is possible to compare
-      /// JointImageIterators with different images and different types.
+      /// \brief Equality comparison, is equal if the two iterators have the same coordinates. It is possible to compare
+      /// `JointImageIterators` with different images and different types.
       template< typename... OtherTypes >
       bool operator==( JointImageIterator< OtherTypes... > const& other ) const {
          return ( atEnd_ == other.atEnd_ ) && ( coords_ == other.coords_ );
@@ -831,9 +836,11 @@ class DIP_NO_EXPORT JointImageIterator {
          return stridess_[ I ][ procDim_ ];
       }
 
-      /// \brief Return true if the iterator points at a pixel on the edge of the image. If there is a processing
-      /// dimension, then the iterator always points at an edge pixel; in this case only returns true if all pixels
-      /// on the line are edge pixels (i.e. the first and last pixel of the line are not counted).
+      /// \brief Return true if the iterator points at a pixel on the edge of the image.
+      ///
+      /// If there is a processing dimension, then the iterator always points at an edge pixel; in this case
+      /// only returns true if all pixels on the line are edge pixels (i.e. the first and last pixel of the
+      /// line are not counted).
       bool IsOnEdge() const {
          for( dip::uint dd = 0; dd < coords_.size(); ++dd ) {
             if( dd != procDim_ ) {
@@ -873,6 +880,7 @@ class DIP_NO_EXPORT JointImageIterator {
          return origins_[ 0 ] ? procDim_ < sizes_.size() : false;
       }
       /// \brief Return the processing dimension, the direction of the lines over which the iterator iterates.
+      ///
       /// If the return value is larger or equal to the dimensionality (i.e. not one of the image dimensions), then
       /// there is no processing dimension.
       dip::uint ProcessingDimension() const { return procDim_; }
@@ -885,9 +893,22 @@ class DIP_NO_EXPORT JointImageIterator {
          return *this;
       }
 
-      /// \brief Optimizes the order in which the iterator visits the image pixels. Expanded singleton dimensions
-      /// are eliminated if all images expand the same dimensions. The iterator is reset to the first pixel.
-      /// `Coordinates` and `Index` no longer match the input images.
+      /// \brief Optimizes the order in which the iterator visits the image pixels.
+      ///
+      /// The iterator internally reorders and flips image dimensions to change the linear index to match
+      /// the storage order of the first image (see `dip::Image::StandardizeStrides`).
+      /// If the image's strides were not normal, this will significantly increase the speed of reading or
+      /// writing to the image. Expanded singleton dimensions are eliminated only if the dimension is expanded
+      /// in all images. Additionally, singleton dimensions are ignored.
+      ///
+      /// After calling this function, `Coordinates` and `Index` no longer match the input images. Do not
+      /// use this method if the order of accessing pixels is relevant, or if `Coordinates` are needed.
+      ///
+      /// Note that the processing dimension stride could change sign. Use `ProcessingDimensionStride`.
+      /// If the processing dimension was a singleton dimension, or singleton-expanded, the iterator will
+      /// no longer have a singleton dimension. In this case, `HasProcessingDimension` will return false.
+      ///
+      /// The iterator is reset to the first pixel.
       JointImageIterator& Optimize() {
          DIP_ASSERT( origins_[ 0 ] );
          //std::tie( order, offset ) = Image::StandardizeStrides( stridess_[ 0 ], sizes_ );
@@ -931,7 +952,7 @@ class DIP_NO_EXPORT JointImageIterator {
             origins_[ ii ] = static_cast< uint8* >( origins_[ ii ] ) + offsets_[ ii ] * sizeOf_[ ii ];
             stridess_[ ii ] = stridess_[ ii ].permute( order );
          }
-         procDim_ = order.find( procDim_ ); // TODO: fails if procDim_ was singleton or singeton-expanded
+         procDim_ = order.find( procDim_ );
          coords_.resize( sizes_.size() );
          // TODO: we could gain a little bit more by flattening the dimensions that are not `prodDim_`.
          return Reset();

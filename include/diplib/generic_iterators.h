@@ -217,27 +217,20 @@ inline void swap( BresenhamLineIterator& v1, BresenhamLineIterator& v2 ) {
 /// know that this choice will not affect the results of reading from and assigning to the dereferenced
 /// iterator. The only difference is the type to which the dereferenced iterator can implicitly be cast to.
 ///
-/// Example usage from `dip::Image::CopyAt`:
+/// Example usage from `dip::CopyTo`:
 ///
 /// ```cpp
-///     auto indIt = indices.begin();
-///     GenericImageIterator<> srcIt( source );
+///     auto arrIt = offsets.begin();
+///     GenericImageIterator<> srcIt( src );
 ///     do {
-///        detail::CopyBuffer(
-///              srcIt.Pointer(),
-///              source.DataType(),
-///              1, source.TensorStride(),
-///              Pointer( coordinates( static_cast< dip::sint >( *indIt ))),
-///              DataType(),
-///              1, TensorStride(),
-///              1, TensorElements()   // copy one pixel
-///        );
-///     } while( ++indIt, ++srcIt ); // srcIt is at the end, and determines the value of the `while` expression.
+///        Image::Pixel d( dest.Pointer( *arrIt ), dest.DataType(), dest.Tensor(), dest.TensorStride() );
+///        d = *srcIt;
+///     } while( ++arrIt, ++srcIt ); // these two must end at the same time, we test the image iterator, as indIt should be compared with the end iterator.
 /// ```
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see ImageIterator, GenericJointImageIterator
+/// \see \ref using_iterators, ImageIterator, GenericJointImageIterator
 template< typename T = dfloat >
 class DIP_NO_EXPORT GenericImageIterator {
    public:
@@ -336,7 +329,7 @@ class DIP_NO_EXPORT GenericImageIterator {
          return ConstLineIterator< S >( *image_, coords_, procDim_ );
       }
 
-      /// Equality comparison, is equal if the two iterators have the same coordinates. It is possible to compare
+      /// \brief Equality comparison, is equal if the two iterators have the same coordinates. It is possible to compare
       /// GenericImageIterator with different images.
       template< typename S >
       bool operator==( GenericImageIterator< S > const& other ) const {
@@ -366,9 +359,11 @@ class DIP_NO_EXPORT GenericImageIterator {
          coords_ = coords;
       }
 
-      /// \brief Return true if the iterator points at a pixel on the edge of the image. If there is a processing
-      /// dimension, then the iterator always points at an edge pixel; in this case only returns true if all pixels
-      /// on the line are edge pixels (i.e. the first and last pixel of the line are not counted).
+      /// \brief Return true if the iterator points at a pixel on the edge of the image.
+      ///
+      /// If there is a processing dimension, then the iterator always points at an edge pixel; in this case
+      /// only returns true if all pixels on the line are edge pixels (i.e. the first and last pixel of the
+      /// line are not counted).
       bool IsOnEdge() const {
          DIP_ASSERT( image_ );
          for( dip::uint dd = 0; dd < coords_.size(); ++dd ) {
@@ -458,30 +453,30 @@ inline GenericImageIterator< dip::dfloat > Image::end() {
 /// to work, but know that this choice will not affect the results of reading from and assigning to the
 /// samples. The only difference is the type to which the output can implicitly be cast to.
 ///
-/// Example usage from `dip::Image::Copy`:
+/// Example usage slightly modified from `dip::Image::Copy`:
 ///
 /// ```cpp
 ///     dip::uint processingDim = Framework::OptimalProcessingDim( src );
-///     auto it = dip::GenericJointImageIterator< 2 >( { src, *this }, processingDim );
+///     auto it = dip::GenericJointImageIterator< 2 >( { src, dest }, processingDim );
 ///     do {
 ///        detail::CopyBuffer(
 ///              it.InPointer(),
-///              src.dataType_,
-///              src.strides_[ processingDim ],
-///              src.tensorStride_,
+///              src.DataType(),
+///              src.Stride( processingDim ),
+///              src.TensorStride(),
 ///              it.OutPointer(),
-///              dataType_,
-///              strides_[ processingDim ],
-///              tensorStride_,
-///              sizes_[ processingDim ],
-///              tensor_.Elements()
+///              dest.DataType(),
+///              dest.Stride( processingDim ),
+///              dest.TensorStride(),
+///              dest.Size( processingDim ),
+///              dest.tensor_.Elements()
 ///        );
 ///     } while( ++it );
 /// ```
 ///
 /// Note that when an image is stripped or reforged, all its iterators are invalidated.
 ///
-/// \see JointImageIterator, GenericImageIterator
+/// \see \ref using_iterators, JointImageIterator, GenericImageIterator
 template< dip::uint N, typename T = dfloat >
 class DIP_NO_EXPORT GenericJointImageIterator {
    public:
@@ -640,9 +635,11 @@ class DIP_NO_EXPORT GenericJointImageIterator {
          coords_ = coords;
       }
 
-      /// \brief Return true if the iterator points at a pixel on the edge of the image. If there is a processing
-      /// dimension, then the iterator always points at an edge pixel; in this case only returns true if all pixels
-      /// on the line are edge pixels (i.e. the first and last pixel of the line are not counted).
+      /// \brief Return true if the iterator points at a pixel on the edge of the image.
+      ///
+      /// If there is a processing dimension, then the iterator always points at an edge pixel; in this case
+      /// only returns true if all pixels on the line are edge pixels (i.e. the first and last pixel of the
+      /// line are not counted).
       bool IsOnEdge() const {
          DIP_ASSERT( images_[ 0 ] );
          for( dip::uint dd = 0; dd < coords_.size(); ++dd ) {
@@ -775,7 +772,7 @@ inline void swap( GenericJointImageIterator< N, T >& v1, GenericJointImageIterat
 /// Additionally, it behaves like a RandomAccessIterator except for the indexing operator `[]`,
 /// which would be less efficient in use and therefore it's better to not offer it.
 ///
-/// \see ImageTensorIterator, ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
+/// \see \ref using_iterators, ImageTensorIterator, ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
 class DIP_NO_EXPORT ImageSliceIterator {
    public:
       using iterator_category = std::forward_iterator_tag;
@@ -925,7 +922,7 @@ class DIP_NO_EXPORT ImageSliceIterator {
          coord_ = 0;
       }
 
-      /// Set the iterator to index `plane`. If `plane` is outside the image domain, the iterator is still valid,
+      /// \brief Set the iterator to index `plane`. If `plane` is outside the image domain, the iterator is still valid,
       /// but should not be dereferenced.
       void Set( dip::uint plane ) {
          coord_ = plane;
@@ -989,7 +986,7 @@ inline ImageSliceIterator ImageSliceEndIterator( Image const& image, dip::uint p
 /// Note that when the original image is stripped or reforged, the iterator is still valid and
 /// holds on to the original data segment.
 ///
-/// \see ImageSliceIterator, ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
+/// \see \ref using_iterators, ImageSliceIterator, ImageIterator, JointImageIterator, GenericImageIterator, GenericJointImageIterator
 inline ImageSliceIterator ImageTensorIterator( Image const& image ) {
    Image tmp = image;
    dip::uint dim = tmp.Dimensionality();
