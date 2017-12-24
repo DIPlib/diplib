@@ -546,7 +546,7 @@ class DIP_NO_EXPORT ImageIterator {
          strides_ = strides_.permute( order );
          procDim_ = order.find( procDim_ );
          coords_.resize( sizes_.size() );
-         // TODO: we could gain a little bit more by flattening the dimensions that are not `prodDim_`.
+         // TODO: we could gain a little bit more by flattening the dimensions that are not `procDim_`.
          return Reset();
       }
 
@@ -659,6 +659,7 @@ class DIP_NO_EXPORT JointImageIterator {
          coords_.resize( img0.Dimensionality(), 0 );
          sizes_ = img0.Sizes();
          origins_[ 0 ] = img0.Origin();
+         sizeOf_[ 0 ] = static_cast< sint8 >( img0.DataType().SizeOf() ); // will always fit in an 8-bit signed integer (sizeof(dcomplex)==16).
          stridess_[ 0 ] = img0.Strides();
          tensorElementss_[ 0 ] = img0.TensorElements();
          tensorStrides_[ 0 ] = img0.TensorStride();
@@ -694,6 +695,7 @@ class DIP_NO_EXPORT JointImageIterator {
          swap( offsets_, other.offsets_ );
          swap( coords_, other.coords_ );
          swap( procDim_, other.procDim_ );
+         swap( sizeOf_, other.sizeOf_ );
          swap( atEnd_, other.atEnd_ );
       }
 
@@ -954,7 +956,7 @@ class DIP_NO_EXPORT JointImageIterator {
          }
          procDim_ = order.find( procDim_ );
          coords_.resize( sizes_.size() );
-         // TODO: we could gain a little bit more by flattening the dimensions that are not `prodDim_`.
+         // TODO: we could gain a little bit more by flattening the dimensions that are not `procDim_`.
          return Reset();
       }
 
@@ -962,7 +964,6 @@ class DIP_NO_EXPORT JointImageIterator {
       constexpr static dip::uint N = sizeof...( Types );
       static_assert( N > 1, "JointImageIterator needs at least two type template arguments" );
       std::array< void*, N > origins_;
-      std::array< sint8, N > sizeOf_;
       UnsignedArray sizes_;
       std::array< IntegerArray, N > stridess_;
       std::array< dip::uint, N > tensorElementss_;
@@ -970,6 +971,7 @@ class DIP_NO_EXPORT JointImageIterator {
       std::array< dip::sint, N > offsets_;
       UnsignedArray coords_;
       dip::uint procDim_;
+      std::array< sint8, N > sizeOf_;
       bool atEnd_;
 
       // Compares size of image to sizes_

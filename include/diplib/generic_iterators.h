@@ -241,31 +241,43 @@ class DIP_NO_EXPORT GenericImageIterator {
       using pointer = value_type*;        ///< The type of a pointer to a pixel
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
-      GenericImageIterator() : procDim_( std::numeric_limits< dip::uint >::max() ), atEnd_( true ) {}
+      GenericImageIterator() : procDim_( std::numeric_limits< dip::uint >::max() ), sizeOf_( 0 ), atEnd_( true ) {}
       /// To construct a useful iterator, provide an image and optionally a processing dimension
       explicit GenericImageIterator( Image const& image, dip::uint procDim = std::numeric_limits< dip::uint >::max() ) :
-            image_( &image ),
+            origin_( image.Origin() ),
+            sizes_( image.Sizes() ),
+            strides_( image.Strides() ),
+            tensorElements_( image.TensorElements() ),
+            tensorStride_( image.TensorStride() ),
             offset_( 0 ),
             coords_( image.Dimensionality(), 0 ),
             procDim_( procDim ),
+            dataType_( image.DataType() ),
+            sizeOf_( static_cast< sint8 >( dataType_.SizeOf() )),
             atEnd_( false ) {
-         DIP_THROW_IF( !image_->IsForged(), E::IMAGE_NOT_FORGED );
+         DIP_THROW_IF( !image.IsForged(), E::IMAGE_NOT_FORGED );
       }
 
       /// Swap
       template< typename S >
       void swap( GenericImageIterator< S >& other ) {
          using std::swap;
-         swap( image_, other.image_ );
+         swap( origin_, other.origin_ );
+         swap( sizes_, other.sizes_ );
+         swap( strides_, other.strides_ );
+         swap( tensorElements_, other.tensorElements_ );
+         swap( tensorStride_, other.tensorStride_ );
          swap( offset_, other.offset_ );
          swap( coords_, other.coords_ );
          swap( procDim_, other.procDim_ );
+         swap( dataType_, other.dataType_ );
+         swap( sizeOf_, other.sizeOf_ );
          swap( atEnd_, other.atEnd_ );
       }
 
       /// Dereference
       value_type operator*() const {
-         return value_type( image_->Pointer( offset_ ), image_->DataType(), image_->Tensor(), image_->TensorStride() );
+         return value_type( Pointer(), dataType_, Tensor( tensorElements_ ), tensorStride_ );
       }
       /// Dereference
       value_type operator->() const {
@@ -273,26 +285,24 @@ class DIP_NO_EXPORT GenericImageIterator {
       }
       /// Index into tensor, `it[index]` is equal to `(*it)[index]`.
       Image::CastSample< T > operator[]( dip::uint index ) const {
-         DIP_ASSERT( image_ );
-         return Image::CastSample< T >( image_->Pointer( offset_ + static_cast< dip::sint >( index ) * image_->TensorStride() ),
-                                        image_->DataType() );
+         return Image::CastSample< T >( Pointer( index ), dataType_ );
       }
 
       /// Increment
       GenericImageIterator& operator++() {
-         DIP_ASSERT( image_ );
+         DIP_ASSERT( origin_ );
          dip::uint dd;
          for( dd = 0; dd < coords_.size(); ++dd ) {
             if( dd != procDim_ ) {
                // Increment coordinate and adjust offset
                ++coords_[ dd ];
-               offset_ += image_->Stride( dd );
+               offset_ += strides_[ dd ];
                // Check whether we reached the last pixel of the line ...
-               if( coords_[ dd ] < image_->Size( dd ) ) {
+               if( coords_[ dd ] < sizes_[ dd ] ) {
                   break;
                }
                // Rewind, the next loop iteration will increment the next coordinate
-               offset_ -= static_cast< dip::sint >( coords_[ dd ] ) * image_->Stride( dd );
+               offset_ -= static_cast< dip::sint >( coords_[ dd ] ) * strides_[ dd ];
                coords_[ dd ] = 0;
             }
          }
@@ -310,23 +320,23 @@ class DIP_NO_EXPORT GenericImageIterator {
 
       /// Get an iterator over the tensor for the current pixel, `it.begin()` is equal to `(*it).begin()`.
       typename value_type::Iterator begin() const {
-         return typename value_type::Iterator( Pointer(), image_->DataType(), image_->TensorStride() );
+         return typename value_type::Iterator( Pointer(), dataType_, tensorStride_ );
       }
       /// Get an end iterator over the tensor for the current pixel
       typename value_type::Iterator end() const {
-         return typename value_type::Iterator( Pointer(), image_->DataType(), image_->TensorStride(), image_->TensorElements() );
+         return typename value_type::Iterator( Pointer(), dataType_, tensorStride_, tensorElements_ );
       }
       /// Get an iterator over the current line
       template< typename S = T >
       LineIterator< S > GetLineIterator() const {
          DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return LineIterator< S >( *image_, coords_, procDim_ );
+         return LineIterator< S >( Pointer(), sizes_[ procDim_ ], strides_[ procDim_ ], tensorElements_, tensorStride_ );
       }
       /// Get a const iterator over the current line
       template< typename S = T >
       ConstLineIterator< S > GetConstLineIterator() const {
          DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return ConstLineIterator< S >( *image_, coords_, procDim_ );
+         return ConstLineIterator< S >( Pointer(), sizes_[ procDim_ ], strides_[ procDim_ ], tensorElements_, tensorStride_ );
       }
 
       /// \brief Equality comparison, is equal if the two iterators have the same coordinates. It is possible to compare
@@ -349,14 +359,33 @@ class DIP_NO_EXPORT GenericImageIterator {
       /// Return the current coordinates
       UnsignedArray const& Coordinates() const { return coords_; }
       /// Set the iterator to point at a different location in the image
-      void SetCoordinates( UnsignedArray coords ) {
-         DIP_ASSERT( image_ );
-         DIP_ASSERT( coords.size() == image_->Dimensionality() );
+      GenericImageIterator& SetCoordinates( UnsignedArray coords ) {
+         DIP_ASSERT( origin_ );
+         DIP_ASSERT( coords.size() == sizes_.size() );
          if( HasProcessingDimension() ) {
             coords[ procDim_ ] = 0;
          }
-         offset_ = image_->Offset( coords ); // tests for coords to be correct
+         offset_ = Image::Offset( coords, strides_, sizes_ ); // tests for coords to be correct
          coords_ = coords;
+         return *this;
+      }
+
+      /// Return the sizes of the image we're iterating over.
+      UnsignedArray const& Sizes() const { return sizes_; }
+
+      /// Return the size along the processing dimension
+      dip::uint ProcessingDimensionSize() const {
+         DIP_ASSERT( HasProcessingDimension() );
+         return sizes_[ procDim_ ];
+      }
+
+      /// Return the strides used to iterate over the image.
+      IntegerArray const& Strides() const { return strides_; }
+
+      /// Return the stride along the processing dimension
+      dip::sint ProcessingDimensionStride() const {
+         DIP_ASSERT( HasProcessingDimension() );
+         return strides_[ procDim_ ];
       }
 
       /// \brief Return true if the iterator points at a pixel on the edge of the image.
@@ -365,10 +394,9 @@ class DIP_NO_EXPORT GenericImageIterator {
       /// only returns true if all pixels on the line are edge pixels (i.e. the first and last pixel of the
       /// line are not counted).
       bool IsOnEdge() const {
-         DIP_ASSERT( image_ );
          for( dip::uint dd = 0; dd < coords_.size(); ++dd ) {
             if( dd != procDim_ ) {
-               if(( coords_[ dd ] == 0 ) || ( coords_[ dd ] == image_->Size( dd ) - 1 )) {
+               if(( coords_[ dd ] == 0 ) || ( coords_[ dd ] == sizes_[ dd ] - 1 )) {
                   return true;
                }
             }
@@ -378,49 +406,76 @@ class DIP_NO_EXPORT GenericImageIterator {
 
       /// Return the current pointer
       void* Pointer() const {
-         DIP_ASSERT( image_ );
-         return image_->Pointer( offset_ );
+         DIP_ASSERT( origin_ );
+         return static_cast< uint8* >( origin_ ) + offset_ * sizeOf_;
       }
       /// Return a pointer to the tensor element `index`
       void* Pointer( dip::uint index ) const {
-         DIP_ASSERT( image_ );
-         return image_->Pointer( offset_ + static_cast< dip::sint >( index ) * image_->TensorStride() );
+         DIP_ASSERT( origin_ );
+         return static_cast< uint8* >( origin_ ) + ( offset_ + static_cast< dip::sint >( index ) * tensorStride_ ) * sizeOf_;
       }
       /// Return the current offset
       dip::sint Offset() const { return offset_; }
       /// Return the current index, which is computed: this function is not trivial
       dip::uint Index() const {
-         DIP_ASSERT( image_ );
-         return image_->Index( coords_ );
+         return Image::Index( coords_, sizes_ );
       }
 
       /// True if the processing dimension is set
       bool HasProcessingDimension() const {
-         if( image_ ) {
-            return procDim_ < image_->Dimensionality();
-         } else {
-            return false;
-         }
+         return origin_ ? ( procDim_ < sizes_.size() ) : false;
       }
       /// Return the processing dimension, the direction of the lines over which the iterator iterates
-      dip::sint ProcessingDimension() const {
-         return HasProcessingDimension() ? static_cast< dip::sint >( procDim_ ) : -1;
-      }
+      dip::uint ProcessingDimension() const { return procDim_; }
 
       /// Reset the iterator to the first pixel in the image (as it was when first created)
-      void Reset() {
+      GenericImageIterator& Reset() {
          offset_ = 0;
          coords_.fill( 0 );
          atEnd_ = false;
+         return *this;
+      }
+
+      /// \brief Optimizes the order in which the iterator visits the image pixels.
+      ///
+      /// The iterator internally reorders and flips image dimensions to change the linear index to match
+      /// the storage order (see `dip::Image::StandardizeStrides`).
+      /// If the image's strides were not normal, this will significantly increase the speed of reading or
+      /// writing to the image. Expanded singleton dimensions are eliminated, meaning that each pixel is
+      /// always only accessed once. Additionally, singleton dimensions are ignored.
+      ///
+      /// After calling this function, `Coordinates` and `Index` no longer match the input image. Do not
+      /// use this method if the order of accessing pixels is relevant, or if `Coordinates` are needed.
+      ///
+      /// Note that the processing dimension stride could change sign. Use `ProcessingDimensionStride`.
+      /// If the processing dimension was a singleton dimension, or singleton-expanded, the iterator will
+      /// no longer have a singleton dimension. In this case, `HasProcessingDimension` will return false.
+      ///
+      /// The iterator is reset to the first pixel.
+      GenericImageIterator& Optimize() {
+         UnsignedArray order;
+         dip::sint offset;
+         std::tie( order, offset ) = Image::StandardizeStrides( strides_, sizes_ );
+         origin_ = static_cast< uint8* >( origin_ ) + offset * sizeOf_;
+         sizes_ = sizes_.permute( order );
+         strides_ = strides_.permute( order );
+         procDim_ = order.find( procDim_ );
+         coords_.resize( sizes_.size() );
+         // TODO: we could gain a little bit more by flattening the dimensions that are not `procDim_`.
+         return Reset();
       }
 
    private:
-      // TODO: Rewrite so it keeps sizes and strides instead of an image pointer (see ImageIterator)
-      // TODO: Add Optimize() method
-      Image const* image_ = nullptr;
+      void* origin_ = nullptr;
+      UnsignedArray sizes_;
+      IntegerArray strides_;
+      dip::uint tensorElements_;
+      dip::sint tensorStride_ = 0;
       dip::sint offset_ = 0;
       UnsignedArray coords_;
       dip::uint procDim_;
+      DataType dataType_;
+      sint8 sizeOf_;
       bool atEnd_;
 };
 
@@ -488,22 +543,40 @@ class DIP_NO_EXPORT GenericJointImageIterator {
 
       /// Default constructor yields an invalid iterator that cannot be dereferenced, and is equivalent to an end iterator
       GenericJointImageIterator() : procDim_( std::numeric_limits< dip::uint >::max() ), atEnd_( true ) {
-         images_.fill( nullptr );
+         origins_.fill( nullptr );
          offsets_.fill( 0 );
       }
       /// To construct a useful iterator, provide two images, and optionally a processing dimension
       explicit GenericJointImageIterator( ImageConstRefArray const& images, dip::uint procDim = std::numeric_limits< dip::uint >::max() ):
             procDim_( procDim ), atEnd_( false ) {
          DIP_THROW_IF( images.size() != N, E::ARRAY_ILLEGAL_SIZE );
-         images_[ 0 ] = &( images[ 0 ].get() );
-         DIP_THROW_IF( !images_[ 0 ]->IsForged(), E::IMAGE_NOT_FORGED );
-         coords_.resize( images_[ 0 ]->Dimensionality(), 0 );
-         dummy_.SetStrides( IntegerArray( coords_.size(), 0 ));
+         Image const& img0 = images[ 0 ].get();
+         DIP_THROW_IF( !img0.IsForged(), E::IMAGE_NOT_FORGED );
+         coords_.resize( img0.Dimensionality(), 0 );
+         sizes_ = img0.Sizes();
+         origins_[ 0 ] = img0.Origin();
+         dataTypes_[ 0 ] = img0.DataType();
+         sizeOf_[ 0 ] = static_cast< sint8 >( img0.DataType().SizeOf() ); // will always fit in an 8-bit signed integer (sizeof(dcomplex)==16).
+         stridess_[ 0 ] = img0.Strides();
+         tensorElementss_[ 0 ] = img0.TensorElements();
+         tensorStrides_[ 0 ] = img0.TensorStride();
          offsets_.fill( 0 );
          for( dip::uint ii = 1; ii < N; ++ii ) {
-            images_[ ii ] = &( images[ ii ].get() );
-            if( !images_[ ii ]->IsForged() ) {
-               images_[ ii ] = &dummy_;
+            Image const& imgI = images[ ii ].get();
+            if( imgI.IsForged() ) {
+               DIP_THROW_IF( !CompareSizes( imgI ), E::SIZES_DONT_MATCH );
+               origins_[ ii ] = imgI.Origin();
+               dataTypes_[ ii ] = imgI.DataType();
+               sizeOf_[ ii ] = static_cast< sint8 >( imgI.DataType().SizeOf() ); // will always fit in an 8-bit signed integer (sizeof(dcomplex)==16).
+               stridess_[ ii ] = imgI.Strides();
+               tensorElementss_[ ii ] = imgI.TensorElements();
+               tensorStrides_[ ii ] = imgI.TensorStride();
+            } else {
+               origins_[ ii ] = nullptr;
+               sizeOf_[ ii ] = 0;
+               stridess_[ ii ] = IntegerArray( sizes_.size(), 0 );
+               tensorElementss_[ ii ] = 0;
+               tensorStrides_[ ii ] = 0;
             }
          }
       }
@@ -512,18 +585,23 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       template< typename S >
       void swap( GenericJointImageIterator< N, S >& other ) {
          using std::swap;
-         swap( images_, other.images_ );
+         swap( origins_, other.origins_ );
+         swap( sizes_, other.sizes_ );
+         swap( stridess_, other.stridess_ );
+         swap( tensorElementss_, other.tensorElementss_ );
+         swap( tensorStrides_, other.tensorStrides_ );
          swap( offsets_, other.offsets_ );
-         swap( dummy_, other.dummy_ );
          swap( coords_, other.coords_ );
          swap( procDim_, other.procDim_ );
+         swap( dataTypes_, other.dataTypes_ );
+         swap( sizeOf_, other.sizeOf_ );
          swap( atEnd_, other.atEnd_ );
       }
 
       /// Index into image tensor for image `I`
       template< dip::uint I >
       Image::CastSample< T > Sample( dip::uint index ) const {
-         return Image::CastSample< T >( Pointer< I >( index ), images_[ I ]->DataType() );
+         return Image::CastSample< T >( Pointer< I >( index ), dataTypes_[ I ] );
       }
       /// Index into image tensor for image 0.
       Image::CastSample< T > InSample( dip::uint index ) const { return Sample< 0 >( index ); }
@@ -532,7 +610,7 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// Get first tensor element for image `I`.
       template< dip::uint I >
       Image::CastSample< T > Sample() const {
-         return Image::CastSample< T >( Pointer< I >(), images_[ I ]->DataType() );
+         return Image::CastSample< T >( Pointer< I >(), dataTypes_[ I ] );
       }
       /// Get pixel for image 0.
       value_type In() const { return Pixel< 0 >(); }
@@ -541,7 +619,7 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// Get pixel for image `I`.
       template< dip::uint I >
       value_type Pixel() const {
-         return value_type( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->Tensor(), images_[ I ]->TensorStride() );
+         return value_type( Pointer< I >(), dataTypes_[ I ], Tensor( tensorElementss_[ I ] ), tensorStrides_[ I ] );
       }
 
       /// Increment
@@ -553,15 +631,15 @@ class DIP_NO_EXPORT GenericJointImageIterator {
                   // Increment coordinate and adjust pointer
                   ++coords_[ dd ];
                   for( dip::uint ii = 0; ii < N; ++ii ) {
-                     offsets_[ ii ] += images_[ ii ]->Stride( dd );
+                     offsets_[ ii ] += stridess_[ ii ][ dd ];
                   }
                   // Check whether we reached the last pixel of the line
-                  if( coords_[ dd ] < images_[ 0 ]->Size( dd )) {
+                  if( coords_[ dd ] < sizes_[ dd ] ) {
                      break;
                   }
                   // Rewind, the next loop iteration will increment the next coordinate
                   for( dip::uint ii = 0; ii < N; ++ii ) {
-                     offsets_[ ii ] -= static_cast< dip::sint >( coords_[ dd ] ) * images_[ ii ]->Stride( dd );
+                     offsets_[ ii ] -= static_cast< dip::sint >( coords_[ dd ] ) * stridess_[ ii ][ dd ];
                   }
                   coords_[ dd ] = 0;
                }
@@ -582,26 +660,26 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// Get an iterator over the tensor for the current pixel of image `I`
       template< dip::uint I >
       typename value_type::Iterator begin() const {
-         DIP_ASSERT( images_[ I ] );
-         return typename value_type::Iterator( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->TensorStride() );
+         return typename value_type::Iterator( Pointer< I >(), dataTypes_[ I ], tensorStrides_[ I ] );
       }
       /// Get an end iterator over the tensor for the current pixel of image `I`
       template< dip::uint I >
       typename value_type::Iterator end() const {
-         DIP_ASSERT( images_[ I ] );
-         return typename value_type::Iterator( Pointer< I >(), images_[ I ]->DataType(), images_[ I ]->TensorStride(), images_[ I ]->TensorElements() );
+         return typename value_type::Iterator( Pointer< I >(), dataTypes_[ I ], tensorStrides_[ I ], tensorElementss_[ I ] );
       }
       /// Get an iterator over the current line of image `I`
       template< dip::uint I, typename S = T >
       LineIterator< S > GetLineIterator() const {
          DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return LineIterator< S >( *images_[ I ], coords_, procDim_ );
+         return LineIterator< S >( Pointer< I >(), sizes_[ procDim_ ], stridess_[ I ][ procDim_ ],
+                                   tensorElementss_[ I ], tensorStrides_[ I ] );
       }
       /// Get a const iterator over the current line of image `I`
       template< dip::uint I, typename S = T >
       ConstLineIterator< S > GetConstLineIterator() const {
          DIP_THROW_IF( !HasProcessingDimension(), "Cannot get a line iterator if there's no valid processing dimension" );
-         return ConstLineIterator< S >( *images_[ I ], coords_, procDim_ );
+         return ConstLineIterator< S >( Pointer< I >(), sizes_[ procDim_ ], stridess_[ I ][ procDim_ ],
+                                        tensorElementss_[ I ], tensorStrides_[ I ] );
       }
 
       /// Equality comparison, is equal if the two iterators have the same coordinates.
@@ -623,16 +701,36 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// Return the current coordinates
       UnsignedArray const& Coordinates() const { return coords_; }
       /// Set the iterator to point at a different location in the image
-      void SetCoordinates( UnsignedArray coords ) {
-         DIP_ASSERT( images_[ 0 ] );
-         DIP_ASSERT( coords.size() == images_[ 0 ]->Dimensionality() );
+      GenericJointImageIterator& SetCoordinates( UnsignedArray coords ) {
+         DIP_ASSERT( coords.size() == sizes_.size() );
          if( HasProcessingDimension() ) {
             coords[ procDim_ ] = 0;
          }
          for( dip::uint ii = 0; ii < N; ++ii ) {
-            offsets_[ ii ] = images_[ ii ]->Offset( coords );
+            offsets_[ ii ] = Image::Offset( coords, stridess_[ ii ], sizes_ );
          }
          coords_ = coords;
+         return *this;
+      }
+
+      /// Return the sizes of the images we're iterating over.
+      UnsignedArray const& Sizes() const { return sizes_; }
+
+      /// Return the size along the processing dimension.
+      dip::uint ProcessingDimensionSize() const {
+         DIP_ASSERT( HasProcessingDimension() );
+         return sizes_[ procDim_ ];
+      }
+
+      /// Return the strides used to iterate over the image `I`.
+      template< dip::uint I >
+      IntegerArray const& Strides() const { return stridess_[ I ]; }
+
+      /// Return the stride along the processing dimension.
+      template< dip::uint I >
+      dip::sint ProcessingDimensionStride() const {
+         DIP_ASSERT( HasProcessingDimension() );
+         return stridess_[ I ][ procDim_ ];
       }
 
       /// \brief Return true if the iterator points at a pixel on the edge of the image.
@@ -641,10 +739,9 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// only returns true if all pixels on the line are edge pixels (i.e. the first and last pixel of the
       /// line are not counted).
       bool IsOnEdge() const {
-         DIP_ASSERT( images_[ 0 ] );
          for( dip::uint dd = 0; dd < coords_.size(); ++dd ) {
             if( dd != procDim_ ) {
-               if(( coords_[ dd ] == 0 ) || ( coords_[ dd ] == images_[ 0 ]->Size( dd ) - 1 )) {
+               if(( coords_[ dd ] == 0 ) || ( coords_[ dd ] == sizes_[ dd ] - 1 )) {
                   return true;
                }
             }
@@ -655,8 +752,9 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// Index into image tensor for image `I`
       template< dip::uint I >
       void* Pointer( dip::uint index ) const {
-         DIP_ASSERT( images_[ I ] );
-         return images_[ I ]->Pointer( offsets_[ I ] + static_cast< dip::sint >( index ) * images_[ I ]->TensorStride() );
+         DIP_ASSERT( origins_[ I ] );
+         DIP_ASSERT( !atEnd_ );
+         return static_cast< uint8* >( origins_[ I ] ) + ( offsets_[ I ] + static_cast< dip::sint >( index ) * tensorStrides_[ I ] ) * sizeOf_[ I ];
       }
       /// Index into image tensor for image 0.
       void* InPointer( dip::uint index ) const { return Pointer< 0 >( index ); }
@@ -665,8 +763,9 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// Return the current pointer for image `I`
       template< dip::uint I >
       void* Pointer() const {
-         DIP_ASSERT( images_[ I ] );
-         return images_[ I ]->Pointer( offsets_[ I ] );
+         DIP_ASSERT( origins_[ I ] );
+         DIP_ASSERT( !atEnd_ );
+         return static_cast< uint8* >( origins_[ I ] ) + offsets_[ I ] * sizeOf_[ I ];
       }
       /// Return the current pointer for image 0.
       void* InPointer() const { return Pointer< 0 >(); }
@@ -681,46 +780,113 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       dip::sint OutOffset() const { return offsets_[ 1 ]; }
       /// Return the current index, which is computed: this function is not trivial
       dip::uint Index() const {
-         DIP_ASSERT( images_[ 0 ] );
-         return images_[ 0 ]->Index( coords_ );
+         return Image::Index( coords_, sizes_ );
       }
 
       /// True if the processing dimension is set
       bool HasProcessingDimension() const {
-         if( images_[ 0 ] ) {
-            return procDim_ < images_[ 0 ]->Dimensionality();
-         } else {
-            return false;
-         }
+         return origins_[ 0 ] ? ( procDim_ < sizes_.size() ) : false;
       }
-      /// Return the processing dimension, the direction of the lines over which the iterator iterates
-      dip::sint ProcessingDimension() const { return HasProcessingDimension() ? static_cast< dip::sint >( procDim_ ) : -1; }
+      /// \brief Return the processing dimension, the direction of the lines over which the iterator iterates.
+      ///
+      /// If the return value is larger or equal to the dimensionality (i.e. not one of the image dimensions), then
+      /// there is no processing dimension.
+      dip::uint ProcessingDimension() const { return procDim_; }
 
       /// Reset the iterator to the first pixel in the image (as it was when first created)
-      void Reset() {
+      GenericJointImageIterator& Reset() {
          offsets_.fill( 0 );
          coords_.fill( 0 );
          atEnd_ = false;
+         return *this;
+      }
+
+      /// \brief Optimizes the order in which the iterator visits the image pixels.
+      ///
+      /// The iterator internally reorders and flips image dimensions to change the linear index to match
+      /// the storage order of the first image (see `dip::Image::StandardizeStrides`).
+      /// If the image's strides were not normal, this will significantly increase the speed of reading or
+      /// writing to the image. Expanded singleton dimensions are eliminated only if the dimension is expanded
+      /// in all images. Additionally, singleton dimensions are ignored.
+      ///
+      /// After calling this function, `Coordinates` and `Index` no longer match the input images. Do not
+      /// use this method if the order of accessing pixels is relevant, or if `Coordinates` are needed.
+      ///
+      /// Note that the processing dimension stride could change sign. Use `ProcessingDimensionStride`.
+      /// If the processing dimension was a singleton dimension, or singleton-expanded, the iterator will
+      /// no longer have a singleton dimension. In this case, `HasProcessingDimension` will return false.
+      ///
+      /// The iterator is reset to the first pixel.
+      GenericJointImageIterator& Optimize() {
+         DIP_ASSERT( origins_[ 0 ] );
+         //std::tie( order, offset ) = Image::StandardizeStrides( stridess_[ 0 ], sizes_ );
+         dip::uint nd = sizes_.size();
+         DIP_ASSERT( stridess_[ 0 ].size() == nd );
+         // Un-mirror and un-expand
+         offsets_.fill( 0 );
+         for( dip::uint jj = 0; jj < nd; ++jj ) {
+            if( stridess_[ 0 ][ jj ] < 0 ) {
+               for( dip::uint ii = 0; ii < N; ++ii ) {
+                  offsets_[ ii ] += static_cast< dip::sint >( sizes_[ jj ] - 1 ) * stridess_[ ii ][ jj ];
+                  stridess_[ ii ][ jj ] = -stridess_[ ii ][ jj ];
+               }
+            } else if( stridess_[ 0 ][ jj ] == 0 ) {
+               bool all = true;
+               for( dip::uint ii = 1; ii < N; ++ii ) {
+                  if( stridess_[ ii ][ jj ] != 0 ) {
+                     all = false;
+                     break;
+                  }
+               }
+               if( all ) {
+                  sizes_[ jj ] = 1;
+               }
+               // TODO: What if not `all`? This dimension will be sorted first, should it???
+            }
+         }
+         // Sort strides
+         UnsignedArray order = stridess_[ 0 ].sorted_indices();
+         // Remove singleton dimensions
+         dip::uint jj = 0;
+         for( dip::uint ii = 0; ii < order.size(); ++ii ) {
+            if( sizes_[ order[ ii ]] > 1 ) {
+               order[ jj ] = order[ ii ];
+               ++jj;
+            }
+         }
+         order.resize( jj );
+         sizes_ = sizes_.permute( order );
+         for( dip::uint ii = 0; ii < N; ++ii ) {
+            origins_[ ii ] = static_cast< uint8* >( origins_[ ii ] ) + offsets_[ ii ] * sizeOf_[ ii ];
+            stridess_[ ii ] = stridess_[ ii ].permute( order );
+         }
+         procDim_ = order.find( procDim_ );
+         coords_.resize( sizes_.size() );
+         // TODO: we could gain a little bit more by flattening the dimensions that are not `procDim_`.
+         return Reset();
       }
 
    private:
       static_assert( N > 1, "GenericJointImageIterator needs at least two type template arguments" );
-      // TODO: Rewrite so it keeps sizes and strides instead of image pointers (see JointImageIterator)
-      // TODO: Add Optimize() method
-      std::array< Image const*, N > images_;
+      std::array< void*, N > origins_;
+      UnsignedArray sizes_;
+      std::array< IntegerArray, N > stridess_;
+      std::array< dip::uint, N > tensorElementss_;
+      std::array< dip::sint, N > tensorStrides_;
       std::array< dip::sint, N > offsets_;
-      Image dummy_;
       UnsignedArray coords_;
       dip::uint procDim_;
+      std::array< DataType, N > dataTypes_;
+      std::array< sint8, N > sizeOf_;
       bool atEnd_;
 
-      // Compares size of image n to first
-      bool CompareSizes( dip::uint n ) const {
-         if( images_[ 0 ]->Dimensionality() != images_[ n ]->Dimensionality() ) {
+      // Compares size of image to sizes_
+      bool CompareSizes( Image const& image ) const {
+         if( sizes_.size() != image.Dimensionality() ) {
             return false;
          }
-         for( dip::uint ii = 0; ii < images_[ 0 ]->Dimensionality(); ++ii ) {
-            if(( ii != procDim_ ) && ( images_[ 0 ]->Size( ii ) != images_[ n ]->Size( ii ))) {
+         for( dip::uint ii = 0; ii < sizes_.size(); ++ii ) {
+            if(( ii != procDim_ ) && ( sizes_[ ii ] != image.Size( ii ))) {
                return false;
             }
          }
@@ -909,23 +1075,26 @@ class DIP_NO_EXPORT ImageSliceIterator {
       /// Return the current position
       dip::uint Coordinate() const { return coord_; }
       /// Set the iterator to point at a different location in the image
-      void SetCoordinate( dip::uint coord ) {
+      ImageSliceIterator& SetCoordinate( dip::uint coord ) {
          DIP_THROW_IF( coord >= size_, E::INDEX_OUT_OF_RANGE );
          coord_ = coord;
+         return *this;
       }
 
       /// Return the processing dimension, the direction over which the iterator iterates
       dip::uint ProcessingDimension() const { return procDim_; }
 
       /// Reset the iterator to the first image plane (as it was when the iterator first was created)
-      void Reset() {
+      ImageSliceIterator& Reset() {
          coord_ = 0;
+         return *this;
       }
 
       /// \brief Set the iterator to index `plane`. If `plane` is outside the image domain, the iterator is still valid,
       /// but should not be dereferenced.
-      void Set( dip::uint plane ) {
+      ImageSliceIterator& Set( dip::uint plane ) {
          coord_ = plane;
+         return *this;
       }
 
    private:

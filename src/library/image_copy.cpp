@@ -405,7 +405,8 @@ void Image::Convert( dip::DataType dt ) {
             // Make nD loop
             //std::cout << "dip::Image::Convert: in-place, nD loop\n";
             dip::uint processingDim = Framework::OptimalProcessingDim( *this );
-            auto it = GenericImageIterator<>( *this, processingDim );
+            GenericImageIterator<> it( *this, processingDim );
+            it.Optimize();
             do {
                detail::CopyBuffer(
                      it.Pointer(),

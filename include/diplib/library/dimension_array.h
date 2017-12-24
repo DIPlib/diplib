@@ -51,8 +51,8 @@ namespace dip {
 
 /// \brief A dynamic array type optimized for few elements.
 ///
-/// We have our own array type, similar to `std::vector` but optimized for our
-/// particular use: hold one element per image dimension. Most images have
+/// `%dip::DimensionArray` is similar to `std::vector` but optimized for one particular
+/// use within the *DIPlib* library: hold one element per image dimension. Most images have
 /// only two or three dimensions, and for internal processing we might add the
 /// tensor dimension to the mix, yielding up to four dimensions for most
 /// applications. However, *DIPlib* does not limit image dimensionality, and we
@@ -427,11 +427,9 @@ class DIP_NO_EXPORT DimensionArray {
       /// Finds the first occurrence of `value` in the array, returns the index or `size()` if it is not present.
       size_type find( T value ) {
          // Like in `sort`, we expect the array to be small
-         size_type ii;
-         for( ii = 0; ii < size_; ++ii ) {
-            if( data_[ ii ] == value ) {
-               break;
-            }
+         size_type ii = 0;
+         while(( ii < size_ ) && ( data_[ ii ] != value )) {
+            ++ii;
          }
          return ii;
       }
