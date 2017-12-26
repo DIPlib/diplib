@@ -684,7 +684,7 @@ void Image::Forge() {
          DIP_THROW_IF( !p, "Failed to allocate memory" );
          dataBlock_ = DataSegment{ p, std::free };
          //[]( void* ptr ) { std::cout << "   Successfully freed image with DataSegment " << ptr << std::endl; std::free( ptr ); }
-         origin_ = static_cast< uint8* >( p ) + start * static_cast< dip::sint >( sz );
+         origin_ = static_cast< uint8* >( p ) - start * static_cast< dip::sint >( sz );
          //std::cout << "   Successfully forged image with DataSegment " << p << std::endl;
       }
    }
@@ -747,7 +747,41 @@ CoordinatesComputer Image::IndexToCoordinatesComputer() const {
 #include "doctest.h"
 #include "diplib/random.h"
 
-DOCTEST_TEST_CASE("[DIPlib] testing the Alias function") {
+DOCTEST_TEST_CASE( "[DIPlib] testing dip::Image::Forge" ) {
+   dip::Image img;
+   img.SetSizes( dip::UnsignedArray{ 5, 8, 7 } );
+   img.SetTensorSizes( 3 );
+   img.Forge();
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 3 * 5, 3 * 5 * 8 } );
+   DOCTEST_CHECK( img.TensorStride() == 1 );
+   DOCTEST_CHECK( img.Origin() == img.Data() );
+   // Custom strides: swap tensor dimension and x axis
+   img.Strip();
+   img.SetTensorStride( 5 );
+   img.SetStrides( dip::IntegerArray{ 1, 5*3, 5*3*8 } );
+   img.Forge();
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 5*3, 5*3*8 } );
+   DOCTEST_CHECK( img.TensorStride() == 5 );
+   DOCTEST_CHECK( img.Origin() == img.Data() );
+   // Custom strides that are not compact: yields normal strides
+   img.Strip();
+   img.SetTensorStride( 5 );
+   img.SetStrides( dip::IntegerArray{ 1, 5*3 + 5, ( 5*3 + 5 ) * 8 } );
+   img.Forge();
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 3, 3*5, 3*5*8 } );
+   DOCTEST_CHECK( img.TensorStride() == 1 );
+   DOCTEST_CHECK( img.Origin() == img.Data() );
+   // Custom strides: y dimension is flipped
+   img.Strip();
+   img.SetTensorStride( 5 );
+   img.SetStrides( dip::IntegerArray{ 1, -5*3, 5*3*8 } );
+   img.Forge();
+   DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, -5*3, 5*3*8 } );
+   DOCTEST_CHECK( img.TensorStride() == 5 );
+   DOCTEST_CHECK( img.Origin() == static_cast< dip::uint8* >( img.Data() ) + 5*3*(8-1) * img.DataType().SizeOf() );
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::Alias") {
    dip::Image img1{ dip::UnsignedArray{ 50, 80, 30 }, 3 };
    DOCTEST_REQUIRE( img1.Size( 0 ) == 50 );
    DOCTEST_REQUIRE( img1.Size( 1 ) == 80 );
