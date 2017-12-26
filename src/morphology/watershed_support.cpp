@@ -33,14 +33,14 @@ std::vector< dip::sint > CreateOffsetsArray( UnsignedArray const& sizes, Integer
    offsets.reserve( noInd );
    UnsignedArray coords( ndims, 1 );
    for( ;; ) {
-      dip::sint ptr = 0;
+      dip::sint offset = 0;
       dip::uint ii;
       for( ii = 0; ii < ndims; ++ii ) {
-         ptr += static_cast< dip::sint >( coords[ ii ] ) * strides[ ii ];
+         offset += static_cast< dip::sint >( coords[ ii ] ) * strides[ ii ];
       }
       for( ii = 1; ii < sizes[ 0 ] - 1; ++ii ) {
-         offsets.push_back( ptr );
-         ptr += strides[ 0 ];
+         offsets.push_back( offset );
+         offset += strides[ 0 ];
       }
       for( ii = 1; ii < ndims; ++ii ) {
          ++( coords[ ii ] );
@@ -66,19 +66,19 @@ std::vector< dip::sint > CreateOffsetsArray( Image const& maskim, IntegerArray c
    bin* mask = ( bin* )maskim.Origin();
    UnsignedArray coords( ndims, 1 );
    for( ;; ) {
-      dip::sint ptr = 0;
-      dip::sint mptr = 0;
+      dip::sint offset = 0;
+      dip::sint moffset = 0;
       dip::uint ii;
       for( ii = 0; ii < ndims; ++ii ) {
-         ptr += static_cast< dip::sint >( coords[ ii ] ) * strides[ ii ];
-         mptr += static_cast< dip::sint >( coords[ ii ] ) * maskstrides[ ii ];
+         offset += static_cast< dip::sint >( coords[ ii ] ) * strides[ ii ];
+         moffset += static_cast< dip::sint >( coords[ ii ] ) * maskstrides[ ii ];
       }
       for( ii = 1; ii < sizes[ 0 ] - 1; ++ii ) {
-         if( mask[ mptr ] ) {
-            offsets.push_back( ptr );
+         if( mask[ moffset ] ) {
+            offsets.push_back( offset );
          }
-         ptr += strides[ 0 ];
-         mptr += maskstrides[ 0 ];
+         offset += strides[ 0 ];
+         moffset += maskstrides[ 0 ];
       }
       for( ii = 1; ii < ndims; ++ii ) {
          ++( coords[ ii ] );

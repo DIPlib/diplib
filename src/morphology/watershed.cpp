@@ -394,15 +394,6 @@ void FastWatershed(
    }
    labels.Fill( 0 );
    out.SetPixelSize( pixelSize );
-   // Resort strides to make looping over the image optimal. All images have the same strides, so will be
-   // transformed in an identical way.
-   // We can use the offset array we computed above because pixels don't move around in memory, we just
-   // change their coordinates.
-   in.StandardizeStrides();
-   labels.StandardizeStrides(); // TODO: not sure this is necessary any more
-   if( binary.IsForged() ) {
-      binary.StandardizeStrides(); // TODO: not sure this is necessary any more
-   }
 
    // Create array with offsets to neighbors
    NeighborList neighbors( { Metric::TypeCode::CONNECTED, connectivity }, nDims );
