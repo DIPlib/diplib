@@ -40,7 +40,7 @@ namespace dip {
 namespace Option {
 /// \brief How to compare images in `dip::testing::CompareImages`.
 enum class DIP_NO_EXPORT CompareImagesMode {
-      APPROX,  ///< Compare the sample values (and image sizes), to match within
+      APPROX,  ///< Compare the sample values (and image sizes), to match within `epsilon`
       EXACT,   ///< Compare only the sample values (and image sizes)
       FULL     ///< Compare for identical sample values as well as tensor shape, color space, and pixel size
 };
