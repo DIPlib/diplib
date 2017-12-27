@@ -45,24 +45,24 @@ struct CoordinateMode {
 CoordinateMode ParseMode( StringSet const& mode ) {
    CoordinateMode coordinateMode;
    for( auto& option : mode ) {
-      if( option == "right" ) {
+      if( option == S::RIGHT ) {
          coordinateMode.system = CoordinateSystem::RIGHT;
-      } else if( option == "left" ) {
+      } else if( option == S::LEFT ) {
          coordinateMode.system = CoordinateSystem::LEFT;
-      } else if( option == "true" ) {
+      } else if( option == S::TRUE ) {
          coordinateMode.system = CoordinateSystem::TRUE;
-      } else if( option == "corner" ) {
+      } else if( option == S::CORNER ) {
          coordinateMode.system = CoordinateSystem::CORNER;
-      } else if(( option == "frequency" ) || ( option == "freq" )) {
+      } else if(( option == S::FREQUENCY ) || ( option == "freq" )) {
          coordinateMode.system = CoordinateSystem::FREQUENCY;
-      } else if( option == "radfreq" ) {
+      } else if( option == S::RADFREQ ) {
          coordinateMode.system = CoordinateSystem::FREQUENCY;
          coordinateMode.radialFrequency = true;
-      } else if( option == "radial" ) {
+      } else if( option == S::RADIAL ) {
          coordinateMode.radialFrequency = true;
-      } else if( option == "math" ) {
+      } else if( option == S::MATH ) {
          coordinateMode.invertedY = true;
-      } else if( option == "physical" ) {
+      } else if( option == S::PHYSICAL ) {
          coordinateMode.physical = true;
       } else {
          DIP_THROW_INVALID_FLAG( option );
@@ -118,11 +118,11 @@ void FillDelta( Image& out, String const& origin ) {
    DIP_THROW_IF( !out.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !out.IsScalar(), E::IMAGE_NOT_FORGED );
    CoordinateSystem system = CoordinateSystem::RIGHT;
-   if( origin.empty() || ( origin == "right" )) {
+   if( origin.empty() || ( origin == S::RIGHT )) {
       system = CoordinateSystem::RIGHT;
-   } else if( origin == "left" ) {
+   } else if( origin == S::LEFT ) {
       system = CoordinateSystem::LEFT;
-   } else if( origin == "corner" ) {
+   } else if( origin == S::CORNER ) {
       system = CoordinateSystem::CORNER;
    } else {
       DIP_THROW_INVALID_FLAG( origin );
@@ -514,7 +514,7 @@ void FillCoordinates( Image& out, StringSet const& mode, String const& system ) 
    dip::uint nDims = out.Dimensionality();
    DIP_THROW_IF( out.TensorElements() != nDims, E::NTENSORELEM_DONT_MATCH );
    bool spherical;
-   DIP_STACK_TRACE_THIS( spherical = BooleanFromString( system, "spherical", "cartesian" ));
+   DIP_STACK_TRACE_THIS( spherical = BooleanFromString( system, S::SPHERICAL, S::CARTESIAN ));
    DIP_THROW_IF( spherical && (( nDims < 2 ) || ( nDims > 3 )), E::DIMENSIONALITY_NOT_SUPPORTED );
    DIP_START_STACK_TRACE
       CoordinateMode coordinateMode = ParseMode( mode );

@@ -487,16 +487,16 @@ Image& Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocatio
 
 Image& Image::Crop( UnsignedArray const& sizes, String const& cropLocation ) {
    Option::CropLocation flag;
-   if( cropLocation == "center" ) {
+   if( cropLocation == S::CENTER ) {
       flag = Option::CropLocation::CENTER;
-   } else if( cropLocation == "mirror center" ) {
+   } else if( cropLocation == S::MIRROR_CENTER ) {
       flag = Option::CropLocation::MIRROR_CENTER;
-   } else if( cropLocation == "top left" ) {
+   } else if( cropLocation == S::TOP_LEFT ) {
       flag = Option::CropLocation::TOP_LEFT;
-   } else if( cropLocation == "bottom right" ) {
+   } else if( cropLocation == S::BOTTOM_RIGHT ) {
       flag = Option::CropLocation::BOTTOM_RIGHT;
    } else {
-      DIP_THROW( "Unknown crop location flag" );
+      DIP_THROW( E::INVALID_FLAG );
    }
    return Crop( sizes, flag );
 }

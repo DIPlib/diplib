@@ -105,13 +105,13 @@ class DIP_NO_EXPORT Kernel {
 
       /// \brief A `dip::FloatArray` implicitly converts to a kernel, it is interpreted as the
       /// parameter for each dimension. A second argument specifies the shape.
-      Kernel( FloatArray const& params, String const& shape = "elliptic" ) : params_( params ) {
+      Kernel( FloatArray const& params, String const& shape = S::ELLIPTIC ) : params_( params ) {
          SetShape( shape );
       }
 
       /// \brief A floating-point value implicitly converts to a kernel, it is interpreted as the
       /// parameter for all dimensions. A second argument specifies the shape.
-      Kernel( dfloat param, String const& shape = "elliptic" ) : params_( FloatArray{ param } ) {
+      Kernel( dfloat param, String const& shape = S::ELLIPTIC ) : params_( FloatArray{ param } ) {
          SetShape( shape );
       }
 
@@ -215,14 +215,14 @@ class DIP_NO_EXPORT Kernel {
       String ShapeString() const {
          switch( shape_ ) {
             case ShapeCode::RECTANGULAR:
-               return "rectangular";
+               return S::RECTANGULAR;
             case ShapeCode::ELLIPTIC:
-               return "elliptic";
+               return S::ELLIPTIC;
             case ShapeCode::DIAMOND:
-               return "diamond";
+               return S::DIAMOND;
             case ShapeCode::LINE:
             case ShapeCode::LEFT_LINE:
-               return "line";
+               return S::LINE;
             //case ShapeCode::CUSTOM:
             default:
                return "custom";
@@ -255,13 +255,13 @@ class DIP_NO_EXPORT Kernel {
       bool mirror_ = false;
 
       void SetShape( String const& shape ) {
-         if( shape == "elliptic" ) {
+         if( shape == S::ELLIPTIC ) {
             shape_ = ShapeCode::ELLIPTIC;
-         } else if( shape == "rectangular" ) {
+         } else if( shape == S::RECTANGULAR ) {
             shape_ = ShapeCode::RECTANGULAR;
-         } else if( shape == "diamond" ) {
+         } else if( shape == S::DIAMOND ) {
             shape_ = ShapeCode::DIAMOND;
-         } else if( shape == "line" ) {
+         } else if( shape == S::LINE ) {
             shape_ = ShapeCode::LINE;
          } else {
             DIP_THROW_INVALID_FLAG( shape );

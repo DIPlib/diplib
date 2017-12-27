@@ -407,7 +407,8 @@ FileInformation ImageReadICS(
       Range channels,
       String const& mode
 ) {
-   bool fast = BooleanFromString( mode, "fast", "" );
+   bool fast;
+   DIP_STACK_TRACE_THIS( fast = BooleanFromString( mode, "fast", "" ));
 
    // open the ICS file
    IcsFile icsFile( filename, "r" );

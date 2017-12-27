@@ -116,6 +116,18 @@ class DIP_NO_EXPORT Tensor {
             LOWTRIANG_MATRIX, ///< a lower-triangular matrix (stores n(n+1)/2 elements)
       };
 
+      struct ShapeString {
+         // Undocumented, used to prevent typos in literal strings.
+         constexpr static char const* COL_VECTOR = "column vector";
+         constexpr static char const* ROW_VECTOR = "row vector";
+         constexpr static char const* COL_MAJOR_MATRIX = "column-major matrix";
+         constexpr static char const* ROW_MAJOR_MATRIX = "row-major matrix";
+         constexpr static char const* DIAGONAL_MATRIX = "diagonal matrix";
+         constexpr static char const* SYMMETRIC_MATRIX = "symmetric matrix";
+         constexpr static char const* UPPTRIANG_MATRIX = "upper triangular matrix";
+         constexpr static char const* LOWTRIANG_MATRIX = "lower triangular matrix";
+      };
+
       /// Creates a `Shape::COL_VECTOR` with one element (scalar).
       Tensor() {
          SetScalar();
@@ -598,41 +610,41 @@ class DIP_NO_EXPORT Tensor {
          switch( shape ) {
             default:
                //case Shape::COL_VECTOR:
-               return "column vector";
+               return ShapeString::COL_VECTOR;
             case Shape::ROW_VECTOR:
-               return "row vector";
+               return ShapeString::ROW_VECTOR;
             case Shape::COL_MAJOR_MATRIX:
-               return "column-major matrix";
+               return ShapeString::COL_MAJOR_MATRIX;
             case Shape::ROW_MAJOR_MATRIX:
-               return "row-major matrix";
+               return ShapeString::ROW_MAJOR_MATRIX;
             case Shape::DIAGONAL_MATRIX:
-               return "diagonal matrix";
+               return ShapeString::DIAGONAL_MATRIX;
             case Shape::SYMMETRIC_MATRIX:
-               return "symmetric matrix";
+               return ShapeString::SYMMETRIC_MATRIX;
             case Shape::UPPTRIANG_MATRIX:
-               return "upper triangular matrix";
+               return ShapeString::UPPTRIANG_MATRIX;
             case Shape::LOWTRIANG_MATRIX:
-               return "lower triangular matrix";
+               return ShapeString::LOWTRIANG_MATRIX;
          }
       }
 
       /// Retrieve a tensor shape from a string representation of the tensor shape
       static Shape ShapeFromString( String const& string ) {
-         if( string == "column vector" ) {
+         if( string == ShapeString::COL_VECTOR ) {
             return dip::Tensor::Shape::COL_VECTOR;
-         } else if( string == "row vector" ) {
+         } else if( string == ShapeString::ROW_VECTOR ) {
             return dip::Tensor::Shape::ROW_VECTOR;
-         } else if( string == "column-major matrix" ) {
+         } else if( string == ShapeString::COL_MAJOR_MATRIX ) {
             return dip::Tensor::Shape::COL_MAJOR_MATRIX;
-         } else if( string == "row-major matrix" ) {
+         } else if( string == ShapeString::ROW_MAJOR_MATRIX ) {
             return dip::Tensor::Shape::ROW_MAJOR_MATRIX;
-         } else if( string == "diagonal matrix" ) {
+         } else if( string == ShapeString::DIAGONAL_MATRIX ) {
             return dip::Tensor::Shape::DIAGONAL_MATRIX;
-         } else if( string == "symmetric matrix" ) {
+         } else if( string == ShapeString::SYMMETRIC_MATRIX ) {
             return dip::Tensor::Shape::SYMMETRIC_MATRIX;
-         } else if( string == "upper triangular matrix" ) {
+         } else if( string == ShapeString::UPPTRIANG_MATRIX ) {
             return dip::Tensor::Shape::UPPTRIANG_MATRIX;
-         } else if( string == "lower triangular matrix" ) {
+         } else if( string == ShapeString::LOWTRIANG_MATRIX ) {
             return dip::Tensor::Shape::LOWTRIANG_MATRIX;
          } else {
             DIP_THROW( String{ "TensorShape string not recognized: " } + string );

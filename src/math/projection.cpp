@@ -324,7 +324,7 @@ void Mean(
       BooleanArray const& process
 ) {
    std::unique_ptr< ProjectionScanFunction > lineFilter;
-   if( mode == "directional" ) {
+   if( mode == S::DIRECTIONAL ) {
       DIP_OVL_NEW_FLOAT( lineFilter, ProjectionMeanDirectional, (), in.DataType() );
    } else {
       DIP_OVL_NEW_ALL( lineFilter, ProjectionMean, ( true ), in.DataType() );
@@ -570,14 +570,14 @@ void Variance(
 ) {
    // TODO: This exists also for complex numbers, yielding a real value
    std::unique_ptr< ProjectionScanFunction > lineFilter;
-   if(( in.DataType().SizeOf() <= 2 ) && ( mode == "stable" )) {
-      mode = "fast";
+   if(( in.DataType().SizeOf() <= 2 ) && ( mode == S::STABLE )) {
+      mode = S::FAST;
    }
-   if( mode == "stable" ) {
+   if( mode == S::STABLE ) {
       DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewProjectionVarianceStable, ( false ), in.DataType());
-   } else if( mode == "fast" ) {
+   } else if( mode == S::FAST ) {
       DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewProjectionVarianceFast, ( false ), in.DataType());
-   } else if( mode == "directional" ) {
+   } else if( mode == S::DIRECTIONAL ) {
       DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceDirectional, ( false ), in.DataType());
    } else {
       DIP_THROW( E::INVALID_FLAG );
@@ -594,14 +594,14 @@ void StandardDeviation(
 ) {
    // TODO: This exists also for complex numbers, yielding a real value
    std::unique_ptr< ProjectionScanFunction > lineFilter;
-   if(( in.DataType().SizeOf() <= 2 ) && ( mode == "stable" )) {
-      mode = "fast";
+   if(( in.DataType().SizeOf() <= 2 ) && ( mode == S::STABLE )) {
+      mode = S::FAST;
    }
-   if( mode == "stable" ) {
+   if( mode == S::STABLE ) {
       DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceStable, ( true ), in.DataType());
-   } else if( mode == "fast" ) {
+   } else if( mode == S::FAST ) {
       DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceFast, ( true ), in.DataType());
-   } else if( mode == "directional" ) {
+   } else if( mode == S::DIRECTIONAL ) {
       DIP_OVL_CALL_ASSIGN_FLOAT( lineFilter, NewProjectionVarianceDirectional, ( true ), in.DataType());
    } else {
       DIP_THROW( E::INVALID_FLAG );

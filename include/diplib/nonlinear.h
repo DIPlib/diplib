@@ -158,7 +158,7 @@ DIP_EXPORT void SelectionFilter(
       Image& out,
       Kernel const& kernel = {},
       dfloat threshold = 0.0,
-      String const& mode = "minimum",
+      String const& mode = S::MINIMUM,
       StringArray const& boundaryCondition = {}
 );
 inline Image SelectionFilter(
@@ -166,7 +166,7 @@ inline Image SelectionFilter(
       Image const& control,
       Kernel const& kernel = {},
       dfloat threshold = 0.0,
-      String const& mode = "minimum",
+      String const& mode = S::MINIMUM,
       StringArray const& boundaryCondition = {}
 ) {
    Image out;
@@ -249,13 +249,13 @@ DIP_EXPORT void NonMaximumSuppression(
       Image const& c_gradient,
       Image const& mask,
       Image& out,
-      String const& mode = "interpolate"
+      String const& mode = S::INTERPOLATE
 );
 inline Image NonMaximumSuppression(
       Image const& gradmag,
       Image const& gradient,
       Image const& mask,
-      String const& mode = "interpolate"
+      String const& mode = S::INTERPOLATE
 ) {
    Image out;
    NonMaximumSuppression( gradmag, gradient, mask, out, mode );

@@ -353,12 +353,12 @@ void DrawPolygon2D(
    DIP_THROW_IF( !value.IsScalar() && ( out.TensorElements() != value.TensorElements() ), E::NTENSORELEM_DONT_MATCH );
    bool filled = false;
    bool open = false;
-   if( mode == "filled" ) {
+   if( mode == S::FILLED ) {
       filled = true;
-   } else if( mode == "open" ) {
+   } else if( mode == S::OPEN ) {
       open = true;
    } else {
-      DIP_THROW_IF( mode != "closed", E::INVALID_FLAG );
+      DIP_THROW_IF( mode != S::CLOSED, E::INVALID_FLAG );
    }
    DIP_THROW_IF( polygon.vertices.size() < ( open ? 2u : 3u ), E::ARRAY_ILLEGAL_SIZE ); // need at least 2 points to draw an open polygon, otherwise 3 points
    if( filled ) {

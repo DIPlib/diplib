@@ -33,14 +33,31 @@ namespace S {
 // These are some of the string input arguments. Defining them as a constant
 // prevents typos in the library code. A library user does not need to use these
 // constants, but of course can do so if she wants.
-// TODO: Go through the whole library and fish out all the string constants everywhere.
 
-// Binary processing: background/object; special; all/foreground
+// Assorted
+constexpr char const* MINIMUM = "minimum";
+constexpr char const* MAXIMUM = "maximum";
+constexpr char const* FIRST = "first";
+constexpr char const* LAST = "last";
+constexpr char const* STABLE = "stable";
+constexpr char const* DIRECTIONAL = "directional";
+constexpr char const* OTSU = "otsu";
+constexpr char const* INCLUDE = "include";
+constexpr char const* EXCLUDE = "exclude";
+constexpr char const* INTERPOLATE = "interpolate";
+constexpr char const* ROUND = "round";
+constexpr char const* EMPTY = "empty";
+constexpr char const* FILLED = "filled";
+constexpr char const* OPEN = "open";
+constexpr char const* CLOSED = "closed";
+
+// Binary processing
 constexpr char const* BACKGROUND = "background";
 constexpr char const* OBJECT = "object";
 constexpr char const* SPECIAL = "special";
 constexpr char const* ALL = "all";
 constexpr char const* FOREGROUND = "foreground";
+
 // Skeleton end pixel conditions
 constexpr char const* LOOSEENDSAWAY = "loose ends away";
 constexpr char const* NATURAL = "natural";
@@ -98,6 +115,7 @@ constexpr char const* CUBIC_ORDER_3 = "3-cubic";
 constexpr char const* CUBIC_ORDER_4 = "4-cubic";
 constexpr char const* LINEAR = "linear";
 constexpr char const* NEAREST = "nearest";
+constexpr char const* ZERO_ORDER = "zero order";
 constexpr char const* INVERSE_NEAREST = "inverse nearest";
 constexpr char const* BSPLINE = "bspline";
 constexpr char const* LANCZOS8 = "lanczos8";
@@ -106,6 +124,70 @@ constexpr char const* LANCZOS4 = "lanczos4";
 constexpr char const* LANCZOS3 = "lanczos3";
 constexpr char const* LANCZOS2 = "lanczos2";
 constexpr char const* FOURIER = "fourier";
+
+// Convolution flags
+constexpr char const* SPATIAL = "spatial";
+constexpr char const* FREQUENCY = "frequency";
+constexpr char const* BEST = "best";
+constexpr char const* EVEN = "even";
+constexpr char const* ODD = "odd";
+constexpr char const* NORMALIZE = "normalize";
+constexpr char const* DONT_NORMALIZE = "don't normalize";
+constexpr char const* SMOOTH = "smooth";
+constexpr char const* FINITEDIFF = "finitediff";
+constexpr char const* DISCRETE_TIME_FIT = "discrete time fit";
+constexpr char const* FORWARD_BACKWARD = "forward backward";
+
+// Fourier
+constexpr char const* INVERSE = "inverse";
+constexpr char const* REAL = "real";
+constexpr char const* SYMMETRIC = "SYMMETRIC";
+constexpr char const* CORNER = "corner";
+//constexpr char const* FAST = "fast";
+
+// Distance transforms
+constexpr char const* GDT = "GDT";
+constexpr char const* EUCLIDEAN = "Euclidean";
+//constexpr char const* FAST = "fast";
+constexpr char const* TIES = "ties";
+constexpr char const* TRUE = "true";
+constexpr char const* BRUTE_FORCE  = "brute force";
+
+// Crop location
+constexpr char const* CENTER = "center";
+constexpr char const* MIRROR_CENTER = "mirror center";
+constexpr char const* TOP_LEFT = "top left";
+constexpr char const* BOTTOM_RIGHT = "bottom right";
+
+// Clip options
+//constexpr char const* BOTH = "both";
+constexpr char const* LOW = "low";
+constexpr char const* HIGH = "high";
+constexpr char const* RANGE = "range";
+
+// Metrics
+constexpr char const* CHAMFER = "chamfer";
+constexpr char const* CONNECTED = "connected";
+constexpr char const* CITY = "city";
+constexpr char const* CHESS = "chess";
+constexpr char const* CONNECTED_4 = "4-connected";
+constexpr char const* CONNECTED_8 = "8-connected";
+constexpr char const* CONNECTED_6 = "6-connected";
+constexpr char const* CONNECTED_18 = "18-connected";
+constexpr char const* CONNECTED_28 = "28-connected";
+
+// Coordinate systems
+constexpr char const* SPHERICAL = "spherical";
+constexpr char const* CARTESIAN = "cartesian";
+constexpr char const* RIGHT = "right";
+constexpr char const* LEFT = "left";
+//constexpr char const* TRUE = "true";
+//constexpr char const* CORNER = "corner";
+//constexpr char const* FREQUENCY = "frequency";
+constexpr char const* RADFREQ = "radfreq";
+constexpr char const* RADIAL = "radial";
+constexpr char const* MATH = "math";
+constexpr char const* PHYSICAL = "physical";
 
 } // namespace S
 

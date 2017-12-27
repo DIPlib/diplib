@@ -447,7 +447,7 @@ void DrawBandlimitedBall(
    DIP_THROW_IF( origin.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    DIP_THROW_IF( diameter <= 0.0, E::PARAMETER_OUT_OF_RANGE );
    bool filled;
-   DIP_STACK_TRACE_THIS( filled = BooleanFromString( mode, "filled", "empty" ));
+   DIP_STACK_TRACE_THIS( filled = BooleanFromString( mode, S::FILLED, S::EMPTY ));
    DIP_THROW_IF( sigma <= 0.0, E::PARAMETER_OUT_OF_RANGE );
    DIP_THROW_IF( truncation <= 0.0, E::PARAMETER_OUT_OF_RANGE );
    dfloat margin = sigma * truncation;
@@ -667,7 +667,7 @@ void DrawBandlimitedBox(
    }
    DIP_THROW_IF( origin.size() != nDims, E::ARRAY_PARAMETER_WRONG_LENGTH );
    bool filled;
-   DIP_STACK_TRACE_THIS( filled = BooleanFromString( mode, "filled", "empty" ));
+   DIP_STACK_TRACE_THIS( filled = BooleanFromString( mode, S::FILLED, S::EMPTY ));
    DIP_THROW_IF( sigma <= 0.0, E::PARAMETER_OUT_OF_RANGE );
    DIP_THROW_IF( truncation <= 0.0, E::PARAMETER_OUT_OF_RANGE );
    dfloat margin = sigma * truncation;

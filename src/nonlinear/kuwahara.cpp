@@ -119,7 +119,8 @@ void SelectionFilter(
    DIP_THROW_IF( !c_control.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !c_control.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_THROW_IF( kernel.HasWeights(), E::KERNEL_NOT_BINARY );
-   bool minimum = BooleanFromString( mode, "minimum", "maximum" );
+   bool minimum;
+   DIP_STACK_TRACE_THIS( minimum = BooleanFromString( mode, S::MINIMUM, S::MAXIMUM ));
 
    // Determine boundary sizes
    UnsignedArray kernelSizes;
@@ -205,7 +206,7 @@ void Kuwahara(
       Image value = dip::Uniform( in, kernel, boundaryCondition );
       Image control = dip::VarianceFilter( in, kernel, boundaryCondition );
       kernel.Mirror();
-      SelectionFilter( value, control, out, kernel, threshold, "minimum", boundaryCondition );
+      SelectionFilter( value, control, out, kernel, threshold, S::MINIMUM, boundaryCondition );
    DIP_END_STACK_TRACE
 }
 

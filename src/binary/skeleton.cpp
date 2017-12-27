@@ -4722,7 +4722,8 @@ void EuclideanSkeleton(
    }
 
    // Edge condition
-   bool edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
+   bool edgeCondition;
+   DIP_STACK_TRACE_THIS( edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND ));
 
    // Copy input plane to output plane. Operation takes place directly in the output plane.
    Image c_in = in; // temporary copy of image header, so we can strip out

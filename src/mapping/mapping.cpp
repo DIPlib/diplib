@@ -36,13 +36,13 @@ struct ClipOptions {
 
 ClipOptions ParseClipOptions( String const& mode ) {
    ClipOptions options;
-   if( mode == "both" ) {
+   if( mode == S::BOTH ) {
       // nothing to do
-   } else if( mode == "low" ) {
+   } else if( mode == S::LOW ) {
       options.clipHigh = false;
-   } else if( mode == "high" ) {
+   } else if( mode == S::HIGH ) {
       options.clipLow = false;
-   } else if( mode == "range" ) {
+   } else if( mode == S::RANGE ) {
       options.range = true;
    } else {
       DIP_THROW( E::INVALID_FLAG );

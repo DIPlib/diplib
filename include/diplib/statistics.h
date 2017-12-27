@@ -56,7 +56,7 @@ DIP_EXPORT dip::uint Count( Image const& in, Image const& mask = {} );
 /// If it is `"last"`, the last one is found.
 ///
 /// \see dip::Maximum
-DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = "first" );
+DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = S::FIRST );
 
 /// \brief Returns the coordinates of the minimum pixel in the image.
 ///
@@ -65,7 +65,7 @@ DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask = {}, 
 /// If it is `"last"`, the last one is found.
 ///
 /// \see dip::Minimum
-DIP_EXPORT UnsignedArray MinimumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = "first" );
+DIP_EXPORT UnsignedArray MinimumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = S::FIRST );
 
 /// \brief Calculates the cumulative sum of the pixel values over all those dimensions which are specified by `process`.
 ///
@@ -287,8 +287,8 @@ inline Image SumSquare( Image const& in, Image const& mask = {}, BooleanArray co
 /// directional statistics it must be floating point.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void Variance( Image const& in, Image const& mask, Image& out, String mode = "fast", BooleanArray const& process = {} );
-inline Image Variance( Image const& in, Image const& mask = {}, String const& mode = "fast", BooleanArray const& process = {} ) {
+DIP_EXPORT void Variance( Image const& in, Image const& mask, Image& out, String mode = S::FAST, BooleanArray const& process = {} );
+inline Image Variance( Image const& in, Image const& mask = {}, String const& mode = S::FAST, BooleanArray const& process = {} ) {
    Image out;
    Variance( in, mask, out, mode, process );
    return out;
@@ -317,8 +317,8 @@ inline Image Variance( Image const& in, Image const& mask = {}, String const& mo
 /// directional statistics it must be floating point.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
-DIP_EXPORT void StandardDeviation( Image const& in, Image const& mask, Image& out, String mode = "fast", BooleanArray const& process = {} );
-inline Image StandardDeviation( Image const& in, Image const& mask = {}, String const& mode = "fast", BooleanArray const& process = {} ) {
+DIP_EXPORT void StandardDeviation( Image const& in, Image const& mask, Image& out, String mode = S::FAST, BooleanArray const& process = {} );
+inline Image StandardDeviation( Image const& in, Image const& mask = {}, String const& mode = S::FAST, BooleanArray const& process = {} ) {
    Image out;
    StandardDeviation( in, mask, out, mode, process );
    return out;

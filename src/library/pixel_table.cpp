@@ -55,7 +55,7 @@ PixelTable::PixelTable(
    DIP_THROW_IF( procDim >= nDims, E::PARAMETER_OUT_OF_RANGE );
    procDim_ = procDim;
 
-   if( shape == "line" ) {
+   if( shape == S::LINE ) {
 
       //
       // Construct a pixel table from a Bresenham line
@@ -155,7 +155,7 @@ PixelTable::PixelTable(
          s = std::max( 1.0, s );
       }
 
-      if( shape == "rectangular" ) {
+      if( shape == S::RECTANGULAR ) {
          // A rectangle has all runs of the same length, easy!
 
          // Initialize sizes and origin
@@ -202,7 +202,7 @@ PixelTable::PixelTable(
             }
          }
 
-      } else if( shape == "elliptic" ) {
+      } else if( shape == S::ELLIPTIC ) {
          // A unit circle in Euclidean space, normalized by the sizes.
 
          // Initialize sizes and origin
@@ -257,7 +257,7 @@ PixelTable::PixelTable(
             }
          }
 
-      } else if( shape == "diamond" ) {
+      } else if( shape == S::DIAMOND ) {
          // Same as "elliptic" but with L1 norm.
 
          // Initialize sizes and origin

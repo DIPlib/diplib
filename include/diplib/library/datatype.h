@@ -107,6 +107,21 @@ struct DIP_NO_EXPORT DataType {
          DCOMPLEX,
    } dt;
 
+   struct DTString {
+      // Undocumented, used to prevent typos in literal strings.
+      constexpr static char const* BIN = "BIN";
+      constexpr static char const* UINT8 = "UINT8";
+      constexpr static char const* SINT8 = "SINT8";
+      constexpr static char const* UINT16 = "UINT16";
+      constexpr static char const* SINT16 = "SINT16";
+      constexpr static char const* UINT32 = "UINT32";
+      constexpr static char const* SINT32 = "SINT32";
+      constexpr static char const* SFLOAT = "SFLOAT";
+      constexpr static char const* DFLOAT = "DFLOAT";
+      constexpr static char const* SCOMPLEX = "SCOMPLEX";
+      constexpr static char const* DCOMPLEX = "DCOMPLEX";
+   };
+
    constexpr DataType() : dt( DT::SFLOAT ) {}
    constexpr DataType( DT _dt ) : dt( _dt ) {}
 
@@ -123,17 +138,17 @@ struct DIP_NO_EXPORT DataType {
 
    /// \brief A string can be cast to a data type. The recognized names are identical to the enumerator names in `dip::DataType::DT`.
    explicit DataType( String name ) {
-      if( name == "BIN"      ) { dt = DT::BIN;      } else
-      if( name == "UINT8"    ) { dt = DT::UINT8;    } else
-      if( name == "SINT8"    ) { dt = DT::SINT8;    } else
-      if( name == "UINT16"   ) { dt = DT::UINT16;   } else
-      if( name == "SINT16"   ) { dt = DT::SINT16;   } else
-      if( name == "UINT32"   ) { dt = DT::UINT32;   } else
-      if( name == "SINT32"   ) { dt = DT::SINT32;   } else
-      if( name == "SFLOAT"   ) { dt = DT::SFLOAT;   } else
-      if( name == "DFLOAT"   ) { dt = DT::DFLOAT;   } else
-      if( name == "SCOMPLEX" ) { dt = DT::SCOMPLEX; } else
-      if( name == "DCOMPLEX" ) { dt = DT::DCOMPLEX; }
+      if( name == DTString::BIN      ) { dt = DT::BIN;      } else
+      if( name == DTString::UINT8    ) { dt = DT::UINT8;    } else
+      if( name == DTString::SINT8    ) { dt = DT::SINT8;    } else
+      if( name == DTString::UINT16   ) { dt = DT::UINT16;   } else
+      if( name == DTString::SINT16   ) { dt = DT::SINT16;   } else
+      if( name == DTString::UINT32   ) { dt = DT::UINT32;   } else
+      if( name == DTString::SINT32   ) { dt = DT::SINT32;   } else
+      if( name == DTString::SFLOAT   ) { dt = DT::SFLOAT;   } else
+      if( name == DTString::DFLOAT   ) { dt = DT::DFLOAT;   } else
+      if( name == DTString::SCOMPLEX ) { dt = DT::SCOMPLEX; } else
+      if( name == DTString::DCOMPLEX ) { dt = DT::DCOMPLEX; }
       else {
          DIP_THROW( "Illegal data type name: " + name );
       }
@@ -154,17 +169,17 @@ struct DIP_NO_EXPORT DataType {
    /// \brief Returns a C-style string constant with a representation of the data type name.
    char const* Name() const {
       switch( dt ) {
-         case DT::BIN:      return "BIN";
-         case DT::UINT8:    return "UINT8";
-         case DT::SINT8:    return "SINT8";
-         case DT::UINT16:   return "UINT16";
-         case DT::SINT16:   return "SINT16";
-         case DT::UINT32:   return "UINT32";
-         case DT::SINT32:   return "SINT32";
-         case DT::SFLOAT:   return "SFLOAT";
-         case DT::DFLOAT:   return "DFLOAT";
-         case DT::SCOMPLEX: return "SCOMPLEX";
-         case DT::DCOMPLEX: return "DCOMPLEX";
+         case DT::BIN:      return DTString::BIN;
+         case DT::UINT8:    return DTString::UINT8;
+         case DT::SINT8:    return DTString::SINT8;
+         case DT::UINT16:   return DTString::UINT16;
+         case DT::SINT16:   return DTString::SINT16;
+         case DT::UINT32:   return DTString::UINT32;
+         case DT::SINT32:   return DTString::SINT32;
+         case DT::SFLOAT:   return DTString::SFLOAT;
+         case DT::DFLOAT:   return DTString::DFLOAT;
+         case DT::SCOMPLEX: return DTString::SCOMPLEX;
+         case DT::DCOMPLEX: return DTString::DCOMPLEX;
       };
       DIP_THROW( "Unknown data type" ); // This should never happen, but GCC complains.
    }

@@ -123,7 +123,7 @@ DIP_EXPORT void DrawPolygon2D(
       Image& out,
       Polygon const& polygon,
       Image::Pixel const& value = { 1 },
-      String const& mode = "filled"
+      String const& mode = S::FILLED
 );
 
 /// \brief Draws a solid ellipsoid in an image.
@@ -244,7 +244,7 @@ DIP_EXPORT void DrawBandlimitedBall(
       dfloat diameter,
       FloatArray origin,
       Image::Pixel const& value = { 1 },
-      String const& mode = "filled", // or "empty"
+      String const& mode = S::FILLED,
       dfloat sigma = 1.0,
       dfloat truncation = 3.0
 );
@@ -272,7 +272,7 @@ DIP_EXPORT void DrawBandlimitedBox(
       FloatArray sizes,
       FloatArray origin,
       Image::Pixel const& value = { 1 },
-      String const& mode = "filled", // or "empty"
+      String const& mode = S::FILLED,
       dfloat sigma = 1.0,
       dfloat truncation = 3.0
 );

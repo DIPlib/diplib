@@ -134,16 +134,16 @@ DIP_EXPORT void ConvolveFT(
       Image const& in,
       Image const& filter,
       Image& out,
-      String const& inRepresentation = "spatial",
-      String const& filterRepresentation = "spatial",
-      String const& outRepresentation = "spatial"
+      String const& inRepresentation = S::SPATIAL,
+      String const& filterRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL
 );
 inline Image ConvolveFT(
       Image const& in,
       Image const& filter,
-      String const& inRepresentation = "spatial",
-      String const& filterRepresentation = "spatial",
-      String const& outRepresentation = "spatial"
+      String const& inRepresentation = S::SPATIAL,
+      String const& filterRepresentation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL
 ) {
    Image out;
    ConvolveFT( in, filter, out, inRepresentation, filterRepresentation, outRepresentation );
@@ -318,7 +318,7 @@ DIP_EXPORT void GaussIIR(
       UnsignedArray derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
       UnsignedArray filterOrder = {}, // means compute order depending on derivativeOrder.
-      String const& designMethod = "", // default is "discrete time fit", alt is "forward backward".
+      String const& designMethod = S::DISCRETE_TIME_FIT,
       dfloat truncation = 3 // truncation gets automatically increased for higher-order derivatives
 );
 inline Image GaussIIR(
@@ -327,7 +327,7 @@ inline Image GaussIIR(
       UnsignedArray const& derivativeOrder = { 0 },
       StringArray const& boundaryCondition = {},
       UnsignedArray const& filterOrder = {},
-      String const& designMethod = "",
+      String const& designMethod = S::DISCRETE_TIME_FIT,
       dfloat truncation = 3
 ) {
    Image out;
@@ -360,7 +360,7 @@ DIP_EXPORT void Gauss(
       Image& out,
       FloatArray const& sigmas = { 1.0 },
       UnsignedArray const& derivativeOrder = { 0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 );
@@ -368,7 +368,7 @@ inline Image Gauss(
       Image const& in,
       FloatArray const& sigmas = { 1.0 },
       UnsignedArray const& derivativeOrder = { 0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
@@ -397,14 +397,14 @@ DIP_EXPORT void FiniteDifference(
       Image const& in,
       Image& out,
       UnsignedArray derivativeOrder = { 0 },
-      String const& smoothFlag = "smooth",
+      String const& smoothFlag = S::SMOOTH,
       StringArray const& boundaryCondition = {},
       BooleanArray process = {}
 );
 inline Image FiniteDifference(
       Image const& in,
       UnsignedArray const& derivativeOrder = { 0 },
-      String const& smoothFlag = "smooth",
+      String const& smoothFlag = S::SMOOTH,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {}
 ) {
@@ -431,7 +431,7 @@ inline void SobelGradient(
    DIP_THROW_IF( dimension >= in.Dimensionality(), E::PARAMETER_OUT_OF_RANGE );
    UnsignedArray derivativeOrder( in.Dimensionality(), 0 );
    derivativeOrder[ dimension ] = 1;
-   FiniteDifference( in, out, derivativeOrder, "smooth", boundaryCondition );
+   FiniteDifference( in, out, derivativeOrder, S::SMOOTH, boundaryCondition );
 }
 inline Image SobelGradient(
       Image const& in,
@@ -474,7 +474,7 @@ DIP_EXPORT void Derivative(
       Image& out,
       UnsignedArray const& derivativeOrder,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 );
@@ -482,7 +482,7 @@ inline Image Derivative(
       Image const& in,
       UnsignedArray const& derivativeOrder,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
@@ -694,7 +694,7 @@ DIP_EXPORT void Gradient(
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -702,7 +702,7 @@ DIP_EXPORT void Gradient(
 inline Image Gradient(
       Image const& in,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -721,7 +721,7 @@ DIP_EXPORT void GradientMagnitude(
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -729,7 +729,7 @@ DIP_EXPORT void GradientMagnitude(
 inline Image GradientMagnitude(
       Image const& in,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -752,7 +752,7 @@ DIP_EXPORT void GradientDirection(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -760,7 +760,7 @@ DIP_EXPORT void GradientDirection(
 inline Image GradientDirection(
       Image const& in,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -781,7 +781,7 @@ DIP_EXPORT void Curl(
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -789,7 +789,7 @@ DIP_EXPORT void Curl(
 inline Image Curl(
       Image const& in,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -810,7 +810,7 @@ DIP_EXPORT void Divergence(
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -818,7 +818,7 @@ DIP_EXPORT void Divergence(
 inline Image Divergence(
       Image const& in,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -851,7 +851,7 @@ DIP_EXPORT void Hessian (
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -859,7 +859,7 @@ DIP_EXPORT void Hessian (
 inline Image Hessian(
       Image const& in,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -887,7 +887,7 @@ DIP_EXPORT void Laplace (
       Image const& in,
       Image& out,
       FloatArray sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -895,7 +895,7 @@ DIP_EXPORT void Laplace (
 inline Image Laplace(
       Image const& in,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -909,7 +909,7 @@ DIP_EXPORT void Dgg(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -919,7 +919,7 @@ DIP_EXPORT void LaplacePlusDgg(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -929,7 +929,7 @@ DIP_EXPORT void LaplaceMinDgg(
       Image const& in,
       Image& out,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       BooleanArray const& process = {},
       dfloat truncation = 3
@@ -951,7 +951,7 @@ DIP_EXPORT void Sharpen(
          Image& out,
          dfloat weight = 1.0,
          FloatArray const& sigmas = { 1.0 },
-         String const& method = "best",
+         String const& method = S::BEST,
          StringArray const& boundaryCondition = {},
          dfloat truncation = 3
 );
@@ -959,7 +959,7 @@ inline Image Sharpen(
       Image const& in,
       dfloat weight = 1.0,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
@@ -984,7 +984,7 @@ DIP_EXPORT void UnsharpMask(
          Image& out,
          dfloat weight = 1.0,
          FloatArray const& sigmas = { 1.0 },
-         String const& method = "best",
+         String const& method = S::BEST,
          StringArray const& boundaryCondition = {},
          dfloat truncation = 3
 );
@@ -992,7 +992,7 @@ inline Image UnsharpMask(
       Image const& in,
       dfloat weight = 1.0,
       FloatArray const& sigmas = { 1.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {

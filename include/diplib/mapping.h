@@ -56,13 +56,13 @@ DIP_EXPORT void Clip(
       Image& out,
       dfloat low = 0.0,
       dfloat high = 255.0,
-      String const& mode = "both"
+      String const& mode = S::BOTH
 );
 inline Image Clip(
       Image const& in,
       dfloat low = 0.0,
       dfloat high = 255.0,
-      String const& mode = "both"
+      String const& mode = S::BOTH
 ) {
    Image out;
    Clip( in, out, low, high, mode );
@@ -94,13 +94,13 @@ DIP_EXPORT void ErfClip(
       Image& out,
       dfloat low = 128.0,
       dfloat high = 64.0,
-      String const& mode = "range"
+      String const& mode = S::RANGE
 );
 inline Image ErfClip(
       Image const& in,
       dfloat low = 128.0,
       dfloat high = 64.0,
-      String const& mode = "range"
+      String const& mode = S::RANGE
 ) {
    Image out;
    ErfClip( in, out, low, high, mode );
@@ -173,7 +173,7 @@ DIP_EXPORT void ContrastStretch(
       dfloat upperBound = 100.0,
       dfloat outMin = 0.0,
       dfloat outMax = 255.0,
-      String const& method = "linear",
+      String const& method = S::LINEAR,
       dfloat parameter1 = 1.0,
       dfloat parameter2 = 0.0
 );
@@ -183,7 +183,7 @@ inline Image ContrastStretch(
       dfloat upperBound = 100.0,
       dfloat outMin = 0.0,
       dfloat outMax = 255.0,
-      String const& method = "linear",
+      String const& method = S::LINEAR,
       dfloat parameter1 = 1.0,
       dfloat parameter2 = 0.0
 ) {

@@ -157,7 +157,7 @@ class DIP_NO_EXPORT LookupTable{
          DIP_END_STACK_TRACE
          Apply( in, out, mode );
       }
-      Image Apply( Image const& in, String const& interpolation = "linear"  ) const {
+      Image Apply( Image const& in, String const& interpolation = S::LINEAR ) const {
          Image out;
          Apply( in, out, interpolation );
          return out;
@@ -186,11 +186,11 @@ class DIP_NO_EXPORT LookupTable{
       dfloat outOfBoundsUpperValue_;  // LowerValue is for below the lower bound, UpperValue for above the upper bound
 
       static InterpolationMode DecodeInterpolationMode( String const& interpolation ) {
-         if( interpolation == "linear" ) {
+         if( interpolation == S::LINEAR ) {
             return InterpolationMode::LINEAR;
-         } else if( interpolation == "nearest" ) {
+         } else if( interpolation == S::NEAREST ) {
             return InterpolationMode::NEAREST_NEIGHBOR;
-         } else if( interpolation == "zero order" ) {
+         } else if( interpolation == S::ZERO_ORDER ) {
             return InterpolationMode::ZERO_ORDER_HOLD;
          } else {
             DIP_THROW_INVALID_FLAG( interpolation );

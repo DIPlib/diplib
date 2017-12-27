@@ -52,10 +52,10 @@ struct InternOneDimensionalFilter {
       if( size != 0 ) {
          if( in.symmetry.empty() || ( in.symmetry == "general" )) {
             symmetry = FilterSymmetry::GENERAL;
-         } else if( in.symmetry == "even" ) {
+         } else if( in.symmetry == S::EVEN ) {
             symmetry = FilterSymmetry::EVEN;
             size += size - 1;
-         } else if( in.symmetry == "odd" ) {
+         } else if( in.symmetry == S::ODD ) {
             symmetry = FilterSymmetry::ODD;
             size += size - 1;
          } else if( in.symmetry == "d-even" ) {
@@ -310,36 +310,38 @@ void ConvolveFT(
 ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !filter.IsForged(), E::IMAGE_NOT_FORGED );
-   bool real = true;
-   Image inFT;
-   if( BooleanFromString( inRepresentation, "spatial", "frequency" )) {
-      real &= in.DataType().IsReal();
-      FourierTransform( in, inFT );
-   } else {
-      real = false;
-      inFT = in.QuickCopy();
-   }
-   Image filterFT = filter.QuickCopy();
-   if( filterFT.Dimensionality() < in.Dimensionality() ) {
-      filterFT.ExpandDimensionality( in.Dimensionality() );
-   }
-   DIP_THROW_IF( !( filterFT.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
-   filterFT = filterFT.Pad( in.Sizes() );
-   if( BooleanFromString( filterRepresentation, "spatial", "frequency" )) {
-      real &= filterFT.DataType().IsReal();
-      FourierTransform( filterFT, filterFT );
-   } else {
-      real = false;
-   }
-   DataType dt = inFT.DataType();
-   MultiplySampleWise( inFT, filterFT, out, dt );
-   if( BooleanFromString( outRepresentation, "spatial", "frequency" )) {
-      StringSet options{ "inverse" };
-      if( real ) {
-         options.insert( "real" );
+   DIP_START_STACK_TRACE
+      bool real = true;
+      Image inFT;
+      if( BooleanFromString( inRepresentation, S::SPATIAL, S::FREQUENCY )) {
+         real &= in.DataType().IsReal();
+         FourierTransform( in, inFT );
+      } else {
+         real = false;
+         inFT = in.QuickCopy();
       }
-      FourierTransform( out, out, options );
-   }
+      Image filterFT = filter.QuickCopy();
+      if( filterFT.Dimensionality() < in.Dimensionality() ) {
+         filterFT.ExpandDimensionality( in.Dimensionality() );
+      }
+      DIP_THROW_IF( !( filterFT.Sizes() <= in.Sizes() ), E::SIZES_DONT_MATCH ); // Also throws if dimensionalities don't match
+      filterFT = filterFT.Pad( in.Sizes() );
+      if( BooleanFromString( filterRepresentation, S::SPATIAL, S::FREQUENCY )) {
+         real &= filterFT.DataType().IsReal();
+         FourierTransform( filterFT, filterFT );
+      } else {
+         real = false;
+      }
+      DataType dt = inFT.DataType();
+      MultiplySampleWise( inFT, filterFT, out, dt );
+      if( BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY )) {
+         StringSet options{ S::INVERSE };
+         if( real ) {
+            options.insert( S::REAL );
+         }
+         FourierTransform( out, out, options );
+      }
+   DIP_END_STACK_TRACE
 }
 
 

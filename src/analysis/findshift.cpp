@@ -40,30 +40,32 @@ void CrossCorrelationFT(
    DIP_THROW_IF( !in1.IsForged() || !in2.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in1.IsScalar() || !in2.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( in1.Sizes() != in2.Sizes(), E::SIZES_DONT_MATCH );
-   Image in1FT;
-   if( BooleanFromString( in1Representation, "spatial", "frequency" )) {
-      DIP_STACK_TRACE_THIS( FourierTransform( in1, in1FT ));
-   } else {
-      in1FT = in1.QuickCopy();
-   }
-   Image in2FT;
-   if( BooleanFromString( in2Representation, "spatial", "frequency" )) {
-      DIP_STACK_TRACE_THIS( FourierTransform( in2, in2FT ));
-   } else {
-      in2FT = in2.QuickCopy();
-   }
-   DataType dt = in1FT.DataType();
-   DIP_STACK_TRACE_THIS( MultiplyConjugate( in1FT, in2FT, out, dt ));
-   if( BooleanFromString( normalize, "normalize", "don't normalize" )) {
-      if( in2FT.IsShared() ) {
-         in2FT.Strip(); // make sure we don't write in any input data segments. Otherwise, we re-use the data segment.
+   DIP_START_STACK_TRACE
+      Image in1FT;
+      if( BooleanFromString( in1Representation, S::SPATIAL, S::FREQUENCY )) {
+         FourierTransform( in1, in1FT );
+      } else {
+         in1FT = in1.QuickCopy();
       }
-      SquareModulus( in1FT, in2FT );
-      SafeDivide( out, in2FT, out, out.DataType() ); // Normalize by the square modulus of in1.
-   }
-   if( BooleanFromString( outRepresentation, "spatial", "frequency" )) {
-      DIP_STACK_TRACE_THIS( FourierTransform( out, out, { "inverse", "real" } ));
-   }
+      Image in2FT;
+      if( BooleanFromString( in2Representation, S::SPATIAL, S::FREQUENCY )) {
+         FourierTransform( in2, in2FT );
+      } else {
+         in2FT = in2.QuickCopy();
+      }
+      DataType dt = in1FT.DataType();
+      MultiplyConjugate( in1FT, in2FT, out, dt );
+      if( BooleanFromString( normalize, S::NORMALIZE, S::DONT_NORMALIZE )) {
+         if( in2FT.IsShared() ) {
+            in2FT.Strip(); // make sure we don't write in any input data segments. Otherwise, we re-use the data segment.
+         }
+         SquareModulus( in1FT, in2FT );
+         SafeDivide( out, in2FT, out, out.DataType() ); // Normalize by the square modulus of in1.
+      }
+      if( BooleanFromString( outRepresentation, S::SPATIAL, S::FREQUENCY )) {
+         FourierTransform( out, out, { "inverse", "real" } );
+      }
+   DIP_END_STACK_TRACE
 }
 
 namespace {
@@ -76,7 +78,7 @@ FloatArray FindShift_CPF( Image const& in1, Image const& in2, dfloat maxFrequenc
    // Do cross-correlation for sub-pixel shift, forcing dcomplex output
    Image cross{ in1.Sizes(), 1, DT_DCOMPLEX };
    cross.Protect();
-   CrossCorrelationFT( in1, in2, cross, "spatial", "spatial", "frequency", "normalize" );
+   CrossCorrelationFT( in1, in2, cross, S::SPATIAL, S::SPATIAL, S::FREQUENCY, S::NORMALIZE );
    DIP_ASSERT( cross.DataType() == DT_DCOMPLEX );
    DIP_ASSERT( cross.Stride( 0 ) == 1 );
    // Do the least squares fit
@@ -240,12 +242,12 @@ FloatArray FindShift_CC(
       Image const& in1,
       Image const& in2,
       UnsignedArray const& maxShift,
-      String const& normalize = "don't normalize",
+      String const& normalize = S::DONT_NORMALIZE,
       bool subpixelPrecision = false
 ) {
    dip::uint nDims = in1.Dimensionality();
    Image cross;
-   DIP_STACK_TRACE_THIS( CrossCorrelationFT( in1, in2, cross, "spatial", "spatial", "spatial", normalize ));
+   DIP_STACK_TRACE_THIS( CrossCorrelationFT( in1, in2, cross, S::SPATIAL, S::SPATIAL, S::SPATIAL, normalize ));
    DIP_ASSERT( cross.DataType().IsReal() );
    UnsignedArray sizes = cross.Sizes();
    bool crop = false;
@@ -328,11 +330,11 @@ FloatArray FindShift(
    DIP_STACK_TRACE_THIS( ArrayUseParameter( maxShift, nDims, std::numeric_limits< dip::uint >::max() ));
    FloatArray shift( nDims, 0.0 );
    if( method == "integer only" ) {
-      DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, "don't normalize", false ));
+      DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::DONT_NORMALIZE, false ));
    } else if( method == "CC" ) {
-      DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, "don't normalize", true ));
+      DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::DONT_NORMALIZE, true ));
    } else if( method == "NCC" ) {
-      DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, "normalize", true ));
+      DIP_STACK_TRACE_THIS( shift = FindShift_CC( c_in1, c_in2, maxShift, S::NORMALIZE, true ));
    } else {
       Image in1 = c_in1.QuickCopy();
       Image in2 = c_in2.QuickCopy();

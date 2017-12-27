@@ -771,17 +771,17 @@ void FourierTransform(
    bool corner = false;
    bool symmetric = false;
    for( auto& option : options ) {
-      if( option == "inverse" ) {
+      if( option == S::INVERSE ) {
          inverse = true;
-      } else if( option == "real" ) {
+      } else if( option == S::REAL ) {
          // TODO: We should probably write code to do real -> 1/2 plane complex, and 1/2 plane complex -> real DFTs.
          // TODO: If so, we'll need to write our own loop code here, we won't be able to depend on Framework::Separable (unless we add some options there...)
          real = true;
-      } else if( option == "fast" ) {
+      } else if( option == S::FAST ) {
          fast = true;
-      } else if( option == "corner" ) {
+      } else if( option == S::CORNER ) {
          corner = true;
-      } else if( option == "symmetric" ) {
+      } else if( option == S::SYMMETRIC ) {
          symmetric = true;
       } else {
          DIP_THROW_INVALID_FLAG( option );

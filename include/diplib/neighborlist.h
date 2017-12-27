@@ -95,27 +95,27 @@ class DIP_NO_EXPORT Metric {
       ///  - B.J.H. Verwer, "Distance Transforms, Metrics, Algorithms, and Applications", Ph.D. thesis, Delft University
       ///    of Technology, The Netherlands, 1991.
       Metric( String const& type, dip::uint param = 1, dip::PixelSize const& pixelSize = {} ) {
-         if( type == "chamfer" ) {
+         if( type == S::CHAMFER ) {
             DIP_THROW_IF( param < 1, E::PARAMETER_OUT_OF_RANGE );
             type_ = TypeCode::CHAMFER;
             param_ = param;
          } else {
             type_ = TypeCode::CONNECTED;
-            if( type == "connected" ) {
+            if( type == S::CONNECTED ) {
                param_ = param;
-            } else if( type == "city" ) {
+            } else if( type == S::CITY ) {
                param_ = 1;
-            } else if( type == "chess" ) {
+            } else if( type == S::CHESS ) {
                param_ = 0;
-            } else if( type == "4-connected" ) {
+            } else if( type == S::CONNECTED_4 ) {
                param_ = 1;
-            } else if( type == "8-connected" ) {
+            } else if( type == S::CONNECTED_8 ) {
                param_ = 2;
-            } else if( type == "6-connected" ) {
+            } else if( type == S::CONNECTED_6 ) {
                param_ = 1;
-            } else if( type == "18-connected" ) {
+            } else if( type == S::CONNECTED_18 ) {
                param_ = 2;
-            } else if( type == "28-connected" ) {
+            } else if( type == S::CONNECTED_28 ) {
                param_ = 3;
             } else {
                DIP_THROW_INVALID_FLAG( type );

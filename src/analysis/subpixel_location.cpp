@@ -442,7 +442,7 @@ SubpixelLocationResult SubpixelLocation(
    bool invert;
    SubpixelExtremumMethod method;
    DIP_START_STACK_TRACE
-      invert = BooleanFromString( polarity, "minimum", "maximum" );
+      invert = BooleanFromString( polarity, S::MINIMUM, S::MAXIMUM );
       method = ParseMethod( s_method, nDims );
    DIP_END_STACK_TRACE
    // Data-type dependent stuff

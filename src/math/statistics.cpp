@@ -275,7 +275,8 @@ class dip__MinPixel : public dip__MaxMinPixel {
 UnsignedArray MaximumPixel( Image const& in, Image const& mask, String const& positionFlag ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   bool first = positionFlag == "first";
+   bool first;
+   DIP_STACK_TRACE_THIS( first = BooleanFromString( positionFlag, S::FIRST, S::LAST ));
    DataType dataType = DataType::SuggestReal( in.DataType() );
    std::unique_ptr< dip__MaxMinPixel > scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__MaxPixel, ( first ), dataType );
@@ -287,7 +288,8 @@ UnsignedArray MaximumPixel( Image const& in, Image const& mask, String const& po
 UnsignedArray MinimumPixel( Image const& in, Image const& mask, String const& positionFlag ) {
    DIP_THROW_IF( !in.IsForged(), E::IMAGE_NOT_FORGED );
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
-   bool first = positionFlag == "first";
+   bool first;
+   DIP_STACK_TRACE_THIS( first = BooleanFromString( positionFlag, S::FIRST, S::LAST ));
    DataType dataType = DataType::SuggestReal( in.DataType() );
    std::unique_ptr< dip__MaxMinPixel > scanLineFilter;
    DIP_OVL_NEW_REAL( scanLineFilter, dip__MinPixel, ( first ), dataType );

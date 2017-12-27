@@ -47,7 +47,7 @@ struct dip__GaussIIRParams {
 };
 
 enum class DesignMethod {
-      FORWARD_BACKWARD_METHOD = 1,
+      FORWARD_BACKWARD = 1,
       DISCRETE_TIME_FIT = 2
 };
 
@@ -175,7 +175,7 @@ void dip__FillPoleCoef (
             break;
          default:
             // Abramowitz and Stegun
-            method = DesignMethod::FORWARD_BACKWARD_METHOD;
+            method = DesignMethod::FORWARD_BACKWARD;
             pp[ 0 ] = { 3.0, 0.0 };
             pp[ 1 ] = { 2.1078345, 1.4058574 };
             pp[ 2 ] = { 2.1078345, -1.4058574 };
@@ -183,7 +183,7 @@ void dip__FillPoleCoef (
             break;
       }
    } else {
-      method = DesignMethod::FORWARD_BACKWARD_METHOD;
+      method = DesignMethod::FORWARD_BACKWARD;
       switch( nn ) {
          case 5:
             pp[ 1 ] = { 2.19406, 1.90251 };
@@ -261,7 +261,7 @@ dip__GaussIIRParams dip__FillGaussIIRParams(
 
       // Compute the correct value for q based on the poles in the z-domain
       dfloat q;
-      if( method == DesignMethod::FORWARD_BACKWARD_METHOD ) {
+      if( method == DesignMethod::FORWARD_BACKWARD ) {
          if( sigma > 0 ) {
             dfloat q0term = -sigma * sigma;
             dfloat q1term = 0.0;
@@ -305,7 +305,7 @@ dip__GaussIIRParams dip__FillGaussIIRParams(
       }
 
       // Scale the poles
-      if( method == DesignMethod::FORWARD_BACKWARD_METHOD ) {
+      if( method == DesignMethod::FORWARD_BACKWARD ) {
          for( dip::uint mm = 1; mm <= nn; ++mm ) {
             pp[ mm ] = { 1.0 + ( pp[ mm ].real() - 1.0 ) / q, pp[ mm ].imag() / q };
          }
@@ -748,10 +748,9 @@ void GaussIIR(
    } else {
       DIP_STACK_TRACE_THIS( ArrayUseParameter< dip::uint >( filterOrder, nDims, 3 ));
    }
-   DesignMethod method = DesignMethod::DISCRETE_TIME_FIT;
-   if( designMethod == "forward backward") {
-      method = DesignMethod::FORWARD_BACKWARD_METHOD;
-   }
+   DesignMethod method;
+   DIP_STACK_TRACE_THIS( method = BooleanFromString( designMethod, S::FORWARD_BACKWARD, S::DISCRETE_TIME_FIT )
+                                  ? DesignMethod::FORWARD_BACKWARD : DesignMethod::DISCRETE_TIME_FIT );
    // Filter parameters
    std::vector< dip__GaussIIRParams > filterParams( nDims );
    UnsignedArray border( nDims );

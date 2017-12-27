@@ -38,8 +38,8 @@ void Canny(
    DIP_THROW_IF( !in.IsScalar(), E::IMAGE_NOT_SCALAR );
    DIP_THROW_IF( !in.DataType().IsReal(), E::DATA_TYPE_NOT_SUPPORTED );
    DIP_START_STACK_TRACE
-      Image gradient = Gradient( in, sigmas, "best" );
-      NonMaximumSuppression( {}, gradient, {}, out, "interpolate" ); // use interpolation in 2D, for higher dims it's always "round"
+      Image gradient = Gradient( in, sigmas, S::BEST );
+      NonMaximumSuppression( {}, gradient, {}, out, S::INTERPOLATE ); // use interpolation in 2D, for higher dims it's always "round"
       dfloat threshold = Percentile( out, {}, upper*100 ).As< dfloat >();
       HysteresisThreshold( out, out, lower*threshold, threshold );
       if(( out.Dimensionality() == 2 ) || ( out.Dimensionality() == 3 )) {

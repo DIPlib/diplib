@@ -89,7 +89,8 @@ UnsignedArray GetObjectLabels(
       DIP_THROW_IF( !mask.DataType().IsBinary(), E::MASK_NOT_BINARY );
       DIP_STACK_TRACE_THIS( mask.CompareProperties( label, Option::CmpProp::Sizes ));
    }
-   bool nullIsObject = BooleanFromString( background, "include", "exclude" );
+   bool nullIsObject;
+   DIP_STACK_TRACE_THIS( nullIsObject = BooleanFromString( background, S::INCLUDE, S::EXCLUDE ));
 
    LabelSet objectIDs; // output
 

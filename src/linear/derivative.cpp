@@ -70,7 +70,7 @@ void Gauss(
       StringArray const& boundaryCondition,
       dfloat truncation
 ) {
-   if( method == "best" ) {
+   if( method == S::BEST ) {
       DIP_STACK_TRACE_THIS( GaussDispatch( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
    } else if( ( method == "FIR" ) || ( method == "fir" ) ) {
       DIP_STACK_TRACE_THIS( GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
@@ -92,7 +92,7 @@ void Derivative(
       StringArray const& boundaryCondition,
       dfloat truncation
 ) {
-   if( method == "finitediff" ) {
+   if( method == S::FINITEDIFF ) {
       dip::uint nDims = in.Dimensionality();
       BooleanArray process( nDims, true );
       FloatArray ss = sigmas;
@@ -103,8 +103,8 @@ void Derivative(
             process[ ii ] = 0;
          }
       }
-      DIP_STACK_TRACE_THIS( FiniteDifference( in, out, derivativeOrder, "smooth", boundaryCondition, process ));
-   } else if( ( method == "best" ) || ( method == "gauss" ) ) {
+      DIP_STACK_TRACE_THIS( FiniteDifference( in, out, derivativeOrder, S::SMOOTH, boundaryCondition, process ));
+   } else if( ( method == S::BEST ) || ( method == "gauss" ) ) {
       DIP_STACK_TRACE_THIS( GaussDispatch( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
    } else if( ( method == "gaussFIR" ) || ( method == "gaussfir" ) ) {
       DIP_STACK_TRACE_THIS( GaussFIR( in, out, sigmas, derivativeOrder, boundaryCondition, truncation ));
@@ -389,7 +389,7 @@ void Laplace (
    DIP_STACK_TRACE_THIS( dims = FindGradientDimensions( c_in.Sizes(), sigmas, process ));
    dip::uint nDims = dims.size();
    DIP_THROW_IF( nDims < 1, E::DIMENSIONALITY_NOT_SUPPORTED );
-   if( method == "finitediff" ) {
+   if( method == S::FINITEDIFF ) {
       UnsignedArray ksz( c_in.Dimensionality(), 1 );
       for( dip::uint ii = 0; ii < nDims; ++ii ) {
             ksz[ dims[ ii ]] = 3;

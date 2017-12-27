@@ -72,13 +72,13 @@ namespace dip {
 DIP_EXPORT void EuclideanDistanceTransform(
       Image const& in,
       Image& out,
-      String const& border = "background",
-      String const& method = "fast"
+      String const& border = S::BACKGROUND,
+      String const& method = S::FAST
 );
 inline Image EuclideanDistanceTransform(
       Image const& in,
-      String const& border = "background",
-      String const& method = "fast"
+      String const& border = S::BACKGROUND,
+      String const& method = S::FAST
 ) {
    Image out;
    EuclideanDistanceTransform( in, out, border, method );
@@ -95,13 +95,13 @@ inline Image EuclideanDistanceTransform(
 DIP_EXPORT void VectorDistanceTransform(
       Image const& in,
       Image& out,
-      String const& border = "background",
-      String const& method = "fast"
+      String const& border = S::BACKGROUND,
+      String const& method = S::FAST
 );
 inline Image VectorDistanceTransform(
       Image const& in,
-      String const& border = "background",
-      String const& method = "fast"
+      String const& border = S::BACKGROUND,
+      String const& method = S::FAST
 ) {
    Image out;
    VectorDistanceTransform( in, out, border, method );
@@ -160,14 +160,14 @@ DIP_EXPORT void GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& in,
       Image&  out,
-      Metric metric = { "chamfer", 2 },
-      String const& outputMode = "GDT" // or: "Euclidean" or "both"
+      Metric metric = { S::CHAMFER, 2 },
+      String const& outputMode = S::GDT
 );
 inline Image GreyWeightedDistanceTransform(
       Image const& grey,
       Image const& in,
-      Metric const& metric = { "chamfer", 2 },
-      String const& outputMode = "GDT" // or: "Euclidean" or "both"
+      Metric const& metric = { S::CHAMFER, 2 },
+      String const& outputMode = S::GDT
 ) {
    Image out;
    GreyWeightedDistanceTransform( grey, in, out, metric, outputMode );

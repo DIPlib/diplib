@@ -163,11 +163,11 @@ void GaussFIR(
             switch( order[ ii ] ) {
                case 0:
                case 2:
-                  filter[ ii ].symmetry = "even";
+                  filter[ ii ].symmetry = S::EVEN;
                   break;
                case 1:
                case 3:
-                  filter[ ii ].symmetry = "odd";
+                  filter[ ii ].symmetry = S::ODD;
                   break;
                default:
                   DIP_THROW( "Gaussian FIR filter not implemented for order > 3" );
@@ -308,9 +308,9 @@ void GaussFT(
       Framework::ScanMonadic(
             ft, ft, dtype, dtype, 1, *scanLineFilter,
             Framework::ScanOption::TensorAsSpatialDim + Framework::ScanOption::NeedCoordinates );
-      StringSet opts = { "inverse" };
+      StringSet opts = { S::INVERSE };
       if( isreal ) {
-         opts.emplace( "real" );
+         opts.emplace( S::REAL );
       }
       FourierTransform( ft, out, opts );
    } else {

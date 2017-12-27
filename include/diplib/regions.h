@@ -81,7 +81,7 @@ inline Image Label(
 DIP_EXPORT UnsignedArray GetObjectLabels(
       Image const& label,
       Image const& mask,
-      String const& background = "exclude"
+      String const& background = S::EXCLUDE
 );
 
 /// \brief Re-assigns labels to objects in a labeled image, such that all labels are consecutive.

@@ -479,11 +479,11 @@ void GreyWeightedDistanceTransform(
    // what will we output?
    bool outputGDT = false;
    bool outputDistance = false;
-   if( outputMode == "GDT" ) {
+   if( outputMode == S::GDT ) {
       outputGDT = true;
-   } else if( outputMode == "Euclidean" ) {
+   } else if( outputMode == S::EUCLIDEAN ) {
       outputDistance = true;
-   } else if( outputMode == "both" ) {
+   } else if( outputMode == S::BOTH ) {
       outputGDT = true;
       outputDistance = true;
    } else {

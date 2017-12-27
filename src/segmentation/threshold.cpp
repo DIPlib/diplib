@@ -134,7 +134,7 @@ void FixedThreshold(
       String const& output
 ) {
    DIP_START_STACK_TRACE
-      if( output == "binary" ) {
+      if( output == S::BINARY ) {
          if( foreground == 0.0 ) {
             // out = in <= threshold
             NotGreater( in, Image{ threshold, in.DataType() }, out );
@@ -190,7 +190,7 @@ void RangeThreshold(
       dfloat background,
       String const& output
 ) {
-   if( output == "binary" ) {
+   if( output == S::BINARY ) {
       DIP_START_STACK_TRACE
          if( foreground == 0.0 ) {
             // out = in <= lowerBound || in >= upperBound
@@ -239,7 +239,7 @@ void MultipleThresholds(
       dataType = DT_UINT16;
    }
    Image values( { nLabels }, 1, dataType );
-   FillXCoordinate( values, { "corner" } );
+   FillXCoordinate( values, { S::CORNER } );
    values = values.At( Range{ 1, -1 } ); // remove first label, use the out-of-bounds value for this label
    LookupTable lut( values, thresholds );
    lut.SetOutOfBoundsValue( 0, static_cast< dfloat >( nLabels - 1 ));

@@ -214,14 +214,14 @@ DIP_EXPORT void FixedThreshold(
       dfloat threshold,
       dfloat foreground = 1.0,
       dfloat background = 0.0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 );
 inline Image FixedThreshold(
       Image const& in,
       dfloat threshold,
       dfloat foreground = 1.0,
       dfloat background = 0.0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 ) {
    Image out;
    FixedThreshold( in, out, threshold, foreground, background, output );
@@ -245,7 +245,7 @@ DIP_EXPORT void RangeThreshold(
       dfloat upperBound,
       dfloat foreground = 1.0,
       dfloat background = 0.0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 );
 inline Image RangeThreshold(
       Image const& in,
@@ -253,7 +253,7 @@ inline Image RangeThreshold(
       dfloat upperBound,
       dfloat foreground = 1.0,
       dfloat background = 0.0,
-      String const& output = "binary"
+      String const& output = S::BINARY
 ) {
    Image out;
    RangeThreshold( in, out, lowerBound, upperBound, foreground, background, output );
@@ -323,13 +323,13 @@ inline Image MultipleThresholds(
 inline dfloat Threshold(
       Image const& in,
       Image& out,
-      String const& method = "otsu",
+      String const& method = S::OTSU,
       dfloat parameter = infinity
 ) {
    if( method == "isodata" ) {
       FloatArray values = IsodataThreshold( in, {}, out, 1 );
       return values[ 0 ];
-   } else if( method == "otsu" ) {
+   } else if( method == S::OTSU ) {
       return OtsuThreshold( in, {}, out );
    } else if( method == "minerror" ) {
       return MinimumErrorThreshold( in, {}, out );
@@ -359,7 +359,7 @@ inline dfloat Threshold(
 }
 inline Image Threshold(
       Image const& in,
-      String const& method = "otsu",
+      String const& method = S::OTSU,
       dfloat parameter = infinity
 ) {
    Image out;

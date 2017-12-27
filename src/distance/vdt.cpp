@@ -1697,7 +1697,7 @@ void VectorDistanceTransform(
    UnsignedArray sizes = in.Sizes();
 
    bool objectBorder;
-   DIP_STACK_TRACE_THIS( objectBorder = BooleanFromString( border, "object", "background" ));
+   DIP_STACK_TRACE_THIS( objectBorder = BooleanFromString( border, S::OBJECT, S::BACKGROUND ));
 
    // Distances to neighboring pixels
    FloatArray dist( dim, 1 );
@@ -1717,7 +1717,7 @@ void VectorDistanceTransform(
    sfloat* data = static_cast< sfloat* >( out.Origin() );
 
    // Call the real guts function
-   if( method == "fast" ) {
+   if( method == S::FAST ) {
       if( dim == 2 ) {
          VDTFast2D( data, data + tensorStride,
                     sizes, stride, dist, objectBorder );
@@ -1725,8 +1725,8 @@ void VectorDistanceTransform(
          VDTFast3D( data, data + tensorStride, data + tensorStride + tensorStride,
                     sizes, stride, dist, objectBorder );
       }
-   } else if(( method == "ties" ) || ( method == "true" )) {
-      bool useTrue = method == "true";
+   } else if(( method == S::TIES ) || ( method == S::TRUE )) {
+      bool useTrue = method == S::TRUE;
       if( dim == 2 ) {
          VDTTies2D( data, data + tensorStride,
                     sizes, stride, dist, objectBorder, useTrue );
@@ -1734,7 +1734,7 @@ void VectorDistanceTransform(
          VDTTies3D( data, data + tensorStride, data + tensorStride + tensorStride,
                     sizes, stride, dist, objectBorder, useTrue );
       }
-   } else if( method == "brute force" ) {
+   } else if( method == S::BRUTE_FORCE ) {
       if( dim == 2 ) {
          VDTBruteForce2D( data, data + tensorStride,
                           sizes, stride, dist, objectBorder );

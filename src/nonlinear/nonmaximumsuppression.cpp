@@ -352,7 +352,8 @@ void NonMaximumSuppression(
       DIP_END_STACK_TRACE
    }
 
-   bool interpolate = BooleanFromString( mode, "interpolate", "round" );
+   bool interpolate;
+   DIP_STACK_TRACE_THIS( interpolate = BooleanFromString( mode, S::INTERPOLATE, S::ROUND ));
 
    if( nDims == 1 ) {
       PixelSize ps = gradmag.HasPixelSize() ? gradmag.PixelSize() : gradient.PixelSize();

@@ -77,7 +77,7 @@ dfloat FractalDimension(
    //std::cout << "size = 1, count = " << count << std::endl;
    acc.Push( std::log( 1.0 ), std::log( count ));
    // size = 2
-   dip::Image boxes = Dilation( in, { 2, "rectangular" } );
+   dip::Image boxes = Dilation( in, { 2, S::RECTANGULAR } );
    count = Sum( boxes ).As< double >();
    //std::cout << "size = 2, count = " << count << std::endl;
    acc.Push( std::log( 2.0 ), std::log( count ));
@@ -89,7 +89,7 @@ dfloat FractalDimension(
       if( count < numPixels ) {
          // else: We're saturated. Larger scales will yield the same count, so there's no need to compute them.
          dip::uint delta = size - sizes[ ii - 1 ] + 1;
-         StructuringElement se( static_cast< dfloat >( delta ), "rectangular" );
+         StructuringElement se( static_cast< dfloat >( delta ), S::RECTANGULAR );
          if(( delta & 1 ) == 0 ) {
             if( mirror ) {
                se.Mirror();

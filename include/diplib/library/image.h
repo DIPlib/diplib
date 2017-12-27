@@ -36,6 +36,7 @@
 #include "diplib/library/physical_dimensions.h"
 #include "diplib/library/clamp_cast.h"
 #include "diplib/library/sample_iterator.h"
+#include "diplib/library/stringparams.h"
 
 
 /// \file
@@ -2040,16 +2041,16 @@ class DIP_NO_EXPORT Image {
       /// `TOP_LEFT`               | "top left"
       /// `BOTTOM_RIGHT`           | "bottom right"
       inline Image Pad( UnsignedArray const& sizes, String const& cropLocation ) const {
-         if( cropLocation == "center" ) {
+         if( cropLocation == S::CENTER ) {
             return Pad( sizes, Option::CropLocation::CENTER );
-         } else if( cropLocation == "mirror center" ) {
+         } else if( cropLocation == S::MIRROR_CENTER ) {
             return Pad( sizes, Option::CropLocation::MIRROR_CENTER );
-         } else if( cropLocation == "top left" ) {
+         } else if( cropLocation == S::TOP_LEFT ) {
             return Pad( sizes, Option::CropLocation::TOP_LEFT );
-         } else if( cropLocation == "bottom right" ) {
+         } else if( cropLocation == S::BOTTOM_RIGHT ) {
             return Pad( sizes, Option::CropLocation::BOTTOM_RIGHT );
          } else {
-            DIP_THROW( "Unknown crop location flag" );
+            DIP_THROW( E::INVALID_FLAG );
          }
       };
 

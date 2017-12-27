@@ -71,7 +71,7 @@ using SubpixelLocationArray = std::vector< SubpixelLocationResult >;
 DIP_EXPORT SubpixelLocationResult SubpixelLocation(
       Image const& in,
       UnsignedArray const& position,
-      String const& polarity = "maximum",
+      String const& polarity = S::MAXIMUM,
       String const& method = "parabolic separable"
 );
 
@@ -145,18 +145,18 @@ DIP_EXPORT void CrossCorrelationFT(
       Image const& in1,
       Image const& in2,
       Image& out,
-      String const& in1Representation = "spatial",
-      String const& in2Representation = "spatial",
-      String const& outRepresentation = "spatial",
-      String const& normalize = "normalize"
+      String const& in1Representation = S::SPATIAL,
+      String const& in2Representation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL,
+      String const& normalize = S::NORMALIZE
 );
 inline Image CrossCorrelationFT(
       Image const& in1,
       Image const& in2,
-      String const& in1Representation = "spatial",
-      String const& in2Representation = "spatial",
-      String const& outRepresentation = "spatial",
-      String const& normalize = "normalize"
+      String const& in1Representation = S::SPATIAL,
+      String const& in2Representation = S::SPATIAL,
+      String const& outRepresentation = S::SPATIAL,
+      String const& normalize = S::NORMALIZE
 ) {
    Image out;
    CrossCorrelationFT( in1, in2, out, in1Representation, in2Representation, outRepresentation, normalize );
@@ -272,7 +272,7 @@ DIP_EXPORT void StructureTensor(
       Image& out,
       FloatArray const& gradientSigmas = { 1.0 },
       FloatArray const& tensorSigmas = { 5.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 );
@@ -281,7 +281,7 @@ inline Image StructureTensor(
       Image const& mask = {},
       FloatArray const& gradientSigmas = { 1.0 },
       FloatArray const& tensorSigmas = { 5.0 },
-      String const& method = "best",
+      String const& method = S::BEST,
       StringArray const& boundaryCondition = {},
       dfloat truncation = 3
 ) {
@@ -454,7 +454,6 @@ DIP_EXPORT dfloat FractalDimension(
 
    dip_OSEmphasizeLinearStructures (dip_structure.h)
    dip_DanielsonLineDetector (dip_structure.h)
-   dip_Canny (dip_detection.h) (or in diplib/segmentation.h?)
 */
 
 /// \}

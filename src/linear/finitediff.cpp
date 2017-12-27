@@ -38,25 +38,25 @@ void FiniteDifference(
       ArrayUseParameter( order, nDims, dip::uint( 0 ));
       ArrayUseParameter( process, nDims, true );
    DIP_END_STACK_TRACE
-   bool smooth = smoothFlag == "smooth";
+   bool smooth = smoothFlag == S::SMOOTH;
    OneDimensionalFilterArray filter( nDims );
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if( process[ ii ] ) {
          switch( order[ ii ] ) {
             case 0:
                if( smooth ) {
-                  filter[ ii ].symmetry = "even";
+                  filter[ ii ].symmetry = S::EVEN;
                   filter[ ii ].filter = { 0.25, 0.5 };
                } else {
                   process[ ii ] = false;
                }
                break;
             case 1:
-               filter[ ii ].symmetry = "odd";
+               filter[ ii ].symmetry = S::ODD;
                filter[ ii ].filter = { 0.5, 0.0 };
                break;
             case 2:
-               filter[ ii ].symmetry = "even";
+               filter[ ii ].symmetry = S::EVEN;
                filter[ ii ].filter = { 1.0, -2.0 };
                break;
             default:

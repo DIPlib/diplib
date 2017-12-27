@@ -1596,7 +1596,7 @@ void EuclideanDistanceTransform(
    UnsignedArray sizes = in.Sizes();
 
    bool objectBorder;
-   DIP_STACK_TRACE_THIS( objectBorder = BooleanFromString( border, "object", "background" ));
+   DIP_STACK_TRACE_THIS( objectBorder = BooleanFromString( border, S::OBJECT, S::BACKGROUND ));
 
    // Distances to neighboring pixels
    FloatArray dist( dim, 1 );
@@ -1612,21 +1612,21 @@ void EuclideanDistanceTransform(
    sfloat* data = static_cast< sfloat* >( out.Origin() );
 
    // Call the real guts function
-   if( method == "fast" ) {
+   if( method == S::FAST ) {
       if( dim == 2 ) {
          EDTFast2D( data, sizes, stride, dist, objectBorder );
       } else {
          EDTFast3D( data, sizes, stride, dist, objectBorder );
       }
       Sqrt( out, out );
-   } else if(( method == "ties" ) || ( method == "true" )) {
-      bool useTrue = method == "true";
+   } else if(( method == S::TIES ) || ( method == S::TRUE )) {
+      bool useTrue = method == S::TRUE;
       if( dim == 2 ) {
          EDTTies2D( data, sizes, stride, dist, objectBorder, useTrue );
       } else {
          EDTTies3D( data, sizes, stride, dist, objectBorder, useTrue );
       }
-   } else if( method == "brute force" ) {
+   } else if( method == S::BRUTE_FORCE ) {
       if( dim == 2 ) {
          EDTBruteForce2D( data, sizes, stride, dist, objectBorder );
       } else {
