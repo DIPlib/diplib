@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains support for 1D and nD iterators.
  *
- * (c)2016-2017, Cris Luengo.
+ * (c)2016-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

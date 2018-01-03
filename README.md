@@ -134,7 +134,7 @@ There is a chance it will only work on Unix-like systems (not yet tested under W
 
 ## License
 
-Copyright 2014-2017 Cris Luengo  
+Copyright 2014-2018 Cris Luengo  
 Copyright 1995-2014 Delft University of Technology
 
 Licensed under the Apache License, Version 2.0 (the "License");

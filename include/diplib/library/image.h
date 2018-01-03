@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2017, Cris Luengo.
+ * (c)2014-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -396,7 +396,6 @@ class DIP_NO_EXPORT Image {
             tensor_( tensor ),
             tensorStride_( tensorStride ),
             dataBlock_( data ),
-            origin_( origin ),
             externalData_( true ),
             externalInterface_( externalInterface ) {
          DIP_THROW_IF( data.get() == nullptr, "Bad data pointer" );
@@ -408,6 +407,7 @@ class DIP_NO_EXPORT Image {
          } else {
             DIP_THROW_IF( strides_.size() != nDims, "Strides array size does not match image dimensionality" );
          }
+         origin_ = origin; // Set this after calling `SetNormalStrides`. It's not forged until now.
       }
 
       /// \brief Create a new forged image similar to `this`. The data is not copied, and left uninitialized.
