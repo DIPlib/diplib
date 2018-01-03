@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for the Image class and related functions.
  *
- * (c)2014-2017, Cris Luengo.
+ * (c)2014-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -276,7 +276,7 @@ Image& Image::Rotation90( dip::sint n, dip::uint dimension1, dip::uint dimension
       case 0:
          // Do nothing
          break;
-      case 1: // 90 degrees counter-clockwise
+      case 1: // 90 degrees clockwise
          process[ dimension2 ] = true;
          Mirror( process );
          SwapDimensions( dimension1, dimension2 );
@@ -286,7 +286,7 @@ Image& Image::Rotation90( dip::sint n, dip::uint dimension1, dip::uint dimension
          process[ dimension2 ] = true;
          Mirror( process );
          break;
-      case 3: // 270 degrees (== 90 degrees clockwise)
+      case 3: // 270 degrees (== 90 degrees counter-clockwise)
          process[ dimension1 ] = true;
          Mirror( process );
          SwapDimensions( dimension1, dimension2 );
@@ -464,12 +464,14 @@ Image& Image::Crop( UnsignedArray const& sizes, Option::CropLocation cropLocatio
    switch( cropLocation ) {
       case Option::CropLocation::CENTER:
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            origin[ ii ] = ( sizes_[ ii ] - sizes[ ii ] + ( sizes[ ii ] & 1 )) / 2; // add one if output is odd in size
+            dip::uint diff = sizes_[ ii ] - sizes[ ii ];
+            origin[ ii ] = diff / 2 + (!( sizes_[ ii ] & 1 ) && ( sizes[ ii ] & 1 )); // add one if input is even in size and output is odd in size
          }
          break;
       case Option::CropLocation::MIRROR_CENTER:
          for( dip::uint ii = 0; ii < nDims; ++ii ) {
-            origin[ ii ] = ( sizes_[ ii ] - sizes[ ii ] + ( sizes_[ ii ] & 1 )) / 2; // add one if input is odd in size
+            dip::uint diff = sizes_[ ii ] - sizes[ ii ];
+            origin[ ii ] = diff / 2 + (( sizes_[ ii ] & 1 ) && !( sizes[ ii ] & 1 )); // add one if input is odd in size and output is even in size
          }
          break;
       case Option::CropLocation::TOP_LEFT:
@@ -638,6 +640,25 @@ DOCTEST_TEST_CASE("[DIPlib] testing dip::Image singleton dimensions") {
    DOCTEST_CHECK( img.Sizes() == dip::UnsignedArray{ 5, 10, 15 } );
    DOCTEST_CHECK( img.Strides() == dip::IntegerArray{ 1, 5, 50 } );
    DOCTEST_CHECK( img.TensorElements() == 1 );
+}
+
+#include "diplib/generation.h"
+
+DOCTEST_TEST_CASE("[DIPlib] testing dip::Image::Crop") {
+   // We test all 4 combinations of cropping {even|odd} input to {even|odd} output.
+   dip::Image src( { 7, 8, 9, 10 }, 1 );
+   dip::FillDelta( src, "right" );
+   DOCTEST_REQUIRE( src.At<float>( dip::UnsignedArray{ 3, 4, 4, 5 } ) == 1.0 );
+   DOCTEST_REQUIRE( src.At<float>( dip::UnsignedArray{ 3, 3, 4, 4 } ) == 0.0 );
+   dip::Image img = src.QuickCopy();
+   img.Crop( { 6, 6, 7, 7 }, dip::Option::CropLocation::CENTER ); // keeps the pixel right of center on its place
+   DOCTEST_CHECK( img.At<float>( dip::UnsignedArray{ 3, 3, 3, 3 } ) == 1.0 );
+   dip::FillDelta( src, "left" );
+   DOCTEST_REQUIRE( src.At<float>( dip::UnsignedArray{ 3, 4, 4, 5 } ) == 0.0 );
+   DOCTEST_REQUIRE( src.At<float>( dip::UnsignedArray{ 3, 3, 4, 4 } ) == 1.0 );
+   img = src.QuickCopy();
+   img.Crop( { 6, 6, 7, 7 }, dip::Option::CropLocation::MIRROR_CENTER ); // keeps the pixel left of center on its place
+   DOCTEST_CHECK( img.At<float>( dip::UnsignedArray{ 2, 2, 3, 3 } ) == 1.0 );
 }
 
 #endif // DIP__ENABLE_DOCTEST

@@ -7,7 +7,7 @@
 %
 % PARAMETERS:
 %  angle: Angle (in radian) to rotate over
-%  axis: Axis to rotate around (for 2D or 3D images only, for a 2D image it has to be 3).
+%  axis: Axis to rotate around (for 2D or 3D images only, value ignored for a 2D image).
 %  dimension1: First dimension defining the orthogonal plane
 %  dimension2: Second dimension defining the orthogonal plane
 %  interpolation_method: One of the following strings:
@@ -45,7 +45,7 @@
 % DIPlib:
 %  This function calls the DIPlib function dip::Rotation.
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

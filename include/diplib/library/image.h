@@ -1635,7 +1635,7 @@ class DIP_NO_EXPORT Image {
       ///
       /// The rotation occurs in the direction of positive angles, as defined in the image coordinate system.
       /// That is, if `dimension1` is 0 (x-axis) and `dimension2` is 1 (y-axis), and considering the y-axis is
-      /// positive in the up direction, then the rotation happens in counter-clockwise direction. A negative
+      /// positive in the down direction, then the rotation happens in clockwise direction. A negative
       /// value for `n` inverts the direction of rotation.
       DIP_EXPORT Image& Rotation90( dip::sint n, dip::uint dimension1, dip::uint dimension2 );
 

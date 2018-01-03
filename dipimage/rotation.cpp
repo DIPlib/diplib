@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `rotation` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -33,6 +33,8 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::dfloat angle = dml::GetFloat( prhs[ 1 ] );
 
+      dip::uint nDims = in.Dimensionality();
+      DIP_THROW_IF( nDims < 2, "Defined only for images with 2 or more dimensions" );
       dip::uint dimension1 = 0;
       dip::uint dimension2 = dimension1 + 1;
       dip::String method = "";
@@ -40,7 +42,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       if(( nrhs > 2 ) && ( mxIsChar( prhs[ 2 ] ))) {
          // rotation(image_in,angle,interpolation_method,boundary_condition)
-         DIP_THROW_IF( in.Dimensionality() != 2, "Missing argument before INTERPOLATION_METHOD" );
+         DIP_THROW_IF( nDims != 2, "Missing argument before INTERPOLATION_METHOD" );
          DML_MAX_ARGS( 4 );
          method = dml::GetString( prhs[ 2 ] );
          if( nrhs > 3 ) {
@@ -48,24 +50,26 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          }
       } else if(( nrhs == 3 ) || (( nrhs > 3 ) && mxIsChar( prhs[ 3 ]))) {
          // rotation(image_in,angle,axis,interpolation_method,boundary_condition)
-         DIP_THROW_IF( in.Dimensionality() > 3, "For images with more than 3 dimensions, use the syntax with two DIMENSION parameters" );
+         DIP_THROW_IF( nDims > 3, "For images with more than 3 dimensions, use the syntax with two DIMENSION parameters" );
          DML_MAX_ARGS( 5 );
          dip::uint axis = dml::GetUnsigned( prhs[ 2 ] );
-         switch( axis ) {
-            case 1:
-               dimension1 = 1;
-               dimension2 = 2;
-               break;
-            case 2:
-               dimension1 = 2;
-               dimension2 = 0;
-               break;
-            case 3:
-               dimension1 = 0;
-               dimension2 = 1;
-               break;
-            default:
-               DIP_THROW( dip::E::PARAMETER_OUT_OF_RANGE );
+         if( nDims == 3 ) { // Ignore value if nDims == 2.
+            switch( axis ) {
+               case 1:
+                  dimension1 = 1;
+                  dimension2 = 2;
+                  break;
+               case 2:
+                  dimension1 = 2;
+                  dimension2 = 0;
+                  break;
+               case 3:
+                  dimension1 = 0;
+                  dimension2 = 1;
+                  break;
+               default:
+                  DIP_THROW( dip::E::PARAMETER_OUT_OF_RANGE );
+            }
          }
          if( nrhs > 3 ) {
             method = dml::GetString( prhs[ 3 ] );

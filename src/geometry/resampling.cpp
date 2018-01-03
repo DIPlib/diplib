@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains definitions for geometric transformations that use interpolation
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -373,7 +373,7 @@ class SkewLineFilter : public Framework::SeparableLineFilter {
 
 } // namespace
 
-void Skew(
+dip::UnsignedArray Skew(
       Image const& c_in,
       Image& out,
       FloatArray const& shearArray,
@@ -400,6 +400,8 @@ void Skew(
    DIP_THROW_IF( origin > outSizes[ axis ], E::PARAMETER_OUT_OF_RANGE );
    FloatArray offset( nDims, 0.0 );
    BooleanArray process( nDims, false );
+   UnsignedArray outArray( nDims, 0 );
+   outArray[ axis ] = origin;
    for( dip::uint ii = 0; ii < nDims; ++ii ) {
       if(( ii != axis ) && ( shearArray[ ii ] != 0.0 )) {
          process[ ii ] = true;
@@ -417,6 +419,7 @@ void Skew(
                offset[ ii ] += static_cast< dfloat >( skewSize );
             }
          }
+         outArray[ ii ] = static_cast< dip::uint >( round_cast( originShift + offset[ ii ] ));
       }
    }
    UnsignedArray border( nDims, interpolation::GetBorderSize( method ));
@@ -438,6 +441,8 @@ void Skew(
    // Call line filter through framework
    Framework::Separable( in, out, bufferType, out.DataType(), process, { border }, boundaryCondition, *lineFilter,
          Framework::SeparableOption::AsScalarImage + Framework::SeparableOption::DontResizeOutput + Framework::SeparableOption::UseInputBuffer );
+
+   return outArray;
 }
 
 void Rotation(
@@ -450,8 +455,9 @@ void Rotation(
       String const& boundaryCondition
 ) {
    // Parse boundaryCondition
+   dip::uint nDims = c_in.Dimensionality();
    BoundaryConditionArray bc;
-   DIP_STACK_TRACE_THIS( bc = BoundaryConditionArray( c_in.Dimensionality(), StringToBoundaryCondition( boundaryCondition )));
+   DIP_STACK_TRACE_THIS( bc = BoundaryConditionArray( nDims, StringToBoundaryCondition( boundaryCondition )));
    // Preserve input
    Image in = c_in.QuickCopy();
    PixelSize pixelSize = c_in.PixelSize();
@@ -465,17 +471,25 @@ void Rotation(
    angle -= n * pi / 2.0;
    // This tests for in being forged, and dim1 and dim2 being valid
    DIP_STACK_TRACE_THIS( in.Rotation90( static_cast< dip::sint >( n ), dimension1, dimension2 ));
+   // NOTE: The rotation above swaps and flips dimensions, it doesn't keep the origin pixel in its place.
+   //       This means that even-sized dimensions with a negative stride now need to be shifted up by 1 pixel
+   //       `origin1` and `origin2` are the location of the pixel that shouldn't move in the rotation.
+   dip::uint origin1 = in.Size( dimension1 ) / 2 - ( !( in.Size( dimension1 ) & 1 ) && ( in.Stride( dimension1 ) < 0 ));
+   dip::uint origin2 = in.Size( dimension2 ) / 2 - ( !( in.Size( dimension2 ) & 1 ) && ( in.Stride( dimension2 ) < 0 ));
    // Do the last rotation, in the range [-45,45], with three skews
-   FloatArray skewArray1( in.Dimensionality(), 0.0 );
-   skewArray1[ dimension1 ] = std::tan( angle / 2.0 );
-   FloatArray skewArray2( in.Dimensionality(), 0.0 );
-   skewArray2[ dimension2 ] = -std::sin( angle );
-   dip::uint origin1 = in.Size( dimension1 );
-   dip::uint origin2 = in.Size( dimension2 );
-   Skew( in, out, skewArray1, dimension2, origin2, method, bc );
-   Skew( out, out, skewArray2, dimension1, origin1, method, bc );
-   Skew( out, out, skewArray1, dimension2, origin2, method, bc );
+   //    As origin we take the pixel that was at the origin *before* the `Rotation90` call.
+   FloatArray skewArray1( nDims, 0.0 );
+   skewArray1[ dimension1 ] = -std::tan( angle / 2.0 );
+   FloatArray skewArray2( nDims, 0.0 );
+   skewArray2[ dimension2 ] = std::sin( angle );
+   UnsignedArray ret = Skew( in, out, skewArray1, dimension2, origin2, method, bc );
+   origin1 += ret[ dimension1 ];
+   ret = Skew( out, out, skewArray2, dimension1, origin1, method, bc );
+   origin2 += ret[ dimension2 ];
+   ret = Skew( out, out, skewArray1, dimension2, origin2, method, bc );
+   origin1 += ret[ dimension1 ];
    // Remove the useless borders of the image
+   //    This is where we adjust such that the pixel at the input's origin is also at the output's origin.
    dfloat cos_angle = std::abs( std::cos( angle ));
    dfloat sin_angle = std::abs( std::sin( angle ));
    dfloat size1 = static_cast< dfloat >( in.Size( dimension1 ));
@@ -484,10 +498,25 @@ void Rotation(
    newSize[ dimension1 ] = std::min(
          out.Size( dimension1 ),
          2 * static_cast< dip::uint >( std::ceil(( size1 * cos_angle + size2 * sin_angle ) / 2.0 )) + ( in.Size( dimension1 ) & 1 ));
+   if ( origin1 < ( newSize[ dimension1 ] / 2 )) {
+      // if `newSize` is too large to be symmetric around the origin, make it smaller.
+      newSize[ dimension1 ] = origin1 * 2 + ( newSize[ dimension1 ] & 1 ); // keep odd if it was odd.
+   }
    newSize[ dimension2 ] = std::min(
          out.Size( dimension2 ),
          2 * static_cast< dip::uint >( std::ceil(( size1 * sin_angle + size2 * cos_angle ) / 2.0 )) + ( in.Size( dimension2 ) & 1 ));
-   out.Crop( newSize );
+   if ( origin2 < ( newSize[ dimension2 ] / 2 )) {
+      // if `newSize` is too large to be symmetric around the origin, make it smaller.
+      newSize[ dimension2 ] = origin2 * 2 + ( newSize[ dimension2 ] & 1 ); // keep odd if it was odd.
+   }
+   // The section below is similar to out.Crop( newSize ), except we use `origin1` and `origin2` to determine where to cut.
+   UnsignedArray origin( nDims, 0 );
+   origin[ dimension1 ] = origin1 - ( newSize[ dimension1 ] / 2 );
+   DIP_ASSERT( origin[ dimension1 ] <= out.Size( dimension1 ) - newSize[ dimension1 ] );
+   origin[ dimension2 ] = origin2 - ( newSize[ dimension2 ] / 2 );
+   DIP_ASSERT( origin[ dimension2 ] <= out.Size( dimension2 ) - newSize[ dimension2 ] );
+   out.dip__SetOrigin( out.Pointer( origin ));
+   out.dip__SetSizes( newSize );
    // Fix pixel sizes
    if( pixelSize.IsDefined() ) {
       if( pixelSize[ dimension1 ] != pixelSize[ dimension2 ] ) {

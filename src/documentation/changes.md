@@ -261,10 +261,17 @@ code that used *DIPlib* or *DIPimage* to the new version.
   more efficient. The "diamond" SE is now implemented using line SEs, and we have added an
   "octagonal" SE that is computed as a combination of a diamond SE and a rectangular SE.
 
+- `dip::Rotation` and dependent functions now rotate around the pixel that is right from center
+  (the same pixel that is assumed the origin in `dip::FourierTransform` and other functions),
+  instead of the point in between pixels, in case of an even-sized image. The implementation is
+  slightly more complex, but this definition is more useful. This function nows work for any
+  number of dimensions, though it only rotates around one cartesian axis. `dip::Rotation3D` is
+  a new function that does a full 3D rotation.
+
+- `dip::Skew` can now skew in multiple dimensions at the same time.
+
 - `dip::Resampling` (and by extension `dip::Shift`) shifts the image in the opposite direction
-  from what it did in the old *DIPlib*, where the shift was unintuitive. `dip::Skew` can now skew
-  in multiple dimensions at the same time. `dip::Rotation` now works for any number of dimensions,
-  though it only rotates around one cartesian axis.
+  from what it did in the old *DIPlib*, where the shift was unintuitive.
 
 - `dip::FindShift` now returns the shift with inverse sign compared to before, to match the reversal
   in `dip::Shift`.
@@ -278,6 +285,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - Lots of new algorithms, some previously only available in *DIPimage*.
   - New morphological functions: `dip::HMaxima`, `dip::HMinima`, `dip::OpeningByReconstruction`,
     and `dip::ClosingByReconstruction`, `dip::ConditionalThickening2D`, `dip::ConditionalThinning2D`.
+  - `dip::Canny` and `dip::MaximumSuppression` have been generalized from 2D only to any number of
+    dimensions.
   - TODO: try to list them all!
 
 [//]: # (--------------------------------------------------------------)
@@ -423,4 +432,4 @@ code that used *DIPlib* or *DIPimage* to the new version.
 - If you customized the menus in the DIPimage GUI, you will have to update your `localdipmenus.m`
   file. If you wrote your own functions that integrated in the GUI, you'll have to do so through
   your `localdipmenus.m` now. Preference setting `'CommandFilePath'` no longer exists,
-  `getprarams` no longer exists, and functions are no longer probed with `'DIP_GetParamList'`.
+  `getparams` no longer exists, and functions are no longer probed with `'DIP_GetParamList'`.

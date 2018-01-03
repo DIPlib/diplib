@@ -36,7 +36,7 @@
 % SEE ALSO:
 %  extendregion, cut
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,7 +92,9 @@ N = length(sz);
 if ~isnumeric(newsz) || ~isvector(newsz)
    error('NEWSIZE must be a numeric vector')
 end
-if length(newsz)~=N
+if isscalar(newsz)
+   newsz = repmat(newsz,1,N);
+elseif length(newsz)~=N
    error('NEWSIZE has wrong number of elements')
 end
 newsz = newsz(:)';

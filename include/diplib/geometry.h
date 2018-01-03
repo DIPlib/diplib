@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for geometric transformations
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -205,8 +205,16 @@ inline Image Shift(
 }
 
 
-// Undocumented internal function called by the other forms of Skew
-DIP_EXPORT void Skew(
+// Undocumented internal function called by the other forms of Skew.
+// Each sub-volume perpendicular to axis is shifted with sub-pixel precision, according to `shearArray`.
+// That is, if `axis` is 1, then the sub-volume `in[:,ii,:,:,...]`, with all possible `ii`, is shifted
+// by some different amount. No shift happens along the direction `axis`. All image sizes where `shearArray[ii]`
+// is non-zero increase except `in.Size(axis)==out.Size(axis)`. `shearArray[axis]` is ignored.
+// `origin` indicates which of the sub-volumes perpendicular to `axis` is not shifted. That is, `in[:,origin,:,:,...]`
+// is not shifted (or rather, it is shifted by some integer amount to allow negative shifts of other sub-volumes).
+// Returns `ret` the location of `in[0,origin,0,0,...]` in the output image. The return array `ret` will always have
+// `ret[axis]==origin` since no change happens along that dimension.
+DIP_EXPORT dip::UnsignedArray Skew(
       Image const& in,
       Image& out,
       FloatArray const& shearArray, // value along `axis` is ignored
@@ -223,8 +231,9 @@ DIP_EXPORT void Skew(
 /// the sub-pixel shift of a line in the direction `ii` with respect to the previous line along `axis`.
 /// Each image sub-volume perpendicular
 /// to `axis` is shifted by a different amount. The output image has the same dimension as `in` in the `axis`
-/// direction, and larger dimensions in all other dimensions, such that no data is lost. The value of `shear[ axis ]`
-/// is ignored. The origin of the skew is in the middle of the image.
+/// direction, and larger dimensions in all other dimensions, such that no data is lost. The value of `shearArray[ axis ]`
+/// is ignored. The origin of the skew is the origin pixel (as defined in `dip::FourierTransform` and other other
+/// places).
 ///
 /// The output image has the same data type as the input image.
 ///
@@ -273,7 +282,8 @@ inline Image Skew(
 /// angle of `shear` radian in the direction of dimension `skew`. Each image line along dimension
 /// `skew` is shifted by a different amount. The output image has the same dimensions as
 /// `in`, except for dimension `skew`, which will be larger, such that no data is lost.
-/// The origin of the skew is in the middle of the image.
+/// The origin of the skew is the origin pixel (as defined in `dip::FourierTransform` and other other
+/// places).
 ///
 /// The output image has the same data type as the input image.
 ///
@@ -332,8 +342,9 @@ inline Image Skew(
 
 /// \brief Rotates an image in one orthogonal plane, over the center of the image.
 ///
-/// Rotates an image in the plane defined by `dimension1` and `dimension2`, over an angle `angle`, in radian,
-/// around the center of the image.
+/// Rotates an image in the plane defined by `dimension1` and `dimension2`, over an angle `angle`, in radian.
+/// The origin of the rotation is the origin pixel (as defined in `dip::FourierTransform` and other other
+/// places).
 /// The function implements the rotation in the mathematical sense; **note** the y-axis is positive downwards!
 ///
 /// The output image has the same data type as the input image.

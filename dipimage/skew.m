@@ -23,7 +23,7 @@
 %                      See HELP BOUNDARY_CONDITION
 %
 % DEFAULTS:
-%  axis = 0, except when SKEW is 0, then it's 1
+%  axis = 1, except when SKEW is 1, then it's 2
 %  interpolation_method = '3-cubic'
 %  boundary_condition = {} (equivalent to 'mirror')
 %
@@ -42,7 +42,7 @@
 % SEE ALSO:
 %  SHIFT, RESAMPLE
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %

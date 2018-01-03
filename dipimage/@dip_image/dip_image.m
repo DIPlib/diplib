@@ -72,7 +72,7 @@
 
 % DIPimage 3.0
 %
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -1657,8 +1657,13 @@ classdef dip_image
 
       function b = rot90(b,k)
          %ROT90  Rotate image 90 degrees.
-         %   ROT90(A) is the 90 degree counterclockwise rotation of image A.
+         %   ROT90(A) is the 90 degree clockwise rotation of image A.
          %   ROT90(A,K) is the K*90 degree rotation of A, K = +-1,+-2,...
+         %
+         %   Note that the direction of rotation is reversed w.r.t. the
+         %   built-in function ROT90 for matrices. This is due to the
+         %   different dimension order of images and matrices. The rotation
+         %   here is consistent with the DIPimage function ROTATION.
          if nargin == 1
              k = 1;
          else

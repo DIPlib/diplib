@@ -31,7 +31,7 @@
 % SEE ALSO:
 %  extend, extendregion
 
-% (c)2017, Cris Luengo.
+% (c)2017-2018, Cris Luengo.
 % Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -71,7 +71,9 @@ N = length(sz);
 if ~isnumeric(newsz) || ~isvector(newsz)
    error('NEWSIZE must be a numeric vector')
 end
-if length(newsz)~=N
+if isscalar(newsz)
+   newsz = repmat(newsz,1,N);
+elseif length(newsz)~=N
    error('NEWSIZE has wrong number of elements')
 end
 newsz = newsz(:)';
@@ -125,15 +127,9 @@ out = in(s{:});
 
 %%% TEST CODE:
 %{
-x = xx(4);
-y = cut(extend(x,5),4);
-z = cut(extend(x,6),4);
-if any(y~=x), disp('Error!!!'), end
-if any(z~=x), disp('Error!!!'), end
-
-x = xx(3);
-y = cut(extend(x,5),3);
-z = cut(extend(x,6),3);
-if any(y~=x), disp('Error!!!'), end
-if any(z~=x), disp('Error!!!'), end
+x = deltaim([4,4,5,5]);
+y = extend(x,[5,6,7,8]);
+if any(y~=deltaim([5,6,7,8])), disp('Error in extend!!!'), end
+z = cut(y,[4,4,5,5]);
+if any(z~=x), disp('Error in cut!!!'), end
 %}
