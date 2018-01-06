@@ -70,7 +70,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          color.swap( dml::GetPixel( prhs[ 2 ] )); // we cannot assign to a pixel!
       }
 
-      dip::String mode = "open";
+      dip::String mode = dip::S::OPEN;
       if( nrhs > 3 ) {
          mode = dml::GetString( prhs[ 3 ] );
       }
@@ -80,12 +80,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          dip::DrawPolygon2D( out, coords, color, mode );
       } else {
          dip::CoordinateArray coords = dml::GetCoordinateArray( prhs[ 1 ] );
-         if( mode == "closed" ) {
+         if( mode == dip::S::CLOSED ) {
             if( coords.front() != coords.back() ) {
                coords.push_back( coords.front() );
             }
          } else {
-            DIP_THROW_IF( mode != "open", dip::E::INVALID_FLAG );
+            DIP_THROW_IF( mode != dip::S::OPEN, dip::E::INVALID_FLAG );
          }
          dip::DrawLines( out, coords, color );
       }

@@ -48,7 +48,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       if( nrhs > 4 ) {
          maximum = dml::GetFloat( prhs[ 4 ] );
       }
-      dip::String method = "linear";
+      dip::String method = dip::S::LINEAR;
       if( nrhs > 5 ) {
          method = dml::GetString( prhs[ 5 ] );
       }

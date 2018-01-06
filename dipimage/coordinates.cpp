@@ -48,12 +48,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       if( nrhs > 2 ) {
          dip::String origin = dml::GetString( prhs[ 2 ] );
          if( origin[ 0 ] == 'm' ) {
-            mode.insert( "math" );
+            mode.insert( dip::S::MATH );
             origin = origin.erase( 0, 1 );
          }
          mode.insert( origin );
       } else {
-         mode.insert( "right" );
+         mode.insert( dip::S::RIGHT );
       }
       if( nrhs > 3 ) {
          dip::StringArray options = dml::GetStringArray( prhs[ 3 ] );
@@ -70,11 +70,11 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          }
          dip::FillRamp( out, dim - 1, mode );
       } else {
-         dip::String value = "cartesian";
+         dip::String value = dip::S::CARTESIAN;
          if( nrhs > 1 ) {
             value = dml::GetString( prhs[ 1 ] );
          }
-         if(( value == "cartesian" ) || ( value == "spherical" )) {
+         if(( value == dip::S::CARTESIAN ) || ( value == dip::S::SPHERICAL )) {
             out.SetTensorSizes( out.Dimensionality() );
             out.Forge();
             dip::FillCoordinates( out, mode, value );

@@ -34,7 +34,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::UnsignedArray order = { 0 };
       dip::FloatArray sigmas = { 1 };
-      dip::String method = "best";
+      dip::String method = dip::S::BEST;
       dip::StringArray bc = {};
       dip::dfloat truncation = 3;
 

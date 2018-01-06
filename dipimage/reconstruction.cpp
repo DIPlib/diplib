@@ -38,7 +38,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          connectivity = dml::GetUnsigned( prhs[ 2 ] );
       }
 
-      dip::String flag = "dilation";
+      dip::String flag = dip::S::DILATION;
       if( nrhs > 3 ) {
          flag = dml::GetString( prhs[ 3 ] );
       }

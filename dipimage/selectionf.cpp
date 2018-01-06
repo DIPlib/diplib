@@ -41,7 +41,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          threshold = dml::GetFloat( prhs[ index ] );
          ++index;
       }
-      dip::String mode = "minimum";
+      dip::String mode = dip::S::MINIMUM;
       if( nrhs > index ) {
          mode = dml::GetString( prhs[ index ] );
          ++index;

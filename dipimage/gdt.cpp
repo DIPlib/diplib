@@ -33,17 +33,17 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::Image const grey = dml::GetImage( prhs[ 1 ] );
       dip::Image out = mi.NewImage();
 
-      dip::Metric metric( "chamfer", 1 );
+      dip::Metric metric( dip::S::CHAMFER, 1 );
       if( nrhs > 2 ) {
          dip::uint chamfer = dml::GetUnsigned( prhs[ 2 ] );
          switch( chamfer ) {
             case 1:
-               metric = dip::Metric( "connected", 1 );
+               metric = dip::Metric( dip::S::CONNECTED, 1 );
                break;
             case 3:
                break;
             case 5:
-               metric = dip::Metric( "chamfer", 2 );
+               metric = dip::Metric( dip::S::CHAMFER, 2 );
                break;
             default:
                DIP_THROW( dip::E::INVALID_PARAMETER );
@@ -52,9 +52,9 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
 
       dip::String outputMode;
       if( nlhs > 1 ) {
-         outputMode = "both";
+         outputMode = dip::S::BOTH;
       } else {
-         outputMode = "GDT";
+         outputMode = dip::S::GDT;
       }
 
       dip::GreyWeightedDistanceTransform( grey, in, out, metric, outputMode );

@@ -30,21 +30,21 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::CoordinateArray coords = dml::GetCoordinateArray( prhs[ 1 ] );
 
-      dip::String method = "parabolic separable";
+      dip::String method = dip::S::PARABOLIC_SEPARABLE;
       if( nrhs > 2 ) {
          method = dml::GetString( prhs[ 2 ] );
          // Method names are different in the DIPimage interface...
          if(( method == "parabolic nonseparable" ) || ( method == "parabolic_nonseparable" )) {
-            method = "parabolic";
+            method = dip::S::PARABOLIC;
          } else if(( method == "gaussian nonseparable" ) || ( method == "gaussian_nonseparable" )) {
-            method = "gaussian";
+            method = dip::S::GAUSSIAN;
          } else if( method == "parabolic" ) {
-            method = "parabolic separable";
+            method = dip::S::PARABOLIC_SEPARABLE;
          } else if( method == "gaussian" ) {
-            method = "gaussian separable";
+            method = dip::S::GAUSSIAN_SEPARABLE;
          }
       }
-      dip::String polarity = "maximum";
+      dip::String polarity = dip::S::MAXIMUM;
       if( nrhs > 3 ) {
          polarity = dml::GetString( prhs[ 3 ] );
       }

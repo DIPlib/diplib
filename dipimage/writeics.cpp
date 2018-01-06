@@ -39,7 +39,7 @@ void mexFunction( int /*nlhs*/, mxArray* /*plhs*/[], int nrhs, const mxArray* pr
       if( nrhs > 3 ) {
          significantBits = dml::GetUnsigned( prhs[ 3 ] );
       }
-      dip::StringSet options = { "fast" };
+      dip::StringSet options = { dip::S::FAST };
       if( nrhs > 4 ) {
          options = dml::GetStringSet( prhs[ 4 ] );
       }

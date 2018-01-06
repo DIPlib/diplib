@@ -40,7 +40,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          connectivity = dml::GetUnsigned( prhs[ 2 ] );
       }
 
-      dip::String polarity = "opening";
+      dip::String polarity = dip::S::OPENING;
       if( nrhs > 3 ) {
          polarity = dml::GetString( prhs[ 3 ] );
       }

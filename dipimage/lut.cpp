@@ -49,7 +49,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
 
       dip::LookupTable lut( table, indices );
 
-      dip::String method = "linear";
+      dip::String method = dip::S::LINEAR;
       if( nrhs > index ) {
          method = dml::GetString( prhs[ index ] );
          ++index;
@@ -68,7 +68,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
             dip::String bounds = dml::GetString( prhs[ index ] );
             if( bounds == "clamp" ) {
                lut.ClampOutOfBoundsValues();
-            } else if( bounds == "keep" ) {
+            } else if( bounds == dip::S::KEEP ) {
                lut.KeepInputValueOnOutOfBounds();
             } else {
                DIP_THROW( dip::E::INVALID_FLAG );

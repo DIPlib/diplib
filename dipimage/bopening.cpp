@@ -42,15 +42,15 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          connectivity = dml::GetInteger( prhs[ 2 ] );
       }
 
-      dip::String edgeCondition = "special";
+      dip::String edgeCondition = dip::S::SPECIAL;
       if( nrhs > 3 ) {
          if( mxIsChar( prhs[ 3 ] )) {
             edgeCondition = dml::GetString( prhs[ 3 ] );
          } else {
             if( dml::GetBoolean( prhs[ 3 ] )) {
-               edgeCondition = "object";
+               edgeCondition = dip::S::OBJECT;
             } else {
-               edgeCondition = "background";
+               edgeCondition = dip::S::BACKGROUND;
             }
          }
       }

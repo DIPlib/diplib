@@ -37,24 +37,24 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          connectivity = dml::GetUnsigned( prhs[ 2 ] );
       }
 
-      dip::String mode = "foreground";
+      dip::String mode = dip::S::FOREGROUND;
       if( nrhs > 1 ) { // Note order difference between MATLAB and C++
          if( mxIsChar( prhs[ 1 ] )) {
             mode = dml::GetString( prhs[ 1 ] );
          } else {
             if( !dml::GetBoolean( prhs[ 1 ] )) {
-               mode = "all";
+               mode = dip::S::ALL;
             }
          }
       }
 
-      dip::String edgeCondition = "background";
+      dip::String edgeCondition = dip::S::BACKGROUND;
       if( nrhs > 3 ) {
          if( mxIsChar( prhs[ 3 ] )) {
             edgeCondition = dml::GetString( prhs[ 3 ] );
          } else {
             if( dml::GetBoolean( prhs[ 3 ] )) {
-               edgeCondition = "object";
+               edgeCondition = dip::S::OBJECT;
             }
          }
       }

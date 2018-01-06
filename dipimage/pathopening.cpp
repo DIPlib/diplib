@@ -34,11 +34,11 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       if( nrhs > 1 ) {
          params = dml::GetIntegerArray( prhs[ 1 ] );
       }
-      dip::String polarity = "opening";
+      dip::String polarity = dip::S::OPENING;
       if( nrhs > 2 ) {
          polarity = dml::GetString( prhs[ 2 ] );
       }
-      dip::String mode = "normal";
+      dip::String mode = dip::S::NORMAL;
       if( nrhs > 3 ) {
          mode = dml::GetString( prhs[ 3 ] );
       }

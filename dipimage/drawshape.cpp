@@ -70,19 +70,19 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          if( sigma == 0.0 ) {
             dip::DrawEllipsoid( out, sizes, origin, color );
          } else {
-            dip::DrawBandlimitedBall( out, sizes[ 0 ], origin, color, "filled", sigma, truncation );
+            dip::DrawBandlimitedBall( out, sizes[ 0 ], origin, color, dip::S::FILLED, sigma, truncation );
          }
       } else if(( shape == "circle" ) || shape == "sphere" ) {
          DIP_THROW_IF( sizes.size() != 1, dip::E::ARRAY_ILLEGAL_SIZE );
-         dip::DrawBandlimitedBall( out, sizes[ 0 ], origin, color, "empty", sigma, truncation );
+         dip::DrawBandlimitedBall( out, sizes[ 0 ], origin, color, dip::S::EMPTY, sigma, truncation );
       } else if(( shape == "rectangle" ) || shape == "box" ) {
          if( sigma == 0.0 ) {
             dip::DrawBox( out, sizes, origin, color );
          } else {
-            dip::DrawBandlimitedBox( out, sizes, origin, color, "filled", sigma, truncation );
+            dip::DrawBandlimitedBox( out, sizes, origin, color, dip::S::FILLED, sigma, truncation );
          }
       } else if( shape == "box shell" ) {
-         dip::DrawBandlimitedBox( out, sizes, origin, color, "empty", sigma, truncation );
+         dip::DrawBandlimitedBox( out, sizes, origin, color, dip::S::EMPTY, sigma, truncation );
       } else if( shape == "diamond" ) {
          dip::DrawDiamond( out, sizes, origin, color );
       } else {

@@ -34,7 +34,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       dip::Image mask;
       dip::Image out = mi.NewImage();
 
-      dip::String mode = "fast";
+      dip::String mode = dip::S::FAST;
 
       // Get images
       in = dml::GetImage( prhs[ 0 ] );

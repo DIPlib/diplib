@@ -42,13 +42,13 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          connectivity = dml::GetInteger( prhs[ 2 ] );
       }
 
-      dip::String edgeCondition = "background";
+      dip::String edgeCondition = dip::S::BACKGROUND;
       if( nrhs > 3 ) {
          if( mxIsChar( prhs[ 3 ] )) {
             edgeCondition = dml::GetString( prhs[ 3 ] );
          } else {
             if( dml::GetBoolean( prhs[ 3 ] )) {
-               edgeCondition = "object";
+               edgeCondition = dip::S::OBJECT;
             }
          }
       }

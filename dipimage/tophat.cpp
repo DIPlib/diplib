@@ -35,12 +35,12 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       int index = 1;
       auto se = dml::GetKernel< dip::StructuringElement >( nrhs, prhs, index, in.Dimensionality() );
 
-      dip::String edgeType = "texture";
+      dip::String edgeType = dip::S::TEXTURE;
       if( nrhs > index ) {
          edgeType = dml::GetString( prhs[ index ] );
          ++index;
       }
-      dip::String polarity = "white";
+      dip::String polarity = dip::S::WHITE;
       if( nrhs > index ) {
          polarity = dml::GetString( prhs[ index ] );
          ++index;

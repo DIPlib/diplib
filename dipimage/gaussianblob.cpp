@@ -95,7 +95,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       bool spatial = true;
       if( nrhs > 4 ) {
          dip::String domain = dml::GetString( prhs[ 4 ] );
-         spatial = dip::BooleanFromString( domain, "spatial", "frequency" );
+         spatial = dip::BooleanFromString( domain, dip::S::SPATIAL, dip::S::FREQUENCY );
       }
 
       dip::dfloat truncation = 3;

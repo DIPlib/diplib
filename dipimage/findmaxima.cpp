@@ -37,18 +37,18 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
          ++index;
       }
 
-      dip::String method = "parabolic separable";
+      dip::String method = dip::S::PARABOLIC_SEPARABLE;
       if( nrhs > index ) {
          method = dml::GetString( prhs[ index ] );
          // Method names are different in the DIPimage interface...
          if(( method == "parabolic nonseparable" ) || ( method == "parabolic_nonseparable" )) {
-            method = "parabolic";
+            method = dip::S::PARABOLIC;
          } else if(( method == "gaussian nonseparable" ) || ( method == "gaussian_nonseparable" )) {
-            method = "gaussian";
+            method = dip::S::GAUSSIAN;
          } else if( method == "parabolic" ) {
-            method = "parabolic separable";
+            method = dip::S::PARABOLIC_SEPARABLE;
          } else if( method == "gaussian" ) {
-            method = "gaussian separable";
+            method = dip::S::GAUSSIAN_SEPARABLE;
          }
       }
 

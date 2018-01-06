@@ -33,7 +33,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image out = mi.NewImage();
 
       dip::FloatArray sigmas = { 1 };
-      dip::String method = "best";
+      dip::String method = dip::S::BEST;
       dip::StringArray bc = {};
       dip::BooleanArray process = {};
       dip::dfloat truncation = 3;

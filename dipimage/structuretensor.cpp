@@ -48,7 +48,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] ) {
       if( nrhs > 3 ) {
          outputs = dml::GetStringArray( prhs[ 3 ] );
       }
-      dip::String method = "best";
+      dip::String method = dip::S::BEST;
       if( nrhs > 4 ) {
          method = dml::GetString( prhs[ 4 ] );
       }

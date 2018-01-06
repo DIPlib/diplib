@@ -41,7 +41,7 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
          high = dml::GetFloat( prhs[ 2 ] );
       }
 
-      dip::Clip( in, out, low, high, "both" );
+      dip::Clip( in, out, low, high, dip::S::BOTH );
 
       plhs[ 0 ] = mi.GetArray( out );
 

@@ -32,28 +32,28 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      dip::String edgeCondition = "background";
+      dip::String edgeCondition = dip::S::BACKGROUND;
       if( nrhs > 1 ) {
          if( mxIsChar( prhs[ 1 ] )) {
             edgeCondition = dml::GetString( prhs[ 1 ] );
          } else {
             if( dml::GetBoolean( prhs[ 1 ] )) {
-               edgeCondition = "foreground";
+               edgeCondition = dip::S::FOREGROUND;
             }
          }
       }
 
-      dip::String endPixelCondition = "natural";
+      dip::String endPixelCondition = dip::S::NATURAL;
       if( nrhs > 2 ) {
          endPixelCondition = dml::GetString( prhs[ 2 ] );
          if( endPixelCondition == "looseendsaway" ) {
-            endPixelCondition = "loose ends away";
+            endPixelCondition = dip::S::LOOSE_ENDS_AWAY;
          } else if( endPixelCondition == "1neighbor" ) {
-            endPixelCondition = "one neighbor";
+            endPixelCondition = dip::S::ONE_NEIGHBOR;
          } else if( endPixelCondition == "2neighbors" ) {
-            endPixelCondition = "two neighbors";
+            endPixelCondition = dip::S::TWO_NEIGHBORS;
          } else if( endPixelCondition == "3neighbors" ) {
-            endPixelCondition = "three neighbors";
+            endPixelCondition = dip::S::THREE_NEIGHBORS;
          }
       }
 

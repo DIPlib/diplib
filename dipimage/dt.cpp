@@ -32,22 +32,22 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image const in = dml::GetImage( prhs[ 0 ] );
       dip::Image out = mi.NewImage();
 
-      dip::String edgeCondition = "object";
+      dip::String edgeCondition = dip::S::OBJECT;
       if( nrhs > 1 ) {
          if( mxIsChar( prhs[ 1 ] )) {
             edgeCondition = dml::GetString( prhs[ 1 ] );
          } else {
             if( !dml::GetBoolean( prhs[ 1 ] )) {
-               edgeCondition = "background";
+               edgeCondition = dip::S::BACKGROUND;
             }
          }
       }
 
-      dip::String method = "fast";
+      dip::String method = dip::S::FAST;
       if( nrhs > 2 ) {
          method = dml::GetString( prhs[ 2 ] );
          if( method == "bruteforce" ) {
-            method = "brute force";
+            method = dip::S::BRUTE_FORCE;
          }
       }
 
