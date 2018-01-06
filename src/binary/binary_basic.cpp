@@ -198,12 +198,22 @@ void BinaryAreaOpening(
         Image const& in,
         Image& out,
         dip::uint filterSize,
-        dip::uint connectivity
+        dip::uint connectivity,
+        String const& edgeCondition
 ) {
-   // This is a short function, but we don't define it in the header because we'd need to pull in `diplib/regions.h`.
    DIP_START_STACK_TRACE
+      Image edgeObjects;
+      if( BooleanFromString( edgeCondition, S::OBJECT, S::BACKGROUND )) {
+         // If edgeCondition is OBJECT, we need to preserve the edge objects (they are always infinitely large)
+         edgeObjects = BinaryPropagation( Image(), in, static_cast< dip::sint >( connectivity ), 0, S::OBJECT ); // copied from `EdgeObjectsRemove`
+      }
+      // This removes all small objects, but assumes edgeCondition is BACKGROUND.
       Image labels = Label( in, connectivity, filterSize, 0 );
       Greater( labels, 0, out );
+      // Handle edge condition by adding back edge-connected objects if edgeCondition is OBJECT.
+      if( edgeObjects.IsForged() ) {
+         out |= edgeObjects;
+      }
    DIP_END_STACK_TRACE
 }
 

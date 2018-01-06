@@ -22,7 +22,6 @@
 #define DIP_MORPHOLOGY_H
 
 #include "diplib.h"
-#include "diplib/binary.h"
 
 
 /// \file

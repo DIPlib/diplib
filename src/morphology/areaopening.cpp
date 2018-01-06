@@ -19,6 +19,7 @@
 
 #include "diplib.h"
 #include "diplib/morphology.h"
+#include "diplib/binary.h"
 #include "diplib/neighborlist.h"
 #include "diplib/iterators.h"
 #include "diplib/boundary.h"

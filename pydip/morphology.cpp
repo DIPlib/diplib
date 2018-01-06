@@ -180,10 +180,10 @@ void init_morphology( py::module& m ) {
    m.def( "ConditionalThinning2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::ConditionalThinning2D ),
          "in"_a, "mask"_a, "iterations"_a = 0, "endPixelCondition"_a = "keep", "edgeCondition"_a = "background" );
 
-   m.def( "BinaryAreaOpening", py::overload_cast< dip::Image const&, dip::uint, dip::uint >( &dip::BinaryAreaOpening ),
-          "in"_a, "filterSize"_a, "connectivity"_a = 0 );
-   m.def( "BinaryAreaClosing", py::overload_cast< dip::Image const&, dip::uint, dip::uint >( &dip::BinaryAreaClosing ),
-          "in"_a, "filterSize"_a, "connectivity"_a = 0 );
+   m.def( "BinaryAreaOpening", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::BinaryAreaOpening ),
+          "in"_a, "filterSize"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
+   m.def( "BinaryAreaClosing", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::BinaryAreaClosing ),
+          "in"_a, "filterSize"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
 
    m.def( "EuclideanSkeleton", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanSkeleton ),
           "in"_a, "endPixelCondition"_a = "natural", "edgeCondition"_a = "background" );

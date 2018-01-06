@@ -312,49 +312,54 @@ inline Image ConditionalThinning2D(
 /// `connectivity` determines what a connected component is. See \ref connectivity for information on the
 /// connectivity parameter.
 ///
-/// The operation is implemented through `dip::Label`, and therefore there is no way to set the edge condition:
-/// connected component size is given by the pixels in the image domain, and connected components touching the
-/// image boundary are not treated differently. To preserve small connected components at the image edge, some
-/// binary arithmetic with `dip::EdgeObjectsRemove` would be in order.
+/// The `edgeCondition` parameter specifies whether pixels past the border of the image should be
+/// treated as object (by passing `"object"`) or as background (by passing `"background"`).
+///
+/// The operation is implemented through `dip::Label`.
 ///
 /// \see dip::AreaOpening, dip::AreaClosing
 DIP_EXPORT void BinaryAreaOpening(
       Image const& in,
       Image& out,
       dip::uint filterSize,
-      dip::uint connectivity = 0
-      // TODO: add `String const& edgeCondition` here, and implement the binary arithmetic hinted at in the doc above.
+      dip::uint connectivity = 0,
+      String const& edgeCondition = S::BACKGROUND
 );
 inline Image BinaryAreaOpening(
       Image const& in,
       dip::uint filterSize,
-      dip::uint connectivity = 0
+      dip::uint connectivity = 0,
+      String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
-   BinaryAreaOpening( in, out, filterSize, connectivity );
+   BinaryAreaOpening( in, out, filterSize, connectivity, edgeCondition );
    return out;
 }
 
-/// \brief Computes the area closing of a binary image, by calling `dip::BinaryAreaOpening`.
+/// \brief Computes the area closing of a binary image, by calling `dip::BinaryAreaOpening` on the inverse
+/// of the input image.
 inline void BinaryAreaClosing(
       Image const& in,
       Image& out,
       dip::uint filterSize,
-      dip::uint connectivity = 0
+      dip::uint connectivity = 0,
+      String const& s_edgeCondition = S::BACKGROUND
 ) {
    DIP_START_STACK_TRACE
+      bool edgeCondition = BooleanFromString( s_edgeCondition, S::OBJECT, S::BACKGROUND );
       Not( in, out );
-      BinaryAreaOpening( out, out, filterSize, connectivity );
+      BinaryAreaOpening( out, out, filterSize, connectivity, edgeCondition ? S::BACKGROUND : S::OBJECT ); // invert edge condition also
       Not( out, out );
    DIP_END_STACK_TRACE
 }
 inline Image BinaryAreaClosing(
         Image const& in,
         dip::uint filterSize,
-        dip::uint connectivity = 0
+        dip::uint connectivity = 0,
+        String const& edgeCondition = S::BACKGROUND
 ) {
    Image out;
-   BinaryAreaClosing( in, out, filterSize, connectivity );
+   BinaryAreaClosing( in, out, filterSize, connectivity, edgeCondition );
    return out;
 }
 
