@@ -224,17 +224,17 @@ enum class SubpixelExtremumMethod {
 
 SubpixelExtremumMethod ParseMethod( String const& s_method, dip::uint nDims ) {
    SubpixelExtremumMethod method;
-   if( s_method == "linear" ) {
+   if( s_method == dip::S::LINEAR ) {
       method = SubpixelExtremumMethod::LINEAR;
-   } else if( s_method == "parabolic" ) {
+   } else if( s_method == dip::S::PARABOLIC ) {
       method = SubpixelExtremumMethod::PARABOLIC;
-   } else if( s_method == "parabolic separable" ) {
+   } else if( s_method == dip::S::PARABOLIC_SEPARABLE ) {
       method = SubpixelExtremumMethod::PARABOLIC_SEPARABLE;
-   } else if( s_method == "gaussian" ) {
+   } else if( s_method == dip::S::GAUSSIAN ) {
       method = SubpixelExtremumMethod::GAUSSIAN;
-   } else if( s_method == "gaussian separable" ) {
+   } else if( s_method == dip::S::GAUSSIAN_SEPARABLE ) {
       method = SubpixelExtremumMethod::GAUSSIAN_SEPARABLE;
-   } else if( s_method == "integer" ) {
+   } else if( s_method == dip::S::INTEGER ) {
       method = SubpixelExtremumMethod::INTEGER;
    } else {
       DIP_THROW( E::INVALID_FLAG );

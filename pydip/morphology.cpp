@@ -84,8 +84,8 @@ void init_morphology( py::module& m ) {
    se.def( py::init<>() );
    se.def( py::init< dip::Image const& >(), "image"_a );
    se.def( py::init< dip::String const& >(), "shape"_a );
-   se.def( py::init< dip::dfloat, dip::String const& >(), "param"_a, "shape"_a = "elliptic" );
-   se.def( py::init< dip::FloatArray, dip::String const& >(), "param"_a, "shape"_a = "elliptic" );
+   se.def( py::init< dip::dfloat, dip::String const& >(), "param"_a, "shape"_a = dip::S::ELLIPTIC );
+   se.def( py::init< dip::FloatArray, dip::String const& >(), "param"_a, "shape"_a = dip::S::ELLIPTIC );
    se.def( "Mirror", &dip::StructuringElement::Mirror );
    se.def( "__repr__", &StructuringElementRepr );
    py::implicitly_convertible< py::buffer, dip::StructuringElement >();
@@ -105,26 +105,26 @@ void init_morphology( py::module& m ) {
           "in"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
 
    m.def( "Tophat", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::Tophat ),
-          "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = "texture", "polarity"_a = "white", "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "polarity"_a = dip::S::WHITE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalThreshold", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalThreshold ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = "texture", "boundaryCondition"_a = dip::StringArray{} );
+         "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalGist", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalGist ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = "texture", "boundaryCondition"_a = dip::StringArray{} );
+         "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalRange", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalRange ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = "texture", "boundaryCondition"_a = dip::StringArray{} );
+         "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalGradientMagnitude", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::StringArray const& >( &dip::MorphologicalGradientMagnitude ),
          "in"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "Lee", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::String const&, dip::StringArray const& >( &dip::Lee ),
-          "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = "texture", "sign"_a = "unsigned", "boundaryCondition"_a = dip::StringArray{} );
+          "in"_a, "se"_a = dip::StructuringElement{}, "edgeType"_a = dip::S::TEXTURE, "sign"_a = dip::S::UNSIGNED, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalSmoothing", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::String const&, dip::StringArray const& >( &dip::MorphologicalSmoothing ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "mode"_a = "average", "boundaryCondition"_a = dip::StringArray{} );
+         "in"_a, "se"_a = dip::StructuringElement{}, "mode"_a = dip::S::AVERAGE, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MultiScaleMorphologicalGradient", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::String const&, dip::StringArray const& >( &dip::MultiScaleMorphologicalGradient ),
-         "in"_a, "upperSize"_a = 9, "lowerSize"_a = 3, "filterShape"_a = "elliptic", "boundaryCondition"_a = dip::StringArray{} );
+         "in"_a, "upperSize"_a = 9, "lowerSize"_a = 3, "filterShape"_a = dip::S::ELLIPTIC, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "MorphologicalLaplace", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::StringArray const& >( &dip::MorphologicalLaplace ),
          "in"_a, "se"_a = dip::StructuringElement{}, "boundaryCondition"_a = dip::StringArray{} );
 
    m.def( "RankFilter", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::uint, dip::String const&, dip::StringArray const& >( &dip::RankFilter ),
-         "in"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "order"_a = "increasing", "boundaryCondition"_a = dip::StringArray{} );
+         "in"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "order"_a = dip::S::INCREASING, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "RankMinClosing", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::uint, dip::StringArray const& >( &dip::RankMinClosing ),
          "in"_a, "se"_a = dip::StructuringElement{}, "rank"_a = 2, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "RankMaxOpening", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::uint, dip::StringArray const& >( &dip::RankMaxOpening ),
@@ -135,27 +135,27 @@ void init_morphology( py::module& m ) {
    m.def( "SeededWatershed", py::overload_cast< dip::Image const&, dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::StringSet const& >( &dip::SeededWatershed ),
           "in"_a, "seeds"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1.0, "maxSize"_a = 0, "flags"_a = dip::StringSet{} );
    m.def( "Maxima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const& >( &dip::Maxima ),
-          "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "output"_a = "binary" );
+          "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "output"_a = dip::S::BINARY );
    m.def( "Minima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const& >( &dip::Minima ),
-          "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "output"_a = "binary" );
+          "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "output"_a = dip::S::BINARY );
    m.def( "WatershedMinima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::String const& >( &dip::WatershedMinima ),
-          "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1, "maxSize"_a = 0, "output"_a = "binary" );
+          "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1, "maxSize"_a = 0, "output"_a = dip::S::BINARY );
    m.def( "WatershedMaxima", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::dfloat, dip::uint, dip::String const& >( &dip::WatershedMaxima ),
-          "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1, "maxSize"_a = 0, "output"_a = "binary" );
+          "in"_a, "mask"_a = dip::Image{}, "connectivity"_a = 1, "maxDepth"_a = 1, "maxSize"_a = 0, "output"_a = dip::S::BINARY );
    m.def( "MorphologicalReconstruction", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const& >( &dip::MorphologicalReconstruction ),
-          "marker"_a, "in"_a, "connectivity"_a = 1, "direction"_a = "dilation" );
+          "marker"_a, "in"_a, "connectivity"_a = 1, "direction"_a = dip::S::DILATION );
    m.def( "HMinima", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint >( &dip::HMinima ),
           "in"_a, "h"_a, "connectivity"_a = 1 );
    m.def( "HMaxima", py::overload_cast< dip::Image const&, dip::dfloat, dip::uint >( &dip::HMaxima ),
           "in"_a, "h"_a, "connectivity"_a = 1 );
    m.def( "AreaOpening", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::AreaOpening ),
-          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a, "connectivity"_a = 1, "polarity"_a = "opening" );
+          "in"_a, "mask"_a = dip::Image{}, "filterSize"_a, "connectivity"_a = 1, "polarity"_a = dip::S::OPENING );
    m.def( "AreaClosing", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::uint >( &dip::AreaClosing ),
           "in"_a, "mask"_a = dip::Image{}, "filterSize"_a, "connectivity"_a = 1 );
    m.def( "PathOpening", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::PathOpening ),
-          "in"_a, "mask"_a = dip::Image{}, "length"_a = 7, "polarity"_a = "opening", "mode"_a = "normal" );
+          "in"_a, "mask"_a = dip::Image{}, "length"_a = 7, "polarity"_a = dip::S::OPENING, "mode"_a = dip::S::NORMAL );
    m.def( "DirectedPathOpening", py::overload_cast< dip::Image const&, dip::Image const&, dip::IntegerArray const&, dip::String const&, dip::String const& >( &dip::DirectedPathOpening ),
-          "in"_a, "mask"_a = dip::Image{}, "filterParam"_a = dip::IntegerArray{}, "polarity"_a = "opening", "mode"_a = "normal" );
+          "in"_a, "mask"_a = dip::Image{}, "filterParam"_a = dip::IntegerArray{}, "polarity"_a = dip::S::OPENING, "mode"_a = dip::S::NORMAL );
    m.def( "OpeningByReconstruction", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::uint, dip::StringArray const& >( &dip::OpeningByReconstruction ),
           "in"_a, "se"_a = dip::StructuringElement{}, "connectivity"_a = 1, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "ClosingByReconstruction", py::overload_cast< dip::Image const&, dip::StructuringElement const&, dip::uint, dip::StringArray const& >( &dip::ClosingByReconstruction ),
@@ -163,22 +163,22 @@ void init_morphology( py::module& m ) {
 
    // diplib/binary.h
    m.def( "BinaryDilation", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryDilation ),
-         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = "background" );
+         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "BinaryErosion", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryErosion ),
-         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = "object" );
+         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::OBJECT );
    m.def( "BinaryClosing", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryClosing ),
-         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = "special" );
+         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::SPECIAL );
    m.def( "BinaryOpening", py::overload_cast< dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryOpening ),
-         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = "special" );
+         "in"_a, "connectivity"_a = -1, "iterations"_a = 3, "edgeCondition"_a = dip::S::SPECIAL );
    m.def( "BinaryPropagation", py::overload_cast< dip::Image const&, dip::Image const&, dip::sint, dip::uint, dip::String const& >( &dip::BinaryPropagation ),
-         "inSeed"_a, "inMask"_a, "connectivity"_a = 1, "iterations"_a = 0, "edgeCondition"_a = "background" );
+         "inSeed"_a, "inMask"_a, "connectivity"_a = 1, "iterations"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "EdgeObjectsRemove", py::overload_cast< dip::Image const&, dip::uint >( &dip::EdgeObjectsRemove ),
          "in"_a, "connectivity"_a = 1 );
 
    m.def( "ConditionalThickening2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::ConditionalThickening2D ),
-         "in"_a, "mask"_a, "iterations"_a = 0, "endPixelCondition"_a = "keep", "edgeCondition"_a = "background" );
+         "in"_a, "mask"_a, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "ConditionalThinning2D", py::overload_cast< dip::Image const&, dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::ConditionalThinning2D ),
-         "in"_a, "mask"_a, "iterations"_a = 0, "endPixelCondition"_a = "keep", "edgeCondition"_a = "background" );
+         "in"_a, "mask"_a, "iterations"_a = 0, "endPixelCondition"_a = dip::S::KEEP, "edgeCondition"_a = dip::S::BACKGROUND );
 
    m.def( "BinaryAreaOpening", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::String const& >( &dip::BinaryAreaOpening ),
           "in"_a, "filterSize"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
@@ -186,18 +186,18 @@ void init_morphology( py::module& m ) {
           "in"_a, "filterSize"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
 
    m.def( "EuclideanSkeleton", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanSkeleton ),
-          "in"_a, "endPixelCondition"_a = "natural", "edgeCondition"_a = "background" );
+          "in"_a, "endPixelCondition"_a = dip::S::NATURAL, "edgeCondition"_a = dip::S::BACKGROUND );
 
    m.def( "CountNeighbors", py::overload_cast< dip::Image const&, dip::uint, dip::String const&, dip::String const& >( &dip::CountNeighbors ),
-         "in"_a, "connectivity"_a = 0, "mode"_a = "foreground", "edgeCondition"_a = "background" );
+         "in"_a, "connectivity"_a = 0, "mode"_a = dip::S::FOREGROUND, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "MajorityVote", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::MajorityVote ),
-         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = "background" );
+         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "GetSinglePixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetSinglePixels ),
-         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = "background" );
+         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "GetEndPixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetEndPixels ),
-         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = "background" );
+         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "GetLinkPixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetLinkPixels ),
-         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = "background" );
+         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
    m.def( "GetBranchPixels", py::overload_cast< dip::Image const&, dip::uint, dip::String const& >( &dip::GetBranchPixels ),
-         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = "background" );
+         "in"_a, "connectivity"_a = 0, "edgeCondition"_a = dip::S::BACKGROUND );
 }

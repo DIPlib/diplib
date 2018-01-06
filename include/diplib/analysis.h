@@ -72,7 +72,7 @@ DIP_EXPORT SubpixelLocationResult SubpixelLocation(
       Image const& in,
       UnsignedArray const& position,
       String const& polarity = S::MAXIMUM,
-      String const& method = "parabolic separable"
+      String const& method = dip::S::PARABOLIC_SEPARABLE
 );
 
 /// \brief Gets coordinates of local maxima with sub-pixel precision
@@ -88,7 +88,7 @@ DIP_EXPORT SubpixelLocationResult SubpixelLocation(
 DIP_EXPORT SubpixelLocationArray SubpixelMaxima(
       Image const& in,
       Image const& mask = {},
-      String const& method = "parabolic separable"
+      String const& method = dip::S::PARABOLIC_SEPARABLE
 );
 
 /// \brief Gets coordinates of local minima with sub-pixel precision
@@ -104,7 +104,7 @@ DIP_EXPORT SubpixelLocationArray SubpixelMaxima(
 DIP_EXPORT SubpixelLocationArray SubpixelMinima(
       Image const& in,
       Image const& mask = {},
-      String const& method = "parabolic separable"
+      String const& method = dip::S::PARABOLIC_SEPARABLE
 );
 
 

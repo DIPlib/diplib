@@ -59,11 +59,11 @@ constexpr char const* ALL = "all";
 constexpr char const* FOREGROUND = "foreground";
 
 // Skeleton end pixel conditions
-constexpr char const* LOOSEENDSAWAY = "loose ends away";
+constexpr char const* LOOSE_ENDS_AWAY = "loose ends away";
 constexpr char const* NATURAL = "natural";
-constexpr char const* ONENEIGHBOR = "one neighbor";
-constexpr char const* TWONEIGHBORS = "two neighbors";
-constexpr char const* THREENEIGHBORS = "three neighbors";
+constexpr char const* ONE_NEIGHBOR = "one neighbor";
+constexpr char const* TWO_NEIGHBORS = "two neighbors";
+constexpr char const* THREE_NEIGHBORS = "three neighbors";
 constexpr char const* KEEP = "keep";
 constexpr char const* LOSE = "lose";
 
@@ -188,6 +188,15 @@ constexpr char const* RADFREQ = "radfreq";
 constexpr char const* RADIAL = "radial";
 constexpr char const* MATH = "math";
 constexpr char const* PHYSICAL = "physical";
+
+// Peak finding methods
+//constexpr char const* LINEAR = "linear";
+//constexpr char const* PARABOLIC = "parabolic";
+constexpr char const* PARABOLIC_SEPARABLE = "parabolic separable";
+constexpr char const* GAUSSIAN = "gaussian";
+constexpr char const* GAUSSIAN_SEPARABLE = "gaussian separable";
+constexpr char const* INTEGER = "integer";
+
 
 } // namespace S
 

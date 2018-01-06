@@ -4707,15 +4707,15 @@ void EuclideanSkeleton(
 
    // End pixel condition
    int endPixelCondition;
-   if( s_endPixelCondition == S::LOOSEENDSAWAY ) {
+   if( s_endPixelCondition == S::LOOSE_ENDS_AWAY ) {
       endPixelCondition = -1;
    } else if( s_endPixelCondition == S::NATURAL ) {
       endPixelCondition = 0;
-   } else if( s_endPixelCondition == S::ONENEIGHBOR ) {
+   } else if( s_endPixelCondition == S::ONE_NEIGHBOR ) {
       endPixelCondition = 1;
-   } else if( s_endPixelCondition == S::TWONEIGHBORS ) {
+   } else if( s_endPixelCondition == S::TWO_NEIGHBORS ) {
       endPixelCondition = 2;
-   } else if( s_endPixelCondition == S::THREENEIGHBORS ) {
+   } else if( s_endPixelCondition == S::THREE_NEIGHBORS ) {
       endPixelCondition = 3;
    } else {
       DIP_THROW( E::INVALID_FLAG );

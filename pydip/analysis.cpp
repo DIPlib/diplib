@@ -37,26 +37,26 @@ void init_analysis( py::module& m ) {
             } );
 
    m.def( "SubpixelLocation", &dip::SubpixelLocation,
-          "in"_a, "position"_a, "polarity"_a = "maximum", "method"_a = "parabolic separable" );
+          "in"_a, "position"_a, "polarity"_a = dip::S::MAXIMUM, "method"_a = dip::S::PARABOLIC_SEPARABLE );
    m.def( "SubpixelMaxima", &dip::SubpixelMaxima,
-          "in"_a, "mask"_a = dip::Image{}, "method"_a = "parabolic separable" );
+          "in"_a, "mask"_a = dip::Image{}, "method"_a = dip::S::PARABOLIC_SEPARABLE );
    m.def( "SubpixelMinima", &dip::SubpixelMinima,
-          "in"_a, "mask"_a = dip::Image{}, "method"_a = "parabolic separable" );
+          "in"_a, "mask"_a = dip::Image{}, "method"_a = dip::S::PARABOLIC_SEPARABLE );
    m.def( "CrossCorrelationFT", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const&, dip::String const&, dip::String const&, dip::String const& >( &dip::CrossCorrelationFT ),
-          "in1"_a, "in2"_a, "in1Representation"_a = "spatial", "in2Representation"_a = "spatial", "outRepresentation"_a = "spatial", "normalize"_a = "normalize" );
+          "in1"_a, "in2"_a, "in1Representation"_a = dip::S::SPATIAL, "in2Representation"_a = dip::S::SPATIAL, "outRepresentation"_a = dip::S::SPATIAL, "normalize"_a = dip::S::NORMALIZE );
    m.def( "FindShift", &dip::FindShift,
           "in1"_a, "in2"_a, "method"_a = "MTS", "parameter"_a = 0, "maxShift"_a = std::numeric_limits< dip::uint >::max() );
    m.def( "StructureTensor", py::overload_cast< dip::Image const&, dip::Image const&, dip::FloatArray const&, dip::FloatArray const&, dip::String const&, dip::StringArray const&, dip::dfloat >( &dip::StructureTensor ),
-          "in"_a, "mask"_a = dip::Image{}, "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "tensorSigmas"_a = dip::FloatArray{ 5.0 }, "method"_a = "best", "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
+          "in"_a, "mask"_a = dip::Image{}, "gradientSigmas"_a = dip::FloatArray{ 1.0 }, "tensorSigmas"_a = dip::FloatArray{ 5.0 }, "method"_a = dip::S::BEST, "boundaryCondition"_a = dip::StringArray{}, "truncation"_a = 3.0 );
    m.def( "StructureTensorAnalysis", py::overload_cast< dip::Image const&, dip::StringArray const& >( &dip::StructureTensorAnalysis ),
           "in"_a, "outputs"_a );
 
    // diplib/distance.h
 
    m.def( "EuclideanDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::EuclideanDistanceTransform ),
-          "in"_a, "border"_a = "background", "method"_a = "fast" );
+          "in"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::FAST );
    m.def( "VectorDistanceTransform", py::overload_cast< dip::Image const&, dip::String const&, dip::String const& >( &dip::VectorDistanceTransform ),
-          "in"_a, "border"_a = "background", "method"_a = "fast" );
+          "in"_a, "border"_a = dip::S::BACKGROUND, "method"_a = dip::S::FAST );
    m.def( "GreyWeightedDistanceTransform", py::overload_cast< dip::Image const&, dip::Image const&, dip::Metric const&, dip::String const& >( &dip::GreyWeightedDistanceTransform ),
           "grey"_a, "in"_a, "metric"_a, "outputMode"_a = "GDT" );
 
@@ -67,7 +67,7 @@ void init_analysis( py::module& m ) {
    m.def( "Label", py::overload_cast< dip::Image const&, dip::uint, dip::uint, dip::uint, dip::StringArray const& >( &dip::Label ),
           "binary"_a, "connectivity"_a = 0, "minSize"_a = 0, "maxSize"_a = 0, "boundaryCondition"_a = dip::StringArray{} );
    m.def( "GetObjectLabels", py::overload_cast< dip::Image const&, dip::Image const&, dip::String const& >( &dip::GetObjectLabels ),
-          "label"_a, "mask"_a = dip::Image{}, "background"_a = "exclude" );
+          "label"_a, "mask"_a = dip::Image{}, "background"_a = dip::S::EXCLUDE );
    m.def( "Relabel", py::overload_cast< dip::Image const& >( &dip::Relabel ), "label"_a );
    m.def( "SmallObjectsRemove", py::overload_cast< dip::Image const&, dip::uint, dip::uint >( &dip::SmallObjectsRemove ),
           "in"_a, "threshold"_a, "connectivity"_a = 0 );
@@ -87,9 +87,9 @@ void init_analysis( py::module& m ) {
    m.def( "VolumeThreshold", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat >( &dip::VolumeThreshold ),
           "in"_a, "mask"_a = dip::Image{}, "volumeFraction"_a = 0.5 );
    m.def( "FixedThreshold", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::FixedThreshold ),
-          "in"_a, "threshold"_a, "foreground"_a = 1.0, "background"_a = 0.0, "output"_a = "binary" );
+          "in"_a, "threshold"_a, "foreground"_a = 1.0, "background"_a = 0.0, "output"_a = dip::S::BINARY );
    m.def( "RangeThreshold", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat, dip::dfloat, dip::dfloat, dip::String const& >( &dip::RangeThreshold ),
-          "in"_a, "lowerBound"_a, "upperBound"_a, "foreground"_a = 1.0, "background"_a = 0.0, "output"_a = "binary" );
+          "in"_a, "lowerBound"_a, "upperBound"_a, "foreground"_a = 1.0, "background"_a = 0.0, "output"_a = dip::S::BINARY );
    m.def( "HysteresisThreshold", py::overload_cast< dip::Image const&, dip::dfloat, dip::dfloat >( &dip::HysteresisThreshold ),
           "in"_a, "lowThreshold"_a, "highThreshold"_a );
    m.def( "MultipleThresholds", py::overload_cast< dip::Image const&, dip::FloatArray const& >( &dip::MultipleThresholds ),
@@ -98,7 +98,7 @@ void init_analysis( py::module& m ) {
              dip::Image out;
              dip::dfloat threshold = Threshold( in, out, method, parameter );
              return py::make_tuple( out, threshold ).release();
-          }, "in"_a, "method"_a = "otsu", "parameter"_a = dip::infinity );
+          }, "in"_a, "method"_a = dip::S::OTSU, "parameter"_a = dip::infinity );
    m.def( "Canny", py::overload_cast< dip::Image const&, dip::FloatArray const&, dip::dfloat, dip::dfloat >( &dip::Canny ),
           "in"_a, "sigmas"_a, "lower"_a, "upper"_a );
 }
