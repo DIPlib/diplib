@@ -99,7 +99,7 @@ void FindBinaryEdgePixels(
 
    // Iterate over all pixels: detect edge pixels and add them to the queue
    ImageIterator< bin > itImage( in );
-   itImage.Optimize();
+   itImage.OptimizeAndFlatten(); // we get coordinates from the offset, this is not affected by the flattening.
    do {
       uint8& pixelByte = static_cast< uint8& >( *itImage );
       bool isObjectPixel = TestAnyBit( pixelByte, dataMask );   // Does pixel have non-zero data value, i.e., is it part of the object and not the background?

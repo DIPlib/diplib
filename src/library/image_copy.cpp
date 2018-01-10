@@ -406,7 +406,7 @@ void Image::Convert( dip::DataType dt ) {
             //std::cout << "dip::Image::Convert: in-place, nD loop\n";
             dip::uint processingDim = Framework::OptimalProcessingDim( *this );
             GenericImageIterator<> it( *this, processingDim );
-            it.Optimize();
+            it.OptimizeAndFlatten();
             do {
                detail::CopyBuffer(
                      it.Pointer(),
@@ -454,7 +454,7 @@ static inline void InternFill( Image& dest, TPI value ) {
       // Make nD loop
       dip::uint processingDim = Framework::OptimalProcessingDim( dest );
       ImageIterator< TPI > it( dest, processingDim );
-      it.Optimize();
+      it.OptimizeAndFlatten();
       dip::uint size = it.ProcessingDimensionSize();
       dip::sint stride = it.ProcessingDimensionStride();
       do {

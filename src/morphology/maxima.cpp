@@ -141,7 +141,7 @@ void dip__Extrema(
    }
    // Loop over all image pixels again, apply `mapping`.
    ImageIterator< LabelType > oit( out );
-   oit.Optimize();
+   oit.OptimizeAndFlatten();
    do {
       LabelType lab = *oit;
       *oit = lab == PIXEL_NOT_EXTREMUM ? 0 : mapping[ lab ];

@@ -13,7 +13,7 @@ namespace
 {
 
 // Int to string with padded zeros
-std::string GetPaddedNumberString( int number, int numDigits ) {
+std::string GetPaddedNumberString( size_t number, int numDigits ) {
    std::ostringstream ss;
    ss << std::setfill( '0' ) << std::setw( numDigits ) << number;
    return ss.str();
@@ -26,7 +26,7 @@ void TestWriteTIFF( dip::Image const& in, std::string const& filename ) {
 
 // Write a series of TIFF images with options convenient for this test
 void TestWriteTIFFs( std::vector< dip::Image > const& images, std::string const& filenameBase ) {
-   for( int iImg = 0; iImg < images.size(); ++iImg ) {
+   for( size_t iImg = 0; iImg < images.size(); ++iImg ) {
       TestWriteTIFF( images[iImg], filenameBase + GetPaddedNumberString( iImg, 2 ) );
    }
 }
@@ -38,7 +38,7 @@ void TestWriteICS( dip::Image const& in, std::string const& filename ) {
 
 // Write a series of ICS images with options convenient for this test
 void TestWriteICSs( std::vector< dip::Image > const& images, std::string const& filenameBase ) {
-   for( int iImg = 0; iImg < images.size(); ++iImg ) {
+   for( size_t iImg = 0; iImg < images.size(); ++iImg ) {
       TestWriteICS( images[iImg], filenameBase + GetPaddedNumberString( iImg, 2 ) );
    }
 }

@@ -141,7 +141,7 @@ void Image::View::Fill( Sample const& sample ) {
    if( mask_.IsForged() ) {
       // Iterate over reference_ and mask_
       GenericJointImageIterator< 2 > it( { reference_, mask_ } );
-      it.Optimize();
+      it.OptimizeAndFlatten();
       void* src = source.Origin();
       if( telems == 1 ) {
          do {

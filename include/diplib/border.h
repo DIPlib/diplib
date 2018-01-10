@@ -60,13 +60,10 @@ void ProcessBorders(
    if( 2 * borderWidth >= lineLength ) {
       // Everything is a border
       if( ProcessBorder ) {
-         ImageIterator< TPI > it( out, procDim );
-         it.Optimize();
+         ImageIterator< TPI > it( out );
+         it.OptimizeAndFlatten();
          do {
-            TPI* ptr = it.Pointer();
-            for( dip::uint ii = 0; ii < lineLength; ++ii, ptr += stride ) {
-               borderPixelFunction( ptr, tensorStride );
-            }
+            borderPixelFunction( it.Pointer(), tensorStride );
          } while( ++it );
       }
       return;

@@ -70,7 +70,7 @@ int main( void ) {
    tmp = 0; // reset to show we're really doing the computation
    timer.Reset();
    dip::JointImageIterator< dip::sfloat, dip::sfloat, dip::sfloat > it( { in1, in2, tmp } );
-   it.Optimize();
+   it.OptimizeAndFlatten();
    do {
       it.Sample< 2 >() = ( it.Sample< 0 >() * 100.0f ) / ( it.Sample< 1 >() * 10.0f ) + offset;
       // Note that for tensor images, it is necessary to iterate over tensor elements here.

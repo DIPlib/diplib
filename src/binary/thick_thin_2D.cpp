@@ -133,7 +133,7 @@ Uint8FifoQueue EnqueueEdges2D(
       uint8 maskBitmask
 ) {
    ImageIterator< bin > itImage( in );
-   itImage.Optimize();
+   itImage.OptimizeAndFlatten();
    dip::sint strideX = in.Stride( 0 );
    dip::sint strideY = in.Stride( 1 );
    Uint8FifoQueue edgePixels;
@@ -200,7 +200,7 @@ void ConditionalThickeningThinning2D(
    // Add mask plane to out image
    if( mask.IsForged() ) {
       JointImageIterator< bin, bin > it( { mask, out } );
-      it.Optimize();
+      it.OptimizeAndFlatten();
       do {
          if( it.Sample< 0 >()) {
             SetBits( static_cast< uint8& >( it.Sample< 1 >()), maskBitmask );
@@ -208,7 +208,7 @@ void ConditionalThickeningThinning2D(
       } while( ++it );
    } else {
       ImageIterator< bin > it( out );
-      it.Optimize();
+      it.OptimizeAndFlatten();
       do {
          SetBits( static_cast< uint8& >( *it ), maskBitmask );
       } while( ++it );
@@ -304,7 +304,7 @@ void ConditionalThickeningThinning2D(
 
    // Keep only the data bit
    ImageIterator< dip::bin > itOut( out );
-   itOut.Optimize();
+   itOut.OptimizeAndFlatten();
    do {
       *itOut = TestAnyBit( static_cast< uint8& >( *itOut ), dataBitmask );
    } while( ++itOut );

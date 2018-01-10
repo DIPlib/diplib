@@ -152,7 +152,7 @@ void dip__AreaOpening(
       }
    }
    JointImageIterator< TPI, LabelType > it( { c_grey, c_labels } );
-   it.Optimize();
+   it.OptimizeAndFlatten();
    if( lowFirst ) {
       do {
          LabelType lab = it.template Sample< 1 >();

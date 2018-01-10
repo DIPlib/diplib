@@ -91,7 +91,7 @@ void BinaryPropagation(
 
    // Add mask plane to out image
    JointImageIterator< dip::bin, dip::bin > itInMaskOut( { inMask, out } );
-   itInMaskOut.Optimize();
+   itInMaskOut.OptimizeAndFlatten();
    do {
       if ( itInMaskOut.In() )
          SetBits( static_cast< uint8& >( itInMaskOut.Out() ), maskBitmask );
@@ -174,7 +174,7 @@ void BinaryPropagation(
    // The result is stored in a way that resets all bits except bit 0
    // This means that the border mask is also removed
    ImageIterator< dip::bin > itOut( out );
-   itOut.Optimize();
+   itOut.OptimizeAndFlatten();
    do {
       *itOut = TestBits( static_cast< uint8 >( *itOut ), maskOrSeedBitmask );
    } while( ++itOut );

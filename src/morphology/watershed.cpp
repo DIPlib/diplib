@@ -251,7 +251,7 @@ void dip__FastWatershed(
       if( binaryOutput ) {
          // Process binary output image
          JointImageIterator< LabelType, bin > it( { c_labels, c_binary } );
-         it.Optimize();
+         it.OptimizeAndFlatten();
          do {
             if( it.template Sample< 0 >() == 0 ) {
                it.template Sample< 1 >() = true;
@@ -261,7 +261,7 @@ void dip__FastWatershed(
          // Process labels output image
          regions.Relabel();
          ImageIterator< LabelType > it( c_labels );
-         it.Optimize();
+         it.OptimizeAndFlatten();
          do {
             LabelType lab1 = *it;
             if( lab1 > 0 ) {
@@ -274,7 +274,7 @@ void dip__FastWatershed(
       if( binaryOutput ) {
          // Process binary output image
          JointImageIterator< LabelType, TPI, bin > it( { c_labels, c_in, c_binary } );
-         it.Optimize();
+         it.OptimizeAndFlatten();
          do {
             LabelType lab = it.template Sample< 0 >();
             if( lab > 0 ) {
@@ -287,7 +287,7 @@ void dip__FastWatershed(
          // Process labels output image
          regions.Relabel();
          JointImageIterator< TPI, LabelType > it( { c_in, c_labels } );
-         it.Optimize();
+         it.OptimizeAndFlatten();
          do {
             LabelType lab = it.Out();
             if( lab > 0 ) {
@@ -620,7 +620,7 @@ void dip__SeededWatershed(
       // Process label image
       // if binaryOutput it doesn't matter - we're thresholding this label image anyways
       ImageIterator< LabelType > lit( c_labels );
-      lit.Optimize();
+      lit.OptimizeAndFlatten();
       do {
          LabelType lab1 = *lit;
          if( lab1 == WATERSHED_LABEL ) {

@@ -186,7 +186,7 @@ void SelectionFilter(
          minimum
    };
    GenericJointImageIterator< 3 > it( { in, control, out }, processingDim );
-   it.Optimize();
+   it.OptimizeAndFlatten();
    do {
       params.inBuffer = in.Pointer( it.Offset< 0 >() );
       params.controlBuffer = static_cast< dfloat* >( control.Pointer( it.Offset< 1 >() ));

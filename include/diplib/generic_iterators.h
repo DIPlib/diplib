@@ -453,6 +453,7 @@ class DIP_NO_EXPORT GenericImageIterator {
       ///
       /// The iterator is reset to the first pixel.
       GenericImageIterator& Optimize() {
+         // Standardize strides
          UnsignedArray order;
          dip::sint offset;
          std::tie( order, offset ) = Image::StandardizeStrides( strides_, sizes_ );
@@ -461,8 +462,30 @@ class DIP_NO_EXPORT GenericImageIterator {
          strides_ = strides_.permute( order );
          procDim_ = order.find( procDim_ );
          coords_.resize( sizes_.size() );
-         // TODO: we could gain a little bit more by flattening the dimensions that are not `procDim_`.
+         // Reset iterator
          return Reset();
+      }
+
+      /// \brief Like `Optimize`, but additionally folds dimensions together where possible (flattens the image,
+      /// so that the iterator has fewer dimensions to work with). The processing dimension is not affected.
+      GenericImageIterator& OptimizeAndFlatten() {
+         Optimize();
+         // Merge dimensions that can be merged, but not procDim.
+         for( dip::uint ii = sizes_.size() - 1; ii > 0; --ii ) {
+            if(( ii != procDim_ ) && ( ii - 1 != procDim_ )) {
+               if( strides_[ ii - 1 ] * static_cast< dip::sint >( sizes_[ ii - 1 ] ) == strides_[ ii ] ) {
+                  // Yes, we can merge these dimensions
+                  sizes_[ ii - 1 ] *= sizes_[ ii ];
+                  sizes_.erase( ii );
+                  strides_.erase( ii );
+                  if( ii < procDim_ ) {
+                     --procDim_;
+                  }
+               }
+            }
+         }
+         coords_.resize( sizes_.size() );
+         return *this;
       }
 
    private:
@@ -804,7 +827,8 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// \brief Optimizes the order in which the iterator visits the image pixels.
       ///
       /// The iterator internally reorders and flips image dimensions to change the linear index to match
-      /// the storage order of the first image (see `dip::Image::StandardizeStrides`).
+      /// the storage order of the first image (see `dip::Image::StandardizeStrides`), or image `n`
+      /// if a parameter is given.
       /// If the image's strides were not normal, this will significantly increase the speed of reading or
       /// writing to the image. Expanded singleton dimensions are eliminated only if the dimension is expanded
       /// in all images. Additionally, singleton dimensions are ignored.
@@ -817,22 +841,22 @@ class DIP_NO_EXPORT GenericJointImageIterator {
       /// no longer have a singleton dimension. In this case, `HasProcessingDimension` will return false.
       ///
       /// The iterator is reset to the first pixel.
-      GenericJointImageIterator& Optimize() {
-         DIP_ASSERT( origins_[ 0 ] );
-         //std::tie( order, offset ) = Image::StandardizeStrides( stridess_[ 0 ], sizes_ );
+      GenericJointImageIterator& Optimize( dip::uint n = 0 ) {
+         DIP_ASSERT( origins_[ n ] );
+         //std::tie( order, offset ) = Image::StandardizeStrides( stridess_[ n ], sizes_ );
          dip::uint nd = sizes_.size();
-         DIP_ASSERT( stridess_[ 0 ].size() == nd );
+         DIP_ASSERT( stridess_[ n ].size() == nd );
          // Un-mirror and un-expand
          offsets_.fill( 0 );
          for( dip::uint jj = 0; jj < nd; ++jj ) {
-            if( stridess_[ 0 ][ jj ] < 0 ) {
+            if( stridess_[ n ][ jj ] < 0 ) {
                for( dip::uint ii = 0; ii < N; ++ii ) {
                   offsets_[ ii ] += static_cast< dip::sint >( sizes_[ jj ] - 1 ) * stridess_[ ii ][ jj ];
                   stridess_[ ii ][ jj ] = -stridess_[ ii ][ jj ];
                }
-            } else if( stridess_[ 0 ][ jj ] == 0 ) {
+            } else if( stridess_[ n ][ jj ] == 0 ) {
                bool all = true;
-               for( dip::uint ii = 1; ii < N; ++ii ) {
+               for( dip::uint ii = 0; ii < N; ++ii ) {
                   if( stridess_[ ii ][ jj ] != 0 ) {
                      all = false;
                      break;
@@ -845,10 +869,10 @@ class DIP_NO_EXPORT GenericJointImageIterator {
             }
          }
          // Sort strides
-         UnsignedArray order = stridess_[ 0 ].sorted_indices();
+         UnsignedArray order = stridess_[ n ].sorted_indices();
          // Remove singleton dimensions
          dip::uint jj = 0;
-         for( dip::uint ii = 0; ii < order.size(); ++ii ) {
+         for( dip::uint ii = 0; ii < nd; ++ii ) {
             if( sizes_[ order[ ii ]] > 1 ) {
                order[ jj ] = order[ ii ];
                ++jj;
@@ -862,8 +886,39 @@ class DIP_NO_EXPORT GenericJointImageIterator {
          }
          procDim_ = order.find( procDim_ );
          coords_.resize( sizes_.size() );
-         // TODO: we could gain a little bit more by flattening the dimensions that are not `procDim_`.
+         // Reset iterator
          return Reset();
+      }
+
+      /// \brief Like `Optimize`, but additionally folds dimensions together where possible (flattens the image,
+      /// so that the iterator has fewer dimensions to work with). The processing dimension is not affected.
+      GenericJointImageIterator& OptimizeAndFlatten( dip::uint n = 0 ) {
+         Optimize( n );
+         // Merge dimensions that can be merged, but not procDim.
+         for( dip::uint jj = sizes_.size() - 1; jj > 0; --jj ) {
+            if(( jj != procDim_ ) && ( jj - 1 != procDim_ )) {
+               bool all = true;
+               for( dip::uint ii = 0; ii < N; ++ii ) {
+                  if( stridess_[ ii ][ jj - 1 ] * static_cast< dip::sint >( sizes_[ jj - 1 ] ) != stridess_[ ii ][ jj ] ) {
+                     all = false;
+                     break;
+                  }
+               }
+               if( all ) {
+                  // Yes, we can merge these dimensions
+                  sizes_[ jj - 1 ] *= sizes_[ jj ];
+                  sizes_.erase( jj );
+                  for( dip::uint ii = 0; ii < N; ++ii ) {
+                     stridess_[ ii ].erase( jj );
+                  }
+                  if( jj < procDim_ ) {
+                     --procDim_;
+                  }
+               }
+            }
+         }
+         coords_.resize( sizes_.size());
+         return *this;
       }
 
    private:
@@ -1173,24 +1228,138 @@ inline ImageSliceIterator ImageTensorIterator( Image const& image ) {
 
 DOCTEST_TEST_CASE("[DIPlib] testing ImageIterator and GenericImageIterator") {
    dip::Image img{ dip::UnsignedArray{ 3, 2, 4 }, 1, dip::DT_UINT16 };
+   DOCTEST_REQUIRE( img.DataType() == dip::DT_UINT16 );
    {
-      DOCTEST_REQUIRE( img.DataType() == dip::DT_UINT16 );
       dip::ImageIterator< dip::uint16 > it( img );
       dip::uint16 counter = 0;
       do {
          *it = static_cast< dip::uint16 >( counter++ );
       } while( ++it );
+      DOCTEST_CHECK( !it.HasProcessingDimension());
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( !it.HasProcessingDimension());
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3*2*4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1 } );
    }
+   {
+      dip::ImageIterator< dip::uint16 > it( img, 0 );
+      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2*4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3 } );
+   }
+   img.Rotation90( 1 ); // rotates over dims 0 and 1.
+   {
+      dip::ImageIterator< dip::uint16 > it( img, 0 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3, 3*2 } );
+   }
+   {
+      dip::ImageIterator< dip::uint16 > it( img, 1 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2*4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3 } );
+   }
+   {
+      dip::ImageIterator< dip::uint16 > it( img, 2 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 2 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3*2, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3*2 } );
+   }
+
+   img.StandardizeStrides(); // returns strides to normal.
    {
       dip::GenericImageIterator< dip::sint32 > it( img );
       dip::sint32 counter = 0;
       do {
          DOCTEST_CHECK( *it == counter++ );
       } while( ++it );
+      DOCTEST_CHECK( !it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3*2*4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1 } );
    }
-   dip::Image img2{ dip::UnsignedArray{ 3, 4 }, 3, dip::DT_SINT32 };
    {
-      DOCTEST_REQUIRE( img2.DataType() == dip::DT_SINT32 );
+      dip::GenericImageIterator<> it( img, 0 );
+      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3, 3 * 2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2 * 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3 } );
+   }
+   img.Rotation90( 1 ); // rotates over dims 0 and 1.
+   {
+      dip::GenericImageIterator<> it( img, 0 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3, 3*2 } );
+   }
+   {
+      dip::GenericImageIterator<> it( img, 1 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2*4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3 } );
+   }
+   {
+      dip::GenericImageIterator<> it( img, 2 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 2 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3*2, 4 } );
+      DOCTEST_CHECK( it.Strides() == dip::IntegerArray{ 1, 3*2 } );
+   }
+
+   dip::Image img2{ dip::UnsignedArray{ 3, 4 }, 3, dip::DT_SINT32 };
+   DOCTEST_REQUIRE( img2.DataType() == dip::DT_SINT32 );
+   {
       dip::ImageIterator< dip::sint32 > it( img2 );
       dip::sint32 counter = 0;
       do {
@@ -1221,6 +1390,162 @@ DOCTEST_TEST_CASE("[DIPlib] testing ImageIterator and GenericImageIterator") {
       DOCTEST_CHECK( *iit == -10000 );
       ++iit;
       DOCTEST_CHECK( iit == it.end() );
+   }
+}
+
+DOCTEST_TEST_CASE("[DIPlib] testing JointImageIterator and GenericJointImageIterator") {
+   dip::Image imgA{ dip::UnsignedArray{ 3, 2, 4 }, 1, dip::DT_UINT16 };
+   dip::Image imgB{ dip::UnsignedArray{ 3, 2, 4 }, 1, dip::DT_SINT8 };
+   DOCTEST_REQUIRE( imgA.DataType() == dip::DT_UINT16 );
+   {
+      dip::JointImageIterator< dip::uint16, dip::sint8 > it( { imgA, imgB } );
+      dip::uint16 counter = 0;
+      do {
+         it.Sample< 0 >() = static_cast< dip::uint16 >( counter++ );
+      } while( ++it );
+      DOCTEST_CHECK( !it.HasProcessingDimension());
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( !it.HasProcessingDimension());
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3*2*4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1 } );
+   }
+   {
+      dip::JointImageIterator< dip::uint16, dip::sint8 > it( { imgA, imgB }, 0 );
+      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2*4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3 } );
+   }
+   imgA.Rotation90( 1 ); // rotates over dims 0 and 1.
+   imgB.Rotation90( 1 ); // rotates over dims 0 and 1.
+   {
+      dip::JointImageIterator< dip::uint16, dip::sint8 > it( { imgA, imgB }, 0 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3, 3*2 } );
+   }
+   {
+      dip::JointImageIterator< dip::uint16, dip::sint8 > it( { imgA, imgB }, 1 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2*4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3 } );
+   }
+   {
+      dip::JointImageIterator< dip::uint16, dip::sint8 > it( { imgA, imgB }, 2 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 2 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3*2, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3*2 } );
+   }
+
+   imgA.StandardizeStrides(); // returns strides to normal.
+   imgB.StandardizeStrides(); // returns strides to normal.
+   {
+      dip::GenericJointImageIterator< 2 > it( { imgA, imgB } );
+      dip::sint32 counter = 0;
+      do {
+         DOCTEST_CHECK( (dip::sint32)(it.Sample< 0 >()) == counter++ );
+      } while( ++it );
+      DOCTEST_CHECK( !it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3*2*4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1 } );
+   }
+   {
+      dip::GenericJointImageIterator< 2 > it( { imgA, imgB }, 0 );
+      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3, 3 * 2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3, 3 * 2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension());
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2 * 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3 } );
+   }
+   imgA.Rotation90( 1 ); // rotates over dims 0 and 1.
+   imgB.Rotation90( 1 ); // rotates over dims 0 and 1.
+   {
+      dip::GenericJointImageIterator< 2 > it( { imgA, imgB }, 0 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3, 3*2 } );
+   }
+   {
+      dip::GenericJointImageIterator< 2 > it( { imgA, imgB }, 1 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 0 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3, 2*4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3 } );
+   }
+   {
+      dip::GenericJointImageIterator< 2 > it( { imgA, imgB }, 2 );
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 2 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 2, 3, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ -3, 1, 3*2 } );
+      it.OptimizeAndFlatten();
+      DOCTEST_CHECK( it.HasProcessingDimension() );
+      DOCTEST_CHECK( it.ProcessingDimension() == 1 );
+      DOCTEST_CHECK( it.Sizes() == dip::UnsignedArray{ 3*2, 4 } );
+      DOCTEST_CHECK( it.Strides< 0 >() == dip::IntegerArray{ 1, 3*2 } );
+      DOCTEST_CHECK( it.Strides< 1 >() == dip::IntegerArray{ 1, 3*2 } );
    }
 }
 
