@@ -1263,7 +1263,7 @@ classdef dip_image
                end
                N = sz(1);
                s = substruct('()',repmat({':'},1,ndims(a.Data)));
-               if a.TensorShapeInternal == 'column-major matrix' || a.TensorShapeInternal == 'row-major matrix'
+               if strcmp(a.TensorShapeInternal,'column-major matrix') || strcmp(a.TensorShapeInternal,'row-major matrix')
                   s.subs{2} = 1:N+1:N*N;
                else % diagonal, symmetric and triangular matrices store diagonal elements first
                   s.subs{2} = 1:N;
