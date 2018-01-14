@@ -52,7 +52,7 @@ void GaussDispatch(
    }
    for( dip::uint ii = 0; ii < sigmas.size(); ++ii ) {
       if( sigmas[ ii ] > 10 ) {
-         GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, "", truncation );
+         GaussIIR( in, out, sigmas, derivativeOrder, boundaryCondition, {}, S::DISCRETE_TIME_FIT, truncation );
          return;
       }
    }
