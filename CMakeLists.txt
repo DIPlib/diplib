@@ -23,7 +23,7 @@ endif()
 # Static or dynamic?
 set(DIP_SHARED_LIBRARY ON CACHE BOOL "Build a shared library (off for static library)")
 if(DIP_SHARED_LIBRARY)
-   set(BUILD_SHARED_LIBS On)
+   set(BUILD_SHARED_LIBS ON)
 endif()
 
 # Installation path
@@ -34,7 +34,7 @@ set(PYDIP_INSTALL_PATH lib/PyDIP)
 
 # Compiler flags
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED on)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden) # Hiding all functions, to avoid settings mismatch with the MEX files
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
@@ -77,46 +77,9 @@ if(OpenMP_CXX_FOUND OR OPENMP_FOUND) # OPENMP_FOUND for CMake <= 3.8
    set(DIP_ENABLE_MULTITHREADING ON CACHE BOOL "Enable multithreading support")
 endif()
 
-# Do we have __PRETTY_FUNCTION__ ?
-include(CheckCXXSourceCompiles)
-check_cxx_source_compiles("int main() { char const* name = __PRETTY_FUNCTION__; return 0; }" HAS_PRETTY_FUNCTION)
-
-# Control exceptions
-set(DIP_ENABLE_STACK_TRACE ON CACHE BOOL "Stack trace information is added to exceptions (see the documentation for DIP_CATCH)")
-set(DIP_ENABLE_ASSERT ON CACHE BOOL "Enable assertions (see the documentation for DIP_ASSERT)")
-
-# Enable testing
-# It's possible to disable DocTest using `DOCTEST_CONFIG_DISABLE`, but that would also disable any tests in code
-# that uses DIPlib, hence we define a variable here that removes all of DocTest from the DIPlib sources.
-set(DIP_ENABLE_DOCTEST ON CACHE BOOL "Turn off to not include doctest.h in the library headers")
-
-# UFT-8 or plain old ASCII?
-set(DIP_ENABLE_UNICODE ON CACHE BOOL "Enable UTF-8 encoded strings, if disabled, some text output will look more 'primitive'")
-
-# Force 128-bit PRNG?
-set(DIP_ALWAYS_128_PRNG OFF CACHE BOOL "Use the 128-bit PRNG code even if 128-bit integers are not natively supported by your platform")
-if(DIP_ALWAYS_128_PRNG)
-   set(FORCE_128_INT TRUE)
-   set(HAS_128_INT TRUE)
-else()
-   check_cxx_source_compiles("int main() { int v = __SIZEOF_INT128__; return 0; }" HAS_128_INT)
-endif()
-
-# Image file format libraries: libics, libtiff
-set(DIP_ENABLE_ICS ON CACHE BOOL "Enable ICS file support")
-if(DIP_ENABLE_ICS)
-   add_subdirectory(dependencies/libics EXCLUDE_FROM_ALL)
-endif()
-find_package(TIFF)
-if(TIFF_FOUND)
-   set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
-endif()
-
-# Switch to link against the FFTW library for Fourier transforms
-find_package(FFTW3)
-if(FFTW3_FOUND)
-   set(DIP_ENABLE_FFTW OFF CACHE BOOL "Enable linking against the FFTW library (GPL license) for Fourier transforms")
-endif()
+# Pthreads
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 # Utility for automatically updating targets when a file is added to the source directories
 # from: https://stackoverflow.com/a/39971448/7328782, but modified
@@ -155,8 +118,11 @@ add_library(DIP src/support/matrix.cpp ${DIPLIB_SOURCES}) # The matrix.cpp file 
 target_include_directories(DIP PUBLIC include)
 include(GenerateExportHeader)
 generate_export_header(DIP BASE_NAME dip)
-# configuration
+
+# Debugging mode
 target_compile_definitions(DIP PRIVATE DIP_DEBUG_VERSION=$<CONFIG:Debug>)
+
+# Multithreading
 if(DIP_ENABLE_MULTITHREADING)
    target_compile_options(DIP PRIVATE ${OpenMP_CXX_FLAGS})
    if(OpenMP_CXX_LIB_NAMES)
@@ -165,15 +131,28 @@ if(DIP_ENABLE_MULTITHREADING)
       target_link_libraries(DIP PRIVATE ${OpenMP_CXX_FLAGS}) # This is the case for CMake <= 3.8
    endif()
 endif()
+
+# Do we have __PRETTY_FUNCTION__ ?
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles("int main() { char const* name = __PRETTY_FUNCTION__; return 0; }" HAS_PRETTY_FUNCTION)
 if(HAS_PRETTY_FUNCTION)
    target_compile_definitions(DIP PUBLIC DIP__HAS_PRETTY_FUNCTION)
 endif()
+
+# Control exceptions
+set(DIP_ENABLE_STACK_TRACE ON CACHE BOOL "Stack trace information is added to exceptions (see the documentation for DIP_CATCH)")
 if(DIP_ENABLE_STACK_TRACE)
    target_compile_definitions(DIP PUBLIC DIP__EXCEPTIONS_RECORD_STACK_TRACE)
 endif()
+set(DIP_ENABLE_ASSERT ON CACHE BOOL "Enable assertions (see the documentation for DIP_ASSERT)")
 if(DIP_ENABLE_ASSERT)
    target_compile_definitions(DIP PUBLIC DIP__ENABLE_ASSERT)
 endif()
+
+# Enable testing
+# It's possible to disable DocTest using `DOCTEST_CONFIG_DISABLE`, but that would also disable any tests in code
+# that uses DIPlib, hence we define a variable here that removes all of DocTest from the DIPlib sources.
+set(DIP_ENABLE_DOCTEST ON CACHE BOOL "Turn off to not include doctest.h in the library headers")
 if(DIP_ENABLE_DOCTEST)
    target_include_directories(DIP PRIVATE dependencies/doctest)
    target_compile_definitions(DIP PRIVATE DIP__ENABLE_DOCTEST DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
@@ -182,35 +161,62 @@ if(DIP_ENABLE_DOCTEST)
       target_compile_definitions(DIP PRIVATE DIP__DOCTEST_IN_SHARED_LIB)
    endif()
 endif()
+
+# UFT-8 or plain old ASCII?
+set(DIP_ENABLE_UNICODE ON CACHE BOOL "Enable UTF-8 encoded strings, if disabled, some text output will look more 'primitive'")
 if(DIP_ENABLE_UNICODE)
    target_compile_definitions(DIP PRIVATE DIP__ENABLE_UNICODE)
+endif()
+
+# Force 128-bit PRNG?
+set(DIP_ALWAYS_128_PRNG OFF CACHE BOOL "Use the 128-bit PRNG code even if 128-bit integers are not natively supported by your platform")
+if(DIP_ALWAYS_128_PRNG)
+   set(FORCE_128_INT TRUE)
+   set(HAS_128_INT TRUE)
+else()
+   check_cxx_source_compiles("int main() { int v = __SIZEOF_INT128__; return 0; }" HAS_128_INT)
 endif()
 if(FORCE_128_INT)
    target_compile_definitions(DIP PUBLIC DIP__ALWAYS_128_PRNG)
 endif()
+
 # Eigen
 target_include_directories(DIP PRIVATE dependencies/eigen3)
 target_compile_definitions(DIP PRIVATE EIGEN_MPL2_ONLY # This makes sure we only use parts of the Eigen library that use the MPL2 license or more permissive ones.
                                        EIGEN_DONT_PARALLELIZE) # This to prevent Eigen algorithms trying to run in parallel -- we parallelize at a larger scale.
+
 # libics
+set(DIP_ENABLE_ICS ON CACHE BOOL "Enable ICS file support")
 if(DIP_ENABLE_ICS)
+   add_subdirectory(dependencies/libics EXCLUDE_FROM_ALL)
    target_link_libraries(DIP PRIVATE libics_static)
    target_compile_definitions(DIP PRIVATE DIP__HAS_ICS)
 endif()
+
 # libtiff
+find_package(TIFF)
+if(TIFF_FOUND)
+   set(DIP_ENABLE_TIFF ON CACHE BOOL "Enable TIFF file support")
+endif()
 if(DIP_ENABLE_TIFF)
    target_link_libraries(DIP PRIVATE TIFF::TIFF)
    target_compile_definitions(DIP PRIVATE DIP__HAS_TIFF)
    #get_filename_component(TIFF_LIBS_TRUE ${TIFF_LIBRARIES} REALPATH)
    #install(PROGRAMS ${TIFF_LIBS_TRUE} DESTINATION lib)
 endif()
-# fftw
+
+# Switch to link against the FFTW library for Fourier transforms
+find_package(FFTW3)
+if(FFTW3_FOUND)
+   set(DIP_ENABLE_FFTW OFF CACHE BOOL "Enable linking against the FFTW library (GPL license) for Fourier transforms")
+endif()
 if(DIP_ENABLE_FFTW)
    target_include_directories(DIP PRIVATE ${FFTW3_INCLUDE_DIRS} dependencies/fftw)
    target_link_libraries(DIP PRIVATE ${FFTW3_LIBRARIES})
    target_compile_definitions(DIP PRIVATE DIP__HAS_FFTW)
 endif()
-#install
+
+# Install
 install(TARGETS DIP DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
@@ -273,7 +279,7 @@ if(DIP_BUILD_DIPVIEWER)
    add_library(DIPviewer ${DIP_VIEWER_SRC})
    target_include_directories(DIPviewer PUBLIC viewer/include)
    generate_export_header(DIPviewer BASE_NAME dipviewer)
-   target_link_libraries(DIPviewer PRIVATE DIP)
+   target_link_libraries(DIPviewer PRIVATE DIP Threads::Threads)
    if(FREEGLUT_FOUND)
       target_compile_definitions(DIPviewer PUBLIC DIP__HAS_FREEGLUT)
       target_link_libraries(DIPviewer PRIVATE FREEGLUT::FREEGLUT)
@@ -290,9 +296,6 @@ if(DIP_BUILD_DIPVIEWER)
    else() # For older CMakes:
       target_link_libraries(DIPviewer PRIVATE ${OPENGL_LIBRARIES})
       target_include_directories(DIPviewer PUBLIC ${OPENGL_INCLUDE_DIR})
-   endif()
-   if(NOT WIN32)
-      target_link_libraries(DIPviewer PRIVATE pthread)
    endif()
    if(APPLE)
       set_target_properties(DIPviewer PROPERTIES INSTALL_RPATH "@loader_path")
@@ -525,13 +528,14 @@ foreach(file ${DIP_EXAMPLES})
       set(EXAMPLES_TARGETS ${EXAMPLES_TARGETS} ${target})
    endif()
 endforeach()
+target_link_libraries(viewer Threads::Threads)
 
 add_custom_target(examples DEPENDS ${EXAMPLES_TARGETS})
 
 
 ### DIPlib documentation
 
-set(DOXYGEN_SKIP_DOT On)
+set(DOXYGEN_SKIP_DOT ON)
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
    configure_file(src/documentation/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
