@@ -1,7 +1,7 @@
 /*
  * PyDIP 3.0, Python bindings for DIPlib 3.0
  *
- * (c)2017, Flagship Biosciences, Inc., written by Cris Luengo.
+ * (c)2017-2018, Flagship Biosciences, Inc., written by Cris Luengo.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,9 @@ void init_math( py::module& m ) {
    m.def( "Sign", py::overload_cast< dip::Image const& >( &dip::Sign ), "in"_a );
    m.def( "NearestInt", py::overload_cast< dip::Image const& >( &dip::NearestInt ), "in"_a );
    m.def( "Supremum", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Supremum ), "in1"_a, "in2"_a );
+   m.def( "Supremum", py::overload_cast< dip::ImageConstRefArray const& >( &dip::Supremum ), "image_array"_a );
    m.def( "Infimum", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::Infimum ), "in1"_a, "in2"_a );
+   m.def( "Infimum", py::overload_cast< dip::ImageConstRefArray const& >( &dip::Infimum ), "image_array"_a );
    m.def( "SignedInfimum", py::overload_cast< dip::Image const&, dip::Image const& >( &dip::SignedInfimum ), "in1"_a, "in2"_a );
    m.def( "LinearCombination", py::overload_cast< dip::Image const&, dip::Image const&, dip::dfloat, dip::dfloat >( &dip::LinearCombination ),
           "a"_a, "b"_a, "aWeight"_a = 0.5, "bWeight"_a = 0.5 );
