@@ -47,18 +47,25 @@ void ProcessBorders(
       Image& out,
       BorderFunc borderPixelFunction,
       InnerFunc nonBorderPixelFunction,
-      dip::uint borderWidth = 1
+      UnsignedArray borderWidth = { 1 }
 ) {
    static_assert( ProcessBorder || ProcessNonBorder, "At least one of the two boolean template parameters must be set" );
 
-   // Iterate over all image lines, in the optimal processing dimension
-   dip::uint procDim = Framework::OptimalProcessingDim( out );
-   dip::uint lineLength = out.Size( procDim );
-   dip::sint stride = out.Stride( procDim );
-   dip::sint tensorStride = out.TensorStride();
+   dip::uint nDims = out.Dimensionality();
+   DIP_STACK_TRACE_THIS( ArrayUseParameter( borderWidth, nDims, dip::uint( 1 )));
 
-   if( 2 * borderWidth >= lineLength ) {
-      // Everything is a border
+   // See if there are any non-border pixels at all
+   bool nonBorder = false;
+   for( dip::uint ii = 0; ii < nDims; ++ii ) {
+      if( 2 * borderWidth[ ii ] >= out.Size( ii ) ) {
+         nonBorder = true;
+         break;
+      }
+   }
+
+   // If there are no non-border pixels, process all pixels as border pixels and be done!
+   if( nonBorder ) {
+      dip::sint tensorStride = out.TensorStride();
       if( ProcessBorder ) {
          ImageIterator< TPI > it( out );
          it.OptimizeAndFlatten();
@@ -69,8 +76,13 @@ void ProcessBorders(
       return;
    }
 
-   dip::uint innerLength = lineLength - 2 * borderWidth;
-   dip::sint innerOffset = static_cast< dip::sint >( borderWidth ) * stride;
+   // Iterate over all image lines, in the optimal processing dimension
+   dip::uint procDim = Framework::OptimalProcessingDim( out );
+   dip::uint lineLength = out.Size( procDim );
+   dip::sint stride = out.Stride( procDim );
+   dip::sint tensorStride = out.TensorStride();
+   dip::uint innerLength = lineLength - 2 * borderWidth[ procDim ];
+   dip::sint innerOffset = static_cast< dip::sint >( borderWidth[ procDim ] ) * stride;
    dip::sint lastOffset = static_cast< dip::sint >( innerLength ) * stride;
    ImageIterator< TPI > it( out, procDim );
    it.Optimize();
@@ -84,7 +96,7 @@ void ProcessBorders(
       UnsignedArray const& coord = it.Coordinates();
       for( dip::uint ii = 0; ii < nDim; ++ii ) {
          if(( ii != procDim ) &&
-            (( coord[ ii ] < borderWidth ) || ( coord[ ii ] >= newSizes[ ii ] - borderWidth ))) {
+            (( coord[ ii ] < borderWidth[ ii ] ) || ( coord[ ii ] >= newSizes[ ii ] - borderWidth[ ii ] ))) {
             inBorder = true;
             break;
          }
@@ -100,7 +112,7 @@ void ProcessBorders(
       } else {
          // No, it isn't: process only the first `borderWidth` and last `borderWidth` pixels
          if( ProcessBorder ) {
-            for( dip::uint ii = 0; ii < borderWidth; ++ii, ptr += stride ) {
+            for( dip::uint ii = 0; ii < borderWidth[ procDim ]; ++ii, ptr += stride ) {
                borderPixelFunction( ptr, tensorStride );
             }
          } else {
@@ -116,7 +128,7 @@ void ProcessBorders(
          }
          // Process last `borderWidth` pixels
          if( ProcessBorder ) {
-            for( dip::uint ii = 0; ii < borderWidth; ++ii, ptr += stride ) {
+            for( dip::uint ii = 0; ii < borderWidth[ procDim ]; ++ii, ptr += stride ) {
                borderPixelFunction( ptr, tensorStride );
             }
          }
@@ -129,7 +141,7 @@ template< typename TPI, typename BorderFunc >
 void ProcessBorders(
       Image& out,
       BorderFunc borderPixelFunction,
-      dip::uint borderWidth = 1
+      UnsignedArray const& borderWidth = { 1 }
 ) {
    ProcessBorders< TPI, true, false >( out, borderPixelFunction, []( TPI*, dip::sint ){}, borderWidth );
 }

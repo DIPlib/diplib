@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the `setborder` function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -33,9 +33,9 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, const mxArray* prhs[]
       dip::Image out = mi.NewImage();
       out.Copy( in );
 
-      dip::uint border = 1;
+      dip::UnsignedArray border{ 1 };
       if( nrhs > 2 ) {
-         border = dml::GetUnsigned( prhs[ 2 ] );
+         border = dml::GetUnsignedArray( prhs[ 2 ] );
       }
 
       if( nrhs > 1 ) {

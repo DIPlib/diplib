@@ -2,7 +2,7 @@
  * DIPlib 3.0
  * This file contains declarations for functions that generate image data
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -71,10 +71,11 @@ inline Image CreateDelta( UnsignedArray const& sizes, String const& origin = "" 
 
 /// \brief Sets the pixels at the border of `out` to `value`.
 ///
-/// `size` indicates how many pixels in from the border are set.
+/// `sizes` must contain either a single value or one value per image dimension, and indicates how many pixels
+/// in from the border are set.
 ///
 /// `out` must not be 0D.
-DIP_EXPORT void SetBorder( Image& out, Image::Pixel const& value = { 0 }, dip::uint size = 1 );
+DIP_EXPORT void SetBorder( Image& out, Image::Pixel const& value = { 0 }, UnsignedArray const& sizes = { 1 } );
 
 
 /// \brief Draws a Bresenham line in an image.
