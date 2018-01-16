@@ -1277,7 +1277,7 @@ inline Image AreaClosing(
 /// \brief Applies a path opening in all possible directions
 ///
 /// `length` is the length of the path. All `filterParam` arguments to `dip::DirectedPathOpening` that yield a
-/// lenght of `length` and represent unique directions are generated, and the directed path opening is computed
+/// length of `length` pixels and represent unique directions are generated, and the directed path opening is computed
 /// for each of them. The supremum (when `polarity` is `"opening"`) or infimum (when it is `"closing"`) is
 /// computed over all results. See `dip::DirectedPathOpening` for a description of the algorithm and the parameters.
 DIP_EXPORT void PathOpening(
