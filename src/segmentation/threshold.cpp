@@ -23,7 +23,7 @@
 #include "diplib/histogram.h"
 #include "diplib/math.h"
 #include "diplib/statistics.h"
-#include "diplib/morphology.h"
+#include "diplib/binary.h"
 #include "diplib/generation.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
@@ -222,7 +222,7 @@ void HysteresisThreshold(
    DIP_START_STACK_TRACE
       Image low = in >= lowThreshold;
       Image high = in >= highThreshold;
-      MorphologicalReconstruction( high, low, out );
+      BinaryPropagation( high, low, out, 0, 0, S::BACKGROUND );
    DIP_END_STACK_TRACE
 }
 
