@@ -485,6 +485,9 @@ inline Image Rotation3d(
    return out;
 }
 
+// TODO: move to proper header
+DIP_EXPORT FloatArray GetCenter( Image const& in, StringSet const& mode );
+
 // TODO: functions to port:
 /*
    dip_AffineTransform (dip_interpolation.h) => was never implemented, but we do have affine_trans in DIPimage.
