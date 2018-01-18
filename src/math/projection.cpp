@@ -1533,6 +1533,9 @@ void RadialProjection(
       DIP_THROW_IF( !in.IsInside( center ), "Center is outside image" );
    }
 
+   // TODO: Create support for using physical pixel sizes to compute the radius. Allows integrating over ellipses.
+   //       Probably involves replacing ProjectionRadial::center_ by a TransformationArray member.
+
    // Determine radius
    dfloat radius;
    if( maxRadius == S::INNERRADIUS ) {
