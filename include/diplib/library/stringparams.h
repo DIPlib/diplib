@@ -197,6 +197,9 @@ constexpr char const* GAUSSIAN = "gaussian";
 constexpr char const* GAUSSIAN_SEPARABLE = "gaussian separable";
 constexpr char const* INTEGER = "integer";
 
+// Radial methods
+constexpr char const* INNERRADIUS = "inner radius";
+constexpr char const* OUTERRADIUS = "outer radius";
 
 } // namespace S
 
