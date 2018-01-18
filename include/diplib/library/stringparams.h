@@ -150,6 +150,10 @@ constexpr char const* GDT = "GDT";
 constexpr char const* EUCLIDEAN = "Euclidean";
 //constexpr char const* FAST = "fast";
 constexpr char const* TIES = "ties";
+#ifdef TRUE
+  // somebody using windows.h?
+  #undef TRUE
+#endif
 constexpr char const* TRUE = "true";
 constexpr char const* BRUTE_FORCE  = "brute force";
 
