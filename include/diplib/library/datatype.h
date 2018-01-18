@@ -382,6 +382,9 @@ struct DIP_NO_EXPORT DataType {
    /// \brief Returns a suitable floating-point type that can hold the samples of `type`.
    DIP_EXPORT static DataType SuggestFloat( DataType type );
 
+   /// \brief Returns a suitable double precision floating-point type (real or complex) that can hold large sums of `type`.
+   DIP_EXPORT static DataType SuggestDouble( DataType type );
+
    /// \brief Returns a suitable complex type that can hold the samples of `type`.
    DIP_EXPORT static DataType SuggestComplex( DataType type );
 

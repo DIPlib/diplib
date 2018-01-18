@@ -266,6 +266,14 @@ template<> struct FloatTypeCalculator< dcomplex > { using type = dfloat; };
 template< typename T > using FloatType = typename detail::FloatTypeCalculator< T >::type;
 
 namespace detail {
+template< typename T > struct DoubleTypeCalculator { using type = dfloat; };
+template<> struct DoubleTypeCalculator< scomplex > { using type = dcomplex; };
+template<> struct DoubleTypeCalculator< dcomplex > { using type = dcomplex; };
+} // namespace detail
+/// \brief The double precision floating point type (real or complex) to use when computing large sums of any input type. Matches `dip::DataType::SuggestDouble`.
+template< typename T > using DoubleType = typename detail::DoubleTypeCalculator< T >::type;
+
+namespace detail {
 template< typename T > struct ComplexTypeCalculator { using type = scomplex; };
 template<> struct ComplexTypeCalculator< uint32 > { using type = dcomplex; };
 template<> struct ComplexTypeCalculator< sint32 > { using type = dcomplex; };

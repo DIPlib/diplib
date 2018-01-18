@@ -79,6 +79,16 @@ DataType DataType::SuggestFloat( DataType type ) {
    }
 }
 
+DataType DataType::SuggestDouble( DataType type ) {
+   switch( type ) {
+      default:
+         return DT_DFLOAT;
+      case DT_SCOMPLEX:
+      case DT_DCOMPLEX:
+         return DT_DCOMPLEX;
+   }
+}
+
 DataType DataType::SuggestComplex( DataType type ) {
    switch( type ) {
       default:
