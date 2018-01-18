@@ -1320,6 +1320,19 @@ class DIP_NO_EXPORT Image {
          return false;
       }
 
+      /// \brief Returns whether the coordinates are inside the image
+      template< typename CoordType >
+      bool IsInside( DimensionArray< CoordType > const& coords ) const {
+         DIP_THROW_IF( sizes_.empty(), "Image sizes not set" );
+         DIP_THROW_IF( coords.size() != sizes_.size(), E::DIMENSIONALITIES_DONT_MATCH );
+         for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
+            if( ( coords[ ii ] >  (sizes_[ ii ] - 1) ) || ( coords[ ii] < 0 ) ) {
+               return false;
+            }
+         }
+         return true;
+      }
+
       /// \brief Compute offset given coordinates and strides.
       ///
       /// The offset needs to be multiplied by the number of bytes of each sample to become
