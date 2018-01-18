@@ -547,7 +547,7 @@ inline Image CreateThetaCoordinate( UnsignedArray const& sizes, StringSet const&
 ///  - `"spherical"`: Uses polar (2D) or spherical (3D) coordinates. The image must have
 ///    two or three dimensions.
 ///
-/// `mode` specifies the origin and scaling of the coordinates. If can contain one of the
+/// `mode` specifies the origin and scaling of the coordinates. It can contain one of the
 /// following strings:
 ///  - `"right"`: The origin is on the pixel right of the center (at integer division result of
 ///    `size/2`). This is the default if no other option is given.
