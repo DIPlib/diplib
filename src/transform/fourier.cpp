@@ -242,7 +242,7 @@ public:
       sizeDims_.resize( out_.Dimensionality() );
       for( int iSizeDim = 0; iSizeDim < sizeDims_.size(); ++iSizeDim ) {
          sizeDims_[ iSizeDim ].n = static_cast<int>(out_.Size( iSizeDim ));    // Number of elements
-         sizeDims_[ iSizeDim ].is = inputStrides_[ iSizeDim ];  // Input stride
+         sizeDims_[ iSizeDim ].is = static_cast<int>(inputStrides_[ iSizeDim ]);  // Input stride
          sizeDims_[ iSizeDim ].os = static_cast<int>(out_.Stride( iSizeDim ));  // Output stride
       }
 
@@ -253,7 +253,7 @@ public:
          repeatDims_.resize( 1 );
          for( int iTensorEl = 0; iTensorEl < repeatDims_.size(); ++iTensorEl ) {
             repeatDims_[ iTensorEl ].n = static_cast<int>(out_.TensorElements());   // Number of tensor elements
-            repeatDims_[ iTensorEl ].is = inputTensorStride_;  // Input tensor stride
+            repeatDims_[ iTensorEl ].is = static_cast<int>(inputTensorStride_);  // Input tensor stride
             repeatDims_[ iTensorEl ].os = static_cast<int>(out_.TensorStride()); // Output tensor stride
          }
       }
@@ -470,7 +470,7 @@ public:
       // Due to Hermitian symmetry, only half the transform is computed and we have to fill the other half, for which holds:
       // Y [k_0, k_1, ..., k_(d-1)] = Y [n_0-k_0, n_1-k_1, ..., n_(d-1)-k_(d-1)]*
       // Note that 0 maps to 0.
-      const int completionDim = largestProcessedDim_;  // This must be the dimension *represented* by the last element of fftwSizeDims
+      const dip::uint completionDim = largestProcessedDim_;  // This must be the dimension *represented* by the last element of fftwSizeDims
       typedef ComplexType< typename fftwapi::real > dip_complex;
       dip::ImageIterator< dip_complex > itOut( out_ );
       dip::uint completionDimIndex = 0;
