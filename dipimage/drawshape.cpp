@@ -19,7 +19,6 @@
  * limitations under the License.
  */
 
-#include <include/diplib.h>
 #include "dip_matlab_interface.h"
 #include "diplib/generation.h"
 

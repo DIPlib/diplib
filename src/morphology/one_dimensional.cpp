@@ -19,10 +19,10 @@
  */
 
 #include <utility>
-#include <include/diplib/generic_iterators.h>
 
 #include "one_dimensional.h"
 #include "diplib/geometry.h"
+#include "diplib/generic_iterators.h"
 #include "diplib/framework.h"
 #include "diplib/overload.h"
 #include "diplib/library/copy_buffer.h"
