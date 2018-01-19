@@ -20,11 +20,9 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# Static or dynamic?
+# Static or shared?
 set(DIP_SHARED_LIBRARY ON CACHE BOOL "Build a shared library (off for static library)")
-if(DIP_SHARED_LIBRARY)
-   set(BUILD_SHARED_LIBS ON)
-endif()
+set(BUILD_SHARED_LIBS ${DIP_SHARED_LIBRARY})
 
 # Installation path
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BUILD_TYPE}" CACHE PATH "Installation directory")
@@ -60,7 +58,6 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # Disable unchecked iterator warnings and unsafe (string manipulation) function warnings
    add_compile_options(/wd4251) # Disable "needs to have dll-interface" warning
 endif()
-set(CMAKE_INCLUDE_CURRENT_DIR 1)
 
 # RPATH
 #set(CMAKE_MACOSX_RPATH 1) # This is the default
@@ -116,8 +113,11 @@ file(GLOB DIPLIB_SOURCES src/*/*.h src/*/*.cpp include/*.h include/diplib/*.h in
 update_deps_file("DIPlib_sources" "${DIPLIB_SOURCES}")
 add_library(DIP src/support/matrix.cpp ${DIPLIB_SOURCES}) # The matrix.cpp file takes annoyingly long to compile, let's compile it first!
 target_include_directories(DIP PUBLIC include)
-include(GenerateExportHeader)
-generate_export_header(DIP BASE_NAME dip)
+if(DIP_SHARED_LIBRARY)
+   target_compile_definitions(DIP PRIVATE DIP__BUILD_SHARED)
+else()
+   target_compile_definitions(DIP PUBLIC DIP__IS_STATIC)
+endif()
 
 # Debugging mode
 target_compile_definitions(DIP PRIVATE DIP_DEBUG_VERSION=$<CONFIG:Debug>)
@@ -219,7 +219,6 @@ endif()
 # Install
 install(TARGETS DIP DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
-install(FILES ${PROJECT_BINARY_DIR}/dip_export.h DESTINATION include)
 # To examine symbol table of the shared library on MacOSX: nm -g -p -U libDIP.dylib
 
 # Uncomment next line to see compile times for each source file (make without -j).
@@ -277,8 +276,12 @@ if(DIP_BUILD_DIPVIEWER)
    file(GLOB DIP_VIEWER_SRC viewer/src/*.cpp viewer/src/manager/*.cpp viewer/src/manager/*.h viewer/include/*.h viewer/include/diplib/viewer/*.h)
    update_deps_file("DIPviewer_sources" "${DIP_VIEWER_SRC}")
    add_library(DIPviewer ${DIP_VIEWER_SRC})
+   if(DIP_SHARED_LIBRARY)
+      target_compile_definitions(DIP PRIVATE DIP__VIEWER_BUILD_SHARED)
+   else()
+      target_compile_definitions(DIP PUBLIC DIP__VIEWER_IS_STATIC)
+   endif()
    target_include_directories(DIPviewer PUBLIC viewer/include)
-   generate_export_header(DIPviewer BASE_NAME dipviewer)
    target_link_libraries(DIPviewer PRIVATE DIP Threads::Threads)
    if(FREEGLUT_FOUND)
       target_compile_definitions(DIPviewer PUBLIC DIP__HAS_FREEGLUT)
@@ -295,7 +298,7 @@ if(DIP_BUILD_DIPVIEWER)
       target_link_libraries(DIPviewer PRIVATE OpenGL::GL)
    else() # For older CMakes:
       target_link_libraries(DIPviewer PRIVATE ${OPENGL_LIBRARIES})
-      target_include_directories(DIPviewer PUBLIC ${OPENGL_INCLUDE_DIR})
+      target_include_directories(DIPviewer PRIVATE ${OPENGL_INCLUDE_DIR})
    endif()
    if(APPLE)
       set_target_properties(DIPviewer PROPERTIES INSTALL_RPATH "@loader_path")

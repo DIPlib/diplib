@@ -21,7 +21,7 @@
 #define DIPVIEWER_H
 
 #include "diplib.h"
-#include "dipviewer_export.h"
+#include "diplib/viewer/export.h"
 
 /// \file
 /// \brief Declares the high-level interface to \ref viewer.

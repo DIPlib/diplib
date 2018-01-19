@@ -26,7 +26,8 @@
 #include <vector>
 #include <complex>
 #include <limits>
-#include "dip_export.h"
+
+#include "diplib/library/export.h"
 
 /// \file
 /// \brief Declares an interface to a DFT function.

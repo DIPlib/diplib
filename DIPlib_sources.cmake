@@ -26,6 +26,7 @@ include/diplib/library/copy_buffer.h
 include/diplib/library/datatype.h
 include/diplib/library/dimension_array.h
 include/diplib/library/error.h
+include/diplib/library/export.h
 include/diplib/library/image.h
 include/diplib/library/image_views.h
 include/diplib/library/numeric.h

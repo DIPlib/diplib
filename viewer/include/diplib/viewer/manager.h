@@ -21,7 +21,7 @@
 #define DIP_VIEWER_MANAGER_H_
 
 #include "diplib.h"
-#include "dipviewer_export.h"
+#include "diplib/viewer/export.h"
 
 #include <memory>
 

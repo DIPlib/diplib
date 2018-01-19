@@ -1,7 +1,8 @@
 target/
+target2/
+build/
 .idea/
 *.geany
 dipimage/private/*.jar
 *~
-build/
 *.orig

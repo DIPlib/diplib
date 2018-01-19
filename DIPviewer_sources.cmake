@@ -1,6 +1,7 @@
 # Automatically generated, don't edit!
 set(DIPviewer_sources_bogus
 viewer/include/diplib/viewer/control.h
+viewer/include/diplib/viewer/export.h
 viewer/include/diplib/viewer/glfw.h
 viewer/include/diplib/viewer/glut.h
 viewer/include/diplib/viewer/histogram.h

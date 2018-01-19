@@ -31,7 +31,7 @@
 #include <exception>
 #include <string>
 
-#include "dip_export.h"
+#include "diplib/library/export.h"
 
 /// \file
 /// \brief Defines error macros and default error strings. This file is always included through `diplib.h`.
