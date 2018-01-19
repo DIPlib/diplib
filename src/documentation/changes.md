@@ -181,6 +181,8 @@ code that used *DIPlib* or *DIPimage* to the new version.
 
 - `dip_GetMaximumAndMinimum` is now called `dip::MaximumAndMinimum` for consistency.
 
+- `dip_RadialMin` and `dip_RadialMax` are now called `dip::RadialMinimum` and `dip::RadialMaximum`.
+
 - `dip_ResamplingFT` is no longer a separate function, call `dip::Resampling` with "ft" as
   method. `dip_Skewing` was renamed to `dip::Skew` for consistency. `dip_Rotation` has
   been renamed `dip::Rotation2d`, and a generalized `dip::Rotation` is similar but takes

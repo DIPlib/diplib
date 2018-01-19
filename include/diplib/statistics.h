@@ -55,7 +55,7 @@ DIP_EXPORT dip::uint Count( Image const& in, Image const& mask = {} );
 /// If `positionFlag` is `"first"`, the first maximum is found, in linear index order.
 /// If it is `"last"`, the last one is found.
 ///
-/// \see dip::Maximum
+/// \see dip::Maximum, dip::PositionMaximum, dip::MaximumAndMinimum
 DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = S::FIRST );
 
 /// \brief Returns the coordinates of the minimum pixel in the image.
@@ -64,7 +64,7 @@ DIP_EXPORT UnsignedArray MaximumPixel( Image const& in, Image const& mask = {}, 
 /// If `positionFlag` is `"first"`, the first minimuim is found, in linear index order.
 /// If it is `"last"`, the last one is found.
 ///
-/// \see dip::Minimum
+/// \see dip::Minimum, dip::PositionMinimum, dip::MaximumAndMinimum
 DIP_EXPORT UnsignedArray MinimumPixel( Image const& in, Image const& mask = {}, String const& positionFlag = S::FIRST );
 
 /// \brief Calculates the cumulative sum of the pixel values over all those dimensions which are specified by `process`.
@@ -340,7 +340,7 @@ inline Image StandardDeviation( Image const& in, Image const& mask = {}, String 
 ///
 /// To compute the sample-wise maximum over two or more images, use `dip::Supremum`.
 ///
-/// \see dip::MaximumAndMinimum, dip::MaximumPixel, dip::Supremum
+/// \see dip::MaximumAndMinimum, dip::MaximumPixel, dip::PositionMaximum, dip::Supremum
 DIP_EXPORT void Maximum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image Maximum( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
@@ -364,7 +364,7 @@ inline Image Maximum( Image const& in, Image const& mask = {}, BooleanArray cons
 ///
 /// To compute the sample-wise minimum over two or more images, use `dip::Infimum`.
 ///
-/// \see dip::MaximumAndMinimum, dip::MinimumPixel, dip::Infimum
+/// \see dip::MaximumAndMinimum, dip::MinimumPixel, dip::PositionMinimum, dip::Infimum
 DIP_EXPORT void Minimum( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} );
 inline Image Minimum( Image const& in, Image const& mask = {}, BooleanArray const& process = {} ) {
    Image out;
@@ -425,6 +425,8 @@ inline Image MinimumAbs( Image const& in, Image const& mask = {}, BooleanArray c
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
+///
+/// \see dip::PositionPercentile
 DIP_EXPORT void Percentile( Image const& in, Image const& mask, Image& out, dfloat percentile, BooleanArray const& process = {} );
 inline Image Percentile( Image const& in, Image const& mask, dfloat percentile, BooleanArray const& process = {} ) {
    Image out;
@@ -445,6 +447,8 @@ inline Image Percentile( Image const& in, Image const& mask, dfloat percentile, 
 /// For tensor images, the result is computed for each element independently. Input must be not complex.
 ///
 /// If `mask` is forged, only those pixels selected by the mask image are used.
+///
+/// \see dip::PositionMedian
 inline void Median( Image const& in, Image const& mask, Image& out, BooleanArray const& process = {} ) {
    Percentile( in, mask, out, 50.0, process );
 }
@@ -554,7 +558,7 @@ inline Image PositionMinimum( Image const& in, Image const& mask, dip::uint dim,
 /// A call to this function with `percentile` set to 0.0 redirects to `dip::PositionMinimum` and
 /// a value of 100.0 redirects to `dip::PositionMaximum`.
 ///
-/// \see dip::PositionMedian, dip::PositionMinimum, dip::PositionMaximum
+/// \see dip::PositionMedian, dip::PositionMinimum, dip::PositionMaximum, dip::Percentile
 DIP_EXPORT void PositionPercentile( Image const& in, Image const& mask, Image& out, dfloat percentile, dip::uint dim, String const& mode = S::FIRST );
 inline Image PositionPercentile( Image const& in, Image const& mask, dfloat percentile, dip::uint dim, String const& mode = S::FIRST ) {
    Image out;
@@ -577,7 +581,7 @@ inline Image PositionPercentile( Image const& in, Image const& mask, dfloat perc
 ///
 /// This function redirects to `dip::PositionPercentile` with `percentile` set to 50.0.
 ///
-/// \see dip::PositionPercentile
+/// \see dip::PositionPercentile, dip::Median
 inline void PositionMedian( Image const& in, Image const& mask, Image& out, dip::uint dim, String const& mode = S::FIRST ) {
    PositionPercentile( in, mask, out, 50.0, dim, mode );
 }
@@ -601,9 +605,9 @@ inline Image PositionMedian( Image const& in, Image const& mask, dip::uint dim, 
 ///
 /// The output datatype is DFLOAT for non-complex inputs and DCOMPLEX for complex inputs.
 ///
-/// \see dip::RadialMean, dip::RadialMin, dip::RadialMax, dip::GetCenter
-DIP_EXPORT void RadialSum( Image const& in, Image const& mask, Image& out, dip::dfloat binSize, String const& maxRadius = S::OUTERRADIUS, dip::FloatArray const& center = dip::FloatArray() );
-inline Image RadialSum( Image const& in, Image const& mask, dip::dfloat binSize, String const& maxRadius = S::OUTERRADIUS, dip::FloatArray const& center = dip::FloatArray() ) {
+/// \see dip::RadialMean, dip::GetCenter, dip::Sum
+DIP_EXPORT void RadialSum( Image const& in, Image const& mask, Image& out, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} );
+inline Image RadialSum( Image const& in, Image const& mask, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} ) {
    Image out;
    RadialSum( in, mask, out, binSize, maxRadius, center );
    return out;
@@ -623,9 +627,9 @@ inline Image RadialSum( Image const& in, Image const& mask, dip::dfloat binSize,
 ///
 /// The output datatype is DFLOAT for non-complex inputs and DCOMPLEX for complex inputs.
 ///
-/// \see dip::RadialSum, dip::RadialMin, dip::RadialMax, dip::GetCenter
-DIP_EXPORT void RadialMean( Image const& in, Image const& mask, Image& out, dip::dfloat binSize, String const& maxRadius = S::OUTERRADIUS, dip::FloatArray const& center = dip::FloatArray() );
-inline Image RadialMean( Image const& in, Image const& mask, dip::dfloat binSize, String const& maxRadius = S::OUTERRADIUS, dip::FloatArray const& center = dip::FloatArray() ) {
+/// \see dip::RadialSum, dip::GetCenter, dip::Mean
+DIP_EXPORT void RadialMean( Image const& in, Image const& mask, Image& out, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} );
+inline Image RadialMean( Image const& in, Image const& mask, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} ) {
    Image out;
    RadialMean( in, mask, out, binSize, maxRadius, center );
    return out;
@@ -645,11 +649,11 @@ inline Image RadialMean( Image const& in, Image const& mask, dip::dfloat binSize
 ///
 /// The output datatype is equal to the input datatype.
 ///
-/// \see dip::RadialSum, dip::RadialMean, dip::RadialMax, dip::GetCenter
-DIP_EXPORT void RadialMin( Image const& in, Image const& mask, Image& out, dip::dfloat binSize, String const& maxRadius = S::OUTERRADIUS, dip::FloatArray const& center = dip::FloatArray() );
-inline Image RadialMin( Image const& in, Image const& mask, dip::dfloat binSize, String const& maxRadius = S::OUTERRADIUS, dip::FloatArray const& center = dip::FloatArray() ) {
+/// \see dip::RadialMaximum, dip::GetCenter, dip::Minimum
+DIP_EXPORT void RadialMinimum( Image const& in, Image const& mask, Image& out, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} );
+inline Image RadialMinimum( Image const& in, Image const& mask, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} ) {
    Image out;
-   RadialMin( in, mask, out, binSize, maxRadius, center );
+   RadialMinimum( in, mask, out, binSize, maxRadius, center );
    return out;
 }
 
@@ -667,11 +671,11 @@ inline Image RadialMin( Image const& in, Image const& mask, dip::dfloat binSize,
 ///
 /// The output datatype is equal to the input datatype.
 ///
-/// \see dip::RadialSum, dip::RadialMean, dip::RadialMin, dip::GetCenter
-DIP_EXPORT void RadialMax( Image const& in, Image const& mask, Image& out, dip::dfloat binSize, String const& maxRadius = S::OUTERRADIUS, dip::FloatArray const& center = dip::FloatArray() );
-inline Image RadialMax( Image const& in, Image const& mask, dip::dfloat binSize, String const& maxRadius = S::OUTERRADIUS, dip::FloatArray const& center = dip::FloatArray() ) {
+/// \see dip::RadialMinimum, dip::GetCenter, dip::Maximum
+DIP_EXPORT void RadialMaximum( Image const& in, Image const& mask, Image& out, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} );
+inline Image RadialMaximum( Image const& in, Image const& mask, dfloat binSize, String const& maxRadius = S::OUTERRADIUS, FloatArray const& center = {} ) {
    Image out;
-   RadialMax( in, mask, out, binSize, maxRadius, center );
+   RadialMaximum( in, mask, out, binSize, maxRadius, center );
    return out;
 }
 

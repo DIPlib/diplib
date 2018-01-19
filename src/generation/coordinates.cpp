@@ -118,7 +118,7 @@ Transformation FindTransformation( dip::uint size, dip::uint dim, CoordinateMode
 FloatArray GetCenter( Image const& in, StringSet const& mode ) {
    CoordinateMode coordinateMode = ParseMode( mode );
    FloatArray center( in.Dimensionality() );
-   for( int iDim = 0; iDim < center.size(); ++iDim ) {
+   for( dip::uint iDim = 0; iDim < center.size(); ++iDim ) {
       center[ iDim ] = FindTransformation( in.Size( iDim ), iDim, coordinateMode, in.PixelSize( iDim ) ).offset;
    }
    return center;

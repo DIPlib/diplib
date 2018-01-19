@@ -1326,7 +1326,7 @@ class DIP_NO_EXPORT Image {
          DIP_THROW_IF( sizes_.empty(), "Image sizes not set" );
          DIP_THROW_IF( coords.size() != sizes_.size(), E::DIMENSIONALITIES_DONT_MATCH );
          for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
-            if( ( coords[ ii ] >  (sizes_[ ii ] - 1) ) || ( coords[ ii] < 0 ) ) {
+            if(( coords[ ii ] < 0 ) || ( static_cast< dip::uint >( coords[ ii ] ) > sizes_[ ii ] - 1 )) {
                return false;
             }
          }
