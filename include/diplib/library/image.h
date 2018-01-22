@@ -1487,6 +1487,21 @@ class DIP_NO_EXPORT Image {
       /// \see Index, Offset, IndexToCoordinates, OffsetToCoordinates, OffsetToCoordinatesComputer
       DIP_EXPORT CoordinatesComputer IndexToCoordinatesComputer() const;
 
+      /// \brief Returns the coordinates for the center of the image.
+      ///
+      /// `mode` specifies the origin of the coordinates. It can be one of the following strings:
+      ///  - `"right"`: The origin is on the pixel right of the center (at integer division result of
+      ///    `size/2`). This is the default.
+      ///  - `"left"`: The origin is on the pixel left of the center (at integer division result of
+      ///    `(size-1)/2`).
+      ///  - `"true"`: The origin is halfway the first and last pixel, in between pixels if necessary
+      ///    (at floating-point division result of `size/2`).
+      ///  - `"corner"`: The origin is on the first pixel.
+      ///  - `"frequency"`: The coordinates used are as for the Fourier transform. Same results as
+      ///    for `"right"`.
+      // Function defined in src/generation/coordinates.cpp for convenience.
+      DIP_EXPORT FloatArray GetCenter( String const& mode = "right" ) const;
+
       /// \}
 
       //
