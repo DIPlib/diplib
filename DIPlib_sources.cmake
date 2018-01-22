@@ -133,6 +133,7 @@ src/math/error.cpp
 src/math/monadic_operators.cpp
 src/math/pixel.cpp
 src/math/projection.cpp
+src/math/radial.cpp
 src/math/select.cpp
 src/math/statistics.cpp
 src/math/tensor_operators.cpp
