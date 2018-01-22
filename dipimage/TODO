@@ -116,10 +116,6 @@ pmd
 pmd_gaussian
 pst
 quadraturetensor
-radialmax
-radialmean
-radialmin
-radialsum
 radoncircle
 readavi
 readrawim

@@ -11,7 +11,6 @@
 %
 %   [VALUE,POSITION] = MAX(B,M,DIM) gets the value and position of
 %   the first maximum along dimension DIM. DIM is a single dimension.
-%   TODO: This syntax is not yet implemented.
 %
 %   VALUE = MAX(B,C) is the pixel-by-pixel maximum operator. It returns
 %   an image with each pixel the largest taken from B or C. C must not

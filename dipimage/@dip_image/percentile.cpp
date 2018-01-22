@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the 'percentile' function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -22,7 +22,7 @@
 #include "dip_matlab_interface.h"
 #include "diplib/statistics.h"
 
-void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
+void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
    try {
 
       DML_MIN_ARGS( 2 );
@@ -33,7 +33,6 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
       dip::Image in;
       dip::Image mask;
       dip::Image out = mi.NewImage();
-      // TODO: second (optional) output is position
 
       // Get images
       in = dml::GetImage( prhs[ 0 ] );
@@ -43,21 +42,48 @@ void mexFunction( int /*nlhs*/, mxArray* plhs[], int nrhs, mxArray const* prhs[]
 
       // Get parameter
       dip::dfloat percentile = dml::GetFloat( prhs[ 1 ] );
+      dip::uint nDims = in.Dimensionality();
 
-      // Get optional process array
-      dip::BooleanArray process;
-      if( nrhs > 3 ) {
-         process = dml::GetProcessArray( prhs[ 3 ], in.Dimensionality() );
-      }
+      if( nlhs == 2 ) { // Output position as well
 
-      // Do the thing
-      dip::Percentile( in, mask, out, percentile, process );
+         DIP_THROW_IF( nDims < 1, dip::E::DIMENSIONALITY_NOT_SUPPORTED );
 
-      // Done
-      if( nrhs > 2 ) {
+         // Get optional dimensions
+         dip::uint dim = nDims;
+         if( nrhs > 3 ) {
+            dim = dml::GetUnsigned( prhs[ 3 ] );
+            DIP_THROW_IF( ( dim <= 0 ) || ( dim > nDims ), "DIM argument out of range" );
+         }
+         --dim;
+
+         // Do the thing
+         dip::BooleanArray process( nDims, false );
+         process[ dim ] = true;
+         dip::Percentile( in, mask, out, percentile, process );
          plhs[ 0 ] = mi.GetArray( out );
+
+         dip::Image out2 = mi.NewImage();
+         dip::PositionPercentile( in, mask, out2, percentile, dim );
+         plhs[ 1 ] = mi.GetArray( out2 );
+
       } else {
-         plhs[ 0 ] = dml::GetArray( out.At( 0 ));
+
+         // Get optional process array
+         dip::BooleanArray process;
+         if( nrhs > 3 ) {
+            process = dml::GetProcessArray( prhs[ 3 ], nDims );
+         }
+
+         // Do the thing
+         dip::Percentile( in, mask, out, percentile, process );
+
+         // Done
+         if( nrhs > 2 ) {
+            plhs[ 0 ] = mi.GetArray( out );
+         } else {
+            plhs[ 0 ] = dml::GetArray( out.At( 0 ));
+         }
+
       }
 
    } catch( const dip::Error& e ) {

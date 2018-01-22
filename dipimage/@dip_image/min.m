@@ -11,7 +11,6 @@
 %
 %   [VALUE,POSITION] = MIN(B,M,DIM) gets the value and position of
 %   the first minimum along dimension DIM. DIM is a single dimension.
-%   TODO: This syntax is not yet implemented.
 %
 %   VALUE = MIN(B,C) is the pixel-by-pixel minimum operator. It returns
 %   an image with each pixel the largest taken from B or C. C must not

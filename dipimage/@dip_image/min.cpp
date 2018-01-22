@@ -2,7 +2,7 @@
  * DIPimage 3.0
  * This MEX-file implements the 'min' function
  *
- * (c)2017, Cris Luengo.
+ * (c)2017-2018, Cris Luengo.
  * Based on original DIPlib code: (c)1995-2014, Delft University of Technology.
  * Based on original DIPimage code: (c)1999-2014, Delft University of Technology.
  *
@@ -34,7 +34,6 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
       dip::Image in1;
       dip::Image in2; // either 2nd image or mask image
       dip::Image out = mi.NewImage();
-      // TODO: second (optional) output is position
 
       // Get images
       in1 = dml::GetImage( prhs[ 0 ] );
@@ -61,11 +60,16 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, mxArray const* prhs[] ) {
          }
          if( nlhs > 1 ) {
             // Compute position also
-            if( hasProcess ) {
-               // TODO: minimum position projection
-               DIP_THROW( dip::E::NOT_IMPLEMENTED );
-            } else {
+            dip::uint k = process.count();
+            if( !hasProcess || ( k == in1.Dimensionality() )) {
                plhs[ 1 ] = dml::GetArray( dip::MinimumPixel( in1, in2 ));
+            } else if( k == 1 ) {
+               k = process.find( true );
+               dip::Image out2 = mi.NewImage();
+               dip::PositionMinimum( in1, in2, out2, k );
+               plhs[ 1 ] = mi.GetArray( out2 );
+            } else {
+               DIP_THROW( "Cannot produce position value for more than one dimension" );
             }
          }
       } else {

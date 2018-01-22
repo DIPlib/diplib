@@ -16,7 +16,7 @@
 %   the 10th percentile over the pixel values along the third dimension (z).
 %   DIM can be an array with any number of dimensions. M can be [].
 %
-%   (TODO) [VALUE,POSITION] = PERCENTILE(B,...) returns the position of the found
+%   [VALUE,POSITION] = PERCENTILE(B,...) returns the position of the found
 %   values as well. With this syntax, DIM can specify just one dimension.
 %
 %   COMPATIBILITY NOTE:

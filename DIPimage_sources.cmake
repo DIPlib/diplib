@@ -85,6 +85,10 @@ dipimage/private/imagedisplay.cpp
 dipimage/private/libraryinformation.cpp
 dipimage/private/numberofthreads.cpp
 dipimage/private/readtiffseries.cpp
+dipimage/radialmax.cpp
+dipimage/radialmean.cpp
+dipimage/radialmin.cpp
+dipimage/radialsum.cpp
 dipimage/rankmax_opening.cpp
 dipimage/rankmin_closing.cpp
 dipimage/readics.cpp
