@@ -13,7 +13,7 @@
 #   Heavily modified by Cris Luengo, July 2017
 #
 ##############################################################################
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 if(POLICY CMP0068)
    cmake_policy(SET CMP0068 NEW)
 endif()

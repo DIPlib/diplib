@@ -56,7 +56,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
    # using Visual Studio C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # Disable unchecked iterator warnings and unsafe (string manipulation) function warnings
-   add_compile_options(/wd4251) # Disable "needs to have dll-interface" warning
+   # add_compile_options(/wd4251) # Disable "needs to have dll-interface" warning
 endif()
 
 # RPATH
@@ -277,9 +277,9 @@ if(DIP_BUILD_DIPVIEWER)
    update_deps_file("DIPviewer_sources" "${DIP_VIEWER_SRC}")
    add_library(DIPviewer ${DIP_VIEWER_SRC})
    if(DIP_SHARED_LIBRARY)
-      target_compile_definitions(DIP PRIVATE DIP__VIEWER_BUILD_SHARED)
+      target_compile_definitions(DIPviewer PRIVATE DIP__VIEWER_BUILD_SHARED)
    else()
-      target_compile_definitions(DIP PUBLIC DIP__VIEWER_IS_STATIC)
+      target_compile_definitions(DIPviewer PUBLIC DIP__VIEWER_IS_STATIC)
    endif()
    target_include_directories(DIPviewer PUBLIC viewer/include)
    target_link_libraries(DIPviewer PRIVATE DIP Threads::Threads)

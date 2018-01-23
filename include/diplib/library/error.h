@@ -46,18 +46,13 @@ namespace dip {
 /// \ingroup infrastructure
 /// \{
 
-#ifdef _MSC_VER
-// MSVC complains about "non dll-interface class 'std::exception' used as base for dll-interface class 'dip::Error'" TODO: Do not export these classes under Windows.
-#pragma warning( push )
-#pragma warning( disable : 4275)
-#endif
 
 /// \brief Base exception class. All exceptions thrown in *DIPlib* are derived of this class.
 ///
 /// You can catch this exception at the top level, where you can communicate the problem to the user,
 /// and only if you want to prevent your program from exiting abnormally.
 /// This class is derived from `std::exception`, so you can choose to catch that instead.
-class DIP_EXPORT Error : public std::exception {
+class DIP_CLASS_EXPORT Error : public std::exception {
    public:
       Error() = default;
       explicit Error( char const* message ) : message_( message ) {}
@@ -106,7 +101,7 @@ class DIP_EXPORT Error : public std::exception {
 /// You shouldn't need to catch exceptions of this type.
 ///
 /// To throw an exception of this type, use the `#DIP_THROW_ASSERTION` and `#DIP_ASSERT` macros.
-class DIP_EXPORT AssertionError : public Error {
+class DIP_CLASS_EXPORT AssertionError : public Error {
       using Error::Error;
 };
 
@@ -116,7 +111,7 @@ class DIP_EXPORT AssertionError : public Error {
 /// Catch exceptions of this type only if you don't control the input arguments (i.e. in a use interface).
 ///
 /// To throw an exception of this type, use the `#DIP_THROW` and `#DIP_THROW_IF` macros.
-class DIP_EXPORT ParameterError : public Error {
+class DIP_CLASS_EXPORT ParameterError : public Error {
       using Error::Error;
 };
 
@@ -127,13 +122,10 @@ class DIP_EXPORT ParameterError : public Error {
 /// library functions catch and translate this exception.
 ///
 /// To throw an exception of this type, use the `#DIP_THROW_RUNTIME` macro.
-class DIP_EXPORT RunTimeError : public Error {
+class DIP_CLASS_EXPORT RunTimeError : public Error {
       using Error::Error;
 };
 
-#ifdef _MSC_VER
-#pragma warning( pop )
-#endif
 
 namespace E {
 // These are some of the standard what() strings thrown.

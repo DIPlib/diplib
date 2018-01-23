@@ -222,7 +222,9 @@ Units::Units( dip::String const& string ) {
          if( string[ ii + 1 ] == micron[ 1 ] ) { thousands = -2; ii += 2; } break; // the micron character takes 2 bytes
 #endif
       case 'm':
-         if( isalpha( string[ ii + 1 ] ) ) { thousands = -1; ++ii; } break; // could be mili or meter
+         // If the next character is a letter, then this is "milli" prefix, otherwise it's "meter" units.
+         // Windows uses signed characters, so we cast to `unsigned char` first, then to `int` as expected by `isalpha`.
+         if( std::isalpha( static_cast< int >( static_cast< unsigned char >( string[ ii + 1 ] )))) { thousands = -1; ++ii; } break;
       case 'k':
          thousands = 1; ++ii; break;
       case 'M':

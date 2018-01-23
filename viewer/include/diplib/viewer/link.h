@@ -27,7 +27,7 @@
 namespace dip { namespace viewer {
 
 /// \brief Handles viewer linking.
-class DIPVIEWER_EXPORT LinkViewPort : public ViewPort
+class DIPVIEWER_CLASS_EXPORT LinkViewPort : public ViewPort
 {
   protected:
     static LinkViewPort *link_source_;
@@ -42,22 +42,22 @@ class DIPVIEWER_EXPORT LinkViewPort : public ViewPort
       links_.clear();
     }
     
-    void render() override;
-    void click(int button, int state, int x, int y) override;
+    DIPVIEWER_EXPORT void render() override;
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y) override;
     
     /// \brief Update linked viewers' options
-    void update();
+    DIPVIEWER_EXPORT void update();
     
   protected:
   
     /// \brief Update from linked viewer's options
-    void update(const ViewingOptions &options);
+    DIPVIEWER_EXPORT void update(const ViewingOptions &options);
     
     /// \brief Add linked viewer
-    void link(LinkViewPort *link);
+    DIPVIEWER_EXPORT void link(LinkViewPort *link);
     
     /// \brief Remove linked viewer
-    void unlink(LinkViewPort *link);
+    DIPVIEWER_EXPORT void unlink(LinkViewPort *link);
 };
 
 }} // namespace dip::viewer

@@ -38,7 +38,7 @@
 
 namespace dip { namespace viewer {
 
-class DIPVIEWER_EXPORT SliceView : public View
+class DIPVIEWER_CLASS_EXPORT SliceView : public View
 {
   protected:
     dip::Image projected_,       ///< Projected (2D) image.
@@ -51,10 +51,10 @@ class DIPVIEWER_EXPORT SliceView : public View
   public:
     SliceView(ViewPort *viewport, dip::uint dimx, dip::uint dimy) : View(viewport), dimx_(dimx), dimy_(dimy), texture_(0) { }
 
-    void project();
-    void map();
-    void rebuild();
-    void render();
+    DIPVIEWER_EXPORT void project();
+    DIPVIEWER_EXPORT void map();
+    DIPVIEWER_EXPORT void rebuild();
+    DIPVIEWER_EXPORT void render();
     dip::uint size(dip::uint ii)
     {
       return colored_.Size(ii);
@@ -64,7 +64,7 @@ class DIPVIEWER_EXPORT SliceView : public View
     dip::uint dimy() { return dimy_; }
 };
 
-class DIPVIEWER_EXPORT SliceViewPort : public ViewPort
+class DIPVIEWER_CLASS_EXPORT SliceViewPort : public ViewPort
 {
   protected:
     class SliceViewer *viewer_;
@@ -76,22 +76,22 @@ class DIPVIEWER_EXPORT SliceViewPort : public ViewPort
     ~SliceViewPort() override { if (view_) delete view_; }
     
     void rebuild() override { view()->rebuild(); }
-    void render() override;
-    void click(int button, int state, int x, int y) override;
-    void motion(int button, int x, int y) override;
+    DIPVIEWER_EXPORT void render() override;
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y) override;
+    DIPVIEWER_EXPORT void motion(int button, int x, int y) override;
 
     void setView(SliceView *view) { view_ = view; }
     SliceView *view() { return view_; }
 
   protected:    
-    void screenToView(int x, int y, double *ix, double *iy) override;
+    DIPVIEWER_EXPORT void screenToView(int x, int y, double *ix, double *iy) override;
 };
 
 /// \addtogroup viewer
 /// \{
 
 /// \brief Interactive nD tensor image viewer.
-class DIPVIEWER_EXPORT SliceViewer : public Viewer
+class DIPVIEWER_CLASS_EXPORT SliceViewer : public Viewer
 {
   public:
     typedef std::shared_ptr<SliceViewer> Ptr;
@@ -147,20 +147,20 @@ class DIPVIEWER_EXPORT SliceViewer : public Viewer
     /// \brief Update linked viewers.
     ///
     /// Only call this under lock.
-    void updateLinkedViewers();
+    DIPVIEWER_EXPORT void updateLinkedViewers();
   protected:
-    explicit SliceViewer(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0);
+    DIPVIEWER_EXPORT explicit SliceViewer(const dip::Image &image, std::string name="SliceViewer", size_t width=0, size_t height=0);
 
-    void create() override;
-    void reshape(int width, int height) override;
-    void draw() override;
-    void key(unsigned char k, int x, int y, int mods) override;
-    void click(int button, int state, int x, int y) override;
-    void motion(int x, int y) override;
+    DIPVIEWER_EXPORT void create() override;
+    DIPVIEWER_EXPORT void reshape(int width, int height) override;
+    DIPVIEWER_EXPORT void draw() override;
+    DIPVIEWER_EXPORT void key(unsigned char k, int x, int y, int mods) override;
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y) override;
+    DIPVIEWER_EXPORT void motion(int x, int y) override;
 
-    void place();
-    ViewPort *viewport(int x, int y);
-    void calculateTextures();
+    DIPVIEWER_EXPORT void place();
+    DIPVIEWER_EXPORT ViewPort *viewport(int x, int y);
+    DIPVIEWER_EXPORT void calculateTextures();
 };
 
 /// \}

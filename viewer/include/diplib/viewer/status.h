@@ -25,7 +25,7 @@
 namespace dip { namespace viewer {
 
 /// \brief Displays the Viewer's status.
-class DIPVIEWER_EXPORT StatusViewPort : public ViewPort
+class DIPVIEWER_CLASS_EXPORT StatusViewPort : public ViewPort
 {
   protected:
     std::vector<std::vector<dip::String> > lists_;
@@ -34,7 +34,7 @@ class DIPVIEWER_EXPORT StatusViewPort : public ViewPort
     explicit StatusViewPort(Viewer *viewer) : ViewPort(viewer) { }
     ~StatusViewPort() override { }
     
-    void render() override;
+    DIPVIEWER_EXPORT void render() override;
 };
 
 }} // namespace dip::viewer

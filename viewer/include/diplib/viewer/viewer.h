@@ -229,7 +229,7 @@ struct DIPVIEWER_NO_EXPORT ViewingOptions
 };
 
 /// \brief Displays a view of the ViewingOptions model
-class DIPVIEWER_EXPORT View
+class DIPVIEWER_CLASS_EXPORT View
 {
   protected:
     class ViewPort *viewport_;
@@ -252,7 +252,7 @@ class DIPVIEWER_EXPORT View
 };
 
 /// \brief Handles interaction in a certain display area to control the ViewingOptions model
-class DIPVIEWER_EXPORT ViewPort
+class DIPVIEWER_CLASS_EXPORT ViewPort
 {
   protected:
     class Viewer *viewer_;
@@ -307,7 +307,7 @@ class DIPVIEWER_EXPORT ViewPort
 };
 
 /// \brief A Window for viewing a dip::Image
-class DIPVIEWER_EXPORT Viewer : public Window
+class DIPVIEWER_CLASS_EXPORT Viewer : public Window
 {
   public:
     typedef std::lock_guard<Viewer> Guard;
@@ -399,14 +399,7 @@ template<typename T>
 std::string to_string(dip::DimensionArray<T> array)
 {
   std::ostringstream oss;
-  oss << "[";
-  for (size_t ii=0; ii < array.size(); ++ii)
-  {
-    oss << array[ii];
-    if (ii < array.size()-1)
-      oss << ", ";
-  }
-  oss << "]";
+  oss << "[" << array << "]";
   return oss.str();
 }
 

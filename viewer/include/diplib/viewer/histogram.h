@@ -28,7 +28,7 @@
 namespace dip { namespace viewer {
 
 /// \brief Controls grey-value mapping range and shows color mapping.
-class DIPVIEWER_EXPORT HistogramViewPort : public ViewPort
+class DIPVIEWER_CLASS_EXPORT HistogramViewPort : public ViewPort
 {
   protected:
     ImageView colorbar_;
@@ -43,13 +43,13 @@ class DIPVIEWER_EXPORT HistogramViewPort : public ViewPort
     }
     ~HistogramViewPort() override { }
     
-    void calculate();
-    void render() override;
-    void click(int button, int state, int x, int y) override;
-    void motion(int button, int x, int y) override;
+    DIPVIEWER_EXPORT void calculate();
+    DIPVIEWER_EXPORT void render() override;
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y) override;
+    DIPVIEWER_EXPORT void motion(int button, int x, int y) override;
     
   protected:
-    void screenToView(int x, int y, double *ix, double *iy) override;
+    DIPVIEWER_EXPORT void screenToView(int x, int y, double *ix, double *iy) override;
 };
 
 }} // namespace dip::viewer

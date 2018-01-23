@@ -138,7 +138,6 @@ FeretValues ConvexHull::Feret() const {
       dfloat d = v.x * cos + v.y * sin;
       pmin = std::min( pmin, d );
       pmax = std::max( pmax, d );
-      ++p;
    }
    feret.maxPerpendicular = pmax - pmin;
 

@@ -84,7 +84,7 @@ inline DataSegment NonOwnedRefToDataSegment( void const* ptr ) {
 /// the interface.
 ///
 /// See \ref external_interface for details on how to use the external interfaces.
-class DIP_EXPORT ExternalInterface {
+class DIP_CLASS_EXPORT ExternalInterface {
    public:
       /// Allocates the data for an image. The function is required to set `strides`,
       /// `tensorStride` and `origin`, and return a `dip::DataSegment` that owns the
@@ -116,13 +116,13 @@ class DIP_EXPORT ExternalInterface {
 /// Note: this interface is only suitable for allocating blocks of memory that are (much)
 /// larger than the alignment size. Internally, the class allocates an oversized memory block
 /// padded with `alignment`, and returns an aligned pointer within that oversized block.
-class DIP_EXPORT AlignedAllocInterface : public ExternalInterface {
+class DIP_CLASS_EXPORT AlignedAllocInterface : public ExternalInterface {
    private:
       // Private constructor to enforce the singleton interface
       explicit AlignedAllocInterface( size_t alignment ) : alignment_( alignment ) {}
 
    protected:
-      class Deleter {
+      class DIP_NO_EXPORT Deleter {
          protected:
             // The pointer to the unaligned data must be freed, not the aligned pointer -> store it
             void* pUnaligned_;
@@ -139,7 +139,7 @@ class DIP_EXPORT AlignedAllocInterface : public ExternalInterface {
 
    public:
       /// Called by `dip::Image::Forge`.
-      virtual DataSegment AllocateData(
+      DIP_EXPORT virtual DataSegment AllocateData(
             void*& origin,
             dip::DataType dataType,
             UnsignedArray const& sizes,

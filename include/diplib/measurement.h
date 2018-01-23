@@ -613,7 +613,7 @@ DIP_EXPORT std::ostream& operator<<( std::ostream& os, Measurement const& measur
 namespace Feature {
 
 /// \brief The pure virtual base class for all measurement features.
-class DIP_EXPORT Base {
+class DIP_CLASS_EXPORT Base {
    public:
       Information const information; ///< Information on the feature
       Type const type; ///< The type of the measurement
@@ -657,7 +657,7 @@ class DIP_EXPORT Base {
 };
 
 /// \brief The pure virtual base class for all line-based measurement features.
-class DIP_EXPORT LineBased : public Base {
+class DIP_CLASS_EXPORT LineBased : public Base {
    public:
       LineBased( Information const& information ) : Base( information, Type::LINE_BASED ) {};
 
@@ -686,7 +686,7 @@ class DIP_EXPORT LineBased : public Base {
 };
 
 /// \brief The pure virtual base class for all image-based measurement features.
-class DIP_EXPORT ImageBased : public Base {
+class DIP_CLASS_EXPORT ImageBased : public Base {
    public:
       ImageBased( Information const& information ) : Base( information, Type::IMAGE_BASED ) {};
 
@@ -695,7 +695,7 @@ class DIP_EXPORT ImageBased : public Base {
 };
 
 /// \brief The pure virtual base class for all chain-code--based measurement features.
-class DIP_EXPORT ChainCodeBased : public Base {
+class DIP_CLASS_EXPORT ChainCodeBased : public Base {
    public:
       ChainCodeBased( Information const& information ) : Base( information, Type::CHAINCODE_BASED ) {};
 
@@ -704,7 +704,7 @@ class DIP_EXPORT ChainCodeBased : public Base {
 };
 
 /// \brief The pure virtual base class for all polygon-based measurement features.
-class DIP_EXPORT PolygonBased : public Base {
+class DIP_CLASS_EXPORT PolygonBased : public Base {
    public:
       PolygonBased( Information const& information ) : Base( information, Type::POLYGON_BASED ) {};
 
@@ -713,7 +713,7 @@ class DIP_EXPORT PolygonBased : public Base {
 };
 
 /// \brief The pure virtual base class for all convex-hull--based measurement features.
-class DIP_EXPORT ConvexHullBased : public Base {
+class DIP_CLASS_EXPORT ConvexHullBased : public Base {
    public:
       ConvexHullBased( Information const& information ) : Base( information, Type::CONVEXHULL_BASED ) {};
 
@@ -722,7 +722,7 @@ class DIP_EXPORT ConvexHullBased : public Base {
 };
 
 /// \brief The pure virtual base class for all composite measurement features.
-class DIP_EXPORT Composite : public Base {
+class DIP_CLASS_EXPORT Composite : public Base {
    public:
       Composite( Information const& information ) : Base( information, Type::COMPOSITE ) {};
 

@@ -35,7 +35,7 @@ namespace dip { namespace viewer {
 /// \{
 
 /// Simple GLUT window manager.
-class DIPVIEWER_EXPORT GLUTManager : public Manager
+class DIPVIEWER_CLASS_EXPORT GLUTManager : public Manager
 {
   protected:
     typedef std::map<void*, WindowPtr> WindowMap;
@@ -53,22 +53,22 @@ class DIPVIEWER_EXPORT GLUTManager : public Manager
     static GLUTManager *instance_;
     
   public:
-    GLUTManager();
-    ~GLUTManager() override;
+    DIPVIEWER_EXPORT GLUTManager();
+    DIPVIEWER_EXPORT ~GLUTManager() override;
   
-    void createWindow(WindowPtr window) override;
+    DIPVIEWER_EXPORT void createWindow(WindowPtr window) override;
     size_t activeWindows() override { Guard guard(mutex_); return windows_.size(); }
-    void destroyWindows() override;
-    void processEvents() override { }
+    DIPVIEWER_EXPORT void destroyWindows() override;
+    DIPVIEWER_EXPORT void processEvents() override { }
 
   protected:    
-    size_t drawString(Window* window, const char *string) override;
-    void swapBuffers(Window* window) override;
-    void setWindowTitle(Window* window, const char *name) override;
-    void refreshWindow(Window* window) override;
+    DIPVIEWER_EXPORT size_t drawString(Window* window, const char *string) override;
+    DIPVIEWER_EXPORT void swapBuffers(Window* window) override;
+    DIPVIEWER_EXPORT void setWindowTitle(Window* window, const char *name) override;
+    DIPVIEWER_EXPORT void refreshWindow(Window* window) override;
 
-    void run();
-    WindowPtr getCurrentWindow();
+    DIPVIEWER_EXPORT void run();
+    DIPVIEWER_EXPORT WindowPtr getCurrentWindow();
     
     // Delegates
     static void idle()
@@ -111,7 +111,7 @@ class DIPVIEWER_EXPORT GLUTManager : public Manager
       }
     }
 
-    static void key(unsigned char k, int x, int y);
+    DIPVIEWER_EXPORT static void key(unsigned char k, int x, int y);
     
     static void click(int button, int state, int x, int y)
     {

@@ -241,7 +241,7 @@ void Separable(
    ParameterError parameterError;
    RunTimeError runTimeError;
    Error error;
-   #pragma omp parallel num_threads( nThreads )
+   #pragma omp parallel num_threads( static_cast< int >( nThreads ))
    try {
       dip::uint thread = static_cast< dip::uint >( omp_get_thread_num());
 

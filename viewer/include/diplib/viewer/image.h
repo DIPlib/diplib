@@ -27,7 +27,7 @@
 
 namespace dip { namespace viewer {
 
-class DIPVIEWER_EXPORT ImageView : public View
+class DIPVIEWER_CLASS_EXPORT ImageView : public View
 {
   protected:
     class ViewPort *viewport_;
@@ -44,15 +44,15 @@ class DIPVIEWER_EXPORT ImageView : public View
        DIP_ASSERT( image.TensorElements() == 3 );
        image_ = image;
     }
-    void rebuild() override;
-    void render() override;
+    DIPVIEWER_EXPORT void rebuild() override;
+    DIPVIEWER_EXPORT void render() override;
     virtual dip::uint size(dip::uint ii) override { return image_.Size(ii); }
     
     class ViewPort *viewport() { return viewport_; }
     const dip::Image &image() { return image_; }
 };
 
-class DIPVIEWER_EXPORT ImageViewPort : public ViewPort
+class DIPVIEWER_CLASS_EXPORT ImageViewPort : public ViewPort
 {
   protected:
     ImageView *view_;
@@ -66,7 +66,7 @@ class DIPVIEWER_EXPORT ImageViewPort : public ViewPort
     }
     
     void rebuild() override { view_->rebuild(); }
-    void render() override;
+    DIPVIEWER_EXPORT void render() override;
     void setView(ImageView *view) { view_ = view; }
     ImageView *view() { return view_; }
 };
@@ -75,7 +75,7 @@ class DIPVIEWER_EXPORT ImageViewPort : public ViewPort
 /// \{
 
 /// Non-interactive 2D RGB image viewer.
-class DIPVIEWER_EXPORT ImageViewer : public Viewer
+class DIPVIEWER_CLASS_EXPORT ImageViewer : public Viewer
 {
   public:
     typedef std::shared_ptr<ImageViewer> Ptr;
@@ -141,7 +141,7 @@ class DIPVIEWER_EXPORT ImageViewer : public Viewer
       viewport_->setView(view);
     }
     
-    void create() override;
+    DIPVIEWER_EXPORT void create() override;
     void reshape(int /*width*/, int /*height*/) override
     {
       Guard guard(*this);

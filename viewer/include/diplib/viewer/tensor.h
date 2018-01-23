@@ -25,14 +25,14 @@
 namespace dip { namespace viewer {
 
 /// \brief Allows the user to control which tensor elements are visualized.
-class DIPVIEWER_EXPORT TensorViewPort : public ViewPort
+class DIPVIEWER_CLASS_EXPORT TensorViewPort : public ViewPort
 {
   public:
     TensorViewPort(Viewer *viewer) : ViewPort(viewer) { }
     ~TensorViewPort() { }
     
-    void render();
-    void click(int button, int state, int x, int y);
+    DIPVIEWER_EXPORT void render();
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y);
 };
 
 }} // namespace dip::viewer

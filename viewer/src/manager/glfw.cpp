@@ -102,6 +102,7 @@ void GLFWManager::createWindow(WindowPtr window)
   if (height <= 0) height = width;
 
   GLFWwindow *wdw = glfwCreateWindow(width, height, "", NULL, NULL);
+  DIP_THROW_IF(wdw == nullptr, "Failed to create window");
   
   glfwSetWindowRefreshCallback(wdw, refresh);
   glfwSetFramebufferSizeCallback(wdw, reshape);

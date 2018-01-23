@@ -24,14 +24,19 @@
 /// \brief Declares the DIPVIEWER_EXPORT and DIPVIEWER_NO_EXPORT macros.
 
 /// \def DIPVIEWER_EXPORT
-/// \brief Indicates that the function or class is exported from the shared/dynamic-load library.
+/// \brief Indicates that the function or class is exported from the shared library.
 
 /// \def DIPVIEWER_NO_EXPORT
-/// \brief Indicates that the function or class is not exported from the shared/dynamic-load library.
+/// \brief Indicates that the function or class is not exported from the shared library.
+
+/// \def DIPVIEWER_CLASS_EXPORT
+/// \brief Specifically for classes in a inheritance hierarchy and that must be passed across the
+/// executable/shared library interface. See `DIP_CLASS_EXPORT` for more details.
 
 #ifdef DIP__VIEWER_IS_STATIC
 #   define DIPVIEWER_EXPORT
 #   define DIPVIEWER_NO_EXPORT
+#   define DIPVIEWER_CLASS_EXPORT
 #else
 #   ifdef _WIN32 // TODO: do we need to test for __CYGWIN__ here also?
 #      ifdef DIP__VIEWER_BUILD_SHARED
@@ -40,9 +45,11 @@
 #         define DIPVIEWER_EXPORT __declspec(dllimport)
 #      endif
 #      define DIPVIEWER_NO_EXPORT
+#      define DIPVIEWER_CLASS_EXPORT DIP_NO_EXPORT
 #   else
 #      define DIPVIEWER_EXPORT __attribute__((visibility("default")))
 #      define DIPVIEWER_NO_EXPORT __attribute__((visibility("hidden")))
+#      define DIPVIEWER_CLASS_EXPORT DIPVIEWER_EXPORT
 #   endif
 #endif
 

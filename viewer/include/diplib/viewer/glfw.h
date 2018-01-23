@@ -38,7 +38,7 @@ namespace dip { namespace viewer {
 /// \{
 
 /// Simple GLFW window manager.
-class DIPVIEWER_EXPORT GLFWManager : public Manager
+class DIPVIEWER_CLASS_EXPORT GLFWManager : public Manager
 {
   protected:
     struct WindowInfo
@@ -60,24 +60,24 @@ class DIPVIEWER_EXPORT GLFWManager : public Manager
     static GLFWManager *instance_;
     
   public:
-    GLFWManager();
-    ~GLFWManager() override;
+    DIPVIEWER_EXPORT GLFWManager();
+    DIPVIEWER_EXPORT ~GLFWManager() override;
   
-    void createWindow(WindowPtr window) override;
+    DIPVIEWER_EXPORT void createWindow(WindowPtr window) override;
     size_t activeWindows() override { Guard guard(mutex_); return windows_.size(); }
-    void destroyWindows() override;
-    void processEvents() override;
+    DIPVIEWER_EXPORT void destroyWindows() override;
+    DIPVIEWER_EXPORT void processEvents() override;
     
   protected:    
-    size_t drawString(Window* window, const char *string) override;
-    void swapBuffers(Window* window) override;
-    void setWindowTitle(Window* window, const char *name) override;
-    void refreshWindow(Window* window) override;
+    DIPVIEWER_EXPORT size_t drawString(Window* window, const char *string) override;
+    DIPVIEWER_EXPORT void swapBuffers(Window* window) override;
+    DIPVIEWER_EXPORT void setWindowTitle(Window* window, const char *name) override;
+    DIPVIEWER_EXPORT void refreshWindow(Window* window) override;
 
-    void run();
-    WindowPtr getWindow(GLFWwindow *window);
-    void getCursorPos(Window *window, int *x, int *y);
-    void makeCurrent(Window *window);
+    DIPVIEWER_EXPORT void run();
+    DIPVIEWER_EXPORT WindowPtr getWindow(GLFWwindow *window);
+    DIPVIEWER_EXPORT void getCursorPos(Window *window, int *x, int *y);
+    DIPVIEWER_EXPORT void makeCurrent(Window *window);
 
     // Delegates
     static void refresh(GLFWwindow *window)

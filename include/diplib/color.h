@@ -43,7 +43,7 @@ namespace dip {
 ///
 /// Classes that convert between color spaces must derive from this and overload all the pure virtual functions.
 /// See `dip::ColorSpaceManager` for how to use these converters.
-class DIP_EXPORT ColorSpaceConverter {
+class DIP_CLASS_EXPORT ColorSpaceConverter {
    public:
       /// \brief Returns the source color space name.
       virtual String InputColorSpace() const = 0;

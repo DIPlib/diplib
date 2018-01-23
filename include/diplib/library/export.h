@@ -36,9 +36,27 @@
 /// \def DIP_NO_EXPORT
 /// \brief Indicates that the function or class is not exported from the shared/dynamic-load library.
 
+/// \def DIP_CLASS_EXPORT
+/// \brief Specifically for classes in a inheritance hierarchy and that must be passed across the
+/// executable/shared library interface.
+///
+/// Equal to `DIP_NO_EXPORT` on Windows and `DIP_EXPORT` elsewhere.
+///
+/// On Linux and other Unix-like systems, classes in a hierarchy, as well as classes thrown as
+/// exceptions, must be exported from the shared library if they are to be used across the interface
+/// between the library and whatever is using the library. This is the only way that the run-time
+/// linker is able to merge the virtual function tables, and identify the type of the thrown object.
+///
+/// However, on Windows, trying to export a class derived from a class in the standard library (such
+/// as `std::exception`), or trying to export a class that contains members of a non-exported class
+/// (such as a `dip::String`, a.k.a. `std::string`), causes compiler warnings. It seems that currently
+/// it is considered best practice to not export such classes. The Windows run-time linker always
+/// maps local classes to those in the shared library, even when they are not exported.
+
 #ifdef DIP__IS_STATIC
 #   define DIP_EXPORT
 #   define DIP_NO_EXPORT
+#   define DIP_CLASS_EXPORT
 #else
 #   ifdef _WIN32 // TODO: do we need to test for __CYGWIN__ here also?
 #      ifdef DIP__BUILD_SHARED
@@ -47,9 +65,13 @@
 #         define DIP_EXPORT __declspec(dllimport)
 #      endif
 #      define DIP_NO_EXPORT
+       // On the Windows platform, exception classes derived from `std::exception` should not exported
+#      define DIP_CLASS_EXPORT DIP_NO_EXPORT
 #   else
 #      define DIP_EXPORT __attribute__((visibility("default")))
 #      define DIP_NO_EXPORT __attribute__((visibility("hidden")))
+       // On other platforms, exception classes derived from `std::exception` must be exported
+#      define DIP_CLASS_EXPORT DIP_EXPORT
 #   endif
 #endif
 

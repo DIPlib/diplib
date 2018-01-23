@@ -25,7 +25,7 @@
 namespace dip { namespace viewer {
 
 /// \brief Allows the user to control how the image is displayed.
-class DIPVIEWER_EXPORT ControlViewPort : public ViewPort
+class DIPVIEWER_CLASS_EXPORT ControlViewPort : public ViewPort
 {
   protected:
     std::vector<std::vector<dip::String> > lists_;
@@ -40,8 +40,8 @@ class DIPVIEWER_EXPORT ControlViewPort : public ViewPort
     }
     ~ControlViewPort() override { }
     
-    void render() override;
-    void click(int button, int state, int x, int y) override;
+    DIPVIEWER_EXPORT void render() override;
+    DIPVIEWER_EXPORT void click(int button, int state, int x, int y) override;
 };
 
 }} // namespace dip::viewer
