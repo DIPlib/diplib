@@ -1326,7 +1326,7 @@ class DIP_NO_EXPORT Image {
          DIP_THROW_IF( sizes_.empty(), "Image sizes not set" );
          DIP_THROW_IF( coords.size() != sizes_.size(), E::DIMENSIONALITIES_DONT_MATCH );
          for( dip::uint ii = 0; ii < coords.size(); ++ii ) {
-            if(( coords[ ii ] < 0 ) || ( static_cast< dip::uint >( coords[ ii ] ) > sizes_[ ii ] - 1 )) {
+            if(( coords[ ii ] < 0 ) || ( coords[ ii ] > static_cast< CoordType >( sizes_[ ii ] - 1 ))) {
                return false;
             }
          }
@@ -1356,7 +1356,7 @@ class DIP_NO_EXPORT Image {
       /// The offset needs to be multiplied by the number of bytes of each sample to become
       /// a memory offset within the image.
       ///
-      /// `coords` can have negative values, no domain asusmptions are made.
+      /// `coords` can have negative values, no domain assumptions are made.
       static dip::sint Offset( IntegerArray const& coords, IntegerArray const& strides ) {
          DIP_THROW_IF( coords.size() != strides.size(), E::ARRAY_ILLEGAL_SIZE );
          dip::sint offset = 0;
