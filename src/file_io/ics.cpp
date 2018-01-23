@@ -543,7 +543,8 @@ FileInformation ImageReadICS(
       // Fast reading!
       //std::cout << "[ImageReadICS] fast reading!\n";
 
-      CALL_ICS( IcsGetData( icsFile, outRef.Origin(), outRef.NumberOfPixels() ), "Couldn't read pixel data from ICS file" );
+      CALL_ICS( IcsGetData( icsFile, outRef.Origin(), outRef.NumberOfPixels() * outRef.DataType().SizeOf() ),
+                "Couldn't read pixel data from ICS file" );
 
    } else {
       // Reading using strides
