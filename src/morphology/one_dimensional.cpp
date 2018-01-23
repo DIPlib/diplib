@@ -51,10 +51,10 @@ class OperatorErosion {
 };
 
 template< typename TPI, typename OP >
-class DilationLineFilter : public Framework::SeparableLineFilter {
+class DilationErosionLineFilter : public Framework::SeparableLineFilter {
    public:
       // NOTE! This filter needs input and output buffers to be distinct only for the brute-force version (filterLength <= 3)
-      DilationLineFilter( UnsignedArray const& filterLengths, Mirror mirror, dip::uint maxSize ) :
+      DilationErosionLineFilter( UnsignedArray const& filterLengths, Mirror mirror, dip::uint maxSize ) :
             filterLengths_( filterLengths ), mirror_( mirror == Mirror::YES ), maxSize_( maxSize ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          bool needBuffers = false;
@@ -296,24 +296,16 @@ class DilationLineFilter : public Framework::SeparableLineFilter {
 };
 
 template< typename TPI >
-inline std::unique_ptr< Framework::SeparableLineFilter > NewDilationLineFilter(
-      UnsignedArray const& sizes, Mirror mirror, dip::uint maxSize ) {
-   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>(
-         new DilationLineFilter< TPI, OperatorDilation< TPI >>( sizes, mirror, maxSize ));
-}
+using DilationLineFilter = DilationErosionLineFilter< TPI, OperatorDilation< TPI >>;
 
 template< typename TPI >
-inline std::unique_ptr< Framework::SeparableLineFilter > NewErosionLineFilter(
-      UnsignedArray const& sizes, Mirror mirror, dip::uint maxSize ) {
-   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>(
-         new DilationLineFilter< TPI, OperatorErosion< TPI >>( sizes, mirror, maxSize ));
-}
+using ErosionLineFilter = DilationErosionLineFilter< TPI, OperatorErosion< TPI >>;
 
 template< typename TPI, typename OP >
-class PeriodicDilationLineFilter : public Framework::SeparableLineFilter {
+class PeriodicDilationErosionLineFilter : public Framework::SeparableLineFilter {
    public:
       // NOTE! This filer needs input and output buffers to be distinct only for the brute-force version (filterLength <= 3)
-      PeriodicDilationLineFilter( dip::uint stepSize, dip::uint filterLength, Mirror mirror, dip::uint maxSize ) :
+      PeriodicDilationErosionLineFilter( dip::uint stepSize, dip::uint filterLength, Mirror mirror, dip::uint maxSize ) :
             stepSize_( stepSize ), filterLength_( filterLength ), mirror_( mirror == Mirror::YES ), maxSize_( maxSize ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          if( filterLength_ / stepSize_ > 3 ) {
@@ -344,7 +336,7 @@ class PeriodicDilationLineFilter : public Framework::SeparableLineFilter {
          }
          if( steps == 2 ) {
             // Brute-force computation
-            // TODO: use the `prev` trick from `DilationLineFilter`. But it needs to be an array with `stepSize_` elements...
+            // TODO: use the `prev` trick from `DilationErosionLineFilter`. But it needs to be an array with `stepSize_` elements...
             if( hasMargin ) {
                if( mirror_ ) {
                   in += stepStride;
@@ -376,7 +368,7 @@ class PeriodicDilationLineFilter : public Framework::SeparableLineFilter {
             }
          } else if( steps == 3 ) {
             // Brute-force computation
-            // TODO: use the `prev` trick from `DilationLineFilter`. But it needs to be an array with `stepSize_` elements...
+            // TODO: use the `prev` trick from `DilationErosionLineFilter`. But it needs to be an array with `stepSize_` elements...
             if( !hasMargin ) {
                if( length <= 2 * stepSize_ ) {
                   for( dip::uint ii = 0; ii < length - stepSize_; ++ii ) {
@@ -416,7 +408,7 @@ class PeriodicDilationLineFilter : public Framework::SeparableLineFilter {
                }
             }
          } else {
-            // Van Herk algorithm, modified from DilationLineFilter
+            // Van Herk algorithm, modified from DilationErosionLineFilter
             dip::uint left = ( steps / 2 ) * stepSize_; // The number of pixels on the left side of the filter
             dip::uint right = (( steps - 1 ) / 2 ) * stepSize_; // The number of pixels on the right side
             if( mirror_ ) {
@@ -560,18 +552,10 @@ class PeriodicDilationLineFilter : public Framework::SeparableLineFilter {
 };
 
 template< typename TPI >
-inline std::unique_ptr< Framework::SeparableLineFilter > NewPeriodicDilationLineFilter(
-      dip::uint stepSize, dip::uint filterLength, Mirror mirror, dip::uint maxSize ) {
-   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>(
-         new PeriodicDilationLineFilter< TPI, OperatorDilation< TPI >>( stepSize, filterLength, mirror, maxSize ));
-}
+using PeriodicDilationLineFilter = PeriodicDilationErosionLineFilter< TPI, OperatorDilation< TPI >>;
 
 template< typename TPI >
-inline std::unique_ptr< Framework::SeparableLineFilter > NewPeriodicErosionLineFilter(
-      dip::uint stepSize, dip::uint filterLength, Mirror mirror, dip::uint maxSize ) {
-   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>(
-         new PeriodicDilationLineFilter< TPI, OperatorErosion< TPI >>( stepSize, filterLength, mirror, maxSize ));
-}
+using PeriodicErosionLineFilter = PeriodicDilationErosionLineFilter< TPI, OperatorErosion< TPI >>;
 
 /*
 
@@ -609,7 +593,7 @@ class OperatorClosing {
 };
 
 template< typename TPI, typename OP >
-class OpeningLineFilter : public Framework::SeparableLineFilter {
+class OpeningClosingLineFilter : public Framework::SeparableLineFilter {
       struct QElem {
          dip::uint start;
          TPI value;
@@ -617,7 +601,7 @@ class OpeningLineFilter : public Framework::SeparableLineFilter {
          QElem( dip::uint start, TPI value, bool finished ) : start( start ), value( value ), finished( finished ) {}
       };
    public:
-      OpeningLineFilter( dip::uint filterLength ) : filterLength_( filterLength ) {}
+      OpeningClosingLineFilter( dip::uint filterLength ) : filterLength_( filterLength ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
          if( filterLength_ > 3 ) {
             stack_.resize( threads );
@@ -796,21 +780,21 @@ class OpeningLineFilter : public Framework::SeparableLineFilter {
 
 template< typename TPI >
 inline std::unique_ptr< Framework::SeparableLineFilter > NewOpeningLineFilter( dip::uint filterLength ) {
-   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>( new OpeningLineFilter< TPI, OperatorOpening< TPI >>( filterLength ));
+   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>( new OpeningClosingLineFilter< TPI, OperatorOpening< TPI >>( filterLength ));
 }
 
 template< typename TPI >
 inline std::unique_ptr< Framework::SeparableLineFilter > NewClosingLineFilter( dip::uint filterLength ) {
-   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>( new OpeningLineFilter< TPI, OperatorClosing< TPI >>( filterLength ));
+   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>( new OpeningClosingLineFilter< TPI, OperatorClosing< TPI >>( filterLength ));
 }
 
 */
 
 template< typename TPI, typename OP1, typename OP2 >
-class OpeningLineFilter : public Framework::SeparableLineFilter {
+class OpeningClosingLineFilter : public Framework::SeparableLineFilter {
    public:
       // NOTE! This filter needs input and output buffers to be distinct only for the brute-force version (filterLength <= 3)
-      OpeningLineFilter( UnsignedArray const& filterLengths, dip::uint maxSize, BoundaryConditionArray const& bc ) :
+      OpeningClosingLineFilter( UnsignedArray const& filterLengths, dip::uint maxSize, BoundaryConditionArray const& bc ) :
             erosion_( filterLengths, Mirror::NO, maxSize ), dilation_( filterLengths, Mirror::YES, maxSize ),
             filterLengths_( filterLengths ), maxSize_( maxSize ), boundaryCondition_( bc ) {
          // Exactly one of `filterLengths_` is larger than 1, find it.
@@ -945,8 +929,8 @@ class OpeningLineFilter : public Framework::SeparableLineFilter {
          }
       }
    private:
-      DilationLineFilter< TPI, OP1 > erosion_;
-      DilationLineFilter< TPI, OP2 > dilation_;
+      DilationErosionLineFilter< TPI, OP1 > erosion_;
+      DilationErosionLineFilter< TPI, OP2 > dilation_;
       UnsignedArray const& filterLengths_;
       dip::uint filterLength_;
       dip::uint maxSize_;
@@ -955,24 +939,16 @@ class OpeningLineFilter : public Framework::SeparableLineFilter {
 };
 
 template< typename TPI >
-inline std::unique_ptr< Framework::SeparableLineFilter > NewOpeningLineFilter(
-      UnsignedArray const& filterLengths, dip::uint maxSize, BoundaryConditionArray const& bc ) {
-   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>(
-         new OpeningLineFilter< TPI, OperatorErosion< TPI >, OperatorDilation< TPI >>( filterLengths, maxSize, bc ));
-}
+using OpeningLineFilter = OpeningClosingLineFilter< TPI, OperatorErosion< TPI >, OperatorDilation< TPI >>;
 
 template< typename TPI >
-inline std::unique_ptr< Framework::SeparableLineFilter > NewClosingLineFilter(
-      UnsignedArray const& filterLengths, dip::uint maxSize, BoundaryConditionArray const& bc ) {
-   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>(
-         new OpeningLineFilter< TPI, OperatorDilation< TPI >, OperatorErosion< TPI >>( filterLengths, maxSize, bc ));
-}
+using ClosingLineFilter = OpeningClosingLineFilter< TPI, OperatorDilation< TPI >, OperatorErosion< TPI >>;
 
 template< typename TPI, typename OP1, typename OP2 >
-class PeriodicOpeningLineFilter : public Framework::SeparableLineFilter {
+class PeriodicOpeningClosingLineFilter : public Framework::SeparableLineFilter {
    public:
       // NOTE! This filter does not need input and output buffers to be distinct
-      PeriodicOpeningLineFilter( dip::uint stepSize, dip::uint filterLength, dip::uint maxSize, BoundaryConditionArray const& bc ) :
+      PeriodicOpeningClosingLineFilter( dip::uint stepSize, dip::uint filterLength, dip::uint maxSize, BoundaryConditionArray const& bc ) :
             erosion_( stepSize, filterLength, Mirror::NO, maxSize ), dilation_( stepSize, filterLength, Mirror::YES, maxSize ),
             filterLength_( filterLength ), maxSize_( maxSize ), boundaryCondition_( bc ) {}
       virtual void SetNumberOfThreads( dip::uint threads ) override {
@@ -1018,8 +994,8 @@ class PeriodicOpeningLineFilter : public Framework::SeparableLineFilter {
          dilation_.Filter( paramsTmpOut );
       }
    private:
-      PeriodicDilationLineFilter< TPI, OP1 > erosion_;
-      PeriodicDilationLineFilter< TPI, OP2 > dilation_;
+      PeriodicDilationErosionLineFilter< TPI, OP1 > erosion_;
+      PeriodicDilationErosionLineFilter< TPI, OP2 > dilation_;
       dip::uint filterLength_;
       dip::uint maxSize_;
       BoundaryConditionArray const& boundaryCondition_;
@@ -1027,18 +1003,10 @@ class PeriodicOpeningLineFilter : public Framework::SeparableLineFilter {
 };
 
 template< typename TPI >
-inline std::unique_ptr< Framework::SeparableLineFilter > NewPeriodicOpeningLineFilter(
-      dip::uint stepSize, dip::uint filterLength, dip::uint maxSize, BoundaryConditionArray const& bc ) {
-   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>(
-         new PeriodicOpeningLineFilter< TPI, OperatorErosion< TPI >, OperatorDilation< TPI >>( stepSize, filterLength, maxSize, bc ));
-}
+using PeriodicOpeningLineFilter = PeriodicOpeningClosingLineFilter< TPI, OperatorErosion< TPI >, OperatorDilation< TPI >>;
 
 template< typename TPI >
-inline std::unique_ptr< Framework::SeparableLineFilter > NewPeriodicClosingLineFilter(
-      dip::uint stepSize, dip::uint filterLength, dip::uint maxSize, BoundaryConditionArray const& bc ) {
-   return static_cast< std::unique_ptr< Framework::SeparableLineFilter >>(
-         new PeriodicOpeningLineFilter< TPI, OperatorDilation< TPI >, OperatorErosion< TPI >>( stepSize, filterLength, maxSize, bc ));
-}
+using PeriodicClosingLineFilter = PeriodicOpeningClosingLineFilter< TPI, OperatorDilation< TPI >, OperatorErosion< TPI >>;
 
 // --- Rectangular morphology ---
 
@@ -1078,32 +1046,32 @@ void RectangularMorphology(
       DIP_START_STACK_TRACE
          switch( operation ) {
             case BasicMorphologyOperation::DILATION:
-               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewDilationLineFilter, ( sizes, mirror, 0 ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter, DilationLineFilter, ( sizes, mirror, 0 ), ovltype );
                Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
                break;
             case BasicMorphologyOperation::EROSION:
-               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewErosionLineFilter, ( sizes, mirror, 0 ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter, ErosionLineFilter, ( sizes, mirror, 0 ), ovltype );
                Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
                break;
             case BasicMorphologyOperation::CLOSING:
                if( nProcess == 1 ) {
-                  DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewClosingLineFilter, ( sizes, 0, bc ), ovltype );
+                  DIP_OVL_NEW_REAL( lineFilter, ClosingLineFilter, ( sizes, 0, bc ), ovltype );
                   Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
                } else {
-                  DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewDilationLineFilter, ( sizes, mirror, 0 ), ovltype );
+                  DIP_OVL_NEW_REAL( lineFilter, DilationLineFilter, ( sizes, mirror, 0 ), ovltype );
                   Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
-                  DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewErosionLineFilter, ( sizes, InvertMirrorParam( mirror ), 0 ), ovltype );
+                  DIP_OVL_NEW_REAL( lineFilter, ErosionLineFilter, ( sizes, InvertMirrorParam( mirror ), 0 ), ovltype );
                   Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
                }
                break;
             case BasicMorphologyOperation::OPENING:
                if( nProcess == 1 ) {
-                  DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewOpeningLineFilter, ( sizes, 0, bc ), ovltype );
+                  DIP_OVL_NEW_REAL( lineFilter, OpeningLineFilter, ( sizes, 0, bc ), ovltype );
                   Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
                } else {
-                  DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewErosionLineFilter, ( sizes, mirror, 0 ), ovltype );
+                  DIP_OVL_NEW_REAL( lineFilter, ErosionLineFilter, ( sizes, mirror, 0 ), ovltype );
                   Framework::Separable( in, out, dtype, dtype, process, border, bc, *lineFilter );
-                  DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewDilationLineFilter, ( sizes, InvertMirrorParam( mirror ), 0 ), ovltype );
+                  DIP_OVL_NEW_REAL( lineFilter, DilationLineFilter, ( sizes, InvertMirrorParam( mirror ), 0 ), ovltype );
                   Framework::Separable( out, out, dtype, dtype, process, border, bc, *lineFilter );
                }
                break;
@@ -1359,24 +1327,24 @@ void FastLineMorphology(
       ovltype = DT_UINT8; // Dirty trick: process a binary image with the same filter as a UINT8 image, but don't convert the type -- for some reason this is faster!
    }
    std::unique_ptr< Framework::SeparableLineFilter > lineFilter;
-   UnsignedArray sizes( 1, filterLength ); // This needs to be kept alive, DilationLineFilter holds a reference to it
+   UnsignedArray sizes( 1, filterLength ); // This needs to be kept alive, DilationErosionLineFilter holds a reference to it
    bool requireBuffer = false; // for some line filters, input and output must be distinct, so we need at least one buffer
    if( mode == StructuringElement::ShapeCode::PERIODIC_LINE ) {
       DIP_START_STACK_TRACE
          switch( operation ) {
             case BasicMorphologyOperation::DILATION:
-               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewPeriodicDilationLineFilter, ( periodicStepSize, filterLength, mirror, maxLineLength ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter, PeriodicDilationLineFilter, ( periodicStepSize, filterLength, mirror, maxLineLength ), ovltype );
                requireBuffer = filterLength / periodicStepSize <= 3;
                break;
             case BasicMorphologyOperation::EROSION:
-               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewPeriodicErosionLineFilter, ( periodicStepSize, filterLength, mirror, maxLineLength ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter, PeriodicErosionLineFilter, ( periodicStepSize, filterLength, mirror, maxLineLength ), ovltype );
                requireBuffer = filterLength / periodicStepSize <= 3;
                break;
             case BasicMorphologyOperation::CLOSING:
-               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewPeriodicClosingLineFilter, ( periodicStepSize, filterLength, maxLineLength, bc ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter, PeriodicClosingLineFilter, ( periodicStepSize, filterLength, maxLineLength, bc ), ovltype );
                break;
             case BasicMorphologyOperation::OPENING:
-               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewPeriodicOpeningLineFilter, ( periodicStepSize, filterLength, maxLineLength, bc ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter, PeriodicOpeningLineFilter, ( periodicStepSize, filterLength, maxLineLength, bc ), ovltype );
                break;
          }
       DIP_END_STACK_TRACE
@@ -1385,16 +1353,16 @@ void FastLineMorphology(
          requireBuffer = filterLength / periodicStepSize <= 3; // All of these line filters need input and output buffers to be distinct for small SEs.
          switch( operation ) {
             case BasicMorphologyOperation::DILATION:
-               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewDilationLineFilter, ( sizes, mirror, maxLineLength ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter, DilationLineFilter, ( sizes, mirror, maxLineLength ), ovltype );
                break;
             case BasicMorphologyOperation::EROSION:
-               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewErosionLineFilter, ( sizes, mirror, maxLineLength ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter, ErosionLineFilter, ( sizes, mirror, maxLineLength ), ovltype );
                break;
             case BasicMorphologyOperation::CLOSING:
-               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewClosingLineFilter, ( sizes, maxLineLength, bc ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter, ClosingLineFilter, ( sizes, maxLineLength, bc ), ovltype );
                break;
             case BasicMorphologyOperation::OPENING:
-               DIP_OVL_CALL_ASSIGN_REAL( lineFilter, NewOpeningLineFilter, ( sizes, maxLineLength, bc ), ovltype );
+               DIP_OVL_NEW_REAL( lineFilter, OpeningLineFilter, ( sizes, maxLineLength, bc ), ovltype );
                break;
          }
       DIP_END_STACK_TRACE
